@@ -2,12 +2,12 @@
 open Odoc_model
 open Odoc_model.Names
 
-type lookup_result_found = { root : Odoc_model.Root.t; hidden : bool }
-
 type lookup_unit_result =
   | Forward_reference
-  | Found of lookup_result_found
+  | Found of Odoc_model.Lang.Compilation_unit.t
   | Not_found
+
+type lookup_page_result = Odoc_model.Lang.Page.t option
 
 type root =
   | Resolved of
@@ -17,9 +17,7 @@ type root =
 type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
-  resolve_unit : Odoc_model.Root.t -> Odoc_model.Lang.Compilation_unit.t;
-  lookup_page : string -> Odoc_model.Root.t option;
-  resolve_page : Odoc_model.Root.t -> Odoc_model.Lang.Page.t;
+  lookup_page : string -> lookup_page_result;
 }
 
 let unique_id = ref 0
@@ -366,13 +364,10 @@ let lookup_root_module name env =
         match r.lookup_unit name with
         | Forward_reference -> Some Forward
         | Not_found -> None
-        | Found u -> (
-            match u.root.id with
-            | `Root _ as id ->
-                let unit = r.resolve_unit u.root in
-                let m = module_of_unit unit in
-                Some (Resolved (u.root.digest, id, m))
-            | _ -> failwith "Expecting root module!"))
+        | Found u ->
+            let (`Root _ as id) = u.id in
+            let m = module_of_unit u in
+            Some (Resolved (u.root.digest, id, m)))
   in
   (match (env.recorder, result) with
   | Some r, Some Forward ->
@@ -558,12 +553,7 @@ let lookup_section_title identifier env =
   try Some (Maps.Label.find identifier env.titles) with _ -> None
 
 let lookup_page name env =
-  match env.resolver with
-  | None -> None
-  | Some r -> (
-      match r.lookup_page name with
-      | None -> None
-      | Some root -> Some (r.resolve_page root))
+  match env.resolver with None -> None | Some r -> r.lookup_page name
 
 let add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t =
  fun p t ->

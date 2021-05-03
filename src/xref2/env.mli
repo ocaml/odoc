@@ -1,11 +1,11 @@
 (* Env.mli *)
 
-type lookup_result_found = { root : Odoc_model.Root.t; hidden : bool }
-
 type lookup_unit_result =
   | Forward_reference
-  | Found of lookup_result_found
+  | Found of Odoc_model.Lang.Compilation_unit.t
   | Not_found
+
+type lookup_page_result = Odoc_model.Lang.Page.t option
 
 type root =
   | Resolved of
@@ -15,9 +15,7 @@ type root =
 type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
-  resolve_unit : Odoc_model.Root.t -> Odoc_model.Lang.Compilation_unit.t;
-  lookup_page : string -> Odoc_model.Root.t option;
-  resolve_page : Odoc_model.Root.t -> Odoc_model.Lang.Page.t;
+  lookup_page : string -> lookup_page_result;
 }
 
 type lookup_type =

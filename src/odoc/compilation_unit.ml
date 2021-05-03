@@ -34,7 +34,14 @@ let load file =
   | exception Not_found -> (
       try
         let ic = open_in_bin file in
-        let _root = Root.load file ic in
+        (match Root.load file ic with
+        | Ok { Odoc_model.Root.file = Page _; _ } ->
+            (* Ensure we aren't loading a page. [Env] no longer ensures that. *)
+            assert false
+        | Ok _ -> ()
+        | Error (`Msg msg) ->
+            (* avoid calling marshal again. *)
+            failwith msg);
         let res = Marshal.from_channel ic in
         close_in ic;
         Hashtbl.add units_cache file res;

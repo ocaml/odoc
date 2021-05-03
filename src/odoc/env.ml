@@ -33,21 +33,22 @@
 
 open Or_error
 
-module Accessible_paths = struct
-  type t = {
-    root_map : Fs.File.t Odoc_model.Root.Hash_table.t;
-    file_map : (string, Odoc_model.Root.t list) Hashtbl.t;
-    directories : Fs.Directory.t list;
-  }
+type env_unit = [ `Module of Compilation_unit.t | `Page of Page.t ]
+(** In this module, a unit is either a module or a page. A module is a
+    [Compilation_unit]. *)
 
-  let create ~directories =
-    {
-      root_map = Odoc_model.Root.Hash_table.create 42;
-      file_map = Hashtbl.create 42;
-      directories;
-    }
+module Accessible_paths : sig
+  type t
 
-  let find_file_by_name t name =
+  val create : directories:Fs.Directory.t list -> t
+
+  val find : t -> string -> Fs.File.t list
+end = struct
+  type t = { directories : Fs.Directory.t list }
+
+  let create ~directories = { directories }
+
+  let find t name =
     let uname = Astring.String.Ascii.capitalize name ^ ".odoc" in
     let lname = Astring.String.Ascii.uncapitalize name ^ ".odoc" in
     let rec loop acc = function
@@ -63,76 +64,12 @@ module Accessible_paths = struct
               | exception Unix.Unix_error _ -> loop acc dirs))
     in
     loop [] t.directories
-
-  (* If there's only one possible file we've discovered in the search path
-     we can check the digest right now. If there's more than one, we defer
-     until further up the call stack *)
-  let check_optional_digest ?digest filename (roots : Odoc_model.Root.t list) =
-    match (roots, digest) with
-    | [ root ], Some d when Digest.compare d root.digest <> 0 ->
-        let warning =
-          Odoc_model.Error.filename_only "Digest mismatch" filename
-        in
-        prerr_endline (Odoc_model.Error.to_string warning);
-        roots
-    | _ -> roots
-
-  let find_root t ~filename =
-    match Hashtbl.find t.file_map filename with
-    | roots -> roots
-    | exception Not_found ->
-        let paths = find_file_by_name t filename in
-        (* This could be the empty list *)
-        let filter_map f l =
-          List.fold_right
-            (fun x acc -> match f x with Some y -> y :: acc | None -> acc)
-            l []
-        in
-        let safe_read file =
-          match Root.read file with
-          | Ok root -> Some (root, file)
-          | Error (`Msg msg) ->
-              let warning =
-                Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string file)
-              in
-              prerr_endline (Odoc_model.Error.to_string warning);
-              None
-          | exception End_of_file ->
-              let warning =
-                Odoc_model.Error.filename_only "End_of_file while reading"
-                  (Fs.File.to_string file)
-              in
-              prerr_endline (Odoc_model.Error.to_string warning);
-              None
-        in
-        let roots_paths = filter_map safe_read paths in
-        let roots = List.map fst roots_paths in
-        Hashtbl.add t.file_map filename roots;
-        List.iter
-          (fun (root, path) ->
-            Odoc_model.Root.Hash_table.add t.root_map root path)
-          roots_paths;
-        roots
-
-  let file_of_root t root =
-    try Odoc_model.Root.Hash_table.find t.root_map root
-    with Not_found ->
-      let _roots =
-        match root.file with
-        | Page page_name ->
-            let filename = "page-" ^ page_name in
-            check_optional_digest ~digest:root.digest filename
-            @@ find_root t ~filename
-        | Compilation_unit { name; _ } ->
-            check_optional_digest ~digest:root.digest name
-            @@ find_root t ~filename:name
-      in
-      Odoc_model.Root.Hash_table.find t.root_map root
 end
 
 module StringMap = Map.Make (String)
 
-let build_imports_map imports =
+let build_imports_map m =
+  let imports = m.Odoc_model.Lang.Compilation_unit.imports in
   List.fold_left
     (fun map import ->
       match import with
@@ -142,127 +79,147 @@ let build_imports_map imports =
           StringMap.add (Odoc_model.Names.ModuleName.to_string name) import map)
     StringMap.empty imports
 
-let lookup_unit ~important_digests ap target_name import_map =
-  let handle_root (root : Odoc_model.Root.t) =
-    match root.file with
-    | Compilation_unit { hidden; _ } -> Odoc_xref2.Env.Found { root; hidden }
-    | Page _ -> assert false
+let unit_name (u : env_unit) =
+  let open Odoc_model in
+  let root = match u with `Page p -> p.root | `Module m -> m.root in
+  let (Page name | Compilation_unit { name; _ }) = root.Root.file in
+  name
+
+let load_unit_from_file file =
+  let file = Fs.File.to_string file in
+  let ic = open_in_bin file in
+  let res =
+    try
+      match Root.load file ic with
+      | Error _ as e -> e
+      | Ok root ->
+          Ok
+            (match root.Odoc_model.Root.file with
+            | Page _ -> `Page (Marshal.from_channel ic)
+            | Compilation_unit _ -> `Module (Marshal.from_channel ic))
+    with exn ->
+      let msg =
+        Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
+          (match exn with Failure s -> s | _ -> Printexc.to_string exn)
+      in
+      Error (`Msg msg)
   in
-  let find_root ~digest =
-    match (Accessible_paths.find_root ap ~filename:target_name, digest) with
-    | [], _ -> Odoc_xref2.Env.Not_found
-    | [ r ], _ ->
-        handle_root r (* Already checked the digest, if one's been specified *)
-    | r :: rs, None ->
-        Printf.fprintf stderr
-          "Warning, ambiguous lookup. Please wrap your libraries. Possible \
-           files:\n\
-           %!";
-        let files_strs =
-          List.map
-            (fun root ->
-              Accessible_paths.file_of_root ap root
-              |> Fs.File.to_string |> Printf.sprintf "  %s")
-            (r :: rs)
+  close_in ic;
+  res
+
+(** TODO: Propagate warnings instead of printing. *)
+let load_units_from_files paths =
+  let safe_read file acc =
+    match load_unit_from_file file with
+    | Ok u -> u :: acc
+    | Error (`Msg msg) ->
+        let warning =
+          Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string file)
         in
-        prerr_endline (String.concat "\n" files_strs);
-        (* We've not specified a digest, let's try the first one *)
-        handle_root r
-    | roots, Some d -> (
-        try
-          (* If we can't find a module that matches the digest, return Not_found *)
-          handle_root
-          @@ List.find (fun root -> root.Odoc_model.Root.digest = d) roots
-        with Not_found -> Odoc_xref2.Env.Not_found)
+        prerr_endline (Odoc_model.Error.to_string warning);
+        acc
   in
-  match StringMap.find target_name import_map with
-  | Odoc_model.Lang.Compilation_unit.Import.Unresolved (_, digest) -> (
-      match digest with
-      | None when important_digests -> Odoc_xref2.Env.Forward_reference
-      | _ -> find_root ~digest)
-  | Odoc_model.Lang.Compilation_unit.Import.Resolved (root, _) -> (
-      match root.file with
-      | Compilation_unit { hidden; _ } -> Found { root; hidden }
-      | Page _ -> assert false)
+  List.fold_right safe_read paths []
+
+let unit_cache = Hashtbl.create 42
+
+(** Load every units matching a given name. Cached. *)
+let load_units_from_name =
+  let do_load ap target_name =
+    let paths = Accessible_paths.find ap target_name in
+    load_units_from_files paths
+  in
+  fun ap target_name ->
+    try Hashtbl.find unit_cache target_name
+    with Not_found ->
+      let units = do_load ap target_name in
+      Hashtbl.add unit_cache target_name units;
+      units
+
+let rec find_map f = function
+  | [] -> None
+  | hd :: tl -> (
+      match f hd with Some x -> Some (x, tl) | None -> find_map f tl)
+
+let lookup_module_with_digest ap target_name digest =
+  let module_that_match_digest = function
+    | `Module m
+      when Digest.compare m.Odoc_model.Lang.Compilation_unit.digest digest = 0
+      ->
+        Some m
+    | _ -> None
+  in
+  let units = load_units_from_name ap target_name in
+  match find_map module_that_match_digest units with
+  | Some (m, _) -> Odoc_xref2.Env.Found m
+  | None -> Not_found
+
+(** Lookup a module matching a name. If there is more than one result, report on
+    stderr and return the first one.
+
+    TODO: Correctly propagate warnings instead of printing. *)
+let lookup_module_by_name ap target_name =
+  let first_module = function `Module m -> Some m | `Page _ -> None in
+  let units = load_units_from_name ap target_name in
+  match find_map first_module units with
+  | Some (m, []) -> Odoc_xref2.Env.Found m
+  | Some (m, (_ :: _ as ambiguous)) ->
+      Printf.fprintf stderr
+        "Warning, ambiguous lookup. Please wrap your libraries. Possible files:\n\
+         %!";
+      let files_strs =
+        List.map
+          (fun u -> Printf.sprintf "  %s" (unit_name u))
+          (`Module m :: ambiguous)
+      in
+      prerr_endline (String.concat "\n" files_strs);
+      Found m
+  | None -> Not_found
+
+(** Lookup a module. First looks into [imports_map] then searches into the paths. *)
+let lookup_unit ~important_digests ~imports_map ap target_name =
+  match StringMap.find target_name imports_map with
+  | Odoc_model.Lang.Compilation_unit.Import.Unresolved (_, Some digest) ->
+      lookup_module_with_digest ap target_name digest
+  | Unresolved (_, None) ->
+      if important_digests then Odoc_xref2.Env.Forward_reference
+      else lookup_module_by_name ap target_name
+  | Resolved (root, _) -> lookup_module_with_digest ap target_name root.digest
   | exception Not_found ->
       if important_digests then Odoc_xref2.Env.Not_found
-      else find_root ~digest:None
+      else lookup_module_by_name ap target_name
 
+(** Lookup a page.
+
+    TODO: Warning on ambiguous lookup. *)
 let lookup_page ap target_name =
-  match Accessible_paths.find_root ap ~filename:("page-" ^ target_name) with
-  | [] -> None
-  | [ root ] -> Some root
-  | root :: _roots -> Some root
-
-let fetch_page ap root =
-  match Accessible_paths.file_of_root ap root with
-  | path -> Page.load path
-  | exception Not_found ->
-      let msg =
-        Printf.sprintf "No unit for root: %s\n%!"
-          (Odoc_model.Root.to_string root)
-      in
-      Error (`Msg msg)
-
-let fetch_unit ap root =
-  match Accessible_paths.file_of_root ap root with
-  | path -> Compilation_unit.load path
-  | exception Not_found ->
-      let msg =
-        Printf.sprintf "No unit for root: %s\n%!"
-          (Odoc_model.Root.to_string root)
-      in
-      Error (`Msg msg)
+  let target_name = "page-" ^ target_name in
+  let is_page = function `Page p -> Some p | `Module _ -> None in
+  let units = load_units_from_name ap target_name in
+  match find_map is_page units with Some (p, _) -> Some p | None -> None
 
 type t = Odoc_xref2.Env.resolver
 
-type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
+type builder = env_unit -> t
 
-let create ?(important_digests = true) ~directories ~open_modules : builder =
+(** Add the current unit to the cache. No need to load other units with the same
+    name. *)
+let add_unit_to_cache u = Hashtbl.add unit_cache (unit_name u) [ u ]
+
+let create ?(important_digests = true) ~directories ~open_modules =
   let ap = Accessible_paths.create ~directories in
   fun unit_or_page ->
+    add_unit_to_cache unit_or_page;
     let lookup_unit =
       match unit_or_page with
       | `Page _ ->
-          fun target_name ->
-            lookup_unit ~important_digests:false ap target_name StringMap.empty
-      | `Unit unit -> (
-          let imports_map =
-            build_imports_map unit.Odoc_model.Lang.Compilation_unit.imports
-          in
-          fun target_name ->
-            let lookup_result =
-              lookup_unit ~important_digests ap target_name imports_map
-            in
-            match lookup_result with
-            | Not_found -> (
-                let root = unit.root in
-                match root.file with
-                | Page _ -> assert false
-                | Compilation_unit { name; hidden } when target_name = name ->
-                    Found { root; hidden }
-                | Compilation_unit _ -> Not_found)
-            | x -> x)
-    in
-    let fetch_unit root : (Odoc_model.Lang.Compilation_unit.t, _) Result.result
-        =
-      match unit_or_page with
-      | `Page _ -> fetch_unit ap root
-      | `Unit unit ->
-          let current_root = unit.root in
-          if Odoc_model.Root.equal root current_root then Ok unit
-          else fetch_unit ap root
-    in
-    let lookup_page target_name = lookup_page ap target_name in
-    let fetch_page root : (Odoc_model.Lang.Page.t, _) Result.result =
-      match unit_or_page with
-      | `Unit _ -> fetch_page ap root
-      | `Page page ->
-          let current_root = page.Odoc_model.Lang.Page.root in
-          if Odoc_model.Root.equal root current_root then Ok page
-          else fetch_page ap root
-    in
-    Odoc_xref2.Compile.build_resolver open_modules lookup_unit fetch_unit
-      lookup_page fetch_page
+          lookup_unit ~important_digests:false ~imports_map:StringMap.empty ap
+      | `Module current_m ->
+          let imports_map = build_imports_map current_m in
+          lookup_unit ~important_digests ~imports_map ap
+    and lookup_page = lookup_page ap in
+    Odoc_xref2.Compile.build_resolver open_modules lookup_unit lookup_page
 
-let build builder unit = builder unit
+let build_from_module builder m = builder (`Module m)
+
+let build_from_page builder p = builder (`Page p)

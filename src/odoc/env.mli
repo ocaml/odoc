@@ -25,12 +25,7 @@ module Accessible_paths : sig
   val create : directories:Fs.directory list -> t
 end
 
-val lookup_page : Accessible_paths.t -> string -> Odoc_model.Root.t option
-
-val fetch_page :
-  Accessible_paths.t ->
-  Odoc_model.Root.t ->
-  (Page.t, [> `Msg of string ]) Result.result
+val lookup_page : Accessible_paths.t -> string -> Odoc_model.Lang.Page.t option
 
 type t = Odoc_xref2.Env.resolver
 
@@ -47,7 +42,10 @@ val create :
     @param important_digests indicate whether digests should be compared when
     doc-ock tries to lookup or fetch a unit. It defaults to [true]. *)
 
-val build : builder -> [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
-(** Initialize the environment for the given unit. *)
+val build_from_module : builder -> Odoc_model.Lang.Compilation_unit.t -> t
+(** Initialize the environment for the given module. *)
+
+val build_from_page : builder -> Odoc_model.Lang.Page.t -> t
+(** Initialize the environment for the given page. *)
 
 (* val forward_resolver : t -> Root.t DocOck.forward_resolver *)

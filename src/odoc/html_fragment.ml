@@ -16,7 +16,7 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
       Odoc_model.Lang.Page.
         { name = id; root; content; children = []; digest; linked = false }
     in
-    let resolve_env = Env.build env (`Page page) in
+    let resolve_env = Env.build_from_page env page in
     Odoc_xref2.Link.resolve_page resolve_env page
     |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename:input_s
     >>= fun resolved ->
