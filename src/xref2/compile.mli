@@ -6,12 +6,6 @@ val signature :
   Odoc_model.Lang.Signature.t ->
   Odoc_model.Lang.Signature.t
 
-val build_resolver :
-  string list ->
-  (string -> Env.lookup_unit_result) ->
-  (string -> Env.lookup_page_result) ->
-  Env.resolver
-
 val compile :
   Env.resolver ->
   Odoc_model.Lang.Compilation_unit.t ->

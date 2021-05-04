@@ -55,8 +55,8 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
 
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
-  let imports, env = Env.initial_env t resolver in
-  { t with content = content env t.id t.content; imports }
+  let env = Env.initial_env t resolver in
+  { t with content = content env t.id t.content }
 
 and content env id =
   let open Compilation_unit in
@@ -740,14 +740,6 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
   | Class (path, ts) -> Class (path, List.map (type_expression env parent) ts)
   | Poly (strs, t) -> Poly (strs, type_expression env parent t)
   | Package p -> Package (type_expression_package env parent p)
-
-let build_resolver :
-    string list ->
-    (string -> Env.lookup_unit_result) ->
-    (string -> Page.t option) ->
-    Env.resolver =
- fun open_units lookup_unit lookup_page ->
-  { Env.lookup_unit; lookup_page; open_units }
 
 let compile x y = Lookup_failures.catch_failures (fun () -> unit x y)
 

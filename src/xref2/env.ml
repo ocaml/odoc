@@ -708,11 +708,7 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | Odoc_model.Lang.Signature.Open o -> open_signature o.expansion env)
       e s.items
 
-let initial_env :
-    Odoc_model.Lang.Compilation_unit.t ->
-    resolver ->
-    Odoc_model.Lang.Compilation_unit.Import.t list * t =
- fun t resolver ->
+let initial_env t resolver =
   let open Odoc_model.Lang.Compilation_unit in
   let initial_env =
     let m = module_of_unit t in
@@ -720,19 +716,7 @@ let initial_env :
     let dm = Component.Delayed.put (fun () -> m) in
     empty |> add_module (t.id :> Identifier.Path.Module.t) dm m.doc
   in
-  let initial_env = set_resolver initial_env resolver in
-  List.fold_right
-    (fun import (imports, env) ->
-      match import with
-      | Import.Resolved (_root, _name) -> (import :: imports, env)
-      | Import.Unresolved (str, _) -> (
-          match resolver.lookup_unit str with
-          | Forward_reference -> (import :: imports, env)
-          | Found x ->
-              let name = Names.ModuleName.make_std str in
-              (Import.Resolved (x.root, name) :: imports, env)
-          | Not_found -> (import :: imports, env)))
-    t.imports ([], initial_env)
+  set_resolver initial_env resolver
 
 let inherit_resolver env =
   match env.resolver with Some r -> set_resolver empty r | None -> empty

@@ -169,10 +169,7 @@ val open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t
 
 val open_signature : Odoc_model.Lang.Signature.t -> t -> t
 
-val initial_env :
-  Odoc_model.Lang.Compilation_unit.t ->
-  resolver ->
-  Odoc_model.Lang.Compilation_unit.Import.t list * t
+val initial_env : Odoc_model.Lang.Compilation_unit.t -> resolver -> t
 
 val inherit_resolver : t -> t
 (** Create an empty environment reusing the same resolver. *)
