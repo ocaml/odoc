@@ -218,7 +218,7 @@ let create ?(important_digests = true) ~directories ~open_modules =
           let imports_map = build_imports_map current_m in
           lookup_unit ~important_digests ~imports_map ap
     and lookup_page = lookup_page ap in
-    Odoc_xref2.Compile.build_resolver open_modules lookup_unit lookup_page
+    { Odoc_xref2.Env.open_units = open_modules; lookup_unit; lookup_page }
 
 let build_from_module builder m = builder (`Module m)
 

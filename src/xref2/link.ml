@@ -213,13 +213,13 @@ and comment env parent = function
 
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
-  let imports, env = Env.initial_env t resolver in
+  let env = Env.initial_env t resolver in
   let content =
     match t.content with
     | Module sg -> Module (signature env (t.id :> Id.Signature.t) sg)
     | Pack _ as p -> p
   in
-  { t with content; imports; linked = true }
+  { t with content; linked = true }
 
 and value_ env parent t =
   let open Value in
