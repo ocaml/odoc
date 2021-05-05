@@ -1,3 +1,24 @@
+2.0.0~beta3
+-----------
+
+Breaking changes
+- Refactor the comment parser in preparation for it to be octavius 2 (@jonludlam, #621)
+
+Additions
+- Better HTML rendering (@dbuenzli, #607, #612, #615)
+- Better handling of signature comments (@Julow, #627, #629, #640, #643, #647, #654)
+- Centre, left and right alignment constructs now parse correctly (@lubegasimon, #624)
+- Allow reference to pages that contain hyphens and dots (@lubegasimon, #622)
+- Allow type definitions to be copied and pasted with correct syntax (@Drup, #626)
+- Install Ocamlary as a library for testing (@dbuenzli, #639)
+- Handle @canonical tags on compilation units (@Julow, #649)
+- Alias more when strengthening (@jonludlam, #653)
+- Light theme fixes (@xvw, #660)
+
+Bugs fixed
+- LaTeX: Hardened description environments (@Octachron, #608)
+
+
 2.0.0~beta2
 -----------
 
