@@ -85,7 +85,7 @@ let unit_name
 let load_units_from_files paths =
   let safe_read file acc =
     match Compilation_unit.load file with
-    | Ok u -> u.content :: acc
+    | Ok u -> u :: acc
     | Error (`Msg msg) ->
         let warning =
           Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string file)

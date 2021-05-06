@@ -20,11 +20,9 @@ open Odoc_model
 open Or_error
 
 (** Either a page or a module. *)
-type content =
+type t =
   | Page_content of Lang.Page.t
   | Module_content of Lang.Compilation_unit.t
-
-type t = { root : Root.t; content : content }
 
 (** {2 Serialization} *)
 

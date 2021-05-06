@@ -17,11 +17,9 @@
 open Odoc_model
 open Or_error
 
-type content =
+type t =
   | Page_content of Lang.Page.t
   | Module_content of Lang.Compilation_unit.t
-
-type t = { root : Root.t; content : content }
 
 (** Written at the top of the files. Checked when loading. *)
 let magic = "odoc-%%VERSION%%"
@@ -41,11 +39,9 @@ let save_page file page =
     if Astring.String.is_prefix ~affix:"page-" base then file
     else Fs.File.create ~directory:dir ~name:("page-" ^ base)
   in
-  save_unit file { root = page.Lang.Page.root; content = Page_content page }
+  save_unit file (Page_content page)
 
-let save_module file m =
-  save_unit file
-    { root = m.Lang.Compilation_unit.root; content = Module_content m }
+let save_module file m = save_unit file (Module_content m)
 
 let load file =
   let file = Fs.File.to_string file in

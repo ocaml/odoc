@@ -10,9 +10,8 @@ let print_json_desc desc x =
 
 let run inp =
   let inp = Fpath.v inp in
-  Compilation_unit.load inp >>= fun r ->
-  match r.Compilation_unit.content with
-  | Page_content page ->
+  Compilation_unit.load inp >>= function
+  | Compilation_unit.Page_content page ->
       print_json_desc Lang_desc.page_t page;
       Ok ()
   | Module_content u ->
