@@ -64,13 +64,11 @@ end = struct
 end
 
 let deps_of_odoc_file ~deps input =
-  Root.read input >>= function
-  | { file = Page _; _ } ->
-      Ok () (* XXX something should certainly be done here *)
-  | { file = Compilation_unit _; _ } ->
-      Compilation_unit.load input >>= fun odoctree ->
-      List.iter odoctree.Odoc_model.Lang.Compilation_unit.imports
-        ~f:(fun import ->
+  Compilation_unit.load input >>= fun { content; _ } ->
+  match content with
+  | Page_content _ -> Ok () (* XXX something should certainly be done here *)
+  | Module_content unit ->
+      List.iter unit.Odoc_model.Lang.Compilation_unit.imports ~f:(fun import ->
           match import with
           | Odoc_model.Lang.Compilation_unit.Import.Unresolved _ -> ()
           | Odoc_model.Lang.Compilation_unit.Import.Resolved (root, _) ->

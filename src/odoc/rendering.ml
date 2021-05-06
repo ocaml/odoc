@@ -2,45 +2,41 @@ open Odoc_document
 open Or_error
 
 let document_of_odocl ~syntax input =
-  Root.read input >>= fun root ->
-  match root.file with
-  | Page _ ->
-      Page.load input >>= fun odoctree ->
+  Compilation_unit.load input >>= fun unit ->
+  match unit.content with
+  | Compilation_unit.Page_content odoctree ->
       Ok (Renderer.document_of_page ~syntax odoctree)
-  | Compilation_unit _ ->
-      Compilation_unit.load input >>= fun odoctree ->
+  | Module_content odoctree ->
       Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
 
 let document_of_input ~env ~warn_error ~syntax input =
-  Root.read input >>= fun root ->
   let input_s = Fs.File.to_string input in
-  match root.file with
-  | Page _ ->
-      Page.load input >>= fun page ->
+  Compilation_unit.load input >>= fun unit ->
+  match unit.content with
+  | Compilation_unit.Page_content page ->
       let resolve_env = Env.build_from_page env page in
       Odoc_xref2.Link.resolve_page resolve_env page
       |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error
            ~filename:input_s
       >>= fun odoctree -> Ok (Renderer.document_of_page ~syntax odoctree)
-  | Compilation_unit { hidden; _ } ->
+  | Module_content m ->
       (* If hidden, we should not generate HTML. See
            https://github.com/ocaml/odoc/issues/99. *)
-      Compilation_unit.load input >>= fun unit ->
-      let unit =
-        if hidden then
+      let m =
+        if Odoc_model.Root.Odoc_file.hidden m.root.file then
           {
-            unit with
+            m with
             content =
               Odoc_model.Lang.Compilation_unit.Module
                 { items = []; compiled = false; doc = [] };
             expansion = None;
           }
-        else unit
+        else m
       in
-      let env = Env.build_from_module env unit in
+      let env = Env.build_from_module env m in
       (* let startlink = Unix.gettimeofday () in *)
       (* Format.fprintf Format.err_formatter "**** Link...\n%!"; *)
-      let linked = Odoc_xref2.Link.link env unit in
+      let linked = Odoc_xref2.Link.link env m in
       (* let finishlink = Unix.gettimeofday () in *)
       (* Format.fprintf Format.err_formatter "**** Finished: Link=%f\n%!" (finishlink -. startlink); *)
       (* Printf.fprintf stderr "num_times: %d\n%!" !Odoc_xref2.Tools.num_times; *)
@@ -49,9 +45,8 @@ let document_of_input ~env ~warn_error ~syntax input =
            ~filename:input_s
       >>= fun odoctree ->
       Odoc_xref2.Tools.reset_caches ();
-      Hashtbl.clear Compilation_unit.units_cache;
 
-      Compilation_unit.save Fs.File.(set_ext ".odocl" input) odoctree;
+      Compilation_unit.save_module Fs.File.(set_ext ".odocl" input) odoctree;
       Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
 
 let render_document renderer ~output:root_dir ~extra odoctree =

@@ -33,10 +33,6 @@
 
 open Or_error
 
-type env_unit = [ `Module of Compilation_unit.t | `Page of Page.t ]
-(** In this module, a unit is either a module or a page. A module is a
-    [Compilation_unit]. *)
-
 module Accessible_paths : sig
   type t
 
@@ -79,39 +75,17 @@ let build_imports_map m =
           StringMap.add (Odoc_model.Names.ModuleName.to_string name) import map)
     StringMap.empty imports
 
-let unit_name (u : env_unit) =
-  let open Odoc_model in
-  let root = match u with `Page p -> p.root | `Module m -> m.root in
-  let (Page name | Compilation_unit { name; _ }) = root.Root.file in
-  name
+let root_name root = Odoc_model.Root.Odoc_file.name root.Odoc_model.Root.file
 
-let load_unit_from_file file =
-  let file = Fs.File.to_string file in
-  let ic = open_in_bin file in
-  let res =
-    try
-      match Root.load file ic with
-      | Error _ as e -> e
-      | Ok root ->
-          Ok
-            (match root.Odoc_model.Root.file with
-            | Page _ -> `Page (Marshal.from_channel ic)
-            | Compilation_unit _ -> `Module (Marshal.from_channel ic))
-    with exn ->
-      let msg =
-        Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
-          (match exn with Failure s -> s | _ -> Printexc.to_string exn)
-      in
-      Error (`Msg msg)
-  in
-  close_in ic;
-  res
+let unit_name
+    (Compilation_unit.Module_content { root; _ } | Page_content { root; _ }) =
+  root_name root
 
 (** TODO: Propagate warnings instead of printing. *)
 let load_units_from_files paths =
   let safe_read file acc =
-    match load_unit_from_file file with
-    | Ok u -> u :: acc
+    match Compilation_unit.load file with
+    | Ok u -> u.content :: acc
     | Error (`Msg msg) ->
         let warning =
           Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string file)
@@ -142,8 +116,9 @@ let rec find_map f = function
       match f hd with Some x -> Some (x, tl) | None -> find_map f tl)
 
 let lookup_module_with_digest ap target_name digest =
-  let module_that_match_digest = function
-    | `Module m
+  let module_that_match_digest u =
+    match u with
+    | Compilation_unit.Module_content m
       when Digest.compare m.Odoc_model.Lang.Compilation_unit.digest digest = 0
       ->
         Some m
@@ -159,21 +134,36 @@ let lookup_module_with_digest ap target_name digest =
 
     TODO: Correctly propagate warnings instead of printing. *)
 let lookup_module_by_name ap target_name =
-  let first_module = function `Module m -> Some m | `Page _ -> None in
+  let first_module u =
+    match u with
+    | Compilation_unit.Module_content m -> Some m
+    | Page_content _ -> None
+  in
+  let rec find_ambiguous tl =
+    match find_map first_module tl with
+    | Some (m, tl) -> m :: find_ambiguous tl
+    | None -> []
+  in
   let units = load_units_from_name ap target_name in
   match find_map first_module units with
-  | Some (m, []) -> Odoc_xref2.Env.Found m
-  | Some (m, (_ :: _ as ambiguous)) ->
-      Printf.fprintf stderr
-        "Warning, ambiguous lookup. Please wrap your libraries. Possible files:\n\
-         %!";
-      let files_strs =
-        List.map
-          (fun u -> Printf.sprintf "  %s" (unit_name u))
-          (`Module m :: ambiguous)
-      in
-      prerr_endline (String.concat "\n" files_strs);
-      Found m
+  | Some (m, tl) ->
+      (match find_ambiguous tl with
+      | [] -> ()
+      | ambiguous ->
+          let ambiguous = m :: ambiguous in
+          let ambiguous =
+            List.map
+              (fun m -> root_name m.Odoc_model.Lang.Compilation_unit.root)
+              ambiguous
+          in
+          let warning =
+            Odoc_model.Error.filename_only
+              "Ambiguous lookup. Possible files: %a"
+              Format.(pp_print_list pp_print_string)
+              ambiguous target_name
+          in
+          prerr_endline (Odoc_model.Error.to_string warning));
+      Odoc_xref2.Env.Found m
   | None -> Not_found
 
 (** Lookup a module. First looks into [imports_map] then searches into the paths. *)
@@ -194,32 +184,42 @@ let lookup_unit ~important_digests ~imports_map ap target_name =
     TODO: Warning on ambiguous lookup. *)
 let lookup_page ap target_name =
   let target_name = "page-" ^ target_name in
-  let is_page = function `Page p -> Some p | `Module _ -> None in
+  let is_page u =
+    match u with
+    | Compilation_unit.Page_content p -> Some p
+    | Module_content _ -> None
+  in
   let units = load_units_from_name ap target_name in
   match find_map is_page units with Some (p, _) -> Some p | None -> None
-
-type t = Odoc_xref2.Env.resolver
-
-type builder = env_unit -> t
 
 (** Add the current unit to the cache. No need to load other units with the same
     name. *)
 let add_unit_to_cache u = Hashtbl.add unit_cache (unit_name u) [ u ]
 
-let create ?(important_digests = true) ~directories ~open_modules =
+type t = Odoc_xref2.Env.resolver
+
+type builder = {
+  important_digests : bool;
+  ap : Accessible_paths.t;
+  open_modules : string list;
+}
+
+let create ~important_digests ~directories ~open_modules =
   let ap = Accessible_paths.create ~directories in
-  fun unit_or_page ->
-    add_unit_to_cache unit_or_page;
-    let lookup_unit =
-      match unit_or_page with
-      | `Page _ ->
-          lookup_unit ~important_digests:false ~imports_map:StringMap.empty ap
-      | `Module current_m ->
-          let imports_map = build_imports_map current_m in
-          lookup_unit ~important_digests ~imports_map ap
-    and lookup_page = lookup_page ap in
-    { Odoc_xref2.Env.open_units = open_modules; lookup_unit; lookup_page }
+  { important_digests; ap; open_modules }
 
-let build_from_module builder m = builder (`Module m)
+(** [important_digests] and [imports_map] only apply to modules. *)
+let build { important_digests; ap; open_modules } ~imports_map u =
+  add_unit_to_cache u;
+  let lookup_unit = lookup_unit ~important_digests ~imports_map ap
+  and lookup_page = lookup_page ap in
+  { Odoc_xref2.Env.open_units = open_modules; lookup_unit; lookup_page }
 
-let build_from_page builder p = builder (`Page p)
+let build_from_module builder m =
+  let imports_map = build_imports_map m in
+  build builder ~imports_map (Compilation_unit.Module_content m)
+
+let build_from_page builder p =
+  let imports_map = StringMap.empty in
+  let builder = { builder with important_digests = false } in
+  build builder ~imports_map (Compilation_unit.Page_content p)

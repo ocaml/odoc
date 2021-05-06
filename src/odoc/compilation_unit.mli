@@ -14,16 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+(** Load and save [.odoc] and [.odocl] files. *)
+
+open Odoc_model
 open Or_error
 
-type t = Odoc_model.Lang.Compilation_unit.t
+(** Either a page or a module. *)
+type content =
+  | Page_content of Lang.Page.t
+  | Module_content of Lang.Compilation_unit.t
+
+type t = { root : Root.t; content : content }
 
 (** {2 Serialization} *)
 
-val save : Fs.File.t -> t -> unit
+val save_page : Fs.File.t -> Lang.Page.t -> unit
+(** Save a page. The [page-] prefix is added to the file name if missing. *)
 
-val units_cache : (string, t) Hashtbl.t
+val save_module : Fs.File.t -> Lang.Compilation_unit.t -> unit
+(** Save a module. *)
 
 (** {2 Deserialization} *)
 
 val load : Fs.File.t -> (t, [> msg ]) result
+(** Load an [.odoc] file. *)
