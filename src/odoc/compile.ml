@@ -29,15 +29,14 @@ type parent_cli_spec =
   | CliPackage of string
   | CliNoparent
 
-let parent directories parent_cli_spec =
-  let ap = Env.Accessible_paths.create ~directories in
+let parent resolver parent_cli_spec =
   let find_parent :
       Odoc_model.Paths.Reference.t ->
       (Odoc_model.Lang.Page.t, [> `Msg of string ]) Result.result =
    fun r ->
     match r with
     | `Root (p, `TPage) | `Root (p, `TUnknown) -> (
-        match Env.lookup_page ap p with
+        match Resolver.lookup_page resolver p with
         | Some r -> Ok r
         | None -> Error (`Msg "Couldn't find specified parent page"))
     | _ -> Error (`Msg "Expecting page as parent")
@@ -55,8 +54,8 @@ let parent directories parent_cli_spec =
   | CliPackage package -> Ok (Package (`RootPage (PageName.make_std package)))
   | CliNoparent -> Ok Noparent
 
-let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file
-    =
+let resolve_and_substitute ~resolver ~output ~warn_error parent input_file
+    read_file =
   let filename = Fs.File.to_string input_file in
 
   read_file ~parent ~filename
@@ -67,7 +66,7 @@ let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file
       (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
       else
         Printf.sprintf " Using %S while you should use the .cmti file" filename);
-  let env = Env.build_from_module env unit in
+  let env = Resolver.build_env_for_module resolver unit in
 
   Odoc_xref2.Compile.compile env unit
   |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error:false ~filename
@@ -171,9 +170,9 @@ let mld ~parent_spec ~output ~children ~warn_error input =
   | `Stop -> resolve [] (* TODO: Error? *)
   | `Docs content -> resolve content
 
-let compile ~env ~directories ~parent_cli_spec ~hidden ~children ~output
-    ~warn_error input =
-  parent directories parent_cli_spec >>= fun parent_spec ->
+let compile ~resolver ~parent_cli_spec ~hidden ~children ~output ~warn_error
+    input =
+  parent resolver parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then mld ~parent_spec ~output ~warn_error ~children input
   else
@@ -193,5 +192,5 @@ let compile ~env ~directories ~parent_cli_spec ~hidden ~children ~output
     in
     parent >>= fun parent ->
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
-    resolve_and_substitute ~env ~output ~warn_error parent input
+    resolve_and_substitute ~resolver ~output ~warn_error parent input
       (loader ~make_root)

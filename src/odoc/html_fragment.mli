@@ -20,12 +20,12 @@ open Or_error
 
 val from_mld :
   xref_base_uri:string ->
-  env:Env.builder ->
+  resolver:Resolver.t ->
   output:Fs.File.t ->
   warn_error:bool ->
   Fs.File.t ->
   (unit, [> msg ]) result
-(** [from_mld ~xref_base_uri ~env ~output input] parses the content of the [input]
+(** [from_mld ~xref_base_uri ~resolver ~output input] parses the content of the [input]
     file as a documentation page ({e i.e.} the ocamldoc syntax), generates the
     equivalent HTML representation and writes the result into the [output]
     file. The produced file is an HTML fragment that can be embedded into other

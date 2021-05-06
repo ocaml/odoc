@@ -2,7 +2,7 @@ open Odoc_document
 open Or_error
 
 val render_odoc :
-  env:Env.builder ->
+  resolver:Resolver.t ->
   warn_error:bool ->
   syntax:Renderer.syntax ->
   renderer:'a Renderer.t ->
@@ -20,7 +20,7 @@ val generate_odoc :
   (unit, [> msg ]) result
 
 val targets_odoc :
-  env:Env.builder ->
+  resolver:Resolver.t ->
   warn_error:bool ->
   syntax:Renderer.syntax ->
   renderer:'a Renderer.t ->

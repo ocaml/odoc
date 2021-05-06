@@ -7,7 +7,7 @@ val signature :
   Odoc_model.Lang.Signature.t
 
 val compile :
-  Env.resolver ->
+  Env.t ->
   Odoc_model.Lang.Compilation_unit.t ->
   Odoc_model.Lang.Compilation_unit.t Lookup_failures.with_failures
 

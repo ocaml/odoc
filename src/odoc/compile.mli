@@ -24,8 +24,7 @@ type parent_cli_spec =
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)
 
 val compile :
-  env:Env.builder ->
-  directories:Fs.Directory.t list ->
+  resolver:Resolver.t ->
   parent_cli_spec:parent_cli_spec ->
   hidden:bool ->
   children:string list ->

@@ -609,8 +609,8 @@ let my_compilation_unit id s =
     ; canonical = None
 }
 
-let mkenv () =
-  Odoc_odoc.Env.create
+let mkresolver () =
+  Odoc_odoc.Resolver.create
     ~important_digests:false
     ~directories:(List.map Odoc_odoc.Fs.Directory.of_string
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
@@ -621,8 +621,8 @@ let mkenv () =
     ) ~open_modules:[]
 
 let resolve unit =
-  let env = mkenv () in
-  let resolve_env = Odoc_odoc.Env.build_from_module env unit in
+  let resolver = mkresolver () in
+  let resolve_env = Odoc_odoc.Resolver.build_env_for_module resolver unit in
   let result = Odoc_xref2.Compile.compile resolve_env unit in
   result
 
