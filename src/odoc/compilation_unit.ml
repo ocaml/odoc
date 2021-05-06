@@ -14,41 +14,58 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_model
 open Or_error
 
-type t = Odoc_model.Lang.Compilation_unit.t
+type content =
+  | Page_content of Lang.Page.t
+  | Module_content of Lang.Compilation_unit.t
 
-let save file t =
+type t = { root : Root.t; content : content }
+
+(** Written at the top of the files. Checked when loading. *)
+let magic = "odoc-%%VERSION%%"
+
+(** Exceptions while saving are allowed to leak. *)
+let save_unit file t =
   Fs.Directory.mkdir_p (Fs.File.dirname file);
   let oc = open_out_bin (Fs.File.to_string file) in
-  Root.save oc t.Odoc_model.Lang.Compilation_unit.root;
+  output_string oc magic;
   Marshal.to_channel oc t [];
   close_out oc
 
-let units_cache = Hashtbl.create 23 (* because. *)
+let save_page file page =
+  let dir = Fs.File.dirname file in
+  let base = Fs.File.(to_string @@ basename file) in
+  let file =
+    if Astring.String.is_prefix ~affix:"page-" base then file
+    else Fs.File.create ~directory:dir ~name:("page-" ^ base)
+  in
+  save_unit file { root = page.Lang.Page.root; content = Page_content page }
+
+let save_module file m =
+  save_unit file
+    { root = m.Lang.Compilation_unit.root; content = Module_content m }
 
 let load file =
   let file = Fs.File.to_string file in
-  match Hashtbl.find units_cache file with
-  | unit -> Ok unit
-  | exception Not_found -> (
-      try
-        let ic = open_in_bin file in
-        (match Root.load file ic with
-        | Ok { Odoc_model.Root.file = Page _; _ } ->
-            (* Ensure we aren't loading a page. [Env] no longer ensures that. *)
-            assert false
-        | Ok _ -> ()
-        | Error (`Msg msg) ->
-            (* avoid calling marshal again. *)
-            failwith msg);
-        let res = Marshal.from_channel ic in
-        close_in ic;
-        Hashtbl.add units_cache file res;
-        Ok res
-      with exn ->
+  let ic = open_in_bin file in
+  let res =
+    try
+      let actual_magic = really_input_string ic (String.length magic) in
+      if actual_magic = magic then Ok (Marshal.from_channel ic)
+      else
         let msg =
-          Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
-            (match exn with Failure s -> s | _ -> Printexc.to_string exn)
+          Printf.sprintf "%s: invalid magic number %S, expected %S\n%!" file
+            actual_magic magic
         in
-        Error (`Msg msg))
+        Error (`Msg msg)
+    with exn ->
+      let msg =
+        Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
+          (match exn with Failure s -> s | _ -> Printexc.to_string exn)
+      in
+      Error (`Msg msg)
+  in
+  close_in ic;
+  res

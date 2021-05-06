@@ -35,6 +35,8 @@ module Odoc_file : sig
   val create_page : string -> t
 
   val name : t -> string
+
+  val hidden : t -> bool
 end
 
 type t = {

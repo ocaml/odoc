@@ -1,38 +1,36 @@
 open Or_error
 
 let from_odoc ~env ~warn_error input output =
-  Root.read input >>= fun root ->
   let input_s = Fs.File.to_string input in
-  match root.file with
-  | Page _ ->
-      Page.load input >>= fun page ->
+  Compilation_unit.load input >>= fun unit ->
+  match unit.content with
+  | Page_content page ->
       let resolve_env = Env.build_from_page env page in
       Odoc_xref2.Link.resolve_page resolve_env page
       |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error
            ~filename:input_s
       >>= fun odoctree ->
-      Page.save output odoctree;
+      Compilation_unit.save_page output odoctree;
 
       Ok ()
-  | Compilation_unit { hidden; _ } ->
-      Compilation_unit.load input >>= fun unit ->
-      let unit =
-        if hidden then
+  | Module_content m ->
+      let m =
+        if Odoc_model.Root.Odoc_file.hidden m.root.file then
           {
-            unit with
+            m with
             content =
               Odoc_model.Lang.Compilation_unit.Module
                 { items = []; compiled = false; doc = [] };
             expansion = None;
           }
-        else unit
+        else m
       in
 
-      let env = Env.build_from_module env unit in
-      Odoc_xref2.Link.link env unit
+      let env = Env.build_from_module env m in
+      Odoc_xref2.Link.link env m
       |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error:false
            ~filename:input_s
       >>= fun odoctree ->
-      Compilation_unit.save output odoctree;
+      Compilation_unit.save_module output odoctree;
 
       Ok ()

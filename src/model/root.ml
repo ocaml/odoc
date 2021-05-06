@@ -47,6 +47,8 @@ module Odoc_file = struct
   let create_page name = Page name
 
   let name = function Page name | Compilation_unit { name; _ } -> name
+
+  let hidden = function Page _ -> false | Compilation_unit m -> m.hidden
 end
 
 type t = {

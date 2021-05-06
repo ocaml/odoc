@@ -79,7 +79,7 @@ let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file
      working on. *)
   (*    let expand_env = Env.build env (`Unit resolved) in*)
   (*    let expanded = Odoc_xref2.Expand.expand (Env.expander expand_env) resolved in *)
-  Compilation_unit.save output compiled;
+  Compilation_unit.save_module output compiled;
   Ok ()
 
 let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
@@ -88,15 +88,8 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
     Filename.chop_extension Fs.File.(to_string @@ basename output)
   in
   let result parent =
-    let file_representation : Odoc_file.t =
-      Odoc_file.create_unit ~force_hidden:hidden module_name
-    in
-    Ok
-      {
-        id = `Root (parent, ModuleName.make_std module_name);
-        file = file_representation;
-        digest;
-      }
+    let file = Odoc_file.create_unit ~force_hidden:hidden module_name in
+    Ok { id = `Root (parent, ModuleName.make_std module_name); file; digest }
   in
   let check_child : Odoc_model.Paths.Reference.t -> bool =
    fun c ->
@@ -166,7 +159,7 @@ let mld ~parent_spec ~output ~children ~warn_error input =
       Odoc_model.Lang.Page.
         { name; root; children; content; digest; linked = false }
     in
-    Page.save output page;
+    Compilation_unit.save_page output page;
     Ok ()
   in
   Fs.File.read input >>= fun str ->
