@@ -53,9 +53,8 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
       | Ok p' -> `Resolved (Cpath.resolved_class_type_path_of_cpath p')
       | Error _ -> Cpath.class_type_path_of_cpath cp)
 
-let rec unit (resolver : Env.resolver) t =
+let rec unit env t =
   let open Compilation_unit in
-  let env = Env.initial_env t resolver in
   { t with content = content env t.id t.content }
 
 and content env id =

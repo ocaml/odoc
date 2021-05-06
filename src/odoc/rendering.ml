@@ -8,12 +8,12 @@ let document_of_odocl ~syntax input =
   | Module_content odoctree ->
       Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
 
-let document_of_input ~env ~warn_error ~syntax input =
+let document_of_input ~resolver ~warn_error ~syntax input =
   let input_s = Fs.File.to_string input in
   Compilation_unit.load input >>= function
   | Compilation_unit.Page_content page ->
-      let resolve_env = Env.build_from_page env page in
-      Odoc_xref2.Link.resolve_page resolve_env page
+      let env = Resolver.build_env_for_page resolver page in
+      Odoc_xref2.Link.resolve_page env page
       |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error
            ~filename:input_s
       >>= fun odoctree -> Ok (Renderer.document_of_page ~syntax odoctree)
@@ -31,7 +31,7 @@ let document_of_input ~env ~warn_error ~syntax input =
           }
         else m
       in
-      let env = Env.build_from_module env m in
+      let env = Resolver.build_env_for_module resolver m in
       (* let startlink = Unix.gettimeofday () in *)
       (* Format.fprintf Format.err_formatter "**** Link...\n%!"; *)
       let linked = Odoc_xref2.Link.link env m in
@@ -59,18 +59,18 @@ let render_document renderer ~output:root_dir ~extra odoctree =
       close_out oc);
   Ok ()
 
-let render_odoc ~env ~warn_error ~syntax ~renderer ~output extra file =
-  document_of_input ~env ~warn_error ~syntax file
+let render_odoc ~resolver ~warn_error ~syntax ~renderer ~output extra file =
+  document_of_input ~resolver ~warn_error ~syntax file
   >>= render_document renderer ~output ~extra
 
 let generate_odoc ~syntax ~renderer ~output extra file =
   document_of_odocl ~syntax file >>= render_document renderer ~output ~extra
 
-let targets_odoc ~env ~warn_error ~syntax ~renderer ~output:root_dir ~extra
+let targets_odoc ~resolver ~warn_error ~syntax ~renderer ~output:root_dir ~extra
     odoctree =
   let doc =
     if Fpath.get_ext odoctree = ".odoc" then
-      document_of_input ~env ~warn_error ~syntax odoctree
+      document_of_input ~resolver ~warn_error ~syntax odoctree
     else document_of_odocl ~syntax:OCaml odoctree
   in
   doc >>= fun odoctree ->

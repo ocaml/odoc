@@ -196,9 +196,7 @@ let lookup_page ap target_name =
     name. *)
 let add_unit_to_cache u = Hashtbl.add unit_cache (unit_name u) [ u ]
 
-type t = Odoc_xref2.Env.resolver
-
-type builder = {
+type t = {
   important_digests : bool;
   ap : Accessible_paths.t;
   open_modules : string list;
@@ -215,11 +213,15 @@ let build { important_digests; ap; open_modules } ~imports_map u =
   and lookup_page = lookup_page ap in
   { Odoc_xref2.Env.open_units = open_modules; lookup_unit; lookup_page }
 
-let build_from_module builder m =
+let build_env_for_module t m =
   let imports_map = build_imports_map m in
-  build builder ~imports_map (Compilation_unit.Module_content m)
+  let resolver = build t ~imports_map (Compilation_unit.Module_content m) in
+  Odoc_xref2.Env.env_of_module m resolver
 
-let build_from_page builder p =
+let build_env_for_page t p =
   let imports_map = StringMap.empty in
-  let builder = { builder with important_digests = false } in
-  build builder ~imports_map (Compilation_unit.Page_content p)
+  let t = { t with important_digests = false } in
+  let resolver = build t ~imports_map (Compilation_unit.Page_content p) in
+  Odoc_xref2.Env.env_of_page p resolver
+
+let lookup_page t target_name = lookup_page t.ap target_name

@@ -7,11 +7,11 @@ val signature :
   Odoc_model.Lang.Signature.t
 
 val link :
-  Env.resolver ->
+  Env.t ->
   Odoc_model.Lang.Compilation_unit.t ->
   Odoc_model.Lang.Compilation_unit.t Lookup_failures.with_failures
 
 val resolve_page :
-  Env.resolver ->
+  Env.t ->
   Odoc_model.Lang.Page.t ->
   Odoc_model.Lang.Page.t Lookup_failures.with_failures

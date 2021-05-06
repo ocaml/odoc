@@ -708,18 +708,21 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | Odoc_model.Lang.Signature.Open o -> open_signature o.expansion env)
       e s.items
 
-let initial_env t resolver =
+let inherit_resolver env =
+  match env.resolver with Some r -> set_resolver empty r | None -> empty
+
+let env_of_module t resolver =
   let open Odoc_model.Lang.Compilation_unit in
   let initial_env =
     let m = module_of_unit t in
-
     let dm = Component.Delayed.put (fun () -> m) in
     empty |> add_module (t.id :> Identifier.Path.Module.t) dm m.doc
   in
   set_resolver initial_env resolver
 
-let inherit_resolver env =
-  match env.resolver with Some r -> set_resolver empty r | None -> empty
+let env_of_page page resolver =
+  let initial_env = empty |> add_docs page.Odoc_model.Lang.Page.content in
+  set_resolver initial_env resolver
 
 let modules_of env =
   let f acc = function `Module (id, m) -> (id, m) :: acc | _ -> acc in

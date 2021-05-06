@@ -107,8 +107,8 @@ end = struct
   let compile hidden directories resolve_fwd_refs dst package_opt
       parent_name_opt open_modules children input warn_error =
     let open Or_error in
-    let env =
-      Env.create ~important_digests:(not resolve_fwd_refs) ~directories
+    let resolver =
+      Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
         ~open_modules
     in
     let input = Fs.File.of_string input in
@@ -125,7 +125,7 @@ end = struct
     in
     parent_cli_spec >>= fun parent_cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
-    Compile.compile ~env ~directories ~parent_cli_spec ~hidden ~children ~output
+    Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
       ~warn_error input
 
   let input =
@@ -231,10 +231,10 @@ end = struct
   let link directories input_file output_file warn_error =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
-    let env =
-      Env.create ~important_digests:false ~directories ~open_modules:[]
+    let resolver =
+      Resolver.create ~important_digests:false ~directories ~open_modules:[]
     in
-    Odoc_link.from_odoc ~env ~warn_error input output
+    Odoc_link.from_odoc ~resolver ~warn_error input output
 
   let dst =
     let doc =
@@ -278,11 +278,11 @@ end = struct
   module Process = struct
     let process extra _hidden directories output_dir syntax input_file
         warn_error =
-      let env =
-        Env.create ~important_digests:false ~directories ~open_modules:[]
+      let resolver =
+        Resolver.create ~important_digests:false ~directories ~open_modules:[]
       in
       let file = Fs.File.of_string input_file in
-      Rendering.render_odoc ~renderer:R.renderer ~env ~warn_error ~syntax
+      Rendering.render_odoc ~renderer:R.renderer ~resolver ~warn_error ~syntax
         ~output:output_dir extra file
 
     let cmd =
@@ -340,10 +340,10 @@ end = struct
   module Targets = struct
     let list_targets output_dir directories extra odoc_file =
       let odoc_file = Fs.File.of_string odoc_file in
-      let env =
-        Env.create ~important_digests:false ~directories ~open_modules:[]
+      let resolver =
+        Resolver.create ~important_digests:false ~directories ~open_modules:[]
       in
-      Rendering.targets_odoc ~env ~warn_error:false ~syntax:OCaml
+      Rendering.targets_odoc ~resolver ~warn_error:false ~syntax:OCaml
         ~renderer:R.renderer ~output:output_dir ~extra odoc_file
 
     let back_compat =
@@ -432,8 +432,8 @@ module Html_fragment : sig
 end = struct
   let html_fragment directories xref_base_uri output_file input_file warn_error
       =
-    let env =
-      Env.create ~important_digests:false ~directories ~open_modules:[]
+    let resolver =
+      Resolver.create ~important_digests:false ~directories ~open_modules:[]
     in
     let input_file = Fs.File.of_string input_file in
     let output_file = Fs.File.of_string output_file in
@@ -443,8 +443,8 @@ end = struct
         let last_char = xref_base_uri.[String.length xref_base_uri - 1] in
         if last_char <> '/' then xref_base_uri ^ "/" else xref_base_uri
     in
-    Html_fragment.from_mld ~env ~xref_base_uri ~output:output_file ~warn_error
-      input_file
+    Html_fragment.from_mld ~resolver ~xref_base_uri ~output:output_file
+      ~warn_error input_file
 
   let cmd =
     let output =

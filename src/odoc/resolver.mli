@@ -19,33 +19,28 @@
     This is the module which does the link between packages, directories and
     {!DocOck}'s needs. *)
 
-module Accessible_paths : sig
-  type t
-
-  val create : directories:Fs.directory list -> t
-end
-
-val lookup_page : Accessible_paths.t -> string -> Odoc_model.Lang.Page.t option
-
-type t = Odoc_xref2.Env.resolver
-
-type builder
+type t
 
 val create :
   important_digests:bool ->
   directories:Fs.Directory.t list ->
   open_modules:string list ->
-  builder
+  t
 (** Prepare the environment for a given list of
     {{!Fs.Directory.t} include directories}
 
     @param important_digests indicate whether digests should be compared when
     doc-ock tries to lookup or fetch a unit. It defaults to [true]. *)
 
-val build_from_module : builder -> Odoc_model.Lang.Compilation_unit.t -> t
+val lookup_page : t -> string -> Odoc_model.Lang.Page.t option
+
+(* val lookup_module *)
+
+val build_env_for_module :
+  t -> Odoc_model.Lang.Compilation_unit.t -> Odoc_xref2.Env.t
 (** Initialize the environment for the given module. *)
 
-val build_from_page : builder -> Odoc_model.Lang.Page.t -> t
+val build_env_for_page : t -> Odoc_model.Lang.Page.t -> Odoc_xref2.Env.t
 (** Initialize the environment for the given page. *)
 
 (* val forward_resolver : t -> Root.t DocOck.forward_resolver *)
