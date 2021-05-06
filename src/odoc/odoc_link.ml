@@ -2,8 +2,7 @@ open Or_error
 
 let from_odoc ~env ~warn_error input output =
   let input_s = Fs.File.to_string input in
-  Compilation_unit.load input >>= fun unit ->
-  match unit.content with
+  Compilation_unit.load input >>= function
   | Page_content page ->
       let resolve_env = Env.build_from_page env page in
       Odoc_xref2.Link.resolve_page resolve_env page

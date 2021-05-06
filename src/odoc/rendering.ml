@@ -2,8 +2,7 @@ open Odoc_document
 open Or_error
 
 let document_of_odocl ~syntax input =
-  Compilation_unit.load input >>= fun unit ->
-  match unit.content with
+  Compilation_unit.load input >>= function
   | Compilation_unit.Page_content odoctree ->
       Ok (Renderer.document_of_page ~syntax odoctree)
   | Module_content odoctree ->
@@ -11,8 +10,7 @@ let document_of_odocl ~syntax input =
 
 let document_of_input ~env ~warn_error ~syntax input =
   let input_s = Fs.File.to_string input in
-  Compilation_unit.load input >>= fun unit ->
-  match unit.content with
+  Compilation_unit.load input >>= function
   | Compilation_unit.Page_content page ->
       let resolve_env = Env.build_from_page env page in
       Odoc_xref2.Link.resolve_page resolve_env page
