@@ -55,10 +55,26 @@ let hidden =
   in
   Arg.(value & flag & info ~docs ~doc [ "hidden" ])
 
-let warn_error =
-  let doc = "Turn warnings into errors." in
-  let env = Arg.env_var "ODOC_WARN_ERROR" ~doc:(doc ^ " See option $(opt).") in
-  Arg.(value & flag & info ~docs ~doc ~env [ "warn-error" ])
+let warnings_options =
+  let warn_error =
+    let doc = "Turn warnings into errors." in
+    let env =
+      Arg.env_var "ODOC_WARN_ERROR" ~doc:(doc ^ " See option $(opt).")
+    in
+    Arg.(value & flag & info ~docs ~doc ~env [ "warn-error" ])
+  in
+  let print_warnings =
+    let doc =
+      "Whether warnings should be printed to stderr. See the $(b,errors) \
+       command."
+    in
+    let env = Arg.env_var "ODOC_PRINT_WARNINGS" ~doc in
+    Arg.(value & opt bool true & info ~docs ~doc ~env [ "print-warnings" ])
+  in
+  Term.(
+    const (fun warn_error print_warnings ->
+        { Odoc_model.Error.warn_error; print_warnings })
+    $ warn_error $ print_warnings)
 
 let dst ?create () =
   let doc = "Output directory where the HTML tree is expected to be saved." in
@@ -112,7 +128,7 @@ end = struct
         Fs.File.(set_ext ".odoc" output)
 
   let compile hidden directories resolve_fwd_refs dst package_opt
-      parent_name_opt open_modules children input warn_error =
+      parent_name_opt open_modules children input warnings_options =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -133,7 +149,7 @@ end = struct
     parent_cli_spec >>= fun parent_cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warn_error input
+      ~warnings_options input
 
   let input =
     let doc = "Input cmti, cmt, cmi or mld file" in
@@ -183,8 +199,8 @@ end = struct
     Term.(
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
-       $ package_opt $ parent_opt $ open_modules $ children $ input $ warn_error
-        ))
+       $ package_opt $ parent_opt $ open_modules $ children $ input
+       $ warnings_options))
 
   let info =
     Term.info "compile"
@@ -230,13 +246,13 @@ end = struct
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.(set_ext ".odocl" input)
 
-  let link directories input_file output_file warn_error open_modules =
+  let link directories input_file output_file warnings_options open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules
     in
-    match Odoc_link.from_odoc ~resolver ~warn_error input output with
+    match Odoc_link.from_odoc ~resolver ~warnings_options input output with
     | Error _ as e -> e
     | Ok _ -> Ok ()
 
@@ -255,7 +271,7 @@ end = struct
     in
     Term.(
       const handle_error
-      $ (const link $ odoc_file_directories $ input $ dst $ warn_error
+      $ (const link $ odoc_file_directories $ input $ dst $ warnings_options
        $ open_modules))
 
   let info = Term.info ~doc:"Link odoc files together" "link"
@@ -282,13 +298,13 @@ end = struct
 
   module Process = struct
     let process extra _hidden directories output_dir syntax input_file
-        warn_error =
+        warnings_options =
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
       in
       let file = Fs.File.of_string input_file in
-      Rendering.render_odoc ~renderer:R.renderer ~resolver ~warn_error ~syntax
-        ~output:output_dir extra file
+      Rendering.render_odoc ~renderer:R.renderer ~resolver ~warnings_options
+        ~syntax ~output:output_dir extra file
 
     let cmd =
       let syntax =
@@ -302,7 +318,7 @@ end = struct
       Term.(
         const handle_error
         $ (const process $ R.extra_args $ hidden $ odoc_file_directories
-         $ dst ~create:true () $ syntax $ input $ warn_error))
+         $ dst ~create:true () $ syntax $ input $ warnings_options))
 
     let info =
       let doc =
@@ -348,7 +364,10 @@ end = struct
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
       in
-      Rendering.targets_odoc ~resolver ~warn_error:false ~syntax:OCaml
+      let warnings_options =
+        { Odoc_model.Error.warn_error = false; print_warnings = false }
+      in
+      Rendering.targets_odoc ~resolver ~warnings_options ~syntax:OCaml
         ~renderer:R.renderer ~output:output_dir ~extra odoc_file
 
     let back_compat =
@@ -435,8 +454,8 @@ module Html_fragment : sig
 
   val info : Term.info
 end = struct
-  let html_fragment directories xref_base_uri output_file input_file warn_error
-      =
+  let html_fragment directories xref_base_uri output_file input_file
+      warnings_options =
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules:[]
     in
@@ -449,7 +468,7 @@ end = struct
         if last_char <> '/' then xref_base_uri ^ "/" else xref_base_uri
     in
     Html_fragment.from_mld ~resolver ~xref_base_uri ~output:output_file
-      ~warn_error input_file
+      ~warnings_options input_file
 
   let cmd =
     let output =
@@ -472,7 +491,7 @@ end = struct
     Term.(
       const handle_error
       $ (const html_fragment $ odoc_file_directories $ xref_base_uri $ output
-       $ input $ warn_error))
+       $ input $ warnings_options))
 
   let info =
     Term.info ~doc:"Generates an html fragment file from an mld one"

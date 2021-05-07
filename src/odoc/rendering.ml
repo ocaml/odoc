@@ -9,9 +9,9 @@ let document_of_odocl ~syntax input =
   | Unit_content odoctree ->
       Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
 
-let document_of_input ~resolver ~warn_error ~syntax input =
+let document_of_input ~resolver ~warnings_options ~syntax input =
   let output = Fs.File.(set_ext ".odocl" input) in
-  Odoc_link.from_odoc ~resolver ~warn_error input output >>= function
+  Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
   | `Page page -> Ok (Renderer.document_of_page ~syntax page)
   | `Module m -> Ok (Renderer.document_of_compilation_unit ~syntax m)
 
@@ -27,18 +27,19 @@ let render_document renderer ~output:root_dir ~extra odoctree =
       close_out oc);
   Ok ()
 
-let render_odoc ~resolver ~warn_error ~syntax ~renderer ~output extra file =
-  document_of_input ~resolver ~warn_error ~syntax file
+let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
+    =
+  document_of_input ~resolver ~warnings_options ~syntax file
   >>= render_document renderer ~output ~extra
 
 let generate_odoc ~syntax ~renderer ~output extra file =
   document_of_odocl ~syntax file >>= render_document renderer ~output ~extra
 
-let targets_odoc ~resolver ~warn_error ~syntax ~renderer ~output:root_dir ~extra
-    odoctree =
+let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
+    ~extra odoctree =
   let doc =
     if Fpath.get_ext odoctree = ".odoc" then
-      document_of_input ~resolver ~warn_error ~syntax odoctree
+      document_of_input ~resolver ~warnings_options ~syntax odoctree
     else document_of_odocl ~syntax odoctree
   in
   doc >>= fun odoctree ->

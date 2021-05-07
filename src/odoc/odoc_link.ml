@@ -20,27 +20,27 @@ let link_unit ~resolver ~filename m =
   Odoc_xref2.Link.link ~filename env m
 
 (** [~input_warnings] are the warnings stored in the input file *)
-let handle_warnings ~input_warnings ~warn_error ww =
+let handle_warnings ~input_warnings ~warnings_options ww =
   let _, warnings = Odoc_model.Error.unpack_warnings ww in
-  Odoc_model.Error.handle_warnings ~warn_error ww >>= fun res ->
+  Odoc_model.Error.handle_warnings ~warnings_options ww >>= fun res ->
   Ok (res, input_warnings @ warnings)
 
 (** Read the input file and write to the output file.
     Also return the resulting tree. *)
-let from_odoc ~resolver ~warn_error input output =
+let from_odoc ~resolver ~warnings_options input output =
   let filename = Fs.File.to_string input in
   Odoc_file.load input >>= fun unit ->
   let input_warnings = unit.Odoc_file.warnings in
   match unit.content with
   | Page_content page ->
       link_page ~resolver ~filename page
-      |> handle_warnings ~input_warnings ~warn_error
+      |> handle_warnings ~input_warnings ~warnings_options
       >>= fun (page, warnings) ->
       Odoc_file.save_page output ~warnings page;
       Ok (`Page page)
   | Unit_content m ->
       link_unit ~resolver ~filename m
-      |> handle_warnings ~input_warnings ~warn_error
+      |> handle_warnings ~input_warnings ~warnings_options
       >>= fun (m, warnings) ->
       Odoc_file.save_unit output ~warnings m;
       Ok (`Module m)

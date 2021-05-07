@@ -36,13 +36,20 @@ val raise_errors_and_warnings : 'a with_errors_and_warnings -> 'a
 val catch_errors_and_warnings : (unit -> 'a) -> 'a with_errors_and_warnings
 (** Combination of [catch] and [catch_warnings]. *)
 
+type warnings_options = {
+  warn_error : bool;  (** If [true], warnings will result in an error. *)
+  print_warnings : bool;  (** Whether to print warnings. *)
+}
+
 val handle_warnings :
-  warn_error:bool -> 'a with_warnings -> ('a, [> `Msg of string ]) Result.result
+  warnings_options:warnings_options ->
+  'a with_warnings ->
+  ('a, [> `Msg of string ]) Result.result
 (** Print warnings to stderr. If [warn_error] is [true] and there was warnings,
     returns an [Error]. *)
 
 val handle_errors_and_warnings :
-  warn_error:bool ->
+  warnings_options:warnings_options ->
   'a with_errors_and_warnings ->
   ('a, [> `Msg of string ]) Result.result
 (** Like [handle_warnings] but works on the output of

@@ -39,3 +39,9 @@ A contains linking errors:
   Identifier in reference should not be empty.
   File "a.odoc":
   Failed to lookup type unresolvedroot(B).t Parent_module: Lookup failure (root module): B
+
+It is possible to hide the warnings too:
+
+  $ odoc compile --print-warnings false --package test a.cmti
+  $ odoc link --print-warnings false a.odoc
+  $ ODOC_PRINT_WARNINGS=false odoc compile --package test a.cmti

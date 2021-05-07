@@ -32,8 +32,10 @@ type parent_cli_spec =
 (** Parse parent and child references. May print warnings. *)
 let parse_reference f =
   let open Odoc_model in
+  (* This is a command-line error. *)
+  let warnings_options = { Error.warn_error = true; print_warnings = true } in
   Semantics.parse_reference f
-  |> Error.handle_errors_and_warnings ~warn_error:true
+  |> Error.handle_errors_and_warnings ~warnings_options
 
 let parent resolver parent_cli_spec =
   let find_parent :
@@ -121,7 +123,7 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
       else Error (`Msg "Specified parent is not a parent of this file")
   | Package parent -> result parent
 
-let mld ~parent_spec ~output ~children ~warn_error input =
+let mld ~parent_spec ~output ~children ~warnings_options input =
   List.fold_left
     (fun acc child_str ->
       match (acc, parse_reference child_str) with
@@ -182,16 +184,17 @@ let mld ~parent_spec ~output ~children ~warn_error input =
   Odoc_loader.read_string
     (name :> Odoc_model.Paths.Identifier.LabelParent.t)
     input_s str
-  |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
+  |> Odoc_model.Error.handle_errors_and_warnings ~warnings_options
   >>= function
   | `Stop -> resolve [] (* TODO: Error? *)
   | `Docs content -> resolve content
 
-let compile ~resolver ~parent_cli_spec ~hidden ~children ~output ~warn_error
-    input =
+let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
+    ~warnings_options input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
-  if ext = ".mld" then mld ~parent_spec ~output ~warn_error ~children input
+  if ext = ".mld" then
+    mld ~parent_spec ~output ~warnings_options ~children input
   else
     (match ext with
     | ".cmti" -> Ok Odoc_loader.read_cmti
@@ -215,7 +218,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output ~warn_error
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Odoc_model.Error.unpack_warnings result in
-    Odoc_model.Error.handle_errors_and_warnings ~warn_error result
+    Odoc_model.Error.handle_errors_and_warnings ~warnings_options result
     >>= fun unit ->
     Odoc_file.save_unit output ~warnings unit;
     Ok ()

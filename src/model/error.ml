@@ -99,23 +99,29 @@ let print_error t = prerr_endline (to_string t)
 
 let print_errors = List.iter print_error
 
-let print_warnings = List.iter (fun w -> print_error w.w)
+type warnings_options = { warn_error : bool; print_warnings : bool }
+
+let print_warnings ~warnings_options warnings =
+  if warnings_options.print_warnings then
+    List.iter (fun w -> print_error w.w) warnings
 
 (* When there is warnings. *)
-let handle_warn_error ~warn_error warnings ok =
-  print_warnings warnings;
+let handle_warn_error ~warnings_options warnings ok =
+  print_warnings ~warnings_options warnings;
   let maybe_fatal = List.exists (fun w -> not w.non_fatal) warnings in
-  if maybe_fatal && warn_error then Error (`Msg "Warnings have been generated.")
+  if maybe_fatal && warnings_options.warn_error then
+    Error (`Msg "Warnings have been generated.")
   else Ok ok
 
-let handle_warnings ~warn_error ww =
-  handle_warn_error ~warn_error ww.warnings ww.value
+let handle_warnings ~warnings_options ww =
+  handle_warn_error ~warnings_options ww.warnings ww.value
 
-let handle_errors_and_warnings ~warn_error = function
+let handle_errors_and_warnings ~warnings_options = function
   | { value = Error e; warnings } ->
-      print_warnings warnings;
+      print_warnings ~warnings_options warnings;
       Error (`Msg (to_string e))
-  | { value = Ok ok; warnings } -> handle_warn_error ~warn_error warnings ok
+  | { value = Ok ok; warnings } ->
+      handle_warn_error ~warnings_options warnings ok
 
 let unpack_warnings ww = (ww.value, List.map (fun w -> w.w) ww.warnings)
 
