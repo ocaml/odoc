@@ -3,7 +3,7 @@ open Or_error
 
 val render_odoc :
   resolver:Resolver.t ->
-  warn_error:bool ->
+  warnings_options:Odoc_model.Error.warnings_options ->
   syntax:Renderer.syntax ->
   renderer:'a Renderer.t ->
   output:Fs.directory ->
@@ -21,7 +21,7 @@ val generate_odoc :
 
 val targets_odoc :
   resolver:Resolver.t ->
-  warn_error:bool ->
+  warnings_options:Odoc_model.Error.warnings_options ->
   syntax:Renderer.syntax ->
   renderer:'a Renderer.t ->
   output:Fs.directory ->

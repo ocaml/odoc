@@ -1,6 +1,6 @@
 open Or_error
 
-let from_mld ~xref_base_uri ~resolver ~output ~warn_error input =
+let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
   (* Internal names, they don't have effect on the output. *)
   let page_name = "__fragment_page__" in
   let id = `RootPage (Odoc_model.Names.PageName.make_std page_name) in
@@ -18,7 +18,7 @@ let from_mld ~xref_base_uri ~resolver ~output ~warn_error input =
     in
     let env = Resolver.build_env_for_page resolver page in
     Odoc_xref2.Link.resolve_page ~filename:input_s env page
-    |> Odoc_model.Error.handle_warnings ~warn_error
+    |> Odoc_model.Error.handle_warnings ~warnings_options
     >>= fun resolved ->
     let page = Odoc_document.Comment.to_ir resolved.content in
     let html = Odoc_html.Generator.doc ~xref_base_uri page in
@@ -32,7 +32,7 @@ let from_mld ~xref_base_uri ~resolver ~output ~warn_error input =
   | Error _ as e -> e
   | Ok str -> (
       Odoc_loader.read_string id input_s str
-      |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
+      |> Odoc_model.Error.handle_errors_and_warnings ~warnings_options
       >>= function
       | `Docs content -> to_html content
       | `Stop -> to_html [])

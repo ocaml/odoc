@@ -22,7 +22,7 @@ val from_mld :
   xref_base_uri:string ->
   resolver:Resolver.t ->
   output:Fs.File.t ->
-  warn_error:bool ->
+  warnings_options:Odoc_model.Error.warnings_options ->
   Fs.File.t ->
   (unit, [> msg ]) result
 (** [from_mld ~xref_base_uri ~resolver ~output input] parses the content of the [input]

@@ -29,6 +29,6 @@ val compile :
   hidden:bool ->
   children:string list ->
   output:Fs.File.t ->
-  warn_error:bool ->
+  warnings_options:Odoc_model.Error.warnings_options ->
   Fs.File.t ->
   (unit, [> msg ]) result
