@@ -55,7 +55,18 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
 
 let rec unit env t =
   let open Compilation_unit in
-  { t with content = content env t.id t.content }
+  let imports =
+    (* Resolve imports *)
+    List.map
+      (function
+        | Import.Resolved _ as import -> import
+        | Unresolved (name, _) as unresolved -> (
+            match Env.lookup_root_module name env with
+            | Some (Env.Resolved (root, _, _)) -> Resolved (root, Names.ModuleName.make_std name)
+            | Some Forward | None -> unresolved))
+      t.imports
+  in
+  { t with content = content env t.id t.content; imports }
 
 and content env id =
   let open Compilation_unit in

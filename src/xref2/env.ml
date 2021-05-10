@@ -11,7 +11,7 @@ type lookup_page_result = Odoc_model.Lang.Page.t option
 
 type root =
   | Resolved of
-      (Digest.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
+      (Root.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
   | Forward
 
 type resolver = {
@@ -367,13 +367,13 @@ let lookup_root_module name env =
         | Found u ->
             let (`Root _ as id) = u.id in
             let m = module_of_unit u in
-            Some (Resolved (u.root.digest, id, m)))
+            Some (Resolved (u.root, id, m)))
   in
   (match (env.recorder, result) with
   | Some r, Some Forward ->
       r.lookups <- RootModule (name, Some `Forward) :: r.lookups
-  | Some r, Some (Resolved (digest, _, _)) ->
-      r.lookups <- RootModule (name, Some (`Resolved digest)) :: r.lookups
+  | Some r, Some (Resolved (root, _, _)) ->
+      r.lookups <- RootModule (name, Some (`Resolved root.digest)) :: r.lookups
   | Some r, None -> r.lookups <- RootModule (name, None) :: r.lookups
   | None, _ -> ());
   result

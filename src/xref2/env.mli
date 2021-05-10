@@ -9,7 +9,9 @@ type lookup_page_result = Odoc_model.Lang.Page.t option
 
 type root =
   | Resolved of
-      (Digest.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
+      (Odoc_model.Root.t
+      * Odoc_model.Paths.Identifier.Module.t
+      * Component.Module.t)
   | Forward
 
 type resolver = {
