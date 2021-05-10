@@ -284,6 +284,62 @@ let reset_caches () =
   SignatureOfModuleMemo.clear ();
   LookupParentMemo.clear ()
 
+let simplify_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
+    =
+ fun env m ->
+  match m with
+  | `Module (`Module (`Identifier p), name) -> (
+      let ident =
+        (`Module ((p :> Odoc_model.Paths.Identifier.Signature.t), name)
+          : Odoc_model.Paths.Identifier.Path.Module.t)
+      in
+      match
+        Env.(
+          lookup_by_id s_module
+            (ident :> Odoc_model.Paths.Identifier.Signature.t)
+            env)
+      with
+      | Some _ -> `Identifier ident
+      | None -> m)
+  | _ -> m
+
+let simplify_module_type :
+    Env.t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
+ fun env m ->
+  match m with
+  | `ModuleType (`Module (`Identifier p), name) -> (
+      let ident =
+        (`ModuleType ((p :> Odoc_model.Paths.Identifier.Signature.t), name)
+          : Odoc_model.Paths.Identifier.Path.ModuleType.t)
+      in
+      match
+        Env.(
+          lookup_by_id s_module_type
+            (ident :> Odoc_model.Paths.Identifier.Signature.t)
+            env)
+      with
+      | Some _ -> `Identifier ident
+      | None -> m)
+  | _ -> m
+
+let simplify_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
+ fun env m ->
+  match m with
+  | `Type (`Module (`Identifier p), name) -> (
+      let ident =
+        (`Type ((p :> Odoc_model.Paths.Identifier.Signature.t), name)
+          : Odoc_model.Paths.Identifier.Path.Type.t)
+      in
+      match
+        Env.(
+          lookup_by_id s_type
+            (ident :> Odoc_model.Paths.Identifier.Path.Type.t)
+            env)
+      with
+      | Some _ -> `Identifier ident
+      | None -> m)
+  | _ -> m
+
 let rec handle_apply ~mark_substituted env func_path arg_path m =
   let rec find_functor mty =
     match mty with
@@ -398,7 +454,7 @@ and process_module_path env ~add_canonical m p =
 and handle_module_lookup env ~add_canonical id parent sg sub =
   match Find.careful_module_in_sig sg id with
   | Some (`FModule (name, m)) ->
-      let p' = `Module (parent, name) in
+      let p' = simplify_module env (`Module (parent, name)) in
       let m' = Subst.module_ sub m in
       let md' = Component.Delayed.put_val m' in
       Ok (process_module_path env ~add_canonical m' p', md')
@@ -409,15 +465,15 @@ and handle_module_lookup env ~add_canonical id parent sg sub =
 and handle_module_type_lookup env ~add_canonical id p sg sub =
   let open OptionMonad in
   Find.module_type_in_sig sg id >>= fun (`FModuleType (name, mt)) ->
-  let p' = `ModuleType (p, name) in
+  let p' = simplify_module_type env (`ModuleType (p, name)) in
   let p'' = process_module_type env ~add_canonical mt p' in
   Some (p'', Subst.module_type sub mt)
 
-and handle_type_lookup id p sg =
+and handle_type_lookup env id p sg =
   match Find.careful_type_in_sig sg id with
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
   | Some (`FClassType (name, _) as t) -> Ok (`ClassType (p, name), t)
-  | Some (`FType (name, _) as t) -> Ok (`Type (p, name), t)
+  | Some (`FType (name, _) as t) -> Ok (simplify_type env (`Type (p, name)), t)
   | Some (`FType_removed (name, _, _) as t) -> Ok (`Type (p, name), t)
   | None -> Error `Find_failure
 
@@ -540,7 +596,7 @@ and lookup_type :
     lookup_parent ~mark_substituted:true env p
     |> map_error (fun e -> (e :> simple_type_lookup_error))
     >>= fun (sg, sub) ->
-    handle_type_lookup name p sg >>= fun (_, t') ->
+    handle_type_lookup env name p sg >>= fun (_, t') ->
     let t =
       match t' with
       | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
@@ -750,7 +806,7 @@ and resolve_type :
         (* let time1point5 = Unix.gettimeofday () in *)
         let sub = prefix_substitution (`Module p) sg in
         (* let time2 = Unix.gettimeofday () in *)
-        handle_type_lookup id (`Module p) sg >>= fun (p', t') ->
+        handle_type_lookup env id (`Module p) sg >>= fun (p', t') ->
         let t =
           match t' with
           | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
@@ -789,7 +845,7 @@ and resolve_type :
         lookup_parent ~mark_substituted:true env parent
         |> map_error (fun e -> (e :> simple_type_lookup_error))
         >>= fun (parent_sg, sub) ->
-        handle_type_lookup (ClassTypeName.to_string id) parent parent_sg
+        handle_type_lookup env (ClassTypeName.to_string id) parent parent_sg
         >>= fun (p', t') ->
         let t =
           match t' with

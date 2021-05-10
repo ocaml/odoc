@@ -711,6 +711,17 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
 let inherit_resolver env =
   match env.resolver with Some r -> set_resolver empty r | None -> empty
 
+let open_units resolver env =
+  List.fold_left
+    (fun env m ->
+      match resolver.lookup_unit m with
+      | Found unit -> (
+          match unit.content with
+          | Module sg -> open_signature sg env
+          | _ -> env)
+      | _ -> env)
+    env resolver.open_units
+
 let env_of_unit t resolver =
   let open Odoc_model.Lang.Compilation_unit in
   let initial_env =
@@ -718,11 +729,11 @@ let env_of_unit t resolver =
     let dm = Component.Delayed.put (fun () -> m) in
     empty |> add_module (t.id :> Identifier.Path.Module.t) dm m.doc
   in
-  set_resolver initial_env resolver
+  set_resolver initial_env resolver |> open_units resolver
 
 let env_of_page page resolver =
   let initial_env = empty |> add_docs page.Odoc_model.Lang.Page.content in
-  set_resolver initial_env resolver
+  set_resolver initial_env resolver |> open_units resolver
 
 let modules_of env =
   let f acc = function `Module (id, m) -> (id, m) :: acc | _ -> acc in
