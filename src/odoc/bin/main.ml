@@ -67,6 +67,13 @@ let dst ?create () =
     & opt (some (convert_directory ?create ())) None
     & info ~docs ~docv:"DIR" ~doc [ "o"; "output-dir" ])
 
+let open_modules =
+  let doc =
+    "Initially open module. Can be used more than once. Defaults to 'Stdlib'"
+  in
+  let default = [ "Stdlib" ] in
+  Arg.(value & opt_all string default & info ~docv:"MODULE" ~doc [ "open" ])
+
 module Compile : sig
   val output_file : dst:string option -> input:Fs.file -> Fs.file
 
@@ -144,11 +151,6 @@ end = struct
       \                 added if not already present in the input basename)."
     in
     Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
-
-  let open_modules =
-    let doc = "Initially open module. Can be used more than once" in
-    let default = [] in
-    Arg.(value & opt_all string default & info ~docv:"MODULE" ~doc [ "open" ])
 
   let children =
     let doc =
@@ -228,11 +230,11 @@ end = struct
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.(set_ext ".odocl" input)
 
-  let link directories input_file output_file warn_error =
+  let link directories input_file output_file warn_error open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
     let resolver =
-      Resolver.create ~important_digests:false ~directories ~open_modules:[]
+      Resolver.create ~important_digests:false ~directories ~open_modules
     in
     Odoc_link.from_odoc ~resolver ~warn_error input output
 
@@ -251,7 +253,8 @@ end = struct
     in
     Term.(
       const handle_error
-      $ (const link $ odoc_file_directories $ input $ dst $ warn_error))
+      $ (const link $ odoc_file_directories $ input $ dst $ warn_error
+       $ open_modules))
 
   let info = Term.info ~doc:"Link odoc files together" "link"
 end
