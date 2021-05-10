@@ -821,18 +821,6 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
   | Poly (strs, t) -> Poly (strs, type_expression env parent visited t)
   | Package p -> Package (type_expression_package env parent visited p)
 
-(*
-let build_resolver :
-    ?equal:(Root.t -> Root.t -> bool) ->
-    ?hash:(Root.t -> int) ->
-    (string -> Env.lookup_unit_result) ->
-    (Root.t -> Compilation_unit.t) ->
-    (string -> Root.t option) ->
-    (Root.t -> Page.t) ->
-    Env.resolver =
- fun ?equal:_ ?hash:_ lookup_unit resolve_unit lookup_page resolve_page ->
-  { Env.lookup_unit; resolve_unit; lookup_page; resolve_page }
-*)
 let link x y =
   Lookup_failures.catch_failures (fun () ->
       if y.Lang.Compilation_unit.linked then y else unit x y)
