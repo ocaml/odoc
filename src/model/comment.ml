@@ -40,7 +40,7 @@ type module_reference = {
 
 type nestable_block_element =
   [ `Paragraph of paragraph
-  | `Code_block of string
+  | `Code_block of string option * string
   | `Verbatim of string
   | `Modules of module_reference list
   | `List of
