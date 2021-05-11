@@ -213,7 +213,7 @@ let emit_verbatim input start_offset buffer =
   let t = trim_trailing_blank_lines t in
   emit input (`Verbatim t) ~start_offset
 
-let emit_code_block input c =
+let emit_code_block input meta c =
   let c = trim_trailing_blank_lines c in
   let c =
     with_location_adjustments
@@ -223,7 +223,7 @@ let emit_code_block input c =
       input c
   in
   let c = trim_leading_blank_lines c in
-  emit input (`Code_block c)
+  emit input (`Code_block (meta, c))
 
 
 
@@ -262,6 +262,8 @@ let raw_markup =
   ([^ '%'] | '%'+ [^ '%' '}'])* '%'*
 let raw_markup_target =
   ([^ ':' '%'] | '%'+ [^ ':' '%' '}'])* '%'*
+let code_block_meta =
+  ([^ '['])*
 
 
 
@@ -327,7 +329,10 @@ rule token input = parse
     { emit input (reference_token start target) }
 
   | "{[" (code_block_text as c) "]}"
-    { emit_code_block input c }
+    { emit_code_block input None c }
+
+  | "{@" (code_block_meta as m) "[" (code_block_text as c) "]}"
+    { emit_code_block input (Some m) c }
 
   | "{v"
     { verbatim
@@ -476,8 +481,17 @@ rule token input = parse
         ~start_offset:(Lexing.lexeme_end lexbuf)
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
-          ~in_what:(Token.describe (`Code_block "")));
-      emit_code_block input c }
+          ~in_what:(Token.describe (`Code_block (None, ""))));
+      emit_code_block input None c }
+
+  | "{@" (code_block_meta as m) "[" (code_block_text as c) eof
+    { warning
+        input
+        ~start_offset:(Lexing.lexeme_end lexbuf)
+        (Parse_error.not_allowed
+          ~what:(Token.describe `End)
+          ~in_what:(Token.describe (`Code_block (None, ""))));
+      emit_code_block input (Some m) c }
 
 
 
