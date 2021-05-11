@@ -195,7 +195,7 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
  fun content ->
   match content with
   | `Paragraph p -> paragraph p
-  | `Code_block code -> block @@ Source (source_of_code code)
+  | `Code_block (_, code) -> block @@ Source (source_of_code code)
   | `Verbatim s -> block @@ Verbatim s
   | `Modules ms -> module_references ms
   | `List (kind, items) ->

@@ -52,7 +52,8 @@ module Ast_to_sexp = struct
   let rec nestable_block_element : Ast.nestable_block_element -> sexp = function
     | `Paragraph es ->
         List [ Atom "paragraph"; List (List.map (at inline_element) es) ]
-    | `Code_block c -> List [ Atom "code_block"; Atom c ]
+    | `Code_block (None, c) -> List [ Atom "code_block"; Atom c ]
+    | `Code_block (Some m, c) -> List [ Atom "code_block"; Atom m; Atom c ]
     | `Verbatim t -> List [ Atom "verbatim"; Atom t ]
     | `Modules ps -> List [ Atom "modules"; List (List.map (at str) ps) ]
     | `List (kind, weight, items) ->
@@ -2495,6 +2496,46 @@ let%expect_test _ =
             "File \"f.ml\", line 2, characters 13-14:\
            \nUnpaired '}' (end of markup).\
            \nSuggestion: try '\\}'."))) |}]
+
+    let code_block_with_meta =
+      test "{@ocaml env=f1 version>=4.06 [code goes here]}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 46))
+            (code_block "ocaml env=f1 version>=4.06 " "code goes here"))))
+         (warnings ())) |}]
+
+    let code_block_empty_meta =
+      test "{@[code goes here]}";
+      [%expect
+        {|
+        ((output (((f.ml (1 0) (1 19)) (code_block "" "code goes here"))))
+         (warnings ())) |}]
+
+    let unterminated_code_block_with_meta =
+      test "{@meta[foo";
+      [%expect
+        {|
+        ((output (((f.ml (1 0) (1 10)) (code_block meta foo))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 10-10:\
+           \nEnd of text is not allowed in '{[...]}' (code block)."))) |}]
+
+    let unterminated_code_block_with_meta =
+      test "{@met";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 5))
+            (paragraph
+             (((f.ml (1 0) (1 1)) (word {)) ((f.ml (1 1) (1 5)) (word @met)))))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 0-1:\
+           \n'{': bad markup.\
+           \nSuggestion: escape the brace with '\\{'."
+            "File \"f.ml\", line 1, characters 1-5:\
+           \nUnknown tag '@met'."))) |}]
   end in
   ()
 
