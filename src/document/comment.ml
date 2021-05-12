@@ -56,39 +56,6 @@ module Reference = struct
         render_resolved (r :> t) ^ "." ^ InstanceVariableName.to_string s
     | `Label (r, s) -> render_resolved (r :> t) ^ ":" ^ LabelName.to_string s
 
-  let rec ref_to_string : Reference.t -> string =
-    let open Reference in
-    function
-    | `Root (s, _) -> s
-    | `Dot (parent, s) -> ref_to_string (parent :> t) ^ "." ^ s
-    | `Module (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ ModuleName.to_string s
-    | `ModuleType (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ ModuleTypeName.to_string s
-    | `Type (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ TypeName.to_string s
-    | `Constructor (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ ConstructorName.to_string s
-    | `Field (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ FieldName.to_string s
-    | `Extension (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ ExtensionName.to_string s
-    | `Exception (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ ExceptionName.to_string s
-    | `Value (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ ValueName.to_string s
-    | `Class (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ ClassName.to_string s
-    | `ClassType (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ ClassTypeName.to_string s
-    | `Method (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ MethodName.to_string s
-    | `InstanceVariable (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ InstanceVariableName.to_string s
-    | `Label (parent, s) ->
-        ref_to_string (parent :> t) ^ "." ^ LabelName.to_string s
-    | `Resolved r -> render_resolved r
-
   (* This is the entry point. stop_before is false on entry, true on recursive
      call. *)
   let rec to_ir : ?text:Inline.t -> stop_before:bool -> Reference.t -> Inline.t
