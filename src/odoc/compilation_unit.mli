@@ -36,3 +36,6 @@ val save_module : Fs.File.t -> Lang.Compilation_unit.t -> unit
 
 val load : Fs.File.t -> (t, [> msg ]) result
 (** Load an [.odoc] file. *)
+
+val load_root : Fs.File.t -> (Root.t, [> msg ]) result
+(** Only load the root. Faster than {!load}, used for looking up imports. *)

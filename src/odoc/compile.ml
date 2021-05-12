@@ -54,6 +54,17 @@ let parent resolver parent_cli_spec =
   | CliPackage package -> Ok (Package (`RootPage (PageName.make_std package)))
   | CliNoparent -> Ok Noparent
 
+let resolve_imports resolver imports =
+  let open Odoc_model in
+  List.map
+    (function
+      | Lang.Compilation_unit.Import.Resolved _ as resolved -> resolved
+      | Unresolved (name, _) as unresolved -> (
+          match Resolver.resolve_import resolver name with
+          | Some root -> Resolved (root, Names.ModuleName.make_std name)
+          | None -> unresolved))
+    imports
+
 let resolve_and_substitute ~resolver ~output ~warn_error parent input_file
     read_file =
   let filename = Fs.File.to_string input_file in
@@ -66,6 +77,8 @@ let resolve_and_substitute ~resolver ~output ~warn_error parent input_file
       (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
       else
         Printf.sprintf " Using %S while you should use the .cmti file" filename);
+  (* Resolve imports, used by the [link-deps] command. *)
+  let unit = { unit with imports = resolve_imports resolver unit.imports } in
   let env = Resolver.build_env_for_module resolver unit in
 
   Odoc_xref2.Compile.compile env unit
