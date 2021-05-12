@@ -17,9 +17,7 @@
 open Odoc_model
 open Or_error
 
-type t =
-  | Page_content of Lang.Page.t
-  | Module_content of Lang.Compilation_unit.t
+type t = Page_content of Lang.Page.t | Unit_content of Lang.Compilation_unit.t
 
 (** Written at the top of the files. Checked when loading. *)
 let magic = "odoc-%%VERSION%%"
@@ -42,8 +40,8 @@ let save_page file page =
   in
   save_unit file page.Lang.Page.root (Page_content page)
 
-let save_module file m =
-  save_unit file m.Lang.Compilation_unit.root (Module_content m)
+let save_unit file m =
+  save_unit file m.Lang.Compilation_unit.root (Unit_content m)
 
 let load_ file f =
   let file = Fs.File.to_string file in

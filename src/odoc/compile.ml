@@ -79,7 +79,7 @@ let resolve_and_substitute ~resolver ~output ~warn_error parent input_file
         Printf.sprintf " Using %S while you should use the .cmti file" filename);
   (* Resolve imports, used by the [link-deps] command. *)
   let unit = { unit with imports = resolve_imports resolver unit.imports } in
-  let env = Resolver.build_env_for_module resolver unit in
+  let env = Resolver.build_env_for_unit resolver unit in
 
   Odoc_xref2.Compile.compile env unit
   |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error:false ~filename
@@ -91,7 +91,7 @@ let resolve_and_substitute ~resolver ~output ~warn_error parent input_file
      working on. *)
   (*    let expand_env = Env.build env (`Unit resolved) in*)
   (*    let expanded = Odoc_xref2.Expand.expand (Env.expander expand_env) resolved in *)
-  Compilation_unit.save_module output compiled;
+  Odoc_file.save_unit output compiled;
   Ok ()
 
 let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
@@ -171,7 +171,7 @@ let mld ~parent_spec ~output ~children ~warn_error input =
       Odoc_model.Lang.Page.
         { name; root; children; content; digest; linked = false }
     in
-    Compilation_unit.save_page output page;
+    Odoc_file.save_page output page;
     Ok ()
   in
   Fs.File.read input >>= fun str ->

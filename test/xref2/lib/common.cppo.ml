@@ -622,7 +622,7 @@ let mkresolver () =
 
 let resolve unit =
   let resolver = mkresolver () in
-  let resolve_env = Odoc_odoc.Resolver.build_env_for_module resolver unit in
+  let resolve_env = Odoc_odoc.Resolver.build_env_for_unit resolver unit in
   let result = Odoc_xref2.Compile.compile resolve_env unit in
   result
 

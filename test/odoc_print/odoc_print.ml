@@ -10,11 +10,11 @@ let print_json_desc desc x =
 
 let run inp =
   let inp = Fpath.v inp in
-  Compilation_unit.load inp >>= function
-  | Compilation_unit.Page_content page ->
+  Odoc_file.load inp >>= function
+  | Odoc_file.Page_content page ->
       print_json_desc Lang_desc.page_t page;
       Ok ()
-  | Module_content u ->
+  | Unit_content u ->
       print_json_desc Lang_desc.compilation_unit_t u;
       Ok ()
 

@@ -171,7 +171,7 @@ val open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t
 
 val open_signature : Odoc_model.Lang.Signature.t -> t -> t
 
-val env_of_module : Odoc_model.Lang.Compilation_unit.t -> resolver -> t
+val env_of_unit : Odoc_model.Lang.Compilation_unit.t -> resolver -> t
 (** Create a new env with a module initially opened. *)
 
 val env_of_page : Odoc_model.Lang.Page.t -> resolver -> t

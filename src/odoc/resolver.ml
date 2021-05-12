@@ -77,14 +77,13 @@ let build_imports_map m =
 
 let root_name root = Odoc_model.Root.Odoc_file.name root.Odoc_model.Root.file
 
-let unit_name
-    (Compilation_unit.Module_content { root; _ } | Page_content { root; _ }) =
+let unit_name (Odoc_file.Unit_content { root; _ } | Page_content { root; _ }) =
   root_name root
 
 (** TODO: Propagate warnings instead of printing. *)
 let load_units_from_files paths =
   let safe_read file acc =
-    match Compilation_unit.load file with
+    match Odoc_file.load file with
     | Ok u -> u :: acc
     | Error (`Msg msg) ->
         let warning =
@@ -115,37 +114,35 @@ let rec find_map f = function
   | hd :: tl -> (
       match f hd with Some x -> Some (x, tl) | None -> find_map f tl)
 
-let lookup_module_with_digest ap target_name digest =
-  let module_that_match_digest u =
+let lookup_unit_with_digest ap target_name digest =
+  let unit_that_match_digest u =
     match u with
-    | Compilation_unit.Module_content m
+    | Odoc_file.Unit_content m
       when Digest.compare m.Odoc_model.Lang.Compilation_unit.digest digest = 0
       ->
         Some m
     | _ -> None
   in
   let units = load_units_from_name ap target_name in
-  match find_map module_that_match_digest units with
+  match find_map unit_that_match_digest units with
   | Some (m, _) -> Odoc_xref2.Env.Found m
   | None -> Not_found
 
-(** Lookup a module matching a name. If there is more than one result, report on
-    stderr and return the first one.
+(** Lookup a compilation unit matching a name. If there is more than one
+    result, report on stderr and return the first one.
 
     TODO: Correctly propagate warnings instead of printing. *)
-let lookup_module_by_name ap target_name =
-  let first_module u =
-    match u with
-    | Compilation_unit.Module_content m -> Some m
-    | Page_content _ -> None
+let lookup_unit_by_name ap target_name =
+  let first_unit u =
+    match u with Odoc_file.Unit_content m -> Some m | Page_content _ -> None
   in
   let rec find_ambiguous tl =
-    match find_map first_module tl with
+    match find_map first_unit tl with
     | Some (m, tl) -> m :: find_ambiguous tl
     | None -> []
   in
   let units = load_units_from_name ap target_name in
-  match find_map first_module units with
+  match find_map first_unit units with
   | Some (m, tl) ->
       (match find_ambiguous tl with
       | [] -> ()
@@ -166,18 +163,19 @@ let lookup_module_by_name ap target_name =
       Odoc_xref2.Env.Found m
   | None -> Not_found
 
-(** Lookup a module. First looks into [imports_map] then searches into the paths. *)
+(** Lookup an unit. First looks into [imports_map] then searches into the
+    paths. *)
 let lookup_unit ~important_digests ~imports_map ap target_name =
   match StringMap.find target_name imports_map with
   | Odoc_model.Lang.Compilation_unit.Import.Unresolved (_, Some digest) ->
-      lookup_module_with_digest ap target_name digest
+      lookup_unit_with_digest ap target_name digest
   | Unresolved (_, None) ->
       if important_digests then Odoc_xref2.Env.Forward_reference
-      else lookup_module_by_name ap target_name
-  | Resolved (root, _) -> lookup_module_with_digest ap target_name root.digest
+      else lookup_unit_by_name ap target_name
+  | Resolved (root, _) -> lookup_unit_with_digest ap target_name root.digest
   | exception Not_found ->
       if important_digests then Odoc_xref2.Env.Not_found
-      else lookup_module_by_name ap target_name
+      else lookup_unit_by_name ap target_name
 
 (** Lookup a page.
 
@@ -185,9 +183,7 @@ let lookup_unit ~important_digests ~imports_map ap target_name =
 let lookup_page ap target_name =
   let target_name = "page-" ^ target_name in
   let is_page u =
-    match u with
-    | Compilation_unit.Page_content p -> Some p
-    | Module_content _ -> None
+    match u with Odoc_file.Page_content p -> Some p | Unit_content _ -> None
   in
   let units = load_units_from_name ap target_name in
   match find_map is_page units with Some (p, _) -> Some p | None -> None
@@ -213,15 +209,15 @@ let build { important_digests; ap; open_modules } ~imports_map u =
   and lookup_page = lookup_page ap in
   { Odoc_xref2.Env.open_units = open_modules; lookup_unit; lookup_page }
 
-let build_env_for_module t m =
+let build_env_for_unit t m =
   let imports_map = build_imports_map m in
-  let resolver = build t ~imports_map (Compilation_unit.Module_content m) in
-  Odoc_xref2.Env.env_of_module m resolver
+  let resolver = build t ~imports_map (Odoc_file.Unit_content m) in
+  Odoc_xref2.Env.env_of_unit m resolver
 
 let build_env_for_page t p =
   let imports_map = StringMap.empty in
   let t = { t with important_digests = false } in
-  let resolver = build t ~imports_map (Compilation_unit.Page_content p) in
+  let resolver = build t ~imports_map (Odoc_file.Page_content p) in
   Odoc_xref2.Env.env_of_page p resolver
 
 let lookup_page t target_name = lookup_page t.ap target_name
@@ -230,7 +226,7 @@ let resolve_import t target_name =
   let rec loop = function
     | [] -> None
     | path :: tl -> (
-        match Compilation_unit.load_root path with
+        match Odoc_file.load_root path with
         | Error _ -> loop tl
         | Ok root -> (
             match root.Odoc_model.Root.file with
