@@ -144,6 +144,10 @@ module Anchor = struct
   let add_suffix ~kind { page; anchor; _ } suffix =
     { page; anchor = anchor ^ "." ^ suffix; kind }
 
+  let mk ~kind parent str_name =
+    let page = Path.from_identifier parent in
+    Ok { page; anchor = str_name; kind }
+
   let rec from_identifier : Identifier.t -> (t, Error.t) result =
     let open Error in
     function
@@ -230,16 +234,15 @@ module Anchor = struct
         let kind = "field" in
         let suffix = FieldName.to_string name in
         Ok (add_suffix ~kind page suffix)
-    | `Label (parent, anchor') -> (
-        let anchor = LabelName.to_string anchor' in
-        from_identifier (parent :> Identifier.t) >>= function
-        | { page; anchor = _; kind } ->
-            (* Really ad-hoc and shitty, but it works. *)
-            if kind = "page" then Ok { page; anchor; kind }
-            else Ok { page; anchor; kind = "" })
-
-  (* | _ ->
-     Error (Unexpected_anchor ("label " ^ anchor)) *)
+    | `Label (parent, anchor) -> (
+        let str_name = LabelName.to_string anchor in
+        (* [Identifier.LabelParent.t] contains datatypes. [`CoreType] can't
+           happen, [`Type] may not happen either but just in case, use the
+           grand-parent. *)
+        match parent with
+        | #Path.source as parent -> mk ~kind:"section" parent str_name
+        | `CoreType _ -> Error (Unexpected_anchor "core_type label parent")
+        | `Type (gp, _) -> mk ~kind:"section" gp str_name)
 
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =
