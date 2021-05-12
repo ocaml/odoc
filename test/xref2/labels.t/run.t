@@ -54,8 +54,8 @@ There are two references in N, one should point to a local label and the other t
     </nav>
     <div class="odoc-content">
      <h2 id="B"><a href="#B" class="anchor"></a>An other conflicting label</h2>
-     <p><a href="../index.html#B">An other conflicting label</a> 
-      <a href="../index.html#B"><code>M:B</code></a>
+     <p><a href="#B">An other conflicting label</a> 
+      <a href="../M/index.html#B"><code>M:B</code></a>
      </p>
     </div>
    </body>
