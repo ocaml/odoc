@@ -25,10 +25,11 @@ type t =
 let magic = "odoc-%%VERSION%%"
 
 (** Exceptions while saving are allowed to leak. *)
-let save_unit file t =
+let save_unit file (root : Root.t) (t : t) =
   Fs.Directory.mkdir_p (Fs.File.dirname file);
   let oc = open_out_bin (Fs.File.to_string file) in
   output_string oc magic;
+  Marshal.to_channel oc root [];
   Marshal.to_channel oc t [];
   close_out oc
 
@@ -39,17 +40,20 @@ let save_page file page =
     if Astring.String.is_prefix ~affix:"page-" base then file
     else Fs.File.create ~directory:dir ~name:("page-" ^ base)
   in
-  save_unit file (Page_content page)
+  save_unit file page.Lang.Page.root (Page_content page)
 
-let save_module file m = save_unit file (Module_content m)
+let save_module file m =
+  save_unit file m.Lang.Compilation_unit.root (Module_content m)
 
-let load file =
+let load_ file f =
   let file = Fs.File.to_string file in
   let ic = open_in_bin file in
   let res =
     try
       let actual_magic = really_input_string ic (String.length magic) in
-      if actual_magic = magic then Ok (Marshal.from_channel ic)
+      if actual_magic = magic then
+        let root = Marshal.from_channel ic in
+        f ic root
       else
         let msg =
           Printf.sprintf "%s: invalid magic number %S, expected %S\n%!" file
@@ -65,3 +69,8 @@ let load file =
   in
   close_in ic;
   res
+
+let load file = load_ file (fun ic _ -> Ok (Marshal.from_channel ic))
+
+(** The root is saved separately in the files to support this function. *)
+let load_root file = load_ file (fun _ root -> Ok root)
