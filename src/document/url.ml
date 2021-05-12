@@ -76,8 +76,6 @@ module Path = struct
 
   type t = { kind : string; parent : t option; name : string }
 
-  let last t = t.name
-
   let mk ?parent kind name = { kind; parent; name }
 
   let rec from_identifier : source -> t = function
@@ -270,98 +268,12 @@ type t = Anchor.t
 
 let from_path page = { Anchor.page; anchor = ""; kind = page.kind }
 
-let page x = x.Anchor.page
-
 let from_identifier ~stop_before = function
   | #Path.source as p when not stop_before ->
       Ok (from_path @@ Path.from_identifier p)
   | p -> Anchor.from_identifier p
 
-let from_identifier_exn ~stop_before id =
-  match from_identifier ~stop_before id with
-  | Error e -> failwith (Error.to_string e)
-  | Ok url -> url
-
 let kind id =
   match Anchor.from_identifier id with
   | Error e -> failwith (Error.to_string e)
   | Ok { kind; _ } -> kind
-
-(* module Of_path = struct
- *   let rec to_html : stop_before:bool -> Path.t -> _ =
- *     fun ~stop_before path ->
- *       match path with
- *       | `Root root -> [ Html.txt root ]
- *       | `Forward root -> [ Html.txt root ] (\* FIXME *\)
- *       | `Dot (prefix, suffix) ->
- *         let link = to_html ~stop_before:true (prefix :> Path.t) in
- *         link @ [ Html.txt ("." ^ suffix) ]
- *       | `Apply (p1, p2) ->
- *         let link1 = to_html ~stop_before (p1 :> Path.t) in
- *         let link2 = to_html ~stop_before (p2 :> Path.t) in
- *         link1 @ Html.txt "(":: link2 @ [ Html.txt ")" ]
- *       | `Resolved rp ->
- *         let id = Path.Resolved.identifier rp in
- *         let txt = Url.render_path path in
- *         begin match Id.href ~stop_before id with
- *         | href -> [ Html.a ~a:[ Html.a_href href ] [ Html.txt txt ] ]
- *         | exception Id.Not_linkable -> [ Html.txt txt ]
- *         | exception exn ->
- *           Printf.eprintf "Id.href failed: %S\n%!" (Printexc.to_string exn);
- *           [ Html.txt txt ]
- *         end
- * end *)
-
-(* module Of_fragment = struct
- *   let dot prefix suffix =
- *     match prefix with
- *     | "" -> suffix
- *     | _  -> prefix ^ "." ^ suffix
- *
- *   let rec render_raw : Fragment.t -> string =
- *     fun fragment ->
- *       match fragment with
- *       | `Resolved rr -> render_resolved rr
- *       | `Dot (prefix, suffix) -> dot (render_raw (prefix :> Fragment.t)) suffix
- *
- *   and render_resolved : Fragment.Resolved.t -> string =
- *     let open Fragment.Resolved in
- *     fun fragment ->
- *       match fragment with
- *       | `Root -> ""
- *       | `Subst (_, rr) -> render_resolved (rr :> t)
- *       | `SubstAlias (_, rr) -> render_resolved (rr :> t)
- *       | `Module (rr, s) -> dot (render_resolved (rr :> t)) (ModuleName.to_string s)
- *       | `Type (rr, s) -> dot (render_resolved (rr :> t)) (TypeName.to_string s)
- *       | `Class (rr, s) -> dot (render_resolved ( rr :> t)) (ClassName.to_string s)
- *       | `ClassType (rr, s) -> dot (render_resolved (rr :> t)) (ClassTypeName.to_string s)
- *
- *   let rec to_html : stop_before:bool ->
- *     Identifier.Signature.t -> Fragment.t -> _ =
- *     fun ~stop_before id fragment ->
- *       let open Fragment in
- *       match fragment with
- *       | `Resolved `Root ->
- *         begin match Id.href ~stop_before:true (id :> Identifier.t) with
- *         | href ->
- *           [Html.a ~a:[Html.a_href href] [Html.txt (Identifier.name id)]]
- *         | exception Id.Not_linkable -> [ Html.txt (Identifier.name id) ]
- *         | exception exn ->
- *           Printf.eprintf "[FRAG] Id.href failed: %S\n%!" (Printexc.to_string exn);
- *           [ Html.txt (Identifier.name id) ]
- *         end
- *       | `Resolved rr ->
- *         let id = Resolved.identifier id (rr :> Resolved.t) in
- *         let txt = render_resolved rr in
- *         begin match Id.href ~stop_before id with
- *         | href ->
- *           [ Html.a ~a:[ Html.a_href href ] [ Html.txt txt ] ]
- *         | exception Id.Not_linkable -> [ Html.txt txt ]
- *         | exception exn ->
- *           Printf.eprintf "[FRAG] Id.href failed: %S\n%!" (Printexc.to_string exn);
- *           [ Html.txt txt ]
- *         end
- *       | `Dot (prefix, suffix) ->
- *         let link = to_html ~stop_before:true id (prefix :> Fragment.t) in
- *         link @ [ Html.txt ("." ^ suffix) ]
- * end *)
