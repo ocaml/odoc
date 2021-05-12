@@ -20,17 +20,15 @@ open Odoc_model
 open Or_error
 
 (** Either a page or a module. *)
-type t =
-  | Page_content of Lang.Page.t
-  | Module_content of Lang.Compilation_unit.t
+type t = Page_content of Lang.Page.t | Unit_content of Lang.Compilation_unit.t
 
 (** {2 Serialization} *)
 
 val save_page : Fs.File.t -> Lang.Page.t -> unit
 (** Save a page. The [page-] prefix is added to the file name if missing. *)
 
-val save_module : Fs.File.t -> Lang.Compilation_unit.t -> unit
-(** Save a module. *)
+val save_unit : Fs.File.t -> Lang.Compilation_unit.t -> unit
+(** Save a compilation unit. *)
 
 (** {2 Deserialization} *)
 

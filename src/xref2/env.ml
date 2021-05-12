@@ -711,7 +711,7 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
 let inherit_resolver env =
   match env.resolver with Some r -> set_resolver empty r | None -> empty
 
-let env_of_module t resolver =
+let env_of_unit t resolver =
   let open Odoc_model.Lang.Compilation_unit in
   let initial_env =
     let m = module_of_unit t in

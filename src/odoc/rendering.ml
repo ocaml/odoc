@@ -2,22 +2,22 @@ open Odoc_document
 open Or_error
 
 let document_of_odocl ~syntax input =
-  Compilation_unit.load input >>= function
-  | Compilation_unit.Page_content odoctree ->
+  Odoc_file.load input >>= function
+  | Odoc_file.Page_content odoctree ->
       Ok (Renderer.document_of_page ~syntax odoctree)
-  | Module_content odoctree ->
+  | Unit_content odoctree ->
       Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
 
 let document_of_input ~resolver ~warn_error ~syntax input =
   let input_s = Fs.File.to_string input in
-  Compilation_unit.load input >>= function
-  | Compilation_unit.Page_content page ->
+  Odoc_file.load input >>= function
+  | Odoc_file.Page_content page ->
       let env = Resolver.build_env_for_page resolver page in
       Odoc_xref2.Link.resolve_page env page
       |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error
            ~filename:input_s
       >>= fun odoctree -> Ok (Renderer.document_of_page ~syntax odoctree)
-  | Module_content m ->
+  | Unit_content m ->
       (* If hidden, we should not generate HTML. See
            https://github.com/ocaml/odoc/issues/99. *)
       let m =
@@ -31,7 +31,7 @@ let document_of_input ~resolver ~warn_error ~syntax input =
           }
         else m
       in
-      let env = Resolver.build_env_for_module resolver m in
+      let env = Resolver.build_env_for_unit resolver m in
       (* let startlink = Unix.gettimeofday () in *)
       (* Format.fprintf Format.err_formatter "**** Link...\n%!"; *)
       let linked = Odoc_xref2.Link.link env m in
@@ -44,7 +44,7 @@ let document_of_input ~resolver ~warn_error ~syntax input =
       >>= fun odoctree ->
       Odoc_xref2.Tools.reset_caches ();
 
-      Compilation_unit.save_module Fs.File.(set_ext ".odocl" input) odoctree;
+      Odoc_file.save_unit Fs.File.(set_ext ".odocl" input) odoctree;
       Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
 
 let render_document renderer ~output:root_dir ~extra odoctree =
