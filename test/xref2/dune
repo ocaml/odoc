@@ -15,7 +15,15 @@
  (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile}))
 
 (subdir
+ v407_and_above
+ (cram
+  (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile})
+  (enabled_if
+   (>= %{ocaml_version} 4.07.0))))
+
+(subdir
  v408_and_above
  (cram
+  (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile})
   (enabled_if
    (>= %{ocaml_version} 4.08.0))))
