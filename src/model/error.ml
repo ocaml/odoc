@@ -116,6 +116,6 @@ let handle_errors_and_warnings ~warn_error = function
 let t_of_parser_t : Octavius.Warning.t -> t =
  fun x -> (`With_full_location x :> t)
 
-let raise_parser_warnings { Octavius.value; warnings } =
+let raise_parser_warnings { Octavius.ast; warnings } =
   raise_warnings' (List.map t_of_parser_t warnings);
-  value
+  ast

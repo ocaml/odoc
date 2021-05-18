@@ -3,7 +3,7 @@ module Ast = Octavius.Ast
 open Result
 
 type internal_tags_removed =
-  [ `Tag of Ast.external_tag
+  [ `Tag of Ast.ocamldoc_tag
   | `Heading of Ast.heading
   | Ast.nestable_block_element ]
 (** {!Ast.block_element} without internal tags. *)
@@ -117,9 +117,11 @@ type ast_leaf_inline_element =
   | `Code_span of string
   | `Raw_markup of string option * string ]
 
+type sections_allowed = [ `All | `No_titles | `None ]
+
 type status = {
   warnings : Error.warning_accumulator;
-  sections_allowed : Octavius.Ast.sections_allowed;
+  sections_allowed : sections_allowed;
   parent_of_sections : Paths.Identifier.LabelParent.t;
 }
 
@@ -254,7 +256,7 @@ and nestable_block_elements status elements =
 let tag :
     location:Location.span ->
     status ->
-    Ast.external_tag ->
+    Ast.ocamldoc_tag ->
     ( Comment.block_element with_location,
       internal_tags_removed with_location )
     Result.result =
@@ -462,7 +464,7 @@ let strip_internal_tags status ast :
                 loop tags ast' tl))
     | ({
          value =
-           `Tag #Ast.external_tag | `Heading _ | #Ast.nestable_block_element;
+           `Tag #Ast.ocamldoc_tag | `Heading _ | #Ast.nestable_block_element;
          _;
        } as hd)
       :: tl ->
@@ -483,7 +485,7 @@ let parse_comment ~internal_tags ~sections_allowed ~containing_definition
   let comment =
     Error.accumulate_warnings (fun warnings ->
         ast_to_comment warnings ~internal_tags ~sections_allowed
-          ~parent_of_sections:containing_definition ast.Octavius.value)
+          ~parent_of_sections:containing_definition ast.Octavius.ast)
   in
   {
     Error.value = comment.value;

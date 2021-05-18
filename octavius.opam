@@ -1,9 +1,10 @@
 opam-version: "2.0"
 maintainer: ["Jon Ludlam <jon@recoil.org>"]
 authors: [
-  "Leo White <leo@lpw25.net>"
   "Anton Bachin <antonbachin@yahoo.com>"
-  "Jules Aguillon <juloo.dsi@gmail.com>"]
+  "Leo White <leo@lpw25.net>"
+  "Jules Aguillon <juloo.dsi@gmail.com>"
+  "Jon Ludlam <jon@recoil.org>"]
 license: "ISC"
 homepage: "https://github.com/ocaml/odoc"
 doc: "http://ocaml.github.io/odoc/"

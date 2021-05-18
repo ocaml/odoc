@@ -60,4 +60,4 @@ val handle_errors_and_warnings :
 
 val t_of_parser_t : Octavius.Warning.t -> t
 
-val raise_parser_warnings : Octavius.t -> Octavius.Ast.docs
+val raise_parser_warnings : Octavius.t -> Octavius.Ast.t
