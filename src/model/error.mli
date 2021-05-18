@@ -1,4 +1,4 @@
-type full_location_payload = Octavius.Error.t = {
+type full_location_payload = Octavius.Warning.t = {
   location : Location_.span;
   message : string;
 }
@@ -6,7 +6,7 @@ type full_location_payload = Octavius.Error.t = {
 type filename_only_payload = { file : string; message : string }
 
 type t =
-  [ `With_full_location of Octavius.Error.t
+  [ `With_full_location of full_location_payload
   | `With_filename_only of filename_only_payload ]
 
 val make :
@@ -58,6 +58,6 @@ val handle_errors_and_warnings :
 (** Like [handle_warnings] but works on the output of
     [catch_errors_and_warnings]. Error case is converted into a [`Msg]. *)
 
-val t_of_parser_t : Octavius.Error.t -> t
+val t_of_parser_t : Octavius.Warning.t -> t
 
-val raise_parser_warnings : 'a Octavius.Error.with_warnings -> 'a
+val raise_parser_warnings : Octavius.t -> Octavius.Ast.docs

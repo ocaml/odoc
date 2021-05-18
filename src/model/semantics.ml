@@ -483,12 +483,12 @@ let parse_comment ~internal_tags ~sections_allowed ~containing_definition
   let comment =
     Error.accumulate_warnings (fun warnings ->
         ast_to_comment warnings ~internal_tags ~sections_allowed
-          ~parent_of_sections:containing_definition ast.Octavius.Error.value)
+          ~parent_of_sections:containing_definition ast.Octavius.value)
   in
   {
     Error.value = comment.value;
     Error.warnings =
-      (ast.Octavius.Error.warnings |> List.map Error.t_of_parser_t)
+      (ast.Octavius.warnings |> List.map Error.t_of_parser_t)
       @ comment.Error.warnings;
   }
 

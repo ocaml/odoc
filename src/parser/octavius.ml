@@ -1,6 +1,8 @@
 module Ast = Ast
 module Location = Location
-module Error = Error
+module Warning = Warning
+
+type t = { value : Ast.docs; warnings : Warning.t list }
 
 (* odoc uses an ocamllex lexer. The "engine" for such lexers is the standard
    [Lexing] module.
@@ -63,20 +65,20 @@ let offset_to_location :
     scan_to_last_newline reversed_newlines
 
 let parse_comment ~location ~text =
-  Error.accumulate_warnings (fun warnings ->
-      let token_stream =
-        let lexbuf = Lexing.from_string text in
-        let offset_to_location =
-          offset_to_location ~input:text ~comment_location:location
-        in
-        let input : Lexer.input =
-          {
-            file = location.Lexing.pos_fname;
-            offset_to_location;
-            warnings;
-            lexbuf;
-          }
-        in
-        Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
-      in
-      Syntax.parse warnings token_stream)
+  let token_stream =
+    let lexbuf = Lexing.from_string text in
+    let offset_to_location =
+      offset_to_location ~input:text ~comment_location:location
+    in
+    let input : Lexer.input =
+      {
+        file = location.Lexing.pos_fname;
+        offset_to_location;
+        warnings = ref [];
+        lexbuf;
+      }
+    in
+    Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
+  in
+  let value, warnings = Syntax.parse token_stream in
+  { value; warnings }
