@@ -6,16 +6,18 @@ type _ handle_internal_tags =
       : [ `Dot of Paths.Path.Module.t * string ] option handle_internal_tags
   | Expect_none : unit handle_internal_tags
 
+type sections_allowed = [ `All | `No_titles | `None ]
+
 val ast_to_comment :
   internal_tags:'tags handle_internal_tags ->
-  sections_allowed:Odoc_parser.Ast.sections_allowed ->
+  sections_allowed:sections_allowed ->
   parent_of_sections:Paths.Identifier.LabelParent.t ->
-  Odoc_parser.Ast.docs ->
+  Odoc_parser.Ast.t ->
   (Comment.docs * 'tags) Error.with_warnings
 
 val parse_comment :
   internal_tags:'tags handle_internal_tags ->
-  sections_allowed:Odoc_parser.Ast.sections_allowed ->
+  sections_allowed:sections_allowed ->
   containing_definition:Paths.Identifier.LabelParent.t ->
   location:Lexing.position ->
   text:string ->

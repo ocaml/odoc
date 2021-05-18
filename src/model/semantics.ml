@@ -2,7 +2,7 @@ module Location = Location_
 module Ast = Odoc_parser.Ast
 
 type internal_tags_removed =
-  [ `Tag of Ast.external_tag
+  [ `Tag of Ast.ocamldoc_tag
   | `Heading of Ast.heading
   | Ast.nestable_block_element ]
 (** {!Ast.block_element} without internal tags. *)
@@ -116,8 +116,10 @@ type ast_leaf_inline_element =
   | `Code_span of string
   | `Raw_markup of string option * string ]
 
+type sections_allowed = [ `All | `No_titles | `None ]
+
 type status = {
-  sections_allowed : Odoc_parser.Ast.sections_allowed;
+  sections_allowed : sections_allowed;
   parent_of_sections : Paths.Identifier.LabelParent.t;
 }
 
@@ -250,7 +252,7 @@ and nestable_block_elements status elements =
 let tag :
     location:Location.span ->
     status ->
-    Ast.external_tag ->
+    Ast.ocamldoc_tag ->
     ( Comment.block_element with_location,
       internal_tags_removed with_location )
     Result.result =
@@ -459,7 +461,7 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
                 loop tags ast' tl))
     | ({
          value =
-           `Tag #Ast.external_tag | `Heading _ | #Ast.nestable_block_element;
+           `Tag #Ast.ocamldoc_tag | `Heading _ | #Ast.nestable_block_element;
          _;
        } as hd)
       :: tl ->
