@@ -9,7 +9,10 @@
     "Leo White <leo@lpw25.net>"
   ],
   "esy": {
-    "build": "dune build -p odoc",
+    "build": "dune build @install",
+    "install": [
+      "dune install --prefix=#{self.install}"
+    ],
     "release": {
       "releasedBinaries": [
         "odoc"
