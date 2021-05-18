@@ -28,6 +28,8 @@ type input = {
   warnings : Warning.t list ref;
 }
 
+(* {2 Output} *)
+
 let add_warning input warning = input.warnings := warning :: !(input.warnings)
 
 let junk input = Stream.junk input.tokens
@@ -1071,8 +1073,10 @@ and explicit_list_items :
 
 (* {2 Entry point} *)
 
+type output = { ast : Ast.t; warnings : Warning.t list }
+
 let parse tokens =
-  let input = { tokens; warnings = ref [] } in
+  let input : input = { tokens; warnings = ref [] } in
 
   let rec parse_block_elements () =
     let elements, last_token, _where_in_line =
@@ -1093,4 +1097,5 @@ let parse tokens =
         junk input;
         elements @ block :: parse_block_elements ()
   in
-  (parse_block_elements (), !(input.warnings))
+  let ast = parse_block_elements () in
+  { ast; warnings = List.rev !(input.warnings) }

@@ -2,7 +2,7 @@ module Ast = Ast
 module Location = Location
 module Warning = Warning
 
-type t = { value : Ast.docs; warnings : Warning.t list }
+type t = Syntax.output = { ast : Ast.t; warnings : Warning.t list }
 
 (* odoc uses an ocamllex lexer. The "engine" for such lexers is the standard
    [Lexing] module.
@@ -80,5 +80,4 @@ let parse_comment ~location ~text =
     in
     Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
   in
-  let value, warnings = Syntax.parse token_stream in
-  { value; warnings }
+  Syntax.parse token_stream
