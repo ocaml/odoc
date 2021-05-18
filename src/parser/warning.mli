@@ -1,3 +1,5 @@
+(* This module is exposed, but via the signature declared in Octavius *)
+
 type t = { location : Location.span; message : string }
 
 val to_string : t -> string

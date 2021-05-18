@@ -111,13 +111,13 @@ module Ast_to_sexp = struct
         List [ Atom level; label; List (List.map (at inline_element) es) ]
     | `Tag t -> tag t
 
-  let docs : Ast.docs -> sexp = fun f -> List (List.map (at block_element) f)
+  let docs : Ast.t -> sexp = fun f -> List (List.map (at block_element) f)
 end
 
 let error err = Atom (Odoc_parser.Warning.to_string err)
 
-let parser_output formatter { Odoc_parser.value; warnings } =
-  let value = Ast_to_sexp.docs value in
+let parser_output formatter { Odoc_parser.ast; warnings } =
+  let value = Ast_to_sexp.docs ast in
   let warnings = List (List.map error warnings) in
   let output =
     List [ List [ Atom "output"; value ]; List [ Atom "warnings"; warnings ] ]

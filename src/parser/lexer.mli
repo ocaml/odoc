@@ -1,3 +1,5 @@
+(* Internal module, not exposed *)
+
 type input = {
   file : string;
   offset_to_location : int -> Location.point;
