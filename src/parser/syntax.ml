@@ -25,8 +25,10 @@ type 'a with_location = 'a Location.with_location
 
 type input = {
   tokens : Token.t Location.with_location Stream.t;
-  warnings : Error.warning_accumulator;
+  warnings : Warning.t list ref;
 }
+
+let add_warning input warning = input.warnings := warning :: !(input.warnings)
 
 let junk input = Stream.junk input.tokens
 
@@ -122,7 +124,7 @@ let rec inline_element :
         Parse_error.should_not_be_empty
           ~what:(Token.describe parent_markup)
           location
-        |> Error.warning input.warnings;
+        |> add_warning input;
 
       Location.at location (`Styled (s, content))
   | `Simple_reference r ->
@@ -150,7 +152,7 @@ let rec inline_element :
         Parse_error.should_not_be_empty
           ~what:(Token.describe parent_markup)
           location
-        |> Error.warning input.warnings;
+        |> add_warning input;
 
       Location.at location (`Reference (`With_text, r, content))
   | `Simple_link u ->
@@ -162,7 +164,7 @@ let rec inline_element :
         Parse_error.should_not_be_empty
           ~what:(Token.describe next_token)
           location
-        |> Error.warning input.warnings;
+        |> add_warning input;
 
       Location.at location (`Link (u, []))
   | `Begin_link_with_replacement_text u as parent_markup ->
@@ -174,7 +176,7 @@ let rec inline_element :
         Parse_error.should_not_be_empty
           ~what:(Token.describe parent_markup)
           location
-        |> Error.warning input.warnings;
+        |> add_warning input;
 
       let content, brace_location =
         delimited_inline_element_list ~parent_markup
@@ -246,7 +248,7 @@ and delimited_inline_element_list :
         Parse_error.not_allowed ~what:(Token.describe blank)
           ~in_what:(Token.describe parent_markup)
           next_token.location
-        |> Error.warning input.warnings;
+        |> add_warning input;
 
         junk input;
         let element = Location.same next_token (`Space ws) in
@@ -260,7 +262,7 @@ and delimited_inline_element_list :
          Parse_error.not_allowed ~what:(Token.describe bullet)
            ~in_what:(Token.describe parent_markup)
            ~suggestion next_token.location
-         |> Error.warning input.warnings);
+         |> add_warning input);
 
         let acc = inline_element input next_token.location bullet :: acc in
         consume_elements ~at_start_of_line:false acc
@@ -269,7 +271,7 @@ and delimited_inline_element_list :
           ~what:(Token.describe other_token)
           ~in_what:(Token.describe parent_markup)
           next_token.location
-        |> Error.warning input.warnings;
+        |> add_warning input;
 
         let last_location =
           match acc with
@@ -300,7 +302,7 @@ and delimited_inline_element_list :
       Parse_error.not_allowed ~what:(Token.describe blank)
         ~in_what:(Token.describe parent_markup)
         first_token.location
-      |> Error.warning input.warnings;
+      |> add_warning input;
 
       junk input;
       consume_elements ~at_start_of_line:true []
@@ -312,7 +314,7 @@ and delimited_inline_element_list :
         Parse_error.should_be_followed_by_whitespace
           ~what:(Token.print parent_markup)
           parent_markup_location
-        |> Error.warning input.warnings;
+        |> add_warning input;
       consume_elements ~at_start_of_line:false []
 
 (* {2 Paragraphs} *)
@@ -530,7 +532,7 @@ let rec block_element_list :
     let warn_if_after_text { Location.location; value = token } =
       if where_in_line = `After_text then
         Parse_error.should_begin_on_its_own_line ~what:(describe token) location
-        |> Error.warning input.warnings
+        |> add_warning input
     in
 
     let warn_if_after_tags { Location.location; value = token } =
@@ -540,7 +542,7 @@ let rec block_element_list :
         in
         Parse_error.not_allowed ~what:(describe token)
           ~in_what:"the tags section" ~suggestion location
-        |> Error.warning input.warnings
+        |> add_warning input
     in
 
     let warn_because_not_at_top_level { Location.location; value = token } =
@@ -551,7 +553,7 @@ let rec block_element_list :
       Parse_error.not_allowed ~what:(Token.describe token)
         ~in_what:(Token.describe parent_markup)
         ~suggestion location
-      |> Error.warning input.warnings
+      |> add_warning input
     in
 
     match peek input with
@@ -595,7 +597,7 @@ let rec block_element_list :
         Parse_error.not_allowed ~what:(Token.describe token)
           ~in_what:(Token.describe parent_markup)
           ~suggestion location
-        |> Error.warning input.warnings;
+        |> add_warning input;
 
         junk input;
         consume_block_elements ~parsed_a_tag where_in_line acc
@@ -635,7 +637,7 @@ let rec block_element_list :
             if where_in_line <> `At_start_of_line then
               Parse_error.should_begin_on_its_own_line
                 ~what:(Token.describe token) location
-              |> Error.warning input.warnings;
+              |> add_warning input;
 
             junk input;
 
@@ -645,7 +647,7 @@ let rec block_element_list :
                 if s = "" then
                   Parse_error.should_not_be_empty ~what:(Token.describe token)
                     location
-                  |> Error.warning input.warnings;
+                  |> add_warning input;
                 let tag =
                   match tag with
                   | `Author _ -> `Author s
@@ -729,7 +731,7 @@ let rec block_element_list :
         warn_if_after_text next_token;
         if s = "" then
           Parse_error.should_not_be_empty ~what:(Token.describe token) location
-          |> Error.warning input.warnings;
+          |> add_warning input;
 
         junk input;
         let block = accepted_in_all_contexts context token in
@@ -771,7 +773,7 @@ let rec block_element_list :
 
         if modules = [] then
           Parse_error.should_not_be_empty ~what:(Token.describe token) location
-          |> Error.warning input.warnings;
+          |> add_warning input;
 
         let block = accepted_in_all_contexts context (`Modules modules) in
         let block = Location.at location block in
@@ -788,7 +790,7 @@ let rec block_element_list :
         in
         if items = [] then
           Parse_error.should_not_be_empty ~what:(Token.describe token) location
-          |> Error.warning input.warnings;
+          |> add_warning input;
 
         let location = Location.span [ location; brace_location ] in
         let block = `List (kind, `Heavy, items) in
@@ -801,7 +803,7 @@ let rec block_element_list :
         | `After_text | `After_shorthand_bullet ->
             Parse_error.should_begin_on_its_own_line
               ~what:(Token.describe token) location
-            |> Error.warning input.warnings
+            |> add_warning input
         | _ -> ());
 
         warn_if_after_tags next_token;
@@ -857,13 +859,13 @@ let rec block_element_list :
             if where_in_line <> `At_start_of_line then
               Parse_error.should_begin_on_its_own_line
                 ~what:(Token.describe token) location
-              |> Error.warning input.warnings;
+              |> add_warning input;
 
             let label =
               match label with
               | Some "" ->
                   Parse_error.should_not_be_empty ~what:"heading label" location
-                  |> Error.warning input.warnings;
+                  |> add_warning input;
                   None
               | _ -> label
             in
@@ -878,7 +880,7 @@ let rec block_element_list :
             if content = [] then
               Parse_error.should_not_be_empty ~what:(Token.describe token)
                 location
-              |> Error.warning input.warnings;
+              |> add_warning input;
 
             let location = Location.span [ location; brace_location ] in
             let heading = `Heading (level, label, content) in
@@ -896,7 +898,7 @@ let rec block_element_list :
 
         Parse_error.markup_should_not_be_used ~what:(Token.describe token)
           location
-        |> Error.warning input.warnings;
+        |> add_warning input;
 
         let paragraph =
           `Paragraph content
@@ -956,7 +958,7 @@ and shorthand_list_items :
           if content = [] then
             Parse_error.should_not_be_empty ~what:(Token.describe bullet)
               next_token.location
-            |> Error.warning input.warnings;
+            |> add_warning input;
 
           let acc = content :: acc in
           consume_list_items stream_head where_in_line acc)
@@ -992,7 +994,7 @@ and explicit_list_items :
         Parse_error.not_allowed next_token.location
           ~what:(Token.describe `End)
           ~in_what:(Token.describe parent_markup)
-        |> Error.warning input.warnings;
+        |> add_warning input;
         (List.rev acc, next_token.location)
     | `Right_brace ->
         junk input;
@@ -1024,7 +1026,7 @@ and explicit_list_items :
          | _ ->
              Parse_error.should_be_followed_by_whitespace next_token.location
                ~what:(Token.print token)
-             |> Error.warning input.warnings);
+             |> add_warning input);
 
         let content, token_after_list_item, _where_in_line =
           block_element_list In_explicit_list ~parent_markup:token input
@@ -1033,7 +1035,7 @@ and explicit_list_items :
         if content = [] then
           Parse_error.should_not_be_empty next_token.location
             ~what:(Token.describe token)
-          |> Error.warning input.warnings;
+          |> add_warning input;
 
         (match token_after_list_item.value with
         | `Right_brace -> junk input
@@ -1041,7 +1043,7 @@ and explicit_list_items :
             Parse_error.not_allowed token_after_list_item.location
               ~what:(Token.describe `End)
               ~in_what:(Token.describe token)
-            |> Error.warning input.warnings);
+            |> add_warning input);
 
         let acc = content :: acc in
         consume_list_items acc
@@ -1059,7 +1061,7 @@ and explicit_list_items :
         Parse_error.not_allowed next_token.location ~what:(Token.describe token)
           ~in_what:(Token.describe parent_markup)
           ~suggestion
-        |> Error.warning input.warnings;
+        |> add_warning input;
 
         junk input;
         consume_list_items acc
@@ -1069,8 +1071,8 @@ and explicit_list_items :
 
 (* {2 Entry point} *)
 
-let parse warnings tokens =
-  let input = { tokens; warnings } in
+let parse tokens =
+  let input = { tokens; warnings = ref [] } in
 
   let rec parse_block_elements () =
     let elements, last_token, _where_in_line =
@@ -1081,7 +1083,7 @@ let parse warnings tokens =
     | `End -> elements
     | `Right_brace ->
         Parse_error.unpaired_right_brace last_token.location
-        |> Error.warning input.warnings;
+        |> add_warning input;
 
         let block =
           Location.same last_token
@@ -1091,4 +1093,4 @@ let parse warnings tokens =
         junk input;
         elements @ block :: parse_block_elements ()
   in
-  parse_block_elements ()
+  (parse_block_elements (), !(input.warnings))
