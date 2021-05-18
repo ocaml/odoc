@@ -19,3 +19,5 @@ val span : span list -> span
 (* This adjusts only the column number, implicitly assuming that the offset does
    not move the location across a newline character. *)
 val nudge_start : int -> span -> span
+
+val to_loc : span -> Warnings.loc
