@@ -114,9 +114,9 @@ module Ast_to_sexp = struct
   let docs : Ast.docs -> sexp = fun f -> List (List.map (at block_element) f)
 end
 
-let error err = Atom (Odoc_parser.Error.to_string err)
+let error err = Atom (Odoc_parser.Warning.to_string err)
 
-let parser_output formatter { Odoc_parser.Error.value; warnings } =
+let parser_output formatter { Odoc_parser.value; warnings } =
   let value = Ast_to_sexp.docs value in
   let warnings = List (List.map error warnings) in
   let output =

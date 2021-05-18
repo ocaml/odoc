@@ -1,4 +1,1 @@
-val parse :
-  Error.warning_accumulator ->
-  Token.t Location.with_location Stream.t ->
-  Ast.docs
+val parse : Token.t Location.with_location Stream.t -> Ast.docs * Warning.t list
