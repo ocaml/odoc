@@ -1,11 +1,11 @@
 (** Parser for ocamldoc formatted comments. *)
 
 module Ast = Ast
-module Location = Location
+module Loc = Loc
 
 (** Warnings produced during parsing. *)
 module Warning : sig
-  type t = Warning.t = { location : Location.span; message : string }
+  type t = Warning.t = { location : Loc.span; message : string }
   (** Warnings are represented as human-readable text. *)
 
   val to_string : t -> string

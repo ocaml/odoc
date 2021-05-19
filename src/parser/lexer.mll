@@ -132,7 +132,7 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
 
 type input = {
   file : string;
-  offset_to_location : int -> Location.point;
+  offset_to_location : int -> Loc.point;
   warnings : Warning.t list ref;
   lexbuf : Lexing.lexbuf;
 }
@@ -161,7 +161,7 @@ let with_location_adjustments
     | Some s -> end_ - String.length s
   in
   let location = {
-    Location.file = input.file;
+    Loc.file = input.file;
     start = input.offset_to_location start;
     end_ = input.offset_to_location end_;
   }
@@ -169,7 +169,7 @@ let with_location_adjustments
   k input location value
 
 let emit =
-  with_location_adjustments (fun _ -> Location.at)
+  with_location_adjustments (fun _ -> Loc.at)
 
 let warning =
   with_location_adjustments (fun input location error ->

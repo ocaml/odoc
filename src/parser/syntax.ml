@@ -17,14 +17,12 @@
      sequence of block elements, so [block_element_list] is the top-level
      parser. It is also used for list item and tag content. *)
 
-module Location = Location
-
-type 'a with_location = 'a Location.with_location
+type 'a with_location = 'a Loc.with_location
 
 (* {2 Input} *)
 
 type input = {
-  tokens : Token.t Location.with_location Stream.t;
+  tokens : Token.t Loc.with_location Stream.t;
   warnings : Warning.t list ref;
 }
 
@@ -83,30 +81,30 @@ let _check_subset : token_that_always_begins_an_inline_element -> Token.t =
 
    This function consumes exactly the tokens that make up the element. *)
 let rec inline_element :
-    input -> Location.span -> _ -> Ast.inline_element with_location =
+    input -> Loc.span -> _ -> Ast.inline_element with_location =
  fun input location next_token ->
   match next_token with
   | `Space _ as token ->
       junk input;
-      Location.at location token
+      Loc.at location token
   | `Word _ as token ->
       junk input;
-      Location.at location token
+      Loc.at location token
       (* This is actually the same memory representation as the token, complete
          with location, and is probably the most common case. Perhaps the token
          can be reused somehow. The same is true of [`Space], [`Code_span]. *)
   | `Minus ->
       junk input;
-      Location.at location (`Word "-")
+      Loc.at location (`Word "-")
   | `Plus ->
       junk input;
-      Location.at location (`Word "+")
+      Loc.at location (`Word "+")
   | `Code_span c ->
       junk input;
-      Location.at location (`Code_span c)
+      Loc.at location (`Code_span c)
   | `Raw_markup (raw_markup_target, s) ->
       junk input;
-      Location.at location (`Raw_markup (raw_markup_target, s))
+      Loc.at location (`Raw_markup (raw_markup_target, s))
   | `Begin_style s as parent_markup ->
       junk input;
 
@@ -120,7 +118,7 @@ let rec inline_element :
           ~parent_markup_location:location ~requires_leading_whitespace input
       in
 
-      let location = Location.span [ location; brace_location ] in
+      let location = Loc.span [ location; brace_location ] in
 
       if content = [] then
         Parse_error.should_not_be_empty
@@ -128,19 +126,19 @@ let rec inline_element :
           location
         |> add_warning input;
 
-      Location.at location (`Styled (s, content))
+      Loc.at location (`Styled (s, content))
   | `Simple_reference r ->
       junk input;
 
-      let r_location = Location.nudge_start (String.length "{!") location in
-      let r = Location.at r_location r in
+      let r_location = Loc.nudge_start (String.length "{!") location in
+      let r = Loc.at r_location r in
 
-      Location.at location (`Reference (`Simple, r, []))
+      Loc.at location (`Reference (`Simple, r, []))
   | `Begin_reference_with_replacement_text r as parent_markup ->
       junk input;
 
-      let r_location = Location.nudge_start (String.length "{{!") location in
-      let r = Location.at r_location r in
+      let r_location = Loc.nudge_start (String.length "{{!") location in
+      let r = Loc.at r_location r in
 
       let content, brace_location =
         delimited_inline_element_list ~parent_markup
@@ -148,7 +146,7 @@ let rec inline_element :
           input
       in
 
-      let location = Location.span [ location; brace_location ] in
+      let location = Loc.span [ location; brace_location ] in
 
       if content = [] then
         Parse_error.should_not_be_empty
@@ -156,7 +154,7 @@ let rec inline_element :
           location
         |> add_warning input;
 
-      Location.at location (`Reference (`With_text, r, content))
+      Loc.at location (`Reference (`With_text, r, content))
   | `Simple_link u ->
       junk input;
 
@@ -168,7 +166,7 @@ let rec inline_element :
           location
         |> add_warning input;
 
-      Location.at location (`Link (u, []))
+      Loc.at location (`Link (u, []))
   | `Begin_link_with_replacement_text u as parent_markup ->
       junk input;
 
@@ -186,8 +184,7 @@ let rec inline_element :
           input
       in
 
-      `Link (u, content)
-      |> Location.at (Location.span [ location; brace_location ])
+      `Link (u, content) |> Loc.at (Loc.span [ location; brace_location ])
 
 (* Consumes tokens that make up a sequence of inline elements that is ended by
    a '}', a [`Right_brace] token. The brace token is also consumed.
@@ -213,10 +210,10 @@ let rec inline_element :
    generating error messages. *)
 and delimited_inline_element_list :
     parent_markup:[< Token.t ] ->
-    parent_markup_location:Location.span ->
+    parent_markup_location:Loc.span ->
     requires_leading_whitespace:bool ->
     input ->
-    Ast.inline_element with_location list * Location.span =
+    Ast.inline_element with_location list * Loc.span =
  fun ~parent_markup ~parent_markup_location ~requires_leading_whitespace input ->
   (* [~at_start_of_line] is used to interpret [`Minus] and [`Plus]. These are
      word tokens if not the first non-whitespace tokens on their line. Then,
@@ -224,7 +221,7 @@ and delimited_inline_element_list :
   let rec consume_elements :
       at_start_of_line:bool ->
       Ast.inline_element with_location list ->
-      Ast.inline_element with_location list * Location.span =
+      Ast.inline_element with_location list * Loc.span =
    fun ~at_start_of_line acc ->
     let next_token = peek input in
     match next_token.value with
@@ -244,7 +241,7 @@ and delimited_inline_element_list :
         consume_elements ~at_start_of_line:false acc
     | `Single_newline ws ->
         junk input;
-        let element = Location.same next_token (`Space ws) in
+        let element = Loc.same next_token (`Space ws) in
         consume_elements ~at_start_of_line:true (element :: acc)
     | `Blank_line ws as blank ->
         Parse_error.not_allowed ~what:(Token.describe blank)
@@ -253,7 +250,7 @@ and delimited_inline_element_list :
         |> add_warning input;
 
         junk input;
-        let element = Location.same next_token (`Space ws) in
+        let element = Loc.same next_token (`Space ws) in
         consume_elements ~at_start_of_line:true (element :: acc)
     | (`Minus | `Plus) as bullet ->
         (if at_start_of_line then
@@ -362,15 +359,14 @@ let paragraph : input -> Ast.nestable_block_element with_location =
     | { value = `Single_newline ws; location }
       :: { value = #token_that_always_begins_an_inline_element; _ } :: _ ->
         junk input;
-        let acc = Location.at location (`Space ws) :: acc in
+        let acc = Loc.at location (`Space ws) :: acc in
         let acc = paragraph_line acc in
         additional_lines acc
     | _ -> List.rev acc
   in
 
   let elements = paragraph_line [] |> additional_lines in
-  `Paragraph elements
-  |> Location.at (Location.span (List.map Location.location elements))
+  `Paragraph elements |> Loc.at (Loc.span (List.map Loc.location elements))
 
 (* {2 Block elements} *)
 
@@ -531,13 +527,13 @@ let rec block_element_list :
       | _ -> Token.describe token
     in
 
-    let warn_if_after_text { Location.location; value = token } =
+    let warn_if_after_text { Loc.location; value = token } =
       if where_in_line = `After_text then
         Parse_error.should_begin_on_its_own_line ~what:(describe token) location
         |> add_warning input
     in
 
-    let warn_if_after_tags { Location.location; value = token } =
+    let warn_if_after_tags { Loc.location; value = token } =
       if parsed_a_tag then
         let suggestion =
           Printf.sprintf "move %s before any tags." (Token.describe token)
@@ -547,7 +543,7 @@ let rec block_element_list :
         |> add_warning input
     in
 
-    let warn_because_not_at_top_level { Location.location; value = token } =
+    let warn_because_not_at_top_level { Loc.location; value = token } =
       let suggestion =
         Printf.sprintf "move %s outside of any other markup."
           (Token.print token)
@@ -609,11 +605,11 @@ let rec block_element_list :
         let recover_when_not_at_top_level context =
           warn_because_not_at_top_level next_token;
           junk input;
-          let words = List.map (Location.at location) (tag_to_words tag) in
+          let words = List.map (Loc.at location) (tag_to_words tag) in
           let paragraph =
             `Paragraph words
             |> accepted_in_all_contexts context
-            |> Location.at location
+            |> Loc.at location
           in
           consume_block_elements ~parsed_a_tag `At_start_of_line
             (paragraph :: acc)
@@ -659,14 +655,12 @@ let rec block_element_list :
                       (* TODO The location is only approximate, as we need lexer
                          cooperation to get the real location. *)
                       let r_location =
-                        Location.nudge_start
-                          (String.length "@canonical ")
-                          location
+                        Loc.nudge_start (String.length "@canonical ") location
                       in
-                      `Canonical (Location.at r_location s)
+                      `Canonical (Loc.at r_location s)
                 in
 
-                let tag = Location.at location (`Tag tag) in
+                let tag = Loc.at location (`Tag tag) in
                 consume_block_elements ~parsed_a_tag:true `After_text
                   (tag :: acc)
             | (`Deprecated | `Return) as tag ->
@@ -679,10 +673,9 @@ let rec block_element_list :
                   | `Return -> `Return content
                 in
                 let location =
-                  location :: List.map Location.location content
-                  |> Location.span
+                  location :: List.map Loc.location content |> Loc.span
                 in
-                let tag = Location.at location (`Tag tag) in
+                let tag = Loc.at location (`Tag tag) in
                 consume_block_elements ~parsed_a_tag:true where_in_line
                   (tag :: acc)
             | (`Param _ | `Raise _ | `Before _) as tag ->
@@ -696,10 +689,9 @@ let rec block_element_list :
                   | `Before s -> `Before (s, content)
                 in
                 let location =
-                  location :: List.map Location.location content
-                  |> Location.span
+                  location :: List.map Loc.location content |> Loc.span
                 in
-                let tag = Location.at location (`Tag tag) in
+                let tag = Loc.at location (`Tag tag) in
                 consume_block_elements ~parsed_a_tag:true where_in_line
                   (tag :: acc)
             | `See (kind, target) ->
@@ -707,15 +699,14 @@ let rec block_element_list :
                   block_element_list In_tag ~parent_markup:token input
                 in
                 let location =
-                  location :: List.map Location.location content
-                  |> Location.span
+                  location :: List.map Loc.location content |> Loc.span
                 in
                 let tag = `Tag (`See (kind, target, content)) in
-                let tag = Location.at location tag in
+                let tag = Loc.at location tag in
                 consume_block_elements ~parsed_a_tag:true where_in_line
                   (tag :: acc)
             | (`Inline | `Open | `Closed) as tag ->
-                let tag = Location.at location (`Tag tag) in
+                let tag = Loc.at location (`Tag tag) in
                 consume_block_elements ~parsed_a_tag:true `After_text
                   (tag :: acc)))
     | { value = #token_that_always_begins_an_inline_element; _ } as next_token
@@ -724,7 +715,7 @@ let rec block_element_list :
         warn_if_after_text next_token;
 
         let block = paragraph input in
-        let block = Location.map (accepted_in_all_contexts context) block in
+        let block = Loc.map (accepted_in_all_contexts context) block in
         let acc = block :: acc in
         consume_block_elements ~parsed_a_tag `After_text acc
     | { value = (`Code_block (_, s) | `Verbatim s) as token; location } as
@@ -737,7 +728,7 @@ let rec block_element_list :
 
         junk input;
         let block = accepted_in_all_contexts context token in
-        let block = Location.at location block in
+        let block = Loc.at location block in
         let acc = block :: acc in
         consume_block_elements ~parsed_a_tag `After_text acc
     | { value = `Modules s as token; location } as next_token ->
@@ -770,7 +761,7 @@ let rec block_element_list :
         (* TODO Correct locations await a full implementation of {!modules}
            parsing. *)
         let modules =
-          split_string " \t\r\n" s |> List.map (fun r -> Location.at location r)
+          split_string " \t\r\n" s |> List.map (fun r -> Loc.at location r)
         in
 
         if modules = [] then
@@ -778,7 +769,7 @@ let rec block_element_list :
           |> add_warning input;
 
         let block = accepted_in_all_contexts context (`Modules modules) in
-        let block = Location.at location block in
+        let block = Loc.at location block in
         let acc = block :: acc in
         consume_block_elements ~parsed_a_tag `After_text acc
     | { value = `Begin_list kind as token; location } as next_token ->
@@ -794,10 +785,10 @@ let rec block_element_list :
           Parse_error.should_not_be_empty ~what:(Token.describe token) location
           |> add_warning input;
 
-        let location = Location.span [ location; brace_location ] in
+        let location = Loc.span [ location; brace_location ] in
         let block = `List (kind, `Heavy, items) in
         let block = accepted_in_all_contexts context block in
-        let block = Location.at location block in
+        let block = Loc.at location block in
         let acc = block :: acc in
         consume_block_elements ~parsed_a_tag `After_text acc
     | { value = (`Minus | `Plus) as token; location } as next_token -> (
@@ -820,12 +811,11 @@ let rec block_element_list :
               match token with `Minus -> `Unordered | `Plus -> `Ordered
             in
             let location =
-              location :: List.map Location.location (List.flatten items)
-              |> Location.span
+              location :: List.map Loc.location (List.flatten items) |> Loc.span
             in
             let block = `List (kind, `Light, items) in
             let block = accepted_in_all_contexts context block in
-            let block = Location.at location block in
+            let block = Loc.at location block in
             let acc = block :: acc in
             consume_block_elements ~parsed_a_tag where_in_line acc)
     | { value = `Begin_section_heading (level, label) as token; location } as
@@ -840,11 +830,11 @@ let rec block_element_list :
               ~parent_markup_location:location ~requires_leading_whitespace:true
               input
           in
-          let location = Location.span [ location; brace_location ] in
+          let location = Loc.span [ location; brace_location ] in
           let paragraph =
             `Paragraph content
             |> accepted_in_all_contexts context
-            |> Location.at location
+            |> Loc.at location
           in
           consume_block_elements ~parsed_a_tag `At_start_of_line
             (paragraph :: acc)
@@ -884,9 +874,9 @@ let rec block_element_list :
                 location
               |> add_warning input;
 
-            let location = Location.span [ location; brace_location ] in
+            let location = Loc.span [ location; brace_location ] in
             let heading = `Heading (level, label, content) in
-            let heading = Location.at location heading in
+            let heading = Loc.at location heading in
             let acc = heading :: acc in
             consume_block_elements ~parsed_a_tag `After_text acc)
     | { value = `Begin_paragraph_style _ as token; location } ->
@@ -896,7 +886,7 @@ let rec block_element_list :
             ~parent_markup_location:location ~requires_leading_whitespace:true
             input
         in
-        let location = Location.span [ location; brace_location ] in
+        let location = Loc.span [ location; brace_location ] in
 
         Parse_error.markup_should_not_be_used ~what:(Token.describe token)
           location
@@ -905,7 +895,7 @@ let rec block_element_list :
         let paragraph =
           `Paragraph content
           |> accepted_in_all_contexts context
-          |> Location.at location
+          |> Loc.at location
         in
         consume_block_elements ~parsed_a_tag `At_start_of_line
           (paragraph :: acc)
@@ -984,11 +974,11 @@ and shorthand_list_items :
 and explicit_list_items :
     parent_markup:[< Token.t ] ->
     input ->
-    Ast.nestable_block_element with_location list list * Location.span =
+    Ast.nestable_block_element with_location list list * Loc.span =
  fun ~parent_markup input ->
   let rec consume_list_items :
       Ast.nestable_block_element with_location list list ->
-      Ast.nestable_block_element with_location list list * Location.span =
+      Ast.nestable_block_element with_location list list * Loc.span =
    fun acc ->
     let next_token = peek input in
     match next_token.value with
@@ -1075,8 +1065,8 @@ and explicit_list_items :
 
 type output = { ast : Ast.t; warnings : Warning.t list }
 
-let parse tokens =
-  let input : input = { tokens; warnings = ref [] } in
+let parse warnings tokens =
+  let input : input = { tokens; warnings } in
 
   let rec parse_block_elements () =
     let elements, last_token, _where_in_line =
@@ -1090,8 +1080,7 @@ let parse tokens =
         |> add_warning input;
 
         let block =
-          Location.same last_token
-            (`Paragraph [ Location.same last_token (`Word "}") ])
+          Loc.same last_token (`Paragraph [ Loc.same last_token (`Word "}") ])
         in
 
         junk input;

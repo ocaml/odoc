@@ -1,5 +1,5 @@
 module Ast = Ast
-module Location = Location
+module Loc = Loc
 module Warning = Warning
 
 type t = Syntax.output = { ast : Ast.t; warnings : Warning.t list }
@@ -28,7 +28,7 @@ type t = Syntax.output = { ast : Ast.t; warnings : Warning.t list }
    which point it creates the table described above. The remaining function is
    then passed to the lexer, so it can apply the table to its emitted tokens. *)
 let offset_to_location :
-    input:string -> comment_location:Lexing.position -> int -> Location.point =
+    input:string -> comment_location:Lexing.position -> int -> Loc.point =
  fun ~input ~comment_location ->
   let rec find_newlines line_number input_index newlines_accumulator =
     if input_index >= String.length input then newlines_accumulator
@@ -60,24 +60,20 @@ let offset_to_location :
                 - comment_location.Lexing.pos_bol
               else column_in_comment
             in
-            { Location.line = line_in_file; column = column_in_file }
+            { Loc.line = line_in_file; column = column_in_file }
     in
     scan_to_last_newline reversed_newlines
 
 let parse_comment ~location ~text =
+  let warnings = ref [] in
   let token_stream =
     let lexbuf = Lexing.from_string text in
     let offset_to_location =
       offset_to_location ~input:text ~comment_location:location
     in
     let input : Lexer.input =
-      {
-        file = location.Lexing.pos_fname;
-        offset_to_location;
-        warnings = ref [];
-        lexbuf;
-      }
+      { file = location.Lexing.pos_fname; offset_to_location; warnings; lexbuf }
     in
     Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
   in
-  Syntax.parse token_stream
+  Syntax.parse warnings token_stream
