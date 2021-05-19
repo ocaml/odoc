@@ -1,4 +1,4 @@
-include Odoc_parser.Location
+include Odoc_parser.Loc
 
 let set_end_as_offset_from_start offset span =
   { span with end_ = { span.start with column = span.start.column + offset } }

@@ -1,4 +1,4 @@
-type t = { location : Location.span; message : string }
+type t = { location : Loc.span; message : string }
 
 let to_string e =
   let { location; message } = e in

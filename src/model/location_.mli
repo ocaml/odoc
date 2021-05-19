@@ -1,5 +1,5 @@
 include module type of struct
-  include Odoc_parser.Location
+  include Odoc_parser.Loc
 end
 
 val set_end_as_offset_from_start : int -> span -> span
