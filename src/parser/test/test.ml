@@ -3,14 +3,14 @@ open Odoc_parser
 type sexp = Sexplib0.Sexp.t = Atom of string | List of sexp list
 
 module Location_to_sexp = struct
-  let point : Location.point -> sexp =
+  let point : Loc.point -> sexp =
    fun { line; column } ->
     List [ Atom (string_of_int line); Atom (string_of_int column) ]
 
-  let span : Location.span -> sexp =
+  let span : Loc.span -> sexp =
    fun { file; start; end_ } -> List [ Atom file; point start; point end_ ]
 
-  let at : ('a -> sexp) -> 'a Location.with_location -> sexp =
+  let at : ('a -> sexp) -> 'a Loc.with_location -> sexp =
    fun f { location; value } -> List [ span location; f value ]
 end
 
@@ -125,7 +125,7 @@ let parser_output formatter { Odoc_parser.ast; warnings } =
   Sexplib0.Sexp.pp_hum formatter output;
   Format.pp_print_flush formatter ()
 
-let test ?(location = { Location.line = 1; column = 0 }) str =
+let test ?(location = { Loc.line = 1; column = 0 }) str =
   let dummy_filename = "f.ml" in
   let location =
     {

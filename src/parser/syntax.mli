@@ -2,4 +2,4 @@
 
 type output = { ast : Ast.t; warnings : Warning.t list }
 
-val parse : Token.t Location.with_location Stream.t -> output
+val parse : Warning.t list ref -> Token.t Loc.with_location Stream.t -> output
