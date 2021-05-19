@@ -48,4 +48,4 @@ let to_loc span =
         pos_cnum = span.end_.column;
       }
   in
-  Warnings.{ loc_start; loc_end; loc_ghost = false }
+  Location.{ loc_start; loc_end; loc_ghost = false }

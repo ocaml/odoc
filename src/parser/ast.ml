@@ -7,7 +7,7 @@
     be rejected by further stages, for example, invalid references or headings that
     are out of range. *)
 
-type 'a with_location = 'a Location.with_location
+type 'a with_location = 'a Loc.with_location
 
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 

@@ -1,5 +1,5 @@
 include module type of struct
-  include Octavius.Location
+  include Octavius.Loc
 end
 
 val set_end_as_offset_from_start : int -> span -> span
