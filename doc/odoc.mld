@@ -1,0 +1,123 @@
+{0 odoc}
+
+{1:overview What is [odoc]?}
+
+[odoc] is not your ordinary documentation tool.
+
+It's built from the ground up to be build-tool friendly, and it focuses on
+parallelism and caching. Instead of source code, it works with {i compilation
+units}; that is, it works on compiler outputs and turns them into compiled
+documentation, which then becomes gorgeous HTML. There are 
+{{!page-interface}strong guarantees} about compatibility so you can be
+assured your documentation will work long into the future!
+
+Compiled documentation appears in the form of [.odoc] files, which consist of
+an intermediary representation that is currrently internal and subject to
+change.
+
+A regular [odoc] execution transforms [.cmt], [.cmti], and [.mld] files into
+[.odoc] files, and then turns those into [.html] files. Roughly like this:
+
+{v
+cmti_and_mld_files |> compile_to_odoc |> compile_to_html
+v}
+
+This means that an [intro.mld] file will be compiled to [page-intro.odoc] which
+in turn will become [intro.html].
+
+Similarly, a [Game.cmti] will be compiled to [Game.odoc] which in turn will become
+[Game/index.html].
+
+{1:getting-started Getting Started with [odoc]}
+
+You can install [odoc] today through [opam]:
+
+{v
+opam install odoc
+v}
+
+{2:usage-ocaml ...using OCaml}
+
+If you want to use odoc on the packages you have installed in your
+opam switch type:
+
+{v
+opam install ocaml-manual odig
+odig doc
+v}
+
+When you are developing the easiest way to use odoc right now is by
+having Dune drive it. This command should work in most Dune projects
+out of the box:
+
+{v
+dune build @doc
+v}
+
+The generated docs can be found at [./_build/default/_doc/_html/index.html].
+
+Whilst odoc can be run manually, it's a tough job to get right as there
+tricky details about ordering and dependencies. For the details, there is a
+{{!page-driver}reference driver page} - a 'live' page that is used to build
+these documents - which may be consulted if necessary.
+
+odoc's main advantage over ocamldoc is an accurate cross-referencer, which handles the complexity of the OCaml module system. odoc also offers a good opportunity to improve HTML output compared to ocamldoc, but this is very much a work in progress :)
+
+{1 Using Odoc}
+
+Odoc is not intended to be invoked by users directly. Please use `odig` or `dune`.
+
+{1 Contributing to Odoc}
+
+We'd love your help! We have a {{!page-contributing}contributors guide} with some useful
+pointers to help you get familiar with odoc's codebase. 
+
+{1 API reference}
+
+{2 Parsing and loading}
+
+- {!childpage-odoc_parser}: The parser will soon be removed from odoc to be distributed separately
+- {!childpage-odoc_loader}: The loaders are responsible for converting from the OCaml typedtree representations to the internal Model representation.
+
+{2 Model}
+
+This library contains the internal representation of OCaml interfaces used
+by odoc.
+
+- {!childpage-odoc_model} : Model types
+- {!childpage-odoc_model_desc} : Json renderers of model types
+
+{2 Resolution and expansion}
+
+Resolution of Paths, Fragments and References, and expansion of Modules and Module Types are handled
+by the xref2 library.
+
+- {!childpage-odoc_xref2}
+
+{2 Intermediate representation and renderers}
+
+The generic documentation intermediate format is defined in the document library:
+- {!childpage-odoc_document}
+
+The three current renderers are implemented within the following libraries
+- {!childpage-odoc_html}
+- {!childpage-odoc_latex}
+- {!childpage-odoc_manpage}
+
+{2 CLI and driver}
+
+The CLI for odoc and various helper functions for driving the process are contained in the
+odoc_odoc library.
+- {!childpage-odoc_odoc}
+
+{2 Test and internal libraries}
+
+{!childpage-odoc_xref_test}
+{!childpage-print}
+
+
+{1 Dependency libraries}
+
+The following libraries are dependencies of odoc, and the documentation for relevant parts of the libraries are here for reference.
+
+{{!childpage-deps}Dependency libraries}

@@ -16,43 +16,32 @@
 
 module Html = Tyxml.Html
 
-type uri = Absolute of string | Relative of string
+type uri = Absolute of string | Relative of Odoc_document.Url.Path.t option
 
-let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
+let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
+    ~url name header toc content =
   let is_leaf_page = Link.Path.is_leaf_page url in
   let path = Link.Path.for_printing url in
   let rec add_dotdot ~n acc =
     if n <= 0 then acc else add_dotdot ~n:(n - 1) ("../" ^ acc)
   in
-  let resolve_relative_uri uri =
-    (* Remove the first "dot segment". *)
-    let uri =
-      if String.length uri >= 2 && String.sub uri 0 2 = "./" then
-        String.sub uri 2 (String.length uri - 2)
-      else uri
-    in
-    (* How deep is this page? *)
-    let n =
-      List.length path
-      - if (* This is just horrible. *)
-           is_leaf_page then 1 else 0
-    in
-    add_dotdot uri ~n
-  in
 
   let head : Html_types.head Html.elt =
     let title_string = Printf.sprintf "%s (%s)" name (String.concat "." path) in
 
-    let theme_uri =
-      match theme_uri with
-      | Absolute uri -> uri
-      | Relative uri -> resolve_relative_uri uri
+    let file_uri base file =
+      match base with
+      | Absolute uri -> uri ^ "/" ^ file
+      | Relative uri ->
+          let page =
+            Odoc_document.Url.Path.{ kind = "file"; parent = uri; name = file }
+          in
+          Link.href ~resolve:(Current url)
+            Odoc_document.Url.Anchor.{ page; anchor = ""; kind = "file" }
     in
 
-    let support_files_uri = resolve_relative_uri "./" in
-
-    let odoc_css_uri = theme_uri ^ "odoc.css" in
-    let highlight_js_uri = support_files_uri ^ "highlight.pack.js" in
+    let odoc_css_uri = file_uri theme_uri "odoc.css" in
+    let highlight_js_uri = file_uri support_uri "highlight.pack.js" in
 
     Html.head
       (Html.title (Html.txt title_string))
@@ -116,9 +105,12 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
   in
   Html.html head (Html.body ~a:[ Html.a_class [ "odoc" ] ] body)
 
-let make ?theme_uri ~indent ~url ~header ~toc title content children =
+let make ?theme_uri ?support_uri ~indent ~url ~header ~toc title content
+    children =
   let filename = Link.Path.as_filename url in
-  let html = page_creator ?theme_uri ~url title header toc content in
+  let html =
+    page_creator ?theme_uri ?support_uri ~url title header toc content
+  in
   let content ppf = (Html.pp ~indent ()) ppf html in
   { Odoc_document.Renderer.filename; content; children }
 

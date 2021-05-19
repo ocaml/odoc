@@ -1,0 +1,234 @@
+{0 Contributing to odoc}
+
+Please ask any questions you have about odoc, {{:https://github.com/ocaml/odoc/issues}open any issues},
+{{:https://github.com/ocaml/odoc#contact}offer feedback}, etc. All of these are valued contributions :)
+
+If you'd like specifically to work on the code of odoc, we hope that you will
+find the information in this file helpful.
+
+{1 Quick start: HTML and CSS}
+
+The odoc CSS is found at {{:https://github.com/ocaml/odoc/blob/master/src/odoc/etc/odoc.css}src/odoc/etc/css}. It
+still needs a lot of work, and PRs are very welcome. You can edit CSS using your browser's developer
+mode, then send us a PR for the same changes made to this file.
+
+Working on the HTML is more involved. The main HTML generator is in {{:https://github.com/ocaml/odoc/blob/master/src/html/generator.ml}src/html/generator.ml}.
+It operates on the types defined in {!module-Odoc_document.Types}, which is an intermediate representation used by all output renderers. The type that
+describes an individual HTML page is {!Odoc_document.Types.Page.t}.
+
+To make edits to the HTML generation, run the following commands:
+
+{ol
+{- Install requirements:
+{ul 
+{- A recent version of {{:http://www.html-tidy.org/}HTML tidy} (used for HTML validity testing) is required:
+{[
+# On MacOS (should be version 5.6.0 by the date of this writing)
+brew install tidy-html5     
+# Debian / Ubuntu
+sudo apt-get install tidy
+]}}
+{- A recent version of {{:https://github.com/stedolan/jq}jq} is required.
+{[
+# On MacOS
+brew install jq
+
+# Debian / Ubuntu
+sudo apt-get install jq
+]}}}}
+{- Set up for development:
+{[
+git clone https://github.com/ocaml/odoc.git
+cd odoc
+opam pin add --no-action odoc .
+opam install --with-test --deps-only odoc
+opam install mdx
+]}}
+{- Make changes to the code. To compile it,
+{[
+make
+]}
+and then to run the tests,
+{[
+make test
+]}
+Changes to the HTML are likely to cause the tests to fail. See the section {!testing} below to understand how to update them.
+}
+{- To test odoc against your own project, install it
+{[
+make clean
+opam install odoc
+]}
+   Since odoc is pinned, this installs your modified version. Then, you can run
+   odoc in your project as normal:
+{[
+dune build @doc
+]}
+}
+
+{- If all looks good, send odoc a PR :)
+}
+}
+
+{1:testing Testing}
+
+odoc uses a variety of different test types. We are slowly converging on using
+dune's {{!https://dune.readthedocs.io/en/stable/tests.html#cram-tests}cram tests},
+though we still have many tests that aren't.
+
+{2 Cram tests}
+
+These are extensively used by the tests for the model layer, and are found in
+{{!https://github.com/ocaml/odoc/blob/master/test/xref2}test/xref2}. These consist
+of a directory called [something.t], containing a file [run.t]. This file
+contains shell-like syntax, and usually runs odoc on some carefully crafted
+input files. For tests of the model layer it's often useful to use the binary
+`odoc_print` which can dump [odoc] and [odocl] files as JSON. This output can
+then be piped through [jq] to verify that values are as expected.
+
+We try to make these test files describe the test and what's expected which
+helps both when the output is not what the test expects, and also means that
+the tests can serve as documentation of how things work. As an example see
+the file {{!https://github.com/ocaml/odoc/blob/master/test/xref2/multi_file_module_type_of.t/run.t}test/xref2/multi_file_module_type_of.t/run.t}
+
+The tests work by executing the shell script snippets, and then comparing the
+output we actually get with those in the [run.t] files. If these _don't_
+match, the difference is rendered as a [diff]. For example, if I change the
+way [type] declarations are printed and run [dune runtest], I get the
+following output:
+
+{[
+------ test/xref2/module_type_of.t/run.t
+++++++ test/xref2/module_type_of.t/run.t.corrected
+File "test/xref2/module_type_of.t/run.t", line 95, characters 0-1:
+ |                ]
+ |              },
+ |              "T"
+ |            ]
+ |          },
+ |          "Z"
+ |        ]
+ |      }
+ |    }
+ |  ]
+ |
+ |Check that the expansion of 'T.Y' contains only 1 type
+ |
+ |  $ jq ".[0].ModuleType.expr.Some.TypeOf.t_expansion.Some.Signature.items" < T_sig.json > T.Y_sig.json
+ |  $ odoc_print m.odocl | jq "map(keys | .[0])" < T.Y_sig.json
+ |  [
+-|    "Type"
++|    "Toupe"
+ |  ]
+ |
+]}
+
+The intended response to this is:
+
++ Check the diff. If the `-` line is correct, the code is broken. If the `+`
+  line is correct, the test is broken.
++ If the test is broken, run [dune promote] to replace the expected output
+  with the current output.
+
+{2 Other expect tests}
+
+Many of odoc's older tests are {b custom expect tests}, similar to those
+run in the cram test above, but that don't use dune's [promote] workflow.
+As an example the parser tests in [test/parser] work in the following way:
+
++ The tests run some code, for example the odoc parser on the string [{e foo}].
++ They take the output, in this case an AST representing "emphasized [foo],"
+  and convert that output to a string. In this case, it will be an S-expression
+  roughly like `(emphasis (foo))`.
++ There is an {b expected} copy of this S-expression in a file somewhere in the
+  repo. If the S-expression from the code doesn't match the expected one, the
+  test fails.
+
+When one of these expect test fails, the string that the code emitted is saved, so that
+the human developer can choose to {b replace} the now-incorrect expected string.
+For these custom expect tests, the results may look like:
+
+{[
+-- bold.000 [basic.] Failed --
+in _build/_tests/bold.000.output:
+
+{e foo}
+
+--- expect/bold/basic.txt       2018-04-15 14:42:32.356895400 -0500
++++ _actual/bold/basic.txt      2018-04-15 17:36:26.812747400 -0500
+@@ -2,5 +2,5 @@
+   (ok
+    (((f.ml (1 0) (1 7))
+      (paragraph
+-      (((f.ml (1 0) (1 7)) (bold (((f.ml (1 3) (1 6)) (word foo)))))))))))
++      (((f.ml (1 0) (1 7)) (emphasis (((f.ml (1 3) (1 6)) (word foo)))))))))))
+  (warnings ()))
+
+To replace expected output with actual, run
+
+bash _build/default/test/parser/_actual/replace.sh
+]}
+
+As with the cram tests, the idea is to examine the diff to see if your code
+is broken or the test is broken. If the test is broken, the actual results
+may be promoted to the expected results by running the suggested command. If
+your code is broken, go and fix it!
+
+We are slowly shifting these custom expect tests over to the dune promote
+workflow.
+
+{1: Coverage analysis}
+
+The odoc repo is set up for coverage analysis. This is most useful if you're
+writing new tests, and want to know what they are actually touching. To use it,
+
++ Run `make coverage`. This will run the tests as normal, except at the end you
+  will get a message like
+{[
+    See _coverage/index.html
+]}
+   You can then open [_coverage/index.html] and see the coverage of the code you
+   would like your new test to reach. It is possible that it is already covered
+   "accidentally" by tests that are checking other properties, however, in which
+   case coverage analysis will not be very useful :)
++ Write new tests.
++ Check coverage again.
+
+The coverage is tested by our CI tests and the results are available on 
+{{:https://coveralls.io/github/ocaml/odoc}the coveralls website}.
+
+
+{1 CI tests}
+
+Odoc is tested by {{:https://ci.ocamllabs.io/}ocaml-ci} and by github workflows.
+One of these does a coverage build too, so we have up-to-date coverage stats
+on {{:https://coveralls.io/github/ocaml/odoc}Coveralls}.
+
+The tests cover esy and opam builds on Windows, MacOS and Linux, and the linux
+tests cover all supported versions of OCaml. We strive to retain compatibility
+back as far as we can -- currently 4.02 -- which is important for supporting
+docs.ocaml.org.
+
+{1 Project structure}
+
+odoc is divided into several sub-libraries, each of which is found under [src/].
+
+The directories are:
+
+- {{:https://github.com/ocaml/odoc/tree/master/src/odoc}odoc/} - The overall [odoc] command-line tool.
+- {{:https://github.com/ocaml/odoc/tree/master/src/parser}parser/} - The parser for ocamldoc syntax ({{!Odoc_parser}documentation})
+- {{:https://github.com/ocaml/odoc/tree/master/src/model}model/} - Representation of OCaml source ({{!Odoc_model}documentation})
+- {{:https://github.com/ocaml/odoc/tree/master/src/model_desc}model_desc/} - Used for pretty-printing of {!Odoc_model} types ({{!Odoc_model_desc}documentation})
+- {{:https://github.com/ocaml/odoc/tree/master/src/loader}loader/} - Responsible for loading cmti, cmt and cmi files ({{!Odoc_loader}documentation})
+- {{:https://github.com/ocaml/odoc/tree/master/src/xref2}xref2/} - Resolution and expansion ({{!Odoc_xref2}documentation})
+- {{:https://github.com/ocaml/odoc/tree/master/src/document}document/} - Translates from {!Odoc_model} types into {{!Odoc_document.Types.Page.t}generic documentation IR} ({{!Odoc_document}documentation})
+- {{:https://github.com/ocaml/odoc/tree/master/src/vendor}vendor/} - Third-party software (highlight.js)
+and there are 3 directories for the different output formats:
+
+- {{:https://github.com/ocaml/odoc/tree/master/src/html/}html/} - The HTML renderer ({{!Odoc_html}documentation})
+- {{:https://github.com/ocaml/odoc/tree/master/src/latex/}latex/} - The LaTeX renderer ({{!Odoc_latex}documentation})
+- {{:https://github.com/ocaml/odoc/tree/master/src/manpage/}manpage/} - The man-page renderer ({{!Odoc_manpage}documentation})
+
+The source for the main CLI binary is {{:https://github.com/ocaml/odoc/blob/master/src/odoc/bin/main.ml}src/odoc/bin/main.ml}
+
+

@@ -43,8 +43,24 @@ Bugs fixed
 -----------
 
 - New model for expanding and cross referencing (@jonludlam, @Julow, @lubegasimon)
+
+This is a brand-new implementation, ensuring that the expansions and links are
+correct, requring no rendering of hidden modules, and correctly handling functors,
+destructive substitution, `module type of` expressions, dependently-typed functors
+and other complex language features.
+
 - New document output layer, supporting HTML, LaTeX and man page output (@Drup, @Octachron, @jonludlam, @Julow, @lubegasimon)
+
+This release introduces a new intermediate representation of the documentation,
+allowing new backend renderers to be added without having to understand every
+detail of the language. Included with this release are renderers for HTML,
+LaTeX and man pages.
+
 - Experimental parent/child support for structured output (@jonludlam)
+
+This allows the output pages to be structured in a hierarchy. This is an experimental
+feature intended to enable the support of more complex outputs, such as that required
+to produce a site documenting all opam packages.
 
 1.5.1
 -----
