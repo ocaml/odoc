@@ -114,7 +114,7 @@ let env_lookup_by_name scope name env =
       Some hd
   | Error `Not_found -> None
 
-let find_ambiguous find sg name : 'b option =
+let find_ambiguous find sg name =
   match find sg name with
   | [ x ] -> Some x
   | x :: _ as results ->
@@ -180,19 +180,22 @@ module M = struct
     Some
       (of_component env m (`Module (parent_cp, name)) (`Module (parent, name)))
 
-  let of_element env (`Module (id, m)) : t option =
+  let of_element env (`Module (id, m)) : t =
     let m = Component.Delayed.get m in
-    let base = `Identifier (id :> Odoc_model.Paths.Identifier.Path.Module.t) in
-    Some (of_component env m base base)
+    let base = `Identifier (id :> Identifier.Path.Module.t) in
+    of_component env m base base
+
+  let lookup_root_module env name =
+    match Env.lookup_root_module name env with
+    | Some (Env.Resolved (_, id, m)) ->
+        let base = `Identifier (id :> Identifier.Path.Module.t) in
+        Some (of_component env m base base)
+    | _ -> None
 
   let in_env env name : t option =
     match env_lookup_by_name Env.s_module name env with
-    | Some e -> of_element env e
-    | None -> (
-        match Env.lookup_root_module name env with
-        | Some (Env.Resolved (_, id, m)) ->
-            of_element env (`Module (id, Component.Delayed.put_val m))
-        | _ -> None)
+    | Some e -> Some (of_element env e)
+    | None -> lookup_root_module env name
 end
 
 module MT = struct
@@ -211,11 +214,12 @@ module MT = struct
          (`ModuleType (parent_cp, name))
          (`ModuleType (parent', name)))
 
-  let of_element _env (`ModuleType (id, mt)) : t option =
-    Some (`Identifier id, `Identifier id, mt)
+  let of_element _env (`ModuleType (id, mt)) : t =
+    (`Identifier id, `Identifier id, mt)
 
   let in_env env name : t option =
-    env_lookup_by_name Env.s_module_type name env >>= of_element env
+    env_lookup_by_name Env.s_module_type name env >>= fun e ->
+    Some (of_element env e)
 end
 
 module CL = struct
@@ -257,9 +261,7 @@ module DT = struct
   let of_element _env (`Type (id, t)) : t = (`Identifier id, t)
 
   let in_env env name : t option =
-    env_lookup_by_name Env.s_datatype name env >>= function
-    | `Type _ as e -> Some (of_element env e)
-    | _ -> None
+    env_lookup_by_name Env.s_type name env >>= fun e -> Some (of_element env e)
 
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name : t option =
@@ -273,11 +275,14 @@ module T = struct
 
   type t = type_lookup_result
 
+  let of_element env : _ -> t = function
+    | `Type _ as e -> `T (DT.of_element env e)
+    | `Class _ as e -> `C (CL.of_element env e)
+    | `ClassType _ as e -> `CT (CT.of_element env e)
+
   let in_env env name : t option =
-    env_lookup_by_name Env.s_datatype name env >>= function
-    | `Type (id, t) -> Some (`T (`Identifier id, t))
-    | `Class _ as e -> Some (`C (CL.of_element env e))
-    | `ClassType _ as e -> Some (`CT (CT.of_element env e))
+    env_lookup_by_name Env.s_datatype name env >>= fun e ->
+    Some (of_element env e)
 
   (* Don't handle name collisions between class, class types and type decls *)
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
@@ -461,17 +466,19 @@ module LP = struct
 
   type t = label_parent_lookup_result
 
-  let in_env env name : t option =
-    env_lookup_by_name Env.s_label_parent name env >>= function
+  let of_element env : _ -> t option = function
     | `Module _ as e ->
-        M.of_element env e >>= module_lookup_to_signature_lookup env
-        >>= fun r -> Some (`S r)
+        M.of_element env e |> module_lookup_to_signature_lookup env >>= fun r ->
+        Some (`S r)
     | `ModuleType _ as e ->
-        MT.of_element env e >>= module_type_lookup_to_signature_lookup env
+        MT.of_element env e |> module_type_lookup_to_signature_lookup env
         >>= fun r -> Some (`S r)
     | `Type _ as e -> Some (`T (DT.of_element env e))
     | `Class _ as e -> Some (`C (CL.of_element env e))
     | `ClassType _ as e -> Some (`CT (CT.of_element env e))
+
+  let in_env env name : t option =
+    env_lookup_by_name Env.s_label_parent name env >>= of_element env
 
   let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
       : t option =
@@ -578,10 +585,9 @@ and resolve_signature_reference :
       | `Root (name, `TUnknown) -> (
           env_lookup_by_name Env.s_signature name env >>= function
           | `Module (_, _) as e ->
-              M.of_element env e >>= module_lookup_to_signature_lookup env
+              module_lookup_to_signature_lookup env (M.of_element env e)
           | `ModuleType (_, _) as e ->
-              MT.of_element env e >>= module_type_lookup_to_signature_lookup env
-          )
+              module_type_lookup_to_signature_lookup env (MT.of_element env e))
       | `Dot (parent, name) -> (
           resolve_label_parent_reference env parent
           >>= signature_lookup_result_of_label_parent
@@ -709,12 +715,10 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
   fun env r ->
     match r with
     | `Root (name, `TUnknown) -> (
-        let identifier id =
-          return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
-        in
+        let identifier id = return (`Identifier (id :> Identifier.t)) in
         env_lookup_by_name Env.s_any name env >>= function
-        | `Module (_, _) as e -> M.of_element env e >>= resolved
-        | `ModuleType (_, _) as e -> MT.of_element env e >>= resolved
+        | `Module (_, _) as e -> resolved (M.of_element env e)
+        | `ModuleType (_, _) as e -> resolved (MT.of_element env e)
         | `Value (id, _) -> identifier id
         | `Type (id, _) -> identifier id
         | `Label id -> identifier id

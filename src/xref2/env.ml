@@ -1,6 +1,7 @@
 (* A bunch of association lists. Let's hashtbl them up later *)
 open Odoc_model
 open Odoc_model.Names
+open Odoc_model.Paths
 
 type lookup_unit_result =
   | Forward_reference
@@ -20,7 +21,11 @@ type resolver = {
   lookup_page : string -> lookup_page_result;
 }
 
-let unique_id = ref 0
+let unique_id =
+  let i = ref 0 in
+  fun () ->
+    incr i;
+    !i
 
 type lookup_type =
   | Module of Odoc_model.Paths.Identifier.Path.Module.t
@@ -61,10 +66,61 @@ type recorder = { mutable lookups : lookup_type list }
 module Maps = Odoc_model.Paths.Identifier.Maps
 module StringMap = Map.Make (String)
 
+type kind =
+  | Kind_Module
+  | Kind_ModuleType
+  | Kind_Type
+  | Kind_Value
+  | Kind_Label
+  | Kind_Class
+  | Kind_ClassType
+  | Kind_External
+  | Kind_Constructor
+  | Kind_Exception
+  | Kind_Extension
+  | Kind_Field
+
+module Elements : sig
+  type t
+
+  val empty : t
+
+  val add : kind -> [< Identifier.t ] -> [< Component.Element.any ] -> t -> t
+
+  val find_by_name :
+    (Component.Element.any -> 'b option) -> string -> t -> 'b list
+
+  val fold : ('a -> kind * Component.Element.any -> 'a) -> 'a -> t -> 'a
+end = struct
+  type t = (kind * Component.Element.any) list StringMap.t
+
+  let empty = StringMap.empty
+
+  let add kind identifier comp t =
+    let name = Identifier.name identifier in
+    let v = (kind, (comp :> Component.Element.any)) in
+    try
+      let tl = StringMap.find name t in
+      let tl =
+        let not_dup (kind', _) = kind' <> kind in
+        if List.for_all not_dup tl then tl else List.filter not_dup tl
+      in
+      StringMap.add name (v :: tl) t
+    with Not_found -> StringMap.add name [ v ] t
+
+  let find_by_name f name t =
+    let filter acc (_, e) = match f e with Some e -> e :: acc | None -> acc in
+    let found = try StringMap.find name t with Not_found -> [] in
+    List.fold_left filter [] found |> List.rev
+
+  let fold f acc t =
+    StringMap.fold (fun _ e acc -> List.fold_left f acc e) t acc
+end
+
 type t = {
   id : int;
   titles : Odoc_model.Comment.link_content Maps.Label.t;
-  elts : Component.Element.any list StringMap.t;
+  elts : Elements.t;
   resolver : resolver option;
   recorder : recorder option;
   fragmentroot : (int * Component.Signature.t) option;
@@ -96,45 +152,29 @@ let empty =
   {
     id = 0;
     titles = Maps.Label.empty;
-    elts = StringMap.empty;
+    elts = Elements.empty;
     resolver = None;
     recorder = None;
     fragmentroot = None;
   }
 
 let add_fragment_root sg env =
-  let id =
-    incr unique_id;
-    !unique_id
-  in
+  let id = unique_id () in
   { env with fragmentroot = Some (id, sg); id }
 
-let add_to_elts name v elts =
-  try
-    let cur = StringMap.find name elts in
-    StringMap.add name (v :: cur) elts
-  with Not_found -> StringMap.add name [ v ] elts
+(** Implements most [add_*] functions. *)
+let add_to_elts kind identifier component env =
+  {
+    env with
+    id = unique_id ();
+    elts = Elements.add kind identifier component env.elts;
+  }
 
 let add_label identifier env =
-  {
-    env with
-    id =
-      (incr unique_id;
-       !unique_id);
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`Label identifier) env.elts;
-  }
+  add_to_elts Kind_Label identifier (`Label identifier) env
 
 let add_label_title label elts env =
-  {
-    env with
-    id =
-      (incr unique_id;
-       !unique_id);
-    titles = Maps.Label.add label elts env.titles;
-  }
+  { env with id = unique_id (); titles = Maps.Label.add label elts env.titles }
 
 let add_docs (docs : Odoc_model.Comment.docs) env =
   List.fold_right
@@ -163,18 +203,7 @@ let add_cdocs p (docs : Component.CComment.docs) env =
     docs env
 
 let add_module identifier m docs env =
-  {
-    env with
-    id =
-      (incr unique_id;
-       (*Format.fprintf Format.err_formatter "unique_id=%d\n%!" !unique_id; *)
-       !unique_id);
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`Module (identifier, m))
-        env.elts;
-  }
+  add_to_elts Kind_Module identifier (`Module (identifier, m)) env
   |> add_cdocs identifier docs
 
 let add_type identifier t env =
@@ -184,20 +213,14 @@ let add_type identifier t env =
       let ident =
         `Constructor (identifier, ConstructorName.make_std cons.name)
       in
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name ident)
-        (`Constructor (ident, cons))
-        elts
+      Elements.add Kind_Constructor ident (`Constructor (ident, cons)) elts
     and add_field elts (field : TypeDecl.Field.t) =
       let ident =
         `Field
           ( (identifier :> Odoc_model.Paths.Identifier.Parent.t),
             FieldName.make_std field.name )
       in
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name ident)
-        (`Field (ident, field))
-        elts
+      Elements.add Kind_Field ident (`Field (ident, field)) elts
     in
     let open TypeDecl in
     match t.representation with
@@ -210,87 +233,29 @@ let add_type identifier t env =
     | Some Extensible | None -> (cs, [])
   in
   let elts, docs = open_typedecl env.elts in
-  {
-    env with
-    id =
-      (incr unique_id;
-       !unique_id);
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`Type (identifier, t))
-        elts;
-  }
-  |> List.fold_right (add_cdocs identifier) (t.doc :: docs)
+  let elts = Elements.add Kind_Type identifier (`Type (identifier, t)) elts in
+  { env with id = unique_id (); elts }
+  |> add_cdocs identifier t.doc
+  |> List.fold_right (add_cdocs identifier) docs
 
 let add_module_type identifier t env =
-  {
-    env with
-    id =
-      (incr unique_id;
-       !unique_id);
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`ModuleType (identifier, t))
-        env.elts;
-  }
+  add_to_elts Kind_ModuleType identifier (`ModuleType (identifier, t)) env
   |> add_cdocs identifier t.doc
 
 let add_value identifier t env =
-  {
-    env with
-    id =
-      (incr unique_id;
-       !unique_id);
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`Value (identifier, t))
-        env.elts;
-  }
+  add_to_elts Kind_Value identifier (`Value (identifier, t)) env
   |> add_cdocs identifier t.doc
 
 let add_external identifier t env =
-  {
-    env with
-    id =
-      (incr unique_id;
-       !unique_id);
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`External (identifier, t))
-        env.elts;
-  }
+  add_to_elts Kind_External identifier (`External (identifier, t)) env
   |> add_cdocs identifier t.doc
 
 let add_class identifier t env =
-  {
-    env with
-    id =
-      (incr unique_id;
-       !unique_id);
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`Class (identifier, t))
-        env.elts;
-  }
+  add_to_elts Kind_Class identifier (`Class (identifier, t)) env
   |> add_cdocs identifier t.doc
 
 let add_class_type identifier t env =
-  {
-    env with
-    id =
-      (incr unique_id;
-       !unique_id);
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`ClassType (identifier, t))
-        env.elts;
-  }
+  add_to_elts Kind_ClassType identifier (`ClassType (identifier, t)) env
   |> add_cdocs identifier t.doc
 
 let add_method _identifier _t env =
@@ -298,31 +263,11 @@ let add_method _identifier _t env =
   env
 
 let add_exception identifier e env =
-  {
-    env with
-    id =
-      (incr unique_id;
-       !unique_id);
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`Exception (identifier, e))
-        env.elts;
-  }
+  add_to_elts Kind_Exception identifier (`Exception (identifier, e)) env
   |> add_cdocs identifier e.doc
 
 let add_extension_constructor identifier ec env =
-  {
-    env with
-    id =
-      (incr unique_id;
-       !unique_id);
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`Extension (identifier, ec))
-        env.elts;
-  }
+  add_to_elts Kind_Extension identifier (`Extension (identifier, ec)) env
   |> add_cdocs identifier ec.doc
 
 let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
@@ -394,15 +339,8 @@ let make_scope ?(root = fun _ _ -> None)
     (filter : _ -> ([< Component.Element.any ] as 'a) option) : 'a scope =
   { filter; root }
 
-let lookup_by_name' scope name env =
-  let filter acc r =
-    match scope.filter r with Some r' -> r' :: acc | None -> acc
-  in
-  let found = try StringMap.find name env.elts with Not_found -> [] in
-  List.fold_left filter [] found |> List.rev
-
 let lookup_by_name scope name env =
-  let record_lookup_results results =
+  let record_lookup_results env results =
     match env.recorder with
     | Some r ->
         List.iter
@@ -413,17 +351,15 @@ let lookup_by_name scope name env =
           (results :> Component.Element.any list)
     | None -> ()
   in
-  match lookup_by_name' scope name env with
+  match Elements.find_by_name scope.filter name env.elts with
   | [ x ] as results ->
-      record_lookup_results results;
+      record_lookup_results env results;
       Result.Ok x
   | x :: tl as results ->
-      record_lookup_results results;
+      record_lookup_results env results;
       Error (`Ambiguous (x, tl))
   | [] -> (
       match scope.root name env with Some x -> Ok x | None -> Error `Not_found)
-
-open Odoc_model.Paths
 
 let ident_of_element = function
   | `Module (id, _) -> (id :> Identifier.t)
@@ -455,7 +391,10 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
         | _ -> ())
     | None -> ()
   in
-  match disam_id id (lookup_by_name' scope (Identifier.name id) env) with
+  match
+    disam_id id
+      (Elements.find_by_name scope.filter (Identifier.name id) env.elts)
+  with
   | Some result as x ->
       record_lookup_result result;
       x
@@ -736,8 +675,8 @@ let env_of_page page resolver =
   set_resolver initial_env resolver |> open_units resolver
 
 let modules_of env =
-  let f acc = function `Module (id, m) -> (id, m) :: acc | _ -> acc in
-  StringMap.fold (fun _ e acc -> List.fold_left f acc e) env.elts []
+  let f acc = function _, `Module (id, m) -> (id, m) :: acc | _ -> acc in
+  Elements.fold f [] env.elts
 
 let verify_lookups env lookups =
   let bad_lookup = function

@@ -1,14 +1,6 @@
 # Testing the scope of references
 
   $ compile a.mli shadowed.mli shadowed_through_open.mli
-  File "shadowed.mli", line 9, characters 31-53:
-  Reference to 't' is ambiguous. Please specify its kind: type-t, type-t.
-  File "shadowed.mli", line 15, characters 31-52:
-  Reference to 't' is ambiguous. Please specify its kind: type-t, type-t.
-  File "shadowed_through_open.mli", line 24, characters 6-27:
-  Reference to 't' is ambiguous. Please specify its kind: type-t, type-t.
-  File "shadowed_through_open.mli", line 28, characters 6-26:
-  Reference to 't' is ambiguous. Please specify its kind: type-t, type-t.
 
   $ jq_scan_references() { jq -c '.. | .["`Reference"]? | select(.)'; }
 
