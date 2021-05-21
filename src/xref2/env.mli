@@ -1,5 +1,7 @@
 (* Env.mli *)
 
+open Odoc_model.Paths
+
 type lookup_unit_result =
   | Forward_reference
   | Found of Odoc_model.Lang.Compilation_unit.t
@@ -8,10 +10,7 @@ type lookup_unit_result =
 type lookup_page_result = Odoc_model.Lang.Page.t option
 
 type root =
-  | Resolved of
-      (Odoc_model.Root.t
-      * Odoc_model.Paths.Identifier.Module.t
-      * Component.Module.t)
+  | Resolved of (Odoc_model.Root.t * Identifier.Module.t * Component.Module.t)
   | Forward
 
 type resolver = {
@@ -21,10 +20,10 @@ type resolver = {
 }
 
 type lookup_type =
-  | Module of Odoc_model.Paths.Identifier.Path.Module.t
-  | ModuleType of Odoc_model.Paths.Identifier.ModuleType.t
+  | Module of Identifier.Path.Module.t
+  | ModuleType of Identifier.ModuleType.t
   | RootModule of string * [ `Forward | `Resolved of Digest.t ] option
-  | ModuleByName of string * Odoc_model.Paths.Identifier.Path.Module.t
+  | ModuleByName of string * Identifier.Path.Module.t
   | FragmentRoot of int
 
 val pp_lookup_type_list : Format.formatter -> lookup_type list -> unit
@@ -44,69 +43,51 @@ val empty : t
 val add_fragment_root : Component.Signature.t -> t -> t
 
 val add_module :
-  Odoc_model.Paths.Identifier.Path.Module.t ->
+  Identifier.Path.Module.t ->
   Component.Module.t Component.Delayed.t ->
   Component.CComment.docs ->
   t ->
   t
 
-val add_type :
-  Odoc_model.Paths.Identifier.Type.t -> Component.TypeDecl.t -> t -> t
+val add_type : Identifier.Type.t -> Component.TypeDecl.t -> t -> t
 
 val add_module_type :
-  Odoc_model.Paths.Identifier.Path.ModuleType.t ->
-  Component.ModuleType.t ->
-  t ->
-  t
+  Identifier.Path.ModuleType.t -> Component.ModuleType.t -> t -> t
 
-val add_value :
-  Odoc_model.Paths.Identifier.Value.t -> Component.Value.t -> t -> t
+val add_value : Identifier.Value.t -> Component.Value.t -> t -> t
 
-val add_external :
-  Odoc_model.Paths.Identifier.Value.t -> Component.External.t -> t -> t
+val add_external : Identifier.Value.t -> Component.External.t -> t -> t
 
-val add_label : Odoc_model.Paths.Identifier.Label.t -> t -> t
+val add_label : Identifier.Label.t -> t -> t
 
 val add_label_title :
-  Odoc_model.Paths.Identifier.Label.t ->
-  Odoc_model.Comment.link_content ->
-  t ->
-  t
+  Identifier.Label.t -> Odoc_model.Comment.link_content -> t -> t
 
-val add_class :
-  Odoc_model.Paths.Identifier.Class.t -> Component.Class.t -> t -> t
+val add_class : Identifier.Class.t -> Component.Class.t -> t -> t
 
-val add_class_type :
-  Odoc_model.Paths.Identifier.ClassType.t -> Component.ClassType.t -> t -> t
+val add_class_type : Identifier.ClassType.t -> Component.ClassType.t -> t -> t
 
-val add_exception :
-  Odoc_model.Paths.Identifier.Exception.t -> Component.Exception.t -> t -> t
+val add_exception : Identifier.Exception.t -> Component.Exception.t -> t -> t
 
 val add_extension_constructor :
-  Odoc_model.Paths.Identifier.Extension.t ->
-  Component.Extension.Constructor.t ->
-  t ->
-  t
+  Identifier.Extension.t -> Component.Extension.Constructor.t -> t -> t
 
 val add_docs : Odoc_model.Comment.docs -> t -> t
 
 val add_comment : Odoc_model.Comment.docs_or_stop -> t -> t
 
-val add_method :
-  Odoc_model.Paths.Identifier.Method.t -> Component.Method.t -> t -> t
+val add_method : Identifier.Method.t -> Component.Method.t -> t -> t
 
 val add_module_functor_args :
-  Component.Module.t -> Odoc_model.Paths.Identifier.Path.Module.t -> t -> t
+  Component.Module.t -> Identifier.Path.Module.t -> t -> t
 
 val add_module_type_functor_args :
-  Component.ModuleType.t -> Odoc_model.Paths.Identifier.ModuleType.t -> t -> t
+  Component.ModuleType.t -> Identifier.ModuleType.t -> t -> t
 
 val lookup_fragment_root : t -> (int * Component.Signature.t) option
 
 val lookup_section_title :
-  Odoc_model.Paths.Identifier.Label.t ->
-  t ->
-  Odoc_model.Comment.link_content option
+  Identifier.Label.t -> t -> Odoc_model.Comment.link_content option
 
 val lookup_page : string -> t -> Odoc_model.Lang.Page.t option
 
@@ -125,11 +106,11 @@ type 'a maybe_ambiguous =
   ('a, [ `Ambiguous of 'a * 'a list | `Not_found ]) Result.result
 
 val lookup_by_name : 'a scope -> string -> t -> 'a maybe_ambiguous
-(** Lookup an element in Env depending on the given [scope].
-    Return [Error (`Ambiguous _)] when two or more elements match the given scope and name. *)
+(** Lookup an element in Env depending on the given [scope]. Return
+    [Error (`Ambiguous _)] when two or more elements match the given scope and
+    name. *)
 
-val lookup_by_id :
-  'a scope -> [< Odoc_model.Paths.Identifier.t ] -> t -> 'a option
+val lookup_by_id : 'a scope -> [< Identifier.t ] -> t -> 'a option
 (** Like [lookup_by_name] but use an identifier as key. *)
 
 val s_any : Component.Element.any scope
@@ -181,10 +162,7 @@ val inherit_resolver : t -> t
 (** Create an empty environment reusing the same resolver. *)
 
 val modules_of :
-  t ->
-  (Odoc_model.Paths.Identifier.Path.Module.t
-  * Component.Module.t Component.Delayed.t)
-  list
+  t -> (Identifier.Path.Module.t * Component.Module.t Component.Delayed.t) list
 
 val len : int ref
 
