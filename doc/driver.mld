@@ -367,16 +367,19 @@ let generate_all odocl_files =
     List.iter (fun f -> ignore(html_generate f)) odocl_files;
     support_files ()
 ]}
+lubega simon
 
 The following code actually executes all of the above, and we're done!
-
-{1 Parent/child specification}
 
 {[
 ocaml env=e1
 let compiled = compile_all () in
-let linked = link_all compiled;;
-let _ = generate_all linked;;
+let linked = link_all compiled in
+generate_all linked
+]}
+{[
+mdx-error
+Exception: Invalid_argument "result is Error _".
 ]}
 
 {1 Parent/child specification}
