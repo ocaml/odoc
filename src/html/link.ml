@@ -1,5 +1,7 @@
 module Url = Odoc_document.Url
 
+let flat = ref true
+
 (* Translation from Url.Path *)
 module Path = struct
   let to_list url =
@@ -9,6 +11,13 @@ module Path = struct
       | Some p -> loop ((kind, name) :: acc) p
     in
     loop [] url
+
+  let of_list l =
+    let rec inner parent = function
+      | [] -> parent
+      | (kind, name) :: xs -> inner (Some { Url.Path.parent; name; kind }) xs
+    in
+    inner None l
 
   let for_printing url = List.map snd @@ to_list url
 
@@ -21,17 +30,25 @@ module Path = struct
     url.Url.Path.kind = "page" || url.Url.Path.kind = "file"
 
   let rec get_dir { Url.Path.parent; name; kind } =
-    let ppath = match parent with Some p -> get_dir p | None -> [] in
-    match kind with
-    | "page" | "file" -> ppath
-    | _ -> ppath @ [ segment_to_string (kind, name) ]
+    if !flat then []
+    else
+      let ppath = match parent with Some p -> get_dir p | None -> [] in
+      match kind with
+      | "page" | "file" -> ppath
+      | _ -> ppath @ [ segment_to_string (kind, name) ]
 
   let get_file : Url.Path.t -> string =
    fun t ->
-    match t.kind with
-    | "page" -> t.name ^ ".html"
-    | "file" -> t.name
-    | _ -> "index.html"
+    if !flat then
+      match t.kind with
+      | "file" -> t.name
+      | _ ->
+          String.concat "-" (List.map segment_to_string (to_list t)) ^ ".html"
+    else
+      match t.kind with
+      | "page" -> t.name ^ ".html"
+      | "file" -> t.name
+      | _ -> "index.html"
 
   let for_linking : Url.Path.t -> string list =
    fun url -> get_dir url @ [ get_file url ]
