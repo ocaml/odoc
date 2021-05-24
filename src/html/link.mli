@@ -2,6 +2,8 @@
 
 module Url = Odoc_document.Url
 
+val flat : bool ref
+
 val semantic_uris : bool ref
 (** Whether to generate pretty/semantics links or not. *)
 

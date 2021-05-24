@@ -1,6 +1,6 @@
 module Url = Odoc_document.Url
 
-let flat = ref true
+let flat = ref false
 
 (* Translation from Url.Path *)
 module Path = struct

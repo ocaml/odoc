@@ -407,6 +407,13 @@ module Odoc_html = Make_renderer (struct
     in
     Arg.(value & flag (info ~doc [ "closed-details" ]))
 
+  let flat_output =
+    let doc =
+      "Output the resulting HTML files into one directory rather than a \
+       hierarchy"
+    in
+    Arg.(value & flag (info ~doc [ "flat" ]))
+
   let indent =
     let doc = "Format the output HTML files with indentation" in
     Arg.(value & flag (info ~doc [ "indent" ]))
@@ -466,18 +473,19 @@ module Odoc_html = Make_renderer (struct
       value & opt convert_uri default & info ~docv:"URI" ~doc [ "support-uri" ])
 
   let extra_args =
-    let f semantic_uris closed_details indent theme_uri support_uri =
+    let f semantic_uris closed_details indent theme_uri support_uri flat =
       {
         Html_page.semantic_uris;
         closed_details;
         theme_uri;
         support_uri;
         indent;
+        flat;
       }
     in
     Term.(
       const f $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri)
+      $ support_uri $ flat_output)
 end)
 
 module Html_fragment : sig
