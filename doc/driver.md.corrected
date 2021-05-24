@@ -355,18 +355,12 @@ let generate_all odocl_files =
 The following code actually executes all of the above, and we're done!
 
 ```ocaml env=e1
-let compiled = compile_all ();;
-let linked = link_all compiled;;
-let _ = generate_all linked;;
+let compiled = compile_all () in
+let linked = link_all compiled in
+generate_all linked
 ```
 ```mdx-error
 Exception: Invalid_argument "result is Error _".
-Line 1, characters 25-33:
-Error: Unbound value compiled
-Hint: Did you mean compile?
-Line 1, characters 24-30:
-Error: Unbound value linked
-Hint: Did you mean link?
 ```
 
 ## Parent/child specification

@@ -355,9 +355,9 @@ let generate_all odocl_files =
 The following code actually executes all of the above, and we're done!
 
 ```ocaml env=e1
-let compiled = compile_all ();;
-let linked = link_all compiled;;
-let _ = generate_all linked;;
+let compiled = compile_all () in
+let linked = link_all compiled in
+generate_all linked
 ```
 
 ## Parent/child specification
