@@ -1,0 +1,34 @@
+(library
+ (name gen_link_lib)
+ (modules gen_link_lib)
+ (libraries sexplib0 gen_backend)
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(library
+ (name gen_backend)
+ (modules gen_backend)
+ (libraries sexplib0 unix fpath)
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(library
+ (name html_t_rule)
+ (modules html_t_rule)
+ (libraries sexplib0 gen_backend)
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(library
+ (name latex_t_rule)
+ (modules latex_t_rule)
+ (libraries sexplib0 gen_backend)
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(library
+ (name man_t_rule)
+ (modules man_t_rule)
+ (libraries sexplib0 gen_backend)
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
