@@ -1,0 +1,178 @@
+
+.TH Module 3 "" "Odoc" "OCaml Library"
+.SH Name
+test\.Module
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Module\fR
+.in 
+.sp 
+.fi 
+Foo\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR foo : unit
+.fi 
+.br 
+.ti +2
+The module needs at least one signature item, otherwise a bug causes the compiler to drop the module comment (above)\. See 
+.UR https://caml.inria.fr/mantis/view.php?id=7701
+https://caml\.inria\.fr/mantis/view\.php?id=7701
+.UE 
+\.
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]type\fR u
+.sp 
+.ti +2
+\f[CB]type\fR 'a v
+.sp 
+.ti +2
+\f[CB]type\fR ('a, 'b) w
+.sp 
+.ti +2
+\f[CB]module\fR M : \f[CB]sig\fR \f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S1
+.sp 
+\f[CB]module\fR \f[CB]type\fR S2 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]type\fR u
+.sp 
+.ti +2
+\f[CB]type\fR 'a v
+.sp 
+.ti +2
+\f[CB]type\fR ('a, 'b) w
+.sp 
+.ti +2
+\f[CB]module\fR M : \f[CB]sig\fR \f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S3 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t = int
+.sp 
+.ti +2
+\f[CB]type\fR u = string
+.sp 
+.ti +2
+\f[CB]type\fR 'a v
+.sp 
+.ti +2
+\f[CB]type\fR ('a, 'b) w
+.sp 
+.ti +2
+\f[CB]module\fR M : \f[CB]sig\fR \f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S4 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR u
+.sp 
+.ti +2
+\f[CB]type\fR 'a v
+.sp 
+.ti +2
+\f[CB]type\fR ('a, 'b) w
+.sp 
+.ti +2
+\f[CB]module\fR M : \f[CB]sig\fR \f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S5 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]type\fR u
+.sp 
+.ti +2
+\f[CB]type\fR ('a, 'b) w
+.sp 
+.ti +2
+\f[CB]module\fR M : \f[CB]sig\fR \f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]type\fR ('a, 'b) result
+.sp 
+\f[CB]module\fR \f[CB]type\fR S6 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]type\fR u
+.sp 
+.ti +2
+\f[CB]type\fR 'a v
+.sp 
+.ti +2
+\f[CB]module\fR M : \f[CB]sig\fR \f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR M' : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S7 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]type\fR u
+.sp 
+.ti +2
+\f[CB]type\fR 'a v
+.sp 
+.ti +2
+\f[CB]type\fR ('a, 'b) w
+.sp 
+.ti +2
+\f[CB]module\fR M = M'
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S8 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]type\fR u
+.sp 
+.ti +2
+\f[CB]type\fR 'a v
+.sp 
+.ti +2
+\f[CB]type\fR ('a, 'b) w
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S9 = \f[CB]sig\fR \f[CB]end\fR
+.sp 
+\f[CB]module\fR Mutually : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Recursive : \f[CB]sig\fR \.\.\. \f[CB]end\fR

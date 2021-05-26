@@ -1,0 +1,204 @@
+
+.TH Include_sections 3 "" "Odoc" "OCaml Library"
+.SH Name
+test\.Include_sections
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include_sections\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR Something = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]val\fR something : unit
+.sp 
+.ti +2
+\fB1\.1 Something 1\fR
+.sp 
+.ti +2
+.fi 
+foo
+.nf 
+.sp 
+.ti +2
+\f[CB]val\fR foo : unit
+.sp 
+.ti +2
+\fB1\.1\.1 Something 2\fR
+.sp 
+.ti +2
+\f[CB]val\fR bar : unit
+.fi 
+.br 
+.ti +4
+foo bar
+.nf 
+.sp 
+.ti +2
+\fB1\.2 Something 1-bis\fR
+.sp 
+.ti +2
+.fi 
+Some text\.
+.nf 
+
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+A module type\.
+.nf 
+.sp 
+.fi 
+Let's include \f[CI]Something\fR once
+.nf 
+.sp 
+\f[CB]val\fR something : unit
+.sp 
+.in 3
+\fB2 Something 1\fR
+.in 
+.sp 
+.fi 
+foo
+.nf 
+.sp 
+\f[CB]val\fR foo : unit
+.sp 
+.in 4
+\fB2\.1 Something 2\fR
+.in 
+.sp 
+\f[CB]val\fR bar : unit
+.fi 
+.br 
+.ti +2
+foo bar
+.nf 
+.sp 
+.in 3
+\fB3 Something 1-bis\fR
+.in 
+.sp 
+.fi 
+Some text\.
+.nf 
+.sp 
+.in 3
+\fB4 Second include\fR
+.in 
+.sp 
+.fi 
+Let's include \f[CI]Something\fR a second time: the heading level should be shift here\.
+.nf 
+.sp 
+\f[CB]val\fR something : unit
+.sp 
+.in 4
+\fB4\.1 Something 1\fR
+.in 
+.sp 
+.fi 
+foo
+.nf 
+.sp 
+\f[CB]val\fR foo : unit
+.sp 
+.in 5
+\fB4\.1\.1 Something 2\fR
+.in 
+.sp 
+\f[CB]val\fR bar : unit
+.fi 
+.br 
+.ti +2
+foo bar
+.nf 
+.sp 
+.in 4
+\fB4\.2 Something 1-bis\fR
+.in 
+.sp 
+.fi 
+Some text\.
+.nf 
+.sp 
+.in 4
+\fB4\.3 Third include\fR
+.in 
+.sp 
+.fi 
+Shifted some more\.
+.nf 
+.sp 
+\f[CB]val\fR something : unit
+.sp 
+.in 5
+\fB4\.3\.1 Something 1\fR
+.in 
+.sp 
+.fi 
+foo
+.nf 
+.sp 
+\f[CB]val\fR foo : unit
+.sp 
+.in 6
+\fBSomething 2\fR
+.in 
+.sp 
+\f[CB]val\fR bar : unit
+.fi 
+.br 
+.ti +2
+foo bar
+.nf 
+.sp 
+.in 5
+\fB4\.3\.2 Something 1-bis\fR
+.in 
+.sp 
+.fi 
+Some text\.
+.nf 
+.sp 
+.fi 
+And let's include it again, but without inlining it this time: the ToC shouldn't grow\.
+.nf 
+.sp 
+\f[CB]val\fR something : unit
+.sp 
+.in 5
+\fB4\.3\.3 Something 1\fR
+.in 
+.sp 
+.fi 
+foo
+.nf 
+.sp 
+\f[CB]val\fR foo : unit
+.sp 
+.in 6
+\fBSomething 2\fR
+.in 
+.sp 
+\f[CB]val\fR bar : unit
+.fi 
+.br 
+.ti +2
+foo bar
+.nf 
+.sp 
+.in 5
+\fB4\.3\.4 Something 1-bis\fR
+.in 
+.sp 
+.fi 
+Some text\.
+.nf 
+

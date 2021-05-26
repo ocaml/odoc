@@ -1,0 +1,133 @@
+
+.TH FunctorTypeOf 3 "" "Odoc" "OCaml Library"
+.SH Name
+test\.Ocamlary\.FunctorTypeOf
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.FunctorTypeOf\fR
+.in 
+.sp 
+.fi 
+This comment is for FunctorTypeOf\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+\f[CB]module\fR Collection : \f[CB]sig\fR
+.br 
+.ti +2
+.fi 
+This comment is for CollectionModule\.
+.nf 
+.sp 
+.ti +2
+\f[CB]type\fR collection
+.fi 
+.br 
+.ti +4
+This comment is for collection\.
+.nf 
+.sp 
+.ti +2
+\f[CB]type\fR element
+.sp 
+.ti +2
+\f[CB]module\fR InnerModuleA : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t = collection
+.fi 
+.br 
+.ti +6
+This comment is for t\.
+.nf 
+.sp 
+.ti +4
+\f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = (unit, unit) a_function
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleA'\.
+.nf 
+.sp 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA' = \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = InnerModuleA'\.t
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleTypeA'\.
+.nf 
+
+.br 
+.ti +2
+\f[CB]end\fR
+.fi 
+.br 
+.ti +4
+This comment is for InnerModuleA\.
+.nf 
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
+.fi 
+.br 
+.ti +6
+This comment is for t\.
+.nf 
+
+.br 
+.ti +2
+\f[CB]end\fR
+.fi 
+.br 
+.ti +4
+This comment is for InnerModuleTypeA\.
+.nf 
+
+.br 
+\f[CB]end\fR
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]type\fR t = Collection\.collection
+.fi 
+.br 
+.ti +2
+This comment is for t\.
+.nf 
+

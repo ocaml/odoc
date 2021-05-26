@@ -1,0 +1,17 @@
+
+.TH Buffer 3 "" "Odoc" "OCaml Library"
+.SH Name
+test\.Ocamlary\.Buffer
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.Buffer\fR
+.in 
+.sp 
+.fi 
+Buffer\.t
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR f : Stdlib\.Buffer\.t \f[CB]\->\fR unit

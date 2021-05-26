@@ -1,0 +1,71 @@
+
+.TH Include 3 "" "Odoc" "OCaml Library"
+.SH Name
+test\.Include
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR Not_inlined = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]type\fR t
+.sp 
+\f[CB]module\fR \f[CB]type\fR Inlined = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR u
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]type\fR u
+.sp 
+\f[CB]module\fR \f[CB]type\fR Not_inlined_and_closed = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR v
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]include\fR Not_inlined_and_closed
+.sp 
+\f[CB]module\fR \f[CB]type\fR Not_inlined_and_opened = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR w
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]type\fR w
+.sp 
+\f[CB]module\fR \f[CB]type\fR Inherent_Module = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]val\fR a : t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]val\fR a : t
+.sp 
+\f[CB]module\fR \f[CB]type\fR Dorminant_Module = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]val\fR a : t
+.sp 
+.ti +2
+\f[CB]val\fR a : u
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]val\fR a : t
+.sp 
+\f[CB]val\fR a : u

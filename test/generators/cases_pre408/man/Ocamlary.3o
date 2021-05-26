@@ -1,0 +1,1971 @@
+
+.TH Ocamlary 3 "" "Odoc" "OCaml Library"
+.SH Name
+test\.Ocamlary
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\fR
+.in 
+.sp 
+.fi 
+This is an \fIinterface\fR with \fBall\fR of the module system features\. This documentation demonstrates:
+.nf 
+.sp 
+.fi 
+\(bu comment formatting
+.br 
+\(bu unassociated comments
+.br 
+\(bu documentation sections
+.br 
+\(bu module system documentation including
+.sp 
+.ti +2
+1) submodules
+.br 
+.ti +2
+2) module aliases
+.br 
+.ti +2
+3) module types
+.br 
+.ti +2
+4) module type aliases
+.br 
+.ti +2
+5) modules with signatures
+.br 
+.ti +2
+6) modules with aliased signatures
+.nf 
+.sp 
+.fi 
+A numbered list:
+.nf 
+.sp 
+.fi 
+1) 3
+.br 
+2) 2
+.br 
+3) 1
+.nf 
+.sp 
+.fi 
+David Sheets is the author\.
+.nf 
+.sp 
+.fi 
+@author: David Sheets
+.nf 
+.SH Documentation
+.sp 
+.nf 
+.fi 
+You may find more information about this HTML documentation renderer at 
+.UR https://github.com/dsheets/ocamlary
+github\.com/dsheets/ocamlary
+.UE 
+\.
+.nf 
+.sp 
+.fi 
+This is some verbatim text:
+.sp 
+.EX 
+verbatim
+.EE 
+.nf 
+.sp 
+.fi 
+This is some verbatim text:
+.sp 
+.EX 
+[][df[]]}}
+.EE 
+.nf 
+.sp 
+.fi 
+Here is some raw LaTeX: 
+.nf 
+.sp 
+.fi 
+Here is an index table of Empty modules:
+.sp 
+@\f[CI]Empty\fR: A plain, empty module
+.br 
+@\f[CI]EmptyAlias\fR: A plain module alias of Empty
+.nf 
+.sp 
+.fi 
+Here is a table of links to indexes: indexlist
+.nf 
+.sp 
+.fi 
+Here is some superscript: x2
+.nf 
+.sp 
+.fi 
+Here is some subscript: x0
+.nf 
+.sp 
+.fi 
+Here are some escaped brackets: { [ @ ] }
+.nf 
+.sp 
+.fi 
+Here is some emphasis followed by code\.
+.nf 
+.sp 
+.fi 
+An unassociated comment
+.nf 
+.sp 
+.in 3
+\fB1 Level 1\fR
+.in 
+.sp 
+.in 4
+\fB1\.1 Level 2\fR
+.in 
+.sp 
+.in 5
+\fB1\.1\.1 Level 3\fR
+.in 
+.sp 
+.in 6
+\fBLevel 4\fR
+.in 
+.sp 
+.in 5
+\fB1\.1\.2 Basic module stuff\fR
+.in 
+.sp 
+\f[CB]module\fR Empty : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+A plain, empty module
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR Empty = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+An ambiguous, misnamed module type
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR MissingComment = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+An ambiguous, misnamed module type
+.nf 
+.sp 
+.in 3
+\fB2 Section 9000\fR
+.in 
+.sp 
+\f[CB]module\fR EmptyAlias = Empty
+.fi 
+.br 
+.ti +2
+A plain module alias of Empty
+.nf 
+.sp 
+.in 5
+\fB2\.1\.1 EmptySig\fR
+.in 
+.sp 
+\f[CB]module\fR \f[CB]type\fR EmptySig = \f[CB]sig\fR \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+A plain, empty module signature
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR EmptySigAlias = \f[CB]sig\fR \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+A plain, empty module signature alias of
+.nf 
+.sp 
+\f[CB]module\fR ModuleWithSignature : EmptySig
+.fi 
+.br 
+.ti +2
+A plain module of a signature of \f[CI]EmptySig\fR (reference)
+.nf 
+.sp 
+\f[CB]module\fR ModuleWithSignatureAlias : EmptySigAlias
+.fi 
+.br 
+.ti +2
+A plain module with an alias signature
+.nf 
+.sp 
+\f[CB]module\fR One : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR SigForMod = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR Inner : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR Empty = \f[CB]sig\fR \f[CB]end\fR
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+There's a signature in a module in this signature\.
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR SuperSig = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR SubSigA = \f[CB]sig\fR
+.br 
+.ti +4
+.sp 
+.ti +4
+\fBA Labeled Section Header Inside of a Signature\fR
+.sp 
+.ti +4
+\f[CB]type\fR t
+.sp 
+.ti +4
+\f[CB]module\fR SubSigAMod : \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR sub_sig_a_mod
+.br 
+.ti +4
+\f[CB]end\fR
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR SubSigB = \f[CB]sig\fR
+.br 
+.ti +4
+.sp 
+.ti +4
+\fBAnother Labeled Section Header Inside of a Signature\fR
+.sp 
+.ti +4
+\f[CB]type\fR t
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR EmptySig = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR not_actually_empty
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR One = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR two
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR SuperSig = \f[CB]sig\fR \f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+.fi 
+For a good time, see SuperSig\.SubSigA\.subSig or SuperSig\.SubSigB\.subSig or \f[CI]SuperSig\.EmptySig\fR\. Section \f[CI]Section 9000\fR is also interesting\. \f[CI]EmptySig\fR is the section and \f[CI]EmptySig\fR is the module signature\.
+.nf 
+.sp 
+\f[CB]module\fR Buffer : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+Buffer\.t
+.nf 
+.sp 
+.fi 
+Some text before exception title\.
+.nf 
+.sp 
+.in 5
+\fB2\.1\.2 Basic exception stuff\fR
+.in 
+.sp 
+.fi 
+After exception title\.
+.nf 
+.sp 
+\f[CB]exception\fR \f[CB]Kaboom\fR \f[CB]of\fR unit
+.fi 
+.br 
+.ti +2
+Unary exception constructor
+.nf 
+.sp 
+\f[CB]exception\fR \f[CB]Kablam\fR \f[CB]of\fR unit * unit
+.fi 
+.br 
+.ti +2
+Binary exception constructor
+.nf 
+.sp 
+\f[CB]exception\fR \f[CB]Kapow\fR \f[CB]of\fR unit * unit
+.fi 
+.br 
+.ti +2
+Unary exception constructor over binary tuple
+.nf 
+.sp 
+\f[CB]exception\fR \f[CB]EmptySig\fR
+.fi 
+.br 
+.ti +2
+\f[CI]EmptySig\fR is a module and \f[CI]EmptySig\fR is this exception\.
+.nf 
+.sp 
+\f[CB]exception\fR \f[CB]EmptySigAlias\fR
+.fi 
+.br 
+.ti +2
+\f[CI]EmptySigAlias\fR is this exception\.
+.nf 
+.sp 
+.in 5
+\fB2\.1\.3 Basic type and value stuff with advanced doc comments\fR
+.in 
+.sp 
+\f[CB]type\fR ('a, 'b) a_function = \f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR
+.fi 
+.br 
+.ti +2
+\f[CI]a_function\fR is this type and \f[CI]a_function\fR is the value below\.
+.nf 
+.sp 
+\f[CB]val\fR a_function : x:int \f[CB]\->\fR int
+.fi 
+.br 
+.ti +2
+This is a_function with param and return type\.
+.sp 
+.ti +2
+@parameter x: the x coordinate
+.br 
+.ti +2
+@returns: the y coordinate
+.nf 
+.sp 
+\f[CB]val\fR fun_fun_fun : ((int, int) a_function, (unit, unit) a_function) a_function
+.sp 
+\f[CB]val\fR fun_maybe : ?yes:unit \f[CB]\->\fR unit \f[CB]\->\fR int
+.sp 
+\f[CB]val\fR not_found : unit \f[CB]\->\fR unit
+.fi 
+.br 
+.ti +2
+@raises Not_found: That's all it does
+.nf 
+.sp 
+\f[CB]val\fR ocaml_org : string
+.fi 
+.br 
+.ti +2
+@see 
+.UR http://ocaml.org/
+http://ocaml\.org/
+.UE 
+: The OCaml Web site
+.nf 
+.sp 
+\f[CB]val\fR some_file : string
+.fi 
+.br 
+.ti +2
+@see some_file: The file called some_file
+.nf 
+.sp 
+\f[CB]val\fR some_doc : string
+.fi 
+.br 
+.ti +2
+@see some_doc: The document called some_doc
+.nf 
+.sp 
+\f[CB]val\fR since_mesozoic : unit
+.fi 
+.br 
+.ti +2
+This value was introduced in the Mesozoic era\.
+.sp 
+.ti +2
+@since: mesozoic
+.nf 
+.sp 
+\f[CB]val\fR changing : unit
+.fi 
+.br 
+.ti +2
+This value has had changes in 1\.0\.0, 1\.1\.0, and 1\.2\.0\.
+.sp 
+.ti +2
+@before 1\.0\.0: before 1\.0\.0
+.br 
+.ti +2
+@before 1\.1\.0: before 1\.1\.0
+.br 
+.ti +2
+@version: 1\.2\.0
+.nf 
+.sp 
+.in 5
+\fB2\.1\.4 Some Operators\fR
+.in 
+.sp 
+\f[CB]val\fR (~-) : unit
+.sp 
+\f[CB]val\fR (!) : unit
+.sp 
+\f[CB]val\fR (@) : unit
+.sp 
+\f[CB]val\fR ($) : unit
+.sp 
+\f[CB]val\fR (%) : unit
+.sp 
+\f[CB]val\fR (&) : unit
+.sp 
+\f[CB]val\fR (*) : unit
+.sp 
+\f[CB]val\fR (-) : unit
+.sp 
+\f[CB]val\fR (+) : unit
+.sp 
+\f[CB]val\fR (-?) : unit
+.sp 
+\f[CB]val\fR (/) : unit
+.sp 
+\f[CB]val\fR (:=) : unit
+.sp 
+\f[CB]val\fR (=) : unit
+.sp 
+\f[CB]val\fR (land) : unit
+.sp 
+.in 5
+\fB2\.1\.5 Advanced Module Stuff\fR
+.in 
+.sp 
+\f[CB]module\fR CollectionModule : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This comment is for CollectionModule\.
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR COLLECTION = \f[CB]sig\fR
+.br 
+.ti +2
+.fi 
+This comment is for CollectionModule\.
+.nf 
+.sp 
+.ti +2
+\f[CB]type\fR collection
+.fi 
+.br 
+.ti +4
+This comment is for collection\.
+.nf 
+.sp 
+.ti +2
+\f[CB]type\fR element
+.sp 
+.ti +2
+\f[CB]module\fR InnerModuleA : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t = collection
+.fi 
+.br 
+.ti +6
+This comment is for t\.
+.nf 
+.sp 
+.ti +4
+\f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = (unit, unit) a_function
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleA'\.
+.nf 
+.sp 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA' = \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = InnerModuleA'\.t
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleTypeA'\.
+.nf 
+
+.br 
+.ti +2
+\f[CB]end\fR
+.fi 
+.br 
+.ti +4
+This comment is for InnerModuleA\.
+.nf 
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
+.fi 
+.br 
+.ti +6
+This comment is for t\.
+.nf 
+
+.br 
+.ti +2
+\f[CB]end\fR
+.fi 
+.br 
+.ti +4
+This comment is for InnerModuleTypeA\.
+.nf 
+
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+module type of
+.nf 
+.sp 
+\f[CB]module\fR Recollection (C : COLLECTION) : COLLECTION \f[CB]with\fR \f[CB]type\fR collection = C\.element list \f[CB]and\fR \f[CB]type\fR element = C\.collection
+.sp 
+\f[CB]module\fR \f[CB]type\fR MMM = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR C : \f[CB]sig\fR
+.br 
+.ti +4
+.fi 
+This comment is for CollectionModule\.
+.nf 
+.sp 
+.ti +4
+\f[CB]type\fR collection
+.fi 
+.br 
+.ti +6
+This comment is for collection\.
+.nf 
+.sp 
+.ti +4
+\f[CB]type\fR element
+.sp 
+.ti +4
+\f[CB]module\fR InnerModuleA : \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = collection
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+.sp 
+.ti +6
+\f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
+.br 
+.ti +8
+\f[CB]type\fR t = (unit, unit) a_function
+.fi 
+.br 
+.ti +10
+This comment is for t\.
+.nf 
+
+.br 
+.ti +6
+\f[CB]end\fR
+.fi 
+.br 
+.ti +8
+This comment is for InnerModuleA'\.
+.nf 
+.sp 
+.ti +6
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA' = \f[CB]sig\fR
+.br 
+.ti +8
+\f[CB]type\fR t = InnerModuleA'\.t
+.fi 
+.br 
+.ti +10
+This comment is for t\.
+.nf 
+
+.br 
+.ti +6
+\f[CB]end\fR
+.fi 
+.br 
+.ti +8
+This comment is for InnerModuleTypeA'\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleA\.
+.nf 
+.sp 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleTypeA\.
+.nf 
+
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR RECOLLECTION = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR C = Recollection(CollectionModule)
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR RecollectionModule = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR collection = CollectionModule\.element list
+.sp 
+.ti +2
+\f[CB]type\fR element = CollectionModule\.collection
+.sp 
+.ti +2
+\f[CB]module\fR InnerModuleA : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t = collection
+.fi 
+.br 
+.ti +6
+This comment is for t\.
+.nf 
+.sp 
+.ti +4
+\f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = (unit, unit) a_function
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleA'\.
+.nf 
+.sp 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA' = \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = InnerModuleA'\.t
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleTypeA'\.
+.nf 
+
+.br 
+.ti +2
+\f[CB]end\fR
+.fi 
+.br 
+.ti +4
+This comment is for InnerModuleA\.
+.nf 
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
+.fi 
+.br 
+.ti +6
+This comment is for t\.
+.nf 
+
+.br 
+.ti +2
+\f[CB]end\fR
+.fi 
+.br 
+.ti +4
+This comment is for InnerModuleTypeA\.
+.nf 
+
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR A = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]module\fR Q : \f[CB]sig\fR
+.br 
+.ti +4
+.fi 
+This comment is for CollectionModule\.
+.nf 
+.sp 
+.ti +4
+\f[CB]type\fR collection
+.fi 
+.br 
+.ti +6
+This comment is for collection\.
+.nf 
+.sp 
+.ti +4
+\f[CB]type\fR element
+.sp 
+.ti +4
+\f[CB]module\fR InnerModuleA : \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = collection
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+.sp 
+.ti +6
+\f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
+.br 
+.ti +8
+\f[CB]type\fR t = (unit, unit) a_function
+.fi 
+.br 
+.ti +10
+This comment is for t\.
+.nf 
+
+.br 
+.ti +6
+\f[CB]end\fR
+.fi 
+.br 
+.ti +8
+This comment is for InnerModuleA'\.
+.nf 
+.sp 
+.ti +6
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA' = \f[CB]sig\fR
+.br 
+.ti +8
+\f[CB]type\fR t = InnerModuleA'\.t
+.fi 
+.br 
+.ti +10
+This comment is for t\.
+.nf 
+
+.br 
+.ti +6
+\f[CB]end\fR
+.fi 
+.br 
+.ti +8
+This comment is for InnerModuleTypeA'\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleA\.
+.nf 
+.sp 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleTypeA\.
+.nf 
+
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR B = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]module\fR Q : \f[CB]sig\fR
+.br 
+.ti +4
+.fi 
+This comment is for CollectionModule\.
+.nf 
+.sp 
+.ti +4
+\f[CB]type\fR collection
+.fi 
+.br 
+.ti +6
+This comment is for collection\.
+.nf 
+.sp 
+.ti +4
+\f[CB]type\fR element
+.sp 
+.ti +4
+\f[CB]module\fR InnerModuleA : \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = collection
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+.sp 
+.ti +6
+\f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
+.br 
+.ti +8
+\f[CB]type\fR t = (unit, unit) a_function
+.fi 
+.br 
+.ti +10
+This comment is for t\.
+.nf 
+
+.br 
+.ti +6
+\f[CB]end\fR
+.fi 
+.br 
+.ti +8
+This comment is for InnerModuleA'\.
+.nf 
+.sp 
+.ti +6
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA' = \f[CB]sig\fR
+.br 
+.ti +8
+\f[CB]type\fR t = InnerModuleA'\.t
+.fi 
+.br 
+.ti +10
+This comment is for t\.
+.nf 
+
+.br 
+.ti +6
+\f[CB]end\fR
+.fi 
+.br 
+.ti +8
+This comment is for InnerModuleTypeA'\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleA\.
+.nf 
+.sp 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleTypeA\.
+.nf 
+
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR C = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]module\fR Q : \f[CB]sig\fR
+.br 
+.ti +4
+.fi 
+This comment is for CollectionModule\.
+.nf 
+.sp 
+.ti +4
+\f[CB]type\fR collection
+.fi 
+.br 
+.ti +6
+This comment is for collection\.
+.nf 
+.sp 
+.ti +4
+\f[CB]type\fR element
+.sp 
+.ti +4
+\f[CB]module\fR InnerModuleA : \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = collection
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+.sp 
+.ti +6
+\f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
+.br 
+.ti +8
+\f[CB]type\fR t = (unit, unit) a_function
+.fi 
+.br 
+.ti +10
+This comment is for t\.
+.nf 
+
+.br 
+.ti +6
+\f[CB]end\fR
+.fi 
+.br 
+.ti +8
+This comment is for InnerModuleA'\.
+.nf 
+.sp 
+.ti +6
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA' = \f[CB]sig\fR
+.br 
+.ti +8
+\f[CB]type\fR t = InnerModuleA'\.t
+.fi 
+.br 
+.ti +10
+This comment is for t\.
+.nf 
+
+.br 
+.ti +6
+\f[CB]end\fR
+.fi 
+.br 
+.ti +8
+This comment is for InnerModuleTypeA'\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleA\.
+.nf 
+.sp 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
+.fi 
+.br 
+.ti +8
+This comment is for t\.
+.nf 
+
+.br 
+.ti +4
+\f[CB]end\fR
+.fi 
+.br 
+.ti +6
+This comment is for InnerModuleTypeA\.
+.nf 
+
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This module type includes two signatures\.
+.nf 
+.sp 
+\f[CB]module\fR FunctorTypeOf (Collection : \f[CB]module\fR \f[CB]type\fR \f[CB]of\fR CollectionModule) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This comment is for FunctorTypeOf\.
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR IncludeModuleType = \f[CB]sig\fR
+.br 
+.ti +2
+
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This comment is for IncludeModuleType\.
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR ToInclude = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR IncludedA : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR IncludedB = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR s
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR IncludedA : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR IncludedB = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR s
+.br 
+\f[CB]end\fR
+.sp 
+.in 5
+\fB2\.1\.6 Advanced Type Stuff\fR
+.in 
+.sp 
+\f[CB]type\fR record = {
+.br 
+.ti +2
+field1 : int;
+.br 
+.ti +4
+(* This comment is for field1\. *)
+.br 
+.ti +2
+field2 : int;
+.br 
+.ti +4
+(* This comment is for field2\. *)
+.br 
+}
+.fi 
+.br 
+.ti +2
+This comment is for record\.
+.sp 
+.ti +2
+This comment is also for record\.
+.nf 
+.sp 
+\f[CB]type\fR mutable_record = {
+.br 
+.ti +2
+\f[CB]mutable\fR a : int;
+.br 
+.ti +4
+(* a is first and mutable *)
+.br 
+.ti +2
+b : unit;
+.br 
+.ti +4
+(* b is second and immutable *)
+.br 
+.ti +2
+\f[CB]mutable\fR c : int;
+.br 
+.ti +4
+(* c is third and mutable *)
+.br 
+}
+.sp 
+\f[CB]type\fR universe_record = {
+.br 
+.ti +2
+nihilate : a\. \f[CB]'a\fR \f[CB]\->\fR unit;
+.br 
+}
+.sp 
+\f[CB]type\fR variant = 
+.br 
+.ti +2
+| \f[CB]TagA\fR
+.br 
+.ti +4
+(* This comment is for TagA\. *)
+.br 
+.ti +2
+| \f[CB]ConstrB\fR \f[CB]of\fR int
+.br 
+.ti +4
+(* This comment is for ConstrB\. *)
+.br 
+.ti +2
+| \f[CB]ConstrC\fR \f[CB]of\fR int * int
+.br 
+.ti +4
+(* This comment is for binary ConstrC\. *)
+.br 
+.ti +2
+| \f[CB]ConstrD\fR \f[CB]of\fR int * int
+.br 
+.ti +4
+(* This comment is for unary ConstrD of binary tuple\. *)
+.br 
+.fi 
+.br 
+.ti +2
+This comment is for variant\.
+.sp 
+.ti +2
+This comment is also for variant\.
+.nf 
+.sp 
+\f[CB]type\fR poly_variant = [ 
+.br 
+.ti +2
+| `TagA
+.br 
+.ti +2
+| `ConstrB \f[CB]of\fR int
+.br 
+ ]
+.fi 
+.br 
+.ti +2
+This comment is for poly_variant\.
+.sp 
+.ti +2
+Wow! It was a polymorphic variant!
+.nf 
+.sp 
+\f[CB]type\fR (_, _) full_gadt = 
+.br 
+.ti +2
+| \f[CB]Tag\fR : (unit, unit) full_gadt
+.br 
+.ti +2
+| \f[CB]First\fR : \f[CB]'a\fR \f[CB]\->\fR (\f[CB]'a\fR, unit) full_gadt
+.br 
+.ti +2
+| \f[CB]Second\fR : \f[CB]'a\fR \f[CB]\->\fR (unit, \f[CB]'a\fR) full_gadt
+.br 
+.ti +2
+| \f[CB]Exist\fR : \f[CB]'a\fR * \f[CB]'b\fR \f[CB]\->\fR (\f[CB]'b\fR, unit) full_gadt
+.br 
+.fi 
+.br 
+.ti +2
+This comment is for full_gadt\.
+.sp 
+.ti +2
+Wow! It was a GADT!
+.nf 
+.sp 
+\f[CB]type\fR 'a partial_gadt = 
+.br 
+.ti +2
+| \f[CB]AscribeTag\fR : \f[CB]'a\fR partial_gadt
+.br 
+.ti +2
+| \f[CB]OfTag\fR \f[CB]of\fR \f[CB]'a\fR partial_gadt
+.br 
+.ti +2
+| \f[CB]ExistGadtTag\fR : (\f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR) \f[CB]\->\fR \f[CB]'a\fR partial_gadt
+.br 
+.fi 
+.br 
+.ti +2
+This comment is for partial_gadt\.
+.sp 
+.ti +2
+Wow! It was a mixed GADT!
+.nf 
+.sp 
+\f[CB]type\fR alias = variant
+.fi 
+.br 
+.ti +2
+This comment is for alias\.
+.nf 
+.sp 
+\f[CB]type\fR tuple = (alias * alias) * alias * (alias * alias)
+.fi 
+.br 
+.ti +2
+This comment is for tuple\.
+.nf 
+.sp 
+\f[CB]type\fR variant_alias = variant = 
+.br 
+.ti +2
+| \f[CB]TagA\fR
+.br 
+.ti +2
+| \f[CB]ConstrB\fR \f[CB]of\fR int
+.br 
+.ti +2
+| \f[CB]ConstrC\fR \f[CB]of\fR int * int
+.br 
+.ti +2
+| \f[CB]ConstrD\fR \f[CB]of\fR int * int
+.br 
+.fi 
+.br 
+.ti +2
+This comment is for variant_alias\.
+.nf 
+.sp 
+\f[CB]type\fR record_alias = record = {
+.br 
+.ti +2
+field1 : int;
+.br 
+.ti +2
+field2 : int;
+.br 
+}
+.fi 
+.br 
+.ti +2
+This comment is for record_alias\.
+.nf 
+.sp 
+\f[CB]type\fR poly_variant_union = [ 
+.br 
+.ti +2
+| poly_variant
+.br 
+.ti +2
+| `TagC
+.br 
+ ]
+.fi 
+.br 
+.ti +2
+This comment is for poly_variant_union\.
+.nf 
+.sp 
+\f[CB]type\fR 'a poly_poly_variant = [ 
+.br 
+.ti +2
+| `TagA \f[CB]of\fR \f[CB]'a\fR
+.br 
+ ]
+.sp 
+\f[CB]type\fR ('a, 'b) bin_poly_poly_variant = [ 
+.br 
+.ti +2
+| `TagA \f[CB]of\fR \f[CB]'a\fR
+.br 
+.ti +2
+| `ConstrB \f[CB]of\fR \f[CB]'b\fR
+.br 
+ ]
+.sp 
+\f[CB]type\fR 'a open_poly_variant = [> `TagA ] \f[CB]as\fR 'a
+.sp 
+\f[CB]type\fR 'a open_poly_variant2 = [> `ConstrB of int ] \f[CB]as\fR 'a
+.sp 
+\f[CB]type\fR 'a open_poly_variant_alias = \f[CB]'a\fR open_poly_variant open_poly_variant2
+.sp 
+\f[CB]type\fR 'a poly_fun = [> `ConstrB of int ] \f[CB]as\fR 'a \f[CB]\->\fR \f[CB]'a\fR
+.sp 
+\f[CB]type\fR 'a poly_fun_constraint = \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = [> `TagA ]
+.sp 
+\f[CB]type\fR 'a closed_poly_variant = [< `One | `Two ] \f[CB]as\fR 'a
+.sp 
+\f[CB]type\fR 'a clopen_poly_variant = [< `One | `Two of int | `Three Two Three ] \f[CB]as\fR 'a
+.sp 
+\f[CB]type\fR nested_poly_variant = [ 
+.br 
+.ti +2
+| `A
+.br 
+.ti +2
+| `B \f[CB]of\fR [ `B1 | `B2 ]
+.br 
+.ti +2
+| `C
+.br 
+.ti +2
+| `D \f[CB]of\fR [ `D1 of [ `D1a ] ]
+.br 
+ ]
+.sp 
+\f[CB]type\fR ('a, 'b) full_gadt_alias = (\f[CB]'a\fR, \f[CB]'b\fR) full_gadt = 
+.br 
+.ti +2
+| \f[CB]Tag\fR : (unit, unit) full_gadt_alias
+.br 
+.ti +2
+| \f[CB]First\fR : \f[CB]'a\fR \f[CB]\->\fR (\f[CB]'a\fR, unit) full_gadt_alias
+.br 
+.ti +2
+| \f[CB]Second\fR : \f[CB]'a\fR \f[CB]\->\fR (unit, \f[CB]'a\fR) full_gadt_alias
+.br 
+.ti +2
+| \f[CB]Exist\fR : \f[CB]'a\fR * \f[CB]'b\fR \f[CB]\->\fR (\f[CB]'b\fR, unit) full_gadt_alias
+.br 
+.fi 
+.br 
+.ti +2
+This comment is for full_gadt_alias\.
+.nf 
+.sp 
+\f[CB]type\fR 'a partial_gadt_alias = \f[CB]'a\fR partial_gadt = 
+.br 
+.ti +2
+| \f[CB]AscribeTag\fR : \f[CB]'a\fR partial_gadt_alias
+.br 
+.ti +2
+| \f[CB]OfTag\fR \f[CB]of\fR \f[CB]'a\fR partial_gadt_alias
+.br 
+.ti +2
+| \f[CB]ExistGadtTag\fR : (\f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR) \f[CB]\->\fR \f[CB]'a\fR partial_gadt_alias
+.br 
+.fi 
+.br 
+.ti +2
+This comment is for partial_gadt_alias\.
+.nf 
+.sp 
+\f[CB]exception\fR \f[CB]Exn_arrow\fR : unit \f[CB]\->\fR exn
+.fi 
+.br 
+.ti +2
+This comment is for \f[CI]Exn_arrow\fR\.
+.nf 
+.sp 
+\f[CB]type\fR mutual_constr_a = 
+.br 
+.ti +2
+| \f[CB]A\fR
+.br 
+.ti +2
+| \f[CB]B_ish\fR \f[CB]of\fR mutual_constr_b
+.br 
+.ti +4
+(* This comment is between \f[CI]mutual_constr_a\fR and \f[CI]mutual_constr_b\fR\. *)
+.br 
+.fi 
+.br 
+.ti +2
+This comment is for \f[CI]mutual_constr_a\fR then \f[CI]mutual_constr_b\fR\.
+.nf 
+.sp 
+\f[CB]and\fR mutual_constr_b = 
+.br 
+.ti +2
+| \f[CB]B\fR
+.br 
+.ti +2
+| \f[CB]A_ish\fR \f[CB]of\fR mutual_constr_a
+.br 
+.ti +4
+(* This comment must be here for the next to associate correctly\. *)
+.br 
+.fi 
+.br 
+.ti +2
+This comment is for \f[CI]mutual_constr_b\fR then \f[CI]mutual_constr_a\fR\.
+.nf 
+.sp 
+\f[CB]type\fR rec_obj = < f : int; g : unit \f[CB]\->\fR unit; h : rec_obj; >
+.sp 
+\f[CB]type\fR 'a open_obj = < f : int; g : unit \f[CB]\->\fR unit; \.\. > \f[CB]as\fR 'a
+.sp 
+\f[CB]type\fR 'a oof = < a : unit; \.\. > \f[CB]as\fR 'a \f[CB]\->\fR \f[CB]'a\fR
+.sp 
+\f[CB]type\fR 'a any_obj = < \.\. > \f[CB]as\fR 'a
+.sp 
+\f[CB]type\fR empty_obj = < >
+.sp 
+\f[CB]type\fR one_meth = < meth : unit; >
+.sp 
+\f[CB]type\fR ext = \.\.
+.fi 
+.br 
+.ti +2
+A mystery wrapped in an ellipsis
+.nf 
+.sp 
+\f[CB]type\fR ext += 
+.br 
+.ti +2
+| \f[CB]ExtA\fR
+.br 
+.sp 
+\f[CB]type\fR ext += 
+.br 
+.ti +2
+| \f[CB]ExtB\fR
+.br 
+.sp 
+\f[CB]type\fR ext += 
+.br 
+.ti +2
+| \f[CB]ExtC\fR \f[CB]of\fR unit
+.br 
+.ti +2
+| \f[CB]ExtD\fR \f[CB]of\fR ext
+.br 
+.sp 
+\f[CB]type\fR ext += 
+.br 
+.ti +2
+| \f[CB]ExtE\fR
+.br 
+.sp 
+\f[CB]type\fR ext += 
+.br 
+.ti +2
+| \f[CB]ExtF\fR
+.br 
+.sp 
+\f[CB]type\fR 'a poly_ext = \.\.
+.fi 
+.br 
+.ti +2
+'a poly_ext
+.nf 
+.sp 
+\f[CB]type\fR poly_ext += 
+.br 
+.ti +2
+| \f[CB]Foo\fR \f[CB]of\fR \f[CB]'b\fR
+.br 
+.ti +2
+| \f[CB]Bar\fR \f[CB]of\fR \f[CB]'b\fR * \f[CB]'b\fR
+.br 
+.ti +4
+(* 'b poly_ext *)
+.br 
+.sp 
+\f[CB]type\fR poly_ext += 
+.br 
+.ti +2
+| \f[CB]Quux\fR \f[CB]of\fR \f[CB]'c\fR
+.br 
+.ti +4
+(* 'c poly_ext *)
+.br 
+.sp 
+\f[CB]module\fR ExtMod : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR ExtMod\.t += 
+.br 
+.ti +2
+| \f[CB]ZzzTop0\fR
+.br 
+.ti +4
+(* It's got the rock *)
+.br 
+.sp 
+\f[CB]type\fR ExtMod\.t += 
+.br 
+.ti +2
+| \f[CB]ZzzTop\fR \f[CB]of\fR unit
+.br 
+.ti +4
+(* and it packs a unit\. *)
+.br 
+.sp 
+\f[CB]val\fR launch_missiles : unit \f[CB]\->\fR unit
+.fi 
+.br 
+.ti +2
+Rotate keys on my mark\.\.\.
+.nf 
+.sp 
+\f[CB]type\fR my_mod = (\f[CB]module\fR COLLECTION)
+.fi 
+.br 
+.ti +2
+A brown paper package tied up with string
+.nf 
+.sp 
+\f[CB]class\fR  empty_class : \f[CB]object\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]class\fR  one_method_class : \f[CB]object\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]class\fR  two_method_class : \f[CB]object\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]class\fR 'a param_class : \f[CB]'a\fR \f[CB]\->\fR \f[CB]object\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR my_unit_object = unit param_class
+.sp 
+\f[CB]type\fR 'a my_unit_class = unit param_class \f[CB]as\fR 'a
+.sp 
+\f[CB]module\fR Dep1 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Dep2 (Arg : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR dep1 = Dep2(Dep1)\.B\.c
+.sp 
+\f[CB]module\fR Dep3 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Dep4 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Dep5 (Arg : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR dep2 = Dep5(Dep4)\.Z\.X\.b
+.sp 
+\f[CB]type\fR dep3 = Dep5(Dep4)\.Z\.Y\.a
+.sp 
+\f[CB]module\fR Dep6 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Dep7 (Arg : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR dep4 = Dep7(Dep6)\.M\.Y\.d
+.sp 
+\f[CB]module\fR Dep8 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Dep9 (X : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR Dep10 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t = int
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR Dep11 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Dep12 (Arg : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Dep13 : Dep12(Dep11)\.T
+.sp 
+\f[CB]type\fR dep5 = Dep13\.c
+.sp 
+\f[CB]module\fR \f[CB]type\fR With1 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR M : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR S
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR N : M\.S
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR With2 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR With3 : With1 \f[CB]with\fR \f[CB]module\fR M = With2
+.sp 
+\f[CB]type\fR with1 = With3\.N\.t
+.sp 
+\f[CB]module\fR With4 : With1 \f[CB]with\fR \f[CB]module\fR M := With2
+.sp 
+\f[CB]type\fR with2 = With4\.N\.t
+.sp 
+\f[CB]module\fR With5 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR With6 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR With7 (X : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR With8 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR M : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t
+.br 
+.ti +4
+\f[CB]end\fR
+.sp 
+.ti +4
+\f[CB]module\fR N : \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]type\fR t = With5\.N\.t
+.br 
+.ti +4
+\f[CB]end\fR
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR With9 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR With10 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR With11 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR M = With9
+.sp 
+.ti +2
+\f[CB]module\fR N : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t = int
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR NestedInclude1 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR NestedInclude2 = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR nested_include
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR NestedInclude2 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR nested_include
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]type\fR nested_include = int
+.sp 
+\f[CB]module\fR DoubleInclude1 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR DoubleInclude3 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR double_include
+.sp 
+\f[CB]module\fR IncludeInclude1 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR IncludeInclude2 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR include_include
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]type\fR include_include
+.sp 
+.in 3
+\fB3 Trying the {!modules: \.\.\.} command\.\fR
+.in 
+.sp 
+.fi 
+With ocamldoc, toplevel units will be linked and documented, while submodules will behave as simple references\.
+.sp 
+With odoc, everything should be resolved (and linked) but only toplevel units will be documented\.
+.sp 
+@\f[CI]Dep1\.X\fR: 
+.br 
+@DocOckTypes: 
+.br 
+@\f[CI]Ocamlary\.IncludeInclude1\fR: 
+.br 
+@\f[CI]Ocamlary\fR: This is an \fIinterface\fR with \fBall\fR of the module system features\. This documentation demonstrates:
+.nf 
+.sp 
+.in 5
+\fB3\.1\.1 Weirder usages involving module types\fR
+.in 
+.sp 
+.fi 
+@IncludeInclude1\.IncludeInclude2: 
+.br 
+@Dep4\.T: 
+.br 
+@\f[CI]A\.Q\fR: 
+.nf 
+.sp 
+.in 3
+\fB4 Playing with @canonical paths\fR
+.in 
+.sp 
+\f[CB]module\fR CanonicalTest : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]val\fR test : \f[CB]'a\fR CanonicalTest\.Base\.List\.t \f[CB]\->\fR unit
+.fi 
+.br 
+.ti +2
+Some ref to \f[CI]CanonicalTest\.Base__Tests\.C\.t\fR and \f[CI]CanonicalTest\.Base__Tests\.L\.id\fR\. But also to \f[CI]CanonicalTest\.Base__\.List\fR and \f[CI]CanonicalTest\.Base__\.List\.t\fR
+.nf 
+.sp 
+.in 3
+\fB5 Aliases again\fR
+.in 
+.sp 
+\f[CB]module\fR Aliases : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+Let's imitate jst's layout\.
+.nf 
+.sp 
+.in 3
+\fB6 Section title splicing\fR
+.in 
+.sp 
+.fi 
+I can refer to
+.sp 
+\(bu {!section:indexmodules} : \f[CI]Trying the {!modules: \.\.\.} command\.\fR
+.br 
+\(bu {!aliases} : \f[CI]Aliases again\fR
+.sp 
+But also to things in submodules:
+.sp 
+\(bu {!section:SuperSig\.SubSigA\.subSig} : SuperSig\.SubSigA\.subSig
+.br 
+\(bu {!Aliases\.incl} : \f[CI]Aliases:incl\fR
+.sp 
+And just to make sure we do not mess up:
+.sp 
+\(bu {{!section:indexmodules}A} : \f[CI]A\fR
+.br 
+\(bu {{!aliases}B} : \f[CI]B\fR
+.br 
+\(bu {{!section:SuperSig\.SubSigA\.subSig}C} : \f[CI]C\fR
+.br 
+\(bu {{!Aliases\.incl}D} : \f[CI]D\fR
+.nf 
+.sp 
+.in 3
+\fB7 New reference syntax\fR
+.in 
+.sp 
+\f[CB]module\fR \f[CB]type\fR M = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR M : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+.fi 
+Here goes:
+.sp 
+\(bu {!module-M\.t} : \f[CI]M\.t\fR
+.br 
+\(bu {!module-type-M\.t} : \f[CI]M\.t\fR
+.nf 
+.sp 
+\f[CB]module\fR Only_a_module : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+.fi 
+Some here should fail:
+.sp 
+\(bu {!Only_a_module\.t} : \f[CI]Only_a_module\.t\fR
+.br 
+\(bu {!module-Only_a_module\.t} : \f[CI]Only_a_module\.t\fR
+.br 
+\(bu {!module-type-Only_a_module\.t} : Only_a_module\.t : \f[CI]test\fR
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR TypeExt = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t = \.\.
+.sp 
+.ti +2
+\f[CB]type\fR t += 
+.br 
+.ti +4
+| \f[CB]C\fR
+.br 
+.ti +2
+.sp 
+.ti +2
+\f[CB]val\fR f : t \f[CB]\->\fR unit
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]type\fR new_t = \.\.
+.sp 
+\f[CB]type\fR new_t += 
+.br 
+.ti +2
+| \f[CB]C\fR
+.br 
+.sp 
+\f[CB]module\fR \f[CB]type\fR TypeExtPruned = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR new_t += 
+.br 
+.ti +4
+| \f[CB]C\fR
+.br 
+.ti +2
+.sp 
+.ti +2
+\f[CB]val\fR f : new_t \f[CB]\->\fR unit
+.br 
+\f[CB]end\fR

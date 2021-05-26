@@ -1,0 +1,50 @@
+
+.TH CollectionModule 3 "" "Odoc" "OCaml Library"
+.SH Name
+test\.Ocamlary\.CollectionModule
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.CollectionModule\fR
+.in 
+.sp 
+.fi 
+This comment is for CollectionModule\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR collection
+.fi 
+.br 
+.ti +2
+This comment is for collection\.
+.nf 
+.sp 
+\f[CB]type\fR element
+.sp 
+\f[CB]module\fR InnerModuleA : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This comment is for InnerModuleA\.
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
+.fi 
+.br 
+.ti +4
+This comment is for t\.
+.nf 
+
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This comment is for InnerModuleTypeA\.
+.nf 
+

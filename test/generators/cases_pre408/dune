@@ -1,0 +1,20 @@
+(include link.dune.inc)
+
+(rule
+ (deps
+  (glob_files cases/*))
+ (enabled_if
+  (>= %{ocaml_version} 4.10))
+ (action
+  (with-stdout-to
+   link.dune.inc.gen
+   (pipe-stdout
+    (run gen_link/gen_link.exe)
+    (run dune format-dune-file)))))
+
+(rule
+ (enabled_if
+  (>= %{ocaml_version} 4.10))
+ (alias runtest)
+ (action
+  (diff link.dune.inc link.dune.inc.gen)))
