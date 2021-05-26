@@ -1,0 +1,5 @@
+(executable
+ (name gen_man)
+ (libraries man_t_rule)
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))

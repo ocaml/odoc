@@ -1,0 +1,5 @@
+(executable
+ (name gen_link)
+ (libraries gen_link_lib)
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
