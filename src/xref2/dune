@@ -4,3 +4,51 @@
  (instrumentation
   (backend bisect_ppx))
  (libraries compiler-libs.common odoc_model unix))
+
+(rule
+ (alias runmdx)
+ (deps
+  (:x paths.md)
+  (package odoc))
+ (enabled_if
+  (> %{ocaml_version} 4.08))
+ (action
+  (progn
+   (run ocaml-mdx-test %{x})
+   (diff? %{x} %{x}.corrected))))
+
+(rule
+ (alias runmdx)
+ (deps
+  (:x test.md)
+  (package odoc))
+ (enabled_if
+  (> %{ocaml_version} 4.08))
+ (action
+  (progn
+   (run ocaml-mdx-test %{x})
+   (diff? %{x} %{x}.corrected))))
+
+(rule
+ (alias runmdx)
+ (deps
+  (:x notes.md)
+  (package odoc))
+ (enabled_if
+  (> %{ocaml_version} 4.08))
+ (action
+  (progn
+   (run ocaml-mdx-test %{x})
+   (diff? %{x} %{x}.corrected))))
+
+(rule
+ (alias runmdx)
+ (deps
+  (:x scratch.md)
+  (package odoc))
+ (enabled_if
+  (> %{ocaml_version} 4.08))
+ (action
+  (progn
+   (run ocaml-mdx-test %{x})
+   (diff? %{x} %{x}.corrected))))

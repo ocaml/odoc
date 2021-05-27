@@ -9,8 +9,6 @@
    (../odoc_print/odoc_print.exe as odoc_print)
    (./compile.exe as compile))))
 
-(dirs :standard \ strengthen subst refs resolve)
-
 (cram
  (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile}))
 
