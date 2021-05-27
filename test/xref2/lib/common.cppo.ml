@@ -614,7 +614,7 @@ let mkresolver () =
     ~important_digests:false
     ~directories:(List.map Odoc_odoc.Fs.Directory.of_string
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
-    (Load_path.get_paths ())
+    (Load_path.get_paths () |> List.filter (fun s -> s <> ""))
 #else
     !Config.load_path
 #endif

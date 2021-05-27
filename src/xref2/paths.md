@@ -84,7 +84,7 @@ Here we have:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_type "S" |-- ModuleType.id) sg);;
-- : Odoc_model.Paths_types.Identifier.reference_module_type =
+- : Odoc_model.Paths.Identifier.ModuleType.t =
 `ModuleType (`Root (`RootPage None, Root), S)
 ```
 
@@ -92,7 +92,7 @@ Here we have:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- Module.id) sg);;
-- : Odoc_model.Paths_types.Identifier.module_ =
+- : Odoc_model.Paths.Identifier.Module.t =
 `Module (`Root (`RootPage None, Root), M)
 ```
 
@@ -100,7 +100,7 @@ Here we have:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "F" |-- Module.id) sg);;
-- : Odoc_model.Paths_types.Identifier.module_ =
+- : Odoc_model.Paths.Identifier.Module.t =
 `Module (`Root (`RootPage None, Root), F)
 ```
 
@@ -108,7 +108,7 @@ Here we have:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- Signature.type_ "m_t" |-- TypeDecl.id) sg);;
-- : Odoc_model.Paths_types.Identifier.type_ =
+- : Odoc_model.Paths.Identifier.Type.t =
 `Type (`Module (`Root (`RootPage None, Root), M), m_t)
 ```
 
@@ -116,7 +116,7 @@ Here we have:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "F" |-- functor_sig |-- Signature.type_ "f_t" |-- TypeDecl.id) sg);;
-- : Odoc_model.Paths_types.Identifier.type_ =
+- : Odoc_model.Paths.Identifier.Type.t =
 `Type (`Result (`Module (`Root (`RootPage None, Root), F)), f_t)
 ```
 
@@ -124,7 +124,7 @@ Here we have:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "F" |-- functor_arg_sig |-- Signature.type_ "foo" |-- TypeDecl.id) sg);;
-- : Odoc_model.Paths_types.Identifier.type_ =
+- : Odoc_model.Paths.Identifier.Type.t =
 `Type (`Parameter (`Module (`Root (`RootPage None, Root), F), X), foo)
 ```
 
@@ -164,17 +164,17 @@ and now we can get the paths for all three type declarations:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- Signature.module_ "N" |-- mod_sig |-- type_constr_path "x1") sg);;
-- : Odoc_model.Paths_types.Path.type_ =
+- : Odoc_model.Paths.Path.Type.t =
 `Identifier
   (`Type (`Module (`Module (`Root (`RootPage None, Root), M), N), t), false)
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- type_constr_path "x2") sg);;
-- : Odoc_model.Paths_types.Path.type_ =
+- : Odoc_model.Paths.Path.Type.t =
 `Dot
   (`Identifier
      (`Module (`Module (`Root (`RootPage None, Root), M), N), false),
    "t")
 # Common.LangUtils.Lens.(get (type_constr_path "x3") sg);;
-- : Odoc_model.Paths_types.Path.type_ =
+- : Odoc_model.Paths.Path.Type.t =
 `Dot
   (`Dot (`Identifier (`Module (`Root (`RootPage None, Root), M), false), "N"),
    "t")
@@ -190,18 +190,18 @@ and now the paths are:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- Signature.module_ "N" |-- mod_sig |-- type_constr_path "x1") sg');;
-- : Odoc_model.Paths_types.Path.type_ =
+- : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Identifier
      (`Type (`Module (`Module (`Root (`RootPage None, Root), M), N), t)))
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- type_constr_path "x2") sg');;
-- : Odoc_model.Paths_types.Path.type_ =
+- : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Type
      (`Identifier (`Module (`Module (`Root (`RootPage None, Root), M), N)),
       t))
 # Common.LangUtils.Lens.(get (type_constr_path "x3") sg');;
-- : Odoc_model.Paths_types.Path.type_ =
+- : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Type
      (`Module (`Identifier (`Module (`Root (`RootPage None, Root), M)), N),
@@ -256,7 +256,7 @@ path as this `` `Subst `` constructor:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (type_constr_path "t") sg)
-- : Odoc_model.Paths_types.Path.type_ =
+- : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Type
      (`Subst
