@@ -40,15 +40,16 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          opam pin add -n .
-          opam depext -y -t odoc
-          opam install --deps-only -t odoc
+        run: opam install -y --deps-only -t ./odoc.opam
 
-      - name: dune build
-        run: opam exec -- dune build
       - name: dune runtest
         run: opam exec -- dune runtest
+
+      # Run Mdx tests that are disabled by default.
+      - name: Mdx tests
+        run: |
+          opam install -y mdx
+          opam exec -- dune build @runmdx
 
       - name: Send coverage stats to Coveralls
         if: matrix.send-coverage == true

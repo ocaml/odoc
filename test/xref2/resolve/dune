@@ -7,7 +7,7 @@
     %{dep:test.md})))
 
 (rule
- (alias runtest)
+ (alias runmdx)
  (enabled_if
   (>= %{ocaml_version} 4.03))
  (action

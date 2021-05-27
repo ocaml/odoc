@@ -7,6 +7,6 @@
     %{dep:test.md})))
 
 (rule
- (alias runtest)
+ (alias runmdx)
  (action
   (diff test.md test.output)))
