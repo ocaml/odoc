@@ -5,18 +5,17 @@ Testing resolution of references
 Helpers:
 
 ```ocaml
+open Odoc_model
+
 let parse_ref ref_str =
-  let open Odoc_model in
-  let parse acc = Odoc_parser__Reference.parse acc (Location_.span []) ref_str in
-  match Error.handle_errors_and_warnings ~warn_error:true (Error.accumulate_warnings parse) with
+  match Semantics.parse_reference ref_str with
   | Ok ref -> ref
   | Error (`Msg e) -> failwith e
 
 (* Shorten type for nicer output *)
-type ref = Odoc_model.Paths_types.Resolved_reference.any
+type ref = Paths.Reference.Resolved.t
 
 let resolve_ref' env ref_str : ref =
-  let open Odoc_model in
   let unresolved = parse_ref ref_str in
   let resolve () = Ref_tools.resolve_reference env unresolved in
   match
@@ -200,8 +199,7 @@ Exception: Failure "resolve_reference".
 `Field
   (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
 # resolve_ref "section:M.L2"
-- : ref =
-`Label (`Identifier (`Module (`Root (`RootPage None, Root), M)), L2)
+Exception: Failure "resolve_reference".
 ```
 
 Implicit, root:
@@ -316,8 +314,7 @@ Implicit, in sig:
 `Field
   (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
 # resolve_ref "M.L2"
-- : ref =
-`Label (`Identifier (`Module (`Root (`RootPage None, Root), M)), L2)
+Exception: Failure "resolve_reference".
 ```
 
 Known kind:
@@ -417,8 +414,7 @@ Known kind:
 `Field
   (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
 # resolve_ref "M.section-L2"
-- : ref =
-`Label (`Identifier (`Module (`Root (`RootPage None, Root), M)), L2)
+Exception: Failure "resolve_reference".
 # resolve_ref "module-M.type-t2"
 - : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), t2)
 # resolve_ref "module-M.module-type-T2"
@@ -459,8 +455,7 @@ Known kind:
 `Field
   (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
 # resolve_ref "module-M.section-L2"
-- : ref =
-`Label (`Identifier (`Module (`Root (`RootPage None, Root), M)), L2)
+Exception: Failure "resolve_reference".
 # resolve_ref "module-M.field-rf2"
 - : ref =
 `Field
@@ -681,13 +676,13 @@ val resolve_ref : string -> ref = <fun>
 # resolve_ref "type-c.method-m"
 Exception:
 Failure
- "File \"_none_\", line 1, characters 0-6:\nExpected 'class-', 'class-type-', or an unqualified reference.".
+ "File \"\", line 0, characters 0-6:\nExpected 'class-', 'class-type-', or an unqualified reference.".
 # resolve_ref "type-t.m"
 Exception: Failure "resolve_reference".
 # resolve_ref "type-t.method-m"
 Exception:
 Failure
- "File \"_none_\", line 1, characters 0-6:\nExpected 'class-', 'class-type-', or an unqualified reference.".
+ "File \"\", line 0, characters 0-6:\nExpected 'class-', 'class-type-', or an unqualified reference.".
 ```
 
 ## Failures

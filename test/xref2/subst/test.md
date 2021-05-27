@@ -10,7 +10,7 @@ let resolve_module_name sg name =
   check sg.Component.Signature.items
 
 let module_substitution ~idents ~targets m test_data =
-  let _, _, sg = Common.model_of_string test_data in
+  let _, sg, _ = Common.model_of_string test_data in
 
   let c = Component.Of_Lang.(signature empty sg) in
 
@@ -92,7 +92,7 @@ Now test by compiling signatures and printing the result:
 
 let compile mli =
   let open Component in
-  let id, docs, sg = Common.model_of_string mli in
+  let id, sg, _ = Common.model_of_string mli in
   Odoc_xref2.Compile.signature Env.empty (id :> Odoc_model.Paths.Identifier.Signature.t) sg
   |> Of_Lang.signature Of_Lang.empty
 ```

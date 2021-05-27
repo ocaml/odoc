@@ -1,7 +1,7 @@
 ```ocaml
 let simple_strengthening input =
     let p = Common.root_identifier in
-    let _, _, sg = Common.model_of_string input in
+    let _, sg, _ = Common.model_of_string input in
     let c = Component.Of_Lang.(signature empty sg) in
     let cp = Component.Of_Lang.(resolved_module_path empty p) in
     let c' = Strengthen.signature (`Resolved cp) c in
