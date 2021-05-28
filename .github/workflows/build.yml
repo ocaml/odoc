@@ -28,18 +28,14 @@ jobs:
       - uses: actions/checkout@v2
 
       # Setup
-      - name: Cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.opam
-          key: ${{ matrix.os }}-${{ matrix.ocaml-version }}-${{ hashFiles('*.opam') }}-opam
       - name: Setup OCaml ${{ matrix.ocaml-version }}
-        uses: avsm/setup-ocaml@v1
+        uses: ocaml/setup-ocaml@v2
         with:
+          # Do not pin odoc to not break Mdx installation
+          opam-pin: false
           ocaml-version: ${{ matrix.ocaml-version }}
 
       - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
         run: opam install -y --deps-only -t ./odoc.opam
 
       - name: dune runtest
