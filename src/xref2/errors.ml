@@ -193,6 +193,9 @@ let rec kind_of_error = function
   | `Parent (`Parent_expr e) -> kind_of_error (e :> Tools_error.any)
   | `Parent (`Parent_module e) -> kind_of_error (e :> Tools_error.any)
   | `Parent (`Parent _ as e) -> kind_of_error (e :> Tools_error.any)
+  | `OpaqueModule ->
+      (* Don't turn OpaqueModule warnings into errors *)
+      Some `Root
   | _ -> None
 
 open Paths
