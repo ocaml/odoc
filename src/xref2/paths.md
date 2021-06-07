@@ -183,7 +183,7 @@ and now we can get the paths for all three type declarations:
 We can resolve the paths:
 
 ```ocaml env=e1
-let sg' = Compile.signature Env.empty id sg;;
+let sg' = Common.compile_signature sg;;
 ```
 
 and now the paths are:
@@ -243,7 +243,118 @@ end
 
 type t = F(M).N.t
 |};;
-let sg = Compile.signature Env.empty id (Common.signature_of_mli_string example);;
+```
+
+```ocaml env=e1
+# let sg = Common.compile_signature (Common.signature_of_mli_string example)
+File "<test>":
+Failed to compile expansion for module type expression identifier((param (root Root).F X), false).S OpaqueModule
+val sg : Odoc_model.Lang.Signature.t =
+  {Odoc_model.Lang.Signature.items =
+    [Odoc_model.Lang.Signature.ModuleType
+      {Odoc_model.Lang.ModuleType.id =
+        `ModuleType (`Root (`RootPage None, Root), ARG);
+       doc = []; canonical = None;
+       expr =
+        Some
+         (Odoc_model.Lang.ModuleType.Signature
+           {Odoc_model.Lang.Signature.items =
+             [Odoc_model.Lang.Signature.ModuleType
+               {Odoc_model.Lang.ModuleType.id =
+                 `ModuleType
+                   (`ModuleType (`Root (`RootPage None, Root), ARG), S);
+                doc = []; canonical = None; expr = None}];
+            compiled = true; doc = []})};
+     Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
+      {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), F);
+       doc = [];
+       type_ =
+        Odoc_model.Lang.Module.ModuleType
+         (Odoc_model.Lang.ModuleType.Functor
+           (Odoc_model.Lang.FunctorParameter.Named
+             {Odoc_model.Lang.FunctorParameter.id =
+               `Parameter (`Module (`Root (`RootPage None, Root), F), X);
+              expr =
+               Odoc_model.Lang.ModuleType.Path
+                {Odoc_model.Lang.ModuleType.p_expansion =
+                  Some
+                   (Odoc_model.Lang.ModuleType.Signature
+                     {Odoc_model.Lang.Signature.items =
+                       [Odoc_model.Lang.Signature.ModuleType
+                         {Odoc_model.Lang.ModuleType.id =
+                           `ModuleType
+                             (`Parameter
+                                (`Module (`Root (`RootPage None, Root), F),
+                                 X),
+                              S);
+                          doc = []; canonical = None; expr = None}];
+                      compiled = true; doc = []});
+                 p_path =
+                  `Resolved
+                    (`Identifier
+                       (`ModuleType (`Root (`RootPage None, Root), ARG)))}},
+           Odoc_model.Lang.ModuleType.Signature
+            {Odoc_model.Lang.Signature.items =
+              [Odoc_model.Lang.Signature.Module
+                (Odoc_model.Lang.Signature.Ordinary,
+                {Odoc_model.Lang.Module.id =
+                  `Module
+                    (`Result (`Module (`Root (`RootPage None, Root), F)), N);
+                 doc = [];
+                 type_ =
+                  Odoc_model.Lang.Module.ModuleType
+                   (Odoc_model.Lang.ModuleType.Path
+                     {Odoc_model.Lang.ModuleType.p_expansion = None;
+                      p_path =
+                       `Resolved
+                         (`OpaqueModuleType
+                            (`ModuleType
+                               (`Identifier
+                                  (`Parameter
+                                     (`Module
+                                        (`Root (`RootPage None, Root), F),
+                                      X)),
+                                S)))});
+                 canonical = None; hidden = false})];
+             compiled = true; doc = []}));
+       canonical = None; hidden = false});
+     Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
+      {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), M);
+       doc = [];
+       type_ =
+        Odoc_model.Lang.Module.ModuleType
+         (Odoc_model.Lang.ModuleType.Signature
+           {Odoc_model.Lang.Signature.items =
+             [Odoc_model.Lang.Signature.ModuleType
+               {Odoc_model.Lang.ModuleType.id =
+                 `ModuleType (`Module (`Root (`RootPage None, Root), M), S);
+                doc = []; canonical = None;
+                expr =
+                 Some
+                  (Odoc_model.Lang.ModuleType.Signature
+                    {Odoc_model.Lang.Signature.items =
+                      [Odoc_model.Lang.Signature.Type
+                        (Odoc_model.Lang.Signature.Ordinary,
+                        {Odoc_model.Lang.TypeDecl.id =
+                          `Type
+                            (`ModuleType
+                               (`Module (`Root (`RootPage None, Root), M), S),
+                             t);
+                         doc = []; canonical = None;
+                         equation =
+                          {Odoc_model.Lang.TypeDecl.Equation.params = [];
+                           private_ = false; manifest = None;
+                           constraints = []};
+                         representation = None})];
+                     compiled = true; doc = []})}];
+            compiled = true; doc = []});
+       canonical = None; hidden = false});
+     Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
+      {Odoc_model.Lang.TypeDecl.id =
+        `Type (`Root (`RootPage None, Root), ...);
+       doc = ...; canonical = ...; equation = ...; representation = ...});
+     ...];
+   compiled = ...; doc = ...}
 ```
 
 The problem here is that odoc will not generate a page for the module `F(M)`.

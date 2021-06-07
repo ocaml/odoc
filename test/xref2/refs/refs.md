@@ -8,9 +8,9 @@ Helpers:
 open Odoc_model
 
 let parse_ref ref_str =
-  match Semantics.parse_reference ref_str with
+  match Semantics.parse_reference ref_str |> Common.handle_warnings with
   | Ok ref -> ref
-  | Error (`Msg e) -> failwith e
+  | Error e -> failwith (Error.to_string e)
 
 (* Shorten type for nicer output *)
 type ref = Paths.Reference.Resolved.t
@@ -19,12 +19,11 @@ let resolve_ref' env ref_str : ref =
   let unresolved = parse_ref ref_str in
   let resolve () = Ref_tools.resolve_reference env unresolved in
   match
-    Lookup_failures.catch_failures resolve
-    |> Lookup_failures.handle_failures ~warn_error:true ~filename:"tests"
+    Lookup_failures.catch_failures ~filename:"<test>" resolve
+    |> Common.handle_warnings
   with
-  | Error (`Msg e) -> failwith e
-  | Ok None -> failwith "resolve_reference"
-  | Ok (Some r) -> r
+  | None -> failwith "resolve_reference"
+  | Some r -> r
 
 let resolve_ref_of_mli mli =
   let sg = Common.signature_of_mli_string mli in
@@ -785,34 +784,44 @@ Ambiguous in env:
 
 ```ocaml
 # resolve_ref "t"
-Exception: Failure "Warnings have been generated.".
-File "tests":
+File "<test>":
 Reference to 't' is ambiguous. Please specify its kind: val-t, type-t.
+- : ref = `Identifier (`Value (`Root (`RootPage None, Root), t))
 # resolve_ref "X"
-Exception: Failure "Warnings have been generated.".
-File "tests":
+File "<test>":
 Reference to 'X' is ambiguous. Please specify its kind: module-X, constructor-X.
+- : ref = `Identifier (`Module (`Root (`RootPage None, Root), X))
 ```
 
 Ambiguous in sig:
 
 ```ocaml
 # resolve_ref "X.u"
-Exception: Failure "Warnings have been generated.".
-File "tests":
+File "<test>":
 Reference to 'u' is ambiguous. Please specify its kind: type-u, val-u.
+- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), X)), u)
 # resolve_ref "X.Y"
-Exception: Failure "Warnings have been generated.".
-File "tests":
+File "<test>":
 Reference to 'Y' is ambiguous. Please specify its kind: constructor-Y, module-Y.
+- : ref =
+`Constructor
+  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), X)), u), Y)
 # resolve_ref "Everything_ambiguous_in_sig.t" (* Some kinds are missing: label, type subst (would be "type-") *)
-Exception: Failure "Warnings have been generated.".
-File "tests":
+File "<test>":
 Reference to 't' is ambiguous. Please specify its kind: type-t, module-type-t, field-t, val-t, val-t.
+- : ref =
+`Type
+  (`Identifier
+     (`Module (`Root (`RootPage None, Root), Everything_ambiguous_in_sig)),
+   t)
 # resolve_ref "Everything_ambiguous_in_sig.T" (* Missing kind: module subst (would be "module-") *)
-Exception: Failure "Warnings have been generated.".
-File "tests":
+File "<test>":
 Reference to 'T' is ambiguous. Please specify its kind: module-T, exception-T, extension-T.
+- : ref =
+`Module
+  (`Identifier
+     (`Module (`Root (`RootPage None, Root), Everything_ambiguous_in_sig)),
+   T)
 ```
 
 Unambiguous:

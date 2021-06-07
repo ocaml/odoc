@@ -15,10 +15,8 @@ right hand side but doesn't we need to which which `t` it is referring to.
 
 ```ocaml
 let test_resolve test_data =
-    Odoc_xref2.Tools.reset_caches ();
-    Common.resolve_from_string test_data
-    |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error:false ~filename:"test"
-    |> Result.get_ok
+  Tools.reset_caches ();
+  Common.resolve_from_string test_data
 ```
 
 The simplest resolution is where we simply look up a type and check it's there.
@@ -832,9 +830,9 @@ Ensure a substitution is taken into account during resolution:
 
   type t = C.N.t
     |}
-File "test":
+File "<test>":
 Failed to compile expansion for module type expression identifier((root Root).A.M, false).S OpaqueModule
-File "test":
+File "<test>":
 Failed to compile expansion for module type expression identifier((root Root).A.M, false).S OpaqueModule
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
@@ -964,9 +962,9 @@ Ensure a destructive substitution is taken into account during resolution:
 
   type t = C.N.t
     |}
-File "test":
+File "<test>":
 Failed to compile expansion for module type expression identifier((root Root).A.M, false).S OpaqueModule
-File "test":
+File "<test>":
 Failed to compile expansion for module type expression identifier((root Root).A.M, false).S OpaqueModule
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
@@ -1579,13 +1577,13 @@ Functor app nightmare:
   type t = resolved[(global(Bar).T subst-> global(App)(resolved[global(Bar)])(resolved[global(Foo)])(resolved[global(FooBarInt)]).Foo).bar]
   *)
     |}
-File "test":
+File "<test>":
 Failed to compile expansion for module type expression identifier((param (root Root).App.result F), false)(identifier((param (root Root).App T), false)).T OpaqueModule
-File "test":
+File "<test>":
 Failed to compile expansion for module type expression identifier((param (root Root).App.result F), false)(identifier((param (root Root).App T), false)).T OpaqueModule
-File "test":
+File "<test>":
 Failed to compile expansion for module type expression identifier((param (root Root).Foo T), false).T OpaqueModule
-File "test":
+File "<test>":
 Failed to compile expansion for module type expression identifier((param (root Root).Foo T), false).T OpaqueModule
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);

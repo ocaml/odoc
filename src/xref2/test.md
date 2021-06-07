@@ -177,7 +177,7 @@ and `lookup_type` starts:
 and so we simply look up the type in the environment, giving a `Component.Type.t` that represents the type.
 
 ```ocaml env=e1
-# Compile.signature Env.empty id sg;;
+# Common.compile_signature sg;;
 - : Odoc_model.Lang.Signature.t =
 {Odoc_model.Lang.Signature.items =
   [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
@@ -556,7 +556,7 @@ end
 type t = A.N.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 Let's look at `t`'s manifest:
@@ -592,7 +592,7 @@ end
 type t = A.O.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
@@ -640,8 +640,8 @@ module C : A with module M = B
 type t = C.N.t
 |};;
 let sg = Common.signature_of_mli_string test_data;;
+let resolved = Common.compile_signature sg;;
 let env = Env.open_signature sg Env.empty;;
-let resolved = Compile.signature env id sg;;
 ```
 
 So in module type `A`, module `N` has type `M.S`, which 
@@ -815,7 +815,7 @@ type s = M.F(M.T).N.t
 let sg = Common.signature_of_mli_string test_data;;
 let t_manifest = type_manifest "t";;
 let s_manifest = type_manifest "s";;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 The interesting thing here is the difference between `type t` and `type s`. The module `M.O` has
@@ -887,7 +887,7 @@ type t = M.O.N.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
 let env = Env.open_signature sg Env.empty;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
@@ -929,7 +929,7 @@ type t = M.O(M.T).N.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
 let env = Env.open_signature sg Env.empty;;
-let resolved = Compile.signature env id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
@@ -1075,7 +1075,7 @@ val sg' : Component.Signature.t =
 ```
 
 ```ocaml env=e1
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 The resolved path of t is:
@@ -1125,7 +1125,7 @@ end
 type t = M.O(M).N.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
@@ -1171,7 +1171,7 @@ type dep1 = Dep2(Dep1).B.c
 |};;
 
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
@@ -1231,7 +1231,7 @@ type dep2 = Dep5(Dep4).Z.X.b
 type dep3 = Dep5(Dep4).Z.Y.a
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
@@ -1303,7 +1303,7 @@ module Dep7 :
 type dep4 = Dep7(Dep6).M.Y.d
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
@@ -1354,7 +1354,7 @@ module Dep13 : Dep12(Dep11).T
 type dep5 = Dep13.c
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
@@ -1397,7 +1397,7 @@ end
 module type With11 = With7(With10).T with module M = With9 and type N.t = int
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 let with11 = Common.LangUtils.Lens.Signature.module_type "With11"
 
 ```
@@ -1416,7 +1416,7 @@ module H=Hidden__
 type t = Hidden__.t
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
@@ -1441,7 +1441,7 @@ type t
 (** [t] {!t} *)
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
@@ -1561,7 +1561,7 @@ module Bar : sig end
 module M : Foo(Bar).S
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty id sg;;
+let resolved = Common.compile_signature sg;;
 let expanded = Link.signature Env.empty id resolved;;
 let module_M_expansion =
   let open Common.LangUtils.Lens in
