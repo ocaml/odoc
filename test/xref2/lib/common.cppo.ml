@@ -620,14 +620,31 @@ let mkresolver () =
 #endif
     ) ~open_modules:[]
 
+let warnings_options =
+  { Odoc_model.Error.warn_error = false; print_warnings = true }
+
+let handle_warnings ww =
+  match Odoc_model.Error.handle_warnings ~warnings_options ww with
+  | Ok x -> x
+  | Error (`Msg msg) -> failwith msg
+
 let resolve unit =
   let resolver = mkresolver () in
   let resolve_env = Odoc_odoc.Resolver.build_env_for_unit resolver unit in
-  let result = Odoc_xref2.Compile.compile resolve_env unit in
-  result
-
+  Odoc_xref2.Compile.compile ~filename:"<test>" resolve_env unit
+  |> handle_warnings
 
 let resolve_from_string s =
-    let id, sg, _ = model_of_string s in
-    let unit = my_compilation_unit id sg in
-    resolve unit
+  let id, sg, _ = model_of_string s in
+  let unit = my_compilation_unit id sg in
+  resolve unit
+
+let compile_signature ?(id = id) sg =
+  let open Odoc_xref2 in
+  Lookup_failures.catch_failures ~filename:"<test>" (fun () ->
+      Compile.signature Env.empty id sg)
+  |> handle_warnings
+
+let compile_mli test_data =
+  let sg = signature_of_mli_string test_data in
+  compile_signature sg
