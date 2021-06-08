@@ -161,9 +161,6 @@ val env_of_page : Odoc_model.Lang.Page.t -> resolver -> t
 val inherit_resolver : t -> t
 (** Create an empty environment reusing the same resolver. *)
 
-val modules_of :
-  t -> (Identifier.Path.Module.t * Component.Module.t Component.Delayed.t) list
-
 val len : int ref
 
 val n : int ref

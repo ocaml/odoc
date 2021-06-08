@@ -63,6 +63,20 @@ let pp_lookup_type_list fmt ls =
 
 type recorder = { mutable lookups : lookup_type list }
 
+let ident_of_element = function
+  | `Module (id, _) -> (id :> Identifier.t)
+  | `ModuleType (id, _) -> (id :> Identifier.t)
+  | `Type (id, _) -> (id :> Identifier.t)
+  | `Value (id, _) -> (id :> Identifier.t)
+  | `Label id -> (id :> Identifier.t)
+  | `Class (id, _) -> (id :> Identifier.t)
+  | `ClassType (id, _) -> (id :> Identifier.t)
+  | `External (id, _) -> (id :> Identifier.t)
+  | `Constructor (id, _) -> (id :> Identifier.t)
+  | `Exception (id, _) -> (id :> Identifier.t)
+  | `Extension (id, _) -> (id :> Identifier.t)
+  | `Field (id, _) -> (id :> Identifier.t)
+
 module Maps = Odoc_model.Paths.Identifier.Maps
 module StringMap = Map.Make (String)
 
@@ -90,31 +104,51 @@ module Elements : sig
   val find_by_name :
     (Component.Element.any -> 'b option) -> string -> t -> 'b list
 
-  val fold : ('a -> kind * Component.Element.any -> 'a) -> 'a -> t -> 'a
+  val find_by_id :
+    (Component.Element.any -> 'b option) -> Identifier.t -> t -> 'b list
 end = struct
-  type t = (kind * Component.Element.any) list StringMap.t
+  type elem = { kind : kind; elem : Component.Element.any; shadowed : bool }
+
+  type t = elem list StringMap.t
 
   let empty = StringMap.empty
 
   let add kind identifier comp t =
     let name = Identifier.name identifier in
-    let v = (kind, (comp :> Component.Element.any)) in
+    let v =
+      { kind; elem = (comp :> Component.Element.any); shadowed = false }
+    in
     try
       let tl = StringMap.find name t in
       let tl =
-        let not_dup (kind', _) = kind' <> kind in
-        if List.for_all not_dup tl then tl else List.filter not_dup tl
+        let has_shadow e = e.kind = kind in
+        let mark_shadow e =
+          if e.kind = kind then { e with shadowed = true } else e
+        in
+        if List.exists has_shadow tl then List.map mark_shadow tl else tl
       in
       StringMap.add name (v :: tl) t
     with Not_found -> StringMap.add name [ v ] t
 
-  let find_by_name f name t =
-    let filter acc (_, e) = match f e with Some e -> e :: acc | None -> acc in
-    let found = try StringMap.find name t with Not_found -> [] in
-    List.fold_left filter [] found |> List.rev
+  let find' f name t =
+    try List.fold_right f (StringMap.find name t) [] with Not_found -> []
 
-  let fold f acc t =
-    StringMap.fold (fun _ e acc -> List.fold_left f acc e) t acc
+  (** Do not consider shadowed elements. *)
+  let find_by_name f name t =
+    let filter e acc =
+      if e.shadowed then acc
+      else match f e.elem with Some r -> r :: acc | None -> acc
+    in
+    find' filter name t
+
+  (** Allow matching shadowed elements. *)
+  let find_by_id f id t =
+    let filter e acc =
+      match f e.elem with
+      | Some r -> if ident_of_element e.elem = id then r :: acc else acc
+      | None -> acc
+    in
+    find' filter (Identifier.name id) t
 end
 
 type t = {
@@ -361,26 +395,6 @@ let lookup_by_name scope name env =
   | [] -> (
       match scope.root name env with Some x -> Ok x | None -> Error `Not_found)
 
-let ident_of_element = function
-  | `Module (id, _) -> (id :> Identifier.t)
-  | `ModuleType (id, _) -> (id :> Identifier.t)
-  | `Type (id, _) -> (id :> Identifier.t)
-  | `Value (id, _) -> (id :> Identifier.t)
-  | `Label id -> (id :> Identifier.t)
-  | `Class (id, _) -> (id :> Identifier.t)
-  | `ClassType (id, _) -> (id :> Identifier.t)
-  | `External (id, _) -> (id :> Identifier.t)
-  | `Constructor (id, _) -> (id :> Identifier.t)
-  | `Exception (id, _) -> (id :> Identifier.t)
-  | `Extension (id, _) -> (id :> Identifier.t)
-  | `Field (id, _) -> (id :> Identifier.t)
-
-let rec disam_id id = function
-  | hd :: tl ->
-      if ident_of_element hd = (id :> Identifier.t) then Some hd
-      else disam_id id tl
-  | [] -> None
-
 let lookup_by_id (scope : 'a scope) id env : 'a option =
   let record_lookup_result result =
     match env.recorder with
@@ -391,14 +405,11 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
         | _ -> ())
     | None -> ()
   in
-  match
-    disam_id id
-      (Elements.find_by_name scope.filter (Identifier.name id) env.elts)
-  with
-  | Some result as x ->
-      record_lookup_result result;
-      x
-  | None -> (
+  match Elements.find_by_id scope.filter (id :> Identifier.t) env.elts with
+  | x :: _ ->
+      record_lookup_result x;
+      Some x
+  | [] -> (
       match (id :> Identifier.t) with
       | `Root (_, name) -> scope.root (ModuleName.to_string name) env
       | _ -> None)
@@ -673,10 +684,6 @@ let env_of_unit t resolver =
 let env_of_page page resolver =
   let initial_env = empty |> add_docs page.Odoc_model.Lang.Page.content in
   set_resolver initial_env resolver |> open_units resolver
-
-let modules_of env =
-  let f acc = function _, `Module (id, m) -> (id, m) :: acc | _ -> acc in
-  Elements.fold f [] env.elts
 
 let verify_lookups env lookups =
   let bad_lookup = function
