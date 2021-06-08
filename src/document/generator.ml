@@ -559,7 +559,7 @@ module Make (Syntax : SYNTAX) = struct
             (if Syntax.Type.type_def_semicolon then O.txt ";" else O.noop)
       in
       let attr = [ "type"; "extension" ] in
-      let anchor = None in
+      let anchor = Some (Url.Anchor.extension_decl t) in
       let doc = Comment.to_ir t.doc in
       Item.Declaration { attr; anchor; doc; content }
 

@@ -36,6 +36,10 @@ module Anchor : sig
     type_ident:Identifier.t ->
     Odoc_model.Lang.TypeExpr.Polymorphic_variant.element ->
     t
+
+  val extension_decl : Odoc_model.Lang.Extension.t -> t
+  (** Anchor for the extension declaration item itself, which doesn't have an
+      identifier in the model. *)
 end
 
 type t = Anchor.t
