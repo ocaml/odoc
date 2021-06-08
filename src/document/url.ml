@@ -265,6 +265,15 @@ module Anchor = struct
             let kind = "constructor" in
             let suffix = name in
             add_suffix ~kind url suffix)
+
+  (** The anchor looks like
+      [extension-decl-"Path.target_type"-FirstConstructor]. *)
+  let extension_decl (decl : Odoc_model.Lang.Extension.t) =
+    let page = Path.from_identifier (decl.parent :> Path.source) in
+    let kind = "extension-decl" in
+    let first_cons = Identifier.name (List.hd decl.constructors).id in
+    let anchor = Printf.sprintf "%s-%s" kind first_cons in
+    { page; kind; anchor }
 end
 
 type t = Anchor.t
