@@ -12,4 +12,4 @@
  (public_name odoc.model)
  (instrumentation
   (backend bisect_ppx))
- (libraries result compiler-libs.common odoc_parser))
+ (libraries result compiler-libs.common odoc-parser))
