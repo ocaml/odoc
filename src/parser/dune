@@ -2,7 +2,7 @@
 
 (library
  (name odoc_parser)
- (public_name odoc.parser)
+ (public_name odoc-parser)
  (instrumentation
   (backend bisect_ppx))
  (libraries astring result))
