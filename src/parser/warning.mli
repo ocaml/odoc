@@ -1,4 +1,4 @@
-(* This module is exposed, but via the signature declared in Octavius *)
+(* This module is exposed, but via the signature declared in Odoc_parser *)
 
 type t = { location : Loc.span; message : string }
 
