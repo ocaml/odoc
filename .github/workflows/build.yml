@@ -34,9 +34,11 @@ jobs:
           # Do not pin odoc to not break Mdx installation
           opam-pin: false
           ocaml-version: ${{ matrix.ocaml-version }}
+          opam-local-packages: |
+            odoc.opam
 
       - name: Install dependencies
-        run: opam install -y --deps-only -t ./odoc.opam
+        run: opam install -y --deps-only -t ./odoc.opam ./odoc-parser.opam
 
       - name: dune runtest
         run: opam exec -- dune runtest
