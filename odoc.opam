@@ -23,6 +23,7 @@ delimited with `(** ... *)`, and outputs HTML.
 """
 
 depends: [
+  "odoc-parser"
   "astring"
   "cmdliner"
   "cppo" {build}
