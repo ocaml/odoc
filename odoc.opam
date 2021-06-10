@@ -27,7 +27,7 @@ depends: [
   "astring"
   "cmdliner"
   "cppo" {build}
-  "dune" {>= "2.7.0"}
+  "dune" {>= "2.8.0"}
   "fpath"
   "ocaml" {>= "4.02.0"}
   "result"
@@ -53,5 +53,15 @@ depends: [
 
 build: [
   ["dune" "subst"] {pinned}
-  ["dune" "build" "-p" name "-j" jobs]
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
 ]

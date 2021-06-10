@@ -1,9 +1,9 @@
 (library
  (name type_desc_to_yojson)
  (modules type_desc_to_yojson)
- (libraries odoc_model_desc yojson))
+ (libraries odoc.model_desc yojson))
 
 (executable
  (name odoc_print)
  (modules odoc_print)
- (libraries odoc_odoc cmdliner type_desc_to_yojson))
+ (libraries odoc.odoc cmdliner type_desc_to_yojson))
