@@ -1,3 +1,16 @@
+2.0.0~beta4
+-----------
+
+Additions
+- Handle @canonical tags in the top-comment of modules (@Julow, #662)
+- Simplify paths referring to Stdlib (@jonludlam, #677)
+- New odoc command to report warnings encountered during compilation/linking (@Julow, #667)
+- Anchors on type extensions (@Julow, #684)
+
+Bugs fixes
+- Resolve references in module synopses (@Julow, #658)
+- Fix reference resolution in the presence of shadowing (@Julow, #682)
+
 2.0.0~beta3
 -----------
 
