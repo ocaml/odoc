@@ -33,6 +33,7 @@ val make :
   indent:bool ->
   url:Url.Path.t ->
   header:Html_types.flow5_without_header_footer Html.elt list ->
+  extra_suffix:string ->
   toc:Html_types.flow5 Html.elt list ->
   string ->
   Html_types.div_content Html.elt list ->

@@ -23,6 +23,7 @@ type args = {
   theme_uri : Odoc_html.Tree.uri;
   support_uri : Odoc_html.Tree.uri;
   flat : bool;
+  extra_suffix : string;
 }
 
 val renderer : args Renderer.t

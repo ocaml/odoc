@@ -111,9 +111,9 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
   in
   Html.html head (Html.body ~a:[ Html.a_class [ "odoc" ] ] body)
 
-let make ?theme_uri ?support_uri ~indent ~url ~header ~toc title content
-    children =
-  let filename = Link.Path.as_filename url in
+let make ?theme_uri ?support_uri ~indent ~url ~header ~extra_suffix ~toc title
+    content children =
+  let filename = Fpath.add_ext extra_suffix (Link.Path.as_filename url) in
   let html =
     page_creator ?theme_uri ?support_uri ~url title header toc content
   in

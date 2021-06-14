@@ -472,8 +472,18 @@ module Odoc_html = Make_renderer (struct
     Arg.(
       value & opt convert_uri default & info ~docv:"URI" ~doc [ "support-uri" ])
 
+  let extra_suffix =
+    let doc =
+      "Extra suffix to append to generated filenames. This is intended for \
+       expect tests to use."
+    in
+    let default = "" in
+    Arg.(
+      value & opt string default & info ~docv:"SUFFIX" ~doc [ "extra-suffix" ])
+
   let extra_args =
-    let f semantic_uris closed_details indent theme_uri support_uri flat =
+    let f semantic_uris closed_details indent theme_uri support_uri flat
+        extra_suffix =
       {
         Html_page.semantic_uris;
         closed_details;
@@ -481,11 +491,12 @@ module Odoc_html = Make_renderer (struct
         support_uri;
         indent;
         flat;
+        extra_suffix;
       }
     in
     Term.(
       const f $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ flat_output)
+      $ support_uri $ flat_output $ extra_suffix)
 end)
 
 module Html_fragment : sig
