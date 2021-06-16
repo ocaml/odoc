@@ -1063,8 +1063,6 @@ and explicit_list_items :
 
 (* {2 Entry point} *)
 
-type output = { ast : Ast.t; warnings : Warning.t list }
-
 let parse warnings tokens =
   let input : input = { tokens; warnings } in
 
@@ -1087,4 +1085,4 @@ let parse warnings tokens =
         elements @ block :: parse_block_elements ()
   in
   let ast = parse_block_elements () in
-  { ast; warnings = List.rev !(input.warnings) }
+  (ast, List.rev !(input.warnings))
