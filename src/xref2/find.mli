@@ -22,7 +22,9 @@ type exception_ = [ `FExn of ExceptionName.t * Exception.t ]
 type extension = [ `FExt of Extension.t * Extension.Constructor.t ]
 
 type substitution =
-  [ `FModule_subst of ModuleSubstitution.t | `FType_subst of TypeDecl.t ]
+  [ `FModule_subst of ModuleSubstitution.t
+  | `FType_subst of TypeDecl.t
+  | `FModuleType_subst of ModuleTypeSubstitution.t ]
 
 type signature = [ module_ | module_type ]
 
@@ -102,11 +104,17 @@ type removed_type =
 
 type careful_module = [ module_ | `FModule_removed of Cpath.Resolved.module_ ]
 
+type careful_module_type =
+  [ module_type | `FModuleType_removed of ModuleType.expr ]
+
 type careful_type = [ type_ | removed_type ]
 
 type careful_class = [ class_ | removed_type ]
 
 val careful_module_in_sig : Signature.t -> string -> careful_module option
+
+val careful_module_type_in_sig :
+  Signature.t -> string -> careful_module_type option
 
 val careful_type_in_sig : Signature.t -> string -> careful_type option
 

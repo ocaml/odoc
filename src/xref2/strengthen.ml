@@ -65,7 +65,8 @@ and sig_items prefix ?canonical sg =
             let i', strengthened = include_ prefix i in
             (Include i' :: items, strengthened @ s)
         | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
-        | ModuleSubstitution _ | TypeSubstitution _ | Comment _ | Open _ ->
+        | ModuleSubstitution _ | TypeSubstitution _ | ModuleTypeSubstitution _
+        | Comment _ | Open _ ->
             (item :: items, s))
       ([], []) sg.items
   in

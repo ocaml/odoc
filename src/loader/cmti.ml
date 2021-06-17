@@ -451,7 +451,8 @@ let read_class_descriptions env parent clds =
   |> fst
   |> List.rev
 
-let rec read_with_constraint env parent (_, frag, constr) =
+let rec read_with_constraint env global_parent parent (_, frag, constr) =
+  let _ = global_parent in
   let open ModuleType in
     match constr with
     | Twith_type decl ->
@@ -470,9 +471,15 @@ let rec read_with_constraint env parent (_, frag, constr) =
         let frag = Env.Fragment.read_module frag.Location.txt in
         let p = Env.Path.read_module env p in
           ModuleSubst(frag, p)
-#if OCAML_VERSION >= (4,13,0)
-   | Twith_modtype _ -> failwith "with module type not yet implemented"
-   | Twith_modtypesubst _ -> failwith "with module type not yet implemented"
+ #if OCAML_VERSION >= (4,13,0)
+    | Twith_modtype mty ->
+        let frag = Env.Fragment.read_module_type frag.Location.txt in
+        let mty = read_module_type env global_parent parent mty in
+        ModuleTypeEq(frag, mty)
+    | Twith_modtypesubst mty ->
+        let frag = Env.Fragment.read_module_type frag.Location.txt in
+        let mty = read_module_type env global_parent parent mty in
+        ModuleTypeSubst(frag, mty)
 #endif
 
 and read_module_type env parent label_parent mty =
@@ -517,7 +524,7 @@ and read_module_type env parent label_parent mty =
 #endif
     | Tmty_with(body, subs) -> (
       let body = read_module_type env parent label_parent body in
-      let subs = List.map (read_with_constraint env label_parent) subs in
+      let subs = List.map (read_with_constraint env parent label_parent) subs in
       match Odoc_model.Lang.umty_of_mty body with
       | Some w_expr ->
           With {w_substitutions=subs; w_expansion=None; w_expr }
@@ -686,7 +693,8 @@ and read_signature_item env parent item =
     | Tsig_modsubst mst ->
         [ModuleSubstitution (read_module_substitution env parent mst)]
 #if OCAML_VERSION >= (4,13,0)
-    | Tsig_modtypesubst _ -> failwith "local module type substitution not yet implemented"
+    | Tsig_modtypesubst mtst ->
+        [ModuleTypeSubstitution (read_module_type_substitution env parent mtst)]
 #endif
 
 
@@ -697,6 +705,21 @@ and read_module_substitution env parent ms =
   let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container ms.ms_attributes in
   let manifest = Env.Path.read_module env ms.ms_manifest in
   { id; doc; manifest }
+
+#if OCAML_VERSION >= (4,13,0)
+and read_module_type_substitution env parent mtd =
+  let open ModuleTypeSubstitution in
+  let id = Env.find_module_type env mtd.mtd_id in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container mtd.mtd_attributes in
+  let expr = match opt_map (read_module_type env (id :> Identifier.Signature.t) container) mtd.mtd_type with
+    | None -> assert false
+    | Some x -> x
+  in
+  {id; doc; manifest=expr;}
+#endif
+
+
 #endif
 
 and read_include env parent incl =

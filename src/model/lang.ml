@@ -52,8 +52,10 @@ end =
 and ModuleType : sig
   type substitution =
     | ModuleEq of Fragment.Module.t * Module.Equation.t
+    | ModuleTypeEq of Fragment.ModuleType.t * ModuleType.expr
     | TypeEq of Fragment.Type.t * TypeDecl.Equation.t
     | ModuleSubst of Fragment.Module.t * Path.Module.t
+    | ModuleTypeSubst of Fragment.ModuleType.t * ModuleType.expr
     | TypeSubst of Fragment.Type.t * TypeDecl.Equation.t
 
   type type_of_desc =
@@ -115,6 +117,15 @@ and ModuleSubstitution : sig
 end =
   ModuleSubstitution
 
+and ModuleTypeSubstitution : sig
+  type t = {
+    id : Identifier.ModuleType.t;
+    doc : Comment.docs;
+    manifest : ModuleType.expr;
+  }
+end =
+  ModuleTypeSubstitution
+
 (** {3 Signatures} *)
 
 and Signature : sig
@@ -124,6 +135,7 @@ and Signature : sig
     | Module of recursive * Module.t
     | ModuleType of ModuleType.t
     | ModuleSubstitution of ModuleSubstitution.t
+    | ModuleTypeSubstitution of ModuleTypeSubstitution.t
     | Open of Open.t
     | Type of recursive * TypeDecl.t
     | TypeSubstitution of TypeDecl.t

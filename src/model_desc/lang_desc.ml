@@ -69,6 +69,11 @@ and moduletype_substitution =
           ( "ModuleEq",
             ((x1 :> Paths.Fragment.t), x2),
             Pair (fragment, module_decl) )
+    | ModuleTypeEq (x1, x2) ->
+        C
+          ( "ModuleTypeEq",
+            ((x1 :> Paths.Fragment.t), x2),
+            Pair (fragment, moduletype_expr) )
     | TypeEq (x1, x2) ->
         C
           ( "TypeEq",
@@ -79,6 +84,11 @@ and moduletype_substitution =
           ( "ModuleSubst",
             ((x1 :> Paths.Fragment.t), (x2 :> Paths.Path.t)),
             Pair (fragment, path) )
+    | ModuleTypeSubst (x1, x2) ->
+        C
+          ( "ModuleTypeSubst",
+            ((x1 :> Paths.Fragment.t), x2),
+            Pair (fragment, moduletype_expr) )
     | TypeSubst (x1, x2) ->
         C
           ( "TypeSubst",
@@ -176,6 +186,17 @@ and modulesubstitution_t =
       F ("manifest", (fun t -> (t.manifest :> Paths.Path.t)), path);
     ]
 
+(** {3 ModuleTypeSubstitution} *)
+
+and moduletypesubstitution_t =
+  let open Lang.ModuleTypeSubstitution in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), docs);
+      F ("manifest", (fun t -> t.manifest), moduletype_expr);
+    ]
+
 (** {3 Signature} *)
 
 and signature_recursive =
@@ -195,6 +216,8 @@ and signature_item =
         C ("Module", (x1, x2), Pair (signature_recursive, module_t))
     | ModuleType x -> C ("ModuleType", x, moduletype_t)
     | ModuleSubstitution x -> C ("ModuleSubstitution", x, modulesubstitution_t)
+    | ModuleTypeSubstitution x ->
+        C ("ModuleTypeSubstitution", x, moduletypesubstitution_t)
     | Open x -> C ("Open", x, open_t)
     | Type (x1, x2) ->
         C ("Type", (x1, x2), Pair (signature_recursive, typedecl_t))

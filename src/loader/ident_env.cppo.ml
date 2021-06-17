@@ -596,6 +596,11 @@ module Fragment = struct
     | Longident.Ldot(p, s) -> `Dot((read_module p :> Paths.Fragment.Signature.t), s)
     | Longident.Lapply _ -> assert false
 
+  let read_module_type : Longident.t -> Paths.Fragment.ModuleType.t = function
+    | Longident.Lident s -> `Dot(`Root, s)
+    | Longident.Ldot(p, s) -> `Dot((read_module p :> Paths.Fragment.Signature.t), s)
+    | Longident.Lapply _ -> assert false
+
   let read_type = function
     | Longident.Lident s -> `Dot(`Root, s)
     | Longident.Ldot(p, s) -> `Dot((read_module p :> Paths.Fragment.Signature.t), s)

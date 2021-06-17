@@ -18,6 +18,9 @@ and resolved_module =
   | `Module of resolved_signature * ModuleName.t
   | `OpaqueModule of resolved_module ]
 
+and resolved_module_type =
+  [ `ModuleType of resolved_signature * ModuleTypeName.t ]
+
 and resolved_type =
   [ `Type of resolved_signature * TypeName.t
   | `Class of resolved_signature * ClassName.t
@@ -29,6 +32,9 @@ type signature =
   [ `Resolved of resolved_signature | `Dot of signature * string | `Root ]
 
 and module_ = [ `Resolved of resolved_module | `Dot of signature * string ]
+
+and module_type =
+  [ `Resolved of resolved_module_type | `Dot of signature * string ]
 
 and type_ = [ `Resolved of resolved_type | `Dot of signature * string ]
 
@@ -83,6 +89,24 @@ let module_split : module_ -> string * module_ option = function
       | Base _ -> (name, None)
       | Branch (base, m) -> (ModuleName.to_string base, Some (`Dot (m, name))))
 
+let resolved_module_type_split :
+    resolved_module_type -> string * resolved_module_type option = function
+  | `ModuleType (m, name) -> (
+      match resolved_signature_split_parent m with
+      | RBase _ -> (ModuleTypeName.to_string name, None)
+      | RBranch (base, m) ->
+          (ModuleName.to_string base, Some (`ModuleType (m, name))))
+
+let module_type_split : module_type -> string * module_type option = function
+  | `Resolved r ->
+      let base, m = resolved_module_type_split r in
+      let m = match m with None -> None | Some m -> Some (`Resolved m) in
+      (base, m)
+  | `Dot (m, name) -> (
+      match signature_split_parent m with
+      | Base _ -> (name, None)
+      | Branch (base, m) -> (ModuleName.to_string base, Some (`Dot (m, name))))
+
 let resolved_type_split : resolved_type -> string * resolved_type option =
   function
   | `Type (m, name) -> (
@@ -127,3 +151,7 @@ and unresolve_type : resolved_type -> type_ = function
       `Dot (unresolve_signature parent, ClassTypeName.to_string name)
   | `Class (parent, name) ->
       `Dot (unresolve_signature parent, ClassName.to_string name)
+
+and unresolve_module_type : resolved_module_type -> module_type = function
+  | `ModuleType (parent, name) ->
+      `Dot (unresolve_signature parent, ModuleTypeName.to_string name)

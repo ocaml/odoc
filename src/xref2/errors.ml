@@ -215,6 +215,7 @@ type what =
   | `Type of Cfrag.type_
   | `Type_path of Cpath.type_
   | `With_module of Cfrag.module_
+  | `With_module_type of Cfrag.module_type
   | `With_type of Cfrag.type_
   | `Module_type_expr of Component.ModuleType.expr
   | `Module_type_u_expr of Component.ModuleType.U.expr
@@ -264,6 +265,8 @@ let report ~(what : what) ?tools_error action =
   | `Type cfrag -> r "type" type_fragment cfrag
   | `Type_path path -> r "type" type_path path
   | `With_module frag -> r "module substitution" module_fragment frag
+  | `With_module_type frag ->
+      r "module type substitution" module_type_fragment frag
   | `With_type frag -> r "type substitution" type_fragment frag
   | `Module_type_expr cexpr -> r "module type expression" module_type_expr cexpr
   | `Module_type_u_expr cexpr ->

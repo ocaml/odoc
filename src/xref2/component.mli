@@ -77,6 +77,10 @@ and ModuleSubstitution : sig
   type t = { doc : CComment.docs; manifest : Cpath.module_ }
 end
 
+and ModuleTypeSubstitution : sig
+  type t = { doc : CComment.docs; manifest : ModuleType.expr }
+end
+
 and TypeExpr : sig
   module Polymorphic_variant : sig
     type kind = Odoc_model.Lang.TypeExpr.Polymorphic_variant.kind
@@ -162,6 +166,8 @@ and ModuleType : sig
   type substitution =
     | ModuleEq of Cfrag.module_ * Module.decl
     | ModuleSubst of Cfrag.module_ * Cpath.module_
+    | ModuleTypeEq of Cfrag.module_type * ModuleType.expr
+    | ModuleTypeSubst of Cfrag.module_type * ModuleType.expr
     | TypeEq of Cfrag.type_ * TypeDecl.Equation.t
     | TypeSubst of Cfrag.type_ * TypeDecl.Equation.t
 
@@ -269,6 +275,7 @@ and Signature : sig
     | Module of Ident.module_ * recursive * Module.t Delayed.t
     | ModuleSubstitution of Ident.module_ * ModuleSubstitution.t
     | ModuleType of Ident.module_type * ModuleType.t Delayed.t
+    | ModuleTypeSubstitution of Ident.module_type * ModuleTypeSubstitution.t
     | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
     | Exception of Ident.exception_ * Exception.t
@@ -286,6 +293,7 @@ and Signature : sig
   type removed_item =
     | RModule of Ident.module_ * Cpath.Resolved.module_
     | RType of Ident.type_ * TypeExpr.t * TypeDecl.Equation.t
+    | RModuleType of Ident.module_type * ModuleType.expr
 
   type t = {
     items : item list;
@@ -398,6 +406,7 @@ and Substitution : sig
     type_ : subst_type PathTypeMap.t;
     class_type : subst_class_type PathClassTypeMap.t;
     type_replacement : (TypeExpr.t * TypeDecl.Equation.t) PathTypeMap.t;
+    module_type_replacement : ModuleType.expr ModuleTypeMap.t;
     path_invalidating_modules : Ident.path_module list;
     module_type_of_invalidating_modules : Ident.path_module list;
     unresolve_opaque_paths : bool;
@@ -582,6 +591,8 @@ module Fmt : sig
 
   val module_fragment : Format.formatter -> Cfrag.module_ -> unit
 
+  val module_type_fragment : Format.formatter -> Cfrag.module_type -> unit
+
   val type_fragment : Format.formatter -> Cfrag.type_ -> unit
 
   val model_resolved_reference :
@@ -632,6 +643,11 @@ module Of_Lang : sig
   val resolved_module_fragment :
     map -> Odoc_model.Paths.Fragment.Resolved.Module.t -> Cfrag.resolved_module
 
+  val resolved_module_type_fragment :
+    map ->
+    Odoc_model.Paths.Fragment.Resolved.ModuleType.t ->
+    Cfrag.resolved_module_type
+
   val resolved_type_fragment :
     map -> Odoc_model.Paths.Fragment.Resolved.Type.t -> Cfrag.resolved_type
 
@@ -642,6 +658,9 @@ module Of_Lang : sig
     map -> Odoc_model.Paths.Fragment.Module.t -> Cfrag.module_
 
   val type_fragment : map -> Odoc_model.Paths.Fragment.Type.t -> Cfrag.type_
+
+  val module_type_fragment :
+    map -> Odoc_model.Paths.Fragment.ModuleType.t -> Cfrag.module_type
 
   val type_decl : map -> Odoc_model.Lang.TypeDecl.t -> TypeDecl.t
 
@@ -686,7 +705,7 @@ module Of_Lang : sig
 
   val module_ : map -> Odoc_model.Lang.Module.t -> Module.t
 
-  val module_type_substitution :
+  val with_module_type_substitution :
     map -> Odoc_model.Lang.ModuleType.substitution -> ModuleType.substitution
 
   val functor_parameter :

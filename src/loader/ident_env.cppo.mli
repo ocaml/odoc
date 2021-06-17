@@ -63,5 +63,7 @@ val find_class_type_identifier : t -> Ident.t -> Paths.Identifier.ClassType.t
 module Fragment : sig
   val read_module : Longident.t -> Paths.Fragment.Module.t
 
+  val read_module_type : Longident.t -> Paths.Fragment.ModuleType.t
+
   val read_type : Longident.t -> Paths.Fragment.Type.t
 end
