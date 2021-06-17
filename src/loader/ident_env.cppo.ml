@@ -229,6 +229,10 @@ let rec extract_signature_tree_items hide_item items =
       List.map (fun decl -> `Type (decl.typ_id, hide_item)) 
         ts @ extract_signature_tree_items hide_item rest
 #endif
+#if OCAML_VERSION >= (4,13,0)
+    | { sig_desc = Tsig_modtypesubst mtd; _ } :: rest ->
+      [`ModuleType (mtd.mtd_id, hide_item)] @ extract_signature_tree_items hide_item rest
+#endif
     | { sig_desc = Tsig_typext _; _} :: rest
     | { sig_desc = Tsig_exception _; _} :: rest
     | { sig_desc = Tsig_open _;_} :: rest -> extract_signature_tree_items hide_item rest
@@ -241,7 +245,11 @@ let rec read_pattern hide_item pat =
   | Tpat_alias(pat, id, _) -> `Value(id, hide_item) :: read_pattern hide_item pat
   | Tpat_record(pats, _) -> 
       List.concat (List.map (fun (_, _, pat) -> read_pattern hide_item pat) pats)
-  | Tpat_construct(_, _, pats) 
+#if OCAML_VERSION < (4,13,0)
+  | Tpat_construct(_, _, pats)
+#else
+  | Tpat_construct(_, _, pats, _)
+#endif
   | Tpat_array pats
   | Tpat_tuple pats -> List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
   | Tpat_or(pat, _, _)

@@ -470,6 +470,10 @@ let rec read_with_constraint env parent (_, frag, constr) =
         let frag = Env.Fragment.read_module frag.Location.txt in
         let p = Env.Path.read_module env p in
           ModuleSubst(frag, p)
+#if OCAML_VERSION >= (4,13,0)
+   | Twith_modtype _ -> failwith "with module type not yet implemented"
+   | Twith_modtypesubst _ -> failwith "with module type not yet implemented"
+#endif
 
 and read_module_type env parent label_parent mty =
   let open ModuleType in
@@ -681,6 +685,10 @@ and read_signature_item env parent item =
         read_type_substitutions env parent tst
     | Tsig_modsubst mst ->
         [ModuleSubstitution (read_module_substitution env parent mst)]
+#if OCAML_VERSION >= (4,13,0)
+    | Tsig_modtypesubst _ -> failwith "local module type substitution not yet implemented"
+#endif
+
 
 and read_module_substitution env parent ms =
   let open ModuleSubstitution in
