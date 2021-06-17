@@ -266,6 +266,10 @@ module rec Fragment : sig
     [ `Resolved of Resolved_fragment.module_ | `Dot of signature * string ]
   (** @canonical Odoc_model.Paths.Fragment.Module.t *)
 
+  type module_type =
+    [ `Resolved of Resolved_fragment.module_type | `Dot of signature * string ]
+  (** @canonical Odoc_model.Paths.Fragment.ModuleType.t *)
+
   type type_ =
     [ `Resolved of Resolved_fragment.type_ | `Dot of signature * string ]
   (** @canonical Odoc_model.Paths.Fragment.Type.t *)
@@ -307,7 +311,10 @@ and Resolved_fragment : sig
     | `ClassType of signature * ClassTypeName.t ]
   (** @canonical Odoc_model.Paths.Fragment.Resolved.Type.t *)
 
-  type leaf = [ module_ | type_ ]
+  and module_type = [ `Module_type of signature * ModuleTypeName.t ]
+  (** @canonical Odoc_model.Paths.Fragment.Resolved.ModuleType.t *)
+
+  type leaf = [ module_ | module_type | type_ ]
   (** @canonical Odoc_model.Paths.Fragment.Resolved.leaf *)
 
   (* Absence of `Root here might make coersions annoying *)
@@ -316,6 +323,7 @@ and Resolved_fragment : sig
     | `Subst of Resolved_path.module_type * module_
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
+    | `Module_type of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t

@@ -402,6 +402,11 @@ module General_paths = struct
             ( "`Module",
               ((x1 :> rf), x2),
               Pair (resolved_fragment, Names.modulename) )
+      | `Module_type (x1, x2) ->
+          C
+            ( "`Module_type",
+              ((x1 :> rf), x2),
+              Pair (resolved_fragment, Names.moduletypename) )
       | `Type (x1, x2) ->
           C ("`Type", ((x1 :> rf), x2), Pair (resolved_fragment, Names.typename))
       | `Class (x1, x2) ->

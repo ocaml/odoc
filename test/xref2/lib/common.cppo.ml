@@ -534,6 +534,10 @@ module LangUtils = struct
                 Format.fprintf ppf "%a%a" model_fragment (frag :> Odoc_model.Paths.Fragment.t) type_equation decl
             | TypeSubst (frag, decl) ->
                 Format.fprintf ppf "%a:%a" model_fragment (frag :> Odoc_model.Paths.Fragment.t) type_equation decl
+            | ModuleTypeEq (frag, decl) ->
+                Format.fprintf ppf "%a%a" model_fragment (frag :> Odoc_model.Paths.Fragment.t) module_type_expr decl
+            | ModuleTypeSubst (frag, decl) ->
+                Format.fprintf ppf "%a:%a" model_fragment (frag :> Odoc_model.Paths.Fragment.t) module_type_expr decl
 
 
         and substitution_list ppf l =

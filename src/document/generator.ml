@@ -165,11 +165,16 @@ module Make (Syntax : SYNTAX) = struct
         | `Subst (_, rr) -> render_resolved_fragment (rr :> t)
         | `SubstAlias (_, rr) -> render_resolved_fragment (rr :> t)
         | `Module (`Root _, s) -> ModuleName.to_string s
+        | `Module_type (`Root _, s) -> ModuleTypeName.to_string s
         | `Type (`Root _, s) -> TypeName.to_string s
         | `Class (`Root _, s) -> ClassName.to_string s
         | `ClassType (`Root _, s) -> ClassTypeName.to_string s
         | `Module (rr, s) ->
             dot (render_resolved_fragment (rr :> t)) (ModuleName.to_string s)
+        | `Module_type (rr, s) ->
+            dot
+              (render_resolved_fragment (rr :> t))
+              (ModuleTypeName.to_string s)
         | `Type (rr, s) ->
             dot (render_resolved_fragment (rr :> t)) (TypeName.to_string s)
         | `Class (rr, s) ->
@@ -1094,6 +1099,12 @@ module Make (Syntax : SYNTAX) = struct
       | `Module (_, name) when ModuleName.is_internal name -> true
       | _ -> false
 
+    let internal_module_type_substitution t =
+      let open Lang.ModuleTypeSubstitution in
+      match t.id with
+      | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
+      | _ -> false
+
     let rec signature (s : Lang.Signature.t) =
       let rec loop l acc_items =
         match l with
@@ -1107,6 +1118,10 @@ module Make (Syntax : SYNTAX) = struct
             | ModuleType m when internal_module_type m -> loop rest acc_items
             | ModuleSubstitution m when internal_module_substitution m ->
                 loop rest acc_items
+            | ModuleTypeSubstitution m when internal_module_type_substitution m
+              ->
+                loop rest acc_items
+            | ModuleTypeSubstitution m -> continue @@ module_type_substitution m
             | Module (_, m) -> continue @@ module_ m
             | ModuleType m -> continue @@ module_type m
             | Class (_, c) -> continue @@ class_ c
@@ -1184,6 +1199,24 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "module-substitution" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
+      Item.Declaration { attr; anchor; doc; content }
+
+    and module_type_substitution (t : Odoc_model.Lang.ModuleTypeSubstitution.t)
+        =
+      let modname = Paths.Identifier.name t.id in
+      let modname, expansion_doc, mty =
+        module_type_manifest ~subst:true modname t.id t.doc (Some t.manifest)
+      in
+      let content =
+        O.documentedSrc
+          (O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " ")
+        @ modname @ mty
+        @ O.documentedSrc
+            (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
+      in
+      let attr = [ "module-type" ] in
+      let anchor = path_to_id t.id in
+      let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
       Item.Declaration { attr; anchor; doc; content }
 
     and simple_expansion :
@@ -1327,10 +1360,9 @@ module Make (Syntax : SYNTAX) = struct
       | Alias (mod_path, _) -> Link.from_path (mod_path :> Paths.Path.t)
       | ModuleType mt -> mty mt
 
-    and module_type (t : Odoc_model.Lang.ModuleType.t) =
-      let modname = Paths.Identifier.name t.id in
+    and module_type_manifest ~subst modname id doc manifest =
       let expansion =
-        match t.expr with
+        match manifest with
         | None -> None
         | Some e -> expansion_of_module_type_expr e
       in
@@ -1338,20 +1370,27 @@ module Make (Syntax : SYNTAX) = struct
         match expansion with
         | None -> (O.documentedSrc @@ O.txt modname, None, None)
         | Some (expansion_doc, items) ->
-            let url = Url.Path.from_identifier t.id in
+            let url = Url.Path.from_identifier id in
             let link = path url [ inline @@ Text modname ] in
             let page =
-              make_expansion_page modname `Mty url [ t.doc; expansion_doc ]
-                items
+              make_expansion_page modname `Mty url [ doc; expansion_doc ] items
             in
             (O.documentedSrc link, Some page, Some expansion_doc)
       in
       let summary =
-        match t.expr with
+        match manifest with
         | None -> O.noop
-        | Some expr -> O.txt " = " ++ mty expr
+        | Some expr -> (if subst then O.txt " := " else O.txt " = ") ++ mty expr
       in
-      let mty = attach_expansion (" = ", "sig", "end") expansion summary in
+      ( modname,
+        expansion_doc,
+        attach_expansion (" = ", "sig", "end") expansion summary )
+
+    and module_type (t : Odoc_model.Lang.ModuleType.t) =
+      let modname = Paths.Identifier.name t.id in
+      let modname, expansion_doc, mty =
+        module_type_manifest ~subst:false modname t.id t.doc t.expr
+      in
       let content =
         O.documentedSrc
           (O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " ")
@@ -1491,6 +1530,10 @@ module Make (Syntax : SYNTAX) = struct
           O.keyword "module" ++ O.sp
           ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
           ++ O.sp ++ O.txt "= " ++ mdexpr md
+      | ModuleTypeEq (frag_mty, md) ->
+          O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
+          ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
+          ++ O.txt " = " ++ mty md
       | TypeEq (frag_typ, td) ->
           O.keyword "type" ++ O.sp
           ++ type_expr_in_subst td (frag_typ :> Paths.Fragment.leaf)
@@ -1501,6 +1544,10 @@ module Make (Syntax : SYNTAX) = struct
           ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
           ++ O.sp ++ O.txt ":= "
           ++ Link.from_path (mod_path :> Paths.Path.t)
+      | ModuleTypeSubst (frag_mty, md) ->
+          O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
+          ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
+          ++ O.txt " := " ++ mty md
       | TypeSubst (frag_typ, td) -> (
           O.keyword "type" ++ O.sp
           ++ type_expr_in_subst td (frag_typ :> Paths.Fragment.leaf)

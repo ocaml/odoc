@@ -21,7 +21,9 @@ type exception_ = [ `FExn of ExceptionName.t * Exception.t ]
 type extension = [ `FExt of Extension.t * Extension.Constructor.t ]
 
 type substitution =
-  [ `FModule_subst of ModuleSubstitution.t | `FType_subst of TypeDecl.t ]
+  [ `FModule_subst of ModuleSubstitution.t
+  | `FType_subst of TypeDecl.t
+  | `FModuleType_subst of ModuleTypeSubstitution.t ]
 
 type signature = [ module_ | module_type ]
 
@@ -87,6 +89,12 @@ let module_in_sig sg name =
         Some (`FModule (N.typed_module id, Delayed.get m))
     | _ -> None)
 
+let module_type_in_sig sg name =
+  find_in_sig sg (function
+    | Signature.ModuleType (id, mt) when N.module_type id = name ->
+        Some (`FModuleType (N.typed_module_type id, Delayed.get mt))
+    | _ -> None)
+
 let type_in_sig sg name =
   find_in_sig sg (function
     | Signature.Type (id, _, m) when N.type_ id = name ->
@@ -110,6 +118,9 @@ type removed_type =
 
 type careful_module = [ module_ | `FModule_removed of Cpath.Resolved.module_ ]
 
+type careful_module_type =
+  [ module_type | `FModuleType_removed of ModuleType.expr ]
+
 type careful_type = [ type_ | removed_type ]
 
 type careful_class = [ class_ | removed_type ]
@@ -123,6 +134,16 @@ let careful_module_in_sig sg name =
   match module_in_sig sg name with
   | Some _ as x -> x
   | None -> find_map removed_module sg.Signature.removed
+
+let careful_module_type_in_sig sg name =
+  let removed_module_type = function
+    | Signature.RModuleType (id, p) when N.module_type id = name ->
+        Some (`FModuleType_removed p)
+    | _ -> None
+  in
+  match module_type_in_sig sg name with
+  | Some _ as x -> x
+  | None -> find_map removed_module_type sg.Signature.removed
 
 let removed_type_in_sig sg name =
   let removed_type = function

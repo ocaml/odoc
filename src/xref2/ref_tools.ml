@@ -85,7 +85,7 @@ let ref_kind_of_element = function
 
 let ref_kind_of_find = function
   | `FModule _ | `FModule_subst _ -> "module"
-  | `FModuleType _ -> "module-type"
+  | `FModuleType _ | `FModuleType_subst _ -> "module-type"
   | `FType _ | `FType_subst _ -> "type"
   | `FValue _ | `FExternal _ -> "val"
   | `FLabel _ -> "section"
@@ -684,7 +684,7 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
       match r with
       | `FConstructor _ -> CS.of_component env parent name >>= resolved1
       | `FField _ -> F.of_component env parent name >>= resolved1)
-  | `FModule_subst _ | `FType_subst _ -> None
+  | `FModule_subst _ | `FType_subst _ | `FModuleType_subst _ -> None
 
 let resolve_reference_dot_page env page name =
   L.in_page env page name >>= resolved1

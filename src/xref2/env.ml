@@ -616,6 +616,17 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | Odoc_model.Lang.Signature.ModuleType t ->
             let ty = module_type empty t in
             add_module_type t.Odoc_model.Lang.ModuleType.id ty env
+        | Odoc_model.Lang.Signature.ModuleTypeSubstitution t ->
+            let ty =
+              module_type empty
+                {
+                  id = t.id;
+                  doc = t.doc;
+                  expr = Some t.manifest;
+                  canonical = None;
+                }
+            in
+            add_module_type t.Odoc_model.Lang.ModuleTypeSubstitution.id ty env
         | Odoc_model.Lang.Signature.Comment c -> add_comment c env
         | Odoc_model.Lang.Signature.TypExt te ->
             let doc = docs empty te.doc in

@@ -229,6 +229,8 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
             let ty = Component.Of_Lang.(module_type empty m') in
             let env' = Env.add_module_type mt.id ty env in
             (ModuleType (module_type env mt) :: items, env')
+        | ModuleTypeSubstitution mt ->
+            std @@ ModuleTypeSubstitution (module_type_substitution env mt)
         | Value v -> std @@ Value (value_ env id v)
         | Comment c -> std @@ Comment c
         | TypExt t -> std @@ TypExt (extension env id t)
@@ -264,6 +266,13 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
       ([], env) s
   in
   List.rev items
+
+and module_type_substitution env mt =
+  let open ModuleTypeSubstitution in
+  {
+    mt with
+    manifest = module_type_expr env (mt.id :> Id.Signature.t) mt.manifest;
+  }
 
 and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
  fun env id s ->
@@ -475,7 +484,54 @@ and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
               sg
             >>= fun sg' ->
             Ok (sg', Odoc_model.Lang.ModuleType.TypeSubst (frag', eqn'))
+        | ModuleTypeEq (frag, mty) ->
+            let cfrag = Component.Of_Lang.(module_type_fragment empty frag) in
+            let cfrag', frag' =
+              match
+                Tools.resolve_module_type_fragment env (fragment_root, sg) cfrag
+              with
+              | Some cfrag' ->
+                  ( `Resolved cfrag',
+                    `Resolved
+                      (Lang_of.Path.resolved_module_type_fragment lang_of_map
+                         cfrag') )
+              | None ->
+                  Errors.report ~what:(`With_module_type cfrag) `Resolve;
+                  (cfrag, frag)
+            in
+            let mty = module_type_expr env id mty in
+            let mty' = Component.Of_Lang.(module_type_expr empty mty) in
+            let resolved_csub =
+              Component.ModuleType.ModuleTypeEq (cfrag', mty')
+            in
+            Tools.fragmap ~mark_substituted:true env resolved_csub sg
+            >>= fun sg' ->
+            Ok (sg', Odoc_model.Lang.ModuleType.ModuleTypeEq (frag', mty))
+        | Odoc_model.Lang.ModuleType.ModuleTypeSubst (frag, mty) ->
+            let cfrag = Component.Of_Lang.(module_type_fragment empty frag) in
+            let cfrag', frag' =
+              match
+                Tools.resolve_module_type_fragment env (fragment_root, sg) cfrag
+              with
+              | Some cfrag' ->
+                  ( `Resolved cfrag',
+                    `Resolved
+                      (Lang_of.Path.resolved_module_type_fragment lang_of_map
+                         cfrag') )
+              | None ->
+                  Errors.report ~what:(`With_module_type cfrag) `Resolve;
+                  (cfrag, frag)
+            in
+            let mty = module_type_expr env id mty in
+            let mty' = Component.Of_Lang.(module_type_expr empty mty) in
+            let resolved_csub =
+              Component.ModuleType.ModuleTypeSubst (cfrag', mty')
+            in
+            Tools.fragmap ~mark_substituted:true env resolved_csub sg
+            >>= fun sg' ->
+            Ok (sg', Odoc_model.Lang.ModuleType.ModuleTypeSubst (frag', mty))
       in
+
       match sg_and_sub with
       | Ok (sg', sub') -> (Ok sg', env, sub' :: subs)
       | Error _ -> (sg_res, env, lsub :: subs))

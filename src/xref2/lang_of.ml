@@ -81,7 +81,11 @@ module Path = struct
     | `Identifier ((#Odoc_model.Paths.Identifier.ModuleType.t as y), b) ->
         `Identifier (y, b)
     | `Local (id, b) ->
-        `Identifier (Component.ModuleTypeMap.find id map.module_type, b)
+        `Identifier
+          ( (try Component.ModuleTypeMap.find id map.module_type
+             with Not_found ->
+               failwith (Format.asprintf "Not_found: %a" Ident.fmt id)),
+            b )
     | `Resolved x -> `Resolved (resolved_module_type map x)
     | `Dot (p, n) -> `Dot (module_ map p, n)
     | `ModuleType (`Module p, n) ->
@@ -156,7 +160,11 @@ module Path = struct
     match p with
     | `Identifier (#Odoc_model.Paths.Identifier.ModuleType.t as y) ->
         `Identifier y
-    | `Local id -> `Identifier (Component.ModuleTypeMap.find id map.module_type)
+    | `Local id ->
+        `Identifier
+          (try Component.ModuleTypeMap.find id map.module_type
+           with Not_found ->
+             failwith (Format.asprintf "Not_found: %a" Ident.fmt id))
     | `ModuleType (p, name) -> `ModuleType (resolved_parent map p, name)
     | `Substituted s -> resolved_module_type map s
     | `SubstT (p1, p2) ->
@@ -242,6 +250,21 @@ module Path = struct
     | `Type (p, n) -> `Type (resolved_signature_fragment map p, n)
     | `ClassType (p, n) -> `ClassType (resolved_signature_fragment map p, n)
     | `Class (p, n) -> `Class (resolved_signature_fragment map p, n)
+
+  let rec module_type_fragment :
+      maps -> Cfrag.module_type -> Odoc_model.Paths.Fragment.ModuleType.t =
+   fun map f ->
+    match f with
+    | `Resolved r -> `Resolved (resolved_module_type_fragment map r)
+    | `Dot (sg, p) -> `Dot (signature_fragment map sg, p)
+
+  and resolved_module_type_fragment :
+      maps ->
+      Cfrag.resolved_module_type ->
+      Odoc_model.Paths.Fragment.Resolved.ModuleType.t =
+   fun map f ->
+    match f with
+    | `ModuleType (p, n) -> `Module_type (resolved_signature_fragment map p, n)
 end
 
 module ExtractIDs = struct
@@ -341,6 +364,8 @@ module ExtractIDs = struct
       | Module (id, _, _) :: rest -> inner rest (module_ parent map id)
       | ModuleSubstitution (id, _) :: rest -> inner rest (module_ parent map id)
       | ModuleType (id, _mt) :: rest -> inner rest (module_type parent map id)
+      | ModuleTypeSubstitution (id, _mt) :: rest ->
+          inner rest (module_type parent map id)
       | Type (id, _, _t) :: rest -> inner rest (type_decl parent map id)
       | TypeSubstitution (id, _t) :: rest ->
           inner rest (type_decl parent map id)
@@ -377,6 +402,11 @@ let rec signature_items id map items =
     | ModuleType (id, m) :: rest ->
         inner rest
           (Odoc_model.Lang.Signature.ModuleType (module_type map parent id m)
+           :: acc)
+    | ModuleTypeSubstitution (id, m) :: rest ->
+        inner rest
+          (Odoc_model.Lang.Signature.ModuleTypeSubstitution
+             (module_type_substitution map parent id m)
            :: acc)
     | Type (id, r, t) :: rest ->
         let t = Component.Delayed.get t in
@@ -697,6 +727,12 @@ and mty_substitution map identifier = function
       TypeSubst
         ( Path.type_fragment map frag,
           type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
+  | ModuleTypeEq (frag, eqn) ->
+      ModuleTypeEq
+        (Path.module_type_fragment map frag, module_type_expr map identifier eqn)
+  | ModuleTypeSubst (frag, eqn) ->
+      ModuleTypeSubst
+        (Path.module_type_fragment map frag, module_type_expr map identifier eqn)
 
 and u_module_type_expr map identifier = function
   | Component.ModuleType.U.Path p_path ->
@@ -786,6 +822,22 @@ and module_type :
     doc = docs (parent :> Identifier.LabelParent.t) mty.doc;
     canonical = Opt.map (Path.module_type map) mty.canonical;
     expr = Opt.map (module_type_expr map sig_id) mty.expr;
+  }
+
+and module_type_substitution :
+    maps ->
+    Identifier.Signature.t ->
+    Ident.module_type ->
+    Component.ModuleTypeSubstitution.t ->
+    Odoc_model.Lang.ModuleTypeSubstitution.t =
+ fun map parent id mty ->
+  let identifier = Component.ModuleTypeMap.find id map.module_type in
+  let sig_id = (identifier :> Odoc_model.Paths.Identifier.Signature.t) in
+  let map = { map with shadowed = empty_shadow } in
+  {
+    Odoc_model.Lang.ModuleTypeSubstitution.id = identifier;
+    doc = docs (parent :> Identifier.LabelParent.t) mty.doc;
+    manifest = module_type_expr map sig_id mty.manifest;
   }
 
 and type_decl_constructor_argument :

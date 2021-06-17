@@ -46,6 +46,14 @@ let prefix_substitution path sg =
              (`ModuleType (path, name))
              sub')
           rest
+    | ModuleTypeSubstitution (id, _) :: rest ->
+        let name = Ident.Name.typed_module_type id in
+        get_sub
+          (Subst.add_module_type id
+             (`ModuleType (path, name))
+             (`ModuleType (path, name))
+             sub')
+          rest
     | ModuleSubstitution (id, _) :: rest ->
         let name = Ident.Name.typed_module id in
         get_sub
@@ -93,6 +101,13 @@ let prefix_substitution path sg =
               (`Module (path, name))
               (`Module (path, name))
               map
+        | Component.Signature.RModuleType (id, _) ->
+            let name = Ident.Name.typed_module_type id in
+            Subst.add_module_type
+              (id :> Ident.module_type)
+              (`ModuleType (path, name))
+              (`ModuleType (path, name))
+              map
         | Component.Signature.RType (id, _, _) ->
             let name = Ident.Name.typed_type id in
             Subst.add_type id (`Type (path, name)) (`Type (path, name)) map)
@@ -128,6 +143,9 @@ let prefix_signature (path, sg) =
         | ModuleSubstitution (id, m) ->
             ModuleSubstitution
               (Ident.Rename.module_ id, Subst.module_substitution sub m)
+        | ModuleTypeSubstitution (id, m) ->
+            ModuleTypeSubstitution
+              (Ident.Rename.module_type id, Subst.module_type_substitution sub m)
         | Exception (id, e) -> Exception (id, Subst.exception_ sub e)
         | TypExt t -> TypExt (Subst.extension sub t)
         | Value (id, v) ->
@@ -168,6 +186,10 @@ type resolve_class_type_result =
   ( Cpath.Resolved.class_type * Find.careful_class,
     simple_type_lookup_error )
   Result.result
+
+type ('a, 'b, 'c) sig_map = { type_ : 'a; module_ : 'b; module_type : 'c }
+
+let id_map = { type_ = None; module_ = None; module_type = None }
 
 module type MEMO = sig
   type result
@@ -1295,12 +1317,12 @@ and fragmap :
     map_module_decl m.type_ new_subst >>= fun type_ ->
     Ok (Left { m with type_ })
   in
-  let rec map_signature tymap modmap items =
+  let rec map_signature map items =
     List.fold_right
       (fun item acc ->
         acc >>= fun (items, handled, subbed_modules, removed) ->
-        match (item, tymap, modmap) with
-        | Component.Signature.Type (id, r, t), Some (id', fn), _
+        match (item, map) with
+        | Component.Signature.Type (id, r, t), { type_ = Some (id', fn); _ }
           when Ident.Name.type_ id = id' -> (
             fn (Component.Delayed.get t) >>= function
             | Left x ->
@@ -1317,7 +1339,7 @@ and fragmap :
                     true,
                     subbed_modules,
                     Component.Signature.RType (id, texpr, eq) :: removed ))
-        | Component.Signature.Module (id, r, m), _, Some (id', fn)
+        | Component.Signature.Module (id, r, m), { module_ = Some (id', fn); _ }
           when Ident.Name.module_ id = id' -> (
             fn (Component.Delayed.get m) >>= function
             | Left x ->
@@ -1334,8 +1356,8 @@ and fragmap :
                     true,
                     subbed_modules,
                     Component.Signature.RModule (id, y) :: removed ))
-        | Component.Signature.Include ({ expansion_; _ } as i), _, _ ->
-            map_signature tymap modmap expansion_.items
+        | Component.Signature.Include ({ expansion_; _ } as i), _ ->
+            map_signature map expansion_.items
             >>= fun (items', handled', subbed_modules', removed') ->
             let component =
               if handled' then
@@ -1360,13 +1382,31 @@ and fragmap :
                 handled' || handled,
                 subbed_modules' @ subbed_modules,
                 removed' @ removed )
-        | x, _, _ -> Ok (x :: items, handled, subbed_modules, removed))
+        | ( Component.Signature.ModuleType (id, mt),
+            { module_type = Some (id', fn); _ } )
+          when Ident.Name.module_type id = id' -> (
+            fn (Component.Delayed.get mt) >>= function
+            | Left x ->
+                Ok
+                  ( Component.Signature.ModuleType
+                      (id, Component.Delayed.put (fun () -> x))
+                    :: items,
+                    true,
+                    subbed_modules,
+                    removed )
+            | Right y ->
+                Ok
+                  ( items,
+                    true,
+                    subbed_modules,
+                    Component.Signature.RModuleType (id, y) :: removed ))
+        | x, _ -> Ok (x :: items, handled, subbed_modules, removed))
       items
       (Ok ([], false, [], []))
   in
   let handle_intermediate name new_subst =
     let modmaps = Some (name, fun m -> map_module m new_subst) in
-    map_signature None modmaps sg.items
+    map_signature { id_map with module_ = modmaps } sg.items
   in
   let new_sg =
     match sub with
@@ -1389,7 +1429,7 @@ and fragmap :
               in
               Ok (Left { m with Component.Module.type_ })
             in
-            map_signature None (Some (name, mapfn)) sg.items)
+            map_signature { id_map with module_ = Some (name, mapfn) } sg.items)
     | ModuleSubst (frag, p) -> (
         match Cfrag.module_split frag with
         | name, Some frag' ->
@@ -1406,7 +1446,31 @@ and fragmap :
                     "failed to resolve path: %a\n%!" Component.Fmt.module_path p;
                   Error (`UnresolvedPath (`Module (p, e)))
             in
-            map_signature None (Some (name, mapfn)) sg.items)
+            map_signature { id_map with module_ = Some (name, mapfn) } sg.items)
+    | ModuleTypeEq (frag, mtye) -> (
+        match Cfrag.module_type_split frag with
+        | name, Some frag' ->
+            let new_subst = Component.ModuleType.ModuleTypeEq (frag', mtye) in
+            handle_intermediate name new_subst
+        | name, None ->
+            let mapfn t =
+              Ok (Left { t with Component.ModuleType.expr = Some mtye })
+            in
+            map_signature
+              { id_map with module_type = Some (name, mapfn) }
+              sg.items)
+    | ModuleTypeSubst (frag, mtye) -> (
+        match Cfrag.module_type_split frag with
+        | name, Some frag' ->
+            let new_subst =
+              Component.ModuleType.ModuleTypeSubst (frag', mtye)
+            in
+            handle_intermediate name new_subst
+        | name, None ->
+            let mapfn _t = Ok (Right mtye) in
+            map_signature
+              { id_map with module_type = Some (name, mapfn) }
+              sg.items)
     | TypeEq (frag, equation) -> (
         match Cfrag.type_split frag with
         | name, Some frag' ->
@@ -1414,7 +1478,7 @@ and fragmap :
             handle_intermediate name new_subst
         | name, None ->
             let mapfn t = Ok (Left { t with Component.TypeDecl.equation }) in
-            map_signature (Some (name, mapfn)) None sg.items)
+            map_signature { id_map with type_ = Some (name, mapfn) } sg.items)
     | TypeSubst
         ( frag,
           ({ Component.TypeDecl.Equation.manifest = Some x; _ } as equation) )
@@ -1425,7 +1489,7 @@ and fragmap :
             handle_intermediate name new_subst
         | name, None ->
             let mapfn _t = Ok (Right (x, equation)) in
-            map_signature (Some (name, mapfn)) None sg.items)
+            map_signature { id_map with type_ = Some (name, mapfn) } sg.items)
     | TypeSubst (_, { Component.TypeDecl.Equation.manifest = None; _ }) ->
         failwith "Unhandled condition: TypeSubst with no manifest"
   in
@@ -1436,6 +1500,8 @@ and fragmap :
         Subst.add_module (id :> Ident.path_module) (`Resolved p) p sub
     | Component.Signature.RType (id, r_texpr, r_eq) ->
         Subst.add_type_replacement (id :> Ident.path_type) r_texpr r_eq sub
+    | Component.Signature.RModuleType (id, e) ->
+        Subst.add_module_type_replacement (id :> Ident.module_type) e sub
   in
 
   let sub = List.fold_right sub_of_removed removed Subst.identity in
@@ -1548,6 +1614,12 @@ and fixup_module_cfrag (f : Cfrag.resolved_module) : Cfrag.resolved_module =
   | `Module (parent, name) -> `Module (fixup_signature_cfrag parent, name)
   | `OpaqueModule m -> `OpaqueModule (fixup_module_cfrag m)
 
+and fixup_module_type_cfrag (f : Cfrag.resolved_module_type) :
+    Cfrag.resolved_module_type =
+  match f with
+  | `ModuleType (parent, name) ->
+      `ModuleType (fixup_signature_cfrag parent, name)
+
 and fixup_signature_cfrag (f : Cfrag.resolved_signature) =
   match f with
   | `Root x -> `Root x
@@ -1573,6 +1645,19 @@ and find_module_with_replacement :
   | Some (`FModule_removed path) ->
       lookup_module ~mark_substituted:false env path
   | None -> Error `Find_failure
+
+and find_module_type_with_replacement :
+    Env.t ->
+    Component.Signature.t ->
+    string ->
+    ( Component.ModuleType.t Component.Delayed.t,
+      simple_module_type_lookup_error )
+    Result.result =
+ fun _env sg name ->
+  match Find.careful_module_type_in_sig sg name with
+  | Some (`FModuleType (_, m)) -> Ok (Component.Delayed.put_val m)
+  | None -> Error `Find_failure
+  | Some (`FModuleType_removed _mty) -> Error `Find_failure
 
 and resolve_signature_fragment :
     Env.t ->
@@ -1649,6 +1734,32 @@ and resolve_module_fragment :
       in
       Some (fixup_module_cfrag f'')
 
+and resolve_module_type_fragment :
+    Env.t ->
+    Cfrag.root * Component.Signature.t ->
+    Cfrag.module_type ->
+    Cfrag.resolved_module_type option =
+ fun env (p, sg) frag ->
+  match frag with
+  | `Resolved r -> Some r
+  | `Dot (parent, name) ->
+      let open OptionMonad in
+      resolve_signature_fragment env (p, sg) parent
+      >>= fun (pfrag, _ppath, sg) ->
+      of_result (find_module_type_with_replacement env sg name) >>= fun mt' ->
+      let mtname = ModuleTypeName.make_std name in
+      let f' = `ModuleType (pfrag, mtname) in
+      let m' = Component.Delayed.get mt' in
+      let f'' =
+        match signature_of_module_type env m' with
+        | Ok (_m : Component.Signature.t) -> f'
+        | Error
+            ( `UnresolvedForwardPath | `UnresolvedPath _ | `OpaqueModule
+            | `UnexpandedTypeOf _ ) ->
+            f'
+      in
+      Some (fixup_module_type_cfrag f'')
+
 and resolve_type_fragment :
     Env.t ->
     Cfrag.root * Component.Signature.t ->
@@ -1694,6 +1805,12 @@ and reresolve_type_fragment :
   | `Type (p, n) -> `Type (reresolve_signature_fragment env p, n)
   | `ClassType (p, n) -> `ClassType (reresolve_signature_fragment env p, n)
   | `Class (p, n) -> `Class (reresolve_signature_fragment env p, n)
+
+and reresolve_module_type_fragment :
+    Env.t -> Cfrag.resolved_module_type -> Cfrag.resolved_module_type =
+ fun env m ->
+  match m with
+  | `ModuleType (p, n) -> `ModuleType (reresolve_signature_fragment env p, n)
 
 let rec class_signature_of_class :
     Env.t -> Component.Class.t -> Component.ClassSignature.t option =

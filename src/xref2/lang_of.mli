@@ -52,6 +52,9 @@ module Path : sig
   val resolved_module_fragment :
     maps -> Cfrag.resolved_module -> Fragment.Resolved.Module.t
 
+  val resolved_module_type_fragment :
+    maps -> Cfrag.resolved_module_type -> Fragment.Resolved.ModuleType.t
+
   val resolved_signature_fragment :
     maps -> Cfrag.resolved_signature -> Fragment.Resolved.Signature.t
 
