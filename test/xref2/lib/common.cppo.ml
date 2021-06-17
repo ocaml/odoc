@@ -66,7 +66,11 @@ let model_of_string str =
     Odoc_loader__Cmti.read_interface parent "Root" cmti
 
 let model_of_string_impl str =
+#if OCAML_VERSION < (4,13,0)
     let (cmt,_) = cmt_of_string str in
+#else
+    let cmt = (cmt_of_string str).structure in
+#endif
     Odoc_loader__Cmt.read_implementation parent "Root" cmt
 
 let signature_of_mli_string str =

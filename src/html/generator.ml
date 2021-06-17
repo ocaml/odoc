@@ -292,9 +292,9 @@ and items ~resolve l : item Html.elt list =
             | _ -> Stop_and_keep)
         in
         let content = flow_to_item @@ block ~resolve text in
-        content |> (continue_with [@tailcall]) rest
+        (continue_with [@tailcall]) rest content
     | Heading h :: rest ->
-        [ heading ~resolve h ] |> (continue_with [@tailcall]) rest
+        (continue_with [@tailcall]) rest [ heading ~resolve h ]
     | Include { attr; anchor; doc; content = { summary; status; content } }
       :: rest ->
         let doc = spec_doc_div ~resolve doc in
