@@ -311,7 +311,53 @@ let source_files_pre410 = [ ("bugs_pre_410.ml", [ "Bugs_pre_410/index.html" ]) ]
 let source_files_post404 =
   [ ("stop_dead_link_doc.mli", [ "Stop_dead_link_doc/index.html" ]) ]
 
-let source_files =
+let source_files_post413 =
+  [
+    ( "module_type_subst.mli",
+      [
+        "Module_type_subst/index.html";
+        "Module_type_subst/Basic/index.html";
+        "Module_type_subst/Basic/module-type-a/index.html";
+        "Module_type_subst/Basic/module-type-a/M/index.html";
+        "Module_type_subst/Basic/module-type-a/module-type-b/index.html";
+        "Module_type_subst/Basic/module-type-c/index.html";
+        "Module_type_subst/Basic/module-type-c/M/index.html";
+        "Module_type_subst/Basic/module-type-u/index.html";
+        "Module_type_subst/Basic/module-type-u/module-type-T/index.html";
+        "Module_type_subst/Basic/module-type-u2/index.html";
+        "Module_type_subst/Basic/module-type-u2/module-type-T/index.html";
+        "Module_type_subst/Basic/module-type-u2/M/index.html";
+        "Module_type_subst/Basic/module-type-with_/index.html";
+        "Module_type_subst/Basic/module-type-with_/module-type-T/index.html";
+        "Module_type_subst/Basic/module-type-with_2/index.html";
+        "Module_type_subst/Basic/module-type-with_2/module-type-T/index.html";
+        "Module_type_subst/Basic/module-type-with_2/M/index.html";
+        "Module_type_subst/Local/index.html";
+        "Module_type_subst/Local/module-type-s/index.html";
+        "Module_type_subst/Local/module-type-local/index.html";
+        "Module_type_subst/Local/module-type-w/index.html";
+        "Module_type_subst/Nested/index.html";
+        "Module_type_subst/Nested/module-type-nested/index.html";
+        "Module_type_subst/Nested/module-type-nested/N/index.html";
+        "Module_type_subst/Nested/module-type-nested/N/module-type-t/index.html";
+        "Module_type_subst/Nested//module-type-with_/index.html";
+        "Module_type_subst/Nested/module-type-with_/N/index.html";
+        "Module_type_subst/Nested/module-type-with_/N/module-type-t/index.html";
+        "Module_type_subst/Nested//module-type-with_subst/index.html";
+        "Module_type_subst/Nested/module-type-with_subst/N/index.html";
+        "Module_type_subst/Structural/index.html";
+        "Module_type_subst/Structural/module-type-u/index.html";
+        "Module_type_subst/Structural/module-type-u/module-type-a/index.html";
+        "Module_type_subst/Structural/module-type-u/module-type-a/module-type-b/index.html";
+        "Module_type_subst/Structural/module-type-u/module-type-a/module-type-b/module-type-c/index.html";
+        "Module_type_subst/Structural/module-type-w/index.html";
+        "Module_type_subst/Structural/module-type-w/module-type-a/index.html";
+        "Module_type_subst/Structural/module-type-w/module-type-a/module-type-b/index.html";
+        "Module_type_subst/Structural/module-type-w/module-type-a/module-type-b/module-type-c/index.html";
+      ] );
+  ]
+
+let source_files ~syntax =
   let cur =
     Astring.String.cuts ~sep:"." Sys.ocaml_version
     |> List.map (fun i -> try Some (int_of_string i) with _ -> None)
@@ -320,6 +366,8 @@ let source_files =
   | Some major :: Some minor :: _ ->
       List.concat
         [
+          (if major = 4 && minor >= 13 && syntax = `ml then source_files_post413
+          else []);
           (if major = 4 && minor < 10 then source_files_pre410 else []);
           (if major = 4 && minor > 8 then source_files_post408 else []);
           (if major = 4 && minor >= 6 then source_files_post406 else []);
@@ -334,8 +382,10 @@ let () =
   Alcotest.run "html"
     [
       ("support_files", [ output_support_files ]);
-      ("html_ml", List.map (make_test_case ~syntax:`ml) source_files);
-      ("html_re", List.map (make_test_case ~syntax:`re) source_files);
+      ( "html_ml",
+        List.map (make_test_case ~syntax:`ml) (source_files ~syntax:`ml) );
+      ( "html_re",
+        List.map (make_test_case ~syntax:`re) (source_files ~syntax:`re) );
       ( "custom_theme",
         [
           make_test_case ~theme_uri:"/a/b/c"
