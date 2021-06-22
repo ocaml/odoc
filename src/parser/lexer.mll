@@ -213,19 +213,20 @@ let emit_verbatim input start_offset buffer =
   let t = trim_trailing_blank_lines t in
   emit input (`Verbatim t) ~start_offset
 
-let emit_code_block input meta c =
+let get_code_block_meta input meta : string Loc.with_location option =
+  Some (with_location_adjustments ~adjust_start_by:"{@" ~adjust_end_by:"[" (fun _ -> Loc.at) input meta)
+
+let get_code_block_content input c =
   let c = trim_trailing_blank_lines c in
   let c =
     with_location_adjustments
       (fun _ location c ->
-         let first_line_offset = location.start.column + 2 (* Length of {[ *) in
+         let first_line_offset = location.start.column in
          trim_leading_whitespace ~first_line_offset c)
       input c
   in
   let c = trim_leading_blank_lines c in
-  emit input (`Code_block (meta, c))
-
-
+  with_location_adjustments ~adjust_end_by:"]}" (fun _ -> Loc.at) input c
 
 let heading_level input level =
   if String.length level >= 2 && level.[0] = '0' then begin
@@ -328,11 +329,12 @@ rule token input = parse
   | (reference_start as start) ([^ '}']* as target) '}'
     { emit input (reference_token start target) }
 
-  | "{[" (code_block_text as c) "]}"
-    { emit_code_block input None c }
+  | "{["
+    { code_block_with_meta input None lexbuf }
 
-  | "{@" (code_block_meta as m) "[" (code_block_text as c) "]}"
-    { emit_code_block input (Some m) c }
+  | "{@" (code_block_meta as m) "["
+    { let meta = get_code_block_meta input m in
+      code_block_with_meta input meta lexbuf }
 
   | "{v"
     { verbatim
@@ -475,24 +477,6 @@ rule token input = parse
           ~in_what:(Token.describe (reference_token start "")));
       emit input (reference_token start target) }
 
-  | "{[" (code_block_text as c) eof
-    { warning
-        input
-        ~start_offset:(Lexing.lexeme_end lexbuf)
-        (Parse_error.not_allowed
-          ~what:(Token.describe `End)
-          ~in_what:(Token.describe (`Code_block (None, ""))));
-      emit_code_block input None c }
-
-  | "{@" (code_block_meta as m) "[" (code_block_text as c) eof
-    { warning
-        input
-        ~start_offset:(Lexing.lexeme_end lexbuf)
-        (Parse_error.not_allowed
-          ~what:(Token.describe `End)
-          ~in_what:(Token.describe (`Code_block (None, ""))));
-      emit_code_block input (Some m) c }
-
 
 
 and code_span buffer nesting_level start_offset input = parse
@@ -577,3 +561,28 @@ and bad_markup_recovery start_offset input = parse
         ~start_offset
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
       emit input (`Code_span text) ~start_offset}
+
+and code_block_with_meta input meta = parse
+  | (code_block_text as c) "]}"
+    {
+      let content = get_code_block_content input c in
+      with_location_adjustments (fun _ loc v ->
+        let span =
+          match meta with
+          | Some m -> Loc.span [m.location; loc]
+          | None -> loc
+        in
+        Loc.at (Loc.nudge_start (-2) span) v)
+        input (`Code_block (meta, content))
+    }
+  | (code_block_text as c) eof
+    {
+      let content = get_code_block_content input c in
+      warning
+        input
+        ~start_offset:(Lexing.lexeme_end lexbuf)
+        (Parse_error.not_allowed
+          ~what:(Token.describe `End)
+          ~in_what:(Token.describe (`Code_block (meta, with_location_adjustments (fun _ -> Loc.at) input ""))));
+      emit input (`Code_block (meta, content))
+    }

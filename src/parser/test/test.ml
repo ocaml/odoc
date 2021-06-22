@@ -50,13 +50,17 @@ module Ast_to_sexp = struct
             at.at str r;
             List (List.map (at.at (inline_element at)) es);
           ]
-    | `Link (u, es) -> List [ str u; List (List.map (at.at (inline_element at)) es) ]
+    | `Link (u, es) ->
+        List [ str u; List (List.map (at.at (inline_element at)) es) ]
 
-  let rec nestable_block_element at : Ast.nestable_block_element -> sexp = function
+  let rec nestable_block_element at : Ast.nestable_block_element -> sexp =
+    function
     | `Paragraph es ->
-        List [ Atom "paragraph"; List (List.map (at inline_element) es) ]
-    | `Code_block (None, c) -> List [ Atom "code_block"; Atom c ]
-    | `Code_block (Some m, c) -> List [ Atom "code_block"; Atom m; Atom c ]
+        List
+          [ Atom "paragraph"; List (List.map (at.at (inline_element at)) es) ]
+    | `Code_block (None, c) -> List [ Atom "code_block"; at.at str c ]
+    | `Code_block (Some m, c) ->
+        List [ Atom "code_block"; at.at str m; at.at str c ]
     | `Verbatim t -> List [ Atom "verbatim"; Atom t ]
     | `Modules ps -> List [ Atom "modules"; List (List.map (at.at str) ps) ]
     | `List (kind, weight, items) ->
