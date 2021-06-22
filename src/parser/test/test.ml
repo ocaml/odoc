@@ -81,13 +81,16 @@ module Ast_to_sexp = struct
   let tag at : Ast.tag -> sexp = function
     | `Author s -> List [ Atom "@author"; Atom s ]
     | `Deprecated es ->
-        List (Atom "@deprecated" :: List.map (at.at (nestable_block_element at)) es)
+        List
+          (Atom "@deprecated" :: List.map (at.at (nestable_block_element at)) es)
     | `Param (s, es) ->
         List
-          ([ Atom "@param"; Atom s ] @ List.map (at.at (nestable_block_element at)) es)
+          ([ Atom "@param"; Atom s ]
+          @ List.map (at.at (nestable_block_element at)) es)
     | `Raise (s, es) ->
         List
-          ([ Atom "@raise"; Atom s ] @ List.map (at.at (nestable_block_element at)) es)
+          ([ Atom "@raise"; Atom s ]
+          @ List.map (at.at (nestable_block_element at)) es)
     | `Return es ->
         List (Atom "@return" :: List.map (at.at (nestable_block_element at)) es)
     | `See (kind, s, es) ->
@@ -103,7 +106,8 @@ module Ast_to_sexp = struct
     | `Since s -> List [ Atom "@since"; Atom s ]
     | `Before (s, es) ->
         List
-          ([ Atom "@before"; Atom s ] @ List.map (at.at (nestable_block_element at)) es)
+          ([ Atom "@before"; Atom s ]
+          @ List.map (at.at (nestable_block_element at)) es)
     | `Version s -> List [ Atom "@version"; Atom s ]
     | `Canonical p -> List [ Atom "@canonical"; at.at str p ]
     | `Inline -> Atom "@inline"
@@ -115,10 +119,12 @@ module Ast_to_sexp = struct
     | `Heading (level, label, es) ->
         let label = List [ Atom "label"; opt str label ] in
         let level = string_of_int level in
-        List [ Atom level; label; List (List.map (at.at (inline_element at)) es) ]
+        List
+          [ Atom level; label; List (List.map (at.at (inline_element at)) es) ]
     | `Tag t -> tag at t
 
-  let docs at : Ast.t -> sexp = fun f -> List (List.map (at.at (block_element at)) f)
+  let docs at : Ast.t -> sexp =
+   fun f -> List (List.map (at.at (block_element at)) f)
 end
 
 let error err = Atom (Odoc_parser.Warning.to_string err)
@@ -131,9 +137,9 @@ let parser_output formatter v =
     List [ List [ Atom "output"; value ]; List [ Atom "warnings"; warnings ] ]
   in
   Sexplib0.Sexp.pp_hum formatter output;
-  Format.pp_print_flush formatter ()  
-  
-  let test ?(location = { Loc.line = 1; column = 0 }) str =
+  Format.pp_print_flush formatter ()
+
+let test ?(location = { Loc.line = 1; column = 0 }) str =
   let dummy_filename = "f.ml" in
   let location =
     {
@@ -5091,48 +5097,58 @@ let%expect_test _ =
        "{!indexlist}"
        (Ok []); *)
 
-       let lexing_pos_to_sexp : Lexing.position -> sexp = fun v ->
-          List [
-            List [Atom "pos_fname"; Atom v.pos_fname];
-            List [Atom "pos_bol"; Atom (string_of_int v.pos_bol)];
-            List [Atom "pos_lnum"; Atom (string_of_int v.pos_lnum)];
-            List [Atom "pos_cnum"; Atom (string_of_int v.pos_cnum)];
+    let lexing_pos_to_sexp : Lexing.position -> sexp =
+     fun v ->
+      List
+        [
+          List [ Atom "pos_fname"; Atom v.pos_fname ];
+          List [ Atom "pos_bol"; Atom (string_of_int v.pos_bol) ];
+          List [ Atom "pos_lnum"; Atom (string_of_int v.pos_lnum) ];
+          List [ Atom "pos_cnum"; Atom (string_of_int v.pos_cnum) ];
+        ]
+
+    let parser_output formatter pv =
+      let ast, warnings = Odoc_parser.(ast pv, warnings pv) in
+      let at conv v =
+        let { Loc.start; end_; _ } = Loc.location v in
+        let v' = Loc.value v |> conv in
+        let start' =
+          Odoc_parser.position_of_point pv start |> lexing_pos_to_sexp
+        in
+        let start'' = Location_to_sexp.point start in
+        let end' =
+          Odoc_parser.position_of_point pv end_ |> lexing_pos_to_sexp
+        in
+        let end'' = Location_to_sexp.point end_ in
+        List
+          [
+            List [ Atom "start"; start' ];
+            List [ Atom "start_loc"; start'' ];
+            List [ Atom "end"; end' ];
+            List [ Atom "end_loc"; end'' ];
+            List [ Atom "value"; v' ];
           ]
-     
-          let parser_output formatter pv =
-            let ast, warnings = Odoc_parser.(ast pv, warnings pv) in
-            let at conv v =
-              let { Loc.start; end_; _ } = Loc.location v in
-              let v' = Loc.value v |> conv in
-              let start' = Odoc_parser.position_of_point pv start |> lexing_pos_to_sexp in
-              let start'' = Location_to_sexp.point start in
-              let end' = Odoc_parser.position_of_point pv end_ |> lexing_pos_to_sexp in 
-              let end'' = Location_to_sexp.point end_ in
-              List [
-                List [Atom "start"; start'];
-                List [Atom "start_loc"; start''];
-                List [Atom "end"; end'];
-                List [Atom "end_loc"; end''];
-                List [Atom "value"; v']
-              ]
-            in
-            let sexp = Ast_to_sexp.(docs { at = at} ast) in
-            let warnings = List (List.map error warnings) in
-            let output =
-              List [ List [ Atom "output"; sexp ]; List [ Atom "warnings"; warnings ] ]
-            in
-            Sexplib0.Sexp.pp_hum formatter output;
-            Format.pp_print_flush formatter ()  
-            
-          
-          
-    let test ?(location = Lexing.{pos_bol=0; pos_cnum=0; pos_lnum=1; pos_fname="none"}) text =
+      in
+      let sexp = Ast_to_sexp.(docs { at } ast) in
+      let warnings = List (List.map error warnings) in
+      let output =
+        List
+          [ List [ Atom "output"; sexp ]; List [ Atom "warnings"; warnings ] ]
+      in
+      Sexplib0.Sexp.pp_hum formatter output;
+      Format.pp_print_flush formatter ()
+
+    let test
+        ?(location =
+          Lexing.{ pos_bol = 0; pos_cnum = 0; pos_lnum = 1; pos_fname = "none" })
+        text =
       let ast = Odoc_parser.parse_comment ~location ~text in
       Format.printf "%a" parser_output ast
 
     let non_offset_location =
       test "one\n two\n  three";
-      [%expect{|
+      [%expect
+        {|
         ((output
           (((start ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 0)))
             (start_loc (1 0))
@@ -5160,11 +5176,16 @@ let%expect_test _ =
                 (start_loc (3 2))
                 (end ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 16)))
                 (end_loc (3 7)) (value (word three)))))))))
-         (warnings ())) |} ]
+         (warnings ())) |}]
 
-      let offset_location =
-        test ~location:Lexing.{pos_bol=10; pos_cnum=20; pos_lnum=2; pos_fname="none"} "one\n two\n  three";
-        [%expect{|
+    let offset_location =
+      test
+        ~location:
+          Lexing.
+            { pos_bol = 10; pos_cnum = 20; pos_lnum = 2; pos_fname = "none" }
+        "one\n two\n  three";
+      [%expect
+        {|
           ((output
             (((start ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 20)))
               (start_loc (2 10))
@@ -5192,7 +5213,6 @@ let%expect_test _ =
                   (start_loc (4 2))
                   (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 36)))
                   (end_loc (4 7)) (value (word three)))))))))
-           (warnings ())) |} ]
-  
-    end in
-     ()
+           (warnings ())) |}]
+  end in
+  ()

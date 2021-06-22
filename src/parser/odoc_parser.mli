@@ -17,7 +17,6 @@ val parse_comment : location:Lexing.position -> text:string -> t
     in the 4th column (e.g. [{... pos_bol=0; pos_cnum=3 }]) *)
 
 module Ast = Ast
-
 module Loc = Loc
 
 (** Warnings produced during parsing. *)
@@ -33,7 +32,6 @@ module Warning : sig
   (** [to_string] will format the location and warning as text to be
       printed. *)
 end
-
 
 val warnings : t -> Warning.t list
 (** Extract any warnings from the parser result. *)

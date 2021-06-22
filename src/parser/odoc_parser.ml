@@ -81,26 +81,23 @@ let offset_to_location :
 
 (* Given a Loc.point and the result of [parse_comment], this function returns
    a valid Lexing.position *)
-let position_of_point :
-    t ->
-    Loc.point ->
-    Lexing.position =
+let position_of_point : t -> Loc.point -> Lexing.position =
  fun v point ->
-  let { reversed_newlines; original_pos; _} = v in
+  let { reversed_newlines; original_pos; _ } = v in
   let line_in_comment = point.Loc.line - original_pos.pos_lnum + 1 in
   let rec find_pos_bol reversed_newlines_prefix =
     match reversed_newlines_prefix with
     | [] -> assert false
     | [ _ ] -> original_pos.pos_bol
     | (line_number, line_start_offset) :: prefix ->
-      if line_number > line_in_comment then find_pos_bol prefix
-      else line_start_offset + original_pos.pos_cnum
+        if line_number > line_in_comment then find_pos_bol prefix
+        else line_start_offset + original_pos.pos_cnum
   in
   let pos_bol = find_pos_bol reversed_newlines in
   let pos_lnum = point.Loc.line in
   let pos_cnum = point.column + pos_bol in
   let pos_fname = original_pos.pos_fname in
-  { Lexing.pos_bol; pos_lnum; pos_cnum; pos_fname}
+  { Lexing.pos_bol; pos_lnum; pos_cnum; pos_fname }
 
 (* The main entry point for this module *)
 let parse_comment ~location ~text =
@@ -121,5 +118,5 @@ let parse_comment ~location ~text =
 
 (* Accessor functions, as [t] is opaque *)
 let warnings t = t.warnings
-let ast t = t.ast
 
+let ast t = t.ast

@@ -13,8 +13,7 @@ let to_string e =
   in
   Printf.sprintf "File \"%s\", %s:\n%s" location.file location_string message
 
-let pp fmt v =
-  Format.fprintf fmt "%s" (to_string v)
+let pp fmt v = Format.fprintf fmt "%s" (to_string v)
 
 let kasprintf k fmt =
   Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt)
