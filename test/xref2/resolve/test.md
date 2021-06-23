@@ -1638,13 +1638,13 @@ Functor app nightmare:
   *)
     |}
 File "<test>":
-Failed to compile expansion for module type expression identifier((param (root Root).App.result F), false)(identifier((param (root Root).App T), false)).T OpaqueModule
-File "<test>":
-Failed to compile expansion for module type expression identifier((param (root Root).App.result F), false)(identifier((param (root Root).App T), false)).T OpaqueModule
-File "<test>":
 Failed to compile expansion for module type expression identifier((param (root Root).Foo T), false).T OpaqueModule
 File "<test>":
 Failed to compile expansion for module type expression identifier((param (root Root).Foo T), false).T OpaqueModule
+File "<test>":
+Failed to compile expansion for module type expression identifier((param (root Root).App.result F), false)(identifier((param (root Root).App T), false)).T OpaqueModule
+File "<test>":
+Failed to compile expansion for module type expression identifier((param (root Root).App.result F), false)(identifier((param (root Root).App T), false)).T OpaqueModule
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);

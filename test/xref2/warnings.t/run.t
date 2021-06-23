@@ -30,7 +30,8 @@ A contains linking errors:
 
   $ odoc link a.odoc
   File "a.odoc":
-  Failed to lookup type unresolvedroot(B).t Parent_module: Lookup failure (root module): B
+  Couldn't find the following modules:
+    B
 
   $ odoc errors a.odocl
   File "a.mli", line 8, characters 23-23:
@@ -38,7 +39,8 @@ A contains linking errors:
   File "a.mli", line 8, characters 22-23:
   Identifier in reference should not be empty.
   File "a.odoc":
-  Failed to lookup type unresolvedroot(B).t Parent_module: Lookup failure (root module): B
+  Couldn't find the following modules:
+    B
 
 It is possible to hide the warnings too:
 

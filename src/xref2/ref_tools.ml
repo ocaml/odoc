@@ -101,7 +101,7 @@ let ref_kind_of_find = function
 let ambiguous_ref_warning name results =
   let pp_sep pp () = Format.fprintf pp ", "
   and pp_kind pp r = Format.fprintf pp "%s-%s" r name in
-  Lookup_failures.report ~kind:`Warning
+  Lookup_failures.report_warning
     "Reference to '%s' is ambiguous. Please specify its kind: %a." name
     (Format.pp_print_list ~pp_sep pp_kind)
     results

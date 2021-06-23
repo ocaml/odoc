@@ -169,9 +169,8 @@ let is_unexpanded_module_type_of =
   in
   inner
 
-(** To use as [Lookup_failures.kind]. *)
 let rec kind_of_module_cpath = function
-  | `Root _ -> Some `Root
+  | `Root name -> Some (`Root name)
   | `Substituted p' | `Dot (p', _) -> kind_of_module_cpath p'
   | `Apply (a, b) -> (
       match kind_of_module_cpath a with
@@ -184,10 +183,14 @@ let rec kind_of_module_type_cpath = function
   | `Dot (p', _) -> kind_of_module_cpath p'
   | _ -> None
 
+(** [Some (`Root _)] for errors during lookup of root modules or [None] for
+    other errors. *)
 let rec kind_of_error = function
   | `UnresolvedPath (`Module (cp, _)) -> kind_of_module_cpath cp
   | `UnresolvedPath (`ModuleType (cp, _)) -> kind_of_module_type_cpath cp
-  | `Lookup_failure (`Root _) | `Lookup_failure_root _ -> Some `Root
+  | `Lookup_failure (`Root (_, name)) ->
+      Some (`Root (Names.ModuleName.to_string name))
+  | `Lookup_failure_root name -> Some (`Root name)
   | `Parent (`Parent_sig e) -> kind_of_error (e :> Tools_error.any)
   | `Parent (`Parent_module_type e) -> kind_of_error (e :> Tools_error.any)
   | `Parent (`Parent_expr e) -> kind_of_error (e :> Tools_error.any)
@@ -195,8 +198,17 @@ let rec kind_of_error = function
   | `Parent (`Parent _ as e) -> kind_of_error (e :> Tools_error.any)
   | `OpaqueModule ->
       (* Don't turn OpaqueModule warnings into errors *)
-      Some `Root
+      Some `OpaqueModule
   | _ -> None
+
+let kind_of_error ~what = function
+  | Some e -> kind_of_error (e :> Tools_error.any)
+  | None -> (
+      match what with
+      | `Include (Component.Include.Alias cp) -> kind_of_module_cpath cp
+      | `Module (`Root (_, name)) ->
+          Some (`Root (Names.ModuleName.to_string name))
+      | _ -> None)
 
 open Paths
 
@@ -222,15 +234,6 @@ type what =
   | `Child of Reference.t ]
 
 let report ~(what : what) ?tools_error action =
-  let kind =
-    match tools_error with
-    | Some e -> kind_of_error (e :> Tools_error.any)
-    | None -> (
-        match what with
-        | `Include (Component.Include.Alias cp) -> kind_of_module_cpath cp
-        | `Module (`Root _) -> Some `Root
-        | _ -> None)
-  in
   let action =
     match action with
     | `Lookup -> "lookup"
@@ -243,32 +246,39 @@ let report ~(what : what) ?tools_error action =
     | Some e -> Format.fprintf fmt " %a" Tools_error.pp (e :> Tools_error.any)
     | None -> ()
   in
-  let r ?(kind = kind) subject pp_a a =
-    Lookup_failures.report ?kind "Failed to %s %s %a%a" action subject pp_a a
-      pp_tools_error tools_error
-  in
   let open Component.Fmt in
-  let fmt_id fmt id = model_identifier fmt (id :> Paths.Identifier.t) in
-  match what with
-  | `Functor_parameter id -> r "functor parameter" fmt_id id
-  | `Value id -> r "value" fmt_id id
-  | `Class id -> r "class" fmt_id id
-  | `Class_type id -> r "class type" fmt_id id
-  | `Module id -> r "module" fmt_id id
-  | `Module_type id -> r "module type" fmt_id id
-  | `Module_path path -> r "module path" module_path path
-  | `Module_type_path path -> r "module type path" module_type_path path
-  | `Module_type_U expr -> r "module type expr" u_module_type_expr expr
-  | `Include decl -> r "include" include_decl decl
-  | `Package path ->
-      r "module package" module_type_path (path :> Cpath.module_type)
-  | `Type cfrag -> r "type" type_fragment cfrag
-  | `Type_path path -> r "type" type_path path
-  | `With_module frag -> r "module substitution" module_fragment frag
-  | `With_module_type frag ->
-      r "module type substitution" module_type_fragment frag
-  | `With_type frag -> r "type substitution" type_fragment frag
-  | `Module_type_expr cexpr -> r "module type expression" module_type_expr cexpr
-  | `Module_type_u_expr cexpr ->
-      r "module type u expression" u_module_type_expr cexpr
-  | `Child rf -> r "child reference" model_reference rf
+  let report_internal_error () =
+    let r subject pp_a a =
+      Lookup_failures.report_internal "Failed to %s %s %a%a" action subject pp_a
+        a pp_tools_error tools_error
+    in
+    let fmt_id fmt id = model_identifier fmt (id :> Paths.Identifier.t) in
+    match what with
+    | `Functor_parameter id -> r "functor parameter" fmt_id id
+    | `Value id -> r "value" fmt_id id
+    | `Class id -> r "class" fmt_id id
+    | `Class_type id -> r "class type" fmt_id id
+    | `Module id -> r "module" fmt_id id
+    | `Module_type id -> r "module type" fmt_id id
+    | `Module_path path -> r "module path" module_path path
+    | `Module_type_path path -> r "module type path" module_type_path path
+    | `Module_type_U expr -> r "module type expr" u_module_type_expr expr
+    | `Include decl -> r "include" include_decl decl
+    | `Package path ->
+        r "module package" module_type_path (path :> Cpath.module_type)
+    | `Type cfrag -> r "type" type_fragment cfrag
+    | `Type_path path -> r "type" type_path path
+    | `With_module frag -> r "module substitution" module_fragment frag
+    | `With_module_type frag ->
+        r "module type substitution" module_type_fragment frag
+    | `With_type frag -> r "type substitution" type_fragment frag
+    | `Module_type_expr cexpr ->
+        r "module type expression" module_type_expr cexpr
+    | `Module_type_u_expr cexpr ->
+        r "module type u expression" u_module_type_expr cexpr
+    | `Child rf -> r "child reference" model_reference rf
+  in
+  match kind_of_error ~what tools_error with
+  | Some (`Root name) -> Lookup_failures.report_root ~name
+  | Some `OpaqueModule -> report_internal_error ()
+  | None -> report_internal_error ()
