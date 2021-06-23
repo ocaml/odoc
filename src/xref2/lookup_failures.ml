@@ -1,36 +1,68 @@
 open Odoc_model
 
-type kind = [ `Root | `Internal | `Warning ]
-
 let loc_acc = ref None
 
-let with_location' loc f =
-  let prev_loc = !loc_acc in
-  loc_acc := Some loc;
-  let r = f () in
-  loc_acc := prev_loc;
-  r
+let acc = ref []
 
-let add ~kind msg =
-  let w =
-    match !loc_acc with
-    | Some (`Filename_only filename) -> Error.filename_only "%s" msg filename
-    | Some (`Full_loc loc) -> Error.make "%s" msg loc
-    | None -> failwith "Lookup_failures: Uncaught failure."
+let with_ref r x f =
+  let saved = !r in
+  r := x;
+  let v = f () in
+  let x = !r in
+  r := saved;
+  (v, x)
+
+let with_location' loc f = fst (with_ref loc_acc (Some loc) f)
+
+let add f = acc := f :: !acc
+
+(** Raise a single message for root errors. *)
+let raise_root_errors ~filename failures =
+  let roots =
+    List.fold_left
+      (fun acc -> function `Root name -> name :: acc | `Warning _ -> acc)
+      [] failures
+    |> List.sort_uniq String.compare
   in
-  ignore kind;
-  Error.raise_warning ~non_fatal:true w
+  match roots with
+  | [] -> ()
+  | _ :: _ ->
+      Error.raise_warning ~non_fatal:true
+        (Error.filename_only "Couldn't find the following modules:@;<1 2>@[%a@]"
+           Format.(pp_print_list ~pp_sep:pp_print_space pp_print_string)
+           roots filename)
+
+(** Raise the other warnings. *)
+let raise_warnings ~filename failures =
+  List.iter
+    (function
+      | `Root _ -> ()
+      | `Warning (msg, loc, non_fatal) ->
+          let err =
+            match loc with
+            | Some loc -> Error.make "%s" msg loc
+            | None -> Error.filename_only "%s" msg filename
+          in
+          Error.raise_warning ~non_fatal err)
+    failures
 
 let catch_failures ~filename f =
-  with_location' (`Filename_only filename) (fun () -> Error.catch_warnings f)
+  let r, failures = with_ref acc [] f in
+  Error.catch_warnings (fun () ->
+      raise_root_errors ~filename failures;
+      raise_warnings ~filename failures;
+      r)
 
 let kasprintf k fmt =
   Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt)
 
-(** Report a lookup failure to the enclosing [catch_failures] call. *)
-let report ?(kind = `Internal) fmt =
-  (* Render the message into a string first because [Error.kmake] is not
-     exposed. *)
-  kasprintf (add ~kind) fmt
+let report ~non_fatal fmt =
+  kasprintf (fun msg -> add (`Warning (msg, !loc_acc, non_fatal))) fmt
 
-let with_location loc f = with_location' (`Full_loc loc) f
+let report_internal fmt = report ~non_fatal:true fmt
+
+let report_root ~name = add (`Root name)
+
+let report_warning fmt = report ~non_fatal:false fmt
+
+let with_location loc f = with_location' loc f
