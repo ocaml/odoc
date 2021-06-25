@@ -54,18 +54,13 @@ Include
 .br 
 \f[CB]end\fR
 .sp 
-\f[CB]val\fR a : t
-.sp 
 \f[CB]module\fR \f[CB]type\fR Dorminant_Module = \f[CB]sig\fR
 .br 
 .ti +2
-\f[CB]val\fR a : t
 .sp 
 .ti +2
 \f[CB]val\fR a : u
 .br 
 \f[CB]end\fR
-.sp 
-\f[CB]val\fR a : t
 .sp 
 \f[CB]val\fR a : u

@@ -620,7 +620,12 @@ and open_ parent map o =
 
 and value_ map parent id v =
   let open Component.Value in
-  let identifier = `Value (parent, Ident.Name.typed_value id) in
+  let name = Ident.Name.value id in
+  let identifier =
+    if List.mem name map.shadowed.s_values then
+      `Value (parent, ValueName.internal_of_string name)
+    else `Value (parent, Ident.Name.typed_value id)
+  in
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) v.doc;
