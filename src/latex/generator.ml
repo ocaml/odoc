@@ -46,10 +46,10 @@ module Link = struct
         | "container-page" -> Fpath.(pdir / url.name)
         | _ -> pdir)
 
-  let file url =
+  let file ~flat url =
     let rec l (url : Odoc_document.Url.Path.t) acc =
       match url.kind with
-      | "container-page" -> acc
+      | "container-page" when not flat -> acc
       | _ -> (
           match url.parent with
           | None ->
@@ -57,14 +57,16 @@ module Link = struct
               (* Only container-pages are allowed to have no parent *)
           | Some p -> l p (url.name :: acc))
     in
-    String.concat "." (l url [])
+    String.concat "." (l url []) 
 
-  let filename url =
-    let dir = dir url in
-    let file = file url in
-    Format.eprintf "dir=%a file=%s\n%!" Fpath.pp dir file;
-    if file = "" then Fpath.add_ext "tex" dir
-    else Fpath.(add_ext "tex" (dir / file))
+  let filename ~flat url =
+    let file = file ~flat url |> Fpath.v in
+    if flat
+      then Fpath.set_ext "tex" file
+    else 
+      let dir = dir url in
+      Fpath.(dir // file |> Fpath.add_ext "tex")
+
 end
 
 let style = function
@@ -438,8 +440,8 @@ module Doc = struct
     in
     Fmt.list input_child ppf children
 
-  let make ~with_children url content children =
-    let filename = Link.filename url in
+  let make ~with_children ~flat url content children =
+    let filename = Link.filename ~flat url in
     let label = Label (Link.page url) in
     let content =
       match content with
@@ -457,25 +459,25 @@ end
 module Page = struct
   let on_sub = function `Page _ -> Some 1 | `Include _ -> None
 
-  let rec subpage ~with_children (p : Subpage.t) =
+  let rec subpage ~with_children ~flat (p : Subpage.t) =
     if Link.should_inline p.status p.content.url then []
-    else [ page ~with_children p.content ]
+    else [ page ~with_children ~flat p.content ]
 
-  and subpages ~with_children i =
+  and subpages ~with_children ~flat i =
     List.flatten
-    @@ List.map (subpage ~with_children)
+    @@ List.map (subpage ~with_children ~flat)
     @@ Doctree.Subpages.compute i
 
-  and page ~with_children ({ Page.title = _; header; items = i; url } as p) =
+  and page ~with_children ~flat ({ Page.title = _; header; items = i; url } as p) =
     let i = Doctree.Shift.compute ~on_sub i in
-    let subpages = subpages ~with_children p in
+    let subpages = subpages ~with_children ~flat p in
     let header = items header in
     let content = items i in
-    let page = Doc.make ~with_children url (header @ content) subpages in
+    let page = Doc.make ~with_children ~flat url (header @ content) subpages in
     page
 end
 
-let render ~with_children page = Page.page ~with_children page
+let render ~with_children ~flat page = Page.page ~with_children ~flat page 
 
 let files_of_url url =
-  if Link.is_class_or_module_path url then [ Link.filename url ] else []
+  if Link.is_class_or_module_path url then [ Link.filename ~flat:false url ] else []
