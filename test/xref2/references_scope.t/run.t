@@ -20,6 +20,8 @@ scope. Both "Before-shadowed" and "After-shadowed" should resolve to [M.t].
   [{"`Resolved":{"`Identifier":{"`Type":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Shadowed"]},"M"]},"t"]}}},[{"`Word":"Before-shadowed"}]]
   [{"`Resolved":{"`Type":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Shadowed"]}},"t"]}},[]]
   [{"`Resolved":{"`Identifier":{"`Type":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Shadowed"]},"M"]},"t"]}}},[{"`Word":"After-shadowed"}]]
+  [{"`Resolved":{"`Identifier":{"`Value":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Shadowed"]},"N"]},"f"]}}},[]]
+  [{"`Resolved":{"`Value":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Shadowed"]}},"f"]}},[]]
 
 "Before-open" and "After-open" should resolve to to [T.t].
 "Before-include" and "After-include" should resolve to [Through_include.t].

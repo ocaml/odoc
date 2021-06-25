@@ -88,7 +88,6 @@ type kind =
   | Kind_Label
   | Kind_Class
   | Kind_ClassType
-  | Kind_External
   | Kind_Constructor
   | Kind_Exception
   | Kind_Extension
@@ -281,7 +280,7 @@ let add_value identifier (t : Component.Value.t) env =
   |> add_cdocs identifier t.doc
 
 let add_external identifier (t : Component.External.t) env =
-  add_to_elts Kind_External identifier (`External (identifier, t)) env
+  add_to_elts Kind_Value identifier (`External (identifier, t)) env
   |> add_cdocs identifier t.doc
 
 let add_class identifier (t : Component.Class.t) env =
