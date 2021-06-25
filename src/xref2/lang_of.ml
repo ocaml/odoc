@@ -374,8 +374,7 @@ module ExtractIDs = struct
       | Exception (_, _) :: rest
       | Value (_, _) :: rest
       | TypExt _ :: rest
-      | Comment _ :: rest
-      | External (_, _) :: rest ->
+      | Comment _ :: rest ->
           inner rest map
       | Include i :: rest -> inner rest (include_ parent map i)
       | Open o :: rest -> inner rest (open_ parent map o)
@@ -424,8 +423,6 @@ let rec signature_items id map items =
         inner rest (Value (value_ map parent id v) :: acc)
     | Include i :: rest -> inner rest (Include (include_ id map i) :: acc)
     | Open o :: rest -> inner rest (Open (open_ id map o) :: acc)
-    | External (id, e) :: rest ->
-        inner rest (External (external_ map parent id e) :: acc)
     | ModuleSubstitution (id, m) :: rest ->
         inner rest
           (ModuleSubstitution (module_substitution map parent id m) :: acc)
@@ -554,21 +551,6 @@ and instance_variable map parent id i =
     type_ = type_expr map (parent :> Identifier.Parent.t) i.type_;
   }
 
-and external_ map parent id e =
-  let open Component.External in
-  let name = Ident.Name.value id in
-  let identifier =
-    if List.mem name map.shadowed.s_values then
-      `Value (parent, ValueName.internal_of_string name)
-    else `Value (parent, Ident.Name.typed_value id)
-  in
-  {
-    id = identifier;
-    doc = docs (parent :> Identifier.LabelParent.t) e.doc;
-    type_ = type_expr map (parent :> Identifier.Parent.t) e.type_;
-    primitives = e.primitives;
-  }
-
 and simple_expansion :
     maps ->
     Identifier.Signature.t ->
@@ -643,6 +625,7 @@ and value_ map parent id v =
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) v.doc;
     type_ = type_expr map (parent :> Identifier.Parent.t) v.type_;
+    value = v.value;
   }
 
 and typ_ext map parent t =

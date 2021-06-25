@@ -146,12 +146,17 @@ let rec read_core_type env container ctyp =
 let read_value_description env parent vd =
   let open Signature in
   let id = Env.find_value_identifier env vd.val_id in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
   let doc = Doc_attr.attached_no_tag container vd.val_attributes in
   let type_ = read_core_type env container vd.val_desc in
-  match vd.val_prim with
-  | [] -> Value {Value.id; doc; type_}
-  | primitives -> External {External.id; doc; type_; primitives}
+  let value =
+    match vd.val_prim with
+    | [] -> Value.Abstract
+    | primitives -> External primitives
+  in
+  Value { Value.id; doc; type_; value }
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in

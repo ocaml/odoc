@@ -38,13 +38,15 @@ let rec read_pattern env parent doc pat =
         let id = Env.find_value_identifier env id in
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
-            [Value {id; doc; type_}]
+          let value = Abstract in
+          [Value {id; doc; type_; value}]
     | Tpat_alias(pat, id, _) ->
         let open Value in
         let id = Env.find_value_identifier env id in
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
-            Value {id; doc; type_} :: read_pattern env parent doc pat
+          let value = Abstract in
+          Value {id; doc; type_; value} :: read_pattern env parent doc pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
         List.concat (List.map (read_pattern env parent doc) pats)

@@ -71,7 +71,6 @@ let prefix_substitution path sg =
     | Exception _ :: rest
     | TypExt _ :: rest
     | Value (_, _) :: rest
-    | External (_, _) :: rest
     | Comment _ :: rest ->
         get_sub sub' rest
     | Class (id, _, _) :: rest ->
@@ -153,7 +152,6 @@ let prefix_signature (path, sg) =
               ( id,
                 Component.Delayed.put (fun () ->
                     Subst.value sub (Component.Delayed.get v)) )
-        | External (id, e) -> External (id, Subst.external_ sub e)
         | Class (id, r, c) ->
             Class (Ident.Rename.class_ id, r, Subst.class_ sub c)
         | ClassType (id, r, c) ->

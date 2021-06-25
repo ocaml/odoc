@@ -264,10 +264,6 @@ and TypeDecl : sig
   }
 end
 
-and Value : sig
-  type t = { doc : CComment.docs; type_ : TypeExpr.t }
-end
-
 and Signature : sig
   type recursive = Odoc_model.Lang.Signature.recursive
 
@@ -281,7 +277,6 @@ and Signature : sig
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
     | Value of Ident.value * Value.t Delayed.t
-    | External of Ident.value * External.t
     | Class of Ident.class_ * recursive * Class.t
     | ClassType of Ident.class_type * recursive * ClassType.t
     | Include of Include.t
@@ -321,8 +316,10 @@ and Include : sig
   }
 end
 
-and External : sig
-  type t = { doc : CComment.docs; type_ : TypeExpr.t; primitives : string list }
+and Value : sig
+  type value = Odoc_model.Lang.Value.value
+
+  type t = { doc : CComment.docs; type_ : TypeExpr.t; value : value }
 end
 
 and Class : sig
@@ -448,8 +445,6 @@ module Element : sig
 
   type signature = [ module_ | module_type ]
 
-  type external_ = [ `External of Identifier.Value.t * External.t ]
-
   type constructor =
     [ `Constructor of Identifier.Constructor.t * TypeDecl.Constructor.t ]
 
@@ -469,7 +464,6 @@ module Element : sig
     | label
     | class_
     | class_type
-    | external_
     | constructor
     | exception_
     | extension
@@ -484,8 +478,6 @@ module Fmt : sig
 
   val removed_item_list :
     Format.formatter -> Signature.removed_item list -> unit
-
-  val external_ : Format.formatter -> External.t -> unit
 
   val class_ : Format.formatter -> Class.t -> unit
 
@@ -735,8 +727,6 @@ module Of_Lang : sig
   val module_type : map -> Odoc_model.Lang.ModuleType.t -> ModuleType.t
 
   val value : map -> Odoc_model.Lang.Value.t -> Value.t
-
-  val external_ : map -> Odoc_model.Lang.External.t -> External.t
 
   val include_ : map -> Odoc_model.Lang.Include.t -> Include.t
 

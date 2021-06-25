@@ -53,8 +53,6 @@ val exception_ : t -> Component.Exception.t -> Component.Exception.t
 
 val extension : t -> Component.Extension.t -> Component.Extension.t
 
-val external_ : t -> Component.External.t -> Component.External.t
-
 val include_ : t -> Component.Include.t -> Component.Include.t
 
 val open_ : t -> Component.Open.t -> Component.Open.t

@@ -11,8 +11,7 @@ type class_ =
   [ `FClass of ClassName.t * Class.t
   | `FClassType of ClassTypeName.t * ClassType.t ]
 
-type value =
-  [ `FExternal of ValueName.t * External.t | `FValue of ValueName.t * Value.t ]
+type value = [ `FValue of ValueName.t * Value.t ]
 
 type label = [ `FLabel of Ident.label ]
 
@@ -233,8 +232,6 @@ let any_in_sig sg name =
         Some (`FExn (N.typed_exception id, exc))
     | Value (id, v) when N.value id = name ->
         Some (`FValue (N.typed_value id, Delayed.get v))
-    | External (id, vex) when N.value id = name ->
-        Some (`FExternal (N.typed_value id, vex))
     | Class (id, _, c) when N.class_ id = name ->
         Some (`FClass (N.class' id, c))
     | ClassType (id, _, ct) when N.class_type id = name ->
@@ -266,8 +263,6 @@ let value_in_sig sg name =
   filter_in_sig sg (function
     | Signature.Value (id, m) when N.value id = name ->
         Some (`FValue (N.typed_value id, Delayed.get m))
-    | External (id, e) when N.value id = name ->
-        Some (`FExternal (N.typed_value id, e))
     | _ -> None)
 
 let label_in_sig sg name =
