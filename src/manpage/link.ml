@@ -27,7 +27,7 @@ let as_filename (url : Url.Path.t) =
   in
   let dir, path = get_components url in
   let s = String.concat "." @@ List.rev path in
-  (dir ^ "-" ^ s) ^ ".3o" |> Fpath.v
+  Fpath.((v dir / s) + ".3o")
 
 let rec is_class_or_module_path (url : Url.Path.t) =
   match url.kind with

@@ -55,15 +55,16 @@ module Link = struct
           | None ->
               (* Only container-pages are allowed to have no parent, so we must be in flat mode *)
               assert flat;
-              acc
+              url.name :: acc
           | Some p -> l p (url.name :: acc))
     in
-    String.concat "." (l url []) 
+    let result = (l url []) in
+    String.concat "." result
 
   let filename ~flat url =
     let file = file ~flat url |> Fpath.v in
     if flat
-      then Fpath.set_ext "tex" file
+      then Fpath.add_ext "tex" file
     else 
       let dir = dir url in
       Fpath.(dir // file |> Fpath.add_ext "tex")
