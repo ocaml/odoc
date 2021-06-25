@@ -53,8 +53,9 @@ module Link = struct
       | _ -> (
           match url.parent with
           | None ->
-              assert false
-              (* Only container-pages are allowed to have no parent *)
+              (* Only container-pages are allowed to have no parent, so we must be in flat mode *)
+              assert flat;
+              acc
           | Some p -> l p (url.name :: acc))
     in
     String.concat "." (l url []) 
