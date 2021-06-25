@@ -479,6 +479,3 @@ module Page = struct
 end
 
 let render ~with_children ~flat page = Page.page ~with_children ~flat page 
-
-let files_of_url url =
-  if Link.is_class_or_module_path url then [ Link.filename ~flat:false url ] else []
