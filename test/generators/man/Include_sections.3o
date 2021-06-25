@@ -58,8 +58,6 @@ A module type\.
 Let's include \f[CI]Something\fR once
 .nf 
 .sp 
-\f[CB]val\fR something : unit
-.sp 
 .in 3
 \fB2 Something 1\fR
 .in 
@@ -68,18 +66,9 @@ Let's include \f[CI]Something\fR once
 foo
 .nf 
 .sp 
-\f[CB]val\fR foo : unit
-.sp 
 .in 4
 \fB2\.1 Something 2\fR
 .in 
-.sp 
-\f[CB]val\fR bar : unit
-.fi 
-.br 
-.ti +2
-foo bar
-.nf 
 .sp 
 .in 3
 \fB3 Something 1-bis\fR
@@ -97,8 +86,6 @@ Some text\.
 Let's include \f[CI]Something\fR a second time: the heading level should be shift here\.
 .nf 
 .sp 
-\f[CB]val\fR something : unit
-.sp 
 .in 4
 \fB4\.1 Something 1\fR
 .in 
@@ -107,18 +94,9 @@ Let's include \f[CI]Something\fR a second time: the heading level should be shif
 foo
 .nf 
 .sp 
-\f[CB]val\fR foo : unit
-.sp 
 .in 5
 \fB4\.1\.1 Something 2\fR
 .in 
-.sp 
-\f[CB]val\fR bar : unit
-.fi 
-.br 
-.ti +2
-foo bar
-.nf 
 .sp 
 .in 4
 \fB4\.2 Something 1-bis\fR
@@ -136,8 +114,6 @@ Some text\.
 Shifted some more\.
 .nf 
 .sp 
-\f[CB]val\fR something : unit
-.sp 
 .in 5
 \fB4\.3\.1 Something 1\fR
 .in 
@@ -146,18 +122,9 @@ Shifted some more\.
 foo
 .nf 
 .sp 
-\f[CB]val\fR foo : unit
-.sp 
 .in 6
 \fBSomething 2\fR
 .in 
-.sp 
-\f[CB]val\fR bar : unit
-.fi 
-.br 
-.ti +2
-foo bar
-.nf 
 .sp 
 .in 5
 \fB4\.3\.2 Something 1-bis\fR
