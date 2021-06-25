@@ -785,10 +785,13 @@ module Make (Syntax : SYNTAX) = struct
 
   module Value : sig
     val value : Lang.Value.t -> Item.t
-
-    val external_ : Lang.External.t -> Item.t
   end = struct
     let value (t : Odoc_model.Lang.Value.t) =
+      let extra_attr, semicolon =
+        match t.value with
+        | Abstract -> ([], Syntax.Value.semicolon)
+        | External _ -> ([ "external" ], Syntax.Type.External.semicolon)
+      in
       let name = Paths.Identifier.name t.id in
       let content =
         O.documentedSrc
@@ -796,24 +799,9 @@ module Make (Syntax : SYNTAX) = struct
           ++ O.txt " " ++ O.txt name
           ++ O.txt Syntax.Type.annotation_separator
           ++ type_expr t.type_
-          ++ if Syntax.Value.semicolon then O.txt ";" else O.noop)
+          ++ if semicolon then O.txt ";" else O.noop)
       in
-      let attr = [ "value" ] in
-      let anchor = path_to_id t.id in
-      let doc = Comment.to_ir t.doc in
-      Item.Declaration { attr; anchor; doc; content }
-
-    let external_ (t : Odoc_model.Lang.External.t) =
-      let name = Paths.Identifier.name t.id in
-      let content =
-        O.documentedSrc
-          (O.keyword Syntax.Value.variable_keyword
-          ++ O.txt " " ++ O.txt name
-          ++ O.txt Syntax.Type.annotation_separator
-          ++ type_expr t.type_
-          ++ if Syntax.Type.External.semicolon then O.txt ";" else O.noop)
-      in
-      let attr = [ "value"; "external" ] in
+      let attr = [ "value" ] @ extra_attr in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
       Item.Declaration { attr; anchor; doc; content }
@@ -1138,7 +1126,6 @@ module Make (Syntax : SYNTAX) = struct
             | TypExt e -> continue @@ extension e
             | Exception e -> continue @@ exn e
             | Value v -> continue @@ value v
-            | External e -> continue @@ external_ e
             | Open _ -> loop rest acc_items
             | Comment `Stop ->
                 let rest =

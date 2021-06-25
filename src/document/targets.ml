@@ -20,7 +20,7 @@ and signature (t : Odoc_model.Lang.Signature.t) =
         | Include incl -> add_items ~don't (include_ incl :: acc) is
         | Open _ | ModuleSubstitution _ | ModuleTypeSubstitution _
         | TypeSubstitution _ | Type _ | TypExt _ | Exception _ | Value _
-        | External _ | Class _ | ClassType _
+        | Class _ | ClassType _
         | Comment (`Docs _) ->
             add_items ~don't acc is)
   in

@@ -142,7 +142,6 @@ and Signature : sig
     | TypExt of Extension.t
     | Exception of Exception.t
     | Value of Value.t
-    | External of External.t
     | Class of recursive * Class.t
     | ClassType of recursive * ClassType.t
     | Include of Include.t
@@ -285,21 +284,16 @@ end =
 (** {3 Values} *)
 
 and Value : sig
-  type t = { id : Identifier.Value.t; doc : Comment.docs; type_ : TypeExpr.t }
-end =
-  Value
+  type value = Abstract | External of string list
 
-(** {3 External values} *)
-
-and External : sig
   type t = {
     id : Identifier.Value.t;
     doc : Comment.docs;
     type_ : TypeExpr.t;
-    primitives : string list;
+    value : value;
   }
 end =
-  External
+  Value
 
 (** {3 Classes} *)
 

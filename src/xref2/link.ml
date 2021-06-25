@@ -256,14 +256,6 @@ and extension env parent t =
   let doc = comment_docs env parent t.doc in
   { t with type_path; constructors; doc }
 
-and external_ env parent e =
-  let open External in
-  {
-    e with
-    type_ = type_expression env parent [] e.type_;
-    doc = comment_docs env parent e.doc;
-  }
-
 and class_type_expr env parent =
   let open ClassType in
   function
@@ -345,7 +337,6 @@ and signature_items :
       | Comment c -> Comment (comment env id c)
       | TypExt t -> TypExt (extension env id t)
       | Exception e -> Exception (exception_ env id e)
-      | External e -> External (external_ env id e)
       | Class (r, c) -> Class (r, class_ env id c)
       | ClassType (r, c) -> ClassType (r, class_type env id c)
       | Include i -> Include (include_ env i)

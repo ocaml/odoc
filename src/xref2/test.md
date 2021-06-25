@@ -1748,7 +1748,8 @@ let m_e_i_s_value mod_name n val_name =
       (`Identifier
          (`Module (`Root (Some (`Page (None, None)), Root), Foo), false),
        "t"),
-   [])}
+   []);
+ value = Odoc_model.Lang.Value.Abstract}
 # Common.LangUtils.Lens.get (m_e_i_s_value "Foo3" 0 "id2") sg;;
 - : Odoc_model.Lang.Value.t =
 {Odoc_model.Lang.Value.id =
@@ -1759,7 +1760,8 @@ let m_e_i_s_value mod_name n val_name =
    (`Identifier
       (`Type (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}2),
        false),
-   [])}
+   []);
+ value = Odoc_model.Lang.Value.Abstract}
 ```
 
 
@@ -1820,7 +1822,8 @@ let sg = Common.signature_of_mli_string test_data;;
           (`Type
              (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}3),
            false),
-       [])}];
+       []);
+     value = Odoc_model.Lang.Value.Abstract}];
  compiled = false; doc = []}
 # Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 1) sg;;
 - : Odoc_model.Lang.Signature.t =
@@ -1852,7 +1855,8 @@ let sg = Common.signature_of_mli_string test_data;;
           (`Type
              (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}4),
            false),
-       [])}];
+       []);
+     value = Odoc_model.Lang.Value.Abstract}];
  compiled = false; doc = []}
 ```
 
@@ -1912,7 +1916,8 @@ let sg = Common.signature_of_mli_string test_data;;
      doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr (`Identifier (`CoreType int, false),
-       [])};
+       []);
+     value = Odoc_model.Lang.Value.Abstract};
    Odoc_model.Lang.Signature.Value
     {Odoc_model.Lang.Value.id =
       `Value (`Module (`Root (Some (`Page (None, None)), Root), Foo3), id);
@@ -1923,7 +1928,8 @@ let sg = Common.signature_of_mli_string test_data;;
           (`Type
              (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}5),
            false),
-       [])}];
+       []);
+     value = Odoc_model.Lang.Value.Abstract}];
  compiled = false; doc = []}
 ```
 
@@ -1985,6 +1991,7 @@ let sg = Common.signature_of_mli_string test_data;;
                  {Bar}8),
               true),
            "t"),
-       [])}];
+       []);
+     value = Odoc_model.Lang.Value.Abstract}];
  compiled = false; doc = []}
 ```

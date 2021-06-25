@@ -71,7 +71,6 @@ let ident_of_element = function
   | `Label id -> (id :> Identifier.t)
   | `Class (id, _) -> (id :> Identifier.t)
   | `ClassType (id, _) -> (id :> Identifier.t)
-  | `External (id, _) -> (id :> Identifier.t)
   | `Constructor (id, _) -> (id :> Identifier.t)
   | `Exception (id, _) -> (id :> Identifier.t)
   | `Extension (id, _) -> (id :> Identifier.t)
@@ -279,10 +278,6 @@ let add_value identifier (t : Component.Value.t) env =
   add_to_elts Kind_Value identifier (`Value (identifier, t)) env
   |> add_cdocs identifier t.doc
 
-let add_external identifier (t : Component.External.t) env =
-  add_to_elts Kind_Value identifier (`External (identifier, t)) env
-  |> add_cdocs identifier t.doc
-
 let add_class identifier (t : Component.Class.t) env =
   add_to_elts Kind_Class identifier (`Class (identifier, t)) env
   |> add_cdocs identifier t.doc
@@ -356,10 +351,6 @@ let lookup_root_module name env =
   | Some r, None -> r.lookups <- RootModule (name, None) :: r.lookups
   | None, _ -> ());
   result
-
-type value_or_external =
-  [ `External of Odoc_model.Paths.Identifier.Value.t * Component.External.t
-  | `Value of Odoc_model.Paths.Identifier.Value.t * Component.Value.t ]
 
 type 'a scope = {
   filter : Component.Element.any -> ([< Component.Element.any ] as 'a) option;
@@ -454,8 +445,8 @@ let s_class_type : Component.Element.class_type scope =
     | #Component.Element.class_type as r -> Some r
     | _ -> None)
 
-let s_value : value_or_external scope =
-  make_scope (function #value_or_external as r -> Some r | _ -> None)
+let s_value : Component.Element.value scope =
+  make_scope (function #Component.Element.value as r -> Some r | _ -> None)
 
 let s_label : Component.Element.label scope =
   make_scope (function #Component.Element.label as r -> Some r | _ -> None)
@@ -655,9 +646,6 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | Odoc_model.Lang.Signature.Value v ->
             let ty = value empty v in
             add_value v.Odoc_model.Lang.Value.id ty env
-        | Odoc_model.Lang.Signature.External e ->
-            let ty = external_ empty e in
-            add_external e.Odoc_model.Lang.External.id ty env
         | Odoc_model.Lang.Signature.Class (_, c) ->
             let ty = class_ empty c in
             add_class c.id ty env

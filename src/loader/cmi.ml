@@ -535,23 +535,25 @@ and read_object env fi nm =
 let read_value_description env parent id vd =
   let open Signature in
   let id = Env.find_value_identifier env id in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
   let doc = Doc_attr.attached_no_tag container vd.val_attributes in
-    mark_value_description vd;
-    let type_ = read_type_expr env vd.val_type in
+  mark_value_description vd;
+  let type_ = read_type_expr env vd.val_type in
+  let value =
     match vd.val_kind with
-    | Val_reg -> Value {Value.id; doc; type_}
+    | Val_reg -> Value.Abstract
     | Val_prim desc ->
         let primitives =
           let open Primitive in
-          desc.prim_name :: (
-            match desc.prim_native_name with
-            | "" -> []
-            | name -> [ name ]
-          )
+          desc.prim_name
+          :: (match desc.prim_native_name with "" -> [] | name -> [ name ])
         in
-          External {External.id; doc; type_; primitives}
+        External primitives
     | _ -> assert false
+  in
+  Value { Value.id; doc; type_; value }
 
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in

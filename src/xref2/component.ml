@@ -284,7 +284,9 @@ end =
   TypeDecl
 
 and Value : sig
-  type t = { doc : CComment.docs; type_ : TypeExpr.t }
+  type value = Odoc_model.Lang.Value.value
+
+  type t = { doc : CComment.docs; type_ : TypeExpr.t; value : value }
 end =
   Value
 
@@ -301,7 +303,6 @@ and Signature : sig
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
     | Value of Ident.value * Value.t Delayed.t
-    | External of Ident.value * External.t
     | Class of Ident.class_ * recursive * Class.t
     | ClassType of Ident.class_type * recursive * ClassType.t
     | Include of Include.t
@@ -344,11 +345,6 @@ and Include : sig
   }
 end =
   Include
-
-and External : sig
-  type t = { doc : CComment.docs; type_ : TypeExpr.t; primitives : string list }
-end =
-  External
 
 and Class : sig
   type decl =
@@ -480,8 +476,6 @@ module Element = struct
 
   type signature = [ module_ | module_type ]
 
-  type external_ = [ `External of Identifier.Value.t * External.t ]
-
   type constructor =
     [ `Constructor of Identifier.Constructor.t * TypeDecl.Constructor.t ]
 
@@ -501,7 +495,6 @@ module Element = struct
     | label
     | class_
     | class_type
-    | external_
     | constructor
     | exception_
     | extension
@@ -554,9 +547,6 @@ module Fmt = struct
         | Value (id, v) ->
             Format.fprintf ppf "@[<v 2>val %a %a@]@," Ident.fmt id value
               (Delayed.get v)
-        | External (id, e) ->
-            Format.fprintf ppf "@[<v 2>external %a %a@]@," Ident.fmt id
-              external_ e
         | Class (id, _, c) ->
             Format.fprintf ppf "@[<v 2>class %a %a@]@," Ident.fmt id class_ c
         | ClassType (id, _, c) ->
@@ -636,8 +626,6 @@ module Fmt = struct
     | [] -> ()
     | [ x ] -> Format.fprintf ppf "%a" removed_item x
     | x :: ys -> Format.fprintf ppf "%a;%a" removed_item x removed_item_list ys
-
-  and external_ ppf _ = Format.fprintf ppf "<todo>"
 
   and class_decl ppf c =
     let open Class in
@@ -1520,7 +1508,7 @@ module LocalIdents = struct
               class_types =
                 Identifier.Sets.ClassType.add c.ClassType.id ids.class_types;
             }
-        | TypExt _ | Exception _ | Value _ | Comment _ | External _ -> ids
+        | TypExt _ | Exception _ | Value _ | Comment _ -> ids
         | Include i -> signature i.Include.expansion.content ids
         | Open o -> signature o.Open.expansion ids)
       s ids
@@ -2170,13 +2158,8 @@ module Of_Lang = struct
     }
 
   and value ident_map v =
-    let type_ = type_expression ident_map v.Odoc_model.Lang.Value.type_ in
-    { Value.type_; doc = docs ident_map v.doc }
-
-  and external_ ident_map e =
-    let open Odoc_model.Lang.External in
-    let type_ = type_expression ident_map e.type_ in
-    { External.doc = docs ident_map e.doc; type_; primitives = e.primitives }
+    let type_ = type_expression ident_map v.Lang.Value.type_ in
+    { Value.type_; doc = docs ident_map v.doc; value = v.value }
 
   and include_ ident_map i =
     let open Odoc_model.Lang.Include in
@@ -2358,9 +2341,6 @@ module Of_Lang = struct
         | Exception e ->
             let id = Ident.Of_Identifier.exception_ e.id in
             Exception (id, exception_ ident_map e)
-        | External e ->
-            let id = Ident.Of_Identifier.value e.id in
-            External (id, external_ ident_map e)
         | Class (r, c) ->
             let id = Identifier.Maps.Class.find c.id ident_map.classes in
             Class (id, r, class_ ident_map c)

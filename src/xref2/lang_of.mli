@@ -120,13 +120,6 @@ val instance_variable :
   Component.InstanceVariable.t ->
   Odoc_model.Lang.InstanceVariable.t
 
-val external_ :
-  maps ->
-  Identifier.Signature.t ->
-  Ident.value ->
-  Component.External.t ->
-  Odoc_model.Lang.External.t
-
 val include_ :
   Identifier.Signature.t ->
   maps ->

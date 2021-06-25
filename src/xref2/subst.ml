@@ -831,10 +831,6 @@ and extension s e =
   and constructors = List.map (extension_constructor s) e.constructors in
   { e with type_path; constructors }
 
-and external_ s e =
-  let open Component.External in
-  { e with type_ = type_expr s e.type_ }
-
 and include_ s i =
   let open Component.Include in
   {
@@ -850,7 +846,7 @@ and open_ s o =
 
 and value s v =
   let open Component.Value in
-  { type_ = type_expr s v.type_; doc = v.doc }
+  { v with type_ = type_expr s v.type_ }
 
 and class_ s c =
   let open Component.Class in
@@ -985,9 +981,6 @@ and rename_bound_idents s sg =
   | Value (id, v) :: rest ->
       let id' = Ident.Rename.value id in
       rename_bound_idents s (Value (id', v) :: sg) rest
-  | External (id, e) :: rest ->
-      let id' = Ident.Rename.value id in
-      rename_bound_idents s (External (id', e) :: sg) rest
   | Class (id, r, c) :: rest ->
       let id' = new_class_id id in
       rename_bound_idents
@@ -1086,8 +1079,6 @@ and apply_sig_map s items removed =
                Component.Delayed.put (fun () ->
                    value s (Component.Delayed.get v)) )
            :: acc)
-    | External (id, e) :: rest ->
-        inner rest (External (id, external_ s e) :: acc)
     | Class (id, r, c) :: rest -> inner rest (Class (id, r, class_ s c) :: acc)
     | ClassType (id, r, c) :: rest ->
         inner rest (ClassType (id, r, class_type s c) :: acc)

@@ -74,7 +74,7 @@ let ref_kind_of_element = function
   | `Module _ -> "module"
   | `ModuleType _ -> "module-type"
   | `Type _ -> "type"
-  | `Value _ | `External _ -> "val"
+  | `Value _ -> "val"
   | `Label _ -> "section"
   | `Class _ -> "class"
   | `ClassType _ -> "class-type"
@@ -87,7 +87,7 @@ let ref_kind_of_find = function
   | `FModule _ | `FModule_subst _ -> "module"
   | `FModuleType _ | `FModuleType_subst _ -> "module-type"
   | `FType _ | `FType_subst _ -> "type"
-  | `FValue _ | `FExternal _ -> "val"
+  | `FValue _ -> "val"
   | `FLabel _ -> "section"
   | `FClass _ -> "class"
   | `FClassType _ -> "class-type"
@@ -300,15 +300,10 @@ module V = struct
   type t = value_lookup_result
 
   let in_env env name : t option =
-    env_lookup_by_name Env.s_value name env >>= function
-    | `Value (id, _x) -> return (`Identifier id)
-    | `External (id, _x) -> return (`Identifier id)
+    env_lookup_by_name Env.s_value name env >>= fun (`Value (id, _x)) ->
+    return (`Identifier id)
 
   let of_component _env ~parent_ref name : t option =
-    Some (`Value (parent_ref, name))
-
-  let external_of_component _env ~parent_ref name : t option =
-    (* Should add an [`External] reference ? *)
     Some (`Value (parent_ref, name))
 
   let in_signature _env ((parent', _, sg) : signature_lookup_result) name :
@@ -674,8 +669,6 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   | `FClassType (name, ct) ->
       CT.of_component env ct ~parent_ref name >>= resolved2
   | `FValue (name, _) -> V.of_component env ~parent_ref name >>= resolved1
-  | `FExternal (name, _) ->
-      V.external_of_component env ~parent_ref name >>= resolved1
   | `FLabel label -> L.of_component env ~parent_ref label >>= resolved1
   | `FExn (name, _) -> EX.of_component env ~parent_ref name >>= resolved1
   | `FExt _ -> EC.of_component env ~parent_ref name >>= resolved1
@@ -724,7 +717,6 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         | `Label id -> identifier id
         | `Class (id, _) -> identifier id
         | `ClassType (id, _) -> identifier id
-        | `External (id, _) -> identifier id
         | `Constructor (id, _) -> identifier id
         | `Exception (id, _) -> identifier id
         | `Extension (id, _) -> identifier id

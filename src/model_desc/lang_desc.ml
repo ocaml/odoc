@@ -225,7 +225,6 @@ and signature_item =
     | TypExt x -> C ("TypExt", x, extension_t)
     | Exception x -> C ("Exception", x, exception_t)
     | Value x -> C ("Value", x, value_t)
-    | External x -> C ("External", x, external_t)
     | Class (x1, x2) ->
         C ("Class", (x1, x2), Pair (signature_recursive, class_t))
     | ClassType (x1, x2) ->
@@ -403,23 +402,17 @@ and exception_t =
 
 and value_t =
   let open Lang.Value in
+  let value_value_t =
+    Variant
+      (function
+      | Abstract -> C0 "Abstract" | External x -> C ("External", x, List string))
+  in
   Record
     [
       F ("id", (fun t -> t.id), identifier);
       F ("doc", (fun t -> t.doc), docs);
       F ("type_", (fun t -> t.type_), typeexpr_t);
-    ]
-
-(** {3 External} *)
-
-and external_t =
-  let open Lang.External in
-  Record
-    [
-      F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), docs);
-      F ("type_", (fun t -> t.type_), typeexpr_t);
-      F ("primitives", (fun t -> t.primitives), List string);
+      F ("value", (fun t -> t.value), value_value_t);
     ]
 
 (** {3 Class} *)

@@ -56,8 +56,6 @@ val add_module_type :
 
 val add_value : Identifier.Value.t -> Component.Value.t -> t -> t
 
-val add_external : Identifier.Value.t -> Component.External.t -> t -> t
-
 val add_label : Identifier.Label.t -> t -> t
 
 val add_label_title :
@@ -95,10 +93,6 @@ val module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t
 
 val lookup_root_module : string -> t -> root option
 
-type value_or_external =
-  [ `External of Odoc_model.Paths.Identifier.Value.t * Component.External.t
-  | `Value of Odoc_model.Paths.Identifier.Value.t * Component.Value.t ]
-
 type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)
 
@@ -129,7 +123,7 @@ val s_class : Component.Element.class_ scope
 
 val s_class_type : Component.Element.class_type scope
 
-val s_value : value_or_external scope
+val s_value : Component.Element.value scope
 
 val s_label : Component.Element.label scope
 

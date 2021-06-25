@@ -95,11 +95,6 @@ and extension env parent t =
   let constructors = List.map constructor t.constructors in
   { t with type_path; constructors }
 
-and external_ env parent e =
-  let open External in
-  let container = (parent :> Id.Parent.t) in
-  { e with type_ = type_expression env container e.type_ }
-
 and class_type_expr env parent =
   let open ClassType in
   let container = (parent :> Id.Parent.t) in
@@ -235,7 +230,6 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
         | Comment c -> std @@ Comment c
         | TypExt t -> std @@ TypExt (extension env id t)
         | Exception e -> std @@ Exception (exception_ env id e)
-        | External e -> std @@ External (external_ env id e)
         | Class (r, c) -> std @@ Class (r, class_ env id c)
         | ClassType (r, c) -> std @@ ClassType (r, class_type env c)
         | Include i ->

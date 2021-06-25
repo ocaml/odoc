@@ -12,8 +12,7 @@ type class_ =
   [ `FClass of ClassName.t * Class.t
   | `FClassType of ClassTypeName.t * ClassType.t ]
 
-type value =
-  [ `FExternal of ValueName.t * External.t | `FValue of ValueName.t * Value.t ]
+type value = [ `FValue of ValueName.t * Value.t ]
 
 type label = [ `FLabel of Ident.label ]
 
