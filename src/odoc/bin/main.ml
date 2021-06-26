@@ -62,6 +62,15 @@ let flat_output =
   in
   Arg.(value & flag (info ~doc [ "flat" ]))
 
+let extra_suffix =
+  let doc =
+    "Extra suffix to append to generated filenames. This is intended for \
+      expect tests to use."
+  in
+  let default = "" in
+  Arg.(
+    value & opt string default & info ~docv:"SUFFIX" ~doc [ "extra-suffix" ])
+
 let warnings_options =
   let warn_error =
     let doc = "Turn warnings into errors." in
@@ -472,15 +481,6 @@ module Odoc_html = Make_renderer (struct
     Arg.(
       value & opt convert_uri default & info ~docv:"URI" ~doc [ "support-uri" ])
 
-  let extra_suffix =
-    let doc =
-      "Extra suffix to append to generated filenames. This is intended for \
-       expect tests to use."
-    in
-    let default = "" in
-    Arg.(
-      value & opt string default & info ~docv:"SUFFIX" ~doc [ "extra-suffix" ])
-
   let extra_args =
     let f semantic_uris closed_details indent theme_uri support_uri flat
         extra_suffix =
@@ -566,8 +566,8 @@ module Odoc_latex = Make_renderer (struct
     Arg.(value & opt bool true & info ~docv:"BOOL" ~doc [ "with-children" ])
 
   let extra_args =
-    let f with_children flat = { Latex.with_children; flat } in
-    Term.(const f $ with_children $ flat_output)
+    let f with_children flat extra_suffix = { Latex.with_children; flat; extra_suffix } in
+    Term.(const f $ with_children $ flat_output $ extra_suffix)
 end)
 
 module Depends = struct
