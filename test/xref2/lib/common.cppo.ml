@@ -35,7 +35,7 @@ let cmt_of_string s =
     Typemod.type_implementation "" "" "" env p
 
 let parent = `RootPage (Odoc_model.Names.PageName.make_std "None")
-let id = `Root (parent, Odoc_model.Names.ModuleName.make_std "Root")
+let id = `Root (Some parent, Odoc_model.Names.ModuleName.make_std "Root")
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
   ignore(package);
@@ -63,7 +63,7 @@ let root_pp fmt (_ : Odoc_model.Root.t) = Format.fprintf fmt "Common.root"
 
 let model_of_string str = 
     let cmti = cmti_of_string str in
-    Odoc_loader__Cmti.read_interface parent "Root" cmti
+    Odoc_loader__Cmti.read_interface (Some parent) "Root" cmti
 
 let model_of_string_impl str =
 #if OCAML_VERSION < (4,13,0)
@@ -71,7 +71,7 @@ let model_of_string_impl str =
 #else
     let cmt = (cmt_of_string str).structure in
 #endif
-    Odoc_loader__Cmt.read_implementation parent "Root" cmt
+    Odoc_loader__Cmt.read_implementation (Some parent) "Root" cmt
 
 let signature_of_mli_string str =
     Odoc_xref2.Ident.reset ();

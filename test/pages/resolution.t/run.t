@@ -63,12 +63,14 @@ This is the '{!childmodule:M1}' reference
       "`Identifier": {
         "`Root": [
           {
-            "`Page": [
-              {
-                "`RootPage": "top1"
-              },
-              "sub1"
-            ]
+            "Some": {
+              "`Page": [
+                {
+                  "`RootPage": "top1"
+                },
+                "sub1"
+              ]
+            }
           },
           "M1"
         ]

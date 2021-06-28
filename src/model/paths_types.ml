@@ -9,11 +9,11 @@ module Identifier = struct
   type page = [ container_page | `LeafPage of container_page * PageName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Page.t *)
 
-  type odoc_id = [ page | `Root of container_page * ModuleName.t ]
+  type odoc_id = [ page | `Root of container_page option * ModuleName.t ]
   (** @canonical Odoc_model.Paths.Identifier.OdocId.t *)
 
   type signature =
-    [ `Root of container_page * ModuleName.t
+    [ `Root of container_page option * ModuleName.t
     | `Module of signature * ModuleName.t
     | `Parameter of signature * ParameterName.t
     | `Result of signature
@@ -34,7 +34,7 @@ module Identifier = struct
   type label_parent = [ parent | page ]
   (** @canonical Odoc_model.Paths.Identifier.LabelParent.t *)
 
-  type root_module = [ `Root of container_page * ModuleName.t ]
+  type root_module = [ `Root of container_page option * ModuleName.t ]
   (** @canonical Odoc_model.Paths.Identifier.RootModule.t *)
 
   type module_ = [ root_module | `Module of signature * ModuleName.t ]

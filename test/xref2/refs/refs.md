@@ -88,55 +88,57 @@ Explicit, root:
 
 ```ocaml
 # resolve_ref "module:M"
-- : ref = `Identifier (`Module (`Root (`RootPage None, Root), M))
+- : ref = `Identifier (`Module (`Root (Some (`RootPage None), Root), M))
 # resolve_ref "module:M.N"
 - : ref =
-`Module (`Identifier (`Module (`Root (`RootPage None, Root), M)), N)
+`Module (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), N)
 # resolve_ref "val:f1"
-- : ref = `Identifier (`Value (`Root (`RootPage None, Root), f1))
+- : ref = `Identifier (`Value (`Root (Some (`RootPage None), Root), f1))
 # resolve_ref "type:t1"
-- : ref = `Identifier (`Type (`Root (`RootPage None, Root), t1))
+- : ref = `Identifier (`Type (`Root (Some (`RootPage None), Root), t1))
 # resolve_ref "module-type:T1"
-- : ref = `Identifier (`ModuleType (`Root (`RootPage None, Root), T1))
+- : ref = `Identifier (`ModuleType (`Root (Some (`RootPage None), Root), T1))
 # resolve_ref "exception:E1"
-- : ref = `Identifier (`Exception (`Root (`RootPage None, Root), E1))
+- : ref = `Identifier (`Exception (`Root (Some (`RootPage None), Root), E1))
 # resolve_ref "constructor:C1"
 - : ref =
-`Identifier (`Constructor (`Type (`Root (`RootPage None, Root), t1), C1))
+`Identifier
+  (`Constructor (`Type (`Root (Some (`RootPage None), Root), t1), C1))
 # resolve_ref "val:e1"
-- : ref = `Identifier (`Value (`Root (`RootPage None, Root), e1))
+- : ref = `Identifier (`Value (`Root (Some (`RootPage None), Root), e1))
 # resolve_ref "class:c1"
-- : ref = `Identifier (`Class (`Root (`RootPage None, Root), c1))
+- : ref = `Identifier (`Class (`Root (Some (`RootPage None), Root), c1))
 # resolve_ref "class-type:ct1"
-- : ref = `Identifier (`ClassType (`Root (`RootPage None, Root), ct1))
+- : ref = `Identifier (`ClassType (`Root (Some (`RootPage None), Root), ct1))
 # resolve_ref "type:x1"
-- : ref = `Identifier (`Type (`Root (`RootPage None, Root), x1))
+- : ref = `Identifier (`Type (`Root (Some (`RootPage None), Root), x1))
 # resolve_ref "constructor:X1" (* X1 is an extension constructor *)
 Exception: Failure "resolve_reference".
 # resolve_ref "extension:X1"
-- : ref = `Identifier (`Extension (`Root (`RootPage None, Root), X1))
+- : ref = `Identifier (`Extension (`Root (Some (`RootPage None), Root), X1))
 # resolve_ref "method:c1.m1"
 - : ref =
-`Method (`Identifier (`Class (`Root (`RootPage None, Root), c1)), m1)
+`Method (`Identifier (`Class (`Root (Some (`RootPage None), Root), c1)), m1)
 # resolve_ref "instance-variable:c1.v1"
 - : ref =
 `InstanceVariable
-  (`Identifier (`Class (`Root (`RootPage None, Root), c1)), v1)
+  (`Identifier (`Class (`Root (Some (`RootPage None), Root), c1)), v1)
 # resolve_ref "method:ct1.tm1" (* ct1 is a class type *)
 - : ref =
-`Method (`Identifier (`ClassType (`Root (`RootPage None, Root), ct1)), tm1)
+`Method
+  (`Identifier (`ClassType (`Root (Some (`RootPage None), Root), ct1)), tm1)
 # resolve_ref "instance-variable:ct1.tv1"
 - : ref =
 `InstanceVariable
-  (`Identifier (`ClassType (`Root (`RootPage None, Root), ct1)), tv1)
+  (`Identifier (`ClassType (`Root (Some (`RootPage None), Root), ct1)), tv1)
 # resolve_ref "field:rf1"
 - : ref =
-`Identifier (`Field (`Type (`Root (`RootPage None, Root), r1), rf1))
+`Identifier (`Field (`Type (`Root (Some (`RootPage None), Root), r1), rf1))
 # resolve_ref "field:r1.rf1"
 - : ref =
-`Field (`Identifier (`Type (`Root (`RootPage None, Root), r1)), rf1)
+`Field (`Identifier (`Type (`Root (Some (`RootPage None), Root), r1)), rf1)
 # resolve_ref "section:L1"
-- : ref = `Identifier (`Label (`Root (`RootPage None, Root), L1))
+- : ref = `Identifier (`Label (`Root (Some (`RootPage None), Root), L1))
 ```
 
 Explicit, in sig:
@@ -144,59 +146,73 @@ Explicit, in sig:
 ```ocaml
 # resolve_ref "val:M.f2"
 - : ref =
-`Value (`Identifier (`Module (`Root (`RootPage None, Root), M)), f2)
+`Value (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), f2)
 # resolve_ref "type:M.t2"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), t2)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), t2)
 # resolve_ref "module-type:M.T2"
 - : ref =
-`ModuleType (`Identifier (`Module (`Root (`RootPage None, Root), M)), T2)
+`ModuleType
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), T2)
 # resolve_ref "exception:M.E2"
 - : ref =
-`Exception (`Identifier (`Module (`Root (`RootPage None, Root), M)), E2)
+`Exception
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), E2)
 # resolve_ref "constructor:M.C2" (* Not allowed by types *)
 Exception: Failure "resolve_reference".
 # resolve_ref "val:M.e2"
 - : ref =
-`Value (`Identifier (`Module (`Root (`RootPage None, Root), M)), e2)
+`Value (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), e2)
 # resolve_ref "class:M.c2"
 - : ref =
-`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2)
+`Class (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2)
 # resolve_ref "class-type:M.ct2"
 - : ref =
-`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2)
+`ClassType
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2)
 # resolve_ref "type:M.x2"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), x2)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), x2)
 # resolve_ref "constructor:M.X2" (* X2 is an extension constructor *)
 Exception: Failure "resolve_reference".
 # resolve_ref "extension:M.X2"
 - : ref =
-`Extension (`Identifier (`Module (`Root (`RootPage None, Root), M)), X2)
+`Extension
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), X2)
 # resolve_ref "method:M.c2.m2"
 - : ref =
 `Method
-  (`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2), m2)
+  (`Class
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2),
+   m2)
 # resolve_ref "instance-variable:M.c2.v2"
 - : ref =
 `InstanceVariable
-  (`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2), v2)
+  (`Class
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2),
+   v2)
 # resolve_ref "method:M.ct2.tm2" (* ct2 is a class type *)
 - : ref =
 `Method
-  (`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2),
+  (`ClassType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2),
    tm2)
 # resolve_ref "instance-variable:M.ct2.tv2"
 - : ref =
 `InstanceVariable
-  (`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2),
+  (`ClassType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2),
    tv2)
 # resolve_ref "field:M.rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 # resolve_ref "field:M.r2.rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 # resolve_ref "section:M.L2"
 Exception: Failure "resolve_reference".
 ```
@@ -205,53 +221,55 @@ Implicit, root:
 
 ```ocaml
 # resolve_ref "M"
-- : ref = `Identifier (`Module (`Root (`RootPage None, Root), M))
+- : ref = `Identifier (`Module (`Root (Some (`RootPage None), Root), M))
 # resolve_ref "M.N"
 - : ref =
-`Module (`Identifier (`Module (`Root (`RootPage None, Root), M)), N)
+`Module (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), N)
 # resolve_ref "f1"
-- : ref = `Identifier (`Value (`Root (`RootPage None, Root), f1))
+- : ref = `Identifier (`Value (`Root (Some (`RootPage None), Root), f1))
 # resolve_ref "t1"
-- : ref = `Identifier (`Type (`Root (`RootPage None, Root), t1))
+- : ref = `Identifier (`Type (`Root (Some (`RootPage None), Root), t1))
 # resolve_ref "T1"
-- : ref = `Identifier (`ModuleType (`Root (`RootPage None, Root), T1))
+- : ref = `Identifier (`ModuleType (`Root (Some (`RootPage None), Root), T1))
 # resolve_ref "E1"
-- : ref = `Identifier (`Exception (`Root (`RootPage None, Root), E1))
+- : ref = `Identifier (`Exception (`Root (Some (`RootPage None), Root), E1))
 # resolve_ref "C1"
 - : ref =
-`Identifier (`Constructor (`Type (`Root (`RootPage None, Root), t1), C1))
+`Identifier
+  (`Constructor (`Type (`Root (Some (`RootPage None), Root), t1), C1))
 # resolve_ref "e1"
-- : ref = `Identifier (`Value (`Root (`RootPage None, Root), e1))
+- : ref = `Identifier (`Value (`Root (Some (`RootPage None), Root), e1))
 # resolve_ref "c1"
-- : ref = `Identifier (`Class (`Root (`RootPage None, Root), c1))
+- : ref = `Identifier (`Class (`Root (Some (`RootPage None), Root), c1))
 # resolve_ref "ct1"
-- : ref = `Identifier (`ClassType (`Root (`RootPage None, Root), ct1))
+- : ref = `Identifier (`ClassType (`Root (Some (`RootPage None), Root), ct1))
 # resolve_ref "x1"
-- : ref = `Identifier (`Type (`Root (`RootPage None, Root), x1))
+- : ref = `Identifier (`Type (`Root (Some (`RootPage None), Root), x1))
 # resolve_ref "X1"
-- : ref = `Identifier (`Extension (`Root (`RootPage None, Root), X1))
+- : ref = `Identifier (`Extension (`Root (Some (`RootPage None), Root), X1))
 # resolve_ref "c1.m1"
 - : ref =
-`Method (`Identifier (`Class (`Root (`RootPage None, Root), c1)), m1)
+`Method (`Identifier (`Class (`Root (Some (`RootPage None), Root), c1)), m1)
 # resolve_ref "c1.v1"
 - : ref =
 `InstanceVariable
-  (`Identifier (`Class (`Root (`RootPage None, Root), c1)), v1)
+  (`Identifier (`Class (`Root (Some (`RootPage None), Root), c1)), v1)
 # resolve_ref "ct1.tm1" (* ct1 is a class type *)
 - : ref =
-`Method (`Identifier (`ClassType (`Root (`RootPage None, Root), ct1)), tm1)
+`Method
+  (`Identifier (`ClassType (`Root (Some (`RootPage None), Root), ct1)), tm1)
 # resolve_ref "ct1.tv1"
 - : ref =
 `InstanceVariable
-  (`Identifier (`ClassType (`Root (`RootPage None, Root), ct1)), tv1)
+  (`Identifier (`ClassType (`Root (Some (`RootPage None), Root), ct1)), tv1)
 # resolve_ref "rf1"
 - : ref =
-`Identifier (`Field (`Type (`Root (`RootPage None, Root), r1), rf1))
+`Identifier (`Field (`Type (`Root (Some (`RootPage None), Root), r1), rf1))
 # resolve_ref "r1.rf1"
 - : ref =
-`Field (`Identifier (`Type (`Root (`RootPage None, Root), r1)), rf1)
+`Field (`Identifier (`Type (`Root (Some (`RootPage None), Root), r1)), rf1)
 # resolve_ref "L1"
-- : ref = `Identifier (`Label (`Root (`RootPage None, Root), L1))
+- : ref = `Identifier (`Label (`Root (Some (`RootPage None), Root), L1))
 ```
 
 Implicit, in sig:
@@ -259,59 +277,74 @@ Implicit, in sig:
 ```ocaml
 # resolve_ref "M.f2"
 - : ref =
-`Value (`Identifier (`Module (`Root (`RootPage None, Root), M)), f2)
+`Value (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), f2)
 # resolve_ref "M.t2"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), t2)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), t2)
 # resolve_ref "M.T2"
 - : ref =
-`ModuleType (`Identifier (`Module (`Root (`RootPage None, Root), M)), T2)
+`ModuleType
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), T2)
 # resolve_ref "M.E2"
 - : ref =
-`Exception (`Identifier (`Module (`Root (`RootPage None, Root), M)), E2)
+`Exception
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), E2)
 # resolve_ref "M.C2"
 - : ref =
 `Constructor
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), t2), C2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), t2),
+   C2)
 # resolve_ref "M.e2"
 - : ref =
-`Value (`Identifier (`Module (`Root (`RootPage None, Root), M)), e2)
+`Value (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), e2)
 # resolve_ref "M.c2"
 - : ref =
-`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2)
+`Class (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2)
 # resolve_ref "M.ct2"
 - : ref =
-`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2)
+`ClassType
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2)
 # resolve_ref "M.x2"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), x2)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), x2)
 # resolve_ref "M.X2"
 - : ref =
-`Extension (`Identifier (`Module (`Root (`RootPage None, Root), M)), X2)
+`Extension
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), X2)
 # resolve_ref "M.c2.m2"
 - : ref =
 `Method
-  (`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2), m2)
+  (`Class
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2),
+   m2)
 # resolve_ref "M.c2.v2"
 - : ref =
 `InstanceVariable
-  (`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2), v2)
+  (`Class
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2),
+   v2)
 # resolve_ref "M.ct2.tm2" (* ct2 is a class type *)
 - : ref =
 `Method
-  (`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2),
+  (`ClassType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2),
    tm2)
 # resolve_ref "M.ct2.tv2"
 - : ref =
 `InstanceVariable
-  (`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2),
+  (`ClassType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2),
    tv2)
 # resolve_ref "M.rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 # resolve_ref "M.r2.rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 # resolve_ref "M.L2"
 Exception: Failure "resolve_reference".
 ```
@@ -320,154 +353,182 @@ Known kind:
 
 ```ocaml
 # resolve_ref "module-M"
-- : ref = `Identifier (`Module (`Root (`RootPage None, Root), M))
+- : ref = `Identifier (`Module (`Root (Some (`RootPage None), Root), M))
 # resolve_ref "module-M.N"
 - : ref =
-`Module (`Identifier (`Module (`Root (`RootPage None, Root), M)), N)
+`Module (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), N)
 # resolve_ref "M.module-N"
 - : ref =
-`Module (`Identifier (`Module (`Root (`RootPage None, Root), M)), N)
+`Module (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), N)
 # resolve_ref "module-M.module-N"
 - : ref =
-`Module (`Identifier (`Module (`Root (`RootPage None, Root), M)), N)
+`Module (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), N)
 # resolve_ref "type-t1"
-- : ref = `Identifier (`Type (`Root (`RootPage None, Root), t1))
+- : ref = `Identifier (`Type (`Root (Some (`RootPage None), Root), t1))
 # resolve_ref "module-type-T1"
-- : ref = `Identifier (`ModuleType (`Root (`RootPage None, Root), T1))
+- : ref = `Identifier (`ModuleType (`Root (Some (`RootPage None), Root), T1))
 # resolve_ref "class-c1"
-- : ref = `Identifier (`Class (`Root (`RootPage None, Root), c1))
+- : ref = `Identifier (`Class (`Root (Some (`RootPage None), Root), c1))
 # resolve_ref "class-type-ct1"
-- : ref = `Identifier (`ClassType (`Root (`RootPage None, Root), ct1))
+- : ref = `Identifier (`ClassType (`Root (Some (`RootPage None), Root), ct1))
 # resolve_ref "type-x1"
-- : ref = `Identifier (`Type (`Root (`RootPage None, Root), x1))
+- : ref = `Identifier (`Type (`Root (Some (`RootPage None), Root), x1))
 # resolve_ref "class-c1.m1"
 - : ref =
-`Method (`Identifier (`Class (`Root (`RootPage None, Root), c1)), m1)
+`Method (`Identifier (`Class (`Root (Some (`RootPage None), Root), c1)), m1)
 # resolve_ref "class-c1.v1"
 - : ref =
 `InstanceVariable
-  (`Identifier (`Class (`Root (`RootPage None, Root), c1)), v1)
+  (`Identifier (`Class (`Root (Some (`RootPage None), Root), c1)), v1)
 # resolve_ref "class-type-ct1.tm1"
 - : ref =
-`Method (`Identifier (`ClassType (`Root (`RootPage None, Root), ct1)), tm1)
+`Method
+  (`Identifier (`ClassType (`Root (Some (`RootPage None), Root), ct1)), tm1)
 # resolve_ref "class-type-ct1.tv1"
 - : ref =
 `InstanceVariable
-  (`Identifier (`ClassType (`Root (`RootPage None, Root), ct1)), tv1)
+  (`Identifier (`ClassType (`Root (Some (`RootPage None), Root), ct1)), tv1)
 # resolve_ref "field-rf1"
 - : ref =
-`Identifier (`Field (`Type (`Root (`RootPage None, Root), r1), rf1))
+`Identifier (`Field (`Type (`Root (Some (`RootPage None), Root), r1), rf1))
 # resolve_ref "type-r1.rf1"
 - : ref =
-`Field (`Identifier (`Type (`Root (`RootPage None, Root), r1)), rf1)
+`Field (`Identifier (`Type (`Root (Some (`RootPage None), Root), r1)), rf1)
 # resolve_ref "type-r1.field-rf1"
 - : ref =
-`Field (`Identifier (`Type (`Root (`RootPage None, Root), r1)), rf1)
+`Field (`Identifier (`Type (`Root (Some (`RootPage None), Root), r1)), rf1)
 # resolve_ref "section-L1"
-- : ref = `Identifier (`Label (`Root (`RootPage None, Root), L1))
+- : ref = `Identifier (`Label (`Root (Some (`RootPage None), Root), L1))
 # resolve_ref "M.type-t2"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), t2)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), t2)
 # resolve_ref "M.module-type-T2"
 - : ref =
-`ModuleType (`Identifier (`Module (`Root (`RootPage None, Root), M)), T2)
+`ModuleType
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), T2)
 # resolve_ref "M.class-c2"
 - : ref =
-`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2)
+`Class (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2)
 # resolve_ref "M.class-type-ct2"
 - : ref =
-`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2)
+`ClassType
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2)
 # resolve_ref "M.type-x2"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), x2)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), x2)
 # resolve_ref "M.class-c2.m2"
 - : ref =
 `Method
-  (`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2), m2)
+  (`Class
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2),
+   m2)
 # resolve_ref "M.class-c2.v2"
 - : ref =
 `InstanceVariable
-  (`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2), v2)
+  (`Class
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2),
+   v2)
 # resolve_ref "M.class-type-ct2.tm2"
 - : ref =
 `Method
-  (`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2),
+  (`ClassType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2),
    tm2)
 # resolve_ref "M.class-type-ct2.tv2"
 - : ref =
 `InstanceVariable
-  (`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2),
+  (`ClassType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2),
    tv2)
 # resolve_ref "M.type-r2.rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 # resolve_ref "M.r2.field-rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 # resolve_ref "M.type-r2.field-rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 # resolve_ref "M.field-rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 # resolve_ref "M.section-L2"
 Exception: Failure "resolve_reference".
 # resolve_ref "module-M.type-t2"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), t2)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), t2)
 # resolve_ref "module-M.module-type-T2"
 - : ref =
-`ModuleType (`Identifier (`Module (`Root (`RootPage None, Root), M)), T2)
+`ModuleType
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), T2)
 # resolve_ref "module-M.class-c2"
 - : ref =
-`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2)
+`Class (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2)
 # resolve_ref "module-M.class-type-ct2"
 - : ref =
-`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2)
+`ClassType
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2)
 # resolve_ref "module-M.type-x2"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), x2)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), x2)
 # resolve_ref "module-M.class-c2.m2"
 - : ref =
 `Method
-  (`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2), m2)
+  (`Class
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2),
+   m2)
 # resolve_ref "module-M.class-c2.v2"
 - : ref =
 `InstanceVariable
-  (`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), c2), v2)
+  (`Class
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), c2),
+   v2)
 # resolve_ref "module-M.class-type-ct2.tm2"
 - : ref =
 `Method
-  (`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2),
+  (`ClassType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2),
    tm2)
 # resolve_ref "module-M.class-type-ct2.tv2"
 - : ref =
 `InstanceVariable
-  (`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), ct2),
+  (`ClassType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), ct2),
    tv2)
 # resolve_ref "module-M.type-r2.rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 # resolve_ref "module-M.field-rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 # resolve_ref "module-M.section-L2"
 Exception: Failure "resolve_reference".
 # resolve_ref "module-M.field-rf2"
 - : ref =
 `Field
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), r2), rf2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), r2),
+   rf2)
 ```
 
 Class and class type as type:
 
 ```ocaml
 # resolve_ref "type:c1"
-- : ref = `Identifier (`Class (`Root (`RootPage None, Root), c1))
+- : ref = `Identifier (`Class (`Root (Some (`RootPage None), Root), c1))
 # resolve_ref "type:ct1"
-- : ref = `Identifier (`ClassType (`Root (`RootPage None, Root), ct1))
+- : ref = `Identifier (`ClassType (`Root (Some (`RootPage None), Root), ct1))
 ```
 
 Constructors in type parent:
@@ -475,32 +536,40 @@ Constructors in type parent:
 ```ocaml
 # resolve_ref "t1.C1"
 - : ref =
-`Constructor (`Identifier (`Type (`Root (`RootPage None, Root), t1)), C1)
+`Constructor
+  (`Identifier (`Type (`Root (Some (`RootPage None), Root), t1)), C1)
 # resolve_ref "constructor:t1.C1"
 - : ref =
-`Constructor (`Identifier (`Type (`Root (`RootPage None, Root), t1)), C1)
+`Constructor
+  (`Identifier (`Type (`Root (Some (`RootPage None), Root), t1)), C1)
 # resolve_ref "t1.constructor-C1"
 - : ref =
-`Constructor (`Identifier (`Type (`Root (`RootPage None, Root), t1)), C1)
+`Constructor
+  (`Identifier (`Type (`Root (Some (`RootPage None), Root), t1)), C1)
 # resolve_ref "constructor:type-t1.C1"
 - : ref =
-`Constructor (`Identifier (`Type (`Root (`RootPage None, Root), t1)), C1)
+`Constructor
+  (`Identifier (`Type (`Root (Some (`RootPage None), Root), t1)), C1)
 # resolve_ref "M.t2.C2"
 - : ref =
 `Constructor
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), t2), C2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), t2),
+   C2)
 # resolve_ref "constructor:M.t2.C2"
 - : ref =
 `Constructor
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), t2), C2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), t2),
+   C2)
 # resolve_ref "M.t2.constructor-C2"
 - : ref =
 `Constructor
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), t2), C2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), t2),
+   C2)
 # resolve_ref "constructor:M.type-t2.C2"
 - : ref =
 `Constructor
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), M)), t2), C2)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), t2),
+   C2)
 ```
 
 Signature parent:
@@ -525,28 +594,37 @@ let resolve_ref = resolve_ref_of_mli {|
 # resolve_ref "M.module-N.t"
 - : ref =
 `Type
-  (`Module (`Identifier (`Module (`Root (`RootPage None, Root), M)), N), t)
+  (`Module
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), N),
+   t)
 # resolve_ref "M.module-type-T.t"
 - : ref =
 `Type
-  (`ModuleType (`Identifier (`Module (`Root (`RootPage None, Root), M)), T),
+  (`ModuleType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), T),
    t)
 # resolve_ref "M.N.type-t"
 - : ref =
 `Type
-  (`Module (`Identifier (`Module (`Root (`RootPage None, Root), M)), N), t)
+  (`Module
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), N),
+   t)
 # resolve_ref "M.T.type-t"
 - : ref =
 `Type
-  (`ModuleType (`Identifier (`Module (`Root (`RootPage None, Root), M)), T),
+  (`ModuleType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), T),
    t)
 # resolve_ref "type:M.N.t"
 - : ref =
 `Type
-  (`Module (`Identifier (`Module (`Root (`RootPage None, Root), M)), N), t)
+  (`Module
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), N),
+   t)
 # resolve_ref "type:MT.t"
 - : ref =
-`Type (`Identifier (`ModuleType (`Root (`RootPage None, Root), MT)), t)
+`Type
+  (`Identifier (`ModuleType (`Root (Some (`RootPage None), Root), MT)), t)
 ```
 
 Substitutions are only available in 4.08 onwards:
@@ -567,7 +645,7 @@ let resolve_ref = resolve_ref_of_mli {|
 <!-- $MDX version>=4.08 -->
 ```ocaml
 # resolve_ref "s1"
-- : ref = `Identifier (`Type (`Root (`RootPage None, Root), s1))
+- : ref = `Identifier (`Type (`Root (Some (`RootPage None), Root), s1))
 # resolve_ref "s1.rf1"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.s2"
@@ -596,24 +674,27 @@ let resolve_ref = resolve_ref_of_mli {|
 
 ```ocaml
 # resolve_ref "A.t"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), A)), t)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), A)), t)
 # resolve_ref "B.t" (* get_module_path_modifiers is [`Aliased] *)
 - : ref =
 `Type
   (`SubstAlias
-     (`Identifier (`Module (`Root (`RootPage None, Root), A)),
-      `Identifier (`Module (`Root (`RootPage None, Root), B))),
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), A)),
+      `Identifier (`Module (`Root (Some (`RootPage None), Root), B))),
    t)
 # resolve_ref "C.t"
 Exception: Failure "resolve_reference".
 # resolve_ref "D.t"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), D)), t)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), D)), t)
 # resolve_ref "E.N.t"
 - : ref =
 `Type
   (`SubstAlias
-     (`Identifier (`Module (`Root (`RootPage None, Root), A)),
-      `Module (`Identifier (`Module (`Root (`RootPage None, Root), E)), N)),
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), A)),
+      `Module
+        (`Identifier (`Module (`Root (Some (`RootPage None), Root), E)), N)),
    t)
 ```
 
@@ -634,32 +715,37 @@ let resolve_ref = resolve_ref_of_mli {|
 ```ocaml
 # resolve_ref "type:M.cl" (* Type reference resolves to class *)
 - : ref =
-`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), cl)
+`Class (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), cl)
 # resolve_ref "type:M.clt"
 - : ref =
-`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), clt)
+`ClassType
+  (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), clt)
 # resolve_ref "type:cl" (* Root TType reference resolves to class *)
-- : ref = `Identifier (`Class (`Root (`RootPage None, Root), cl))
+- : ref = `Identifier (`Class (`Root (Some (`RootPage None), Root), cl))
 # resolve_ref "type:clt"
-- : ref = `Identifier (`ClassType (`Root (`RootPage None, Root), clt))
+- : ref = `Identifier (`ClassType (`Root (Some (`RootPage None), Root), clt))
 # resolve_ref "M.type-cl.m" (* Type label parent resolves to class *)
 - : ref =
 `Method
-  (`Class (`Identifier (`Module (`Root (`RootPage None, Root), M)), cl), m)
+  (`Class
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), cl),
+   m)
 # resolve_ref "M.type-clt.m"
 - : ref =
 `Method
-  (`ClassType (`Identifier (`Module (`Root (`RootPage None, Root), M)), clt),
+  (`ClassType
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), clt),
    m)
 # resolve_ref "type-cl.m" (* Root TType label parent resolves to class *)
 - : ref =
-`Method (`Identifier (`Class (`Root (`RootPage None, Root), cl)), m)
+`Method (`Identifier (`Class (`Root (Some (`RootPage None), Root), cl)), m)
 # resolve_ref "type-clt.m"
 - : ref =
-`Method (`Identifier (`ClassType (`Root (`RootPage None, Root), clt)), m)
+`Method
+  (`Identifier (`ClassType (`Root (Some (`RootPage None), Root), clt)), m)
 # resolve_ref "method:cl.m"
 - : ref =
-`Method (`Identifier (`Class (`Root (`RootPage None, Root), cl)), m)
+`Method (`Identifier (`Class (`Root (Some (`RootPage None), Root), cl)), m)
 ```
 
 It is not possible to reference to methods through type references:
@@ -671,7 +757,8 @@ It is not possible to reference to methods through type references:
   |}
 val resolve_ref : string -> ref = <fun>
 # resolve_ref "type-c.m"
-- : ref = `Method (`Identifier (`Class (`Root (`RootPage None, Root), c)), m)
+- : ref =
+`Method (`Identifier (`Class (`Root (Some (`RootPage None), Root), c)), m)
 # resolve_ref "type-c.method-m"
 Exception:
 Failure
@@ -786,11 +873,11 @@ Ambiguous in env:
 # resolve_ref "t"
 File "<test>":
 Reference to 't' is ambiguous. Please specify its kind: val-t, type-t.
-- : ref = `Identifier (`Value (`Root (`RootPage None, Root), t))
+- : ref = `Identifier (`Value (`Root (Some (`RootPage None), Root), t))
 # resolve_ref "X"
 File "<test>":
 Reference to 'X' is ambiguous. Please specify its kind: module-X, constructor-X.
-- : ref = `Identifier (`Module (`Root (`RootPage None, Root), X))
+- : ref = `Identifier (`Module (`Root (Some (`RootPage None), Root), X))
 ```
 
 Ambiguous in sig:
@@ -799,20 +886,23 @@ Ambiguous in sig:
 # resolve_ref "X.u"
 File "<test>":
 Reference to 'u' is ambiguous. Please specify its kind: type-u, val-u.
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), X)), u)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), X)), u)
 # resolve_ref "X.Y"
 File "<test>":
 Reference to 'Y' is ambiguous. Please specify its kind: constructor-Y, module-Y.
 - : ref =
 `Constructor
-  (`Type (`Identifier (`Module (`Root (`RootPage None, Root), X)), u), Y)
+  (`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), X)), u),
+   Y)
 # resolve_ref "Everything_ambiguous_in_sig.t" (* Some kinds are missing: label, type subst (would be "type-") *)
 File "<test>":
 Reference to 't' is ambiguous. Please specify its kind: type-t, module-type-t, field-t, val-t, val-t.
 - : ref =
 `Type
   (`Identifier
-     (`Module (`Root (`RootPage None, Root), Everything_ambiguous_in_sig)),
+     (`Module
+        (`Root (Some (`RootPage None), Root), Everything_ambiguous_in_sig)),
    t)
 # resolve_ref "Everything_ambiguous_in_sig.T" (* Missing kind: module subst (would be "module-") *)
 File "<test>":
@@ -820,7 +910,8 @@ Reference to 'T' is ambiguous. Please specify its kind: module-T, exception-T, e
 - : ref =
 `Module
   (`Identifier
-     (`Module (`Root (`RootPage None, Root), Everything_ambiguous_in_sig)),
+     (`Module
+        (`Root (Some (`RootPage None), Root), Everything_ambiguous_in_sig)),
    T)
 ```
 
@@ -828,44 +919,50 @@ Unambiguous:
 
 ```ocaml
 # resolve_ref "type-t"
-- : ref = `Identifier (`Type (`Root (`RootPage None, Root), t))
+- : ref = `Identifier (`Type (`Root (Some (`RootPage None), Root), t))
 # resolve_ref "val-t"
-- : ref = `Identifier (`Value (`Root (`RootPage None, Root), t))
+- : ref = `Identifier (`Value (`Root (Some (`RootPage None), Root), t))
 # resolve_ref "constructor-X"
 - : ref =
-`Identifier (`Constructor (`Type (`Root (`RootPage None, Root), t), X))
+`Identifier
+  (`Constructor (`Type (`Root (Some (`RootPage None), Root), t), X))
 # resolve_ref "module-X"
-- : ref = `Identifier (`Module (`Root (`RootPage None, Root), X))
+- : ref = `Identifier (`Module (`Root (Some (`RootPage None), Root), X))
 # resolve_ref "X.type-u"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), X)), u)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), X)), u)
 # resolve_ref "X.val-u"
-- : ref = `Value (`Identifier (`Module (`Root (`RootPage None, Root), X)), u)
+- : ref =
+`Value (`Identifier (`Module (`Root (Some (`RootPage None), Root), X)), u)
 # resolve_ref "X.constructor-Y"
 Exception: Failure "resolve_reference".
 # resolve_ref "X.module-Y"
 - : ref =
-`Module (`Identifier (`Module (`Root (`RootPage None, Root), X)), Y)
+`Module (`Identifier (`Module (`Root (Some (`RootPage None), Root), X)), Y)
 ```
 
 Unambiguous 2:
 
 ```ocaml
 # resolve_ref "type:t"
-- : ref = `Identifier (`Type (`Root (`RootPage None, Root), t))
+- : ref = `Identifier (`Type (`Root (Some (`RootPage None), Root), t))
 # resolve_ref "val:t"
-- : ref = `Identifier (`Value (`Root (`RootPage None, Root), t))
+- : ref = `Identifier (`Value (`Root (Some (`RootPage None), Root), t))
 # resolve_ref "constructor:X"
 - : ref =
-`Identifier (`Constructor (`Type (`Root (`RootPage None, Root), t), X))
+`Identifier
+  (`Constructor (`Type (`Root (Some (`RootPage None), Root), t), X))
 # resolve_ref "module:X"
-- : ref = `Identifier (`Module (`Root (`RootPage None, Root), X))
+- : ref = `Identifier (`Module (`Root (Some (`RootPage None), Root), X))
 # resolve_ref "type:X.u"
-- : ref = `Type (`Identifier (`Module (`Root (`RootPage None, Root), X)), u)
+- : ref =
+`Type (`Identifier (`Module (`Root (Some (`RootPage None), Root), X)), u)
 # resolve_ref "val:X.u"
-- : ref = `Value (`Identifier (`Module (`Root (`RootPage None, Root), X)), u)
+- : ref =
+`Value (`Identifier (`Module (`Root (Some (`RootPage None), Root), X)), u)
 # resolve_ref "constructor:X.Y"
 Exception: Failure "resolve_reference".
 # resolve_ref "module:X.Y"
 - : ref =
-`Module (`Identifier (`Module (`Root (`RootPage None, Root), X)), Y)
+`Module (`Identifier (`Module (`Root (Some (`RootPage None), Root), X)), Y)
 ```

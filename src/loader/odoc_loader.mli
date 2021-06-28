@@ -12,7 +12,7 @@ val read_cmti :
     (module_name:string ->
     digest:Digest.t ->
     (Odoc_model.Root.t, [ `Msg of string ]) result) ->
-  parent:Odoc_model.Paths.Identifier.ContainerPage.t ->
+  parent:Odoc_model.Paths.Identifier.ContainerPage.t option ->
   filename:string ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
@@ -21,7 +21,7 @@ val read_cmt :
     (module_name:string ->
     digest:Digest.t ->
     (Odoc_model.Root.t, [ `Msg of string ]) result) ->
-  parent:Odoc_model.Paths.Identifier.ContainerPage.t ->
+  parent:Odoc_model.Paths.Identifier.ContainerPage.t option ->
   filename:string ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
@@ -30,6 +30,6 @@ val read_cmi :
     (module_name:string ->
     digest:Digest.t ->
     (Odoc_model.Root.t, [ `Msg of string ]) result) ->
-  parent:Odoc_model.Paths.Identifier.ContainerPage.t ->
+  parent:Odoc_model.Paths.Identifier.ContainerPage.t option ->
   filename:string ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings

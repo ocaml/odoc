@@ -74,7 +74,9 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver parent input_file read_file =
+let resolve_and_substitute ~resolver
+    (parent : Odoc_model.Paths.Identifier.ContainerPage.t option) input_file
+    read_file =
   let filename = Fs.File.to_string input_file in
   let unit =
     read_file ~parent ~filename |> Odoc_model.Error.raise_errors_and_warnings
@@ -107,7 +109,12 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   in
   let result parent =
     let file = Odoc_file.create_unit ~force_hidden:hidden module_name in
-    Ok { id = `Root (parent, ModuleName.make_std module_name); file; digest }
+    Ok
+      {
+        id = `Root (Some parent, ModuleName.make_std module_name);
+        file;
+        digest;
+      }
   in
   let check_child : Odoc_model.Paths.Reference.t -> bool =
    fun c ->
@@ -214,7 +221,8 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Odoc_model.Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver parent input (loader ~make_root))
+          resolve_and_substitute ~resolver (Some parent) input
+            (loader ~make_root))
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Odoc_model.Error.unpack_warnings result in

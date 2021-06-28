@@ -75,21 +75,23 @@ Simplest possible resolution:
   type u = t
   |}
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
   Odoc_model.Lang.Compilation_unit.Module
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.TypeDecl.id = `Type (`Root (`RootPage None, Root), t);
+       {Odoc_model.Lang.TypeDecl.id =
+         `Type (`Root (Some (`RootPage None), Root), t);
         doc = []; canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
           manifest = None; constraints = []};
         representation = None});
       Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.TypeDecl.id = `Type (`Root (`RootPage None, Root), u);
+       {Odoc_model.Lang.TypeDecl.id =
+         `Type (`Root (Some (`RootPage None), Root), u);
         doc = []; canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -97,7 +99,8 @@ Simplest possible resolution:
            Some
             (Odoc_model.Lang.TypeExpr.Constr
               (`Resolved
-                 (`Identifier (`Type (`Root (`RootPage None, Root), t))),
+                 (`Identifier
+                    (`Type (`Root (Some (`RootPage None), Root), t))),
               []));
           constraints = []};
         representation = None})];
@@ -179,14 +182,15 @@ Basic resolution 2, environment lookup:
   type u = M.t
     |}
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
   Odoc_model.Lang.Compilation_unit.Module
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), M);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), M);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -195,7 +199,7 @@ Basic resolution 2, environment lookup:
               [Odoc_model.Lang.Signature.Type
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.TypeDecl.id =
-                  `Type (`Module (`Root (`RootPage None, Root), M), t);
+                  `Type (`Module (`Root (Some (`RootPage None), Root), M), t);
                  doc = []; canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -204,7 +208,8 @@ Basic resolution 2, environment lookup:
              compiled = true; doc = []});
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.TypeDecl.id = `Type (`Root (`RootPage None, Root), u);
+       {Odoc_model.Lang.TypeDecl.id =
+         `Type (`Root (Some (`RootPage None), Root), u);
         doc = []; canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -213,7 +218,8 @@ Basic resolution 2, environment lookup:
             (Odoc_model.Lang.TypeExpr.Constr
               (`Resolved
                  (`Type
-                    (`Identifier (`Module (`Root (`RootPage None, Root), M)),
+                    (`Identifier
+                       (`Module (`Root (Some (`RootPage None), Root), M)),
                      t)),
               []));
           constraints = []};
@@ -269,7 +275,7 @@ Basic resolution 3, module type:
   type u = N.t
     |}
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
@@ -277,7 +283,7 @@ Basic resolution 3, module type:
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
-         `ModuleType (`Root (`RootPage None, Root), M);
+         `ModuleType (`Root (Some (`RootPage None), Root), M);
         doc = []; canonical = None;
         expr =
          Some
@@ -286,7 +292,8 @@ Basic resolution 3, module type:
               [Odoc_model.Lang.Signature.Type
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.TypeDecl.id =
-                  `Type (`ModuleType (`Root (`RootPage None, Root), M), t);
+                  `Type
+                    (`ModuleType (`Root (Some (`RootPage None), Root), M), t);
                  doc = []; canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -294,7 +301,8 @@ Basic resolution 3, module type:
                  representation = None})];
              compiled = true; doc = []})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), N);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), N);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -306,7 +314,9 @@ Basic resolution 3, module type:
                    [Odoc_model.Lang.Signature.Type
                      (Odoc_model.Lang.Signature.Ordinary,
                      {Odoc_model.Lang.TypeDecl.id =
-                       `Type (`Module (`Root (`RootPage None, Root), N), t);
+                       `Type
+                         (`Module (`Root (Some (`RootPage None), Root), N),
+                          t);
                       doc = []; canonical = None;
                       equation =
                        {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -315,10 +325,12 @@ Basic resolution 3, module type:
                   compiled = true; doc = []});
              p_path =
               `Resolved
-                (`Identifier (`ModuleType (`Root (`RootPage None, Root), M)))});
+                (`Identifier
+                   (`ModuleType (`Root (Some (`RootPage None), Root), M)))});
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.TypeDecl.id = `Type (`Root (`RootPage None, Root), u);
+       {Odoc_model.Lang.TypeDecl.id =
+         `Type (`Root (Some (`RootPage None), Root), u);
         doc = []; canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -327,7 +339,8 @@ Basic resolution 3, module type:
             (Odoc_model.Lang.TypeExpr.Constr
               (`Resolved
                  (`Type
-                    (`Identifier (`Module (`Root (`RootPage None, Root), N)),
+                    (`Identifier
+                       (`Module (`Root (Some (`RootPage None), Root), N)),
                      t)),
               []));
           constraints = []};
@@ -361,7 +374,7 @@ Basic resolution 4, module type:
   type u = A.N.t
     |}
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
@@ -369,7 +382,7 @@ Basic resolution 4, module type:
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
-         `ModuleType (`Root (`RootPage None, Root), M);
+         `ModuleType (`Root (Some (`RootPage None), Root), M);
         doc = []; canonical = None;
         expr =
          Some
@@ -378,7 +391,8 @@ Basic resolution 4, module type:
               [Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
-                  `Module (`ModuleType (`Root (`RootPage None, Root), M), N);
+                  `Module
+                    (`ModuleType (`Root (Some (`RootPage None), Root), M), N);
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -390,7 +404,7 @@ Basic resolution 4, module type:
                            `Type
                              (`Module
                                 (`ModuleType
-                                   (`Root (`RootPage None, Root), M),
+                                   (`Root (Some (`RootPage None), Root), M),
                                  N),
                               t);
                           doc = []; canonical = None;
@@ -403,7 +417,8 @@ Basic resolution 4, module type:
                  canonical = None; hidden = false})];
              compiled = true; doc = []})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), A);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), A);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -415,7 +430,9 @@ Basic resolution 4, module type:
                    [Odoc_model.Lang.Signature.Module
                      (Odoc_model.Lang.Signature.Ordinary,
                      {Odoc_model.Lang.Module.id =
-                       `Module (`Module (`Root (`RootPage None, Root), A), N);
+                       `Module
+                         (`Module (`Root (Some (`RootPage None), Root), A),
+                          N);
                       doc = [];
                       type_ =
                        Odoc_model.Lang.Module.ModuleType
@@ -427,7 +444,8 @@ Basic resolution 4, module type:
                                 `Type
                                   (`Module
                                      (`Module
-                                        (`Root (`RootPage None, Root), A),
+                                        (`Root (Some (`RootPage None), Root),
+                                         A),
                                       N),
                                    t);
                                doc = []; canonical = None;
@@ -442,10 +460,12 @@ Basic resolution 4, module type:
                   compiled = true; doc = []});
              p_path =
               `Resolved
-                (`Identifier (`ModuleType (`Root (`RootPage None, Root), M)))});
+                (`Identifier
+                   (`ModuleType (`Root (Some (`RootPage None), Root), M)))});
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.TypeDecl.id = `Type (`Root (`RootPage None, Root), u);
+       {Odoc_model.Lang.TypeDecl.id =
+         `Type (`Root (Some (`RootPage None), Root), u);
         doc = []; canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -456,7 +476,7 @@ Basic resolution 4, module type:
                  (`Type
                     (`Module
                        (`Identifier
-                          (`Module (`Root (`RootPage None, Root), A)),
+                          (`Module (`Root (Some (`RootPage None), Root), A)),
                         N),
                      t)),
               []));
@@ -527,7 +547,7 @@ and then we can look up the type `t`.
   type u = A.B.t
     |}
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
@@ -535,7 +555,7 @@ and then we can look up the type `t`.
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
-         `ModuleType (`Root (`RootPage None, Root), M);
+         `ModuleType (`Root (Some (`RootPage None), Root), M);
         doc = []; canonical = None;
         expr =
          Some
@@ -544,7 +564,7 @@ and then we can look up the type `t`.
               [Odoc_model.Lang.Signature.ModuleType
                 {Odoc_model.Lang.ModuleType.id =
                   `ModuleType
-                    (`ModuleType (`Root (`RootPage None, Root), M), N);
+                    (`ModuleType (`Root (Some (`RootPage None), Root), M), N);
                  doc = []; canonical = None;
                  expr =
                   Some
@@ -556,7 +576,7 @@ and then we can look up the type `t`.
                            `Type
                              (`ModuleType
                                 (`ModuleType
-                                   (`Root (`RootPage None, Root), M),
+                                   (`Root (Some (`RootPage None), Root), M),
                                  N),
                               t);
                           doc = []; canonical = None;
@@ -569,7 +589,8 @@ and then we can look up the type `t`.
                Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
-                  `Module (`ModuleType (`Root (`RootPage None, Root), M), B);
+                  `Module
+                    (`ModuleType (`Root (Some (`RootPage None), Root), M), B);
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -584,7 +605,8 @@ and then we can look up the type `t`.
                                 `Type
                                   (`Module
                                      (`ModuleType
-                                        (`Root (`RootPage None, Root), M),
+                                        (`Root (Some (`RootPage None), Root),
+                                         M),
                                       B),
                                    t);
                                doc = []; canonical = None;
@@ -599,12 +621,14 @@ and then we can look up the type `t`.
                        `Resolved
                          (`Identifier
                             (`ModuleType
-                               (`ModuleType (`Root (`RootPage None, Root), M),
+                               (`ModuleType
+                                  (`Root (Some (`RootPage None), Root), M),
                                 N)))});
                  canonical = None; hidden = false})];
              compiled = true; doc = []})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), A);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), A);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -616,7 +640,8 @@ and then we can look up the type `t`.
                    [Odoc_model.Lang.Signature.ModuleType
                      {Odoc_model.Lang.ModuleType.id =
                        `ModuleType
-                         (`Module (`Root (`RootPage None, Root), A), N);
+                         (`Module (`Root (Some (`RootPage None), Root), A),
+                          N);
                       doc = []; canonical = None;
                       expr =
                        Some
@@ -628,7 +653,8 @@ and then we can look up the type `t`.
                                 `Type
                                   (`ModuleType
                                      (`Module
-                                        (`Root (`RootPage None, Root), A),
+                                        (`Root (Some (`RootPage None), Root),
+                                         A),
                                       N),
                                    t);
                                doc = []; canonical = None;
@@ -642,18 +668,10 @@ and then we can look up the type `t`.
                     Odoc_model.Lang.Signature.Module
                      (Odoc_model.Lang.Signature.Ordinary,
                      {Odoc_model.Lang.Module.id =
-                       `Module (`Module (`Root (`RootPage None, Root), A), B);
-                      doc = [];
-                      type_ =
-                       Odoc_model.Lang.Module.ModuleType
-                        (Odoc_model.Lang.ModuleType.Path
-                          {Odoc_model.Lang.ModuleType.p_expansion =
-                            Some
-                             (Odoc_model.Lang.ModuleType.Signature
-                               {Odoc_model.Lang.Signature.items = ...;
-                                compiled = ...; doc = ...});
-                           p_path = ...});
-                      canonical = ...; hidden = ...});
+                       `Module
+                         (`Module (`Root (Some (`RootPage None), ...), ...),
+                          ...);
+                      doc = ...; type_ = ...; canonical = ...; hidden = ...});
                     ...];
                   compiled = ...; doc = ...});
              p_path = ...});
@@ -677,7 +695,7 @@ and then we can look up the type `t`.
   type u = A.X.B.t
     |}
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
@@ -685,7 +703,7 @@ and then we can look up the type `t`.
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
-         `ModuleType (`Root (`RootPage None, Root), M);
+         `ModuleType (`Root (Some (`RootPage None), Root), M);
         doc = []; canonical = None;
         expr =
          Some
@@ -694,7 +712,7 @@ and then we can look up the type `t`.
               [Odoc_model.Lang.Signature.ModuleType
                 {Odoc_model.Lang.ModuleType.id =
                   `ModuleType
-                    (`ModuleType (`Root (`RootPage None, Root), M), N);
+                    (`ModuleType (`Root (Some (`RootPage None), Root), M), N);
                  doc = []; canonical = None;
                  expr =
                   Some
@@ -706,7 +724,7 @@ and then we can look up the type `t`.
                            `Type
                              (`ModuleType
                                 (`ModuleType
-                                   (`Root (`RootPage None, Root), M),
+                                   (`Root (Some (`RootPage None), Root), M),
                                  N),
                               t);
                           doc = []; canonical = None;
@@ -719,7 +737,8 @@ and then we can look up the type `t`.
                Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
-                  `Module (`ModuleType (`Root (`RootPage None, Root), M), X);
+                  `Module
+                    (`ModuleType (`Root (Some (`RootPage None), Root), M), X);
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -731,7 +750,7 @@ and then we can look up the type `t`.
                            `Module
                              (`Module
                                 (`ModuleType
-                                   (`Root (`RootPage None, Root), M),
+                                   (`Root (Some (`RootPage None), Root), M),
                                  X),
                               B);
                           doc = [];
@@ -750,7 +769,8 @@ and then we can look up the type `t`.
                                               (`Module
                                                  (`ModuleType
                                                     (`Root
-                                                       (`RootPage None, Root),
+                                                       (Some (`RootPage None),
+                                                        Root),
                                                      M),
                                                   X),
                                                B),
@@ -768,14 +788,17 @@ and then we can look up the type `t`.
                                   (`Identifier
                                      (`ModuleType
                                         (`ModuleType
-                                           (`Root (`RootPage None, Root), M),
+                                           (`Root
+                                              (Some (`RootPage None), Root),
+                                            M),
                                          N)))});
                           canonical = None; hidden = false})];
                       compiled = true; doc = []});
                  canonical = None; hidden = false})];
              compiled = true; doc = []})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), A);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), A);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -787,7 +810,8 @@ and then we can look up the type `t`.
                    [Odoc_model.Lang.Signature.ModuleType
                      {Odoc_model.Lang.ModuleType.id =
                        `ModuleType
-                         (`Module (`Root (`RootPage None, Root), A), N);
+                         (`Module (`Root (Some (`RootPage None), Root), A),
+                          N);
                       doc = []; canonical = None;
                       expr =
                        Some
@@ -796,12 +820,7 @@ and then we can look up the type `t`.
                             [Odoc_model.Lang.Signature.Type
                               (Odoc_model.Lang.Signature.Ordinary,
                               {Odoc_model.Lang.TypeDecl.id =
-                                `Type
-                                  (`ModuleType
-                                     (`Module
-                                        (`Root (`RootPage None, Root), A),
-                                      N),
-                                   t);
+                                `Type (`ModuleType (`Module (...), ...), ...);
                                doc = ...; canonical = ...; equation = ...;
                                representation = ...});
                              ...];
@@ -835,7 +854,7 @@ Failed to compile expansion for module type expression identifier((root Root).A.
 File "<test>":
 Failed to compile expansion for module type expression identifier((root Root).A.M, false).S OpaqueModule
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
@@ -843,7 +862,7 @@ Failed to compile expansion for module type expression identifier((root Root).A.
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
-         `ModuleType (`Root (`RootPage None, Root), A);
+         `ModuleType (`Root (Some (`RootPage None), Root), A);
         doc = []; canonical = None;
         expr =
          Some
@@ -852,7 +871,8 @@ Failed to compile expansion for module type expression identifier((root Root).A.
               [Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
-                  `Module (`ModuleType (`Root (`RootPage None, Root), A), M);
+                  `Module
+                    (`ModuleType (`Root (Some (`RootPage None), Root), A), M);
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -863,7 +883,7 @@ Failed to compile expansion for module type expression identifier((root Root).A.
                            `ModuleType
                              (`Module
                                 (`ModuleType
-                                   (`Root (`RootPage None, Root), A),
+                                   (`Root (Some (`RootPage None), Root), A),
                                  M),
                               S);
                           doc = []; canonical = None; expr = None}];
@@ -872,7 +892,8 @@ Failed to compile expansion for module type expression identifier((root Root).A.
                Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
-                  `Module (`ModuleType (`Root (`RootPage None, Root), A), N);
+                  `Module
+                    (`ModuleType (`Root (Some (`RootPage None), Root), A), N);
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -885,13 +906,15 @@ Failed to compile expansion for module type expression identifier((root Root).A.
                                (`Identifier
                                   (`Module
                                      (`ModuleType
-                                        (`Root (`RootPage None, Root), A),
+                                        (`Root (Some (`RootPage None), Root),
+                                         A),
                                       M)),
                                 S)))});
                  canonical = None; hidden = false})];
              compiled = true; doc = []})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), B);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), B);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -899,7 +922,8 @@ Failed to compile expansion for module type expression identifier((root Root).A.
             {Odoc_model.Lang.Signature.items =
               [Odoc_model.Lang.Signature.ModuleType
                 {Odoc_model.Lang.ModuleType.id =
-                  `ModuleType (`Module (`Root (`RootPage None, Root), B), S);
+                  `ModuleType
+                    (`Module (`Root (Some (`RootPage None), Root), B), S);
                  doc = []; canonical = None;
                  expr =
                   Some
@@ -910,7 +934,8 @@ Failed to compile expansion for module type expression identifier((root Root).A.
                          {Odoc_model.Lang.TypeDecl.id =
                            `Type
                              (`ModuleType
-                                (`Module (`Root (`RootPage None, Root), B),
+                                (`Module
+                                   (`Root (Some (`RootPage None), Root), B),
                                  S),
                               t);
                           doc = []; canonical = None;
@@ -923,7 +948,8 @@ Failed to compile expansion for module type expression identifier((root Root).A.
              compiled = true; doc = []});
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), C);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), C);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -935,10 +961,10 @@ Failed to compile expansion for module type expression identifier((root Root).A.
                       (`Root
                          (`ModuleType
                             (`Identifier
-                               (`ModuleType (`Root (`RootPage None, Root), A)))),
+                               (`ModuleType
+                                  (`Root (Some (`RootPage None), Root), A)))),
                        M)),
-                Odoc_model.Lang.Module.Alias
-                 (`Resolved (`Identifier (`Module (`Root (...), ...))), ...));
+                Odoc_model.Lang.Module.Alias (...));
                ...];
              w_expansion = ...; w_expr = ...});
         canonical = ...; hidden = ...});
@@ -967,7 +993,7 @@ Failed to compile expansion for module type expression identifier((root Root).A.
 File "<test>":
 Failed to compile expansion for module type expression identifier((root Root).A.M, false).S OpaqueModule
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
@@ -975,7 +1001,7 @@ Failed to compile expansion for module type expression identifier((root Root).A.
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
-         `ModuleType (`Root (`RootPage None, Root), A);
+         `ModuleType (`Root (Some (`RootPage None), Root), A);
         doc = []; canonical = None;
         expr =
          Some
@@ -984,7 +1010,8 @@ Failed to compile expansion for module type expression identifier((root Root).A.
               [Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
-                  `Module (`ModuleType (`Root (`RootPage None, Root), A), M);
+                  `Module
+                    (`ModuleType (`Root (Some (`RootPage None), Root), A), M);
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -995,7 +1022,7 @@ Failed to compile expansion for module type expression identifier((root Root).A.
                            `ModuleType
                              (`Module
                                 (`ModuleType
-                                   (`Root (`RootPage None, Root), A),
+                                   (`Root (Some (`RootPage None), Root), A),
                                  M),
                               S);
                           doc = []; canonical = None; expr = None}];
@@ -1004,7 +1031,8 @@ Failed to compile expansion for module type expression identifier((root Root).A.
                Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
-                  `Module (`ModuleType (`Root (`RootPage None, Root), A), N);
+                  `Module
+                    (`ModuleType (`Root (Some (`RootPage None), Root), A), N);
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -1017,13 +1045,15 @@ Failed to compile expansion for module type expression identifier((root Root).A.
                                (`Identifier
                                   (`Module
                                      (`ModuleType
-                                        (`Root (`RootPage None, Root), A),
+                                        (`Root (Some (`RootPage None), Root),
+                                         A),
                                       M)),
                                 S)))});
                  canonical = None; hidden = false})];
              compiled = true; doc = []})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), B);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), B);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -1031,7 +1061,8 @@ Failed to compile expansion for module type expression identifier((root Root).A.
             {Odoc_model.Lang.Signature.items =
               [Odoc_model.Lang.Signature.ModuleType
                 {Odoc_model.Lang.ModuleType.id =
-                  `ModuleType (`Module (`Root (`RootPage None, Root), B), S);
+                  `ModuleType
+                    (`Module (`Root (Some (`RootPage None), Root), B), S);
                  doc = []; canonical = None;
                  expr =
                   Some
@@ -1042,7 +1073,8 @@ Failed to compile expansion for module type expression identifier((root Root).A.
                          {Odoc_model.Lang.TypeDecl.id =
                            `Type
                              (`ModuleType
-                                (`Module (`Root (`RootPage None, Root), B),
+                                (`Module
+                                   (`Root (Some (`RootPage None), Root), B),
                                  S),
                               t);
                           doc = []; canonical = None;
@@ -1055,7 +1087,8 @@ Failed to compile expansion for module type expression identifier((root Root).A.
              compiled = true; doc = []});
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), C);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), C);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -1067,16 +1100,15 @@ Failed to compile expansion for module type expression identifier((root Root).A.
                       (`Root
                          (`ModuleType
                             (`Identifier
-                               (`ModuleType (`Root (`RootPage None, Root), A)))),
+                               (`ModuleType
+                                  (`Root (Some (`RootPage None), Root), A)))),
                        M)),
-                `Resolved
-                  (`Identifier (`Module (`Root (`RootPage None, Root), ...))));
-               ...];
-             w_expansion = ...; w_expr = ...});
-        canonical = ...; hidden = ...});
-      ...];
-    compiled = ...; doc = ...};
- expansion = ...; linked = ...; canonical = ...}
+                `Resolved ...); ...];
+              w_expansion = ...; w_expr = ...});
+         canonical = ...; hidden = ...});
+       ...];
+     compiled = ...; doc = ...};
+  expansion = ...; linked = ...; canonical = ...}
 ```
 
 Resolve a module alias:
@@ -1090,14 +1122,15 @@ Resolve a module alias:
   type t = B.t
     |}
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
   Odoc_model.Lang.Compilation_unit.Module
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), A);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), A);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -1106,7 +1139,7 @@ Resolve a module alias:
               [Odoc_model.Lang.Signature.Type
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.TypeDecl.id =
-                  `Type (`Module (`Root (`RootPage None, Root), A), t);
+                  `Type (`Module (`Root (Some (`RootPage None), Root), A), t);
                  doc = []; canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -1115,16 +1148,18 @@ Resolve a module alias:
              compiled = true; doc = []});
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), B);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), B);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.Alias
           (`Resolved
-             (`Identifier (`Module (`Root (`RootPage None, Root), A))),
+             (`Identifier (`Module (`Root (Some (`RootPage None), Root), A))),
            None);
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.TypeDecl.id = `Type (`Root (`RootPage None, Root), t);
+       {Odoc_model.Lang.TypeDecl.id =
+         `Type (`Root (Some (`RootPage None), Root), t);
         doc = []; canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1135,9 +1170,9 @@ Resolve a module alias:
                  (`Type
                     (`Alias
                        (`Identifier
-                          (`Module (`Root (`RootPage None, Root), A)),
+                          (`Module (`Root (Some (`RootPage None), Root), A)),
                         `Identifier
-                          (`Module (`Root (`RootPage None, Root), B))),
+                          (`Module (`Root (Some (`RootPage None), Root), B))),
                      t)),
               []));
           constraints = []};
@@ -1158,14 +1193,15 @@ Resolve a module alias:
   type t = C.t
     |}
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
   Odoc_model.Lang.Compilation_unit.Module
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), A);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), A);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -1174,7 +1210,7 @@ Resolve a module alias:
               [Odoc_model.Lang.Signature.Type
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.TypeDecl.id =
-                  `Type (`Module (`Root (`RootPage None, Root), A), t);
+                  `Type (`Module (`Root (Some (`RootPage None), Root), A), t);
                  doc = []; canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -1183,27 +1219,32 @@ Resolve a module alias:
              compiled = true; doc = []});
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), B);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), B);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.Alias
           (`Resolved
-             (`Identifier (`Module (`Root (`RootPage None, Root), A))),
+             (`Identifier (`Module (`Root (Some (`RootPage None), Root), A))),
            None);
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), C);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), C);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.Alias
           (`Resolved
              (`Alias
-                (`Identifier (`Module (`Root (`RootPage None, Root), A)),
-                 `Identifier (`Module (`Root (`RootPage None, Root), B)))),
+                (`Identifier
+                   (`Module (`Root (Some (`RootPage None), Root), A)),
+                 `Identifier
+                   (`Module (`Root (Some (`RootPage None), Root), B)))),
            None);
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.TypeDecl.id = `Type (`Root (`RootPage None, Root), t);
+       {Odoc_model.Lang.TypeDecl.id =
+         `Type (`Root (Some (`RootPage None), Root), t);
         doc = []; canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1215,11 +1256,13 @@ Resolve a module alias:
                     (`Alias
                        (`Alias
                           (`Identifier
-                             (`Module (`Root (`RootPage None, Root), A)),
+                             (`Module
+                                (`Root (Some (`RootPage None), Root), A)),
                            `Identifier
-                             (`Module (`Root (`RootPage None, Root), B))),
+                             (`Module
+                                (`Root (Some (`RootPage None), Root), B))),
                         `Identifier
-                          (`Module (`Root (`RootPage None, Root), C))),
+                          (`Module (`Root (Some (`RootPage None), Root), C))),
                      t)),
               []));
           constraints = []};
@@ -1243,7 +1286,7 @@ Resolve a functor:
   end
   |}
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
@@ -1251,7 +1294,7 @@ Resolve a functor:
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
-         `ModuleType (`Root (`RootPage None, Root), S);
+         `ModuleType (`Root (Some (`RootPage None), Root), S);
         doc = []; canonical = None;
         expr =
          Some
@@ -1260,7 +1303,8 @@ Resolve a functor:
               [Odoc_model.Lang.Signature.Type
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.TypeDecl.id =
-                  `Type (`ModuleType (`Root (`RootPage None, Root), S), t);
+                  `Type
+                    (`ModuleType (`Root (Some (`RootPage None), Root), S), t);
                  doc = []; canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -1268,14 +1312,16 @@ Resolve a functor:
                  representation = None})];
              compiled = true; doc = []})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), F);
+       {Odoc_model.Lang.Module.id =
+         `Module (`Root (Some (`RootPage None), Root), F);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
           (Odoc_model.Lang.ModuleType.Functor
             (Odoc_model.Lang.FunctorParameter.Named
               {Odoc_model.Lang.FunctorParameter.id =
-                `Parameter (`Module (`Root (`RootPage None, Root), F), X);
+                `Parameter
+                  (`Module (`Root (Some (`RootPage None), Root), F), X);
                expr =
                 Odoc_model.Lang.ModuleType.Path
                  {Odoc_model.Lang.ModuleType.p_expansion =
@@ -1287,7 +1333,8 @@ Resolve a functor:
                           {Odoc_model.Lang.TypeDecl.id =
                             `Type
                               (`Parameter
-                                 (`Module (`Root (`RootPage None, Root), F),
+                                 (`Module
+                                    (`Root (Some (`RootPage None), Root), F),
                                   X),
                                t);
                            doc = []; canonical = None;
@@ -1300,12 +1347,14 @@ Resolve a functor:
                   p_path =
                    `Resolved
                      (`Identifier
-                        (`ModuleType (`Root (`RootPage None, Root), S)))}},
+                        (`ModuleType (`Root (Some (`RootPage None), Root), S)))}},
             Odoc_model.Lang.ModuleType.Functor
              (Odoc_model.Lang.FunctorParameter.Named
                {Odoc_model.Lang.FunctorParameter.id =
                  `Parameter
-                   (`Result (`Module (`Root (`RootPage None, Root), F)), Y);
+                   (`Result
+                      (`Module (`Root (Some (`RootPage None), Root), F)),
+                    Y);
                 expr =
                  Odoc_model.Lang.ModuleType.Path
                   {Odoc_model.Lang.ModuleType.p_expansion =
@@ -1319,7 +1368,8 @@ Resolve a functor:
                                (`Parameter
                                   (`Result
                                      (`Module
-                                        (`Root (`RootPage None, Root), F)),
+                                        (`Root (Some (`RootPage None), Root),
+                                         F)),
                                    Y),
                                 t);
                             doc = []; canonical = None;
@@ -1332,7 +1382,8 @@ Resolve a functor:
                    p_path =
                     `Resolved
                       (`Identifier
-                         (`ModuleType (`Root (`RootPage None, Root), S)))}},
+                         (`ModuleType
+                            (`Root (Some (`RootPage None), Root), S)))}},
              Odoc_model.Lang.ModuleType.Signature
               {Odoc_model.Lang.Signature.items =
                 [Odoc_model.Lang.Signature.Type
@@ -1340,7 +1391,8 @@ Resolve a functor:
                   {Odoc_model.Lang.TypeDecl.id =
                     `Type
                       (`Result
-                         (`Result (`Module (`Root (`RootPage None, Root), F))),
+                         (`Result
+                            (`Module (`Root (Some (`RootPage None), Root), F))),
                        x_t);
                    doc = []; canonical = None;
                    equation =
@@ -1349,14 +1401,7 @@ Resolve a functor:
                      manifest =
                       Some
                        (Odoc_model.Lang.TypeExpr.Constr
-                         (`Resolved
-                            (`Type
-                               (`Identifier
-                                  (`Parameter
-                                     (`Module (`Root (`RootPage ...), ...),
-                                        ...)),
-                                  ...)),
-                            ...));
+                         (`Resolved (`Type (`Identifier ...)), ...));
                       constraints = ...};
                     representation = ...});
                   ...];
@@ -1404,7 +1449,7 @@ Resolve a functor:
   end
     |}
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
@@ -1412,7 +1457,7 @@ Resolve a functor:
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
-         `ModuleType (`Root (`RootPage None, Root), S);
+         `ModuleType (`Root (Some (`RootPage None), Root), S);
         doc = []; canonical = None;
         expr =
          Some
@@ -1421,7 +1466,8 @@ Resolve a functor:
               [Odoc_model.Lang.Signature.Type
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.TypeDecl.id =
-                  `Type (`ModuleType (`Root (`RootPage None, Root), S), t);
+                  `Type
+                    (`ModuleType (`Root (Some (`RootPage None), Root), S), t);
                  doc = []; canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -1430,7 +1476,7 @@ Resolve a functor:
              compiled = true; doc = []})};
       Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
-         `ModuleType (`Root (`RootPage None, Root), S1);
+         `ModuleType (`Root (Some (`RootPage None), Root), S1);
         doc = []; canonical = None;
         expr =
          Some
@@ -1438,7 +1484,7 @@ Resolve a functor:
             (Odoc_model.Lang.FunctorParameter.Named
               {Odoc_model.Lang.FunctorParameter.id =
                 `Parameter
-                  (`ModuleType (`Root (`RootPage None, Root), S1), _);
+                  (`ModuleType (`Root (Some (`RootPage None), Root), S1), _);
                expr =
                 Odoc_model.Lang.ModuleType.Path
                  {Odoc_model.Lang.ModuleType.p_expansion =
@@ -1451,7 +1497,7 @@ Resolve a functor:
                             `Type
                               (`Parameter
                                  (`ModuleType
-                                    (`Root (`RootPage None, Root), S1),
+                                    (`Root (Some (`RootPage None), Root), S1),
                                   _),
                                t);
                            doc = []; canonical = None;
@@ -1464,7 +1510,7 @@ Resolve a functor:
                   p_path =
                    `Resolved
                      (`Identifier
-                        (`ModuleType (`Root (`RootPage None, Root), S)))}},
+                        (`ModuleType (`Root (Some (`RootPage None), Root), S)))}},
             Odoc_model.Lang.ModuleType.Path
              {Odoc_model.Lang.ModuleType.p_expansion =
                Some
@@ -1474,7 +1520,9 @@ Resolve a functor:
                       (Odoc_model.Lang.Signature.Ordinary,
                       {Odoc_model.Lang.TypeDecl.id =
                         `Type
-                          (`ModuleType (`Root (`RootPage None, Root), S1), t);
+                          (`ModuleType
+                             (`Root (Some (`RootPage None), Root), S1),
+                           t);
                        doc = []; canonical = None;
                        equation =
                         {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -1483,17 +1531,19 @@ Resolve a functor:
                    compiled = true; doc = []});
               p_path =
                `Resolved
-                 (`Identifier (`ModuleType (`Root (`RootPage None, Root), S)))}))};
+                 (`Identifier
+                    (`ModuleType (`Root (Some (`RootPage None), Root), S)))}))};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.Module.id =
-         `Module (`Root (`RootPage None, Root), F1);
+         `Module (`Root (Some (`RootPage None), Root), F1);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
           (Odoc_model.Lang.ModuleType.Functor
             (Odoc_model.Lang.FunctorParameter.Named
               {Odoc_model.Lang.FunctorParameter.id =
-                `Parameter (`Module (`Root (`RootPage None, Root), F1), Arg);
+                `Parameter
+                  (`Module (`Root (Some (`RootPage None), Root), F1), Arg);
                expr =
                 Odoc_model.Lang.ModuleType.Path
                  {Odoc_model.Lang.ModuleType.p_expansion =
@@ -1505,16 +1555,14 @@ Resolve a functor:
                           {Odoc_model.Lang.TypeDecl.id =
                             `Type
                               (`Parameter
-                                 (`Module (`Root (`RootPage None, Root), F1),
+                                 (`Module
+                                    (`Root (Some (`RootPage None), Root), F1),
                                   Arg),
                                t);
-                           doc = []; canonical = None;
-                           equation =
-                            {Odoc_model.Lang.TypeDecl.Equation.params = [];
-                             private_ = false; manifest = None;
-                             constraints = []};
-                           representation = None})];
-                       compiled = true; doc = []});
+                           doc = []; canonical = ...; equation = ...;
+                           representation = ...});
+                         ...];
+                       compiled = ...; doc = ...});
                   p_path = ...}},
             ...));
         canonical = ...; hidden = ...});
@@ -1586,7 +1634,7 @@ Failed to compile expansion for module type expression identifier((param (root R
 File "<test>":
 Failed to compile expansion for module type expression identifier((param (root Root).Foo T), false).T OpaqueModule
 - : Odoc_model.Lang.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (`RootPage None, Root);
+{Odoc_model.Lang.Compilation_unit.id = `Root (Some (`RootPage None), Root);
  root = Common.root; digest = "nodigest"; imports = []; source = None;
  interface = true; hidden = false;
  content =
@@ -1594,7 +1642,7 @@ Failed to compile expansion for module type expression identifier((param (root R
    {Odoc_model.Lang.Signature.items =
      [Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
-         `ModuleType (`Root (`RootPage None, Root), Type);
+         `ModuleType (`Root (Some (`RootPage None), Root), Type);
         doc = []; canonical = None;
         expr =
          Some
@@ -1603,19 +1651,21 @@ Failed to compile expansion for module type expression identifier((param (root R
               [Odoc_model.Lang.Signature.ModuleType
                 {Odoc_model.Lang.ModuleType.id =
                   `ModuleType
-                    (`ModuleType (`Root (`RootPage None, Root), Type), T);
+                    (`ModuleType (`Root (Some (`RootPage None), Root), Type),
+                     T);
                  doc = []; canonical = None; expr = None}];
              compiled = true; doc = []})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.Module.id =
-         `Module (`Root (`RootPage None, Root), App);
+         `Module (`Root (Some (`RootPage None), Root), App);
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
           (Odoc_model.Lang.ModuleType.Functor
             (Odoc_model.Lang.FunctorParameter.Named
               {Odoc_model.Lang.FunctorParameter.id =
-                `Parameter (`Module (`Root (`RootPage None, Root), App), T);
+                `Parameter
+                  (`Module (`Root (Some (`RootPage None), Root), App), T);
                expr =
                 Odoc_model.Lang.ModuleType.Path
                  {Odoc_model.Lang.ModuleType.p_expansion =
@@ -1626,7 +1676,9 @@ Failed to compile expansion for module type expression identifier((param (root R
                           {Odoc_model.Lang.ModuleType.id =
                             `ModuleType
                               (`Parameter
-                                 (`Module (`Root (`RootPage None, Root), App),
+                                 (`Module
+                                    (`Root (Some (`RootPage None), Root),
+                                     App),
                                   T),
                                T);
                            doc = []; canonical = None; expr = None}];
@@ -1634,12 +1686,15 @@ Failed to compile expansion for module type expression identifier((param (root R
                   p_path =
                    `Resolved
                      (`Identifier
-                        (`ModuleType (`Root (`RootPage None, Root), Type)))}},
+                        (`ModuleType
+                           (`Root (Some (`RootPage None), Root), Type)))}},
             Odoc_model.Lang.ModuleType.Functor
              (Odoc_model.Lang.FunctorParameter.Named
                {Odoc_model.Lang.FunctorParameter.id =
                  `Parameter
-                   (`Result (`Module (`Root (`RootPage None, Root), App)), F);
+                   (`Result
+                      (`Module (`Root (Some (`RootPage None), Root), App)),
+                    F);
                 expr =
                  Odoc_model.Lang.ModuleType.Functor
                   (Odoc_model.Lang.FunctorParameter.Named
@@ -1647,7 +1702,8 @@ Failed to compile expansion for module type expression identifier((param (root R
                       `Parameter
                         (`Parameter
                            (`Result
-                              (`Module (`Root (`RootPage None, Root), App)),
+                              (`Module
+                                 (`Root (Some (`RootPage None), Root), App)),
                             F),
                          _);
                      expr =
@@ -1663,7 +1719,9 @@ Failed to compile expansion for module type expression identifier((param (root R
                                        (`Parameter
                                           (`Result
                                              (`Module
-                                                (`Root (`RootPage None, Root),
+                                                (`Root
+                                                   (Some (`RootPage None),
+                                                    Root),
                                                  App)),
                                            F),
                                         _),
@@ -1674,7 +1732,7 @@ Failed to compile expansion for module type expression identifier((param (root R
                          `Resolved
                            (`Identifier
                               (`ModuleType
-                                 (`Root (`RootPage None, Root), Type)))}},
+                                 (`Root (Some (`RootPage None), Root), Type)))}},
                   Odoc_model.Lang.ModuleType.Path
                    {Odoc_model.Lang.ModuleType.p_expansion =
                      Some
@@ -1686,15 +1744,17 @@ Failed to compile expansion for module type expression identifier((param (root R
                                 (`Parameter
                                    (`Result
                                       (`Module
-                                         (`Root (`RootPage None, Root), App)),
+                                         (`Root (Some (`RootPage None), Root),
+                                          App)),
                                     F),
                                  T);
-                             doc = []; canonical = None; expr = None}];
-                         compiled = true; doc = []});
-                    p_path = `Resolved (`Identifier ...)})},
-               ...)));
-         canonical = ...; hidden = ...});
-       ...];
-     compiled = ...; doc = ...};
-  expansion = ...; linked = ...; canonical = ...}
+                             doc = ...; canonical = ...; expr = ...};
+                           ...];
+                         compiled = ...; doc = ...});
+                    p_path = ...})},
+             ...)));
+        canonical = ...; hidden = ...});
+      ...];
+    compiled = ...; doc = ...};
+ expansion = ...; linked = ...; canonical = ...}
 ```
