@@ -76,35 +76,6 @@ module Path = struct
 
   type t = { kind : string; parent : t option; name : string }
 
-  (* 
-  
-  If we have a module that looks like this:
-
-  {[
-    module M : sig
-      module type MT = sig
-        type t
-      end
-    end
-  ]}
-
-  and this has parent page 'toppage', then the Path.t for module type MT will look like this:
-
-  { kind="module-type";
-    name="MT";
-    parent=Some {
-      kind="module";
-      name="M";
-      parent = Some {
-        kind="container-page";
-        name="toppage"
-        parent=None;
-      }
-    }
-  }
-
-  *)
-
   let mk ?parent kind name = { kind; parent; name }
 
   let rec from_identifier : source -> t = function
