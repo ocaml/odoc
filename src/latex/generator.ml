@@ -58,17 +58,15 @@ module Link = struct
               url.name :: acc
           | Some p -> l p (url.name :: acc))
     in
-    let result = (l url []) in
+    let result = l url [] in
     String.concat "." result
 
   let filename ~flat url =
     let file = file ~flat url |> Fpath.v in
-    if flat
-      then Fpath.add_ext "tex" file
-    else 
+    if flat then Fpath.add_ext "tex" file
+    else
       let dir = dir url in
       Fpath.(dir // file |> Fpath.add_ext "tex")
-
 end
 
 let style = function
@@ -470,13 +468,18 @@ module Page = struct
     @@ List.map (subpage ~with_children ~flat ~extra_suffix)
     @@ Doctree.Subpages.compute i
 
-  and page ~with_children ~flat ~extra_suffix ({ Page.title = _; header; items = i; url } as p) =
+  and page ~with_children ~flat ~extra_suffix
+      ({ Page.title = _; header; items = i; url } as p) =
     let i = Doctree.Shift.compute ~on_sub i in
     let subpages = subpages ~with_children ~flat ~extra_suffix p in
     let header = items header in
     let content = items i in
-    let page = Doc.make ~with_children ~flat ~extra_suffix url (header @ content) subpages in
+    let page =
+      Doc.make ~with_children ~flat ~extra_suffix url (header @ content)
+        subpages
+    in
     page
 end
 
-let render ~with_children ~flat ~extra_suffix page = Page.page ~with_children ~flat ~extra_suffix page 
+let render ~with_children ~flat ~extra_suffix page =
+  Page.page ~with_children ~flat ~extra_suffix page
