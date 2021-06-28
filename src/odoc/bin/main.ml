@@ -549,11 +549,13 @@ end = struct
 end
 
 module Odoc_manpage = Make_renderer (struct
-  type args = unit
+  type args = Man_page.args
 
   let renderer = Man_page.renderer
 
-  let extra_args = Term.const ()
+  let extra_args = 
+    let f flat extra_suffix = { Man_page.flat; extra_suffix } in
+    Term.(const f $ flat_output $ extra_suffix)
 end)
 
 module Odoc_latex = Make_renderer (struct

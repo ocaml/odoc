@@ -17,17 +17,21 @@ let segment_to_string (kind, name) =
   then name
   else Printf.sprintf "%s-%s" kind name
 
-let as_filename (url : Url.Path.t) =
-  let rec get_components { Url.Path.parent; name; kind } =
+let as_filename ~flat (url : Url.Path.t) =
+  let rec get_components { Url.Path.parent; name; kind } acc =
     match parent with
-    | None -> (name, [])
+    | None -> assert flat; (name, name :: acc)
     | Some p ->
-        let dir, path = get_components p in
-        (dir, segment_to_string (kind, name) :: path)
+        let dir, path = get_components p [] in
+        (dir, segment_to_string (kind, name) :: (name :: path))
   in
-  let dir, path = get_components url in
+  let dir, path = get_components url [] in
   let s = String.concat "." @@ List.rev path in
-  Fpath.((v dir / s) + ".3o")
+  let file = Fpath.v s in
+  if flat
+    then Fpath.add_ext ".3o" file
+  else
+    Fpath.(v dir // file |> Fpath.add_ext ".3o")
 
 let rec is_class_or_module_path (url : Url.Path.t) =
   match url.kind with

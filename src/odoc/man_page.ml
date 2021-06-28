@@ -1,5 +1,8 @@
 open Odoc_document
 
-let render _ page = Odoc_manpage.Generator.render page
+type args = { flat : bool; extra_suffix : string }
 
-let renderer = { Renderer.name = "man"; render }
+let render args page =
+  Odoc_manpage.Generator.render page ~flat:args.flat ~extra_suffix:args.extra_suffix
+
+let renderer = { Renderer.name = "man"; render}
