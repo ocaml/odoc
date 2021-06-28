@@ -75,8 +75,8 @@ module General_paths = struct
       | `Root (parent, name) ->
           C
             ( "`Root",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.modulename) )
+              ((parent :> id_t option), name),
+              Pair (Option identifier, Names.modulename) )
       | `Module (parent, name) ->
           C
             ( "`Module",

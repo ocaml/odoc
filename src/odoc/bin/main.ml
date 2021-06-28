@@ -575,7 +575,7 @@ module Depends = struct
       >>= fun depends ->
       List.iter depends ~f:(fun (root : Odoc_model.Root.t) ->
           match root.id with
-          | `Root (p, _) ->
+          | `Root (Some p, _) ->
               Format.printf "%a %s %s\n" fmt_page p
                 (Odoc_model.Root.Odoc_file.name root.file)
                 (Digest.to_hex root.digest)

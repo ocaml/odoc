@@ -100,10 +100,14 @@ module Path = struct
 
   let rec from_identifier : source -> t = function
     | `Root (parent, unit_name) ->
-        let parent = from_identifier (parent :> source) in
+        let parent =
+          match parent with
+          | Some p -> Some (from_identifier (p :> source))
+          | None -> None
+        in
         let kind = `Module in
         let page = ModuleName.to_string unit_name in
-        mk ~parent kind page
+        mk ?parent kind page
     | `RootPage page_name ->
         let kind = `ContainerPage in
         let page = PageName.to_string page_name in

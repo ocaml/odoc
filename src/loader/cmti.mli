@@ -25,7 +25,7 @@ val read_module_expr :
   ref
 
 val read_interface :
-  Odoc_model.Paths.Identifier.ContainerPage.t ->
+  Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->
   Typedtree.signature ->
   Paths.Identifier.RootModule.t

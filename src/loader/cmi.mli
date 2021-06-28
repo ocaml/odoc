@@ -20,7 +20,7 @@ module Paths = Odoc_model.Paths
 
 
 val read_interface :
-  Odoc_model.Paths.Identifier.ContainerPage.t ->
+  Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->
   Odoc_model.Compat.signature ->
   Paths.Identifier.RootModule.t * Odoc_model.Lang.Signature.t

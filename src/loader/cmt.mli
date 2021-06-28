@@ -15,7 +15,7 @@
  *)
 
 val read_implementation :
-  Odoc_model.Paths.Identifier.ContainerPage.t ->
+  Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->
   Typedtree.structure ->
   Odoc_model.Paths.Identifier.RootModule.t

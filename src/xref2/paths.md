@@ -85,7 +85,7 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_type "S" |-- ModuleType.id) sg);;
 - : Odoc_model.Paths.Identifier.ModuleType.t =
-`ModuleType (`Root (`RootPage None, Root), S)
+`ModuleType (`Root (Some (`RootPage None), Root), S)
 ```
 
 - M: `` `Module (`Root root, "M") ``
@@ -93,7 +93,7 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- Module.id) sg);;
 - : Odoc_model.Paths.Identifier.Module.t =
-`Module (`Root (`RootPage None, Root), M)
+`Module (`Root (Some (`RootPage None), Root), M)
 ```
 
 - F: `` `Module (`Root root, "F") ``
@@ -101,7 +101,7 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "F" |-- Module.id) sg);;
 - : Odoc_model.Paths.Identifier.Module.t =
-`Module (`Root (`RootPage None, Root), F)
+`Module (`Root (Some (`RootPage None), Root), F)
 ```
 
 - m_t: `` `Type ( `Module ( `Root root, "M"), "m_t" ) ``
@@ -109,7 +109,7 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- Signature.type_ "m_t" |-- TypeDecl.id) sg);;
 - : Odoc_model.Paths.Identifier.Type.t =
-`Type (`Module (`Root (`RootPage None, Root), M), m_t)
+`Type (`Module (`Root (Some (`RootPage None), Root), M), m_t)
 ```
 
 - f_t: `` `Type (`Result (`Module (`Root root, "F")), "f_t") ``
@@ -117,7 +117,7 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "F" |-- functor_sig |-- Signature.type_ "f_t" |-- TypeDecl.id) sg);;
 - : Odoc_model.Paths.Identifier.Type.t =
-`Type (`Result (`Module (`Root (`RootPage None, Root), F)), f_t)
+`Type (`Result (`Module (`Root (Some (`RootPage None), Root), F)), f_t)
 ```
 
 - foo: `` `Type (`Parameter (`Module (`Root root, "F"), "X"), "foo") ``
@@ -125,7 +125,7 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "F" |-- functor_arg_sig |-- Signature.type_ "foo" |-- TypeDecl.id) sg);;
 - : Odoc_model.Paths.Identifier.Type.t =
-`Type (`Parameter (`Module (`Root (`RootPage None, Root), F), X), foo)
+`Type (`Parameter (`Module (`Root (Some (`RootPage None), Root), F), X), foo)
 ```
 
 There are many other types of Identifier: type, constructor, field, etc.
@@ -166,17 +166,20 @@ and now we can get the paths for all three type declarations:
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- Signature.module_ "N" |-- mod_sig |-- type_constr_path "x1") sg);;
 - : Odoc_model.Paths.Path.Type.t =
 `Identifier
-  (`Type (`Module (`Module (`Root (`RootPage None, Root), M), N), t), false)
+  (`Type (`Module (`Module (`Root (Some (`RootPage None), Root), M), N), t),
+   false)
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- type_constr_path "x2") sg);;
 - : Odoc_model.Paths.Path.Type.t =
 `Dot
   (`Identifier
-     (`Module (`Module (`Root (`RootPage None, Root), M), N), false),
+     (`Module (`Module (`Root (Some (`RootPage None), Root), M), N), false),
    "t")
 # Common.LangUtils.Lens.(get (type_constr_path "x3") sg);;
 - : Odoc_model.Paths.Path.Type.t =
 `Dot
-  (`Dot (`Identifier (`Module (`Root (`RootPage None, Root), M), false), "N"),
+  (`Dot
+     (`Identifier (`Module (`Root (Some (`RootPage None), Root), M), false),
+      "N"),
    "t")
 ```
 
@@ -193,18 +196,21 @@ and now the paths are:
 - : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Identifier
-     (`Type (`Module (`Module (`Root (`RootPage None, Root), M), N), t)))
+     (`Type
+        (`Module (`Module (`Root (Some (`RootPage None), Root), M), N), t)))
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- type_constr_path "x2") sg');;
 - : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Type
-     (`Identifier (`Module (`Module (`Root (`RootPage None, Root), M), N)),
+     (`Identifier
+        (`Module (`Module (`Root (Some (`RootPage None), Root), M), N)),
       t))
 # Common.LangUtils.Lens.(get (type_constr_path "x3") sg');;
 - : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Type
-     (`Module (`Identifier (`Module (`Root (`RootPage None, Root), M)), N),
+     (`Module
+        (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)), N),
       t))
 ```
 
@@ -253,7 +259,7 @@ val sg : Odoc_model.Lang.Signature.t =
   {Odoc_model.Lang.Signature.items =
     [Odoc_model.Lang.Signature.ModuleType
       {Odoc_model.Lang.ModuleType.id =
-        `ModuleType (`Root (`RootPage None, Root), ARG);
+        `ModuleType (`Root (Some (`RootPage None), Root), ARG);
        doc = []; canonical = None;
        expr =
         Some
@@ -262,18 +268,21 @@ val sg : Odoc_model.Lang.Signature.t =
              [Odoc_model.Lang.Signature.ModuleType
                {Odoc_model.Lang.ModuleType.id =
                  `ModuleType
-                   (`ModuleType (`Root (`RootPage None, Root), ARG), S);
+                   (`ModuleType (`Root (Some (`RootPage None), Root), ARG),
+                    S);
                 doc = []; canonical = None; expr = None}];
             compiled = true; doc = []})};
      Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-      {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), F);
+      {Odoc_model.Lang.Module.id =
+        `Module (`Root (Some (`RootPage None), Root), F);
        doc = [];
        type_ =
         Odoc_model.Lang.Module.ModuleType
          (Odoc_model.Lang.ModuleType.Functor
            (Odoc_model.Lang.FunctorParameter.Named
              {Odoc_model.Lang.FunctorParameter.id =
-               `Parameter (`Module (`Root (`RootPage None, Root), F), X);
+               `Parameter
+                 (`Module (`Root (Some (`RootPage None), Root), F), X);
               expr =
                Odoc_model.Lang.ModuleType.Path
                 {Odoc_model.Lang.ModuleType.p_expansion =
@@ -284,7 +293,8 @@ val sg : Odoc_model.Lang.Signature.t =
                          {Odoc_model.Lang.ModuleType.id =
                            `ModuleType
                              (`Parameter
-                                (`Module (`Root (`RootPage None, Root), F),
+                                (`Module
+                                   (`Root (Some (`RootPage None), Root), F),
                                  X),
                               S);
                           doc = []; canonical = None; expr = None}];
@@ -292,14 +302,17 @@ val sg : Odoc_model.Lang.Signature.t =
                  p_path =
                   `Resolved
                     (`Identifier
-                       (`ModuleType (`Root (`RootPage None, Root), ARG)))}},
+                       (`ModuleType
+                          (`Root (Some (`RootPage None), Root), ARG)))}},
            Odoc_model.Lang.ModuleType.Signature
             {Odoc_model.Lang.Signature.items =
               [Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
                   `Module
-                    (`Result (`Module (`Root (`RootPage None, Root), F)), N);
+                    (`Result
+                       (`Module (`Root (Some (`RootPage None), Root), F)),
+                     N);
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -312,14 +325,16 @@ val sg : Odoc_model.Lang.Signature.t =
                                (`Identifier
                                   (`Parameter
                                      (`Module
-                                        (`Root (`RootPage None, Root), F),
+                                        (`Root (Some (`RootPage None), Root),
+                                         F),
                                       X)),
                                 S)))});
                  canonical = None; hidden = false})];
              compiled = true; doc = []}));
        canonical = None; hidden = false});
      Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-      {Odoc_model.Lang.Module.id = `Module (`Root (`RootPage None, Root), M);
+      {Odoc_model.Lang.Module.id =
+        `Module (`Root (Some (`RootPage None), Root), M);
        doc = [];
        type_ =
         Odoc_model.Lang.Module.ModuleType
@@ -327,7 +342,8 @@ val sg : Odoc_model.Lang.Signature.t =
            {Odoc_model.Lang.Signature.items =
              [Odoc_model.Lang.Signature.ModuleType
                {Odoc_model.Lang.ModuleType.id =
-                 `ModuleType (`Module (`Root (`RootPage None, Root), M), S);
+                 `ModuleType
+                   (`Module (`Root (Some (`RootPage None), Root), M), S);
                 doc = []; canonical = None;
                 expr =
                  Some
@@ -338,7 +354,9 @@ val sg : Odoc_model.Lang.Signature.t =
                         {Odoc_model.Lang.TypeDecl.id =
                           `Type
                             (`ModuleType
-                               (`Module (`Root (`RootPage None, Root), M), S),
+                               (`Module
+                                  (`Root (Some (`RootPage None), Root), M),
+                                S),
                              t);
                          doc = []; canonical = None;
                          equation =
@@ -350,9 +368,8 @@ val sg : Odoc_model.Lang.Signature.t =
             compiled = true; doc = []});
        canonical = None; hidden = false});
      Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-      {Odoc_model.Lang.TypeDecl.id =
-        `Type (`Root (`RootPage None, Root), ...);
-       doc = ...; canonical = ...; equation = ...; representation = ...});
+      {Odoc_model.Lang.TypeDecl.id = ...; doc = ...; canonical = ...;
+       equation = ...; representation = ...});
      ...];
    compiled = ...; doc = ...}
 ```
@@ -372,11 +389,12 @@ path as this `` `Subst `` constructor:
   (`Type
      (`Subst
         (`ModuleType
-           (`Identifier (`Module (`Root (`RootPage None, Root), M)), S),
+           (`Identifier (`Module (`Root (Some (`RootPage None), Root), M)),
+            S),
          `Module
            (`Apply
-              (`Identifier (`Module (`Root (`RootPage None, Root), F)),
-               `Identifier (`Module (`Root (`RootPage None, Root), M))),
+              (`Identifier (`Module (`Root (Some (`RootPage None), Root), F)),
+               `Identifier (`Module (`Root (Some (`RootPage None), Root), M))),
             N)),
       t))
 ```
