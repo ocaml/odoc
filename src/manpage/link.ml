@@ -25,7 +25,7 @@ let as_filename ~flat (url : Url.Path.t) =
         (name, name :: acc)
     | Some p ->
         let dir, path = get_components p [] in
-        (dir, segment_to_string (kind, name) :: name :: path)
+        (dir, segment_to_string (kind, name) :: path)
   in
   let dir, path = get_components url [] in
   let s = String.concat "." @@ List.rev path in
