@@ -42,3 +42,14 @@ foo/Test.html
   html_flat/foo/Test-class-foo.html
   html_flat/foo/Test-class-type-t.html
   html_flat/foo/Test.html
+
+  $ odoc html-generate test.odocl -o html_suffix --flat --extra-suffix gen
+  $ find html_suffix -name "*" | sort
+  html_suffix
+  html_suffix/foo
+  html_suffix/foo/Test-M-module-type-N.html.gen
+  html_suffix/foo/Test-M.html.gen
+  html_suffix/foo/Test-class-foo.html.gen
+  html_suffix/foo/Test-class-type-t.html.gen
+  html_suffix/foo/Test.html.gen
+

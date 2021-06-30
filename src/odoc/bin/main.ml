@@ -55,6 +55,17 @@ let hidden =
   in
   Arg.(value & flag & info ~docs ~doc [ "hidden" ])
 
+let extra_suffix =
+  let doc =
+    "Extra suffix to append to generated filenames. This is intended for \
+     expect tests to use."
+  in
+  let default = None in
+  Arg.(
+    value
+    & opt (some string) default
+    & info ~docv:"SUFFIX" ~doc [ "extra-suffix" ])
+
 let warnings_options =
   let warn_error =
     let doc = "Turn warnings into errors." in
@@ -330,10 +341,11 @@ end = struct
   let process = Process.(cmd, info)
 
   module Generate = struct
-    let generate extra _hidden output_dir syntax input_file =
+    let generate extra _hidden output_dir syntax extra_suffix input_file =
       let file = Fs.File.of_string input_file in
+
       Rendering.generate_odoc ~renderer:R.renderer ~syntax ~output:output_dir
-        extra file
+        ~extra_suffix extra file
 
     let cmd =
       let syntax =
@@ -347,7 +359,7 @@ end = struct
       Term.(
         const handle_error
         $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
-         $ input))
+         $ extra_suffix $ input))
 
     let info =
       let doc =

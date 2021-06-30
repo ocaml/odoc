@@ -15,6 +15,7 @@ val generate_odoc :
   syntax:Renderer.syntax ->
   renderer:'a Renderer.t ->
   output:Fs.directory ->
+  extra_suffix:string option ->
   'a ->
   Fpath.t ->
   (unit, [> msg ]) result
