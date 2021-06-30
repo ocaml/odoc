@@ -20,11 +20,7 @@ type uri = Absolute of string | Relative of Odoc_document.Url.Path.t option
 
 let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
     ~url name header toc content =
-  let is_leaf_page = Link.Path.is_leaf_page url in
   let path = Link.Path.for_printing url in
-  let rec add_dotdot ~n acc =
-    if n <= 0 then acc else add_dotdot ~n:(n - 1) ("../" ^ acc)
-  in
 
   let head : Html_types.head Html.elt =
     let title_string = Printf.sprintf "%s (%s)" name (String.concat "." path) in
@@ -63,33 +59,44 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
   in
 
   let breadcrumbs =
-    let dot = if !Link.semantic_uris then "" else "index.html" in
-    let dotdot = add_dotdot ~n:1 dot in
-    let up_href = if is_leaf_page && name <> "index" then dot else dotdot in
-    let has_parent = List.length path > 1 in
+    let rec get_parents x =
+      match x with
+      | [] -> []
+      | x :: xs -> (
+          match Odoc_document.Url.Path.of_list (List.rev (x :: xs)) with
+          | Some x -> x :: get_parents xs
+          | None -> get_parents xs)
+    in
+    let parents =
+      get_parents (List.rev (Odoc_document.Url.Path.to_list url)) |> List.rev
+    in
+    let has_parent = List.length parents > 1 in
+    let href page =
+      Link.href ~resolve:(Current url) (Odoc_document.Url.from_path page)
+    in
     if has_parent then
+      let up_url = List.hd (List.tl (List.rev parents)) in
       let l =
         [
-          Html.a ~a:[ Html.a_href up_href ] [ Html.txt "Up" ]; Html.txt " – ";
+          Html.a ~a:[ Html.a_href (href up_url) ] [ Html.txt "Up" ];
+          Html.txt " – ";
         ]
         @
         (* Create breadcrumbs *)
         let space = Html.txt " " in
-        let breadcrumb_spec =
-          if is_leaf_page then fun n x -> (n, dot, x)
-          else fun n x -> (n, add_dotdot ~n dot, x)
-        in
-        let rev_path =
-          if is_leaf_page && name = "index" then List.tl (List.rev path)
-          else List.rev path
-        in
-        rev_path |> List.mapi breadcrumb_spec |> List.rev
+        parents
         |> Utils.list_concat_map
              ?sep:(Some [ space; Html.entity "#x00BB"; space ])
-             ~f:(fun (n, addr, lbl) ->
-               if n > 0 then
-                 [ [ Html.a ~a:[ Html.a_href addr ] [ Html.txt lbl ] ] ]
-               else [ [ Html.txt lbl ] ])
+             ~f:(fun url' ->
+               [
+                 [
+                   (if url = url' then Html.txt url.name
+                   else
+                     Html.a
+                       ~a:[ Html.a_href (href url') ]
+                       [ Html.txt url'.name ]);
+                 ];
+               ])
         |> List.flatten
       in
       [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] l ]

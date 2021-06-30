@@ -35,6 +35,8 @@ module Path : sig
 
   val to_list : t -> (kind * string) list
 
+  val of_list : (kind * string) list -> t option
+
   val split :
     is_dir:(kind -> bool) ->
     (kind * string) list ->
