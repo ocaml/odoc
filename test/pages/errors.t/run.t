@@ -16,13 +16,8 @@ This is a different code-path:
   ERROR: Specified parent is not a parent of this file
   [1]
 
-Compilation units require a parent:
-  $ ocamlc -c -bin-annot m1.mli
-  $ odoc compile m1.cmti
-  ERROR: Compilation unit requires a parent
-  [1]
-
 And these need to specify compilation unit children as well as mld children
+  $ ocamlc -c -bin-annot m1.mli
   $ odoc compile m1.cmti -I . --parent top1
   ERROR: File "m1.cmti":
   Specified parent is not a parent of this file
