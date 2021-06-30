@@ -424,12 +424,26 @@ module Odoc_html = Make_renderer (struct
           || str.[0] = '/'
         in
         let last_char = str.[String.length str - 1] in
-        let str = if last_char <> '/' then str ^ "/" else str in
-        `Ok Odoc_html.Tree.(if is_absolute then Absolute str else Relative str)
+        let str =
+          if last_char <> '/' then str
+          else String.sub str ~pos:0 ~len:(String.length str - 1)
+        in
+        let conv_rel rel =
+          let l = Astring.String.cuts ~sep:"/" rel in
+          List.fold_left
+            ~f:(fun acc seg ->
+              Some
+                Odoc_document.Url.Path.
+                  { kind = `ContainerPage; parent = acc; name = seg })
+            l ~init:None
+        in
+        `Ok
+          Odoc_html.Tree.(
+            if is_absolute then Absolute str else Relative (conv_rel str))
     in
     let printer ppf = function
-      | Odoc_html.Tree.Absolute uri | Odoc_html.Tree.Relative uri ->
-          Format.pp_print_string ppf uri
+      | Odoc_html.Tree.Absolute uri -> Format.pp_print_string ppf uri
+      | Odoc_html.Tree.Relative _uri -> Format.pp_print_string ppf ""
     in
     (parser, printer)
 
@@ -438,9 +452,18 @@ module Odoc_html = Make_renderer (struct
       "Where to look for theme files (e.g. `URI/odoc.css'). Relative URIs are \
        resolved using `--output-dir' as a target."
     in
-    let default = Odoc_html.Tree.Relative "./" in
+    let default = Odoc_html.Tree.Relative None in
     Arg.(
       value & opt convert_uri default & info ~docv:"URI" ~doc [ "theme-uri" ])
+
+  let support_uri =
+    let doc =
+      "Where to look for support files (e.g. `URI/highlite.pack.js'). Relative \
+       URIs are resolved using `--output-dir' as a target."
+    in
+    let default = Odoc_html.Tree.Relative None in
+    Arg.(
+      value & opt convert_uri default & info ~docv:"URI" ~doc [ "support-uri" ])
 
   let flat =
     let doc =
@@ -451,10 +474,19 @@ module Odoc_html = Make_renderer (struct
     Arg.(value & flag & info ~docs ~doc [ "flat" ])
 
   let extra_args =
-    let f semantic_uris closed_details indent theme_uri flat =
-      { Html_page.semantic_uris; closed_details; theme_uri; indent; flat }
+    let f semantic_uris closed_details indent theme_uri support_uri flat =
+      {
+        Html_page.semantic_uris;
+        closed_details;
+        theme_uri;
+        support_uri;
+        indent;
+        flat;
+      }
     in
-    Term.(const f $ semantic_uris $ closed_details $ indent $ theme_uri $ flat)
+    Term.(
+      const f $ semantic_uris $ closed_details $ indent $ theme_uri
+      $ support_uri $ flat)
 end)
 
 module Html_fragment : sig

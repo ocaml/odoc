@@ -1,6 +1,11 @@
 open Odoc_document
 
-val render : ?theme_uri:Tree.uri -> indent:bool -> Types.Page.t -> Renderer.page
+val render :
+  ?theme_uri:Tree.uri ->
+  ?support_uri:Tree.uri ->
+  indent:bool ->
+  Types.Page.t ->
+  Renderer.page
 
 val doc :
   xref_base_uri:string ->
