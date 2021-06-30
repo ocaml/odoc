@@ -81,7 +81,8 @@ module Path = struct
     | `ModuleType
     | `Argument
     | `Class
-    | `ClassType ]
+    | `ClassType
+    | `File ]
 
   let string_of_kind : kind -> string = function
     | `ContainerPage -> "container-page"
@@ -91,6 +92,7 @@ module Path = struct
     | `Argument -> "argument"
     | `Class -> "class"
     | `ClassType -> "class-type"
+    | `File -> "file"
 
   let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
 

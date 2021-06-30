@@ -19,7 +19,8 @@ module Path : sig
     | `ModuleType
     | `Argument
     | `Class
-    | `ClassType ]
+    | `ClassType
+    | `File ]
 
   val pp_kind : Format.formatter -> kind -> unit
 

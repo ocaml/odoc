@@ -17,7 +17,7 @@ module Path = struct
     let l = Url.Path.to_list url in
     let is_dir =
       if !flat then function `ContainerPage -> true | _ -> false
-      else function `Page -> false | _ -> true
+      else function `Page -> false | `File -> false | _ -> true
     in
     let dir, file = Url.Path.split ~is_dir l in
     let dir = List.map segment_to_string dir in
@@ -25,6 +25,7 @@ module Path = struct
       match file with
       | [] -> "index.html"
       | [ (`Page, name) ] -> name ^ ".html"
+      | [ (`File, name) ] -> name
       | xs ->
           assert !flat;
           String.concat "-" (List.map segment_to_string xs) ^ ".html"
