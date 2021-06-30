@@ -12,7 +12,20 @@ module Error : sig
 end
 
 module Path : sig
-  type t = { kind : string; parent : t option; name : string }
+  type kind =
+    [ `Module
+    | `ContainerPage
+    | `Page
+    | `ModuleType
+    | `Argument
+    | `Class
+    | `ClassType ]
+
+  val pp_kind : Format.formatter -> kind -> unit
+
+  val string_of_kind : kind -> string
+
+  type t = { kind : kind; parent : t option; name : string }
 
   type source =
     [ Identifier.Page.t | Identifier.Signature.t | Identifier.ClassSignature.t ]
@@ -21,11 +34,27 @@ module Path : sig
 end
 
 module Anchor : sig
+  type kind =
+    [ Path.kind
+    | `Section
+    | `Type
+    | `Extension
+    | `ExtensionDecl
+    | `Exception
+    | `Method
+    | `Val
+    | `Constructor
+    | `Field ]
+
+  val pp_kind : Format.formatter -> kind -> unit
+
+  val string_of_kind : kind -> string
+
   type t = {
     page : Path.t;
     anchor : string;
         (** Anchor in {!field-page} where the element is attached *)
-    kind : string;
+    kind : kind;
         (** What kind of element the path points to.
         e.g. "module", "module-type", "exception", ... *)
   }
@@ -42,12 +71,14 @@ module Anchor : sig
       identifier in the model. *)
 end
 
+type kind = Anchor.kind
+
 type t = Anchor.t
 
 val from_path : Path.t -> t
 
 val from_identifier : stop_before:bool -> Identifier.t -> (t, Error.t) result
 
-val kind : Identifier.t -> string
+val kind : Identifier.t -> kind
 
 val render_path : Odoc_model.Paths.Path.t -> string
