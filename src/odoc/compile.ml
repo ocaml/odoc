@@ -109,12 +109,7 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   in
   let result parent =
     let file = Odoc_file.create_unit ~force_hidden:hidden module_name in
-    Ok
-      {
-        id = `Root (Some parent, ModuleName.make_std module_name);
-        file;
-        digest;
-      }
+    Ok { id = `Root (parent, ModuleName.make_std module_name); file; digest }
   in
   let check_child : Odoc_model.Paths.Reference.t -> bool =
    fun c ->
@@ -124,11 +119,11 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
     | _ -> false
   in
   match parent_spec with
-  | Noparent -> Error (`Msg "Compilation units require a parent")
+  | Noparent -> result None
   | Explicit (parent, children) ->
-      if List.exists check_child children then result parent
+      if List.exists check_child children then result (Some parent)
       else Error (`Msg "Specified parent is not a parent of this file")
-  | Package parent -> result parent
+  | Package parent -> result (Some parent)
 
 let mld ~parent_spec ~output ~children ~warnings_options input =
   List.fold_left
@@ -213,16 +208,15 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     >>= fun loader ->
     let parent =
       match parent_spec with
-      | Noparent -> Error (`Msg "Compilation unit requires a parent")
-      | Explicit (parent, _) -> Ok parent
-      | Package parent -> Ok parent
+      | Noparent -> Ok None
+      | Explicit (parent, _) -> Ok (Some parent)
+      | Package parent -> Ok (Some parent)
     in
     parent >>= fun parent ->
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Odoc_model.Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver (Some parent) input
-            (loader ~make_root))
+          resolve_and_substitute ~resolver parent input (loader ~make_root))
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Odoc_model.Error.unpack_warnings result in
