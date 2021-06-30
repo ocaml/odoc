@@ -11,3 +11,6 @@
   %{workspace_root}/src/odoc/bin/main.exe
   (source_tree ../cases)
   (source_tree expect)))
+
+(cram
+ (deps %{bin:odoc}))
