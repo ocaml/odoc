@@ -11,11 +11,9 @@ let to_list url =
 let for_printing url = List.map snd @@ to_list url
 
 let segment_to_string (kind, name) =
-  if
-    kind = "module" || kind = "container-page" || kind = "page"
-    || kind = "class" || kind = "page"
-  then name
-  else Printf.sprintf "%s-%s" kind name
+  match kind with
+  | `Module | `ContainerPage | `Page | `Class -> name
+  | _ -> Format.asprintf "%a-%s" Odoc_document.Url.Path.pp_kind kind name
 
 let as_filename (url : Url.Path.t) =
   let rec get_components { Url.Path.parent; name; kind } =
@@ -31,7 +29,7 @@ let as_filename (url : Url.Path.t) =
 
 let rec is_class_or_module_path (url : Url.Path.t) =
   match url.kind with
-  | "module" | "page" | "container-page" | "class" -> (
+  | `Module | `Page | `ContainerPage | `Class -> (
       match url.parent with
       | None -> true
       | Some url -> is_class_or_module_path url)

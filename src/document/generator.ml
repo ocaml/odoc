@@ -404,7 +404,9 @@ module Make (Syntax : SYNTAX) = struct
         | Error e -> failwith (Url.Error.to_string e)
         | Ok url ->
             let name = Paths.Identifier.name id in
-            let attrs = [ "def"; "record"; url.kind ] in
+            let attrs =
+              [ "def"; "record"; Url.Anchor.string_of_kind url.kind ]
+            in
             let cell =
               (* O.td ~a:[ O.a_class ["def"; kind ] ]
                *   [O.a ~a:[O.a_href ("#" ^ anchor); O.a_class ["anchor"]] []
@@ -444,7 +446,7 @@ module Make (Syntax : SYNTAX) = struct
         DocumentedSrc.t =
      fun id args ret_type ->
       let name = Paths.Identifier.name id in
-      let kind = Url.kind id in
+      let kind = Url.(kind id |> Anchor.string_of_kind) in
       let cstr = tag kind (O.txt name) in
       let is_gadt, ret_type =
         match ret_type with
@@ -509,7 +511,9 @@ module Make (Syntax : SYNTAX) = struct
         match Url.from_identifier ~stop_before:true id with
         | Error e -> failwith (Url.Error.to_string e)
         | Ok url ->
-            let attrs = [ "def"; "variant"; url.kind ] in
+            let attrs =
+              [ "def"; "variant"; Url.Anchor.string_of_kind url.kind ]
+            in
             let content =
               let doc = constructor id args res in
               O.documentedSrc (O.txt "| ") @ doc
@@ -545,7 +549,7 @@ module Make (Syntax : SYNTAX) = struct
       | Error e -> failwith (Url.Error.to_string e)
       | Ok url ->
           let anchor = Some url in
-          let attrs = [ "def"; url.kind ] in
+          let attrs = [ "def"; Url.Anchor.string_of_kind url.kind ] in
           let code =
             O.documentedSrc (O.txt "| ") @ constructor id t.args t.res
           in
@@ -621,7 +625,7 @@ module Make (Syntax : SYNTAX) = struct
         let markers = Syntax.Comment.markers in
         try
           let url = Url.Anchor.polymorphic_variant ~type_ident item in
-          let attrs = [ "def"; url.kind ] in
+          let attrs = [ "def"; Url.Anchor.string_of_kind url.kind ] in
           let anchor = Some url in
           let code = O.code (O.txt "| ") @ cstr in
           let doc = match doc with None -> [] | Some doc -> doc in

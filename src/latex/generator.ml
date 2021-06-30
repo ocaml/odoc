@@ -13,8 +13,10 @@ let rec list_concat_map ?sep ~f = function
 module Link = struct
   let rec flatten_path ppf (x : Odoc_document.Url.Path.t) =
     match x.parent with
-    | Some p -> Fmt.pf ppf "%a-%s-%s" flatten_path p x.kind x.name
-    | None -> Fmt.pf ppf "%s-%s" x.kind x.name
+    | Some p ->
+        Fmt.pf ppf "%a-%a-%s" flatten_path p Odoc_document.Url.Path.pp_kind
+          x.kind x.name
+    | None -> Fmt.pf ppf "%a-%s" Odoc_document.Url.Path.pp_kind x.kind x.name
 
   let page p = Format.asprintf "%a" flatten_path p
 
@@ -25,7 +27,7 @@ module Link = struct
 
   let rec is_class_or_module_path (url : Odoc_document.Url.Path.t) =
     match url.kind with
-    | "module" | "page" | "class" | "container-page" -> (
+    | `Module | `Page | `Class | `ContainerPage -> (
         match url.parent with
         | None -> true
         | Some url -> is_class_or_module_path url)
@@ -43,13 +45,13 @@ module Link = struct
     | Some p -> (
         let pdir = dir p in
         match url.kind with
-        | "container-page" -> Fpath.(pdir / url.name)
+        | `ContainerPage -> Fpath.(pdir / url.name)
         | _ -> pdir)
 
   let file url =
     let rec l (url : Odoc_document.Url.Path.t) acc =
       match url.kind with
-      | "container-page" -> acc
+      | `ContainerPage -> acc
       | _ -> (
           match url.parent with
           | None ->
