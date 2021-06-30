@@ -149,6 +149,27 @@ module Path = struct
     | `Result p -> from_identifier (p :> source)
 
   let from_identifier p = from_identifier (p : [< source ] :> source)
+
+  let to_list url =
+    let rec loop acc { parent; name; kind } =
+      match parent with
+      | None -> (kind, name) :: acc
+      | Some p -> loop ((kind, name) :: acc) p
+    in
+    loop [] url
+
+  let split :
+      is_dir:(kind -> bool) ->
+      (kind * string) list ->
+      (kind * string) list * (kind * string) list =
+   fun ~is_dir l ->
+    let rec inner = function
+      | ((kind, _) as x) :: xs when is_dir kind ->
+          let dirs, files = inner xs in
+          (x :: dirs, files)
+      | xs -> ([], xs)
+    in
+    inner l
 end
 
 module Anchor = struct

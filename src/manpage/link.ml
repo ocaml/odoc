@@ -1,14 +1,6 @@
 open Odoc_document
 
-let to_list url =
-  let rec loop acc { Url.Path.parent; name; kind } =
-    match parent with
-    | None -> (kind, name) :: acc
-    | Some p -> loop ((kind, name) :: acc) p
-  in
-  loop [] url
-
-let for_printing url = List.map snd @@ to_list url
+let for_printing url = List.map snd @@ Url.Path.to_list url
 
 let segment_to_string (kind, name) =
   match kind with
@@ -16,16 +8,15 @@ let segment_to_string (kind, name) =
   | _ -> Format.asprintf "%a-%s" Odoc_document.Url.Path.pp_kind kind name
 
 let as_filename (url : Url.Path.t) =
-  let rec get_components { Url.Path.parent; name; kind } =
-    match parent with
-    | None -> (name, [])
-    | Some p ->
-        let dir, path = get_components p in
-        (dir, segment_to_string (kind, name) :: path)
+  let components = Url.Path.to_list url in
+  let dir, path =
+    Url.Path.split
+      ~is_dir:(function `ContainerPage -> true | _ -> false)
+      components
   in
-  let dir, path = get_components url in
-  let s = String.concat "." @@ List.rev path in
-  Fpath.((v dir / s) + ".3o")
+  let dir = List.map segment_to_string dir in
+  let path = String.concat "." (List.map segment_to_string path) in
+  Fpath.(v (String.concat dir_sep (dir @ [ path ])) + ".3o")
 
 let rec is_class_or_module_path (url : Url.Path.t) =
   match url.kind with
