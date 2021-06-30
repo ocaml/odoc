@@ -39,34 +39,26 @@ module Link = struct
     | `Closed -> false
     | `Default -> not @@ is_class_or_module_path url
 
-  let rec dir (url : Odoc_document.Url.Path.t) =
-    match url.parent with
-    | None -> Fpath.v url.name
-    | Some p -> (
-        let pdir = dir p in
-        match url.kind with
-        | `ContainerPage -> Fpath.(pdir / url.name)
-        | _ -> pdir)
-
-  let file url =
-    let rec l (url : Odoc_document.Url.Path.t) acc =
-      match url.kind with
-      | `ContainerPage -> acc
-      | _ -> (
-          match url.parent with
-          | None ->
-              assert false
-              (* Only container-pages are allowed to have no parent *)
-          | Some p -> l p (url.name :: acc))
-    in
-    String.concat "." (l url [])
+  let get_dir_and_file url =
+    let open Odoc_document in
+    let l = Url.Path.to_list url in
+    let is_dir = function `ContainerPage -> true | _ -> false in
+    let dir, file = Url.Path.split ~is_dir l in
+    let segment_to_string (_kind, name) = name in
+    let dir = List.map segment_to_string dir in
+    match (dir, file) with
+    | [], [] -> assert false
+    | dir, [] ->
+        let rev_dir = List.rev dir in
+        let file' = List.hd rev_dir in
+        let dir' = List.tl rev_dir |> List.rev in
+        (dir', file')
+    | _, xs -> (dir, String.concat "." (List.map segment_to_string xs))
 
   let filename url =
-    let dir = dir url in
-    let file = file url in
-    Format.eprintf "dir=%a file=%s\n%!" Fpath.pp dir file;
-    if file = "" then Fpath.add_ext "tex" dir
-    else Fpath.(add_ext "tex" (dir / file))
+    let dir, file = get_dir_and_file url in
+    let file = Fpath.(v (String.concat dir_sep (dir @ [ file ]))) in
+    Fpath.(add_ext "tex" file)
 end
 
 let style = function

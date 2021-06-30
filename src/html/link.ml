@@ -2,15 +2,7 @@ module Url = Odoc_document.Url
 
 (* Translation from Url.Path *)
 module Path = struct
-  let to_list url =
-    let rec loop acc { Url.Path.parent; name; kind } =
-      match parent with
-      | None -> (kind, name) :: acc
-      | Some p -> loop ((kind, name) :: acc) p
-    in
-    loop [] url
-
-  let for_printing url = List.map snd @@ to_list url
+  let for_printing url = List.map snd @@ Url.Path.to_list url
 
   let segment_to_string (kind, name) =
     match kind with
@@ -19,17 +11,22 @@ module Path = struct
 
   let is_leaf_page url = url.Url.Path.kind = `Page
 
-  let rec get_dir { Url.Path.parent; name; kind } =
-    let ppath = match parent with Some p -> get_dir p | None -> [] in
-    match kind with
-    | `Page -> ppath
-    | _ -> ppath @ [ segment_to_string (kind, name) ]
+  let get_dir_and_file url =
+    let l = Url.Path.to_list url in
+    let is_dir = function `Page -> false | _ -> true in
+    let dir, file = Url.Path.split ~is_dir l in
+    let dir = List.map segment_to_string dir in
+    let file =
+      match file with
+      | [] -> "index.html"
+      | [ (`Page, name) ] -> name ^ ".html"
+      | _ -> assert false
+    in
+    (dir, file)
 
-  let get_file : Url.Path.t -> string =
-   fun t -> match t.kind with `Page -> t.name ^ ".html" | _ -> "index.html"
-
-  let for_linking : Url.Path.t -> string list =
-   fun url -> get_dir url @ [ get_file url ]
+  let for_linking url =
+    let dir, file = get_dir_and_file url in
+    dir @ [ file ]
 
   let as_filename (url : Url.Path.t) =
     Fpath.(v @@ String.concat Fpath.dir_sep @@ for_linking url)

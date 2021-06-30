@@ -31,6 +31,13 @@ module Path : sig
     [ Identifier.Page.t | Identifier.Signature.t | Identifier.ClassSignature.t ]
 
   val from_identifier : [< source ] -> t
+
+  val to_list : t -> (kind * string) list
+
+  val split :
+    is_dir:(kind -> bool) ->
+    (kind * string) list ->
+    (kind * string) list * (kind * string) list
 end
 
 module Anchor : sig
