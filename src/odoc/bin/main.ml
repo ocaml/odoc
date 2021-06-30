@@ -442,11 +442,19 @@ module Odoc_html = Make_renderer (struct
     Arg.(
       value & opt convert_uri default & info ~docv:"URI" ~doc [ "theme-uri" ])
 
-  let extra_args =
-    let f semantic_uris closed_details indent theme_uri =
-      { Html_page.semantic_uris; closed_details; theme_uri; indent }
+  let flat =
+    let doc =
+      "Output HTML files in 'flat' mode, where the heirarchy of modules / \
+       module types / classes and class types are reflected in the filenames \
+       rather than in the directory structure"
     in
-    Term.(const f $ semantic_uris $ closed_details $ indent $ theme_uri)
+    Arg.(value & flag & info ~docs ~doc [ "flat" ])
+
+  let extra_args =
+    let f semantic_uris closed_details indent theme_uri flat =
+      { Html_page.semantic_uris; closed_details; theme_uri; indent; flat }
+    in
+    Term.(const f $ semantic_uris $ closed_details $ indent $ theme_uri $ flat)
 end)
 
 module Html_fragment : sig
