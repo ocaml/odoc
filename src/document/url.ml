@@ -164,6 +164,13 @@ module Path = struct
     in
     loop [] url
 
+  let of_list l =
+    let rec inner parent = function
+      | [] -> parent
+      | (kind, name) :: xs -> inner (Some { parent; name; kind }) xs
+    in
+    inner None l
+
   let split :
       is_dir:(kind -> bool) ->
       (kind * string) list ->
