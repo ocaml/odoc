@@ -69,7 +69,7 @@ end = struct
     { url = mkurl anchor; text; children }
 
   let compute page ~on_sub t =
-    let mkurl anchor = { Url.Anchor.page; anchor; kind = `Page } in
+    let mkurl anchor = { Url.Anchor.page; anchor; kind = `LeafPage } in
     Rewire.walk ~classify:(classify ~on_sub) ~node:(node mkurl) t
 end
 

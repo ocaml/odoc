@@ -7,10 +7,10 @@ Every references in `Good_references` should resolve:
   $ jq_scan_references() { jq -c '.. | .["`Reference"]? | select(.) | .[0]'; }
 
   $ odoc_print good_references.odocl | jq_scan_references
-  {"`Resolved":{"`Identifier":{"`LeafPage":[{"`RootPage":"test"},"p"]}}}
-  {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"`RootPage":"test"},"p"]},"P1"]}}}
-  {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"`RootPage":"test"},"p"]},"P2"]}}}
-  {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"`RootPage":"test"},"p"]},"P1"]}}}
+  {"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","test"]}},"p"]}}}
+  {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"Some":{"`Page":["None","test"]}},"p"]},"P1"]}}}
+  {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"Some":{"`Page":["None","test"]}},"p"]},"P2"]}}}
+  {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"Some":{"`Page":["None","test"]}},"p"]},"P1"]}}}
 
 Every references in `Bad_references` should not:
 

@@ -19,10 +19,7 @@ type datatype = [ `LType of TypeName.t * int | `LCoreType of TypeName.t ]
 type parent = [ signature | datatype | class_signature ]
 
 type label_parent =
-  [ parent
-  | `LRootPage of PageName.t * int
-  | `LPage of PageName.t * int
-  | `LLeafPage of PageName.t * int ]
+  [ parent | `LPage of PageName.t * int | `LLeafPage of PageName.t * int ]
 
 type module_ = [ `LRoot of ModuleName.t * int | `LModule of ModuleName.t * int ]
 
@@ -59,10 +56,7 @@ type instance_variable = [ `LInstanceVariable of InstanceVariableName.t * int ]
 
 type label = [ `LLabel of LabelName.t * int ]
 
-type page =
-  [ `LRootPage of PageName.t * int
-  | `LPage of PageName.t * int
-  | `LLeafPage of PageName.t * int ]
+type page = [ `LPage of PageName.t * int | `LLeafPage of PageName.t * int ]
 
 type any =
   [ signature
@@ -95,7 +89,6 @@ let int_of_any : any -> int = function
   | `LModule (_, i)
   | `LException (_, i)
   | `LConstructor (_, i)
-  | `LRootPage (_, i)
   | `LClassType (_, i)
   | `LMethod (_, i)
   | `LClass (_, i)
@@ -149,7 +142,6 @@ module Of_Identifier = struct
    fun p ->
     match p with
     | #Parent.t as s -> (parent s :> label_parent)
-    | `RootPage n -> `LRootPage (n, fresh_int ())
     | `Page (_, n) -> `LPage (n, fresh_int ())
     | `LeafPage (_, n) -> `LLeafPage (n, fresh_int ())
 
@@ -216,7 +208,6 @@ module Of_Identifier = struct
   let page : Page.t -> page =
    fun p ->
     match p with
-    | `RootPage n -> `LRootPage (n, fresh_int ())
     | `Page (_, n) -> `LPage (n, fresh_int ())
     | `LeafPage (_, n) -> `LLeafPage (n, fresh_int ())
 end
@@ -415,7 +406,6 @@ let rec fmt_aux ppf (id : any) =
   | `LInstanceVariable (n, i) ->
       Format.fprintf ppf "%s/%d" (InstanceVariableName.to_string n) i
   | `LLabel (n, i) -> Format.fprintf ppf "%s/%d" (LabelName.to_string n) i
-  | `LRootPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
   | `LPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
   | `LLeafPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
 

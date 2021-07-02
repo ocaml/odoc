@@ -31,7 +31,10 @@ Let's check which module type `.content.Module.items[0].ModuleType` refers to:
         "`Root": [
           {
             "Some": {
-              "`RootPage": "page"
+              "`Page": [
+                "None",
+                "page"
+              ]
             }
           },
           "Test"

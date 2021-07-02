@@ -22,7 +22,10 @@ Check that references are resolved:
                 "`Root": [
                   {
                     "Some": {
-                      "`RootPage": "test"
+                      "`Page": [
+                        "None",
+                        "test"
+                      ]
                     }
                   },
                   "B"
@@ -46,7 +49,10 @@ Check that references are resolved:
                 "`Root": [
                   {
                     "Some": {
-                      "`RootPage": "test"
+                      "`Page": [
+                        "None",
+                        "test"
+                      ]
                     }
                   },
                   "A"

@@ -50,7 +50,7 @@ let parent resolver parent_cli_spec =
     | _ -> Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
-    | (`RootPage _ | `Page _) as container -> Ok container
+    | `Page _ as container -> Ok container
     | _ -> Error (`Msg "Specified parent is not a parent of this file")
   in
   match parent_cli_spec with
@@ -59,7 +59,7 @@ let parent resolver parent_cli_spec =
       find_parent r >>= fun page ->
       extract_parent page.name >>= fun parent ->
       Ok (Explicit (parent, page.children))
-  | CliPackage package -> Ok (Package (`RootPage (PageName.make_std package)))
+  | CliPackage package -> Ok (Package (`Page (None, PageName.make_std package)))
   | CliNoparent -> Ok Noparent
 
 let resolve_imports resolver imports =
@@ -158,12 +158,13 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
       else Error (`Msg "Specified parent is not a parent of this file")
     in
     match (parent_spec, children) with
-    | Explicit (p, cs), [] -> check cs @@ `LeafPage (p, page_name)
-    | Explicit (p, cs), _ -> check cs @@ `Page (p, page_name)
-    | Package parent, [] -> Ok (`LeafPage (parent, page_name))
+    | Explicit (p, cs), [] -> check cs @@ `LeafPage (Some p, page_name)
+    | Explicit (p, cs), _ -> check cs @@ `Page (Some p, page_name)
+    | Package parent, [] -> Ok (`LeafPage (Some parent, page_name))
     | Package parent, _ ->
-        Ok (`Page (parent, page_name)) (* This is a bit odd *)
-    | Noparent, _ -> Ok (`RootPage page_name)
+        Ok (`Page (Some parent, page_name)) (* This is a bit odd *)
+    | Noparent, [] -> Ok (`LeafPage (None, page_name))
+    | Noparent, _ -> Ok (`Page (None, page_name))
   in
   name >>= fun name ->
   let root =

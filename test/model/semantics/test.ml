@@ -18,7 +18,7 @@ let parser_output_desc =
 let test ?(sections_allowed = `No_titles)
     ?(location = { Location_.line = 1; column = 0 }) str =
   let dummy_filename = "f.ml" in
-  let dummy_page = `RootPage (Names.PageName.make_std dummy_filename) in
+  let dummy_page = `Page (None, Names.PageName.make_std dummy_filename) in
   let location =
     {
       Lexing.pos_fname = dummy_filename;
@@ -663,7 +663,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -682,7 +682,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subparagraph",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -701,14 +701,14 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -735,7 +735,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -754,14 +754,14 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Section",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Section",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -778,14 +778,14 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Section",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -804,21 +804,21 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsubsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Section",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             },
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "baz" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "baz" ] },
                 [ { "`Word": "Baz" } ]
               ]
             }
@@ -835,7 +835,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Section",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -852,7 +852,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -871,14 +871,14 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -898,14 +898,14 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Section",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Section",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -922,21 +922,21 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Subparagraph",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -957,14 +957,14 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subparagraph",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Subparagraph",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -984,14 +984,14 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subparagraph",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Subparagraph",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -1014,7 +1014,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1031,7 +1031,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsubsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1048,7 +1048,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Paragraph",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1065,7 +1065,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1082,7 +1082,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1101,7 +1101,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsubsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1120,7 +1120,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1137,7 +1137,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1154,7 +1154,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1173,7 +1173,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsubsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1192,7 +1192,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1209,7 +1209,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1226,7 +1226,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo-" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-" ] },
                 [ { "`Word": "Foo" }, "`Space" ]
               ]
             }
@@ -1245,7 +1245,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Code_span": "foo" } ]
               ]
             }
@@ -1262,7 +1262,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Code_span": "Foo" } ]
               ]
             }
@@ -1279,7 +1279,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "-foo-bar--baz---" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "-foo-bar--baz---" ] },
                 [ { "`Code_span": " foo bar  baz  \t" } ]
               ]
             }
@@ -1296,7 +1296,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo-bar--baz" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar--baz" ] },
                 [ { "`Code_span": "foo\nbar\r\nbaz" } ]
               ]
             }
@@ -1313,7 +1313,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo-bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar" ] },
                 [
                   {
                     "`Styled": [
@@ -1337,7 +1337,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo-bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar" ] },
                 [ { "`Word": "foo" }, "`Space", { "`Word": "bar" } ]
               ]
             }
@@ -1354,14 +1354,14 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ] },
                 []
               ]
             },
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
@@ -1402,7 +1402,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
@@ -1423,7 +1423,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -1442,7 +1442,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
@@ -1461,7 +1461,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -1478,7 +1478,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -1495,7 +1495,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, ":foo-bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, ":foo-bar" ] },
                 [ { "`Word": ":foo" }, "`Space", { "`Word": "Bar" } ]
               ]
             }
@@ -1512,7 +1512,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo-bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar" ] },
                 [ { "`Word": "foo" }, "`Space", { "`Word": "Bar" } ]
               ]
             }
@@ -1531,7 +1531,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 []
               ]
             }
@@ -1550,7 +1550,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 []
               ]
             }
@@ -1592,7 +1592,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -1637,7 +1637,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subparagraph",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1656,7 +1656,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subparagraph",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -1675,7 +1675,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1694,7 +1694,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -1713,7 +1713,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Title",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1732,7 +1732,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subparagraph",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             }
@@ -1751,7 +1751,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ] },
                 [ { "`Styled": [ "`Emphasis", [] ] } ]
               ]
             }
@@ -1770,7 +1770,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ] },
                 [ { "`Styled": [ "`Emphasis", [] ] } ]
               ]
             }
@@ -1789,14 +1789,14 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -1813,14 +1813,14 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },
             {
               "`Heading": [
                 "`Subsubsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -1996,7 +1996,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "bar" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
                 [ { "`Word": "Bar" } ]
               ]
             }
@@ -2108,7 +2108,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ] },
                 []
               ]
             },
@@ -2343,7 +2343,7 @@ let%expect_test _ =
             {
               "`Heading": [
                 "`Subsection",
-                { "`Label": [ { "`RootPage": "f.ml" }, "foo" ] },
+                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
                 [ { "`Word": "Foo" } ]
               ]
             },

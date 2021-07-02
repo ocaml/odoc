@@ -61,17 +61,16 @@ module General_paths = struct
   let rec identifier : Paths.Identifier.t t =
     Variant
       (function
-      | `RootPage name -> C ("`RootPage", name, Names.pagename)
       | `Page (parent, name) ->
           C
             ( "`Page",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.pagename) )
+              ((parent :> id_t option), name),
+              Pair (Option identifier, Names.pagename) )
       | `LeafPage (parent, name) ->
           C
             ( "`LeafPage",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.pagename) )
+              ((parent :> id_t option), name),
+              Pair (Option identifier, Names.pagename) )
       | `Root (parent, name) ->
           C
             ( "`Root",

@@ -2,11 +2,11 @@ open Names
 (** {1 Paths} *)
 
 module Identifier = struct
-  type container_page =
-    [ `RootPage of PageName.t | `Page of container_page * PageName.t ]
+  type container_page = [ `Page of container_page option * PageName.t ]
   (** @canonical Odoc_model.Paths.Identifier.ContainerPage.t *)
 
-  type page = [ container_page | `LeafPage of container_page * PageName.t ]
+  type page =
+    [ container_page | `LeafPage of container_page option * PageName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Page.t *)
 
   type odoc_id = [ page | `Root of container_page option * ModuleName.t ]

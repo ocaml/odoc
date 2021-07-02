@@ -446,7 +446,7 @@ module Odoc_html = Make_renderer (struct
             ~f:(fun acc seg ->
               Some
                 Odoc_document.Url.Path.
-                  { kind = `ContainerPage; parent = acc; name = seg })
+                  { kind = `Page; parent = acc; name = seg })
             l ~init:None
         in
         `Ok
@@ -604,14 +604,17 @@ module Depends = struct
   module Link = struct
     let rec fmt_page pp page =
       match page with
-      | `RootPage name ->
-          Format.fprintf pp "%a" Odoc_model.Names.PageName.fmt name
-      | `Page (parent, name) ->
-          Format.fprintf pp "%a/%a" fmt_page parent
+      | `Page (parent_opt, name) ->
+          Format.fprintf pp "%a%a" fmt_parent_opt parent_opt
             Odoc_model.Names.PageName.fmt name
-      | `LeafPage (parent, name) ->
-          Format.fprintf pp "%a/%a" fmt_page parent
+      | `LeafPage (parent_opt, name) ->
+          Format.fprintf pp "%a%a" fmt_parent_opt parent_opt
             Odoc_model.Names.PageName.fmt name
+
+    and fmt_parent_opt pp parent_opt =
+      match parent_opt with
+      | None -> ()
+      | Some p -> Format.fprintf pp "%a/" fmt_page p
 
     let list_dependencies input_file =
       let open Or_error in

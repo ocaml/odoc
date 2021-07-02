@@ -6,7 +6,10 @@
       "`Identifier": {
         "`Label": [
           {
-            "`RootPage": "page"
+            "`LeafPage": [
+              "None",
+              "page"
+            ]
           },
           "test"
         ]

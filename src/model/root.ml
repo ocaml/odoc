@@ -64,11 +64,13 @@ let hash : t -> int = Hashtbl.hash
 let to_string t =
   let rec pp fmt (id : Paths.Identifier.OdocId.t) =
     match id with
-    | `RootPage p -> Format.fprintf fmt "%a" Names.PageName.fmt p
-    | `LeafPage (parent, name) | `Page (parent, name) ->
-        Format.fprintf fmt "%a::%a" pp
-          (parent :> Paths.Identifier.OdocId.t)
-          Names.PageName.fmt name
+    | `LeafPage (parent, name) | `Page (parent, name) -> (
+        match parent with
+        | Some p ->
+            Format.fprintf fmt "%a::%a" pp
+              (p :> Paths.Identifier.OdocId.t)
+              Names.PageName.fmt name
+        | None -> Format.fprintf fmt "%a" Names.PageName.fmt name)
     | `Root (Some parent, name) ->
         Format.fprintf fmt "%a::%a" pp
           (parent :> Paths.Identifier.OdocId.t)

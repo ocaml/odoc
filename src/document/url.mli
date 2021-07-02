@@ -14,8 +14,8 @@ end
 module Path : sig
   type kind =
     [ `Module
-    | `ContainerPage
     | `Page
+    | `LeafPage
     | `ModuleType
     | `Argument
     | `Class

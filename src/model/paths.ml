@@ -21,7 +21,6 @@ module Identifier = struct
 
   let rec name_aux : t -> string = function
     | `Root (_, name) -> ModuleName.to_string name
-    | `RootPage name -> PageName.to_string name
     | `Page (_, name) -> PageName.to_string name
     | `LeafPage (_, name) -> PageName.to_string name
     | `Module (_, name) -> ModuleName.to_string name
@@ -51,7 +50,6 @@ module Identifier = struct
       | `Result i -> label_parent_aux (i :> any)
       | `CoreType _ | `CoreException _ -> assert false
       | `Root _ as p -> (p :> label_parent)
-      | `RootPage _ as p -> (p :> label_parent)
       | `Page _ as p -> (p :> label_parent)
       | `LeafPage _ as p -> (p :> label_parent)
       | `Module (p, _)

@@ -76,8 +76,8 @@ module Path = struct
 
   type kind =
     [ `Module
-    | `ContainerPage
     | `Page
+    | `LeafPage
     | `ModuleType
     | `Argument
     | `Class
@@ -85,9 +85,9 @@ module Path = struct
     | `File ]
 
   let string_of_kind : kind -> string = function
-    | `ContainerPage -> "container-page"
-    | `Module -> "module"
     | `Page -> "page"
+    | `Module -> "module"
+    | `LeafPage -> "leaf-page"
     | `ModuleType -> "module-type"
     | `Argument -> "argument"
     | `Class -> "class"
@@ -110,20 +110,24 @@ module Path = struct
         let kind = `Module in
         let page = ModuleName.to_string unit_name in
         mk ?parent kind page
-    | `RootPage page_name ->
-        let kind = `ContainerPage in
-        let page = PageName.to_string page_name in
-        mk kind page
     | `Page (parent, page_name) ->
-        let parent = from_identifier (parent :> source) in
-        let kind = `ContainerPage in
-        let page = PageName.to_string page_name in
-        mk ~parent kind page
-    | `LeafPage (parent, page_name) ->
-        let parent = from_identifier (parent :> source) in
+        let parent =
+          match parent with
+          | Some p -> Some (from_identifier (p :> source))
+          | None -> None
+        in
         let kind = `Page in
         let page = PageName.to_string page_name in
-        mk ~parent kind page
+        mk ?parent kind page
+    | `LeafPage (parent, page_name) ->
+        let parent =
+          match parent with
+          | Some p -> Some (from_identifier (p :> source))
+          | None -> None
+        in
+        let kind = `LeafPage in
+        let page = PageName.to_string page_name in
+        mk ?parent kind page
     | `Module (parent, mod_name) ->
         let parent = from_identifier (parent :> source) in
         let kind = `Module in
@@ -242,15 +246,12 @@ module Anchor = struct
     | `Root _ as p ->
         let page = Path.from_identifier (p :> Path.source) in
         Ok { page; kind = `Module; anchor = "" }
-    | `RootPage _ as p ->
-        let page = Path.from_identifier (p :> Path.source) in
-        Ok { page; kind = `ContainerPage; anchor = "" }
     | `Page _ as p ->
         let page = Path.from_identifier (p :> Path.source) in
-        Ok { page; kind = `ContainerPage; anchor = "" }
+        Ok { page; kind = `Page; anchor = "" }
     | `LeafPage _ as p ->
         let page = Path.from_identifier (p :> Path.source) in
-        Ok { page; kind = `Page; anchor = "" }
+        Ok { page; kind = `LeafPage; anchor = "" }
     (* For all these identifiers, page names and anchors are the same *)
     | (`Parameter _ | `Result _ | `ModuleType _ | `Class _ | `ClassType _) as p
       ->

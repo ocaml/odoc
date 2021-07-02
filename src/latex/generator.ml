@@ -27,7 +27,7 @@ module Link = struct
 
   let rec is_class_or_module_path (url : Odoc_document.Url.Path.t) =
     match url.kind with
-    | `Module | `Page | `Class | `ContainerPage -> (
+    | `Module | `LeafPage | `Class | `Page -> (
         match url.parent with
         | None -> true
         | Some url -> is_class_or_module_path url)
@@ -42,7 +42,7 @@ module Link = struct
   let get_dir_and_file url =
     let open Odoc_document in
     let l = Url.Path.to_list url in
-    let is_dir = function `ContainerPage -> true | _ -> false in
+    let is_dir = function `Page -> true | _ -> false in
     let dir, file = Url.Path.split ~is_dir l in
     let segment_to_string (_kind, name) = name in
     let dir = List.map segment_to_string dir in
