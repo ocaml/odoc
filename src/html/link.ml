@@ -8,23 +8,23 @@ module Path = struct
 
   let segment_to_string (kind, name) =
     match kind with
-    | `Module | `ContainerPage -> name
+    | `Module | `Page -> name
     | _ -> Format.asprintf "%a-%s" Url.Path.pp_kind kind name
 
-  let is_leaf_page url = url.Url.Path.kind = `Page
+  let is_leaf_page url = url.Url.Path.kind = `LeafPage
 
   let get_dir_and_file url =
     let l = Url.Path.to_list url in
     let is_dir =
-      if !flat then function `ContainerPage -> true | _ -> false
-      else function `Page -> false | `File -> false | _ -> true
+      if !flat then function `Page -> true | _ -> false
+      else function `LeafPage -> false | `File -> false | _ -> true
     in
     let dir, file = Url.Path.split ~is_dir l in
     let dir = List.map segment_to_string dir in
     let file =
       match file with
       | [] -> "index.html"
-      | [ (`Page, name) ] -> name ^ ".html"
+      | [ (`LeafPage, name) ] -> name ^ ".html"
       | [ (`File, name) ] -> name
       | xs ->
           assert !flat;

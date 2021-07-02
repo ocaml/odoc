@@ -34,7 +34,7 @@ let cmt_of_string s =
     let p = Parse.implementation l in
     Typemod.type_implementation "" "" "" env p
 
-let parent = `RootPage (Odoc_model.Names.PageName.make_std "None")
+let parent = `Page (None, Odoc_model.Names.PageName.make_std "None")
 let id = `Root (Some parent, Odoc_model.Names.ModuleName.make_std "Root")
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =

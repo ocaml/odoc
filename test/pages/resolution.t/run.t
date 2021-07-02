@@ -33,7 +33,12 @@ This is the '{!childpage-sub1}' reference
       "`Identifier": {
         "`Page": [
           {
-            "`RootPage": "top1"
+            "Some": {
+              "`Page": [
+                "None",
+                "top1"
+              ]
+            }
           },
           "sub1"
         ]
@@ -48,7 +53,12 @@ This is the '{!childpage:sub2}' reference
       "`Identifier": {
         "`Page": [
           {
-            "`RootPage": "top1"
+            "Some": {
+              "`Page": [
+                "None",
+                "top1"
+              ]
+            }
           },
           "sub2"
         ]
@@ -66,7 +76,12 @@ This is the '{!childmodule:M1}' reference
             "Some": {
               "`Page": [
                 {
-                  "`RootPage": "top1"
+                  "Some": {
+                    "`Page": [
+                      "None",
+                      "top1"
+                    ]
+                  }
                 },
                 "sub1"
               ]
