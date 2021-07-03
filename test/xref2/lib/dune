@@ -11,6 +11,11 @@
  (name odoc_xref_test)
  (public_name odoc.xref_test)
  (modes byte)
- (libraries tyxml compiler-libs.toplevel compiler-libs.common odoc_xref2
-   odoc_odoc odoc_model)
+ (libraries
+  tyxml
+  compiler-libs.toplevel
+  compiler-libs.common
+  odoc_xref2
+  odoc_odoc
+  odoc_model)
  (modules common))

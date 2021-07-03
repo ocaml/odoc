@@ -38,7 +38,7 @@ jobs:
             odoc.opam
 
       - name: Install dependencies
-        run: opam install -y --deps-only -t ./odoc.opam ./odoc-parser.opam
+        run: opam install -y --deps-only -t ./odoc.opam
 
       - name: dune runtest
         run: opam exec -- dune runtest

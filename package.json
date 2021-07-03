@@ -46,6 +46,7 @@
     "@opam/sexplib0": "*",
     "@opam/tyxml": "4.3.0",
     "@opam/ocamlfind-secondary":"1.8.1",
+    "@opam/odoc-parser":"0.9.0",
     "ocaml": "~4.2.0"
   },
   "resolutions": {

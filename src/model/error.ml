@@ -128,9 +128,10 @@ let unpack_warnings ww = (ww.value, List.map (fun w -> w.w) ww.warnings)
 let t_of_parser_t : Odoc_parser.Warning.t -> t =
  fun x -> (`With_full_location x :> t)
 
-let raise_parser_warnings { Odoc_parser.ast; warnings } =
+let raise_parser_warnings v =
   (* Parsing errors may be fatal. *)
+  let warnings = Odoc_parser.warnings v in
   let non_fatal = false in
   raise_warnings'
     (List.map (fun p -> { w = t_of_parser_t p; non_fatal }) warnings);
-  ast
+  Odoc_parser.ast v
