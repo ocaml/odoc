@@ -1,0 +1,13 @@
+(rule
+ (target html)
+ (alias docgen)
+ (deps
+  (:x driver.md)
+  (glob_files *.ml*)
+  (package odoc))
+ (enabled_if
+  (> %{ocaml_version} 4.11))
+ (action
+  (progn
+   (run ocaml-mdx-test %{x})
+   (diff? %{x} %{x}.corrected))))

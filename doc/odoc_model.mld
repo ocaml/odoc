@@ -1,0 +1,8 @@
+{0 odoc_model}
+
+The most important modules of this library are
+- {!module-Odoc_model.module-Lang}
+- {!Odoc_model.Paths}
+
+Other modules may be found in the main module:
+{!childmodule-Odoc_model}
