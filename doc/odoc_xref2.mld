@@ -1,0 +1,10 @@
+{0 odoc_xref2}
+
+This is the library that is responsible for expansion and resolution.
+
+The important modules are:
+
+{!modules: Odoc_xref2.Component Odoc_xref2.Compile Odoc_xref2.Tools Odoc_xref2.Expand_tools}
+
+Other modules may be found here:
+- {!childmodule-Odoc_xref2}
