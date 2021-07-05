@@ -44,7 +44,6 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
   match p with
   | `Identifier _ -> false
   | `Subst (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
-  | `SubstAlias (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Hidden p -> should_reresolve (p :> t)
   | `Canonical (x, y) ->
       should_reresolve (x :> t) || should_resolve (y :> Paths.Path.t)

@@ -10,7 +10,6 @@ module rec Resolved : sig
     | `Identifier of Identifier.Path.Module.t
     | `Substituted of module_
     | `Subst of module_type * module_
-    | `SubstAlias of module_ * module_
     | `Hidden of module_
     | `Module of parent * ModuleName.t
     | `Canonical of module_ * Cpath.module_
@@ -104,9 +103,6 @@ let rec resolved_module_path_of_cpath :
   | `Subst (a, b) ->
       `Subst
         (resolved_module_type_path_of_cpath a, resolved_module_path_of_cpath b)
-  | `SubstAlias (a, b) ->
-      `SubstAlias
-        (resolved_module_path_of_cpath a, resolved_module_path_of_cpath b)
   | `Hidden x -> `Hidden (resolved_module_path_of_cpath x)
   | `Canonical (a, b) ->
       `Canonical (resolved_module_path_of_cpath a, module_path_of_cpath b)
@@ -206,7 +202,6 @@ let rec is_resolved_module_substituted : Resolved.module_ -> bool = function
   | `Substituted _ -> true
   | `Identifier _ -> false
   | `Subst (_a, _) -> false (* is_resolved_module_type_substituted a*)
-  | `SubstAlias (a, _)
   | `Hidden a
   | `Canonical (a, _)
   | `Apply (a, _)
@@ -436,7 +431,6 @@ let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
   | `Local x -> `Local (x, false)
   | `Substituted x -> unresolve_resolved_module_path x
   | `Subst (_, x) -> unresolve_resolved_module_path x
-  | `SubstAlias (_, x) -> unresolve_resolved_module_path x
   | `Hidden x -> unresolve_resolved_module_path x (* should assert false here *)
   | `Module (p, m) ->
       `Dot (unresolve_resolved_parent_path p, ModuleName.to_string m)
