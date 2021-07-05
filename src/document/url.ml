@@ -19,7 +19,6 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `OpaqueModule p -> render_resolved (p :> t)
     | `OpaqueModuleType p -> render_resolved (p :> t)
     | `Subst (_, p) -> render_resolved (p :> t)
-    | `SubstAlias (_, p) -> render_resolved (p :> t)
     | `SubstT (_, p) -> render_resolved (p :> t)
     | `Alias (p1, p2) ->
         if Odoc_model.Paths.Path.is_hidden (`Resolved (p2 :> t)) then

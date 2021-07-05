@@ -201,7 +201,6 @@ and Resolved_path : sig
   type module_ =
     [ `Identifier of Identifier.path_module
     | `Subst of module_type * module_
-    | `SubstAlias of module_ * module_
     | `Hidden of module_
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_
@@ -235,7 +234,6 @@ and Resolved_path : sig
   type any =
     [ `Identifier of Identifier.any
     | `Subst of module_type * module_
-    | `SubstAlias of module_ * module_
     | `Hidden of module_
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_

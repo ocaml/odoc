@@ -571,7 +571,6 @@ module LangUtils = struct
             | `CanonicalType (_, _)
             | `Class (_, _)
             | `ClassType (_, _)
-            | `SubstAlias (_, _)
             | `Hidden _
             | `Canonical _ -> Format.fprintf ppf "unimplemented resolved_path"
 

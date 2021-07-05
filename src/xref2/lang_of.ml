@@ -137,8 +137,6 @@ module Path = struct
     | `Identifier y -> `Identifier y
     | `Subst (mty, m) ->
         `Subst (resolved_module_type map mty, resolved_module map m)
-    | `SubstAlias (m1, m2) ->
-        `SubstAlias (resolved_module map m1, resolved_module map m2)
     | `Hidden h -> `Hidden (resolved_module map h)
     | `Module (p, n) -> `Module (resolved_parent map p, n)
     | `Canonical (r, m) -> `Canonical (resolved_module map r, module_ map m)

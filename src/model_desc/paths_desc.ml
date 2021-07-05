@@ -192,11 +192,6 @@ module General_paths = struct
             ( "`Subst",
               ((x1 :> rp), (x2 :> rp)),
               Pair (resolved_path, resolved_path) )
-      | `SubstAlias (x1, x2) ->
-          C
-            ( "`SubstAlias",
-              ((x1 :> rp), (x2 :> rp)),
-              Pair (resolved_path, resolved_path) )
       | `Hidden x -> C ("`Hidden", (x :> rp), resolved_path)
       | `Module (x1, x2) ->
           C ("`Module", ((x1 :> rp), x2), Pair (resolved_path, Names.modulename))

@@ -880,9 +880,6 @@ module Fmt = struct
     | `Subst (p1, p2) ->
         Format.fprintf ppf "subst(%a,%a)" resolved_module_type_path p1
           resolved_module_path p2
-    | `SubstAlias (p1, p2) ->
-        Format.fprintf ppf "substalias(%a,%a)" resolved_module_path p1
-          resolved_module_path p2
     | `Hidden p1 -> Format.fprintf ppf "hidden(%a)" resolved_module_path p1
     | `Canonical (p1, p2) ->
         Format.fprintf ppf "canonical(%a,%a)" resolved_module_path p1
@@ -1111,8 +1108,6 @@ module Fmt = struct
           model_path
           (p2 :> Odoc_model.Paths.Path.t)
     | `Hidden p -> Format.fprintf ppf "hidden(%a)" model_resolved_path (p :> t)
-    | `SubstAlias (_, _) ->
-        Format.fprintf ppf "UNIMPLEMENTED substalias in model_resolved_path"
     | `Class (parent, name) ->
         Format.fprintf ppf "%a.%s" model_resolved_path
           (parent :> t)
@@ -1673,7 +1668,6 @@ module Of_Lang = struct
     | `Alias (p1, p2) -> `Alias (recurse p1, recurse p2)
     | `Subst (p1, p2) ->
         `Subst (resolved_module_type_path ident_map p1, recurse p2)
-    | `SubstAlias (p1, p2) -> `SubstAlias (recurse p1, recurse p2)
     | `Canonical (p1, p2) -> `Canonical (recurse p1, module_path ident_map p2)
     | `Hidden p1 -> `Hidden (recurse p1)
     | `OpaqueModule m -> `OpaqueModule (recurse m)

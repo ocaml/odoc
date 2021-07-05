@@ -215,8 +215,6 @@ let rec resolved_module_path :
         | Not_replaced p1 -> p1
       in
       `Subst (p1, resolved_module_path s p2)
-  | `SubstAlias (p1, p2) ->
-      `SubstAlias (resolved_module_path s p1, resolved_module_path s p2)
   | `Hidden p1 -> `Hidden (resolved_module_path s p1)
   | `Canonical (p1, p2) ->
       `Canonical (resolved_module_path s p1, module_path s p2)
@@ -687,7 +685,6 @@ and mto_resolved_module_path_invalidated s p =
   | `Module (_, _) -> false
   | `Alias (p1, _p2) -> mto_resolved_module_path_invalidated s p1
   | `Subst (_p1, p2) -> mto_resolved_module_path_invalidated s p2
-  | `SubstAlias (p1, _p2) -> mto_resolved_module_path_invalidated s p1
   | `Hidden p -> mto_resolved_module_path_invalidated s p
   | `Canonical (p1, _p2) -> mto_resolved_module_path_invalidated s p1
   | `OpaqueModule p -> mto_resolved_module_path_invalidated s p

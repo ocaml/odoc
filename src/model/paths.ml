@@ -445,8 +445,6 @@ module Path = struct
       | `Hidden _ -> true
       | `Subst (p1, p2) ->
           inner (p1 : module_type :> any) || inner (p2 : module_ :> any)
-      | `SubstAlias (p1, p2) ->
-          inner (p1 : module_ :> any) || inner (p2 : module_ :> any)
       | `Module (p, _) -> inner (p : module_ :> any)
       | `Apply (p, _) -> inner (p : module_ :> any)
       | `ModuleType (_, m) when Names.ModuleTypeName.is_internal m -> true
@@ -504,7 +502,6 @@ module Path = struct
       | `Identifier id ->
           (id : Identifier.Path.Module.t :> Identifier.Signature.t)
       | `Subst (sub, _) -> parent_module_type_identifier sub
-      | `SubstAlias (sub, _) -> parent_module_identifier sub
       | `Hidden p -> parent_module_identifier p
       | `Module (m, n) -> `Module (parent_module_identifier m, n)
       | `Canonical (_, `Resolved p) -> parent_module_identifier p
@@ -527,7 +524,6 @@ module Path = struct
       let rec identifier : t -> Identifier.Path.Module.t = function
         | `Identifier id -> id
         | `Subst (_, p) -> identifier p
-        | `SubstAlias (_, p) -> identifier p
         | `Hidden p -> identifier p
         | `Module (m, n) -> `Module (parent_module_identifier m, n)
         | `Canonical (_, `Resolved p) -> identifier p
@@ -542,7 +538,6 @@ module Path = struct
       let rec canonical_ident : t -> Identifier.Path.Module.t option = function
         | `Identifier _id -> None
         | `Subst (_, _) -> None
-        | `SubstAlias (_, _) -> None
         | `Hidden p -> canonical_ident p
         | `Module (p, n) -> (
             match canonical_ident p with
@@ -637,7 +632,6 @@ module Path = struct
     let rec identifier : t -> Identifier.t = function
       | `Identifier id -> id
       | `Subst (_, p) -> identifier (p :> t)
-      | `SubstAlias (_, p) -> identifier (p :> t)
       | `Hidden p -> identifier (p :> t)
       | `Module (m, n) -> `Module (parent_module_identifier m, n)
       | `Canonical (_, `Resolved p) -> identifier (p :> t)

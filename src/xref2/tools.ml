@@ -538,7 +538,6 @@ and lookup_module :
         >>= fun (sg, sub) -> find_in_sg sg sub
     | `Alias (_, p) -> lookup_module ~mark_substituted env p
     | `Subst (_, p) -> lookup_module ~mark_substituted env p
-    | `SubstAlias (_, p) -> lookup_module ~mark_substituted env p
     | `Hidden p -> lookup_module ~mark_substituted env p
     | `Canonical (p, _) -> lookup_module ~mark_substituted env p
     | `OpaqueModule m -> lookup_module ~mark_substituted env m
@@ -963,8 +962,6 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
   | `Alias (p1, p2) -> `Alias (reresolve_module env p1, reresolve_module env p2)
   | `Subst (p1, p2) ->
       `Subst (reresolve_module_type env p1, reresolve_module env p2)
-  | `SubstAlias (p1, p2) ->
-      `SubstAlias (reresolve_module env p1, reresolve_module env p2)
   | `Hidden p ->
       let p' = reresolve_module env p in
       `Hidden p'
@@ -1552,12 +1549,6 @@ and find_external_module_path :
   | `Local x -> Some (`Local x)
   | `Substituted x ->
       find_external_module_path x >>= fun x -> Some (`Substituted x)
-  | `SubstAlias (x, y) -> (
-      match (find_external_module_path x, find_external_module_path y) with
-      | Some x, Some y -> Some (`SubstAlias (x, y))
-      | Some x, None -> Some x
-      | None, Some x -> Some x
-      | None, None -> None)
   | `Canonical (x, y) ->
       find_external_module_path x >>= fun x -> Some (`Canonical (x, y))
   | `Hidden x -> find_external_module_path x >>= fun x -> Some (`Hidden x)
