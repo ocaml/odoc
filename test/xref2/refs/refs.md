@@ -752,7 +752,7 @@ let resolve_ref = resolve_ref_of_mli {|
 # resolve_ref "B.t" (* get_module_path_modifiers is [`Aliased] *)
 - : ref =
 `Type
-  (`SubstAlias
+  (`Alias
      (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), A)),
       `Identifier (`Module (`Root (Some (`Page (None, None)), Root), B))),
    t)
@@ -764,7 +764,7 @@ Exception: Failure "resolve_reference".
 # resolve_ref "E.N.t"
 - : ref =
 `Type
-  (`SubstAlias
+  (`Alias
      (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), A)),
       `Module
         (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), E)),

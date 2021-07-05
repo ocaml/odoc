@@ -360,9 +360,9 @@ module General_paths = struct
             ( "`ModuleType",
               ((x1 :> rr), x2),
               Pair (resolved_reference, Names.moduletypename) )
-      | `SubstAlias (x1, x2) ->
+      | `Alias (x1, x2) ->
           C
-            ( "`SubstAlias",
+            ( "`Alias",
               ((x1 :> rp), (x2 :> rr)),
               Pair (resolved_path, resolved_reference) )
       | `Type (x1, x2) ->
@@ -391,9 +391,9 @@ module General_paths = struct
             ( "`Subst",
               ((x1 :> rp), (x2 :> rf)),
               Pair (resolved_path, resolved_fragment) )
-      | `SubstAlias (x1, x2) ->
+      | `Alias (x1, x2) ->
           C
-            ( "`SubstAlias",
+            ( "`Alias",
               ((x1 :> rp), (x2 :> rf)),
               Pair (resolved_path, resolved_fragment) )
       | `Module (x1, x2) ->

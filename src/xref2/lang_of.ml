@@ -227,8 +227,8 @@ module Path = struct
     match f with
     | `Subst (p, f) ->
         `Subst (resolved_module_type map p, resolved_module_fragment map f)
-    | `SubstAlias (p, f) ->
-        `SubstAlias (resolved_module map p, resolved_module_fragment map f)
+    | `Alias (p, f) ->
+        `Alias (resolved_module map p, resolved_module_fragment map f)
     | `Module (p, n) -> `Module (resolved_signature_fragment map p, n)
     | `OpaqueModule m -> `OpaqueModule (resolved_module_fragment map m)
 
@@ -240,7 +240,7 @@ module Path = struct
     match f with
     | `Root (`ModuleType p) -> `Root (`ModuleType (resolved_module_type map p))
     | `Root (`Module p) -> `Root (`Module (resolved_module map p))
-    | (`OpaqueModule _ | `Subst _ | `SubstAlias _ | `Module _) as x ->
+    | (`OpaqueModule _ | `Subst _ | `Alias _ | `Module _) as x ->
         (resolved_module_fragment map x
           :> Odoc_model.Paths.Fragment.Resolved.Signature.t)
 
