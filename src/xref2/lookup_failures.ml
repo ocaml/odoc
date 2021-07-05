@@ -18,10 +18,8 @@ let add ~kind msg =
     | Some (`Full_loc loc) -> Error.make "%s" msg loc
     | None -> failwith "Lookup_failures: Uncaught failure."
   in
-  let non_fatal =
-    match kind with `Internal | `Warning -> false | `Root -> true
-  in
-  Error.raise_warning ~non_fatal w
+  ignore kind;
+  Error.raise_warning ~non_fatal:true w
 
 let catch_failures ~filename f =
   with_location' (`Filename_only filename) (fun () -> Error.catch_warnings f)
