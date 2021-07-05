@@ -183,7 +183,6 @@ val handle_module_type_lookup :
 
 type module_modifiers =
   [ `Aliased of Cpath.Resolved.module_
-  | `SubstAliased of Cpath.Resolved.module_
   | `SubstMT of Cpath.Resolved.module_type ]
 
 val get_module_path_modifiers :
