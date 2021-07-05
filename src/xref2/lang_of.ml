@@ -169,6 +169,9 @@ module Path = struct
     | `Substituted s -> resolved_module_type map s
     | `SubstT (p1, p2) ->
         `SubstT (resolved_module_type map p1, resolved_module_type map p2)
+    | `AliasModuleType (p1, p2) ->
+        `AliasModuleType
+          (resolved_module_type map p1, resolved_module_type map p2)
     | `CanonicalModuleType (p1, p2) ->
         `CanonicalModuleType (resolved_module_type map p1, module_type map p2)
     | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type map m)

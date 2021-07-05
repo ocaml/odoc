@@ -56,6 +56,8 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
       should_reresolve (x :> t) || should_reresolve (y :> Paths.Path.Resolved.t)
   | `SubstT (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Alias (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
+  | `AliasModuleType (x, y) ->
+      should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Type (p, _)
   | `Class (p, _)
   | `ClassType (p, _)

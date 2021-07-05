@@ -24,6 +24,7 @@ module rec Resolved : sig
     | `Identifier of Identifier.ModuleType.t
     | `ModuleType of parent * ModuleTypeName.t
     | `SubstT of module_type * module_type
+    | `AliasModuleType of module_type * module_type
     | `CanonicalModuleType of module_type * Cpath.module_type
     | `OpaqueModuleType of module_type ]
 
@@ -131,6 +132,10 @@ and resolved_module_type_path_of_cpath :
       `SubstT
         ( resolved_module_type_path_of_cpath p1,
           resolved_module_type_path_of_cpath p2 )
+  | `AliasModuleType (m1, m2) ->
+      `AliasModuleType
+        ( resolved_module_type_path_of_cpath m1,
+          resolved_module_type_path_of_cpath m2 )
   | `CanonicalModuleType (p1, p2) ->
       `CanonicalModuleType
         (resolved_module_type_path_of_cpath p1, module_type_path_of_cpath p2)
@@ -222,6 +227,7 @@ and is_resolved_module_type_substituted : Resolved.module_type -> bool =
   | `Identifier _ -> false
   | `ModuleType (a, _) -> is_resolved_parent_substituted a
   | `SubstT _ -> false
+  | `AliasModuleType (m1, _) -> is_resolved_module_type_substituted m1
   | `CanonicalModuleType (m, _) | `OpaqueModuleType m ->
       is_resolved_module_type_substituted m
 
@@ -334,6 +340,8 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
   | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
   | `SubstT (p1, p2) ->
       is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
+  | `AliasModuleType (p1, p2) ->
+      is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
   | `CanonicalModuleType (_, `Resolved _) -> false
   | `CanonicalModuleType (p, _) -> is_resolved_module_type_hidden p
   | `OpaqueModuleType m -> is_resolved_module_type_substituted m
@@ -445,6 +453,7 @@ and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
   | `ModuleType (p, n) ->
       `Dot (unresolve_resolved_parent_path p, ModuleTypeName.to_string n)
   | `SubstT (_, m) -> unresolve_resolved_module_type_path m
+  | `AliasModuleType (_, m2) -> unresolve_resolved_module_type_path m2
   | `CanonicalModuleType (p, _) -> unresolve_resolved_module_type_path p
   | `OpaqueModuleType m -> unresolve_resolved_module_type_path m
 

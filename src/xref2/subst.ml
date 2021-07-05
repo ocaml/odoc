@@ -295,6 +295,13 @@ and resolved_module_type_path :
       with
       | Not_replaced p1, Not_replaced p2 -> Not_replaced (`SubstT (p1, p2))
       | Replaced mt, _ | _, Replaced mt -> Replaced mt)
+  | `AliasModuleType (p1, p2) -> (
+      match
+        (resolved_module_type_path s p1, resolved_module_type_path s p2)
+      with
+      | Not_replaced p1, Not_replaced p2 ->
+          Not_replaced (`AliasModuleType (p1, p2))
+      | Replaced mt, _ | _, Replaced mt -> Replaced mt)
 
 and module_type_path :
     t -> Cpath.module_type -> Cpath.module_type module_type_or_replaced =

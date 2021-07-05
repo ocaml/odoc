@@ -214,6 +214,7 @@ and Resolved_path : sig
     [ `Identifier of Identifier.path_module_type
     | `SubstT of module_type * module_type
     | `CanonicalModuleType of module_type * Path.module_type
+    | `AliasModuleType of module_type * module_type
     | `ModuleType of module_ * ModuleTypeName.t
     | `OpaqueModuleType of module_type ]
   (** @canonical Odoc_model.Paths.Path.Resolved.ModuleType.t *)
@@ -240,6 +241,7 @@ and Resolved_path : sig
     | `Canonical of module_ * Path.module_
     | `Apply of module_ * module_
     | `Alias of module_ * module_
+    | `AliasModuleType of module_type * module_type
     | `OpaqueModule of module_
     | `ModuleType of module_ * ModuleTypeName.t
     | `CanonicalModuleType of module_type * Path.module_type

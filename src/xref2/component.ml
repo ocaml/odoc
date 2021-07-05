@@ -938,6 +938,9 @@ module Fmt = struct
           module_type_path m2
     | `OpaqueModuleType m ->
         Format.fprintf ppf "opaquemoduletype(%a)" resolved_module_type_path m
+    | `AliasModuleType (mt1, mt2) ->
+        Format.fprintf ppf "aliasmoduletype(%a,%a)" resolved_module_type_path
+          mt1 resolved_module_type_path mt2
     | `SubstT (mt1, mt2) ->
         Format.fprintf ppf "subst(%a,%a)" resolved_module_type_path mt1
           resolved_module_type_path mt2
@@ -1081,6 +1084,11 @@ module Fmt = struct
           (Odoc_model.Names.TypeName.to_string name)
     | `Alias (path, realpath) ->
         Format.fprintf ppf "alias(%a,%a)" model_resolved_path
+          (path :> t)
+          model_resolved_path
+          (realpath :> t)
+    | `AliasModuleType (path, realpath) ->
+        Format.fprintf ppf "aliasmoduletype(%a,%a)" model_resolved_path
           (path :> t)
           model_resolved_path
           (realpath :> t)
@@ -1696,6 +1704,10 @@ module Of_Lang = struct
           (resolved_module_type_path ident_map p1, module_type_path ident_map p2)
     | `OpaqueModuleType m ->
         `OpaqueModuleType (resolved_module_type_path ident_map m)
+    | `AliasModuleType (m1, m2) ->
+        `AliasModuleType
+          ( resolved_module_type_path ident_map m1,
+            resolved_module_type_path ident_map m2 )
     | `SubstT (p1, p2) ->
         `SubstT
           ( resolved_module_type_path ident_map p1,
