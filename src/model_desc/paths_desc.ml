@@ -212,6 +212,11 @@ module General_paths = struct
             ( "`Alias",
               ((x1 :> rp), (x2 :> rp)),
               Pair (resolved_path, resolved_path) )
+      | `AliasModuleType (x1, x2) ->
+          C
+            ( "`AliasModuleType",
+              ((x1 :> rp), (x2 :> rp)),
+              Pair (resolved_path, resolved_path) )
       | `OpaqueModule x -> C ("`OpaqueModule", (x :> rp), resolved_path)
       | `ModuleType (x1, x2) ->
           C

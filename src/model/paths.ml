@@ -457,6 +457,8 @@ module Path = struct
       | `ClassType (p, _) -> inner (p : module_ :> any)
       | `Alias (p1, p2) ->
           inner (p1 : module_ :> any) && inner (p2 : module_ :> any)
+      | `AliasModuleType (p1, p2) ->
+          inner (p1 : module_type :> any) && inner (p2 : module_type :> any)
       | `SubstT (p1, p2) -> inner (p1 :> any) || inner (p2 :> any)
       | `CanonicalModuleType (_, `Resolved _) -> false
       | `CanonicalModuleType (x, _) -> inner (x : module_type :> any)
@@ -492,6 +494,10 @@ module Path = struct
       | `CanonicalModuleType (_, `Resolved p) -> parent_module_type_identifier p
       | `CanonicalModuleType (p, _) -> parent_module_type_identifier p
       | `OpaqueModuleType mt -> parent_module_type_identifier mt
+      | `AliasModuleType (sub, orig) ->
+          if is_path_hidden (`Resolved (sub :> t)) then
+            parent_module_type_identifier orig
+          else parent_module_type_identifier sub
 
     and parent_module_identifier :
         Paths_types.Resolved_path.module_ -> Identifier.Signature.t = function
@@ -564,6 +570,10 @@ module Path = struct
         | `CanonicalModuleType (_, `Resolved p) -> identifier p
         | `CanonicalModuleType (p, _) -> identifier p
         | `OpaqueModuleType mt -> identifier mt
+        | `AliasModuleType (sub, orig) ->
+            if is_path_hidden (`Resolved (sub :> Paths_types.Resolved_path.any))
+            then identifier orig
+            else identifier sub
 
       let rec canonical_ident : t -> Identifier.ModuleType.t option = function
         | `Identifier _id -> None
@@ -572,6 +582,7 @@ module Path = struct
             | Some x -> Some (`ModuleType ((x :> Identifier.Signature.t), n))
             | None -> None)
         | `SubstT (_, _) -> None
+        | `AliasModuleType (_, _) -> None
         | `CanonicalModuleType (_, `Resolved p) -> Some (identifier p)
         | `CanonicalModuleType (_, _) -> None
         | `OpaqueModuleType m -> canonical_ident (m :> t)
@@ -637,6 +648,9 @@ module Path = struct
       | `Class (m, n) -> `Class (parent_module_identifier m, n)
       | `ClassType (m, n) -> `ClassType (parent_module_identifier m, n)
       | `Alias (sub, orig) ->
+          if is_path_hidden (`Resolved (sub :> t)) then identifier (orig :> t)
+          else identifier (sub :> t)
+      | `AliasModuleType (sub, orig) ->
           if is_path_hidden (`Resolved (sub :> t)) then identifier (orig :> t)
           else identifier (sub :> t)
       | `SubstT (p, _) -> identifier (p :> t)

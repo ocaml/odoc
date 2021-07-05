@@ -571,6 +571,7 @@ and lookup_module_type :
         lookup_parent ~mark_substituted:true env parent
         |> map_error (fun e -> (e :> simple_module_type_lookup_error))
         >>= fun (sg, sub) -> find_in_sg sg sub
+    | `AliasModuleType (_, mt) -> lookup_module_type ~mark_substituted env mt
     | `OpaqueModuleType m -> lookup_module_type ~mark_substituted env m
   in
   lookup env
@@ -1074,6 +1075,9 @@ and reresolve_module_type :
         (reresolve_module_type env p1, handle_canonical_module_type env p2)
   | `SubstT (p1, p2) ->
       `SubstT (reresolve_module_type env p1, reresolve_module_type env p2)
+  | `AliasModuleType (p1, p2) ->
+      `AliasModuleType
+        (reresolve_module_type env p1, reresolve_module_type env p2)
   | `OpaqueModuleType m -> `OpaqueModuleType (reresolve_module_type env m)
 
 and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
@@ -1586,6 +1590,14 @@ and find_external_module_type_path :
   | `CanonicalModuleType (x, _) | `Substituted x ->
       find_external_module_type_path x >>= fun x -> Some (`Substituted x)
   | `Identifier _ -> Some p
+  | `AliasModuleType (x, y) -> (
+      match
+        (find_external_module_type_path x, find_external_module_type_path y)
+      with
+      | Some x, Some y -> Some (`AliasModuleType (x, y))
+      | Some x, None -> Some x
+      | None, Some x -> Some x
+      | None, None -> None)
   | `OpaqueModuleType m ->
       find_external_module_type_path m >>= fun x -> Some (`OpaqueModuleType x)
 
