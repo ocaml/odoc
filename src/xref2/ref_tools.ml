@@ -158,10 +158,6 @@ module M = struct
     let p, r =
       match Tools.get_module_path_modifiers env ~add_canonical:true m with
       | None -> (base_path, base_ref)
-      | Some (`SubstAliased cp) ->
-          let cp = Tools.reresolve_module env cp in
-          let p = Lang_of.(Path.resolved_module empty cp) in
-          (`SubstAlias (cp, base_path), `SubstAlias (p, base_ref))
       | Some (`Aliased cp) ->
           let cp = Tools.reresolve_module env cp in
           let p = Lang_of.(Path.resolved_module empty cp) in

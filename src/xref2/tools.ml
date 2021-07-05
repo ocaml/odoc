@@ -8,7 +8,6 @@ type ('a, 'b) either = Left of 'a | Right of 'b
 
 type module_modifiers =
   [ `Aliased of Cpath.Resolved.module_
-  | `SubstAliased of Cpath.Resolved.module_
   | `SubstMT of Cpath.Resolved.module_type ]
 
 let core_types =
@@ -466,7 +465,6 @@ and process_module_path env ~add_canonical m p =
   let p' =
     match get_module_path_modifiers env ~add_canonical m with
     | None -> p
-    | Some (`SubstAliased p') -> `SubstAlias (p', p)
     | Some (`Aliased p') -> `Alias (p', p)
     | Some (`SubstMT p') -> `Subst (p', p)
   in
@@ -1698,9 +1696,6 @@ and resolve_signature_fragment :
         | None ->
             (* Format.fprintf Format.err_formatter "No modifier for frag %a\n%!" Component.Fmt.resolved_signature_fragment new_frag; *)
             (new_path, new_frag)
-        | Some (`SubstAliased p') ->
-            (* Format.fprintf Format.err_formatter "SubstAlias for frag %a\n%!" Component.Fmt.resolved_signature_fragment new_frag; *)
-            (`SubstAlias (p', new_path), `SubstAlias (p', new_frag))
         | Some (`Aliased p') ->
             (* Format.fprintf Format.err_formatter "Alias for frag %a\n%!" Component.Fmt.resolved_signature_fragment new_frag; *)
             (`Alias (p', new_path), `SubstAlias (p', new_frag))
@@ -1733,7 +1728,6 @@ and resolve_module_fragment :
       let f' =
         match modifier with
         | None -> new_frag
-        | Some (`SubstAliased p') -> `SubstAlias (p', new_frag)
         | Some (`Aliased p') -> `SubstAlias (p', new_frag)
         | Some (`SubstMT p') -> `Subst (p', new_frag)
       in
