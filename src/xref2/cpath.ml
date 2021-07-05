@@ -307,7 +307,7 @@ and is_resolved_module_hidden :
     | `Substituted p | `Apply (p, _) -> inner p
     | `Module (p, _) -> is_resolved_parent_hidden ~weak_canonical_test p
     | `Subst (p1, p2) -> is_resolved_module_type_hidden p1 || inner p2
-    | `SubstAlias (p1, p2) | `Alias (p1, p2) -> inner p1 || inner p2
+    | `Alias (p1, p2) -> inner p1 || inner p2
     | `OpaqueModule m -> inner m
   in
   inner
@@ -391,7 +391,7 @@ let rec resolved_module_of_resolved_module_reference :
       `Module
         (`Module (resolved_module_of_resolved_signature_reference parent), name)
   | `Identifier i -> `Identifier i
-  | `SubstAlias (_m1, _m2) -> failwith "gah"
+  | `Alias (_m1, _m2) -> failwith "gah"
   | `Hidden s -> `Hidden (resolved_module_of_resolved_module_reference s)
   | `Canonical (m1, m2) ->
       `Canonical
@@ -401,7 +401,7 @@ let rec resolved_module_of_resolved_module_reference :
 and resolved_module_of_resolved_signature_reference :
     Reference.Resolved.Signature.t -> Resolved.module_ = function
   | `Identifier (#Identifier.Module.t as i) -> `Identifier i
-  | (`SubstAlias _ | `Canonical _ | `Module _ | `Hidden _) as r' ->
+  | (`Alias _ | `Canonical _ | `Module _ | `Hidden _) as r' ->
       resolved_module_of_resolved_module_reference r'
   | `ModuleType (_, n) ->
       failwith ("Not a module reference: " ^ ModuleTypeName.to_string n)

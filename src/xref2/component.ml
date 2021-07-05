@@ -1239,7 +1239,7 @@ module Fmt = struct
           (path :> Odoc_model.Paths.Path.Resolved.t)
           model_resolved_fragment
           (m :> t)
-    | `SubstAlias (_, _) -> Format.fprintf ppf "UNIMPLEMENTED subst alias!?"
+    | `Alias (_, _) -> Format.fprintf ppf "UNIMPLEMENTED subst alias!?"
     | `Class (sg, c) ->
         Format.fprintf ppf "%a.%s" model_resolved_fragment
           (sg :> t)
@@ -1260,7 +1260,7 @@ module Fmt = struct
   and resolved_signature_fragment ppf (f : Cfrag.resolved_signature) =
     match f with
     | `Root r -> Format.fprintf ppf "%a" resolved_root_fragment r
-    | (`Subst _ | `SubstAlias _ | `Module _) as x ->
+    | (`Subst _ | `Alias _ | `Module _) as x ->
         resolved_module_fragment ppf x
     | `OpaqueModule m ->
         Format.fprintf ppf "opaquemodule(%a)" resolved_module_fragment m
@@ -1270,7 +1270,7 @@ module Fmt = struct
     | `Subst (s, f) ->
         Format.fprintf ppf "subst(%a,%a)" resolved_module_type_path s
           resolved_module_fragment f
-    | `SubstAlias (m, f) ->
+    | `Alias (m, f) ->
         Format.fprintf ppf "substalias(%a,%a)" resolved_module_path m
           resolved_module_fragment f
     | `Module (p, n) ->
@@ -1373,7 +1373,7 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" model_resolved_reference
           (parent :> t)
           (InstanceVariableName.to_string name)
-    | `SubstAlias (x, y) ->
+    | `Alias (x, y) ->
         Format.fprintf ppf "substalias(%a,%a)" model_resolved_path
           (x :> Odoc_model.Paths.Path.Resolved.t)
           model_resolved_reference
@@ -1791,7 +1791,7 @@ module Of_Lang = struct
         `Root (`ModuleType (resolved_module_type_path ident_map path))
     | `Root (`Module path) ->
         `Root (`Module (resolved_module_path ident_map path))
-    | (`SubstAlias _ | `Subst _ | `Module _ | `OpaqueModule _) as x ->
+    | (`Alias _ | `Subst _ | `Module _ | `OpaqueModule _) as x ->
         (resolved_module_fragment ident_map x :> Cfrag.resolved_signature)
 
   and resolved_module_fragment :
@@ -1803,8 +1803,8 @@ module Of_Lang = struct
         `Subst
           ( resolved_module_type_path ident_map p,
             resolved_module_fragment ident_map m )
-    | `SubstAlias (p, m) ->
-        `SubstAlias
+    | `Alias (p, m) ->
+        `Alias
           ( resolved_module_path ident_map p,
             resolved_module_fragment ident_map m )
     | `Module (p, m) -> `Module (resolved_signature_fragment ident_map p, m)

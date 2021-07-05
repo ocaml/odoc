@@ -29,7 +29,7 @@ module Reference = struct
     let open Reference.Resolved in
     match r with
     | `Identifier id -> Identifier.name id
-    | `SubstAlias (_, r) -> render_resolved (r :> t)
+    | `Alias (_, r) -> render_resolved (r :> t)
     | `Module (r, s) -> render_resolved (r :> t) ^ "." ^ ModuleName.to_string s
     | `Canonical (_, `Resolved r) -> render_resolved (r :> t)
     | `Canonical (p, _) -> render_resolved (p :> t)

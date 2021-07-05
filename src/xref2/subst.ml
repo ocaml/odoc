@@ -432,7 +432,7 @@ let rec resolved_signature_fragment :
       in
       `Root (`ModuleType p)
   | `Root (`Module p) -> `Root (`Module (resolved_module_path t p))
-  | (`Subst _ | `SubstAlias _ | `OpaqueModule _ | `Module _) as x ->
+  | (`Subst _ | `Alias _ | `OpaqueModule _ | `Module _) as x ->
       (resolved_module_fragment t x :> Cfrag.resolved_signature)
 
 and resolved_module_fragment :
@@ -449,8 +449,8 @@ and resolved_module_fragment :
             assert false
       in
       `Subst (p, resolved_module_fragment t f)
-  | `SubstAlias (m, f) ->
-      `SubstAlias (resolved_module_path t m, resolved_module_fragment t f)
+  | `Alias (m, f) ->
+      `Alias (resolved_module_path t m, resolved_module_fragment t f)
   | `Module (sg, n) -> `Module (resolved_signature_fragment t sg, n)
   | `OpaqueModule m -> `OpaqueModule (resolved_module_fragment t m)
 

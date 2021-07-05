@@ -120,7 +120,7 @@ and `Resolved_path.module_` is:
 type module_ = [
   | `Identifier of Identifier.path_module
   | `Subst of module_type * module_
-  | `SubstAlias of module_ * module_
+  | `Alias of module_ * module_
   | `Hidden of module_
   | `Module of module_ * ModuleName.t
   | `Canonical of module_ * Path.module_

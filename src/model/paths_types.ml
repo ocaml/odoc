@@ -293,14 +293,14 @@ and Resolved_fragment : sig
   type signature =
     [ `Root of root
     | `Subst of Resolved_path.module_type * module_
-    | `SubstAlias of Resolved_path.module_ * module_
+    | `Alias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `OpaqueModule of module_ ]
   (** @canonical Odoc_model.Paths.Fragment.Resolved.Signature.t *)
 
   and module_ =
     [ `Subst of Resolved_path.module_type * module_
-    | `SubstAlias of Resolved_path.module_ * module_
+    | `Alias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `OpaqueModule of module_ ]
   (** @canonical Odoc_model.Paths.Fragment.Resolved.Module.t *)
@@ -321,7 +321,7 @@ and Resolved_fragment : sig
   type any =
     [ `Root of root
     | `Subst of Resolved_path.module_type * module_
-    | `SubstAlias of Resolved_path.module_ * module_
+    | `Alias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `Module_type of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
@@ -589,7 +589,7 @@ and Resolved_reference : sig
   and module_ =
     [ `Identifier of Identifier.path_module
     | `Hidden of module_
-    | `SubstAlias of Resolved_path.module_ * module_
+    | `Alias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `Canonical of module_ * Reference.module_ ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Module.t *)
@@ -598,7 +598,7 @@ and Resolved_reference : sig
   and signature =
     [ `Identifier of Identifier.signature
     | `Hidden of module_
-    | `SubstAlias of Resolved_path.module_ * module_
+    | `Alias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `Canonical of module_ * Reference.module_
     | `ModuleType of signature * ModuleTypeName.t ]
@@ -613,7 +613,7 @@ and Resolved_reference : sig
   (* parent is [ signature | class_signature ] *)
   and parent =
     [ `Identifier of Identifier.parent
-    | `SubstAlias of Resolved_path.module_ * module_
+    | `Alias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `Hidden of module_
     | `Canonical of module_ * Reference.module_
@@ -627,7 +627,7 @@ and Resolved_reference : sig
      is that the Identifier allows more types *)
   and label_parent =
     [ `Identifier of Identifier.label_parent
-    | `SubstAlias of Resolved_path.module_ * module_
+    | `Alias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `Hidden of module_
     | `Canonical of module_ * Reference.module_
@@ -708,7 +708,7 @@ and Resolved_reference : sig
 
   type any =
     [ `Identifier of Identifier.any
-    | `SubstAlias of Resolved_path.module_ * module_
+    | `Alias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `Hidden of module_
     | `Canonical of module_ * Reference.module_

@@ -693,7 +693,7 @@ module Fragment = struct
         = function
       | `Root i -> Base i
       | `Subst (_, p) -> split_parent (sig_of_mod p)
-      | `SubstAlias (_, p) -> split_parent (sig_of_mod p)
+      | `Alias (_, p) -> split_parent (sig_of_mod p)
       | `OpaqueModule m -> split_parent (sig_of_mod m)
       | `Module (p, name) -> (
           match split_parent p with
@@ -706,7 +706,7 @@ module Fragment = struct
       let rec split : t -> string * t option = function
         | `Root _ -> ("", None)
         | `Subst (_, p) -> split (sig_of_mod p)
-        | `SubstAlias (_, p) -> split (sig_of_mod p)
+        | `Alias (_, p) -> split (sig_of_mod p)
         | `OpaqueModule m -> split (sig_of_mod m)
         | `Module (m, name) -> (
             match split_parent m with
@@ -721,7 +721,7 @@ module Fragment = struct
             (Path.Resolved.Module.identifier i :> Identifier.Signature.t)
         | `Subst (s, _) ->
             (Path.Resolved.ModuleType.identifier s :> Identifier.Signature.t)
-        | `SubstAlias (i, _) ->
+        | `Alias (i, _) ->
             (Path.Resolved.Module.identifier i :> Identifier.Signature.t)
         | `Module (m, n) -> `Module (identifier m, n)
         | `OpaqueModule m -> identifier (sig_of_mod m)
@@ -732,7 +732,7 @@ module Fragment = struct
 
       let rec split : t -> string * t option = function
         | `Subst (_, p) -> split p
-        | `SubstAlias (_, p) -> split p
+        | `Alias (_, p) -> split p
         | `Module (m, name) -> (
             match split_parent m with
             | Base _ -> (ModuleName.to_string name, None)
@@ -779,7 +779,7 @@ module Fragment = struct
       | `Root (`ModuleType _r) -> assert false
       | `Root (`Module _r) -> assert false
       | `Subst (s, _) -> Path.Resolved.identifier (s :> Path.Resolved.t)
-      | `SubstAlias (p, _) ->
+      | `Alias (p, _) ->
           (Path.Resolved.Module.identifier p :> Identifier.t)
       | `Module (m, n) -> `Module (Signature.identifier m, n)
       | `Module_type (m, n) -> `ModuleType (Signature.identifier m, n)
@@ -792,7 +792,7 @@ module Fragment = struct
       | `Root (`ModuleType r) -> Path.is_resolved_hidden (r :> Path.Resolved.t)
       | `Root (`Module r) -> Path.is_resolved_hidden (r :> Path.Resolved.t)
       | `Subst (s, _) -> Path.is_resolved_hidden (s :> Path.Resolved.t)
-      | `SubstAlias (s, _) -> Path.is_resolved_hidden (s :> Path.Resolved.t)
+      | `Alias (s, _) -> Path.is_resolved_hidden (s :> Path.Resolved.t)
       | `Module (m, _)
       | `Module_type (m, _)
       | `Type (m, _)
@@ -894,7 +894,7 @@ module Reference = struct
       function
       | `Identifier id -> id
       | `Hidden s -> parent_signature_identifier (s :> signature)
-      | `SubstAlias (sub, orig) ->
+      | `Alias (sub, orig) ->
           if Path.Resolved.Module.is_hidden sub then
             parent_signature_identifier (orig :> signature)
           else (Path.Resolved.Module.identifier sub :> Identifier.Signature.t)
@@ -917,7 +917,7 @@ module Reference = struct
 
     and parent_identifier : parent -> Identifier.Parent.t = function
       | `Identifier id -> id
-      | (`Hidden _ | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _)
+      | (`Hidden _ | `Alias _ | `Module _ | `Canonical _ | `ModuleType _)
         as sg ->
           (parent_signature_identifier sg :> Identifier.Parent.t)
       | `Type _ as t -> (parent_type_identifier t :> Identifier.Parent.t)
@@ -927,13 +927,13 @@ module Reference = struct
     and label_parent_identifier : label_parent -> Identifier.LabelParent.t =
       function
       | `Identifier id -> id
-      | ( `Hidden _ | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _
+      | ( `Hidden _ | `Alias _ | `Module _ | `Canonical _ | `ModuleType _
         | `Type _ | `Class _ | `ClassType _ ) as r ->
           (parent_identifier r :> Identifier.LabelParent.t)
 
     and identifier : t -> Identifier.t = function
       | `Identifier id -> id
-      | ( `SubstAlias _ | `Module _ | `Canonical _ | `Hidden _ | `Type _
+      | ( `Alias _ | `Module _ | `Canonical _ | `Hidden _ | `Type _
         | `Class _ | `ClassType _ | `ModuleType _ ) as r ->
           (label_parent_identifier r :> Identifier.t)
       | `Field (p, n) -> `Field (parent_identifier p, n)

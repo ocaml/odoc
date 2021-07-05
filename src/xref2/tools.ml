@@ -1608,9 +1608,9 @@ and fixup_module_cfrag (f : Cfrag.resolved_module) : Cfrag.resolved_module =
       match find_external_module_type_path path with
       | Some p -> `Subst (p, frag)
       | None -> frag)
-  | `SubstAlias (path, frag) -> (
+  | `Alias (path, frag) -> (
       match find_external_module_path path with
-      | Some p -> `SubstAlias (p, frag)
+      | Some p -> `Alias (p, frag)
       | None -> frag)
   | `Module (parent, name) -> `Module (fixup_signature_cfrag parent, name)
   | `OpaqueModule m -> `OpaqueModule (fixup_module_cfrag m)
@@ -1624,7 +1624,7 @@ and fixup_module_type_cfrag (f : Cfrag.resolved_module_type) :
 and fixup_signature_cfrag (f : Cfrag.resolved_signature) =
   match f with
   | `Root x -> `Root x
-  | (`OpaqueModule _ | `Subst _ | `SubstAlias _ | `Module _) as f ->
+  | (`OpaqueModule _ | `Subst _ | `Alias _ | `Module _) as f ->
       (fixup_module_cfrag f :> Cfrag.resolved_signature)
 
 and fixup_type_cfrag (f : Cfrag.resolved_type) : Cfrag.resolved_type =
@@ -1689,7 +1689,7 @@ and resolve_signature_fragment :
             (new_path, new_frag)
         | Some (`Aliased p') ->
             (* Format.fprintf Format.err_formatter "Alias for frag %a\n%!" Component.Fmt.resolved_signature_fragment new_frag; *)
-            (`Alias (p', new_path), `SubstAlias (p', new_frag))
+            (`Alias (p', new_path), `Alias (p', new_frag))
         | Some (`SubstMT p') ->
             (* Format.fprintf Format.err_formatter "SubstMT for frag %a\n%!" Component.Fmt.resolved_signature_fragment new_frag; *)
             (`Subst (p', new_path), `Subst (p', new_frag))
@@ -1719,7 +1719,7 @@ and resolve_module_fragment :
       let f' =
         match modifier with
         | None -> new_frag
-        | Some (`Aliased p') -> `SubstAlias (p', new_frag)
+        | Some (`Aliased p') -> `Alias (p', new_frag)
         | Some (`SubstMT p') -> `Subst (p', new_frag)
       in
       let f'' =
@@ -1779,7 +1779,7 @@ let rec reresolve_signature_fragment :
   match m with
   | `Root (`ModuleType p) -> `Root (`ModuleType (reresolve_module_type env p))
   | `Root (`Module p) -> `Root (`Module (reresolve_module env p))
-  | (`OpaqueModule _ | `Subst _ | `SubstAlias _ | `Module _) as x ->
+  | (`OpaqueModule _ | `Subst _ | `Alias _ | `Module _) as x ->
       (reresolve_module_fragment env x :> Cfrag.resolved_signature)
 
 and reresolve_module_fragment :
@@ -1789,9 +1789,9 @@ and reresolve_module_fragment :
   | `Subst (p, f) ->
       let p' = reresolve_module_type env p in
       `Subst (p', reresolve_module_fragment env f)
-  | `SubstAlias (p, f) ->
+  | `Alias (p, f) ->
       let p' = reresolve_module env p in
-      `SubstAlias (p', reresolve_module_fragment env f)
+      `Alias (p', reresolve_module_fragment env f)
   | `OpaqueModule m -> `OpaqueModule (reresolve_module_fragment env m)
   | `Module (sg, m) -> `Module (reresolve_signature_fragment env sg, m)
 
