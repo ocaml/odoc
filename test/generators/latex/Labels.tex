@@ -1,0 +1,58 @@
+\section{Module \ocamlinlinecode{Labels}}\label{module-Labels}%
+\subsection{Attached to unit\label{L1}}%
+\subsection{Attached to nothing\label{L2}}%
+\label{module-Labels-module-A}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Labels-module-A]{\ocamlinlinecode{A}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\subsubsection{Attached to module\label{L3}}%
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Labels-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\begin{ocamlindent}Attached to type\end{ocamlindent}%
+\medbreak
+\label{module-Labels-val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : \hyperref[module-Labels-type-t]{\ocamlinlinecode{t}}}\begin{ocamlindent}Attached to value\end{ocamlindent}%
+\medbreak
+\label{module-Labels-val-e}\ocamlcodefragment{\ocamltag{keyword}{val} e : unit \ocamltag{arrow}{$\rightarrow$} \hyperref[module-Labels-type-t]{\ocamlinlinecode{t}}}\begin{ocamlindent}Attached to external\end{ocamlindent}%
+\medbreak
+\label{module-Labels-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Labels-module-type-S]{\ocamlinlinecode{S}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\subsubsection{Attached to module type\label{L6}}%
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Labels-class-c}\ocamlcodefragment{\ocamltag{keyword}{class}  \hyperref[module-Labels-class-c]{\ocamlinlinecode{c}}}\ocamlcodefragment{ : \ocamltag{keyword}{object} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Labels-class-type-cs}\ocamlcodefragment{\ocamltag{keyword}{class} \ocamltag{keyword}{type}  \hyperref[module-Labels-class-type-cs]{\ocamlinlinecode{cs}}}\ocamlcodefragment{ = \ocamltag{keyword}{object}}\begin{ocamlindent}\subsubsection{Attached to class type\label{L7}}%
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Labels-exception-E}\ocamlcodefragment{\ocamltag{keyword}{exception} \ocamltag{exception}{E}}\begin{ocamlindent}Attached to exception\end{ocamlindent}%
+\medbreak
+\label{module-Labels-type-x}\ocamlcodefragment{\ocamltag{keyword}{type} x = .\allowbreak{}.\allowbreak{}}\\
+\label{module-Labels-extension-decl-X}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Labels-type-x]{\ocamlinlinecode{x}} += }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{X}}\label{module-Labels-extension-X}\\
+\end{ocamltabular}%
+\\
+\begin{ocamlindent}Attached to extension\end{ocamlindent}%
+\medbreak
+\label{module-Labels-module-S}\ocamlcodefragment{\ocamltag{keyword}{module} S := \hyperref[module-Labels-module-A]{\ocamlinlinecode{A}}}\begin{ocamlindent}Attached to module subst\end{ocamlindent}%
+\medbreak
+\label{module-Labels-type-s}\ocamlcodefragment{\ocamltag{keyword}{type} s := \hyperref[module-Labels-type-t]{\ocamlinlinecode{t}}}\begin{ocamlindent}Attached to type subst\end{ocamlindent}%
+\medbreak
+\label{module-Labels-type-u}\ocamlcodefragment{\ocamltag{keyword}{type} u = }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A'}}\label{module-Labels-type-u.A'}& Attached to constructor\\
+\end{ocamltabular}%
+\\
+\label{module-Labels-type-v}\ocamlcodefragment{\ocamltag{keyword}{type} v = \{}\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{f : \hyperref[module-Labels-type-t]{\ocamlinlinecode{t}};\allowbreak{}}\label{module-Labels-type-v.f}& Attached to field\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+Testing that labels can be referenced
+
+\begin{itemize}\item{\hyperref[module-Labels-L1]{\ocamlinlinecode{Attached to unit}[p\pageref*{module-Labels-L1}]}}%
+\item{\hyperref[module-Labels-L2]{\ocamlinlinecode{Attached to nothing}[p\pageref*{module-Labels-L2}]}}%
+\item{\hyperref[module-Labels-L3]{\ocamlinlinecode{Attached to module}[p\pageref*{module-Labels-L3}]}}%
+\item{\hyperref[module-Labels-L4]{\ocamlinlinecode{Attached to type}[p\pageref*{module-Labels-L4}]}}%
+\item{\hyperref[module-Labels-L5]{\ocamlinlinecode{Attached to value}[p\pageref*{module-Labels-L5}]}}%
+\item{\hyperref[module-Labels-L6]{\ocamlinlinecode{Attached to class}[p\pageref*{module-Labels-L6}]}}%
+\item{\hyperref[module-Labels-L7]{\ocamlinlinecode{Attached to class type}[p\pageref*{module-Labels-L7}]}}%
+\item{\hyperref[module-Labels-L8]{\ocamlinlinecode{Attached to exception}[p\pageref*{module-Labels-L8}]}}%
+\item{\hyperref[module-Labels-L9]{\ocamlinlinecode{Attached to extension}[p\pageref*{module-Labels-L9}]}}%
+\item{\hyperref[module-Labels-L10]{\ocamlinlinecode{Attached to module subst}[p\pageref*{module-Labels-L10}]}}%
+\item{\hyperref[module-Labels-L11]{\ocamlinlinecode{Attached to type subst}[p\pageref*{module-Labels-L11}]}}%
+\item{\hyperref[module-Labels-L12]{\ocamlinlinecode{Attached to constructor}[p\pageref*{module-Labels-L12}]}}%
+\item{\hyperref[module-Labels-L13]{\ocamlinlinecode{Attached to field}[p\pageref*{module-Labels-L13}]}}\end{itemize}%
+
+\input{Labels.c.tex}

@@ -1,0 +1,78 @@
+\section{Module \ocamlinlinecode{Recent}}\label{module-Recent}%
+\label{module-Recent-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Recent-module-type-S]{\ocamlinlinecode{S}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Recent-module-type-S1}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Recent-module-type-S1]{\ocamlinlinecode{S1}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\subsubsection{Parameters\label{parameters}}%
+\label{module-Recent-module-type-S1-argument-1-+u+}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Recent-module-type-S1-argument-1-+u+]{\ocamlinlinecode{\_\allowbreak{}}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\subsubsection{Signature\label{signature}}%
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Recent-type-variant}\ocamlcodefragment{\ocamltag{keyword}{type} variant = }\begin{ocamlindent}\ocamlcodefragment{| \ocamltag{constructor}{A}}\label{module-Recent-type-variant.A}%
+\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{| \ocamltag{constructor}{B} \ocamltag{keyword}{of} int}\label{module-Recent-type-variant.B}%
+\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{| \ocamltag{constructor}{C}}\label{module-Recent-type-variant.C}%
+\begin{ocamlindent}foo\end{ocamlindent}%
+\ocamlcodefragment{| \ocamltag{constructor}{D}}\label{module-Recent-type-variant.D}%
+\begin{ocamlindent}\emph{bar}\end{ocamlindent}%
+\ocamlcodefragment{| \ocamltag{constructor}{E} \ocamltag{keyword}{of} \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{module-Recent-type-variant.a}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\label{module-Recent-type-variant.E}%
+\begin{ocamlindent}\end{ocamlindent}%
+\end{ocamlindent}%
+\label{module-Recent-type-gadt}\ocamlcodefragment{\ocamltag{keyword}{type} \_\allowbreak{} gadt = }\begin{ocamlindent}\ocamlcodefragment{| \ocamltag{constructor}{A} : int \hyperref[module-Recent-type-gadt]{\ocamlinlinecode{gadt}}}\label{module-Recent-type-gadt.A}%
+\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{| \ocamltag{constructor}{B} : int \ocamltag{arrow}{$\rightarrow$} string \hyperref[module-Recent-type-gadt]{\ocamlinlinecode{gadt}}}\label{module-Recent-type-gadt.B}%
+\begin{ocamlindent}foo\end{ocamlindent}%
+\ocamlcodefragment{| \ocamltag{constructor}{C} : \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{module-Recent-type-gadt.a}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\} \ocamltag{arrow}{$\rightarrow$} unit \hyperref[module-Recent-type-gadt]{\ocamlinlinecode{gadt}}}\label{module-Recent-type-gadt.C}%
+\begin{ocamlindent}\end{ocamlindent}%
+\end{ocamlindent}%
+\label{module-Recent-type-polymorphic+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} polymorphic\_\allowbreak{}variant = [ }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A}\label{module-Recent-type-polymorphic+u+variant.A}& \\
+\ocamlinlinecode{| }\ocamlinlinecode{`B \ocamltag{keyword}{of} int}\label{module-Recent-type-polymorphic+u+variant.B}& \\
+\ocamlinlinecode{| }\ocamlinlinecode{`C}\label{module-Recent-type-polymorphic+u+variant.C}& foo\\
+\ocamlinlinecode{| }\ocamlinlinecode{`D}\label{module-Recent-type-polymorphic+u+variant.D}& bar\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\\
+\label{module-Recent-type-empty+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} empty\_\allowbreak{}variant = |}\\
+\label{module-Recent-type-nonrec+u+}\ocamlcodefragment{\ocamltag{keyword}{type} \ocamltag{keyword}{nonrec} nonrec\_\allowbreak{} = int}\\
+\label{module-Recent-type-empty+u+conj}\ocamlcodefragment{\ocamltag{keyword}{type} empty\_\allowbreak{}conj = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{X} : [< `X of \& \ocamltag{type-var}{'a} \& int * float ] \ocamltag{arrow}{$\rightarrow$} \hyperref[module-Recent-type-empty+u+conj]{\ocamlinlinecode{empty\_\allowbreak{}conj}}}\label{module-Recent-type-empty+u+conj.X}\\
+\end{ocamltabular}%
+\\
+\label{module-Recent-type-conj}\ocamlcodefragment{\ocamltag{keyword}{type} conj = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{X} : [< `X of int \& [< `B of int \& float ] ] \ocamltag{arrow}{$\rightarrow$} \hyperref[module-Recent-type-conj]{\ocamlinlinecode{conj}}}\label{module-Recent-type-conj.X}\\
+\end{ocamltabular}%
+\\
+\label{module-Recent-val-empty+u+conj}\ocamlcodefragment{\ocamltag{keyword}{val} empty\_\allowbreak{}conj : [< `X of \& \ocamltag{type-var}{'a} \& int * float ]}\\
+\label{module-Recent-val-conj}\ocamlcodefragment{\ocamltag{keyword}{val} conj : [< `X of int \& [< `B of int \& float ] ]}\\
+\label{module-Recent-module-Z}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Recent-module-Z]{\ocamlinlinecode{Z}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Recent-module-Z-module-Y}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Recent-module-Z-module-Y]{\ocamlinlinecode{Y}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Recent-module-Z-module-Y-module-X}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Recent-module-Z-module-Y-module-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Recent-module-Z-module-Y-module-X-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Recent-module-X}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Recent-module-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Recent-module-X-module-L}\ocamlcodefragment{\ocamltag{keyword}{module} L := \hyperref[module-Recent-module-Z-module-Y]{\ocamlinlinecode{Z.\allowbreak{}Y}}}\\
+\label{module-Recent-module-X-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = int \hyperref[module-Recent-module-Z-module-Y-module-X-type-t]{\ocamlinlinecode{Z.\allowbreak{}Y.\allowbreak{}X.\allowbreak{}t}}}\\
+\label{module-Recent-module-X-type-u}\ocamlcodefragment{\ocamltag{keyword}{type} u := int}\\
+\label{module-Recent-module-X-type-v}\ocamlcodefragment{\ocamltag{keyword}{type} v = \hyperref[module-Recent-module-X-type-u]{\ocamlinlinecode{u}} \hyperref[module-Recent-module-Z-module-Y-module-X-type-t]{\ocamlinlinecode{Z.\allowbreak{}Y.\allowbreak{}X.\allowbreak{}t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Recent-module-type-PolyS}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Recent-module-type-PolyS]{\ocamlinlinecode{PolyS}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Recent-module-type-PolyS-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A}\label{module-Recent-module-type-PolyS-type-t.A}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`B}\label{module-Recent-module-type-PolyS-type-t.B}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+
+
