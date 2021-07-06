@@ -620,16 +620,38 @@ and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
  fun env id expr ->
   let open ModuleType in
-  let do_expn e =
-    Opt.map (simple_expansion env (id :> Paths.Identifier.Signature.t)) e
+  let do_expn cur (e : Paths.Path.ModuleType.t option) =
+    match cur, e with
+    | Some e, _ -> Some (simple_expansion env (id :> Paths.Identifier.Signature.t) e)
+    | None, Some (`Resolved p_path) -> (
+      let hidden_alias =
+        Paths.Path.is_hidden (`Resolved (p_path :> Paths.Path.Resolved.t))
+      in
+      let self_canonical =
+        let i = Paths.Path.Resolved.ModuleType.identifier p_path in
+        (i :> Id.Signature.t) = id
+      in
+      let expansion_needed = self_canonical || hidden_alias in
+      if expansion_needed then
+        let cp = Component.Of_Lang.(resolved_module_type_path empty p_path) in
+        match
+          Expand_tools.expansion_of_module_type_expr env id (Path {p_path=`Resolved cp; p_expansion=None})
+        with
+        | Ok (_, _, e) ->
+            let le = Lang_of.(simple_expansion empty id e) in
+            Some (simple_expansion env id le)
+        | Error _ -> None
+      else None)
+    | None, _ -> None
   in
   match expr with
   | Signature s -> Signature (signature env id s)
   | Path { p_path; p_expansion } ->
+      let p_path = module_type_path env p_path in
       Path
         {
-          p_path = module_type_path env p_path;
-          p_expansion = do_expn p_expansion;
+          p_path;
+          p_expansion = do_expn p_expansion (Some p_path);
         }
   | With { w_substitutions; w_expansion; w_expr } as unresolved -> (
       let cexpr = Component.Of_Lang.(u_module_type_expr empty w_expr) in
@@ -640,7 +662,7 @@ and module_type_expr :
           With
             {
               w_substitutions = handle_fragments env id sg w_substitutions;
-              w_expansion = do_expn w_expansion;
+              w_expansion = do_expn w_expansion None;
               w_expr = u_module_type_expr env id w_expr;
             }
       | Error e ->
@@ -655,13 +677,13 @@ and module_type_expr :
       TypeOf
         {
           t_desc = StructInclude (module_path env p);
-          t_expansion = do_expn t_expansion;
+          t_expansion = do_expn t_expansion None;
         }
   | TypeOf { t_desc = ModPath p; t_expansion } ->
       TypeOf
         {
           t_desc = ModPath (module_path env p);
-          t_expansion = do_expn t_expansion;
+          t_expansion = do_expn t_expansion None;
         }
 
 and type_decl_representation :
