@@ -1,0 +1,107 @@
+
+.TH Module_type_alias 3 "" "Odoc" "OCaml Library"
+.SH Name
+Module_type_alias
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Module_type_alias\fR
+.in 
+.sp 
+.fi 
+Module Type Aliases
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR A = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR a
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR B = \f[CB]sig\fR
+.br 
+.ti +2
+.sp 
+.ti +2
+\fB1\.1 Parameters\fR
+.sp 
+.ti +2
+\f[CB]module\fR C : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR c
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\fB1\.2 Signature\fR
+.sp 
+.ti +2
+\f[CB]type\fR b
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR D = A
+.sp 
+\f[CB]module\fR \f[CB]type\fR E = \f[CB]sig\fR
+.br 
+.ti +2
+.sp 
+.ti +2
+\fB1\.3 Parameters\fR
+.sp 
+.ti +2
+\f[CB]module\fR F : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR f
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR C : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR c
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\fB1\.4 Signature\fR
+.sp 
+.ti +2
+\f[CB]type\fR b
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR G = \f[CB]sig\fR
+.br 
+.ti +2
+.sp 
+.ti +2
+\fB1\.5 Parameters\fR
+.sp 
+.ti +2
+\f[CB]module\fR H : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR h
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\fB1\.6 Signature\fR
+.sp 
+.ti +2
+\f[CB]type\fR a
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR I = B
