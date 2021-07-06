@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head><title>Labels (Labels)</title><link rel="stylesheet" href="odoc.css"/>
+  <meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <script src="highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+ </head>
+ <body class="odoc">
+  <header class="odoc-preamble">
+   <h1>Module <code><span>Labels</span></code></h1>
+  </header>
+  <nav class="odoc-toc">
+   <ul><li><a href="#L1">Attached to unit</a></li>
+    <li><a href="#L2">Attached to nothing</a></li>
+   </ul>
+  </nav>
+  <div class="odoc-content">
+   <h2 id="L1"><a href="#L1" class="anchor"></a>Attached to unit</h2>
+   <h2 id="L2"><a href="#L2" class="anchor"></a>Attached to nothing</h2>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-A" class="anchored">
+     <a href="#module-A" class="anchor"></a>
+     <code><span><span class="keyword">module</span> </span>
+      <span><a href="Labels-A.html">A</a></span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-t" class="anchored">
+     <a href="#type-t" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t</span></code>
+    </div><div class="spec-doc"><p>Attached to type</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-f" class="anchored">
+     <a href="#val-f" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> f : <a href="#type-t">t</a>
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Attached to value</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value external" id="val-e" class="anchored">
+     <a href="#val-e" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> e : 
+       <span>unit <span class="arrow">&#45;&gt;</span></span> 
+       <a href="#type-t">t</a>
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Attached to external</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-S" class="anchored">
+     <a href="#module-type-S" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <span class="keyword">type</span> 
+      </span><span><a href="Labels-module-type-S.html">S</a></span>
+      <span> = <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec class" id="class-c" class="anchored">
+     <a href="#class-c" class="anchor"></a>
+     <code><span><span class="keyword">class</span>  </span>
+      <span><a href="Labels-class-c.html">c</a></span>
+      <span> : <span class="keyword">object</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec class-type" id="class-type-cs" class="anchored">
+     <a href="#class-type-cs" class="anchor"></a>
+     <code>
+      <span><span class="keyword">class</span> 
+       <span class="keyword">type</span>  
+      </span><span><a href="Labels-class-type-cs.html">cs</a></span>
+      <span> = <span class="keyword">object</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec exception" id="exception-E" class="anchored">
+     <a href="#exception-E" class="anchor"></a>
+     <code><span><span class="keyword">exception</span> </span>
+      <span><span class="exception">E</span></span>
+     </code>
+    </div><div class="spec-doc"><p>Attached to exception</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-x" class="anchored">
+     <a href="#type-x" class="anchor"></a>
+     <code><span><span class="keyword">type</span> x</span><span> = </span>
+      <span>..</span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type extension" id="extension-decl-X" class="anchored">
+     <a href="#extension-decl-X" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <a href="#type-x">x</a> += 
+      </span>
+     </code>
+     <table>
+      <tr id="extension-X" class="anchored">
+       <td class="def extension"><a href="#extension-X" class="anchor"></a>
+        <code><span>| </span><span><span class="extension">X</span></span>
+        </code>
+       </td>
+      </tr>
+     </table>
+    </div><div class="spec-doc"><p>Attached to extension</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module-substitution" id="module-S" class="anchored">
+     <a href="#module-S" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> S := 
+       <a href="Labels-A.html">A</a>
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Attached to module subst</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type subst" id="type-s" class="anchored">
+     <a href="#type-s" class="anchor"></a>
+     <code><span><span class="keyword">type</span> s</span>
+      <span> := <a href="#type-t">t</a></span>
+     </code>
+    </div><div class="spec-doc"><p>Attached to type subst</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-u" class="anchored">
+     <a href="#type-u" class="anchor"></a>
+     <code><span><span class="keyword">type</span> u</span><span> = </span>
+     </code>
+     <table>
+      <tr id="type-u.A'" class="anchored">
+       <td class="def variant constructor">
+        <a href="#type-u.A'" class="anchor"></a>
+        <code><span>| </span><span><span class="constructor">A'</span></span>
+        </code>
+       </td>
+       <td class="def-doc"><span class="comment-delim">(*</span>
+        <p>Attached to constructor</p><span class="comment-delim">*)</span>
+       </td>
+      </tr>
+     </table>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-v" class="anchored">
+     <a href="#type-v" class="anchor"></a>
+     <code><span><span class="keyword">type</span> v</span><span> = </span>
+      <span>{</span>
+     </code>
+     <table>
+      <tr id="type-v.f" class="anchored">
+       <td class="def record field"><a href="#type-v.f" class="anchor"></a>
+        <code><span>f : <a href="#type-t">t</a>;</span></code>
+       </td>
+       <td class="def-doc"><span class="comment-delim">(*</span>
+        <p>Attached to field</p><span class="comment-delim">*)</span>
+       </td>
+      </tr>
+     </table><code><span>}</span></code>
+    </div>
+   </div><p>Testing that labels can be referenced</p>
+   <ul><li><a href="#L1">Attached to unit</a></li>
+    <li><a href="#L2">Attached to nothing</a></li>
+    <li><a href="#L3">Attached to module</a></li>
+    <li><a href="#L4">Attached to type</a></li>
+    <li><a href="#L5">Attached to value</a></li>
+    <li><a href="#L6">Attached to class</a></li>
+    <li><a href="#L7">Attached to class type</a></li>
+    <li><a href="#L8">Attached to exception</a></li>
+    <li><a href="#L9">Attached to extension</a></li>
+    <li><a href="#L10">Attached to module subst</a></li>
+    <li><a href="#L11">Attached to type subst</a></li>
+    <li><a href="#L12">Attached to constructor</a></li>
+    <li><a href="#L13">Attached to field</a></li>
+   </ul>
+  </div>
+ </body>
+</html>
