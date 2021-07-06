@@ -1,0 +1,17 @@
+
+.TH ModuleWithSignature 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.ModuleWithSignature
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.ModuleWithSignature\fR
+.in 
+.sp 
+.fi 
+A plain module of a signature of \f[CI]EmptySig\fR (reference)
+.nf 
+.SH Documentation
+.sp 
+.nf 
+

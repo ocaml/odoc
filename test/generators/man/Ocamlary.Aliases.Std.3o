@@ -1,0 +1,22 @@
+
+.TH Std 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Aliases\.Std
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Aliases\.Std\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR A = Foo\.A
+.sp 
+\f[CB]module\fR B = Foo\.B
+.sp 
+\f[CB]module\fR C = Foo\.C
+.sp 
+\f[CB]module\fR D = Foo\.D
+.sp 
+\f[CB]module\fR E = Foo\.E

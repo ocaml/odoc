@@ -1,0 +1,14 @@
+
+.TH DoubleInclude2 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.DoubleInclude1\.DoubleInclude2
+.SH Synopsis
+.sp 
+.in 2
+\fBModule DoubleInclude1\.DoubleInclude2\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR double_include

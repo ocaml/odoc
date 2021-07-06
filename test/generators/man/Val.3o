@@ -1,0 +1,29 @@
+
+.TH Val 3 "" "Odoc" "OCaml Library"
+.SH Name
+Val
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Val\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR documented : unit
+.fi 
+.br 
+.ti +2
+Foo\.
+.nf 
+.sp 
+\f[CB]val\fR undocumented : unit
+.sp 
+\f[CB]val\fR documented_above : unit
+.fi 
+.br 
+.ti +2
+Bar\.
+.nf 
+

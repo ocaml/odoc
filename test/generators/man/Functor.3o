@@ -1,0 +1,53 @@
+
+.TH Functor 3 "" "Odoc" "OCaml Library"
+.SH Name
+Functor
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Functor\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S1 = \f[CB]sig\fR
+.br 
+.ti +2
+.sp 
+.ti +2
+\fB1\.1 Parameters\fR
+.sp 
+.ti +2
+\f[CB]module\fR _ : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\fB1\.2 Signature\fR
+.sp 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR F1 (Arg : S) : S
+.sp 
+\f[CB]module\fR F2 (Arg : S) : S \f[CB]with\fR \f[CB]type\fR t = Arg\.t
+.sp 
+\f[CB]module\fR F3 (Arg : S) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR F4 (Arg : S) : S
+.sp 
+\f[CB]module\fR F5 () : S

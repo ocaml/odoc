@@ -1,0 +1,34 @@
+
+.TH With10 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.With10
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.With10\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR T = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR M : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR S
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR N : M\.S
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+\f[CI]With10\.T\fR is a submodule type\.
+.nf 
+

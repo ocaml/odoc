@@ -1,0 +1,30 @@
+
+.TH Dep9 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Dep9
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.Dep9\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+\f[CB]module\fR X : \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR T
+.br 
+\f[CB]end\fR
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]module\fR \f[CB]type\fR T = X\.T

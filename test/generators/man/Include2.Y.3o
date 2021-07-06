@@ -1,0 +1,17 @@
+
+.TH Y 3 "" "Odoc" "OCaml Library"
+.SH Name
+Include2\.Y
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include2\.Y\fR
+.in 
+.sp 
+.fi 
+Top-comment of Y\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t

@@ -1,0 +1,16 @@
+
+.TH With3 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.With3
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.With3\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR M = With2
+.sp 
+\f[CB]module\fR N : M\.S

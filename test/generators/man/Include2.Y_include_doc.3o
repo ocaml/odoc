@@ -1,0 +1,14 @@
+
+.TH Y_include_doc 3 "" "Odoc" "OCaml Library"
+.SH Name
+Include2\.Y_include_doc
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include2\.Y_include_doc\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t = Y\.t

@@ -1,0 +1,41 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Functor2\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Functor2\.X\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+\f[CB]module\fR Y : \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR Z : \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]type\fR y_t = Y\.t
+.sp 
+\f[CB]type\fR z_t = Z\.t
+.sp 
+\f[CB]type\fR x_t = y_t

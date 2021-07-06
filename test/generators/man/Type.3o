@@ -1,0 +1,257 @@
+
+.TH Type 3 "" "Odoc" "OCaml Library"
+.SH Name
+Type
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Type\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR abstract
+.fi 
+.br 
+.ti +2
+Some documentation\.
+.nf 
+.sp 
+\f[CB]type\fR alias = int
+.sp 
+\f[CB]type\fR private_ = \f[CB]private\fR int
+.sp 
+\f[CB]type\fR 'a constructor = \f[CB]'a\fR
+.sp 
+\f[CB]type\fR arrow = int \f[CB]\->\fR int
+.sp 
+\f[CB]type\fR higher_order = (int \f[CB]\->\fR int) \f[CB]\->\fR int
+.sp 
+\f[CB]type\fR labeled = l:int \f[CB]\->\fR int
+.sp 
+\f[CB]type\fR optional = ?l:int \f[CB]\->\fR int
+.sp 
+\f[CB]type\fR labeled_higher_order = (l:int \f[CB]\->\fR int) \f[CB]\->\fR (?l:int \f[CB]\->\fR int) \f[CB]\->\fR int
+.sp 
+\f[CB]type\fR pair = int * int
+.sp 
+\f[CB]type\fR parens_dropped = int * int
+.sp 
+\f[CB]type\fR triple = int * int * int
+.sp 
+\f[CB]type\fR nested_pair = (int * int) * int
+.sp 
+\f[CB]type\fR instance = int constructor
+.sp 
+\f[CB]type\fR long = labeled_higher_order \f[CB]\->\fR [ `Bar | `Baz of triple ] \f[CB]\->\fR pair \f[CB]\->\fR labeled \f[CB]\->\fR higher_order \f[CB]\->\fR (string \f[CB]\->\fR int) \f[CB]\->\fR (int, float, char, string, char, unit) CamlinternalFormatBasics\.fmtty \f[CB]\->\fR nested_pair \f[CB]\->\fR arrow \f[CB]\->\fR string \f[CB]\->\fR nested_pair array
+.sp 
+\f[CB]type\fR variant_e = {
+.br 
+.ti +2
+a : int;
+.br 
+}
+.sp 
+\f[CB]type\fR variant = 
+.br 
+.ti +2
+| \f[CB]A\fR
+.br 
+.ti +2
+| \f[CB]B\fR \f[CB]of\fR int
+.br 
+.ti +2
+| \f[CB]C\fR
+.br 
+.ti +4
+(* foo *)
+.br 
+.ti +2
+| \f[CB]D\fR
+.br 
+.ti +4
+(* bar *)
+.br 
+.ti +2
+| \f[CB]E\fR \f[CB]of\fR variant_e
+.br 
+.sp 
+\f[CB]type\fR variant_c = {
+.br 
+.ti +2
+a : int;
+.br 
+}
+.sp 
+\f[CB]type\fR _ gadt = 
+.br 
+.ti +2
+| \f[CB]A\fR : int gadt
+.br 
+.ti +2
+| \f[CB]B\fR : int \f[CB]\->\fR string gadt
+.br 
+.ti +2
+| \f[CB]C\fR : variant_c \f[CB]\->\fR unit gadt
+.br 
+.sp 
+\f[CB]type\fR degenerate_gadt = 
+.br 
+.ti +2
+| \f[CB]A\fR : degenerate_gadt
+.br 
+.sp 
+\f[CB]type\fR private_variant = \f[CB]private\fR 
+.br 
+.ti +2
+| \f[CB]A\fR
+.br 
+.sp 
+\f[CB]type\fR record = {
+.br 
+.ti +2
+a : int;
+.br 
+.ti +2
+\f[CB]mutable\fR b : int;
+.br 
+.ti +2
+c : int;
+.br 
+.ti +4
+(* foo *)
+.br 
+.ti +2
+d : int;
+.br 
+.ti +4
+(* bar *)
+.br 
+.ti +2
+e : a\. \f[CB]'a\fR;
+.br 
+}
+.sp 
+\f[CB]type\fR polymorphic_variant = [ 
+.br 
+.ti +2
+| `A
+.br 
+.ti +2
+| `B \f[CB]of\fR int
+.br 
+.ti +2
+| `C \f[CB]of\fR int * unit
+.br 
+.ti +2
+| `D
+.br 
+ ]
+.sp 
+\f[CB]type\fR polymorphic_variant_extension = [ 
+.br 
+.ti +2
+| polymorphic_variant
+.br 
+.ti +2
+| `E
+.br 
+ ]
+.sp 
+\f[CB]type\fR nested_polymorphic_variant = [ 
+.br 
+.ti +2
+| `A \f[CB]of\fR [ `B | `C ]
+.br 
+ ]
+.sp 
+\f[CB]type\fR private_extenion#row
+.sp 
+\f[CB]and\fR private_extenion = \f[CB]private\fR [> 
+.br 
+.ti +2
+| polymorphic_variant
+.br 
+ ]
+.sp 
+\f[CB]type\fR object_ = < a : int; b : int; c : int; >
+.sp 
+\f[CB]module\fR \f[CB]type\fR X = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]type\fR u
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]type\fR module_ = (\f[CB]module\fR X)
+.sp 
+\f[CB]type\fR module_substitution = (\f[CB]module\fR X \f[CB]with\fR \f[CB]type\fR t = int \f[CB]and\fR \f[CB]type\fR u = unit)
+.sp 
+\f[CB]type\fR +'a covariant
+.sp 
+\f[CB]type\fR -'a contravariant
+.sp 
+\f[CB]type\fR _ bivariant = int
+.sp 
+\f[CB]type\fR ('a, 'b) binary
+.sp 
+\f[CB]type\fR using_binary = (int, int) binary
+.sp 
+\f[CB]type\fR 'custom name
+.sp 
+\f[CB]type\fR 'a constrained = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = int
+.sp 
+\f[CB]type\fR 'a exact_variant = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = [ `A | `B of int ]
+.sp 
+\f[CB]type\fR 'a lower_variant = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = [> `A | `B of int ]
+.sp 
+\f[CB]type\fR 'a any_variant = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = [>  ]
+.sp 
+\f[CB]type\fR 'a upper_variant = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = [< `A | `B of int ]
+.sp 
+\f[CB]type\fR 'a named_variant = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = [< polymorphic_variant ]
+.sp 
+\f[CB]type\fR 'a exact_object = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = < a : int; b : int; >
+.sp 
+\f[CB]type\fR 'a lower_object = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = < a : int; b : int; \.\. >
+.sp 
+\f[CB]type\fR 'a poly_object = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = < a : a\. \f[CB]'a\fR; >
+.sp 
+\f[CB]type\fR ('a, 'b) double_constrained = \f[CB]'a\fR * \f[CB]'b\fR \f[CB]constraint\fR \f[CB]'a\fR = int \f[CB]constraint\fR \f[CB]'b\fR = unit
+.sp 
+\f[CB]type\fR as_ = int \f[CB]as\fR 'a * \f[CB]'a\fR
+.sp 
+\f[CB]type\fR extensible = \.\.
+.sp 
+\f[CB]type\fR extensible += 
+.br 
+.ti +2
+| \f[CB]Extension\fR
+.br 
+.ti +4
+(* Documentation for \f[CI]Extension\fR\. *)
+.br 
+.ti +2
+| \f[CB]Another_extension\fR
+.br 
+.ti +4
+(* Documentation for \f[CI]Another_extension\fR\. *)
+.br 
+.sp 
+\f[CB]type\fR mutually = 
+.br 
+.ti +2
+| \f[CB]A\fR \f[CB]of\fR recursive
+.br 
+.sp 
+\f[CB]and\fR recursive = 
+.br 
+.ti +2
+| \f[CB]B\fR \f[CB]of\fR mutually
+.br 
+.sp 
+\f[CB]exception\fR \f[CB]Foo\fR \f[CB]of\fR int * int

@@ -1,0 +1,14 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Dep4\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Dep4\.X\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR b

@@ -1,0 +1,63 @@
+
+.TH Section 3 "" "Odoc" "OCaml Library"
+.SH Name
+Section
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Section\fR
+.in 
+.sp 
+.fi 
+This is the module comment\. Eventually, sections won't be allowed in it\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Empty section\fR
+.in 
+.sp 
+.in 3
+\fB2 Text only\fR
+.in 
+.sp 
+.fi 
+Foo bar\.
+.nf 
+.sp 
+.in 3
+\fB3 Aside only\fR
+.in 
+.sp 
+.fi 
+Foo bar\.
+.nf 
+.sp 
+.in 3
+\fB4 Value only\fR
+.in 
+.sp 
+\f[CB]val\fR foo : unit
+.sp 
+.in 3
+\fB5 Empty section\fR
+.in 
+.sp 
+.in 3
+\fB6 within a comment\fR
+.in 
+.sp 
+.in 4
+\fB6\.1 and one with a nested section\fR
+.in 
+.sp 
+.in 3
+\fB7 This section \fBtitle\fB has markup\fR
+.in 
+.sp 
+.fi 
+But links are impossible thanks to the parser, so we never have trouble rendering a section title in a table of contents – no link will be nested inside another link\.
+.nf 
+

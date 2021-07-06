@@ -1,0 +1,54 @@
+
+.TH Interlude 3 "" "Odoc" "OCaml Library"
+.SH Name
+Interlude
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Interlude\fR
+.in 
+.sp 
+.fi 
+This is the comment associated to the module\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+.fi 
+Some separate stray text at the top of the module\.
+.nf 
+.sp 
+\f[CB]val\fR foo : unit
+.fi 
+.br 
+.ti +2
+Foo\.
+.nf 
+.sp 
+.fi 
+Some stray text that is not associated with any signature item\.
+.sp 
+It has multiple paragraphs\.
+.nf 
+.sp 
+.fi 
+A separate block of stray text, adjacent to the preceding one\.
+.nf 
+.sp 
+\f[CB]val\fR bar : unit
+.fi 
+.br 
+.ti +2
+Bar\.
+.nf 
+.sp 
+\f[CB]val\fR multiple : unit
+.sp 
+\f[CB]val\fR signature : unit
+.sp 
+\f[CB]val\fR items : unit
+.sp 
+.fi 
+Stray text at the bottom of the module\.
+.nf 
+

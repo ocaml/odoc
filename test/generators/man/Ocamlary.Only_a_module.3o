@@ -1,0 +1,14 @@
+
+.TH Only_a_module 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Only_a_module
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.Only_a_module\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t

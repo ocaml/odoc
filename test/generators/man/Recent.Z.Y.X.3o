@@ -1,0 +1,14 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Recent\.Z\.Y\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Y\.X\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR 'a t

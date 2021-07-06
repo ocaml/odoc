@@ -1,0 +1,14 @@
+
+.TH Base 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.CanonicalTest\.Base
+.SH Synopsis
+.sp 
+.in 2
+\fBModule CanonicalTest\.Base\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR List : \f[CB]sig\fR \.\.\. \f[CB]end\fR

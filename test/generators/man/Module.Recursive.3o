@@ -1,0 +1,14 @@
+
+.TH Recursive 3 "" "Odoc" "OCaml Library"
+.SH Name
+Module\.Recursive
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Module\.Recursive\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+

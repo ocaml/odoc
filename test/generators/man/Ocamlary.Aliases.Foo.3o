@@ -1,0 +1,22 @@
+
+.TH Foo 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Aliases\.Foo
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Aliases\.Foo\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR A : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR B : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR C : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR D : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR E : \f[CB]sig\fR \.\.\. \f[CB]end\fR

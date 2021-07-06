@@ -1,0 +1,21 @@
+
+.TH Ref_in_synopsis 3 "" "Odoc" "OCaml Library"
+.SH Name
+Toplevel_comments\.Ref_in_synopsis
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Toplevel_comments\.Ref_in_synopsis\fR
+.in 
+.sp 
+.fi 
+\f[CI]t\fR\.
+.nf 
+.sp 
+.fi 
+This reference should resolve in the context of this module, even when used as a synopsis\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t

@@ -1,0 +1,19 @@
+
+.TH Dep8 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Dep8
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.Dep8\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR T = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR

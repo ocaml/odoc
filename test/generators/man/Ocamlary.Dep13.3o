@@ -1,0 +1,14 @@
+
+.TH Dep13 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Dep13
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.Dep13\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]class\fR  c : \f[CB]object\fR \.\.\. \f[CB]end\fR

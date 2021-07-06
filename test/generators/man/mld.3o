@@ -1,0 +1,63 @@
+
+.TH mld 3 "" "Odoc" "OCaml Library"
+.SH Name
+mld
+.SH Synopsis
+.sp 
+.in 2
+\fBMld Page\fR
+.in 
+.sp 
+.fi 
+This is an \.mld file\. It doesn't have an auto-generated title, like modules and other pages generated fully by odoc do\.
+.sp 
+It will have a TOC generated from section headings\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Section\fR
+.in 
+.sp 
+.fi 
+This is a section\.
+.sp 
+Another paragraph in section\.
+.nf 
+.sp 
+.in 3
+\fB2 Another section\fR
+.in 
+.sp 
+.fi 
+This is another section\.
+.sp 
+Another paragraph in section 2\.
+.nf 
+.sp 
+.in 4
+\fB2\.1 Subsection\fR
+.in 
+.sp 
+.fi 
+This is a subsection\.
+.sp 
+Another paragraph in subsection\.
+.sp 
+Yet another paragraph in subsection\.
+.nf 
+.sp 
+.in 4
+\fB2\.2 Another Subsection\fR
+.in 
+.sp 
+.fi 
+This is another subsection\.
+.sp 
+Another paragraph in subsection 2\.
+.sp 
+Yet another paragraph in subsection 2\.
+.nf 
+

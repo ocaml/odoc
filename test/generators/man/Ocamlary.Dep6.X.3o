@@ -1,0 +1,21 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Dep6\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Dep6\.X\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR R = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR d
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR Y : R

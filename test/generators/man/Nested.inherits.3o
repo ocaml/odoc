@@ -1,0 +1,14 @@
+
+.TH inherits 3 "" "Odoc" "OCaml Library"
+.SH Name
+Nested\.inherits
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Nested\.inherits\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]inherit\fR z

@@ -1,0 +1,26 @@
+
+.TH Bugs 3 "" "Odoc" "OCaml Library"
+.SH Name
+Bugs
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Bugs\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR 'a opt = \f[CB]'a\fR option
+.sp 
+\f[CB]val\fR foo : ?bar:\f[CB]'a\fR \f[CB]\->\fR unit \f[CB]\->\fR unit
+.fi 
+.br 
+.ti +2
+Triggers an assertion failure when 
+.UR https://github.com/ocaml/odoc/issues/101
+https://github\.com/ocaml/odoc/issues/101
+.UE 
+ is not fixed\.
+.nf 
+

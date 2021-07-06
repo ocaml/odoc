@@ -1,0 +1,20 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Alias\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Alias\.X\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t = int
+.fi 
+.br 
+.ti +2
+Module Foo__X documentation\. This should appear in the documentation for the alias to this module 'X'
+.nf 
+

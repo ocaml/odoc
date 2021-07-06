@@ -1,0 +1,19 @@
+
+.TH IncludeInclude1 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.IncludeInclude1
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.IncludeInclude1\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR IncludeInclude2 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR include_include
+.br 
+\f[CB]end\fR

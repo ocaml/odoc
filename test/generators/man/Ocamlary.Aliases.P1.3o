@@ -1,0 +1,14 @@
+
+.TH P1 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Aliases\.P1
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Aliases\.P1\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR Y : \f[CB]sig\fR \.\.\. \f[CB]end\fR

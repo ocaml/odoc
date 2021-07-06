@@ -1,0 +1,21 @@
+
+.TH c1 3 "" "Odoc" "OCaml Library"
+.SH Name
+Toplevel_comments\.c1
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Toplevel_comments\.c1\fR
+.in 
+.sp 
+.fi 
+Doc of c1, part 1\.
+.nf 
+.sp 
+.fi 
+Doc of c1, part 2\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+

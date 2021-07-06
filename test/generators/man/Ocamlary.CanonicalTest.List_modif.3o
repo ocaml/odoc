@@ -1,0 +1,16 @@
+
+.TH List_modif 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.CanonicalTest\.List_modif
+.SH Synopsis
+.sp 
+.in 2
+\fBModule CanonicalTest\.List_modif\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR 'c t = \f[CB]'c\fR Base\.List\.t
+.sp 
+\f[CB]val\fR id : \f[CB]'a\fR t \f[CB]\->\fR \f[CB]'a\fR t

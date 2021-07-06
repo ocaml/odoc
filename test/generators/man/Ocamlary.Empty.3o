@@ -1,0 +1,21 @@
+
+.TH Empty 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Empty
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.Empty\fR
+.in 
+.sp 
+.fi 
+A plain, empty module
+.nf 
+.sp 
+.fi 
+This module has a signature without any members\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+
