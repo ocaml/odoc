@@ -1,0 +1,14 @@
+
+.TH Z 3 "" "Odoc" "OCaml Library"
+.SH Name
+Recent\.Z
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Recent\.Z\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR Y : \f[CB]sig\fR \.\.\. \f[CB]end\fR

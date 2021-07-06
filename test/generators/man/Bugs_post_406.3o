@@ -1,0 +1,19 @@
+
+.TH Bugs_post_406 3 "" "Odoc" "OCaml Library"
+.SH Name
+Bugs_post_406
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Bugs_post_406\fR
+.in 
+.sp 
+.fi 
+Let-open in class types, https://github\.com/ocaml/odoc/issues/543 This was added to the language in 4\.06
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]class\fR \f[CB]type\fR  let_open = \f[CB]object\fR \f[CB]end\fR
+.sp 
+\f[CB]class\fR  let_open' : \f[CB]object\fR \.\.\. \f[CB]end\fR

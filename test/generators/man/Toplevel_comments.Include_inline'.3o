@@ -1,0 +1,21 @@
+
+.TH Include_inline' 3 "" "Odoc" "OCaml Library"
+.SH Name
+Toplevel_comments\.Include_inline'
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Toplevel_comments\.Include_inline'\fR
+.in 
+.sp 
+.fi 
+Doc of Include_inline, part 1\.
+.nf 
+.sp 
+.fi 
+Doc of Include_inline, part 2\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t

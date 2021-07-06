@@ -1,0 +1,50 @@
+
+.TH Recent_impl 3 "" "Odoc" "OCaml Library"
+.SH Name
+Recent_impl
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Recent_impl\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR Foo : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR B : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR u
+.sp 
+\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR F : \f[CB]sig\fR
+.br 
+.ti +4
+.sp 
+.ti +4
+\fB1\.1 Parameters\fR
+.sp 
+.ti +4
+\f[CB]module\fR _ : \f[CB]sig\fR \f[CB]end\fR
+.sp 
+.ti +4
+\fB1\.2 Signature\fR
+.sp 
+.ti +4
+\f[CB]type\fR t
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR X : \f[CB]sig\fR \f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]val\fR f : F(X)\.t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR B' = Foo\.B

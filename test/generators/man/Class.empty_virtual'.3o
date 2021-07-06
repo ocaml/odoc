@@ -1,0 +1,14 @@
+
+.TH empty_virtual' 3 "" "Odoc" "OCaml Library"
+.SH Name
+Class\.empty_virtual'
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Class\.empty_virtual'\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+

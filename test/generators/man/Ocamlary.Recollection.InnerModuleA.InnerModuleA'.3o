@@ -1,0 +1,23 @@
+
+.TH InnerModuleA' 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Recollection\.InnerModuleA\.InnerModuleA'
+.SH Synopsis
+.sp 
+.in 2
+\fBModule InnerModuleA\.InnerModuleA'\fR
+.in 
+.sp 
+.fi 
+This comment is for InnerModuleA'\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t = (unit, unit) a_function
+.fi 
+.br 
+.ti +2
+This comment is for t\.
+.nf 
+

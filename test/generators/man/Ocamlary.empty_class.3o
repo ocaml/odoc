@@ -1,0 +1,14 @@
+
+.TH empty_class 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.empty_class
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Ocamlary\.empty_class\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+

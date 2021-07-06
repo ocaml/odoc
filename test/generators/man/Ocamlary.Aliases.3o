@@ -1,0 +1,81 @@
+
+.TH Aliases 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Aliases
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.Aliases\fR
+.in 
+.sp 
+.fi 
+Let's imitate jst's layout\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR Foo__A : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Foo__B : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Foo__C : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Foo__D : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Foo__E : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Foo__ : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Foo : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR A' = Foo\.A
+.sp 
+\f[CB]type\fR tata = Foo\.A\.t
+.sp 
+\f[CB]type\fR tbtb = Foo\.B\.t
+.sp 
+\f[CB]type\fR tete
+.sp 
+\f[CB]type\fR tata' = A'\.t
+.sp 
+\f[CB]type\fR tete2 = Foo\.E\.t
+.sp 
+\f[CB]module\fR Std : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR stde = Std\.E\.t
+.sp 
+.in 5
+\fB1\.1\.1 include of Foo\fR
+.in 
+.sp 
+.fi 
+Just for giggle, let's see what happens when we include \f[CI]Foo\fR\.
+.nf 
+.sp 
+\f[CB]module\fR A = Foo\.A
+.sp 
+\f[CB]module\fR B = Foo\.B
+.sp 
+\f[CB]module\fR C = Foo\.C
+.sp 
+\f[CB]module\fR D = Foo\.D
+.sp 
+\f[CB]module\fR E : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR testa = A\.t
+.sp 
+.fi 
+And also, let's refer to \f[CI]A\.t\fR and \f[CI]Foo\.B\.id\fR
+.nf 
+.sp 
+\f[CB]module\fR P1 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR P2 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR X1 = P2\.Z
+.sp 
+\f[CB]module\fR X2 = P2\.Z
+.sp 
+\f[CB]type\fR p1 = X1\.t
+.sp 
+\f[CB]type\fR p2 = X2\.t

@@ -1,0 +1,14 @@
+
+.TH With4 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.With4
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.With4\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR N : With2\.S

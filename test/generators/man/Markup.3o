@@ -1,0 +1,279 @@
+
+.TH Markup 3 "" "Odoc" "OCaml Library"
+.SH Name
+Markup
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Markup\fR
+.in 
+.sp 
+.fi 
+Here, we test the rendering of comment markup\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Sections\fR
+.in 
+.sp 
+.fi 
+Let's get these done first, because sections will be used to break up the rest of this test\.
+.sp 
+Besides the section heading above, there are also
+.nf 
+.sp 
+.in 4
+\fB1\.1 Subsection headings\fR
+.in 
+.sp 
+.fi 
+and
+.nf 
+.sp 
+.in 5
+\fB1\.1\.1 Sub-subsection headings\fR
+.in 
+.sp 
+.fi 
+but odoc has banned deeper headings\. There are also title headings, but they are only allowed in mld files\.
+.nf 
+.sp 
+.in 5
+\fB1\.1\.2 Anchors\fR
+.in 
+.sp 
+.fi 
+Sections can have attached \f[CI]Anchors\fR, and it is possible to \f[CI]link\fR to them\. Links to section headers should not be set in source code style\.
+.nf 
+.sp 
+.in 6
+\fBParagraph\fR
+.in 
+.sp 
+.fi 
+Individual paragraphs can have a heading\.
+.nf 
+.sp 
+.in 7
+\fBSubparagraph\fR
+.in 
+.sp 
+.fi 
+Parts of a longer paragraph that can be considered alone can also have headings\.
+.nf 
+.sp 
+.in 3
+\fB2 Styling\fR
+.in 
+.sp 
+.fi 
+This paragraph has some styled elements: \fBbold\fR and \fIitalic\fR, \fB\fIbold italic\fB\fR, emphasis, emphasis within emphasis, \fB\fIbold italic\fB\fR, superscript, subscript\. The line spacing should be enough for superscripts and subscripts not to look odd\.
+.sp 
+Note: \fIIn italics emphasis is rendered as normal text while emphasis in emphasis is rendered in italics\.\fR \fIIt also work the same in 
+.UR #
+links in italics with emphasis in emphasis\.
+.UE 
+\fR
+.sp 
+code is a different kind of markup that doesn't allow nested markup\.
+.sp 
+It's possible for two markup elements to appear \fBnext\fR \fIto\fR each other and have a space, and appear \fBnext\fR\fIto\fR each other with no space\. It doesn't matter \fBhow\fR \fImuch\fR space it was in the source: in this sentence, it was two space characters\. And in this one, there is \fBa\fR \fInewline\fR\.
+.sp 
+This is also true between non-code markup and code\.
+.sp 
+Code can appear \fBinside other markup\fR\. Its display shouldn't be affected\.
+.nf 
+.sp 
+.in 3
+\fB3 Links and references\fR
+.in 
+.sp 
+.fi 
+This is a 
+.UR #
+link
+.UE 
+\. It sends you to the top of this page\. Links can have markup inside them: 
+.UR #
+\fBbold\fR
+.UE 
+, 
+.UR #
+\fIitalics\fR
+.UE 
+, 
+.UR #
+emphasis
+.UE 
+, 
+.UR #
+superscript
+.UE 
+, 
+.UR #
+subscript
+.UE 
+, and 
+.UR #
+code
+.UE 
+\. Links can also be nested 
+.UR #
+inside
+.UE 
+ markup\. Links cannot be nested inside each other\. This link has no replacement text: 
+.UR #
+#
+.UE 
+\. The text is filled in by odoc\. This is a shorthand link: 
+.UR #
+#
+.UE 
+\. The text is also filled in by odoc in this case\.
+.sp 
+This is a reference to \f[CI]foo\fR\. References can have replacement text: \f[CI]the value foo\fR\. Except for the special lookup support, references are pretty much just like links\. The replacement text can have nested styles: \f[CI]\fBbold\f[CI]\fR, \f[CI]\fIitalic\f[CI]\fR, \f[CI]emphasis\fR, \f[CI]superscript\fR, \f[CI]subscript\fR, and \f[CI]code\fR\. It's also possible to surround a reference in a style: \fB\f[CI]foo\fB\fR\. References can't be nested inside references, and links and references can't be nested inside each other\.
+.nf 
+.sp 
+.in 3
+\fB4 Preformatted text\fR
+.in 
+.sp 
+.fi 
+This is a code block:
+.sp 
+.EX 
+let foo = ()
+(** There are some nested comments in here, but an unpaired comment
+    terminator would terminate the whole doc surrounding comment\. It's
+    best to keep code blocks no wider than 72 characters\. *)
+
+let bar =
+  ignore foo
+.EE 
+.sp 
+There are also verbatim blocks:
+.sp 
+.EX 
+The main difference is these don't get syntax highlighting\.
+.EE 
+.nf 
+.sp 
+.in 3
+\fB5 Lists\fR
+.in 
+.sp 
+.fi 
+\(bu This is a
+.br 
+\(bu shorthand bulleted list,
+.br 
+\(bu and the paragraphs in each list item support styling\.
+.sp 
+1) This is a
+.br 
+2) shorthand numbered list\.
+.sp 
+\(bu Shorthand list items can span multiple lines, however trying to put two paragraphs into a shorthand list item using a double line break
+.sp 
+just creates a paragraph outside the list\.
+.sp 
+\(bu Similarly, inserting a blank line between two list items
+.sp 
+\(bu creates two separate lists\.
+.sp 
+\(bu To get around this limitation, one
+.sp 
+.ti +2
+can use explicitly-delimited lists\.
+.br 
+\(bu This one is bulleted,
+.sp 
+1) but there is also the numbered variant\.
+.sp 
+\(bu \(bu lists
+.br 
+.ti +2
+\(bu can be nested
+.br 
+.ti +2
+\(bu and can include references
+.br 
+.ti +2
+\(bu \f[CI]foo\fR
+.nf 
+.sp 
+.in 3
+\fB6 Unicode\fR
+.in 
+.sp 
+.fi 
+The parser supports any ASCII-compatible encoding, in particuλar UTF-8\.
+.nf 
+.sp 
+.in 3
+\fB7 Raw HTML\fR
+.in 
+.sp 
+.fi 
+Raw HTML can be  as inline elements into sentences\.
+.sp 
+.nf 
+.sp 
+.in 3
+\fB8 Modules\fR
+.in 
+.sp 
+.fi 
+@X: 
+.br 
+@X: 
+.br 
+@Y: 
+.br 
+@Z: 
+.nf 
+.sp 
+.in 3
+\fB9 Tags\fR
+.in 
+.sp 
+.fi 
+Each comment can end with zero or more tags\. Here are some examples:
+.sp 
+@author: antron
+.br 
+@deprecated: a long time ago
+.br 
+@parameter foo: unused
+.br 
+@raises Failure: always
+.br 
+@returns: never
+.br 
+@see 
+.UR #
+#
+.UE 
+: this url
+.br 
+@see foo\.ml: this file
+.br 
+@see Foo: this document
+.br 
+@since: 0
+.br 
+@before 1\.0: it was in beta
+.br 
+@version: -1
+.nf 
+.sp 
+\f[CB]val\fR foo : unit
+.fi 
+.br 
+.ti +2
+Comments in structure items \fBsupport\fR markup, too\.
+.nf 
+

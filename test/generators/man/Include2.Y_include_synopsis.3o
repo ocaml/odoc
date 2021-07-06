@@ -1,0 +1,17 @@
+
+.TH Y_include_synopsis 3 "" "Odoc" "OCaml Library"
+.SH Name
+Include2\.Y_include_synopsis
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include2\.Y_include_synopsis\fR
+.in 
+.sp 
+.fi 
+The include Y below should have the synopsis from Y's top-comment attached to it\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t = Y\.t

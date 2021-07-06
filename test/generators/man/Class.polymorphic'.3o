@@ -1,0 +1,14 @@
+
+.TH polymorphic' 3 "" "Odoc" "OCaml Library"
+.SH Name
+Class\.polymorphic'
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Class\.polymorphic'\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+

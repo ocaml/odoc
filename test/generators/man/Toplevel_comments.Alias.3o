@@ -1,0 +1,21 @@
+
+.TH Alias 3 "" "Odoc" "OCaml Library"
+.SH Name
+Toplevel_comments\.Alias
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Toplevel_comments\.Alias\fR
+.in 
+.sp 
+.fi 
+Doc of Alias\.
+.nf 
+.sp 
+.fi 
+Doc of T, part 2\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t

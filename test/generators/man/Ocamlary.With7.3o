@@ -1,0 +1,30 @@
+
+.TH With7 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.With7
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.With7\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+\f[CB]module\fR X : \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR T
+.br 
+\f[CB]end\fR
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]module\fR \f[CB]type\fR T = X\.T

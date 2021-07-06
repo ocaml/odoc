@@ -1,0 +1,54 @@
+
+.TH Dep7 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Dep7
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.Dep7\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+\f[CB]module\fR Arg : \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR S
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR T = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR R = S
+.sp 
+.ti +4
+\f[CB]module\fR Y : R
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR X : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR R = S
+.sp 
+.ti +4
+\f[CB]module\fR Y : R
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]module\fR M : Arg\.T

@@ -1,0 +1,41 @@
+
+.TH z 3 "" "Odoc" "OCaml Library"
+.SH Name
+Nested\.z
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Nested\.z\fR
+.in 
+.sp 
+.fi 
+This is class z\.
+.nf 
+.sp 
+.fi 
+Some additional comments\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR y : int
+.fi 
+.br 
+.ti +2
+Some value\.
+.nf 
+.sp 
+\f[CB]val\fR \f[CB]mutable\fR \f[CB]virtual\fR y' : int
+.sp 
+.in 3
+\fB1 Methods\fR
+.in 
+.sp 
+\f[CB]method\fR z : int
+.fi 
+.br 
+.ti +2
+Some method\.
+.nf 
+.sp 
+\f[CB]method\fR \f[CB]private\fR \f[CB]virtual\fR z' : int

@@ -1,0 +1,19 @@
+
+.TH B 3 "" "Odoc" "OCaml Library"
+.SH Name
+Recent_impl\.Foo\.B
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Foo\.B\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t = 
+.br 
+.ti +2
+| \f[CB]B\fR
+.br 
+

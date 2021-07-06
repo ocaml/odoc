@@ -1,0 +1,14 @@
+
+.TH one_method_class 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.one_method_class
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Ocamlary\.one_method_class\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]method\fR go : unit

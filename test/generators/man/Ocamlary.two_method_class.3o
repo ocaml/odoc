@@ -1,0 +1,16 @@
+
+.TH two_method_class 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.two_method_class
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Ocamlary\.two_method_class\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]method\fR one : one_method_class
+.sp 
+\f[CB]method\fR undo : unit

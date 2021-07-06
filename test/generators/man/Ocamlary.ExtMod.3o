@@ -1,0 +1,21 @@
+
+.TH ExtMod 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.ExtMod
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.ExtMod\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t = \.\.
+.sp 
+\f[CB]type\fR t += 
+.br 
+.ti +2
+| \f[CB]Leisureforce\fR
+.br 
+

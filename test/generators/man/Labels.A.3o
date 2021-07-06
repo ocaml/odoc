@@ -1,0 +1,19 @@
+
+.TH A 3 "" "Odoc" "OCaml Library"
+.SH Name
+Labels\.A
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Labels\.A\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Attached to module\fR
+.in 
+.sp 
+

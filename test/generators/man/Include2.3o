@@ -1,0 +1,41 @@
+
+.TH Include2 3 "" "Odoc" "OCaml Library"
+.SH Name
+Include2
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include2\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR X : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+Comment about X that should not appear when including X below\.
+.nf 
+.sp 
+.fi 
+Comment about X that should not appear when including X below\.
+.nf 
+.sp 
+\f[CB]type\fR t = int
+.sp 
+\f[CB]module\fR Y : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+Top-comment of Y\.
+.nf 
+.sp 
+\f[CB]module\fR Y_include_synopsis : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+The include Y below should have the synopsis from Y's top-comment attached to it\.
+.nf 
+.sp 
+\f[CB]module\fR Y_include_doc : \f[CB]sig\fR \.\.\. \f[CB]end\fR

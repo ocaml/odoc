@@ -1,0 +1,25 @@
+
+.TH Dep11 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Dep11
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.Dep11\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]class\fR  c : \f[CB]object\fR
+.br 
+.ti +4
+\f[CB]method\fR m : int
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR

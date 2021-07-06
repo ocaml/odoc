@@ -1,0 +1,21 @@
+
+.TH ModuleWithSignatureAlias 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.ModuleWithSignatureAlias
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.ModuleWithSignatureAlias\fR
+.in 
+.sp 
+.fi 
+A plain module with an alias signature
+.nf 
+.sp 
+.fi 
+@deprecated: I don't like this element any more\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+

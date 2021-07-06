@@ -1,0 +1,14 @@
+
+.TH Foo 3 "" "Odoc" "OCaml Library"
+.SH Name
+Stop_dead_link_doc\.Foo
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Stop_dead_link_doc\.Foo\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t

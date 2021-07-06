@@ -1,0 +1,89 @@
+
+.TH Nested 3 "" "Odoc" "OCaml Library"
+.SH Name
+Nested
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Nested\fR
+.in 
+.sp 
+.fi 
+This comment needs to be here before #235 is fixed\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Module\fR
+.in 
+.sp 
+\f[CB]module\fR X : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This is module X\.
+.nf 
+.sp 
+.in 3
+\fB2 Module type\fR
+.in 
+.sp 
+\f[CB]module\fR \f[CB]type\fR Y = \f[CB]sig\fR
+.br 
+.ti +2
+.sp 
+.ti +2
+\fB2\.1\.1 Type\fR
+.sp 
+.ti +2
+\f[CB]type\fR t
+.fi 
+.br 
+.ti +4
+Some type\.
+.nf 
+.sp 
+.ti +2
+\fB2\.1\.2 Values\fR
+.sp 
+.ti +2
+\f[CB]val\fR y : t
+.fi 
+.br 
+.ti +4
+The value of y\.
+.nf 
+
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This is module type Y\.
+.nf 
+.sp 
+.in 3
+\fB3 Functor\fR
+.in 
+.sp 
+\f[CB]module\fR F (Arg1 : Y) (Arg2 : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This is a functor F\.
+.nf 
+.sp 
+.in 3
+\fB4 Class\fR
+.in 
+.sp 
+\f[CB]class\fR \f[CB]virtual\fR  z : \f[CB]object\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This is class z\.
+.nf 
+.sp 
+\f[CB]class\fR \f[CB]virtual\fR  inherits : \f[CB]object\fR \.\.\. \f[CB]end\fR

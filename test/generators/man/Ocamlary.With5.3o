@@ -1,0 +1,21 @@
+
+.TH With5 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.With5
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.With5\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR N : S

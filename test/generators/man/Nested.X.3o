@@ -1,0 +1,43 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Nested\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Nested\.X\fR
+.in 
+.sp 
+.fi 
+This is module X\.
+.nf 
+.sp 
+.fi 
+Some additional comments\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Type\fR
+.in 
+.sp 
+\f[CB]type\fR t
+.fi 
+.br 
+.ti +2
+Some type\.
+.nf 
+.sp 
+.in 3
+\fB2 Values\fR
+.in 
+.sp 
+\f[CB]val\fR x : t
+.fi 
+.br 
+.ti +2
+The value of x\.
+.nf 
+

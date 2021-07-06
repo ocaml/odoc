@@ -1,0 +1,14 @@
+
+.TH M' 3 "" "Odoc" "OCaml Library"
+.SH Name
+Module\.M'
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Module\.M'\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+

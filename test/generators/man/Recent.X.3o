@@ -1,0 +1,20 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Recent\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Recent\.X\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR L := Z\.Y
+.sp 
+\f[CB]type\fR t = int Z\.Y\.X\.t
+.sp 
+\f[CB]type\fR u := int
+.sp 
+\f[CB]type\fR v = u Z\.Y\.X\.t

@@ -1,0 +1,23 @@
+
+.TH F5 3 "" "Odoc" "OCaml Library"
+.SH Name
+Functor\.F5
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Functor\.F5\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]type\fR t

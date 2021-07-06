@@ -1,0 +1,17 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Include2\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include2\.X\fR
+.in 
+.sp 
+.fi 
+Comment about X that should not appear when including X below\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t = int
