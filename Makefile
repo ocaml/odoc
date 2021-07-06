@@ -38,12 +38,7 @@ serve :
 
 .PHONY : test
 test : build
-	$(DUNE) runtest $(DUNE_ARGS) src/parser/test
-	$(DUNE) build $(DUNE_ARGS) @test/model/runtest --no-buffer -j 1
-	$(DUNE) build $(DUNE_ARGS) @test/html/runtest --no-buffer -j 1
-	$(DUNE) build $(DUNE_ARGS) @test/man/runtest --no-buffer -j 1
-	$(DUNE) build $(DUNE_ARGS) @test/latex/runtest --no-buffer -j 1
-	$(DUNE) build $(DUNE_ARGS) @test/xref2/runtest --no-buffer -j 1
+	$(DUNE) runtest $(DUNE_ARGS)
 
 ODOC_RELATIVE_PATH := ../../_build/install/default/bin/
 
