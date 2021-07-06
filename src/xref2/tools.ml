@@ -439,8 +439,29 @@ and process_module_type env ~add_canonical m p' =
     Some (`SubstT (p, p'))
   in
   let p' = match substpath with Some p -> p | None -> p' in
-  let p'' = if add_canonical then add_canonical_path_mt m p' else p' in
-  p''
+  let alias_of expr =
+    match expr with
+    | Path alias_path -> begin
+      match
+        resolve_module_type ~mark_substituted:true ~add_canonical env alias_path.p_path
+      with
+      | Ok (resolved_alias_path, _) -> Some resolved_alias_path
+      | Error _ -> None
+      end
+    (* | Functor (_arg, res) -> alias_of res *)
+    | _ -> None
+  in
+  let p'' =
+    match m.expr with
+    | Some e -> begin
+      match alias_of e with 
+      | Some e -> `AliasModuleType (e, p')
+      | None -> p'
+    end
+    | None -> p'
+  in
+  let p''' = if add_canonical then add_canonical_path_mt m p'' else p'' in
+  p'''
 
 and get_module_path_modifiers :
     Env.t -> add_canonical:bool -> Component.Module.t -> _ option =
@@ -483,9 +504,10 @@ and handle_module_lookup env ~add_canonical id parent sg sub =
 and handle_module_type_lookup env ~add_canonical id p sg sub =
   let open OptionMonad in
   Find.module_type_in_sig sg id >>= fun (`FModuleType (name, mt)) ->
+  let mt = Subst.module_type sub mt in
   let p' = simplify_module_type env (`ModuleType (p, name)) in
   let p'' = process_module_type env ~add_canonical mt p' in
-  Some (p'', Subst.module_type sub mt)
+  Some (p'', mt)
 
 and handle_type_lookup env id p sg =
   match Find.careful_type_in_sig sg id with

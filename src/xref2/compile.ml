@@ -308,7 +308,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   let expr =
     match m.expr with
     | None -> None
-    | Some e -> Some (module_type_expr env sg_id e)
+    | Some e -> Some (module_type_expr env sg_id ~expand_paths:false e)
   in
   { m with expr }
 
@@ -605,8 +605,8 @@ and u_module_type_expr :
   inner expr
 
 and module_type_expr :
-    Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
- fun env id expr ->
+    Env.t -> Id.Signature.t -> ?expand_paths:bool -> ModuleType.expr -> ModuleType.expr =
+ fun env id ?(expand_paths=true) expr ->
   let get_expansion cur e =
     match cur with
     | Some e -> Some (simple_expansion env id e)
@@ -623,7 +623,8 @@ and module_type_expr :
   match expr with
   | Signature s -> Signature (signature env id s)
   | Path { p_path; p_expansion } as e ->
-      let p_expansion = get_expansion p_expansion e in
+      let p_expansion =
+        if expand_paths then get_expansion p_expansion e else p_expansion in
       Path { p_path = module_type_path env p_path; p_expansion }
   | With { w_substitutions; w_expansion; w_expr } as e -> (
       let w_expansion = get_expansion w_expansion e in
