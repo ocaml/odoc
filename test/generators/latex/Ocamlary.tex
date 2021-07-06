@@ -1,0 +1,970 @@
+\section{Module \ocamlinlinecode{Ocamlary}}\label{module-Ocamlary}%
+This is an \emph{interface} with \bold{all} of the \emph{module system} features. This documentation demonstrates:
+
+\begin{itemize}\item{comment formatting}%
+\item{unassociated comments}%
+\item{documentation sections}%
+\item{module system documentation including
+
+\begin{enumerate}\item{submodules}%
+\item{module aliases}%
+\item{module types}%
+\item{module type aliases}%
+\item{modules with signatures}%
+\item{modules with aliased signatures}\end{enumerate}%
+}\end{itemize}%
+A numbered list:
+
+\begin{enumerate}\item{3}%
+\item{2}%
+\item{1}\end{enumerate}%
+David Sheets is the author.
+
+\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{author}]{David Sheets}\end{description}%
+You may find more information about this HTML documentation renderer at \href{https://github.com/dsheets/ocamlary}{github.com/dsheets/ocamlary}\footnote{\url{https://github.com/dsheets/ocamlary}}.
+
+This is some verbatim text:
+
+\begin{verbatim}verbatim\end{verbatim}%
+This is some verbatim text:
+
+\begin{verbatim}[][df[]]}}\end{verbatim}%
+Here is some raw LaTeX:  $e^{i\pi} = -1$ 
+
+Here is an index table of \ocamlinlinecode{Empty} modules:
+
+\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{\hyperref[module-Ocamlary-module-Empty]{\ocamlinlinecode{\ocamlinlinecode{Empty}}[p\pageref*{module-Ocamlary-module-Empty}]}}]{A plain, empty module}%
+\item[{\hyperref[module-Ocamlary-module-Empty]{\ocamlinlinecode{\ocamlinlinecode{EmptyAlias}}[p\pageref*{module-Ocamlary-module-Empty}]}}]{A plain module alias of \ocamlinlinecode{Empty}}\end{description}%
+Here is a table of links to indexes: \ocamlinlinecode{indexlist}
+
+Here is some superscript: x\textsuperscript{2}
+
+Here is some subscript: x\textsubscript{0}
+
+Here are some escaped brackets: \{ [ @ ] \}
+
+Here is some \emph{emphasis} \ocamlinlinecode{followed by code}.
+
+An unassociated comment
+
+\subsection{Level 1\label{level-1}}%
+\subsubsection{Level 2\label{level-2}}%
+\subsubsection{Level 3\label{level-3}}%
+\subsubsection{Level 4\label{level-4}}%
+\subsubsection{Basic module stuff\label{basic-module-stuff}}%
+\label{module-Ocamlary-module-Empty}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Empty]{\ocamlinlinecode{Empty}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}A plain, empty module\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-Empty}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-Empty]{\ocamlinlinecode{Empty}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-Empty-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}An ambiguous, misnamed module type\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-MissingComment}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-MissingComment]{\ocamlinlinecode{MissingComment}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-MissingComment-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}An ambiguous, misnamed module type\end{ocamlindent}%
+\medbreak
+\subsection{Section 9000\label{s9000}}%
+\label{module-Ocamlary-module-EmptyAlias}\ocamlcodefragment{\ocamltag{keyword}{module} EmptyAlias = \hyperref[module-Ocamlary-module-Empty]{\ocamlinlinecode{Empty}}}\begin{ocamlindent}A plain module alias of \ocamlinlinecode{Empty}\end{ocamlindent}%
+\medbreak
+\subsubsection{EmptySig\label{emptySig}}%
+\label{module-Ocamlary-module-type-EmptySig}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-EmptySig]{\ocamlinlinecode{EmptySig}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}A plain, empty module signature\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-EmptySigAlias}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-EmptySigAlias]{\ocamlinlinecode{EmptySigAlias}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}A plain, empty module signature alias of\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-ModuleWithSignature}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-ModuleWithSignature]{\ocamlinlinecode{ModuleWithSignature}}}\ocamlcodefragment{ : \hyperref[module-Ocamlary-module-type-EmptySig]{\ocamlinlinecode{EmptySig}}}\begin{ocamlindent}A plain module of a signature of \hyperref[module-Ocamlary-module-type-EmptySig]{\ocamlinlinecode{\ocamlinlinecode{EmptySig}}[p\pageref*{module-Ocamlary-module-type-EmptySig}]} (reference)\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-ModuleWithSignatureAlias}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-ModuleWithSignatureAlias]{\ocamlinlinecode{ModuleWithSignatureAlias}}}\ocamlcodefragment{ : \hyperref[module-Ocamlary-module-type-EmptySigAlias]{\ocamlinlinecode{EmptySigAlias}}}\begin{ocamlindent}A plain module with an alias signature\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-One}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-One]{\ocamlinlinecode{One}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-One-type-one}\ocamlcodefragment{\ocamltag{keyword}{type} one}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-SigForMod}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-SigForMod]{\ocamlinlinecode{SigForMod}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-SigForMod-module-Inner}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-SigForMod-module-Inner]{\ocamlinlinecode{Inner}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-SigForMod-module-Inner-module-type-Empty}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-SigForMod-module-Inner-module-type-Empty]{\ocamlinlinecode{Empty}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}There's a signature in a module in this signature.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-SuperSig}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-SuperSig]{\ocamlinlinecode{SuperSig}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-SuperSig-module-type-SubSigA}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-SuperSig-module-type-SubSigA]{\ocamlinlinecode{SubSigA}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\subsubsection{A Labeled Section Header Inside of a Signature\label{subSig}}%
+\label{module-Ocamlary-module-type-SuperSig-module-type-SubSigA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{module-Ocamlary-module-type-SuperSig-module-type-SubSigA-module-SubSigAMod}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-SuperSig-module-type-SubSigA-module-SubSigAMod]{\ocamlinlinecode{SubSigAMod}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-SuperSig-module-type-SubSigA-module-SubSigAMod-type-sub+u+sig+u+a+u+mod}\ocamlcodefragment{\ocamltag{keyword}{type} sub\_\allowbreak{}sig\_\allowbreak{}a\_\allowbreak{}mod}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-SuperSig-module-type-SubSigB}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-SuperSig-module-type-SubSigB]{\ocamlinlinecode{SubSigB}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\subsubsection{Another Labeled Section Header Inside of a Signature\label{subSig}}%
+\label{module-Ocamlary-module-type-SuperSig-module-type-SubSigB-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-SuperSig-module-type-EmptySig}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-SuperSig-module-type-EmptySig]{\ocamlinlinecode{EmptySig}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-SuperSig-module-type-EmptySig-type-not+u+actually+u+empty}\ocamlcodefragment{\ocamltag{keyword}{type} not\_\allowbreak{}actually\_\allowbreak{}empty}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-SuperSig-module-type-One}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-SuperSig-module-type-One]{\ocamlinlinecode{One}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-SuperSig-module-type-One-type-two}\ocamlcodefragment{\ocamltag{keyword}{type} two}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-SuperSig-module-type-SuperSig}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-SuperSig-module-type-SuperSig]{\ocamlinlinecode{SuperSig}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+For a good time, see \ocamlinlinecode{SuperSig}.SubSigA.subSig or \ocamlinlinecode{SuperSig}.SubSigB.subSig or \hyperref[module-Ocamlary-module-type-SuperSig-module-type-EmptySig]{\ocamlinlinecode{\ocamlinlinecode{SuperSig.\allowbreak{}EmptySig}}[p\pageref*{module-Ocamlary-module-type-SuperSig-module-type-EmptySig}]}. Section \hyperref[module-Ocamlary-s9000]{\ocamlinlinecode{Section 9000}[p\pageref*{module-Ocamlary-s9000}]} is also interesting. \hyperref[module-Ocamlary-emptySig]{\ocamlinlinecode{EmptySig}[p\pageref*{module-Ocamlary-emptySig}]} is the section and \hyperref[module-Ocamlary-module-type-EmptySig]{\ocamlinlinecode{\ocamlinlinecode{EmptySig}}[p\pageref*{module-Ocamlary-module-type-EmptySig}]} is the module signature.
+
+\label{module-Ocamlary-module-Buffer}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Buffer]{\ocamlinlinecode{Buffer}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Buffer-val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : \hyperref[xref-unresolved]{\ocamlinlinecode{Stdlib}}.\allowbreak{}Buffer.\allowbreak{}t \ocamltag{arrow}{$\rightarrow$} unit}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}\ocamlinlinecode{Buffer}.t\end{ocamlindent}%
+\medbreak
+Some text before exception title.
+
+\subsubsection{Basic exception stuff\label{basic-exception-stuff}}%
+After exception title.
+
+\label{module-Ocamlary-exception-Kaboom}\ocamlcodefragment{\ocamltag{keyword}{exception} \ocamltag{exception}{Kaboom} \ocamltag{keyword}{of} unit}\begin{ocamlindent}Unary exception constructor\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-exception-Kablam}\ocamlcodefragment{\ocamltag{keyword}{exception} \ocamltag{exception}{Kablam} \ocamltag{keyword}{of} unit * unit}\begin{ocamlindent}Binary exception constructor\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-exception-Kapow}\ocamlcodefragment{\ocamltag{keyword}{exception} \ocamltag{exception}{Kapow} \ocamltag{keyword}{of} unit * unit}\begin{ocamlindent}Unary exception constructor over binary tuple\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-exception-EmptySig}\ocamlcodefragment{\ocamltag{keyword}{exception} \ocamltag{exception}{EmptySig}}\begin{ocamlindent}\hyperref[module-Ocamlary-module-type-EmptySig]{\ocamlinlinecode{\ocamlinlinecode{EmptySig}}[p\pageref*{module-Ocamlary-module-type-EmptySig}]} is a module and \hyperref[module-Ocamlary-exception-EmptySig]{\ocamlinlinecode{\ocamlinlinecode{EmptySig}}[p\pageref*{module-Ocamlary-exception-EmptySig}]} is this exception.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-exception-EmptySigAlias}\ocamlcodefragment{\ocamltag{keyword}{exception} \ocamltag{exception}{EmptySigAlias}}\begin{ocamlindent}\hyperref[module-Ocamlary-exception-EmptySigAlias]{\ocamlinlinecode{\ocamlinlinecode{EmptySigAlias}}[p\pageref*{module-Ocamlary-exception-EmptySigAlias}]} is this exception.\end{ocamlindent}%
+\medbreak
+\subsubsection{Basic type and value stuff with advanced doc comments\label{basic-type-and-value-stuff-with-advanced-doc-comments}}%
+\label{module-Ocamlary-type-a+u+function}\ocamlcodefragment{\ocamltag{keyword}{type} ('a,\allowbreak{} 'b) a\_\allowbreak{}function = \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'b}}\begin{ocamlindent}\hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{\ocamlinlinecode{a\_\allowbreak{}function}}[p\pageref*{module-Ocamlary-type-a+u+function}]} is this type and \hyperref[module-Ocamlary-val-a+u+function]{\ocamlinlinecode{\ocamlinlinecode{a\_\allowbreak{}function}}[p\pageref*{module-Ocamlary-val-a+u+function}]} is the value below.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-val-a+u+function}\ocamlcodefragment{\ocamltag{keyword}{val} a\_\allowbreak{}function : x:int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}This is \ocamlinlinecode{a\_\allowbreak{}function} with param and return type.\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{parameter x}]{the \ocamlinlinecode{x} coordinate}\end{description}%
+\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{returns}]{the \ocamlinlinecode{y} coordinate}\end{description}%
+\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-val-fun+u+fun+u+fun}\ocamlcodefragment{\ocamltag{keyword}{val} fun\_\allowbreak{}fun\_\allowbreak{}fun : ((int,\allowbreak{} int) \hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{a\_\allowbreak{}function}},\allowbreak{} (unit,\allowbreak{} unit) \hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{a\_\allowbreak{}function}}) \hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{a\_\allowbreak{}function}}}\\
+\label{module-Ocamlary-val-fun+u+maybe}\ocamlcodefragment{\ocamltag{keyword}{val} fun\_\allowbreak{}maybe : ?yes:unit \ocamltag{arrow}{$\rightarrow$} unit \ocamltag{arrow}{$\rightarrow$} int}\\
+\label{module-Ocamlary-val-not+u+found}\ocamlcodefragment{\ocamltag{keyword}{val} not\_\allowbreak{}found : unit \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{raises Not\_\allowbreak{}found}]{That's all it does}\end{description}%
+\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-val-ocaml+u+org}\ocamlcodefragment{\ocamltag{keyword}{val} ocaml\_\allowbreak{}org : string}\begin{ocamlindent}\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{see \href{http://ocaml.org/}{http://ocaml.org/}\footnote{\url{http://ocaml.org/}}}]{The OCaml Web site}\end{description}%
+\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-val-some+u+file}\ocamlcodefragment{\ocamltag{keyword}{val} some\_\allowbreak{}file : string}\begin{ocamlindent}\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{see \ocamlinlinecode{some\_\allowbreak{}file}}]{The file called \ocamlinlinecode{some\_\allowbreak{}file}}\end{description}%
+\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-val-some+u+doc}\ocamlcodefragment{\ocamltag{keyword}{val} some\_\allowbreak{}doc : string}\begin{ocamlindent}\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{see some\_\allowbreak{}doc}]{The document called \ocamlinlinecode{some\_\allowbreak{}doc}}\end{description}%
+\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-val-since+u+mesozoic}\ocamlcodefragment{\ocamltag{keyword}{val} since\_\allowbreak{}mesozoic : unit}\begin{ocamlindent}This value was introduced in the Mesozoic era.\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{since}]{mesozoic}\end{description}%
+\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-val-changing}\ocamlcodefragment{\ocamltag{keyword}{val} changing : unit}\begin{ocamlindent}This value has had changes in 1.0.0, 1.1.0, and 1.2.0.\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{before 1.\allowbreak{}0.\allowbreak{}0}]{before 1.0.0}\end{description}%
+\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{before 1.\allowbreak{}1.\allowbreak{}0}]{before 1.1.0}\end{description}%
+\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{version}]{1.2.0}\end{description}%
+\end{ocamlindent}%
+\medbreak
+\subsubsection{Some Operators\label{some-operators}}%
+\label{module-Ocamlary-val-(+t+-)}\ocamlcodefragment{\ocamltag{keyword}{val} (\textasciitilde{}-) : unit}\\
+\label{module-Ocamlary-val-(!)}\ocamlcodefragment{\ocamltag{keyword}{val} (!) : unit}\\
+\label{module-Ocamlary-val-(@)}\ocamlcodefragment{\ocamltag{keyword}{val} (@) : unit}\\
+\label{module-Ocamlary-val-($)}\ocamlcodefragment{\ocamltag{keyword}{val} (\$) : unit}\\
+\label{module-Ocamlary-val-(%)}\ocamlcodefragment{\ocamltag{keyword}{val} (\%) : unit}\\
+\label{module-Ocamlary-val-(&)}\ocamlcodefragment{\ocamltag{keyword}{val} (\&) : unit}\\
+\label{module-Ocamlary-val-(*)}\ocamlcodefragment{\ocamltag{keyword}{val} (*) : unit}\\
+\label{module-Ocamlary-val-(-)}\ocamlcodefragment{\ocamltag{keyword}{val} (-) : unit}\\
+\label{module-Ocamlary-val-(+++)}\ocamlcodefragment{\ocamltag{keyword}{val} (+) : unit}\\
+\label{module-Ocamlary-val-(-?)}\ocamlcodefragment{\ocamltag{keyword}{val} (-?) : unit}\\
+\label{module-Ocamlary-val-(/)}\ocamlcodefragment{\ocamltag{keyword}{val} (/) : unit}\\
+\label{module-Ocamlary-val-(:=)}\ocamlcodefragment{\ocamltag{keyword}{val} (:=) : unit}\\
+\label{module-Ocamlary-val-(=)}\ocamlcodefragment{\ocamltag{keyword}{val} (=) : unit}\\
+\label{module-Ocamlary-val-(land)}\ocamlcodefragment{\ocamltag{keyword}{val} (land) : unit}\\
+\subsubsection{Advanced Module Stuff\label{advanced-module-stuff}}%
+\label{module-Ocamlary-module-CollectionModule}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CollectionModule]{\ocamlinlinecode{CollectionModule}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CollectionModule-type-collection}\ocamlcodefragment{\ocamltag{keyword}{type} collection}\begin{ocamlindent}This comment is for \ocamlinlinecode{collection}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-CollectionModule-type-element}\ocamlcodefragment{\ocamltag{keyword}{type} element}\\
+\label{module-Ocamlary-module-CollectionModule-module-InnerModuleA}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CollectionModule-module-InnerModuleA]{\ocamlinlinecode{InnerModuleA}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CollectionModule-module-InnerModuleA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-CollectionModule-type-collection]{\ocamlinlinecode{collection}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-CollectionModule-module-InnerModuleA-module-InnerModuleA'}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CollectionModule-module-InnerModuleA-module-InnerModuleA']{\ocamlinlinecode{InnerModuleA'}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CollectionModule-module-InnerModuleA-module-InnerModuleA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = (unit,\allowbreak{} unit) \hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{a\_\allowbreak{}function}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA'}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-CollectionModule-module-InnerModuleA-module-type-InnerModuleTypeA'}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-CollectionModule-module-InnerModuleA-module-type-InnerModuleTypeA']{\ocamlinlinecode{InnerModuleTypeA'}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CollectionModule-module-InnerModuleA-module-type-InnerModuleTypeA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-CollectionModule-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA'}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-CollectionModule-module-type-InnerModuleTypeA}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-CollectionModule-module-type-InnerModuleTypeA]{\ocamlinlinecode{InnerModuleTypeA}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CollectionModule-module-type-InnerModuleTypeA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-CollectionModule-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA.\allowbreak{}InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{CollectionModule}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-COLLECTION}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-COLLECTION]{\ocamlinlinecode{COLLECTION}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}This comment is for \ocamlinlinecode{CollectionModule}.
+
+\label{module-Ocamlary-module-type-COLLECTION-type-collection}\ocamlcodefragment{\ocamltag{keyword}{type} collection}\begin{ocamlindent}This comment is for \ocamlinlinecode{collection}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-COLLECTION-type-element}\ocamlcodefragment{\ocamltag{keyword}{type} element}\\
+\label{module-Ocamlary-module-type-COLLECTION-module-InnerModuleA}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-COLLECTION-module-InnerModuleA]{\ocamlinlinecode{InnerModuleA}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-COLLECTION-module-InnerModuleA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-COLLECTION-type-collection]{\ocamlinlinecode{collection}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-COLLECTION-module-InnerModuleA-module-InnerModuleA'}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-COLLECTION-module-InnerModuleA-module-InnerModuleA']{\ocamlinlinecode{InnerModuleA'}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-COLLECTION-module-InnerModuleA-module-InnerModuleA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = (unit,\allowbreak{} unit) \hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{a\_\allowbreak{}function}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA'}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-COLLECTION-module-InnerModuleA-module-type-InnerModuleTypeA'}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-COLLECTION-module-InnerModuleA-module-type-InnerModuleTypeA']{\ocamlinlinecode{InnerModuleTypeA'}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-COLLECTION-module-InnerModuleA-module-type-InnerModuleTypeA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-COLLECTION-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA'}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-COLLECTION-module-type-InnerModuleTypeA}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-COLLECTION-module-type-InnerModuleTypeA]{\ocamlinlinecode{InnerModuleTypeA}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-COLLECTION-module-type-InnerModuleTypeA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-COLLECTION-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA.\allowbreak{}InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}module type of\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-Recollection}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Recollection]{\ocamlinlinecode{Recollection}}}\ocamlcodefragment{ (\hyperref[module-Ocamlary-module-Recollection-argument-1-C]{\ocamlinlinecode{C}} : \hyperref[module-Ocamlary-module-type-COLLECTION]{\ocamlinlinecode{COLLECTION}}) : \hyperref[module-Ocamlary-module-type-COLLECTION]{\ocamlinlinecode{COLLECTION}} \ocamltag{keyword}{with} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-COLLECTION-type-collection]{\ocamlinlinecode{collection}} = \hyperref[module-Ocamlary-module-Recollection-argument-1-C-type-element]{\ocamlinlinecode{C.\allowbreak{}element}} list \ocamltag{keyword}{and} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-COLLECTION-type-element]{\ocamlinlinecode{element}} = \hyperref[module-Ocamlary-module-Recollection-argument-1-C-type-collection]{\ocamlinlinecode{C.\allowbreak{}collection}}}\\
+\label{module-Ocamlary-module-type-MMM}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-MMM]{\ocamlinlinecode{MMM}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-MMM-module-C}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-MMM-module-C]{\ocamlinlinecode{C}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}This comment is for \ocamlinlinecode{CollectionModule}.
+
+\label{module-Ocamlary-module-type-MMM-module-C-type-collection}\ocamlcodefragment{\ocamltag{keyword}{type} collection}\begin{ocamlindent}This comment is for \ocamlinlinecode{collection}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-MMM-module-C-type-element}\ocamlcodefragment{\ocamltag{keyword}{type} element}\\
+\label{module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA]{\ocamlinlinecode{InnerModuleA}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-MMM-module-C-type-collection]{\ocamlinlinecode{collection}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA-module-InnerModuleA'}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA-module-InnerModuleA']{\ocamlinlinecode{InnerModuleA'}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA-module-InnerModuleA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = (unit,\allowbreak{} unit) \hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{a\_\allowbreak{}function}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA'}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA-module-type-InnerModuleTypeA'}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA-module-type-InnerModuleTypeA']{\ocamlinlinecode{InnerModuleTypeA'}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA-module-type-InnerModuleTypeA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA'}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-MMM-module-C-module-type-InnerModuleTypeA}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-MMM-module-C-module-type-InnerModuleTypeA]{\ocamlinlinecode{InnerModuleTypeA}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-MMM-module-C-module-type-InnerModuleTypeA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-MMM-module-C-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA.\allowbreak{}InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-RECOLLECTION}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-RECOLLECTION]{\ocamlinlinecode{RECOLLECTION}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-RECOLLECTION-module-C}\ocamlcodefragment{\ocamltag{keyword}{module} C = \hyperref[module-Ocamlary-module-Recollection]{\ocamlinlinecode{Recollection(CollectionModule)}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-RecollectionModule}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-RecollectionModule]{\ocamlinlinecode{RecollectionModule}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-RecollectionModule-type-collection}\ocamlcodefragment{\ocamltag{keyword}{type} collection = \hyperref[module-Ocamlary-module-CollectionModule-type-element]{\ocamlinlinecode{CollectionModule.\allowbreak{}element}} list}\\
+\label{module-Ocamlary-module-type-RecollectionModule-type-element}\ocamlcodefragment{\ocamltag{keyword}{type} element = \hyperref[module-Ocamlary-module-CollectionModule-type-collection]{\ocamlinlinecode{CollectionModule.\allowbreak{}collection}}}\\
+\label{module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA]{\ocamlinlinecode{InnerModuleA}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-RecollectionModule-type-collection]{\ocamlinlinecode{collection}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA-module-InnerModuleA'}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA-module-InnerModuleA']{\ocamlinlinecode{InnerModuleA'}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA-module-InnerModuleA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = (unit,\allowbreak{} unit) \hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{a\_\allowbreak{}function}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA'}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA-module-type-InnerModuleTypeA'}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA-module-type-InnerModuleTypeA']{\ocamlinlinecode{InnerModuleTypeA'}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA-module-type-InnerModuleTypeA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA'}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-RecollectionModule-module-type-InnerModuleTypeA}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-RecollectionModule-module-type-InnerModuleTypeA]{\ocamlinlinecode{InnerModuleTypeA}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-RecollectionModule-module-type-InnerModuleTypeA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-RecollectionModule-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA.\allowbreak{}InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-A}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-A]{\ocamlinlinecode{A}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-A-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{module-Ocamlary-module-type-A-module-Q}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-A-module-Q]{\ocamlinlinecode{Q}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}This comment is for \ocamlinlinecode{CollectionModule}.
+
+\label{module-Ocamlary-module-type-A-module-Q-type-collection}\ocamlcodefragment{\ocamltag{keyword}{type} collection}\begin{ocamlindent}This comment is for \ocamlinlinecode{collection}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-A-module-Q-type-element}\ocamlcodefragment{\ocamltag{keyword}{type} element}\\
+\label{module-Ocamlary-module-type-A-module-Q-module-InnerModuleA}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-A-module-Q-module-InnerModuleA]{\ocamlinlinecode{InnerModuleA}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-A-module-Q-module-InnerModuleA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-A-module-Q-type-collection]{\ocamlinlinecode{collection}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-A-module-Q-module-InnerModuleA-module-InnerModuleA'}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-A-module-Q-module-InnerModuleA-module-InnerModuleA']{\ocamlinlinecode{InnerModuleA'}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-A-module-Q-module-InnerModuleA-module-InnerModuleA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = (unit,\allowbreak{} unit) \hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{a\_\allowbreak{}function}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA'}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-A-module-Q-module-InnerModuleA-module-type-InnerModuleTypeA'}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-A-module-Q-module-InnerModuleA-module-type-InnerModuleTypeA']{\ocamlinlinecode{InnerModuleTypeA'}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-A-module-Q-module-InnerModuleA-module-type-InnerModuleTypeA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-A-module-Q-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA'}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-A-module-Q-module-type-InnerModuleTypeA}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-A-module-Q-module-type-InnerModuleTypeA]{\ocamlinlinecode{InnerModuleTypeA}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-A-module-Q-module-type-InnerModuleTypeA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-A-module-Q-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA.\allowbreak{}InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-B}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-B]{\ocamlinlinecode{B}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-B-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{module-Ocamlary-module-type-B-module-Q}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-B-module-Q]{\ocamlinlinecode{Q}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}This comment is for \ocamlinlinecode{CollectionModule}.
+
+\label{module-Ocamlary-module-type-B-module-Q-type-collection}\ocamlcodefragment{\ocamltag{keyword}{type} collection}\begin{ocamlindent}This comment is for \ocamlinlinecode{collection}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-B-module-Q-type-element}\ocamlcodefragment{\ocamltag{keyword}{type} element}\\
+\label{module-Ocamlary-module-type-B-module-Q-module-InnerModuleA}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-B-module-Q-module-InnerModuleA]{\ocamlinlinecode{InnerModuleA}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-B-module-Q-module-InnerModuleA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-B-module-Q-type-collection]{\ocamlinlinecode{collection}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-B-module-Q-module-InnerModuleA-module-InnerModuleA'}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-B-module-Q-module-InnerModuleA-module-InnerModuleA']{\ocamlinlinecode{InnerModuleA'}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-B-module-Q-module-InnerModuleA-module-InnerModuleA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = (unit,\allowbreak{} unit) \hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{a\_\allowbreak{}function}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA'}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-B-module-Q-module-InnerModuleA-module-type-InnerModuleTypeA'}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-B-module-Q-module-InnerModuleA-module-type-InnerModuleTypeA']{\ocamlinlinecode{InnerModuleTypeA'}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-B-module-Q-module-InnerModuleA-module-type-InnerModuleTypeA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-B-module-Q-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA'}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-B-module-Q-module-type-InnerModuleTypeA}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-B-module-Q-module-type-InnerModuleTypeA]{\ocamlinlinecode{InnerModuleTypeA}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-B-module-Q-module-type-InnerModuleTypeA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-B-module-Q-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA.\allowbreak{}InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-C}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-C]{\ocamlinlinecode{C}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\ocamltag{keyword}{include} \hyperref[module-Ocamlary-module-type-A]{\ocamlinlinecode{A}}\label{module-Ocamlary-module-type-C-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{module-Ocamlary-module-type-C-module-Q}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-C-module-Q]{\ocamlinlinecode{Q}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}This comment is for \ocamlinlinecode{CollectionModule}.
+
+\label{module-Ocamlary-module-type-C-module-Q-type-collection}\ocamlcodefragment{\ocamltag{keyword}{type} collection}\begin{ocamlindent}This comment is for \ocamlinlinecode{collection}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-C-module-Q-type-element}\ocamlcodefragment{\ocamltag{keyword}{type} element}\\
+\label{module-Ocamlary-module-type-C-module-Q-module-InnerModuleA}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-C-module-Q-module-InnerModuleA]{\ocamlinlinecode{InnerModuleA}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-C-module-Q-module-InnerModuleA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-C-module-Q-type-collection]{\ocamlinlinecode{collection}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-C-module-Q-module-InnerModuleA-module-InnerModuleA'}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-C-module-Q-module-InnerModuleA-module-InnerModuleA']{\ocamlinlinecode{InnerModuleA'}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-C-module-Q-module-InnerModuleA-module-InnerModuleA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = (unit,\allowbreak{} unit) \hyperref[module-Ocamlary-type-a+u+function]{\ocamlinlinecode{a\_\allowbreak{}function}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA'}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-C-module-Q-module-InnerModuleA-module-type-InnerModuleTypeA'}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-C-module-Q-module-InnerModuleA-module-type-InnerModuleTypeA']{\ocamlinlinecode{InnerModuleTypeA'}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-C-module-Q-module-InnerModuleA-module-type-InnerModuleTypeA'-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-C-module-Q-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA'}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleA}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-C-module-Q-module-type-InnerModuleTypeA}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-C-module-Q-module-type-InnerModuleTypeA]{\ocamlinlinecode{InnerModuleTypeA}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-C-module-Q-module-type-InnerModuleTypeA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-type-C-module-Q-module-InnerModuleA-module-InnerModuleA'-type-t]{\ocamlinlinecode{InnerModuleA.\allowbreak{}InnerModuleA'.\allowbreak{}t}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{t}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{InnerModuleTypeA}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} \hyperref[module-Ocamlary-module-type-B]{\ocamlinlinecode{B}} \ocamltag{keyword}{with} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-B-type-t]{\ocamlinlinecode{t}} := \hyperref[module-Ocamlary-module-type-C-type-t]{\ocamlinlinecode{t}} \ocamltag{keyword}{and} \ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-B-module-Q]{\ocamlinlinecode{Q}} := \hyperref[module-Ocamlary-module-type-C-module-Q]{\ocamlinlinecode{Q}}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This module type includes two signatures.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-FunctorTypeOf}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-FunctorTypeOf]{\ocamlinlinecode{FunctorTypeOf}}}\ocamlcodefragment{ (\hyperref[module-Ocamlary-module-FunctorTypeOf-argument-1-Collection]{\ocamlinlinecode{Collection}} : \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-module-CollectionModule]{\ocamlinlinecode{CollectionModule}}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{FunctorTypeOf}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-IncludeModuleType}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-IncludeModuleType]{\ocamlinlinecode{IncludeModuleType}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}This comment is for \ocamlinlinecode{include EmptySigAlias}.\ocamltag{keyword}{include} \hyperref[module-Ocamlary-module-type-EmptySigAlias]{\ocamlinlinecode{EmptySigAlias}}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This comment is for \ocamlinlinecode{IncludeModuleType}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-type-ToInclude}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-ToInclude]{\ocamlinlinecode{ToInclude}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-ToInclude-module-IncludedA}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-ToInclude-module-IncludedA]{\ocamlinlinecode{IncludedA}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-ToInclude-module-IncludedA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-ToInclude-module-type-IncludedB}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-ToInclude-module-type-IncludedB]{\ocamlinlinecode{IncludedB}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-ToInclude-module-type-IncludedB-type-s}\ocamlcodefragment{\ocamltag{keyword}{type} s}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} \hyperref[module-Ocamlary-module-type-ToInclude]{\ocamlinlinecode{ToInclude}}\label{module-Ocamlary-module-IncludedA}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-IncludedA]{\ocamlinlinecode{IncludedA}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-IncludedA-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-IncludedB}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-IncludedB]{\ocamlinlinecode{IncludedB}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-IncludedB-type-s}\ocamlcodefragment{\ocamltag{keyword}{type} s}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\subsubsection{Advanced Type Stuff\label{advanced-type-stuff}}%
+\label{module-Ocamlary-type-record}\ocamlcodefragment{\ocamltag{keyword}{type} record = \{}\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{field1 : int;\allowbreak{}}\label{module-Ocamlary-type-record.field1}& This comment is for \ocamlinlinecode{field1}.\\
+\ocamlinlinecode{field2 : int;\allowbreak{}}\label{module-Ocamlary-type-record.field2}& This comment is for \ocamlinlinecode{field2}.\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\begin{ocamlindent}This comment is for \ocamlinlinecode{record}.This comment is also for \ocamlinlinecode{record}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-mutable+u+record}\ocamlcodefragment{\ocamltag{keyword}{type} mutable\_\allowbreak{}record = \{}\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{\ocamltag{keyword}{mutable} a : int;\allowbreak{}}\label{module-Ocamlary-type-mutable+u+record.a}& \ocamlinlinecode{a} is first and mutable\\
+\ocamlinlinecode{b : unit;\allowbreak{}}\label{module-Ocamlary-type-mutable+u+record.b}& \ocamlinlinecode{b} is second and immutable\\
+\ocamlinlinecode{\ocamltag{keyword}{mutable} c : int;\allowbreak{}}\label{module-Ocamlary-type-mutable+u+record.c}& \ocamlinlinecode{c} is third and mutable\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\label{module-Ocamlary-type-universe+u+record}\ocamlcodefragment{\ocamltag{keyword}{type} universe\_\allowbreak{}record = \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{nihilate : a.\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} unit;\allowbreak{}}\label{module-Ocamlary-type-universe+u+record.nihilate}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\label{module-Ocamlary-type-variant}\ocamlcodefragment{\ocamltag{keyword}{type} variant = }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{TagA}}\label{module-Ocamlary-type-variant.TagA}& This comment is for \ocamlinlinecode{TagA}.\\
+\ocamlcodefragment{| \ocamltag{constructor}{ConstrB} \ocamltag{keyword}{of} int}\label{module-Ocamlary-type-variant.ConstrB}& This comment is for \ocamlinlinecode{ConstrB}.\\
+\ocamlcodefragment{| \ocamltag{constructor}{ConstrC} \ocamltag{keyword}{of} int * int}\label{module-Ocamlary-type-variant.ConstrC}& This comment is for binary \ocamlinlinecode{ConstrC}.\\
+\ocamlcodefragment{| \ocamltag{constructor}{ConstrD} \ocamltag{keyword}{of} int * int}\label{module-Ocamlary-type-variant.ConstrD}& This comment is for unary \ocamlinlinecode{ConstrD} of binary tuple.\\
+\end{ocamltabular}%
+\\
+\begin{ocamlindent}This comment is for \ocamlinlinecode{variant}.This comment is also for \ocamlinlinecode{variant}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-poly+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} poly\_\allowbreak{}variant = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`TagA}\label{module-Ocamlary-type-poly+u+variant.TagA}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`ConstrB \ocamltag{keyword}{of} int}\label{module-Ocamlary-type-poly+u+variant.ConstrB}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\begin{ocamlindent}This comment is for \ocamlinlinecode{poly\_\allowbreak{}variant}.Wow! It was a polymorphic variant!\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-full+u+gadt}\ocamlcodefragment{\ocamltag{keyword}{type} (\_\allowbreak{},\allowbreak{} \_\allowbreak{}) full\_\allowbreak{}gadt = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{Tag} : (unit,\allowbreak{} unit) \hyperref[module-Ocamlary-type-full+u+gadt]{\ocamlinlinecode{full\_\allowbreak{}gadt}}}\label{module-Ocamlary-type-full+u+gadt.Tag}\\
+\ocamlcodefragment{| \ocamltag{constructor}{First} : \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} (\ocamltag{type-var}{'a},\allowbreak{} unit) \hyperref[module-Ocamlary-type-full+u+gadt]{\ocamlinlinecode{full\_\allowbreak{}gadt}}}\label{module-Ocamlary-type-full+u+gadt.First}\\
+\ocamlcodefragment{| \ocamltag{constructor}{Second} : \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} (unit,\allowbreak{} \ocamltag{type-var}{'a}) \hyperref[module-Ocamlary-type-full+u+gadt]{\ocamlinlinecode{full\_\allowbreak{}gadt}}}\label{module-Ocamlary-type-full+u+gadt.Second}\\
+\ocamlcodefragment{| \ocamltag{constructor}{Exist} : \ocamltag{type-var}{'a} * \ocamltag{type-var}{'b} \ocamltag{arrow}{$\rightarrow$} (\ocamltag{type-var}{'b},\allowbreak{} unit) \hyperref[module-Ocamlary-type-full+u+gadt]{\ocamlinlinecode{full\_\allowbreak{}gadt}}}\label{module-Ocamlary-type-full+u+gadt.Exist}\\
+\end{ocamltabular}%
+\\
+\begin{ocamlindent}This comment is for \ocamlinlinecode{full\_\allowbreak{}gadt}.Wow! It was a GADT!\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-partial+u+gadt}\ocamlcodefragment{\ocamltag{keyword}{type} 'a partial\_\allowbreak{}gadt = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{AscribeTag} : \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-type-partial+u+gadt]{\ocamlinlinecode{partial\_\allowbreak{}gadt}}}\label{module-Ocamlary-type-partial+u+gadt.AscribeTag}\\
+\ocamlcodefragment{| \ocamltag{constructor}{OfTag} \ocamltag{keyword}{of} \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-type-partial+u+gadt]{\ocamlinlinecode{partial\_\allowbreak{}gadt}}}\label{module-Ocamlary-type-partial+u+gadt.OfTag}\\
+\ocamlcodefragment{| \ocamltag{constructor}{ExistGadtTag} : (\ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'b}) \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-type-partial+u+gadt]{\ocamlinlinecode{partial\_\allowbreak{}gadt}}}\label{module-Ocamlary-type-partial+u+gadt.ExistGadtTag}\\
+\end{ocamltabular}%
+\\
+\begin{ocamlindent}This comment is for \ocamlinlinecode{partial\_\allowbreak{}gadt}.Wow! It was a mixed GADT!\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-alias}\ocamlcodefragment{\ocamltag{keyword}{type} alias = \hyperref[module-Ocamlary-type-variant]{\ocamlinlinecode{variant}}}\begin{ocamlindent}This comment is for \ocamlinlinecode{alias}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-tuple}\ocamlcodefragment{\ocamltag{keyword}{type} tuple = (\hyperref[module-Ocamlary-type-alias]{\ocamlinlinecode{alias}} * \hyperref[module-Ocamlary-type-alias]{\ocamlinlinecode{alias}}) * \hyperref[module-Ocamlary-type-alias]{\ocamlinlinecode{alias}} * (\hyperref[module-Ocamlary-type-alias]{\ocamlinlinecode{alias}} * \hyperref[module-Ocamlary-type-alias]{\ocamlinlinecode{alias}})}\begin{ocamlindent}This comment is for \ocamlinlinecode{tuple}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-variant+u+alias}\ocamlcodefragment{\ocamltag{keyword}{type} variant\_\allowbreak{}alias = \hyperref[module-Ocamlary-type-variant]{\ocamlinlinecode{variant}} = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{TagA}}\label{module-Ocamlary-type-variant+u+alias.TagA}\\
+\ocamlcodefragment{| \ocamltag{constructor}{ConstrB} \ocamltag{keyword}{of} int}\label{module-Ocamlary-type-variant+u+alias.ConstrB}\\
+\ocamlcodefragment{| \ocamltag{constructor}{ConstrC} \ocamltag{keyword}{of} int * int}\label{module-Ocamlary-type-variant+u+alias.ConstrC}\\
+\ocamlcodefragment{| \ocamltag{constructor}{ConstrD} \ocamltag{keyword}{of} int * int}\label{module-Ocamlary-type-variant+u+alias.ConstrD}\\
+\end{ocamltabular}%
+\\
+\begin{ocamlindent}This comment is for \ocamlinlinecode{variant\_\allowbreak{}alias}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-record+u+alias}\ocamlcodefragment{\ocamltag{keyword}{type} record\_\allowbreak{}alias = \hyperref[module-Ocamlary-type-record]{\ocamlinlinecode{record}} = \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{field1 : int;\allowbreak{}}\label{module-Ocamlary-type-record+u+alias.field1}\\
+\ocamlinlinecode{field2 : int;\allowbreak{}}\label{module-Ocamlary-type-record+u+alias.field2}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\begin{ocamlindent}This comment is for \ocamlinlinecode{record\_\allowbreak{}alias}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-poly+u+variant+u+union}\ocamlcodefragment{\ocamltag{keyword}{type} poly\_\allowbreak{}variant\_\allowbreak{}union = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{\hyperref[module-Ocamlary-type-poly+u+variant]{\ocamlinlinecode{poly\_\allowbreak{}variant}}}\label{module-Ocamlary-type-poly+u+variant+u+union.poly+u+variant}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`TagC}\label{module-Ocamlary-type-poly+u+variant+u+union.TagC}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\begin{ocamlindent}This comment is for \ocamlinlinecode{poly\_\allowbreak{}variant\_\allowbreak{}union}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-poly+u+poly+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a poly\_\allowbreak{}poly\_\allowbreak{}variant = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`TagA \ocamltag{keyword}{of} \ocamltag{type-var}{'a}}\label{module-Ocamlary-type-poly+u+poly+u+variant.TagA}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\\
+\label{module-Ocamlary-type-bin+u+poly+u+poly+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} ('a,\allowbreak{} 'b) bin\_\allowbreak{}poly\_\allowbreak{}poly\_\allowbreak{}variant = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`TagA \ocamltag{keyword}{of} \ocamltag{type-var}{'a}}\label{module-Ocamlary-type-bin+u+poly+u+poly+u+variant.TagA}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`ConstrB \ocamltag{keyword}{of} \ocamltag{type-var}{'b}}\label{module-Ocamlary-type-bin+u+poly+u+poly+u+variant.ConstrB}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\\
+\label{module-Ocamlary-type-open+u+poly+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a open\_\allowbreak{}poly\_\allowbreak{}variant = [> `TagA ] \ocamltag{keyword}{as} 'a}\\
+\label{module-Ocamlary-type-open+u+poly+u+variant2}\ocamlcodefragment{\ocamltag{keyword}{type} 'a open\_\allowbreak{}poly\_\allowbreak{}variant2 = [> `ConstrB of int ] \ocamltag{keyword}{as} 'a}\\
+\label{module-Ocamlary-type-open+u+poly+u+variant+u+alias}\ocamlcodefragment{\ocamltag{keyword}{type} 'a open\_\allowbreak{}poly\_\allowbreak{}variant\_\allowbreak{}alias = \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-type-open+u+poly+u+variant]{\ocamlinlinecode{open\_\allowbreak{}poly\_\allowbreak{}variant}} \hyperref[module-Ocamlary-type-open+u+poly+u+variant2]{\ocamlinlinecode{open\_\allowbreak{}poly\_\allowbreak{}variant2}}}\\
+\label{module-Ocamlary-type-poly+u+fun}\ocamlcodefragment{\ocamltag{keyword}{type} 'a poly\_\allowbreak{}fun = [> `ConstrB of int ] \ocamltag{keyword}{as} 'a \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\\
+\label{module-Ocamlary-type-poly+u+fun+u+constraint}\ocamlcodefragment{\ocamltag{keyword}{type} 'a poly\_\allowbreak{}fun\_\allowbreak{}constraint = \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [> `TagA ]}\\
+\label{module-Ocamlary-type-closed+u+poly+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a closed\_\allowbreak{}poly\_\allowbreak{}variant = [< `One | `Two ] \ocamltag{keyword}{as} 'a}\\
+\label{module-Ocamlary-type-clopen+u+poly+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a clopen\_\allowbreak{}poly\_\allowbreak{}variant = [< `One | `Two of int | `Three Two Three ] \ocamltag{keyword}{as} 'a}\\
+\label{module-Ocamlary-type-nested+u+poly+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}poly\_\allowbreak{}variant = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A}\label{module-Ocamlary-type-nested+u+poly+u+variant.A}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`B \ocamltag{keyword}{of} [ `B1 | `B2 ]}\label{module-Ocamlary-type-nested+u+poly+u+variant.B}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`C}\label{module-Ocamlary-type-nested+u+poly+u+variant.C}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`D \ocamltag{keyword}{of} [ `D1 of [ `D1a ] ]}\label{module-Ocamlary-type-nested+u+poly+u+variant.D}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\\
+\label{module-Ocamlary-type-full+u+gadt+u+alias}\ocamlcodefragment{\ocamltag{keyword}{type} ('a,\allowbreak{} 'b) full\_\allowbreak{}gadt\_\allowbreak{}alias = (\ocamltag{type-var}{'a},\allowbreak{} \ocamltag{type-var}{'b}) \hyperref[module-Ocamlary-type-full+u+gadt]{\ocamlinlinecode{full\_\allowbreak{}gadt}} = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{Tag} : (unit,\allowbreak{} unit) \hyperref[module-Ocamlary-type-full+u+gadt+u+alias]{\ocamlinlinecode{full\_\allowbreak{}gadt\_\allowbreak{}alias}}}\label{module-Ocamlary-type-full+u+gadt+u+alias.Tag}\\
+\ocamlcodefragment{| \ocamltag{constructor}{First} : \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} (\ocamltag{type-var}{'a},\allowbreak{} unit) \hyperref[module-Ocamlary-type-full+u+gadt+u+alias]{\ocamlinlinecode{full\_\allowbreak{}gadt\_\allowbreak{}alias}}}\label{module-Ocamlary-type-full+u+gadt+u+alias.First}\\
+\ocamlcodefragment{| \ocamltag{constructor}{Second} : \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} (unit,\allowbreak{} \ocamltag{type-var}{'a}) \hyperref[module-Ocamlary-type-full+u+gadt+u+alias]{\ocamlinlinecode{full\_\allowbreak{}gadt\_\allowbreak{}alias}}}\label{module-Ocamlary-type-full+u+gadt+u+alias.Second}\\
+\ocamlcodefragment{| \ocamltag{constructor}{Exist} : \ocamltag{type-var}{'a} * \ocamltag{type-var}{'b} \ocamltag{arrow}{$\rightarrow$} (\ocamltag{type-var}{'b},\allowbreak{} unit) \hyperref[module-Ocamlary-type-full+u+gadt+u+alias]{\ocamlinlinecode{full\_\allowbreak{}gadt\_\allowbreak{}alias}}}\label{module-Ocamlary-type-full+u+gadt+u+alias.Exist}\\
+\end{ocamltabular}%
+\\
+\begin{ocamlindent}This comment is for \ocamlinlinecode{full\_\allowbreak{}gadt\_\allowbreak{}alias}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-partial+u+gadt+u+alias}\ocamlcodefragment{\ocamltag{keyword}{type} 'a partial\_\allowbreak{}gadt\_\allowbreak{}alias = \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-type-partial+u+gadt]{\ocamlinlinecode{partial\_\allowbreak{}gadt}} = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{AscribeTag} : \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-type-partial+u+gadt+u+alias]{\ocamlinlinecode{partial\_\allowbreak{}gadt\_\allowbreak{}alias}}}\label{module-Ocamlary-type-partial+u+gadt+u+alias.AscribeTag}\\
+\ocamlcodefragment{| \ocamltag{constructor}{OfTag} \ocamltag{keyword}{of} \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-type-partial+u+gadt+u+alias]{\ocamlinlinecode{partial\_\allowbreak{}gadt\_\allowbreak{}alias}}}\label{module-Ocamlary-type-partial+u+gadt+u+alias.OfTag}\\
+\ocamlcodefragment{| \ocamltag{constructor}{ExistGadtTag} : (\ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'b}) \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-type-partial+u+gadt+u+alias]{\ocamlinlinecode{partial\_\allowbreak{}gadt\_\allowbreak{}alias}}}\label{module-Ocamlary-type-partial+u+gadt+u+alias.ExistGadtTag}\\
+\end{ocamltabular}%
+\\
+\begin{ocamlindent}This comment is for \ocamlinlinecode{partial\_\allowbreak{}gadt\_\allowbreak{}alias}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-exception-Exn+u+arrow}\ocamlcodefragment{\ocamltag{keyword}{exception} \ocamltag{exception}{Exn\_\allowbreak{}arrow} : unit \ocamltag{arrow}{$\rightarrow$} exn}\begin{ocamlindent}This comment is for \hyperref[module-Ocamlary-exception-Exn+u+arrow]{\ocamlinlinecode{\ocamlinlinecode{Exn\_\allowbreak{}arrow}}[p\pageref*{module-Ocamlary-exception-Exn+u+arrow}]}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-mutual+u+constr+u+a}\ocamlcodefragment{\ocamltag{keyword}{type} mutual\_\allowbreak{}constr\_\allowbreak{}a = }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A}}\label{module-Ocamlary-type-mutual+u+constr+u+a.A}& \\
+\ocamlcodefragment{| \ocamltag{constructor}{B\_\allowbreak{}ish} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-type-mutual+u+constr+u+b]{\ocamlinlinecode{mutual\_\allowbreak{}constr\_\allowbreak{}b}}}\label{module-Ocamlary-type-mutual+u+constr+u+a.B+u+ish}& This comment is between \hyperref[module-Ocamlary-type-mutual+u+constr+u+a]{\ocamlinlinecode{\ocamlinlinecode{mutual\_\allowbreak{}constr\_\allowbreak{}a}}[p\pageref*{module-Ocamlary-type-mutual+u+constr+u+a}]} and \hyperref[module-Ocamlary-type-mutual+u+constr+u+b]{\ocamlinlinecode{\ocamlinlinecode{mutual\_\allowbreak{}constr\_\allowbreak{}b}}[p\pageref*{module-Ocamlary-type-mutual+u+constr+u+b}]}.\\
+\end{ocamltabular}%
+\\
+\begin{ocamlindent}This comment is for \hyperref[module-Ocamlary-type-mutual+u+constr+u+a]{\ocamlinlinecode{\ocamlinlinecode{mutual\_\allowbreak{}constr\_\allowbreak{}a}}[p\pageref*{module-Ocamlary-type-mutual+u+constr+u+a}]} then \hyperref[module-Ocamlary-type-mutual+u+constr+u+b]{\ocamlinlinecode{\ocamlinlinecode{mutual\_\allowbreak{}constr\_\allowbreak{}b}}[p\pageref*{module-Ocamlary-type-mutual+u+constr+u+b}]}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-mutual+u+constr+u+b}\ocamlcodefragment{\ocamltag{keyword}{and} mutual\_\allowbreak{}constr\_\allowbreak{}b = }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{B}}\label{module-Ocamlary-type-mutual+u+constr+u+b.B}& \\
+\ocamlcodefragment{| \ocamltag{constructor}{A\_\allowbreak{}ish} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-type-mutual+u+constr+u+a]{\ocamlinlinecode{mutual\_\allowbreak{}constr\_\allowbreak{}a}}}\label{module-Ocamlary-type-mutual+u+constr+u+b.A+u+ish}& This comment must be here for the next to associate correctly.\\
+\end{ocamltabular}%
+\\
+\begin{ocamlindent}This comment is for \hyperref[module-Ocamlary-type-mutual+u+constr+u+b]{\ocamlinlinecode{\ocamlinlinecode{mutual\_\allowbreak{}constr\_\allowbreak{}b}}[p\pageref*{module-Ocamlary-type-mutual+u+constr+u+b}]} then \hyperref[module-Ocamlary-type-mutual+u+constr+u+a]{\ocamlinlinecode{\ocamlinlinecode{mutual\_\allowbreak{}constr\_\allowbreak{}a}}[p\pageref*{module-Ocamlary-type-mutual+u+constr+u+a}]}.\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-rec+u+obj}\ocamlcodefragment{\ocamltag{keyword}{type} rec\_\allowbreak{}obj = < f : int;\allowbreak{} g : unit \ocamltag{arrow}{$\rightarrow$} unit;\allowbreak{} h : \hyperref[module-Ocamlary-type-rec+u+obj]{\ocamlinlinecode{rec\_\allowbreak{}obj}};\allowbreak{} >}\\
+\label{module-Ocamlary-type-open+u+obj}\ocamlcodefragment{\ocamltag{keyword}{type} 'a open\_\allowbreak{}obj = < f : int;\allowbreak{} g : unit \ocamltag{arrow}{$\rightarrow$} unit;\allowbreak{} .\allowbreak{}.\allowbreak{} > \ocamltag{keyword}{as} 'a}\\
+\label{module-Ocamlary-type-oof}\ocamlcodefragment{\ocamltag{keyword}{type} 'a oof = < a : unit;\allowbreak{} .\allowbreak{}.\allowbreak{} > \ocamltag{keyword}{as} 'a \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\\
+\label{module-Ocamlary-type-any+u+obj}\ocamlcodefragment{\ocamltag{keyword}{type} 'a any\_\allowbreak{}obj = < .\allowbreak{}.\allowbreak{} > \ocamltag{keyword}{as} 'a}\\
+\label{module-Ocamlary-type-empty+u+obj}\ocamlcodefragment{\ocamltag{keyword}{type} empty\_\allowbreak{}obj = < >}\\
+\label{module-Ocamlary-type-one+u+meth}\ocamlcodefragment{\ocamltag{keyword}{type} one\_\allowbreak{}meth = < meth : unit;\allowbreak{} >}\\
+\label{module-Ocamlary-type-ext}\ocamlcodefragment{\ocamltag{keyword}{type} ext = .\allowbreak{}.\allowbreak{}}\begin{ocamlindent}A mystery wrapped in an ellipsis\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-extension-decl-ExtA}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-type-ext]{\ocamlinlinecode{ext}} += }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{ExtA}}\label{module-Ocamlary-extension-ExtA}\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-extension-decl-ExtB}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-type-ext]{\ocamlinlinecode{ext}} += }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{ExtB}}\label{module-Ocamlary-extension-ExtB}\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-extension-decl-ExtC}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-type-ext]{\ocamlinlinecode{ext}} += }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{ExtC} \ocamltag{keyword}{of} unit}\label{module-Ocamlary-extension-ExtC}\\
+\ocamlcodefragment{| \ocamltag{extension}{ExtD} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-type-ext]{\ocamlinlinecode{ext}}}\label{module-Ocamlary-extension-ExtD}\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-extension-decl-ExtE}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-type-ext]{\ocamlinlinecode{ext}} += }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{ExtE}}\label{module-Ocamlary-extension-ExtE}\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-extension-decl-ExtF}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-type-ext]{\ocamlinlinecode{ext}} += }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{ExtF}}\label{module-Ocamlary-extension-ExtF}\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-type-poly+u+ext}\ocamlcodefragment{\ocamltag{keyword}{type} 'a poly\_\allowbreak{}ext = .\allowbreak{}.\allowbreak{}}\begin{ocamlindent}'a poly\_ext\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-extension-decl-Foo}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-type-poly+u+ext]{\ocamlinlinecode{poly\_\allowbreak{}ext}} += }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{Foo} \ocamltag{keyword}{of} \ocamltag{type-var}{'b}}\label{module-Ocamlary-extension-Foo}& \\
+\ocamlcodefragment{| \ocamltag{extension}{Bar} \ocamltag{keyword}{of} \ocamltag{type-var}{'b} * \ocamltag{type-var}{'b}}\label{module-Ocamlary-extension-Bar}& 'b poly\_ext\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-extension-decl-Quux}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-type-poly+u+ext]{\ocamlinlinecode{poly\_\allowbreak{}ext}} += }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{Quux} \ocamltag{keyword}{of} \ocamltag{type-var}{'c}}\label{module-Ocamlary-extension-Quux}& 'c poly\_ext\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-module-ExtMod}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-ExtMod]{\ocamlinlinecode{ExtMod}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-ExtMod-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = .\allowbreak{}.\allowbreak{}}\\
+\label{module-Ocamlary-module-ExtMod-extension-decl-Leisureforce}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-ExtMod-type-t]{\ocamlinlinecode{t}} += }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{Leisureforce}}\label{module-Ocamlary-module-ExtMod-extension-Leisureforce}\\
+\end{ocamltabular}%
+\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-extension-decl-ZzzTop0}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-ExtMod-type-t]{\ocamlinlinecode{ExtMod.\allowbreak{}t}} += }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{ZzzTop0}}\label{module-Ocamlary-extension-ZzzTop0}& It's got the rock\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-extension-decl-ZzzTop}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-ExtMod-type-t]{\ocamlinlinecode{ExtMod.\allowbreak{}t}} += }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{ZzzTop} \ocamltag{keyword}{of} unit}\label{module-Ocamlary-extension-ZzzTop}& and it packs a unit.\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-val-launch+u+missiles}\ocamlcodefragment{\ocamltag{keyword}{val} launch\_\allowbreak{}missiles : unit \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Rotate keys on my mark...\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-type-my+u+mod}\ocamlcodefragment{\ocamltag{keyword}{type} my\_\allowbreak{}mod = (\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-COLLECTION]{\ocamlinlinecode{COLLECTION}})}\begin{ocamlindent}A brown paper package tied up with string\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-class-empty+u+class}\ocamlcodefragment{\ocamltag{keyword}{class}  \hyperref[module-Ocamlary-class-empty+u+class]{\ocamlinlinecode{empty\_\allowbreak{}class}}}\ocamlcodefragment{ : \ocamltag{keyword}{object} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-class-one+u+method+u+class}\ocamlcodefragment{\ocamltag{keyword}{class}  \hyperref[module-Ocamlary-class-one+u+method+u+class]{\ocamlinlinecode{one\_\allowbreak{}method\_\allowbreak{}class}}}\ocamlcodefragment{ : \ocamltag{keyword}{object} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-class-two+u+method+u+class}\ocamlcodefragment{\ocamltag{keyword}{class}  \hyperref[module-Ocamlary-class-two+u+method+u+class]{\ocamlinlinecode{two\_\allowbreak{}method\_\allowbreak{}class}}}\ocamlcodefragment{ : \ocamltag{keyword}{object} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-class-param+u+class}\ocamlcodefragment{\ocamltag{keyword}{class} 'a \hyperref[module-Ocamlary-class-param+u+class]{\ocamlinlinecode{param\_\allowbreak{}class}}}\ocamlcodefragment{ : \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{keyword}{object} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-type-my+u+unit+u+object}\ocamlcodefragment{\ocamltag{keyword}{type} my\_\allowbreak{}unit\_\allowbreak{}object = unit \hyperref[module-Ocamlary-class-param+u+class]{\ocamlinlinecode{param\_\allowbreak{}class}}}\\
+\label{module-Ocamlary-type-my+u+unit+u+class}\ocamlcodefragment{\ocamltag{keyword}{type} 'a my\_\allowbreak{}unit\_\allowbreak{}class = unit \hyperref[xref-unresolved]{\ocamlinlinecode{param\_\allowbreak{}class}} \ocamltag{keyword}{as} 'a}\\
+\label{module-Ocamlary-module-Dep1}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep1]{\ocamlinlinecode{Dep1}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep1-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-Dep1-module-type-S]{\ocamlinlinecode{S}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep1-module-type-S-class-c}\ocamlcodefragment{\ocamltag{keyword}{class}  \hyperref[module-Ocamlary-module-Dep1-module-type-S-class-c]{\ocamlinlinecode{c}}}\ocamlcodefragment{ : \ocamltag{keyword}{object}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep1-module-type-S-class-c-method-m}\ocamlcodefragment{\ocamltag{keyword}{method} m : int}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep1-module-X}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep1-module-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep1-module-X-module-Y}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep1-module-X-module-Y]{\ocamlinlinecode{Y}}}\ocamlcodefragment{ : \hyperref[module-Ocamlary-module-Dep1-module-type-S]{\ocamlinlinecode{S}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep2}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep2]{\ocamlinlinecode{Dep2}}}\ocamlcodefragment{ (\hyperref[module-Ocamlary-module-Dep2-argument-1-Arg]{\ocamlinlinecode{Arg}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-type-dep1}\ocamlcodefragment{\ocamltag{keyword}{type} dep1 = \hyperref[module-Ocamlary-module-Dep1-module-type-S-class-c]{\ocamlinlinecode{Dep2(Dep1).\allowbreak{}B.\allowbreak{}c}}}\\
+\label{module-Ocamlary-module-Dep3}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep3]{\ocamlinlinecode{Dep3}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep3-type-a}\ocamlcodefragment{\ocamltag{keyword}{type} a}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep4}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep4]{\ocamlinlinecode{Dep4}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep4-module-type-T}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-Dep4-module-type-T]{\ocamlinlinecode{T}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep4-module-type-T-type-b}\ocamlcodefragment{\ocamltag{keyword}{type} b}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep4-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-Dep4-module-type-S]{\ocamlinlinecode{S}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep4-module-type-S-module-X}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep4-module-type-S-module-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep4-module-type-S-module-X-type-b}\ocamlcodefragment{\ocamltag{keyword}{type} b}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep4-module-type-S-module-Y}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep4-module-type-S-module-Y]{\ocamlinlinecode{Y}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep4-module-X}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep4-module-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ : \hyperref[module-Ocamlary-module-Dep4-module-type-T]{\ocamlinlinecode{T}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep5}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep5]{\ocamlinlinecode{Dep5}}}\ocamlcodefragment{ (\hyperref[module-Ocamlary-module-Dep5-argument-1-Arg]{\ocamlinlinecode{Arg}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-type-dep2}\ocamlcodefragment{\ocamltag{keyword}{type} dep2 = \hyperref[module-Ocamlary-module-Dep4-module-type-T-type-b]{\ocamlinlinecode{Dep5(Dep4).\allowbreak{}Z.\allowbreak{}X.\allowbreak{}b}}}\\
+\label{module-Ocamlary-type-dep3}\ocamlcodefragment{\ocamltag{keyword}{type} dep3 = \hyperref[module-Ocamlary-module-Dep3-type-a]{\ocamlinlinecode{Dep5(Dep4).\allowbreak{}Z.\allowbreak{}Y.\allowbreak{}a}}}\\
+\label{module-Ocamlary-module-Dep6}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep6]{\ocamlinlinecode{Dep6}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep6-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-Dep6-module-type-S]{\ocamlinlinecode{S}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep6-module-type-S-type-d}\ocamlcodefragment{\ocamltag{keyword}{type} d}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep6-module-type-T}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-Dep6-module-type-T]{\ocamlinlinecode{T}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep6-module-type-T-module-type-R}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-Dep6-module-type-T-module-type-R]{\ocamlinlinecode{R}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep6-module-type-T-module-type-R-type-d}\ocamlcodefragment{\ocamltag{keyword}{type} d}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep6-module-type-T-module-Y}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep6-module-type-T-module-Y]{\ocamlinlinecode{Y}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep6-module-type-T-module-Y-type-d}\ocamlcodefragment{\ocamltag{keyword}{type} d}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep6-module-X}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep6-module-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ : \hyperref[module-Ocamlary-module-Dep6-module-type-T]{\ocamlinlinecode{T}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep7}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep7]{\ocamlinlinecode{Dep7}}}\ocamlcodefragment{ (\hyperref[module-Ocamlary-module-Dep7-argument-1-Arg]{\ocamlinlinecode{Arg}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-type-dep4}\ocamlcodefragment{\ocamltag{keyword}{type} dep4 = \hyperref[module-Ocamlary-module-Dep6-module-type-T-module-Y-type-d]{\ocamlinlinecode{Dep7(Dep6).\allowbreak{}M.\allowbreak{}Y.\allowbreak{}d}}}\\
+\label{module-Ocamlary-module-Dep8}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep8]{\ocamlinlinecode{Dep8}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep8-module-type-T}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-Dep8-module-type-T]{\ocamlinlinecode{T}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep8-module-type-T-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep9}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep9]{\ocamlinlinecode{Dep9}}}\ocamlcodefragment{ (\hyperref[module-Ocamlary-module-Dep9-argument-1-X]{\ocamlinlinecode{X}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-Dep10}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-Dep10]{\ocamlinlinecode{Dep10}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-Dep10-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = int}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep11}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep11]{\ocamlinlinecode{Dep11}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep11-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-Dep11-module-type-S]{\ocamlinlinecode{S}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep11-module-type-S-class-c}\ocamlcodefragment{\ocamltag{keyword}{class}  \hyperref[module-Ocamlary-module-Dep11-module-type-S-class-c]{\ocamlinlinecode{c}}}\ocamlcodefragment{ : \ocamltag{keyword}{object}}\begin{ocamlindent}\label{module-Ocamlary-module-Dep11-module-type-S-class-c-method-m}\ocamlcodefragment{\ocamltag{keyword}{method} m : int}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep12}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep12]{\ocamlinlinecode{Dep12}}}\ocamlcodefragment{ (\hyperref[module-Ocamlary-module-Dep12-argument-1-Arg]{\ocamlinlinecode{Arg}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Dep13}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Dep13]{\ocamlinlinecode{Dep13}}}\ocamlcodefragment{ : \hyperref[module-Ocamlary-module-Dep11-module-type-S]{\ocamlinlinecode{Dep12(Dep11).\allowbreak{}T}}}\\
+\label{module-Ocamlary-type-dep5}\ocamlcodefragment{\ocamltag{keyword}{type} dep5 = \hyperref[module-Ocamlary-module-Dep13-class-c]{\ocamlinlinecode{Dep13.\allowbreak{}c}}}\\
+\label{module-Ocamlary-module-type-With1}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-With1]{\ocamlinlinecode{With1}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-With1-module-M}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-With1-module-M]{\ocamlinlinecode{M}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-With1-module-M-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} S}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-With1-module-N}\ocamlcodefragment{\ocamltag{keyword}{module} N : \hyperref[module-Ocamlary-module-type-With1-module-M-module-type-S]{\ocamlinlinecode{M.\allowbreak{}S}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-With2}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With2]{\ocamlinlinecode{With2}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With2-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-With2-module-type-S]{\ocamlinlinecode{S}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With2-module-type-S-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-With3}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With3]{\ocamlinlinecode{With3}}}\ocamlcodefragment{ : \hyperref[module-Ocamlary-module-type-With1]{\ocamlinlinecode{With1}} \ocamltag{keyword}{with} \ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-With1-module-M]{\ocamlinlinecode{M}} = \hyperref[module-Ocamlary-module-With2]{\ocamlinlinecode{With2}}}\\
+\label{module-Ocamlary-type-with1}\ocamlcodefragment{\ocamltag{keyword}{type} with1 = \hyperref[module-Ocamlary-module-With3-module-N-type-t]{\ocamlinlinecode{With3.\allowbreak{}N.\allowbreak{}t}}}\\
+\label{module-Ocamlary-module-With4}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With4]{\ocamlinlinecode{With4}}}\ocamlcodefragment{ : \hyperref[module-Ocamlary-module-type-With1]{\ocamlinlinecode{With1}} \ocamltag{keyword}{with} \ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-With1-module-M]{\ocamlinlinecode{M}} := \hyperref[module-Ocamlary-module-With2]{\ocamlinlinecode{With2}}}\\
+\label{module-Ocamlary-type-with2}\ocamlcodefragment{\ocamltag{keyword}{type} with2 = \hyperref[module-Ocamlary-module-With4-module-N-type-t]{\ocamlinlinecode{With4.\allowbreak{}N.\allowbreak{}t}}}\\
+\label{module-Ocamlary-module-With5}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With5]{\ocamlinlinecode{With5}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With5-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-With5-module-type-S]{\ocamlinlinecode{S}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With5-module-type-S-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-With5-module-N}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With5-module-N]{\ocamlinlinecode{N}}}\ocamlcodefragment{ : \hyperref[module-Ocamlary-module-With5-module-type-S]{\ocamlinlinecode{S}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-With6}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With6]{\ocamlinlinecode{With6}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With6-module-type-T}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-With6-module-type-T]{\ocamlinlinecode{T}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With6-module-type-T-module-M}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With6-module-type-T-module-M]{\ocamlinlinecode{M}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With6-module-type-T-module-M-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} S}\\
+\label{module-Ocamlary-module-With6-module-type-T-module-M-module-N}\ocamlcodefragment{\ocamltag{keyword}{module} N : \hyperref[module-Ocamlary-module-With6-module-type-T-module-M-module-type-S]{\ocamlinlinecode{S}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-With7}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With7]{\ocamlinlinecode{With7}}}\ocamlcodefragment{ (\hyperref[module-Ocamlary-module-With7-argument-1-X]{\ocamlinlinecode{X}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-With8}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-With8]{\ocamlinlinecode{With8}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-With8-module-M}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-With8-module-M]{\ocamlinlinecode{M}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-With8-module-M-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-With8-module-M-module-type-S]{\ocamlinlinecode{S}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-With8-module-M-module-type-S-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-With8-module-M-module-N}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-With8-module-M-module-N]{\ocamlinlinecode{N}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-With8-module-M-module-N-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[module-Ocamlary-module-With5-module-N-type-t]{\ocamlinlinecode{With5.\allowbreak{}N.\allowbreak{}t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-With9}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With9]{\ocamlinlinecode{With9}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With9-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-With9-module-type-S]{\ocamlinlinecode{S}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With9-module-type-S-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-With10}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With10]{\ocamlinlinecode{With10}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With10-module-type-T}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-With10-module-type-T]{\ocamlinlinecode{T}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With10-module-type-T-module-M}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-With10-module-type-T-module-M]{\ocamlinlinecode{M}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-With10-module-type-T-module-M-module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} S}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-With10-module-type-T-module-N}\ocamlcodefragment{\ocamltag{keyword}{module} N : \hyperref[module-Ocamlary-module-With10-module-type-T-module-M-module-type-S]{\ocamlinlinecode{M.\allowbreak{}S}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}\hyperref[module-Ocamlary-module-With10-module-type-T]{\ocamlinlinecode{\ocamlinlinecode{With10.\allowbreak{}T}}[p\pageref*{module-Ocamlary-module-With10-module-type-T}]} is a submodule type.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-With11}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-With11]{\ocamlinlinecode{With11}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-With11-module-M}\ocamlcodefragment{\ocamltag{keyword}{module} M = \hyperref[module-Ocamlary-module-With9]{\ocamlinlinecode{With9}}}\\
+\label{module-Ocamlary-module-type-With11-module-N}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-type-With11-module-N]{\ocamlinlinecode{N}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-With11-module-N-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = int}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-type-NestedInclude1}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-NestedInclude1]{\ocamlinlinecode{NestedInclude1}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-NestedInclude1-module-type-NestedInclude2}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-NestedInclude1-module-type-NestedInclude2]{\ocamlinlinecode{NestedInclude2}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-NestedInclude1-module-type-NestedInclude2-type-nested+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}include}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} \hyperref[module-Ocamlary-module-type-NestedInclude1]{\ocamlinlinecode{NestedInclude1}}\label{module-Ocamlary-module-type-NestedInclude2}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-NestedInclude2]{\ocamlinlinecode{NestedInclude2}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-NestedInclude2-type-nested+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}include}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} \hyperref[module-Ocamlary-module-type-NestedInclude2]{\ocamlinlinecode{NestedInclude2}} \ocamltag{keyword}{with} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-NestedInclude2-type-nested+u+include]{\ocamlinlinecode{nested\_\allowbreak{}include}} = int\label{module-Ocamlary-type-nested+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}include = int}\\
+\label{module-Ocamlary-module-DoubleInclude1}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-DoubleInclude1]{\ocamlinlinecode{DoubleInclude1}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-DoubleInclude1-module-DoubleInclude2}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-DoubleInclude1-module-DoubleInclude2]{\ocamlinlinecode{DoubleInclude2}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-DoubleInclude1-module-DoubleInclude2-type-double+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} double\_\allowbreak{}include}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-DoubleInclude3}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-DoubleInclude3]{\ocamlinlinecode{DoubleInclude3}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-module-DoubleInclude1]{\ocamlinlinecode{DoubleInclude1}}\label{module-Ocamlary-module-DoubleInclude3-module-DoubleInclude2}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-DoubleInclude3-module-DoubleInclude2]{\ocamlinlinecode{DoubleInclude2}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-DoubleInclude3-module-DoubleInclude2-type-double+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} double\_\allowbreak{}include}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-module-DoubleInclude3-module-DoubleInclude2]{\ocamlinlinecode{DoubleInclude3.\allowbreak{}DoubleInclude2}}\label{module-Ocamlary-type-double+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} double\_\allowbreak{}include}\\
+\label{module-Ocamlary-module-IncludeInclude1}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-IncludeInclude1]{\ocamlinlinecode{IncludeInclude1}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-IncludeInclude1-module-type-IncludeInclude2}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-IncludeInclude1-module-type-IncludeInclude2]{\ocamlinlinecode{IncludeInclude2}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-IncludeInclude1-module-type-IncludeInclude2-type-include+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} include\_\allowbreak{}include}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-module-IncludeInclude1]{\ocamlinlinecode{IncludeInclude1}}\label{module-Ocamlary-module-type-IncludeInclude2}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-IncludeInclude2]{\ocamlinlinecode{IncludeInclude2}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-IncludeInclude2-type-include+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} include\_\allowbreak{}include}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} \hyperref[module-Ocamlary-module-type-IncludeInclude2]{\ocamlinlinecode{IncludeInclude2}}\label{module-Ocamlary-type-include+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} include\_\allowbreak{}include}\\
+\subsection{Trying the \{!modules: ...\} command.\label{indexmodules}}%
+With ocamldoc, toplevel units will be linked and documented, while submodules will behave as simple references.
+
+With odoc, everything should be resolved (and linked) but only toplevel units will be documented.
+
+\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{\hyperref[module-Ocamlary-module-Dep1-module-X]{\ocamlinlinecode{\ocamlinlinecode{Dep1.\allowbreak{}X}}[p\pageref*{module-Ocamlary-module-Dep1-module-X}]}}]{}%
+\item[{\ocamlinlinecode{DocOckTypes}}]{}%
+\item[{\hyperref[module-Ocamlary-module-IncludeInclude1]{\ocamlinlinecode{\ocamlinlinecode{Ocamlary.\allowbreak{}IncludeInclude1}}[p\pageref*{module-Ocamlary-module-IncludeInclude1}]}}]{}%
+\item[{\hyperref[module-Ocamlary]{\ocamlinlinecode{\ocamlinlinecode{Ocamlary}}[p\pageref*{module-Ocamlary}]}}]{This is an \emph{interface} with \bold{all} of the \emph{module system} features. This documentation demonstrates:}\end{description}%
+\subsubsection{Weirder usages involving module types\label{weirder-usages-involving-module-types}}%
+\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[{\ocamlinlinecode{IncludeInclude1}.IncludeInclude2}]{}%
+\item[{\ocamlinlinecode{Dep4}.T}]{}%
+\item[{\hyperref[module-Ocamlary-module-type-A-module-Q]{\ocamlinlinecode{\ocamlinlinecode{A.\allowbreak{}Q}}[p\pageref*{module-Ocamlary-module-type-A-module-Q}]}}]{}\end{description}%
+\subsection{Playing with @canonical paths\label{playing-with-@canonical-paths}}%
+\label{module-Ocamlary-module-CanonicalTest}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest]{\ocamlinlinecode{CanonicalTest}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+List}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base+u++u+List]{\ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}List}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+List-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+List-val-id}\ocamlcodefragment{\ocamltag{keyword}{val} id : \ocamltag{type-var}{'a} \hyperref[xref-unresolved]{\ocamlinlinecode{t}} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a} \hyperref[xref-unresolved]{\ocamlinlinecode{t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base+u++u+]{\ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+-module-List}\ocamlcodefragment{\ocamltag{keyword}{module} List = \hyperref[xref-unresolved]{\ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}List}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base]{\ocamlinlinecode{Base}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CanonicalTest-module-Base-module-List}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List]{\ocamlinlinecode{List}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+Tests}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base+u++u+Tests]{\ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}Tests}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+Tests-module-C}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base+u++u+Tests-module-C]{\ocamlinlinecode{C}}}\ocamlcodefragment{ : \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[xref-unresolved]{\ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}}}.\allowbreak{}List}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+Tests-module-L}\ocamlcodefragment{\ocamltag{keyword}{module} L = \hyperref[xref-unresolved]{\ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}}}.\allowbreak{}List}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+Tests-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : \hyperref[xref-unresolved]{\ocamlinlinecode{int}} \hyperref[xref-unresolved]{\ocamlinlinecode{L}}.\allowbreak{}t \ocamltag{arrow}{$\rightarrow$} \hyperref[xref-unresolved]{\ocamlinlinecode{float}} \hyperref[xref-unresolved]{\ocamlinlinecode{L}}.\allowbreak{}t}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+Tests-val-bar}\ocamlcodefragment{\ocamltag{keyword}{val} bar : \ocamltag{type-var}{'a} \hyperref[xref-unresolved]{\ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}}}.\allowbreak{}List.\allowbreak{}t \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a} \hyperref[xref-unresolved]{\ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}}}.\allowbreak{}List.\allowbreak{}t}\begin{ocamlindent}This is just \ocamlinlinecode{List}.id, or rather \ocamlinlinecode{L}.id\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u++u+Tests-val-baz}\ocamlcodefragment{\ocamltag{keyword}{val} baz : \ocamltag{type-var}{'a} \hyperref[xref-unresolved]{\ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}}}.\allowbreak{}List.\allowbreak{}t \ocamltag{arrow}{$\rightarrow$} \hyperref[xref-unresolved]{\ocamlinlinecode{unit}}}\begin{ocamlindent}Just seeing if \ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}}.List.t (\ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}.\allowbreak{}List.\allowbreak{}t}) gets rewriten to \ocamlinlinecode{Base}.List.t (\ocamlinlinecode{Base.\allowbreak{}List.\allowbreak{}t})\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-CanonicalTest-module-List+u+modif}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-List+u+modif]{\ocamlinlinecode{List\_\allowbreak{}modif}}}\ocamlcodefragment{ : \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List]{\ocamlinlinecode{Base.\allowbreak{}List}} \ocamltag{keyword}{with} \ocamltag{keyword}{type} 'c \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{t}} = \ocamltag{type-var}{'c} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{Base.\allowbreak{}List.\allowbreak{}t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-val-test}\ocamlcodefragment{\ocamltag{keyword}{val} test : \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{CanonicalTest.\allowbreak{}Base.\allowbreak{}List.\allowbreak{}t}} \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Some ref to \hyperref[module-Ocamlary-module-CanonicalTest-module-Base+u++u+Tests-module-C-type-t]{\ocamlinlinecode{\ocamlinlinecode{CanonicalTest.\allowbreak{}Base\_\allowbreak{}\_\allowbreak{}Tests.\allowbreak{}C.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-CanonicalTest-module-Base+u++u+Tests-module-C-type-t}]} and \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-val-id]{\ocamlinlinecode{\ocamlinlinecode{CanonicalTest.\allowbreak{}Base\_\allowbreak{}\_\allowbreak{}Tests.\allowbreak{}L.\allowbreak{}id}}[p\pageref*{module-Ocamlary-module-CanonicalTest-module-Base-module-List-val-id}]}. But also to \hyperref[module-Ocamlary-module-CanonicalTest-module-Base+u++u+-module-List]{\ocamlinlinecode{\ocamlinlinecode{CanonicalTest.\allowbreak{}Base\_\allowbreak{}\_\allowbreak{}.\allowbreak{}List}}[p\pageref*{module-Ocamlary-module-CanonicalTest-module-Base+u++u+-module-List}]} and \hyperref[module-Ocamlary-module-CanonicalTest-module-Base+u++u+-module-List-type-t]{\ocamlinlinecode{\ocamlinlinecode{CanonicalTest.\allowbreak{}Base\_\allowbreak{}\_\allowbreak{}.\allowbreak{}List.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-CanonicalTest-module-Base+u++u+-module-List-type-t}]}\end{ocamlindent}%
+\medbreak
+\subsection{Aliases again\label{aliases}}%
+\label{module-Ocamlary-module-Aliases}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases]{\ocamlinlinecode{Aliases}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Foo+u++u+A}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo+u++u+A]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}A}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Foo+u++u+A-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+A-val-id}\ocamlcodefragment{\ocamltag{keyword}{val} id : \hyperref[xref-unresolved]{\ocamlinlinecode{t}} \ocamltag{arrow}{$\rightarrow$} \hyperref[xref-unresolved]{\ocamlinlinecode{t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+B}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo+u++u+B]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}B}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Foo+u++u+B-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+B-val-id}\ocamlcodefragment{\ocamltag{keyword}{val} id : \hyperref[xref-unresolved]{\ocamlinlinecode{t}} \ocamltag{arrow}{$\rightarrow$} \hyperref[xref-unresolved]{\ocamlinlinecode{t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+C}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo+u++u+C]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}C}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Foo+u++u+C-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+C-val-id}\ocamlcodefragment{\ocamltag{keyword}{val} id : \hyperref[xref-unresolved]{\ocamlinlinecode{t}} \ocamltag{arrow}{$\rightarrow$} \hyperref[xref-unresolved]{\ocamlinlinecode{t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+D}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo+u++u+D]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}D}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Foo+u++u+D-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+D-val-id}\ocamlcodefragment{\ocamltag{keyword}{val} id : \hyperref[xref-unresolved]{\ocamlinlinecode{t}} \ocamltag{arrow}{$\rightarrow$} \hyperref[xref-unresolved]{\ocamlinlinecode{t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+E}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo+u++u+E]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}E}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Foo+u++u+E-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+E-val-id}\ocamlcodefragment{\ocamltag{keyword}{val} id : \hyperref[xref-unresolved]{\ocamlinlinecode{t}} \ocamltag{arrow}{$\rightarrow$} \hyperref[xref-unresolved]{\ocamlinlinecode{t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo+u++u+]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Foo+u++u+-module-A}\ocamlcodefragment{\ocamltag{keyword}{module} A = \hyperref[xref-unresolved]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}A}}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+-module-B}\ocamlcodefragment{\ocamltag{keyword}{module} B = \hyperref[xref-unresolved]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}B}}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+-module-C}\ocamlcodefragment{\ocamltag{keyword}{module} C = \hyperref[xref-unresolved]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}C}}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+-module-D}\ocamlcodefragment{\ocamltag{keyword}{module} D = \hyperref[xref-unresolved]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}D}}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo+u++u+-module-E}\ocamlcodefragment{\ocamltag{keyword}{module} E = \hyperref[xref-unresolved]{\ocamlinlinecode{Foo\_\allowbreak{}\_\allowbreak{}E}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo]{\ocamlinlinecode{Foo}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Foo-module-A}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-A]{\ocamlinlinecode{A}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo-module-B}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-B]{\ocamlinlinecode{B}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo-module-C}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-C]{\ocamlinlinecode{C}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo-module-D}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-D]{\ocamlinlinecode{D}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-Foo-module-E}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-E]{\ocamlinlinecode{E}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-A'}\ocamlcodefragment{\ocamltag{keyword}{module} A' = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-A]{\ocamlinlinecode{Foo.\allowbreak{}A}}}\\
+\label{module-Ocamlary-module-Aliases-type-tata}\ocamlcodefragment{\ocamltag{keyword}{type} tata = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-A-type-t]{\ocamlinlinecode{Foo.\allowbreak{}A.\allowbreak{}t}}}\\
+\label{module-Ocamlary-module-Aliases-type-tbtb}\ocamlcodefragment{\ocamltag{keyword}{type} tbtb = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-B-type-t]{\ocamlinlinecode{Foo.\allowbreak{}B.\allowbreak{}t}}}\\
+\label{module-Ocamlary-module-Aliases-type-tete}\ocamlcodefragment{\ocamltag{keyword}{type} tete}\\
+\label{module-Ocamlary-module-Aliases-type-tata'}\ocamlcodefragment{\ocamltag{keyword}{type} tata' = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-A-type-t]{\ocamlinlinecode{A'.\allowbreak{}t}}}\\
+\label{module-Ocamlary-module-Aliases-type-tete2}\ocamlcodefragment{\ocamltag{keyword}{type} tete2 = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-E-type-t]{\ocamlinlinecode{Foo.\allowbreak{}E.\allowbreak{}t}}}\\
+\label{module-Ocamlary-module-Aliases-module-Std}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Std]{\ocamlinlinecode{Std}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Std-module-A}\ocamlcodefragment{\ocamltag{keyword}{module} A = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-A]{\ocamlinlinecode{Foo.\allowbreak{}A}}}\\
+\label{module-Ocamlary-module-Aliases-module-Std-module-B}\ocamlcodefragment{\ocamltag{keyword}{module} B = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-B]{\ocamlinlinecode{Foo.\allowbreak{}B}}}\\
+\label{module-Ocamlary-module-Aliases-module-Std-module-C}\ocamlcodefragment{\ocamltag{keyword}{module} C = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-C]{\ocamlinlinecode{Foo.\allowbreak{}C}}}\\
+\label{module-Ocamlary-module-Aliases-module-Std-module-D}\ocamlcodefragment{\ocamltag{keyword}{module} D = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-D]{\ocamlinlinecode{Foo.\allowbreak{}D}}}\\
+\label{module-Ocamlary-module-Aliases-module-Std-module-E}\ocamlcodefragment{\ocamltag{keyword}{module} E = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-E]{\ocamlinlinecode{Foo.\allowbreak{}E}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-type-stde}\ocamlcodefragment{\ocamltag{keyword}{type} stde = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-E-type-t]{\ocamlinlinecode{Std.\allowbreak{}E.\allowbreak{}t}}}\\
+\subsubsection{include of Foo\label{incl}}%
+Just for giggle, let's see what happens when we include \hyperref[module-Ocamlary-module-Aliases-module-Foo]{\ocamlinlinecode{\ocamlinlinecode{Foo}}[p\pageref*{module-Ocamlary-module-Aliases-module-Foo}]}.
+
+\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-module-Aliases-module-Foo]{\ocamlinlinecode{Foo}}\label{module-Ocamlary-module-Aliases-module-A}\ocamlcodefragment{\ocamltag{keyword}{module} A = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-A]{\ocamlinlinecode{Foo.\allowbreak{}A}}}\\
+\label{module-Ocamlary-module-Aliases-module-B}\ocamlcodefragment{\ocamltag{keyword}{module} B = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-B]{\ocamlinlinecode{Foo.\allowbreak{}B}}}\\
+\label{module-Ocamlary-module-Aliases-module-C}\ocamlcodefragment{\ocamltag{keyword}{module} C = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-C]{\ocamlinlinecode{Foo.\allowbreak{}C}}}\\
+\label{module-Ocamlary-module-Aliases-module-D}\ocamlcodefragment{\ocamltag{keyword}{module} D = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-D]{\ocamlinlinecode{Foo.\allowbreak{}D}}}\\
+\label{module-Ocamlary-module-Aliases-module-E}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-E]{\ocamlinlinecode{E}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-type-testa}\ocamlcodefragment{\ocamltag{keyword}{type} testa = \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-A-type-t]{\ocamlinlinecode{A.\allowbreak{}t}}}\\
+And also, let's refer to \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-A-type-t]{\ocamlinlinecode{\ocamlinlinecode{A.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-Aliases-module-Foo-module-A-type-t}]} and \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-B-val-id]{\ocamlinlinecode{\ocamlinlinecode{Foo.\allowbreak{}B.\allowbreak{}id}}[p\pageref*{module-Ocamlary-module-Aliases-module-Foo-module-B-val-id}]}
+
+\label{module-Ocamlary-module-Aliases-module-P1}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-P1]{\ocamlinlinecode{P1}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-P1-module-Y}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-P1-module-Y]{\ocamlinlinecode{Y}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-P1-module-Y-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{module-Ocamlary-module-Aliases-module-P1-module-Y-val-id}\ocamlcodefragment{\ocamltag{keyword}{val} id : \hyperref[module-Ocamlary-module-Aliases-module-P1-module-Y-type-t]{\ocamlinlinecode{t}} \ocamltag{arrow}{$\rightarrow$} \hyperref[module-Ocamlary-module-Aliases-module-P1-module-Y-type-t]{\ocamlinlinecode{t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-P2}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-P2]{\ocamlinlinecode{P2}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-P2-module-Z}\ocamlcodefragment{\ocamltag{keyword}{module} Z = \hyperref[module-Ocamlary-module-Aliases-module-P1-module-Y]{\ocamlinlinecode{Z}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-Aliases-module-X1}\ocamlcodefragment{\ocamltag{keyword}{module} X1 = \hyperref[module-Ocamlary-module-Aliases-module-P1-module-Y]{\ocamlinlinecode{P2.\allowbreak{}Z}}}\\
+\label{module-Ocamlary-module-Aliases-module-X2}\ocamlcodefragment{\ocamltag{keyword}{module} X2 = \hyperref[module-Ocamlary-module-Aliases-module-P1-module-Y]{\ocamlinlinecode{P2.\allowbreak{}Z}}}\\
+\label{module-Ocamlary-module-Aliases-type-p1}\ocamlcodefragment{\ocamltag{keyword}{type} p1 = \hyperref[module-Ocamlary-module-Aliases-module-P1-module-Y-type-t]{\ocamlinlinecode{X1.\allowbreak{}t}}}\\
+\label{module-Ocamlary-module-Aliases-type-p2}\ocamlcodefragment{\ocamltag{keyword}{type} p2 = \hyperref[module-Ocamlary-module-Aliases-module-P1-module-Y-type-t]{\ocamlinlinecode{X2.\allowbreak{}t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}Let's imitate jst's layout.\end{ocamlindent}%
+\medbreak
+\subsection{Section title splicing\label{section-title-splicing}}%
+I can refer to
+
+\begin{itemize}\item{\ocamlinlinecode{\{!section:indexmodules\}} : \hyperref[module-Ocamlary-indexmodules]{\ocamlinlinecode{Trying the \{!modules: ...\} command.}[p\pageref*{module-Ocamlary-indexmodules}]}}%
+\item{\ocamlinlinecode{\{!aliases\}} : \hyperref[module-Ocamlary-aliases]{\ocamlinlinecode{Aliases again}[p\pageref*{module-Ocamlary-aliases}]}}\end{itemize}%
+But also to things in submodules:
+
+\begin{itemize}\item{\ocamlinlinecode{\{!section:SuperSig.\allowbreak{}SubSigA.\allowbreak{}subSig\}} : \ocamlinlinecode{SuperSig}.SubSigA.subSig}%
+\item{\ocamlinlinecode{\{!Aliases.\allowbreak{}incl\}} : \hyperref[module-Ocamlary-module-Aliases-incl]{\ocamlinlinecode{\ocamlinlinecode{Aliases:incl}}[p\pageref*{module-Ocamlary-module-Aliases-incl}]}}\end{itemize}%
+And just to make sure we do not mess up:
+
+\begin{itemize}\item{\ocamlinlinecode{\{\{!section:indexmodules\}A\}} : \hyperref[module-Ocamlary-indexmodules]{\ocamlinlinecode{A}[p\pageref*{module-Ocamlary-indexmodules}]}}%
+\item{\ocamlinlinecode{\{\{!aliases\}B\}} : \hyperref[module-Ocamlary-aliases]{\ocamlinlinecode{B}[p\pageref*{module-Ocamlary-aliases}]}}%
+\item{\ocamlinlinecode{\{\{!section:SuperSig.\allowbreak{}SubSigA.\allowbreak{}subSig\}C\}} : \hyperref[xref-unresolved]{\ocamlinlinecode{C}[p\pageref*{xref-unresolved}]}}%
+\item{\ocamlinlinecode{\{\{!Aliases.\allowbreak{}incl\}D\}} : \hyperref[module-Ocamlary-module-Aliases-incl]{\ocamlinlinecode{D}[p\pageref*{module-Ocamlary-module-Aliases-incl}]}}\end{itemize}%
+\subsection{New reference syntax\label{new-reference-syntax}}%
+\label{module-Ocamlary-module-type-M}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-M]{\ocamlinlinecode{M}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-M-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-M}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-M]{\ocamlinlinecode{M}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-M-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+Here goes:
+
+\begin{itemize}\item{\ocamlinlinecode{\{!module-M.\allowbreak{}t\}} : \hyperref[module-Ocamlary-module-M-type-t]{\ocamlinlinecode{\ocamlinlinecode{M.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-M-type-t}]}}%
+\item{\ocamlinlinecode{\{!module-type-M.\allowbreak{}t\}} : \hyperref[module-Ocamlary-module-type-M-type-t]{\ocamlinlinecode{\ocamlinlinecode{M.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-type-M-type-t}]}}\end{itemize}%
+\label{module-Ocamlary-module-Only+u+a+u+module}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Only+u+a+u+module]{\ocamlinlinecode{Only\_\allowbreak{}a\_\allowbreak{}module}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Only+u+a+u+module-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+Some here should fail:
+
+\begin{itemize}\item{\ocamlinlinecode{\{!Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t\}} : \hyperref[module-Ocamlary-module-Only+u+a+u+module-type-t]{\ocamlinlinecode{\ocamlinlinecode{Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-Only+u+a+u+module-type-t}]}}%
+\item{\ocamlinlinecode{\{!module-Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t\}} : \hyperref[module-Ocamlary-module-Only+u+a+u+module-type-t]{\ocamlinlinecode{\ocamlinlinecode{Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-Only+u+a+u+module-type-t}]}}%
+\item{\ocamlinlinecode{\{!module-type-Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t\}} : \ocamlinlinecode{Only\_\allowbreak{}a\_\allowbreak{}module}.t : \hyperref[xref-unresolved]{\ocamlinlinecode{test}[p\pageref*{xref-unresolved}]}}\end{itemize}%
+\label{module-Ocamlary-module-type-TypeExt}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-TypeExt]{\ocamlinlinecode{TypeExt}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-TypeExt-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = .\allowbreak{}.\allowbreak{}}\\
+\label{module-Ocamlary-module-type-TypeExt-extension-decl-C}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-TypeExt-type-t]{\ocamlinlinecode{t}} += }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{C}}\label{module-Ocamlary-module-type-TypeExt-extension-C}\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-module-type-TypeExt-val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : \hyperref[module-Ocamlary-module-type-TypeExt-type-t]{\ocamlinlinecode{t}} \ocamltag{arrow}{$\rightarrow$} unit}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-type-new+u+t}\ocamlcodefragment{\ocamltag{keyword}{type} new\_\allowbreak{}t = .\allowbreak{}.\allowbreak{}}\\
+\label{module-Ocamlary-extension-decl-C}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-type-new+u+t]{\ocamlinlinecode{new\_\allowbreak{}t}} += }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{C}}\label{module-Ocamlary-extension-C}\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-module-type-TypeExtPruned}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-TypeExtPruned]{\ocamlinlinecode{TypeExtPruned}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-TypeExtPruned-extension-decl-C}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-type-new+u+t]{\ocamlinlinecode{new\_\allowbreak{}t}} += }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{C}}\label{module-Ocamlary-module-type-TypeExtPruned-extension-C}\\
+\end{ocamltabular}%
+\\
+\label{module-Ocamlary-module-type-TypeExtPruned-val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : \hyperref[module-Ocamlary-type-new+u+t]{\ocamlinlinecode{new\_\allowbreak{}t}} \ocamltag{arrow}{$\rightarrow$} unit}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+
+\input{Ocamlary.ModuleWithSignature.tex}
+\input{Ocamlary.ModuleWithSignatureAlias.tex}
+\input{Ocamlary.Recollection.tex}
+\input{Ocamlary.FunctorTypeOf.tex}
+\input{Ocamlary.empty_class.tex}
+\input{Ocamlary.one_method_class.tex}
+\input{Ocamlary.two_method_class.tex}
+\input{Ocamlary.param_class.tex}
+\input{Ocamlary.Dep2.tex}
+\input{Ocamlary.Dep5.tex}
+\input{Ocamlary.Dep7.tex}
+\input{Ocamlary.Dep9.tex}
+\input{Ocamlary.Dep12.tex}
+\input{Ocamlary.Dep13.tex}
+\input{Ocamlary.With3.tex}
+\input{Ocamlary.With4.tex}
+\input{Ocamlary.With7.tex}

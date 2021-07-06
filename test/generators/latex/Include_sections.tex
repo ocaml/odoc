@@ -1,0 +1,71 @@
+\section{Module \ocamlinlinecode{Include\_\allowbreak{}sections}}\label{module-Include+u+sections}%
+\label{module-Include+u+sections-module-type-Something}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Include+u+sections-module-type-Something]{\ocamlinlinecode{Something}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Include+u+sections-module-type-Something-val-something}\ocamlcodefragment{\ocamltag{keyword}{val} something : unit}\\
+\subsubsection{Something 1\label{something-1}}%
+foo
+
+\label{module-Include+u+sections-module-type-Something-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : unit}\\
+\subsubsection{Something 2\label{something-2}}%
+\label{module-Include+u+sections-module-type-Something-val-bar}\ocamlcodefragment{\ocamltag{keyword}{val} bar : unit}\begin{ocamlindent}foo bar\end{ocamlindent}%
+\medbreak
+\subsubsection{Something 1-bis\label{something-1-bis}}%
+Some text.
+
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}A module type.\end{ocamlindent}%
+\medbreak
+Let's include \hyperref[module-Include+u+sections-module-type-Something]{\ocamlinlinecode{\ocamlinlinecode{Something}}[p\pageref*{module-Include+u+sections-module-type-Something}]} once
+
+\ocamltag{keyword}{include} \hyperref[module-Include+u+sections-module-type-Something]{\ocamlinlinecode{Something}}\label{module-Include+u+sections-val-something}\ocamlcodefragment{\ocamltag{keyword}{val} something : unit}\\
+\subsection{Something 1\label{something-1}}%
+foo
+
+\label{module-Include+u+sections-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : unit}\\
+\subsubsection{Something 2\label{something-2}}%
+\label{module-Include+u+sections-val-bar}\ocamlcodefragment{\ocamltag{keyword}{val} bar : unit}\begin{ocamlindent}foo bar\end{ocamlindent}%
+\medbreak
+\subsection{Something 1-bis\label{something-1-bis}}%
+Some text.
+
+\subsection{Second include\label{second-include}}%
+Let's include \hyperref[module-Include+u+sections-module-type-Something]{\ocamlinlinecode{\ocamlinlinecode{Something}}[p\pageref*{module-Include+u+sections-module-type-Something}]} a second time: the heading level should be shift here.
+
+\ocamltag{keyword}{include} \hyperref[module-Include+u+sections-module-type-Something]{\ocamlinlinecode{Something}}\label{module-Include+u+sections-val-something}\ocamlcodefragment{\ocamltag{keyword}{val} something : unit}\\
+\subsection{Something 1\label{something-1}}%
+foo
+
+\label{module-Include+u+sections-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : unit}\\
+\subsubsection{Something 2\label{something-2}}%
+\label{module-Include+u+sections-val-bar}\ocamlcodefragment{\ocamltag{keyword}{val} bar : unit}\begin{ocamlindent}foo bar\end{ocamlindent}%
+\medbreak
+\subsection{Something 1-bis\label{something-1-bis}}%
+Some text.
+
+\subsubsection{Third include\label{third-include}}%
+Shifted some more.
+
+\ocamltag{keyword}{include} \hyperref[module-Include+u+sections-module-type-Something]{\ocamlinlinecode{Something}}\label{module-Include+u+sections-val-something}\ocamlcodefragment{\ocamltag{keyword}{val} something : unit}\\
+\subsection{Something 1\label{something-1}}%
+foo
+
+\label{module-Include+u+sections-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : unit}\\
+\subsubsection{Something 2\label{something-2}}%
+\label{module-Include+u+sections-val-bar}\ocamlcodefragment{\ocamltag{keyword}{val} bar : unit}\begin{ocamlindent}foo bar\end{ocamlindent}%
+\medbreak
+\subsection{Something 1-bis\label{something-1-bis}}%
+Some text.
+
+And let's include it again, but without inlining it this time: the ToC shouldn't grow.
+
+\ocamltag{keyword}{include} \hyperref[module-Include+u+sections-module-type-Something]{\ocamlinlinecode{Something}}\label{module-Include+u+sections-val-something}\ocamlcodefragment{\ocamltag{keyword}{val} something : unit}\\
+\subsection{Something 1\label{something-1}}%
+foo
+
+\label{module-Include+u+sections-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : unit}\\
+\subsubsection{Something 2\label{something-2}}%
+\label{module-Include+u+sections-val-bar}\ocamlcodefragment{\ocamltag{keyword}{val} bar : unit}\begin{ocamlindent}foo bar\end{ocamlindent}%
+\medbreak
+\subsection{Something 1-bis\label{something-1-bis}}%
+Some text.
+
+
+

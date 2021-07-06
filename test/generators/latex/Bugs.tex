@@ -1,0 +1,6 @@
+\section{Module \ocamlinlinecode{Bugs}}\label{module-Bugs}%
+\label{module-Bugs-type-opt}\ocamlcodefragment{\ocamltag{keyword}{type} 'a opt = \ocamltag{type-var}{'a} option}\\
+\label{module-Bugs-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : ?bar:\ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} unit \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Triggers an assertion failure when \href{https://github.com/ocaml/odoc/issues/101}{https://github.com/ocaml/odoc/issues/101}\footnote{\url{https://github.com/ocaml/odoc/issues/101}} is not fixed.\end{ocamlindent}%
+\medbreak
+
+
