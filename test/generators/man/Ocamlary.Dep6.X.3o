@@ -11,11 +11,6 @@ Ocamlary\.Dep6\.X
 .SH Documentation
 .sp 
 .nf 
-\f[CB]module\fR \f[CB]type\fR R = \f[CB]sig\fR
-.br 
-.ti +2
-\f[CB]type\fR d
-.br 
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR R = S
 .sp 
 \f[CB]module\fR Y : R

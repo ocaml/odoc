@@ -98,19 +98,7 @@ This comment is for InnerModuleA\.
 .nf 
 .sp 
 .ti +2
-\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
-.br 
-.ti +4
-\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
-.fi 
-.br 
-.ti +6
-This comment is for t\.
-.nf 
-
-.br 
-.ti +2
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = InnerModuleA\.InnerModuleTypeA'
 .fi 
 .br 
 .ti +4

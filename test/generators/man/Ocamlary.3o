@@ -195,7 +195,7 @@ A plain module alias of Empty
 A plain, empty module signature
 .nf 
 .sp 
-\f[CB]module\fR \f[CB]type\fR EmptySigAlias = \f[CB]sig\fR \f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR EmptySigAlias = EmptySig
 .fi 
 .br 
 .ti +2
@@ -564,19 +564,7 @@ This comment is for InnerModuleA\.
 .nf 
 .sp 
 .ti +2
-\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
-.br 
-.ti +4
-\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
-.fi 
-.br 
-.ti +6
-This comment is for t\.
-.nf 
-
-.br 
-.ti +2
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = InnerModuleA\.InnerModuleTypeA'
 .fi 
 .br 
 .ti +4
@@ -675,19 +663,7 @@ This comment is for InnerModuleA\.
 .nf 
 .sp 
 .ti +4
-\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
-.br 
-.ti +6
-\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
-.fi 
-.br 
-.ti +8
-This comment is for t\.
-.nf 
-
-.br 
-.ti +4
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = InnerModuleA\.InnerModuleTypeA'
 .fi 
 .br 
 .ti +6
@@ -776,19 +752,7 @@ This comment is for InnerModuleA\.
 .nf 
 .sp 
 .ti +2
-\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
-.br 
-.ti +4
-\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
-.fi 
-.br 
-.ti +6
-This comment is for t\.
-.nf 
-
-.br 
-.ti +2
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = InnerModuleA\.InnerModuleTypeA'
 .fi 
 .br 
 .ti +4
@@ -883,19 +847,7 @@ This comment is for InnerModuleA\.
 .nf 
 .sp 
 .ti +4
-\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
-.br 
-.ti +6
-\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
-.fi 
-.br 
-.ti +8
-This comment is for t\.
-.nf 
-
-.br 
-.ti +4
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = InnerModuleA\.InnerModuleTypeA'
 .fi 
 .br 
 .ti +6
@@ -993,19 +945,7 @@ This comment is for InnerModuleA\.
 .nf 
 .sp 
 .ti +4
-\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
-.br 
-.ti +6
-\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
-.fi 
-.br 
-.ti +8
-This comment is for t\.
-.nf 
-
-.br 
-.ti +4
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = InnerModuleA\.InnerModuleTypeA'
 .fi 
 .br 
 .ti +6
@@ -1103,19 +1043,7 @@ This comment is for InnerModuleA\.
 .nf 
 .sp 
 .ti +4
-\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
-.br 
-.ti +6
-\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
-.fi 
-.br 
-.ti +8
-This comment is for t\.
-.nf 
-
-.br 
-.ti +4
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = InnerModuleA\.InnerModuleTypeA'
 .fi 
 .br 
 .ti +6

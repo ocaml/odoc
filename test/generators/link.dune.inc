@@ -299,6 +299,24 @@
   (run odoc link -o %{target} %{deps})))
 
 (rule
+ (target module_type_alias.cmti)
+ (deps cases/module_type_alias.mli)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{deps})))
+
+(rule
+ (target module_type_alias.odoc)
+ (deps module_type_alias.cmti)
+ (action
+  (run odoc compile -o %{target} %{deps})))
+
+(rule
+ (target module_type_alias.odocl)
+ (deps module_type_alias.odoc)
+ (action
+  (run odoc link -o %{target} %{deps})))
+
+(rule
  (target module_type_subst.cmti)
  (deps cases/module_type_subst.mli)
  (action
@@ -890,32 +908,6 @@
 (subdir
  html
  (rule
-  (targets Bugs_pre_410.html.gen)
-  (action
-   (progn
-    (run
-     odoc
-     html-generate
-     --indent
-     --flat
-     --extra-suffix
-     gen
-     -o
-     .
-     %{dep:../bugs_pre_410.odocl})))
-  (enabled_if
-   (<= %{ocaml_version} 4.09))))
-
-(rule
- (alias runtest)
- (action
-  (diff html/Bugs_pre_410.html html/Bugs_pre_410.html.gen))
- (enabled_if
-  (<= %{ocaml_version} 4.09)))
-
-(subdir
- html
- (rule
   (action
    (with-outputs-to
     bugs_pre_410.gen
@@ -933,30 +925,6 @@
 (subdir
  latex
  (rule
-  (targets Bugs_pre_410.tex.gen)
-  (action
-   (progn
-    (run
-     odoc
-     latex-generate
-     -o
-     .
-     --extra-suffix
-     gen
-     %{dep:../bugs_pre_410.odocl})))
-  (enabled_if
-   (<= %{ocaml_version} 4.09))))
-
-(rule
- (alias runtest)
- (action
-  (diff latex/Bugs_pre_410.tex latex/Bugs_pre_410.tex.gen))
- (enabled_if
-  (<= %{ocaml_version} 4.09)))
-
-(subdir
- latex
- (rule
   (action
    (with-outputs-to
     bugs_pre_410.gen
@@ -968,30 +936,6 @@
  (alias runtest)
  (action
   (diff latex/bugs_pre_410.targets latex/bugs_pre_410.gen))
- (enabled_if
-  (<= %{ocaml_version} 4.09)))
-
-(subdir
- man
- (rule
-  (targets Bugs_pre_410.3o.gen)
-  (action
-   (progn
-    (run
-     odoc
-     man-generate
-     -o
-     .
-     --extra-suffix
-     gen
-     %{dep:../bugs_pre_410.odocl})))
-  (enabled_if
-   (<= %{ocaml_version} 4.09))))
-
-(rule
- (alias runtest)
- (action
-  (diff man/Bugs_pre_410.3o man/Bugs_pre_410.3o.gen))
  (enabled_if
   (<= %{ocaml_version} 4.09)))
 
@@ -2550,8 +2494,6 @@
    Module.html.gen
    Module-module-type-S.html.gen
    Module-module-type-S-M.html.gen
-   Module-module-type-S2.html.gen
-   Module-module-type-S2-M.html.gen
    Module-module-type-S3.html.gen
    Module-module-type-S3-M.html.gen
    Module-module-type-S4.html.gen
@@ -2595,18 +2537,6 @@
   (diff
    html/Module-module-type-S-M.html
    html/Module-module-type-S-M.html.gen)))
-
-(rule
- (alias runtest)
- (action
-  (diff html/Module-module-type-S2.html html/Module-module-type-S2.html.gen)))
-
-(rule
- (alias runtest)
- (action
-  (diff
-   html/Module-module-type-S2-M.html
-   html/Module-module-type-S2-M.html.gen)))
 
 (rule
  (alias runtest)
@@ -2769,6 +2699,172 @@
  (alias runtest)
  (action
   (diff man/module.targets man/module.gen)))
+
+(subdir
+ html
+ (rule
+  (targets
+   Module_type_alias.html.gen
+   Module_type_alias-module-type-A.html.gen
+   Module_type_alias-module-type-B.html.gen
+   Module_type_alias-module-type-B-argument-1-C.html.gen
+   Module_type_alias-module-type-E.html.gen
+   Module_type_alias-module-type-E-argument-1-F.html.gen
+   Module_type_alias-module-type-E-argument-1-C.html.gen
+   Module_type_alias-module-type-G.html.gen
+   Module_type_alias-module-type-G-argument-1-H.html.gen)
+  (action
+   (progn
+    (run
+     odoc
+     html-generate
+     --indent
+     --flat
+     --extra-suffix
+     gen
+     -o
+     .
+     %{dep:../module_type_alias.odocl})))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff html/Module_type_alias.html html/Module_type_alias.html.gen)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff
+   html/Module_type_alias-module-type-A.html
+   html/Module_type_alias-module-type-A.html.gen)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff
+   html/Module_type_alias-module-type-B.html
+   html/Module_type_alias-module-type-B.html.gen)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff
+   html/Module_type_alias-module-type-B-argument-1-C.html
+   html/Module_type_alias-module-type-B-argument-1-C.html.gen)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff
+   html/Module_type_alias-module-type-E.html
+   html/Module_type_alias-module-type-E.html.gen)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff
+   html/Module_type_alias-module-type-E-argument-1-F.html
+   html/Module_type_alias-module-type-E-argument-1-F.html.gen)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff
+   html/Module_type_alias-module-type-E-argument-1-C.html
+   html/Module_type_alias-module-type-E-argument-1-C.html.gen)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff
+   html/Module_type_alias-module-type-G.html
+   html/Module_type_alias-module-type-G.html.gen)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff
+   html/Module_type_alias-module-type-G-argument-1-H.html
+   html/Module_type_alias-module-type-G-argument-1-H.html.gen)))
+
+(subdir
+ html
+ (rule
+  (action
+   (with-outputs-to
+    module_type_alias.gen
+    (run odoc html-targets -o . %{dep:../module_type_alias.odocl} --flat)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff html/module_type_alias.targets html/module_type_alias.gen)))
+
+(subdir
+ latex
+ (rule
+  (targets Module_type_alias.tex.gen)
+  (action
+   (progn
+    (run
+     odoc
+     latex-generate
+     -o
+     .
+     --extra-suffix
+     gen
+     %{dep:../module_type_alias.odocl})))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff latex/Module_type_alias.tex latex/Module_type_alias.tex.gen)))
+
+(subdir
+ latex
+ (rule
+  (action
+   (with-outputs-to
+    module_type_alias.gen
+    (run odoc latex-targets -o . %{dep:../module_type_alias.odocl})))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff latex/module_type_alias.targets latex/module_type_alias.gen)))
+
+(subdir
+ man
+ (rule
+  (targets Module_type_alias.3o.gen)
+  (action
+   (progn
+    (run
+     odoc
+     man-generate
+     -o
+     .
+     --extra-suffix
+     gen
+     %{dep:../module_type_alias.odocl})))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff man/Module_type_alias.3o man/Module_type_alias.3o.gen)))
+
+(subdir
+ man
+ (rule
+  (action
+   (with-outputs-to
+    module_type_alias.gen
+    (run odoc man-targets -o . %{dep:../module_type_alias.odocl})))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff man/module_type_alias.targets man/module_type_alias.gen)))
 
 (subdir
  html
@@ -3008,7 +3104,6 @@
    Ocamlary-module-type-Empty.html.gen
    Ocamlary-module-type-MissingComment.html.gen
    Ocamlary-module-type-EmptySig.html.gen
-   Ocamlary-module-type-EmptySigAlias.html.gen
    Ocamlary-ModuleWithSignature.html.gen
    Ocamlary-ModuleWithSignatureAlias.html.gen
    Ocamlary-One.html.gen
@@ -3027,58 +3122,48 @@
    Ocamlary-CollectionModule-InnerModuleA.html.gen
    Ocamlary-CollectionModule-InnerModuleA-InnerModuleA'.html.gen
    Ocamlary-CollectionModule-InnerModuleA-module-type-InnerModuleTypeA'.html.gen
-   Ocamlary-CollectionModule-module-type-InnerModuleTypeA.html.gen
    Ocamlary-module-type-COLLECTION.html.gen
    Ocamlary-module-type-COLLECTION-InnerModuleA.html.gen
    Ocamlary-module-type-COLLECTION-InnerModuleA-InnerModuleA'.html.gen
    Ocamlary-module-type-COLLECTION-InnerModuleA-module-type-InnerModuleTypeA'.html.gen
-   Ocamlary-module-type-COLLECTION-module-type-InnerModuleTypeA.html.gen
    Ocamlary-Recollection.html.gen
    Ocamlary-Recollection-argument-1-C.html.gen
    Ocamlary-Recollection-argument-1-C-InnerModuleA.html.gen
    Ocamlary-Recollection-argument-1-C-InnerModuleA-InnerModuleA'.html.gen
    Ocamlary-Recollection-argument-1-C-InnerModuleA-module-type-InnerModuleTypeA'.html.gen
-   Ocamlary-Recollection-argument-1-C-module-type-InnerModuleTypeA.html.gen
    Ocamlary-Recollection-InnerModuleA.html.gen
    Ocamlary-Recollection-InnerModuleA-InnerModuleA'.html.gen
    Ocamlary-Recollection-InnerModuleA-module-type-InnerModuleTypeA'.html.gen
-   Ocamlary-Recollection-module-type-InnerModuleTypeA.html.gen
    Ocamlary-module-type-MMM.html.gen
    Ocamlary-module-type-MMM-C.html.gen
    Ocamlary-module-type-MMM-C-InnerModuleA.html.gen
    Ocamlary-module-type-MMM-C-InnerModuleA-InnerModuleA'.html.gen
    Ocamlary-module-type-MMM-C-InnerModuleA-module-type-InnerModuleTypeA'.html.gen
-   Ocamlary-module-type-MMM-C-module-type-InnerModuleTypeA.html.gen
    Ocamlary-module-type-RECOLLECTION.html.gen
    Ocamlary-module-type-RecollectionModule.html.gen
    Ocamlary-module-type-RecollectionModule-InnerModuleA.html.gen
    Ocamlary-module-type-RecollectionModule-InnerModuleA-InnerModuleA'.html.gen
    Ocamlary-module-type-RecollectionModule-InnerModuleA-module-type-InnerModuleTypeA'.html.gen
-   Ocamlary-module-type-RecollectionModule-module-type-InnerModuleTypeA.html.gen
    Ocamlary-module-type-A.html.gen
    Ocamlary-module-type-A-Q.html.gen
    Ocamlary-module-type-A-Q-InnerModuleA.html.gen
    Ocamlary-module-type-A-Q-InnerModuleA-InnerModuleA'.html.gen
    Ocamlary-module-type-A-Q-InnerModuleA-module-type-InnerModuleTypeA'.html.gen
-   Ocamlary-module-type-A-Q-module-type-InnerModuleTypeA.html.gen
    Ocamlary-module-type-B.html.gen
    Ocamlary-module-type-B-Q.html.gen
    Ocamlary-module-type-B-Q-InnerModuleA.html.gen
    Ocamlary-module-type-B-Q-InnerModuleA-InnerModuleA'.html.gen
    Ocamlary-module-type-B-Q-InnerModuleA-module-type-InnerModuleTypeA'.html.gen
-   Ocamlary-module-type-B-Q-module-type-InnerModuleTypeA.html.gen
    Ocamlary-module-type-C.html.gen
    Ocamlary-module-type-C-Q.html.gen
    Ocamlary-module-type-C-Q-InnerModuleA.html.gen
    Ocamlary-module-type-C-Q-InnerModuleA-InnerModuleA'.html.gen
    Ocamlary-module-type-C-Q-InnerModuleA-module-type-InnerModuleTypeA'.html.gen
-   Ocamlary-module-type-C-Q-module-type-InnerModuleTypeA.html.gen
    Ocamlary-FunctorTypeOf.html.gen
    Ocamlary-FunctorTypeOf-argument-1-Collection.html.gen
    Ocamlary-FunctorTypeOf-argument-1-Collection-InnerModuleA.html.gen
    Ocamlary-FunctorTypeOf-argument-1-Collection-InnerModuleA-InnerModuleA'.html.gen
    Ocamlary-FunctorTypeOf-argument-1-Collection-InnerModuleA-module-type-InnerModuleTypeA'.html.gen
-   Ocamlary-FunctorTypeOf-argument-1-Collection-module-type-InnerModuleTypeA.html.gen
    Ocamlary-module-type-IncludeModuleType.html.gen
    Ocamlary-module-type-ToInclude.html.gen
    Ocamlary-module-type-ToInclude-IncludedA.html.gen
@@ -3115,10 +3200,8 @@
    Ocamlary-Dep6.html.gen
    Ocamlary-Dep6-module-type-S.html.gen
    Ocamlary-Dep6-module-type-T.html.gen
-   Ocamlary-Dep6-module-type-T-module-type-R.html.gen
    Ocamlary-Dep6-module-type-T-Y.html.gen
    Ocamlary-Dep6-X.html.gen
-   Ocamlary-Dep6-X-module-type-R.html.gen
    Ocamlary-Dep6-X-Y.html.gen
    Ocamlary-Dep7.html.gen
    Ocamlary-Dep7-argument-1-Arg.html.gen
@@ -3258,15 +3341,6 @@
   (diff
    html/Ocamlary-module-type-EmptySig.html
    html/Ocamlary-module-type-EmptySig.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
-   html/Ocamlary-module-type-EmptySigAlias.html
-   html/Ocamlary-module-type-EmptySigAlias.html.gen))
  (enabled_if
   (>= %{ocaml_version} 4.07)))
 
@@ -3432,15 +3506,6 @@
  (alias runtest)
  (action
   (diff
-   html/Ocamlary-CollectionModule-module-type-InnerModuleTypeA.html
-   html/Ocamlary-CollectionModule-module-type-InnerModuleTypeA.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
    html/Ocamlary-module-type-COLLECTION.html
    html/Ocamlary-module-type-COLLECTION.html.gen))
  (enabled_if
@@ -3470,15 +3535,6 @@
   (diff
    html/Ocamlary-module-type-COLLECTION-InnerModuleA-module-type-InnerModuleTypeA'.html
    html/Ocamlary-module-type-COLLECTION-InnerModuleA-module-type-InnerModuleTypeA'.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
-   html/Ocamlary-module-type-COLLECTION-module-type-InnerModuleTypeA.html
-   html/Ocamlary-module-type-COLLECTION-module-type-InnerModuleTypeA.html.gen))
  (enabled_if
   (>= %{ocaml_version} 4.07)))
 
@@ -3529,15 +3585,6 @@
  (alias runtest)
  (action
   (diff
-   html/Ocamlary-Recollection-argument-1-C-module-type-InnerModuleTypeA.html
-   html/Ocamlary-Recollection-argument-1-C-module-type-InnerModuleTypeA.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
    html/Ocamlary-Recollection-InnerModuleA.html
    html/Ocamlary-Recollection-InnerModuleA.html.gen))
  (enabled_if
@@ -3558,15 +3605,6 @@
   (diff
    html/Ocamlary-Recollection-InnerModuleA-module-type-InnerModuleTypeA'.html
    html/Ocamlary-Recollection-InnerModuleA-module-type-InnerModuleTypeA'.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
-   html/Ocamlary-Recollection-module-type-InnerModuleTypeA.html
-   html/Ocamlary-Recollection-module-type-InnerModuleTypeA.html.gen))
  (enabled_if
   (>= %{ocaml_version} 4.07)))
 
@@ -3619,15 +3657,6 @@
  (alias runtest)
  (action
   (diff
-   html/Ocamlary-module-type-MMM-C-module-type-InnerModuleTypeA.html
-   html/Ocamlary-module-type-MMM-C-module-type-InnerModuleTypeA.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
    html/Ocamlary-module-type-RECOLLECTION.html
    html/Ocamlary-module-type-RECOLLECTION.html.gen))
  (enabled_if
@@ -3666,15 +3695,6 @@
   (diff
    html/Ocamlary-module-type-RecollectionModule-InnerModuleA-module-type-InnerModuleTypeA'.html
    html/Ocamlary-module-type-RecollectionModule-InnerModuleA-module-type-InnerModuleTypeA'.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
-   html/Ocamlary-module-type-RecollectionModule-module-type-InnerModuleTypeA.html
-   html/Ocamlary-module-type-RecollectionModule-module-type-InnerModuleTypeA.html.gen))
  (enabled_if
   (>= %{ocaml_version} 4.07)))
 
@@ -3727,15 +3747,6 @@
  (alias runtest)
  (action
   (diff
-   html/Ocamlary-module-type-A-Q-module-type-InnerModuleTypeA.html
-   html/Ocamlary-module-type-A-Q-module-type-InnerModuleTypeA.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
    html/Ocamlary-module-type-B.html
    html/Ocamlary-module-type-B.html.gen))
  (enabled_if
@@ -3774,15 +3785,6 @@
   (diff
    html/Ocamlary-module-type-B-Q-InnerModuleA-module-type-InnerModuleTypeA'.html
    html/Ocamlary-module-type-B-Q-InnerModuleA-module-type-InnerModuleTypeA'.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
-   html/Ocamlary-module-type-B-Q-module-type-InnerModuleTypeA.html
-   html/Ocamlary-module-type-B-Q-module-type-InnerModuleTypeA.html.gen))
  (enabled_if
   (>= %{ocaml_version} 4.07)))
 
@@ -3835,15 +3837,6 @@
  (alias runtest)
  (action
   (diff
-   html/Ocamlary-module-type-C-Q-module-type-InnerModuleTypeA.html
-   html/Ocamlary-module-type-C-Q-module-type-InnerModuleTypeA.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
    html/Ocamlary-FunctorTypeOf.html
    html/Ocamlary-FunctorTypeOf.html.gen))
  (enabled_if
@@ -3882,15 +3875,6 @@
   (diff
    html/Ocamlary-FunctorTypeOf-argument-1-Collection-InnerModuleA-module-type-InnerModuleTypeA'.html
    html/Ocamlary-FunctorTypeOf-argument-1-Collection-InnerModuleA-module-type-InnerModuleTypeA'.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
-   html/Ocamlary-FunctorTypeOf-argument-1-Collection-module-type-InnerModuleTypeA.html
-   html/Ocamlary-FunctorTypeOf-argument-1-Collection-module-type-InnerModuleTypeA.html.gen))
  (enabled_if
   (>= %{ocaml_version} 4.07)))
 
@@ -4196,15 +4180,6 @@
  (alias runtest)
  (action
   (diff
-   html/Ocamlary-Dep6-module-type-T-module-type-R.html
-   html/Ocamlary-Dep6-module-type-T-module-type-R.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
    html/Ocamlary-Dep6-module-type-T-Y.html
    html/Ocamlary-Dep6-module-type-T-Y.html.gen))
  (enabled_if
@@ -4214,15 +4189,6 @@
  (alias runtest)
  (action
   (diff html/Ocamlary-Dep6-X.html html/Ocamlary-Dep6-X.html.gen))
- (enabled_if
-  (>= %{ocaml_version} 4.07)))
-
-(rule
- (alias runtest)
- (action
-  (diff
-   html/Ocamlary-Dep6-X-module-type-R.html
-   html/Ocamlary-Dep6-X-module-type-R.html.gen))
  (enabled_if
   (>= %{ocaml_version} 4.07)))
 

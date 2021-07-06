@@ -30,18 +30,7 @@ This comment is for collection\.
 This comment is for InnerModuleA\.
 .nf 
 .sp 
-\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = \f[CB]sig\fR
-.br 
-.ti +2
-\f[CB]type\fR t = InnerModuleA\.InnerModuleA'\.t
-.fi 
-.br 
-.ti +4
-This comment is for t\.
-.nf 
-
-.br 
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR InnerModuleTypeA = InnerModuleA\.InnerModuleTypeA'
 .fi 
 .br 
 .ti +2
