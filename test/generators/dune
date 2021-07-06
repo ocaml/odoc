@@ -1,0 +1,29 @@
+(include link.dune.inc)
+
+(rule
+ (deps
+  (glob_files cases/*)
+  (glob_files html/*.targets)
+  (glob_files latex/*.targets)
+  (glob_files man/*.targets))
+ (enabled_if
+  (>= %{ocaml_version} 4.04))
+ (action
+  (with-stdout-to
+   link.dune.inc.gen
+   (pipe-stdout
+    (run gen_rules/gen_rules.exe)
+    (run dune format-dune-file)))))
+
+(rule
+ (alias runtest)
+ (enabled_if
+  (>= %{ocaml_version} 4.04))
+ (action
+  (diff link.dune.inc link.dune.inc.gen)))
+
+(library
+ (name gen_rules_lib)
+ (libraries sexplib0 unix fpath)
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
