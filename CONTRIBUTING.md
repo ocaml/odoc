@@ -15,7 +15,6 @@ find the information in this file helpful.
 - [Quick start: HTML and CSS](#Quick_start)
 - [Testing](#Testing)
   - [Debug prints](#Debug_prints)
-  - [Expect tests](#Expect_tests)
   - [Coverage analysis](#Coverage_analysis)
 - [Project structure](#Project_structure)
 - [Roadmap](#Roadmap)
@@ -136,72 +135,6 @@ The [testing framework][alcotest] will display STDERR if a test fails.
 
 <br/>
 
-<a id="Expect_tests"></a>
-### Expect tests
-
-Most of odoc's tests are *expect tests*, which means that they convert output
-of some code that is being tested to strings, and then check that those strings
-are correct:
-
-1. The tests run some code, for example the odoc parser on the string `{e foo}`.
-2. They take the output, in this case an AST representing "emphasized `foo`,"
-   and convert that output to a string. In this case, it will be an S-expression
-   roughly like `(emphasis (foo))`.
-3. There is an *expected* copy of this S-expression in a file somewhere in the
-   repo. If the S-expression from the code doesn't match the expected one, the
-   test fails.
-
-The reason for using expect tests is that when a test fails, there are two
-possibilities:
-
-1. The code being tested has become wrong, in which case the *first* failure
-   should trigger fixing the code.
-2. The code being tested has been changed in some way, but is correct (perhaps
-   more correct than it used to be), and it is the test case that is wrong. It
-   is possible that *dozens* or even *hundreds* of tests are now wrong. It is
-   not practical to fix them fully by hand.
-
-When an expect test fails, the string that the code emitted is saved, so that
-the human developer can choose to *replace* the now-incorrect expected string.
-In odoc, a test failure looks like this:
-
-```diff
--- bold.000 [basic.] Failed --
-in _build/_tests/bold.000.output:
-
-{e foo}
-
---- expect/bold/basic.txt       2018-04-15 14:42:32.356895400 -0500
-+++ _actual/bold/basic.txt      2018-04-15 17:36:26.812747400 -0500
-@@ -2,5 +2,5 @@
-   (ok
-    (((f.ml (1 0) (1 7))
-      (paragraph
--      (((f.ml (1 0) (1 7)) (bold (((f.ml (1 3) (1 6)) (word foo)))))))))))
-+      (((f.ml (1 0) (1 7)) (emphasis (((f.ml (1 3) (1 6)) (word foo)))))))))))
-  (warnings ()))
-
-To replace expected output with actual, run
-
-bash _build/default/test/parser/_actual/replace.sh
-```
-
-The intended response to this is:
-
-1. Check the diff. If the `-` line is correct, the code is broken. If the `+`
-   line is correct, the test is broken.
-2. If the test is broken, copy/paste the command that the output suggests,
-   and re-run the tests:
-
-    ```
-    bash _build/default/test/parser/_actual/replace.sh; make test
-    ```
-
-   This command is the same within one test category (e.g. HTML tests, parser
-   tests), so if you have lots of tests to fix, you paste it once, then use
-   UP, ENTER to repeat it over and over again, quickly checking each failure.
-
-<br/>
 
 <a id="Coverage_analysis"></a>
 ### Coverage analysis
@@ -237,14 +170,9 @@ writing new tests, and want to know what they are actually touching. To use it,
 odoc is divided into several sub-libraries, each of which is a directory
 under `src/`. Most of these have a *main file*, whose name is the directory
 name prefixed with "`odoc__`". That main file is the interface for the entire
-sub-library directory. For example, [`src/parser`][parser-dir] has
-[`src/parser/odoc__parser.mli`][parser-api], and everything in `src/parser` is
+sub-library directory. For example, [`src/loader`][loader-dir] has
+[`src/loader/odoc__loader.mli`][loader-api], and everything in `src/loader` is
 hidden behind that interface.
-
-We use an alias module, in [`src/alias/odoc__alias.ml`][alias] to shorten these
-names in odoc's own code. For example, as you can see in the alias module, we
-`Odoc__parser` is shortened to `Parser_`. The underscore is there to avoid
-needlessly shadowing OCaml's module `Parser`, which is part of `compiler-libs`.
 
 The `dune` files in each directory can be used to figure out how the
 directories depend on each other. Mostly, however, everything depends on
@@ -258,7 +186,7 @@ OCaml.
 - [`src/model`][model-dir] &mdash; datatypes representing the OCaml
 language ([`src/model/lang.ml`][lang]), error-handling
 ([`src/model/error.ml`][error]), cross-references
-([`src/model/paths-types.ml`][paths]), etc. This directory actually has no main
+([`src/model/paths_types.ml`][paths]), etc. This directory actually has no main
 file. It is a collection of the datatypes that the rest of the odoc
 sub-libraries use to communicate with each other, so everything else depends on
 `model`.
@@ -267,18 +195,17 @@ sub-libraries use to communicate with each other, so everything else depends on
 to `model`. You can see the three functions' signatures in the main file,
 [`src/loader/odoc__loader.mli`][loader-api].
 
-- [`src/parser`][parser-dir] &mdash; a single function from strings to comment
-ASTs. You can see its signature in the main file,
-[`src/parser/odoc__parser.mli`][parser-api].
-
 - [`src/xref`][xref-dir] &mdash; functions for resolving cross-references. These
 consume things from `model`, and return transformed instances. The signature, in
 [`src/xref/odoc__xref.mli`][xref-api] is not very pretty, but the usage of
 `xref` is pretty isolated in the rest of odoc, and can be found by grepping for
 `Xref`.
 
-- [`src/html`][html-dir] &mdash; the HTML generator. The main file is
-[`src/html/odoc__html.mli`][html-api].
+- [`src/html`][html-dir] &mdash; the HTML generator.
+
+- [`src/latex`][latex-dir] &mdash; the Latex generator.
+
+- [`src/man`][man-dir] &mdash; the Manpages generator.
 
 - [`src/odoc`][odoc-dir] &mdash; the overall `odoc` command-line tool that ties
 the other parts together. This doesn't have the same kind of main file, because
@@ -294,14 +221,13 @@ third-party software.
 [lang]: https://github.com/ocaml/odoc/blob/master/src/model/lang.ml
 [error]: https://github.com/ocaml/odoc/blob/master/src/model/error.ml
 [paths]: https://github.com/ocaml/odoc/blob/master/src/model/paths_types.ml
-[parser-dir]: https://github.com/ocaml/odoc/tree/master/src/parser
-[parser-api]: https://github.com/ocaml/odoc/blob/master/src/parser/odoc__parser.mli
 [loader-dir]: https://github.com/ocaml/odoc/tree/master/src/loader
 [loader-api]: https://github.com/ocaml/odoc/blob/master/src/loader/odoc__loader.mli
 [xref-dir]: https://github.com/ocaml/odoc/tree/master/src/xref
 [xref-api]: https://github.com/ocaml/odoc/blob/master/src/xref/odoc__xref.mli
 [html-dir]: https://github.com/ocaml/odoc/tree/master/src/html
-[html-api]: https://github.com/ocaml/odoc/blob/master/src/html/odoc__html.ml
+[latex-dir]: https://github.com/ocaml/odoc/tree/master/src/html
+[man-dir]: https://github.com/ocaml/odoc/tree/master/src/html
 [odoc-dir]: https://github.com/ocaml/odoc/tree/master/src/odoc
 [main]: https://github.com/ocaml/odoc/blob/master/src/odoc/bin/main.ml
 [util-dir]: https://github.com/ocaml/odoc/tree/master/src/util
@@ -309,31 +235,26 @@ third-party software.
 
 The tests parallel the structure of `src/`:
 
-- [`test/parser`][test-parser] is expect tests for the parser. Each [one]
-[parser-test] calls the parser on a string, converts the AST to a string, and
-compares it with an [expected string][parser-expect].
-
-- [`test/html`][test-html] is end-to-end expect tests for the HTML generator.
-Each [one][html-test] is an OCaml source file. The tester runs the `odoc` tool
-on it, and compares the resulting HTML to some [expected HTML][html-expect].
-
-- [`test/print`][test-print] is converters from odoc datatypes to strings, so
-they can be used in expect tests.
-
-- [`test/dune`][test-dune] is a tiny project for checking that Dune drives odoc
-correctly. It is mainly used in the odoc CI.
+- [`test/generators`][test-generators] This contains backend tests. See the [README.md](https://github.com/ocaml/odoc/blob/master/test/generators/README.md).
 
 - [`test/inactive`][test-inactive] is some old tests that have suffered some bit
 rot, and we haven't gotten around to restoring yet.
 
-[test-parser]: https://github.com/ocaml/odoc/blob/master/test/parser/test.ml
-[parser-test]: https://github.com/ocaml/odoc/blob/4c09575a5b25f4b224322f25d7867ce41fa4d032/test/parser/test.ml#L35
-[parser-expect]: https://github.com/ocaml/odoc/blob/4c09575a5b25f4b224322f25d7867ce41fa4d032/test/parser/expect/one-paragraph/word.txt
-[test-html]: https://github.com/ocaml/odoc/blob/master/test/html/test.ml
-[html-test]: https://github.com/ocaml/odoc/blob/master/test/html/cases/val.mli
-[html-expect]: https://github.com/ocaml/odoc/blob/master/test/html/expect/val.html
+- [`test/integration`] is meant to test `odoc`'s CLI and integration with dune, and it use [cram-testing](https://dune.readthedocs.io/en/stable/tests.html?highlight=cram%20testing#cram-tests) style.
+
+- [`test/model`] tests the odoc model using expect tests and cram-testing style.
+
+- [`test/odoc_print`] is an helper program that is used by cram tests to print the content of intermediary files, that is `.odoc`, `.odocl` et cetera.
+
+- [`test/pages`] is testing the `odoc's` CLI too
+
+- [`test/print`][test-print] converts from `odoc`'s datatypes to strings, so
+they can be used in expect tests.
+
+- [`test/xref2`] is testing specific paths of compile and link code but always from "the outside" (calling Odoc's CLI or the "public" API, they are not unit tests). Some of the tests are run using [`Mdx`](https://github.com/realworldocaml/mdx) and most of them using cram-testing style. [`xref/compile.ml`](https://github.com/ocaml/odoc/blob/master/test/xref2/compile.ml) is a small script helping to write the cram tests.
+
+[test-generators]: https://github.com/ocaml/odoc/tree/master/test/generators
 [test-print]: https://github.com/ocaml/odoc/tree/master/test/print
-[test-dune]: https://github.com/ocaml/odoc/tree/master/test/dune
 [test-inactive]: https://github.com/ocaml/odoc/tree/master/test/inactive
 
 <br/>
