@@ -779,8 +779,7 @@ module Fragment = struct
       | `Root (`ModuleType _r) -> assert false
       | `Root (`Module _r) -> assert false
       | `Subst (s, _) -> Path.Resolved.identifier (s :> Path.Resolved.t)
-      | `Alias (p, _) ->
-          (Path.Resolved.Module.identifier p :> Identifier.t)
+      | `Alias (p, _) -> (Path.Resolved.Module.identifier p :> Identifier.t)
       | `Module (m, n) -> `Module (Signature.identifier m, n)
       | `Module_type (m, n) -> `ModuleType (Signature.identifier m, n)
       | `Type (m, n) -> `Type (Signature.identifier m, n)
@@ -901,7 +900,8 @@ module Reference = struct
       | `AliasModuleType (sub, orig) ->
           if Path.Resolved.ModuleType.is_hidden sub then
             parent_signature_identifier (orig :> signature)
-          else (Path.Resolved.ModuleType.identifier sub :> Identifier.Signature.t)
+          else
+            (Path.Resolved.ModuleType.identifier sub :> Identifier.Signature.t)
       | `Module (m, n) -> `Module (parent_signature_identifier m, n)
       | `Canonical (_, `Resolved r) ->
           parent_signature_identifier (r : module_ :> signature)
@@ -921,8 +921,8 @@ module Reference = struct
 
     and parent_identifier : parent -> Identifier.Parent.t = function
       | `Identifier id -> id
-      | (`Hidden _ | `Alias _ | `AliasModuleType _ | `Module _ | `Canonical _ | `ModuleType _)
-        as sg ->
+      | ( `Hidden _ | `Alias _ | `AliasModuleType _ | `Module _ | `Canonical _
+        | `ModuleType _ ) as sg ->
           (parent_signature_identifier sg :> Identifier.Parent.t)
       | `Type _ as t -> (parent_type_identifier t :> Identifier.Parent.t)
       | (`Class _ | `ClassType _) as c ->
@@ -931,14 +931,14 @@ module Reference = struct
     and label_parent_identifier : label_parent -> Identifier.LabelParent.t =
       function
       | `Identifier id -> id
-      | ( `Hidden _ | `Alias _ | `AliasModuleType _ | `Module _ | `Canonical _ | `ModuleType _
-        | `Type _ | `Class _ | `ClassType _ ) as r ->
+      | ( `Hidden _ | `Alias _ | `AliasModuleType _ | `Module _ | `Canonical _
+        | `ModuleType _ | `Type _ | `Class _ | `ClassType _ ) as r ->
           (parent_identifier r :> Identifier.LabelParent.t)
 
     and identifier : t -> Identifier.t = function
       | `Identifier id -> id
-      | ( `Alias _ | `AliasModuleType _ | `Module _ | `Canonical _ | `Hidden _ | `Type _
-        | `Class _ | `ClassType _ | `ModuleType _ ) as r ->
+      | ( `Alias _ | `AliasModuleType _ | `Module _ | `Canonical _ | `Hidden _
+        | `Type _ | `Class _ | `ClassType _ | `ModuleType _ ) as r ->
           (label_parent_identifier r :> Identifier.t)
       | `Field (p, n) -> `Field (parent_identifier p, n)
       | `Constructor (s, n) -> `Constructor (parent_type_identifier s, n)

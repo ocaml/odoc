@@ -48,8 +48,7 @@ let rec resolved_signature_split_parent :
     resolved_signature -> resolved_base_name = function
   | `Root i -> RBase i
   | `Subst (_, p) -> resolved_signature_split_parent (p :> resolved_signature)
-  | `Alias (_, p) ->
-      resolved_signature_split_parent (p :> resolved_signature)
+  | `Alias (_, p) -> resolved_signature_split_parent (p :> resolved_signature)
   | `OpaqueModule m -> resolved_signature_split_parent (m :> resolved_signature)
   | `Module (p, name) -> (
       match resolved_signature_split_parent p with

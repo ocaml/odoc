@@ -202,10 +202,7 @@ let rec is_resolved_module_substituted : Resolved.module_ -> bool = function
   | `Substituted _ -> true
   | `Identifier _ -> false
   | `Subst (_a, _) -> false (* is_resolved_module_type_substituted a*)
-  | `Hidden a
-  | `Canonical (a, _)
-  | `Apply (a, _)
-  | `Alias (a, _) ->
+  | `Hidden a | `Canonical (a, _) | `Apply (a, _) | `Alias (a, _) ->
       is_resolved_module_substituted a
   | `Module (a, _) -> is_resolved_parent_substituted a
   | `OpaqueModule a -> is_resolved_module_substituted a
@@ -405,8 +402,7 @@ and resolved_module_of_resolved_signature_reference :
       resolved_module_of_resolved_module_reference r'
   | `ModuleType (_, n) ->
       failwith ("Not a module reference: " ^ ModuleTypeName.to_string n)
-  | `AliasModuleType _ ->
-    failwith "Not a module reference: aliasmoduletype"
+  | `AliasModuleType _ -> failwith "Not a module reference: aliasmoduletype"
   | `Identifier _ -> failwith "Not a module reference : identifier"
 
 and module_of_module_reference : Reference.Module.t -> module_ = function

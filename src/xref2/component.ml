@@ -1260,8 +1260,7 @@ module Fmt = struct
   and resolved_signature_fragment ppf (f : Cfrag.resolved_signature) =
     match f with
     | `Root r -> Format.fprintf ppf "%a" resolved_root_fragment r
-    | (`Subst _ | `Alias _ | `Module _) as x ->
-        resolved_module_fragment ppf x
+    | (`Subst _ | `Alias _ | `Module _) as x -> resolved_module_fragment ppf x
     | `OpaqueModule m ->
         Format.fprintf ppf "opaquemodule(%a)" resolved_module_fragment m
 
@@ -1379,10 +1378,10 @@ module Fmt = struct
           model_resolved_reference
           (y :> Odoc_model.Paths.Reference.Resolved.t)
     | `AliasModuleType (x, y) ->
-      Format.fprintf ppf "aliasmoduletype(%a,%a)" model_resolved_path
-        (x :> Odoc_model.Paths.Path.Resolved.t)
-        model_resolved_reference
-        (y :> Odoc_model.Paths.Reference.Resolved.t)
+        Format.fprintf ppf "aliasmoduletype(%a,%a)" model_resolved_path
+          (x :> Odoc_model.Paths.Path.Resolved.t)
+          model_resolved_reference
+          (y :> Odoc_model.Paths.Reference.Resolved.t)
     | `Canonical (x, y) ->
         Format.fprintf ppf "canonical(%a,%a)" model_resolved_reference
           (x :> t)
