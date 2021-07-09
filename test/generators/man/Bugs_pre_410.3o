@@ -1,0 +1,26 @@
+
+.TH Bugs_pre_410 3 "" "Odoc" "OCaml Library"
+.SH Name
+Bugs_pre_410
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Bugs_pre_410\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR 'a opt' = int option
+.sp 
+\f[CB]val\fR foo' : ?bar:\f[CB]'a\fR \f[CB]\->\fR unit \f[CB]\->\fR unit
+.fi 
+.br 
+.ti +2
+Similar to Bugs, but the printed type of ~bar should be int, not 'a\. This probably requires fixing in the compiler\. See 
+.UR https://github.com/ocaml/odoc/pull/230#issuecomment-433226807
+https://github\.com/ocaml/odoc/pull/230#issuecomment-433226807
+.UE 
+\.
+.nf 
+

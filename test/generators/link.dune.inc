@@ -908,6 +908,32 @@
 (subdir
  html
  (rule
+  (targets Bugs_pre_410.html.gen)
+  (action
+   (progn
+    (run
+     odoc
+     html-generate
+     --indent
+     --flat
+     --extra-suffix
+     gen
+     -o
+     .
+     %{dep:../bugs_pre_410.odocl})))
+  (enabled_if
+   (<= %{ocaml_version} 4.09))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff html/Bugs_pre_410.html html/Bugs_pre_410.html.gen))
+ (enabled_if
+  (<= %{ocaml_version} 4.09)))
+
+(subdir
+ html
+ (rule
   (action
    (with-outputs-to
     bugs_pre_410.gen
@@ -925,6 +951,30 @@
 (subdir
  latex
  (rule
+  (targets Bugs_pre_410.tex.gen)
+  (action
+   (progn
+    (run
+     odoc
+     latex-generate
+     -o
+     .
+     --extra-suffix
+     gen
+     %{dep:../bugs_pre_410.odocl})))
+  (enabled_if
+   (<= %{ocaml_version} 4.09))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff latex/Bugs_pre_410.tex latex/Bugs_pre_410.tex.gen))
+ (enabled_if
+  (<= %{ocaml_version} 4.09)))
+
+(subdir
+ latex
+ (rule
   (action
    (with-outputs-to
     bugs_pre_410.gen
@@ -936,6 +986,30 @@
  (alias runtest)
  (action
   (diff latex/bugs_pre_410.targets latex/bugs_pre_410.gen))
+ (enabled_if
+  (<= %{ocaml_version} 4.09)))
+
+(subdir
+ man
+ (rule
+  (targets Bugs_pre_410.3o.gen)
+  (action
+   (progn
+    (run
+     odoc
+     man-generate
+     -o
+     .
+     --extra-suffix
+     gen
+     %{dep:../bugs_pre_410.odocl})))
+  (enabled_if
+   (<= %{ocaml_version} 4.09))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff man/Bugs_pre_410.3o man/Bugs_pre_410.3o.gen))
  (enabled_if
   (<= %{ocaml_version} 4.09)))
 
