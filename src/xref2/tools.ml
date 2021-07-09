@@ -7,11 +7,9 @@ open ResultMonad
 type ('a, 'b) either = Left of 'a | Right of 'b
 
 type module_modifiers =
-  [ `Aliased of Cpath.Resolved.module_
-  | `SubstMT of Cpath.Resolved.module_type ]
+  [ `Aliased of Cpath.Resolved.module_ | `SubstMT of Cpath.Resolved.module_type ]
 
-type module_type_modifiers =
-  [ `AliasModuleType of Cpath.Resolved.module_type ]
+type module_type_modifiers = [ `AliasModuleType of Cpath.Resolved.module_type ]
 
 let core_types =
   let open Odoc_model.Lang.TypeDecl in
@@ -432,28 +430,29 @@ and get_substituted_module_type :
       else None
   | _ -> (* Format.fprintf Format.err_formatter "<<<wtf!?\n%!"; *) None
 
-and get_module_type_path_modifiers : Env.t -> add_canonical:bool -> Component.ModuleType.t -> module_type_modifiers option =
-  fun env ~add_canonical m ->
-    let alias_of expr =
-      match expr with
-      | Component.ModuleType.Path alias_path -> begin
+and get_module_type_path_modifiers :
+    Env.t ->
+    add_canonical:bool ->
+    Component.ModuleType.t ->
+    module_type_modifiers option =
+ fun env ~add_canonical m ->
+  let alias_of expr =
+    match expr with
+    | Component.ModuleType.Path alias_path -> (
         match
-          resolve_module_type ~mark_substituted:true ~add_canonical env alias_path.p_path
+          resolve_module_type ~mark_substituted:true ~add_canonical env
+            alias_path.p_path
         with
         | Ok (resolved_alias_path, _) -> Some resolved_alias_path
-        | Error _ -> None
-        end
-      (* | Functor (_arg, res) -> alias_of res *)
-      | _ -> None
-    in
-    match m.expr with
-      | Some e -> begin
-        match alias_of e with 
-        | Some e -> Some (`AliasModuleType e)
-        | None -> None
-      end
-      | None -> None
-  
+        | Error _ -> None)
+    (* | Functor (_arg, res) -> alias_of res *)
+    | _ -> None
+  in
+  match m.expr with
+  | Some e -> (
+      match alias_of e with Some e -> Some (`AliasModuleType e) | None -> None)
+  | None -> None
+
 and process_module_type env ~add_canonical m p' =
   let open Component.ModuleType in
   let open OptionMonad in
@@ -465,7 +464,8 @@ and process_module_type env ~add_canonical m p' =
   in
 
   let p' = match substpath with Some p -> p | None -> p' in
-  let p'' = match get_module_type_path_modifiers env ~add_canonical m with
+  let p'' =
+    match get_module_type_path_modifiers env ~add_canonical m with
     | Some (`AliasModuleType e) -> `AliasModuleType (e, p')
     | None -> p'
   in

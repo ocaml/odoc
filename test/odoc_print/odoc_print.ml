@@ -50,7 +50,7 @@ and signature_of_module_type :
 
 let find_map fn list =
   let rec inner = function
-    | x :: xs -> ( match fn x with Some y -> Some y | None -> inner xs )
+    | x :: xs -> ( match fn x with Some y -> Some y | None -> inner xs)
     | [] -> None
   in
   inner list
@@ -160,7 +160,7 @@ let run inp ref =
   | Odoc_file.Page_content page ->
       print_json_desc Lang_desc.page_t page;
       Ok ()
-  | Unit_content u ->
+  | Unit_content u -> (
       match ref with
       | None ->
           print_json_desc Lang_desc.compilation_unit_t u;
@@ -178,8 +178,8 @@ let run inp ref =
               | Some elt ->
                   print_element elt;
                   Ok ()
-              | None -> Ok () )
-          | _ -> Ok () )
+              | None -> Ok ())
+          | _ -> Ok ()))
 
 open Cmdliner
 

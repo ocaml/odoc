@@ -366,10 +366,10 @@ module General_paths = struct
               ((x1 :> rp), (x2 :> rr)),
               Pair (resolved_path, resolved_reference) )
       | `AliasModuleType (x1, x2) ->
-        C
-          ( "`AliasModuleType",
-            ((x1 :> rp), (x2 :> rr)),
-            Pair (resolved_path, resolved_reference) )
+          C
+            ( "`AliasModuleType",
+              ((x1 :> rp), (x2 :> rr)),
+              Pair (resolved_path, resolved_reference) )
       | `Type (x1, x2) ->
           C
             ( "`Type",

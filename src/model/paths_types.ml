@@ -601,7 +601,7 @@ and Resolved_reference : sig
     | `Alias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `Canonical of module_ * Reference.module_
-    | `ModuleType of signature * ModuleTypeName.t 
+    | `ModuleType of signature * ModuleTypeName.t
     | `AliasModuleType of Resolved_path.module_type * module_type ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Signature.t *)
 

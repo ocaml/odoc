@@ -612,38 +612,36 @@ and module_type_expr :
  fun env id expr ->
   let open ModuleType in
   let do_expn cur (e : Paths.Path.ModuleType.t option) =
-    match cur, e with
-    | Some e, _ -> Some (simple_expansion env (id :> Paths.Identifier.Signature.t) e)
-    | None, Some (`Resolved p_path) -> (
-      let hidden_alias =
-        Paths.Path.is_hidden (`Resolved (p_path :> Paths.Path.Resolved.t))
-      in
-      let self_canonical =
-        let i = Paths.Path.Resolved.ModuleType.identifier p_path in
-        (i :> Id.Signature.t) = id
-      in
-      let expansion_needed = self_canonical || hidden_alias in
-      if expansion_needed then
-        let cp = Component.Of_Lang.(resolved_module_type_path empty p_path) in
-        match
-          Expand_tools.expansion_of_module_type_expr env id (Path {p_path=`Resolved cp; p_expansion=None})
-        with
-        | Ok (_, _, e) ->
-            let le = Lang_of.(simple_expansion empty id e) in
-            Some (simple_expansion env id le)
-        | Error _ -> None
-      else None)
+    match (cur, e) with
+    | Some e, _ ->
+        Some (simple_expansion env (id :> Paths.Identifier.Signature.t) e)
+    | None, Some (`Resolved p_path) ->
+        let hidden_alias =
+          Paths.Path.is_hidden (`Resolved (p_path :> Paths.Path.Resolved.t))
+        in
+        let self_canonical =
+          let i = Paths.Path.Resolved.ModuleType.identifier p_path in
+          (i :> Id.Signature.t) = id
+        in
+        let expansion_needed = self_canonical || hidden_alias in
+        if expansion_needed then
+          let cp = Component.Of_Lang.(resolved_module_type_path empty p_path) in
+          match
+            Expand_tools.expansion_of_module_type_expr env id
+              (Path { p_path = `Resolved cp; p_expansion = None })
+          with
+          | Ok (_, _, e) ->
+              let le = Lang_of.(simple_expansion empty id e) in
+              Some (simple_expansion env id le)
+          | Error _ -> None
+        else None
     | None, _ -> None
   in
   match expr with
   | Signature s -> Signature (signature env id s)
   | Path { p_path; p_expansion } ->
       let p_path = module_type_path env p_path in
-      Path
-        {
-          p_path;
-          p_expansion = do_expn p_expansion (Some p_path);
-        }
+      Path { p_path; p_expansion = do_expn p_expansion (Some p_path) }
   | With { w_substitutions; w_expansion; w_expr } as unresolved -> (
       let cexpr = Component.Of_Lang.(u_module_type_expr empty w_expr) in
       match
