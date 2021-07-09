@@ -1362,10 +1362,15 @@ module Fmt = struct
           (parent :> t)
           (InstanceVariableName.to_string name)
     | `Alias (x, y) ->
-        Format.fprintf ppf "substalias(%a,%a)" model_resolved_path
+        Format.fprintf ppf "alias(%a,%a)" model_resolved_path
           (x :> Odoc_model.Paths.Path.Resolved.t)
           model_resolved_reference
           (y :> Odoc_model.Paths.Reference.Resolved.t)
+    | `AliasModuleType (x, y) ->
+      Format.fprintf ppf "aliasmoduletype(%a,%a)" model_resolved_path
+        (x :> Odoc_model.Paths.Path.Resolved.t)
+        model_resolved_reference
+        (y :> Odoc_model.Paths.Reference.Resolved.t)
     | `Canonical (x, y) ->
         Format.fprintf ppf "canonical(%a,%a)" model_resolved_reference
           (x :> t)

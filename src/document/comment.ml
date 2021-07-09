@@ -30,6 +30,7 @@ module Reference = struct
     match r with
     | `Identifier id -> Identifier.name id
     | `Alias (_, r) -> render_resolved (r :> t)
+    | `AliasModuleType (_, r) -> render_resolved (r :> t)
     | `Module (r, s) -> render_resolved (r :> t) ^ "." ^ ModuleName.to_string s
     | `Canonical (_, `Resolved r) -> render_resolved (r :> t)
     | `Canonical (p, _) -> render_resolved (p :> t)

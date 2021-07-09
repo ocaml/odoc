@@ -405,6 +405,8 @@ and resolved_module_of_resolved_signature_reference :
       resolved_module_of_resolved_module_reference r'
   | `ModuleType (_, n) ->
       failwith ("Not a module reference: " ^ ModuleTypeName.to_string n)
+  | `AliasModuleType _ ->
+    failwith "Not a module reference: aliasmoduletype"
   | `Identifier _ -> failwith "Not a module reference : identifier"
 
 and module_of_module_reference : Reference.Module.t -> module_ = function
