@@ -185,8 +185,14 @@ type module_modifiers =
   [ `Aliased of Cpath.Resolved.module_
   | `SubstMT of Cpath.Resolved.module_type ]
 
+type module_type_modifiers =
+  [ `AliasModuleType of Cpath.Resolved.module_type ]
+
 val get_module_path_modifiers :
   Env.t -> add_canonical:bool -> Component.Module.t -> module_modifiers option
+
+val get_module_type_path_modifiers :
+  Env.t -> add_canonical:bool -> Component.ModuleType.t -> module_type_modifiers option
 
 val prefix_signature :
   Cpath.Resolved.parent * Component.Signature.t -> Component.Signature.t

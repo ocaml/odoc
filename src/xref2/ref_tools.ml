@@ -199,7 +199,13 @@ module MT = struct
 
   type t = module_type_lookup_result
 
-  let of_component _env mt base_path base_ref : t = (base_ref, base_path, mt)
+  let of_component env mt base_path base_ref : t =
+    match Tools.get_module_type_path_modifiers env ~add_canonical:true mt with
+    | None -> (base_ref, base_path, mt)
+    | Some (`AliasModuleType cp) ->
+      let cp = Tools.reresolve_module_type env cp in
+      let p = Lang_of.(Path.resolved_module_type empty cp) in
+      (`AliasModuleType (p, base_ref), `AliasModuleType (cp, base_path), mt)
 
   let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
       : t option =
@@ -210,9 +216,9 @@ module MT = struct
          (`ModuleType (parent_cp, name))
          (`ModuleType (parent', name)))
 
-  let of_element _env (`ModuleType (id, mt)) : t =
-    (`Identifier id, `Identifier id, mt)
-
+  let of_element env (`ModuleType (id, mt)) : t =
+    of_component env mt (`Identifier id) (`Identifier id)
+  
   let in_env env name : t option =
     env_lookup_by_name Env.s_module_type name env >>= fun e ->
     Some (of_element env e)
