@@ -1,0 +1,9 @@
+(library
+ (name odoc_examples)
+ (public_name odoc.examples)
+ (modules_without_implementation
+  expansion
+  resolution
+  unexposed
+  wrapping
+  markup))

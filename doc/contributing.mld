@@ -8,8 +8,8 @@ find the information in this file helpful.
 
 {1 Quick start: HTML and CSS}
 
-The odoc CSS is found at {{:https://github.com/ocaml/odoc/blob/master/src/odoc/etc/odoc.css}src/odoc/etc/css}. It
-still needs a lot of work, and PRs are very welcome. You can edit CSS using your browser's developer
+The odoc CSS is found at {{:https://github.com/ocaml/odoc/blob/master/src/odoc/etc/odoc.css}src/odoc/etc/odoc.css}. It
+still needs work, and PRs are very welcome. You can edit CSS using your browser's developer
 mode, then send us a PR for the same changes made to this file.
 
 Working on the HTML is more involved. The main HTML generator is in {{:https://github.com/ocaml/odoc/blob/master/src/html/generator.ml}src/html/generator.ml}.
@@ -73,13 +73,13 @@ dune build @doc
 {1:testing Testing}
 
 odoc uses a variety of different test types. We are slowly converging on using
-dune's {{!https://dune.readthedocs.io/en/stable/tests.html#cram-tests}cram tests},
+dune's {{:https://dune.readthedocs.io/en/stable/tests.html#cram-tests}cram tests},
 though we still have many tests that aren't.
 
 {2 Cram tests}
 
 These are extensively used by the tests for the model layer, and are found in
-{{!https://github.com/ocaml/odoc/blob/master/test/xref2}test/xref2}. These consist
+{{:https://github.com/ocaml/odoc/blob/master/test/xref2}test/xref2}. These consist
 of a directory called [something.t], containing a file [run.t]. This file
 contains shell-like syntax, and usually runs odoc on some carefully crafted
 input files. For tests of the model layer it's often useful to use the binary
@@ -89,7 +89,7 @@ then be piped through [jq] to verify that values are as expected.
 We try to make these test files describe the test and what's expected which
 helps both when the output is not what the test expects, and also means that
 the tests can serve as documentation of how things work. As an example see
-the file {{!https://github.com/ocaml/odoc/blob/master/test/xref2/multi_file_module_type_of.t/run.t}test/xref2/multi_file_module_type_of.t/run.t}
+the file {{:https://github.com/ocaml/odoc/blob/master/test/xref2/multi_file_module_type_of.t/run.t}test/xref2/multi_file_module_type_of.t/run.t}
 
 The tests work by executing the shell script snippets, and then comparing the
 output we actually get with those in the [run.t] files. If these _don't_
@@ -177,7 +177,7 @@ your code is broken, go and fix it!
 We are slowly shifting these custom expect tests over to the dune promote
 workflow.
 
-{1: Coverage analysis}
+{1 Coverage analysis}
 
 The odoc repo is set up for coverage analysis. This is most useful if you're
 writing new tests, and want to know what they are actually touching. To use it,
@@ -209,24 +209,47 @@ tests cover all supported versions of OCaml. We strive to retain compatibility
 back as far as we can -- currently 4.02 -- which is important for supporting
 docs.ocaml.org.
 
-{1 Project structure}
+{1 API reference}
 
-odoc is divided into several sub-libraries, each of which is found under [src/].
+{2 Loading}
 
-The directories are:
+{{!module-Odoc_loader}Odoc_loader} and functions within are responsible for converting
+from the OCaml {!module-Typedtree} representations to the
+{{!Odoc_model.Lang}internal representation}.
 
-- {{:https://github.com/ocaml/odoc/tree/master/src/odoc}odoc/} - The overall [odoc] command-line tool.
-- {{:https://github.com/ocaml/odoc/tree/master/src/parser}parser/} - The parser for ocamldoc syntax ({{!Odoc_parser}documentation})
-- {{:https://github.com/ocaml/odoc/tree/master/src/model}model/} - Representation of OCaml source ({{!Odoc_model}documentation})
-- {{:https://github.com/ocaml/odoc/tree/master/src/model_desc}model_desc/} - Used for pretty-printing of {!Odoc_model} types ({{!Odoc_model_desc}documentation})
-- {{:https://github.com/ocaml/odoc/tree/master/src/loader}loader/} - Responsible for loading cmti, cmt and cmi files ({{!Odoc_loader}documentation})
-- {{:https://github.com/ocaml/odoc/tree/master/src/xref2}xref2/} - Resolution and expansion ({{!Odoc_xref2}documentation})
-- {{:https://github.com/ocaml/odoc/tree/master/src/document}document/} - Translates from {!Odoc_model} types into {{!Odoc_document.Types.Page.t}generic documentation IR} ({{!Odoc_document}documentation})
-- {{:https://github.com/ocaml/odoc/tree/master/src/vendor}vendor/} - Third-party software (highlight.js)
-and there are 3 directories for the different output formats:
+{2 Model}
 
-- {{:https://github.com/ocaml/odoc/tree/master/src/html/}html/} - The HTML renderer ({{!Odoc_html}documentation})
-- {{:https://github.com/ocaml/odoc/tree/master/src/latex/}latex/} - The LaTeX renderer ({{!Odoc_latex}documentation})
-- {{:https://github.com/ocaml/odoc/tree/master/src/manpage/}manpage/} - The man-page renderer ({{!Odoc_manpage}documentation})
+This library contains the internal representation of OCaml interfaces used
+by odoc. The library {{!page-odoc_model}odoc_model} contains definitions of
+the types, and the library {{!page-odoc_model_desc}odoc_model_desc} contains
+Json renderers for the model types.
 
-The source for the main CLI binary is {{:https://github.com/ocaml/odoc/blob/master/src/odoc/bin/main.ml}src/odoc/bin/main.ml}
+{2 Resolution and expansion}
+
+Resolution of Paths, Fragments and References, and expansion of Modules and
+Module Types are handled by the {{!page-odoc_xref2}xref2 library}.
+
+{2 Intermediate representation and renderers}
+
+The generic documentation intermediate format is defined in the
+{{!page-odoc_document}odoc_document library}.
+
+The three current renderers are implemented within the following libraries
+{!page-odoc_html}, {!page-odoc_latex} and {!page-odoc_manpage}.
+
+{2 CLI and driver}
+
+The CLI for odoc and various helper functions for driving the process are contained in the
+{{!page-odoc_odoc}odoc_odoc library}.
+
+{2 Test and internal libraries}
+
+There are a couple of libraries used internally for testing - {!page-odoc_xref_test} and {!page-odoc_model_desc}.
+
+{1 Dependency libraries}
+
+There are several {{!page-deps}dependency libraries} that [odoc] uses, whose functions and
+type and module declarations are essential for understanding how [odoc] works. See the
+{{!page-driver}driver} page for details on how the documentation for these 
+libraries are included.
+

@@ -1,26 +1,27 @@
-{0:top Using [odoc]}
+{0:top [odoc] for authors}
 
 This manual describes the features that are available and recommended for users
 to write great documentation using [odoc].
 
-+ {{:#cookbook} Cookbook}
++ {{!getting_started}Getting started}
 + {{:#interfaces} Documenting your interfaces}
 + {{:#doc-pages} Writing documentation pages}
-+ {{:#examples} Examples of great [odoc] usage}
 
-{1:cookbook Cookbook}
+{1:getting_started Getting started}
 
-{2 Sections and headings}
+To generate documentation for your project, you will almost always be using
+odoc indirectly rather than executing it yourself. There are several 'drivers'
+of odoc at time of writing, each with their own strengths:
 
-Both API references and documentation pages can be split into sections that can
-be introduced with level-1 headings. Each section can also have subsections
-(level-2) and subsubsections (level-3).
-
-Additionally paragraphs can be annotated with level-4 or level-5 headings.
-Note that paragraph headings are {e not} be included in the generated table of
-contents and thus should be used to introduce examples, comments or other
-complementary notes.
-
+- {{:https://dune.build/}Dune} is the simplest way to view docs while you're
+  developing your project. We have a {{!page-using_dune}short page} describing
+  how to use it.
+- {{:https://erratique.ch/software/odig}Odig} is the simplest way to view docs
+  of your installed packages. 
+- {{!page-driver}The reference driver} is the simplest driver, useful if you
+  want to see how to integrate it with your own projects.
+- {{:https://github.codoo}Voodoo} is the driver used to create
+  the docs for {{:https://v3.ocaml.org/packages}the new OCaml website}.
 
 {1:interfaces Documenting your interfaces}
 
@@ -28,15 +29,25 @@ Odoc is built to produce documentation for your {e libraries}, and the unit of
 organisation is the {e module}. Documentation is written by putting special
 {{!comments} comments} into the source of the {e module} or {e module
 interface}, and correctly placing these is critical to producing good output.
-Odoc expects the documentation to be structured in a logical way, and will work
+
+
+All of the ocamldoc documentation comments described in {{:https://ocaml.org/manual/ocamldoc.html#s:ocamldoc-comments}the OCaml manual}
+are supported, with a few important {{!page-ocamldoc_differences}differences}. In addition, 
+it is intended that all features of the OCaml language are supported by [odoc].
+For examples of how the language features are handled, see the
+{{!page-features}Features} page.
+
+Producing good documentation for your library is more than simply annotating
+the various modules, type and functions that are contained however. 
+[odoc] expects the documentation to be structured in a logical way, and will work
 best if the following conventions are applied.
 
 The overall structure is that modules start with a {{!preamble} preamble} or
 'Lead Section' that serves as an overview of the most important information
-about module. This is followed by the content of the module, organised into {e
+about the module. This is followed by the content of the module, organised into {e
 sections} and {e subsections}, the structure of which will be used to populate
-a {e table of contents} which will be structurally placed immediately after the
-preamble.
+a {e table of contents} which will be structurally placed in the HTML immediately
+after the preamble, and rendered by default as a sidebar.
 
 The first paragraph of the preamble will be treated as the module {{!synopsis}
 synopsis}, and will be used as a short description of the module when it
@@ -66,7 +77,7 @@ type t
 
 The documentation can be formatted, Odoc accepts the same markup language as
 {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#s%3Aocamldoc-comments}
-ocamldoc} with some exceptions, see {!page-interface.Changes}.
+ocamldoc} with some exceptions, see {!page-ocamldoc_differences}.
 
 {2 Top-comment}
 
@@ -165,8 +176,7 @@ Note: A comment attached to a declaration shouldn't contain any heading.
 The synopsis of a module (a module type, a class, etc..) is the first
 paragraph of the {!preamble}, {e if} the preamble starts with a paragraph.
 
-It is rendered after the corresponding declaration and in [{!modules:...}]
-lists.
+It is rendered in [{!modules:...}] lists and after {{!page-features.aliases}expanded aliases}.
 
 Note that the synopsis is computed on top of the {e preamble}, in these two
 examples, the synopsis is the same:
@@ -189,6 +199,17 @@ module M : sig
   (* ... *)
 end
 ]}
+
+{1 Sections and headings}
+
+Both API references and documentation pages can be split into sections that can
+be introduced with level-1 headings. Each section can also have subsections
+(level-2) and subsubsections (level-3).
+
+Additionally paragraphs can be annotated with level-4 or level-5 headings.
+Note that paragraph headings are {e not} be included in the generated table of
+contents and thus should be used to introduce examples, comments or other
+complementary notes.
 
 {1:doc-pages Writing documentation pages}
 
@@ -226,7 +247,7 @@ if you forget accidentally include multiple titles.
 The recommended way to setup documentation pages for your project is by using
 the Dune build system. It will automatically find and generate HTML for all
 [mld] files in your project. See
-{{:https://jbuilder.readthedocs.io/en/latest/documentation.html#documentation-stanza}
+{{:https://dune.readthedocs.io/en/latest/documentation.html#documentation-stanza}
 Dune's configuration instructions} for more details.
 
 {2 Referencing pages}
@@ -237,14 +258,3 @@ index page, you must manually add links to point to the pages in your document.
 For example, if you have a page called [my_page.mld], you can create a
 link to it with [{{!page-my_page}My page}] in your [index.mld] or
 anywhere else in your documentation.
-
-{2 Manual usage}
-
-Generic [odoc] build instructions apply to documentation pages. You can compile
-[mld] files manually with [odoc compile] (this is described in details in
-{{:system-integrations.html#manual-usage} Invoking [odoc] manually}).
-
-
-{1:examples Examples of great [odoc] usage}
-
-...
