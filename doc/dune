@@ -1,10 +1,14 @@
+(documentation)
+
 (rule
  (target html)
  (alias docgen)
  (deps
   (:x driver.md)
   (glob_files *.ml*)
-  (package odoc))
+  (glob_files *.png)
+  (package odoc)
+  )
  (enabled_if
   (> %{ocaml_version} 4.11))
  (action

@@ -22,3 +22,10 @@ The following libraries are dependencies of odoc.
 
 {2 Tyxml}
 {!module-Tyxml} is the library used to generate HTML pages.
+
+{2 Biniou}
+Binary data format designed for speed, safety, ease of use and backward compatibility as protocols evolve.
+{!modules: Bi_dump Bi_inbuf Bi_io Bi_outbuf Bi_share Bi_stream Bi_util Bi_vint}
+
+{2 Odoc-parser}
+{!module-Odoc_parser} is the parser library used

@@ -67,7 +67,7 @@ children [Max], and page [foo], whereas [Mark] has no child. That is to say,
   (** I'm foo, a page child to Doe*)
 ]}
 
-{1 compilation}
+{2 compilation}
 
 {[
   $ ocamlc -c -bin-annot foo.ml
@@ -81,7 +81,7 @@ children [Max], and page [foo], whereas [Mark] has no child. That is to say,
 The output of the compilation phase will be [odoc] files, where each of them will be
 linked by invoking [odoc link] command on them.
 
-{1 linking}
+{2 linking}
 
 [odoc link -I . <file>.odoc]
 
@@ -95,7 +95,7 @@ linked by invoking [odoc link] command on them.
 
 The output of the [odoc link] command is an [odocl] file, by default, in the same path as the original [odoc] file.
 
-{1 generate html}
+{2 generate html}
 {[
   $ odoc html-generate --indent -o html page-john.odocl
   && odoc html-generate --indent -o html page-doe.odocl

@@ -1,0 +1,4 @@
+(** Unexposed module *)
+
+type t
+
