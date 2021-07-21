@@ -2,70 +2,40 @@ let die s =
   prerr_endline s;
   exit 1
 
-let html_target_rule path : Gen_rules_lib.sexp =
-  List
-    [
-      Atom "action";
-      List
-        [
-          Atom "progn";
-          List
-            [
-              Atom "run";
-              Atom "odoc";
-              Atom "html-generate";
-              Atom "--indent";
-              Atom "--flat";
-              Atom "--extra-suffix";
-              Atom "gen";
-              Atom "-o";
-              Atom ".";
-              Atom ("%{dep:" ^ Fpath.to_string path ^ "}");
-            ];
-        ];
-    ]
+let html_target_rule path =
+  [
+    "odoc";
+    "html-generate";
+    "--indent";
+    "--flat";
+    "--extra-suffix";
+    "gen";
+    "-o";
+    ".";
+    Gen_rules_lib.Dune.arg_dep path;
+  ]
 
-let latex_target_rule path : Gen_rules_lib.sexp =
-  List
-    [
-      Atom "action";
-      List
-        [
-          Atom "progn";
-          List
-            [
-              Atom "run";
-              Atom "odoc";
-              Atom "latex-generate";
-              Atom "-o";
-              Atom ".";
-              Atom "--extra-suffix";
-              Atom "gen";
-              Atom ("%{dep:" ^ Fpath.to_string path ^ "}");
-            ];
-        ];
-    ]
+let latex_target_rule path =
+  [
+    "odoc";
+    "latex-generate";
+    "-o";
+    ".";
+    "--extra-suffix";
+    "gen";
+    Gen_rules_lib.Dune.arg_dep path;
+  ]
 
-let man_target_rule path : Gen_rules_lib.sexp =
-  List
-    [
-      Atom "action";
-      List
-        [
-          Atom "progn";
-          List
-            [
-              Atom "run";
-              Atom "odoc";
-              Atom "man-generate";
-              Atom "-o";
-              Atom ".";
-              Atom "--extra-suffix";
-              Atom "gen";
-              Atom ("%{dep:" ^ Fpath.to_string path ^ "}");
-            ];
-        ];
-    ]
+let man_target_rule path =
+  [
+    "odoc";
+    "man-generate";
+    "-o";
+    ".";
+    "--extra-suffix";
+    "gen";
+    Gen_rules_lib.Dune.arg_dep path;
+  ]
 
 (** Returns filenames, not paths. *)
 let read_files_from_dir dir =
@@ -91,7 +61,7 @@ let test_cases_dir = Fpath.v "cases"
 (** Make a test cases or return the empty list if the given file should be
     ignored. Might abort the program with an error. *)
 let make_test_case case_name =
-  let input = Fpath.(/) test_cases_dir case_name in
+  let input = Fpath.( / ) test_cases_dir case_name in
   let mk odoc_prefix cmt_suffix =
     let base_out_path = Fpath.v (odoc_prefix ^ case_name) in
     let cmt =
