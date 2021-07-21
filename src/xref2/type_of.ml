@@ -69,8 +69,8 @@ and module_type_expr env (id : Id.Signature.t) expr =
   | TypeOf t -> (
       match module_type_expr_typeof env id t with
       | Ok e ->
-          TypeOf
-            { t with t_expansion = Some Lang_of.(simple_expansion empty id e) }
+          let se = Lang_of.(simple_expansion empty id e) in
+          TypeOf { t with t_expansion = Some (simple_expansion env se) }
       | Error e
         when Errors.is_unexpanded_module_type_of (e :> Errors.Tools_error.any)
         ->
@@ -86,8 +86,8 @@ and u_module_type_expr env id expr =
   | TypeOf t -> (
       match module_type_expr_typeof env id t with
       | Ok e ->
-          TypeOf
-            { t with t_expansion = Some Lang_of.(simple_expansion empty id e) }
+          let se = Lang_of.(simple_expansion empty id e) in
+          TypeOf { t with t_expansion = Some (simple_expansion env se) }
       | Error e
         when Errors.is_unexpanded_module_type_of (e :> Errors.Tools_error.any)
         ->
@@ -97,6 +97,14 @@ and u_module_type_expr env id expr =
 
 and functor_parameter env p =
   { p with expr = module_type_expr env (p.id :> Id.Signature.t) p.expr }
+
+and simple_expansion :
+    Env.t -> ModuleType.simple_expansion -> ModuleType.simple_expansion =
+ fun env -> function
+  | Signature sg -> Signature (signature env sg)
+  | Functor (Named n, sg) ->
+      Functor (Named (functor_parameter env n), simple_expansion env sg)
+  | Functor (Unit, sg) -> Functor (Unit, simple_expansion env sg)
 
 and include_ env i =
   let decl =

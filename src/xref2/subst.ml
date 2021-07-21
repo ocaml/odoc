@@ -905,6 +905,11 @@ and rename_bound_idents s sg =
     try
       match PathModuleMap.find (id :> Ident.path_module) s.module_ with
       | `Renamed (`LModule _ as x) -> x
+      | `Prefixed (_, _) ->
+          (* This is unusual but can happen when we have TypeOf expressions. It means
+             we're already prefixing this module path, hence we can essentially rename
+             it to whatever we like because it's never going to be referred to. *)
+          Ident.Rename.module_ id
       | _ -> failwith "Error"
     with Not_found -> Ident.Rename.module_ id
   in
@@ -912,13 +917,14 @@ and rename_bound_idents s sg =
     try
       match ModuleTypeMap.find id s.module_type with
       | `Renamed x -> x
-      | _ -> failwith "Error"
+      | `Prefixed (_, _) -> Ident.Rename.module_type id
     with Not_found -> Ident.Rename.module_type id
   in
   let new_type_id id =
     try
       match PathTypeMap.find (id :> Ident.path_type) s.type_ with
       | `Renamed (`LType _ as x) -> x
+      | `Prefixed (_, _) -> Ident.Rename.type_ id
       | _ -> failwith "Error"
     with Not_found -> Ident.Rename.type_ id
   in
@@ -928,6 +934,7 @@ and rename_bound_idents s sg =
         PathClassTypeMap.find (id :> Ident.path_class_type) s.class_type
       with
       | `Renamed (`LClass _ as x) -> x
+      | `Prefixed (_, _) -> Ident.Rename.class_ id
       | _ -> failwith "Error"
     with Not_found -> Ident.Rename.class_ id
   in
@@ -937,6 +944,7 @@ and rename_bound_idents s sg =
         PathClassTypeMap.find (id :> Ident.path_class_type) s.class_type
       with
       | `Renamed (`LClassType _ as x) -> x
+      | `Prefixed (_, _) -> Ident.Rename.class_type id
       | _ -> failwith "Error!"
     with Not_found -> Ident.Rename.class_type id
   in
