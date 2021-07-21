@@ -2,11 +2,51 @@ type sexp = Sexplib0.Sexp.t = Atom of string | List of sexp list
 
 type enabledif = Min of string | Max of string | MinMax of string * string
 
+type test_case = {
+  input : Fpath.t;
+  cmt : Fpath.t option;  (** [None] for mld files. *)
+  odoc : Fpath.t;
+  odocl : Fpath.t;
+  enabledif : enabledif option;
+}
+
+let render_enabledif = function
+  | Some (Min v) ->
+      [
+        List
+          [
+            Atom "enabled_if";
+            List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ];
+          ];
+      ]
+  | Some (Max v) ->
+      [
+        List
+          [
+            Atom "enabled_if";
+            List [ Atom "<="; Atom "%{ocaml_version}"; Atom v ];
+          ];
+      ]
+  | Some (MinMax (min, max)) ->
+      [
+        List
+          [
+            Atom "enabled_if";
+            List
+              [
+                Atom "and";
+                List [ Atom ">="; Atom "%{ocaml_version}"; Atom min ];
+                List [ Atom "<="; Atom "%{ocaml_version}"; Atom max ];
+              ];
+          ];
+      ]
+  | None -> []
+
 let cu_target_rule enabledif dep_path target_path =
   List
     ([
        Atom "rule";
-       List [ Atom "target"; Atom target_path ];
+       List [ Atom "target"; Atom (Fpath.to_string target_path) ];
        List [ Atom "deps"; Atom (Fpath.to_string dep_path) ];
        List
          [
@@ -91,52 +131,29 @@ let mld_odoc_target_rule enabledif dep_path target_path =
      ]
     @ enabledif)
 
-let set_odocl_ext = Fpath.set_ext ".odocl"
-
-let set_odoc_ext = Fpath.set_ext ".odoc"
-
-let file_rule enabledif path ext =
-  let cm_file = Fpath.set_ext ext path in
-  let odoc_file = set_odoc_ext path in
-  let odocl_file = set_odocl_ext path in
+let file_rule { input; odoc; odocl; enabledif; _ } cmt =
+  let enabledif = render_enabledif enabledif in
   [
-    cu_target_rule enabledif path (Fpath.basename cm_file);
-    odoc_target_rule enabledif cm_file odoc_file;
-    odocl_target_rule enabledif odoc_file odocl_file;
+    cu_target_rule enabledif input cmt;
+    odoc_target_rule enabledif cmt odoc;
+    odocl_target_rule enabledif odoc odocl;
   ]
 
-let mld_file_rule enabledif path =
-  let path' = Fpath.(v ("page-" ^ basename path)) in
-  let odoc_file = set_odoc_ext path' in
-  let odocl_file = set_odocl_ext path' in
+let mld_file_rule { input; odoc; odocl; enabledif; _ } =
+  let enabledif = render_enabledif enabledif in
   [
-    mld_odoc_target_rule enabledif path odoc_file;
-    odocl_target_rule enabledif odoc_file odocl_file;
+    mld_odoc_target_rule enabledif input odoc;
+    odocl_target_rule enabledif odoc odocl;
   ]
-
-let die s =
-  prerr_endline s;
-  exit 1
 
 let path' () f = Filename.quote (Fpath.to_string f)
 
 let ext' () f = Filename.quote (Fpath.get_ext f)
 
-let cases = Fpath.v "cases"
-
-let is_dot_ocamlformat p = Fpath.filename p = ".ocamlformat"
-
-let gen_rule_for_source_file enabledif path =
-  let ext = Fpath.get_ext path in
-  match ext with
-  | ".ml" -> file_rule enabledif path ".cmt"
-  | ".mli" -> file_rule enabledif path ".cmti"
-  | ".mld" -> mld_file_rule enabledif path
-  | _ ->
-      die
-        (Printf.sprintf
-           "Don't know what to do with %a because of unrecognized %a extension."
-           path' path ext' path)
+let gen_rule_for_source_file case =
+  match case.cmt with
+  | Some cmt -> file_rule case cmt
+  | None -> mld_file_rule case
 
 let odocls backend p =
   let path = Fpath.relativize ~root:backend p in
@@ -308,66 +325,15 @@ let gen_backend_rule enabledif backend_target_rules path =
     backend_target_rules
   |> List.flatten
 
-let gen_rule enabledif backend_target_rules paths =
-  let enabledif v =
-    match List.assoc v enabledif with
-    | exception Not_found -> []
-    | Min v ->
-        [
-          List
-            [
-              Atom "enabled_if";
-              List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ];
-            ];
-        ]
-    | Max v ->
-        [
-          List
-            [
-              Atom "enabled_if";
-              List [ Atom "<="; Atom "%{ocaml_version}"; Atom v ];
-            ];
-        ]
-    | MinMax (min, max) ->
-        [
-          List
-            [
-              Atom "enabled_if";
-              List
-                [
-                  Atom "and";
-                  List [ Atom ">="; Atom "%{ocaml_version}"; Atom min ];
-                  List [ Atom "<="; Atom "%{ocaml_version}"; Atom max ];
-                ];
-            ];
-        ]
-  in
-  let paths' =
-    List.map
-      (fun origp ->
-        let path = Fpath.relativize ~root:cases origp in
-        match path with
-        | Some p ->
-            let odocl =
-              if Fpath.get_ext p = ".mld" then
-                set_odocl_ext Fpath.(parent p / ("page-" ^ filename p))
-              else set_odocl_ext Fpath.(parent p / filename p)
-            in
-            (origp, odocl, enabledif p)
-        | None -> assert false)
-      paths
-  in
+let gen_rule backend_target_rules test_cases =
   List.concat
     [
-      List.(
-        concat
-          (map
-             (fun (path, _, enabledif) ->
-               gen_rule_for_source_file enabledif path)
-             paths'));
+      List.(concat (map gen_rule_for_source_file test_cases));
       List.map
-        (fun (_, p, enabledif) ->
-          gen_backend_rule enabledif backend_target_rules p)
-        paths'
+        (fun case ->
+          gen_backend_rule
+            (render_enabledif case.enabledif)
+            backend_target_rules case.odocl)
+        test_cases
       |> List.flatten;
     ]
