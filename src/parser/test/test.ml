@@ -2677,6 +2677,18 @@ let%expect_test _ =
              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (2 0) (2 13)) kind=toplevel)))
              ((f.ml (2 14) (2 20)) "code ")))))
          (warnings ())) |}]
+
+    let langtag_non_word =
+      test "{@ocaml,top[ code ]}";
+      [%expect{|
+        ((output
+          (((f.ml (1 0) (1 20))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+             ((f.ml (1 8) (1 18)) "top[ code ")))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 0-8:\
+           \nInvalid character ',' in language tag.\
+           \nSuggestion: try '{@ocaml[ ... ]}'."))) |}]
   end in
   ()
 
