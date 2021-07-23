@@ -572,9 +572,9 @@ and bad_markup_recovery start_offset input = parse
       emit input (`Code_span text) ~start_offset}
 
 and code_block_metadata input = parse
-  | (word_char+ as lang_tag) (horizontal_space* as suffix)
+  | (word_char+ as lang_tag)
     {
-      let lang_tag = with_location_adjustments ~adjust_end_by:suffix (fun _ -> Loc.at) input lang_tag in
+      let lang_tag = with_location_adjustments (fun _ -> Loc.at) input lang_tag in
       code_block_metadata' input lang_tag lexbuf
     }
   | '['
@@ -584,18 +584,17 @@ and code_block_metadata input = parse
 
 (* The second field of the metadata *)
 and code_block_metadata' input lang_tag = parse
-  | (([^ '['])+ as meta) '['
+  | ((newline | horizontal_space)+ as prefix) (([^ '['])+ as meta) '['
     {
-      let meta = with_location_adjustments ~adjust_end_by:"[" (fun _ -> Loc.at) input meta in
+      let meta = with_location_adjustments ~adjust_start_by:prefix ~adjust_end_by:"[" (fun _ -> Loc.at) input meta in
       `Ok (lang_tag, Some meta)
     }
-  | '['
+  | (newline | horizontal_space)* '['
     { `Ok (lang_tag, None) }
   | eof
     { `Eof (Some (lang_tag, None)) }
 
-and code_block start_offset metadata input =
-  parse
+and code_block start_offset metadata input = parse
   | (code_block_text as c) "]}"
     { emit_code_block ~start_offset input metadata c }
   | (code_block_text as c) eof
