@@ -53,14 +53,17 @@ module Ast_to_sexp = struct
     | `Link (u, es) ->
         List [ str u; List (List.map (at.at (inline_element at)) es) ]
 
+  let code_block_meta at (lang_tag, meta) =
+    List [ at.at str lang_tag; opt (at.at str) meta ]
+
   let rec nestable_block_element at : Ast.nestable_block_element -> sexp =
     function
     | `Paragraph es ->
         List
           [ Atom "paragraph"; List (List.map (at.at (inline_element at)) es) ]
     | `Code_block (None, c) -> List [ Atom "code_block"; at.at str c ]
-    | `Code_block (Some m, c) ->
-        List [ Atom "code_block"; at.at str m; at.at str c ]
+    | `Code_block (Some meta, c) ->
+        List [ Atom "code_block"; code_block_meta at meta; at.at str c ]
     | `Verbatim t -> List [ Atom "verbatim"; Atom t ]
     | `Modules ps -> List [ Atom "modules"; List (List.map (at.at str) ps) ]
     | `List (kind, weight, items) ->
@@ -2519,19 +2522,21 @@ let%expect_test _ =
       test "{[foo";
       [%expect
         {|
-        ((output (((f.ml (1 2) (1 5)) (code_block ((f.ml (1 2) (1 3)) foo)))))
+        ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) foo)))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 5-5:\
-           \nEnd of text is not allowed in '{[...]}' (code block)."))) |}]
+          ( "File \"f.ml\", line 1, characters 0-5:\
+           \nMissing end of code block.\
+           \nSuggestion: add ']}'."))) |}]
 
     let unterminated_bracket =
       test "{[foo]";
       [%expect
         {|
-        ((output (((f.ml (1 2) (1 6)) (code_block ((f.ml (1 2) (1 4)) foo])))))
+        ((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) foo])))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 6-6:\
-           \nEnd of text is not allowed in '{[...]}' (code block)."))) |}]
+          ( "File \"f.ml\", line 1, characters 0-6:\
+           \nMissing end of code block.\
+           \nSuggestion: add ']}'."))) |}]
 
     let trailing_cr =
       test "{[foo\r]}";
@@ -2590,7 +2595,9 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 46))
-            (code_block ((f.ml (1 2) (1 29)) "ocaml env=f1 version>=4.06 ")
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml)
+              (((f.ml (1 8) (1 29)) "env=f1 version>=4.06 ")))
              ((f.ml (1 30) (1 44)) "code goes here")))))
          (warnings ())) |}]
 
@@ -2599,21 +2606,23 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 19))
-            (code_block ((f.ml (1 2) (1 2)) "")
-             ((f.ml (1 3) (1 17)) "code goes here")))))
-         (warnings ())) |}]
+          (((f.ml (1 0) (1 19)) (code_block ((f.ml (1 3) (1 17)) "code goes here")))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 0-3:\
+           \n'{@' should be followed by a language tag.\
+           \nSuggestion: try '{[ ... ]}' or '{@ocaml[ ... ]}'."))) |}]
 
     let unterminated_code_block_with_meta =
       test "{@meta[foo";
       [%expect
         {|
         ((output
-          (((f.ml (1 7) (1 10))
-            (code_block ((f.ml (1 2) (1 6)) meta) ((f.ml (1 7) (1 8)) foo)))))
+          (((f.ml (1 0) (1 10))
+            (code_block (((f.ml (1 2) (1 6)) meta) ()) ((f.ml (1 7) (1 8)) foo)))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 10-10:\
-           \nEnd of text is not allowed in '{[...]}' (code block)."))) |}]
+          ( "File \"f.ml\", line 1, characters 0-10:\
+           \nMissing end of code block.\
+           \nSuggestion: add ']}'."))) |}]
 
     let unterminated_code_block_with_meta =
       test "{@met";
@@ -2621,14 +2630,13 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 5))
-            (paragraph
-             (((f.ml (1 0) (1 1)) (word {)) ((f.ml (1 1) (1 5)) (word @met)))))))
+            (code_block (((f.ml (1 2) (1 5)) met) ()) ((f.ml (1 5) (1 5)) "")))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-1:\
-           \n'{': bad markup.\
-           \nSuggestion: escape the brace with '\\{'."
-            "File \"f.ml\", line 1, characters 1-5:\
-           \nUnknown tag '@met'."))) |}]
+          ( "File \"f.ml\", line 1, characters 0-5:\
+           \nMissing end of code block.\
+           \nSuggestion: try '{@ocaml[ ... ]}'."
+            "File \"f.ml\", line 1, characters 0-5:\
+           \n'{[...]}' (code block) should not be empty."))) |}]
   end in
   ()
 
