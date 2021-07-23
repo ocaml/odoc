@@ -2637,6 +2637,46 @@ let%expect_test _ =
            \nSuggestion: try '{@ocaml[ ... ]}'."
             "File \"f.ml\", line 1, characters 0-5:\
            \n'{[...]}' (code block) should not be empty."))) |}]
+
+    let newlines_after_langtag =
+      test "{@ocaml\n[ code ]}";
+      [%expect{|
+        ((output
+          (((f.ml (1 0) (2 9))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) ()) ((f.ml (2 1) (2 7)) "code ")))))
+         (warnings ())) |}]
+
+    let newlines_after_meta =
+      test "{@ocaml kind=toplevel\n[ code ]}";
+      [%expect{|
+        ((output
+          (((f.ml (1 0) (2 9))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (2 0)) "kind=toplevel\n")))
+             ((f.ml (2 1) (2 7)) "code ")))))
+         (warnings ())) |}]
+
+    let newlines_inside_meta =
+      test "{@ocaml kind=toplevel\nenv=e1[ code ]}";
+      [%expect{|
+        ((output
+          (((f.ml (1 0) (2 15))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml)
+              (((f.ml (1 8) (2 6))  "kind=toplevel\
+                                   \nenv=e1")))
+             ((f.ml (2 7) (2 13)) "code ")))))
+         (warnings ())) |}]
+
+    let newlines_between_meta =
+      test "{@ocaml\nkind=toplevel[ code ]}";
+      [%expect{|
+        ((output
+          (((f.ml (1 0) (2 22))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (2 0) (2 13)) kind=toplevel)))
+             ((f.ml (2 14) (2 20)) "code ")))))
+         (warnings ())) |}]
   end in
   ()
 
