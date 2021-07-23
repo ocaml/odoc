@@ -262,6 +262,8 @@ let raw_markup =
 let raw_markup_target =
   ([^ ':' '%'] | '%'+ [^ ':' '%' '}'])* '%'*
 
+let language_tag_char =
+  ['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ]
 
 
 rule token input = parse
@@ -328,21 +330,31 @@ rule token input = parse
   | "{["
     { code_block (Lexing.lexeme_start lexbuf) None input lexbuf }
 
-  | "{@" (horizontal_space*)
+  | (("{@" horizontal_space*) as prefix) (language_tag_char+ as lang_tag_)
     {
       let start_offset = Lexing.lexeme_start lexbuf in
-      let emit_truncated_code_block metadata =
-        let empty_content = with_location_adjustments (fun _ -> Loc.at) input "" in
-        emit ~start_offset input (`Code_block (metadata, empty_content))
+      let lang_tag =
+        with_location_adjustments ~adjust_start_by:prefix (fun _ -> Loc.at) input lang_tag_
       in
-      match code_block_metadata input lexbuf with
-      | `Ok metadata -> code_block start_offset (Some metadata) input lexbuf
-      | `Truncated ->
-          warning input ~start_offset Parse_error.no_language_tag_in_meta;
-          code_block start_offset None input lexbuf
-      | `Eof metadata ->
+      let emit_truncated_code_block () =
+        let empty_content = with_location_adjustments (fun _ -> Loc.at) input "" in
+        emit ~start_offset input (`Code_block (Some (lang_tag, None), empty_content))
+      in
+      match code_block_metadata_tail input lexbuf with
+      | `Ok metadata -> code_block start_offset (Some (lang_tag, metadata)) input lexbuf
+      | `Eof ->
           warning input ~start_offset Parse_error.truncated_code_block_meta;
-          emit_truncated_code_block metadata
+          emit_truncated_code_block ()
+      | `Invalid_char c ->
+          warning input ~start_offset
+            (Parse_error.language_tag_invalid_char lang_tag_ c);
+          code_block start_offset (Some (lang_tag, None)) input lexbuf
+    }
+
+  | "{@" horizontal_space* '['
+    {
+      warning input Parse_error.no_language_tag_in_meta;
+      code_block (Lexing.lexeme_start lexbuf) None input lexbuf
     }
 
   | "{v"
@@ -571,28 +583,19 @@ and bad_markup_recovery start_offset input = parse
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
       emit input (`Code_span text) ~start_offset}
 
-and code_block_metadata input = parse
-  | (word_char+ as lang_tag)
-    {
-      let lang_tag = with_location_adjustments (fun _ -> Loc.at) input lang_tag in
-      code_block_metadata' input lang_tag lexbuf
-    }
-  | '['
-    { `Truncated }
-  | eof
-    { `Eof None }
-
 (* The second field of the metadata *)
-and code_block_metadata' input lang_tag = parse
+and code_block_metadata_tail input = parse
   | ((newline | horizontal_space)+ as prefix) (([^ '['])+ as meta) '['
     {
       let meta = with_location_adjustments ~adjust_start_by:prefix ~adjust_end_by:"[" (fun _ -> Loc.at) input meta in
-      `Ok (lang_tag, Some meta)
+      `Ok (Some meta)
     }
   | (newline | horizontal_space)* '['
-    { `Ok (lang_tag, None) }
+    { `Ok None }
+  | _ as c
+    { `Invalid_char c }
   | eof
-    { `Eof (Some (lang_tag, None)) }
+    { `Eof }
 
 and code_block start_offset metadata input = parse
   | (code_block_text as c) "]}"
