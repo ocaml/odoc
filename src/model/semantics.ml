@@ -224,8 +224,14 @@ let rec nestable_block_element :
   match element with
   | { value = `Paragraph content; location } ->
       Location.at location (`Paragraph (inline_elements status content))
-  | ({ value = `Code_block _; _ } | { value = `Verbatim _; _ }) as element ->
-      element
+  | { value = `Verbatim _; _ } as element -> element
+  | { value = `Code_block (metadata, code_block_content); location } ->
+      let code_block_lang =
+        (* Ignore the second field. *)
+        match metadata with Some (lang_tag, _) -> Some lang_tag | None -> None
+      in
+      let code_block = { Comment.code_block_lang; code_block_content } in
+      Location.at location (`Code_block code_block)
   | { value = `Modules modules; location } ->
       let modules =
         List.fold_left

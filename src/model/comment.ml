@@ -38,9 +38,14 @@ type module_reference = {
 (** The [{!modules: ...}] markup. [module_synopsis] is initially [None], it is
     resolved during linking. *)
 
+type code_block = {
+  code_block_lang : string with_location option;
+  code_block_content : string with_location;
+}
+
 type nestable_block_element =
   [ `Paragraph of paragraph
-  | `Code_block of string with_location option * string with_location
+  | `Code_block of code_block
   | `Verbatim of string
   | `Modules of module_reference list
   | `List of

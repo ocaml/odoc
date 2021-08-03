@@ -18,7 +18,7 @@ and general_link_content = general_inline_element with_location list
 
 type general_block_element =
   [ `Paragraph of general_link_content
-  | `Code_block of string with_location option * string with_location
+  | `Code_block of Comment.code_block
   | `Verbatim of string
   | `Modules of Comment.module_reference list
   | `List of
@@ -70,6 +70,16 @@ let module_reference =
   in
   Indirect (simplify, Pair (reference, Option link_content))
 
+let code_block =
+  Record
+    [
+      F
+        ( "lang",
+          (fun b -> b.code_block_lang),
+          Option (Indirect (ignore_loc, string)) );
+      F ("content", (fun b -> ignore_loc b.code_block_content), string);
+    ]
+
 let rec block_element : general_block_element t =
   let heading_level =
     Variant
@@ -88,12 +98,7 @@ let rec block_element : general_block_element t =
   Variant
     (function
     | `Paragraph x -> C ("`Paragraph", x, link_content)
-    | `Code_block (x, y) ->
-        C
-          ( "`Code_block",
-            ( (match x with None -> None | Some x -> Some (ignore_loc x)),
-              ignore_loc y ),
-            Pair (Option string, string) )
+    | `Code_block b -> C ("`Code_block", b, code_block)
     | `Verbatim x -> C ("`Verbatim", x, string)
     | `Modules x -> C ("`Modules", x, List module_reference)
     | `List (x1, x2) ->
