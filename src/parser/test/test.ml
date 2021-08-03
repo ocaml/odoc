@@ -2640,7 +2640,8 @@ let%expect_test _ =
 
     let newlines_after_langtag =
       test "{@ocaml\n[ code ]}";
-      [%expect{|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (2 9))
             (code_block (((f.ml (1 2) (1 7)) ocaml) ()) ((f.ml (2 1) (2 7)) "code ")))))
@@ -2648,7 +2649,8 @@ let%expect_test _ =
 
     let newlines_after_meta =
       test "{@ocaml kind=toplevel\n[ code ]}";
-      [%expect{|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (2 9))
             (code_block
@@ -2658,7 +2660,8 @@ let%expect_test _ =
 
     let newlines_inside_meta =
       test "{@ocaml kind=toplevel\nenv=e1[ code ]}";
-      [%expect{|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (2 15))
             (code_block
@@ -2670,7 +2673,8 @@ let%expect_test _ =
 
     let newlines_between_meta =
       test "{@ocaml\nkind=toplevel[ code ]}";
-      [%expect{|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (2 22))
             (code_block
@@ -2680,7 +2684,8 @@ let%expect_test _ =
 
     let langtag_non_word =
       test "{@ocaml,top[ code ]}";
-      [%expect{|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (1 20))
             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
