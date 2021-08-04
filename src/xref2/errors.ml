@@ -231,7 +231,8 @@ type what =
   | `With_type of Cfrag.type_
   | `Module_type_expr of Component.ModuleType.expr
   | `Module_type_u_expr of Component.ModuleType.U.expr
-  | `Child of Reference.t ]
+  | `Child of Reference.t
+  | `Reference of Reference.t ]
 
 let report ~(what : what) ?tools_error action =
   let action =
@@ -277,6 +278,7 @@ let report ~(what : what) ?tools_error action =
     | `Module_type_u_expr cexpr ->
         r "module type u expression" u_module_type_expr cexpr
     | `Child rf -> r "child reference" model_reference rf
+    | `Reference ref -> r "reference" model_reference ref
   in
   match kind_of_error ~what tools_error with
   | Some (`Root name) -> Lookup_failures.report_root ~name
