@@ -132,26 +132,23 @@ let rec comment_inline_element :
   match x with
   | `Styled (s, ls) ->
       `Styled (s, List.map (with_location (comment_inline_element env)) ls)
-  | `Reference (r, []) -> (
-      (* Format.fprintf Format.err_formatter "XXXXXXXXXX about to resolve reference: %a\n%!" (Component.Fmt.model_reference) r; *)
-      match Ref_tools.resolve_reference env r with
-      | Some (`Identifier (#Id.Label.t as i) as r) ->
-          (* Format.fprintf Format.err_formatter "XXXXXXXXXX resolved reference: %a\n%!" (Component.Fmt.model_resolved_reference) r; *)
-          let content =
-            match Env.lookup_section_title i env with Some x -> x | None -> []
-          in
-          `Reference (`Resolved r, content)
-      | Some x ->
-          (* Format.fprintf Format.err_formatter "XXXXXXXXXX resolved reference: %a\n%!" (Component.Fmt.model_resolved_reference) x; *)
-          `Reference (`Resolved x, [])
-      | None ->
-          (* Format.fprintf Format.err_formatter "XXXXXXXXXX FAILED to resolve reference: %a\n%!" (Component.Fmt.model_reference) r; *)
-          `Reference (r, []))
   | `Reference (r, content) as orig -> (
-      (* Format.fprintf Format.err_formatter "XXXXXXXXXX about to resolve contentful reference: %a\n" (Component.Fmt.model_reference) r; *)
       match Ref_tools.resolve_reference env r with
-      | Some x -> `Reference (`Resolved x, content)
-      | None -> orig)
+      | Some x ->
+          let content =
+            (* In case of labels, use the heading text as reference text if
+               it's not specified. *)
+            match (content, x) with
+            | [], `Identifier (#Id.Label.t as i) -> (
+                match Env.lookup_section_title i env with
+                | Some x -> x
+                | None -> [])
+            | content, _ -> content
+          in
+          `Reference (`Resolved x, content)
+      | None ->
+          Errors.report ~what:(`Reference r) `Resolve;
+          orig)
   | y -> y
 
 and paragraph env elts =

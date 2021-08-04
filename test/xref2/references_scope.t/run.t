@@ -1,6 +1,8 @@
 # Testing the scope of references
 
   $ compile a.mli shadowed.mli shadowed_through_open.mli
+  File "a.mli", line 18, characters 6-24:
+  Failed to resolve reference unresolvedroot(C)
 
   $ jq_scan_references() { jq -c '.. | .["`Reference"]? | select(.)'; }
 

@@ -32,6 +32,8 @@ A contains linking errors:
   File "a.odoc":
   Couldn't find the following modules:
     B
+  File "a.mli", line 6, characters 47-65:
+  Failed to resolve reference unresolvedroot(B).doesn't_exist
 
   $ odoc errors a.odocl
   File "a.mli", line 8, characters 23-23:
@@ -41,6 +43,8 @@ A contains linking errors:
   File "a.odoc":
   Couldn't find the following modules:
     B
+  File "a.mli", line 6, characters 47-65:
+  Failed to resolve reference unresolvedroot(B).doesn't_exist
 
 It is possible to hide the warnings too:
 
