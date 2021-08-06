@@ -2,13 +2,13 @@
 
   $ compile p.mld good_references.mli bad_references.mli
   File "p.mld", line 6, characters 5-11:
-  Failed to resolve reference unresolvedroot(M).t
+  Failed to resolve reference unresolvedroot(M).t Couldn't find "M"
   File "p.mld", line 6, characters 0-4:
-  Failed to resolve reference unresolvedroot(M)
+  Failed to resolve reference unresolvedroot(M) Couldn't find "M"
   File "bad_references.mli", line 6, characters 42-69:
-  Failed to resolve reference unresolvedroot(p).not_found
+  Failed to resolve reference unresolvedroot(p).not_found Couldn't find page "not_found"
   File "bad_references.mli", line 4, characters 20-37:
-  Failed to resolve reference unresolvedroot(not_found)
+  Failed to resolve reference unresolvedroot(not_found) Couldn't find page "not_found"
 
 Every references in `Good_references` should resolve:
 
