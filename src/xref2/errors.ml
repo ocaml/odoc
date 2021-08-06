@@ -9,6 +9,8 @@ module Tools_error = struct
       [ `Module of Cpath.module_ ]
       (* Failed to resolve a module path when applying a fragment item *) ]
 
+  type reference_kind = [ `S | `T | `C | `CT | `Page | `Cons | `Field | `Label ]
+
   type signature_of_module_error =
     [ `OpaqueModule (* The module does not have an expansion *)
     | `UnresolvedForwardPath
@@ -63,6 +65,7 @@ module Tools_error = struct
     | `Class_replaced
       (* Class was replaced with a destructive substitution and we're not sure
           what to do now *)
+    | `OpaqueClass (* Couldn't resolve class signature. *)
     | `Find_failure
       (* Internal error: the type was not found in the parent signature *)
     | `Lookup_failureT of
@@ -83,7 +86,15 @@ module Tools_error = struct
     | `Parent_module of
       simple_module_lookup_error
       (* Error found while looking up parent module *)
+    | `Parent_type of simple_type_lookup_error
     | `Fragment_root (* Encountered unexpected fragment root *)
+    | `Parent of parent_lookup_error
+    | `Reference of reference_lookup_error ]
+
+  and reference_lookup_error =
+    [ `Wrong_kind of reference_kind list * reference_kind (* Expected, got *)
+    | `Lookup_by_name of [ reference_kind | `Any ] * string
+    | `Find_by_name of [ reference_kind | `Any ] * string
     | `Parent of parent_lookup_error ]
 
   type any =
@@ -94,10 +105,25 @@ module Tools_error = struct
     | signature_of_module_error
     | parent_lookup_error ]
 
+  let pp_reference_kind fmt k =
+    let k =
+      match k with
+      | `S -> "signature"
+      | `T -> "type"
+      | `C -> "class"
+      | `CT -> "class type"
+      | `Page -> "page"
+      | `Cons -> "constructor"
+      | `Field -> "field"
+      | `Label -> "label"
+    in
+    Format.pp_print_string fmt k
+
   let rec pp : Format.formatter -> any -> unit =
    fun fmt err ->
     match err with
     | `OpaqueModule -> Format.fprintf fmt "OpaqueModule"
+    | `OpaqueClass -> Format.fprintf fmt "Class is abstract"
     | `UnresolvedForwardPath -> Format.fprintf fmt "Unresolved forward path"
     | `UnresolvedPath (`Module (p, e)) ->
         Format.fprintf fmt "Unresolved module path %a (%a)"
@@ -138,6 +164,22 @@ module Tools_error = struct
     | `Parent_expr e -> Format.fprintf fmt "Parent_expr: %a" pp (e :> any)
     | `Parent_module e -> Format.fprintf fmt "Parent_module: %a" pp (e :> any)
     | `Fragment_root -> Format.fprintf fmt "Fragment root"
+    | `Parent_type e -> Format.fprintf fmt "Parent_type: %a" pp (e :> any)
+    | `Reference e -> pp_reference_lookup_error fmt e
+
+  and pp_reference_lookup_error fmt = function
+    | `Wrong_kind (expected, got) ->
+        let pp_sep fmt () = Format.fprintf fmt " or " in
+        Format.fprintf fmt "is of kind %a but expected %a" pp_reference_kind got
+          (Format.pp_print_list ~pp_sep pp_reference_kind)
+          expected
+    | `Lookup_by_name (kind, name) | `Find_by_name (kind, name) -> (
+        match kind with
+        | `Any -> Format.fprintf fmt "Couldn't find %S" name
+        | #reference_kind as kind ->
+            Format.fprintf fmt "Couldn't find %a %S" pp_reference_kind kind name
+        )
+    | `Parent e -> pp fmt (e :> any)
 end
 
 (* Ugh. we need to determine whether this was down to an unexpanded module type error. This is horrendous. *)
@@ -154,6 +196,7 @@ let is_unexpanded_module_type_of =
     | `Parent_module_type p -> inner (p :> any)
     | `Parent_expr p -> inner (p :> any)
     | `Parent_module p -> inner (p :> any)
+    | `Parent_type p -> inner (p :> any)
     | `Fragment_root -> false
     | `OpaqueModule -> false
     | `UnresolvedForwardPath -> false
@@ -166,6 +209,9 @@ let is_unexpanded_module_type_of =
     | `Lookup_failureT _ -> false
     | `LocalType _ -> false
     | `Class_replaced -> false
+    | `OpaqueClass -> false
+    | `Reference (`Parent p) -> inner (p :> any)
+    | `Reference _ -> false
   in
   inner
 

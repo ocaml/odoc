@@ -1,7 +1,7 @@
 
   $ compile test.mli
   File "test.mli", line 23, characters 14-20:
-  Failed to resolve reference unresolvedroot(M).C
+  Failed to resolve reference unresolvedroot(M).C Couldn't find "C"
 
 Labels:
 Some are not in order because the 'doc' field appears after the rest in the output.

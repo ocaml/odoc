@@ -134,7 +134,7 @@ let rec comment_inline_element :
       `Styled (s, List.map (with_location (comment_inline_element env)) ls)
   | `Reference (r, content) as orig -> (
       match Ref_tools.resolve_reference env r with
-      | Some x ->
+      | Ok x ->
           let content =
             (* In case of labels, use the heading text as reference text if
                it's not specified. *)
@@ -146,8 +146,9 @@ let rec comment_inline_element :
             | content, _ -> content
           in
           `Reference (`Resolved x, content)
-      | None ->
-          Errors.report ~what:(`Reference r) `Resolve;
+      | Error e ->
+          Errors.report ~what:(`Reference r) ~tools_error:(`Reference e)
+            `Resolve;
           orig)
   | y -> y
 
@@ -175,14 +176,18 @@ and comment_nestable_block_element env parent
         List.map
           (fun (r : Comment.module_reference) ->
             match Ref_tools.resolve_module_reference env r.module_reference with
-            | Some (r, _, m) ->
+            | Ok (r, _, m) ->
                 let module_synopsis =
                   Opt.map
                     (resolve_external_synopsis env)
                     (synopsis_of_module env m)
                 in
                 { Comment.module_reference = `Resolved r; module_synopsis }
-            | None -> r)
+            | Error e ->
+                Errors.report
+                  ~what:(`Reference (r.module_reference :> Paths.Reference.t))
+                  ~tools_error:(`Reference e) `Resolve;
+                r)
           refs
       in
       `Modules refs
@@ -886,8 +891,8 @@ let page env page =
     List.fold_right
       (fun child res ->
         match Ref_tools.resolve_reference env child with
-        | Some r -> `Resolved r :: res
-        | None ->
+        | Ok r -> `Resolved r :: res
+        | Error _ ->
             Errors.report ~what:(`Child child) `Resolve;
             res)
       page.Odoc_model.Lang.Page.children []
