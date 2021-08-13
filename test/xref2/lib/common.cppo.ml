@@ -10,7 +10,6 @@ utop # let id, sg, docs = Common.model_of_string test_data;;
 utop # let env = Env.open_signature sg Env.empty;;
 utop # let unit = Common.my_compilation_unit id sg;
 utop # Common.resolve unit
-utop # Resolve.signature Env.empty sg
 
 *)
 
