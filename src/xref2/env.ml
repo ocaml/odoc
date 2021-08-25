@@ -68,7 +68,7 @@ let ident_of_element = function
   | `ModuleType (id, _) -> (id :> Identifier.t)
   | `Type (id, _) -> (id :> Identifier.t)
   | `Value (id, _) -> (id :> Identifier.t)
-  | `Label id -> (id :> Identifier.t)
+  | `Label (id, _) -> (id :> Identifier.t)
   | `Class (id, _) -> (id :> Identifier.t)
   | `ClassType (id, _) -> (id :> Identifier.t)
   | `Constructor (id, _) -> (id :> Identifier.t)
@@ -151,7 +151,6 @@ end
 
 type t = {
   id : int;
-  titles : Odoc_model.Comment.link_content Maps.Label.t;
   elts : Elements.t;
   resolver : resolver option;
   recorder : recorder option;
@@ -183,7 +182,6 @@ let with_recorded_lookups env f =
 let empty =
   {
     id = 0;
-    titles = Maps.Label.empty;
     elts = Elements.empty;
     resolver = None;
     recorder = None;
@@ -202,20 +200,15 @@ let add_to_elts kind identifier component env =
     elts = Elements.add kind identifier component env.elts;
   }
 
-let add_label identifier env =
-  add_to_elts Kind_Label identifier (`Label identifier) env
-
-let add_label_title label elts env =
-  { env with id = unique_id (); titles = Maps.Label.add label elts env.titles }
+let add_label identifier elts env =
+  add_to_elts Kind_Label identifier (`Label (identifier, elts)) env
 
 let add_docs (docs : Odoc_model.Comment.docs) env =
   List.fold_right
     (fun element env ->
       match element.Odoc_model.Location_.value with
       | `Heading (_, label, nested_elements) ->
-          let env = add_label label env in
-          let env = add_label_title label nested_elements env in
-          env
+          add_label label nested_elements env
       | _ -> env)
     docs env
 
@@ -228,9 +221,7 @@ let add_cdocs p (docs : Component.CComment.docs) env =
       match element.Odoc_model.Location_.value with
       | `Heading (_, `LLabel (name, _), nested_elements) ->
           let label = `Label (Paths.Identifier.label_parent p, name) in
-          let env = add_label label env in
-          let env = add_label_title label nested_elements env in
-          env
+          add_label label nested_elements env
       | _ -> env)
     docs env
 
@@ -489,9 +480,6 @@ let lookup_fragment_root env =
       maybe_record_result (FragmentRoot i);
       result
   | None -> None
-
-let lookup_section_title identifier env =
-  try Some (Maps.Label.find identifier env.titles) with _ -> None
 
 let lookup_page name env =
   match env.resolver with None -> None | Some r -> r.lookup_page name

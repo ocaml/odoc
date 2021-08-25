@@ -305,7 +305,7 @@ module L = struct
   type t = Resolved.Label.t
 
   let in_env env name : t ref_result =
-    env_lookup_by_name Env.s_label name env >>= fun (`Label id) ->
+    env_lookup_by_name Env.s_label name env >>= fun (`Label (id, _)) ->
     Ok (`Identifier id)
 
   let in_page _env (`Page (_, p)) name =
@@ -699,7 +699,7 @@ let resolve_reference =
         | `ModuleType (_, _) as e -> resolved (MT.of_element env e)
         | `Value (id, _) -> identifier id
         | `Type (id, _) -> identifier id
-        | `Label id -> identifier id
+        | `Label (id, _) -> identifier id
         | `Class (id, _) -> identifier id
         | `ClassType (id, _) -> identifier id
         | `Constructor (id, _) -> identifier id

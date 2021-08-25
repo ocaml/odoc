@@ -140,8 +140,8 @@ let rec comment_inline_element :
                it's not specified. *)
             match (content, x) with
             | [], `Identifier (#Id.Label.t as i) -> (
-                match Env.lookup_section_title i env with
-                | Some x -> x
+                match Env.lookup_by_id Env.s_label i env with
+                | Some (`Label (_, x)) -> x
                 | None -> [])
             | content, _ -> content
           in

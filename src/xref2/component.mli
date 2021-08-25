@@ -435,7 +435,7 @@ module Element : sig
 
   type value = [ `Value of Identifier.Value.t * Value.t ]
 
-  type label = [ `Label of Identifier.Label.t ]
+  type label = [ `Label of Identifier.Label.t * Odoc_model.Comment.link_content ]
 
   type class_ = [ `Class of Identifier.Class.t * Class.t ]
 
