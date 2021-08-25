@@ -56,10 +56,7 @@ val add_module_type :
 
 val add_value : Identifier.Value.t -> Component.Value.t -> t -> t
 
-val add_label : Identifier.Label.t -> t -> t
-
-val add_label_title :
-  Identifier.Label.t -> Odoc_model.Comment.link_content -> t -> t
+val add_label : Identifier.Label.t -> Odoc_model.Comment.link_content -> t -> t
 
 val add_class : Identifier.Class.t -> Component.Class.t -> t -> t
 
@@ -83,9 +80,6 @@ val add_module_type_functor_args :
   Component.ModuleType.t -> Identifier.ModuleType.t -> t -> t
 
 val lookup_fragment_root : t -> (int * Component.Signature.t) option
-
-val lookup_section_title :
-  Identifier.Label.t -> t -> Odoc_model.Comment.link_content option
 
 val lookup_page : string -> t -> Odoc_model.Lang.Page.t option
 
