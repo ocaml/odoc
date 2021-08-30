@@ -18,6 +18,10 @@ module N : sig
   (** {!B} {!M.B} *)
 end
 
+(** {1:B Dupplicate B}
+
+    Define [B] again in the same scope. *)
+
 (** References to the labels:
 
     {!A} {!B} {!M.C} {!M.D} {!M.B} {!N.B} *)

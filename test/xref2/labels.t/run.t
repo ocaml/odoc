@@ -1,9 +1,11 @@
 
   $ compile test.mli
-  File "test.mli", line 23, characters 14-20:
+  File "test.mli", line 27, characters 14-20:
   Failed to resolve reference unresolvedroot(M).C Couldn't find "C"
-  File "test.mli", line 18, characters 6-10:
+  File "test.mli", line 27, characters 9-13:
   Reference to 'B' is ambiguous. Please specify its kind: section-B, section-B.
+  File "test.mli", line 18, characters 6-10:
+  Reference to 'B' is ambiguous. Please specify its kind: section-B, section-B, section-B.
 
 Labels:
 Some are not in order because the 'doc' field appears after the rest in the output.
@@ -14,6 +16,7 @@ Some are not in order because the 'doc' field appears after the rest in the outp
   [{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"B"]
   [{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"C"]
   [{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]},"B"]
+  [{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]
   [{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]
 
 References to the labels:
@@ -23,7 +26,7 @@ We expect resolved references and the heading text filled in.
   [{"`Resolved":{"`Identifier":{"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]},"B"]}}},[{"`Word":"An"},"`Space",{"`Word":"other"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
   [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[]]
   [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]}}},[{"`Word":"First"},"`Space",{"`Word":"label"}]]
-  [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}}},[{"`Word":"Floating"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}}},[{"`Word":"Dupplicate"},"`Space",{"`Word":"B"}]]
   [{"`Dot":[{"`Root":["M","`TUnknown"]},"C"]},[]]
   [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"D"]}},[]]
   [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[]]
@@ -52,12 +55,75 @@ There are two references in N, one should point to a local label and the other t
      <h1>Module <code><span>Test.N</span></code></h1>
     </header>
     <nav class="odoc-toc">
-     <ul><li><a href="#B">An other conflicting label</a></li></ul>
+     <ul><li><a href="#B_3">An other conflicting label</a></li></ul>
     </nav>
     <div class="odoc-content">
-     <h2 id="B"><a href="#B" class="anchor"></a>An other conflicting label</h2>
+     <h2 id="B_3"><a href="#B_3" class="anchor"></a>An other conflicting label
+     </h2>
      <p><a href="#B">An other conflicting label</a> 
       <a href="../M/index.html#B"><code>B</code></a>
+     </p>
+    </div>
+   </body>
+  </html>
+
+The second occurence of 'B' in the main page should be disambiguated
+(renamed 'B_2').
+
+  $ cat html/test/Test/index.html
+  <!DOCTYPE html>
+  <html xmlns="http://www.w3.org/1999/xhtml">
+   <head><title>Test (test.Test)</title>
+    <link rel="stylesheet" href="../../odoc.css"/><meta charset="utf-8"/>
+    <meta name="generator" content="odoc %%VERSION%%"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <script src="../../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+   </head>
+   <body class="odoc">
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
+     <a href="../index.html">test</a> &#x00BB; Test
+    </nav>
+    <header class="odoc-preamble">
+     <h1>Module <code><span>Test</span></code></h1>
+    </header>
+    <nav class="odoc-toc">
+     <ul><li><a href="#A">First label</a></li>
+      <li><a href="#B">Floating label</a></li>
+      <li><a href="#B_4">Dupplicate B</a></li>
+     </ul>
+    </nav>
+    <div class="odoc-content">
+     <h2 id="A"><a href="#A" class="anchor"></a>First label</h2>
+     <h2 id="B"><a href="#B" class="anchor"></a>Floating label</h2>
+     <div class="odoc-spec">
+      <div class="spec module" id="module-M" class="anchored">
+       <a href="#module-M" class="anchor"></a>
+       <code><span><span class="keyword">module</span> </span>
+        <span><a href="M/index.html">M</a></span>
+        <span> : <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
+       </code>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec module" id="module-N" class="anchored">
+       <a href="#module-N" class="anchor"></a>
+       <code><span><span class="keyword">module</span> </span>
+        <span><a href="N/index.html">N</a></span>
+        <span> : <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
+       </code>
+      </div>
+     </div><h2 id="B_4"><a href="#B_4" class="anchor"></a>Dupplicate B</h2>
+     <p>Define <code>B</code> again in the same scope.</p>
+     <p>References to the labels:</p>
+     <p><a href="#A">First label</a> <a href="#B">Dupplicate B</a> 
+      <code>M</code>.C <a href="M/index.html#D"><code>D</code></a> 
+      <a href="M/index.html#B"><code>B</code></a> 
+      <a href="N/index.html#B"><code>B</code></a>
      </p>
     </div>
    </body>

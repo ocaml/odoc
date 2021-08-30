@@ -172,3 +172,70 @@ module Shift = struct
     let shift_state = start in
     walk_item ~on_sub shift_state i
 end
+
+module Headings : sig
+  val fold : ('a -> Heading.t -> 'a) -> 'a -> Page.t -> 'a
+  (** Fold over every headings, follow subpages, nested documentedsrc and
+      expansions. *)
+
+  val foldmap :
+    ('a -> Heading.t -> 'a * Heading.t) -> 'a -> Page.t -> 'a * Page.t
+end = struct
+  let fold =
+    let rec w_page f acc page =
+      w_items f (w_items f acc page.Page.header) page.items
+    and w_items f acc ts = List.fold_left (w_item f) acc ts
+    and w_item f acc = function
+      | Heading h -> f acc h
+      | Text _ -> acc
+      | Declaration t -> w_documentedsrc f acc t.Item.content
+      | Include t -> w_items f acc t.Item.content.content
+    and w_documentedsrc f acc t = List.fold_left (w_documentedsrc_one f) acc t
+    and w_documentedsrc_one f acc = function
+      | DocumentedSrc.Code _ | Documented _ -> acc
+      | Nested t -> w_documentedsrc f acc t.code
+      | Subpage sp -> w_page f acc sp.content
+      | Alternative (Expansion exp) -> w_documentedsrc f acc exp.expansion
+    in
+    w_page
+
+  let rec foldmap_left f acc rlst = function
+    | [] -> (acc, List.rev rlst)
+    | hd :: tl ->
+        let acc, hd = f acc hd in
+        foldmap_left f acc (hd :: rlst) tl
+
+  let foldmap_left f acc lst = foldmap_left f acc [] lst
+
+  let foldmap =
+    let rec w_page f acc page =
+      let acc, header = w_items f acc page.Page.header in
+      let acc, items = w_items f acc page.items in
+      (acc, { page with header; items })
+    and w_items f acc items = foldmap_left (w_item f) acc items
+    and w_item f acc = function
+      | Heading h ->
+          let acc, h = f acc h in
+          (acc, Heading h)
+      | Text _ as x -> (acc, x)
+      | Declaration t ->
+          let acc, content = w_documentedsrc f acc t.content in
+          (acc, Declaration { t with content })
+      | Include t ->
+          let acc, content = w_items f acc t.Item.content.content in
+          (acc, Include { t with content = { t.content with content } })
+    and w_documentedsrc f acc t = foldmap_left (w_documentedsrc_one f) acc t
+    and w_documentedsrc_one f acc = function
+      | (Code _ | Documented _) as x -> (acc, x)
+      | Nested t ->
+          let acc, code = w_documentedsrc f acc t.code in
+          (acc, Nested { t with code })
+      | Subpage sp ->
+          let acc, content = w_page f acc sp.content in
+          (acc, Subpage { sp with content })
+      | Alternative (Expansion exp) ->
+          let acc, expansion = w_documentedsrc f acc exp.expansion in
+          (acc, Alternative (Expansion { exp with expansion }))
+    in
+    w_page
+end

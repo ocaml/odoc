@@ -1601,6 +1601,45 @@ module Make (Syntax : SYNTAX) = struct
 
     val page : Lang.Page.t -> Page.t
   end = struct
+    module StringMap = Map.Make (String)
+
+    let rec make_label_unique labels di label =
+      let label' = label ^ "_" in
+      (* start at [_2]. *)
+      let new_label = label' ^ string_of_int (di + 1) in
+      (* If the label is still ambiguous after suffixing, add an extra '_'. *)
+      if StringMap.mem new_label labels then make_label_unique labels di label'
+      else new_label
+
+    (** Colliding labels are allowed in the model but don't make sense in
+        generators because we need to link to everything (eg. the TOC).
+        Post-process the doctree, add a "_N" suffix to dupplicates, the first
+        occurence is unchanged. *)
+    let ensure_labels_are_unique page =
+      (* Perform two passes, we need to know every labels before allocating new
+          ones. *)
+      let labels =
+        Doctree.Headings.fold
+          (fun acc h ->
+            match h.label with Some l -> StringMap.add l 0 acc | None -> acc)
+          StringMap.empty page
+      in
+      Doctree.Headings.foldmap
+        (fun acc h ->
+          match h.label with
+          | Some l ->
+              let d_index = StringMap.find l acc in
+              let h =
+                if d_index = 0 then h
+                else
+                  let label = Some (make_label_unique acc d_index l) in
+                  { h with label }
+              in
+              (StringMap.add l (d_index + 1) acc, h)
+          | None -> (acc, h))
+        labels page
+      |> snd
+
     let pack : Odoc_model.Lang.Compilation_unit.Packed.t -> Item.t list =
      fun t ->
       let open Odoc_model.Lang in
@@ -1632,6 +1671,7 @@ module Make (Syntax : SYNTAX) = struct
         | Pack packed -> ([], pack packed)
       in
       make_expansion_page title ~header_title:title `Mod url [ unit_doc ] items
+      |> ensure_labels_are_unique
 
     let page (t : Odoc_model.Lang.Page.t) : Page.t =
       let name =
@@ -1640,7 +1680,7 @@ module Make (Syntax : SYNTAX) = struct
       let title = Odoc_model.Names.PageName.to_string name in
       let url = Url.Path.from_identifier t.name in
       let header, items = Sectioning.docs t.content in
-      { Page.title; header; items; url }
+      { Page.title; header; items; url } |> ensure_labels_are_unique
   end
 
   include Page
