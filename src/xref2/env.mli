@@ -56,7 +56,7 @@ val add_module_type :
 
 val add_value : Identifier.Value.t -> Component.Value.t -> t -> t
 
-val add_label : Identifier.Label.t -> Odoc_model.Comment.link_content -> t -> t
+val add_label : Identifier.Label.t -> Component.Label.t -> t -> t
 
 val add_class : Identifier.Class.t -> Component.Class.t -> t -> t
 

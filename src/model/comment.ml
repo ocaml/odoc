@@ -71,10 +71,10 @@ type heading_level =
 
 type attached_block_element = [ nestable_block_element | `Tag of tag ]
 
+type heading = heading_level * Identifier.Label.t * link_content
+
 type block_element =
-  [ nestable_block_element
-  | `Heading of heading_level * Identifier.Label.t * link_content
-  | `Tag of tag ]
+  [ nestable_block_element | `Heading of heading | `Tag of tag ]
 
 type docs = block_element with_location list
 

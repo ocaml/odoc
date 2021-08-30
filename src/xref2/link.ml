@@ -141,7 +141,11 @@ let rec comment_inline_element :
             match (content, x) with
             | [], `Identifier (#Id.Label.t as i) -> (
                 match Env.lookup_by_id Env.s_label i env with
-                | Some (`Label (_, x)) -> x
+                | Some (`Label (_, lbl)) ->
+                    let (`Heading (_, _, elts)) =
+                      lbl.Odoc_model.Location_.value
+                    in
+                    elts
                 | None -> [])
             | content, _ -> content
           in
