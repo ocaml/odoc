@@ -455,6 +455,12 @@ and CComment : sig
 end =
   CComment
 
+and Label : sig
+  type t =
+    [ `Heading of Odoc_model.Comment.heading ] Odoc_model.Comment.with_location
+end =
+  Label
+
 module Element = struct
   open Odoc_model.Paths
 
@@ -466,7 +472,7 @@ module Element = struct
 
   type value = [ `Value of Identifier.Value.t * Value.t ]
 
-  type label = [ `Label of Identifier.Label.t * Odoc_model.Comment.link_content ]
+  type label = [ `Label of Identifier.Label.t * Label.t ]
 
   type class_ = [ `Class of Identifier.Class.t * Class.t ]
 
