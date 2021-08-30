@@ -79,6 +79,7 @@ let ident_of_element = function
 module Maps = Odoc_model.Paths.Identifier.Maps
 module StringMap = Map.Make (String)
 
+(** Used only to handle shadowing, see {!Elements}. *)
 type kind =
   | Kind_Module
   | Kind_ModuleType
@@ -97,7 +98,16 @@ module Elements : sig
 
   val empty : t
 
-  val add : kind -> [< Identifier.t ] -> [< Component.Element.any ] -> t -> t
+  val add :
+    ?shadow:bool ->
+    kind ->
+    [< Identifier.t ] ->
+    [< Component.Element.any ] ->
+    t ->
+    t
+  (** If [shadow] is set to [false] (defaults to [true]), existing
+      elements of the same name won't be shadowed. This is used for labels,
+      which doesn't allow shadowing. *)
 
   val find_by_name :
     (Component.Element.any -> 'b option) -> string -> t -> 'b list
@@ -111,7 +121,7 @@ end = struct
 
   let empty = StringMap.empty
 
-  let add kind identifier comp t =
+  let add ?(shadow = true) kind identifier comp t =
     let name = Identifier.name identifier in
     let v =
       { kind; elem = (comp :> Component.Element.any); shadowed = false }
@@ -123,7 +133,8 @@ end = struct
         let mark_shadow e =
           if e.kind = kind then { e with shadowed = true } else e
         in
-        if List.exists has_shadow tl then List.map mark_shadow tl else tl
+        if shadow && List.exists has_shadow tl then List.map mark_shadow tl
+        else tl
       in
       StringMap.add name (v :: tl) t
     with Not_found -> StringMap.add name [ v ] t
@@ -193,15 +204,19 @@ let add_fragment_root sg env =
   { env with fragmentroot = Some (id, sg); id }
 
 (** Implements most [add_*] functions. *)
-let add_to_elts kind identifier component env =
+let add_to_elts ?shadow kind identifier component env =
   {
     env with
     id = unique_id ();
-    elts = Elements.add kind identifier component env.elts;
+    elts = Elements.add ?shadow kind identifier component env.elts;
   }
 
 let add_label identifier elts env =
-  add_to_elts Kind_Label identifier (`Label (identifier, elts)) env
+  (* Disallow shadowing for labels. Duplicate names are disallowed and reported
+     during linking. *)
+  add_to_elts ~shadow:false Kind_Label identifier
+    (`Label (identifier, elts))
+    env
 
 let add_docs (docs : Odoc_model.Comment.docs) env =
   List.fold_right
