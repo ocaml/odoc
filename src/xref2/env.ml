@@ -219,20 +219,19 @@ let add_label identifier heading env =
     env
 
 let add_docs (docs : Odoc_model.Comment.docs) env =
-  List.fold_right
-    (fun element env ->
-      match element with
+  List.fold_left
+    (fun env -> function
       | { Odoc_model.Location_.value = `Heading (_, label, _); _ } as heading ->
           add_label label heading env
       | _ -> env)
-    docs env
+    env docs
 
 let add_comment (com : Odoc_model.Comment.docs_or_stop) env =
   match com with `Docs doc -> add_docs doc env | `Stop -> env
 
 let add_cdocs p (docs : Component.CComment.docs) env =
-  List.fold_right
-    (fun element env ->
+  List.fold_left
+    (fun env element ->
       match element.Odoc_model.Location_.value with
       | `Heading (lvl, `LLabel (name, _), nested_elements) ->
           let label = `Label (Paths.Identifier.label_parent p, name) in
@@ -240,7 +239,7 @@ let add_cdocs p (docs : Component.CComment.docs) env =
             { element with value = `Heading (lvl, label, nested_elements) }
             env
       | _ -> env)
-    docs env
+    env docs
 
 let add_module identifier m docs env =
   add_to_elts Kind_Module identifier (`Module (identifier, m)) env
