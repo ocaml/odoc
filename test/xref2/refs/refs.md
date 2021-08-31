@@ -17,7 +17,9 @@ type ref = Paths.Reference.Resolved.t
 
 let resolve_ref' env ref_str : ref =
   let unresolved = parse_ref ref_str in
-  let resolve () = Ref_tools.resolve_reference env unresolved in
+  let resolve () =
+    Ref_tools.resolve_reference env unresolved |> Error.raise_warnings
+  in
   match
     Lookup_failures.catch_failures ~filename:"<test>" resolve
     |> Common.handle_warnings
@@ -962,11 +964,11 @@ Ambiguous in env:
 ```ocaml
 # resolve_ref "t" ;;
 File "<test>":
-Reference to 't' is ambiguous. Please specify its kind: val-t, type-t.
+Reference to 't' is ambiguous. Please specify its kind: type-t, val-t.
 - : ref = `Identifier (`Value (`Root (Some (`Page (None, None)), Root), t))
 # resolve_ref "X" ;;
 File "<test>":
-Reference to 'X' is ambiguous. Please specify its kind: module-X, constructor-X.
+Reference to 'X' is ambiguous. Please specify its kind: constructor-X, module-X.
 - : ref = `Identifier (`Module (`Root (Some (`Page (None, None)), Root), X))
 ```
 
@@ -988,7 +990,7 @@ Reference to 'Y' is ambiguous. Please specify its kind: constructor-Y, module-Y.
    Y)
 # resolve_ref "Everything_ambiguous_in_sig.t" (* Some kinds are missing: label, type subst (would be "type-") *) ;;
 File "<test>":
-Reference to 't' is ambiguous. Please specify its kind: type-t, module-type-t, field-t, val-t, val-t.
+Reference to 't' is ambiguous. Please specify its kind: field-t, module-type-t, type-t, val-t.
 - : ref =
 `Type
   (`Identifier
@@ -998,7 +1000,7 @@ Reference to 't' is ambiguous. Please specify its kind: type-t, module-type-t, f
    t)
 # resolve_ref "Everything_ambiguous_in_sig.T" (* Missing kind: module subst (would be "module-") *) ;;
 File "<test>":
-Reference to 'T' is ambiguous. Please specify its kind: module-T, exception-T, extension-T.
+Reference to 'T' is ambiguous. Please specify its kind: exception-T, extension-T, module-T.
 - : ref =
 `Module
   (`Identifier

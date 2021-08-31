@@ -133,7 +133,7 @@ let rec comment_inline_element :
   | `Styled (s, ls) ->
       `Styled (s, List.map (with_location (comment_inline_element env)) ls)
   | `Reference (r, content) as orig -> (
-      match Ref_tools.resolve_reference env r with
+      match Ref_tools.resolve_reference env r |> Error.raise_warnings with
       | Ok x ->
           let content =
             (* In case of labels, use the heading text as reference text if
@@ -179,7 +179,10 @@ and comment_nestable_block_element env parent
       let refs =
         List.map
           (fun (r : Comment.module_reference) ->
-            match Ref_tools.resolve_module_reference env r.module_reference with
+            match
+              Ref_tools.resolve_module_reference env r.module_reference
+              |> Error.raise_warnings
+            with
             | Ok (r, _, m) ->
                 let module_synopsis =
                   Opt.map
@@ -894,7 +897,7 @@ let page env page =
   let children =
     List.fold_right
       (fun child res ->
-        match Ref_tools.resolve_reference env child with
+        match Ref_tools.resolve_reference env child |> Error.raise_warnings with
         | Ok r -> `Resolved r :: res
         | Error _ ->
             Errors.report ~what:(`Child child) `Resolve;
