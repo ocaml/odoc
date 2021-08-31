@@ -22,8 +22,10 @@ let resolve_ref' env ref_str : ref =
     Lookup_failures.catch_failures ~filename:"<test>" resolve
     |> Common.handle_warnings
   with
-  | None -> failwith "resolve_reference"
-  | Some r -> r
+  | Error e ->
+      Format.kasprintf failwith "resolve_reference: %a"
+        Errors.Tools_error.pp_reference_lookup_error e
+  | Ok r -> r
 
 let resolve_ref_of_mli mli =
   let sg = Common.signature_of_mli_string mli in
@@ -117,7 +119,7 @@ Explicit, root:
 # resolve_ref "type:x1"
 - : ref = `Identifier (`Type (`Root (Some (`Page (None, None)), Root), x1))
 # resolve_ref "constructor:X1" (* X1 is an extension constructor *)
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"X1\"".
 # resolve_ref "extension:X1"
 - : ref =
 `Identifier (`Extension (`Root (Some (`Page (None, None)), Root), X1))
@@ -171,7 +173,7 @@ Explicit, in sig:
 `Exception
   (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), E2)
 # resolve_ref "constructor:M.C2" (* Not allowed by types *)
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"M\"".
 # resolve_ref "val:M.e2"
 - : ref =
 `Value
@@ -189,7 +191,7 @@ Exception: Failure "resolve_reference".
 `Type
   (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), x2)
 # resolve_ref "constructor:M.X2" (* X2 is an extension constructor *)
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"M\"".
 # resolve_ref "extension:M.X2"
 - : ref =
 `Extension
@@ -233,7 +235,7 @@ Exception: Failure "resolve_reference".
      (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), r2),
    rf2)
 # resolve_ref "section:M.L2"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find label \"L2\"".
 ```
 
 Implicit, root:
@@ -385,7 +387,7 @@ Implicit, in sig:
      (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), r2),
    rf2)
 # resolve_ref "M.L2"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"L2\"".
 ```
 
 Known kind:
@@ -520,7 +522,7 @@ Known kind:
      (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), r2),
    rf2)
 # resolve_ref "M.section-L2"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find label \"L2\"".
 # resolve_ref "module-M.type-t2"
 - : ref =
 `Type
@@ -580,7 +582,7 @@ Exception: Failure "resolve_reference".
      (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), r2),
    rf2)
 # resolve_ref "module-M.section-L2"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find label \"L2\"".
 # resolve_ref "module-M.field-rf2"
 - : ref =
 `Field
@@ -720,11 +722,11 @@ let resolve_ref = resolve_ref_of_mli {|
 # resolve_ref "s1"
 - : ref = `Identifier (`Type (`Root (Some (`Page (None, None)), Root), s1))
 # resolve_ref "s1.rf1"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"rf1\"".
 # resolve_ref "M.s2"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"s2\"".
 # resolve_ref "M.s2.rf2"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"s2\"".
 ```
 
 ```ocaml
@@ -757,7 +759,9 @@ let resolve_ref = resolve_ref_of_mli {|
       `Identifier (`Module (`Root (Some (`Page (None, None)), Root), B))),
    t)
 # resolve_ref "C.t"
-Exception: Failure "resolve_reference".
+Exception:
+Failure
+ "resolve_reference: Parent_sig: Unexpanded `module type of` expression: module type of identifier((root Root).A, false)".
 # resolve_ref "D.t"
 - : ref =
 `Type (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), D)), t)
@@ -845,7 +849,7 @@ Exception:
 Failure
  "File \"\", line 0, characters 0-6:\nExpected 'class-', 'class-type-', or an unqualified reference.".
 # resolve_ref "type-t.m"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"m\"".
 # resolve_ref "type-t.method-m"
 Exception:
 Failure
@@ -871,17 +875,17 @@ let resolve_ref = resolve_ref_of_mli {|
 ```ocaml
 # (* Lookup a field but find a constructor *)
   resolve_ref "M.field-C"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find field \"C\"".
 # resolve_ref "M.t.field-C"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find field \"C\"".
 # (* Lookup a class but find a type *)
   resolve_ref "M.class-t"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: is of kind type but expected class".
 # (* Lookup a constructor but find a field *)
   resolve_ref "M.constructor-f"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"M\"".
 # resolve_ref "M.u.constructor-f"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find constructor \"f\"".
 ```
 
 Lookup classes but get types
@@ -898,19 +902,24 @@ let resolve_ref = resolve_ref_of_mli {|
 
 ```ocaml
 # resolve_ref "m" (* in env *)
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"m\"".
 # resolve_ref "method-m"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"m\"".
 # resolve_ref "u.method-m" (* Parent is type in env *)
-Exception: Failure "resolve_reference".
+Exception:
+Failure "resolve_reference: is of kind type but expected class or class type".
 # resolve_ref "M.method-m" (* Parent is sig *)
-Exception: Failure "resolve_reference".
+Exception:
+Failure
+ "resolve_reference: is of kind signature but expected type or class or class type".
 # resolve_ref "M.t.method-m"
-Exception: Failure "resolve_reference".
+Exception:
+Failure "resolve_reference: is of kind type but expected class or class type".
 # resolve_ref "c.constructor-C" (* Type in env but find class (parent of constructor is "datatype") *)
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"c\"".
 # resolve_ref "c.field-f" (* Field in class (parent of field is "label_parent") *)
-Exception: Failure "resolve_reference".
+Exception:
+Failure "resolve_reference: is of kind class but expected signature or type".
 ```
 
 ## Ambiguous references
@@ -1020,7 +1029,7 @@ Unambiguous:
 `Value
   (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), X)), u)
 # resolve_ref "X.constructor-Y"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"X\"".
 # resolve_ref "X.module-Y"
 - : ref =
 `Module
@@ -1048,7 +1057,7 @@ Unambiguous 2:
 `Value
   (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), X)), u)
 # resolve_ref "constructor:X.Y"
-Exception: Failure "resolve_reference".
+Exception: Failure "resolve_reference: Couldn't find \"X\"".
 # resolve_ref "module:X.Y"
 - : ref =
 `Module
