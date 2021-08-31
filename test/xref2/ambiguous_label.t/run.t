@@ -2,11 +2,16 @@ Labels don't follow OCaml's scoping rules:
 - No shadowing: There cannot be two identical labels.
 - No nesting: It is not possible to disambiguate labels by nesting them inside sections.
 
-  $ compile test.ml
+  $ compile test.ml test_2.ml
   File "test.ml", line 25, characters 4-36:
   Failed to resolve reference unresolvedroot(example_2) Couldn't find "example_2"
   File "test.ml", line 16, characters 4-50:
-  Reference to 'example' is ambiguous. Please specify its kind: section-example, section-example, section-example.
+  Reference to label 'example' is ambiguous.
+  This reference will point to the first occurence of 'example'.
+  Hint:
+    Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
+  File "test_2.ml", line 1, characters 4-55:
+  Failed to resolve reference unresolvedroot(Test).example Couldn't find "example"
 
 Contains some ambiguous labels:
 
@@ -37,6 +42,14 @@ The table of content should point to unique anchors:
      </ul>
     </nav>
 
+References should resolve to the first occurence of the ambiguous label. It is
+not possible to use the internal label name in references:
+
   $ odoc_print test.odocl | jq -c '.. | .["`Reference"]? | select(.)'
   [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}}},[{"`Word":"Should"},"`Space",{"`Word":"resolve"},"`Space",{"`Word":"to"},"`Space",{"`Word":"the"},"`Space",{"`Word":"first"},"`Space",{"`Word":"label"}]]
   [{"`Root":["example_2","`TUnknown"]},[{"`Word":"Shouldn't"},"`Space",{"`Word":"resolve"}]]
+
+A second module has a reference to the ambiguous label:
+
+  $ odoc_print test_2.odocl | jq -c '.. | .["`Reference"]? | select(.)'
+  [{"`Dot":[{"`Root":["Test","`TUnknown"]},"example"]},[{"`Word":"Should"},"`Space",{"`Word":"resolve"},"`Space",{"`Word":"to"},"`Space",{"`Word":"the"},"`Space",{"`Word":"first"},"`Space",{"`Word":"label"}]]

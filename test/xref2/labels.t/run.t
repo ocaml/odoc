@@ -3,9 +3,15 @@
   File "test.mli", line 27, characters 14-20:
   Failed to resolve reference unresolvedroot(M).C Couldn't find "C"
   File "test.mli", line 27, characters 9-13:
-  Reference to 'B' is ambiguous. Please specify its kind: section-B, section-B.
+  Reference to label 'B' is ambiguous.
+  This reference will point to the first occurence of 'B'.
+  Hint:
+    Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
   File "test.mli", line 18, characters 6-10:
-  Reference to 'B' is ambiguous. Please specify its kind: section-B, section-B, section-B.
+  Reference to label 'B' is ambiguous.
+  This reference will point to the first occurence of 'B'.
+  Hint:
+    Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
 
 Labels:
 Some are not in order because the 'doc' field appears after the rest in the output.
