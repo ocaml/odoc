@@ -55,7 +55,7 @@ module Reference = struct
     | `InstanceVariable (r, s) ->
         (* CR trefis: the following makes no sense to me... *)
         render_resolved (r :> t) ^ "." ^ InstanceVariableName.to_string s
-    | `Label (r, s) -> render_resolved (r :> t) ^ ":" ^ LabelName.to_string s
+    | `Label (_, s) -> LabelName.to_string s
 
   (* This is the entry point. stop_before is false on entry, true on recursive
      call. *)
