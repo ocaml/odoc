@@ -221,8 +221,8 @@ let add_label identifier heading env =
 let add_docs (docs : Odoc_model.Comment.docs) env =
   List.fold_left
     (fun env -> function
-      | { Odoc_model.Location_.value = `Heading (_, label, _); _ } as heading ->
-          add_label label heading env
+      | { Odoc_model.Location_.value = `Heading h; _ } as heading ->
+          add_label h.Odoc_model.Comment.heading_label heading env
       | _ -> env)
     env docs
 
@@ -233,11 +233,10 @@ let add_cdocs p (docs : Component.CComment.docs) env =
   List.fold_left
     (fun env element ->
       match element.Odoc_model.Location_.value with
-      | `Heading (lvl, `LLabel (name, _), nested_elements) ->
-          let label = `Label (Paths.Identifier.label_parent p, name) in
-          add_label label
-            { element with value = `Heading (lvl, label, nested_elements) }
-            env
+      | `Heading (`LLabel (name, _), heading) ->
+          let heading_label = `Label (Paths.Identifier.label_parent p, name) in
+          let heading = { heading with Odoc_model.Comment.heading_label } in
+          add_label heading_label { element with value = `Heading heading } env
       | _ -> env)
     env docs
 

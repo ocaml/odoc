@@ -25,3 +25,7 @@ let in_string s ~offset ~length s_span =
     start = point_in_string s offset s_span.start;
     end_ = point_in_string s (offset + length) s_span.start;
   }
+
+let pp_span_start fmt s =
+  Format.fprintf fmt "File \"%s\", line %d, character %d" s.file s.start.line
+    s.start.column

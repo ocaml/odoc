@@ -545,7 +545,10 @@ let rec resolve_label_parent_reference env r =
             List.fold_right
               (fun element l ->
                 match element.Odoc_model.Location_.value with
-                | `Heading (_, (`Label (_, name) as x), _nested_elements) ->
+                | `Heading h ->
+                    let (`Label (_, name) as x) =
+                      h.Odoc_model.Comment.heading_label
+                    in
                     (LabelName.to_string name, x) :: l
                 | _ -> l)
               p.Odoc_model.Lang.Page.content []

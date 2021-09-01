@@ -443,10 +443,7 @@ end =
 and CComment : sig
   type block_element =
     [ Odoc_model.Comment.nestable_block_element
-    | `Heading of
-      Odoc_model.Comment.heading_level
-      * Ident.label
-      * Odoc_model.Comment.link_content
+    | `Heading of Ident.label * Odoc_model.Comment.heading
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list
@@ -2380,8 +2377,7 @@ module Of_Lang = struct
       _ -> Odoc_model.Comment.block_element -> CComment.block_element =
    fun _ b ->
     match b with
-    | `Heading (l, id, content) ->
-        `Heading (l, Ident.Of_Identifier.label id, content)
+    | `Heading h -> `Heading (Ident.Of_Identifier.label h.heading_label, h)
     | `Tag t -> `Tag t
     | #Odoc_model.Comment.nestable_block_element as n -> n
 

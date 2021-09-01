@@ -7,23 +7,41 @@
   This reference will point to the first occurence of 'B'.
   Hint:
     Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
+  File "test.mli", line 21, characters 4-22:
+  Label 'B' is ambiguous. The other occurences are:
+    File "test.mli", line 21, character 4
+    File "test.mli", line 3, character 4
   File "test.mli", line 18, characters 6-10:
   Reference to label 'B' is ambiguous.
   This reference will point to the first occurence of 'B'.
   Hint:
     Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
+  File "test.mli", line 16, characters 6-38:
+  Label 'B' is ambiguous. The other occurences are:
+    File "test.mli", line 16, character 6
+    File "test.mli", line 21, character 4
+    File "test.mli", line 3, character 4
+  File "test.mli", line 10, characters 6-41:
+  Label 'B' is ambiguous. The other occurences are:
+    File "test.mli", line 10, character 6
+    File "test.mli", line 21, character 4
+    File "test.mli", line 3, character 4
+  File "test.mli", line 3, characters 4-24:
+  Label 'B' is ambiguous. The other occurences are:
+    File "test.mli", line 21, character 4
+    File "test.mli", line 3, character 4
 
 Labels:
 Some are not in order because the 'doc' field appears after the rest in the output.
 
-  $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.) | .[1]["`Label"]'
-  [{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]
-  [{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"D"]
-  [{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"B"]
-  [{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"C"]
-  [{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]},"B"]
-  [{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]
-  [{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]
+  $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.) | .["heading_label"]'
+  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}
+  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"D"]}
+  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"B"]}
+  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"C"]}
+  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]},"B"]}
+  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}
+  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]}
 
 References to the labels:
 We expect resolved references and the heading text filled in.

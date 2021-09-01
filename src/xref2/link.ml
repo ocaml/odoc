@@ -28,6 +28,27 @@ let synopsis_of_module env (m : Component.Module.t) =
       | Ok sg -> synopsis_from_comment (Component.extract_signature_doc sg)
       | Error _ -> None)
 
+let ambiguous_label_warning label_name labels =
+  let pp_label_loc fmt (`Label (_, x)) =
+    Location_.pp_span_start fmt (Location_.location x)
+  in
+  Lookup_failures.report_warning
+    "@[<2>Label '%s' is ambiguous. The other occurences are:@ %a@]" label_name
+    (Format.pp_print_list ~pp_sep:Format.pp_force_newline pp_label_loc)
+    labels
+
+(** Raise a warning when a label explicitly set by the user collides. This
+    warning triggers even if one of the colliding labels have been automatically
+    generated. *)
+let check_ambiguous_label env h =
+  if h.Comment.heading_label_explicit then
+    let (`Label (_, label_name)) = h.heading_label in
+    let label_name = Names.LabelName.to_string label_name in
+    match Env.lookup_by_name Env.s_label label_name env with
+    | Ok _ | Error `Not_found -> ()
+    | Error (`Ambiguous (hd, tl)) ->
+        ambiguous_label_warning label_name (hd :: tl)
+
 exception Loop
 
 let rec is_forward : Paths.Path.Module.t -> bool = function
@@ -142,10 +163,8 @@ let rec comment_inline_element :
             | [], `Identifier (#Id.Label.t as i) -> (
                 match Env.lookup_by_id Env.s_label i env with
                 | Some (`Label (_, lbl)) ->
-                    let (`Heading (_, _, elts)) =
-                      lbl.Odoc_model.Location_.value
-                    in
-                    elts
+                    let (`Heading h) = Location_.value lbl in
+                    h.heading_text
                 | None -> [])
             | content, _ -> content
           in
@@ -203,7 +222,9 @@ and comment_block_element env parent (x : Comment.block_element) =
   match x with
   | #Comment.nestable_block_element as x ->
       (comment_nestable_block_element env parent x :> Comment.block_element)
-  | `Heading _ as x -> x
+  | `Heading h as x ->
+      check_ambiguous_label env h;
+      x
   | `Tag _ as x -> x
 
 and with_location :

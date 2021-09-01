@@ -71,7 +71,13 @@ type heading_level =
 
 type attached_block_element = [ nestable_block_element | `Tag of tag ]
 
-type heading = heading_level * Identifier.Label.t * link_content
+type heading = {
+  heading_level : heading_level;
+  heading_label : Identifier.Label.t;
+  heading_label_explicit : bool;
+      (** Whether the label have been written by the user. *)
+  heading_text : link_content;
+}
 
 type block_element =
   [ nestable_block_element | `Heading of heading | `Tag of tag ]

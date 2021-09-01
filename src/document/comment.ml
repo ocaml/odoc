@@ -272,12 +272,12 @@ let attached_block_element : Comment.attached_block_element -> Block.t =
 
 let block_element : Comment.block_element -> Block.t = function
   | #Comment.attached_block_element as e -> attached_block_element e
-  | `Heading (_, `Label (_, _), content) ->
+  | `Heading { heading_text; _ } ->
       (* We are not supposed to receive Heading in this context.
          TODO: Remove heading in attached documentation in the model *)
-      [ block @@ Paragraph (non_link_inline_element_list content) ]
+      [ block @@ Paragraph (non_link_inline_element_list heading_text) ]
 
-let heading_level = function
+let heading_level_to_int = function
   | `Title -> 0
   | `Section -> 1
   | `Subsection -> 2
@@ -285,17 +285,18 @@ let heading_level = function
   | `Paragraph -> 4
   | `Subparagraph -> 5
 
-let heading (`Heading (level, `Label (_, label), content)) =
+let heading (h : Comment.heading) =
+  let (`Label (_, label)) = h.heading_label in
   let label = Odoc_model.Names.LabelName.to_string label in
-  let title = non_link_inline_element_list content in
-  let level = heading_level level in
+  let title = non_link_inline_element_list h.heading_text in
+  let level = heading_level_to_int h.heading_level in
   let label = Some label in
   Item.Heading { label; level; title }
 
 let item_element : Comment.block_element -> Item.t list = function
   | #Comment.attached_block_element as e ->
       [ Item.Text (attached_block_element e) ]
-  | `Heading _ as h -> [ heading h ]
+  | `Heading h -> [ heading h ]
 
 (** The documentation of the expansion is used if there is no comment attached
     to the declaration. *)
