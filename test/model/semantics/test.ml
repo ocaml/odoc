@@ -661,11 +661,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -680,11 +683,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subparagraph",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subparagraph",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -699,18 +705,24 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -733,11 +745,14 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Word": "foo" } ] },
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -752,18 +767,24 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Section",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Section",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Section",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Section",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": []
@@ -776,18 +797,24 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Section",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Section",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -802,25 +829,34 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsubsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsubsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Section",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Section",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "baz" ] },
-                [ { "`Word": "Baz" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "baz" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Baz" } ]
+              }
             }
           ],
           "warnings": []
@@ -833,11 +869,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Section",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Section",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -850,11 +889,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -869,18 +911,24 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -896,18 +944,24 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Section",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Section",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Section",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Section",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": []
@@ -920,25 +974,34 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Subparagraph",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subparagraph",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -955,18 +1018,24 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subparagraph",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subparagraph",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Subparagraph",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subparagraph",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -982,18 +1051,24 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subparagraph",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subparagraph",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Subparagraph",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subparagraph",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -1012,11 +1087,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -1029,11 +1107,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsubsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsubsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -1046,11 +1127,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Paragraph",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Paragraph",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -1063,11 +1147,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -1080,11 +1167,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -1099,11 +1189,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsubsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsubsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -1118,11 +1211,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -1135,11 +1231,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -1152,11 +1251,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -1171,11 +1273,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsubsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsubsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -1190,11 +1295,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -1207,11 +1315,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -1224,11 +1335,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-" ] },
-                [ { "`Word": "Foo" }, "`Space" ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" }, "`Space" ]
+              }
             }
           ],
           "warnings": [
@@ -1243,11 +1357,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Code_span": "foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Code_span": "foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -1260,11 +1377,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Code_span": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Code_span": "Foo" } ]
+              }
             }
           ],
           "warnings": []
@@ -1277,11 +1397,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "-foo-bar--baz---" ] },
-                [ { "`Code_span": " foo bar  baz  \t" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "-foo-bar--baz---" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Code_span": " foo bar  baz  \t" } ]
+              }
             }
           ],
           "warnings": []
@@ -1294,11 +1417,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar--baz" ] },
-                [ { "`Code_span": "foo\nbar\r\nbaz" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar--baz" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Code_span": "foo\nbar\r\nbaz" } ]
+              }
             }
           ],
           "warnings": []
@@ -1311,10 +1437,13 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar" ] },
-                [
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [
                   {
                     "`Styled": [
                       "`Emphasis",
@@ -1322,7 +1451,7 @@ let%expect_test _ =
                     ]
                   }
                 ]
-              ]
+              }
             }
           ],
           "warnings": []
@@ -1335,11 +1464,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar" ] },
-                [ { "`Word": "foo" }, "`Space", { "`Word": "bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "foo" }, "`Space", { "`Word": "bar" } ]
+              }
             }
           ],
           "warnings": []
@@ -1352,18 +1484,24 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ] },
-                []
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": []
+              }
             },
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             { "`Paragraph": [ { "`Word": "}" } ] }
           ],
@@ -1400,11 +1538,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             { "`Paragraph": [ { "`Word": "bar" } ] }
           ],
@@ -1421,11 +1562,14 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Word": "foo" }, "`Space" ] },
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -1440,11 +1584,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             { "`Paragraph": [ { "`Word": "bar" } ] }
           ],
@@ -1459,11 +1606,14 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Word": "foo" } ] },
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": []
@@ -1476,11 +1626,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "true",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": []
@@ -1493,11 +1646,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, ":foo-bar" ] },
-                [ { "`Word": ":foo" }, "`Space", { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, ":foo-bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": ":foo" }, "`Space", { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": []
@@ -1510,11 +1666,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar" ] },
-                [ { "`Word": "foo" }, "`Space", { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo-bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "foo" }, "`Space", { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -1529,11 +1688,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                []
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "true",
+                "heading_text": []
+              }
             }
           ],
           "warnings": [
@@ -1548,11 +1710,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                []
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "true",
+                "heading_text": []
+              }
             }
           ],
           "warnings": [
@@ -1590,11 +1755,14 @@ let%expect_test _ =
               ]
             },
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": []
@@ -1635,11 +1803,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subparagraph",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subparagraph",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -1654,11 +1825,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subparagraph",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subparagraph",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "true",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -1673,11 +1847,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -1692,11 +1869,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "true",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -1711,11 +1891,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Title",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Title",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -1730,11 +1913,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subparagraph",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subparagraph",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             }
           ],
           "warnings": [
@@ -1749,11 +1935,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ] },
-                [ { "`Styled": [ "`Emphasis", [] ] } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Styled": [ "`Emphasis", [] ] } ]
+              }
             }
           ],
           "warnings": [
@@ -1768,11 +1957,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ] },
-                [ { "`Styled": [ "`Emphasis", [] ] } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Styled": [ "`Emphasis", [] ] } ]
+              }
             }
           ],
           "warnings": [
@@ -1787,18 +1979,24 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": []
@@ -1811,18 +2009,24 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             {
-              "`Heading": [
-                "`Subsubsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsubsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": []
@@ -1997,11 +2201,14 @@ let%expect_test _ =
           "value": [
             { "`Tag": { "`Author": "Foo" } },
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ] },
-                [ { "`Word": "Bar" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "bar" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Bar" } ]
+              }
             }
           ],
           "warnings": [
@@ -2109,11 +2316,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ] },
-                []
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": []
+              }
             },
             { "`Tag": { "`Author": "Foo}" } }
           ],
@@ -2347,11 +2557,14 @@ let%expect_test _ =
         {
           "value": [
             {
-              "`Heading": [
-                "`Subsection",
-                { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ] },
-                [ { "`Word": "Foo" } ]
-              ]
+              "`Heading": {
+                "heading_level": "`Subsection",
+                "heading_label": {
+                  "`Label": [ { "`Page": [ "None", "f.ml" ] }, "foo" ]
+                },
+                "heading_label_explicit": "false",
+                "heading_text": [ { "`Word": "Foo" } ]
+              }
             },
             { "`Tag": { "`Author": "Bar" } }
           ],

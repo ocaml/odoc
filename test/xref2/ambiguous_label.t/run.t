@@ -15,13 +15,13 @@ Labels don't follow OCaml's scoping rules:
 
 Contains some ambiguous labels:
 
-  $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.)'
-  ["`Section",{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"section-1"]},[{"`Word":"Section"},"`Space",{"`Word":"1"}]]
-  ["`Subsection",{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]},[{"`Word":"Example"}]]
-  ["`Section",{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"section-2"]},[{"`Word":"Section"},"`Space",{"`Word":"2"}]]
-  ["`Subsection",{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]},[{"`Word":"Example"}]]
-  ["`Subsection",{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]},[{"`Word":"Example"}]]
-  ["`Subsection",{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example_3"]},[{"`Word":"Example_3"}]]
+  $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.) | .["heading_label"]'
+  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"section-1"]}
+  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}
+  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"section-2"]}
+  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}
+  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}
+  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example_3"]}
 
   $ odoc html-generate --indent -o html test.odocl
 

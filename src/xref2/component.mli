@@ -413,10 +413,7 @@ end
 and CComment : sig
   type block_element =
     [ Odoc_model.Comment.nestable_block_element
-    | `Heading of
-      Odoc_model.Comment.heading_level
-      * Ident.label
-      * Odoc_model.Comment.link_content
+    | `Heading of Ident.label * Odoc_model.Comment.heading
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list

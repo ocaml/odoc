@@ -23,7 +23,7 @@ type general_block_element =
   | `Modules of Comment.module_reference list
   | `List of
     [ `Unordered | `Ordered ] * general_block_element with_location list list
-  | `Heading of heading_level * Paths.Identifier.Label.t * general_link_content
+  | `Heading of Comment.heading
   | `Tag of general_tag ]
 
 and general_tag =
@@ -70,7 +70,7 @@ let module_reference =
   in
   Indirect (simplify, Pair (reference, Option link_content))
 
-let rec block_element : general_block_element t =
+let heading =
   let heading_level =
     Variant
       (function
@@ -81,6 +81,18 @@ let rec block_element : general_block_element t =
       | `Paragraph -> C0 "`Paragraph"
       | `Subparagraph -> C0 "`Subparagraph")
   in
+  Record
+    [
+      F ("heading_level", (fun h -> h.heading_level), heading_level);
+      F ("heading_label", (fun h -> h.heading_label), identifier);
+      F ("heading_label_explicit", (fun h -> h.heading_label_explicit), bool);
+      F
+        ( "heading_text",
+          (fun h -> (h.heading_text :> general_link_content)),
+          link_content );
+    ]
+
+let rec block_element : general_block_element t =
   let list_kind =
     Variant
       (function `Unordered -> C0 "`Unordered" | `Ordered -> C0 "`Ordered")
@@ -98,11 +110,7 @@ let rec block_element : general_block_element t =
     | `Modules x -> C ("`Modules", x, List module_reference)
     | `List (x1, x2) ->
         C ("`List", (x1, (x2 :> general_docs list)), Pair (list_kind, List docs))
-    | `Heading (x1, x2, x3) ->
-        C
-          ( "`Heading",
-            (x1, x2, x3),
-            Triple (heading_level, identifier, link_content) )
+    | `Heading h -> C ("`Heading", h, heading)
     | `Tag x -> C ("`Tag", x, tag))
 
 and tag : general_tag t =

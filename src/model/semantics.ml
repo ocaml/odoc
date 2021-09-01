@@ -326,38 +326,51 @@ let section_heading :
  fun status ~top_heading_level location heading ->
   let (`Heading (level, label, content)) = heading in
 
-  let content =
+  let heading_text =
     non_link_inline_elements status
       ~surrounding:(heading :> surrounding)
       content
   in
 
-  let label =
+  let heading_label_explicit, label =
     match label with
-    | Some label -> label
-    | None -> generate_heading_label content
+    | Some label -> (true, label)
+    | None -> (false, generate_heading_label heading_text)
   in
-  let label =
+  let heading_label =
     `Label (status.parent_of_sections, Names.LabelName.make_std label)
+  in
+
+  let mk_heading heading_level =
+    let heading =
+      {
+        Comment.heading_level;
+        heading_label;
+        heading_label_explicit;
+        heading_text;
+      }
+    in
+    let element = Location.at location (`Heading heading) in
+    let top_heading_level =
+      match top_heading_level with None -> Some level | some -> some
+    in
+    (top_heading_level, element)
   in
 
   match (status.sections_allowed, level) with
   | `None, _any_level ->
       Error.raise_warning (headings_not_allowed location);
-      let content = (content :> Comment.inline_element with_location list) in
+      let heading_text =
+        (heading_text :> Comment.inline_element with_location list)
+      in
       let element =
         Location.at location
-          (`Paragraph [ Location.at location (`Styled (`Bold, content)) ])
+          (`Paragraph [ Location.at location (`Styled (`Bold, heading_text)) ])
       in
       (top_heading_level, element)
   | `No_titles, 0 ->
       Error.raise_warning (titles_not_allowed location);
-      let element = `Heading (`Title, label, content) in
-      let element = Location.at location element in
-      let top_heading_level =
-        match top_heading_level with None -> Some level | some -> some
-      in
-      (top_heading_level, element)
+      mk_heading `Title
   | _, level ->
       let level' =
         match level with
@@ -380,12 +393,7 @@ let section_heading :
             (heading_level_should_be_lower_than_top_level level top_level
                location)
       | _ -> ());
-      let element = `Heading (level', label, content) in
-      let element = Location.at location element in
-      let top_heading_level =
-        match top_heading_level with None -> Some level | some -> some
-      in
-      (top_heading_level, element)
+      mk_heading level'
 
 let validate_first_page_heading status ast_element =
   match status.parent_of_sections with

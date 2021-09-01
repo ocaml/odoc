@@ -838,8 +838,7 @@ module Make (Syntax : SYNTAX) = struct
         | [] -> List.rev acc
         | element :: input_comment -> (
             match element.Location.value with
-            | `Heading (level, label, content) ->
-                let h = `Heading (level, label, content) in
+            | `Heading h ->
                 let item = Comment.heading h in
                 loop input_comment (item :: acc)
             | _ ->
