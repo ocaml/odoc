@@ -415,7 +415,8 @@ let env_of_items parent items env =
 
     | `Module (t, is_hidden_item) :: rest ->
       let name = Ident.name t in
-      let is_hidden = is_hidden_item || module_name_exists name rest in
+      let double_underscore = Odoc_model.Root.contains_double_underscore name in
+      let is_hidden = is_hidden_item || module_name_exists name rest || double_underscore in
       let identifier, hidden =
         if is_hidden 
         then `Module(parent, ModuleName.internal_of_string name), t :: env.hidden

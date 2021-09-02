@@ -1778,11 +1778,11 @@ With odoc, everything should be resolved (and linked) but only toplevel units wi
 .sp 
 \f[CB]module\fR CanonicalTest : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .sp 
-\f[CB]val\fR test : \f[CB]'a\fR CanonicalTest\.Base\.List\.t \f[CB]\->\fR unit
+\f[CB]val\fR test : \f[CB]'a\fR CanonicalTest\.Base__\.List\.t \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
-Some ref to \f[CI]CanonicalTest\.Base__Tests\.C\.t\fR and \f[CI]CanonicalTest\.Base__Tests\.L\.id\fR\. But also to \f[CI]CanonicalTest\.Base__\.List\fR and \f[CI]CanonicalTest\.Base__\.List\.t\fR
+Some ref to CanonicalTest\.Base__Tests\.C\.t and CanonicalTest\.Base__Tests\.L\.id\. But also to CanonicalTest\.Base__\.List and CanonicalTest\.Base__\.List\.t
 .nf 
 .sp 
 .in 3
