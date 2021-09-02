@@ -1811,7 +1811,7 @@ But also to things in submodules:
 .sp 
 \(bu {!section:SuperSig\.SubSigA\.subSig} : SuperSig\.SubSigA\.subSig
 .br 
-\(bu {!Aliases\.incl} : \f[CI]Aliases:incl\fR
+\(bu {!Aliases\.incl} : \f[CI]incl\fR
 .sp 
 And just to make sure we do not mess up:
 .sp 
