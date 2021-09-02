@@ -14,18 +14,6 @@ Let's imitate jst's layout\.
 .SH Documentation
 .sp 
 .nf 
-\f[CB]module\fR Foo__A : \f[CB]sig\fR \.\.\. \f[CB]end\fR
-.sp 
-\f[CB]module\fR Foo__B : \f[CB]sig\fR \.\.\. \f[CB]end\fR
-.sp 
-\f[CB]module\fR Foo__C : \f[CB]sig\fR \.\.\. \f[CB]end\fR
-.sp 
-\f[CB]module\fR Foo__D : \f[CB]sig\fR \.\.\. \f[CB]end\fR
-.sp 
-\f[CB]module\fR Foo__E : \f[CB]sig\fR \.\.\. \f[CB]end\fR
-.sp 
-\f[CB]module\fR Foo__ : \f[CB]sig\fR \.\.\. \f[CB]end\fR
-.sp 
 \f[CB]module\fR Foo : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .sp 
 \f[CB]module\fR A' = Foo\.A

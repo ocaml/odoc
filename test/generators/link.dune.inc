@@ -464,7 +464,7 @@
 (subdir
  html
  (rule
-  (targets Alias.html.gen Alias-Foo__X.html.gen Alias-X.html.gen)
+  (targets Alias.html.gen Alias-X.html.gen)
   (action
    (run
     odoc
@@ -480,10 +480,6 @@
   (alias runtest)
   (action
    (diff Alias.html Alias.html.gen)))
- (rule
-  (alias runtest)
-  (action
-   (diff Alias-Foo__X.html Alias-Foo__X.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -531,17 +527,13 @@
 (subdir
  man
  (rule
-  (targets Alias.3o.gen Alias.Foo__X.3o.gen Alias.X.3o.gen)
+  (targets Alias.3o.gen Alias.X.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../alias.odocl})))
  (rule
   (alias runtest)
   (action
    (diff Alias.3o Alias.3o.gen)))
- (rule
-  (alias runtest)
-  (action
-   (diff Alias.Foo__X.3o Alias.Foo__X.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -2886,20 +2878,10 @@
    Ocamlary-IncludeInclude1-module-type-IncludeInclude2.html.gen
    Ocamlary-module-type-IncludeInclude2.html.gen
    Ocamlary-CanonicalTest.html.gen
-   Ocamlary-CanonicalTest-Base__List.html.gen
-   Ocamlary-CanonicalTest-Base__.html.gen
    Ocamlary-CanonicalTest-Base.html.gen
    Ocamlary-CanonicalTest-Base-List.html.gen
-   Ocamlary-CanonicalTest-Base__Tests.html.gen
-   Ocamlary-CanonicalTest-Base__Tests-C.html.gen
    Ocamlary-CanonicalTest-List_modif.html.gen
    Ocamlary-Aliases.html.gen
-   Ocamlary-Aliases-Foo__A.html.gen
-   Ocamlary-Aliases-Foo__B.html.gen
-   Ocamlary-Aliases-Foo__C.html.gen
-   Ocamlary-Aliases-Foo__D.html.gen
-   Ocamlary-Aliases-Foo__E.html.gen
-   Ocamlary-Aliases-Foo__.html.gen
    Ocamlary-Aliases-Foo.html.gen
    Ocamlary-Aliases-Foo-A.html.gen
    Ocamlary-Aliases-Foo-B.html.gen
@@ -4083,22 +4065,6 @@
   (alias runtest)
   (action
    (diff
-    Ocamlary-CanonicalTest-Base__List.html
-    Ocamlary-CanonicalTest-Base__List.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff
-    Ocamlary-CanonicalTest-Base__.html
-    Ocamlary-CanonicalTest-Base__.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff
     Ocamlary-CanonicalTest-Base.html
     Ocamlary-CanonicalTest-Base.html.gen))
   (enabled_if
@@ -4115,22 +4081,6 @@
   (alias runtest)
   (action
    (diff
-    Ocamlary-CanonicalTest-Base__Tests.html
-    Ocamlary-CanonicalTest-Base__Tests.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff
-    Ocamlary-CanonicalTest-Base__Tests-C.html
-    Ocamlary-CanonicalTest-Base__Tests-C.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff
     Ocamlary-CanonicalTest-List_modif.html
     Ocamlary-CanonicalTest-List_modif.html.gen))
   (enabled_if
@@ -4139,42 +4089,6 @@
   (alias runtest)
   (action
    (diff Ocamlary-Aliases.html Ocamlary-Aliases.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary-Aliases-Foo__A.html Ocamlary-Aliases-Foo__A.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary-Aliases-Foo__B.html Ocamlary-Aliases-Foo__B.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary-Aliases-Foo__C.html Ocamlary-Aliases-Foo__C.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary-Aliases-Foo__D.html Ocamlary-Aliases-Foo__D.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary-Aliases-Foo__E.html Ocamlary-Aliases-Foo__E.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary-Aliases-Foo__.html Ocamlary-Aliases-Foo__.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -4546,20 +4460,10 @@
    Ocamlary.DoubleInclude3.DoubleInclude2.3o.gen
    Ocamlary.IncludeInclude1.3o.gen
    Ocamlary.CanonicalTest.3o.gen
-   Ocamlary.CanonicalTest.Base__List.3o.gen
-   Ocamlary.CanonicalTest.Base__.3o.gen
    Ocamlary.CanonicalTest.Base.3o.gen
    Ocamlary.CanonicalTest.Base.List.3o.gen
-   Ocamlary.CanonicalTest.Base__Tests.3o.gen
-   Ocamlary.CanonicalTest.Base__Tests.C.3o.gen
    Ocamlary.CanonicalTest.List_modif.3o.gen
    Ocamlary.Aliases.3o.gen
-   Ocamlary.Aliases.Foo__A.3o.gen
-   Ocamlary.Aliases.Foo__B.3o.gen
-   Ocamlary.Aliases.Foo__C.3o.gen
-   Ocamlary.Aliases.Foo__D.3o.gen
-   Ocamlary.Aliases.Foo__E.3o.gen
-   Ocamlary.Aliases.Foo__.3o.gen
    Ocamlary.Aliases.Foo.3o.gen
    Ocamlary.Aliases.Foo.A.3o.gen
    Ocamlary.Aliases.Foo.B.3o.gen
@@ -4942,22 +4846,6 @@
  (rule
   (alias runtest)
   (action
-   (diff
-    Ocamlary.CanonicalTest.Base__List.3o
-    Ocamlary.CanonicalTest.Base__List.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff
-    Ocamlary.CanonicalTest.Base__.3o
-    Ocamlary.CanonicalTest.Base__.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
    (diff Ocamlary.CanonicalTest.Base.3o Ocamlary.CanonicalTest.Base.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
@@ -4973,22 +4861,6 @@
   (alias runtest)
   (action
    (diff
-    Ocamlary.CanonicalTest.Base__Tests.3o
-    Ocamlary.CanonicalTest.Base__Tests.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff
-    Ocamlary.CanonicalTest.Base__Tests.C.3o
-    Ocamlary.CanonicalTest.Base__Tests.C.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff
     Ocamlary.CanonicalTest.List_modif.3o
     Ocamlary.CanonicalTest.List_modif.3o.gen))
   (enabled_if
@@ -4997,42 +4869,6 @@
   (alias runtest)
   (action
    (diff Ocamlary.Aliases.3o Ocamlary.Aliases.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary.Aliases.Foo__A.3o Ocamlary.Aliases.Foo__A.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary.Aliases.Foo__B.3o Ocamlary.Aliases.Foo__B.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary.Aliases.Foo__C.3o Ocamlary.Aliases.Foo__C.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary.Aliases.Foo__D.3o Ocamlary.Aliases.Foo__D.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary.Aliases.Foo__E.3o Ocamlary.Aliases.Foo__E.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff Ocamlary.Aliases.Foo__.3o Ocamlary.Aliases.Foo__.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
