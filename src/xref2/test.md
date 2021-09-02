@@ -1500,8 +1500,10 @@ Some
    (`Resolved
       (`Type
          (`Hidden
-            (`Identifier
-               (`Module (`Root (Some (`Page (None, None)), Root), Hidden__))),
+            (`Hidden
+               (`Identifier
+                  (`Module
+                     (`Root (Some (`Page (None, None)), Root), {Hidden__}1)))),
           t)),
    []))
 ```
@@ -1758,7 +1760,7 @@ let m_e_i_s_value mod_name n val_name =
  type_ =
   Odoc_model.Lang.TypeExpr.Constr
    (`Identifier
-      (`Type (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}2),
+      (`Type (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}3),
        false),
    []);
  value = Odoc_model.Lang.Value.Abstract}
@@ -1797,7 +1799,7 @@ let sg = Common.signature_of_mli_string test_data;;
 {Odoc_model.Lang.Signature.items =
   [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
     {Odoc_model.Lang.TypeDecl.id =
-      `Type (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}3);
+      `Type (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}4);
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1820,7 +1822,7 @@ let sg = Common.signature_of_mli_string test_data;;
       Odoc_model.Lang.TypeExpr.Constr
        (`Identifier
           (`Type
-             (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}3),
+             (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}4),
            false),
        []);
      value = Odoc_model.Lang.Value.Abstract}];
@@ -1830,7 +1832,7 @@ let sg = Common.signature_of_mli_string test_data;;
 {Odoc_model.Lang.Signature.items =
   [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
     {Odoc_model.Lang.TypeDecl.id =
-      `Type (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}4);
+      `Type (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}5);
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1853,7 +1855,7 @@ let sg = Common.signature_of_mli_string test_data;;
       Odoc_model.Lang.TypeExpr.Constr
        (`Identifier
           (`Type
-             (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}4),
+             (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}5),
            false),
        []);
      value = Odoc_model.Lang.Value.Abstract}];
@@ -1895,7 +1897,7 @@ let sg = Common.signature_of_mli_string test_data;;
 {Odoc_model.Lang.Signature.items =
   [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
     {Odoc_model.Lang.TypeDecl.id =
-      `Type (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}5);
+      `Type (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}6);
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1912,7 +1914,7 @@ let sg = Common.signature_of_mli_string test_data;;
      representation = None});
    Odoc_model.Lang.Signature.Value
     {Odoc_model.Lang.Value.id =
-      `Value (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {x}6);
+      `Value (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {x}7);
      doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr (`Identifier (`CoreType int, false),
@@ -1926,7 +1928,7 @@ let sg = Common.signature_of_mli_string test_data;;
       Odoc_model.Lang.TypeExpr.Constr
        (`Identifier
           (`Type
-             (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}5),
+             (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {t}6),
            false),
        []);
      value = Odoc_model.Lang.Value.Abstract}];
@@ -1968,7 +1970,7 @@ let sg = Common.signature_of_mli_string test_data;;
   [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
     {Odoc_model.Lang.Module.id =
       `Module
-        (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {Bar}8);
+        (`Module (`Root (Some (`Page (None, None)), Root), Foo3), {Bar}9);
      doc = [];
      type_ =
       Odoc_model.Lang.Module.Alias
@@ -1988,7 +1990,7 @@ let sg = Common.signature_of_mli_string test_data;;
           (`Identifier
              (`Module
                 (`Module (`Root (Some (`Page (None, None)), Root), Foo3),
-                 {Bar}8),
+                 {Bar}9),
               true),
            "t"),
        []);
