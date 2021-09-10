@@ -580,20 +580,7 @@ and u_module_type_expr :
           | None -> subs
         in
         let result : ModuleType.U.expr = With (subs', expr') in
-        match expr' with
-        | Signature _ -> (
-            (* Explicitly handle 'sig ... end with ...' - replace with a plain signature.
-               See equivalent in [module_type_expr] *)
-            let cu =
-              Component.Of_Lang.(u_module_type_expr empty (With (subs, expr')))
-            in
-            let expansion =
-              Expand_tools.aux_expansion_of_u_module_type_expr env cu
-            in
-            match expansion with
-            | Ok sg -> Signature Lang_of.(signature id empty sg)
-            | _ -> result)
-        | _ -> result)
+        result)
     | TypeOf { t_desc; t_expansion } ->
         let t_desc =
           match t_desc with
@@ -634,17 +621,11 @@ and module_type_expr :
   | With { w_substitutions; w_expansion; w_expr } as e -> (
       let w_expansion = get_expansion w_expansion e in
       let w_expr = u_module_type_expr env id w_expr in
-      match (w_expr, w_expansion) with
-      | Signature _, Some (Signature sg) ->
-          (* Explicitly handle 'sig ... end with ...' - replace with a plain signature.
-             See equivalent in [u_module_type_expr] *)
-          Signature sg
-      | _, _ -> (
-          let cexpr = Component.Of_Lang.(u_module_type_expr empty w_expr) in
-          let subs' = module_type_map_subs env id cexpr w_substitutions in
-          match subs' with
-          | None -> With { w_substitutions; w_expansion; w_expr }
-          | Some s -> With { w_substitutions = s; w_expansion; w_expr }))
+      let cexpr = Component.Of_Lang.(u_module_type_expr empty w_expr) in
+      let subs' = module_type_map_subs env id cexpr w_substitutions in
+      match subs' with
+      | None -> With { w_substitutions; w_expansion; w_expr }
+      | Some s -> With { w_substitutions = s; w_expansion; w_expr })
   | Functor (param, res) ->
       let param' = functor_parameter env param in
       let env' = Env.add_functor_parameter param env in

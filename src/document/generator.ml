@@ -1430,14 +1430,22 @@ module Make (Syntax : SYNTAX) = struct
           ++ Link.from_path (m :> Paths.Path.t)
           ++ O.txt " " ++ O.keyword "end"
 
+    and is_elidable_with_u : Odoc_model.Lang.ModuleType.U.expr -> bool = function
+      | Path _ -> false
+      | Signature _ -> true
+      | With (_, expr) -> is_elidable_with_u expr
+      | TypeOf _ -> false
+
     and umty : Odoc_model.Lang.ModuleType.U.expr -> text =
      fun m ->
       match m with
       | Path p -> Link.from_path (p :> Paths.Path.t)
+      | Signature _ ->
+        Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
+      | With (_, expr) when is_elidable_with_u expr ->
+        Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       | With (subs, expr) -> mty_with subs expr
       | TypeOf { t_desc; _ } -> mty_typeof t_desc
-      | Signature _ ->
-          Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
 
     and mty : Odoc_model.Lang.ModuleType.expr -> text =
      fun m ->
@@ -1470,6 +1478,8 @@ module Make (Syntax : SYNTAX) = struct
                  ++ mty arg_expr ++ O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow
                  )
             ++ O.txt " " ++ mty expr
+        | With { w_expr ; _ } when is_elidable_with_u w_expr ->
+          Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
         | With { w_substitutions; w_expr; _ } -> mty_with w_substitutions w_expr
         | TypeOf { t_desc; _ } -> mty_typeof t_desc
         | Signature _ ->
