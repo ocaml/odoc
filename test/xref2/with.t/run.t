@@ -44,10 +44,10 @@ Let's check which module type `.content.Module.items[0].ModuleType` refers to:
     ]
   }
 
-And it ought to be a simple Signature after compiling and linking.
+And it ought to still be a With after compiling and linking.
 
   $ odoc_print test.odocl | jq '.content.Module.items[0].ModuleType.expr.Some | keys'
   [
-    "Signature"
+    "With"
   ]
 
