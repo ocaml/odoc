@@ -189,6 +189,14 @@ let dep_libraries = [
     "biniou";
     "fmt";
     "odoc-parser";
+    "base";
+    "core_kernel";
+    "bin_prot";
+    "sexplib";
+    "sexplib0";
+    "base_quickcheck";
+    "ppx_sexp_conv";
+    "ppx_hash";
 ];;
 
 let odoc_libraries = [
