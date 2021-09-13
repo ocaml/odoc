@@ -29,3 +29,42 @@ Binary data format designed for speed, safety, ease of use and backward compatib
 
 {2 Odoc-parser}
 {!module-Odoc_parser} is the parser library used
+
+{2 Base}
+{!module-Base}
+{!module-Base_internalhash_types}
+{!module-Caml}
+{!module-Md5_lib}
+{!module-Shadow_stdlib}
+
+{2 Base_quickcheck}
+{!module-Base_quickcheck}
+{!module-Ppx_quickcheck}
+{!module-Ppx_quickcheck_expander}
+
+{2 Fmt}
+{!module-Fmt}
+{!module-Fmt_cli}
+{!module-Fmt_tty}
+
+{2 Ppx_hash}
+{!module-Ppx_hash}
+{!module-Ppx_hash_expander}
+{!module-Ppx_hash_lib}
+
+{2 Ppx_sexp_conv}
+{!module-Ppx_sexp_conv}
+{!module-Ppx_sexp_conv_lib}
+{!module-Ppx_sexp_conv_expander}
+
+{2 Sexplib}
+{!module-Sexplib}
+{!module-Sexplib_num}
+{!module-Sexplib_unix}
+
+{2 Sexplib0}
+{!module-Sexplib0}
+
+{2 Core_kernel}
+{!page-core_kernel}
+
