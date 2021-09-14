@@ -23,17 +23,14 @@ type type_lookup_result =
   | `C of class_lookup_result
   | `CT of class_type_lookup_result ]
 
-(* type value_lookup_result = Resolved.Value.t *)
-
 type label_parent_lookup_result =
   [ `S of signature_lookup_result
   | type_lookup_result
   | `Page of Resolved.Page.t * (string * Identifier.Label.t) list ]
 
-(* type class_signature_lookup_result = *)
-(*   Resolved.ClassSignature.t * Component.ClassSignature.t *)
-
-type 'a ref_result = ('a, Errors.Tools_error.reference_lookup_error) Result.result
+type 'a ref_result =
+  ('a, Errors.Tools_error.reference_lookup_error) Result.result
+(** The result type for every functions in this module. *)
 
 let kind_of_find_result = function
   | `S _ -> `S
@@ -57,28 +54,6 @@ let class_lookup_result_of_type : type_lookup_result -> _ = function
 let class_type_lookup_result_of_type : type_lookup_result -> _ = function
   | `CT r -> Ok r
   | r -> wrong_kind_error [ `CT ] r
-
-module Hashable = struct
-  type t = bool * Resolved.Signature.t
-
-  let equal = ( = )
-
-  let hash = Hashtbl.hash
-end
-
-module Memos1 = Hashtbl.Make (Hashable)
-
-(*  let memo = Memos1.create 91*)
-
-module Hashable2 = struct
-  type t = bool * Signature.t
-
-  let equal = ( = )
-
-  let hash = Hashtbl.hash
-end
-
-module Memos2 = Hashtbl.Make (Hashable2)
 
 let ref_kind_of_element = function
   | `Module _ -> "module"
@@ -252,9 +227,9 @@ module CL = struct
 end
 
 module CT = struct
-  (* type t = class_type_lookup_result *)
+  type t = class_type_lookup_result
 
-  let of_element _env (`ClassType (id, t)) : class_type_lookup_result =
+  let of_element _env (`ClassType (id, t)) : t =
     ((`Identifier id :> Resolved.ClassType.t), t)
 
   let in_env env name =
@@ -311,9 +286,9 @@ end
 module V = struct
   (** Value *)
 
-  (* type t = value_lookup_result *)
+  type t = Resolved.Value.t
 
-  let in_env env name =
+  let in_env env name : t ref_result =
     env_lookup_by_name Env.s_value name env >>= fun (`Value (id, _x)) ->
     Ok (`Identifier id)
 
@@ -327,9 +302,9 @@ end
 module L = struct
   (** Label *)
 
-  (* type t = Resolved.Label.t *)
+  type t = Resolved.Label.t
 
-  let in_env env name =
+  let in_env env name : t ref_result =
     env_lookup_by_name Env.s_label name env >>= fun (`Label id) ->
     Ok (`Identifier id)
 
@@ -374,9 +349,9 @@ end
 module EX = struct
   (** Exception *)
 
-  (* type t = Resolved.Exception.t *)
+  type t = Resolved.Exception.t
 
-  let in_env env name =
+  let in_env env name : t ref_result =
     env_lookup_by_name Env.s_exception name env >>= fun (`Exception (id, _)) ->
     Ok (`Identifier id)
 
@@ -390,8 +365,9 @@ module EX = struct
 end
 
 module CS = struct
-  type t = Resolved.Constructor.t
   (** Constructor *)
+
+  type t = Resolved.Constructor.t
 
   let in_env env name =
     env_lookup_by_name Env.s_constructor name env
@@ -445,10 +421,10 @@ end
 module MM = struct
   (** Method *)
 
-  (* type t = Resolved.Method.t *)
+  type t = Resolved.Method.t
 
   (* TODO: Resolve methods in env *)
-  let in_env _env name = Error (`Lookup_by_name (`Any, name))
+  let in_env _env name : t ref_result = Error (`Lookup_by_name (`Any, name))
 
   let in_class_signature _env (parent', cs) name =
     find Find.method_in_class_signature cs (MethodName.to_string name)
@@ -458,11 +434,12 @@ module MM = struct
 end
 
 module MV = struct
-  (* type t = Resolved.InstanceVariable.t *)
   (** Instance variable *)
 
+  type t = Resolved.InstanceVariable.t
+
   (* TODO: Resolve instance variables in env *)
-  let in_env _env name = Error (`Lookup_by_name (`Any, name))
+  let in_env _env name : t ref_result = Error (`Lookup_by_name (`Any, name))
 
   let in_class_signature _env (parent', cs) name =
     find Find.instance_variable_in_class_signature cs
@@ -475,9 +452,9 @@ end
 module LP = struct
   (** Label parent *)
 
-  (* type t = label_parent_lookup_result *)
+  type t = label_parent_lookup_result
 
-  let of_element env = function
+  let of_element env : _ -> t ref_result = function
     | `Module _ as e ->
         M.of_element env e |> module_lookup_to_signature_lookup env >>= fun r ->
         Ok (`S r)
