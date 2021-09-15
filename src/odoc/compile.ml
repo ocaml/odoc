@@ -152,6 +152,13 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
     | `Root (n, `TUnknown) | `Root (n, `TPage) -> root_name = n
     | _ -> false
   in
+  let _ =
+    match (parent_spec, root_name) with
+    | Explicit _, "index" ->
+        Format.eprintf
+          "Warning: Potential name clash - child page named 'index'\n%!"
+    | _ -> ()
+  in
   let name =
     let check parents_children v =
       if List.exists check_child parents_children then Ok v

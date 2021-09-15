@@ -70,37 +70,49 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
     let parents =
       get_parents (List.rev (Odoc_document.Url.Path.to_list url)) |> List.rev
     in
-    let has_parent = List.length parents > 1 in
     let href page =
       Link.href ~resolve:(Current url) (Odoc_document.Url.from_path page)
     in
-    if has_parent then
-      let up_url = List.hd (List.tl (List.rev parents)) in
-      let l =
+    match parents with
+    | [] -> [] (* Can't happen - Url.Path.to_list returns a non-empty list *)
+    | [ _ ] -> [] (* No parents *)
+    | [ x; { name = "index"; _ } ] ->
+        (* Special case leaf pages called 'index' with one parent. This is for files called
+           index.mld that would otherwise clash with their parent. In particular,
+           dune and odig both cause this situation right now. *)
+        let up_url = "../index.html" in
+        let parent_name = x.name in
         [
-          Html.a ~a:[ Html.a_href (href up_url) ] [ Html.txt "Up" ];
-          Html.txt " – ";
+          Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ];
+          Html.txt " - ";
+          Html.txt parent_name;
         ]
-        @
-        (* Create breadcrumbs *)
-        let space = Html.txt " " in
-        parents
-        |> Utils.list_concat_map
-             ?sep:(Some [ space; Html.entity "#x00BB"; space ])
-             ~f:(fun url' ->
-               [
+    | _ ->
+        let up_url = List.hd (List.tl (List.rev parents)) in
+        let l =
+          [
+            Html.a ~a:[ Html.a_href (href up_url) ] [ Html.txt "Up" ];
+            Html.txt " – ";
+          ]
+          @
+          (* Create breadcrumbs *)
+          let space = Html.txt " " in
+          parents
+          |> Utils.list_concat_map
+               ?sep:(Some [ space; Html.entity "#x00BB"; space ])
+               ~f:(fun url' ->
                  [
-                   (if url = url' then Html.txt url.name
-                   else
-                     Html.a
-                       ~a:[ Html.a_href (href url') ]
-                       [ Html.txt url'.name ]);
-                 ];
-               ])
-        |> List.flatten
-      in
-      [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] l ]
-    else []
+                   [
+                     (if url = url' then Html.txt url.name
+                     else
+                       Html.a
+                         ~a:[ Html.a_href (href url') ]
+                         [ Html.txt url'.name ]);
+                   ];
+                 ])
+          |> List.flatten
+        in
+        [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] l ]
   in
 
   let body =
