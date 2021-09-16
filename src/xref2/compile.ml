@@ -607,6 +607,7 @@ and module_type_expr :
         | Ok (_, _, ce) ->
             let e = Lang_of.simple_expansion Lang_of.empty id ce in
             Some (simple_expansion env id e)
+        | Error `OpaqueModule -> None
         | Error e ->
             Errors.report ~what:(`Module_type_expr ce) ~tools_error:e `Expand;
             None)
