@@ -318,7 +318,7 @@ As with the addition of equations above, these substitutions may be on
 deeply nested modules, and care needs to be taken to ensure that there are
 no references to the removed module or type left. For example,
 
-```ocaml
+{[
 module type S = sig
   module M: sig type t end
 
@@ -326,30 +326,30 @@ module type S = sig
 end
 
 module type T = S with type M.t := int
-```
+]}
 
-The expansion of `T` internally is different from what is rendered.
+The expansion of [T] internally is different from what is rendered.
 Internally, it becomes:
 
-```ocaml
+{[
 module M: sig type t end with type t := int
 
 type t = M.t
-```
+]}
 
 From this expansion it is still clear how to resolve the right-hand side
-of `type t = M.t`, and the next phase of odoc's transformation turns the
-right-hand side of `M.t` into `int`.
+of [type t = M.t], and the next phase of odoc's transformation turns the
+right-hand side of [M.t] into [int].
 
 In the output documentation, the declaration of `module M` is rendered
 simply as
 
-```ocaml
+{[
 module M : sig ... end
-```
+]}
 
 with the type substitution dropped. This is because the type substitition on
-the simple signature is not useful to know to the reader; the link `t` would
+the simple signature is not useful to know to the reader; the link [t] would
 have no destination. This example is rendered {{!Odoc_examples.Expansion.TypeSubstitution}here}.
 
 
