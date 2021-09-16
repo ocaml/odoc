@@ -1235,10 +1235,10 @@ and signature_of_module_type_expr :
   | Component.ModuleType.Signature s -> Ok s
   (* | Component.ModuleType.With { w_expansion = Some e; _ } ->
       Ok (signature_of_simple_expansion e)
-      
+
       Recalculate 'With' expressions always, as we need to know which
-      items have been removed 
-      *)
+      items have been removed
+  *)
   | Component.ModuleType.With { w_substitutions; w_expr; _ } ->
       signature_of_u_module_type_expr ~mark_substituted env w_expr >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg w_substitutions

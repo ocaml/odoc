@@ -571,7 +571,7 @@ and u_module_type_expr :
   let rec inner : U.expr -> U.expr = function
     | Signature s -> Signature s
     | Path p -> Path (module_type_path env p)
-    | With (subs, expr) -> (
+    | With (subs, expr) ->
         let expr' = inner expr in
         let cexpr = Component.Of_Lang.(u_module_type_expr empty expr') in
         let subs' =
@@ -580,7 +580,7 @@ and u_module_type_expr :
           | None -> subs
         in
         let result : ModuleType.U.expr = With (subs', expr') in
-        result)
+        result
     | TypeOf { t_desc; t_expansion } ->
         let t_desc =
           match t_desc with
