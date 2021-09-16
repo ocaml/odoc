@@ -12,9 +12,5 @@ parent page of 'index.mld' also generates the file 'parent/index.html'.
 The breadcrumbs shouldn't show the name of the page, "index".
 Expected to fail:
 
-  $ grep -C 2 odoc-nav test/index.html
-   </head>
-   <body class="odoc">
-    <nav class="odoc-nav"><a href="#">Up</a> – <a href="#">test</a> &#x00BB;
-      index
-    </nav>
+  $ grep odoc-nav test/index.html
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – test</nav>
