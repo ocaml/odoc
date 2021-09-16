@@ -73,6 +73,17 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
     let href page =
       Link.href ~resolve:(Current url) (Odoc_document.Url.from_path page)
     in
+    let make_navigation ~up_url breadcrumbs =
+      [
+        Html.nav
+          ~a:[ Html.a_class [ "odoc-nav" ] ]
+          ([
+             Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ];
+             Html.txt " – ";
+           ]
+          @ breadcrumbs);
+      ]
+    in
     match parents with
     | [] -> [] (* Can't happen - Url.Path.to_list returns a non-empty list *)
     | [ _ ] -> [] (* No parents *)
@@ -82,19 +93,10 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
            dune and odig both cause this situation right now. *)
         let up_url = "../index.html" in
         let parent_name = x.name in
-        [
-          Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ];
-          Html.txt " - ";
-          Html.txt parent_name;
-        ]
+        make_navigation ~up_url [ Html.txt parent_name ]
     | _ ->
-        let up_url = List.hd (List.tl (List.rev parents)) in
+        let up_url = href (List.hd (List.tl (List.rev parents))) in
         let l =
-          [
-            Html.a ~a:[ Html.a_href (href up_url) ] [ Html.txt "Up" ];
-            Html.txt " – ";
-          ]
-          @
           (* Create breadcrumbs *)
           let space = Html.txt " " in
           parents
@@ -112,7 +114,7 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
                  ])
           |> List.flatten
         in
-        [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] l ]
+        make_navigation ~up_url l
   in
 
   let body =
