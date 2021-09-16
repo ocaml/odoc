@@ -224,15 +224,15 @@ directive.
 OCaml ordinarily does not allow two items of the same type with
 the same name. For example, the following is illegal:
 
-```ocaml
+{[
 type t = int
 type t = string
-```
+]}
 
 However, if the item comes in via an include, then OCaml allows it.
 For example,
 
-```ocaml
+{[
 module type A = sig
   type t = int
   val f : t
@@ -243,7 +243,7 @@ module type B = sig
   type t = string
   val g : t
 end
-```
+]}
 
 Since odoc is required to do its own expansions, it must take
 account of this behaviour. The previous example is rendered
