@@ -23,7 +23,7 @@ delimited with `(** ... *)`, and outputs HTML.
 """
 
 depends: [
-  "odoc-parser" {>= "0.9.0"}
+  "odoc-parser" {= "dev"}
   "astring"
   "cmdliner"
   "cppo" {build}
@@ -49,6 +49,10 @@ depends: [
 
   "bisect_ppx" {with-test & = "2.5.0"}
   "ppx_expect" {with-test}
+]
+
+pin-depends: [
+  [ "odoc-parser.dev" "git+https://github.com/ocaml-doc/odoc-parser#626ccc9e319d7d3cc67251425ddbb48e33bc2de8" ]
 ]
 
 build: [
