@@ -8,7 +8,7 @@ extensions where odoc goes beyond what is officially supported.
 The example interface [foo.mli] {{:https://ocaml.org/manual/ocamldoc.html#ss:ocamldoc-placement}described in the OCaml manual} 
 can be seen rendered by [odoc] {{!Odoc_examples.Markup.Foo}here}.
 
-{3 Changes}
+{2 Changes}
 
 The following describes the changes between what odoc understands and what is in the OCaml manual.
 
@@ -16,7 +16,7 @@ The following describes the changes between what odoc understands and what is in
   we follow the HTML spec in allowing headings from 1-6, and we also allow heading level [0] for the title
   of [mld] files. Odoc emits a warning for heading levels outside this range and caps them.
 
-{4 Omissions}
+{3 Omissions}
 - Comments describing class inheritance are not rendered ({{:https://github.com/ocaml/odoc/issues/574}github issue}).
 - Odoc handles ambiguous documentation comments as the compiler does (see {{:https://caml.inria.fr/pub/docs/manual-ocaml/doccomments.html}here})
   rather than treating them as the ocamldoc manual suggests.
@@ -28,7 +28,7 @@ The following describes the changes between what odoc understands and what is in
   Synopses are used when rendering declarations (of modules, classes, etc..) and [{!modules:...}] lists.
   An other difference is that documentation starting with a heading or something that is not a paragraph won't have a synopsis ({{:https://github.com/ocaml/odoc/pull/643}github issue}).
 
-{4 Improvements}
+{3 Improvements}
 - Odoc has a better mechanism for disambiguating references in comments. See 'reference syntax' later in this document.
 - Built-in support for standalone 'mld' files - these are documents using the OCamldoc markup, but rendered as distinct pages.
 - Structured output - odoc can produce output in a structured directory tree rather a set of files.
@@ -38,7 +38,7 @@ The following describes the changes between what odoc understands and what is in
   + [@open] and [@closed] and [@inline] are hints for how 'included' signatures should be rendered
   + [@canonical] allows a definition of a [module], [module type] or [type] to be marked as canonically elsewhere. 
 
-{3 Reference syntax}
+{2 Reference syntax}
 Odoc has a far more powerful reference resolution mechanism than ocamldoc. While it supports the mechanism in ocamldoc used for disambiguating between different types of references,
 it offers a more powerful alternative. The new mechanism allows for disambiguation of each part in a dotted reference rather than just the final part. For example, 
 where in the reference manual it suggests the syntax [{!type:Foo.Bar.t}] to designate a type, and [{!val:Foo.Bar.t}] a value of the same name, the new Odoc syntax for these
@@ -55,3 +55,10 @@ Additionally we support extra annotations:
 - [label] refers to labels introduced in anchors
 - [page] refers to [mld] pages as outlined above
 - [value] is recognised as [val]
+
+{3 Referencing items containing hyphens or dots}
+
+If it is necessary to reference a reference that contains hyphens or dots - e.g. if you have a file [docs-with-dashes.mld] or
+[docs.with.dots.mld], to reference them use quotation marks in the reference. For the previous two examples, the references
+would be [{!page-"docs-with-dashes.mld"}] and [{!page-"docs.with.dots"}].
+

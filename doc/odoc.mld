@@ -19,7 +19,7 @@ The syntax reference is a refinement of that explained in the
 {{:https://ocaml.org/manual/ocamldoc.html}OCaml manual}. The differences
 are described {{!page-ocamldoc_differences}here}.
 
-odoc's main advantage over ocamldoc is an accurate {e cross-referencer}, which
+The main advantage of [odoc] over [ocamldoc] is an accurate {e cross-referencer}, which
 handles the complexity of the OCaml module system, and an {e expander}, which
 can expand complex module-type expressions while preserving their structure,
 including comment, includes and more.
