@@ -1,2 +1,5 @@
 {0 Ppx_hash}
 
+{!module-Ppx_hash}
+{!module-Ppx_hash_expander}
+{!module-Ppx_hash_lib}

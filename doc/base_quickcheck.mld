@@ -1,2 +1,5 @@
 {0 Base_quickcheck}
 
+{!module-Base_quickcheck}
+{!module-Ppx_quickcheck}
+{!module-Ppx_quickcheck_expander}
