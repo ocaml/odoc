@@ -23,7 +23,6 @@
 {!module-Backend_var}
 {!module-Big_int}
 {!module-Bigarray}
-{!module-Binutils}
 {!module-Branch_relaxation}
 {!module-Branch_relaxation_intf}
 {!module-Btype}
@@ -37,7 +36,6 @@
 {!module-Bytesections}
 {!module-CSE}
 {!module-CSEgen}
-{!module-CamlinternalAtomic}
 {!module-CamlinternalFormat}
 {!module-CamlinternalFormatBasics}
 {!module-CamlinternalLazy}
@@ -140,19 +138,16 @@
 {!module-Lift_constants}
 {!module-Lift_let_to_initialize_symbol}
 {!module-Linear}
-{!module-Linear_format}
 {!module-Linearize}
 {!module-Linkage_name}
 {!module-Linscan}
 {!module-Liveness}
 {!module-Load_path}
-{!module-Local_store}
 {!module-Location}
 {!module-Longident}
 {!module-Mach}
 {!module-Main}
 {!module-Main_args}
-{!module-Maindriver}
 {!module-Makedepend}
 {!module-Matching}
 {!module-Meta}
@@ -168,7 +163,6 @@
 {!module-Optcompile}
 {!module-Opterrors}
 {!module-Optmain}
-{!module-Optmaindriver}
 {!module-Outcometree}
 {!module-Parameter}
 {!module-Parmatch}
@@ -177,7 +171,6 @@
 {!module-Parsetree}
 {!module-Pass_wrapper}
 {!module-Path}
-{!module-Patterns}
 {!module-Persistent_env}
 {!module-Pparse}
 {!module-Pprintast}
@@ -216,7 +209,6 @@
 {!module-Selectgen}
 {!module-Selection}
 {!module-Semantics_of_primitives}
-{!module-Semaphore}
 {!module-Set_of_closures_id}
 {!module-Set_of_closures_origin}
 {!module-Share_constants}

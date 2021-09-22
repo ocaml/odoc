@@ -178,17 +178,20 @@ documented in different sections, so we'll keep them in separate lists, together
 to the hierarchy declared above.
 
 ```ocaml env=e1
-let dep_libraries = [
-    "cmdliner";
-    "stdlib";
+let dep_libraries_core = [
+    "odoc-parser";
     "astring";
+    "cmdliner";
     "fpath";
     "result";
-    "yojson";
     "tyxml";
-    "biniou";
     "fmt";
-    "odoc-parser";
+    "stdlib";
+    "yojson";
+    "biniou";
+];;
+
+let extra_deps = [
     "base";
     "core_kernel";
     "bin_prot";
@@ -197,7 +200,10 @@ let dep_libraries = [
     "base_quickcheck";
     "ppx_sexp_conv";
     "ppx_hash";
-];;
+]
+
+let dep_libraries =
+    match Sys.getenv_opt "ODOC_BENCHMARK" with | Some "true" -> dep_libraries_core @ extra_deps | _ -> dep_libraries_core
 
 let odoc_libraries = [
     "odoc_xref_test"; "odoc_xref2"; "odoc_odoc";
