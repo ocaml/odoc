@@ -10,7 +10,7 @@ open Errors.Tools_error
 (** {2 Lookup and resolve functions} *)
 
 (** The following lookup and resolve functions take {{!module:Cpath.Resolved}resolved paths}
-    (for lookup) or {{!module:Cpath.Unresolved}unresolved paths} (for resolve)
+    (for lookup) or {{!module:Cpath.Cpath}unresolved paths} (for resolve)
     and an {{!type:Env.t}environment} and return the representation of the
     component. The resolve functions additionally return the resolved path.
     There are some common arguments:

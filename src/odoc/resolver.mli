@@ -17,7 +17,7 @@
 (** Management of the documentation environment.
 
     This is the module which does the link between packages, directories and
-    {!DocOck}'s needs. *)
+    {!Odoc_xref2}'s needs. *)
 
 type t
 
@@ -30,7 +30,7 @@ val create :
     {{!Fs.Directory.t} include directories}
 
     @param important_digests indicate whether digests should be compared when
-    doc-ock tries to lookup or fetch a unit. It defaults to [true]. *)
+    odoc_xref2 tries to lookup or fetch a unit. It defaults to [true]. *)
 
 val lookup_page : t -> string -> Odoc_model.Lang.Page.t option
 
