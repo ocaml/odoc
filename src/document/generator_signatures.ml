@@ -5,8 +5,8 @@ type rendered_item = DocumentedSrc.t
 
 type text = Format.formatter -> unit
 
-(** HTML generation syntax customization module. See {!To_re_html_tree} and
-    {!To_ml_html_tree}. *)
+(** HTML generation syntax customization module. See {!ML} and
+    {!Reason}. *)
 module type SYNTAX = sig
   module Obj : sig
     val close_tag_closed : string
