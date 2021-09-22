@@ -2874,7 +2874,6 @@
    Ocamlary-With7-argument-1-X.html.gen
    Ocamlary-module-type-With8.html.gen
    Ocamlary-module-type-With8-M.html.gen
-   Ocamlary-module-type-With8-M-module-type-S.html.gen
    Ocamlary-module-type-With8-M-N.html.gen
    Ocamlary-With9.html.gen
    Ocamlary-With9-module-type-S.html.gen
@@ -3931,14 +3930,6 @@
    (diff
     Ocamlary-module-type-With8-M.html
     Ocamlary-module-type-With8-M.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.07)))
- (rule
-  (alias runtest)
-  (action
-   (diff
-    Ocamlary-module-type-With8-M-module-type-S.html
-    Ocamlary-module-type-With8-M-module-type-S.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
