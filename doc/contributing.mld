@@ -73,7 +73,7 @@ dune build @doc
 {1:testing Testing}
 
 [odoc] uses a variety of different test types. We are slowly converging on using
-Dune's {{:https://dune.readthedocs.io/en/stable/tests.html#cram-tests}cram tests},
+Dune's {{:https://dune.readthedocs.io/en/stable/tests.html#cram-tests}Cram tests},
 though we still have many tests that aren't yet converted.
 
 {2 Cram Tests}
@@ -130,10 +130,10 @@ The intended response to this is:
 + If the test is broken, run [dune promote] to replace the expected output
   with the current output.
 
-{2 Other Expect Tests}
+{2 Other Expect-Tests}
 
-Many of [odoc]'s older tests are {b custom expect tests}, similar to those
-run in the cram test above, but that don't use Dune's [promote] workflow.
+Many of [odoc]'s older tests are {b custom Expect-tests}, similar to those
+run in the Cram test above, but that don't use Dune's [promote] workflow.
 As an example the parser tests in [test/parser] work in the following way:
 
 + The tests run some code, e.g., the [odoc] parser on the string [{e foo}].
@@ -144,9 +144,9 @@ As an example the parser tests in [test/parser] work in the following way:
   repo. If the S-expression from the code doesn't match the expected one, the
   test fails.
 
-When one of these expect tests fail, the string that the code emitted is saved, so
+When one of these Expect-tests fail, the string that the code emitted is saved, so
 the human developer can choose to {b replace} the now-incorrect expected string.
-For these custom expect tests, the results may look like:
+For these custom Expect-tests, the results may look like:
 
 {[
 -- bold.000 [basic.] Failed --
@@ -169,12 +169,12 @@ To replace expected output with actual, run
 bash _build/default/test/parser/_actual/replace.sh
 ]}
 
-As with the cram tests, the idea is to examine the diff to see if your code
+As with the Cram tests, the idea is to examine the diff to see if your code
 is broken or the test is broken. If the test is broken, the actual results
 may be promoted to the expected results by running the suggested command. If
 your code is broken, go and fix it!
 
-We are slowly shifting these custom expect tests over to the Dune [promote]
+We are slowly shifting these custom Expect-tests over to the Dune [promote]
 workflow.
 
 {1 Coverage Analysis}
@@ -206,8 +206,8 @@ on {{:https://coveralls.io/github/ocaml/odoc}Coveralls}.
 
 The tests cover Esy and Opam builds on Windows, macOS, and Linux. The Linux
 tests cover all supported versions of OCaml. We strive to retain compatibility
-back as far as we can -- currently 4.02 -- which is important for supporting
-docs.ocaml.org.
+back as far as we can (currently 4.02) which is important for supporting
+{{https://ocaml.org/docs/}ocaml.org/docs}.
 
 {1 API Reference}
 
