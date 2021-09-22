@@ -1661,13 +1661,7 @@ A brown paper package tied up with string
 \f[CB]module\fR M : \f[CB]sig\fR
 .br 
 .ti +4
-\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
-.br 
-.ti +6
-\f[CB]type\fR t
-.br 
-.ti +4
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR S = With5\.S
 .sp 
 .ti +4
 \f[CB]module\fR N : \f[CB]sig\fR
