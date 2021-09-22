@@ -26,15 +26,12 @@ npm-build :
 npm-test :
 	esy make test
 
-.PHONY : docs
-docs :
-	mkdir -p docs
-	$(DUNE) build $(DUNE_ARGS) @doc
-	cp -R _build/default/_doc/_html/* docs
-
-.PHONY : docs
-serve :
-	python -m SimpleHTTPServer $(PORT)
+.PHONY : publish-docs
+publish-docs:
+	dune build @doc
+	dune build @docgen || true
+	git checkout gh-pages
+	rsync -av _build/default/doc/html/odoc/ .
 
 .PHONY : test
 test : build
