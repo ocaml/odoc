@@ -1,7 +1,8 @@
 {0:top [odoc] for authors}
 
 This manual describes the features that are available and recommended for users
-to write great documentation using [odoc].
+to write great documentation using [odoc]. See also the page listing the
+{{!page-features}language features} [odoc] understands.
 
 + {{!getting_started}Getting started}
 + {{:#interfaces} Documenting your interfaces}
@@ -13,14 +14,14 @@ To generate documentation for your project, you will almost always be using
 odoc indirectly rather than executing it yourself. There are several 'drivers'
 of odoc at time of writing, each with their own strengths:
 
-- {{:https://dune.build/}Dune} is the simplest way to view docs while you're
+- {{:https://dune.build/}Dune} is the best way to view docs while you're
   developing your project. We have a {{!page-using_dune}short page} describing
   how to use it.
-- {{:https://erratique.ch/software/odig}Odig} is the simplest way to view docs
+- {{:https://erratique.ch/software/odig}Odig} is the best way to view docs
   of your installed packages. 
 - {{!page-driver}The reference driver} is the simplest driver, useful if you
   want to see how to integrate it with your own projects.
-- {{:https://github.codoo}Voodoo} is the driver used to create
+- {{:https://github.com/ocaml-doc/voodoo}Voodoo} is the driver used to create
   the docs for {{:https://v3.ocaml.org/packages}the new OCaml website}.
 
 {1:interfaces Documenting your interfaces}
