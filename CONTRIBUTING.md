@@ -168,10 +168,10 @@ writing new tests, and want to know what they are actually touching. To use it,
 ## Project structure
 
 odoc is divided into several sub-libraries, each of which is a directory
-under `src/`. Most of these have a *main file*, whose name is the directory
-name prefixed with "`odoc__`". That main file is the interface for the entire
+under `src/`. Many of these have a *main file*, whose name is the directory
+name prefixed with "`odoc_`". That main file is the interface for the entire
 sub-library directory. For example, [`src/loader`][loader-dir] has
-[`src/loader/odoc__loader.mli`][loader-api], and everything in `src/loader` is
+[`src/loader/odoc_loader.mli`][loader-api], and everything in `src/loader` is
 hidden behind that interface.
 
 The `dune` files in each directory can be used to figure out how the
@@ -179,9 +179,6 @@ directories depend on each other. Mostly, however, everything depends on
 `model`, and `odoc` depends on everything.
 
 The directories are:
-
-- [`src/compat`][compat-api] &mdash; backports of functions to old versions of
-OCaml.
 
 - [`src/model`][model-dir] &mdash; datatypes representing the OCaml
 language ([`src/model/lang.ml`][lang]), error-handling
@@ -192,42 +189,36 @@ sub-libraries use to communicate with each other, so everything else depends on
 `model`.
 
 - [`src/loader`][loader-dir] &mdash; functions from `cmt`, `cmti`, `cmi` files
-to `model`. You can see the three functions' signatures in the main file,
-[`src/loader/odoc__loader.mli`][loader-api].
+to `model`.
 
-- [`src/xref`][xref-dir] &mdash; functions for resolving cross-references. These
-consume things from `model`, and return transformed instances. The signature, in
-[`src/xref/odoc__xref.mli`][xref-api] is not very pretty, but the usage of
-`xref` is pretty isolated in the rest of odoc, and can be found by grepping for
-`Xref`.
+- [`src/xref2`][xref2-dir] &mdash; functions for resolving cross-references. These
+consume things from `model`, and return transformed instances.
 
 - [`src/html`][html-dir] &mdash; the HTML generator.
 
 - [`src/latex`][latex-dir] &mdash; the Latex generator.
 
-- [`src/man`][man-dir] &mdash; the Manpages generator.
+- [`src/manpage`][manpage-dir] &mdash; the Manpages generator.
 
-- [`src/odoc`][odoc-dir] &mdash; the overall `odoc` command-line tool that ties
-the other parts together. This doesn't have the same kind of main file, because
-what's generated from this is the odoc executable, not a sub-library. The entry
-point for the executable is [`src/odoc/bin/main.ml`][main].
+- [`src/odoc`][odoc-dir] &mdash; the `odoc` command-line interface (CLI) that ties the other
+parts together. This doesn't have the same kind of main file, because what's
+generated from this is the `odoc` executable, not a sub-library. The entry point
+for the executable is [`src/odoc/bin/main.ml`][main].
 
 - [`src/util`][util-dir] is for things that help with the development of odoc,
 but aren't part of the regular build, and [`src/vendor`][vendor-dir] is for
 third-party software.
 
-[compat-api]: https://github.com/ocaml/odoc/blob/master/src/compat/odoc__compat.ml
 [model-dir]: https://github.com/ocaml/odoc/tree/master/src/model
 [lang]: https://github.com/ocaml/odoc/blob/master/src/model/lang.ml
 [error]: https://github.com/ocaml/odoc/blob/master/src/model/error.ml
 [paths]: https://github.com/ocaml/odoc/blob/master/src/model/paths_types.ml
 [loader-dir]: https://github.com/ocaml/odoc/tree/master/src/loader
-[loader-api]: https://github.com/ocaml/odoc/blob/master/src/loader/odoc__loader.mli
-[xref-dir]: https://github.com/ocaml/odoc/tree/master/src/xref
-[xref-api]: https://github.com/ocaml/odoc/blob/master/src/xref/odoc__xref.mli
+[loader-api]: https://github.com/ocaml/odoc/tree/master/src/loader/odoc_loader.ml
+[xref2-dir]: https://github.com/ocaml/odoc/tree/master/src/xref2
 [html-dir]: https://github.com/ocaml/odoc/tree/master/src/html
-[latex-dir]: https://github.com/ocaml/odoc/tree/master/src/html
-[man-dir]: https://github.com/ocaml/odoc/tree/master/src/html
+[latex-dir]: https://github.com/ocaml/odoc/tree/master/src/latex
+[manpage-dir]: https://github.com/ocaml/odoc/tree/master/src/manpage
 [odoc-dir]: https://github.com/ocaml/odoc/tree/master/src/odoc
 [main]: https://github.com/ocaml/odoc/blob/master/src/odoc/bin/main.ml
 [util-dir]: https://github.com/ocaml/odoc/tree/master/src/util
@@ -235,27 +226,33 @@ third-party software.
 
 The tests parallel the structure of `src/`:
 
-- [`test/generators`][test-generators] This contains backend tests. See the [README.md](https://github.com/ocaml/odoc/blob/master/test/generators/README.md).
+- [`test/generators`][test-generators] &mdash; backend tests. See the [README.md][readme-md].
 
-- [`test/inactive`][test-inactive] is some old tests that have suffered some bit
+- [`test/inactive`][test-inactive] &mdash; old tests that have suffered some bit
 rot, and we haven't gotten around to restoring yet.
 
-- [`test/integration`] is meant to test `odoc`'s CLI and integration with dune, and it use [cram-testing](https://dune.readthedocs.io/en/stable/tests.html?highlight=cram%20testing#cram-tests) style.
+- [`test/integration`][test-integration] &mdash; [cram tests][cram-tests] for the CLI and integration with dune.
 
-- [`test/model`] tests the odoc model using expect tests and cram-testing style.
+- [`test/model`][test-model] &mdash; expect tests and cram tests for the odoc model.
 
-- [`test/odoc_print`] is an helper program that is used by cram tests to print the content of intermediary files, that is `.odoc`, `.odocl` et cetera.
+- [`test/odoc_print`][test-odoc-print] &mdash; a helper program used by cram tests to print the content of intermediary files, that is `.odoc`, `.odocl` etc.
 
-- [`test/pages`] is testing the `odoc's` CLI too
+- [`test/pages`][test-pages] &mdash; tests for the CLI. It consists of shell commands and their expected output.
 
-- [`test/print`][test-print] converts from `odoc`'s datatypes to strings, so
-they can be used in expect tests.
-
-- [`test/xref2`] is testing specific paths of compile and link code but always from "the outside" (calling Odoc's CLI or the "public" API, they are not unit tests). Some of the tests are run using [`Mdx`](https://github.com/realworldocaml/mdx) and most of them using cram-testing style. [`xref/compile.ml`](https://github.com/ocaml/odoc/blob/master/test/xref2/compile.ml) is a small script helping to write the cram tests.
+- [`test/xref2`][test-xref2] &mdash; mostly cram tests with some [mdx][mdx] tests for specific paths of compile and link code using the CLI and the "public" API (so they are end-to-end tests, not unit tests). [`xref2/compile.ml`][xref2-compile-ml] is a small script used to help write the cram tests.
 
 [test-generators]: https://github.com/ocaml/odoc/tree/master/test/generators
-[test-print]: https://github.com/ocaml/odoc/tree/master/test/print
+[readme-md]: https://github.com/ocaml/odoc/blob/master/test/generators/README.md
 [test-inactive]: https://github.com/ocaml/odoc/tree/master/test/inactive
+[test-integration]: https://github.com/ocaml/odoc/tree/master/test/integration
+[test-model]: https://github.com/ocaml/odoc/tree/master/test/model
+[cram-tests]: https://dune.readthedocs.io/en/stable/tests.html?highlight=cram%20testing#cram-tests
+[test-odoc-print]: https://github.com/ocaml/odoc/tree/master/test/odoc_print
+[test-pages]: https://github.com/ocaml/odoc/tree/master/test/pages
+[test-xref2]: https://github.com/ocaml/odoc/tree/master/test/xref2
+[mdx]: https://github.com/realworldocaml/mdx
+[xref2-compile-ml]: https://github.com/ocaml/odoc/blob/master/test/xref2/compile.ml
+
 
 <br/>
 
