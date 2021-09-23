@@ -259,8 +259,6 @@ type t = F(M).N.t
 
 ```ocaml env=e1
 # let sg = Common.compile_signature (Common.signature_of_mli_string example)
-File "<test>":
-Failed to compile expansion for module type expression identifier((param (root Root).F X), false).S OpaqueModule
 val sg : Odoc_model.Lang.Signature.t =
   {Odoc_model.Lang.Signature.items =
     [Odoc_model.Lang.Signature.ModuleType
