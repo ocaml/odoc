@@ -239,3 +239,46 @@ end = struct
     in
     w_page
 end
+
+module Labels : sig
+  val disambiguate_page : Page.t -> Page.t
+  (** Colliding labels are allowed in the model but don't make sense in
+      generators because we need to link to everything (eg. the TOC).
+      Post-process the doctree, add a "_N" suffix to dupplicates, the first
+      occurence is unchanged. Iterate through subpages. *)
+end = struct
+  module StringMap = Map.Make (String)
+
+  let rec make_label_unique labels di label =
+    let label' = label ^ "_" in
+    (* start at [_2]. *)
+    let new_label = label' ^ string_of_int (di + 1) in
+    (* If the label is still ambiguous after suffixing, add an extra '_'. *)
+    if StringMap.mem new_label labels then make_label_unique labels di label'
+    else new_label
+
+  let disambiguate_page page =
+    (* Perform two passes, we need to know every labels before allocating new
+        ones. *)
+    let labels =
+      Headings.fold
+        (fun acc h ->
+          match h.label with Some l -> StringMap.add l 0 acc | None -> acc)
+        StringMap.empty page
+    in
+    Headings.foldmap
+      (fun acc h ->
+        match h.label with
+        | Some l ->
+            let d_index = StringMap.find l acc in
+            let h =
+              if d_index = 0 then h
+              else
+                let label = Some (make_label_unique acc d_index l) in
+                { h with label }
+            in
+            (StringMap.add l (d_index + 1) acc, h)
+        | None -> (acc, h))
+      labels page
+    |> snd
+end

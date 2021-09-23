@@ -455,14 +455,14 @@ module Page = struct
     if Link.should_inline p.status p.content.url then []
     else [ page ~with_children p.content ]
 
-  and subpages ~with_children i =
-    List.flatten
-    @@ List.map (subpage ~with_children)
-    @@ Doctree.Subpages.compute i
+  and subpages ~with_children subpages =
+    List.flatten @@ List.map (subpage ~with_children) subpages
 
-  and page ~with_children ({ Page.title = _; header; items = i; url } as p) =
+  and page ~with_children p =
+    let { Page.title = _; header; items = i; url } =
+      Doctree.Labels.disambiguate_page p
+    and subpages = subpages ~with_children @@ Doctree.Subpages.compute p in
     let i = Doctree.Shift.compute ~on_sub i in
-    let subpages = subpages ~with_children p in
     let header = items header in
     let content = items i in
     let page = Doc.make ~with_children url (header @ content) subpages in

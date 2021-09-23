@@ -79,11 +79,10 @@ There are two references in N, one should point to a local label and the other t
      <h1>Module <code><span>Test.N</span></code></h1>
     </header>
     <nav class="odoc-toc">
-     <ul><li><a href="#B_3">An other conflicting label</a></li></ul>
+     <ul><li><a href="#B">An other conflicting label</a></li></ul>
     </nav>
     <div class="odoc-content">
-     <h2 id="B_3"><a href="#B_3" class="anchor"></a>An other conflicting label
-     </h2>
+     <h2 id="B"><a href="#B" class="anchor"></a>An other conflicting label</h2>
      <p><a href="#B">An other conflicting label</a> 
       <a href="../M/index.html#B"><code>B</code></a>
      </p>
