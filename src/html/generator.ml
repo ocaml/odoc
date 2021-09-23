@@ -373,16 +373,20 @@ module Page = struct
   let rec include_ ?theme_uri indent { Subpage.content; _ } =
     [ page ?theme_uri indent content ]
 
-  and subpages ?theme_uri indent i =
-    Utils.list_concat_map ~f:(include_ ?theme_uri indent)
-    @@ Doctree.Subpages.compute i
+  and subpages ?theme_uri indent subpages =
+    Utils.list_concat_map ~f:(include_ ?theme_uri indent) subpages
 
-  and page ?theme_uri ?support_uri indent
-      ({ Page.title; header; items = i; url } as p) =
+  and page ?theme_uri ?support_uri indent p =
+    let { Page.title; header; items = i; url } =
+      Doctree.Labels.disambiguate_page p
+    and subpages =
+      (* Don't use the output of [disambiguate_page] to avoid unecessarily
+         mangled labels. *)
+      subpages ?theme_uri indent @@ Doctree.Subpages.compute p
+    in
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
     let toc = Toc.from_items ~resolve ~path:url i in
-    let subpages = subpages ?theme_uri indent p in
     let header = items ~resolve header in
     let content = (items ~resolve i :> any Html.elt list) in
     let page =
