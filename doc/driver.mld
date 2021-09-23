@@ -4,7 +4,7 @@ This 'live' document describes how to use odoc to produce the documentation of o
 to show a short, simple example of how odoc can be used, covering most of the important features.
 The document built here includes not only the documentation of odoc itself, but also builds the
 docs for a subset of odoc's dependent libraries to show how this may be done. For a much more
-complete and comprehensive use of odoc, see the voodoo project, the tool that will is being used to build
+complete and comprehensive use of odoc, see the voodoo project, the tool that will be used to build
 [docs.ocaml.org].
 
 First we need to initialise mdx with some libraries and helpful values.
@@ -13,7 +13,6 @@ First we need to initialise mdx with some libraries and helpful values.
 (* Prelude *)
 #require "bos";;
 #install_printer Fpath.pp;;
-#print_length 65535;;
 open Bos;;
 let (>>=) = Result.bind;;
 let (>>|=) m f = m >>= fun x -> Ok (f x);;
@@ -89,7 +88,8 @@ include path as specified by the [-I] arguments to [odoc link]. In this example,
 link step is an [odocl] file, by default in the same path as the original [odoc] file.
 
 Note that is only necessary to link the non-hidden modules (without a double underscore).
-}{- Generation: [odoc html-generate]
+}
+{- Generation: [odoc html-generate]
 
 
 Once the compile and link phases are complete, the resulting [odocl] files may be rendered in a variety of formats. In this example we output HTML.
@@ -177,21 +177,35 @@ documented in different sections, so we'll keep them in separate lists, together
 to the hierarchy declared above.
 
 {[
-let dep_libraries = [
-    "cmdliner";
-    "stdlib";
+let dep_libraries_core = [
+    "odoc-parser";
     "astring";
+    "cmdliner";
     "fpath";
     "result";
-    "yojson";
     "tyxml";
-    "biniou";
     "fmt";
-    "odoc-parser";
+    "stdlib";
+    "yojson";
+    "biniou";
 ];;
 
+let extra_deps = [
+    "base";
+    "core_kernel";
+    "bin_prot";
+    "sexplib";
+    "sexplib0";
+    "base_quickcheck";
+    "ppx_sexp_conv";
+    "ppx_hash";
+]
+
+let dep_libraries =
+    match Sys.getenv_opt "ODOC_BENCHMARK" with | Some "true" -> dep_libraries_core @ extra_deps | _ -> dep_libraries_core
+
 let odoc_libraries = [
-    "odoc_xref_test"; "print"; "odoc_xref2"; "odoc_odoc";
+    "odoc_xref_test"; "odoc_xref2"; "odoc_odoc";
     "odoc_model_desc"; "odoc_model"; "odoc_manpage"; "odoc_loader";
     "odoc_latex"; "odoc_html"; "odoc_document"; "odoc_examples" ];;
 
@@ -298,7 +312,10 @@ let odoc_units = List.map (fun lib ->
     Fpath.Set.fold (fun p acc ->
         if Astring.String.is_infix ~affix:lib (Fpath.to_string p)
         then ("odoc",lib,p)::acc
-        else acc) odoc_all_unit_paths []) odoc_libraries;;
+        else acc) odoc_all_unit_paths []) odoc_libraries
+]}
+
+{[
 let lib_units = List.map (fun (lib, p) ->
     Fpath.Set.fold (fun p acc ->
         ("deps",lib,p)::acc) (find_units p |> get_ok) []) lib_paths
@@ -312,15 +329,15 @@ let compile_mlds () =
     let mkpage x = "page-\"" ^ x ^ "\"" in
     let mkmod x = "module-" ^ String.capitalize_ascii x in
     let mkmld x = Fpath.(add_ext "mld" (v x)) in
-    let _ = compile (mkmld "odoc") ("page-deps" :: (List.map mkpage (odoc_libraries @ extra_docs))) in
-    let _ = compile (mkmld "deps") ~parent:"odoc" (List.map mkpage dep_libraries) in
+    ignore (compile (mkmld "odoc") ("page-deps" :: (List.map mkpage (odoc_libraries @ extra_docs))));
+    ignore (compile (mkmld "deps") ~parent:"odoc" (List.map mkpage dep_libraries));
     let extra_odocs = List.map (fun p ->
         ignore(compile (mkmld p) ~parent:"odoc" []);
         "page-"^p^".odoc") extra_docs in
     let odocs = List.map (fun library ->
         let parent = List.assoc library parents in
         let children = List.filter_map (fun (parent, lib, child) -> if lib=library then Some (Fpath.basename child |> mkmod) else None) all_units in
-        let _ = compile (mkmld library) ~parent children in
+        ignore (compile (mkmld library) ~parent children);
         "page-"^library^".odoc"
         ) all_libraries in
     List.map (fun f -> (Fpath.v f, false))
@@ -386,6 +403,14 @@ Let's see if there was any output from the odoc:
 
 {[
 # !compile_output;;
+- : string list = [""]
 # !link_output;;
+- : string list = [""]
 # !generate_output;;
+- : string list =
+["";
+ "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_xref_test.odocl' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
+ "odoc_xref_test.odocl: Warning, resolved hidden path: Odoc_model__Lang.Signature.t";
+ "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_examples.odocl' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
+ "odoc_examples.odocl: Warning, resolved hidden path: Odoc_examples__Unexposed.t"]
 ]}
