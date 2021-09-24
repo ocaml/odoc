@@ -1,0 +1,16 @@
+
+.TH C 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.CanonicalTest\.Base_Tests\.C
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Base_Tests\.C\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR 'a t
+.sp 
+\f[CB]val\fR id : \f[CB]'a\fR t \f[CB]\->\fR \f[CB]'a\fR t

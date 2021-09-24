@@ -13,4 +13,6 @@ Ocamlary\.CanonicalTest
 .nf 
 \f[CB]module\fR Base : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .sp 
+\f[CB]module\fR Base_Tests : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
 \f[CB]module\fR List_modif : \f[CB]module\fR \f[CB]type\fR \f[CB]of\fR Base\.List \f[CB]with\fR \f[CB]type\fR 'c t = \f[CB]'c\fR Base\.List\.t

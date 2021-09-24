@@ -65,7 +65,7 @@ A numbered list:
 *)
 
 (**
-    Here is a table of links to indexes: {!indexlist}
+    Odoc doesn't support [{!indexlist}].
 *)
 
 (**
@@ -179,9 +179,9 @@ end
     {!section:emptySig} is the section and {!module-type:EmptySig} is the
     module signature. *)
 
-(** {!Buffer.t} *)
+(** References are resolved after everything, so [{!Buffer.t}] won't resolve. *)
 module Buffer : sig
-  val f : Buffer.t -> unit
+  val f : int -> unit
 end
 
 (** Some text before exception title.
@@ -836,6 +836,8 @@ module IncludeInclude1 : sig
   module type IncludeInclude2 = sig
     type include_include
   end
+
+  module IncludeInclude2_M : sig end
 end
 
 include module type of IncludeInclude1
@@ -850,11 +852,11 @@ include IncludeInclude2
     With odoc, everything should be resolved (and linked) but only toplevel
     units will be documented.
 
-    {!modules: Dep1.X DocOckTypes Ocamlary.IncludeInclude1 Ocamlary}
+    {!modules: Dep1.X Ocamlary.IncludeInclude1 Ocamlary}
 
     {3 Weirder usages involving module types}
 
-    {!modules: IncludeInclude1.IncludeInclude2 Dep4.T A.Q}
+    {!modules: IncludeInclude1.IncludeInclude2_M Dep4.X}
 *)
 
 (** {1 Playing with \@canonical paths} *)
@@ -875,7 +877,7 @@ module CanonicalTest : sig
     module List = Base__.List
   end
 
-  module Base__Tests : sig
+  module Base_Tests : sig
     module C : module type of Base__.List
 
     open Base__
@@ -887,16 +889,16 @@ module CanonicalTest : sig
     (** This is just {!List.id}, or rather {!L.id} *)
 
     val baz : 'a Base__.List.t -> unit
-    (** Just seeing if {!Base__.List.t} ([Base__.List.t]) gets rewriten to
-        {!Base.List.t} ([Base.List.t]) *)
+    (** We can't reference [Base__] because it's hidden.
+        {!List.t} ([List.t]) should resolve. *)
   end
 
   module List_modif : module type of Base.List with type 'c t = 'c Base__.List.t
 end
 
 val test : 'a CanonicalTest.Base__.List.t -> unit
-(** Some ref to {!CanonicalTest.Base__Tests.C.t} and {!CanonicalTest.Base__Tests.L.id}.
-    But also to {!CanonicalTest.Base__.List} and {!CanonicalTest.Base__.List.t} *)
+(** Some ref to {!CanonicalTest.Base_Tests.C.t} and {!CanonicalTest.Base_Tests.L.id}.
+    But also to {!CanonicalTest.Base.List} and {!CanonicalTest.Base.List.t} *)
 
 (** {1:aliases Aliases again} *)
 
@@ -1047,10 +1049,10 @@ module Only_a_module : sig
   type t
 end
 
-(** Some here should fail:
-    - [{!Only_a_module.t}] : {!Only_a_module.t}
+(** - [{!Only_a_module.t}] : {!Only_a_module.t}
     - [{!module-Only_a_module.t}] : {!module-Only_a_module.t}
-    - [{!module-type-Only_a_module.t}] : {!module-type-Only_a_module.t} : {{!module-type-Only_a_module.t}test}*)
+    - [{!module-Only_a_module.type-t}] : {!module-Only_a_module.type-t}
+    - [{!type:Only_a_module.t}] : {!type:Only_a_module.t} *)
 
 module type TypeExt = sig
   type t = ..

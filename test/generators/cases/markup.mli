@@ -154,9 +154,8 @@ v}
 
     {1 Modules}
 
-    {!modules: }
     {!modules: X}
-    {!modules: X Y Z}
+    {!modules: X Y}
 
 
     {1 Tags}
@@ -177,3 +176,8 @@ v}
 
 val foo : unit
 (** Comments in structure items {b support} {e markup}, t{^o}{_o}. *)
+
+(** Some modules to support references. *)
+
+module X : sig end
+module Y : sig end

@@ -39,7 +39,7 @@ Here is an index table of \ocamlinlinecode{Empty} modules:
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
 \item[{\hyperref[module-Ocamlary-module-Empty]{\ocamlinlinecode{\ocamlinlinecode{Empty}}[p\pageref*{module-Ocamlary-module-Empty}]}}]{A plain, empty module}%
 \item[{\hyperref[module-Ocamlary-module-Empty]{\ocamlinlinecode{\ocamlinlinecode{EmptyAlias}}[p\pageref*{module-Ocamlary-module-Empty}]}}]{A plain module alias of \ocamlinlinecode{Empty}}\end{description}%
-Here is a table of links to indexes: \ocamlinlinecode{indexlist}
+Odoc doesn't support \ocamlinlinecode{\{!indexlist\}}.
 
 Here is some superscript: x\textsuperscript{2}
 
@@ -113,9 +113,9 @@ An unassociated comment
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
 For a good time, see \ocamlinlinecode{SuperSig}.SubSigA.subSig or \ocamlinlinecode{SuperSig}.SubSigB.subSig or \hyperref[module-Ocamlary-module-type-SuperSig-module-type-EmptySig]{\ocamlinlinecode{\ocamlinlinecode{SuperSig.\allowbreak{}EmptySig}}[p\pageref*{module-Ocamlary-module-type-SuperSig-module-type-EmptySig}]}. Section \hyperref[module-Ocamlary-s9000]{\ocamlinlinecode{Section 9000}[p\pageref*{module-Ocamlary-s9000}]} is also interesting. \hyperref[module-Ocamlary-emptySig]{\ocamlinlinecode{EmptySig}[p\pageref*{module-Ocamlary-emptySig}]} is the section and \hyperref[module-Ocamlary-module-type-EmptySig]{\ocamlinlinecode{\ocamlinlinecode{EmptySig}}[p\pageref*{module-Ocamlary-module-type-EmptySig}]} is the module signature.
 
-\label{module-Ocamlary-module-Buffer}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Buffer]{\ocamlinlinecode{Buffer}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Buffer-val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : \hyperref[xref-unresolved]{\ocamlinlinecode{Stdlib}}.\allowbreak{}Buffer.\allowbreak{}t \ocamltag{arrow}{$\rightarrow$} unit}\\
+\label{module-Ocamlary-module-Buffer}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Buffer]{\ocamlinlinecode{Buffer}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Buffer-val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : int \ocamltag{arrow}{$\rightarrow$} unit}\\
 \end{ocamlindent}%
-\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}\ocamlinlinecode{Buffer}.t\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}References are resolved after everything, so \ocamlinlinecode{\{!Buffer.\allowbreak{}t\}} won't resolve.\end{ocamlindent}%
 \medbreak
 Some text before exception title.
 
@@ -748,10 +748,14 @@ After exception title.
 \label{module-Ocamlary-module-IncludeInclude1}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-IncludeInclude1]{\ocamlinlinecode{IncludeInclude1}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-IncludeInclude1-module-type-IncludeInclude2}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-IncludeInclude1-module-type-IncludeInclude2]{\ocamlinlinecode{IncludeInclude2}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-IncludeInclude1-module-type-IncludeInclude2-type-include+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} include\_\allowbreak{}include}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-IncludeInclude1-module-IncludeInclude2+u+M}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-IncludeInclude1-module-IncludeInclude2+u+M]{\ocamlinlinecode{IncludeInclude2\_\allowbreak{}M}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
 \ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-module-IncludeInclude1]{\ocamlinlinecode{IncludeInclude1}}\label{module-Ocamlary-module-type-IncludeInclude2}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-IncludeInclude2]{\ocamlinlinecode{IncludeInclude2}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-IncludeInclude2-type-include+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} include\_\allowbreak{}include}\\
 \end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-IncludeInclude2+u+M}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-IncludeInclude2+u+M]{\ocamlinlinecode{IncludeInclude2\_\allowbreak{}M}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
 \ocamltag{keyword}{include} \hyperref[module-Ocamlary-module-type-IncludeInclude2]{\ocamlinlinecode{IncludeInclude2}}\label{module-Ocamlary-type-include+u+include}\ocamlcodefragment{\ocamltag{keyword}{type} include\_\allowbreak{}include}\\
 \subsection{Trying the \{!modules: ...\} command.\label{indexmodules}}%
@@ -762,23 +766,30 @@ With odoc, everything should be resolved (and linked) but only toplevel units wi
 \begin{description}\kern-\topsep
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
 \item[{\hyperref[module-Ocamlary-module-Dep1-module-X]{\ocamlinlinecode{\ocamlinlinecode{Dep1.\allowbreak{}X}}[p\pageref*{module-Ocamlary-module-Dep1-module-X}]}}]{}%
-\item[{\ocamlinlinecode{DocOckTypes}}]{}%
 \item[{\hyperref[module-Ocamlary-module-IncludeInclude1]{\ocamlinlinecode{\ocamlinlinecode{Ocamlary.\allowbreak{}IncludeInclude1}}[p\pageref*{module-Ocamlary-module-IncludeInclude1}]}}]{}%
 \item[{\hyperref[module-Ocamlary]{\ocamlinlinecode{\ocamlinlinecode{Ocamlary}}[p\pageref*{module-Ocamlary}]}}]{This is an \emph{interface} with \bold{all} of the \emph{module system} features. This documentation demonstrates:}\end{description}%
 \subsubsection{Weirder usages involving module types\label{weirder-usages-involving-module-types}}%
 \begin{description}\kern-\topsep
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
-\item[{\ocamlinlinecode{IncludeInclude1}.IncludeInclude2}]{}%
-\item[{\ocamlinlinecode{Dep4}.T}]{}%
-\item[{\hyperref[module-Ocamlary-module-type-A-module-Q]{\ocamlinlinecode{\ocamlinlinecode{A.\allowbreak{}Q}}[p\pageref*{module-Ocamlary-module-type-A-module-Q}]}}]{}\end{description}%
+\item[{\hyperref[module-Ocamlary-module-IncludeInclude1-module-IncludeInclude2+u+M]{\ocamlinlinecode{\ocamlinlinecode{IncludeInclude1.\allowbreak{}IncludeInclude2\_\allowbreak{}M}}[p\pageref*{module-Ocamlary-module-IncludeInclude1-module-IncludeInclude2+u+M}]}}]{}%
+\item[{\hyperref[module-Ocamlary-module-Dep4-module-X]{\ocamlinlinecode{\ocamlinlinecode{Dep4.\allowbreak{}X}}[p\pageref*{module-Ocamlary-module-Dep4-module-X}]}}]{}\end{description}%
 \subsection{Playing with @canonical paths\label{playing-with-@canonical-paths}}%
 \label{module-Ocamlary-module-CanonicalTest}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest]{\ocamlinlinecode{CanonicalTest}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CanonicalTest-module-Base}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base]{\ocamlinlinecode{Base}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CanonicalTest-module-Base-module-List}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List]{\ocamlinlinecode{List}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u+Tests}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base+u+Tests]{\ocamlinlinecode{Base\_\allowbreak{}Tests}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-CanonicalTest-module-Base+u+Tests-module-C}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base+u+Tests-module-C]{\ocamlinlinecode{C}}}\ocamlcodefragment{ : \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List]{\ocamlinlinecode{Base.\allowbreak{}List}}}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u+Tests-module-L}\ocamlcodefragment{\ocamltag{keyword}{module} L = \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List]{\ocamlinlinecode{Base.\allowbreak{}List}}}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u+Tests-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : int \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{L.\allowbreak{}t}} \ocamltag{arrow}{$\rightarrow$} float \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{L.\allowbreak{}t}}}\\
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u+Tests-val-bar}\ocamlcodefragment{\ocamltag{keyword}{val} bar : \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{Base.\allowbreak{}List.\allowbreak{}t}} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{Base.\allowbreak{}List.\allowbreak{}t}}}\begin{ocamlindent}This is just \ocamlinlinecode{List}.id, or rather \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-val-id]{\ocamlinlinecode{\ocamlinlinecode{L.\allowbreak{}id}}[p\pageref*{module-Ocamlary-module-CanonicalTest-module-Base-module-List-val-id}]}\end{ocamlindent}%
+\medbreak
+\label{module-Ocamlary-module-CanonicalTest-module-Base+u+Tests-val-baz}\ocamlcodefragment{\ocamltag{keyword}{val} baz : \ocamltag{type-var}{'a} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{Base.\allowbreak{}List.\allowbreak{}t}} \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}We can't reference \ocamlinlinecode{Base\_\allowbreak{}\_\allowbreak{}} because it's hidden. \ocamlinlinecode{List}.t (\ocamlinlinecode{List.\allowbreak{}t}) should resolve.\end{ocamlindent}%
+\medbreak
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
 \label{module-Ocamlary-module-CanonicalTest-module-List+u+modif}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-CanonicalTest-module-List+u+modif]{\ocamlinlinecode{List\_\allowbreak{}modif}}}\ocamlcodefragment{ : \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List]{\ocamlinlinecode{Base.\allowbreak{}List}} \ocamltag{keyword}{with} \ocamltag{keyword}{type} 'c \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{t}} = \ocamltag{type-var}{'c} \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{Base.\allowbreak{}List.\allowbreak{}t}}}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
-\label{module-Ocamlary-val-test}\ocamlcodefragment{\ocamltag{keyword}{val} test : \ocamltag{type-var}{'a} \hyperref[xref-unresolved]{\ocamlinlinecode{CanonicalTest}}.\allowbreak{}Base\_\allowbreak{}\_\allowbreak{}.\allowbreak{}List.\allowbreak{}t \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Some ref to \ocamlinlinecode{CanonicalTest}.Base\_\_Tests.C.t and \ocamlinlinecode{CanonicalTest}.Base\_\_Tests.L.id. But also to \ocamlinlinecode{CanonicalTest}.Base\_\_.List and \ocamlinlinecode{CanonicalTest}.Base\_\_.List.t\end{ocamlindent}%
+\label{module-Ocamlary-val-test}\ocamlcodefragment{\ocamltag{keyword}{val} test : \ocamltag{type-var}{'a} \hyperref[xref-unresolved]{\ocamlinlinecode{CanonicalTest}}.\allowbreak{}Base\_\allowbreak{}\_\allowbreak{}.\allowbreak{}List.\allowbreak{}t \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Some ref to \hyperref[module-Ocamlary-module-CanonicalTest-module-Base+u+Tests-module-C-type-t]{\ocamlinlinecode{\ocamlinlinecode{CanonicalTest.\allowbreak{}Base\_\allowbreak{}Tests.\allowbreak{}C.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-CanonicalTest-module-Base+u+Tests-module-C-type-t}]} and \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-val-id]{\ocamlinlinecode{\ocamlinlinecode{CanonicalTest.\allowbreak{}Base\_\allowbreak{}Tests.\allowbreak{}L.\allowbreak{}id}}[p\pageref*{module-Ocamlary-module-CanonicalTest-module-Base-module-List-val-id}]}. But also to \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List]{\ocamlinlinecode{\ocamlinlinecode{CanonicalTest.\allowbreak{}Base.\allowbreak{}List}}[p\pageref*{module-Ocamlary-module-CanonicalTest-module-Base-module-List}]} and \hyperref[module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t]{\ocamlinlinecode{\ocamlinlinecode{CanonicalTest.\allowbreak{}Base.\allowbreak{}List.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-CanonicalTest-module-Base-module-List-type-t}]}\end{ocamlindent}%
 \medbreak
 \subsection{Aliases again\label{aliases}}%
 \label{module-Ocamlary-module-Aliases}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases]{\ocamlinlinecode{Aliases}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Foo}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo]{\ocamlinlinecode{Foo}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Aliases-module-Foo-module-A}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Aliases-module-Foo-module-A]{\ocamlinlinecode{A}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
@@ -858,11 +869,10 @@ Here goes:
 \label{module-Ocamlary-module-Only+u+a+u+module}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Ocamlary-module-Only+u+a+u+module]{\ocamlinlinecode{Only\_\allowbreak{}a\_\allowbreak{}module}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-Only+u+a+u+module-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
-Some here should fail:
-
 \begin{itemize}\item{\ocamlinlinecode{\{!Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t\}} : \hyperref[module-Ocamlary-module-Only+u+a+u+module-type-t]{\ocamlinlinecode{\ocamlinlinecode{Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-Only+u+a+u+module-type-t}]}}%
 \item{\ocamlinlinecode{\{!module-Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t\}} : \hyperref[module-Ocamlary-module-Only+u+a+u+module-type-t]{\ocamlinlinecode{\ocamlinlinecode{Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-Only+u+a+u+module-type-t}]}}%
-\item{\ocamlinlinecode{\{!module-type-Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t\}} : \ocamlinlinecode{Only\_\allowbreak{}a\_\allowbreak{}module}.t : \hyperref[xref-unresolved]{\ocamlinlinecode{test}[p\pageref*{xref-unresolved}]}}\end{itemize}%
+\item{\ocamlinlinecode{\{!module-Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}type-t\}} : \hyperref[module-Ocamlary-module-Only+u+a+u+module-type-t]{\ocamlinlinecode{\ocamlinlinecode{Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-Only+u+a+u+module-type-t}]}}%
+\item{\ocamlinlinecode{\{!type:Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t\}} : \hyperref[module-Ocamlary-module-Only+u+a+u+module-type-t]{\ocamlinlinecode{\ocamlinlinecode{Only\_\allowbreak{}a\_\allowbreak{}module.\allowbreak{}t}}[p\pageref*{module-Ocamlary-module-Only+u+a+u+module-type-t}]}}\end{itemize}%
 \label{module-Ocamlary-module-type-TypeExt}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-TypeExt]{\ocamlinlinecode{TypeExt}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Ocamlary-module-type-TypeExt-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = .\allowbreak{}.\allowbreak{}}\\
 \label{module-Ocamlary-module-type-TypeExt-extension-decl-C}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Ocamlary-module-type-TypeExt-type-t]{\ocamlinlinecode{t}} += }\\
 \begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{C}}\label{module-Ocamlary-module-type-TypeExt-extension-C}\\

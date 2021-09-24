@@ -27,7 +27,7 @@ type nested_pair = (int * int) * int
 
 type instance = int constructor
 
-type long = labeled_higher_order -> [ `Bar | `Baz of triple] -> pair -> labeled -> higher_order -> (string -> int) -> (int,float,char,string,char,unit) CamlinternalFormatBasics.fmtty -> nested_pair -> arrow -> string -> nested_pair array
+type long = labeled_higher_order -> [ `Bar | `Baz of triple] -> pair -> labeled -> higher_order -> (string -> int) -> (int * float * char * string * char * unit) option -> nested_pair -> arrow -> string -> nested_pair array
 
 type variant_e = {a : int}
 type variant =

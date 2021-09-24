@@ -1,0 +1,14 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Markup\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Markup\.X\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+

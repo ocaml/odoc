@@ -1,0 +1,14 @@
+
+.TH IncludeInclude2_M 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.IncludeInclude1\.IncludeInclude2_M
+.SH Synopsis
+.sp 
+.in 2
+\fBModule IncludeInclude1\.IncludeInclude2_M\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+

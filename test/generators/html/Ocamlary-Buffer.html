@@ -13,7 +13,9 @@
   </nav>
   <header class="odoc-preamble">
    <h1>Module <code><span>Ocamlary.Buffer</span></code></h1>
-   <p><code>Buffer</code>.t</p>
+   <p>References are resolved after everything, so <code>{!Buffer.t}</code>
+     won't resolve.
+   </p>
   </header>
   <div class="odoc-content">
    <div class="odoc-spec">
@@ -21,9 +23,7 @@
      <a href="#val-f" class="anchor"></a>
      <code>
       <span><span class="keyword">val</span> f : 
-       <span><span class="xref-unresolved">Stdlib</span>.Buffer.t 
-        <span class="arrow">&#45;&gt;</span>
-       </span> unit
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
       </span>
      </code>
     </div>

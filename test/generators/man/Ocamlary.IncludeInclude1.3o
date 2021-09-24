@@ -17,3 +17,5 @@ Ocamlary\.IncludeInclude1
 \f[CB]type\fR include_include
 .br 
 \f[CB]end\fR
+.sp 
+\f[CB]module\fR IncludeInclude2_M : \f[CB]sig\fR \.\.\. \f[CB]end\fR

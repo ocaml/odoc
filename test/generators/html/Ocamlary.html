@@ -85,7 +85,7 @@
     <li><a href="Ocamlary-Empty.html"><code>EmptyAlias</code></a> 
      <span class="synopsis">A plain module alias of <code>Empty</code></span>
     </li>
-   </ul><p>Here is a table of links to indexes: <code>indexlist</code></p>
+   </ul><p>Odoc doesn't support <code>{!indexlist}</code>.</p>
    <p>Here is some superscript: x<sup>2</sup></p>
    <p>Here is some subscript: x<sub>0</sub></p>
    <p>Here are some escaped brackets: { [ @ ] }</p>
@@ -277,7 +277,12 @@
        <span class="keyword">end</span>
       </span>
      </code>
-    </div><div class="spec-doc"><p><code>Buffer</code>.t</p></div>
+    </div>
+    <div class="spec-doc">
+     <p>References are resolved after everything, so <code>{!Buffer.t}</code>
+       won't resolve.
+     </p>
+    </div>
    </div><p>Some text before exception title.</p>
    <h4 id="basic-exception-stuff">
     <a href="#basic-exception-stuff" class="anchor"></a>Basic exception
@@ -2688,6 +2693,18 @@
        </code>
       </div>
      </div>
+     <div class="odoc-spec">
+      <div class="spec module" id="module-IncludeInclude2_M" class="anchored">
+       <a href="#module-IncludeInclude2_M" class="anchor"></a>
+       <code><span><span class="keyword">module</span> </span>
+        <span><a href="Ocamlary-IncludeInclude2_M.html">IncludeInclude2_M</a>
+        </span>
+        <span> : <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
+       </code>
+      </div>
+     </div>
     </details>
    </div>
    <div class="odoc-include">
@@ -2720,7 +2737,6 @@
    </p>
    <ul class="modules">
     <li><a href="Ocamlary-Dep1-X.html"><code>Dep1.X</code></a> </li>
-    <li><code>DocOckTypes</code> </li>
     <li>
      <a href="Ocamlary-IncludeInclude1.html">
       <code>Ocamlary.IncludeInclude1</code>
@@ -2737,9 +2753,12 @@
     <a href="#weirder-usages-involving-module-types" class="anchor"></a>
     Weirder usages involving module types
    </h4>
-   <ul class="modules"><li><code>IncludeInclude1</code>.IncludeInclude2 </li>
-    <li><code>Dep4</code>.T </li>
-    <li><a href="Ocamlary-module-type-A-Q.html"><code>A.Q</code></a> </li>
+   <ul class="modules">
+    <li>
+     <a href="Ocamlary-IncludeInclude1-IncludeInclude2_M.html">
+      <code>IncludeInclude1.IncludeInclude2_M</code>
+     </a> 
+    </li><li><a href="Ocamlary-Dep4-X.html"><code>Dep4.X</code></a> </li>
    </ul>
    <h2 id="playing-with-@canonical-paths">
     <a href="#playing-with-@canonical-paths" class="anchor"></a>Playing
@@ -2771,10 +2790,19 @@
      </code>
     </div>
     <div class="spec-doc">
-     <p>Some ref to <code>CanonicalTest</code>.Base__Tests.C.t and 
-      <code>CanonicalTest</code>.Base__Tests.L.id. But also to 
-      <code>CanonicalTest</code>.Base__.List and <code>CanonicalTest</code>
-      .Base__.List.t
+     <p>Some ref to 
+      <a href="Ocamlary-CanonicalTest-Base_Tests-C.html#type-t">
+       <code>CanonicalTest.Base_Tests.C.t</code>
+      </a> and 
+      <a href="Ocamlary-CanonicalTest-Base-List.html#val-id">
+       <code>CanonicalTest.Base_Tests.L.id</code>
+      </a>. But also to 
+      <a href="Ocamlary-CanonicalTest-Base-List.html">
+       <code>CanonicalTest.Base.List</code>
+      </a> and 
+      <a href="Ocamlary-CanonicalTest-Base-List.html#type-t">
+       <code>CanonicalTest.Base.List.t</code>
+      </a>
      </p>
     </div>
    </div>
@@ -2865,7 +2893,7 @@
       </span>
      </code>
     </div>
-   </div><p>Some here should fail:</p>
+   </div>
    <ul>
     <li><code>{!Only_a_module.t}</code> : 
      <a href="Ocamlary-Only_a_module.html#type-t">
@@ -2877,8 +2905,15 @@
       <code>Only_a_module.t</code>
      </a>
     </li>
-    <li><code>{!module-type-Only_a_module.t}</code> : 
-     <code>Only_a_module</code>.t : <span class="xref-unresolved">test</span>
+    <li><code>{!module-Only_a_module.type-t}</code> : 
+     <a href="Ocamlary-Only_a_module.html#type-t">
+      <code>Only_a_module.t</code>
+     </a>
+    </li>
+    <li><code>{!type:Only_a_module.t}</code> : 
+     <a href="Ocamlary-Only_a_module.html#type-t">
+      <code>Only_a_module.t</code>
+     </a>
     </li>
    </ul>
    <div class="odoc-spec">

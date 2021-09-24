@@ -2039,7 +2039,7 @@
 (subdir
  html
  (rule
-  (targets Markup.html.gen)
+  (targets Markup.html.gen Markup-X.html.gen Markup-Y.html.gen)
   (action
    (run
     odoc
@@ -2054,7 +2054,15 @@
  (rule
   (alias runtest)
   (action
-   (diff Markup.html Markup.html.gen))))
+   (diff Markup.html Markup.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Markup-X.html Markup-X.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Markup-Y.html Markup-Y.html.gen))))
 
 (subdir
  html
@@ -2094,13 +2102,21 @@
 (subdir
  man
  (rule
-  (targets Markup.3o.gen)
+  (targets Markup.3o.gen Markup.X.3o.gen Markup.Y.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../markup.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Markup.3o Markup.3o.gen))))
+   (diff Markup.3o Markup.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Markup.X.3o Markup.X.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Markup.Y.3o Markup.Y.3o.gen))))
 
 (subdir
  man
@@ -2876,10 +2892,14 @@
    Ocamlary-DoubleInclude3-DoubleInclude2.html.gen
    Ocamlary-IncludeInclude1.html.gen
    Ocamlary-IncludeInclude1-module-type-IncludeInclude2.html.gen
+   Ocamlary-IncludeInclude1-IncludeInclude2_M.html.gen
    Ocamlary-module-type-IncludeInclude2.html.gen
+   Ocamlary-IncludeInclude2_M.html.gen
    Ocamlary-CanonicalTest.html.gen
    Ocamlary-CanonicalTest-Base.html.gen
    Ocamlary-CanonicalTest-Base-List.html.gen
+   Ocamlary-CanonicalTest-Base_Tests.html.gen
+   Ocamlary-CanonicalTest-Base_Tests-C.html.gen
    Ocamlary-CanonicalTest-List_modif.html.gen
    Ocamlary-Aliases.html.gen
    Ocamlary-Aliases-Foo.html.gen
@@ -4051,8 +4071,22 @@
   (alias runtest)
   (action
    (diff
+    Ocamlary-IncludeInclude1-IncludeInclude2_M.html
+    Ocamlary-IncludeInclude1-IncludeInclude2_M.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
     Ocamlary-module-type-IncludeInclude2.html
     Ocamlary-module-type-IncludeInclude2.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary-IncludeInclude2_M.html Ocamlary-IncludeInclude2_M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -4075,6 +4109,22 @@
    (diff
     Ocamlary-CanonicalTest-Base-List.html
     Ocamlary-CanonicalTest-Base-List.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary-CanonicalTest-Base_Tests.html
+    Ocamlary-CanonicalTest-Base_Tests.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary-CanonicalTest-Base_Tests-C.html
+    Ocamlary-CanonicalTest-Base_Tests-C.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -4459,9 +4509,13 @@
    Ocamlary.DoubleInclude3.3o.gen
    Ocamlary.DoubleInclude3.DoubleInclude2.3o.gen
    Ocamlary.IncludeInclude1.3o.gen
+   Ocamlary.IncludeInclude1.IncludeInclude2_M.3o.gen
+   Ocamlary.IncludeInclude2_M.3o.gen
    Ocamlary.CanonicalTest.3o.gen
    Ocamlary.CanonicalTest.Base.3o.gen
    Ocamlary.CanonicalTest.Base.List.3o.gen
+   Ocamlary.CanonicalTest.Base_Tests.3o.gen
+   Ocamlary.CanonicalTest.Base_Tests.C.3o.gen
    Ocamlary.CanonicalTest.List_modif.3o.gen
    Ocamlary.Aliases.3o.gen
    Ocamlary.Aliases.Foo.3o.gen
@@ -4840,6 +4894,20 @@
  (rule
   (alias runtest)
   (action
+   (diff
+    Ocamlary.IncludeInclude1.IncludeInclude2_M.3o
+    Ocamlary.IncludeInclude1.IncludeInclude2_M.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.IncludeInclude2_M.3o Ocamlary.IncludeInclude2_M.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
    (diff Ocamlary.CanonicalTest.3o Ocamlary.CanonicalTest.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
@@ -4855,6 +4923,22 @@
    (diff
     Ocamlary.CanonicalTest.Base.List.3o
     Ocamlary.CanonicalTest.Base.List.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.CanonicalTest.Base_Tests.3o
+    Ocamlary.CanonicalTest.Base_Tests.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.CanonicalTest.Base_Tests.C.3o
+    Ocamlary.CanonicalTest.Base_Tests.C.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
