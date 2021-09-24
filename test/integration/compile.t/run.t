@@ -168,3 +168,17 @@ Compiling a '.cmt' file.
 
   $ ocamlc -bin-annot -c impl_only.ml
   $ odoc compile --package foo impl_only.cmt
+
+Check line numbers for errors in a '.mld' file.
+
+  $ odoc compile line_numbers.mld
+  File "line_numbers.mld", line 2, characters 0-4:
+  '{[...]}' (code block) should not be empty.
+  File "line_numbers.mld", line 8, characters 0-12:
+  '{Bad Markup}': bad markup.
+  Suggestion: did you mean '{!Bad Markup}' or '[Bad Markup]'?
+  File "line_numbers.mld", line 32, characters 0-1:
+  '{': bad markup.
+  Suggestion: escape the brace with '\{'.
+  File "line_numbers.mld", line 16, characters 0-11:
+  '6': bad heading level (0-5 allowed).
