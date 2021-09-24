@@ -15,13 +15,14 @@ module C__hidden : sig
 end
 
 (**/**)
+
 module D_hidden : sig
   (** @canonical Test.D *)
 
   type t
 end
-(**/**)
 
+(**/**)
 
 (** This should not have an expansion *)
 module A = A_nonhidden
