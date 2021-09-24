@@ -19,13 +19,14 @@ modules and canonical annotations.
   end
   
   (**/**)
+  
   module D_hidden : sig
     (** @canonical Test.D *)
   
     type t
   end
-  (**/**)
   
+  (**/**)
   
   (** This should not have an expansion *)
   module A = A_nonhidden
