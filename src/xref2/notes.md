@@ -19,7 +19,7 @@ so we have no access to type `u` in the result of applying
 `F` to `Y`.
 
 ```ocaml env=e1
-# module FY = F(Y)
+# module FY = F(Y) ;;
 module FY : sig type t = Y.t end
 ```
 

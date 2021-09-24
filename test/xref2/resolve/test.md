@@ -73,7 +73,7 @@ Simplest possible resolution:
 # test_resolve {|
   type t
   type u = t
-  |}
+  |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -181,7 +181,7 @@ Basic resolution 2, environment lookup:
       type t
   end
   type u = M.t
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -276,7 +276,7 @@ Basic resolution 3, module type:
   end
   module N : M
   type u = N.t
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -378,7 +378,7 @@ Basic resolution 4, module type:
   end
   module A : M
   type u = A.N.t
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -557,7 +557,7 @@ and then we can look up the type `t`.
   end
   module A : M
   type u = A.B.t
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -706,7 +706,7 @@ and then we can look up the type `t`.
   end
   module A : M
   type u = A.X.B.t
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -857,7 +857,7 @@ Ensure a substitution is taken into account during resolution:
   module C : A with module M = B
 
   type t = C.N.t
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -990,7 +990,7 @@ Ensure a destructive substitution is taken into account during resolution:
   module C : A with module M := B
 
   type t = C.N.t
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -1118,7 +1118,7 @@ Resolve a module alias:
   end
   module B = A
   type t = B.t
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -1194,7 +1194,7 @@ Resolve a module alias:
   module B = A
   module C = B
   type t = C.t
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -1291,7 +1291,7 @@ Resolve a functor:
     type y_t = Y.t
     type f_t = x_t
   end
-  |}
+  |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -1451,7 +1451,7 @@ Resolve a functor:
     type t = Arg.t
     type u = t
   end
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);
@@ -1628,7 +1628,7 @@ Functor app nightmare:
   (* Note: I think correct result is:
   type t = resolved[(global(Bar).T subst-> global(App)(resolved[global(Bar)])(resolved[global(Foo)])(resolved[global(FooBarInt)]).Foo).bar]
   *)
-    |}
+    |} ;;
 - : Odoc_model.Lang.Compilation_unit.t =
 {Odoc_model.Lang.Compilation_unit.id =
   `Root (Some (`Page (None, None)), Root);

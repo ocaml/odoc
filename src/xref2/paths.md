@@ -258,7 +258,7 @@ type t = F(M).N.t
 ```
 
 ```ocaml env=e1
-# let sg = Common.compile_signature (Common.signature_of_mli_string example)
+# let sg = Common.compile_signature (Common.signature_of_mli_string example) ;;
 val sg : Odoc_model.Lang.Signature.t =
   {Odoc_model.Lang.Signature.items =
     [Odoc_model.Lang.Signature.ModuleType
@@ -386,7 +386,7 @@ of `t` during the resolution process we embed it into the returned resolved
 path as this `` `Subst `` constructor:
 
 ```ocaml env=e1
-# Common.LangUtils.Lens.(get (type_constr_path "t") sg)
+# Common.LangUtils.Lens.(get (type_constr_path "t") sg) ;;
 - : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Type

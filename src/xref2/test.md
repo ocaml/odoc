@@ -148,7 +148,7 @@ let s_manifest = type_manifest "s"
 and using this lens on our original signature we obtain:
 
 ```ocaml env=e1
-# Common.LangUtils.Lens.get u_manifest sg
+# Common.LangUtils.Lens.get u_manifest sg ;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
@@ -227,7 +227,7 @@ The OCaml compiler find the module `M` exactly, but everything after that is lef
 to identify precisely. So the manifest of `u` is now:
 
 ```ocaml env=e1
-# Common.LangUtils.Lens.get u_manifest sg
+# Common.LangUtils.Lens.get u_manifest sg ;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
@@ -444,7 +444,7 @@ which is `A.B.t`. The compiler has started us off by resolving the
 `A`:
 
 ```ocaml env=e1
-# Common.LangUtils.Lens.get u_manifest sg
+# Common.LangUtils.Lens.get u_manifest sg ;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
@@ -574,7 +574,7 @@ let resolved = Common.compile_signature sg;;
 Let's look at `t`'s manifest:
 
 ```ocaml env=e1
-# Common.LangUtils.Lens.get t_manifest resolved
+# Common.LangUtils.Lens.get t_manifest resolved ;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
@@ -612,7 +612,7 @@ let resolved = Common.compile_signature sg;;
 ```
 
 ```ocaml env=e1
-# Common.LangUtils.Lens.get t_manifest resolved
+# Common.LangUtils.Lens.get t_manifest resolved ;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
@@ -1572,7 +1572,7 @@ let sg = Common.signature_of_mli_string test_data;;
 ```
 
 ```ocaml env=e1
-# Link.signature Env.empty id sg
+# Link.signature Env.empty id sg ;;
 - : Odoc_model.Lang.Signature.t =
 {Odoc_model.Lang.Signature.items =
   [Odoc_model.Lang.Signature.ModuleType
@@ -1651,7 +1651,7 @@ let module_M_expansion =
 ```
 
 ```ocaml env=e1
-# Common.LangUtils.Lens.get module_M_expansion expanded
+# Common.LangUtils.Lens.get module_M_expansion expanded ;;
 - : Odoc_model.Lang.ModuleType.expr =
 Odoc_model.Lang.ModuleType.Path
  {Odoc_model.Lang.ModuleType.p_expansion =
