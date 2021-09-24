@@ -12,21 +12,23 @@
 (cram
  (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile}))
 
+; 4.06.0 and above
+
 (cram
  (applies_to deep_substitution)
  (enabled_if
   (>= %{ocaml_version} 4.06.0)))
 
-(subdir
- v407_and_above
- (cram
-  (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile})
-  (enabled_if
-   (>= %{ocaml_version} 4.07.0))))
+; 4.07.0 and above
 
-(subdir
- v408_and_above
- (cram
-  (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile})
-  (enabled_if
-   (>= %{ocaml_version} 4.08.0))))
+(cram
+ (applies_to labels)
+ (enabled_if
+  (>= %{ocaml_version} 4.07.0)))
+
+; 4.08.0 and above
+
+(cram
+ (applies_to github_issue_587)
+ (enabled_if
+  (>= %{ocaml_version} 4.08.0)))
