@@ -500,6 +500,8 @@ module Fragment : sig
       type t = Paths_types.Resolved_fragment.module_
 
       val split : t -> string * t option
+
+      val identifier : t -> Identifier.Path.Module.t
     end
 
     module ModuleType : sig

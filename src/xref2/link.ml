@@ -362,44 +362,41 @@ and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
   let sg_id = (m.id :> Id.Signature.t) in
-  (* Format.fprintf Format.err_formatter "Processing Module %a\n%!"
-     Component.Fmt.model_identifier
-     (m.id :> Id.t); *)
   if m.hidden then m
   else
-    let type_ = module_decl env sg_id m.type_ in
-    let type_ =
-      match type_ with
-      | Alias (`Resolved p, _) ->
+    let type_ = module_decl env (m.id :> Id.Path.Module.t) m.type_ in
+    { m with doc = comment_docs env sg_id m.doc; type_ }
+
+and module_decl : Env.t -> Id.Path.Module.t -> Module.decl -> Module.decl =
+ fun env id decl ->
+  let open Module in
+  let sg_id = (id :> Id.Signature.t) in
+  match decl with
+  | ModuleType expr ->
+      ModuleType
+        (module_type_expr env (id : Id.Path.Module.t :> Id.Signature.t) expr)
+  | Alias (p, e) -> (
+      match module_path env p with
+      | `Resolved p ->
           let hidden_alias =
             Paths.Path.is_hidden (`Resolved (p :> Paths.Path.Resolved.t))
           in
           let self_canonical =
             let i = Paths.Path.Resolved.Module.identifier p in
-            i = (m.id :> Paths.Identifier.Path.Module.t)
+            i = (id :> Id.Path.Module.t)
           in
           let expansion_needed = self_canonical || hidden_alias in
           if expansion_needed then
             let cp = Component.Of_Lang.(resolved_module_path empty p) in
             match
-              Expand_tools.expansion_of_module_alias env m.id (`Resolved cp)
+              Expand_tools.expansion_of_module_alias env id (`Resolved cp)
             with
             | Ok (_, _, e) ->
                 let le = Lang_of.(simple_expansion empty sg_id e) in
                 Alias (`Resolved p, Some (simple_expansion env sg_id le))
-            | Error _ -> type_
-          else type_
-      | Alias _ | ModuleType _ -> type_
-    in
-    { m with doc = comment_docs env sg_id m.doc; type_ }
-
-and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
- fun env id decl ->
-  let open Module in
-  match decl with
-  | ModuleType expr -> ModuleType (module_type_expr env id expr)
-  | Alias (p, e) ->
-      Alias (module_path env p, Opt.map (simple_expansion env id) e)
+            | Error _ -> Alias (`Resolved p, e)
+          else Alias (`Resolved p, e)
+      | p' -> Alias (p', Opt.map (simple_expansion env sg_id) e))
 
 and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
  fun env id decl ->
@@ -476,24 +473,26 @@ and handle_fragments env id sg subs =
          Component.Fmt.substitution
          Component.Of_Lang.(module_type_substitution empty sub); *)
       match (sg_res, lsub) with
-      | Result.Ok sg, ModuleEq (frag, decl) ->
-          let frag' =
-            match frag with
-            | `Resolved f ->
-                let cfrag =
-                  Component.Of_Lang.(resolved_module_fragment empty f)
-                in
-                `Resolved
-                  (Tools.reresolve_module_fragment env cfrag
-                  |> Lang_of.(Path.resolved_module_fragment empty))
-            | _ -> frag
-          in
+      | Result.Ok sg, ModuleEq (frag, decl) -> (
           let sg' =
             Tools.fragmap ~mark_substituted:true env
               Component.Of_Lang.(with_module_type_substitution empty lsub)
               sg
           in
-          (sg', ModuleEq (frag', module_decl env id decl) :: subs)
+          match frag with
+          | `Resolved f ->
+              let cfrag =
+                Component.Of_Lang.(resolved_module_fragment empty f)
+              in
+              let rfrag =
+                Tools.reresolve_module_fragment env cfrag
+                |> Lang_of.(Path.resolved_module_fragment empty)
+              in
+
+              let frag' = `Resolved rfrag in
+              let m_id = Paths.Fragment.Resolved.Module.identifier rfrag in
+              (sg', ModuleEq (frag', module_decl env m_id decl) :: subs)
+          | _ -> (sg', lsub :: subs))
       | Ok sg, TypeEq (frag, eqn) ->
           let frag' =
             match frag with

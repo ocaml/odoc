@@ -213,7 +213,7 @@ let expansion_of_u_module_type_expr env id expr =
 let expansion_of_module_alias env id path =
   let open Paths.Identifier in
   aux_expansion_of_module_alias ~strengthen:false env path
-  >>= handle_expansion env (id : Module.t :> Signature.t)
+  >>= handle_expansion env (id : Path.Module.t :> Signature.t)
   >>= fun (env, r) -> Ok (env, false, r)
 
 let expansion_of_module_type_of_desc env id t_desc =

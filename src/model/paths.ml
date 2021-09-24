@@ -739,6 +739,12 @@ module Fragment = struct
             | Branch (base, m) ->
                 (ModuleName.to_string base, Some (`Module (m, name))))
         | `OpaqueModule m -> split m
+
+      let rec identifier : t -> Identifier.Path.Module.t = function
+        | `Subst (_, s) -> identifier s
+        | `Alias (i, _) -> Path.Resolved.Module.identifier i
+        | `Module (m, n) -> `Module (Signature.identifier m, n)
+        | `OpaqueModule m -> identifier m
     end
 
     module ModuleType = struct
