@@ -3,7 +3,10 @@
 open Odoc_model
 
 val signature :
-  Env.t -> Paths.Identifier.Signature.t -> Lang.Signature.t -> Lang.Signature.t
+  Env.t ->
+  Paths.Identifier.Signature.t ->
+  Lang.Signature.t * Comment.docs ->
+  Lang.Signature.t * Comment.docs
 (** For testing purpose. May call [Lookup_failures.report]. *)
 
 val link :

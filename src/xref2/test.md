@@ -1572,63 +1572,64 @@ let sg = Common.signature_of_mli_string test_data;;
 ```
 
 ```ocaml env=e1
-# Link.signature Env.empty id sg
-- : Odoc_model.Lang.Signature.t =
-{Odoc_model.Lang.Signature.items =
-  [Odoc_model.Lang.Signature.ModuleType
-    {Odoc_model.Lang.ModuleType.id =
-      `ModuleType (`Root (Some (`Page (None, None)), Root), M);
-     doc = []; canonical = None;
-     expr =
-      Some
-       (Odoc_model.Lang.ModuleType.Signature
-         {Odoc_model.Lang.Signature.items =
-           [Odoc_model.Lang.Signature.Type
-             (Odoc_model.Lang.Signature.Ordinary,
-             {Odoc_model.Lang.TypeDecl.id =
-               `Type
-                 (`ModuleType (`Root (Some (`Page (None, None)), Root), M),
-                  t);
-              doc = []; canonical = None;
-              equation =
-               {Odoc_model.Lang.TypeDecl.Equation.params = [];
-                private_ = false; manifest = None; constraints = []};
-              representation = None})];
-          compiled = false; doc = []})};
-   Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-    {Odoc_model.Lang.TypeDecl.id =
-      `Type (`Root (Some (`Page (None, None)), Root), u);
-     doc = []; canonical = None;
-     equation =
-      {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-       manifest = None; constraints = []};
-     representation = None});
-   Odoc_model.Lang.Signature.ModuleType
-    {Odoc_model.Lang.ModuleType.id =
-      `ModuleType (`Root (Some (`Page (None, None)), Root), M1);
-     doc = []; canonical = None;
-     expr =
-      Some
-       (Odoc_model.Lang.ModuleType.With
-         {Odoc_model.Lang.ModuleType.w_substitutions =
-           [Odoc_model.Lang.ModuleType.TypeEq (`Dot (`Root, "t"),
-             {Odoc_model.Lang.TypeDecl.Equation.params = [];
-              private_ = false;
-              manifest =
-               Some
-                (Odoc_model.Lang.TypeExpr.Constr
-                  (`Resolved
-                     (`Identifier
-                        (`Type (`Root (Some (`Page (None, None)), Root), u))),
-                  []));
-              constraints = []})];
-          w_expansion = None;
-          w_expr =
-           Odoc_model.Lang.ModuleType.U.Path
-            (`Resolved
-               (`Identifier
-                  (`ModuleType (`Root (Some (`Page (None, None)), Root), M))))})}];
- compiled = false; doc = []}
+# Link.signature Env.empty id (sg, [])
+- : Odoc_model.Lang.Signature.t * Odoc_model.Comment.docs =
+({Odoc_model.Lang.Signature.items =
+   [Odoc_model.Lang.Signature.ModuleType
+     {Odoc_model.Lang.ModuleType.id =
+       `ModuleType (`Root (Some (`Page (None, None)), Root), M);
+      doc = []; canonical = None;
+      expr =
+       Some
+        (Odoc_model.Lang.ModuleType.Signature
+          {Odoc_model.Lang.Signature.items =
+            [Odoc_model.Lang.Signature.Type
+              (Odoc_model.Lang.Signature.Ordinary,
+              {Odoc_model.Lang.TypeDecl.id =
+                `Type
+                  (`ModuleType (`Root (Some (`Page (None, None)), Root), M),
+                   t);
+               doc = []; canonical = None;
+               equation =
+                {Odoc_model.Lang.TypeDecl.Equation.params = [];
+                 private_ = false; manifest = None; constraints = []};
+               representation = None})];
+           compiled = false; doc = []})};
+    Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
+     {Odoc_model.Lang.TypeDecl.id =
+       `Type (`Root (Some (`Page (None, None)), Root), u);
+      doc = []; canonical = None;
+      equation =
+       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
+        manifest = None; constraints = []};
+      representation = None});
+    Odoc_model.Lang.Signature.ModuleType
+     {Odoc_model.Lang.ModuleType.id =
+       `ModuleType (`Root (Some (`Page (None, None)), Root), M1);
+      doc = []; canonical = None;
+      expr =
+       Some
+        (Odoc_model.Lang.ModuleType.With
+          {Odoc_model.Lang.ModuleType.w_substitutions =
+            [Odoc_model.Lang.ModuleType.TypeEq (`Dot (`Root, "t"),
+              {Odoc_model.Lang.TypeDecl.Equation.params = [];
+               private_ = false;
+               manifest =
+                Some
+                 (Odoc_model.Lang.TypeExpr.Constr
+                   (`Resolved
+                      (`Identifier
+                         (`Type (`Root (Some (`Page (None, None)), Root), u))),
+                   []));
+               constraints = []})];
+           w_expansion = None;
+           w_expr =
+            Odoc_model.Lang.ModuleType.U.Path
+             (`Resolved
+                (`Identifier
+                   (`ModuleType (`Root (Some (`Page (None, None)), Root), M))))})}];
+  compiled = false; doc = []},
+ [])
 ```
 
 # Expansion continued
@@ -1644,7 +1645,7 @@ module M : Foo(Bar).S
 |};;
 let sg = Common.signature_of_mli_string test_data;;
 let resolved = Common.compile_signature sg;;
-let expanded = Link.signature Env.empty id resolved;;
+let expanded, _ = Link.signature Env.empty id (resolved, []);;
 let module_M_expansion =
   let open Common.LangUtils.Lens in
   Signature.module_ "M" |-- Module.type_ |-~ Module.decl_moduletype
