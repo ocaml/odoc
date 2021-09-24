@@ -1,10 +1,6 @@
 # References to pages and items in pages
 
   $ compile p.mld good_references.mli bad_references.mli
-  File "p.mld", line 6, characters 5-11:
-  Failed to resolve reference unresolvedroot(M).t Couldn't find "M"
-  File "p.mld", line 6, characters 0-4:
-  Failed to resolve reference unresolvedroot(M) Couldn't find "M"
   File "bad_references.mli", line 6, characters 42-69:
   Failed to resolve reference unresolvedroot(p).not_found Couldn't find page "not_found"
   File "bad_references.mli", line 4, characters 20-37:
@@ -29,5 +25,5 @@ Every references in `Bad_references` should not:
 Every references in `P` should resolve:
 
   $ odoc_print page-p.odocl | jq_scan_references
-  {"`Root":["M","`TUnknown"]}
-  {"`Dot":[{"`Root":["M","`TUnknown"]},"t"]}
+  {"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Good_references"]}}}
+  {"`Resolved":{"`Type":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Good_references"]}},"t"]}}
