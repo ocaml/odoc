@@ -12,6 +12,11 @@
 (cram
  (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile}))
 
+(cram
+ (applies_to deep_substitution)
+ (enabled_if
+  (>= %{ocaml_version} 4.06.0)))
+
 (subdir
  v407_and_above
  (cram
