@@ -9,9 +9,9 @@ Ocamlary\.Buffer
 .in 
 .sp 
 .fi 
-Buffer\.t
+References are resolved after everything, so {!Buffer\.t} won't resolve\.
 .nf 
 .SH Documentation
 .sp 
 .nf 
-\f[CB]val\fR f : Stdlib\.Buffer\.t \f[CB]\->\fR unit
+\f[CB]val\fR f : int \f[CB]\->\fR unit

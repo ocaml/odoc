@@ -85,12 +85,11 @@ Raw HTML can be  as inline elements into sentences.
 \subsection{Modules\label{modules}}%
 \begin{description}\kern-\topsep
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
-\item[{\ocamlinlinecode{X}}]{}\end{description}%
+\item[{\hyperref[module-Markup-module-X]{\ocamlinlinecode{\ocamlinlinecode{X}}[p\pageref*{module-Markup-module-X}]}}]{}\end{description}%
 \begin{description}\kern-\topsep
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
-\item[{\ocamlinlinecode{X}}]{}%
-\item[{\ocamlinlinecode{Y}}]{}%
-\item[{\ocamlinlinecode{Z}}]{}\end{description}%
+\item[{\hyperref[module-Markup-module-X]{\ocamlinlinecode{\ocamlinlinecode{X}}[p\pageref*{module-Markup-module-X}]}}]{}%
+\item[{\hyperref[module-Markup-module-Y]{\ocamlinlinecode{\ocamlinlinecode{Y}}[p\pageref*{module-Markup-module-Y}]}}]{}\end{description}%
 \subsection{Tags\label{tags}}%
 Each comment can end with zero or more tags. Here are some examples:
 
@@ -145,5 +144,11 @@ Each comment can end with zero or more tags. Here are some examples:
 \item[{version}]{-1}\end{description}%
 \label{module-Markup-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : unit}\begin{ocamlindent}Comments in structure items \bold{support} \emph{markup}, t\textsuperscript{o}\textsubscript{o}.\end{ocamlindent}%
 \medbreak
+Some modules to support references.
+
+\label{module-Markup-module-X}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Markup-module-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{module-Markup-module-Y}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Markup-module-Y]{\ocamlinlinecode{Y}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
 
 

@@ -155,10 +155,14 @@ Ocamlary-DoubleInclude3.html
 Ocamlary-DoubleInclude3-DoubleInclude2.html
 Ocamlary-IncludeInclude1.html
 Ocamlary-IncludeInclude1-module-type-IncludeInclude2.html
+Ocamlary-IncludeInclude1-IncludeInclude2_M.html
 Ocamlary-module-type-IncludeInclude2.html
+Ocamlary-IncludeInclude2_M.html
 Ocamlary-CanonicalTest.html
 Ocamlary-CanonicalTest-Base.html
 Ocamlary-CanonicalTest-Base-List.html
+Ocamlary-CanonicalTest-Base_Tests.html
+Ocamlary-CanonicalTest-Base_Tests-C.html
 Ocamlary-CanonicalTest-List_modif.html
 Ocamlary-Aliases.html
 Ocamlary-Aliases-Foo.html

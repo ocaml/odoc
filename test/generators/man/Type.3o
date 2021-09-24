@@ -44,7 +44,7 @@ Some documentation\.
 .sp 
 \f[CB]type\fR instance = int constructor
 .sp 
-\f[CB]type\fR long = labeled_higher_order \f[CB]\->\fR [ `Bar | `Baz of triple ] \f[CB]\->\fR pair \f[CB]\->\fR labeled \f[CB]\->\fR higher_order \f[CB]\->\fR (string \f[CB]\->\fR int) \f[CB]\->\fR (int, float, char, string, char, unit) CamlinternalFormatBasics\.fmtty \f[CB]\->\fR nested_pair \f[CB]\->\fR arrow \f[CB]\->\fR string \f[CB]\->\fR nested_pair array
+\f[CB]type\fR long = labeled_higher_order \f[CB]\->\fR [ `Bar | `Baz of triple ] \f[CB]\->\fR pair \f[CB]\->\fR labeled \f[CB]\->\fR higher_order \f[CB]\->\fR (string \f[CB]\->\fR int) \f[CB]\->\fR (int * float * char * string * char * unit) option \f[CB]\->\fR nested_pair \f[CB]\->\fR arrow \f[CB]\->\fR string \f[CB]\->\fR nested_pair array
 .sp 
 \f[CB]type\fR variant_e = {
 .br 

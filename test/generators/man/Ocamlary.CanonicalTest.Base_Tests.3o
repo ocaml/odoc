@@ -1,0 +1,33 @@
+
+.TH Base_Tests 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.CanonicalTest\.Base_Tests
+.SH Synopsis
+.sp 
+.in 2
+\fBModule CanonicalTest\.Base_Tests\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR C : \f[CB]module\fR \f[CB]type\fR \f[CB]of\fR Base\.List
+.sp 
+\f[CB]module\fR L = Base\.List
+.sp 
+\f[CB]val\fR foo : int L\.t \f[CB]\->\fR float L\.t
+.sp 
+\f[CB]val\fR bar : \f[CB]'a\fR Base\.List\.t \f[CB]\->\fR \f[CB]'a\fR Base\.List\.t
+.fi 
+.br 
+.ti +2
+This is just List\.id, or rather \f[CI]L\.id\fR
+.nf 
+.sp 
+\f[CB]val\fR baz : \f[CB]'a\fR Base\.List\.t \f[CB]\->\fR unit
+.fi 
+.br 
+.ti +2
+We can't reference Base__ because it's hidden\. List\.t (List\.t) should resolve\.
+.nf 
+

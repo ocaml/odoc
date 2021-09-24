@@ -99,7 +99,7 @@ Here is an index table of Empty modules:
 .nf 
 .sp 
 .fi 
-Here is a table of links to indexes: indexlist
+Odoc doesn't support {!indexlist}\.
 .nf 
 .sp 
 .fi 
@@ -306,7 +306,7 @@ For a good time, see SuperSig\.SubSigA\.subSig or SuperSig\.SubSigB\.subSig or \
 .fi 
 .br 
 .ti +2
-Buffer\.t
+References are resolved after everything, so {!Buffer\.t} won't resolve\.
 .nf 
 .sp 
 .fi 
@@ -1740,6 +1740,8 @@ A brown paper package tied up with string
 .br 
 \f[CB]end\fR
 .sp 
+\f[CB]module\fR IncludeInclude2_M : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
 \f[CB]type\fR include_include
 .sp 
 .in 3
@@ -1753,8 +1755,6 @@ With odoc, everything should be resolved (and linked) but only toplevel units wi
 .sp 
 @\f[CI]Dep1\.X\fR: 
 .br 
-@DocOckTypes: 
-.br 
 @\f[CI]Ocamlary\.IncludeInclude1\fR: 
 .br 
 @\f[CI]Ocamlary\fR: This is an \fIinterface\fR with \fBall\fR of the module system features\. This documentation demonstrates:
@@ -1765,11 +1765,9 @@ With odoc, everything should be resolved (and linked) but only toplevel units wi
 .in 
 .sp 
 .fi 
-@IncludeInclude1\.IncludeInclude2: 
+@\f[CI]IncludeInclude1\.IncludeInclude2_M\fR: 
 .br 
-@Dep4\.T: 
-.br 
-@\f[CI]A\.Q\fR: 
+@\f[CI]Dep4\.X\fR: 
 .nf 
 .sp 
 .in 3
@@ -1782,7 +1780,7 @@ With odoc, everything should be resolved (and linked) but only toplevel units wi
 .fi 
 .br 
 .ti +2
-Some ref to CanonicalTest\.Base__Tests\.C\.t and CanonicalTest\.Base__Tests\.L\.id\. But also to CanonicalTest\.Base__\.List and CanonicalTest\.Base__\.List\.t
+Some ref to \f[CI]CanonicalTest\.Base_Tests\.C\.t\fR and \f[CI]CanonicalTest\.Base_Tests\.L\.id\fR\. But also to \f[CI]CanonicalTest\.Base\.List\fR and \f[CI]CanonicalTest\.Base\.List\.t\fR
 .nf 
 .sp 
 .in 3
@@ -1848,13 +1846,13 @@ Here goes:
 \f[CB]module\fR Only_a_module : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .sp 
 .fi 
-Some here should fail:
-.sp 
 \(bu {!Only_a_module\.t} : \f[CI]Only_a_module\.t\fR
 .br 
 \(bu {!module-Only_a_module\.t} : \f[CI]Only_a_module\.t\fR
 .br 
-\(bu {!module-type-Only_a_module\.t} : Only_a_module\.t : \f[CI]test\fR
+\(bu {!module-Only_a_module\.type-t} : \f[CI]Only_a_module\.t\fR
+.br 
+\(bu {!type:Only_a_module\.t} : \f[CI]Only_a_module\.t\fR
 .nf 
 .sp 
 \f[CB]module\fR \f[CB]type\fR TypeExt = \f[CB]sig\fR

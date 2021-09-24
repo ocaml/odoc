@@ -55,9 +55,13 @@ Ocamlary.DoubleInclude1.DoubleInclude2.3o
 Ocamlary.DoubleInclude3.3o
 Ocamlary.DoubleInclude3.DoubleInclude2.3o
 Ocamlary.IncludeInclude1.3o
+Ocamlary.IncludeInclude1.IncludeInclude2_M.3o
+Ocamlary.IncludeInclude2_M.3o
 Ocamlary.CanonicalTest.3o
 Ocamlary.CanonicalTest.Base.3o
 Ocamlary.CanonicalTest.Base.List.3o
+Ocamlary.CanonicalTest.Base_Tests.3o
+Ocamlary.CanonicalTest.Base_Tests.C.3o
 Ocamlary.CanonicalTest.List_modif.3o
 Ocamlary.Aliases.3o
 Ocamlary.Aliases.Foo.3o
