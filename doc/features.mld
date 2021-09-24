@@ -1,79 +1,72 @@
-{0 Language features}
+{0 Language Features}
 
-Odoc works by taking module interfaces, processing them to make them more
-useful, and turning them into documentation.
-The processing that odoc does is largely {{!hiding}hiding}, handling of {{!canonical}
-canonical references}, {{!expansion}expansion} and {{!resolution}resolution},
-and this document explains the features of these processes in detail.
+[odoc] works by taking module interfaces, processing them to make them more
+useful, and turning them into documentation. This processing is largely {{!hiding}hiding}, handling of {{!canonical}
+canonical references}, {{!expansion}expansion} and {{!resolution}resolution}.
+This document explains the features of these processes in detail.
 
 {1:hiding Hiding}
 
 Some items are not intended to be used directly but are present as
-implementation detail, for example for testing, or for implementing dune's
-namespacing, or other reasons. 
+implementation detail, e.g., for testing, for implementing Dune's namespacing, or other reasons. 
 
 There are two mechanisms for explicitly hiding elements from the final
 output. The first is to use {{:https://ocaml.org/manual/ocamldoc.html#ss:ocamldoc-stop}documentation stop comments},
-which can be used to hide any items at all from the output. The second
-mechanism is only used for modules, and is a naming convention. If any
-module has a double underscore in its name, it is considered to be
-hidden.
+which can be used to hide any items from the output. The second
+mechanism is only used for modules and is a naming convention. If any module has a double underscore in its name, it’s considered to be hidden.
 
-{1:canonical Canonical items}
+{1:canonical Canonical Items}
 
-Occasionally it is useful to declare an item in one place, and expose
+Occasionally it’s useful to declare an item in one place and expose
 it in the public interface in another. In order to prevent unwanted occurrences
-of the actual definition site, odoc has a feature whereby the 'canonical'
+of the actual definition site, [odoc] has a feature whereby the 'canonical'
 location of a module, module type or type can be specified.
 
-The biggest user of module aliases is dune's {{:https://dune.readthedocs.io/en/stable/dune-files.html#library}wrapped libraries}.
-This feature allows dune to produce a library whose interface is exposed entirely
+The biggest user of module aliases is Dune's {{:https://dune.readthedocs.io/en/stable/dune-files.html#library}wrapped libraries}.
+This feature allows Dune to produce a library whose interface is exposed entirely
 though a single top-level module. It does this by mangling the names of the
 real implementation modules and generating the single top-level module that
-simply contains aliases to the these implementation modules. With odoc's
+simply contains aliases to the these implementation modules. With [odoc]'s
 canonical modules feature all references to the implementation modules are
 rewritten to point at the aliases in the top-level module instead. Please
 see the section on Dune's 
 {{!page-dune.library_wrapping}library wrapping} for more detail.
 
-
-In a similar fashion, it is sometimes useful to have this feature on module
-types and types. For example, odoc itself uses this for it's 'paths types'.
-Since they are all mutually recursive they have to be declared all at the
-same time in the module {{:https://github.com/ocaml/odoc/blob/91f6310967e64f3fa88445f3daf2fea2acc0bb49/src/model/paths_types.ml#L201-L219}[Paths_types]}, but odoc exposes them in separate modules.
+In a similar fashion, it's sometimes useful to have this feature on module
+types and types. For example, [odoc] itself uses this for its 'paths types'.
+Since they are all mutually recursive, they all have to be declared at the
+same time in the module {{:https://github.com/ocaml/odoc/blob/91f6310967e64f3fa88445f3daf2fea2acc0bb49/src/model/paths_types.ml#L201-L219}[Paths_types]}, but [odoc] exposes them in separate modules.
 By annotating the definition point with [@canonical] tags pointing to the
-{{:https://github.com/ocaml/odoc/blob/master/src/model/paths.mli#L419}aliases}, we ensure that all
-references to them point at the {{!Odoc_model.Paths.Path.Resolved.Module}separate} {{!Odoc_model.Paths.Path.Resolved.ModuleType}modules} as intended.
+{{:https://github.com/ocaml/odoc/blob/master/src/model/paths.mli#L419}aliases}, we ensure that all their 
+references point at the {{!Odoc_model.Paths.Path.Resolved.Module}separate} {{!Odoc_model.Paths.Path.Resolved.ModuleType}modules} as intended.
 
 {1:expansion Expansion}
 
 There are many instances of items in signatures where what's written is
-the best thing in terms of semantics, but not necessarily useful in terms
+the best thing in terms of semantics, but it’s not necessarily useful in terms
 of documentation. For example:
 
 {[
 module StringSet : Stdlib.Set.S with type t = string
 ]}
 
-Odoc will {e expand} these items, augmenting the declaration with the
-signature along with all the documentation comments that can be found,
-so in this case those from [Stdlib.Set.S]. While the compiler also does
+[odoc] will {e expand} these items, augmenting the declaration with the
+signature along with all the documentation comments that can be found, e.g., those from [Stdlib.Set.S] in the above example. While the compiler also does
 a very similar procedure and determines the signature of the module,
-odoc tries quite hard to preserve as much as possible from the context
-of the original items. 
+[odoc] tries quite hard to preserve as much as possible from the original items’ context. 
 
 The declaration can be seen rendered {{!Odoc_examples.Expansion.Simple}here}, 
 and the full expansion can be found by clicking on the name of the module
-([StringSet] in this case), or the direct link is {{!Odoc_examples.Expansion.Simple.StringSet}here}.
+([StringSet] in this case). The direct link is {{!Odoc_examples.Expansion.Simple.StringSet}here}.
 
 These expansions have to be done carefully. A number of cases follow
-in which odoc has to treat specially.
+in which [odoc] has to treat specially.
 
 {2 Aliases}
 
-In general odoc does not expand module aliases, unless they are an
-alias to a hidden module. If this is the case the right-hand side of
-the declaration is dropped and replaced with [sig ... end] and
+In general [odoc] doesn’t expand module aliases unless they are an
+alias to a hidden module. If this is the case, the right-hand side of
+the declaration is dropped and replaced with [sig ... end], and
 the expansion is created.
 
 For example, given the following source,
@@ -89,21 +82,21 @@ module Alias = Hidden__module
 
 ]}
 
-then the [Hidden__module] module will not be present in the output, and
+the [Hidden__module] module won’t be present in the output, and
 the [Alias] module will be rendered as if it were a simple
 signature. This can be seen in the example rendering {{!Odoc_examples.Expansion.Aliases}here}.
 
 As well as expanding aliases to hidden modules, modules are also expanded if the module
-alias is "self canonical" - that is,
-if module [A] is an alias to another module [B] that declares [A] to be the canonical
-path to the module (ie, it has the tag [@canonical A] in an associated
+alias is "self canonical." That is,
+if module [A] is an alias to module [B], that declares [A] to be the canonical
+path to the module (i.e., it has the tag [@canonical A] in an associated
 comment).
 
-{3 Module type aliases}
+{3 Module Type Aliases}
 
-Module types do not have aliases in the same way that modules do, but it
+Module types don’t have aliases in the same way that modules do, but it
 is possible and common to declare an effective alias to another by
-simply creating a new module type that is equal to a previous one. For example:
+simply creating a new module type that’s equal to a previous one. For example:
 
 {[
 module type A = sig
@@ -113,18 +106,17 @@ end
 module type B = A
 ]}
 
-For these simple module type declarations where the right-hand side is just a
-path, odoc treats them as module aliases and does not produce an expansion.
+For these simple module type declarations, where the right-hand side is just a
+path, [odoc] treats them as module aliases and doesn’t produce an expansion.
 This example is rendered {{!Odoc_examples.Expansion.ModuleTypeAliases}here}.
 
-When strengthening, OCaml creates turns modules into aliases to the original
-module, but nothing is done to module types. In contrast, odoc replaces
-module types with 'aliases' to the originals too - these are then not expanded
-and hence this is important for reducing the size of the output.
+When strengthening, OCaml turns modules into aliases to the original
+module, but nothing is done to module types. In contrast, [odoc] replaces
+module types with 'aliases' to the originals, too. These are  not expanded, hence this is important for reducing the size of the output.
 
-The following examples uses [module type of struct include ... end] to
+The following examples use [module type of struct include ... end] to
 obtain the strengthened signature of [A] (see the {{!module_type_of}[Module Type Of]}
-section for more discussion of this).
+section for more details on this).
 
 {[
 module A : sig
@@ -140,7 +132,7 @@ OCaml evaluates the following signature for [B]:
 module B : sig module type A = sig type t end module X = A.X end
 ]}
 
-whereas odoc internally evaluates this as:
+whereas [odoc] internally evaluates this as:
 
 {[
 module B : sig module type A = A.A end module X = A.X end
@@ -151,11 +143,11 @@ This example is rendered {{!Odoc_examples.Expansion.ModuleTypeAliases2.B}here}
 
 {2 Functors}
 
-When odoc encounters a functor, these are also expanded. The parameters
-are expanded in the body of the functor expansion above the signature
-representing the result of the functor.
+When [odoc] encounters a functor, it is also expanded. The parameters
+are expanded in the body of the functor expansion, above the signature
+representing the functor’s result.
 
-For example, given the following:
+For example, given the following,
 
 {[
 module type Argument = sig
@@ -175,8 +167,8 @@ end
 module Functor : functor (X : Argument) (Y : Argument) -> Result
 ]}
 
-an expansion will be created for [Functor], containing within it
-expansions for [X] and [Y], followed by the signature of [Result].
+an expansion will be created for [Functor], containing
+expansions for [X] and [Y] within it and followed by the [Result]’s signature.
 The above functor can be seen rendered {{!Odoc_examples.Expansion.Functors.Functor}here}.
 
 {2 Includes}
@@ -231,7 +223,7 @@ type t = string
 ]}
 
 However, if the item comes in via an include, then OCaml allows it.
-For example,
+For example:
 
 {[
 module type A = sig
@@ -246,16 +238,16 @@ module type B = sig
 end
 ]}
 
-Since odoc is required to do its own expansions, it must take
+Since [odoc] is required to do its own expansions, it must take
 account of this behaviour. The previous example is rendered
 {{!Odoc_examples.Expansion.Shadowing}here}.
 
-{2 Deep equations}
+{2 Deep Equations}
 
 The module type system allows for adding equations to abstract types 
 (as seen above in the [StringSet] declaration). These equations
 may be 'deep' in the sense that they operate on a nested module
-rather than the outer one. For example,
+rather than the outer one. For example:
 
 {[
 module type SIG = sig
@@ -272,9 +264,8 @@ type foo
 module M : MODTYPE with type X.t = foo
 ]}
 
-Here we've got a module type [SIG] that contains an abstract type [t].
-Then a module type [MODTYPE] that contains two modules, [X] and [Y],
-that have signature [SIG]. Lastly we declare a module [M] that
+Here we've got a module type [SIG] that contains an abstract type [t] and a module type [MODTYPE] that contains two modules, [X] and [Y],
+that have signature [SIG]. Lastly, we declare a module [M] that
 has signature [MODTYPE] with an additional type equality [X.t = foo].
 When the compiler evaluates
 the signature of module [M] here, the definition of [X]
@@ -287,14 +278,14 @@ module M : sig
 end
 ]}
 
-and we lose both the fact that it came from [MODTYPE] and also
-that within it [X] originally had signature [SIG]. Odoc tries
-to be more careful and instead with keep both the [MODTYPE] on [M] with the 
-type equality [X.t = foo], 
+We lose both the fact that it came from [MODTYPE] and also
+that within it, [X] originally had signature [SIG]. [odoc] tries
+to be more careful. Instead, it keeps both the [MODTYPE] on [M] with the 
+type equality [X.t = foo] 
 and the [SIG] on [X] with the type equality [t = foo]. The expansion of
-of module M in this example can be seen {{!Odoc_examples.Expansion.DeepEquality.M}here}.
+of module [M] in this example can be seen {{!Odoc_examples.Expansion.DeepEquality.M}here}.
 
-Note that if X was a simple signature before the type equality was added, that does not get preserved. In the following example,
+Note that if [X] was a simple signature before the type equality was added, that does not get preserved. In the following example,
 
 {[
 module type MODTYPE = sig
@@ -312,12 +303,12 @@ the {{!Odoc_examples.Expansion.DeepEquality2.M}expansion of M} does not contain 
 {2 Substitution}
 
 Similar to the addition of equations in the previous section, OCaml allows
-for types and modules to be {e destructively} substituted - so that the
+for types and modules to be {e destructively} substituted, so the
 type or module is entirely removed from the resulting signature.
 
 As with the addition of equations above, these substitutions may be on
 deeply nested modules, and care needs to be taken to ensure that there are
-no references to the removed module or type left. For example,
+no references to the removed module or type left. For example:
 
 {[
 module type S = sig
@@ -339,10 +330,10 @@ type t = M.t
 ]}
 
 From this expansion it is still clear how to resolve the right-hand side
-of [type t = M.t], and the next phase of odoc's transformation turns the
+of [type t = M.t], and the next phase of [odoc]'s transformation turns the
 right-hand side of [M.t] into [int].
 
-In the output documentation, the declaration of `module M` is rendered
+In the output documentation, the declaration of [module M] is rendered
 simply as
 
 {[
@@ -350,17 +341,17 @@ module M : sig ... end
 ]}
 
 with the type substitution dropped. This is because the type substitition on
-the simple signature is not useful to know to the reader; the link [t] would
+the simple signature isn't useful for the reader; the link [t] would
 have no destination. This example is rendered {{!Odoc_examples.Expansion.TypeSubstitution}here}.
 
 
 {2:module_type_of [module type of]}
 
 The OCaml construct [module type of] allows the type of a module to be
-recovered. As usual, when OCaml performs this operation it only retains
+recovered. As usual, when OCaml performs this operation, it only retains
 the simplified signature, stripped of comments, includes, and more
-complex module type expressions. As with the previous sections, odoc
-tries a little harder to keep track of these things, and also of the
+complex module type expressions. As with the previous sections, [odoc]
+tries a little harder to keep track of these things and also of the
 fact that the signature came from a [module type of] expression.
 
 For example, consider the following:
@@ -377,9 +368,9 @@ module M : module type of A
 ]}
 
 the [type t] in module [M] has the comment from the original module.
-There is also logic in odoc to manage the similar construct
-[module type of struct include ... end] which is used where the types
-and modules are required to be strengthened - that is, the types in
+There is also logic in [odoc] to manage the similar construct
+[module type of struct include ... end], which is used where the types
+and modules are required to be strengthened. That is, the types in
 the signature are equal to those in the original module, and any
 modules in the new signature are aliases of those in the original.
 For example,
@@ -388,7 +379,7 @@ For example,
 module M' : module type of struct include A end
 ]}
 
-In {{!Odoc_examples.Expansion.ModuleTypeOf.M}M'}, type [t] is equal to
+In {{!Odoc_examples.Expansion.ModuleTypeOf.M}M’}, type [t] is equal to
 [A.t], whereas in {{!Odoc_examples.Expansion.ModuleTypeOf.M}M} there is
 no equation.
 
@@ -420,7 +411,7 @@ module type S =
   end
 ]}
 
-whereas odoc preserves the fact that [Y] and [Z] are calculated from [X]. If the 
+whereas [odoc] preserves the fact that [Y] and [Z] are calculated from [X]. If the 
 module [X] is subsequently replaced using a destructive substitution on [S], the
 results would be different. Given the following,
 
@@ -433,7 +424,7 @@ end
 module type T = S with module X := X1
 ]}
 
-then the signature of T as calculated by OCaml will be
+then the signature of [T] as calculated by OCaml will be
 
 {[
 sig
@@ -442,22 +433,22 @@ sig
 end
 ]}
 
-However it's clear that if the [module type of] operations were evaluated {e after}
+However, it's clear that if the [module type of] operations were evaluated {e after}
 the substitution, both [Y] and [Z] would contain [type u].
 
-There is logic in odoc to handle this correctly, but since there is currently no
+There is logic in [odoc] to handle this correctly, but since there is currently no
 syntax for representing transparent ascription, the consequence is that we lose
 the fact that [Y] and [Z] originally came from [module type of] expressions.
 
 This example is rendered {{!Odoc_examples.Expansion.ModuleTypeOfComplications}here},
-and in the {{!Odoc_examples.Expansion.ModuleTypeOfComplications.T}expansion of T} it
-can be seen that [Y] and [Z] are simple signatures only containing type t.
+and in the {{!Odoc_examples.Expansion.ModuleTypeOfComplications.T}expansion of T}, it
+can be seen that [Y] and [Z] are simple signatures only containing [type t].
 
 
 {1:resolution Resolution}
 
 There are several different but related constructs for referring to elements in
-odoc. The following example demonstrates each:
+[odoc]. The following example demonstrates each:
 
 {[
 (** The module {!module-M} and type {!module-M.module-X.type-t} *)
@@ -468,20 +459,20 @@ Here, [M] is an {e identifier} that uniquely identifies the module [M]. [A.B.C] 
 {e path} used to locate a particular identifier, [X.t] is a {e fragment} that refers
 to an element within a module type, and [module-M] and [module-M.module-X.type-t] are
 {e references} that are similar to paths in that they are used to locate particular
-identifiers, but unlike paths they are not checked by the compiler and are entirely
-resolved by odoc.
+identifiers; however, unlike paths, they are not checked by the compiler and are entirely
+resolved by [odoc].
 
-In most of the output formats odoc supports, paths, references and fragments will be
-turned into links that take the reader to the identifier being referred to. These
-links necessarily need to take into account some of the features of expansions
+In most of the output formats, [odoc] supports paths; references and fragments will be
+turned into links that take the reader to the referred identifier. These
+links need to consider some of the expansions’ features,
 as outlined above. In order to decide where the links should point to and how to
 turn them into text, a process called 'Resolution' is required.
 
 {2 Aliases}
 
-Since aliases are not usually expanded, a path or reference to an item that is in
-an module that's an alias must link to the item in the aliased module instead. For
-example, given the following:
+Since aliases are not usually expanded, a path or reference to an item contained in
+an aliased module must link directly to the item inside the aliased module. For
+example:
 
 {[
 module A : sig
@@ -493,10 +484,10 @@ module B = A
 type t = B.t
 ]}
 
-The right-hand side of type [t] should render as [B.t], but it should link to
-the definition of [t] in module [A]. This example is demonstrated {{!Odoc_examples.Resolution.Alias}here}.
+The right-hand side of [type t] should render as [B.t], but it should link to
+the definition of [t] in [module A]. This example is demonstrated {{!Odoc_examples.Resolution.Alias}here}.
 
-Aliases of hidden module {e are} expanded, so the following example demonstrates
+Aliases of hidden modules {e are} expanded, so the following example demonstrates
 this alteration:
 
 {[
@@ -516,10 +507,10 @@ type t = B.t
 Here we've hidden [A] via the {{:https://ocaml.org/manual/ocamldoc.html#ss:ocamldoc-stop}documentation stop comment}
 mechanism. This example is demonstrated {{!Odoc_examples.Resolution.HiddenAlias}here}.
 
-{2 Canonical paths}
+{2 Canonical Paths}
 
-When encountering a module, module type or a type that has been marked with a
-[@canonical] tag, odoc first has to check that the specified canonical path
+When encountering a module, module type, or a type that has been marked with a
+[@canonical] tag, [odoc] first has to check that the specified canonical path
 actually resolves. If this is the case, in a similar way to the alias above, the
 target of the path will be rewritten to point to the canonical path.
 However, in contrast to the alias behaviour, the {e text} of the path will
@@ -544,14 +535,14 @@ Note that in this example the [@canonical] tag has been given the path
 [Odoc_examples.Resolution.Canonical.B]. This {e must} be the fully qualified
 path to the canonical item.
 
-In this example, the right-hand side of [type t] will be rewritten such
+The right-hand side of [type t] will be rewritten such
 that it will be as if [B.t] had been written instead.
 
 Note that canonical tags are only used when resolving {e paths}, not 
-fragments (which are relative anyway) nor references, which since they are
-written by the author are assumed to point to the correct destination.
+fragments (which are relative anyway) nor references. Since they are
+written by the author, they’re assumed to point to the correct destination.
 
-{2 Fragment resolution}
+{2 Fragment Resolution}
 
 Fragments are relative paths that appear in module type expressions when
 adding equations or substituting types or modules. For example:
@@ -568,15 +559,15 @@ module C : A with type B.t = int
 module D : module type of C.B with type t := int
 ]}
 
-In this expression the fragment [B.t] should link to the definition of [type t]
-inside module [B] inside module type [A]. The fragment [t] in the definition of
-module [D] should link to the definition of type [t] inside module [B] inside
+In this expression, the fragment [B.t] should link to the definition of [type t]
+inside module [B] inside module [type A]. The fragment [t] in the definition of
+module [D] should link to the definition of [type t] inside module [B] inside
 module [C]. Note that it can't link to [type t] in [D] since that type has been
 destroyed!
 
 This example is rendered {{!Odoc_examples.Resolution.Fragments}here}.
 
-{2 Hidden elements}
+{2 Hidden Elements}
 
 If there are paths that refer to hidden elements, these are removed from the
 interface unless there is an equal non-hidden type that can replace it. For
@@ -596,11 +587,11 @@ type w = U of u
 
 ]}
 
-[type v] will have a right-hand side of [T of int] as the hidden type [t] is
-equal to [int], whereas there is no non-hidden type equivalent to [u] so the
-right-hand side of type [w] is omitted from the output.
+[type v] will have a right-hand side of [T of int], as the hidden [type t] is
+equal to [int]; whereas, there is no non-hidden type equivalent to [u], so the
+right-hand side of [type w] is omitted from the output.
 
-{2 Reference resolution}
+{2 Reference Resolution}
 
 References are hand-written in comments and not evaluated in any way by the
 compiler. 
@@ -628,13 +619,13 @@ end
     within the path: {!A.module-B.t} or {!A.module-type-B.t} *)
 ]}
 
-This demonstrates that it is possible to refer to elements even when there is ambiguity
-if just the names were used. If odoc detects any ambiguity it will emit a warning.
+This demonstrates that it’s possible to refer to elements even when there’s ambiguity,
+if just the names were used. If [odoc] detects any ambiguity, it will emit a warning.
 
 
-{2 Module type challenges}
+{2 Module Type Challenges}
 
-In some cases resolution can be more challenging than others. Consider this example:
+In some cases, resolution can be more challenging than others. Consider this example:
 
 {[
 module type A = sig
@@ -650,13 +641,13 @@ type t = C.N.t
 ]}
 
 In the expansion of module type [A], module [N] has no expansion because 
-module type [S] is abstract. Therefore in the definition of module [C], 
-the fragment [N.t] therefore cannot link to module [N] in module type [A],
-but instead must link to module type [S] in module [B].
+module type [S] is abstract. Therefore, in the definition of module [C], 
+the fragment [N.t] cannot link to module [N] in module type [A],
+but instead it must link to module type [S] in module [B].
 
 This example is rendered {{!Odoc_examples.Resolution.Complicated_1}here}.
 
-Now a very complicated example:
+Now for a very complicated example:
 
 {[
 module type Type = sig module type T end
@@ -674,7 +665,7 @@ type t = App(Bar)(Foo)(FooBarInt).Foo.bar
 ]}
 
 This one is left as an exercise to the reader! It can be seen rendered
-by odoc {{!Odoc_examples.Resolution.Complicated_2}here}.
+by [odoc] {{!Odoc_examples.Resolution.Complicated_2}here}.
 
 
 
