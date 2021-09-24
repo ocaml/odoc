@@ -13,9 +13,9 @@ jobs:
           - macos-latest
           - ubuntu-latest
           # - windows-latest Windows doesn't work yet
-        ocaml-version:
+        ocaml-compiler:
           # Don't include every versions. OCaml-CI already covers that
-          - 4.11.1
+          - 4.12.x
         include:
           - os: ubuntu-latest # Enable coverage only on a single build
             send-coverage: true
@@ -33,7 +33,7 @@ jobs:
         with:
           # Do not pin odoc to not break Mdx installation
           opam-pin: false
-          ocaml-version: ${{ matrix.ocaml-version }}
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
           opam-local-packages: |
             odoc.opam
 
