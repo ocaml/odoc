@@ -21,7 +21,7 @@ type equations for all abstract types.
 # simple_strengthening {|
   type t
   type u = t
-  |}
+  |} ;;
 BEFORE
 ======
 type t/0

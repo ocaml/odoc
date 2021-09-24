@@ -64,7 +64,7 @@ the equations for t, u and v point to SubTargets rather than SubstituteMe
       type uu = SubstituteMe.u
       type vv = SubstituteMe.v
   end
-  |}
+  |} ;;
 BEFORE
 ======
 S: sig
@@ -125,7 +125,7 @@ let compile mli =
   module Erase : sig
     include Monad with type 'a t := 'a
   end
-  |}
+  |} ;;
 - : Component.Signature.t =
 module type Monad/33 = sig
   type t/34
@@ -169,7 +169,7 @@ More tests with two type variables:
     type ('x, 'y) t
     include Monad_2 with type ('a, 'b) t := ('b, 'a) t
   end
-  |}
+  |} ;;
 - : Component.Signature.t =
 module type Monad_2/61 = sig
   type t/62
@@ -201,7 +201,7 @@ Edge cases:
     type 'a t
     include S with type 'a t := ([ `A of 'a * 'b ] as 'b) t
   end
-  |}
+  |} ;;
 - : Component.Signature.t =
 module type S/78 = sig
   type t/79
