@@ -5,7 +5,8 @@ to show a short, simple example of how odoc can be used, covering most of the im
 The document built here includes not only the documentation of odoc itself, but also builds the
 docs for a subset of odoc's dependent libraries to show how this may be done. For a much more
 complete and comprehensive use of odoc, see the voodoo project, the tool that will be used to build
-`docs.ocaml.org`.
+the package docs for
+[v3.ocaml.org](https://v3.ocaml.org/).
 
 First we need to initialise mdx with some libraries and helpful values.
 
@@ -32,7 +33,7 @@ Odoc produces output files (html or others) in a structured directory tree, and 
 - odoc/deps/stdlib/index.html : stdlib main page
 - odoc/deps/stdlib/Stdlib/index.html : Module page for the module `Stdlib`
 - odoc/deps/astring/index.html : astring main page
-...
+- odoc/deps/... : other dependencies
 
 The odoc model for achieving this is that we have *pages* (mld files) that have *children* that are either *further pages* (mld files) or *modules* (from cmti files). This {{!page-parent_child_spec} parent/child relationship} is specified on the command line. Parent pages must be *compiled* by odoc before their children, and compiling a page `mypage.mld` will produce the file `page-mypage.odoc`.
 
@@ -221,7 +222,7 @@ let extra_docs = [
     "dune_wrapping";
     "interface";
     "odoc_for_authors";
-    "using_dune";
+    "dune";
     "ocamldoc_differences";
 ]
 

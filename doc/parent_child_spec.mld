@@ -1,17 +1,18 @@
-{1 Parent/child specification}
-This parent/child specification allows more flexible output support, for example, per library documentation. See {{: https://docs.ocaml.org} docs.ocaml.org}.
+{0 Parent/child specification}
+This parent/child specification allows more flexible output support, for example, per library documentation. See {{:https://v3.ocaml.org/packages}v3.ocaml.org/packages}.
 
 The rules are;
 
 {ul 
-{- Mld files may or may not have a parent mld.}
-{- Compilation units must have a parent mld.}
-{- The parent mld file must be compiled before any of its children, and the children
+{- [.mld] files may or may not have a parent [.mld].}
+{- Compilation units must have a parent [.mld].}
+{- The parent [.mld] file must be compiled before any of its children, and the children
  must be specified at compilation time of the parent}
-{- The output paths of mlds and compilation units are subdirectories of their parent's
+{- The output paths of [.mld] files and compilation units are subdirectories of their parent's
  output directory.}
-{- The output directory of an mld file [x] with children is [<parent_output_directory>/x], and its file name is [index.html]. That is to say, [<parent_output_directory>/x/index.html]}
-{- The output directory of an mld file [x] without children is [<parent_output_directory> /x.html]}
+{- The output directory of a [.mld] file [x.mld] with children is [<parent_output_directory>/x],
+   and its file name is [index.html]. That is to say, [<parent_output_directory>/x/index.html]}
+{- The output directory of a [.mld] file [x.mld] without children is [<parent_output_directory> /x.html]}
 {- The output directory of a compilation unit [X] is [<parent_output_directory>/X/index.html]}
 }
 
@@ -24,92 +25,89 @@ children [Max], and page [foo], whereas [Mark] has no child. That is to say,
 
 [john.mld]
 
-{[
-  {0 About John}
+{v
+{0 About John}
 
-  I'm John the father to {{!page-doe}Doe} and {{!page-mark}Mark}.
-]}
+I'm John the father to {{!page-doe}Doe} and {{!page-mark}Mark}.
+v}
 
 [doe.mld]
 
-{[
-  {0 About Doe}
+{v
+{0 About Doe}
 
-  I'm Doe, the;
-  - son to {{!page-john}John}
-  - brother to {{!page-mark}Mark}
-  - father to {{!page-max}Max}
+I'm Doe, the;
+- son to {{!page-john}John}
+- brother to {{!page-mark}Mark}
+- father to {{!page-max}Max}
 
-  I also own page {{!page-foo}foo}
-
-]}
+I also own page {{!page-foo}foo}
+v}
 
 [mark.mld]
 
-{[
-  {0 About Mark}
+{v
+{0 About Mark}
 
-  I'm Mark {{!page-doe}Doe}'s and I have no child.
-
-]}
+I'm Mark {{!page-doe}Doe}'s and I have no child.
+v}
 
 [max.mld]
 
-{[
-  {0 About Max}
+{v
+{0 About Max}
 
-  I'm Max, the child to {{!page-doe}Doe}
-]}
+I'm Max, the child to {{!page-doe}Doe}
+v}
 
 [foo.ml]
 
 {[
-  (** I'm foo, a page child to Doe*)
+(** I'm foo, a page child to Doe *)
 ]}
 
-{2 compilation}
+{2 Compilation}
 
-{[
-  $ ocamlc -c -bin-annot foo.ml
+{v
+$ ocamlc -c -bin-annot foo.ml
   && odoc compile john.mld -c page-doe -c page-mark
   && odoc compile doe.mld -I . --parent page-john -c page-max -c foo
   && odoc compile max.mld -I . --parent page-doe
   && odoc compile foo.cmt -I . --parent page-doe
   && odoc compile mark.mld -I . --parent page-john
-]}
+v}
 
-The output of the compilation phase will be [odoc] files, where each of them will be
+The output of the compilation phase will be [.odoc] files, where each of them will be
 linked by invoking [odoc link] command on them.
 
-{2 linking}
+{2 Linking}
 
 [odoc link -I . <file>.odoc]
 
-{[
-  $ odoc link -I . page-john.odoc
+{v
+$ odoc link -I . page-john.odoc
   && odoc link -I . page-doe.odoc
   && odoc link -I . page-mark.odoc
   && odoc link -I . page-max.odoc
   && odoc link -I . foo.odoc
-]}
+v}
 
-The output of the [odoc link] command is an [odocl] file, by default, in the same path as the original [odoc] file.
+The output of the [odoc link] command is an [.odocl] file, by default, in the same path as the original [.odoc] file.
 
-{2 generate html}
-{[
-  $ odoc html-generate --indent -o html page-john.odocl
+{2 Generating HTML}
+{v
+$ odoc html-generate --indent -o html page-john.odocl
   && odoc html-generate --indent -o html page-doe.odocl
   && odoc html-generate --indent -o html page-mark.odocl
   && odoc html-generate --indent -o html page-max.odocl
   && odoc html-generate --indent -o html foo.odocl
   && odoc support-files -o html
-]}
+v}
 
 We then inspect the contents of [html] directory using;
 
-[ls -R html]
-
-{[
+{v
+$ ls -R html
   highlight.pack.js
   john
   odoc.css
@@ -126,7 +124,7 @@ We then inspect the contents of [html] directory using;
 
   html/john/doe/Foo:
   index.
-]}
+v}
 
 {b Note:} We generated html files only for this example, but it's very possible to
 generate files in other formats, i.e latex and man-pages; using:
@@ -141,7 +139,7 @@ for inspection;
 
 {ul 
 {- [odoc <html/latex/man>-targets ...] to take a glimpse of the expected targets}
-{- [odoc compile-deps ...] which lists units \(with their digest\) which need to be
+{- [odoc compile-deps ...] which lists units (with their digest) which need to be
  compiled in order to compile current compilation unit. The unit itself and its
  digest is also reported in the output.}
 }
