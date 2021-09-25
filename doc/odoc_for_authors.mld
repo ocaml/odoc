@@ -15,10 +15,18 @@ odoc indirectly rather than executing it yourself. There are several 'drivers'
 of odoc at time of writing, each with their own strengths:
 
 - {{:https://dune.build/}Dune} is the best way to view docs while you're
-  developing your project. We have a {{!page-using_dune}short page} describing
-  how to use it.
+  developing your project. We have a {{!page-dune}page} describing
+  how to use it, but the short version is:
+{v
+$ dune build @doc
+v}
+  and the results can be viewed with [open _build/default/_doc/_html/index.html]
+  on macOS, or [xdg-open _build/default/_doc/_html/index.html] under Linux.
 - {{:https://erratique.ch/software/odig}Odig} is the best way to view docs
-  of your installed packages. 
+  of your installed packages. After installing, try:
+{v
+$ odig doc odig
+v}
 - {{!page-driver}The reference driver} is the simplest driver, useful if you
   want to see how to integrate it with your own projects.
 - {{:https://github.com/ocaml-doc/voodoo}Voodoo} is the driver used to create
@@ -30,7 +38,6 @@ Odoc is built to produce documentation for your {e libraries}, and the unit of
 organisation is the {e module}. Documentation is written by putting special
 {{!comments} comments} into the source of the {e module} or {e module
 interface}, and correctly placing these is critical to producing good output.
-
 
 All of the ocamldoc documentation comments described in {{:https://ocaml.org/manual/ocamldoc.html#s:ocamldoc-comments}the OCaml manual}
 are supported, with a few important {{!page-ocamldoc_differences}differences}. In addition, 
@@ -133,7 +140,7 @@ type t
 The preamble is composed of the comment attached to a declaration and the
 top-comment of the corresponding signature, if there is one.
 It is special only because it will be placed in the [header] part of the page,
-just before the TOC (if any), and is used to compute the {e synopsis}.
+just before the table of contents (if any), and is used to compute the {e synopsis}.
 
 {[
 (** This is the comment attached to the declaration. This paragraph will be the
@@ -210,7 +217,8 @@ be introduced with level-1 headings. Each section can also have subsections
 Additionally paragraphs can be annotated with level-4 or level-5 headings.
 Note that paragraph headings are {e not} be included in the generated table of
 contents and thus should be used to introduce examples, comments or other
-complementary notes.
+complementary notes. An alternative would be to consider splitting into
+multiple files.
 
 {1:doc-pages Writing documentation pages}
 
@@ -224,8 +232,9 @@ supported.
 
 Similarly to interface files, the familiar
 {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec351} ocamldoc}
-syntax can be used in pages. A documentation page can be seen as a single
-regular docstring in a separate file.
+syntax can be used in pages, with a few differences and extensions as
+{{!page-ocamldoc_differences}explained here}. A documentation page can be seen
+as a single regular docstring in a separate file.
 
 {2 Page title}
 

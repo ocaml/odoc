@@ -2,8 +2,8 @@
 
 Odoc works by taking module interfaces, processing them to make them more
 useful, and turning them into documentation.
-The processing that odoc does is largely {!hiding}, handling of {{!canonical}
-canonical references}, {!expansion} and {!resolution},
+The processing that odoc does is largely {{!hiding}hiding}, handling of {{!canonical}
+canonical references}, {{!expansion}expansion} and {{!resolution}resolution},
 and this document explains the features of these processes in detail.
 
 {1:hiding Hiding}
@@ -32,14 +32,15 @@ though a single top-level module. It does this by mangling the names of the
 real implementation modules and generating the single top-level module that
 simply contains aliases to the these implementation modules. With odoc's
 canonical modules feature all references to the implementation modules are
-rewritten to point at the aliases in the top-level module instead. A 
-{{!page-dune_wrapping}separate page} documents this in more detail.
+rewritten to point at the aliases in the top-level module instead. Please
+see the section on Dune's 
+{{!page-dune.library_wrapping}library wrapping} for more detail.
 
 
 In a similar fashion, it is sometimes useful to have this feature on module
 types and types. For example, odoc itself uses this for it's 'paths types'.
 Since they are all mutually recursive they have to be declared all at the
-same time in the module {{:https://github.com/ocaml/odoc/blob/91f6310967e64f3fa88445f3daf2fea2acc0bb49/src/model/paths_types.ml#L201-L219}Paths_types}, but odoc exposes them in separate modules.
+same time in the module {{:https://github.com/ocaml/odoc/blob/91f6310967e64f3fa88445f3daf2fea2acc0bb49/src/model/paths_types.ml#L201-L219}[Paths_types]}, but odoc exposes them in separate modules.
 By annotating the definition point with [@canonical] tags pointing to the
 {{:https://github.com/ocaml/odoc/blob/master/src/model/paths.mli#L419}aliases}, we ensure that all
 references to them point at the {{!Odoc_model.Paths.Path.Resolved.Module}separate} {{!Odoc_model.Paths.Path.Resolved.ModuleType}modules} as intended.
@@ -622,8 +623,9 @@ module A : sig
 
 end
 
-(** We can refer unambiguously to {!module-type-A.t} in module type [A] or {!module-A.t} in module [A],
-and also where there are name clashes within the path: {!A.module-B.t} or {!A.module-type-B.t} *)
+(** We can refer unambiguously to {!module-type-A.t} in module type [A]
+    or {!module-A.t} in module [A], and also where there are name clashes
+    within the path: {!A.module-B.t} or {!A.module-type-B.t} *)
 ]}
 
 This demonstrates that it is possible to refer to elements even when there is ambiguity

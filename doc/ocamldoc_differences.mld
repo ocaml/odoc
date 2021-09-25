@@ -14,7 +14,7 @@ The following describes the changes between what odoc understands and what is in
 
 - Heading levels are more restrictive. In the manual, it suggests any whole number is acceptable. In odoc
   we follow the HTML spec in allowing headings from 1-6, and we also allow heading level [0] for the title
-  of [mld] files. Odoc emits a warning for heading levels outside this range and caps them.
+  of [.mld] files. Odoc emits a warning for heading levels outside this range and caps them.
 
 {3 Omissions}
 - Comments describing class inheritance are not rendered ({{:https://github.com/ocaml/odoc/issues/574}github issue}).
@@ -30,7 +30,7 @@ The following describes the changes between what odoc understands and what is in
 
 {3 Improvements}
 - Odoc has a better mechanism for disambiguating references in comments. See 'reference syntax' later in this document.
-- Built-in support for standalone 'mld' files - these are documents using the OCamldoc markup, but rendered as distinct pages.
+- Built-in support for standalone [.mld] files - these are documents using the OCamldoc markup, but rendered as distinct pages.
 - Structured output - odoc can produce output in a structured directory tree rather a set of files.
 - A few extra tags are supported:
   + [@returns] is a synonym for [@return]
@@ -53,7 +53,7 @@ Additionally we support extra annotations:
 - [field] is a replacement for [recfield]
 - [instance-variable] refers to instance variables
 - [label] refers to labels introduced in anchors
-- [page] refers to [mld] pages as outlined above
+- [page] refers to [.mld] pages as outlined above
 - [value] is recognised as [val]
 
 {3 Referencing items containing hyphens or dots}
