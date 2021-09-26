@@ -1,53 +1,51 @@
-{0 Odoc interface guarantees}
+{0 [odoc] interface guarantees}
 
-Odoc has several 'public facing' parts, with varying levels of support guarantees.
-This document describes what those interfaces are and what the support levels are
-now and what we aim for in the future.
+[odoc] has several 'public facing' parts with varying levels of support guarantees.
+This document describes what those interfaces are, what the support levels are
+now, and what we aim for in the future.
 
-{2 Documentation comments}
+{2 Documentation Comments}
 
 The first and most important is the syntax of the documentation comments present in source code.
-This is relevant to everyone who is writing code intended to be documented by odoc, and hence is applies to the widest set of people.
-The differences are documented in a {{!page-ocamldoc_differences}separate page}.
+This is relevant to everyone who is writing code that’s intended to be documented by [odoc], so it applies to the widest set of people.
+We have a separate page describing the {{!page-ocamldoc_differences}markup differences from OCamldoc}.
 
-{2 CLI interface}
+{2 CLI Interface}
 
-The way in which the odoc CLI is invoked is not trivial, and requires careful
-ordering and correct arguments to produce correctly linked documentation. It is not expected that
-end-users will invoke odoc by hand, but rather it will be driven by a separate tool. As a consequence of
-this it is important that we preserve the ability of these tools to create good documentation with
-each release of odoc, and thus we will ensure backward compatibility of the CLI as much as possible.
-There are currently 3 tools that 'drive' odoc that are considered 'first class' in that we will not make
-releases of odoc whilst knowingly breaking these tools. These are:
+The way in which the [odoc] CLI is invoked is not trivial, and it requires careful
+ordering and correct arguments to produce correctly linked documentation. It’s not expected that
+end-users will invoke [odoc] by hand, but rather it will be driven by separate tools. As a consequence, it’s important to preserve the tools’ ability to create good documentation with
+each release of [odoc], so we’ll ensure backward compatibility of the CLI as much as possible.
+There are currently three ‘first class’ tools that 'drive' [odoc]. We will not make
+releases of [odoc] whilst knowingly breaking these tools. These are:
 
 - Odig
 - Dune
 - OCaml
 
-OCaml here refers to the newly merged configure option (from 4.12.0) to build the standard library documentation with
-odoc. If the recommended way of invoking odoc changes we will work with the maintainers of these projects
+Here, OCaml refers to the newly merged configure option (from 4.12.0) that builds the standard library documentation with
+[odoc]. If the recommended way of invoking [odoc] changes, we will work with the maintainers of these projects
 to ensure they are updated correspondingly.
 
-Additionally there will be a reference implementation of a tool to build Odoc's documentation which should
-serve as a guide for anyone building other 'drivers' of odoc.
+Additionally, there will be a reference implementation of a tool to build [odoc]'s documentation, which should
+serve as a guide for anyone building other 'drivers' of [odoc].
 
-{2 Output formats}
+{2 Output Formats}
 
-Odoc currently outputs HTML files, man pages and latex documents. In a similar vein to the CLI interface,
-we will try to ensure that the three tools described above will will not be broken by any changes to the
-outputs - that is, that they will succeed and produce documentation that is 'correct'. We do not make any
-guarantees about the internal structure of the output documents - for example, the exact nesting of
-tags or sequence of latex commands may not be preserved. We will attempt to ensure that the anchors in
-the HTML are preserved though, implying also that the filenames will also be preserved.
+[odoc] currently outputs HTML files, man pages, and LaTex documents. In a similar vein to the CLI interface,
+we will try to ensure that the three tools described above will  not be broken by any changes to the
+outputs. That is, they will succeed and produce ‘correct’ documentation. Although, we don’t make any
+guarantees about the internal structure of the output documents; e.g., the exact nesting of
+tags or sequence of LaTex commands may not be preserved. We will attempt to ensure that the HTML anchors are preserved, implying that the filenames will also be preserved.
 
 {2 Libraries}
 
-Odoc has several internal libraries. The only one of these for which we currently expect external users is
-the comment parser. This will soon be removed into an external package to link with separately and will
+[odoc] has several internal libraries. The only one that we currently expect external users to need is
+the comment parser. This will soon be removed into an external package with a separate link, and it will
 have its own lifecycle and support statement. Note that this will replace the existing
-[octavius] library, which was the original implementation of odoc's current parser.
+[octavius] library, which was the original implementation of [odoc]'s current parser.
 
-{2 Intermediate files}
+{2 Intermediate Files}
 
-The intermediate files that odoc produces - [.odoc] and [.odocl] should be considered to be internal only
-and tied to the specific version of odoc.
+The intermediate files that [odoc] produces ([.odoc] and [.odocl]) should be considered to be internal only
+and tied to the specific version of [odoc].
