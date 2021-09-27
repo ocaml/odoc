@@ -2,40 +2,49 @@
 
 {1:overview What is [odoc]?}
 
-[odoc] is a documentation generator for OCaml. It reads doc comments,
-delimited with [(** ... *)], and outputs HTML, LaTeX and man pages.
-The pages you are reading now are rendered using [odoc].
+[odoc] is a documentation generator for OCaml. It reads doc comments
+from your source files and your [mld] files, and outputs HTML, LaTeX and
+man pages. The pages you are reading now are rendered using [odoc].
 
-Text inside doc comments is marked up in ocamldoc syntax:
+Text inside doc comments (delimited by [(** ... *)]) is marked up in
+odoc syntax:
 
 {[
-val compare : string -> string -> int
-(** [compare s1 s2] compares [s1] and [s2] in {e lexicographic} order. The
-    result is negative if [s1] precedes [s2], positive if [s1] follows [s2],
-    and zero if [s1] and [s2] are equal. *)
+val float_dsig : int -> float t
+(** [float_dsig d] rounds the normalized {e decimal} significand
+    of the float to the [d]th decimal fractional digit and formats
+    the result with ["%g"]. Ties are rounded towards positive
+    infinity. The result is NaN on infinities and only defined for
+    [0 <= d <= 16].
+
+    {b Warning.} The current implementation overflows on large [d]
+    and floats. *)
 ]}
+
+These comments are picked up by [odoc] and {{!Fmt.float_dsig}turned into html}, or TeX or manpages.
 
 The syntax reference is a refinement of that explained in the
 {{:https://ocaml.org/manual/ocamldoc.html}OCaml manual}. The differences
 are described {{!page-ocamldoc_differences}here}.
 
-The main advantage of [odoc] over [ocamldoc] is an accurate {e cross-referencer}, which
-handles the complexity of the OCaml module system, and an {e expander}, which
-can expand complex module-type expressions while preserving their structure,
-including comment, includes and more.
+odoc's main advantages over ocamldoc are
+
+- an accurate {e cross-referencer} that can calculate links between types, modules,
+module types and more. So if you've ever been baffled by exactly what the [t] was in [val f : A(M).t -> unit], [odoc] will link to it!
+- an {e expander}, which can expand complex module-type expressions while preserving their structure, including comment, includes and
+more. If you've ever wondered what values there are in your module [M : Base.Applicative.S with type t := u], [odoc] will show you!
 
 {1 For library authors}
 
-If you are looking for guidance on how to document your OCaml project, see
-{{!page-odoc_for_authors}[odoc] for authors}.
+For guidance on how to document your OCaml project, see {{!page-odoc_for_authors}[odoc] for authors}.
 
 {1 For integrators}
 
-If you are looking to integrate odoc into your tool, webpage or any other
+To integrate odoc into your tool, webpage or any other
 setting, you will need to understand {{!page-driver}how to drive odoc}.
 
 {1 For developers}
 
-If you want to start contributing to odoc, please see our {{!page-contributing}contributors guide}.
+To start contributing to odoc, please see our {{!page-contributing}contributors guide}.
 
 

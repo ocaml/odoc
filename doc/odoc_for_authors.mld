@@ -11,8 +11,9 @@ to write great documentation using [odoc]. See also the page listing the
 {1:getting_started Getting started}
 
 To generate documentation for your project, you will almost always be using
-odoc indirectly rather than executing it yourself. There are several 'drivers'
-of odoc at time of writing, each with their own strengths:
+odoc indirectly rather than executing it yourself. There are currently several
+'drivers' of odoc at time of writing, each with their own strengths and
+weaknesses:
 
 - {{:https://dune.build/}Dune} is the best way to view docs while you're
   developing your project. We have a {{!page-dune}page} describing
@@ -35,8 +36,8 @@ v}
 {1:interfaces Documenting your interfaces}
 
 Odoc is built to produce documentation for your {e libraries}, and the unit of
-organisation is the {e module}. Documentation is written by putting special
-{{!comments} comments} into the source of the {e module} or {e module
+organisation is the {e module}. Documentation is written by putting
+{{!comments}special comments} into the source of the {e module} or {e module
 interface}, and correctly placing these is critical to producing good output.
 
 All of the ocamldoc documentation comments described in {{:https://ocaml.org/manual/ocamldoc.html#s:ocamldoc-comments}the OCaml manual}
@@ -44,6 +45,177 @@ are supported, with a few important {{!page-ocamldoc_differences}differences}. I
 it is intended that all features of the OCaml language are supported by [odoc].
 For examples of how the language features are handled, see the
 {{!page-features}Features} page.
+
+For the HTML output, [odoc] will produce one page for each module, module type,
+class and class type. This includes any submodules, so if a module [A] contains
+module [B] then two HTML pages will be created, and [A/index.html] will have a
+link to [A/B/index.html] at the point that module [B] is defined. So each
+module, module type, class and class type should be documented keeping in mind
+that it will end up as a single page with a table of contents. 
+
+{2:comment-placement Comment placement}
+
+Comments containing documentation are known as {e special comments}. 
+They are like normal comments except they have precisely
+two asterisks at the start:
+
+{[
+(* Normal comment *)
+(** Documentation comment *)
+(*** Normal comment *)
+]}
+
+From here on in 'comment' will refer to the special comments.
+Most comments will be associated with particular elements, and this requires
+the comment to be immediately before or after an element with no blank lines
+in between (although non-special comments are allowed). Comments that
+are not associated with a particular element are known as 'floating' comments.
+
+If there is ambiguity, which can happen if there are two elements with a
+comment directly in between, the comment will be associated with {e both}
+elements. This is an example of where odoc differs from ocamldoc - read more
+about that on the {{!page-ocamldoc_differences}Ocamldoc differences} page.
+
+{[
+type x
+(** Ambiguous comment, associated with {e both} {!x} and {!y} *)
+type y
+]}
+
+This behaviour, while inherited from the compiler, is unlikely to be desired
+so a blank line should be inserted to make it clear to which item the comment
+should be associated. Note that Dune will raise an error if there are ambiguous
+comments in the source files.
+
+The first comment of a module is special - it is associated with the module
+as a whole. This is discussed in more detail in the {{!top_comment}Top-comment} section.
+
+The OCaml manual has a helpful example of comment placement, reproduced here.
+Note that there is an additional line inserted to avoid an ambiguous special
+comment.
+
+{[
+(** The first special comment of the file is the comment associated
+  with the whole module.*)
+
+(** Special comments can be placed between elements and are kept
+  by the OCamldoc tool, but are not associated to any element.
+  [@]-tags in these comments are ignored.*)
+
+(*******************************************************************)
+(** Comments like the one above, with more than two asterisks,
+  are ignored. *)
+
+(** The comment for function f. *)
+val f : int -> int -> int
+(** The continuation of the comment for function f. *)
+
+(* Hello, I'm a simple comment :-) *)
+exception My_exception of (int -> int) * int
+(** Comment for exception My_exception, even with a simple comment
+  between the special comment and the exception.*)
+
+(** Comment for type weather  *)
+type weather =
+  | Rain of int  (** The comment for constructor Rain *)
+  | Sun  (** The comment for constructor Sun *)
+
+(** Comment for type weather2  *)
+type weather2 =
+  | Rain of int  (** The comment for constructor Rain *)
+  | Sun  (** The comment for constructor Sun *)
+(** I can continue the comment for type weather2 here
+because there is already a comment associated to the last constructor.*)
+
+(** The comment for type my_record *)
+type my_record = {
+  foo : int;  (** Comment for field foo *)
+  bar : string;  (** Comment for field bar *)
+}
+(** Continuation of comment for type my_record *)
+
+(** Comment for foo *)
+val foo : string
+(** This comment is associated to foo and not to bar. *)
+
+val bar : string
+(** This comment is associated to bar. *)
+
+class cl :
+  object
+
+    (** Interesting information about cl *)
+  end
+
+(** The comment for class my_class *)
+class my_class :
+  object
+    inherit cl
+    (** A comment to describe inheritance from cl *)
+
+    val mutable tutu : string
+    (** The comment for attribute tutu *)
+
+    val toto : int
+    (** The comment for attribute toto. *)
+
+    (** This comment is not attached to titi since
+      there is a blank line before titi, but is kept
+      as a comment in the class. *)
+
+    val titi : string
+
+    method toto : string
+    (** Comment for method toto *)
+
+    method m : float -> int
+    (** Comment for method m *)
+  end
+
+(** The comment for the class type my_class_type *)
+class type my_class_type =
+  object
+    val mutable x : int
+    (** The comment for variable x. *)
+
+    method m : int -> int
+    (** The comment for method m. *)
+  end
+
+(** The comment for module Foo *)
+module Foo : sig
+  val x : int
+  (** The comment for x *)
+
+  (** A special comment that is kept but not associated to any element *)
+end
+
+(** The comment for module type my_module_type. *)
+module type my_module_type = sig
+  val x : int
+  (** The comment for value x. *)
+
+  (** The comment for module M. *)
+  module M : sig
+    val y : int
+    (** The comment for value y. *)
+
+    (* ... *)
+  end
+end
+]}
+
+The result of [odoc] documenting this interface can be seen on the examples
+page {{!Odoc_examples.Markup.Foo}here}.
+
+There are no differences in how [odoc] handles comment placement between [.ml]
+and [.mli] files, which is {{!page-ocamldoc_differences}another difference}
+from OCamldoc.
+
+{2 Comment markup}
+
+
+{1 Page structure}
 
 Producing good documentation for your library is more than simply annotating
 the various modules, type and functions that are contained however. 
@@ -61,33 +233,7 @@ The first paragraph of the preamble will be treated as the module {{!synopsis}
 synopsis}, and will be used as a short description of the module when it
 appears in a list of modules elsewhere in the documentation of the library.
 
-{2 Comments}
-
-Documentation comments are delimited with [(** ] (exactly two [*]) and [*)] and
-can be attached to a declaration or be floating in a signature.
-{{:https://caml.inria.fr/pub/docs/manual-ocaml/doccomments.html}This is defined
-by OCaml.} It is also possible to attach documentation comments to individual
-record fields, constructors, function arguments, class items, etc..
-
-{[
-(** This is the top-comment. It documents the whole module and will be used to
-    derive the preamble and the synopsis. *)
-
-type t
-(** This comment is attached to [t]. *)
-
-(** This comment is "floating", it can be used to define sections.
-
-    {1 This is a heading} *)
-
-(* ... *)
-]}
-
-The documentation can be formatted, Odoc accepts the same markup language as
-{{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#s%3Aocamldoc-comments}
-ocamldoc} with some exceptions, see {!page-ocamldoc_differences}.
-
-{2 Top-comment}
+{2:top_comment Top-comment}
 
 The top-comment is the first item of a signature, if it is a documentation
 comment. For example, in an [.mli] file:
@@ -97,19 +243,6 @@ comment. For example, in an [.mli] file:
 
 module M : sig
   (** This is the top-comment of [M]. *)
-
-  (* ... *)
-end
-
-module type T = sig
-  (** This is the top-comment of [T]. *)
-
-  (* ... *)
-end
-
-class c =
-  object
-    (** This is the top-comment of [c]. *)
 
     (* ... *)
   end

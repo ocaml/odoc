@@ -3,34 +3,31 @@
 The following libraries are dependencies of odoc.
 
 {2 Stdlib}
-{!module-Stdlib} The standard library of OCaml.
+{!modules:Stdlib}
 
 {2 Fpath}
-{!module-Fpath} provides a library for handling file system paths.
+{!modules:Fpath}
 
 {2 Cmdliner}
-{!module-Cmdliner} provides a library for handling command-line arguments.
+{!modules:Cmdliner}
 
 {2 Astring}
-{!module-Astring} provides a replacement for the standard OCaml String module.
+{!modules:Astring}
 
 {2 Result}
-{!module-Result} is the Result Monad module.
+{!modules:Result}
 
 {2 Yojson}
-{!module-Yojson} is a JSON library.
+{!modules:Yojson}
 
 {2 Tyxml}
-{!module-Tyxml} is the library used to generate HTML pages.
+{!modules:Tyxml}
 
 {2 Biniou}
-Binary data format designed for speed, safety, ease of use and backward compatibility as protocols evolve.
 {!modules: Bi_dump Bi_inbuf Bi_io Bi_outbuf Bi_share Bi_stream Bi_util Bi_vint}
 
 {2 Odoc-parser}
-{!module-Odoc_parser} is the parser library used
+{!modules: Odoc_parser}
 
 {2 Fmt}
-{!module-Fmt}
-{!module-Fmt_cli}
-{!module-Fmt_tty}
+{!modules: Fmt Fmt_cli Fmt_tty}
