@@ -1,5 +1,5 @@
-{0 Parent/child specification}
-This parent/child specification allows more flexible output support, for example, per library documentation. See {{:https://v3.ocaml.org/packages}v3.ocaml.org/packages}.
+{0 Parent/Child Specification}
+This parent/child specification allows more flexible output support, e.g., per library documentation. See {{:https://v3.ocaml.org/packages}v3.ocaml.org/packages}.
 
 The rules are;
 
@@ -7,7 +7,7 @@ The rules are;
 {- [.mld] files may or may not have a parent [.mld].}
 {- Compilation units must have a parent [.mld].}
 {- The parent [.mld] file must be compiled before any of its children, and the children
- must be specified at compilation time of the parent}
+ must be specified at the parent's compilation time.}
 {- The output paths of [.mld] files and compilation units are subdirectories of their parent's
  output directory.}
 {- The output directory of a [.mld] file [x.mld] with children is [<parent_output_directory>/x],
@@ -16,11 +16,11 @@ The rules are;
 {- The output directory of a compilation unit [X] is [<parent_output_directory>/X/index.html]}
 }
 
-{b Note:} The [--pkg <package>] option is still being supported for backward compatibility in [odoc >= v2.0.0],
-though it's now equivalent to specifying a parent mld file.
+{b Note:} The [--pkg <package>] option is still supported for backward compatibility in [odoc >= v2.0.0],
+although it's now equivalent to specifying a parent [.mld] file.
 
-For example, let's consider [John] whose is a father to [Doe] and [Mark]. [Doe] has
-children [Max], and page [foo], whereas [Mark] has no child. That is to say,
+For example, let's consider [John] whose is [Doe] and [Mark]'s father. [Doe] has
+children, [Max], and page [foo], whereas [Mark] has no children. That is to say,
 [john.mld], [doe.mld], [mark.mld], [max.mld], [foo.ml] respectively. For instance;
 
 [john.mld]
@@ -49,7 +49,7 @@ v}
 {v
 {0 About Mark}
 
-I'm Mark {{!page-doe}Doe}'s and I have no child.
+I'm Mark {{!page-doe}Doe}'s brother and I have no children.
 v}
 
 [max.mld]
@@ -77,8 +77,8 @@ $ ocamlc -c -bin-annot foo.ml
   && odoc compile mark.mld -I . --parent page-john
 v}
 
-The output of the compilation phase will be [.odoc] files, where each of them will be
-linked by invoking [odoc link] command on them.
+The output of the compilation phase will be [.odoc] files, where each will be
+linked by invoking the [odoc link] command on them.
 
 {2 Linking}
 
@@ -104,7 +104,7 @@ $ odoc html-generate --indent -o html page-john.odocl
   && odoc support-files -o html
 v}
 
-We then inspect the contents of [html] directory using;
+Then we inspect the contents of the [html] directory using;
 
 {v
 $ ls -R html
@@ -126,21 +126,21 @@ $ ls -R html
   index.
 v}
 
-{b Note:} We generated html files only for this example, but it's very possible to
-generate files in other formats, i.e latex and man-pages; using:
+{b Note:} We generated HTML files only for this example, but it's very possible to
+generate files in other formats (i.e, latex and man-pages) using:
 
 {ul 
 {- [$ odoc latex-generate -o latex <file>.odocl]}
 {- [$ odoc man-generate -o man <file>.odocl]}
 }
 
-There are of course other commands that [odoc] uses for other purposes; for example,
-for inspection;
+Of course there are different commands that [odoc] uses for other purposes; e.g.,
+for inspection:
 
 {ul 
-{- [odoc <html/latex/man>-targets ...] to take a glimpse of the expected targets}
-{- [odoc compile-deps ...] which lists units (with their digest) which need to be
- compiled in order to compile current compilation unit. The unit itself and its
+{- [odoc <html/latex/man>-targets ...] takes a glimpse of the expected targets}
+{- [odoc compile-deps ...] lists units (with their digest) that need to be
+ compiled in order to compile the current compilation unit. The unit itself and its
  digest is also reported in the output.}
 }
 
