@@ -37,14 +37,8 @@ v}
 
 Odoc is built to produce documentation for your {e libraries}, and the unit of
 organisation is the {e module}. Documentation is written by putting
-{{!comments}special comments} into the source of the {e module} or {e module
-interface}, and correctly placing these is critical to producing good output.
-
-All of the ocamldoc documentation comments described in {{:https://ocaml.org/manual/ocamldoc.html#s:ocamldoc-comments}the OCaml manual}
-are supported, with a few important {{!page-ocamldoc_differences}differences}. In addition, 
-it is intended that all features of the OCaml language are supported by [odoc].
-For examples of how the language features are handled, see the
-{{!page-features}Features} page.
+{{!comments}special comments} into the source of the {e module interface} or
+less commonly your {e module implementation}. 
 
 For the HTML output, [odoc] will produce one page for each module, module type,
 class and class type. This includes any submodules, so if a module [A] contains
@@ -52,6 +46,27 @@ module [B] then two HTML pages will be created, and [A/index.html] will have a
 link to [A/B/index.html] at the point that module [B] is defined. So each
 module, module type, class and class type should be documented keeping in mind
 that it will end up as a single page with a table of contents. 
+
+For each module, [odoc] will describe all of the values, types, module types,
+classes, modules and all other items found in module signatures, documenting
+the details relevant to the OCaml type system along with any documentation
+written in specially formatted comments in the source code. For any item that
+references any other, for example a [value] that has a [type], [odoc] will
+create links such that clicking them will link to the definitions.
+
+The job of the library author is therefore to organise the module interface
+in a logical manner and write comments explaining each type, value, exception,
+type constructor and everything else. The comments are written in a rich markup
+language that allows the usual formatting constructs: bold, italic, sub- and
+super-script, lists, verbatim and code sections, along with section headings, 
+a very rich cross-referencing mechanism and tags to add specific information 
+to individual items.
+
+All of the ocamldoc documentation comments described in {{:https://ocaml.org/manual/ocamldoc.html#s:ocamldoc-comments}the OCaml manual}
+are supported, with a few important {{!page-ocamldoc_differences}differences}. In addition, 
+it is intended that all features of the OCaml language are supported by [odoc].
+For examples of how the language features are handled, see the
+{{!page-features}Features} page.
 
 {2:comment-placement Comment placement}
 
@@ -88,7 +103,8 @@ should be associated. Note that Dune will raise an error if there are ambiguous
 comments in the source files.
 
 The first comment of a module is special - it is associated with the module
-as a whole. This is discussed in more detail in the {{!top_comment}Top-comment} section.
+as a whole. This is discussed in more detail in the {{!top_comment}Top-comment}
+section.
 
 The OCaml manual has a helpful example of comment placement, reproduced here.
 Note that there is an additional line inserted to avoid an ambiguous special
@@ -214,6 +230,61 @@ from OCamldoc.
 
 {2 Comment markup}
 
+Text within the comments can be formatted using the following markup. Firstly,
+the simple typesetting markup:
+
+- [{b text}] bold
+- [{i text}] italic
+- [{e text}] emphasis
+- [{^ text}] superscript
+- [{_ text}] subscript
+ 
+Unordered lists:
+{v
+{ul {- item}
+    {- item}
+    {- item}}
+v}
+and ordered lists:
+{v
+{ol {- item 1}
+    {- item 2}
+    {- item 3}}
+v}
+There is also an abbreviated syntax for lists. The above could be written:
+{v
+- item
+- item
+- item
+v}
+and
+{v
++ item 1
++ item 2
++ item 3
+v}
+For inline source code style, use square brackets: [ [ ... ] ]. For longer,
+preformatted sections of code, use the enclosing tags [ {[ .. ]} ].
+For verbatim (non-source) formatted sections, use the enclosing tags [{v ... v}].
+
+{3:escaping Escaping}
+
+In most contexts, the characters [ { [ ] } @ ] all need to be escaped with a backslash.
+In inline source code style, only square brackets need to be escaped. However, as a
+convenience, {e matched} square brackets need not be escaped to aid in typesetting
+code. For example, the following would be acceptable in a documentation comment:
+
+{v
+The list [ [1;2;3] ] needs no escaping
+v}
+
+In a code block section, 
+In a verbatim formatted section, the section is ended with a whitespace character
+followed by [ v} ]. It is not currently possible to escape this.
+
+
+
+[ \@foo ]
 
 {1 Page structure}
 
