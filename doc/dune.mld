@@ -3,11 +3,11 @@
 {1:using_dune Using Dune}
 
 To create docs with [odoc] and Dune is straightforward, but there is an important
-point to know: Dune only creates docs for {e public packages}. So you will need
+point to know: Dune only creates docs for {e public packages}, so you will need
 a [(public_name ...)] stanza in your libraries and a corresponding [lib.opam]
 file in the root of your project.
 
-As a simple example, the given the following files:
+The following files are a simple example:
 
 - [dune-project]
 {[
@@ -24,9 +24,9 @@ As a simple example, the given the following files:
 
 type t = int (** My type *)
 ]}
-- [lib.opam] - this file need only {e exist}, ie, [touch lib.opam] is sufficient.
+- [lib.opam] - this file need only {e exist}, i.e., [touch lib.opam] is sufficient.
 
-To use dune to create the docs for these:
+Dune creates the docs for these with this command:
 
 {[
 $ dune build @doc
