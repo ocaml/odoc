@@ -7,7 +7,7 @@ from your source files and your [mld] files, and outputs HTML, LaTeX and
 man pages. The pages you are reading now are rendered using [odoc].
 
 Text inside doc comments (delimited by [(** ... *)]) is marked up in
-odoc syntax:
+[odoc] syntax:
 
 {[
 val float_dsig : int -> float t
@@ -27,24 +27,24 @@ The syntax reference is a refinement of that explained in the
 {{:https://ocaml.org/manual/ocamldoc.html}OCaml manual}. The differences
 are described {{!page-ocamldoc_differences}here}.
 
-odoc's main advantages over ocamldoc are
+[odoc]'s main advantages over OCamldoc are
 
 - an accurate {e cross-referencer} that can calculate links between types, modules,
 module types and more. So if you've ever been baffled by exactly what the [t] was in [val f : A(M).t -> unit], [odoc] will link to it!
 - an {e expander}, which can expand complex module-type expressions while preserving their structure, including comment, includes and
 more. If you've ever wondered what values there are in your module [M : Base.Applicative.S with type t := u], [odoc] will show you!
 
-{1 For library authors}
+{1 For Library Authors}
 
 For guidance on how to document your OCaml project, see {{!page-odoc_for_authors}[odoc] for authors}.
 
-{1 For integrators}
+{1 For Integrators}
 
-To integrate odoc into your tool, webpage or any other
-setting, you will need to understand {{!page-driver}how to drive odoc}.
+To integrate [odoc] into your tool, webpage or any other
+setting, you'll need to understand {{!page-driver}how to drive [odoc]}.
 
-{1 For developers}
+{1 For Developers}
 
-To start contributing to odoc, please see our {{!page-contributing}contributors guide}.
+To start contributing to [odoc], please see our {{!page-contributing}contributors guide}.
 
 
