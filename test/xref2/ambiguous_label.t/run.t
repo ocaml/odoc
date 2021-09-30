@@ -15,7 +15,7 @@ Labels don't follow OCaml's scoping rules:
 
 Contains some ambiguous labels:
 
-  $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.) | .["heading_label"]'
+  $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.) | .[1]'
   {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"section-1"]}
   {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}
   {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"section-2"]}

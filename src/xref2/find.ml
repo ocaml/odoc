@@ -13,7 +13,7 @@ type class_ =
 
 type value = [ `FValue of ValueName.t * Value.t ]
 
-type label = [ `FLabel of Ident.label ]
+type label = [ `FLabel of Label.t ]
 
 type exception_ = [ `FExn of ExceptionName.t * Exception.t ]
 
@@ -210,7 +210,8 @@ let any_in_comment d name =
     match xs with
     | elt :: rest -> (
         match elt.Odoc_model.Location_.value with
-        | `Heading (id, _) when Ident.Name.label id = name -> Some (`FLabel id)
+        | `Heading lbl when Ident.Name.label lbl.Label.label = name ->
+            Some (`FLabel lbl)
         | _ -> inner rest)
     | [] -> None
   in

@@ -71,16 +71,16 @@ type heading_level =
 
 type attached_block_element = [ nestable_block_element | `Tag of tag ]
 
-type heading = {
+type heading_attrs = {
   heading_level : heading_level;
-  heading_label : Identifier.Label.t;
   heading_label_explicit : bool;
       (** Whether the label have been written by the user. *)
-  heading_text : link_content;
 }
 
 type block_element =
-  [ nestable_block_element | `Heading of heading | `Tag of tag ]
+  [ nestable_block_element
+  | `Heading of heading_attrs * Identifier.Label.t * link_content
+  | `Tag of tag ]
 
 type docs = block_element with_location list
 

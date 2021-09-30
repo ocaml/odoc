@@ -34,7 +34,7 @@
 Labels:
 Some are not in order because the 'doc' field appears after the rest in the output.
 
-  $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.) | .["heading_label"]'
+  $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.) | .[1]'
   {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}
   {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"D"]}
   {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"B"]}

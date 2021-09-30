@@ -30,7 +30,7 @@ let synopsis_of_module env (m : Component.Module.t) =
 
 let ambiguous_label_warning label_name labels =
   let pp_label_loc fmt (`Label (_, x)) =
-    Location_.pp_span_start fmt (Location_.location x)
+    Location_.pp_span_start fmt x.Component.Label.location
   in
   Lookup_failures.report_warning
     "@[<2>Label '%s' is ambiguous. The other occurences are:@ %a@]" label_name
@@ -40,9 +40,9 @@ let ambiguous_label_warning label_name labels =
 (** Raise a warning when a label explicitly set by the user collides. This
     warning triggers even if one of the colliding labels have been automatically
     generated. *)
-let check_ambiguous_label env h =
-  if h.Comment.heading_label_explicit then
-    let (`Label (_, label_name)) = h.heading_label in
+let check_ambiguous_label env (attrs, label, _) =
+  if attrs.Comment.heading_label_explicit then
+    let (`Label (_, label_name)) = label in
     let label_name = Names.LabelName.to_string label_name in
     match Env.lookup_by_name Env.s_label label_name env with
     | Ok _ | Error `Not_found -> ()
@@ -162,9 +162,7 @@ let rec comment_inline_element :
             match (content, x) with
             | [], `Identifier (#Id.Label.t as i) -> (
                 match Env.lookup_by_id Env.s_label i env with
-                | Some (`Label (_, lbl)) ->
-                    let (`Heading h) = Location_.value lbl in
-                    h.heading_text
+                | Some (`Label (_, lbl)) -> lbl.Component.Label.text
                 | None -> [])
             | content, _ -> content
           in

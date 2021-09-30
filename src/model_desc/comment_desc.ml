@@ -23,7 +23,8 @@ type general_block_element =
   | `Modules of Comment.module_reference list
   | `List of
     [ `Unordered | `Ordered ] * general_block_element with_location list list
-  | `Heading of Comment.heading
+  | `Heading of
+    Comment.heading_attrs * Identifier.Label.t * general_link_content
   | `Tag of general_tag ]
 
 and general_tag =
@@ -81,16 +82,14 @@ let heading =
       | `Paragraph -> C0 "`Paragraph"
       | `Subparagraph -> C0 "`Subparagraph")
   in
-  Record
-    [
-      F ("heading_level", (fun h -> h.heading_level), heading_level);
-      F ("heading_label", (fun h -> h.heading_label), identifier);
-      F ("heading_label_explicit", (fun h -> h.heading_label_explicit), bool);
-      F
-        ( "heading_text",
-          (fun h -> (h.heading_text :> general_link_content)),
-          link_content );
-    ]
+  let heading_attrs =
+    Record
+      [
+        F ("heading_level", (fun h -> h.heading_level), heading_level);
+        F ("heading_label_explicit", (fun h -> h.heading_label_explicit), bool);
+      ]
+  in
+  Triple (heading_attrs, identifier, link_content)
 
 let rec block_element : general_block_element t =
   let list_kind =

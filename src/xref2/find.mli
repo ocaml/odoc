@@ -14,7 +14,7 @@ type class_ =
 
 type value = [ `FValue of ValueName.t * Value.t ]
 
-type label = [ `FLabel of Ident.label ]
+type label = [ `FLabel of Label.t ]
 
 type exception_ = [ `FExn of ExceptionName.t * Exception.t ]
 

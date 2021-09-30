@@ -443,7 +443,7 @@ end =
 and CComment : sig
   type block_element =
     [ Odoc_model.Comment.nestable_block_element
-    | `Heading of Ident.label * Odoc_model.Comment.heading
+    | `Heading of Label.t
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list
@@ -453,8 +453,12 @@ end =
   CComment
 
 and Label : sig
-  type t =
-    [ `Heading of Odoc_model.Comment.heading ] Odoc_model.Comment.with_location
+  type t = {
+    attrs : Odoc_model.Comment.heading_attrs;
+    label : Ident.label;
+    text : Odoc_model.Comment.link_content;
+    location : Odoc_model.Location_.span;
+  }
 end =
   Label
 
@@ -2368,20 +2372,18 @@ module Of_Lang = struct
     in
     { items; removed = []; compiled = sg.compiled; doc = docs ident_map sg.doc }
 
-  and with_location :
-        'a 'b. (map -> 'a -> 'b) -> map -> 'a Location_.with_location ->
-        'b Location_.with_location =
-   fun conv ident_map v -> { v with value = conv ident_map v.Location_.value }
-
-  and block_element :
-      _ -> Odoc_model.Comment.block_element -> CComment.block_element =
-   fun _ b ->
+  and block_element _ b :
+      CComment.block_element Odoc_model.Comment.with_location =
     match b with
-    | `Heading h -> `Heading (Ident.Of_Identifier.label h.heading_label, h)
-    | `Tag t -> `Tag t
-    | #Odoc_model.Comment.nestable_block_element as n -> n
+    | { Odoc_model.Location_.value = `Heading (attrs, label, text); location }
+      ->
+        let label = Ident.Of_Identifier.label label in
+        Odoc_model.Location_.same b
+          (`Heading { Label.attrs; label; text; location })
+    | { value = `Tag _; _ } as t -> t
+    | { value = #Odoc_model.Comment.nestable_block_element; _ } as n -> n
 
-  and docs ident_map d = List.map (with_location block_element ident_map) d
+  and docs ident_map d = List.map (block_element ident_map) d
 
   and docs_or_stop ident_map = function
     | `Docs d -> `Docs (docs ident_map d)
