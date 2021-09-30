@@ -224,8 +224,9 @@ let rec nestable_block_element :
   match element with
   | { value = `Paragraph content; location } ->
       Location.at location (`Paragraph (inline_elements status content))
-  | ({ value = `Code_block _; _ } | { value = `Verbatim _; _ }) as element ->
-      element
+  | { value = `Code_block (_, code); _ } ->
+      Location.same element (`Code_block code)
+  | { value = `Verbatim _; _ } as element -> element
   | { value = `Modules modules; location } ->
       let modules =
         List.fold_left
