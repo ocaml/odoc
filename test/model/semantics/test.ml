@@ -1917,10 +1917,7 @@ let%expect_test _ =
       [%expect
         {|
         {
-          "value": [
-            { "`Tag": { "`Author": "Foo" } },
-            { "`Code_block": [ "None", "bar" ] }
-          ],
+          "value": [ { "`Tag": { "`Author": "Foo" } }, { "`Code_block": "bar" } ],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-7:\n'{[...]}' (code block) is not allowed in the tags section.\nSuggestion: move '{[...]}' (code block) before any tags."
           ]
@@ -2307,7 +2304,7 @@ let%expect_test _ =
       test "{[@author Foo]}";
       [%expect
         {|
-          { "value": [ { "`Code_block": [ "None", "@author Foo" ] } ], "warnings": [] } |}]
+          { "value": [ { "`Code_block": "@author Foo" } ], "warnings": [] } |}]
 
     let in_verbatim =
       test "{v @author Foo v}";
@@ -2320,10 +2317,7 @@ let%expect_test _ =
       [%expect
         {|
         {
-          "value": [
-            { "`Code_block": [ "None", "foo" ] },
-            { "`Tag": { "`Author": "Bar" } }
-          ],
+          "value": [ { "`Code_block": "foo" }, { "`Tag": { "`Author": "Bar" } } ],
           "warnings": [
             "File \"f.ml\", line 1, characters 8-19:\n'@author' should begin on its own line."
           ]
