@@ -19,6 +19,16 @@
 module Identifier : sig
   (** {2 Generic operations} *)
 
+  module Any : sig
+    type t = Paths_types.Identifier.any
+
+    val equal : t -> t -> bool
+
+    val hash : t -> int
+
+    val compare : t -> t -> int
+  end
+
   module Signature : sig
     type t = Paths_types.Identifier.signature
 
@@ -358,6 +368,8 @@ module Identifier : sig
   end
 
   module Maps : sig
+    module Any : Map.S with type key = Any.t
+
     module Signature : Map.S with type key = Signature.t
 
     module ClassSignature : Map.S with type key = ClassSignature.t
