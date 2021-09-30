@@ -1000,15 +1000,16 @@ and block_element parent
     Odoc_model.Comment.block_element Odoc_model.Location_.with_location =
   let value =
     match d.Odoc_model.Location_.value with
-    | `Heading (id, heading) ->
-        let heading_label =
-          try `Label (parent, Ident.Name.typed_label id)
+    | `Heading h ->
+        let { Component.Label.attrs; label; text; location = _ } = h in
+        let label =
+          try `Label (parent, Ident.Name.typed_label label)
           with Not_found ->
             Format.fprintf Format.err_formatter "Failed to find id: %a\n"
-              Ident.fmt id;
+              Ident.fmt label;
             raise Not_found
         in
-        `Heading { heading with Odoc_model.Comment.heading_label }
+        `Heading (attrs, label, text)
     | `Tag t -> `Tag t
     | #Odoc_model.Comment.nestable_block_element as n -> n
   in

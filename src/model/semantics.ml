@@ -327,7 +327,7 @@ let section_heading :
  fun status ~top_heading_level location heading ->
   let (`Heading (level, label, content)) = heading in
 
-  let heading_text =
+  let text =
     non_link_inline_elements status
       ~surrounding:(heading :> surrounding)
       content
@@ -336,22 +336,15 @@ let section_heading :
   let heading_label_explicit, label =
     match label with
     | Some label -> (true, label)
-    | None -> (false, generate_heading_label heading_text)
+    | None -> (false, generate_heading_label text)
   in
-  let heading_label =
+  let label =
     `Label (status.parent_of_sections, Names.LabelName.make_std label)
   in
 
   let mk_heading heading_level =
-    let heading =
-      {
-        Comment.heading_level;
-        heading_label;
-        heading_label_explicit;
-        heading_text;
-      }
-    in
-    let element = Location.at location (`Heading heading) in
+    let attrs = { Comment.heading_level; heading_label_explicit } in
+    let element = Location.at location (`Heading (attrs, label, text)) in
     let top_heading_level =
       match top_heading_level with None -> Some level | some -> some
     in
@@ -361,12 +354,10 @@ let section_heading :
   match (status.sections_allowed, level) with
   | `None, _any_level ->
       Error.raise_warning (headings_not_allowed location);
-      let heading_text =
-        (heading_text :> Comment.inline_element with_location list)
-      in
+      let text = (text :> Comment.inline_element with_location list) in
       let element =
         Location.at location
-          (`Paragraph [ Location.at location (`Styled (`Bold, heading_text)) ])
+          (`Paragraph [ Location.at location (`Styled (`Bold, text)) ])
       in
       (top_heading_level, element)
   | `No_titles, 0 ->

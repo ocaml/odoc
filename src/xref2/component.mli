@@ -413,7 +413,7 @@ end
 and CComment : sig
   type block_element =
     [ Odoc_model.Comment.nestable_block_element
-    | `Heading of Ident.label * Odoc_model.Comment.heading
+    | `Heading of Label.t
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list
@@ -422,8 +422,12 @@ and CComment : sig
 end
 
 and Label : sig
-  type t =
-    [ `Heading of Odoc_model.Comment.heading ] Odoc_model.Comment.with_location
+  type t = {
+    attrs : Odoc_model.Comment.heading_attrs;
+    label : Ident.label;
+    text : Odoc_model.Comment.link_content;
+    location : Odoc_model.Location_.span;
+  }
 end
 
 module Element : sig
@@ -759,9 +763,6 @@ module Of_Lang : sig
   val open_ : map -> Odoc_model.Lang.Open.t -> Open.t
 
   val apply_sig_map : map -> Odoc_model.Lang.Signature.t -> Signature.t
-
-  val block_element :
-    map -> Odoc_model.Comment.block_element -> CComment.block_element
 
   val docs : map -> Odoc_model.Comment.docs -> CComment.docs
 

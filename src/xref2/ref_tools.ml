@@ -330,7 +330,8 @@ module L = struct
   let of_component _env ~parent_ref label =
     Ok
       (`Label
-        ((parent_ref :> Resolved.LabelParent.t), Ident.Name.typed_label label))
+        ( (parent_ref :> Resolved.LabelParent.t),
+          Ident.Name.typed_label label.Component.Label.label ))
 
   let in_label_parent env (parent : label_parent_lookup_result) name =
     match parent with
@@ -545,11 +546,9 @@ let rec resolve_label_parent_reference env r =
             List.fold_right
               (fun element l ->
                 match element.Odoc_model.Location_.value with
-                | `Heading h ->
-                    let (`Label (_, name) as x) =
-                      h.Odoc_model.Comment.heading_label
-                    in
-                    (LabelName.to_string name, x) :: l
+                | `Heading (_, label, _) ->
+                    let (`Label (_, name)) = label in
+                    (LabelName.to_string name, label) :: l
                 | _ -> l)
               p.Odoc_model.Lang.Page.content []
           in
