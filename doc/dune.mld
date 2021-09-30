@@ -95,7 +95,7 @@ have double underscores meaning they are hidden. Only the non-hidden module
 the modules [A] and [B] are expanded because they are aliases of hidden
 modules. All references to [Lib__A] and [Lib__B] are replaced with the canonical
 paths [Lib.A] and [Lib.B], so in this way odoc presents the library as entirely
-containined withing the module [Lib].
+contained within the module [Lib].
 
 {2 Hand-Written Top-Level Module}
 

@@ -1,6 +1,4 @@
-(** Markup examples *)
-
-(** {1 Ocamldoc example from the OCaml manual}*)
+(** Markup examples. *)
 
 (** The OCaml manual gives a
 {{:https://ocaml.org/manual/ocamldoc.html#ss:ocamldoc-placement}comprehensive example}
@@ -118,8 +116,6 @@ module type Foo = sig
   end
 end
 
-(** {1 Stop comments} *)
-
 module Stop : sig
   (** This module demonstrates the use of stop comments ([(**/**)]) *)
 
@@ -166,7 +162,9 @@ module A : sig
   (** In this module I can refer to val {!x} declared above as well as
       type {!u} declared later in the parent module. Elements declared
       in this signature take priority, so {!y} refers to {!A.y} as
-      opposed to the [y] declared in the parent signature.  *)
+      opposed to the [y] declared in the parent signature.
+      
+      @see 'markup.mli' for a good time *)
 
   val y : string
 end
@@ -174,14 +172,9 @@ end
 type u
 end
 
-(** Tags - '@' tags *)
-module Tags : sig
-  
-  val v : int 
-  (** @author jon@recoil.org Jon *)
-  
-end
-(** {1 Synopsis, preambles and sections} *)
+
+module Preamble_examples : sig
+(** This module demonstrates the various ways that preambles are calculated *)
 
 (** This is the comment attached to the declaration of Hidden__Module *)
 module Hidden__Module : sig
@@ -233,3 +226,5 @@ module Module4 = Nonhidden_module2
 
 (** The [modules] special reference can be used to refer to a list of modules.
 It uses the synopsis from the modules  *)
+
+end

@@ -40,10 +40,8 @@ tags or sequence of LaTex commands may not be preserved. We will attempt to ensu
 
 {2 Libraries}
 
-[odoc] has several internal libraries. The only one that we currently expect external users to need is
-the comment parser. This will soon be removed into an external package with a separate link, and it will
-have its own lifecycle and support statement. Note that this will replace the existing
-[octavius] library, which was the original implementation of [odoc]'s current parser.
+[odoc]'s libraries are not currently intended to be used by other projects. There are
+no guarantees about the stability of the API.
 
 {2 Intermediate Files}
 
