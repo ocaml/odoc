@@ -148,6 +148,39 @@ module Stop : sig
   type t = string
 end
 
+(** {2 Scoping rules} *)
+module Scope : sig
+
+  (** In this floating comment I can refer to type {!t} and value {!v}
+    declared later in the signature *)
+
+  type t
+
+  val v : t
+
+  val x : int
+val y : int
+
+module A : sig
+  
+  (** In this module I can refer to val {!x} declared above as well as
+      type {!u} declared later in the parent module. Elements declared
+      in this signature take priority, so {!y} refers to {!A.y} as
+      opposed to the [y] declared in the parent signature.  *)
+
+  val y : string
+end
+
+type u
+end
+
+(** Tags - '@' tags *)
+module Tags : sig
+  
+  val v : int 
+  (** @author jon@recoil.org Jon *)
+  
+end
 (** {1 Synopsis, preambles and sections} *)
 
 (** This is the comment attached to the declaration of Hidden__Module *)

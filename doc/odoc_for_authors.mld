@@ -239,6 +239,7 @@ the simple typesetting markup:
 - [{^ text}] superscript
 - [{_ text}] subscript
  
+{3:lists Lists}
 Unordered lists:
 {v
 {ul {- item}
@@ -278,13 +279,89 @@ code. For example, the following would be acceptable in a documentation comment:
 The list [ [1;2;3] ] needs no escaping
 v}
 
-In a code block section, 
-In a verbatim formatted section, the section is ended with a whitespace character
-followed by [ v} ]. It is not currently possible to escape this.
+In a code block section, the section is ended with a [ \]} ], and in a
+verbatim formatted section, the section is ended with a whitespace character
+followed by [ v} ]. It is not currently possible to escape this in either case.
 
+{2 Links and References}
 
+A link to a URL may be put into the text as follows:
 
-[ \@foo ]
+{[
+(** See {{: https://www.ocaml.org/ }the OCaml website} for news about OCaml *)
+]}
+
+This will render as a link to [https://www.ocaml.org/] with the text "the OCaml website" 
+
+References are links to other elements - e.g., comments might wish to refer to 
+a module or type elsewhere as follows:
+
+{[
+(** See the module {!Stdlib.Buffer} for more details *)
+]}
+
+While [odoc] supports the syntax for references used by OCamldoc, it has an
+improved syntax that allows for diambiguating in the face of clashing names.
+See the section {!page-features.reference_resolution} for an example of this.
+
+The supported methods for referring to elements are:
+
+- Bare: [ {!Foo.bar} ] - this works well if there are no ambiguities in what's being referred to.
+- OCamldoc: [ {!type:Foo.bar} ] - here the [type] prefix applies to the last element - i.e., [bar].
+This is useful if there are several idenfiers [bar] in module [Foo], e.g., a type and a value.
+- [odoc]: [ {!module-Foo.type-bar} ] - each element in the path may be prefixed by its type. This is
+useful if there are ambiguous elements in any part of the path, e.g. in this case perhaps there is a
+module type [Foo].
+
+The prefixes supported are:
+- [module]
+- [module-type] (also [modtype])
+- [class]
+- [class-type] (also [classtype])
+- [val]
+- [type]
+- [exception]
+- [method]
+- [section]
+- [constructor] (also [const])
+- [field] (also [recfield])
+
+{3 Reference Scope}
+
+[odoc] uses the same scoping as OCaml when resolving references,
+but with one major difference. In a particular
+signature, {e all} items are in scope, even those later in the signature.
+Consider the following example:
+
+{[
+(** In this floating comment I can refer to type {!t} and value {!v}
+    declared later in the signature *)
+
+type t
+
+val v : t
+]}
+
+Elements from parent modules are also in scope in child modules. Therefore
+the following will also work:
+
+{[
+val x : int
+val y : int
+
+module A : sig
+  (** In this module I can refer to val {!x} declared above as well as
+      type {!u} declared later in the parent module. Elements declared
+      in this signature take priority, so {!y} refers to {!A.y} as
+      opposed to the [y] declared in the parent signature.  *)
+
+  val y : string
+end
+
+type u
+]}
+
+The above example can be seen rendered in the module {!Odoc_examples.Scope}.
 
 {1 Page structure}
 
