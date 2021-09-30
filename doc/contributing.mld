@@ -9,10 +9,10 @@ find the information in this file helpful.
 {1 Quick start: HTML and CSS}
 
 The [odoc] CSS is found at {{:https://github.com/ocaml/odoc/blob/master/src/odoc/etc/odoc.css}[src/odoc/etc/odoc.css]}. It
-still needs work, and PRs are very welcome. You can edit CSS using your browser's developer
-mode. Then send us a PR for the same changes made to this file.
+still needs work, and PRs are very welcome. You can edit CSS using your browser's {{:https://developer.mozilla.org/en-US/docs/Tools}developer}
+{{:https://developer.chrome.com/docs/devtools/}tools}. Then send us a PR for the same changes made to this file.
 
-Working on the HTML is more involved. The main HTML generator is in {{:https://github.com/ocaml/odoc/blob/master/src/html/generator.ml}src/html/generator.ml}.
+Working on the HTML is more involved. The main HTML generator is in {{:https://github.com/ocaml/odoc/blob/master/src/html/generator.ml}[src/html/generator.ml]}.
 It operates on the types defined in {!module-Odoc_document.Types}, which is an intermediate representation used by all output renderers. The type that
 describes an individual HTML page is {!Odoc_document.Types.Page.t}.
 
@@ -52,7 +52,7 @@ and then to run the tests,
 {[
 make test
 ]}
-Changes to the HTML are likely to cause the tests to fail. See the section {!testing} below to understand how to update them.
+Changes to the HTML are likely to cause the tests to fail. See the section on {{!testing}testing} below to understand how to update them.
 }
 {- To test [odoc] against your own project, install it
 {[
@@ -73,27 +73,27 @@ dune build @doc
 {1:testing Testing}
 
 [odoc] uses a variety of different test types. We are slowly converging on using
-Dune's {{:https://dune.readthedocs.io/en/stable/tests.html#cram-tests}Cram tests},
+Dune's {{:https://dune.readthedocs.io/en/stable/tests.html#cram-tests}cram tests},
 though we still have many tests that aren't yet converted.
 
 {2 Cram Tests}
 
 The tests extensively use these for the model layer and are found in
-{{:https://github.com/ocaml/odoc/blob/master/test/xref2}test/xref2}. These consist
+{{:https://github.com/ocaml/odoc/blob/master/test/xref2}[test/xref2]}. These consist
 of a directory called [something.t], containing a file [run.t]. This file has 
 shell-like syntax and usually runs [odoc] on some carefully crafted
 input files. For tests of the model layer it's often useful to use the binary
-[odoc_print] which can dump [odoc] and [odocl] files as JSON. This output can
+[odoc_print] which can dump [.odoc] and [.odocl] files as JSON. This output can
 then be piped through [jq] to verify that values are as expected.
 
 We try to make these test files describe the test and what's expected, which
 helps when the output isn’t what the test expected. This also means that
 the tests can serve as documentation of how things work. As an example, see
-the file {{:https://github.com/ocaml/odoc/blob/master/test/xref2/multi_file_module_type_of.t/run.t}test/xref2/multi_file_module_type_of.t/run.t}
+the file {{:https://github.com/ocaml/odoc/blob/master/test/xref2/multi_file_module_type_of.t/run.t}[test/xref2/multi_file_module_type_of.t/run.t]}
 
 The tests work by executing the shell script snippets and then comparing the
-actual output with those in the [run.t] files. If these _don't_
-match, the difference is rendered as a [diff]. For example, if I change the
+actual output with those in the [run.t] files. If these {e don't}
+match, the difference is rendered as a diff. For example, if I change the
 way [type] declarations are printed and run [dune runtest], I get the
 following output:
 
@@ -144,8 +144,8 @@ As an example the parser tests in [test/parser] work in the following way:
   repo. If the S-expression from the code doesn't match the expected one, the
   test fails.
 
-When one of these Expect-tests fail, the string that the code emitted is saved, so
-the human developer can choose to {b replace} the now-incorrect expected string.
+When one of these Expect-tests fail, the output is saved, so
+the developer can choose to {b replace} the now-incorrect expected string.
 For these custom Expect-tests, the results may look like:
 
 {[
@@ -194,10 +194,6 @@ To use it,
 + Write new tests.
 + Check coverage again.
 
-The coverage is tested by our CI tests and the results are available on 
-{{:https://coveralls.io/github/ocaml/odoc}the coveralls website}.
-
-
 {1 CI Tests}
 
 [odoc] is tested by {{:https://ci.ocamllabs.io/}ocaml-ci} and by GitHub workflows.
@@ -213,38 +209,36 @@ back as far as we can (currently 4.02) which is important for supporting
 
 {2 Loading}
 
-{{!module-Odoc_loader}Odoc_loader} and functions within are responsible for converting
+The library {{!page-odoc_loader}odoc.loader} is responsible for converting
 from the OCaml {!module-Typedtree} representations to the
 {{!Odoc_model.Lang}internal representation}.
 
 {2 Model}
 
-This library contains the internal representation of OCaml interfaces used
-by [odoc]. The library {{!page-odoc_model}odoc_model} contains definitions of
-the types, and the library {{!page-odoc_model_desc}odoc_model_desc} contains
-JSON renderers for the model types.
+The library {{!page-odoc_model}odoc.model} contains definitions of
+the internal types used to represent OCaml interfaces.
 
 {2 Resolution and Expansion}
 
 Resolution of Paths, Fragments and References, and Expansion of Modules and
-Module Types are handled by the {{!page-odoc_xref2}xref2 library}.
+Module Types are handled by the {{!page-odoc_xref2}odoc.xref2 library}.
 
 {2 Intermediate Representation and Renderers}
-
 The generic documentation intermediate format is defined in the
-{{!page-odoc_document}odoc_document library}.
+{{!page-odoc_document}odoc.document library}.
 
 The three current renderers are implemented within the following libraries
-{!page-odoc_html}, {!page-odoc_latex}, and {!page-odoc_manpage}.
+{{!page-odoc_html}odoc.html}, {{!page-odoc_latex}odoc.latex}, and {{!page-odoc_manpage}odoc.manpage}.
 
 {2 CLI and Driver}
 
 The CLI for [odoc] and various helper functions for driving the process are contained in the
-{{!page-odoc_odoc}odoc_odoc library}.
+{{!page-odoc_odoc}odoc.odoc library}.
 
 {2 Test and Internal Libraries}
 
-There are a couple of libraries used internally for testing - {!page-odoc_xref_test} and {!page-odoc_model_desc}.
+There are a couple of libraries used internally for testing - {{!page-odoc_xref_test}odoc.xref_test}
+and {{!page-odoc_model_desc}odoc.model_desc}.
 
 {1 Dependency Libraries}
 

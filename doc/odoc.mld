@@ -3,7 +3,7 @@
 {1:overview What is [odoc]?}
 
 [odoc] is a documentation generator for OCaml. It reads doc comments
-from your source files and your [mld] files, and outputs HTML, LaTeX and
+from your source files and your [.mld] files, and outputs HTML, LaTeX and
 man pages. The pages you are reading now are rendered using [odoc].
 
 Text inside doc comments (delimited by [(** ... *)]) is marked up in
@@ -47,4 +47,15 @@ setting, you'll need to understand {{!page-driver}how to drive [odoc]}.
 
 To start contributing to [odoc], please see our {{!page-contributing}contributors guide}.
 
+{1 Page index}
+
+The main other pages of this site:
+- {!page-odoc_for_authors} Odoc For Authors
+- {!page-features} Language Features
+- {!page-driver} Reference Driver
+- {!page-contributing} Contributing
+- {!page-ocamldoc_differences} Differences from OCamldoc
+- {!page-dune} Dune
+- {!page-parent_child_spec} Parent/Child specification
+- {!page-interface} Interface guarantees
 

@@ -24,17 +24,17 @@ let get_ok = function | Ok x -> x | Error (`Msg m) -> failwith m
 
 `odoc` produces output files (html or others) in a structured directory tree, so before running `odoc`, the structure of the output must be decided. For these docs, we want the following structure:
 
-- odoc/index.html : main page
-- odoc/{odoc_for_authors.html,...} : other documentation pages
-- odoc/odoc_model/index.html : `odoc` model library subpage
-- odoc/odoc_model/Odoc_model/index.html : Module page for the module `Odoc_model`
-- odoc/odoc_model/Odoc_model/... : Further pages for the submodules of `Odoc_model`
-- odoc/odoc_parser/index.html : `odoc` parser library subpage
-- odoc/odoc_.../index.html : other `odoc` library pages
-- odoc/deps/stdlib/index.html : stdlib main page
-- odoc/deps/stdlib/Stdlib/index.html : Module page for the module `Stdlib`
-- odoc/deps/astring/index.html : astring main page
-- odoc/deps/... : other dependencies
+- `odoc/index.html` : main page
+- `odoc/{odoc_for_authors.html,...}` : other documentation pages
+- `odoc/odoc_model/index.html` : `odoc` model library subpage
+- `odoc/odoc_model/Odoc_model/index.html` : Module page for the module `Odoc_model`
+- `odoc/odoc_model/Odoc_model/...` : Further pages for the submodules of `Odoc_model`
+- `odoc/odoc_parser/index.html` : `odoc` parser library subpage
+- `odoc/odoc_.../index.html` : other `odoc` library pages
+- `odoc/deps/stdlib/index.html` : stdlib main page
+- `odoc/deps/stdlib/Stdlib/index.html` : Module page for the module `Stdlib`
+- `odoc/deps/astring/index.html` : astring main page
+- `odoc/deps/...` : other dependencies
 
 The `odoc` model for achieving this is that we have *pages* (`.mld` files) that have *children* which are either *further pages* (`.mld` files) or *modules* (from `.cmti` files). This {{!page-parent_child_spec} parent/child relationship} is specified on the command line. Parent pages must be *compiled* by `odoc` before their children. Then compiling a page `mypage.mld` will produce the file `page-mypage.odoc`.
 
@@ -108,7 +108,7 @@ In this section `odoc` is used to generate the documentation of `odoc` and some 
 Let's start with some functions to execute the three phases of `odoc`.
 
 Compiling a file with `odoc` requires a few arguments: the file to compile, an
-optional parent, a list of include paths, a list of children for `mld` files,
+optional parent, a list of include paths, a list of children for `.mld` files,
 and an output path. Include paths can be just `'.'`, and we can calculate the
 output file from the input because all of the files are going into the same directory.
 
@@ -229,7 +229,6 @@ let extra_docs = [
     "driver";
     "parent_child_spec";
     "features";
-    "dune_wrapping";
     "interface";
     "odoc_for_authors";
     "dune";
@@ -382,7 +381,7 @@ let compile_mlds () =
               else None)
             all_units
         in
-        ignore (compile (mkmld library) ~parent children);
+        ignore (compile (mkmld ("library_mlds/"^library)) ~parent children);
         "page-" ^ library ^ ".odoc")
       all_libraries
   in
