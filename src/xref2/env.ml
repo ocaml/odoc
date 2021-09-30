@@ -63,19 +63,6 @@ let pp_lookup_type_list fmt ls =
 
 type recorder = { mutable lookups : lookup_type list }
 
-let ident_of_element = function
-  | `Module (id, _) -> (id :> Identifier.t)
-  | `ModuleType (id, _) -> (id :> Identifier.t)
-  | `Type (id, _) -> (id :> Identifier.t)
-  | `Value (id, _) -> (id :> Identifier.t)
-  | `Label (id, _) -> (id :> Identifier.t)
-  | `Class (id, _) -> (id :> Identifier.t)
-  | `ClassType (id, _) -> (id :> Identifier.t)
-  | `Constructor (id, _) -> (id :> Identifier.t)
-  | `Exception (id, _) -> (id :> Identifier.t)
-  | `Extension (id, _) -> (id :> Identifier.t)
-  | `Field (id, _) -> (id :> Identifier.t)
-
 module Maps = Odoc_model.Paths.Identifier.Maps
 module StringMap = Map.Make (String)
 
@@ -112,52 +99,40 @@ module Elements : sig
   val find_by_name :
     (Component.Element.any -> 'b option) -> string -> t -> 'b list
 
-  val find_by_id :
-    (Component.Element.any -> 'b option) -> Identifier.t -> t -> 'b list
+  val find_by_id : Identifier.t -> t -> Component.Element.any option
 end = struct
-  type elem = { kind : kind; elem : Component.Element.any; shadowed : bool }
+  module IdMap = Identifier.Maps.Any
 
-  type t = elem list StringMap.t
+  type elem = { kind : kind; elem : Component.Element.any }
 
-  let empty = StringMap.empty
+  type t = elem list StringMap.t * Component.Element.any IdMap.t
+  (** The first map is queried with {!find_by_name}, shadowed elements are
+      removed from it. The second map is queried with {!find_by_id}. *)
 
-  let add ?(shadow = true) kind identifier comp t =
+  let empty = (StringMap.empty, IdMap.empty)
+
+  let add ?(shadow = true) kind identifier elem (names, ids) =
+    let elem = (elem :> Component.Element.any) in
     let name = Identifier.name identifier in
-    let v =
-      { kind; elem = (comp :> Component.Element.any); shadowed = false }
-    in
-    try
-      let tl = StringMap.find name t in
-      let tl =
-        let has_shadow e = e.kind = kind in
-        let mark_shadow e =
-          if e.kind = kind then { e with shadowed = true } else e
-        in
-        if shadow && List.exists has_shadow tl then List.map mark_shadow tl
+    let tl =
+      try
+        let tl = StringMap.find name names in
+        let not_shadow e = e.kind <> kind in
+        if shadow && not (List.for_all not_shadow tl) then
+          List.filter not_shadow tl
         else tl
-      in
-      StringMap.add name (v :: tl) t
-    with Not_found -> StringMap.add name [ v ] t
-
-  let find' f name t =
-    try List.fold_right f (StringMap.find name t) [] with Not_found -> []
-
-  (** Do not consider shadowed elements. *)
-  let find_by_name f name t =
-    let filter e acc =
-      if e.shadowed then acc
-      else match f e.elem with Some r -> r :: acc | None -> acc
+      with Not_found -> []
     in
-    find' filter name t
+    let ids = IdMap.add (identifier :> Identifier.t) elem ids in
+    let names = StringMap.add name ({ kind; elem } :: tl) names in
+    (names, ids)
 
-  (** Allow matching shadowed elements. *)
-  let find_by_id f id t =
-    let filter e acc =
-      match f e.elem with
-      | Some r -> if ident_of_element e.elem = id then r :: acc else acc
-      | None -> acc
-    in
-    find' filter (Identifier.name id) t
+  let find_by_name f name (names, _) =
+    let filter e acc = match f e.elem with Some r -> r :: acc | None -> acc in
+    try List.fold_right filter (StringMap.find name names) []
+    with Not_found -> []
+
+  let find_by_id id (_, ids) = IdMap.find_opt id ids
 end
 
 type t = {
@@ -403,11 +378,11 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
         | _ -> ())
     | None -> ()
   in
-  match Elements.find_by_id scope.filter (id :> Identifier.t) env.elts with
-  | x :: _ ->
+  match Elements.find_by_id (id :> Identifier.t) env.elts with
+  | Some x ->
       record_lookup_result x;
-      Some x
-  | [] -> (
+      scope.filter x
+  | None -> (
       match (id :> Identifier.t) with
       | `Root (_, name) -> scope.root (ModuleName.to_string name) env
       | _ -> None)

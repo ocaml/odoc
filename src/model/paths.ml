@@ -78,6 +78,16 @@ module Identifier = struct
 
   type any = t
 
+  module Any = struct
+    type t = any
+
+    let equal = equal
+
+    let hash = hash
+
+    let compare = compare
+  end
+
   module Signature = struct
     type t = Paths_types.Identifier.signature
 
@@ -395,6 +405,7 @@ module Identifier = struct
   end
 
   module Maps = struct
+    module Any = Map.Make (Any)
     module Signature = Map.Make (Signature)
     module ClassSignature = Map.Make (ClassSignature)
     module DataType = Map.Make (DataType)
