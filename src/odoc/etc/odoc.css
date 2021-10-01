@@ -399,10 +399,6 @@ li code {
   padding: 0 0.3ex;
 }
 
-li a code {
-  color: var(--link-color);
-}
-
 p a > code {
   color: var(--link-color);
 }
@@ -432,8 +428,7 @@ pre code {
 }
 
 div.spec, .def-doc {
-  margin-top: 20px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .spec.type .variant {
@@ -521,10 +516,6 @@ td.def {
 
 td.def-doc *:first-child {
   margin-top: 0em;
-}
-
-td.def-doc {
-  padding-left: 2ex;
 }
 
 /* Lists of @tags */
