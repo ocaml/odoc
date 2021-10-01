@@ -1,0 +1,6 @@
+(library
+ (name odoc_markdown)
+ (public_name odoc.markdown)
+ (instrumentation
+  (backend bisect_ppx))
+ (libraries odoc_model odoc_document))
