@@ -121,32 +121,33 @@ module Stop : sig
 
   class type foo =
     object
-      (** comment for method m *)
       method m : string
+      (** comment for method m *)
 
       (**/**)
 
-      (** This method won't appear in the documentation *)
       method bar : int
+      (** This method won't appear in the documentation *)
     end
 
+  val foo : string
   (** This value appears in the documentation, since the Stop special comment
       in the class does not affect the parent module of the class.*)
-  val foo : string
 
   (**/**)
-  (** The value bar does not appear in the documentation.*)
+
   val bar : string
+  (** The value bar does not appear in the documentation.*)
+
   (**/**)
 
+  type t = string
   (** The type t appears since in the documentation since the previous stop comment
   toggled off the "no documentation mode". *)
-  type t = string
 end
 
 (** {2 Scoping rules} *)
 module Scope : sig
-
   (** In this floating comment I can refer to type {!t} and value {!v}
     declared later in the signature *)
 
@@ -155,76 +156,74 @@ module Scope : sig
   val v : t
 
   val x : int
-val y : int
 
-module A : sig
-  
-  (** In this module I can refer to val {!x} declared above as well as
+  val y : int
+
+  module A : sig
+    (** In this module I can refer to val {!x} declared above as well as
       type {!u} declared later in the parent module. Elements declared
       in this signature take priority, so {!y} refers to {!A.y} as
       opposed to the [y] declared in the parent signature.
       
       @see 'markup.mli' for a good time *)
 
-  val y : string
-end
+    val y : string
+  end
 
-type u
+  type u
 end
-
 
 module Preamble_examples : sig
-(** This module demonstrates the various ways that preambles are calculated *)
+  (** This module demonstrates the various ways that preambles are calculated *)
 
-(** This is the comment attached to the declaration of Hidden__Module *)
-module Hidden__Module : sig
-  (** This is the top comment declared in the module Hidden__module.
+  (** This is the comment attached to the declaration of Hidden__Module *)
+  module Hidden__Module : sig
+    (** This is the top comment declared in the module Hidden__module.
      
      This is the second paragraph in the module Hidden__module.
      
      @canonical Odoc_examples.Markup.Module *)
 
-  type t
-  (** This is a comment on type t *)
-end
+    type t
+    (** This is a comment on type t *)
+  end
 
-module Module = Hidden__Module
-(** This comment is on the declaration of Module as an alias of Hidden__Module *)
+  module Module = Hidden__Module
+  (** This comment is on the declaration of Module as an alias of Hidden__Module *)
 
-(** This is the comment attached to the declaration of module Hidden__Module2 *)
-module Hidden__Module2 : sig
-  (** This is the top comment declared in the module Hidden__module2.
+  (** This is the comment attached to the declaration of module Hidden__Module2 *)
+  module Hidden__Module2 : sig
+    (** This is the top comment declared in the module Hidden__module2.
        
        This is the second paragraph in the module Hidden__module2.
        
        @canonical Odoc_examples.Markup.Module2 *)
 
-  type t
-  (** This is a comment on type t *)
-end
+    type t
+    (** This is a comment on type t *)
+  end
 
-module Module2 = Hidden__Module2
+  module Module2 = Hidden__Module2
 
-module Nonhidden_module : sig
-  (** This is the top comment declared in the module Hidden__module2.
+  module Nonhidden_module : sig
+    (** This is the top comment declared in the module Hidden__module2.
        
        This is the second paragraph in the module Hidden__module2.
     *)
-end
+  end
 
-module Module3 = Nonhidden_module
-(** This comment is on the declaration of Module3 as an alias of Nonhidden_module *)
+  module Module3 = Nonhidden_module
+  (** This comment is on the declaration of Module3 as an alias of Nonhidden_module *)
 
-module Nonhidden_module2 : sig
-  (** This is the top comment declared in the module Hidden__module2.
+  module Nonhidden_module2 : sig
+    (** This is the top comment declared in the module Hidden__module2.
        
        This is the second paragraph in the module Hidden__module2.
     *)
-end
+  end
 
-module Module4 = Nonhidden_module2
+  module Module4 = Nonhidden_module2
 
-(** The [modules] special reference can be used to refer to a list of modules.
+  (** The [modules] special reference can be used to refer to a list of modules.
 It uses the synopsis from the modules  *)
-
 end
