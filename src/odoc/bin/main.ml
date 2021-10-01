@@ -572,6 +572,30 @@ module Odoc_latex = Make_renderer (struct
     Term.(const f $ with_children)
 end)
 
+module Odoc_markdown = Make_renderer (struct
+  type args = Markdown.args
+
+  let renderer = Markdown.renderer
+
+  let generate_links =
+    let doc = "Generate links in markdown." in
+    Arg.(value & flag (info ~doc [ "generate-links" ]))
+
+  let md_flavour =
+    let doc =
+      "The markdown renderer you are targeting, though only\n\
+      \    Pandoc and Github Flavoured Markdown are supported, the default \
+       being GFM."
+    in
+    Arg.(
+      value & opt string ""
+      & info ~docv:"MARKDOWN_FLAVOUR" ~doc [ "md-flavour" ])
+
+  let extra_args =
+    let f generate_links md_flavour = { Markdown.generate_links; md_flavour } in
+    Term.(const f $ generate_links $ md_flavour)
+end)
+
 module Depends = struct
   module Compile = struct
     let list_dependencies input_file =
@@ -720,6 +744,9 @@ let () =
       Odoc_html.process;
       Odoc_html.targets;
       Odoc_html.generate;
+      Odoc_markdown.process;
+      Odoc_markdown.targets;
+      Odoc_markdown.generate;
       Odoc_manpage.process;
       Odoc_manpage.targets;
       Odoc_manpage.generate;
