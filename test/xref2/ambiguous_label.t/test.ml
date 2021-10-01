@@ -23,3 +23,6 @@
 
     It is not possible to use the internal name in references:
     {{!example_2} Shouldn't resolve} *)
+
+let x = 1
+  
