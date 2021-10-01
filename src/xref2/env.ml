@@ -132,7 +132,7 @@ end = struct
     try List.fold_right filter (StringMap.find name names) []
     with Not_found -> []
 
-  let find_by_id id (_, ids) = IdMap.find_opt id ids
+  let find_by_id id (_, ids) = try Some (IdMap.find id ids) with _ -> None
 end
 
 type t = {
