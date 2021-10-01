@@ -552,6 +552,33 @@
    (diff alias.targets alias.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets Alias.md.gen Alias.X.md.gen)
+  (action
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../alias.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Alias.md Alias.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Alias.X.md Alias.X.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    alias.targets.gen
+    (run odoc markdown-targets -o . %{dep:../alias.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff alias.targets alias.targets.gen))))
+
+(subdir
  html
  (rule
   (targets Bugs.html.gen)
@@ -624,6 +651,29 @@
    (with-outputs-to
     bugs.targets.gen
     (run odoc man-targets -o . %{dep:../bugs.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff bugs.targets bugs.targets.gen))))
+
+(subdir
+ markdown
+ (rule
+  (targets Bugs.md.gen)
+  (action
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../bugs.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Bugs.md Bugs.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    bugs.targets.gen
+    (run odoc markdown-targets -o . %{dep:../bugs.odocl}))))
  (rule
   (alias runtest)
   (action
@@ -777,6 +827,50 @@
    (>= %{ocaml_version} 4.06))))
 
 (subdir
+ markdown
+ (rule
+  (targets Bugs_post_406.md.gen Bugs_post_406.let_open'.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../bugs_post_406.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.06)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Bugs_post_406.md Bugs_post_406.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.06)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Bugs_post_406.let_open'.md Bugs_post_406.let_open'.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.06))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    bugs_post_406.targets.gen
+    (run odoc markdown-targets -o . %{dep:../bugs_post_406.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.06)))
+ (rule
+  (alias runtest)
+  (action
+   (diff bugs_post_406.targets bugs_post_406.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.06))))
+
+(subdir
  html
  (rule
   (targets Bugs_pre_410.html.gen)
@@ -883,6 +977,22 @@
    (with-outputs-to
     bugs_pre_410.targets.gen
     (run odoc man-targets -o . %{dep:../bugs_pre_410.odocl})))
+  (enabled_if
+   (<= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff bugs_pre_410.targets bugs_pre_410.targets.gen))
+  (enabled_if
+   (<= %{ocaml_version} 4.09))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    bugs_pre_410.targets.gen
+    (run odoc markdown-targets -o . %{dep:../bugs_pre_410.odocl})))
   (enabled_if
    (<= %{ocaml_version} 4.09)))
  (rule
@@ -1063,6 +1173,50 @@
    (diff class.targets class.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets
+   Class.md.gen
+   Class.mutually'.md.gen
+   Class.recursive'.md.gen
+   Class.empty_virtual'.md.gen
+   Class.polymorphic'.md.gen)
+  (action
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../class.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class.md Class.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class.mutually'.md Class.mutually'.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class.recursive'.md Class.recursive'.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class.empty_virtual'.md Class.empty_virtual'.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class.polymorphic'.md Class.polymorphic'.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    class.targets.gen
+    (run odoc markdown-targets -o . %{dep:../class.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff class.targets class.targets.gen))))
+
+(subdir
  html
  (rule
   (targets External.html.gen)
@@ -1135,6 +1289,36 @@
    (with-outputs-to
     external.targets.gen
     (run odoc man-targets -o . %{dep:../external.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff external.targets external.targets.gen))))
+
+(subdir
+ markdown
+ (rule
+  (targets External.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../external.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff External.md External.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    external.targets.gen
+    (run odoc markdown-targets -o . %{dep:../external.odocl}))))
  (rule
   (alias runtest)
   (action
@@ -1334,6 +1518,62 @@
    (diff functor.targets functor.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets
+   Functor.md.gen
+   Functor.F1.md.gen
+   Functor.F2.md.gen
+   Functor.F3.md.gen
+   Functor.F4.md.gen
+   Functor.F5.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../functor.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor.md Functor.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor.F1.md Functor.F1.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor.F2.md Functor.F2.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor.F3.md Functor.F3.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor.F4.md Functor.F4.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor.F5.md Functor.F5.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    functor.targets.gen
+    (run odoc markdown-targets -o . %{dep:../functor.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff functor.targets functor.targets.gen))))
+
+(subdir
  html
  (rule
   (targets
@@ -1460,6 +1700,40 @@
    (diff functor2.targets functor2.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets Functor2.md.gen Functor2.X.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../functor2.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor2.md Functor2.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor2.X.md Functor2.X.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    functor2.targets.gen
+    (run odoc markdown-targets -o . %{dep:../functor2.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff functor2.targets functor2.targets.gen))))
+
+(subdir
  html
  (rule
   (targets
@@ -1575,6 +1849,36 @@
    (with-outputs-to
     include.targets.gen
     (run odoc man-targets -o . %{dep:../include.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff include.targets include.targets.gen))))
+
+(subdir
+ markdown
+ (rule
+  (targets Include.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../include.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Include.md Include.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    include.targets.gen
+    (run odoc markdown-targets -o . %{dep:../include.odocl}))))
  (rule
   (alias runtest)
   (action
@@ -1703,6 +2007,57 @@
    (diff include2.targets include2.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets
+   Include2.md.gen
+   Include2.X.md.gen
+   Include2.Y.md.gen
+   Include2.Y_include_synopsis.md.gen
+   Include2.Y_include_doc.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../include2.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Include2.md Include2.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Include2.X.md Include2.X.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Include2.Y.md Include2.Y.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Include2.Y_include_synopsis.md Include2.Y_include_synopsis.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Include2.Y_include_doc.md Include2.Y_include_doc.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    include2.targets.gen
+    (run odoc markdown-targets -o . %{dep:../include2.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff include2.targets include2.targets.gen))))
+
+(subdir
  html
  (rule
   (targets
@@ -1803,6 +2158,36 @@
    (diff include_sections.targets include_sections.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets Include_sections.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../include_sections.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Include_sections.md Include_sections.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    include_sections.targets.gen
+    (run odoc markdown-targets -o . %{dep:../include_sections.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff include_sections.targets include_sections.targets.gen))))
+
+(subdir
  html
  (rule
   (targets Interlude.html.gen)
@@ -1882,6 +2267,36 @@
    (with-outputs-to
     interlude.targets.gen
     (run odoc man-targets -o . %{dep:../interlude.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff interlude.targets interlude.targets.gen))))
+
+(subdir
+ markdown
+ (rule
+  (targets Interlude.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../interlude.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Interlude.md Interlude.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    interlude.targets.gen
+    (run odoc markdown-targets -o . %{dep:../interlude.odocl}))))
  (rule
   (alias runtest)
   (action
@@ -2037,6 +2452,56 @@
    (>= %{ocaml_version} 4.09))))
 
 (subdir
+ markdown
+ (rule
+  (targets Labels.md.gen Labels.A.md.gen Labels.c.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../labels.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Labels.md Labels.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Labels.A.md Labels.A.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Labels.c.md Labels.c.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    labels.targets.gen
+    (run odoc markdown-targets -o . %{dep:../labels.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff labels.targets labels.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09))))
+
+(subdir
  html
  (rule
   (targets Markup.html.gen Markup-X.html.gen Markup-Y.html.gen)
@@ -2131,6 +2596,44 @@
    (diff markup.targets markup.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets Markup.md.gen Markup.X.md.gen Markup.Y.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../markup.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Markup.md Markup.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Markup.X.md Markup.X.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Markup.Y.md Markup.Y.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    markup.targets.gen
+    (run odoc markdown-targets -o . %{dep:../markup.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff markup.targets markup.targets.gen))))
+
+(subdir
  html
  (rule
   (targets mld.html.gen)
@@ -2203,6 +2706,36 @@
    (with-outputs-to
     page-mld.targets.gen
     (run odoc man-targets -o . %{dep:../page-mld.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff page-mld.targets page-mld.targets.gen))))
+
+(subdir
+ markdown
+ (rule
+  (targets mld.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../page-mld.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff mld.md mld.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    page-mld.targets.gen
+    (run odoc markdown-targets -o . %{dep:../page-mld.odocl}))))
  (rule
   (alias runtest)
   (action
@@ -2384,6 +2917,52 @@
    (diff module.targets module.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets
+   Module.md.gen
+   Module.M'.md.gen
+   Module.Mutually.md.gen
+   Module.Recursive.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../module.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module.md Module.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module.M'.md Module.M'.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module.Mutually.md Module.Mutually.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module.Recursive.md Module.Recursive.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    module.targets.gen
+    (run odoc markdown-targets -o . %{dep:../module.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff module.targets module.targets.gen))))
+
+(subdir
  html
  (rule
   (targets
@@ -2533,6 +3112,36 @@
    (diff module_type_alias.targets module_type_alias.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets Module_type_alias.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../module_type_alias.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_alias.md Module_type_alias.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    module_type_alias.targets.gen
+    (run odoc markdown-targets -o . %{dep:../module_type_alias.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff module_type_alias.targets module_type_alias.targets.gen))))
+
+(subdir
  html
  (rule
   (action
@@ -2571,6 +3180,22 @@
    (with-outputs-to
     module_type_subst.targets.gen
     (run odoc man-targets -o . %{dep:../module_type_subst.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff module_type_subst.targets module_type_subst.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    module_type_subst.targets.gen
+    (run odoc markdown-targets -o . %{dep:../module_type_subst.odocl})))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
@@ -2726,6 +3351,57 @@
    (with-outputs-to
     nested.targets.gen
     (run odoc man-targets -o . %{dep:../nested.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff nested.targets nested.targets.gen))))
+
+(subdir
+ markdown
+ (rule
+  (targets
+   Nested.md.gen
+   Nested.X.md.gen
+   Nested.F.md.gen
+   Nested.z.md.gen
+   Nested.inherits.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../nested.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Nested.md Nested.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Nested.X.md Nested.X.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Nested.F.md Nested.F.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Nested.z.md Nested.z.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Nested.inherits.md Nested.inherits.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    nested.targets.gen
+    (run odoc markdown-targets -o . %{dep:../nested.odocl}))))
  (rule
   (alias runtest)
   (action
@@ -5042,6 +5718,615 @@
    (>= %{ocaml_version} 4.07))))
 
 (subdir
+ markdown
+ (rule
+  (targets
+   Ocamlary.md.gen
+   Ocamlary.Empty.md.gen
+   Ocamlary.ModuleWithSignature.md.gen
+   Ocamlary.ModuleWithSignatureAlias.md.gen
+   Ocamlary.One.md.gen
+   Ocamlary.Buffer.md.gen
+   Ocamlary.CollectionModule.md.gen
+   Ocamlary.CollectionModule.InnerModuleA.md.gen
+   Ocamlary.CollectionModule.InnerModuleA.InnerModuleA'.md.gen
+   Ocamlary.Recollection.md.gen
+   Ocamlary.Recollection.InnerModuleA.md.gen
+   Ocamlary.Recollection.InnerModuleA.InnerModuleA'.md.gen
+   Ocamlary.FunctorTypeOf.md.gen
+   Ocamlary.IncludedA.md.gen
+   Ocamlary.ExtMod.md.gen
+   Ocamlary.empty_class.md.gen
+   Ocamlary.one_method_class.md.gen
+   Ocamlary.two_method_class.md.gen
+   Ocamlary.param_class.md.gen
+   Ocamlary.Dep1.md.gen
+   Ocamlary.Dep1.X.md.gen
+   Ocamlary.Dep1.X.Y.md.gen
+   Ocamlary.Dep1.X.Y.c.md.gen
+   Ocamlary.Dep2.md.gen
+   Ocamlary.Dep2.A.md.gen
+   Ocamlary.Dep3.md.gen
+   Ocamlary.Dep4.md.gen
+   Ocamlary.Dep4.X.md.gen
+   Ocamlary.Dep5.md.gen
+   Ocamlary.Dep5.Z.md.gen
+   Ocamlary.Dep6.md.gen
+   Ocamlary.Dep6.X.md.gen
+   Ocamlary.Dep6.X.Y.md.gen
+   Ocamlary.Dep7.md.gen
+   Ocamlary.Dep7.M.md.gen
+   Ocamlary.Dep8.md.gen
+   Ocamlary.Dep9.md.gen
+   Ocamlary.Dep11.md.gen
+   Ocamlary.Dep12.md.gen
+   Ocamlary.Dep13.md.gen
+   Ocamlary.Dep13.c.md.gen
+   Ocamlary.With2.md.gen
+   Ocamlary.With3.md.gen
+   Ocamlary.With3.N.md.gen
+   Ocamlary.With4.md.gen
+   Ocamlary.With4.N.md.gen
+   Ocamlary.With5.md.gen
+   Ocamlary.With5.N.md.gen
+   Ocamlary.With6.md.gen
+   Ocamlary.With7.md.gen
+   Ocamlary.With9.md.gen
+   Ocamlary.With10.md.gen
+   Ocamlary.DoubleInclude1.md.gen
+   Ocamlary.DoubleInclude1.DoubleInclude2.md.gen
+   Ocamlary.DoubleInclude3.md.gen
+   Ocamlary.DoubleInclude3.DoubleInclude2.md.gen
+   Ocamlary.IncludeInclude1.md.gen
+   Ocamlary.IncludeInclude1.IncludeInclude2_M.md.gen
+   Ocamlary.IncludeInclude2_M.md.gen
+   Ocamlary.CanonicalTest.md.gen
+   Ocamlary.CanonicalTest.Base.md.gen
+   Ocamlary.CanonicalTest.Base.List.md.gen
+   Ocamlary.CanonicalTest.Base_Tests.md.gen
+   Ocamlary.CanonicalTest.Base_Tests.C.md.gen
+   Ocamlary.CanonicalTest.List_modif.md.gen
+   Ocamlary.Aliases.md.gen
+   Ocamlary.Aliases.Foo.md.gen
+   Ocamlary.Aliases.Foo.A.md.gen
+   Ocamlary.Aliases.Foo.B.md.gen
+   Ocamlary.Aliases.Foo.C.md.gen
+   Ocamlary.Aliases.Foo.D.md.gen
+   Ocamlary.Aliases.Foo.E.md.gen
+   Ocamlary.Aliases.Std.md.gen
+   Ocamlary.Aliases.E.md.gen
+   Ocamlary.Aliases.P1.md.gen
+   Ocamlary.Aliases.P1.Y.md.gen
+   Ocamlary.Aliases.P2.md.gen
+   Ocamlary.M.md.gen
+   Ocamlary.Only_a_module.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../ocamlary.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.md Ocamlary.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Empty.md Ocamlary.Empty.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.ModuleWithSignature.md Ocamlary.ModuleWithSignature.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.ModuleWithSignatureAlias.md
+    Ocamlary.ModuleWithSignatureAlias.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.One.md Ocamlary.One.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Buffer.md Ocamlary.Buffer.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.CollectionModule.md Ocamlary.CollectionModule.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.CollectionModule.InnerModuleA.md
+    Ocamlary.CollectionModule.InnerModuleA.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.CollectionModule.InnerModuleA.InnerModuleA'.md
+    Ocamlary.CollectionModule.InnerModuleA.InnerModuleA'.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Recollection.md Ocamlary.Recollection.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.Recollection.InnerModuleA.md
+    Ocamlary.Recollection.InnerModuleA.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.Recollection.InnerModuleA.InnerModuleA'.md
+    Ocamlary.Recollection.InnerModuleA.InnerModuleA'.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.FunctorTypeOf.md Ocamlary.FunctorTypeOf.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.IncludedA.md Ocamlary.IncludedA.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.ExtMod.md Ocamlary.ExtMod.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.empty_class.md Ocamlary.empty_class.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.one_method_class.md Ocamlary.one_method_class.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.two_method_class.md Ocamlary.two_method_class.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.param_class.md Ocamlary.param_class.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep1.md Ocamlary.Dep1.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep1.X.md Ocamlary.Dep1.X.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep1.X.Y.md Ocamlary.Dep1.X.Y.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep1.X.Y.c.md Ocamlary.Dep1.X.Y.c.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep2.md Ocamlary.Dep2.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep2.A.md Ocamlary.Dep2.A.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep3.md Ocamlary.Dep3.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep4.md Ocamlary.Dep4.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep4.X.md Ocamlary.Dep4.X.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep5.md Ocamlary.Dep5.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep5.Z.md Ocamlary.Dep5.Z.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep6.md Ocamlary.Dep6.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep6.X.md Ocamlary.Dep6.X.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep6.X.Y.md Ocamlary.Dep6.X.Y.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep7.md Ocamlary.Dep7.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep7.M.md Ocamlary.Dep7.M.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep8.md Ocamlary.Dep8.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep9.md Ocamlary.Dep9.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep11.md Ocamlary.Dep11.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep12.md Ocamlary.Dep12.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep13.md Ocamlary.Dep13.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Dep13.c.md Ocamlary.Dep13.c.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With2.md Ocamlary.With2.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With3.md Ocamlary.With3.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With3.N.md Ocamlary.With3.N.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With4.md Ocamlary.With4.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With4.N.md Ocamlary.With4.N.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With5.md Ocamlary.With5.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With5.N.md Ocamlary.With5.N.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With6.md Ocamlary.With6.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With7.md Ocamlary.With7.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With9.md Ocamlary.With9.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.With10.md Ocamlary.With10.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.DoubleInclude1.md Ocamlary.DoubleInclude1.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.DoubleInclude1.DoubleInclude2.md
+    Ocamlary.DoubleInclude1.DoubleInclude2.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.DoubleInclude3.md Ocamlary.DoubleInclude3.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.DoubleInclude3.DoubleInclude2.md
+    Ocamlary.DoubleInclude3.DoubleInclude2.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.IncludeInclude1.md Ocamlary.IncludeInclude1.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.IncludeInclude1.IncludeInclude2_M.md
+    Ocamlary.IncludeInclude1.IncludeInclude2_M.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.IncludeInclude2_M.md Ocamlary.IncludeInclude2_M.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.CanonicalTest.md Ocamlary.CanonicalTest.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.CanonicalTest.Base.md Ocamlary.CanonicalTest.Base.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.CanonicalTest.Base.List.md
+    Ocamlary.CanonicalTest.Base.List.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.CanonicalTest.Base_Tests.md
+    Ocamlary.CanonicalTest.Base_Tests.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.CanonicalTest.Base_Tests.C.md
+    Ocamlary.CanonicalTest.Base_Tests.C.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Ocamlary.CanonicalTest.List_modif.md
+    Ocamlary.CanonicalTest.List_modif.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.md Ocamlary.Aliases.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.Foo.md Ocamlary.Aliases.Foo.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.Foo.A.md Ocamlary.Aliases.Foo.A.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.Foo.B.md Ocamlary.Aliases.Foo.B.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.Foo.C.md Ocamlary.Aliases.Foo.C.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.Foo.D.md Ocamlary.Aliases.Foo.D.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.Foo.E.md Ocamlary.Aliases.Foo.E.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.Std.md Ocamlary.Aliases.Std.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.E.md Ocamlary.Aliases.E.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.P1.md Ocamlary.Aliases.P1.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.P1.Y.md Ocamlary.Aliases.P1.Y.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.P2.md Ocamlary.Aliases.P2.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.M.md Ocamlary.M.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Only_a_module.md Ocamlary.Only_a_module.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    ocamlary.targets.gen
+    (run odoc markdown-targets -o . %{dep:../ocamlary.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff ocamlary.targets ocamlary.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07))))
+
+(subdir
  html
  (rule
   (targets
@@ -5222,6 +6507,73 @@
    (with-outputs-to
     recent.targets.gen
     (run odoc man-targets -o . %{dep:../recent.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff recent.targets recent.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09))))
+
+(subdir
+ markdown
+ (rule
+  (targets
+   Recent.md.gen
+   Recent.Z.md.gen
+   Recent.Z.Y.md.gen
+   Recent.Z.Y.X.md.gen
+   Recent.X.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../recent.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Recent.md Recent.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Recent.Z.md Recent.Z.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Recent.Z.Y.md Recent.Z.Y.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Recent.Z.Y.X.md Recent.Z.Y.X.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Recent.X.md Recent.X.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    recent.targets.gen
+    (run odoc markdown-targets -o . %{dep:../recent.odocl})))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
@@ -5446,6 +6798,73 @@
    (>= %{ocaml_version} 4.09))))
 
 (subdir
+ markdown
+ (rule
+  (targets
+   Recent_impl.md.gen
+   Recent_impl.Foo.md.gen
+   Recent_impl.Foo.A.md.gen
+   Recent_impl.Foo.B.md.gen
+   Recent_impl.B.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../recent_impl.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Recent_impl.md Recent_impl.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Recent_impl.Foo.md Recent_impl.Foo.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Recent_impl.Foo.A.md Recent_impl.Foo.A.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Recent_impl.Foo.B.md Recent_impl.Foo.B.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Recent_impl.B.md Recent_impl.B.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    recent_impl.targets.gen
+    (run odoc markdown-targets -o . %{dep:../recent_impl.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff recent_impl.targets recent_impl.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09))))
+
+(subdir
  html
  (rule
   (targets Section.html.gen)
@@ -5518,6 +6937,36 @@
    (with-outputs-to
     section.targets.gen
     (run odoc man-targets -o . %{dep:../section.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff section.targets section.targets.gen))))
+
+(subdir
+ markdown
+ (rule
+  (targets Section.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../section.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Section.md Section.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    section.targets.gen
+    (run odoc markdown-targets -o . %{dep:../section.odocl}))))
  (rule
   (alias runtest)
   (action
@@ -5604,6 +7053,33 @@
    (with-outputs-to
     stop.targets.gen
     (run odoc man-targets -o . %{dep:../stop.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff stop.targets stop.targets.gen))))
+
+(subdir
+ markdown
+ (rule
+  (targets Stop.md.gen Stop.N.md.gen)
+  (action
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../stop.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop.md Stop.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop.N.md Stop.N.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    stop.targets.gen
+    (run odoc markdown-targets -o . %{dep:../stop.odocl}))))
  (rule
   (alias runtest)
   (action
@@ -5728,6 +7204,50 @@
    (with-outputs-to
     stop_dead_link_doc.targets.gen
     (run odoc man-targets -o . %{dep:../stop_dead_link_doc.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ markdown
+ (rule
+  (targets Stop_dead_link_doc.md.gen Stop_dead_link_doc.Foo.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../stop_dead_link_doc.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop_dead_link_doc.md Stop_dead_link_doc.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop_dead_link_doc.Foo.md Stop_dead_link_doc.Foo.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    stop_dead_link_doc.targets.gen
+    (run odoc markdown-targets -o . %{dep:../stop_dead_link_doc.odocl})))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
@@ -5978,6 +7498,88 @@
    (diff toplevel_comments.targets toplevel_comments.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets
+   Toplevel_comments.md.gen
+   Toplevel_comments.Include_inline.md.gen
+   Toplevel_comments.Include_inline'.md.gen
+   Toplevel_comments.M.md.gen
+   Toplevel_comments.M'.md.gen
+   Toplevel_comments.M''.md.gen
+   Toplevel_comments.Alias.md.gen
+   Toplevel_comments.c1.md.gen
+   Toplevel_comments.c2.md.gen
+   Toplevel_comments.Ref_in_synopsis.md.gen)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../toplevel_comments.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Toplevel_comments.md Toplevel_comments.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Toplevel_comments.Include_inline.md
+    Toplevel_comments.Include_inline.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Toplevel_comments.Include_inline'.md
+    Toplevel_comments.Include_inline'.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Toplevel_comments.M.md Toplevel_comments.M.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Toplevel_comments.M'.md Toplevel_comments.M'.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Toplevel_comments.M''.md Toplevel_comments.M''.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Toplevel_comments.Alias.md Toplevel_comments.Alias.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Toplevel_comments.c1.md Toplevel_comments.c1.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Toplevel_comments.c2.md Toplevel_comments.c2.md.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Toplevel_comments.Ref_in_synopsis.md
+    Toplevel_comments.Ref_in_synopsis.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    toplevel_comments.targets.gen
+    (run odoc markdown-targets -o . %{dep:../toplevel_comments.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff toplevel_comments.targets toplevel_comments.targets.gen))))
+
+(subdir
  html
  (rule
   (targets Type.html.gen Type-module-type-X.html.gen)
@@ -6060,6 +7662,29 @@
    (diff type.targets type.targets.gen))))
 
 (subdir
+ markdown
+ (rule
+  (targets Type.md.gen)
+  (action
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../type.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Type.md Type.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    type.targets.gen
+    (run odoc markdown-targets -o . %{dep:../type.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff type.targets type.targets.gen))))
+
+(subdir
  html
  (rule
   (targets Val.html.gen)
@@ -6132,6 +7757,29 @@
    (with-outputs-to
     val.targets.gen
     (run odoc man-targets -o . %{dep:../val.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff val.targets val.targets.gen))))
+
+(subdir
+ markdown
+ (rule
+  (targets Val.md.gen)
+  (action
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../val.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Val.md Val.md.gen))))
+
+(subdir
+ markdown
+ (rule
+  (action
+   (with-outputs-to
+    val.targets.gen
+    (run odoc markdown-targets -o . %{dep:../val.odocl}))))
  (rule
   (alias runtest)
   (action

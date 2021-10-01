@@ -5,7 +5,8 @@
   (glob_files cases/*)
   (glob_files html/*.targets)
   (glob_files latex/*.targets)
-  (glob_files man/*.targets))
+  (glob_files man/*.targets)
+  (glob_files markdown/*.targets))
  (enabled_if
   (>= %{ocaml_version} 4.04))
  (action
