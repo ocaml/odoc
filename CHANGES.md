@@ -1,3 +1,22 @@
+2.0.0
+-----
+Breaking changes
+- Remove odoc-parser into a separate repository (@jonludlam, #700)
+
+Additions
+- OCaml 4.13 support (@octachron, #687, #689)
+- Better errors/warnings (@Julow, #692, #717, #720, #732)
+- ModuleType 'Alias' support (@jonludlam, #703)
+- Improved test suite (@lubega-simon, #697)
+- Improved documentation (@lubega-simon, @jonludlam, #702, #733)
+- Strengthen module types (@jonludlam, #731)
+
+Bugs fixed
+- `uwt` now can be documented (@jonludlam, #708)
+- Fix resolution involving deeply nested substitutions (@jonludlam, #727)
+- Fix off-by-one error in error reporting (@asavahista, #736)
+
+
 2.0.0~beta4
 -----------
 
@@ -7,7 +26,7 @@ Additions
 - New odoc command to report warnings encountered during compilation/linking (@Julow, #667)
 - Anchors on type extensions (@Julow, #684)
 
-Bugs fixes
+Bugs fixed
 - Resolve references in module synopses (@Julow, #658)
 - Fix reference resolution in the presence of shadowing (@Julow, #682)
 

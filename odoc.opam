@@ -49,6 +49,8 @@ depends: [
 
   "bisect_ppx" {with-test & = "2.5.0"}
   "ppx_expect" {with-test}
+  ("ocaml" {< "4.03.0" & with-test} | "mdx" {with-test})
+  "bos" {with-test}
 ]
 
 build: [
