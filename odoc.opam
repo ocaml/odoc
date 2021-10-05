@@ -12,8 +12,10 @@ authors: [
   "Leo White <leo@lpw25.net>"
   "Anton Bachin <antonbachin@yahoo.com>"
   "Jon Ludlam <jon@recoil.org>"
+  "Jules Aguillon <juloo.dsi@gmail.com>"
+  "Lubega Simon <lubegasimon73@gmail.com>"
 ]
-maintainer: "Anton Bachin <antonbachin@yahoo.com>"
+maintainer: "Jon Ludlam <jon@recoil.org>"
 dev-repo: "git+https://github.com/ocaml/odoc.git"
 
 synopsis: "OCaml documentation generator"
