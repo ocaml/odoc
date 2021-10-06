@@ -25,7 +25,20 @@ dune build @docgen
 
 and find the docs in `_build/default/doc/html/index.html`
 
+## Contact
+
+odoc is most discussed on [discuss.ocaml.org's Ecosystem category][discourse] with the `odoc` tag.
+Please also don't hesitate to [open an issue][issues].
+
+<br/>
+
+## Contributing
+
+Any [question asked](#contact), [issue opened][issues], feedback offered, is a
+contribution to odoc, and the project and all its users are thankful :) If
+you'd like to contribute code specifically, you may find the guide in
+[`doc/contributing.mld`][contributing.mld] helpful.
+
 [discourse]: https://discuss.ocaml.org/c/eco
 [issues]: https://github.com/ocaml/odoc/issues/new
-[contributing.md]: https://github.com/ocaml/odoc/blob/master/CONTRIBUTING.md#readme
-[roadmap]: https://github.com/ocaml/odoc/blob/master/CONTRIBUTING.md#Roadmap
+[contributing.mld]: https://ocaml.github.io/odoc/contributing.html
