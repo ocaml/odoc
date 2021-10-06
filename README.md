@@ -1,87 +1,29 @@
 # odoc &nbsp; [![OCaml-CI Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml%2Fodoc%2Fmaster&logo=ocaml)](https://ci.ocamllabs.io/github/ocaml/odoc) [![Coverage Status](https://coveralls.io/repos/github/ocaml/odoc/badge.svg)](https://coveralls.io/github/ocaml/odoc)
 
 **odoc** is a documentation generator for OCaml. It reads *doc comments* ,
-delimited with `(** ... *)`, and outputs HTML.
-See [example output][odig-sample].
-
-[odig-sample]: https://b0-system.github.io/odig/doc/index.html
-
-Text inside doc comments is marked up in ocamldoc syntax:
-
-```ocaml
-val compare : string -> string -> int
-(** [compare s1 s2] compares [s1] and [s2] in {e lexicographic} order. The
-    result is negative if [s1] precedes [s2], positive if [s1] follows [s2],
-    and zero if [s1] and [s2] are equal. *)
-```
-
-The syntax reference is [here][comment-syntax]. There is also an
-[explanation][comment-location] of how to attach comments to specific types,
-values, and other elements in your program.
-
-[comment-syntax]: http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#ss:ocamldoc-syntax
-[comment-location]: http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#ss:ocamldoc-placement
-
-<br/>
-
-odoc's main advantage over ocamldoc is an accurate cross-referencer, which
-handles the complexity of the OCaml module system. odoc also offers a good
-opportunity to improve HTML output compared to ocamldoc, but this is very much
-a work in progress :)
-
-<br/>
+delimited with `(** ... *)`, and outputs HTML, LaTeX and man pages.
 
 ## Using `odoc` with OCaml
 
 To install odoc with opam:
 
 ```
-opam install odoc
+$ opam install odoc
 ```
 
-If you want to use odoc on the packages you have installed in your
-opam switch type:
+For more information, see the [odoc website](https://ocaml.github.io/odoc) or build
+the docs locally yourself from the `odoc` directory:
 
 ```
-opam install ocaml-manual odig
-odig doc
+git clone https://github.com/ocaml/odoc.git
+cd odoc
+opam pin add . -n
+opam install mdx bos
+opam install --deps-only -t odoc
+dune build @docgen
 ```
 
-When you are developing the easiest way to use odoc right now is by
-having Dune drive it. This command should work in most Dune projects
-out of the box:
-
-```
-dune build @doc
-```
-
-The generated docs can then be found locally at
-`./_build/default/_doc/_html/index.html`.
-
-<br/>
-
-## Using `odoc` with BuckleScript/Reason
-
-You can use the [`bsdoc`](https://reasonml-community.github.io/bsdoc) npm package to use
-`odoc` in your BuckleScript projects.
-
-<br/>
-
-## Contact
-
-odoc is most discussed on [discuss.ocaml.org's Ecosystem category][discourse] with the `odoc` tag.
-Please also don't hesitate to [open an issue][issues].
-
-<br/>
-
-## Contributing
-
-Any [question asked](#contact), [issue opened][issues], feedback offered, is a
-contribution to odoc, and the project and all its users are thankful :) If
-you'd like to contribute code specifically, you may find the guide in
-[`CONTRIBUTING.md`][contributing.md] helpful. Also see the [roadmap][roadmap]
-there. If anything is missing from it, please don't hesitate to
-[reach out](#contact).
+and find the docs in `_build/default/doc/html/index.html`
 
 [discourse]: https://discuss.ocaml.org/c/eco
 [issues]: https://github.com/ocaml/odoc/issues/new
