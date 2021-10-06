@@ -19,17 +19,19 @@ module Path = struct
       if !flat then function `Page -> true | _ -> false
       else function `LeafPage -> false | `File -> false | _ -> true
     in
-    let dir, file = Url.Path.split ~is_dir l in
-    let dir = List.map segment_to_string dir in
-    let file =
+    let dir, file =
+      let dir, file = Url.Path.split ~is_dir l in
       match file with
-      | [] -> "index.html"
-      | [ (`LeafPage, name) ] -> name ^ ".html"
-      | [ (`File, name) ] -> name
+      | [ (`LeafPage, name) ] -> (dir, name ^ ".html")
+      | [ (`File, name) ] -> (dir, name)
+      | [ (kind, _) ] when is_dir kind ->
+          (* Pointing to a directory. *)
+          (dir @ file, "index.html")
       | xs ->
           assert !flat;
-          String.concat "-" (List.map segment_to_string xs) ^ ".html"
+          (dir, String.concat "-" (List.map segment_to_string xs) ^ ".html")
     in
+    let dir = List.map segment_to_string dir in
     (dir, file)
 
   let for_linking url =

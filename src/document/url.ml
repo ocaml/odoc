@@ -184,6 +184,9 @@ module Path = struct
       (kind * string) list * (kind * string) list =
    fun ~is_dir l ->
     let rec inner = function
+      | [ _ ] as xs ->
+          (* Don't let the right part be empty. eg. url to a directory. *)
+          ([], xs)
       | ((kind, _) as x) :: xs when is_dir kind ->
           let dirs, files = inner xs in
           (x :: dirs, files)
