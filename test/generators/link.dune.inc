@@ -2535,6 +2535,340 @@
 (subdir
  html
  (rule
+  (targets
+   Module_type_subst.html.gen
+   Module_type_subst-Local.html.gen
+   Module_type_subst-Local-module-type-local.html.gen
+   Module_type_subst-Local-module-type-s.html.gen
+   Module_type_subst-module-type-s.html.gen
+   Module_type_subst-Basic.html.gen
+   Module_type_subst-Basic-module-type-u.html.gen
+   Module_type_subst-Basic-module-type-u-module-type-T.html.gen
+   Module_type_subst-Basic-module-type-with_.html.gen
+   Module_type_subst-Basic-module-type-u2.html.gen
+   Module_type_subst-Basic-module-type-u2-module-type-T.html.gen
+   Module_type_subst-Basic-module-type-u2-M.html.gen
+   Module_type_subst-Basic-module-type-with_2.html.gen
+   Module_type_subst-Basic-module-type-with_2-module-type-T.html.gen
+   Module_type_subst-Basic-module-type-with_2-M.html.gen
+   Module_type_subst-Basic-module-type-a.html.gen
+   Module_type_subst-Basic-module-type-a-M.html.gen
+   Module_type_subst-Basic-module-type-c.html.gen
+   Module_type_subst-Basic-module-type-c-M.html.gen
+   Module_type_subst-Nested.html.gen
+   Module_type_subst-Nested-module-type-nested.html.gen
+   Module_type_subst-Nested-module-type-nested-N.html.gen
+   Module_type_subst-Nested-module-type-nested-N-module-type-t.html.gen
+   Module_type_subst-Nested-module-type-with_.html.gen
+   Module_type_subst-Nested-module-type-with_-N.html.gen
+   Module_type_subst-Nested-module-type-with_subst.html.gen
+   Module_type_subst-Nested-module-type-with_subst-N.html.gen
+   Module_type_subst-Structural.html.gen
+   Module_type_subst-Structural-module-type-u.html.gen
+   Module_type_subst-Structural-module-type-u-module-type-a.html.gen
+   Module_type_subst-Structural-module-type-u-module-type-a-module-type-b.html.gen
+   Module_type_subst-Structural-module-type-u-module-type-a-module-type-b-module-type-c.html.gen
+   Module_type_subst-Structural-module-type-w.html.gen
+   Module_type_subst-Structural-module-type-w-module-type-a.html.gen
+   Module_type_subst-Structural-module-type-w-module-type-a-module-type-b.html.gen
+   Module_type_subst-Structural-module-type-w-module-type-a-module-type-b-module-type-c.html.gen)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../module_type_subst.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_subst.html Module_type_subst.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_subst-Local.html Module_type_subst-Local.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Local-module-type-local.html
+    Module_type_subst-Local-module-type-local.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Local-module-type-s.html
+    Module_type_subst-Local-module-type-s.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-module-type-s.html
+    Module_type_subst-module-type-s.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_subst-Basic.html Module_type_subst-Basic.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-u.html
+    Module_type_subst-Basic-module-type-u.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-u-module-type-T.html
+    Module_type_subst-Basic-module-type-u-module-type-T.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-with_.html
+    Module_type_subst-Basic-module-type-with_.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-u2.html
+    Module_type_subst-Basic-module-type-u2.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-u2-module-type-T.html
+    Module_type_subst-Basic-module-type-u2-module-type-T.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-u2-M.html
+    Module_type_subst-Basic-module-type-u2-M.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-with_2.html
+    Module_type_subst-Basic-module-type-with_2.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-with_2-module-type-T.html
+    Module_type_subst-Basic-module-type-with_2-module-type-T.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-with_2-M.html
+    Module_type_subst-Basic-module-type-with_2-M.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-a.html
+    Module_type_subst-Basic-module-type-a.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-a-M.html
+    Module_type_subst-Basic-module-type-a-M.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-c.html
+    Module_type_subst-Basic-module-type-c.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Basic-module-type-c-M.html
+    Module_type_subst-Basic-module-type-c-M.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_subst-Nested.html Module_type_subst-Nested.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Nested-module-type-nested.html
+    Module_type_subst-Nested-module-type-nested.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Nested-module-type-nested-N.html
+    Module_type_subst-Nested-module-type-nested-N.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Nested-module-type-nested-N-module-type-t.html
+    Module_type_subst-Nested-module-type-nested-N-module-type-t.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Nested-module-type-with_.html
+    Module_type_subst-Nested-module-type-with_.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Nested-module-type-with_-N.html
+    Module_type_subst-Nested-module-type-with_-N.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Nested-module-type-with_subst.html
+    Module_type_subst-Nested-module-type-with_subst.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Nested-module-type-with_subst-N.html
+    Module_type_subst-Nested-module-type-with_subst-N.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Structural.html
+    Module_type_subst-Structural.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Structural-module-type-u.html
+    Module_type_subst-Structural-module-type-u.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Structural-module-type-u-module-type-a.html
+    Module_type_subst-Structural-module-type-u-module-type-a.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Structural-module-type-u-module-type-a-module-type-b.html
+    Module_type_subst-Structural-module-type-u-module-type-a-module-type-b.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Structural-module-type-u-module-type-a-module-type-b-module-type-c.html
+    Module_type_subst-Structural-module-type-u-module-type-a-module-type-b-module-type-c.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Structural-module-type-w.html
+    Module_type_subst-Structural-module-type-w.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Structural-module-type-w-module-type-a.html
+    Module_type_subst-Structural-module-type-w-module-type-a.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Structural-module-type-w-module-type-a-module-type-b.html
+    Module_type_subst-Structural-module-type-w-module-type-a-module-type-b.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_subst-Structural-module-type-w-module-type-a-module-type-b-module-type-c.html
+    Module_type_subst-Structural-module-type-w-module-type-a-module-type-b-module-type-c.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13))))
+
+(subdir
+ html
+ (rule
   (action
    (with-outputs-to
     module_type_subst.targets.gen
@@ -2551,6 +2885,28 @@
 (subdir
  latex
  (rule
+  (targets Module_type_subst.tex.gen)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../module_type_subst.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_subst.tex Module_type_subst.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13))))
+
+(subdir
+ latex
+ (rule
   (action
    (with-outputs-to
     module_type_subst.targets.gen
@@ -2561,6 +2917,57 @@
   (alias runtest)
   (action
    (diff module_type_subst.targets module_type_subst.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13))))
+
+(subdir
+ man
+ (rule
+  (targets
+   Module_type_subst.3o.gen
+   Module_type_subst.Local.3o.gen
+   Module_type_subst.Basic.3o.gen
+   Module_type_subst.Nested.3o.gen
+   Module_type_subst.Structural.3o.gen)
+  (action
+   (run
+    odoc
+    man-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../module_type_subst.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_subst.3o Module_type_subst.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_subst.Local.3o Module_type_subst.Local.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_subst.Basic.3o Module_type_subst.Basic.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_subst.Nested.3o Module_type_subst.Nested.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_subst.Structural.3o Module_type_subst.Structural.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13))))
 
