@@ -1,0 +1,74 @@
+
+.TH Structural 3 "" "Odoc" "OCaml Library"
+.SH Name
+Module_type_subst\.Structural
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Module_type_subst\.Structural\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR u = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR a = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR b = \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]module\fR \f[CB]type\fR c = \f[CB]sig\fR
+.br 
+.ti +8
+\f[CB]type\fR t = 
+.br 
+.ti +10
+| \f[CB]A\fR \f[CB]of\fR t
+.br 
+.ti +8
+
+.br 
+.ti +6
+\f[CB]end\fR
+.br 
+.ti +4
+\f[CB]end\fR
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR w = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR a = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]module\fR \f[CB]type\fR b = \f[CB]sig\fR
+.br 
+.ti +6
+\f[CB]module\fR \f[CB]type\fR c = \f[CB]sig\fR
+.br 
+.ti +8
+\f[CB]type\fR t = 
+.br 
+.ti +10
+| \f[CB]A\fR \f[CB]of\fR t
+.br 
+.ti +8
+
+.br 
+.ti +6
+\f[CB]end\fR
+.br 
+.ti +4
+\f[CB]end\fR
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR

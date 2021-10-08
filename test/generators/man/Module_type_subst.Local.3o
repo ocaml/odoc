@@ -1,0 +1,25 @@
+
+.TH Local 3 "" "Odoc" "OCaml Library"
+.SH Name
+Module_type_subst\.Local
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Module_type_subst\.Local\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR local := int * int
+.sp 
+\f[CB]module\fR \f[CB]type\fR local = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t = local
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR w = local
+.sp 
+\f[CB]module\fR \f[CB]type\fR s = \f[CB]sig\fR \f[CB]end\fR

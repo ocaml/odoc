@@ -1,0 +1,22 @@
+
+.TH Module_type_subst 3 "" "Odoc" "OCaml Library"
+.SH Name
+Module_type_subst
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Module_type_subst\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR Local : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR s = \f[CB]sig\fR \f[CB]end\fR
+.sp 
+\f[CB]module\fR Basic : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Nested : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Structural : \f[CB]sig\fR \.\.\. \f[CB]end\fR
