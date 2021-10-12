@@ -140,6 +140,9 @@ val open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t
 
 val open_signature : Odoc_model.Lang.Signature.t -> t -> t
 
+val open_page : Odoc_model.Lang.Page.t -> t -> t
+(** Add a page content to the env. *)
+
 val env_of_unit : Odoc_model.Lang.Compilation_unit.t -> resolver -> t
 (** Create a new env with a module initially opened. *)
 

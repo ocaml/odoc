@@ -18,6 +18,8 @@ type class_lookup_result = Resolved.Class.t * Component.Class.t
 
 type class_type_lookup_result = Resolved.ClassType.t * Component.ClassType.t
 
+type page_lookup_result = Resolved.Page.t * Odoc_model.Lang.Page.t
+
 type type_lookup_result =
   [ `T of datatype_lookup_result
   | `C of class_lookup_result
@@ -26,7 +28,7 @@ type type_lookup_result =
 type label_parent_lookup_result =
   [ `S of signature_lookup_result
   | type_lookup_result
-  | `Page of Resolved.Page.t * (string * Identifier.Label.t) list ]
+  | `P of page_lookup_result ]
 
 type 'a ref_result =
   ('a, Errors.Tools_error.reference_lookup_error) Result.result
@@ -37,7 +39,7 @@ let kind_of_find_result = function
   | `T _ -> `T
   | `C _ -> `C
   | `CT _ -> `CT
-  | `Page _ -> `Page
+  | `P _ -> `Page
 
 let wrong_kind_error expected r =
   Error (`Wrong_kind (expected, kind_of_find_result r))
@@ -67,6 +69,7 @@ let ref_kind_of_element = function
   | `Exception _ -> "exception"
   | `Extension _ -> "extension"
   | `Field _ -> "field"
+  | `Page _ -> "page"
 
 let ref_kind_of_find = function
   | `FModule _ | `FModule_subst _ -> "module"
@@ -323,9 +326,17 @@ module L = struct
     env_lookup_by_name Env.s_label name env >>= fun (`Label (id, _)) ->
     Ok (`Identifier id)
 
-  let in_page _env (`Page (_, p)) name =
-    try Ok (`Identifier (List.assoc name p))
-    with Not_found -> Error (`Find_by_name (`Page, name))
+  let in_page _env (`P (_, p)) name =
+    let rec find = function
+      | hd :: tl -> (
+          match Odoc_model.Location_.value hd with
+          | `Heading (_, (`Label (_, name') as label), _)
+            when name = LabelName.to_string name' ->
+              Ok (`Identifier label)
+          | _ -> find tl)
+      | [] -> Error (`Find_by_name (`Page, name))
+    in
+    find p.Odoc_model.Lang.Page.content
 
   let of_component _env ~parent_ref label =
     Ok
@@ -340,7 +351,7 @@ module L = struct
           (LabelName.to_string name)
         >>= fun _ -> Ok (`Label ((p :> Resolved.LabelParent.t), name))
     | (`T _ | `C _ | `CT _) as r -> wrong_kind_error [ `S; `Page ] r
-    | `Page _ as page -> in_page env page (LabelName.to_string name)
+    | `P _ as page -> in_page env page (LabelName.to_string name)
 end
 
 module EC = struct
@@ -425,7 +436,7 @@ module F = struct
         find Find.any_in_type t name_s >>= function
         | `FConstructor _ -> got_a_constructor name_s
         | `FField _ -> Ok (`Field ((parent' :> Resolved.Parent.t), name)))
-    | (`C _ | `CT _ | `Page _) as r -> wrong_kind_error [ `S; `T ] r
+    | (`C _ | `CT _ | `P _) as r -> wrong_kind_error [ `S; `T ] r
 
   let of_component _env parent name =
     Ok
@@ -465,6 +476,17 @@ module MV = struct
   let of_component _env parent' name = Ok (`InstanceVariable (parent', name))
 end
 
+module Page = struct
+  type t = page_lookup_result
+
+  let in_env env name : t ref_result =
+    match Env.lookup_page name env with
+    | Some p -> Ok (`Identifier p.Odoc_model.Lang.Page.name, p)
+    | None -> Error (`Lookup_by_name (`Page, name))
+
+  let of_element _env (`Page (id, page)) : t = (`Identifier id, page)
+end
+
 module LP = struct
   (** Label parent *)
 
@@ -480,6 +502,7 @@ module LP = struct
     | `Type _ as e -> Ok (`T (DT.of_element env e))
     | `Class _ as e -> Ok (`C (CL.of_element env e))
     | `ClassType _ as e -> Ok (`CT (CT.of_element env e))
+    | `Page _ as e -> Ok (`P (Page.of_element env e))
 
   let in_env env name =
     env_lookup_by_name Env.s_label_parent name env >>= of_element env
@@ -539,21 +562,8 @@ let rec resolve_label_parent_reference env r =
       resolve_label_parent_reference env parent
       >>= signature_lookup_result_of_label_parent
       >>= fun p -> LP.in_signature env p name
-  | `Root (name, `TPage) | `Root (name, `TChildPage) -> (
-      match Env.lookup_page name env with
-      | Some p ->
-          let labels =
-            List.fold_right
-              (fun element l ->
-                match element.Odoc_model.Location_.value with
-                | `Heading (_, label, _) ->
-                    let (`Label (_, name)) = label in
-                    (LabelName.to_string name, label) :: l
-                | _ -> l)
-              p.Odoc_model.Lang.Page.content []
-          in
-          Ok (`Page (`Identifier p.Odoc_model.Lang.Page.name, labels))
-      | None -> Error (`Lookup_by_name (`Page, name)))
+  | `Root (name, `TPage) | `Root (name, `TChildPage) ->
+      Page.in_env env name >>= fun r -> Ok (`P r)
   | `Root (name, `TChildModule) ->
       resolve_signature_reference env (`Root (name, `TModule)) >>= fun s ->
       Ok (`S s)
@@ -636,7 +646,7 @@ let resolve_class_signature_reference env (r : ClassSignature.t) =
      TODO: Add [resolve_class_signature_reference] when it's easier to implement. *)
   resolve_label_parent_reference env (r :> LabelParent.t) >>= function
   | (`T _ | `C _ | `CT _) as p -> type_lookup_to_class_signature_lookup env p
-  | (`S _ | `Page _) as r -> wrong_kind_error [ `T; `C; `CT ] r
+  | (`S _ | `P _) as r -> wrong_kind_error [ `T; `C; `CT ] r
 
 (***)
 
@@ -702,7 +712,7 @@ let resolve_reference_dot env parent name =
       resolve_reference_dot_sg ~parent_path ~parent_ref ~parent_sg env name
   | `T (parent_ref, t) -> resolve_reference_dot_type env ~parent_ref t name
   | (`C _ | `CT _) as p -> resolve_reference_dot_class env p name
-  | `Page _ as page -> resolve_reference_dot_page env page name
+  | `P _ as page -> resolve_reference_dot_page env page name
 
 (** Warnings may be generated with [Error.implicit_warning] *)
 let resolve_reference =
@@ -722,7 +732,8 @@ let resolve_reference =
         | `Constructor (id, _) -> identifier id
         | `Exception (id, _) -> identifier id
         | `Extension (id, _) -> identifier id
-        | `Field (id, _) -> identifier id)
+        | `Field (id, _) -> identifier id
+        | `Page (id, _) -> identifier id)
     | `Root (name, `TChildPage) -> (
         match Env.lookup_page name env with
         | Some p -> Ok (`Identifier (p.name :> Identifier.t))
