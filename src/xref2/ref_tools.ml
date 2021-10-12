@@ -188,17 +188,10 @@ module M = struct
     let base = `Identifier (id :> Identifier.Path.Module.t) in
     of_component env m base base
 
-  let lookup_root_module env name =
-    match Env.lookup_root_module name env with
-    | Some (Env.Resolved (_, id, m)) ->
-        let base = `Identifier (id :> Identifier.Path.Module.t) in
-        Ok (of_component env m base base)
-    | _ -> Error (`Parent (`Parent_module (`Lookup_failure_root name)))
-
   let in_env env name =
     match env_lookup_by_name Env.s_module name env with
     | Ok e -> Ok (of_element env e)
-    | Error _ -> lookup_root_module env name
+    | Error _ -> Error (`Parent (`Parent_module (`Lookup_failure_root name)))
 end
 
 module MT = struct
@@ -734,16 +727,8 @@ let resolve_reference =
         | `Extension (id, _) -> identifier id
         | `Field (id, _) -> identifier id
         | `Page (id, _) -> identifier id)
-    | `Root (name, `TChildPage) -> (
-        match Env.lookup_page name env with
-        | Some p -> Ok (`Identifier (p.name :> Identifier.t))
-        | None -> Error (`Lookup_by_name (`Page, name)))
-    | `Root (name, `TChildModule) -> (
-        match Env.lookup_root_module name env with
-        | Some (Resolved (_, id, _)) -> Ok (`Identifier (id :> Identifier.t))
-        | Some Forward | None -> Error (`Lookup_by_name (`S, name)))
     | `Resolved r -> Ok r
-    | `Root (name, `TModule) -> M.in_env env name >>= resolved
+    | `Root (name, (`TModule | `TChildModule)) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
         M.in_signature env p (ModuleName.to_string name) >>= resolved
@@ -773,11 +758,7 @@ let resolve_reference =
     | `Label (parent, name) ->
         resolve_label_parent_reference env parent >>= fun p ->
         L.in_label_parent env p name >>= resolved1
-    | `Root (name, `TPage) -> (
-        match Env.lookup_page name env with
-        | Some p ->
-            Ok (`Identifier (p.Odoc_model.Lang.Page.name :> Identifier.t))
-        | None -> Error (`Lookup_by_name (`Page, name)))
+    | `Root (name, (`TPage | `TChildPage)) -> Page.in_env env name >>= resolved2
     | `Dot (parent, name) -> resolve_reference_dot env parent name
     | `Root (name, `TConstructor) -> CS.in_env env name >>= resolved1
     | `Constructor (parent, name) ->
