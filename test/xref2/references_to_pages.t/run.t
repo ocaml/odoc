@@ -1,6 +1,10 @@
 # References to pages and items in pages
 
   $ compile p.mld good_references.mli bad_references.mli
+  File "good_references.mli", line 8, characters 33-40:
+  Failed to resolve reference unresolvedroot(p).P1 Couldn't find "p"
+  File "good_references.mli", line 8, characters 28-32:
+  Failed to resolve reference unresolvedroot(p) Couldn't find "p"
   File "bad_references.mli", line 6, characters 42-69:
   Failed to resolve reference unresolvedroot(p).not_found Couldn't find page "not_found"
   File "bad_references.mli", line 4, characters 20-37:
@@ -15,6 +19,8 @@ Every references in `Good_references` should resolve:
   {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"Some":{"`Page":["None","test"]}},"p"]},"P1"]}}}
   {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"Some":{"`Page":["None","test"]}},"p"]},"P2"]}}}
   {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"Some":{"`Page":["None","test"]}},"p"]},"P1"]}}}
+  {"`Root":["p","`TUnknown"]}
+  {"`Dot":[{"`Root":["p","`TUnknown"]},"P1"]}
 
 Every references in `Bad_references` should not:
 
