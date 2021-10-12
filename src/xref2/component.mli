@@ -461,7 +461,10 @@ module Element : sig
 
   type field = [ `Field of Identifier.Field.t * TypeDecl.Field.t ]
 
-  type label_parent = [ signature | datatype ]
+  (* No component for pages yet *)
+  type page = [ `Page of Identifier.Page.t * Odoc_model.Lang.Page.t ]
+
+  type label_parent = [ signature | datatype | page ]
 
   type any =
     [ signature
@@ -473,7 +476,8 @@ module Element : sig
     | constructor
     | exception_
     | extension
-    | field ]
+    | field
+    | page ]
 end
 
 (** Formatting functions for components *)

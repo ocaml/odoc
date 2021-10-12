@@ -334,6 +334,9 @@ let lookup_root_module name env =
   | None, _ -> ());
   result
 
+let lookup_page name env =
+  match env.resolver with None -> None | Some r -> r.lookup_page name
+
 type 'a scope = {
   filter : Component.Element.any -> ([< Component.Element.any ] as 'a) option;
   root : string -> t -> 'a option;
@@ -395,6 +398,14 @@ let lookup_root_module_fallback name t =
           ((id :> Identifier.Path.Module.t), Component.Delayed.put_val m))
   | Some Forward | None -> None
 
+let lookup_page_or_root_module_fallback name t =
+  match lookup_root_module_fallback name t with
+  | Some _ as x -> x
+  | None -> (
+      match lookup_page name t with
+      | Some page -> Some (`Page (page.Lang.Page.name, page))
+      | None -> None)
+
 let s_signature : Component.Element.signature scope =
   make_scope ~root:lookup_root_module_fallback (function
     | #Component.Element.signature as r -> Some r
@@ -406,7 +417,7 @@ let s_module : Component.Element.module_ scope =
     | _ -> None)
 
 let s_any : Component.Element.any scope =
-  make_scope ~root:lookup_root_module_fallback (fun r -> Some r)
+  make_scope ~root:lookup_page_or_root_module_fallback (fun r -> Some r)
 
 let s_module_type : Component.Element.module_type scope =
   make_scope (function
@@ -452,7 +463,7 @@ let s_field : Component.Element.field scope =
   make_scope (function #Component.Element.field as r -> Some r | _ -> None)
 
 let s_label_parent : Component.Element.label_parent scope =
-  make_scope ~root:lookup_root_module_fallback (function
+  make_scope ~root:lookup_page_or_root_module_fallback (function
     | #Component.Element.label_parent as r -> Some r
     | _ -> None)
 
@@ -471,9 +482,6 @@ let lookup_fragment_root env =
       maybe_record_result (FragmentRoot i);
       result
   | None -> None
-
-let lookup_page name env =
-  match env.resolver with None -> None | Some r -> r.lookup_page name
 
 let add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t =
  fun p t ->
@@ -659,8 +667,10 @@ let env_of_unit t resolver =
   in
   set_resolver initial_env resolver |> open_units resolver
 
+let open_page page env = add_docs page.Odoc_model.Lang.Page.content env
+
 let env_of_page page resolver =
-  let initial_env = empty |> add_docs page.Odoc_model.Lang.Page.content in
+  let initial_env = open_page page empty in
   set_resolver initial_env resolver |> open_units resolver
 
 let verify_lookups env lookups =
