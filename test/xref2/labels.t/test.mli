@@ -25,3 +25,17 @@ end
 (** References to the labels:
 
     {!A} {!B} {!M.C} {!M.D} {!M.B} {!N.B} *)
+
+module type T = sig
+  type t
+
+  (** {1:E Included heading} *)
+end
+
+module O : sig
+  include T
+
+  (** {!E} *)
+end
+
+(** {!T.E} {!O.E} *)

@@ -1,5 +1,9 @@
 
   $ compile test.mli
+  File "test.mli", line 32, characters 6-28:
+  Label 'E' is ambiguous. The other occurences are:
+    File "test.mli", line 32, character 6
+    File "test.mli", line 32, character 6
   File "test.mli", line 27, characters 14-20:
   Failed to resolve reference unresolvedroot(M).C Couldn't find "C"
   File "test.mli", line 27, characters 9-13:
@@ -41,6 +45,8 @@ Some are not in order because the 'doc' field appears after the rest in the outp
   {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"C"]}
   {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]},"B"]}
   {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}
+  {"`Label":[{"`ModuleType":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"T"]},"E"]}
+  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"O"]},"E"]}
   {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]}
 
 References to the labels:
@@ -55,6 +61,9 @@ We expect resolved references and the heading text filled in.
   [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"D"]}},[]]
   [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[]]
   [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]}},"B"]}},[]]
+  [{"`Resolved":{"`Identifier":{"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"O"]},"E"]}}},[{"`Word":"Included"},"`Space",{"`Word":"heading"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`ModuleType":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"T"]}},"E"]}},[]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"O"]}},"E"]}},[]]
 
   $ odoc html-generate --indent -o html test.odocl
 
@@ -147,6 +156,33 @@ The second occurence of 'B' in the main page should be disambiguated
       <code>M</code>.C <a href="M/index.html#D"><code>D</code></a> 
       <a href="M/index.html#B"><code>B</code></a> 
       <a href="N/index.html#B"><code>B</code></a>
+     </p>
+     <div class="odoc-spec">
+      <div class="spec module-type" id="module-type-T" class="anchored">
+       <a href="#module-type-T" class="anchor"></a>
+       <code>
+        <span><span class="keyword">module</span> 
+         <span class="keyword">type</span> 
+        </span><span><a href="module-type-T/index.html">T</a></span>
+        <span> = <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
+       </code>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec module" id="module-O" class="anchored">
+       <a href="#module-O" class="anchor"></a>
+       <code><span><span class="keyword">module</span> </span>
+        <span><a href="O/index.html">O</a></span>
+        <span> : <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
+       </code>
+      </div>
+     </div>
+     <p><a href="module-type-T/index.html#E"><code>E</code></a> 
+      <a href="O/index.html#E"><code>E</code></a>
      </p>
     </div>
    </body>
