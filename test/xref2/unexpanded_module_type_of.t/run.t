@@ -17,5 +17,5 @@ should _not_ result in an exception, merely a warning.
 
   $ odoc compile --package test test.cmti
   File "test.cmti":
-  Failed to compile expansion for include : module type of unresolvedroot(Test0) Unexpanded `module type of` expression: module type of unresolvedroot(Test0)
+  Warning: Failed to compile expansion for include : module type of unresolvedroot(Test0) Unexpanded `module type of` expression: module type of unresolvedroot(Test0)
 
