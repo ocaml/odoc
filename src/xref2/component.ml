@@ -342,6 +342,7 @@ and Include : sig
     shadowed : Odoc_model.Lang.Include.shadowed;
     expansion_ : Signature.t;
     decl : decl;
+    loc : Odoc_model.Location_.span;
   }
 end =
   Include
@@ -2209,6 +2210,7 @@ module Of_Lang = struct
       status = i.status;
       strengthened = option module_path ident_map i.strengthened;
       decl;
+      loc = i.loc;
     }
 
   and class_ ident_map c =

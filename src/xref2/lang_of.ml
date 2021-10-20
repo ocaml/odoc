@@ -613,6 +613,7 @@ and include_ parent map i =
       };
     status = i.status;
     strengthened = Opt.map (Path.module_ map) i.strengthened;
+    loc = i.loc;
   }
 
 and open_ parent map o =

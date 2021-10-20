@@ -469,10 +469,14 @@ and include_ : Env.t -> Include.t -> Include.t =
        the environment, which is already done recursively by
        {!Env.open_signature}. *)
     let content =
-      let { content; _ } = i.expansion in
-      let items = signature_items env i.parent content.items
-      and doc = comment_docs env i.parent content.doc in
-      { content with items; doc }
+      (* Add context around errors from the expansion. *)
+      Lookup_failures.with_context
+        "While resolving the expansion of include at %a" Location_.pp_span_start
+        i.loc (fun () ->
+          let { content; _ } = i.expansion in
+          let items = signature_items env i.parent content.items
+          and doc = comment_docs env i.parent content.doc in
+          { content with items; doc })
     in
     { i.expansion with content }
   in
