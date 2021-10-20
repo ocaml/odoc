@@ -527,6 +527,7 @@ and read_structure_item env parent item =
 
 and read_include env parent incl =
   let open Include in
+  let loc = Cmi.read_location incl.incl_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, status = Doc_attr.attached Odoc_model.Semantics.Expect_status container incl.incl_attributes in
   let decl_modty =
@@ -548,7 +549,7 @@ and read_include env parent incl =
   | Some m when not (contains_signature m) ->
     let decl = ModuleType m in
     let expansion = { content; shadowed; } in
-    [Include {parent; doc; decl; expansion; status; strengthened=None }]
+    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
   | Some (ModuleType.U.Signature { items; _ }) ->
     items
   | _ ->

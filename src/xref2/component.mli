@@ -313,6 +313,7 @@ and Include : sig
     shadowed : Odoc_model.Lang.Include.shadowed;
     expansion_ : Signature.t;
     decl : decl;
+    loc : Odoc_model.Location_.span;
   }
 end
 

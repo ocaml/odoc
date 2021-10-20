@@ -1025,3 +1025,14 @@ let read_interface root name intf =
   let id = `Root (root, Odoc_model.Names.ModuleName.make_std name) in
   let items = read_signature Env.empty id intf in
   (id, items)
+
+let point_of_pos { Lexing.pos_lnum; pos_bol; pos_cnum; _ } =
+  let column = pos_cnum - pos_bol in
+  { Odoc_model.Location_.line = pos_lnum; column }
+
+let read_location { Location.loc_start; loc_end; _ } =
+  {
+    Odoc_model.Location_.file = loc_start.pos_fname;
+    start = point_of_pos loc_start;
+    end_ = point_of_pos loc_end;
+  }

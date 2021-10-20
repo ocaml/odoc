@@ -469,7 +469,12 @@ and include_ : Env.t -> Include.t -> Include.t =
         (Component.Of_Lang.(module_decl empty i.decl)); *)
   let doc = comment_docs env i.parent i.doc in
   let expansion =
-    let content = signature env i.parent i.expansion.content in
+    let content =
+      (* Add context around errors from the expansion. *)
+      Lookup_failures.with_context
+        "While resolving the expansion of include at %a" Location_.pp_span_start
+        i.loc (fun () -> signature env i.parent i.expansion.content)
+    in
     { i.expansion with content }
   in
   { i with decl; expansion; doc }

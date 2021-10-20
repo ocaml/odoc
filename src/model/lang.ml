@@ -178,6 +178,7 @@ and Include : sig
   type decl = Alias of Path.Module.t | ModuleType of ModuleType.U.expr
 
   type t = {
+    loc : Location_.span;
     parent : Identifier.Signature.t;
     strengthened : Path.Module.t option;
     doc : Comment.docs;
