@@ -83,3 +83,5 @@ val read_extension_constructor : Ident_env.t ->
 val read_exception : Ident_env.t ->
   Paths.Identifier.Signature.t -> Ident.t ->
   Types.extension_constructor -> Odoc_model.Lang.Exception.t
+
+val read_location : Location.t -> Odoc_model.Location_.span
