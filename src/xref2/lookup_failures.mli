@@ -22,3 +22,8 @@ val report_warning : ('fmt, Format.formatter, unit, unit) format4 -> 'fmt
 
 val with_location : Location_.span -> (unit -> 'a) -> 'a
 (** Failures reported indirectly by this function will have a location attached. *)
+
+val with_context :
+  ('fmt, Format.formatter, unit, (unit -> 'a) -> 'a) format4 -> 'fmt
+(** [with_context "format string" format_arguments f] adds context to failures
+    reported by [f ()]. *)
