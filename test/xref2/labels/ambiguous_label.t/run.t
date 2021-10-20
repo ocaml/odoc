@@ -6,7 +6,7 @@ Labels don't follow OCaml's scoping rules:
   Duplicate label found: (root Test).example
   Duplicate label found: (root Test).example
   File "test.ml", line 25, characters 4-36:
-  Failed to resolve reference unresolvedroot(example_2) Couldn't find "example_2"
+  Warning: Failed to resolve reference unresolvedroot(example_2) Couldn't find "example_2"
 
 Contains some ambiguous labels:
 

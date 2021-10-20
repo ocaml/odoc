@@ -34,5 +34,5 @@ Linking checks the children are all present:
   $ odoc compile top1.mld --child foo
   $ odoc link page-top1.odoc -I .
   File "page-top1.odoc":
-  Failed to resolve child reference unresolvedroot(foo)
+  Warning: Failed to resolve child reference unresolvedroot(foo)
 
