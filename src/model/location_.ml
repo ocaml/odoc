@@ -26,6 +26,15 @@ let in_string s ~offset ~length s_span =
     end_ = point_in_string s (offset + length) s_span.start;
   }
 
+let pp fmt l =
+  Format.fprintf fmt "File \"%s\", " l.file;
+  if l.start.line = l.end_.line then
+    Format.fprintf fmt "line %i, characters %i-%i" l.start.line l.start.column
+      l.end_.column
+  else
+    Format.fprintf fmt "line %i, character %i to line %i, character %i"
+      l.start.line l.start.column l.end_.line l.end_.column
+
 let pp_span_start fmt s =
   Format.fprintf fmt "File \"%s\", line %d, character %d" s.file s.start.line
     s.start.column
