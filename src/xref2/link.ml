@@ -469,7 +469,15 @@ and include_ : Env.t -> Include.t -> Include.t =
         (Component.Of_Lang.(module_decl empty i.decl)); *)
   let doc = comment_docs env i.parent i.doc in
   let expansion =
-    let content = signature env i.parent i.expansion.content in
+    (* Don't call {!signature} to avoid adding the content of the expansion to
+       the environment, which is already done recursively by
+       {!Env.open_signature}. *)
+    let content =
+      let { content; _ } = i.expansion in
+      let items = signature_items env i.parent content.items
+      and doc = comment_docs env i.parent content.doc in
+      { content with items; doc }
+    in
     { i.expansion with content }
   in
   { i with decl; expansion; doc }
