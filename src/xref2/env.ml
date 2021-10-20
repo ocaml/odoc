@@ -189,9 +189,20 @@ let add_to_elts ?shadow kind identifier component env =
 let add_label identifier heading env =
   (* Disallow shadowing for labels. Duplicate names are disallowed and reported
      during linking. *)
-  add_to_elts ~shadow:false Kind_Label identifier
-    (`Label (identifier, heading))
-    env
+  if
+    (* There's a case where shadowing is necessary: when the same label shadows
+       itself. This can happen with includes and module types. Use the location
+       to test if two headings are exactly the same. *)
+    let (`Label (_, name)) = identifier in
+    Elements.find_by_name
+      (function `Label (_, h) -> Some h.location | _ -> None)
+      (LabelName.to_string name) env.elts
+    |> List.mem heading.Component.Label.location
+  then env
+  else
+    add_to_elts ~shadow:false Kind_Label identifier
+      (`Label (identifier, heading))
+      env
 
 let add_docs (docs : Odoc_model.Comment.docs) env =
   List.fold_left

@@ -1,9 +1,5 @@
 
   $ compile test.mli
-  File "test.mli", line 32, characters 6-28:
-  Label 'E' is ambiguous. The other occurences are:
-    File "test.mli", line 32, character 6
-    File "test.mli", line 32, character 6
   File "test.mli", line 27, characters 14-20:
   Failed to resolve reference unresolvedroot(M).C Couldn't find "C"
   File "test.mli", line 27, characters 9-13:
