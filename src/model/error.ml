@@ -31,19 +31,9 @@ let filename_only ?suggestion format =
 
 let to_string = function
   | `With_full_location { location; message } ->
-      let location_string =
-        if location.start.line = location.end_.line then
-          Printf.sprintf "line %i, characters %i-%i" location.start.line
-            location.start.column location.end_.column
-        else
-          Printf.sprintf "line %i, character %i to line %i, character %i"
-            location.start.line location.start.column location.end_.line
-            location.end_.column
-      in
-      Printf.sprintf "File \"%s\", %s:\n%s" location.file location_string
-        message
+      Format.asprintf "%a:@\n%s" Location_.pp location message
   | `With_filename_only { file; message } ->
-      Printf.sprintf "File \"%s\":\n%s" file message
+      Format.asprintf "File \"%s\":@\n%s" file message
 
 exception Conveyed_by_exception of t
 
