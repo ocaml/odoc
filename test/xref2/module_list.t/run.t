@@ -2,15 +2,15 @@
 
   $ compile external.mli starts_with_open.mli main.mli
   File "main.mli", line 63, characters 22-43:
-  Failed to resolve reference unresolvedroot(Resolve_synopsis).t Couldn't find "Resolve_synopsis"
+  Warning: Failed to resolve reference unresolvedroot(Resolve_synopsis).t Couldn't find "Resolve_synopsis"
   File "main.mli", line 63, characters 17-21:
-  Failed to resolve reference unresolvedroot(t) Couldn't find "t"
+  Warning: Failed to resolve reference unresolvedroot(t) Couldn't find "t"
   File "external.mli", line 9, characters 6-10:
-  Failed to resolve reference unresolvedroot(t) Couldn't find "t"
+  Warning: Failed to resolve reference unresolvedroot(t) Couldn't find "t"
   File "main.mli", line 63, characters 22-43:
-  Failed to resolve reference unresolvedroot(Resolve_synopsis).t Couldn't find "Resolve_synopsis"
+  Warning: Failed to resolve reference unresolvedroot(Resolve_synopsis).t Couldn't find "Resolve_synopsis"
   File "main.mli", line 63, characters 17-21:
-  Failed to resolve reference unresolvedroot(t) Couldn't find "t"
+  Warning: Failed to resolve reference unresolvedroot(t) Couldn't find "t"
 
 Everything should resolve:
 

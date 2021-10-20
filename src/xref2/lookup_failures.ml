@@ -46,7 +46,9 @@ let raise_warnings ~filename failures =
             | [] -> ()
           in
           let pp_failure fmt () =
-            Format.fprintf fmt "%a%s" pp_context context.c_context msg
+            let prefix = if non_fatal then "Warning" else "Error" in
+            Format.fprintf fmt "%s: %a%s" prefix pp_context context.c_context
+              msg
           in
           let err =
             match context.c_loc with

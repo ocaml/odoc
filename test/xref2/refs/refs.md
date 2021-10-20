@@ -964,11 +964,11 @@ Ambiguous in env:
 ```ocaml
 # resolve_ref "t" ;;
 File "<test>":
-Reference to 't' is ambiguous. Please specify its kind: type-t, val-t.
+Error: Reference to 't' is ambiguous. Please specify its kind: type-t, val-t.
 - : ref = `Identifier (`Value (`Root (Some (`Page (None, None)), Root), t))
 # resolve_ref "X" ;;
 File "<test>":
-Reference to 'X' is ambiguous. Please specify its kind: constructor-X, module-X.
+Error: Reference to 'X' is ambiguous. Please specify its kind: constructor-X, module-X.
 - : ref = `Identifier (`Module (`Root (Some (`Page (None, None)), Root), X))
 ```
 
@@ -977,12 +977,12 @@ Ambiguous in sig:
 ```ocaml
 # resolve_ref "X.u" ;;
 File "<test>":
-Reference to 'u' is ambiguous. Please specify its kind: type-u, val-u.
+Error: Reference to 'u' is ambiguous. Please specify its kind: type-u, val-u.
 - : ref =
 `Type (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), X)), u)
 # resolve_ref "X.Y" ;;
 File "<test>":
-Reference to 'Y' is ambiguous. Please specify its kind: constructor-Y, module-Y.
+Error: Reference to 'Y' is ambiguous. Please specify its kind: constructor-Y, module-Y.
 - : ref =
 `Constructor
   (`Type
@@ -990,7 +990,7 @@ Reference to 'Y' is ambiguous. Please specify its kind: constructor-Y, module-Y.
    Y)
 # resolve_ref "Everything_ambiguous_in_sig.t" (* Some kinds are missing: label, type subst (would be "type-") *) ;;
 File "<test>":
-Reference to 't' is ambiguous. Please specify its kind: field-t, module-type-t, type-t, val-t.
+Error: Reference to 't' is ambiguous. Please specify its kind: field-t, module-type-t, type-t, val-t.
 - : ref =
 `Type
   (`Identifier
@@ -1000,7 +1000,7 @@ Reference to 't' is ambiguous. Please specify its kind: field-t, module-type-t, 
    t)
 # resolve_ref "Everything_ambiguous_in_sig.T" (* Missing kind: module subst (would be "module-") *) ;;
 File "<test>":
-Reference to 'T' is ambiguous. Please specify its kind: exception-T, extension-T, module-T.
+Error: Reference to 'T' is ambiguous. Please specify its kind: exception-T, extension-T, module-T.
 - : ref =
 `Module
   (`Identifier

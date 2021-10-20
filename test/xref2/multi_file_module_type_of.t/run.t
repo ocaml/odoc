@@ -28,14 +28,14 @@ on test1.cmti:
 
   $ odoc compile --package foo test1.cmti
   File "test1.cmti":
-  Failed to compile expansion for module type expression module type of unresolvedroot(Test0) Unexpanded `module type of` expression: module type of unresolvedroot(Test0)
+  Warning: Failed to compile expansion for module type expression module type of unresolvedroot(Test0) Unexpanded `module type of` expression: module type of unresolvedroot(Test0)
 
 Similarly, module `T` also can not be expanded, therefore we expect
 another warning when we run `odoc compile` on test2.cmti:
 
   $ odoc compile --package foo test2.cmti -I .
   File "test2.cmti":
-  Failed to compile expansion for module type expression module type of unresolvedroot(Test1).S Unexpanded `module type of` expression: module type of unresolvedroot(Test1).S
+  Warning: Failed to compile expansion for module type expression module type of unresolvedroot(Test1).S Unexpanded `module type of` expression: module type of unresolvedroot(Test1).S
 
 Crucially though, we do expect this command to have terminated!
 

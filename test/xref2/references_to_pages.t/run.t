@@ -2,9 +2,9 @@
 
   $ compile p.mld good_references.mli bad_references.mli
   File "bad_references.mli", line 6, characters 42-69:
-  Failed to resolve reference unresolvedroot(p).not_found Couldn't find page "not_found"
+  Warning: Failed to resolve reference unresolvedroot(p).not_found Couldn't find page "not_found"
   File "bad_references.mli", line 4, characters 20-37:
-  Failed to resolve reference unresolvedroot(not_found) Couldn't find page "not_found"
+  Warning: Failed to resolve reference unresolvedroot(not_found) Couldn't find page "not_found"
 
 Every references in `Good_references` should resolve:
 

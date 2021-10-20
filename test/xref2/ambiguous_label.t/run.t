@@ -4,14 +4,14 @@ Labels don't follow OCaml's scoping rules:
 
   $ compile test.ml test_2.ml
   File "test.ml", line 25, characters 4-36:
-  Failed to resolve reference unresolvedroot(example_2) Couldn't find "example_2"
+  Warning: Failed to resolve reference unresolvedroot(example_2) Couldn't find "example_2"
   File "test.ml", line 16, characters 4-50:
-  Reference to label 'example' is ambiguous.
+  Error: Reference to label 'example' is ambiguous.
   This reference will point to the first occurence of 'example'.
   Hint:
     Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
   File "test_2.ml", line 1, characters 4-55:
-  Failed to resolve reference unresolvedroot(Test).example Couldn't find "example"
+  Warning: Failed to resolve reference unresolvedroot(Test).example Couldn't find "example"
 
 Contains some ambiguous labels:
 
