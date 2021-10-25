@@ -136,6 +136,9 @@ end = struct
 end
 
 type t = {
+  linking : bool;
+  (* True if this is a linking environment - if not,
+     we only put in modules, module types, types, classes and class types *)
   id : int;
   elts : Elements.t;
   resolver : resolver option;
@@ -167,6 +170,7 @@ let with_recorded_lookups env f =
 
 let empty =
   {
+    linking = true;
     id = 0;
     elts = Elements.empty;
     resolver = None;
@@ -180,6 +184,10 @@ let add_fragment_root sg env =
 
 (** Implements most [add_*] functions. *)
 let add_to_elts ?shadow kind identifier component env =
+  if not env.linking then
+    assert (
+      List.mem kind
+        [ Kind_Module; Kind_ModuleType; Kind_Type; Kind_Class; Kind_ClassType ]);
   {
     env with
     id = unique_id ();
@@ -189,11 +197,13 @@ let add_to_elts ?shadow kind identifier component env =
 let add_label identifier heading env =
   (* Disallow shadowing for labels. Duplicate names are disallowed and reported
      during linking. *)
+  assert env.linking;
   add_to_elts ~shadow:false Kind_Label identifier
     (`Label (identifier, heading))
     env
 
 let add_docs (docs : Odoc_model.Comment.docs) env =
+  assert env.linking;
   List.fold_left
     (fun env -> function
       | { Odoc_model.Location_.value = `Heading (attrs, id, text); location } ->
@@ -217,8 +227,8 @@ let add_cdocs p (docs : Component.CComment.docs) env =
     env docs
 
 let add_module identifier m docs env =
-  add_to_elts Kind_Module identifier (`Module (identifier, m)) env
-  |> add_cdocs identifier docs
+  let env' = add_to_elts Kind_Module identifier (`Module (identifier, m)) env in
+  if env.linking then add_cdocs identifier docs env' else env'
 
 let add_type identifier t env =
   let open Component in
@@ -246,27 +256,36 @@ let add_type identifier t env =
           List.map (fun t -> t.Field.doc) fields )
     | Some Extensible | None -> (cs, [])
   in
-  let elts, docs = open_typedecl env.elts in
+  let elts, docs =
+    if env.linking then open_typedecl env.elts else (env.elts, [])
+  in
   let elts = Elements.add Kind_Type identifier (`Type (identifier, t)) elts in
-  { env with id = unique_id (); elts }
-  |> add_cdocs identifier t.doc
-  |> List.fold_right (add_cdocs identifier) docs
+  let env' = { env with id = unique_id (); elts } in
+  (* If this is a linking env, put in the constructors and labels from docs *)
+  if env.linking then
+    add_cdocs identifier t.doc env'
+    |> List.fold_right (add_cdocs identifier) docs
+  else env'
 
 let add_module_type identifier (t : Component.ModuleType.t) env =
-  add_to_elts Kind_ModuleType identifier (`ModuleType (identifier, t)) env
-  |> add_cdocs identifier t.doc
+  let env' =
+    add_to_elts Kind_ModuleType identifier (`ModuleType (identifier, t)) env
+  in
+  if env'.linking then add_cdocs identifier t.doc env' else env'
 
 let add_value identifier (t : Component.Value.t) env =
   add_to_elts Kind_Value identifier (`Value (identifier, t)) env
   |> add_cdocs identifier t.doc
 
 let add_class identifier (t : Component.Class.t) env =
-  add_to_elts Kind_Class identifier (`Class (identifier, t)) env
-  |> add_cdocs identifier t.doc
+  let env' = add_to_elts Kind_Class identifier (`Class (identifier, t)) env in
+  if env'.linking then add_cdocs identifier t.doc env' else env'
 
 let add_class_type identifier (t : Component.ClassType.t) env =
-  add_to_elts Kind_ClassType identifier (`ClassType (identifier, t)) env
-  |> add_cdocs identifier t.doc
+  let env' =
+    add_to_elts Kind_ClassType identifier (`ClassType (identifier, t)) env
+  in
+  if env'.linking then add_cdocs identifier t.doc env' else env'
 
 let add_method _identifier _t env =
   (* TODO *)
@@ -579,21 +598,21 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
   fun s e ->
     List.fold_left
       (fun env orig ->
-        match orig with
-        | Odoc_model.Lang.Signature.Type (_, t) ->
+        match ((orig : L.Signature.item), env.linking) with
+        | Type (_, t), _ ->
             let ty = type_decl empty t in
-            add_type t.Odoc_model.Lang.TypeDecl.id ty env
-        | Odoc_model.Lang.Signature.Module (_, t) ->
+            add_type t.L.TypeDecl.id ty env
+        | Module (_, t), _ ->
             let ty = Component.Delayed.put (fun () -> module_ empty t) in
             add_module
-              (t.Odoc_model.Lang.Module.id :> Identifier.Path.Module.t)
+              (t.L.Module.id :> Identifier.Path.Module.t)
               ty
               (docs empty t.L.Module.doc)
               env
-        | Odoc_model.Lang.Signature.ModuleType t ->
+        | ModuleType t, _ ->
             let ty = module_type empty t in
-            add_module_type t.Odoc_model.Lang.ModuleType.id ty env
-        | Odoc_model.Lang.Signature.ModuleTypeSubstitution t ->
+            add_module_type t.L.ModuleType.id ty env
+        | ModuleTypeSubstitution t, _ ->
             let ty =
               module_type empty
                 {
@@ -603,20 +622,11 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
                   canonical = None;
                 }
             in
-            add_module_type t.Odoc_model.Lang.ModuleTypeSubstitution.id ty env
-        | Odoc_model.Lang.Signature.Comment c -> add_comment c env
-        | Odoc_model.Lang.Signature.TypExt te ->
-            let doc = docs empty te.doc in
-            List.fold_left
-              (fun env tec ->
-                let ty = extension_constructor empty tec in
-                add_extension_constructor tec.L.Extension.Constructor.id ty env)
-              env te.L.Extension.constructors
-            |> add_cdocs te.L.Extension.parent doc
-        | Odoc_model.Lang.Signature.Exception e ->
-            let ty = exception_ empty e in
-            add_exception e.Odoc_model.Lang.Exception.id ty env
-        | Odoc_model.Lang.Signature.ModuleSubstitution m ->
+            add_module_type t.L.ModuleTypeSubstitution.id ty env
+        | L.Signature.TypeSubstitution t, _ ->
+            let ty = type_decl empty t in
+            add_type t.L.TypeDecl.id ty env
+        | L.Signature.ModuleSubstitution m, _ ->
             let _id = Ident.Of_Identifier.module_ m.id in
             let doc = docs empty m.doc in
             let ty =
@@ -627,21 +637,35 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
                       empty m))
             in
             add_module (m.id :> Identifier.Path.Module.t) ty doc env
-        | Odoc_model.Lang.Signature.TypeSubstitution t ->
-            let ty = type_decl empty t in
-            add_type t.Odoc_model.Lang.TypeDecl.id ty env
-        | Odoc_model.Lang.Signature.Value v ->
-            let ty = value empty v in
-            add_value v.Odoc_model.Lang.Value.id ty env
-        | Odoc_model.Lang.Signature.Class (_, c) ->
+        | L.Signature.Class (_, c), _ ->
             let ty = class_ empty c in
             add_class c.id ty env
-        | Odoc_model.Lang.Signature.ClassType (_, c) ->
+        | L.Signature.ClassType (_, c), _ ->
             let ty = class_type empty c in
             add_class_type c.id ty env
-        | Odoc_model.Lang.Signature.Include i ->
-            open_signature i.expansion.content env
-        | Odoc_model.Lang.Signature.Open o -> open_signature o.expansion env)
+        | L.Signature.Include i, _ -> open_signature i.expansion.content env
+        | L.Signature.Open o, _ -> open_signature o.expansion env
+        (* The following are only added when linking *)
+        | Comment c, true -> add_comment c env
+        | TypExt te, true ->
+            let doc = docs empty te.doc in
+            List.fold_left
+              (fun env tec ->
+                let ty = extension_constructor empty tec in
+                add_extension_constructor tec.L.Extension.Constructor.id ty env)
+              env te.L.Extension.constructors
+            |> add_cdocs te.L.Extension.parent doc
+        | Exception e, true ->
+            let ty = exception_ empty e in
+            add_exception e.L.Exception.id ty env
+        | L.Signature.Value v, true ->
+            let ty = value empty v in
+            add_value v.L.Value.id ty env
+        (* Skip when compiling *)
+        | Exception _, false -> env
+        | TypExt _, false -> env
+        | Comment _, false -> env
+        | L.Signature.Value _, false -> env)
       e s.items
 
 let inherit_resolver env =
@@ -658,12 +682,13 @@ let open_units resolver env =
       | _ -> env)
     env resolver.open_units
 
-let env_of_unit t resolver =
+let env_of_unit t ~linking resolver =
   let open Odoc_model.Lang.Compilation_unit in
   let initial_env =
     let m = module_of_unit t in
     let dm = Component.Delayed.put (fun () -> m) in
-    empty |> add_module (t.id :> Identifier.Path.Module.t) dm m.doc
+    let env = { empty with linking } in
+    env |> add_module (t.id :> Identifier.Path.Module.t) dm m.doc
   in
   set_resolver initial_env resolver |> open_units resolver
 
@@ -672,6 +697,8 @@ let open_page page env = add_docs page.Odoc_model.Lang.Page.content env
 let env_of_page page resolver =
   let initial_env = open_page page empty in
   set_resolver initial_env resolver |> open_units resolver
+
+let env_for_testing ~linking = { empty with linking }
 
 let verify_lookups env lookups =
   let bad_lookup = function

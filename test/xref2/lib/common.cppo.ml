@@ -638,7 +638,7 @@ let handle_warnings ww =
 
 let resolve unit =
   let resolver = mkresolver () in
-  let resolve_env = Odoc_odoc.Resolver.build_env_for_unit resolver unit in
+  let resolve_env = Odoc_odoc.Resolver.build_env_for_unit resolver ~linking:true unit in
   Odoc_xref2.Compile.compile ~filename:"<test>" resolve_env unit
   |> handle_warnings
 

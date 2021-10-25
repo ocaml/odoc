@@ -88,7 +88,7 @@ let resolve_and_substitute ~resolver
         Printf.sprintf " Using %S while you should use the .cmti file" filename);
   (* Resolve imports, used by the [link-deps] command. *)
   let unit = { unit with imports = resolve_imports resolver unit.imports } in
-  let env = Resolver.build_env_for_unit resolver unit in
+  let env = Resolver.build_env_for_unit resolver ~linking:false unit in
   let compiled =
     Odoc_xref2.Compile.compile ~filename env unit
     |> Odoc_model.Error.raise_warnings

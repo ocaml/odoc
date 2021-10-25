@@ -272,7 +272,7 @@ and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
  fun env id s ->
   if s.compiled then s
   else
-    let env = Env.open_signature s env |> Env.add_docs s.doc in
+    let env = Env.open_signature s env in
     let items = signature_items env id s.items in
     {
       items;
@@ -776,7 +776,7 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
   | Poly (strs, t) -> Poly (strs, type_expression env parent t)
   | Package p -> Package (type_expression_package env parent p)
 
-let compile ~filename x y =
-  Lookup_failures.catch_failures ~filename (fun () -> unit x y)
+let compile ~filename env compilation_unit =
+  Lookup_failures.catch_failures ~filename (fun () -> unit env compilation_unit)
 
 let resolve_page _resolver y = y
