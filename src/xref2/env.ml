@@ -96,6 +96,8 @@ module Elements : sig
       elements of the same name won't be shadowed. This is used for labels,
       which doesn't allow shadowing. *)
 
+  val remove : [< Identifier.t ] -> t -> t
+
   val find_by_name :
     (Component.Element.any -> 'b option) -> string -> t -> 'b list
 
@@ -112,6 +114,17 @@ end = struct
   let empty = (StringMap.empty, IdMap.empty)
 
   let add ?(shadow = true) kind identifier elem (names, ids) =
+    let check_for_duplicates () =
+      try
+        ignore (IdMap.find (identifier :> Identifier.t) ids);
+        assert (kind = Kind_Label);
+        Format.eprintf "%s\n%!"
+          ("Duplicate found: "
+          ^ Format.asprintf "%a" Component.Fmt.model_identifier
+              (identifier :> Identifier.t))
+      with Not_found -> ()
+    in
+    check_for_duplicates ();
     let elem = (elem :> Component.Element.any) in
     let name = Identifier.name identifier in
     let tl =
@@ -126,6 +139,23 @@ end = struct
     let ids = IdMap.add (identifier :> Identifier.t) elem ids in
     let names = StringMap.add name ({ kind; elem } :: tl) names in
     (names, ids)
+
+  let remove identifier (names, ids) =
+    let id = (identifier :> Identifier.t) in
+    let elem =
+      try IdMap.find id ids
+      with e ->
+        Format.eprintf "Failed to find %a\n%!" Component.Fmt.model_identifier id;
+        raise e
+    in
+    let names' =
+      let name = Identifier.name id in
+      let l = StringMap.find name names in
+      match List.filter (fun e -> elem != e.elem) l with
+      | [] -> StringMap.remove name names
+      | xs -> StringMap.add name xs (StringMap.remove name names)
+    in
+    (names', IdMap.remove id ids)
 
   let find_by_name f name (names, _) =
     let filter e acc = match f e.elem with Some r -> r :: acc | None -> acc in
@@ -194,6 +224,9 @@ let add_to_elts ?shadow kind identifier component env =
     elts = Elements.add ?shadow kind identifier component env.elts;
   }
 
+let remove identifier env =
+  { env with id = unique_id (); elts = Elements.remove identifier env.elts }
+
 let add_label identifier heading env =
   (* Disallow shadowing for labels. Duplicate names are disallowed and reported
      during linking. *)
@@ -229,6 +262,9 @@ let add_cdocs p (docs : Component.CComment.docs) env =
 let add_module identifier m docs env =
   let env' = add_to_elts Kind_Module identifier (`Module (identifier, m)) env in
   if env.linking then add_cdocs identifier docs env' else env'
+
+let update_module identifier m docs env =
+  remove identifier env |> add_module identifier m docs
 
 let add_type identifier t env =
   let open Component in
@@ -272,6 +308,9 @@ let add_module_type identifier (t : Component.ModuleType.t) env =
     add_to_elts Kind_ModuleType identifier (`ModuleType (identifier, t)) env
   in
   if env'.linking then add_cdocs identifier t.doc env' else env'
+
+let update_module_type identifier m env =
+  remove identifier env |> add_module_type identifier m
 
 let add_value identifier (t : Component.Value.t) env =
   add_to_elts Kind_Value identifier (`Value (identifier, t)) env
@@ -666,6 +705,30 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | TypExt _, false -> env
         | Comment _, false -> env
         | L.Signature.Value _, false -> env)
+      e s.items
+
+let rec close_signature : Odoc_model.Lang.Signature.t -> t -> t =
+  let module L = Odoc_model.Lang in
+  fun s e ->
+    assert (not e.linking);
+    List.fold_left
+      (fun env orig ->
+        match (orig : L.Signature.item) with
+        | Type (_, t) -> remove t.L.TypeDecl.id env
+        | Module (_, t) -> remove t.L.Module.id env
+        | ModuleType t -> remove t.L.ModuleType.id env
+        | ModuleTypeSubstitution t -> remove t.L.ModuleTypeSubstitution.id env
+        | TypeSubstitution t -> remove t.L.TypeDecl.id env
+        | ModuleSubstitution t -> remove t.L.ModuleSubstitution.id env
+        | Class (_, c) -> remove c.id env
+        | ClassType (_, c) -> remove c.id env
+        | Include i -> close_signature i.expansion.content env
+        | Open o -> close_signature o.expansion env
+        (* The following are only added when linking *)
+        | Exception _ -> env
+        | TypExt _ -> env
+        | Comment _ -> env
+        | Value _ -> env)
       e s.items
 
 let inherit_resolver env =

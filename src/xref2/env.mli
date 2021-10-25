@@ -49,9 +49,19 @@ val add_module :
   t ->
   t
 
+val update_module :
+  Identifier.Path.Module.t ->
+  Component.Module.t Component.Delayed.t ->
+  Component.CComment.docs ->
+  t ->
+  t
+
 val add_type : Identifier.Type.t -> Component.TypeDecl.t -> t -> t
 
 val add_module_type :
+  Identifier.Path.ModuleType.t -> Component.ModuleType.t -> t -> t
+
+val update_module_type :
   Identifier.Path.ModuleType.t -> Component.ModuleType.t -> t -> t
 
 val add_value : Identifier.Value.t -> Component.Value.t -> t -> t
@@ -142,6 +152,8 @@ val open_signature : Odoc_model.Lang.Signature.t -> t -> t
 
 val open_page : Odoc_model.Lang.Page.t -> t -> t
 (** Add a page content to the env. *)
+
+val close_signature : Odoc_model.Lang.Signature.t -> t -> t
 
 val env_of_unit :
   Odoc_model.Lang.Compilation_unit.t -> linking:bool -> resolver -> t

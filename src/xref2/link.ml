@@ -601,7 +601,8 @@ and u_module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.U.expr -> ModuleType.U.expr =
  fun env id expr ->
   match expr with
-  | Signature s -> Signature (signature env id s)
+  | Signature s -> Signature s
+  (* No need to link 'unexpanded' module type expressions that are actually expanded... *)
   | Path p -> Path (module_type_path env p)
   | With (subs, expr) as unresolved -> (
       let cexpr = Component.Of_Lang.(u_module_type_expr empty expr) in
