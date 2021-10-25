@@ -210,7 +210,7 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
               in
               let docs = [] in
               let env' =
-                Env.add_module
+                Env.update_module
                   (m.id :> Paths.Identifier.Path.Module.t)
                   ty docs env
               in
@@ -222,7 +222,7 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
         | ModuleType mt ->
             let m' = module_type env mt in
             let ty = Component.Of_Lang.(module_type empty m') in
-            let env' = Env.add_module_type mt.id ty env in
+            let env' = Env.update_module_type mt.id ty env in
             (ModuleType (module_type env mt) :: items, env')
         | ModuleTypeSubstitution mt ->
             std @@ ModuleTypeSubstitution (module_type_substitution env mt)
@@ -236,26 +236,12 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
             let i' = include_ env i in
             if i'.expansion == i.expansion then std @@ Include i'
             else
-              (* Expansion has changed, let's put the new modules into the environment *)
-              let env' =
-                List.fold_left
-                  (fun env item ->
-                    match item with
-                    | Module (_, m) ->
-                        let ty =
-                          Component.Delayed.(
-                            put (fun () -> Component.Of_Lang.(module_ empty m)))
-                        in
-                        let env' =
-                          Env.add_module
-                            (m.id :> Paths.Identifier.Path.Module.t)
-                            ty [] env
-                        in
-                        env'
-                    | _ -> env)
-                  env i'.expansion.content.items
+              (* Expansion has changed, let's put the content into the environment *)
+              let env' = Env.close_signature i.Include.expansion.content env in
+              let env'' =
+                Env.open_signature i'.Include.expansion.content env'
               in
-              (Include i' :: items, env')
+              (Include i' :: items, env'')
         | Open o -> std @@ Open o)
       ([], env) s
   in
@@ -345,10 +331,11 @@ and include_ : Env.t -> Include.t -> Include.t =
           | _ ->
               failwith "Expansion shouldn't be anything other than a signature"
         in
-        {
-          shadowed = i.expansion.shadowed;
-          content = signature env i.parent expansion_sg;
-        }
+        let content =
+          let env = Env.close_signature i.expansion.content env in
+          signature env i.parent expansion_sg
+        in
+        { shadowed = i.expansion.shadowed; content }
   in
   let expansion =
     if i.expansion.content.compiled then i.expansion else get_expansion ()

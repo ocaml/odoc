@@ -108,15 +108,16 @@ and simple_expansion :
 
 and include_ env i =
   let decl =
+    let env = Env.close_signature i.expansion.content env in
     match i.decl with
     | Alias _ -> i.decl
     | ModuleType t -> ModuleType (u_module_type_expr env i.parent t)
   in
-  {
-    i with
-    expansion = { i.expansion with content = signature env i.expansion.content };
-    decl;
-  }
+  let content =
+    let { Include.content; _ } = i.expansion in
+    signature_items env content
+  in
+  { i with expansion = { i.expansion with content }; decl }
 
 let signature env =
   let rec loop sg =
