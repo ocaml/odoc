@@ -42,18 +42,11 @@ module Link = struct
   let get_dir_and_file url =
     let open Odoc_document in
     let l = Url.Path.to_list url in
-    let is_dir = function `Page -> true | _ -> false in
+    let is_dir = function `Page -> `IfNotLast | _ -> `Never in
     let dir, file = Url.Path.split ~is_dir l in
     let segment_to_string (_kind, name) = name in
-    let dir = List.map segment_to_string dir in
-    match (dir, file) with
-    | [], [] -> assert false
-    | dir, [] ->
-        let rev_dir = List.rev dir in
-        let file' = List.hd rev_dir in
-        let dir' = List.tl rev_dir |> List.rev in
-        (dir', file')
-    | _, xs -> (dir, String.concat "." (List.map segment_to_string xs))
+    ( List.map segment_to_string dir,
+      String.concat "." (List.map segment_to_string file) )
 
   let filename url =
     let dir, file = get_dir_and_file url in

@@ -34,3 +34,16 @@ file 'package.mld' should be written to the file 'package/index.html'.
   $ find html -type f | sort
   html/package/Test/index.html
   html/package/index.html
+
+Let's make sure the manpage and latex renderers work too
+
+  $ for i in *.odocl; do odoc man-generate $i -o man; odoc latex-generate $i -o latex; done
+
+  $ find man -type f | sort
+  man/package.3o
+  man/package/Test.3o
+
+  $ find latex -type f | sort
+  latex/package.tex
+  latex/package/Test.tex
+
