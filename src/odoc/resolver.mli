@@ -37,7 +37,7 @@ val lookup_page : t -> string -> Odoc_model.Lang.Page.t option
 (* val lookup_module *)
 
 val build_env_for_unit :
-  t -> Odoc_model.Lang.Compilation_unit.t -> Odoc_xref2.Env.t
+  t -> linking:bool -> Odoc_model.Lang.Compilation_unit.t -> Odoc_xref2.Env.t
 (** Initialize the environment for the given module. *)
 
 val build_env_for_page : t -> Odoc_model.Lang.Page.t -> Odoc_xref2.Env.t
