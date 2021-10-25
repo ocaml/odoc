@@ -1,3 +1,9 @@
+Unreleased
+----------
+
+Bugs fixed
+- Man page renderer fails to output pages that have children (@jonludlam, @Julow, #766)
+
 2.0.0
 -----
 Breaking changes

@@ -179,17 +179,18 @@ module Path = struct
     inner None l
 
   let split :
-      is_dir:(kind -> bool) ->
+      is_dir:(kind -> [ `Always | `Never | `IfNotLast ]) ->
       (kind * string) list ->
       (kind * string) list * (kind * string) list =
    fun ~is_dir l ->
-    let rec inner = function
-      | ((kind, _) as x) :: xs when is_dir kind ->
-          let dirs, files = inner xs in
-          (x :: dirs, files)
-      | xs -> ([], xs)
+    let rec inner dirs = function
+      | [ ((kind, _) as x) ] when is_dir kind = `IfNotLast ->
+          (List.rev dirs, [ x ])
+      | ((kind, _) as x) :: xs when is_dir kind <> `Never ->
+          inner (x :: dirs) xs
+      | xs -> (List.rev dirs, xs)
     in
-    inner l
+    inner [] l
 end
 
 module Anchor = struct
