@@ -1,5 +1,6 @@
 
   $ compile test.mli
+  Duplicate found: (root Test).B
   File "test.mli", line 27, characters 14-20:
   Failed to resolve reference unresolvedroot(M).C Couldn't find "C"
   File "test.mli", line 27, characters 9-13:

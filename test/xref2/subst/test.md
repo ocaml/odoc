@@ -93,7 +93,8 @@ Now test by compiling signatures and printing the result:
 let compile mli =
   let open Component in
   let id, sg, _ = Common.model_of_string mli in
-  Odoc_xref2.Compile.signature Env.empty (id :> Odoc_model.Paths.Identifier.Signature.t) sg
+  let env = Env.env_for_testing ~linking:false in
+  Odoc_xref2.Compile.signature env (id :> Odoc_model.Paths.Identifier.Signature.t) sg
   |> Of_Lang.signature Of_Lang.empty
 ```
 
