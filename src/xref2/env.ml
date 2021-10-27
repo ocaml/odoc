@@ -80,89 +80,88 @@ type kind =
   | Kind_Extension
   | Kind_Field
 
-module Elements : sig
+module ElementsByName : sig
   type t
 
   val empty : t
 
   val add :
-    ?shadow:bool ->
-    kind ->
-    [< Identifier.t ] ->
-    [< Component.Element.any ] ->
-    t ->
-    t
-  (** If [shadow] is set to [false] (defaults to [true]), existing
-      elements of the same name won't be shadowed. This is used for labels,
-      which doesn't allow shadowing. *)
+    ?shadow:bool -> kind -> string -> [< Component.Element.any ] -> t -> t
 
   val remove : [< Identifier.t ] -> t -> t
 
   val find_by_name :
     (Component.Element.any -> 'b option) -> string -> t -> 'b list
-
-  val find_by_id : Identifier.t -> t -> Component.Element.any option
 end = struct
-  module IdMap = Identifier.Maps.Any
-
   type elem = { kind : kind; elem : Component.Element.any }
 
-  type t = elem list StringMap.t * Component.Element.any IdMap.t
-  (** The first map is queried with {!find_by_name}, shadowed elements are
-      removed from it. The second map is queried with {!find_by_id}. *)
+  type t = elem list StringMap.t
 
-  let empty = (StringMap.empty, IdMap.empty)
+  let empty = StringMap.empty
 
-  let add ?(shadow = true) kind identifier elem (names, ids) =
-    let check_for_duplicates () =
-      if IdMap.mem (identifier :> Identifier.t) ids then (
-        assert (kind = Kind_Label);
-        Format.eprintf "%s\n%!"
-          ("Duplicate found: "
-          ^ Format.asprintf "%a" Component.Fmt.model_identifier
-              (identifier :> Identifier.t)))
-    in
-    check_for_duplicates ();
+  let add ?(shadow = true) kind name elem t =
     let elem = (elem :> Component.Element.any) in
-    let name = Identifier.name identifier in
     let tl =
       try
-        let tl = StringMap.find name names in
+        let tl = StringMap.find name t in
         let not_shadow e = e.kind <> kind in
         if shadow && not (List.for_all not_shadow tl) then
           List.filter not_shadow tl
         else tl
       with Not_found -> []
     in
-    let ids = IdMap.add (identifier :> Identifier.t) elem ids in
-    let names = StringMap.add name ({ kind; elem } :: tl) names in
-    (names, ids)
+    StringMap.add name ({ kind; elem } :: tl) t
 
-  let remove identifier (names, ids) =
-    let id = (identifier :> Identifier.t) in
-    let elem =
-      try IdMap.find id ids
-      with Not_found ->
-        Format.eprintf "Failed to find %a\n%!" Component.Fmt.model_identifier id;
-        assert false
-    in
-    let names' =
-      let name = Identifier.name id in
-      let l = StringMap.find name names in
-      match
-        List.filter (fun e -> not Component.Element.(equal elem e.elem)) l
-      with
-      | [] -> StringMap.remove name names
-      | xs -> StringMap.add name xs (StringMap.remove name names)
-    in
-    (names', IdMap.remove id ids)
+  let remove id t =
+    let id = (id :> Identifier.t) in
+    let name = Identifier.name id in
+    let l = StringMap.find name t in
+    match
+      List.filter
+        (fun e ->
+          not (Identifier.equal id (Component.Element.identifier e.elem)))
+        l
+    with
+    | [] -> StringMap.remove name t
+    | xs -> StringMap.add name xs (StringMap.remove name t)
 
-  let find_by_name f name (names, _) =
+  let find_by_name f name t =
     let filter e acc = match f e.elem with Some r -> r :: acc | None -> acc in
-    try List.fold_right filter (StringMap.find name names) []
-    with Not_found -> []
+    try List.fold_right filter (StringMap.find name t) [] with Not_found -> []
+end
 
-  let find_by_id id (_, ids) = try Some (IdMap.find id ids) with _ -> None
+module ElementsById : sig
+  type t
+
+  val empty : t
+
+  val add : [< Identifier.t ] -> [< Component.Element.any ] -> t -> t
+
+  val remove : [< Identifier.t ] -> t -> t
+
+  val find_by_id : Identifier.t -> t -> Component.Element.any option
+end = struct
+  module IdMap = Identifier.Maps.Any
+
+  type t = Component.Element.any IdMap.t
+
+  let empty = IdMap.empty
+
+  let add identifier element t =
+    let check_for_duplicates () =
+      if IdMap.mem (identifier :> Identifier.t) t then
+        Format.eprintf "Duplicate found: %a\n%!" Component.Fmt.model_identifier
+          (identifier :> Identifier.t)
+    in
+    check_for_duplicates ();
+    IdMap.add (identifier :> Identifier.t) (element :> Component.Element.any) t
+
+  let remove id t =
+    let id = (id :> Identifier.t) in
+    IdMap.remove id t
+
+  let find_by_id identifier t =
+    try Some (IdMap.find identifier t) with Not_found -> None
 end
 
 type t = {
@@ -170,7 +169,10 @@ type t = {
   (* True if this is a linking environment - if not,
      we only put in modules, module types, types, classes and class types *)
   id : int;
-  elts : Elements.t;
+  elts : ElementsByName.t;
+      (** Elements mapped by their name. Queried with {!find_by_name}. *)
+  ids : ElementsById.t;
+      (** Elements mapped by their identifier. Queried with {!find_by_id}. *)
   resolver : resolver option;
   recorder : recorder option;
   fragmentroot : (int * Component.Signature.t) option;
@@ -202,7 +204,8 @@ let empty =
   {
     linking = true;
     id = 0;
-    elts = Elements.empty;
+    elts = ElementsByName.empty;
+    ids = ElementsById.empty;
     resolver = None;
     recorder = None;
     fragmentroot = None;
@@ -213,27 +216,39 @@ let add_fragment_root sg env =
   { env with fragmentroot = Some (id, sg); id }
 
 (** Implements most [add_*] functions. *)
-let add_to_elts ?shadow kind identifier component env =
+let add_to_elts kind identifier component env =
   if not env.linking then
     assert (
       List.mem kind
         [ Kind_Module; Kind_ModuleType; Kind_Type; Kind_Class; Kind_ClassType ]);
+  let name = Identifier.name identifier in
   {
     env with
     id = unique_id ();
-    elts = Elements.add ?shadow kind identifier component env.elts;
+    elts = ElementsByName.add kind name component env.elts;
+    ids = ElementsById.add identifier component env.ids;
   }
 
 let remove identifier env =
-  { env with id = unique_id (); elts = Elements.remove identifier env.elts }
+  {
+    env with
+    id = unique_id ();
+    elts = ElementsByName.remove identifier env.elts;
+    ids = ElementsById.remove identifier env.ids;
+  }
 
 let add_label identifier heading env =
-  (* Disallow shadowing for labels. Duplicate names are disallowed and reported
-     during linking. *)
   assert env.linking;
-  add_to_elts ~shadow:false Kind_Label identifier
-    (`Label (identifier, heading))
-    env
+  let comp = `Label (identifier, heading) in
+  let name = Identifier.name identifier in
+  {
+    env with
+    id = unique_id ();
+    (* Disallow shadowing for labels. Duplicate names are disallowed and
+       reported during linking. *)
+    elts = ElementsByName.add ~shadow:false Kind_Label name comp env.elts;
+    ids = ElementsById.add identifier comp env.ids;
+  }
 
 let add_docs (docs : Odoc_model.Comment.docs) env =
   assert env.linking;
@@ -269,18 +284,18 @@ let update_module identifier m docs env =
 let add_type identifier t env =
   let open Component in
   let open_typedecl cs =
-    let add_cons elts (cons : TypeDecl.Constructor.t) =
+    let add_cons env (cons : TypeDecl.Constructor.t) =
       let ident =
         `Constructor (identifier, ConstructorName.make_std cons.name)
       in
-      Elements.add Kind_Constructor ident (`Constructor (ident, cons)) elts
-    and add_field elts (field : TypeDecl.Field.t) =
+      add_to_elts Kind_Constructor ident (`Constructor (ident, cons)) env
+    and add_field env (field : TypeDecl.Field.t) =
       let ident =
         `Field
           ( (identifier :> Odoc_model.Paths.Identifier.Parent.t),
             FieldName.make_std field.name )
       in
-      Elements.add Kind_Field ident (`Field (ident, field)) elts
+      add_to_elts Kind_Field ident (`Field (ident, field)) env
     in
     let open TypeDecl in
     match t.representation with
@@ -292,16 +307,12 @@ let add_type identifier t env =
           List.map (fun t -> t.Field.doc) fields )
     | Some Extensible | None -> (cs, [])
   in
-  let elts, docs =
-    if env.linking then open_typedecl env.elts else (env.elts, [])
-  in
-  let elts = Elements.add Kind_Type identifier (`Type (identifier, t)) elts in
-  let env' = { env with id = unique_id (); elts } in
-  (* If this is a linking env, put in the constructors and labels from docs *)
+  let env, docs = if env.linking then open_typedecl env else (env, []) in
+  let env = add_to_elts Kind_Type identifier (`Type (identifier, t)) env in
   if env.linking then
-    add_cdocs identifier t.doc env'
+    add_cdocs identifier t.doc env
     |> List.fold_right (add_cdocs identifier) docs
-  else env'
+  else env
 
 let add_module_type identifier (t : Component.ModuleType.t) env =
   let env' =
@@ -419,7 +430,7 @@ let lookup_by_name scope name env =
           (results :> Component.Element.any list)
     | None -> ()
   in
-  match Elements.find_by_name scope.filter name env.elts with
+  match ElementsByName.find_by_name scope.filter name env.elts with
   | [ x ] as results ->
       record_lookup_results env results;
       Result.Ok x
@@ -439,7 +450,7 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
         | _ -> ())
     | None -> ()
   in
-  match Elements.find_by_id (id :> Identifier.t) env.elts with
+  match ElementsById.find_by_id (id :> Identifier.t) env.ids with
   | Some x ->
       record_lookup_result x;
       scope.filter x

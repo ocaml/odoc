@@ -526,9 +526,6 @@ module Element = struct
     | `Field (id, _) -> (id :> t)
     | `Extension (id, _) -> (id :> t)
     | `Page (id, _) -> (id :> t)
-
-  let equal : [< any ] -> [< any ] -> bool =
-   fun a b -> Odoc_model.Paths.Identifier.equal (identifier a) (identifier b)
 end
 
 module Fmt = struct
