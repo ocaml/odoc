@@ -3,6 +3,7 @@ Unreleased
 
 Bugs fixed
 - Man page renderer fails to output pages that have children (@jonludlam, @Julow, #766)
+- Fix resolution of unprefixed references to pages (@Julow, #755)
 
 2.0.0
 -----
