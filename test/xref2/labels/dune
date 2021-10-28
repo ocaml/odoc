@@ -1,0 +1,9 @@
+(cram
+ (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile}))
+
+; 4.07.0 and above
+
+(cram
+ (applies_to labels)
+ (enabled_if
+  (>= %{ocaml_version} 4.07.0)))
