@@ -103,7 +103,7 @@
       italics.
     </i> 
     <i>It also work the same in 
-     <a href="#">links in italics with 
+     <a href="#" class="external-link">links in italics with 
       <em>emphasis <em class="odd">in</em> emphasis</em>.
      </a>
     </i>
@@ -126,16 +126,20 @@
    <h2 id="links-and-references">
     <a href="#links-and-references" class="anchor"></a>Links and references
    </h2>
-   <p>This is a <a href="#">link</a>. It sends you to the top of this
-     page. Links can have markup inside them: <a href="#"><b>bold</b></a>
-    , <a href="#"><i>italics</i></a>, <a href="#"><em>emphasis</em></a>
-    , <a href="#">super<sup>script</sup></a>, 
-    <a href="#">sub<sub>script</sub></a>, and 
-    <a href="#"><code>code</code></a>. Links can also be nested 
-    <em><a href="#">inside</a></em> markup. Links cannot be nested inside
-     each other. This link has no replacement text: <a href="#">#</a>
-    . The text is filled in by odoc. This is a shorthand link: 
-    <a href="#">#</a>. The text is also filled in by odoc in this case.
+   <p>This is a <a href="#" class="external-link">link</a>. It sends 
+    you to the top of this page. Links can have markup inside them: 
+    <a href="#" class="external-link"><b>bold</b></a>, 
+    <a href="#" class="external-link"><i>italics</i></a>, 
+    <a href="#" class="external-link"><em>emphasis</em></a>, 
+    <a href="#" class="external-link">super<sup>script</sup></a>, 
+    <a href="#" class="external-link">sub<sub>script</sub></a>, and 
+    <a href="#" class="external-link"><code>code</code></a>. Links can
+     also be nested <em><a href="#" class="external-link">inside</a></em>
+     markup. Links cannot be nested inside each other. This link has 
+    no replacement text: <a href="#" class="external-link">#</a>. The
+     text is filled in by odoc. This is a shorthand link: 
+    <a href="#" class="external-link">#</a>. The text is also filled 
+    in by odoc in this case.
    </p>
    <p>This is a reference to <a href="#val-foo"><code>foo</code></a>.
      References can have replacement text: 
@@ -307,7 +311,7 @@
    </ul>
    <ul class="at-tags">
     <li class="see"><span class="at-tag">see</span> 
-     <a href="#" class="value">#</a> <p>this url</p>
+     <a href="#" class="external-link value">#</a> <p>this url</p>
     </li>
    </ul>
    <ul class="at-tags">
