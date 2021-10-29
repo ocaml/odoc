@@ -1,7 +1,6 @@
 (documentation)
 
 (rule
- (target html)
  (alias docgen)
  (deps
   (:x driver.md)
