@@ -30,10 +30,22 @@ let () =
     List.partition (fun f -> Fpath.get_ext f = ".mld") input_files
   in
   let cmt_files =
+    let mli_files =
+      List.fold_left
+        (fun acc f ->
+          if Fpath.has_ext ".mli" f then Fpath.rem_ext f :: acc else acc)
+        [] ocaml_files
+    in
+    ocaml_files
+    (* Remove .ml files that have a corresponding .mli. *)
+    |> List.filter (fun f ->
+           not (Fpath.has_ext ".ml" f && List.mem (Fpath.rem_ext f) mli_files))
     (* Side effect: error on unknown extension *)
-    List.map cmt_filename ocaml_files
+    |> List.map cmt_filename
   in
   let odoc_files = List.map odoc_filename input_files in
   List.iter (run "ocamlc -bin-annot -c %a" path) ocaml_files;
-  List.iter (run "odoc compile --package test %a" path) (mld_files @ cmt_files);
+  List.iter
+    (run "odoc compile -I . --package test %a" path)
+    (mld_files @ cmt_files);
   List.iter (run "odoc link -I . %a" path) odoc_files
