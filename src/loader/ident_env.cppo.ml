@@ -479,11 +479,9 @@ let add_parameter parent id name env =
   { env with module_paths }
 
 let find_module env id =
-  (* Format.fprintf Format.err_formatter "Finding module path: %a\n%!" (Ident.print_with_scope) id; *)
   Ident.find_same id env.module_paths
 
 let find_module_identifier env id =
-  (* Format.fprintf Format.err_formatter "Finding module identifier: %a\n%!" (Ident.print_with_scope) id; *)
   Ident.find_same id env.modules
 
 let find_module_type env id =

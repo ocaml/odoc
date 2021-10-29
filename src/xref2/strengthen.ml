@@ -20,7 +20,6 @@ let rec signature :
     Cpath.module_ -> ?canonical:Cpath.module_ -> Signature.t -> Signature.t =
  fun prefix ?canonical sg ->
   let sg', strengthened_modules = sig_items prefix ?canonical sg in
-  (* Format.eprintf "Invalidating modules: %a\n%!" (Format.pp_print_list Ident.fmt) strengthened_modules; *)
   let substs =
     List.fold_left
       (fun s mid -> Subst.path_invalidate_module (mid :> Ident.path_module) s)
