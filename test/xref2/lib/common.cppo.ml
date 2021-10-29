@@ -23,7 +23,7 @@ let cmti_of_string s =
     let l = Lexing.from_string s in
     let p = Parse.interface l in
     Typemod.type_interface
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 09 && OCAML_MINOR >= 04
+#if OCAML_VERSION >= (4,4,0) && OCAML_VERSION < (4,9,0)
     ""
 #endif
     env p;;
@@ -621,7 +621,7 @@ let mkresolver () =
   Odoc_odoc.Resolver.create
     ~important_digests:false
     ~directories:(List.map Odoc_odoc.Fs.Directory.of_string
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
     (Load_path.get_paths () |> List.filter (fun s -> s <> ""))
 #else
     !Config.load_path

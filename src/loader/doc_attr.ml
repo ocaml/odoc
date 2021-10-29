@@ -28,9 +28,9 @@ let empty : Odoc_model.Comment.docs = empty_body
 let load_payload : Parsetree.payload -> string * Location.t = function
   | PStr [{pstr_desc =
       Pstr_eval ({pexp_desc =
-#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+#if OCAML_VERSION < (4,3,0)
         Pexp_constant (Const_string (text, _))
-#elif OCAML_MAJOR = 4 && OCAML_MINOR < 11
+#elif OCAML_VERSION < (4,11,0)
         Pexp_constant (Pconst_string (text, _))
 #else
         Pexp_constant (Pconst_string (text, _, _))
@@ -40,17 +40,17 @@ let load_payload : Parsetree.payload -> string * Location.t = function
   | _ -> assert false
 
 
-    let parse_attribute : Parsetree.attribute -> (string * Location.t) option = function
-    #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
-      | { attr_name = { Location.txt =
-          ("text" | "ocaml.text"); loc = _loc}; attr_payload; _ } -> begin
-    #else
-      | ({Location.txt =
-          ("text" | "ocaml.text"); loc = _loc}, attr_payload) -> begin
-    #endif
-      Some (load_payload attr_payload)
-        end
-      | _ -> None
+let parse_attribute : Parsetree.attribute -> (string * Location.t) option = function
+#if OCAML_VERSION >= (4,8,0)
+  | { attr_name = { Location.txt =
+      ("text" | "ocaml.text"); loc = _loc}; attr_payload; _ } -> begin
+#else
+  | ({Location.txt =
+      ("text" | "ocaml.text"); loc = _loc}, attr_payload) -> begin
+#endif
+  Some (load_payload attr_payload)
+    end
+  | _ -> None
 
 let pad_loc loc =
   { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
@@ -63,7 +63,7 @@ let ast_to_comment ~internal_tags parent ast_docs =
 let attached internal_tags parent attrs =
   let rec loop acc =
     function
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
     | {Parsetree.attr_name = { Location.txt =
           ("doc" | "ocaml.doc"); loc = _loc}; attr_payload; _ } :: rest -> begin
 #else

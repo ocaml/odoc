@@ -70,7 +70,7 @@ let rec read_pattern env parent doc pat =
         read_pattern env parent doc pat
     | Tpat_lazy pat ->
         read_pattern env parent doc pat
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08 && OCAML_MINOR < 11
+#if OCAML_VERSION >= (4,8,0) && OCAML_VERSION < (4,11,0)
     | Tpat_exception pat ->
         read_pattern env parent doc pat
 #endif
@@ -185,7 +185,7 @@ and read_class_signature env parent params cltyp =
         let items, doc = Doc_attr.extract_top_comment_class items in
         Signature {self; items; doc}
     | Tcty_arrow _ -> assert false
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+#if OCAML_VERSION >= (4,6,0)
     | Tcty_open _ -> assert false
 #endif
 
@@ -199,10 +199,10 @@ let rec read_class_type env parent params cty =
       let arg = read_core_type env arg in
       let res = read_class_type env parent params res in
         Arrow(lbl, arg, res)
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06 && OCAML_MINOR < 08
-  | Tcty_open (_, _, _, _, cty) -> read_class_type env parent params cty
-#elif OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
   | Tcty_open (_, cty) -> read_class_type env parent params cty
+#elif OCAML_VERSION >= (4,6,0)
+  | Tcty_open (_, _, _, _, cty) -> read_class_type env parent params cty
 #endif
 
 
@@ -277,10 +277,10 @@ and read_class_structure env parent params cl =
     | Tcl_constraint(cl, None, _, _, _) -> read_class_structure env parent params cl
     | Tcl_constraint(_, Some cltyp, _, _, _) ->
         read_class_signature env parent params cltyp
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06 && OCAML_MINOR < 08
-    | Tcl_open (_, _, _, _, cl) -> read_class_structure env parent params cl
-#elif OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
     | Tcl_open (_, cl) -> read_class_structure env parent params cl
+#elif OCAML_VERSION >= (4,6,0)
+    | Tcl_open (_, _, _, _, cl) -> read_class_structure env parent params cl
 #endif
 
 
@@ -302,10 +302,10 @@ let rec read_class_expr env parent params cl =
       read_class_expr env parent params cl
   | Tcl_constraint(_, Some cltyp, _, _, _) ->
       read_class_type env parent params cltyp
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06 && OCAML_MINOR < 08
-    | Tcl_open (_, _, _, _, cl) -> read_class_expr env parent params cl
-#elif OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
     | Tcl_open (_, cl) -> read_class_expr env parent params cl
+#elif OCAML_VERSION >= (4,6,0)
+    | Tcl_open (_, _, _, _, cl) -> read_class_expr env parent params cl
 #endif
 
 let read_class_declaration env parent cld =
@@ -347,7 +347,7 @@ let rec read_module_expr env parent label_parent mexpr =
     | Tmod_structure str ->
         let sg, () = read_structure Odoc_model.Semantics.Expect_none env parent str in
         Signature sg
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+#if OCAML_VERSION >= (4,10,0)
     | Tmod_functor(parameter, res) ->
         let f_parameter, env =
           match parameter with
@@ -406,7 +406,7 @@ and read_module_expr_maybe_canonical env parent container ~canonical mexpr =
 
 and read_module_binding env parent mb =
   let open Module in
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+#if OCAML_VERSION >= (4,10,0)
       match mb.mb_id with
       | None -> None
       | Some id ->
@@ -429,7 +429,7 @@ and read_module_binding env parent mb =
   in
   let canonical = (canonical :> Path.Module.t option) in
   let hidden =
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+#if OCAML_VERSION >= (4,10,0)
     match canonical, mb.mb_id with
     | None, Some id -> Odoc_model.Root.contains_double_underscore (Ident.name id)
     | _, _ -> false
@@ -465,7 +465,7 @@ and read_structure_item env parent item =
         read_value_bindings env parent vbs
     | Tstr_primitive vd ->
         [Cmti.read_value_description env parent vd]
-#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+#if OCAML_VERSION < (4,3,0)
     | Tstr_type (decls) ->
       let rec_flag = Ordinary in
 #else
@@ -481,7 +481,7 @@ and read_structure_item env parent item =
         [TypExt (read_type_extension env parent tyext)]
     | Tstr_exception ext ->
         let ext =
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
           Cmi.read_exception env parent ext.tyexn_constructor.ext_id ext.tyexn_constructor.ext_type
 #else
           Cmi.read_exception env parent ext.ext_id ext.ext_type
@@ -499,7 +499,7 @@ and read_structure_item env parent item =
     | Tstr_modtype mtd ->
         [ModuleType (Cmti.read_module_type_declaration env parent mtd)]
     | Tstr_open o ->
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 08
+#if OCAML_VERSION < (4,8,0)
         ignore(o); []
 #else
         [Open (read_open env parent o)]
@@ -508,7 +508,7 @@ and read_structure_item env parent item =
         read_include env parent incl
     | Tstr_class cls ->
         let cls = List.map
-#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+#if OCAML_VERSION < (4,3,0)
           (* NOTE(@ostera): remember the virtual flag was removed post 4.02 *)
           (fun (cl, _, _) -> cl)
 #else
@@ -554,7 +554,7 @@ and read_include env parent incl =
   | _ ->
     content.items
 
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
 and read_open env parent o =
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature o.open_bound_items) in
   Open.{expansion}

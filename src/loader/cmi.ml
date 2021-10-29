@@ -36,7 +36,7 @@ let opt_iter f = function
 
 let read_label lbl =
   let open TypeExpr in
-#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+#if OCAML_VERSION < (4,3,0)
   (* NOTE(@ostera): 4.02 does not have an Asttypes variant for whether the
    * label exists, and is an optional label or not, so I went back to string
    * manipulation *)
@@ -268,7 +268,7 @@ let prepare_type_parameters params manifest =
 
 (* NOTE(@ostera): constructor with inlined records were introduced post 4.02 *)
 let mark_constructor_args =
-#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+#if OCAML_VERSION < (4,3,0)
   List.iter mark_type
 #else
   function
@@ -568,7 +568,7 @@ let read_label_declaration env parent ld =
     {id; doc; mutable_; type_}
 
 let read_constructor_declaration_arguments env parent arg =
-#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+#if OCAML_VERSION < (4,3,0)
   (* NOTE(@ostera): constructor with inlined records were introduced post 4.02
      so it's safe to use Tuple here *)
   ignore parent;
