@@ -416,7 +416,6 @@ and add_canonical_path_mt :
 and get_substituted_module_type :
     Env.t -> Component.ModuleType.expr -> Cpath.Resolved.module_type option =
  fun env expr ->
-  (* Format.fprintf Format.err_formatter ">>>expr=%a\n%!"  Component.Fmt.module_type_expr expr; *)
   match expr with
   | Component.ModuleType.Path { p_path; _ } ->
       if Cpath.is_module_type_substituted p_path then
@@ -425,10 +424,9 @@ and get_substituted_module_type :
             p_path
         with
         | Ok (resolved_path, _) -> Some resolved_path
-        | Error _ ->
-            (* Format.fprintf Format.err_formatter "<<<Unresolved!?\n%!";*) None
+        | Error _ -> None
       else None
-  | _ -> (* Format.fprintf Format.err_formatter "<<<wtf!?\n%!"; *) None
+  | _ -> None
 
 and get_module_type_path_modifiers :
     Env.t ->
@@ -456,7 +454,6 @@ and get_module_type_path_modifiers :
 and process_module_type env ~add_canonical m p' =
   let open Component.ModuleType in
   let open OptionMonad in
-  (* Format.fprintf Format.err_formatter "Processing module_type %a\n%!" Component.Fmt.resolved_module_type_path p'; *)
   (* Loop through potential chains of module_type equalities, looking for substitutions *)
   let substpath =
     m.expr >>= get_substituted_module_type env >>= fun p ->
@@ -477,7 +474,6 @@ and get_module_path_modifiers :
  fun env ~add_canonical m ->
   match m.type_ with
   | Alias (alias_path, _) -> (
-      (* Format.fprintf Format.err_formatter "alias to path: %a\n%!" Component.Fmt.module_path alias_path; *)
       match
         resolve_module ~mark_substituted:true ~add_canonical env alias_path
       with
@@ -727,8 +723,6 @@ and resolve_module :
     resolve_module_result =
  fun ~mark_substituted ~add_canonical env' path ->
   let id = (mark_substituted, add_canonical, path) in
-  (* let t = Unix.gettimeofday () in
-     Format.fprintf Format.err_formatter "resolve_module: looking up %a\n%!" Component.Fmt.module_path path; *)
   let resolve env (mark_substituted, add_canonical, p) =
     match p with
     | `Dot (parent, id) ->
@@ -773,7 +767,6 @@ and resolve_module :
         |> map_error (fun e -> `Parent (`Parent_module e))
         >>= fun (p, m) -> Ok (`Substituted p, m)
     | `Root r -> (
-        (* Format.fprintf Format.err_formatter "Looking up module %s by name...%!" r; *)
         match Env.lookup_root_module r env with
         | Some (Env.Resolved (_, p, m)) ->
             let p =
@@ -783,9 +776,7 @@ and resolve_module :
             Ok (p, Component.Delayed.put_val m)
         | Some Env.Forward ->
             Error (`Parent (`Parent_sig `UnresolvedForwardPath))
-        | None ->
-            (* Format.fprintf Format.err_formatter "Unresolved!\n%!"; *)
-            Error (`Lookup_failure_root r))
+        | None -> Error (`Lookup_failure_root r))
     | `Forward f ->
         resolve_module ~mark_substituted ~add_canonical env (`Root f)
         |> map_error (fun e -> `Parent (`Parent_module e))
@@ -799,7 +790,6 @@ and resolve_module_type :
     Cpath.module_type ->
     resolve_module_type_result =
  fun ~mark_substituted ~add_canonical env p ->
-  (* Format.fprintf Format.err_formatter "resolve_module_type: looking up %a\n%!" Component.Fmt.module_type_path p; *)
   match p with
   | `Dot (parent, id) ->
       resolve_module ~mark_substituted ~add_canonical:true env parent
@@ -843,18 +833,14 @@ and resolve_type :
   let result =
     match p with
     | `Dot (parent, id) ->
-        (* let start_time = Unix.gettimeofday () in *)
         resolve_module ~mark_substituted:true ~add_canonical:true env parent
         |> map_error (fun e -> `Parent (`Parent_module e))
         >>= fun (p, m) ->
         let m = Component.Delayed.get m in
-        (* let time1 = Unix.gettimeofday () in *)
         signature_of_module_cached env p m
         |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= fun sg ->
-        (* let time1point5 = Unix.gettimeofday () in *)
         let sub = prefix_substitution (`Module p) sg in
-        (* let time2 = Unix.gettimeofday () in *)
         handle_type_lookup env id (`Module p) sg >>= fun (p', t') ->
         let t =
           match t' with
@@ -864,8 +850,6 @@ and resolve_type :
           | `FType_removed (name, texpr, eq) ->
               `FType_removed (name, Subst.type_expr sub texpr, eq)
         in
-        (* let time3 = Unix.gettimeofday () in *)
-        (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
         Ok (p', t)
     | `Type (parent, id) ->
         lookup_parent ~mark_substituted:true env parent
@@ -924,18 +908,14 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
  fun env p ->
   match p with
   | `Dot (parent, id) ->
-      (* let start_time = Unix.gettimeofday () in *)
       resolve_module ~mark_substituted:true ~add_canonical:true env parent
       |> map_error (fun e -> `Parent (`Parent_module e))
       >>= fun (p, m) ->
       let m = Component.Delayed.get m in
-      (* let time1 = Unix.gettimeofday () in *)
       signature_of_module_cached env p m
       |> map_error (fun e -> `Parent (`Parent_sig e))
       >>= fun sg ->
-      (* let time1point5 = Unix.gettimeofday () in *)
       let sub = prefix_substitution (`Module p) sg in
-      (* let time2 = Unix.gettimeofday () in *)
       handle_class_type_lookup id (`Module p) sg >>= fun (p', t') ->
       let t =
         match t' with
@@ -944,8 +924,6 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
         | `FType_removed (name, texpr, eq) ->
             `FType_removed (name, Subst.type_expr sub texpr, eq)
       in
-      (* let time3 = Unix.gettimeofday () in *)
-      (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
       Ok (p', t)
   | `Identifier (i, _) ->
       lookup_class_type env (`Identifier i) >>= fun t -> Ok (`Identifier i, t)
@@ -1717,15 +1695,9 @@ and resolve_signature_fragment :
       let modifier = get_module_path_modifiers env ~add_canonical:false m' in
       let cp', f' =
         match modifier with
-        | None ->
-            (* Format.fprintf Format.err_formatter "No modifier for frag %a\n%!" Component.Fmt.resolved_signature_fragment new_frag; *)
-            (new_path, new_frag)
-        | Some (`Aliased p') ->
-            (* Format.fprintf Format.err_formatter "Alias for frag %a\n%!" Component.Fmt.resolved_signature_fragment new_frag; *)
-            (`Alias (p', new_path), `Alias (p', new_frag))
-        | Some (`SubstMT p') ->
-            (* Format.fprintf Format.err_formatter "SubstMT for frag %a\n%!" Component.Fmt.resolved_signature_fragment new_frag; *)
-            (`Subst (p', new_path), `Subst (p', new_frag))
+        | None -> (new_path, new_frag)
+        | Some (`Aliased p') -> (`Alias (p', new_path), `Alias (p', new_frag))
+        | Some (`SubstMT p') -> (`Subst (p', new_path), `Subst (p', new_frag))
       in
       (* Don't use the cached one - `FragmentRoot` is not unique *)
       of_result (signature_of_module env m') >>= fun parent_sg ->
@@ -1803,7 +1775,6 @@ and resolve_type_fragment :
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, _ppath, _sg) ->
       let result = fixup_type_cfrag (`Type (pfrag, TypeName.make_std name)) in
-      (* Format.fprintf Format.err_formatter "resolve_type_fragment: fragment=%a\n%!" Component.Fmt.resolved_type_fragment result; *)
       Some result
 
 let rec reresolve_signature_fragment :
@@ -1868,7 +1839,6 @@ and class_signature_of_class_type :
  fun env c -> class_signature_of_class_type_expr env c.expr
 
 let resolve_module_path env p =
-  (* Format.fprintf Format.err_formatter "resolve_module: %a\n%!" Component.Fmt.module_path p; *)
   resolve_module ~mark_substituted:true ~add_canonical:true env p
   >>= fun (p, m) ->
   match p with

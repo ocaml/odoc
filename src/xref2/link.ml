@@ -3,10 +3,6 @@ open Odoc_model
 open Lang
 module Id = Paths.Identifier
 
-(* for < 4.03 *)
-(* let kasprintf k fmt =
-   Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt) *)
-
 module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
 end
@@ -251,16 +247,11 @@ let rec unit env t =
 
 and value_ env parent t =
   let open Value in
-  (* Format.fprintf Format.err_formatter "Handling %a\n%!" Component.Fmt.model_identifier (t.id :> Id.t); *)
-  let result =
-    {
-      t with
-      doc = comment_docs env parent t.doc;
-      type_ = type_expression env parent [] t.type_;
-    }
-  in
-  (* Format.fprintf Format.err_formatter "Done\n%!"; *)
-  result
+  {
+    t with
+    doc = comment_docs env parent t.doc;
+    type_ = type_expression env parent [] t.type_;
+  }
 
 and exception_ env parent e =
   let open Exception in
@@ -388,9 +379,6 @@ and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
   let sg_id = (m.id :> Id.Signature.t) in
-  (* Format.fprintf Format.err_formatter "Processing Module %a\n%!"
-     Component.Fmt.model_identifier
-     (m.id :> Id.t); *)
   if m.hidden then m
   else
     let type_ = module_decl env sg_id m.type_ in
@@ -465,8 +453,6 @@ and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
   let decl = include_decl env i.parent i.decl in
-  (* Format.eprintf "include_: %a\n%!" Component.Fmt.module_decl
-        (Component.Of_Lang.(module_decl empty i.decl)); *)
   let doc = comment_docs env i.parent i.doc in
   let expansion =
     let content = signature env i.parent i.expansion.content in
@@ -488,19 +474,8 @@ and functor_argument env a =
 
 and handle_fragments env id sg subs =
   let open ModuleType in
-  (* Format.fprintf Format.err_formatter
-     "Handling `With` expression for %a (expr=%a) [%a]\n%!"
-     Component.Fmt.model_identifier
-     (id :> Id.t)
-     Component.Fmt.module_type_expr cexpr Component.Fmt.substitution_list
-     (List.map Component.Of_Lang.(module_type_substitution empty) subs);*)
   List.fold_left
     (fun (sg_res, subs) lsub ->
-      (* Format.fprintf Format.err_formatter "Signature is: %a\n%!"
-         Component.Fmt.signature sg; *)
-      (* Format.fprintf Format.err_formatter "Handling sub: %a\n%!"
-         Component.Fmt.substitution
-         Component.Of_Lang.(module_type_substitution empty sub); *)
       match (sg_res, lsub) with
       | Result.Ok sg, ModuleEq (frag, decl) ->
           let frag' =
@@ -718,8 +693,6 @@ and type_decl_representation :
 and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
  fun env parent t ->
   let open TypeDecl in
-  (* Format.eprintf "Handling type decl %a\n%!" Component.Fmt.model_identifier
-            (t.id :> Paths.Identifier.t); *)
   let equation = type_decl_equation env parent t.equation in
   let doc = comment_docs env parent t.doc in
   let hidden_path =
@@ -735,33 +708,23 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
     Opt.map (type_decl_representation env parent) t.representation
   in
   let default = { t with equation; doc; representation } in
-  let result =
-    match hidden_path with
-    | Some (p, params) -> (
-        let p' =
-          Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p
-        in
-        (* Format.eprintf "found hidden path: %a\n%!"
-           Component.Fmt.resolved_type_path p'; *)
-        match Tools.lookup_type env p' with
-        | Ok (`FType (_, t')) ->
-            let equation =
-              try
-                Expand_tools.collapse_eqns default.equation
-                  (Lang_of.type_decl_equation Lang_of.empty
-                     (parent :> Id.Parent.t)
-                     t'.equation)
-                  params
-              with _ -> default.equation
-            in
-            { default with equation = type_decl_equation env parent equation }
-        | Ok (`FClass _ | `FClassType _ | `FType_removed _) | Error _ -> default
-        )
-    | None -> default
-  in
-  (* Format.fprintf Format.err_formatter "type_decl result: %a\n%!"
-        Component.Fmt.type_decl (Component.Of_Lang.(type_decl empty result)); *)
-  result
+  match hidden_path with
+  | Some (p, params) -> (
+      let p' = Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p in
+      match Tools.lookup_type env p' with
+      | Ok (`FType (_, t')) ->
+          let equation =
+            try
+              Expand_tools.collapse_eqns default.equation
+                (Lang_of.type_decl_equation Lang_of.empty
+                   (parent :> Id.Parent.t)
+                   t'.equation)
+                params
+            with _ -> default.equation
+          in
+          { default with equation = type_decl_equation env parent equation }
+      | Ok (`FClass _ | `FClassType _ | `FType_removed _) | Error _ -> default)
+  | None -> default
 
 and type_decl_equation env parent t =
   let open TypeDecl.Equation in
