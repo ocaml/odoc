@@ -1,10 +1,8 @@
 ifeq "$(wildcard dune-local/dune.exe)" ""
   DUNE = dune
-  TEST_DUNE = $(DUNE)
 	DUNE_BUILD_TARGET =
 else
   DUNE = dune-local/dune.exe
-  TEST_DUNE = ../../$(DUNE)
 	DUNE_BUILD_TARGET = odoc.install
 endif
 DUNE_ARGS ?=
@@ -37,12 +35,6 @@ publish-docs:
 test : build
 	$(DUNE) runtest $(DUNE_ARGS)
 
-ODOC_RELATIVE_PATH := ../../_build/install/default/bin/
-
-.PHONY : dune-test
-dune-test : build
-	(cd test/dune && PATH=$(ODOC_RELATIVE_PATH):$$PATH $(TEST_DUNE) build $(DUNE_ARGS) @doc)
-
 .PHONY : coverage
 coverage :
 	$(DUNE) build $(DUNE_ARGS) --instrument-with bisect_ppx @test/runtest --no-buffer -j 1 --force || true
@@ -52,7 +44,6 @@ coverage :
 .PHONY : clean
 clean :
 	$(DUNE) clean
-	(cd test/dune && $(TEST_DUNE) clean)
 	rm -rf $(COVERAGE)
 
 DUNIVERSE_DEPS = astring cmdliner cppo fmt fpath ocaml-re result tyxml uutf
@@ -152,9 +143,3 @@ uutf/dune-project : uutf
 .PHONY : distclean
 distclean :
 	rm -rf $(DUNIVERSE_DEPS) dune-local
-
-.PHONY : promote-html
-promote-html:
-	EXPECTED=`cat _build/default/test/html/_scratch/expected`; \
-	ACTUAL=`cat _build/default/test/html/_scratch/actual`; \
-	mkdir -p "`dirname "$$EXPECTED"`" && cp "$$ACTUAL" "$$EXPECTED"
