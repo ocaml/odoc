@@ -54,7 +54,7 @@ module Dune = struct
   let action x = List [ Atom "action"; x ]
 
   let rule ?enabledif fields =
-    List (Atom "rule" :: fields @ render_enabledif enabledif)
+    List ((Atom "rule" :: fields) @ render_enabledif enabledif)
 
   let simple_rule ?enabledif target cmd =
     rule ?enabledif
@@ -155,10 +155,10 @@ let gen_backend_diff_rule enabledif ~targets (b_t_r, b, _) p =
                [
                  List
                    (Atom "targets"
-                    :: List.map (fun t -> Atom (Dune.arg_fpath t)) targets_gen);
+                   :: List.map (fun t -> Atom (Dune.arg_fpath t)) targets_gen);
                  action (run (b_t_r p));
                ]
-             :: List.map2 (Dune.runtest_diff ?enabledif) targets targets_gen);
+            :: List.map2 (Dune.runtest_diff ?enabledif) targets targets_gen);
         ]
 
 let gen_backend_rule enabledif backend_target_rules path =

@@ -78,8 +78,7 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
         Html.nav
           ~a:[ Html.a_class [ "odoc-nav" ] ]
           ([
-             Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ];
-             Html.txt " – ";
+             Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ]; Html.txt " – ";
            ]
           @ breadcrumbs);
       ]
