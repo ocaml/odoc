@@ -107,7 +107,7 @@ let rec extract_signature_type_items items =
 
     | [] -> []
 
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
 
 let rec unwrap_module_expr_desc = function
   | Typedtree.Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
@@ -159,7 +159,7 @@ let extract_extended_open o =
 let rec extract_signature_tree_items hide_item items =
   let open Typedtree in
   match items with
-#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+#if OCAML_VERSION < (4,3,0)
   | { sig_desc = Tsig_type decls; _} :: rest ->
 #else
   | { sig_desc = Tsig_type (_, decls); _} :: rest ->
@@ -167,7 +167,7 @@ let rec extract_signature_tree_items hide_item items =
     List.map (fun decl -> `Type (decl.typ_id, hide_item))
       decls @ extract_signature_tree_items hide_item rest
 
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+#if OCAML_VERSION >= (4,10,0)
   | { sig_desc = Tsig_module { md_id = Some id; _ }; _} :: rest ->
       [`Module (id, hide_item)] @ extract_signature_tree_items hide_item rest
   | { sig_desc = Tsig_module _; _ } :: rest ->
@@ -201,7 +201,7 @@ let rec extract_signature_tree_items hide_item items =
       List.map
         (fun cld ->
             let typehash =
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
+#if OCAML_VERSION < (4,4,0)
             cld.ci_id_typesharp
 #else
             cld.ci_id_typehash
@@ -213,7 +213,7 @@ let rec extract_signature_tree_items hide_item items =
     List.map
       (fun clty ->
           let typehash =
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
+#if OCAML_VERSION < (4,4,0)
               clty.ci_id_typesharp
 #else
               clty.ci_id_typehash
@@ -222,7 +222,7 @@ let rec extract_signature_tree_items hide_item items =
             
             `ClassType (clty.ci_id_class_type, clty.ci_id_object, typehash, hide_item))
               cltyps @ extract_signature_tree_items hide_item rest
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
     | { sig_desc = Tsig_modsubst ms; _} :: rest ->
       [`Module (ms.ms_id, hide_item)] @ extract_signature_tree_items hide_item rest
     | { sig_desc = Tsig_typesubst ts; _} :: rest ->
@@ -256,14 +256,14 @@ let rec read_pattern hide_item pat =
   | Tpat_variant(_, Some pat, _)
   | Tpat_lazy pat -> read_pattern hide_item pat
   | Tpat_any | Tpat_constant _ | Tpat_variant(_, None, _) -> []
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08 && OCAML_MINOR < 11
+#if OCAML_VERSION >= (4,8,0) && OCAML_VERSION < (4,11,0)
   | Tpat_exception pat -> read_pattern hide_item pat
 #endif
 
 let rec extract_structure_tree_items hide_item items =
   let open Typedtree in
     match items with
-#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+#if OCAML_VERSION < (4,3,0)
     | { str_desc = Tstr_type decls; _ } :: rest ->
 #else
     | { str_desc = Tstr_type (_, decls); _ } :: rest -> (* TODO: handle rec_flag *)
@@ -272,7 +272,7 @@ let rec extract_structure_tree_items hide_item items =
           decls @ extract_structure_tree_items hide_item rest
 
 
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 03
+#if OCAML_VERSION < (4,3,0)
     | { str_desc = Tstr_value (_, vbs ); _} :: rest ->
 #else
     | { str_desc = Tstr_value (_, vbs); _ } :: rest -> (*TODO: handle rec_flag *)
@@ -280,7 +280,7 @@ let rec extract_structure_tree_items hide_item items =
    ( List.map (fun vb -> read_pattern hide_item vb.vb_pat) vbs
       |> List.flatten) @ extract_structure_tree_items hide_item rest
 
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+#if OCAML_VERSION >= (4,10,0)
     | { str_desc = Tstr_module { mb_id = Some id; _}; _} :: rest ->
       [`Module (id, hide_item)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_module _; _} :: rest -> extract_structure_tree_items hide_item rest
@@ -309,14 +309,14 @@ let rec extract_structure_tree_items hide_item items =
       end
     | { str_desc = Tstr_class cls; _ } :: rest ->
         List.map
-#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+#if OCAML_VERSION < (4,3,0)
           (fun (cld, _, _) ->
 #else
           (fun (cld, _) ->
 #endif
              `Class (cld.ci_id_class,
                cld.ci_id_class_type, cld.ci_id_object,
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
+#if OCAML_VERSION < (4,4,0)
                cld.ci_id_typesharp,
 #else
                cld.ci_id_typehash,
@@ -328,14 +328,14 @@ let rec extract_structure_tree_items hide_item items =
           (fun (_, _, clty) ->
              `ClassType (clty.ci_id_class_type,
                clty.ci_id_object,
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
+#if OCAML_VERSION < (4,4,0)
                clty.ci_id_typesharp,
 #else
                clty.ci_id_typehash,
 #endif
               hide_item
              )) cltyps @ extract_structure_tree_items hide_item rest
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 08
+#if OCAML_VERSION < (4,8,0)
     | { str_desc = Tstr_open _; _} :: rest -> extract_structure_tree_items hide_item rest
 #else
     | { str_desc = Tstr_open o; _ } :: rest ->
@@ -554,7 +554,7 @@ module Path = struct
 
   let rec read_module : t -> Path.t -> Paths.Path.Module.t = fun env -> function
     | Path.Pident id -> read_module_ident env id
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `Dot(read_module env p, s)
 #else
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
@@ -563,7 +563,7 @@ module Path = struct
 
   let read_module_type env = function
     | Path.Pident id -> read_module_type_ident env id
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `Dot(read_module env p, s)
 #else
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
@@ -572,7 +572,7 @@ module Path = struct
 
   let read_class_type env = function
     | Path.Pident id -> read_class_type_ident env id
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `Dot(read_module env p, s)
 #else
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
@@ -581,7 +581,7 @@ module Path = struct
 
   let read_type env = function
     | Path.Pident id -> read_type_ident env id
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `Dot(read_module env p, s)
 #else
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
