@@ -478,6 +478,10 @@ module Element : sig
     | extension
     | field
     | page ]
+
+  val identifier : [< any ] -> Identifier.t
+
+  val equal : [< any ] -> [< any ] -> bool
 end
 
 (** Formatting functions for components *)

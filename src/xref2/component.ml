@@ -510,6 +510,25 @@ module Element = struct
     | extension
     | field
     | page ]
+
+  let identifier : [< any ] -> Odoc_model.Paths.Identifier.t =
+    let open Odoc_model.Paths.Identifier in
+    function
+    | `Module (id, _) -> (id :> t)
+    | `ModuleType (id, _) -> (id :> t)
+    | `Type (id, _) -> (id :> t)
+    | `ClassType (id, _) -> (id :> t)
+    | `Class (id, _) -> (id :> t)
+    | `Value (id, _) -> (id :> t)
+    | `Label (id, _) -> (id :> t)
+    | `Constructor (id, _) -> (id :> t)
+    | `Exception (id, _) -> (id :> t)
+    | `Field (id, _) -> (id :> t)
+    | `Extension (id, _) -> (id :> t)
+    | `Page (id, _) -> (id :> t)
+
+  let equal : [< any ] -> [< any ] -> bool =
+   fun a b -> Odoc_model.Paths.Identifier.equal (identifier a) (identifier b)
 end
 
 module Fmt = struct
