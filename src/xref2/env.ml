@@ -144,9 +144,9 @@ end = struct
     let id = (identifier :> Identifier.t) in
     let elem =
       try IdMap.find id ids
-      with e ->
+      with Not_found ->
         Format.eprintf "Failed to find %a\n%!" Component.Fmt.model_identifier id;
-        raise e
+        assert false
     in
     let names' =
       let name = Identifier.name id in
