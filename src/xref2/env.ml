@@ -151,7 +151,9 @@ end = struct
     let names' =
       let name = Identifier.name id in
       let l = StringMap.find name names in
-      match List.filter (fun e -> elem != e.elem) l with
+      match
+        List.filter (fun e -> not Component.Element.(equal elem e.elem)) l
+      with
       | [] -> StringMap.remove name names
       | xs -> StringMap.add name xs (StringMap.remove name names)
     in
