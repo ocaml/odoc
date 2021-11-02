@@ -115,14 +115,12 @@ end = struct
 
   let add ?(shadow = true) kind identifier elem (names, ids) =
     let check_for_duplicates () =
-      try
-        ignore (IdMap.find (identifier :> Identifier.t) ids);
+      if IdMap.mem (identifier :> Identifier.t) ids then (
         assert (kind = Kind_Label);
         Format.eprintf "%s\n%!"
           ("Duplicate found: "
           ^ Format.asprintf "%a" Component.Fmt.model_identifier
-              (identifier :> Identifier.t))
-      with Not_found -> ()
+              (identifier :> Identifier.t)))
     in
     check_for_duplicates ();
     let elem = (elem :> Component.Element.any) in
