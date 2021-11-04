@@ -1,8 +1,6 @@
 
   $ compile test.mli
   Duplicate found: (root Test).B
-  File "test.mli", line 27, characters 14-20:
-  Failed to resolve reference unresolvedroot(M).C Couldn't find "C"
   File "test.mli", line 27, characters 9-13:
   Reference to label 'B' is ambiguous.
   This reference will point to the first occurence of 'B'.
@@ -36,13 +34,13 @@ Labels:
 Some are not in order because the 'doc' field appears after the rest in the output.
 
   $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.) | .[1]'
+  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]}
   {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}
+  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"C"]}
   {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"D"]}
   {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"B"]}
-  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"C"]}
   {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]},"B"]}
   {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}
-  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]}
 
 References to the labels:
 We expect resolved references and the heading text filled in.
@@ -52,7 +50,7 @@ We expect resolved references and the heading text filled in.
   [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[]]
   [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]}}},[{"`Word":"First"},"`Space",{"`Word":"label"}]]
   [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}}},[{"`Word":"Dupplicate"},"`Space",{"`Word":"B"}]]
-  [{"`Dot":[{"`Root":["M","`TUnknown"]},"C"]},[]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"C"]}},[]]
   [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"D"]}},[]]
   [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[]]
   [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]}},"B"]}},[]]
@@ -145,7 +143,8 @@ The second occurence of 'B' in the main page should be disambiguated
      <p>Define <code>B</code> again in the same scope.</p>
      <p>References to the labels:</p>
      <p><a href="#A">First label</a> <a href="#B">Dupplicate B</a> 
-      <code>M</code>.C <a href="M/index.html#D"><code>D</code></a> 
+      <a href="M/index.html#C"><code>C</code></a> 
+      <a href="M/index.html#D"><code>D</code></a> 
       <a href="M/index.html#B"><code>B</code></a> 
       <a href="N/index.html#B"><code>B</code></a>
      </p>

@@ -60,8 +60,9 @@ val extract_top_comment :
   classify:('item -> [ `Attribute of Parsetree.attribute | `Open ] option) ->
   Paths.Identifier.Signature.t ->
   'item list ->
-  'item list * Comment.docs * 'tags
-(** Extract the first comment of a signature. Returns the remaining items. *)
+  'item list * (Comment.docs * Comment.docs) * 'tags
+(** Extract the first comment of a signature. Returns the remaining items.
+    Splits the docs on the first heading *)
 
 val extract_top_comment_class :
   Lang.ClassSignature.item list -> Lang.ClassSignature.item list * Comment.docs
