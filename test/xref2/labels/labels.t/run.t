@@ -8,7 +8,6 @@
     Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
   File "test.mli", line 21, characters 4-22:
   Label 'B' is ambiguous. The other occurences are:
-    File "test.mli", line 21, character 4
     File "test.mli", line 3, character 4
   File "test.mli", line 18, characters 6-10:
   Reference to label 'B' is ambiguous.
@@ -18,7 +17,6 @@
   File "test.mli", line 3, characters 4-24:
   Label 'B' is ambiguous. The other occurences are:
     File "test.mli", line 21, character 4
-    File "test.mli", line 3, character 4
 
 Labels:
 Some are not in order because the 'doc' field appears after the rest in the output.

@@ -36,16 +36,19 @@ let ambiguous_label_warning label_name labels =
 (** Raise a warning when a label explicitly set by the user collides. This
     warning triggers even if one of the colliding labels have been automatically
     generated. *)
-let check_ambiguous_label env (attrs, (`Label (_, label_name) as id), _) =
+let check_ambiguous_label ~loc env (attrs, (`Label (_, label_name) as id), _) =
   if attrs.Comment.heading_label_explicit then
     let label_name = Names.LabelName.to_string label_name in
     match Env.lookup_by_name Env.s_label label_name env with
     | Ok _ | Error `Not_found -> ()
     | Error (`Ambiguous (hd, tl)) -> (
         (* Looking for an identical identifier but a different location. *)
-        let conflicting (`Label (id', _)) = Id.equal id id' in
+        let conflicting (`Label (id', comp)) =
+          Id.equal id id'
+          && not (Location_.span_equal comp.Component.Label.location loc)
+        in
         match List.filter conflicting (hd :: tl) with
-        | [] | [ _ ] -> ()
+        | [] -> ()
         | conflicting -> ambiguous_label_warning label_name conflicting)
 
 exception Loop
@@ -147,8 +150,8 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
             Cpath.module_path_of_cpath cp)
 
 let rec comment_inline_element :
-    Env.t -> Comment.inline_element -> Comment.inline_element =
- fun env x ->
+    loc:_ -> Env.t -> Comment.inline_element -> Comment.inline_element =
+ fun ~loc:_ env x ->
   match x with
   | `Styled (s, ls) ->
       `Styled (s, List.map (with_location (comment_inline_element env)) ls)
@@ -179,7 +182,7 @@ and resolve_external_synopsis env synopsis =
   let env = Env.inherit_resolver env in
   paragraph env synopsis
 
-and comment_nestable_block_element env parent
+and comment_nestable_block_element env parent ~loc:_
     (x : Comment.nestable_block_element) =
   match x with
   | `Paragraph elts -> `Paragraph (paragraph env elts)
@@ -215,20 +218,23 @@ and comment_nestable_block_element env parent
       in
       `Modules refs
 
-and comment_block_element env parent (x : Comment.block_element) =
+and comment_block_element env parent ~loc (x : Comment.block_element) =
   match x with
   | #Comment.nestable_block_element as x ->
-      (comment_nestable_block_element env parent x :> Comment.block_element)
+      (comment_nestable_block_element env parent ~loc x
+        :> Comment.block_element)
   | `Heading h as x ->
-      check_ambiguous_label env h;
+      check_ambiguous_label ~loc env h;
       x
   | `Tag _ as x -> x
 
 and with_location :
-    type a. (a -> a) -> a Location_.with_location -> a Location_.with_location =
- fun fn x ->
-  let value = Lookup_failures.with_location x.location (fun () -> fn x.value) in
-  { x with value }
+    type a.
+    (loc:_ -> a -> a) -> a Location_.with_location -> a Location_.with_location
+    =
+ fun fn { value; location = loc } ->
+  let value = Lookup_failures.with_location loc (fun () -> fn ~loc value) in
+  { value; location = loc }
 
 and comment_docs env parent d =
   List.map
