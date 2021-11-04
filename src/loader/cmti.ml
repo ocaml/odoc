@@ -387,7 +387,12 @@ and read_class_signature env parent label_parent cltyp =
             [] csig.csig_fields
         in
         let items = List.rev items in
-        let items, doc = Doc_attr.extract_top_comment_class items in
+        let items, (doc, doc_post) = Doc_attr.extract_top_comment_class items in
+        let items =
+          match doc_post with
+          | [] -> items
+          | _ -> Comment (`Docs doc_post) :: items
+        in
         Signature {self; items; doc}
     | Tcty_arrow _ -> assert false
 #if OCAML_VERSION >= (4,8,0)

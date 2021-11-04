@@ -126,6 +126,15 @@ let standalone_multiple parent attrs =
   in
     List.rev coms
 
+let split_docs docs =
+  let rec inner first x =
+    match x with
+    | { Location_.value = `Heading _; _ } :: _ -> List.rev first, x
+    | x :: y -> inner (x::first) y
+    | [] -> List.rev first, []
+  in
+  inner [] docs
+
 let extract_top_comment internal_tags ~classify parent items =
   let rec extract ~classify = function
     | hd :: tl as items -> (
@@ -151,18 +160,9 @@ let extract_top_comment internal_tags ~classify parent items =
       (parent : Paths.Identifier.Signature.t :> Paths.Identifier.LabelParent.t)
       ast_docs
   in
-  let split_docs =
-    let rec inner first x =
-      match x with
-      | { Location_.value = `Heading _; _ } :: _ -> List.rev first, x
-      | x :: y -> inner (x::first) y
-      | [] -> List.rev first, []
-    in
-    inner [] docs
-  in
-  (items, split_docs, tags)
+  (items, split_docs docs, tags)
 
 let extract_top_comment_class items =
   match items with
-  | Lang.ClassSignature.Comment (`Docs doc) :: tl -> (tl, doc)
-  | _ -> items, empty
+  | Lang.ClassSignature.Comment (`Docs doc) :: tl -> (tl, split_docs doc)
+  | _ -> items, (empty,empty)

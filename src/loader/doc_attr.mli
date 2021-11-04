@@ -65,5 +65,6 @@ val extract_top_comment :
     Splits the docs on the first heading *)
 
 val extract_top_comment_class :
-  Lang.ClassSignature.item list -> Lang.ClassSignature.item list * Comment.docs
+  Lang.ClassSignature.item list ->
+  Lang.ClassSignature.item list * (Comment.docs * Comment.docs)
 (** Extract the first comment of a class signature. Returns the remaining items. *)
