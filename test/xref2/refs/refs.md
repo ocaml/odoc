@@ -237,7 +237,9 @@ Exception: Failure "resolve_reference: Couldn't find \"M\"".
      (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), r2),
    rf2)
 # resolve_ref "section:M.L2" ;;
-Exception: Failure "resolve_reference: Couldn't find label \"L2\"".
+- : ref =
+`Label
+  (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), L2)
 ```
 
 Implicit, root:
@@ -389,7 +391,9 @@ Implicit, in sig:
      (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), r2),
    rf2)
 # resolve_ref "M.L2" ;;
-Exception: Failure "resolve_reference: Couldn't find \"L2\"".
+- : ref =
+`Label
+  (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), L2)
 ```
 
 Known kind:
@@ -524,7 +528,9 @@ Known kind:
      (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), r2),
    rf2)
 # resolve_ref "M.section-L2" ;;
-Exception: Failure "resolve_reference: Couldn't find label \"L2\"".
+- : ref =
+`Label
+  (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), L2)
 # resolve_ref "module-M.type-t2" ;;
 - : ref =
 `Type
@@ -584,7 +590,9 @@ Exception: Failure "resolve_reference: Couldn't find label \"L2\"".
      (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), r2),
    rf2)
 # resolve_ref "module-M.section-L2" ;;
-Exception: Failure "resolve_reference: Couldn't find label \"L2\"".
+- : ref =
+`Label
+  (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)), L2)
 # resolve_ref "module-M.field-rf2" ;;
 - : ref =
 `Field
