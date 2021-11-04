@@ -182,8 +182,14 @@ and read_class_signature env parent params cltyp =
             [] csig.csig_fields
         in
         let items = constraints @ List.rev items in
-        let items, doc = Doc_attr.extract_top_comment_class items in
+        let items, (doc, doc_post) = Doc_attr.extract_top_comment_class items in
+        let items =
+          match doc_post with
+          | [] -> items
+          | _ -> Comment (`Docs doc_post) :: items
+        in
         Signature {self; items; doc}
+
     | Tcty_arrow _ -> assert false
 #if OCAML_VERSION >= (4,6,0)
     | Tcty_open _ -> assert false
@@ -270,7 +276,12 @@ and read_class_structure env parent params cl =
             [] cstr.cstr_fields
         in
         let items = constraints @ List.rev items in
-        let items, doc = Doc_attr.extract_top_comment_class items in
+        let items, (doc, doc_post) = Doc_attr.extract_top_comment_class items in
+        let items =
+          match doc_post with
+          | [] -> items
+          | _ -> Comment (`Docs doc_post) :: items
+        in
         Signature {self; items; doc}
     | Tcl_fun _ -> assert false
     | Tcl_let(_, _, _, cl) -> read_class_structure env parent params cl
