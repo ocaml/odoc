@@ -299,7 +299,7 @@ There's a signature in a module in this signature\.
 \f[CB]end\fR
 .sp 
 .fi 
-For a good time, see SuperSig\.SubSigA\.subSig or SuperSig\.SubSigB\.subSig or \f[CI]SuperSig\.EmptySig\fR\. Section \f[CI]Section 9000\fR is also interesting\. \f[CI]EmptySig\fR is the section and \f[CI]EmptySig\fR is the module signature\.
+For a good time, see \f[CI]subSig\fR or \f[CI]subSig\fR or \f[CI]SuperSig\.EmptySig\fR\. Section \f[CI]Section 9000\fR is also interesting\. \f[CI]EmptySig\fR is the section and \f[CI]EmptySig\fR is the module signature\.
 .nf 
 .sp 
 \f[CB]module\fR Buffer : \f[CB]sig\fR \.\.\. \f[CB]end\fR
@@ -1801,7 +1801,7 @@ I can refer to
 .sp 
 But also to things in submodules:
 .sp 
-\(bu {!section:SuperSig\.SubSigA\.subSig} : SuperSig\.SubSigA\.subSig
+\(bu {!section:SuperSig\.SubSigA\.subSig} : \f[CI]subSig\fR
 .br 
 \(bu {!Aliases\.incl} : \f[CI]incl\fR
 .sp 

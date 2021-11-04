@@ -770,7 +770,7 @@ and read_signature :
       _ * 'tags =
  fun internal_tags env parent sg ->
   let env = Env.add_signature_tree_items parent sg env in
-  let items, doc, tags =
+  let items, (doc, doc_post), tags =
     let classify item =
       match item.sig_desc with
       | Tsig_attribute attr -> Some (`Attribute attr)
@@ -786,7 +786,11 @@ and read_signature :
       [] items
     |> List.rev
   in
-  ({ Signature.items; compiled = false; doc }, tags)
+  match doc_post with
+  | [] ->
+    ({ Signature.items; compiled = false; doc }, tags)
+  | _ ->
+    ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; doc }, tags)
 
 let read_interface root name intf =
   let id = `Root (root, Odoc_model.Names.ModuleName.make_std name) in

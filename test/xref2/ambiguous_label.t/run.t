@@ -12,8 +12,6 @@ Labels don't follow OCaml's scoping rules:
   This reference will point to the first occurence of 'example'.
   Hint:
     Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
-  File "test_2.ml", line 1, characters 4-55:
-  Failed to resolve reference unresolvedroot(Test).example Couldn't find "example"
 
 Contains some ambiguous labels:
 
@@ -54,4 +52,4 @@ not possible to use the internal label name in references:
 A second module has a reference to the ambiguous label:
 
   $ odoc_print test_2.odocl | jq -c '.. | .["`Reference"]? | select(.)'
-  [{"`Dot":[{"`Root":["Test","`TUnknown"]},"example"]},[{"`Word":"Should"},"`Space",{"`Word":"resolve"},"`Space",{"`Word":"to"},"`Space",{"`Word":"the"},"`Space",{"`Word":"first"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]}},"example"]}},[{"`Word":"Should"},"`Space",{"`Word":"resolve"},"`Space",{"`Word":"to"},"`Space",{"`Word":"the"},"`Space",{"`Word":"first"},"`Space",{"`Word":"label"}]]

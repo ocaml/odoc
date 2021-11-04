@@ -565,7 +565,7 @@ and read_structure :
       _ * 'tags =
  fun internal_tags env parent str ->
   let env = Env.add_structure_tree_items parent str env in
-  let items, doc, tags =
+  let items, (doc, doc_post), tags =
     let classify item =
       match item.str_desc with
       | Tstr_open _ -> Some `Open
@@ -581,7 +581,11 @@ and read_structure :
       [] items
     |> List.rev
   in
-  ({ Signature.items; compiled = false; doc }, tags)
+  match doc_post with
+  | [] ->
+    ({ Signature.items; compiled = false; doc }, tags)
+  | _ ->
+    ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; doc }, tags)
 
 let read_implementation root name impl =
   let id = `Root (root, Odoc_model.Names.ModuleName.make_std name) in

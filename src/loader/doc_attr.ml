@@ -151,7 +151,16 @@ let extract_top_comment internal_tags ~classify parent items =
       (parent : Paths.Identifier.Signature.t :> Paths.Identifier.LabelParent.t)
       ast_docs
   in
-  (items, docs, tags)
+  let split_docs =
+    let rec inner first x =
+      match x with
+      | { Location_.value = `Heading _; _ } :: _ -> List.rev first, x
+      | x :: y -> inner (x::first) y
+      | [] -> List.rev first, []
+    in
+    inner [] docs
+  in
+  (items, split_docs, tags)
 
 let extract_top_comment_class items =
   match items with
