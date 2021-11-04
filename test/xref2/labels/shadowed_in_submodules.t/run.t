@@ -8,10 +8,6 @@ There should be no ambiguous labels in this example.
   This reference will point to the first occurence of 'foo'.
   Hint:
     Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
-  File "test.mli", line 8, characters 6-16:
-  Label 'foo' is ambiguous. The other occurences are:
-    File "test.mli", line 8, character 6
-    File "test.mli", line 3, character 4
 
 All the references should resolve and point to what's written in the text.
 

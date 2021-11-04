@@ -15,16 +15,6 @@
   This reference will point to the first occurence of 'B'.
   Hint:
     Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
-  File "test.mli", line 16, characters 6-38:
-  Label 'B' is ambiguous. The other occurences are:
-    File "test.mli", line 16, character 6
-    File "test.mli", line 21, character 4
-    File "test.mli", line 3, character 4
-  File "test.mli", line 10, characters 6-41:
-  Label 'B' is ambiguous. The other occurences are:
-    File "test.mli", line 10, character 6
-    File "test.mli", line 21, character 4
-    File "test.mli", line 3, character 4
   File "test.mli", line 3, characters 4-24:
   Label 'B' is ambiguous. The other occurences are:
     File "test.mli", line 21, character 4

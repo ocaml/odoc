@@ -29,3 +29,5 @@ let in_string s ~offset ~length s_span =
 let pp_span_start fmt s =
   Format.fprintf fmt "File \"%s\", line %d, character %d" s.file s.start.line
     s.start.column
+
+let span_equal = ( = )

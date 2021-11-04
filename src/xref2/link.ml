@@ -36,14 +36,17 @@ let ambiguous_label_warning label_name labels =
 (** Raise a warning when a label explicitly set by the user collides. This
     warning triggers even if one of the colliding labels have been automatically
     generated. *)
-let check_ambiguous_label env (attrs, label, _) =
+let check_ambiguous_label env (attrs, (`Label (_, label_name) as id), _) =
   if attrs.Comment.heading_label_explicit then
-    let (`Label (_, label_name)) = label in
     let label_name = Names.LabelName.to_string label_name in
     match Env.lookup_by_name Env.s_label label_name env with
     | Ok _ | Error `Not_found -> ()
-    | Error (`Ambiguous (hd, tl)) ->
-        ambiguous_label_warning label_name (hd :: tl)
+    | Error (`Ambiguous (hd, tl)) -> (
+        (* Looking for an identical identifier but a different location. *)
+        let conflicting (`Label (id', _)) = Id.equal id id' in
+        match List.filter conflicting (hd :: tl) with
+        | [] | [ _ ] -> ()
+        | conflicting -> ambiguous_label_warning label_name conflicting)
 
 exception Loop
 

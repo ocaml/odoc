@@ -321,7 +321,7 @@ module Identifier : sig
 
   val compare : t -> t -> int
 
-  val equal : t -> t -> bool
+  val equal : ([< t ] as 'a) -> 'a -> bool
 
   val label_parent : [< t ] -> LabelParent.t
 
