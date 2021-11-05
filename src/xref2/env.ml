@@ -85,8 +85,7 @@ module ElementsByName : sig
 
   val empty : t
 
-  val add :
-    ?shadow:bool -> kind -> string -> [< Component.Element.any ] -> t -> t
+  val add : kind -> string -> [< Component.Element.any ] -> t -> t
 
   val remove : [< Identifier.t ] -> t -> t
 
@@ -99,14 +98,13 @@ end = struct
 
   let empty = StringMap.empty
 
-  let add ?(shadow = true) kind name elem t =
+  let add kind name elem t =
     let elem = (elem :> Component.Element.any) in
     let tl =
       try
         let tl = StringMap.find name t in
         let not_shadow e = e.kind <> kind in
-        if shadow && not (List.for_all not_shadow tl) then
-          List.filter not_shadow tl
+        if not (List.for_all not_shadow tl) then List.filter not_shadow tl
         else tl
       with Not_found -> []
     in
@@ -244,9 +242,7 @@ let add_label identifier heading env =
   {
     env with
     id = unique_id ();
-    (* Disallow shadowing for labels. Duplicate names are disallowed and
-       reported during linking. *)
-    elts = ElementsByName.add ~shadow:false Kind_Label name comp env.elts;
+    elts = ElementsByName.add Kind_Label name comp env.elts;
     ids = ElementsById.add identifier comp env.ids;
   }
 
