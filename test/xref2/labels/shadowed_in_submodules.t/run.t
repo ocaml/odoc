@@ -3,11 +3,6 @@ Label in a submodule clashing with a previously defined label
 There should be no ambiguous labels in this example.
 
   $ compile test.mli
-  File "test.mli", line 10, characters 6-26:
-  Reference to label 'foo' is ambiguous.
-  This reference will point to the first occurence of 'foo'.
-  Hint:
-    Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
 
 All the references should resolve and point to what's written in the text.
 

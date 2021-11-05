@@ -7,11 +7,6 @@ Labels don't follow OCaml's scoping rules:
   Duplicate found: (root Test).example
   File "test.ml", line 25, characters 4-36:
   Failed to resolve reference unresolvedroot(example_2) Couldn't find "example_2"
-  File "test.ml", line 16, characters 4-50:
-  Reference to label 'example' is ambiguous.
-  This reference will point to the first occurence of 'example'.
-  Hint:
-    Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
 
 Contains some ambiguous labels:
 

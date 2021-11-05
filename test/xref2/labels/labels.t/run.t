@@ -1,19 +1,6 @@
 
   $ compile test.mli
   Duplicate found: (root Test).B
-  File "test.mli", line 27, characters 9-13:
-  Reference to label 'B' is ambiguous.
-  This reference will point to the first occurence of 'B'.
-  Hint:
-    Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
-  File "test.mli", line 21, characters 4-22:
-  Label 'B' is ambiguous. The other occurences are:
-    File "test.mli", line 3, character 4
-  File "test.mli", line 18, characters 6-10:
-  Reference to label 'B' is ambiguous.
-  This reference will point to the first occurence of 'B'.
-  Hint:
-    Define labels explicitly using the syntax '{1:explicit-label Heading text}'.
   File "test.mli", line 3, characters 4-24:
   Label 'B' is ambiguous. The other occurences are:
     File "test.mli", line 21, character 4

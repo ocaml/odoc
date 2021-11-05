@@ -38,18 +38,19 @@ let ambiguous_label_warning label_name labels =
     generated. *)
 let check_ambiguous_label ~loc env (attrs, (`Label (_, label_name) as id), _) =
   if attrs.Comment.heading_label_explicit then
+    (* Looking for an identical identifier but a different location. *)
+    let conflicting (`Label (id', comp)) =
+      Id.equal id id'
+      && not (Location_.span_equal comp.Component.Label.location loc)
+    in
     let label_name = Names.LabelName.to_string label_name in
     match Env.lookup_by_name Env.s_label label_name env with
-    | Ok _ | Error `Not_found -> ()
+    | Ok lbl when conflicting lbl -> ambiguous_label_warning label_name [ lbl ]
     | Error (`Ambiguous (hd, tl)) -> (
-        (* Looking for an identical identifier but a different location. *)
-        let conflicting (`Label (id', comp)) =
-          Id.equal id id'
-          && not (Location_.span_equal comp.Component.Label.location loc)
-        in
         match List.filter conflicting (hd :: tl) with
         | [] -> ()
-        | conflicting -> ambiguous_label_warning label_name conflicting)
+        | xs -> ambiguous_label_warning label_name xs)
+    | Ok _ | Error `Not_found -> ()
 
 exception Loop
 
