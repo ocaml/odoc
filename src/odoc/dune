@@ -20,6 +20,18 @@
     (echo "let content = {css|")
     (cat %{css})
     (echo "|css}")))))
+    
+(rule
+     (targets support-files.tex)
+     (deps
+      (:tex etc/supprt-files.tex))
+     (action
+      (with-stdout-to
+       %{targets}
+       (progn
+        (echo "let content = {tex|")
+        (cat %{tex})
+        (echo "|tex}"))))) 
 
 (rule
  (targets highlight_js.ml)
