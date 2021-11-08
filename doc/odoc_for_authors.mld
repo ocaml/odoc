@@ -702,6 +702,34 @@ v}
 In this case the reference text would be "Foo Bar" so the paragraph would read
 "See Foo Bar for details".
 
+Sections with a label cannot be referenced via the section title, only
+using the label.
+
+Note that label names can contain [-] but if they do, you have to quote the label
+name in the reference link as follows:
+
+{v
+{2:foo-bar Foo Bar}
+...
+See {!label-"foo-bar"} for details
+v}
+
+You can use [_] instead of [-] to avoid this syntax.
+
+Sections can also be cross referenced from another page.
+If you define the following section in a [a.mld] file:
+
+{v
+{1:foo Foo}
+v}
+
+And then want to reference it from another [b.mld] page,
+you can use the following syntax:
+
+{v
+See {!page-a.foo} for details
+v}
+
 {1:doc-pages Writing Documentation Pages}
 
 Files with the [.mld] extension are called {e documentation pages} and should
