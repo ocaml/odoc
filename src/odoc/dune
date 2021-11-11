@@ -22,16 +22,16 @@
     (echo "|css}")))))
     
 (rule
-     (targets support-files.tex)
-     (deps
-      (:tex etc/supprt-files.tex))
-     (action
-      (with-stdout-to
-       %{targets}
-       (progn
-        (echo "let content = {tex|")
-        (cat %{tex})
-        (echo "|tex}"))))) 
+ (targets latex_preamble.ml)
+ (deps
+  (:tex etc/supprt-files.tex))
+ (action
+  (with-stdout-to
+   %{targets}
+   (progn
+    (echo "let content = {tex|")
+    (cat %{tex})
+    (echo "|tex}")))))
 
 (rule
  (targets highlight_js.ml)
@@ -52,4 +52,5 @@
  (section share)
  (files
   (etc/odoc.css as odoc-theme/default/odoc.css)
+  (etc/support-files.tex as odoc-theme/default/support-files.tex)
   (../vendor/highlight.pack.js as odoc-theme/default/highlight.pack.js)))
