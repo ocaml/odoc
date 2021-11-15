@@ -1,6 +1,6 @@
 
   $ compile test.mli
-  Duplicate found: (root Test).B
+  Duplicate label found: (root Test).B
   File "test.mli", line 3, characters 4-24:
   Label 'B' is ambiguous. The other occurences are:
     File "test.mli", line 21, character 4

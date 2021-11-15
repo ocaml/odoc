@@ -43,14 +43,14 @@ let pp_lookup_type fmt =
   function
   | Module r ->
       Format.fprintf fmt "Module %a" Component.Fmt.model_identifier
-        (r :> Odoc_model.Paths.Identifier.t)
+        (r :> Identifier.t)
   | ModuleType r ->
       Format.fprintf fmt "ModuleType %a" Component.Fmt.model_identifier
-        (r :> Odoc_model.Paths.Identifier.t)
+        (r :> Identifier.t)
   | RootModule (str, res) -> Format.fprintf fmt "RootModule %s %a" str fmtrm res
   | ModuleByName (n, r) ->
       Format.fprintf fmt "ModuleByName %s, %a" n Component.Fmt.model_identifier
-        (r :> Odoc_model.Paths.Identifier.t)
+        (r :> Identifier.t)
   | FragmentRoot i -> Format.fprintf fmt "FragmentRoot %d" i
 
 let pp_lookup_type_list fmt ls =
@@ -137,7 +137,7 @@ module ElementsById : sig
 
   val remove : [< Identifier.t ] -> t -> t
 
-  val find_by_id : Identifier.t -> t -> Component.Element.any option
+  val find_by_id : [< Identifier.t ] -> t -> Component.Element.any option
 end = struct
   module IdMap = Identifier.Maps.Any
 
@@ -146,12 +146,6 @@ end = struct
   let empty = IdMap.empty
 
   let add identifier element t =
-    let check_for_duplicates () =
-      if IdMap.mem (identifier :> Identifier.t) t then
-        Format.eprintf "Duplicate found: %a\n%!" Component.Fmt.model_identifier
-          (identifier :> Identifier.t)
-    in
-    check_for_duplicates ();
     IdMap.add (identifier :> Identifier.t) (element :> Component.Element.any) t
 
   let remove id t =
@@ -159,7 +153,8 @@ end = struct
     IdMap.remove id t
 
   let find_by_id identifier t =
-    try Some (IdMap.find identifier t) with Not_found -> None
+    try Some (IdMap.find (identifier :> Identifier.t) t)
+    with Not_found -> None
 end
 
 type t = {
@@ -219,6 +214,7 @@ let add_to_elts kind identifier component env =
     assert (
       List.mem kind
         [ Kind_Module; Kind_ModuleType; Kind_Type; Kind_Class; Kind_ClassType ]);
+  assert (ElementsById.find_by_id identifier env.ids = None);
   let name = Identifier.name identifier in
   {
     env with
@@ -239,6 +235,14 @@ let add_label identifier heading env =
   assert env.linking;
   let comp = `Label (identifier, heading) in
   let name = Identifier.name identifier in
+  let () =
+    match ElementsById.find_by_id identifier env.ids with
+    | Some _ ->
+        Format.eprintf "Duplicate label found: %a\n%!"
+          Component.Fmt.model_identifier
+          (identifier :> Identifier.t)
+    | None -> ()
+  in
   {
     env with
     id = unique_id ();
@@ -446,7 +450,7 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
         | _ -> ())
     | None -> ()
   in
-  match ElementsById.find_by_id (id :> Identifier.t) env.ids with
+  match ElementsById.find_by_id id env.ids with
   | Some x ->
       record_lookup_result x;
       scope.filter x
