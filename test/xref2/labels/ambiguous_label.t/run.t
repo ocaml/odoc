@@ -3,8 +3,8 @@ Labels don't follow OCaml's scoping rules:
 - No nesting: It is not possible to disambiguate labels by nesting them inside sections.
 
   $ compile test.ml test_2.ml
-  Duplicate found: (root Test).example
-  Duplicate found: (root Test).example
+  Duplicate label found: (root Test).example
+  Duplicate label found: (root Test).example
   File "test.ml", line 25, characters 4-36:
   Failed to resolve reference unresolvedroot(example_2) Couldn't find "example_2"
 
