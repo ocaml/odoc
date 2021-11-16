@@ -294,6 +294,34 @@ doc.
 *)
 v}
 
+{4:language_headers Language Headers}
+
+As of [odoc.2.1] it is possible to write blocks with explicit language headers,
+similar to markdown code blocks:
+
+{@markdown[
+Here is some python code:
+```python
+def f():
+  return 0
+```
+]}
+
+These blocks can be written using the enclosing tags [ {@<language>[ ... ]} ].
+The content of those block should be properly styled if odoc supports the
+styling for the given language. It is encouraged to use them even before proper
+support is available so that you benefit from it as soon as it is released.
+The above markdown example would be written as:
+
+{v
+(** Here is some python code:
+    {@python[
+    def f():
+      return 0
+    ]}
+*)
+v}
+
 {4:verbatim_blocks Verbatim Blocks}
 
 It is possible to write language agnostic code blocks, also called verbatim
