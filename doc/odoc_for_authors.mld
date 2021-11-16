@@ -263,11 +263,50 @@ and
 + item 2
 + item 3
 v}
-For inline source code style, use square brackets: [ [ ... ] ]. For longer,
-preformatted sections of code, use the enclosing tags [ {[ .. ]} ].
-For verbatim (non-source) formatted sections, use the enclosing tags [{v ... v}].
 
+{3:code_blocks Code Blocks}
 
+There are various ways of inserting code elements in your documentation.
+
+{4:inline_code_blocks Inline Code Blocks}
+
+For inline, language agnostic source code style, use square brackets: [ [ ... ] ].
+
+{[
+(** Here, [f 0] is [None] *)
+]}
+
+All the other existing ways to insert code are meant to be used for code blocks,
+not inline code fragments. Those will be formatted as a code block and will end
+the paragraph. Attempting to use them inline will trigger a warning.
+
+{4:ocaml_code_blocks OCaml Code Blocks}
+
+OCaml code blocks can be written using the enclosing tags [ {[ ... ]} ].
+The code inside these blocks will be properly styled as OCaml in the generated
+doc.
+
+{v
+(** This how one binds a variable in OCaml:
+    {[
+    let x = 0
+    ]}
+*)
+v}
+
+{4:verbatim_blocks Verbatim Blocks}
+
+It is possible to write language agnostic code blocks, also called verbatim
+blocks using the enclosing tags [ {v ... v} ]. The content of these blocks will be
+formatted as code but with no particular style applied.
+
+{[
+(** Here is some code formatted text:
+    {v
+    Some text
+    v}
+*)
+]}
 
 {3:escaping Escaping}
 
