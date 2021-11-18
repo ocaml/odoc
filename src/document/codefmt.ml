@@ -3,9 +3,14 @@ open Types
 type out = Source.t
 
 module State = struct
-  type t = { context : (out * Source.tag) Stack.t; mutable current : out }
+  type t = {
+    context : (out * Source.tag) Stack.t;
+    mutable current : out;
+    mutable should_print : bool;
+  }
 
-  let create () = { context = Stack.create (); current = [] }
+  let create () =
+    { context = Stack.create (); current = []; should_print = true }
 
   let push state elt = state.current <- elt :: state.current
 
@@ -83,6 +88,7 @@ module Tag = struct
       let mark_open_tag s =
         match get_tag s with
         | `Elt elt ->
+            state0.State.should_print <- false;
             State.push state0 (Elt elt);
             ""
         | `String "" ->
@@ -93,7 +99,9 @@ module Tag = struct
             ""
       and mark_close_tag s =
         match get_tag s with
-        | `Elt _ -> ""
+        | `Elt _ ->
+            state0.should_print <- true;
+            ""
         | `String _ ->
             State.leave state0;
             ""
@@ -110,7 +118,8 @@ module Tag = struct
     ()
 
   let elt ppf (elt : Inline.t) =
-    Format.fprintf ppf "@{<tag:%s>@}" (Marshal.to_string elt [])
+    Format.fprintf ppf "@{<tag:%s>%s@}" (Marshal.to_string elt [])
+      (String.make (Utils.compute_length_inline elt) ' ')
 end
 [@@alert "-deprecated--deprecated"]
 
@@ -118,7 +127,9 @@ let make () =
   let open Inline in
   let state0 = State.create () in
   let push elt = State.push state0 (Elt elt) in
-  let push_text s = push [ inline @@ Text s ] in
+  let push_text s =
+    if state0.State.should_print then push [ inline @@ Text s ]
+  in
 
   let formatter =
     let out_string s i j = push_text (String.sub s i j) in
@@ -137,6 +148,7 @@ let make () =
    * in
    * let formatter = Format.formatter_of_out_functions out_functions in *)
   Tag.setup_tags formatter state0;
+  Format.pp_set_margin formatter 80;
   ( (fun () ->
       Format.pp_print_flush formatter ();
       State.flush state0),
@@ -180,7 +192,11 @@ let rec list ?sep ~f = function
       let tl = list ?sep ~f xs in
       match sep with None -> hd ++ tl | Some sep -> hd ++ sep ++ tl)
 
-let render f = spf "@[%t@]" (span f)
+let box_hv t ppf = pf ppf "@[<hv 2>%t@]" t
+
+let box_hv_no_indent t ppf = pf ppf "@[<hv 0>%t@]" t
+
+let render f = spf "@[<hv 2>%t@]" (span f)
 
 let code ?attr f = [ inline ?attr @@ Inline.Source (render f) ]
 

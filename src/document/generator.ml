@@ -235,9 +235,8 @@ module Make (Syntax : SYNTAX) = struct
             let first =
               match first with
               | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te ->
-                  let res = type_expr te in
-                  if add_pipe then O.txt " " ++ O.span (O.txt "| " ++ res)
-                  else res
+                  let res = O.box_hv @@ type_expr te in
+                  if add_pipe then O.sp ++ O.span (O.txt "| " ++ res) else res
               | Constructor { constant; name; arguments; _ } ->
                   let constr =
                     let name = "`" ^ name in
@@ -245,28 +244,30 @@ module Make (Syntax : SYNTAX) = struct
                     else O.txt name
                   in
                   let res =
-                    match arguments with
-                    | [] -> constr
-                    | _ ->
-                        let arguments = style_arguments ~constant arguments in
-                        O.span
-                          (if Syntax.Type.Variant.parenthesize_params then
-                           constr ++ arguments
-                          else constr ++ O.txt " of " ++ arguments)
+                    O.box_hv
+                      (match arguments with
+                      | [] -> constr
+                      | _ ->
+                          let arguments = style_arguments ~constant arguments in
+                          O.span
+                            (if Syntax.Type.Variant.parenthesize_params then
+                             constr ++ arguments
+                            else constr ++ O.txt " of" ++ O.sp ++ arguments))
                   in
-                  if add_pipe then O.txt " " ++ res else res
+                  if add_pipe then O.sp ++ res else res
             in
             first ++ style_elements ~add_pipe:true rest
       in
       let elements = style_elements ~add_pipe:false t.elements in
-      O.span
-        (match t.kind with
-        | Fixed -> O.txt "[ " ++ elements ++ O.txt " ]"
-        | Open -> O.txt "[> " ++ elements ++ O.txt " ]"
-        | Closed [] -> O.txt "[< " ++ elements ++ O.txt " ]"
-        | Closed lst ->
-            let constrs = String.concat " " lst in
-            O.txt "[< " ++ elements ++ O.txt (" " ^ constrs ^ " ]"))
+      O.box_hv_no_indent
+      @@ O.span
+           (match t.kind with
+           | Fixed -> O.txt "[ " ++ elements ++ O.txt " ]"
+           | Open -> O.txt "[> " ++ elements ++ O.txt " ]"
+           | Closed [] -> O.txt "[< " ++ elements ++ O.txt " ]"
+           | Closed lst ->
+               let constrs = String.concat " " lst in
+               O.txt "[< " ++ elements ++ O.txt (" " ^ constrs ^ " ]"))
 
     and te_object (t : Odoc_model.Lang.TypeExpr.Object.t) =
       let fields =
@@ -289,6 +290,8 @@ module Make (Syntax : SYNTAX) = struct
 
     and format_type_path ~delim (params : Odoc_model.Lang.TypeExpr.t list)
         (path : text) : text =
+      O.box_hv
+      @@
       match params with
       | [] -> path
       | [ param ] ->
@@ -319,20 +322,23 @@ module Make (Syntax : SYNTAX) = struct
       | Arrow (None, src, dst) ->
           let res =
             O.span
-              (type_expr ~needs_parentheses:true src
-              ++ O.txt " " ++ Syntax.Type.arrow)
-            ++ O.txt " " ++ type_expr dst
+              (O.box_hv
+              @@ type_expr ~needs_parentheses:true src
+                 ++ O.txt " " ++ Syntax.Type.arrow)
+            ++ O.sp ++ type_expr dst
+            (* ++ O.end_hv *)
           in
-          if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
+          if not needs_parentheses then res else enclose ~l:"( " res ~r:" )"
       | Arrow (Some lbl, src, dst) ->
           let res =
             O.span
-              (label lbl ++ O.txt ":"
-              ++ type_expr ~needs_parentheses:true src
-              ++ O.sp ++ Syntax.Type.arrow)
+              (O.box_hv
+              @@ label lbl ++ O.txt ":" ++ O.cut
+                 ++ type_expr ~needs_parentheses:true src
+                 ++ O.txt " " ++ Syntax.Type.arrow)
             ++ O.sp ++ type_expr dst
           in
-          if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
+          if not needs_parentheses then res else enclose ~l:"( " res ~r:" )"
       | Tuple lst ->
           let res =
             O.list lst
@@ -799,11 +805,12 @@ module Make (Syntax : SYNTAX) = struct
       let name = Paths.Identifier.name t.id in
       let content =
         O.documentedSrc
-          (O.keyword Syntax.Value.variable_keyword
-          ++ O.txt " " ++ O.txt name
-          ++ O.txt Syntax.Type.annotation_separator
-          ++ type_expr t.type_
-          ++ if semicolon then O.txt ";" else O.noop)
+          (O.box_hv
+          @@ O.keyword Syntax.Value.variable_keyword
+             ++ O.txt " " ++ O.txt name
+             ++ O.txt Syntax.Type.annotation_separator
+             ++ O.cut ++ type_expr t.type_
+             ++ if semicolon then O.txt ";" else O.noop)
       in
       let attr = [ "value" ] @ extra_attr in
       let anchor = path_to_id t.id in

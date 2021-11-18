@@ -19,3 +19,27 @@ let split_at ~f lst =
     | hd :: tl -> loop (hd :: acc) tl
   in
   loop [] lst
+
+let rec compute_length_source (t : Types.Source.t) : int =
+  let f (acc : int) = function
+    | Types.Source.Elt t -> acc + compute_length_inline t
+    | Types.Source.Tag (_, t) -> acc + compute_length_source t
+  in
+  List.fold_left f 0 t
+
+and compute_length_inline (t : Types.Inline.t) : int =
+  let f (acc : int) { Types.Inline.desc; _ } =
+    match desc with
+    | Text s -> acc + String.length s
+    | Entity _e -> acc + 1 (* CHECK *)
+    | Linebreak -> 0 (* TODO *)
+    | Styled (_, t)
+    | Link (_, t)
+    | InternalLink (Resolved (_, t))
+    | InternalLink (Unresolved t) ->
+        acc + compute_length_inline t
+    | Source s -> acc + compute_length_source s
+    | Raw_markup _ -> assert false
+    (* TODO *)
+  in
+  List.fold_left f 0 t
