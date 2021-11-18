@@ -1305,7 +1305,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let modname, status, expansion, expansion_doc =
         match expansion with
-        | None -> (O.documentedSrc (O.txt modname), `Default, None, None)
+        | None -> (O.txt modname, `Default, None, None)
         | Some (expansion_doc, items) ->
             let status =
               match t.type_ with
@@ -1318,17 +1318,17 @@ module Make (Syntax : SYNTAX) = struct
               make_expansion_page modname `Mod url [ t.doc; expansion_doc ]
                 items
             in
-            (O.documentedSrc link, status, Some page, Some expansion_doc)
+            (link, status, Some page, Some expansion_doc)
       in
-      let summary = mdexpr_in_decl t.id t.type_ in
+      let intro = O.keyword "module" ++ O.txt " " ++ modname in
+      let summary = O.ignore intro ++ mdexpr_in_decl t.id t.type_ in
       let modexpr =
         attach_expansion ~status
           (Syntax.Type.annotation_separator, "sig", "end")
           expansion summary
       in
       let content =
-        O.documentedSrc (O.keyword "module" ++ O.txt " ")
-        @ modname @ modexpr
+        O.documentedSrc intro @ modexpr
         @ O.documentedSrc
             (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
       in
@@ -1348,12 +1348,12 @@ module Make (Syntax : SYNTAX) = struct
     and mdexpr_in_decl (base : Paths.Identifier.Module.t) md =
       let sig_dotdotdot =
         O.txt Syntax.Type.annotation_separator
-        ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
+        ++ O.cut ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       in
       match md with
       | Alias (_, Some se) -> simple_expansion_in_decl base se
       | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) ->
-          O.txt " = " ++ mdexpr md
+          O.txt " =" ++ O.sp ++ mdexpr md
       | Alias _ -> sig_dotdotdot
       | ModuleType mt -> mty_in_decl (base :> Paths.Identifier.Signature.t) mt
 
@@ -1501,9 +1501,9 @@ module Make (Syntax : SYNTAX) = struct
         =
      fun base -> function
       | (Path _ | Signature _ | With _ | TypeOf _) as m ->
-          O.txt Syntax.Type.annotation_separator ++ mty m
+          O.txt Syntax.Type.annotation_separator ++ O.cut ++ mty m
       | Functor _ as m when not Syntax.Mod.functor_contraction ->
-          O.txt Syntax.Type.annotation_separator ++ mty m
+          O.txt Syntax.Type.annotation_separator ++ O.cut ++ mty m
       | Functor (arg, expr) ->
           let text_arg =
             match arg with
@@ -1527,7 +1527,7 @@ module Make (Syntax : SYNTAX) = struct
                 ++ O.txt Syntax.Type.annotation_separator
                 ++ mty arg.expr ++ O.txt ")"
           in
-          O.txt " " ++ text_arg ++ mty_in_decl base expr
+          O.sp ++ text_arg ++ mty_in_decl base expr
 
     (* TODO : Centralize the list juggling for type parameters *)
     and type_expr_in_subst td typath =
