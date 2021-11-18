@@ -4,7 +4,7 @@ open O.Infix
 
 module ML = Generator.Make (struct
   module Obj = struct
-    let close_tag_closed = ">"
+    let close_tag_closed = " >"
 
     let close_tag_extendable = ".. >"
 
@@ -22,7 +22,7 @@ module ML = Generator.Make (struct
 
     let handle_constructor_params = handle_params
 
-    let handle_substitution_params = handle_params
+    let handle_substitution_params name args = O.span (args ++ O.txt " " ++ name)
 
     let handle_format_params p = p
 
@@ -37,7 +37,7 @@ module ML = Generator.Make (struct
     end
 
     module Tuple = struct
-      let element_separator = " * "
+      let element_separator = O.sp ++ O.txt "* "
 
       let always_parenthesize = false
     end
