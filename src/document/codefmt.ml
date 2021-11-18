@@ -7,24 +7,33 @@ module State = struct
     context : (out * Source.tag) Stack.t;
     mutable current : out;
     mutable should_print : bool;
+    mutable ignore_all : bool;
   }
 
   let create () =
-    { context = Stack.create (); current = []; should_print = true }
+    {
+      context = Stack.create ();
+      current = [];
+      should_print = true;
+      ignore_all = false;
+    }
 
-  let push state elt = state.current <- elt :: state.current
+  let push state elt =
+    if not state.ignore_all then state.current <- elt :: state.current
 
   let enter state tag =
-    let previous_elt = state.current in
-    Stack.push (previous_elt, tag) state.context;
-    state.current <- [];
-    ()
+    if not state.ignore_all then (
+      let previous_elt = state.current in
+      Stack.push (previous_elt, tag) state.context;
+      state.current <- [];
+      ())
 
   let leave state =
-    let current_elt = List.rev state.current in
-    let previous_elt, tag = Stack.pop state.context in
-    state.current <- Tag (tag, current_elt) :: previous_elt;
-    ()
+    if not state.ignore_all then (
+      let current_elt = List.rev state.current in
+      let previous_elt, tag = Stack.pop state.context in
+      state.current <- Tag (tag, current_elt) :: previous_elt;
+      ())
 
   let rec flush state =
     if Stack.is_empty state.context then List.rev state.current
@@ -78,15 +87,19 @@ module Tag = struct
   let setup_tags formatter state0 =
     let tag_functions =
       let get_tag s =
-        let prefix_tag = "tag:" in
+        let prefix_tag = "tag:" and prefix_ignore = "ignore-tag" in
         let l = String.length prefix_tag in
         if String.length s > l && String.sub s 0 l = prefix_tag then
           let elt : Inline.t = Marshal.from_string s l in
           `Elt elt
+        else if s = prefix_ignore then `Ignore
         else `String s
       in
       let mark_open_tag s =
         match get_tag s with
+        | `Ignore ->
+            state0.State.ignore_all <- true;
+            ""
         | `Elt elt ->
             state0.State.should_print <- false;
             State.push state0 (Elt elt);
@@ -99,6 +112,9 @@ module Tag = struct
             ""
       and mark_close_tag s =
         match get_tag s with
+        | `Ignore ->
+            state0.State.ignore_all <- false;
+            ""
         | `Elt _ ->
             state0.should_print <- true;
             ""
@@ -120,6 +136,8 @@ module Tag = struct
   let elt ppf (elt : Inline.t) =
     Format.fprintf ppf "@{<tag:%s>%s@}" (Marshal.to_string elt [])
       (String.make (Utils.compute_length_inline elt) ' ')
+
+  let ignore ppf txt = Format.fprintf ppf "@{<ignore-tag>%t@}" txt
 end
 [@@alert "-deprecated--deprecated"]
 
@@ -128,7 +146,8 @@ let make () =
   let state0 = State.create () in
   let push elt = State.push state0 (Elt elt) in
   let push_text s =
-    if state0.State.should_print then push [ inline @@ Text s ]
+    if state0.State.should_print && not state0.ignore_all then
+      push [ inline @@ Text s ]
   in
 
   let formatter =
@@ -165,6 +184,8 @@ let pf = Format.fprintf
 let elt = Tag.elt
 
 let entity e ppf = elt ppf [ inline @@ Inline.Entity e ]
+
+let ignore t ppf = Tag.ignore ppf t
 
 let ( ++ ) f g ppf =
   f ppf;
