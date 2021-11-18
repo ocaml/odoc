@@ -35,7 +35,7 @@ module Reason = Generator.Make (struct
     end
 
     module Tuple = struct
-      let element_separator = ", "
+      let element_separator = O.txt ", "
 
       let always_parenthesize = true
     end

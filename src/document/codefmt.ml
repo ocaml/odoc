@@ -134,8 +134,8 @@ module Tag = struct
     ()
 
   let elt ppf (elt : Inline.t) =
-    Format.fprintf ppf "@{<tag:%s>%s@}" (Marshal.to_string elt [])
-      (String.make (Utils.compute_length_inline elt) ' ')
+    Format.fprintf ppf "@{<tag:%s>%t@}" (Marshal.to_string elt []) (fun fmt ->
+        Format.pp_print_as fmt (Utils.compute_length_inline elt) "")
 
   let ignore ppf txt = Format.fprintf ppf "@{<ignore-tag>%t@}" txt
 end

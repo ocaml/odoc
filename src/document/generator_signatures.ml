@@ -40,7 +40,7 @@ module type SYNTAX = sig
     end
 
     module Tuple : sig
-      val element_separator : string
+      val element_separator : text
 
       val always_parenthesize : bool
     end

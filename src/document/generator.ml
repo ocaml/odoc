@@ -271,12 +271,15 @@ module Make (Syntax : SYNTAX) = struct
 
     and te_object (t : Odoc_model.Lang.TypeExpr.Object.t) =
       let fields =
-        O.list t.fields ~f:(function
-          | Odoc_model.Lang.TypeExpr.Object.Method { name; type_ } ->
-              O.txt (name ^ Syntax.Type.annotation_separator)
-              ++ type_expr type_
-              ++ O.txt Syntax.Obj.field_separator
-          | Inherit type_ -> type_expr type_ ++ O.txt Syntax.Obj.field_separator)
+        O.list
+          ~sep:(O.sp ++ O.txt Syntax.Obj.field_separator)
+          t.fields
+          ~f:(function
+            | Odoc_model.Lang.TypeExpr.Object.Method { name; type_ } ->
+                O.box_hv_no_indent
+                @@ O.txt (name ^ Syntax.Type.annotation_separator)
+                   ++ O.cut ++ type_expr type_
+            | Inherit type_ -> O.box_hv_no_indent @@ type_expr type_)
       in
       let open_tag =
         if t.open_ then O.txt Syntax.Obj.open_tag_extendable
@@ -341,8 +344,7 @@ module Make (Syntax : SYNTAX) = struct
           if not needs_parentheses then res else enclose ~l:"( " res ~r:" )"
       | Tuple lst ->
           let res =
-            O.list lst
-              ~sep:(O.txt Syntax.Type.Tuple.element_separator)
+            O.list lst ~sep:Syntax.Type.Tuple.element_separator
               ~f:(type_expr ~needs_parentheses:true)
           in
           if Syntax.Type.Tuple.always_parenthesize || needs_parentheses then
@@ -470,8 +472,7 @@ module Make (Syntax : SYNTAX) = struct
       | Tuple [] -> O.documentedSrc (cstr ++ ret_type)
       | Tuple lst ->
           let params =
-            O.list lst
-              ~sep:(O.txt Syntax.Type.Tuple.element_separator)
+            O.list lst ~sep:Syntax.Type.Tuple.element_separator
               ~f:(type_expr ~needs_parentheses:is_gadt)
           in
           O.documentedSrc
@@ -1204,14 +1205,17 @@ module Make (Syntax : SYNTAX) = struct
 
     and module_type_substitution (t : Odoc_model.Lang.ModuleTypeSubstitution.t)
         =
+      let prefix =
+        O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
+      in
       let modname = Paths.Identifier.name t.id in
       let modname, expansion_doc, mty =
         module_type_manifest ~subst:true modname t.id t.doc (Some t.manifest)
+          prefix
       in
       let content =
-        O.documentedSrc
-          (O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " ")
-        @ modname @ mty
+        O.documentedSrc (prefix ++ modname)
+        @ mty
         @ O.documentedSrc
             (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
       in
@@ -1361,7 +1365,7 @@ module Make (Syntax : SYNTAX) = struct
       | Alias (mod_path, _) -> Link.from_path (mod_path :> Paths.Path.t)
       | ModuleType mt -> mty mt
 
-    and module_type_manifest ~subst modname id doc manifest =
+    and module_type_manifest ~subst modname id doc manifest prefix =
       let expansion =
         match manifest with
         | None -> None
@@ -1369,33 +1373,38 @@ module Make (Syntax : SYNTAX) = struct
       in
       let modname, expansion, expansion_doc =
         match expansion with
-        | None -> (O.documentedSrc @@ O.txt modname, None, None)
+        | None -> (O.txt modname, None, None)
         | Some (expansion_doc, items) ->
             let url = Url.Path.from_identifier id in
             let link = path url [ inline @@ Text modname ] in
             let page =
               make_expansion_page modname `Mty url [ doc; expansion_doc ] items
             in
-            (O.documentedSrc link, Some page, Some expansion_doc)
+            (link, Some page, Some expansion_doc)
       in
       let summary =
         match manifest with
         | None -> O.noop
-        | Some expr -> (if subst then O.txt " := " else O.txt " = ") ++ mty expr
+        | Some expr ->
+            O.ignore (prefix ++ modname)
+            ++ (if subst then O.txt " :=" ++ O.sp else O.txt " =" ++ O.sp)
+            ++ mty expr
       in
       ( modname,
         expansion_doc,
         attach_expansion (" = ", "sig", "end") expansion summary )
 
     and module_type (t : Odoc_model.Lang.ModuleType.t) =
+      let prefix =
+        O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
+      in
       let modname = Paths.Identifier.name t.id in
       let modname, expansion_doc, mty =
-        module_type_manifest ~subst:false modname t.id t.doc t.expr
+        module_type_manifest ~subst:false modname t.id t.doc t.expr prefix
       in
       let content =
-        O.documentedSrc
-          (O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " ")
-        @ modname @ mty
+        O.documentedSrc (prefix ++ modname)
+        @ mty
         @ O.documentedSrc
             (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
       in
@@ -1421,9 +1430,9 @@ module Make (Syntax : SYNTAX) = struct
       | _ -> false
 
     and mty_with subs expr =
-      umty expr ++ O.txt " " ++ O.keyword "with" ++ O.txt " "
+      umty expr ++ O.sp ++ O.keyword "with" ++ O.txt " "
       ++ O.list
-           ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
+           ~sep:(O.cut ++ O.txt " " ++ O.keyword "and" ++ O.txt " ")
            ~f:(fun x -> O.span (substitution x))
            subs
 
@@ -1469,7 +1478,7 @@ module Make (Syntax : SYNTAX) = struct
         | Functor (Unit, expr) ->
             (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop)
             ++ O.span (O.txt " () " ++ Syntax.Type.arrow)
-            ++ O.txt " " ++ mty expr
+            ++ O.sp ++ mty expr
         | Functor (Named arg, expr) ->
             let arg_expr = arg.expr in
             let stop_before = expansion_of_module_type_expr arg_expr = None in
@@ -1483,15 +1492,16 @@ module Make (Syntax : SYNTAX) = struct
               | Ok href -> resolved href [ inline @@ Text name ]
             in
             (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop)
-            ++ O.span
-                 (O.txt " (" ++ name
-                 ++ O.txt Syntax.Type.annotation_separator
-                 ++ mty arg_expr ++ O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow
-                 )
-            ++ O.txt " " ++ mty expr
+            ++ (O.box_hv @@ O.span
+               @@ O.txt " (" ++ name
+                  ++ O.txt Syntax.Type.annotation_separator
+                  ++ mty arg_expr ++ O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow
+               )
+            ++ O.sp ++ mty expr
         | With { w_expr; _ } when is_elidable_with_u w_expr ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
-        | With { w_substitutions; w_expr; _ } -> mty_with w_substitutions w_expr
+        | With { w_substitutions; w_expr; _ } ->
+            O.box_hv @@ (O.txt "a" ++ mty_with w_substitutions w_expr)
         | TypeOf { t_desc; _ } -> mty_typeof t_desc
         | Signature _ ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
@@ -1523,9 +1533,10 @@ module Make (Syntax : SYNTAX) = struct
                   | Error _ -> O.txt name
                   | Ok href -> resolved href [ inline @@ Text name ]
                 in
-                O.txt "(" ++ name
-                ++ O.txt Syntax.Type.annotation_separator
-                ++ mty arg.expr ++ O.txt ")"
+                O.box_hv
+                @@ O.txt "(" ++ name
+                   ++ O.txt Syntax.Type.annotation_separator
+                   ++ O.cut ++ mty arg.expr ++ O.txt ")"
           in
           O.sp ++ text_arg ++ mty_in_decl base expr
 
@@ -1539,31 +1550,31 @@ module Make (Syntax : SYNTAX) = struct
     and substitution : Odoc_model.Lang.ModuleType.substitution -> text =
       function
       | ModuleEq (frag_mod, md) ->
-          O.keyword "module" ++ O.sp
+          O.keyword "module" ++ O.txt " "
           ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
-          ++ O.sp ++ O.txt "= " ++ mdexpr md
+          ++ O.txt " " ++ O.txt "= " ++ mdexpr md
       | ModuleTypeEq (frag_mty, md) ->
           O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
           ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
           ++ O.txt " = " ++ mty md
       | TypeEq (frag_typ, td) ->
-          O.keyword "type" ++ O.sp
+          O.keyword "type" ++ O.txt " "
           ++ type_expr_in_subst td (frag_typ :> Paths.Fragment.leaf)
           ++ fst (format_manifest td)
           ++ format_constraints td.Odoc_model.Lang.TypeDecl.Equation.constraints
       | ModuleSubst (frag_mod, mod_path) ->
-          O.keyword "module" ++ O.sp
+          O.keyword "module" ++ O.txt " "
           ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
-          ++ O.sp ++ O.txt ":= "
+          ++ O.txt " " ++ O.txt ":= "
           ++ Link.from_path (mod_path :> Paths.Path.t)
       | ModuleTypeSubst (frag_mty, md) ->
           O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
           ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
           ++ O.txt " := " ++ mty md
       | TypeSubst (frag_typ, td) -> (
-          O.keyword "type" ++ O.sp
+          O.keyword "type" ++ O.txt " "
           ++ type_expr_in_subst td (frag_typ :> Paths.Fragment.leaf)
-          ++ O.sp ++ O.txt ":= "
+          ++ O.txt " " ++ O.txt ":= "
           ++
           match td.Lang.TypeDecl.Equation.manifest with
           | None -> assert false (* cf loader/cmti *)
