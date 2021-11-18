@@ -18,7 +18,7 @@ module ML = Generator.Make (struct
   module Type = struct
     let annotation_separator = " : "
 
-    let handle_params name args = O.span (args ++ O.txt " " ++ name)
+    let handle_params name args = O.span (args ++ O.sp ++ name)
 
     let handle_constructor_params = handle_params
 
