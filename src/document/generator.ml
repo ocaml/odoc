@@ -359,7 +359,7 @@ module Make (Syntax : SYNTAX) = struct
           format_type_path ~delim:`brackets args
             (Link.from_path (path :> Paths.Path.t))
       | Poly (polyvars, t) ->
-          O.txt (String.concat " " polyvars ^ ". ") ++ type_expr t
+          O.txt ("'" ^ String.concat " '" polyvars ^ ". ") ++ type_expr t
       | Package pkg ->
           enclose ~l:"(" ~r:")"
             (O.keyword "module" ++ O.txt " "
@@ -367,17 +367,21 @@ module Make (Syntax : SYNTAX) = struct
             ++
             match pkg.substitutions with
             | [] -> O.noop
-            | lst ->
-                O.txt " " ++ O.keyword "with" ++ O.txt " "
-                ++ O.list
-                     ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
-                     lst ~f:package_subst)
+            | fst :: lst ->
+                O.sp
+                ++ O.box_hv (O.keyword "with" ++ O.txt " " ++ package_subst fst)
+                ++ O.list lst ~f:(fun s ->
+                       O.cut
+                       ++ (O.box_hv
+                          @@ O.txt " " ++ O.keyword "and" ++ O.txt " "
+                             ++ package_subst s)))
 
     and package_subst
         ((frag_typ, te) : Paths.Fragment.Type.t * Odoc_model.Lang.TypeExpr.t) :
         text =
       let typath = Link.from_fragment (frag_typ :> Paths.Fragment.leaf) in
-      O.keyword "type" ++ O.txt " " ++ typath ++ O.txt " = " ++ type_expr te
+      O.keyword "type" ++ O.txt " " ++ typath ++ O.txt " =" ++ O.sp
+      ++ type_expr te
   end
 
   open Type_expression
@@ -693,8 +697,12 @@ module Make (Syntax : SYNTAX) = struct
 
     let format_constraints constraints =
       O.list constraints ~f:(fun (t1, t2) ->
-          O.txt " " ++ O.keyword "constraint" ++ O.txt " " ++ type_expr t1
-          ++ O.txt " = " ++ type_expr t2)
+          O.sp
+          ++ (O.box_hv
+             @@ O.keyword "constraint" ++ O.sp
+                ++ O.box_hv_no_indent (type_expr t1)
+                ++ O.txt " =" ++ O.sp
+                ++ O.box_hv_no_indent (type_expr t2)))
 
     let format_manifest :
           'inner_row 'outer_row.
