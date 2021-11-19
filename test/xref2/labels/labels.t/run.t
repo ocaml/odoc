@@ -1,6 +1,12 @@
 
   $ compile test.mli
-  Duplicate label found: (root Test).B
+  File "test.mli", line 27, characters 9-13:
+  Error: Multiple sections named 'B' found. Please alter one to ensure reference is unambiguous. Locations:
+    File "test.mli", line 3, character 4
+    File "test.mli", line 21, character 4
+  File "test.mli", line 21, characters 4-22:
+  Error: Label 'B' is ambiguous. The other occurences are:
+    File "test.mli", line 3, character 4
   File "test.mli", line 3, characters 4-24:
   Error: Label 'B' is ambiguous. The other occurences are:
     File "test.mli", line 21, character 4

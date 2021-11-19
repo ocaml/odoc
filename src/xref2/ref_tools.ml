@@ -86,7 +86,7 @@ let ref_kind_of_find = function
   | `FMethod _ -> "method"
   | `FInstance_variable _ -> "instance-variable"
 
-let ambiguous_ref_warning name results =
+let ambiguous_generic_ref_warning name results =
   (* Sort the results to make sure the result is reproducible. *)
   let results = List.sort String.compare results in
   let pp_sep pp () = Format.fprintf pp ", "
@@ -96,11 +96,32 @@ let ambiguous_ref_warning name results =
     (Format.pp_print_list ~pp_sep pp_kind)
     results
 
+let ambiguous_label_warning name (labels : Component.Element.any list) =
+  (* Sort the results to make sure the result is reproducible. *)
+  let pp_kind pp r =
+    match r with
+    | `Label (_, l) ->
+        Odoc_model.Location_.pp_span_start pp l.Component.Label.location
+    | _ -> ()
+  in
+  Lookup_failures.report_warning
+    "@[<2>Multiple sections named '%s' found. Please alter one to ensure \
+     reference is unambiguous. Locations:@ %a@]"
+    name
+    (Format.pp_print_list ~pp_sep:Format.pp_force_newline pp_kind)
+    labels
+
+let ambiguous_warning name (results : [< Component.Element.any ] list) =
+  let results = (results :> Component.Element.any list) in
+  if List.for_all (function `Label _ -> true | _ -> false) results then
+    ambiguous_label_warning name (results :> [> Component.Element.any ] list)
+  else ambiguous_generic_ref_warning name (List.map ref_kind_of_element results)
+
 let env_lookup_by_name ?(kind = `Any) scope name env =
   match Env.lookup_by_name scope name env with
   | Ok x -> Ok x
   | Error (`Ambiguous (hd, tl)) ->
-      ambiguous_ref_warning name (List.map ref_kind_of_element (hd :: tl));
+      ambiguous_warning name (hd :: tl);
       Ok hd
   | Error `Not_found -> Error (`Lookup_by_name (kind, name))
 
@@ -108,7 +129,7 @@ let find_ambiguous ?(kind = `Any) find sg name =
   match find sg name with
   | [ x ] -> Ok x
   | x :: _ as results ->
-      ambiguous_ref_warning name (List.map ref_kind_of_find results);
+      ambiguous_generic_ref_warning name (List.map ref_kind_of_find results);
       Ok x
   | [] -> Error (`Find_by_name (kind, name))
 
