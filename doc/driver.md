@@ -29,7 +29,6 @@ let get_ok = function | Ok x -> x | Error (`Msg m) -> failwith m
 - `odoc/odoc_model/index.html` : `odoc` model library subpage
 - `odoc/odoc_model/Odoc_model/index.html` : Module page for the module `Odoc_model`
 - `odoc/odoc_model/Odoc_model/...` : Further pages for the submodules of `Odoc_model`
-- `odoc/odoc_parser/index.html` : `odoc` parser library subpage
 - `odoc/odoc_.../index.html` : other `odoc` library pages
 - `odoc/deps/stdlib/index.html` : stdlib main page
 - `odoc/deps/stdlib/Stdlib/index.html` : Module page for the module `Stdlib`
@@ -42,7 +41,7 @@ In the example below, there will be a file `odoc.mld` that corresponds with the 
 
 <!-- $MDX skip -->
 ```sh
-odoc compile odoc.mld --child page-odoc_model --child page-odoc_parser --child deps ...
+odoc compile odoc.mld --child page-odoc_model --child deps ...
 ```
 
 The file `deps.mld` which corresponds with the sub-directory `odoc/deps/`, will be compiled as follows:
