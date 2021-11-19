@@ -452,7 +452,7 @@ let lookup_by_name scope name env =
   | ([ x ] as results), Some c -> (
       record_lookup_results env results;
       match c env x with
-      | Some (`Ambiguous (x, y)) -> Error (`Ambiguous (x, y))
+      | Some (`Ambiguous (x, y)) -> Result.Error (`Ambiguous (x, y))
       | None -> Result.Ok x)
   | ([ x ] as results), None ->
       record_lookup_results env results;
