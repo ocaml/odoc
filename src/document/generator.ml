@@ -306,13 +306,13 @@ module Make (Syntax : SYNTAX) = struct
           in
           Syntax.Type.handle_constructor_params path args
       | params ->
-          let params = O.list params ~sep:(O.txt ",\194\160") ~f:type_expr in
+          let params = O.list params ~sep:(O.txt "," ++ O.sp) ~f:type_expr in
           let params =
             match delim with
-            | `parens -> enclose ~l:"(" params ~r:")"
-            | `brackets -> enclose ~l:"[" params ~r:"]"
+            | `parens -> enclose ~l:"( " params ~r:" )"
+            | `brackets -> enclose ~l:"[ " params ~r:" ]"
           in
-          Syntax.Type.handle_constructor_params path params
+          Syntax.Type.handle_constructor_params path (O.box_hv params)
 
     and type_expr ?(needs_parentheses = false) (t : Odoc_model.Lang.TypeExpr.t)
         =
@@ -325,9 +325,8 @@ module Make (Syntax : SYNTAX) = struct
       | Arrow (None, src, dst) ->
           let res =
             O.span
-              (O.box_hv
-              @@ type_expr ~needs_parentheses:true src
-                 ++ O.txt " " ++ Syntax.Type.arrow)
+              ((O.box_hv @@ type_expr ~needs_parentheses:true src)
+              ++ O.txt " " ++ Syntax.Type.arrow)
             ++ O.sp ++ type_expr dst
             (* ++ O.end_hv *)
           in
@@ -335,10 +334,10 @@ module Make (Syntax : SYNTAX) = struct
       | Arrow (Some lbl, src, dst) ->
           let res =
             O.span
-              (O.box_hv
-              @@ label lbl ++ O.txt ":" ++ O.cut
-                 ++ type_expr ~needs_parentheses:true src
-                 ++ O.txt " " ++ Syntax.Type.arrow)
+              ((O.box_hv
+               @@ label lbl ++ O.txt ":" ++ O.cut
+                  ++ (O.box_hv @@ type_expr ~needs_parentheses:true src))
+              ++ O.txt " " ++ Syntax.Type.arrow)
             ++ O.sp ++ type_expr dst
           in
           if not needs_parentheses then res else enclose ~l:"( " res ~r:" )"
