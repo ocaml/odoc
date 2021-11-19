@@ -723,7 +723,8 @@ module Make (Syntax : SYNTAX) = struct
       | None -> (O.noop, private_)
       | Some t ->
           let manifest =
-            O.txt (if is_substitution then " := " else " = ")
+            O.txt (if is_substitution then " :=" else " =")
+            ++ O.sp
             ++ (if private_ then
                 O.keyword Syntax.Type.private_keyword ++ O.txt " "
                else O.noop)
@@ -1567,35 +1568,42 @@ module Make (Syntax : SYNTAX) = struct
     and substitution : Odoc_model.Lang.ModuleType.substitution -> text =
       function
       | ModuleEq (frag_mod, md) ->
-          O.keyword "module" ++ O.txt " "
-          ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
-          ++ O.txt " " ++ O.txt "= " ++ mdexpr md
+          O.box_hv
+          @@ O.keyword "module" ++ O.txt " "
+             ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
+             ++ O.txt " =" ++ O.sp ++ mdexpr md
       | ModuleTypeEq (frag_mty, md) ->
-          O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
-          ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
-          ++ O.txt " = " ++ mty md
+          O.box_hv
+          @@ O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
+             ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
+             ++ O.txt " =" ++ O.sp ++ mty md
       | TypeEq (frag_typ, td) ->
-          O.keyword "type" ++ O.txt " "
-          ++ type_expr_in_subst td (frag_typ :> Paths.Fragment.leaf)
-          ++ fst (format_manifest td)
-          ++ format_constraints td.Odoc_model.Lang.TypeDecl.Equation.constraints
+          O.box_hv
+          @@ O.keyword "type" ++ O.txt " "
+             ++ type_expr_in_subst td (frag_typ :> Paths.Fragment.leaf)
+             ++ fst (format_manifest td)
+             ++ format_constraints
+                  td.Odoc_model.Lang.TypeDecl.Equation.constraints
       | ModuleSubst (frag_mod, mod_path) ->
-          O.keyword "module" ++ O.txt " "
-          ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
-          ++ O.txt " " ++ O.txt ":= "
-          ++ Link.from_path (mod_path :> Paths.Path.t)
+          O.box_hv
+          @@ O.keyword "module" ++ O.txt " "
+             ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
+             ++ O.txt " :=" ++ O.sp
+             ++ Link.from_path (mod_path :> Paths.Path.t)
       | ModuleTypeSubst (frag_mty, md) ->
-          O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
-          ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
-          ++ O.txt " := " ++ mty md
+          O.box_hv
+          @@ O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
+             ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
+             ++ O.txt " :=" ++ O.sp ++ mty md
       | TypeSubst (frag_typ, td) -> (
-          O.keyword "type" ++ O.txt " "
-          ++ type_expr_in_subst td (frag_typ :> Paths.Fragment.leaf)
-          ++ O.txt " " ++ O.txt ":= "
-          ++
-          match td.Lang.TypeDecl.Equation.manifest with
-          | None -> assert false (* cf loader/cmti *)
-          | Some te -> type_expr te)
+          O.box_hv
+          @@ O.keyword "type" ++ O.txt " "
+             ++ type_expr_in_subst td (frag_typ :> Paths.Fragment.leaf)
+             ++ O.txt " :=" ++ O.sp
+             ++
+             match td.Lang.TypeDecl.Equation.manifest with
+             | None -> assert false (* cf loader/cmti *)
+             | Some te -> type_expr te)
 
     and include_ (t : Odoc_model.Lang.Include.t) =
       let decl_hidden =
