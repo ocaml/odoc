@@ -215,6 +215,8 @@ let is_unexpanded_module_type_of =
   in
   inner
 
+type kind = [ `OpaqueModule | `Root of string ]
+
 let rec kind_of_module_cpath = function
   | `Root name -> Some (`Root name)
   | `Substituted p' | `Dot (p', _) -> kind_of_module_cpath p'
@@ -231,11 +233,12 @@ let rec kind_of_module_type_cpath = function
 
 (** [Some (`Root _)] for errors during lookup of root modules or [None] for
     other errors. *)
-let rec kind_of_error = function
+let rec kind_of_error : Tools_error.any -> kind option = function
   | `UnresolvedPath (`Module (cp, _)) -> kind_of_module_cpath cp
   | `UnresolvedPath (`ModuleType (cp, _)) -> kind_of_module_type_cpath cp
   | `Lookup_failure (`Root (_, name)) ->
       Some (`Root (Names.ModuleName.to_string name))
+  | `UnexpandedTypeOf type_of_desc -> kind_of_type_of_desc type_of_desc
   | `Lookup_failure_root name -> Some (`Root name)
   | `Parent (`Parent_sig e) -> kind_of_error (e :> Tools_error.any)
   | `Parent (`Parent_module_type e) -> kind_of_error (e :> Tools_error.any)
@@ -246,6 +249,11 @@ let rec kind_of_error = function
       (* Don't turn OpaqueModule warnings into errors *)
       Some `OpaqueModule
   | _ -> None
+
+and kind_of_type_of_desc : Component.ModuleType.type_of_desc -> kind option =
+  function
+  | ModPath cp -> kind_of_module_cpath cp
+  | StructInclude cp -> kind_of_module_cpath cp
 
 let kind_of_error ~what = function
   | Some e -> kind_of_error (e :> Tools_error.any)
