@@ -157,6 +157,8 @@ end = struct
     with Not_found -> None
 end
 
+type 'a amb_err = [ `Ambiguous of 'a * 'a list ]
+
 type t = {
   linking : bool;
   (* True if this is a linking environment - if not,
@@ -166,6 +168,7 @@ type t = {
       (** Elements mapped by their name. Queried with {!find_by_name}. *)
   ids : ElementsById.t;
       (** Elements mapped by their identifier. Queried with {!find_by_id}. *)
+  ambiguous_labels : Component.Element.label amb_err Identifier.Maps.Label.t;
   resolver : resolver option;
   recorder : recorder option;
   fragmentroot : (int * Component.Signature.t) option;
@@ -201,6 +204,7 @@ let empty =
     ids = ElementsById.empty;
     resolver = None;
     recorder = None;
+    ambiguous_labels = Identifier.Maps.Label.empty;
     fragmentroot = None;
   }
 
@@ -235,18 +239,30 @@ let add_label identifier heading env =
   assert env.linking;
   let comp = `Label (identifier, heading) in
   let name = Identifier.name identifier in
-  let () =
+  let ambiguous_labels =
     match ElementsById.find_by_id identifier env.ids with
-    | Some _ ->
-        Format.eprintf "Duplicate label found: %a\n%!"
-          Component.Fmt.model_identifier
-          (identifier :> Identifier.t)
-    | None -> ()
+    | Some (#Component.Element.label as l) ->
+        let err =
+          try
+            match
+              Identifier.Maps.Label.find identifier env.ambiguous_labels
+            with
+            | `Ambiguous (x, others) -> `Ambiguous (x, comp :: others)
+          with Not_found -> `Ambiguous (l, [ comp ])
+        in
+
+        Identifier.Maps.Label.add identifier err env.ambiguous_labels
+    | Some _ -> assert false
+    | None -> env.ambiguous_labels
   in
   {
     env with
     id = unique_id ();
-    elts = ElementsByName.add Kind_Label name comp env.elts;
+    elts =
+      ElementsByName.add Kind_Label name
+        (comp :> Component.Element.any)
+        env.elts;
+    ambiguous_labels;
     ids = ElementsById.add identifier comp env.ids;
   }
 
@@ -408,15 +424,15 @@ let lookup_page name env =
 
 type 'a scope = {
   filter : Component.Element.any -> ([< Component.Element.any ] as 'a) option;
+  check : (t -> ([< Component.Element.any ] as 'a) -> 'a amb_err option) option;
   root : string -> t -> 'a option;
 }
 
-type 'a maybe_ambiguous =
-  ('a, [ `Ambiguous of 'a * 'a list | `Not_found ]) Result.result
+type 'a maybe_ambiguous = ('a, [ 'a amb_err | `Not_found ]) Result.result
 
-let make_scope ?(root = fun _ _ -> None)
+let make_scope ?(root = fun _ _ -> None) ?check
     (filter : _ -> ([< Component.Element.any ] as 'a) option) : 'a scope =
-  { filter; root }
+  { filter; check; root }
 
 let lookup_by_name scope name env =
   let record_lookup_results env results =
@@ -430,14 +446,21 @@ let lookup_by_name scope name env =
           (results :> Component.Element.any list)
     | None -> ()
   in
-  match ElementsByName.find_by_name scope.filter name env.elts with
-  | [ x ] as results ->
+  match
+    (ElementsByName.find_by_name scope.filter name env.elts, scope.check)
+  with
+  | ([ x ] as results), Some c -> (
+      record_lookup_results env results;
+      match c env x with
+      | Some (`Ambiguous (x, y)) -> Error (`Ambiguous (x, y))
+      | None -> Result.Ok x)
+  | ([ x ] as results), None ->
       record_lookup_results env results;
       Result.Ok x
-  | x :: tl as results ->
+  | (x :: tl as results), _ ->
       record_lookup_results env results;
       Error (`Ambiguous (x, tl))
-  | [] -> (
+  | [], _ -> (
       match scope.root name env with Some x -> Ok x | None -> Error `Not_found)
 
 let lookup_by_id (scope : 'a scope) id env : 'a option =
@@ -486,7 +509,17 @@ let s_module : Component.Element.module_ scope =
     | _ -> None)
 
 let s_any : Component.Element.any scope =
-  make_scope ~root:lookup_page_or_root_module_fallback (fun r -> Some r)
+  make_scope ~root:lookup_page_or_root_module_fallback
+    ~check:
+      (fun env -> function
+        | `Label (id, _) -> (
+            try
+              Some
+                (Identifier.Maps.Label.find id env.ambiguous_labels
+                  :> Component.Element.any amb_err)
+            with Not_found -> None)
+        | _ -> None)
+    (fun r -> Some r)
 
 let s_module_type : Component.Element.module_type scope =
   make_scope (function
@@ -511,7 +544,13 @@ let s_value : Component.Element.value scope =
   make_scope (function #Component.Element.value as r -> Some r | _ -> None)
 
 let s_label : Component.Element.label scope =
-  make_scope (function #Component.Element.label as r -> Some r | _ -> None)
+  make_scope
+    ~check:
+      (fun env -> function
+        | `Label (id, _) -> (
+            try Some (Identifier.Maps.Label.find id env.ambiguous_labels)
+            with Not_found -> None))
+    (function #Component.Element.label as r -> Some r | _ -> None)
 
 let s_constructor : Component.Element.constructor scope =
   make_scope (function
