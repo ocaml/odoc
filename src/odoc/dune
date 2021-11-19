@@ -24,7 +24,7 @@
 (rule
  (targets latex_preamble.ml)
  (deps
-  (:tex etc/supprt-files.tex))
+  (:tex etc/support-files.tex))
  (action
   (with-stdout-to
    %{targets}
