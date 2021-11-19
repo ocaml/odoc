@@ -1,6 +1,6 @@
 (documentation
  (package odoc)
- (mld_files contributing deps driver dune features index interface
+ (mld_files contributing driver dune features index interface
    ocamldoc_differences odoc_for_authors parent_child_spec))
 
 (rule
