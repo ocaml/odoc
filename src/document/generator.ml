@@ -569,11 +569,13 @@ module Make (Syntax : SYNTAX) = struct
           DocumentedSrc.Nested { anchor; attrs; code; doc; markers }
 
     let extension (t : Odoc_model.Lang.Extension.t) =
+      let prefix =
+        O.keyword "type" ++ O.txt " "
+        ++ Link.from_path (t.type_path :> Paths.Path.t)
+        ++ O.txt " +=" ++ O.sp
+      in
       let content =
-        O.documentedSrc
-          (O.keyword "type" ++ O.txt " "
-          ++ Link.from_path (t.type_path :> Paths.Path.t)
-          ++ O.txt " += ")
+        O.documentedSrc prefix
         @ List.map extension_constructor t.constructors
         @ O.documentedSrc
             (if Syntax.Type.type_def_semicolon then O.txt ";" else O.noop)
@@ -621,7 +623,10 @@ module Make (Syntax : SYNTAX) = struct
                       else fun x -> type_expr x
                     in
                     let params =
-                      O.list arguments ~sep:(O.txt " & ") ~f:wrapped_type_expr
+                      O.box_hv
+                      @@ O.list arguments
+                           ~sep:(O.txt " &" ++ O.sp)
+                           ~f:wrapped_type_expr
                     in
                     let params =
                       if constant then O.txt "& " ++ params else params
@@ -630,7 +635,7 @@ module Make (Syntax : SYNTAX) = struct
                       (O.txt cstr
                       ++
                       if Syntax.Type.Variant.parenthesize_params then params
-                      else O.txt " " ++ O.keyword "of" ++ O.txt " " ++ params)),
+                      else O.txt " " ++ O.keyword "of" ++ O.sp ++ params)),
                 match doc with [] -> None | _ -> Some (Comment.to_ir doc) ))
         in
         let markers = Syntax.Comment.markers in
@@ -728,9 +733,23 @@ module Make (Syntax : SYNTAX) = struct
 
     let type_decl ?(is_substitution = false)
         ((recursive, t) : Lang.Signature.recursive * Lang.TypeDecl.t) =
+      let keyword' =
+        match recursive with
+        | Ordinary | Rec -> O.keyword "type"
+        | And -> O.keyword "and"
+        | Nonrec -> O.keyword "type" ++ O.txt " " ++ O.keyword "nonrec"
+      in
       let tyname = Paths.Identifier.name t.id in
+      let tconstr =
+        match t.equation.params with
+        | [] -> O.txt tyname
+        | l ->
+            let params = format_params l in
+            Syntax.Type.handle_constructor_params (O.txt tyname) params
+      in
+      let intro = keyword' ++ O.txt " " ++ tconstr in
       let constraints = format_constraints t.equation.constraints in
-      let manifest, need_private =
+      let manifest, need_private, long_prefix =
         match t.equation.manifest with
         | Some (Odoc_model.Lang.TypeExpr.Polymorphic_variant variant) ->
             let code =
@@ -740,19 +759,22 @@ module Make (Syntax : SYNTAX) = struct
             in
             let manifest =
               O.documentedSrc
-                (O.txt (if is_substitution then " := " else " = ")
+                (O.ignore intro
+                ++ O.txt (if is_substitution then " :=" else " =")
+                ++ O.sp
                 ++
                 if t.equation.private_ then
                   O.keyword Syntax.Type.private_keyword ++ O.txt " "
                 else O.noop)
               @ code
             in
-            (manifest, false)
+            (manifest, false, O.noop)
         | _ ->
             let manifest, need_private =
               format_manifest ~is_substitution t.equation
             in
-            (O.documentedSrc manifest, need_private)
+            let text = O.ignore intro ++ manifest in
+            (O.documentedSrc @@ text, need_private, text)
       in
       let representation =
         match t.representation with
@@ -766,7 +788,7 @@ module Make (Syntax : SYNTAX) = struct
             in
             if List.length content > 0 then
               O.documentedSrc
-                (O.txt " = "
+                (O.ignore long_prefix ++ O.txt " =" ++ O.sp
                 ++
                 if need_private then
                   O.keyword Syntax.Type.private_keyword ++ O.txt " "
@@ -774,22 +796,8 @@ module Make (Syntax : SYNTAX) = struct
               @ content
             else []
       in
-      let tconstr =
-        match t.equation.params with
-        | [] -> O.txt tyname
-        | l ->
-            let params = format_params l in
-            Syntax.Type.handle_constructor_params (O.txt tyname) params
-      in
       let content =
-        let keyword' =
-          match recursive with
-          | Ordinary | Rec -> O.keyword "type"
-          | And -> O.keyword "and"
-          | Nonrec -> O.keyword "type" ++ O.txt " " ++ O.keyword "nonrec"
-        in
-        O.documentedSrc (keyword' ++ O.txt " " ++ tconstr)
-        @ manifest @ representation
+        O.documentedSrc intro @ manifest @ representation
         @ O.documentedSrc constraints
         @ O.documentedSrc
             (if Syntax.Type.type_def_semicolon then O.txt ";" else O.noop)
@@ -1204,7 +1212,8 @@ module Make (Syntax : SYNTAX) = struct
       let path = Link.from_path (t.manifest :> Paths.Path.t) in
       let content =
         O.documentedSrc
-          (O.keyword "module" ++ O.txt " " ++ O.txt name ++ O.txt " := " ++ path)
+          (O.keyword "module" ++ O.txt " " ++ O.txt name ++ O.txt " :=" ++ O.sp
+         ++ path)
       in
       let attr = [ "module-substitution" ] in
       let anchor = path_to_id t.id in
