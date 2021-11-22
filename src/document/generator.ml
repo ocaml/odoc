@@ -1518,7 +1518,7 @@ module Make (Syntax : SYNTAX) = struct
         | With { w_expr; _ } when is_elidable_with_u w_expr ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
         | With { w_substitutions; w_expr; _ } ->
-            O.box_hv @@ (O.txt "a" ++ mty_with w_substitutions w_expr)
+            O.box_hv @@ mty_with w_substitutions w_expr
         | TypeOf { t_desc; _ } -> mty_typeof t_desc
         | Signature _ ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
