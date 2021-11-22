@@ -112,7 +112,7 @@ let tokenize location s =
     | exception Invalid_argument _ ->
         let identifier, location = identifier_ended started_at index in
         (None, identifier, location) :: tokens
-    | '-' | ' ' when open_parenthesis_count = 0 ->
+    | '-' when open_parenthesis_count = 0 ->
         let identifier, location = identifier_ended started_at index in
         scan_kind identifier location index (index - 1) tokens
     | '.' when open_parenthesis_count = 0 ->
