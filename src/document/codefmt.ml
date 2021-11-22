@@ -141,6 +141,8 @@ module Tag = struct
 end
 [@@alert "-deprecated--deprecated"]
 
+type t = Format.formatter
+
 let make () =
   let open Inline in
   let state0 = State.create () in
