@@ -141,7 +141,7 @@ module Tag = struct
 end
 [@@alert "-deprecated--deprecated"]
 
-type t = Format.formatter
+type t = Format.formatter -> unit
 
 let make () =
   let open Inline in
@@ -177,8 +177,6 @@ let spf fmt =
   Format.kfprintf (fun _ -> flush ()) ppf fmt
 
 let pf = Format.fprintf
-
-(** Transitory hackish API *)
 
 let elt t ppf = Tag.elt ppf t
 

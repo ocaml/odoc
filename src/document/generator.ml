@@ -41,16 +41,16 @@ let make_name_from_path { Url.Path.name; parent; _ } =
   | None -> name
   | Some p -> Printf.sprintf "%s.%s" p.name name
 
-let label t ppf =
+let label t =
   match t with
-  | Odoc_model.Lang.TypeExpr.Label s -> O.pf ppf "%s" s
-  | Optional s -> O.pf ppf "?%s" s
+  | Odoc_model.Lang.TypeExpr.Label s -> O.txt s
+  | Optional s -> O.txt "?" ++ O.txt s
 
-let tag tag t ppf = O.pf ppf "@{<%s>%t@}" tag t
+let tag tag t = O.span ~attr:tag t
 
 let type_var tv = tag "type-var" (O.txt tv)
 
-let enclose ~l ~r x = O.span (fun ppf -> O.pf ppf "%s%t%s" l x r)
+let enclose ~l ~r x = O.span (O.txt l ++ x ++ O.txt r)
 
 let path p txt =
   O.elt
