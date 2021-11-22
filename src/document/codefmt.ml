@@ -180,9 +180,9 @@ let pf = Format.fprintf
 
 (** Transitory hackish API *)
 
-let elt = Tag.elt
+let elt t ppf = Tag.elt ppf t
 
-let entity e ppf = elt ppf [ inline @@ Inline.Entity e ]
+let entity e ppf = elt [ inline @@ Inline.Entity e ] ppf
 
 let ignore t ppf = Tag.ignore ppf t
 
@@ -201,8 +201,6 @@ let break i j ppf = Format.pp_print_break ppf i j
 let cut = break 0 0
 
 let sp = break 1 0
-
-let ( ! ) (pp : _ Fmt.t) x ppf = pp ppf x
 
 let rec list ?sep ~f = function
   | [] -> noop
@@ -227,7 +225,5 @@ let codeblock ?attr f = [ block ?attr @@ Block.Source (render f) ]
 let keyword keyword ppf = pf ppf "@{<keyword>%s@}" keyword
 
 module Infix = struct
-  let ( ! ) = ( ! )
-
   let ( ++ ) = ( ++ )
 end

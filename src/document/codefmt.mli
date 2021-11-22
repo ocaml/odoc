@@ -4,7 +4,7 @@ type t
 
 val pf : t -> ('a, t, unit) format -> 'a
 
-val elt : t -> Inline.t -> unit
+val elt : Inline.t -> t -> unit
 
 val entity : Inline.entity -> t -> unit
 
@@ -37,7 +37,5 @@ val codeblock : ?attr:Class.t -> (t -> unit) -> Block.t
 val keyword : string -> t -> unit
 
 module Infix : sig
-  val ( ! ) : (t -> 'a -> unit) -> 'a -> t -> unit
-
   val ( ++ ) : (t -> unit) -> (t -> unit) -> t -> unit
 end
