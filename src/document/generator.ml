@@ -53,14 +53,14 @@ let type_var tv = tag "type-var" (O.txt tv)
 let enclose ~l ~r x = O.span (fun ppf -> O.pf ppf "%s%t%s" l x r)
 
 let path p txt =
-  !O.elt
+  O.elt
     [ inline @@ InternalLink (InternalLink.Resolved (Url.from_path p, txt)) ]
 
 let resolved p txt =
-  !O.elt [ inline @@ InternalLink (InternalLink.Resolved (p, txt)) ]
+  O.elt [ inline @@ InternalLink (InternalLink.Resolved (p, txt)) ]
 
 let unresolved txt =
-  !O.elt [ inline @@ InternalLink (InternalLink.Unresolved txt) ]
+  O.elt [ inline @@ InternalLink (InternalLink.Unresolved txt) ]
 
 let path_to_id path =
   match Url.Anchor.from_identifier (path :> Paths.Identifier.t) with
