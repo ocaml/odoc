@@ -3,7 +3,7 @@ module Lang = Odoc_model.Lang
 
 type rendered_item = DocumentedSrc.t
 
-type text = Codefmt.t -> unit
+type text = Codefmt.t
 
 (** HTML generation syntax customization module. See {!ML} and
     {!Reason}. *)
