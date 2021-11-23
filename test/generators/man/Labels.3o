@@ -135,6 +135,8 @@ Testing that labels can be referenced
 .br 
 \(bu \f[CI]Attached to value\fR
 .br 
+\(bu \f[CI]Attached to module type\fR
+.br 
 \(bu \f[CI]Attached to class\fR
 .br 
 \(bu \f[CI]Attached to class type\fR
