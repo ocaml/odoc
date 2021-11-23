@@ -135,12 +135,16 @@ let tokenize location s =
         with _ ->
           Error.raise_exception (Error.make "Unmatched quotation!" location))
     | _ -> scan_identifier started_at open_parenthesis_count (index - 1) tokens
-  and identifier_ended started_at index =
+    and identifier_ended started_at index =
     let offset = index + 1 in
     let length = started_at - offset in
     let identifier = String.trim (String.sub s offset length) in
     let identifier =
-      Astring.String.cuts ~sep:"\"" identifier |> String.concat ""
+      Astring.String.cuts ~sep:"\"" identifier
+      |> List.mapi (fun i s -> 
+        if i mod 2 = 0 then
+        Astring.String.cuts s ~sep:" " |> String.concat ""
+      else s ) |> String.concat ""
     in
     let location = Location_.in_string s ~offset ~length location in
 

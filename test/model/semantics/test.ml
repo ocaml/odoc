@@ -198,7 +198,7 @@ let%expect_test _ =
           "value": [
             {
               "`Paragraph": [
-                { "`Reference": [ { "`Root": [ "( * )", "`TUnknown" ] }, [] ] }
+                { "`Reference": [ { "`Root": [ "(*)", "`TUnknown" ] }, [] ] }
               ]
             }
           ],
@@ -304,7 +304,7 @@ let%expect_test _ =
           "value": [
             {
               "`Paragraph": [
-                { "`Reference": [ { "`Root": [ "( * )", "`TValue" ] }, [] ] }
+                { "`Reference": [ { "`Root": [ "(*)", "`TValue" ] }, [] ] }
               ]
             }
           ],
