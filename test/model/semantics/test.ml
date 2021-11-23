@@ -205,6 +205,21 @@ let%expect_test _ =
           "warnings": []
         } |}]
 
+    let internal_quoted_whitespace =
+      test "{!\"( * )\"}";
+      [%expect
+        {|
+        {
+          "value": [
+            {
+              "`Paragraph": [
+                { "`Reference": [ { "`Root": [ "( * )", "`TUnknown" ] }, [] ] }
+              ]
+            }
+          ],
+          "warnings": []
+        } |}]
+
     (* TODO Limiting the character combinations allowed will make it easier to
        catch expressions accidentally written inside references. This can also
        be caught by a good resolver and resolver error messages. *)
@@ -305,6 +320,21 @@ let%expect_test _ =
             {
               "`Paragraph": [
                 { "`Reference": [ { "`Root": [ "(*)", "`TValue" ] }, [] ] }
+              ]
+            }
+          ],
+          "warnings": []
+        } |}]
+
+    let internal_quoted_whitespace_in_referent =
+      test "{!val:\"( * )\"}";
+      [%expect
+        {|
+        {
+          "value": [
+            {
+              "`Paragraph": [
+                { "`Reference": [ { "`Root": [ "( * )", "`TValue" ] }, [] ] }
               ]
             }
           ],
