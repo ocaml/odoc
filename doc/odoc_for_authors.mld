@@ -36,7 +36,7 @@ v}
 
 Odoc is built to produce documentation for your {e libraries}, and the unit of
 organisation is the {e module}. Documentation is written by putting
-{{!comments}special comments} into the source of the {e module interface} or
+{{!special_comments}special comments} into the source of the {e module interface} or
 less commonly your {e module implementation}. 
 
 For the HTML output, [odoc] will produce one page for each module, module type,
@@ -67,7 +67,7 @@ it is intended that all features of the OCaml language are supported by [odoc].
 For examples of how the language features are handled, see the
 {{!page-features}Features} page.
 
-{2:comment-placement Comment placement}
+{2:special_comments Special Comments}
 
 Comments containing documentation are known as {e special comments}. 
 They are like normal comments except they have precisely
@@ -75,7 +75,7 @@ two asterisks at the start:
 
 {[
 (* Normal comment *)
-(** Documentation comment *)
+(** Special comment containing documentation *)
 (*** Normal comment *)
 ]}
 
@@ -425,7 +425,7 @@ end
 type u
 ]}
 
-The above example can be seen rendered in the module {!Odoc_examples.Scope}.
+The above example can be seen rendered in the module {!Odoc_examples.Markup.Scope}.
 
 [odoc] allows modules to be 'opened' for the purposes of resolving references.
 By default, the module [Stdlib] is 'opened', allowing references like [{!List.t}]
@@ -543,7 +543,7 @@ The OCaml manual provides an instructive example:
 The output of this as rendered by [odoc] is {{!Odoc_examples.Markup.Stop}here}.
 
 
-{1 Page Structure}
+{1:page_structure Page Structure}
 
 Producing good documentation for your library is more than simply annotating
 the various modules, type and functions that are contained however. 
@@ -645,7 +645,7 @@ Note: A comment attached to a declaration shouldn't contain any heading.
 The synopsis of a module (a module type, a class, etc..) is the first
 paragraph of the {!preamble}, {e if} the preamble starts with a paragraph.
 
-It is rendered in [{!modules:...}] lists and after {{!page-features.aliases}expanded aliases}.
+It is rendered in [{!modules:...}] lists and after {{!page-features.expansion_aliases}expanded aliases}.
 
 Note that the synopsis is computed on top of the {e preamble}, in these two
 examples, the synopsis is the same:

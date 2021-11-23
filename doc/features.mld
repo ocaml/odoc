@@ -62,7 +62,7 @@ and the full expansion can be found by clicking on the name of the module
 These expansions have to be done carefully. A number of cases follow
 in which [odoc] has to treat specially.
 
-{2 Aliases}
+{2:expansion_aliases Aliases}
 
 In general [odoc] doesn’t expand module aliases unless they are an
 alias to a hidden module. If this is the case, the right-hand side of
@@ -468,7 +468,7 @@ links need to consider some of the expansions’ features,
 as outlined above. In order to decide where the links should point to and how to
 turn them into text, a process called 'Resolution' is required.
 
-{2 Aliases}
+{2:resolution_aliases Aliases}
 
 Since aliases are not usually expanded, a path or reference to an item contained in
 an aliased module must link directly to the item inside the aliased module. For
