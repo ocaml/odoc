@@ -18,28 +18,28 @@ module type S = sig end
 (** {1:L6 Attached to module type} *)
 
 class c : object end
-(** {1:L6 Attached to class} *)
+(** {1:L7 Attached to class} *)
 
 class type cs = object end
-(** {1:L7 Attached to class type} *)
+(** {1:L8 Attached to class type} *)
 
 exception E
-(** {1:L8 Attached to exception} *)
+(** {1:L9 Attached to exception} *)
 
 type x = ..
 
-(** {1:L9 Attached to extension} *)
+(** {1:L10 Attached to extension} *)
 type x += X
 
 module S := A
-(** {1:L10 Attached to module subst} *)
+(** {1:L11 Attached to module subst} *)
 
 type s := t
-(** {1:L11 Attached to type subst} *)
+(** {1:L12 Attached to type subst} *)
 
-type u = A'  (** {1:L12 Attached to constructor} *)
+type u = A'  (** {1:L13 Attached to constructor} *)
 
-type v = { f : t  (** {1:L13 Attached to field} *) }
+type v = { f : t  (** {1:L14 Attached to field} *) }
 
 (** Testing that labels can be referenced
     - {!L1}
@@ -55,4 +55,5 @@ type v = { f : t  (** {1:L13 Attached to field} *) }
     - {!L11}
     - {!L12}
     - {!L13}
+    - {!L14}
   *)
