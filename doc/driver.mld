@@ -14,6 +14,8 @@ First we need to initialise MDX with some libraries and helpful values.
 (* Prelude *)
 #require "bos";;
 #install_printer Fpath.pp;;
+#print_length 100;;
+#print_depth 10;;
 open Bos;;
 let (>>=) = Result.bind;;
 let (>>|=) m f = m >>= fun x -> Ok (f x);;
@@ -156,7 +158,8 @@ let compile file ?parent ?(ignore_output = false) children =
 let link ?(ignore_output = false) file =
   let open Cmd in
   let cmd = odoc % "link" % p file % "-I" % "." in
-  let lines = OS.Cmd.(run_out ~err:err_run_out cmd |> to_lines) |> get_ok in
+  let cmd = if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd in
+  Format.printf "%a" pp cmd;let lines = OS.Cmd.(run_out ~err:err_run_out cmd |> to_lines) |> get_ok in
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
 
@@ -347,16 +350,16 @@ let odoc_units =
 ]}
 
 {[
-let lib_units =
-  List.map
-    (fun (lib, p) ->
-      Fpath.Set.fold
-        (fun p acc -> ("deps", lib, p) :: acc)
-        (find_units p |> get_ok)
-        [])
-    lib_paths
-
-let all_units = odoc_units @ lib_units |> List.flatten
+let all_units =
+  let lib_units =
+    List.map
+      (fun (lib, p) ->
+        Fpath.Set.fold
+          (fun p acc -> ("deps", lib, p) :: acc)
+          (find_units p |> get_ok)
+          [])
+      lib_paths in
+  odoc_units @ lib_units |> List.flatten
 ]}
 
 Now we'll compile all of the parent [.mld] files. To ensure that the parents are compiled before the children, we start with [odoc.mld], then [deps.mld], and so on. The result of this file is a list of the resulting [odoc] files.
@@ -463,6 +466,7 @@ generate_all linked
 Let's see if there was any output from the [odoc] invocations:
 
 {[
+# #print_length 655360;;
 # !compile_output;;
 - : string list = [""]
 # !link_output;;
