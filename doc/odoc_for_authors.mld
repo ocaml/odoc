@@ -369,13 +369,14 @@ The prefixes supported are:
 - [label] (also [section] - for referring to headings)
 - [page] (for referring to [.mld] pages)
 
-In some cases the element being referenced might have a hyphen or a dot in the name,
+In some cases the element being referenced might have a hyphen, a dot or a space in the name,
 e.g. if trying to refer to a page from a [.mld] file "1.2.3.mld". In this case, the
 element name should be quoted with double quote marks:
 
 {v
 {!page-"1.2.3"}
 v}
+
 
 {4 Module lists}
 

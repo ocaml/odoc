@@ -198,6 +198,21 @@ let%expect_test _ =
           "value": [
             {
               "`Paragraph": [
+                { "`Reference": [ { "`Root": [ "(*)", "`TUnknown" ] }, [] ] }
+              ]
+            }
+          ],
+          "warnings": []
+        } |}]
+
+    let internal_quoted_whitespace =
+      test "{!\"( * )\"}";
+      [%expect
+        {|
+        {
+          "value": [
+            {
+              "`Paragraph": [
                 { "`Reference": [ { "`Root": [ "( * )", "`TUnknown" ] }, [] ] }
               ]
             }
@@ -298,6 +313,21 @@ let%expect_test _ =
 
     let internal_whitespace_in_referent =
       test "{!val:( * )}";
+      [%expect
+        {|
+        {
+          "value": [
+            {
+              "`Paragraph": [
+                { "`Reference": [ { "`Root": [ "(*)", "`TValue" ] }, [] ] }
+              ]
+            }
+          ],
+          "warnings": []
+        } |}]
+
+    let internal_quoted_whitespace_in_referent =
+      test "{!val:\"( * )\"}";
       [%expect
         {|
         {
