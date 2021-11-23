@@ -5,6 +5,9 @@ Bugs fixed
 - Man page renderer fails to output pages that have children (@jonludlam, @Julow, #766)
 - Fix resolution of unprefixed references to pages (@Julow, #755)
 
+Additions
+- Strip unquoted spaces in identifiers for a more flexible reference syntax (@lubega-simon, @panglesd, #783)
+
 2.0.0
 -----
 Breaking changes

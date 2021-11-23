@@ -2,9 +2,9 @@
 
   $ compile bad_ref.mli
   File "bad_ref.mli", line 7, characters 8-18:
-  Failed to resolve reference unresolvedroot(( * )) Couldn't find "( * )"
+  Warning: Failed to resolve reference unresolvedroot(( * )) Couldn't find "( * )"
   File "bad_ref.mli", line 3, characters 8-18:
-  Failed to resolve reference unresolvedroot(( ^ )) Couldn't find "( ^ )"
+  Warning: Failed to resolve reference unresolvedroot(( ^ )) Couldn't find "( ^ )"
 
   $ jq_scan_references() { jq -c '.. | .["`Reference"]? | select(.) | .[0]'; }
 
