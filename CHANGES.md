@@ -4,9 +4,12 @@ Unreleased
 Bugs fixed
 - Man page renderer fails to output pages that have children (@jonludlam, @Julow, #766)
 - Fix resolution of unprefixed references to pages (@Julow, #755)
+- Fix reporting of ambiguous labels (@Julow, @jonludlam, #773, #781)
+- Allow referencing of labels in the top comment (@jonludlam, #771)
 
 Additions
 - Strip unquoted spaces in identifiers for a more flexible reference syntax (@lubega-simon, @panglesd, #783)
+- Add context to messages raised in expansions of includes (@Julow, #780)
 
 2.0.0
 -----
