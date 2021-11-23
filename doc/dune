@@ -9,6 +9,7 @@
   (:x driver.md)
   (glob_files *.ml*)
   (glob_files *.png)
+  (glob_files library_mlds/*.mld)
   (package odoc))
  (enabled_if
   (> %{ocaml_version} 4.11))
