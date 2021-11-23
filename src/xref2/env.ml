@@ -218,7 +218,13 @@ let add_to_elts kind identifier component env =
     assert (
       List.mem kind
         [ Kind_Module; Kind_ModuleType; Kind_Type; Kind_Class; Kind_ClassType ]);
-  assert (ElementsById.find_by_id identifier env.ids = None);
+  let _ =
+    let other = ElementsById.find_by_id identifier env.ids in
+    match other with
+    | Some _ ->
+      Format.eprintf "Overriding duplicate env entry\n%!"
+    | None -> ()
+  in
   let name = Identifier.name identifier in
   {
     env with
