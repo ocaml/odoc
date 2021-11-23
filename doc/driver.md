@@ -14,6 +14,8 @@ First we need to initialise MDX with some libraries and helpful values.
 (* Prelude *)
 #require "bos";;
 #install_printer Fpath.pp;;
+#print_length 100;;
+#print_depth 10;;
 open Bos;;
 let (>>=) = Result.bind;;
 let (>>|=) m f = m >>= fun x -> Ok (f x);;
@@ -159,6 +161,8 @@ let compile file ?parent ?(ignore_output = false) children =
 let link ?(ignore_output = false) file =
   let open Cmd in
   let cmd = odoc % "link" % p file % "-I" % "." in
+  let cmd = if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd in
+  Format.printf "%a" pp cmd;
   let lines = OS.Cmd.(run_out ~err:err_run_out cmd |> to_lines) |> get_ok in
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
@@ -339,16 +343,16 @@ let odoc_units =
 ```
 
 ```ocaml env=e1
-let lib_units =
-  List.map
-    (fun (lib, p) ->
-      Fpath.Set.fold
-        (fun p acc -> ("deps", lib, p) :: acc)
-        (find_units p |> get_ok)
-        [])
-    lib_paths
-
-let all_units = odoc_units @ lib_units |> List.flatten
+let all_units =
+  let lib_units =
+    List.map
+      (fun (lib, p) ->
+        Fpath.Set.fold
+          (fun p acc -> ("deps", lib, p) :: acc)
+          (find_units p |> get_ok)
+          [])
+      lib_paths in
+  odoc_units @ lib_units |> List.flatten
 ```
 
 Now we'll compile all of the parent `.mld` files. To ensure that the parents are compiled before the children, we start with `odoc.mld`, then `deps.mld`, and so on. The result of this file is a list of the resulting `odoc` files.
@@ -454,10 +458,413 @@ generate_all linked
 
 Let's see if there was any output from the `odoc` invocations:
 ```ocaml env=e1
+# #print_length 655360;;
 # !compile_output;;
 - : string list = [""]
 # !link_output;;
-- : string list = [""]
+- : string list =
+[""; "'../src/odoc/bin/main.exe' 'link' 'odoc_xref2.odoc' '-I' '.'";
+ "odoc_xref2.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "'../src/odoc/bin/main.exe' 'link' 'odoc_model.odoc' '-I' '.'";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"map.mli\", line 331, characters 16-24:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 248, characters 16-36:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 242, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_binding Couldn't find \"S\"";
+ "odoc_model.odoc: File \"map.mli\", line 223, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "odoc_model.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_model.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_model.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "'../src/odoc/bin/main.exe' 'link' 'odoc_examples.odoc' '-I' '.'";
+ "odoc_examples.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_examples.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_examples.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_examples.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_examples.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_examples.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
+ "'../src/odoc/bin/main.exe' 'link' 'page-deps.odoc' '-I' '.'";
+ "page-deps.odoc: File \"src/fmt.mli\", line 6, characters 4-13:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Format) Couldn't find \"Format\"";
+ "page-deps.odoc: File \"src/fpath.mli\", line 8, characters 8-20:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Map) Couldn't find \"Map\"";
+ "page-deps.odoc: File \"src/fpath.mli\", line 7, characters 59-71:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Set) Couldn't find \"Set\"";
+ "page-deps.odoc: File \"src/fpath.mli\", line 7, characters 28-52:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(file_exts) Couldn't find \"file_exts\""]
 # !generate_output;;
 - : string list =
 ["";
