@@ -222,7 +222,8 @@ let add_to_elts kind identifier component env =
     let other = ElementsById.find_by_id identifier env.ids in
     match other with
     | Some _ ->
-      Format.eprintf "Overriding duplicate env entry\n%!"
+      (* Format.eprintf "Overriding duplicate env entry\n%!" *)
+      ()
     | None -> ()
   in
   let name = Identifier.name identifier in
