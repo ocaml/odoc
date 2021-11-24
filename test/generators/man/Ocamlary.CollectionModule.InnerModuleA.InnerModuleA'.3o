@@ -14,7 +14,7 @@ This comment is for InnerModuleA'\.
 .SH Documentation
 .sp 
 .nf 
-\f[CB]type\fR t = (unit, unit) a_function
+\f[CB]type\fR t = ( unit, unit ) a_function
 .fi 
 .br 
 .ti +2

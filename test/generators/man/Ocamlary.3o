@@ -380,7 +380,8 @@ This is a_function with param and return type\.
 @returns: the y coordinate
 .nf 
 .sp 
-\f[CB]val\fR fun_fun_fun : ((int, int) a_function, (unit, unit) a_function) a_function
+\f[CB]val\fR fun_fun_fun : 
+  ( ( int, int ) a_function, ( unit, unit ) a_function ) a_function
 .sp 
 \f[CB]val\fR fun_maybe : ?yes:unit \f[CB]\->\fR unit \f[CB]\->\fR int
 .sp 
@@ -518,7 +519,7 @@ This comment is for t\.
 \f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
 .br 
 .ti +6
-\f[CB]type\fR t = (unit, unit) a_function
+\f[CB]type\fR t = ( unit, unit ) a_function
 .fi 
 .br 
 .ti +8
@@ -579,7 +580,11 @@ This comment is for InnerModuleTypeA\.
 module type of
 .nf 
 .sp 
-\f[CB]module\fR Recollection (C : COLLECTION) : COLLECTION \f[CB]with\fR \f[CB]type\fR collection = C\.element list \f[CB]and\fR \f[CB]type\fR element = C\.collection
+\f[CB]module\fR Recollection
+  (C : COLLECTION) : 
+  COLLECTION
+    \f[CB]with\fR \f[CB]type\fR collection = C\.element list
+     \f[CB]and\fR \f[CB]type\fR element = C\.collection
 .sp 
 \f[CB]module\fR \f[CB]type\fR MMM = \f[CB]sig\fR
 .br 
@@ -617,7 +622,7 @@ This comment is for t\.
 \f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
 .br 
 .ti +8
-\f[CB]type\fR t = (unit, unit) a_function
+\f[CB]type\fR t = ( unit, unit ) a_function
 .fi 
 .br 
 .ti +10
@@ -706,7 +711,7 @@ This comment is for t\.
 \f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
 .br 
 .ti +6
-\f[CB]type\fR t = (unit, unit) a_function
+\f[CB]type\fR t = ( unit, unit ) a_function
 .fi 
 .br 
 .ti +8
@@ -801,7 +806,7 @@ This comment is for t\.
 \f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
 .br 
 .ti +8
-\f[CB]type\fR t = (unit, unit) a_function
+\f[CB]type\fR t = ( unit, unit ) a_function
 .fi 
 .br 
 .ti +10
@@ -899,7 +904,7 @@ This comment is for t\.
 \f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
 .br 
 .ti +8
-\f[CB]type\fR t = (unit, unit) a_function
+\f[CB]type\fR t = ( unit, unit ) a_function
 .fi 
 .br 
 .ti +10
@@ -997,7 +1002,7 @@ This comment is for t\.
 \f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
 .br 
 .ti +8
-\f[CB]type\fR t = (unit, unit) a_function
+\f[CB]type\fR t = ( unit, unit ) a_function
 .fi 
 .br 
 .ti +10
@@ -1064,7 +1069,9 @@ This comment is for InnerModuleTypeA\.
 This module type includes two signatures\.
 .nf 
 .sp 
-\f[CB]module\fR FunctorTypeOf (Collection : \f[CB]module\fR \f[CB]type\fR \f[CB]of\fR CollectionModule) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+\f[CB]module\fR FunctorTypeOf
+  (Collection : \f[CB]module\fR \f[CB]type\fR \f[CB]of\fR CollectionModule) : 
+  \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .fi 
 .br 
 .ti +2
@@ -1167,7 +1174,7 @@ b : unit;
 \f[CB]type\fR universe_record = {
 .br 
 .ti +2
-nihilate : a\. \f[CB]'a\fR \f[CB]\->\fR unit;
+nihilate : 'a\. \f[CB]'a\fR \f[CB]\->\fR unit;
 .br 
 }
 .sp 
@@ -1227,16 +1234,16 @@ Wow! It was a polymorphic variant!
 \f[CB]type\fR (_, _) full_gadt = 
 .br 
 .ti +2
-| \f[CB]Tag\fR : (unit, unit) full_gadt
+| \f[CB]Tag\fR : ( unit, unit ) full_gadt
 .br 
 .ti +2
-| \f[CB]First\fR : \f[CB]'a\fR \f[CB]\->\fR (\f[CB]'a\fR, unit) full_gadt
+| \f[CB]First\fR : \f[CB]'a\fR \f[CB]\->\fR ( \f[CB]'a\fR, unit ) full_gadt
 .br 
 .ti +2
-| \f[CB]Second\fR : \f[CB]'a\fR \f[CB]\->\fR (unit, \f[CB]'a\fR) full_gadt
+| \f[CB]Second\fR : \f[CB]'a\fR \f[CB]\->\fR ( unit, \f[CB]'a\fR ) full_gadt
 .br 
 .ti +2
-| \f[CB]Exist\fR : \f[CB]'a\fR * \f[CB]'b\fR \f[CB]\->\fR (\f[CB]'b\fR, unit) full_gadt
+| \f[CB]Exist\fR : \f[CB]'a\fR * \f[CB]'b\fR \f[CB]\->\fR ( \f[CB]'b\fR, unit ) full_gadt
 .br 
 .fi 
 .br 
@@ -1256,7 +1263,7 @@ Wow! It was a GADT!
 | \f[CB]OfTag\fR \f[CB]of\fR \f[CB]'a\fR partial_gadt
 .br 
 .ti +2
-| \f[CB]ExistGadtTag\fR : (\f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR) \f[CB]\->\fR \f[CB]'a\fR partial_gadt
+| \f[CB]ExistGadtTag\fR : ( \f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR ) \f[CB]\->\fR \f[CB]'a\fR partial_gadt
 .br 
 .fi 
 .br 
@@ -1378,19 +1385,19 @@ This comment is for poly_variant_union\.
 .br 
  ]
 .sp 
-\f[CB]type\fR ('a, 'b) full_gadt_alias = (\f[CB]'a\fR, \f[CB]'b\fR) full_gadt = 
+\f[CB]type\fR ('a, 'b) full_gadt_alias = ( \f[CB]'a\fR, \f[CB]'b\fR ) full_gadt = 
 .br 
 .ti +2
-| \f[CB]Tag\fR : (unit, unit) full_gadt_alias
+| \f[CB]Tag\fR : ( unit, unit ) full_gadt_alias
 .br 
 .ti +2
-| \f[CB]First\fR : \f[CB]'a\fR \f[CB]\->\fR (\f[CB]'a\fR, unit) full_gadt_alias
+| \f[CB]First\fR : \f[CB]'a\fR \f[CB]\->\fR ( \f[CB]'a\fR, unit ) full_gadt_alias
 .br 
 .ti +2
-| \f[CB]Second\fR : \f[CB]'a\fR \f[CB]\->\fR (unit, \f[CB]'a\fR) full_gadt_alias
+| \f[CB]Second\fR : \f[CB]'a\fR \f[CB]\->\fR ( unit, \f[CB]'a\fR ) full_gadt_alias
 .br 
 .ti +2
-| \f[CB]Exist\fR : \f[CB]'a\fR * \f[CB]'b\fR \f[CB]\->\fR (\f[CB]'b\fR, unit) full_gadt_alias
+| \f[CB]Exist\fR : \f[CB]'a\fR * \f[CB]'b\fR \f[CB]\->\fR ( \f[CB]'b\fR, unit ) full_gadt_alias
 .br 
 .fi 
 .br 
@@ -1407,7 +1414,7 @@ This comment is for full_gadt_alias\.
 | \f[CB]OfTag\fR \f[CB]of\fR \f[CB]'a\fR partial_gadt_alias
 .br 
 .ti +2
-| \f[CB]ExistGadtTag\fR : (\f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR) \f[CB]\->\fR \f[CB]'a\fR partial_gadt_alias
+| \f[CB]ExistGadtTag\fR : ( \f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR ) \f[CB]\->\fR \f[CB]'a\fR partial_gadt_alias
 .br 
 .fi 
 .br 
@@ -1456,17 +1463,17 @@ This comment is for \f[CI]mutual_constr_a\fR then \f[CI]mutual_constr_b\fR\.
 This comment is for \f[CI]mutual_constr_b\fR then \f[CI]mutual_constr_a\fR\.
 .nf 
 .sp 
-\f[CB]type\fR rec_obj = < f : int; g : unit \f[CB]\->\fR unit; h : rec_obj; >
+\f[CB]type\fR rec_obj = < f : int ; g : unit \f[CB]\->\fR unit ; h : rec_obj >
 .sp 
-\f[CB]type\fR 'a open_obj = < f : int; g : unit \f[CB]\->\fR unit; \.\. > \f[CB]as\fR 'a
+\f[CB]type\fR 'a open_obj = < f : int ; g : unit \f[CB]\->\fR unit\.\. > \f[CB]as\fR 'a
 .sp 
-\f[CB]type\fR 'a oof = < a : unit; \.\. > \f[CB]as\fR 'a \f[CB]\->\fR \f[CB]'a\fR
+\f[CB]type\fR 'a oof = < a : unit\.\. > \f[CB]as\fR 'a \f[CB]\->\fR \f[CB]'a\fR
 .sp 
 \f[CB]type\fR 'a any_obj = < \.\. > \f[CB]as\fR 'a
 .sp 
-\f[CB]type\fR empty_obj = < >
+\f[CB]type\fR empty_obj = <  >
 .sp 
-\f[CB]type\fR one_meth = < meth : unit; >
+\f[CB]type\fR one_meth = < meth : unit >
 .sp 
 \f[CB]type\fR ext = \.\.
 .fi 

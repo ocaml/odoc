@@ -84,8 +84,10 @@ See the comments on the types at the end of test.mli for the expectation.
      <div class="odoc-spec">
       <div class="spec module" id="module-A_nonhidden" class="anchored">
        <a href="#module-A_nonhidden" class="anchor"></a>
-       <code><span><span class="keyword">module</span> </span>
-        <span><a href="A_nonhidden/index.html">A_nonhidden</a></span>
+       <code>
+        <span><span class="keyword">module</span> 
+         <a href="A_nonhidden/index.html">A_nonhidden</a>
+        </span>
         <span> : <span class="keyword">sig</span> ... 
          <span class="keyword">end</span>
         </span>
@@ -95,7 +97,7 @@ See the comments on the types at the end of test.mli for the expectation.
      <div class="odoc-spec">
       <div class="spec module" id="module-A" class="anchored">
        <a href="#module-A" class="anchor"></a>
-       <code><span><span class="keyword">module</span> </span><span>A</span>
+       <code><span><span class="keyword">module</span> A</span>
         <span> = <a href="A_nonhidden/index.html">A</a></span>
        </code>
       </div>
@@ -104,8 +106,9 @@ See the comments on the types at the end of test.mli for the expectation.
      <div class="odoc-spec">
       <div class="spec module" id="module-B" class="anchored">
        <a href="#module-B" class="anchor"></a>
-       <code><span><span class="keyword">module</span> </span>
-        <span><a href="B/index.html">B</a></span>
+       <code>
+        <span><span class="keyword">module</span> <a href="B/index.html">B</a>
+        </span>
         <span> : <span class="keyword">sig</span> ... 
          <span class="keyword">end</span>
         </span>
@@ -115,8 +118,9 @@ See the comments on the types at the end of test.mli for the expectation.
      <div class="odoc-spec">
       <div class="spec module" id="module-C" class="anchored">
        <a href="#module-C" class="anchor"></a>
-       <code><span><span class="keyword">module</span> </span>
-        <span><a href="C/index.html">C</a></span>
+       <code>
+        <span><span class="keyword">module</span> <a href="C/index.html">C</a>
+        </span>
         <span> : <span class="keyword">sig</span> ... 
          <span class="keyword">end</span>
         </span>
@@ -126,8 +130,9 @@ See the comments on the types at the end of test.mli for the expectation.
      <div class="odoc-spec">
       <div class="spec module" id="module-D" class="anchored">
        <a href="#module-D" class="anchor"></a>
-       <code><span><span class="keyword">module</span> </span>
-        <span><a href="D/index.html">D</a></span>
+       <code>
+        <span><span class="keyword">module</span> <a href="D/index.html">D</a>
+        </span>
         <span> : <span class="keyword">sig</span> ... 
          <span class="keyword">end</span>
         </span>

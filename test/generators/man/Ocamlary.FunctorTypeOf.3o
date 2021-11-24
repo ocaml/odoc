@@ -52,7 +52,7 @@ This comment is for t\.
 \f[CB]module\fR InnerModuleA' : \f[CB]sig\fR
 .br 
 .ti +6
-\f[CB]type\fR t = (unit, unit) a_function
+\f[CB]type\fR t = ( unit, unit ) a_function
 .fi 
 .br 
 .ti +8

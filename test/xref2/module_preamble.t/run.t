@@ -49,8 +49,9 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
      <div class="odoc-spec">
       <div class="spec module" id="module-B" class="anchored">
        <a href="#module-B" class="anchor"></a>
-       <code><span><span class="keyword">module</span> </span>
-        <span><a href="B/index.html">B</a></span>
+       <code>
+        <span><span class="keyword">module</span> <a href="B/index.html">B</a>
+        </span>
         <span> : <span class="keyword">sig</span> ... 
          <span class="keyword">end</span>
         </span>
