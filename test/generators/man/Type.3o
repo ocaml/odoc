@@ -26,13 +26,13 @@ Some documentation\.
 .sp 
 \f[CB]type\fR arrow = int \f[CB]\->\fR int
 .sp 
-\f[CB]type\fR higher_order = (int \f[CB]\->\fR int) \f[CB]\->\fR int
+\f[CB]type\fR higher_order = ( int \f[CB]\->\fR int ) \f[CB]\->\fR int
 .sp 
 \f[CB]type\fR labeled = l:int \f[CB]\->\fR int
 .sp 
 \f[CB]type\fR optional = ?l:int \f[CB]\->\fR int
 .sp 
-\f[CB]type\fR labeled_higher_order = (l:int \f[CB]\->\fR int) \f[CB]\->\fR (?l:int \f[CB]\->\fR int) \f[CB]\->\fR int
+\f[CB]type\fR labeled_higher_order = ( l:int \f[CB]\->\fR int ) \f[CB]\->\fR ( ?l:int \f[CB]\->\fR int ) \f[CB]\->\fR int
 .sp 
 \f[CB]type\fR pair = int * int
 .sp 
@@ -44,7 +44,18 @@ Some documentation\.
 .sp 
 \f[CB]type\fR instance = int constructor
 .sp 
-\f[CB]type\fR long = labeled_higher_order \f[CB]\->\fR [ `Bar | `Baz of triple ] \f[CB]\->\fR pair \f[CB]\->\fR labeled \f[CB]\->\fR higher_order \f[CB]\->\fR (string \f[CB]\->\fR int) \f[CB]\->\fR (int * float * char * string * char * unit) option \f[CB]\->\fR nested_pair \f[CB]\->\fR arrow \f[CB]\->\fR string \f[CB]\->\fR nested_pair array
+\f[CB]type\fR long =
+  labeled_higher_order \f[CB]\->\fR
+  [ `Bar | `Baz of triple ] \f[CB]\->\fR
+  pair \f[CB]\->\fR
+  labeled \f[CB]\->\fR
+  higher_order \f[CB]\->\fR
+  ( string \f[CB]\->\fR int ) \f[CB]\->\fR
+  (int * float * char * string * char * unit) option \f[CB]\->\fR
+  nested_pair \f[CB]\->\fR
+  arrow \f[CB]\->\fR
+  string \f[CB]\->\fR
+  nested_pair array
 .sp 
 \f[CB]type\fR variant_e = {
 .br 
@@ -129,7 +140,7 @@ d : int;
 (* bar *)
 .br 
 .ti +2
-e : a\. \f[CB]'a\fR;
+e : 'a\. \f[CB]'a\fR;
 .br 
 }
 .sp 
@@ -175,7 +186,7 @@ e : a\. \f[CB]'a\fR;
 .br 
  ]
 .sp 
-\f[CB]type\fR object_ = < a : int; b : int; c : int; >
+\f[CB]type\fR object_ = < a : int ; b : int ; c : int >
 .sp 
 \f[CB]module\fR \f[CB]type\fR X = \f[CB]sig\fR
 .br 
@@ -199,7 +210,7 @@ e : a\. \f[CB]'a\fR;
 .sp 
 \f[CB]type\fR ('a, 'b) binary
 .sp 
-\f[CB]type\fR using_binary = (int, int) binary
+\f[CB]type\fR using_binary = ( int, int ) binary
 .sp 
 \f[CB]type\fR 'custom name
 .sp 
@@ -215,11 +226,11 @@ e : a\. \f[CB]'a\fR;
 .sp 
 \f[CB]type\fR 'a named_variant = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = [< polymorphic_variant ]
 .sp 
-\f[CB]type\fR 'a exact_object = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = < a : int; b : int; >
+\f[CB]type\fR 'a exact_object = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = < a : int ; b : int >
 .sp 
-\f[CB]type\fR 'a lower_object = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = < a : int; b : int; \.\. >
+\f[CB]type\fR 'a lower_object = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = < a : int ; b : int\.\. >
 .sp 
-\f[CB]type\fR 'a poly_object = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = < a : a\. \f[CB]'a\fR; >
+\f[CB]type\fR 'a poly_object = \f[CB]'a\fR \f[CB]constraint\fR \f[CB]'a\fR = < a : 'a\. \f[CB]'a\fR >
 .sp 
 \f[CB]type\fR ('a, 'b) double_constrained = \f[CB]'a\fR * \f[CB]'b\fR \f[CB]constraint\fR \f[CB]'a\fR = int \f[CB]constraint\fR \f[CB]'b\fR = unit
 .sp 

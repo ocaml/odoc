@@ -102,8 +102,9 @@ The second occurence of 'B' in the main page should be disambiguated
      <div class="odoc-spec">
       <div class="spec module" id="module-M" class="anchored">
        <a href="#module-M" class="anchor"></a>
-       <code><span><span class="keyword">module</span> </span>
-        <span><a href="M/index.html">M</a></span>
+       <code>
+        <span><span class="keyword">module</span> <a href="M/index.html">M</a>
+        </span>
         <span> : <span class="keyword">sig</span> ... 
          <span class="keyword">end</span>
         </span>
@@ -113,8 +114,9 @@ The second occurence of 'B' in the main page should be disambiguated
      <div class="odoc-spec">
       <div class="spec module" id="module-N" class="anchored">
        <a href="#module-N" class="anchor"></a>
-       <code><span><span class="keyword">module</span> </span>
-        <span><a href="N/index.html">N</a></span>
+       <code>
+        <span><span class="keyword">module</span> <a href="N/index.html">N</a>
+        </span>
         <span> : <span class="keyword">sig</span> ... 
          <span class="keyword">end</span>
         </span>

@@ -57,7 +57,7 @@
      <code><span><span class="keyword">type</span> higher_order</span>
       <span> = 
        <span>
-        <span>(<span>int <span class="arrow">&#45;&gt;</span></span> int)
+        <span>( <span>int <span class="arrow">&#45;&gt;</span></span> int )
         </span> <span class="arrow">&#45;&gt;</span>
        </span> int
       </span>
@@ -89,11 +89,12 @@
       <span><span class="keyword">type</span> labeled_higher_order</span>
       <span> = 
        <span>
-        <span>(<span>l:int <span class="arrow">&#45;&gt;</span></span> int)
+        <span>( <span>l:int <span class="arrow">&#45;&gt;</span></span> int )
         </span> <span class="arrow">&#45;&gt;</span>
        </span> 
        <span>
-        <span>(<span>?l:int <span class="arrow">&#45;&gt;</span></span> int)
+        <span>( <span>?l:int <span class="arrow">&#45;&gt;</span></span>
+          int )
         </span> <span class="arrow">&#45;&gt;</span>
        </span> int
       </span>
@@ -145,40 +146,53 @@
     <div class="spec type" id="type-long" class="anchored">
      <a href="#type-long" class="anchor"></a>
      <code><span><span class="keyword">type</span> long</span>
-      <span> = 
+      <span> =
+                
        <span><a href="#type-labeled_higher_order">labeled_higher_order</a>
          <span class="arrow">&#45;&gt;</span>
-       </span> 
+       </span>
+                
        <span>
         <span>[ `Bar 
          <span><span>| `Baz</span> of <a href="#type-triple">triple</a>
          </span> ]
         </span> <span class="arrow">&#45;&gt;</span>
-       </span> 
+       </span>
+                
        <span><a href="#type-pair">pair</a> 
         <span class="arrow">&#45;&gt;</span>
-       </span> 
+       </span>
+                
        <span><a href="#type-labeled">labeled</a> 
         <span class="arrow">&#45;&gt;</span>
-       </span> 
+       </span>
+                
        <span><a href="#type-higher_order">higher_order</a> 
         <span class="arrow">&#45;&gt;</span>
-       </span> 
+       </span>
+                
        <span>
-        <span>(<span>string <span class="arrow">&#45;&gt;</span></span> int)
+        <span>( <span>string <span class="arrow">&#45;&gt;</span></span>
+          int )
         </span> <span class="arrow">&#45;&gt;</span>
-       </span> 
+       </span>
+                
        <span>
         <span><span>(int * float * char * string * char * unit)</span> option
         </span> <span class="arrow">&#45;&gt;</span>
-       </span> 
+       </span>
+                
        <span><a href="#type-nested_pair">nested_pair</a> 
         <span class="arrow">&#45;&gt;</span>
-       </span> 
+       </span>
+                
        <span><a href="#type-arrow">arrow</a> 
         <span class="arrow">&#45;&gt;</span>
-       </span> <span>string <span class="arrow">&#45;&gt;</span></span>
-        <span><a href="#type-nested_pair">nested_pair</a> array</span>
+       </span>
+                
+       <span>string <span class="arrow">&#45;&gt;</span></span>
+                                                                 
+       <span><a href="#type-nested_pair">nested_pair</a> array</span>
       </span>
      </code>
     </div>
@@ -394,7 +408,7 @@
       <tr id="type-record.e" class="anchored">
        <td class="def record field">
         <a href="#type-record.e" class="anchor"></a>
-        <code><span>e : a. <span class="type-var">'a</span>;</span></code>
+        <code><span>e : 'a. <span class="type-var">'a</span>;</span></code>
        </td>
       </tr>
      </table><code><span>}</span></code>
@@ -523,7 +537,7 @@
     <div class="spec type" id="type-object_" class="anchored">
      <a href="#type-object_" class="anchor"></a>
      <code><span><span class="keyword">type</span> object_</span>
-      <span> = <span>&lt; a : int; b : int; c : int; &gt;</span></span>
+      <span> = <span>&lt; a : int ; b : int ; c : int &gt;</span></span>
      </code>
     </div>
    </div>
@@ -533,7 +547,8 @@
      <code>
       <span><span class="keyword">module</span> 
        <span class="keyword">type</span> 
-      </span><span><a href="Type-module-type-X.html">X</a></span>
+       <a href="Type-module-type-X.html">X</a>
+      </span>
       <span> = <span class="keyword">sig</span> ... 
        <span class="keyword">end</span>
       </span>
@@ -609,7 +624,7 @@
      <a href="#type-using_binary" class="anchor"></a>
      <code><span><span class="keyword">type</span> using_binary</span>
       <span> = 
-       <span><span>(int, int)</span> <a href="#type-binary">binary</a>
+       <span><span>( int, int )</span> <a href="#type-binary">binary</a>
        </span>
       </span>
      </code>
@@ -710,7 +725,7 @@
       </span><span> = <span class="type-var">'a</span></span>
       <span> <span class="keyword">constraint</span> 
        <span class="type-var">'a</span> = 
-       <span>&lt; a : int; b : int; &gt;</span>
+       <span>&lt; a : int ; b : int &gt;</span>
       </span>
      </code>
     </div>
@@ -723,7 +738,7 @@
       </span><span> = <span class="type-var">'a</span></span>
       <span> <span class="keyword">constraint</span> 
        <span class="type-var">'a</span> = 
-       <span>&lt; a : int; b : int; .. &gt;</span>
+       <span>&lt; a : int ; b : int.. &gt;</span>
       </span>
      </code>
     </div>
@@ -736,7 +751,7 @@
       </span><span> = <span class="type-var">'a</span></span>
       <span> <span class="keyword">constraint</span> 
        <span class="type-var">'a</span> = 
-       <span>&lt; a : a. <span class="type-var">'a</span>; &gt;</span>
+       <span>&lt; a : 'a. <span class="type-var">'a</span> &gt;</span>
       </span>
      </code>
     </div>
