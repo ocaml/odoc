@@ -234,8 +234,8 @@ let rec kind_of_module_type_cpath = function
 (** [Some (`Root _)] for errors during lookup of root modules or [None] for
     other errors. *)
 let rec kind_of_error : Tools_error.any -> kind option = function
-  | `UnresolvedPath (`Module (cp, _)) -> kind_of_module_cpath cp
-  | `UnresolvedPath (`ModuleType (cp, _)) -> kind_of_module_type_cpath cp
+  | `UnresolvedPath (`Module (cp, e)) -> (match kind_of_module_cpath cp with | None -> kind_of_error (e :> Tools_error.any) | x -> x)
+  | `UnresolvedPath (`ModuleType (cp, e)) -> (match kind_of_module_type_cpath cp with | None -> kind_of_error (e :> Tools_error.any) | x -> x)
   | `Lookup_failure (`Root (_, name)) ->
       Some (`Root (Names.ModuleName.to_string name))
   | `UnexpandedTypeOf type_of_desc -> kind_of_type_of_desc type_of_desc
