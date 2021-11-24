@@ -343,8 +343,9 @@ module Make (Syntax : SYNTAX) = struct
           if not needs_parentheses then res else enclose ~l:"( " res ~r:" )"
       | Tuple lst ->
           let res =
-            O.list lst ~sep:Syntax.Type.Tuple.element_separator
-              ~f:(type_expr ~needs_parentheses:true)
+            O.box_hv_no_indent
+              (O.list lst ~sep:Syntax.Type.Tuple.element_separator
+                 ~f:(type_expr ~needs_parentheses:true))
           in
           if Syntax.Type.Tuple.always_parenthesize || needs_parentheses then
             enclose ~l:"(" res ~r:")"
