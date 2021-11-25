@@ -29,11 +29,19 @@ let filename_only ?suggestion format =
   let k message file = `With_filename_only { file; message } in
   kmake k ?suggestion format
 
-let to_string = function
-  | `With_full_location { location; message } ->
-      Format.asprintf "%a:@\n%s" Location_.pp location message
-  | `With_filename_only { file; message } ->
-      Format.asprintf "File \"%s\":@\n%s" file message
+let _to_string =
+  let pp_prefix ppf = function
+    | Some p -> Format.fprintf ppf "%s: " p
+    | None -> ()
+  in
+  fun ?prefix -> function
+    | `With_full_location { location; message } ->
+        Format.asprintf "%a:@\n%a%s" Location_.pp location pp_prefix prefix
+          message
+    | `With_filename_only { file; message } ->
+        Format.asprintf "File \"%s\":@\n%a%s" file pp_prefix prefix message
+
+let to_string e = _to_string e
 
 exception Conveyed_by_exception of t
 
@@ -85,7 +93,7 @@ let raise_errors_and_warnings we =
 
 let catch_errors_and_warnings f = catch_warnings (fun () -> catch f)
 
-let print_error t = prerr_endline (to_string t)
+let print_error ?prefix t = prerr_endline (_to_string ?prefix t)
 
 let print_errors = List.iter print_error
 
@@ -93,7 +101,14 @@ type warnings_options = { warn_error : bool; print_warnings : bool }
 
 let print_warnings ~warnings_options warnings =
   if warnings_options.print_warnings then
-    List.iter (fun w -> print_error w.w) warnings
+    List.iter
+      (fun w ->
+        let prefix =
+          if warnings_options.warn_error && not w.non_fatal then "Error"
+          else "Warning"
+        in
+        print_error ~prefix w.w)
+      warnings
 
 (* When there is warnings. *)
 let handle_warn_error ~warnings_options warnings ok =
