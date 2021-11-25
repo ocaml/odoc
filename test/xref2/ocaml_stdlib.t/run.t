@@ -10,7 +10,7 @@ Imitate the way the stdlib is built and how its documentation should be built.
 
   $ odoc compile --pkg ocaml -o main.odoc main.cmti -I .
   File "main.mli", line 3, characters 4-17:
-  Canonical paths must contain a dot, eg. X.Y.
+  Warning: Canonical paths must contain a dot, eg. X.Y.
   $ odoc compile --pkg ocaml -o main__x.odoc main__x.cmti -I .
 
   $ odoc html --indent -o html main__x.odoc -I .

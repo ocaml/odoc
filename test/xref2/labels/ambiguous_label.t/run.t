@@ -6,7 +6,7 @@ Labels don't follow OCaml's scoping rules:
   File "test.ml", line 25, characters 4-36:
   Warning: Failed to resolve reference unresolvedroot(example_2) Couldn't find "example_2"
   File "test.ml", line 16, characters 4-50:
-  Error: Multiple sections named 'example' found. Please alter one to ensure reference is unambiguous. Locations:
+  Warning: Multiple sections named 'example' found. Please alter one to ensure reference is unambiguous. Locations:
     File "test.ml", line 3, character 4
     File "test.ml", line 18, character 4
     File "test.ml", line 9, character 4

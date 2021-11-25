@@ -14,7 +14,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
   $ odoc compile --pkg test -o a__b.odoc -I . a__b.cmti
   $ odoc compile --pkg test -o a.odoc -I . a.cmti
   File "a.mli", line 4, characters 4-17:
-  Canonical paths must contain a dot, eg. X.Y.
+  Warning: Canonical paths must contain a dot, eg. X.Y.
 
   $ odoc link -I . a__b.odoc
   $ odoc link -I . a.odoc

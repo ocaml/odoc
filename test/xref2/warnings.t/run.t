@@ -7,18 +7,18 @@ A contains both parsing errors and a reference to B that isn't compiled yet:
 
   $ odoc compile --warn-error --package test a.cmti
   File "a.mli", line 8, characters 23-23:
-  End of text is not allowed in '{!...}' (cross-reference).
+  Error: End of text is not allowed in '{!...}' (cross-reference).
   File "a.mli", line 8, characters 22-23:
-  Identifier in reference should not be empty.
+  Error: Identifier in reference should not be empty.
   ERROR: Warnings have been generated.
   [1]
 
   $ odoc compile --package test b.cmti
   $ odoc compile --package test a.cmti
   File "a.mli", line 8, characters 23-23:
-  End of text is not allowed in '{!...}' (cross-reference).
+  Warning: End of text is not allowed in '{!...}' (cross-reference).
   File "a.mli", line 8, characters 22-23:
-  Identifier in reference should not be empty.
+  Warning: Identifier in reference should not be empty.
 
   $ odoc errors a.odoc
   File "a.mli", line 8, characters 23-23:
@@ -30,7 +30,7 @@ A contains linking errors:
 
   $ odoc link a.odoc
   File "a.odoc":
-  Couldn't find the following modules:
+  Warning: Couldn't find the following modules:
     B
   File "a.mli", line 6, characters 47-65:
   Warning: Failed to resolve reference unresolvedroot(B).doesn't_exist Couldn't find "B"
@@ -44,7 +44,7 @@ A contains linking errors:
   Couldn't find the following modules:
     B
   File "a.mli", line 6, characters 47-65:
-  Warning: Failed to resolve reference unresolvedroot(B).doesn't_exist Couldn't find "B"
+  Failed to resolve reference unresolvedroot(B).doesn't_exist Couldn't find "B"
 
 It is possible to hide the warnings too:
 
