@@ -1,5 +1,5 @@
-Unreleased
-----------
+2.0.1
+-----
 
 Bugs fixed
 - Man page renderer fails to output pages that have children (@jonludlam, @Julow, #766)
