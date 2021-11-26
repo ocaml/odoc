@@ -205,14 +205,6 @@ let namable_row row =
        | _ -> true)
     (row_fields row)
 
-let proxy x =
-  #if OCAML_VERSION >= (4, 14, 0)
-    Btype.proxy x
-  #else
-    let r = Btype.repr x in
-      Btype.proxy r
-  #endif
-
 let field_public =
   #if OCAML_VERSION >= (4, 14, 0)
     Types.Fpublic
@@ -220,9 +212,17 @@ let field_public =
     Fpresent
   #endif
 
+let repr x =
+#if OCAML_VERSION >= (4, 14, 0)
+  x
+#else
+  Btype.repr x
+#endif
+
 let mark_type ty =
   let rec loop visited ty =
-    let px = proxy ty in
+    let ty = repr ty in
+    let px = Btype.proxy ty in
     if List.memq px visited && aliasable ty then add_alias px else
       let visited = px :: visited in
       match get_desc ty with
@@ -312,14 +312,6 @@ let tvar_none ty = Types.Private_type_expr.set_desc ty (Tvar None)
 let tsubst x = Tsubst(x,None)
 let tvar_none ty = Types.Transient_expr.(set_desc (coerce ty) (Tvar None))
 #endif
-
-let repr x =
-#if OCAML_VERSION >= (4, 14, 0)
-  x
-#else
-  Btype.repr x
-#endif
-
 
 let prepare_type_parameters params manifest =
   let params =
