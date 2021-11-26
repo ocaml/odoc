@@ -409,7 +409,7 @@ let csig_self x =
   #if OCAML_VERSION >= (4,14,0)
     x.csig_self
   #else
-    Btype.repr x.self_type
+    Btype.repr x.csig_self
   #endif
 
 let rec mark_class_type params = function
@@ -557,7 +557,11 @@ and read_row env _px row =
          | _ -> false)
       sorted_fields in
   let all_present = List.length present = List.length sorted_fields in
+#if OCAML_VERSION >= (4,14,0)
   match row_name row with
+#else
+  match row.row_name with
+#endif
   | Some(p, params) when namable_row row ->
       let p = Env.Path.read_type env p in
       let params = List.map (read_type_expr env) params in
