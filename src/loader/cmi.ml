@@ -212,6 +212,8 @@ let field_public =
     Fpresent
   #endif
 
+(* TODO(patricoferris): Is it safe to not call repr.
+   Probably provided we go through an accessor. *)
 let repr x =
 #if OCAML_VERSION >= (4, 14, 0)
   x
@@ -436,15 +438,6 @@ let mark_class_declaration cld =
   reset_context ();
   List.iter mark_type_parameter cld.cty_params;
   mark_class_type cld.cty_params cld.cty_type
-
-(* TODO(patricoferris): Is it safe to not call repr.
-   Probably provided we go through an accessor. *)
-let repr x =
-  #if OCAML_VERSION >= (4,14,0)
-    x
-  #else
-    Btype.repr x
-  #endif
 
 let row_repr x =
   #if OCAML_VERSION >= (4,14,0)
