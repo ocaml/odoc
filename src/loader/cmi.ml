@@ -150,11 +150,11 @@ let visit_object ty px =
     visited_rows := px :: !visited_rows
 
 let get_row_name x =
-  #if OCAML_VERSION >= (4, 14, 0)
-    Types.row_name x
-  #else
-    x.Types.row_name
-  #endif
+#if OCAML_VERSION >= (4, 14, 0)
+  Types.row_name x
+#else
+  x.Types.row_name
+#endif
 
 let row_field_repr x =
 #if OCAML_VERSION >= (4, 14, 0)
@@ -178,39 +178,39 @@ let static_row_repr x =
 #endif
 
 let row_closed x =
-  #if OCAML_VERSION >= (4, 14, 0)
-    Types.row_closed x
-  #else
-    x.Types.row_closed
-  #endif
+#if OCAML_VERSION >= (4, 14, 0)
+  Types.row_closed x
+#else
+  x.Types.row_closed
+#endif
 
 let row_fields x =
-  #if OCAML_VERSION >= (4, 14, 0)
-    Types.row_fields x
-  #else
-    x.Types.row_fields
-  #endif
+#if OCAML_VERSION >= (4, 14, 0)
+  Types.row_fields x
+#else
+  x.Types.row_fields
+#endif
 
 let namable_row row =
   get_row_name row <> None &&
   List.for_all
     (fun (_, f) ->
        match row_field_repr f with
-       #if OCAML_VERSION >= (4, 14, 0)
-        | Reither(c, l, _) ->
-      #else
-        | Reither(c, l, _, _) ->
-      #endif
+#if OCAML_VERSION >= (4, 14, 0)
+       | Reither(c, l, _) ->
+#else
+       | Reither(c, l, _, _) ->
+#endif
            row_closed row && if c then l = [] else List.length l = 1
        | _ -> true)
     (row_fields row)
 
 let field_public =
-  #if OCAML_VERSION >= (4, 14, 0)
-    Types.Fpublic
-  #else
-    Fpresent
-  #endif
+#if OCAML_VERSION >= (4, 14, 0)
+  Types.Fpublic
+#else
+  Fpresent
+#endif
 
 (* TODO(patricoferris): Is it safe to not call repr.
    Probably provided we go through an accessor. *)
@@ -392,19 +392,19 @@ let mark_exception ext =
   mark_extension_constructor ext
 
 let self_type =
-  #if OCAML_VERSION >= (4,14,0)
-    Btype.self_type
-  #else
-    Ctype.self_type
-  #endif
+#if OCAML_VERSION >= (4,14,0)
+  Btype.self_type
+#else
+  Ctype.self_type
+#endif
 
 (* TODO(patricoferris): Is it safe to not call repr *)
 let csig_self x =
-  #if OCAML_VERSION >= (4,14,0)
-    x.csig_self
-  #else
-    Btype.repr x.csig_self
-  #endif
+#if OCAML_VERSION >= (4,14,0)
+  x.csig_self
+#else
+  Btype.repr x.csig_self
+#endif
 
 let rec mark_class_type params = function
   | Cty_constr (_, tyl, cty) ->
@@ -440,11 +440,11 @@ let mark_class_declaration cld =
   mark_class_type cld.cty_params cld.cty_type
 
 let row_repr x =
-  #if OCAML_VERSION >= (4,14,0)
-    x
-  #else
-    Btype.row_repr x
-  #endif
+#if OCAML_VERSION >= (4,14,0)
+  x
+#else
+  Btype.row_repr x
+#endif
 
 let rec read_type_expr env typ =
   let open TypeExpr in
@@ -571,14 +571,14 @@ and read_row env _px row =
                   arguments = [read_type_expr env typ];
                   doc = [];
                 }
-                #if OCAML_VERSION >= (4, 14, 0)
-                  | Reither(constant, typs, _) ->
-                #else
-                  | Reither(constant, typs, _, _) ->
-                #endif
-                  let arguments =
-                    List.map (read_type_expr env) typs
-                  in
+#if OCAML_VERSION >= (4, 14, 0)
+              | Reither(constant, typs, _) ->
+#else
+              | Reither(constant, typs, _, _) ->
+#endif
+                let arguments =
+                  List.map (read_type_expr env) typs
+                in
                 Constructor {name; constant; arguments; doc = []}
               | Rabsent -> assert false)
           sorted_fields
@@ -831,18 +831,18 @@ let read_exception env parent id ext =
       {id; doc; args; res}
 
 let concr_mem =
-  #if OCAML_VERSION >= (4,14,0)
-    Types.Meths.mem
-  #else
-    Concr.mem
-  #endif
+#if OCAML_VERSION >= (4,14,0)
+  Types.Meths.mem
+#else
+  Concr.mem
+#endif
 
 let csig_concr x =
-  #if OCAML_VERSION >= (4,14,0)
-    x.Types.csig_meths
-  #else
-    x.Types.csig_concr
-  #endif
+#if OCAML_VERSION >= (4,14,0)
+  x.Types.csig_meths
+#else
+  x.Types.csig_concr
+#endif
 
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
