@@ -26,6 +26,40 @@ open Odoc_model.Names
 module Env = Ident_env
 module Paths = Odoc_model.Paths
 
+module Compat = struct
+#if OCAML_VERSION >= (4, 14, 0)
+  let get_desc = Types.get_desc
+  let get_row_name = Types.row_name
+  let row_field_repr = Types.row_field_repr
+  let field_kind_repr = Types.field_kind_repr
+  let static_row_repr = Btype.static_row
+  let row_closed = Types.row_closed
+  let row_fields = Types.row_fields
+  let field_public = Types.Fpublic
+  let repr x = x
+  let self_type = Btype.self_type
+  let csig_self x = x.Types.csig_self
+  let row_repr x = x
+  let concr_mem = Types.Meths.mem
+  let csig_concr x = x.Types.csig_meths
+#else
+  let get_desc x = x.Types.desc
+  let get_row_name x = x.Types.row_name
+  let row_field_repr = Btype.row_field_repr
+  let field_kind_repr = Btype.field_kind_repr
+  let static_row_repr x = Btype.static_row (Btype.row_repr x)
+  let row_closed x = x.Types.row_closed
+  let row_fields x = x.Types.row_fields
+  let field_public = Types.Fpresent
+  let repr = Btype.repr
+  let self_type = Ctype.self_type
+  let csig_self x = Btype.repr x.Types.csig_self
+  let row_repr = Btype.row_repr
+  let concr_mem = Types.Concr.mem
+  let csig_concr x = x.Types.csig_concr
+#endif
+end
+
 let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
@@ -86,19 +120,12 @@ let fresh_name base =
   done;
   !current_name
 
-let get_desc x =
-#if OCAML_VERSION >= (4, 14, 0)
-  Types.get_desc x
-#else
-  x.Types.desc
-#endif
-
 let name_of_type (ty : Types.type_expr) =
   try
     List.assq ty !used_names
   with Not_found ->
     let base =
-      match get_desc ty with
+      match Compat.get_desc ty with
       | Tvar (Some name) | Tunivar (Some name) -> name
       | _ -> next_name ()
     in
@@ -119,7 +146,7 @@ let reset_aliased () = aliased := []; used_aliases := []
 let is_aliased px = List.memq px !aliased
 
 let aliasable (ty : Types.type_expr) =
-  match get_desc ty with
+  match Compat.get_desc ty with
   | Tvar _ | Tunivar _ | Tpoly _ -> false
   | _ -> true
 
@@ -127,7 +154,7 @@ let add_alias ty =
   let px = Btype.proxy ty in
   if not (List.memq px !aliased) then begin
     aliased := px :: !aliased;
-    match get_desc px with
+    match Compat.get_desc px with
     | Tvar name | Tunivar name -> reserve_name name
     | _ -> ()
   end
@@ -149,85 +176,27 @@ let visit_object ty px =
   if Ctype.opened_object ty then
     visited_rows := px :: !visited_rows
 
-let get_row_name x =
-#if OCAML_VERSION >= (4, 14, 0)
-  Types.row_name x
-#else
-  x.Types.row_name
-#endif
-
-let row_field_repr x =
-#if OCAML_VERSION >= (4, 14, 0)
-  Types.row_field_repr x
-#else
-  Btype.row_field_repr x
-#endif
-
-let field_kind_repr x =
-#if OCAML_VERSION >= (4, 14, 0)
-  Types.field_kind_repr x
-#else
-  Btype.field_kind_repr x
-#endif
-
-let static_row_repr x =
-#if OCAML_VERSION >= (4, 14, 0)
-  Btype.static_row x
-#else
-  Btype.(static_row @@ row_repr x)
-#endif
-
-let row_closed x =
-#if OCAML_VERSION >= (4, 14, 0)
-  Types.row_closed x
-#else
-  x.Types.row_closed
-#endif
-
-let row_fields x =
-#if OCAML_VERSION >= (4, 14, 0)
-  Types.row_fields x
-#else
-  x.Types.row_fields
-#endif
-
 let namable_row row =
-  get_row_name row <> None &&
+  Compat.get_row_name row <> None &&
   List.for_all
     (fun (_, f) ->
-       match row_field_repr f with
+       match Compat.row_field_repr f with
 #if OCAML_VERSION >= (4, 14, 0)
        | Reither(c, l, _) ->
 #else
        | Reither(c, l, _, _) ->
 #endif
-           row_closed row && if c then l = [] else List.length l = 1
+           Compat.row_closed row && if c then l = [] else List.length l = 1
        | _ -> true)
-    (row_fields row)
-
-let field_public =
-#if OCAML_VERSION >= (4, 14, 0)
-  Types.Fpublic
-#else
-  Fpresent
-#endif
-
-(* TODO(patricoferris): Is it safe to not call repr.
-   Probably provided we go through an accessor. *)
-let repr x =
-#if OCAML_VERSION >= (4, 14, 0)
-  x
-#else
-  Btype.repr x
-#endif
+    (Compat.row_fields row)
 
 let mark_type ty =
   let rec loop visited ty =
-    let ty = repr ty in
+    let ty = Compat.repr ty in
     let px = Btype.proxy ty in
     if List.memq px visited && aliasable ty then add_alias px else
       let visited = px :: visited in
-      match get_desc ty with
+      match Compat.get_desc ty with
       | Tvar name -> reserve_name name
       | Tarrow(_, ty1, ty2, _) ->
           loop visited ty1;
@@ -238,8 +207,8 @@ let mark_type ty =
       | Tvariant row ->
           if is_row_visited px then add_alias px else
            begin
-            if not (static_row_repr row) then visit_row px;
-            match get_row_name row with
+            if not (Compat.static_row_repr row) then visit_row px;
+            match Compat.get_row_name row with
             | Some(_, tyl) when namable_row row ->
                 List.iter (loop visited) tyl
             | _ ->
@@ -254,13 +223,13 @@ let mark_type ty =
                 let fields, _ = Ctype.flatten_fields fi in
                 List.iter
                   (fun (_, kind, ty) ->
-                    if field_kind_repr kind = field_public then
+                    if Compat.field_kind_repr kind = Compat.field_public then
                       loop visited ty)
                   fields
             | Some (_, l) ->
                 List.iter (loop visited) (List.tl l)
           end
-      | Tfield(_, kind, ty1, ty2) when field_kind_repr kind = field_public ->
+      | Tfield(_, kind, ty1, ty2) when Compat.field_kind_repr kind = Compat.field_public ->
           loop visited ty1;
           loop visited ty2
       | Tfield(_, _, _, ty2) ->
@@ -307,7 +276,7 @@ let mark_type_parameter param =
 #if OCAML_VERSION<(4,13,0)
 let tsubst x = Tsubst x
 let tvar_none ty = ty.desc <- Tvar None
-#elif OCAML_VERSION >= (4,13,0) && OCAML_VERSION < (4,14,0)
+#elif OCAML_VERSION < (4,14,0)
 let tsubst x = Tsubst(x,None)
 let tvar_none ty = Types.Private_type_expr.set_desc ty (Tvar None)
 #else
@@ -319,7 +288,7 @@ let prepare_type_parameters params manifest =
   let params =
     List.fold_left
       (fun params param ->
-        let param = repr param in
+        let param = Compat.repr param in
         if List.memq param params then Btype.newgenty (tsubst param) :: params
         else param :: params)
       [] params
@@ -329,7 +298,7 @@ let prepare_type_parameters params manifest =
     | Some ty ->
         let vars = Ctype.free_variables ty in
           List.iter
-            (fun ty -> match get_desc ty with
+            (fun ty -> match Compat.get_desc ty with
               | Tvar (Some "_") -> if List.memq ty vars then tvar_none ty
               | _ -> ())
             params
@@ -391,31 +360,16 @@ let mark_exception ext =
   reset_context ();
   mark_extension_constructor ext
 
-let self_type =
-#if OCAML_VERSION >= (4,14,0)
-  Btype.self_type
-#else
-  Ctype.self_type
-#endif
-
-(* TODO(patricoferris): Is it safe to not call repr *)
-let csig_self x =
-#if OCAML_VERSION >= (4,14,0)
-  x.csig_self
-#else
-  Btype.repr x.csig_self
-#endif
-
 let rec mark_class_type params = function
   | Cty_constr (_, tyl, cty) ->
-      let sty = self_type cty in
+      let sty = Compat.self_type cty in
       if is_row_visited (Btype.proxy sty)
       || List.exists aliasable params
       || List.exists (Ctype.deep_occur sty) tyl
       then mark_class_type params cty
       else List.iter mark_type tyl
   | Cty_signature sign ->
-      let sty = csig_self sign in
+      let sty = Compat.csig_self sign in
       let px = Btype.proxy sty in
       if is_row_visited px then add_alias sty
       else visit_row px;
@@ -439,16 +393,9 @@ let mark_class_declaration cld =
   List.iter mark_type_parameter cld.cty_params;
   mark_class_type cld.cty_params cld.cty_type
 
-let row_repr x =
-#if OCAML_VERSION >= (4,14,0)
-  x
-#else
-  Btype.row_repr x
-#endif
-
 let rec read_type_expr env typ =
   let open TypeExpr in
-  let typ = repr typ in
+  let typ = Compat.repr typ in
   let px = Btype.proxy typ in
   if used_alias px then Var (name_of_type typ)
   else begin
@@ -460,7 +407,7 @@ let rec read_type_expr env typ =
       end
     in
     let typ =
-      match get_desc typ with
+      match Compat.get_desc typ with
       | Tvar _ ->
           let name = name_of_type typ in
             if name = "_" then Any
@@ -468,7 +415,7 @@ let rec read_type_expr env typ =
       | Tarrow(lbl, arg, res, _) ->
           let arg =
             if Btype.is_optional lbl then
-              match get_desc (repr arg) with
+              match Compat.get_desc (Compat.repr arg) with
               | Tconstr(_option, [arg], _) -> read_type_expr env arg
               | _ -> assert false
             else read_type_expr env arg
@@ -488,7 +435,7 @@ let rec read_type_expr env typ =
       | Tnil | Tfield _ -> read_object env typ None
       | Tpoly (typ, []) -> read_type_expr env typ
       | Tpoly (typ, tyl) ->
-          let tyl = List.map repr tyl in
+          let tyl = List.map Compat.repr tyl in
           let vars = List.map name_of_type tyl in
           let typ = read_type_expr env typ in
             remove_names tyl;
@@ -527,30 +474,26 @@ let rec read_type_expr env typ =
 and read_row env _px row =
   let open TypeExpr in
   let open TypeExpr.Polymorphic_variant in
-  let row = row_repr row in
+  let row = Compat.row_repr row in
   let fields =
-    if row_closed row then
-      List.filter (fun (_, f) -> row_field_repr f <> Rabsent)
-        (row_fields row)
-    else row_fields row in
+    if Compat.row_closed row then
+      List.filter (fun (_, f) -> Compat.row_field_repr f <> Rabsent)
+        (Compat.row_fields row)
+    else Compat.row_fields row in
   let sorted_fields = List.sort (fun (p,_) (q,_) -> compare p q) fields in
   let present =
     List.filter
       (fun (_, f) ->
-         match row_field_repr f with
+         match Compat.row_field_repr f with
          | Rpresent _ -> true
          | _ -> false)
       sorted_fields in
   let all_present = List.length present = List.length sorted_fields in
-#if OCAML_VERSION >= (4,14,0)
-  match row_name row with
-#else
-  match row.row_name with
-#endif
+  match Compat.get_row_name row with
   | Some(p, params) when namable_row row ->
       let p = Env.Path.read_type env p in
       let params = List.map (read_type_expr env) params in
-      if row_closed row && all_present then
+      if Compat.row_closed row && all_present then
         Constr (p, params)
       else
         let kind =
@@ -561,7 +504,7 @@ and read_row env _px row =
       let elements =
         List.map
           (fun (name, f) ->
-            match row_field_repr f with
+            match Compat.row_field_repr f with
               | Rpresent None ->
                 Constructor {name; constant = true; arguments = []; doc = []}
               | Rpresent (Some typ) ->
@@ -585,7 +528,7 @@ and read_row env _px row =
       in
       let kind =
         if all_present then
-          if row_closed row then Fixed
+          if Compat.row_closed row then Fixed
           else Open
         else Closed (List.map fst present)
       in
@@ -594,7 +537,7 @@ and read_row env _px row =
 and read_object env fi nm =
   let open TypeExpr in
   let open TypeExpr.Object in
-  let fi = repr fi in
+  let fi = Compat.repr fi in
   let px = Btype.proxy fi in
   if used_alias px then Var (name_of_type fi)
   else begin
@@ -605,8 +548,8 @@ and read_object env fi nm =
         let present_fields =
           List.fold_right
             (fun (n, k, t) l ->
-               match field_kind_repr k with
-               | f when f = field_public -> (n, t) :: l
+               match Compat.field_kind_repr k with
+               | f when f = Compat.field_public -> (n, t) :: l
                | _ -> l)
             fields []
         in
@@ -619,7 +562,7 @@ and read_object env fi nm =
             sorted_fields
         in
         let open_ =
-          match get_desc rest with
+          match Compat.get_desc rest with
           | Tvar _ | Tunivar _ -> true
           | Tconstr _ -> true
           | Tnil -> false
@@ -830,26 +773,12 @@ let read_exception env parent id ext =
     let res = opt_map (read_type_expr env) ext.ext_ret_type in
       {id; doc; args; res}
 
-let concr_mem =
-#if OCAML_VERSION >= (4,14,0)
-  Types.Meths.mem
-#else
-  Concr.mem
-#endif
-
-let csig_concr x =
-#if OCAML_VERSION >= (4,14,0)
-  x.Types.csig_meths
-#else
-  x.Types.csig_concr
-#endif
-
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
   let id = `Method(parent, Odoc_model.Names.MethodName.make_std name) in
   let doc = Doc_attr.empty in
-  let private_ = (field_kind_repr kind) <> field_public in
-  let virtual_ = not (concr_mem name concrete) in
+  let private_ = (Compat.field_kind_repr kind) <> Compat.field_public in
+  let virtual_ = not (Compat.concr_mem name concrete) in
   let type_ = read_type_expr env typ in
     ClassSignature.Method {id; doc; private_; virtual_; type_}
 
@@ -863,14 +792,14 @@ let read_instance_variable env parent (name, mutable_, virtual_, typ) =
     ClassSignature.InstanceVariable {id; doc; mutable_; virtual_; type_}
 
 let read_self_type sty =
-  let sty = repr sty in
+  let sty = Compat.repr sty in
     if not (is_aliased sty) then None
     else Some (TypeExpr.Var (name_of_type (Btype.proxy sty)))
 
 let rec read_class_signature env parent params =
   let open ClassType in function
   | Cty_constr(p, _, cty) ->
-      if is_row_visited (Btype.proxy (self_type cty))
+      if is_row_visited (Btype.proxy (Compat.self_type cty))
       || List.exists aliasable params
       then read_class_signature env parent params cty
       else begin
@@ -903,7 +832,7 @@ let rec read_class_signature env parent params =
         List.map (read_instance_variable env parent) instance_variables
       in
       let methods =
-        List.map (read_method env parent (csig_concr csig)) methods
+        List.map (read_method env parent (Compat.csig_concr csig)) methods
       in
       let items = constraints @ instance_variables @ methods in
       Signature {self; items; doc = []}
@@ -919,7 +848,7 @@ let rec read_virtual = function
         List.exists
           (fun (name, _, _) ->
              not (name = Btype.dummy_method
-                 || concr_mem name (csig_concr csig)))
+                 || Compat.concr_mem name (Compat.csig_concr csig)))
           methods
       in
       let virtual_instance_variable =
@@ -953,7 +882,7 @@ let rec read_class_type env parent params =
   | Cty_arrow(lbl, arg, cty) ->
       let arg =
         if Btype.is_optional lbl then
-          match get_desc (repr arg) with
+          match Compat.get_desc (Compat.repr arg) with
           | Tconstr(path, [arg], _)
             when OCamlPath.same path Predef.path_option ->
               read_type_expr env arg
