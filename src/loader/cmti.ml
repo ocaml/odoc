@@ -294,11 +294,11 @@ let read_extension_constructor env parent ext =
   let doc = Doc_attr.attached_no_tag label_container ext.ext_attributes in
   match ext.ext_kind with
   | Text_rebind _ -> assert false
-  #if OCAML_VERSION >= (4, 14, 0)
+#if OCAML_VERSION >= (4, 14, 0)
   | Text_decl(_, args, res) ->
-  #else
+#else
   | Text_decl(args, res) ->
-  #endif
+#endif
     let args =
       read_constructor_declaration_arguments
         env container label_container args
@@ -328,11 +328,11 @@ let read_exception env parent (ext : extension_constructor) =
   let doc = Doc_attr.attached_no_tag label_container ext.ext_attributes in
   match ext.ext_kind with
   | Text_rebind _ -> assert false
-  #if OCAML_VERSION >= (4, 14, 0)
+#if OCAML_VERSION >= (4, 14, 0)
   | Text_decl(_, args, res) ->
-  #else
+#else
   | Text_decl(args, res) ->
-  #endif
+#endif
     let args =
       read_constructor_declaration_arguments
         env container label_container args
