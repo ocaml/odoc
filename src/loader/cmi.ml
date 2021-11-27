@@ -335,7 +335,9 @@ let prepare_type_parameters params manifest =
     | Some ty ->
         let vars = Ctype.free_variables ty in
           List.iter
-            (fun v -> if get_desc v = Tvar (Some "_") then (if List.memq ty vars then tvar_none ty))
+            (fun ty -> match get_desc ty with
+              | Tvar (Some "_") -> if List.memq ty vars then tvar_none ty
+              | _ -> ())
             params
     | None -> ()
   end;
