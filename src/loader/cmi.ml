@@ -205,14 +205,6 @@ let namable_row row =
        | _ -> true)
     (row_fields row)
 
-let proxy x =
-  #if OCAML_VERSION >= (4, 14, 0)
-    Btype.proxy x
-  #else
-    let r = Btype.repr x in
-      Btype.proxy r
-  #endif
-
 let field_public =
   #if OCAML_VERSION >= (4, 14, 0)
     Types.Fpublic
@@ -220,9 +212,17 @@ let field_public =
     Fpresent
   #endif
 
+let repr x =
+  #if OCAML_VERSION >= (4, 14, 0)
+    x
+  #else
+    Btype.repr x
+  #endif
+
 let mark_type ty =
   let rec loop visited ty =
-    let px = proxy ty in
+    let ty = repr ty in
+    let px = Btype.proxy ty in
     if List.memq px visited && aliasable ty then add_alias px else
       let visited = px :: visited in
       match get_desc ty with
@@ -313,14 +313,6 @@ let tsubst x = Tsubst(x,None)
 let tvar_none ty = Types.Transient_expr.(set_desc (coerce ty) (Tvar None))
 #endif
 
-let repr x =
-#if OCAML_VERSION >= (4, 14, 0)
-  x
-#else
-  Btype.repr x
-#endif
-
-
 let prepare_type_parameters params manifest =
   let params =
     List.fold_left
@@ -409,7 +401,7 @@ let csig_self x =
   #if OCAML_VERSION >= (4,14,0)
     x.csig_self
   #else
-    Btype.repr x.self_type
+    Btype.repr x.csig_self
   #endif
 
 let rec mark_class_type params = function
@@ -444,15 +436,6 @@ let mark_class_declaration cld =
   reset_context ();
   List.iter mark_type_parameter cld.cty_params;
   mark_class_type cld.cty_params cld.cty_type
-
-(* TODO(patricoferris): Is it safe to not call repr.
-   Probably provided we go through an accessor. *)
-let repr x =
-  #if OCAML_VERSION >= (4,14,0)
-    x
-  #else
-    Btype.repr x
-  #endif
 
 let row_repr x =
   #if OCAML_VERSION >= (4,14,0)
@@ -557,7 +540,7 @@ and read_row env _px row =
          | _ -> false)
       sorted_fields in
   let all_present = List.length present = List.length sorted_fields in
-  match row_name row with
+  match get_row_name row with
   | Some(p, params) when namable_row row ->
       let p = Env.Path.read_type env p in
       let params = List.map (read_type_expr env) params in
