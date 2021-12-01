@@ -40,6 +40,9 @@ jobs:
       - name: Install dependencies
         run: opam install -y --deps-only -t ./odoc.opam
 
+      - name: Install bisect_ppx
+        run: opam install bisect_ppx
+
       - name: dune runtest
         run: opam exec -- dune runtest
 
