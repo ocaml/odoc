@@ -1,3 +1,9 @@
+2.0.2
+-----
+
+Additions
+- Compatibility with OCaml 4.14 (@patricoferris, @kit-ty-kate, #788)
+
 2.0.1
 -----
 
