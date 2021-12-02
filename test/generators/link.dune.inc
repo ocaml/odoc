@@ -3319,6 +3319,7 @@
    Ocamlary-Aliases-P1.html.gen
    Ocamlary-Aliases-P1-Y.html.gen
    Ocamlary-Aliases-P2.html.gen
+   Ocamlary-Aliases-P2-Z.html.gen
    Ocamlary-module-type-M.html.gen
    Ocamlary-M.html.gen
    Ocamlary-Only_a_module.html.gen
@@ -4608,6 +4609,12 @@
  (rule
   (alias runtest)
   (action
+   (diff Ocamlary-Aliases-P2-Z.html Ocamlary-Aliases-P2-Z.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
    (diff Ocamlary-module-type-M.html Ocamlary-module-type-M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
@@ -4927,6 +4934,7 @@
    Ocamlary.Aliases.P1.3o.gen
    Ocamlary.Aliases.P1.Y.3o.gen
    Ocamlary.Aliases.P2.3o.gen
+   Ocamlary.Aliases.P2.Z.3o.gen
    Ocamlary.M.3o.gen
    Ocamlary.Only_a_module.3o.gen)
   (action
@@ -5417,6 +5425,12 @@
   (alias runtest)
   (action
    (diff Ocamlary.Aliases.P2.3o Ocamlary.Aliases.P2.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Ocamlary.Aliases.P2.Z.3o Ocamlary.Aliases.P2.Z.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule

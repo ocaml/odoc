@@ -11,4 +11,4 @@ Ocamlary\.Aliases\.P2
 .SH Documentation
 .sp 
 .nf 
-\f[CB]module\fR Z = Z
+\f[CB]module\fR Z : \f[CB]sig\fR \.\.\. \f[CB]end\fR

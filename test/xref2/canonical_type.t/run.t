@@ -35,7 +35,11 @@ Here is the module in which the types above will be exposed.
   $ cat foo__type.ml
   module Path = struct
       type t = Type0.Resolved_path.module_
+  
+      type u = Type0.Resolved_path.module_
   end
+  
+  type t = Type0.Resolved_path.module_
 
   $ ocamlc -c -bin-annot -open Foo__ foo__type.ml
 
@@ -63,6 +67,77 @@ We only need to link `foo` as all the others are hidden
 Now we check that any types with 'equations' found in `foo` are equal to
 polymorphic variants rather than Constrs
 
-  $ odoc_print foo.odocl | jq '.. | .["equation"]? | select(.) | .manifest.Some.Polymorphic_variant.kind'
+  $ odoc_print foo.odocl -r Type.Path.t | jq '.. | .["equation"]? | select(.) | .manifest.Some.Polymorphic_variant.kind'
   "Fixed"
 
+Canonical paths should be as short as possible. As such, the following ought to be just an Identifier:
+
+  $ odoc_print foo.odocl -r Type.Path.u | jq '.. | .["equation"]? | select(.) | .manifest.Some.Constr[0]["`Resolved"]["`CanonicalType"][1]'
+  {
+    "`Resolved": {
+      "`Identifier": {
+        "`Type": [
+          {
+            "`Module": [
+              {
+                "`Module": [
+                  {
+                    "`Root": [
+                      {
+                        "Some": {
+                          "`Page": [
+                            "None",
+                            "x"
+                          ]
+                        }
+                      },
+                      "Foo"
+                    ]
+                  },
+                  "Type"
+                ]
+              },
+              "Path"
+            ]
+          },
+          "t"
+        ]
+      }
+    }
+  }
+
+And this one should be `` `Type(`Identifier,t) ``
+
+  $ odoc_print foo.odocl -r Type.t | jq '.. | .["equation"]? | select(.) | .manifest.Some.Constr[0]["`Resolved"]["`CanonicalType"][1]'
+  {
+    "`Resolved": {
+      "`Type": [
+        {
+          "`Identifier": {
+            "`Module": [
+              {
+                "`Module": [
+                  {
+                    "`Root": [
+                      {
+                        "Some": {
+                          "`Page": [
+                            "None",
+                            "x"
+                          ]
+                        }
+                      },
+                      "Foo"
+                    ]
+                  },
+                  "Type"
+                ]
+              },
+              "Path"
+            ]
+          }
+        },
+        "t"
+      ]
+    }
+  }

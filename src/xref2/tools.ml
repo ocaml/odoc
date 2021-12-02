@@ -6,10 +6,86 @@ open ResultMonad
 
 type ('a, 'b) either = Left of 'a | Right of 'b
 
+let filter_map f x =
+  List.rev
+  @@ List.fold_left
+       (fun acc x -> match f x with Some x -> x :: acc | None -> acc)
+       [] x
+
 type module_modifiers =
   [ `Aliased of Cpath.Resolved.module_ | `SubstMT of Cpath.Resolved.module_type ]
 
 type module_type_modifiers = [ `AliasModuleType of Cpath.Resolved.module_type ]
+
+(* These three functions take a fully-qualified canonical path and return
+   a list of shorter possibilities to test *)
+let c_mod_poss env p =
+  (* canonical module paths *)
+  let rec inner = function
+    | `Dot (p, n) -> (
+        let rest = List.map (fun p -> `Dot (p, n)) (inner p) in
+        match Env.lookup_by_name Env.s_module n env with
+        | Ok (`Module (id, m)) ->
+            let m = Component.Delayed.get m in
+            `Identifier (id, m.hidden) :: rest
+        | Error _ -> rest)
+    | p -> [ p ]
+  in
+  inner p
+
+let c_modty_poss env p =
+  (* canonical module type paths *)
+  match p with
+  | `Dot (p, n) -> (
+      let rest = List.map (fun p -> `Dot (p, n)) (c_mod_poss env p) in
+      match Env.lookup_by_name Env.s_module_type n env with
+      | Ok (`ModuleType (id, _)) -> `Identifier (id, false) :: rest
+      | Error _ -> rest)
+  | p -> [ p ]
+
+let c_ty_poss env p =
+  (* canonical type paths *)
+  match p with
+  | `Dot (p, n) -> (
+      let rest = List.map (fun p -> `Dot (p, n)) (c_mod_poss env p) in
+      match Env.lookup_by_name Env.s_type n env with
+      | Ok (`Type (id, _)) ->
+          `Identifier ((id :> Odoc_model.Paths.Identifier.Path.Type.t), false)
+          :: rest
+      | Error _ -> rest)
+  | p -> [ p ]
+
+(* Small helper function for resolving canonical paths.
+   [canonical_helper env resolve lang_of possibilities p2] takes the
+   fully-qualified path [p2] and returns the shortest resolved path
+   whose identifier is the same as the resolved fully qualified path.
+   [resolve] is a function that resolves an arbitrary unresolved path,
+   [lang_of] turns a resolved path into a generic resolved Lang path
+   and [possibilities] is a function that, given the fully qualified
+   unresolved path, returns a list of all possible unresolved paths
+   (including the longest one) *)
+let canonical_helper :
+      'unresolved 'resolved.
+      Env.t ->
+      (Env.t -> 'unresolved -> ('resolved * 'result, _) result) ->
+      ('resolved -> Odoc_model.Paths.Path.Resolved.t) ->
+      (Env.t -> 'unresolved -> 'unresolved list) ->
+      'unresolved ->
+      ('resolved * 'result) option =
+ fun env resolve lang_of possibilities p2 ->
+  let resolve p =
+    match resolve env p with Ok rp -> Some rp | Error _ -> None
+  in
+  let get_identifier cpath =
+    Odoc_model.Paths.Path.Resolved.identifier (lang_of cpath)
+  in
+  match resolve p2 with
+  | None -> None
+  | Some (rp2, _) -> (
+      let fallback_id = get_identifier rp2 in
+      let resolved = filter_map resolve (possibilities env p2) in
+      let find_fn (r, _) = get_identifier r = fallback_id in
+      try Some (List.find find_fn resolved) with _ -> None)
 
 let core_types =
   let open Odoc_model.Lang.TypeDecl in
@@ -981,88 +1057,101 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
   | `OpaqueModule m -> `OpaqueModule (reresolve_module env m)
 
 and handle_canonical_module env p2 =
-  let resolve p =
-    match resolve_module ~mark_substituted:true ~add_canonical:false env p with
-    | Ok (p, _) -> Some p
-    | Error _ -> None
+  let strip_alias : Cpath.Resolved.module_ -> Cpath.Resolved.module_ = function
+    | `Alias (_, p) -> p
+    | p -> p
   in
-  let rec get_cpath = function
-    | `Root _ as p -> resolve p
-    | `Dot (p, n) -> (
-        match get_cpath p with
-        | None -> None
-        | Some parent -> (
-            let fallback = `Dot (`Resolved parent, n) in
-            match parent with
-            | `Identifier pid -> (
-                let p' =
-                  `Identifier
-                    ( `Module
-                        ( (pid :> Odoc_model.Paths.Identifier.Signature.t),
-                          Odoc_model.Names.ModuleName.make_std n ),
-                      false )
-                in
-                match resolve p' with None -> resolve fallback | x -> x)
-            | _ -> resolve fallback))
-    | _ -> None
+  let resolve env p =
+    resolve_module env ~mark_substituted:false ~add_canonical:false p
+    >>= fun (p, m) -> Ok (strip_alias p, m)
   in
-  match get_cpath p2 with Some p -> `Resolved p | None -> p2
+  let lang_of cpath =
+    (Lang_of.(Path.resolved_module (empty ()) cpath)
+      :> Odoc_model.Paths.Path.Resolved.t)
+  in
+  match canonical_helper env resolve lang_of c_mod_poss p2 with
+  | None -> p2
+  | Some (rp, m) ->
+      let m = Component.Delayed.get m in
+      (* Need to check if the module we're going to link to has been expanded.
+         ModuleTypes are always expanded if possible, but Aliases are only expanded
+         if they're an alias to a hidden module or if they're self canonical.
 
-and handle_canonical_module_type env p2 =
-  let resolve p =
-    match
-      resolve_module_type ~mark_substituted:true ~add_canonical:false env p
-    with
-    | Ok (p, _) -> `Resolved p
-    | Error _ -> p2
-  in
-  match p2 with
-  | `Dot (p, n) -> (
-      match handle_canonical_module env p with
-      | `Resolved r as p' -> (
-          let fallback = `Dot (p', n) in
-          match r with
-          | `Identifier pid -> (
-              let p' =
-                `Identifier
-                  ( `ModuleType
-                      ( (pid :> Odoc_model.Paths.Identifier.Signature.t),
-                        Odoc_model.Names.ModuleTypeName.make_std n ),
-                    false )
-              in
-              match resolve p' with
-              | `Resolved _ as x -> x
-              | _ -> resolve fallback)
-          | _ -> resolve fallback)
-      | _ -> p2)
-  | _ -> p2
+         Checking if a module is self canonical is a bit tricky, since this function
+         is itself part of the process of resolving any canonical reference. Hence
+         what we do here is to look through alias chains looking for one that's marked
+         with the same _unresolved_ canonical path that we're currently trying to resolve.
 
-and handle_canonical_type env p2 =
-  let resolve p =
-    match resolve_type ~add_canonical:false env p with
-    | Ok (p, _) -> `Resolved p
-    | Error _ -> p2
+         This is particularly important because some modules don't know they're canonical!
+         For example the module Caml in base, which is marked as the canonical path for
+         all references to the standard library in the file [import0.ml], but is itself just
+         defined by including [Stdlib].
+
+         If a module doesn't know it's canonical, it will fail the self-canonical check, and
+         therefore not necessarily be expanded. If this happens, we call [process_module_path]
+         to stick the [`Alias] constructor back on so we'll link to the correct place. *)
+      let expanded =
+        match m.type_ with
+        | Component.Module.Alias (_, Some _) -> true
+        | Alias (`Resolved p, None) ->
+            (* check for an alias chain with a canonical in it... *)
+            let rec check (m, p) =
+              match m.Component.Module.canonical with
+              | Some p ->
+                  p = p2
+                  (* The canonical path is the same one we're trying to resolve *)
+              | None -> (
+                  match lookup_module ~mark_substituted:false env p with
+                  | Error _ -> false
+                  | Ok m -> (
+                      let m = Component.Delayed.get m in
+                      match m.type_ with
+                      | Alias (`Resolved p, _) -> check (m, p)
+                      | _ -> false))
+            in
+            let self_canonical () = check (m, p) in
+            let hidden =
+              Cpath.is_resolved_module_hidden ~weak_canonical_test:true p
+            in
+            hidden || self_canonical ()
+        | Alias (_, _) -> false
+        | ModuleType _ -> true
+      in
+      if expanded then `Resolved rp
+      else `Resolved (process_module_path env ~add_canonical:false m rp)
+
+and handle_canonical_module_type env (p2 : Cpath.module_type) =
+  let strip_alias : Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
+    function
+    | `AliasModuleType (_, p) -> p
+    | p -> p
   in
-  match p2 with
-  | `Dot (p, n) -> (
-      match handle_canonical_module env p with
-      | `Resolved r as p' -> (
-          let fallback = `Dot (p', n) in
-          match r with
-          | `Identifier pid -> (
-              let p' =
-                `Identifier
-                  ( `Type
-                      ( (pid :> Odoc_model.Paths.Identifier.Signature.t),
-                        Odoc_model.Names.TypeName.make_std n ),
-                    false )
-              in
-              match resolve p' with
-              | `Resolved _ as x -> x
-              | _ -> resolve fallback)
-          | _ -> resolve fallback)
-      | _ -> p2)
-  | _ -> p2
+  let resolve env p =
+    resolve_module_type env ~mark_substituted:false ~add_canonical:false p
+    >>= fun (p, m) -> Ok (strip_alias p, m)
+  in
+  let lang_of cpath =
+    (Lang_of.(Path.resolved_module_type (empty ()) cpath)
+      :> Odoc_model.Paths.Path.Resolved.t)
+  in
+  match canonical_helper env resolve lang_of c_modty_poss p2 with
+  | None -> p2
+  | Some (rp, _) -> `Resolved rp
+
+and handle_canonical_type env (p2 : Cpath.type_) =
+  let lang_of cpath =
+    (Lang_of.(Path.resolved_type (empty ()) cpath)
+      :> Odoc_model.Paths.Path.Resolved.t)
+  in
+  let resolve env p =
+    match resolve_type env ~add_canonical:false p with
+    | Ok (_, `FType_removed _) -> Error `Find_failure
+    | Ok (x, y) -> Ok (x, y)
+    | Error y -> Error y
+  in
+  match canonical_helper env resolve lang_of c_ty_poss p2 with
+  | None -> p2
+  | Some (rp, _) -> `Resolved rp
 
 and reresolve_module_type :
     Env.t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type =

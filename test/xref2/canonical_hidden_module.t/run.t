@@ -62,6 +62,7 @@ See the comments on the types at the end of test.mli for the expectation.
   $ odoc html-generate test.odocl --indent -o .
   $ odoc support-files -o .
   $ find Test -type f | sort
+  Test/A/index.html
   Test/A_nonhidden/index.html
   Test/B/index.html
   Test/C/index.html
@@ -97,8 +98,12 @@ See the comments on the types at the end of test.mli for the expectation.
      <div class="odoc-spec">
       <div class="spec module" id="module-A" class="anchored">
        <a href="#module-A" class="anchor"></a>
-       <code><span><span class="keyword">module</span> A</span>
-        <span> = <a href="A_nonhidden/index.html">A</a></span>
+       <code>
+        <span><span class="keyword">module</span> <a href="A/index.html">A</a>
+        </span>
+        <span> : <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
        </code>
       </div>
       <div class="spec-doc"><p>This should not have an expansion</p></div>
@@ -144,7 +149,7 @@ See the comments on the types at the end of test.mli for the expectation.
       <div class="spec type" id="type-a" class="anchored">
        <a href="#type-a" class="anchor"></a>
        <code><span><span class="keyword">type</span> a</span>
-        <span> = <a href="A_nonhidden/index.html#type-t">A.t</a></span>
+        <span> = <a href="A/index.html#type-t">A.t</a></span>
        </code>
       </div>
       <div class="spec-doc">

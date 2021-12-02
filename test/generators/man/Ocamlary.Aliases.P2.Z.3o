@@ -1,0 +1,16 @@
+
+.TH Z 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Aliases\.P2\.Z
+.SH Synopsis
+.sp 
+.in 2
+\fBModule P2\.Z\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t
+.sp 
+\f[CB]val\fR id : t \f[CB]\->\fR t
