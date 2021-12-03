@@ -31,7 +31,7 @@ and compute_length_inline (t : Types.Inline.t) : int =
   let f (acc : int) { Types.Inline.desc; _ } =
     match desc with
     | Text s -> acc + String.length s
-    | Entity _e -> acc + 1 (* CHECK *)
+    | Entity _e -> acc + 1
     | Linebreak -> 0 (* TODO *)
     | Styled (_, t)
     | Link (_, t)
