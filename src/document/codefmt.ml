@@ -78,9 +78,13 @@ module Tag = struct
 
   let elt ppf elt =
     Format.pp_open_stag ppf (Elt elt);
+    Format.pp_print_as ppf (Utils.compute_length_inline elt) "";
     Format.pp_close_stag ppf ()
 
-  let ignore ppf txt = Format.fprintf ppf "@{<ignore-tag>%t@}" txt
+  let ignore ppf txt =
+    Format.pp_open_stag ppf Ignore;
+    Format.fprintf ppf "%t" txt;
+    Format.pp_close_stag ppf ()
 end
 *)
 
