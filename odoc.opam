@@ -35,15 +35,7 @@ depends: [
   "result"
   "tyxml" {>= "4.3.0"}
   "fmt"
-  "logs"
-  "re" {>= "1.7.2"}
 
-  "ocaml-migrate-parsetree" {>= "1.0.6"}
-
-  "ocaml-version" {with-test & >= "2.3.0"}
-  "lwt" {with-test}
-  "alcotest" {with-test & >= "0.8.3"}
-  "markup" {with-test & >= "1.0.0"}
   "ocamlfind" {with-test}
   "yojson" {with-test}
   ("ocaml" {< "4.04.1" & with-test} | "sexplib0" {with-test})
