@@ -615,7 +615,7 @@ and module_type_expr :
   | Functor (param, res) ->
       let param' = functor_parameter env param in
       let env' = Env.add_functor_parameter param env in
-      let res' = module_type_expr env' id res in
+      let res' = module_type_expr env' (`Result id) res in
       Functor (param', res')
   | TypeOf { t_desc; t_expansion } as e ->
       let t_expansion = get_expansion t_expansion e in
