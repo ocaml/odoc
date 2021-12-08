@@ -2393,7 +2393,7 @@
    Module_type_alias-module-type-B-argument-1-C.html.gen
    Module_type_alias-module-type-E.html.gen
    Module_type_alias-module-type-E-argument-1-F.html.gen
-   Module_type_alias-module-type-E-argument-1-C.html.gen
+   Module_type_alias-module-type-E-argument-2-C.html.gen
    Module_type_alias-module-type-G.html.gen
    Module_type_alias-module-type-G-argument-1-H.html.gen)
   (action
@@ -2445,8 +2445,8 @@
   (alias runtest)
   (action
    (diff
-    Module_type_alias-module-type-E-argument-1-C.html
-    Module_type_alias-module-type-E-argument-1-C.html.gen)))
+    Module_type_alias-module-type-E-argument-2-C.html
+    Module_type_alias-module-type-E-argument-2-C.html.gen)))
  (rule
   (alias runtest)
   (action
