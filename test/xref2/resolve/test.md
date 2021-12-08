@@ -1529,8 +1529,9 @@ Resolve a functor:
                       (Odoc_model.Lang.Signature.Ordinary,
                       {Odoc_model.Lang.TypeDecl.id =
                         `Type
-                          (`ModuleType
-                             (`Root (Some (`Page (None, None)), Root), S1),
+                          (`Result
+                             (`ModuleType
+                                (`Root (Some (`Page (None, None)), Root), S1)),
                            t);
                        doc = []; canonical = None;
                        equation =
@@ -1561,10 +1562,7 @@ Resolve a functor:
                     (Odoc_model.Lang.ModuleType.Signature
                       {Odoc_model.Lang.Signature.items =
                         [Odoc_model.Lang.Signature.Type
-                          (Odoc_model.Lang.Signature.Ordinary,
-                          {Odoc_model.Lang.TypeDecl.id = ...; doc = ...;
-                           canonical = ...; equation = ...;
-                           representation = ...});
+                          (Odoc_model.Lang.Signature.Ordinary, ...);
                          ...];
                        compiled = ...; doc = ...});
                   p_path = ...}},
