@@ -1,3 +1,10 @@
+Unreleased
+----------
+
+Bugs fixed
+- Fix a missing Result constructor during compile. This will cause some
+  functor arguments to have different filenames (@jonludlam, #795)
+
 2.0.2
 -----
 
