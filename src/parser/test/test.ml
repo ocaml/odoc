@@ -2597,7 +2597,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 46))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              (((f.ml (1 8) (1 29)) "env=f1 version>=4.06 ")))
+              (((f.ml (1 8) (1 28)) "env=f1 version>=4.06")))
              ((f.ml (1 30) (1 44)) "code goes here")))))
          (warnings ())) |}]
 
@@ -2654,29 +2654,29 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (2 9))
             (code_block
-             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (2 0)) "kind=toplevel\n")))
+             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
              ((f.ml (2 1) (2 7)) "code ")))))
          (warnings ())) |}]
 
     let spaces_after_meta =
       test "{@ocaml kind=toplevel [ code ]}";
-      [%expect {|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (1 31))
             (code_block
-             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 22)) "kind=toplevel ")))
+             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
              ((f.ml (1 23) (1 29)) "code ")))))
          (warnings ())) |}]
 
     let spaces_and_newline_after_meta =
       test "{@ocaml kind=toplevel \n  [ code ]}";
-      [%expect {|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (2 11))
             (code_block
-             (((f.ml (1 2) (1 7)) ocaml)
-              (((f.ml (1 8) (2 2))  "kind=toplevel \
-                                   \n  ")))
+             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
              ((f.ml (2 3) (2 9)) "code ")))))
          (warnings ())) |}]
 
