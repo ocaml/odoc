@@ -583,11 +583,17 @@ and bad_markup_recovery start_offset input = parse
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
       emit input (`Code_span text) ~start_offset}
 
-(* The second field of the metadata *)
+(* The second field of the metadata.
+   This rule keeps whitespaces and newlines in the 'metadata' field except the
+   ones just before the '['. *)
 and code_block_metadata_tail input = parse
-  | ((newline | horizontal_space)+ as prefix) (([^ '['])+ as meta) '['
+ | (space_char+ as prefix)
+   ((space_char* (_ # space_char # ['['])+)+ as meta)
+   ((space_char* '[') as suffix)
     {
-      let meta = with_location_adjustments ~adjust_start_by:prefix ~adjust_end_by:"[" (fun _ -> Loc.at) input meta in
+      let meta =
+        with_location_adjustments ~adjust_start_by:prefix ~adjust_end_by:suffix (fun _ -> Loc.at) input meta
+      in
       `Ok (Some meta)
     }
   | (newline | horizontal_space)* '['
