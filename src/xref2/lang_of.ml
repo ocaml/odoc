@@ -618,7 +618,10 @@ and include_ parent map i =
 
 and open_ parent map o =
   let open Component.Open in
-  { Odoc_model.Lang.Open.expansion = signature parent map o.expansion }
+  {
+    Odoc_model.Lang.Open.expansion = signature parent map o.expansion;
+    doc = docs (parent :> Identifier.LabelParent.t) o.doc;
+  }
 
 and value_ map parent id v =
   let open Component.Value in

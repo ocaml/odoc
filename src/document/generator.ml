@@ -1154,7 +1154,9 @@ module Make (Syntax : SYNTAX) = struct
             | TypExt e -> continue @@ extension e
             | Exception e -> continue @@ exn e
             | Value v -> continue @@ value v
-            | Open _ -> loop rest acc_items
+            | Open o ->
+                let items = Sectioning.comment_items o.doc in
+                loop rest (List.rev_append items acc_items)
             | Comment `Stop ->
                 let rest =
                   Utils.skip_until rest ~p:(function

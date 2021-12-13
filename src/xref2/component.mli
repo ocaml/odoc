@@ -299,7 +299,7 @@ and Signature : sig
 end
 
 and Open : sig
-  type t = { expansion : Signature.t }
+  type t = { expansion : Signature.t; doc : CComment.docs }
 end
 
 and Include : sig

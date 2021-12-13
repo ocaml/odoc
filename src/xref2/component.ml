@@ -327,7 +327,7 @@ end =
   Signature
 
 and Open : sig
-  type t = { expansion : Signature.t }
+  type t = { expansion : Signature.t; doc : CComment.docs }
 end =
   Open
 
@@ -2331,7 +2331,10 @@ module Of_Lang = struct
 
   and open_ ident_map o =
     Open.
-      { expansion = apply_sig_map ident_map o.Odoc_model.Lang.Open.expansion }
+      {
+        expansion = apply_sig_map ident_map o.Odoc_model.Lang.Open.expansion;
+        doc = docs ident_map o.Odoc_model.Lang.Open.doc;
+      }
 
   and apply_sig_map ident_map sg =
     let items =
