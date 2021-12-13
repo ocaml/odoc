@@ -775,8 +775,10 @@ and read_include env parent incl =
 
 #if OCAML_VERSION >= (4,8,0)
 and read_open env parent o =
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let doc = Doc_attr.attached_no_tag container o.open_attributes in
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature o.open_bound_items) in
-  { expansion }
+  { expansion; doc }
 #endif
 
 and read_signature :
