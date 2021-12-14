@@ -1,0 +1,14 @@
+
+.TH M 3 "" "Odoc" "OCaml Library"
+.SH Name
+Toplevel_comments\.Comments_on_open\.M
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Comments_on_open\.M\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t

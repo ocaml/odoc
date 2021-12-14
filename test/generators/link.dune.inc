@@ -6161,7 +6161,9 @@
    Toplevel_comments-class-c1.html.gen
    Toplevel_comments-class-type-ct.html.gen
    Toplevel_comments-class-c2.html.gen
-   Toplevel_comments-Ref_in_synopsis.html.gen)
+   Toplevel_comments-Ref_in_synopsis.html.gen
+   Toplevel_comments-Comments_on_open.html.gen
+   Toplevel_comments-Comments_on_open-M.html.gen)
   (action
    (run
     odoc
@@ -6242,7 +6244,19 @@
   (action
    (diff
     Toplevel_comments-Ref_in_synopsis.html
-    Toplevel_comments-Ref_in_synopsis.html.gen))))
+    Toplevel_comments-Ref_in_synopsis.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Toplevel_comments-Comments_on_open.html
+    Toplevel_comments-Comments_on_open.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Toplevel_comments-Comments_on_open-M.html
+    Toplevel_comments-Comments_on_open-M.html.gen))))
 
 (subdir
  html
@@ -6315,7 +6329,9 @@
    Toplevel_comments.Alias.3o.gen
    Toplevel_comments.c1.3o.gen
    Toplevel_comments.c2.3o.gen
-   Toplevel_comments.Ref_in_synopsis.3o.gen)
+   Toplevel_comments.Ref_in_synopsis.3o.gen
+   Toplevel_comments.Comments_on_open.3o.gen
+   Toplevel_comments.Comments_on_open.M.3o.gen)
   (action
    (run
     odoc
@@ -6370,7 +6386,19 @@
   (action
    (diff
     Toplevel_comments.Ref_in_synopsis.3o
-    Toplevel_comments.Ref_in_synopsis.3o.gen))))
+    Toplevel_comments.Ref_in_synopsis.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Toplevel_comments.Comments_on_open.3o
+    Toplevel_comments.Comments_on_open.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Toplevel_comments.Comments_on_open.M.3o
+    Toplevel_comments.Comments_on_open.M.3o.gen))))
 
 (subdir
  man
