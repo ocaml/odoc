@@ -246,6 +246,10 @@ and comment env parent = function
   | `Stop -> `Stop
   | `Docs d -> `Docs (comment_docs env parent d)
 
+and open_ env parent = function
+  | { Odoc_model__Lang.Open.doc; _ } as open_ ->
+      { open_ with doc = comment_docs env parent doc }
+
 let rec unit env t =
   let open Compilation_unit in
   let content =
@@ -370,7 +374,7 @@ and signature_items :
       | Class (r, c) -> Class (r, class_ env id c)
       | ClassType (r, c) -> ClassType (r, class_type env id c)
       | Include i -> Include (include_ env i)
-      | Open o -> Open o)
+      | Open o -> Open (open_ env id o))
     s
 
 and simple_expansion :
