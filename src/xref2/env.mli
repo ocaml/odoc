@@ -152,6 +152,13 @@ val open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t
 
 val open_signature : Odoc_model.Lang.Signature.t -> t -> t
 
+val open_type_substitution : Odoc_model.Lang.TypeDecl.t -> t -> t
+
+val open_module_substitution : Odoc_model.Lang.ModuleSubstitution.t -> t -> t
+
+val open_module_type_substitution :
+  Odoc_model.Lang.ModuleTypeSubstitution.t -> t -> t
+
 val open_page : Odoc_model.Lang.Page.t -> t -> t
 (** Add a page content to the env. *)
 
