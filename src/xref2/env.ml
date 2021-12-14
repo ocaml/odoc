@@ -808,12 +808,13 @@ let rec close_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | Type (_, t) -> remove t.L.TypeDecl.id env
         | Module (_, t) -> remove t.L.Module.id env
         | ModuleType t -> remove t.L.ModuleType.id env
-        | ModuleSubstitution t -> remove t.L.ModuleSubstitution.id env
         | Class (_, c) -> remove c.id env
         | ClassType (_, c) -> remove c.id env
         | Include i -> close_signature i.expansion.content env
         | Open o -> close_signature o.expansion env
-        | ModuleTypeSubstitution _ | TypeSubstitution _ -> env
+        | ModuleSubstitution _ | ModuleTypeSubstitution _ | TypeSubstitution _
+          ->
+            env
         (* The following are only added when linking *)
         | Exception _ -> env
         | TypExt _ -> env

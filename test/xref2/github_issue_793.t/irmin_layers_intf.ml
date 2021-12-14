@@ -1,33 +1,27 @@
-module Irmin = struct
-  module type S_generic_key = sig
-    type repo
+module Foo = struct end
 
-    type kinded_key := [ `Contents | `Node ]
+module type A = sig
+  type unrelated
 
-    val f : kinded_key
-  end
+  type conflicting_type := [ `Contents | `Node ]
 
-  module type S = sig
-    include S_generic_key
-  end
-
-  module Generic_key = struct
-    module type S = S_generic_key
-  end
+  module Conflicting_module := Foo
 end
 
-module type Generic_key = sig
-  include Irmin.Generic_key.S
+module type B = sig
+  include A
 
-  type kinded_key = Foo
+  type conflicting_type = Foo
+
+  module Conflicting_module = Foo
 end
 
-module type S = sig
-  include Generic_key
+module type C = sig
+  include B
 end
 
 module type Maker = sig
   type hash
 
-  module Make (Schema : sig end) : S with type repo = int
+  module Make (Schema : sig end) : C with type unrelated = int
 end
