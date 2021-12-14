@@ -61,7 +61,8 @@ let pp_lookup_type_list fmt ls =
   in
   Format.fprintf fmt "[%a]" inner ls
 
-type recorder = { mutable lookups : lookup_type list }
+module LookupTypeSet = Set.Make(struct type t = lookup_type let compare = compare end)
+type recorder = { mutable lookups : LookupTypeSet.t }
 
 module Maps = Odoc_model.Paths.Identifier.Maps
 module StringMap = Map.Make (String)
@@ -181,11 +182,11 @@ let has_resolver t = match t.resolver with None -> false | _ -> true
 let id t = t.id
 
 let with_recorded_lookups env f =
-  let recorder = { lookups = [] } in
+  let recorder = { lookups = LookupTypeSet.empty } in
   let env' = { env with recorder = Some recorder } in
   let restore () =
     match env.recorder with
-    | Some r -> r.lookups <- recorder.lookups @ r.lookups
+    | Some r -> r.lookups <- LookupTypeSet.union recorder.lookups r.lookups
     | None -> ()
   in
   try
@@ -419,10 +420,10 @@ let lookup_root_module name env =
   in
   (match (env.recorder, result) with
   | Some r, Some Forward ->
-      r.lookups <- RootModule (name, Some `Forward) :: r.lookups
+      r.lookups <- LookupTypeSet.add (RootModule (name, Some `Forward)) r.lookups
   | Some r, Some (Resolved (root, _, _)) ->
-      r.lookups <- RootModule (name, Some (`Resolved root.digest)) :: r.lookups
-  | Some r, None -> r.lookups <- RootModule (name, None) :: r.lookups
+      r.lookups <- LookupTypeSet.add (RootModule (name, Some (`Resolved root.digest))) r.lookups
+  | Some r, None -> r.lookups <- LookupTypeSet.add (RootModule (name, None)) r.lookups
   | None, _ -> ());
   result
 
@@ -448,7 +449,7 @@ let lookup_by_name scope name env =
         List.iter
           (function
             | `Module (id, _) ->
-                r.lookups <- ModuleByName (name, id) :: r.lookups
+                r.lookups <- LookupTypeSet.add (ModuleByName (name, id)) r.lookups
             | _ -> ())
           (results :> Component.Element.any list)
     | None -> ()
@@ -475,8 +476,8 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
     match env.recorder with
     | Some r -> (
         match (result :> Component.Element.any) with
-        | `Module (id, _) -> r.lookups <- Module id :: r.lookups
-        | `ModuleType (id, _) -> r.lookups <- ModuleType id :: r.lookups
+        | `Module (id, _) -> r.lookups <- LookupTypeSet.add (Module id)  r.lookups
+        | `ModuleType (id, _) -> r.lookups <- LookupTypeSet.add (ModuleType id) r.lookups
         | _ -> ())
     | None -> ()
   in
@@ -589,7 +590,7 @@ let n = ref 0
 let lookup_fragment_root env =
   let maybe_record_result res =
     match env.recorder with
-    | Some r -> r.lookups <- res :: r.lookups
+    | Some r -> r.lookups <- LookupTypeSet.add res r.lookups
     | None -> ()
   in
   match env.fragmentroot with
@@ -868,10 +869,10 @@ let verify_lookups env lookups =
            true
        end*)
   in
-  let result = not (List.exists bad_lookup lookups) in
+  let result = not (LookupTypeSet.exists bad_lookup lookups) in
   (* If we're recording lookups, make sure it looks like we
       looked all this stuff up *)
   (match (result, env.recorder) with
-  | true, Some r -> r.lookups <- r.lookups @ lookups
+  | true, Some r -> r.lookups <- LookupTypeSet.union r.lookups lookups
   | _ -> ());
   result

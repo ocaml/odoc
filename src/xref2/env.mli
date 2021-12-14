@@ -26,11 +26,13 @@ type lookup_type =
   | ModuleByName of string * Identifier.Path.Module.t
   | FragmentRoot of int
 
+module LookupTypeSet : Set.S with type elt = lookup_type
+
 val pp_lookup_type_list : Format.formatter -> lookup_type list -> unit
 
 type t
 
-val with_recorded_lookups : t -> (t -> 'a) -> lookup_type list * 'a
+val with_recorded_lookups : t -> (t -> 'a) -> LookupTypeSet.t * 'a
 
 val set_resolver : t -> resolver -> t
 
@@ -172,4 +174,4 @@ val len : int ref
 
 val n : int ref
 
-val verify_lookups : t -> lookup_type list -> bool
+val verify_lookups : t -> LookupTypeSet.t -> bool
