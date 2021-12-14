@@ -740,8 +740,10 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             let ty = class_type empty c in
             add_class_type c.id ty env
         | L.Signature.Include i, _ -> open_signature i.expansion.content env
-        | L.Signature.Open o, _ -> open_signature o.expansion env
+        | L.Signature.Open o, false -> open_signature o.expansion env
         (* The following are only added when linking *)
+        | L.Signature.Open o, true ->
+            add_comment (`Docs o.doc) (open_signature o.expansion env)
         | Comment c, true -> add_comment c env
         | TypExt te, true ->
             let doc = docs empty te.doc in
