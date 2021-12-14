@@ -5,6 +5,10 @@ Bugs fixed
 - Fix a missing Result constructor during compile. This will cause some
   functor arguments to have different filenames (@jonludlam, #795)
 
+Additions
+- Handle comments attached to open statement as floating comment, instead
+  of dropping them (@panglesd, #797)
+
 2.0.2
 -----
 

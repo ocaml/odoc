@@ -119,4 +119,5 @@ Doc of c2\.
 .ti +2
 \f[CI]t\fR\.
 .nf 
-
+.sp 
+\f[CB]module\fR Comments_on_open : \f[CB]sig\fR \.\.\. \f[CB]end\fR

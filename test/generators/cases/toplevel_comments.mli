@@ -79,3 +79,16 @@ module Ref_in_synopsis : sig
 
   type t
 end
+
+module Comments_on_open : sig
+  module M : sig
+    type t
+  end
+
+  open M
+      (** 
+          {2:sec Section}
+
+          Comments attached to open are treated as floating comments.
+         Referencing {!section-sec} {!M.t} works *)
+end
