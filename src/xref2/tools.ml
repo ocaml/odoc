@@ -16,7 +16,7 @@ let core_types =
   let open Odoc_model.Paths in
   List.map
     (fun decl ->
-      (Identifier.name decl.id, Component.Of_Lang.(type_decl empty decl)))
+      (Identifier.name decl.id, Component.Of_Lang.(type_decl (empty ()) decl)))
     Odoc_model.Predefined.core_types
 
 let prefix_substitution path sg =

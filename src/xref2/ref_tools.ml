@@ -176,7 +176,7 @@ module M = struct
       | None -> (base_path, base_ref)
       | Some (`Aliased cp) ->
           let cp = Tools.reresolve_module env cp in
-          let p = Lang_of.(Path.resolved_module empty cp) in
+          let p = Lang_of.(Path.resolved_module (empty ()) cp) in
           (`Alias (cp, base_path), `Alias (p, base_ref))
       | Some (`SubstMT cp) ->
           let cp = Tools.reresolve_module_type env cp in
@@ -212,7 +212,7 @@ module MT = struct
     | None -> (base_ref, base_path, mt)
     | Some (`AliasModuleType cp) ->
         let cp = Tools.reresolve_module_type env cp in
-        let p = Lang_of.(Path.resolved_module_type empty cp) in
+        let p = Lang_of.(Path.resolved_module_type (empty ()) cp) in
         (`AliasModuleType (p, base_ref), `AliasModuleType (cp, base_path), mt)
 
   let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name

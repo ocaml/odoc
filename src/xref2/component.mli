@@ -609,7 +609,7 @@ end
 module Of_Lang : sig
   type map
 
-  val empty : map
+  val empty : unit -> map
 
   val identifier :
     ('a -> 'b -> 'c) -> 'b -> 'a -> [> `Identifier of 'a | `Local of 'c ]
