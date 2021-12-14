@@ -1554,6 +1554,14 @@ end
 module Of_Lang = struct
   open Odoc_model
 
+  module RM = Map.Make (struct
+    type t = Paths.Path.Resolved.Module.t
+
+    let compare x y = if x == y then 0 else compare x y
+  end)
+
+  type memos = { mutable rmodpathmemo : Cpath.Resolved.module_ RM.t }
+
   type map = {
     modules : Ident.module_ Paths.Identifier.Maps.Module.t;
     module_types : Ident.module_type Paths.Identifier.Maps.ModuleType.t;
@@ -1565,10 +1573,12 @@ module Of_Lang = struct
       Ident.path_class_type Paths.Identifier.Maps.Path.ClassType.t;
     classes : Ident.class_ Paths.Identifier.Maps.Class.t;
     class_types : Ident.class_type Paths.Identifier.Maps.ClassType.t;
+    memos : memos;
   }
 
-  let empty =
+  let empty () =
     let open Paths.Identifier.Maps in
+    let memos = { rmodpathmemo = RM.empty } in
     {
       modules = Module.empty;
       module_types = ModuleType.empty;
@@ -1578,6 +1588,7 @@ module Of_Lang = struct
       path_class_types = Path.ClassType.empty;
       classes = Class.empty;
       class_types = ClassType.empty;
+      memos;
     }
 
   let map_of_idents ids map =
@@ -1662,6 +1673,7 @@ module Of_Lang = struct
         map.path_class_types
     in
     {
+      (empty ()) with
       modules;
       module_types;
       functor_parameters;
@@ -1692,17 +1704,24 @@ module Of_Lang = struct
   let rec resolved_module_path :
       _ -> Odoc_model.Paths.Path.Resolved.Module.t -> Cpath.Resolved.module_ =
    fun ident_map p ->
-    let recurse p = resolved_module_path ident_map p in
-    match p with
-    | `Identifier i -> identifier find_any_module ident_map i
-    | `Module (p, name) -> `Module (`Module (recurse p), name)
-    | `Apply (p1, p2) -> `Apply (recurse p1, recurse p2)
-    | `Alias (p1, p2) -> `Alias (recurse p1, recurse p2)
-    | `Subst (p1, p2) ->
-        `Subst (resolved_module_type_path ident_map p1, recurse p2)
-    | `Canonical (p1, p2) -> `Canonical (recurse p1, module_path ident_map p2)
-    | `Hidden p1 -> `Hidden (recurse p1)
-    | `OpaqueModule m -> `OpaqueModule (recurse m)
+    let f () =
+      let recurse p = resolved_module_path ident_map p in
+      match p with
+      | `Identifier i -> identifier find_any_module ident_map i
+      | `Module (p, name) -> `Module (`Module (recurse p), name)
+      | `Apply (p1, p2) -> `Apply (recurse p1, recurse p2)
+      | `Alias (p1, p2) -> `Alias (recurse p1, recurse p2)
+      | `Subst (p1, p2) ->
+          `Subst (resolved_module_type_path ident_map p1, recurse p2)
+      | `Canonical (p1, p2) -> `Canonical (recurse p1, module_path ident_map p2)
+      | `Hidden p1 -> `Hidden (recurse p1)
+      | `OpaqueModule m -> `OpaqueModule (recurse m)
+    in
+    try RM.find p ident_map.memos.rmodpathmemo
+    with Not_found ->
+      let res = f () in
+      ident_map.memos.rmodpathmemo <- RM.add p res ident_map.memos.rmodpathmemo;
+      res
 
   and resolved_module_type_path :
       _ ->
