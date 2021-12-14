@@ -730,9 +730,9 @@ let resolve_ref = resolve_ref_of_mli {|
 <!-- $MDX version>=4.08 -->
 ```ocaml
 # resolve_ref "s1" ;;
-- : ref = `Identifier (`Type (`Root (Some (`Page (None, None)), Root), s1))
+Exception: Failure "resolve_reference: Couldn't find \"s1\"".
 # resolve_ref "s1.rf1" ;;
-Exception: Failure "resolve_reference: Couldn't find \"rf1\"".
+Exception: Failure "resolve_reference: Couldn't find \"s1\"".
 # resolve_ref "M.s2" ;;
 Exception: Failure "resolve_reference: Couldn't find \"s2\"".
 # resolve_ref "M.s2.rf2" ;;
