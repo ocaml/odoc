@@ -357,26 +357,35 @@ and signature_items :
     Env.t -> Id.Signature.t -> Signature.item list -> Signature.item list =
  fun env id s ->
   let open Signature in
-  List.map
-    (fun item ->
-      match item with
-      | Module (r, m) -> Module (r, module_ env m)
-      | ModuleSubstitution m ->
-          ModuleSubstitution (module_substitution env id m)
-      | Type (r, t) -> Type (r, type_decl env id t)
-      | TypeSubstitution t -> TypeSubstitution (type_decl env id t)
-      | ModuleType mt -> ModuleType (module_type env mt)
-      | ModuleTypeSubstitution mts ->
-          ModuleTypeSubstitution (module_type_substitution env mts)
-      | Value v -> Value (value_ env id v)
-      | Comment c -> Comment (comment env id c)
-      | TypExt t -> TypExt (extension env id t)
-      | Exception e -> Exception (exception_ env id e)
-      | Class (r, c) -> Class (r, class_ env id c)
-      | ClassType (r, c) -> ClassType (r, class_type env id c)
-      | Include i -> Include (include_ env i)
-      | Open o -> Open (open_ env id o))
-    s
+  let items, _ =
+    List.fold_left
+      (fun (items, env) item ->
+        let std i = (i :: items, env) in
+        match item with
+        | Module (r, m) -> std @@ Module (r, module_ env m)
+        | ModuleSubstitution m ->
+            let env' = Env.open_module_substitution m env in
+            (ModuleSubstitution (module_substitution env id m) :: items, env')
+        | Type (r, t) -> std @@ Type (r, type_decl env id t)
+        | TypeSubstitution t ->
+            let env' = Env.open_type_substitution t env in
+            (TypeSubstitution (type_decl env id t) :: items, env')
+        | ModuleType mt -> std @@ ModuleType (module_type env mt)
+        | ModuleTypeSubstitution mts ->
+            let env' = Env.open_module_type_substitution mts env in
+            ( ModuleTypeSubstitution (module_type_substitution env mts) :: items,
+              env' )
+        | Value v -> std @@ Value (value_ env id v)
+        | Comment c -> std @@ Comment (comment env id c)
+        | TypExt t -> std @@ TypExt (extension env id t)
+        | Exception e -> std @@ Exception (exception_ env id e)
+        | Class (r, c) -> std @@ Class (r, class_ env id c)
+        | ClassType (r, c) -> std @@ ClassType (r, class_type env id c)
+        | Include i -> std @@ Include (include_ env i)
+        | Open o -> std @@ Open (open_ env id o))
+      ([], env) s
+  in
+  List.rev items
 
 and simple_expansion :
     Env.t ->

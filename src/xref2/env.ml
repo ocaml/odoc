@@ -228,7 +228,7 @@ let add_to_elts kind identifier component env =
     let other = ElementsById.find_by_id identifier env.ids in
     match other with
     | Some _ ->
-        (* Format.eprintf "Overriding duplicate env entry\n%!" *)
+        (* Format.eprintf "Overriding duplicate env entry: %s\n%!" (Identifier.name identifier); *)
         ()
     | None -> ()
   in
@@ -724,31 +724,10 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | ModuleType t, _ ->
             let ty = module_type ident_map t in
             add_module_type t.L.ModuleType.id ty env
-        | ModuleTypeSubstitution t, _ ->
-            let ty =
-              module_type ident_map
-                {
-                  id = t.id;
-                  doc = t.doc;
-                  expr = Some t.manifest;
-                  canonical = None;
-                }
-            in
-            add_module_type t.L.ModuleTypeSubstitution.id ty env
-        | L.Signature.TypeSubstitution t, _ ->
-            let ty = type_decl ident_map t in
-            add_type t.L.TypeDecl.id ty env
-        | L.Signature.ModuleSubstitution m, _ ->
-            let _id = Ident.Of_Identifier.module_ m.id in
-            let doc = docs ident_map m.doc in
-            let ty =
-              Component.Delayed.put (fun () ->
-                  Of_Lang.(
-                    module_of_module_substitution
-                      (*                  { ident_map with modules = [ (m.id, id) ] } *)
-                      ident_map m))
-            in
-            add_module (m.id :> Identifier.Path.Module.t) ty doc env
+        | ModuleTypeSubstitution _, _
+        | L.Signature.TypeSubstitution _, _
+        | L.Signature.ModuleSubstitution _, _ ->
+            env
         | L.Signature.Class (_, c), _ ->
             let ty = class_ ident_map c in
             add_class c.id ty env
@@ -782,6 +761,43 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | L.Signature.Value _, false -> env)
       e s.items
 
+let open_type_substitution : Odoc_model.Lang.TypeDecl.t -> t -> t =
+ fun t env ->
+  let open Component in
+  let open Of_Lang in
+  let module L = Odoc_model.Lang in
+  let ty = type_decl (empty ()) t in
+  add_type t.L.TypeDecl.id ty env
+
+let open_module_substitution : Odoc_model.Lang.ModuleSubstitution.t -> t -> t =
+ fun m env ->
+  let open Component in
+  let open Of_Lang in
+  let module L = Odoc_model.Lang in
+  let _id = Ident.Of_Identifier.module_ m.id in
+  let doc = docs (empty ()) m.doc in
+  let ty =
+    Component.Delayed.put (fun () ->
+        Of_Lang.(
+          module_of_module_substitution
+            (*                  { empty with modules = [ (m.id, id) ] } *)
+            (empty ())
+            m))
+  in
+  add_module (m.id :> Identifier.Path.Module.t) ty doc env
+
+let open_module_type_substitution :
+    Odoc_model.Lang.ModuleTypeSubstitution.t -> t -> t =
+ fun t env ->
+  let open Component in
+  let open Of_Lang in
+  let module L = Odoc_model.Lang in
+  let ty =
+    module_type (empty ())
+      { id = t.id; doc = t.doc; expr = Some t.manifest; canonical = None }
+  in
+  add_module_type t.L.ModuleTypeSubstitution.id ty env
+
 let rec close_signature : Odoc_model.Lang.Signature.t -> t -> t =
   let module L = Odoc_model.Lang in
   fun s e ->
@@ -792,13 +808,12 @@ let rec close_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | Type (_, t) -> remove t.L.TypeDecl.id env
         | Module (_, t) -> remove t.L.Module.id env
         | ModuleType t -> remove t.L.ModuleType.id env
-        | ModuleTypeSubstitution t -> remove t.L.ModuleTypeSubstitution.id env
-        | TypeSubstitution t -> remove t.L.TypeDecl.id env
         | ModuleSubstitution t -> remove t.L.ModuleSubstitution.id env
         | Class (_, c) -> remove c.id env
         | ClassType (_, c) -> remove c.id env
         | Include i -> close_signature i.expansion.content env
         | Open o -> close_signature o.expansion env
+        | ModuleTypeSubstitution _ | TypeSubstitution _ -> env
         (* The following are only added when linking *)
         | Exception _ -> env
         | TypExt _ -> env

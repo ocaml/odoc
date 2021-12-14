@@ -217,16 +217,21 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
               in
               (Module (r, m') :: items, env')
         | ModuleSubstitution m ->
-            std @@ ModuleSubstitution (module_substitution env m)
+            let env' = Env.open_module_substitution m env in
+            (ModuleSubstitution (module_substitution env m) :: items, env')
         | Type (r, t) -> std @@ Type (r, type_decl env t)
-        | TypeSubstitution t -> std @@ TypeSubstitution (type_decl env t)
+        | TypeSubstitution t ->
+            let env' = Env.open_type_substitution t env in
+            (TypeSubstitution (type_decl env t) :: items, env')
         | ModuleType mt ->
             let m' = module_type env mt in
             let ty = Component.Of_Lang.(module_type (empty ()) m') in
             let env' = Env.update_module_type mt.id ty env in
             (ModuleType (module_type env mt) :: items, env')
         | ModuleTypeSubstitution mt ->
-            std @@ ModuleTypeSubstitution (module_type_substitution env mt)
+            let env' = Env.open_module_type_substitution mt env in
+            ( ModuleTypeSubstitution (module_type_substitution env mt) :: items,
+              env' )
         | Value v -> std @@ Value (value_ env id v)
         | Comment c -> std @@ Comment c
         | TypExt t -> std @@ TypExt (extension env id t)
