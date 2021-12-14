@@ -471,6 +471,10 @@ div.def-doc>*:first-child {
   position: relative;
 }
 
+.odoc-include.shadowed-include {
+  display: none;
+}
+
 .odoc-include details:after {
   z-index: -100;
   display: block;

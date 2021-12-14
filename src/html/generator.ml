@@ -299,6 +299,10 @@ and items ~resolve l : item Html.elt list =
       :: rest ->
         let doc = spec_doc_div ~resolve doc in
         let included_html = (items content :> any Html.elt list) in
+        let a_class =
+          if List.length content = 0 then [ "odoc-include"; "shadowed-include" ]
+          else [ "odoc-include" ]
+        in
         let content =
           let details ~open' =
             let open' = if open' then [ Html.a_open () ] else [] in
@@ -315,9 +319,7 @@ and items ~resolve l : item Html.elt list =
           | `Open -> details ~open':true
           | `Default -> details ~open':!Tree.open_details
         in
-        let inc =
-          [ Html.div ~a:[ Html.a_class [ "odoc-include" ] ] (doc @ content) ]
-        in
+        let inc = [ Html.div ~a:[ Html.a_class a_class ] (doc @ content) ] in
         (continue_with [@tailcall]) rest inc
     | Declaration { Item.attr; anchor; content; doc } :: rest ->
         let anchor_attrib, anchor_link = mk_anchor anchor in
