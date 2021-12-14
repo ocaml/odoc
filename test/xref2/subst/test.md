@@ -12,7 +12,7 @@ let resolve_module_name sg name =
 let module_substitution ~idents ~targets m test_data =
   let _, sg, _ = Common.model_of_string test_data in
 
-  let c = Component.Of_Lang.(signature empty sg) in
+  let c = Component.Of_Lang.(signature (empty ()) sg) in
 
   let subst_idents_mod = resolve_module_name c idents in
   let subst_targets_mod = resolve_module_name c targets in
@@ -95,7 +95,7 @@ let compile mli =
   let id, sg, _ = Common.model_of_string mli in
   let env = Env.env_for_testing ~linking:false in
   Odoc_xref2.Compile.signature env (id :> Odoc_model.Paths.Identifier.Signature.t) sg
-  |> Of_Lang.signature Of_Lang.empty
+  |> Of_Lang.(signature (empty ()))
 ```
 
 ```ocaml
@@ -128,28 +128,28 @@ let compile mli =
   end
   |} ;;
 - : Component.Signature.t =
-module type Monad/33 = sig
-  type t/34
-  val map/35 : ([a] r(t/34)) -> ((a) -> b) -> [b] r(t/34)
-  val join/36 : ([[a] r(t/34)] r(t/34)) -> [a] r(t/34)
+module type Monad/68 = sig
+  type t/69
+  val map/70 : ([a] r(t/69)) -> ((a) -> b) -> [b] r(t/69)
+  val join/71 : ([[a] r(t/69)] r(t/69)) -> [a] r(t/69)
    (removed=[])end
-module SomeMonad/32 : sig
-  type t/37
-  include : r(Monad/33) with [r(root(Monad/33).t) = [a] r(t/37)] (sig =
-    val map/38 : ([a] r(t/37)) -> ((a) -> b) -> [b] r(t/37)
-    val join/39 : ([[a] r(t/37)] r(t/37)) -> [a] r(t/37)
+module SomeMonad/67 : sig
+  type t/72
+  include : r(Monad/68) with [r(root(Monad/68).t) = [a] r(t/72)] (sig =
+    val map/73 : ([a] r(t/72)) -> ((a) -> b) -> [b] r(t/72)
+    val join/74 : ([[a] r(t/72)] r(t/72)) -> [a] r(t/72)
      (removed=[]))
    (removed=[])end
-module ComplexTypeExpr/30 : sig
-  type t/40
-  include : r(Monad/33) with [r(root(Monad/33).t) = ([r(int) * a] r(t/40) * [a * r(int)] r(t/40))] (sig =
-    val map/41 : (([r(int) * a] r(t/40) * [a * r(int)] r(t/40))) -> ((a) -> b) -> ([r(int) * b] r(t/40) * [b * r(int)] r(t/40))
-    val join/42 : (([r(int) * ([r(int) * a] r(t/40) * [a * r(int)] r(t/40))] r(t/40) * [([r(int) * a] r(t/40) * [a * r(int)] r(t/40)) * r(int)] r(t/40))) -> ([r(int) * a] r(t/40) * [a * r(int)] r(t/40))
+module ComplexTypeExpr/65 : sig
+  type t/75
+  include : r(Monad/68) with [r(root(Monad/68).t) = ([r(int) * a] r(t/75) * [a * r(int)] r(t/75))] (sig =
+    val map/76 : (([r(int) * a] r(t/75) * [a * r(int)] r(t/75))) -> ((a) -> b) -> ([r(int) * b] r(t/75) * [b * r(int)] r(t/75))
+    val join/77 : (([r(int) * ([r(int) * a] r(t/75) * [a * r(int)] r(t/75))] r(t/75) * [([r(int) * a] r(t/75) * [a * r(int)] r(t/75)) * r(int)] r(t/75))) -> ([r(int) * a] r(t/75) * [a * r(int)] r(t/75))
      (removed=[]))
    (removed=[])end
-module Erase/31 : sig
-  include : r(Monad/33) with [r(root(Monad/33).t) = a] (sig = val map/43 : (a) -> ((a) -> b) -> b
-                                                              val join/44 : (a) -> a
+module Erase/66 : sig
+  include : r(Monad/68) with [r(root(Monad/68).t) = a] (sig = val map/78 : (a) -> ((a) -> b) -> b
+                                                              val join/79 : (a) -> a
                                                                (removed=[]))
    (removed=[])end
  (removed=[])
@@ -172,18 +172,18 @@ More tests with two type variables:
   end
   |} ;;
 - : Component.Signature.t =
-module type Monad_2/61 = sig
-  type t/62
-  val map/63 : ([a * err] r(t/62)) -> f:((a) -> b) -> [b * err] r(t/62)
-  val join/64 : ([[a * e] r(t/62) * e] r(t/62)) -> [a * e] r(t/62)
-  val both/65 : ([a * e] r(t/62)) -> ([b * e] r(t/62)) -> [(a * b) * e] r(t/62)
+module type Monad_2/121 = sig
+  type t/122
+  val map/123 : ([a * err] r(t/122)) -> f:((a) -> b) -> [b * err] r(t/122)
+  val join/124 : ([[a * e] r(t/122) * e] r(t/122)) -> [a * e] r(t/122)
+  val both/125 : ([a * e] r(t/122)) -> ([b * e] r(t/122)) -> [(a * b) * e] r(t/122)
    (removed=[])end
-module SwappedVars/60 : sig
-  type t/66
-  include : r(Monad_2/61) with [r(root(Monad_2/61).t) = [b * a] r(t/66)] (sig =
-    val map/67 : ([err * a] r(t/66)) -> f:((a) -> b) -> [err * b] r(t/66)
-    val join/68 : ([e * [e * a] r(t/66)] r(t/66)) -> [e * a] r(t/66)
-    val both/69 : ([e * a] r(t/66)) -> ([e * b] r(t/66)) -> [e * (a * b)] r(t/66)
+module SwappedVars/120 : sig
+  type t/126
+  include : r(Monad_2/121) with [r(root(Monad_2/121).t) = [b * a] r(t/126)] (sig =
+    val map/127 : ([err * a] r(t/126)) -> f:((a) -> b) -> [err * b] r(t/126)
+    val join/128 : ([e * [e * a] r(t/126)] r(t/126)) -> [e * a] r(t/126)
+    val both/129 : ([e * a] r(t/126)) -> ([e * b] r(t/126)) -> [e * (a * b)] r(t/126)
      (removed=[]))
    (removed=[])end
  (removed=[])
@@ -204,14 +204,14 @@ Edge cases:
   end
   |} ;;
 - : Component.Signature.t =
-module type S/78 = sig
-  type t/79
-  val map/80 : ([a] r(t/79)) -> ((a) -> b) -> [b] r(t/79)
+module type S/151 = sig
+  type t/152
+  val map/153 : ([a] r(t/152)) -> ((a) -> b) -> [b] r(t/152)
    (removed=[])end
-module M/77 : sig
-  type t/81
-  include : r(S/78) with [r(root(S/78).t) = [(alias (poly_var [ `A of (a * b) ]) b)] r(t/81)] (sig =
-    val map/82 : ([(alias (poly_var [ `A of (a * b) ]) b)] r(t/81)) -> ((a) -> b) -> [(alias (poly_var [ `A of (b * b) ]) b)] r(t/81)
+module M/150 : sig
+  type t/154
+  include : r(S/151) with [r(root(S/151).t) = [(alias (poly_var [ `A of (a * b) ]) b)] r(t/154)] (sig =
+    val map/155 : ([(alias (poly_var [ `A of (a * b) ]) b)] r(t/154)) -> ((a) -> b) -> [(alias (poly_var [ `A of (b * b) ]) b)] r(t/154)
      (removed=[]))
    (removed=[])end
  (removed=[])
