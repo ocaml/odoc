@@ -297,9 +297,9 @@ let lib_paths =
   |> get_ok
 ]}
 
-We need a function to find [odoc] inputs given a search path. [odoc]
+We need a function to find [odoc] inputs from the given search path. [odoc]
 operates on [.cmti], [.cmt], or [.cmi] files, in order of preference, and the following
-function finds all matching files given a search path. Then it returns an [Fpath.Set.t]
+function finds all matching files starting from the given path. Then it returns an [Fpath.Set.t]
 that contains the [Fpath.t] values representing the absolute file path, without its extension.
 
 {[
