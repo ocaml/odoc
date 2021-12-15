@@ -685,14 +685,10 @@ and read_signature_item env parent item =
         read_module_declarations env parent mds
     | Tsig_modtype mtd ->
         [ModuleType (read_module_type_declaration env parent mtd)]
-#if OCAML_VERSION >= (4,8,0)
     | Tsig_open o ->
         [
           Open (read_open env parent o)
         ]
-#else
-    | Tsig_open _ -> []
-#endif
     | Tsig_include incl ->
         read_include env parent incl
     | Tsig_class cls ->
@@ -773,13 +769,16 @@ and read_include env parent incl =
   | _ ->
     content.items
 
-#if OCAML_VERSION >= (4,8,0)
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container o.open_attributes in
-  let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature o.open_bound_items) in
+  #if OCAML_VERSION >= (4,8,0)
+  let signature = o.open_bound_items in
+  #else
+  let signature = [] in
+  #endif
+  let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature signature) in
   { expansion; doc }
-#endif
 
 and read_signature :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
