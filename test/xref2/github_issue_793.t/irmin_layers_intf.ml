@@ -1,11 +1,15 @@
 module Foo = struct end
 
+module type Foo_T = sig end
+
 module type A = sig
   type unrelated
 
   type conflicting_type := [ `Contents | `Node ]
 
   module Conflicting_module := Foo
+
+  module type Conflicting_module_type := Foo_T
 end
 
 module type B = sig
@@ -14,6 +18,8 @@ module type B = sig
   type conflicting_type = Foo
 
   module Conflicting_module = Foo
+
+  module type Conflicting_module_type = Foo_T
 end
 
 module type C = sig
