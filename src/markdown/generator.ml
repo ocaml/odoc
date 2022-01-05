@@ -47,9 +47,6 @@ and inline (l : Inline.t) args =
   | [] -> noop
   | i :: rest -> (
       let continue i = if i = [] then noop else inline i args in
-      let cond then_clause else_clause =
-        if args.generate_links then then_clause else else_clause
-      in
       match i.desc with
       | Text "" | Text " " -> continue rest
       | Text _ ->
@@ -58,21 +55,20 @@ and inline (l : Inline.t) args =
               | { Inline.desc = Text s; _ } -> Accum [ s ]
               | _ -> Stop_and_keep)
           in
-          (*TODO: string trim here works but, I don't think it's appropriate. *)
           text String.(concat "" l |> trim) ++ continue rest
       | Entity _ -> noop
-      | Styled (sty, content) -> style sty (continue content) ++ continue rest
+      | Styled (styl, content) -> style styl (continue content) ++ continue rest
       | Linebreak -> line_break ++ continue rest
       | Link (href, content) ->
           link ~href (inline content args) ++ continue rest
       | InternalLink (Resolved (link', content)) ->
-          cond
-            (match link'.page.parent with
+          if args.generate_links then
+            match link'.page.parent with
             | Some _ -> continue content ++ continue rest
             | None ->
                 link ~href:(make_hashes 1 ^ link'.anchor) (inline content args)
-                ++ continue rest)
-            (continue content ++ continue rest)
+                ++ continue rest
+          else continue content ++ continue rest
       | InternalLink (Unresolved content) -> continue content ++ continue rest
       | Source content -> source_code content args ++ continue rest
       | Raw_markup (_, s) -> text s ++ continue rest)
@@ -121,34 +117,6 @@ let rec block (l : Block.t) args =
       | Verbatim content -> blocks (code_block content) (continue rest)
       | Raw_markup (_, s) -> blocks (raw_markup s) (continue rest))
 
-let heading' { Heading.label; level; title } args =
-  let title = inline title args in
-  match label with
-  | Some _ -> (
-      match level with
-      | 1 -> heading level title
-      | _ -> blocks (heading level title) block_separator)
-  | None -> paragraph title
-
-let inline_subpage = function
-  | `Inline | `Open | `Default -> true
-  | `Closed -> false
-
-let item_prop = text (make_hashes 6 ^ " ")
-
-let expansion_not_inlined url = not (should_inline url)
-
-let take_code l =
-  let c, _, rest =
-    Take.until l ~classify:(function
-      | DocumentedSrc.Code c -> Accum c
-      | DocumentedSrc.Alternative (Expansion e) ->
-          if expansion_not_inlined e.url then Accum e.summary
-          else Rec e.expansion
-      | _ -> Stop_and_keep)
-  in
-  (c, rest)
-
 let rec acc_text (l : Block.t) : string =
   match l with
   | [] -> ""
@@ -174,8 +142,21 @@ and inline_text (i : Inline.t) =
       | _ -> "")
 
 let rec documented_src (l : DocumentedSrc.t) args nbsps =
-  let nbsps' = nbsps ++ (nbsp ++ nbsp) in
   let noop = paragraph noop in
+  let nbsps' = nbsps ++ (nbsp ++ nbsp) in
+  let item_prop = text (make_hashes 6 ^ " ") in
+  let take_code l =
+    let c, _, rest =
+      let expansion_not_inlined url = not (should_inline url) in
+      Take.until l ~classify:(function
+        | DocumentedSrc.Code c -> Accum c
+        | DocumentedSrc.Alternative (Expansion e) ->
+            if expansion_not_inlined e.url then Accum e.summary
+            else Rec e.expansion
+        | _ -> Stop_and_keep)
+    in
+    (c, rest)
+  in
   match l with
   | [] -> noop
   | line :: rest -> (
@@ -230,8 +211,8 @@ let rec documented_src (l : DocumentedSrc.t) args nbsps =
 
 and subpage { title = _; header = _; items; url = _ } args nbsps =
   let content = items in
-  let surround body = if content = [] then paragraph line_break else body in
-  surround @@ item content args nbsps
+  let subpage' body = if content = [] then paragraph line_break else body in
+  subpage' @@ item content args nbsps
 
 and item (l : Item.t list) args nbsps =
   let noop = paragraph noop in
@@ -241,7 +222,17 @@ and item (l : Item.t list) args nbsps =
       let continue r = if r = [] then noop else item r args nbsps in
       match i with
       | Text b -> blocks (block b args) (continue rest)
-      | Heading h -> blocks (heading' h args) (continue rest)
+      | Heading { Heading.label; level; title } ->
+          let heading' =
+            let title = inline title args in
+            match label with
+            | Some _ -> (
+                match level with
+                | 1 -> heading level title
+                | _ -> blocks (heading level title) block_separator)
+            | None -> paragraph title
+          in
+          blocks heading' (continue rest)
       | Declaration { attr = _; anchor; content; doc } ->
           let decl = documented_src content args nbsps in
           let doc =
@@ -253,6 +244,10 @@ and item (l : Item.t list) args nbsps =
             blocks (blocks (paragraph (anchor' anchor)) item') (continue rest)
           else blocks item' (continue rest)
       | Include { content = { summary; status; content }; _ } ->
+          let inline_subpage = function
+            | `Inline | `Open | `Default -> true
+            | `Closed -> false
+          in
           let d =
             if inline_subpage status then item content args nbsps
             else paragraph (source_code summary args)

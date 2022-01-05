@@ -56,7 +56,5 @@ val code_block : string -> blocks
 
 val heading : int -> inlines -> blocks
 
-(* val pp_inlines : Format.formatter -> inlines -> unit *)
-
 val pp_blocks : Format.formatter -> blocks -> unit
 (** Renders a markdown document. *)
