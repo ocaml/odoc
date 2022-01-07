@@ -712,6 +712,22 @@ module Odoc_error = struct
       ~doc:"Print errors that occurred while an .odoc file was generated."
 end
 
+module Odoc_uri : sig
+  val cmd : unit Term.t
+
+  val info : Term.info
+end = struct
+  let resolve directories =
+    let _resolver =
+      Resolver.create ~important_digests:false ~directories ~open_modules:[]
+    in
+    Ok ()
+
+  let cmd = Term.(const handle_error $ (const resolve $ odoc_file_directories))
+
+  let info = Term.info ~doc:"Resolve a reference and output a uri to it" "uri"
+end
+
 let () =
   Printexc.record_backtrace true;
   let subcommands =
@@ -736,6 +752,7 @@ let () =
       Targets.Support_files.(cmd, info);
       Odoc_link.(cmd, info);
       Odoc_error.(cmd, info);
+      Odoc_uri.(cmd, info);
     ]
   in
   let default =
