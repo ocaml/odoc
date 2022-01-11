@@ -86,7 +86,7 @@ so we can see we will need to run [odoc compile] against several [Stdlib] module
 
 This takes the [odoc] files produced during the compilation step and performs the final steps of expansion and resolution. It is during this phase that all the references in the documentation comments are resolved. In order for these to be resolved, everything that is referenced must have been compiled already, and their [odoc] files must be on the
 include path as specified by the [-I] arguments to [odoc link]. In this example, we achieve that by compiling all modules and [.mld] files before linking anything. The output of the
-link step is an [odocl] file, which is in [_odocls] directory by default.
+link step is an [odocl] file, which is in [_build/default/_doc/_odocls] by default when invoked by [dune].
 
 Please note: it's only necessary to link the non-hidden modules (i.e., without a double underscore).
 }
