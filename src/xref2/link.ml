@@ -111,6 +111,25 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
             Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
             p)
 
+let class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
+    =
+ fun env p ->
+  if not (should_resolve (p :> Paths.Path.t)) then p
+  else
+    let cp = Component.Of_Lang.(class_type_path (empty ()) p) in
+    match cp with
+    | `Resolved p ->
+        let result = Tools.reresolve_class_type env p in
+        `Resolved Lang_of.(Path.resolved_class_type (empty ()) result)
+    | _ -> (
+        match Tools.resolve_class_type_path env cp with
+        | Ok p' ->
+            let result = Tools.reresolve_class_type env p' in
+            `Resolved Lang_of.(Path.resolved_class_type (empty ()) result)
+        | Error e ->
+            Errors.report ~what:(`Class_type_path cp) ~tools_error:e `Lookup;
+            p)
+
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
  fun env p ->
@@ -897,8 +916,18 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent visited v)
   | Object o -> Object (type_expression_object env parent visited o)
-  | Class (path, ts) ->
-      Class (path, List.map (type_expression env parent visited) ts)
+  | Class (path', ts') -> (
+      let path = class_type_path env path' in
+      let ts = List.map (type_expression env parent visited) ts' in
+      if not (Paths.Path.is_hidden (path :> Paths.Path.t)) then Class (path, ts)
+      else
+        let cp = Component.Of_Lang.(class_type_path (empty ()) path') in
+        match Tools.resolve_class_type env cp with
+        | Ok (cp', (`FClass _ | `FClassType _)) ->
+            let cp' = Tools.reresolve_class_type env cp' in
+            let p = Lang_of.(Path.resolved_class_type (empty ()) cp') in
+            Class (`Resolved p, ts)
+        | _ -> Class (path', ts))
   | Poly (strs, t) -> Poly (strs, type_expression env parent visited t)
   | Package p -> Package (type_expression_package env parent visited p)
 

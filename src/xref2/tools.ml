@@ -1098,6 +1098,18 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
   in
   result
 
+and reresolve_class_type :
+    Env.t -> Cpath.Resolved.class_type -> Cpath.Resolved.class_type =
+ fun env path ->
+  let result =
+    match path with
+    | `Identifier _ | `Local _ -> path
+    | `Substituted s -> `Substituted (reresolve_class_type env s)
+    | `Class (p, n) -> `Class (reresolve_parent env p, n)
+    | `ClassType (p, n) -> `ClassType (reresolve_parent env p, n)
+  in
+  result
+
 and reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent =
  fun env path ->
   match path with

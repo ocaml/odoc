@@ -286,6 +286,7 @@ type what =
   | `Package of Cpath.module_type
   | `Type of Cfrag.type_
   | `Type_path of Cpath.type_
+  | `Class_type_path of Cpath.class_type
   | `With_module of Cfrag.module_
   | `With_module_type of Cfrag.module_type
   | `With_type of Cfrag.type_
@@ -329,6 +330,7 @@ let report ~(what : what) ?tools_error action =
         r "module package" module_type_path (path :> Cpath.module_type)
     | `Type cfrag -> r "type" type_fragment cfrag
     | `Type_path path -> r "type" type_path path
+    | `Class_type_path path -> r "class_type" class_type_path path
     | `With_module frag -> r "module substitution" module_fragment frag
     | `With_module_type frag ->
         r "module type substitution" module_type_fragment frag
