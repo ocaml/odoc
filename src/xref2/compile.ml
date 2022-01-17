@@ -774,7 +774,14 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent v)
   | Object o -> Object (type_expression_object env parent o)
-  | Class (path, ts) -> Class (path, List.map (type_expression env parent) ts)
+  | Class (path, ts) -> (
+      let ts' = List.map (type_expression env parent) ts in
+      let cp = Component.Of_Lang.(class_type_path (empty ()) path) in
+      match Tools.resolve_class_type env cp with
+      | Ok (cp, (`FClass _ | `FClassType _)) ->
+          let p = Lang_of.(Path.resolved_class_type (empty ()) cp) in
+          Class (`Resolved p, ts')
+      | _ -> Class (path, ts'))
   | Poly (strs, t) -> Poly (strs, type_expression env parent t)
   | Package p -> Package (type_expression_package env parent p)
 

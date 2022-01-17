@@ -164,6 +164,9 @@ val reresolve_module_type :
 
 val reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_
 
+val reresolve_class_type :
+  Env.t -> Cpath.Resolved.class_type -> Cpath.Resolved.class_type
+
 (** {2 Ref_tools helpers} *)
 
 (** The following functions are exposed for use in the {!module:Ref_tools} module
