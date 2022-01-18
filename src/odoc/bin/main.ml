@@ -717,13 +717,20 @@ module Odoc_uri : sig
 
   val info : Term.info
 end = struct
-  let resolve directories =
+  let resolve directories reference =
     let _resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules:[]
     in
+    print_endline reference;
     Ok ()
 
-  let cmd = Term.(const handle_error $ (const resolve $ odoc_file_directories))
+  let reference =
+    let doc = "The reference to be resolved" in
+    Arg.(required & pos 0 (some string) None & info ~doc ~docv:"REF" [])
+
+  let cmd =
+    Term.(
+      const handle_error $ (const resolve $ odoc_file_directories $ reference))
 
   let info = Term.info ~doc:"Resolve a reference and output a uri to it" "uri"
 end
