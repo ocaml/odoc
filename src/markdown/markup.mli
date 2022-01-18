@@ -29,8 +29,6 @@ val text : string -> inlines
 
 val line_break : inlines
 
-val nbsp : inlines
-
 val noop : inlines
 
 val bold : inlines -> inlines

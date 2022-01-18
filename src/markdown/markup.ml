@@ -11,7 +11,6 @@ type inlines =
   | Link of string * inlines
   | Anchor of string
   | Linebreak
-  | Nbsp
   | Noop
 
 and blocks =
@@ -39,8 +38,6 @@ let block_separator = Block_separator
 let text s = String s
 
 let line_break = Linebreak
-
-let nbsp = Nbsp
 
 let noop = Noop
 
@@ -87,7 +84,6 @@ let rec pp_inlines fmt i =
   | Link (href, i) -> Format.fprintf fmt "[%a](%s)" pp_inlines i href
   | Anchor s -> Format.fprintf fmt "<a id=\"%s\"></a>" s
   | Linebreak -> Format.fprintf fmt "@\n"
-  | Nbsp -> Format.fprintf fmt "\u{00A0}"
   | Noop -> ()
 
 let rec pp_blocks fmt b =

@@ -4,14 +4,21 @@ open Doctree
 open Link
 open Markup
 
+(** Make a new string by copying the given string [n] times. *)
+let string_repeat n s =
+  let s_len = String.length s in
+  let b = Bytes.create (s_len * n) in
+  for i = 0 to n - 1 do
+    Bytes.unsafe_blit_string s 0 b (i * s_len) s_len
+  done;
+  Bytes.unsafe_to_string b
+
 let style (style : style) =
   match style with
   | `Bold -> bold
   | `Italic | `Emphasis -> italic
   | `Superscript -> superscript
   | `Subscript -> subscript
-
-let make_hashes n = String.make n '#'
 
 type args = { generate_links : bool }
 
@@ -66,7 +73,7 @@ and inline (l : Inline.t) args =
             match link'.page.parent with
             | Some _ -> continue content ++ continue rest
             | None ->
-                link ~href:(make_hashes 1 ^ link'.anchor) (inline content args)
+                link ~href:("#" ^ link'.anchor) (inline content args)
                 ++ continue rest
           else continue content ++ continue rest
       | InternalLink (Unresolved content) -> continue content ++ continue rest
@@ -141,10 +148,22 @@ and inline_text (i : Inline.t) =
           code_span (source_text s)
       | _ -> "")
 
-let rec documented_src (l : DocumentedSrc.t) args nbsps =
+(** Generates the 6-heading used to differentiate items. Non-breaking spaces
+    are inserted just before the text, to simulate indentation depending on
+    [nesting_level].
+    {v
+      ######<space><nbsps><space>Text
+    v} *)
+let item_heading nesting_level content =
+  let pre_hash = text (String.make 6 '#')
+  and pre_nbsp =
+    if nesting_level = 0 then noop
+    else text (string_repeat (nesting_level * 2) "\u{A0}")
+  in
+  paragraph (pre_hash ++ pre_nbsp ++ content)
+
+let rec documented_src (l : DocumentedSrc.t) args nesting_level =
   let noop = paragraph noop in
-  let nbsps' = nbsps ++ (nbsp ++ nbsp) in
-  let item_prop = text (make_hashes 6 ^ " ") in
   let take_code l =
     let c, _, rest =
       let expansion_not_inlined url = not (should_inline url) in
@@ -160,17 +179,20 @@ let rec documented_src (l : DocumentedSrc.t) args nbsps =
   match l with
   | [] -> noop
   | line :: rest -> (
-      let continue r = if r = [] then noop else documented_src r args nbsps in
+      let continue r =
+        if r = [] then noop else documented_src r args nesting_level
+      in
       match line with
       | Code s ->
           if source_contains_text s then
             let c, rest = take_code l in
             blocks
-              (paragraph (item_prop ++ nbsps' ++ source_code c args))
+              (item_heading nesting_level (source_code c args))
               (continue rest)
           else noop
       | Alternative _ -> continue rest
-      | Subpage p -> blocks (subpage p.content args nbsps') (continue rest)
+      | Subpage p ->
+          blocks (subpage p.content args (nesting_level + 1)) (continue rest)
       | Documented _ | Nested _ ->
           let lines, _, rest =
             Take.until l ~classify:(function
@@ -187,16 +209,14 @@ let rec documented_src (l : DocumentedSrc.t) args nbsps =
               | doc -> paragraph (text (acc_text doc))
             in
             let content =
+              let nesting_level = nesting_level + 1 in
               match content with
               | `D code (* for record fields and polymorphic variants *) ->
-                  paragraph
-                    (item_prop ++ nbsps' ++ (nbsp ++ nbsp) ++ inline code args)
+                  item_heading nesting_level (inline code args)
               | `N l (* for constructors *) ->
                   let c, rest = take_code l in
                   blocks
-                    (paragraph
-                       (item_prop ++ nbsps' ++ (nbsp ++ nbsp)
-                      ++ source_code c args))
+                    (item_heading nesting_level (source_code c args))
                     (continue rest)
             in
             let item = blocks content doc in
@@ -209,17 +229,17 @@ let rec documented_src (l : DocumentedSrc.t) args nbsps =
           in
           blocks (blocks' (List.map f lines)) (continue rest))
 
-and subpage { title = _; header = _; items; url = _ } args nbsps =
+and subpage { title = _; header = _; items; url = _ } args nesting_level =
   let content = items in
   let subpage' body = if content = [] then paragraph line_break else body in
-  subpage' @@ item content args nbsps
+  subpage' @@ item content args nesting_level
 
-and item (l : Item.t list) args nbsps =
+and item (l : Item.t list) args nesting_level =
   let noop = paragraph noop in
   match l with
   | [] -> noop
   | i :: rest -> (
-      let continue r = if r = [] then noop else item r args nbsps in
+      let continue r = if r = [] then noop else item r args nesting_level in
       match i with
       | Text b -> blocks (block b args) (continue rest)
       | Heading { Heading.label; level; title } ->
@@ -234,7 +254,7 @@ and item (l : Item.t list) args nbsps =
           in
           blocks heading' (continue rest)
       | Declaration { attr = _; anchor; content; doc } ->
-          let decl = documented_src content args nbsps in
+          let decl = documented_src content args nesting_level in
           let doc =
             match doc with [] -> noop | doc -> paragraph (text (acc_text doc))
           in
@@ -249,7 +269,7 @@ and item (l : Item.t list) args nbsps =
             | `Closed -> false
           in
           let d =
-            if inline_subpage status then item content args nbsps
+            if inline_subpage status then item content args nesting_level
             else paragraph (source_code summary args)
           in
           blocks d (continue rest))
@@ -258,7 +278,7 @@ let page { Page.header; items; url; _ } args =
   let blocks'' l = List.map (fun s -> paragraph (text s)) l |> blocks' in
   blocks'
     ([ blocks'' (for_printing url) ]
-    @ [ blocks (item header args (text "")) (item items args (text "")) ])
+    @ [ blocks (item header args 0) (item items args 0) ])
 
 let rec subpage subp (args : args) =
   let p = subp.Subpage.content in

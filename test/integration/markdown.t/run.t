@@ -15,79 +15,79 @@
   
   arrow (->) in a doc comment
   
-  ######       val concat : string -> string -> string
+  ###### val concat : string -> string -> string
   
   foo:bar : a raw markup
   
-  ######       type t
+  ###### type t
   
   Doc for `type t`
   
-  ######       type a = t
+  ###### type a = t
   
-  ######       type y'
+  ###### type y'
   
-  ######       module type Foo' = sig
+  ###### module type Foo' = sig
   
-  ######           type foo
+  ######    type foo
   
-  ######       end
+  ###### end
   
-  ######       module Bar : sig ... end
+  ###### module Bar : sig ... end
   
-  ######       module type Bar' = sig
+  ###### module type Bar' = sig
   
-  ######           type bar'
+  ######    type bar'
   
-  ######       end
+  ###### end
   
-  ######       module type Foo = sig
+  ###### module type Foo = sig
   
-  ######           type foo
+  ######    type foo
   
-  ######           type bar'
+  ######    type bar'
   
-  ######           module type Foo' = sig
+  ######    module type Foo' = sig
   
-  ######               type foo'
+  ######      type foo'
   
-  ######               type days =
+  ######      type days =
   
-  ######                   | Mon
+  ######        | Mon
   
   Docs for `days`
   
-  ######               type num = [
+  ######      type num = [
   
-  ######                   | `One
+  ######        | `One
   
   Docs for `` `One``
   
-  ######               ]
+  ######      ]
   
-  ######           end
+  ######    end
   
-  ######       end
+  ###### end
   
-  ######       type other_names = {
+  ###### type other_names = {
   
-  ######           given : string ;
+  ######    given : string ;
   
-  ######           nickname : string ;
+  ######    nickname : string ;
   
-  ######       }
+  ###### }
   
-  ######       type name = {
+  ###### type name = {
   
-  ######           fname : string ;
+  ######    fname : string ;
   
   Docs for `fname`
   
-  ######           lname : string ;
+  ######    lname : string ;
   
-  ######           others : other_names ;
+  ######    others : other_names ;
   
-  ######       }
+  ###### }
   
   ## Label
   
@@ -142,7 +142,7 @@
   
   @author: David Sheets
   
-  ######       module Foo : sig ... end
+  ###### module Foo : sig ... end
   
   The end foo end keyword in doc comment.
   
@@ -181,127 +181,127 @@
   
   <a id="val-concat"></a>
   
-  ######       val concat : string -> string -> string
+  ###### val concat : string -> string -> string
   
   foo:bar : a raw markup
   
   <a id="type-t"></a>
   
-  ######       type t
+  ###### type t
   
   Doc for `type t`
   
   <a id="type-a"></a>
   
-  ######       type a = [t](#type-t)
+  ###### type a = [t](#type-t)
   
   <a id="type-y'"></a>
   
-  ######       type y'
+  ###### type y'
   
   <a id="module-type-Foo'"></a>
   
-  ######       module type Foo' = sig
+  ###### module type Foo' = sig
   
   <a id="type-foo"></a>
   
-  ######           type foo
+  ######    type foo
   
-  ######       end
+  ###### end
   
   <a id="module-Bar"></a>
   
-  ######       module Bar : sig ... end
+  ###### module Bar : sig ... end
   
   <a id="module-type-Bar'"></a>
   
-  ######       module type Bar' = sig
+  ###### module type Bar' = sig
   
   <a id="type-bar'"></a>
   
-  ######           type bar'
+  ######    type bar'
   
-  ######       end
+  ###### end
   
   <a id="module-type-Foo"></a>
   
-  ######       module type Foo = sig
+  ###### module type Foo = sig
   
   <a id="type-foo"></a>
   
-  ######           type foo
+  ######    type foo
   
   <a id="type-bar'"></a>
   
-  ######           type bar'
+  ######    type bar'
   
   <a id="module-type-Foo'"></a>
   
-  ######           module type Foo' = sig
+  ######    module type Foo' = sig
   
   <a id="type-foo'"></a>
   
-  ######               type foo'
+  ######      type foo'
   
   <a id="type-days"></a>
   
-  ######               type days =
+  ######      type days =
   
   <a id="type-days.Mon"></a>
   
-  ######                   | Mon
+  ######        | Mon
   
   Docs for `days`
   
   <a id="type-num"></a>
   
-  ######               type num = [
+  ######      type num = [
   
   <a id="type-num.One"></a>
   
-  ######                   | `One
+  ######        | `One
   
   Docs for `` `One``
   
-  ######               ]
+  ######      ]
   
-  ######           end
+  ######    end
   
-  ######       end
+  ###### end
   
   <a id="type-other_names"></a>
   
-  ######       type other_names = {
+  ###### type other_names = {
   
   <a id="type-other_names.given"></a>
   
-  ######           given : string ;
+  ######    given : string ;
   
   <a id="type-other_names.nickname"></a>
   
-  ######           nickname : string ;
+  ######    nickname : string ;
   
-  ######       }
+  ###### }
   
   <a id="type-name"></a>
   
-  ######       type name = {
+  ###### type name = {
   
   <a id="type-name.fname"></a>
   
-  ######           fname : string ;
+  ######    fname : string ;
   
   Docs for `fname`
   
   <a id="type-name.lname"></a>
   
-  ######           lname : string ;
+  ######    lname : string ;
   
   <a id="type-name.others"></a>
   
-  ######           others : [other_names](#type-other_names) ;
+  ######    others : [other_names](#type-other_names) ;
   
-  ######       }
+  ###### }
   
   ## Label
   
@@ -358,7 +358,7 @@
   
   <a id="module-Foo"></a>
   
-  ######       module Foo : sig ... end
+  ###### module Foo : sig ... end
   
   The end foo end keyword in doc comment.
   
