@@ -836,6 +836,9 @@ let env_of_page page resolver =
   let initial_env = open_page page empty in
   set_resolver initial_env resolver |> open_units resolver
 
+let env_for_reference resolver =
+  set_resolver empty resolver |> open_units resolver
+
 let env_for_testing ~linking = { empty with linking }
 
 let verify_lookups env lookups =

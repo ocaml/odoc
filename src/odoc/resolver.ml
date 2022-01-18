@@ -203,22 +203,28 @@ let create ~important_digests ~directories ~open_modules =
   { important_digests; ap; open_modules }
 
 (** [important_digests] and [imports_map] only apply to modules. *)
-let build { important_digests; ap; open_modules } ~imports_map u =
-  add_unit_to_cache u;
+let build ?u { important_digests; ap; open_modules } ~imports_map =
+  (match u with Some u -> add_unit_to_cache u | None -> ());
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
   and lookup_page = lookup_page ap in
   { Odoc_xref2.Env.open_units = open_modules; lookup_unit; lookup_page }
 
 let build_env_for_unit t ~linking m =
   let imports_map = build_imports_map m in
-  let resolver = build t ~imports_map (Odoc_file.Unit_content m) in
+  let resolver = build ~u:(Odoc_file.Unit_content m) t ~imports_map in
   Odoc_xref2.Env.env_of_unit m ~linking resolver
 
 let build_env_for_page t p =
   let imports_map = StringMap.empty in
   let t = { t with important_digests = false } in
-  let resolver = build t ~imports_map (Odoc_file.Page_content p) in
+  let resolver = build ~u:(Odoc_file.Page_content p) t ~imports_map in
   Odoc_xref2.Env.env_of_page p resolver
+
+let build_env_for_reference t =
+  let imports_map = StringMap.empty in
+  let t = { t with important_digests = false } in
+  let resolver = build t ~imports_map in
+  Odoc_xref2.Env.env_for_reference resolver
 
 let lookup_page t target_name = lookup_page t.ap target_name
 

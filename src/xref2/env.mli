@@ -164,6 +164,9 @@ val env_of_unit :
 val env_of_page : Odoc_model.Lang.Page.t -> resolver -> t
 (** Create a new env for a page. *)
 
+val env_for_reference : resolver -> t
+(** Create a new env for a reference. *)
+
 val env_for_testing : linking:bool -> t
 (** Create a new env for testing purposes *)
 
