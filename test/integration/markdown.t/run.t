@@ -27,27 +27,35 @@
   
   ###### type y'
   
-  ###### module type Foo' = sig
+  ###### module type Foo'
+  
+  ###### = sig
   
   ######    type foo
   
   ###### end
   
-  ###### module Bar : sig ... end
+  ###### module Bar
   
-  ###### module type Bar' = sig
+  ###### module type Bar'
+  
+  ###### = sig
   
   ######    type bar'
   
   ###### end
   
-  ###### module type Foo = sig
+  ###### module type Foo
+  
+  ###### = sig
   
   ######    type foo
   
   ######    type bar'
   
-  ######    module type Foo' = sig
+  ######    module type Foo'
+  
+  ######    = sig
   
   ######      type foo'
   
@@ -142,7 +150,7 @@
   
   @author: David Sheets
   
-  ###### module Foo : sig ... end
+  ###### module Foo
   
   The end foo end keyword in doc comment.
   
@@ -201,7 +209,9 @@
   
   <a id="module-type-Foo'"></a>
   
-  ###### module type Foo' = sig
+  ###### module type Foo'
+  
+  ###### = sig
   
   <a id="type-foo"></a>
   
@@ -211,11 +221,13 @@
   
   <a id="module-Bar"></a>
   
-  ###### module Bar : sig ... end
+  ###### module Bar
   
   <a id="module-type-Bar'"></a>
   
-  ###### module type Bar' = sig
+  ###### module type Bar'
+  
+  ###### = sig
   
   <a id="type-bar'"></a>
   
@@ -225,7 +237,9 @@
   
   <a id="module-type-Foo"></a>
   
-  ###### module type Foo = sig
+  ###### module type Foo
+  
+  ###### = sig
   
   <a id="type-foo"></a>
   
@@ -237,7 +251,9 @@
   
   <a id="module-type-Foo'"></a>
   
-  ######    module type Foo' = sig
+  ######    module type Foo'
+  
+  ######    = sig
   
   <a id="type-foo'"></a>
   
@@ -358,7 +374,7 @@
   
   <a id="module-Foo"></a>
   
-  ###### module Foo : sig ... end
+  ###### module Foo
   
   The end foo end keyword in doc comment.
   

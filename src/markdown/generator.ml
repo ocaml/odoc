@@ -166,12 +166,8 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
   let noop = paragraph noop in
   let take_code l =
     let c, _, rest =
-      let expansion_not_inlined url = not (should_inline url) in
       Take.until l ~classify:(function
         | DocumentedSrc.Code c -> Accum c
-        | DocumentedSrc.Alternative (Expansion e) ->
-            if expansion_not_inlined e.url then Accum e.summary
-            else Rec e.expansion
         | _ -> Stop_and_keep)
     in
     (c, rest)
@@ -190,7 +186,9 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
               (item_heading nesting_level (source_code c args))
               (continue rest)
           else noop
-      | Alternative _ -> continue rest
+      | Alternative (Expansion { url; expansion; _ }) ->
+          if should_inline url then documented_src expansion args nesting_level
+          else continue rest
       | Subpage p ->
           blocks (subpage p.content args (nesting_level + 1)) (continue rest)
       | Documented _ | Nested _ ->
