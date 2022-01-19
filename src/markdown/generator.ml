@@ -36,6 +36,27 @@ let rec source_contains_text (s : Source.t) =
   in
   List.exists check_source s
 
+(** Split source code at the first [:] or [=]. *)
+let source_take_until_punctuation code =
+  let rec is_punctuation s i =
+    if i >= String.length s then false
+    else
+      match s.[i] with
+      | ' ' -> is_punctuation s (i + 1)
+      | ':' | '=' -> true
+      | _ -> false
+  in
+  let is_punctuation i =
+    List.exists
+      (function
+        | { Inline.desc = Text s; _ } -> is_punctuation s 0 | _ -> false)
+      i
+  in
+  Take.until code ~classify:(function
+    | Source.Elt i as t ->
+        if is_punctuation i then Stop_and_accum ([ t ], None) else Accum [ t ]
+    | Tag (_, c) -> Rec c)
+
 let rec source_code (s : Source.t) args =
   match s with
   | [] -> noop
@@ -249,7 +270,7 @@ and item (l : Item.t list) args nesting_level =
             | None -> paragraph title
           in
           blocks heading' (continue rest)
-      | Declaration { attr = _; anchor; content; doc } ->
+      | Declaration { attr = _; anchor; content; doc } -> (
           (*
              Declarations render like this:
 
@@ -262,18 +283,8 @@ and item (l : Item.t list) args nesting_level =
              <doc>
              v}
           *)
-          let doc =
-            match doc with [] -> noop | doc -> paragraph (text (acc_text doc))
-          and anchor =
-            if args.generate_links then
-              let anchor =
-                match anchor with Some x -> x.anchor | None -> ""
-              in
-              paragraph (anchor' anchor)
-            else noop
-          and begin_code, content =
+          let take_code_from_declaration content =
             match take_code content with
-            | [], _ -> assert false (* Content doesn't begin with code ? *)
             | begin_code, Alternative (Expansion e) :: tl
               when should_inline e.url ->
                 (* Take the code from inlined expansion. For example, to catch
@@ -282,10 +293,36 @@ and item (l : Item.t list) args nesting_level =
                 (begin_code @ e_code, e_tl @ tl)
             | begin_code, content -> (begin_code, content)
           in
-          anchor
-          +++ item_heading nesting_level (source_code begin_code args)
-          +++ documented_src content args nesting_level
-          +++ doc +++ continue rest
+          let render_declaration ~anchor ~doc heading content =
+            let doc =
+              match doc with
+              | [] -> noop
+              | doc -> paragraph (text (acc_text doc))
+            and anchor =
+              if args.generate_links then
+                let anchor =
+                  match anchor with Some x -> x.Url.Anchor.anchor | None -> ""
+                in
+                paragraph (anchor' anchor)
+              else noop
+            in
+            anchor
+            +++ item_heading nesting_level (source_code heading args)
+            +++ content +++ doc +++ continue rest
+          in
+          match take_code_from_declaration content with
+          | code, [] ->
+              (* Declaration is only code, render formatted code. *)
+              let code, _, content = source_take_until_punctuation code in
+              let content =
+                if source_contains_text content then
+                  paragraph (source_code content args)
+                else noop
+              in
+              render_declaration ~anchor ~doc code content
+          | code, content ->
+              render_declaration ~anchor ~doc code
+                (documented_src content args nesting_level))
       | Include { content = { summary; status; content }; _ } ->
           let inline_subpage = function
             | `Inline | `Open | `Default -> true

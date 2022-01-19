@@ -32,13 +32,17 @@
   
   <a id="val-x"></a>
   
-  ###### val x : [t](#type-t)
+  ###### val x :
+  
+  [t](#type-t)
   
   Doc for `val x`
   
   <a id="type-a"></a>
   
-  ###### type a = [t](#type-t)
+  ###### type a =
+  
+  [t](#type-t)
   
   Type alias
   
@@ -82,7 +86,9 @@
   
   <a id="val-y"></a>
   
-  ###### val y : [ `One | `Two ]
+  ###### val y :
+  
+  [ `One | `Two ]
   
   Polymorphic variant.
   
@@ -90,7 +96,9 @@
   
   <a id="val-z"></a>
   
-  ###### val z : [t](#type-t) -> ( [t](#type-t) -> [t](#type-t) ) -> foo : [t](#type-t) -> ? bar : [t](#type-t) -> [ `One of [t](#type-t) ] -> [t](#type-t) * [t](#type-t)
+  ###### val z :
+  
+  [t](#type-t) -> ( [t](#type-t) -> [t](#type-t) ) -> foo : [t](#type-t) -> ? bar : [t](#type-t) -> [ `One of [t](#type-t) ] -> [t](#type-t) * [t](#type-t)
   
   Type complicated enough to be rendered differently.
   
