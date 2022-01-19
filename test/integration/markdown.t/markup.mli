@@ -4,50 +4,7 @@
 
 (** arrow (->) in a doc comment *)
 
-val concat : string -> string -> string
-
 (** {%html:foo:bar%} : a raw markup *)
-
-type t
-(** Doc for [type t]. *)
-
-type a = t
-
-type y'
-
-module type Foo' = sig
-  type foo
-end
-
-module Bar : sig
-  type bar
-end
-
-module type Bar' = sig
-  type bar'
-end
-
-module type Foo = sig
-  type foo
-
-  include Bar'
-
-  module type Foo' = sig
-    type foo'
-
-    type days = Mon  (** Docs for [days]. *)
-
-    type num = [ `One (** Docs for [`One]*)]
-  end
-end
-
-type other_names = { given : string; nickname : string }
-
-type name = {
-  fname : string;  (** Docs for [fname] *)
-  lname : string;
-  others : other_names;
-}
 
 (** {2:foo Label} *)
 
@@ -90,15 +47,6 @@ A numbered list:
     @author David Sheets
 *)
 
-(** The end foo end keyword in doc comment. *)
-module Foo : sig
-  type foo
-
-  type poly = [ `Mon | `Tue ]
-
-  type name = { fname : string; lname : string }
-end
-
 (** p1 *)
 
 (** p2
@@ -121,3 +69,4 @@ end
       {- Mon}
       {- Tue}
     } *)
+

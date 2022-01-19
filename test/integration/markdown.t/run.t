@@ -1,197 +1,28 @@
-  $ ocamlc -c -bin-annot test.mli
-  $ odoc compile test.cmti
-  $ odoc link test.odoc
-  $ odoc markdown-generate test.odocl -o markdown
-  $ cat markdown/Test.md
-  Test
-  
-  Module Test
-  
-  # This is a heading
-  
-  ## This has a label
-  
-  ---
-  
-  arrow (->) in a doc comment
-  
-  ###### val concat : string -> string -> string
-  
-  foo:bar : a raw markup
-  
-  ###### type t
-  
-  Doc for `type t`
-  
-  ###### type a = t
-  
-  ###### type y'
-  
-  ###### module type Foo'
-  
-  = sig
-  
-  ######    type foo
-  
-  end
-  
-  ###### module Bar
-  
-  ###### module type Bar'
-  
-  = sig
-  
-  ######    type bar'
-  
-  end
-  
-  ###### module type Foo
-  
-  = sig
-  
-  ######    type foo
-  
-  ######    type bar'
-  
-  ######    module type Foo'
-  
-  = sig
-  
-  ######      type foo'
-  
-  ######      type days =
-  
-  ######        | Mon
-  
-  Docs for `days`
-  
-  ######      type num = [
-  
-  ######        | `One
-  
-  Docs for `` `One``
-  
-  ]
-  
-  end
-  
-  end
-  
-  ###### type other_names = {
-  
-  ######    given : string ;
-  
-  ######    nickname : string ;
-  
-  }
-  
-  ###### type name = {
-  
-  ######    fname : string ;
-  
-  Docs for `fname`
-  
-  ######    lname : string ;
-  
-  ######    others : other_names ;
-  
-  }
-  
-  ## Label
-  
-  ---
-  
-  [test_two](href)
-  
-  [**test**](href)
-  
-  [test two foo](href)
-  
-  [**barz**](href)
-  
-  ```
-  verbatim
-  text
-  ```
-  
-  See if listness is preserved.
-  
-  This is an _interface_ with **all** of the _module system_ features. This documentation demonstrates:
-  
-  - comment formatting
-  
-  - unassociated comments
-  
-  - documentation sections
-  
-  - module system documentation including
-    
-    1. submodules
-    
-    2. module aliases
-    
-    3. module types
-    
-    4. module type aliases
-    
-    5. modules with signatures
-    
-    6. modules with aliased signatures
-  
-  A numbered list:
-  
-  1. 3
-  
-  2. 2
-  
-  3. 1
-  
-  David Sheets is the author.
-  
-  @author: David Sheets
-  
-  ###### module Foo
-  
-  The end foo end keyword in doc comment.
-  
-  p1
-  
-  p2
-  
-  p3
-  
-  - a
-  
-  - b
-  
-  This is where I begin my thing from.
-  
-  1. one
-  
-  2. two
-  
-  - Mon
-  
-  - Tue
-  $ odoc markdown-generate test.odocl -o markdown --generate-links
-  $ cat markdown/Test.md
-  Test
-  
-  Module Test
-  
-  # This is a heading
-  
-  ## This has a label
-  
-  ---
-  
-  arrow (->) in a doc comment
-  
-  <a id="val-concat"></a>
-  
-  ###### val concat : string -> string -> string
-  
-  foo:bar : a raw markup
+  $ ocamlc -c -bin-annot intf.mli markup.mli
+  $ odoc compile intf.cmti
+  $ odoc compile markup.cmti
+  $ odoc link intf.odoc
+  $ odoc link markup.odoc
+  $ odoc markdown-generate intf.odocl -o markdown --generate-links
+  $ odoc markdown-generate markup.odocl -o markdown --generate-links
+
+  $ find markdown
+  markdown
+  markdown/Intf.md
+  markdown/Markup.md
+  markdown/Intf.M.md
+  markdown/Intf.N.md
+
+  $ cat markdown/Intf.md
+  Intf
+  
+  Module Intf
+  
+  Synopsis.
+  
+  Rest of preamble.
+  
+  Floating comment at the top.
   
   <a id="type-t"></a>
   
@@ -199,125 +30,110 @@
   
   Doc for `type t`
   
+  <a id="val-x"></a>
+  
+  ###### val x : [t](#type-t)
+  
+  Doc for `val x`
+  
   <a id="type-a"></a>
   
   ###### type a = [t](#type-t)
   
-  <a id="type-y'"></a>
+  Type alias
   
-  ###### type y'
+  <a id="type-b"></a>
   
-  <a id="module-type-Foo'"></a>
+  ###### type b =
   
-  ###### module type Foo'
+  <a id="type-b.A"></a>
   
-  = sig
+  ######    | A
   
-  <a id="type-foo"></a>
+  Doc for `A`
   
-  ######    type foo
+  <a id="type-b.B"></a>
   
-  end
+  ######    | B
   
-  <a id="module-Bar"></a>
+  Doc for `B`
   
-  ###### module Bar
+  Doc for `type b`
   
-  <a id="module-type-Bar'"></a>
+  <a id="type-c"></a>
   
-  ###### module type Bar'
+  ###### type c = {
   
-  = sig
+  <a id="type-c.a"></a>
   
-  <a id="type-bar'"></a>
+  ######    a : int ;
   
-  ######    type bar'
+  Doc for `a`
   
-  end
+  <a id="type-c.b"></a>
   
-  <a id="module-type-Foo"></a>
+  ######    b : int ;
   
-  ###### module type Foo
-  
-  = sig
-  
-  <a id="type-foo"></a>
-  
-  ######    type foo
-  
-  <a id="type-bar'"></a>
-  
-  ######    type bar'
-  
-  <a id="module-type-Foo'"></a>
-  
-  ######    module type Foo'
-  
-  = sig
-  
-  <a id="type-foo'"></a>
-  
-  ######      type foo'
-  
-  <a id="type-days"></a>
-  
-  ######      type days =
-  
-  <a id="type-days.Mon"></a>
-  
-  ######        | Mon
-  
-  Docs for `days`
-  
-  <a id="type-num"></a>
-  
-  ######      type num = [
-  
-  <a id="type-num.One"></a>
-  
-  ######        | `One
-  
-  Docs for `` `One``
-  
-  ]
-  
-  end
-  
-  end
-  
-  <a id="type-other_names"></a>
-  
-  ###### type other_names = {
-  
-  <a id="type-other_names.given"></a>
-  
-  ######    given : string ;
-  
-  <a id="type-other_names.nickname"></a>
-  
-  ######    nickname : string ;
+  Doc for `b`
   
   }
   
-  <a id="type-name"></a>
+  Doc for `type c`
   
-  ###### type name = {
+  <a id="val-y"></a>
   
-  <a id="type-name.fname"></a>
+  ###### val y : [ `One | `Two ]
   
-  ######    fname : string ;
+  Polymorphic variant.
   
-  Docs for `fname`
+  Floating comment.
   
-  <a id="type-name.lname"></a>
+  <a id="val-z"></a>
   
-  ######    lname : string ;
+  ###### val z : [t](#type-t) -> ( [t](#type-t) -> [t](#type-t) ) -> foo : [t](#type-t) -> ? bar : [t](#type-t) -> [ `One of [t](#type-t) ] -> [t](#type-t) * [t](#type-t)
   
-  <a id="type-name.others"></a>
+  Type complicated enough to be rendered differently.
   
-  ######    others : [other_names](#type-other_names) ;
+  <a id="module-M"></a>
   
-  }
+  ###### module M
+  
+  Outer doc for `M`
+  
+  <a id="module-N"></a>
+  
+  ###### module N
+  
+  Doc for `N`
+  
+  <a id="module-type-S"></a>
+  
+  ###### module type S
+  
+  = sig
+  
+  <a id="type-t"></a>
+  
+  ######    type t
+  
+  end
+  
+  Doc for `S`
+
+  $ cat markdown/Markup.md
+  Markup
+  
+  Module Markup
+  
+  # This is a heading
+  
+  ## This has a label
+  
+  ---
+  
+  arrow (->) in a doc comment
+  
+  foo:bar : a raw markup
   
   ## Label
   
@@ -371,12 +187,6 @@
   David Sheets is the author.
   
   @author: David Sheets
-  
-  <a id="module-Foo"></a>
-  
-  ###### module Foo
-  
-  The end foo end keyword in doc comment.
   
   p1
   
