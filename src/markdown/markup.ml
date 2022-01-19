@@ -33,6 +33,8 @@ let join left right = Join (left, right)
 
 let blocks above below = ConcatB (above, below)
 
+let ( +++ ) = blocks
+
 let block_separator = Block_separator
 
 let text s = String s

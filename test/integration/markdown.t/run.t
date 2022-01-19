@@ -29,25 +29,25 @@
   
   ###### module type Foo'
   
-  ###### = sig
+  = sig
   
   ######    type foo
   
-  ###### end
+  end
   
   ###### module Bar
   
   ###### module type Bar'
   
-  ###### = sig
+  = sig
   
   ######    type bar'
   
-  ###### end
+  end
   
   ###### module type Foo
   
-  ###### = sig
+  = sig
   
   ######    type foo
   
@@ -55,7 +55,7 @@
   
   ######    module type Foo'
   
-  ######    = sig
+  = sig
   
   ######      type foo'
   
@@ -71,11 +71,11 @@
   
   Docs for `` `One``
   
-  ######      ]
+  ]
   
-  ######    end
+  end
   
-  ###### end
+  end
   
   ###### type other_names = {
   
@@ -83,7 +83,7 @@
   
   ######    nickname : string ;
   
-  ###### }
+  }
   
   ###### type name = {
   
@@ -95,7 +95,7 @@
   
   ######    others : other_names ;
   
-  ###### }
+  }
   
   ## Label
   
@@ -211,13 +211,13 @@
   
   ###### module type Foo'
   
-  ###### = sig
+  = sig
   
   <a id="type-foo"></a>
   
   ######    type foo
   
-  ###### end
+  end
   
   <a id="module-Bar"></a>
   
@@ -227,19 +227,19 @@
   
   ###### module type Bar'
   
-  ###### = sig
+  = sig
   
   <a id="type-bar'"></a>
   
   ######    type bar'
   
-  ###### end
+  end
   
   <a id="module-type-Foo"></a>
   
   ###### module type Foo
   
-  ###### = sig
+  = sig
   
   <a id="type-foo"></a>
   
@@ -253,7 +253,7 @@
   
   ######    module type Foo'
   
-  ######    = sig
+  = sig
   
   <a id="type-foo'"></a>
   
@@ -279,11 +279,11 @@
   
   Docs for `` `One``
   
-  ######      ]
+  ]
   
-  ######    end
+  end
   
-  ###### end
+  end
   
   <a id="type-other_names"></a>
   
@@ -297,7 +297,7 @@
   
   ######    nickname : string ;
   
-  ###### }
+  }
   
   <a id="type-name"></a>
   
@@ -317,7 +317,7 @@
   
   ######    others : [other_names](#type-other_names) ;
   
-  ###### }
+  }
   
   ## Label
   

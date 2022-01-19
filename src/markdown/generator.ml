@@ -162,16 +162,16 @@ let item_heading nesting_level content =
   in
   paragraph (pre_hash ++ pre_nbsp ++ content)
 
+let take_code l =
+  let c, _, rest =
+    Take.until l ~classify:(function
+      | DocumentedSrc.Code c -> Accum c
+      | _ -> Stop_and_keep)
+  in
+  (c, rest)
+
 let rec documented_src (l : DocumentedSrc.t) args nesting_level =
   let noop = paragraph noop in
-  let take_code l =
-    let c, _, rest =
-      Take.until l ~classify:(function
-        | DocumentedSrc.Code c -> Accum c
-        | _ -> Stop_and_keep)
-    in
-    (c, rest)
-  in
   match l with
   | [] -> noop
   | line :: rest -> (
@@ -182,10 +182,8 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
       | Code s ->
           if source_contains_text s then
             let c, rest = take_code l in
-            blocks
-              (item_heading nesting_level (source_code c args))
-              (continue rest)
-          else noop
+            paragraph (source_code c args) +++ continue rest
+          else continue rest
       | Alternative (Expansion { url; expansion; _ }) ->
           if should_inline url then documented_src expansion args nesting_level
           else continue rest
@@ -251,16 +249,36 @@ and item (l : Item.t list) args nesting_level =
             | None -> paragraph title
           in
           blocks heading' (continue rest)
-      | Declaration { attr = _; anchor; content; doc } ->
-          let decl = documented_src content args nesting_level in
+      | Declaration { attr = _; anchor; content; doc } -> (
+          (*
+             A declaration render like this:
+
+             {v
+             <a id="<id>"></a>
+             ###### <nesting_level> <code from content>
+
+             <rest of content, possibly big>
+
+             <doc>
+             v}
+          *)
           let doc =
             match doc with [] -> noop | doc -> paragraph (text (acc_text doc))
+          and anchor =
+            if args.generate_links then
+              let anchor =
+                match anchor with Some x -> x.anchor | None -> ""
+              in
+              paragraph (anchor' anchor)
+            else noop
           in
-          let item' = blocks decl doc in
-          if args.generate_links then
-            let anchor = match anchor with Some x -> x.anchor | None -> "" in
-            blocks (blocks (paragraph (anchor' anchor)) item') (continue rest)
-          else blocks item' (continue rest)
+          match take_code content with
+          | [], _ -> assert false (* Content doesn't begin with code ? *)
+          | begin_code, tl ->
+              anchor
+              +++ item_heading nesting_level (source_code begin_code args)
+              +++ documented_src tl args nesting_level
+              +++ doc +++ continue rest)
       | Include { content = { summary; status; content }; _ } ->
           let inline_subpage = function
             | `Inline | `Open | `Default -> true

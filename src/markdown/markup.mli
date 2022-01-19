@@ -18,6 +18,9 @@ val ordered_list : blocks list -> blocks
 
 val unordered_list : blocks list -> blocks
 
+val ( +++ ) : blocks -> blocks -> blocks
+(** Alias for {!blocks} *)
+
 val blocks : blocks -> blocks -> blocks
 (** Combine blocks. *)
 
