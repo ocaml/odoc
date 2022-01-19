@@ -20,6 +20,7 @@ and blocks =
   | List of list_type * blocks list
   | Raw_markup of string
   | Block_separator
+  | Prefixed_block of string * blocks  (** Prefix every lines of blocks. *)
 
 and list_type = Ordered | Unordered
 
@@ -64,10 +65,19 @@ let paragraph i = Block i
 
 let code_block s = CodeBlock s
 
+let quote_block b = Prefixed_block ("> ", b)
+
 let heading level i =
   let make_hashes n = String.make n '#' in
   let hashes = make_hashes level in
   Block (String hashes ++ i)
+
+(** Every lines that [f] formats are prefixed and written in [sink].
+    Inefficient. *)
+let with_prefixed_formatter prefix sink f =
+  let s = Format.asprintf "%t" f in
+  String.split_on_char '\n' s
+  |> List.iter (fun l -> Format.fprintf sink "%s%s@\n" prefix l)
 
 let pp_list_item fmt list_type (b : blocks) n pp_blocks =
   match list_type with
@@ -109,3 +119,5 @@ let rec pp_blocks fmt b =
       in
       pp_list 0 l
   | Raw_markup s -> Format.fprintf fmt "%s" s
+  | Prefixed_block (p, b) ->
+      with_prefixed_formatter p fmt (fun fmt -> pp_blocks fmt b)

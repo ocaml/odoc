@@ -34,7 +34,8 @@
   
   ###### val x :
   
-  [t](#type-t)
+  > [t](#type-t)
+  
   
   Doc for `val x`
   
@@ -42,7 +43,8 @@
   
   ###### type a =
   
-  [t](#type-t)
+  > [t](#type-t)
+  
   
   Type alias
   
@@ -88,7 +90,8 @@
   
   ###### val y :
   
-  [ `One | `Two ]
+  > [ `One | `Two ]
+  
   
   Polymorphic variant.
   
@@ -98,7 +101,8 @@
   
   ###### val z :
   
-  [t](#type-t) -> ( [t](#type-t) -> [t](#type-t) ) -> foo : [t](#type-t) -> ? bar : [t](#type-t) -> [ `One of [t](#type-t) ] -> [t](#type-t) * [t](#type-t)
+  > [t](#type-t) -> ( [t](#type-t) -> [t](#type-t) ) -> foo : [t](#type-t) -> ? bar : [t](#type-t) -> [ `One of [t](#type-t) ] -> [t](#type-t) * [t](#type-t)
+  
   
   Type complicated enough to be rendered differently.
   

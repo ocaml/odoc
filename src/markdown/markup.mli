@@ -55,6 +55,8 @@ val paragraph : inlines -> blocks
 
 val code_block : string -> blocks
 
+val quote_block : blocks -> blocks
+
 val heading : int -> inlines -> blocks
 
 val pp_blocks : Format.formatter -> blocks -> unit

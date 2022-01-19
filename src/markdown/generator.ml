@@ -316,7 +316,7 @@ and item (l : Item.t list) args nesting_level =
               let code, _, content = source_take_until_punctuation code in
               let content =
                 if source_contains_text content then
-                  paragraph (source_code content args)
+                  quote_block (paragraph (source_code content args))
                 else noop
               in
               render_declaration ~anchor ~doc code content
