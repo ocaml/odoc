@@ -108,9 +108,7 @@
   
   <a id="module-type-S"></a>
   
-  ###### module type S
-  
-  = sig
+  ###### module type S = sig
   
   <a id="type-t"></a>
   

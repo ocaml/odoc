@@ -249,9 +249,9 @@ and item (l : Item.t list) args nesting_level =
             | None -> paragraph title
           in
           blocks heading' (continue rest)
-      | Declaration { attr = _; anchor; content; doc } -> (
+      | Declaration { attr = _; anchor; content; doc } ->
           (*
-             A declaration render like this:
+             Declarations render like this:
 
              {v
              <a id="<id>"></a>
@@ -271,14 +271,21 @@ and item (l : Item.t list) args nesting_level =
               in
               paragraph (anchor' anchor)
             else noop
+          and begin_code, content =
+            match take_code content with
+            | [], _ -> assert false (* Content doesn't begin with code ? *)
+            | begin_code, Alternative (Expansion e) :: tl
+              when should_inline e.url ->
+                (* Take the code from inlined expansion. For example, to catch
+                   [= sig]. *)
+                let e_code, e_tl = take_code e.expansion in
+                (begin_code @ e_code, e_tl @ tl)
+            | begin_code, content -> (begin_code, content)
           in
-          match take_code content with
-          | [], _ -> assert false (* Content doesn't begin with code ? *)
-          | begin_code, tl ->
-              anchor
-              +++ item_heading nesting_level (source_code begin_code args)
-              +++ documented_src tl args nesting_level
-              +++ doc +++ continue rest)
+          anchor
+          +++ item_heading nesting_level (source_code begin_code args)
+          +++ documented_src content args nesting_level
+          +++ doc +++ continue rest
       | Include { content = { summary; status; content }; _ } ->
           let inline_subpage = function
             | `Inline | `Open | `Default -> true
