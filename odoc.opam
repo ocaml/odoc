@@ -44,7 +44,7 @@ depends: [
   "ppx_expect" {with-test}
   "bos" {with-test}
 
-  "bisect_ppx" {dev & = "2.5.0"}
+  "bisect_ppx" {dev & > "2.5.0"}
   ("ocaml" {< "4.03.0" & dev} | "mdx" {dev})
 ]
 
