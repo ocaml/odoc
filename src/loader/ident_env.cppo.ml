@@ -550,6 +550,9 @@ module Path = struct
       (* TODO remove this hack once the fix for PR#6650
          is in the OCaml release *)
 
+  let strip_hash s =
+    if s.[0]='#' then String.sub s 1 (String.length s - 1) else s
+
   let rec read_module : t -> Path.t -> Paths.Path.Module.t = fun env -> function
     | Path.Pident id -> read_module_ident env id
 #if OCAML_VERSION >= (4,8,0)
@@ -571,18 +574,18 @@ module Path = struct
   let read_class_type env = function
     | Path.Pident id -> read_class_type_ident env id
 #if OCAML_VERSION >= (4,8,0)
-    | Path.Pdot(p, s) -> `Dot(read_module env p, s)
+    | Path.Pdot(p, s) -> `Dot(read_module env p, strip_hash s)
 #else
-    | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
+    | Path.Pdot(p, s, _) -> `Dot(read_module env p, strip_hash s)
 #endif
     | Path.Papply(_, _)-> assert false
 
   let read_type env = function
     | Path.Pident id -> read_type_ident env id
 #if OCAML_VERSION >= (4,8,0)
-    | Path.Pdot(p, s) -> `Dot(read_module env p, s)
+    | Path.Pdot(p, s) -> `Dot(read_module env p, strip_hash s)
 #else
-    | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
+    | Path.Pdot(p, s, _) -> `Dot(read_module env p, strip_hash s)
 #endif
     | Path.Papply(_, _)-> assert false
 
