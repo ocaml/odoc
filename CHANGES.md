@@ -1,13 +1,17 @@
 Unreleased
 ----------
 
+Additions
+- Improved rendering of long signatures (@panglesd, #782)
+- Handle comments attached to open statement as floating comment, instead
+  of dropping them (@panglesd, #797)
+- Empty includes (containing entirely shadowed entries) are now hidden (@panglesd, #798)
+
 Bugs fixed
 - Fix a missing Result constructor during compile. This will cause some
   functor arguments to have different filenames (@jonludlam, #795)
-
-Additions
-- Handle comments attached to open statement as floating comment, instead
-  of dropping them (@panglesd, #797)
+- Better memory/disk space usage when handling module alias chains (@jonludlam, #799)
+- Resolving class-type paths (ie., `val x : #c`) (@jonludlam, #???)
 
 2.0.2
 -----
