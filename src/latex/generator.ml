@@ -219,6 +219,7 @@ let raw_markup (t : Raw_markup.t) =
   let target, content = t in
   match Astring.String.Ascii.lowercase target with
   | "latex" | "tex" -> [ Raw content ]
+  | "math" -> [ Raw (Printf.sprintf {|$%s$|} content) ]
   | _ -> []
 
 let source k (t : Source.t) =
