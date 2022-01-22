@@ -1,0 +1,49 @@
+[
+  structure_item (b.ml[1,0+0]..b.ml[1,0+6])
+    Tstr_type Rec
+    [
+      type_declaration t/81 (b.ml[1,0+0]..b.ml[1,0+6])
+        ptype_params =
+          []
+        ptype_cstrs =
+          []
+        ptype_kind =
+          Ttype_abstract
+        ptype_private = Public
+        ptype_manifest =
+          None
+    ]
+  structure_item (b.ml[3,8+0]..b.ml[3,8+25])
+    Tstr_class_type
+    [
+      class_type_declaration (b.ml[3,8+0]..b.ml[3,8+25])
+        pci_virt = Concrete
+        pci_params =
+          []
+        pci_name = "u"
+        pci_expr =
+          class_type (b.ml[3,8+15]..b.ml[3,8+25])
+            Tcty_signature
+            class_signature
+              core_type (b.ml[3,8+21]..b.ml[3,8+21])
+                Ttyp_any
+              []
+    ]
+  structure_item (b.ml[5,35+0]..b.ml[5,35+30])
+    Tstr_class_type
+    [
+      class_type_declaration (b.ml[5,35+0]..b.ml[5,35+30])
+        pci_virt = Concrete
+        pci_params =
+          []
+        pci_name = "uuuuuu"
+        pci_expr =
+          class_type (b.ml[5,35+20]..b.ml[5,35+30])
+            Tcty_signature
+            class_signature
+              core_type (b.ml[5,35+26]..b.ml[5,35+26])
+                Ttyp_any
+              []
+    ]
+]
+
