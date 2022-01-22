@@ -33,3 +33,6 @@ ocaml-re/
 result/
 tyxml/
 uutf/
+
+# Mac things
+.DS_Store

@@ -37,11 +37,14 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
 
     let odoc_css_uri = file_uri theme_uri "odoc.css" in
     let highlight_js_uri = file_uri support_uri "highlight.pack.js" in
+    let katex_css_uri = {|https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ|} in
+    let katex_js_uri = {|https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY|} in
 
     Html.head
       (Html.title (Html.txt title_string))
       [
         Html.link ~rel:[ `Stylesheet ] ~href:odoc_css_uri ();
+        Html.link ~rel:[ `Stylesheet ] ~href:katex_css_uri ();
         Html.meta ~a:[ Html.a_charset "utf-8" ] ();
         Html.meta
           ~a:[ Html.a_name "generator"; Html.a_content "odoc %%VERSION%%" ]
@@ -55,6 +58,23 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
           ();
         Html.script ~a:[ Html.a_src highlight_js_uri ] (Html.txt "");
         Html.script (Html.txt "hljs.initHighlightingOnLoad();");
+        Html.script ~a:[ Html.a_src katex_js_uri ] (Html.txt "");
+        (* Unsafe is necessary to avoid escaping parts of the following code. *)
+        Html.script
+          (Html.Unsafe.data
+             {|
+          document.addEventListener("DOMContentLoaded", function () {
+            var elements = document.getElementsByClassName("odoc-katex-math");
+            for (var i = 0; i < elements.length; i++) {
+              var el = elements[i];
+              var content = el.textContent;
+              var new_el = document.createElement("span");
+              new_el.setAttribute("class", "odoc-katex-math-rendered");
+              katex.render(content, new_el, { throwOnError: false });
+              el.replaceWith(new_el);
+            }
+          });
+        |});
       ]
   in
 

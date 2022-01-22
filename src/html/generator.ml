@@ -50,6 +50,10 @@ and raw_markup (t : Raw_markup.t) =
          the HTML tree from there.
       *)
       [ Html.Unsafe.data content ]
+  | "math" ->
+      [
+        Html.span ~a:[ Html.a_class [ "odoc-katex-math" ] ] [ Html.txt content ];
+      ]
   | _ -> []
 
 and source k ?a (t : Source.t) =
