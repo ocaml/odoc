@@ -15,6 +15,8 @@ module Element = struct
     | Module of Module.t
     | ModuleType of ModuleType.t
     | Type of TypeDecl.t
+    | ClassType of ClassType.t
+    | Class of Class.t
     | Value of Value.t
 end
 
@@ -82,6 +84,12 @@ let find_type name sg =
       | Type (_, ({ id; _ } as m))
         when Odoc_model.Paths.Identifier.name id = name ->
           Some (Element.Type m)
+      | ClassType (_, ({ id; _} as m))
+        when Odoc_model.Paths.Identifier.name id = name ->
+          Some (Element.ClassType m)
+      | Class (_, ({ id; _} as m))
+        when Odoc_model.Paths.Identifier.name id = name ->
+          Some (Element.Class m)
       | _ -> None)
     sg.items
 
@@ -152,6 +160,8 @@ let print_element elt =
   | Element.ModuleType m -> print_json_desc Lang_desc.moduletype_t m
   | Element.Type t -> print_json_desc Lang_desc.typedecl_t t
   | Element.Value v -> print_json_desc Lang_desc.value_t v
+  | Element.ClassType v -> print_json_desc Lang_desc.classtype_t v
+  | Element.Class v -> print_json_desc Lang_desc.class_t v
 
 let run inp ref =
   let inp = Fpath.v inp in
