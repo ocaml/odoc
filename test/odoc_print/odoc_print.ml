@@ -84,10 +84,10 @@ let find_type name sg =
       | Type (_, ({ id; _ } as m))
         when Odoc_model.Paths.Identifier.name id = name ->
           Some (Element.Type m)
-      | ClassType (_, ({ id; _} as m))
+      | ClassType (_, ({ id; _ } as m))
         when Odoc_model.Paths.Identifier.name id = name ->
           Some (Element.ClassType m)
-      | Class (_, ({ id; _} as m))
+      | Class (_, ({ id; _ } as m))
         when Odoc_model.Paths.Identifier.name id = name ->
           Some (Element.Class m)
       | _ -> None)
