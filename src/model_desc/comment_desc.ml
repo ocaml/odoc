@@ -9,6 +9,7 @@ type general_inline_element =
   [ `Space
   | `Word of string
   | `Code_span of string
+  | `Math_span of string
   | `Raw_markup of raw_markup_target * string
   | `Styled of style * general_inline_element with_location list
   | `Reference of Paths.Reference.t * general_link_content
@@ -19,6 +20,7 @@ and general_link_content = general_inline_element with_location list
 type general_block_element =
   [ `Paragraph of general_link_content
   | `Code_block of string option * string with_location
+  | `Math_block of string
   | `Verbatim of string
   | `Modules of Comment.module_reference list
   | `List of
@@ -56,6 +58,7 @@ let rec inline_element : general_inline_element t =
     | `Space -> C0 "`Space"
     | `Word x -> C ("`Word", x, string)
     | `Code_span x -> C ("`Code_span", x, string)
+    | `Math_span x -> C ("`Math_span", x, string)
     | `Raw_markup (x1, x2) -> C ("`Raw_markup", (x1, x2), Pair (string, string))
     | `Styled (x1, x2) -> C ("`Styled", (x1, x2), Pair (style, link_content))
     | `Reference (x1, x2) ->
@@ -102,6 +105,7 @@ let rec block_element : general_block_element t =
     | `Paragraph x -> C ("`Paragraph", x, link_content)
     | `Code_block (x1, x2) ->
         C ("`Code_block", (x1, ignore_loc x2), Pair (Option string, string))
+    | `Math_block x -> C ("`Math_block", x, string)
     | `Verbatim x -> C ("`Verbatim", x, string)
     | `Modules x -> C ("`Modules", x, List module_reference)
     | `List (x1, x2) ->

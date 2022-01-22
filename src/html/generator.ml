@@ -42,6 +42,12 @@ let mk_anchor anchor =
 
 let class_ (l : Class.t) = if l = [] then [] else [ Html.a_class l ]
 
+let inline_math (s : Math.t) =
+  Html.code ~a:[ Html.a_class [ "odoc-katex-math" ] ] [ Html.txt s ]
+
+let block_math (s : Math.t) =
+  Html.pre ~a:[ Html.a_class [ "odoc-katex-math"; "display" ] ] [ Html.txt s ]
+
 and raw_markup (t : Raw_markup.t) =
   let target, content = t in
   match Astring.String.Ascii.lowercase target with
@@ -121,6 +127,7 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
         [ Html.a ~a:(Html.a_href href :: a) content ]
     | InternalLink c -> internallink ~config ~emph_level ~resolve ~a c
     | Source c -> source (inline ~config ~emph_level ~resolve) ~a c
+    | Math s -> [ inline_math s ]
     | Raw_markup r -> raw_markup r
   in
   Utils.list_concat_map ~f:one l
@@ -142,6 +149,7 @@ and inline_nolink ?(emph_level = 0) (l : Inline.t) :
     | Link (_, c) -> inline_nolink ~emph_level c
     | InternalLink c -> internallink_nolink ~emph_level ~a c
     | Source c -> source (inline_nolink ~emph_level) ~a c
+    | Math s -> [ inline_math s ]
     | Raw_markup r -> raw_markup r
   in
   Utils.list_concat_map ~f:one l
@@ -196,6 +204,7 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
     | Source (lang_tag, c) ->
         let extra_class = [ "language-" ^ lang_tag ] in
         mk_block ~extra_class Html.pre (source (inline ~config ~resolve) c)
+    | Math s -> mk_block Html.div [ block_math s ]
   in
   Utils.list_concat_map l ~f:one
 
@@ -389,10 +398,11 @@ module Page = struct
     in
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
+    let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
     let header = items ~config ~resolve header in
     let content = (items ~config ~resolve i :> any Html.elt list) in
-    Tree.make ~config ~header ~toc ~url title content subpages
+    Tree.make ~config ~header ~toc ~url ~uses_katex title content subpages
 end
 
 let render ~config page = Page.page ~config page

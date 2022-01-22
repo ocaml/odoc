@@ -152,6 +152,19 @@ v}
     %}
 
 
+    {1 Math}
+
+    Math elements can be inline: {m \int_{-\infty}^\infty}, or blocks:
+
+    {math
+    % \f is defined as #1f(#2) using the macro
+    \newcommand{\f}[2]{#1f(#2)}
+    \f\relax{x} = \int_{-\infty}^\infty
+    \f\hat\xi\,e^{2 \pi i \xi x}
+    \,d\xi
+    }
+
+
     {1 Modules}
 
     {!modules: X}

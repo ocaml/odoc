@@ -30,7 +30,7 @@ let html_of_toc toc =
   | [] -> []
   | _ -> [ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] [ sections toc ] ]
 
-let page_creator ~config ~url name header toc content =
+let page_creator ~config ~url ~uses_katex name header toc content =
   let theme_uri = Config.theme_uri config in
   let support_uri = Config.support_uri config in
   let path = Link.Path.for_printing url in
@@ -51,9 +51,7 @@ let page_creator ~config ~url name header toc content =
 
     let odoc_css_uri = file_uri theme_uri "odoc.css" in
     let highlight_js_uri = file_uri support_uri "highlight.pack.js" in
-
-    Html.head
-      (Html.title (Html.txt title_string))
+    let default_meta_elements =
       [
         Html.link ~rel:[ `Stylesheet ] ~href:odoc_css_uri ();
         Html.meta ~a:[ Html.a_charset "utf-8" ] ();
@@ -70,6 +68,35 @@ let page_creator ~config ~url name header toc content =
         Html.script ~a:[ Html.a_src highlight_js_uri ] (Html.txt "");
         Html.script (Html.txt "hljs.initHighlightingOnLoad();");
       ]
+    in
+    let meta_elements =
+      if uses_katex then
+        let katex_css_uri = file_uri theme_uri "katex.min.css" in
+        let katex_js_uri = file_uri support_uri "katex.min.js" in
+        default_meta_elements
+        @ [
+            Html.link ~rel:[ `Stylesheet ] ~href:katex_css_uri ();
+            Html.script ~a:[ Html.a_src katex_js_uri ] (Html.txt "");
+            Html.script
+              (Html.cdata_script
+                 {|
+          document.addEventListener("DOMContentLoaded", function () {
+            var elements = Array.from(document.getElementsByClassName("odoc-katex-math"));
+            for (var i = 0; i < elements.length; i++) {
+              var el = elements[i];
+              var content = el.textContent;
+              var new_el = document.createElement("span");
+              new_el.setAttribute("class", "odoc-katex-math-rendered");
+              var display = el.classList.contains("display");
+              katex.render(content, new_el, { throwOnError: false, displayMode: display });
+              el.replaceWith(new_el);
+            }
+          });
+        |});
+          ]
+      else default_meta_elements
+    in
+    Html.head (Html.title (Html.txt title_string)) meta_elements
   in
 
   let gen_breadcrumbs () =
@@ -152,7 +179,9 @@ let page_creator ~config ~url name header toc content =
     let content ppf = htmlpp ppf html in
     content
 
-let make ~config ~url ~header ~toc title content children =
+let make ~config ~url ~header ~toc ~uses_katex title content children =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
-  let content = page_creator ~config ~url title header toc content in
+  let content =
+    page_creator ~config ~url ~uses_katex title header toc content
+  in
   [ { Odoc_document.Renderer.filename; content; children } ]

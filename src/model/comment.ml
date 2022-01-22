@@ -12,6 +12,7 @@ type leaf_inline_element =
   [ `Space
   | `Word of string
   | `Code_span of string
+  | `Math_span of string
   | `Raw_markup of raw_markup_target * string ]
 
 type non_link_inline_element =
@@ -41,6 +42,7 @@ type module_reference = {
 type nestable_block_element =
   [ `Paragraph of paragraph
   | `Code_block of string option * string with_location
+  | `Math_block of string
   | `Verbatim of string
   | `Modules of module_reference list
   | `List of

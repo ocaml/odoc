@@ -114,6 +114,7 @@ type ast_leaf_inline_element =
   [ `Space of string
   | `Word of string
   | `Code_span of string
+  | `Math_span of string
   | `Raw_markup of string option * string ]
 
 type sections_allowed = [ `All | `No_titles | `None ]
@@ -131,7 +132,7 @@ let leaf_inline_element :
     Comment.leaf_inline_element with_location =
  fun element ->
   match element with
-  | { value = `Word _ | `Code_span _; _ } as element -> element
+  | { value = `Word _ | `Code_span _ | `Math_span _; _ } as element -> element
   | { value = `Space _; _ } -> Location.same element `Space
   | { value = `Raw_markup (target, s); location } -> (
       match target with
@@ -234,6 +235,7 @@ let rec nestable_block_element :
         | None -> None
       in
       Location.at location (`Code_block (lang_tag, code))
+  | { value = `Math_block s; location } -> Location.at location (`Math_block s)
   | { value = `Verbatim _; _ } as element -> element
   | { value = `Modules modules; location } ->
       let modules =
@@ -315,7 +317,8 @@ let generate_heading_label : Comment.link_content -> string =
           match element.Location.value with
           | `Space -> anchor ^ "-"
           | `Word w -> anchor ^ Astring.String.Ascii.lowercase w
-          | `Code_span c -> anchor ^ replace_spaces_with_hyphens_and_lowercase c
+          | `Code_span c | `Math_span c ->
+              anchor ^ replace_spaces_with_hyphens_and_lowercase c
           | `Raw_markup _ ->
               (* TODO Perhaps having raw markup in a section heading should be an
                  error? *)

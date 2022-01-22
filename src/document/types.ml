@@ -30,6 +30,11 @@ and Source : sig
 end =
   Source
 
+and Math : sig
+  type t = string
+end =
+  Math
+
 and Inline : sig
   type entity = string
 
@@ -47,6 +52,7 @@ and Inline : sig
     | Link of href * t
     | InternalLink of InternalLink.t
     | Source of Source.t
+    | Math of Math.t
     | Raw_markup of Raw_markup.t
 end =
   Inline
@@ -76,6 +82,7 @@ and Block : sig
     | List of list_type * t list
     | Description of Description.t
     | Source of lang_tag * Source.t
+    | Math of Math.t
     | Verbatim of string
     | Raw_markup of Raw_markup.t
 

@@ -282,3 +282,77 @@ end = struct
       labels page
     |> snd
 end
+
+module Math : sig
+  val has_math_elements : Page.t -> bool
+end = struct
+  let rec items x = List.exists item x
+
+  and item : Item.t -> bool = function
+    | Text x -> block x
+    | Heading x -> heading x
+    | Declaration { content = x; doc; _ } -> documentedsrc x || block doc
+    | Include { content = x; doc; _ } -> include_ x || block doc
+
+  and documentedsrc : DocumentedSrc.t -> bool =
+   fun x ->
+    let documentedsrc_ : DocumentedSrc.one -> bool = function
+      | Code _ -> false
+      | Documented { code = x; doc; _ } -> inline x || block doc
+      | Nested { code = x; doc; _ } -> documentedsrc x || block doc
+      | Subpage x -> subpage x
+      | Alternative x -> alternative x
+    in
+    List.exists documentedsrc_ x
+
+  and subpage : Subpage.t -> bool = fun x -> page x.content
+
+  and page : Page.t -> bool = fun x -> items x.items
+
+  and alternative : Alternative.t -> bool = function
+    | Expansion x -> documentedsrc x.expansion
+
+  and include_ : Include.t -> bool = fun x -> items x.content
+
+  and block : Block.t -> bool =
+   fun x ->
+    let block_ : Block.one -> bool =
+     fun x ->
+      match x.desc with
+      | Inline x -> inline x
+      | Paragraph x -> inline x
+      | List (_, x) -> List.exists block x
+      | Description x -> description x
+      | Math _ -> true
+      | Source _ | Verbatim _ | Raw_markup _ -> false
+    in
+    List.exists block_ x
+
+  and heading : Heading.t -> bool = fun x -> inline x.title
+
+  and inline : Inline.t -> bool =
+   fun x ->
+    let inline_ : Inline.one -> bool =
+     fun x ->
+      match x.desc with
+      | Styled (_, x) -> inline x
+      | Link (_, x) -> inline x
+      | InternalLink x -> internallink x
+      | Math _ -> true
+      | Text _ | Entity _ | Linebreak | Source _ | Raw_markup _ -> false
+    in
+    List.exists inline_ x
+
+  and internallink : InternalLink.t -> bool = function
+    | Resolved (_, x) -> inline x
+    | Unresolved x -> inline x
+
+  and description : Description.t -> bool =
+   fun x ->
+    let description_ : Description.one -> bool =
+     fun x -> inline x.key || block x.definition
+    in
+    List.exists description_ x
+
+  let has_math_elements = page
+end

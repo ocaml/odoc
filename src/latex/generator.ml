@@ -255,6 +255,7 @@ and inline ~in_source ~verbatim (l : Inline.t) =
     | InternalLink c -> [ internalref ~in_source ~verbatim c ]
     | Source c ->
         [ Inlined_code (source (inline ~verbatim:false ~in_source:true) c) ]
+    | Math s -> [ Raw (Format.asprintf "%a" Raw.math s) ]
     | Raw_markup r -> raw_markup r
     | Entity s -> [ entity ~in_source ~verbatim s ]
   in
@@ -309,6 +310,12 @@ let rec block ~in_source (l : Block.t) =
     | Raw_markup r -> raw_markup r
     | Verbatim s -> [ Verbatim s ]
     | Source (_, c) -> non_empty_block_code c
+    | Math s ->
+        [
+          Break Paragraph;
+          Raw (Format.asprintf "%a" Raw.equation s);
+          Break Paragraph;
+        ]
   in
   list_concat_map l ~f:one
 

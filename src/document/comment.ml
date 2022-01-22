@@ -129,6 +129,7 @@ let leaf_inline_element : Comment.leaf_inline_element -> Inline.one = function
   | `Space -> inline @@ Text " "
   | `Word s -> inline @@ Text s
   | `Code_span s -> inline @@ Source (source_of_code s)
+  | `Math_span s -> inline @@ Math s
   | `Raw_markup (target, s) -> inline @@ Raw_markup (target, s)
 
 let rec non_link_inline_element : Comment.non_link_inline_element -> Inline.one
@@ -202,6 +203,7 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
       in
       block
       @@ Source (lang_tag, source_of_code (Odoc_model.Location_.value code))
+  | `Math_block s -> block @@ Math s
   | `Verbatim s -> block @@ Verbatim s
   | `Modules ms -> module_references ms
   | `List (kind, items) ->
