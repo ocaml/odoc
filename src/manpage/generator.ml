@@ -231,7 +231,7 @@ let strip l =
     | [] -> acc
     | h :: t -> (
         match h.Inline.desc with
-        | Text _ | Entity _ | Raw_markup _ -> loop (h :: acc) t
+        | Text _ | Entity _ | Raw_markup _ | Math _ -> loop (h :: acc) t
         | Linebreak -> loop acc t
         | Styled (sty, content) ->
             let h =
@@ -267,6 +267,8 @@ let raw_markup (t : Raw_markup.t) =
   | "manpage" | "troff" | "roff" -> String content
   | _ -> noop
 
+let math (s : Types.Math.t) = String s
+
 let rec source_code (s : Source.t) =
   match s with
   | [] -> noop
@@ -299,6 +301,7 @@ and inline (l : Inline.t) =
       | InternalLink (Resolved (_, content) | Unresolved content) ->
           font "CI" (inline @@ strip content) ++ inline rest
       | Source content -> source_code content ++ inline rest
+      | Math s -> math s ++ inline rest
       | Raw_markup t -> raw_markup t ++ inline rest)
 
 let rec block (l : Block.t) =
@@ -333,6 +336,7 @@ let rec block (l : Block.t) =
           list ~sep:break (List.map f descrs) ++ continue rest
       | Source (_, content) ->
           env "EX" "EE" "" (source_code content) ++ continue rest
+      | Math s -> math s ++ continue rest
       | Verbatim content -> env "EX" "EE" "" (str "%s" content) ++ continue rest
       | Raw_markup t -> raw_markup t ++ continue rest)
 

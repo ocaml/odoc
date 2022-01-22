@@ -206,3 +206,13 @@ let small_table pp ppf tbl =
   break ppf Line
 
 let ocamltag tag pp ppf x = create2 "ocamltag" Fmt.string pp ppf tag x
+
+let math ppf x = Fmt.pf ppf {|$%s$|} x
+
+let equation ppf x =
+  let name = "equation*" in
+  mbegin ppf name;
+  Fmt.cut ppf ();
+  Fmt.string ppf x;
+  Fmt.cut ppf ();
+  mend ppf name

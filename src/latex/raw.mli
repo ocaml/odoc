@@ -93,3 +93,9 @@ val ocamltag : string -> 'a t
 (** tag (e.g keyword, type-var, ...) are rendered to
 {v \ocamltag{tagname}{content} v}
 *)
+
+(** {2 Math mode} *)
+
+val math : string Fmt.t
+
+val equation : string Fmt.t

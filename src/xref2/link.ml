@@ -220,7 +220,7 @@ and comment_nestable_block_element env parent ~loc:_
     (x : Comment.nestable_block_element) =
   match x with
   | `Paragraph elts -> `Paragraph (paragraph env elts)
-  | (`Code_block _ | `Verbatim _) as x -> x
+  | (`Code_block _ | `Math_block _ | `Verbatim _) as x -> x
   | `List (x, ys) ->
       `List
         ( x,

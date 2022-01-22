@@ -82,6 +82,18 @@ The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
 \subsection{Raw HTML\label{raw-html}}%
 Raw HTML can be  as inline elements into sentences.
 
+\subsection{Math\label{math}}%
+Math elements can be inline: $\int_{-\infty}^\infty$, or blocks:
+
+\begin{equation*}
+    % \f is defined as #1f(#2) using the macro
+    \newcommand{\f}[2]{#1f(#2)}
+    \f\relax{x} = \int_{-\infty}^\infty
+    \f\hat\xi\,e^{2 \pi i \xi x}
+    \,d\xi
+    
+\end{equation*}
+
 \subsection{Modules\label{modules}}%
 \begin{description}\kern-\topsep
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded

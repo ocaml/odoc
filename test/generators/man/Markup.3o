@@ -223,7 +223,22 @@ Raw HTML can be  as inline elements into sentences\.
 .nf 
 .sp 
 .in 3
-\fB8 Modules\fR
+\fB8 Math\fR
+.in 
+.sp 
+.fi 
+Math elements can be inline: \int_{-\infty}^\infty, or blocks:
+.sp 
+    % \f is defined as #1f(#2) using the macro
+    \newcommand{\f}[2]{#1f(#2)}
+    \f\relax{x} = \int_{-\infty}^\infty
+    \f\hat\xi\,e^{2 \pi i \xi x}
+    \,d\xi
+    
+.nf 
+.sp 
+.in 3
+\fB9 Modules\fR
 .in 
 .sp 
 .fi 
@@ -235,7 +250,7 @@ Raw HTML can be  as inline elements into sentences\.
 .nf 
 .sp 
 .in 3
-\fB9 Tags\fR
+\fB10 Tags\fR
 .in 
 .sp 
 .fi 
