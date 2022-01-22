@@ -40,7 +40,9 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
     let katex_css_uri =
       "https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css"
     in
-    (* let katex_css_integrity ="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" in *)
+    let katex_css_integrity =
+      "sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ"
+    in
     let katex_js_uri =
       "https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"
     in
@@ -55,7 +57,7 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
         Html.link ~rel:[ `Stylesheet ] ~href:katex_css_uri
           ~a:
             [
-              Html.a_integrity katex_js_integrity; Html.a_crossorigin `Anonymous;
+              Html.a_integrity katex_css_integrity; Html.a_crossorigin `Anonymous;
             ]
           ();
         Html.meta ~a:[ Html.a_charset "utf-8" ] ();
