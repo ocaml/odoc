@@ -759,14 +759,15 @@ end = struct
                 Ok ()))
 
   let reference =
-    let doc = "The reference to be resolved" in
+    let doc = "The reference to be resolved and whose uri to be generated." in
     Arg.(required & pos 0 (some string) None & info ~doc ~docv:"REF" [])
 
   let cmd =
     Term.(
       const handle_error $ (const resolve $ odoc_file_directories $ reference))
 
-  let info = Term.info ~doc:"Resolve a reference and output a uri to it" "uri"
+  let info =
+    Term.info ~doc:"Resolve a reference and output its corresponding uri" "uri"
 end
 
 let () =
