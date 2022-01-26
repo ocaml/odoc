@@ -5358,7 +5358,7 @@ let%expect_test _ =
             (paragraph (((f.ml (1 0) (1 20)) (math inline "\\sub_{i=0}^n x^i")))))))
          (warnings ())) |}]
     
-    let inline_false_terminator =
+    let inline_false_nesting =
       test "{m \\{ \\mathbb{only_left}}";
       [%expect {|
         ((output
@@ -5366,5 +5366,14 @@ let%expect_test _ =
             (paragraph
              (((f.ml (1 0) (1 25)) (math inline "\\{ \\mathbb{only_left}")))))))
          (warnings ())) |}]
+    
+    let inline_false_terminator =
+    test "{m \\mathbb{only_left}\\}}";
+    [%expect {|
+      ((output
+        (((f.ml (1 0) (1 24))
+          (paragraph
+           (((f.ml (1 0) (1 24)) (math inline "\\mathbb{only_left}\\}")))))))
+       (warnings ())) |}]
   end in
   ()
