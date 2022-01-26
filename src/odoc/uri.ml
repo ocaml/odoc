@@ -1,3 +1,5 @@
+open Result
+
 let resolve url_to_string directories reference prefix =
   let resolver =
     Resolver.create ~important_digests:false ~directories ~open_modules:[]
