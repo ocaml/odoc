@@ -41,6 +41,9 @@ module Ast_to_sexp = struct
     | `Code_span c -> List [ Atom "code_span"; Atom c ]
     | `Raw_markup (target, s) ->
         List [ Atom "raw_markup"; opt str target; Atom s ]
+    | `Math (b, s) ->
+      let b_descr = if b then Atom "block" else Atom "inline" in 
+      List [Atom "math"; b_descr; Atom s]
     | `Styled (s, es) ->
         List [ style s; List (List.map (at.at (inline_element at)) es) ]
     | `Reference (kind, r, es) ->
@@ -1279,8 +1282,8 @@ let%expect_test _ =
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'{^...}' (superscript) should not be empty."))) |}]
   end in
-  ()
-
+  ()  
+  
 let%expect_test _ =
   let module Subscript = struct
     let basic =
@@ -5301,5 +5304,67 @@ let%expect_test _ =
                   (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 36)))
                   (end_loc (4 7)) (value (word three)))))))))
            (warnings ())) |}]
+  end in
+  ()
+
+let%expect_test _ =
+  let module Math = struct
+    let block =
+      test "{%math \\sum_{i=0}^n x^i%}";
+      [%expect {|
+        ((output
+          (((f.ml (1 0) (1 25))
+            (paragraph (((f.ml (1 0) (1 25)) (math block "\\sum_{i=0}^n x^i")))))))
+         (warnings ())) |}]
+      
+    let complex_block =
+      test {|{%math
+      \alpha(x)=\left\{
+                \begin{array}{ll}                 % beginning of the array
+                  x \% 4\\                        % some variable modulo 4
+                  \frac{1}{1+e^{-kx}}\\           % something else
+                  \frac{e^x-e^{-x}}{e^x+e^{-x}}   % another action
+                \end{array}                       % end of the array
+              \right.
+      %}|}
+    
+    let inline =
+      test "{m x + 4}";
+      [%expect {|
+        ((output
+          (((f.ml (1 0) (9 8))
+            (paragraph
+             (((f.ml (1 0) (9 8))
+               (raw_markup ()
+                 "math\
+                \n      \\alpha(x)=\\left\\{\
+                \n                \\begin{array}{ll}                 % beginning of the array\
+                \n                  x \\% 4\\\\                        % some variable modulo 4\
+                \n                  \\frac{1}{1+e^{-kx}}\\\\           % something else\
+                \n                  \\frac{e^x-e^{-x}}{e^x+e^{-x}}   % another action\
+                \n                \\end{array}                       % end of the array\
+                \n              \\right.\
+                \n      ")))))))
+         (warnings ()))((output
+          (((f.ml (1 0) (1 9))
+            (paragraph (((f.ml (1 0) (1 9)) (math inline "x + 4")))))))
+         (warnings ())) |}]
+    
+    let inline_nested =
+      test "{m \\sub_{i=0}^n x^i}";
+      [%expect {|
+        ((output
+          (((f.ml (1 0) (1 20))
+            (paragraph (((f.ml (1 0) (1 20)) (math inline "\\sub_{i=0}^n x^i")))))))
+         (warnings ())) |}]
+    
+    let inline_false_terminator =
+      test "{m \\{ \\mathbb{only_left}}";
+      [%expect {|
+        ((output
+          (((f.ml (1 0) (1 25))
+            (paragraph
+             (((f.ml (1 0) (1 25)) (math inline "\\{ \\mathbb{only_left}")))))))
+         (warnings ())) |}]
   end in
   ()

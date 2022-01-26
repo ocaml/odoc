@@ -53,6 +53,8 @@ type t =
     string
   | `Code_span of string
   | `Raw_markup of string option * string
+  | `Math of bool * string
+    (* The boolean is true iff the math is a block *)
   | `Begin_style of style
   | `Begin_paragraph_style of paragraph_style
   | (* Other inline element markup. *)
@@ -123,6 +125,7 @@ let describe : [< t | `Comment ] -> string = function
   | `Begin_style `Emphasis -> "'{e ...}' (emphasized text)"
   | `Begin_style `Superscript -> "'{^...}' (superscript)"
   | `Begin_style `Subscript -> "'{_...}' (subscript)"
+  | `Math (b, _) -> if b then "'{%math ...%}' (math block)" else "'{m ...}' (inline math)"
   | `Simple_reference _ -> "'{!...}' (cross-reference)"
   | `Begin_reference_with_replacement_text _ ->
       "'{{!...} ...}' (cross-reference)"
