@@ -36,7 +36,7 @@ let _to_string =
   in
   fun ?prefix -> function
     | `With_full_location { location; message } ->
-        if not (String.equal location.file "") then
+        if String.compare location.file "" != 0 then
           Format.asprintf "%a:@\n%a%s" Location_.pp location pp_prefix prefix
             message
         else Format.asprintf "%a%s" pp_prefix prefix message
