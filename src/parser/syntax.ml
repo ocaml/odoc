@@ -54,7 +54,8 @@ type token_that_always_begins_an_inline_element =
   | `Simple_reference of string
   | `Begin_reference_with_replacement_text of string
   | `Simple_link of string
-  | `Begin_link_with_replacement_text of string ]
+  | `Begin_link_with_replacement_text of string
+  | `Math of bool * string ]
 
 (* Check that the token constructors above actually are all in [Token.t]. *)
 let _check_subset : token_that_always_begins_an_inline_element -> Token.t =
@@ -105,6 +106,9 @@ let rec inline_element :
   | `Raw_markup (raw_markup_target, s) ->
       junk input;
       Loc.at location (`Raw_markup (raw_markup_target, s))
+  | `Math s ->
+      junk input;
+      Loc.at location (`Math s)
   | `Begin_style s as parent_markup ->
       junk input;
 

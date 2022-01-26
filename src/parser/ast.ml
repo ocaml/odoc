@@ -22,7 +22,8 @@ type inline_element =
   | `Styled of style * inline_element with_location list
   | `Reference of
     reference_kind * string with_location * inline_element with_location list
-  | `Link of string * inline_element with_location list ]
+  | `Link of string * inline_element with_location list
+  | `Math of bool * string ]
 (** Inline elements are equivalent to what would be found in a [span] in HTML.
     Mostly these are straightforward. The [`Reference] constructor takes a triple
     whose second element is the reference itself, and the third the replacement
