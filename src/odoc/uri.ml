@@ -38,11 +38,15 @@ let resolve url_to_string directories reference prefix =
               Ok ()))
 
 let reference_to_uri_html =
-  let url_to_string prefix url = 
-    Odoc_html.Link.(href ~resolve:(Base prefix) url) in
+  let url_to_string prefix url =
+    let prefix = match prefix with None -> "" | Some prefix -> prefix in
+    Odoc_html.Link.(href ~resolve:(Base prefix) url)
+  in
   resolve url_to_string
 
 let reference_to_uri_latex =
-  let url_to_string prefix url = 
-    prefix ^ Odoc_latex.Generator.Link.label url in
+  let url_to_string prefix url =
+    let prefix = match prefix with None -> "" | Some prefix -> prefix in
+    prefix ^ Odoc_latex.Generator.Link.label url
+  in
   resolve url_to_string
