@@ -550,6 +550,21 @@ module Path = struct
       (* TODO remove this hack once the fix for PR#6650
          is in the OCaml release *)
 
+  (*  When a type is a classtype path (with a #), the # is stripped off because
+      each ident is mapped to the identifier named for the ident without a
+      hash. e.g. in the following, we take the name of the identifier from
+      cd_id_class, and therefore even [Pident #u/10] will map to identifier
+      [u].
+      
+      Typedtree.Tsig_class_type
+      [{Typedtree.ci_virt = Asttypes.Concrete; ci_params = [];
+        ci_id_name = {Asttypes.txt = ...; loc = ...}; ci_id_class = u/13[14];
+        ci_id_class_type = u/12[14]; ci_id_object = u/11[14];
+        ci_id_typehash = #u/10[14];
+      
+      For a dotted path though, we have to strip the # off manually here, so
+      [read_class_type] and [read_type] both need the following function. 
+  *)
   let strip_hash s =
     if s.[0]='#' then String.sub s 1 (String.length s - 1) else s
 
