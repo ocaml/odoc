@@ -5310,7 +5310,7 @@ let%expect_test _ =
 let%expect_test _ =
   let module Math = struct
     let block =
-      test "{%math \\sum_{i=0}^n x^i%}";
+      test "{%math:\\sum_{i=0}^n x^i%}";
       [%expect {|
         ((output
           (((f.ml (1 0) (1 25))

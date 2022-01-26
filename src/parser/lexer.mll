@@ -262,8 +262,6 @@ let raw_markup =
 let raw_markup_target =
   ([^ ':' '%'] | '%'+ [^ ':' '%' '}'])* '%'*
 
-let math_block = raw_markup
-
 let language_tag_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ]
 
@@ -366,19 +364,13 @@ rule token input = parse
     { verbatim
         (Buffer.create 1024) None (Lexing.lexeme_start lexbuf) input lexbuf }
 
-  | "{%math" horizontal_space (raw_markup as s) ("%}" | eof as e)
-    { let token  = `Math (true, s) in
-      if e <> "%}" then
-        warning
-          input
-          ~start_offset:(Lexing.lexeme_end lexbuf)
-          (Parse_error.not_allowed
-            ~what:(Token.describe `End)
-            ~in_what:(Token.describe token));
-      emit input token }
   | "{%" ((raw_markup_target as target) ':')? (raw_markup as s)
     ("%}" | eof as e)
-    { let token = `Raw_markup (target, s) in
+    { let token =
+      match target with
+      | Some "math" -> `Math (true, s)
+      | _ -> `Raw_markup (target, s)
+      in
       if e <> "%}" then
         warning
           input
