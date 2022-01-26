@@ -1,4 +1,6 @@
-module Link : sig val label : Odoc_document.Url.t -> string end
+module Link : sig
+  val label : Odoc_document.Url.t -> string
+end
 
 val files_of_url : Odoc_document.Url.Path.t -> Fpath.t list
 
