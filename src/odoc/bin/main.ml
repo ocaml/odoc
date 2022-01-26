@@ -408,14 +408,35 @@ module Odoc_uri : sig
 
   val info : Term.info
 end = struct
+  let prefix = ""
+
+  type backend = Html | Latex
+
+  let backend =
+    let html =
+      let doc = "Generate the uri for the html backend. This is the default." in
+      (Html, Arg.info [ "h"; "html" ] ~doc)
+    in
+    let latex =
+      let doc = "Generate the uri for the latex backend." in
+      (Latex, Arg.info [ "l"; "latex" ] ~doc)
+    in
+    Arg.(value & vflag Html [ html; latex ])
+
   let reference =
     let doc = "The reference to be resolved and whose uri to be generated." in
     Arg.(required & pos 0 (some string) None & info ~doc ~docv:"REF" [])
 
+  let reference_to_uri kind =
+    match kind with
+    | Html -> Uri.reference_to_uri_html
+    | Latex -> Uri.reference_to_uri_latex
+
   let cmd =
     Term.(
       const handle_error
-      $ (const Uri.resolve $ odoc_file_directories $ reference))
+      $ (const reference_to_uri $ backend $ odoc_file_directories $ reference
+       $ const prefix))
 
   let info =
     Term.info ~doc:"Resolve a reference and output its corresponding uri" "uri"
