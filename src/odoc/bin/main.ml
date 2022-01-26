@@ -408,7 +408,9 @@ module Odoc_uri : sig
 
   val info : Term.info
 end = struct
-  let prefix = ""
+  let prefix =
+    let doc = "A string to prepend to the generated uri." in
+    Arg.(value & (opt (some string) None @@ Arg.info [ "p"; "prefix" ] ~doc))
 
   type backend = Html | Latex
 
@@ -436,7 +438,7 @@ end = struct
     Term.(
       const handle_error
       $ (const reference_to_uri $ backend $ odoc_file_directories $ reference
-       $ const prefix))
+       $ prefix))
 
   let info =
     Term.info ~doc:"Resolve a reference and output its corresponding uri" "uri"

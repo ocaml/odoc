@@ -4,6 +4,12 @@ Generating url for a reference uses html by default
   $ odoc uri -I . Foo.t
   test/Foo/index.html#type-t
 
+The prefix argument prepend a string to the uri
+  $ odoc uri -p /absolute/prefix/path/ -I . Foo.t
+  /absolute/prefix/path/test/Foo/index.html#type-t
+  $ odoc uri --prefix=/absolute/prefix/path/ -I . Foo.t
+  /absolute/prefix/path/test/Foo/index.html#type-t
+
 Generates url for the html backend
   $ odoc uri --html -I . Foo.t
   test/Foo/index.html#type-t
