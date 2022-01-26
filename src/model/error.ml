@@ -36,8 +36,10 @@ let _to_string =
   in
   fun ?prefix -> function
     | `With_full_location { location; message } ->
-        Format.asprintf "%a:@\n%a%s" Location_.pp location pp_prefix prefix
-          message
+        if not (String.equal location.file "") then
+          Format.asprintf "%a:@\n%a%s" Location_.pp location pp_prefix prefix
+            message
+        else Format.asprintf "%a%s" pp_prefix prefix message
     | `With_filename_only { file; message } ->
         Format.asprintf "File \"%s\":@\n%a%s" file pp_prefix prefix message
 
