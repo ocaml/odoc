@@ -1,6 +1,6 @@
 open Result
 
-let resolve url_to_string directories reference prefix =
+let resolve url_to_string directories reference =
   let resolver =
     Resolver.create ~important_digests:false ~directories ~open_modules:[]
   in
@@ -35,20 +35,22 @@ let resolve url_to_string directories reference prefix =
           match url with
           | Error e -> Error (`Msg (Odoc_document.Url.Error.to_string e))
           | Ok url ->
-              let href = url_to_string prefix url in
+              let href = url_to_string url in
               print_endline href;
               Ok ()))
 
-let reference_to_uri_html =
-  let url_to_string prefix url =
-    let prefix = match prefix with None -> "" | Some prefix -> prefix in
-    Odoc_html.Link.(href ~resolve:(Base prefix) url)
+let reference_to_uri_html root_dir =
+  let url_to_string url =
+    let href s = Odoc_html.Link.(href ~resolve:(Base s) url) in
+    match root_dir with
+    | None -> href ""
+    | Some r_dir -> (
+        match String.rindex r_dir '/' = String.length r_dir - 1 with
+        | true -> href r_dir
+        | false -> href (r_dir ^ "/"))
   in
   resolve url_to_string
 
 let reference_to_uri_latex =
-  let url_to_string prefix url =
-    let prefix = match prefix with None -> "" | Some prefix -> prefix in
-    prefix ^ Odoc_latex.Generator.Link.label url
-  in
+  let url_to_string url = Odoc_latex.Generator.Link.label url in
   resolve url_to_string
