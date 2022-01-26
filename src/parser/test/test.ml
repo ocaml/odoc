@@ -1282,8 +1282,8 @@ let%expect_test _ =
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'{^...}' (superscript) should not be empty."))) |}]
   end in
-  ()  
-  
+  ()
+
 let%expect_test _ =
   let module Subscript = struct
     let basic =

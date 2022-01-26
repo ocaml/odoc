@@ -387,7 +387,7 @@ rule token input = parse
             ~what:(Token.describe `End)
             ~in_what:(Token.describe token));
       emit input token }
-  
+
   | "{ul"
     { emit input (`Begin_list `Unordered) }
 
