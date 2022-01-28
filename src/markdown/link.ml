@@ -19,15 +19,7 @@ let as_filename (url : Url.Path.t) =
   let str_path = String.concat Fpath.dir_sep (dir @ [ path ]) in
   Fpath.(v str_path + ".md")
 
-let rec is_class_or_module_path (url : Url.Path.t) =
-  match url.kind with
-  | `Module | `LeafPage | `Page | `Class -> (
-      match url.parent with
-      | None -> true
-      | Some url -> is_class_or_module_path url)
-  | _ -> false
-
-let should_inline x = not @@ is_class_or_module_path x
+let should_inline _ = false
 
 let files_of_url url =
-  if is_class_or_module_path url then [ as_filename url ] else []
+  if should_inline url then [] else [ as_filename url ]
