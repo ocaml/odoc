@@ -403,46 +403,50 @@ end = struct
   let targets = Targets.(cmd, info)
 end
 
-let reference =
-  let doc = "The reference to be resolved and whose uri to be generated." in
-  Arg.(required & pos 0 (some string) None & info ~doc ~docv:"REF" [])
-
-module Odoc_html_uri : sig
+module Odoc_html_url : sig
   val cmd : unit Term.t
 
   val info : Term.info
 end = struct
-  let root_dir =
-    let doc = "A string to prepend to the generated uri." in
-    Arg.(value & opt (some string) None & info [ "r"; "root-dir" ] ~doc)
+  let base =
+    let doc = "A string to prepend to the generated url." in
+    Arg.(value & opt (some string) None & info [ "b"; "base" ] ~doc)
 
-  let reference_to_uri = Uri.reference_to_uri_html
+  let reference =
+    let doc = "The reference to be resolved and whose url to be generated." in
+    Arg.(required & pos 0 (some string) None & info ~doc ~docv:"REF" [])
+
+  let reference_to_url = Url.reference_to_url_html
 
   let cmd =
     Term.(
       const handle_error
-      $ (const reference_to_uri $ root_dir $ odoc_file_directories $ reference))
+      $ (const reference_to_url $ base $ odoc_file_directories $ reference))
 
   let info =
-    Term.info ~doc:"Resolve a reference and output its corresponding uri"
-      "html-uri"
+    Term.info ~doc:"Resolve a reference and output its corresponding url"
+      "html-url"
 end
 
-module Odoc_latex_uri : sig
+module Odoc_latex_url : sig
   val cmd : unit Term.t
 
   val info : Term.info
 end = struct
-  let reference_to_uri = Uri.reference_to_uri_latex
+  let reference =
+    let doc = "The reference to be resolved and whose url to be generated." in
+    Arg.(required & pos 0 (some string) None & info ~doc ~docv:"REF" [])
+
+  let reference_to_url = Url.reference_to_url_latex
 
   let cmd =
     Term.(
       const handle_error
-      $ (const reference_to_uri $ odoc_file_directories $ reference))
+      $ (const reference_to_url $ odoc_file_directories $ reference))
 
   let info =
-    Term.info ~doc:"Resolve a reference and output its corresponding uri"
-      "latex-uri"
+    Term.info ~doc:"Resolve a reference and output its corresponding url"
+      "latex-url"
 end
 
 module Odoc_html = Make_renderer (struct
@@ -778,8 +782,8 @@ let () =
       Targets.Support_files.(cmd, info);
       Odoc_link.(cmd, info);
       Odoc_error.(cmd, info);
-      Odoc_html_uri.(cmd, info);
-      Odoc_latex_uri.(cmd, info);
+      Odoc_html_url.(cmd, info);
+      Odoc_latex_url.(cmd, info);
     ]
   in
   let default =
