@@ -39,18 +39,18 @@ let resolve url_to_string directories reference =
               print_endline href;
               Ok ()))
 
-let reference_to_uri_html root_dir =
+let reference_to_url_html base =
   let url_to_string url =
     let href s = Odoc_html.Link.(href ~resolve:(Base s) url) in
-    match root_dir with
+    match base with
     | None -> href ""
-    | Some r_dir -> (
-        match String.rindex r_dir '/' = String.length r_dir - 1 with
-        | true -> href r_dir
-        | false -> href (r_dir ^ "/"))
+    | Some base -> (
+        match String.rindex base '/' = String.length base - 1 with
+        | true -> href base
+        | false -> href (base ^ "/"))
   in
   resolve url_to_string
 
-let reference_to_uri_latex =
+let reference_to_url_latex =
   let url_to_string url = Odoc_latex.Generator.Link.label url in
   resolve url_to_string
