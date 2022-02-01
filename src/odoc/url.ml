@@ -41,13 +41,13 @@ let resolve url_to_string directories reference =
 
 let reference_to_url_html root_url =
   let url_to_string url =
-    let href s = Odoc_html.Link.(href ~resolve:(Base s) url) in
-    match root_url with
-    | None -> href ""
-    | Some base -> (
-        match String.rindex base '/' = String.length base - 1 with
-        | true -> href base
-        | false -> href (base ^ "/"))
+    let base =
+      match root_url with
+      | None | Some "" -> ""
+      | Some base ->
+          if base.[String.length base - 1] = '/' then base else base ^ "/"
+    in
+    Odoc_html.Link.(href ~resolve:(Base base) url)
   in
   resolve url_to_string
 
