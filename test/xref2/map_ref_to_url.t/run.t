@@ -4,11 +4,11 @@ Generating html url for a reference
   $ odoc html-url -I . Foo.t
   test/Foo/index.html#type-t
 
-The root_url argument prepend a string to the html url
+The root-url argument prepends a string to the html url
   $ odoc html-url -r /base -I . Foo.t
   /base/test/Foo/index.html#type-t
 
-  $ odoc html-url --root_url=/base/ -I . Foo.t
+  $ odoc html-url --root-url=/base/ -I . Foo.t
   /base/test/Foo/index.html#type-t
 
 Generate latex url
