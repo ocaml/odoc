@@ -413,7 +413,7 @@ end = struct
       "A string to prepend to the generated relative url. A separating / is \
        added if needed."
     in
-    Arg.(value & opt (some string) None & info [ "r"; "root_url" ] ~doc)
+    Arg.(value & opt (some string) None & info [ "r"; "root-url" ] ~doc)
 
   let reference =
     let doc = "The reference to be resolved and whose url to be generated." in
