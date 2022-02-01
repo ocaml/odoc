@@ -39,10 +39,10 @@ let resolve url_to_string directories reference =
               print_endline href;
               Ok ()))
 
-let reference_to_url_html base =
+let reference_to_url_html root_url =
   let url_to_string url =
     let href s = Odoc_html.Link.(href ~resolve:(Base s) url) in
-    match base with
+    match root_url with
     | None -> href ""
     | Some base -> (
         match String.rindex base '/' = String.length base - 1 with
