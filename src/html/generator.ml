@@ -247,8 +247,7 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
             | doc ->
                 let opening, closing = markers in
                 [
-                  Html.td
-                    ~a:(class_ [ "def-doc" ])
+                  Html.td ~a:(class_ [ "def-doc" ])
                     (Html.span
                        ~a:(class_ [ "comment-delim" ])
                        [ Html.txt opening ]
