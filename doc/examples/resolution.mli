@@ -67,7 +67,6 @@ module Fragments : sig
   end
 
   module C : A with type B.t = int
-
   module D : module type of C.B with type t := int
 end
 
@@ -77,13 +76,11 @@ module Hidden : sig
   (**/**)
 
   type t = int
-
   type u
 
   (**/**)
 
   type v = T of t
-
   type w = U of u
 end
 

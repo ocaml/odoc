@@ -2,7 +2,6 @@ open Types
 module Lang = Odoc_model.Lang
 
 type rendered_item = DocumentedSrc.t
-
 type text = Codefmt.t
 
 (** HTML generation syntax customization module. See {!ML} and
@@ -10,29 +9,19 @@ type text = Codefmt.t
 module type SYNTAX = sig
   module Obj : sig
     val close_tag_closed : string
-
     val close_tag_extendable : string
-
     val field_separator : string
-
     val open_tag_closed : string
-
     val open_tag_extendable : string
   end
 
   module Type : sig
     val annotation_separator : string
-
     val handle_constructor_params : text -> text -> text
-
     val handle_substitution_params : text -> text -> text
-
     val handle_format_params : string -> string
-
     val type_def_semicolon : bool
-
     val private_keyword : string
-
     val parenthesize_constructor : bool
 
     module Variant : sig
@@ -41,7 +30,6 @@ module type SYNTAX = sig
 
     module Tuple : sig
       val element_separator : text
-
       val always_parenthesize : bool
     end
 
@@ -50,9 +38,7 @@ module type SYNTAX = sig
     end
 
     val var_prefix : string
-
     val any : string
-
     val arrow : text
 
     module Exception : sig
@@ -65,34 +51,26 @@ module type SYNTAX = sig
 
     module External : sig
       val semicolon : bool
-
       val handle_primitives : string list -> Inline.t
     end
   end
 
   module Mod : sig
     val open_tag : text
-
     val close_tag : text
-
     val close_tag_semicolon : bool
-
     val include_semicolon : bool
-
     val functor_keyword : bool
-
     val functor_contraction : bool
   end
 
   module Class : sig
     val open_tag : text
-
     val close_tag : text
   end
 
   module Value : sig
     val variable_keyword : string
-
     val semicolon : bool
   end
 
@@ -103,6 +81,5 @@ end
 
 module type GENERATOR = sig
   val compilation_unit : Lang.Compilation_unit.t -> Page.t
-
   val page : Lang.Page.t -> Page.t
 end

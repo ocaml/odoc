@@ -1,18 +1,14 @@
 (** Component module *)
 
 module ModuleMap : Map.S with type key = Ident.module_
-
 module TypeMap : Map.S with type key = Ident.type_
 
 module PathModuleMap : Map.S with type key = Ident.path_module
 (** Useful maps *)
 
 module ModuleTypeMap : Map.S with type key = Ident.module_type
-
 module PathTypeMap : Map.S with type key = Ident.path_type
-
 module PathClassTypeMap : Map.S with type key = Ident.path_class_type
-
 module IdentMap : Map.S with type key = Ident.any
 
 (** Delayed is a bit like Lazy.t but may in the future offer the chance to peek inside
@@ -25,9 +21,7 @@ module Delayed : sig
   type 'a t = { mutable v : 'a option; mutable get : (unit -> 'a) option }
 
   val get : 'a t -> 'a
-
   val put : (unit -> 'a) -> 'a t
-
   val put_val : 'a -> 'a t
 end
 
@@ -95,21 +89,17 @@ and TypeExpr : sig
     end
 
     type element = Type of TypeExpr.t | Constructor of Constructor.t
-
     type t = { kind : kind; elements : element list }
   end
 
   module Object : sig
     type method_ = { name : string; type_ : TypeExpr.t }
-
     type field = Method of method_ | Inherit of TypeExpr.t
-
     type t = { fields : field list; open_ : bool }
   end
 
   module Package : sig
     type substitution = Cfrag.type_ * TypeExpr.t
-
     type t = { path : Cpath.module_type; substitutions : substitution list }
   end
 
@@ -158,7 +148,6 @@ end
 
 and FunctorParameter : sig
   type parameter = { id : Ident.functor_parameter; expr : ModuleType.expr }
-
   type t = Named of parameter | Unit
 end
 
@@ -319,7 +308,6 @@ end
 
 and Value : sig
   type value = Odoc_model.Lang.Value.value
-
   type t = { doc : CComment.docs; type_ : TypeExpr.t; value : value }
 end
 
@@ -418,7 +406,6 @@ and CComment : sig
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list
-
   type docs_or_stop = [ `Docs of docs | `Stop ]
 end
 
@@ -435,21 +422,13 @@ module Element : sig
   open Odoc_model.Paths
 
   type module_ = [ `Module of Identifier.Path.Module.t * Module.t Delayed.t ]
-
   type module_type = [ `ModuleType of Identifier.ModuleType.t * ModuleType.t ]
-
   type type_ = [ `Type of Identifier.Type.t * TypeDecl.t ]
-
   type value = [ `Value of Identifier.Value.t * Value.t ]
-
   type label = [ `Label of Identifier.Label.t * Label.t ]
-
   type class_ = [ `Class of Identifier.Class.t * Class.t ]
-
   type class_type = [ `ClassType of Identifier.ClassType.t * ClassType.t ]
-
   type datatype = [ type_ | class_ | class_type ]
-
   type signature = [ module_ | module_type ]
 
   type constructor =
@@ -464,7 +443,6 @@ module Element : sig
 
   (* No component for pages yet *)
   type page = [ `Page of Identifier.Page.t * Odoc_model.Lang.Page.t ]
-
   type label_parent = [ signature | datatype | page ]
 
   type any =
@@ -486,57 +464,41 @@ end
 (** Formatting functions for components *)
 module Fmt : sig
   val signature : Format.formatter -> Signature.t -> unit
-
   val removed_item : Format.formatter -> Signature.removed_item -> unit
 
   val removed_item_list :
     Format.formatter -> Signature.removed_item list -> unit
 
   val class_ : Format.formatter -> Class.t -> unit
-
   val class_type : Format.formatter -> ClassType.t -> unit
-
   val include_ : Format.formatter -> Include.t -> unit
-
   val value : Format.formatter -> Value.t -> unit
-
   val module_decl : Format.formatter -> Module.decl -> unit
-
   val include_decl : Format.formatter -> Include.decl -> unit
-
   val module_ : Format.formatter -> Module.t -> unit
-
   val module_type : Format.formatter -> ModuleType.t -> unit
-
   val simple_expansion : Format.formatter -> ModuleType.simple_expansion -> unit
 
   val module_type_type_of_desc :
     Format.formatter -> ModuleType.type_of_desc -> unit
 
   val u_module_type_expr : Format.formatter -> ModuleType.U.expr -> unit
-
   val module_type_expr : Format.formatter -> ModuleType.expr -> unit
-
   val functor_parameter : Format.formatter -> FunctorParameter.t -> unit
 
   val functor_parameter_parameter :
     Format.formatter -> FunctorParameter.parameter -> unit
 
   val type_decl : Format.formatter -> TypeDecl.t -> unit
-
   val type_equation : Format.formatter -> TypeDecl.Equation.t -> unit
-
   val exception_ : Format.formatter -> Exception.t -> unit
-
   val extension : Format.formatter -> Extension.t -> unit
-
   val substitution : Format.formatter -> ModuleType.substitution -> unit
 
   val substitution_list :
     Format.formatter -> ModuleType.substitution list -> unit
 
   val type_expr_list : Format.formatter -> TypeExpr.t list -> unit
-
   val type_object : Format.formatter -> TypeExpr.Object.t -> unit
 
   val type_class :
@@ -548,27 +510,21 @@ module Fmt : sig
     Format.formatter -> TypeExpr.Polymorphic_variant.t -> unit
 
   val type_expr : Format.formatter -> TypeExpr.t -> unit
-
   val resolved_module_path : Format.formatter -> Cpath.Resolved.module_ -> unit
-
   val module_path : Format.formatter -> Cpath.module_ -> unit
 
   val resolved_module_type_path :
     Format.formatter -> Cpath.Resolved.module_type -> unit
 
   val module_type_path : Format.formatter -> Cpath.module_type -> unit
-
   val resolved_type_path : Format.formatter -> Cpath.Resolved.type_ -> unit
-
   val resolved_parent_path : Format.formatter -> Cpath.Resolved.parent -> unit
-
   val type_path : Format.formatter -> Cpath.type_ -> unit
 
   val resolved_class_type_path :
     Format.formatter -> Cpath.Resolved.class_type -> unit
 
   val class_type_path : Format.formatter -> Cpath.class_type -> unit
-
   val model_path : Format.formatter -> Odoc_model.Paths.Path.t -> unit
 
   val model_resolved_path :
@@ -591,13 +547,9 @@ module Fmt : sig
     Format.formatter -> Cfrag.resolved_module -> unit
 
   val resolved_type_fragment : Format.formatter -> Cfrag.resolved_type -> unit
-
   val signature_fragment : Format.formatter -> Cfrag.signature -> unit
-
   val module_fragment : Format.formatter -> Cfrag.module_ -> unit
-
   val module_type_fragment : Format.formatter -> Cfrag.module_type -> unit
-
   val type_fragment : Format.formatter -> Cfrag.type_ -> unit
 
   val model_resolved_reference :
@@ -700,9 +652,7 @@ module Of_Lang : sig
     map -> Odoc_model.Lang.TypeExpr.Package.t -> TypeExpr.Package.t
 
   val type_expression : map -> Odoc_model.Lang.TypeExpr.t -> TypeExpr.t
-
   val module_decl : map -> Odoc_model.Lang.Module.decl -> Module.decl
-
   val include_decl : map -> Odoc_model.Lang.Include.decl -> Include.decl
 
   val canonical :
@@ -738,17 +688,11 @@ module Of_Lang : sig
     map -> Odoc_model.Lang.ModuleType.expr -> ModuleType.expr
 
   val module_type : map -> Odoc_model.Lang.ModuleType.t -> ModuleType.t
-
   val value : map -> Odoc_model.Lang.Value.t -> Value.t
-
   val include_ : map -> Odoc_model.Lang.Include.t -> Include.t
-
   val class_ : map -> Odoc_model.Lang.Class.t -> Class.t
-
   val class_decl : map -> Odoc_model.Lang.Class.decl -> Class.decl
-
   val class_type_expr : map -> Odoc_model.Lang.ClassType.expr -> ClassType.expr
-
   val class_type : map -> Odoc_model.Lang.ClassType.t -> ClassType.t
 
   val class_signature :
@@ -766,11 +710,8 @@ module Of_Lang : sig
     map -> Odoc_model.Lang.ModuleSubstitution.t -> Module.t
 
   val signature : map -> Odoc_model.Lang.Signature.t -> Signature.t
-
   val open_ : map -> Odoc_model.Lang.Open.t -> Open.t
-
   val apply_sig_map : map -> Odoc_model.Lang.Signature.t -> Signature.t
-
   val docs : map -> Odoc_model.Comment.docs -> CComment.docs
 
   val docs_or_stop :
@@ -778,5 +719,4 @@ module Of_Lang : sig
 end
 
 val module_of_functor_argument : FunctorParameter.parameter -> Module.t
-
 val extract_signature_doc : Signature.t -> CComment.docs

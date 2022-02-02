@@ -181,11 +181,8 @@ let spf fmt =
   Format.kfprintf (fun _ -> flush ()) ppf fmt
 
 let pf = Format.fprintf
-
 let elt t ppf = Tag.elt ppf t
-
 let entity e ppf = elt [ inline @@ Inline.Entity e ] ppf
-
 let ignore t ppf = Tag.ignore ppf t
 
 let ( ++ ) f g ppf =
@@ -193,15 +190,10 @@ let ( ++ ) f g ppf =
   g ppf
 
 let span ?(attr = "") f ppf = pf ppf "@{<%s>%t@}" attr f
-
 let txt s ppf = Format.pp_print_string ppf s
-
 let noop (_ : Format.formatter) = ()
-
 let break i j ppf = Format.pp_print_break ppf i j
-
 let cut = break 0 0
-
 let sp = break 1 0
 
 let rec list ?sep ~f = function
@@ -213,17 +205,11 @@ let rec list ?sep ~f = function
       match sep with None -> hd ++ tl | Some sep -> hd ++ sep ++ tl)
 
 let box_hv t ppf = pf ppf "@[<hv 2>%t@]" t
-
 let box_hv_no_indent t ppf = pf ppf "@[<hv 0>%t@]" t
-
 let render f = spf "@[<hv 2>%t@]" (span f)
-
 let code ?attr f = [ inline ?attr @@ Inline.Source (render f) ]
-
 let documentedSrc f = [ DocumentedSrc.Code (render f) ]
-
 let codeblock ?attr f = [ block ?attr @@ Block.Source (render f) ]
-
 let keyword keyword ppf = pf ppf "@{<keyword>%s@}" keyword
 
 module Infix = struct

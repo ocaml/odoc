@@ -103,13 +103,9 @@ let open_modules =
 
 module Compile : sig
   val output_file : dst:string option -> input:Fs.file -> Fs.file
-
   val input : string Term.t
-
   val dst : string option Term.t
-
   val cmd : unit Term.t
-
   val info : Term.info
 end = struct
   let has_page_prefix file =
@@ -249,7 +245,6 @@ end
 
 module Odoc_link : sig
   val cmd : unit Term.t
-
   val info : Term.info
 end = struct
   let get_output_file ~output_file ~input =
@@ -292,15 +287,12 @@ module type S = sig
   type args
 
   val renderer : args Odoc_document.Renderer.t
-
   val extra_args : args Cmdliner.Term.t
 end
 
 module Make_renderer (R : S) : sig
   val process : unit Term.t * Term.info
-
   val targets : unit Term.t * Term.info
-
   val generate : unit Term.t * Term.info
 end = struct
   let input =
@@ -503,7 +495,6 @@ end)
 
 module Html_fragment : sig
   val cmd : unit Term.t
-
   val info : Term.info
 end = struct
   let html_fragment directories xref_base_uri output_file input_file
@@ -554,7 +545,6 @@ module Odoc_manpage = Make_renderer (struct
   type args = unit
 
   let renderer = Man_page.renderer
-
   let extra_args = Term.const ()
 end)
 
@@ -675,7 +665,6 @@ module Targets = struct
       flush stdout
 
     let cmd = Term.(const list_targets $ Compile.dst $ Compile.input)
-
     let info = Term.info "compile-targets" ~doc:"TODO: Fill in."
   end
 

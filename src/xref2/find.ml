@@ -2,9 +2,7 @@ open Odoc_model.Names
 open Component
 
 type module_ = [ `FModule of ModuleName.t * Module.t ]
-
 type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t ]
-
 type datatype = [ `FType of TypeName.t * TypeDecl.t ]
 
 type class_ =
@@ -12,11 +10,8 @@ type class_ =
   | `FClassType of ClassTypeName.t * ClassType.t ]
 
 type value = [ `FValue of ValueName.t * Value.t ]
-
 type label = [ `FLabel of Label.t ]
-
 type exception_ = [ `FExn of ExceptionName.t * Exception.t ]
-
 type extension = [ `FExt of Extension.t * Extension.Constructor.t ]
 
 type substitution =
@@ -25,15 +20,10 @@ type substitution =
   | `FModuleType_subst of ModuleTypeSubstitution.t ]
 
 type signature = [ module_ | module_type ]
-
 type type_ = [ datatype | class_ ]
-
 type label_parent = [ signature | type_ ]
-
 type constructor = [ `FConstructor of TypeDecl.Constructor.t ]
-
 type field = [ `FField of TypeDecl.Field.t ]
-
 type any_in_type = [ constructor | field ]
 
 type any_in_type_in_sig =
@@ -52,7 +42,6 @@ type instance_variable =
   [ `FInstance_variable of InstanceVariableName.t * InstanceVariable.t ]
 
 type method_ = [ `FMethod of MethodName.t * Method.t ]
-
 type any_in_class_sig = [ instance_variable | method_ ]
 
 module N = Ident.Name
@@ -121,7 +110,6 @@ type careful_module_type =
   [ module_type | `FModuleType_removed of ModuleType.expr ]
 
 type careful_type = [ type_ | removed_type ]
-
 type careful_class = [ class_ | removed_type ]
 
 let careful_module_in_sig sg name =

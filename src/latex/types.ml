@@ -27,11 +27,7 @@ type elt =
   | Ligaturable of string
 
 and section = { level : int; label : string option; content : t }
-
 and list_info = { typ : Odoc_document.Types.Block.list_type; items : t list }
-
 and table = { row_size : row_size; tbl : t list list }
-
 and t = elt list
-
 and reference = { short : bool; target : string; text : t option }

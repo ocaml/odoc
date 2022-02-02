@@ -30,14 +30,12 @@ module Package = struct
     type nonrec t = t
 
     let equal : t -> t -> bool = ( = )
-
     let hash : t -> int = Hashtbl.hash
   end)
 end
 
 module Odoc_file = struct
   type compilation_unit = { name : string; hidden : bool }
-
   type t = Page of string | Compilation_unit of compilation_unit
 
   let create_unit ~force_hidden name =
@@ -45,9 +43,7 @@ module Odoc_file = struct
     Compilation_unit { name; hidden }
 
   let create_page name = Page name
-
   let name = function Page name | Compilation_unit { name; _ } -> name
-
   let hidden = function Page _ -> false | Compilation_unit m -> m.hidden
 end
 
@@ -58,7 +54,6 @@ type t = {
 }
 
 let equal : t -> t -> bool = ( = )
-
 let hash : t -> int = Hashtbl.hash
 
 let to_string t =
@@ -86,6 +81,5 @@ module Hash_table = Hashtbl.Make (struct
   type nonrec t = t
 
   let equal = equal
-
   let hash = hash
 end)

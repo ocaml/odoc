@@ -1,13 +1,10 @@
 open Component
 
 exception Invalidated
-
 exception MTOInvalidated
 
 type ('a, 'b) or_replaced = Not_replaced of 'a | Replaced of 'b
-
 type 'a type_or_replaced = ('a, TypeExpr.t * TypeDecl.Equation.t) or_replaced
-
 type 'a module_type_or_replaced = ('a, ModuleType.expr) or_replaced
 
 let map_replaced f = function
@@ -505,9 +502,7 @@ let rec type_fragment : t -> Cfrag.type_ -> Cfrag.type_ =
   | `Dot (sg, n) -> `Dot (signature_fragment t sg, n)
 
 let option_ conv s x = match x with Some x -> Some (conv s x) | None -> None
-
 let option_bind conv s x = match x with Some x -> conv s x | None -> None
-
 let list conv s xs = List.map (conv s) xs
 
 let rec type_ s t =

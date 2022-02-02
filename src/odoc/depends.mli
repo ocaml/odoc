@@ -23,7 +23,6 @@ module Compile : sig
   type t
 
   val name : t -> string
-
   val digest : t -> Digest.t
 end
 

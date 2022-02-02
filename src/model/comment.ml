@@ -3,9 +3,7 @@ module Reference = Paths.Reference
 module Identifier = Paths.Identifier
 
 type 'a with_location = 'a Location_.with_location
-
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
-
 type raw_markup_target = string
 
 type leaf_inline_element =
@@ -83,7 +81,6 @@ type block_element =
   | `Tag of tag ]
 
 type docs = block_element with_location list
-
 type docs_or_stop = [ `Docs of docs | `Stop ]
 
 (** The synopsis is the first element of a comment if it is a paragraph.

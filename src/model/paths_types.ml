@@ -126,35 +126,20 @@ module Identifier = struct
   (** @canonical Odoc_model.Paths.Identifier.Path.t *)
 
   type fragment_module = path_module
-
   type fragment_type = path_type
-
   type reference_module = path_module
-
   type reference_module_type = path_module_type
-
   type reference_type = path_type
-
   type reference_constructor = [ constructor | extension | exception_ ]
-
   type reference_field = field
-
   type reference_extension = [ extension | exception_ ]
-
   type reference_exception = exception_
-
   type reference_value = value
-
   type reference_class = class_
-
   type reference_class_type = [ class_ | class_type ]
-
   type reference_method = method_
-
   type reference_instance_variable = instance_variable
-
   type reference_label = label
-
   type reference_page = page
 end
 
@@ -334,37 +319,21 @@ end =
 
 module rec Reference : sig
   type tag_only_module = [ `TModule ]
-
   type tag_only_module_type = [ `TModuleType ]
-
   type tag_only_type = [ `TType ]
-
   type tag_only_constructor = [ `TConstructor ]
-
   type tag_only_field = [ `TField ]
-
   type tag_only_extension = [ `TExtension ]
-
   type tag_only_exception = [ `TException ]
-
   type tag_only_value = [ `TValue ]
-
   type tag_only_class = [ `TClass ]
-
   type tag_only_class_type = [ `TClassType ]
-
   type tag_only_method = [ `TMethod ]
-
   type tag_only_instance_variable = [ `TInstanceVariable ]
-
   type tag_only_label = [ `TLabel ]
-
   type tag_only_page = [ `TPage ]
-
   type tag_unknown = [ `TUnknown ]
-
   type tag_only_child_page = [ `TChildPage ]
-
   type tag_only_child_module = [ `TChildModule ]
 
   type tag_any =
@@ -387,9 +356,7 @@ module rec Reference : sig
     | `TUnknown ]
 
   type tag_signature = [ `TUnknown | `TModule | `TModuleType ]
-
   type tag_class_signature = [ `TUnknown | `TClass | `TClassType ]
-
   type tag_datatype = [ `TUnknown | `TType ]
 
   type tag_parent =

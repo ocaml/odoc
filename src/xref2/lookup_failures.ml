@@ -4,7 +4,6 @@ type context = { c_loc : Location_.span option; c_context : string list }
 (** Context added by {!with_location} and {!with_context}. *)
 
 let context_acc = ref { c_loc = None; c_context = [] }
-
 let acc = ref []
 
 let with_ref r x f =
@@ -70,9 +69,7 @@ let report ~non_fatal fmt =
   kasprintf (fun msg -> add (`Warning (msg, !context_acc, non_fatal))) fmt
 
 let report_internal fmt = report ~non_fatal:true fmt
-
 let report_root ~name = add (`Root name)
-
 let report_warning fmt = report ~non_fatal:false fmt
 
 let with_location loc f =

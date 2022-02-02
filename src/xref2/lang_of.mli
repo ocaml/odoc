@@ -4,24 +4,17 @@ open Odoc_model.Paths
 type maps
 
 val empty : unit -> maps
-
 val with_fragment_root : Cfrag.root -> maps
-
 val with_shadowed : Odoc_model.Lang.Include.shadowed -> maps
 
 module Opt = Component.Opt
 
 module Path : sig
   val module_ : maps -> Cpath.module_ -> Path.Module.t
-
   val module_type : maps -> Cpath.module_type -> Path.ModuleType.t
-
   val type_ : maps -> Cpath.type_ -> Path.Type.t
-
   val class_type : maps -> Cpath.class_type -> Path.ClassType.t
-
   val resolved_module : maps -> Cpath.Resolved.module_ -> Path.Resolved.Module.t
-
   val resolved_parent : maps -> Cpath.Resolved.parent -> Path.Resolved.Module.t
 
   val resolved_module_type :
@@ -33,9 +26,7 @@ module Path : sig
     maps -> Cpath.Resolved.class_type -> Path.Resolved.ClassType.t
 
   val module_fragment : maps -> Cfrag.module_ -> Fragment.Module.t
-
   val signature_fragment : maps -> Cfrag.signature -> Fragment.Signature.t
-
   val type_fragment : maps -> Cfrag.type_ -> Fragment.Type.t
 
   val resolved_module_fragment :

@@ -114,7 +114,6 @@ module DeepEquality : sig
 
   module type MODTYPE = sig
     module X : SIG
-
     module Y : SIG
   end
 
@@ -187,7 +186,6 @@ module ModuleTypeOfComplications : sig
 
   module X1 : sig
     type t
-
     type u
   end
 

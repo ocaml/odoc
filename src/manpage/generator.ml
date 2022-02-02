@@ -45,11 +45,8 @@ module Roff = struct
     | Indent of int * t
 
   let noop = Concat []
-
   let sp = Space
-
   let break = Break
-
   let vspace = Vspace
 
   let append t1 t2 =
@@ -60,7 +57,6 @@ module Roff = struct
     | e1, e2 -> Concat [ e1; e2 ]
 
   let ( ++ ) = append
-
   let concat = List.fold_left ( ++ ) (Concat [])
 
   let rec intersperse ~sep = function
@@ -69,9 +65,7 @@ module Roff = struct
     | h1 :: (_ :: _ as t) -> h1 :: sep :: intersperse ~sep t
 
   let list ?(sep = Concat []) l = concat @@ intersperse ~sep l
-
   let indent i content = Indent (i, content)
-
   let macro id fmt = Format.ksprintf (fun s -> Macro (id, s)) fmt
 
   (* copied from cmdliner *)
@@ -103,13 +97,9 @@ module Roff = struct
       loop 0 0
 
   let str fmt = Format.ksprintf (fun s -> String (escape s)) fmt
-
   let escaped fmt = Format.ksprintf (fun s -> String s) fmt
-
   let env o c arg content = macro o "%s" arg ++ content ++ macro c ""
-
   let font s content = Font (s, content)
-
   let font_stack = Stack.create ()
 
   let pp_font ppf s fmt =

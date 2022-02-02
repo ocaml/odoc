@@ -90,16 +90,13 @@ module ElementsByName : sig
   type t
 
   val empty : t
-
   val add : kind -> string -> [< Component.Element.any ] -> t -> t
-
   val remove : [< Identifier.t ] -> t -> t
 
   val find_by_name :
     (Component.Element.any -> 'b option) -> string -> t -> 'b list
 end = struct
   type elem = { kind : kind; elem : Component.Element.any }
-
   type t = elem list StringMap.t
 
   let empty = StringMap.empty
@@ -138,11 +135,8 @@ module ElementsById : sig
   type t
 
   val empty : t
-
   val add : [< Identifier.t ] -> [< Component.Element.any ] -> t -> t
-
   val remove : [< Identifier.t ] -> t -> t
-
   val find_by_id : [< Identifier.t ] -> t -> Component.Element.any option
 end = struct
   module IdMap = Identifier.Maps.Any
@@ -181,9 +175,7 @@ type t = {
 }
 
 let set_resolver t resolver = { t with resolver = Some resolver }
-
 let has_resolver t = match t.resolver with None -> false | _ -> true
-
 let id t = t.id
 
 let with_recorded_lookups env f =
@@ -597,7 +589,6 @@ let s_label_parent : Component.Element.label_parent scope =
     | _ -> None)
 
 let len = ref 0
-
 let n = ref 0
 
 let lookup_fragment_root env =

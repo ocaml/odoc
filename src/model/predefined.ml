@@ -52,33 +52,19 @@ let invariant_equation =
   { params; private_; manifest; constraints }
 
 let bool_identifier = `CoreType (TypeName.make_std "bool")
-
 let int_identifier = `CoreType (TypeName.make_std "int")
-
 let char_identifier = `CoreType (TypeName.make_std "char")
-
 let bytes_identifier = `CoreType (TypeName.make_std "bytes")
-
 let string_identifier = `CoreType (TypeName.make_std "string")
-
 let float_identifier = `CoreType (TypeName.make_std "float")
-
 let unit_identifier = `CoreType (TypeName.make_std "unit")
-
 let exn_identifier = `CoreType (TypeName.make_std "exn")
-
 let array_identifier = `CoreType (TypeName.make_std "array")
-
 let list_identifier = `CoreType (TypeName.make_std "list")
-
 let option_identifier = `CoreType (TypeName.make_std "option")
-
 let int32_identifier = `CoreType (TypeName.make_std "int32")
-
 let int64_identifier = `CoreType (TypeName.make_std "int64")
-
 let nativeint_identifier = `CoreType (TypeName.make_std "nativeint")
-
 let lazy_t_identifier = `CoreType (TypeName.make_std "lazy_t")
 
 let extension_constructor_identifier =
@@ -117,7 +103,6 @@ let invalid_argument_identifier =
   `CoreException (ExceptionName.make_std "Invalid_argument")
 
 let failure_identifier = `CoreException (ExceptionName.make_std "Failure")
-
 let not_found_identifier = `CoreException (ExceptionName.make_std "Not_found")
 
 let out_of_memory_identifier =
@@ -188,106 +173,63 @@ let core_constructor_identifier = function
   | _ -> None
 
 let bool_path = `Resolved (`Identifier bool_identifier)
-
 let int_path = `Resolved (`Identifier int_identifier)
-
 let char_path = `Resolved (`Identifier char_identifier)
-
 let bytes_path = `Resolved (`Identifier bytes_identifier)
-
 let string_path = `Resolved (`Identifier string_identifier)
-
 let float_path = `Resolved (`Identifier float_identifier)
-
 let unit_path = `Resolved (`Identifier unit_identifier)
-
 let exn_path = `Resolved (`Identifier exn_identifier)
-
 let array_path = `Resolved (`Identifier array_identifier)
-
 let list_path = `Resolved (`Identifier list_identifier)
-
 let option_path = `Resolved (`Identifier option_identifier)
-
 let int32_path = `Resolved (`Identifier int32_identifier)
-
 let int64_path = `Resolved (`Identifier int64_identifier)
-
 let nativeint_path = `Resolved (`Identifier nativeint_identifier)
-
 let lazy_t_path = `Resolved (`Identifier lazy_t_identifier)
 
 let extension_constructor_path =
   `Resolved (`Identifier extension_constructor_identifier)
 
 let _floatarray_path = `Resolved (`Identifier floatarray_identifier)
-
 let bool_reference = `Resolved (`Identifier bool_identifier)
-
 let int_reference = `Resolved (`Identifier int_identifier)
-
 let char_reference = `Resolved (`Identifier char_identifier)
-
 let bytes_reference = `Resolved (`Identifier bytes_identifier)
-
 let string_reference = `Resolved (`Identifier string_identifier)
-
 let float_reference = `Resolved (`Identifier float_identifier)
-
 let unit_reference = `Resolved (`Identifier unit_identifier)
-
 let exn_reference = `Resolved (`Identifier exn_identifier)
-
 let array_reference = `Resolved (`Identifier array_identifier)
-
 let list_reference = `Resolved (`Identifier list_identifier)
-
 let option_reference = `Resolved (`Identifier option_identifier)
-
 let int32_reference = `Resolved (`Identifier int32_identifier)
-
 let int64_reference = `Resolved (`Identifier int64_identifier)
-
 let nativeint_reference = `Resolved (`Identifier nativeint_identifier)
-
 let lazy_t_reference = `Resolved (`Identifier lazy_t_identifier)
 
 let extension_constructor_reference =
   `Resolved (`Identifier extension_constructor_identifier)
 
 let _floatarray_reference = `Resolved (`Identifier floatarray_identifier)
-
 let false_reference = `Resolved (`Identifier false_identifier)
-
 let true_reference = `Resolved (`Identifier true_identifier)
-
 let void_reference = `Resolved (`Identifier void_identifier)
-
 let nil_reference = `Resolved (`Identifier nil_identifier)
-
 let cons_reference = `Resolved (`Identifier cons_identifier)
-
 let none_reference = `Resolved (`Identifier none_identifier)
-
 let some_reference = `Resolved (`Identifier some_identifier)
-
 let match_failure_reference = `Resolved (`Identifier match_failure_identifier)
-
 let assert_failure_reference = `Resolved (`Identifier assert_failure_identifier)
 
 let invalid_argument_reference =
   `Resolved (`Identifier invalid_argument_identifier)
 
 let failure_reference = `Resolved (`Identifier failure_identifier)
-
 let not_found_reference = `Resolved (`Identifier not_found_identifier)
-
 let out_of_memory_reference = `Resolved (`Identifier out_of_memory_identifier)
-
 let stack_overflow_reference = `Resolved (`Identifier stack_overflow_identifier)
-
 let sys_error_reference = `Resolved (`Identifier sys_error_identifier)
-
 let end_of_file_reference = `Resolved (`Identifier end_of_file_identifier)
 
 let division_by_zero_reference =

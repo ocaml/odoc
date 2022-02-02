@@ -7,36 +7,29 @@ end =
 
 and InternalLink : sig
   type resolved = Url.t * Inline.t
-
   type unresolved = Inline.t
-
   type t = Resolved of resolved | Unresolved of Inline.t
 end =
   InternalLink
 
 and Raw_markup : sig
   type target = Odoc_model.Comment.raw_markup_target
-
   and t = target * string
 end =
   Raw_markup
 
 and Source : sig
   type t = token list
-
   and tag = string option
-
   and token = Elt of Inline.t | Tag of tag * t
 end =
   Source
 
 and Inline : sig
   type entity = string
-
   type href = string
 
   type t = one list
-
   and one = { attr : Class.t; desc : desc }
 
   and desc =
@@ -53,7 +46,6 @@ end =
 
 and Description : sig
   type one = { attr : Class.t; key : Inline.t; definition : Block.t }
-
   type t = one list
 end =
   Description
@@ -65,7 +57,6 @@ end =
 
 and Block : sig
   type t = one list
-
   and one = { attr : Class.t; desc : desc }
 
   and desc =
@@ -115,14 +106,12 @@ end =
 
 and Subpage : sig
   type status = [ `Inline | `Open | `Closed | `Default ]
-
   type t = { status : status; content : Page.t }
 end =
   Subpage
 
 and Include : sig
   type status = [ `Inline | `Open | `Closed | `Default ]
-
   type t = { status : status; content : Item.t list; summary : Source.t }
 end =
   Include
@@ -136,7 +125,6 @@ and Item : sig
   }
 
   type declaration = DocumentedSrc.t item
-
   type text = Block.t
 
   type t =
@@ -158,5 +146,4 @@ end =
   Page
 
 let inline ?(attr = []) desc = Inline.{ attr; desc }
-
 let block ?(attr = []) desc = Block.{ attr; desc }

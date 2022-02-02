@@ -18,22 +18,16 @@ open StdLabels
 open Or_error
 
 type directory = Fpath.t
-
 type file = Fpath.t
 
 module File = struct
   type t = file
 
   let dirname = Fpath.parent
-
   let basename = Fpath.base
-
   let append = Fpath.append
-
   let set_ext e p = Fpath.set_ext e p
-
   let has_ext e p = Fpath.has_ext e p
-
   let get_ext e = Fpath.get_ext e
 
   let create ~directory ~name =
@@ -95,7 +89,6 @@ module File = struct
     type nonrec t = t
 
     let equal = Fpath.equal
-
     let hash = Hashtbl.hash
   end)
 end
@@ -104,9 +97,7 @@ module Directory = struct
   type t = directory
 
   let dirname = Fpath.parent
-
   let basename = Fpath.base
-
   let append = Fpath.append
 
   let make_path p name =
@@ -178,7 +169,6 @@ module Directory = struct
     type nonrec t = t
 
     let equal = Fpath.equal
-
     let hash = Hashtbl.hash
   end)
 end

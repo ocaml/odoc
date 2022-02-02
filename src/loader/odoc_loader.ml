@@ -30,11 +30,8 @@ let error_msg file (msg : string) =
   Error.raise_exception (Error.filename_only "%s" msg file)
 
 exception Corrupted
-
 exception Not_an_implementation
-
 exception Not_an_interface
-
 exception Make_root_error of string
 
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id

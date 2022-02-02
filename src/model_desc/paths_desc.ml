@@ -9,33 +9,19 @@ module Names = struct
   include Names
 
   let modulename = To_string ModuleName.to_string
-
   let moduletypename = To_string ModuleTypeName.to_string
-
   let typename = To_string TypeName.to_string
-
   let classname = To_string ClassName.to_string
-
   let classtypename = To_string ClassTypeName.to_string
-
   let constructorname = To_string ConstructorName.to_string
-
   let fieldname = To_string FieldName.to_string
-
   let exceptionname = To_string ExceptionName.to_string
-
   let extensionname = To_string ExtensionName.to_string
-
   let valuename = To_string ValueName.to_string
-
   let methodname = To_string MethodName.to_string
-
   let instancevariablename = To_string InstanceVariableName.to_string
-
   let labelname = To_string LabelName.to_string
-
   let pagename = To_string PageName.to_string
-
   let parametername = To_string ParameterName.to_string
 end
 
@@ -43,19 +29,12 @@ module General_paths = struct
   (** Simplified paths types that can be coerced to. *)
 
   type p = Paths.Path.t
-
   type rp = Paths.Path.Resolved.t
-
   type f = Paths.Fragment.t
-
   type rf = Paths.Fragment.Resolved.t
-
   type r = Paths.Reference.t
-
   type rr = Paths.Reference.Resolved.t
-
   type id_t = Paths.Identifier.t
-
   type tag = Paths.Reference.tag_any
 
   let rec identifier : Paths.Identifier.t t =
@@ -434,7 +413,6 @@ module General_paths = struct
 end
 
 let root = Root.t
-
 let modulename = Names.modulename
 
 (* Indirection seems to be required to make the type open. *)

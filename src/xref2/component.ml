@@ -108,21 +108,17 @@ and TypeExpr : sig
     end
 
     type element = Type of TypeExpr.t | Constructor of Constructor.t
-
     type t = { kind : kind; elements : element list }
   end
 
   module Object : sig
     type method_ = { name : string; type_ : TypeExpr.t }
-
     type field = Method of method_ | Inherit of TypeExpr.t
-
     type t = { fields : field list; open_ : bool }
   end
 
   module Package : sig
     type substitution = Cfrag.type_ * TypeExpr.t
-
     type t = { path : Cpath.module_type; substitutions : substitution list }
   end
 
@@ -174,7 +170,6 @@ end =
 
 and FunctorParameter : sig
   type parameter = { id : Ident.functor_parameter; expr : ModuleType.expr }
-
   type t = Named of parameter | Unit
 end =
   FunctorParameter
@@ -285,7 +280,6 @@ end =
 
 and Value : sig
   type value = Odoc_model.Lang.Value.value
-
   type t = { doc : CComment.docs; type_ : TypeExpr.t; value : value }
 end =
   Value
@@ -448,7 +442,6 @@ and CComment : sig
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list
-
   type docs_or_stop = [ `Docs of docs | `Stop ]
 end =
   CComment
@@ -467,21 +460,13 @@ module Element = struct
   open Odoc_model.Paths
 
   type module_ = [ `Module of Identifier.Path.Module.t * Module.t Delayed.t ]
-
   type module_type = [ `ModuleType of Identifier.ModuleType.t * ModuleType.t ]
-
   type type_ = [ `Type of Identifier.Type.t * TypeDecl.t ]
-
   type value = [ `Value of Identifier.Value.t * Value.t ]
-
   type label = [ `Label of Identifier.Label.t * Label.t ]
-
   type class_ = [ `Class of Identifier.Class.t * Class.t ]
-
   type class_type = [ `ClassType of Identifier.ClassType.t * ClassType.t ]
-
   type datatype = [ type_ | class_ | class_type ]
-
   type signature = [ module_ | module_type ]
 
   type constructor =
@@ -496,7 +481,6 @@ module Element = struct
 
   (* No component for pages yet *)
   type page = [ `Page of Identifier.Page.t * Odoc_model.Lang.Page.t ]
-
   type label_parent = [ signature | datatype | page ]
 
   type any =
@@ -664,7 +648,6 @@ module Fmt = struct
           class_decl decl
 
   and class_ ppf c = Format.fprintf ppf "%a" class_decl c.type_
-
   and class_type ppf _c = Format.fprintf ppf "<todo>"
 
   and include_ ppf i =
@@ -779,7 +762,6 @@ module Fmt = struct
     fpf ppf "%s%s : %a" mutable_ t.name type_expr t.type_
 
   and type_decl_fields ppf fs = fpp_list "; " "{ %a }" type_decl_field ppf fs
-
   and type_tuple ppf ts = fpp_list " * " "%a" type_expr ppf ts
 
   and type_param ppf t =
@@ -800,7 +782,6 @@ module Fmt = struct
     | Some m -> Format.fprintf ppf " = %a" type_expr m
 
   and exception_ _ppf _e = ()
-
   and extension ppf e = Format.fprintf ppf "%a" type_path e.Extension.type_path
 
   and substitution ppf t =

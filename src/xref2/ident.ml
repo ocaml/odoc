@@ -15,47 +15,31 @@ type class_signature =
   [ `LClass of ClassName.t * int | `LClassType of ClassTypeName.t * int ]
 
 type datatype = [ `LType of TypeName.t * int | `LCoreType of TypeName.t ]
-
 type parent = [ signature | datatype | class_signature ]
 
 type label_parent =
   [ parent | `LPage of PageName.t * int | `LLeafPage of PageName.t * int ]
 
 type module_ = [ `LRoot of ModuleName.t * int | `LModule of ModuleName.t * int ]
-
 type functor_parameter = [ `LParameter of ParameterName.t * int ]
-
 type path_module = [ module_ | `LResult of signature * int | functor_parameter ]
-
 type module_type = [ `LModuleType of ModuleTypeName.t * int ]
-
 type type_ = datatype
-
 type constructor = [ `LConstructor of ConstructorName.t * int ]
-
 type field = [ `LField of FieldName.t * int ]
-
 type extension = [ `LExtension of ExtensionName.t * int ]
 
 type exception_ =
   [ `LException of ExceptionName.t * int | `LCoreException of ExceptionName.t ]
 
 type value = [ `LValue of ValueName.t * int ]
-
 type class_ = [ `LClass of ClassName.t * int ]
-
 type class_type = [ `LClassType of ClassTypeName.t * int ]
-
 type path_type = [ type_ | class_ | class_type ]
-
 type path_class_type = [ class_ | class_type ]
-
 type method_ = [ `LMethod of MethodName.t * int ]
-
 type instance_variable = [ `LInstanceVariable of InstanceVariableName.t * int ]
-
 type label = [ `LLabel of LabelName.t * int ]
-
 type page = [ `LPage of PageName.t * int | `LLeafPage of PageName.t * int ]
 
 type any =
@@ -261,9 +245,7 @@ module Name = struct
     | `LCoreType n -> TypeName.to_string n
 
   let class' : class_ -> ClassName.t = function `LClass (n, _) -> n
-
   let class_ c = ClassName.to_string (class' c)
-
   let typed_class : class_ -> ClassName.t = function `LClass (n, _) -> n
 
   let module_type : module_type -> string = function

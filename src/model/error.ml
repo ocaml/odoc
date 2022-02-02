@@ -46,7 +46,6 @@ let to_string e = _to_string e
 exception Conveyed_by_exception of t
 
 let raise_exception error = raise (Conveyed_by_exception error)
-
 let catch f = try Ok (f ()) with Conveyed_by_exception error -> Error error
 
 type warning = {
@@ -92,9 +91,7 @@ let raise_errors_and_warnings we =
   match raise_warnings we with Ok x -> x | Error e -> raise_exception e
 
 let catch_errors_and_warnings f = catch_warnings (fun () -> catch f)
-
 let print_error ?prefix t = prerr_endline (_to_string ?prefix t)
-
 let print_errors = List.iter print_error
 
 type warnings_options = { warn_error : bool; print_warnings : bool }

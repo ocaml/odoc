@@ -54,7 +54,6 @@ let empty () =
   }
 
 let with_fragment_root r = { (empty ()) with fragment_root = Some r }
-
 let with_shadowed shadowed = { (empty ()) with shadowed }
 
 (** Raises [Not_found] *)
@@ -378,7 +377,6 @@ module ExtractIDs = struct
     }
 
   and include_ parent map i = signature parent map i.Include.expansion_
-
   and open_ parent map o = signature parent map o.Open.expansion
 
   and signature_items parent map items =

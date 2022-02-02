@@ -47,9 +47,7 @@ let label t =
   | Optional s -> O.txt "?" ++ O.txt s
 
 let tag tag t = O.span ~attr:tag t
-
 let type_var tv = tag "type-var" (O.txt tv)
-
 let enclose ~l ~r x = O.span (O.txt l ++ x ++ O.txt r)
 
 let path p txt =
@@ -104,7 +102,6 @@ include Generator_signatures
 module Make (Syntax : SYNTAX) = struct
   module Link : sig
     val from_path : Paths.Path.t -> text
-
     val from_fragment : Paths.Fragment.leaf -> text
   end = struct
     open Paths
@@ -396,7 +393,6 @@ module Make (Syntax : SYNTAX) = struct
       Item.t
 
     val extension : Lang.Extension.t -> Item.t
-
     val exn : Lang.Exception.t -> Item.t
 
     val format_params :
@@ -847,7 +843,6 @@ module Make (Syntax : SYNTAX) = struct
     open Odoc_model
 
     val comment_items : Comment.docs -> Item.t list
-
     val docs : Comment.docs -> Item.t list * Item.t list
   end = struct
     let take_until_heading_or_end (docs : Odoc_model.Comment.docs) =
@@ -905,7 +900,6 @@ module Make (Syntax : SYNTAX) = struct
 
   module Class : sig
     val class_ : Lang.Class.t -> Item.t
-
     val class_type : Lang.ClassType.t -> Item.t
   end = struct
     let class_type_expr (cte : Odoc_model.Lang.ClassType.expr) =
@@ -1646,7 +1640,6 @@ module Make (Syntax : SYNTAX) = struct
 
   module Page : sig
     val compilation_unit : Lang.Compilation_unit.t -> Page.t
-
     val page : Lang.Page.t -> Page.t
   end = struct
     let pack : Odoc_model.Lang.Compilation_unit.Packed.t -> Item.t list =

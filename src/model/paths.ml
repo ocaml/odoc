@@ -69,11 +69,8 @@ module Identifier = struct
       | `Field (p, _) -> (p : parent :> label_parent)
 
   let label_parent n = label_parent_aux (n :> t)
-
   let equal = ( = )
-
   let hash = Hashtbl.hash
-
   let compare = compare
 
   type any = t
@@ -82,9 +79,7 @@ module Identifier = struct
     type t = any
 
     let equal = equal
-
     let hash = hash
-
     let compare = compare
   end
 
@@ -92,9 +87,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.signature
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -102,9 +95,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.class_signature
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -112,9 +103,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.datatype
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -122,9 +111,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.parent
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -132,9 +119,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.label_parent
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -142,9 +127,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.root_module
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -152,9 +135,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.module_
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -162,9 +143,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.functor_parameter
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -172,9 +151,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.functor_result
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash x = hash (x :> any)
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -182,9 +159,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.module_type
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -192,9 +167,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.type_
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -202,9 +175,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.constructor
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -212,9 +183,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.field
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -222,9 +191,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.extension
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -232,9 +199,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.exception_
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -242,9 +207,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.value
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -252,9 +215,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.class_
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -262,9 +223,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.class_type
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -272,9 +231,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.method_
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -282,9 +239,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.instance_variable
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -292,9 +247,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.label
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -302,9 +255,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.page
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -312,9 +263,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.container_page
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -322,9 +271,7 @@ module Identifier = struct
     type t = Paths_types.Identifier.odoc_id
 
     let equal x y = equal (x :> any) (y :> any)
-
     let hash = Hashtbl.hash
-
     let compare x y = compare (x :> any) (y :> any)
   end
 
@@ -333,9 +280,7 @@ module Identifier = struct
       type t = Paths_types.Identifier.path_module
 
       let equal x y = equal (x :> any) (y :> any)
-
       let hash = Hashtbl.hash
-
       let compare x y = compare (x :> any) (y :> any)
     end
 
@@ -343,9 +288,7 @@ module Identifier = struct
       type t = Paths_types.Identifier.path_module_type
 
       let equal x y = equal (x :> any) (y :> any)
-
       let hash = Hashtbl.hash
-
       let compare x y = compare (x :> any) (y :> any)
     end
 
@@ -353,9 +296,7 @@ module Identifier = struct
       type t = Paths_types.Identifier.path_type
 
       let equal x y = equal (x :> any) (y :> any)
-
       let hash = Hashtbl.hash
-
       let compare x y = compare (x :> any) (y :> any)
     end
 
@@ -363,9 +304,7 @@ module Identifier = struct
       type t = Paths_types.Identifier.path_class_type
 
       let equal x y = equal (x :> any) (y :> any)
-
       let hash = Hashtbl.hash
-
       let compare x y = compare (x :> any) (y :> any)
     end
 
@@ -689,7 +628,6 @@ end
 module Fragment = struct
   module Resolved = struct
     type t = Paths_types.Resolved_fragment.any
-
     type root = Paths_types.Resolved_fragment.root
 
     let sig_of_mod m =
@@ -1039,7 +977,6 @@ module Reference = struct
   end
 
   type t = Paths_types.Reference.any
-
   type tag_any = Paths_types.Reference.tag_any
 
   module Signature = struct

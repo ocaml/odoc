@@ -19,13 +19,9 @@ module Html = Tyxml.Html
 module Doctree = Odoc_document.Doctree
 
 type any = Html_types.flow5
-
 type item = Html_types.flow5_without_header_footer
-
 type flow = Html_types.flow5_without_sectioning_heading_header_footer
-
 type phrasing = Html_types.phrasing
-
 type non_link_phrasing = Html_types.phrasing_without_interactive
 
 let mk_anchor_link id =

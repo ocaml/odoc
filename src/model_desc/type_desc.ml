@@ -12,11 +12,8 @@ type 'a t =
   | Indirect : ('a -> 'b) * 'b t -> 'a t
 
 and 'a field = F : string * ('a -> 'b) * 'b t -> 'a field
-
 and case = C : string * 'b * 'b t -> case | C0 : string -> case
 
 let bool : bool t = To_string string_of_bool
-
 let string : string t = To_string (fun s -> s)
-
 let int : int t = To_string string_of_int

@@ -19,7 +19,6 @@ open Or_error
 (** Utilities to manipulate files and paths. *)
 
 type file = Fpath.t
-
 type directory
 
 module Directory : sig
@@ -28,18 +27,14 @@ module Directory : sig
   type t = directory
 
   val dirname : t -> t
-
   val basename : t -> t
-
   val append : t -> t -> t
 
   val reach_from : dir:t -> string -> t
   (** @raises Invalid_arg if [parent/name] exists but is not a directory. *)
 
   val mkdir_p : t -> unit
-
   val of_string : string -> t
-
   val to_string : t -> string
 
   val fold_files_rec_result :
@@ -59,23 +54,14 @@ module File : sig
   type t = file
 
   val create : directory:Directory.t -> name:string -> t
-
   val dirname : t -> Directory.t
-
   val basename : t -> t
-
   val append : Directory.t -> t -> t
-
   val set_ext : string -> t -> t
-
   val has_ext : string -> t -> bool
-
   val get_ext : t -> string
-
   val of_string : string -> t
-
   val to_string : t -> string
-
   val read : t -> (string, [> msg ]) result
 
   module Table : Hashtbl.S with type key = t

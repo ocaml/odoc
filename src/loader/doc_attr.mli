@@ -18,7 +18,6 @@ open Odoc_model
 module Paths = Odoc_model.Paths
 
 val empty : Odoc_model.Comment.docs
-
 val parse_attribute : Parsetree.attribute -> (string * Location.t) option
 
 val attached :

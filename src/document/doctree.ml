@@ -46,14 +46,12 @@ end
 
 module Toc : sig
   type t = one list
-
   and one = { url : Url.t; text : Inline.t; children : t }
 
   val compute :
     Url.Path.t -> on_sub:(Include.status -> bool) -> Item.t list -> t
 end = struct
   type t = one list
-
   and one = { url : Url.t; text : Inline.t; children : t }
 
   let classify ~on_sub (i : Item.t) : _ Rewire.action =

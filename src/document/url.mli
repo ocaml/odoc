@@ -23,7 +23,6 @@ module Path : sig
     | `File ]
 
   val pp_kind : Format.formatter -> kind -> unit
-
   val string_of_kind : kind -> string
 
   type t = { kind : kind; parent : t option; name : string }
@@ -32,9 +31,7 @@ module Path : sig
     [ Identifier.Page.t | Identifier.Signature.t | Identifier.ClassSignature.t ]
 
   val from_identifier : [< source ] -> t
-
   val to_list : t -> (kind * string) list
-
   val of_list : (kind * string) list -> t option
 
   val split :
@@ -66,7 +63,6 @@ module Anchor : sig
     | `Field ]
 
   val pp_kind : Format.formatter -> kind -> unit
-
   val string_of_kind : kind -> string
 
   type t = {
@@ -91,13 +87,9 @@ module Anchor : sig
 end
 
 type kind = Anchor.kind
-
 type t = Anchor.t
 
 val from_path : Path.t -> t
-
 val from_identifier : stop_before:bool -> Identifier.t -> (t, Error.t) result
-
 val kind : Identifier.t -> kind
-
 val render_path : Odoc_model.Paths.Path.t -> string

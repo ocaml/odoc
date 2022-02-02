@@ -33,15 +33,10 @@ val pp_lookup_type_list : Format.formatter -> lookup_type list -> unit
 type t
 
 val with_recorded_lookups : t -> (t -> 'a) -> LookupTypeSet.t * 'a
-
 val set_resolver : t -> resolver -> t
-
 val has_resolver : t -> bool
-
 val id : t -> int
-
 val empty : t
-
 val add_fragment_root : Component.Signature.t -> t -> t
 
 val add_module :
@@ -67,22 +62,16 @@ val update_module_type :
   Identifier.Path.ModuleType.t -> Component.ModuleType.t -> t -> t
 
 val add_value : Identifier.Value.t -> Component.Value.t -> t -> t
-
 val add_label : Identifier.Label.t -> Component.Label.t -> t -> t
-
 val add_class : Identifier.Class.t -> Component.Class.t -> t -> t
-
 val add_class_type : Identifier.ClassType.t -> Component.ClassType.t -> t -> t
-
 val add_exception : Identifier.Exception.t -> Component.Exception.t -> t -> t
 
 val add_extension_constructor :
   Identifier.Extension.t -> Component.Extension.Constructor.t -> t -> t
 
 val add_docs : Odoc_model.Comment.docs -> t -> t
-
 val add_comment : Odoc_model.Comment.docs_or_stop -> t -> t
-
 val add_method : Identifier.Method.t -> Component.Method.t -> t -> t
 
 val add_module_functor_args :
@@ -92,11 +81,8 @@ val add_module_type_functor_args :
   Component.ModuleType.t -> Identifier.ModuleType.t -> t -> t
 
 val lookup_fragment_root : t -> (int * Component.Signature.t) option
-
 val lookup_page : string -> t -> Odoc_model.Lang.Page.t option
-
 val module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t
-
 val lookup_root_module : string -> t -> root option
 
 type 'a scope constraint 'a = [< Component.Element.any ]
@@ -114,46 +100,28 @@ val lookup_by_id : 'a scope -> [< Identifier.t ] -> t -> 'a option
 (** Like [lookup_by_name] but use an identifier as key. *)
 
 val s_any : Component.Element.any scope
-
 val s_signature : Component.Element.signature scope
-
 val s_module : Component.Element.module_ scope
-
 val s_module_type : Component.Element.module_type scope
-
 val s_datatype : Component.Element.datatype scope
-
 val s_type : Component.Element.type_ scope
-
 val s_class : Component.Element.class_ scope
-
 val s_class_type : Component.Element.class_type scope
-
 val s_value : Component.Element.value scope
-
 val s_label : Component.Element.label scope
-
 val s_constructor : Component.Element.constructor scope
-
 val s_exception : Component.Element.exception_ scope
-
 val s_extension : Component.Element.extension scope
-
 val s_field : Component.Element.field scope
-
 val s_label_parent : Component.Element.label_parent scope
 
 (* val open_component_signature :
    Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
 
 val add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t
-
 val open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t
-
 val open_signature : Odoc_model.Lang.Signature.t -> t -> t
-
 val open_type_substitution : Odoc_model.Lang.TypeDecl.t -> t -> t
-
 val open_module_substitution : Odoc_model.Lang.ModuleSubstitution.t -> t -> t
 
 val open_module_type_substitution :
@@ -178,7 +146,5 @@ val inherit_resolver : t -> t
 (** Create an empty environment reusing the same resolver. *)
 
 val len : int ref
-
 val n : int ref
-
 val verify_lookups : t -> LookupTypeSet.t -> bool

@@ -37,7 +37,6 @@ module Accessible_paths : sig
   type t
 
   val create : directories:Fs.Directory.t list -> t
-
   val find : t -> string -> Fs.File.t list
 end = struct
   type t = { directories : Fs.Directory.t list }

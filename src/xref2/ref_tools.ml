@@ -13,11 +13,8 @@ type signature_lookup_result =
   Resolved.Signature.t * Cpath.Resolved.parent * Component.Signature.t
 
 type datatype_lookup_result = Resolved.DataType.t * Component.TypeDecl.t
-
 type class_lookup_result = Resolved.Class.t * Component.Class.t
-
 type class_type_lookup_result = Resolved.ClassType.t * Component.ClassType.t
-
 type page_lookup_result = Resolved.Page.t * Odoc_model.Lang.Page.t
 
 type type_lookup_result =
@@ -265,7 +262,6 @@ module DT = struct
   type t = datatype_lookup_result
 
   let of_component _env t ~parent_ref name = Ok (`Type (parent_ref, name), t)
-
   let of_element _env (`Type (id, t)) : t = (`Identifier id, t)
 
   let in_env env name =
@@ -654,7 +650,6 @@ let resolve_class_signature_reference env (r : ClassSignature.t) =
 let resolved1 r = Ok (r :> Resolved.t)
 
 let resolved3 (r, _, _) = resolved1 r
-
 and resolved2 (r, _) = resolved1 r
 
 let resolved_type_lookup = function

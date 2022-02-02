@@ -34,36 +34,23 @@ val add_structure_tree_items :
 
 module Path : sig
   val read_module : t -> Path.t -> Paths.Path.Module.t
-
   val read_module_type : t -> Path.t -> Paths.Path.ModuleType.t
-
   val read_type : t -> Path.t -> Paths.Path.Type.t
-
   val read_class_type : t -> Path.t -> Paths.Path.ClassType.t
 end
 
 val find_module : t -> Ident.t -> Paths.Path.Module.t
-
 val find_module_identifier : t -> Ident.t -> Paths.Identifier.Module.t
-
 val find_module_type : t -> Ident.t -> Paths.Identifier.ModuleType.t
-
 val find_value_identifier : t -> Ident.t -> Paths.Identifier.Value.t
-
 val find_type : t -> Ident.t -> Paths.Identifier.Path.Type.t
-
 val find_type_identifier : t -> Ident.t -> Paths.Identifier.Type.t
-
 val find_class_identifier : t -> Ident.t -> Paths.Identifier.Class.t
-
 val is_shadowed : t -> Ident.t -> bool
-
 val find_class_type_identifier : t -> Ident.t -> Paths.Identifier.ClassType.t
 
 module Fragment : sig
   val read_module : Longident.t -> Paths.Fragment.Module.t
-
   val read_module_type : Longident.t -> Paths.Fragment.ModuleType.t
-
   val read_type : Longident.t -> Paths.Fragment.Type.t
 end

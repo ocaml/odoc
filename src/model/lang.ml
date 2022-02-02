@@ -220,7 +220,6 @@ and TypeDecl : sig
   end
 
   type variance = Pos | Neg
-
   type param_desc = Any | Var of string
 
   type param = {
@@ -388,21 +387,17 @@ and TypeExpr : sig
     end
 
     type element = Type of TypeExpr.t | Constructor of Constructor.t
-
     type t = { kind : kind; elements : element list }
   end
 
   module Object : sig
     type method_ = { name : string; type_ : TypeExpr.t }
-
     type field = Method of method_ | Inherit of TypeExpr.t
-
     type t = { fields : field list; open_ : bool }
   end
 
   module Package : sig
     type substitution = Fragment.Type.t * TypeExpr.t
-
     type t = { path : Path.ModuleType.t; substitutions : substitution list }
   end
 
@@ -438,7 +433,6 @@ module rec Compilation_unit : sig
 
   module Packed : sig
     type item = { id : Identifier.Module.t; path : Path.Module.t }
-
     type t = item list
   end
 

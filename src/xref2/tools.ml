@@ -199,9 +199,7 @@ module MakeMemo (X : MEMO) = struct
   module M = Hashtbl.Make (X)
 
   let cache : (X.result * int * Env.LookupTypeSet.t) M.t = M.create 10000
-
   let cache_hits : int M.t = M.create 10000
-
   let enabled = ref true
 
   let bump_counter arg =
@@ -255,7 +253,6 @@ module LookupModuleMemo = MakeMemo (struct
     Result.result
 
   let equal = ( = )
-
   let hash = Hashtbl.hash
 end)
 
@@ -268,27 +265,22 @@ module LookupParentMemo = MakeMemo (struct
     Result.result
 
   let equal = ( = )
-
   let hash = Hashtbl.hash
 end)
 
 module LookupAndResolveMemo = MakeMemo (struct
   type t = bool * bool * Cpath.module_
-
   type result = resolve_module_result
 
   let equal = ( = )
-
   let hash = Hashtbl.hash
 end)
 
 module SignatureOfModuleMemo = MakeMemo (struct
   type t = Cpath.Resolved.module_
-
   type result = (Component.Signature.t, signature_of_module_error) Result.result
 
   let equal = ( = )
-
   let hash = Hashtbl.hash
 end)
 

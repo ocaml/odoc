@@ -8,5 +8,4 @@
 open Odoc_model.Lang
 
 val unit : Compilation_unit.t -> Url.Path.t list
-
 val page : Page.t -> Url.Path.t list

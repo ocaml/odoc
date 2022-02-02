@@ -5,11 +5,8 @@
 *)
 
 type pr = Format.formatter -> unit
-
 type 'a with_options = ?options:pr list -> 'a
-
 type ('a, 'b) tr = 'a Fmt.t -> 'b Fmt.t
-
 type 'a t = ('a, 'a) tr
 
 module Escape = struct
@@ -63,13 +60,9 @@ let create2 name ?(options = []) pp_x pp_y ppf x y =
   Fmt.pf ppf {|\%s%a{%a}{%a}|} name (Fmt.list option) options pp_x x pp_y y
 
 let bind pp x ppf = pp ppf x
-
 let label ppf = create "label" Escape.ref ppf
-
 let mbegin ?options = create "begin" ?options Fmt.string
-
 let mend = create "end" Fmt.string
-
 let code_fragment pp = create "ocamlcodefragment" pp
 
 let break ppf level =
@@ -96,23 +89,14 @@ let env name pp ?(with_break = false) ?(opts = []) ?(args = []) ppf content =
   break ppf (if with_break then Simple else Aesthetic)
 
 let indent pp ppf x = env "ocamlindent" pp ppf x
-
 let inline_code pp = create "ocamlinlinecode" pp
-
 let verbatim ppf x = env "verbatim" Fmt.string ppf x
-
 let pageref_star x = create "pageref*" Escape.ref x
-
 let hyperref s = create "hyperref" ~options:[ bind Escape.ref s ]
-
 let ref x = create "ref" Escape.ref x
-
 let emph pp = create "emph" pp
-
 let bold pp = create "bold" pp
-
 let subscript pp = create "textsubscript" pp
-
 let superscript pp = create "textsuperscript" pp
 
 let code_block pp ppf x =
@@ -124,17 +108,11 @@ let code_block pp ppf x =
   mend ppf name
 
 let section pp = create "section" pp
-
 let subsection pp = create "subsection" pp
-
 let subsubsection pp = create "subsubsection" pp
-
 let paragraph pp = create "paragraph" pp
-
 let enumerate pp ppf x = env "enumerate" pp ppf x
-
 let itemize pp ppf x = env "itemize" pp ppf x
-
 let raw_description pp ppf x = env "description" pp ppf x
 
 let href x pp ppf y =
@@ -161,7 +139,6 @@ let url ppf s =
   create "url" Fmt.string ppf (Escape.text ~code_hyphenation:false s)
 
 let footnote x = create "footnote" url x
-
 let rightarrow ppf = math "rightarrow" ppf
 
 (** Latex uses forward slash even on Windows. *)

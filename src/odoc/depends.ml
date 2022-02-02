@@ -21,7 +21,6 @@ module Compile = struct
   type t = { unit_name : string; digest : Digest.t }
 
   let name t = t.unit_name
-
   let digest t = t.digest
 end
 
@@ -46,9 +45,7 @@ module Hash_set : sig
   type t
 
   val create : unit -> t
-
   val add : t -> Odoc_model.Root.t -> unit
-
   val elements : t -> Odoc_model.Root.t list
 end = struct
   type t = unit Odoc_model.Root.Hash_table.t

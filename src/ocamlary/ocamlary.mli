@@ -220,7 +220,6 @@ val a_function : x:int -> int
 *)
 
 val fun_fun_fun : ((int, int) a_function, (unit, unit) a_function) a_function
-
 val fun_maybe : ?yes:unit -> unit -> int
 
 val not_found : unit -> unit
@@ -252,13 +251,9 @@ val changing : unit
 (** {3 Some Operators } *)
 
 val ( ~- ) : unit
-
 val ( ! ) : unit
-
 val ( @ ) : unit
-
 val ( $ ) : unit
-
 val ( % ) : unit
 
 (* Disabling the following four until we figure out what to do about
@@ -273,21 +268,13 @@ val ( % ) : unit
    val ( -| ) : unit *)
 
 val ( & ) : unit
-
 val ( * ) : unit
-
 val ( - ) : unit
-
 val ( + ) : unit
-
 val ( -? ) : unit
-
 val ( / ) : unit
-
 val ( := ) : unit
-
 val ( = ) : unit
-
 val ( land ) : unit
 
 (**/**)
@@ -363,7 +350,6 @@ end
    {- it includes {!module-type:B} with some substitution}} *)
 module type C = sig
   include A
-
   include B with type t := t and module Q := Q
 end
 
@@ -465,7 +451,6 @@ type poly_variant_union = [ poly_variant | `TagC ]
 (** This comment is for [poly_variant_union]. *)
 
 type 'a poly_poly_variant = [ `TagA of 'a ]
-
 type ('a, 'b) bin_poly_poly_variant = [ `TagA of 'a | `ConstrB of 'b ]
 
 (* TODO: figure out how to spec a conjunctive type
@@ -477,15 +462,10 @@ type ('a, 'b) bin_poly_poly_variant = [ `TagA of 'a | `ConstrB of 'b ]
 *)
 
 type 'a open_poly_variant = [> `TagA ] as 'a
-
 type 'a open_poly_variant2 = [> `ConstrB of int ] as 'a
-
 type 'a open_poly_variant_alias = 'a open_poly_variant open_poly_variant2
-
 type 'a poly_fun = ([> `ConstrB of int ] as 'a) -> 'a
-
 type 'a poly_fun_constraint = 'a -> 'a constraint 'a = [> `TagA ]
-
 type 'a closed_poly_variant = [< `One | `Two ] as 'a
 
 type 'a clopen_poly_variant =
@@ -523,45 +503,33 @@ and mutual_constr_b =
       (** This comment must be here for the next to associate correctly. *)
 
 type rec_obj = < f : int ; g : unit -> unit ; h : rec_obj >
-
 type 'a open_obj = < f : int ; g : unit -> unit ; .. > as 'a
-
 type 'a oof = (< a : unit ; .. > as 'a) -> 'a
-
 type 'a any_obj = < .. > as 'a
-
 type empty_obj = < >
-
 type one_meth = < meth : unit >
 
 type ext = ..
 (** A mystery wrapped in an ellipsis *)
 
 type ext += ExtA
-
 type ext += ExtB
-
 type ext += ExtC of unit | ExtD of ext
-
 type ext += ExtE
-
 type ext += private ExtF
 
 type 'a poly_ext = ..
 (** 'a poly_ext *)
 
 type 'b poly_ext += Foo of 'b | Bar of 'b * 'b  (** 'b poly_ext *)
-
 type 'c poly_ext += Quux of 'c  (** 'c poly_ext *)
 
 module ExtMod : sig
   type t = ..
-
   type t += Leisureforce
 end
 
 type ExtMod.t += ZzzTop0  (** It's got the rock *)
-
 type ExtMod.t += ZzzTop of unit  (** and it packs a unit. *)
 
 external launch_missiles : unit -> unit = "tetris"
@@ -580,7 +548,6 @@ class one_method_class :
 class two_method_class :
   object
     method one : one_method_class
-
     method undo : unit
   end
 
@@ -591,7 +558,6 @@ class ['a] param_class :
      end
 
 type my_unit_object = unit param_class
-
 type 'a my_unit_class = unit #param_class as 'a
 
 (* Bug in compiler breaks this example on cmi's *)
@@ -642,7 +608,6 @@ module Dep4 : sig
 
   module type S = sig
     module X : T
-
     module Y : sig end
   end
 
@@ -655,7 +620,6 @@ module Dep5 : functor
 
      module type S = sig
        module X : T
-
        module Y : sig end
      end
 
@@ -666,7 +630,6 @@ module Dep5 : functor
 end
 
 type dep2 = Dep5(Dep4).Z.X.b
-
 type dep3 = Dep5(Dep4).Z.Y.a
 
 module Dep6 : sig
@@ -817,7 +780,6 @@ module type NestedInclude1 = sig
 end
 
 include NestedInclude1
-
 include NestedInclude2 with type nested_include = int
 
 module DoubleInclude1 : sig
@@ -841,7 +803,6 @@ module IncludeInclude1 : sig
 end
 
 include module type of IncludeInclude1
-
 include IncludeInclude2
 
 (** {1:indexmodules Trying the \{!modules: ...\} command.}
@@ -879,12 +840,10 @@ module CanonicalTest : sig
 
   module Base_Tests : sig
     module C : module type of Base__.List
-
     open Base__
     module L = List
 
     val foo : int L.t -> float L.t
-
     val bar : 'a List.t -> 'a List.t
     (* This is just {!List.id}, or rather {!L.id} *)
 
@@ -963,13 +922,9 @@ module Aliases : sig
   module A' = Foo.A
 
   type tata = Foo.A.t
-
   type tbtb = Foo__.B.t
-
   type tete = Foo__.E.t
-
   type tata' = A'.t
-
   type tete2 = Foo.E.t
 
   module Std : sig
@@ -1009,7 +964,6 @@ module Aliases : sig
   module X2 = P2.Z
 
   type p1 = X1.t
-
   type p2 = X2.t
 end
 
@@ -1056,14 +1010,12 @@ end
 
 module type TypeExt = sig
   type t = ..
-
   type t += C
 
   val f : t -> unit
 end
 
 type new_t = ..
-
 type new_t += C
 
 module type TypeExtPruned = TypeExt with type t := new_t

@@ -1,5 +1,4 @@
 type sexp = Sexplib0.Sexp.t = Atom of string | List of sexp list
-
 type enabledif = Min of string | Max of string | MinMax of string * string
 
 type test_case = {
@@ -12,9 +11,7 @@ type test_case = {
 
 module Dune = struct
   let arg_fpath f = Fpath.to_string f
-
   let arg_dep f = "%{dep:" ^ Fpath.to_string f ^ "}"
-
   let arg_list args = List.map (fun x -> Atom x) args
 
   let render_enabledif = function
@@ -50,7 +47,6 @@ module Dune = struct
     | None -> []
 
   let run cmd = List (Atom "run" :: arg_list cmd)
-
   let action x = List [ Atom "action"; x ]
 
   let rule ?enabledif fields =

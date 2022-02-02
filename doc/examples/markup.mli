@@ -154,9 +154,7 @@ module Scope : sig
   type t
 
   val v : t
-
   val x : int
-
   val y : int
 
   module A : sig

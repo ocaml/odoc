@@ -19,25 +19,15 @@ module type Name = sig
   type t
 
   val to_string : t -> string
-
   val to_string_unsafe : t -> string
-
   val make_std : string -> t
-
   val of_ident : Ident.t -> t
-
   val internal_of_string : string -> t
-
   val internal_of_ident : Ident.t -> t
-
   val is_internal : t -> bool
-
   val equal : t -> t -> bool
-
   val compare : t -> t -> int
-
   val fmt : Format.formatter -> t -> unit
-
   val is_hidden : t -> bool
 end
 
@@ -63,13 +53,9 @@ module Name : Name = struct
     Internal (id, !internal_counter)
 
   let internal_of_ident id = internal_of_string (Ident.name id)
-
   let is_internal = function Std _ -> false | Internal _ -> true
-
   let equal (x : t) (y : t) = x = y
-
   let compare = compare
-
   let fmt ppf x = Format.fprintf ppf "%s" (to_string x)
 
   let is_hidden = function
@@ -88,17 +74,11 @@ module type SimpleName = sig
   type t
 
   val to_string : t -> string
-
   val make_std : string -> t
-
   val of_ident : Ident.t -> t
-
   val equal : t -> t -> bool
-
   val compare : t -> t -> int
-
   val fmt : Format.formatter -> t -> unit
-
   val is_hidden : t -> bool
 end
 
@@ -106,15 +86,10 @@ module SimpleName : SimpleName = struct
   type t = string
 
   let to_string s = s
-
   let make_std s = s
-
   let of_ident id = make_std (Ident.name id)
-
   let equal (x : t) (y : t) = x = y
-
   let compare x y = String.compare x y
-
   let fmt ppf t = Format.pp_print_string ppf (to_string t)
 
   let is_hidden s =

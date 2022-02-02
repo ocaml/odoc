@@ -372,7 +372,6 @@ module Anchor = struct
 end
 
 type kind = Anchor.kind
-
 type t = Anchor.t
 
 let from_path page =
