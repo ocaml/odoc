@@ -1,38 +1,24 @@
-(** The goal of this module is to allow to describe a markdown document and
-        to print it.
-        A markdown document is composed of [blocks]. *)
+(** The goal of this module is to allow to describe a markdown document and to
+    print it. A markdown document is composed of {!blocks}, see {!pp_blocks}. *)
+
+(** {2 Inline elements} *)
 
 type inlines
-(** Inlines elements are rendered one after the other, separated by spaces,
-        but not by empty line. *)
+(** Inlines elements are rendered one after the other, separated by spaces. *)
 
 val ( ++ ) : inlines -> inlines -> inlines
-(** Combine inlines. *)
+(** Combine inlines, render a breakable space between two inlines. *)
 
 val join : inlines -> inlines -> inlines
-
-type blocks
-(** A block is composed of [inlines]. Blocks are separated by an empty line. *)
-
-val ordered_list : blocks list -> blocks
-
-val unordered_list : blocks list -> blocks
-
-val ( +++ ) : blocks -> blocks -> blocks
-(** Alias for {!blocks} *)
-
-val blocks : blocks -> blocks -> blocks
-(** Combine blocks. *)
-
-val block_separator : blocks
-(** A horizontal line between a heading and the body. *)
+(** Join inlines without spaces in between. *)
 
 val text : string -> inlines
-(** Some inline elements *)
+(** An arbitrary string. *)
 
 val line_break : inlines
 
 val noop : inlines
+(** Nothing. Isn't separated by spaces: [noop ++ x = x ++ noop = x]. *)
 
 val bold : inlines -> inlines
 
@@ -47,6 +33,24 @@ val link : href:string -> inlines -> inlines
 
 val anchor' : string -> inlines
 
+(** {2 Block elements} *)
+
+type blocks
+(** Blocks are separated by an empty line. *)
+
+val ordered_list : blocks list -> blocks
+
+val unordered_list : blocks list -> blocks
+
+val ( +++ ) : blocks -> blocks -> blocks
+(** Alias for {!blocks} *)
+
+val blocks : blocks -> blocks -> blocks
+(** Combine blocks. *)
+
+val block_separator : blocks
+(** A horizontal line. *)
+
 val raw_markup : string -> blocks
 
 val code_span : string -> string
@@ -58,6 +62,9 @@ val code_block : string -> blocks
 val quote_block : blocks -> blocks
 
 val heading : int -> inlines -> blocks
+
+val noop_block : blocks
+(** No blocks. [noop_block +++ x = x +++ noop_block = x]. *)
 
 val pp_blocks : Format.formatter -> blocks -> unit
 (** Renders a markdown document. *)

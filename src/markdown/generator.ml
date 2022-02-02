@@ -99,18 +99,14 @@ and inline (l : Inline.t) args =
       | Source content -> source_code content args ++ continue rest
       | Raw_markup (_, s) -> text s ++ continue rest)
 
-let rec blocks' (bs : blocks list) =
-  match bs with
-  | [] -> paragraph noop
-  | [ b ] -> b
-  | b :: rest -> blocks b (blocks' rest)
+let fold_blocks f elts : blocks =
+  List.fold_left (fun acc elt -> acc +++ f elt) noop_block elts
 
 let rec block (l : Block.t) args =
-  let noop = paragraph noop in
   match l with
-  | [] -> noop
+  | [] -> noop_block
   | b :: rest -> (
-      let continue r = if r = [] then noop else block r args in
+      let continue r = if r = [] then noop_block else block r args in
       match b.desc with
       | Inline i -> blocks (paragraph (inline i args)) (continue rest)
       | Paragraph i -> blocks (paragraph (inline i args)) (continue rest)
@@ -137,7 +133,7 @@ let rec block (l : Block.t) args =
             in
             paragraph (join (text "@") (join key (text ":")) ++ def)
           in
-          blocks (blocks' (List.map f descrs)) (continue rest)
+          blocks (fold_blocks f descrs) (continue rest)
       | Source content ->
           blocks (paragraph (source_code content args)) (continue rest)
       | Verbatim content -> blocks (code_block content) (continue rest)
@@ -204,7 +200,8 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
             paragraph (source_code c args) +++ continue rest
           else continue rest
       | Alternative (Expansion { url; expansion; _ }) ->
-          if Link.should_inline url then documented_src expansion args nesting_level
+          if Link.should_inline url then
+            documented_src expansion args nesting_level
           else continue rest
       | Subpage p ->
           blocks (subpage p.content args (nesting_level + 1)) (continue rest)
@@ -220,7 +217,7 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
           let f (content, doc, (anchor : Odoc_document.Url.t option)) =
             let doc =
               match doc with
-              | [] -> noop
+              | [] -> noop_block
               | doc -> paragraph (text (acc_text doc))
             in
             let content =
@@ -242,7 +239,7 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
               blocks (paragraph (anchor' anchor)) item
             else item
           in
-          blocks (blocks' (List.map f lines)) (continue rest))
+          blocks (fold_blocks f lines) (continue rest))
 
 and subpage { title = _; header = _; items; url = _ } args nesting_level =
   let content = items in
@@ -250,11 +247,12 @@ and subpage { title = _; header = _; items; url = _ } args nesting_level =
   subpage' @@ item content args nesting_level
 
 and item (l : Item.t list) args nesting_level =
-  let noop = paragraph noop in
   match l with
-  | [] -> noop
+  | [] -> noop_block
   | i :: rest -> (
-      let continue r = if r = [] then noop else item r args nesting_level in
+      let continue r =
+        if r = [] then noop_block else item r args nesting_level
+      in
       match i with
       | Text b -> blocks (block b args) (continue rest)
       | Heading { Heading.label; level; title } ->
@@ -294,7 +292,7 @@ and item (l : Item.t list) args nesting_level =
           let render_declaration ~anchor ~doc heading content =
             let doc =
               match doc with
-              | [] -> noop
+              | [] -> noop_block
               | doc -> paragraph (text (acc_text doc))
             and anchor =
               if args.generate_links then
@@ -302,7 +300,7 @@ and item (l : Item.t list) args nesting_level =
                   match anchor with Some x -> x.Url.Anchor.anchor | None -> ""
                 in
                 paragraph (anchor' anchor)
-              else noop
+              else noop_block
             in
             anchor
             +++ item_heading nesting_level (source_code heading args)
@@ -315,7 +313,7 @@ and item (l : Item.t list) args nesting_level =
               let content =
                 if source_contains_text content then
                   quote_block (paragraph (source_code content args))
-                else noop
+                else noop_block
               in
               render_declaration ~anchor ~doc code content
           | code, content ->
@@ -334,17 +332,17 @@ and item (l : Item.t list) args nesting_level =
 
 let page ~generate_links { Page.header; items; url; _ } =
   let args = { base_path = url; generate_links } in
-  let blocks'' l = List.map (fun s -> paragraph (text s)) l |> blocks' in
-  blocks'
-    ([ blocks'' (Link.for_printing url) ]
-    @ [ blocks (item header args 0) (item items args 0) ])
+  fold_blocks (fun s -> paragraph (text s)) (Link.for_printing url)
+  +++ item header args 0 +++ item items args 0
 
 let rec subpage ~generate_links subp =
   let p = subp.Subpage.content in
   if Link.should_inline p.url then [] else [ render ~generate_links p ]
 
 and render ~generate_links (p : Page.t) =
-  let content fmt = Format.fprintf fmt "%a" pp_blocks (page ~generate_links p) in
+  let content fmt =
+    Format.fprintf fmt "%a" pp_blocks (page ~generate_links p)
+  in
   let children =
     Utils.flatmap ~f:(fun sp -> subpage ~generate_links sp) (Subpages.compute p)
   in

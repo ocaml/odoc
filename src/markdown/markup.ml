@@ -13,7 +13,7 @@ type inlines =
   | Linebreak
   | Noop
 
-and blocks =
+type blocks =
   | ConcatB of blocks * blocks
   | Block of inlines
   | CodeBlock of string
@@ -67,6 +67,8 @@ let code_block s = CodeBlock s
 
 let quote_block b = Prefixed_block ("> ", b)
 
+let noop_block = Block Noop
+
 let heading level i =
   let make_hashes n = String.make n '#' in
   let hashes = make_hashes level in
@@ -100,10 +102,9 @@ let rec pp_inlines fmt i =
 
 let rec pp_blocks fmt b =
   match b with
+  | ConcatB (Block Noop, b) | ConcatB (b, Block Noop) -> pp_blocks fmt b
   | ConcatB (above, below) ->
-      if above = paragraph noop then pp_blocks fmt below
-      else if below = paragraph noop then pp_blocks fmt above
-      else Format.fprintf fmt "%a@\n@\n%a" pp_blocks above pp_blocks below
+      Format.fprintf fmt "%a@\n@\n%a" pp_blocks above pp_blocks below
   | Block i -> pp_inlines fmt i
   | CodeBlock s -> Format.fprintf fmt "```@\n%s@\n```" s
   | Block_separator -> Format.fprintf fmt "---"

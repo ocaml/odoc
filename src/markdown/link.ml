@@ -34,5 +34,4 @@ let href ~base_path (url : Url.t) =
 
 let should_inline _ = false
 
-let files_of_url url =
-  if should_inline url then [] else [ as_filename url ]
+let files_of_url url = if should_inline url then [] else [ as_filename url ]
