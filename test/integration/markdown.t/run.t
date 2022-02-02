@@ -10,8 +10,9 @@
   markdown
   markdown/Intf.md
   markdown/Markup.md
-  markdown/Intf.M.md
   markdown/Intf.N.md
+  markdown/Intf.module-type-S.md
+  markdown/Intf.M.md
 
   $ cat markdown/Intf.md
   Intf
@@ -108,25 +109,19 @@
   
   <a id="module-M"></a>
   
-  ###### module M
+  ###### module [M](Intf.M.md)
   
   Outer doc for `M`
   
   <a id="module-N"></a>
   
-  ###### module N
+  ###### module [N](Intf.N.md)
   
   Doc for `N`
   
   <a id="module-type-S"></a>
   
-  ###### module type S = sig
-  
-  <a id="type-t"></a>
-  
-  ######    type t
-  
-  end
+  ###### module type [S](Intf.module-type-S.md)
   
   Doc for `S`
 

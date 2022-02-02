@@ -19,6 +19,19 @@ let as_filename (url : Url.Path.t) =
   let str_path = String.concat Fpath.dir_sep (dir @ [ path ]) in
   Fpath.(v str_path + ".md")
 
+let href ~base_path (url : Url.t) =
+  let anchor = match url.anchor with "" -> "" | anchor -> "#" ^ anchor in
+  if url.page = base_path then anchor
+  else
+    let root = Fpath.parent (as_filename base_path)
+    and path = as_filename url.page in
+    let path =
+      match Fpath.relativize ~root path with
+      | Some path -> path
+      | None -> assert false
+    in
+    Fpath.to_string path ^ anchor
+
 let should_inline _ = false
 
 let files_of_url url =

@@ -1,7 +1,6 @@
 open Odoc_document
 open Types
 open Doctree
-open Link
 open Markup
 
 (** Make a new string by copying the given string [n] times. *)
@@ -20,7 +19,7 @@ let style (style : style) =
   | `Superscript -> superscript
   | `Subscript -> subscript
 
-type args = { generate_links : bool }
+type args = { base_path : Url.Path.t; generate_links : bool }
 
 let rec source_contains_text (s : Source.t) =
   let inline_contains_text (i : Inline.t) =
@@ -89,13 +88,12 @@ and inline (l : Inline.t) args =
       | Linebreak -> line_break ++ continue rest
       | Link (href, content) ->
           link ~href (inline content args) ++ continue rest
-      | InternalLink (Resolved (link', content)) ->
+      | InternalLink (Resolved (url, content)) ->
           if args.generate_links then
-            match link'.page.parent with
-            | Some _ -> continue content ++ continue rest
-            | None ->
-                link ~href:("#" ^ link'.anchor) (inline content args)
-                ++ continue rest
+            link
+              ~href:(Link.href ~base_path:args.base_path url)
+              (inline content args)
+            ++ continue rest
           else continue content ++ continue rest
       | InternalLink (Unresolved content) -> continue content ++ continue rest
       | Source content -> source_code content args ++ continue rest
@@ -206,7 +204,7 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
             paragraph (source_code c args) +++ continue rest
           else continue rest
       | Alternative (Expansion { url; expansion; _ }) ->
-          if should_inline url then documented_src expansion args nesting_level
+          if Link.should_inline url then documented_src expansion args nesting_level
           else continue rest
       | Subpage p ->
           blocks (subpage p.content args (nesting_level + 1)) (continue rest)
@@ -286,7 +284,7 @@ and item (l : Item.t list) args nesting_level =
           let take_code_from_declaration content =
             match take_code content with
             | begin_code, Alternative (Expansion e) :: tl
-              when should_inline e.url ->
+              when Link.should_inline e.url ->
                 (* Take the code from inlined expansion. For example, to catch
                    [= sig]. *)
                 let e_code, e_tl = take_code e.expansion in
@@ -334,20 +332,21 @@ and item (l : Item.t list) args nesting_level =
           in
           blocks d (continue rest))
 
-let page { Page.header; items; url; _ } args =
+let page ~generate_links { Page.header; items; url; _ } =
+  let args = { base_path = url; generate_links } in
   let blocks'' l = List.map (fun s -> paragraph (text s)) l |> blocks' in
   blocks'
-    ([ blocks'' (for_printing url) ]
+    ([ blocks'' (Link.for_printing url) ]
     @ [ blocks (item header args 0) (item items args 0) ])
 
-let rec subpage subp (args : args) =
+let rec subpage ~generate_links subp =
   let p = subp.Subpage.content in
-  if should_inline p.url then [] else [ render p args ]
+  if Link.should_inline p.url then [] else [ render ~generate_links p ]
 
-and render (p : Page.t) args =
-  let content fmt = Format.fprintf fmt "%a" pp_blocks (page p args) in
+and render ~generate_links (p : Page.t) =
+  let content fmt = Format.fprintf fmt "%a" pp_blocks (page ~generate_links p) in
   let children =
-    Utils.flatmap ~f:(fun sp -> subpage sp args) (Subpages.compute p)
+    Utils.flatmap ~f:(fun sp -> subpage ~generate_links sp) (Subpages.compute p)
   in
-  let filename = as_filename p.url in
+  let filename = Link.as_filename p.url in
   { Odoc_document.Renderer.filename; content; children }

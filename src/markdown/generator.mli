@@ -1,3 +1,4 @@
-type args = { generate_links : bool }
-
-val render : Odoc_document.Types.Page.t -> args -> Odoc_document.Renderer.page
+val render :
+  generate_links:bool ->
+  Odoc_document.Types.Page.t ->
+  Odoc_document.Renderer.page
