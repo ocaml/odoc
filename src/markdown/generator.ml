@@ -19,6 +19,9 @@ let style (style : style) =
   | `Superscript -> superscript
   | `Subscript -> subscript
 
+let fold_blocks f elts : blocks =
+  List.fold_left (fun acc elt -> acc +++ f elt) noop_block elts
+
 type args = { base_path : Url.Path.t; generate_links : bool }
 
 let rec source_contains_text (s : Source.t) =
@@ -59,85 +62,69 @@ let source_take_until_punctuation code =
 let rec source_code (s : Source.t) args =
   match s with
   | [] -> noop
-  | h :: t -> (
-      let continue s =
-        if source_contains_text s then source_code s args else noop
-      in
-      match h with
-      | Source.Elt i -> inline i args ++ continue t
-      | Tag (Some "arrow", _) ->
-          text "->" (* takes care of the Entity branch of Inline.t *)
-      | Tag (_, s) -> continue s ++ continue t)
+  | _ when not (source_contains_text s) -> noop
+  | Source.Elt i :: t -> inline i args ++ source_code t args
+  | Tag (Some "arrow", _) :: _ ->
+      text "->" (* takes care of the Entity branch of Inline.t *)
+  | Tag (_, s) :: t -> source_code s args ++ source_code t args
 
 and inline (l : Inline.t) args =
   match l with
   | [] -> noop
   | i :: rest -> (
-      let continue i = if i = [] then noop else inline i args in
       match i.desc with
-      | Text "" | Text " " -> continue rest
+      | Text "" | Text " " -> inline rest args
       | Text _ ->
           let l, _, rest =
             Doctree.Take.until l ~classify:(function
               | { Inline.desc = Text s; _ } -> Accum [ s ]
               | _ -> Stop_and_keep)
           in
-          text String.(concat "" l |> trim) ++ continue rest
+          text String.(concat "" l |> trim) ++ inline rest args
       | Entity _ -> noop
-      | Styled (styl, content) -> style styl (continue content) ++ continue rest
-      | Linebreak -> line_break ++ continue rest
+      | Styled (styl, content) ->
+          style styl (inline content args) ++ inline rest args
+      | Linebreak -> line_break ++ inline rest args
       | Link (href, content) ->
-          link ~href (inline content args) ++ continue rest
+          link ~href (inline content args) ++ inline rest args
       | InternalLink (Resolved (url, content)) ->
           if args.generate_links then
             link
               ~href:(Link.href ~base_path:args.base_path url)
               (inline content args)
-            ++ continue rest
-          else continue content ++ continue rest
-      | InternalLink (Unresolved content) -> continue content ++ continue rest
-      | Source content -> source_code content args ++ continue rest
-      | Raw_markup (_, s) -> text s ++ continue rest)
+            ++ inline rest args
+          else inline content args ++ inline rest args
+      | InternalLink (Unresolved content) ->
+          inline content args ++ inline rest args
+      | Source content -> source_code content args ++ inline rest args
+      | Raw_markup (_, s) -> text s ++ inline rest args)
 
-let fold_blocks f elts : blocks =
-  List.fold_left (fun acc elt -> acc +++ f elt) noop_block elts
+let rec block args l = fold_blocks (block_one args) l
 
-let rec block (l : Block.t) args =
-  match l with
-  | [] -> noop_block
-  | b :: rest -> (
-      let continue r = if r = [] then noop_block else block r args in
-      match b.desc with
-      | Inline i -> blocks (paragraph (inline i args)) (continue rest)
-      | Paragraph i -> blocks (paragraph (inline i args)) (continue rest)
-      | List (list_typ, l') ->
-          let f bs =
-            match list_typ with
-            | Unordered -> unordered_list bs
-            | Ordered -> ordered_list bs
-          in
-          blocks (f (List.map (fun b -> block b args) l')) (continue rest)
-      | Description _ ->
-          let descrs, _, rest =
-            Take.until l ~classify:(function
-              | { Block.desc = Description l; _ } -> Accum l
-              | _ -> Stop_and_keep)
-          in
-          let f i =
-            let key = inline i.Description.key args in
-            let def =
-              match i.Description.definition with
-              | [] -> text ""
-              | h :: _ -> (
-                  match h.desc with Inline i -> inline i args | _ -> text "")
-            in
-            paragraph (join (text "@") (join key (text ":")) ++ def)
-          in
-          blocks (fold_blocks f descrs) (continue rest)
-      | Source content ->
-          blocks (paragraph (source_code content args)) (continue rest)
-      | Verbatim content -> blocks (code_block content) (continue rest)
-      | Raw_markup (_, s) -> blocks (raw_markup s) (continue rest))
+and block_one args b =
+  match b.Block.desc with
+  | Inline i -> paragraph (inline i args)
+  | Paragraph i -> paragraph (inline i args)
+  | List (list_typ, items) -> (
+      let items = List.map (block args) items in
+      match list_typ with
+      | Unordered -> unordered_list items
+      | Ordered -> ordered_list items)
+  | Description l -> description args l
+  | Source content -> paragraph (source_code content args)
+  | Verbatim content -> code_block content
+  | Raw_markup (_, s) -> raw_markup s
+
+and description args l = fold_blocks (description_one args) l
+
+and description_one args { Description.key; definition; _ } =
+  let key = inline key args in
+  let def =
+    match definition with
+    | [] -> noop
+    | h :: _ -> ( match h.desc with Inline i -> inline i args | _ -> noop)
+  in
+  paragraph (join (text "@") (join key (text ":")) ++ def)
 
 let rec acc_text (l : Block.t) : string =
   match l with
@@ -186,13 +173,10 @@ let take_code l =
   (c, rest)
 
 let rec documented_src (l : DocumentedSrc.t) args nesting_level =
-  let noop = paragraph noop in
   match l with
-  | [] -> noop
+  | [] -> noop_block
   | line :: rest -> (
-      let continue r =
-        if r = [] then noop else documented_src r args nesting_level
-      in
+      let continue r = documented_src r args nesting_level in
       match line with
       | Code s ->
           if source_contains_text s then
@@ -250,11 +234,9 @@ and item (l : Item.t list) args nesting_level =
   match l with
   | [] -> noop_block
   | i :: rest -> (
-      let continue r =
-        if r = [] then noop_block else item r args nesting_level
-      in
+      let continue r = item r args nesting_level in
       match i with
-      | Text b -> blocks (block b args) (continue rest)
+      | Text b -> blocks (block args b) (continue rest)
       | Heading { Heading.label; level; title } ->
           let heading' =
             let title = inline title args in

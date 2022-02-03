@@ -1256,9 +1256,9 @@ With ocamldoc, toplevel units will be linked and documented, while submodules wi
 
 With odoc, everything should be resolved (and linked) but only toplevel units will be documented.
 
-@[Dep1.X](Ocamlary.Dep1.X.md): 
+@[Dep1.X](Ocamlary.Dep1.X.md):
 
-@[Ocamlary.IncludeInclude1](Ocamlary.IncludeInclude1.md): 
+@[Ocamlary.IncludeInclude1](Ocamlary.IncludeInclude1.md):
 
 @[Ocamlary](): This is an _interface_ with **all** of the _module system_ features. This documentation demonstrates:
 
@@ -1266,9 +1266,9 @@ With odoc, everything should be resolved (and linked) but only toplevel units wi
 
 ---
 
-@[IncludeInclude1.IncludeInclude2_M](Ocamlary.IncludeInclude1.IncludeInclude2_M.md): 
+@[IncludeInclude1.IncludeInclude2_M](Ocamlary.IncludeInclude1.IncludeInclude2_M.md):
 
-@[Dep4.X](Ocamlary.Dep4.X.md): 
+@[Dep4.X](Ocamlary.Dep4.X.md):
 
 # Playing with @canonical paths
 

@@ -131,11 +131,11 @@ Raw HTML can be <input type="text" placeholder="inserted"> as inline elements in
 
 # Modules
 
-@[X](Markup.X.md): 
+@[X](Markup.X.md):
 
-@[X](Markup.X.md): 
+@[X](Markup.X.md):
 
-@[Y](Markup.Y.md): 
+@[Y](Markup.Y.md):
 
 # Tags
 
@@ -143,23 +143,23 @@ Each comment can end with zero or more tags. Here are some examples:
 
 @author: antron
 
-@deprecated: 
+@deprecated:
 
-@parameter foo: 
+@parameter foo:
 
-@raises Failure: 
+@raises Failure:
 
-@returns: 
+@returns:
 
-@see [#](#): 
+@see [#](#):
 
-@see foo.ml: 
+@see foo.ml:
 
-@see Foo: 
+@see Foo:
 
 @since: 0
 
-@before 1.0: 
+@before 1.0:
 
 @version: -1
 
