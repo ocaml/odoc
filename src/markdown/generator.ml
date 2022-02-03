@@ -101,8 +101,8 @@ and block_one args b =
       | Unordered -> unordered_list items
       | Ordered -> ordered_list items)
   | Description l -> description args l
-  | Source content -> paragraph (source_code content args)
-  | Verbatim content -> code_block content
+  | Source content -> code_block (source_code content args)
+  | Verbatim content -> code_block (text content)
   | Raw_markup (_, s) -> raw_markup s
 
 and description args l = fold_blocks (description_one args) l

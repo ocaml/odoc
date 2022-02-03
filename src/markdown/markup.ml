@@ -16,7 +16,7 @@ type inlines =
 type blocks =
   | ConcatB of blocks * blocks
   | Block of inlines
-  | CodeBlock of string
+  | CodeBlock of inlines
   | List of list_type * blocks list
   | Raw_markup of string
   | Block_separator
@@ -66,7 +66,7 @@ let raw_markup s = Raw_markup s
 
 let paragraph i = Block i
 
-let code_block s = CodeBlock s
+let code_block i = CodeBlock i
 
 let quote_block b = Prefixed_block ("> ", b)
 
@@ -109,7 +109,7 @@ let rec pp_blocks fmt b =
   | ConcatB (above, below) ->
       Format.fprintf fmt "%a@\n@\n%a" pp_blocks above pp_blocks below
   | Block i -> pp_inlines fmt i
-  | CodeBlock s -> Format.fprintf fmt "```@\n%s@\n```" s
+  | CodeBlock i -> Format.fprintf fmt "```@\n%a@\n```" pp_inlines i
   | Block_separator -> Format.fprintf fmt "---"
   | List (list_type, l) ->
       let rec pp_list n l =

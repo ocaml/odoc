@@ -64,6 +64,7 @@ This is a reference to [foo](#val-foo) . References can have replacement text: [
 
 This is a code block:
 
+```
 let foo = ()
 (** There are some nested comments in here, but an unpaired comment
     terminator would terminate the whole doc surrounding comment. It's
@@ -71,6 +72,7 @@ let foo = ()
 
 let bar =
   ignore foo
+```
 
 There are also verbatim blocks:
 
