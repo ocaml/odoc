@@ -19,6 +19,9 @@ let style (style : style) =
   | `Superscript -> superscript
   | `Subscript -> subscript
 
+let fold_inlines f elts : inlines =
+  List.fold_left (fun acc elt -> acc ++ f elt) noop elts
+
 let fold_blocks f elts : blocks =
   List.fold_left (fun acc elt -> acc +++ f elt) noop_block elts
 
@@ -68,36 +71,25 @@ let rec source_code (s : Source.t) args =
       text "->" (* takes care of the Entity branch of Inline.t *)
   | Tag (_, s) :: t -> source_code s args ++ source_code t args
 
-and inline (l : Inline.t) args =
-  match l with
-  | [] -> noop
-  | i :: rest -> (
-      match i.desc with
-      | Text "" | Text " " -> inline rest args
-      | Text _ ->
-          let l, _, rest =
-            Doctree.Take.until l ~classify:(function
-              | { Inline.desc = Text s; _ } -> Accum [ s ]
-              | _ -> Stop_and_keep)
-          in
-          text String.(concat "" l |> trim) ++ inline rest args
-      | Entity _ -> noop
-      | Styled (styl, content) ->
-          style styl (inline content args) ++ inline rest args
-      | Linebreak -> line_break ++ inline rest args
-      | Link (href, content) ->
-          link ~href (inline content args) ++ inline rest args
-      | InternalLink (Resolved (url, content)) ->
-          if args.generate_links then
-            link
-              ~href:(Link.href ~base_path:args.base_path url)
-              (inline content args)
-            ++ inline rest args
-          else inline content args ++ inline rest args
-      | InternalLink (Unresolved content) ->
-          inline content args ++ inline rest args
-      | Source content -> source_code content args ++ inline rest args
-      | Raw_markup (_, s) -> text s ++ inline rest args)
+and inline l args = fold_inlines (inline_one args) l
+
+and inline_one args i =
+  match i.Inline.desc with
+  | Text ("" | " ") -> noop
+  | Text s -> text (String.trim s)
+  | Entity _ -> noop
+  | Styled (styl, content) -> style styl (inline content args)
+  | Linebreak -> line_break
+  | Link (href, content) -> link ~href (inline content args)
+  | InternalLink (Resolved (url, content)) ->
+      if args.generate_links then
+        link
+          ~href:(Link.href ~base_path:args.base_path url)
+          (inline content args)
+      else inline content args
+  | InternalLink (Unresolved content) -> inline content args
+  | Source content -> source_code content args
+  | Raw_markup (_, s) -> text s
 
 let rec block args l = fold_blocks (block_one args) l
 

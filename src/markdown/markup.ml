@@ -28,7 +28,10 @@ let ordered_list bs = List (Ordered, bs)
 
 let unordered_list bs = List (Unordered, bs)
 
-let ( ++ ) left right = ConcatI (left, right)
+(* Make sure to never leave a [Noop] in the result, which would cause unwanted
+   spaces. *)
+let ( ++ ) left right =
+  match (left, right) with Noop, x | x, Noop -> x | _ -> ConcatI (left, right)
 
 let join left right = Join (left, right)
 
