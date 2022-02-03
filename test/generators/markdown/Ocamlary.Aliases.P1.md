@@ -4,7 +4,7 @@ Aliases
 
 P1
 
-Module Aliases.P1
+Module `Aliases.P1`
 
 <a id="module-Y"></a>
 

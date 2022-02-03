@@ -4,9 +4,9 @@ A
 
 Q
 
-Module A.Q
+Module `A.Q`
 
-This comment is for CollectionModule .
+This comment is for `CollectionModule` .
 
 <a id="type-collection"></a>
 

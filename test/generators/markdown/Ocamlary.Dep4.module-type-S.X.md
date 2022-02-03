@@ -6,7 +6,7 @@ S
 
 X
 
-Module S.X
+Module `S.X`
 
 <a id="type-b"></a>
 

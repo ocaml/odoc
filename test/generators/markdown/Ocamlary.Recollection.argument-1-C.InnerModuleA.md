@@ -6,9 +6,9 @@ Recollection
 
 InnerModuleA
 
-Module 1-C.InnerModuleA
+Module `1-C.InnerModuleA`
 
-This comment is for InnerModuleA .
+This comment is for `InnerModuleA` .
 
 <a id="type-t"></a>
 

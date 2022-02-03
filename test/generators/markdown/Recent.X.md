@@ -2,7 +2,7 @@ Recent
 
 X
 
-Module Recent.X
+Module `Recent.X`
 
 <a id="module-L"></a>
 

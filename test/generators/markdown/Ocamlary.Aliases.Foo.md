@@ -4,7 +4,7 @@ Aliases
 
 Foo
 
-Module Aliases.Foo
+Module `Aliases.Foo`
 
 <a id="module-A"></a>
 

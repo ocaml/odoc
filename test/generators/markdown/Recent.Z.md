@@ -2,7 +2,7 @@ Recent
 
 Z
 
-Module Recent.Z
+Module `Recent.Z`
 
 <a id="module-Y"></a>
 

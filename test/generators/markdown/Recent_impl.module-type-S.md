@@ -2,7 +2,7 @@ Recent_impl
 
 S
 
-Module type Recent_impl.S
+Module type `Recent_impl.S`
 
 <a id="module-F"></a>
 

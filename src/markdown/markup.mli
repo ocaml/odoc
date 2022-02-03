@@ -53,7 +53,7 @@ val block_separator : blocks
 
 val raw_markup : string -> blocks
 
-val code_span : string -> string
+val code_span : string -> inlines
 
 val paragraph : inlines -> blocks
 

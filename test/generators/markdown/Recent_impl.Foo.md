@@ -2,7 +2,7 @@ Recent_impl
 
 Foo
 
-Module Recent_impl.Foo
+Module `Recent_impl.Foo`
 
 <a id="module-A"></a>
 

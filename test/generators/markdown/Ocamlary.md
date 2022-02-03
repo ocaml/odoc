@@ -1,6 +1,6 @@
 Ocamlary
 
-Module Ocamlary
+Module `Ocamlary`
 
 This is an _interface_ with **all** of the _module system_ features. This documentation demonstrates:
 
@@ -52,13 +52,13 @@ This is some verbatim text:
 
 Here is some raw LaTeX:  $e^{i\pi} = -1$ 
 
-Here is an index table of Empty modules:
+Here is an index table of `Empty` modules:
 
-@[Empty](Ocamlary.Empty.md): A plain, empty module
+@[`Empty`](Ocamlary.Empty.md): A plain, empty module
 
-@[EmptyAlias](Ocamlary.Empty.md): A plain module alias of Empty
+@[`EmptyAlias`](Ocamlary.Empty.md): A plain module alias of `Empty`
 
-Odoc doesn't support {!indexlist} .
+Odoc doesn't support `{!indexlist}` .
 
 Here is some superscript: x <sup>2</sup>
 
@@ -66,7 +66,7 @@ Here is some subscript: x <sub>0</sub>
 
 Here are some escaped brackets: { [ @ ] }
 
-Here is some _emphasis_ followed by code .
+Here is some _emphasis_ `followed by code` .
 
 An unassociated comment
 
@@ -162,7 +162,7 @@ There's a signature in a module in this signature.
 
 ###### module type [SuperSig](Ocamlary.module-type-SuperSig.md)
 
-For a good time, see [subSig](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig) or [subSig](Ocamlary.module-type-SuperSig.module-type-SubSigB.md#subSig) or [SuperSig.EmptySig](Ocamlary.module-type-SuperSig.module-type-EmptySig.md) . Section [Section 9000](#s9000) is also interesting. [EmptySig](#emptySig) is the section and [EmptySig](Ocamlary.module-type-EmptySig.md) is the module signature.
+For a good time, see [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig) or [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigB.md#subSig) or [`SuperSig.EmptySig`](Ocamlary.module-type-SuperSig.module-type-EmptySig.md) . Section [Section 9000](#s9000) is also interesting. [EmptySig](#emptySig) is the section and [`EmptySig`](Ocamlary.module-type-EmptySig.md) is the module signature.
 
 <a id="module-Buffer"></a>
 
@@ -480,13 +480,13 @@ This comment is for `IncludeModuleType`
 
 <a id="type-record.field1"></a>
 
-######    field1 : int ;
+######    `;int : field1`
 
 This comment is for `field1`
 
 <a id="type-record.field2"></a>
 
-######    field2 : int ;
+######    `;int : field2`
 
 This comment is for `field2`
 
@@ -500,19 +500,19 @@ This comment is for `record`This comment is also for `record`
 
 <a id="type-mutable_record.a"></a>
 
-######    mutable a : int ;
+######    `;int : a mutable`
 
 `a`
 
 <a id="type-mutable_record.b"></a>
 
-######    b : unit ;
+######    `;unit : b`
 
 `b`
 
 <a id="type-mutable_record.c"></a>
 
-######    mutable c : int ;
+######    `;int : c mutable`
 
 `c`
 
@@ -564,11 +564,11 @@ This comment is for `variant`This comment is also for `variant`
 
 <a id="type-poly_variant.TagA"></a>
 
-######    | `TagA
+######    `| ` `` `TagA ``
 
 <a id="type-poly_variant.ConstrB"></a>
 
-######    | `ConstrB of int
+######    `| ` `` int of `ConstrB ``
 
 ]
 
@@ -660,11 +660,11 @@ This comment is for `variant_alias`
 
 <a id="type-record_alias.field1"></a>
 
-######    field1 : int ;
+######    `;int : field1`
 
 <a id="type-record_alias.field2"></a>
 
-######    field2 : int ;
+######    `;int : field2`
 
 }
 
@@ -676,11 +676,11 @@ This comment is for `record_alias`
 
 <a id="type-poly_variant_union.poly_variant"></a>
 
-######    | [poly_variant](#type-poly_variant)
+######    `| ` [poly_variant](#type-poly_variant)
 
 <a id="type-poly_variant_union.TagC"></a>
 
-######    | `TagC
+######    `| ` `` `TagC ``
 
 ]
 
@@ -692,7 +692,7 @@ This comment is for `poly_variant_union`
 
 <a id="type-poly_poly_variant.TagA"></a>
 
-######    | `TagA of 'a
+######    `| ` `` 'a of `TagA ``
 
 ]
 
@@ -702,11 +702,11 @@ This comment is for `poly_variant_union`
 
 <a id="type-bin_poly_poly_variant.TagA"></a>
 
-######    | `TagA of 'a
+######    `| ` `` 'a of `TagA ``
 
 <a id="type-bin_poly_poly_variant.ConstrB"></a>
 
-######    | `ConstrB of 'b
+######    `| ` `` 'b of `ConstrB ``
 
 ]
 
@@ -765,19 +765,19 @@ This comment is for `poly_variant_union`
 
 <a id="type-nested_poly_variant.A"></a>
 
-######    | `A
+######    `| ` `` `A ``
 
 <a id="type-nested_poly_variant.B"></a>
 
-######    | `B of [ `B1 | `B2 ]
+######    `| ` `` [ `B1 | `B2 ] of `B ``
 
 <a id="type-nested_poly_variant.C"></a>
 
-######    | `C
+######    `| ` `` `C ``
 
 <a id="type-nested_poly_variant.D"></a>
 
-######    | `D of [ `D1 of [ `D1a ] ]
+######    `| ` `` [ [ `D1a ]  of`D1 ] of `D ``
 
 ]
 
@@ -1256,19 +1256,19 @@ With ocamldoc, toplevel units will be linked and documented, while submodules wi
 
 With odoc, everything should be resolved (and linked) but only toplevel units will be documented.
 
-@[Dep1.X](Ocamlary.Dep1.X.md):
+@[`Dep1.X`](Ocamlary.Dep1.X.md):
 
-@[Ocamlary.IncludeInclude1](Ocamlary.IncludeInclude1.md):
+@[`Ocamlary.IncludeInclude1`](Ocamlary.IncludeInclude1.md):
 
-@[Ocamlary](): This is an _interface_ with **all** of the _module system_ features. This documentation demonstrates:
+@[`Ocamlary`](): This is an _interface_ with **all** of the _module system_ features. This documentation demonstrates:
 
 ### Weirder usages involving module types
 
 ---
 
-@[IncludeInclude1.IncludeInclude2_M](Ocamlary.IncludeInclude1.IncludeInclude2_M.md):
+@[`IncludeInclude1.IncludeInclude2_M`](Ocamlary.IncludeInclude1.IncludeInclude2_M.md):
 
-@[Dep4.X](Ocamlary.Dep4.X.md):
+@[`Dep4.X`](Ocamlary.Dep4.X.md):
 
 # Playing with @canonical paths
 
@@ -1276,7 +1276,7 @@ With odoc, everything should be resolved (and linked) but only toplevel units wi
 
 ###### module [CanonicalTest](Ocamlary.CanonicalTest.md)
 
-Some ref to [CanonicalTest.Base_Tests.C.t](Ocamlary.CanonicalTest.Base_Tests.C.md#type-t) and [CanonicalTest.Base_Tests.L.id](Ocamlary.CanonicalTest.Base.List.md#val-id) . But also to [CanonicalTest.Base.List](Ocamlary.CanonicalTest.Base.List.md) and [CanonicalTest.Base.List.t](Ocamlary.CanonicalTest.Base.List.md#type-t)
+Some ref to [`CanonicalTest.Base_Tests.C.t`](Ocamlary.CanonicalTest.Base_Tests.C.md#type-t) and [`CanonicalTest.Base_Tests.L.id`](Ocamlary.CanonicalTest.Base.List.md#val-id) . But also to [`CanonicalTest.Base.List`](Ocamlary.CanonicalTest.Base.List.md) and [`CanonicalTest.Base.List.t`](Ocamlary.CanonicalTest.Base.List.md#type-t)
 
 # Aliases again
 
@@ -1290,25 +1290,25 @@ Let's imitate jst's layout.
 
 I can refer to
 
-- {!section:indexmodules} : [Trying the {!modules: ...} command.](#indexmodules)
+- `{!section:indexmodules}` : [Trying the {!modules: ...} command.](#indexmodules)
 
-- {!aliases} : [Aliases again](#aliases)
+- `{!aliases}` : [Aliases again](#aliases)
 
 But also to things in submodules:
 
-- {!section:SuperSig.SubSigA.subSig} : [subSig](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
+- `{!section:SuperSig.SubSigA.subSig}` : [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
 
-- {!Aliases.incl} : [incl](Ocamlary.Aliases.md#incl)
+- `{!Aliases.incl}` : [`incl`](Ocamlary.Aliases.md#incl)
 
 And just to make sure we do not mess up:
 
-- {{!section:indexmodules}A} : [A](#indexmodules)
+- `{{!section:indexmodules}A}` : [A](#indexmodules)
 
-- {{!aliases}B} : [B](#aliases)
+- `{{!aliases}B}` : [B](#aliases)
 
-- {{!section:SuperSig.SubSigA.subSig}C} : [C](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
+- `{{!section:SuperSig.SubSigA.subSig}C}` : [C](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
 
-- {{!Aliases.incl}D} : [D](Ocamlary.Aliases.md#incl)
+- `{{!Aliases.incl}D}` : [D](Ocamlary.Aliases.md#incl)
 
 # New reference syntax
 
@@ -1322,21 +1322,21 @@ And just to make sure we do not mess up:
 
 Here goes:
 
-- {!module-M.t} : [M.t](Ocamlary.M.md#type-t)
+- `{!module-M.t}` : [`M.t`](Ocamlary.M.md#type-t)
 
-- {!module-type-M.t} : [M.t](Ocamlary.module-type-M.md#type-t)
+- `{!module-type-M.t}` : [`M.t`](Ocamlary.module-type-M.md#type-t)
 
 <a id="module-Only_a_module"></a>
 
 ###### module [Only_a_module](Ocamlary.Only_a_module.md)
 
-- {!Only_a_module.t} : [Only_a_module.t](Ocamlary.Only_a_module.md#type-t)
+- `{!Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
 
-- {!module-Only_a_module.t} : [Only_a_module.t](Ocamlary.Only_a_module.md#type-t)
+- `{!module-Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
 
-- {!module-Only_a_module.type-t} : [Only_a_module.t](Ocamlary.Only_a_module.md#type-t)
+- `{!module-Only_a_module.type-t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
 
-- {!type:Only_a_module.t} : [Only_a_module.t](Ocamlary.Only_a_module.md#type-t)
+- `{!type:Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
 
 <a id="module-type-TypeExt"></a>
 

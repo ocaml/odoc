@@ -2,9 +2,9 @@ Ocamlary
 
 Buffer
 
-Module Ocamlary.Buffer
+Module `Ocamlary.Buffer`
 
-References are resolved after everything, so {!Buffer.t} won't resolve.
+References are resolved after everything, so `{!Buffer.t}` won't resolve.
 
 <a id="val-f"></a>
 

@@ -2,4 +2,4 @@ Class
 
 polymorphic
 
-Class type Class.polymorphic
+Class type `Class.polymorphic`

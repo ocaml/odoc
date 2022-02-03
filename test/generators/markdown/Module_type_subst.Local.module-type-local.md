@@ -4,7 +4,7 @@ Local
 
 local
 
-Module type Local.local
+Module type `Local.local`
 
 <a id="type-t"></a>
 

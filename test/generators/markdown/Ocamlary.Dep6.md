@@ -2,7 +2,7 @@ Ocamlary
 
 Dep6
 
-Module Ocamlary.Dep6
+Module `Ocamlary.Dep6`
 
 <a id="module-type-S"></a>
 

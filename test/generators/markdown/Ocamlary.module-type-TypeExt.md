@@ -2,7 +2,7 @@ Ocamlary
 
 TypeExt
 
-Module type Ocamlary.TypeExt
+Module type `Ocamlary.TypeExt`
 
 <a id="type-t"></a>
 

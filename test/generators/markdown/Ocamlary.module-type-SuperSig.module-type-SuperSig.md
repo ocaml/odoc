@@ -4,4 +4,4 @@ SuperSig
 
 SuperSig
 
-Module type SuperSig.SuperSig
+Module type `SuperSig.SuperSig`

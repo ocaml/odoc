@@ -2,7 +2,7 @@ Ocamlary
 
 Dep4
 
-Module Ocamlary.Dep4
+Module `Ocamlary.Dep4`
 
 <a id="module-type-T"></a>
 

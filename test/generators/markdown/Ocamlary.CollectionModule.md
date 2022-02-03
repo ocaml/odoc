@@ -2,9 +2,9 @@ Ocamlary
 
 CollectionModule
 
-Module Ocamlary.CollectionModule
+Module `Ocamlary.CollectionModule`
 
-This comment is for CollectionModule .
+This comment is for `CollectionModule` .
 
 <a id="type-collection"></a>
 

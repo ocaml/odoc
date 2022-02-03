@@ -1,6 +1,6 @@
 Class
 
-Module Class
+Module `Class`
 
 <a id="class-type-empty"></a>
 

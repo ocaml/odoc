@@ -1,6 +1,6 @@
 Recent
 
-Module Recent
+Module `Recent`
 
 <a id="module-type-S"></a>
 
@@ -40,7 +40,7 @@ foo
 
 <a id="type-variant.a"></a>
 
-######    a : int ;
+######    `;int : a`
 
 }
 
@@ -64,7 +64,7 @@ foo
 
 <a id="type-gadt.a"></a>
 
-######    a : int ;
+######    `;int : a`
 
 } -> unit [gadt](#type-gadt)
 
@@ -74,21 +74,21 @@ foo
 
 <a id="type-polymorphic_variant.A"></a>
 
-######    | `A
+######    `| ` `` `A ``
 
 <a id="type-polymorphic_variant.B"></a>
 
-######    | `B of int
+######    `| ` `` int of `B ``
 
 <a id="type-polymorphic_variant.C"></a>
 
-######    | `C
+######    `| ` `` `C ``
 
 foo
 
 <a id="type-polymorphic_variant.D"></a>
 
-######    | `D
+######    `| ` `` `D ``
 
 bar
 

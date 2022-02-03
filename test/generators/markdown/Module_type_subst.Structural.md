@@ -2,7 +2,7 @@ Module_type_subst
 
 Structural
 
-Module Module_type_subst.Structural
+Module `Module_type_subst.Structural`
 
 <a id="module-type-u"></a>
 

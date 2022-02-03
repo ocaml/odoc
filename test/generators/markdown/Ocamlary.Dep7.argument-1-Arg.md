@@ -4,7 +4,7 @@ Dep7
 
 1-Arg
 
-Parameter Dep7.1-Arg
+Parameter `Dep7.1-Arg`
 
 <a id="module-type-S"></a>
 

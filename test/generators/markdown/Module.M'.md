@@ -2,4 +2,4 @@ Module
 
 M'
 
-Module Module.M'
+Module `Module.M'`

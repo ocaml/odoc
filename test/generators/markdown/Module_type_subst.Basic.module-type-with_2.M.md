@@ -6,4 +6,4 @@ with_2
 
 M
 
-Module with_2.M
+Module `with_2.M`

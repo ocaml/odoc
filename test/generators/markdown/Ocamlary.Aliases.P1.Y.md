@@ -6,7 +6,7 @@ P1
 
 Y
 
-Module P1.Y
+Module `P1.Y`
 
 <a id="type-t"></a>
 

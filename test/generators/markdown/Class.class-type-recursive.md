@@ -2,4 +2,4 @@ Class
 
 recursive
 
-Class type Class.recursive
+Class type `Class.recursive`

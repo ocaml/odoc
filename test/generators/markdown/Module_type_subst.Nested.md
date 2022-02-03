@@ -2,7 +2,7 @@ Module_type_subst
 
 Nested
 
-Module Module_type_subst.Nested
+Module `Module_type_subst.Nested`
 
 <a id="module-type-nested"></a>
 

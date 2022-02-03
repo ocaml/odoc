@@ -4,7 +4,7 @@ Dep7
 
 M
 
-Module Dep7.M
+Module `Dep7.M`
 
 <a id="module-type-R"></a>
 

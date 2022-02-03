@@ -4,7 +4,7 @@ With6
 
 T
 
-Module type With6.T
+Module type `With6.T`
 
 <a id="module-M"></a>
 

@@ -4,7 +4,7 @@ With8
 
 M
 
-Module With8.M
+Module `With8.M`
 
 <a id="module-type-S"></a>
 

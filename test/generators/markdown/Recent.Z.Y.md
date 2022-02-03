@@ -4,7 +4,7 @@ Z
 
 Y
 
-Module Z.Y
+Module `Z.Y`
 
 <a id="module-X"></a>
 

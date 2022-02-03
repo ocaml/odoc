@@ -2,7 +2,7 @@ Ocamlary
 
 A
 
-Module type Ocamlary.A
+Module type `Ocamlary.A`
 
 <a id="type-t"></a>
 

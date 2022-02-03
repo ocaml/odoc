@@ -4,7 +4,7 @@ Nested
 
 nested
 
-Module type Nested.nested
+Module type `Nested.nested`
 
 <a id="module-N"></a>
 

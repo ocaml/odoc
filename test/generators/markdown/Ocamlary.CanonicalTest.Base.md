@@ -4,7 +4,7 @@ CanonicalTest
 
 Base
 
-Module CanonicalTest.Base
+Module `CanonicalTest.Base`
 
 <a id="module-List"></a>
 

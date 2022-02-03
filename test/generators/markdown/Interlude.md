@@ -1,6 +1,6 @@
 Interlude
 
-Module Interlude
+Module `Interlude`
 
 This is the comment associated to the module.
 

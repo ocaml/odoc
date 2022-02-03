@@ -6,7 +6,7 @@ Dep2
 
 X
 
-Module 1-Arg.X
+Module `1-Arg.X`
 
 <a id="module-Y"></a>
 

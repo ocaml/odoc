@@ -2,7 +2,7 @@ Ocamlary
 
 Dep13
 
-Module Ocamlary.Dep13
+Module `Ocamlary.Dep13`
 
 <a id="class-c"></a>
 

@@ -6,7 +6,7 @@ Base_Tests
 
 C
 
-Module Base_Tests.C
+Module `Base_Tests.C`
 
 <a id="type-t"></a>
 

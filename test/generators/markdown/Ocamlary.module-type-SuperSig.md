@@ -2,7 +2,7 @@ Ocamlary
 
 SuperSig
 
-Module type Ocamlary.SuperSig
+Module type `Ocamlary.SuperSig`
 
 <a id="module-type-SubSigA"></a>
 

@@ -4,9 +4,9 @@ CollectionModule
 
 InnerModuleA
 
-Module CollectionModule.InnerModuleA
+Module `CollectionModule.InnerModuleA`
 
-This comment is for InnerModuleA .
+This comment is for `InnerModuleA` .
 
 <a id="type-t"></a>
 

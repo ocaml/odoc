@@ -4,7 +4,7 @@ F
 
 2-Arg2
 
-Parameter F.2-Arg2
+Parameter `F.2-Arg2`
 
 # Type
 

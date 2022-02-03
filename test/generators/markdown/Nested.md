@@ -1,6 +1,6 @@
 Nested
 
-Module Nested
+Module `Nested`
 
 This comment needs to be here before #235 is fixed.
 

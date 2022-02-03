@@ -2,4 +2,4 @@ Recent
 
 S
 
-Module type Recent.S
+Module type `Recent.S`

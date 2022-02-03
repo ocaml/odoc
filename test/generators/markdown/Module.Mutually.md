@@ -2,4 +2,4 @@ Module
 
 Mutually
 
-Module Module.Mutually
+Module `Module.Mutually`

@@ -4,9 +4,9 @@ MMM
 
 C
 
-Module MMM.C
+Module `MMM.C`
 
-This comment is for CollectionModule .
+This comment is for `CollectionModule` .
 
 <a id="type-collection"></a>
 

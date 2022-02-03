@@ -4,4 +4,4 @@ Local
 
 s
 
-Module type Local.s
+Module type `Local.s`

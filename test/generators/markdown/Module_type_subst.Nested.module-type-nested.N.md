@@ -6,7 +6,7 @@ nested
 
 N
 
-Module nested.N
+Module `nested.N`
 
 <a id="module-type-t"></a>
 

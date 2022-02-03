@@ -4,7 +4,7 @@ Structural
 
 w
 
-Module type Structural.w
+Module type `Structural.w`
 
 <a id="module-type-a"></a>
 

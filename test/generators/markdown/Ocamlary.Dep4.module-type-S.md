@@ -4,7 +4,7 @@ Dep4
 
 S
 
-Module type Dep4.S
+Module type `Dep4.S`
 
 <a id="module-X"></a>
 

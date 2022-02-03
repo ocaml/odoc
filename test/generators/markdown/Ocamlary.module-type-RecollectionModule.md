@@ -2,7 +2,7 @@ Ocamlary
 
 RecollectionModule
 
-Module type Ocamlary.RecollectionModule
+Module type `Ocamlary.RecollectionModule`
 
 <a id="type-collection"></a>
 

@@ -1,6 +1,6 @@
 Stop_dead_link_doc
 
-Module Stop_dead_link_doc
+Module `Stop_dead_link_doc`
 
 <a id="module-Foo"></a>
 

@@ -56,7 +56,11 @@ let subscript i = Join (String "<sub>", Join (i, String "</sub>"))
 let superscript i = Join (String "<sup>", Join (i, String "</sup>"))
 
 let code_span s =
-  if String.contains s '`' then "`` " ^ s ^ "``" else "`" ^ s ^ "`"
+  let left, right =
+    if String.contains s '`' then (String "`` ", String " ``")
+    else (String "`", String "`")
+  in
+  Join (left, Join (String s, right))
 
 let link ~href i = Link (href, i)
 

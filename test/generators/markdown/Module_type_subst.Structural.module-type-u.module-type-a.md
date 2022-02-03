@@ -6,7 +6,7 @@ u
 
 a
 
-Module type u.a
+Module type `u.a`
 
 <a id="module-type-b"></a>
 

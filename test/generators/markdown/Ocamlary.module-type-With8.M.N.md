@@ -6,7 +6,7 @@ M
 
 N
 
-Module M.N
+Module `M.N`
 
 <a id="type-t"></a>
 

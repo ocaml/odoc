@@ -4,7 +4,7 @@ Basic
 
 u2
 
-Module type Basic.u2
+Module type `Basic.u2`
 
 <a id="module-type-T"></a>
 

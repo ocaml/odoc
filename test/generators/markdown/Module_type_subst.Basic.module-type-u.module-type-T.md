@@ -6,4 +6,4 @@ u
 
 T
 
-Module type u.T
+Module type `u.T`

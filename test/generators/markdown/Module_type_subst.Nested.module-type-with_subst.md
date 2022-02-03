@@ -4,7 +4,7 @@ Nested
 
 with_subst
 
-Module type Nested.with_subst
+Module type `Nested.with_subst`
 
 <a id="module-N"></a>
 

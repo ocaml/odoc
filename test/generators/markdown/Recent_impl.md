@@ -1,6 +1,6 @@
 Recent_impl
 
-Module Recent_impl
+Module `Recent_impl`
 
 <a id="module-Foo"></a>
 

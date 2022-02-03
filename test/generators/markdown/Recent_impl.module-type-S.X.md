@@ -4,4 +4,4 @@ S
 
 X
 
-Module S.X
+Module `S.X`

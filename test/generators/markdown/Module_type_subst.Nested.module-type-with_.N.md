@@ -6,7 +6,7 @@ with_
 
 N
 
-Module with_.N
+Module `with_.N`
 
 <a id="module-type-t"></a>
 

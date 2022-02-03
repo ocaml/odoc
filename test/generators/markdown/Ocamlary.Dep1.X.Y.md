@@ -6,7 +6,7 @@ X
 
 Y
 
-Module X.Y
+Module `X.Y`
 
 <a id="class-c"></a>
 

@@ -1,6 +1,6 @@
 Labels
 
-Module Labels
+Module `Labels`
 
 # Attached to unit
 

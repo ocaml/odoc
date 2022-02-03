@@ -2,7 +2,7 @@ Ocamlary
 
 TypeExtPruned
 
-Module type Ocamlary.TypeExtPruned
+Module type `Ocamlary.TypeExtPruned`
 
 <a id="extension-decl-C"></a>
 

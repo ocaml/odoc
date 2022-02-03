@@ -1,6 +1,6 @@
 Alias
 
-Module Alias
+Module `Alias`
 
 <a id="module-X"></a>
 

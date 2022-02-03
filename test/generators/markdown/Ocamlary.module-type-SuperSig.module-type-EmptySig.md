@@ -4,7 +4,7 @@ SuperSig
 
 EmptySig
 
-Module type SuperSig.EmptySig
+Module type `SuperSig.EmptySig`
 
 <a id="type-not_actually_empty"></a>
 

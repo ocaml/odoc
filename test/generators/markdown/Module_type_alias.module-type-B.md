@@ -2,7 +2,7 @@ Module_type_alias
 
 B
 
-Module type Module_type_alias.B
+Module type `Module_type_alias.B`
 
 # Parameters
 

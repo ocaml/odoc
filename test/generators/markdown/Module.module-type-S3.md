@@ -2,7 +2,7 @@ Module
 
 S3
 
-Module type Module.S3
+Module type `Module.S3`
 
 <a id="type-t"></a>
 

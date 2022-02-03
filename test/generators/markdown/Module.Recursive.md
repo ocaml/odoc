@@ -2,4 +2,4 @@ Module
 
 Recursive
 
-Module Module.Recursive
+Module `Module.Recursive`

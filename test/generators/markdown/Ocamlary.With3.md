@@ -2,7 +2,7 @@ Ocamlary
 
 With3
 
-Module Ocamlary.With3
+Module `Ocamlary.With3`
 
 <a id="module-M"></a>
 

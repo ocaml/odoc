@@ -6,4 +6,4 @@ c
 
 M
 
-Module c.M
+Module `c.M`

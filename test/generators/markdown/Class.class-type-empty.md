@@ -2,4 +2,4 @@ Class
 
 empty
 
-Class type Class.empty
+Class type `Class.empty`

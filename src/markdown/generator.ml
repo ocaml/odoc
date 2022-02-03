@@ -41,6 +41,14 @@ let rec source_contains_text (s : Source.t) =
   in
   List.exists check_source s
 
+let rec source_contains_only_text s =
+  let check_inline i = match i.Inline.desc with Text _ -> true | _ -> false in
+  let check_source = function
+    | Source.Elt i -> List.for_all check_inline i
+    | Tag (_, s) -> source_contains_only_text s
+  in
+  List.for_all check_source s
+
 (** Split source code at the first [:] or [=]. *)
 let source_take_until_punctuation code =
   let rec is_punctuation s i =
@@ -61,6 +69,21 @@ let source_take_until_punctuation code =
     | Source.Elt i as t ->
         if is_punctuation i then Stop_and_accum ([ t ], None) else Accum [ t ]
     | Tag (_, c) -> Rec c)
+
+(** Used for code spans. Must be called only on sources that pass
+    [source_contains_only_text s]. *)
+let source_code_to_string s =
+  let inline acc i =
+    match i.Inline.desc with Text s -> s :: acc | _ -> assert false
+  in
+  let rec source_code s =
+    List.fold_left
+      (fun acc -> function
+        | Source.Elt i -> List.fold_left inline acc i
+        | Tag (_, t) -> List.rev_append (source_code t) acc)
+      [] s
+  in
+  String.concat "" (List.rev (source_code s))
 
 let rec source_code (s : Source.t) args = fold_inlines (source_code_one args) s
 
@@ -86,6 +109,8 @@ and inline_one args i =
           (inline content args)
       else inline content args
   | InternalLink (Unresolved content) -> inline content args
+  | Source content when source_contains_only_text content ->
+      code_span (source_code_to_string content)
   | Source content -> source_code content args
   | Raw_markup (_, s) -> text s
 
@@ -123,6 +148,9 @@ let rec acc_text (l : Block.t) : string =
       match h.desc with Paragraph i -> inline_text i ^ acc_text rest | _ -> "")
 
 and inline_text (i : Inline.t) =
+  let code_span s =
+    if String.contains s '`' then "`` " ^ s ^ "``" else "`" ^ s ^ "`"
+  in
   match i with
   | [] -> ""
   | h :: rest -> (

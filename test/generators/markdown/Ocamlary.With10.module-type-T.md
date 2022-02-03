@@ -4,9 +4,9 @@ With10
 
 T
 
-Module type With10.T
+Module type `With10.T`
 
-[With10.T]() is a submodule type.
+[`With10.T`]() is a submodule type.
 
 <a id="module-M"></a>
 

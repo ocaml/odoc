@@ -1,6 +1,6 @@
 Markup
 
-Module Markup
+Module `Markup`
 
 Here, we test the rendering of comment markup.
 
@@ -46,19 +46,19 @@ This paragraph has some styled elements: **bold** and _italic_ , **_bold italic_
 
 Note: _In italics _emphasis_ is rendered as normal text while _emphasis _in_ emphasis_ is rendered in italics._ _It also work the same in [links in italics with _emphasis _in_ emphasis_ .](#)_
 
-code is a different kind of markup that doesn't allow nested markup.
+`code` is a different kind of markup that doesn't allow nested markup.
 
 It's possible for two markup elements to appear **next** _to_ each other and have a space, and appear **next** _to_ each other with no space. It doesn't matter **how** _much_ space it was in the source: in this sentence, it was two space characters. And in this one, there is **a** _newline_ .
 
-This is also true between _non-_ code markup _and_ code .
+This is also true between _non-_ `code` markup _and_ `code` .
 
-Code can appear **inside other markup** . Its display shouldn't be affected.
+Code can appear **inside `other` markup** . Its display shouldn't be affected.
 
 # Links and references
 
-This is a [link](#) . It sends you to the top of this page. Links can have markup inside them: [**bold**](#) , [_italics_](#) , [_emphasis_](#) , [super <sup>script</sup>](#) , [sub <sub>script</sub>](#) , and [code](#) . Links can also be nested _[inside](#)_ markup. Links cannot be nested inside each other. This link has no replacement text: [#](#) . The text is filled in by odoc. This is a shorthand link: [#](#) . The text is also filled in by odoc in this case.
+This is a [link](#) . It sends you to the top of this page. Links can have markup inside them: [**bold**](#) , [_italics_](#) , [_emphasis_](#) , [super <sup>script</sup>](#) , [sub <sub>script</sub>](#) , and [`code`](#) . Links can also be nested _[inside](#)_ markup. Links cannot be nested inside each other. This link has no replacement text: [#](#) . The text is filled in by odoc. This is a shorthand link: [#](#) . The text is also filled in by odoc in this case.
 
-This is a reference to [foo](#val-foo) . References can have replacement text: [the value foo](#val-foo) . Except for the special lookup support, references are pretty much just like links. The replacement text can have nested styles: [**bold**](#val-foo) , [_italic_](#val-foo) , [_emphasis_](#val-foo) , [super <sup>script</sup>](#val-foo) , [sub <sub>script</sub>](#val-foo) , and [code](#val-foo) . It's also possible to surround a reference in a style: **[foo](#val-foo)** . References can't be nested inside references, and links and references can't be nested inside each other.
+This is a reference to [`foo`](#val-foo) . References can have replacement text: [the value foo](#val-foo) . Except for the special lookup support, references are pretty much just like links. The replacement text can have nested styles: [**bold**](#val-foo) , [_italic_](#val-foo) , [_emphasis_](#val-foo) , [super <sup>script</sup>](#val-foo) , [sub <sub>script</sub>](#val-foo) , and [`code`](#val-foo) . It's also possible to surround a reference in a style: **[`foo`](#val-foo)** . References can't be nested inside references, and links and references can't be nested inside each other.
 
 # Preformatted text
 
@@ -114,7 +114,7 @@ just creates a paragraph outside the list.
   
   - and can include references
   
-  - [foo](#val-foo)
+  - [`foo`](#val-foo)
 
 # Unicode
 
@@ -133,11 +133,11 @@ Raw HTML can be <input type="text" placeholder="inserted"> as inline elements in
 
 # Modules
 
-@[X](Markup.X.md):
+@[`X`](Markup.X.md):
 
-@[X](Markup.X.md):
+@[`X`](Markup.X.md):
 
-@[Y](Markup.Y.md):
+@[`Y`](Markup.Y.md):
 
 # Tags
 
@@ -155,7 +155,7 @@ Each comment can end with zero or more tags. Here are some examples:
 
 @see [#](#):
 
-@see foo.ml:
+@see `foo.ml`:
 
 @see Foo:
 

@@ -2,7 +2,7 @@ Ocamlary
 
 Empty
 
-Module Ocamlary.Empty
+Module `Ocamlary.Empty`
 
 A plain, empty module
 

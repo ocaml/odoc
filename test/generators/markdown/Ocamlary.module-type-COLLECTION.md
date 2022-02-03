@@ -2,11 +2,11 @@ Ocamlary
 
 COLLECTION
 
-Module type Ocamlary.COLLECTION
+Module type `Ocamlary.COLLECTION`
 
 module type of
 
-This comment is for CollectionModule .
+This comment is for `CollectionModule` .
 
 <a id="type-collection"></a>
 

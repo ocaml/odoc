@@ -6,7 +6,7 @@ Base
 
 List
 
-Module Base.List
+Module `Base.List`
 
 <a id="type-t"></a>
 

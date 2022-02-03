@@ -2,7 +2,7 @@ Ocamlary
 
 Recollection
 
-Module Ocamlary.Recollection
+Module `Ocamlary.Recollection`
 
 # Parameters
 
@@ -12,7 +12,7 @@ Module Ocamlary.Recollection
 
 # Signature
 
-This comment is for CollectionModule .
+This comment is for `CollectionModule` .
 
 <a id="type-collection"></a>
 

@@ -4,7 +4,7 @@ ToInclude
 
 IncludedA
 
-Module ToInclude.IncludedA
+Module `ToInclude.IncludedA`
 
 <a id="type-t"></a>
 

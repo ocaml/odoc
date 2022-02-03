@@ -2,7 +2,7 @@ Ocamlary
 
 Dep1
 
-Module Ocamlary.Dep1
+Module `Ocamlary.Dep1`
 
 <a id="module-type-S"></a>
 

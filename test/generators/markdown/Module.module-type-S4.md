@@ -2,7 +2,7 @@ Module
 
 S4
 
-Module type Module.S4
+Module type `Module.S4`
 
 <a id="type-u"></a>
 

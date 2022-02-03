@@ -4,7 +4,7 @@ Dep11
 
 S
 
-Module type Dep11.S
+Module type `Dep11.S`
 
 <a id="class-c"></a>
 

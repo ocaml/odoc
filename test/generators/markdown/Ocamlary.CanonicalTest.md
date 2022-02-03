@@ -2,7 +2,7 @@ Ocamlary
 
 CanonicalTest
 
-Module Ocamlary.CanonicalTest
+Module `Ocamlary.CanonicalTest`
 
 <a id="module-Base"></a>
 

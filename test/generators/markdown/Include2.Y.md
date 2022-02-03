@@ -2,7 +2,7 @@ Include2
 
 Y
 
-Module Include2.Y
+Module `Include2.Y`
 
 Top-comment of Y.
 

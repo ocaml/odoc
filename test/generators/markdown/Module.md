@@ -1,6 +1,6 @@
 Module
 
-Module Module
+Module `Module`
 
 Foo.
 

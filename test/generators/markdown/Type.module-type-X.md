@@ -2,7 +2,7 @@ Type
 
 X
 
-Module type Type.X
+Module type `Type.X`
 
 <a id="type-t"></a>
 

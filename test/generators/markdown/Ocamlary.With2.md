@@ -2,7 +2,7 @@ Ocamlary
 
 With2
 
-Module Ocamlary.With2
+Module `Ocamlary.With2`
 
 <a id="module-type-S"></a>
 

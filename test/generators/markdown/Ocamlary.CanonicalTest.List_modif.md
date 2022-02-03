@@ -4,7 +4,7 @@ CanonicalTest
 
 List_modif
 
-Module CanonicalTest.List_modif
+Module `CanonicalTest.List_modif`
 
 <a id="type-t"></a>
 

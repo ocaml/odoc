@@ -8,9 +8,9 @@ InnerModuleA
 
 InnerModuleA'
 
-Module InnerModuleA.InnerModuleA'
+Module `InnerModuleA.InnerModuleA'`
 
-This comment is for InnerModuleA' .
+This comment is for `InnerModuleA'` .
 
 <a id="type-t"></a>
 

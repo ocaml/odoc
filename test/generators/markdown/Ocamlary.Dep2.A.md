@@ -4,7 +4,7 @@ Dep2
 
 A
 
-Module Dep2.A
+Module `Dep2.A`
 
 <a id="module-Y"></a>
 

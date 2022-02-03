@@ -6,4 +6,4 @@ with_subst
 
 N
 
-Module with_subst.N
+Module `with_subst.N`

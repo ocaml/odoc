@@ -2,7 +2,7 @@ Ocamlary
 
 Empty
 
-Module type Ocamlary.Empty
+Module type `Ocamlary.Empty`
 
 An ambiguous, misnamed module type
 

@@ -2,7 +2,7 @@ Recent
 
 S1
 
-Module type Recent.S1
+Module type `Recent.S1`
 
 # Parameters
 

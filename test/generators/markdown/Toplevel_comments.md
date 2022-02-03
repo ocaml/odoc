@@ -1,6 +1,6 @@
 Toplevel_comments
 
-Module Toplevel_comments
+Module `Toplevel_comments`
 
 A doc comment at the beginning of a module is considered to be that module's doc.
 

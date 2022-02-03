@@ -2,7 +2,7 @@ Ocamlary
 
 Dep9
 
-Module Ocamlary.Dep9
+Module `Ocamlary.Dep9`
 
 # Parameters
 

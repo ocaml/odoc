@@ -2,9 +2,9 @@ Ocamlary
 
 FunctorTypeOf
 
-Module Ocamlary.FunctorTypeOf
+Module `Ocamlary.FunctorTypeOf`
 
-This comment is for FunctorTypeOf .
+This comment is for `FunctorTypeOf` .
 
 # Parameters
 

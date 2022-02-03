@@ -2,7 +2,7 @@ Functor
 
 F1
 
-Module Functor.F1
+Module `Functor.F1`
 
 # Parameters
 

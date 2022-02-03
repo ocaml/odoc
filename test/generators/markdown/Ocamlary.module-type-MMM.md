@@ -2,7 +2,7 @@ Ocamlary
 
 MMM
 
-Module type Ocamlary.MMM
+Module type `Ocamlary.MMM`
 
 <a id="module-C"></a>
 

@@ -4,9 +4,9 @@ Recollection
 
 1-C
 
-Parameter Recollection.1-C
+Parameter `Recollection.1-C`
 
-This comment is for CollectionModule .
+This comment is for `CollectionModule` .
 
 <a id="type-collection"></a>
 

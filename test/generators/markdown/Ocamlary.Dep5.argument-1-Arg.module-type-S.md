@@ -6,7 +6,7 @@ Dep5
 
 S
 
-Module type 1-Arg.S
+Module type `1-Arg.S`
 
 <a id="module-X"></a>
 

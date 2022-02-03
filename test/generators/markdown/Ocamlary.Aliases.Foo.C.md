@@ -6,7 +6,7 @@ Foo
 
 C
 
-Module Foo.C
+Module `Foo.C`
 
 <a id="type-t"></a>
 

@@ -6,9 +6,9 @@ FunctorTypeOf
 
 InnerModuleA
 
-Module 1-Collection.InnerModuleA
+Module `1-Collection.InnerModuleA`
 
-This comment is for InnerModuleA .
+This comment is for `InnerModuleA` .
 
 <a id="type-t"></a>
 

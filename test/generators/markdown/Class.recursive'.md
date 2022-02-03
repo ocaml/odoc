@@ -2,4 +2,4 @@ Class
 
 recursive'
 
-Class Class.recursive'
+Class `Class.recursive'`

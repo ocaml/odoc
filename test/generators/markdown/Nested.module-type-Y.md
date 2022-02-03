@@ -2,7 +2,7 @@ Nested
 
 Y
 
-Module type Nested.Y
+Module type `Nested.Y`
 
 This is module type Y.
 

@@ -2,7 +2,7 @@ Nested
 
 inherits
 
-Class Nested.inherits
+Class `Nested.inherits`
 
 <a id=""></a>
 

@@ -8,7 +8,7 @@ a
 
 b
 
-Module type a.b
+Module type `a.b`
 
 <a id="module-type-c"></a>
 

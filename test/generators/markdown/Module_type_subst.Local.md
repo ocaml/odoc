@@ -2,7 +2,7 @@ Module_type_subst
 
 Local
 
-Module Module_type_subst.Local
+Module `Module_type_subst.Local`
 
 <a id="type-local"></a>
 

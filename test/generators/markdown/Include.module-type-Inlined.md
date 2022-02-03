@@ -2,7 +2,7 @@ Include
 
 Inlined
 
-Module type Include.Inlined
+Module type `Include.Inlined`
 
 <a id="type-u"></a>
 

@@ -4,7 +4,7 @@ Structural
 
 u
 
-Module type Structural.u
+Module type `Structural.u`
 
 <a id="module-type-a"></a>
 

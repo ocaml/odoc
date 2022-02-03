@@ -4,7 +4,7 @@ SigForMod
 
 Inner
 
-Module SigForMod.Inner
+Module `SigForMod.Inner`
 
 <a id="module-type-Empty"></a>
 

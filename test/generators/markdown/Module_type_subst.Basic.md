@@ -2,7 +2,7 @@ Module_type_subst
 
 Basic
 
-Module Module_type_subst.Basic
+Module `Module_type_subst.Basic`
 
 <a id="module-type-u"></a>
 

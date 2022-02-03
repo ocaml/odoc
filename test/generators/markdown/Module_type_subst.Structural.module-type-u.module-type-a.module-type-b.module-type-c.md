@@ -10,7 +10,7 @@ b
 
 c
 
-Module type b.c
+Module type `b.c`
 
 <a id="type-t"></a>
 

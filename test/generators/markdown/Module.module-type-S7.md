@@ -2,7 +2,7 @@ Module
 
 S7
 
-Module type Module.S7
+Module type `Module.S7`
 
 <a id="type-t"></a>
 

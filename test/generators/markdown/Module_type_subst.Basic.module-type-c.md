@@ -4,7 +4,7 @@ Basic
 
 c
 
-Module type Basic.c
+Module type `Basic.c`
 
 <a id="module-M"></a>
 

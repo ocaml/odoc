@@ -2,7 +2,7 @@ Nested
 
 F
 
-Module Nested.F
+Module `Nested.F`
 
 This is a functor F.
 

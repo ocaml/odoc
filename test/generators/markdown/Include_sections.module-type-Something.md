@@ -2,7 +2,7 @@ Include_sections
 
 Something
 
-Module type Include_sections.Something
+Module type `Include_sections.Something`
 
 A module type.
 

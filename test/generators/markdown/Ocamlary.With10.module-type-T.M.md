@@ -6,7 +6,7 @@ T
 
 M
 
-Module T.M
+Module `T.M`
 
 <a id="module-type-S"></a>
 

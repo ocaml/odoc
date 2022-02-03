@@ -2,7 +2,7 @@ Functor2
 
 XF
 
-Module type Functor2.XF
+Module type `Functor2.XF`
 
 # Parameters
 

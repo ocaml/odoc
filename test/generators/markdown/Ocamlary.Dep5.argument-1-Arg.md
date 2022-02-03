@@ -4,7 +4,7 @@ Dep5
 
 1-Arg
 
-Parameter Dep5.1-Arg
+Parameter `Dep5.1-Arg`
 
 <a id="module-type-T"></a>
 

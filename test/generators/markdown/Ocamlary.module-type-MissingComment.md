@@ -2,7 +2,7 @@ Ocamlary
 
 MissingComment
 
-Module type Ocamlary.MissingComment
+Module type `Ocamlary.MissingComment`
 
 An ambiguous, misnamed module type
 

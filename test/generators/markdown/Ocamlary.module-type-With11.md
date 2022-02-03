@@ -2,7 +2,7 @@ Ocamlary
 
 With11
 
-Module type Ocamlary.With11
+Module type `Ocamlary.With11`
 
 <a id="module-M"></a>
 

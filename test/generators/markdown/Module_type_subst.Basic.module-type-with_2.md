@@ -4,7 +4,7 @@ Basic
 
 with_2
 
-Module type Basic.with_2
+Module type `Basic.with_2`
 
 <a id="module-type-T"></a>
 

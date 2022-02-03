@@ -6,7 +6,7 @@ SubSigA
 
 SubSigAMod
 
-Module SubSigA.SubSigAMod
+Module `SubSigA.SubSigAMod`
 
 <a id="type-sub_sig_a_mod"></a>
 

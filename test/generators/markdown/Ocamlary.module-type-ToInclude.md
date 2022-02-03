@@ -2,7 +2,7 @@ Ocamlary
 
 ToInclude
 
-Module type Ocamlary.ToInclude
+Module type `Ocamlary.ToInclude`
 
 <a id="module-IncludedA"></a>
 

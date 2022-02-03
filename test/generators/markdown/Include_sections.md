@@ -1,6 +1,6 @@
 Include_sections
 
-Module Include_sections
+Module `Include_sections`
 
 <a id="module-type-Something"></a>
 
@@ -8,7 +8,7 @@ Module Include_sections
 
 A module type.
 
-Let's include [Something](Include_sections.module-type-Something.md) once
+Let's include [`Something`](Include_sections.module-type-Something.md) once
 
 # Something 1
 
@@ -24,7 +24,7 @@ Some text.
 
 # Second include
 
-Let's include [Something](Include_sections.module-type-Something.md) a second time: the heading level should be shift here.
+Let's include [`Something`](Include_sections.module-type-Something.md) a second time: the heading level should be shift here.
 
 # Something 1
 

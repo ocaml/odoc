@@ -4,7 +4,7 @@ Dep6
 
 X
 
-Module Dep6.X
+Module `Dep6.X`
 
 <a id="module-type-R"></a>
 

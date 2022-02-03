@@ -1,6 +1,6 @@
 Module_type_subst
 
-Module Module_type_subst
+Module `Module_type_subst`
 
 <a id="module-Local"></a>
 

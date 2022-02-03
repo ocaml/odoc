@@ -2,7 +2,7 @@ Alias
 
 X
 
-Module Alias.X
+Module `Alias.X`
 
 <a id="type-t"></a>
 

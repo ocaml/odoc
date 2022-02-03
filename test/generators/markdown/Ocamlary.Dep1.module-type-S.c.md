@@ -6,7 +6,7 @@ S
 
 c
 
-Class S.c
+Class `S.c`
 
 <a id="method-m"></a>
 

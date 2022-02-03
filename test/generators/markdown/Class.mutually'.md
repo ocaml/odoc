@@ -2,4 +2,4 @@ Class
 
 mutually'
 
-Class Class.mutually'
+Class `Class.mutually'`

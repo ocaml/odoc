@@ -2,7 +2,7 @@ Include
 
 Dorminant_Module
 
-Module type Include.Dorminant_Module
+Module type `Include.Dorminant_Module`
 
 <a id="val-a"></a>
 

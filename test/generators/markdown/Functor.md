@@ -1,6 +1,6 @@
 Functor
 
-Module Functor
+Module `Functor`
 
 <a id="module-type-S"></a>
 

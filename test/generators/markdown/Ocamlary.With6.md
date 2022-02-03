@@ -2,7 +2,7 @@ Ocamlary
 
 With6
 
-Module Ocamlary.With6
+Module `Ocamlary.With6`
 
 <a id="module-type-T"></a>
 

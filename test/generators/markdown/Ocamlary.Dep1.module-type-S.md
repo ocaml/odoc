@@ -4,7 +4,7 @@ Dep1
 
 S
 
-Module type Dep1.S
+Module type `Dep1.S`
 
 <a id="class-c"></a>
 

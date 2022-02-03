@@ -2,7 +2,7 @@ Functor
 
 S1
 
-Module type Functor.S1
+Module type `Functor.S1`
 
 # Parameters
 

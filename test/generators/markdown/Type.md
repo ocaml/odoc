@@ -1,6 +1,6 @@
 Type
 
-Module Type
+Module `Type`
 
 <a id="type-abstract"></a>
 
@@ -112,7 +112,7 @@ Some
 
 <a id="type-variant_e.a"></a>
 
-######    a : int ;
+######    `;int : a`
 
 }
 
@@ -150,7 +150,7 @@ foo
 
 <a id="type-variant_c.a"></a>
 
-######    a : int ;
+######    `;int : a`
 
 }
 
@@ -192,27 +192,27 @@ foo
 
 <a id="type-record.a"></a>
 
-######    a : int ;
+######    `;int : a`
 
 <a id="type-record.b"></a>
 
-######    mutable b : int ;
+######    `;int : b mutable`
 
 <a id="type-record.c"></a>
 
-######    c : int ;
+######    `;int : c`
 
 foo
 
 <a id="type-record.d"></a>
 
-######    d : int ;
+######    `;int : d`
 
 
 
 <a id="type-record.e"></a>
 
-######    e : 'a. 'a ;
+######    `;'a'a.  : e`
 
 }
 
@@ -222,19 +222,19 @@ foo
 
 <a id="type-polymorphic_variant.A"></a>
 
-######    | `A
+######    `| ` `` `A ``
 
 <a id="type-polymorphic_variant.B"></a>
 
-######    | `B of int
+######    `| ` `` int of `B ``
 
 <a id="type-polymorphic_variant.C"></a>
 
-######    | `C of int * unit
+######    `| ` `` unit*  int of `C ``
 
 <a id="type-polymorphic_variant.D"></a>
 
-######    | `D
+######    `| ` `` `D ``
 
 ]
 
@@ -244,11 +244,11 @@ foo
 
 <a id="type-polymorphic_variant_extension.polymorphic_variant"></a>
 
-######    | [polymorphic_variant](#type-polymorphic_variant)
+######    `| ` [polymorphic_variant](#type-polymorphic_variant)
 
 <a id="type-polymorphic_variant_extension.E"></a>
 
-######    | `E
+######    `| ` `` `E ``
 
 ]
 
@@ -258,7 +258,7 @@ foo
 
 <a id="type-nested_polymorphic_variant.A"></a>
 
-######    | `A of [ `B | `C ]
+######    `| ` `` [ `B | `C ] of `A ``
 
 ]
 
@@ -272,7 +272,7 @@ foo
 
 <a id="type-private_extenion.polymorphic_variant"></a>
 
-######    | [polymorphic_variant](#type-polymorphic_variant)
+######    `| ` [polymorphic_variant](#type-polymorphic_variant)
 
 ]
 

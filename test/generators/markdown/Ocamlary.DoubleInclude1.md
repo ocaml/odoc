@@ -2,7 +2,7 @@ Ocamlary
 
 DoubleInclude1
 
-Module Ocamlary.DoubleInclude1
+Module `Ocamlary.DoubleInclude1`
 
 <a id="module-DoubleInclude2"></a>
 

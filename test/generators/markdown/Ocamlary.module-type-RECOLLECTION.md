@@ -2,7 +2,7 @@ Ocamlary
 
 RECOLLECTION
 
-Module type Ocamlary.RECOLLECTION
+Module type `Ocamlary.RECOLLECTION`
 
 <a id="module-C"></a>
 

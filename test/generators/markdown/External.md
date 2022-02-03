@@ -1,6 +1,6 @@
 External
 
-Module External
+Module `External`
 
 <a id="val-foo"></a>
 

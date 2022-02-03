@@ -6,4 +6,4 @@ Inner
 
 Empty
 
-Module type Inner.Empty
+Module type `Inner.Empty`

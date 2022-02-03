@@ -4,9 +4,9 @@ FunctorTypeOf
 
 1-Collection
 
-Parameter FunctorTypeOf.1-Collection
+Parameter `FunctorTypeOf.1-Collection`
 
-This comment is for CollectionModule .
+This comment is for `CollectionModule` .
 
 <a id="type-collection"></a>
 

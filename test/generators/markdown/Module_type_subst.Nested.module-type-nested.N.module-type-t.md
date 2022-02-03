@@ -8,4 +8,4 @@ N
 
 t
 
-Module type N.t
+Module type `N.t`

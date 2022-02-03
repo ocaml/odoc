@@ -2,7 +2,7 @@ Ocamlary
 
 IncludeInclude1
 
-Module Ocamlary.IncludeInclude1
+Module `Ocamlary.IncludeInclude1`
 
 <a id="module-type-IncludeInclude2"></a>
 

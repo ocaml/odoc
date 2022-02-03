@@ -6,7 +6,7 @@ Dep7
 
 T
 
-Module type 1-Arg.T
+Module type `1-Arg.T`
 
 <a id="module-type-R"></a>
 

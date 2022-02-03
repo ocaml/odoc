@@ -4,7 +4,7 @@ CanonicalTest
 
 Base_Tests
 
-Module CanonicalTest.Base_Tests
+Module `CanonicalTest.Base_Tests`
 
 <a id="module-C"></a>
 

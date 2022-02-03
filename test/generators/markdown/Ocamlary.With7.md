@@ -2,7 +2,7 @@ Ocamlary
 
 With7
 
-Module Ocamlary.With7
+Module `Ocamlary.With7`
 
 # Parameters
 

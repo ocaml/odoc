@@ -4,7 +4,7 @@ Basic
 
 a
 
-Module type Basic.a
+Module type `Basic.a`
 
 <a id="module-type-b"></a>
 

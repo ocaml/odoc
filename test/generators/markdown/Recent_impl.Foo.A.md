@@ -4,7 +4,7 @@ Foo
 
 A
 
-Module Foo.A
+Module `Foo.A`
 
 <a id="type-t"></a>
 

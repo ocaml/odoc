@@ -1,6 +1,6 @@
 Val
 
-Module Val
+Module `Val`
 
 <a id="val-documented"></a>
 
