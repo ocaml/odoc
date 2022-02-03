@@ -584,15 +584,15 @@ This comment is for `poly_variant`Wow! It was a polymorphic variant!
 
 <a id="type-full_gadt.First"></a>
 
-######    | First : 'a ->
+######    | First : 'a -> ( 'a , unit ) [full_gadt](#type-full_gadt)
 
 <a id="type-full_gadt.Second"></a>
 
-######    | Second : 'a ->
+######    | Second : 'a -> ( unit , 'a ) [full_gadt](#type-full_gadt)
 
 <a id="type-full_gadt.Exist"></a>
 
-######    | Exist : 'a * 'b ->
+######    | Exist : 'a * 'b -> ( 'b , unit ) [full_gadt](#type-full_gadt)
 
 This comment is for `full_gadt`Wow! It was a GADT!
 
@@ -610,7 +610,7 @@ This comment is for `full_gadt`Wow! It was a GADT!
 
 <a id="type-partial_gadt.ExistGadtTag"></a>
 
-######    | ExistGadtTag : ( 'a -> 'b ) ->
+######    | ExistGadtTag : ( 'a -> 'b ) -> 'a [partial_gadt](#type-partial_gadt)
 
 This comment is for `partial_gadt`Wow! It was a mixed GADT!
 
@@ -791,15 +791,15 @@ This comment is for `poly_variant_union`
 
 <a id="type-full_gadt_alias.First"></a>
 
-######    | First : 'a ->
+######    | First : 'a -> ( 'a , unit ) [full_gadt_alias](#type-full_gadt_alias)
 
 <a id="type-full_gadt_alias.Second"></a>
 
-######    | Second : 'a ->
+######    | Second : 'a -> ( unit , 'a ) [full_gadt_alias](#type-full_gadt_alias)
 
 <a id="type-full_gadt_alias.Exist"></a>
 
-######    | Exist : 'a * 'b ->
+######    | Exist : 'a * 'b -> ( 'b , unit ) [full_gadt_alias](#type-full_gadt_alias)
 
 This comment is for `full_gadt_alias`
 
@@ -817,7 +817,7 @@ This comment is for `full_gadt_alias`
 
 <a id="type-partial_gadt_alias.ExistGadtTag"></a>
 
-######    | ExistGadtTag : ( 'a -> 'b ) ->
+######    | ExistGadtTag : ( 'a -> 'b ) -> 'a [partial_gadt_alias](#type-partial_gadt_alias)
 
 This comment is for `partial_gadt_alias`
 
@@ -825,7 +825,7 @@ This comment is for `partial_gadt_alias`
 
 ###### exception Exn_arrow :
 
-> unit ->
+> unit -> exn
 
 
 This comment is for 

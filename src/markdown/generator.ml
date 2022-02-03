@@ -62,14 +62,12 @@ let source_take_until_punctuation code =
         if is_punctuation i then Stop_and_accum ([ t ], None) else Accum [ t ]
     | Tag (_, c) -> Rec c)
 
-let rec source_code (s : Source.t) args =
-  match s with
-  | [] -> noop
-  | _ when not (source_contains_text s) -> noop
-  | Source.Elt i :: t -> inline i args ++ source_code t args
-  | Tag (Some "arrow", _) :: _ ->
-      text "->" (* takes care of the Entity branch of Inline.t *)
-  | Tag (_, s) :: t -> source_code s args ++ source_code t args
+let rec source_code (s : Source.t) args = fold_inlines (source_code_one args) s
+
+and source_code_one args = function
+  | Source.Elt i -> inline i args
+  | Tag (Some "arrow", _) -> text "->"
+  | Tag (_, s) -> source_code s args
 
 and inline l args = fold_inlines (inline_one args) l
 

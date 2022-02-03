@@ -164,11 +164,11 @@ foo
 
 <a id="type-gadt.B"></a>
 
-######    | B : int ->
+######    | B : int -> string [gadt](#type-gadt)
 
 <a id="type-gadt.C"></a>
 
-######    | C : [variant_c](#type-variant_c) ->
+######    | C : [variant_c](#type-variant_c) -> unit [gadt](#type-gadt)
 
 <a id="type-degenerate_gadt"></a>
 

@@ -54,7 +54,7 @@ foo
 
 <a id="type-gadt.B"></a>
 
-######    | B : int ->
+######    | B : int -> string [gadt](#type-gadt)
 
 foo
 
@@ -66,7 +66,7 @@ foo
 
 ######    a : int ;
 
-} ->
+} -> unit [gadt](#type-gadt)
 
 <a id="type-polymorphic_variant"></a>
 
@@ -114,7 +114,7 @@ bar
 
 <a id="type-empty_conj.X"></a>
 
-######    | X : [< `X of & 'a & int * float ] ->
+######    | X : [< `X of & 'a & int * float ] -> [empty_conj](#type-empty_conj)
 
 <a id="type-conj"></a>
 
@@ -122,7 +122,7 @@ bar
 
 <a id="type-conj.X"></a>
 
-######    | X : [< `X of int & [< `B of int & float ] ] ->
+######    | X : [< `X of int & [< `B of int & float ] ] -> [conj](#type-conj)
 
 <a id="val-empty_conj"></a>
 
