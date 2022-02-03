@@ -12,7 +12,7 @@ This comment is for `CollectionModule` .
 
 ###### type collection
 
-This comment is for `collection`
+This comment is for `collection` .
 
 <a id="type-element"></a>
 
@@ -22,7 +22,7 @@ This comment is for `collection`
 
 ###### module [InnerModuleA](Ocamlary.module-type-MMM.C.InnerModuleA.md)
 
-This comment is for `InnerModuleA`
+This comment is for `InnerModuleA` .
 
 <a id="module-type-InnerModuleTypeA"></a>
 
@@ -31,4 +31,4 @@ This comment is for `InnerModuleA`
 > [InnerModuleA.InnerModuleTypeA'](Ocamlary.module-type-MMM.C.InnerModuleA.module-type-InnerModuleTypeA'.md)
 
 
-This comment is for `InnerModuleTypeA`
+This comment is for `InnerModuleTypeA` .

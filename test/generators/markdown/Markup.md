@@ -172,7 +172,7 @@ Each comment can end with zero or more tags. Here are some examples:
 > unit
 
 
-Comments in structure items 
+Comments in structure items **support** _markup_ , t <sup>o</sup> <sub>o</sub> .
 
 Some modules to support references.
 

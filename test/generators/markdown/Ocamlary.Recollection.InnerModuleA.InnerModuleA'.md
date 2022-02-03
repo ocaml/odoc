@@ -17,4 +17,4 @@ This comment is for `InnerModuleA'` .
 > ( unit , unit ) [a_function](Ocamlary.md#type-a_function)
 
 
-This comment is for `t`
+This comment is for `t` .

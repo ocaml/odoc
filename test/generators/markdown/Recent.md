@@ -32,7 +32,7 @@ foo
 
 ######    | D
 
-
+_bar_
 
 <a id="type-variant.E"></a>
 

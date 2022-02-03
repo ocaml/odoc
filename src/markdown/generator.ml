@@ -141,33 +141,6 @@ and description_one args { Description.key; definition; _ } =
   in
   paragraph (join (text "@") (join key (text ":")) ++ def)
 
-let rec acc_text (l : Block.t) : string =
-  match l with
-  | [] -> ""
-  | h :: rest -> (
-      match h.desc with Paragraph i -> inline_text i ^ acc_text rest | _ -> "")
-
-and inline_text (i : Inline.t) =
-  let code_span s =
-    if String.contains s '`' then "`` " ^ s ^ "``" else "`" ^ s ^ "`"
-  in
-  match i with
-  | [] -> ""
-  | h :: rest -> (
-      match h.desc with
-      | Text s -> s ^ inline_text rest
-      | Source s ->
-          let rec source_text (s' : Source.t) =
-            match s' with
-            | [] -> ""
-            | t :: rest_t -> (
-                match t with
-                | Elt i -> inline_text i ^ source_text rest_t
-                | _ -> "")
-          in
-          code_span (source_text s)
-      | _ -> "")
-
 (** Generates the 6-heading used to differentiate items. Non-breaking spaces
     are inserted just before the text, to simulate indentation depending on
     [nesting_level].
@@ -217,11 +190,6 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
               | _ -> Stop_and_keep)
           in
           let f (content, doc, (anchor : Odoc_document.Url.t option)) =
-            let doc =
-              match doc with
-              | [] -> noop_block
-              | doc -> paragraph (text (acc_text doc))
-            in
             let content =
               let nesting_level = nesting_level + 1 in
               match content with
@@ -233,7 +201,7 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
                     (item_heading nesting_level (source_code c args))
                     (continue rest)
             in
-            let item = blocks content doc in
+            let item = blocks content (block args doc) in
             if args.generate_links then
               let anchor =
                 match anchor with Some a -> a.anchor | None -> ""
@@ -290,11 +258,7 @@ and item (l : Item.t list) args nesting_level =
             | begin_code, content -> (begin_code, content)
           in
           let render_declaration ~anchor ~doc heading content =
-            let doc =
-              match doc with
-              | [] -> noop_block
-              | doc -> paragraph (text (acc_text doc))
-            and anchor =
+            let anchor =
               if args.generate_links then
                 let anchor =
                   match anchor with Some x -> x.Url.Anchor.anchor | None -> ""
@@ -304,7 +268,7 @@ and item (l : Item.t list) args nesting_level =
             in
             anchor
             +++ item_heading nesting_level (source_code heading args)
-            +++ content +++ doc +++ continue rest
+            +++ content +++ block args doc +++ continue rest
           in
           match take_code_from_declaration content with
           | code, [] ->

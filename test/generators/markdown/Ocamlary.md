@@ -140,7 +140,7 @@ A plain, empty module signature alias of
 
 ###### module [ModuleWithSignature](Ocamlary.ModuleWithSignature.md)
 
-A plain module of a signature of 
+A plain module of a signature of [`EmptySig`](Ocamlary.module-type-EmptySig.md) (reference)
 
 <a id="module-ModuleWithSignatureAlias"></a>
 
@@ -168,7 +168,7 @@ For a good time, see [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSig
 
 ###### module [Buffer](Ocamlary.Buffer.md)
 
-References are resolved after everything, so `{!Buffer.t}`
+References are resolved after everything, so `{!Buffer.t}` won't resolve.
 
 Some text before exception title.
 
@@ -200,13 +200,13 @@ Unary exception constructor over binary tuple
 
 ###### exception EmptySig
 
-
+[`EmptySig`](Ocamlary.module-type-EmptySig.md) is a module and [`EmptySig`](#exception-EmptySig) is this exception.
 
 <a id="exception-EmptySigAlias"></a>
 
 ###### exception EmptySigAlias
 
-
+[`EmptySigAlias`](#exception-EmptySigAlias) is this exception.
 
 ### Basic type and value stuff with advanced doc comments
 
@@ -219,7 +219,7 @@ Unary exception constructor over binary tuple
 > 'a -> 'b
 
 
-
+[`a_function`](#type-a_function) is this type and [`a_function`](#val-a_function) is the value below.
 
 <a id="val-a_function"></a>
 
@@ -228,7 +228,11 @@ Unary exception constructor over binary tuple
 > x : int -> int
 
 
-This is `a_function`
+This is `a_function` with param and return type.
+
+@parameter x:
+
+@returns:
 
 <a id="val-fun_fun_fun"></a>
 
@@ -251,7 +255,7 @@ This is `a_function`
 > unit -> unit
 
 
-
+@raises Not_found:
 
 <a id="val-ocaml_org"></a>
 
@@ -260,7 +264,7 @@ This is `a_function`
 > string
 
 
-
+@see [http://ocaml.org/](http://ocaml.org/):
 
 <a id="val-some_file"></a>
 
@@ -269,7 +273,7 @@ This is `a_function`
 > string
 
 
-
+@see `some_file`:
 
 <a id="val-some_doc"></a>
 
@@ -278,7 +282,7 @@ This is `a_function`
 > string
 
 
-
+@see some_doc:
 
 <a id="val-since_mesozoic"></a>
 
@@ -289,6 +293,8 @@ This is `a_function`
 
 This value was introduced in the Mesozoic era.
 
+@since: mesozoic
+
 <a id="val-changing"></a>
 
 ###### val changing :
@@ -297,6 +303,12 @@ This value was introduced in the Mesozoic era.
 
 
 This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
+
+@before 1.0.0:
+
+@before 1.1.0:
+
+@version: 1.2.0
 
 ### Some Operators
 
@@ -408,7 +420,7 @@ This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 ###### module [CollectionModule](Ocamlary.CollectionModule.md)
 
-This comment is for `CollectionModule`
+This comment is for `CollectionModule` .
 
 <a id="module-type-COLLECTION"></a>
 
@@ -450,13 +462,13 @@ This module type includes two signatures.
 
 ###### module [FunctorTypeOf](Ocamlary.FunctorTypeOf.md)
 
-This comment is for `FunctorTypeOf`
+This comment is for `FunctorTypeOf` .
 
 <a id="module-type-IncludeModuleType"></a>
 
 ###### module type [IncludeModuleType](Ocamlary.module-type-IncludeModuleType.md)
 
-This comment is for `IncludeModuleType`
+This comment is for `IncludeModuleType` .
 
 <a id="module-type-ToInclude"></a>
 
@@ -482,17 +494,19 @@ This comment is for `IncludeModuleType`
 
 ######    `;int : field1`
 
-This comment is for `field1`
+This comment is for `field1` .
 
 <a id="type-record.field2"></a>
 
 ######    `;int : field2`
 
-This comment is for `field2`
+This comment is for `field2` .
 
 }
 
-This comment is for `record`This comment is also for `record`
+This comment is for `record` .
+
+This comment is also for `record` .
 
 <a id="type-mutable_record"></a>
 
@@ -502,19 +516,19 @@ This comment is for `record`This comment is also for `record`
 
 ######    `;int : a mutable`
 
-`a`
+`a` is first and mutable
 
 <a id="type-mutable_record.b"></a>
 
 ######    `;unit : b`
 
-`b`
+`b` is second and immutable
 
 <a id="type-mutable_record.c"></a>
 
 ######    `;int : c mutable`
 
-`c`
+`c` is third and mutable
 
 }
 
@@ -536,27 +550,29 @@ This comment is for `record`This comment is also for `record`
 
 ######    | TagA
 
-This comment is for `TagA`
+This comment is for `TagA` .
 
 <a id="type-variant.ConstrB"></a>
 
 ######    | ConstrB of int
 
-This comment is for `ConstrB`
+This comment is for `ConstrB` .
 
 <a id="type-variant.ConstrC"></a>
 
 ######    | ConstrC of int * int
 
-This comment is for binary `ConstrC`
+This comment is for binary `ConstrC` .
 
 <a id="type-variant.ConstrD"></a>
 
 ######    | ConstrD of int * int
 
-This comment is for unary `ConstrD`
+This comment is for unary `ConstrD` of binary tuple.
 
-This comment is for `variant`This comment is also for `variant`
+This comment is for `variant` .
+
+This comment is also for `variant` .
 
 <a id="type-poly_variant"></a>
 
@@ -572,7 +588,9 @@ This comment is for `variant`This comment is also for `variant`
 
 ]
 
-This comment is for `poly_variant`Wow! It was a polymorphic variant!
+This comment is for `poly_variant` .
+
+Wow! It was a polymorphic variant!
 
 <a id="type-full_gadt"></a>
 
@@ -594,7 +612,9 @@ This comment is for `poly_variant`Wow! It was a polymorphic variant!
 
 ######    | Exist : 'a * 'b -> ( 'b , unit ) [full_gadt](#type-full_gadt)
 
-This comment is for `full_gadt`Wow! It was a GADT!
+This comment is for `full_gadt` .
+
+Wow! It was a GADT!
 
 <a id="type-partial_gadt"></a>
 
@@ -612,7 +632,9 @@ This comment is for `full_gadt`Wow! It was a GADT!
 
 ######    | ExistGadtTag : ( 'a -> 'b ) -> 'a [partial_gadt](#type-partial_gadt)
 
-This comment is for `partial_gadt`Wow! It was a mixed GADT!
+This comment is for `partial_gadt` .
+
+Wow! It was a mixed GADT!
 
 <a id="type-alias"></a>
 
@@ -621,7 +643,7 @@ This comment is for `partial_gadt`Wow! It was a mixed GADT!
 > [variant](#type-variant)
 
 
-This comment is for `alias`
+This comment is for `alias` .
 
 <a id="type-tuple"></a>
 
@@ -630,7 +652,7 @@ This comment is for `alias`
 > ( [alias](#type-alias) * [alias](#type-alias) ) * [alias](#type-alias) * ( [alias](#type-alias) * [alias](#type-alias) )
 
 
-This comment is for `tuple`
+This comment is for `tuple` .
 
 <a id="type-variant_alias"></a>
 
@@ -652,7 +674,7 @@ This comment is for `tuple`
 
 ######    | ConstrD of int * int
 
-This comment is for `variant_alias`
+This comment is for `variant_alias` .
 
 <a id="type-record_alias"></a>
 
@@ -668,7 +690,7 @@ This comment is for `variant_alias`
 
 }
 
-This comment is for `record_alias`
+This comment is for `record_alias` .
 
 <a id="type-poly_variant_union"></a>
 
@@ -684,7 +706,7 @@ This comment is for `record_alias`
 
 ]
 
-This comment is for `poly_variant_union`
+This comment is for `poly_variant_union` .
 
 <a id="type-poly_poly_variant"></a>
 
@@ -801,7 +823,7 @@ This comment is for `poly_variant_union`
 
 ######    | Exist : 'a * 'b -> ( 'b , unit ) [full_gadt_alias](#type-full_gadt_alias)
 
-This comment is for `full_gadt_alias`
+This comment is for `full_gadt_alias` .
 
 <a id="type-partial_gadt_alias"></a>
 
@@ -819,7 +841,7 @@ This comment is for `full_gadt_alias`
 
 ######    | ExistGadtTag : ( 'a -> 'b ) -> 'a [partial_gadt_alias](#type-partial_gadt_alias)
 
-This comment is for `partial_gadt_alias`
+This comment is for `partial_gadt_alias` .
 
 <a id="exception-Exn_arrow"></a>
 
@@ -828,7 +850,7 @@ This comment is for `partial_gadt_alias`
 > unit -> exn
 
 
-This comment is for 
+This comment is for [`Exn_arrow`](#exception-Exn_arrow) .
 
 <a id="type-mutual_constr_a"></a>
 
@@ -842,9 +864,9 @@ This comment is for
 
 ######    | B_ish of [mutual_constr_b](#type-mutual_constr_b)
 
-This comment is between 
+This comment is between [`mutual_constr_a`](#type-mutual_constr_a) and [`mutual_constr_b`](#type-mutual_constr_b) .
 
-This comment is for 
+This comment is for [`mutual_constr_a`](#type-mutual_constr_a) then [`mutual_constr_b`](#type-mutual_constr_b) .
 
 <a id="type-mutual_constr_b"></a>
 
@@ -860,7 +882,7 @@ This comment is for
 
 This comment must be here for the next to associate correctly.
 
-This comment is for 
+This comment is for [`mutual_constr_b`](#type-mutual_constr_b) then [`mutual_constr_a`](#type-mutual_constr_a) .
 
 <a id="type-rec_obj"></a>
 

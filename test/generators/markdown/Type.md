@@ -6,7 +6,7 @@ Module `Type`
 
 ###### type abstract
 
-Some 
+Some _documentation_ .
 
 <a id="type-alias"></a>
 
@@ -138,7 +138,7 @@ foo
 
 ######    | D
 
-
+_bar_
 
 <a id="type-variant.E"></a>
 
@@ -208,7 +208,7 @@ foo
 
 ######    `;int : d`
 
-
+_bar_
 
 <a id="type-record.e"></a>
 
@@ -423,13 +423,13 @@ foo
 
 ######    | Extension
 
-Documentation for 
+Documentation for [`Extension`](#extension-Extension) .
 
 <a id="extension-Another_extension"></a>
 
 ######    | Another_extension
 
-Documentation for 
+Documentation for [`Another_extension`](#extension-Another_extension) .
 
 <a id="type-mutually"></a>
 

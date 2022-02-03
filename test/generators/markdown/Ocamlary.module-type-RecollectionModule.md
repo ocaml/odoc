@@ -22,7 +22,7 @@ Module type `Ocamlary.RecollectionModule`
 
 ###### module [InnerModuleA](Ocamlary.module-type-RecollectionModule.InnerModuleA.md)
 
-This comment is for `InnerModuleA`
+This comment is for `InnerModuleA` .
 
 <a id="module-type-InnerModuleTypeA"></a>
 
@@ -31,4 +31,4 @@ This comment is for `InnerModuleA`
 > [InnerModuleA.InnerModuleTypeA'](Ocamlary.module-type-RecollectionModule.InnerModuleA.module-type-InnerModuleTypeA'.md)
 
 
-This comment is for `InnerModuleTypeA`
+This comment is for `InnerModuleTypeA` .
