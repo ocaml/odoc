@@ -28,11 +28,12 @@ module State = struct
       ())
 
   let leave state =
-    if state.ignore_all = 0 then (
+    if state.ignore_all = 0 then
       let current_elt = List.rev state.current in
       let previous_elt, tag = Stack.pop state.context in
-      state.current <- Tag (tag, current_elt) :: previous_elt;
-      ())
+      match current_elt with
+      | [] -> state.current <- previous_elt
+      | _ -> state.current <- Tag (tag, current_elt) :: previous_elt
 
   let rec flush state =
     if Stack.is_empty state.context then List.rev state.current
@@ -151,7 +152,9 @@ let make () =
   let open Inline in
   let state0 = State.create () in
   let push elt = State.push state0 (Elt elt) in
-  let push_text s = if state0.ignore_all = 0 then push [ inline @@ Text s ] in
+  let push_text s =
+    if state0.ignore_all = 0 && s <> "" then push [ inline @@ Text s ]
+  in
 
   let formatter =
     let out_string s i j = push_text (String.sub s i j) in

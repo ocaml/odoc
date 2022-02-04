@@ -37,6 +37,18 @@ let man_target_rule path =
     Gen_rules_lib.Dune.arg_dep path;
   ]
 
+let markdown_target_rule path =
+  [
+    "odoc";
+    "markdown-generate";
+    "--generate-links";
+    "-o";
+    ".";
+    "--extra-suffix";
+    "gen";
+    Gen_rules_lib.Dune.arg_dep path;
+  ]
+
 (** Returns filenames, not paths. *)
 let read_files_from_dir dir =
   let arr = Sys.readdir (Fpath.to_string dir) in
@@ -100,6 +112,7 @@ let () =
         (html_target_rule, Fpath.v "html", Some "--flat");
         (latex_target_rule, Fpath.v "latex", None);
         (man_target_rule, Fpath.v "man", None);
+        (markdown_target_rule, Fpath.v "markdown", None);
       ]
       cases
   in
