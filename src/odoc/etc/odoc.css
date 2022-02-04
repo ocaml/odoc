@@ -432,7 +432,11 @@ pre code {
 }
 
 div.spec, .def-doc {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+}
+
+div.odoc-spec {
+  margin-bottom: 25px;
 }
 
 .spec.type .variant {
