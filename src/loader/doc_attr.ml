@@ -147,7 +147,9 @@ let extract_top_comment internal_tags ~classify parent items =
                   |> Error.raise_parser_warnings
                 in
                 (tl, ast_docs)
-            | None -> (items, []))
+            | None ->
+                let items, ast_docs = extract ~classify tl in
+                (hd :: items, ast_docs))
         | Some `Open ->
             let items, ast_docs = extract ~classify tl in
             (hd :: items, ast_docs)
