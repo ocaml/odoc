@@ -62,8 +62,8 @@ let c_ty_poss env p =
    [resolve] is a function that resolves an arbitrary unresolved path,
    [lang_of] turns a resolved path into a generic resolved Lang path
    and [possibilities] is a function that, given the fully qualified
-   unresolved path, returns a list of all possible unresolved paths
-   (including the longest one) *)
+   unresolved path, returns an ordered list of all possible unresolved
+   paths starting with the shortest and including the longest one. *)
 let canonical_helper :
       'unresolved 'resolved.
       Env.t ->
