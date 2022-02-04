@@ -24,7 +24,7 @@ Module `Stop_dead_link_doc`
 
 <a id="type-bar.field"></a>
 
-######    field : [Foo.t](Stop_dead_link_doc.Foo.md#type-t) ;
+######      field : [Foo.t](Stop_dead_link_doc.Foo.md#type-t) ;
 
 }
 

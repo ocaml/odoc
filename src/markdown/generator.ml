@@ -176,45 +176,37 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
           else continue rest
       | Alternative (Expansion { url; expansion; _ }) ->
           if Link.should_inline url then
-            documented_src expansion args nesting_level
+            documented_src expansion args nesting_level +++ continue rest
           else continue rest
-      | Subpage p ->
-          blocks (subpage p.content args (nesting_level + 1)) (continue rest)
-      | Documented _ | Nested _ ->
-          let lines, _, rest =
-            Take.until l ~classify:(function
-              | DocumentedSrc.Documented { code; doc; anchor; _ } ->
-                  Accum [ (`D code, doc, anchor) ]
-              | DocumentedSrc.Nested { code; doc; anchor; _ } ->
-                  Accum [ (`N code, doc, anchor) ]
-              | _ -> Stop_and_keep)
+      | Subpage { content = { title = _; header = _; items; url = _ }; _ } ->
+          let content =
+            if items = [] then paragraph line_break
+            else item items args (nesting_level + 1)
           in
-          let f (content, doc, (anchor : Odoc_document.Url.t option)) =
-            let content =
-              let nesting_level = nesting_level + 1 in
-              match content with
-              | `D code (* for record fields and polymorphic variants *) ->
-                  item_heading nesting_level (inline code args)
-              | `N l (* for constructors *) ->
-                  let c, rest = take_code l in
-                  blocks
-                    (item_heading nesting_level (source_code c args))
-                    (continue rest)
-            in
-            let item = blocks content (block args doc) in
-            if args.generate_links then
-              let anchor =
-                match anchor with Some a -> a.anchor | None -> ""
-              in
-              blocks (paragraph (anchor' anchor)) item
-            else item
-          in
-          blocks (fold_blocks f lines) (continue rest))
+          content +++ continue rest
+      | Documented { code; doc; anchor; _ } ->
+          documented args nesting_level (`D code) doc anchor +++ continue rest
+      | Nested { code; doc; anchor; _ } ->
+          documented args nesting_level (`N code) doc anchor +++ continue rest)
 
-and subpage { title = _; header = _; items; url = _ } args nesting_level =
-  let content = items in
-  let subpage' body = if content = [] then paragraph line_break else body in
-  subpage' @@ item content args nesting_level
+and documented args nesting_level content doc anchor =
+  let content =
+    let nesting_level = nesting_level + 1 in
+    match content with
+    | `D code (* for record fields and polymorphic variants *) ->
+        item_heading nesting_level (inline code args)
+    | `N l (* for constructors *) ->
+        let c, rest = take_code l in
+        item_heading nesting_level (source_code c args)
+        +++ documented_src rest args nesting_level
+  in
+  let item = blocks content (block args doc) in
+  if args.generate_links then
+    let anchor =
+      match anchor with Some a -> a.Url.Anchor.anchor | None -> ""
+    in
+    blocks (paragraph (anchor' anchor)) item
+  else item
 
 and item (l : Item.t list) args nesting_level =
   match l with

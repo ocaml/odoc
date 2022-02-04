@@ -40,7 +40,7 @@ _bar_
 
 <a id="type-variant.a"></a>
 
-######    `;int : a`
+######      `;int : a`
 
 }
 
@@ -64,7 +64,7 @@ foo
 
 <a id="type-gadt.a"></a>
 
-######    `;int : a`
+######      `;int : a`
 
 } -> unit [gadt](#type-gadt)
 
