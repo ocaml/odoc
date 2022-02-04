@@ -576,10 +576,12 @@ module M : sig
   end
 ]}
 
-As an exception, [open] statements are allowed to be placed before the top-comment.
+As an exception, [open] statements and attributes are allowed to be placed before the top-comment.
 For example:
 
 {[
+[@@@ocaml.warning "-6"]
+
 (* Copyright header *)
 
 open Base
