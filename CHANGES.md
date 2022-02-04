@@ -12,6 +12,7 @@ Bugs fixed
   functor arguments to have different filenames (@jonludlam, #795)
 - Better memory/disk space usage when handling module alias chains (@jonludlam, #799)
 - Resolving class-type paths (ie., `val x : #c`) (@jonludlam, #???)
+- Skip top-level attributes while extracting the top comment. Fix top-comment extraction with PPX preprocessing (@jorisgio, #819)
 
 2.0.2
 -----
