@@ -207,11 +207,14 @@ pre {
   margin-bottom: 1.2em;
 }
 
-p, ul, ol {
+/* Restore default margin for paragraphs. */
+p {
+  margin: 1em 0 1em 0;
+}
+
+ul, ol {
   margin-top: 0.5em;
   margin-bottom: 1em;
-}
-ul, ol {
   list-style-position: outside
 }
 
@@ -431,12 +434,12 @@ pre code {
   padding: 0.35em 0.5em;
 }
 
-div.spec, .def-doc {
+.def-doc {
   margin-bottom: 10px;
 }
 
 div.odoc-spec {
-  margin-bottom: 25px;
+  margin-bottom: 2em;
 }
 
 .spec.type .variant {
