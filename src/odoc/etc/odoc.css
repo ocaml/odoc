@@ -423,7 +423,8 @@ pre code {
   margin-bottom: 10px;
 }
 
-div.odoc-spec {
+/* Spacing between items */
+div.odoc-spec,.odoc-include {
   margin-bottom: 2em;
 }
 
@@ -483,7 +484,7 @@ div.def-doc>*:first-child {
 
 .odoc-include summary {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 1em;
   cursor: pointer;
   outline: none;
 }
