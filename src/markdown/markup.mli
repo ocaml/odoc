@@ -4,13 +4,9 @@
 (** {2 Inline elements} *)
 
 type inlines
-(** Inlines elements are rendered one after the other, separated by spaces. *)
 
 val ( ++ ) : inlines -> inlines -> inlines
-(** Combine inlines, render a breakable space between two inlines. *)
-
-val join : inlines -> inlines -> inlines
-(** Join inlines without spaces in between. *)
+(** Renders two inlines one after the other. *)
 
 val text : string -> inlines
 (** An arbitrary string. *)
@@ -20,7 +16,7 @@ val space : inlines
 val line_break : inlines
 
 val noop : inlines
-(** Nothing. Isn't separated by spaces: [noop ++ x = x ++ noop = x]. *)
+(** Nothing. *)
 
 val bold : inlines -> inlines
 

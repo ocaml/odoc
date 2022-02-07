@@ -48,7 +48,7 @@ A numbered list:
 
 David Sheets is the author.
 
-@author: David Sheets
+@author David Sheets
 
 You may find more information about this HTML documentation renderer at
 [github.com/dsheets/ocamlary](https://github.com/dsheets/ocamlary).
@@ -67,9 +67,9 @@ Here is some raw LaTeX:  $e^{i\pi} = -1$
 
 Here is an index table of `Empty` modules:
 
-@[`Empty`](Ocamlary.Empty.md): A plain, empty module
+@[`Empty`](Ocamlary.Empty.md) A plain, empty module
 
-@[`EmptyAlias`](Ocamlary.Empty.md): A plain module alias of `Empty`
+@[`EmptyAlias`](Ocamlary.Empty.md) A plain module alias of `Empty`
 
 Odoc doesn't support `{!indexlist}`.
 
@@ -249,9 +249,9 @@ Unary exception constructor over binary tuple
 
 This is `a_function` with param and return type.
 
-@parameter x:
+@parameter x
 
-@returns:
+@returns
 
 <a id="val-fun_fun_fun"></a>
 
@@ -273,7 +273,7 @@ This is `a_function` with param and return type.
 
 > unit -> unit
 
-@raises Not_found:
+@raises Not_found
 
 <a id="val-ocaml_org"></a>
 
@@ -281,7 +281,7 @@ This is `a_function` with param and return type.
 
 > string
 
-@see [http://ocaml.org/](http://ocaml.org/):
+@see [http://ocaml.org/](http://ocaml.org/)
 
 <a id="val-some_file"></a>
 
@@ -289,7 +289,7 @@ This is `a_function` with param and return type.
 
 > string
 
-@see `some_file`:
+@see `some_file`
 
 <a id="val-some_doc"></a>
 
@@ -297,7 +297,7 @@ This is `a_function` with param and return type.
 
 > string
 
-@see some_doc:
+@see some_doc
 
 <a id="val-since_mesozoic"></a>
 
@@ -307,7 +307,7 @@ This is `a_function` with param and return type.
 
 This value was introduced in the Mesozoic era.
 
-@since: mesozoic
+@since mesozoic
 
 <a id="val-changing"></a>
 
@@ -317,11 +317,11 @@ This value was introduced in the Mesozoic era.
 
 This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
-@before 1.0.0:
+@before 1.0.0
 
-@before 1.1.0:
+@before 1.1.0
 
-@version: 1.2.0
+@version 1.2.0
 
 ### Some Operators
 
@@ -1262,20 +1262,20 @@ will behave as simple references.
 With odoc, everything should be resolved (and linked) but only toplevel units
 will be documented.
 
-@[`Dep1.X`](Ocamlary.Dep1.X.md):
+@[`Dep1.X`](Ocamlary.Dep1.X.md)
 
-@[`Ocamlary.IncludeInclude1`](Ocamlary.IncludeInclude1.md):
+@[`Ocamlary.IncludeInclude1`](Ocamlary.IncludeInclude1.md)
 
-@[`Ocamlary`](): This is an _interface_ with **all** of the _module system_
+@[`Ocamlary`]() This is an _interface_ with **all** of the _module system_
 features. This documentation demonstrates:
 
 ### Weirder usages involving module types
 
 ---
 
-@[`IncludeInclude1.IncludeInclude2_M`](Ocamlary.IncludeInclude1.IncludeInclude2_M.md):
+@[`IncludeInclude1.IncludeInclude2_M`](Ocamlary.IncludeInclude1.IncludeInclude2_M.md)
 
-@[`Dep4.X`](Ocamlary.Dep4.X.md):
+@[`Dep4.X`](Ocamlary.Dep4.X.md)
 
 # Playing with @canonical paths
 

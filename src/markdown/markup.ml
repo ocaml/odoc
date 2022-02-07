@@ -5,9 +5,7 @@
 
 type inlines =
   | String of string
-  | ConcatI of inlines * inlines
   | Join of inlines * inlines
-      (** [Join] constructor is for joining [inlines] without spaces between them. *)
   | Link of string * inlines
   | Anchor of string
   | Linebreak
@@ -31,10 +29,7 @@ let unordered_list bs = List (Unordered, bs)
 
 (* Make sure to never leave a [Noop] in the result, which would cause unwanted
    spaces. *)
-let ( ++ ) left right =
-  match (left, right) with Noop, x | x, Noop -> x | _ -> ConcatI (left, right)
-
-let join left right = Join (left, right)
+let ( ++ ) left right = Join (left, right)
 
 let blocks above below = ConcatB (above, below)
 
@@ -82,7 +77,7 @@ let noop_block = Block Noop
 let heading level i =
   let make_hashes n = String.make n '#' in
   let hashes = make_hashes level in
-  Block (String hashes ++ i)
+  Block (String hashes ++ String " " ++ i)
 
 (** [split_on_char] is not available on [< 4.04]. *)
 let rec iter_lines f s i =
@@ -108,8 +103,6 @@ let pp_list_item fmt list_type (b : blocks) n pp_blocks =
 let rec pp_inlines fmt i =
   match i with
   | String s -> Format.fprintf fmt "%s" s
-  | ConcatI (left, right) ->
-      Format.fprintf fmt "%a@ %a" pp_inlines left pp_inlines right
   | Join (left, right) ->
       Format.fprintf fmt "%a%a" pp_inlines left pp_inlines right
   | Link (href, i) -> Format.fprintf fmt "[%a](%s)" pp_inlines i href

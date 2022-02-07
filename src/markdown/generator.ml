@@ -34,9 +34,8 @@ let style (style : style) =
   | `Superscript -> superscript
   | `Subscript -> subscript
 
-(** Fold inlines using [join]. *)
 let fold_inlines f elts : inlines =
-  List.fold_left (fun acc elt -> join acc (f elt)) noop elts
+  List.fold_left (fun acc elt -> acc ++ f elt) noop elts
 
 let fold_blocks f elts : blocks =
   List.fold_left (fun acc elt -> acc +++ f elt) noop_block elts
@@ -185,9 +184,10 @@ and description_one args { Description.key; definition; _ } =
   let def =
     match definition with
     | [] -> noop
-    | h :: _ -> ( match h.desc with Inline i -> inline i args | _ -> noop)
+    | h :: _ -> (
+        match h.desc with Inline i -> space ++ inline i args | _ -> noop)
   in
-  paragraph (join (text "@") (join key (text ":")) ++ def)
+  paragraph (text "@" ++ key ++ def)
 
 (** Generates the 6-heading used to differentiate items. Non-breaking spaces
     are inserted just before the text, to simulate indentation depending on
@@ -196,12 +196,12 @@ and description_one args { Description.key; definition; _ } =
       ######<space><nbsps><space>Text
     v} *)
 let item_heading nesting_level content =
-  let pre_hash = text (String.make 6 '#')
-  and pre_nbsp =
+  let pre_nbsp =
     if nesting_level = 0 then noop
-    else text (string_repeat (nesting_level * 2) "\u{A0}")
+    else text (string_repeat (nesting_level * 2) "\u{A0}") ++ text " "
+    (* Use literal spaces to avoid breaking. *)
   in
-  paragraph (pre_hash ++ pre_nbsp ++ content)
+  heading 6 (pre_nbsp ++ content)
 
 let take_code l =
   let c, _, rest =
