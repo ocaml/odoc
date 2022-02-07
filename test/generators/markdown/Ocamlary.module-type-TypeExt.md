@@ -12,7 +12,7 @@ Module type `Ocamlary.TypeExt`
 
 <a id="extension-decl-C"></a>
 
-###### type [t](#type-t) +=
+###### type [t](#type-t) += 
 
 <a id="extension-C"></a>
 

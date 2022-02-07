@@ -38,11 +38,11 @@ Attached to external
 
 <a id="class-c"></a>
 
-###### class [c](Labels.c.md)
+###### class  [c](Labels.c.md)
 
 <a id="class-type-cs"></a>
 
-###### class type [cs](Labels.class-type-cs.md)
+###### class type  [cs](Labels.class-type-cs.md)
 
 <a id="exception-E"></a>
 
@@ -58,7 +58,7 @@ Attached to exception
 
 <a id="extension-decl-X"></a>
 
-###### type [x](#type-x) +=
+###### type [x](#type-x) += 
 
 <a id="extension-X"></a>
 
@@ -84,7 +84,7 @@ Attached to type subst
 
 <a id="type-u"></a>
 
-###### type u =
+###### type u = 
 
 <a id="type-u.A'"></a>
 
@@ -98,7 +98,7 @@ Attached to constructor
 
 <a id="type-v.f"></a>
 
-######    f : [t](#type-t) ;
+######    f : [t](#type-t);
 
 Attached to field
 

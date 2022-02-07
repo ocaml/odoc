@@ -6,13 +6,13 @@ Q
 
 Module `A.Q`
 
-This comment is for `CollectionModule` .
+This comment is for `CollectionModule`.
 
 <a id="type-collection"></a>
 
 ###### type collection
 
-This comment is for `collection` .
+This comment is for `collection`.
 
 <a id="type-element"></a>
 
@@ -22,7 +22,7 @@ This comment is for `collection` .
 
 ###### module [InnerModuleA](Ocamlary.module-type-A.Q.InnerModuleA.md)
 
-This comment is for `InnerModuleA` .
+This comment is for `InnerModuleA`.
 
 <a id="module-type-InnerModuleTypeA"></a>
 
@@ -30,4 +30,4 @@ This comment is for `InnerModuleA` .
 
 > [InnerModuleA.InnerModuleTypeA'](Ocamlary.module-type-A.Q.InnerModuleA.module-type-InnerModuleTypeA'.md)
 
-This comment is for `InnerModuleTypeA` .
+This comment is for `InnerModuleTypeA`.

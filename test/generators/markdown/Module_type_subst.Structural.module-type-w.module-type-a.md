@@ -10,4 +10,5 @@ Module type `w.a`
 
 <a id="module-type-b"></a>
 
-###### module type [b](Module_type_subst.Structural.module-type-w.module-type-a.module-type-b.md)
+###### module type
+[b](Module_type_subst.Structural.module-type-w.module-type-a.module-type-b.md)

@@ -12,7 +12,7 @@ Module `Recent`
 
 <a id="type-variant"></a>
 
-###### type variant =
+###### type variant = 
 
 <a id="type-variant.A"></a>
 
@@ -46,7 +46,7 @@ _bar_
 
 <a id="type-gadt"></a>
 
-###### type _ gadt =
+###### type _ gadt = 
 
 <a id="type-gadt.A"></a>
 
@@ -70,29 +70,29 @@ foo
 
 <a id="type-polymorphic_variant"></a>
 
-###### type polymorphic_variant = [
+###### type polymorphic_variant = [ 
 
 <a id="type-polymorphic_variant.A"></a>
 
-######    `| ` `` `A ``
+######    `| ``` `A ``
 
 <a id="type-polymorphic_variant.B"></a>
 
-######    `| ` `` int of `B ``
+######    `| ``` int of `B ``
 
 <a id="type-polymorphic_variant.C"></a>
 
-######    `| ` `` `C ``
+######    `| ``` `C ``
 
 foo
 
 <a id="type-polymorphic_variant.D"></a>
 
-######    `| ` `` `D ``
+######    `| ``` `D ``
 
 bar
 
-]
+ ]
 
 <a id="type-empty_variant"></a>
 
@@ -108,19 +108,21 @@ bar
 
 <a id="type-empty_conj"></a>
 
-###### type empty_conj =
+###### type empty_conj = 
 
 <a id="type-empty_conj.X"></a>
 
-######    | X : [< `X of & 'a & int * float ] -> [empty_conj](#type-empty_conj)
+######    | X : [< `X of & 'a & int * float ] ->
+[empty_conj](#type-empty_conj)
 
 <a id="type-conj"></a>
 
-###### type conj =
+###### type conj = 
 
 <a id="type-conj.X"></a>
 
-######    | X : [< `X of int & [< `B of int & float ] ] -> [conj](#type-conj)
+######    | X : [< `X of int & [< `B of int & float ] ] ->
+[conj](#type-conj)
 
 <a id="val-empty_conj"></a>
 

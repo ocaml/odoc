@@ -14,4 +14,5 @@ Module `Module_type_subst.Nested`
 
 <a id="module-type-with_subst"></a>
 
-###### module type [with_subst](Module_type_subst.Nested.module-type-with_subst.md)
+###### module type
+[with_subst](Module_type_subst.Nested.module-type-with_subst.md)

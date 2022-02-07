@@ -12,6 +12,21 @@ let string_repeat n s =
   done;
   Bytes.unsafe_to_string b
 
+(** Like [String.index_from_opt] but check against a predicate function. *)
+let rec string_index_f f s i =
+  if i >= String.length s then None
+  else if f s.[i] then Some i
+  else string_index_f f s (i + 1)
+
+(** Remove spaces at the end of a string. *)
+let string_trim_right s =
+  let right = String.length s - 1 in
+  let i = ref right in
+  while !i >= 0 && s.[!i] = ' ' do
+    decr i
+  done;
+  if !i = right then s else String.sub s 0 (!i + 1)
+
 let style (style : style) =
   match style with
   | `Bold -> bold
@@ -19,8 +34,9 @@ let style (style : style) =
   | `Superscript -> superscript
   | `Subscript -> subscript
 
+(** Fold inlines using [join]. *)
 let fold_inlines f elts : inlines =
-  List.fold_left (fun acc elt -> acc ++ f elt) noop elts
+  List.fold_left (fun acc elt -> join acc (f elt)) noop elts
 
 let fold_blocks f elts : blocks =
   List.fold_left (fun acc elt -> acc +++ f elt) noop_block elts
@@ -59,16 +75,48 @@ let source_take_until_punctuation code =
       | ':' | '=' -> true
       | _ -> false
   in
-  let is_punctuation i =
-    List.exists
-      (function
-        | { Inline.desc = Text s; _ } -> is_punctuation s 0 | _ -> false)
-      i
+  let rec inline_take_until_punctuation acc = function
+    | ({ Inline.desc = Text s; _ } as inline) :: tl when is_punctuation s 0 ->
+        let inline = { inline with desc = Text (string_trim_right s) } in
+        Some (List.rev (inline :: acc), tl)
+    | hd :: tl -> inline_take_until_punctuation (hd :: acc) tl
+    | [] -> None
   in
-  Take.until code ~classify:(function
-    | Source.Elt i as t ->
-        if is_punctuation i then Stop_and_accum ([ t ], None) else Accum [ t ]
-    | Tag (_, c) -> Rec c)
+  let left, middle, right =
+    Take.until code ~classify:(function
+      | Source.Elt i as t -> (
+          match inline_take_until_punctuation [] i with
+          | Some (i, tl) -> Stop_and_accum ([ Source.Elt i ], Some tl)
+          | None -> Accum [ t ])
+      | Tag (_, c) -> Rec c)
+  in
+  let right =
+    match middle with Some i -> Source.Elt i :: right | None -> right
+  in
+  (left, right)
+
+let is_not_whitespace = function ' ' -> false | _ -> true
+
+let rec inline_trim_begin = function
+  | ({ Inline.desc = Text s; _ } as inline) :: tl -> (
+      match string_index_f is_not_whitespace s 0 with
+      | None -> inline_trim_begin tl
+      | Some i ->
+          let s = String.sub s i (String.length s - i) in
+          { inline with desc = Text s } :: tl)
+  | x -> x
+
+(** Remove the spaces at the beginning of source code. *)
+let rec source_trim_begin = function
+  | Source.Elt i :: tl -> (
+      match inline_trim_begin i with
+      | [] -> source_trim_begin tl
+      | i -> Source.Elt i :: tl)
+  | Tag (attr, c) :: tl -> (
+      match source_trim_begin c with
+      | [] -> source_trim_begin tl
+      | c -> Tag (attr, c) :: tl)
+  | [] -> []
 
 (** Used for code spans. Must be called only on sources that pass
     [source_contains_only_text s]. *)
@@ -96,8 +144,8 @@ and inline l args = fold_inlines (inline_one args) l
 
 and inline_one args i =
   match i.Inline.desc with
-  | Text ("" | " ") -> noop
-  | Text s -> text (String.trim s)
+  | Text " " -> space
+  | Text s -> text s
   | Entity _ -> noop
   | Styled (styl, content) -> style styl (inline content args)
   | Linebreak -> line_break
@@ -265,11 +313,11 @@ and item (l : Item.t list) args nesting_level =
           match take_code_from_declaration content with
           | code, [] ->
               (* Declaration is only code, render formatted code. *)
-              let code, _, content = source_take_until_punctuation code in
+              let code, content = source_take_until_punctuation code in
               let content =
-                if source_contains_text content then
-                  quote_block (paragraph (source_code content args))
-                else noop_block
+                match source_trim_begin content with
+                | [] -> noop_block
+                | content -> quote_block (paragraph (source_code content args))
               in
               render_declaration ~anchor ~doc code content
           | code, content ->

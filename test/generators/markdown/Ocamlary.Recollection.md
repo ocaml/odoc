@@ -12,7 +12,7 @@ Module `Ocamlary.Recollection`
 
 # Signature
 
-This comment is for `CollectionModule` .
+This comment is for `CollectionModule`.
 
 <a id="type-collection"></a>
 
@@ -20,7 +20,7 @@ This comment is for `CollectionModule` .
 
 > [C.element](Ocamlary.Recollection.argument-1-C.md#type-element) list
 
-This comment is for `collection` .
+This comment is for `collection`.
 
 <a id="type-element"></a>
 
@@ -32,7 +32,7 @@ This comment is for `collection` .
 
 ###### module [InnerModuleA](Ocamlary.Recollection.InnerModuleA.md)
 
-This comment is for `InnerModuleA` .
+This comment is for `InnerModuleA`.
 
 <a id="module-type-InnerModuleTypeA"></a>
 
@@ -40,4 +40,4 @@ This comment is for `InnerModuleA` .
 
 > [InnerModuleA.InnerModuleTypeA'](Ocamlary.Recollection.InnerModuleA.module-type-InnerModuleTypeA'.md)
 
-This comment is for `InnerModuleTypeA` .
+This comment is for `InnerModuleTypeA`.

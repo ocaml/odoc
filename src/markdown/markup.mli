@@ -15,6 +15,8 @@ val join : inlines -> inlines -> inlines
 val text : string -> inlines
 (** An arbitrary string. *)
 
+val space : inlines
+
 val line_break : inlines
 
 val noop : inlines

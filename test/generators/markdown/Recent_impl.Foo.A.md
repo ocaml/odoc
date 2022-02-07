@@ -8,7 +8,7 @@ Module `Foo.A`
 
 <a id="type-t"></a>
 
-###### type t =
+###### type t = 
 
 <a id="type-t.A"></a>
 

@@ -12,6 +12,8 @@ Module `Bugs`
 
 ###### val foo :
 
-> ? bar : 'a -> unit -> unit
+> ?bar:'a -> unit -> unit
 
-Triggers an assertion failure when [https://github.com/ocaml/odoc/issues/101](https://github.com/ocaml/odoc/issues/101) is not fixed.
+Triggers an assertion failure when
+[https://github.com/ocaml/odoc/issues/101](https://github.com/ocaml/odoc/issues/101)
+is not fixed.

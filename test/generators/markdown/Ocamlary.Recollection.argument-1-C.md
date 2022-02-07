@@ -6,13 +6,13 @@ Recollection
 
 Parameter `Recollection.1-C`
 
-This comment is for `CollectionModule` .
+This comment is for `CollectionModule`.
 
 <a id="type-collection"></a>
 
 ###### type collection
 
-This comment is for `collection` .
+This comment is for `collection`.
 
 <a id="type-element"></a>
 
@@ -20,9 +20,10 @@ This comment is for `collection` .
 
 <a id="module-InnerModuleA"></a>
 
-###### module [InnerModuleA](Ocamlary.Recollection.argument-1-C.InnerModuleA.md)
+###### module
+[InnerModuleA](Ocamlary.Recollection.argument-1-C.InnerModuleA.md)
 
-This comment is for `InnerModuleA` .
+This comment is for `InnerModuleA`.
 
 <a id="module-type-InnerModuleTypeA"></a>
 
@@ -30,4 +31,4 @@ This comment is for `InnerModuleA` .
 
 > [InnerModuleA.InnerModuleTypeA'](Ocamlary.Recollection.argument-1-C.InnerModuleA.module-type-InnerModuleTypeA'.md)
 
-This comment is for `InnerModuleTypeA` .
+This comment is for `InnerModuleTypeA`.

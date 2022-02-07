@@ -6,7 +6,7 @@ Module `Type`
 
 ###### type abstract
 
-Some _documentation_ .
+Some _documentation_.
 
 <a id="type-alias"></a>
 
@@ -42,19 +42,19 @@ Some _documentation_ .
 
 ###### type labeled =
 
-> l : int -> int
+> l:int -> int
 
 <a id="type-optional"></a>
 
 ###### type optional =
 
-> ? l : int -> int
+> ?l:int -> int
 
 <a id="type-labeled_higher_order"></a>
 
 ###### type labeled_higher_order =
 
-> ( l : int -> int ) -> ( ? l : int -> int ) -> int
+> ( l:int -> int ) -> ( ?l:int -> int ) -> int
 
 <a id="type-pair"></a>
 
@@ -78,7 +78,7 @@ Some _documentation_ .
 
 ###### type nested_pair =
 
-> ( int * int ) * int
+> (int * int) * int
 
 <a id="type-instance"></a>
 
@@ -90,7 +90,23 @@ Some _documentation_ .
 
 ###### type long =
 
->   [labeled_higher_order](#type-labeled_higher_order) ->   [ `Bar | `Baz of [triple](#type-triple) ] ->   [pair](#type-pair) ->   [labeled](#type-labeled) ->   [higher_order](#type-higher_order) ->   ( string -> int ) ->   ( int * float * char * string * char * unit ) option ->   [nested_pair](#type-nested_pair) ->   [arrow](#type-arrow) ->   string ->   [nested_pair](#type-nested_pair) array
+> 
+>   [labeled_higher_order](#type-labeled_higher_order) ->
+>   [ `Bar | `Baz of
+> [triple](#type-triple) ] ->
+>   [pair](#type-pair)
+> ->
+>   [labeled](#type-labeled) ->
+>   [higher_order](#type-higher_order)
+> ->
+>   ( string -> int ) ->
+>   (int * float * char * string * char * unit)
+> option ->
+>   [nested_pair](#type-nested_pair) ->
+>   [arrow](#type-arrow)
+> ->
+>   string ->
+>   [nested_pair](#type-nested_pair) array
 
 <a id="type-variant_e"></a>
 
@@ -104,7 +120,7 @@ Some _documentation_ .
 
 <a id="type-variant"></a>
 
-###### type variant =
+###### type variant = 
 
 <a id="type-variant.A"></a>
 
@@ -142,7 +158,7 @@ _bar_
 
 <a id="type-gadt"></a>
 
-###### type _ gadt =
+###### type _ gadt = 
 
 <a id="type-gadt.A"></a>
 
@@ -158,7 +174,7 @@ _bar_
 
 <a id="type-degenerate_gadt"></a>
 
-###### type degenerate_gadt =
+###### type degenerate_gadt = 
 
 <a id="type-degenerate_gadt.A"></a>
 
@@ -166,7 +182,7 @@ _bar_
 
 <a id="type-private_variant"></a>
 
-###### type private_variant = private
+###### type private_variant = private 
 
 <a id="type-private_variant.A"></a>
 
@@ -204,49 +220,49 @@ _bar_
 
 <a id="type-polymorphic_variant"></a>
 
-###### type polymorphic_variant = [
+###### type polymorphic_variant = [ 
 
 <a id="type-polymorphic_variant.A"></a>
 
-######    `| ` `` `A ``
+######    `| ``` `A ``
 
 <a id="type-polymorphic_variant.B"></a>
 
-######    `| ` `` int of `B ``
+######    `| ``` int of `B ``
 
 <a id="type-polymorphic_variant.C"></a>
 
-######    `| ` `` unit*  int of `C ``
+######    `| ``` unit*  int of `C ``
 
 <a id="type-polymorphic_variant.D"></a>
 
-######    `| ` `` `D ``
+######    `| ``` `D ``
 
-]
+ ]
 
 <a id="type-polymorphic_variant_extension"></a>
 
-###### type polymorphic_variant_extension = [
+###### type polymorphic_variant_extension = [ 
 
 <a id="type-polymorphic_variant_extension.polymorphic_variant"></a>
 
-######    `| ` [polymorphic_variant](#type-polymorphic_variant)
+######    `| `[polymorphic_variant](#type-polymorphic_variant)
 
 <a id="type-polymorphic_variant_extension.E"></a>
 
-######    `| ` `` `E ``
+######    `| ``` `E ``
 
-]
+ ]
 
 <a id="type-nested_polymorphic_variant"></a>
 
-###### type nested_polymorphic_variant = [
+###### type nested_polymorphic_variant = [ 
 
 <a id="type-nested_polymorphic_variant.A"></a>
 
-######    `| ` `` [ `B | `C ] of `A ``
+######    `| ``` [ `B | `C ] of `A ``
 
-]
+ ]
 
 <a id="type-private_extenion#row"></a>
 
@@ -254,13 +270,13 @@ _bar_
 
 <a id="type-private_extenion"></a>
 
-###### and private_extenion = private [>
+###### and private_extenion = private [> 
 
 <a id="type-private_extenion.polymorphic_variant"></a>
 
-######    `| ` [polymorphic_variant](#type-polymorphic_variant)
+######    `| `[polymorphic_variant](#type-polymorphic_variant)
 
-]
+ ]
 
 <a id="type-object_"></a>
 
@@ -276,13 +292,15 @@ _bar_
 
 ###### type module_ =
 
-> ( module [X](Type.module-type-X.md) )
+> (module [X](Type.module-type-X.md))
 
 <a id="type-module_substitution"></a>
 
 ###### type module_substitution =
 
-> ( module [X](Type.module-type-X.md) with type [t](Type.module-type-X.md#type-t) = int and type [u](Type.module-type-X.md#type-u) = unit )
+> (module [X](Type.module-type-X.md) with type
+> [t](Type.module-type-X.md#type-t) = int and type
+> [u](Type.module-type-X.md#type-u) = unit)
 
 <a id="type-covariant"></a>
 
@@ -306,7 +324,7 @@ _bar_
 
 ###### type using_binary =
 
-> ( int , int ) [binary](#type-binary)
+> ( int, int ) [binary](#type-binary)
 
 <a id="type-name"></a>
 
@@ -334,7 +352,7 @@ _bar_
 
 ###### type 'a any_variant =
 
-> 'a constraint 'a = [> ]
+> 'a constraint 'a = [>  ]
 
 <a id="type-upper_variant"></a>
 
@@ -358,7 +376,7 @@ _bar_
 
 ###### type 'a lower_object =
 
-> 'a constraint 'a = < a : int ; b : int .. >
+> 'a constraint 'a = < a : int ; b : int.. >
 
 <a id="type-poly_object"></a>
 
@@ -376,7 +394,7 @@ _bar_
 
 ###### type as_ =
 
-> int as ' a * 'a
+> int as 'a * 'a
 
 <a id="type-extensible"></a>
 
@@ -386,23 +404,23 @@ _bar_
 
 <a id="extension-decl-Extension"></a>
 
-###### type [extensible](#type-extensible) +=
+###### type [extensible](#type-extensible) += 
 
 <a id="extension-Extension"></a>
 
 ######    | Extension
 
-Documentation for [`Extension`](#extension-Extension) .
+Documentation for [`Extension`](#extension-Extension).
 
 <a id="extension-Another_extension"></a>
 
 ######    | Another_extension
 
-Documentation for [`Another_extension`](#extension-Another_extension) .
+Documentation for [`Another_extension`](#extension-Another_extension).
 
 <a id="type-mutually"></a>
 
-###### type mutually =
+###### type mutually = 
 
 <a id="type-mutually.A"></a>
 
@@ -410,7 +428,7 @@ Documentation for [`Another_extension`](#extension-Another_extension) .
 
 <a id="type-recursive"></a>
 
-###### and recursive =
+###### and recursive = 
 
 <a id="type-recursive.B"></a>
 

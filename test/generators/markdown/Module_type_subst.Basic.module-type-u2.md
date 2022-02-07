@@ -8,7 +8,8 @@ Module type `Basic.u2`
 
 <a id="module-type-T"></a>
 
-###### module type [T](Module_type_subst.Basic.module-type-u2.module-type-T.md)
+###### module type
+[T](Module_type_subst.Basic.module-type-u2.module-type-T.md)
 
 <a id="module-M"></a>
 

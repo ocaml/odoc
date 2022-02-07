@@ -14,7 +14,7 @@ Module type `b.c`
 
 <a id="type-t"></a>
 
-###### type t =
+###### type t = 
 
 <a id="type-t.A"></a>
 

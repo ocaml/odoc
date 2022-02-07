@@ -6,7 +6,7 @@ Module type `Ocamlary.TypeExtPruned`
 
 <a id="extension-decl-C"></a>
 
-###### type [new_t](Ocamlary.md#type-new_t) +=
+###### type [new_t](Ocamlary.md#type-new_t) += 
 
 <a id="extension-C"></a>
 

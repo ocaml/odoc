@@ -12,6 +12,7 @@ type inlines =
   | Anchor of string
   | Linebreak
   | Noop
+  | Space
 
 type blocks =
   | ConcatB of blocks * blocks
@@ -46,6 +47,8 @@ let text s = String s
 let line_break = Linebreak
 
 let noop = Noop
+
+let space = Space
 
 let bold i = Join (String "**", Join (i, String "**"))
 
@@ -106,24 +109,21 @@ let rec pp_inlines fmt i =
   match i with
   | String s -> Format.fprintf fmt "%s" s
   | ConcatI (left, right) ->
-      if left = noop then pp_inlines fmt right
-      else if right = noop then pp_inlines fmt left
-      else Format.fprintf fmt "%a %a" pp_inlines left pp_inlines right
+      Format.fprintf fmt "%a@ %a" pp_inlines left pp_inlines right
   | Join (left, right) ->
       Format.fprintf fmt "%a%a" pp_inlines left pp_inlines right
   | Link (href, i) -> Format.fprintf fmt "[%a](%s)" pp_inlines i href
   | Anchor s -> Format.fprintf fmt "<a id=\"%s\"></a>" s
   | Linebreak -> Format.fprintf fmt "@\n"
   | Noop -> ()
+  | Space -> Format.fprintf fmt "@ "
 
 let rec pp_blocks fmt b =
   match b with
   | ConcatB (Block Noop, b) | ConcatB (b, Block Noop) -> pp_blocks fmt b
   | ConcatB (above, below) ->
       Format.fprintf fmt "%a@\n%a" pp_blocks above pp_blocks below
-  | Block i ->
-      pp_inlines fmt i;
-      Format.fprintf fmt "@\n"
+  | Block i -> Format.fprintf fmt "@[%a@]@\n" pp_inlines i
   | CodeBlock i -> Format.fprintf fmt "```@\n%a@\n```" pp_inlines i
   | Block_separator -> Format.fprintf fmt "---@\n"
   | List (list_type, l) ->

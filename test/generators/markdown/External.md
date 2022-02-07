@@ -8,4 +8,4 @@ Module `External`
 
 > unit -> unit
 
-Foo _bar_ .
+Foo _bar_.

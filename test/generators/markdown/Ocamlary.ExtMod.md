@@ -12,7 +12,7 @@ Module `Ocamlary.ExtMod`
 
 <a id="extension-decl-Leisureforce"></a>
 
-###### type [t](#type-t) +=
+###### type [t](#type-t) += 
 
 <a id="extension-Leisureforce"></a>
 

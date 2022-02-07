@@ -6,13 +6,13 @@ FunctorTypeOf
 
 Parameter `FunctorTypeOf.1-Collection`
 
-This comment is for `CollectionModule` .
+This comment is for `CollectionModule`.
 
 <a id="type-collection"></a>
 
 ###### type collection
 
-This comment is for `collection` .
+This comment is for `collection`.
 
 <a id="type-element"></a>
 
@@ -20,9 +20,10 @@ This comment is for `collection` .
 
 <a id="module-InnerModuleA"></a>
 
-###### module [InnerModuleA](Ocamlary.FunctorTypeOf.argument-1-Collection.InnerModuleA.md)
+###### module
+[InnerModuleA](Ocamlary.FunctorTypeOf.argument-1-Collection.InnerModuleA.md)
 
-This comment is for `InnerModuleA` .
+This comment is for `InnerModuleA`.
 
 <a id="module-type-InnerModuleTypeA"></a>
 
@@ -30,4 +31,4 @@ This comment is for `InnerModuleA` .
 
 > [InnerModuleA.InnerModuleTypeA'](Ocamlary.FunctorTypeOf.argument-1-Collection.InnerModuleA.module-type-InnerModuleTypeA'.md)
 
-This comment is for `InnerModuleTypeA` .
+This comment is for `InnerModuleTypeA`.
