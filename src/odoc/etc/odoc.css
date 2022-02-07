@@ -124,7 +124,6 @@
 /* Reset a few things. */
 
 html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
-  margin: 0;
   padding: 0;
   border: 0;
   font: inherit;
@@ -200,11 +199,6 @@ sup, sub {
   font-size: 12px;
   line-height: 0;
   margin-left: 0.2ex;
-}
-
-/* Restore default margin for block elements part of documentation. */
-p, pre, ul, ol {
-  margin: 1em 0 1em 0;
 }
 
 ul, ol {
@@ -302,7 +296,6 @@ a.anchor {
 h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10 {
   font-family: "Fira Sans", Helvetica, Arial, sans-serif;
   font-weight: 400;
-  margin: 0.5em 0 0.5em 0;
   padding-top: 0.1em;
   line-height: 1.2;
   overflow-wrap: break-word;
@@ -311,7 +304,6 @@ h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10 {
 h1 {
   font-weight: 500;
   font-size: 2.441em;
-  margin-top: 1.214em;
 }
 
 h1 {
