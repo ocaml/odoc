@@ -18,5 +18,4 @@ This comment is for `InnerModuleTypeA'` .
 
 > [InnerModuleA'.t](Ocamlary.FunctorTypeOf.argument-1-Collection.InnerModuleA.InnerModuleA'.md#type-t)
 
-
 This comment is for `t` .

@@ -81,17 +81,26 @@ let heading level i =
   let hashes = make_hashes level in
   Block (String hashes ++ i)
 
+(** [split_on_char] is not available on [< 4.04]. *)
+let rec iter_lines f s i =
+  try
+    let i' = String.index_from s i '\n' in
+    f (String.sub s i (i' - i));
+    iter_lines f s (i' + 1)
+  with Not_found ->
+    let len = String.length s in
+    if i < len then f (String.sub s i (len - i))
+
 (** Every lines that [f] formats are prefixed and written in [sink].
     Inefficient. *)
 let with_prefixed_formatter prefix sink f =
   let s = Format.asprintf "%t" f in
-  String.split_on_char '\n' s
-  |> List.iter (fun l -> Format.fprintf sink "%s%s@\n" prefix l)
+  iter_lines (Format.fprintf sink "%s%s@\n" prefix) s 0
 
 let pp_list_item fmt list_type (b : blocks) n pp_blocks =
   match list_type with
-  | Unordered -> Format.fprintf fmt "- @[%a@]" pp_blocks b
-  | Ordered -> Format.fprintf fmt "%d. @[%a@]" (n + 1) pp_blocks b
+  | Unordered -> Format.fprintf fmt "- @[%a@]@\n" pp_blocks b
+  | Ordered -> Format.fprintf fmt "%d. @[%a@]@\n" (n + 1) pp_blocks b
 
 let rec pp_inlines fmt i =
   match i with
@@ -111,10 +120,12 @@ let rec pp_blocks fmt b =
   match b with
   | ConcatB (Block Noop, b) | ConcatB (b, Block Noop) -> pp_blocks fmt b
   | ConcatB (above, below) ->
-      Format.fprintf fmt "%a@\n@\n%a" pp_blocks above pp_blocks below
-  | Block i -> pp_inlines fmt i
+      Format.fprintf fmt "%a@\n%a" pp_blocks above pp_blocks below
+  | Block i ->
+      pp_inlines fmt i;
+      Format.fprintf fmt "@\n"
   | CodeBlock i -> Format.fprintf fmt "```@\n%a@\n```" pp_inlines i
-  | Block_separator -> Format.fprintf fmt "---"
+  | Block_separator -> Format.fprintf fmt "---@\n"
   | List (list_type, l) ->
       let rec pp_list n l =
         match l with
@@ -122,7 +133,7 @@ let rec pp_blocks fmt b =
         | [ x ] -> pp_list_item fmt list_type x n pp_blocks
         | x :: rest ->
             pp_list_item fmt list_type x n pp_blocks;
-            Format.fprintf fmt "@\n@\n";
+            Format.fprintf fmt "@\n";
             pp_list (n + 1) rest
       in
       pp_list 0 l

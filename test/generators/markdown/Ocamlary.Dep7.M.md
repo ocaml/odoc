@@ -12,7 +12,6 @@ Module `Dep7.M`
 
 > [Arg.S](Ocamlary.Dep7.argument-1-Arg.md#module-type-S)
 
-
 <a id="module-Y"></a>
 
 ###### module Y :

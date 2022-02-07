@@ -10,7 +10,6 @@ Foo.
 
 > unit
 
-
 The module needs at least one signature item, otherwise a bug causes the compiler to drop the module comment (above). See [https://caml.inria.fr/mantis/view.php?id=7701](https://caml.inria.fr/mantis/view.php?id=7701) .
 
 <a id="module-type-S"></a>
@@ -26,7 +25,6 @@ The module needs at least one signature item, otherwise a bug causes the compile
 ###### module type S2 =
 
 > [S](Module.module-type-S.md)
-
 
 <a id="module-type-S3"></a>
 

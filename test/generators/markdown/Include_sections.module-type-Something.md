@@ -12,7 +12,6 @@ A module type.
 
 > unit
 
-
 # Something 1
 
 foo
@@ -23,7 +22,6 @@ foo
 
 > unit
 
-
 ## Something 2
 
 ---
@@ -33,7 +31,6 @@ foo
 ###### val bar :
 
 > unit
-
 
 foo bar
 

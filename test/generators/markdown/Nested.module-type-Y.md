@@ -24,5 +24,4 @@ Some type.
 
 > [t](#type-t)
 
-
 The value of y.

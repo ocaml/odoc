@@ -10,13 +10,11 @@ Module type `Module.S3`
 
 > int
 
-
 <a id="type-u"></a>
 
 ###### type u =
 
 > string
-
 
 <a id="type-v"></a>
 

@@ -20,7 +20,6 @@ This comment is for `CollectionModule` .
 
 > [C.element](Ocamlary.Recollection.argument-1-C.md#type-element) list
 
-
 This comment is for `collection` .
 
 <a id="type-element"></a>
@@ -28,7 +27,6 @@ This comment is for `collection` .
 ###### type element =
 
 > [C.collection](Ocamlary.Recollection.argument-1-C.md#type-collection)
-
 
 <a id="module-InnerModuleA"></a>
 
@@ -41,6 +39,5 @@ This comment is for `InnerModuleA` .
 ###### module type InnerModuleTypeA =
 
 > [InnerModuleA.InnerModuleTypeA'](Ocamlary.Recollection.InnerModuleA.module-type-InnerModuleTypeA'.md)
-
 
 This comment is for `InnerModuleTypeA` .

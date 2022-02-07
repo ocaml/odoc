@@ -10,7 +10,6 @@ Module type `Ocamlary.With11`
 
 > [With9](Ocamlary.With9.md)
 
-
 <a id="module-N"></a>
 
 ###### module [N](Ocamlary.module-type-With11.N.md)

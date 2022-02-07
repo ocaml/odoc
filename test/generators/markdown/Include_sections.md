@@ -64,7 +64,6 @@ And let's include it again, but without inlining it this time: the ToC shouldn't
 
 > unit
 
-
 # Something 1
 
 foo
@@ -75,7 +74,6 @@ foo
 
 > unit
 
-
 ## Something 2
 
 ---
@@ -85,7 +83,6 @@ foo
 ###### val bar :
 
 > unit
-
 
 foo bar
 

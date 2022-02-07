@@ -14,7 +14,6 @@ Some additional comments.
 
 > int
 
-
 Some value.
 
 <a id="val-y'"></a>
@@ -23,7 +22,6 @@ Some value.
 
 > int
 
-
 # Methods
 
 <a id="method-z"></a>
@@ -31,7 +29,6 @@ Some value.
 ###### method z :
 
 > int
-
 
 Some method.
 

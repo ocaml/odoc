@@ -12,7 +12,6 @@ Module `Dep5.Z`
 
 > [Arg.T](Ocamlary.Dep5.argument-1-Arg.md#module-type-T)
 
-
 <a id="module-Y"></a>
 
 ###### module Y =

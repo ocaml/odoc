@@ -22,7 +22,6 @@ Foo bar.
 
 > unit
 
-
 # Empty section
 
 # within a comment

@@ -16,7 +16,6 @@ Comment about X that should not appear when including X below.
 
 > int
 
-
 <a id="module-Y"></a>
 
 ###### module [Y](Include2.Y.md)

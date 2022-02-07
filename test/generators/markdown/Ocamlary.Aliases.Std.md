@@ -12,13 +12,11 @@ Module `Aliases.Std`
 
 > [Foo.A](Ocamlary.Aliases.Foo.A.md)
 
-
 <a id="module-B"></a>
 
 ###### module B =
 
 > [Foo.B](Ocamlary.Aliases.Foo.B.md)
-
 
 <a id="module-C"></a>
 
@@ -26,13 +24,11 @@ Module `Aliases.Std`
 
 > [Foo.C](Ocamlary.Aliases.Foo.C.md)
 
-
 <a id="module-D"></a>
 
 ###### module D =
 
 > [Foo.D](Ocamlary.Aliases.Foo.D.md)
-
 
 <a id="module-E"></a>
 

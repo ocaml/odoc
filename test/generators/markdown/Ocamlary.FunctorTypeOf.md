@@ -20,5 +20,4 @@ This comment is for `FunctorTypeOf` .
 
 > [Collection.collection](Ocamlary.FunctorTypeOf.argument-1-Collection.md#type-collection)
 
-
 This comment is for `t` .

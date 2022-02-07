@@ -8,7 +8,6 @@ Module `Val`
 
 > unit
 
-
 Foo.
 
 <a id="val-undocumented"></a>
@@ -17,12 +16,10 @@ Foo.
 
 > unit
 
-
 <a id="val-documented_above"></a>
 
 ###### val documented_above :
 
 > unit
-
 
 Bar.

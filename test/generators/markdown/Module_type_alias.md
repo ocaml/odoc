@@ -18,7 +18,6 @@ Module Type Aliases
 
 > [A](Module_type_alias.module-type-A.md)
 
-
 <a id="module-type-E"></a>
 
 ###### module type [E](Module_type_alias.module-type-E.md)

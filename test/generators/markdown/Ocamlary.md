@@ -5,32 +5,45 @@ Module `Ocamlary`
 This is an _interface_ with **all** of the _module system_ features. This documentation demonstrates:
 
 - comment formatting
+  
 
 - unassociated comments
+  
 
 - documentation sections
+  
 
 - module system documentation including
   
   1. submodules
+     
   
   2. module aliases
+     
   
   3. module types
+     
   
   4. module type aliases
+     
   
   5. modules with signatures
+     
   
   6. modules with aliased signatures
+     
+  
 
 A numbered list:
 
 1. 3
+   
 
 2. 2
+   
 
 3. 1
+   
 
 David Sheets is the author.
 
@@ -43,13 +56,11 @@ This is some verbatim text:
 ```
 verbatim
 ```
-
 This is some verbatim text:
 
 ```
 [][df[]]}}
 ```
-
 Here is some raw LaTeX:  $e^{i\pi} = -1$ 
 
 Here is an index table of `Empty` modules:
@@ -114,7 +125,6 @@ An ambiguous, misnamed module type
 
 > [Empty](Ocamlary.Empty.md)
 
-
 A plain module alias of `Empty`
 
 ### EmptySig
@@ -132,7 +142,6 @@ A plain, empty module signature
 ###### module type EmptySigAlias =
 
 > [EmptySig](Ocamlary.module-type-EmptySig.md)
-
 
 A plain, empty module signature alias of
 
@@ -218,7 +227,6 @@ Unary exception constructor over binary tuple
 
 > 'a -> 'b
 
-
 [`a_function`](#type-a_function) is this type and [`a_function`](#val-a_function) is the value below.
 
 <a id="val-a_function"></a>
@@ -226,7 +234,6 @@ Unary exception constructor over binary tuple
 ###### val a_function :
 
 > x : int -> int
-
 
 This is `a_function` with param and return type.
 
@@ -240,20 +247,17 @@ This is `a_function` with param and return type.
 
 >   ( ( int , int ) [a_function](#type-a_function) , ( unit , unit ) [a_function](#type-a_function) ) [a_function](#type-a_function)
 
-
 <a id="val-fun_maybe"></a>
 
 ###### val fun_maybe :
 
 > ? yes : unit -> unit -> int
 
-
 <a id="val-not_found"></a>
 
 ###### val not_found :
 
 > unit -> unit
-
 
 @raises Not_found:
 
@@ -263,7 +267,6 @@ This is `a_function` with param and return type.
 
 > string
 
-
 @see [http://ocaml.org/](http://ocaml.org/):
 
 <a id="val-some_file"></a>
@@ -271,7 +274,6 @@ This is `a_function` with param and return type.
 ###### val some_file :
 
 > string
-
 
 @see `some_file`:
 
@@ -281,7 +283,6 @@ This is `a_function` with param and return type.
 
 > string
 
-
 @see some_doc:
 
 <a id="val-since_mesozoic"></a>
@@ -289,7 +290,6 @@ This is `a_function` with param and return type.
 ###### val since_mesozoic :
 
 > unit
-
 
 This value was introduced in the Mesozoic era.
 
@@ -300,7 +300,6 @@ This value was introduced in the Mesozoic era.
 ###### val changing :
 
 > unit
-
 
 This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
@@ -320,13 +319,11 @@ This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 > unit
 
-
 <a id="val-(!)"></a>
 
 ###### val (!) :
 
 > unit
-
 
 <a id="val-(@)"></a>
 
@@ -334,13 +331,11 @@ This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 > unit
 
-
 <a id="val-($)"></a>
 
 ###### val ($) :
 
 > unit
-
 
 <a id="val-(%)"></a>
 
@@ -348,13 +343,11 @@ This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 > unit
 
-
 <a id="val-(&)"></a>
 
 ###### val (&) :
 
 > unit
-
 
 <a id="val-(*)"></a>
 
@@ -362,13 +355,11 @@ This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 > unit
 
-
 <a id="val-(-)"></a>
 
 ###### val (-) :
 
 > unit
-
 
 <a id="val-(+)"></a>
 
@@ -376,13 +367,11 @@ This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 > unit
 
-
 <a id="val-(-?)"></a>
 
 ###### val (-?) :
 
 > unit
-
 
 <a id="val-(/)"></a>
 
@@ -390,13 +379,11 @@ This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 > unit
 
-
 <a id="val-(:=)"></a>
 
 ###### val (:=) :
 
 > unit
-
 
 <a id="val-(=)"></a>
 
@@ -404,13 +391,11 @@ This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 > unit
 
-
 <a id="val-(land)"></a>
 
 ###### val (land) :
 
 > unit
-
 
 ### Advanced Module Stuff
 
@@ -642,7 +627,6 @@ Wow! It was a mixed GADT!
 
 > [variant](#type-variant)
 
-
 This comment is for `alias` .
 
 <a id="type-tuple"></a>
@@ -650,7 +634,6 @@ This comment is for `alias` .
 ###### type tuple =
 
 > ( [alias](#type-alias) * [alias](#type-alias) ) * [alias](#type-alias) * ( [alias](#type-alias) * [alias](#type-alias) )
-
 
 This comment is for `tuple` .
 
@@ -738,13 +721,11 @@ This comment is for `poly_variant_union` .
 
 > [> `TagA ] as ' a
 
-
 <a id="type-open_poly_variant2"></a>
 
 ###### type 'a open_poly_variant2 =
 
 > [> `ConstrB of int ] as ' a
-
 
 <a id="type-open_poly_variant_alias"></a>
 
@@ -752,13 +733,11 @@ This comment is for `poly_variant_union` .
 
 > 'a [open_poly_variant](#type-open_poly_variant) [open_poly_variant2](#type-open_poly_variant2)
 
-
 <a id="type-poly_fun"></a>
 
 ###### type 'a poly_fun =
 
 > [> `ConstrB of int ] as ' a -> 'a
-
 
 <a id="type-poly_fun_constraint"></a>
 
@@ -766,20 +745,17 @@ This comment is for `poly_variant_union` .
 
 > 'a -> 'a constraint 'a = [> `TagA ]
 
-
 <a id="type-closed_poly_variant"></a>
 
 ###### type 'a closed_poly_variant =
 
 > [< `One | `Two ] as ' a
 
-
 <a id="type-clopen_poly_variant"></a>
 
 ###### type 'a clopen_poly_variant =
 
 > [< `One | `Two of int | `Three Two Three ] as ' a
-
 
 <a id="type-nested_poly_variant"></a>
 
@@ -849,7 +825,6 @@ This comment is for `partial_gadt_alias` .
 
 > unit -> exn
 
-
 This comment is for [`Exn_arrow`](#exception-Exn_arrow) .
 
 <a id="type-mutual_constr_a"></a>
@@ -890,13 +865,11 @@ This comment is for [`mutual_constr_b`](#type-mutual_constr_b) then [`mutual_con
 
 > < f : int ; g : unit -> unit ; h : [rec_obj](#type-rec_obj) >
 
-
 <a id="type-open_obj"></a>
 
 ###### type 'a open_obj =
 
 > < f : int ; g : unit -> unit .. > as ' a
-
 
 <a id="type-oof"></a>
 
@@ -904,13 +877,11 @@ This comment is for [`mutual_constr_b`](#type-mutual_constr_b) then [`mutual_con
 
 > < a : unit .. > as ' a -> 'a
 
-
 <a id="type-any_obj"></a>
 
 ###### type 'a any_obj =
 
 > < .. > as ' a
-
 
 <a id="type-empty_obj"></a>
 
@@ -918,20 +889,17 @@ This comment is for [`mutual_constr_b`](#type-mutual_constr_b) then [`mutual_con
 
 > < >
 
-
 <a id="type-one_meth"></a>
 
 ###### type one_meth =
 
 > < meth : unit >
 
-
 <a id="type-ext"></a>
 
 ###### type ext =
 
 > ..
-
 
 A mystery wrapped in an ellipsis
 
@@ -984,7 +952,6 @@ A mystery wrapped in an ellipsis
 ###### type 'a poly_ext =
 
 > ..
-
 
 'a poly_ext
 
@@ -1042,7 +1009,6 @@ and it packs a unit.
 
 > unit -> unit
 
-
 Rotate keys on my mark...
 
 <a id="type-my_mod"></a>
@@ -1050,7 +1016,6 @@ Rotate keys on my mark...
 ###### type my_mod =
 
 > ( module [COLLECTION](Ocamlary.module-type-COLLECTION.md) )
-
 
 A brown paper package tied up with string
 
@@ -1076,13 +1041,11 @@ A brown paper package tied up with string
 
 > unit [param_class](Ocamlary.param_class.md)
 
-
 <a id="type-my_unit_class"></a>
 
 ###### type 'a my_unit_class =
 
 > unit param_class as ' a
-
 
 <a id="module-Dep1"></a>
 
@@ -1097,7 +1060,6 @@ A brown paper package tied up with string
 ###### type dep1 =
 
 > [Dep2(Dep1).B.c](Ocamlary.Dep1.module-type-S.c.md)
-
 
 <a id="module-Dep3"></a>
 
@@ -1117,13 +1079,11 @@ A brown paper package tied up with string
 
 > [Dep5(Dep4).Z.X.b](Ocamlary.Dep4.module-type-T.md#type-b)
 
-
 <a id="type-dep3"></a>
 
 ###### type dep3 =
 
 > [Dep5(Dep4).Z.Y.a](Ocamlary.Dep3.md#type-a)
-
 
 <a id="module-Dep6"></a>
 
@@ -1138,7 +1098,6 @@ A brown paper package tied up with string
 ###### type dep4 =
 
 > [Dep7(Dep6).M.Y.d](Ocamlary.Dep6.module-type-T.Y.md#type-d)
-
 
 <a id="module-Dep8"></a>
 
@@ -1170,7 +1129,6 @@ A brown paper package tied up with string
 
 > [Dep13.c](Ocamlary.Dep13.c.md)
 
-
 <a id="module-type-With1"></a>
 
 ###### module type [With1](Ocamlary.module-type-With1.md)
@@ -1189,7 +1147,6 @@ A brown paper package tied up with string
 
 > [With3.N.t](Ocamlary.With3.N.md#type-t)
 
-
 <a id="module-With4"></a>
 
 ###### module [With4](Ocamlary.With4.md)
@@ -1199,7 +1156,6 @@ A brown paper package tied up with string
 ###### type with2 =
 
 > [With4.N.t](Ocamlary.With4.N.md#type-t)
-
 
 <a id="module-With5"></a>
 
@@ -1242,7 +1198,6 @@ A brown paper package tied up with string
 ###### type nested_include =
 
 > int
-
 
 <a id="module-DoubleInclude1"></a>
 
@@ -1313,24 +1268,32 @@ Let's imitate jst's layout.
 I can refer to
 
 - `{!section:indexmodules}` : [Trying the {!modules: ...} command.](#indexmodules)
+  
 
 - `{!aliases}` : [Aliases again](#aliases)
+  
 
 But also to things in submodules:
 
 - `{!section:SuperSig.SubSigA.subSig}` : [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
+  
 
 - `{!Aliases.incl}` : [`incl`](Ocamlary.Aliases.md#incl)
+  
 
 And just to make sure we do not mess up:
 
 - `{{!section:indexmodules}A}` : [A](#indexmodules)
+  
 
 - `{{!aliases}B}` : [B](#aliases)
+  
 
 - `{{!section:SuperSig.SubSigA.subSig}C}` : [C](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
+  
 
 - `{{!Aliases.incl}D}` : [D](Ocamlary.Aliases.md#incl)
+  
 
 # New reference syntax
 
@@ -1345,20 +1308,26 @@ And just to make sure we do not mess up:
 Here goes:
 
 - `{!module-M.t}` : [`M.t`](Ocamlary.M.md#type-t)
+  
 
 - `{!module-type-M.t}` : [`M.t`](Ocamlary.module-type-M.md#type-t)
+  
 
 <a id="module-Only_a_module"></a>
 
 ###### module [Only_a_module](Ocamlary.Only_a_module.md)
 
 - `{!Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+  
 
 - `{!module-Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+  
 
 - `{!module-Only_a_module.type-t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+  
 
 - `{!type:Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+  
 
 <a id="module-type-TypeExt"></a>
 
@@ -1369,7 +1338,6 @@ Here goes:
 ###### type new_t =
 
 > ..
-
 
 <a id="extension-decl-C"></a>
 

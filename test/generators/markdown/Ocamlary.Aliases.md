@@ -16,20 +16,17 @@ Let's imitate jst's layout.
 
 > [Foo.A](Ocamlary.Aliases.Foo.A.md)
 
-
 <a id="type-tata"></a>
 
 ###### type tata =
 
 > [Foo.A.t](Ocamlary.Aliases.Foo.A.md#type-t)
 
-
 <a id="type-tbtb"></a>
 
 ###### type tbtb =
 
 > [Foo.B.t](Ocamlary.Aliases.Foo.B.md#type-t)
-
 
 <a id="type-tete"></a>
 
@@ -41,13 +38,11 @@ Let's imitate jst's layout.
 
 > [A'.t](Ocamlary.Aliases.Foo.A.md#type-t)
 
-
 <a id="type-tete2"></a>
 
 ###### type tete2 =
 
 > [Foo.E.t](Ocamlary.Aliases.Foo.E.md#type-t)
-
 
 <a id="module-Std"></a>
 
@@ -58,7 +53,6 @@ Let's imitate jst's layout.
 ###### type stde =
 
 > [Std.E.t](Ocamlary.Aliases.Foo.E.md#type-t)
-
 
 ### include of Foo
 
@@ -72,13 +66,11 @@ Just for giggle, let's see what happens when we include [`Foo`](Ocamlary.Aliases
 
 > [Foo.A](Ocamlary.Aliases.Foo.A.md)
 
-
 <a id="module-B"></a>
 
 ###### module B =
 
 > [Foo.B](Ocamlary.Aliases.Foo.B.md)
-
 
 <a id="module-C"></a>
 
@@ -86,13 +78,11 @@ Just for giggle, let's see what happens when we include [`Foo`](Ocamlary.Aliases
 
 > [Foo.C](Ocamlary.Aliases.Foo.C.md)
 
-
 <a id="module-D"></a>
 
 ###### module D =
 
 > [Foo.D](Ocamlary.Aliases.Foo.D.md)
-
 
 <a id="module-E"></a>
 
@@ -103,7 +93,6 @@ Just for giggle, let's see what happens when we include [`Foo`](Ocamlary.Aliases
 ###### type testa =
 
 > [A.t](Ocamlary.Aliases.Foo.A.md#type-t)
-
 
 And also, let's refer to [`A.t`](Ocamlary.Aliases.Foo.A.md#type-t) and [`Foo.B.id`](Ocamlary.Aliases.Foo.B.md#val-id)
 
@@ -121,20 +110,17 @@ And also, let's refer to [`A.t`](Ocamlary.Aliases.Foo.A.md#type-t) and [`Foo.B.i
 
 > [P2.Z](Ocamlary.Aliases.P1.Y.md)
 
-
 <a id="module-X2"></a>
 
 ###### module X2 =
 
 > [P2.Z](Ocamlary.Aliases.P1.Y.md)
 
-
 <a id="type-p1"></a>
 
 ###### type p1 =
 
 > [X1.t](Ocamlary.Aliases.P1.Y.md#type-t)
-
 
 <a id="type-p2"></a>
 

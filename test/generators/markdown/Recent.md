@@ -100,13 +100,11 @@ bar
 
 > |
 
-
 <a id="type-nonrec_"></a>
 
 ###### type nonrec nonrec_ =
 
 > int
-
 
 <a id="type-empty_conj"></a>
 
@@ -130,13 +128,11 @@ bar
 
 > [< `X of & 'a & int * float ]
 
-
 <a id="val-conj"></a>
 
 ###### val conj :
 
 > [< `X of int & [< `B of int & float ] ]
-
 
 <a id="module-Z"></a>
 

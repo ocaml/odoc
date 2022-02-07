@@ -22,7 +22,6 @@ Attached to type
 
 > [t](#type-t)
 
-
 Attached to value
 
 <a id="val-e"></a>
@@ -30,7 +29,6 @@ Attached to value
 ###### val e :
 
 > unit -> [t](#type-t)
-
 
 Attached to external
 
@@ -58,7 +56,6 @@ Attached to exception
 
 > ..
 
-
 <a id="extension-decl-X"></a>
 
 ###### type [x](#type-x) +=
@@ -75,7 +72,6 @@ Attached to extension
 
 > [A](Labels.A.md)
 
-
 Attached to module subst
 
 <a id="type-s"></a>
@@ -83,7 +79,6 @@ Attached to module subst
 ###### type s :=
 
 > [t](#type-t)
-
 
 Attached to type subst
 
@@ -112,29 +107,43 @@ Attached to field
 Testing that labels can be referenced
 
 - [Attached to unit](#L1)
+  
 
 - [Attached to nothing](#L2)
+  
 
 - [Attached to module](#L3)
+  
 
 - [Attached to type](#L4)
+  
 
 - [Attached to value](#L5)
+  
 
 - [Attached to module type](#L6)
+  
 
 - [Attached to class](#L7)
+  
 
 - [Attached to class type](#L8)
+  
 
 - [Attached to exception](#L9)
+  
 
 - [Attached to extension](#L10)
+  
 
 - [Attached to module subst](#L11)
+  
 
 - [Attached to type subst](#L12)
+  
 
 - [Attached to constructor](#L13)
+  
 
 - [Attached to field](#L14)
+  

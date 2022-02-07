@@ -14,13 +14,11 @@ Some _documentation_ .
 
 > int
 
-
 <a id="type-private_"></a>
 
 ###### type private_ =
 
 > private int
-
 
 <a id="type-constructor"></a>
 
@@ -28,13 +26,11 @@ Some _documentation_ .
 
 > 'a
 
-
 <a id="type-arrow"></a>
 
 ###### type arrow =
 
 > int -> int
-
 
 <a id="type-higher_order"></a>
 
@@ -42,13 +38,11 @@ Some _documentation_ .
 
 > ( int -> int ) -> int
 
-
 <a id="type-labeled"></a>
 
 ###### type labeled =
 
 > l : int -> int
-
 
 <a id="type-optional"></a>
 
@@ -56,13 +50,11 @@ Some _documentation_ .
 
 > ? l : int -> int
 
-
 <a id="type-labeled_higher_order"></a>
 
 ###### type labeled_higher_order =
 
 > ( l : int -> int ) -> ( ? l : int -> int ) -> int
-
 
 <a id="type-pair"></a>
 
@@ -70,13 +62,11 @@ Some _documentation_ .
 
 > int * int
 
-
 <a id="type-parens_dropped"></a>
 
 ###### type parens_dropped =
 
 > int * int
-
 
 <a id="type-triple"></a>
 
@@ -84,13 +74,11 @@ Some _documentation_ .
 
 > int * int * int
 
-
 <a id="type-nested_pair"></a>
 
 ###### type nested_pair =
 
 > ( int * int ) * int
-
 
 <a id="type-instance"></a>
 
@@ -98,13 +86,11 @@ Some _documentation_ .
 
 > int [constructor](#type-constructor)
 
-
 <a id="type-long"></a>
 
 ###### type long =
 
 >   [labeled_higher_order](#type-labeled_higher_order) ->   [ `Bar | `Baz of [triple](#type-triple) ] ->   [pair](#type-pair) ->   [labeled](#type-labeled) ->   [higher_order](#type-higher_order) ->   ( string -> int ) ->   ( int * float * char * string * char * unit ) option ->   [nested_pair](#type-nested_pair) ->   [arrow](#type-arrow) ->   string ->   [nested_pair](#type-nested_pair) array
-
 
 <a id="type-variant_e"></a>
 
@@ -282,7 +268,6 @@ _bar_
 
 > < a : int ; b : int ; c : int >
 
-
 <a id="module-type-X"></a>
 
 ###### module type [X](Type.module-type-X.md)
@@ -293,13 +278,11 @@ _bar_
 
 > ( module [X](Type.module-type-X.md) )
 
-
 <a id="type-module_substitution"></a>
 
 ###### type module_substitution =
 
 > ( module [X](Type.module-type-X.md) with type [t](Type.module-type-X.md#type-t) = int and type [u](Type.module-type-X.md#type-u) = unit )
-
 
 <a id="type-covariant"></a>
 
@@ -315,7 +298,6 @@ _bar_
 
 > int
 
-
 <a id="type-binary"></a>
 
 ###### type ('a, 'b) binary
@@ -325,7 +307,6 @@ _bar_
 ###### type using_binary =
 
 > ( int , int ) [binary](#type-binary)
-
 
 <a id="type-name"></a>
 
@@ -337,13 +318,11 @@ _bar_
 
 > 'a constraint 'a = int
 
-
 <a id="type-exact_variant"></a>
 
 ###### type 'a exact_variant =
 
 > 'a constraint 'a = [ `A | `B of int ]
-
 
 <a id="type-lower_variant"></a>
 
@@ -351,13 +330,11 @@ _bar_
 
 > 'a constraint 'a = [> `A | `B of int ]
 
-
 <a id="type-any_variant"></a>
 
 ###### type 'a any_variant =
 
 > 'a constraint 'a = [> ]
-
 
 <a id="type-upper_variant"></a>
 
@@ -365,13 +342,11 @@ _bar_
 
 > 'a constraint 'a = [< `A | `B of int ]
 
-
 <a id="type-named_variant"></a>
 
 ###### type 'a named_variant =
 
 > 'a constraint 'a = [< [polymorphic_variant](#type-polymorphic_variant) ]
-
 
 <a id="type-exact_object"></a>
 
@@ -379,13 +354,11 @@ _bar_
 
 > 'a constraint 'a = < a : int ; b : int >
 
-
 <a id="type-lower_object"></a>
 
 ###### type 'a lower_object =
 
 > 'a constraint 'a = < a : int ; b : int .. >
-
 
 <a id="type-poly_object"></a>
 
@@ -393,13 +366,11 @@ _bar_
 
 > 'a constraint 'a = < a : 'a. 'a >
 
-
 <a id="type-double_constrained"></a>
 
 ###### type ('a, 'b) double_constrained =
 
 > 'a * 'b constraint 'a = int constraint 'b = unit
-
 
 <a id="type-as_"></a>
 
@@ -407,13 +378,11 @@ _bar_
 
 > int as ' a * 'a
 
-
 <a id="type-extensible"></a>
 
 ###### type extensible =
 
 > ..
-
 
 <a id="extension-decl-Extension"></a>
 

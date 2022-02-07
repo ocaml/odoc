@@ -30,5 +30,4 @@ This comment is for `InnerModuleA` .
 
 > [InnerModuleA.InnerModuleTypeA'](Ocamlary.module-type-MMM.C.InnerModuleA.module-type-InnerModuleTypeA'.md)
 
-
 This comment is for `InnerModuleTypeA` .

@@ -10,7 +10,6 @@ Class `Ocamlary.two_method_class`
 
 > [one_method_class](Ocamlary.one_method_class.md)
 
-
 <a id="method-undo"></a>
 
 ###### method undo :

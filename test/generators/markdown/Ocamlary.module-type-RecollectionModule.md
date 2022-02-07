@@ -10,13 +10,11 @@ Module type `Ocamlary.RecollectionModule`
 
 > [CollectionModule.element](Ocamlary.CollectionModule.md#type-element) list
 
-
 <a id="type-element"></a>
 
 ###### type element =
 
 > [CollectionModule.collection](Ocamlary.CollectionModule.md#type-collection)
-
 
 <a id="module-InnerModuleA"></a>
 
@@ -29,6 +27,5 @@ This comment is for `InnerModuleA` .
 ###### module type InnerModuleTypeA =
 
 > [InnerModuleA.InnerModuleTypeA'](Ocamlary.module-type-RecollectionModule.InnerModuleA.module-type-InnerModuleTypeA'.md)
-
 
 This comment is for `InnerModuleTypeA` .

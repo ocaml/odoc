@@ -16,7 +16,6 @@ This comment is for `InnerModuleA` .
 
 > [collection](Ocamlary.module-type-A.Q.md#type-collection)
 
-
 This comment is for `t` .
 
 <a id="module-InnerModuleA'"></a>

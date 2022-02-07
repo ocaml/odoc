@@ -73,48 +73,62 @@ let foo = ()
 let bar =
   ignore foo
 ```
-
 There are also verbatim blocks:
 
 ```
 The main difference is these don't get syntax highlighting.
 ```
-
 # Lists
 
 - This is a
+  
 
 - shorthand bulleted list,
+  
 
 - and the paragraphs in each list item support _styling_ .
+  
 
 1. This is a
+   
 
 2. shorthand numbered list.
+   
 
 - Shorthand list items can span multiple lines, however trying to put two paragraphs into a shorthand list item using a double line break
+  
 
 just creates a paragraph outside the list.
 
 - Similarly, inserting a blank line between two list items
+  
 
 - creates two separate lists.
+  
 
 - To get around this limitation, one
   
   can use explicitly-delimited lists.
+  
 
 - This one is bulleted,
+  
 
 1. but there is also the numbered variant.
+   
 
 - - lists
+    
   
   - can be nested
+    
   
   - and can include references
+    
   
   - [`foo`](#val-foo)
+    
+  
 
 # Unicode
 
@@ -130,7 +144,6 @@ Raw HTML can be <input type="text" placeholder="inserted"> as inline elements in
       element, and won't be wrapped in paragraph tags by the HTML generator.
     </blockquote>
     
-
 # Modules
 
 @[`X`](Markup.X.md):
@@ -170,7 +183,6 @@ Each comment can end with zero or more tags. Here are some examples:
 ###### val foo :
 
 > unit
-
 
 Comments in structure items **support** _markup_ , t <sup>o</sup> <sub>o</sub> .
 

@@ -12,7 +12,6 @@ Some separate stray text at the top of the module.
 
 > unit
 
-
 Foo.
 
 Some stray text that is not associated with any signature item.
@@ -27,7 +26,6 @@ A separate block of stray text, adjacent to the preceding one.
 
 > unit
 
-
 Bar.
 
 <a id="val-multiple"></a>
@@ -36,19 +34,16 @@ Bar.
 
 > unit
 
-
 <a id="val-signature"></a>
 
 ###### val signature :
 
 > unit
 
-
 <a id="val-items"></a>
 
 ###### val items :
 
 > unit
-
 
 Stray text at the bottom of the module.

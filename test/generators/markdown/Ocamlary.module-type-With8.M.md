@@ -12,7 +12,6 @@ Module `With8.M`
 
 > [With5.S](Ocamlary.With5.module-type-S.md)
 
-
 <a id="module-N"></a>
 
 ###### module [N](Ocamlary.module-type-With8.M.N.md)

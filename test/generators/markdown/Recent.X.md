@@ -10,20 +10,17 @@ Module `Recent.X`
 
 > [Z.Y](Recent.Z.Y.md)
 
-
 <a id="type-t"></a>
 
 ###### type t =
 
 > int [Z.Y.X.t](Recent.Z.Y.X.md#type-t)
 
-
 <a id="type-u"></a>
 
 ###### type u :=
 
 > int
-
 
 <a id="type-v"></a>
 

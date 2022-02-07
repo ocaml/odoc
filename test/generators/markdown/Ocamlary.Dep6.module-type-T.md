@@ -12,7 +12,6 @@ Module type `Dep6.T`
 
 > [S](Ocamlary.Dep6.module-type-S.md)
 
-
 <a id="module-Y"></a>
 
 ###### module [Y](Ocamlary.Dep6.module-type-T.Y.md)

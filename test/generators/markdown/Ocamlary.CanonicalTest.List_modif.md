@@ -12,7 +12,6 @@ Module `CanonicalTest.List_modif`
 
 > 'c [Base.List.t](Ocamlary.CanonicalTest.Base.List.md#type-t)
 
-
 <a id="val-id"></a>
 
 ###### val id :

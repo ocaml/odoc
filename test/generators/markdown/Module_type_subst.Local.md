@@ -10,7 +10,6 @@ Module `Module_type_subst.Local`
 
 > int * int
 
-
 <a id="module-type-local"></a>
 
 ###### module type [local](Module_type_subst.Local.module-type-local.md)
@@ -20,7 +19,6 @@ Module `Module_type_subst.Local`
 ###### module type w =
 
 > [local](Module_type_subst.Local.module-type-local.md)
-
 
 <a id="module-type-s"></a>
 

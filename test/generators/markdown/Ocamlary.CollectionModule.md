@@ -28,5 +28,4 @@ This comment is for `InnerModuleA` .
 
 > [InnerModuleA.InnerModuleTypeA'](Ocamlary.CollectionModule.InnerModuleA.module-type-InnerModuleTypeA'.md)
 
-
 This comment is for `InnerModuleTypeA` .
