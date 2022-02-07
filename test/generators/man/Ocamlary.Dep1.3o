@@ -14,7 +14,7 @@ Ocamlary\.Dep1
 \f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
 .br 
 .ti +2
-\f[CB]class\fR  c : \f[CB]object\fR
+\f[CB]class\fR c : \f[CB]object\fR
 .br 
 .ti +4
 \f[CB]method\fR m : int

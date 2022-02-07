@@ -1577,11 +1577,11 @@ Rotate keys on my mark\.\.\.
 A brown paper package tied up with string
 .nf 
 .sp 
-\f[CB]class\fR  empty_class : \f[CB]object\fR \.\.\. \f[CB]end\fR
+\f[CB]class\fR empty_class : \f[CB]object\fR \.\.\. \f[CB]end\fR
 .sp 
-\f[CB]class\fR  one_method_class : \f[CB]object\fR \.\.\. \f[CB]end\fR
+\f[CB]class\fR one_method_class : \f[CB]object\fR \.\.\. \f[CB]end\fR
 .sp 
-\f[CB]class\fR  two_method_class : \f[CB]object\fR \.\.\. \f[CB]end\fR
+\f[CB]class\fR two_method_class : \f[CB]object\fR \.\.\. \f[CB]end\fR
 .sp 
 \f[CB]class\fR 'a param_class : \f[CB]'a\fR \f[CB]\->\fR \f[CB]object\fR \.\.\. \f[CB]end\fR
 .sp 

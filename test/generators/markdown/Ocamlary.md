@@ -1048,15 +1048,15 @@ A brown paper package tied up with string
 
 <a id="class-empty_class"></a>
 
-###### class  [empty_class](Ocamlary.empty_class.md)
+###### class [empty_class](Ocamlary.empty_class.md)
 
 <a id="class-one_method_class"></a>
 
-###### class  [one_method_class](Ocamlary.one_method_class.md)
+###### class [one_method_class](Ocamlary.one_method_class.md)
 
 <a id="class-two_method_class"></a>
 
-###### class  [two_method_class](Ocamlary.two_method_class.md)
+###### class [two_method_class](Ocamlary.two_method_class.md)
 
 <a id="class-param_class"></a>
 

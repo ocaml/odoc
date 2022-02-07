@@ -38,11 +38,11 @@ Attached to external
 
 <a id="class-c"></a>
 
-###### class  [c](Labels.c.md)
+###### class [c](Labels.c.md)
 
 <a id="class-type-cs"></a>
 
-###### class type  [cs](Labels.class-type-cs.md)
+###### class type [cs](Labels.class-type-cs.md)
 
 <a id="exception-E"></a>
 

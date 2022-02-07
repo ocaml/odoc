@@ -32,10 +32,10 @@ This is a functor F.
 
 <a id="class-z"></a>
 
-###### class virtual  [z](Nested.z.md)
+###### class virtual [z](Nested.z.md)
 
 This is class z.
 
 <a id="class-inherits"></a>
 
-###### class virtual  [inherits](Nested.inherits.md)
+###### class virtual [inherits](Nested.inherits.md)

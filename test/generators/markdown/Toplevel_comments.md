@@ -63,19 +63,19 @@ Doc of `Alias`.
 
 <a id="class-c1"></a>
 
-###### class  [c1](Toplevel_comments.c1.md)
+###### class [c1](Toplevel_comments.c1.md)
 
 Doc of `c1`, part 1.
 
 <a id="class-type-ct"></a>
 
-###### class type  [ct](Toplevel_comments.class-type-ct.md)
+###### class type [ct](Toplevel_comments.class-type-ct.md)
 
 Doc of `ct`, part 1.
 
 <a id="class-c2"></a>
 
-###### class  [c2](Toplevel_comments.c2.md)
+###### class [c2](Toplevel_comments.c2.md)
 
 Doc of `c2`.
 
