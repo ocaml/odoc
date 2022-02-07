@@ -202,19 +202,12 @@ sup, sub {
   margin-left: 0.2ex;
 }
 
-pre {
-  margin-top: 0.8em;
-  margin-bottom: 1.2em;
-}
-
-/* Restore default margin for paragraphs. */
-p {
+/* Restore default margin for block elements part of documentation. */
+p, pre, ul, ol {
   margin: 1em 0 1em 0;
 }
 
 ul, ol {
-  margin-top: 0.5em;
-  margin-bottom: 1em;
   list-style-position: outside
 }
 
