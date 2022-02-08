@@ -1,7 +1,8 @@
-Unreleased
-----------
+2.1.0
+-----
 
 Additions
+- New subcommand to resolve references (@panglesd, @lubega-simon, #812)
 - Improved rendering of long signatures (@panglesd, #782)
 - Handle comments attached to open statement as floating comment, instead
   of dropping them (@panglesd, #797)
@@ -11,8 +12,10 @@ Bugs fixed
 - Fix a missing Result constructor during compile. This will cause some
   functor arguments to have different filenames (@jonludlam, #795)
 - Better memory/disk space usage when handling module alias chains (@jonludlam, #799)
-- Resolving class-type paths (ie., `val x : #c`) (@jonludlam, #???)
+- Resolving class-type paths (ie., `val x : #c`) (@jonludlam, #809)
 - Skip top-level attributes while extracting the top comment. Fix top-comment extraction with PPX preprocessing (@jorisgio, #819)
+- Better handling of @canonical tags (@jonludlam, #820)
+- css: improved layout (@jonludlam, @Julow, #822)
 
 2.0.2
 -----
