@@ -464,6 +464,12 @@ Let's see if there was any output from the `odoc` invocations:
 # !link_output;;
 - : string list =
 [""; "'../src/odoc/bin/main.exe' 'link' 'odoc_xref2.odoc' '-I' '.'";
+ "odoc_xref2.odoc: File \"set.mli\", line 208, characters 16-32:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt_opt Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"set.mli\", line 204, characters 16-28:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).min_elt Couldn't find \"S\"";
+ "odoc_xref2.odoc: File \"set.mli\", line 189, characters 16-23:";
+ "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(Make) Couldn't find \"Make\"";
  "odoc_xref2.odoc: File \"map.mli\", line 331, characters 16-24:";
  "odoc_xref2.odoc: Warning: Failed to resolve reference unresolvedroot(S).map Couldn't find \"S\"";
  "odoc_xref2.odoc: File \"map.mli\", line 248, characters 16-36:";
@@ -870,6 +876,8 @@ Let's see if there was any output from the `odoc` invocations:
 ["";
  "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_xref_test.odocl' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
  "odoc_xref_test.odocl: Warning, resolved hidden path: Odoc_model__Lang.Signature.t";
+ "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_document.odocl' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
+ "odoc_document.odocl: Warning, resolved hidden path: Odoc_document__Types.Inline.one";
  "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_examples.odocl' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
  "odoc_examples.odocl: Warning, resolved hidden path: Odoc_examples__Unexposed.t"]
 ```
