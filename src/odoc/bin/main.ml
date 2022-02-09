@@ -4,9 +4,9 @@
    output the result to. *)
 
 open Odoc_odoc
-open Cmdliner
+open Compatcmdliner
 
-let convert_syntax : Odoc_document.Renderer.syntax Arg.converter =
+let convert_syntax : Odoc_document.Renderer.syntax Arg.converter2 =
   let syntax_parser str =
     match str with
     | "ml" | "ocaml" -> `Ok Odoc_document.Renderer.OCaml
@@ -18,7 +18,7 @@ let convert_syntax : Odoc_document.Renderer.syntax Arg.converter =
   in
   (syntax_parser, syntax_printer)
 
-let convert_directory ?(create = false) () : Fs.Directory.t Arg.converter =
+let convert_directory ?(create = false) () : Fs.Directory.t Arg.converter2 =
   let dir_parser, dir_printer = Arg.string in
   let odoc_dir_parser str =
     let () = if create then Fs.Directory.(mkdir_p (of_string str)) in
@@ -110,7 +110,7 @@ module Compile : sig
 
   val cmd : unit Term.t
 
-  val info : Term.info
+  val info : Term.info2
 end = struct
   let has_page_prefix file =
     file |> Fs.File.basename |> Fs.File.to_string
@@ -250,7 +250,7 @@ end
 module Odoc_link : sig
   val cmd : unit Term.t
 
-  val info : Term.info
+  val info : Term.info2
 end = struct
   let get_output_file ~output_file ~input =
     match output_file with
@@ -297,11 +297,11 @@ module type S = sig
 end
 
 module Make_renderer (R : S) : sig
-  val process : unit Term.t * Term.info
+  val process : unit Term.t * Term.info2
 
-  val targets : unit Term.t * Term.info
+  val targets : unit Term.t * Term.info2
 
-  val generate : unit Term.t * Term.info
+  val generate : unit Term.t * Term.info2
 end = struct
   let input =
     let doc = "Input file" in
@@ -406,7 +406,7 @@ end
 module Odoc_html_url : sig
   val cmd : unit Term.t
 
-  val info : Term.info
+  val info : Term.info2
 end = struct
   let root_url =
     let doc =
@@ -434,7 +434,7 @@ end
 module Odoc_latex_url : sig
   val cmd : unit Term.t
 
-  val info : Term.info
+  val info : Term.info2
 end = struct
   let reference =
     let doc = "The reference to be resolved and whose url to be generated." in
@@ -473,7 +473,7 @@ module Odoc_html = Make_renderer (struct
     Arg.(value & flag (info ~doc [ "indent" ]))
 
   (* Very basic validation and normalization for URI paths. *)
-  let convert_uri : Odoc_html.Tree.uri Arg.converter =
+  let convert_uri : Odoc_html.Tree.uri Arg.converter2 =
     let parser str =
       if String.length str = 0 then `Error "invalid URI"
       else
@@ -553,7 +553,7 @@ end)
 module Html_fragment : sig
   val cmd : unit Term.t
 
-  val info : Term.info
+  val info : Term.info2
 end = struct
   let html_fragment directories xref_base_uri output_file input_file
       warnings_options =
