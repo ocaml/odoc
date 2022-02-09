@@ -35,7 +35,7 @@
     "@opam/alcotest": "^0.8.5",
     "@opam/astring": "^0.8.3",
     "@opam/bisect_ppx": "^2.4.1",
-    "@opam/cmdliner": "^1.0.2",
+    "@opam/cmdliner": "1.0.4",
     "@opam/cppo": "^1.6.5",
     "@opam/dune": "~2.8.0",
     "@opam/fpath": "^0.7.2",
