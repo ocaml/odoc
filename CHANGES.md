@@ -2,7 +2,7 @@
 -----
 
 Additions
-- New subcommand to resolve references (@panglesd, @lubega-simon, #812)
+- New subcommand to resolve references (@panglesd, @lubegasimon, #812)
 - Improved rendering of long signatures (@panglesd, #782)
 - Handle comments attached to open statement as floating comment, instead
   of dropping them (@panglesd, #797)
@@ -33,7 +33,7 @@ Bugs fixed
 - Allow referencing of labels in the top comment (@jonludlam, #771)
 
 Additions
-- Strip unquoted spaces in identifiers for a more flexible reference syntax (@lubega-simon, @panglesd, #783)
+- Strip unquoted spaces in identifiers for a more flexible reference syntax (@lubegasimon, @panglesd, #783)
 - Add context to messages raised in expansions of includes (@Julow, #780)
 
 2.0.0
@@ -45,8 +45,8 @@ Additions
 - OCaml 4.13 support (@octachron, #687, #689)
 - Better errors/warnings (@Julow, #692, #717, #720, #732)
 - ModuleType 'Alias' support (@jonludlam, #703)
-- Improved test suite (@lubega-simon, #697)
-- Improved documentation (@lubega-simon, @jonludlam, #702, #733)
+- Improved test suite (@lubegasimon, #697)
+- Improved documentation (@lubegasimon, @jonludlam, #702, #733)
 - Strengthen module types (@jonludlam, #731)
 
 Bugs fixed
