@@ -2,7 +2,7 @@
  (name main)
  (package odoc)
  (public_name odoc)
- (libraries cmdliner odoc_model odoc_odoc)
+ (libraries compatcmdliner odoc_model odoc_odoc)
  (flags
   (:standard -open StdLabels))
  (instrumentation

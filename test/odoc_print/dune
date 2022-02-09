@@ -6,4 +6,5 @@
 (executable
  (name odoc_print)
  (modules odoc_print)
- (libraries odoc_odoc cmdliner type_desc_to_yojson odoc_model_desc))
+ (libraries odoc_odoc cmdliner type_desc_to_yojson odoc_model_desc
+   compatcmdliner))
