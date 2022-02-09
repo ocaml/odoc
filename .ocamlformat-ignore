@@ -1,4 +1,3 @@
-src/compat/*
 src/loader/cmi.ml
 src/loader/cmi.mli
 src/loader/cmt.ml

@@ -6,23 +6,61 @@
    the OCaml compiler without causing deprecation alerts *)
 
 [@@@ocaml.warning "-3"]
-module Term = struct
-  include Cmdliner.Term
 
-  type info2 = Cmdliner.Term.info
+module Term = struct
+  open Cmdliner.Term
+
+  type 'a t = 'a Cmdliner.Term.t
+
+  type info = Cmdliner.Term.info
+
   let info = info
+
   let name = name
+
   let eval_choice = eval_choice
+
   let eval = eval
+
   let exit = Cmdliner.Term.exit
+
+  let ( $ ) = ( $ )
+
+  let const = const
 end
 
 module Arg = struct
-  include Cmdliner.Arg
+  open Cmdliner.Arg
 
-  type 'a converter2 = 'a Cmdliner.Arg.converter
+  type 'a conv = 'a Cmdliner.Arg.conv
+
   let env_var = env_var
-  let pconv = pconv
-end
-[@@@ocaml.warning "+3"]
 
+  let pconv = pconv
+
+  let string = string
+
+  let value = value
+
+  let opt = opt
+
+  let opt_all = opt_all
+
+  let info = info
+
+  let some = some
+
+  let flag = flag
+
+  let required = required
+
+  let pos = pos
+
+  let file = file
+
+  let bool = bool
+
+  let ( & ) = ( & )
+end
+
+[@@@ocaml.warning "+3"]
