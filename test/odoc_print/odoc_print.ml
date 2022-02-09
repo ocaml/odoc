@@ -191,7 +191,7 @@ let run inp ref =
               | None -> Ok ())
           | _ -> Ok ()))
 
-open Cmdliner
+open Compatcmdliner
 
 let reference =
   let doc = "reference to print" in
@@ -211,4 +211,4 @@ let () =
   | `Ok (Error (`Msg msg)) ->
       Printf.eprintf "Error: %s\n" msg;
       exit 1
-  | cmdliner_error -> Term.exit cmdliner_error
+  | (`Version | `Help | `Error _) as x -> Term.exit x
