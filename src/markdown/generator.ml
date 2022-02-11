@@ -2,6 +2,7 @@ open Odoc_document
 open Types
 open Doctree
 open Markup
+open Astring
 
 (** Make a new string by copying the given string [n] times. *)
 let string_repeat n s =
@@ -11,21 +12,6 @@ let string_repeat n s =
     Bytes.unsafe_blit_string s 0 b (i * s_len) s_len
   done;
   Bytes.unsafe_to_string b
-
-(** Like [String.index_from_opt] but check against a predicate function. *)
-let rec string_index_f f s i =
-  if i >= String.length s then None
-  else if f s.[i] then Some i
-  else string_index_f f s (i + 1)
-
-(** Remove spaces at the end of a string. *)
-let string_trim_right s =
-  let right = String.length s - 1 in
-  let i = ref right in
-  while !i >= 0 && s.[!i] = ' ' do
-    decr i
-  done;
-  if !i = right then s else String.sub s 0 (!i + 1)
 
 let style (style : style) =
   match style with
@@ -76,7 +62,12 @@ let source_take_until_punctuation code =
   in
   let rec inline_take_until_punctuation acc = function
     | ({ Inline.desc = Text s; _ } as inline) :: tl when is_punctuation s 0 ->
-        let inline = { inline with desc = Text (string_trim_right s) } in
+        let inline =
+          {
+            inline with
+            desc = Text (String.drop ~rev:true ~sat:Char.Ascii.is_blank s);
+          }
+        in
         Some (List.rev (inline :: acc), tl)
     | hd :: tl -> inline_take_until_punctuation (hd :: acc) tl
     | [] -> None
@@ -98,10 +89,10 @@ let is_not_whitespace = function ' ' -> false | _ -> true
 
 let rec inline_trim_begin = function
   | ({ Inline.desc = Text s; _ } as inline) :: tl -> (
-      match string_index_f is_not_whitespace s 0 with
+      match String.find is_not_whitespace s with
       | None -> inline_trim_begin tl
       | Some i ->
-          let s = String.sub s i (String.length s - i) in
+          let s = String.with_range ~first:i s in
           { inline with desc = Text s } :: tl)
   | x -> x
 
@@ -130,7 +121,7 @@ let source_code_to_string s =
         | Tag (_, t) -> List.rev_append (source_code t) acc)
       [] s
   in
-  String.concat "" (List.rev (source_code s))
+  String.concat (List.rev (source_code s))
 
 let rec source_code (s : Source.t) args = fold_inlines (source_code_one args) s
 

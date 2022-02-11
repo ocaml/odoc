@@ -1,3 +1,5 @@
+open Astring
+
 (* What we need in the markdown generator:
    Special syntaxes:
    - Pandoc's heading attributes
@@ -34,19 +36,12 @@ let blocks above below = ConcatB (above, below)
 
 let ( +++ ) = blocks
 
-(** Returns two substrings of [s]: The beginning of [s] until [c] occurs, the
-    rest without the first [c]. Raise [Not_found]. *)
-let string_cut_at_char s c =
-  let len = String.length s in
-  let i = String.index s c in
-  (String.sub s 0 i, String.sub s (i + 1) (len - i - 1))
-
 let rec text s =
-  try
-    (* Escape backticks. *)
-    let left, right = string_cut_at_char s '`' in
-    String left ++ String "\\`" ++ text right
-  with Not_found -> String s
+  match String.cut ~sep:"`" s with
+  | Some (left, right) ->
+      (* Escape backticks. *)
+      String left ++ String "\\`" ++ text right
+  | None -> String s
 
 let line_break = Linebreak
 
@@ -64,7 +59,7 @@ let superscript i = Join (String "<sup>", Join (i, String "</sup>"))
 
 let code_span s =
   let left, right =
-    if String.contains s '`' then (String "`` ", String " ``")
+    if String.is_infix ~affix:"`" s then (String "`` ", String " ``")
     else (String "`", String "`")
   in
   Join (left, Join (String s, right))
@@ -84,19 +79,16 @@ let quote_block b = Prefixed_block ("> ", b)
 let noop_block = Block Noop
 
 let heading level i =
-  let make_hashes n = String.make n '#' in
+  let make_hashes n = String.v ~len:n (fun _ -> '#') in
   let hashes = make_hashes level in
   Block (String hashes ++ String " " ++ i)
 
-(** [split_on_char] is not available on [< 4.04]. *)
 let rec iter_lines f s i =
-  try
-    let i' = String.index_from s i '\n' in
-    f (String.sub s i (i' - i));
-    iter_lines f s (i' + 1)
-  with Not_found ->
-    let len = String.length s in
-    if i < len then f (String.sub s i (len - i))
+  match String.find_sub ~start:i ~sub:"\n" s with
+  | Some i' ->
+      f (String.with_index_range ~first:i ~last:(i' - 1) s);
+      iter_lines f s (i' + 1)
+  | None -> if i < String.length s then f (String.with_range ~first:i s)
 
 (** Every lines that [f] formats are prefixed and written in [sink].
     Inefficient. *)
