@@ -34,7 +34,19 @@ let blocks above below = ConcatB (above, below)
 
 let ( +++ ) = blocks
 
-let text s = String s
+(** Returns two substrings of [s]: The beginning of [s] until [c] occurs, the
+    rest without the first [c]. Raise [Not_found]. *)
+let string_cut_at_char s c =
+  let len = String.length s in
+  let i = String.index s c in
+  (String.sub s 0 i, String.sub s (i + 1) (len - i - 1))
+
+let rec text s =
+  try
+    (* Escape backticks. *)
+    let left, right = string_cut_at_char s '`' in
+    String left ++ String "\\`" ++ text right
+  with Not_found -> String s
 
 let line_break = Linebreak
 

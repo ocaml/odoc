@@ -717,13 +717,13 @@ This comment is for `poly_variant_union`.
 
 ###### type 'a open_poly_variant =
 
-> [> `TagA ] as 'a
+> [> \`TagA ] as 'a
 
 <a id="type-open_poly_variant2"></a>
 
 ###### type 'a open_poly_variant2 =
 
-> [> `ConstrB of int ] as 'a
+> [> \`ConstrB of int ] as 'a
 
 <a id="type-open_poly_variant_alias"></a>
 
@@ -736,25 +736,25 @@ This comment is for `poly_variant_union`.
 
 ###### type 'a poly_fun =
 
-> [> `ConstrB of int ] as 'a -> 'a
+> [> \`ConstrB of int ] as 'a -> 'a
 
 <a id="type-poly_fun_constraint"></a>
 
 ###### type 'a poly_fun_constraint =
 
-> 'a -> 'a constraint 'a = [> `TagA ]
+> 'a -> 'a constraint 'a = [> \`TagA ]
 
 <a id="type-closed_poly_variant"></a>
 
 ###### type 'a closed_poly_variant =
 
-> [< `One | `Two ] as 'a
+> [< \`One | \`Two ] as 'a
 
 <a id="type-clopen_poly_variant"></a>
 
 ###### type 'a clopen_poly_variant =
 
-> [< `One | `Two of int | `Three Two Three ] as 'a
+> [< \`One | \`Two of int | \`Three Two Three ] as 'a
 
 <a id="type-nested_poly_variant"></a>
 

@@ -92,7 +92,7 @@ Some _documentation_.
 
 > 
 >   [labeled_higher_order](#type-labeled_higher_order) ->
->   [ `Bar | `Baz of
+>   [ \`Bar | \`Baz of
 > [triple](#type-triple) ] ->
 >   [pair](#type-pair)
 > ->
@@ -340,13 +340,13 @@ _bar_
 
 ###### type 'a exact_variant =
 
-> 'a constraint 'a = [ `A | `B of int ]
+> 'a constraint 'a = [ \`A | \`B of int ]
 
 <a id="type-lower_variant"></a>
 
 ###### type 'a lower_variant =
 
-> 'a constraint 'a = [> `A | `B of int ]
+> 'a constraint 'a = [> \`A | \`B of int ]
 
 <a id="type-any_variant"></a>
 
@@ -358,7 +358,7 @@ _bar_
 
 ###### type 'a upper_variant =
 
-> 'a constraint 'a = [< `A | `B of int ]
+> 'a constraint 'a = [< \`A | \`B of int ]
 
 <a id="type-named_variant"></a>
 

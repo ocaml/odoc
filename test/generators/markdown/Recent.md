@@ -112,7 +112,7 @@ bar
 
 <a id="type-empty_conj.X"></a>
 
-######    | X : [< `X of & 'a & int * float ] ->
+######    | X : [< \`X of & 'a & int * float ] ->
 [empty_conj](#type-empty_conj)
 
 <a id="type-conj"></a>
@@ -121,20 +121,20 @@ bar
 
 <a id="type-conj.X"></a>
 
-######    | X : [< `X of int & [< `B of int & float ] ] ->
+######    | X : [< \`X of int & [< \`B of int & float ] ] ->
 [conj](#type-conj)
 
 <a id="val-empty_conj"></a>
 
 ###### val empty_conj :
 
-> [< `X of & 'a & int * float ]
+> [< \`X of & 'a & int * float ]
 
 <a id="val-conj"></a>
 
 ###### val conj :
 
-> [< `X of int & [< `B of int & float ] ]
+> [< \`X of int & [< \`B of int & float ] ]
 
 <a id="module-Z"></a>
 
