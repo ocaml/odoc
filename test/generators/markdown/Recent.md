@@ -42,6 +42,8 @@ _bar_
 
 > a : int;
 
+}
+
 <a id="type-gadt"></a>
 
 ###### type _ gadt = 
@@ -64,7 +66,7 @@ foo
 
 > a : int;
 
- -> unit [gadt](#type-gadt)
+} -> unit [gadt](#type-gadt)
 
 <a id="type-polymorphic_variant"></a>
 
@@ -89,6 +91,8 @@ foo
 > | `D
 
 bar
+
+ ]
 
 <a id="type-empty_variant"></a>
 

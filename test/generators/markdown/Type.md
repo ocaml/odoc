@@ -97,11 +97,14 @@ Some _documentation_.
 >   [pair](#type-pair)
 > ->
 >   [labeled](#type-labeled) ->
->   [higher_order](#type-higher_order) ->
+>   [higher_order](#type-higher_order)
+> ->
 >   ( string -> int ) ->
->   (int * float * char * string * char * unit) option ->
+>   (int * float * char * string * char * unit)
+> option ->
 >   [nested_pair](#type-nested_pair) ->
->   [arrow](#type-arrow) ->
+>   [arrow](#type-arrow)
+> ->
 >   string ->
 >   [nested_pair](#type-nested_pair) array
 
@@ -112,6 +115,8 @@ Some _documentation_.
 <a id="type-variant_e.a"></a>
 
 > a : int;
+
+}
 
 <a id="type-variant"></a>
 
@@ -148,6 +153,8 @@ _bar_
 <a id="type-variant_c.a"></a>
 
 > a : int;
+
+}
 
 <a id="type-gadt"></a>
 
@@ -209,6 +216,8 @@ _bar_
 
 > e : 'a. 'a;
 
+}
+
 <a id="type-polymorphic_variant"></a>
 
 ###### type polymorphic_variant = [ 
@@ -229,6 +238,8 @@ _bar_
 
 > | `D
 
+ ]
+
 <a id="type-polymorphic_variant_extension"></a>
 
 ###### type polymorphic_variant_extension = [ 
@@ -241,6 +252,8 @@ _bar_
 
 > | `E
 
+ ]
+
 <a id="type-nested_polymorphic_variant"></a>
 
 ###### type nested_polymorphic_variant = [ 
@@ -248,6 +261,8 @@ _bar_
 <a id="type-nested_polymorphic_variant.A"></a>
 
 > | `A of [ `B | `C ]
+
+ ]
 
 <a id="type-private_extenion#row"></a>
 
@@ -260,6 +275,8 @@ _bar_
 <a id="type-private_extenion.polymorphic_variant"></a>
 
 > | [polymorphic_variant](#type-polymorphic_variant)
+
+ ]
 
 <a id="type-object_"></a>
 
@@ -281,7 +298,9 @@ _bar_
 
 ###### type module_substitution =
 
-> (module [X](Type.module-type-X.md) with type [t](Type.module-type-X.md#type-t) = int and type [u](Type.module-type-X.md#type-u) = unit)
+> (module [X](Type.module-type-X.md) with type
+> [t](Type.module-type-X.md#type-t) = int and type
+> [u](Type.module-type-X.md#type-u) = unit)
 
 <a id="type-covariant"></a>
 

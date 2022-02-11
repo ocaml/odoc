@@ -2,7 +2,8 @@ Ocamlary
 
 Module `Ocamlary`
 
-This is an _interface_ with **all** of the _module system_ features. This documentation demonstrates:
+This is an _interface_ with **all** of the _module system_ features. This
+documentation demonstrates:
 
 - comment formatting
   
@@ -49,7 +50,8 @@ David Sheets is the author.
 
 @author David Sheets
 
-You may find more information about this HTML documentation renderer at [github.com/dsheets/ocamlary](https://github.com/dsheets/ocamlary).
+You may find more information about this HTML documentation renderer at
+[github.com/dsheets/ocamlary](https://github.com/dsheets/ocamlary).
 
 This is some verbatim text:
 
@@ -139,11 +141,13 @@ A plain, empty module signature alias of
 
 ###### module [ModuleWithSignature](Ocamlary.ModuleWithSignature.md)
 
-A plain module of a signature of [`EmptySig`](Ocamlary.module-type-EmptySig.md) (reference)
+A plain module of a signature of
+[`EmptySig`](Ocamlary.module-type-EmptySig.md) (reference)
 
 <a id="module-ModuleWithSignatureAlias"></a>
 
-###### module [ModuleWithSignatureAlias](Ocamlary.ModuleWithSignatureAlias.md)
+###### module
+[ModuleWithSignatureAlias](Ocamlary.ModuleWithSignatureAlias.md)
 
 A plain module with an alias signature
 
@@ -161,7 +165,13 @@ There's a signature in a module in this signature.
 
 ###### module type [SuperSig](Ocamlary.module-type-SuperSig.md)
 
-For a good time, see [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig) or [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigB.md#subSig) or [`SuperSig.EmptySig`](Ocamlary.module-type-SuperSig.module-type-EmptySig.md). Section [Section 9000](#s9000) is also interesting. [EmptySig](#emptySig) is the section and [`EmptySig`](Ocamlary.module-type-EmptySig.md) is the module signature.
+For a good time, see
+[`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig) or
+[`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigB.md#subSig) or
+[`SuperSig.EmptySig`](Ocamlary.module-type-SuperSig.module-type-EmptySig.md).
+Section [Section 9000](#s9000) is also interesting. [EmptySig](#emptySig) is
+the section and [`EmptySig`](Ocamlary.module-type-EmptySig.md) is the module
+signature.
 
 <a id="module-Buffer"></a>
 
@@ -197,7 +207,8 @@ Unary exception constructor over binary tuple
 
 ###### exception EmptySig
 
-[`EmptySig`](Ocamlary.module-type-EmptySig.md) is a module and [`EmptySig`](#exception-EmptySig) is this exception.
+[`EmptySig`](Ocamlary.module-type-EmptySig.md) is a module and
+[`EmptySig`](#exception-EmptySig) is this exception.
 
 <a id="exception-EmptySigAlias"></a>
 
@@ -213,7 +224,8 @@ Unary exception constructor over binary tuple
 
 > 'a -> 'b
 
-[`a_function`](#type-a_function) is this type and [`a_function`](#val-a_function) is the value below.
+[`a_function`](#type-a_function) is this type and
+[`a_function`](#val-a_function) is the value below.
 
 <a id="val-a_function"></a>
 
@@ -232,7 +244,8 @@ This is `a_function` with param and return type.
 ###### val fun_fun_fun :
 
 > 
->   ( ( int, int ) [a_function](#type-a_function), ( unit, unit ) [a_function](#type-a_function) ) [a_function](#type-a_function)
+>   ( ( int, int ) [a_function](#type-a_function), ( unit, unit )
+> [a_function](#type-a_function) ) [a_function](#type-a_function)
 
 <a id="val-fun_maybe"></a>
 
@@ -410,7 +423,8 @@ module type of
 
 <a id="module-type-RecollectionModule"></a>
 
-###### module type [RecollectionModule](Ocamlary.module-type-RecollectionModule.md)
+###### module type
+[RecollectionModule](Ocamlary.module-type-RecollectionModule.md)
 
 <a id="module-type-A"></a>
 
@@ -434,7 +448,8 @@ This comment is for `FunctorTypeOf`.
 
 <a id="module-type-IncludeModuleType"></a>
 
-###### module type [IncludeModuleType](Ocamlary.module-type-IncludeModuleType.md)
+###### module type
+[IncludeModuleType](Ocamlary.module-type-IncludeModuleType.md)
 
 This comment is for `IncludeModuleType`.
 
@@ -468,6 +483,8 @@ This comment is for `field1`.
 
 This comment is for `field2`.
 
+}
+
 This comment is for `record`.
 
 This comment is also for `record`.
@@ -494,6 +511,8 @@ This comment is also for `record`.
 
 `c` is third and mutable
 
+}
+
 <a id="type-universe_record"></a>
 
 ###### type universe_record = {
@@ -501,6 +520,8 @@ This comment is also for `record`.
 <a id="type-universe_record.nihilate"></a>
 
 > nihilate : 'a. 'a -> unit;
+
+}
 
 <a id="type-variant"></a>
 
@@ -545,6 +566,8 @@ This comment is also for `variant`.
 <a id="type-poly_variant.ConstrB"></a>
 
 > | `ConstrB of int
+
+ ]
 
 This comment is for `poly_variant`.
 
@@ -606,7 +629,8 @@ This comment is for `alias`.
 
 ###### type tuple =
 
-> ([alias](#type-alias) * [alias](#type-alias)) * [alias](#type-alias) * ([alias](#type-alias) * [alias](#type-alias))
+> ([alias](#type-alias) * [alias](#type-alias)) * [alias](#type-alias)
+> * ([alias](#type-alias) * [alias](#type-alias))
 
 This comment is for `tuple`.
 
@@ -644,6 +668,8 @@ This comment is for `variant_alias`.
 
 > field2 : int;
 
+}
+
 This comment is for `record_alias`.
 
 <a id="type-poly_variant_union"></a>
@@ -658,6 +684,8 @@ This comment is for `record_alias`.
 
 > | `TagC
 
+ ]
+
 This comment is for `poly_variant_union`.
 
 <a id="type-poly_poly_variant"></a>
@@ -667,6 +695,8 @@ This comment is for `poly_variant_union`.
 <a id="type-poly_poly_variant.TagA"></a>
 
 > | `TagA of 'a
+
+ ]
 
 <a id="type-bin_poly_poly_variant"></a>
 
@@ -679,6 +709,8 @@ This comment is for `poly_variant_union`.
 <a id="type-bin_poly_poly_variant.ConstrB"></a>
 
 > | `ConstrB of 'b
+
+ ]
 
 <a id="type-open_poly_variant"></a>
 
@@ -696,7 +728,8 @@ This comment is for `poly_variant_union`.
 
 ###### type 'a open_poly_variant_alias =
 
-> 'a [open_poly_variant](#type-open_poly_variant) [open_poly_variant2](#type-open_poly_variant2)
+> 'a [open_poly_variant](#type-open_poly_variant)
+> [open_poly_variant2](#type-open_poly_variant2)
 
 <a id="type-poly_fun"></a>
 
@@ -742,9 +775,12 @@ This comment is for `poly_variant_union`.
 
 > | `D of [ `D1 of [ `D1a ] ]
 
+ ]
+
 <a id="type-full_gadt_alias"></a>
 
-###### type ('a, 'b) full_gadt_alias = ( 'a, 'b ) [full_gadt](#type-full_gadt) = 
+###### type ('a, 'b) full_gadt_alias = ( 'a, 'b )
+[full_gadt](#type-full_gadt) = 
 
 <a id="type-full_gadt_alias.Tag"></a>
 
@@ -778,7 +814,8 @@ This comment is for `full_gadt_alias`.
 
 <a id="type-partial_gadt_alias.ExistGadtTag"></a>
 
-> | ExistGadtTag : ( 'a -> 'b ) -> 'a [partial_gadt_alias](#type-partial_gadt_alias)
+> | ExistGadtTag : ( 'a -> 'b ) -> 'a
+> [partial_gadt_alias](#type-partial_gadt_alias)
 
 This comment is for `partial_gadt_alias`.
 
@@ -802,9 +839,11 @@ This comment is for [`Exn_arrow`](#exception-Exn_arrow).
 
 > | B_ish of [mutual_constr_b](#type-mutual_constr_b)
 
-This comment is between [`mutual_constr_a`](#type-mutual_constr_a) and [`mutual_constr_b`](#type-mutual_constr_b).
+This comment is between [`mutual_constr_a`](#type-mutual_constr_a) and
+[`mutual_constr_b`](#type-mutual_constr_b).
 
-This comment is for [`mutual_constr_a`](#type-mutual_constr_a) then [`mutual_constr_b`](#type-mutual_constr_b).
+This comment is for [`mutual_constr_a`](#type-mutual_constr_a) then
+[`mutual_constr_b`](#type-mutual_constr_b).
 
 <a id="type-mutual_constr_b"></a>
 
@@ -820,7 +859,8 @@ This comment is for [`mutual_constr_a`](#type-mutual_constr_a) then [`mutual_con
 
 This comment must be here for the next to associate correctly.
 
-This comment is for [`mutual_constr_b`](#type-mutual_constr_b) then [`mutual_constr_a`](#type-mutual_constr_a).
+This comment is for [`mutual_constr_b`](#type-mutual_constr_b) then
+[`mutual_constr_a`](#type-mutual_constr_a).
 
 <a id="type-rec_obj"></a>
 
@@ -1192,16 +1232,18 @@ A brown paper package tied up with string
 
 # Trying the {!modules: ...} command.
 
-With ocamldoc, toplevel units will be linked and documented, while submodules will behave as simple references.
+With ocamldoc, toplevel units will be linked and documented, while submodules
+will behave as simple references.
 
-With odoc, everything should be resolved (and linked) but only toplevel units will be documented.
+With odoc, everything should be resolved (and linked) but only toplevel units
+will be documented.
 
 @[`Dep1.X`](Ocamlary.Dep1.X.md)
 
 @[`Ocamlary.IncludeInclude1`](Ocamlary.IncludeInclude1.md)
 
-@[`Ocamlary`]()
-This is an _interface_ with **all** of the _module system_ features. This documentation demonstrates:
+@[`Ocamlary`]() This is an _interface_ with **all** of the _module system_
+features. This documentation demonstrates:
 
 ### Weirder usages involving module types
 
@@ -1215,7 +1257,12 @@ This is an _interface_ with **all** of the _module system_ features. This docume
 
 ###### module [CanonicalTest](Ocamlary.CanonicalTest.md)
 
-Some ref to [`CanonicalTest.Base_Tests.C.t`](Ocamlary.CanonicalTest.Base_Tests.C.md#type-t) and [`CanonicalTest.Base_Tests.L.id`](Ocamlary.CanonicalTest.Base.List.md#val-id). But also to [`CanonicalTest.Base.List`](Ocamlary.CanonicalTest.Base.List.md) and [`CanonicalTest.Base.List.t`](Ocamlary.CanonicalTest.Base.List.md#type-t)
+Some ref to
+[`CanonicalTest.Base_Tests.C.t`](Ocamlary.CanonicalTest.Base_Tests.C.md#type-t)
+and
+[`CanonicalTest.Base_Tests.L.id`](Ocamlary.CanonicalTest.Base.List.md#val-id).
+But also to [`CanonicalTest.Base.List`](Ocamlary.CanonicalTest.Base.List.md)
+and [`CanonicalTest.Base.List.t`](Ocamlary.CanonicalTest.Base.List.md#type-t)
 
 # Aliases again
 
@@ -1229,7 +1276,8 @@ Let's imitate jst's layout.
 
 I can refer to
 
-- `{!section:indexmodules}` : [Trying the {!modules: ...} command.](#indexmodules)
+- `{!section:indexmodules}` : [Trying the {!modules: ...}
+  command.](#indexmodules)
   
 
 - `{!aliases}` : [Aliases again](#aliases)
@@ -1237,7 +1285,8 @@ I can refer to
 
 But also to things in submodules:
 
-- `{!section:SuperSig.SubSigA.subSig}` : [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
+- `{!section:SuperSig.SubSigA.subSig}` :
+  [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
   
 
 - `{!Aliases.incl}` : [`incl`](Ocamlary.Aliases.md#incl)
@@ -1251,7 +1300,8 @@ And just to make sure we do not mess up:
 - `{{!aliases}B}` : [B](#aliases)
   
 
-- `{{!section:SuperSig.SubSigA.subSig}C}` : [C](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
+- `{{!section:SuperSig.SubSigA.subSig}C}` :
+  [C](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
   
 
 - `{{!Aliases.incl}D}` : [D](Ocamlary.Aliases.md#incl)
@@ -1279,16 +1329,20 @@ Here goes:
 
 ###### module [Only_a_module](Ocamlary.Only_a_module.md)
 
-- `{!Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+- `{!Only_a_module.t}` :
+  [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
   
 
-- `{!module-Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+- `{!module-Only_a_module.t}` :
+  [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
   
 
-- `{!module-Only_a_module.type-t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+- `{!module-Only_a_module.type-t}` :
+  [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
   
 
-- `{!type:Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+- `{!type:Only_a_module.t}` :
+  [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
   
 
 <a id="module-type-TypeExt"></a>

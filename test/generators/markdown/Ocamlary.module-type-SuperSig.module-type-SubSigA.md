@@ -14,4 +14,5 @@ Module type `SuperSig.SubSigA`
 
 <a id="module-SubSigAMod"></a>
 
-###### module [SubSigAMod](Ocamlary.module-type-SuperSig.module-type-SubSigA.SubSigAMod.md)
+###### module
+[SubSigAMod](Ocamlary.module-type-SuperSig.module-type-SubSigA.SubSigAMod.md)

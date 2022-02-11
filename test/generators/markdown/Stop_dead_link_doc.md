@@ -26,6 +26,8 @@ Module `Stop_dead_link_doc`
 
 > field : [Foo.t](Stop_dead_link_doc.Foo.md#type-t);
 
+}
+
 <a id="type-foo_"></a>
 
 ###### type foo_ = 

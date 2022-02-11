@@ -20,13 +20,15 @@ Module `CanonicalTest.Base_Tests`
 
 ###### val foo :
 
-> int [L.t](Ocamlary.CanonicalTest.Base.List.md#type-t) -> float [L.t](Ocamlary.CanonicalTest.Base.List.md#type-t)
+> int [L.t](Ocamlary.CanonicalTest.Base.List.md#type-t) -> float
+> [L.t](Ocamlary.CanonicalTest.Base.List.md#type-t)
 
 <a id="val-bar"></a>
 
 ###### val bar :
 
-> 'a [Base.List.t](Ocamlary.CanonicalTest.Base.List.md#type-t) -> 'a [Base.List.t](Ocamlary.CanonicalTest.Base.List.md#type-t)
+> 'a [Base.List.t](Ocamlary.CanonicalTest.Base.List.md#type-t) -> 'a
+> [Base.List.t](Ocamlary.CanonicalTest.Base.List.md#type-t)
 
 <a id="val-baz"></a>
 

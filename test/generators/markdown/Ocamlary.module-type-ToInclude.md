@@ -10,4 +10,5 @@ Module type `Ocamlary.ToInclude`
 
 <a id="module-type-IncludedB"></a>
 
-###### module type [IncludedB](Ocamlary.module-type-ToInclude.module-type-IncludedB.md)
+###### module type
+[IncludedB](Ocamlary.module-type-ToInclude.module-type-IncludedB.md)

@@ -2,7 +2,8 @@ mld
 
  Mld Page
 
-This is an `.mld` file. It doesn't have an auto-generated title, like modules and other pages generated fully by odoc do.
+This is an `.mld` file. It doesn't have an auto-generated title, like modules
+and other pages generated fully by odoc do.
 
 It will have a TOC generated from section headings.
 

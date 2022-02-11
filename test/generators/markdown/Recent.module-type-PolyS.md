@@ -15,3 +15,5 @@ Module type `Recent.PolyS`
 <a id="type-t.B"></a>
 
 > | `B
+
+ ]
