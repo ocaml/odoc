@@ -123,11 +123,13 @@ let source_code_to_string s =
   in
   String.concat (List.rev (source_code s))
 
+(** Special case common entities for readability. *)
+let entity = function "#45" -> "-" | "gt" -> ">" | e -> "&" ^ e ^ ";"
+
 let rec source_code (s : Source.t) args = fold_inlines (source_code_one args) s
 
 and source_code_one args = function
   | Source.Elt i -> inline i args
-  | Tag (Some "arrow", _) -> text "->"
   | Tag (_, s) -> source_code s args
 
 and inline l args = fold_inlines (inline_one args) l
@@ -136,7 +138,7 @@ and inline_one args i =
   match i.Inline.desc with
   | Text " " -> space
   | Text s -> text s
-  | Entity _ -> noop
+  | Entity e -> text (entity e)
   | Styled (styl, content) -> style styl (inline content args)
   | Linebreak -> line_break
   | Link (href, content) -> link ~href (inline content args)
