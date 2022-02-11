@@ -56,8 +56,6 @@ Let's imitate jst's layout.
 
 ### include of Foo
 
----
-
 Just for giggle, let's see what happens when we include
 [`Foo`](Ocamlary.Aliases.Foo.md).
 

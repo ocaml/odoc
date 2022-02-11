@@ -8,8 +8,6 @@ Module type `SuperSig.SubSigA`
 
 ### A Labeled Section Header Inside of a Signature
 
----
-
 <a id="type-t"></a>
 
 ###### type t

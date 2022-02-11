@@ -16,8 +16,6 @@ foo
 
 ## Something 2
 
----
-
 # Something 1-bis
 
 Some text.
@@ -33,15 +31,11 @@ foo
 
 ## Something 2
 
----
-
 # Something 1-bis
 
 Some text.
 
 ## Third include
-
----
 
 Shifted some more.
 
@@ -50,8 +44,6 @@ Shifted some more.
 foo
 
 ## Something 2
-
----
 
 # Something 1-bis
 
@@ -77,8 +69,6 @@ foo
 > unit
 
 ## Something 2
-
----
 
 <a id="val-bar"></a>
 

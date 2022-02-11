@@ -46,9 +46,6 @@ val ( +++ ) : blocks -> blocks -> blocks
 val blocks : blocks -> blocks -> blocks
 (** Combine blocks. *)
 
-val block_separator : blocks
-(** A horizontal line. *)
-
 val raw_markup : string -> blocks
 
 val code_span : string -> inlines

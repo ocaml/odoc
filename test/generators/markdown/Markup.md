@@ -13,20 +13,14 @@ Besides the section heading above, there are also
 
 ## Subsection headings
 
----
-
 and
 
 ### Sub-subsection headings
-
----
 
 but odoc has banned deeper headings. There are also title headings, but they
 are only allowed in mld files.
 
 ### Anchors
-
----
 
 Sections can have attached [Anchors](#anchors), and it is possible to
 [link](#anchors) to them. Links to section headers should not be set in
@@ -34,13 +28,9 @@ source code style.
 
 #### Paragraph
 
----
-
 Individual paragraphs can have a heading.
 
 ##### Subparagraph
-
----
 
 Parts of a longer paragraph that can be considered alone can also have
 headings.

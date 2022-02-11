@@ -18,7 +18,6 @@ type blocks =
   | CodeBlock of inlines
   | List of list_type * blocks list
   | Raw_markup of string
-  | Block_separator
   | Prefixed_block of string * blocks  (** Prefix every lines of blocks. *)
 
 and list_type = Ordered | Unordered
@@ -34,8 +33,6 @@ let ( ++ ) left right = Join (left, right)
 let blocks above below = ConcatB (above, below)
 
 let ( +++ ) = blocks
-
-let block_separator = Block_separator
 
 let text s = String s
 
@@ -118,7 +115,6 @@ let rec pp_blocks fmt b =
       Format.fprintf fmt "%a@\n%a" pp_blocks above pp_blocks below
   | Block i -> Format.fprintf fmt "@[%a@]@\n" pp_inlines i
   | CodeBlock i -> Format.fprintf fmt "```@\n%a@\n```" pp_inlines i
-  | Block_separator -> Format.fprintf fmt "---@\n"
   | List (list_type, l) ->
       let rec pp_list n l =
         match l with

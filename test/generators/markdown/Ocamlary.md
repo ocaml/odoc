@@ -87,19 +87,11 @@ An unassociated comment
 
 ## Level 2
 
----
-
 ### Level 3
-
----
 
 #### Level 4
 
----
-
 ### Basic module stuff
-
----
 
 <a id="module-Empty"></a>
 
@@ -130,8 +122,6 @@ An ambiguous, misnamed module type
 A plain module alias of `Empty`
 
 ### EmptySig
-
----
 
 <a id="module-type-EmptySig"></a>
 
@@ -193,8 +183,6 @@ Some text before exception title.
 
 ### Basic exception stuff
 
----
-
 After exception title.
 
 <a id="exception-Kaboom"></a>
@@ -229,8 +217,6 @@ Unary exception constructor over binary tuple
 [`EmptySigAlias`](#exception-EmptySigAlias) is this exception.
 
 ### Basic type and value stuff with advanced doc comments
-
----
 
 <a id="type-a_function"></a>
 
@@ -325,8 +311,6 @@ This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 ### Some Operators
 
----
-
 <a id="val-(~-)"></a>
 
 ###### val (~-) :
@@ -413,8 +397,6 @@ This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 ### Advanced Module Stuff
 
----
-
 <a id="module-CollectionModule"></a>
 
 ###### module [CollectionModule](Ocamlary.CollectionModule.md)
@@ -484,8 +466,6 @@ This comment is for `IncludeModuleType`.
 ###### module type [IncludedB](Ocamlary.module-type-IncludedB.md)
 
 ### Advanced Type Stuff
-
----
 
 <a id="type-record"></a>
 
@@ -1270,8 +1250,6 @@ will be documented.
 features. This documentation demonstrates:
 
 ### Weirder usages involving module types
-
----
 
 @[`IncludeInclude1.IncludeInclude2_M`](Ocamlary.IncludeInclude1.IncludeInclude2_M.md)
 

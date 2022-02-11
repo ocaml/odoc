@@ -24,8 +24,6 @@ foo
 
 ## Something 2
 
----
-
 <a id="val-bar"></a>
 
 ###### val bar :

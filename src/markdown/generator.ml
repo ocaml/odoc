@@ -267,10 +267,7 @@ and item (l : Item.t list) args nesting_level =
           let heading' =
             let title = inline title args in
             match label with
-            | Some _ -> (
-                match level with
-                | 1 -> heading level title
-                | _ -> blocks (heading level title) block_separator)
+            | Some _ -> heading level title
             | None -> paragraph title
           in
           blocks heading' (continue rest)

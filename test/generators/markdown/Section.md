@@ -28,8 +28,6 @@ Foo bar.
 
 ## and one with a nested section
 
----
-
 # _This_ `section` **title** <sub>has</sub> <sup>markup</sup>
 
 But links are impossible thanks to the parser, so we never have trouble
