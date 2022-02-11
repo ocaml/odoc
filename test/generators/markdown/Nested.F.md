@@ -26,7 +26,6 @@ Some additional comments.
 
 ###### type t =
 
-> [Arg1.t](Nested.F.argument-1-Arg1.md#type-t)
-> * [Arg2.t](Nested.F.argument-2-Arg2.md#type-t)
+> [Arg1.t](Nested.F.argument-1-Arg1.md#type-t) * [Arg2.t](Nested.F.argument-2-Arg2.md#type-t)
 
 Some type.

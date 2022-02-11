@@ -20,8 +20,7 @@ This comment is for `collection`.
 
 <a id="module-InnerModuleA"></a>
 
-###### module
-[InnerModuleA](Ocamlary.Recollection.argument-1-C.InnerModuleA.md)
+###### module [InnerModuleA](Ocamlary.Recollection.argument-1-C.InnerModuleA.md)
 
 This comment is for `InnerModuleA`.
 

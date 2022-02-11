@@ -18,14 +18,12 @@ This comment is for `t`.
 
 <a id="module-InnerModuleA'"></a>
 
-###### module
-[InnerModuleA'](Ocamlary.module-type-RecollectionModule.InnerModuleA.InnerModuleA'.md)
+###### module [InnerModuleA'](Ocamlary.module-type-RecollectionModule.InnerModuleA.InnerModuleA'.md)
 
 This comment is for `InnerModuleA'`.
 
 <a id="module-type-InnerModuleTypeA'"></a>
 
-###### module type
-[InnerModuleTypeA'](Ocamlary.module-type-RecollectionModule.InnerModuleA.module-type-InnerModuleTypeA'.md)
+###### module type [InnerModuleTypeA'](Ocamlary.module-type-RecollectionModule.InnerModuleA.module-type-InnerModuleTypeA'.md)
 
 This comment is for `InnerModuleTypeA'`.

@@ -2,8 +2,7 @@ Ocamlary
 
 Module `Ocamlary`
 
-This is an _interface_ with **all** of the _module system_ features. This
-documentation demonstrates:
+This is an _interface_ with **all** of the _module system_ features. This documentation demonstrates:
 
 - comment formatting
   
@@ -50,8 +49,7 @@ David Sheets is the author.
 
 @author David Sheets
 
-You may find more information about this HTML documentation renderer at
-[github.com/dsheets/ocamlary](https://github.com/dsheets/ocamlary).
+You may find more information about this HTML documentation renderer at [github.com/dsheets/ocamlary](https://github.com/dsheets/ocamlary).
 
 This is some verbatim text:
 
@@ -141,13 +139,11 @@ A plain, empty module signature alias of
 
 ###### module [ModuleWithSignature](Ocamlary.ModuleWithSignature.md)
 
-A plain module of a signature of
-[`EmptySig`](Ocamlary.module-type-EmptySig.md) (reference)
+A plain module of a signature of [`EmptySig`](Ocamlary.module-type-EmptySig.md) (reference)
 
 <a id="module-ModuleWithSignatureAlias"></a>
 
-###### module
-[ModuleWithSignatureAlias](Ocamlary.ModuleWithSignatureAlias.md)
+###### module [ModuleWithSignatureAlias](Ocamlary.ModuleWithSignatureAlias.md)
 
 A plain module with an alias signature
 
@@ -165,13 +161,7 @@ There's a signature in a module in this signature.
 
 ###### module type [SuperSig](Ocamlary.module-type-SuperSig.md)
 
-For a good time, see
-[`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig) or
-[`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigB.md#subSig) or
-[`SuperSig.EmptySig`](Ocamlary.module-type-SuperSig.module-type-EmptySig.md).
-Section [Section 9000](#s9000) is also interesting. [EmptySig](#emptySig) is
-the section and [`EmptySig`](Ocamlary.module-type-EmptySig.md) is the module
-signature.
+For a good time, see [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig) or [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigB.md#subSig) or [`SuperSig.EmptySig`](Ocamlary.module-type-SuperSig.module-type-EmptySig.md). Section [Section 9000](#s9000) is also interesting. [EmptySig](#emptySig) is the section and [`EmptySig`](Ocamlary.module-type-EmptySig.md) is the module signature.
 
 <a id="module-Buffer"></a>
 
@@ -207,8 +197,7 @@ Unary exception constructor over binary tuple
 
 ###### exception EmptySig
 
-[`EmptySig`](Ocamlary.module-type-EmptySig.md) is a module and
-[`EmptySig`](#exception-EmptySig) is this exception.
+[`EmptySig`](Ocamlary.module-type-EmptySig.md) is a module and [`EmptySig`](#exception-EmptySig) is this exception.
 
 <a id="exception-EmptySigAlias"></a>
 
@@ -224,8 +213,7 @@ Unary exception constructor over binary tuple
 
 > 'a -> 'b
 
-[`a_function`](#type-a_function) is this type and
-[`a_function`](#val-a_function) is the value below.
+[`a_function`](#type-a_function) is this type and [`a_function`](#val-a_function) is the value below.
 
 <a id="val-a_function"></a>
 
@@ -244,8 +232,7 @@ This is `a_function` with param and return type.
 ###### val fun_fun_fun :
 
 > 
->   ( ( int, int ) [a_function](#type-a_function), ( unit, unit )
-> [a_function](#type-a_function) ) [a_function](#type-a_function)
+>   ( ( int, int ) [a_function](#type-a_function), ( unit, unit ) [a_function](#type-a_function) ) [a_function](#type-a_function)
 
 <a id="val-fun_maybe"></a>
 
@@ -423,8 +410,7 @@ module type of
 
 <a id="module-type-RecollectionModule"></a>
 
-###### module type
-[RecollectionModule](Ocamlary.module-type-RecollectionModule.md)
+###### module type [RecollectionModule](Ocamlary.module-type-RecollectionModule.md)
 
 <a id="module-type-A"></a>
 
@@ -448,8 +434,7 @@ This comment is for `FunctorTypeOf`.
 
 <a id="module-type-IncludeModuleType"></a>
 
-###### module type
-[IncludeModuleType](Ocamlary.module-type-IncludeModuleType.md)
+###### module type [IncludeModuleType](Ocamlary.module-type-IncludeModuleType.md)
 
 This comment is for `IncludeModuleType`.
 
@@ -473,17 +458,15 @@ This comment is for `IncludeModuleType`.
 
 <a id="type-record.field1"></a>
 
-######    `;int : field1`
+> field1 : int;
 
 This comment is for `field1`.
 
 <a id="type-record.field2"></a>
 
-######    `;int : field2`
+> field2 : int;
 
 This comment is for `field2`.
-
-}
 
 This comment is for `record`.
 
@@ -495,23 +478,21 @@ This comment is also for `record`.
 
 <a id="type-mutable_record.a"></a>
 
-######    `;int : a mutable`
+> mutable a : int;
 
 `a` is first and mutable
 
 <a id="type-mutable_record.b"></a>
 
-######    `;unit : b`
+> b : unit;
 
 `b` is second and immutable
 
 <a id="type-mutable_record.c"></a>
 
-######    `;int : c mutable`
+> mutable c : int;
 
 `c` is third and mutable
-
-}
 
 <a id="type-universe_record"></a>
 
@@ -519,9 +500,7 @@ This comment is also for `record`.
 
 <a id="type-universe_record.nihilate"></a>
 
-######    nihilate : 'a. 'a -> unit;
-
-}
+> nihilate : 'a. 'a -> unit;
 
 <a id="type-variant"></a>
 
@@ -529,25 +508,25 @@ This comment is also for `record`.
 
 <a id="type-variant.TagA"></a>
 
-######    | TagA
+> | TagA
 
 This comment is for `TagA`.
 
 <a id="type-variant.ConstrB"></a>
 
-######    | ConstrB of int
+> | ConstrB of int
 
 This comment is for `ConstrB`.
 
 <a id="type-variant.ConstrC"></a>
 
-######    | ConstrC of int * int
+> | ConstrC of int * int
 
 This comment is for binary `ConstrC`.
 
 <a id="type-variant.ConstrD"></a>
 
-######    | ConstrD of int * int
+> | ConstrD of int * int
 
 This comment is for unary `ConstrD` of binary tuple.
 
@@ -561,13 +540,11 @@ This comment is also for `variant`.
 
 <a id="type-poly_variant.TagA"></a>
 
-######    `| ``` `TagA ``
+> | `TagA
 
 <a id="type-poly_variant.ConstrB"></a>
 
-######    `| ``` int of `ConstrB ``
-
- ]
+> | `ConstrB of int
 
 This comment is for `poly_variant`.
 
@@ -579,19 +556,19 @@ Wow! It was a polymorphic variant!
 
 <a id="type-full_gadt.Tag"></a>
 
-######    | Tag : ( unit, unit ) [full_gadt](#type-full_gadt)
+> | Tag : ( unit, unit ) [full_gadt](#type-full_gadt)
 
 <a id="type-full_gadt.First"></a>
 
-######    | First : 'a -> ( 'a, unit ) [full_gadt](#type-full_gadt)
+> | First : 'a -> ( 'a, unit ) [full_gadt](#type-full_gadt)
 
 <a id="type-full_gadt.Second"></a>
 
-######    | Second : 'a -> ( unit, 'a ) [full_gadt](#type-full_gadt)
+> | Second : 'a -> ( unit, 'a ) [full_gadt](#type-full_gadt)
 
 <a id="type-full_gadt.Exist"></a>
 
-######    | Exist : 'a * 'b -> ( 'b, unit ) [full_gadt](#type-full_gadt)
+> | Exist : 'a * 'b -> ( 'b, unit ) [full_gadt](#type-full_gadt)
 
 This comment is for `full_gadt`.
 
@@ -603,16 +580,15 @@ Wow! It was a GADT!
 
 <a id="type-partial_gadt.AscribeTag"></a>
 
-######    | AscribeTag : 'a [partial_gadt](#type-partial_gadt)
+> | AscribeTag : 'a [partial_gadt](#type-partial_gadt)
 
 <a id="type-partial_gadt.OfTag"></a>
 
-######    | OfTag of 'a [partial_gadt](#type-partial_gadt)
+> | OfTag of 'a [partial_gadt](#type-partial_gadt)
 
 <a id="type-partial_gadt.ExistGadtTag"></a>
 
-######    | ExistGadtTag : ( 'a -> 'b ) -> 'a
-[partial_gadt](#type-partial_gadt)
+> | ExistGadtTag : ( 'a -> 'b ) -> 'a [partial_gadt](#type-partial_gadt)
 
 This comment is for `partial_gadt`.
 
@@ -630,8 +606,7 @@ This comment is for `alias`.
 
 ###### type tuple =
 
-> ([alias](#type-alias) * [alias](#type-alias)) * [alias](#type-alias)
-> * ([alias](#type-alias) * [alias](#type-alias))
+> ([alias](#type-alias) * [alias](#type-alias)) * [alias](#type-alias) * ([alias](#type-alias) * [alias](#type-alias))
 
 This comment is for `tuple`.
 
@@ -641,19 +616,19 @@ This comment is for `tuple`.
 
 <a id="type-variant_alias.TagA"></a>
 
-######    | TagA
+> | TagA
 
 <a id="type-variant_alias.ConstrB"></a>
 
-######    | ConstrB of int
+> | ConstrB of int
 
 <a id="type-variant_alias.ConstrC"></a>
 
-######    | ConstrC of int * int
+> | ConstrC of int * int
 
 <a id="type-variant_alias.ConstrD"></a>
 
-######    | ConstrD of int * int
+> | ConstrD of int * int
 
 This comment is for `variant_alias`.
 
@@ -663,13 +638,11 @@ This comment is for `variant_alias`.
 
 <a id="type-record_alias.field1"></a>
 
-######    `;int : field1`
+> field1 : int;
 
 <a id="type-record_alias.field2"></a>
 
-######    `;int : field2`
-
-}
+> field2 : int;
 
 This comment is for `record_alias`.
 
@@ -679,13 +652,11 @@ This comment is for `record_alias`.
 
 <a id="type-poly_variant_union.poly_variant"></a>
 
-######    `| `[poly_variant](#type-poly_variant)
+> | [poly_variant](#type-poly_variant)
 
 <a id="type-poly_variant_union.TagC"></a>
 
-######    `| ``` `TagC ``
-
- ]
+> | `TagC
 
 This comment is for `poly_variant_union`.
 
@@ -695,9 +666,7 @@ This comment is for `poly_variant_union`.
 
 <a id="type-poly_poly_variant.TagA"></a>
 
-######    `| ``` 'a of `TagA ``
-
- ]
+> | `TagA of 'a
 
 <a id="type-bin_poly_poly_variant"></a>
 
@@ -705,13 +674,11 @@ This comment is for `poly_variant_union`.
 
 <a id="type-bin_poly_poly_variant.TagA"></a>
 
-######    `| ``` 'a of `TagA ``
+> | `TagA of 'a
 
 <a id="type-bin_poly_poly_variant.ConstrB"></a>
 
-######    `| ``` 'b of `ConstrB ``
-
- ]
+> | `ConstrB of 'b
 
 <a id="type-open_poly_variant"></a>
 
@@ -729,8 +696,7 @@ This comment is for `poly_variant_union`.
 
 ###### type 'a open_poly_variant_alias =
 
-> 'a [open_poly_variant](#type-open_poly_variant)
-> [open_poly_variant2](#type-open_poly_variant2)
+> 'a [open_poly_variant](#type-open_poly_variant) [open_poly_variant2](#type-open_poly_variant2)
 
 <a id="type-poly_fun"></a>
 
@@ -762,45 +728,39 @@ This comment is for `poly_variant_union`.
 
 <a id="type-nested_poly_variant.A"></a>
 
-######    `| ``` `A ``
+> | `A
 
 <a id="type-nested_poly_variant.B"></a>
 
-######    `| ``` [ `B1 | `B2 ] of `B ``
+> | `B of [ `B1 | `B2 ]
 
 <a id="type-nested_poly_variant.C"></a>
 
-######    `| ``` `C ``
+> | `C
 
 <a id="type-nested_poly_variant.D"></a>
 
-######    `| ``` [ [ `D1a ]  of`D1 ] of `D ``
-
- ]
+> | `D of [ `D1 of [ `D1a ] ]
 
 <a id="type-full_gadt_alias"></a>
 
-###### type ('a, 'b) full_gadt_alias = ( 'a, 'b )
-[full_gadt](#type-full_gadt) = 
+###### type ('a, 'b) full_gadt_alias = ( 'a, 'b ) [full_gadt](#type-full_gadt) = 
 
 <a id="type-full_gadt_alias.Tag"></a>
 
-######    | Tag : ( unit, unit ) [full_gadt_alias](#type-full_gadt_alias)
+> | Tag : ( unit, unit ) [full_gadt_alias](#type-full_gadt_alias)
 
 <a id="type-full_gadt_alias.First"></a>
 
-######    | First : 'a -> ( 'a, unit )
-[full_gadt_alias](#type-full_gadt_alias)
+> | First : 'a -> ( 'a, unit ) [full_gadt_alias](#type-full_gadt_alias)
 
 <a id="type-full_gadt_alias.Second"></a>
 
-######    | Second : 'a -> ( unit, 'a )
-[full_gadt_alias](#type-full_gadt_alias)
+> | Second : 'a -> ( unit, 'a ) [full_gadt_alias](#type-full_gadt_alias)
 
 <a id="type-full_gadt_alias.Exist"></a>
 
-######    | Exist : 'a * 'b -> ( 'b, unit )
-[full_gadt_alias](#type-full_gadt_alias)
+> | Exist : 'a * 'b -> ( 'b, unit ) [full_gadt_alias](#type-full_gadt_alias)
 
 This comment is for `full_gadt_alias`.
 
@@ -810,16 +770,15 @@ This comment is for `full_gadt_alias`.
 
 <a id="type-partial_gadt_alias.AscribeTag"></a>
 
-######    | AscribeTag : 'a [partial_gadt_alias](#type-partial_gadt_alias)
+> | AscribeTag : 'a [partial_gadt_alias](#type-partial_gadt_alias)
 
 <a id="type-partial_gadt_alias.OfTag"></a>
 
-######    | OfTag of 'a [partial_gadt_alias](#type-partial_gadt_alias)
+> | OfTag of 'a [partial_gadt_alias](#type-partial_gadt_alias)
 
 <a id="type-partial_gadt_alias.ExistGadtTag"></a>
 
-######    | ExistGadtTag : ( 'a -> 'b ) -> 'a
-[partial_gadt_alias](#type-partial_gadt_alias)
+> | ExistGadtTag : ( 'a -> 'b ) -> 'a [partial_gadt_alias](#type-partial_gadt_alias)
 
 This comment is for `partial_gadt_alias`.
 
@@ -837,17 +796,15 @@ This comment is for [`Exn_arrow`](#exception-Exn_arrow).
 
 <a id="type-mutual_constr_a.A"></a>
 
-######    | A
+> | A
 
 <a id="type-mutual_constr_a.B_ish"></a>
 
-######    | B_ish of [mutual_constr_b](#type-mutual_constr_b)
+> | B_ish of [mutual_constr_b](#type-mutual_constr_b)
 
-This comment is between [`mutual_constr_a`](#type-mutual_constr_a) and
-[`mutual_constr_b`](#type-mutual_constr_b).
+This comment is between [`mutual_constr_a`](#type-mutual_constr_a) and [`mutual_constr_b`](#type-mutual_constr_b).
 
-This comment is for [`mutual_constr_a`](#type-mutual_constr_a) then
-[`mutual_constr_b`](#type-mutual_constr_b).
+This comment is for [`mutual_constr_a`](#type-mutual_constr_a) then [`mutual_constr_b`](#type-mutual_constr_b).
 
 <a id="type-mutual_constr_b"></a>
 
@@ -855,16 +812,15 @@ This comment is for [`mutual_constr_a`](#type-mutual_constr_a) then
 
 <a id="type-mutual_constr_b.B"></a>
 
-######    | B
+> | B
 
 <a id="type-mutual_constr_b.A_ish"></a>
 
-######    | A_ish of [mutual_constr_a](#type-mutual_constr_a)
+> | A_ish of [mutual_constr_a](#type-mutual_constr_a)
 
 This comment must be here for the next to associate correctly.
 
-This comment is for [`mutual_constr_b`](#type-mutual_constr_b) then
-[`mutual_constr_a`](#type-mutual_constr_a).
+This comment is for [`mutual_constr_b`](#type-mutual_constr_b) then [`mutual_constr_a`](#type-mutual_constr_a).
 
 <a id="type-rec_obj"></a>
 
@@ -916,7 +872,7 @@ A mystery wrapped in an ellipsis
 
 <a id="extension-ExtA"></a>
 
-######    | ExtA
+> | ExtA
 
 <a id="extension-decl-ExtB"></a>
 
@@ -924,7 +880,7 @@ A mystery wrapped in an ellipsis
 
 <a id="extension-ExtB"></a>
 
-######    | ExtB
+> | ExtB
 
 <a id="extension-decl-ExtC"></a>
 
@@ -932,11 +888,11 @@ A mystery wrapped in an ellipsis
 
 <a id="extension-ExtC"></a>
 
-######    | ExtC of unit
+> | ExtC of unit
 
 <a id="extension-ExtD"></a>
 
-######    | ExtD of [ext](#type-ext)
+> | ExtD of [ext](#type-ext)
 
 <a id="extension-decl-ExtE"></a>
 
@@ -944,7 +900,7 @@ A mystery wrapped in an ellipsis
 
 <a id="extension-ExtE"></a>
 
-######    | ExtE
+> | ExtE
 
 <a id="extension-decl-ExtF"></a>
 
@@ -952,7 +908,7 @@ A mystery wrapped in an ellipsis
 
 <a id="extension-ExtF"></a>
 
-######    | ExtF
+> | ExtF
 
 <a id="type-poly_ext"></a>
 
@@ -968,11 +924,11 @@ A mystery wrapped in an ellipsis
 
 <a id="extension-Foo"></a>
 
-######    | Foo of 'b
+> | Foo of 'b
 
 <a id="extension-Bar"></a>
 
-######    | Bar of 'b * 'b
+> | Bar of 'b * 'b
 
 'b poly_ext
 
@@ -982,7 +938,7 @@ A mystery wrapped in an ellipsis
 
 <a id="extension-Quux"></a>
 
-######    | Quux of 'c
+> | Quux of 'c
 
 'c poly_ext
 
@@ -996,7 +952,7 @@ A mystery wrapped in an ellipsis
 
 <a id="extension-ZzzTop0"></a>
 
-######    | ZzzTop0
+> | ZzzTop0
 
 It's got the rock
 
@@ -1006,7 +962,7 @@ It's got the rock
 
 <a id="extension-ZzzTop"></a>
 
-######    | ZzzTop of unit
+> | ZzzTop of unit
 
 and it packs a unit.
 
@@ -1236,18 +1192,16 @@ A brown paper package tied up with string
 
 # Trying the {!modules: ...} command.
 
-With ocamldoc, toplevel units will be linked and documented, while submodules
-will behave as simple references.
+With ocamldoc, toplevel units will be linked and documented, while submodules will behave as simple references.
 
-With odoc, everything should be resolved (and linked) but only toplevel units
-will be documented.
+With odoc, everything should be resolved (and linked) but only toplevel units will be documented.
 
 @[`Dep1.X`](Ocamlary.Dep1.X.md)
 
 @[`Ocamlary.IncludeInclude1`](Ocamlary.IncludeInclude1.md)
 
-@[`Ocamlary`]() This is an _interface_ with **all** of the _module system_
-features. This documentation demonstrates:
+@[`Ocamlary`]()
+This is an _interface_ with **all** of the _module system_ features. This documentation demonstrates:
 
 ### Weirder usages involving module types
 
@@ -1261,12 +1215,7 @@ features. This documentation demonstrates:
 
 ###### module [CanonicalTest](Ocamlary.CanonicalTest.md)
 
-Some ref to
-[`CanonicalTest.Base_Tests.C.t`](Ocamlary.CanonicalTest.Base_Tests.C.md#type-t)
-and
-[`CanonicalTest.Base_Tests.L.id`](Ocamlary.CanonicalTest.Base.List.md#val-id).
-But also to [`CanonicalTest.Base.List`](Ocamlary.CanonicalTest.Base.List.md)
-and [`CanonicalTest.Base.List.t`](Ocamlary.CanonicalTest.Base.List.md#type-t)
+Some ref to [`CanonicalTest.Base_Tests.C.t`](Ocamlary.CanonicalTest.Base_Tests.C.md#type-t) and [`CanonicalTest.Base_Tests.L.id`](Ocamlary.CanonicalTest.Base.List.md#val-id). But also to [`CanonicalTest.Base.List`](Ocamlary.CanonicalTest.Base.List.md) and [`CanonicalTest.Base.List.t`](Ocamlary.CanonicalTest.Base.List.md#type-t)
 
 # Aliases again
 
@@ -1280,8 +1229,7 @@ Let's imitate jst's layout.
 
 I can refer to
 
-- `{!section:indexmodules}` : [Trying the {!modules: ...}
-  command.](#indexmodules)
+- `{!section:indexmodules}` : [Trying the {!modules: ...} command.](#indexmodules)
   
 
 - `{!aliases}` : [Aliases again](#aliases)
@@ -1289,8 +1237,7 @@ I can refer to
 
 But also to things in submodules:
 
-- `{!section:SuperSig.SubSigA.subSig}` :
-  [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
+- `{!section:SuperSig.SubSigA.subSig}` : [`subSig`](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
   
 
 - `{!Aliases.incl}` : [`incl`](Ocamlary.Aliases.md#incl)
@@ -1304,8 +1251,7 @@ And just to make sure we do not mess up:
 - `{{!aliases}B}` : [B](#aliases)
   
 
-- `{{!section:SuperSig.SubSigA.subSig}C}` :
-  [C](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
+- `{{!section:SuperSig.SubSigA.subSig}C}` : [C](Ocamlary.module-type-SuperSig.module-type-SubSigA.md#subSig)
   
 
 - `{{!Aliases.incl}D}` : [D](Ocamlary.Aliases.md#incl)
@@ -1333,20 +1279,16 @@ Here goes:
 
 ###### module [Only_a_module](Ocamlary.Only_a_module.md)
 
-- `{!Only_a_module.t}` :
-  [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+- `{!Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
   
 
-- `{!module-Only_a_module.t}` :
-  [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+- `{!module-Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
   
 
-- `{!module-Only_a_module.type-t}` :
-  [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+- `{!module-Only_a_module.type-t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
   
 
-- `{!type:Only_a_module.t}` :
-  [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
+- `{!type:Only_a_module.t}` : [`Only_a_module.t`](Ocamlary.Only_a_module.md#type-t)
   
 
 <a id="module-type-TypeExt"></a>
@@ -1365,7 +1307,7 @@ Here goes:
 
 <a id="extension-C"></a>
 
-######    | C
+> | C
 
 <a id="module-type-TypeExtPruned"></a>
 

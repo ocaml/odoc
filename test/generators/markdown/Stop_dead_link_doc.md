@@ -12,7 +12,7 @@ Module `Stop_dead_link_doc`
 
 <a id="type-foo.Bar"></a>
 
-######    | Bar of [Foo.t](Stop_dead_link_doc.Foo.md#type-t)
+> | Bar of [Foo.t](Stop_dead_link_doc.Foo.md#type-t)
 
 <a id="type-bar"></a>
 
@@ -20,13 +20,11 @@ Module `Stop_dead_link_doc`
 
 <a id="type-bar.Bar"></a>
 
-######    | Bar of {
+> | Bar of {
 
 <a id="type-bar.field"></a>
 
-######      field : [Foo.t](Stop_dead_link_doc.Foo.md#type-t);
-
-}
+> field : [Foo.t](Stop_dead_link_doc.Foo.md#type-t);
 
 <a id="type-foo_"></a>
 
@@ -34,7 +32,7 @@ Module `Stop_dead_link_doc`
 
 <a id="type-foo_.Bar_"></a>
 
-######    | Bar_ of int * [Foo.t](Stop_dead_link_doc.Foo.md#type-t) * int
+> | Bar_ of int * [Foo.t](Stop_dead_link_doc.Foo.md#type-t) * int
 
 <a id="type-bar_"></a>
 
@@ -42,7 +40,7 @@ Module `Stop_dead_link_doc`
 
 <a id="type-bar_.Bar__"></a>
 
-######    | Bar__ of [Foo.t](Stop_dead_link_doc.Foo.md#type-t) option
+> | Bar__ of [Foo.t](Stop_dead_link_doc.Foo.md#type-t) option
 
 <a id="type-another_foo"></a>
 

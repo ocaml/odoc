@@ -12,4 +12,4 @@ Module `Foo.A`
 
 <a id="type-t.A"></a>
 
-######    | A
+> | A

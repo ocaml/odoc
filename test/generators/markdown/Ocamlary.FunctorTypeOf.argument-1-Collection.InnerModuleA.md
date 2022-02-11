@@ -20,14 +20,12 @@ This comment is for `t`.
 
 <a id="module-InnerModuleA'"></a>
 
-###### module
-[InnerModuleA'](Ocamlary.FunctorTypeOf.argument-1-Collection.InnerModuleA.InnerModuleA'.md)
+###### module [InnerModuleA'](Ocamlary.FunctorTypeOf.argument-1-Collection.InnerModuleA.InnerModuleA'.md)
 
 This comment is for `InnerModuleA'`.
 
 <a id="module-type-InnerModuleTypeA'"></a>
 
-###### module type
-[InnerModuleTypeA'](Ocamlary.FunctorTypeOf.argument-1-Collection.InnerModuleA.module-type-InnerModuleTypeA'.md)
+###### module type [InnerModuleTypeA'](Ocamlary.FunctorTypeOf.argument-1-Collection.InnerModuleA.module-type-InnerModuleTypeA'.md)
 
 This comment is for `InnerModuleTypeA'`.

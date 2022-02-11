@@ -16,7 +16,7 @@ Module type `Ocamlary.TypeExt`
 
 <a id="extension-C"></a>
 
-######    | C
+> | C
 
 <a id="val-f"></a>
 

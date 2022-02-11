@@ -97,14 +97,11 @@ Some _documentation_.
 >   [pair](#type-pair)
 > ->
 >   [labeled](#type-labeled) ->
->   [higher_order](#type-higher_order)
-> ->
+>   [higher_order](#type-higher_order) ->
 >   ( string -> int ) ->
->   (int * float * char * string * char * unit)
-> option ->
+>   (int * float * char * string * char * unit) option ->
 >   [nested_pair](#type-nested_pair) ->
->   [arrow](#type-arrow)
-> ->
+>   [arrow](#type-arrow) ->
 >   string ->
 >   [nested_pair](#type-nested_pair) array
 
@@ -114,9 +111,7 @@ Some _documentation_.
 
 <a id="type-variant_e.a"></a>
 
-######    `;int : a`
-
-}
+> a : int;
 
 <a id="type-variant"></a>
 
@@ -124,27 +119,27 @@ Some _documentation_.
 
 <a id="type-variant.A"></a>
 
-######    | A
+> | A
 
 <a id="type-variant.B"></a>
 
-######    | B of int
+> | B of int
 
 <a id="type-variant.C"></a>
 
-######    | C
+> | C
 
 foo
 
 <a id="type-variant.D"></a>
 
-######    | D
+> | D
 
 _bar_
 
 <a id="type-variant.E"></a>
 
-######    | E of [variant_e](#type-variant_e)
+> | E of [variant_e](#type-variant_e)
 
 <a id="type-variant_c"></a>
 
@@ -152,9 +147,7 @@ _bar_
 
 <a id="type-variant_c.a"></a>
 
-######    `;int : a`
-
-}
+> a : int;
 
 <a id="type-gadt"></a>
 
@@ -162,15 +155,15 @@ _bar_
 
 <a id="type-gadt.A"></a>
 
-######    | A : int [gadt](#type-gadt)
+> | A : int [gadt](#type-gadt)
 
 <a id="type-gadt.B"></a>
 
-######    | B : int -> string [gadt](#type-gadt)
+> | B : int -> string [gadt](#type-gadt)
 
 <a id="type-gadt.C"></a>
 
-######    | C : [variant_c](#type-variant_c) -> unit [gadt](#type-gadt)
+> | C : [variant_c](#type-variant_c) -> unit [gadt](#type-gadt)
 
 <a id="type-degenerate_gadt"></a>
 
@@ -178,7 +171,7 @@ _bar_
 
 <a id="type-degenerate_gadt.A"></a>
 
-######    | A : [degenerate_gadt](#type-degenerate_gadt)
+> | A : [degenerate_gadt](#type-degenerate_gadt)
 
 <a id="type-private_variant"></a>
 
@@ -186,7 +179,7 @@ _bar_
 
 <a id="type-private_variant.A"></a>
 
-######    | A
+> | A
 
 <a id="type-record"></a>
 
@@ -194,29 +187,27 @@ _bar_
 
 <a id="type-record.a"></a>
 
-######    `;int : a`
+> a : int;
 
 <a id="type-record.b"></a>
 
-######    `;int : b mutable`
+> mutable b : int;
 
 <a id="type-record.c"></a>
 
-######    `;int : c`
+> c : int;
 
 foo
 
 <a id="type-record.d"></a>
 
-######    `;int : d`
+> d : int;
 
 _bar_
 
 <a id="type-record.e"></a>
 
-######    `;'a'a.  : e`
-
-}
+> e : 'a. 'a;
 
 <a id="type-polymorphic_variant"></a>
 
@@ -224,21 +215,19 @@ _bar_
 
 <a id="type-polymorphic_variant.A"></a>
 
-######    `| ``` `A ``
+> | `A
 
 <a id="type-polymorphic_variant.B"></a>
 
-######    `| ``` int of `B ``
+> | `B of int
 
 <a id="type-polymorphic_variant.C"></a>
 
-######    `| ``` unit*  int of `C ``
+> | `C of int * unit
 
 <a id="type-polymorphic_variant.D"></a>
 
-######    `| ``` `D ``
-
- ]
+> | `D
 
 <a id="type-polymorphic_variant_extension"></a>
 
@@ -246,13 +235,11 @@ _bar_
 
 <a id="type-polymorphic_variant_extension.polymorphic_variant"></a>
 
-######    `| `[polymorphic_variant](#type-polymorphic_variant)
+> | [polymorphic_variant](#type-polymorphic_variant)
 
 <a id="type-polymorphic_variant_extension.E"></a>
 
-######    `| ``` `E ``
-
- ]
+> | `E
 
 <a id="type-nested_polymorphic_variant"></a>
 
@@ -260,9 +247,7 @@ _bar_
 
 <a id="type-nested_polymorphic_variant.A"></a>
 
-######    `| ``` [ `B | `C ] of `A ``
-
- ]
+> | `A of [ `B | `C ]
 
 <a id="type-private_extenion#row"></a>
 
@@ -274,9 +259,7 @@ _bar_
 
 <a id="type-private_extenion.polymorphic_variant"></a>
 
-######    `| `[polymorphic_variant](#type-polymorphic_variant)
-
- ]
+> | [polymorphic_variant](#type-polymorphic_variant)
 
 <a id="type-object_"></a>
 
@@ -298,9 +281,7 @@ _bar_
 
 ###### type module_substitution =
 
-> (module [X](Type.module-type-X.md) with type
-> [t](Type.module-type-X.md#type-t) = int and type
-> [u](Type.module-type-X.md#type-u) = unit)
+> (module [X](Type.module-type-X.md) with type [t](Type.module-type-X.md#type-t) = int and type [u](Type.module-type-X.md#type-u) = unit)
 
 <a id="type-covariant"></a>
 
@@ -408,13 +389,13 @@ _bar_
 
 <a id="extension-Extension"></a>
 
-######    | Extension
+> | Extension
 
 Documentation for [`Extension`](#extension-Extension).
 
 <a id="extension-Another_extension"></a>
 
-######    | Another_extension
+> | Another_extension
 
 Documentation for [`Another_extension`](#extension-Another_extension).
 
@@ -424,7 +405,7 @@ Documentation for [`Another_extension`](#extension-Another_extension).
 
 <a id="type-mutually.A"></a>
 
-######    | A of [recursive](#type-recursive)
+> | A of [recursive](#type-recursive)
 
 <a id="type-recursive"></a>
 
@@ -432,7 +413,7 @@ Documentation for [`Another_extension`](#extension-Another_extension).
 
 <a id="type-recursive.B"></a>
 
-######    | B of [mutually](#type-mutually)
+> | B of [mutually](#type-mutually)
 
 <a id="exception-Foo"></a>
 

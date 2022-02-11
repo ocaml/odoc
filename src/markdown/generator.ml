@@ -31,7 +31,9 @@ type args = { base_path : Url.Path.t; generate_links : bool }
 let rec source_contains_text (s : Source.t) =
   let inline_contains_text (i : Inline.t) =
     let check_inline_desc (i : Inline.desc) =
-      match i with Text "" | Text " " -> false | Text _ | _ -> true
+      match i with
+      | Text ("" | " " | "[ " | " ]" | "{ " | "}") -> false
+      | Text _ | _ -> true
     in
     List.exists (fun { Inline.desc = d; _ } -> check_inline_desc d) i
   in
@@ -132,11 +134,10 @@ and source_code_one args = function
   | Source.Elt i -> inline i args
   | Tag (_, s) -> source_code s args
 
-and inline l args = fold_inlines (inline_one args) l
+and inline l args = fold_inlines (fun i -> inline_one args i inline_one') l
 
-and inline_one args i =
+and inline_one args i inline_one' =
   match i.Inline.desc with
-  | Text " " -> space
   | Text s -> text s
   | Entity e -> text (entity e)
   | Styled (styl, content) -> style styl (inline content args)
@@ -149,10 +150,16 @@ and inline_one args i =
           (inline content args)
       else inline content args
   | InternalLink (Unresolved content) -> inline content args
+  | Raw_markup (_, s) -> text s
+  | _ -> inline_one' args i
+
+and inline_one' args i =
+  match i.Inline.desc with
+  | Text ("" | " " | "[ " | " ]" | "{" | "}") -> space
   | Source content when source_contains_only_text content ->
       code_span (source_code_to_string content)
   | Source content -> source_code content args
-  | Raw_markup (_, s) -> text s
+  | _ -> noop
 
 let rec block args l = fold_blocks (block_one args) l
 
@@ -235,10 +242,15 @@ and documented args nesting_level content doc anchor =
     let nesting_level = nesting_level + 1 in
     match content with
     | `D code (* for record fields and polymorphic variants *) ->
-        item_heading nesting_level (inline code args)
+        let rec inline args =
+          fold_inlines (fun i -> inline_one args i inline_one') code
+        and inline_one' args i =
+          match i.Inline.desc with Source s -> source_code s args | _ -> noop
+        in
+        quote_block (paragraph (inline args))
     | `N l (* for constructors *) ->
         let c, rest = take_code l in
-        item_heading nesting_level (source_code c args)
+        quote_block (paragraph (source_code c args))
         +++ documented_src rest args nesting_level
   in
   let item = blocks content (block args doc) in

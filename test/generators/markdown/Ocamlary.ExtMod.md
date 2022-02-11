@@ -16,4 +16,4 @@ Module `Ocamlary.ExtMod`
 
 <a id="extension-Leisureforce"></a>
 
-######    | Leisureforce
+> | Leisureforce

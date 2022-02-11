@@ -10,10 +10,8 @@ Module type `Recent.PolyS`
 
 <a id="type-t.A"></a>
 
-######    `| ``` `A ``
+> | `A
 
 <a id="type-t.B"></a>
 
-######    `| ``` `B ``
-
- ]
+> | `B

@@ -10,4 +10,4 @@ Module `Recent_impl.B`
 
 <a id="type-t.B"></a>
 
-######    | B
+> | B

@@ -56,8 +56,7 @@ Let's imitate jst's layout.
 
 ### include of Foo
 
-Just for giggle, let's see what happens when we include
-[`Foo`](Ocamlary.Aliases.Foo.md).
+Just for giggle, let's see what happens when we include [`Foo`](Ocamlary.Aliases.Foo.md).
 
 <a id="module-A"></a>
 
@@ -93,8 +92,7 @@ Just for giggle, let's see what happens when we include
 
 > [A.t](Ocamlary.Aliases.Foo.A.md#type-t)
 
-And also, let's refer to [`A.t`](Ocamlary.Aliases.Foo.A.md#type-t) and
-[`Foo.B.id`](Ocamlary.Aliases.Foo.B.md#val-id)
+And also, let's refer to [`A.t`](Ocamlary.Aliases.Foo.A.md#type-t) and [`Foo.B.id`](Ocamlary.Aliases.Foo.B.md#val-id)
 
 <a id="module-P1"></a>
 

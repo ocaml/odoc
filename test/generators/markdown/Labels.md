@@ -62,7 +62,7 @@ Attached to exception
 
 <a id="extension-X"></a>
 
-######    | X
+> | X
 
 Attached to extension
 
@@ -88,7 +88,7 @@ Attached to type subst
 
 <a id="type-u.A'"></a>
 
-######    | A'
+> | A'
 
 Attached to constructor
 
@@ -98,11 +98,9 @@ Attached to constructor
 
 <a id="type-v.f"></a>
 
-######    f : [t](#type-t);
+> f : [t](#type-t);
 
 Attached to field
-
-}
 
 Testing that labels can be referenced
 

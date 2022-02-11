@@ -26,8 +26,7 @@ Top-comment of Y.
 
 ###### module [Y_include_synopsis](Include2.Y_include_synopsis.md)
 
-The `include Y` below should have the synopsis from `Y`'s top-comment
-attached to it.
+The `include Y` below should have the synopsis from `Y`'s top-comment attached to it.
 
 <a id="module-Y_include_doc"></a>
 

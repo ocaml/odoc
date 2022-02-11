@@ -20,16 +20,13 @@ Module `Include`
 
 <a id="module-type-Not_inlined_and_closed"></a>
 
-###### module type
-[Not_inlined_and_closed](Include.module-type-Not_inlined_and_closed.md)
+###### module type [Not_inlined_and_closed](Include.module-type-Not_inlined_and_closed.md)
 
-include
-[Not_inlined_and_closed](Include.module-type-Not_inlined_and_closed.md)
+include [Not_inlined_and_closed](Include.module-type-Not_inlined_and_closed.md)
 
 <a id="module-type-Not_inlined_and_opened"></a>
 
-###### module type
-[Not_inlined_and_opened](Include.module-type-Not_inlined_and_opened.md)
+###### module type [Not_inlined_and_opened](Include.module-type-Not_inlined_and_opened.md)
 
 <a id="type-w"></a>
 
@@ -41,8 +38,7 @@ include
 
 <a id="module-type-Dorminant_Module"></a>
 
-###### module type
-[Dorminant_Module](Include.module-type-Dorminant_Module.md)
+###### module type [Dorminant_Module](Include.module-type-Dorminant_Module.md)
 
 <a id="val-a"></a>
 

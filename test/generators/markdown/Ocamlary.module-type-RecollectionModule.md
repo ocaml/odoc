@@ -18,8 +18,7 @@ Module type `Ocamlary.RecollectionModule`
 
 <a id="module-InnerModuleA"></a>
 
-###### module
-[InnerModuleA](Ocamlary.module-type-RecollectionModule.InnerModuleA.md)
+###### module [InnerModuleA](Ocamlary.module-type-RecollectionModule.InnerModuleA.md)
 
 This comment is for `InnerModuleA`.
 

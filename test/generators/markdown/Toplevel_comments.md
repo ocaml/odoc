@@ -2,8 +2,7 @@ Toplevel_comments
 
 Module `Toplevel_comments`
 
-A doc comment at the beginning of a module is considered to be that module's
-doc.
+A doc comment at the beginning of a module is considered to be that module's doc.
 
 <a id="module-type-T"></a>
 
@@ -25,15 +24,13 @@ Doc of `Include_inline`, part 1.
 
 <a id="module-type-Include_inline_T"></a>
 
-###### module type
-[Include_inline_T](Toplevel_comments.module-type-Include_inline_T.md)
+###### module type [Include_inline_T](Toplevel_comments.module-type-Include_inline_T.md)
 
 Doc of `T`, part 2.
 
 <a id="module-type-Include_inline_T'"></a>
 
-###### module type
-[Include_inline_T'](Toplevel_comments.module-type-Include_inline_T'.md)
+###### module type [Include_inline_T'](Toplevel_comments.module-type-Include_inline_T'.md)
 
 Doc of `Include_inline_T'`, part 1.
 

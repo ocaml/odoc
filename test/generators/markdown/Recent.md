@@ -16,33 +16,31 @@ Module `Recent`
 
 <a id="type-variant.A"></a>
 
-######    | A
+> | A
 
 <a id="type-variant.B"></a>
 
-######    | B of int
+> | B of int
 
 <a id="type-variant.C"></a>
 
-######    | C
+> | C
 
 foo
 
 <a id="type-variant.D"></a>
 
-######    | D
+> | D
 
 _bar_
 
 <a id="type-variant.E"></a>
 
-######    | E of {
+> | E of {
 
 <a id="type-variant.a"></a>
 
-######      `;int : a`
-
-}
+> a : int;
 
 <a id="type-gadt"></a>
 
@@ -50,23 +48,23 @@ _bar_
 
 <a id="type-gadt.A"></a>
 
-######    | A : int [gadt](#type-gadt)
+> | A : int [gadt](#type-gadt)
 
 <a id="type-gadt.B"></a>
 
-######    | B : int -> string [gadt](#type-gadt)
+> | B : int -> string [gadt](#type-gadt)
 
 foo
 
 <a id="type-gadt.C"></a>
 
-######    | C : {
+> | C : {
 
 <a id="type-gadt.a"></a>
 
-######      `;int : a`
+> a : int;
 
-} -> unit [gadt](#type-gadt)
+ -> unit [gadt](#type-gadt)
 
 <a id="type-polymorphic_variant"></a>
 
@@ -74,25 +72,23 @@ foo
 
 <a id="type-polymorphic_variant.A"></a>
 
-######    `| ``` `A ``
+> | `A
 
 <a id="type-polymorphic_variant.B"></a>
 
-######    `| ``` int of `B ``
+> | `B of int
 
 <a id="type-polymorphic_variant.C"></a>
 
-######    `| ``` `C ``
+> | `C
 
 foo
 
 <a id="type-polymorphic_variant.D"></a>
 
-######    `| ``` `D ``
+> | `D
 
 bar
-
- ]
 
 <a id="type-empty_variant"></a>
 
