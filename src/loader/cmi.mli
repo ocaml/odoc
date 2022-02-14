@@ -69,7 +69,7 @@ val read_signature_noenv : Ident_env.t ->
                        Paths.Identifier.Signature.t ->
                        Odoc_model.Compat.signature ->
                        (Odoc_model.Lang.Signature.t * Odoc_model.Lang.Include.shadowed)
-  
+
 val read_signature : Ident_env.t ->
                      Paths.Identifier.Signature.t ->
                      Odoc_model.Compat.signature -> Odoc_model.Lang.Signature.t
@@ -83,5 +83,3 @@ val read_extension_constructor : Ident_env.t ->
 val read_exception : Ident_env.t ->
   Paths.Identifier.Signature.t -> Ident.t ->
   Types.extension_constructor -> Odoc_model.Lang.Exception.t
-
-val read_location : Location.t -> Odoc_model.Location_.span

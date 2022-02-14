@@ -738,7 +738,7 @@ and read_module_type_substitution env parent mtd =
 
 and read_include env parent incl =
   let open Include in
-  let loc = Cmi.read_location incl.incl_loc in
+  let loc = Doc_attr.read_location incl.incl_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, status = Doc_attr.attached Odoc_model.Semantics.Expect_status container incl.incl_attributes in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
