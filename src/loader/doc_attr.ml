@@ -58,22 +58,33 @@ let attribute_unpack = function
 
 type payload = string * Location.t
 
-let parse_attribute :
-    Parsetree.attribute ->
-    ([ `Text of payload | `Deprecated of payload option ] * Location.t) option =
+type parsed_attribute =
+  [ `Text of payload  (** Standalone comment. *)
+  | `Doc of payload  (** Attached comment. *)
+  | `Stop of Location.t  (** [(**/**)]. *)
+  | `Deprecated of payload option * Location.t
+    (** [\[@@deprecated\]] attribute. *) ]
+
+(** Recognize an attribute. *)
+let parse_attribute : Parsetree.attribute -> parsed_attribute option =
  fun attr ->
   let name, attr_payload, attr_loc = attribute_unpack attr in
   match name with
   | "text" | "ocaml.text" -> (
       match load_payload attr_payload with
-      | Some p -> Some (`Text p, attr_loc)
-      | None -> assert false)
+      | Some ("/*", _) -> Some (`Stop attr_loc)
+      | Some p -> Some (`Text p)
+      | None -> None)
+  | "doc" | "ocaml.doc" -> (
+      match load_payload attr_payload with
+      | Some p -> Some (`Doc p)
+      | None -> None)
   | "deprecated" | "ocaml.deprecated" ->
-      Some (`Deprecated (load_payload attr_payload), attr_loc)
+      Some (`Deprecated ((load_payload attr_payload), attr_loc))
   | _ -> None
 
 let is_stop_comment attr =
-  match parse_attribute attr with Some (`Text ("/*", _), _) -> true | _ -> false
+  match parse_attribute attr with Some (`Stop _) -> true | _ -> false
 
 let pad_loc loc =
   { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
@@ -83,27 +94,26 @@ let ast_to_comment ~internal_tags parent ast_docs alerts =
     ~parent_of_sections:parent ast_docs alerts
   |> Error.raise_warnings
 
-let parse_deprecated_payload ~loc p =
+let mk_alert_payload ~loc name p =
   let p = match p with Some (p, _) -> Some p | None -> None in
-  let elt = `Tag (`Alert ("deprecated", p)) in
+  let elt = `Tag (`Alert (name, p)) in
   let span = read_location loc in
   Location_.at span elt
 
 let attached internal_tags parent attrs =
   let rec loop acc_docs acc_alerts = function
     | attr :: rest -> (
-        let name, attr_payload, attr_loc = attribute_unpack attr in
-        match (name, load_payload attr_payload) with
-        | ("doc" | "ocaml.doc"), Some (str, loc) ->
+        match parse_attribute attr with
+        | Some (`Doc (str, loc)) ->
             let ast_docs =
               Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:str
               |> Error.raise_parser_warnings
             in
             loop (List.rev_append ast_docs acc_docs) acc_alerts rest
-        | ("deprecated" | "ocaml.deprecated"), p ->
-            let elt = parse_deprecated_payload ~loc:attr_loc p in
+        | Some (`Deprecated (p, loc)) ->
+            let elt = mk_alert_payload ~loc "deprecated" p in
             loop acc_docs (elt :: acc_alerts) rest
-        | _ -> loop acc_docs acc_alerts rest)
+        | Some (`Text _ | `Stop _) | None -> loop acc_docs acc_alerts rest)
     | [] -> (List.rev acc_docs, List.rev acc_alerts)
   in
   let ast_docs, alerts = loop [] [] attrs in
@@ -135,11 +145,12 @@ let page parent loc str =
 let standalone parent (attr : Parsetree.attribute) :
     Odoc_model.Comment.docs_or_stop option =
   match parse_attribute attr with
-  | Some (`Text ("/*", _loc), _) -> Some `Stop
-  | Some (`Text (str, loc), _) ->
+  | Some (`Stop _loc) -> Some `Stop
+  | Some (`Text (str, loc)) ->
       let doc, () = read_string_comment Semantics.Expect_none parent loc str in
       Some (`Docs doc)
-  | Some (`Deprecated _, attr_loc) ->
+  | Some (`Doc _) -> None
+  | Some (`Deprecated (_, attr_loc)) ->
       let w =
         Error.make "Deprecated attribute not expected here."
           (read_location attr_loc)
@@ -173,20 +184,21 @@ let extract_top_comment internal_tags ~classify parent items =
     match classify x with
     | Some (`Attribute attr) -> (
         match parse_attribute attr with
-        | Some ((`Text _ as p), _) -> p
-        | Some (`Deprecated p, attr_loc) ->
+        | Some (`Text _ as p) -> p
+        | Some (`Doc _) -> `Skip (* Unexpected, silently ignore *)
+        | Some (`Deprecated (p, attr_loc)) ->
             let p = match p with Some (p, _) -> Some p | None -> None in
             let attr_loc = read_location attr_loc in
-            (`Alert (Location_.at attr_loc (`Tag (`Alert ("deprecated", p)))))
-        | None -> `Skip)
+            `Alert (Location_.at attr_loc (`Tag (`Alert ("deprecated", p))))
+        | Some (`Stop _) | None -> `Skip)
     | Some `Open -> `Skip
-    | None -> `Stop
+    | None -> `Return
   in
   let rec extract_tail_alerts acc = function
     (* Accumulate the alerts after the top-comment. Stop at the next comment. *)
     | hd :: tl as items -> (
         match classify hd with
-        | `Text _ | `Stop -> (items, acc)
+        | `Text _ | `Return -> (items, acc)
         | `Alert alert -> extract_tail_alerts (alert :: acc) tl
         | `Skip -> extract_tail_alerts acc tl)
     | [] -> ([], acc)
@@ -208,7 +220,7 @@ let extract_top_comment internal_tags ~classify parent items =
         | `Skip ->
             let items, ast_docs, alerts = extract tl in
             (hd :: items, ast_docs, alerts)
-        | `Stop -> (items, [], []))
+        | `Return -> (items, [], []))
     | [] -> ([], [], [])
   in
   let items, ast_docs, alerts = extract items in
