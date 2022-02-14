@@ -1,0 +1,21 @@
+
+.TH Top2 3 "" "Odoc" "OCaml Library"
+.SH Name
+Alerts\.Top2
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Alerts\.Top2\fR
+.in 
+.sp 
+.fi 
+Top-comment\.
+.nf 
+.sp 
+.fi 
+@deprecated: A
+.nf 
+.SH Documentation
+.sp 
+.nf 
+

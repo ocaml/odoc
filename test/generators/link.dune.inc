@@ -1,4 +1,19 @@
 (rule
+ (target alerts.cmti)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/alerts.mli})))
+
+(rule
+ (target alerts.odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:alerts.cmti})))
+
+(rule
+ (target alerts.odocl)
+ (action
+  (run odoc link -o %{target} %{dep:alerts.odoc})))
+
+(rule
  (target alias.cmt)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/alias.ml})))
@@ -460,6 +475,100 @@
  (target val.odocl)
  (action
   (run odoc link -o %{target} %{dep:val.odoc})))
+
+(subdir
+ html
+ (rule
+  (targets Alerts.html.gen Alerts-Top1.html.gen Alerts-Top2.html.gen)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../alerts.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Alerts.html Alerts.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Alerts-Top1.html Alerts-Top1.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Alerts-Top2.html Alerts-Top2.html.gen))))
+
+(subdir
+ html
+ (rule
+  (action
+   (with-outputs-to
+    alerts.targets.gen
+    (run odoc html-targets -o . %{dep:../alerts.odocl} --flat))))
+ (rule
+  (alias runtest)
+  (action
+   (diff alerts.targets alerts.targets.gen))))
+
+(subdir
+ latex
+ (rule
+  (targets Alerts.tex.gen)
+  (action
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../alerts.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Alerts.tex Alerts.tex.gen))))
+
+(subdir
+ latex
+ (rule
+  (action
+   (with-outputs-to
+    alerts.targets.gen
+    (run odoc latex-targets -o . %{dep:../alerts.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff alerts.targets alerts.targets.gen))))
+
+(subdir
+ man
+ (rule
+  (targets Alerts.3o.gen Alerts.Top1.3o.gen Alerts.Top2.3o.gen)
+  (action
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../alerts.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Alerts.3o Alerts.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Alerts.Top1.3o Alerts.Top1.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Alerts.Top2.3o Alerts.Top2.3o.gen))))
+
+(subdir
+ man
+ (rule
+  (action
+   (with-outputs-to
+    alerts.targets.gen
+    (run odoc man-targets -o . %{dep:../alerts.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff alerts.targets alerts.targets.gen))))
 
 (subdir
  html
