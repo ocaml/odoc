@@ -118,6 +118,9 @@ type ast_leaf_inline_element =
 
 type sections_allowed = [ `All | `No_titles | `None ]
 
+type alerts =
+  [ `Tag of [ `Alert of string * string option ] ] Location_.with_location list
+
 type status = {
   sections_allowed : sections_allowed;
   parent_of_sections : Paths.Identifier.LabelParent.t;
@@ -470,12 +473,32 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
   in
   loop [] [] ast
 
-let ast_to_comment ~internal_tags ~sections_allowed ~parent_of_sections ast =
+(** Append alerts at the end of the comment. Tags are favoured in case of alerts of the same name. *)
+let append_alerts_to_comment alerts
+    (comment : Comment.block_element with_location list) =
+  let alerts =
+    List.filter
+      (fun alert ->
+        let (`Tag alert) = alert.Location_.value in
+        List.for_all
+          (fun elem ->
+            match (elem.Location_.value, alert) with
+            | `Tag (`Deprecated _), `Alert ("deprecated", _) -> false
+            | _ -> true)
+          comment)
+      alerts
+  in
+  comment @ (alerts : alerts :> Comment.docs)
+
+let ast_to_comment ~internal_tags ~sections_allowed ~parent_of_sections ast
+    alerts =
   Error.catch_warnings (fun () ->
       let status = { sections_allowed; parent_of_sections } in
       let ast, tags = strip_internal_tags ast in
-      ( top_level_block_elements status ast,
-        handle_internal_tags tags internal_tags ))
+      let elts =
+        top_level_block_elements status ast |> append_alerts_to_comment alerts
+      in
+      (elts, handle_internal_tags tags internal_tags))
 
 let parse_comment ~internal_tags ~sections_allowed ~containing_definition
     ~location ~text =
@@ -484,7 +507,7 @@ let parse_comment ~internal_tags ~sections_allowed ~containing_definition
         Odoc_parser.parse_comment ~location ~text |> Error.raise_parser_warnings
       in
       ast_to_comment ~internal_tags ~sections_allowed
-        ~parent_of_sections:containing_definition ast
+        ~parent_of_sections:containing_definition ast []
       |> Error.raise_warnings)
 
 let parse_reference text =

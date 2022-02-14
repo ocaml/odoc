@@ -262,6 +262,8 @@ let tag : Comment.tag -> Description.one =
       let value = Inline.Text version in
       item ~tag:"before" ~value (nestable_block_element_list content)
   | `Version s -> item ~tag:"version" (text_def s)
+  | `Alert (tag, Some content) -> item ~tag (text_def content)
+  | `Alert (tag, None) -> item ~tag []
 
 let attached_block_element : Comment.attached_block_element -> Block.t =
   function

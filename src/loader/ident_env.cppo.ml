@@ -192,11 +192,9 @@ let rec extract_signature_tree_items hide_item items =
       [`ModuleType (mtd.mtd_id, hide_item)] @ extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_include incl; _ } :: rest ->
       [`Include (extract_signature_type_items (Compat.signature incl.incl_type))] @ extract_signature_tree_items hide_item rest
-  | {sig_desc = Tsig_attribute attr; _ } :: rest -> begin
-      match Doc_attr.parse_attribute attr with
-      | Some ("/*", _) -> extract_signature_tree_items (not hide_item) rest 
-      | _ -> extract_signature_tree_items hide_item rest
-    end
+  | {sig_desc = Tsig_attribute attr; _ } :: rest ->
+      let hide_item = if Doc_attr.is_stop_comment attr then not hide_item else hide_item in
+      extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_class cls; _} :: rest ->
       List.map
         (fun cld ->
@@ -301,12 +299,9 @@ let rec extract_structure_tree_items hide_item items =
         [`ModuleType (mtd.mtd_id, hide_item)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_include incl; _ } :: rest ->
         [`Include (extract_signature_type_items (Compat.signature incl.incl_type))] @ extract_structure_tree_items hide_item rest
-
-    | { str_desc = Tstr_attribute attr; _} :: rest -> begin
-        match Doc_attr.parse_attribute attr with
-        | Some ("/*", _) -> extract_structure_tree_items (not hide_item) rest
-        | _ -> extract_structure_tree_items hide_item rest
-      end
+    | { str_desc = Tstr_attribute attr; _} :: rest ->
+        let hide_item = if Doc_attr.is_stop_comment attr then not hide_item else hide_item in
+        extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_class cls; _ } :: rest ->
         List.map
 #if OCAML_VERSION < (4,3,0)

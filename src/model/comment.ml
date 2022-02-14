@@ -59,7 +59,8 @@ type tag =
     * nestable_block_element with_location list
   | `Since of string
   | `Before of string * nestable_block_element with_location list
-  | `Version of string ]
+  | `Version of string
+  | `Alert of string * string option ]
 
 type heading_level =
   [ `Title

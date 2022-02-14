@@ -19,7 +19,7 @@ module Paths = Odoc_model.Paths
 
 val empty : Odoc_model.Comment.docs
 
-val parse_attribute : Parsetree.attribute -> (string * Location.t) option
+val is_stop_comment : Parsetree.attribute -> bool
 
 val attached :
   'tags Semantics.handle_internal_tags ->
@@ -68,3 +68,5 @@ val extract_top_comment_class :
   Lang.ClassSignature.item list ->
   Lang.ClassSignature.item list * (Comment.docs * Comment.docs)
 (** Extract the first comment of a class signature. Returns the remaining items. *)
+
+val read_location : Location.t -> Odoc_model.Location_.span

@@ -36,7 +36,8 @@ and general_tag =
   | `See of [ `Url | `File | `Document ] * string * general_docs
   | `Since of string
   | `Before of string * general_docs
-  | `Version of string ]
+  | `Version of string
+  | `Alert of string * string option ]
 
 and general_docs = general_block_element with_location list
 
@@ -124,7 +125,8 @@ and tag : general_tag t =
         C ("`See", (x1, x2, x3), Triple (url_kind, string, docs))
     | `Since x -> C ("`Since", x, string)
     | `Before (x1, x2) -> C ("`Before", (x1, x2), Pair (string, docs))
-    | `Version x -> C ("`Version", x, string))
+    | `Version x -> C ("`Version", x, string)
+    | `Alert (x1, x2) -> C ("`Alert", (x1, x2), Pair (string, Option string)))
 
 and docs : general_docs t = List (Indirect (ignore_loc, block_element))
 
