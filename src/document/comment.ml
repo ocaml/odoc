@@ -226,8 +226,8 @@ and nestable_block_element_list elements =
 
 let tag : Comment.tag -> Description.one =
  fun t ->
+  let sp = inline (Text " ") in
   let item ?value ~tag definition =
-    let sp = inline (Text " ") in
     let tag_name = inline ~attr:[ "at-tag" ] (Text tag) in
     let tag_value =
       match value with
@@ -238,6 +238,11 @@ let tag : Comment.tag -> Description.one =
     { Description.attr = [ tag ]; key; definition }
   in
   let text_def s = [ block (Block.Inline [ inline @@ Text s ]) ] in
+  let content_to_inline ?(prefix = []) content =
+    match content with
+    | None -> []
+    | Some content -> prefix @ [ inline @@ Text content ]
+  in
   match t with
   | `Author s -> item ~tag:"author" (text_def s)
   | `Deprecated content ->
@@ -262,8 +267,13 @@ let tag : Comment.tag -> Description.one =
       let value = Inline.Text version in
       item ~tag:"before" ~value (nestable_block_element_list content)
   | `Version s -> item ~tag:"version" (text_def s)
-  | `Alert (tag, Some content) -> item ~tag (text_def content)
-  | `Alert (tag, None) -> item ~tag []
+  | `Alert ("deprecated", content) ->
+      let content = content_to_inline content in
+      item ~tag:"deprecated" [ block (Block.Inline content) ]
+  | `Alert (tag, content) ->
+      let content = content_to_inline ~prefix:[ sp ] content in
+      item ~tag:"alert"
+        [ block (Block.Inline ([ inline @@ Text tag ] @ content)) ]
 
 let attached_block_element : Comment.attached_block_element -> Block.t =
   function

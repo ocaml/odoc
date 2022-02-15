@@ -45,4 +45,32 @@ Top-comment\.
 .ti +2
 Top-comment\.
 .nf 
+.sp 
+\f[CB]val\fR d : int
+.fi 
+.br 
+.ti +2
+@deprecated: A deprecated alert d
+.nf 
+.sp 
+\f[CB]val\fR d2 : int
+.fi 
+.br 
+.ti +2
+@deprecated: 
+.nf 
+.sp 
+\f[CB]val\fR e : int
+.fi 
+.br 
+.ti +2
+@alert: e an alert
+.nf 
+.sp 
+\f[CB]val\fR f : int
+.fi 
+.br 
+.ti +2
+@alert: f
+.nf 
 
