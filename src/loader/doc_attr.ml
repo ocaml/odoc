@@ -33,18 +33,34 @@ let empty_body = []
 
 let empty : Odoc_model.Comment.docs = empty_body
 
-let load_payload = function
-  | Parsetree.PStr [{pstr_desc =
-      Pstr_eval ({pexp_desc =
+let load_constant_string = function
+  | {Parsetree.pexp_desc =
 #if OCAML_VERSION < (4,3,0)
-        Pexp_constant (Const_string (text, _))
+     Pexp_constant (Const_string (text, _))
 #elif OCAML_VERSION < (4,11,0)
-        Pexp_constant (Pconst_string (text, _))
+     Pexp_constant (Pconst_string (text, _))
 #else
-        Pexp_constant (Pconst_string (text, _, _))
+     Pexp_constant (Pconst_string (text, _, _))
 #endif
-   ; pexp_loc = loc; _}, _); _}] ->
-     Some (text, loc)
+   ; pexp_loc = loc; _} ->
+       Some (text , loc)
+  | _ -> None
+
+let load_payload = function
+  | Parsetree.PStr [ { pstr_desc = Pstr_eval (constant_string, _); _ } ] ->
+      load_constant_string constant_string
+  | _ -> None
+
+let load_alert_name name = (Longident.last name.Location.txt)
+
+let load_alert_name_and_payload = function
+  | Parsetree.PStr
+      [ { pstr_desc = Pstr_eval ({ pexp_desc = expression; _ }, _); _ } ] -> (
+      match expression with
+      | Pexp_apply ({ pexp_desc = Pexp_ident name; _ }, [ (_, payload) ]) ->
+          Some (load_alert_name name, load_constant_string payload)
+      | Pexp_ident name -> Some (load_alert_name name, None)
+      | _ -> None)
   | _ -> None
 
 #if OCAML_VERSION >= (4,8,0)
@@ -62,8 +78,8 @@ type parsed_attribute =
   [ `Text of payload  (** Standalone comment. *)
   | `Doc of payload  (** Attached comment. *)
   | `Stop of Location.t  (** [(**/**)]. *)
-  | `Deprecated of payload option * Location.t
-    (** [\[@@deprecated\]] attribute. *) ]
+  | `Alert of  string * payload option * Location.t
+    (** [`Alert (name, payload, loc)] is for [\[@@alert name "payload"\]] attributes. *) ]
 
 (** Recognize an attribute. *)
 let parse_attribute : Parsetree.attribute -> parsed_attribute option =
@@ -80,7 +96,12 @@ let parse_attribute : Parsetree.attribute -> parsed_attribute option =
       | Some p -> Some (`Doc p)
       | None -> None)
   | "deprecated" | "ocaml.deprecated" ->
-      Some (`Deprecated ((load_payload attr_payload), attr_loc))
+      Some (`Alert ("deprecated", (load_payload attr_payload), attr_loc))
+  | "alert" | "ocaml.alert" ->
+      (match load_alert_name_and_payload attr_payload with
+        Some (name, payload) ->
+      Some (`Alert (name, payload, attr_loc))
+      | None -> None)
   | _ -> None
 
 let is_stop_comment attr =
@@ -110,8 +131,8 @@ let attached internal_tags parent attrs =
               |> Error.raise_parser_warnings
             in
             loop (List.rev_append ast_docs acc_docs) acc_alerts rest
-        | Some (`Deprecated (p, loc)) ->
-            let elt = mk_alert_payload ~loc "deprecated" p in
+        | Some (`Alert (name, p, loc)) ->
+            let elt = mk_alert_payload ~loc name p in
             loop acc_docs (elt :: acc_alerts) rest
         | Some (`Text _ | `Stop _) | None -> loop acc_docs acc_alerts rest)
     | [] -> (List.rev acc_docs, List.rev acc_alerts)
@@ -150,9 +171,9 @@ let standalone parent (attr : Parsetree.attribute) :
       let doc, () = read_string_comment Semantics.Expect_none parent loc str in
       Some (`Docs doc)
   | Some (`Doc _) -> None
-  | Some (`Deprecated (_, attr_loc)) ->
+  | Some (`Alert (name, _, attr_loc)) ->
       let w =
-        Error.make "Deprecated attribute not expected here."
+        Error.make "Alert %s not expected here." name
           (read_location attr_loc)
       in
       Error.raise_warning w;
@@ -186,10 +207,10 @@ let extract_top_comment internal_tags ~classify parent items =
         match parse_attribute attr with
         | Some (`Text _ as p) -> p
         | Some (`Doc _) -> `Skip (* Unexpected, silently ignore *)
-        | Some (`Deprecated (p, attr_loc)) ->
+        | Some (`Alert (name, p, attr_loc)) ->
             let p = match p with Some (p, _) -> Some p | None -> None in
             let attr_loc = read_location attr_loc in
-            `Alert (Location_.at attr_loc (`Tag (`Alert ("deprecated", p))))
+            `Alert (Location_.at attr_loc (`Tag (`Alert (name, p))))
         | Some (`Stop _) | None -> `Skip)
     | Some `Open -> `Skip
     | None -> `Return
