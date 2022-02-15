@@ -118,8 +118,6 @@ Some _documentation_.
 
 ###### }
 
-}
-
 <a id="type-variant"></a>
 
 ###### type variant = 
@@ -157,8 +155,6 @@ _bar_
 > a : int;
 
 ###### }
-
-}
 
 <a id="type-gadt"></a>
 
@@ -221,8 +217,6 @@ _bar_
 > e : 'a. 'a;
 
 ###### }
-
-}
 
 <a id="type-polymorphic_variant"></a>
 

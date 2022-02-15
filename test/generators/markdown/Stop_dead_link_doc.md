@@ -28,8 +28,6 @@ Module `Stop_dead_link_doc`
 
 ######    }
 
-}
-
 <a id="type-foo_"></a>
 
 ###### type foo_ = 

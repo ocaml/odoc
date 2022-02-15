@@ -44,8 +44,6 @@ _bar_
 
 ######    }
 
-}
-
 <a id="type-gadt"></a>
 
 ###### type _ gadt = 
@@ -70,7 +68,7 @@ foo
 
 ######    }
 
-} -> unit [gadt](#type-gadt)
+ -> unit [gadt](#type-gadt)
 
 <a id="type-polymorphic_variant"></a>
 

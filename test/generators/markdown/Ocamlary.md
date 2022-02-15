@@ -485,8 +485,6 @@ This comment is for `field2`.
 
 ###### }
 
-}
-
 This comment is for `record`.
 
 This comment is also for `record`.
@@ -515,8 +513,6 @@ This comment is also for `record`.
 
 ###### }
 
-}
-
 <a id="type-universe_record"></a>
 
 ###### type universe_record = {
@@ -526,8 +522,6 @@ This comment is also for `record`.
 > nihilate : 'a. 'a -> unit;
 
 ###### }
-
-}
 
 <a id="type-variant"></a>
 
@@ -677,8 +671,6 @@ This comment is for `variant_alias`.
 > field2 : int;
 
 ###### }
-
-}
 
 This comment is for `record_alias`.
 

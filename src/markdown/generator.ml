@@ -31,7 +31,7 @@ type args = { base_path : Url.Path.t; generate_links : bool }
 let rec source_contains_text (s : Source.t) =
   let inline_contains_text (i : Inline.t) =
     let check_inline_desc (i : Inline.desc) =
-      match i with Text ("" | " ") -> false | Text _ | _ -> true
+      match i with Text ("" | " " | "}" | "]") -> false | Text _ | _ -> true
     in
     List.exists (fun { Inline.desc = d; _ } -> check_inline_desc d) i
   in
@@ -229,7 +229,7 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
           let markedup_bracket =
             match rest with
             | [] -> noop_block
-            | d :: _rest' -> (
+            | d :: _ -> (
                 match d with
                 | DocumentedSrc.Code c ->
                     item_heading nesting_level (source_code c args)
