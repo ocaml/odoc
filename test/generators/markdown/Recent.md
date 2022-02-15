@@ -76,21 +76,21 @@ foo
 
 <a id="type-polymorphic_variant.A"></a>
 
-> | `A
+> | \`A
 
 <a id="type-polymorphic_variant.B"></a>
 
-> | `B of int
+> | \`B of int
 
 <a id="type-polymorphic_variant.C"></a>
 
-> | `C
+> | \`C
 
 foo
 
 <a id="type-polymorphic_variant.D"></a>
 
-> | `D
+> | \`D
 
 bar
 
@@ -116,8 +116,7 @@ bar
 
 <a id="type-empty_conj.X"></a>
 
-######    | X : [< \`X of & 'a & int * float ] ->
-[empty_conj](#type-empty_conj)
+> | X : [< \`X of & 'a & int * float ] -> [empty_conj](#type-empty_conj)
 
 <a id="type-conj"></a>
 
@@ -125,8 +124,7 @@ bar
 
 <a id="type-conj.X"></a>
 
-######    | X : [< \`X of int & [< \`B of int & float ] ] ->
-[conj](#type-conj)
+> | X : [< \`X of int & [< \`B of int & float ] ] -> [conj](#type-conj)
 
 <a id="val-empty_conj"></a>
 

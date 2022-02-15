@@ -224,19 +224,19 @@ _bar_
 
 <a id="type-polymorphic_variant.A"></a>
 
-> | `A
+> | \`A
 
 <a id="type-polymorphic_variant.B"></a>
 
-> | `B of int
+> | \`B of int
 
 <a id="type-polymorphic_variant.C"></a>
 
-> | `C of int * unit
+> | \`C of int * unit
 
 <a id="type-polymorphic_variant.D"></a>
 
-> | `D
+> | \`D
 
 ######  ]
 
@@ -252,7 +252,7 @@ _bar_
 
 <a id="type-polymorphic_variant_extension.E"></a>
 
-> | `E
+> | \`E
 
 ######  ]
 
@@ -264,7 +264,7 @@ _bar_
 
 <a id="type-nested_polymorphic_variant.A"></a>
 
-> | `A of [ `B | `C ]
+> | \`A of [ \`B | \`C ]
 
 ######  ]
 

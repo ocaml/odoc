@@ -561,11 +561,11 @@ This comment is also for `variant`.
 
 <a id="type-poly_variant.TagA"></a>
 
-> | `TagA
+> | \`TagA
 
 <a id="type-poly_variant.ConstrB"></a>
 
-> | `ConstrB of int
+> | \`ConstrB of int
 
 ######  ]
 
@@ -684,7 +684,7 @@ This comment is for `record_alias`.
 
 <a id="type-poly_variant_union.TagC"></a>
 
-> | `TagC
+> | \`TagC
 
 ######  ]
 
@@ -698,7 +698,7 @@ This comment is for `poly_variant_union`.
 
 <a id="type-poly_poly_variant.TagA"></a>
 
-> | `TagA of 'a
+> | \`TagA of 'a
 
 ######  ]
 
@@ -710,11 +710,11 @@ This comment is for `poly_variant_union`.
 
 <a id="type-bin_poly_poly_variant.TagA"></a>
 
-> | `TagA of 'a
+> | \`TagA of 'a
 
 <a id="type-bin_poly_poly_variant.ConstrB"></a>
 
-> | `ConstrB of 'b
+> | \`ConstrB of 'b
 
 ######  ]
 
@@ -769,19 +769,19 @@ This comment is for `poly_variant_union`.
 
 <a id="type-nested_poly_variant.A"></a>
 
-> | `A
+> | \`A
 
 <a id="type-nested_poly_variant.B"></a>
 
-> | `B of [ `B1 | `B2 ]
+> | \`B of [ \`B1 | \`B2 ]
 
 <a id="type-nested_poly_variant.C"></a>
 
-> | `C
+> | \`C
 
 <a id="type-nested_poly_variant.D"></a>
 
-> | `D of [ `D1 of [ `D1a ] ]
+> | \`D of [ \`D1 of [ \`D1a ] ]
 
 ######  ]
 
