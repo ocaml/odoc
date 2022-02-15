@@ -483,6 +483,8 @@ This comment is for `field1`.
 
 This comment is for `field2`.
 
+###### }
+
 }
 
 This comment is for `record`.
@@ -511,6 +513,8 @@ This comment is also for `record`.
 
 `c` is third and mutable
 
+###### }
+
 }
 
 <a id="type-universe_record"></a>
@@ -520,6 +524,8 @@ This comment is also for `record`.
 <a id="type-universe_record.nihilate"></a>
 
 > nihilate : 'a. 'a -> unit;
+
+###### }
 
 }
 
@@ -566,6 +572,8 @@ This comment is also for `variant`.
 <a id="type-poly_variant.ConstrB"></a>
 
 > | `ConstrB of int
+
+######  ]
 
  ]
 
@@ -668,6 +676,8 @@ This comment is for `variant_alias`.
 
 > field2 : int;
 
+###### }
+
 }
 
 This comment is for `record_alias`.
@@ -684,6 +694,8 @@ This comment is for `record_alias`.
 
 > | `TagC
 
+######  ]
+
  ]
 
 This comment is for `poly_variant_union`.
@@ -695,6 +707,8 @@ This comment is for `poly_variant_union`.
 <a id="type-poly_poly_variant.TagA"></a>
 
 > | `TagA of 'a
+
+######  ]
 
  ]
 
@@ -709,6 +723,8 @@ This comment is for `poly_variant_union`.
 <a id="type-bin_poly_poly_variant.ConstrB"></a>
 
 > | `ConstrB of 'b
+
+######  ]
 
  ]
 
@@ -774,6 +790,8 @@ This comment is for `poly_variant_union`.
 <a id="type-nested_poly_variant.D"></a>
 
 > | `D of [ `D1 of [ `D1a ] ]
+
+######  ]
 
  ]
 

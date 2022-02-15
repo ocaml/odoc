@@ -226,7 +226,17 @@ let rec documented_src (l : DocumentedSrc.t) args nesting_level =
           in
           content +++ continue rest
       | Documented { code; doc; anchor; _ } ->
-          documented args nesting_level (`D code) doc anchor +++ continue rest
+          let markedup_bracket =
+            match rest with
+            | [] -> noop_block
+            | d :: _rest' -> (
+                match d with
+                | DocumentedSrc.Code c ->
+                    item_heading nesting_level (source_code c args)
+                | _ -> noop_block)
+          in
+          documented args nesting_level (`D code) doc anchor
+          +++ markedup_bracket +++ continue rest
       | Nested { code; doc; anchor; _ } ->
           documented args nesting_level (`N code) doc anchor +++ continue rest)
 

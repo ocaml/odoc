@@ -42,6 +42,8 @@ _bar_
 
 > a : int;
 
+######    }
+
 }
 
 <a id="type-gadt"></a>
@@ -65,6 +67,8 @@ foo
 <a id="type-gadt.a"></a>
 
 > a : int;
+
+######    }
 
 } -> unit [gadt](#type-gadt)
 
@@ -91,6 +95,8 @@ foo
 > | `D
 
 bar
+
+######  ]
 
  ]
 

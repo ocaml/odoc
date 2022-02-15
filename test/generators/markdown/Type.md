@@ -116,6 +116,8 @@ Some _documentation_.
 
 > a : int;
 
+###### }
+
 }
 
 <a id="type-variant"></a>
@@ -153,6 +155,8 @@ _bar_
 <a id="type-variant_c.a"></a>
 
 > a : int;
+
+###### }
 
 }
 
@@ -216,6 +220,8 @@ _bar_
 
 > e : 'a. 'a;
 
+###### }
+
 }
 
 <a id="type-polymorphic_variant"></a>
@@ -238,6 +244,8 @@ _bar_
 
 > | `D
 
+######  ]
+
  ]
 
 <a id="type-polymorphic_variant_extension"></a>
@@ -252,6 +260,8 @@ _bar_
 
 > | `E
 
+######  ]
+
  ]
 
 <a id="type-nested_polymorphic_variant"></a>
@@ -261,6 +271,8 @@ _bar_
 <a id="type-nested_polymorphic_variant.A"></a>
 
 > | `A of [ `B | `C ]
+
+######  ]
 
  ]
 
@@ -275,6 +287,8 @@ _bar_
 <a id="type-private_extenion.polymorphic_variant"></a>
 
 > | [polymorphic_variant](#type-polymorphic_variant)
+
+######  ]
 
  ]
 
