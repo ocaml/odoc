@@ -100,7 +100,7 @@ The second occurence of 'B' in the main page should be disambiguated
      <h2 id="A"><a href="#A" class="anchor"></a>First label</h2>
      <h2 id="B"><a href="#B" class="anchor"></a>Floating label</h2>
      <div class="odoc-spec">
-      <div class="spec module" id="module-M" class="anchored">
+      <div class="spec module anchored" id="module-M">
        <a href="#module-M" class="anchor"></a>
        <code>
         <span><span class="keyword">module</span> <a href="M/index.html">M</a>
@@ -112,7 +112,7 @@ The second occurence of 'B' in the main page should be disambiguated
       </div>
      </div>
      <div class="odoc-spec">
-      <div class="spec module" id="module-N" class="anchored">
+      <div class="spec module anchored" id="module-N">
        <a href="#module-N" class="anchor"></a>
        <code>
         <span><span class="keyword">module</span> <a href="N/index.html">N</a>
