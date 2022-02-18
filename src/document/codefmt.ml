@@ -102,39 +102,45 @@ module Tag = struct
         else if s = prefix_ignore then `Ignore
         else `String s
       in
-      let mark_open_tag s =
-        match get_tag s with
-        | `Ignore ->
-            State.push_ignore state0;
-            ""
-        | `Elt elt ->
-            State.push state0 (Elt elt);
-            ""
-        | `String "" ->
-            State.enter state0 None;
-            ""
-        | `String tag ->
-            State.enter state0 (Some tag);
-            ""
-      and mark_close_tag s =
-        match get_tag s with
-        | `Ignore ->
-            State.pop_ignore state0;
-            ""
-        | `Elt _ -> ""
-        | `String _ ->
-            State.leave state0;
-            ""
+      let mark_open_stag = function
+        | Format.String_tag s ->
+            begin match get_tag s with
+            | `Ignore ->
+                State.push_ignore state0;
+                ""
+            | `Elt elt ->
+                State.push state0 (Elt elt);
+                ""
+            | `String "" ->
+                State.enter state0 None;
+                ""
+            | `String tag ->
+                State.enter state0 (Some tag);
+                ""
+            end
+        | _ -> ""
+      and mark_close_stag = function
+        | Format.String_tag s ->
+            begin match get_tag s with
+            | `Ignore ->
+                State.pop_ignore state0;
+                ""
+            | `Elt _ -> ""
+            | `String _ ->
+                State.leave state0;
+                ""
+            end
+        | _ -> ""
       in
       {
-        Format.print_open_tag = (fun _ -> ());
-        print_close_tag = (fun _ -> ());
-        mark_open_tag;
-        mark_close_tag;
+        Format.print_open_stag = (fun _ -> ());
+        print_close_stag = (fun _ -> ());
+        mark_open_stag;
+        mark_close_stag;
       }
     in
     Format.pp_set_tags formatter true;
-    Format.pp_set_formatter_tag_functions formatter tag_functions;
+    Format.pp_set_formatter_stag_functions formatter tag_functions;
     ()
 
   let elt ppf (elt : Inline.t) =
