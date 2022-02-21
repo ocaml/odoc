@@ -26,13 +26,13 @@ Some documentation\.
 .sp 
 \f[CB]type\fR arrow = int \f[CB]\->\fR int
 .sp 
-\f[CB]type\fR higher_order = ( int \f[CB]\->\fR int ) \f[CB]\->\fR int
+\f[CB]type\fR higher_order = (int \f[CB]\->\fR int) \f[CB]\->\fR int
 .sp 
 \f[CB]type\fR labeled = l:int \f[CB]\->\fR int
 .sp 
 \f[CB]type\fR optional = ?l:int \f[CB]\->\fR int
 .sp 
-\f[CB]type\fR labeled_higher_order = ( l:int \f[CB]\->\fR int ) \f[CB]\->\fR ( ?l:int \f[CB]\->\fR int ) \f[CB]\->\fR int
+\f[CB]type\fR labeled_higher_order = (l:int \f[CB]\->\fR int) \f[CB]\->\fR (?l:int \f[CB]\->\fR int) \f[CB]\->\fR int
 .sp 
 \f[CB]type\fR pair = int * int
 .sp 
@@ -50,7 +50,7 @@ Some documentation\.
   pair \f[CB]\->\fR
   labeled \f[CB]\->\fR
   higher_order \f[CB]\->\fR
-  ( string \f[CB]\->\fR int ) \f[CB]\->\fR
+  (string \f[CB]\->\fR int) \f[CB]\->\fR
   (int * float * char * string * char * unit) option \f[CB]\->\fR
   nested_pair \f[CB]\->\fR
   arrow \f[CB]\->\fR
@@ -210,7 +210,7 @@ e : 'a\. \f[CB]'a\fR;
 .sp 
 \f[CB]type\fR ('a, 'b) binary
 .sp 
-\f[CB]type\fR using_binary = ( int, int ) binary
+\f[CB]type\fR using_binary = (int, int) binary
 .sp 
 \f[CB]type\fR 'custom name
 .sp 
