@@ -309,8 +309,8 @@ module Make (Syntax : SYNTAX) = struct
           let params = O.list params ~sep:(O.txt "," ++ O.sp) ~f:type_expr in
           let params =
             match delim with
-            | `parens -> enclose ~l:"( " params ~r:" )"
-            | `brackets -> enclose ~l:"[ " params ~r:" ]"
+            | `parens -> enclose ~l:"(" params ~r:")"
+            | `brackets -> enclose ~l:"[" params ~r:"]"
           in
           Syntax.Type.handle_constructor_params path (O.box_hv params)
 
@@ -330,7 +330,7 @@ module Make (Syntax : SYNTAX) = struct
             ++ O.sp ++ type_expr dst
             (* ++ O.end_hv *)
           in
-          if not needs_parentheses then res else enclose ~l:"( " res ~r:" )"
+          if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
       | Arrow (Some lbl, src, dst) ->
           let res =
             O.span
@@ -340,7 +340,7 @@ module Make (Syntax : SYNTAX) = struct
               ++ O.txt " " ++ Syntax.Type.arrow)
             ++ O.sp ++ type_expr dst
           in
-          if not needs_parentheses then res else enclose ~l:"( " res ~r:" )"
+          if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
       | Tuple lst ->
           let res =
             O.box_hv_no_indent
