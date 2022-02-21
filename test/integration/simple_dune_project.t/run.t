@@ -6,7 +6,5 @@ Build the documentation of a simple Dune library.
   _build/default/_doc/_html/dune_odoc_test/Dune_odoc_test/Bar/index.html
   _build/default/_doc/_html/dune_odoc_test/Dune_odoc_test/Foo/index.html
   _build/default/_doc/_html/dune_odoc_test/Dune_odoc_test/index.html
-  _build/default/_doc/_html/dune_odoc_test/Dune_odoc_test__Bar/index.html
-  _build/default/_doc/_html/dune_odoc_test/Dune_odoc_test__Foo/index.html
   _build/default/_doc/_html/dune_odoc_test/index.html
   _build/default/_doc/_html/index.html
