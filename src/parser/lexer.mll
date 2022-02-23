@@ -321,8 +321,12 @@ rule token input = parse
   | "{_"
     { emit input (`Begin_style `Subscript) }
   
+  | "{math" space_char
+    { math false (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
+    
   | "{m" horizontal_space
-    { inline_math (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
+    { math true (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
+    
 
   | "{!modules:" ([^ '}']* as modules) '}'
     { emit input (`Modules modules) }
@@ -366,10 +370,7 @@ rule token input = parse
 
   | "{%" ((raw_markup_target as target) ':')? (raw_markup as s)
     ("%}" | eof as e)
-    { let token =
-      match target with
-      | Some "math" -> `Math (true, s)
-      | _ -> `Raw_markup (target, s)
+    { let token = `Raw_markup (target, s)
       in
       if e <> "%}" then
         warning
@@ -545,40 +546,49 @@ and code_span buffer nesting_level start_offset input = parse
     { Buffer.add_char buffer c;
       code_span buffer nesting_level start_offset input lexbuf }
 
-and inline_math buffer nesting_level start_offset input = parse
+and math inline buffer nesting_level start_offset input = parse
   | '}'
     { if nesting_level == 0 then
-        emit input (`Math (false, Buffer.contents buffer)) ~start_offset
+        emit input (`Math (inline, Buffer.contents buffer)) ~start_offset
       else begin
         Buffer.add_char buffer '}';
-        inline_math buffer (nesting_level - 1) start_offset input lexbuf
+        math inline buffer (nesting_level - 1) start_offset input lexbuf
       end
       }
   | '{'
     { Buffer.add_char buffer '{';
-      inline_math buffer (nesting_level + 1) start_offset input lexbuf }
+      math inline buffer (nesting_level + 1) start_offset input lexbuf }
   | ("\\{" | "\\}") as s
     { Buffer.add_string buffer s;
-      inline_math buffer nesting_level start_offset input lexbuf }
-  | newline newline
-    { warning
-        input
-        (Parse_error.not_allowed
-          ~what:(Token.describe (`Blank_line "\n\n"))
-          ~in_what:(Token.describe (`Math (false, ""))));
-      Buffer.add_char buffer '\n';
-      inline_math buffer nesting_level start_offset input lexbuf }
-
+      math inline buffer nesting_level start_offset input lexbuf }
+  | (newline) as s
+    {
+      if inline then
+        begin
+          warning
+            input
+            (Parse_error.not_allowed
+              ~what:(Token.describe (`Blank_line "\n"))
+              ~in_what:(Token.describe (`Math (inline, ""))));
+          Buffer.add_char buffer '\n';
+          math inline buffer nesting_level start_offset input lexbuf
+        end
+      else
+        begin
+          Buffer.add_string buffer s;
+          math inline buffer nesting_level start_offset input lexbuf
+        end
+    }
   | eof
     { warning
         input
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
-          ~in_what:(Token.describe (`Math (false, ""))));
-      emit input (`Math (false, Buffer.contents buffer)) ~start_offset }
+          ~in_what:(Token.describe (`Math (inline, ""))));
+      emit input (`Math (inline, Buffer.contents buffer)) ~start_offset }
   | _ as c
     { Buffer.add_char buffer c;
-      inline_math buffer nesting_level start_offset input lexbuf }
+      math inline buffer nesting_level start_offset input lexbuf }
 
 and verbatim buffer last_false_terminator start_offset input = parse
   | (space_char as c) "v}"

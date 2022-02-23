@@ -106,9 +106,9 @@ let rec inline_element :
   | `Raw_markup (raw_markup_target, s) ->
       junk input;
       Loc.at location (`Raw_markup (raw_markup_target, s))
-  | `Math s ->
+  | `Math _ as tk ->
       junk input;
-      Loc.at location (`Math s)
+      Loc.at location tk
   | `Begin_style s as parent_markup ->
       junk input;
 
