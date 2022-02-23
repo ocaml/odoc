@@ -706,8 +706,8 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
   let open Component in
   let open Of_Lang in
   let module L = Odoc_model.Lang in
-  let ident_map = empty () in
   fun s e ->
+    let ident_map = empty () in
     List.fold_left
       (fun env orig ->
         match ((orig : L.Signature.item), env.linking) with
