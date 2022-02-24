@@ -55,7 +55,7 @@ type token_that_always_begins_an_inline_element =
   | `Begin_reference_with_replacement_text of string
   | `Simple_link of string
   | `Begin_link_with_replacement_text of string
-  | `Math of bool * string ]
+  | `Math_span of string ]
 
 (* Check that the token constructors above actually are all in [Token.t]. *)
 let _check_subset : token_that_always_begins_an_inline_element -> Token.t =
@@ -100,15 +100,9 @@ let rec inline_element :
   | `Plus ->
       junk input;
       Loc.at location (`Word "+")
-  | `Code_span c ->
+  | (`Code_span _ | `Math_span _ | `Raw_markup _) as token ->
       junk input;
-      Loc.at location (`Code_span c)
-  | `Raw_markup (raw_markup_target, s) ->
-      junk input;
-      Loc.at location (`Raw_markup (raw_markup_target, s))
-  | `Math _ as tk ->
-      junk input;
-      Loc.at location tk
+      Loc.at location token
   | `Begin_style s as parent_markup ->
       junk input;
 
@@ -734,10 +728,11 @@ let rec block_element_list :
         let block = Loc.at location block in
         let acc = block :: acc in
         consume_block_elements ~parsed_a_tag `After_text acc
-    | { value = `Code_block (_, s) as token; location } as next_token ->
+    | ( { value = `Code_block (_, { value = s; _ }) as token; location }
+      | { value = `Math_block s as token; location } ) as next_token ->
         warn_if_after_tags next_token;
         warn_if_after_text next_token;
-        if s.value = "" then
+        if s = "" then
           Parse_error.should_not_be_empty ~what:(Token.describe token) location
           |> add_warning input;
 

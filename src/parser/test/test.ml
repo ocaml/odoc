@@ -41,9 +41,7 @@ module Ast_to_sexp = struct
     | `Code_span c -> List [ Atom "code_span"; Atom c ]
     | `Raw_markup (target, s) ->
         List [ Atom "raw_markup"; opt str target; Atom s ]
-    | `Math (b, s) ->
-      let b_descr = if b then Atom "inline" else Atom "block" in 
-      List [Atom "math"; b_descr; Atom s]
+    | `Math_span s -> List [ Atom "math_span"; Atom s ]
     | `Styled (s, es) ->
         List [ style s; List (List.map (at.at (inline_element at)) es) ]
     | `Reference (kind, r, es) ->
@@ -64,6 +62,7 @@ module Ast_to_sexp = struct
     | `Paragraph es ->
         List
           [ Atom "paragraph"; List (List.map (at.at (inline_element at)) es) ]
+    | `Math_block s -> List [ Atom "math_block"; Atom s ]
     | `Code_block (None, c) -> List [ Atom "code_block"; at.at str c ]
     | `Code_block (Some meta, c) ->
         List [ Atom "code_block"; code_block_meta at meta; at.at str c ]
@@ -5311,14 +5310,14 @@ let%expect_test _ =
   let module Math = struct
     let block =
       test "{math \\sum_{i=0}^n x^i%}";
-      [%expect {|
-        ((output
-          (((f.ml (1 0) (1 24))
-            (paragraph (((f.ml (1 0) (1 24)) (math block "\\sum_{i=0}^n x^i%")))))))
+      [%expect
+        {|
+        ((output (((f.ml (1 0) (1 24)) (math_block "\\sum_{i=0}^n x^i%"))))
          (warnings ())) |}]
-      
+
     let complex_block =
-      test {|{math
+      test
+        {|{math
       \alpha(x)=\left\{
                 \begin{array}{ll}                 % beginning of the array
                   x \% 4\\                        % some variable modulo 4
@@ -5327,54 +5326,55 @@ let%expect_test _ =
                 \end{array}                       % end of the array
               \right.
       }|};
-      [%expect {|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (9 7))
-            (paragraph
-             (((f.ml (1 0) (9 7))
-               (math block
-                 "      \\alpha(x)=\\left\\{\
-                \n                \\begin{array}{ll}                 % beginning of the array\
-                \n                  x \\% 4\\\\                        % some variable modulo 4\
-                \n                  \\frac{1}{1+e^{-kx}}\\\\           % something else\
-                \n                  \\frac{e^x-e^{-x}}{e^x+e^{-x}}   % another action\
-                \n                \\end{array}                       % end of the array\
-                \n              \\right.\
-                \n      ")))))))
+            (math_block
+              "      \\alpha(x)=\\left\\{\
+             \n                \\begin{array}{ll}                 % beginning of the array\
+             \n                  x \\% 4\\\\                        % some variable modulo 4\
+             \n                  \\frac{1}{1+e^{-kx}}\\\\           % something else\
+             \n                  \\frac{e^x-e^{-x}}{e^x+e^{-x}}   % another action\
+             \n                \\end{array}                       % end of the array\
+             \n              \\right.\
+             \n      "))))
          (warnings ())) |}]
-    
+
     let inline =
       test "{m x + 4}";
-      [%expect {|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (1 9))
-            (paragraph (((f.ml (1 0) (1 9)) (math inline "x + 4")))))))
+            (paragraph (((f.ml (1 0) (1 9)) (math_span "x + 4")))))))
          (warnings ())) |}]
-    
+
     let inline_nested =
       test "{m \\sub_{i=0}^n x^i}";
-      [%expect {|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (1 20))
-            (paragraph (((f.ml (1 0) (1 20)) (math inline "\\sub_{i=0}^n x^i")))))))
+            (paragraph (((f.ml (1 0) (1 20)) (math_span "\\sub_{i=0}^n x^i")))))))
          (warnings ())) |}]
-    
+
     let inline_false_nesting =
       test "{m \\{ \\mathbb{only_left}}";
-      [%expect {|
+      [%expect
+        {|
         ((output
           (((f.ml (1 0) (1 25))
-            (paragraph
-             (((f.ml (1 0) (1 25)) (math inline "\\{ \\mathbb{only_left}")))))))
+            (paragraph (((f.ml (1 0) (1 25)) (math_span "\\{ \\mathbb{only_left}")))))))
          (warnings ())) |}]
-    
+
     let inline_false_terminator =
-    test "{m \\mathbb{only_left}\\}}";
-    [%expect {|
+      test "{m \\mathbb{only_left}\\}}";
+      [%expect
+        {|
       ((output
         (((f.ml (1 0) (1 24))
-          (paragraph
-           (((f.ml (1 0) (1 24)) (math inline "\\mathbb{only_left}\\}")))))))
+          (paragraph (((f.ml (1 0) (1 24)) (math_span "\\mathbb{only_left}\\}")))))))
        (warnings ())) |}]
   end in
   ()
