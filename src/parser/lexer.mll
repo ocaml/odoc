@@ -27,7 +27,7 @@ let unescape_word : string -> string = fun s ->
     scan_word 0;
     Buffer.contents buffer
 
-
+let math_constr inline x = if inline then `Math_span x else `Math_block x
 
 (* This is used for code and verbatim blocks. It can be done with a regular
    expression, but the regexp gets quite ugly, so a function is easier to
@@ -549,7 +549,7 @@ and code_span buffer nesting_level start_offset input = parse
 and math inline buffer nesting_level start_offset input = parse
   | '}'
     { if nesting_level == 0 then
-        emit input (`Math (inline, Buffer.contents buffer)) ~start_offset
+        emit input (math_constr inline (Buffer.contents buffer)) ~start_offset
       else begin
         Buffer.add_char buffer '}';
         math inline buffer (nesting_level - 1) start_offset input lexbuf
@@ -569,7 +569,7 @@ and math inline buffer nesting_level start_offset input = parse
             input
             (Parse_error.not_allowed
               ~what:(Token.describe (`Blank_line "\n"))
-              ~in_what:(Token.describe (`Math (inline, ""))));
+              ~in_what:(Token.describe (math_constr inline "")));
           Buffer.add_char buffer '\n';
           math inline buffer nesting_level start_offset input lexbuf
         end
@@ -584,8 +584,8 @@ and math inline buffer nesting_level start_offset input = parse
         input
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
-          ~in_what:(Token.describe (`Math (inline, ""))));
-      emit input (`Math (inline, Buffer.contents buffer)) ~start_offset }
+          ~in_what:(Token.describe (math_constr inline "")));
+      emit input (math_constr inline (Buffer.contents buffer)) ~start_offset }
   | _ as c
     { Buffer.add_char buffer c;
       math inline buffer nesting_level start_offset input lexbuf }
