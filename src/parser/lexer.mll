@@ -376,8 +376,7 @@ rule token input = parse
 
   | "{%" ((raw_markup_target as target) ':')? (raw_markup as s)
     ("%}" | eof as e)
-    { let token = `Raw_markup (target, s)
-      in
+    { let token = `Raw_markup (target, s) in
       if e <> "%}" then
         warning
           input
