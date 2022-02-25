@@ -43,6 +43,10 @@ end
 
 let internal_counter = ref 0
 
+let _ =
+  Random.self_init ();
+  internal_counter := Random.int (16777216)
+
 module Name : Name = struct
   type t = Internal of string * int | Std of string
 
