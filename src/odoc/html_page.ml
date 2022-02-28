@@ -14,24 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Odoc_document
+let render config page = Odoc_html.Generator.render ~config page
 
-type args = {
-  semantic_uris : bool;
-  closed_details : bool;
-  indent : bool;
-  theme_uri : Odoc_html.Types.uri;
-  support_uri : Odoc_html.Types.uri;
-  flat : bool;
-}
-
-let render args page =
-  Odoc_html.Link.semantic_uris := args.semantic_uris;
-  Odoc_html.Tree.open_details := not args.closed_details;
-  Odoc_html.Link.flat := args.flat;
-  Odoc_html.Generator.render ~theme_uri:args.theme_uri
-    ~support_uri:args.support_uri ~indent:args.indent page
-
-let files_of_url url = [ Odoc_html.Link.Path.as_filename url ]
-
-let renderer = { Renderer.name = "html"; render; files_of_url }
+let renderer = { Odoc_document.Renderer.name = "html"; render }

@@ -463,6 +463,3 @@ module Page = struct
 end
 
 let render ~with_children page = [ Page.page ~with_children page ]
-
-let files_of_url url =
-  if Link.is_class_or_module_path url then [ Link.filename url ] else []

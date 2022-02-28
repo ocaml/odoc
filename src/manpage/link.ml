@@ -28,6 +28,3 @@ let rec is_class_or_module_path (url : Url.Path.t) =
   | _ -> false
 
 let should_inline x = not @@ is_class_or_module_path x
-
-let files_of_url url =
-  if is_class_or_module_path url then [ as_filename url ] else []

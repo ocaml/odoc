@@ -74,10 +74,11 @@ and styled style ~emph_level =
   | `Superscript -> (emph_level, Html.sup ~a:[])
   | `Subscript -> (emph_level, Html.sub ~a:[])
 
-let rec internallink ~emph_level ~resolve ?(a = []) (t : InternalLink.t) =
+let rec internallink ~config ~emph_level ~resolve ?(a = []) (t : InternalLink.t)
+    =
   match t with
   | Resolved (uri, content) ->
-      let href = Link.href ~resolve uri in
+      let href = Link.href ~config ~resolve uri in
       let a = (a :> Html_types.a_attrib Html.attrib list) in
       let elt =
         Html.a ~a:(Html.a_href href :: a) (inline_nolink ~emph_level content)
@@ -90,7 +91,7 @@ let rec internallink ~emph_level ~resolve ?(a = []) (t : InternalLink.t) =
        *       (ref_to_string ref)
        * in *)
       let a = Html.a_class [ "xref-unresolved" ] :: a in
-      let elt = Html.span ~a (inline ~emph_level ~resolve content) in
+      let elt = Html.span ~a (inline ~config ~emph_level ~resolve content) in
       let elt = (elt :> phrasing Html.elt) in
       [ elt ]
 
@@ -100,7 +101,8 @@ and internallink_nolink ~emph_level
   | Resolved (_, content) | Unresolved content ->
       [ Html.span ~a (inline_nolink ~emph_level content) ]
 
-and inline ?(emph_level = 0) ~resolve (l : Inline.t) : phrasing Html.elt list =
+and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
+    phrasing Html.elt list =
   let one (t : Inline.one) =
     let a = class_ t.attr in
     match t.desc with
@@ -112,13 +114,13 @@ and inline ?(emph_level = 0) ~resolve (l : Inline.t) : phrasing Html.elt list =
     | Linebreak -> [ Html.br ~a () ]
     | Styled (style, c) ->
         let emph_level, app_style = styled style ~emph_level in
-        [ app_style @@ inline ~emph_level ~resolve c ]
+        [ app_style @@ inline ~config ~emph_level ~resolve c ]
     | Link (href, c) ->
         let a = (a :> Html_types.a_attrib Html.attrib list) in
         let content = inline_nolink ~emph_level c in
         [ Html.a ~a:(Html.a_href href :: a) content ]
-    | InternalLink c -> internallink ~emph_level ~resolve ~a c
-    | Source c -> source (inline ~emph_level ~resolve) ~a c
+    | InternalLink c -> internallink ~config ~emph_level ~resolve ~a c
+    | Source c -> source (inline ~config ~emph_level ~resolve) ~a c
     | Raw_markup r -> raw_markup r
   in
   Utils.list_concat_map ~f:one l
@@ -144,13 +146,13 @@ and inline_nolink ?(emph_level = 0) (l : Inline.t) :
   in
   Utils.list_concat_map ~f:one l
 
-let heading ~resolve (h : Heading.t) =
+let heading ~config ~resolve (h : Heading.t) =
   let a, anchor =
     match h.label with
     | Some id -> ([ Html.a_id id ], mk_anchor_link id)
     | None -> ([], [])
   in
-  let content = inline ~resolve h.title in
+  let content = inline ~config ~resolve h.title in
   let mk =
     match h.level with
     | 0 -> Html.h1
@@ -162,7 +164,7 @@ let heading ~resolve (h : Heading.t) =
   in
   mk ~a (anchor @ content)
 
-let rec block ~resolve (l : Block.t) : flow Html.elt list =
+let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
   let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
   let one (t : Block.one) =
     let mk_block ?(extra_class = []) mk content =
@@ -171,21 +173,21 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
     in
     match t.desc with
     | Inline i ->
-        if t.attr = [] then as_flow @@ inline ~resolve i
-        else mk_block Html.span (inline ~resolve i)
-    | Paragraph i -> mk_block Html.p (inline ~resolve i)
+        if t.attr = [] then as_flow @@ inline ~config ~resolve i
+        else mk_block Html.span (inline ~config ~resolve i)
+    | Paragraph i -> mk_block Html.p (inline ~config ~resolve i)
     | List (typ, l) ->
         let mk = match typ with Ordered -> Html.ol | Unordered -> Html.ul in
-        mk_block mk (List.map (fun x -> Html.li (block ~resolve x)) l)
+        mk_block mk (List.map (fun x -> Html.li (block ~config ~resolve x)) l)
     | Description l ->
         let item i =
           let a = class_ i.Description.attr in
           let term =
-            (inline ~resolve i.Description.key
+            (inline ~config ~resolve i.Description.key
               : phrasing Html.elt list
               :> flow Html.elt list)
           in
-          let def = block ~resolve i.Description.definition in
+          let def = block ~config ~resolve i.Description.definition in
           Html.li ~a (term @ (Html.txt " " :: def))
         in
         mk_block Html.ul (List.map item l)
@@ -193,7 +195,7 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
     | Verbatim s -> mk_block Html.pre [ Html.txt s ]
     | Source (lang_tag, c) ->
         let extra_class = [ "language-" ^ lang_tag ] in
-        mk_block ~extra_class Html.pre (source (inline ~resolve) c)
+        mk_block ~extra_class Html.pre (source (inline ~config ~resolve) c)
   in
   Utils.list_concat_map l ~f:one
 
@@ -210,13 +212,14 @@ let div : ([< Html_types.div_attrib ], [< item ], [> Html_types.div ]) Html.star
 
 let spec_class attr = class_ ("spec" :: attr)
 
-let spec_doc_div ~resolve = function
+let spec_doc_div ~config ~resolve = function
   | [] -> []
   | docs ->
       let a = [ Html.a_class [ "spec-doc" ] ] in
-      [ div ~a (flow_to_item @@ block ~resolve docs) ]
+      [ div ~a (flow_to_item @@ block ~config ~resolve docs) ]
 
-let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
+let rec documentedSrc ~config ~resolve (t : DocumentedSrc.t) :
+    item Html.elt list =
   let open DocumentedSrc in
   let take_code l =
     Doctree.Take.until l ~classify:(function
@@ -239,14 +242,14 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
     | [] -> []
     | (Code _ | Alternative _) :: _ ->
         let code, _, rest = take_code t in
-        source (inline ~resolve) code @ to_html rest
-    | Subpage subp :: _ -> subpage ~resolve subp
+        source (inline ~config ~resolve) code @ to_html rest
+    | Subpage subp :: _ -> subpage ~config ~resolve subp
     | (Documented _ | Nested _) :: _ ->
         let l, _, rest = take_descr t in
         let one { DocumentedSrc.attrs; anchor; code; doc; markers } =
           let content =
             match code with
-            | `D code -> (inline ~resolve code :> item Html.elt list)
+            | `D code -> (inline ~config ~resolve code :> item Html.elt list)
             | `N n -> to_html n
           in
           let doc =
@@ -259,7 +262,7 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
                 in
                 [
                   Html.div ~a:(class_ [ "def-doc" ])
-                    (delim opening @ block ~resolve doc @ delim closing);
+                    (delim opening @ block ~config ~resolve doc @ delim closing);
                 ]
           in
           let extra_attr, extra_class, link = mk_anchor anchor in
@@ -272,10 +275,10 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
   in
   to_html t
 
-and subpage ~resolve (subp : Subpage.t) : item Html.elt list =
-  items ~resolve subp.content.items
+and subpage ~config ~resolve (subp : Subpage.t) : item Html.elt list =
+  items ~config ~resolve subp.content.items
 
-and items ~resolve l : item Html.elt list =
+and items ~config ~resolve l : item Html.elt list =
   let rec walk_items acc (t : Item.t list) : item Html.elt list =
     let continue_with rest elts =
       (walk_items [@tailcall]) (List.rev_append elts acc) rest
@@ -288,13 +291,13 @@ and items ~resolve l : item Html.elt list =
             | Item.Text text -> Accum text
             | _ -> Stop_and_keep)
         in
-        let content = flow_to_item @@ block ~resolve text in
+        let content = flow_to_item @@ block ~config ~resolve text in
         (continue_with [@tailcall]) rest content
     | Heading h :: rest ->
-        (continue_with [@tailcall]) rest [ heading ~resolve h ]
+        (continue_with [@tailcall]) rest [ heading ~config ~resolve h ]
     | Include { attr; anchor; doc; content = { summary; status; content } }
       :: rest ->
-        let doc = spec_doc_div ~resolve doc in
+        let doc = spec_doc_div ~config ~resolve doc in
         let included_html = (items content :> item Html.elt list) in
         let a_class =
           if List.length content = 0 then [ "odoc-include"; "shadowed-include" ]
@@ -306,7 +309,8 @@ and items ~resolve l : item Html.elt list =
             let summary =
               let extra_attr, extra_class, anchor_link = mk_anchor anchor in
               let a = spec_class (attr @ extra_class) @ extra_attr in
-              Html.summary ~a @@ anchor_link @ source (inline ~resolve) summary
+              Html.summary ~a @@ anchor_link
+              @ source (inline ~config ~resolve) summary
             in
             let inner =
               [
@@ -320,15 +324,15 @@ and items ~resolve l : item Html.elt list =
           | `Inline -> doc @ included_html
           | `Closed -> details ~open':false
           | `Open -> details ~open':true
-          | `Default -> details ~open':!Tree.open_details
+          | `Default -> details ~open':(Config.open_details config)
         in
         (continue_with [@tailcall]) rest content
     | Declaration { Item.attr; anchor; content; doc } :: rest ->
         let extra_attr, extra_class, anchor_link = mk_anchor anchor in
         let a = spec_class (attr @ extra_class) @ extra_attr in
-        let content = anchor_link @ documentedSrc ~resolve content in
+        let content = anchor_link @ documentedSrc ~config ~resolve content in
         let spec =
-          let doc = spec_doc_div ~resolve doc in
+          let doc = spec_doc_div ~config ~resolve doc in
           [ div ~a:[ Html.a_class [ "odoc-spec" ] ] (div ~a content :: doc) ]
         in
         (continue_with [@tailcall]) rest spec
@@ -343,7 +347,7 @@ module Toc = struct
     | `Closed | `Open | `Default -> false
     | `Inline -> true
 
-  let gen_toc ~resolve ~path i =
+  let gen_toc ~config ~resolve ~path i =
     let toc = Toc.compute path ~on_sub i in
     let rec section { Toc.url; text; children } =
       let text = inline_nolink text in
@@ -356,7 +360,7 @@ module Toc = struct
         List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ())) text
         |> String.concat " "
       in
-      let href = Link.href ~resolve url in
+      let href = Link.href ~config ~resolve url in
       { title; title_str; href; children = List.map section children }
     in
     List.map section toc
@@ -370,32 +374,29 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
-  let rec include_ ?theme_uri indent { Subpage.content; _ } =
-    page ?theme_uri indent content
+  let rec include_ ~config { Subpage.content; _ } = page ~config content
 
-  and subpages ?theme_uri indent subpages =
-    Utils.list_concat_map ~f:(include_ ?theme_uri indent) subpages
+  and subpages ~config subpages =
+    Utils.list_concat_map ~f:(include_ ~config) subpages
 
-  and page ?theme_uri ?support_uri indent p : Odoc_document.Renderer.page list =
+  and page ~config p : Odoc_document.Renderer.page list =
     let { Page.title; header; items = i; url } =
       Doctree.Labels.disambiguate_page p
     and subpages =
       (* Don't use the output of [disambiguate_page] to avoid unecessarily
          mangled labels. *)
-      subpages ?theme_uri indent @@ Doctree.Subpages.compute p
+      subpages ~config @@ Doctree.Subpages.compute p
     in
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
-    let toc = Toc.gen_toc ~resolve ~path:url i in
-    let header = items ~resolve header in
-    let content = (items ~resolve i :> any Html.elt list) in
-    Tree.make ?theme_uri ?support_uri ~indent ~header ~toc ~url title content
-      subpages
+    let toc = Toc.gen_toc ~config ~resolve ~path:url i in
+    let header = items ~config ~resolve header in
+    let content = (items ~config ~resolve i :> any Html.elt list) in
+    Tree.make ~config ~header ~toc ~url title content subpages
 end
 
-let render ?theme_uri ?support_uri ~indent page =
-  Page.page ?theme_uri ?support_uri indent page
+let render ~config page = Page.page ~config page
 
-let doc ~xref_base_uri b =
+let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in
-  block ~resolve b
+  block ~config ~resolve b
