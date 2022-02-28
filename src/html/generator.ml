@@ -375,12 +375,12 @@ module Page = struct
         | `Inline -> Some 0)
 
   let rec include_ ?theme_uri indent { Subpage.content; _ } =
-    [ page ?theme_uri indent content ]
+    page ?theme_uri indent content
 
   and subpages ?theme_uri indent subpages =
     Utils.list_concat_map ~f:(include_ ?theme_uri indent) subpages
 
-  and page ?theme_uri ?support_uri indent p =
+  and page ?theme_uri ?support_uri indent p : Odoc_document.Renderer.page list =
     let { Page.title; header; items = i; url } =
       Doctree.Labels.disambiguate_page p
     and subpages =
@@ -393,11 +393,8 @@ module Page = struct
     let toc = Toc.from_items ~resolve ~path:url i in
     let header = items ~resolve header in
     let content = (items ~resolve i :> any Html.elt list) in
-    let page =
-      Tree.make ?theme_uri ?support_uri ~indent ~header ~toc ~url title content
-        subpages
-    in
-    page
+    Tree.make ?theme_uri ?support_uri ~indent ~header ~toc ~url title content
+      subpages
 end
 
 let render ?theme_uri ?support_uri ~indent page =

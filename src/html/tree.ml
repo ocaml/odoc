@@ -131,6 +131,6 @@ let make ?theme_uri ?support_uri ~indent ~url ~header ~toc title content
     page_creator ?theme_uri ?support_uri ~url title header toc content
   in
   let content ppf = (Html.pp ~indent ()) ppf html in
-  { Odoc_document.Renderer.filename; content; children }
+  [ { Odoc_document.Renderer.filename; content; children } ]
 
 let open_details = ref true
