@@ -9,6 +9,7 @@ val v :
   indent:bool ->
   flat:bool ->
   open_details:bool ->
+  omit_breadcrumbs:bool ->
   unit ->
   t
 
@@ -23,3 +24,5 @@ val indent : t -> bool
 val flat : t -> bool
 
 val open_details : t -> bool
+
+val omit_breadcrumbs : t -> bool

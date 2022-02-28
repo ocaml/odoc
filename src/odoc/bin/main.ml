@@ -516,15 +516,20 @@ module Odoc_html_args = struct
     in
     Arg.(value & flag & info ~docs ~doc [ "flat" ])
 
+  let omit_breadcrumbs =
+    let doc = 
+      "Don't emit the breadcrumbs navigation element"
+    in
+    Arg.(value & flag & info ~docs ~doc [ "omit-breadcrumbs"])
   let extra_args =
-    let config semantic_uris closed_details indent theme_uri support_uri flat =
+    let config semantic_uris closed_details indent theme_uri support_uri flat omit_breadcrumbs =
       let open_details = not closed_details in
       Odoc_html.Config.v ~theme_uri ~support_uri ~semantic_uris ~indent ~flat
-        ~open_details ()
+        ~open_details ~omit_breadcrumbs ()
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ flat)
+      $ support_uri $ flat $ omit_breadcrumbs)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)
