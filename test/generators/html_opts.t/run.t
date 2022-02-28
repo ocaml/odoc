@@ -40,4 +40,9 @@ Check omission of toc:
   $ grep odoc-toc html/test/Test/index.html
   [1]
 
+Check content-only output:
+  $ odoc html-generate test.odocl -o html --indent --content-only
+  $ head -n 1 html/test/Test/index.html
+  <div class="odoc">
+ 
 

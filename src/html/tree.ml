@@ -138,10 +138,19 @@ let page_creator ~config ~url name header toc content =
     @ toc
     @ [ Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content ]
   in
-  Html.html head (Html.body ~a:[ Html.a_class [ "odoc" ] ] body)
+  let htmlpp_elt = Html.pp_elt ~indent:(Config.indent config) () in
+  let htmlpp = Html.pp ~indent:(Config.indent config) () in
+  if Config.content_only config
+  then begin
+    let content ppf = htmlpp_elt ppf (Html.div ~a:[ Html.a_class [ "odoc" ] ] body) in
+    content
+  end else begin
+    let html = Html.html head (Html.body ~a:[ Html.a_class [ "odoc" ] ] body) in
+    let content ppf = htmlpp ppf html in
+    content
+  end
 
 let make ~config ~url ~header ~toc title content children =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
-  let html = page_creator ~config ~url title header toc content in
-  let content ppf = (Html.pp ~indent:(Config.indent config) ()) ppf html in
+  let content = page_creator ~config ~url title header toc content in
   [ { Odoc_document.Renderer.filename; content; children } ]

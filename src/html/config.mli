@@ -11,6 +11,7 @@ val v :
   open_details:bool ->
   omit_breadcrumbs:bool ->
   omit_toc:bool ->
+  content_only:bool ->
   unit ->
   t
 
@@ -29,3 +30,5 @@ val open_details : t -> bool
 val omit_breadcrumbs : t -> bool
 
 val omit_toc : t -> bool
+
+val content_only : t -> bool
