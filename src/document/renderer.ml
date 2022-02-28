@@ -15,11 +15,11 @@ let traverse ~f t =
     f node.filename node.content;
     List.iter aux node.children
   in
-  aux t
+  List.iter aux t
 
 type 'a t = {
   name : string;
-  render : 'a -> Types.Page.t -> page;
+  render : 'a -> Types.Page.t -> page list;
   files_of_url : Url.Path.t -> Fpath.t list;
 }
 

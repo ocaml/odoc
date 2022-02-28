@@ -5,7 +5,7 @@ val render :
   ?support_uri:Tree.uri ->
   indent:bool ->
   Types.Page.t ->
-  Renderer.page
+  Renderer.page list
 
 val doc :
   xref_base_uri:string ->

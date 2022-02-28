@@ -37,7 +37,7 @@ val make :
   string ->
   Html_types.div_content Html.elt list ->
   Renderer.page list ->
-  Renderer.page
+  Renderer.page list
 (** [make ?theme_uri (body, children)] calls "the page creator" to turn [body]
     into an [[ `Html ] elt]. If [theme_uri] is provided, it will be used to
     locate the theme files, otherwise the HTML output directory is used. *)
