@@ -32,5 +32,12 @@ Check semantic_uris:
   $ grep Test.t html/test/Test2/index.html
          <a href="../Test/#type-t">Test.t</a>
 
+Check omission of toc:
+  $ odoc html-generate test.odocl -o html --indent
+  $ grep odoc-toc html/test/Test/index.html
+    <nav class="odoc-toc">
+  $ odoc html-generate test.odocl -o html --indent --omit-toc
+  $ grep odoc-toc html/test/Test/index.html
+  [1]
 
 
