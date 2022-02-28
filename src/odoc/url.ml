@@ -39,7 +39,7 @@ let resolve url_to_string directories reference =
               print_endline href;
               Ok ()))
 
-let reference_to_url_html root_url =
+let reference_to_url_html config root_url =
   let url_to_string url =
     let base =
       match root_url with
@@ -47,7 +47,7 @@ let reference_to_url_html root_url =
       | Some base ->
           if base.[String.length base - 1] = '/' then base else base ^ "/"
     in
-    Odoc_html.Link.(href ~resolve:(Base base) url)
+    Odoc_html.Link.(href ~config ~resolve:(Base base) url)
   in
   resolve url_to_string
 

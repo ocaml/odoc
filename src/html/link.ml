@@ -1,7 +1,5 @@
 module Url = Odoc_document.Url
 
-let flat = ref false
-
 (* Translation from Url.Path *)
 module Path = struct
   let for_printing url = List.map snd @@ Url.Path.to_list url
@@ -13,10 +11,10 @@ module Path = struct
 
   let is_leaf_page url = url.Url.Path.kind = `LeafPage
 
-  let get_dir_and_file url =
+  let get_dir_and_file is_flat url =
     let l = Url.Path.to_list url in
     let is_dir =
-      if !flat then function `Page -> `Always | _ -> `Never
+      if is_flat then function `Page -> `Always | _ -> `Never
       else function `LeafPage -> `Never | `File -> `Never | _ -> `Always
     in
     let dir, file = Url.Path.split ~is_dir l in
@@ -27,20 +25,18 @@ module Path = struct
       | [ (`LeafPage, name) ] -> name ^ ".html"
       | [ (`File, name) ] -> name
       | xs ->
-          assert !flat;
+          assert is_flat;
           String.concat "-" (List.map segment_to_string xs) ^ ".html"
     in
     (dir, file)
 
-  let for_linking url =
-    let dir, file = get_dir_and_file url in
+  let for_linking ~is_flat url =
+    let dir, file = get_dir_and_file is_flat url in
     dir @ [ file ]
 
-  let as_filename (url : Url.Path.t) =
-    Fpath.(v @@ String.concat Fpath.dir_sep @@ for_linking url)
+  let as_filename ~is_flat (url : Url.Path.t) =
+    Fpath.(v @@ String.concat Fpath.dir_sep @@ for_linking ~is_flat url)
 end
-
-let semantic_uris = ref false
 
 type resolve = Current of Url.Path.t | Base of string
 
@@ -49,10 +45,10 @@ let rec drop_shared_prefix l1 l2 =
   | l1 :: l1s, l2 :: l2s when l1 = l2 -> drop_shared_prefix l1s l2s
   | _, _ -> (l1, l2)
 
-let href ~resolve t =
+let href ~(config : Config.t) ~resolve t =
   let { Url.Anchor.page; anchor; _ } = t in
 
-  let target_loc = Path.for_linking page in
+  let target_loc = Path.for_linking ~is_flat:(Config.flat config) page in
 
   (* If xref_base_uri is defined, do not perform relative URI resolution. *)
   match resolve with
@@ -60,7 +56,7 @@ let href ~resolve t =
       let page = xref_base_uri ^ String.concat "/" target_loc in
       match anchor with "" -> page | anchor -> page ^ "#" ^ anchor)
   | Current path -> (
-      let current_loc = Path.for_linking path in
+      let current_loc = Path.for_linking ~is_flat:(Config.flat config) path in
 
       let current_from_common_ancestor, target_from_common_ancestor =
         drop_shared_prefix current_loc target_loc
@@ -87,7 +83,7 @@ let href ~resolve t =
         | _ -> l
       in
       let relative_target =
-        if !semantic_uris then remove_index_html relative_target
+        if Config.semantic_uris config then remove_index_html relative_target
         else relative_target
       in
       match (relative_target, anchor) with

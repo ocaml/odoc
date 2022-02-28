@@ -30,8 +30,9 @@ let html_of_toc toc =
   | [] -> []
   | _ -> [ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] [ sections toc ] ]
 
-let page_creator ?(theme_uri = Types.Relative None) ?(support_uri = Types.Relative None)
-    ~url name header toc content =
+let page_creator ~config ~url name header toc content =
+  let theme_uri = Config.theme_uri config in
+  let support_uri = Config.support_uri config in
   let path = Link.Path.for_printing url in
 
   let head : Html_types.head Html.elt =
@@ -44,7 +45,8 @@ let page_creator ?(theme_uri = Types.Relative None) ?(support_uri = Types.Relati
           let page =
             Odoc_document.Url.Path.{ kind = `File; parent = uri; name = file }
           in
-          Link.href ~resolve:(Current url) (Odoc_document.Url.from_path page)
+          Link.href ~config ~resolve:(Current url)
+            (Odoc_document.Url.from_path page)
     in
 
     let odoc_css_uri = file_uri theme_uri "odoc.css" in
@@ -106,7 +108,7 @@ let page_creator ?(theme_uri = Types.Relative None) ?(support_uri = Types.Relati
         let parent_name = x.name in
         make_navigation ~up_url [ Html.txt parent_name ]
     | _ ->
-        let up_url = href (List.hd (List.tl (List.rev parents))) in
+        let up_url = href ~config (List.hd (List.tl (List.rev parents))) in
         let l =
           (* Create breadcrumbs *)
           let space = Html.txt " " in
@@ -119,7 +121,7 @@ let page_creator ?(theme_uri = Types.Relative None) ?(support_uri = Types.Relati
                      (if url = url' then Html.txt url.name
                      else
                        Html.a
-                         ~a:[ Html.a_href (href url') ]
+                         ~a:[ Html.a_href (href ~config url') ]
                          [ Html.txt url'.name ]);
                    ];
                  ])
@@ -136,13 +138,8 @@ let page_creator ?(theme_uri = Types.Relative None) ?(support_uri = Types.Relati
   in
   Html.html head (Html.body ~a:[ Html.a_class [ "odoc" ] ] body)
 
-let make ?theme_uri ?support_uri ~indent ~url ~header ~toc title content
-    children =
-  let filename = Link.Path.as_filename url in
-  let html =
-    page_creator ?theme_uri ?support_uri ~url title header toc content
-  in
-  let content ppf = (Html.pp ~indent ()) ppf html in
+let make ~config ~url ~header ~toc title content children =
+  let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
+  let html = page_creator ~config ~url title header toc content in
+  let content ppf = (Html.pp ~indent:(Config.indent config) ()) ppf html in
   [ { Odoc_document.Renderer.filename; content; children } ]
-
-let open_details = ref true

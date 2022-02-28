@@ -413,34 +413,6 @@ end = struct
   let targets = Targets.(cmd, info)
 end
 
-module Odoc_html_url : sig
-  val cmd : unit Term.t
-
-  val info : Term.info
-end = struct
-  let root_url =
-    let doc =
-      "A string to prepend to the generated relative url. A separating / is \
-       added if needed."
-    in
-    Arg.(value & opt (some string) None & info [ "r"; "root-url" ] ~doc)
-
-  let reference =
-    let doc = "The reference to be resolved and whose url to be generated." in
-    Arg.(required & pos 0 (some string) None & info ~doc ~docv:"REF" [])
-
-  let reference_to_url = Url.reference_to_url_html
-
-  let cmd =
-    Term.(
-      const handle_error
-      $ (const reference_to_url $ root_url $ odoc_file_directories $ reference))
-
-  let info =
-    Term.info ~doc:"Resolve a reference and output its corresponding url"
-      "html-url"
-end
-
 module Odoc_latex_url : sig
   val cmd : unit Term.t
 
@@ -462,8 +434,8 @@ end = struct
       "latex-url"
 end
 
-module Odoc_html = Make_renderer (struct
-  type args = Html_page.args
+module Odoc_html_args = struct
+  type args = Odoc_html.Config.t
 
   let renderer = Html_page.renderer
 
@@ -545,20 +517,46 @@ module Odoc_html = Make_renderer (struct
     Arg.(value & flag & info ~docs ~doc [ "flat" ])
 
   let extra_args =
-    let f semantic_uris closed_details indent theme_uri support_uri flat =
-      {
-        Html_page.semantic_uris;
-        closed_details;
-        theme_uri;
-        support_uri;
-        indent;
-        flat;
-      }
+    let config semantic_uris closed_details indent theme_uri support_uri flat =
+      let open_details = not closed_details in
+      Odoc_html.Config.v ~theme_uri ~support_uri ~semantic_uris ~indent ~flat
+        ~open_details ()
     in
     Term.(
-      const f $ semantic_uris $ closed_details $ indent $ theme_uri
+      const config $ semantic_uris $ closed_details $ indent $ theme_uri
       $ support_uri $ flat)
-end)
+end
+
+module Odoc_html = Make_renderer (Odoc_html_args)
+
+module Odoc_html_url : sig
+  val cmd : unit Term.t
+
+  val info : Term.info
+end = struct
+  let root_url =
+    let doc =
+      "A string to prepend to the generated relative url. A separating / is \
+       added if needed."
+    in
+    Arg.(value & opt (some string) None & info [ "r"; "root-url" ] ~doc)
+
+  let reference =
+    let doc = "The reference to be resolved and whose url to be generated." in
+    Arg.(required & pos 0 (some string) None & info ~doc ~docv:"REF" [])
+
+  let reference_to_url = Url.reference_to_url_html
+
+  let cmd =
+    Term.(
+      const handle_error
+      $ (const reference_to_url $ Odoc_html_args.extra_args $ root_url
+       $ odoc_file_directories $ reference))
+
+  let info =
+    Term.info ~doc:"Resolve a reference and output its corresponding url"
+      "html-url"
+end
 
 module Html_fragment : sig
   val cmd : unit Term.t

@@ -18,13 +18,10 @@ module Html = Tyxml.Html
 
 (** Supported languages for printing code parts. *)
 
-
 (** {1 Page creator} *)
 
 val make :
-  ?theme_uri:Types.uri ->
-  ?support_uri:Types.uri ->
-  indent:bool ->
+  config:Config.t ->
   url:Odoc_document.Url.Path.t ->
   header:Html_types.flow5_without_header_footer Html.elt list ->
   toc:Types.toc list ->
@@ -35,9 +32,3 @@ val make :
 (** [make ?theme_uri (body, children)] calls "the page creator" to turn [body]
     into an [[ `Html ] elt]. If [theme_uri] is provided, it will be used to
     locate the theme files, otherwise the HTML output directory is used. *)
-
-(* TODO: move to a centralized [State] module or something. Along with
-   Relative_link.semantic_uris. *)
-val open_details : bool ref
-(** Whether [<details>] tags should be opened by default or not.
-    Default is [true]. *)
