@@ -20,8 +20,8 @@ type args = {
   semantic_uris : bool;
   closed_details : bool;
   indent : bool;
-  theme_uri : Odoc_html.Tree.uri;
-  support_uri : Odoc_html.Tree.uri;
+  theme_uri : Odoc_html.Types.uri;
+  support_uri : Odoc_html.Types.uri;
   flat : bool;
 }
 
