@@ -337,13 +337,7 @@ and items ~resolve l : item Html.elt list =
 
 module Toc = struct
   open Odoc_document.Doctree
-
-  type t = Tree.toc = {
-    title : Html_types.flow5_without_interactive Html.elt list;
-    title_str : string;
-    href : string;
-    children : t list;
-  }
+  open Types
 
   let on_sub : Subpage.status -> bool = function
     | `Closed | `Open | `Default -> false

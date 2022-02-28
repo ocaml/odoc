@@ -16,16 +16,8 @@
 
 module Html = Tyxml.Html
 
-type uri = Absolute of string | Relative of Odoc_document.Url.Path.t option
-
-type toc = {
-  title : Html_types.flow5_without_interactive Html.elt list;
-  title_str : string;
-  href : string;
-  children : toc list;
-}
-
 let html_of_toc toc =
+  let open Types in
   let rec section section =
     let link = Html.a ~a:[ Html.a_href section.href ] section.title in
     match section.children with [] -> [ link ] | cs -> [ link; sections cs ]
@@ -38,7 +30,7 @@ let html_of_toc toc =
   | [] -> []
   | _ -> [ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] [ sections toc ] ]
 
-let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
+let page_creator ?(theme_uri = Types.Relative None) ?(support_uri = Types.Relative None)
     ~url name header toc content =
   let path = Link.Path.for_printing url in
 
@@ -47,7 +39,7 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
 
     let file_uri base file =
       match base with
-      | Absolute uri -> uri ^ "/" ^ file
+      | Types.Absolute uri -> uri ^ "/" ^ file
       | Relative uri ->
           let page =
             Odoc_document.Url.Path.{ kind = `File; parent = uri; name = file }
