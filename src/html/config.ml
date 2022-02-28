@@ -8,10 +8,11 @@ type t = {
   flat : bool;
   open_details : bool;
   omit_breadcrumbs : bool;
+  omit_toc : bool;
 }
 
-let v ?theme_uri ?support_uri ~semantic_uris ~indent ~flat ~open_details ~omit_breadcrumbs () =
-  { theme_uri; support_uri; semantic_uris; indent; flat; open_details; omit_breadcrumbs }
+let v ?theme_uri ?support_uri ~semantic_uris ~indent ~flat ~open_details ~omit_breadcrumbs ~omit_toc () =
+  { theme_uri; support_uri; semantic_uris; indent; flat; open_details; omit_breadcrumbs; omit_toc }
 
 let theme_uri config =
   match config.theme_uri with None -> Types.Relative None | Some uri -> uri
@@ -28,3 +29,5 @@ let flat config = config.flat
 let open_details config = config.open_details
 
 let omit_breadcrumbs config = config.omit_breadcrumbs
+
+let omit_toc config = config.omit_toc

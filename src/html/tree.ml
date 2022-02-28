@@ -131,10 +131,11 @@ let page_creator ~config ~url name header toc content =
   in
 
   let breadcrumbs = if Config.omit_breadcrumbs config then [] else gen_breadcrumbs () in
+  let toc = if Config.omit_toc config then [] else html_of_toc toc in
   let body =
     breadcrumbs
     @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
-    @ html_of_toc toc
+    @ toc
     @ [ Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content ]
   in
   Html.html head (Html.body ~a:[ Html.a_class [ "odoc" ] ] body)

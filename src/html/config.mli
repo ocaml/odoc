@@ -10,6 +10,7 @@ val v :
   flat:bool ->
   open_details:bool ->
   omit_breadcrumbs:bool ->
+  omit_toc:bool ->
   unit ->
   t
 
@@ -26,3 +27,5 @@ val flat : t -> bool
 val open_details : t -> bool
 
 val omit_breadcrumbs : t -> bool
+
+val omit_toc : t -> bool
