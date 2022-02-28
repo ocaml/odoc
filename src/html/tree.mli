@@ -19,6 +19,13 @@ module Html = Tyxml.Html
 
 (** Supported languages for printing code parts. *)
 
+type toc = {
+  title : Html_types.flow5_without_interactive Html.elt list;
+  title_str : string;
+  href : string;
+  children : toc list;
+}
+
 type uri =
   | Absolute of string
   | Relative of Odoc_document.Url.Path.t option
@@ -33,7 +40,7 @@ val make :
   indent:bool ->
   url:Url.Path.t ->
   header:Html_types.flow5_without_header_footer Html.elt list ->
-  toc:Html_types.flow5 Html.elt list ->
+  toc:toc list ->
   string ->
   Html_types.div_content Html.elt list ->
   Renderer.page list ->

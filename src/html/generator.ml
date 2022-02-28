@@ -338,32 +338,34 @@ and items ~resolve l : item Html.elt list =
 module Toc = struct
   open Odoc_document.Doctree
 
-  let render_toc ~resolve (toc : Toc.t) =
-    let rec section { Toc.url; text; children } =
-      let text = inline_nolink text in
-      let text =
-        (text
-          : non_link_phrasing Html.elt list
-          :> Html_types.flow5_without_interactive Html.elt list)
-      in
-      let href = Link.href ~resolve url in
-      let link = Html.a ~a:[ Html.a_href href ] text in
-      match children with [] -> [ link ] | _ -> [ link; sections children ]
-    and sections the_sections =
-      the_sections
-      |> List.map (fun the_section -> Html.li (section the_section))
-      |> Html.ul
-    in
-    match toc with
-    | [] -> []
-    | _ -> [ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] [ sections toc ] ]
+  type t = Tree.toc = {
+    title : Html_types.flow5_without_interactive Html.elt list;
+    title_str : string;
+    href : string;
+    children : t list;
+  }
 
   let on_sub : Subpage.status -> bool = function
     | `Closed | `Open | `Default -> false
     | `Inline -> true
 
-  let from_items ~resolve ~path i =
-    render_toc ~resolve @@ Toc.compute path ~on_sub i
+  let gen_toc ~resolve ~path i =
+    let toc = Toc.compute path ~on_sub i in
+    let rec section { Toc.url; text; children } =
+      let text = inline_nolink text in
+      let title =
+        (text
+          : non_link_phrasing Html.elt list
+          :> Html_types.flow5_without_interactive Html.elt list)
+      in
+      let title_str =
+        List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ())) text
+        |> String.concat " "
+      in
+      let href = Link.href ~resolve url in
+      { title; title_str; href; children = List.map section children }
+    in
+    List.map section toc
 end
 
 module Page = struct
@@ -390,7 +392,7 @@ module Page = struct
     in
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
-    let toc = Toc.from_items ~resolve ~path:url i in
+    let toc = Toc.gen_toc ~resolve ~path:url i in
     let header = items ~resolve header in
     let content = (items ~resolve i :> any Html.elt list) in
     Tree.make ?theme_uri ?support_uri ~indent ~header ~toc ~url title content
