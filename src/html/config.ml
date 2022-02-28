@@ -7,10 +7,11 @@ type t = {
   indent : bool;
   flat : bool;
   open_details : bool;
+  omit_breadcrumbs : bool;
 }
 
-let v ?theme_uri ?support_uri ~semantic_uris ~indent ~flat ~open_details () =
-  { theme_uri; support_uri; semantic_uris; indent; flat; open_details }
+let v ?theme_uri ?support_uri ~semantic_uris ~indent ~flat ~open_details ~omit_breadcrumbs () =
+  { theme_uri; support_uri; semantic_uris; indent; flat; open_details; omit_breadcrumbs }
 
 let theme_uri config =
   match config.theme_uri with None -> Types.Relative None | Some uri -> uri
@@ -25,3 +26,5 @@ let indent config = config.indent
 let flat config = config.flat
 
 let open_details config = config.open_details
+
+let omit_breadcrumbs config = config.omit_breadcrumbs

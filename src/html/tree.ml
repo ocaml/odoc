@@ -72,7 +72,7 @@ let page_creator ~config ~url name header toc content =
       ]
   in
 
-  let breadcrumbs =
+  let gen_breadcrumbs () =
     let rec get_parents x =
       match x with
       | [] -> []
@@ -130,6 +130,7 @@ let page_creator ~config ~url name header toc content =
         make_navigation ~up_url l
   in
 
+  let breadcrumbs = if Config.omit_breadcrumbs config then [] else gen_breadcrumbs () in
   let body =
     breadcrumbs
     @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]

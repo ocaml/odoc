@@ -27,3 +27,7 @@
  (libraries sexplib0 unix fpath)
  (enabled_if
   (>= %{ocaml_version} 4.04)))
+
+(cram
+ (deps %{bin:odoc}))
+
