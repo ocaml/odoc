@@ -676,9 +676,8 @@ td.def-doc *:first-child {
 /* Mobile adjustements. */
 
 @media only screen and (max-width: 95ex) {
-  .odoc-content {
-    margin: auto;
-    padding: 2em;
+  body.odoc {
+    margin: 2em;
   }
   .odoc-toc {
     position: static;
@@ -688,6 +687,7 @@ td.def-doc *:first-child {
     border: none;
     padding: 0.2em 1em;
     border-radius: 5px;
+    margin-bottom: 2em;
   }
 }
 
