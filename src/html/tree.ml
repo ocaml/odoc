@@ -18,6 +18,26 @@ module Html = Tyxml.Html
 
 type uri = Absolute of string | Relative of Odoc_document.Url.Path.t option
 
+type toc = {
+  title : Html_types.flow5_without_interactive Html.elt list;
+  title_str : string;
+  href : string;
+  children : toc list;
+}
+
+let html_of_toc toc =
+  let rec section section =
+    let link = Html.a ~a:[ Html.a_href section.href ] section.title in
+    match section.children with [] -> [ link ] | cs -> [ link; sections cs ]
+  and sections the_sections =
+    the_sections
+    |> List.map (fun the_section -> Html.li (section the_section))
+    |> Html.ul
+  in
+  match toc with
+  | [] -> []
+  | _ -> [ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] [ sections toc ] ]
+
 let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
     ~url name header toc content =
   let path = Link.Path.for_printing url in
@@ -119,7 +139,7 @@ let page_creator ?(theme_uri = Relative None) ?(support_uri = Relative None)
   let body =
     breadcrumbs
     @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
-    @ toc
+    @ html_of_toc toc
     @ [ Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content ]
   in
   Html.html head (Html.body ~a:[ Html.a_class [ "odoc" ] ] body)
