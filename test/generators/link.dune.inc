@@ -432,6 +432,21 @@
   (>= %{ocaml_version} 4.04)))
 
 (rule
+ (target stop_first_comment.cmti)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/stop_first_comment.mli})))
+
+(rule
+ (target stop_first_comment.odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:stop_first_comment.cmti})))
+
+(rule
+ (target stop_first_comment.odocl)
+ (action
+  (run odoc link -o %{target} %{dep:stop_first_comment.odoc})))
+
+(rule
  (target toplevel_comments.cmti)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/toplevel_comments.mli})))
@@ -6056,7 +6071,7 @@
 (subdir
  html
  (rule
-  (targets Stop.html.gen Stop-N.html.gen)
+  (targets Stop.html.gen Stop-N.html.gen Stop-O.html.gen Stop-P.html.gen)
   (action
    (run
     odoc
@@ -6075,7 +6090,15 @@
  (rule
   (alias runtest)
   (action
-   (diff Stop-N.html Stop-N.html.gen))))
+   (diff Stop-N.html Stop-N.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop-O.html Stop-O.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop-P.html Stop-P.html.gen))))
 
 (subdir
  html
@@ -6115,7 +6138,7 @@
 (subdir
  man
  (rule
-  (targets Stop.3o.gen Stop.N.3o.gen)
+  (targets Stop.3o.gen Stop.N.3o.gen Stop.O.3o.gen Stop.P.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../stop.odocl})))
  (rule
@@ -6125,7 +6148,15 @@
  (rule
   (alias runtest)
   (action
-   (diff Stop.N.3o Stop.N.3o.gen))))
+   (diff Stop.N.3o Stop.N.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop.O.3o Stop.O.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop.P.3o Stop.P.3o.gen))))
 
 (subdir
  man
@@ -6266,6 +6297,98 @@
    (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (targets Stop_first_comment.html.gen)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../stop_first_comment.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop_first_comment.html Stop_first_comment.html.gen))))
+
+(subdir
+ html
+ (rule
+  (action
+   (with-outputs-to
+    stop_first_comment.targets.gen
+    (run odoc html-targets -o . %{dep:../stop_first_comment.odocl} --flat))))
+ (rule
+  (alias runtest)
+  (action
+   (diff stop_first_comment.targets stop_first_comment.targets.gen))))
+
+(subdir
+ latex
+ (rule
+  (targets Stop_first_comment.tex.gen)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../stop_first_comment.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop_first_comment.tex Stop_first_comment.tex.gen))))
+
+(subdir
+ latex
+ (rule
+  (action
+   (with-outputs-to
+    stop_first_comment.targets.gen
+    (run odoc latex-targets -o . %{dep:../stop_first_comment.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff stop_first_comment.targets stop_first_comment.targets.gen))))
+
+(subdir
+ man
+ (rule
+  (targets Stop_first_comment.3o.gen)
+  (action
+   (run
+    odoc
+    man-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../stop_first_comment.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Stop_first_comment.3o Stop_first_comment.3o.gen))))
+
+(subdir
+ man
+ (rule
+  (action
+   (with-outputs-to
+    stop_first_comment.targets.gen
+    (run odoc man-targets -o . %{dep:../stop_first_comment.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff stop_first_comment.targets stop_first_comment.targets.gen))))
 
 (subdir
  html

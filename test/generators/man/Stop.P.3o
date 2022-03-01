@@ -1,0 +1,17 @@
+
+.TH P 3 "" "Odoc" "OCaml Library"
+.SH Name
+Stop\.P
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Stop\.P\fR
+.in 
+.sp 
+.fi 
+Doc\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR bar : int

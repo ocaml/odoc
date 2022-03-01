@@ -13,5 +13,16 @@ Now, we have a nested module, and it has a stop comment between its two items. W
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
 \label{module-Stop-val-lol}\ocamlcodefragment{\ocamltag{keyword}{val} lol : int}\\
+The first comment can also be a stop-comment. The test case \ocamlinlinecode{stop\_\allowbreak{}first\_\allowbreak{}comment.\allowbreak{}mli} is testing the same thing but at the toplevel. We should see \ocamlinlinecode{bar} inside \hyperref[module-Stop-module-O]{\ocamlinlinecode{\ocamlinlinecode{O}}[p\pageref*{module-Stop-module-O}]}.
+
+\label{module-Stop-module-O}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Stop-module-O]{\ocamlinlinecode{O}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}/*\end{ocamlindent}%
+\medbreak
+The top-comment computation must not mess with stop comments.
+
+\label{module-Stop-module-P}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Stop-module-P]{\ocamlinlinecode{P}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Stop-module-P-val-bar}\ocamlcodefragment{\ocamltag{keyword}{val} bar : int}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}Doc.\end{ocamlindent}%
+\medbreak
 
 

@@ -40,3 +40,33 @@ sig
 end
 
 val lol : int
+
+(** The first comment can also be a stop-comment. The test case
+    [stop_first_comment.mli] is testing the same thing but at the toplevel. We
+    should see [bar] inside {!O}. *)
+
+module O :
+sig
+  (**/**)
+
+  val foo : int
+
+  (**/**)
+
+  val bar : int
+end
+
+(** The top-comment computation must not mess with stop comments. *)
+
+module P :
+sig
+  (** Doc. *)
+
+  (**/**)
+
+  val foo : int
+
+  (**/**)
+
+  val bar : int
+end
