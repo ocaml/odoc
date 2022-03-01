@@ -1,0 +1,17 @@
+
+.TH Stop_first_comment 3 "" "Odoc" "OCaml Library"
+.SH Name
+Stop_first_comment
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Stop_first_comment\fR
+.in 
+.sp 
+.fi 
+/*
+.nf 
+.SH Documentation
+.sp 
+.nf 
+

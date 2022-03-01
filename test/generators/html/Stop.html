@@ -47,6 +47,35 @@
      <code><span><span class="keyword">val</span> lol : int</span></code>
     </div>
    </div>
+   <p>The first comment can also be a stop-comment. The test case 
+    <code>stop_first_comment.mli</code> is testing the same thing but
+     at the toplevel. We should see <code>bar</code> inside 
+    <a href="Stop-O.html"><code>O</code></a>.
+   </p>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-O" class="anchored">
+     <a href="#module-O" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> <a href="Stop-O.html">O</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>/*</p></div>
+   </div><p>The top-comment computation must not mess with stop comments.</p>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-P" class="anchored">
+     <a href="#module-P" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> <a href="Stop-P.html">P</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Doc.</p></div>
+   </div>
   </div>
  </body>
 </html>
