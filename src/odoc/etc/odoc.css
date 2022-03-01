@@ -419,8 +419,8 @@ pre code {
   padding: 0.35em 0.5em;
 }
 
-.def-doc {
-  margin-bottom: 10px;
+li:not(:last-child) > .def-doc {
+  margin-bottom: 15px;
 }
 
 /* Spacing between items */
@@ -428,30 +428,40 @@ div.odoc-spec,.odoc-include {
   margin-bottom: 2em;
 }
 
-.spec.type .variant {
+.spec.type .variant p, .spec.type .record p {
+  margin: 5px;
+}
+
+.spec.type .variant, .spec.type .record {
   margin-left: 2ch;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 4px;
 }
-.spec.type .variant p {
-  margin: 0;
-  font-style: italic;
+
+.spec.type .record > code, .spec.type .variant > code {
+  min-width: 40%;
 }
-.spec.type .record {
-  margin-left: 2ch;
+
+.spec.type > ol {
+  margin-top: 0;
+  margin-bottom: 0;
 }
-.spec.type .record p {
-  margin: 0;
-  font-style: italic;
+
+.spec.type .record > .def-doc, .spec.type .variant > .def-doc {
+  min-width:50%;
+  padding-left: 22px;
+  margin-left: 10%;
+  border-radius: 3px;
+  flex-grow:1;
+  border-left: 0.1em solid var(--spec-summary-border-color);
 }
 
 div.def {
   margin-top: 0;
   text-indent: -2ex;
   padding-left: 2ex;
-}
-
-div.def+div.def-doc {
-  margin-left: 1ex;
-  margin-top: 2.5px
 }
 
 div.def-doc>*:first-child {

@@ -33,11 +33,12 @@ let mk_anchor_link id =
 
 let mk_anchor anchor =
   match anchor with
-  | None -> ([], [])
+  | None -> ([], [], [])
   | Some { Odoc_document.Url.Anchor.anchor; _ } ->
       let link = mk_anchor_link anchor in
-      let attrib = [ Html.a_id anchor; Html.a_class [ "anchored" ] ] in
-      (attrib, link)
+      let extra_attr = [ Html.a_id anchor ] in
+      let extra_class = [ "anchored" ] in
+      (extra_attr, extra_class, link)
 
 let class_ (l : Class.t) = if l = [] then [] else [ Html.a_class l ]
 
@@ -204,7 +205,7 @@ let div : ([< Html_types.div_attrib ], [< item ], [> Html_types.div ]) Html.star
     =
   Html.Unsafe.node "div"
 
-let spec_class = function [] -> [] | attr -> class_ ("spec" :: attr)
+let spec_class attr = class_ ("spec" :: attr)
 
 let spec_doc_div ~resolve = function
   | [] -> []
@@ -250,28 +251,22 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
             | [] -> []
             | doc ->
                 let opening, closing = markers in
+                let delim s =
+                  [ Html.span ~a:(class_ [ "comment-delim" ]) [ Html.txt s ] ]
+                in
                 [
-                  Html.td
+                  Html.div
                     ~a:(class_ [ "def-doc" ])
-                    (Html.span
-                       ~a:(class_ [ "comment-delim" ])
-                       [ Html.txt opening ]
-                     :: block ~resolve doc
-                    @ [
-                        Html.span
-                          ~a:(class_ [ "comment-delim" ])
-                          [ Html.txt closing ];
-                      ]);
+                    (delim opening @ block ~resolve doc @ delim closing);
                 ]
           in
-          let a, link = mk_anchor anchor in
-          let content =
-            let c = link @ content in
-            Html.td ~a:(class_ attrs) (c :> any Html.elt list)
-          in
-          Html.tr ~a (content :: doc)
+          let extra_attr, extra_class, link = mk_anchor anchor in
+          let content = (content :> any Html.elt list) in
+          Html.li
+            ~a:(extra_attr @ class_ (attrs @ extra_class))
+            (link @ content @ doc)
         in
-        Html.table (List.map one l) :: to_html rest
+        Html.ol (List.map one l) :: to_html rest
   in
   to_html t
 
@@ -307,8 +302,8 @@ and items ~resolve l : item Html.elt list =
           let details ~open' =
             let open' = if open' then [ Html.a_open () ] else [] in
             let summary =
-              let anchor_attrib, anchor_link = mk_anchor anchor in
-              let a = spec_class attr @ anchor_attrib in
+              let extra_attr, extra_class, anchor_link = mk_anchor anchor in
+              let a = spec_class (attr @ extra_class) @ extra_attr in
               Html.summary ~a @@ anchor_link @ source (inline ~resolve) summary
             in
             [ Html.details ~a:open' summary included_html ]
@@ -322,8 +317,8 @@ and items ~resolve l : item Html.elt list =
         let inc = [ Html.div ~a:[ Html.a_class a_class ] (doc @ content) ] in
         (continue_with [@tailcall]) rest inc
     | Declaration { Item.attr; anchor; content; doc } :: rest ->
-        let anchor_attrib, anchor_link = mk_anchor anchor in
-        let a = spec_class attr @ anchor_attrib in
+        let extra_attr, extra_class, anchor_link = mk_anchor anchor in
+        let a = spec_class (attr @ extra_class) @ extra_attr in
         let content = anchor_link @ documentedSrc ~resolve content in
         let spec =
           let doc = spec_doc_div ~resolve doc in

@@ -83,7 +83,7 @@ See the comments on the types at the end of test.mli for the expectation.
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">
-      <div class="spec module" id="module-A_nonhidden" class="anchored">
+      <div class="spec module anchored" id="module-A_nonhidden">
        <a href="#module-A_nonhidden" class="anchor"></a>
        <code>
         <span><span class="keyword">module</span> 
@@ -96,7 +96,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div>
      </div>
      <div class="odoc-spec">
-      <div class="spec module" id="module-A" class="anchored">
+      <div class="spec module anchored" id="module-A">
        <a href="#module-A" class="anchor"></a>
        <code>
         <span><span class="keyword">module</span> <a href="A/index.html">A</a>
@@ -109,7 +109,7 @@ See the comments on the types at the end of test.mli for the expectation.
       <div class="spec-doc"><p>This should not have an expansion</p></div>
      </div>
      <div class="odoc-spec">
-      <div class="spec module" id="module-B" class="anchored">
+      <div class="spec module anchored" id="module-B">
        <a href="#module-B" class="anchor"></a>
        <code>
         <span><span class="keyword">module</span> <a href="B/index.html">B</a>
@@ -121,7 +121,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div><div class="spec-doc"><p>This should have an expansion</p></div>
      </div>
      <div class="odoc-spec">
-      <div class="spec module" id="module-C" class="anchored">
+      <div class="spec module anchored" id="module-C">
        <a href="#module-C" class="anchor"></a>
        <code>
         <span><span class="keyword">module</span> <a href="C/index.html">C</a>
@@ -133,7 +133,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div><div class="spec-doc"><p>This should have an expansion</p></div>
      </div>
      <div class="odoc-spec">
-      <div class="spec module" id="module-D" class="anchored">
+      <div class="spec module anchored" id="module-D">
        <a href="#module-D" class="anchor"></a>
        <code>
         <span><span class="keyword">module</span> <a href="D/index.html">D</a>
@@ -146,7 +146,7 @@ See the comments on the types at the end of test.mli for the expectation.
       <div class="spec-doc"><p>This also should have an expansion</p></div>
      </div>
      <div class="odoc-spec">
-      <div class="spec type" id="type-a" class="anchored">
+      <div class="spec type anchored" id="type-a">
        <a href="#type-a" class="anchor"></a>
        <code><span><span class="keyword">type</span> a</span>
         <span> = <a href="A/index.html#type-t">A.t</a></span>
@@ -159,7 +159,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div>
      </div>
      <div class="odoc-spec">
-      <div class="spec type" id="type-b" class="anchored">
+      <div class="spec type anchored" id="type-b">
        <a href="#type-b" class="anchor"></a>
        <code><span><span class="keyword">type</span> b</span></code>
       </div>
@@ -170,7 +170,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div>
      </div>
      <div class="odoc-spec">
-      <div class="spec type" id="type-c" class="anchored">
+      <div class="spec type anchored" id="type-c">
        <a href="#type-c" class="anchor"></a>
        <code><span><span class="keyword">type</span> c</span>
         <span> = <a href="C/index.html#type-t">C.t</a></span>
@@ -181,7 +181,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div>
      </div>
      <div class="odoc-spec">
-      <div class="spec type" id="type-d" class="anchored">
+      <div class="spec type anchored" id="type-d">
        <a href="#type-d" class="anchor"></a>
        <code><span><span class="keyword">type</span> d</span>
         <span> = <a href="D/index.html#type-t">D.t</a></span>
