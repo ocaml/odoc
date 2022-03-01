@@ -40,11 +40,6 @@ The first comment can also be a stop-comment\. The test case stop_first_comment\
 .nf 
 .sp 
 \f[CB]module\fR O : \f[CB]sig\fR \.\.\. \f[CB]end\fR
-.fi 
-.br 
-.ti +2
-/*
-.nf 
 .sp 
 .fi 
 The top-comment computation must not mess with stop comments\.
