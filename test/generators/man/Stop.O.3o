@@ -8,10 +8,7 @@ Stop\.O
 \fBModule Stop\.O\fR
 .in 
 .sp 
-.fi 
-/*
-.nf 
 .SH Documentation
 .sp 
 .nf 
-
+\f[CB]val\fR bar : int
