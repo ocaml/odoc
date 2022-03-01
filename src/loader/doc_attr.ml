@@ -92,6 +92,7 @@ let parse_attribute : Parsetree.attribute -> parsed_attribute option =
       | Some p -> Some (`Text p)
       | None -> None)
   | "doc" | "ocaml.doc" -> (
+      (* We don't expect a stop-comment here. *)
       match load_payload attr_payload with
       | Some p -> Some (`Doc p)
       | None -> None)
@@ -211,8 +212,9 @@ let extract_top_comment internal_tags ~classify parent items =
             let p = match p with Some (p, _) -> Some p | None -> None in
             let attr_loc = read_location attr_loc in
             `Alert (Location_.at attr_loc (`Tag (`Alert (name, p))))
-        | Some (`Stop _) | None -> `Skip)
-    | Some `Open -> `Skip
+        | Some (`Stop _) -> `Return (* Stop at stop-comments. *)
+        | None -> `Skip (* Skip unrecognized attributes. *))
+    | Some `Open -> `Skip (* Skip open statements *)
     | None -> `Return
   in
   let rec extract_tail_alerts acc = function
