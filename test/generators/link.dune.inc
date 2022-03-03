@@ -1029,7 +1029,9 @@
    Class-class-type-empty_virtual.html.gen
    Class-class-empty_virtual'.html.gen
    Class-class-type-polymorphic.html.gen
-   Class-class-polymorphic'.html.gen)
+   Class-class-polymorphic'.html.gen
+   Class-class-x.html.gen
+   Class-class-c.html.gen)
   (action
    (run
     odoc
@@ -1084,7 +1086,15 @@
  (rule
   (alias runtest)
   (action
-   (diff Class-class-polymorphic'.html Class-class-polymorphic'.html.gen))))
+   (diff Class-class-polymorphic'.html Class-class-polymorphic'.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class-class-x.html Class-class-x.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class-class-c.html Class-class-c.html.gen))))
 
 (subdir
  html
@@ -1106,7 +1116,9 @@
    Class.mutually'.tex.gen
    Class.recursive'.tex.gen
    Class.empty_virtual'.tex.gen
-   Class.polymorphic'.tex.gen)
+   Class.polymorphic'.tex.gen
+   Class.x.tex.gen
+   Class.c.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../class.odocl})))
  (rule
@@ -1128,7 +1140,15 @@
  (rule
   (alias runtest)
   (action
-   (diff Class.polymorphic'.tex Class.polymorphic'.tex.gen))))
+   (diff Class.polymorphic'.tex Class.polymorphic'.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class.x.tex Class.x.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class.c.tex Class.c.tex.gen))))
 
 (subdir
  latex
@@ -1150,7 +1170,9 @@
    Class.mutually'.3o.gen
    Class.recursive'.3o.gen
    Class.empty_virtual'.3o.gen
-   Class.polymorphic'.3o.gen)
+   Class.polymorphic'.3o.gen
+   Class.x.3o.gen
+   Class.c.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../class.odocl})))
  (rule
@@ -1172,7 +1194,15 @@
  (rule
   (alias runtest)
   (action
-   (diff Class.polymorphic'.3o Class.polymorphic'.3o.gen))))
+   (diff Class.polymorphic'.3o Class.polymorphic'.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class.x.3o Class.x.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Class.c.3o Class.c.3o.gen))))
 
 (subdir
  man

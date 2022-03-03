@@ -1,0 +1,32 @@
+
+.TH c 3 "" "Odoc" "OCaml Library"
+.SH Name
+Class\.c
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Class\.c\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]inherit\fR x
+.fi 
+.br 
+.ti +2
+Inherit\.
+.nf 
+.sp 
+ \f[CB]constraint\fR \f[CB]'a\fR = int
+.fi 
+.br 
+.ti +2
+Constraint\.
+.nf 
+.sp 
+.fi 
+Floating comment\.
+.nf 
+.sp 
+\f[CB]method\fR bar : int
