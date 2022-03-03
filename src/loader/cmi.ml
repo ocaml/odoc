@@ -691,6 +691,12 @@ let read_type_constraints env params =
        else acc)
     params []
 
+let read_class_constraints env params =
+  let open ClassSignature in
+  read_type_constraints env params
+  |> List.map (fun (left, right) ->
+         Constraint { Constraint.left; right; doc = [] })
+
 let read_type_declaration env parent id decl =
   let open TypeDecl in
   let id = Env.find_type_identifier env id in
@@ -810,12 +816,7 @@ let rec read_class_signature env parent params =
   | Cty_signature csig ->
       let open ClassSignature in
       let self = read_self_type csig.csig_self in
-      let constraints = read_type_constraints env params in
-      let constraints =
-        List.map
-          (fun (typ1, typ2) -> Constraint(typ1, typ2))
-          constraints
-      in
+      let constraints = read_class_constraints env params in
       let instance_variables =
         Vars.fold
           (fun name (mutable_, virtual_, typ) acc ->

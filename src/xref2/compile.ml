@@ -139,10 +139,8 @@ and class_signature env parent c =
   let map_item = function
     | Method m -> Method (method_ env parent m)
     | InstanceVariable i -> InstanceVariable (instance_variable env parent i)
-    | Constraint (t1, t2) ->
-        Constraint
-          (type_expression env container t1, type_expression env container t2)
-    | Inherit c -> Inherit (class_type_expr env parent c)
+    | Constraint cst -> Constraint (class_constraint env container cst)
+    | Inherit ih -> Inherit (inherit_ env parent ih)
     | Comment c -> Comment c
   in
   {
@@ -160,6 +158,18 @@ and instance_variable env parent i =
   let open InstanceVariable in
   let container = (parent :> Id.Parent.t) in
   { i with type_ = type_expression env container i.type_ }
+
+and class_constraint env parent cst =
+  let open ClassSignature.Constraint in
+  {
+    cst with
+    left = type_expression env parent cst.left;
+    right = type_expression env parent cst.right;
+  }
+
+and inherit_ env parent ih =
+  let open ClassSignature.Inherit in
+  { ih with expr = class_type_expr env parent ih.expr }
 
 and class_ env parent c =
   let open Class in

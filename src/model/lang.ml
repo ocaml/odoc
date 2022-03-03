@@ -335,11 +335,19 @@ end =
 (** {3 Class Signatures} *)
 
 and ClassSignature : sig
+  module Constraint : sig
+    type t = { left : TypeExpr.t; right : TypeExpr.t; doc : Comment.docs }
+  end
+
+  module Inherit : sig
+    type t = { expr : ClassType.expr; doc : Comment.docs }
+  end
+
   type item =
     | Method of Method.t
     | InstanceVariable of InstanceVariable.t
-    | Constraint of TypeExpr.t * TypeExpr.t
-    | Inherit of ClassType.expr
+    | Constraint of Constraint.t
+    | Inherit of Inherit.t
     | Comment of Comment.docs_or_stop
 
   type t = { self : TypeExpr.t option; items : item list; doc : Comment.docs }

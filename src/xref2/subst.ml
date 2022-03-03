@@ -868,8 +868,8 @@ and class_signature_item s =
   function
   | Method (id, m) -> Method (id, method_ s m)
   | InstanceVariable (id, i) -> InstanceVariable (id, instance_variable s i)
-  | Constraint (t1, t2) -> Constraint (type_expr s t1, type_expr s t2)
-  | Inherit e -> Inherit (class_type_expr s e)
+  | Constraint cst -> Constraint (class_constraint s cst)
+  | Inherit e -> Inherit (inherit_ s e)
   | Comment _ as y -> y
 
 and class_signature s sg =
@@ -887,6 +887,14 @@ and method_ s m =
 and instance_variable s i =
   let open Component.InstanceVariable in
   { i with type_ = type_expr s i.type_ }
+
+and class_constraint s cst =
+  let open Component.ClassSignature.Constraint in
+  { cst with left = type_expr s cst.left; right = type_expr s cst.right }
+
+and inherit_ s ih =
+  let open Component.ClassSignature.Inherit in
+  { ih with expr = class_type_expr s ih.expr }
 
 and rename_bound_idents s sg =
   let open Component.Signature in

@@ -347,7 +347,6 @@ let read_exception env parent (ext : extension_constructor) =
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
   let open Odoc_model.Names in
-
   let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ctf.ctf_attributes in
   match ctf.ctf_desc with
@@ -356,21 +355,22 @@ let rec read_class_type_field env parent ctf =
       let id = Identifier.Mk.instance_variable(parent, InstanceVariableName.make_std name) in
       let mutable_ = (mutable_ = Mutable) in
       let virtual_ = (virtual_ = Virtual) in
-    let type_ = read_core_type env container typ in
-        Some (InstanceVariable {id; doc; mutable_; virtual_; type_})
+      let type_ = read_core_type env container typ in
+      Some (InstanceVariable {id; doc; mutable_; virtual_; type_})
   | Tctf_method(name, private_, virtual_, typ) ->
       let open Method in
       let id = Identifier.Mk.method_(parent, MethodName.make_std name) in
       let private_ = (private_ = Private) in
       let virtual_ = (virtual_ = Virtual) in
-    let type_ = read_core_type env container typ in
-        Some (Method {id; doc; private_; virtual_; type_})
+      let type_ = read_core_type env container typ in
+      Some (Method {id; doc; private_; virtual_; type_})
   | Tctf_constraint(typ1, typ2) ->
-    let typ1 = read_core_type env container typ1 in
-    let typ2 = read_core_type env container typ2 in
-        Some (Constraint(typ1, typ2))
+      let left = read_core_type env container typ1 in
+      let right = read_core_type env container typ2 in
+      Some (Constraint {left; right; doc})
   | Tctf_inherit cltyp ->
-      Some (Inherit (read_class_signature env parent container cltyp))
+      let expr = read_class_signature env parent container cltyp in
+      Some (Inherit {expr; doc})
   | Tctf_attribute attr ->
       match Doc_attr.standalone container attr with
       | None -> None

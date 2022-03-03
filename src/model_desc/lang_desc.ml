@@ -470,9 +470,12 @@ and classsignature_item =
     (function
     | Method x -> C ("Method", x, method_t)
     | InstanceVariable x -> C ("InstanceVariable", x, instancevariable_t)
-    | Constraint (x1, x2) ->
-        C ("Constraint", (x1, x2), Pair (typeexpr_t, typeexpr_t))
-    | Inherit x -> C ("Inherit", x, classtype_expr)
+    | Constraint cst ->
+        C
+          ( "Constraint",
+            (cst.left, cst.right, cst.doc),
+            Triple (typeexpr_t, typeexpr_t, docs) )
+    | Inherit ih -> C ("Inherit", (ih.expr, ih.doc), Pair (classtype_expr, docs))
     | Comment x -> C ("Comment", x, docs_or_stop))
 
 and classsignature_t =

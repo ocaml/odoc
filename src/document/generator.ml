@@ -954,20 +954,27 @@ module Make (Syntax : SYNTAX) = struct
       let doc = Comment.to_ir t.doc in
       Item.Declaration { attr; anchor; doc; content }
 
-    let inherit_ cte =
+    let inherit_ (ih : Lang.ClassSignature.Inherit.t) =
+      let cte =
+        match ih.expr with
+        | Signature _ -> assert false (* Bold. *)
+        | cty -> cty
+      in
       let content =
         O.documentedSrc (O.keyword "inherit" ++ O.txt " " ++ class_type_expr cte)
       in
       let attr = [ "inherit" ] in
       let anchor = None in
-      let doc = [] in
+      let doc = Comment.to_ir ih.doc in
       Item.Declaration { attr; anchor; doc; content }
 
-    let constraint_ t1 t2 =
-      let content = O.documentedSrc (format_constraints [ (t1, t2) ]) in
+    let constraint_ (cst : Lang.ClassSignature.Constraint.t) =
+      let content =
+        O.documentedSrc (format_constraints [ (cst.left, cst.right) ])
+      in
       let attr = [] in
       let anchor = None in
-      let doc = [] in
+      let doc = Comment.to_ir cst.doc in
       Item.Declaration { attr; anchor; doc; content }
 
     let class_signature (c : Lang.ClassSignature.t) =
@@ -977,11 +984,10 @@ module Make (Syntax : SYNTAX) = struct
         | item :: rest -> (
             let continue item = loop rest (item :: acc_items) in
             match (item : Lang.ClassSignature.item) with
-            | Inherit (Signature _) -> assert false (* Bold. *)
             | Inherit cty -> continue @@ inherit_ cty
             | Method m -> continue @@ method_ m
             | InstanceVariable v -> continue @@ instance_variable v
-            | Constraint (t1, t2) -> continue @@ constraint_ t1 t2
+            | Constraint cst -> continue @@ constraint_ cst
             | Comment `Stop ->
                 let rest =
                   Utils.skip_until rest ~p:(function

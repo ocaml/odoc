@@ -378,11 +378,19 @@ end =
   ClassType
 
 and ClassSignature : sig
+  module Constraint : sig
+    type t = { left : TypeExpr.t; right : TypeExpr.t; doc : CComment.docs }
+  end
+
+  module Inherit : sig
+    type t = { expr : ClassType.expr; doc : CComment.docs }
+  end
+
   type item =
     | Method of Ident.method_ * Method.t
     | InstanceVariable of Ident.instance_variable * InstanceVariable.t
-    | Constraint of TypeExpr.t * TypeExpr.t
-    | Inherit of ClassType.expr
+    | Constraint of Constraint.t
+    | Inherit of Inherit.t
     | Comment of CComment.docs_or_stop
 
   type t = { self : TypeExpr.t option; items : item list; doc : CComment.docs }
@@ -602,10 +610,12 @@ module Fmt = struct
         | InstanceVariable (id, i) ->
             Format.fprintf ppf "@[<v 2>instance variable %a : %a@]@," Ident.fmt
               id instance_variable i
-        | Constraint (t1, t2) ->
-            Format.fprintf ppf "@[<v 2>constraint %a = %a@]@," type_expr t1
-              type_expr t2
-        | Inherit i -> Format.fprintf ppf "@[<v 2>inherit %a" class_type_expr i
+        | Constraint cst ->
+            Format.fprintf ppf "@[<v 2>constraint %a = %a@]@," type_expr
+              cst.Constraint.left type_expr cst.right
+        | Inherit i ->
+            Format.fprintf ppf "@[<v 2>inherit %a" class_type_expr
+              i.Inherit.expr
         | Comment _ -> ())
       sg.items
 
@@ -2223,10 +2233,8 @@ module Of_Lang = struct
               let id = Ident.Of_Identifier.instance_variable i.id in
               let i' = instance_variable ident_map i in
               ClassSignature.InstanceVariable (id, i')
-          | Constraint (t1, t2) ->
-              Constraint
-                (type_expression ident_map t1, type_expression ident_map t2)
-          | Inherit e -> Inherit (class_type_expr ident_map e)
+          | Constraint cst -> Constraint (class_constraint ident_map cst)
+          | Inherit e -> Inherit (inherit_ ident_map e)
           | Comment c -> Comment (docs_or_stop ident_map c))
         sg.items
     in
@@ -2251,6 +2259,19 @@ module Of_Lang = struct
       mutable_ = i.mutable_;
       virtual_ = i.virtual_;
       type_ = type_expression ident_map i.type_;
+    }
+
+  and class_constraint ident_map cst =
+    {
+      ClassSignature.Constraint.doc = docs ident_map cst.doc;
+      left = type_expression ident_map cst.left;
+      right = type_expression ident_map cst.right;
+    }
+
+  and inherit_ ident_map ih =
+    {
+      ClassSignature.Inherit.doc = docs ident_map ih.doc;
+      expr = class_type_expr ident_map ih.expr;
     }
 
   and module_substitution ident_map (t : Odoc_model.Lang.ModuleSubstitution.t) =
