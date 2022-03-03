@@ -124,6 +124,13 @@ let read_type_extension env parent tyext =
   in
     { parent; type_path; doc; type_params; private_; constructors; }
 
+(** Make a standalone comment out of a comment attached to an item that isn't
+    rendered. For example, [constraint] items are read separately and not
+    associated with their comment. *)
+let mk_class_comment = function
+  | [] -> None
+  | doc -> Some (ClassSignature.Comment (`Docs doc))
+
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
   let open Odoc_model.Names in
@@ -144,10 +151,10 @@ let rec read_class_type_field env parent ctf =
       let virtual_ = (virtual_ = Virtual) in
       let type_ = read_core_type env typ in
         Some (Method {id; doc; private_; virtual_; type_})
-  | Tctf_constraint(_, _) -> None
+  | Tctf_constraint(_, _) -> mk_class_comment doc
   | Tctf_inherit cltyp ->
       let expr = read_class_signature env parent [] cltyp in
-      Some (Inherit { Inherit.expr; doc })
+      Some (Inherit {Inherit.expr; doc})
   | Tctf_attribute attr ->
       match Doc_attr.standalone container attr with
       | None -> None
@@ -235,11 +242,11 @@ let rec read_class_field env parent cf =
             false, Cmi.read_type_expr env expr.exp_type
       in
         Some (Method {id; doc; private_; virtual_; type_})
-  | Tcf_constraint(_, _) -> None
+  | Tcf_constraint(_, _) -> mk_class_comment doc
   | Tcf_inherit(_, cl, _, _, _) ->
       let expr = read_class_structure env parent [] cl in
       Some (Inherit {Inherit.expr; doc})
-  | Tcf_initializer _ -> None
+  | Tcf_initializer _ -> mk_class_comment doc
   | Tcf_attribute attr ->
       match Doc_attr.standalone container attr with
       | None -> None
