@@ -311,7 +311,7 @@ let any_in_type_in_sig sg name =
 
 let filter_in_class_signature cs f =
   let rec inner = function
-    | ClassSignature.Inherit ct_expr :: tl -> inner_inherit ct_expr @ inner tl
+    | ClassSignature.Inherit { expr; _ } :: tl -> inner_inherit expr @ inner tl
     | it :: tl -> (
         match f it with Some x -> x :: inner tl | None -> inner tl)
     | [] -> []

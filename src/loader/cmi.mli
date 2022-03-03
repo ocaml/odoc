@@ -51,6 +51,11 @@ val read_type_constraints : Ident_env.t -> Types.type_expr list ->
                             (Odoc_model.Lang.TypeExpr.t
                              * Odoc_model.Lang.TypeExpr.t) list
 
+val read_class_constraints :
+  Ident_env.t ->
+  Types.type_expr list ->
+  Odoc_model.Lang.ClassSignature.item list
+
 val read_class_signature : Ident_env.t ->
                            Paths.Identifier.ClassSignature.t ->
                            Types.type_expr list -> Types.class_type ->

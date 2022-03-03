@@ -535,9 +535,8 @@ and class_signature map parent sg =
             Odoc_model.Lang.ClassSignature.Method (method_ map parent id m)
         | InstanceVariable (id, i) ->
             InstanceVariable (instance_variable map parent id i)
-        | Constraint (t1, t2) ->
-            Constraint (type_expr map pparent t1, type_expr map pparent t2)
-        | Inherit e -> Inherit (class_type_expr map parent e)
+        | Constraint cst -> Constraint (class_constraint map pparent cst)
+        | Inherit e -> Inherit (inherit_ map parent e)
         | Comment c ->
             Comment (docs_or_stop (parent :> Identifier.LabelParent.t) c))
       sg.items
@@ -569,6 +568,19 @@ and instance_variable map parent id i =
     virtual_ = i.virtual_;
     type_ = type_expr map (parent :> Identifier.Parent.t) i.type_;
   }
+
+and class_constraint map parent cst =
+  let open Component.ClassSignature.Constraint in
+  let left = type_expr map parent cst.left
+  and right = type_expr map parent cst.right
+  and doc = docs (parent :> Identifier.LabelParent.t) cst.doc in
+  { left; right; doc }
+
+and inherit_ map parent ih =
+  let open Component.ClassSignature.Inherit in
+  let expr = class_type_expr map parent ih.expr
+  and doc = docs (parent :> Identifier.LabelParent.t) ih.doc in
+  { expr; doc }
 
 and simple_expansion :
     maps ->

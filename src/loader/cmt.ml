@@ -127,7 +127,6 @@ let read_type_extension env parent tyext =
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
   let open Odoc_model.Names in
-
   let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ctf.ctf_attributes in
   match ctf.ctf_desc with
@@ -147,7 +146,8 @@ let rec read_class_type_field env parent ctf =
         Some (Method {id; doc; private_; virtual_; type_})
   | Tctf_constraint(_, _) -> None
   | Tctf_inherit cltyp ->
-      Some (Inherit (read_class_signature env parent [] cltyp))
+      let expr = read_class_signature env parent [] cltyp in
+      Some (Inherit { Inherit.expr; doc })
   | Tctf_attribute attr ->
       match Doc_attr.standalone container attr with
       | None -> None
@@ -165,14 +165,7 @@ and read_class_signature env parent params cltyp =
         let self =
           Cmi.read_self_type csig.csig_self.ctyp_type
         in
-        let constraints =
-          Cmi.read_type_constraints env params
-        in
-        let constraints =
-          List.map
-            (fun (typ1, typ2) -> Constraint(typ1, typ2))
-            constraints
-        in
+        let constraints = Cmi.read_class_constraints env params in
         let items =
           List.fold_left
             (fun rest item ->
@@ -244,7 +237,8 @@ let rec read_class_field env parent cf =
         Some (Method {id; doc; private_; virtual_; type_})
   | Tcf_constraint(_, _) -> None
   | Tcf_inherit(_, cl, _, _, _) ->
-      Some (Inherit (read_class_structure env parent [] cl))
+      let expr = read_class_structure env parent [] cl in
+      Some (Inherit {Inherit.expr; doc})
   | Tcf_initializer _ -> None
   | Tcf_attribute attr ->
       match Doc_attr.standalone container attr with
@@ -259,14 +253,7 @@ and read_class_structure env parent params cl =
     | Tcl_structure cstr ->
         let open ClassSignature in
         let self = Cmi.read_self_type cstr.cstr_self.pat_type in
-        let constraints =
-          Cmi.read_type_constraints env params
-        in
-        let constraints =
-          List.map
-            (fun (typ1, typ2) -> Constraint(typ1, typ2))
-            constraints
-        in
+        let constraints = Cmi.read_class_constraints env params in
         let items =
           List.fold_left
             (fun rest item ->
