@@ -30,4 +30,3 @@
 
 (cram
  (deps %{bin:odoc}))
-
