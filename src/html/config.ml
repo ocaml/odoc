@@ -12,8 +12,19 @@ type t = {
   content_only : bool;
 }
 
-let v ?theme_uri ?support_uri ~semantic_uris ~indent ~flat ~open_details ~omit_breadcrumbs ~omit_toc ~content_only () =
-  { theme_uri; support_uri; semantic_uris; indent; flat; open_details; omit_breadcrumbs; omit_toc; content_only }
+let v ?theme_uri ?support_uri ~semantic_uris ~indent ~flat ~open_details
+    ~omit_breadcrumbs ~omit_toc ~content_only () =
+  {
+    theme_uri;
+    support_uri;
+    semantic_uris;
+    indent;
+    flat;
+    open_details;
+    omit_breadcrumbs;
+    omit_toc;
+    content_only;
+  }
 
 let theme_uri config =
   match config.theme_uri with None -> Types.Relative None | Some uri -> uri
