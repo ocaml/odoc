@@ -451,11 +451,12 @@ div.odoc-spec,.odoc-include {
 
 .spec.type .record > .def-doc, .spec.type .variant > .def-doc {
   min-width:50%;
-  padding-left: 22px;
+  padding: 0.25em 0.5em;
   margin-left: 10%;
   border-radius: 3px;
   flex-grow:1;
-  border-left: 0.1em solid var(--spec-summary-border-color);
+  background: var(--main-background);
+  box-shadow: 2px 2px 4px lightgrey;
 }
 
 div.def {
