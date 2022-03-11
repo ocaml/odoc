@@ -196,8 +196,9 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
  fun content ->
   match content with
   | `Paragraph p -> paragraph p
-  | `Code_block code ->
-      block @@ Source (source_of_code (Odoc_model.Location_.value code))
+  | `Code_block (lang_tag, code) ->
+      block
+      @@ Source (lang_tag, source_of_code (Odoc_model.Location_.value code))
   | `Verbatim s -> block @@ Verbatim s
   | `Modules ms -> module_references ms
   | `List (kind, items) ->

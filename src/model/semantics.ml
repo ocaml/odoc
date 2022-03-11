@@ -227,8 +227,13 @@ let rec nestable_block_element :
   match element with
   | { value = `Paragraph content; location } ->
       Location.at location (`Paragraph (inline_elements status content))
-  | { value = `Code_block (_, code); _ } ->
-      Location.same element (`Code_block code)
+  | { value = `Code_block (metadata, code); location } ->
+      let lang_tag =
+        match metadata with
+        | Some ({ Location.value; _ }, _) -> Some value
+        | None -> None
+      in
+      Location.at location (`Code_block (lang_tag, code))
   | { value = `Verbatim _; _ } as element -> element
   | { value = `Modules modules; location } ->
       let modules =

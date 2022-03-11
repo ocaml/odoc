@@ -165,32 +165,37 @@ let heading ~resolve (h : Heading.t) =
 let rec block ~resolve (l : Block.t) : flow Html.elt list =
   let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
   let one (t : Block.one) =
-    let a = class_ t.attr in
+    let mk_block ?(extra_class = []) mk content =
+      let a = Some (class_ (extra_class @ t.attr)) in
+      [ mk ?a content ]
+    in
     match t.desc with
     | Inline i ->
-        if a = [] then as_flow @@ inline ~resolve i
-        else [ Html.span ~a (inline ~resolve i) ]
-    | Paragraph i -> [ Html.p ~a (inline ~resolve i) ]
+        if t.attr = [] then as_flow @@ inline ~resolve i
+        else mk_block Html.span (inline ~resolve i)
+    | Paragraph i -> mk_block Html.p (inline ~resolve i)
     | List (typ, l) ->
         let mk = match typ with Ordered -> Html.ol | Unordered -> Html.ul in
-        [ mk ~a (List.map (fun x -> Html.li (block ~resolve x)) l) ]
+        mk_block mk (List.map (fun x -> Html.li (block ~resolve x)) l)
     | Description l ->
-        [
-          (let item i =
-             let a = class_ i.Description.attr in
-             let term =
-               (inline ~resolve i.Description.key
-                 : phrasing Html.elt list
-                 :> flow Html.elt list)
-             in
-             let def = block ~resolve i.Description.definition in
-             Html.li ~a (term @ (Html.txt " " :: def))
-           in
-           Html.ul ~a (List.map item l));
-        ]
+        let item i =
+          let a = class_ i.Description.attr in
+          let term =
+            (inline ~resolve i.Description.key
+              : phrasing Html.elt list
+              :> flow Html.elt list)
+          in
+          let def = block ~resolve i.Description.definition in
+          Html.li ~a (term @ (Html.txt " " :: def))
+        in
+        mk_block Html.ul (List.map item l)
     | Raw_markup r -> raw_markup r
-    | Verbatim s -> [ Html.pre ~a [ Html.txt s ] ]
-    | Source c -> [ Html.pre ~a (source (inline ~resolve) c) ]
+    | Verbatim s -> mk_block Html.pre [ Html.txt s ]
+    | Source (lang_tag, c) ->
+        let extra_class =
+          match lang_tag with None -> [] | Some lang -> [ "language-" ^ lang ]
+        in
+        mk_block ~extra_class Html.pre (source (inline ~resolve) c)
   in
   Utils.list_concat_map l ~f:one
 

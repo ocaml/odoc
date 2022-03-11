@@ -64,6 +64,8 @@ end =
   Heading
 
 and Block : sig
+  type lang_tag = string option
+
   type t = one list
 
   and one = { attr : Class.t; desc : desc }
@@ -73,7 +75,7 @@ and Block : sig
     | Paragraph of Inline.t
     | List of list_type * t list
     | Description of Description.t
-    | Source of Source.t
+    | Source of lang_tag * Source.t
     | Verbatim of string
     | Raw_markup of Raw_markup.t
 

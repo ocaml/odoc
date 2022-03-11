@@ -331,7 +331,7 @@ let rec block (l : Block.t) =
             indent 2 (str "@" ++ key ++ str ":" ++ sp ++ def)
           in
           list ~sep:break (List.map f descrs) ++ continue rest
-      | Source content ->
+      | Source (_, content) ->
           env "EX" "EE" "" (source_code content) ++ continue rest
       | Verbatim content -> env "EX" "EE" "" (str "%s" content) ++ continue rest
       | Raw_markup t -> raw_markup t ++ continue rest)
