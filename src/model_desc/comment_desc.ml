@@ -18,7 +18,7 @@ and general_link_content = general_inline_element with_location list
 
 type general_block_element =
   [ `Paragraph of general_link_content
-  | `Code_block of string with_location
+  | `Code_block of string option * string with_location
   | `Verbatim of string
   | `Modules of Comment.module_reference list
   | `List of
@@ -100,7 +100,8 @@ let rec block_element : general_block_element t =
   Variant
     (function
     | `Paragraph x -> C ("`Paragraph", x, link_content)
-    | `Code_block x -> C ("`Code_block", ignore_loc x, string)
+    | `Code_block (x1, x2) ->
+        C ("`Code_block", (x1, ignore_loc x2), Pair (Option string, string))
     | `Verbatim x -> C ("`Verbatim", x, string)
     | `Modules x -> C ("`Modules", x, List module_reference)
     | `List (x1, x2) ->
