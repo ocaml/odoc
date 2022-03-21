@@ -1615,18 +1615,19 @@ module Make (Syntax : SYNTAX) = struct
       in
       let status = if decl_hidden then `Inline else t.status in
 
-      let include_decl =
-        match t.decl with
-        | Odoc_model.Lang.Include.Alias mod_path ->
-            Link.from_path (mod_path :> Paths.Path.t)
-        | ModuleType mt -> umty mt
-      in
-
       let _, content = signature t.expansion.content in
       let summary =
-        O.render
-          (O.keyword "include" ++ O.txt " " ++ include_decl
-          ++ if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
+        if decl_hidden then O.render (O.keyword "include" ++ O.txt " ...")
+        else
+          let include_decl =
+            match t.decl with
+            | Odoc_model.Lang.Include.Alias mod_path ->
+                Link.from_path (mod_path :> Paths.Path.t)
+            | ModuleType mt -> umty mt
+          in
+          O.render
+            (O.keyword "include" ++ O.txt " " ++ include_decl
+            ++ if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
       in
       let content = { Include.content; status; summary } in
       let attr = [ "include" ] in

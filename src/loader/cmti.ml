@@ -747,29 +747,12 @@ and read_include env parent incl =
   let doc, status = Doc_attr.attached Odoc_model.Semantics.Expect_status container incl.incl_attributes in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expr = read_module_type env parent container incl.incl_mod in
-  let rec contains_signature = function
-    | ModuleType.U.Signature _ -> true
-    | Path _ -> false
-    | With (_, w_expr) -> contains_signature w_expr
-    | TypeOf _ -> false
-  in
-  (* inline type or module substitution is tricky to inline, because the
-     scope of the substitution is to the end of the signature being inlined.
-     If we've got one of those, we fall back to inlining the compiler-computed signature *)
-  let is_inlinable items =
-    not (List.exists
-          (function
-           | Signature.TypeSubstitution _ -> true
-           | ModuleSubstitution _ -> true
-           | _ -> false) items)
-  in
-  match Odoc_model.Lang.umty_of_mty expr with
-  | Some uexpr when not (contains_signature uexpr) ->
+  let umty = Odoc_model.Lang.umty_of_mty expr in 
+  let expansion = { content; shadowed; } in
+  match umty with
+  | Some uexpr ->
     let decl = Include.ModuleType uexpr in
-    let expansion = { content; shadowed; } in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | Some ModuleType.U.Signature { items; _ } when is_inlinable items ->
-    items
   | _ ->
     content.items
 
