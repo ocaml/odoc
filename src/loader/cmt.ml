@@ -546,22 +546,14 @@ and read_include env parent incl =
       umty_of_mty mty
   in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
-  let rec contains_signature = function
-    | ModuleType.U.Signature _ -> true
-    | Path _ -> false
-    | With (_, w_expr) -> contains_signature w_expr
-    | TypeOf _ -> false
-  in 
+  let expansion = { content; shadowed; } in
   match decl_modty with
-  | Some m when not (contains_signature m) ->
+  | Some m ->
     let decl = ModuleType m in
-    let expansion = { content; shadowed; } in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | Some (ModuleType.U.Signature { items; _ }) ->
-    items
-  | _ ->
+  | _ -> 
     content.items
-
+    
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container o.open_attributes in

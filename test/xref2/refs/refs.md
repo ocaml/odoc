@@ -996,7 +996,7 @@ Warning: Reference to 'Y' is ambiguous. Please specify its kind: constructor-Y, 
    Y)
 # resolve_ref "Everything_ambiguous_in_sig.t" (* Some kinds are missing: label, type subst (would be "type-") *) ;;
 File "<test>":
-Warning: Reference to 't' is ambiguous. Please specify its kind: field-t, module-type-t, type-t, val-t, val-t.
+Warning: Reference to 't' is ambiguous. Please specify its kind: field-t, module-type-t, type-t, val-t.
 - : ref =
 `Type
   (`Identifier
