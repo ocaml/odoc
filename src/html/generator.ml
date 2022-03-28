@@ -295,12 +295,12 @@ and items ~resolve l : item Html.elt list =
     | Include { attr; anchor; doc; content = { summary; status; content } }
       :: rest ->
         let doc = spec_doc_div ~resolve doc in
-        let included_html = (items content :> any Html.elt list) in
+        let included_html = (items content :> item Html.elt list) in
         let a_class =
           if List.length content = 0 then [ "odoc-include"; "shadowed-include" ]
           else [ "odoc-include" ]
         in
-        let content =
+        let content : item Html.elt list =
           let details ~open' =
             let open' = if open' then [ Html.a_open () ] else [] in
             let summary =
@@ -308,7 +308,13 @@ and items ~resolve l : item Html.elt list =
               let a = spec_class (attr @ extra_class) @ extra_attr in
               Html.summary ~a @@ anchor_link @ source (inline ~resolve) summary
             in
-            [ Html.details ~a:open' summary included_html ]
+            let inner =
+              [
+                Html.details ~a:open' summary
+                  (included_html :> any Html.elt list);
+              ]
+            in
+            [ Html.div ~a:[ Html.a_class a_class ] (doc @ inner) ]
           in
           match status with
           | `Inline -> included_html
@@ -316,8 +322,7 @@ and items ~resolve l : item Html.elt list =
           | `Open -> details ~open':true
           | `Default -> details ~open':!Tree.open_details
         in
-        let inc = [ Html.div ~a:[ Html.a_class a_class ] (doc @ content) ] in
-        (continue_with [@tailcall]) rest inc
+        (continue_with [@tailcall]) rest content
     | Declaration { Item.attr; anchor; content; doc } :: rest ->
         let extra_attr, extra_class, anchor_link = mk_anchor anchor in
         let a = spec_class (attr @ extra_class) @ extra_attr in
