@@ -228,6 +228,8 @@ module Name = struct
 
   let module_ m = ModuleName.to_string (module' m)
 
+  let unsafe_module m = ModuleName.to_string_unsafe (module' m)
+
   let path_module : path_module -> string = function
     | `LRoot (n, _) -> ModuleName.to_string n
     | `LModule (n, _) -> ModuleName.to_string n
@@ -264,10 +266,15 @@ module Name = struct
 
   let class_ c = ClassName.to_string (class' c)
 
+  let unsafe_class c = ClassName.to_string_unsafe (class' c)
+
   let typed_class : class_ -> ClassName.t = function `LClass (n, _) -> n
 
   let module_type : module_type -> string = function
     | `LModuleType (n, _) -> ModuleTypeName.to_string n
+
+  let unsafe_module_type : module_type -> string = function
+    | `LModuleType (n, _) -> ModuleTypeName.to_string_unsafe n
 
   let typed_module_type : module_type -> ModuleTypeName.t = function
     | `LModuleType (n, _) -> n
@@ -280,6 +287,8 @@ module Name = struct
     | `LClassType (n, _) -> n
 
   let class_type c = ClassTypeName.to_string (class_type' c)
+
+  let unsafe_class_type c = ClassTypeName.to_string_unsafe (class_type' c)
 
   let typed_class_type : class_type -> ClassTypeName.t = function
     | `LClassType (n, _) -> n

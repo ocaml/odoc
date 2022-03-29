@@ -296,7 +296,7 @@ module ExtractIDs = struct
   open Component
 
   let rec type_decl parent map id =
-    let name = Ident.Name.type_ id in
+    let name = Ident.Name.unsafe_type id in
     let identifier =
       if List.mem name map.shadowed.s_types then
         `Type (parent, Odoc_model.Names.TypeName.internal_of_string name)
@@ -313,7 +313,7 @@ module ExtractIDs = struct
     }
 
   and module_ parent map id =
-    let name = Ident.Name.module_ id in
+    let name = Ident.Name.unsafe_module id in
     let identifier =
       if List.mem name map.shadowed.s_modules then
         `Module (parent, ModuleName.internal_of_string name)
@@ -322,7 +322,7 @@ module ExtractIDs = struct
     { map with module_ = Component.ModuleMap.add id identifier map.module_ }
 
   and module_type parent map id =
-    let name = Ident.Name.module_type id in
+    let name = Ident.Name.unsafe_module_type id in
     let identifier =
       if List.mem name map.shadowed.s_module_types then
         `ModuleType (parent, ModuleTypeName.internal_of_string name)
@@ -334,7 +334,7 @@ module ExtractIDs = struct
     }
 
   and class_ parent map id =
-    let name = Ident.Name.class_ id in
+    let name = Ident.Name.unsafe_class id in
     let identifier =
       if List.mem name map.shadowed.s_classes then
         `Class (parent, ClassName.internal_of_string name)
@@ -356,7 +356,7 @@ module ExtractIDs = struct
     }
 
   and class_type parent map (id : Ident.class_type) =
-    let name = Ident.Name.class_type id in
+    let name = Ident.Name.unsafe_class_type id in
     let identifier =
       if List.mem name map.shadowed.s_class_types then
         `ClassType (parent, ClassTypeName.internal_of_string name)
