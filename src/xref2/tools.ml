@@ -1052,7 +1052,7 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
       let p' = reresolve_module env p in
       `Hidden p'
   | `Canonical (p, `Resolved p2) ->
-      `Canonical (reresolve_module env p, `Resolved (reresolve_module env p2))
+      `Canonical (reresolve_module env p, `Resolved p2)
   | `Canonical (p, p2) ->
       `Canonical (reresolve_module env p, handle_canonical_module env p2)
   | `OpaqueModule m -> `OpaqueModule (reresolve_module env m)
@@ -1070,7 +1070,8 @@ and handle_canonical_module env p2 =
     (Lang_of.(Path.resolved_module (empty ()) cpath)
       :> Odoc_model.Paths.Path.Resolved.t)
   in
-  match canonical_helper env resolve lang_of c_mod_poss p2 with
+  let cp2 = Component.Of_Lang.(module_path (empty ()) p2) in
+  match canonical_helper env resolve lang_of c_mod_poss cp2 with
   | None -> p2
   | Some (rp, m) ->
       let m = Component.Delayed.get m in
@@ -1120,10 +1121,14 @@ and handle_canonical_module env p2 =
         | Alias (_, _) -> false
         | ModuleType _ -> true
       in
-      if expanded then `Resolved rp
-      else `Resolved (process_module_path env ~add_canonical:false m rp)
+      let cpath =
+        if expanded then rp
+        else process_module_path env ~add_canonical:false m rp
+      in
+      `Resolved Lang_of.(Path.resolved_module (empty ()) cpath)
 
-and handle_canonical_module_type env (p2 : Cpath.module_type) =
+and handle_canonical_module_type env p2 =
+  let cp2 = Component.Of_Lang.(module_type_path (empty ()) p2) in
   let strip_alias : Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
     function
     | `AliasModuleType (_, p) -> p
@@ -1137,11 +1142,12 @@ and handle_canonical_module_type env (p2 : Cpath.module_type) =
     (Lang_of.(Path.resolved_module_type (empty ()) cpath)
       :> Odoc_model.Paths.Path.Resolved.t)
   in
-  match canonical_helper env resolve lang_of c_modty_poss p2 with
+  match canonical_helper env resolve lang_of c_modty_poss cp2 with
   | None -> p2
-  | Some (rp, _) -> `Resolved rp
+  | Some (rp, _) -> `Resolved Lang_of.(Path.resolved_module_type (empty ()) rp)
 
-and handle_canonical_type env (p2 : Cpath.type_) =
+and handle_canonical_type env p2 =
+  let cp2 = Component.Of_Lang.(type_path (empty ()) p2) in
   let lang_of cpath =
     (Lang_of.(Path.resolved_type (empty ()) cpath)
       :> Odoc_model.Paths.Path.Resolved.t)
@@ -1152,9 +1158,9 @@ and handle_canonical_type env (p2 : Cpath.type_) =
     | Ok (x, y) -> Ok (x, y)
     | Error y -> Error y
   in
-  match canonical_helper env resolve lang_of c_ty_poss p2 with
+  match canonical_helper env resolve lang_of c_ty_poss cp2 with
   | None -> p2
-  | Some (rp, _) -> `Resolved rp
+  | Some (rp, _) -> `Resolved Lang_of.(Path.resolved_type (empty ()) rp)
 
 and reresolve_module_type :
     Env.t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
@@ -1164,8 +1170,7 @@ and reresolve_module_type :
   | `Substituted x -> `Substituted (reresolve_module_type env x)
   | `ModuleType (parent, name) -> `ModuleType (reresolve_parent env parent, name)
   | `CanonicalModuleType (p1, `Resolved p2) ->
-      `CanonicalModuleType
-        (reresolve_module_type env p1, `Resolved (reresolve_module_type env p2))
+      `CanonicalModuleType (reresolve_module_type env p1, `Resolved p2)
   | `CanonicalModuleType (p1, p2) ->
       `CanonicalModuleType
         (reresolve_module_type env p1, handle_canonical_module_type env p2)

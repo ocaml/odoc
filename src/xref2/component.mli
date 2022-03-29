@@ -68,7 +68,7 @@ module rec Module : sig
   type t = {
     doc : CComment.docs;
     type_ : decl;
-    canonical : Cpath.module_ option;
+    canonical : Odoc_model.Paths.Path.Module.t option;
     hidden : bool;
   }
 end
@@ -212,7 +212,7 @@ and ModuleType : sig
 
   type t = {
     doc : CComment.docs;
-    canonical : Cpath.module_type option;
+    canonical : Odoc_model.Paths.Path.ModuleType.t option;
     expr : expr option;
   }
 end
@@ -258,7 +258,7 @@ and TypeDecl : sig
 
   type t = {
     doc : CComment.docs;
-    canonical : Cpath.type_ option;
+    canonical : Odoc_model.Paths.Path.Type.t option;
     equation : Equation.t;
     representation : Representation.t option;
   }
@@ -704,9 +704,6 @@ module Of_Lang : sig
   val module_decl : map -> Odoc_model.Lang.Module.decl -> Module.decl
 
   val include_decl : map -> Odoc_model.Lang.Include.decl -> Include.decl
-
-  val canonical :
-    map -> Odoc_model.Paths.Path.Module.t option -> Cpath.module_ option
 
   val module_ : map -> Odoc_model.Lang.Module.t -> Module.t
 
