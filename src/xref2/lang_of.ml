@@ -153,7 +153,7 @@ module Path = struct
           `Subst (resolved_module_type map mty, resolved_module map m)
       | `Hidden h -> `Hidden (resolved_module map h)
       | `Module (p, n) -> `Module (resolved_parent map p, n)
-      | `Canonical (r, m) -> `Canonical (resolved_module map r, module_ map m)
+      | `Canonical (r, m) -> `Canonical (resolved_module map r, m)
       | `Apply (m1, m2) ->
           `Apply (resolved_module map m1, resolved_module map m2)
       | `Alias (m1, m2) ->
@@ -195,7 +195,7 @@ module Path = struct
         `AliasModuleType
           (resolved_module_type map p1, resolved_module_type map p2)
     | `CanonicalModuleType (p1, p2) ->
-        `CanonicalModuleType (resolved_module_type map p1, module_type map p2)
+        `CanonicalModuleType (resolved_module_type map p1, p2)
     | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type map m)
 
   and resolved_type map (p : Cpath.Resolved.type_) :
@@ -204,8 +204,7 @@ module Path = struct
     | `Identifier (#Odoc_model.Paths.Identifier.Path.Type.t as y) ->
         `Identifier y
     | `Local id -> `Identifier (Component.PathTypeMap.find id map.path_type)
-    | `CanonicalType (t1, t2) ->
-        `CanonicalType (resolved_type map t1, type_ map t2)
+    | `CanonicalType (t1, t2) -> `CanonicalType (resolved_type map t1, t2)
     | `Type (p, name) -> `Type (resolved_parent map p, name)
     | `Class (p, name) -> `Class (resolved_parent map p, name)
     | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)
@@ -689,16 +688,12 @@ and module_ map parent id m =
       (Component.ModuleMap.find id map.module_ :> Paths.Identifier.Module.t)
     in
     let identifier = (id :> Odoc_model.Paths.Identifier.Signature.t) in
-    let canonical = function
-      | Some p -> Some (Path.module_ map p)
-      | None -> None
-    in
     let map = { map with shadowed = empty_shadow } in
     {
       Odoc_model.Lang.Module.id;
       doc = docs (parent :> Identifier.LabelParent.t) m.doc;
       type_ = module_decl map identifier m.type_;
-      canonical = canonical m.canonical;
+      canonical = m.canonical;
       hidden = m.hidden;
     }
   with e ->
@@ -835,7 +830,7 @@ and module_type :
   {
     Odoc_model.Lang.ModuleType.id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) mty.doc;
-    canonical = Opt.map (Path.module_type map) mty.canonical;
+    canonical = mty.canonical;
     expr = Opt.map (module_type_expr map sig_id) mty.expr;
   }
 
@@ -899,7 +894,7 @@ and type_decl map parent id (t : Component.TypeDecl.t) :
     id = identifier;
     equation = type_decl_equation map (parent :> Identifier.Parent.t) t.equation;
     doc = docs (parent :> Identifier.LabelParent.t) t.doc;
-    canonical = Opt.map (Path.type_ map) t.canonical;
+    canonical = t.canonical;
     representation =
       Opt.map (type_decl_representation map identifier) t.representation;
   }
