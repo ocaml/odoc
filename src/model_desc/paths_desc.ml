@@ -298,11 +298,6 @@ module General_paths = struct
   and resolved_reference : rr t =
     Variant
       (function
-      | `Canonical (x1, x2) ->
-          C
-            ( "`Canonical",
-              ((x1 :> rr), (x2 :> r)),
-              Pair (resolved_reference, reference) )
       | `Class (x1, x2) ->
           C
             ( "`Class",

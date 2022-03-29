@@ -1398,11 +1398,6 @@ module Fmt = struct
           (x :> Odoc_model.Paths.Path.Resolved.t)
           model_resolved_reference
           (y :> Odoc_model.Paths.Reference.Resolved.t)
-    | `Canonical (x, y) ->
-        Format.fprintf ppf "canonical(%a,%a)" model_resolved_reference
-          (x :> t)
-          model_reference
-          (y :> Odoc_model.Paths.Reference.t)
     | `Label (parent, name) ->
         Format.fprintf ppf "%a.%s" model_resolved_reference
           (parent :> t)
