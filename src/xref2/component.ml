@@ -78,7 +78,7 @@ module rec Module : sig
   type t = {
     doc : CComment.docs;
     type_ : decl;
-    canonical : Cpath.module_ option;
+    canonical : Odoc_model.Paths.Path.Module.t option;
     hidden : bool;
   }
 end =
@@ -229,7 +229,7 @@ and ModuleType : sig
 
   type t = {
     doc : CComment.docs;
-    canonical : Cpath.module_type option;
+    canonical : Odoc_model.Paths.Path.ModuleType.t option;
     expr : expr option;
   }
 end =
@@ -276,7 +276,7 @@ and TypeDecl : sig
 
   type t = {
     doc : CComment.docs;
-    canonical : Cpath.type_ option;
+    canonical : Odoc_model.Paths.Path.Type.t option;
     equation : Equation.t;
     representation : Representation.t option;
   }
@@ -910,8 +910,8 @@ module Fmt = struct
           resolved_module_path p2
     | `Hidden p1 -> Format.fprintf ppf "hidden(%a)" resolved_module_path p1
     | `Canonical (p1, p2) ->
-        Format.fprintf ppf "canonical(%a,%a)" resolved_module_path p1
-          module_path p2
+        Format.fprintf ppf "canonical(%a,%a)" resolved_module_path p1 model_path
+          (p2 :> Odoc_model.Paths.Path.t)
     | `OpaqueModule m ->
         Format.fprintf ppf "opaquemodule(%a)" resolved_module_path m
 
@@ -948,7 +948,8 @@ module Fmt = struct
           (ModuleTypeName.to_string m)
     | `CanonicalModuleType (m1, m2) ->
         Format.fprintf ppf "canonicalt(%a,%a)" resolved_module_type_path m1
-          module_type_path m2
+          model_path
+          (m2 :> Odoc_model.Paths.Path.t)
     | `OpaqueModuleType m ->
         Format.fprintf ppf "opaquemoduletype(%a)" resolved_module_type_path m
     | `AliasModuleType (mt1, mt2) ->
@@ -982,8 +983,8 @@ module Fmt = struct
     | `Substituted x ->
         Format.fprintf ppf "substituted(%a)" resolved_type_path x
     | `CanonicalType (t1, t2) ->
-        Format.fprintf ppf "canonicalty(%a,%a)" resolved_type_path t1 type_path
-          t2
+        Format.fprintf ppf "canonicalty(%a,%a)" resolved_type_path t1 model_path
+          (t2 :> Odoc_model.Paths.Path.t)
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.ClassName.to_string t)
@@ -1667,7 +1668,7 @@ module Of_Lang = struct
       | `Alias (p1, p2) -> `Alias (recurse p1, recurse p2)
       | `Subst (p1, p2) ->
           `Subst (resolved_module_type_path ident_map p1, recurse p2)
-      | `Canonical (p1, p2) -> `Canonical (recurse p1, module_path ident_map p2)
+      | `Canonical (p1, p2) -> `Canonical (recurse p1, p2)
       | `Hidden p1 -> `Hidden (recurse p1)
       | `OpaqueModule m -> `OpaqueModule (recurse m)
     in
@@ -1687,8 +1688,7 @@ module Of_Lang = struct
     | `ModuleType (p, name) ->
         `ModuleType (`Module (resolved_module_path ident_map p), name)
     | `CanonicalModuleType (p1, p2) ->
-        `CanonicalModuleType
-          (resolved_module_type_path ident_map p1, module_type_path ident_map p2)
+        `CanonicalModuleType (resolved_module_type_path ident_map p1, p2)
     | `OpaqueModuleType m ->
         `OpaqueModuleType (resolved_module_type_path ident_map m)
     | `AliasModuleType (m1, m2) ->
@@ -1706,7 +1706,7 @@ module Of_Lang = struct
     match p with
     | `Identifier i -> identifier Maps.Path.Type.find ident_map.path_types i
     | `CanonicalType (p1, p2) ->
-        `CanonicalType (resolved_type_path ident_map p1, type_path ident_map p2)
+        `CanonicalType (resolved_type_path ident_map p1, p2)
     | `Type (p, name) -> `Type (`Module (resolved_module_path ident_map p), name)
     | `Class (p, name) ->
         `Class (`Module (resolved_module_path ident_map p), name)
@@ -1853,7 +1853,7 @@ module Of_Lang = struct
     let open Odoc_model.Lang.TypeDecl in
     {
       TypeDecl.doc = docs ident_map ty.doc;
-      canonical = Opt.map (type_path ident_map) ty.canonical;
+      canonical = ty.canonical;
       equation = type_equation ident_map ty.equation;
       representation =
         Opt.map (type_decl_representation ident_map) ty.representation;
@@ -1988,11 +1988,6 @@ module Of_Lang = struct
     | Odoc_model.Lang.Include.Alias p -> Include.Alias (module_path ident_map p)
     | ModuleType s -> ModuleType (u_module_type_expr ident_map s)
 
-  and canonical ident_map (canonical : Odoc_model.Paths.Path.Module.t option) =
-    match canonical with
-    | Some p -> Some (module_path ident_map p)
-    | None -> None
-
   and simple_expansion ident_map
       (f : Odoc_model.Lang.ModuleType.simple_expansion) :
       ModuleType.simple_expansion =
@@ -2020,7 +2015,7 @@ module Of_Lang = struct
 
   and module_ ident_map m =
     let type_ = module_decl ident_map m.Odoc_model.Lang.Module.type_ in
-    let canonical = canonical ident_map m.Odoc_model.Lang.Module.canonical in
+    let canonical = m.Odoc_model.Lang.Module.canonical in
     { Module.doc = docs ident_map m.doc; type_; canonical; hidden = m.hidden }
 
   and with_module_type_substitution ident_map m =
@@ -2162,11 +2157,7 @@ module Of_Lang = struct
     let expr =
       Opt.map (module_type_expr ident_map) m.Odoc_model.Lang.ModuleType.expr
     in
-    {
-      ModuleType.doc = docs ident_map m.doc;
-      canonical = option module_type_path ident_map m.canonical;
-      expr;
-    }
+    { ModuleType.doc = docs ident_map m.doc; canonical = m.canonical; expr }
 
   and value ident_map v =
     let type_ = type_expression ident_map v.Lang.Value.type_ in

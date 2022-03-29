@@ -12,7 +12,7 @@ module rec Resolved : sig
     | `Subst of module_type * module_
     | `Hidden of module_
     | `Module of parent * ModuleName.t
-    | `Canonical of module_ * Cpath.module_
+    | `Canonical of module_ * Path.Module.t
     | `Apply of module_ * module_
     | `Alias of module_ * module_
     | `OpaqueModule of module_ ]
@@ -24,14 +24,14 @@ module rec Resolved : sig
     | `ModuleType of parent * ModuleTypeName.t
     | `SubstT of module_type * module_type
     | `AliasModuleType of module_type * module_type
-    | `CanonicalModuleType of module_type * Cpath.module_type
+    | `CanonicalModuleType of module_type * Path.ModuleType.t
     | `OpaqueModuleType of module_type ]
 
   and type_ =
     [ `Local of Ident.path_type
     | `Identifier of Odoc_model.Paths.Identifier.Path.Type.t
     | `Substituted of type_
-    | `CanonicalType of type_ * Cpath.type_
+    | `CanonicalType of type_ * Path.Type.t
     | `Type of parent * TypeName.t
     | `Class of parent * ClassName.t
     | `ClassType of parent * ClassTypeName.t ]

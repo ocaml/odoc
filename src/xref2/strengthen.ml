@@ -17,7 +17,10 @@ open Component
 open Delayed
 
 let rec signature :
-    Cpath.module_ -> ?canonical:Cpath.module_ -> Signature.t -> Signature.t =
+    Cpath.module_ ->
+    ?canonical:Odoc_model.Paths.Path.Module.t ->
+    Signature.t ->
+    Signature.t =
  fun prefix ?canonical sg ->
   let sg', strengthened_modules = sig_items prefix ?canonical sg in
   let substs =
@@ -71,7 +74,7 @@ and sig_items prefix ?canonical sg =
   ({ sg with items = List.rev items }, ids)
 
 and module_ :
-    ?canonical:Cpath.module_ ->
+    ?canonical:Odoc_model.Paths.Path.Module.t ->
     Cpath.module_ ->
     Component.Module.t ->
     Component.Module.t =
