@@ -68,9 +68,9 @@ the equations for t, u and v point to SubTargets rather than SubstituteMe
 BEFORE
 ======
 S: sig
-type tt/3 = local(SubstituteMe/2,false).t
+type tt/5 = local(SubstituteMe/2,false).t
 type uu/4 = local(SubstituteMe/2,false).u
-type vv/5 = local(SubstituteMe/2,false).v
+type vv/3 = local(SubstituteMe/2,false).v
  (removed=[])end
 
 AFTER
@@ -140,14 +140,14 @@ module SomeMonad/58 : sig
     val join/65 : ([[a] r(t/63)] r(t/63)) -> [a] r(t/63)
      (removed=[]))
    (removed=[])end
-module ComplexTypeExpr/56 : sig
+module ComplexTypeExpr/57 : sig
   type t/66
   include : r(Monad/59) with [r(root(Monad/59).t) = ([r(int) * a] r(t/66) * [a * r(int)] r(t/66))] (sig =
     val map/67 : (([r(int) * a] r(t/66) * [a * r(int)] r(t/66))) -> ((a) -> b) -> ([r(int) * b] r(t/66) * [b * r(int)] r(t/66))
     val join/68 : (([r(int) * ([r(int) * a] r(t/66) * [a * r(int)] r(t/66))] r(t/66) * [([r(int) * a] r(t/66) * [a * r(int)] r(t/66)) * r(int)] r(t/66))) -> ([r(int) * a] r(t/66) * [a * r(int)] r(t/66))
      (removed=[]))
    (removed=[])end
-module Erase/57 : sig
+module Erase/56 : sig
   include : r(Monad/59) with [r(root(Monad/59).t) = a] (sig = val map/69 : (a) -> ((a) -> b) -> b
                                                               val join/70 : (a) -> a
                                                                (removed=[]))
