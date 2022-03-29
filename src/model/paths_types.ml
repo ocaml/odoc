@@ -590,8 +590,7 @@ and Resolved_reference : sig
     [ `Identifier of Identifier.path_module
     | `Hidden of module_
     | `Alias of Resolved_path.module_ * module_
-    | `Module of signature * ModuleName.t
-    | `Canonical of module_ * Reference.module_ ]
+    | `Module of signature * ModuleName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Module.t *)
 
   (* Signature is [ module | moduletype ] *)
@@ -600,7 +599,6 @@ and Resolved_reference : sig
     | `Hidden of module_
     | `Alias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
-    | `Canonical of module_ * Reference.module_
     | `ModuleType of signature * ModuleTypeName.t
     | `AliasModuleType of Resolved_path.module_type * module_type ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Signature.t *)
@@ -618,7 +616,6 @@ and Resolved_reference : sig
     | `AliasModuleType of Resolved_path.module_type * module_type
     | `Module of signature * ModuleName.t
     | `Hidden of module_
-    | `Canonical of module_ * Reference.module_
     | `ModuleType of signature * ModuleTypeName.t
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
@@ -633,7 +630,6 @@ and Resolved_reference : sig
     | `AliasModuleType of Resolved_path.module_type * module_type
     | `Module of signature * ModuleName.t
     | `Hidden of module_
-    | `Canonical of module_ * Reference.module_
     | `ModuleType of signature * ModuleTypeName.t
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
@@ -716,7 +712,6 @@ and Resolved_reference : sig
     | `AliasModuleType of Resolved_path.module_type * module_type
     | `Module of signature * ModuleName.t
     | `Hidden of module_
-    | `Canonical of module_ * Reference.module_
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
     | `Constructor of datatype * ConstructorName.t

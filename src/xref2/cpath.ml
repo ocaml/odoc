@@ -281,15 +281,11 @@ let rec resolved_module_of_resolved_module_reference :
   | `Identifier i -> `Identifier i
   | `Alias (_m1, _m2) -> failwith "gah"
   | `Hidden s -> `Hidden (resolved_module_of_resolved_module_reference s)
-  | `Canonical (m1, m2) ->
-      `Canonical
-        ( resolved_module_of_resolved_module_reference m1,
-          module_of_module_reference m2 )
 
 and resolved_module_of_resolved_signature_reference :
     Reference.Resolved.Signature.t -> Resolved.module_ = function
   | `Identifier (#Identifier.Module.t as i) -> `Identifier i
-  | (`Alias _ | `Canonical _ | `Module _ | `Hidden _) as r' ->
+  | (`Alias _ | `Module _ | `Hidden _) as r' ->
       resolved_module_of_resolved_module_reference r'
   | `ModuleType (_, n) ->
       failwith ("Not a module reference: " ^ ModuleTypeName.to_string n)
