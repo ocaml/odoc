@@ -24,8 +24,8 @@ type equations for all abstract types.
   |} ;;
 BEFORE
 ======
-type t/0
-type u/1 = local(t/0,false)
+type t/1
+type u/0 = local(t/1,false)
  (removed=[])
 AFTER
 ======

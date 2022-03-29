@@ -1477,67 +1477,42 @@ module LocalIdents = struct
       except within them, so we only do that on demand. *)
 
   type t = {
-    modules : Paths.Identifier.Sets.Module.t;
-    module_types : Paths.Identifier.Sets.ModuleType.t;
-    types : Paths.Identifier.Sets.Type.t;
-    classes : Paths.Identifier.Sets.Class.t;
-    class_types : Paths.Identifier.Sets.ClassType.t;
+    modules : Paths.Identifier.Module.t list;
+    module_types : Paths.Identifier.ModuleType.t list;
+    types : Paths.Identifier.Type.t list;
+    classes : Paths.Identifier.Class.t list;
+    class_types : Paths.Identifier.ClassType.t list;
   }
 
   let empty =
-    let open Paths.Identifier.Sets in
     {
-      modules = Module.empty;
-      module_types = ModuleType.empty;
-      types = Type.empty;
-      classes = Class.empty;
-      class_types = ClassType.empty;
+      modules = [];
+      module_types = [];
+      types = [];
+      classes = [];
+      class_types = [];
     }
 
   open Lang
 
   let rec signature_items s ids =
-    let open Paths in
     let open Signature in
     List.fold_right
       (fun c ids ->
         match c with
         | Module (_, { Module.id; _ }) ->
-            { ids with modules = Identifier.Sets.Module.add id ids.modules }
+            { ids with modules = id :: ids.modules }
         | ModuleType m ->
-            {
-              ids with
-              module_types =
-                Identifier.Sets.ModuleType.add m.ModuleType.id ids.module_types;
-            }
+            { ids with module_types = m.ModuleType.id :: ids.module_types }
         | ModuleSubstitution { ModuleSubstitution.id; _ } ->
-            { ids with modules = Identifier.Sets.Module.add id ids.modules }
+            { ids with modules = id :: ids.modules }
         | ModuleTypeSubstitution { ModuleTypeSubstitution.id; _ } ->
-            {
-              ids with
-              module_types = Identifier.Sets.ModuleType.add id ids.module_types;
-            }
-        | Type (_, t) ->
-            {
-              ids with
-              types = Identifier.Sets.Type.add t.TypeDecl.id ids.types;
-            }
-        | TypeSubstitution t ->
-            {
-              ids with
-              types = Identifier.Sets.Type.add t.TypeDecl.id ids.types;
-            }
-        | Class (_, c) ->
-            {
-              ids with
-              classes = Identifier.Sets.Class.add c.Class.id ids.classes;
-            }
+            { ids with module_types = id :: ids.module_types }
+        | Type (_, t) -> { ids with types = t.TypeDecl.id :: ids.types }
+        | TypeSubstitution t -> { ids with types = t.TypeDecl.id :: ids.types }
+        | Class (_, c) -> { ids with classes = c.Class.id :: ids.classes }
         | ClassType (_, c) ->
-            {
-              ids with
-              class_types =
-                Identifier.Sets.ClassType.add c.ClassType.id ids.class_types;
-            }
+            { ids with class_types = c.ClassType.id :: ids.class_types }
         | TypExt _ | Exception _ | Value _ | Comment _ -> ids
         | Include i -> signature i.Include.expansion.content ids
         | Open o -> signature o.Open.expansion ids)
@@ -1588,85 +1563,69 @@ module Of_Lang = struct
 
   let map_of_idents ids map =
     let open Paths.Identifier in
-    let types_new =
-      Sets.Type.fold
-        (fun i acc -> Maps.Type.add i (Ident.Of_Identifier.type_ i) acc)
-        ids.LocalIdents.types Maps.Type.empty
+    (* New types go into [types_new] and [path_types_new]
+       New classes go into [classes_new] and [path_class_types_new]
+       New class_types go into [class_types_new], [path_types_new] and [path_class_types_new] *)
+    let types_new, path_types_new =
+      List.fold_right
+        (fun i (types, path_types) ->
+          let id = Ident.Of_Identifier.type_ i in
+          ( Maps.Type.add i id types,
+            Maps.Path.Type.add
+              (i :> Path.Type.t)
+              (id :> Ident.path_type)
+              path_types ))
+        ids.LocalIdents.types
+        (map.types, map.path_types)
     in
-    let classes_new =
-      Sets.Class.fold
-        (fun i acc -> Maps.Class.add i (Ident.Of_Identifier.class_ i) acc)
-        ids.LocalIdents.classes Maps.Class.empty
+    let classes_new, path_class_types_new =
+      List.fold_right
+        (fun i (classes, path_class_types) ->
+          let id = Ident.Of_Identifier.class_ i in
+          ( Maps.Class.add i id classes,
+            Maps.Path.ClassType.add
+              (i :> Path.ClassType.t)
+              (id :> Ident.path_class_type)
+              path_class_types ))
+        ids.LocalIdents.classes
+        (map.classes, map.path_class_types)
     in
-    let class_types_new =
-      Sets.ClassType.fold
-        (fun i acc ->
-          Maps.ClassType.add i (Ident.Of_Identifier.class_type i) acc)
-        ids.LocalIdents.class_types Maps.ClassType.empty
+    let class_types_new, path_types_new, path_class_types_new =
+      List.fold_right
+        (fun i (class_types, path_types, path_class_types) ->
+          let id = Ident.Of_Identifier.class_type i in
+          ( Maps.ClassType.add i id class_types,
+            Maps.Path.Type.add
+              (i :> Path.Type.t)
+              (id :> Ident.path_type)
+              path_types,
+            Maps.Path.ClassType.add
+              (i :> Path.ClassType.t)
+              (id :> Ident.path_class_type)
+              path_class_types ))
+        ids.LocalIdents.class_types
+        (map.class_types, path_types_new, path_class_types_new)
     in
     let modules_new =
-      Sets.Module.fold
+      List.fold_right
         (fun i acc ->
           Maps.Module.add (i :> Module.t) (Ident.Of_Identifier.module_ i) acc)
-        ids.LocalIdents.modules Maps.Module.empty
+        ids.LocalIdents.modules map.modules
     in
     let module_types_new =
-      Sets.ModuleType.fold
+      List.fold_right
         (fun i acc ->
           Maps.ModuleType.add i (Ident.Of_Identifier.module_type i) acc)
-        ids.LocalIdents.module_types Maps.ModuleType.empty
+        ids.LocalIdents.module_types map.module_types
     in
-    let path_class_types_new =
-      Maps.Path.ClassType.empty
-      |> Maps.ClassType.fold
-           (fun key v acc ->
-             Maps.Path.ClassType.add
-               (key :> Path.ClassType.t)
-               (v :> Ident.path_class_type)
-               acc)
-           class_types_new
-      |> Maps.Class.fold
-           (fun key v acc ->
-             Maps.Path.ClassType.add
-               (key :> Path.ClassType.t)
-               (v :> Ident.path_class_type)
-               acc)
-           classes_new
-    in
-    let path_types_new =
-      Maps.Path.Type.empty
-      |> Maps.Path.ClassType.fold
-           (fun key v acc ->
-             Maps.Path.Type.add (key :> Path.Type.t) (v :> Ident.path_type) acc)
-           path_class_types_new
-      |> Maps.Type.fold
-           (fun key v acc ->
-             Maps.Path.Type.add (key :> Path.Type.t) (v :> Ident.path_type) acc)
-           types_new
-    in
-    let merge_fn _k v1 v2 =
-      match (v1, v2) with
-      | _, Some x -> Some x
-      | None, None -> None
-      | Some x, None -> Some x
-    in
-    let modules = Maps.Module.merge merge_fn modules_new map.modules in
-    let module_types =
-      Maps.ModuleType.merge merge_fn module_types_new map.module_types
-    in
+    let modules = modules_new in
+    let module_types = module_types_new in
     let functor_parameters = map.functor_parameters in
-    let types = Maps.Type.merge merge_fn types_new map.types in
-    let classes = Maps.Class.merge merge_fn classes_new map.classes in
-    let class_types =
-      Maps.ClassType.merge merge_fn class_types_new map.class_types
-    in
-    let path_types =
-      Maps.Path.Type.merge merge_fn path_types_new map.path_types
-    in
-    let path_class_types =
-      Maps.Path.ClassType.merge merge_fn path_class_types_new
-        map.path_class_types
-    in
+    let types = types_new in
+    let classes = classes_new in
+    let class_types = class_types_new in
+    let path_types = path_types_new in
+    let path_class_types = path_class_types_new in
     {
       (empty ()) with
       modules;
