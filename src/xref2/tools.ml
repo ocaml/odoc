@@ -1094,22 +1094,24 @@ and handle_canonical_module env p2 =
         match m.type_ with
         | Component.Module.Alias (_, Some _) -> true
         | Alias (`Resolved p, None) ->
-            (* check for an alias chain with a canonical in it... *)
-            let rec check (m, p) =
+            (* we're an alias - check to see if we're marked as the canonical path.
+               If not, check for an alias chain with us as canonical in it... *)
+            let rec check m =
               match m.Component.Module.canonical with
               | Some p ->
                   p = p2
                   (* The canonical path is the same one we're trying to resolve *)
               | None -> (
-                  match lookup_module ~mark_substituted:false env p with
-                  | Error _ -> false
-                  | Ok m -> (
-                      let m = Component.Delayed.get m in
-                      match m.type_ with
-                      | Alias (`Resolved p, _) -> check (m, p)
-                      | _ -> false))
+                  match m.type_ with
+                  | Component.Module.Alias (`Resolved p, _) -> (
+                      match lookup_module ~mark_substituted:false env p with
+                      | Error _ -> false
+                      | Ok m ->
+                          let m = Component.Delayed.get m in
+                          check m)
+                  | _ -> false)
             in
-            let self_canonical () = check (m, p) in
+            let self_canonical () = check m in
             let hidden =
               Cpath.is_resolved_module_hidden ~weak_canonical_test:true p
             in

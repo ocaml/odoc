@@ -1,0 +1,16 @@
+(rule
+ (targets cpath_test.output)
+ (enabled_if
+  (>= %{ocaml_version} 4.08))
+ (deps
+  (package odoc))
+ (action
+  (run ocaml-mdx-test --prelude=%{dep:../lib/prelude.ml} -o %{targets}
+    %{dep:cpath_test.md})))
+
+(rule
+ (alias runmdx)
+ (enabled_if
+  (>= %{ocaml_version} 4.08))
+ (action
+  (diff cpath_test.md cpath_test.output)))
