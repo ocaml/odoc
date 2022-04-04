@@ -74,11 +74,19 @@ module Path = struct
     match p with
     | `Substituted x -> module_ map x
     | `Local (id, b) ->
-        `Identifier
-          ( (try lookup_module map id
-             with Not_found ->
-               failwith (Format.asprintf "Not_found: %a" Ident.fmt id)),
-            b )
+        let m =
+          try lookup_module map id
+          with Not_found ->
+            failwith (Format.asprintf "Not_found: %a" Ident.fmt id)
+        in
+        let hidden =
+          b
+          ||
+          match m with
+          | `Module (_, n) -> Odoc_model.Names.ModuleName.is_internal n
+          | _ -> false
+        in
+        `Identifier (m, hidden)
     | `Identifier (i, b) -> `Identifier (i, b)
     | `Resolved x -> `Resolved (resolved_module map x)
     | `Root x -> `Root x
@@ -158,8 +166,7 @@ module Path = struct
       | `Canonical (r, m) -> `Canonical (resolved_module map r, m)
       | `Apply (m1, m2) ->
           `Apply (resolved_module map m1, resolved_module map m2)
-      | `Alias (m1, m2) ->
-          `Alias (resolved_module map m1, resolved_module map m2)
+      | `Alias (m1, m2, _) -> `Alias (resolved_module map m1, module_ map m2)
       | `OpaqueModule m -> `OpaqueModule (resolved_module map m)
     in
     try

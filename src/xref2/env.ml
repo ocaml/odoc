@@ -159,6 +159,8 @@ type t = {
   fragmentroot : (int * Component.Signature.t) option;
 }
 
+let is_linking env = env.linking
+
 let set_resolver t resolver = { t with resolver = Some resolver }
 
 let has_resolver t = match t.resolver with None -> false | _ -> true

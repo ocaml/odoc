@@ -1175,7 +1175,8 @@ Resolve a module alias:
                              (`Root (Some (`Page (None, None)), Root), A)),
                         `Identifier
                           (`Module
-                             (`Root (Some (`Page (None, None)), Root), B))),
+                             (`Root (Some (`Page (None, None)), Root), B),
+                           false)),
                      t)),
               []));
           constraints = []};
@@ -1245,7 +1246,8 @@ Resolve a module alias:
                 (`Identifier
                    (`Module (`Root (Some (`Page (None, None)), Root), A)),
                  `Identifier
-                   (`Module (`Root (Some (`Page (None, None)), Root), B)))),
+                   (`Module (`Root (Some (`Page (None, None)), Root), B),
+                    false))),
            None);
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
@@ -1266,10 +1268,12 @@ Resolve a module alias:
                                 (`Root (Some (`Page (None, None)), Root), A)),
                            `Identifier
                              (`Module
-                                (`Root (Some (`Page (None, None)), Root), B))),
+                                (`Root (Some (`Page (None, None)), Root), B),
+                              false)),
                         `Identifier
                           (`Module
-                             (`Root (Some (`Page (None, None)), Root), C))),
+                             (`Root (Some (`Page (None, None)), Root), C),
+                           false)),
                      t)),
               []));
           constraints = []};
