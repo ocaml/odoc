@@ -132,17 +132,20 @@ Should resove to be an alias!
           }
         },
         {
-          "`Identifier": {
-            "`Module": [
-              {
-                "`Root": [
-                  "None",
-                  "Test"
-                ]
-              },
-              "C"
-            ]
-          }
+          "`Identifier": [
+            {
+              "`Module": [
+                {
+                  "`Root": [
+                    "None",
+                    "Test"
+                  ]
+                },
+                "C"
+              ]
+            },
+            "false"
+          ]
         }
       ]
     }

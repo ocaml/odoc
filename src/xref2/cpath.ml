@@ -14,7 +14,7 @@ module rec Resolved : sig
     | `Module of parent * ModuleName.t
     | `Canonical of module_ * Path.Module.t
     | `Apply of module_ * module_
-    | `Alias of module_ * module_
+    | `Alias of module_ * Cpath.module_ * module_ option
     | `OpaqueModule of module_ ]
 
   and module_type =
@@ -93,7 +93,7 @@ let rec is_resolved_module_substituted : Resolved.module_ -> bool = function
   | `Substituted _ -> true
   | `Identifier _ -> false
   | `Subst (_a, _) -> false (* is_resolved_module_type_substituted a*)
-  | `Hidden a | `Canonical (a, _) | `Apply (a, _) | `Alias (a, _) ->
+  | `Hidden a | `Apply (a, _) | `Alias (a, _, _) | `Canonical (a, _) ->
       is_resolved_module_substituted a
   | `Module (a, _) -> is_resolved_parent_substituted a
   | `OpaqueModule a -> is_resolved_module_substituted a
@@ -195,7 +195,9 @@ and is_resolved_module_hidden :
     | `Substituted p -> inner p
     | `Module (p, _) -> is_resolved_parent_hidden ~weak_canonical_test p
     | `Subst (p1, p2) -> is_resolved_module_type_hidden p1 || inner p2
-    | `Alias (p1, p2) | `Apply (p1, p2) -> inner p1 || inner p2
+    | `Alias (p1, `Resolved p2, _) -> inner p1 && inner p2
+    | `Alias (p1, _p2, _) -> inner p1
+    | `Apply (p1, p2) -> inner p1 || inner p2
     | `OpaqueModule m -> inner m
   in
   inner
@@ -311,7 +313,13 @@ and module_of_module_reference : Reference.Module.t -> module_ = function
 
 let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
   | `Hidden (`Identifier x) -> `Identifier (x, true)
-  | `Identifier x -> `Identifier (x, false)
+  | `Identifier x ->
+      let hidden =
+        match x with
+        | `Module (_, n) -> Odoc_model.Names.ModuleName.is_internal n
+        | _ -> false
+      in
+      `Identifier (x, hidden)
   | `Hidden (`Local x) -> `Local (x, true)
   | `Local x -> `Local (x, false)
   | `Substituted x -> unresolve_resolved_module_path x
@@ -322,8 +330,21 @@ let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
   | `Canonical (m, _) -> unresolve_resolved_module_path m
   | `Apply (m, a) ->
       `Apply (unresolve_resolved_module_path m, unresolve_resolved_module_path a)
-  | `Alias (_, m) -> unresolve_resolved_module_path m
+  | `Alias (_, `Resolved m, _) -> unresolve_resolved_module_path m
+  | `Alias (_, m, _) -> m
   | `OpaqueModule m -> unresolve_resolved_module_path m
+
+and unresolve_module_path : module_ -> module_ = function
+  | `Resolved x -> unresolve_resolved_module_path x
+  | `Substituted x -> unresolve_module_path x
+  | `Local (_, _) as x -> x
+  | `Identifier _ as x -> x
+  | `Root _ as x -> x
+  | `Forward _ as x -> x
+  | `Dot (p, x) -> `Dot (unresolve_module_path p, x)
+  | `Module (p, x) ->
+      `Dot (unresolve_resolved_parent_path p, ModuleName.to_string x)
+  | `Apply (x, y) -> `Apply (unresolve_module_path x, unresolve_module_path y)
 
 and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
   function
@@ -358,10 +379,6 @@ and unresolve_resolved_class_type_path : Resolved.class_type -> class_type =
       `Dot (unresolve_resolved_parent_path p, ClassName.to_string n)
   | `ClassType (p, n) ->
       `Dot (unresolve_resolved_parent_path p, ClassTypeName.to_string n)
-
-and unresolve_module_path : module_ -> module_ = function
-  | `Resolved m -> unresolve_resolved_module_path m
-  | y -> y
 
 and unresolve_module_type_path : module_type -> module_type = function
   | `Resolved m -> unresolve_resolved_module_type_path m
