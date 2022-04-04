@@ -879,5 +879,5 @@ Let's see if there was any output from the `odoc` invocations:
  "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_document.odocl' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
  "odoc_document.odocl: Warning, resolved hidden path: Odoc_document__Types.Inline.one";
  "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_examples.odocl' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
- "odoc_examples.odocl: Warning, resolved hidden path: Odoc_examples__Unexposed.t"]
+ "odoc_examples.odocl: Warning, resolved hidden path: Odoc_examples__.Unexposed.t"]
 ```

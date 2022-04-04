@@ -464,8 +464,11 @@ module Path = struct
       | `Type (p, _) -> inner (p : module_ :> any)
       | `Class (p, _) -> inner (p : module_ :> any)
       | `ClassType (p, _) -> inner (p : module_ :> any)
-      | `Alias (p1, p2) ->
-          inner (p1 : module_ :> any) && inner (p2 : module_ :> any)
+      | `Alias (dest, `Resolved src) ->
+          inner (dest : module_ :> any) && inner (src : module_ :> any)
+      | `Alias (dest, src) ->
+          inner (dest : module_ :> any)
+          && is_path_hidden (src :> Paths_types.Path.any)
       | `AliasModuleType (p1, p2) ->
           inner (p1 : module_type :> any) && inner (p2 : module_type :> any)
       | `SubstT (p1, p2) -> inner (p1 :> any) || inner (p2 :> any)
@@ -478,12 +481,21 @@ module Path = struct
     in
     inner x
 
+  and contains_double_underscore s =
+    let len = String.length s in
+    let rec aux i =
+      if i > len - 2 then false
+      else if s.[i] = '_' && s.[i + 1] = '_' then true
+      else aux (i + 1)
+    in
+    aux 0
+
   and is_path_hidden : Paths_types.Path.any -> bool =
     let open Paths_types.Path in
     function
     | `Resolved r -> is_resolved_hidden r
     | `Identifier (_, hidden) -> hidden
-    | `Root _ -> false
+    | `Root s -> contains_double_underscore s
     | `Forward _ -> false
     | `Dot (p, _) -> is_path_hidden (p : module_ :> any)
     | `Apply (p1, p2) ->
@@ -518,10 +530,11 @@ module Path = struct
       | `Canonical (_, `Resolved p) -> parent_module_identifier p
       | `Canonical (p, _) -> parent_module_identifier p
       | `Apply (m, _) -> parent_module_identifier m
-      | `Alias (sub, orig) ->
-          if is_path_hidden (`Resolved (sub :> t)) then
-            parent_module_identifier orig
-          else parent_module_identifier sub
+      | `Alias (dest, `Resolved src) ->
+          if is_path_hidden (`Resolved (dest :> t)) then
+            parent_module_identifier src
+          else parent_module_identifier dest
+      | `Alias (dest, _src) -> parent_module_identifier dest
       | `OpaqueModule m -> parent_module_identifier m
 
     module Module = struct
@@ -540,10 +553,13 @@ module Path = struct
         | `Canonical (_, `Resolved p) -> identifier p
         | `Canonical (p, _) -> identifier p
         | `Apply (m, _) -> identifier m
-        | `Alias (sub, orig) ->
-            if is_path_hidden (`Resolved (sub :> Paths_types.Resolved_path.any))
-            then identifier orig
-            else identifier sub
+        | `Alias (dest, `Resolved src) ->
+            if
+              is_path_hidden
+                (`Resolved (dest : t :> Paths_types.Resolved_path.any))
+            then identifier (src :> t)
+            else identifier (dest :> t)
+        | `Alias (dest, _src) -> identifier (dest :> t)
         | `OpaqueModule m -> identifier m
 
       let rec canonical_ident : t -> Identifier.Path.Module.t option = function
@@ -652,9 +668,10 @@ module Path = struct
       | `ModuleType (m, n) -> `ModuleType (parent_module_identifier m, n)
       | `Class (m, n) -> `Class (parent_module_identifier m, n)
       | `ClassType (m, n) -> `ClassType (parent_module_identifier m, n)
-      | `Alias (sub, orig) ->
-          if is_path_hidden (`Resolved (sub :> t)) then identifier (orig :> t)
-          else identifier (sub :> t)
+      | `Alias (dest, `Resolved src) ->
+          if is_path_hidden (`Resolved (dest :> t)) then identifier (src :> t)
+          else identifier (dest :> t)
+      | `Alias (dest, _src) -> identifier (dest :> t)
       | `AliasModuleType (sub, orig) ->
           if is_path_hidden (`Resolved (sub :> t)) then identifier (orig :> t)
           else identifier (sub :> t)

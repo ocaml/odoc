@@ -32,6 +32,8 @@ val pp_lookup_type_list : Format.formatter -> lookup_type list -> unit
 
 type t
 
+val is_linking : t -> bool
+
 val with_recorded_lookups : t -> (t -> 'a) -> LookupTypeSet.t * 'a
 
 val set_resolver : t -> resolver -> t

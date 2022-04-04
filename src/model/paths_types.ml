@@ -203,9 +203,9 @@ and Resolved_path : sig
     | `Subst of module_type * module_
     | `Hidden of module_
     | `Module of module_ * ModuleName.t
-    | `Canonical of module_ * Path.module_
-    | `Apply of module_ * module_
-    | `Alias of module_ * module_
+    | `Canonical of module_ * Path.module_  (** [`Canonical (mod, canonical)] *)
+    | `Apply of module_ * module_  (** [`Apply (functor, argument)] *)
+    | `Alias of module_ * Path.module_  (** Resolved dest *)
     | `OpaqueModule of module_ ]
   (** @canonical Odoc_model.Paths.Path.Resolved.Module.t *)
 
@@ -238,7 +238,7 @@ and Resolved_path : sig
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_
     | `Apply of module_ * module_
-    | `Alias of module_ * module_
+    | `Alias of module_ * Path.module_
     | `AliasModuleType of module_type * module_type
     | `OpaqueModule of module_
     | `ModuleType of module_ * ModuleTypeName.t
