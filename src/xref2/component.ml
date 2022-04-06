@@ -2328,12 +2328,12 @@ module Of_Lang = struct
   and module_of_module_substitution ident_map
       (t : Odoc_model.Lang.ModuleSubstitution.t) =
     let manifest = module_path ident_map t.manifest in
-    let canonical = Some manifest in
+    let canonical = None in
     {
       Module.doc = docs ident_map t.doc;
       type_ = Alias (manifest, None);
       canonical;
-      hidden = true;
+      hidden = false;
     }
 
   and signature : _ -> Odoc_model.Lang.Signature.t -> Signature.t =

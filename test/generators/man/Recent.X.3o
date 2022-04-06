@@ -13,8 +13,8 @@ Recent\.X
 .nf 
 \f[CB]module\fR L := Z\.Y
 .sp 
-\f[CB]type\fR t = int Z\.Y\.X\.t
+\f[CB]type\fR t = int L\.X\.t
 .sp 
 \f[CB]type\fR u := int
 .sp 
-\f[CB]type\fR v = u Z\.Y\.X\.t
+\f[CB]type\fR v = u L\.X\.t
