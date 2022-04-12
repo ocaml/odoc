@@ -634,11 +634,10 @@ let add_functor_args' :
       in
       let doc = m.Component.Module.doc in
       let m = Component.Delayed.put_val (Subst.module_ subst m) in
+      let rp = `Gpath (`Identifier identifier) in
+      let p = `Resolved rp in
       let env' = add_module identifier m doc env in
-      ( env',
-        Subst.add_module ident
-          (`Resolved (`Identifier identifier))
-          (`Identifier identifier) subst )
+      (env', Subst.add_module ident p rp subst)
     in
     let env', _subst =
       List.fold_left fold_fn (env, Subst.identity) (find_args id expr)
