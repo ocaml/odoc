@@ -430,7 +430,7 @@ and module_ : Env.t -> Module.t -> Module.t =
       match type_ with
       | Alias (`Resolved p, _) ->
           let hidden_alias =
-            Paths.Path.is_hidden (`Resolved (p :> Paths.Path.Resolved.t))
+            Paths.Path.Resolved.Module.is_hidden ~weak_canonical_test:false p
           in
           let self_canonical =
             let i = Paths.Path.Resolved.Module.identifier p in
@@ -677,7 +677,8 @@ and module_type_expr :
         Some (simple_expansion env (id :> Paths.Identifier.Signature.t) e)
     | None, Some (`Resolved p_path) ->
         let hidden_alias =
-          Paths.Path.is_hidden (`Resolved (p_path :> Paths.Path.Resolved.t))
+          Paths.Path.Resolved.ModuleType.is_hidden ~weak_canonical_test:false
+            p_path
         in
         let self_canonical =
           let i = Paths.Path.Resolved.ModuleType.identifier p_path in
