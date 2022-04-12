@@ -21,16 +21,20 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Subst (_, p) -> render_resolved (p :> t)
     | `SubstT (_, p) -> render_resolved (p :> t)
     | `Alias (dest, `Resolved src) ->
-        if Odoc_model.Paths.Path.Resolved.Module.is_hidden src then
-          render_resolved (dest :> t)
+        if
+          Odoc_model.Paths.Path.Resolved.Module.is_hidden
+            ~weak_canonical_test:false src
+        then render_resolved (dest :> t)
         else render_resolved (src :> t)
     | `Alias (dest, src) ->
         if Odoc_model.Paths.Path.is_hidden (src :> Path.t) then
           render_resolved (dest :> t)
         else render_path (src :> Path.t)
     | `AliasModuleType (p1, p2) ->
-        if Odoc_model.Paths.Path.is_hidden (`Resolved (p2 :> t)) then
-          render_resolved (p1 :> t)
+        if
+          Odoc_model.Paths.Path.Resolved.ModuleType.is_hidden
+            ~weak_canonical_test:false p2
+        then render_resolved (p1 :> t)
         else render_resolved (p2 :> t)
     | `Hidden p -> render_resolved (p :> t)
     | `Module (p, s) -> render_resolved (p :> t) ^ "." ^ ModuleName.to_string s
@@ -51,7 +55,9 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ ClassName.to_string s
     | `ClassType (p, s) ->
         render_resolved (p :> t) ^ "." ^ ClassTypeName.to_string s
-  and render_path : Odoc_model.Paths.Path.t -> string = function
+  and render_path : Odoc_model.Paths.Path.t -> string =
+   fun x ->
+    match x with
     | `Identifier (id, _) -> Identifier.name id
     | `Root root -> root
     | `Forward root -> root

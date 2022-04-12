@@ -158,7 +158,7 @@ module Path = struct
              with Not_found ->
                failwith (Format.asprintf "Not_found: %a" Ident.fmt id))
       | `Substituted x -> resolved_module map x
-      | `Identifier y -> `Identifier y
+      | `Gpath y -> y
       | `Subst (mty, m) ->
           `Subst (resolved_module_type map mty, resolved_module map m)
       | `Hidden h -> `Hidden (resolved_module map h)
@@ -189,8 +189,7 @@ module Path = struct
   and resolved_module_type map (p : Cpath.Resolved.module_type) :
       Odoc_model.Paths.Path.Resolved.ModuleType.t =
     match p with
-    | `Identifier (#Odoc_model.Paths.Identifier.ModuleType.t as y) ->
-        `Identifier y
+    | `Gpath y -> y
     | `Local id ->
         `Identifier
           (try Component.ModuleTypeMap.find id map.module_type
@@ -210,8 +209,7 @@ module Path = struct
   and resolved_type map (p : Cpath.Resolved.type_) :
       Odoc_model.Paths.Path.Resolved.Type.t =
     match p with
-    | `Identifier (#Odoc_model.Paths.Identifier.Path.Type.t as y) ->
-        `Identifier y
+    | `Gpath y -> y
     | `Local id -> `Identifier (Component.PathTypeMap.find id map.path_type)
     | `CanonicalType (t1, t2) -> `CanonicalType (resolved_type map t1, t2)
     | `Type (p, name) -> `Type (resolved_parent map p, name)
@@ -222,8 +220,7 @@ module Path = struct
   and resolved_class_type map (p : Cpath.Resolved.class_type) :
       Odoc_model.Paths.Path.Resolved.ClassType.t =
     match p with
-    | `Identifier (#Odoc_model.Paths.Identifier.Path.ClassType.t as y) ->
-        `Identifier y
+    | `Gpath y -> y
     | `Local id ->
         `Identifier (Component.PathClassTypeMap.find id map.path_class_type)
     | `Class (p, name) -> `Class (resolved_parent map p, name)

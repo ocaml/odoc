@@ -261,9 +261,9 @@ which are:
     | Ok x -> x
     | Error _ -> failwith "Found error";;
 val get_ok : ('a, 'b) result -> 'a = <fun>
-# let (path, module_) = get_ok @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env (`Resolved (`Identifier (Common.root_module "M")));;
+# let (path, module_) = get_ok @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env (`Resolved (`Gpath (`Identifier (Common.root_module "M"))));;
 val path : Cpath.Resolved.module_ =
-  `Identifier (`Module (`Root (Some (`Page (None, None)), Root), M))
+  `Gpath (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)))
 val module_ : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
@@ -333,9 +333,9 @@ It proceeds much as the previous example until we get the result
 of looking up the module `N`:
 
 ```ocaml env=e1
-# let (path, module_) = get_ok @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env (`Resolved (`Identifier (Common.root_module "N")));;
+# let (path, module_) = get_ok @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env (`Resolved (`Gpath (`Identifier (Common.root_module "N"))));;
 val path : Cpath.Resolved.module_ =
-  `Identifier (`Module (`Root (Some (`Page (None, None)), Root), N))
+  `Gpath (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), N)))
 val module_ : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
@@ -460,7 +460,7 @@ Some
 we look up `A` from the environment:
 
 ```ocaml env=e1
-# let p = `Identifier (Common.root_module "A") in
+# let p = `Gpath (`Identifier (Common.root_module "A")) in
   let m = get_ok @@ Tools.lookup_module ~mark_substituted:true env p in
   let sg = get_ok @@ Tools.signature_of_module env (Component.Delayed.get m) in
   Tools.prefix_signature (`Module p, sg);;
@@ -498,8 +498,10 @@ we look up `A` from the environment:
              p_path =
               `ModuleType
                 (`Module
-                   (`Identifier
-                      (`Module (`Root (Some (`Page (None, None)), Root), A))),
+                   (`Gpath
+                      (`Identifier
+                         (`Module
+                            (`Root (Some (`Page (None, None)), Root), A)))),
                  N)});
         canonical = None; hidden = false};
      get = None})];
@@ -542,7 +544,7 @@ we then return along with the fully resolved identifier.
     (`Dot
       (`Dot
          (`Resolved
-            (`Identifier (Common.root_module "A")),
+            (`Gpath (`Identifier (Common.root_module "A"))),
           "B"),
        "t"));;
 - : Cpath.Resolved.type_ =
@@ -550,8 +552,9 @@ we then return along with the fully resolved identifier.
   (`Module
      (`Module
         (`Module
-           (`Identifier
-              (`Module (`Root (Some (`Page (None, None)), Root), A))),
+           (`Gpath
+              (`Identifier
+                 (`Module (`Root (Some (`Page (None, None)), Root), A)))),
          B)),
    t)
 ```
@@ -711,7 +714,7 @@ Clearly there is no `type t` declared in here. Let's get the representation
 of module `C` we see the following:
 
 ```ocaml env=e1
-# let m = get_ok @@ Tools.lookup_module ~mark_substituted:true env (`Identifier (Common.root_module "C"));;
+# let m = get_ok @@ Tools.lookup_module ~mark_substituted:true env (`Gpath (`Identifier (Common.root_module "C")));;
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
@@ -774,7 +777,7 @@ look up module `N` from within this and find its signature:
 
 ```ocaml env=e1
 # let m = get_ok @@ Tools.lookup_module ~mark_substituted:true env
-      (`Module (`Module (`Identifier (Common.root_module "C")), ModuleName.make_std "N"));;
+      (`Module (`Module (`Gpath (`Identifier (Common.root_module "C"))), ModuleName.make_std "N"));;
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
@@ -787,8 +790,10 @@ val m : Component.Module.t Component.Delayed.t =
             `Dot
               (`Module
                  (`Module
-                    (`Identifier
-                       (`Module (`Root (Some (`Page (None, None)), Root), C))),
+                    (`Gpath
+                       (`Identifier
+                          (`Module
+                             (`Root (Some (`Page (None, None)), Root), C)))),
                   M),
                "S")});
       canonical = None; hidden = false};
@@ -1069,13 +1074,18 @@ val p : Cpath.Resolved.module_ =
   `Apply
     (`Apply
        (`Apply
+          (`Gpath
+             (`Identifier
+                (`Module (`Root (Some (`Page (None, None)), Root), App))),
+           `Gpath
+             (`Identifier
+                (`Module (`Root (Some (`Page (None, None)), Root), Bar)))),
+        `Gpath
           (`Identifier
-             (`Module (`Root (Some (`Page (None, None)), Root), App)),
-           `Identifier
-             (`Module (`Root (Some (`Page (None, None)), Root), Bar))),
-        `Identifier (`Module (`Root (Some (`Page (None, None)), Root), Foo))),
-     `Identifier
-       (`Module (`Root (Some (`Page (None, None)), Root), FooBarInt)))
+             (`Module (`Root (Some (`Page (None, None)), Root), Foo)))),
+     `Gpath
+       (`Identifier
+          (`Module (`Root (Some (`Page (None, None)), Root), FooBarInt))))
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
@@ -1089,14 +1099,18 @@ val m : Component.Module.t Component.Delayed.t =
               (`Apply
                  (`Resolved
                     (`Substituted
-                       (`Identifier
-                          (`Module
-                             (`Root (Some (`Page (None, None)), Root), Foo)))),
+                       (`Gpath
+                          (`Identifier
+                             (`Module
+                                (`Root (Some (`Page (None, None)), Root),
+                                 Foo))))),
                   `Resolved
                     (`Substituted
-                       (`Identifier
-                          (`Module
-                             (`Root (Some (`Page (None, None)), Root), Bar))))),
+                       (`Gpath
+                          (`Identifier
+                             (`Module
+                                (`Root (Some (`Page (None, None)), Root),
+                                 Bar)))))),
                "T")});
       canonical = None; hidden = false};
    get = None}
@@ -1116,9 +1130,11 @@ val sg' : Component.Signature.t =
                 `Dot
                   (`Resolved
                      (`Substituted
-                        (`Identifier
-                           (`Module
-                              (`Root (Some (`Page (None, None)), Root), Bar)))),
+                        (`Gpath
+                           (`Identifier
+                              (`Module
+                                 (`Root (Some (`Page (None, None)), Root),
+                                  Bar))))),
                    "T")});
           canonical = None; hidden = false};
        get = None})];
@@ -1139,9 +1155,11 @@ val sg' : Component.Signature.t =
                 `Dot
                   (`Resolved
                      (`Substituted
-                        (`Identifier
-                           (`Module
-                              (`Root (Some (`Page (None, None)), Root), Bar)))),
+                        (`Gpath
+                           (`Identifier
+                              (`Module
+                                 (`Root (Some (`Page (None, None)), Root),
+                                  Bar))))),
                    "T")});
           canonical = None; hidden = false};
        get = None})];

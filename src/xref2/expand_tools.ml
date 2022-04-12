@@ -163,11 +163,10 @@ and handle_expansion env id expansion =
         let env' =
           Env.add_module identifier (Component.Delayed.put_val m) m.doc env
         in
+        let rp = `Gpath (`Identifier identifier) in
+        let p = `Resolved rp in
         let subst =
-          Subst.add_module
-            (arg.id :> Ident.path_module)
-            (`Resolved (`Identifier identifier))
-            (`Identifier identifier) Subst.identity
+          Subst.add_module (arg.id :> Ident.path_module) p rp Subst.identity
         in
         let subst =
           Subst.mto_invalidate_module (arg.id :> Ident.path_module) subst
