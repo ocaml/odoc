@@ -14,7 +14,7 @@ type signature =
 type class_signature =
   [ `LClass of ClassName.t * int | `LClassType of ClassTypeName.t * int ]
 
-type datatype = [ `LType of TypeName.t * int | `LCoreType of TypeName.t ]
+type datatype = [ `LType of TypeName.t * int ]
 
 type parent = [ signature | datatype | class_signature ]
 
@@ -37,8 +37,7 @@ type field = [ `LField of FieldName.t * int ]
 
 type extension = [ `LExtension of ExtensionName.t * int ]
 
-type exception_ =
-  [ `LException of ExceptionName.t * int | `LCoreException of ExceptionName.t ]
+type exception_ = [ `LException of ExceptionName.t * int ]
 
 type value = [ `LValue of ValueName.t * int ]
 
@@ -104,7 +103,6 @@ let int_of_any : any -> int = function
   | `LLeafPage (_, i)
   | `LExtension (_, i) ->
       i
-  | `LCoreException _ | `LCoreType _ -> failwith "error"
 
 module Of_Identifier = struct
   open Identifier
@@ -129,7 +127,9 @@ module Of_Identifier = struct
   let datatype : DataType.t -> datatype =
    fun t ->
     let i = fresh_int () in
-    match t with `Type (_, n) -> `LType (n, i) | `CoreType n -> `LCoreType n
+    match t with
+    | `Type (_, n) -> `LType (n, i)
+    | `CoreType _n -> failwith "Bad"
 
   let parent : Parent.t -> parent =
    fun p ->
@@ -183,7 +183,7 @@ module Of_Identifier = struct
    fun e ->
     match e with
     | `Exception (_, n) -> `LException (n, fresh_int ())
-    | `CoreException n -> `LCoreException n
+    | `CoreException _ -> failwith "Bad"
 
   let value : Value.t -> value =
    fun v -> match v with `Value (_, n) -> `LValue (n, fresh_int ())
@@ -242,25 +242,19 @@ module Name = struct
   let functor_parameter : functor_parameter -> string =
    fun (`LParameter (n, _)) -> ParameterName.to_string n
 
-  let type' : type_ -> TypeName.t = function
-    | `LType (n, _) -> n
-    | `LCoreType n -> n
+  let type' : type_ -> TypeName.t = function `LType (n, _) -> n
 
   let type_ t = TypeName.to_string (type' t)
 
   let unsafe_type : type_ -> string = function
     | `LType (n, _) -> TypeName.to_string_unsafe n
-    | `LCoreType n -> TypeName.to_string n
 
-  let typed_type : type_ -> TypeName.t = function
-    | `LType (n, _) -> n
-    | _ -> failwith "Bad type ident"
+  let typed_type : type_ -> TypeName.t = function `LType (n, _) -> n
 
   let path_type : path_type -> string = function
     | `LClassType (n, _) -> ClassTypeName.to_string n
     | `LClass (n, _) -> ClassName.to_string n
     | `LType (n, _) -> TypeName.to_string n
-    | `LCoreType n -> TypeName.to_string n
 
   let class' : class_ -> ClassName.t = function `LClass (n, _) -> n
 
@@ -294,10 +288,10 @@ module Name = struct
     | `LClassType (n, _) -> n
 
   let exception_ : exception_ -> string = function
-    | `LCoreException n | `LException (n, _) -> ExceptionName.to_string n
+    | `LException (n, _) -> ExceptionName.to_string n
 
   let typed_exception : exception_ -> ExceptionName.t = function
-    | `LCoreException n | `LException (n, _) -> n
+    | `LException (n, _) -> n
 
   let value : value -> string = function
     | `LValue (n, _) -> ValueName.to_string n
@@ -345,11 +339,9 @@ module Rename = struct
 
   let type_ : type_ -> type_ = function
     | `LType (n, _) -> `LType (n, fresh_int ())
-    | `LCoreType _ as y -> y
 
   let exception_ : exception_ -> exception_ = function
     | `LException (n, _) -> `LException (n, fresh_int ())
-    | `LCoreException _ as y -> y
 
   let value : value -> value = function
     | `LValue (n, _) -> `LValue (n, fresh_int ())
@@ -398,7 +390,6 @@ let rec fmt_aux ppf (id : any) =
   | `LModuleType (n, i) ->
       Format.fprintf ppf "%s/%d" (ModuleTypeName.to_string n) i
   | `LType (n, i) -> Format.fprintf ppf "%s/%d" (TypeName.to_string n) i
-  | `LCoreType n -> Format.fprintf ppf "%s" (TypeName.to_string n)
   | `LConstructor (n, i) ->
       Format.fprintf ppf "%s/%d" (ConstructorName.to_string n) i
   | `LField (n, i) -> Format.fprintf ppf "%s/%d" (FieldName.to_string n) i
@@ -406,7 +397,6 @@ let rec fmt_aux ppf (id : any) =
       Format.fprintf ppf "%s/%d" (ExtensionName.to_string n) i
   | `LException (n, i) ->
       Format.fprintf ppf "%s/%d" (ExceptionName.to_string n) i
-  | `LCoreException n -> Format.fprintf ppf "%s" (ExceptionName.to_string n)
   | `LValue (n, i) -> Format.fprintf ppf "%s/%d" (ValueName.to_string n) i
   | `LClass (n, i) -> Format.fprintf ppf "%s/%d" (ClassName.to_string n) i
   | `LClassType (n, i) ->
