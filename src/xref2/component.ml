@@ -3,37 +3,69 @@ module Maps = Odoc_model.Paths.Identifier.Maps
 module ModuleMap = Map.Make (struct
   type t = Ident.module_
 
-  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+  let compare a b =
+    let i1 = match a with `LRoot (_, i) | `LModule (_, i) -> i in
+    let i2 = match b with `LRoot (_, i) | `LModule (_, i) -> i in
+    Int.compare i1 i2
 end)
 
 module TypeMap = Map.Make (struct
   type t = Ident.type_
 
-  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+  let compare a b =
+    let i1 = match a with `LType (_, i) -> i in
+    let i2 = match b with `LType (_, i) -> i in
+    Int.compare i1 i2
 end)
 
 module PathModuleMap = Map.Make (struct
   type t = Ident.path_module
 
-  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+  let compare a b =
+    let i1 =
+      match a with
+      | `LRoot (_, i) | `LModule (_, i) | `LParameter (_, i) | `LResult (_, i)
+        ->
+          i
+    in
+    let i2 =
+      match b with
+      | `LRoot (_, i) | `LModule (_, i) | `LParameter (_, i) | `LResult (_, i)
+        ->
+          i
+    in
+    Int.compare i1 i2
 end)
 
 module ModuleTypeMap = Map.Make (struct
   type t = Ident.module_type
 
-  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+  let compare a b =
+    let i1 = match a with `LModuleType (_, i) -> i in
+    let i2 = match b with `LModuleType (_, i) -> i in
+    Int.compare i1 i2
 end)
 
 module PathTypeMap = Map.Make (struct
   type t = Ident.path_type
 
-  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+  let compare a b =
+    let i1 =
+      match a with `LType (_, i) | `LClass (_, i) | `LClassType (_, i) -> i
+    in
+    let i2 =
+      match b with `LType (_, i) | `LClass (_, i) | `LClassType (_, i) -> i
+    in
+    Int.compare i1 i2
 end)
 
 module PathClassTypeMap = Map.Make (struct
   type t = Ident.path_class_type
 
-  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+  let compare a b =
+    let i1 = match a with `LClass (_, i) | `LClassType (_, i) -> i in
+    let i2 = match b with `LClass (_, i) | `LClassType (_, i) -> i in
+    Int.compare i1 i2
 end)
 
 module IdentMap = Map.Make (struct
