@@ -82,7 +82,7 @@ module Path = struct
         let hidden =
           b
           ||
-          match m with
+          match m.iv with
           | `Module (_, n) -> Odoc_model.Names.ModuleName.is_internal n
           | _ -> false
         in
@@ -101,7 +101,8 @@ module Path = struct
       Odoc_model.Paths.Path.ModuleType.t =
     match p with
     | `Substituted x -> module_type map x
-    | `Identifier ((#Odoc_model.Paths.Identifier.ModuleType.t as y), b) ->
+    | `Identifier
+        (({ iv = #Odoc_model.Paths.Identifier.ModuleType.t_pv; _ } as y), b) ->
         `Identifier (y, b)
     | `Local (id, b) ->
         `Identifier
@@ -118,7 +119,8 @@ module Path = struct
   and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
     match p with
     | `Substituted x -> type_ map x
-    | `Identifier ((#Odoc_model.Paths.Identifier.Path.Type.t as y), b) ->
+    | `Identifier
+        (({ iv = #Odoc_model.Paths.Identifier.Path.Type.t_pv; _ } as y), b) ->
         `Identifier (y, b)
     | `Local (id, b) ->
         `Identifier (Component.PathTypeMap.find id map.path_type, b)
@@ -136,7 +138,9 @@ module Path = struct
       =
     match p with
     | `Substituted x -> class_type map x
-    | `Identifier ((#Odoc_model.Paths.Identifier.Path.ClassType.t as y), b) ->
+    | `Identifier
+        (({ iv = #Odoc_model.Paths.Identifier.Path.ClassType.t_pv; _ } as y), b)
+      ->
         `Identifier (y, b)
     | `Local (id, b) ->
         `Identifier (Component.PathClassTypeMap.find id map.path_class_type, b)
@@ -302,11 +306,12 @@ module ExtractIDs = struct
 
   let rec type_decl parent map id =
     let name = Ident.Name.unsafe_type id in
-    let identifier =
+    let typed_name =
       if List.mem name map.shadowed.s_types then
-        `Type (parent, Odoc_model.Names.TypeName.internal_of_string name)
-      else `Type (parent, Ident.Name.typed_type id)
+        Odoc_model.Names.TypeName.internal_of_string name
+      else Ident.Name.typed_type id
     in
+    let identifier = Identifier.Mk.type_ (parent, typed_name) in
     {
       map with
       type_ = Component.TypeMap.add id identifier map.type_;
@@ -319,20 +324,22 @@ module ExtractIDs = struct
 
   and module_ parent map id =
     let name = Ident.Name.unsafe_module id in
-    let identifier =
+    let typed_name =
       if List.mem name map.shadowed.s_modules then
-        `Module (parent, ModuleName.internal_of_string name)
-      else `Module (parent, Ident.Name.typed_module id)
+        ModuleName.internal_of_string name
+      else Ident.Name.typed_module id
     in
+    let identifier = Identifier.Mk.module_ (parent, typed_name) in
     { map with module_ = Component.ModuleMap.add id identifier map.module_ }
 
   and module_type parent map id =
     let name = Ident.Name.unsafe_module_type id in
-    let identifier =
+    let typed_name =
       if List.mem name map.shadowed.s_module_types then
-        `ModuleType (parent, ModuleTypeName.internal_of_string name)
-      else `ModuleType (parent, Ident.Name.typed_module_type id)
+        ModuleTypeName.internal_of_string name
+      else Ident.Name.typed_module_type id
     in
+    let identifier = Identifier.Mk.module_type (parent, typed_name) in
     {
       map with
       module_type = Component.ModuleTypeMap.add id identifier map.module_type;
@@ -340,11 +347,12 @@ module ExtractIDs = struct
 
   and class_ parent map id =
     let name = Ident.Name.unsafe_class id in
-    let identifier =
+    let typed_name =
       if List.mem name map.shadowed.s_classes then
-        `Class (parent, ClassName.internal_of_string name)
-      else `Class (parent, Ident.Name.typed_class id)
+        ClassName.internal_of_string name
+      else Ident.Name.typed_class id
     in
+    let identifier = Identifier.Mk.class_ (parent, typed_name) in
     {
       map with
       class_ = (id, identifier) :: map.class_;
@@ -362,11 +370,12 @@ module ExtractIDs = struct
 
   and class_type parent map (id : Ident.class_type) =
     let name = Ident.Name.unsafe_class_type id in
-    let identifier =
+    let typed_name =
       if List.mem name map.shadowed.s_class_types then
-        `ClassType (parent, ClassTypeName.internal_of_string name)
-      else `ClassType (parent, Ident.Name.typed_class_type id)
+        ClassTypeName.internal_of_string name
+      else Ident.Name.typed_class_type id
     in
+    let identifier = Identifier.Mk.class_type (parent, typed_name) in
     {
       map with
       class_type = ((id :> Ident.class_type), identifier) :: map.class_type;
@@ -559,7 +568,7 @@ and class_signature map parent sg =
 
 and method_ map parent id m =
   let open Component.Method in
-  let identifier = `Method (parent, Ident.Name.typed_method id) in
+  let identifier = Identifier.Mk.method_ (parent, Ident.Name.typed_method id) in
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) m.doc;
@@ -571,7 +580,8 @@ and method_ map parent id m =
 and instance_variable map parent id i =
   let open Component.InstanceVariable in
   let identifier =
-    `InstanceVariable (parent, Ident.Name.typed_instance_variable id)
+    Identifier.Mk.instance_variable
+      (parent, Ident.Name.typed_instance_variable id)
   in
   {
     id = identifier;
@@ -591,9 +601,9 @@ and simple_expansion :
   match e with
   | Signature sg -> Signature (signature id map sg)
   | Functor (Named arg, sg) ->
-      let identifier = `Result id in
+      let identifier = Identifier.Mk.result id in
       let name = Ident.Name.typed_functor_parameter arg.id in
-      let param_identifier = `Parameter (id, name) in
+      let param_identifier = Identifier.Mk.parameter (id, name) in
       let map =
         {
           map with
@@ -603,7 +613,8 @@ and simple_expansion :
       in
       let arg = functor_parameter map arg in
       Functor (Named arg, simple_expansion map identifier sg)
-  | Functor (Unit, sg) -> Functor (Unit, simple_expansion map (`Result id) sg)
+  | Functor (Unit, sg) ->
+      Functor (Unit, simple_expansion map (Identifier.Mk.result id) sg)
 
 and combine_shadowed s1 s2 =
   let open Odoc_model.Lang.Include in
@@ -653,11 +664,12 @@ and open_ parent map o =
 and value_ map parent id v =
   let open Component.Value in
   let name = Ident.Name.value id in
-  let identifier =
+  let typed_name =
     if List.mem name map.shadowed.s_values then
-      `Value (parent, ValueName.internal_of_string name)
-    else `Value (parent, Ident.Name.typed_value id)
+      ValueName.internal_of_string name
+    else Ident.Name.typed_value id
   in
+  let identifier = Identifier.Mk.value (parent, typed_name) in
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) v.doc;
@@ -678,7 +690,9 @@ and typ_ext map parent t =
 
 and extension_constructor map parent c =
   let open Component.Extension.Constructor in
-  let identifier = `Extension (parent, ExtensionName.make_std c.name) in
+  let identifier =
+    Identifier.Mk.extension (parent, ExtensionName.make_std c.name)
+  in
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
@@ -797,7 +811,7 @@ and module_type_expr map identifier = function
         }
   | Functor (Named arg, expr) ->
       let name = Ident.Name.typed_functor_parameter arg.id in
-      let identifier' = `Parameter (identifier, name) in
+      let identifier' = Identifier.Mk.parameter (identifier, name) in
       let map =
         {
           map with
@@ -806,9 +820,9 @@ and module_type_expr map identifier = function
       in
       Functor
         ( Named (functor_parameter map arg),
-          module_type_expr map (`Result identifier) expr )
+          module_type_expr map (Identifier.Mk.result identifier) expr )
   | Functor (Unit, expr) ->
-      Functor (Unit, module_type_expr map (`Result identifier) expr)
+      Functor (Unit, module_type_expr map (Identifier.Mk.result identifier) expr)
   | TypeOf { t_desc = ModPath p; t_expansion } ->
       TypeOf
         {
@@ -872,7 +886,7 @@ and type_decl_field :
     Component.TypeDecl.Field.t ->
     Odoc_model.Lang.TypeDecl.Field.t =
  fun map parent f ->
-  let identifier = `Field (parent, FieldName.make_std f.name) in
+  let identifier = Identifier.Mk.field (parent, FieldName.make_std f.name) in
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) f.doc;
@@ -922,7 +936,9 @@ and type_decl_constructor :
     Component.TypeDecl.Constructor.t ->
     Odoc_model.Lang.TypeDecl.Constructor.t =
  fun map id t ->
-  let identifier = `Constructor (id, ConstructorName.make_std t.name) in
+  let identifier =
+    Identifier.Mk.constructor (id, ConstructorName.make_std t.name)
+  in
   {
     id = identifier;
     doc = docs (id :> Identifier.LabelParent.t) t.doc;
@@ -1013,7 +1029,9 @@ and functor_parameter map f : Odoc_model.Lang.FunctorParameter.parameter =
 
 and exception_ map parent id (e : Component.Exception.t) :
     Odoc_model.Lang.Exception.t =
-  let identifier = `Exception (parent, Ident.Name.typed_exception id) in
+  let identifier =
+    Identifier.Mk.exception_ (parent, Ident.Name.typed_exception id)
+  in
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) e.doc;
@@ -1030,7 +1048,7 @@ and block_element parent
     | `Heading h ->
         let { Component.Label.attrs; label; text; location = _ } = h in
         let label =
-          try `Label (parent, Ident.Name.typed_label label)
+          try Identifier.Mk.label (parent, Ident.Name.typed_label label)
           with Not_found ->
             Format.fprintf Format.err_formatter "Failed to find id: %a\n"
               Ident.fmt label;

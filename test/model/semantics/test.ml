@@ -18,7 +18,9 @@ let parser_output_desc =
 let test ?(sections_allowed = `No_titles)
     ?(location = { Location_.line = 1; column = 0 }) str =
   let dummy_filename = "f.ml" in
-  let dummy_page = `Page (None, Names.PageName.make_std dummy_filename) in
+  let dummy_page =
+    Paths.Identifier.Mk.page (None, Names.PageName.make_std dummy_filename)
+  in
   let location =
     {
       Lexing.pos_fname = dummy_filename;

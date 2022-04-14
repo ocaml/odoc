@@ -124,9 +124,11 @@ module ElementsById : sig
 
   val empty : t
 
-  val add : [< Identifier.t ] -> [< Component.Element.any ] -> t -> t
+  val add :
+    [< Identifier.t_pv ] Paths.id -> [< Component.Element.any ] -> t -> t
 
-  val find_by_id : [< Identifier.t ] -> t -> Component.Element.any option
+  val find_by_id :
+    [< Identifier.t_pv ] Paths.id -> t -> Component.Element.any option
 end = struct
   module IdMap = Identifier.Maps.Any
 
@@ -271,7 +273,9 @@ let add_cdocs p (docs : Component.CComment.docs) env =
       match element.Odoc_model.Location_.value with
       | `Heading h ->
           let (`LLabel (name, _)) = h.Component.Label.label in
-          let label = `Label (Paths.Identifier.label_parent p, name) in
+          let label =
+            Paths.Identifier.Mk.label (Paths.Identifier.label_parent p, name)
+          in
           add_label label h env
       | _ -> env)
     env docs
@@ -285,12 +289,13 @@ let add_type identifier t env =
   let open_typedecl cs =
     let add_cons env (cons : TypeDecl.Constructor.t) =
       let ident =
-        `Constructor (identifier, ConstructorName.make_std cons.name)
+        Paths.Identifier.Mk.constructor
+          (identifier, ConstructorName.make_std cons.name)
       in
       add_to_elts Kind_Constructor ident (`Constructor (ident, cons)) env
     and add_field env (field : TypeDecl.Field.t) =
       let ident =
-        `Field
+        Paths.Identifier.Mk.field
           ( (identifier :> Odoc_model.Paths.Identifier.Parent.t),
             FieldName.make_std field.name )
       in
@@ -386,7 +391,7 @@ let lookup_root_module name env =
         | Forward_reference -> Some Forward
         | Not_found -> None
         | Found u ->
-            let (`Root _ as id) = u.id in
+            let ({ Odoc_model.Paths.iv = `Root _; _ } as id) = u.id in
             let m = module_of_unit u in
             Some (Resolved (u.root, id, m)))
   in
@@ -468,7 +473,8 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
   | None -> (
       (* Format.eprintf "Can't find %a\n%!" Component.Fmt.model_identifier (id :> Identifier.t); *)
       match (id :> Identifier.t) with
-      | `Root (_, name) -> scope.root (ModuleName.to_string name) env
+      | { iv = `Root (_, name); _ } ->
+          scope.root (ModuleName.to_string name) env
       | _ -> None)
 
 let lookup_root_module_fallback name t =
@@ -611,7 +617,7 @@ let add_functor_args' :
       match mty with
       | ModuleType.Functor (Named arg, res) ->
           ( arg.Component.FunctorParameter.id,
-            `Parameter
+            Paths.Identifier.Mk.parameter
               ( parent,
                 Ident.Name.typed_functor_parameter
                   arg.Component.FunctorParameter.id ),
@@ -621,8 +627,9 @@ let add_functor_args' :
               canonical = None;
               hidden = false;
             } )
-          :: find_args (`Result parent) res
-      | ModuleType.Functor (Unit, res) -> find_args (`Result parent) res
+          :: find_args (Paths.Identifier.Mk.result parent) res
+      | ModuleType.Functor (Unit, res) ->
+          find_args (Paths.Identifier.Mk.result parent) res
       | _ -> []
     in
     (* We substituted back the parameters as identifiers to maintain the invariant that

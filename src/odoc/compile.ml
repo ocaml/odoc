@@ -50,7 +50,7 @@ let parent resolver parent_cli_spec =
     | _ -> Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
-    | `Page _ as container -> Ok container
+    | { Odoc_model.Paths.iv = `Page _; _ } as container -> Ok container
     | _ -> Error (`Msg "Specified parent is not a parent of this file")
   in
   match parent_cli_spec with
@@ -59,7 +59,11 @@ let parent resolver parent_cli_spec =
       find_parent r >>= fun page ->
       extract_parent page.name >>= fun parent ->
       Ok (Explicit (parent, page.children))
-  | CliPackage package -> Ok (Package (`Page (None, PageName.make_std package)))
+  | CliPackage package ->
+      Ok
+        (Package
+           (Odoc_model.Paths.Identifier.Mk.page
+              (None, PageName.make_std package)))
   | CliNoparent -> Ok Noparent
 
 let resolve_imports resolver imports =
@@ -109,7 +113,14 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   in
   let result parent =
     let file = Odoc_file.create_unit ~force_hidden:hidden module_name in
-    Ok { id = `Root (parent, ModuleName.make_std module_name); file; digest }
+    Ok
+      {
+        id =
+          Odoc_model.Paths.Identifier.Mk.root
+            (parent, ModuleName.make_std module_name);
+        file;
+        digest;
+      }
   in
   let check_child : Odoc_model.Paths.Reference.t -> bool =
    fun c ->
@@ -164,14 +175,15 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
       if List.exists check_child parents_children then Ok v
       else Error (`Msg "Specified parent is not a parent of this file")
     in
+    let module Mk = Odoc_model.Paths.Identifier.Mk in
     match (parent_spec, children) with
-    | Explicit (p, cs), [] -> check cs @@ `LeafPage (Some p, page_name)
-    | Explicit (p, cs), _ -> check cs @@ `Page (Some p, page_name)
-    | Package parent, [] -> Ok (`LeafPage (Some parent, page_name))
+    | Explicit (p, cs), [] -> check cs @@ Mk.leaf_page (Some p, page_name)
+    | Explicit (p, cs), _ -> check cs @@ Mk.page (Some p, page_name)
+    | Package parent, [] -> Ok (Mk.leaf_page (Some parent, page_name))
     | Package parent, _ ->
-        Ok (`Page (Some parent, page_name)) (* This is a bit odd *)
-    | Noparent, [] -> Ok (`LeafPage (None, page_name))
-    | Noparent, _ -> Ok (`Page (None, page_name))
+        Ok (Mk.page (Some parent, page_name)) (* This is a bit odd *)
+    | Noparent, [] -> Ok (Mk.leaf_page (None, page_name))
+    | Noparent, _ -> Ok (Mk.page (None, page_name))
   in
   name >>= fun name ->
   let root =

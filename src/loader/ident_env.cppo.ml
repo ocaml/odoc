@@ -382,6 +382,7 @@ let class_type_name_exists name items =
   List.exists (function | `ClassType (id',_,_,_) when Ident.name id' = name -> true | _ -> false) items
 
 let env_of_items parent items env =
+  let open Odoc_model.Paths.Identifier in
   let rec inner items env =
     match items with
     | `Type (t, is_hidden_item) :: rest ->
@@ -389,8 +390,8 @@ let env_of_items parent items env =
       let is_hidden = is_hidden_item || type_name_exists name rest in
         let identifier, hidden =
         if is_hidden
-        then `Type(parent, TypeName.internal_of_string name), t :: env.hidden
-        else `Type(parent, TypeName.make_std name), env.hidden
+        then Mk.type_(parent, TypeName.internal_of_string name), t :: env.hidden
+        else Mk.type_(parent, TypeName.make_std name), env.hidden
       in
       let types = Ident.add t identifier env.types in      
       inner rest { env with types; hidden }
@@ -400,8 +401,8 @@ let env_of_items parent items env =
       let is_hidden = is_hidden_item || value_name_exists name rest in
       let identifier, hidden =
         if is_hidden
-        then `Value(parent, ValueName.internal_of_string name), t :: env.hidden
-        else `Value(parent, ValueName.make_std name), env.hidden
+        then Mk.value(parent, ValueName.internal_of_string name), t :: env.hidden
+        else Mk.value(parent, ValueName.make_std name), env.hidden
       in
       let values = Ident.add t identifier env.values in      
       inner rest { env with values; hidden }
@@ -411,8 +412,8 @@ let env_of_items parent items env =
       let is_hidden = is_hidden_item || module_type_name_exists name rest in
       let identifier, hidden =
         if is_hidden
-        then `ModuleType(parent, ModuleTypeName.internal_of_string name), t :: env.hidden
-        else `ModuleType(parent, ModuleTypeName.make_std name), env.hidden
+        then Mk.module_type(parent, ModuleTypeName.internal_of_string name), t :: env.hidden
+        else Mk.module_type(parent, ModuleTypeName.make_std name), env.hidden
       in
       let module_types = Ident.add t identifier env.module_types in
       inner rest { env with module_types; hidden }
@@ -423,8 +424,8 @@ let env_of_items parent items env =
       let is_hidden = is_hidden_item || module_name_exists name rest || double_underscore in
       let identifier, hidden =
         if is_hidden 
-        then `Module(parent, ModuleName.internal_of_string name), t :: env.hidden
-        else `Module(parent, ModuleName.make_std name), env.hidden
+        then Mk.module_(parent, ModuleName.internal_of_string name), t :: env.hidden
+        else Mk.module_(parent, ModuleName.make_std name), env.hidden
       in
       let path = `Identifier(identifier, is_hidden) in
       let modules = Ident.add t identifier env.modules in
@@ -436,8 +437,8 @@ let env_of_items parent items env =
       let is_hidden = is_hidden_item || class_name_exists name rest in
       let identifier, hidden =
         if is_hidden 
-        then `Class(parent, ClassName.internal_of_string name), t :: t2 :: t3 :: t4 :: env.hidden
-        else `Class(parent, ClassName.make_std name), env.hidden
+        then Mk.class_(parent, ClassName.internal_of_string name), t :: t2 :: t3 :: t4 :: env.hidden
+        else Mk.class_(parent, ClassName.make_std name), env.hidden
       in
       let classes =
         List.fold_right (fun id classes -> Ident.add id identifier classes)
@@ -449,8 +450,8 @@ let env_of_items parent items env =
       let is_hidden = is_hidden_item || class_type_name_exists name rest in
       let identifier, hidden =
         if is_hidden 
-        then `ClassType(parent, ClassTypeName.internal_of_string name), t :: t2 :: t3 :: env.hidden
-        else `ClassType(parent, ClassTypeName.make_std name), env.hidden
+        then Mk.class_type(parent, ClassTypeName.internal_of_string name), t :: t2 :: t3 :: env.hidden
+        else Mk.class_type(parent, ClassTypeName.make_std name), env.hidden
       in
       let class_types =
         List.fold_right (fun id class_types -> Ident.add id identifier class_types)
@@ -477,8 +478,9 @@ let handle_signature_type_items : Paths.Identifier.Signature.t -> Compat.signatu
     env_of_items parent items env
 
 let add_parameter parent id name env =
+
   let hidden = ParameterName.is_hidden name in
-  let path = `Identifier (`Parameter(parent, name), hidden) in
+  let path = `Identifier (Odoc_model.Paths.Identifier.Mk.parameter(parent, name), hidden) in
   let module_paths = Ident.add id path env.module_paths in
   { env with module_paths }
 
