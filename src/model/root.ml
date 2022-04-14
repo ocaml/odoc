@@ -63,7 +63,7 @@ let hash : t -> int = Hashtbl.hash
 
 let to_string t =
   let rec pp fmt (id : Paths.Identifier.OdocId.t) =
-    match id with
+    match id.iv with
     | `LeafPage (parent, name) | `Page (parent, name) -> (
         match parent with
         | Some p ->

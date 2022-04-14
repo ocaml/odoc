@@ -28,10 +28,14 @@ module Path : sig
 
   type t = { kind : kind; parent : t option; name : string }
 
-  type source =
-    [ Identifier.Page.t | Identifier.Signature.t | Identifier.ClassSignature.t ]
+  type source_pv =
+    [ Identifier.Page.t_pv
+    | Identifier.Signature.t_pv
+    | Identifier.ClassSignature.t_pv ]
 
-  val from_identifier : [< source ] -> t
+  and source = source_pv Odoc_model.Paths.id
+
+  val from_identifier : [< source_pv ] Odoc_model.Paths.id -> t
 
   val to_list : t -> (kind * string) list
 

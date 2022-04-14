@@ -1091,37 +1091,37 @@ module Make (Syntax : SYNTAX) = struct
   end = struct
     let internal_module m =
       let open Lang.Module in
-      match m.id with
+      match m.id.iv with
       | `Module (_, name) when ModuleName.is_internal name -> true
       | _ -> false
 
     let internal_type t =
       let open Lang.TypeDecl in
-      match t.id with
+      match t.id.iv with
       | `Type (_, name) when TypeName.is_internal name -> true
       | _ -> false
 
     let internal_value v =
       let open Lang.Value in
-      match v.id with
+      match v.id.iv with
       | `Value (_, name) when ValueName.is_internal name -> true
       | _ -> false
 
     let internal_module_type t =
       let open Lang.ModuleType in
-      match t.id with
+      match t.id.iv with
       | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
       | _ -> false
 
     let internal_module_substitution t =
       let open Lang.ModuleSubstitution in
-      match t.id with
+      match t.id.iv with
       | `Module (_, name) when ModuleName.is_internal name -> true
       | _ -> false
 
     let internal_module_type_substitution t =
       let open Lang.ModuleTypeSubstitution in
-      match t.id with
+      match t.id.iv with
       | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
       | _ -> false
 
@@ -1684,7 +1684,7 @@ module Make (Syntax : SYNTAX) = struct
 
     let page (t : Odoc_model.Lang.Page.t) : Page.t =
       let name =
-        match t.name with `Page (_, name) | `LeafPage (_, name) -> name
+        match t.name.iv with `Page (_, name) | `LeafPage (_, name) -> name
       in
       let title = Odoc_model.Names.PageName.to_string name in
       let url = Url.Path.from_identifier t.name in

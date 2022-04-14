@@ -34,8 +34,8 @@ let cmt_of_string s =
     let p = Parse.implementation l in
     Typemod.type_implementation "" "" "" env p
 
-let parent = `Page (None, Odoc_model.Names.PageName.make_std "None")
-let id = `Root (Some parent, Odoc_model.Names.ModuleName.make_std "Root")
+let parent = Odoc_model.Paths.Identifier.Mk.page (None, Odoc_model.Names.PageName.make_std "None")
+let id = Odoc_model.Paths.Identifier.Mk.root (Some parent, Odoc_model.Names.ModuleName.make_std "Root")
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
   ignore(package);
@@ -57,7 +57,7 @@ let root =
 
 let root_identifier = `Identifier id
 
-let root_module name = `Module (id, Odoc_model.Names.ModuleName.make_std name)
+let root_module name = Odoc_model.Paths.Identifier.Mk.module_ (id, Odoc_model.Names.ModuleName.make_std name)
 
 let root_pp fmt (_ : Odoc_model.Root.t) = Format.fprintf fmt "Common.root"
 
@@ -399,7 +399,7 @@ module LangUtils = struct
                 let rec inner = function
                     | Odoc_model.Lang.Signature.Module (_, m) :: rest -> begin
                         let id = m.Odoc_model.Lang.Module.id in
-                        match id with
+                        match id.iv with
                         | `Module (_, mname') ->
                             if Odoc_model.Names.ModuleName.to_string mname' = mname
                             then m
@@ -426,7 +426,7 @@ module LangUtils = struct
         type 'a fmt = Format.formatter -> 'a -> unit
 
         open Paths
-        val identifier : [< Identifier.t] fmt
+        val identifier : [< Identifier.t_pv] Paths.id fmt
 
         open Lang
 

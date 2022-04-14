@@ -85,7 +85,17 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_type "S" |-- ModuleType.id) sg);;
 - : Odoc_model.Paths.Identifier.ModuleType.t =
-`ModuleType (`Root (Some (`Page (None, None)), Root), S)
+{Odoc_model__Paths_types.iv =
+  `ModuleType
+    ({Odoc_model__Paths_types.iv =
+       `Root
+         (Some
+           {Odoc_model__Paths_types.iv = `Page (None, None);
+            ihash = 236059787; ikey = "p_None"},
+          Root);
+      ihash = 818126955; ikey = "r_Root.p_None"},
+     S);
+ ihash = 527535255; ikey = "mt_S.r_Root.p_None"}
 ```
 
 - M: `` `Module (`Root root, "M") ``
@@ -93,7 +103,17 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- Module.id) sg);;
 - : Odoc_model.Paths.Identifier.Module.t =
-`Module (`Root (Some (`Page (None, None)), Root), M)
+{Odoc_model__Paths_types.iv =
+  `Module
+    ({Odoc_model__Paths_types.iv =
+       `Root
+         (Some
+           {Odoc_model__Paths_types.iv = `Page (None, None);
+            ihash = 236059787; ikey = "p_None"},
+          Root);
+      ihash = 818126955; ikey = "r_Root.p_None"},
+     M);
+ ihash = 716453475; ikey = "m_M.r_Root.p_None"}
 ```
 
 - F: `` `Module (`Root root, "F") ``
@@ -101,7 +121,17 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "F" |-- Module.id) sg);;
 - : Odoc_model.Paths.Identifier.Module.t =
-`Module (`Root (Some (`Page (None, None)), Root), F)
+{Odoc_model__Paths_types.iv =
+  `Module
+    ({Odoc_model__Paths_types.iv =
+       `Root
+         (Some
+           {Odoc_model__Paths_types.iv = `Page (None, None);
+            ihash = 236059787; ikey = "p_None"},
+          Root);
+      ihash = 818126955; ikey = "r_Root.p_None"},
+     F);
+ ihash = 748202139; ikey = "m_F.r_Root.p_None"}
 ```
 
 - m_t: `` `Type ( `Module ( `Root root, "M"), "m_t" ) ``
@@ -109,7 +139,21 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- Signature.type_ "m_t" |-- TypeDecl.id) sg);;
 - : Odoc_model.Paths.Identifier.Type.t =
-`Type (`Module (`Root (Some (`Page (None, None)), Root), M), m_t)
+{Odoc_model__Paths_types.iv =
+  `Type
+    ({Odoc_model__Paths_types.iv =
+       `Module
+         ({Odoc_model__Paths_types.iv =
+            `Root
+              (Some
+                {Odoc_model__Paths_types.iv = `Page (None, None);
+                 ihash = 236059787; ikey = "p_None"},
+               Root);
+           ihash = 818126955; ikey = "r_Root.p_None"},
+          M);
+      ihash = 716453475; ikey = "m_M.r_Root.p_None"},
+     m_t);
+ ihash = 493774927; ikey = "t_m_t.m_M.r_Root.p_None"}
 ```
 
 - f_t: `` `Type (`Result (`Module (`Root root, "F")), "f_t") ``
@@ -117,7 +161,24 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "F" |-- functor_sig |-- Signature.type_ "f_t" |-- TypeDecl.id) sg);;
 - : Odoc_model.Paths.Identifier.Type.t =
-`Type (`Result (`Module (`Root (Some (`Page (None, None)), Root), F)), f_t)
+{Odoc_model__Paths_types.iv =
+  `Type
+    ({Odoc_model__Paths_types.iv =
+       `Result
+         {Odoc_model__Paths_types.iv =
+           `Module
+             ({Odoc_model__Paths_types.iv =
+                `Root
+                  (Some
+                    {Odoc_model__Paths_types.iv = `Page (None, None);
+                     ihash = 236059787; ikey = "p_None"},
+                   Root);
+               ihash = 818126955; ikey = "r_Root.p_None"},
+              F);
+          ihash = 748202139; ikey = "m_F.r_Root.p_None"};
+      ihash = 709672416; ikey = "___result__.m_F.r_Root.p_None"},
+     f_t);
+ ihash = 344808614; ikey = "t_f_t.___result__.m_F.r_Root.p_None"}
 ```
 
 - foo: `` `Type (`Parameter (`Module (`Root root, "F"), "X"), "foo") ``
@@ -125,8 +186,25 @@ Here we have:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "F" |-- functor_arg_sig |-- Signature.type_ "foo" |-- TypeDecl.id) sg);;
 - : Odoc_model.Paths.Identifier.Type.t =
-`Type
-  (`Parameter (`Module (`Root (Some (`Page (None, None)), Root), F), X), foo)
+{Odoc_model__Paths_types.iv =
+  `Type
+    ({Odoc_model__Paths_types.iv =
+       `Parameter
+         ({Odoc_model__Paths_types.iv =
+            `Module
+              ({Odoc_model__Paths_types.iv =
+                 `Root
+                   (Some
+                     {Odoc_model__Paths_types.iv = `Page (None, None);
+                      ihash = 236059787; ikey = "p_None"},
+                    Root);
+                ihash = 818126955; ikey = "r_Root.p_None"},
+               F);
+           ihash = 748202139; ikey = "m_F.r_Root.p_None"},
+          X);
+      ihash = 930266402; ikey = "p_X.m_F.r_Root.p_None"},
+     foo);
+ ihash = 212207131; ikey = "t_foo.p_X.m_F.r_Root.p_None"}
 ```
 
 There are many other types of Identifier: type, constructor, field, etc.
@@ -167,14 +245,45 @@ and now we can get the paths for all three type declarations:
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- Signature.module_ "N" |-- mod_sig |-- type_constr_path "x1") sg);;
 - : Odoc_model.Paths.Path.Type.t =
 `Identifier
-  (`Type
-     (`Module (`Module (`Root (Some (`Page (None, None)), Root), M), N), t),
+  ({Odoc_model__Paths_types.iv =
+     `Type
+       ({Odoc_model__Paths_types.iv =
+          `Module
+            ({Odoc_model__Paths_types.iv =
+               `Module
+                 ({Odoc_model__Paths_types.iv =
+                    `Root
+                      (Some
+                        {Odoc_model__Paths_types.iv = `Page (None, None);
+                         ihash = 236059787; ikey = "p_None"},
+                       Root);
+                   ihash = 818126955; ikey = "r_Root.p_None"},
+                  M);
+              ihash = 716453475; ikey = "m_M.r_Root.p_None"},
+             N);
+         ihash = 1041581453; ikey = "m_N.m_M.r_Root.p_None"},
+        t);
+    ihash = 311238448; ikey = "t_t.m_N.m_M.r_Root.p_None"},
    false)
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- type_constr_path "x2") sg);;
 - : Odoc_model.Paths.Path.Type.t =
 `Dot
   (`Identifier
-     (`Module (`Module (`Root (Some (`Page (None, None)), Root), M), N),
+     ({Odoc_model__Paths_types.iv =
+        `Module
+          ({Odoc_model__Paths_types.iv =
+             `Module
+               ({Odoc_model__Paths_types.iv =
+                  `Root
+                    (Some
+                      {Odoc_model__Paths_types.iv = `Page (None, None);
+                       ihash = 236059787; ikey = "p_None"},
+                     Root);
+                 ihash = 818126955; ikey = "r_Root.p_None"},
+                M);
+            ihash = 716453475; ikey = "m_M.r_Root.p_None"},
+           N);
+       ihash = 1041581453; ikey = "m_N.m_M.r_Root.p_None"},
       false),
    "t")
 # Common.LangUtils.Lens.(get (type_constr_path "x3") sg);;
@@ -182,7 +291,18 @@ and now we can get the paths for all three type declarations:
 `Dot
   (`Dot
      (`Identifier
-        (`Module (`Root (Some (`Page (None, None)), Root), M), false),
+        ({Odoc_model__Paths_types.iv =
+           `Module
+             ({Odoc_model__Paths_types.iv =
+                `Root
+                  (Some
+                    {Odoc_model__Paths_types.iv = `Page (None, None);
+                     ihash = 236059787; ikey = "p_None"},
+                   Root);
+               ihash = 818126955; ikey = "r_Root.p_None"},
+              M);
+          ihash = 716453475; ikey = "m_M.r_Root.p_None"},
+         false),
       "N"),
    "t")
 ```
@@ -200,22 +320,63 @@ and now the paths are:
 - : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Identifier
-     (`Type
-        (`Module (`Module (`Root (Some (`Page (None, None)), Root), M), N),
-         t)))
+     {Odoc_model__Paths_types.iv =
+       `Type
+         ({Odoc_model__Paths_types.iv =
+            `Module
+              ({Odoc_model__Paths_types.iv =
+                 `Module
+                   ({Odoc_model__Paths_types.iv =
+                      `Root
+                        (Some
+                          {Odoc_model__Paths_types.iv = `Page (None, None);
+                           ihash = 236059787; ikey = "p_None"},
+                         Root);
+                     ihash = 818126955; ikey = "r_Root.p_None"},
+                    M);
+                ihash = 716453475; ikey = "m_M.r_Root.p_None"},
+               N);
+           ihash = 1041581453; ikey = "m_N.m_M.r_Root.p_None"},
+          t);
+      ihash = 311238448; ikey = "t_t.m_N.m_M.r_Root.p_None"})
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- type_constr_path "x2") sg');;
 - : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Type
      (`Identifier
-        (`Module (`Module (`Root (Some (`Page (None, None)), Root), M), N)),
+        {Odoc_model__Paths_types.iv =
+          `Module
+            ({Odoc_model__Paths_types.iv =
+               `Module
+                 ({Odoc_model__Paths_types.iv =
+                    `Root
+                      (Some
+                        {Odoc_model__Paths_types.iv = `Page (None, None);
+                         ihash = 236059787; ikey = "p_None"},
+                       Root);
+                   ihash = 818126955; ikey = "r_Root.p_None"},
+                  M);
+              ihash = 716453475; ikey = "m_M.r_Root.p_None"},
+             N);
+         ihash = 1041581453; ikey = "m_N.m_M.r_Root.p_None"},
       t))
 # Common.LangUtils.Lens.(get (type_constr_path "x3") sg');;
 - : Odoc_model.Paths.Path.Type.t =
 `Resolved
   (`Type
      (`Module
-        (`Identifier (`Module (`Root (Some (`Page (None, None)), Root), M)),
+        (`Identifier
+           {Odoc_model__Paths_types.iv =
+             `Module
+               ({Odoc_model__Paths_types.iv =
+                  `Root
+                    (Some
+                      {Odoc_model__Paths_types.iv = `Page (None, None);
+                       ihash = 236059787; ikey = "p_None"},
+                     Root);
+                 ihash = 818126955; ikey = "r_Root.p_None"},
+                M);
+            ihash = 716453475; ikey = "m_M.r_Root.p_None"},
          N),
       t))
 ```
@@ -263,7 +424,17 @@ val sg : Odoc_model.Lang.Signature.t =
   {Odoc_model.Lang.Signature.items =
     [Odoc_model.Lang.Signature.ModuleType
       {Odoc_model.Lang.ModuleType.id =
-        `ModuleType (`Root (Some (`Page (None, None)), Root), ARG);
+        {Odoc_model__Paths_types.iv =
+          `ModuleType
+            ({Odoc_model__Paths_types.iv =
+               `Root
+                 (Some
+                   {Odoc_model__Paths_types.iv = `Page (None, None);
+                    ihash = 236059787; ikey = "p_None"},
+                  Root);
+              ihash = 818126955; ikey = "r_Root.p_None"},
+             ARG);
+         ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"};
        doc = []; canonical = None;
        expr =
         Some
@@ -271,23 +442,59 @@ val sg : Odoc_model.Lang.Signature.t =
            {Odoc_model.Lang.Signature.items =
              [Odoc_model.Lang.Signature.ModuleType
                {Odoc_model.Lang.ModuleType.id =
-                 `ModuleType
-                   (`ModuleType
-                      (`Root (Some (`Page (None, None)), Root), ARG),
-                    S);
+                 {Odoc_model__Paths_types.iv =
+                   `ModuleType
+                     ({Odoc_model__Paths_types.iv =
+                        `ModuleType
+                          ({Odoc_model__Paths_types.iv =
+                             `Root
+                               (Some
+                                 {Odoc_model__Paths_types.iv =
+                                   `Page (None, None);
+                                  ihash = 236059787; ikey = "p_None"},
+                                Root);
+                            ihash = 818126955; ikey = "r_Root.p_None"},
+                           ARG);
+                       ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"},
+                      S);
+                  ihash = 208722936; ikey = "mt_S.mt_ARG.r_Root.p_None"};
                 doc = []; canonical = None; expr = None}];
             compiled = true; doc = []})};
      Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
       {Odoc_model.Lang.Module.id =
-        `Module (`Root (Some (`Page (None, None)), Root), F);
+        {Odoc_model__Paths_types.iv =
+          `Module
+            ({Odoc_model__Paths_types.iv =
+               `Root
+                 (Some
+                   {Odoc_model__Paths_types.iv = `Page (None, None);
+                    ihash = 236059787; ikey = "p_None"},
+                  Root);
+              ihash = 818126955; ikey = "r_Root.p_None"},
+             F);
+         ihash = 748202139; ikey = "m_F.r_Root.p_None"};
        doc = [];
        type_ =
         Odoc_model.Lang.Module.ModuleType
          (Odoc_model.Lang.ModuleType.Functor
            (Odoc_model.Lang.FunctorParameter.Named
              {Odoc_model.Lang.FunctorParameter.id =
-               `Parameter
-                 (`Module (`Root (Some (`Page (None, None)), Root), F), X);
+               {Odoc_model__Paths_types.iv =
+                 `Parameter
+                   ({Odoc_model__Paths_types.iv =
+                      `Module
+                        ({Odoc_model__Paths_types.iv =
+                           `Root
+                             (Some
+                               {Odoc_model__Paths_types.iv =
+                                 `Page (None, None);
+                                ihash = 236059787; ikey = "p_None"},
+                              Root);
+                          ihash = 818126955; ikey = "r_Root.p_None"},
+                         F);
+                     ihash = 748202139; ikey = "m_F.r_Root.p_None"},
+                    X);
+                ihash = 930266402; ikey = "p_X.m_F.r_Root.p_None"};
               expr =
                Odoc_model.Lang.ModuleType.Path
                 {Odoc_model.Lang.ModuleType.p_expansion =
@@ -296,85 +503,89 @@ val sg : Odoc_model.Lang.Signature.t =
                      {Odoc_model.Lang.Signature.items =
                        [Odoc_model.Lang.Signature.ModuleType
                          {Odoc_model.Lang.ModuleType.id =
-                           `ModuleType
-                             (`Parameter
-                                (`Module
-                                   (`Root (Some (`Page (None, None)), Root),
-                                    F),
-                                 X),
-                              S);
+                           {Odoc_model__Paths_types.iv =
+                             `ModuleType
+                               ({Odoc_model__Paths_types.iv =
+                                  `Parameter
+                                    ({Odoc_model__Paths_types.iv =
+                                       `Module
+                                         ({Odoc_model__Paths_types.iv =
+                                            `Root
+                                              (Some
+                                                {Odoc_model__Paths_types.iv =
+                                                  `Page (None, None);
+                                                 ihash = 236059787;
+                                                 ikey = "p_None"},
+                                               Root);
+                                           ihash = 818126955;
+                                           ikey = "r_Root.p_None"},
+                                          F);
+                                      ihash = 748202139;
+                                      ikey = "m_F.r_Root.p_None"},
+                                     X);
+                                 ihash = 930266402;
+                                 ikey = "p_X.m_F.r_Root.p_None"},
+                                S);
+                            ihash = 313393860;
+                            ikey = "mt_S.p_X.m_F.r_Root.p_None"};
                           doc = []; canonical = None; expr = None}];
                       compiled = true; doc = []});
                  p_path =
                   `Resolved
                     (`Identifier
-                       (`ModuleType
-                          (`Root (Some (`Page (None, None)), Root), ARG)))}},
+                       {Odoc_model__Paths_types.iv =
+                         `ModuleType
+                           ({Odoc_model__Paths_types.iv =
+                              `Root
+                                (Some
+                                  {Odoc_model__Paths_types.iv =
+                                    `Page (None, None);
+                                   ihash = 236059787; ikey = "p_None"},
+                                 Root);
+                             ihash = 818126955; ikey = "r_Root.p_None"},
+                            ARG);
+                        ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"})}},
            Odoc_model.Lang.ModuleType.Signature
             {Odoc_model.Lang.Signature.items =
               [Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
-                  `Module
-                    (`Result
-                       (`Module (`Root (Some (`Page (None, None)), Root), F)),
-                     N);
+                  {Odoc_model__Paths_types.iv =
+                    `Module
+                      ({Odoc_model__Paths_types.iv =
+                         `Result
+                           {Odoc_model__Paths_types.iv =
+                             `Module
+                               ({Odoc_model__Paths_types.iv =
+                                  `Root
+                                    (Some
+                                      {Odoc_model__Paths_types.iv =
+                                        `Page (None, None);
+                                       ihash = 236059787; ikey = "p_None"},
+                                     Root);
+                                 ihash = 818126955; ikey = "r_Root.p_None"},
+                                F);
+                            ihash = 748202139;
+                            ikey =
+                             "m_F.r_Root.p_No"... (* string length 17; truncated *)};
+                        ihash = 709672416;
+                        ikey =
+                         "___result__.m"... (* string length 29; truncated *)},
+                       N);
+                   ihash = 837385364;
+                   ikey = "m_N.___res"... (* string length 33; truncated *)};
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
                    (Odoc_model.Lang.ModuleType.Path
                      {Odoc_model.Lang.ModuleType.p_expansion = None;
-                      p_path =
-                       `Resolved
-                         (`OpaqueModuleType
-                            (`ModuleType
-                               (`Identifier
-                                  (`Parameter
-                                     (`Module
-                                        (`Root
-                                           (Some (`Page (None, None)), Root),
-                                         F),
-                                      X)),
-                                S)))});
-                 canonical = None; hidden = false})];
-             compiled = true; doc = []}));
-       canonical = None; hidden = false});
-     Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-      {Odoc_model.Lang.Module.id =
-        `Module (`Root (Some (`Page (None, None)), Root), M);
-       doc = [];
-       type_ =
-        Odoc_model.Lang.Module.ModuleType
-         (Odoc_model.Lang.ModuleType.Signature
-           {Odoc_model.Lang.Signature.items =
-             [Odoc_model.Lang.Signature.ModuleType
-               {Odoc_model.Lang.ModuleType.id =
-                 `ModuleType
-                   (`Module (`Root (Some (`Page (None, None)), Root), M), S);
-                doc = []; canonical = None;
-                expr =
-                 Some
-                  (Odoc_model.Lang.ModuleType.Signature
-                    {Odoc_model.Lang.Signature.items =
-                      [Odoc_model.Lang.Signature.Type
-                        (Odoc_model.Lang.Signature.Ordinary,
-                        {Odoc_model.Lang.TypeDecl.id =
-                          `Type
-                            (`ModuleType
-                               (`Module
-                                  (`Root (Some (`Page (None, None)), Root),
-                                   M),
-                                ...),
-                             ...);
-                         doc = ...; canonical = ...; equation = ...;
-                         representation = ...});
-                       ...];
-                     compiled = ...; doc = ...})};
-              ...];
-            compiled = ...; doc = ...});
-       canonical = ...; hidden = ...});
-     ...];
-   compiled = ...; doc = ...}
+                      p_path = `Resolved ...});
+                  canonical = ...; hidden = ...});
+                ...];
+              compiled = ...; doc = ...}));
+        canonical = ...; hidden = ...});
+      ...];
+    compiled = ...; doc = ...}
 ```
 
 The problem here is that odoc will not generate a page for the module `F(M)`.
@@ -393,14 +604,44 @@ path as this `` `Subst `` constructor:
      (`Subst
         (`ModuleType
            (`Identifier
-              (`Module (`Root (Some (`Page (None, None)), Root), M)),
+              {Odoc_model__Paths_types.iv =
+                `Module
+                  ({Odoc_model__Paths_types.iv =
+                     `Root
+                       (Some
+                         {Odoc_model__Paths_types.iv = `Page (None, None);
+                          ihash = 236059787; ikey = "p_None"},
+                        Root);
+                    ihash = 818126955; ikey = "r_Root.p_None"},
+                   M);
+               ihash = 716453475; ikey = "m_M.r_Root.p_None"},
             S),
          `Module
            (`Apply
               (`Identifier
-                 (`Module (`Root (Some (`Page (None, None)), Root), F)),
+                 {Odoc_model__Paths_types.iv =
+                   `Module
+                     ({Odoc_model__Paths_types.iv =
+                        `Root
+                          (Some
+                            {Odoc_model__Paths_types.iv = `Page (None, None);
+                             ihash = 236059787; ikey = "p_None"},
+                           Root);
+                       ihash = 818126955; ikey = "r_Root.p_None"},
+                      F);
+                  ihash = 748202139; ikey = "m_F.r_Root.p_None"},
                `Identifier
-                 (`Module (`Root (Some (`Page (None, None)), Root), M))),
+                 {Odoc_model__Paths_types.iv =
+                   `Module
+                     ({Odoc_model__Paths_types.iv =
+                        `Root
+                          (Some
+                            {Odoc_model__Paths_types.iv = `Page (None, None);
+                             ihash = 236059787; ikey = "p_None"},
+                           Root);
+                       ihash = 818126955; ikey = "r_Root.p_None"},
+                      M);
+                  ihash = 716453475; ikey = "m_M.r_Root.p_None"}),
             N)),
       t))
 ```

@@ -3,12 +3,13 @@ open Odoc_model.Paths
 open Odoc_model.Names
 module Root = Odoc_model.Root
 
-let functor_arg_pos (`Parameter (p, _)) =
+let functor_arg_pos : Odoc_model.Paths.Identifier.FunctorParameter.t -> int =
+ fun { Odoc_model.Paths.iv = `Parameter (p, _); _ } ->
   let rec inner_sig = function
-    | `Result p -> 1 + inner_sig p
+    | `Result { Odoc_model.Paths.iv = p; _ } -> 1 + inner_sig p
     | `Module _ | `ModuleType _ | `Root _ | `Parameter _ -> 1
   in
-  inner_sig p
+  inner_sig p.Odoc_model.Paths.iv
 
 let render_path : Odoc_model.Paths.Path.t -> string =
   let open Odoc_model.Paths.Path in
@@ -84,8 +85,12 @@ end
 let ( >>= ) x f = match x with Ok x -> f x | Error _ as e -> e
 
 module Path = struct
-  type source =
-    [ Identifier.Page.t | Identifier.Signature.t | Identifier.ClassSignature.t ]
+  type source_pv =
+    [ Identifier.Page.t_pv
+    | Identifier.Signature.t_pv
+    | Identifier.ClassSignature.t_pv ]
+
+  and source = source_pv Odoc_model.Paths.id
 
   type kind =
     [ `Module
@@ -113,8 +118,10 @@ module Path = struct
 
   let mk ?parent kind name = { kind; parent; name }
 
-  let rec from_identifier : source -> t = function
-    | `Root (parent, unit_name) ->
+  let rec from_identifier : source -> t =
+   fun x ->
+    match x with
+    | { iv = `Root (parent, unit_name); _ } ->
         let parent =
           match parent with
           | Some p -> Some (from_identifier (p :> source))
@@ -123,7 +130,7 @@ module Path = struct
         let kind = `Module in
         let page = ModuleName.to_string unit_name in
         mk ?parent kind page
-    | `Page (parent, page_name) ->
+    | { iv = `Page (parent, page_name); _ } ->
         let parent =
           match parent with
           | Some p -> Some (from_identifier (p :> source))
@@ -132,7 +139,7 @@ module Path = struct
         let kind = `Page in
         let page = PageName.to_string page_name in
         mk ?parent kind page
-    | `LeafPage (parent, page_name) ->
+    | { iv = `LeafPage (parent, page_name); _ } ->
         let parent =
           match parent with
           | Some p -> Some (from_identifier (p :> source))
@@ -141,12 +148,12 @@ module Path = struct
         let kind = `LeafPage in
         let page = PageName.to_string page_name in
         mk ?parent kind page
-    | `Module (parent, mod_name) ->
+    | { iv = `Module (parent, mod_name); _ } ->
         let parent = from_identifier (parent :> source) in
         let kind = `Module in
         let page = ModuleName.to_string mod_name in
         mk ~parent kind page
-    | `Parameter (functor_id, arg_name) as p ->
+    | { iv = `Parameter (functor_id, arg_name); _ } as p ->
         let parent = from_identifier (functor_id :> source) in
         let kind = `Argument in
         let arg_num = functor_arg_pos p in
@@ -154,24 +161,25 @@ module Path = struct
           Printf.sprintf "%d-%s" arg_num (ParameterName.to_string arg_name)
         in
         mk ~parent kind page
-    | `ModuleType (parent, modt_name) ->
+    | { iv = `ModuleType (parent, modt_name); _ } ->
         let parent = from_identifier (parent :> source) in
         let kind = `ModuleType in
         let page = ModuleTypeName.to_string modt_name in
         mk ~parent kind page
-    | `Class (parent, name) ->
+    | { iv = `Class (parent, name); _ } ->
         let parent = from_identifier (parent :> source) in
         let kind = `Class in
         let page = ClassName.to_string name in
         mk ~parent kind page
-    | `ClassType (parent, name) ->
+    | { iv = `ClassType (parent, name); _ } ->
         let parent = from_identifier (parent :> source) in
         let kind = `ClassType in
         let page = ClassTypeName.to_string name in
         mk ~parent kind page
-    | `Result p -> from_identifier (p :> source)
+    | { iv = `Result p; _ } -> from_identifier (p :> source)
 
-  let from_identifier p = from_identifier (p : [< source ] :> source)
+  let from_identifier p =
+    from_identifier (p : [< source_pv ] Odoc_model.Paths.id :> source)
 
   let to_list url =
     let rec loop acc { parent; name; kind } =
@@ -249,7 +257,7 @@ module Anchor = struct
   let rec from_identifier : Identifier.t -> (t, Error.t) result =
     let open Error in
     function
-    | `Module (parent, mod_name) ->
+    | { iv = `Module (parent, mod_name); _ } ->
         let parent = Path.from_identifier (parent :> Path.source) in
         let kind = `Module in
         let anchor =
@@ -257,20 +265,22 @@ module Anchor = struct
             (ModuleName.to_string mod_name)
         in
         Ok { page = parent; anchor; kind }
-    | `Root _ as p ->
+    | { iv = `Root _; _ } as p ->
         let page = Path.from_identifier (p :> Path.source) in
         Ok { page; kind = `Module; anchor = "" }
-    | `Page _ as p ->
+    | { iv = `Page _; _ } as p ->
         let page = Path.from_identifier (p :> Path.source) in
         Ok { page; kind = `Page; anchor = "" }
-    | `LeafPage _ as p ->
+    | { iv = `LeafPage _; _ } as p ->
         let page = Path.from_identifier (p :> Path.source) in
         Ok { page; kind = `LeafPage; anchor = "" }
     (* For all these identifiers, page names and anchors are the same *)
-    | (`Parameter _ | `Result _ | `ModuleType _ | `Class _ | `ClassType _) as p
-      ->
+    | {
+        iv = `Parameter _ | `Result _ | `ModuleType _ | `Class _ | `ClassType _;
+        _;
+      } as p ->
         Ok (anchorify_path @@ Path.from_identifier p)
-    | `Type (parent, type_name) ->
+    | { iv = `Type (parent, type_name); _ } ->
         let page = Path.from_identifier (parent :> Path.source) in
         let kind = `Type in
         Ok
@@ -281,9 +291,9 @@ module Anchor = struct
                 (TypeName.to_string type_name);
             kind;
           }
-    | `CoreType ty_name ->
+    | { iv = `CoreType ty_name; _ } ->
         Error (Not_linkable ("core_type:" ^ TypeName.to_string ty_name))
-    | `Extension (parent, name) ->
+    | { iv = `Extension (parent, name); _ } ->
         let page = Path.from_identifier (parent :> Path.source) in
         let kind = `Extension in
         Ok
@@ -294,7 +304,7 @@ module Anchor = struct
                 (ExtensionName.to_string name);
             kind;
           }
-    | `Exception (parent, name) ->
+    | { iv = `Exception (parent, name); _ } ->
         let page = Path.from_identifier (parent :> Path.source) in
         let kind = `Exception in
         Ok
@@ -305,9 +315,9 @@ module Anchor = struct
                 (ExceptionName.to_string name);
             kind;
           }
-    | `CoreException name ->
+    | { iv = `CoreException name; _ } ->
         Error (Not_linkable ("core_exception:" ^ ExceptionName.to_string name))
-    | `Value (parent, name) ->
+    | { iv = `Value (parent, name); _ } ->
         let page = Path.from_identifier (parent :> Path.source) in
         let kind = `Val in
         Ok
@@ -317,37 +327,39 @@ module Anchor = struct
               Format.asprintf "%a-%s" pp_kind kind (ValueName.to_string name);
             kind;
           }
-    | `Method (parent, name) ->
+    | { iv = `Method (parent, name); _ } ->
         let str_name = MethodName.to_string name in
         let page = Path.from_identifier (parent :> Path.source) in
         let kind = `Method in
         Ok
           { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
-    | `InstanceVariable (parent, name) ->
+    | { iv = `InstanceVariable (parent, name); _ } ->
         let str_name = InstanceVariableName.to_string name in
         let page = Path.from_identifier (parent :> Path.source) in
         let kind = `Val in
         Ok
           { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
-    | `Constructor (parent, name) ->
+    | { iv = `Constructor (parent, name); _ } ->
         from_identifier (parent :> Identifier.t) >>= fun page ->
         let kind = `Constructor in
         let suffix = ConstructorName.to_string name in
         Ok (add_suffix ~kind page suffix)
-    | `Field (parent, name) ->
+    | { iv = `Field (parent, name); _ } ->
         from_identifier (parent :> Identifier.t) >>= fun page ->
         let kind = `Field in
         let suffix = FieldName.to_string name in
         Ok (add_suffix ~kind page suffix)
-    | `Label (parent, anchor) -> (
+    | { iv = `Label (parent, anchor); _ } -> (
         let str_name = LabelName.to_string anchor in
         (* [Identifier.LabelParent.t] contains datatypes. [`CoreType] can't
            happen, [`Type] may not happen either but just in case, use the
            grand-parent. *)
         match parent with
-        | #Path.source as parent -> mk ~kind:`Section parent str_name
-        | `CoreType _ -> Error (Unexpected_anchor "core_type label parent")
-        | `Type (gp, _) -> mk ~kind:`Section gp str_name)
+        | { iv = #Path.source_pv; _ } as parent ->
+            mk ~kind:`Section parent str_name
+        | { iv = `CoreType _; _ } ->
+            Error (Unexpected_anchor "core_type label parent")
+        | { iv = `Type (gp, _); _ } -> mk ~kind:`Section gp str_name)
 
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =
@@ -389,7 +401,7 @@ let from_path page =
   { Anchor.page; anchor = ""; kind = (page.kind :> Anchor.kind) }
 
 let from_identifier ~stop_before = function
-  | #Path.source as p when not stop_before ->
+  | { Odoc_model.Paths.iv = #Path.source_pv; _ } as p when not stop_before ->
       Ok (from_path @@ Path.from_identifier p)
   | p -> Anchor.from_identifier p
 
