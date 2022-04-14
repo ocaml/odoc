@@ -192,7 +192,7 @@ let read_label_declaration env parent label_parent ld =
   let open TypeDecl.Field in
   let open Odoc_model.Names in
   let name = Ident.name ld.ld_id in
-  let id = `Field(parent, FieldName.make_std name) in
+  let id = Identifier.Mk.field(parent, FieldName.make_std name) in
   let doc = Doc_attr.attached_no_tag label_parent ld.ld_attributes in
   let mutable_ = (ld.ld_mutable = Mutable) in
   let type_ = read_core_type env label_parent ld.ld_type in
@@ -214,7 +214,7 @@ let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let open Odoc_model.Names in
   let name = Ident.name cd.cd_id in
-  let id = `Constructor(parent, ConstructorName.make_std name) in
+  let id = Identifier.Mk.constructor(parent, ConstructorName.make_std name) in
   let container = (parent : Identifier.DataType.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag label_container cd.cd_attributes in
@@ -292,7 +292,7 @@ let read_extension_constructor env parent ext =
   let open Extension.Constructor in
   let open Odoc_model.Names in
   let name = Ident.name ext.ext_id in
-  let id = `Extension(parent, ExtensionName.make_std name) in
+  let id = Identifier.Mk.extension(parent, ExtensionName.make_std name) in
   let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag label_container ext.ext_attributes in
@@ -326,7 +326,7 @@ let read_exception env parent (ext : extension_constructor) =
   let open Exception in
   let open Odoc_model.Names in
   let name = Ident.name ext.ext_id in
-  let id = `Exception(parent, ExceptionName.make_std name) in
+  let id = Identifier.Mk.exception_(parent, ExceptionName.make_std name) in
   let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag label_container ext.ext_attributes in
@@ -353,14 +353,14 @@ let rec read_class_type_field env parent ctf =
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
-      let id = `InstanceVariable(parent, InstanceVariableName.make_std name) in
+      let id = Identifier.Mk.instance_variable(parent, InstanceVariableName.make_std name) in
       let mutable_ = (mutable_ = Mutable) in
       let virtual_ = (virtual_ = Virtual) in
     let type_ = read_core_type env container typ in
         Some (InstanceVariable {id; doc; mutable_; virtual_; type_})
   | Tctf_method(name, private_, virtual_, typ) ->
       let open Method in
-      let id = `Method(parent, MethodName.make_std name) in
+      let id = Identifier.Mk.method_(parent, MethodName.make_std name) in
       let private_ = (private_ = Private) in
       let virtual_ = (virtual_ = Virtual) in
     let type_ = read_core_type env container typ in
@@ -523,11 +523,11 @@ and read_module_type env parent label_parent mty =
                  Ident.name id, Env.add_parameter parent id (ParameterName.of_ident id) env
               | None -> "_", env
             in
-            let id = `Parameter(parent, ParameterName.make_std name) in
+            let id = Identifier.Mk.parameter(parent, ParameterName.make_std name) in
             let arg = read_module_type env id label_parent arg in
             Named { id; expr = arg; }, env
         in
-        let res = read_module_type env (`Result parent) label_parent res in
+        let res = read_module_type env (Identifier.Mk.result parent) label_parent res in
         Functor (f_parameter, res)
 #else
     | Tmty_functor(id, _, arg, res) ->
@@ -795,7 +795,7 @@ and read_signature :
     ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; doc }, tags)
 
 let read_interface root name intf =
-  let id = `Root (root, Odoc_model.Names.ModuleName.make_std name) in
+  let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in
   let sg, canonical =
     read_signature Odoc_model.Semantics.Expect_canonical Env.empty id intf
   in

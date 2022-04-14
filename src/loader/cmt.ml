@@ -133,14 +133,14 @@ let rec read_class_type_field env parent ctf =
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
-      let id = `InstanceVariable(parent, InstanceVariableName.make_std name) in
+      let id = Identifier.Mk.instance_variable(parent, InstanceVariableName.make_std name) in
       let mutable_ = (mutable_ = Mutable) in
       let virtual_ = (virtual_ = Virtual) in
       let type_ = read_core_type env typ in
         Some (InstanceVariable {id; doc; mutable_; virtual_; type_})
   | Tctf_method(name, private_, virtual_, typ) ->
       let open Method in
-      let id = `Method(parent, MethodName.make_std name) in
+      let id = Identifier.Mk.method_(parent, MethodName.make_std name) in
       let private_ = (private_ = Private) in
       let virtual_ = (virtual_ = Virtual) in
       let type_ = read_core_type env typ in
@@ -220,7 +220,7 @@ let rec read_class_field env parent cf =
   match cf.cf_desc with
   | Tcf_val({txt = name; _}, mutable_, _, kind, _) ->
       let open InstanceVariable in
-      let id = `InstanceVariable(parent, InstanceVariableName.make_std name) in
+      let id = Identifier.Mk.instance_variable(parent, InstanceVariableName.make_std name) in
       let mutable_ = (mutable_ = Mutable) in
       let virtual_, type_ =
         match kind with
@@ -232,7 +232,7 @@ let rec read_class_field env parent cf =
         Some (InstanceVariable {id; doc; mutable_; virtual_; type_})
   | Tcf_method({txt = name; _}, private_, kind) ->
       let open Method in
-      let id = `Method(parent, MethodName.make_std name) in
+      let id = Identifier.Mk.method_(parent, MethodName.make_std name) in
       let private_ = (private_ = Private) in
       let virtual_, type_ =
         match kind with
@@ -369,12 +369,12 @@ let rec read_module_expr env parent label_parent mexpr =
                 | Some id -> Ident.name id, Env.add_parameter parent id (ParameterName.of_ident id) env
                 | None -> "_", env
               in
-              let id = `Parameter(parent, Odoc_model.Names.ParameterName.make_std name) in
+              let id = Identifier.Mk.parameter(parent, Odoc_model.Names.ParameterName.make_std name) in
               let arg = Cmti.read_module_type env id label_parent arg in
               
               Named { id; expr=arg }, env
           in
-        let res = read_module_expr env (`Result parent) label_parent res in
+        let res = read_module_expr env (Identifier.Mk.result parent) label_parent res in
         Functor (f_parameter, res)
 #else
     | Tmod_functor(id, _, arg, res) ->
@@ -593,7 +593,7 @@ and read_structure :
     ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; doc }, tags)
 
 let read_implementation root name impl =
-  let id = `Root (root, Odoc_model.Names.ModuleName.make_std name) in
+  let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in
   let sg, canonical =
     read_structure Odoc_model.Semantics.Expect_canonical Env.empty id impl
   in

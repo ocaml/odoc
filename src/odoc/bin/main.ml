@@ -652,7 +652,7 @@ module Depends = struct
 
   module Link = struct
     let rec fmt_page pp page =
-      match page with
+      match page.Odoc_model.Paths.iv with
       | `Page (parent_opt, name) ->
           Format.fprintf pp "%a%a" fmt_parent_opt parent_opt
             Odoc_model.Names.PageName.fmt name
@@ -670,7 +670,7 @@ module Depends = struct
       Depends.for_rendering_step (Fs.Directory.of_string input_file)
       >>= fun depends ->
       List.iter depends ~f:(fun (root : Odoc_model.Root.t) ->
-          match root.id with
+          match root.id.iv with
           | `Root (Some p, _) ->
               Format.printf "%a %s %s\n" fmt_page p
                 (Odoc_model.Root.Odoc_file.name root.file)

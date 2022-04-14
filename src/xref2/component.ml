@@ -1182,7 +1182,7 @@ module Fmt = struct
         Format.fprintf ppf "opaquemoduletype(%a)" model_resolved_path (m :> t)
 
   and model_identifier ppf (p : Odoc_model.Paths.Identifier.t) =
-    match p with
+    match p.iv with
     | `Root (_, unit_name) ->
         Format.fprintf ppf "(root %s)"
           (Odoc_model.Names.ModuleName.to_string unit_name)
@@ -1682,9 +1682,10 @@ module Of_Lang = struct
 
   let find_any_module i ident_map =
     match i with
-    | #Paths.Identifier.Module.t as id ->
+    | { Odoc_model.Paths.iv = #Paths.Identifier.Module.t_pv; _ } as id ->
         (Maps.Module.find id ident_map.modules :> Ident.path_module)
-    | #Paths.Identifier.FunctorParameter.t as id ->
+    | { Odoc_model.Paths.iv = #Paths.Identifier.FunctorParameter.t_pv; _ } as id
+      ->
         (Maps.FunctorParameter.find id ident_map.functor_parameters
           :> Ident.path_module)
     | _ -> raise Not_found

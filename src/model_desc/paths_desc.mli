@@ -4,7 +4,7 @@ val root : Odoc_model.Root.t Type_desc.t
 
 val modulename : Odoc_model.Names.ModuleName.t Type_desc.t
 
-val identifier : [< Identifier.t ] Type_desc.t
+val identifier : [< Identifier.t_pv ] Odoc_model.Paths.id Type_desc.t
 
 val resolved_path : [< Path.Resolved.t ] Type_desc.t
 

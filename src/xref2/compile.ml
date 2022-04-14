@@ -412,7 +412,8 @@ and simple_expansion :
   | Functor (param, sg) ->
       let env' = Env.add_functor_parameter param env in
       Functor
-        (functor_parameter env param, simple_expansion env' (`Result id) sg)
+        ( functor_parameter env param,
+          simple_expansion env' (Paths.Identifier.Mk.result id) sg )
 
 and functor_parameter : Env.t -> FunctorParameter.t -> FunctorParameter.t =
  fun env param ->
@@ -678,7 +679,7 @@ and module_type_expr :
   | Functor (param, res) ->
       let param' = functor_parameter env param in
       let env' = Env.add_functor_parameter param env in
-      let res' = module_type_expr env' (`Result id) res in
+      let res' = module_type_expr env' (Paths.Identifier.Mk.result id) res in
       Functor (param', res')
   | TypeOf { t_desc; t_expansion } as e ->
       let t_expansion = get_expansion t_expansion e in
@@ -693,7 +694,7 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
   let open TypeDecl in
   let container =
-    match t.id with
+    match t.id.iv with
     | `Type (parent, _) -> (parent :> Id.Parent.t)
     | `CoreType _ -> assert false
   in

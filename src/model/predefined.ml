@@ -51,94 +51,87 @@ let invariant_equation =
   let constraints = [] in
   { params; private_; manifest; constraints }
 
-let bool_identifier = `CoreType (TypeName.make_std "bool")
+module Mk = Paths.Identifier.Mk
 
-let int_identifier = `CoreType (TypeName.make_std "int")
+let bool_identifier = Mk.core_type "bool"
 
-let char_identifier = `CoreType (TypeName.make_std "char")
+let int_identifier = Mk.core_type "int"
 
-let bytes_identifier = `CoreType (TypeName.make_std "bytes")
+let char_identifier = Mk.core_type "char"
 
-let string_identifier = `CoreType (TypeName.make_std "string")
+let bytes_identifier = Mk.core_type "bytes"
 
-let float_identifier = `CoreType (TypeName.make_std "float")
+let string_identifier = Mk.core_type "string"
 
-let unit_identifier = `CoreType (TypeName.make_std "unit")
+let float_identifier = Mk.core_type "float"
 
-let exn_identifier = `CoreType (TypeName.make_std "exn")
+let unit_identifier = Mk.core_type "unit"
 
-let array_identifier = `CoreType (TypeName.make_std "array")
+let exn_identifier = Mk.core_type "exn"
 
-let list_identifier = `CoreType (TypeName.make_std "list")
+let array_identifier = Mk.core_type "array"
 
-let option_identifier = `CoreType (TypeName.make_std "option")
+let list_identifier = Mk.core_type "list"
 
-let int32_identifier = `CoreType (TypeName.make_std "int32")
+let option_identifier = Mk.core_type "option"
 
-let int64_identifier = `CoreType (TypeName.make_std "int64")
+let int32_identifier = Mk.core_type "int32"
 
-let nativeint_identifier = `CoreType (TypeName.make_std "nativeint")
+let int64_identifier = Mk.core_type "int64"
 
-let lazy_t_identifier = `CoreType (TypeName.make_std "lazy_t")
+let nativeint_identifier = Mk.core_type "nativeint"
 
-let extension_constructor_identifier =
-  `CoreType (TypeName.make_std "extension_constructor")
+let lazy_t_identifier = Mk.core_type "lazy_t"
 
-let floatarray_identifier = `CoreType (TypeName.make_std "floatarray")
+let extension_constructor_identifier = Mk.core_type "extension_constructor"
+
+let floatarray_identifier = Mk.core_type "floatarray"
 
 let false_identifier =
-  `Constructor (bool_identifier, ConstructorName.make_std "false")
+  Mk.constructor (bool_identifier, ConstructorName.make_std "false")
 
 let true_identifier =
-  `Constructor (bool_identifier, ConstructorName.make_std "true")
+  Mk.constructor (bool_identifier, ConstructorName.make_std "true")
 
 let void_identifier =
-  `Constructor (unit_identifier, ConstructorName.make_std "()")
+  Mk.constructor (unit_identifier, ConstructorName.make_std "()")
 
 let nil_identifier =
-  `Constructor (list_identifier, ConstructorName.make_std "([])")
+  Mk.constructor (list_identifier, ConstructorName.make_std "([])")
 
 let cons_identifier =
-  `Constructor (list_identifier, ConstructorName.make_std "(::)")
+  Mk.constructor (list_identifier, ConstructorName.make_std "(::)")
 
 let none_identifier =
-  `Constructor (option_identifier, ConstructorName.make_std "None")
+  Mk.constructor (option_identifier, ConstructorName.make_std "None")
 
 let some_identifier =
-  `Constructor (option_identifier, ConstructorName.make_std "Some")
+  Mk.constructor (option_identifier, ConstructorName.make_std "Some")
 
-let match_failure_identifier =
-  `CoreException (ExceptionName.make_std "Match_failure")
+let match_failure_identifier = Mk.core_exception "Match_failure"
 
-let assert_failure_identifier =
-  `CoreException (ExceptionName.make_std "Assert_failure")
+let assert_failure_identifier = Mk.core_exception "Assert_failure"
 
-let invalid_argument_identifier =
-  `CoreException (ExceptionName.make_std "Invalid_argument")
+let invalid_argument_identifier = Mk.core_exception "Invalid_argument"
 
-let failure_identifier = `CoreException (ExceptionName.make_std "Failure")
+let failure_identifier = Mk.core_exception "Failure"
 
-let not_found_identifier = `CoreException (ExceptionName.make_std "Not_found")
+let not_found_identifier = Mk.core_exception "Not_found"
 
-let out_of_memory_identifier =
-  `CoreException (ExceptionName.make_std "Out_of_memory")
+let out_of_memory_identifier = Mk.core_exception "Out_of_memory"
 
-let stack_overflow_identifier =
-  `CoreException (ExceptionName.make_std "Stack_overflow")
+let stack_overflow_identifier = Mk.core_exception "Stack_overflow"
 
-let sys_error_identifier = `CoreException (ExceptionName.make_std "Sys_error")
+let sys_error_identifier = Mk.core_exception "Sys_error"
 
-let end_of_file_identifier =
-  `CoreException (ExceptionName.make_std "End_of_file")
+let end_of_file_identifier = Mk.core_exception "End_of_file"
 
-let division_by_zero_identifier =
-  `CoreException (ExceptionName.make_std "Division_by_zero")
+let division_by_zero_identifier = Mk.core_exception "Division_by_zero"
 
-let sys_blocked_io_identifier =
-  `CoreException (ExceptionName.make_std "Sys_blocked_io")
+let sys_blocked_io_identifier = Mk.core_exception "Sys_blocked_io"
 
 let undefined_recursive_module_identifier =
-  `CoreException (ExceptionName.make_std "Undefined_recursive_module")
+  Mk.core_exception "Undefined_recursive_module"
 
 let core_type_identifier = function
   | "int" -> Some int_identifier

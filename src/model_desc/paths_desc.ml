@@ -60,95 +60,96 @@ module General_paths = struct
 
   let rec identifier : Paths.Identifier.t t =
     Variant
-      (function
-      | `Page (parent, name) ->
-          C
-            ( "`Page",
-              ((parent :> id_t option), name),
-              Pair (Option identifier, Names.pagename) )
-      | `LeafPage (parent, name) ->
-          C
-            ( "`LeafPage",
-              ((parent :> id_t option), name),
-              Pair (Option identifier, Names.pagename) )
-      | `Root (parent, name) ->
-          C
-            ( "`Root",
-              ((parent :> id_t option), name),
-              Pair (Option identifier, Names.modulename) )
-      | `Module (parent, name) ->
-          C
-            ( "`Module",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.modulename) )
-      | `Parameter (parent, name) ->
-          C
-            ( "`Parameter",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.parametername) )
-      | `Result r -> C ("`Result", (r :> id_t), identifier)
-      | `ModuleType (parent, name) ->
-          C
-            ( "`ModuleType",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.moduletypename) )
-      | `Class (parent, name) ->
-          C
-            ( "`Class",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.classname) )
-      | `ClassType (parent, name) ->
-          C
-            ( "`ClassType",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.classtypename) )
-      | `Type (parent, name) ->
-          C
-            ( "`Type",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.typename) )
-      | `CoreType name -> C ("`CoreType", name, Names.typename)
-      | `Constructor (parent, name) ->
-          C
-            ( "`Constructor",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.constructorname) )
-      | `Field (parent, name) ->
-          C
-            ( "`Field",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.fieldname) )
-      | `Extension (parent, name) ->
-          C
-            ( "`Extension",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.extensionname) )
-      | `Exception (parent, name) ->
-          C
-            ( "`Exception",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.exceptionname) )
-      | `CoreException name -> C ("`CoreException", name, Names.exceptionname)
-      | `Value (parent, name) ->
-          C
-            ( "`Value",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.valuename) )
-      | `Method (parent, name) ->
-          C
-            ( "`Method",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.methodname) )
-      | `InstanceVariable (parent, name) ->
-          C
-            ( "`InstanceVariable",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.instancevariablename) )
-      | `Label (parent, name) ->
-          C
-            ( "`Label",
-              ((parent :> id_t), name),
-              Pair (identifier, Names.labelname) ))
+      (fun x ->
+        match x.iv with
+        | `Page (parent, name) ->
+            C
+              ( "`Page",
+                ((parent :> id_t option), name),
+                Pair (Option identifier, Names.pagename) )
+        | `LeafPage (parent, name) ->
+            C
+              ( "`LeafPage",
+                ((parent :> id_t option), name),
+                Pair (Option identifier, Names.pagename) )
+        | `Root (parent, name) ->
+            C
+              ( "`Root",
+                ((parent :> id_t option), name),
+                Pair (Option identifier, Names.modulename) )
+        | `Module (parent, name) ->
+            C
+              ( "`Module",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.modulename) )
+        | `Parameter (parent, name) ->
+            C
+              ( "`Parameter",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.parametername) )
+        | `Result r -> C ("`Result", (r :> id_t), identifier)
+        | `ModuleType (parent, name) ->
+            C
+              ( "`ModuleType",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.moduletypename) )
+        | `Class (parent, name) ->
+            C
+              ( "`Class",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.classname) )
+        | `ClassType (parent, name) ->
+            C
+              ( "`ClassType",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.classtypename) )
+        | `Type (parent, name) ->
+            C
+              ( "`Type",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.typename) )
+        | `CoreType name -> C ("`CoreType", name, Names.typename)
+        | `Constructor (parent, name) ->
+            C
+              ( "`Constructor",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.constructorname) )
+        | `Field (parent, name) ->
+            C
+              ( "`Field",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.fieldname) )
+        | `Extension (parent, name) ->
+            C
+              ( "`Extension",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.extensionname) )
+        | `Exception (parent, name) ->
+            C
+              ( "`Exception",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.exceptionname) )
+        | `CoreException name -> C ("`CoreException", name, Names.exceptionname)
+        | `Value (parent, name) ->
+            C
+              ( "`Value",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.valuename) )
+        | `Method (parent, name) ->
+            C
+              ( "`Method",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.methodname) )
+        | `InstanceVariable (parent, name) ->
+            C
+              ( "`InstanceVariable",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.instancevariablename) )
+        | `Label (parent, name) ->
+            C
+              ( "`Label",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.labelname) ))
 
   let reference_tag : tag t =
     Variant
@@ -430,7 +431,7 @@ let root = Root.t
 let modulename = Names.modulename
 
 (* Indirection seems to be required to make the type open. *)
-let identifier : [< Paths.Identifier.t ] Type_desc.t =
+let identifier : [< Paths.Identifier.t_pv ] Paths.id Type_desc.t =
   Indirect ((fun n -> (n :> Paths.Identifier.t)), General_paths.identifier)
 
 let resolved_path : [< Paths.Path.Resolved.t ] Type_desc.t =

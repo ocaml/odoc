@@ -602,7 +602,7 @@ let read_value_description env parent id vd =
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
   let name = Ident.name ld.ld_id in
-  let id = `Field(parent, Odoc_model.Names.FieldName.make_std name) in
+  let id = Identifier.Mk.field (parent, Odoc_model.Names.FieldName.make_std name) in
   let doc =
     Doc_attr.attached_no_tag
       (parent :> Identifier.LabelParent.t) ld.ld_attributes
@@ -628,7 +628,7 @@ let read_constructor_declaration_arguments env parent arg =
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let name = Ident.name cd.cd_id in
-  let id = `Constructor(parent, Odoc_model.Names.ConstructorName.make_std name) in
+  let id = Identifier.Mk.constructor (parent, Odoc_model.Names.ConstructorName.make_std name) in
   let container = (parent : Identifier.DataType.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cd.cd_attributes in
   let args =
@@ -729,7 +729,7 @@ let read_type_declaration env parent id decl =
 let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
   let name = Ident.name id in
-  let id = `Extension(parent, Odoc_model.Names.ExtensionName.make_std name) in
+  let id = Identifier.Mk.extension(parent, Odoc_model.Names.ExtensionName.make_std name) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
   let args =
@@ -762,7 +762,7 @@ let read_type_extension env parent id ext rest =
 let read_exception env parent id ext =
   let open Exception in
   let name = Ident.name id in
-  let id = `Exception(parent, Odoc_model.Names.ExceptionName.make_std name) in
+  let id = Identifier.Mk.exception_(parent, Odoc_model.Names.ExceptionName.make_std name) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
     mark_exception ext;
@@ -775,7 +775,7 @@ let read_exception env parent id ext =
 
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
-  let id = `Method(parent, Odoc_model.Names.MethodName.make_std name) in
+  let id = Identifier.Mk.method_(parent, Odoc_model.Names.MethodName.make_std name) in
   let doc = Doc_attr.empty in
   let private_ = (Compat.field_kind_repr kind) <> Compat.field_public in
   let virtual_ = not (Compat.concr_mem name concrete) in
@@ -784,7 +784,7 @@ let read_method env parent concrete (name, kind, typ) =
 
 let read_instance_variable env parent (name, mutable_, virtual_, typ) =
   let open InstanceVariable in
-  let id = `InstanceVariable(parent, Odoc_model.Names.InstanceVariableName.make_std name) in
+  let id = Identifier.Mk.instance_variable(parent, Odoc_model.Names.InstanceVariableName.make_std name) in
   let doc = Doc_attr.empty in
   let mutable_ = (mutable_ = Mutable) in
   let virtual_ = (virtual_ = Virtual) in
@@ -924,11 +924,11 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
                 | Some id -> Ident.name id,  Env.add_parameter parent id (ParameterName.of_ident id) env
                 | None -> "_", env
               in
-              let id = `Parameter(parent, Odoc_model.Names.ParameterName.make_std name) in
+              let id = Identifier.Mk.parameter(parent, Odoc_model.Names.ParameterName.make_std name) in
               let arg = read_module_type env id arg in
               Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg }), env
         in
-        let res = read_module_type env (`Result parent) res in
+        let res = read_module_type env (Identifier.Mk.result parent) res in
         Functor( f_parameter, res)
     | Mty_alias _ -> assert false
 
@@ -1066,6 +1066,6 @@ and read_signature env parent (items : Odoc_model.Compat.signature) =
 
 
 let read_interface root name intf =
-  let id = `Root (root, Odoc_model.Names.ModuleName.make_std name) in
+  let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in
   let items = read_signature Env.empty id intf in
   (id, items)
