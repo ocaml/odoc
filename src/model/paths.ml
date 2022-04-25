@@ -406,62 +406,15 @@ module Identifier = struct
     type t = Paths_types.Identifier.path_any
   end
 
-  module Sets = struct
-    module Signature = Set.Make (Signature)
-    module ClassSignature = Set.Make (ClassSignature)
-    module DataType = Set.Make (DataType)
-    module Parent = Set.Make (Parent)
-    module LabelParent = Set.Make (LabelParent)
-    module RootModule = Set.Make (RootModule)
-    module FunctorParameter = Set.Make (FunctorParameter)
-    module Module = Set.Make (Module)
-    module ModuleType = Set.Make (ModuleType)
-    module Type = Set.Make (Type)
-    module Constructor = Set.Make (Constructor)
-    module Field = Set.Make (Field)
-    module Extension = Set.Make (Extension)
-    module Exception = Set.Make (Exception)
-    module Value = Set.Make (Value)
-    module Class = Set.Make (Class)
-    module ClassType = Set.Make (ClassType)
-    module Method = Set.Make (Method)
-    module InstanceVariable = Set.Make (InstanceVariable)
-    module Label = Set.Make (Label)
-    module Page = Set.Make (Page)
-    module ContainerPage = Set.Make (ContainerPage)
-
-    module Path = struct
-      module Module = Set.Make (Path.Module)
-      module ModuleType = Set.Make (Path.ModuleType)
-      module Type = Set.Make (Path.Type)
-      module ClassType = Set.Make (Path.ClassType)
-    end
-  end
-
   module Maps = struct
     module Any = Map.Make (Any)
-    module Signature = Map.Make (Signature)
-    module ClassSignature = Map.Make (ClassSignature)
-    module DataType = Map.Make (DataType)
-    module Parent = Map.Make (Parent)
-    module LabelParent = Map.Make (LabelParent)
-    module RootModule = Map.Make (RootModule)
     module FunctorParameter = Map.Make (FunctorParameter)
     module Module = Map.Make (Module)
     module ModuleType = Map.Make (ModuleType)
     module Type = Map.Make (Type)
-    module Constructor = Map.Make (Constructor)
-    module Field = Map.Make (Field)
-    module Extension = Map.Make (Extension)
-    module Exception = Map.Make (Exception)
-    module Value = Map.Make (Value)
     module Class = Map.Make (Class)
     module ClassType = Map.Make (ClassType)
-    module Method = Map.Make (Method)
-    module InstanceVariable = Map.Make (InstanceVariable)
     module Label = Map.Make (Label)
-    module Page = Map.Make (Page)
-    module ContainerPage = Map.Make (ContainerPage)
 
     module Path = struct
       module Module = Map.Make (Path.Module)
@@ -703,38 +656,6 @@ module Path = struct
 
       let is_hidden m =
         is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
-
-      let rec identifier : t -> Identifier.Path.Module.t = function
-        | `Identifier id -> id
-        | `Subst (_, p) -> identifier p
-        | `Hidden p -> identifier p
-        | `Module (m, n) -> Identifier.Mk.module_ (parent_module_identifier m, n)
-        | `Canonical (_, `Resolved p) -> identifier p
-        | `Canonical (p, _) -> identifier p
-        | `Apply (m, _) -> identifier m
-        | `Alias (dest, `Resolved src) ->
-            if
-              is_resolved_hidden ~weak_canonical_test:false
-                (dest :> Paths_types.Resolved_path.any)
-            then identifier (src :> t)
-            else identifier (dest :> t)
-        | `Alias (dest, _src) -> identifier (dest :> t)
-        | `OpaqueModule m -> identifier m
-
-      let rec canonical_ident : t -> Identifier.Path.Module.t option = function
-        | `Identifier _id -> None
-        | `Subst (_, _) -> None
-        | `Hidden p -> canonical_ident p
-        | `Module (p, n) -> (
-            match canonical_ident p with
-            | Some x ->
-                Some (Identifier.Mk.module_ ((x :> Identifier.Signature.t), n))
-            | None -> None)
-        | `Canonical (_, `Resolved p) -> Some (identifier p)
-        | `Canonical (_, _) -> None
-        | `Apply (_, _) -> None
-        | `Alias (_, _) -> None
-        | `OpaqueModule m -> canonical_ident m
     end
 
     module ModuleType = struct
@@ -742,35 +663,6 @@ module Path = struct
 
       let is_hidden m =
         is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
-
-      let rec identifier : t -> Identifier.ModuleType.t = function
-        | `Identifier id -> id
-        | `ModuleType (m, n) ->
-            Identifier.Mk.module_type (parent_module_identifier m, n)
-        | `SubstT (s, _) -> identifier s
-        | `CanonicalModuleType (_, `Resolved p) -> identifier p
-        | `CanonicalModuleType (p, _) -> identifier p
-        | `OpaqueModuleType mt -> identifier mt
-        | `AliasModuleType (sub, orig) ->
-            if
-              is_resolved_hidden ~weak_canonical_test:false
-                (sub :> Paths_types.Resolved_path.any)
-            then identifier orig
-            else identifier sub
-
-      let rec canonical_ident : t -> Identifier.ModuleType.t option = function
-        | `Identifier _id -> None
-        | `ModuleType (p, n) -> (
-            match Module.canonical_ident p with
-            | Some x ->
-                Some
-                  (Identifier.Mk.module_type ((x :> Identifier.Signature.t), n))
-            | None -> None)
-        | `SubstT (_, _) -> None
-        | `AliasModuleType (_, _) -> None
-        | `CanonicalModuleType (_, `Resolved p) -> Some (identifier p)
-        | `CanonicalModuleType (_, _) -> None
-        | `OpaqueModuleType m -> canonical_ident (m :> t)
     end
 
     module Type = struct
@@ -781,32 +673,6 @@ module Path = struct
       let is_hidden m =
         is_resolved_hidden ~weak_canonical_test:false
           (m : t :> Paths_types.Resolved_path.any)
-
-      let rec identifier : t -> Identifier.Path.Type.t = function
-        | `Identifier id -> id
-        | `CanonicalType (_, `Resolved t) -> identifier t
-        | `CanonicalType (t, _) -> identifier t
-        | `Type (m, n) -> Identifier.Mk.type_ (parent_module_identifier m, n)
-        | `Class (m, n) -> Identifier.Mk.class_ (parent_module_identifier m, n)
-        | `ClassType (m, n) ->
-            Identifier.Mk.class_type (parent_module_identifier m, n)
-
-      let canonical_ident : t -> Identifier.Path.Type.t option =
-        let parent m default fn =
-          match Module.canonical_ident m with
-          | Some x -> fn (x :> Identifier.Signature.t)
-          | None -> default
-        in
-        function
-        | `Identifier _ -> None
-        | `CanonicalType (_, `Resolved t) -> Some (identifier t)
-        | `CanonicalType (_, _) -> None
-        | `Type (m, n) ->
-            parent m None (fun sg -> Some (Identifier.Mk.type_ (sg, n)))
-        | `Class (m, n) ->
-            parent m None (fun sg -> Some (Identifier.Mk.class_ (sg, n)))
-        | `ClassType (m, n) ->
-            parent m None (fun sg -> Some (Identifier.Mk.class_type (sg, n)))
     end
 
     module ClassType = struct
@@ -817,17 +683,11 @@ module Path = struct
       let is_hidden m =
         is_resolved_hidden ~weak_canonical_test:false
           (m : t :> Paths_types.Resolved_path.any)
-
-      let identifier = function
-        | `Identifier id -> id
-        | `Class (m, n) -> Identifier.Mk.class_ (parent_module_identifier m, n)
-        | `ClassType (m, n) ->
-            Identifier.Mk.class_type (parent_module_identifier m, n)
     end
 
     let rec identifier : t -> Identifier.t = function
       | `Identifier id -> id
-      | `Subst (_, p) -> identifier (p :> t)
+      | `Subst (sub, _) -> identifier (sub :> t)
       | `Hidden p -> identifier (p :> t)
       | `Module (m, n) -> Identifier.Mk.module_ (parent_module_identifier m, n)
       | `Canonical (_, `Resolved p) -> identifier (p :> t)
@@ -916,14 +776,10 @@ module Fragment = struct
                 (ModuleName.to_string base, Some (`Module (m, name))))
 
       let rec identifier : t -> Identifier.Signature.t = function
-        | `Root (`ModuleType i) ->
-            (Path.Resolved.ModuleType.identifier i :> Identifier.Signature.t)
-        | `Root (`Module i) ->
-            (Path.Resolved.Module.identifier i :> Identifier.Signature.t)
-        | `Subst (s, _) ->
-            (Path.Resolved.ModuleType.identifier s :> Identifier.Signature.t)
-        | `Alias (i, _) ->
-            (Path.Resolved.Module.identifier i :> Identifier.Signature.t)
+        | `Root (`ModuleType i) -> Path.Resolved.parent_module_type_identifier i
+        | `Root (`Module i) -> Path.Resolved.parent_module_identifier i
+        | `Subst (s, _) -> Path.Resolved.parent_module_type_identifier s
+        | `Alias (i, _) -> Path.Resolved.parent_module_identifier i
         | `Module (m, n) -> Identifier.Mk.module_ (identifier m, n)
         | `OpaqueModule m -> identifier (sig_of_mod m)
     end
@@ -980,7 +836,8 @@ module Fragment = struct
       | `Root (`ModuleType _r) -> assert false
       | `Root (`Module _r) -> assert false
       | `Subst (s, _) -> Path.Resolved.identifier (s :> Path.Resolved.t)
-      | `Alias (p, _) -> (Path.Resolved.Module.identifier p :> Identifier.t)
+      | `Alias (p, _) ->
+          (Path.Resolved.parent_module_identifier p :> Identifier.t)
       | `Module (m, n) -> Identifier.Mk.module_ (Signature.identifier m, n)
       | `Module_type (m, n) ->
           Identifier.Mk.module_type (Signature.identifier m, n)
@@ -1106,12 +963,15 @@ module Reference = struct
       | `Alias (sub, orig) ->
           if Path.Resolved.Module.is_hidden ~weak_canonical_test:false sub then
             parent_signature_identifier (orig :> signature)
-          else (Path.Resolved.Module.identifier sub :> Identifier.Signature.t)
+          else
+            (Path.Resolved.parent_module_identifier sub
+              :> Identifier.Signature.t)
       | `AliasModuleType (sub, orig) ->
           if Path.Resolved.ModuleType.is_hidden ~weak_canonical_test:false sub
           then parent_signature_identifier (orig :> signature)
           else
-            (Path.Resolved.ModuleType.identifier sub :> Identifier.Signature.t)
+            (Path.Resolved.parent_module_type_identifier sub
+              :> Identifier.Signature.t)
       | `Module (m, n) ->
           Identifier.Mk.module_ (parent_signature_identifier m, n)
       | `ModuleType (m, s) ->
