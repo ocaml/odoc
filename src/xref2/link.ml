@@ -434,8 +434,8 @@ and module_ : Env.t -> Module.t -> Module.t =
             Paths.Path.Resolved.Module.is_hidden ~weak_canonical_test:false p
           in
           let self_canonical =
-            let i = Paths.Path.Resolved.Module.identifier p in
-            i = (m.id :> Paths.Identifier.Path.Module.t)
+            let i = Paths.Path.Resolved.(identifier (p :> t)) in
+            i = (m.id :> Paths.Identifier.t)
           in
           let expansion_needed = self_canonical || hidden_alias in
           if expansion_needed then
@@ -682,8 +682,8 @@ and module_type_expr :
             p_path
         in
         let self_canonical =
-          let i = Paths.Path.Resolved.ModuleType.identifier p_path in
-          (i :> Id.Signature.t) = id
+          let i = Paths.Path.Resolved.(identifier (p_path :> t)) in
+          (id :> Id.t) = i
         in
         let expansion_needed = self_canonical || hidden_alias in
         if expansion_needed then
@@ -760,8 +760,8 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
     match equation.Equation.manifest with
     | Some (Constr (`Resolved path, params))
       when Paths.Path.Resolved.Type.is_hidden path
-           || Paths.Path.Resolved.Type.identifier path
-              = (t.id :> Paths.Identifier.Path.Type.t) ->
+           || Paths.Path.Resolved.(identifier (path :> t))
+              = (t.id :> Paths.Identifier.t) ->
         Some (path, params)
     | _ -> None
   in
