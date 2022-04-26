@@ -139,14 +139,25 @@ let find find sg name =
   | None -> Error (`Find_by_name (`Any, name))
 
 let module_lookup_to_signature_lookup env (ref, cp, m) =
-  Tools.signature_of_module env m
+  let rec handle_expansion : Tools.expansion -> _ = function
+    | Functor (_, expr) -> (
+        match
+          Tools.expansion_of_module_type_expr ~mark_substituted:true env expr
+        with
+        | Ok e -> handle_expansion e
+        | Error _ as e -> e)
+    | Signature sg -> Ok ((ref :> Resolved.Signature.t), `Module cp, sg)
+  in
+  Tools.expansion_of_module env m
+  >>= handle_expansion
   |> map_error (fun e -> `Parent (`Parent_sig e))
-  >>= fun sg -> Ok ((ref :> Resolved.Signature.t), `Module cp, sg)
 
 let module_type_lookup_to_signature_lookup env (ref, cp, m) =
-  Tools.signature_of_module_type env m
+  Tools.expansion_of_module_type env m
   |> map_error (fun e -> `Parent (`Parent_sig e))
-  >>= fun sg -> Ok ((ref :> Resolved.Signature.t), `ModuleType cp, sg)
+  >>= function
+  | Functor _ -> assert false
+  | Signature sg -> Ok ((ref :> Resolved.Signature.t), `ModuleType cp, sg)
 
 let type_lookup_to_class_signature_lookup =
   let resolved p' cs = Ok ((p' :> Resolved.ClassSignature.t), cs) in
