@@ -15,13 +15,18 @@ let synopsis_from_comment (docs : Component.CComment.docs) =
       Comment.synopsis [ e ]
   | _ -> None
 
-let synopsis_of_module env (m : Component.Module.t) =
+let synopsis_of_module env id (m : Component.Module.t) =
+  let open Utils.ResultMonad in
   match synopsis_from_comment m.doc with
   | Some _ as s -> s
   | None -> (
       (* If there is no doc, look at the expansion. *)
-      match Tools.signature_of_module env m with
-      | Ok sg -> synopsis_from_comment (Component.extract_signature_doc sg)
+      match
+        Tools.expansion_of_module env m >>= Expand_tools.handle_expansion env id
+      with
+      | Ok (_, Signature sg) ->
+          synopsis_from_comment (Component.extract_signature_doc sg)
+      | Ok (_, Functor _) -> None
       | Error _ -> None)
 
 let ambiguous_label_warning label_name labels =
@@ -223,11 +228,13 @@ and comment_nestable_block_element env parent ~loc:_
               Ref_tools.resolve_module_reference env r.module_reference
               |> Error.raise_warnings
             with
-            | Ok (r, _, m) ->
+            | Ok (r, p, m) ->
+                let p = Lang_of.(Path.resolved_module (empty ()) p) in
+                let id = Paths.Path.Resolved.Module.(identifier (p :> t)) in
                 let module_synopsis =
                   Opt.map
                     (resolve_external_synopsis env)
-                    (synopsis_of_module env m)
+                    (synopsis_of_module env (id :> Id.Signature.t) m)
                 in
                 { Comment.module_reference = `Resolved r; module_synopsis }
             | Error e ->
@@ -423,6 +430,7 @@ and simple_expansion :
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
+  let open Utils.ResultMonad in
   let sg_id = (m.id :> Id.Signature.t) in
   if m.hidden then m
   else
@@ -441,10 +449,14 @@ and module_ : Env.t -> Module.t -> Module.t =
           if expansion_needed then
             let cp = Component.Of_Lang.(resolved_module_path (empty ()) p) in
             match
-              Expand_tools.expansion_of_module_alias env m.id (`Resolved cp)
+              Tools.expansion_of_module_path ~strengthen:false env
+                (`Resolved cp)
+              >>= Expand_tools.handle_expansion env (m.id :> Id.Signature.t)
             with
-            | Ok (_, _, e) ->
-                let le = Lang_of.(simple_expansion (empty ()) sg_id e) in
+            | Ok (_, e) ->
+                let le =
+                  Lang_of.(simple_expansion (empty ()) sg_id e)
+                in
                 Alias (`Resolved p, Some (simple_expansion env sg_id le))
             | Error _ -> type_
           else type_
@@ -672,6 +684,7 @@ and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
  fun env id expr ->
   let open ModuleType in
+  let open Utils.ResultMonad in
   let do_expn cur (e : Paths.Path.ModuleType.t option) =
     match (cur, e) with
     | Some e, _ ->
@@ -691,8 +704,9 @@ and module_type_expr :
             Component.Of_Lang.(resolved_module_type_path (empty ()) p_path)
           in
           match
-            Expand_tools.expansion_of_module_type_expr env id
+            Tools.expansion_of_module_type_expr ~mark_substituted:false env
               (Path { p_path = `Resolved cp; p_expansion = None })
+            >>= Expand_tools.handle_expansion env (id :> Id.Signature.t)
           with
           | Ok (_, e) ->
               let le = Lang_of.(simple_expansion (empty ()) id e) in

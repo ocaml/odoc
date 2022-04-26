@@ -94,7 +94,7 @@ and module_type_expr_typeof env (id : Id.Signature.t) t =
   let cp = Component.Of_Lang.(module_path (empty ()) p) in
   let open Expand_tools in
   let open Utils.ResultMonad in
-  aux_expansion_of_module_alias env ~strengthen cp >>= handle_expansion env id
+  Tools.expansion_of_module_path env ~strengthen cp >>= handle_expansion env id
   >>= fun (_env, e) -> Ok e
 
 and module_type_expr env (id : Id.Signature.t) expr =
