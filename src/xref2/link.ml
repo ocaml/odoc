@@ -694,7 +694,7 @@ and module_type_expr :
             Expand_tools.expansion_of_module_type_expr env id
               (Path { p_path = `Resolved cp; p_expansion = None })
           with
-          | Ok (_, _, e) ->
+          | Ok (_, e) ->
               let le = Lang_of.(simple_expansion (empty ()) id e) in
               Some (simple_expansion env id le)
           | Error _ -> None
