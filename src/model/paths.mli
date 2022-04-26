@@ -464,7 +464,7 @@ module rec Path : sig
 
       val is_hidden : t -> weak_canonical_test:bool -> bool
 
-      (* val identifier : t -> Identifier.Path.Module.t *)
+      val identifier : t -> Identifier.Path.Module.t
     end
 
     module ModuleType : sig

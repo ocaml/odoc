@@ -656,6 +656,19 @@ module Path = struct
 
       let is_hidden m =
         is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
+
+      let rec identifier : t -> Identifier.Path.Module.t =
+       fun x ->
+        let r = identifier in
+        match x with
+        | `Identifier id -> id
+        | `Subst (_, x) -> r x
+        | `Hidden p -> r p
+        | `Module (m, n) -> Identifier.Mk.module_ (parent_module_identifier m, n)
+        | `Canonical (p, _) -> r p
+        | `Apply (m, _) -> r m
+        | `Alias (dest, _src) -> r dest
+        | `OpaqueModule m -> r m
     end
 
     module ModuleType = struct

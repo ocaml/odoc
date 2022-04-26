@@ -11,7 +11,7 @@ module Tools_error = struct
 
   type reference_kind = [ `S | `T | `C | `CT | `Page | `Cons | `Field | `Label ]
 
-  type signature_of_module_error =
+  type expansion_of_module_error =
     [ `OpaqueModule (* The module does not have an expansion *)
     | `UnresolvedForwardPath
       (* The module signature depends upon a forward path *)
@@ -75,7 +75,7 @@ module Tools_error = struct
 
   and parent_lookup_error =
     [ `Parent_sig of
-      signature_of_module_error
+      expansion_of_module_error
       (* Error found while calculating the parent signature *)
     | `Parent_module_type of
       simple_module_type_lookup_error
@@ -102,7 +102,7 @@ module Tools_error = struct
     | simple_module_type_lookup_error
     | simple_module_type_expr_of_module_error
     | simple_module_lookup_error
-    | signature_of_module_error
+    | expansion_of_module_error
     | parent_lookup_error ]
 
   let pp_reference_kind fmt k =
