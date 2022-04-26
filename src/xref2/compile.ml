@@ -652,7 +652,7 @@ and module_type_expr :
     | None -> (
         let ce = Component.Of_Lang.(module_type_expr (empty ()) e) in
         match Expand_tools.expansion_of_module_type_expr env id ce with
-        | Ok (_, _, ce) ->
+        | Ok (_, ce) ->
             let e = Lang_of.simple_expansion (Lang_of.empty ()) id ce in
             Some (simple_expansion env id e)
         | Error `OpaqueModule -> None
