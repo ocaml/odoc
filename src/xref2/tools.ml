@@ -280,51 +280,34 @@ module MakeMemo (X : MEMO) = struct
 
   let cache : (X.result * int * Env.LookupTypeSet.t) M.t = M.create 10000
 
-  let cache_hits : int M.t = M.create 10000
-
   let enabled = ref true
-
-  let bump_counter arg =
-    try
-      let new_val = M.find cache_hits arg + 1 in
-      M.replace cache_hits arg new_val;
-      new_val
-    with _ ->
-      M.add cache_hits arg 1;
-      1
 
   let memoize f env arg =
     if not !enabled then f env arg
     else
       let env_id = Env.id env in
-      let n = bump_counter arg in
       let no_memo () =
         let lookups, result =
           Env.with_recorded_lookups env (fun env' -> f env' arg)
         in
-        if n > 1 then M.add cache arg (result, env_id, lookups);
+        M.add cache arg (result, env_id, lookups);
         result
       in
       match M.find_all cache arg with
       | [] -> no_memo ()
       | xs ->
           let rec find_fast = function
-            | (result, env_id', _) :: _ when env_id' = env_id ->
-                M.replace cache_hits arg (M.find cache_hits arg + 1);
-                result
+            | (result, env_id', _) :: _ when env_id' = env_id -> result
             | _ :: ys -> find_fast ys
             | [] -> find xs
           and find = function
             | (m, _, lookups) :: xs ->
-                (* let b = Env.verify_lookups env lookups in *)
                 if Env.verify_lookups env lookups then m else find xs
             | [] -> no_memo ()
           in
           find_fast xs
 
-  let clear () =
-    M.clear cache;
-    M.clear cache_hits
+  let clear () = M.clear cache
 end
 
 module LookupModuleMemo = MakeMemo (struct
