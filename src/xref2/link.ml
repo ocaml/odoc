@@ -387,9 +387,7 @@ and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
   let env = Env.open_signature s env |> Env.add_docs s.doc in
   let items = signature_items env id s.items
   and doc = comment_docs env id s.doc in
-  let sg = { s with items; doc } in
-  let sg' = Component.Of_Lang.(signature (empty ()) sg) in
-  Lang_of.(signature (id :> Id.Signature.t) (empty ()) sg')
+  { s with items; doc }
 
 and signature_items :
     Env.t -> Id.Signature.t -> Signature.item list -> Signature.item list =
