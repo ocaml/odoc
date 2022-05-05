@@ -933,7 +933,7 @@ now we can ask for the signature of this module:
 val sg : Tools.expansion =
   Odoc_xref2.Tools.Signature
    {Odoc_xref2.Component.Signature.items =
-     [Odoc_xref2.Component.Signature.Module (`LModule (M, 64),
+     [Odoc_xref2.Component.Signature.Module (`LModule (M, 37),
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
@@ -956,7 +956,7 @@ val sg : Tools.expansion =
              None);
            canonical = None; hidden = false};
         get = None});
-      Odoc_xref2.Component.Signature.Module (`LModule (N, 65),
+      Odoc_xref2.Component.Signature.Module (`LModule (N, 38),
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
@@ -965,7 +965,7 @@ val sg : Tools.expansion =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
                {Odoc_xref2.Component.ModuleType.p_expansion = None;
-                p_path = `Dot (`Local (`LModule (M, 64), false), "S")});
+                p_path = `Dot (`Local (`LModule (M, 37), false), "S")});
            canonical = None; hidden = false};
         get = None})];
     compiled = false; removed = []; doc = []}
@@ -1011,7 +1011,7 @@ val m : Component.Module.t Component.Delayed.t =
 - : Tools.expansion =
 Odoc_xref2.Tools.Signature
  {Odoc_xref2.Component.Signature.items =
-   [Odoc_xref2.Component.Signature.Type (`LType (t, 72),
+   [Odoc_xref2.Component.Signature.Type (`LType (t, 45),
      Odoc_model.Lang.Signature.Ordinary,
      {Odoc_xref2.Component.Delayed.v =
        Some

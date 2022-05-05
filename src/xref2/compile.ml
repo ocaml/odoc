@@ -312,16 +312,12 @@ and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
  fun env id s ->
   if s.compiled then s
   else
-    let sg =
-      let items, _ = signature_items env id s.items in
-      {
-        Signature.items;
-        compiled = true;
-        doc = s.doc (* comments are ignored while compiling *);
-      }
-    in
-    let sg' = Component.Of_Lang.(signature (empty ()) sg) in
-    Lang_of.(signature (id :> Id.Signature.t) (empty ()) sg')
+    let items, _ = signature_items env id s.items in
+    {
+      Signature.items;
+      compiled = true;
+      doc = s.doc (* comments are ignored while compiling *);
+    }
 
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
