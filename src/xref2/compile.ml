@@ -93,7 +93,7 @@ and extension env parent t =
     }
   in
   let type_path = type_path env t.type_path in
-  let constructors = List.map constructor t.constructors in
+  let constructors = List.rev_map constructor t.constructors |> List.rev in
   { t with type_path; constructors }
 
 and class_type_expr env parent =
@@ -103,7 +103,7 @@ and class_type_expr env parent =
   | Constr (path, texps) ->
       Constr
         ( class_type_path env path,
-          List.map (type_expression env container) texps )
+          List.rev_map (type_expression env container) texps |> List.rev )
   | Signature s -> Signature (class_signature env parent s)
 
 and class_type env c =
@@ -148,7 +148,7 @@ and class_signature env parent c =
   {
     c with
     self = Opt.map (type_expression env container) c.self;
-    items = List.map map_item c.items;
+    items = List.rev_map map_item c.items |> List.rev;
   }
 
 and method_ env parent m =
