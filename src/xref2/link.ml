@@ -222,13 +222,17 @@ and comment_nestable_block_element env parent ~loc:_
   | `List (x, ys) ->
       `List
         ( x,
-          List.map
-            (List.map
-               (with_location (comment_nestable_block_element env parent)))
-            ys )
+          List.rev_map
+            (fun x ->
+              List.rev_map
+                (with_location (comment_nestable_block_element env parent))
+                x
+              |> List.rev)
+            ys
+          |> List.rev )
   | `Modules refs ->
       let refs =
-        List.map
+        List.rev_map
           (fun (r : Comment.module_reference) ->
             match
               Ref_tools.resolve_module_reference env r.module_reference
@@ -247,6 +251,7 @@ and comment_nestable_block_element env parent ~loc:_
                   ~tools_error:(`Reference e) `Resolve;
                 r)
           refs
+        |> List.rev
       in
       `Modules refs
 
@@ -269,9 +274,10 @@ and with_location :
   { value; location = loc }
 
 and comment_docs env parent d =
-  List.map
+  List.rev_map
     (with_location (comment_block_element env (parent :> Id.LabelParent.t)))
     d
+  |> List.rev
 
 and comment env parent = function
   | `Stop -> `Stop

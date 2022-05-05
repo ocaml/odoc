@@ -524,7 +524,8 @@ and class_type_expr map parent c =
   | Component.ClassType.Constr (p, ts) ->
       Constr
         ( Path.class_type map p,
-          List.map (type_expr map (parent :> Identifier.Parent.t)) ts )
+          List.rev_map (type_expr map (parent :> Identifier.Parent.t)) ts
+          |> List.rev )
   | Signature s -> Signature (class_signature map parent s)
 
 and class_type map parent id c =
@@ -551,7 +552,7 @@ and class_signature map parent sg =
   let open Component.ClassSignature in
   let pparent = (parent :> Identifier.Parent.t) in
   let items =
-    List.map
+    List.rev_map
       (function
         | Method (id, m) ->
             Odoc_model.Lang.ClassSignature.Method (method_ map parent id m)
@@ -563,6 +564,7 @@ and class_signature map parent sg =
         | Comment c ->
             Comment (docs_or_stop (parent :> Identifier.LabelParent.t) c))
       sg.items
+    |> List.rev
   and doc = docs (parent :> Identifier.LabelParent.t) sg.doc in
   { self = Opt.map (type_expr map pparent) sg.self; items; doc }
 
@@ -1064,7 +1066,7 @@ and docs :
     Identifier.LabelParent.t ->
     Component.CComment.docs ->
     Odoc_model.Comment.docs =
- fun parent ds -> List.map (fun d -> block_element parent d) ds
+ fun parent ds -> List.rev_map (fun d -> block_element parent d) ds |> List.rev
 
 and docs_or_stop parent (d : Component.CComment.docs_or_stop) =
   match d with `Docs d -> `Docs (docs parent d) | `Stop -> `Stop
