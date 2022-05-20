@@ -269,11 +269,15 @@ let read_type_declarations env parent rec_flag decls =
     let open Signature in
     List.fold_left
       (fun (acc, recursive) decl ->
-        let comments =
-          Doc_attr.standalone_multiple container decl.typ_attributes in
-         let comments = List.map (fun com -> Comment com) comments in
-         let decl = read_type_declaration env parent decl in
-         ((Type (recursive, decl)) :: (List.rev_append comments acc), And))
+        if Btype.is_row_name (Ident.name decl.typ_id)
+        then (acc, recursive)
+        else begin
+          let comments =
+            Doc_attr.standalone_multiple container decl.typ_attributes in
+           let comments = List.map (fun com -> Comment com) comments in
+           let decl = read_type_declaration env parent decl in
+           ((Type (recursive, decl)) :: (List.rev_append comments acc), And)
+        end)
       ([], rec_flag) decls
     |> fst
   in
