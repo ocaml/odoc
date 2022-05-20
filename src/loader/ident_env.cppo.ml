@@ -156,6 +156,12 @@ let extract_extended_open o =
 #endif
 
 
+let filter_map f x =
+  List.rev
+  @@ List.fold_left
+       (fun acc x -> match f x with Some x -> x :: acc | None -> acc)
+       [] x
+
 let rec extract_signature_tree_items hide_item items =
   let open Typedtree in
   match items with
@@ -164,7 +170,10 @@ let rec extract_signature_tree_items hide_item items =
 #else
   | { sig_desc = Tsig_type (_, decls); _} :: rest ->
 #endif
-    List.map (fun decl -> `Type (decl.typ_id, hide_item))
+    filter_map (fun decl ->
+      if Btype.is_row_name (Ident.name decl.typ_id)
+      then None
+      else Some (`Type (decl.typ_id, hide_item)))
       decls @ extract_signature_tree_items hide_item rest
 
 #if OCAML_VERSION >= (4,10,0)

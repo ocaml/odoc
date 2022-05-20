@@ -177,9 +177,7 @@ e : 'a\. \f[CB]'a\fR;
 .br 
  ]
 .sp 
-\f[CB]type\fR private_extenion#row
-.sp 
-\f[CB]and\fR private_extenion = \f[CB]private\fR [> 
+\f[CB]type\fR private_extenion = \f[CB]private\fR [> 
 .br 
 .ti +2
 | polymorphic_variant
