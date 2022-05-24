@@ -255,8 +255,7 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
                   [ Html.span ~a:(class_ [ "comment-delim" ]) [ Html.txt s ] ]
                 in
                 [
-                  Html.div
-                    ~a:(class_ [ "def-doc" ])
+                  Html.div ~a:(class_ [ "def-doc" ])
                     (delim opening @ block ~resolve doc @ delim closing);
                 ]
           in
