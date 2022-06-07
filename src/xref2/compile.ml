@@ -194,64 +194,113 @@ and module_substitution env m =
   { m with manifest = module_path env m.manifest }
 
 and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
- fun env id s ->
+ fun initial_env id s ->
   let open Signature in
-  let items, _ =
-    List.fold_left
-      (fun (items, env) item ->
-        let std i = (i :: items, env) in
+  let rec loop (items, env) xs =
+    match xs with
+    | [] -> (List.rev items, env)
+    | item :: rest -> (
         match item with
+        | Module (Nonrec, _) -> assert false
         | Module (r, m) ->
-            let m' = module_ env m in
-            if m == m' then (item :: items, env)
-            else
+            let add_to_env env m =
               let ty =
                 Component.Delayed.(
-                  put (fun () -> Component.Of_Lang.(module_ (empty ()) m')))
+                  put (fun () -> Component.Of_Lang.(module_ (empty ()) m)))
               in
-              let docs = [] in
-              let env' =
-                Env.update_module
-                  (m.id :> Paths.Identifier.Path.Module.t)
-                  ty docs env
-              in
-              (Module (r, m') :: items, env')
+              Env.add_module (m.id :> Paths.Identifier.Path.Module.t) ty [] env
+            in
+            let env =
+              match r with
+              | Nonrec -> assert false
+              | And | Ordinary -> env
+              | Rec ->
+                  let rec find modules rest =
+                    match rest with
+                    | Module (And, m') :: sgs -> find (m' :: modules) sgs
+                    | Module (_, _) :: _ -> modules
+                    | Comment _ :: sgs -> find modules sgs
+                    | _ -> modules
+                  in
+                  let modules = find [ m ] rest in
+                  List.fold_left add_to_env env modules
+            in
+            let m' = module_ env m in
+            let env'' =
+              match r with
+              | Nonrec -> assert false
+              | And | Rec -> env
+              | Ordinary -> add_to_env env m'
+            in
+            loop (Module (r, m') :: items, env'') rest
         | ModuleSubstitution m ->
             let env' = Env.open_module_substitution m env in
-            (ModuleSubstitution (module_substitution env m) :: items, env')
-        | Type (r, t) -> std @@ Type (r, type_decl env t)
+            loop
+              (ModuleSubstitution (module_substitution env m) :: items, env')
+              rest
+        | Type (r, t) ->
+            let add_to_env env t =
+              let ty = Component.Of_Lang.(type_decl (empty ()) t) in
+              Env.add_type t.id ty env
+            in
+            let env' =
+              match r with
+              | Rec -> assert false
+              | Ordinary ->
+                  let rec find types rest =
+                    match rest with
+                    | Type (And, t) :: sgs -> find (t :: types) sgs
+                    | Type (_, _) :: _ -> types
+                    | Comment _ :: sgs -> find types sgs
+                    | _ -> types
+                  in
+                  let types = find [ t ] rest in
+                  List.fold_left add_to_env env types
+              | And | Nonrec -> env
+            in
+            let t' = type_decl env' t in
+            let env'' =
+              match r with
+              | Rec -> assert false
+              | Ordinary | And -> env'
+              | Nonrec -> add_to_env env' t'
+            in
+            loop (Type (r, t') :: items, env'') rest
         | TypeSubstitution t ->
             let env' = Env.open_type_substitution t env in
-            (TypeSubstitution (type_decl env t) :: items, env')
+            loop (TypeSubstitution (type_decl env t) :: items, env') rest
         | ModuleType mt ->
             let m' = module_type env mt in
             let ty = Component.Of_Lang.(module_type (empty ()) m') in
-            let env' = Env.update_module_type mt.id ty env in
-            (ModuleType (module_type env mt) :: items, env')
+            let env' = Env.add_module_type mt.id ty env in
+            loop (ModuleType (module_type env mt) :: items, env') rest
         | ModuleTypeSubstitution mt ->
             let env' = Env.open_module_type_substitution mt env in
-            ( ModuleTypeSubstitution (module_type_substitution env mt) :: items,
-              env' )
-        | Value v -> std @@ Value (value_ env id v)
-        | Comment c -> std @@ Comment c
-        | TypExt t -> std @@ TypExt (extension env id t)
-        | Exception e -> std @@ Exception (exception_ env id e)
-        | Class (r, c) -> std @@ Class (r, class_ env id c)
-        | ClassType (r, c) -> std @@ ClassType (r, class_type env c)
+            loop
+              ( ModuleTypeSubstitution (module_type_substitution env mt) :: items,
+                env' )
+              rest
+        | Value v -> loop (Value (value_ env id v) :: items, env) rest
+        | Comment c -> loop (Comment c :: items, env) rest
+        | TypExt t -> loop (TypExt (extension env id t) :: items, env) rest
+        | Exception e ->
+            loop (Exception (exception_ env id e) :: items, env) rest
+        | Class (r, c) ->
+            let ty = Component.Of_Lang.(class_ (empty ()) c) in
+            let env' = Env.add_class c.id ty env in
+            let c' = class_ env' id c in
+            loop (Class (r, c') :: items, env') rest
+        | ClassType (r, c) ->
+            let ty = Component.Of_Lang.(class_type (empty ()) c) in
+            let env' = Env.add_class_type c.id ty env in
+            let c' = class_type env' c in
+            loop (ClassType (r, c') :: items, env') rest
         | Include i ->
-            let i' = include_ env i in
-            if i'.expansion == i.expansion then std @@ Include i'
-            else
-              (* Expansion has changed, let's put the content into the environment *)
-              let env' = Env.close_signature i.Include.expansion.content env in
-              let env'' =
-                Env.open_signature i'.Include.expansion.content env'
-              in
-              (Include i' :: items, env'')
-        | Open o -> std @@ Open o)
-      ([], env) s
+            let i', env' = include_ env i in
+            loop (Include i' :: items, env') rest
+        | Open o -> loop (Open o :: items, env) rest)
   in
-  List.rev items
+  loop ([], initial_env) s
 
 and module_type_substitution env mt =
   let open ModuleTypeSubstitution in
@@ -265,8 +314,7 @@ and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
   if s.compiled then s
   else
     let sg =
-      let env = Env.open_signature s env in
-      let items = signature_items env id s.items in
+      let items, _ = signature_items env id s.items in
       {
         Signature.items;
         compiled = true;
@@ -307,7 +355,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   in
   { m with expr }
 
-and include_ : Env.t -> Include.t -> Include.t =
+and include_ : Env.t -> Include.t -> Include.t * Env.t =
  fun env i ->
   let open Include in
   let decl = Component.Of_Lang.(include_decl (empty ()) i.decl) in
@@ -341,16 +389,17 @@ and include_ : Env.t -> Include.t -> Include.t =
           | _ ->
               failwith "Expansion shouldn't be anything other than a signature"
         in
-        let content =
-          let env = Env.close_signature i.expansion.content env in
-          signature env i.parent expansion_sg
-        in
-        { shadowed = i.expansion.shadowed; content }
+        { i.expansion with content = expansion_sg }
   in
+  let expansion = get_expansion () in
+  let items, env' = signature_items env i.parent expansion.content.items in
   let expansion =
-    if i.expansion.content.compiled then i.expansion else get_expansion ()
+    {
+      expansion with
+      content = { expansion.content with items; compiled = true };
+    }
   in
-  { i with decl = include_decl env i.parent i.decl; expansion }
+  ({ i with decl = include_decl env i.parent i.decl; expansion }, env')
 
 and simple_expansion :
     Env.t ->
@@ -770,7 +819,7 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
       | Ok (_cp, `FType_removed (_, x, _eq)) ->
           (* Substitute type variables ? *)
           Lang_of.(type_expr (empty ()) parent x)
-      | Error _ -> Constr (Lang_of.(Path.type_ (empty ()) cp), ts))
+      | Error _e -> Constr (Lang_of.(Path.type_ (empty ()) cp), ts))
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent v)
   | Object o -> Object (type_expression_object env parent o)
