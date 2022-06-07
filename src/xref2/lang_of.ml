@@ -623,16 +623,17 @@ and include_decl :
 
 and include_ parent map i =
   let open Component.Include in
+  let shadowed = combine_shadowed map.shadowed i.shadowed in
   {
     Odoc_model.Lang.Include.parent;
     doc = docs (parent :> Identifier.LabelParent.t) i.doc;
     decl = include_decl map parent i.decl;
     expansion =
       {
-        shadowed = i.shadowed;
+        shadowed;
         content =
           signature parent
-            { map with shadowed = combine_shadowed map.shadowed i.shadowed }
+            { map with shadowed }
             i.expansion_;
       };
     status = i.status;
