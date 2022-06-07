@@ -983,7 +983,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
         let vd = read_value_description env parent id v in
         let shadowed =
           if Env.is_shadowed env id
-          then { shadowed with s_values = Ident.name id :: shadowed.s_values }
+          then { shadowed with s_values = Odoc_model.Names.parenthesise (Ident.name id) :: shadowed.s_values }
           else shadowed
         in
           loop (vd :: acc, shadowed) rest
