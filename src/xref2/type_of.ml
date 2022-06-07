@@ -10,23 +10,63 @@ let again = ref false
 
 let rec signature : Env.t -> Signature.t -> Signature.t =
  fun env sg ->
-  let env = Env.open_signature sg env in
-  signature_items env sg
+  let items, _ = signature_items env sg.items in
+  { sg with items }
 
-and signature_items : Env.t -> Signature.t -> Signature.t =
- fun env s ->
+and signature_items : Env.t -> Signature.item list -> _ =
+ fun initial_env s ->
   let open Signature in
-  let items =
-    List.map
-      (fun item ->
+  let rec loop (items, env) xs =
+    match xs with
+    | [] -> (List.rev items, env)
+    | item :: rest -> (
         match item with
-        | Module (r, m) -> Module (r, module_ env m)
-        | ModuleType mt -> ModuleType (module_type env mt)
-        | Include i -> Include (include_ env i)
-        | item -> item)
-      s.items
+        | Module (Nonrec, _) -> assert false
+        | Module (r, m) ->
+            let add_to_env env m =
+              let ty =
+                Component.Delayed.(
+                  put (fun () -> Component.Of_Lang.(module_ (empty ()) m)))
+              in
+              Env.add_module (m.id :> Paths.Identifier.Path.Module.t) ty [] env
+            in
+            let env =
+              match r with
+              | Nonrec -> assert false
+              | Ordinary | And -> env
+              | Rec ->
+                  let rec find modules rest =
+                    match rest with
+                    | Module (And, m') :: sgs -> find (m' :: modules) sgs
+                    | Module (_, _) :: _ -> List.rev modules
+                    | _ :: sgs -> find modules sgs
+                    | [] -> List.rev modules
+                  in
+                  let modules = find [ m ] rest in
+                  List.fold_left add_to_env env modules
+            in
+            let m' = module_ env m in
+            let env'' =
+              match r with
+              | Nonrec -> assert false
+              | And | Rec -> env
+              | Ordinary -> add_to_env env m'
+            in
+            loop (Module (r, m') :: items, env'') rest
+        | ModuleSubstitution m ->
+            let env' = Env.open_module_substitution m env in
+            loop (item :: items, env') rest
+        | ModuleType mt ->
+            let m' = module_type env mt in
+            let ty = Component.Of_Lang.(module_type (empty ()) m') in
+            let env' = Env.add_module_type mt.id ty env in
+            loop (ModuleType (module_type env mt) :: items, env') rest
+        | Include i ->
+            let i', env' = include_ env i in
+            loop (Include i' :: items, env') rest
+        | item -> loop (item :: items, env) rest)
   in
-  { s with items }
+  loop ([], initial_env) s
 
 and module_ env m =
   match m.type_ with
@@ -108,16 +148,21 @@ and simple_expansion :
 
 and include_ env i =
   let decl =
-    let env = Env.close_signature i.expansion.content env in
     match i.decl with
     | Alias _ -> i.decl
     | ModuleType t -> ModuleType (u_module_type_expr env i.parent t)
   in
-  let content =
+  let items, env' =
     let { Include.content; _ } = i.expansion in
-    signature_items env content
+    signature_items env content.items
   in
-  { i with expansion = { i.expansion with content }; decl }
+  ( {
+      i with
+      expansion =
+        { i.expansion with content = { i.expansion.content with items } };
+      decl;
+    },
+    env' )
 
 let signature env =
   let rec loop sg =
