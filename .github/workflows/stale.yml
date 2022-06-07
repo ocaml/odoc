@@ -30,6 +30,6 @@ jobs:
             for open issues. They will be given the same review attention, and
             any other help.
           days-before-stale: 365
-          days-before-close: 30
+          days-before-close: -1
           exempt-issue-labels: "bug,not stale"
           stale-issue-label: "stale"
