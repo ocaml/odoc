@@ -93,8 +93,6 @@ module ElementsByName : sig
 
   val add : kind -> string -> [< Component.Element.any ] -> t -> t
 
-  val remove : [< Identifier.t ] -> t -> t
-
   val find_by_name :
     (Component.Element.any -> 'b option) -> string -> t -> 'b list
 end = struct
@@ -116,28 +114,6 @@ end = struct
     in
     StringMap.add name ({ kind; elem } :: tl) t
 
-  let remove id t =
-    let id = (id :> Identifier.t) in
-    let name = Identifier.name id in
-    let l =
-      try StringMap.find name t
-      with e ->
-        Format.eprintf "Failed to find %s\n%!" name;
-        raise e
-    in
-    match
-      List.filter
-        (fun e ->
-          not (Identifier.equal id (Component.Element.identifier e.elem)))
-        l
-    with
-    | [] -> (
-        try StringMap.remove name t
-        with Not_found ->
-          Format.eprintf "Failed to find %s\n%!" name;
-          raise Not_found)
-    | xs -> StringMap.add name xs (StringMap.remove name t)
-
   let find_by_name f name t =
     let filter e acc = match f e.elem with Some r -> r :: acc | None -> acc in
     try List.fold_right filter (StringMap.find name t) [] with Not_found -> []
@@ -150,8 +126,6 @@ module ElementsById : sig
 
   val add : [< Identifier.t ] -> [< Component.Element.any ] -> t -> t
 
-  val remove : [< Identifier.t ] -> t -> t
-
   val find_by_id : [< Identifier.t ] -> t -> Component.Element.any option
 end = struct
   module IdMap = Identifier.Maps.Any
@@ -162,10 +136,6 @@ end = struct
 
   let add identifier element t =
     IdMap.add (identifier :> Identifier.t) (element :> Component.Element.any) t
-
-  let remove id t =
-    let id = (id :> Identifier.t) in
-    IdMap.remove id t
 
   let find_by_id identifier t =
     try Some (IdMap.find (identifier :> Identifier.t) t)
@@ -249,14 +219,6 @@ let add_to_elts kind identifier component env =
     ids = ElementsById.add identifier component env.ids;
   }
 
-let remove identifier env =
-  {
-    env with
-    id = unique_id ();
-    elts = ElementsByName.remove identifier env.elts;
-    ids = ElementsById.remove identifier env.ids;
-  }
-
 let add_label identifier heading env =
   assert env.linking;
   let comp = `Label (identifier, heading) in
@@ -316,9 +278,6 @@ let add_module identifier m docs env =
   let env' = add_to_elts Kind_Module identifier (`Module (identifier, m)) env in
   if env.linking then add_cdocs identifier docs env' else env'
 
-let update_module identifier m docs env =
-  remove identifier env |> add_module identifier m docs
-
 let add_type identifier t env =
   let open Component in
   let open_typedecl cs =
@@ -357,9 +316,6 @@ let add_module_type identifier (t : Component.ModuleType.t) env =
     add_to_elts Kind_ModuleType identifier (`ModuleType (identifier, t)) env
   in
   if env'.linking then add_cdocs identifier t.doc env' else env'
-
-let update_module_type identifier m env =
-  remove identifier env |> add_module_type identifier m
 
 let add_value identifier (t : Component.Value.t) env =
   add_to_elts Kind_Value identifier (`Value (identifier, t)) env
@@ -508,6 +464,7 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
       record_lookup_result x;
       scope.filter x
   | None -> (
+      (* Format.eprintf "Can't find %a\n%!" Component.Fmt.model_identifier (id :> Identifier.t); *)
       match (id :> Identifier.t) with
       | `Root (_, name) -> scope.root (ModuleName.to_string name) env
       | _ -> None)
@@ -806,30 +763,6 @@ let open_module_type_substitution :
       { id = t.id; doc = t.doc; expr = Some t.manifest; canonical = None }
   in
   add_module_type t.L.ModuleTypeSubstitution.id ty env
-
-let rec close_signature : Odoc_model.Lang.Signature.t -> t -> t =
-  let module L = Odoc_model.Lang in
-  fun s e ->
-    assert (not e.linking);
-    List.fold_left
-      (fun env orig ->
-        match (orig : L.Signature.item) with
-        | Type (_, t) -> remove t.L.TypeDecl.id env
-        | Module (_, t) -> remove t.L.Module.id env
-        | ModuleType t -> remove t.L.ModuleType.id env
-        | Class (_, c) -> remove c.id env
-        | ClassType (_, c) -> remove c.id env
-        | Include i -> close_signature i.expansion.content env
-        | Open o -> close_signature o.expansion env
-        | ModuleSubstitution _ | ModuleTypeSubstitution _ | TypeSubstitution _
-          ->
-            env
-        (* The following are only added when linking *)
-        | Exception _ -> env
-        | TypExt _ -> env
-        | Comment _ -> env
-        | Value _ -> env)
-      e s.items
 
 let inherit_resolver env =
   match env.resolver with Some r -> set_resolver empty r | None -> empty

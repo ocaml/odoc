@@ -312,6 +312,7 @@ module MakeMemo (X : MEMO) = struct
             | [] -> find xs
           and find = function
             | (m, _, lookups) :: xs ->
+                (* let b = Env.verify_lookups env lookups in *)
                 if Env.verify_lookups env lookups then m else find xs
             | [] -> no_memo ()
           in
