@@ -192,9 +192,7 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
     | Raw_markup r -> raw_markup r
     | Verbatim s -> mk_block Html.pre [ Html.txt s ]
     | Source (lang_tag, c) ->
-        let extra_class =
-          match lang_tag with None -> [] | Some lang -> [ "language-" ^ lang ]
-        in
+        let extra_class = [ "language-" ^ lang_tag ] in
         mk_block ~extra_class Html.pre (source (inline ~resolve) c)
   in
   Utils.list_concat_map l ~f:one

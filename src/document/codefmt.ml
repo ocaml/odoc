@@ -222,7 +222,8 @@ let code ?attr f = [ inline ?attr @@ Inline.Source (render f) ]
 
 let documentedSrc f = [ DocumentedSrc.Code (render f) ]
 
-let codeblock ?attr f = [ block ?attr @@ Block.Source (None, render f) ]
+let codeblock ?attr f =
+  [ block ?attr @@ Block.Source (Comment.default_lang_tag, render f) ]
 
 let keyword keyword ppf = pf ppf "@{<keyword>%s@}" keyword
 
