@@ -64,7 +64,7 @@ end =
   Heading
 
 and Block : sig
-  type lang_tag = string option
+  type lang_tag = string
 
   type t = one list
 

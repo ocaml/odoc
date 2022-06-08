@@ -18,6 +18,8 @@ open Types
 module Comment = Odoc_model.Comment
 open Odoc_model.Names
 
+let default_lang_tag = "ocaml"
+
 let source_of_code s =
   if s = "" then [] else [ Source.Elt [ inline @@ Inline.Text s ] ]
 
@@ -197,6 +199,9 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
   match content with
   | `Paragraph p -> paragraph p
   | `Code_block (lang_tag, code) ->
+      let lang_tag =
+        match lang_tag with None -> default_lang_tag | Some t -> t
+      in
       block
       @@ Source (lang_tag, source_of_code (Odoc_model.Location_.value code))
   | `Verbatim s -> block @@ Verbatim s
