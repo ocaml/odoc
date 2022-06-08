@@ -47,8 +47,9 @@
     [code] is a different kind of markup that doesn't allow nested markup.
 
     It's possible for two markup elements to appear {b next} {i to} each other
-    and have a space, and appear {b next}{i to} each other with no space. It
-    doesn't matter {b how}  {i much} space it was in the source: in this
+    and have a space, and appear {b next}{i to} each other with no space.
+    This also applies to consecutive code phrases [f][ ][x].
+    It doesn't matter {b how}  {i much} space it was in the source: in this
     sentence, it was two space characters. And in this one, there is {b a}
     {i newline}.
 

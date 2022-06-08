@@ -80,7 +80,7 @@ links in italics with emphasis in emphasis\.
 .sp 
 code is a different kind of markup that doesn't allow nested markup\.
 .sp 
-It's possible for two markup elements to appear \fBnext\fR \fIto\fR each other and have a space, and appear \fBnext\fR\fIto\fR each other with no space\. It doesn't matter \fBhow\fR \fImuch\fR space it was in the source: in this sentence, it was two space characters\. And in this one, there is \fBa\fR \fInewline\fR\.
+It's possible for two markup elements to appear \fBnext\fR \fIto\fR each other and have a space, and appear \fBnext\fR\fIto\fR each other with no space\. This also applies to consecutive code phrases f x\. It doesn't matter \fBhow\fR \fImuch\fR space it was in the source: in this sentence, it was two space characters\. And in this one, there is \fBa\fR \fInewline\fR\.
 .sp 
 This is also true between non-code markup and code\.
 .sp 

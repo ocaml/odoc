@@ -166,6 +166,9 @@ let rec last = function
   | [ x ] -> x
   | _ :: xs -> last xs
 
+(* Checking whether an Inline.desc starts with or ends with preformatted text.
+   This is only an approximation as we did not check whether the text is empty
+   [Text ""] or the styled inline is empty [Style (_, [])]. *)
 let rec is_inline_preformatted =
   let open Inline in
   function

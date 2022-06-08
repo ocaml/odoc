@@ -28,6 +28,28 @@ type phrasing = Html_types.phrasing
 
 type non_link_phrasing = Html_types.phrasing_without_interactive
 
+type context = { following_code : bool; followed_by_code : bool }
+
+let default_context = { following_code = false; followed_by_code = false }
+
+let rec inline_list_concat_map ~context ~f = function
+  | [] -> []
+  | [ x ] -> f ~context x
+  | x1 :: (x2 :: _ as xs) ->
+      let hd =
+        let context =
+          { context with followed_by_code = x2.Inline.preformatted.begin_ }
+        in
+        f ~context x1
+      in
+      let tl =
+        let context =
+          { context with following_code = x1.Inline.preformatted.end_ }
+        in
+        inline_list_concat_map ~context ~f xs
+      in
+      hd @ tl
+
 let mk_anchor_link id =
   [ Html.a ~a:[ Html.a_href ("#" ^ id); Html.a_class [ "anchor" ] ] [] ]
 
@@ -41,6 +63,14 @@ let mk_anchor anchor =
       (extra_attr, extra_class, link)
 
 let class_ (l : Class.t) = if l = [] then [] else [ Html.a_class l ]
+
+let class_with_context ~context (l : Class.t) =
+  class_ @@ l
+  @ List.concat
+      [
+        (if context.following_code then [ "following-code" ] else []);
+        (if context.followed_by_code then [ "followed-by-code" ] else []);
+      ]
 
 and raw_markup (t : Raw_markup.t) =
   let target, content = t in
@@ -74,13 +104,15 @@ and styled style ~emph_level =
   | `Superscript -> (emph_level, Html.sup ~a:[])
   | `Subscript -> (emph_level, Html.sub ~a:[])
 
-let rec internallink ~emph_level ~resolve ?(a = []) (t : InternalLink.t) =
+let rec internallink ~context ~emph_level ~resolve ?(a = [])
+    (t : InternalLink.t) =
   match t with
   | Resolved (uri, content) ->
       let href = Link.href ~resolve uri in
       let a = (a :> Html_types.a_attrib Html.attrib list) in
       let elt =
-        Html.a ~a:(Html.a_href href :: a) (inline_nolink ~emph_level content)
+        Html.a ~a:(Html.a_href href :: a)
+          (inline_nolink ~context ~emph_level content)
       in
       let elt = (elt :> phrasing Html.elt) in
       [ elt ]
@@ -90,59 +122,66 @@ let rec internallink ~emph_level ~resolve ?(a = []) (t : InternalLink.t) =
        *       (ref_to_string ref)
        * in *)
       let a = Html.a_class [ "xref-unresolved" ] :: a in
-      let elt = Html.span ~a (inline ~emph_level ~resolve content) in
+      let elt = Html.span ~a (inline ~context ~emph_level ~resolve content) in
       let elt = (elt :> phrasing Html.elt) in
       [ elt ]
 
-and internallink_nolink ~emph_level
+and internallink_nolink ~context ~emph_level
     ~(a : Html_types.span_attrib Html.attrib list) (t : InternalLink.t) =
   match t with
   | Resolved (_, content) | Unresolved content ->
-      [ Html.span ~a (inline_nolink ~emph_level content) ]
+      [ Html.span ~a (inline_nolink ~context ~emph_level content) ]
 
-and inline ?(emph_level = 0) ~resolve (l : Inline.t) : phrasing Html.elt list =
-  let one (t : Inline.one) =
+and inline ~context ?(emph_level = 0) ~resolve (l : Inline.t) :
+    phrasing Html.elt list =
+  let one ~context (t : Inline.one) =
     let a = class_ t.attr in
     match t.desc with
     | Text "" -> []
     | Text s ->
         if a = [] then [ Html.txt s ] else [ Html.span ~a [ Html.txt s ] ]
     | Entity s ->
+        let a = class_with_context ~context t.attr in
         if a = [] then [ Html.entity s ] else [ Html.span ~a [ Html.entity s ] ]
     | Linebreak -> [ Html.br ~a () ]
     | Styled (style, c) ->
         let emph_level, app_style = styled style ~emph_level in
-        [ app_style @@ inline ~emph_level ~resolve c ]
+        [ app_style @@ inline ~context ~emph_level ~resolve c ]
     | Link (href, c) ->
         let a = (a :> Html_types.a_attrib Html.attrib list) in
-        let content = inline_nolink ~emph_level c in
+        let content = inline_nolink ~context ~emph_level c in
         [ Html.a ~a:(Html.a_href href :: a) content ]
-    | InternalLink c -> internallink ~emph_level ~resolve ~a c
-    | Source c -> source (inline ~emph_level ~resolve) ~a c
+    | InternalLink c -> internallink ~context ~emph_level ~resolve ~a c
+    | Source c ->
+        let a = class_with_context ~context t.attr in
+        source (inline ~context:default_context ~emph_level ~resolve) ~a c
     | Raw_markup r -> raw_markup r
   in
-  Utils.list_concat_map ~f:one l
+  inline_list_concat_map ~context ~f:one l
 
-and inline_nolink ?(emph_level = 0) (l : Inline.t) :
+and inline_nolink ~context ?(emph_level = 0) (l : Inline.t) :
     non_link_phrasing Html.elt list =
-  let one (t : Inline.one) =
+  let one ~context (t : Inline.one) =
     let a = class_ t.attr in
     match t.desc with
     | Text "" -> []
     | Text s ->
         if a = [] then [ Html.txt s ] else [ Html.span ~a [ Html.txt s ] ]
     | Entity s ->
+        let a = class_with_context ~context t.attr in
         if a = [] then [ Html.entity s ] else [ Html.span ~a [ Html.entity s ] ]
     | Linebreak -> [ Html.br ~a () ]
     | Styled (style, c) ->
         let emph_level, app_style = styled style ~emph_level in
-        [ app_style @@ inline_nolink ~emph_level c ]
-    | Link (_, c) -> inline_nolink ~emph_level c
-    | InternalLink c -> internallink_nolink ~emph_level ~a c
-    | Source c -> source (inline_nolink ~emph_level) ~a c
+        [ app_style @@ inline_nolink ~context ~emph_level c ]
+    | Link (_, c) -> inline_nolink ~context ~emph_level c
+    | InternalLink c -> internallink_nolink ~context ~emph_level ~a c
+    | Source c ->
+        let a = class_with_context ~context t.attr in
+        source (inline_nolink ~context:default_context ~emph_level) ~a c
     | Raw_markup r -> raw_markup r
   in
-  Utils.list_concat_map ~f:one l
+  inline_list_concat_map ~context ~f:one l
 
 let heading ~resolve (h : Heading.t) =
   let a, anchor =
@@ -150,7 +189,7 @@ let heading ~resolve (h : Heading.t) =
     | Some id -> ([ Html.a_id id ], mk_anchor_link id)
     | None -> ([], [])
   in
-  let content = inline ~resolve h.title in
+  let content = inline ~context:default_context ~resolve h.title in
   let mk =
     match h.level with
     | 0 -> Html.h1
@@ -171,9 +210,11 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
     in
     match t.desc with
     | Inline i ->
-        if t.attr = [] then as_flow @@ inline ~resolve i
-        else mk_block Html.span (inline ~resolve i)
-    | Paragraph i -> mk_block Html.p (inline ~resolve i)
+        if t.attr = [] then
+          as_flow @@ inline ~context:default_context ~resolve i
+        else mk_block Html.span (inline ~context:default_context ~resolve i)
+    | Paragraph i ->
+        mk_block Html.p (inline ~context:default_context ~resolve i)
     | List (typ, l) ->
         let mk = match typ with Ordered -> Html.ol | Unordered -> Html.ul in
         mk_block mk (List.map (fun x -> Html.li (block ~resolve x)) l)
@@ -181,7 +222,7 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
         let item i =
           let a = class_ i.Description.attr in
           let term =
-            (inline ~resolve i.Description.key
+            (inline ~resolve ~context:default_context i.Description.key
               : phrasing Html.elt list
               :> flow Html.elt list)
           in
@@ -195,7 +236,8 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
         let extra_class =
           match lang_tag with None -> [] | Some lang -> [ "language-" ^ lang ]
         in
-        mk_block ~extra_class Html.pre (source (inline ~resolve) c)
+        mk_block ~extra_class Html.pre
+          (source (inline ~context:default_context ~resolve) c)
   in
   Utils.list_concat_map l ~f:one
 
@@ -241,14 +283,16 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
     | [] -> []
     | (Code _ | Alternative _) :: _ ->
         let code, _, rest = take_code t in
-        source (inline ~resolve) code @ to_html rest
+        source (inline ~context:default_context ~resolve) code @ to_html rest
     | Subpage subp :: _ -> subpage ~resolve subp
     | (Documented _ | Nested _) :: _ ->
         let l, _, rest = take_descr t in
         let one { DocumentedSrc.attrs; anchor; code; doc; markers } =
           let content =
             match code with
-            | `D code -> (inline ~resolve code :> item Html.elt list)
+            | `D code ->
+                (inline ~context:default_context ~resolve code
+                  :> item Html.elt list)
             | `N n -> to_html n
           in
           let doc =
@@ -308,7 +352,8 @@ and items ~resolve l : item Html.elt list =
             let summary =
               let extra_attr, extra_class, anchor_link = mk_anchor anchor in
               let a = spec_class (attr @ extra_class) @ extra_attr in
-              Html.summary ~a @@ anchor_link @ source (inline ~resolve) summary
+              Html.summary ~a @@ anchor_link
+              @ source (inline ~context:default_context ~resolve) summary
             in
             [ Html.details ~a:open' summary included_html ]
           in
@@ -337,7 +382,7 @@ module Toc = struct
 
   let render_toc ~resolve (toc : Toc.t) =
     let rec section { Toc.url; text; children } =
-      let text = inline_nolink text in
+      let text = inline_nolink ~context:default_context text in
       let text =
         (text
           : non_link_phrasing Html.elt list
