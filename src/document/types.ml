@@ -35,9 +35,11 @@ and Inline : sig
 
   type href = string
 
+  type preformatted = { begin_ : bool; end_ : bool }
+
   type t = one list
 
-  and one = { attr : Class.t; desc : desc }
+  and one = { attr : Class.t; preformatted : preformatted; desc : desc }
 
   and desc =
     | Text of string
@@ -159,6 +161,34 @@ and Page : sig
 end =
   Page
 
-let inline ?(attr = []) desc = Inline.{ attr; desc }
+let rec last = function
+  | [] -> invalid_arg "last"
+  | [ x ] -> x
+  | _ :: xs -> last xs
+
+let rec is_inline_preformatted =
+  let open Inline in
+  function
+  | Text _ | Linebreak -> { begin_ = false; end_ = false }
+  | Entity _ | Source _ -> { begin_ = true; end_ = true }
+  | Styled (_, is) | Link (_, is) -> is_inline_list_preformatted is
+  | InternalLink il -> is_internallink_preformatted il
+  (* Ideally, the markup should be parsed *)
+  | Raw_markup _ -> { begin_ = false; end_ = false }
+
+and is_inline_list_preformatted = function
+  | [] -> { begin_ = false; end_ = false }
+  | l ->
+      {
+        begin_ = (List.hd l).preformatted.begin_;
+        end_ = (last l).preformatted.end_;
+      }
+
+and is_internallink_preformatted = function
+  | Resolved (_, is) | Unresolved is -> is_inline_list_preformatted is
+
+let inline ?(attr = []) desc =
+  let preformatted = is_inline_preformatted desc in
+  Inline.{ attr; preformatted; desc }
 
 let block ?(attr = []) desc = Block.{ attr; desc }
