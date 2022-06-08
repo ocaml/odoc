@@ -101,12 +101,6 @@ let rec internallink ~config ~emph_level ~resolve ?(a = []) (t : InternalLink.t)
       let elt = (elt :> phrasing Html.elt) in
       [ elt ]
 
-and internallink_nolink ~emph_level
-    ~(a : Html_types.span_attrib Html.attrib list) (t : InternalLink.t) =
-  match t with
-  | Resolved (_, content) | Unresolved content ->
-      [ Html.span ~a (inline_nolink ~emph_level content) ]
-
 and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
     phrasing Html.elt list =
   let one (t : Inline.one) =
@@ -146,8 +140,8 @@ and inline_nolink ?(emph_level = 0) (l : Inline.t) :
     | Styled (style, c) ->
         let emph_level, app_style = styled style ~emph_level in
         [ app_style @@ inline_nolink ~emph_level c ]
-    | Link (_, c) -> inline_nolink ~emph_level c
-    | InternalLink c -> internallink_nolink ~emph_level ~a c
+    | Link _ -> assert false
+    | InternalLink _ -> assert false
     | Source c -> source (inline_nolink ~emph_level) ~a c
     | Math s -> [ inline_math s ]
     | Raw_markup r -> raw_markup r
