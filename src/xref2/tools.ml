@@ -1053,8 +1053,10 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
       `Hidden p'
   | `Canonical (p, `Resolved p2) ->
       `Canonical (reresolve_module env p, `Resolved p2)
-  | `Canonical (p, p2) ->
-      `Canonical (reresolve_module env p, handle_canonical_module env p2)
+  | `Canonical (p, p2) -> (
+      match handle_canonical_module env p2 with
+      | `Resolved _ as r -> `Canonical (p, r)
+      | r -> `Canonical (reresolve_module env p, r))
   | `OpaqueModule m -> `OpaqueModule (reresolve_module env m)
 
 and handle_canonical_module env p2 =

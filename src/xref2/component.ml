@@ -1525,13 +1525,15 @@ end
 module Of_Lang = struct
   open Odoc_model
 
-  module RM = Map.Make (struct
+  module RM = Hashtbl.Make (struct
     type t = Paths.Path.Resolved.Module.t
 
-    let compare x y = if x == y then 0 else compare x y
+    let equal x y = x = y
+
+    let hash x = Hashtbl.hash x
   end)
 
-  type memos = { mutable rmodpathmemo : Cpath.Resolved.module_ RM.t }
+  type memos = { rmodpathmemo : Cpath.Resolved.module_ RM.t }
 
   type map = {
     modules : Ident.module_ Paths.Identifier.Maps.Module.t;
@@ -1549,7 +1551,7 @@ module Of_Lang = struct
 
   let empty () =
     let open Paths.Identifier.Maps in
-    let memos = { rmodpathmemo = RM.empty } in
+    let memos = { rmodpathmemo = RM.create 255 } in
     {
       modules = Module.empty;
       module_types = ModuleType.empty;
@@ -1672,10 +1674,10 @@ module Of_Lang = struct
       | `Hidden p1 -> `Hidden (recurse p1)
       | `OpaqueModule m -> `OpaqueModule (recurse m)
     in
-    try RM.find p ident_map.memos.rmodpathmemo
+    try RM.find ident_map.memos.rmodpathmemo p
     with Not_found ->
       let res = f () in
-      ident_map.memos.rmodpathmemo <- RM.add p res ident_map.memos.rmodpathmemo;
+      RM.add ident_map.memos.rmodpathmemo p res;
       res
 
   and resolved_module_type_path :
