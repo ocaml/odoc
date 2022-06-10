@@ -2,13 +2,15 @@ open Odoc_model
 open Paths
 open Names
 
-module RM = Map.Make (struct
+module RM = Hashtbl.Make (struct
   type t = Cpath.Resolved.module_
 
-  let compare x y = if x == y then 0 else compare x y
+  let equal x y = x = y
+
+  let hash x = Hashtbl.hash x
 end)
 
-type memos = { mutable rmodpathmemo : Path.Resolved.Module.t RM.t }
+type memos = { rmodpathmemo : Path.Resolved.Module.t RM.t }
 
 type maps = {
   module_ : Identifier.Module.t Component.ModuleMap.t;
@@ -38,7 +40,7 @@ let empty_shadow =
   }
 
 let empty () =
-  let memos = { rmodpathmemo = RM.empty } in
+  let memos = { rmodpathmemo = RM.create 255 } in
   {
     module_ = Component.ModuleMap.empty;
     module_type = Component.ModuleTypeMap.empty;
@@ -161,11 +163,11 @@ module Path = struct
       | `OpaqueModule m -> `OpaqueModule (resolved_module map m)
     in
     try
-      let result = RM.find p map.memos.rmodpathmemo in
+      let result = RM.find map.memos.rmodpathmemo p in
       result
     with Not_found ->
       let result = f () in
-      map.memos.rmodpathmemo <- RM.add p result map.memos.rmodpathmemo;
+      RM.add map.memos.rmodpathmemo p result;
       result
 
   and resolved_parent map (p : Cpath.Resolved.parent) =
