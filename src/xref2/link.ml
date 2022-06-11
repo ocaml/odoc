@@ -757,8 +757,8 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
     match equation.Equation.manifest with
     | Some (Constr (`Resolved path, params))
       when Paths.Path.Resolved.Type.is_hidden path
-           || Paths.Path.Resolved.Type.canonical_ident path
-              = (Some t.id :> Paths.Identifier.Path.Type.t option) ->
+           || Paths.Path.Resolved.Type.identifier path
+              = (t.id :> Paths.Identifier.Path.Type.t) ->
         Some (path, params)
     | _ -> None
   in
