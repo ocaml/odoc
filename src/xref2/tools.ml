@@ -1138,7 +1138,11 @@ and handle_canonical_module_type env p2 =
   in
   let resolve env p =
     resolve_module_type env ~mark_substituted:false ~add_canonical:false p
-    >>= fun (p, m) -> Ok (strip_alias p, m)
+    >>= fun (p, m) ->
+    (* Note, we reresolve here in case any parent module has a canonical
+       constructor to deal with - we know there's no canonicalmoduletype as we've
+       explicitly asked for it not to be added *)
+    Ok (reresolve_module_type env (strip_alias p), m)
   in
   let lang_of cpath =
     (Lang_of.(Path.resolved_module_type (empty ()) cpath)
@@ -1157,7 +1161,9 @@ and handle_canonical_type env p2 =
   let resolve env p =
     match resolve_type env ~add_canonical:false p with
     | Ok (_, `FType_removed _) -> Error `Find_failure
-    | Ok (x, y) -> Ok (x, y)
+    | Ok (x, y) ->
+        (* See comment in handle_canonical_module_type for why we're reresolving here *)
+        Ok (reresolve_type env x, y)
     | Error y -> Error y
   in
   match canonical_helper env resolve lang_of c_ty_poss cp2 with
