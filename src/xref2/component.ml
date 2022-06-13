@@ -6,7 +6,7 @@ module ModuleMap = Map.Make (struct
   let compare a b =
     let i1 = match a with `LRoot (_, i) | `LModule (_, i) -> i in
     let i2 = match b with `LRoot (_, i) | `LModule (_, i) -> i in
-    Int.compare i1 i2
+    compare i1 i2
 end)
 
 module TypeMap = Map.Make (struct
@@ -15,7 +15,7 @@ module TypeMap = Map.Make (struct
   let compare a b =
     let i1 = match a with `LType (_, i) -> i in
     let i2 = match b with `LType (_, i) -> i in
-    Int.compare i1 i2
+    compare i1 i2
 end)
 
 module PathModuleMap = Map.Make (struct
@@ -34,7 +34,7 @@ module PathModuleMap = Map.Make (struct
         ->
           i
     in
-    Int.compare i1 i2
+    compare i1 i2
 end)
 
 module ModuleTypeMap = Map.Make (struct
@@ -43,7 +43,7 @@ module ModuleTypeMap = Map.Make (struct
   let compare a b =
     let i1 = match a with `LModuleType (_, i) -> i in
     let i2 = match b with `LModuleType (_, i) -> i in
-    Int.compare i1 i2
+    compare i1 i2
 end)
 
 module PathTypeMap = Map.Make (struct
@@ -56,7 +56,7 @@ module PathTypeMap = Map.Make (struct
     let i2 =
       match b with `LType (_, i) | `LClass (_, i) | `LClassType (_, i) -> i
     in
-    Int.compare i1 i2
+    compare i1 i2
 end)
 
 module PathClassTypeMap = Map.Make (struct
@@ -65,7 +65,7 @@ module PathClassTypeMap = Map.Make (struct
   let compare a b =
     let i1 = match a with `LClass (_, i) | `LClassType (_, i) -> i in
     let i2 = match b with `LClass (_, i) | `LClassType (_, i) -> i in
-    Int.compare i1 i2
+    compare i1 i2
 end)
 
 module IdentMap = Map.Make (struct
