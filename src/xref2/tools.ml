@@ -346,6 +346,16 @@ module LookupAndResolveMemo = MakeMemo (struct
   let hash = Hashtbl.hash
 end)
 
+module HandleCanonicalModuleMemo = MakeMemo (struct
+  type t = Odoc_model.Paths.Path.Module.t
+
+  type result = Odoc_model.Paths.Path.Module.t
+
+  let equal x3 y3 = x3 = y3
+
+  let hash y = Hashtbl.hash y
+end)
+
 module ExpansionOfModuleMemo = MakeMemo (struct
   type t = Cpath.Resolved.module_
 
@@ -1237,7 +1247,7 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
       | r -> `Canonical (reresolve_module env p, r))
   | `OpaqueModule m -> `OpaqueModule (reresolve_module env m)
 
-and handle_canonical_module env p2 =
+and handle_canonical_module_real env p2 =
   let strip_alias : Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
    fun x -> match x with `Alias (_, _, Some p) -> p | _ -> x
   in
@@ -1304,7 +1314,10 @@ and handle_canonical_module env p2 =
         if expanded then rp
         else process_module_path env ~add_canonical:false m rp
       in
-      `Resolved Lang_of.(Path.resolved_module (empty ()) cpath)
+      Lang_of.(Path.module_ (empty ()) (`Resolved cpath))
+
+and handle_canonical_module env p2 =
+  HandleCanonicalModuleMemo.memoize handle_canonical_module_real env p2
 
 and handle_canonical_module_type env p2 =
   let cp2 = Component.Of_Lang.(module_type_path (empty ()) p2) in
