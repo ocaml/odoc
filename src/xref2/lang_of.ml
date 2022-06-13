@@ -2,16 +2,6 @@ open Odoc_model
 open Paths
 open Names
 
-module RM = Hashtbl.Make (struct
-  type t = Cpath.Resolved.module_
-
-  let equal x y = x = y
-
-  let hash x = Hashtbl.hash x
-end)
-
-type memos = { rmodpathmemo : Path.Resolved.Module.t RM.t }
-
 type maps = {
   module_ : Identifier.Module.t Component.ModuleMap.t;
   module_type : Identifier.ModuleType.t Component.ModuleTypeMap.t;
@@ -25,7 +15,6 @@ type maps = {
   fragment_root : Cfrag.root option;
   (* Shadowed items *)
   shadowed : Lang.Include.shadowed;
-  memos : memos;
 }
 
 let empty_shadow =
@@ -40,7 +29,6 @@ let empty_shadow =
   }
 
 let empty () =
-  let memos = { rmodpathmemo = RM.create 255 } in
   {
     module_ = Component.ModuleMap.empty;
     module_type = Component.ModuleTypeMap.empty;
@@ -52,7 +40,6 @@ let empty () =
     path_class_type = Component.PathClassTypeMap.empty;
     fragment_root = None;
     shadowed = empty_shadow;
-    memos;
   }
 
 let with_fragment_root r = { (empty ()) with fragment_root = Some r }
@@ -154,32 +141,22 @@ module Path = struct
 
   and resolved_module map (p : Cpath.Resolved.module_) :
       Odoc_model.Paths.Path.Resolved.Module.t =
-    let f () =
-      match p with
-      | `Local id ->
-          `Identifier
-            (try lookup_module map id
-             with Not_found ->
-               failwith (Format.asprintf "Not_found: %a" Ident.fmt id))
-      | `Substituted x -> resolved_module map x
-      | `Gpath y -> y
-      | `Subst (mty, m) ->
-          `Subst (resolved_module_type map mty, resolved_module map m)
-      | `Hidden h -> `Hidden (resolved_module map h)
-      | `Module (p, n) -> `Module (resolved_parent map p, n)
-      | `Canonical (r, m) -> `Canonical (resolved_module map r, m)
-      | `Apply (m1, m2) ->
-          `Apply (resolved_module map m1, resolved_module map m2)
-      | `Alias (m1, m2, _) -> `Alias (resolved_module map m1, module_ map m2)
-      | `OpaqueModule m -> `OpaqueModule (resolved_module map m)
-    in
-    try
-      let result = RM.find map.memos.rmodpathmemo p in
-      result
-    with Not_found ->
-      let result = f () in
-      RM.add map.memos.rmodpathmemo p result;
-      result
+    match p with
+    | `Local id ->
+        `Identifier
+          (try lookup_module map id
+           with Not_found ->
+             failwith (Format.asprintf "Not_found: %a" Ident.fmt id))
+    | `Substituted x -> resolved_module map x
+    | `Gpath y -> y
+    | `Subst (mty, m) ->
+        `Subst (resolved_module_type map mty, resolved_module map m)
+    | `Hidden h -> `Hidden (resolved_module map h)
+    | `Module (p, n) -> `Module (resolved_parent map p, n)
+    | `Canonical (r, m) -> `Canonical (resolved_module map r, m)
+    | `Apply (m1, m2) -> `Apply (resolved_module map m1, resolved_module map m2)
+    | `Alias (m1, m2, _) -> `Alias (resolved_module map m1, module_ map m2)
+    | `OpaqueModule m -> `OpaqueModule (resolved_module map m)
 
   and resolved_parent map (p : Cpath.Resolved.parent) =
     match p with
