@@ -1,3 +1,4 @@
+open! Compat
 open Types
 
 type out = Source.t
