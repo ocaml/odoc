@@ -196,7 +196,7 @@ and module_substitution env m =
 and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
  fun initial_env id s ->
   let open Signature in
-  let rec loop (items, env) xs =
+  let rec loop items env xs =
     match xs with
     | [] -> (List.rev items, env)
     | item :: rest -> (
@@ -232,12 +232,12 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
               | And | Rec -> env
               | Ordinary -> add_to_env env m'
             in
-            loop (Module (r, m') :: items, env'') rest
+            loop (Module (r, m') :: items) env'' rest
         | ModuleSubstitution m ->
             let env' = Env.open_module_substitution m env in
             loop
-              (ModuleSubstitution (module_substitution env m) :: items, env')
-              rest
+              (ModuleSubstitution (module_substitution env m) :: items)
+              env' rest
         | Type (r, t) ->
             let add_to_env env t =
               let ty = Component.Of_Lang.(type_decl (empty ()) t) in
@@ -265,42 +265,41 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
               | Ordinary | And -> env'
               | Nonrec -> add_to_env env' t'
             in
-            loop (Type (r, t') :: items, env'') rest
+            loop (Type (r, t') :: items) env'' rest
         | TypeSubstitution t ->
             let env' = Env.open_type_substitution t env in
-            loop (TypeSubstitution (type_decl env t) :: items, env') rest
+            loop (TypeSubstitution (type_decl env t) :: items) env' rest
         | ModuleType mt ->
             let m' = module_type env mt in
             let ty = Component.Of_Lang.(module_type (empty ()) m') in
             let env' = Env.add_module_type mt.id ty env in
-            loop (ModuleType (module_type env mt) :: items, env') rest
+            loop (ModuleType (module_type env mt) :: items) env' rest
         | ModuleTypeSubstitution mt ->
             let env' = Env.open_module_type_substitution mt env in
             loop
-              ( ModuleTypeSubstitution (module_type_substitution env mt) :: items,
-                env' )
-              rest
-        | Value v -> loop (Value (value_ env id v) :: items, env) rest
-        | Comment c -> loop (Comment c :: items, env) rest
-        | TypExt t -> loop (TypExt (extension env id t) :: items, env) rest
+              (ModuleTypeSubstitution (module_type_substitution env mt) :: items)
+              env' rest
+        | Value v -> loop (Value (value_ env id v) :: items) env rest
+        | Comment c -> loop (Comment c :: items) env rest
+        | TypExt t -> loop (TypExt (extension env id t) :: items) env rest
         | Exception e ->
-            loop (Exception (exception_ env id e) :: items, env) rest
+            loop (Exception (exception_ env id e) :: items) env rest
         | Class (r, c) ->
             let ty = Component.Of_Lang.(class_ (empty ()) c) in
             let env' = Env.add_class c.id ty env in
             let c' = class_ env' id c in
-            loop (Class (r, c') :: items, env') rest
+            loop (Class (r, c') :: items) env' rest
         | ClassType (r, c) ->
             let ty = Component.Of_Lang.(class_type (empty ()) c) in
             let env' = Env.add_class_type c.id ty env in
             let c' = class_type env' c in
-            loop (ClassType (r, c') :: items, env') rest
+            loop (ClassType (r, c') :: items) env' rest
         | Include i ->
             let i', env' = include_ env i in
-            loop (Include i' :: items, env') rest
-        | Open o -> loop (Open o :: items, env) rest)
+            loop (Include i' :: items) env' rest
+        | Open o -> loop (Open o :: items) env rest)
   in
-  loop ([], initial_env) s
+  loop [] initial_env s
 
 and module_type_substitution env mt =
   let open ModuleTypeSubstitution in
