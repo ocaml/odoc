@@ -317,7 +317,7 @@ and items ~resolve l : item Html.elt list =
             [ Html.div ~a:[ Html.a_class a_class ] (doc @ inner) ]
           in
           match status with
-          | `Inline -> included_html
+          | `Inline -> doc @ included_html
           | `Closed -> details ~open':false
           | `Open -> details ~open':true
           | `Default -> details ~open':!Tree.open_details
