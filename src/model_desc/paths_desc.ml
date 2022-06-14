@@ -36,7 +36,7 @@ module Names = struct
 
   let pagename = To_string PageName.to_string
 
-  let parametername = To_string ParameterName.to_string
+  let parametername = To_string ModuleName.to_string
 end
 
 module General_paths = struct

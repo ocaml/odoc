@@ -366,10 +366,10 @@ let rec read_module_expr env parent label_parent mexpr =
           | Named (id_opt, _, arg) ->
               let name, env =
                 match id_opt with
-                | Some id -> Ident.name id, Env.add_parameter parent id (ParameterName.of_ident id) env
+                | Some id -> Ident.name id, Env.add_parameter parent id (ModuleName.of_ident id) env
                 | None -> "_", env
               in
-              let id = Identifier.Mk.parameter (parent, Odoc_model.Names.ParameterName.make_std name) in
+              let id = Identifier.Mk.parameter (parent, Odoc_model.Names.ModuleName.make_std name) in
               let arg = Cmti.read_module_type env id label_parent arg in
               
               Named { id; expr=arg }, env
@@ -383,11 +383,11 @@ let rec read_module_expr env parent label_parent mexpr =
           | None -> FunctorParameter.Unit
           | Some arg ->
               let name = Ident.name id in
-              let id = Identifier.Mk.parameter (parent, ParameterName.make_std name) in
+              let id = Identifier.Mk.parameter (parent, ModuleName.make_std name) in
           let arg = Cmti.read_module_type env id label_parent arg in
           Named { FunctorParameter. id; expr = arg; }
         in
-        let env = Env.add_parameter parent id (ParameterName.of_ident id) env in
+        let env = Env.add_parameter parent id (ModuleName.of_ident id) env in
         let res = read_module_expr env (Identifier.Mk.result parent) label_parent res in
         Functor(f_parameter, res)
 #endif

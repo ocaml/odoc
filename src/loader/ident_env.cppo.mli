@@ -21,7 +21,7 @@ type t
 val empty : t
 
 val add_parameter :
-  Paths.Identifier.Signature.t -> Ident.t -> Names.ParameterName.t -> t -> t
+  Paths.Identifier.Signature.t -> Ident.t -> Names.ModuleName.t -> t -> t
 
 val handle_signature_type_items :
   Paths.Identifier.Signature.t -> Compat.signature -> t -> t

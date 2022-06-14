@@ -158,7 +158,7 @@ module Path = struct
         let kind = `Argument in
         let arg_num = functor_arg_pos p in
         let page =
-          Printf.sprintf "%d-%s" arg_num (ParameterName.to_string arg_name)
+          Printf.sprintf "%d-%s" arg_num (ModuleName.to_string arg_name)
         in
         mk ~parent kind page
     | { iv = `ModuleType (parent, modt_name); _ } ->

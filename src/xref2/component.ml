@@ -1169,7 +1169,7 @@ module Fmt = struct
     | `Parameter (parent, name) ->
         Format.fprintf ppf "(param %a %s)" model_identifier
           (parent :> Odoc_model.Paths.Identifier.t)
-          (Odoc_model.Names.ParameterName.to_string name)
+          (Odoc_model.Names.ModuleName.to_string name)
     | `Result parent ->
         Format.fprintf ppf "%a.result" model_identifier
           (parent :> Odoc_model.Paths.Identifier.t)
@@ -1636,7 +1636,7 @@ module Of_Lang = struct
 
   let find_any_module i ident_map =
     match i with
-    | { Odoc_model.Paths.iv = #Paths.Identifier.Module.t_pv; _ } as id ->
+    | { Odoc_model.Paths.iv = `Root _ | `Module _; _ } as id ->
         (Maps.Module.find id ident_map.modules :> Ident.path_module)
     | { Odoc_model.Paths.iv = #Paths.Identifier.FunctorParameter.t_pv; _ } as id
       ->

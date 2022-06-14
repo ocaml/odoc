@@ -921,10 +921,10 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
           | Unit -> Odoc_model.Lang.FunctorParameter.Unit, env
           | Named (id_opt, arg) ->
               let name, env = match id_opt with
-                | Some id -> Ident.name id,  Env.add_parameter parent id (ParameterName.of_ident id) env
+                | Some id -> Ident.name id,  Env.add_parameter parent id (ModuleName.of_ident id) env
                 | None -> "_", env
               in
-              let id = Identifier.Mk.parameter(parent, Odoc_model.Names.ParameterName.make_std name) in
+              let id = Identifier.Mk.parameter(parent, Odoc_model.Names.ModuleName.make_std name) in
               let arg = read_module_type env id arg in
               Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg }), env
         in

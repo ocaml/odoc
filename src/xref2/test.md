@@ -32,7 +32,6 @@ open Odoc_model.Names;;
 #install_printer Odoc_model.Names.ModuleName.fmt;;
 #install_printer Odoc_model.Names.ModuleTypeName.fmt;;
 #install_printer Odoc_model.Names.TypeName.fmt;;
-#install_printer Odoc_model.Names.ParameterName.fmt;;
 #install_printer Odoc_model.Names.ExceptionName.fmt;;
 #install_printer Odoc_model.Names.FieldName.fmt;;
 #install_printer Odoc_model.Names.PageName.fmt;;

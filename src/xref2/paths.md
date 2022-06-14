@@ -16,7 +16,6 @@ open Odoc_xref_test;;
 #install_printer Odoc_model.Names.ModuleName.fmt;;
 #install_printer Odoc_model.Names.ModuleTypeName.fmt;;
 #install_printer Odoc_model.Names.TypeName.fmt;;
-#install_printer Odoc_model.Names.ParameterName.fmt;;
 #install_printer Odoc_model.Names.PageName.fmt;;
 let id = Common.id;;
 let mod_sig =
@@ -51,7 +50,7 @@ so we either have named type declarations that are associated with a particular 
 type signature = [
     | `Root of Root.t * UnitName.t
     | `Module of signature * ModuleName.t
-    | `Parameter of signature * ParameterName.t
+    | `Parameter of signature * ModuleName.t
     | `Result of signature
     | `ModuleType of signature * ModuleTypeName.t
 ]

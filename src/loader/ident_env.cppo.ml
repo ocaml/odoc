@@ -478,8 +478,7 @@ let handle_signature_type_items : Paths.Identifier.Signature.t -> Compat.signatu
     env_of_items parent items env
 
 let add_parameter parent id name env =
-
-  let hidden = ParameterName.is_hidden name in
+  let hidden = ModuleName.is_hidden name in
   let path = `Identifier (Odoc_model.Paths.Identifier.Mk.parameter(parent, name), hidden) in
   let module_paths = Ident.add id path env.module_paths in
   { env with module_paths }
