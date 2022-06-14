@@ -30,7 +30,7 @@ module Identifier = struct
     | `Page (_, name) -> PageName.to_string name
     | `LeafPage (_, name) -> PageName.to_string name
     | `Module (_, name) -> ModuleName.to_string name
-    | `Parameter (_, name) -> ParameterName.to_string name
+    | `Parameter (_, name) -> ModuleName.to_string name
     | `Result x -> name_aux (x :> t)
     | `ModuleType (_, name) -> ModuleTypeName.to_string name
     | `Type (_, name) -> TypeName.to_string name
@@ -466,9 +466,9 @@ module Identifier = struct
       mk_parent ModuleName.to_string "m" (fun (p, n) -> `Module (p, n))
 
     let parameter :
-        Signature.t * ParameterName.t ->
-        [> `Parameter of Signature.t * ParameterName.t ] id =
-      mk_parent ParameterName.to_string "p" (fun (p, n) -> `Parameter (p, n))
+        Signature.t * ModuleName.t ->
+        [> `Parameter of Signature.t * ModuleName.t ] id =
+      mk_parent ModuleName.to_string "p" (fun (p, n) -> `Parameter (p, n))
 
     let result : Signature.t -> [> `Result of Signature.t ] id =
      fun s ->

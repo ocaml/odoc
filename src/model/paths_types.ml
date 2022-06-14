@@ -23,7 +23,7 @@ module Identifier = struct
   type signature_pv =
     [ `Root of container_page option * ModuleName.t
     | `Module of signature * ModuleName.t
-    | `Parameter of signature * ParameterName.t
+    | `Parameter of signature * ModuleName.t
     | `Result of signature
     | `ModuleType of signature * ModuleTypeName.t ]
 
@@ -58,12 +58,15 @@ module Identifier = struct
   and root_module = root_module_pv id
   (** @canonical Odoc_model.Paths.Identifier.RootModule.t *)
 
-  type module_pv = [ root_module_pv | `Module of signature * ModuleName.t ]
+  type module_pv =
+    [ root_module_pv
+    | `Module of signature * ModuleName.t
+    | `Parameter of signature * ModuleName.t ]
 
   and module_ = module_pv id
   (** @canonical Odoc_model.Paths.Identifier.Module.t *)
 
-  type functor_parameter_pv = [ `Parameter of signature * ParameterName.t ]
+  type functor_parameter_pv = [ `Parameter of signature * ModuleName.t ]
 
   and functor_parameter = functor_parameter_pv id
   (** @canonical Odoc_model.Paths.Identifier.FunctorParameter.t *)

@@ -5,7 +5,6 @@ open Odoc_xref2;;
 open Odoc_xref_test;;
 #install_printer Common.root_pp;;
 #install_printer Odoc_model.Names.ModuleName.fmt;;
-#install_printer Odoc_model.Names.ParameterName.fmt;;
 #install_printer Odoc_model.Names.TypeName.fmt;;
 #install_printer Odoc_model.Names.ValueName.fmt;;
 #install_printer Odoc_xref2.Component.Fmt.model_identifier;;

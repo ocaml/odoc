@@ -48,7 +48,7 @@ let with_shadowed shadowed = { (empty ()) with shadowed }
 
 (** Raises [Not_found] *)
 let lookup_module map : Ident.path_module -> _ = function
-  | #Ident.module_ as id ->
+  | (`LRoot _ | `LModule _) as id ->
       (Component.ModuleMap.find id map.module_ :> Identifier.Path.Module.t)
   | #Ident.functor_parameter as id ->
       (List.assoc id map.functor_parameter :> Identifier.Path.Module.t)

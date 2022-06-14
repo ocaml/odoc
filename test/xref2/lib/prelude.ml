@@ -15,7 +15,6 @@ open Odoc_xref_test;;
 #install_printer Odoc_model.Names.TypeName.fmt;;
 #install_printer Odoc_model.Names.ClassName.fmt;;
 #install_printer Odoc_model.Names.ClassTypeName.fmt;;
-#install_printer Odoc_model.Names.ParameterName.fmt;;
 #install_printer Odoc_model.Names.ExceptionName.fmt;;
 #install_printer Odoc_model.Names.FieldName.fmt;;
 #install_printer Odoc_model.Names.ConstructorName.fmt;;
