@@ -16,7 +16,7 @@ let rec signature : Env.t -> Signature.t -> Signature.t =
 and signature_items : Env.t -> Signature.item list -> _ =
  fun initial_env s ->
   let open Signature in
-  let rec loop (items, env) xs =
+  let rec loop items env xs =
     match xs with
     | [] -> (List.rev items, env)
     | item :: rest -> (
@@ -52,21 +52,21 @@ and signature_items : Env.t -> Signature.item list -> _ =
               | And | Rec -> env
               | Ordinary -> add_to_env env m'
             in
-            loop (Module (r, m') :: items, env'') rest
+            loop (Module (r, m') :: items) env'' rest
         | ModuleSubstitution m ->
             let env' = Env.open_module_substitution m env in
-            loop (item :: items, env') rest
+            loop (item :: items) env' rest
         | ModuleType mt ->
             let m' = module_type env mt in
             let ty = Component.Of_Lang.(module_type (empty ()) m') in
             let env' = Env.add_module_type mt.id ty env in
-            loop (ModuleType (module_type env mt) :: items, env') rest
+            loop (ModuleType (module_type env mt) :: items) env' rest
         | Include i ->
             let i', env' = include_ env i in
-            loop (Include i' :: items, env') rest
-        | item -> loop (item :: items, env) rest)
+            loop (Include i' :: items) env' rest
+        | item -> loop (item :: items) env rest)
   in
-  loop ([], initial_env) s
+  loop [] initial_env s
 
 and module_ env m =
   match m.type_ with
