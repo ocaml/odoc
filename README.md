@@ -18,7 +18,6 @@ the docs locally yourself from the `odoc` directory:
 git clone https://github.com/ocaml/odoc.git
 cd odoc
 opam pin add . -n
-opam install mdx bos
 opam install --deps-only -t odoc
 dune build @docgen
 ```
