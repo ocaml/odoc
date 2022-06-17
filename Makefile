@@ -11,19 +11,6 @@ DUNE_ARGS ?=
 build :
 	$(DUNE) build $(DUNE_ARGS) $(DUNE_BUILD_TARGET)
 
-.PHONY : npm-package
-npm-package : npm-build
-	esy release
-
-.PHONY : npm-build
-npm-build :
-	esy install
-	esy build
-
-.PHONY : npm-test
-npm-test :
-	esy make test
-
 .PHONY : publish-docs
 publish-docs:
 	dune build @doc
