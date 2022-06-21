@@ -1,5 +1,7 @@
 open Result
 
+let enable_missing_root_warning = ref false
+
 type full_location_payload = Odoc_parser.Warning.t = {
   location : Location_.span;
   message : string;

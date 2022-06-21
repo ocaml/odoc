@@ -59,7 +59,8 @@ let raise_warnings ~filename failures =
 let catch_failures ~filename f =
   let r, failures = with_ref acc [] f in
   Error.catch_warnings (fun () ->
-      raise_root_errors ~filename failures;
+      if !Error.enable_missing_root_warning then
+        raise_root_errors ~filename failures;
       raise_warnings ~filename failures;
       r)
 
