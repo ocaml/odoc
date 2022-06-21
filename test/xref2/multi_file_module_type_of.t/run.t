@@ -26,7 +26,7 @@ In this instance, module S will not be expanded because we are not providing an
 odoc file for `Test0` - so there will be a warning when we run `odoc compile`
 on test1.cmti:
 
-  $ odoc compile --package foo test1.cmti
+  $ odoc compile --package foo test1.cmti --enable-missing-root-warning
   File "test1.cmti":
   Warning: Couldn't find the following modules:
     Test0
@@ -34,7 +34,7 @@ on test1.cmti:
 Similarly, module `T` also can not be expanded, therefore we expect
 another warning when we run `odoc compile` on test2.cmti:
 
-  $ odoc compile --package foo test2.cmti -I .
+  $ odoc compile --package foo test2.cmti -I . --enable-missing-root-warning
   File "test2.cmti":
   Warning: Couldn't find the following modules:
     Test1

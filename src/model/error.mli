@@ -1,5 +1,7 @@
 type t
 
+val enable_missing_root_warning : bool ref
+
 val make :
   ?suggestion:string ->
   ('a, Format.formatter, unit, Location_.span -> t) format4 ->

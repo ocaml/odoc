@@ -82,10 +82,20 @@ let warnings_options =
     let env = Arg.env_var "ODOC_PRINT_WARNINGS" ~doc in
     Arg.(value & opt bool true & info ~docs ~doc ~env [ "print-warnings" ])
   in
+  let enable_missing_root_warning =
+    let doc =
+      "Produce a warning when a root is missing. This is usually a build \
+       system problem so is disabled for users by default."
+    in
+    let env = Arg.env_var "ODOC_ENABLE_MISSING_ROOT_WARNING" ~doc in
+    Arg.(value & flag & info ~docs ~doc ~env [ "enable-missing-root-warning" ])
+  in
   Term.(
-    const (fun warn_error print_warnings ->
+    const (fun warn_error print_warnings enable_missing_root_warning ->
+        Odoc_model.Error.enable_missing_root_warning :=
+          enable_missing_root_warning;
         { Odoc_model.Error.warn_error; print_warnings })
-    $ warn_error $ print_warnings)
+    $ warn_error $ print_warnings $ enable_missing_root_warning)
 
 let dst ?create () =
   let doc = "Output directory where the HTML tree is expected to be saved." in

@@ -15,7 +15,7 @@ This is a test for [this issue](https://github.com/ocaml/odoc/issues/500)
 Compiling an odoc file for `test` without compiling one for `test0` 
 should _not_ result in an exception, merely a warning.
 
-  $ odoc compile --package test test.cmti
+  $ odoc compile --package test test.cmti --enable-missing-root-warning
   File "test.cmti":
   Warning: Couldn't find the following modules:
     Test0

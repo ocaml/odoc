@@ -28,7 +28,7 @@ A contains both parsing errors and a reference to B that isn't compiled yet:
 
 A contains linking errors:
 
-  $ odoc link a.odoc
+  $ odoc link a.odoc --enable-missing-root-warning
   File "a.odoc":
   Warning: Couldn't find the following modules:
     B
