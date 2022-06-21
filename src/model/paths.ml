@@ -80,7 +80,7 @@ module Identifier = struct
 
   let hash x = x.ihash
 
-  let compare x y = compare x.ihash y.ihash
+  let compare x y = compare x.ikey y.ikey
 
   type any = t
 
