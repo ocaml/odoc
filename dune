@@ -4,7 +4,7 @@
 (env
  (dev
   (flags
-   (:standard -g -w -18-53)))
+   (:standard -g -w -18-53-50)))
  (release
   (flags
-   (:standard -g -w -18-53))))
+   (:standard -g -w -18-53-50))))
