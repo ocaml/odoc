@@ -50,7 +50,8 @@ let parent resolver parent_cli_spec =
     | _ -> Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
-    | { Odoc_model.Paths.iv = `Page _; _ } as container -> Ok container
+    | { Odoc_model.Paths.Identifier.iv = `Page _; _ } as container ->
+        Ok container
     | _ -> Error (`Msg "Specified parent is not a parent of this file")
   in
   match parent_cli_spec with

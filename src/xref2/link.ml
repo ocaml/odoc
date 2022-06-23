@@ -48,7 +48,9 @@ let ambiguous_label_warning label_name labels =
     warning triggers even if one of the colliding labels have been automatically
     generated. *)
 let check_ambiguous_label ~loc env
-    (attrs, ({ Odoc_model.Paths.iv = `Label (_, label_name); _ } as id), _) =
+    ( attrs,
+      ({ Odoc_model.Paths.Identifier.iv = `Label (_, label_name); _ } as id),
+      _ ) =
   if attrs.Comment.heading_label_explicit then
     (* Looking for an identical identifier but a different location. *)
     let conflicting (`Label (id', comp)) =

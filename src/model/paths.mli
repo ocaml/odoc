@@ -16,10 +16,10 @@
 
 (** Identifiers for definitions *)
 
-type 'a id = 'a Paths_types.id = { iv : 'a; ihash : int; ikey : string }
-
 module Identifier : sig
   (** {2 Generic operations} *)
+
+  type 'a id = 'a Paths_types.id = { iv : 'a; ihash : int; ikey : string }
 
   module Any : sig
     type t = Paths_types.Identifier.any
@@ -94,6 +94,8 @@ module Identifier : sig
   module RootModule : sig
     type t = Paths_types.Identifier.root_module
 
+    type t_pv = Paths_types.Identifier.root_module_pv
+
     val equal : t -> t -> bool
 
     val hash : t -> int
@@ -127,6 +129,8 @@ module Identifier : sig
 
   module FunctorResult : sig
     type t = Paths_types.Identifier.functor_result
+
+    type t_pv = Paths_types.Identifier.functor_result_pv
 
     val equal : t -> t -> bool
 
@@ -162,6 +166,8 @@ module Identifier : sig
   module Constructor : sig
     type t = Paths_types.Identifier.constructor
 
+    type t_pv = Paths_types.Identifier.constructor_pv
+
     val equal : t -> t -> bool
 
     val hash : t -> int
@@ -171,6 +177,8 @@ module Identifier : sig
 
   module Field : sig
     type t = Paths_types.Identifier.field
+
+    type t_pv = Paths_types.Identifier.field_pv
 
     val equal : t -> t -> bool
 
@@ -182,6 +190,8 @@ module Identifier : sig
   module Extension : sig
     type t = Paths_types.Identifier.extension
 
+    type t_pv = Paths_types.Identifier.extension_pv
+
     val equal : t -> t -> bool
 
     val hash : t -> int
@@ -191,6 +201,8 @@ module Identifier : sig
 
   module Exception : sig
     type t = Paths_types.Identifier.exception_
+
+    type t_pv = Paths_types.Identifier.exception_pv
 
     val equal : t -> t -> bool
 
@@ -202,6 +214,8 @@ module Identifier : sig
   module Value : sig
     type t = Paths_types.Identifier.value
 
+    type t_pv = Paths_types.Identifier.value_pv
+
     val equal : t -> t -> bool
 
     val hash : t -> int
@@ -211,6 +225,8 @@ module Identifier : sig
 
   module Class : sig
     type t = Paths_types.Identifier.class_
+
+    type t_pv = Paths_types.Identifier.class_pv
 
     val equal : t -> t -> bool
 
@@ -222,6 +238,8 @@ module Identifier : sig
   module ClassType : sig
     type t = Paths_types.Identifier.class_type
 
+    type t_pv = Paths_types.Identifier.class_type_pv
+
     val equal : t -> t -> bool
 
     val hash : t -> int
@@ -232,6 +250,8 @@ module Identifier : sig
   module Method : sig
     type t = Paths_types.Identifier.method_
 
+    type t_pv = Paths_types.Identifier.method_pv
+
     val equal : t -> t -> bool
 
     val hash : t -> int
@@ -241,6 +261,8 @@ module Identifier : sig
 
   module InstanceVariable : sig
     type t = Paths_types.Identifier.instance_variable
+
+    type t_pv = Paths_types.Identifier.instance_variable_pv
 
     val equal : t -> t -> bool
 
@@ -276,6 +298,8 @@ module Identifier : sig
   module ContainerPage : sig
     type t = Paths_types.Identifier.container_page
 
+    type t_pv = Paths_types.Identifier.container_page_pv
+
     val equal : t -> t -> bool
 
     val hash : t -> int
@@ -285,6 +309,8 @@ module Identifier : sig
 
   module OdocId : sig
     type t = Paths_types.Identifier.odoc_id
+
+    type t_pv = Paths_types.Identifier.odoc_id_pv
 
     val equal : t -> t -> bool
 
@@ -343,9 +369,9 @@ module Identifier : sig
     type t = Paths_types.Identifier.path_any
   end
 
-  type t = Paths_types.Identifier.any
-
   type t_pv = Paths_types.Identifier.any_pv
+
+  type t = Paths_types.Identifier.any
 
   val hash : t -> int
 

@@ -16,9 +16,9 @@
 
 open Names
 
-type 'a id = 'a Paths_types.id = { iv : 'a; ihash : int; ikey : string }
-
 module Identifier = struct
+  type 'a id = 'a Paths_types.id = { iv : 'a; ihash : int; ikey : string }
+
   type t = Paths_types.Identifier.any
 
   type t_pv = Paths_types.Identifier.any_pv
@@ -157,6 +157,8 @@ module Identifier = struct
   module RootModule = struct
     type t = Paths_types.Identifier.root_module
 
+    type t_pv = Paths_types.Identifier.root_module_pv
+
     let equal = equal
 
     let hash = hash
@@ -190,6 +192,8 @@ module Identifier = struct
 
   module FunctorResult = struct
     type t = Paths_types.Identifier.functor_result
+
+    type t_pv = Paths_types.Identifier.functor_result_pv
 
     let equal = equal
 
@@ -225,6 +229,8 @@ module Identifier = struct
   module Constructor = struct
     type t = Paths_types.Identifier.constructor
 
+    type t_pv = Paths_types.Identifier.constructor_pv
+
     let equal = equal
 
     let hash = hash
@@ -234,6 +240,8 @@ module Identifier = struct
 
   module Field = struct
     type t = Paths_types.Identifier.field
+
+    type t_pv = Paths_types.Identifier.field_pv
 
     let equal = equal
 
@@ -245,6 +253,8 @@ module Identifier = struct
   module Extension = struct
     type t = Paths_types.Identifier.extension
 
+    type t_pv = Paths_types.Identifier.extension_pv
+
     let equal = equal
 
     let hash = hash
@@ -254,6 +264,8 @@ module Identifier = struct
 
   module Exception = struct
     type t = Paths_types.Identifier.exception_
+
+    type t_pv = Paths_types.Identifier.exception_pv
 
     let equal = equal
 
@@ -265,6 +277,8 @@ module Identifier = struct
   module Value = struct
     type t = Paths_types.Identifier.value
 
+    type t_pv = Paths_types.Identifier.value_pv
+
     let equal = equal
 
     let hash = hash
@@ -274,6 +288,8 @@ module Identifier = struct
 
   module Class = struct
     type t = Paths_types.Identifier.class_
+
+    type t_pv = Paths_types.Identifier.class_pv
 
     let equal = equal
 
@@ -285,6 +301,8 @@ module Identifier = struct
   module ClassType = struct
     type t = Paths_types.Identifier.class_type
 
+    type t_pv = Paths_types.Identifier.class_type_pv
+
     let equal = equal
 
     let hash = hash
@@ -295,6 +313,8 @@ module Identifier = struct
   module Method = struct
     type t = Paths_types.Identifier.method_
 
+    type t_pv = Paths_types.Identifier.method_pv
+
     let equal = equal
 
     let hash = hash
@@ -304,6 +324,8 @@ module Identifier = struct
 
   module InstanceVariable = struct
     type t = Paths_types.Identifier.instance_variable
+
+    type t_pv = Paths_types.Identifier.instance_variable_pv
 
     let equal = equal
 
@@ -339,6 +361,8 @@ module Identifier = struct
   module ContainerPage = struct
     type t = Paths_types.Identifier.container_page
 
+    type t_pv = Paths_types.Identifier.container_page_pv
+
     let equal = equal
 
     let hash = hash
@@ -348,6 +372,8 @@ module Identifier = struct
 
   module OdocId = struct
     type t = Paths_types.Identifier.odoc_id
+
+    type t_pv = Paths_types.Identifier.odoc_id_pv
 
     let equal = equal
 

@@ -1636,10 +1636,12 @@ module Of_Lang = struct
 
   let find_any_module i ident_map =
     match i with
-    | { Odoc_model.Paths.iv = `Root _ | `Module _; _ } as id ->
+    | { Odoc_model.Paths.Identifier.iv = `Root _ | `Module _; _ } as id ->
         (Maps.Module.find id ident_map.modules :> Ident.path_module)
-    | { Odoc_model.Paths.iv = #Paths.Identifier.FunctorParameter.t_pv; _ } as id
-      ->
+    | {
+        Odoc_model.Paths.Identifier.iv = #Paths.Identifier.FunctorParameter.t_pv;
+        _;
+      } as id ->
         (Maps.FunctorParameter.find id ident_map.functor_parameters
           :> Ident.path_module)
     | _ -> raise Not_found

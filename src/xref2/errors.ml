@@ -266,7 +266,7 @@ let kind_of_error ~what = function
   | None -> (
       match what with
       | `Include (Component.Include.Alias cp) -> kind_of_module_cpath cp
-      | `Module { Odoc_model.Paths.iv = `Root (_, name); _ } ->
+      | `Module { Odoc_model.Paths.Identifier.iv = `Root (_, name); _ } ->
           Some (`Root (Names.ModuleName.to_string name))
       | _ -> None)
 

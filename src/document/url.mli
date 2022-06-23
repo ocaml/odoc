@@ -33,9 +33,9 @@ module Path : sig
     | Identifier.Signature.t_pv
     | Identifier.ClassSignature.t_pv ]
 
-  and source = source_pv Odoc_model.Paths.id
+  and source = source_pv Odoc_model.Paths.Identifier.id
 
-  val from_identifier : [< source_pv ] Odoc_model.Paths.id -> t
+  val from_identifier : [< source_pv ] Odoc_model.Paths.Identifier.id -> t
 
   val to_list : t -> (kind * string) list
 

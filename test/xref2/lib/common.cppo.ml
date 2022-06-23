@@ -426,7 +426,7 @@ module LangUtils = struct
         type 'a fmt = Format.formatter -> 'a -> unit
 
         open Paths
-        val identifier : [< Identifier.t_pv] Paths.id fmt
+        val identifier : [< Identifier.t_pv] Paths.Identifier.id fmt
 
         open Lang
 
