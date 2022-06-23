@@ -76,7 +76,7 @@ module Identifier = struct
 
   let label_parent n = label_parent_aux (n :> t)
 
-  let equal x y = x.ihash = y.ihash && String.equal x.ikey y.ikey
+  let equal x y = x.ihash = y.ihash && x.ikey = y.ikey
 
   let hash x = x.ihash
 
