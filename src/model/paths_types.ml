@@ -2,20 +2,24 @@ open Names
 (** {1 Paths} *)
 
 type 'a id = { iv : 'a; ihash : int; ikey : string }
+(** @canonical Odoc_model.Paths.Identifier.id *)
 
 module Identifier = struct
   type container_page_pv = [ `Page of container_page option * PageName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.ContainerPage.t_pv *)
 
   and container_page = container_page_pv id
   (** @canonical Odoc_model.Paths.Identifier.ContainerPage.t *)
 
   type page_pv =
     [ container_page_pv | `LeafPage of container_page option * PageName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Page.t_pv *)
 
   and page = page_pv id
   (** @canonical Odoc_model.Paths.Identifier.Page.t *)
 
   type odoc_id_pv = [ page_pv | `Root of container_page option * ModuleName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.OdocId.t_pv *)
 
   and odoc_id = odoc_id_pv id
   (** @canonical Odoc_model.Paths.Identifier.OdocId.t *)
@@ -26,6 +30,7 @@ module Identifier = struct
     | `Parameter of signature * ModuleName.t
     | `Result of signature
     | `ModuleType of signature * ModuleTypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Signature.t_pv *)
 
   and signature = signature_pv id
   (** @canonical Odoc_model.Paths.Identifier.Signature.t *)
@@ -33,27 +38,32 @@ module Identifier = struct
   type class_signature_pv =
     [ `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.ClassSignature.t_pv *)
 
   and class_signature = class_signature_pv id
   (** @canonical Odoc_model.Paths.Identifier.ClassSignature.t *)
 
   type datatype_pv =
     [ `Type of signature * TypeName.t | `CoreType of TypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.DataType.t_pv *)
 
   and datatype = datatype_pv id
   (** @canonical Odoc_model.Paths.Identifier.DataType.t *)
 
   type parent_pv = [ signature_pv | datatype_pv | class_signature_pv ]
+  (** @canonical Odoc_model.Paths.Identifier.Parent.t_pv *)
 
   and parent = parent_pv id
   (** @canonical Odoc_model.Paths.Identifier.Parent.t *)
 
   type label_parent_pv = [ parent_pv | page_pv ]
+  (** @canonical Odoc_model.Paths.Identifier.LabelParent.t_pv *)
 
   and label_parent = label_parent_pv id
   (** @canonical Odoc_model.Paths.Identifier.LabelParent.t *)
 
   type root_module_pv = [ `Root of container_page option * ModuleName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.RootModule.t_pv *)
 
   and root_module = root_module_pv id
   (** @canonical Odoc_model.Paths.Identifier.RootModule.t *)
@@ -62,41 +72,49 @@ module Identifier = struct
     [ root_module_pv
     | `Module of signature * ModuleName.t
     | `Parameter of signature * ModuleName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Module.t_pv *)
 
   and module_ = module_pv id
   (** @canonical Odoc_model.Paths.Identifier.Module.t *)
 
   type functor_parameter_pv = [ `Parameter of signature * ModuleName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.FunctorParameter.t_pv *)
 
   and functor_parameter = functor_parameter_pv id
   (** @canonical Odoc_model.Paths.Identifier.FunctorParameter.t *)
 
   type functor_result_pv = [ `Result of signature ]
+  (** @canonical Odoc_model.Paths.Identifier.FunctorResult.t_pv *)
 
   and functor_result = functor_result_pv id
   (** @canonical Odoc_model.Paths.Identifier.FunctorResult.t *)
 
   type module_type_pv = [ `ModuleType of signature * ModuleTypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.ModuleType.t_pv *)
 
   and module_type = module_type_pv id
   (** @canonical Odoc_model.Paths.Identifier.ModuleType.t *)
 
   type type_pv = [ `Type of signature * TypeName.t | `CoreType of TypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Type.t_pv *)
 
   and type_ = type_pv id
   (** @canonical Odoc_model.Paths.Identifier.Type.t *)
 
   type constructor_pv = [ `Constructor of type_ * ConstructorName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Constructor.t_pv *)
 
   and constructor = constructor_pv id
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t *)
 
   type field_pv = [ `Field of parent * FieldName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Field.t_pv *)
 
   and field = field_pv id
   (** @canonical Odoc_model.Paths.Identifier.Field.t *)
 
   type extension_pv = [ `Extension of signature * ExtensionName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Extension.t_pv *)
 
   and extension = extension_pv id
   (** @canonical Odoc_model.Paths.Identifier.Extension.t *)
@@ -104,37 +122,44 @@ module Identifier = struct
   type exception_pv =
     [ `Exception of signature * ExceptionName.t
     | `CoreException of ExceptionName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Exception.t_pv *)
 
   and exception_ = exception_pv id
   (** @canonical Odoc_model.Paths.Identifier.Exception.t *)
 
   type value_pv = [ `Value of signature * ValueName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Value.t_pv *)
 
   and value = value_pv id
   (** @canonical Odoc_model.Paths.Identifier.Value.t *)
 
   type class_pv = [ `Class of signature * ClassName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Class.t_pv *)
 
   and class_ = class_pv id
   (** @canonical Odoc_model.Paths.Identifier.Class.t *)
 
   type class_type_pv = [ `ClassType of signature * ClassTypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.ClassType.t_pv *)
 
   and class_type = class_type_pv id
   (** @canonical Odoc_model.Paths.Identifier.ClassType.t *)
 
   type method_pv = [ `Method of class_signature * MethodName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Method.t_pv *)
 
   and method_ = method_pv id
   (** @canonical Odoc_model.Paths.Identifier.Method.t *)
 
   type instance_variable_pv =
     [ `InstanceVariable of class_signature * InstanceVariableName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.InstanceVariable.t_pv *)
 
   and instance_variable = instance_variable_pv id
   (** @canonical Odoc_model.Paths.Identifier.InstanceVariable.t *)
 
   type label_pv = [ `Label of label_parent * LabelName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Label.t_pv *)
 
   and label = label_pv id
   (** @canonical Odoc_model.Paths.Identifier.Label.t *)
@@ -161,11 +186,13 @@ module Identifier = struct
     | instance_variable_pv
     | label_pv
     | page_pv ]
+  (** @canonical Odoc_model.Paths.Identifier.t_pv *)
 
   and any = any_pv id
   (** @canonical Odoc_model.Paths.Identifier.t *)
 
   type path_module_pv = [ module_pv | functor_parameter_pv | functor_result_pv ]
+  (** @canonical Odoc_model.Paths.Identifier.Path.Module.t_pv *)
 
   and path_module = path_module_pv id
   (** @canonical Odoc_model.Paths.Identifier.Path.Module.t *)
@@ -174,11 +201,13 @@ module Identifier = struct
   (** @canonical Odoc_model.Paths.Identifier.Path.ModuleType.t *)
 
   type path_type_pv = [ type_pv | class_pv | class_type_pv ]
+  (** @canonical Odoc_model.Paths.Identifier.Path.Type.t_pv *)
 
   and path_type = path_type_pv id
   (** @canonical Odoc_model.Paths.Identifier.Path.Type.t *)
 
   type path_class_type_pv = [ class_pv | class_type_pv ]
+  (** @canonical Odoc_model.Paths.Identifier.Path.ClassType.t_pv *)
 
   and path_class_type = path_class_type_pv id
   (** @canonical Odoc_model.Paths.Identifier.Path.ClassType.t *)

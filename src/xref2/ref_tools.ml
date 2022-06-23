@@ -342,7 +342,10 @@ module L = struct
       | hd :: tl -> (
           match Odoc_model.Location_.value hd with
           | `Heading
-              (_, ({ Odoc_model.Paths.iv = `Label (_, name'); _ } as label), _)
+              ( _,
+                ({ Odoc_model.Paths.Identifier.iv = `Label (_, name'); _ } as
+                label),
+                _ )
             when name = LabelName.to_string name' ->
               Ok (`Identifier label)
           | _ -> find tl)

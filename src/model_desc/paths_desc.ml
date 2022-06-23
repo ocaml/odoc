@@ -431,7 +431,7 @@ let root = Root.t
 let modulename = Names.modulename
 
 (* Indirection seems to be required to make the type open. *)
-let identifier : [< Paths.Identifier.t_pv ] Paths.id Type_desc.t =
+let identifier : [< Paths.Identifier.t_pv ] Paths.Identifier.id Type_desc.t =
   Indirect ((fun n -> (n :> Paths.Identifier.t)), General_paths.identifier)
 
 let resolved_path : [< Paths.Path.Resolved.t ] Type_desc.t =

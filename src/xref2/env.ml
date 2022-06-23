@@ -125,10 +125,15 @@ module ElementsById : sig
   val empty : t
 
   val add :
-    [< Identifier.t_pv ] Paths.id -> [< Component.Element.any ] -> t -> t
+    [< Identifier.t_pv ] Paths.Identifier.id ->
+    [< Component.Element.any ] ->
+    t ->
+    t
 
   val find_by_id :
-    [< Identifier.t_pv ] Paths.id -> t -> Component.Element.any option
+    [< Identifier.t_pv ] Paths.Identifier.id ->
+    t ->
+    Component.Element.any option
 end = struct
   module IdMap = Identifier.Maps.Any
 
@@ -391,7 +396,9 @@ let lookup_root_module name env =
         | Forward_reference -> Some Forward
         | Not_found -> None
         | Found u ->
-            let ({ Odoc_model.Paths.iv = `Root _; _ } as id) = u.id in
+            let ({ Odoc_model.Paths.Identifier.iv = `Root _; _ } as id) =
+              u.id
+            in
             let m = module_of_unit u in
             Some (Resolved (u.root, id, m)))
   in

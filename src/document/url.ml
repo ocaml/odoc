@@ -4,12 +4,13 @@ open Odoc_model.Names
 module Root = Odoc_model.Root
 
 let functor_arg_pos : Odoc_model.Paths.Identifier.FunctorParameter.t -> int =
- fun { Odoc_model.Paths.iv = `Parameter (p, _); _ } ->
-  let rec inner_sig = function
-    | `Result { Odoc_model.Paths.iv = p; _ } -> 1 + inner_sig p
-    | `Module _ | `ModuleType _ | `Root _ | `Parameter _ -> 1
-  in
-  inner_sig p.Odoc_model.Paths.iv
+  let open Odoc_model.Paths.Identifier in
+  fun { iv = `Parameter (p, _); _ } ->
+    let rec inner_sig = function
+      | `Result { iv = p; _ } -> 1 + inner_sig p
+      | `Module _ | `ModuleType _ | `Root _ | `Parameter _ -> 1
+    in
+    inner_sig p.iv
 
 let render_path : Odoc_model.Paths.Path.t -> string =
   let open Odoc_model.Paths.Path in
@@ -90,7 +91,7 @@ module Path = struct
     | Identifier.Signature.t_pv
     | Identifier.ClassSignature.t_pv ]
 
-  and source = source_pv Odoc_model.Paths.id
+  and source = source_pv Odoc_model.Paths.Identifier.id
 
   type kind =
     [ `Module
@@ -179,7 +180,8 @@ module Path = struct
     | { iv = `Result p; _ } -> from_identifier (p :> source)
 
   let from_identifier p =
-    from_identifier (p : [< source_pv ] Odoc_model.Paths.id :> source)
+    from_identifier
+      (p : [< source_pv ] Odoc_model.Paths.Identifier.id :> source)
 
   let to_list url =
     let rec loop acc { parent; name; kind } =
@@ -401,7 +403,8 @@ let from_path page =
   { Anchor.page; anchor = ""; kind = (page.kind :> Anchor.kind) }
 
 let from_identifier ~stop_before = function
-  | { Odoc_model.Paths.iv = #Path.source_pv; _ } as p when not stop_before ->
+  | { Odoc_model.Paths.Identifier.iv = #Path.source_pv; _ } as p
+    when not stop_before ->
       Ok (from_path @@ Path.from_identifier p)
   | p -> Anchor.from_identifier p
 
