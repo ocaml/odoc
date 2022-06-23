@@ -15,24 +15,24 @@ let synopsis_from_comment (docs : Component.CComment.docs) =
       Comment.synopsis [ e ]
   | _ -> None
 
-let synopsis_of_module env id (m : Component.Module.t) =
+let synopsis_of_module env (m : Component.Module.t) =
   let open Utils.ResultMonad in
   match synopsis_from_comment m.doc with
   | Some _ as s -> s
   | None -> (
+      let rec handle_expansion : Tools.expansion -> _ = function
+        | Functor (_, expr) -> (
+            match
+              Tools.expansion_of_module_type_expr ~mark_substituted:true env
+                expr
+            with
+            | Ok e -> handle_expansion e
+            | Error _ as e -> e)
+        | Signature sg -> Ok sg
+      in
       (* If there is no doc, look at the expansion. *)
-      match
-        Tools.expansion_of_module env m >>= Expand_tools.handle_expansion env id
-      with
-      | Ok (_, expansion) ->
-          let rec get_sg :
-              Component.ModuleType.simple_expansion -> Component.Signature.t =
-            function
-            | Signature sg -> sg
-            | Functor (_, x) -> get_sg x
-          in
-          synopsis_from_comment
-            (Component.extract_signature_doc (get_sg expansion))
+      match Tools.expansion_of_module env m >>= handle_expansion with
+      | Ok sg -> synopsis_from_comment (Component.extract_signature_doc sg)
       | Error _ -> None)
 
 let ambiguous_label_warning label_name labels =
@@ -234,13 +234,11 @@ and comment_nestable_block_element env parent ~loc:_
               Ref_tools.resolve_module_reference env r.module_reference
               |> Error.raise_warnings
             with
-            | Ok (r, p, m) ->
-                let p = Lang_of.(Path.resolved_module (empty ()) p) in
-                let id = Paths.Path.Resolved.Module.(identifier (p :> t)) in
+            | Ok (r, _, m) ->
                 let module_synopsis =
                   Opt.map
                     (resolve_external_synopsis env)
-                    (synopsis_of_module env (id :> Id.Signature.t) m)
+                    (synopsis_of_module env m)
                 in
                 { Comment.module_reference = `Resolved r; module_synopsis }
             | Error e ->
