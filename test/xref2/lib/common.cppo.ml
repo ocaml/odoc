@@ -602,7 +602,7 @@ module LangUtils = struct
 
 end
 
-let my_compilation_unit id s =
+let my_compilation_unit id (s : Odoc_model.Lang.Signature.t) =
     { Odoc_model.Lang.Compilation_unit.
       id = id
     ; root = root
