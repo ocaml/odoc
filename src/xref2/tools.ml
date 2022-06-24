@@ -1516,7 +1516,7 @@ and handle_signature_with_subs :
     (Ok sg) subs
 
 and assert_not_functor :
-    type err. expansion -> (Component.Signature.t, err) Result.t = function
+    type err. expansion -> (Component.Signature.t, err) Result.result = function
   | Signature sg -> Ok sg
   | _ -> assert false
 

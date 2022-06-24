@@ -205,7 +205,8 @@ val get_module_type_path_modifiers :
 val prefix_signature :
   Cpath.Resolved.parent * Component.Signature.t -> Component.Signature.t
 
-val assert_not_functor : expansion -> (Component.Signature.t, 'err) result
+val assert_not_functor :
+  expansion -> (Component.Signature.t, 'err) Result.result
 
 val expansion_of_module_path :
   Env.t ->
