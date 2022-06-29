@@ -54,6 +54,7 @@ let constraints =
     ("recent_impl.ml", Min "4.09");
     ("bugs_pre_410.ml", Max "4.09");
     ("module_type_subst.mli", Min "4.13");
+    ("class_comments.mli", Min "4.08");
   ]
 
 let test_cases_dir = Fpath.v "cases"

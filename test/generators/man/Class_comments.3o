@@ -1,0 +1,16 @@
+
+.TH Class_comments 3 "" "Odoc" "OCaml Library"
+.SH Name
+Class_comments
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Class_comments\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]class\fR  x : \f[CB]object\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]class\fR 'a c : \f[CB]object\fR \.\.\. \f[CB]end\fR

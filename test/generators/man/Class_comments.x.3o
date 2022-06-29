@@ -1,11 +1,11 @@
 
 .TH x 3 "" "Odoc" "OCaml Library"
 .SH Name
-Class\.x
+Class_comments\.x
 .SH Synopsis
 .sp 
 .in 2
-\fBClass Class\.x\fR
+\fBClass Class_comments\.x\fR
 .in 
 .sp 
 .SH Documentation
