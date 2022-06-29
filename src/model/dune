@@ -10,6 +10,8 @@
 (library
  (name odoc_model)
  (public_name odoc.model)
+ (flags
+  (:standard -w -50))
  (instrumentation
   (backend bisect_ppx))
  (libraries result compiler-libs.common odoc-parser))
