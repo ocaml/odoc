@@ -19,7 +19,7 @@ git clone https://github.com/ocaml/odoc.git
 cd odoc
 opam pin add . -n
 opam install --deps-only -t odoc
-dune build @docgen
+dune build @doc
 ```
 
 and find the docs in `_build/default/doc/html/index.html`
