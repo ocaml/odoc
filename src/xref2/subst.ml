@@ -517,6 +517,7 @@ let rec type_ s t =
   let representation = option_ type_decl_representation s t.representation in
   let canonical = t.canonical in
   {
+    loc = t.loc;
     equation = type_decl_equation s t.equation;
     representation;
     doc = t.doc;
@@ -619,12 +620,12 @@ and module_type s t =
   let expr =
     match t.expr with Some m -> Some (module_type_expr s m) | None -> None
   in
-  { expr; doc = t.doc; canonical = t.canonical }
+  { loc = t.loc; expr; doc = t.doc; canonical = t.canonical }
 
 and module_type_substitution s t =
   let open Component.ModuleTypeSubstitution in
   let manifest = module_type_expr s t.manifest in
-  { manifest; doc = t.doc }
+  { loc = t.loc; manifest; doc = t.doc }
 
 and functor_parameter s t =
   let open Component.FunctorParameter in
@@ -779,7 +780,7 @@ and module_ s t =
 and module_substitution s m =
   let open Component.ModuleSubstitution in
   let manifest = module_path s m.manifest in
-  { manifest; doc = m.doc }
+  { loc = m.loc; manifest; doc = m.doc }
 
 and type_decl_field s f =
   let open Component.TypeDecl.Field in
@@ -804,7 +805,7 @@ and exception_ s e =
   let open Component.Exception in
   let res = option_ type_expr s e.res in
   let args = type_decl_constructor_arg s e.args in
-  { args; res; doc = e.doc }
+  { loc = e.loc; args; res; doc = e.doc }
 
 and extension_constructor s c =
   let open Component.Extension.Constructor in
@@ -835,7 +836,7 @@ and include_ s i =
 
 and open_ s o =
   let open Component.Open in
-  { expansion = apply_sig_map_sg s o.expansion; doc = o.doc }
+  { loc = o.loc; expansion = apply_sig_map_sg s o.expansion; doc = o.doc }
 
 and value s v =
   let open Component.Value in
@@ -1014,10 +1015,11 @@ and rename_bound_idents s sg =
         (Include { i with expansion_ = { expansion_ with items; removed = [] } }
         :: sg)
         rest
-  | Open { expansion; doc } :: rest ->
+  | Open { loc; expansion; doc } :: rest ->
       let s, items = rename_bound_idents s [] expansion.items in
       rename_bound_idents s
-        (Open { expansion = { expansion with items; removed = [] }; doc } :: sg)
+        (Open { loc; expansion = { expansion with items; removed = [] }; doc }
+        :: sg)
         rest
   | (Comment _ as item) :: rest -> rename_bound_idents s (item :: sg) rest
 

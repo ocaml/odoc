@@ -304,7 +304,8 @@ and items ~config ~resolve l : item Html.elt list =
         (continue_with [@tailcall]) rest content
     | Heading h :: rest ->
         (continue_with [@tailcall]) rest [ heading ~config ~resolve h ]
-    | Include { attr; anchor; doc; content = { summary; status; content } }
+    | Include
+        { attr; anchor; doc; content = { summary; status; content }; loc = _ }
       :: rest ->
         let doc = spec_doc_div ~config ~resolve doc in
         let included_html = (items content :> item Html.elt list) in
@@ -336,7 +337,7 @@ and items ~config ~resolve l : item Html.elt list =
           | `Default -> details ~open':(Config.open_details config)
         in
         (continue_with [@tailcall]) rest content
-    | Declaration { Item.attr; anchor; content; doc } :: rest ->
+    | Declaration { Item.attr; anchor; content; doc; loc = _ } :: rest ->
         let extra_attr, extra_class, anchor_link = mk_anchor anchor in
         let a = spec_class (attr @ extra_class) @ extra_attr in
         let content = anchor_link @ documentedSrc ~config ~resolve content in

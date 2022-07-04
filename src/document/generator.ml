@@ -583,7 +583,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "type"; "extension" ] in
       let anchor = Some (Url.Anchor.extension_decl t) in
       let doc = Comment.to_ir t.doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     let exn (t : Odoc_model.Lang.Exception.t) =
       let cstr = constructor (t.id :> Paths.Identifier.t) t.args t.res in
@@ -596,7 +597,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "exception" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     let polymorphic_variant ~type_ident
         (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) =
@@ -806,7 +808,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = "type" :: (if is_substitution then [ "subst" ] else []) in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
   end
 
   open Type_declaration
@@ -833,7 +836,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "value" ] @ extra_attr in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
   end
 
   open Value
@@ -933,7 +937,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "method" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     let instance_variable (t : Odoc_model.Lang.InstanceVariable.t) =
       let name = Paths.Identifier.name t.id in
@@ -952,7 +957,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "value"; "instance-variable" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = None in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     let inherit_ (ih : Lang.ClassSignature.Inherit.t) =
       let cte =
@@ -966,7 +972,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "inherit" ] in
       let anchor = None in
       let doc = Comment.to_ir ih.doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some ih.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     let constraint_ (cst : Lang.ClassSignature.Constraint.t) =
       let content =
@@ -975,7 +982,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [] in
       let anchor = None in
       let doc = Comment.to_ir cst.doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = None in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     let class_signature (c : Lang.ClassSignature.t) =
       let rec loop l acc_items =
@@ -1054,7 +1062,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "class" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     let class_type (t : Odoc_model.Lang.ClassType.t) =
       let name = Paths.Identifier.name t.id in
@@ -1086,7 +1095,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "class-type" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
   end
 
   open Class
@@ -1227,7 +1237,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "module-substitution" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     and module_type_substitution (t : Odoc_model.Lang.ModuleTypeSubstitution.t)
         =
@@ -1248,7 +1259,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "module-type" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     and simple_expansion :
         Odoc_model.Lang.ModuleType.simple_expansion ->
@@ -1279,7 +1291,8 @@ module Make (Syntax : SYNTAX) = struct
                   @@ Url.Anchor.from_identifier (arg.id :> Paths.Identifier.t)
                 in
                 let doc = [] in
-                [ Item.Declaration { content; anchor; attr; doc } ])
+                let loc = Some arg.loc in
+                [ Item.Declaration { content; anchor; attr; doc; loc } ])
           in
           let prelude =
             Item.Heading
@@ -1365,7 +1378,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "module" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     and simple_expansion_in_decl (base : Paths.Identifier.Module.t) se =
       let rec ty_of_se :
@@ -1437,7 +1451,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "module-type" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
-      Item.Declaration { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Declaration { attr; anchor; doc; content; loc }
 
     and umty_hidden : Odoc_model.Lang.ModuleType.U.expr -> bool = function
       | Path p -> Paths.Path.(is_hidden (p :> t))
@@ -1646,7 +1661,8 @@ module Make (Syntax : SYNTAX) = struct
            The documentation from the expansion is not used. *)
         Comment.to_ir t.doc
       in
-      Item.Include { attr; anchor; doc; content }
+      let loc = Some t.loc in
+      Item.Include { attr; anchor; doc; content; loc }
   end
 
   open Module
@@ -1673,7 +1689,8 @@ module Make (Syntax : SYNTAX) = struct
         in
         let attr = [ "modules" ] in
         let doc = [] in
-        let decl = { Item.anchor; content; attr; doc } in
+        let loc = None in
+        let decl = { Item.anchor; content; attr; doc; loc } in
         Item.Declaration decl
       in
       List.map f t

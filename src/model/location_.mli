@@ -11,3 +11,5 @@ val pp : Format.formatter -> span -> unit
 val pp_span_start : Format.formatter -> span -> unit
 
 val span_equal : span -> span -> bool
+
+val of_location : Location.t -> span

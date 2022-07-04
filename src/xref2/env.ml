@@ -364,6 +364,7 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
         Odoc_model.Lang.Module.
           {
             id = (unit.id :> Odoc_model.Paths.Identifier.Module.t);
+            loc = unit.loc;
             doc = [];
             type_ = ModuleType (Signature s);
             canonical = unit.canonical;
@@ -377,9 +378,12 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
         Odoc_model.Lang.Module.
           {
             id = (unit.id :> Odoc_model.Paths.Identifier.Module.t);
+            loc = unit.loc;
             doc = [];
             type_ =
-              ModuleType (Signature { items = []; compiled = true; doc = [] });
+              ModuleType
+                (Signature
+                   { loc = unit.loc; items = []; compiled = true; doc = [] });
             canonical = unit.canonical;
             hidden = unit.hidden;
           }
@@ -601,6 +605,7 @@ let add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t =
       let m =
         Component.Module.
           {
+            loc = n.loc;
             doc = [];
             type_ =
               ModuleType Component.Of_Lang.(module_type_expr (empty ()) n.expr);
@@ -630,6 +635,7 @@ let add_functor_args' :
                   arg.Component.FunctorParameter.id ),
             {
               Component.Module.doc = [];
+              loc = arg.loc;
               type_ = ModuleType arg.expr;
               canonical = None;
               hidden = false;
@@ -775,7 +781,13 @@ let open_module_type_substitution :
   let module L = Odoc_model.Lang in
   let ty =
     module_type (empty ())
-      { id = t.id; doc = t.doc; expr = Some t.manifest; canonical = None }
+      {
+        id = t.id;
+        loc = t.loc;
+        doc = t.doc;
+        expr = Some t.manifest;
+        canonical = None;
+      }
   in
   add_module_type t.L.ModuleTypeSubstitution.id ty env
 

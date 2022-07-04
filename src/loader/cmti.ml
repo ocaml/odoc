@@ -156,7 +156,8 @@ let read_value_description env parent vd =
     | [] -> Value.Abstract
     | primitives -> External primitives
   in
-  Value { Value.id; doc; type_; value }
+  let loc = Odoc_model.Location_.of_location vd.val_loc in
+  Value { Value.id; loc; doc; type_; value }
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
@@ -261,7 +262,8 @@ let read_type_declaration env parent decl =
   let canonical = (canonical :> Path.Type.t option) in
   let equation = read_type_equation env container decl in
   let representation = read_type_kind env (id :> Identifier.DataType.t) decl.typ_kind in
-    {id; doc; canonical; equation; representation}
+  let loc = Odoc_model.Location_.of_location decl.typ_loc in
+  {id; loc; doc; canonical; equation; representation}
 
 let read_type_declarations env parent rec_flag decls =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -320,7 +322,8 @@ let read_type_extension env parent tyext =
   let constructors =
     List.map (read_extension_constructor env parent) tyext.tyext_constructors
   in
-    { parent; type_path; doc; type_params; private_; constructors; }
+  let loc = Odoc_model.Location_.of_location tyext.tyext_loc in
+  { loc; parent; type_path; doc; type_params; private_; constructors; }
 
 let read_exception env parent (ext : extension_constructor) =
   let open Exception in
@@ -342,7 +345,8 @@ let read_exception env parent (ext : extension_constructor) =
         env container label_container args
     in
     let res = opt_map (read_core_type env label_container) res in
-        {id; doc; args; res}
+    let loc = Odoc_model.Location_.of_location ext.ext_loc in
+    {id; loc; doc; args; res}
 
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
@@ -363,14 +367,16 @@ let rec read_class_type_field env parent ctf =
       let private_ = (private_ = Private) in
       let virtual_ = (virtual_ = Virtual) in
       let type_ = read_core_type env container typ in
-      Some (Method {id; doc; private_; virtual_; type_})
+      let loc = Odoc_model.Location_.of_location ctf.ctf_loc in
+      Some (Method {id; loc; doc; private_; virtual_; type_})
   | Tctf_constraint(typ1, typ2) ->
       let left = read_core_type env container typ1 in
       let right = read_core_type env container typ2 in
       Some (Constraint {left; right; doc})
   | Tctf_inherit cltyp ->
       let expr = read_class_signature env parent container cltyp in
-      Some (Inherit {expr; doc})
+      let loc = Odoc_model.Location_.of_location ctf.ctf_loc in
+      Some (Inherit {loc; expr; doc})
   | Tctf_attribute attr ->
       match Doc_attr.standalone container attr with
       | None -> None
@@ -421,7 +427,8 @@ let read_class_type_declaration env parent cltd =
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map read_type_parameter cltd.ci_params in
   let expr = read_class_signature env (id :> Identifier.ClassSignature.t) container cltd.ci_expr in
-  { id; doc; virtual_; params; expr; expansion = None }
+  let loc = Odoc_model.Location_.of_location cltd.ci_loc in
+  { id; loc; doc; virtual_; params; expr; expansion = None }
 
 let read_class_type_declarations env parent cltds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -459,7 +466,8 @@ let read_class_description env parent cld =
   let virtual_ = (cld.ci_virt = Virtual) in
   let params = List.map read_type_parameter cld.ci_params in
   let type_ = read_class_type env (id :> Identifier.ClassSignature.t) container cld.ci_expr in
-  { id; doc; virtual_; params; type_; expansion = None }
+  let loc = Odoc_model.Location_.of_location cld.ci_loc in
+  { id; loc; doc; virtual_; params; type_; expansion = None }
 
 let read_class_descriptions env parent clds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -525,7 +533,9 @@ and read_module_type env parent label_parent mty =
             in
             let id = Identifier.Mk.parameter (parent, ModuleName.make_std name) in
             let arg = read_module_type env id label_parent arg in
-            Named { id; expr = arg; }, env
+            (* TODO: fix this loc *)
+            let loc = Odoc_model.Location_.span [] in
+            Named { id; loc; expr = arg; }, env
         in
         let res = read_module_type env (Identifier.Mk.result parent) label_parent res in
         Functor (f_parameter, res)
@@ -597,7 +607,8 @@ and read_module_type_declaration env parent mtd =
     | None -> (None, canonical)
   in
   let canonical = (canonical :> Path.ModuleType.t option) in
-  { id; doc; canonical; expr }
+  let loc = Odoc_model.Location_.of_location mtd.mtd_loc in
+  { id; loc; doc; canonical; expr }
 
 and read_module_declaration env parent md =
   let open Module in
@@ -635,7 +646,8 @@ and read_module_declaration env parent md =
     | _ -> false
 #endif
   in
-  Some {id; doc; type_; canonical; hidden}
+  let loc = Odoc_model.Location_.of_location md.md_loc in
+  Some {id; loc; doc; type_; canonical; hidden}
 
 and read_module_declarations env parent mds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -722,7 +734,8 @@ and read_module_substitution env parent ms =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container ms.ms_attributes in
   let manifest = Env.Path.read_module env ms.ms_manifest in
-  { id; doc; manifest }
+  let loc = Odoc_model.Location_.of_location ms.ms_loc in
+  { id; loc; doc; manifest }
 
 #if OCAML_VERSION >= (4,13,0)
 and read_module_type_substitution env parent mtd =
@@ -734,7 +747,8 @@ and read_module_type_substitution env parent mtd =
     | None -> assert false
     | Some x -> x
   in
-  {id; doc; manifest=expr;}
+  let loc = Odoc_model.Location_.of_location mtd.mtd_loc in
+  {id; loc; doc; manifest=expr;}
 #endif
 
 
@@ -765,7 +779,8 @@ and read_open env parent o =
   let signature = [] in
   #endif
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature signature) in
-  { expansion; doc }
+  let loc = Odoc_model.Location_.of_location o.open_loc in
+  { loc; expansion; doc }
 
 and read_signature :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
@@ -788,11 +803,14 @@ and read_signature :
       [] items
     |> List.rev
   in
+  let loc =
+    Odoc_model.Location_.span (List.map (fun x -> Odoc_model.Location_.of_location( x.sig_loc)) sg.sig_items)
+  in
   match doc_post with
   | [] ->
-    ({ Signature.items; compiled = false; doc }, tags)
+    ({ Signature.items; loc; compiled = false; doc }, tags)
   | _ ->
-    ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; doc }, tags)
+    ({ Signature.items = Comment (`Docs doc_post) :: items; loc; compiled=false; doc }, tags)
 
 let read_interface root name intf =
   let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in

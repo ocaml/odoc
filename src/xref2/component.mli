@@ -66,6 +66,7 @@ module rec Module : sig
     | ModuleType of ModuleType.expr
 
   type t = {
+    loc : Odoc_model.Location_.span;
     doc : CComment.docs;
     type_ : decl;
     canonical : Odoc_model.Paths.Path.Module.t option;
@@ -74,11 +75,19 @@ module rec Module : sig
 end
 
 and ModuleSubstitution : sig
-  type t = { doc : CComment.docs; manifest : Cpath.module_ }
+  type t = {
+    loc : Odoc_model.Location_.span;
+    doc : CComment.docs;
+    manifest : Cpath.module_;
+  }
 end
 
 and ModuleTypeSubstitution : sig
-  type t = { doc : CComment.docs; manifest : ModuleType.expr }
+  type t = {
+    loc : Odoc_model.Location_.span;
+    doc : CComment.docs;
+    manifest : ModuleType.expr;
+  }
 end
 
 and TypeExpr : sig
@@ -140,6 +149,7 @@ and Extension : sig
   end
 
   type t = {
+    loc : Odoc_model.Location_.span;
     type_path : Cpath.type_;
     doc : CComment.docs;
     type_params : TypeDecl.param list;
@@ -150,6 +160,7 @@ end
 
 and Exception : sig
   type t = {
+    loc : Odoc_model.Location_.span;
     doc : CComment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
@@ -157,7 +168,11 @@ and Exception : sig
 end
 
 and FunctorParameter : sig
-  type parameter = { id : Ident.functor_parameter; expr : ModuleType.expr }
+  type parameter = {
+    id : Ident.functor_parameter;
+    loc : Odoc_model.Location_.span;
+    expr : ModuleType.expr;
+  }
 
   type t = Named of parameter | Unit
 end
@@ -211,6 +226,7 @@ and ModuleType : sig
     | TypeOf of typeof_t
 
   type t = {
+    loc : Odoc_model.Location_.span;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.ModuleType.t option;
     expr : expr option;
@@ -257,6 +273,7 @@ and TypeDecl : sig
   end
 
   type t = {
+    loc : Odoc_model.Location_.span;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.Type.t option;
     equation : Equation.t;
@@ -291,6 +308,7 @@ and Signature : sig
     | RModuleType of Ident.module_type * ModuleType.expr
 
   type t = {
+    loc : Odoc_model.Location_.span;
     items : item list;
     compiled : bool;
     removed : removed_item list;
@@ -299,7 +317,11 @@ and Signature : sig
 end
 
 and Open : sig
-  type t = { expansion : Signature.t; doc : CComment.docs }
+  type t = {
+    loc : Odoc_model.Location_.span;
+    expansion : Signature.t;
+    doc : CComment.docs;
+  }
 end
 
 and Include : sig
@@ -320,7 +342,12 @@ end
 and Value : sig
   type value = Odoc_model.Lang.Value.value
 
-  type t = { doc : CComment.docs; type_ : TypeExpr.t; value : value }
+  type t = {
+    loc : Odoc_model.Location_.span;
+    doc : CComment.docs;
+    type_ : TypeExpr.t;
+    value : value;
+  }
 end
 
 and Class : sig
@@ -329,6 +356,7 @@ and Class : sig
     | Arrow of TypeExpr.label option * TypeExpr.t * decl
 
   type t = {
+    loc : Odoc_model.Location_.span;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -343,6 +371,7 @@ and ClassType : sig
     | Signature of ClassSignature.t
 
   type t = {
+    loc : Odoc_model.Location_.span;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -357,7 +386,11 @@ and ClassSignature : sig
   end
 
   module Inherit : sig
-    type t = { expr : ClassType.expr; doc : CComment.docs }
+    type t = {
+      loc : Odoc_model.Location_.span;
+      expr : ClassType.expr;
+      doc : CComment.docs;
+    }
   end
 
   type item =
@@ -372,6 +405,7 @@ end
 
 and Method : sig
   type t = {
+    loc : Odoc_model.Location_.span;
     doc : CComment.docs;
     private_ : bool;
     virtual_ : bool;

@@ -40,3 +40,13 @@ let pp_span_start fmt s =
     s.start.column
 
 let span_equal = ( = )
+
+let point_of_position (x : Lexing.position) =
+  { line = x.pos_lnum; column = x.pos_cnum - x.pos_bol }
+
+let of_location (x : Location.t) =
+  {
+    file = x.loc_start.pos_fname;
+    start = point_of_position x.loc_start;
+    end_ = point_of_position x.loc_end;
+  }

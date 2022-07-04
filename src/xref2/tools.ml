@@ -1906,6 +1906,7 @@ and fragmap :
     Subst.signature sub
       {
         Component.Signature.items;
+        loc = sg.loc;
         removed = removed @ sg.removed;
         compiled = false;
         doc = sg.doc;

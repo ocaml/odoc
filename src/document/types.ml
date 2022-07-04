@@ -142,6 +142,7 @@ and Item : sig
     anchor : Url.Anchor.t option;
     content : 'a;
     doc : Block.t;
+    loc : Odoc_model.Location_.span option;
   }
 
   type declaration = DocumentedSrc.t item

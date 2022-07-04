@@ -450,7 +450,7 @@ and item ~nested (l : Item.t list) =
       | Heading h ->
           let h = heading ~nested h in
           vspace ++ h ++ vspace ++ item ~nested rest
-      | Declaration { attr = _; anchor = _; content; doc } ->
+      | Declaration { attr = _; anchor = _; content; doc; loc = _ } ->
           let decl = documentedSrc content in
           let doc =
             match doc with
@@ -459,8 +459,13 @@ and item ~nested (l : Item.t list) =
           in
           decl ++ doc ++ continue rest
       | Include
-          { attr = _; anchor = _; content = { summary; status; content }; doc }
-        ->
+          {
+            attr = _;
+            anchor = _;
+            content = { summary; status; content };
+            doc;
+            loc = _;
+          } ->
           let d =
             if inline_subpage status then item ~nested content
             else

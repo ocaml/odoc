@@ -11,7 +11,7 @@ let link_unit ~resolver ~filename m =
     if Root.Odoc_file.hidden m.root.file then
       {
         m with
-        content = Module { items = []; compiled = false; doc = [] };
+        content = Module { items = []; loc = m.loc; compiled = false; doc = [] };
         expansion = None;
       }
     else m

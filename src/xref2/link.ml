@@ -394,7 +394,8 @@ and inherit_ env parent ih =
   let open ClassSignature.Inherit in
   let expr = class_type_expr env parent ih.expr
   and doc = comment_docs env parent ih.doc in
-  { expr; doc }
+  let loc = ih.loc in
+  { loc; expr; doc }
 
 and class_ env parent c =
   let open Class in

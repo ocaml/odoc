@@ -325,6 +325,7 @@ and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
     let items, _ = signature_items env id s.items in
     {
       Signature.items;
+      loc = s.loc;
       compiled = true;
       doc = s.doc (* comments are ignored while compiling *);
     }

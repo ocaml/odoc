@@ -347,6 +347,7 @@ let int_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = int_identifier in
+  let loc = predefined_location in
   (* let text = [Raw "The type of integer numbers."] in *)
   (* TODO *)
   (* let text = [] in *)
@@ -354,12 +355,13 @@ let int_decl =
   let equation = nullary_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let char_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = char_identifier in
+  let loc = predefined_location in
   (* let text = [Raw "The type of characters."] in *)
   (* let text = [] in *)
   (* let doc = Ok {empty_doc with text} in *)
@@ -367,87 +369,94 @@ let char_decl =
   let equation = nullary_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let bytes_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = bytes_identifier in
+  let loc = predefined_location in
   (* let text = [Raw "The type of (writable) byte sequences."] in *)
   (* let doc = Ok {empty_doc with text} in *)
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let string_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = string_identifier in
+  let loc = predefined_location in
   (* let text = [Raw "The type of (read-only) character strings."] in *)
   (* let doc = Ok {empty_doc with text} in *)
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let float_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = float_identifier in
+  let loc = predefined_location in
   (* let text = [Raw "The type of floating-point numbers."] in *)
   (* let doc = Ok {empty_doc with text} in *)
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let bool_decl =
   let open TypeDecl in
   let open Representation in
   (* let open Odoc_model.Comment in *)
   let id = bool_identifier in
+  let loc = predefined_location in
   (* let text = [Raw "The type of booleans (truth values)."] in *)
   (* let doc = Ok {empty_doc with text} in *)
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = Some (Variant [ false_decl; true_decl ]) in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let unit_decl =
   let open TypeDecl in
   let open Representation in
   (* let open Odoc_model.Comment in *)
   let id = unit_identifier in
+  let loc = predefined_location in
   (* let text = [Raw "The type of the unit value."] in *)
   (* let doc = Ok {empty_doc with text} in *)
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = Some (Variant [ void_decl ]) in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let exn_decl =
   let open TypeDecl in
   let open Representation in
   (* let open Odoc_model.Comment in *)
   let id = exn_identifier in
+  let loc = predefined_location in
   (* let text = [Raw "The type of exception values."] in *)
   (* let doc = Ok {empty_doc with text} in *)
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = Some Extensible in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let array_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = array_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "The type of arrays whose elements have type ";
         Code "'a";
@@ -458,13 +467,14 @@ let array_decl =
   let equation = invariant_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let list_decl =
   let open TypeDecl in
   let open Representation in
   (* let open Odoc_model.Comment in *)
   let id = list_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "The type of lists whose elements have type ";
         Code "'a";
@@ -475,13 +485,14 @@ let list_decl =
   let equation = covariant_equation in
   let representation = Some (Variant [ nil_decl; cons_decl ]) in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let option_decl =
   let open TypeDecl in
   let open Representation in
   (* let open Odoc_model.Comment in *)
   let id = option_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "The type of optional values of type ";
         Code "'a";
@@ -492,12 +503,13 @@ let option_decl =
   let equation = covariant_equation in
   let representation = Some (Variant [ none_decl; some_decl ]) in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let int32_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = int32_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "The type of signed 32-bit integers. See the ";
         Reference(Element(Root("Int32", TModule)), None);
@@ -508,12 +520,13 @@ let int32_decl =
   let equation = nullary_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let int64_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = int64_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "The type of signed 64-bit integers. See the ";
         Reference(Element(Root("Int64", TModule)), None);
@@ -524,12 +537,13 @@ let int64_decl =
   let equation = nullary_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let nativeint_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = nativeint_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "The type of signed, platform-native integers (32 bits on \
              32-bit processors, 64 bits on 64-bit processors). See the ";
@@ -541,12 +555,13 @@ let nativeint_decl =
   let equation = nullary_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let lazy_t_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = lazy_t_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "This type is used to implement the ";
         Reference(Element(Root("Lazy", TModule)), None);
@@ -557,12 +572,13 @@ let lazy_t_decl =
   let equation = covariant_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let extension_constructor_decl =
   let open TypeDecl in
   (* let open Odoc_model.Comment in *)
   let id = extension_constructor_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "cf. ";
         Reference(Element(Root("Obj", TModule)), None);
@@ -573,11 +589,12 @@ let extension_constructor_decl =
   let equation = covariant_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let floatarray_decl =
   let open TypeDecl in
   let id = floatarray_identifier in
+  let loc = predefined_location in
   let words ss =
     ss
     |> List.rev_map (fun s -> [ `Space; `Word s ])
@@ -603,12 +620,13 @@ let floatarray_decl =
   let equation = covariant_equation in
   let representation = None in
   let canonical = None in
-  { id; doc; canonical; equation; representation }
+  { id; loc; doc; canonical; equation; representation }
 
 let match_failure_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = match_failure_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised when none of the cases of a pattern matching apply. \
              The arguments are the location of the ";
@@ -624,12 +642,13 @@ let match_failure_decl =
       [ TypeExpr.Tuple [ string_expr; int_expr; int_expr ] ]
   in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 let assert_failure_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = assert_failure_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised when and assertion fails. \
              The arguments are the location of the ";
@@ -645,12 +664,13 @@ let assert_failure_decl =
       [ TypeExpr.Tuple [ string_expr; int_expr; int_expr ] ]
   in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 let invalid_argument_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = invalid_argument_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised by library functions to signal that the given \
              arguments do not make sense."]
@@ -659,12 +679,13 @@ let invalid_argument_decl =
   let doc = empty_doc in
   let args = TypeDecl.Constructor.Tuple [ TypeExpr.Constr (string_path, []) ] in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 let failure_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = failure_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised by library functions to signal that they are \
              undefined on the given arguments."]
@@ -673,12 +694,13 @@ let failure_decl =
   let doc = empty_doc in
   let args = TypeDecl.Constructor.Tuple [ TypeExpr.Constr (string_path, []) ] in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 let not_found_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = not_found_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised by search functions when the desired object \
              could not be found."]
@@ -687,12 +709,13 @@ let not_found_decl =
   let doc = empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 let out_of_memory_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = out_of_memory_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised by the garbage collector when there is \
              insufficient memory to complete the computation."]
@@ -701,13 +724,14 @@ let out_of_memory_decl =
   let doc = empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 (* TODO: Provide reference to the OCaml manual *)
 let stack_overflow_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = stack_overflow_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised by the bytecode interpreter when the evaluation \
              stack reaches its maximal size. This often indicates infinite or \
@@ -719,12 +743,13 @@ let stack_overflow_decl =
   let doc = empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 let sys_error_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = sys_error_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised by the input/output functions to report an \
              operating system error."]
@@ -733,12 +758,13 @@ let sys_error_decl =
   let doc = empty_doc in
   let args = TypeDecl.Constructor.Tuple [ TypeExpr.Constr (string_path, []) ] in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 let end_of_file_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = end_of_file_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised by input functions to signal that the end of \
              file has been reached."]
@@ -747,12 +773,13 @@ let end_of_file_decl =
   let doc = empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 let division_by_zero_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = division_by_zero_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised by integer division and remainder operations \
              when their second argument is zero."]
@@ -761,12 +788,13 @@ let division_by_zero_decl =
   let doc = empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 let sys_blocked_io_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = sys_blocked_io_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "A special case of ";
         Reference(Element sys_error_reference, None);
@@ -776,13 +804,14 @@ let sys_blocked_io_decl =
   let doc = empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 (* TODO: Provide reference to the OCaml manual *)
 let undefined_recursive_module_decl =
   let open Lang.Exception in
   (* let open Odoc_model.Comment in *)
   let id = undefined_recursive_module_identifier in
+  let loc = predefined_location in
   (* let text =
        [Raw "Exception raised when an ill-founded recursive module definition \
              is evaluated. (See section 7.8 of the OCaml manual.) The arguments \
@@ -798,7 +827,7 @@ let undefined_recursive_module_decl =
       [ TypeExpr.Tuple [ string_expr; int_expr; int_expr ] ]
   in
   let res = None in
-  { id; doc; args; res }
+  { id; loc; doc; args; res }
 
 let core_types =
   [

@@ -25,6 +25,7 @@ module rec Module : sig
 
   type t = {
     id : Identifier.Module.t;
+    loc : Location_.span;
     doc : Comment.docs;
     type_ : decl;
     canonical : Path.Module.t option;
@@ -40,6 +41,7 @@ end =
 and FunctorParameter : sig
   type parameter = {
     id : Identifier.FunctorParameter.t;
+    loc : Location_.span;
     expr : ModuleType.expr;
   }
 
@@ -101,6 +103,7 @@ and ModuleType : sig
 
   type t = {
     id : Identifier.ModuleType.t;
+    loc : Location_.span;
     doc : Comment.docs;
     canonical : Path.ModuleType.t option;
     expr : expr option;
@@ -111,6 +114,7 @@ end =
 and ModuleSubstitution : sig
   type t = {
     id : Identifier.Module.t;
+    loc : Location_.span;
     doc : Comment.docs;
     manifest : Path.Module.t;
   }
@@ -120,6 +124,7 @@ end =
 and ModuleTypeSubstitution : sig
   type t = {
     id : Identifier.ModuleType.t;
+    loc : Location_.span;
     doc : Comment.docs;
     manifest : ModuleType.expr;
   }
@@ -148,6 +153,7 @@ and Signature : sig
     | Comment of Comment.docs_or_stop
 
   type t = {
+    loc : Location_.span;
     items : item list;
     compiled : bool;
     doc : Comment.docs;  (** The top comment. *)
@@ -156,7 +162,7 @@ end =
   Signature
 
 and Open : sig
-  type t = { expansion : Signature.t; doc : Comment.docs }
+  type t = { expansion : Signature.t; loc : Location_.span; doc : Comment.docs }
 end =
   Open
 
@@ -240,6 +246,7 @@ and TypeDecl : sig
 
   type t = {
     id : Identifier.Type.t;
+    loc : Location_.span;
     doc : Comment.docs;
     canonical : Path.Type.t option;
     equation : Equation.t;
@@ -262,6 +269,7 @@ and Extension : sig
 
   type t = {
     parent : Identifier.Signature.t;
+    loc : Location_.span;
     type_path : Path.Type.t;
     doc : Comment.docs;
     type_params : TypeDecl.param list;
@@ -275,6 +283,7 @@ end =
 and Exception : sig
   type t = {
     id : Identifier.Exception.t;
+    loc : Location_.span;
     doc : Comment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
@@ -289,6 +298,7 @@ and Value : sig
 
   type t = {
     id : Identifier.Value.t;
+    loc : Location_.span;
     doc : Comment.docs;
     type_ : TypeExpr.t;
     value : value;
@@ -305,6 +315,7 @@ and Class : sig
 
   type t = {
     id : Identifier.Class.t;
+    loc : Location_.span;
     doc : Comment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -323,6 +334,7 @@ and ClassType : sig
 
   type t = {
     id : Identifier.ClassType.t;
+    loc : Location_.span;
     doc : Comment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -340,7 +352,7 @@ and ClassSignature : sig
   end
 
   module Inherit : sig
-    type t = { expr : ClassType.expr; doc : Comment.docs }
+    type t = { loc : Location_.span; expr : ClassType.expr; doc : Comment.docs }
   end
 
   type item =
@@ -359,6 +371,7 @@ end =
 and Method : sig
   type t = {
     id : Identifier.Method.t;
+    loc : Location_.span;
     doc : Comment.docs;
     private_ : bool;
     virtual_ : bool;
@@ -454,6 +467,7 @@ module rec Compilation_unit : sig
 
   type t = {
     id : Identifier.RootModule.t;
+    loc : Location_.span;
     root : Root.t;
     digest : Digest.t;
     imports : Import.t list;

@@ -31,22 +31,23 @@ let read_core_type env ctyp =
 
 let rec read_pattern env parent doc pat =
   let open Signature in
+  let loc = Odoc_model.Location_.of_location pat.pat_loc in
     match pat.pat_desc with
     | Tpat_any -> []
     | Tpat_var(id, _) ->
         let open Value in
         let id = Env.find_value_identifier env id in
-          Cmi.mark_type_expr pat.pat_type;
-          let type_ = Cmi.read_type_expr env pat.pat_type in
-          let value = Abstract in
-          [Value {id; doc; type_; value}]
+        Cmi.mark_type_expr pat.pat_type;
+        let type_ = Cmi.read_type_expr env pat.pat_type in
+        let value = Abstract in
+        [Value {id; loc; doc; type_; value}]
     | Tpat_alias(pat, id, _) ->
         let open Value in
         let id = Env.find_value_identifier env id in
-          Cmi.mark_type_expr pat.pat_type;
-          let type_ = Cmi.read_type_expr env pat.pat_type in
-          let value = Abstract in
-          Value {id; doc; type_; value} :: read_pattern env parent doc pat
+        Cmi.mark_type_expr pat.pat_type;
+        let type_ = Cmi.read_type_expr env pat.pat_type in
+        let value = Abstract in
+        Value {id; loc; doc; type_; value} :: read_pattern env parent doc pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
         List.concat (List.map (read_pattern env parent doc) pats)
@@ -122,7 +123,8 @@ let read_type_extension env parent tyext =
            env parent ext.ext_id ext.ext_type)
       tyext.tyext_constructors
   in
-    { parent; type_path; doc; type_params; private_; constructors; }
+  let loc = Odoc_model.Location_.of_location tyext.tyext_loc in
+  { loc; parent; type_path; doc; type_params; private_; constructors; }
 
 (** Make a standalone comment out of a comment attached to an item that isn't
     rendered. For example, [constraint] items are read separately and not
@@ -150,11 +152,13 @@ let rec read_class_type_field env parent ctf =
       let private_ = (private_ = Private) in
       let virtual_ = (virtual_ = Virtual) in
       let type_ = read_core_type env typ in
-        Some (Method {id; doc; private_; virtual_; type_})
+      let loc = Odoc_model.Location_.of_location ctf.ctf_loc in
+      Some (Method {id; loc; doc; private_; virtual_; type_})
   | Tctf_constraint(_, _) -> mk_class_comment doc
   | Tctf_inherit cltyp ->
       let expr = read_class_signature env parent [] cltyp in
-      Some (Inherit {Inherit.expr; doc})
+      let loc = Odoc_model.Location_.of_location ctf.ctf_loc in
+      Some (Inherit {Inherit.loc; expr; doc})
   | Tctf_attribute attr ->
       match Doc_attr.standalone container attr with
       | None -> None
@@ -241,11 +245,13 @@ let rec read_class_field env parent cf =
         | Tcfk_concrete(_, expr) ->
             false, Cmi.read_type_expr env expr.exp_type
       in
-        Some (Method {id; doc; private_; virtual_; type_})
+      let loc = Odoc_model.Location_.of_location cf.cf_loc in
+      Some (Method {id; loc; doc; private_; virtual_; type_})
   | Tcf_constraint(_, _) -> mk_class_comment doc
   | Tcf_inherit(_, cl, _, _, _) ->
       let expr = read_class_structure env parent [] cl in
-      Some (Inherit {Inherit.expr; doc})
+      let loc = Odoc_model.Location_.of_location cf.cf_loc in
+      Some (Inherit {Inherit.loc; expr; doc})
   | Tcf_initializer _ -> mk_class_comment doc
   | Tcf_attribute attr ->
       match Doc_attr.standalone container attr with
@@ -329,7 +335,8 @@ let read_class_declaration env parent cld =
         clparams
     in
     let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in
-      { id; doc; virtual_; params; type_; expansion = None }
+    let loc = Odoc_model.Location_.of_location cld.ci_loc in
+    { id; loc; doc; virtual_; params; type_; expansion = None }
 
 let read_class_declarations env parent clds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -365,8 +372,9 @@ let rec read_module_expr env parent label_parent mexpr =
               in
               let id = Identifier.Mk.parameter (parent, Odoc_model.Names.ModuleName.make_std name) in
               let arg = Cmti.read_module_type env id label_parent arg in
-              
-              Named { id; expr=arg }, env
+              (* TODO: fix this loc *)
+              let loc = Odoc_model.Location_.span [] in
+              Named { id; loc; expr=arg }, env
           in
         let res = read_module_expr env (Identifier.Mk.result parent) label_parent res in
         Functor (f_parameter, res)
@@ -444,7 +452,8 @@ and read_module_binding env parent mb =
     | _ -> false
 #endif
   in
-  Some {id; doc; type_; canonical; hidden; }
+  let loc = Odoc_model.Location_.of_location mb.mb_loc in
+  Some {id; loc; doc; type_; canonical; hidden; }
 
 and read_module_bindings env parent mbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
@@ -557,7 +566,8 @@ and read_open env parent o =
   let signature = [] in
   #endif
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature signature) in
-  Open.{expansion; doc}
+  let loc = Odoc_model.Location_.of_location o.open_loc in
+  Open.{loc; expansion; doc}
 
 and read_structure :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
@@ -573,6 +583,9 @@ and read_structure :
     in
     Doc_attr.extract_top_comment internal_tags ~classify parent str.str_items
   in
+  let loc =
+    Odoc_model.Location_.span (List.map (fun x -> Odoc_model.Location_.of_location( x.str_loc)) str.str_items)
+  in
   let items =
     List.fold_left
       (fun items item ->
@@ -582,9 +595,9 @@ and read_structure :
   in
   match doc_post with
   | [] ->
-    ({ Signature.items; compiled = false; doc }, tags)
+    ({ Signature.items; loc; compiled = false; doc }, tags)
   | _ ->
-    ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; doc }, tags)
+    ({ Signature.items = Comment (`Docs doc_post) :: items; loc; compiled=false; doc }, tags)
 
 let read_implementation root name impl =
   let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in

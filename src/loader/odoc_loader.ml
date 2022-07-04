@@ -62,8 +62,15 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
         Some { Source.file; digest; build_dir }
     | _ -> None
   in
+  let loc =
+    match content with
+    (* Should there be a location here? *)
+    | Pack _ -> Odoc_model.Location_.span []
+    | Module m -> m.loc
+  in
   {
     id;
+    loc;
     root;
     digest;
     imports;
