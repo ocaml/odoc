@@ -19,9 +19,7 @@ module Ast_to_sexp = struct
   type at = { at : 'a. ('a -> sexp) -> 'a Loc.with_location -> sexp }
 
   let loc_at = { at = Location_to_sexp.at }
-
   let str s = Atom s
-
   let opt f s = match s with Some s -> List [ f s ] | None -> List []
 
   let style : Ast.style -> sexp = function
