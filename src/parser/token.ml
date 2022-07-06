@@ -3,9 +3,7 @@
    for error messages. *)
 
 type section_heading = [ `Begin_section_heading of int * string option ]
-
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
-
 type paragraph_style = [ `Left | `Center | `Right ]
 
 type tag =
