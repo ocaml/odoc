@@ -23,7 +23,8 @@ type inline_element =
   | `Reference of
     reference_kind * string with_location * inline_element with_location list
   | `Link of string * inline_element with_location list
-  | `Math_span of string ]
+  | `Math_span of string (** @since 2.0.0 *)
+]
 (** Inline elements are equivalent to what would be found in a [span] in HTML.
     Mostly these are straightforward. The [`Reference] constructor takes a triple
     whose second element is the reference itself, and the third the replacement
@@ -42,7 +43,7 @@ type nestable_block_element =
     [ `Unordered | `Ordered ]
     * [ `Light | `Heavy ]
     * nestable_block_element with_location list list
-  | `Math_block of string ]
+  | `Math_block of string (** @since 2.0.0 *) ]
 (** Some block elements may be nested within lists or tags, but not all.
     The [`List] constructor has a parameter of type [\[`Light | `Heavy\]].
     This corresponds to the syntactic constructor used (see the
