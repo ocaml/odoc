@@ -5,4 +5,5 @@
  (public_name odoc-parser)
  (instrumentation
   (backend bisect_ppx))
+ (flags (:standard -w -50))
  (libraries astring result camlp-streams))
