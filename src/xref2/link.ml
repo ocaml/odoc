@@ -257,6 +257,27 @@ and comment_nestable_block_element env parent ~loc:_
       in
       `Modules refs
 
+and comment_nestable_block_element_list env parent
+    (xs : Comment.nestable_block_element Comment.with_location list) =
+  List.map (with_location (comment_nestable_block_element env parent)) xs
+
+and comment_tag env parent ~loc:_ (x : Comment.tag) =
+  match x with
+  | `Deprecated content ->
+      `Deprecated (comment_nestable_block_element_list env parent content)
+  | `Param (name, content) ->
+      `Param (name, comment_nestable_block_element_list env parent content)
+  | `Raise (name, content) ->
+      `Raise (name, comment_nestable_block_element_list env parent content)
+  | `Return content ->
+      `Return (comment_nestable_block_element_list env parent content)
+  | `See (kind, target, content) ->
+      `See (kind, target, comment_nestable_block_element_list env parent content)
+  | `Before (version, content) ->
+      `Before (version, comment_nestable_block_element_list env parent content)
+  | `Author _ | `Since _ | `Alert _ | `Version _ ->
+      x (* only contain primitives *)
+
 and comment_block_element env parent ~loc (x : Comment.block_element) =
   match x with
   | #Comment.nestable_block_element as x ->
@@ -265,7 +286,7 @@ and comment_block_element env parent ~loc (x : Comment.block_element) =
   | `Heading h as x ->
       check_ambiguous_label ~loc env h;
       x
-  | `Tag _ as x -> x
+  | `Tag t -> `Tag (comment_tag env parent ~loc t)
 
 and with_location :
     type a.
