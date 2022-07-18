@@ -468,6 +468,21 @@
   (run odoc link -o %{target} %{dep:stop_first_comment.odoc})))
 
 (rule
+ (target tag_link.cmt)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/tag_link.ml})))
+
+(rule
+ (target tag_link.odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:tag_link.cmt})))
+
+(rule
+ (target tag_link.odocl)
+ (action
+  (run odoc link -o %{target} %{dep:tag_link.odoc})))
+
+(rule
  (target toplevel_comments.cmti)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/toplevel_comments.mli})))
@@ -6571,6 +6586,84 @@
   (alias runtest)
   (action
    (diff stop_first_comment.targets stop_first_comment.targets.gen))))
+
+(subdir
+ html
+ (rule
+  (targets Tag_link.html.gen)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../tag_link.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Tag_link.html Tag_link.html.gen))))
+
+(subdir
+ html
+ (rule
+  (action
+   (with-outputs-to
+    tag_link.targets.gen
+    (run odoc html-targets -o . %{dep:../tag_link.odocl} --flat))))
+ (rule
+  (alias runtest)
+  (action
+   (diff tag_link.targets tag_link.targets.gen))))
+
+(subdir
+ latex
+ (rule
+  (targets Tag_link.tex.gen)
+  (action
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../tag_link.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Tag_link.tex Tag_link.tex.gen))))
+
+(subdir
+ latex
+ (rule
+  (action
+   (with-outputs-to
+    tag_link.targets.gen
+    (run odoc latex-targets -o . %{dep:../tag_link.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff tag_link.targets tag_link.targets.gen))))
+
+(subdir
+ man
+ (rule
+  (targets Tag_link.3o.gen)
+  (action
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../tag_link.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Tag_link.3o Tag_link.3o.gen))))
+
+(subdir
+ man
+ (rule
+  (action
+   (with-outputs-to
+    tag_link.targets.gen
+    (run odoc man-targets -o . %{dep:../tag_link.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff tag_link.targets tag_link.targets.gen))))
 
 (subdir
  html

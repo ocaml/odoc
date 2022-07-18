@@ -1,0 +1,29 @@
+
+.TH Tag_link 3 "" "Odoc" "OCaml Library"
+.SH Name
+Tag_link
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Tag_link\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR foo : unit
+.sp 
+.fi 
+@deprecated: \f[CI]foo\fR
+.br 
+@parameter foo: \f[CI]foo\fR
+.br 
+@raises Foo: \f[CI]foo\fR
+.br 
+@returns: \f[CI]foo\fR
+.br 
+@see foo: \f[CI]foo\fR
+.br 
+@before 0\.0\.1: \f[CI]foo\fR
+.nf 
+
