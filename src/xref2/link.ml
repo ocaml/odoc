@@ -224,13 +224,7 @@ and comment_nestable_block_element env parent ~loc:_
   | `List (x, ys) ->
       `List
         ( x,
-          List.rev_map
-            (fun x ->
-              List.rev_map
-                (with_location (comment_nestable_block_element env parent))
-                x
-              |> List.rev)
-            ys
+          List.rev_map (comment_nestable_block_element_list env parent) ys
           |> List.rev )
   | `Modules refs ->
       let refs =
@@ -259,7 +253,8 @@ and comment_nestable_block_element env parent ~loc:_
 
 and comment_nestable_block_element_list env parent
     (xs : Comment.nestable_block_element Comment.with_location list) =
-  List.map (with_location (comment_nestable_block_element env parent)) xs
+  List.rev_map (with_location (comment_nestable_block_element env parent)) xs
+  |> List.rev
 
 and comment_tag env parent ~loc:_ (x : Comment.tag) =
   match x with
