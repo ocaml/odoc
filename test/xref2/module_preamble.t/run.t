@@ -46,7 +46,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
      <p>Module A.</p>
     </header>
     <div class="odoc-content">
-     <div class="odoc-spec">
+     <div class="odoc-spec"><a href="a.mli#3" class="source">jump to source</a>
       <div class="spec module anchored" id="module-B">
        <a href="#module-B" class="anchor"></a>
        <code>
@@ -95,6 +95,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
        the &quot;content&quot;.
      </p>
      <div class="odoc-spec">
+      <a href="b.mli#16" class="source">jump to source</a>
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
        <code><span><span class="keyword">type</span> t</span></code>
