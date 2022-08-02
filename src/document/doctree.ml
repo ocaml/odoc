@@ -73,6 +73,47 @@ end = struct
     Rewire.walk ~classify:(classify ~on_sub) ~node:(node mkurl) t
 end
 
+module SourceCode : sig
+  val get : string -> Subpage.t option
+end = struct
+  let tbl = Hashtbl.create 32
+
+  let read filename =
+    let ic = open_in filename in
+    let rec loop acc =
+      try
+        let line = input_line ic in
+        let item : Item.t =
+          Text
+            [
+              {
+                attr = [];
+                desc = Paragraph [ { attr = []; desc = Text line } ];
+              };
+            ]
+        in
+        loop (item :: acc)
+      with _ -> acc
+    in
+    let items = List.rev (loop []) in
+    close_in ic;
+    items
+
+  let get filename =
+    match Hashtbl.find_opt tbl filename with
+    | Some _ -> None
+    | None ->
+        let url : Url.Path.t =
+          { kind = `LeafPage; parent = None; name = "Source" }
+        in
+        let header = [] in
+        let items = read filename in
+        let content : Page.t = { title = ""; header; items; url } in
+        let subpage : Subpage.t = { status = `Default; content } in
+        Hashtbl.add tbl filename subpage;
+        Some subpage
+end
+
 module Subpages : sig
   val compute : Page.t -> Subpage.t list
 end = struct
@@ -88,6 +129,10 @@ end = struct
     Utils.flatmap l ~f:(function
       | Item.Text _ -> []
       | Heading _ -> []
+      | Declaration { content; loc = Some loc; _ } -> (
+          match SourceCode.get loc.file with
+          | Some source_code -> source_code :: walk_documentedsrc content
+          | None -> walk_documentedsrc content)
       | Declaration { content; _ } -> walk_documentedsrc content
       | Include i -> walk_items i.content.content)
 
