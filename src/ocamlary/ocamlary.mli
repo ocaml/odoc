@@ -226,6 +226,9 @@ val fun_maybe : ?yes:unit -> unit -> int
 val not_found : unit -> unit
 (** @raise Not_found That's all it does *)
 
+val kaboom : unit -> unit
+(** @raise Kaboom That's all it does *)
+
 val ocaml_org : string
 (** @see <http://ocaml.org/> The OCaml Web site *)
 
