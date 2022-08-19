@@ -24,10 +24,12 @@ type non_link_inline_element =
    cross-referencer. *)
 type link_content = non_link_inline_element with_location list
 
+type reference_element = [ `Reference of Reference.t * link_content ]
+
 type inline_element =
   [ leaf_inline_element
   | `Styled of style * inline_element with_location list
-  | `Reference of Reference.t * link_content
+  | reference_element
   | `Link of string * link_content ]
 
 type paragraph = inline_element with_location list
@@ -53,7 +55,9 @@ type tag =
   [ `Author of string
   | `Deprecated of nestable_block_element with_location list
   | `Param of string * nestable_block_element with_location list
-  | `Raise of string * nestable_block_element with_location list
+  | `Raise of
+    [ `Code_span of string | reference_element ]
+    * nestable_block_element with_location list
   | `Return of nestable_block_element with_location list
   | `See of
     [ `Url | `File | `Document ]

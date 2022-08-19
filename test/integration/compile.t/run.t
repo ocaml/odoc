@@ -96,8 +96,12 @@ Test different parsing errors.
   Warning: '@param' expects parameter name on the same line.
   File "parser_errors.mli", line 34, characters 4-10:
   Warning: '@raise' expects exception constructor on the same line.
+  File "parser_errors.mli", line 34, characters 4-4:
+  Warning: Identifier in reference should not be empty.
   File "parser_errors.mli", line 37, characters 4-11:
   Warning: '@raises' expects exception constructor on the same line.
+  File "parser_errors.mli", line 37, characters 4-4:
+  Warning: Identifier in reference should not be empty.
   File "parser_errors.mli", line 40, characters 4-8:
   Warning: '@see' should be followed by <url>, 'file', or "document title".
   File "parser_errors.mli", line 43, characters 4-15:
@@ -143,8 +147,12 @@ With warn-error enabled.
   Error: '@param' expects parameter name on the same line.
   File "parser_errors.mli", line 34, characters 4-10:
   Error: '@raise' expects exception constructor on the same line.
+  File "parser_errors.mli", line 34, characters 4-4:
+  Error: Identifier in reference should not be empty.
   File "parser_errors.mli", line 37, characters 4-11:
   Error: '@raises' expects exception constructor on the same line.
+  File "parser_errors.mli", line 37, characters 4-4:
+  Error: Identifier in reference should not be empty.
   File "parser_errors.mli", line 40, characters 4-8:
   Error: '@see' should be followed by <url>, 'file', or "document title".
   File "parser_errors.mli", line 43, characters 4-15:

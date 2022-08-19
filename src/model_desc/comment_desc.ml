@@ -33,7 +33,10 @@ and general_tag =
   [ `Author of string
   | `Deprecated of general_docs
   | `Param of string * general_docs
-  | `Raise of string * general_docs
+  | `Raise of
+    [ `Code_span of string
+    | `Reference of Paths.Reference.t * general_link_content ]
+    * general_docs
   | `Return of general_docs
   | `See of [ `Url | `File | `Document ] * string * general_docs
   | `Since of string
@@ -124,7 +127,11 @@ and tag : general_tag t =
     | `Author x -> C ("`Author", x, string)
     | `Deprecated x -> C ("`Deprecated", x, docs)
     | `Param (x1, x2) -> C ("`Param", (x1, x2), Pair (string, docs))
-    | `Raise (x1, x2) -> C ("`Raise", (x1, x2), Pair (string, docs))
+    | `Raise (x1, x2) ->
+        C
+          ( "`Raise",
+            ((x1 :> general_inline_element), x2),
+            Pair (inline_element, docs) )
     | `Return x -> C ("`Return", x, docs)
     | `See (x1, x2, x3) ->
         C ("`See", (x1, x2, x3), Triple (url_kind, string, docs))
