@@ -57,72 +57,66 @@ module Reference = struct
         render_resolved (r :> t) ^ "." ^ InstanceVariableName.to_string s
     | `Label (_, s) -> LabelName.to_string s
 
+  let to_ir_resolved ~stop_before r txt =
+    (* IDENTIFIER MUST BE RENAMED TO DEFINITION. *)
+    let id = Reference.Resolved.identifier r in
+    match Url.from_identifier ~stop_before id with
+    | Ok url ->
+        [ inline @@ Inline.InternalLink (InternalLink.Resolved (url, txt)) ]
+    | Error (Not_linkable _) -> txt
+    | Error exn ->
+        (* FIXME: better error message *)
+        Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
+        txt
+
   (* This is the entry point. stop_before is false on entry, true on recursive
      call. *)
   let rec to_ir : ?text:Inline.t -> stop_before:bool -> Reference.t -> Inline.t
       =
    fun ?text ~stop_before ref ->
-    let open Reference in
-    match ref with
-    | `Root (s, _) -> (
-        match text with
-        | None ->
-            let s = source_of_code s in
-            [ inline @@ Inline.Source s ]
-        | Some s ->
-            [ inline @@ Inline.InternalLink (InternalLink.Unresolved s) ])
-    | `Dot (parent, s) -> unresolved ?text (parent :> t) s
-    | `Module (parent, s) ->
-        unresolved ?text (parent :> t) (ModuleName.to_string s)
-    | `ModuleType (parent, s) ->
-        unresolved ?text (parent :> t) (ModuleTypeName.to_string s)
-    | `Type (parent, s) -> unresolved ?text (parent :> t) (TypeName.to_string s)
-    | `Constructor (parent, s) ->
-        unresolved ?text (parent :> t) (ConstructorName.to_string s)
-    | `Field (parent, s) ->
-        unresolved ?text (parent :> t) (FieldName.to_string s)
-    | `Extension (parent, s) ->
-        unresolved ?text (parent :> t) (ExtensionName.to_string s)
-    | `Exception (parent, s) ->
-        unresolved ?text (parent :> t) (ExceptionName.to_string s)
-    | `Value (parent, s) ->
-        unresolved ?text (parent :> t) (ValueName.to_string s)
-    | `Class (parent, s) ->
-        unresolved ?text (parent :> t) (ClassName.to_string s)
-    | `ClassType (parent, s) ->
-        unresolved ?text (parent :> t) (ClassTypeName.to_string s)
-    | `Method (parent, s) ->
-        unresolved ?text (parent :> t) (MethodName.to_string s)
-    | `InstanceVariable (parent, s) ->
-        unresolved ?text (parent :> t) (InstanceVariableName.to_string s)
-    | `Label (parent, s) ->
-        unresolved ?text (parent :> t) (LabelName.to_string s)
-    | `Resolved r -> (
-        (* IDENTIFIER MUST BE RENAMED TO DEFINITION. *)
-        let id = Reference.Resolved.identifier r in
-        let txt =
-          match text with
-          | None ->
-              [ inline @@ Inline.Source (source_of_code (render_resolved r)) ]
-          | Some s -> s
-        in
-        match Url.from_identifier ~stop_before id with
-        | Ok url ->
-            [ inline @@ Inline.InternalLink (InternalLink.Resolved (url, txt)) ]
-        | Error (Not_linkable _) -> txt
-        | Error exn ->
-            (* FIXME: better error message *)
-            Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
-            txt)
-
-  and unresolved : ?text:Inline.t -> Reference.t -> string -> Inline.t =
-   fun ?text parent field ->
     match text with
-    | Some s -> [ inline @@ InternalLink (InternalLink.Unresolved s) ]
-    | None ->
-        let tail = [ inline @@ Text ("." ^ field) ] in
-        let content = to_ir ~stop_before:true parent in
-        content @ tail
+    | Some s -> (
+        match ref with
+        | `Resolved r -> to_ir_resolved ~stop_before r s
+        | _ -> [ inline @@ InternalLink (InternalLink.Unresolved s) ])
+    | None -> to_ir_aux ~stop_before ~tail:[] ref
+
+  (* to_ir without text. Uses a tail accumulator of unresolved fields. *)
+  and to_ir_aux : stop_before:bool -> tail:Source.t -> Reference.t -> Inline.t =
+   fun ~stop_before ~tail ref ->
+    let open Reference in
+    let unresolved parent field =
+      let tail = source_of_code ("." ^ field) @ tail in
+      to_ir_aux ~stop_before:true ~tail parent
+    in
+    match ref with
+    | `Root (s, _) ->
+        let s = source_of_code s in
+        [ inline @@ Inline.Source (s @ tail) ]
+    | `Dot (parent, s) -> unresolved (parent :> t) s
+    | `Module (parent, s) -> unresolved (parent :> t) (ModuleName.to_string s)
+    | `ModuleType (parent, s) ->
+        unresolved (parent :> t) (ModuleTypeName.to_string s)
+    | `Type (parent, s) -> unresolved (parent :> t) (TypeName.to_string s)
+    | `Constructor (parent, s) ->
+        unresolved (parent :> t) (ConstructorName.to_string s)
+    | `Field (parent, s) -> unresolved (parent :> t) (FieldName.to_string s)
+    | `Extension (parent, s) ->
+        unresolved (parent :> t) (ExtensionName.to_string s)
+    | `Exception (parent, s) ->
+        unresolved (parent :> t) (ExceptionName.to_string s)
+    | `Value (parent, s) -> unresolved (parent :> t) (ValueName.to_string s)
+    | `Class (parent, s) -> unresolved (parent :> t) (ClassName.to_string s)
+    | `ClassType (parent, s) ->
+        unresolved (parent :> t) (ClassTypeName.to_string s)
+    | `Method (parent, s) -> unresolved (parent :> t) (MethodName.to_string s)
+    | `InstanceVariable (parent, s) ->
+        unresolved (parent :> t) (InstanceVariableName.to_string s)
+    | `Label (parent, s) -> unresolved (parent :> t) (LabelName.to_string s)
+    | `Resolved r ->
+        let s = source_of_code (render_resolved r) in
+        let txt = [ inline @@ Inline.Source (s @ tail) ] in
+        to_ir_resolved ~stop_before r txt
 end
 
 let leaf_inline_element : Comment.leaf_inline_element -> Inline.one = function
