@@ -1899,3 +1899,18 @@ Here goes:
 \f[CB]val\fR f : new_t \f[CB]\->\fR unit
 .br 
 \f[CB]end\fR
+.sp 
+.in 3
+\fB8 Unresolved references\fR
+.in 
+.sp 
+.fi 
+\(bu Stdlib\.Invalid_argument
+.br 
+\(bu Hashtbl\.t
+.br 
+\(bu Set\.S\.empty
+.br 
+\(bu CollectionModule\.InnerModuleA\.foo
+.nf 
+
