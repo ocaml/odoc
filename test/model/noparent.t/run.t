@@ -9,6 +9,9 @@ We don't have to provide parents to modules now
 
   $ find output | sort
   output
+  output/Source.3o
+  output/Source.html
+  output/Source.tex
   output/Test-M-module-type-N.html
   output/Test-M.html
   output/Test.3o
@@ -17,6 +20,9 @@ We don't have to provide parents to modules now
   output/Test.tex
 
   $ find output -mindepth 1 | sort
+  output/Source.3o
+  output/Source.html
+  output/Source.tex
   output/Test-M-module-type-N.html
   output/Test-M.html
   output/Test.3o

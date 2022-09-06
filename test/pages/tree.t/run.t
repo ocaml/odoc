@@ -57,6 +57,7 @@ And output the HTML:
 
 Let's see what we've got!
   $ find html -type f | sort
+  html/Source.html
   html/top1/index.html
   html/top1/sub1/M1/index.html
   html/top1/sub1/index.html

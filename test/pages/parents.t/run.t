@@ -32,6 +32,7 @@ We should see a directory structure here where the module 'Test' is found undern
 file 'package.mld' should be written to the file 'package/index.html'.
 
   $ find html -type f | sort
+  html/Source.html
   html/package/Test/index.html
   html/package/index.html
 
@@ -40,10 +41,12 @@ Let's make sure the manpage and latex renderers work too
   $ for i in *.odocl; do odoc man-generate $i -o man; odoc latex-generate $i -o latex; done
 
   $ find man -type f | sort
+  man/Source.3o
   man/package.3o
   man/package/Test.3o
 
   $ find latex -type f | sort
+  latex/Source.tex
   latex/package.tex
   latex/package/Test.tex
 

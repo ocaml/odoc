@@ -1,8 +1,10 @@
 Ocamlary.tex
+Source.tex
 Ocamlary.ModuleWithSignature.tex
 Ocamlary.ModuleWithSignatureAlias.tex
 Ocamlary.Recollection.tex
 Ocamlary.FunctorTypeOf.tex
+Source.tex
 Ocamlary.empty_class.tex
 Ocamlary.one_method_class.tex
 Ocamlary.two_method_class.tex
