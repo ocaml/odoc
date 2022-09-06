@@ -74,32 +74,26 @@ end = struct
 end
 
 module SourceCode : sig
-  val get : string -> Subpage.t option
+  val get :
+    Odoc_model.Lang.Compilation_unit.Source.t -> string -> Subpage.t option
 end = struct
   let tbl = Hashtbl.create 32
 
-  let read filename =
-    let ic = open_in filename in
-    let rec loop acc =
-      try
-        let line = input_line ic in
-        let item : Item.t =
-          Text
-            [
-              {
-                attr = [];
-                desc = Paragraph [ { attr = []; desc = Text line } ];
-              };
-            ]
-        in
-        loop (item :: acc)
-      with _ -> acc
+  let items_from_source (src : Odoc_model.Lang.Compilation_unit.Source.t) =
+    let content = src.content in
+    let lines = String.split_on_char '\n' content in
+    let rec loop acc = function
+      | [] -> acc
+      | h :: t ->
+          let block : Block.one =
+            { attr = []; desc = Paragraph [ { attr = []; desc = Text h } ] }
+          in
+          let item : Item.t = Text [ block ] in
+          loop (item :: acc) t
     in
-    let items = List.rev (loop []) in
-    close_in ic;
-    items
+    List.rev (loop [] lines)
 
-  let get filename =
+  let get source filename =
     match Hashtbl.find_opt tbl filename with
     | Some _ -> None
     | None ->
@@ -107,8 +101,9 @@ end = struct
           { kind = `LeafPage; parent = None; name = "Source" }
         in
         let header = [] in
-        let items = read filename in
-        let content : Page.t = { title = ""; header; items; url } in
+        let items = items_from_source source in
+        let source = None in
+        let content : Page.t = { title = ""; header; items; url; source } in
         let subpage : Subpage.t = { status = `Default; content } in
         Hashtbl.add tbl filename subpage;
         Some subpage
@@ -125,18 +120,21 @@ end = struct
       | Subpage p -> [ p ]
       | Alternative (Expansion r) -> walk_documentedsrc r.expansion)
 
-  let rec walk_items (l : Item.t list) =
+  let rec walk_items source (l : Item.t list) =
     Utils.flatmap l ~f:(function
       | Item.Text _ -> []
       | Heading _ -> []
       | Declaration { content; loc = Some loc; _ } -> (
-          match SourceCode.get loc.file with
-          | Some source_code -> source_code :: walk_documentedsrc content
+          match source with
+          | Some source -> (
+              match SourceCode.get source loc.file with
+              | Some source_code -> source_code :: walk_documentedsrc content
+              | None -> walk_documentedsrc content)
           | None -> walk_documentedsrc content)
       | Declaration { content; _ } -> walk_documentedsrc content
-      | Include i -> walk_items i.content.content)
+      | Include i -> walk_items source i.content.content)
 
-  let compute (p : Page.t) = walk_items (p.header @ p.items)
+  let compute (p : Page.t) = walk_items p.source (p.header @ p.items)
 end
 
 module Shift = struct

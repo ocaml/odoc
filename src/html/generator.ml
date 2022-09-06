@@ -407,7 +407,7 @@ module Page = struct
     Utils.list_concat_map ~f:(include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page list =
-    let { Page.title; header; items = i; url } =
+    let { Page.title; header; items = i; url; source = _ } =
       Doctree.Labels.disambiguate_page p
     and subpages =
       (* Don't use the output of [disambiguate_page] to avoid unecessarily

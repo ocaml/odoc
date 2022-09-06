@@ -163,6 +163,7 @@ and Page : sig
     header : Item.t list;
     items : Item.t list;
     url : Url.Path.t;
+    source : Odoc_model.Lang.Compilation_unit.Source.t option;
   }
 end =
   Page

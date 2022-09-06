@@ -59,7 +59,8 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
   let source =
     match sourcefile with
     | Some (Some file, Some digest, build_dir) ->
-        Some { Source.file; digest; build_dir }
+        let content = Result.value ~default:"" (Fs.File.read (Fpath.v file)) in
+        Some { Source.file; digest; build_dir; content }
     | _ -> None
   in
   let loc =

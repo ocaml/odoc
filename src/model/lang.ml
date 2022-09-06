@@ -454,7 +454,12 @@ module rec Compilation_unit : sig
   end
 
   module Source : sig
-    type t = { file : string; build_dir : string; digest : Digest.t }
+    type t = {
+      file : string;
+      build_dir : string;
+      digest : Digest.t;
+      content : string;
+    }
   end
 
   module Packed : sig
