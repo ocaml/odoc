@@ -67,6 +67,7 @@ See the comments on the types at the end of test.mli for the expectation.
   Test/B/index.html
   Test/C/index.html
   Test/D/index.html
+  Test/Source-Code-test.mli.html
   Test/index.html
   $ cat Test/index.html
   <!DOCTYPE html>

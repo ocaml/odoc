@@ -9,24 +9,24 @@ We don't have to provide parents to modules now
 
   $ find output | sort
   output
-  output/Source-Code-test.mli.3o
-  output/Source-Code-test.mli.html
-  output/Source-Code-test.mli.tex
   output/Test-M-module-type-N.html
   output/Test-M.html
+  output/Test-leaf-page-Source-Code-test.mli.html
   output/Test.3o
   output/Test.M.3o
+  output/Test.Source-Code-test.mli.3o
+  output/Test.Source-Code-test.mli.tex
   output/Test.html
   output/Test.tex
 
   $ find output -mindepth 1 | sort
-  output/Source-Code-test.mli.3o
-  output/Source-Code-test.mli.html
-  output/Source-Code-test.mli.tex
   output/Test-M-module-type-N.html
   output/Test-M.html
+  output/Test-leaf-page-Source-Code-test.mli.html
   output/Test.3o
   output/Test.M.3o
+  output/Test.Source-Code-test.mli.3o
+  output/Test.Source-Code-test.mli.tex
   output/Test.html
   output/Test.tex
 

@@ -97,10 +97,10 @@ Let's also check the hierarchy of files produced:
 
   $ odoc support-files -o html
   $ find html -type f | sort
-  html/Source-Code-m1.mli.html
   html/highlight.pack.js
   html/odoc.css
   html/top1/index.html
+  html/top1/sub1/M1/Source-Code-m1.mli.html
   html/top1/sub1/M1/index.html
   html/top1/sub1/index.html
   html/top1/sub2/index.html

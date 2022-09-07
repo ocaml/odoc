@@ -24,7 +24,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
 
   $ odoc html-targets -o html a.odocl
   html/test/A/index.html
-  html/Source-Code-a.mli.html
+  html/test/A/Source-Code-a.mli.html
   html/test/A/B/index.html
   $ odoc html-targets -o html a__b.odocl
   html/test/A__b/index.html

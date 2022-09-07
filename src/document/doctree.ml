@@ -75,7 +75,10 @@ end
 
 module SourceCode : sig
   val get :
-    Odoc_model.Lang.Compilation_unit.Source.t -> key:string -> Subpage.t option
+    Odoc_model.Lang.Compilation_unit.Source.t ->
+    Url.Path.t ->
+    key:string ->
+    Subpage.t option
 end = struct
   let tbl = Hashtbl.create 32
 
@@ -93,13 +96,12 @@ end = struct
     in
     List.rev (loop [] lines)
 
-  let get source ~key =
+  let get source parent ~key =
     match Hashtbl.find_opt tbl key with
     | Some _ -> None
     | None ->
-        let url : Url.Path.t =
-          { kind = `LeafPage; parent = None; name = key }
-        in
+        let parent = Some parent in
+        let url : Url.Path.t = { kind = `LeafPage; parent; name = key } in
         let header = [] in
         let items = items_from_source source in
         let source = None in
@@ -120,7 +122,7 @@ end = struct
       | Subpage p -> [ p ]
       | Alternative (Expansion r) -> walk_documentedsrc r.expansion)
 
-  let rec walk_items source (l : Item.t list) =
+  let rec walk_items source url (l : Item.t list) =
     Utils.flatmap l ~f:(function
       | Item.Text _ -> []
       | Heading _ -> []
@@ -128,14 +130,14 @@ end = struct
           match source with
           | Some source -> (
               let filename = "Source-Code-" ^ Filename.basename loc.file in
-              match SourceCode.get source ~key:filename with
+              match SourceCode.get source url ~key:filename with
               | Some source_code -> source_code :: walk_documentedsrc content
               | None -> walk_documentedsrc content)
           | None -> walk_documentedsrc content)
       | Declaration { content; _ } -> walk_documentedsrc content
-      | Include i -> walk_items source i.content.content)
+      | Include i -> walk_items source url i.content.content)
 
-  let compute (p : Page.t) = walk_items p.source (p.header @ p.items)
+  let compute (p : Page.t) = walk_items p.source p.url (p.header @ p.items)
 end
 
 module Shift = struct
