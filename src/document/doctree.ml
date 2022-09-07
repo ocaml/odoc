@@ -75,7 +75,7 @@ end
 
 module SourceCode : sig
   val get :
-    Odoc_model.Lang.Compilation_unit.Source.t -> string -> Subpage.t option
+    Odoc_model.Lang.Compilation_unit.Source.t -> key:string -> Subpage.t option
 end = struct
   let tbl = Hashtbl.create 32
 
@@ -93,19 +93,19 @@ end = struct
     in
     List.rev (loop [] lines)
 
-  let get source filename =
-    match Hashtbl.find_opt tbl filename with
+  let get source ~key =
+    match Hashtbl.find_opt tbl key with
     | Some _ -> None
     | None ->
         let url : Url.Path.t =
-          { kind = `LeafPage; parent = None; name = "Source" }
+          { kind = `LeafPage; parent = None; name = key }
         in
         let header = [] in
         let items = items_from_source source in
         let source = None in
         let content : Page.t = { title = ""; header; items; url; source } in
         let subpage : Subpage.t = { status = `Default; content } in
-        Hashtbl.add tbl filename subpage;
+        Hashtbl.add tbl key subpage;
         Some subpage
 end
 
@@ -127,7 +127,8 @@ end = struct
       | Declaration { content; loc = Some loc; _ } -> (
           match source with
           | Some source -> (
-              match SourceCode.get source loc.file with
+              let filename = "Source-Code-" ^ Filename.basename loc.file in
+              match SourceCode.get source ~key:filename with
               | Some source_code -> source_code :: walk_documentedsrc content
               | None -> walk_documentedsrc content)
           | None -> walk_documentedsrc content)

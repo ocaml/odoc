@@ -46,8 +46,9 @@ let mk_source_link loc =
   match loc with
   | None -> noop
   | Some { Odoc_model.Location_.file; start; end_ = _ } ->
+      let filename = "Source-Code-" ^ Filename.basename file in
       let line = start.line in
-      let href = Format.sprintf "%s#%i" file line in
+      let href = Format.sprintf "%s#%i" filename line in
       Html.a
         ~a:[ Html.a_href href; Html.a_class [ "source" ] ]
         [ Html.txt "jump to source" ]
