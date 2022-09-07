@@ -57,7 +57,9 @@ And output the HTML:
 
 Let's see what we've got!
   $ find html -type f | sort
-  html/Source.html
+  html/Source-Code-m1.mli.html
+  html/Source-Code-m2.mli.html
+  html/Source-Code-m3.mli.html
   html/top1/index.html
   html/top1/sub1/M1/index.html
   html/top1/sub1/index.html

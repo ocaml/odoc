@@ -1,5 +1,5 @@
 Ocamlary.html
-Source.html
+Source-Code-ocamlary.mli.html
 Ocamlary-Empty.html
 Ocamlary-module-type-Empty.html
 Ocamlary-module-type-MissingComment.html
@@ -70,7 +70,7 @@ Ocamlary-module-type-ToInclude-IncludedA.html
 Ocamlary-module-type-ToInclude-module-type-IncludedB.html
 Ocamlary-IncludedA.html
 Ocamlary-module-type-IncludedB.html
-Source.html
+Source-Code-_none_.html
 Ocamlary-ExtMod.html
 Ocamlary-class-empty_class.html
 Ocamlary-class-one_method_class.html

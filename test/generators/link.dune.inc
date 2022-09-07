@@ -530,7 +530,11 @@
 (subdir
  html
  (rule
-  (targets Alerts.html.gen Alerts-Top1.html.gen Alerts-Top2.html.gen)
+  (targets
+   Alerts.html.gen
+   Source.html.gen
+   Alerts-Top1.html.gen
+   Alerts-Top2.html.gen)
   (action
    (run
     odoc
@@ -546,6 +550,10 @@
   (alias runtest)
   (action
    (diff Alerts.html Alerts.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -570,13 +578,17 @@
 (subdir
  latex
  (rule
-  (targets Alerts.tex.gen)
+  (targets Alerts.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../alerts.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Alerts.tex Alerts.tex.gen))))
+   (diff Alerts.tex Alerts.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -593,13 +605,17 @@
 (subdir
  man
  (rule
-  (targets Alerts.3o.gen Alerts.Top1.3o.gen Alerts.Top2.3o.gen)
+  (targets Alerts.3o.gen Source.3o.gen Alerts.Top1.3o.gen Alerts.Top2.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../alerts.odocl})))
  (rule
   (alias runtest)
   (action
    (diff Alerts.3o Alerts.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -624,7 +640,7 @@
 (subdir
  html
  (rule
-  (targets Alias.html.gen Alias-X.html.gen)
+  (targets Alias.html.gen Source.html.gen Alias-X.html.gen)
   (action
    (run
     odoc
@@ -640,6 +656,10 @@
   (alias runtest)
   (action
    (diff Alias.html Alias.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -660,13 +680,17 @@
 (subdir
  latex
  (rule
-  (targets Alias.tex.gen Alias.X.tex.gen)
+  (targets Alias.tex.gen Source.tex.gen Alias.X.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../alias.odocl})))
  (rule
   (alias runtest)
   (action
    (diff Alias.tex Alias.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen)))
  (rule
   (alias runtest)
   (action
@@ -687,13 +711,17 @@
 (subdir
  man
  (rule
-  (targets Alias.3o.gen Alias.X.3o.gen)
+  (targets Alias.3o.gen Source.3o.gen Alias.X.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../alias.odocl})))
  (rule
   (alias runtest)
   (action
    (diff Alias.3o Alias.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -714,7 +742,7 @@
 (subdir
  html
  (rule
-  (targets Bugs.html.gen)
+  (targets Bugs.html.gen Source.html.gen)
   (action
    (run
     odoc
@@ -729,7 +757,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Bugs.html Bugs.html.gen))))
+   (diff Bugs.html Bugs.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))))
 
 (subdir
  html
@@ -746,13 +778,17 @@
 (subdir
  latex
  (rule
-  (targets Bugs.tex.gen)
+  (targets Bugs.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../bugs.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Bugs.tex Bugs.tex.gen))))
+   (diff Bugs.tex Bugs.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -769,13 +805,17 @@
 (subdir
  man
  (rule
-  (targets Bugs.3o.gen)
+  (targets Bugs.3o.gen Source.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../bugs.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Bugs.3o Bugs.3o.gen))))
+   (diff Bugs.3o Bugs.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man
@@ -794,6 +834,7 @@
  (rule
   (targets
    Bugs_post_406.html.gen
+   Source.html.gen
    Bugs_post_406-class-type-let_open.html.gen
    Bugs_post_406-class-let_open'.html.gen)
   (action
@@ -813,6 +854,12 @@
   (alias runtest)
   (action
    (diff Bugs_post_406.html Bugs_post_406.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.06)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.06)))
  (rule
@@ -851,7 +898,10 @@
 (subdir
  latex
  (rule
-  (targets Bugs_post_406.tex.gen Bugs_post_406.let_open'.tex.gen)
+  (targets
+   Bugs_post_406.tex.gen
+   Source.tex.gen
+   Bugs_post_406.let_open'.tex.gen)
   (action
    (run
     odoc
@@ -867,6 +917,12 @@
   (alias runtest)
   (action
    (diff Bugs_post_406.tex Bugs_post_406.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.06)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.06)))
  (rule
@@ -895,7 +951,7 @@
 (subdir
  man
  (rule
-  (targets Bugs_post_406.3o.gen Bugs_post_406.let_open'.3o.gen)
+  (targets Bugs_post_406.3o.gen Source.3o.gen Bugs_post_406.let_open'.3o.gen)
   (action
    (run
     odoc
@@ -911,6 +967,12 @@
   (alias runtest)
   (action
    (diff Bugs_post_406.3o Bugs_post_406.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.06)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.06)))
  (rule
@@ -1057,6 +1119,7 @@
  (rule
   (targets
    Class.html.gen
+   Source.html.gen
    Class-class-type-empty.html.gen
    Class-class-type-mutually.html.gen
    Class-class-type-recursive.html.gen
@@ -1081,6 +1144,10 @@
   (alias runtest)
   (action
    (diff Class.html Class.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -1139,6 +1206,7 @@
  (rule
   (targets
    Class.tex.gen
+   Source.tex.gen
    Class.mutually'.tex.gen
    Class.recursive'.tex.gen
    Class.empty_virtual'.tex.gen
@@ -1149,6 +1217,10 @@
   (alias runtest)
   (action
    (diff Class.tex Class.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen)))
  (rule
   (alias runtest)
   (action
@@ -1183,6 +1255,7 @@
  (rule
   (targets
    Class.3o.gen
+   Source.3o.gen
    Class.mutually'.3o.gen
    Class.recursive'.3o.gen
    Class.empty_virtual'.3o.gen
@@ -1193,6 +1266,10 @@
   (alias runtest)
   (action
    (diff Class.3o Class.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -1227,6 +1304,7 @@
  (rule
   (targets
    Class_comments.html.gen
+   Source.html.gen
    Class_comments-class-x.html.gen
    Class_comments-class-c.html.gen)
   (action
@@ -1246,6 +1324,12 @@
   (alias runtest)
   (action
    (diff Class_comments.html Class_comments.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.08)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08)))
  (rule
@@ -1282,6 +1366,7 @@
  (rule
   (targets
    Class_comments.tex.gen
+   Source.tex.gen
    Class_comments.x.tex.gen
    Class_comments.c.tex.gen)
   (action
@@ -1299,6 +1384,12 @@
   (alias runtest)
   (action
    (diff Class_comments.tex Class_comments.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.08)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08)))
  (rule
@@ -1335,6 +1426,7 @@
  (rule
   (targets
    Class_comments.3o.gen
+   Source.3o.gen
    Class_comments.x.3o.gen
    Class_comments.c.3o.gen)
   (action
@@ -1352,6 +1444,12 @@
   (alias runtest)
   (action
    (diff Class_comments.3o Class_comments.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.08)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08)))
  (rule
@@ -1386,7 +1484,7 @@
 (subdir
  html
  (rule
-  (targets External.html.gen)
+  (targets External.html.gen Source.html.gen)
   (action
    (run
     odoc
@@ -1401,7 +1499,11 @@
  (rule
   (alias runtest)
   (action
-   (diff External.html External.html.gen))))
+   (diff External.html External.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))))
 
 (subdir
  html
@@ -1418,13 +1520,17 @@
 (subdir
  latex
  (rule
-  (targets External.tex.gen)
+  (targets External.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../external.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff External.tex External.tex.gen))))
+   (diff External.tex External.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -1441,13 +1547,17 @@
 (subdir
  man
  (rule
-  (targets External.3o.gen)
+  (targets External.3o.gen Source.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../external.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff External.3o External.3o.gen))))
+   (diff External.3o External.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man
@@ -1466,6 +1576,7 @@
  (rule
   (targets
    Functor.html.gen
+   Source.html.gen
    Functor-module-type-S.html.gen
    Functor-module-type-S1.html.gen
    Functor-module-type-S1-argument-1-_.html.gen
@@ -1493,6 +1604,10 @@
   (alias runtest)
   (action
    (diff Functor.html Functor.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -1561,6 +1676,7 @@
  (rule
   (targets
    Functor.tex.gen
+   Source.tex.gen
    Functor.F1.tex.gen
    Functor.F2.tex.gen
    Functor.F3.tex.gen
@@ -1572,6 +1688,10 @@
   (alias runtest)
   (action
    (diff Functor.tex Functor.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen)))
  (rule
   (alias runtest)
   (action
@@ -1610,6 +1730,7 @@
  (rule
   (targets
    Functor.3o.gen
+   Source.3o.gen
    Functor.F1.3o.gen
    Functor.F2.3o.gen
    Functor.F3.3o.gen
@@ -1621,6 +1742,10 @@
   (alias runtest)
   (action
    (diff Functor.3o Functor.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -1659,6 +1784,7 @@
  (rule
   (targets
    Functor2.html.gen
+   Source.html.gen
    Functor2-module-type-S.html.gen
    Functor2-X.html.gen
    Functor2-X-argument-1-Y.html.gen
@@ -1681,6 +1807,10 @@
   (alias runtest)
   (action
    (diff Functor2.html Functor2.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -1729,13 +1859,17 @@
 (subdir
  latex
  (rule
-  (targets Functor2.tex.gen Functor2.X.tex.gen)
+  (targets Functor2.tex.gen Source.tex.gen Functor2.X.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../functor2.odocl})))
  (rule
   (alias runtest)
   (action
    (diff Functor2.tex Functor2.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen)))
  (rule
   (alias runtest)
   (action
@@ -1756,13 +1890,17 @@
 (subdir
  man
  (rule
-  (targets Functor2.3o.gen Functor2.X.3o.gen)
+  (targets Functor2.3o.gen Source.3o.gen Functor2.X.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../functor2.odocl})))
  (rule
   (alias runtest)
   (action
    (diff Functor2.3o Functor2.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -1785,6 +1923,7 @@
  (rule
   (targets
    Include.html.gen
+   Source.html.gen
    Include-module-type-Not_inlined.html.gen
    Include-module-type-Inlined.html.gen
    Include-module-type-Not_inlined_and_closed.html.gen
@@ -1806,6 +1945,10 @@
   (alias runtest)
   (action
    (diff Include.html Include.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -1858,13 +2001,17 @@
 (subdir
  latex
  (rule
-  (targets Include.tex.gen)
+  (targets Include.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../include.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Include.tex Include.tex.gen))))
+   (diff Include.tex Include.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -1881,13 +2028,17 @@
 (subdir
  man
  (rule
-  (targets Include.3o.gen)
+  (targets Include.3o.gen Source.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../include.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Include.3o Include.3o.gen))))
+   (diff Include.3o Include.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man
@@ -1906,6 +2057,7 @@
  (rule
   (targets
    Include2.html.gen
+   Source.html.gen
    Include2-X.html.gen
    Include2-Y.html.gen
    Include2-Y_include_synopsis.html.gen
@@ -1925,6 +2077,10 @@
   (alias runtest)
   (action
    (diff Include2.html Include2.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -1959,13 +2115,17 @@
 (subdir
  latex
  (rule
-  (targets Include2.tex.gen)
+  (targets Include2.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../include2.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Include2.tex Include2.tex.gen))))
+   (diff Include2.tex Include2.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -1984,6 +2144,7 @@
  (rule
   (targets
    Include2.3o.gen
+   Source.3o.gen
    Include2.X.3o.gen
    Include2.Y.3o.gen
    Include2.Y_include_synopsis.3o.gen
@@ -1994,6 +2155,10 @@
   (alias runtest)
   (action
    (diff Include2.3o Include2.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -2028,6 +2193,7 @@
  (rule
   (targets
    Include_sections.html.gen
+   Source.html.gen
    Include_sections-module-type-Something.html.gen)
   (action
    (run
@@ -2044,6 +2210,10 @@
   (alias runtest)
   (action
    (diff Include_sections.html Include_sections.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -2066,7 +2236,7 @@
 (subdir
  latex
  (rule
-  (targets Include_sections.tex.gen)
+  (targets Include_sections.tex.gen Source.tex.gen)
   (action
    (run
     odoc
@@ -2079,7 +2249,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Include_sections.tex Include_sections.tex.gen))))
+   (diff Include_sections.tex Include_sections.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -2096,7 +2270,7 @@
 (subdir
  man
  (rule
-  (targets Include_sections.3o.gen)
+  (targets Include_sections.3o.gen Source.3o.gen)
   (action
    (run
     odoc
@@ -2109,7 +2283,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Include_sections.3o Include_sections.3o.gen))))
+   (diff Include_sections.3o Include_sections.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man
@@ -2126,7 +2304,7 @@
 (subdir
  html
  (rule
-  (targets Interlude.html.gen)
+  (targets Interlude.html.gen Source.html.gen)
   (action
    (run
     odoc
@@ -2141,7 +2319,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Interlude.html Interlude.html.gen))))
+   (diff Interlude.html Interlude.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))))
 
 (subdir
  html
@@ -2158,7 +2340,7 @@
 (subdir
  latex
  (rule
-  (targets Interlude.tex.gen)
+  (targets Interlude.tex.gen Source.tex.gen)
   (action
    (run
     odoc
@@ -2171,7 +2353,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Interlude.tex Interlude.tex.gen))))
+   (diff Interlude.tex Interlude.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -2188,13 +2374,17 @@
 (subdir
  man
  (rule
-  (targets Interlude.3o.gen)
+  (targets Interlude.3o.gen Source.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../interlude.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Interlude.3o Interlude.3o.gen))))
+   (diff Interlude.3o Interlude.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man
@@ -2213,10 +2403,12 @@
  (rule
   (targets
    Labels.html.gen
+   Source.html.gen
    Labels-A.html.gen
    Labels-module-type-S.html.gen
    Labels-class-c.html.gen
-   Labels-class-type-cs.html.gen)
+   Labels-class-type-cs.html.gen
+   Source.html.gen)
   (action
    (run
     odoc
@@ -2234,6 +2426,12 @@
   (alias runtest)
   (action
    (diff Labels.html Labels.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
@@ -2259,6 +2457,12 @@
   (action
    (diff Labels-class-type-cs.html Labels-class-type-cs.html.gen))
   (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))
+  (enabled_if
    (>= %{ocaml_version} 4.09))))
 
 (subdir
@@ -2280,7 +2484,7 @@
 (subdir
  latex
  (rule
-  (targets Labels.tex.gen Labels.c.tex.gen)
+  (targets Labels.tex.gen Source.tex.gen Labels.c.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../labels.odocl}))
   (enabled_if
@@ -2294,7 +2498,19 @@
  (rule
   (alias runtest)
   (action
+   (diff Source.tex Source.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
    (diff Labels.c.tex Labels.c.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09))))
 
@@ -2317,7 +2533,12 @@
 (subdir
  man
  (rule
-  (targets Labels.3o.gen Labels.A.3o.gen Labels.c.3o.gen)
+  (targets
+   Labels.3o.gen
+   Source.3o.gen
+   Labels.A.3o.gen
+   Labels.c.3o.gen
+   Source.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../labels.odocl}))
   (enabled_if
@@ -2331,6 +2552,12 @@
  (rule
   (alias runtest)
   (action
+   (diff Source.3o Source.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
    (diff Labels.A.3o Labels.A.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
@@ -2338,6 +2565,12 @@
   (alias runtest)
   (action
    (diff Labels.c.3o Labels.c.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09))))
 
@@ -2360,7 +2593,11 @@
 (subdir
  html
  (rule
-  (targets Markup.html.gen Markup-X.html.gen Markup-Y.html.gen)
+  (targets
+   Markup.html.gen
+   Source.html.gen
+   Markup-X.html.gen
+   Markup-Y.html.gen)
   (action
    (run
     odoc
@@ -2376,6 +2613,10 @@
   (alias runtest)
   (action
    (diff Markup.html Markup.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -2400,13 +2641,17 @@
 (subdir
  latex
  (rule
-  (targets Markup.tex.gen)
+  (targets Markup.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../markup.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Markup.tex Markup.tex.gen))))
+   (diff Markup.tex Markup.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -2423,13 +2668,17 @@
 (subdir
  man
  (rule
-  (targets Markup.3o.gen Markup.X.3o.gen Markup.Y.3o.gen)
+  (targets Markup.3o.gen Source.3o.gen Markup.X.3o.gen Markup.Y.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../markup.odocl})))
  (rule
   (alias runtest)
   (action
    (diff Markup.3o Markup.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -2534,6 +2783,7 @@
  (rule
   (targets
    Module.html.gen
+   Source.html.gen
    Module-module-type-S.html.gen
    Module-module-type-S-M.html.gen
    Module-module-type-S3.html.gen
@@ -2565,6 +2815,10 @@
   (alias runtest)
   (action
    (diff Module.html Module.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -2645,13 +2899,17 @@
 (subdir
  latex
  (rule
-  (targets Module.tex.gen)
+  (targets Module.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../module.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Module.tex Module.tex.gen))))
+   (diff Module.tex Module.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -2670,6 +2928,7 @@
  (rule
   (targets
    Module.3o.gen
+   Source.3o.gen
    Module.M'.3o.gen
    Module.Mutually.3o.gen
    Module.Recursive.3o.gen)
@@ -2679,6 +2938,10 @@
   (alias runtest)
   (action
    (diff Module.3o Module.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -2709,6 +2972,7 @@
  (rule
   (targets
    Module_type_alias.html.gen
+   Source.html.gen
    Module_type_alias-module-type-A.html.gen
    Module_type_alias-module-type-B.html.gen
    Module_type_alias-module-type-B-argument-1-C.html.gen
@@ -2732,6 +2996,10 @@
   (alias runtest)
   (action
    (diff Module_type_alias.html Module_type_alias.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -2796,7 +3064,7 @@
 (subdir
  latex
  (rule
-  (targets Module_type_alias.tex.gen)
+  (targets Module_type_alias.tex.gen Source.tex.gen)
   (action
    (run
     odoc
@@ -2809,7 +3077,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Module_type_alias.tex Module_type_alias.tex.gen))))
+   (diff Module_type_alias.tex Module_type_alias.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -2826,7 +3098,7 @@
 (subdir
  man
  (rule
-  (targets Module_type_alias.3o.gen)
+  (targets Module_type_alias.3o.gen Source.3o.gen)
   (action
    (run
     odoc
@@ -2839,7 +3111,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Module_type_alias.3o Module_type_alias.3o.gen))))
+   (diff Module_type_alias.3o Module_type_alias.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man
@@ -2858,6 +3134,7 @@
  (rule
   (targets
    Module_type_subst.html.gen
+   Source.html.gen
    Module_type_subst-Local.html.gen
    Module_type_subst-Local-module-type-local.html.gen
    Module_type_subst-Local-module-type-s.html.gen
@@ -2910,6 +3187,12 @@
   (alias runtest)
   (action
    (diff Module_type_subst.html Module_type_subst.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
@@ -3206,7 +3489,7 @@
 (subdir
  latex
  (rule
-  (targets Module_type_subst.tex.gen)
+  (targets Module_type_subst.tex.gen Source.tex.gen)
   (action
    (run
     odoc
@@ -3222,6 +3505,12 @@
   (alias runtest)
   (action
    (diff Module_type_subst.tex Module_type_subst.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13))))
 
@@ -3246,6 +3535,7 @@
  (rule
   (targets
    Module_type_subst.3o.gen
+   Source.3o.gen
    Module_type_subst.Local.3o.gen
    Module_type_subst.Basic.3o.gen
    Module_type_subst.Nested.3o.gen
@@ -3265,6 +3555,12 @@
   (alias runtest)
   (action
    (diff Module_type_subst.3o Module_type_subst.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.13)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
@@ -3313,6 +3609,7 @@
  (rule
   (targets
    Nested.html.gen
+   Source.html.gen
    Nested-X.html.gen
    Nested-module-type-Y.html.gen
    Nested-F.html.gen
@@ -3335,6 +3632,10 @@
   (alias runtest)
   (action
    (diff Nested.html Nested.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -3381,6 +3682,7 @@
  (rule
   (targets
    Nested.tex.gen
+   Source.tex.gen
    Nested.F.tex.gen
    Nested.z.tex.gen
    Nested.inherits.tex.gen)
@@ -3390,6 +3692,10 @@
   (alias runtest)
   (action
    (diff Nested.tex Nested.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen)))
  (rule
   (alias runtest)
   (action
@@ -3420,6 +3726,7 @@
  (rule
   (targets
    Nested.3o.gen
+   Source.3o.gen
    Nested.X.3o.gen
    Nested.F.3o.gen
    Nested.z.3o.gen
@@ -3430,6 +3737,10 @@
   (alias runtest)
   (action
    (diff Nested.3o Nested.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -3464,6 +3775,7 @@
  (rule
   (targets
    Ocamlary.html.gen
+   Source.html.gen
    Ocamlary-Empty.html.gen
    Ocamlary-module-type-Empty.html.gen
    Ocamlary-module-type-MissingComment.html.gen
@@ -3534,6 +3846,7 @@
    Ocamlary-module-type-ToInclude-module-type-IncludedB.html.gen
    Ocamlary-IncludedA.html.gen
    Ocamlary-module-type-IncludedB.html.gen
+   Source.html.gen
    Ocamlary-ExtMod.html.gen
    Ocamlary-class-empty_class.html.gen
    Ocamlary-class-one_method_class.html.gen
@@ -3663,6 +3976,12 @@
   (alias runtest)
   (action
    (diff Ocamlary.html Ocamlary.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -4191,6 +4510,12 @@
    (diff
     Ocamlary-module-type-IncludedB.html
     Ocamlary-module-type-IncludedB.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -4989,10 +5314,12 @@
  (rule
   (targets
    Ocamlary.tex.gen
+   Source.tex.gen
    Ocamlary.ModuleWithSignature.tex.gen
    Ocamlary.ModuleWithSignatureAlias.tex.gen
    Ocamlary.Recollection.tex.gen
    Ocamlary.FunctorTypeOf.tex.gen
+   Source.tex.gen
    Ocamlary.empty_class.tex.gen
    Ocamlary.one_method_class.tex.gen
    Ocamlary.two_method_class.tex.gen
@@ -5024,6 +5351,12 @@
  (rule
   (alias runtest)
   (action
+   (diff Source.tex Source.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
    (diff
     Ocamlary.ModuleWithSignature.tex
     Ocamlary.ModuleWithSignature.tex.gen))
@@ -5047,6 +5380,12 @@
   (alias runtest)
   (action
    (diff Ocamlary.FunctorTypeOf.tex Ocamlary.FunctorTypeOf.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -5179,6 +5518,7 @@
  (rule
   (targets
    Ocamlary.3o.gen
+   Source.3o.gen
    Ocamlary.Empty.3o.gen
    Ocamlary.ModuleWithSignature.3o.gen
    Ocamlary.ModuleWithSignatureAlias.3o.gen
@@ -5192,6 +5532,7 @@
    Ocamlary.Recollection.InnerModuleA.InnerModuleA'.3o.gen
    Ocamlary.FunctorTypeOf.3o.gen
    Ocamlary.IncludedA.3o.gen
+   Source.3o.gen
    Ocamlary.ExtMod.3o.gen
    Ocamlary.empty_class.3o.gen
    Ocamlary.one_method_class.3o.gen
@@ -5266,6 +5607,12 @@
   (alias runtest)
   (action
    (diff Ocamlary.3o Ocamlary.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -5354,6 +5701,12 @@
   (alias runtest)
   (action
    (diff Ocamlary.IncludedA.3o Ocamlary.IncludedA.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -5788,6 +6141,7 @@
  (rule
   (targets
    Recent.html.gen
+   Source.html.gen
    Recent-module-type-S.html.gen
    Recent-module-type-S1.html.gen
    Recent-module-type-S1-argument-1-_.html.gen
@@ -5813,6 +6167,12 @@
   (alias runtest)
   (action
    (diff Recent.html Recent.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
@@ -5885,7 +6245,7 @@
 (subdir
  latex
  (rule
-  (targets Recent.tex.gen)
+  (targets Recent.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../recent.odocl}))
   (enabled_if
@@ -5894,6 +6254,12 @@
   (alias runtest)
   (action
    (diff Recent.tex Recent.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09))))
 
@@ -5918,6 +6284,7 @@
  (rule
   (targets
    Recent.3o.gen
+   Source.3o.gen
    Recent.Z.3o.gen
    Recent.Z.Y.3o.gen
    Recent.Z.Y.X.3o.gen
@@ -5930,6 +6297,12 @@
   (alias runtest)
   (action
    (diff Recent.3o Recent.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
@@ -5978,6 +6351,7 @@
  (rule
   (targets
    Recent_impl.html.gen
+   Source.html.gen
    Recent_impl-Foo.html.gen
    Recent_impl-Foo-A.html.gen
    Recent_impl-Foo-B.html.gen
@@ -6003,6 +6377,12 @@
   (alias runtest)
   (action
    (diff Recent_impl.html Recent_impl.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
@@ -6079,7 +6459,7 @@
 (subdir
  latex
  (rule
-  (targets Recent_impl.tex.gen Recent_impl.B.tex.gen)
+  (targets Recent_impl.tex.gen Source.tex.gen Recent_impl.B.tex.gen)
   (action
    (run
     odoc
@@ -6095,6 +6475,12 @@
   (alias runtest)
   (action
    (diff Recent_impl.tex Recent_impl.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
@@ -6125,6 +6511,7 @@
  (rule
   (targets
    Recent_impl.3o.gen
+   Source.3o.gen
    Recent_impl.Foo.3o.gen
    Recent_impl.Foo.A.3o.gen
    Recent_impl.Foo.B.3o.gen
@@ -6144,6 +6531,12 @@
   (alias runtest)
   (action
    (diff Recent_impl.3o Recent_impl.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.09)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
@@ -6190,7 +6583,7 @@
 (subdir
  html
  (rule
-  (targets Section.html.gen)
+  (targets Section.html.gen Source.html.gen)
   (action
    (run
     odoc
@@ -6205,7 +6598,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Section.html Section.html.gen))))
+   (diff Section.html Section.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))))
 
 (subdir
  html
@@ -6222,13 +6619,17 @@
 (subdir
  latex
  (rule
-  (targets Section.tex.gen)
+  (targets Section.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../section.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Section.tex Section.tex.gen))))
+   (diff Section.tex Section.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -6245,13 +6646,17 @@
 (subdir
  man
  (rule
-  (targets Section.3o.gen)
+  (targets Section.3o.gen Source.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../section.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Section.3o Section.3o.gen))))
+   (diff Section.3o Section.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man
@@ -6268,7 +6673,12 @@
 (subdir
  html
  (rule
-  (targets Stop.html.gen Stop-N.html.gen Stop-O.html.gen Stop-P.html.gen)
+  (targets
+   Stop.html.gen
+   Source.html.gen
+   Stop-N.html.gen
+   Stop-O.html.gen
+   Stop-P.html.gen)
   (action
    (run
     odoc
@@ -6284,6 +6694,10 @@
   (alias runtest)
   (action
    (diff Stop.html Stop.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -6312,13 +6726,17 @@
 (subdir
  latex
  (rule
-  (targets Stop.tex.gen)
+  (targets Stop.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../stop.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Stop.tex Stop.tex.gen))))
+   (diff Stop.tex Stop.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -6335,13 +6753,22 @@
 (subdir
  man
  (rule
-  (targets Stop.3o.gen Stop.N.3o.gen Stop.O.3o.gen Stop.P.3o.gen)
+  (targets
+   Stop.3o.gen
+   Source.3o.gen
+   Stop.N.3o.gen
+   Stop.O.3o.gen
+   Stop.P.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../stop.odocl})))
  (rule
   (alias runtest)
   (action
    (diff Stop.3o Stop.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -6370,7 +6797,10 @@
 (subdir
  html
  (rule
-  (targets Stop_dead_link_doc.html.gen Stop_dead_link_doc-Foo.html.gen)
+  (targets
+   Stop_dead_link_doc.html.gen
+   Source.html.gen
+   Stop_dead_link_doc-Foo.html.gen)
   (action
    (run
     odoc
@@ -6388,6 +6818,12 @@
   (alias runtest)
   (action
    (diff Stop_dead_link_doc.html Stop_dead_link_doc.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
@@ -6416,7 +6852,7 @@
 (subdir
  latex
  (rule
-  (targets Stop_dead_link_doc.tex.gen)
+  (targets Stop_dead_link_doc.tex.gen Source.tex.gen)
   (action
    (run
     odoc
@@ -6432,6 +6868,12 @@
   (alias runtest)
   (action
    (diff Stop_dead_link_doc.tex Stop_dead_link_doc.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
 
@@ -6454,7 +6896,10 @@
 (subdir
  man
  (rule
-  (targets Stop_dead_link_doc.3o.gen Stop_dead_link_doc.Foo.3o.gen)
+  (targets
+   Stop_dead_link_doc.3o.gen
+   Source.3o.gen
+   Stop_dead_link_doc.Foo.3o.gen)
   (action
    (run
     odoc
@@ -6470,6 +6915,12 @@
   (alias runtest)
   (action
    (diff Stop_dead_link_doc.3o Stop_dead_link_doc.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
@@ -6498,7 +6949,7 @@
 (subdir
  html
  (rule
-  (targets Stop_first_comment.html.gen)
+  (targets Stop_first_comment.html.gen Source.html.gen)
   (action
    (run
     odoc
@@ -6513,7 +6964,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Stop_first_comment.html Stop_first_comment.html.gen))))
+   (diff Stop_first_comment.html Stop_first_comment.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))))
 
 (subdir
  html
@@ -6530,7 +6985,7 @@
 (subdir
  latex
  (rule
-  (targets Stop_first_comment.tex.gen)
+  (targets Stop_first_comment.tex.gen Source.tex.gen)
   (action
    (run
     odoc
@@ -6543,7 +6998,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Stop_first_comment.tex Stop_first_comment.tex.gen))))
+   (diff Stop_first_comment.tex Stop_first_comment.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -6560,7 +7019,7 @@
 (subdir
  man
  (rule
-  (targets Stop_first_comment.3o.gen)
+  (targets Stop_first_comment.3o.gen Source.3o.gen)
   (action
    (run
     odoc
@@ -6573,7 +7032,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Stop_first_comment.3o Stop_first_comment.3o.gen))))
+   (diff Stop_first_comment.3o Stop_first_comment.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man
@@ -6590,7 +7053,7 @@
 (subdir
  html
  (rule
-  (targets Tag_link.html.gen)
+  (targets Tag_link.html.gen Source.html.gen)
   (action
    (run
     odoc
@@ -6605,7 +7068,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Tag_link.html Tag_link.html.gen))))
+   (diff Tag_link.html Tag_link.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))))
 
 (subdir
  html
@@ -6622,13 +7089,17 @@
 (subdir
  latex
  (rule
-  (targets Tag_link.tex.gen)
+  (targets Tag_link.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../tag_link.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Tag_link.tex Tag_link.tex.gen))))
+   (diff Tag_link.tex Tag_link.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -6645,13 +7116,17 @@
 (subdir
  man
  (rule
-  (targets Tag_link.3o.gen)
+  (targets Tag_link.3o.gen Source.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../tag_link.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Tag_link.3o Tag_link.3o.gen))))
+   (diff Tag_link.3o Tag_link.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man
@@ -6670,6 +7145,7 @@
  (rule
   (targets
    Toplevel_comments.html.gen
+   Source.html.gen
    Toplevel_comments-module-type-T.html.gen
    Toplevel_comments-Include_inline.html.gen
    Toplevel_comments-Include_inline'.html.gen
@@ -6700,6 +7176,10 @@
   (alias runtest)
   (action
    (diff Toplevel_comments.html Toplevel_comments.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen)))
  (rule
   (alias runtest)
   (action
@@ -6796,6 +7276,7 @@
  (rule
   (targets
    Toplevel_comments.tex.gen
+   Source.tex.gen
    Toplevel_comments.Alias.tex.gen
    Toplevel_comments.c1.tex.gen
    Toplevel_comments.c2.tex.gen)
@@ -6812,6 +7293,10 @@
   (alias runtest)
   (action
    (diff Toplevel_comments.tex Toplevel_comments.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen)))
  (rule
   (alias runtest)
   (action
@@ -6842,6 +7327,7 @@
  (rule
   (targets
    Toplevel_comments.3o.gen
+   Source.3o.gen
    Toplevel_comments.Include_inline.3o.gen
    Toplevel_comments.Include_inline'.3o.gen
    Toplevel_comments.M.3o.gen
@@ -6866,6 +7352,10 @@
   (alias runtest)
   (action
    (diff Toplevel_comments.3o Toplevel_comments.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
  (rule
   (alias runtest)
   (action
@@ -6936,7 +7426,11 @@
 (subdir
  html
  (rule
-  (targets Type.html.gen Type-module-type-X.html.gen)
+  (targets
+   Type.html.gen
+   Source.html.gen
+   Type-module-type-X.html.gen
+   Source.html.gen)
   (action
    (run
     odoc
@@ -6955,7 +7449,15 @@
  (rule
   (alias runtest)
   (action
-   (diff Type-module-type-X.html Type-module-type-X.html.gen))))
+   (diff Source.html Source.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Type-module-type-X.html Type-module-type-X.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))))
 
 (subdir
  html
@@ -6972,13 +7474,21 @@
 (subdir
  latex
  (rule
-  (targets Type.tex.gen)
+  (targets Type.tex.gen Source.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../type.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Type.tex Type.tex.gen))))
+   (diff Type.tex Type.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -6995,13 +7505,21 @@
 (subdir
  man
  (rule
-  (targets Type.3o.gen)
+  (targets Type.3o.gen Source.3o.gen Source.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../type.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Type.3o Type.3o.gen))))
+   (diff Type.3o Type.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man
@@ -7018,7 +7536,7 @@
 (subdir
  html
  (rule
-  (targets Val.html.gen)
+  (targets Val.html.gen Source.html.gen)
   (action
    (run
     odoc
@@ -7033,7 +7551,11 @@
  (rule
   (alias runtest)
   (action
-   (diff Val.html Val.html.gen))))
+   (diff Val.html Val.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.html Source.html.gen))))
 
 (subdir
  html
@@ -7050,13 +7572,17 @@
 (subdir
  latex
  (rule
-  (targets Val.tex.gen)
+  (targets Val.tex.gen Source.tex.gen)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../val.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Val.tex Val.tex.gen))))
+   (diff Val.tex Val.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.tex Source.tex.gen))))
 
 (subdir
  latex
@@ -7073,13 +7599,17 @@
 (subdir
  man
  (rule
-  (targets Val.3o.gen)
+  (targets Val.3o.gen Source.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../val.odocl})))
  (rule
   (alias runtest)
   (action
-   (diff Val.3o Val.3o.gen))))
+   (diff Val.3o Val.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Source.3o Source.3o.gen))))
 
 (subdir
  man

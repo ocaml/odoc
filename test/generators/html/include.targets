@@ -1,5 +1,5 @@
 Include.html
-Source.html
+Source-Code-include.mli.html
 Include-module-type-Not_inlined.html
 Include-module-type-Inlined.html
 Include-module-type-Not_inlined_and_closed.html

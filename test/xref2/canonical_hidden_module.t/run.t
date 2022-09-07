@@ -83,7 +83,7 @@ See the comments on the types at the end of test.mli for the expectation.
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">
-      <a href="test.mli#1" class="source">jump to source</a>
+      <a href="Source-Code-test.mli#1" class="source">jump to source</a>
       <div class="spec module anchored" id="module-A_nonhidden">
        <a href="#module-A_nonhidden" class="anchor"></a>
        <code>
@@ -97,7 +97,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div>
      </div>
      <div class="odoc-spec">
-      <a href="test.mli#28" class="source">jump to source</a>
+      <a href="Source-Code-test.mli#28" class="source">jump to source</a>
       <div class="spec module anchored" id="module-A">
        <a href="#module-A" class="anchor"></a>
        <code>
@@ -111,7 +111,7 @@ See the comments on the types at the end of test.mli for the expectation.
       <div class="spec-doc"><p>This should not have an expansion</p></div>
      </div>
      <div class="odoc-spec">
-      <a href="test.mli#31" class="source">jump to source</a>
+      <a href="Source-Code-test.mli#31" class="source">jump to source</a>
       <div class="spec module anchored" id="module-B">
        <a href="#module-B" class="anchor"></a>
        <code>
@@ -124,7 +124,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div><div class="spec-doc"><p>This should have an expansion</p></div>
      </div>
      <div class="odoc-spec">
-      <a href="test.mli#34" class="source">jump to source</a>
+      <a href="Source-Code-test.mli#34" class="source">jump to source</a>
       <div class="spec module anchored" id="module-C">
        <a href="#module-C" class="anchor"></a>
        <code>
@@ -137,7 +137,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div><div class="spec-doc"><p>This should have an expansion</p></div>
      </div>
      <div class="odoc-spec">
-      <a href="test.mli#37" class="source">jump to source</a>
+      <a href="Source-Code-test.mli#37" class="source">jump to source</a>
       <div class="spec module anchored" id="module-D">
        <a href="#module-D" class="anchor"></a>
        <code>
@@ -151,7 +151,7 @@ See the comments on the types at the end of test.mli for the expectation.
       <div class="spec-doc"><p>This also should have an expansion</p></div>
      </div>
      <div class="odoc-spec">
-      <a href="test.mli#41" class="source">jump to source</a>
+      <a href="Source-Code-test.mli#41" class="source">jump to source</a>
       <div class="spec type anchored" id="type-a">
        <a href="#type-a" class="anchor"></a>
        <code><span><span class="keyword">type</span> a</span>
@@ -165,7 +165,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div>
      </div>
      <div class="odoc-spec">
-      <a href="test.mli#44" class="source">jump to source</a>
+      <a href="Source-Code-test.mli#44" class="source">jump to source</a>
       <div class="spec type anchored" id="type-b">
        <a href="#type-b" class="anchor"></a>
        <code><span><span class="keyword">type</span> b</span></code>
@@ -177,7 +177,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div>
      </div>
      <div class="odoc-spec">
-      <a href="test.mli#47" class="source">jump to source</a>
+      <a href="Source-Code-test.mli#47" class="source">jump to source</a>
       <div class="spec type anchored" id="type-c">
        <a href="#type-c" class="anchor"></a>
        <code><span><span class="keyword">type</span> c</span>
@@ -189,7 +189,7 @@ See the comments on the types at the end of test.mli for the expectation.
       </div>
      </div>
      <div class="odoc-spec">
-      <a href="test.mli#50" class="source">jump to source</a>
+      <a href="Source-Code-test.mli#50" class="source">jump to source</a>
       <div class="spec type anchored" id="type-d">
        <a href="#type-d" class="anchor"></a>
        <code><span><span class="keyword">type</span> d</span>

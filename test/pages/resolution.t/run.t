@@ -97,7 +97,7 @@ Let's also check the hierarchy of files produced:
 
   $ odoc support-files -o html
   $ find html -type f | sort
-  html/Source.html
+  html/Source-Code-m1.mli.html
   html/highlight.pack.js
   html/odoc.css
   html/top1/index.html

@@ -24,7 +24,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
 
   $ odoc html-targets -o html a.odocl
   html/test/A/index.html
-  html/Source.html
+  html/Source-Code-a.mli.html
   html/test/A/B/index.html
   $ odoc html-targets -o html a__b.odocl
   html/test/A__b/index.html
@@ -47,7 +47,8 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
      <p>Module A.</p>
     </header>
     <div class="odoc-content">
-     <div class="odoc-spec"><a href="a.mli#3" class="source">jump to source</a>
+     <div class="odoc-spec">
+      <a href="Source-Code-a.mli#3" class="source">jump to source</a>
       <div class="spec module anchored" id="module-B">
        <a href="#module-B" class="anchor"></a>
        <code>
@@ -96,7 +97,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
        the &quot;content&quot;.
      </p>
      <div class="odoc-spec">
-      <a href="b.mli#16" class="source">jump to source</a>
+      <a href="Source-Code-b.mli#16" class="source">jump to source</a>
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
        <code><span><span class="keyword">type</span> t</span></code>
