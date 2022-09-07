@@ -126,6 +126,9 @@ end = struct
     Utils.flatmap l ~f:(function
       | Item.Text _ -> []
       | Heading _ -> []
+      | Declaration { content; loc = Some { file; _ }; _ }
+        when Filename.basename file = "_none_" ->
+          walk_documentedsrc content
       | Declaration { content; loc = Some loc; _ } -> (
           match source with
           | Some source -> (

@@ -45,6 +45,9 @@ let noop = Html.txt ""
 let mk_source_link loc =
   match loc with
   | None -> noop
+  | Some { Odoc_model.Location_.file; _ } when Filename.basename file = "_none_"
+    ->
+      noop
   | Some { Odoc_model.Location_.file; start; end_ = _ } ->
       let filename = "Source-Code-" ^ Filename.basename file in
       let line = start.line in
