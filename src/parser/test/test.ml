@@ -29,6 +29,11 @@ module Ast_to_sexp = struct
     | `Superscript -> Atom "superscript"
     | `Subscript -> Atom "subscript"
 
+  let alignment : Ast.alignment -> sexp = function
+    | `Left -> Atom "left"
+    | `Center -> Atom "center"
+    | `Right -> Atom "right"
+
   let reference_kind : Ast.reference_kind -> sexp = function
     | `Simple -> Atom "simple"
     | `With_text -> Atom "with_text"
@@ -80,6 +85,26 @@ module Ast_to_sexp = struct
           |> fun items -> List items
         in
         List [ Atom kind; Atom weight; items ]
+    | `Table t -> (
+        let map name x f = List [ Atom name; List (List.map f x) ] in
+        let to_sexp (type a) ((header, data, align) : a Ast.abstract_table)
+            ~syntax ~f =
+          List
+            [
+              Atom "table";
+              List [ Atom "syntax"; Atom syntax ];
+              ( map "header" header @@ fun cell ->
+                map "cell" cell @@ at.at (f at) );
+              ( map "data" data @@ fun row ->
+                map "row" row @@ fun cell -> map "cell" cell @@ at.at (f at) );
+              (map "align" align @@ function
+               | Some a -> alignment a
+               | None -> Atom "none");
+            ]
+        in
+        match t with
+        | `Light t -> to_sexp t ~syntax:"light" ~f:inline_element
+        | `Heavy t -> to_sexp t ~syntax:"heavy" ~f:nestable_block_element)
 
   let tag at : Ast.tag -> sexp = function
     | `Author s -> List [ Atom "@author"; Atom s ]

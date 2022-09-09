@@ -17,6 +17,8 @@
      sequence of block elements, so [block_element_list] is the top-level
      parser. It is also used for list item and tag content. *)
 
+open! Compat
+
 type 'a with_location = 'a Loc.with_location
 
 (* {2 Input} *)
@@ -35,6 +37,107 @@ let peek input =
   match Stream.peek input.tokens with
   | Some token -> token
   | None -> assert false
+
+module Table = struct
+  module Light_syntax = struct
+    let valid_align = function
+      | [ { Loc.value = `Word w; _ } ] -> (
+          match String.length w with
+          | 0 -> Some None
+          | 1 -> (
+              match w with
+              | "-" -> Some None
+              | ":" -> Some (Some `Center)
+              | _ -> None)
+          | len ->
+              if String.for_all (Char.equal '-') (String.sub w 1 (len - 2)) then
+                match (String.get w 0, String.get w (len - 1)) with
+                | ':', ':' -> Some (Some `Center)
+                | ':', '-' -> Some (Some `Left)
+                | '-', ':' -> Some (Some `Right)
+                | '-', '-' -> Some None
+                | _ -> None
+              else None)
+      | _ -> None
+
+    let valid_align_row lx = List.map valid_align lx |> Option.join_list
+    let create ~header ~data ~align : Ast.table = `Light (header, data, align)
+
+    let from_grid (grid : _ Ast.grid) : Ast.table =
+      match grid with
+      | [] -> create ~header:[] ~data:[] ~align:[]
+      | row1 :: rows2_N -> (
+          match valid_align_row row1 with
+          (* If the first line is the align row, everything else is data. *)
+          | Some align -> create ~header:[] ~data:rows2_N ~align
+          | None -> (
+              match rows2_N with
+              (* Only 1 line, if this is not the align row this is data. *)
+              | [] -> create ~header:[] ~data:[ row1 ] ~align:[]
+              | row2 :: rows3_N -> (
+                  match valid_align_row row2 with
+                  (* If the second line is the align row, the first one is the
+                     header and the rest is data. *)
+                  | Some align -> create ~header:row1 ~data:rows3_N ~align
+                  (* No align row in the first 2 lines, everything is considered
+                     data. *)
+                  | None -> create ~header:[] ~data:grid ~align:[])))
+  end
+
+  module Heavy_syntax = struct
+    let create ~header ~data ~align : Ast.table = `Heavy (header, data, align)
+
+    let valid_header_row row =
+      List.map
+        (function
+          | `Header (Some x), y -> Some (Some x, y)
+          | `Header None, y -> Some (None, y)
+          | `Data, _ -> None)
+        row
+      |> Option.join_list
+
+    let from_grid grid : Ast.table =
+      match grid with
+      | [] -> create ~header:[] ~data:[] ~align:[]
+      | row1 :: rows2_N ->
+          let header, data, align =
+            (* If the first line is the header row, everything else is data. *)
+            match valid_header_row row1 with
+            | Some header ->
+                let align, header = List.split header in
+                (header, rows2_N, align)
+            (* Otherwise everything is considered data. *)
+            | None -> ([], grid, [])
+          in
+          let data = List.map (List.map snd) data in
+          create ~header ~data ~align
+  end
+end
+
+module Reader = struct
+  let until_rbrace input acc =
+    let rec consume () =
+      let next_token = peek input in
+      match next_token.value with
+      | `Right_brace ->
+          junk input;
+          `End (acc, next_token.location)
+      | `Space _ | `Single_newline _ | `Blank_line _ ->
+          junk input;
+          consume ()
+      | _ -> `Token next_token
+    in
+    consume ()
+
+  module Infix = struct
+    let ( let>> ) consume if_token =
+      match consume with
+      | `End (ret, loc) -> (ret, loc)
+      | `Token t -> if_token t
+  end
+end
+
+open Reader.Infix
 
 (* The last token in the stream is always [`End], and it is never consumed by
    the parser, so the [None] case is impossible. *)
@@ -381,6 +484,8 @@ let paragraph : input -> Ast.nestable_block_element with_location =
       [-], has been read, and only whitespace has been read since.
     - [`After_explicit_list_bullet], when a valid explicit bullet, such as [{li],
       has been read, and only whitespace has been read since.
+    - [`After_table_header], when a table header opening markup ('{th') has been read.
+    - [`After_table_cell], when a table cell opening markup ('{td') has been read.
     - [`After_text], when any other valid non-whitespace token has already been
       read on the current line.
 
@@ -404,6 +509,8 @@ type where_in_line =
   | `After_tag
   | `After_shorthand_bullet
   | `After_explicit_list_bullet
+  | `After_table_header
+  | `After_table_cell
   | `After_text ]
 
 (* The block parsing loop, function [block_element_list], stops when it
@@ -457,6 +564,8 @@ type ('block, 'stops_at_which_tokens) context =
   | Top_level : (Ast.block_element, stops_at_delimiters) context
   | In_shorthand_list : (Ast.nestable_block_element, stopped_implicitly) context
   | In_explicit_list : (Ast.nestable_block_element, stops_at_delimiters) context
+  | In_table_header : (Ast.nestable_block_element, stops_at_delimiters) context
+  | In_table_cell : (Ast.nestable_block_element, stops_at_delimiters) context
   | In_tag : (Ast.nestable_block_element, Token.t) context
 
 (* This is a no-op. It is needed to prove to the type system that nestable block
@@ -471,6 +580,8 @@ let accepted_in_all_contexts :
   | Top_level -> (block :> Ast.block_element)
   | In_shorthand_list -> block
   | In_explicit_list -> block
+  | In_table_header -> block
+  | In_table_cell -> block
   | In_tag -> block
 
 (* Converts a tag to a series of words. This is used in error recovery, when a
@@ -499,6 +610,7 @@ let tag_to_words = function
    - paragraphs,
    - code blocks,
    - verbatim text blocks,
+   - tables,
    - lists, and
    - section headings. *)
 let rec block_element_list :
@@ -561,6 +673,8 @@ let rec block_element_list :
         | Top_level -> (List.rev acc, next_token, where_in_line)
         | In_shorthand_list -> (List.rev acc, next_token, where_in_line)
         | In_explicit_list -> (List.rev acc, next_token, where_in_line)
+        | In_table_header -> (List.rev acc, next_token, where_in_line)
+        | In_table_cell -> (List.rev acc, next_token, where_in_line)
         | In_tag -> (List.rev acc, next_token, where_in_line))
     (* Whitespace. This can terminate some kinds of block elements. It is also
        necessary to track it to interpret [`Minus] and [`Plus] correctly, as
@@ -596,6 +710,46 @@ let rec block_element_list :
 
         junk input;
         consume_block_elements ~parsed_a_tag where_in_line acc
+    (* Table rows ([{tr ...}]) can never appear directly
+       in block content. They can only appear inside [{table ...}]. *)
+    | { value = `Begin_table_row as token; location } ->
+        let suggestion =
+          Printf.sprintf "move %s into %s." (Token.print token)
+            (Token.describe (`Begin_table `Heavy))
+        in
+        Parse_error.not_allowed ~what:(Token.describe token)
+          ~in_what:(Token.describe parent_markup)
+          ~suggestion location
+        |> add_warning input;
+        junk input;
+        consume_block_elements ~parsed_a_tag where_in_line acc
+    (* Table cells ([{th ...}] and [{td ...}]) can never appear directly
+       in block content. They can only appear inside [{tr ...}]. *)
+    | { value = (`Begin_table_header | `Begin_table_data) as token; location }
+      ->
+        let suggestion =
+          Printf.sprintf "move %s into %s." (Token.print token)
+            (Token.describe `Begin_table_row)
+        in
+        Parse_error.not_allowed ~what:(Token.describe token)
+          ~in_what:(Token.describe parent_markup)
+          ~suggestion location
+        |> add_warning input;
+        junk input;
+        consume_block_elements ~parsed_a_tag where_in_line acc
+    (* Bars can never appear directly in block content.
+       They can only appear inside [{t ...}]. *)
+    | { value = `Bar as token; location } ->
+        let suggestion =
+          Printf.sprintf "move %s into %s." (Token.print token)
+            (Token.describe (`Begin_table `Light))
+        in
+        Parse_error.not_allowed ~what:(Token.describe token)
+          ~in_what:(Token.describe parent_markup)
+          ~suggestion location
+        |> add_warning input;
+        junk input;
+        consume_block_elements ~parsed_a_tag where_in_line acc
     (* Tags. These can appear at the top level only. Also, once one tag is seen,
        the only top-level elements allowed are more tags. *)
     | { value = `Tag tag as token; location } as next_token -> (
@@ -622,6 +776,8 @@ let rec block_element_list :
             if where_in_line = `At_start_of_line then
               (List.rev acc, next_token, where_in_line)
             else recover_when_not_at_top_level context
+        | In_table_header -> recover_when_not_at_top_level context
+        | In_table_cell -> recover_when_not_at_top_level context
         | In_tag ->
             if where_in_line = `At_start_of_line then
               (List.rev acc, next_token, where_in_line)
@@ -800,6 +956,22 @@ let rec block_element_list :
         let block = Loc.at location block in
         let acc = block :: acc in
         consume_block_elements ~parsed_a_tag `After_text acc
+    | { value = `Begin_table syntax as token; location } as next_token ->
+        warn_if_after_tags next_token;
+        warn_if_after_text next_token;
+        junk input;
+        let block, brace_location =
+          let parent_markup = token in
+          let parent_markup_location = location in
+          match syntax with
+          | `Light -> light_table input ~parent_markup ~parent_markup_location
+          | `Heavy -> heavy_table input ~parent_markup ~parent_markup_location
+        in
+        let location = Loc.span [ location; brace_location ] in
+        let block = accepted_in_all_contexts context (`Table block) in
+        let block = Loc.at location block in
+        let acc = block :: acc in
+        consume_block_elements ~parsed_a_tag `After_text acc
     | { value = (`Minus | `Plus) as token; location } as next_token -> (
         (match where_in_line with
         | `After_text | `After_shorthand_bullet ->
@@ -855,6 +1027,8 @@ let rec block_element_list :
               (List.rev acc, next_token, where_in_line)
             else recover_when_not_at_top_level context
         | In_explicit_list -> recover_when_not_at_top_level context
+        | In_table_header -> recover_when_not_at_top_level context
+        | In_table_cell -> recover_when_not_at_top_level context
         | In_tag -> recover_when_not_at_top_level context
         | Top_level ->
             if where_in_line <> `At_start_of_line then
@@ -914,6 +1088,8 @@ let rec block_element_list :
     | Top_level -> `At_start_of_line
     | In_shorthand_list -> `After_shorthand_bullet
     | In_explicit_list -> `After_explicit_list_bullet
+    | In_table_header -> `After_table_header
+    | In_table_cell -> `After_table_cell
     | In_tag -> `After_tag
   in
 
@@ -1066,6 +1242,178 @@ and explicit_list_items :
   in
 
   consume_list_items []
+
+(* Consumes a sequence of table rows that might start with [`Bar].
+
+   This function is called immediately after '{t' ([`Begin_table `Light]) is
+   read. The only "valid" way to exit is by reading a [`Right_brace] token,
+   which is consumed. *)
+and light_table ~parent_markup ~parent_markup_location input =
+  let rec consume_rows acc ~last_loc =
+    let>> next_token = Reader.until_rbrace input acc in
+    match next_token.Loc.value with
+    | `Bar | #token_that_always_begins_an_inline_element -> (
+        let next, row, last_loc =
+          light_table_row ~parent_markup ~last_loc input
+        in
+        match next with
+        | `Continue -> consume_rows (row :: acc) ~last_loc
+        | `Stop -> (row :: acc, last_loc))
+    | other_token ->
+        Parse_error.not_allowed next_token.location
+          ~what:(Token.describe other_token)
+          ~in_what:(Token.describe parent_markup)
+        |> add_warning input;
+        junk input;
+        consume_rows acc ~last_loc
+  in
+  let rows, brace_location = consume_rows [] ~last_loc:parent_markup_location in
+  let grid = List.rev rows in
+  (Table.Light_syntax.from_grid grid, brace_location)
+
+(* Consumes a table row that might start with [`Bar]. *)
+and light_table_row ~parent_markup ~last_loc input =
+  let rec consume_row acc_row acc_cell ~new_line ~last_loc =
+    let push_cells row cell =
+      match cell with [] -> row | _ -> List.rev cell :: row
+    in
+    let return row cell = List.rev (push_cells row cell) in
+    let next_token = peek input in
+    match next_token.value with
+    | `Right_brace ->
+        junk input;
+        (`Stop, return acc_row acc_cell, next_token.location)
+    | `Space _ ->
+        junk input;
+        consume_row acc_row acc_cell ~new_line ~last_loc
+    | `Single_newline _ | `Blank_line _ ->
+        junk input;
+        (`Continue, return acc_row acc_cell, last_loc)
+    | `Bar ->
+        junk input;
+        let acc_row = if new_line then [] else List.rev acc_cell :: acc_row in
+        consume_row acc_row [] ~new_line:false ~last_loc
+    | #token_that_always_begins_an_inline_element as token ->
+        let i = inline_element input next_token.location token in
+        consume_row acc_row (i :: acc_cell) ~new_line:false
+          ~last_loc:next_token.location
+    | other_token ->
+        Parse_error.not_allowed next_token.location
+          ~what:(Token.describe other_token)
+          ~in_what:(Token.describe parent_markup)
+        |> add_warning input;
+        junk input;
+        consume_row acc_row acc_cell ~new_line ~last_loc
+  in
+  consume_row [] [] ~new_line:true ~last_loc
+
+(* Consumes a sequence of table rows (starting with '{tr ...}', which are
+   represented by [`Begin_table_row] tokens).
+
+   This function is called immediately after '{table' ([`Begin_table `Heavy]) is
+   read. The only "valid" way to exit is by reading a [`Right_brace] token,
+   which is consumed. *)
+and heavy_table ~parent_markup ~parent_markup_location input =
+  let rec consume_rows acc ~last_loc =
+    let>> next_token = Reader.until_rbrace input acc in
+    match next_token.Loc.value with
+    | `Begin_table_row as token ->
+        junk input;
+        let items, last_loc = heavy_table_row ~parent_markup:token input in
+        consume_rows (List.rev items :: acc) ~last_loc
+    | token ->
+        Parse_error.not_allowed next_token.location ~what:(Token.describe token)
+          ~in_what:(Token.describe parent_markup)
+        |> add_warning input;
+        junk input;
+        consume_rows acc ~last_loc
+  in
+  let rows, brace_location = consume_rows [] ~last_loc:parent_markup_location in
+  let grid = List.rev rows in
+  (Table.Heavy_syntax.from_grid grid, brace_location)
+
+(* Consumes a sequence of table cells (starting with '{th ...}' or '{td ... }',
+   which are represented by [`Begin_table_header] [`Begin_table_data] tokens).
+
+   This function is called immediately after '{tr' ([`Begin_table_row]) is
+   read. The only "valid" way to exit is by reading a [`Right_brace] token,
+   which is consumed. *)
+and heavy_table_row ~parent_markup input =
+  let rec consume_cell_items acc =
+    let>> next_token = Reader.until_rbrace input acc in
+    match next_token.Loc.value with
+    | `Begin_table_header as token -> (
+        junk input;
+        let content, _brace_location =
+          heavy_table_header input ~parent_markup:token
+        in
+        match content with
+        | None -> consume_cell_items ((`Header None, []) :: acc)
+        | Some (x, b) -> consume_cell_items ((`Header x, b) :: acc))
+    | `Begin_table_data as token ->
+        junk input;
+        let content, token_after_list_item, _where_in_line =
+          block_element_list In_table_cell ~parent_markup:token input
+        in
+        (match token_after_list_item.value with
+        | `Right_brace -> junk input
+        | `End ->
+            Parse_error.not_allowed token_after_list_item.location
+              ~what:(Token.describe `End) ~in_what:(Token.describe token)
+            |> add_warning input);
+        consume_cell_items ((`Data, content) :: acc)
+    | token ->
+        Parse_error.not_allowed next_token.location ~what:(Token.describe token)
+          ~in_what:(Token.describe parent_markup)
+        |> add_warning input;
+        junk input;
+        consume_cell_items acc
+  in
+  consume_cell_items []
+
+(* Consumes a table header (that might start with '{L ...}', '{C ...}' or '{R ... }',
+   which are represented by [`Begin_paragraph_style _] tokens).
+
+   This function is called immediately after '{th' ([`Begin_table_header]) is
+   read. The only "valid" way to exit is by reading a [`Right_brace] token,
+   which is consumed. *)
+and heavy_table_header ~parent_markup input =
+  let rec consume_items acc =
+    let>> next_token = Reader.until_rbrace input acc in
+    match next_token.Loc.value with
+    | `Begin_paragraph_style style as token ->
+        junk input;
+        (match acc with
+        | Some _ ->
+            Parse_error.not_allowed next_token.location
+              ~what:(Token.describe token)
+              ~in_what:(Token.describe parent_markup)
+            |> add_warning input
+        | None -> ());
+        let content, token_after_list_item, _where_in_line =
+          block_element_list In_table_header ~parent_markup input
+        in
+        (match token_after_list_item.value with
+        | `Right_brace -> junk input
+        | `End ->
+            Parse_error.not_allowed token_after_list_item.location
+              ~what:(Token.describe `End) ~in_what:(Token.describe token)
+            |> add_warning input);
+        consume_items (Some (Some style, content))
+    | token ->
+        (match acc with
+        | Some _ ->
+            Parse_error.not_allowed next_token.location
+              ~what:(Token.describe token)
+              ~in_what:(Token.describe parent_markup)
+            |> add_warning input
+        | None -> ());
+        let content, _token_after_list_item, _where_in_line =
+          block_element_list In_table_header ~parent_markup input
+        in
+        consume_items (Some (None, content))
+  in
+  consume_items None
 
 (* {2 Entry point} *)
 
