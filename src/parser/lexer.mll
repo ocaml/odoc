@@ -244,7 +244,7 @@ let heading_level input level =
 
 
 let markup_char =
-  ['{' '}' '[' ']' '@']
+  ['{' '}' '[' ']' '@' '|']
 let space_char =
   [' ' '\t' '\n' '\r']
 let bullet_char =
@@ -288,6 +288,9 @@ rule token input = parse
 
   | (horizontal_space* (newline horizontal_space*)? as p) '}'
     { emit input `Right_brace ~adjust_start_by:p }
+
+  | '|'
+    { emit input `Bar }
 
   | word_char (word_char | bullet_char | '@')*
   | bullet_char (word_char | bullet_char | '@')+ as w
@@ -397,6 +400,21 @@ rule token input = parse
 
   | "{-"
     { emit input (`Begin_list_item `Dash) }
+
+  | "{table"
+    { emit input (`Begin_table `Heavy) }
+
+  | "{t"
+    { emit input (`Begin_table `Light) }
+
+  | "{tr"
+    { emit input `Begin_table_row }
+
+  | "{th"
+    { emit input `Begin_table_header }
+
+  | "{td"
+    { emit input `Begin_table_data }
 
   | '{' (['0'-'9']+ as level) ':' (([^ '}'] # space_char)* as label)
     { emit
