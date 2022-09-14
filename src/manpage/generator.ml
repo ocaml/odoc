@@ -302,6 +302,22 @@ and inline (l : Inline.t) =
       | Math s -> math s ++ inline rest
       | Raw_markup t -> raw_markup t ++ inline rest)
 
+let table pp { Table.data; align = _ } =
+  let sep = '%' in
+  env "TS" "TE" ""
+    (str "allbox tab(%c);" sep
+    ++ List.fold_left
+         (fun acc row ->
+           acc ++ vspace
+           ++
+           match row with
+           | [] -> noop
+           | (h, _) :: t ->
+               List.fold_left
+                 (fun acc (x, _) -> acc ++ str " %c " sep ++ pp x)
+                 (pp h) t)
+         noop data)
+
 let rec block (l : Block.t) =
   match l with
   | [] -> noop
@@ -320,6 +336,7 @@ let rec block (l : Block.t) =
             indent 2 (bullet ++ sp ++ block b)
           in
           list ~sep:break (List.mapi f l) ++ continue rest
+      | Table t -> table block t ++ continue rest
       | Description _ ->
           let descrs, _, rest =
             Take.until l ~classify:(function

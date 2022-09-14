@@ -252,6 +252,14 @@ let rec nestable_block_element :
   | { value = `List (kind, _syntax, items); location } ->
       `List (kind, List.map (nestable_block_elements status) items)
       |> Location.at location
+  | { value = `Table ((grid, align), (`Heavy | `Light)); location } ->
+      let data =
+        List.map
+          (List.map (fun (cell, cell_type) ->
+               (nestable_block_elements status cell, cell_type)))
+          grid
+      in
+      `Table { Comment.data; align } |> Location.at location
 
 and nestable_block_elements status elements =
   List.map (nestable_block_element status) elements

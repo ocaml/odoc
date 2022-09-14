@@ -58,7 +58,7 @@
     <li><a href="#unicode">Unicode</a></li>
     <li><a href="#raw-html">Raw HTML</a></li>
     <li><a href="#math">Math</a></li><li><a href="#modules">Modules</a></li>
-    <li><a href="#tags">Tags</a></li>
+    <li><a href="#tables">Tables</a></li><li><a href="#tags">Tags</a></li>
    </ul>
   </nav>
   <div class="odoc-content">
@@ -222,7 +222,34 @@
    </ul>
    <ul class="modules"><li><a href="Markup-X.html"><code>X</code></a> </li>
     <li><a href="Markup-Y.html"><code>Y</code></a> </li>
-   </ul><h2 id="tags"><a href="#tags" class="anchor"></a>Tags</h2>
+   </ul><h2 id="tables"><a href="#tables" class="anchor"></a>Tables</h2>
+   <div>
+    <table>
+     <colgroup><col style="text-align:left"/><col style="text-align:center"/>
+      <col style="text-align:right"/><col/>
+     </colgroup>
+     <tr><th><p>Left</p></th><th><p>Center</p></th><th><p>Right</p></th>
+      <th><p>Default</p></th>
+     </tr>
+     <tr><td><p>A</p></td><td><p>B</p></td><td><p>C</p></td><td><p>D</p></td>
+     </tr>
+    </table>
+   </div>
+   <div>
+    <table><tr><td><p>No</p></td><td><p>Header</p></td></tr>
+     <tr><td><p>A</p></td><td><p>B</p></td></tr>
+    </table>
+   </div>
+   <div>
+    <table><tr><th><p>Header 1</p></th><th><p>Header 2</p></th></tr>
+     <tr><td><p>Data 1</p></td><td><p>Data 2</p></td></tr>
+    </table>
+   </div>
+   <div>
+    <table><tr><th><p>Header 1</p></th><th><p>Data 1</p></th></tr>
+     <tr><th><p>Header 2</p></th><td><p>Data 2</p></td></tr>
+    </table>
+   </div><h2 id="tags"><a href="#tags" class="anchor"></a>Tags</h2>
    <p>Each comment can end with zero or more tags. Here are some examples:
    </p>
    <ul class="at-tags">

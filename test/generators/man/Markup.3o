@@ -250,7 +250,45 @@ Math elements can be inline: \int_{-\infty}^\infty, or blocks:
 .nf 
 .sp 
 .in 3
-\fB10 Tags\fR
+\fB10 Tables\fR
+.in 
+.sp 
+.fi 
+.TS 
+allbox tab(%);
+.sp 
+Left % Center % Right % Default
+.sp 
+A % B % C % D
+.TE 
+.sp 
+.TS 
+allbox tab(%);
+.sp 
+No % Header
+.sp 
+A % B
+.TE 
+.sp 
+.TS 
+allbox tab(%);
+.sp 
+Header 1 % Header 2
+.sp 
+Data 1 % Data 2
+.TE 
+.sp 
+.TS 
+allbox tab(%);
+.sp 
+Header 1 % Data 1
+.sp 
+Header 2 % Data 2
+.TE 
+.nf 
+.sp 
+.in 3
+\fB11 Tags\fR
 .in 
 .sp 
 .fi 

@@ -258,6 +258,14 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
       in
       let items = List.map f items in
       block @@ Block.List (kind, items)
+  | `Table { data; align } ->
+      let data =
+        List.map
+          (List.map (fun (cell, cell_type) ->
+               (nestable_block_element_list cell, cell_type)))
+          data
+      in
+      block @@ Table { data; align }
 
 and paragraph : Comment.paragraph -> Block.one = function
   | [ { value = `Raw_markup (target, s); _ } ] ->

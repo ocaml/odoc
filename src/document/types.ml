@@ -89,10 +89,21 @@ and Block : sig
     | Math of Math.t
     | Verbatim of string
     | Raw_markup of Raw_markup.t
+    | Table of t Table.t
 
   and list_type = Ordered | Unordered
 end =
   Block
+
+and Table : sig
+  type alignment = [ `Left | `Center | `Right ]
+
+  type 'a t = {
+    data : ('a * [ `Header | `Data ]) list list;
+    align : alignment option list option;
+  }
+end =
+  Table
 
 and DocumentedSrc : sig
   type 'a documented = {

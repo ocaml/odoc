@@ -296,6 +296,7 @@ let rec block ~in_source (l : Block.t) =
         @ if in_source then [] else [ Break Paragraph ]
     | List (typ, l) ->
         [ List { typ; items = List.map (block ~in_source:false) l } ]
+    | Table t -> table_block t
     | Description l ->
         [
           (let item i =
@@ -315,6 +316,18 @@ let rec block ~in_source (l : Block.t) =
         ]
   in
   list_concat_map l ~f:one
+
+and table_block { Table.data; align = _ } =
+  let data =
+    List.map
+      (List.map (fun (cell, cell_type) ->
+           let content = block ~in_source:false cell in
+           match cell_type with
+           | `Header -> [ Style (`Bold, content) ]
+           | `Data -> content))
+      data
+  in
+  table data
 
 let rec is_only_text l =
   let is_text : Item.t -> _ = function
