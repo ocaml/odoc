@@ -58,8 +58,8 @@ module Ast_to_sexp = struct
     | `Link (u, es) ->
         List [ str u; List (List.map (at.at (inline_element at)) es) ]
 
-  let code_block_meta at (lang_tag, meta) =
-    List [ at.at str lang_tag; opt (at.at str) meta ]
+  let code_block_lang at { Ast.language; tags } =
+    List [ at.at str language; opt (at.at str) tags ]
 
   let rec nestable_block_element at : Ast.nestable_block_element -> sexp =
     function
@@ -67,9 +67,21 @@ module Ast_to_sexp = struct
         List
           [ Atom "paragraph"; List (List.map (at.at (inline_element at)) es) ]
     | `Math_block s -> List [ Atom "math_block"; Atom s ]
-    | `Code_block (None, c) -> List [ Atom "code_block"; at.at str c ]
-    | `Code_block (Some meta, c) ->
-        List [ Atom "code_block"; code_block_meta at meta; at.at str c ]
+    | `Code_block { Ast.lang = None; content; output = None; _ } ->
+        List [ Atom "code_block"; at.at str content ]
+    | `Code_block { lang = Some meta; content; output = None; _ } ->
+        List [ Atom "code_block"; code_block_lang at meta; at.at str content ]
+    | `Code_block { lang = Some meta; content; output = Some output; _ } ->
+        List
+          [
+            Atom "code_block";
+            code_block_lang at meta;
+            at.at str content;
+            List
+              (List.map (fun v -> nestable_block_element at v.Loc.value) output);
+          ]
+    | `Code_block { lang = None; content = _; output = Some _output; _ } ->
+        List [ Atom "code_block_err" ]
     | `Verbatim t -> List [ Atom "verbatim"; Atom t ]
     | `Modules ps -> List [ Atom "modules"; List (List.map (at.at str) ps) ]
     | `List (kind, weight, items) ->
@@ -2419,19 +2431,8 @@ let%expect_test _ =
       test "{[foo]}]}";
       [%expect
         {|
-        ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (1 7) (1 8)) (paragraph (((f.ml (1 7) (1 8)) (word ])))))
-           ((f.ml (1 8) (1 9)) (paragraph (((f.ml (1 8) (1 9)) (word })))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 7-8:\
-           \nUnpaired ']' (end of code).\
-           \nSuggestion: try '\\]'."
-            "File \"f.ml\", line 1, characters 7-8:\
-           \nParagraph should begin on its own line."
-            "File \"f.ml\", line 1, characters 8-9:\
-           \nUnpaired '}' (end of markup).\
-           \nSuggestion: try '\\}'."))) |}]
+        ((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+         (warnings ())) |}]
 
     let nested_bracket =
       test "{[]]}";
@@ -2577,7 +2578,7 @@ let%expect_test _ =
       test "{[foo";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) foo)))))
+        ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 5)) foo)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-5:\
            \nMissing end of code block.\
@@ -2587,7 +2588,7 @@ let%expect_test _ =
       test "{[foo]";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) foo])))))
+        ((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 6)) foo])))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \nMissing end of code block.\
@@ -2626,23 +2627,16 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 13)) (code_block ((f.ml (1 2) (1 11)) "(** {[foo")))
-           ((f.ml (1 14) (2 13))
+           ((f.ml (1 14) (2 12))
             (paragraph
              (((f.ml (1 14) (1 16)) (word "*)")) ((f.ml (1 16) (2 0)) space)
               ((f.ml (2 0) (2 3)) (word let)) ((f.ml (2 3) (2 4)) space)
               ((f.ml (2 4) (2 7)) (word bar)) ((f.ml (2 7) (2 8)) space)
               ((f.ml (2 8) (2 9)) (word =)) ((f.ml (2 9) (2 10)) space)
-              ((f.ml (2 10) (2 12)) (word "()")) ((f.ml (2 12) (2 13)) (word ])))))
-           ((f.ml (2 13) (2 14)) (paragraph (((f.ml (2 13) (2 14)) (word })))))))
+              ((f.ml (2 10) (2 12)) (word "()")))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 14-16:\
-           \nParagraph should begin on its own line."
-            "File \"f.ml\", line 2, characters 12-13:\
-           \nUnpaired ']' (end of code).\
-           \nSuggestion: try '\\]'."
-            "File \"f.ml\", line 2, characters 13-14:\
-           \nUnpaired '}' (end of markup).\
-           \nSuggestion: try '\\}'."))) |}]
+           \nParagraph should begin on its own line."))) |}]
 
     let code_block_with_meta =
       test "{@ocaml env=f1 version>=4.06 [code goes here]}";
@@ -2654,6 +2648,18 @@ let%expect_test _ =
              (((f.ml (1 2) (1 7)) ocaml)
               (((f.ml (1 8) (1 28)) "env=f1 version>=4.06")))
              ((f.ml (1 30) (1 44)) "code goes here")))))
+         (warnings ())) |}]
+
+    let code_block_with_output =
+      test "{@ocaml[foo][output {b foo}]}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 29))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) ()) ((f.ml (1 8) (1 11)) foo)
+             ((paragraph
+               (((f.ml (1 13) (1 19)) (word output)) ((f.ml (1 19) (1 20)) space)
+                ((f.ml (1 20) (1 27)) (bold (((f.ml (1 23) (1 26)) (word foo))))))))))))
          (warnings ())) |}]
 
     let code_block_empty_meta =
@@ -2673,7 +2679,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 10))
-            (code_block (((f.ml (1 2) (1 6)) meta) ()) ((f.ml (1 7) (1 8)) foo)))))
+            (code_block (((f.ml (1 2) (1 6)) meta) ()) ((f.ml (1 7) (1 10)) foo)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \nMissing end of code block.\
@@ -2771,6 +2777,40 @@ let%expect_test _ =
           ( "File \"f.ml\", line 1, characters 0-8:\
            \nInvalid character ',' in language tag.\
            \nSuggestion: try '{@ocaml[ ... ]}'."))) |}]
+
+    let delimited_code_block =
+      test "{delim@ocaml[ all{}[2[{{]doo}}]]'''(* ]} ]delim}";
+      [%expect
+        {|
+          ((output
+            (((f.ml (1 0) (1 48))
+              (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+               ((f.ml (1 13) (1 41)) "all{}[2[{{]doo}}]]'''(* ]} ")))))
+           (warnings ())) |}]
+
+    let code_block_with_output =
+      test
+        {|{@ocaml[ let x = ][ {err@mdx-error[ here's the error ]} ]err}
+        ]}|};
+      [%expect
+        "\n\
+        \        ((output\n\
+        \          (((f.ml (1 0) (2 10))\n\
+        \            (code_block (((f.ml (1 2) (1 7)) ocaml) ())\n\
+        \             ((f.ml (1 8) (1 17)) \"let x = \")\n\
+        \             ((code_block (((f.ml (1 25) (1 34)) mdx-error) ())\n\
+        \               ((f.ml (1 35) (1 56)) \"here's the error ]} \")))))))\n\
+        \         (warnings ()))"]
+
+    let delimited_code_block_with_output =
+      test "{delim@ocaml[ foo ]delim[ ]}";
+      [%expect
+        {|
+          ((output
+            (((f.ml (1 0) (1 28))
+              (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+               ((f.ml (1 13) (1 18)) "foo ") ()))))
+           (warnings ())) |}]
   end in
   ()
 
@@ -4955,15 +4995,14 @@ let%expect_test _ =
       test "{b]}";
       [%expect
         {|
-        ((output
-          (((f.ml (1 0) (1 4))
-            (paragraph (((f.ml (1 0) (1 4)) (bold (((f.ml (1 2) (1 3)) (word ]))))))))))
+        ((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (bold ())))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 2-3:\
-           \nUnpaired ']' (end of code).\
-           \nSuggestion: try '\\]'."
+          ( "File \"f.ml\", line 1, characters 0-2:\
+           \n'{b' should be followed by space, a tab, or a new line."
+            "File \"f.ml\", line 1, characters 2-4:\
+           \n']@}' is not allowed in '{b ...}' (boldface text)."
             "File \"f.ml\", line 1, characters 0-2:\
-           \n'{b' should be followed by space, a tab, or a new line."))) |}]
+           \n'{b ...}' (boldface text) should not be empty."))) |}]
 
     let right_bracket_in_verbatim =
       test "{v ] v}";
@@ -4976,12 +5015,11 @@ let%expect_test _ =
         {|
         ((output (((f.ml (1 0) (1 6)) (unordered heavy ()))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 4-5:\
-           \nUnpaired ']' (end of code).\
-           \nSuggestion: try '\\]'."
-            "File \"f.ml\", line 1, characters 4-5:\
-           \n']' is not allowed in '{ul ...}' (bulleted list).\
-           \nSuggestion: move ']' into a list item, '{li ...}' or '{- ...}'."
+          ( "File \"f.ml\", line 1, characters 4-6:\
+           \n']@}' is not allowed in '{ul ...}' (bulleted list).\
+           \nSuggestion: move ']@}' into a list item, '{li ...}' or '{- ...}'."
+            "File \"f.ml\", line 1, characters 6-6:\
+           \nEnd of text is not allowed in '{ul ...}' (bulleted list)."
             "File \"f.ml\", line 1, characters 0-3:\
            \n'{ul ...}' (bulleted list) should not be empty."))) |}]
 
@@ -4989,25 +5027,23 @@ let%expect_test _ =
       test "{ul {li ]}}";
       [%expect
         {|
-        ((output
-          (((f.ml (1 0) (1 11))
-            (unordered heavy
-             ((((f.ml (1 8) (1 9)) (paragraph (((f.ml (1 8) (1 9)) (word ])))))))))))
+        ((output (((f.ml (1 0) (1 11)) (unordered heavy (())))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 8-9:\
-           \nUnpaired ']' (end of code).\
-           \nSuggestion: try '\\]'."))) |}]
+          ( "File \"f.ml\", line 1, characters 4-7:\
+           \n'{li ...}' (list item) should not be empty."
+            "File \"f.ml\", line 1, characters 11-11:\
+           \nEnd of text is not allowed in '{ul ...}' (bulleted list)."))) |}]
 
     let right_bracket_in_heading =
       test "{2 ]}";
       [%expect
         {|
-        ((output
-          (((f.ml (1 0) (1 5)) (2 (label ()) (((f.ml (1 3) (1 4)) (word ])))))))
+        ((output (((f.ml (1 0) (1 2)) (2 (label ()) ()))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 3-4:\
-           \nUnpaired ']' (end of code).\
-           \nSuggestion: try '\\]'."))) |}]
+          ( "File \"f.ml\", line 1, characters 3-5:\
+           \n']@}' is not allowed in '{2 ...}' (section heading)."
+            "File \"f.ml\", line 1, characters 0-2:\
+           \n'{2 ...}' (section heading) should not be empty."))) |}]
 
     let right_bracket_in_author =
       test "@author Foo]";
