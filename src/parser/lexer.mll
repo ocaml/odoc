@@ -346,8 +346,16 @@ rule token input = parse
     { emit input (`Modules modules) }
 
   | (reference_start as start) ([^ '}']* as target) '}'
-    { emit input (reference_token start target) }
-
+    { 
+      let token = (reference_token start target) in
+      if String.contains target '{' then
+        warning
+          input
+          ~start_offset:(Lexing.lexeme_start lexbuf)
+          (Parse_error.not_allowed
+            ~what:(Token.describe (`Word {|{|}))
+            ~in_what:(Token.describe token));
+      emit input token}
   | "{["
     { code_block (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf }
 
