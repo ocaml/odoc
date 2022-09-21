@@ -1689,6 +1689,16 @@ let%expect_test _ =
             (paragraph
              (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(>::)") ())))))))
          (warnings ())) |}]
+         
+    let operator_with_curly_braces =
+      test "{!(.*{})}";
+      [%expect 
+        {|
+        ((output
+          (((f.ml (1 0) (1 9))
+            (paragraph
+             (((f.ml (1 0) (1 9)) (simple ((f.ml (1 2) (1 9)) "(.*{})") ())))))))
+         (warnings ())) |}]
   end in
   ()
 

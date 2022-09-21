@@ -276,8 +276,61 @@ let language_tag_char =
 let delim_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' ]
 
+rule reference_paren_content input start depth buffer = parse 
+  | '('
+    {
+      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+       reference_paren_content input start (depth + 1) buffer lexbuf }
+  | ')'
+    { 
+      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      if depth = 0 then
+        ()
+      else
+        ( reference_paren_content input start (depth  - 1) buffer lexbuf ) }
+  | eof 
+    { warning
+        input
+        ~start_offset:(Lexing.lexeme_end lexbuf)
+        (Parse_error.not_allowed
+          ~what:(Token.describe `End)
+          ~in_what:(Token.describe (reference_token start ""))) 
+    }
+  | _
+    { 
+      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      reference_paren_content input start depth buffer lexbuf }
 
-rule token input = parse
+and reference_content input start buffer = parse
+  | '}' 
+    {
+      Buffer.contents buffer
+    }
+  | '('
+    {
+      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      ((reference_paren_content input start 0 buffer lexbuf)) ;
+      reference_content input start buffer lexbuf
+    }
+  | '"' [^ '"']* '"'
+    {
+      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      reference_content input start buffer lexbuf
+    }
+  | eof 
+    { warning
+        input
+        ~start_offset:(Lexing.lexeme_end lexbuf)
+        (Parse_error.not_allowed
+          ~what:(Token.describe `End)
+          ~in_what:(Token.describe (reference_token start "")));
+        Buffer.contents buffer }
+  | _
+    { 
+      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      reference_content input start buffer lexbuf }
+
+and token input = parse
   | horizontal_space* eof
     { emit input `End }
 
@@ -345,17 +398,13 @@ rule token input = parse
   | "{!modules:" ([^ '}']* as modules) '}'
     { emit input (`Modules modules) }
 
-  | (reference_start as start) ([^ '}']* as target) '}'
+  | (reference_start as start)
     { 
+      let start_offset = Lexing.lexeme_start lexbuf in
+      let target = reference_content input start (Buffer.create 16) lexbuf in
       let token = (reference_token start target) in
-      if String.contains target '{' then
-        warning
-          input
-          ~start_offset:(Lexing.lexeme_start lexbuf)
-          (Parse_error.not_allowed
-            ~what:(Token.describe (`Word "{"))
-            ~in_what:(Token.describe token));
-      emit input token }
+      emit ~start_offset input token }
+
   | "{["
     { code_block (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf }
 
@@ -536,17 +585,6 @@ rule token input = parse
           ~what:(Token.describe `End)
           ~in_what:(Token.describe (`Modules "")));
       emit input (`Modules modules) }
-
-  | (reference_start as start) ([^ '}']* as target) eof
-    { warning
-        input
-        ~start_offset:(Lexing.lexeme_end lexbuf)
-        (Parse_error.not_allowed
-          ~what:(Token.describe `End)
-          ~in_what:(Token.describe (reference_token start "")));
-      emit input (reference_token start target) }
-
-
 
 and code_span buffer nesting_level start_offset input = parse
   | ']'
