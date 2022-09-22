@@ -1717,6 +1717,19 @@ let%expect_test _ =
                (paragraph
                 (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) "\"}\"") ())))))))
             (warnings ())) |}]
+    let quotes_with_curly_braces =
+      test "{!(.*()}" ;
+      [%expect
+      {|
+        ((output
+          (((f.ml (1 0) (1 8))
+            (paragraph
+             (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(.*()}") ())))))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 8-8:\
+           \n'}' (end of reference) is not allowed in '(.*()' (custom operator)."
+            "File \"f.ml\", line 1, characters 8-8:\
+           \nEnd of text is not allowed in '{!...}' (cross-reference)."))) |}]
   end in
   ()
 
