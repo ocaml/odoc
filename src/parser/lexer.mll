@@ -31,7 +31,7 @@ type math_kind =
   Inline | Block
 
 let math_constr kind x =
-  match kind with 
+  match kind with
   | Inline -> `Math_span x
   | Block -> `Math_block x
 
@@ -276,40 +276,61 @@ let language_tag_char =
 let delim_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' ]
 
-rule reference_paren_content input start depth buffer = parse 
+rule reference_paren_content input start depth_paren depth_curly buffer = parse
   | '('
     {
       Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
-       reference_paren_content input start (depth + 1) buffer lexbuf }
-  | ')'
-    { 
+       reference_paren_content input start (depth_paren + 1) depth_curly buffer
+        lexbuf }
+  | '{'
+    {
       Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
-      if depth = 0 then
-        ()
+       reference_paren_content input start depth_paren (depth_curly + 1) buffer
+        lexbuf }
+  | ')'
+    {
+      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      if depth_paren = 0 then ()
       else
-        ( reference_paren_content input start (depth  - 1) buffer lexbuf ) }
-  | eof 
+        ( reference_paren_content input start (depth_paren - 1) depth_curly
+            buffer lexbuf ) }
+  | '}'
+    {
+      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      if depth_curly = 0 then
+        warning
+          input
+          ~start_offset:(Lexing.lexeme_end lexbuf)
+          (Parse_error.not_allowed
+            ~what:"'}' (end of reference)"
+            ~in_what:(
+              Printf.sprintf "'%s' (custom operator)"
+                (Buffer.sub buffer 0 ((Buffer.length buffer) - 1))))
+      else
+        ( reference_paren_content input start depth_paren (depth_curly - 1)
+            buffer lexbuf ) }
+  | eof
     { warning
         input
         ~start_offset:(Lexing.lexeme_end lexbuf)
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
-          ~in_what:(Token.describe (reference_token start ""))) 
+          ~in_what:(Token.describe (reference_token start "")))
     }
   | _
-    { 
+    {
       Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
-      reference_paren_content input start depth buffer lexbuf }
+      reference_paren_content input start depth_paren depth_curly buffer lexbuf }
 
 and reference_content input start buffer = parse
-  | '}' 
+  | '}'
     {
       Buffer.contents buffer
     }
   | '('
     {
       Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
-      ((reference_paren_content input start 0 buffer lexbuf)) ;
+      ((reference_paren_content input start 0 0 buffer lexbuf)) ;
       reference_content input start buffer lexbuf
     }
   | '"' [^ '"']* '"'
@@ -317,7 +338,7 @@ and reference_content input start buffer = parse
       Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
       reference_content input start buffer lexbuf
     }
-  | eof 
+  | eof
     { warning
         input
         ~start_offset:(Lexing.lexeme_end lexbuf)
@@ -326,7 +347,7 @@ and reference_content input start buffer = parse
           ~in_what:(Token.describe (reference_token start "")));
         Buffer.contents buffer }
   | _
-    { 
+    {
       Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
       reference_content input start buffer lexbuf }
 
@@ -372,13 +393,13 @@ and token input = parse
 
   | "{e"
     { emit input (`Begin_style `Emphasis) }
-  
+
   | "{L"
     { emit input (`Begin_paragraph_style `Left) }
-  
+
   | "{C"
     { emit input (`Begin_paragraph_style  `Center) }
-  
+
   | "{R"
     { emit input (`Begin_paragraph_style  `Right) }
 
@@ -387,19 +408,19 @@ and token input = parse
 
   | "{_"
     { emit input (`Begin_style `Subscript) }
-  
+
   | "{math" space_char
     { math Block (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
-    
+
   | "{m" horizontal_space
     { math Inline (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
-    
+
 
   | "{!modules:" ([^ '}']* as modules) '}'
     { emit input (`Modules modules) }
 
   | (reference_start as start)
-    { 
+    {
       let start_offset = Lexing.lexeme_start lexbuf in
       let target = reference_content input start (Buffer.create 16) lexbuf in
       let token = (reference_token start target) in
