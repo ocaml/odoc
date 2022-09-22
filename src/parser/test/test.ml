@@ -1699,6 +1699,7 @@ let%expect_test _ =
             (paragraph
              (((f.ml (1 0) (1 9)) (simple ((f.ml (1 2) (1 9)) "(.*{})") ())))))))
          (warnings ())) |}]
+
     let quotes_with_dash =
       test "{!\"my-name\"}";
       [%expect
@@ -1708,19 +1709,21 @@ let%expect_test _ =
               (paragraph
                (((f.ml (1 0) (1 12)) (simple ((f.ml (1 2) (1 12)) "\"my-name\"") ())))))))
            (warnings ())) |}]
+
     let quotes_with_curly_braces =
       test "{!\"}\"}";
       [%expect
-         {|
+        {|
            ((output
              (((f.ml (1 0) (1 6))
                (paragraph
                 (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) "\"}\"") ())))))))
             (warnings ())) |}]
+
     let quotes_with_curly_braces =
-      test "{!(.*()}" ;
+      test "{!(.*()}";
       [%expect
-      {|
+        {|
         ((output
           (((f.ml (1 0) (1 8))
             (paragraph
