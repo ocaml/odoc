@@ -244,6 +244,9 @@ let heading_level input level =
   end;
   int_of_string level
 
+let buffer_add_lexeme buffer lexbuf =
+  Buffer.add_string buffer (Lexing.lexeme lexbuf)
+
 }
 
 let markup_char =
@@ -279,24 +282,24 @@ let delim_char =
 rule reference_paren_content input start depth_paren depth_curly buffer = parse
   | '('
     {
-      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      buffer_add_lexeme buffer lexbuf ;
        reference_paren_content input start (depth_paren + 1) depth_curly buffer
         lexbuf }
   | '{'
     {
-      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      buffer_add_lexeme buffer lexbuf ;
        reference_paren_content input start depth_paren (depth_curly + 1) buffer
         lexbuf }
   | ')'
     {
-      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      buffer_add_lexeme buffer lexbuf ;
       if depth_paren = 0 then ()
       else
         ( reference_paren_content input start (depth_paren - 1) depth_curly
             buffer lexbuf ) }
   | '}'
     {
-      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      buffer_add_lexeme buffer lexbuf ;
       if depth_curly = 0 then
         warning
           input
@@ -319,7 +322,7 @@ rule reference_paren_content input start depth_paren depth_curly buffer = parse
     }
   | _
     {
-      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      buffer_add_lexeme buffer lexbuf ;
       reference_paren_content input start depth_paren depth_curly buffer lexbuf }
 
 and reference_content input start buffer = parse
@@ -329,13 +332,13 @@ and reference_content input start buffer = parse
     }
   | '('
     {
-      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      buffer_add_lexeme buffer lexbuf ;
       ((reference_paren_content input start 0 0 buffer lexbuf)) ;
       reference_content input start buffer lexbuf
     }
   | '"' [^ '"']* '"'
     {
-      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      buffer_add_lexeme buffer lexbuf ;
       reference_content input start buffer lexbuf
     }
   | eof
@@ -348,7 +351,7 @@ and reference_content input start buffer = parse
         Buffer.contents buffer }
   | _
     {
-      Buffer.add_string buffer (Lexing.lexeme lexbuf) ;
+      buffer_add_lexeme buffer lexbuf ;
       reference_content input start buffer lexbuf }
 
 and token input = parse
