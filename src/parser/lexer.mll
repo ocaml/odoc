@@ -293,13 +293,13 @@ rule reference_paren_content input start depth_paren depth_curly buffer = parse
   | ')'
     {
       buffer_add_lexeme buffer lexbuf ;
-      if depth_paren = 0 then false
+      if depth_paren = 0 then
+        reference_content input start buffer lexbuf
       else
-        ( reference_paren_content input start (depth_paren - 1) depth_curly
-            buffer lexbuf ) }
+        reference_paren_content input start (depth_paren - 1) depth_curly
+            buffer lexbuf }
   | '}'
     {
-      buffer_add_lexeme buffer lexbuf ;
       if depth_curly = 0 then (
         warning
           input
@@ -308,13 +308,15 @@ rule reference_paren_content input start depth_paren depth_curly buffer = parse
             ~what:"'}' (end of reference)"
             ~in_what:(
               Printf.sprintf "'%s' (custom operator)"
-                (Buffer.sub buffer 0 ((Buffer.length buffer) - 1)))) ;
-        true )
+                (Buffer.contents buffer ))) ;
+        Buffer.contents buffer )
       else
-        ( reference_paren_content input start depth_paren (depth_curly - 1)
+        (
+          buffer_add_lexeme buffer lexbuf ;
+          reference_paren_content input start depth_paren (depth_curly - 1)
             buffer lexbuf ) }
   | eof
-    { false }
+    { reference_content input start buffer lexbuf }
   | _
     {
       buffer_add_lexeme buffer lexbuf ;
@@ -328,11 +330,7 @@ and reference_content input start buffer = parse
   | '('
     {
       buffer_add_lexeme buffer lexbuf ;
-      let ref_closed = reference_paren_content input start 0 0 buffer lexbuf in
-      if ref_closed then
-        Buffer.contents buffer
-      else
-        reference_content input start buffer lexbuf
+      reference_paren_content input start 0 0 buffer lexbuf
     }
   | '"' [^ '"']* '"'
     {
