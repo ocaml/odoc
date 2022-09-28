@@ -279,50 +279,35 @@ let language_tag_char =
 let delim_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' ]
 
-rule reference_paren_content input start depth_paren depth_curly buffer = parse
+rule reference_paren_content input start ref_offset start_offset depth_paren
+  buffer =
+  parse
   | '('
     {
       buffer_add_lexeme buffer lexbuf ;
-      reference_paren_content input start (depth_paren + 1) depth_curly buffer
-        lexbuf }
-  | '{'
-    {
-      buffer_add_lexeme buffer lexbuf ;
-       reference_paren_content input start depth_paren (depth_curly + 1) buffer
-        lexbuf }
+      reference_paren_content input start ref_offset start_offset
+        (depth_paren + 1) buffer lexbuf }
   | ')'
     {
       buffer_add_lexeme buffer lexbuf ;
       if depth_paren = 0 then
-        reference_content input start buffer lexbuf
+        reference_content input start ref_offset buffer lexbuf
       else
-        reference_paren_content input start (depth_paren - 1) depth_curly
-            buffer lexbuf }
-  | '}'
-    {
-      if depth_curly = 0 then (
-        warning
-          input
-          ~start_offset:(Lexing.lexeme_end lexbuf)
-          (Parse_error.not_allowed
-            ~what:"'}' (end of reference)"
-            ~in_what:(
-              Printf.sprintf "'%s' (custom operator)"
-                (Buffer.contents buffer ))) ;
-        Buffer.contents buffer )
-      else
-        (
-          buffer_add_lexeme buffer lexbuf ;
-          reference_paren_content input start depth_paren (depth_curly - 1)
-            buffer lexbuf ) }
+        reference_paren_content input start ref_offset start_offset
+          (depth_paren - 1) buffer lexbuf }
   | eof
-    { reference_content input start buffer lexbuf }
+    { warning
+        input
+        ~start_offset
+        (Parse_error.unclosed_bracket ~bracket:"(") ;
+      Buffer.contents buffer }
   | _
     {
       buffer_add_lexeme buffer lexbuf ;
-      reference_paren_content input start depth_paren depth_curly buffer lexbuf }
+      reference_paren_content input start ref_offset start_offset depth_paren
+        buffer lexbuf }
 
-and reference_content input start buffer = parse
+and reference_content input start start_offset buffer = parse
   | '}'
     {
       Buffer.contents buffer
@@ -330,25 +315,24 @@ and reference_content input start buffer = parse
   | '('
     {
       buffer_add_lexeme buffer lexbuf ;
-      reference_paren_content input start 0 0 buffer lexbuf
+      reference_paren_content input start start_offset
+        (Lexing.lexeme_start lexbuf) 0 buffer lexbuf
     }
   | '"' [^ '"']* '"'
     {
       buffer_add_lexeme buffer lexbuf ;
-      reference_content input start buffer lexbuf
+      reference_content input start start_offset buffer lexbuf
     }
   | eof
     { warning
         input
-        ~start_offset:(Lexing.lexeme_end lexbuf)
-        (Parse_error.not_allowed
-          ~what:(Token.describe `End)
-          ~in_what:(Token.describe (reference_token start "")));
-        Buffer.contents buffer }
+        ~start_offset
+        (Parse_error.unclosed_bracket ~bracket:start) ;
+      Buffer.contents buffer }
   | _
     {
       buffer_add_lexeme buffer lexbuf ;
-      reference_content input start buffer lexbuf }
+      reference_content input start start_offset buffer lexbuf }
 
 and token input = parse
   | horizontal_space* eof
@@ -421,7 +405,9 @@ and token input = parse
   | (reference_start as start)
     {
       let start_offset = Lexing.lexeme_start lexbuf in
-      let target = reference_content input start (Buffer.create 16) lexbuf in
+      let target =
+        reference_content input start start_offset (Buffer.create 16) lexbuf
+      in
       let token = (reference_token start target) in
       emit ~start_offset input token }
 

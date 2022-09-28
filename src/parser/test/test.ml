@@ -1537,8 +1537,8 @@ let%expect_test _ =
           (((f.ml (1 0) (1 5))
             (paragraph (((f.ml (1 0) (1 5)) (simple ((f.ml (1 2) (1 5)) foo) ())))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 5-5:\
-           \nEnd of text is not allowed in '{!...}' (cross-reference)."))) |}]
+          ( "File \"f.ml\", line 1, characters 0-5:\
+           \nOpen bracket '{!' is never closed."))) |}]
 
     let empty_kind =
       test "{!:foo}";
@@ -1647,8 +1647,8 @@ let%expect_test _ =
             (paragraph
              (((f.ml (1 0) (1 9)) (simple ((f.ml (1 2) (1 9)) val:foo) ())))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 9-9:\
-           \nEnd of text is not allowed in '{!...}' (cross-reference)."))) |}]
+          ( "File \"f.ml\", line 1, characters 0-9:\
+           \nOpen bracket '{!' is never closed."))) |}]
 
     let operator =
       test "{!(>>=)}";
@@ -1720,6 +1720,16 @@ let%expect_test _ =
                 (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) "\"}\"") ())))))))
             (warnings ())) |}]
 
+    let operator_with_curly_braces =
+      test "{!( } )}";
+      [%expect
+        {|
+          ((output
+            (((f.ml (1 0) (1 8))
+              (paragraph
+               (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "( } )") ())))))))
+           (warnings ())) |}]
+
     let operator_unbalanced =
       test "{!(.*()}";
       [%expect
@@ -1727,10 +1737,10 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 8))
             (paragraph
-             (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(.*()") ())))))))
+             (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(.*()}") ())))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 8-8:\
-           \n'}' (end of reference) is not allowed in '(.*()' (custom operator)."))) |}]
+          ( "File \"f.ml\", line 1, characters 2-8:\
+           \nOpen bracket '(' is never closed."))) |}]
 
     let operator_eof =
       test "{!(.*()";
@@ -1741,8 +1751,8 @@ let%expect_test _ =
               (paragraph
                (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) "(.*()") ())))))))
            (warnings
-            ( "File \"f.ml\", line 1, characters 7-7:\
-             \nEnd of text is not allowed in '{!...}' (cross-reference)."))) |}]
+            ( "File \"f.ml\", line 1, characters 2-7:\
+             \nOpen bracket '(' is never closed."))) |}]
   end in
   ()
 
@@ -1933,8 +1943,8 @@ let%expect_test _ =
             (paragraph
              (((f.ml (1 0) (1 6)) (with_text ((f.ml (1 3) (1 6)) foo) ())))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 6-6:\
-           \nEnd of text is not allowed in '{{!...} ...}' (cross-reference)."
+          ( "File \"f.ml\", line 1, characters 0-6:\
+           \nOpen bracket '{{!' is never closed."
             "File \"f.ml\", line 1, characters 6-6:\
            \nEnd of text is not allowed in '{{!...} ...}' (cross-reference)."
             "File \"f.ml\", line 1, characters 0-6:\
@@ -2102,8 +2112,8 @@ let%expect_test _ =
         {|
         ((output (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (foo ())))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 6-6:\
-           \nEnd of text is not allowed in '{{:...} ...}' (external link)."
+          ( "File \"f.ml\", line 1, characters 0-6:\
+           \nOpen bracket '{{:' is never closed."
             "File \"f.ml\", line 1, characters 6-6:\
            \nEnd of text is not allowed in '{{:...} ...}' (external link)."))) |}]
 
@@ -2120,8 +2130,8 @@ let%expect_test _ =
         {|
         ((output (((f.ml (1 0) (1 5)) (paragraph (((f.ml (1 0) (1 5)) (foo ())))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 5-5:\
-           \nEnd of text is not allowed in '{:...} (external link)'."))) |}]
+          ( "File \"f.ml\", line 1, characters 0-5:\
+           \nOpen bracket '{:' is never closed."))) |}]
 
     let empty_single_braces =
       test "{:}";
