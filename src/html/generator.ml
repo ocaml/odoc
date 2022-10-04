@@ -367,7 +367,7 @@ module Toc = struct
       in
       let title_str =
         List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ())) text
-        |> String.concat " "
+        |> String.concat ""
       in
       let href = Link.href ~config ~resolve url in
       { title; title_str; href; children = List.map section children }
@@ -389,7 +389,7 @@ module Page = struct
     Utils.list_concat_map ~f:(include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page list =
-    let { Page.title; header; items = i; url } =
+    let { Page.title; kind = _; preamble; items = i; url } =
       Doctree.Labels.disambiguate_page p
     and subpages =
       (* Don't use the output of [disambiguate_page] to avoid unecessarily
@@ -400,7 +400,9 @@ module Page = struct
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
-    let header = items ~config ~resolve header in
+    let header =
+      items ~config ~resolve (Doctree.PageTitle.render_title p @ preamble)
+    in
     let content = (items ~config ~resolve i :> any Html.elt list) in
     Tree.make ~config ~header ~toc ~url ~uses_katex title content subpages
 end
