@@ -157,9 +157,18 @@ end =
   Item
 
 and Page : sig
+  type kind =
+    [ `Module
+    | `Argument
+    | `ModuleType
+    | `ClassType
+    | `Class
+    | `Page ]
+
   type t = {
     title : string;
-    header : Item.t list;
+    kind : kind;
+    preamble : Item.t list;
     items : Item.t list;
     url : Url.Path.t;
   }

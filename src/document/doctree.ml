@@ -91,7 +91,7 @@ end = struct
       | Declaration { content; _ } -> walk_documentedsrc content
       | Include i -> walk_items i.content.content)
 
-  let compute (p : Page.t) = walk_items (p.header @ p.items)
+  let compute (p : Page.t) = walk_items (p.preamble @ p.items)
 end
 
 module Shift = struct
@@ -133,7 +133,7 @@ module Shift = struct
         let content =
           {
             page with
-            header = walk_item ~on_sub shift_state page.header;
+            preamble = walk_item ~on_sub shift_state page.preamble;
             items = walk_item ~on_sub shift_state page.items;
           }
         in
@@ -183,7 +183,7 @@ module Headings : sig
 end = struct
   let fold =
     let rec w_page f acc page =
-      w_items f (w_items f acc page.Page.header) page.items
+      w_items f (w_items f acc page.Page.preamble) page.items
     and w_items f acc ts = List.fold_left (w_item f) acc ts
     and w_item f acc = function
       | Heading h -> f acc h
@@ -209,9 +209,9 @@ end = struct
 
   let foldmap =
     let rec w_page f acc page =
-      let acc, header = w_items f acc page.Page.header in
+      let acc, preamble = w_items f acc page.Page.preamble in
       let acc, items = w_items f acc page.items in
-      (acc, { page with header; items })
+      (acc, { page with preamble; items })
     and w_items f acc items = foldmap_left (w_item f) acc items
     and w_item f acc = function
       | Heading h ->
@@ -281,6 +281,35 @@ end = struct
         | None -> (acc, h))
       labels page
     |> snd
+end
+
+module PageTitle : sig
+  val render_title : Page.t -> Item.t list
+end = struct
+  let format_title kind name =
+    let mk title =
+      let level = 0 and label = None in
+      [ Types.Item.Heading { level; label; title } ]
+    in
+    let prefix s =
+      mk (Types.inline (Text (s ^ " ")) :: Codefmt.code (Codefmt.txt name))
+    in
+    match kind with
+    | `Module -> prefix "Module"
+    | `Argument -> prefix "Parameter"
+    | `ModuleType -> prefix "Module type"
+    | `ClassType -> prefix "Class type"
+    | `Class -> prefix "Class"
+    | `Page -> []
+
+  let make_name_from_path { Url.Path.name; parent; _ } =
+    match parent with
+    | None | Some { kind = `Page; _ } -> name
+    | Some p -> Printf.sprintf "%s.%s" p.name name
+
+  let render_title (p : Page.t) =
+    format_title p.kind
+      (make_name_from_path p.url)
 end
 
 module Math : sig

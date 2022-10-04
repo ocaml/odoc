@@ -431,7 +431,7 @@ let rec documentedSrc (l : DocumentedSrc.t) =
           let l = list ~sep:break (List.map f lines) in
           indent 2 (break ++ l) ++ break_if_nonempty rest ++ continue rest)
 
-and subpage { title = _; header = _; items; url = _ } =
+and subpage { title = _; kind = _; preamble = _; items; url = _ } =
   let content = items in
   let surround body =
     if content = [] then sp else indent 2 (break ++ body) ++ break
@@ -476,13 +476,15 @@ let on_sub subp =
   | `Page p -> if Link.should_inline p.Subpage.content.url then Some 1 else None
   | `Include incl -> if inline_subpage incl.Include.status then Some 0 else None
 
-let page { Page.title; header; items = i; url } =
+let page p =
   reset_heading ();
-  let header = Shift.compute ~on_sub header in
-  let i = Shift.compute ~on_sub i in
-  macro "TH" {|%s 3 "" "Odoc" "OCaml Library"|} title
+  let header =
+    Doctree.PageTitle.render_title p @ Shift.compute ~on_sub p.preamble
+  in
+  let i = Shift.compute ~on_sub p.items in
+  macro "TH" {|%s 3 "" "Odoc" "OCaml Library"|} p.title
   ++ macro "SH" "Name"
-  ++ str "%s" (String.concat "." @@ Link.for_printing url)
+  ++ str "%s" (String.concat "." @@ Link.for_printing p.url)
   ++ macro "SH" "Synopsis" ++ vspace ++ item ~nested:false header
   ++ macro "SH" "Documentation" ++ vspace ++ macro "nf" ""
   ++ item ~nested:false i

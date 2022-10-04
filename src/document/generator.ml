@@ -21,26 +21,6 @@ open Types
 module O = Codefmt
 open O.Infix
 
-(* TODO: Title formatting should be a renderer decision *)
-let format_title kind name =
-  let mk title =
-    let level = 0 and label = None in
-    [ Item.Heading { level; label; title } ]
-  in
-  let prefix s = mk (inline (Text (s ^ " ")) :: O.code (O.txt name)) in
-  match kind with
-  | `Mod -> prefix "Module"
-  | `Arg -> prefix "Parameter"
-  | `Mty -> prefix "Module type"
-  | `Cty -> prefix "Class type"
-  | `Class -> prefix "Class"
-  | `Page -> mk [ inline @@ Text name ]
-
-let make_name_from_path { Url.Path.name; parent; _ } =
-  match parent with
-  | None -> name
-  | Some p -> Printf.sprintf "%s.%s" p.name name
-
 let label t =
   match t with
   | Odoc_model.Lang.TypeExpr.Label s -> O.txt s
@@ -92,12 +72,10 @@ let prepare_preamble comment items =
   in
   (Comment.standalone preamble, Comment.standalone first_comment @ items)
 
-let make_expansion_page title kind url ?(header_title = make_name_from_path url)
-    comments items =
+let make_expansion_page title kind url comments items =
   let comment = List.concat comments in
   let preamble, items = prepare_preamble comment items in
-  let header = format_title kind header_title @ preamble in
-  { Page.title; header; items; url }
+  { Page.title; kind; preamble; items; url }
 
 include Generator_signatures
 
@@ -1069,7 +1047,8 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier t.id in
             let expansion_doc, items = class_signature csig in
             let page =
-              make_expansion_page name `Cty url [ t.doc; expansion_doc ] items
+              make_expansion_page name `ClassType url [ t.doc; expansion_doc ]
+                items
             in
             ( O.documentedSrc @@ path url [ inline @@ Text name ],
               Some page,
@@ -1195,7 +1174,7 @@ module Make (Syntax : SYNTAX) = struct
             let modname = path url [ inline @@ Text name ] in
             let type_with_expansion =
               let content =
-                make_expansion_page name `Arg url [ expansion_doc ] items
+                make_expansion_page name `Argument url [ expansion_doc ] items
               in
               let summary = O.render modtyp in
               let status = `Default in
@@ -1345,7 +1324,7 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
             let page =
-              make_expansion_page modname `Mod url [ t.doc; expansion_doc ]
+              make_expansion_page modname `Module url [ t.doc; expansion_doc ]
                 items
             in
             (link, status, Some page, Some expansion_doc)
@@ -1404,7 +1383,8 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier id in
             let link = path url [ inline @@ Text modname ] in
             let page =
-              make_expansion_page modname `Mty url [ doc; expansion_doc ] items
+              make_expansion_page modname `ModuleType url [ doc; expansion_doc ]
+                items
             in
             (link, Some page, Some expansion_doc)
       in
@@ -1686,7 +1666,7 @@ module Make (Syntax : SYNTAX) = struct
         | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
-      make_expansion_page title ~header_title:title `Mod url [ unit_doc ] items
+      make_expansion_page title `Module url [ unit_doc ] items
 
     let page (t : Odoc_model.Lang.Page.t) : Page.t =
       let name =
@@ -1694,8 +1674,9 @@ module Make (Syntax : SYNTAX) = struct
       in
       let title = Odoc_model.Names.PageName.to_string name in
       let url = Url.Path.from_identifier t.name in
-      let header, items = Sectioning.docs t.content in
-      { Page.title; header; items; url }
+      let preamble, items = Sectioning.docs t.content in
+      let kind = `Page in
+      { Page.title; kind; preamble; items; url }
   end
 
   include Page
