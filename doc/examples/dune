@@ -3,5 +3,9 @@
  (public_name odoc.examples)
  (enabled_if
   (> %{ocaml_version} 4.11))
- (modules_without_implementation expansion resolution unexposed wrapping
-   markup))
+ (modules_without_implementation
+  expansion
+  resolution
+  unexposed
+  wrapping
+  markup))

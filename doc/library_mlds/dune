@@ -1,5 +1,14 @@
 (documentation
  (package odoc)
- (mld_files odoc_document odoc_examples odoc_html odoc_latex odoc_loader
-   odoc_manpage odoc_model odoc_model_desc odoc_odoc odoc_xref2
-   odoc_xref_test))
+ (mld_files
+  odoc_document
+  odoc_examples
+  odoc_html
+  odoc_latex
+  odoc_loader
+  odoc_manpage
+  odoc_model
+  odoc_model_desc
+  odoc_odoc
+  odoc_xref2
+  odoc_xref_test))

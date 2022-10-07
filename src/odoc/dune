@@ -1,8 +1,18 @@
 (library
  (name odoc_odoc)
  (public_name odoc.odoc)
- (libraries compiler-libs.common fpath odoc_html odoc_manpage odoc_latex
-   odoc_loader odoc_model odoc_xref2 tyxml unix)
+ (libraries
+  compiler-libs.common
+  fpath
+  odoc_html
+  odoc_manpage
+  odoc_latex
+  odoc_vendor
+  odoc_loader
+  odoc_model
+  odoc_xref2
+  tyxml
+  unix)
  (instrumentation
   (backend bisect_ppx)))
 
@@ -20,18 +30,6 @@
     (echo "let content = {css|")
     (cat %{css})
     (echo "|css}")))))
-
-(rule
- (targets highlight_js.ml)
- (deps
-  (:js ../vendor/highlight.pack.js))
- (action
-  (with-stdout-to
-   %{targets}
-   (progn
-    (echo "let content = {js|")
-    (cat %{js})
-    (echo "|js}")))))
 
 ; Install theme files for odig.
 

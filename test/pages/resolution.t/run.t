@@ -97,7 +97,29 @@ Let's also check the hierarchy of files produced:
 
   $ odoc support-files -o html
   $ find html -type f | sort
+  html/fonts/KaTeX_AMS-Regular.woff2
+  html/fonts/KaTeX_Caligraphic-Bold.woff2
+  html/fonts/KaTeX_Caligraphic-Regular.woff2
+  html/fonts/KaTeX_Fraktur-Bold.woff2
+  html/fonts/KaTeX_Fraktur-Regular.woff2
+  html/fonts/KaTeX_Main-Bold.woff2
+  html/fonts/KaTeX_Main-BoldItalic.woff2
+  html/fonts/KaTeX_Main-Italic.woff2
+  html/fonts/KaTeX_Main-Regular.woff2
+  html/fonts/KaTeX_Math-BoldItalic.woff2
+  html/fonts/KaTeX_Math-Italic.woff2
+  html/fonts/KaTeX_SansSerif-Bold.woff2
+  html/fonts/KaTeX_SansSerif-Italic.woff2
+  html/fonts/KaTeX_SansSerif-Regular.woff2
+  html/fonts/KaTeX_Script-Regular.woff2
+  html/fonts/KaTeX_Size1-Regular.woff2
+  html/fonts/KaTeX_Size2-Regular.woff2
+  html/fonts/KaTeX_Size3-Regular.woff2
+  html/fonts/KaTeX_Size4-Regular.woff2
+  html/fonts/KaTeX_Typewriter-Regular.woff2
   html/highlight.pack.js
+  html/katex.min.css
+  html/katex.min.js
   html/odoc.css
   html/top1/index.html
   html/top1/sub1/M1/index.html
