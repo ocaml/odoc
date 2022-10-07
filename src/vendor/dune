@@ -1,0 +1,19 @@
+(rule
+ (alias runtest)
+ (deps
+  (:x odoc_vendor.ml)
+  (glob_files *.js)
+  (glob_files *.css)
+  (glob_files_rec *.woff2))
+ (action
+  (progn
+   (setenv
+    SOURCE_DATE_EPOCH
+    0
+    (run ocaml-crunch . -e js -e css -e woff2 -o %{x}.corrected -m plain -s))
+   (diff? %{x} %{x}.corrected))))
+
+(library
+ (name odoc_vendor)
+ (public_name odoc.vendor)
+ (wrapped false))
