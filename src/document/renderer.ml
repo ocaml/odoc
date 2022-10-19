@@ -26,3 +26,29 @@ let document_of_compilation_unit ~syntax v =
   match syntax with
   | Reason -> Reason.compilation_unit v
   | OCaml -> ML.compilation_unit v
+
+let document_of_source v =
+  let open Types in
+  let title = Fpath.to_string v in
+  let header = [] in
+  let items =
+    match Fs.File.read v with
+    | Ok content ->
+        let lines = String.split_on_char '\n' content in
+        let rec loop acc = function
+          | [] -> acc
+          | h :: t ->
+              let block =
+                {
+                  Block.attr = [];
+                  desc = Paragraph [ { attr = []; desc = Text h } ];
+                }
+              in
+              let item = Item.Text [ block ] in
+              loop (item :: acc) t
+        in
+        List.rev (loop [] lines)
+    | Error _ -> []
+  in
+  let url = { Url.Path.kind = `File; parent = None; name = title } in
+  { Page.title; header; items; url }

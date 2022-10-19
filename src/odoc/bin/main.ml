@@ -317,15 +317,25 @@ end = struct
     let doc = "Input file" in
     Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
 
+  let impl =
+    let doc = "Implementation source file" in
+    Arg.(value & opt (some file) None & info [ "impl" ] ~doc ~docv:"file.ml")
+
+  let intf =
+    let doc = "Interface source file" in
+    Arg.(value & opt (some file) None & info [ "intf" ] ~doc ~docv:"file.mli")
+
   module Process = struct
-    let process extra _hidden directories output_dir syntax input_file
-        warnings_options =
+    let process extra _hidden directories output_dir syntax input_file impl_file
+        intf_file warnings_options =
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
       in
       let file = Fs.File.of_string input_file in
-      Rendering.render_odoc ~renderer:R.renderer ~resolver ~warnings_options
-        ~syntax ~output:output_dir extra file
+      let impl = Option.map Fs.File.of_string impl_file in
+      let intf = Option.map Fs.File.of_string intf_file in
+      Rendering.render_odoc ?impl ?intf ~renderer:R.renderer ~resolver
+        ~warnings_options ~syntax ~output:output_dir extra file
 
     let cmd =
       let syntax =
@@ -339,7 +349,8 @@ end = struct
       Term.(
         const handle_error
         $ (const process $ R.extra_args $ hidden $ odoc_file_directories
-         $ dst ~create:true () $ syntax $ input $ warnings_options))
+         $ dst ~create:true () $ syntax $ input $ impl $ intf $ warnings_options
+          ))
 
     let info =
       let doc =
