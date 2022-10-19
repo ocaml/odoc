@@ -2,7 +2,7 @@
 
 open Odoc_odoc
 open Odoc_model_desc
-open Or_error
+open Odoc_base.Or_error
 
 let print_json_desc desc x =
   let yojson = Type_desc_to_yojson.to_yojson desc x in

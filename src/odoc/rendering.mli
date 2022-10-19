@@ -2,6 +2,8 @@ open Odoc_document
 open Or_error
 
 val render_odoc :
+  ?impl:Fpath.t ->
+  ?intf:Fpath.t ->
   resolver:Resolver.t ->
   warnings_options:Odoc_model.Error.warnings_options ->
   syntax:Renderer.syntax ->

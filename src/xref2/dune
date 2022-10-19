@@ -1,7 +1,9 @@
 (library
  (name odoc_xref2)
  (public_name odoc.xref2)
- (libraries compiler-libs.common odoc_model unix))
+ (libraries odoc_base odoc_model)
+ (flags
+  (:standard -open Odoc_base)))
 
 (rule
  (alias runmdx)
