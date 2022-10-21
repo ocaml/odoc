@@ -42,7 +42,7 @@ let docs = "ARGUMENTS"
 
 let odoc_file_directories =
   let doc =
-    "Where to look for required .odoc files. (Can be present several times)."
+    "Where to look for required $(i,.odoc) files. Can be present several times."
   in
   Arg.(
     value
@@ -118,7 +118,7 @@ let section_legacy = "COMMANDS: Legacy pipeline"
 let section_deprecated = "COMMANDS: Deprecated"
 
 (** Sections in the order they should appear. *)
-let sections =
+let main_page_sections =
   [
     section_pipeline;
     section_generators;
@@ -189,26 +189,23 @@ end = struct
       ~warnings_options input
 
   let input =
-    let doc = "Input cmti, cmt, cmi or mld file" in
+    let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
     Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
 
   let dst =
     let doc =
-      "Output file path. Non-existing intermediate directories are\n\
-      \                 created. If absent outputs a $(i,BASE).odoc file in \
-       the same\n\
-      \                 directory as the input file where $(i,BASE) is the \
-       basename\n\
-      \                 of the input file (for mld files the \"page-\" prefix \
-       will be\n\
-      \                 added if not already present in the input basename)."
+      "Output file path. Non-existing intermediate directories are created. If \
+       absent outputs a $(i,BASE.odoc) file in the same directory as the input \
+       file where $(i,BASE) is the basename of the input file. For mld files \
+       the \"page-\" prefix will be added if not already present in the input \
+       basename."
     in
     Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
 
   let children =
     let doc =
-      "Specify the odoc file as a child. Can be used multiple times. Only \
-       applies to mld files"
+      "Specify the $(i,.odoc) file as a child. Can be used multiple times. \
+       Only applies to mld files"
     in
     let default = [] in
     Arg.(
@@ -216,21 +213,23 @@ end = struct
 
   let cmd =
     let package_opt =
-      let doc = "Package the input is part of (deprecated - use '--parent')" in
+      let doc =
+        "Package the input is part of. Deprecated: use '--parent' instead."
+      in
       Arg.(
         value
         & opt (some string) None
         & info ~docs ~docv:"PKG" ~doc [ "package"; "pkg" ])
     in
     let parent_opt =
-      let doc = "Parent page or subpage" in
+      let doc = "Parent page or subpage." in
       Arg.(
         value
         & opt (some string) None
         & info ~docs ~docv:"PARENT" ~doc [ "parent" ])
     in
     let resolve_fwd_refs =
-      let doc = "Try resolving forward references" in
+      let doc = "Try resolving forward references." in
       Arg.(value & flag & info ~doc [ "r"; "resolve-fwd-refs" ])
     in
     Term.(
@@ -240,8 +239,20 @@ end = struct
        $ warnings_options))
 
   let info =
-    Term.info "compile" ~docs:section_pipeline
-      ~doc:"Compile a cmti, cmt, cmi or mld file to an odoc file."
+    let man =
+      [
+        `S "DEPENDENCIES";
+        `P
+          "Dependencies between compilation units is the same as while \
+           compiling the initial OCaml modules.";
+        `P "Mld pages don't have any dependency.";
+      ]
+    in
+    let doc =
+      "Compile a $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file to an \
+       $(i,.odoc) file."
+    in
+    Term.info "compile" ~docs:section_pipeline ~doc ~man
 end
 
 module Support_files_command = struct
@@ -267,7 +278,7 @@ module Css = struct
 
   let info =
     let doc =
-      "DEPRECATED: Use `odoc support-files' to copy the CSS file for the \
+      "DEPRECATED: Use $(i,odoc support-files) to copy the CSS file for the \
        default theme."
     in
     Term.info ~docs:section_deprecated ~doc "css"
@@ -295,16 +306,19 @@ end = struct
 
   let dst =
     let doc =
-      "Output file path. Non-existing intermediate directories are\n\
-      \                 created. If absent outputs a .odocl file in the same\n\
-      \                 directory as the input file."
+      "Output file path. Non-existing intermediate directories are created. If \
+       absent outputs a $(i,.odocl) file in the same directory as the input \
+       file with the same basename."
     in
-    Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
+    Arg.(
+      value
+      & opt (some string) None
+      & info ~docs ~docv:"PATH.odocl" ~doc [ "o" ])
 
   let cmd =
     let input =
       let doc = "Input file" in
-      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
+      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE.odoc" [])
     in
     Term.(
       const handle_error
@@ -312,7 +326,21 @@ end = struct
        $ open_modules))
 
   let info =
-    Term.info ~docs:section_pipeline ~doc:"Link odoc files together" "link"
+    let man =
+      [
+        `S "DEPENDENCIES";
+        `P
+          "Any link step depends on the result of all the compile results that \
+           could potentially be needed to resolve forward references. A \
+           correct approximation is to start linking only after every compile \
+           steps are done, passing everything that's possible to $(i,-I). Link \
+           steps don't have dependencies between them.";
+      ]
+    in
+    let doc =
+      "Second stage of compilation. Link a $(i,.odoc) into a $(i,.odocl)."
+    in
+    Term.info ~docs:section_pipeline ~doc ~man "link"
 end
 
 module type S = sig
@@ -332,9 +360,13 @@ module Make_renderer (R : S) : sig
 
   val generate : unit Term.t * Term.info
 end = struct
-  let input =
-    let doc = "Input file" in
-    Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
+  let input_odoc =
+    let doc = "Input file." in
+    Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE.odoc" [])
+
+  let input_odocl =
+    let doc = "Input file." in
+    Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE.odocl" [])
 
   module Process = struct
     let process extra _hidden directories output_dir syntax input_file
@@ -358,11 +390,14 @@ end = struct
       Term.(
         const handle_error
         $ (const process $ R.extra_args $ hidden $ odoc_file_directories
-         $ dst ~create:true () $ syntax $ input $ warnings_options))
+         $ dst ~create:true () $ syntax $ input_odoc $ warnings_options))
 
     let info =
       let doc =
-        Format.sprintf "Render %s files from an odoc one" R.renderer.name
+        Format.sprintf
+          "Render %s files from a $(i,.odoc). $(i,link) then $(i,%s-generate) \
+           should be used instead."
+          R.renderer.name R.renderer.name
       in
       Term.info ~docs:section_legacy ~doc R.renderer.name
   end
@@ -388,11 +423,11 @@ end = struct
       Term.(
         const handle_error
         $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
-         $ extra_suffix $ input))
+         $ extra_suffix $ input_odocl))
 
     let info =
       let doc =
-        Format.sprintf "Generate %s files from an odocl one" R.renderer.name
+        Format.sprintf "Generate %s files from a $(i,.odocl)." R.renderer.name
       in
       Term.info ~docs:R.generate_docs ~doc (R.renderer.name ^ "-generate")
   end
@@ -413,8 +448,8 @@ end = struct
 
     let back_compat =
       let doc =
-        "For backwards compatibility when processing odoc rather than odocl \
-         files."
+        "For backwards compatibility when processing $(i,.odoc) rather than \
+         $(i,.odocl) files."
       in
       Arg.(
         value
@@ -424,12 +459,17 @@ end = struct
     let cmd =
       Term.(
         const handle_error
-        $ (const list_targets $ dst () $ back_compat $ R.extra_args $ input))
+        $ (const list_targets $ dst () $ back_compat $ R.extra_args
+         $ input_odocl))
 
     let info =
-      Term.info
-        (R.renderer.name ^ "-targets")
-        ~docs:section_support ~doc:"TODO: Fill in."
+      let doc =
+        Format.sprintf
+          "Print the files that would be generated by $(i,%s-generate). Works \
+           on both $(i,.odoc) and $(i,.odocl) files."
+          R.renderer.name
+      in
+      Term.info (R.renderer.name ^ "-targets") ~docs:section_support ~doc
   end
 
   let targets = Targets.(cmd, info)
@@ -453,7 +493,7 @@ end = struct
 
   let info =
     Term.info ~docs:section_support
-      ~doc:"Resolve a reference and output its corresponding url" "latex-url"
+      ~doc:"Resolve a reference and output its corresponding url." "latex-url"
 end
 
 module Odoc_html_args = struct
@@ -462,7 +502,7 @@ module Odoc_html_args = struct
   let renderer = Html_page.renderer
 
   let semantic_uris =
-    let doc = "Generate pretty (semantic) links" in
+    let doc = "Generate pretty (semantic) links." in
     Arg.(value & flag (info ~doc [ "semantic-uris"; "pretty-uris" ]))
 
   let closed_details =
@@ -473,7 +513,7 @@ module Odoc_html_args = struct
     Arg.(value & flag (info ~doc [ "closed-details" ]))
 
   let indent =
-    let doc = "Format the output HTML files with indentation" in
+    let doc = "Format the output HTML files with indentation." in
     Arg.(value & flag (info ~doc [ "indent" ]))
 
   (* Very basic validation and normalization for URI paths. *)
@@ -588,7 +628,7 @@ end = struct
 
   let info =
     Term.info ~docs:section_support
-      ~doc:"Resolve a reference and output its corresponding url" "html-url"
+      ~doc:"Resolve a reference and output its corresponding url." "html-url"
 end
 
 module Html_fragment : sig
@@ -614,13 +654,13 @@ end = struct
 
   let cmd =
     let output =
-      let doc = "Output HTML fragment file" in
+      let doc = "Output HTML fragment file." in
       Arg.(
         value & opt string "/dev/stdout"
         & info ~docs ~docv:"file.html" ~doc [ "o"; "output-file" ])
     in
     let input =
-      let doc = "Input documentation page file" in
+      let doc = "Input documentation page file." in
       Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.mld" [])
     in
     let xref_base_uri =
@@ -637,7 +677,7 @@ end = struct
 
   let info =
     Term.info ~docs:section_legacy
-      ~doc:"Generates an html fragment file from an mld one" "html-fragment"
+      ~doc:"Generates an html fragment file from an mld one." "html-fragment"
 end
 
 module Odoc_manpage = Make_renderer (struct
@@ -656,7 +696,7 @@ module Odoc_latex = Make_renderer (struct
   let renderer = Latex.renderer
 
   let with_children =
-    let doc = "Include children at the end of the page" in
+    let doc = "Include children at the end of the page." in
     Arg.(value & opt bool true & info ~docv:"BOOL" ~doc [ "with-children" ])
 
   let extra_args =
@@ -692,7 +732,9 @@ module Depends = struct
         ~doc:
           "List units (with their digest) which needs to be compiled in order \
            to compile this one. The unit itself and its digest is also \
-           reported in the output."
+           reported in the output.\n\
+           Dependencies between compile steps are the same as when compiling \
+           the ocaml modules."
   end
 
   module Link = struct
@@ -736,8 +778,12 @@ module Depends = struct
     let info =
       Term.info "link-deps" ~docs:section_legacy
         ~doc:
-          "lists the packages which need to be in odoc's load path to link the \
-           .odoc files in the given directory"
+          "Lists the packages which need to be in odoc's load path to link the \
+           $(i,.odoc) files in the given directory.\n\
+           The result is not correct in case of forward references. A \
+           conservative approximation is: any link step depends on the result \
+           of all the compile steps that could be targeted by a forward \
+           reference."
   end
 
   module Odoc_html = struct
@@ -773,7 +819,10 @@ module Targets = struct
     let cmd = Term.(const list_targets $ Compile.dst $ Compile.input)
 
     let info =
-      Term.info "compile-targets" ~docs:section_legacy ~doc:"TODO: Fill in."
+      Term.info "compile-targets" ~docs:section_legacy
+        ~doc:
+          "Print the name of the file produced by $(i,compile). If $(i,-o) is \
+           passed, the same path is printed but error checking is performed."
   end
 
   module Support_files = struct
@@ -785,7 +834,8 @@ module Targets = struct
 
     let info =
       Term.info "support-files-targets" ~docs:section_support
-        ~doc:"Lists the names of the files that 'odoc support-files' outputs."
+        ~doc:
+          "Lists the names of the files that $(i,odoc support-files) outputs."
   end
 end
 
@@ -799,14 +849,14 @@ module Odoc_error = struct
     Ok ()
 
   let input =
-    let doc = "Input odoc or odocl file" in
+    let doc = "Input $(i,.odoc) or $(i,.odocl) file" in
     Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
 
   let cmd = Term.(const handle_error $ (const errors $ input))
 
   let info =
     Term.info "errors" ~docs:section_support
-      ~doc:"Print errors that occurred while an .odoc file was generated."
+      ~doc:"Print errors that occurred while compiling or linking."
 end
 
 let () =
@@ -848,7 +898,7 @@ let () =
     in
     let man =
       (* Show sections in a defined order. *)
-      List.map ~f:(fun s -> `S s) sections
+      List.map ~f:(fun s -> `S s) main_page_sections
     in
     ( Term.(const print_default $ const ()),
       Term.info ~man ~version:"%%VERSION%%" "odoc" )
