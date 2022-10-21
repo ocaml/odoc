@@ -659,6 +659,14 @@ let read_type_kind env parent =
           Some (Record lbls)
     | Type_open ->  Some Extensible
 
+let read_injectivity var =
+#if OCAML_VERSION < (5, 1, 0)
+  let _, _, _, inj = Variance.get_lower var in
+#else
+  let _, _, inj = Variance.get_lower var in
+#endif
+  inj
+
 let read_type_parameter abstr var param =
   let open TypeDecl in
   let name = name_of_type param in
@@ -674,10 +682,7 @@ let read_type_parameter abstr var param =
         else if not co then Some Neg
         else None
       end in
-  let injectivity =
-    let _,_,_,inj =Variance.get_lower var in
-    inj
-  in
+  let injectivity = read_injectivity var in
   {desc; variance; injectivity}
 
 let read_type_constraints env params =
