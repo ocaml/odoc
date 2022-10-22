@@ -1,0 +1,163 @@
+body {
+  margin: 0;
+  padding: 0;
+  margin-bottom: 1em;
+}
+
+form {
+  display: flex;
+  margin: 0;
+  padding: 1rem;
+  background-color: #EABB60;
+  border-bottom: 2px solid #C78746;
+  position: fixed;
+  top: 0px;
+  width: 100%;
+  height: 2.5em;
+}
+
+#results {
+  margin-top: 7.5em;
+}
+
+input {
+  line-height: 1.5em;
+}
+
+input[type="text"] {
+  width: 80%;
+  background-color: #FADFB1;
+  font-size: 1.5em;
+  border: none;
+  margin-right: -2px;
+  padding: 0 0.5em;
+  margin-left: 1.7em;
+  outline: 1px solid #553515;
+}
+input[type="submit"] {
+  padding: 0 1em;
+  font-size: 1.5em;
+  background-color: #C78746;
+  border: none;
+  color: #553515;
+  font-weight: bold;
+  outline: 1px solid #553515;
+}
+
+a {
+  text-decoration: none;
+}
+
+pre {
+  margin: 0.5em;
+  font-size: 1.1rem;
+  white-space: normal;
+}
+pre {
+  padding-left: 6em;
+  text-indent: -6em;
+}
+
+pre em {
+  font-style: normal;
+  font-weight: bold;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+.found li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 1.5em;
+  margin-right: 5em;
+  margin-left: 0.95em;
+}
+
+.found li em {
+  margin: 0 -3px;
+  padding: 3px;
+  color: black;
+}
+
+.found li:hover em {
+  background: #FADFB1;
+}
+
+.found li a:hover em {
+  background: #EABB60;
+  border-bottom: 2px solid #553515;
+}
+
+
+h1, ul.doc, p {
+  margin: 0;
+  padding: 0;
+  margin-left: 3.4rem;
+}
+
+h1 {
+  margin-bottom: 1em;
+  font-size: 3em;
+}
+
+p.doc {
+  margin-bottom: 1em;
+  font-size: 1.5em;
+}
+
+ul.doc li {
+  margin-bottom: 0.5em;
+}
+
+.doc code {
+  font-size: 1rem;
+  background: #eee;
+  padding: 0.1em 0.5em;
+}
+
+.query {
+  background-color: #FADFB1;
+  border-top: 1px solid #C78746;
+  border-bottom: 2px solid #C78746;
+  position: fixed;
+  top: 4.5em;
+  width: 100%;
+  padding: 0.3em 4.2em;
+  font-style: italic;
+  color: #553515;
+}
+.query code {
+  margin-left: 1em;
+}
+
+code {
+  font-size: 1rem;
+}
+
+.pkg {
+  margin-left: 3em;
+  margin-bottom: -0.4em;
+}
+
+.pkg a, .pkg a:visited {
+  margin: 0;
+  font-weight: bold;
+  font-size: 0.8em;
+  padding: 0 5px;
+  color: #1A3B60;
+}
+
+.pkg .version {
+  font-weight: normal;
+  color: #8BA4C0;
+}
+
+.pkg a:hover, .pkg a:hover .version {
+  background: #3D5570;
+  color: white !important;
+  text-decoration: none;
+}

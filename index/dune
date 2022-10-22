@@ -1,0 +1,12 @@
+(executable
+ (name index)
+ (libraries
+  db
+  fpath
+  tyxml
+  opam-core
+  odoc.loader
+  odoc.model
+  odoc.xref2
+  odoc.odoc
+  str))
