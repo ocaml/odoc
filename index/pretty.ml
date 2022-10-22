@@ -10,6 +10,32 @@ let fmt_to_string f =
   Format.fprintf to_b "%!" ;
   Buffer.contents b
 
+let string_of_identifier = function
+  | `Class (_, n) -> Names.ClassName.to_string n
+  | `ClassType (_, n) -> Names.ClassTypeName.to_string n
+  | `Constructor (_, n) -> Names.ConstructorName.to_string n
+  | `Exception (_, n) -> Names.ExceptionName.to_string n
+  | `Extension (_, n) -> Names.ExtensionName.to_string n
+  | `Field (_, n) -> Names.FieldName.to_string n
+  | `InstanceVariable (_, n) -> Names.InstanceVariableName.to_string n
+  | `Label (_, n) -> Names.LabelName.to_string n
+  | `Method (_, n) -> Names.MethodName.to_string n
+  | `Module (_, n) -> ModuleName.to_string n
+  | `ModuleType (_, n) -> Names.ModuleTypeName.to_string n
+  | `Type (_, n) -> Names.TypeName.to_string n
+  | `Value (_, n) -> Names.ValueName.to_string n
+  | _ -> ""
+
+let string_of_resolved = function
+  | `Identifier v -> string_of_identifier v
+  | r -> string_of_identifier r
+
+let string_of_reference = function
+  | `Root (r, _) -> r
+  | `Dot (_, n) -> n
+  | `Resolved r -> string_of_resolved r
+  | r -> string_of_identifier r
+
 let rec string_of_non_link = function
   | `Space -> H.txt " "
   | `Word w -> H.txt w
@@ -19,7 +45,7 @@ let rec string_of_non_link = function
 
 and string_of_element = function
   | `Styled (_, lst) -> string_of_paragraph lst
-  | `Reference (_, r) -> string_of_link_content r
+  | `Reference (r, _) -> H.code [ H.txt (string_of_reference r) ]
   | `Link (_, r) -> string_of_link_content r
   | `Space -> H.txt " "
   | `Word w -> H.txt w
