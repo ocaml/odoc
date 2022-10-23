@@ -161,3 +161,12 @@ code {
   color: white !important;
   text-decoration: none;
 }
+
+.ad {
+  padding-top: 3rem;
+  font-family: monospace;
+  font-style: italic;
+  font-size: 1rem;
+}
+
+.ad svg { vertical-align: middle; margin-right: 0.5rem }
