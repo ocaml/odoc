@@ -111,22 +111,6 @@ let open_modules =
   let default = [ "Stdlib" ] in
   Arg.(value & opt_all string default & info ~docv:"MODULE" ~doc [ "open" ])
 
-let section_pipeline = "COMMANDS: Compilation pipeline"
-let section_generators = "COMMANDS: Alternative generators"
-let section_support = "COMMANDS: Scripting"
-let section_legacy = "COMMANDS: Legacy pipeline"
-let section_deprecated = "COMMANDS: Deprecated"
-
-(** Sections in the order they should appear. *)
-let main_page_sections =
-  [
-    section_pipeline;
-    section_generators;
-    section_support;
-    section_legacy;
-    section_deprecated;
-  ]
-
 module Compile : sig
   val output_file : dst:string option -> input:Fs.file -> Fs.file
 
@@ -136,7 +120,7 @@ module Compile : sig
 
   val cmd : unit Term.t
 
-  val info : Term.info
+  val info : docs:string -> Term.info
 end = struct
   let has_page_prefix file =
     file |> Fs.File.basename |> Fs.File.to_string
@@ -238,7 +222,7 @@ end = struct
        $ package_opt $ parent_opt $ open_modules $ children $ input
        $ warnings_options))
 
-  let info =
+  let info ~docs =
     let man =
       [
         `S "DEPENDENCIES";
@@ -252,7 +236,7 @@ end = struct
       "Compile a $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file to an \
        $(i,.odoc) file."
     in
-    Term.info "compile" ~docs:section_pipeline ~doc ~man
+    Term.info "compile" ~docs ~doc ~man
 end
 
 module Support_files_command = struct
@@ -265,29 +249,29 @@ module Support_files_command = struct
 
   let cmd = Term.(const support_files $ without_theme $ dst ~create:true ())
 
-  let info =
+  let info ~docs =
     let doc =
       "Copy the support files (e.g. default theme, JavaScript files) to the \
        output directory."
     in
-    Term.info ~docs:section_pipeline ~doc "support-files"
+    Term.info ~docs ~doc "support-files"
 end
 
 module Css = struct
   let cmd = Support_files_command.cmd
 
-  let info =
+  let info ~docs =
     let doc =
       "DEPRECATED: Use $(i,odoc support-files) to copy the CSS file for the \
        default theme."
     in
-    Term.info ~docs:section_deprecated ~doc "css"
+    Term.info ~docs ~doc "css"
 end
 
 module Odoc_link : sig
   val cmd : unit Term.t
 
-  val info : Term.info
+  val info : docs:string -> Term.info
 end = struct
   let get_output_file ~output_file ~input =
     match output_file with
@@ -325,7 +309,7 @@ end = struct
       $ (const link $ odoc_file_directories $ input $ dst $ warnings_options
        $ open_modules))
 
-  let info =
+  let info ~docs =
     let man =
       [
         `S "DEPENDENCIES";
@@ -340,7 +324,7 @@ end = struct
     let doc =
       "Second stage of compilation. Link a $(i,.odoc) into a $(i,.odocl)."
     in
-    Term.info ~docs:section_pipeline ~doc ~man "link"
+    Term.info ~docs ~doc ~man "link"
 end
 
 module type S = sig
@@ -349,16 +333,14 @@ module type S = sig
   val renderer : args Odoc_document.Renderer.t
 
   val extra_args : args Cmdliner.Term.t
-
-  val generate_docs : string
 end
 
 module Make_renderer (R : S) : sig
-  val process : unit Term.t * Term.info
+  val process : docs:string -> unit Term.t * Term.info
 
-  val targets : unit Term.t * Term.info
+  val targets : docs:string -> unit Term.t * Term.info
 
-  val generate : unit Term.t * Term.info
+  val generate : docs:string -> unit Term.t * Term.info
 end = struct
   let input_odoc =
     let doc = "Input file." in
@@ -392,17 +374,17 @@ end = struct
         $ (const process $ R.extra_args $ hidden $ odoc_file_directories
          $ dst ~create:true () $ syntax $ input_odoc $ warnings_options))
 
-    let info =
+    let info ~docs =
       let doc =
         Format.sprintf
           "Render %s files from a $(i,.odoc). $(i,link) then $(i,%s-generate) \
            should be used instead."
           R.renderer.name R.renderer.name
       in
-      Term.info ~docs:section_legacy ~doc R.renderer.name
+      Term.info ~docs ~doc R.renderer.name
   end
 
-  let process = Process.(cmd, info)
+  let process ~docs = Process.(cmd, info ~docs)
 
   module Generate = struct
     let generate extra _hidden output_dir syntax extra_suffix input_file =
@@ -425,14 +407,14 @@ end = struct
         $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
          $ extra_suffix $ input_odocl))
 
-    let info =
+    let info ~docs =
       let doc =
         Format.sprintf "Generate %s files from a $(i,.odocl)." R.renderer.name
       in
-      Term.info ~docs:R.generate_docs ~doc (R.renderer.name ^ "-generate")
+      Term.info ~docs ~doc (R.renderer.name ^ "-generate")
   end
 
-  let generate = Generate.(cmd, info)
+  let generate ~docs = Generate.(cmd, info ~docs)
 
   module Targets = struct
     let list_targets output_dir directories extra odoc_file =
@@ -462,23 +444,22 @@ end = struct
         $ (const list_targets $ dst () $ back_compat $ R.extra_args
          $ input_odocl))
 
-    let info =
+    let info ~docs =
       let doc =
         Format.sprintf
-          "Print the files that would be generated by $(i,%s-generate). Works \
-           on both $(i,.odoc) and $(i,.odocl) files."
+          "Print the files that would be generated by $(i,%s-generate)."
           R.renderer.name
       in
-      Term.info (R.renderer.name ^ "-targets") ~docs:section_support ~doc
+      Term.info (R.renderer.name ^ "-targets") ~docs ~doc
   end
 
-  let targets = Targets.(cmd, info)
+  let targets ~docs = Targets.(cmd, info ~docs)
 end
 
 module Odoc_latex_url : sig
   val cmd : unit Term.t
 
-  val info : Term.info
+  val info : docs:string -> Term.info
 end = struct
   let reference =
     let doc = "The reference to be resolved and whose url to be generated." in
@@ -491,9 +472,9 @@ end = struct
       const handle_error
       $ (const reference_to_url $ odoc_file_directories $ reference))
 
-  let info =
-    Term.info ~docs:section_support
-      ~doc:"Resolve a reference and output its corresponding url." "latex-url"
+  let info ~docs =
+    Term.info ~docs ~doc:"Resolve a reference and output its corresponding url."
+      "latex-url"
 end
 
 module Odoc_html_args = struct
@@ -596,8 +577,6 @@ module Odoc_html_args = struct
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
       $ support_uri $ flat $ as_json)
-
-  let generate_docs = section_pipeline
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)
@@ -605,7 +584,7 @@ module Odoc_html = Make_renderer (Odoc_html_args)
 module Odoc_html_url : sig
   val cmd : unit Term.t
 
-  val info : Term.info
+  val info : docs:string -> Term.info
 end = struct
   let root_url =
     let doc =
@@ -626,15 +605,15 @@ end = struct
       $ (const reference_to_url $ Odoc_html_args.extra_args $ root_url
        $ odoc_file_directories $ reference))
 
-  let info =
-    Term.info ~docs:section_support
-      ~doc:"Resolve a reference and output its corresponding url." "html-url"
+  let info ~docs =
+    Term.info ~docs ~doc:"Resolve a reference and output its corresponding url."
+      "html-url"
 end
 
 module Html_fragment : sig
   val cmd : unit Term.t
 
-  val info : Term.info
+  val info : docs:string -> Term.info
 end = struct
   let html_fragment directories xref_base_uri output_file input_file
       warnings_options =
@@ -675,9 +654,9 @@ end = struct
       $ (const html_fragment $ odoc_file_directories $ xref_base_uri $ output
        $ input $ warnings_options))
 
-  let info =
-    Term.info ~docs:section_legacy
-      ~doc:"Generates an html fragment file from an mld one." "html-fragment"
+  let info ~docs =
+    Term.info ~docs ~doc:"Generates an html fragment file from an mld one."
+      "html-fragment"
 end
 
 module Odoc_manpage = Make_renderer (struct
@@ -686,8 +665,6 @@ module Odoc_manpage = Make_renderer (struct
   let renderer = Man_page.renderer
 
   let extra_args = Term.const ()
-
-  let generate_docs = section_generators
 end)
 
 module Odoc_latex = Make_renderer (struct
@@ -702,8 +679,6 @@ module Odoc_latex = Make_renderer (struct
   let extra_args =
     let f with_children = { Latex.with_children } in
     Term.(const f $ with_children)
-
-  let generate_docs = section_generators
 end)
 
 module Depends = struct
@@ -727,8 +702,8 @@ module Depends = struct
       in
       Term.(const list_dependencies $ input)
 
-    let info =
-      Term.info "compile-deps" ~docs:section_legacy
+    let info ~docs =
+      Term.info "compile-deps" ~docs
         ~doc:
           "List units (with their digest) which needs to be compiled in order \
            to compile this one. The unit itself and its digest is also \
@@ -775,15 +750,13 @@ module Depends = struct
       in
       Term.(const handle_error $ (const list_dependencies $ input))
 
-    let info =
-      Term.info "link-deps" ~docs:section_legacy
+    let info ~docs =
+      Term.info "link-deps" ~docs
         ~doc:
-          "Lists the packages which need to be in odoc's load path to link the \
-           $(i,.odoc) files in the given directory.\n\
-           The result is not correct in case of forward references. A \
-           conservative approximation is: any link step depends on the result \
-           of all the compile steps that could be targeted by a forward \
-           reference."
+          "Lists a subset of the packages and modules which need to be in \
+           odoc's load path to link the $(i, odoc) files in the given \
+           directory. Additional packages may be required to resolve all \
+           references."
   end
 
   module Odoc_html = struct
@@ -802,9 +775,8 @@ module Depends = struct
       let cmd _ = Link.list_dependencies in
       Term.(const handle_error $ (const cmd $ includes $ input))
 
-    let info =
-      Term.info "html-deps" ~docs:section_deprecated
-        ~doc:"DEPRECATED: alias for link-deps"
+    let info ~docs =
+      Term.info "html-deps" ~docs ~doc:"DEPRECATED: alias for link-deps"
   end
 end
 
@@ -818,8 +790,8 @@ module Targets = struct
 
     let cmd = Term.(const list_targets $ Compile.dst $ Compile.input)
 
-    let info =
-      Term.info "compile-targets" ~docs:section_legacy
+    let info ~docs =
+      Term.info "compile-targets" ~docs
         ~doc:
           "Print the name of the file produced by $(i,compile). If $(i,-o) is \
            passed, the same path is printed but error checking is performed."
@@ -832,8 +804,8 @@ module Targets = struct
     let cmd =
       Term.(const list_targets $ Support_files_command.without_theme $ dst ())
 
-    let info =
-      Term.info "support-files-targets" ~docs:section_support
+    let info ~docs =
+      Term.info "support-files-targets" ~docs
         ~doc:
           "Lists the names of the files that $(i,odoc support-files) outputs."
   end
@@ -854,37 +826,53 @@ module Odoc_error = struct
 
   let cmd = Term.(const handle_error $ (const errors $ input))
 
-  let info =
-    Term.info "errors" ~docs:section_support
+  let info ~docs =
+    Term.info "errors" ~docs
       ~doc:"Print errors that occurred while compiling or linking."
 end
+
+let section_pipeline = "COMMANDS: Compilation pipeline"
+let section_generators = "COMMANDS: Alternative generators"
+let section_support = "COMMANDS: Scripting"
+let section_legacy = "COMMANDS: Legacy pipeline"
+let section_deprecated = "COMMANDS: Deprecated"
+
+(** Sections in the order they should appear. *)
+let main_page_sections =
+  [
+    section_pipeline;
+    section_generators;
+    section_support;
+    section_legacy;
+    section_deprecated;
+  ]
 
 let () =
   Printexc.record_backtrace true;
   let subcommands =
     [
-      Compile.(cmd, info);
-      Odoc_html.process;
-      Odoc_html.targets;
-      Odoc_html.generate;
-      Odoc_manpage.process;
-      Odoc_manpage.targets;
-      Odoc_manpage.generate;
-      Odoc_latex.process;
-      Odoc_latex.targets;
-      Odoc_latex.generate;
-      Html_fragment.(cmd, info);
-      Support_files_command.(cmd, info);
-      Css.(cmd, info);
-      Depends.Compile.(cmd, info);
-      Depends.Link.(cmd, info);
-      Depends.Odoc_html.(cmd, info);
-      Targets.Compile.(cmd, info);
-      Targets.Support_files.(cmd, info);
-      Odoc_link.(cmd, info);
-      Odoc_error.(cmd, info);
-      Odoc_html_url.(cmd, info);
-      Odoc_latex_url.(cmd, info);
+      Compile.(cmd, info ~docs:section_pipeline);
+      Odoc_link.(cmd, info ~docs:section_pipeline);
+      Odoc_html.generate ~docs:section_pipeline;
+      Support_files_command.(cmd, info ~docs:section_pipeline);
+      Odoc_manpage.generate ~docs:section_generators;
+      Odoc_latex.generate ~docs:section_generators;
+      Odoc_html_url.(cmd, info ~docs:section_support);
+      Odoc_latex_url.(cmd, info ~docs:section_support);
+      Targets.Support_files.(cmd, info ~docs:section_support);
+      Odoc_error.(cmd, info ~docs:section_support);
+      Odoc_html.targets ~docs:section_support;
+      Odoc_manpage.targets ~docs:section_support;
+      Odoc_latex.targets ~docs:section_support;
+      Depends.Compile.(cmd, info ~docs:section_support);
+      Targets.Compile.(cmd, info ~docs:section_support);
+      Html_fragment.(cmd, info ~docs:section_legacy);
+      Odoc_html.process ~docs:section_legacy;
+      Odoc_manpage.process ~docs:section_legacy;
+      Odoc_latex.process ~docs:section_legacy;
+      Depends.Link.(cmd, info ~docs:section_legacy);
+      Css.(cmd, info ~docs:section_deprecated);
+      Depends.Odoc_html.(cmd, info ~docs:section_deprecated);
     ]
   in
   let default =
