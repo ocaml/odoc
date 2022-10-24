@@ -31,24 +31,31 @@ let document_of_source v =
   let open Types in
   let title = Fpath.to_string v in
   let preamble = [] in
+  let url = { Url.Path.kind = `File; parent = None; name = title } in
   let items =
     match Fs.File.read v with
     | Ok content ->
         let lines = String.split_on_char '\n' content in
-        let rec loop acc = function
+        let rec loop i acc = function
           | [] -> acc
           | h :: t ->
-              let block =
-                {
-                  Block.attr = [];
-                  desc = Paragraph [ { attr = []; desc = Text h } ];
-                }
+              let source = [ Source.Elt [ { attr = []; desc = Text h } ] ] in
+              let anchor =
+                Some
+                  Url.Anchor.
+                    {
+                      page = url;
+                      anchor = Format.sprintf "L%i" i;
+                      kind = `File;
+                    }
               in
-              let item = Item.Text [ block ] in
-              loop (item :: acc) t
+              let item =
+                Item.Declaration
+                  { attr = []; anchor; content = [ Code source ]; doc = [] }
+              in
+              loop (i + 1) (item :: acc) t
         in
-        List.rev (loop [] lines)
+        List.rev (loop 1 [] lines)
     | Error _ -> []
   in
-  let url = { Url.Path.kind = `File; parent = None; name = title } in
   { Page.preamble; items; url }
