@@ -1,3 +1,11 @@
+(rule
+ (action
+  (with-stdout-to
+   manpage.mld
+   (pipe-stdout
+    (run odoc)
+    (run gen_manpage/gen_manpage.exe)))))
+
 (documentation
  (package odoc)
  (mld_files

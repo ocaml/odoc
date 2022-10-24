@@ -50,6 +50,7 @@ To start contributing to [odoc], please see our {{!page-contributing}contributor
 {1 Page index}
 
 The main other pages of this site:
+- {!page-manpage} Man pages
 - {!page-odoc_for_authors} Odoc For Authors
 - {!page-features} Language Features
 - {!page-driver} Reference Driver
