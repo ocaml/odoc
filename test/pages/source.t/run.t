@@ -38,8 +38,26 @@ Check the generated pages:
     <script>hljs.initHighlightingOnLoad();</script>
    </head>
    <body class="odoc"><header class="odoc-preamble"></header>
-    <div class="odoc-content"><p>let x = 2</p><p>let y = x + 1</p>
-     <p>let z = x + y</p><p></p>
+    <div class="odoc-content">
+     <div class="odoc-spec">
+      <div class="spec anchored" id="L1"><a href="#L1" class="anchor"></a>
+       <code>let x = 2</code>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec anchored" id="L2"><a href="#L2" class="anchor"></a>
+       <code>let y = x + 1</code>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec anchored" id="L3"><a href="#L3" class="anchor"></a>
+       <code>let z = x + y</code>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec anchored" id="L4"><a href="#L4" class="anchor"></a>
+      </div>
+     </div>
     </div>
    </body>
   </html>
@@ -54,8 +72,26 @@ Check the generated pages:
     <script>hljs.initHighlightingOnLoad();</script>
    </head>
    <body class="odoc"><header class="odoc-preamble"></header>
-    <div class="odoc-content"><p>val x : int</p><p>val y : int</p>
-     <p>val z : int</p><p></p>
+    <div class="odoc-content">
+     <div class="odoc-spec">
+      <div class="spec anchored" id="L1"><a href="#L1" class="anchor"></a>
+       <code>val x : int</code>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec anchored" id="L2"><a href="#L2" class="anchor"></a>
+       <code>val y : int</code>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec anchored" id="L3"><a href="#L3" class="anchor"></a>
+       <code>val z : int</code>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec anchored" id="L4"><a href="#L4" class="anchor"></a>
+      </div>
+     </div>
     </div>
    </body>
   </html>
