@@ -49,6 +49,28 @@ module Identifier = struct
 
   let name : [< t_pv ] id -> string = fun n -> name_aux (n :> t)
 
+  let rec root id =
+    match id.iv with
+    | `Root _ as root -> Some root
+    | `Module (parent, _) -> root (parent :> t)
+    | `Parameter (parent, _) -> root (parent :> t)
+    | `Result x -> root (x :> t)
+    | `ModuleType (parent, _) -> root (parent :> t)
+    | `Type (parent, _) -> root (parent :> t)
+    | `Constructor (parent, _) -> root (parent :> t)
+    | `Field (parent, _) -> root (parent :> t)
+    | `Extension (parent, _) -> root (parent :> t)
+    | `Exception (parent, _) -> root (parent :> t)
+    | `Value (parent, _) -> root (parent :> t)
+    | `Class (parent, _) -> root (parent :> t)
+    | `ClassType (parent, _) -> root (parent :> t)
+    | `Method (parent, _) -> root (parent :> t)
+    | `InstanceVariable (parent, _) -> root (parent :> t)
+    | `Label (parent, _) -> root (parent :> t)
+    | `Page _ | `LeafPage _ | `CoreType _ | `CoreException _ -> None
+
+  let root id = root (id :> t)
+
   let rec label_parent_aux =
     let open Paths_types.Identifier in
     fun (n : any) ->
@@ -1221,3 +1243,5 @@ module Reference = struct
     type t = Paths_types.Reference.page
   end
 end
+
+module Ocaml_ident = Ident

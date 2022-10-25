@@ -377,6 +377,8 @@ module Identifier : sig
 
   val name : [< t_pv ] id -> string
 
+  val root : [< t_pv ] id -> RootModule.t_pv option
+
   val compare : t -> t -> int
 
   val equal : ([< t_pv ] id as 'a) -> 'a -> bool
@@ -776,3 +778,5 @@ module rec Reference : sig
 
   type tag_any = Paths_types.Reference.tag_any
 end
+
+module Ocaml_ident = Ident
