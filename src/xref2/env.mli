@@ -1,17 +1,16 @@
 (* Env.mli *)
 
+open Odoc_model
 open Odoc_model.Paths
 
 type lookup_unit_result =
   | Forward_reference
-  | Found of Odoc_model.Lang.Compilation_unit.t
+  | Found of Lang.Compilation_unit.t
   | Not_found
 
-type lookup_page_result = Odoc_model.Lang.Page.t option
+type lookup_page_result = Lang.Page.t option
 
-type root =
-  | Resolved of (Odoc_model.Root.t * Identifier.Module.t * Component.Module.t)
-  | Forward
+type root = Resolved of Lang.Compilation_unit.t | Forward
 
 type resolver = {
   open_units : string list;
@@ -71,9 +70,9 @@ val add_exception : Identifier.Exception.t -> Component.Exception.t -> t -> t
 val add_extension_constructor :
   Identifier.Extension.t -> Component.Extension.Constructor.t -> t -> t
 
-val add_docs : Odoc_model.Comment.docs -> t -> t
+val add_docs : Comment.docs -> t -> t
 
-val add_comment : Odoc_model.Comment.docs_or_stop -> t -> t
+val add_comment : Comment.docs_or_stop -> t -> t
 
 val add_method : Identifier.Method.t -> Component.Method.t -> t -> t
 
@@ -85,9 +84,9 @@ val add_module_type_functor_args :
 
 val lookup_fragment_root : t -> (int * Component.Signature.t) option
 
-val lookup_page : string -> t -> Odoc_model.Lang.Page.t option
+val lookup_page : string -> t -> Lang.Page.t option
 
-val module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t
+val module_of_unit : Lang.Compilation_unit.t -> Component.Module.t
 
 val lookup_root_module : string -> t -> root option
 
@@ -103,10 +102,7 @@ val lookup_by_name : 'a scope -> string -> t -> 'a maybe_ambiguous
     name. *)
 
 val lookup_by_id :
-  'a scope ->
-  [< Identifier.t_pv ] Odoc_model.Paths.Identifier.id ->
-  t ->
-  'a option
+  'a scope -> [< Identifier.t_pv ] Paths.Identifier.id -> t -> 'a option
 (** Like [lookup_by_name] but use an identifier as key. *)
 
 val s_any : Component.Element.any scope
@@ -140,29 +136,27 @@ val s_field : Component.Element.field scope
 val s_label_parent : Component.Element.label_parent scope
 
 (* val open_component_signature :
-   Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
+   Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
 
-val add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t
+val add_functor_parameter : Lang.FunctorParameter.t -> t -> t
 
-val open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t
+val open_class_signature : Lang.ClassSignature.t -> t -> t
 
-val open_signature : Odoc_model.Lang.Signature.t -> t -> t
+val open_signature : Lang.Signature.t -> t -> t
 
-val open_type_substitution : Odoc_model.Lang.TypeDecl.t -> t -> t
+val open_type_substitution : Lang.TypeDecl.t -> t -> t
 
-val open_module_substitution : Odoc_model.Lang.ModuleSubstitution.t -> t -> t
+val open_module_substitution : Lang.ModuleSubstitution.t -> t -> t
 
-val open_module_type_substitution :
-  Odoc_model.Lang.ModuleTypeSubstitution.t -> t -> t
+val open_module_type_substitution : Lang.ModuleTypeSubstitution.t -> t -> t
 
-val open_page : Odoc_model.Lang.Page.t -> t -> t
+val open_page : Lang.Page.t -> t -> t
 (** Add a page content to the env. *)
 
-val env_of_unit :
-  Odoc_model.Lang.Compilation_unit.t -> linking:bool -> resolver -> t
+val env_of_unit : Lang.Compilation_unit.t -> linking:bool -> resolver -> t
 (** Create a new env with a module initially opened. *)
 
-val env_of_page : Odoc_model.Lang.Page.t -> resolver -> t
+val env_of_page : Lang.Page.t -> resolver -> t
 (** Create a new env for a page. *)
 
 val env_for_reference : resolver -> t
