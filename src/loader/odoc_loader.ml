@@ -38,7 +38,7 @@ exception Not_an_interface
 exception Make_root_error of string
 
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical ?shape content =
+    ?canonical ?shape ?env ?uid_to_loc content =
   let open Odoc_model.Lang.Compilation_unit in
   let interface, digest =
     match interface with
@@ -75,13 +75,15 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     linked = false;
     canonical;
     shape;
+    env;
+    uid_to_loc;
   }
 
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical ?shape sg =
+    ?canonical ?shape ?env ?uid_to_loc sg =
   let content = Odoc_model.Lang.Compilation_unit.Module sg in
   make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical ?shape content
+    ?canonical ?shape ?env ?uid_to_loc content
 
 let read_cmti ~make_root ~parent ~filename () =
   let cmt_info = Cmt_format.read_cmt filename in
@@ -92,14 +94,17 @@ let read_cmti ~make_root ~parent ~filename () =
       | Some _ as interface ->
           let name = cmt_info.cmt_modname in
           let shape = cmt_info.cmt_impl_shape in
+          let uid_to_loc = cmt_info.cmt_uid_to_loc in
           let sourcefile =
             ( cmt_info.cmt_sourcefile,
               cmt_info.cmt_source_digest,
               cmt_info.cmt_builddir )
           in
           let id, sg, canonical = Cmti.read_interface parent name intf in
+          let env = Envaux.env_of_only_summary intf.sig_final_env in
           compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
-            ~interface ~sourcefile ~name ~id ?canonical ?shape sg)
+            ~interface ~sourcefile ~name ~id ?canonical ?shape ~env ~uid_to_loc
+            sg)
   | _ -> raise Not_an_interface
 
 let read_cmt ~make_root ~parent ~filename () =
@@ -109,6 +114,7 @@ let read_cmt ~make_root ~parent ~filename () =
   | cmt_info -> (
       let name = cmt_info.cmt_modname in
       let shape = cmt_info.cmt_impl_shape in
+      let uid_to_loc = cmt_info.cmt_uid_to_loc in
       let sourcefile =
         ( cmt_info.cmt_sourcefile,
           cmt_info.cmt_source_digest,
@@ -143,11 +149,12 @@ let read_cmt ~make_root ~parent ~filename () =
           in
           let content = Odoc_model.Lang.Compilation_unit.Pack items in
           make_compilation_unit ~make_root ~imports ~interface ~sourcefile ~name
-            ~id ?shape content
+            ~id ?shape ~uid_to_loc content
       | Implementation impl ->
           let id, sg, canonical = Cmt.read_implementation parent name impl in
+          let env = Envaux.env_of_only_summary impl.str_final_env in
           compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
-            ~name ~id ?canonical ?shape sg
+            ~name ~id ?canonical ?shape ~env sg
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =

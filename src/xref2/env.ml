@@ -14,6 +14,7 @@ type root = Resolved of Lang.Compilation_unit.t | Forward
 
 type resolver = {
   open_units : string list;
+  ocaml_env : Ocaml_env.t option;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
 }
@@ -162,6 +163,9 @@ type t = {
   recorder : recorder option;
   fragmentroot : (int * Component.Signature.t) option;
 }
+
+let get_ocaml_env t =
+  match t.resolver with None -> None | Some r -> r.ocaml_env
 
 let is_linking env = env.linking
 

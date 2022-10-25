@@ -207,7 +207,15 @@ let build ?u { important_digests; ap; open_modules } ~imports_map =
   (match u with Some u -> add_unit_to_cache u | None -> ());
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
   and lookup_page = lookup_page ap in
-  { Odoc_xref2.Env.open_units = open_modules; lookup_unit; lookup_page }
+  let ocaml_env =
+    match u with Some (Odoc_file.Unit_content u) -> u.env | _ -> None
+  in
+  {
+    Odoc_xref2.Env.open_units = open_modules;
+    lookup_unit;
+    lookup_page;
+    ocaml_env;
+  }
 
 let build_env_for_unit t ~linking m =
   let imports_map = build_imports_map m in

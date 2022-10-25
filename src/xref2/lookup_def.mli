@@ -3,4 +3,4 @@
 open Odoc_model.Paths
 
 val lookup_def :
-  Env.t -> [< Identifier.t_pv ] Identifier.id -> Shape.t option
+  Env.t -> Identifier.t -> Shape.Sig_component_kind.t -> Location.t option

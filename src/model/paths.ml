@@ -14,6 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+module Ocaml_path = Path
+module Ocaml_ident = Ident
+module Ocaml_env = Env
+
 open Names
 
 module Identifier = struct
@@ -1243,5 +1247,3 @@ module Reference = struct
     type t = Paths_types.Reference.page
   end
 end
-
-module Ocaml_ident = Ident

@@ -14,6 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+module Ocaml_path = Path
+module Ocaml_ident = Ident
+module Ocaml_env = Env
+
 (** Identifiers for definitions *)
 
 module Identifier : sig
@@ -778,5 +782,3 @@ module rec Reference : sig
 
   type tag_any = Paths_types.Reference.tag_any
 end
-
-module Ocaml_ident = Ident

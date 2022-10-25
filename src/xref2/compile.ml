@@ -332,11 +332,13 @@ and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
-  (match Lookup_def.lookup_def env m.id with
+  (match
+     Lookup_def.lookup_def env (m.id :> Id.t) Shape.Sig_component_kind.Module
+   with
   | Some s ->
-      Format.printf "Shape of module %s: %a@\n"
+      Format.printf "Loc of module %s: %a@\n"
         (Paths.Identifier.name m.id)
-        Shape.print s
+        Location.print_loc s
   | None ->
       Printf.printf "Shape of module %s: None\n%!" (Paths.Identifier.name m.id));
   if m.hidden then m

@@ -25,7 +25,7 @@ module OptionMonad = struct
 end
 
 module OptionSyntax = struct
-  let (let*) = OptionMonad.bind
+  let ( let* ) = OptionMonad.bind
 end
 
 module EitherMonad = struct

@@ -465,6 +465,8 @@ module rec Compilation_unit : sig
     linked : bool;  (** Whether this unit has been linked. *)
     canonical : Path.Module.t option;
     shape : Shape.t option;
+    env : Ocaml_env.t option;
+    uid_to_loc : Warnings.loc Types.Uid.Tbl.t option;
   }
 end =
   Compilation_unit
