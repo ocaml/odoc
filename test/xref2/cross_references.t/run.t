@@ -8,6 +8,10 @@ Two modules that reference each other:
   (** {!A} *)
 
   $ compile a.mli b.mli
+  File "a.cmti":
+  Warning: No implementation file found for the given interface
+  File "b.cmti":
+  Warning: No implementation file found for the given interface
 
 Check that references are resolved:
 

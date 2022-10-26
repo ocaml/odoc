@@ -30,6 +30,8 @@ than in module `A`.
   $ ocamlc -c -bin-annot main__.ml
   $ ocamlc -c -bin-annot main.ml
   $ odoc compile main__Container.cmti
+  File "main__Container.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc compile -I . main__.cmt
   $ odoc compile -I . main.cmt
 

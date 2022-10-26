@@ -1,6 +1,10 @@
   $ compile good_ref.mli
+  File "good_ref.cmti":
+  Warning: No implementation file found for the given interface
 
   $ compile bad_ref.mli
+  File "bad_ref.cmti":
+  Warning: No implementation file found for the given interface
   File "bad_ref.mli", line 7, characters 8-18:
   Warning: Failed to resolve reference unresolvedroot(( * )) Couldn't find "( * )"
   File "bad_ref.mli", line 3, characters 8-18:

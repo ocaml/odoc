@@ -17,11 +17,15 @@ once with the module opened and once without.
   $ ocamlc -c -bin-annot to_open.mli
   $ ocamlc -c -bin-annot other.mli
   $ odoc compile --package x to_open.cmti
+  File "to_open.cmti":
+  Warning: No implementation file found for the given interface
 
 
 Run 'normally', without opening the module 'To_open':
 
   $ odoc compile --package x -I . other.cmti
+  File "other.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc link -I . other.odoc
   $ odoc html-generate -o . other.odocl --indent
   $ grep To_open x/Other/index.html
@@ -30,6 +34,8 @@ Run 'normally', without opening the module 'To_open':
 Now try again, this time opening 'To_open', and expect the rendered link to be simplified:
 
   $ odoc compile --package x -I . other.cmti --open To_open
+  File "other.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc link -I . other.odoc
   $ odoc html-generate -o . other.odocl --indent
   $ grep To_open x/Other/index.html

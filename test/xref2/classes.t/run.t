@@ -11,8 +11,14 @@ resolve correctly. All of the 'Class' json objects should contain
   $ odoc compile b.cmt
   $ odoc compile c.cmt -I .
   $ odoc compile d.cmti -I .
+  File "d.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc compile e.cmti -I .
+  File "e.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc compile f.cmti -I .
+  File "f.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc_print -r f f.odoc 
   {
     "id": { "`Value": [ { "`Root": [ "None", "F" ] }, "f" ] },

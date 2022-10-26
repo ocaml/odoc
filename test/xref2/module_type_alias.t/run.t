@@ -18,6 +18,8 @@ as they are both referencing items that won't be expanded.
 
   $ ocamlc -c -bin-annot test.mli
   $ odoc compile test.cmti
+  File "test.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc link test.odoc
   $ odoc html-generate -o html test.odocl
   $ odoc_print test.odocl | jq ".content.Module.items[2]"
