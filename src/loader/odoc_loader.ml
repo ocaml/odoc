@@ -75,7 +75,7 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     linked = false;
     canonical;
     shape;
-    env;
+    ocaml_env = env;
     uid_to_loc;
   }
 

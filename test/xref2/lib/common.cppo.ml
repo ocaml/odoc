@@ -616,7 +616,7 @@ let my_compilation_unit id (s : Odoc_model.Lang.Signature.t) =
     ; linked = false
     ; canonical = None
     ; shape= None
-    ; env = None
+    ; ocaml_env = None
     ; uid_to_loc = None
 }
 
@@ -641,7 +641,7 @@ let handle_warnings ww =
 
 let resolve unit =
   let resolver = mkresolver () in
-  let resolve_env = Odoc_odoc.Resolver.build_env_for_unit resolver ~linking:true unit in
+  let resolve_env = Odoc_odoc.Resolver.build_compile_env_for_unit resolver unit in
   Odoc_xref2.Compile.compile ~filename:"<test>" resolve_env unit
   |> handle_warnings
 
