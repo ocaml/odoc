@@ -37,7 +37,10 @@ val lookup_page : t -> string -> Odoc_model.Lang.Page.t option
 (** Helpers for creating xref2 env. *)
 
 val build_compile_env_for_unit :
-  t -> Odoc_model.Lang.Compilation_unit.t -> Odoc_xref2.Env.t
+  t ->
+  Odoc_loader.typing_env option ->
+  Odoc_model.Lang.Compilation_unit.t ->
+  Odoc_xref2.Env.t
 (** Initialize the environment for compiling the given module. *)
 
 val build_link_env_for_unit :

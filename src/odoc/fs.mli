@@ -78,5 +78,7 @@ module File : sig
 
   val read : t -> (string, [> msg ]) result
 
+  val exists : t -> bool
+
   module Table : Hashtbl.S with type key = t
 end

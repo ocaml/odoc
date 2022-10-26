@@ -91,6 +91,8 @@ module File = struct
           Result.Error (`Msg err)
     with Sys_error e -> Result.Error (`Msg e)
 
+  let exists file = Sys.file_exists (Fpath.to_string file)
+
   module Table = Hashtbl.Make (struct
     type nonrec t = t
 

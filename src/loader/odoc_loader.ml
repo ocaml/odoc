@@ -29,6 +29,17 @@ let wrong_version file =
 let error_msg file (msg : string) =
   Error.raise_exception (Error.filename_only "%s" msg file)
 
+type typing_env = {
+  final_env : Env.t;
+  uid_to_loc : Location.t Shape.Uid.Tbl.t;
+  impl_shape : Shape.t;
+}
+
+type make_root =
+  module_name:string ->
+  digest:Digest.t ->
+  (Odoc_model.Root.t, [ `Msg of string ]) result
+
 exception Corrupted
 
 exception Not_an_implementation
@@ -37,8 +48,27 @@ exception Not_an_interface
 
 exception Make_root_error of string
 
+let load_typing_env (cmt : Cmt_format.cmt_infos) impl =
+  match cmt.cmt_impl_shape with
+  | Some impl_shape ->
+      Some
+        {
+          final_env = impl.Typedtree.str_final_env;
+          uid_to_loc = cmt.cmt_uid_to_loc;
+          impl_shape;
+        }
+  | None -> None
+
+let read_typing_env ~filename () =
+  match Cmt_format.read_cmt filename with
+  | exception Cmi_format.Error _ -> raise Corrupted
+  | cmt_info -> (
+      match cmt_info.cmt_annots with
+      | Implementation impl -> load_typing_env cmt_info impl
+      | _ -> raise Not_an_implementation)
+
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical ?shape ?env ?uid_to_loc content =
+    ?canonical content =
   let open Odoc_model.Lang.Compilation_unit in
   let interface, digest =
     match interface with
@@ -74,16 +104,13 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     expansion = None;
     linked = false;
     canonical;
-    shape;
-    ocaml_env = env;
-    uid_to_loc;
   }
 
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical ?shape ?env ?uid_to_loc sg =
+    ?canonical sg =
   let content = Odoc_model.Lang.Compilation_unit.Module sg in
   make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical ?shape ?env ?uid_to_loc content
+    ?canonical content
 
 let read_cmti ~make_root ~parent ~filename () =
   let cmt_info = Cmt_format.read_cmt filename in
@@ -93,18 +120,14 @@ let read_cmti ~make_root ~parent ~filename () =
       | None -> raise Corrupted
       | Some _ as interface ->
           let name = cmt_info.cmt_modname in
-          let shape = cmt_info.cmt_impl_shape in
-          let uid_to_loc = cmt_info.cmt_uid_to_loc in
           let sourcefile =
             ( cmt_info.cmt_sourcefile,
               cmt_info.cmt_source_digest,
               cmt_info.cmt_builddir )
           in
           let id, sg, canonical = Cmti.read_interface parent name intf in
-          let env = Envaux.env_of_only_summary intf.sig_final_env in
           compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
-            ~interface ~sourcefile ~name ~id ?canonical ?shape ~env ~uid_to_loc
-            sg)
+            ~interface ~sourcefile ~name ~id ?canonical sg)
   | _ -> raise Not_an_interface
 
 let read_cmt ~make_root ~parent ~filename () =
@@ -113,8 +136,6 @@ let read_cmt ~make_root ~parent ~filename () =
       raise Not_an_implementation
   | cmt_info -> (
       let name = cmt_info.cmt_modname in
-      let shape = cmt_info.cmt_impl_shape in
-      let uid_to_loc = cmt_info.cmt_uid_to_loc in
       let sourcefile =
         ( cmt_info.cmt_sourcefile,
           cmt_info.cmt_source_digest,
@@ -148,13 +169,14 @@ let read_cmt ~make_root ~parent ~filename () =
               items
           in
           let content = Odoc_model.Lang.Compilation_unit.Pack items in
-          make_compilation_unit ~make_root ~imports ~interface ~sourcefile ~name
-            ~id ?shape ~uid_to_loc content
+          ( make_compilation_unit ~make_root ~imports ~interface ~sourcefile
+              ~name ~id content,
+            None )
       | Implementation impl ->
           let id, sg, canonical = Cmt.read_implementation parent name impl in
-          let env = Envaux.env_of_only_summary impl.str_final_env in
-          compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
-            ~name ~id ?canonical ?shape ~env sg
+          ( compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
+              ~name ~id ?canonical sg,
+            load_typing_env cmt_info impl )
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =
@@ -180,6 +202,9 @@ let wrap_errors ~filename f =
       | Not_an_implementation -> not_an_implementation filename
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
+
+let read_typing_env ~filename =
+  wrap_errors ~filename (read_typing_env ~filename)
 
 let read_cmti ~make_root ~parent ~filename =
   wrap_errors ~filename (read_cmti ~make_root ~parent ~filename)
