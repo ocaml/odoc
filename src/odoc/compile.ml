@@ -1,4 +1,5 @@
 open Or_error
+open Odoc_model
 open Odoc_model.Names
 
 (*
@@ -18,10 +19,8 @@ open Odoc_model.Names
  *)
 
 type parent_spec =
-  | Explicit of
-      Odoc_model.Paths.Identifier.ContainerPage.t
-      * Odoc_model.Paths.Reference.t list
-  | Package of Odoc_model.Paths.Identifier.ContainerPage.t
+  | Explicit of Paths.Identifier.ContainerPage.t * Paths.Reference.t list
+  | Package of Paths.Identifier.ContainerPage.t
   | Noparent
 
 type parent_cli_spec =
@@ -29,9 +28,21 @@ type parent_cli_spec =
   | CliPackage of string
   | CliNoparent
 
+(** Raises warnings and errors. *)
+let lookup_implementation_of_cmti intf_file =
+  let input_file = Fs.File.set_ext ".cmt" intf_file in
+  if Fs.File.exists input_file then
+    let filename = Fs.File.to_string input_file in
+    Odoc_loader.read_typing_env ~filename |> Error.raise_errors_and_warnings
+  else (
+    Error.raise_warning ~non_fatal:true
+      (Error.filename_only
+         "No implementation file found for the given interface"
+         (Fs.File.to_string intf_file));
+    None)
+
 (** Parse parent and child references. May print warnings. *)
 let parse_reference f =
-  let open Odoc_model in
   (* This is a command-line error. *)
   let warnings_options = { Error.warn_error = true; print_warnings = true } in
   Semantics.parse_reference f
@@ -39,8 +50,7 @@ let parse_reference f =
 
 let parent resolver parent_cli_spec =
   let find_parent :
-      Odoc_model.Paths.Reference.t ->
-      (Odoc_model.Lang.Page.t, [> `Msg of string ]) Result.result =
+      Paths.Reference.t -> (Lang.Page.t, [> `Msg of string ]) Result.result =
    fun r ->
     match r with
     | `Root (p, `TPage) | `Root (p, `TUnknown) -> (
@@ -50,8 +60,7 @@ let parent resolver parent_cli_spec =
     | _ -> Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
-    | { Odoc_model.Paths.Identifier.iv = `Page _; _ } as container ->
-        Ok container
+    | { Paths.Identifier.iv = `Page _; _ } as container -> Ok container
     | _ -> Error (`Msg "Specified parent is not a parent of this file")
   in
   match parent_cli_spec with
@@ -61,14 +70,10 @@ let parent resolver parent_cli_spec =
       extract_parent page.name >>= fun parent ->
       Ok (Explicit (parent, page.children))
   | CliPackage package ->
-      Ok
-        (Package
-           (Odoc_model.Paths.Identifier.Mk.page
-              (None, PageName.make_std package)))
+      Ok (Package (Paths.Identifier.Mk.page (None, PageName.make_std package)))
   | CliNoparent -> Ok Noparent
 
 let resolve_imports resolver imports =
-  let open Odoc_model in
   List.map
     (function
       | Lang.Compilation_unit.Import.Resolved _ as resolved -> resolved
@@ -79,24 +84,37 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver
-    (parent : Odoc_model.Paths.Identifier.ContainerPage.t option) input_file
-    read_file =
+let resolve_and_substitute ~resolver ~make_root
+    (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
-  let unit =
-    read_file ~parent ~filename |> Odoc_model.Error.raise_errors_and_warnings
+  let unit, typing_env =
+    match input_type with
+    | `Cmti ->
+        let unit =
+          Odoc_loader.read_cmti ~make_root ~parent ~filename
+          |> Error.raise_errors_and_warnings
+        in
+        (unit, lookup_implementation_of_cmti input_file)
+    | `Cmt ->
+        Odoc_loader.read_cmt ~make_root ~parent ~filename
+        |> Error.raise_errors_and_warnings
+    | `Cmi ->
+        let unit =
+          Odoc_loader.read_cmi ~make_root ~parent ~filename
+          |> Error.raise_errors_and_warnings
+        in
+        (unit, None)
   in
-  if not unit.Odoc_model.Lang.Compilation_unit.interface then
+  if not unit.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
       (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
       else
         Printf.sprintf " Using %S while you should use the .cmti file" filename);
   (* Resolve imports, used by the [link-deps] command. *)
   let unit = { unit with imports = resolve_imports resolver unit.imports } in
-  let env = Resolver.build_compile_env_for_unit resolver unit in
+  let env = Resolver.build_compile_env_for_unit resolver typing_env unit in
   let compiled =
-    Odoc_xref2.Compile.compile ~filename env unit
-    |> Odoc_model.Error.raise_warnings
+    Odoc_xref2.Compile.compile ~filename env unit |> Error.raise_warnings
   in
   (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
      defined, elements. We'd rather it got back the resolved bit so we rebuild an
@@ -108,7 +126,7 @@ let resolve_and_substitute ~resolver
   compiled
 
 let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
-  let open Odoc_model.Root in
+  let open Root in
   let filename =
     Filename.chop_extension Fs.File.(to_string @@ basename output)
   in
@@ -116,14 +134,12 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
     let file = Odoc_file.create_unit ~force_hidden:hidden module_name in
     Ok
       {
-        id =
-          Odoc_model.Paths.Identifier.Mk.root
-            (parent, ModuleName.make_std module_name);
+        id = Paths.Identifier.Mk.root (parent, ModuleName.make_std module_name);
         file;
         digest;
       }
   in
-  let check_child : Odoc_model.Paths.Reference.t -> bool =
+  let check_child : Paths.Reference.t -> bool =
    fun c ->
     match c with
     | `Root (n, `TUnknown) | `Root (n, `TModule) ->
@@ -158,7 +174,7 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
   let page_name = PageName.make_std root_name in
-  let check_child : Odoc_model.Paths.Reference.t -> bool =
+  let check_child : Paths.Reference.t -> bool =
    fun c ->
     match c with
     | `Root (n, `TUnknown) | `Root (n, `TPage) -> root_name = n
@@ -176,7 +192,7 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
       if List.exists check_child parents_children then Ok v
       else Error (`Msg "Specified parent is not a parent of this file")
     in
-    let module Mk = Odoc_model.Paths.Identifier.Mk in
+    let module Mk = Paths.Identifier.Mk in
     match (parent_spec, children) with
     | Explicit (p, cs), [] -> check cs @@ Mk.leaf_page (Some p, page_name)
     | Explicit (p, cs), _ -> check cs @@ Mk.page (Some p, page_name)
@@ -188,29 +204,29 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
   in
   name >>= fun name ->
   let root =
-    let file = Odoc_model.Root.Odoc_file.create_page root_name in
-    {
-      Odoc_model.Root.id = (name :> Odoc_model.Paths.Identifier.OdocId.t);
-      file;
-      digest;
-    }
+    let file = Root.Odoc_file.create_page root_name in
+    { Root.id = (name :> Paths.Identifier.OdocId.t); file; digest }
   in
   let resolve content =
     let page =
-      Odoc_model.Lang.Page.
-        { name; root; children; content; digest; linked = false }
+      Lang.Page.{ name; root; children; content; digest; linked = false }
     in
     Odoc_file.save_page output ~warnings:[] page;
     Ok ()
   in
   Fs.File.read input >>= fun str ->
-  Odoc_loader.read_string
-    (name :> Odoc_model.Paths.Identifier.LabelParent.t)
-    input_s str
-  |> Odoc_model.Error.handle_errors_and_warnings ~warnings_options
+  Odoc_loader.read_string (name :> Paths.Identifier.LabelParent.t) input_s str
+  |> Error.handle_errors_and_warnings ~warnings_options
   >>= function
   | `Stop -> resolve [] (* TODO: Error? *)
   | `Docs content -> resolve content
+
+let handle_file_ext = function
+  | ".cmti" -> Ok `Cmti
+  | ".cmt" -> Ok `Cmt
+  | ".cmi" -> Ok `Cmi
+  | _ ->
+      Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     ~warnings_options input =
@@ -219,14 +235,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
   if ext = ".mld" then
     mld ~parent_spec ~output ~warnings_options ~children input
   else
-    (match ext with
-    | ".cmti" -> Ok Odoc_loader.read_cmti
-    | ".cmt" -> Ok Odoc_loader.read_cmt
-    | ".cmi" -> Ok Odoc_loader.read_cmi
-    | _ ->
-        Error
-          (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld."))
-    >>= fun loader ->
+    handle_file_ext ext >>= fun input_type ->
     let parent =
       match parent_spec with
       | Noparent -> Ok None
@@ -236,12 +245,11 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     parent >>= fun parent ->
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
-      Odoc_model.Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver parent input (loader ~make_root))
+      Error.catch_errors_and_warnings (fun () ->
+          resolve_and_substitute ~resolver ~make_root parent input input_type)
     in
     (* Extract warnings to write them into the output file *)
-    let _, warnings = Odoc_model.Error.unpack_warnings result in
-    Odoc_model.Error.handle_errors_and_warnings ~warnings_options result
-    >>= fun unit ->
+    let _, warnings = Error.unpack_warnings result in
+    Error.handle_errors_and_warnings ~warnings_options result >>= fun unit ->
     Odoc_file.save_unit output ~warnings unit;
     Ok ()

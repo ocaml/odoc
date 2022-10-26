@@ -10,21 +10,29 @@ A contains both parsing errors and a reference to B that isn't compiled yet:
   Error: End of text is not allowed in '{!...}' (cross-reference).
   File "a.mli", line 8, characters 22-23:
   Error: Identifier in reference should not be empty.
+  File "a.cmti":
+  Warning: No implementation file found for the given interface
   ERROR: Warnings have been generated.
   [1]
 
   $ odoc compile --package test b.cmti
+  File "b.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc compile --package test a.cmti
   File "a.mli", line 8, characters 23-23:
   Warning: End of text is not allowed in '{!...}' (cross-reference).
   File "a.mli", line 8, characters 22-23:
   Warning: Identifier in reference should not be empty.
+  File "a.cmti":
+  Warning: No implementation file found for the given interface
 
   $ odoc errors a.odoc
   File "a.mli", line 8, characters 23-23:
   End of text is not allowed in '{!...}' (cross-reference).
   File "a.mli", line 8, characters 22-23:
   Identifier in reference should not be empty.
+  File "a.cmti":
+  No implementation file found for the given interface
 
 A contains linking errors:
 
@@ -40,6 +48,8 @@ A contains linking errors:
   End of text is not allowed in '{!...}' (cross-reference).
   File "a.mli", line 8, characters 22-23:
   Identifier in reference should not be empty.
+  File "a.cmti":
+  No implementation file found for the given interface
   File "a.odoc":
   Couldn't find the following modules:
     B

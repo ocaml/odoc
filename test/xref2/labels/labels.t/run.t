@@ -1,5 +1,7 @@
 
   $ compile test.mli
+  File "test.cmti":
+  Warning: No implementation file found for the given interface
   File "test.mli", line 27, characters 9-13:
   Warning: Multiple sections named 'B' found. Please alter one to ensure reference is unambiguous. Locations:
     File "test.mli", line 3, character 4

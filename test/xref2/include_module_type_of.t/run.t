@@ -37,5 +37,7 @@ error. If it doesn't here, that particular issue is fixed!
 
   $ ocamlc -c -bin-annot uwt_base.mli
   $ odoc compile uwt_base.cmti
+  File "uwt_base.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc link uwt_base.odoc
 

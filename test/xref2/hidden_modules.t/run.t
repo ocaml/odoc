@@ -35,6 +35,8 @@ aren't roots.
 
   $ ocamlc -c -bin-annot test.mli
   $ odoc compile test.cmti
+  File "test.cmti":
+  Warning: No implementation file found for the given interface
 
 This shouldn't cause any warnings:
 

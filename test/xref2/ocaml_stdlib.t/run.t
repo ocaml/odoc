@@ -11,7 +11,11 @@ Imitate the way the stdlib is built and how its documentation should be built.
   $ odoc compile --pkg ocaml -o main.odoc main.cmti -I .
   File "main.mli", line 3, characters 4-17:
   Warning: Canonical paths must contain a dot, eg. X.Y.
+  File "main.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc compile --pkg ocaml -o main__x.odoc main__x.cmti -I .
+  File "main__x.cmti":
+  Warning: No implementation file found for the given interface
 
   $ odoc html --indent -o html main__x.odoc -I .
   $ odoc html --indent -o html main.odoc -I .

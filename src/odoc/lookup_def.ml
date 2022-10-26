@@ -1,8 +1,7 @@
-open Odoc_model
 open Odoc_model.Paths
 
 module Make (Loader : sig
-  val lookup_root_module : string -> Lang.Compilation_unit.t option
+  val read_typing_env : unit_name:string -> Odoc_loader.typing_env option
 end) =
 struct
   module Reducer = Shape.Make_reduce (struct
@@ -11,8 +10,8 @@ struct
     let fuel = 10
 
     let read_unit_shape ~unit_name =
-      match Loader.lookup_root_module unit_name with
-      | Some unit -> unit.shape
+      match Loader.read_typing_env ~unit_name with
+      | Some ty -> Some ty.Odoc_loader.impl_shape
       | None -> None
 
     let find_shape env id =

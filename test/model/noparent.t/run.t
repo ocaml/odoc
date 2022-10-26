@@ -2,6 +2,8 @@ We don't have to provide parents to modules now
 
   $ ocamlc -c -bin-annot test.mli
   $ odoc compile test.cmti
+  File "test.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc link test.odoc
   $ odoc html-generate test.odocl -o output --flat
   $ odoc latex-generate test.odocl -o output

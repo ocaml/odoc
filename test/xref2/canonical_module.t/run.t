@@ -4,6 +4,8 @@ top-comment.
 The module Test_x is expected to be referenced as Test.X.
 
   $ compile test_x.mli test_y.ml test.ml
+  File "test_x.cmti":
+  Warning: No implementation file found for the given interface
 
 Test_x and Test_y have a 'canonical' field:
 

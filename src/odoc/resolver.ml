@@ -212,20 +212,19 @@ let create ~important_digests ~directories ~open_modules =
 open Odoc_xref2
 
 let build_compile_env_for_unit
-    { important_digests; ap; open_modules = open_units } m =
+    { important_digests; ap; open_modules = open_units } typing_env m =
   add_unit_to_cache (Odoc_file.Unit_content m);
   let imports_map = build_imports_map m in
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
   and lookup_page = lookup_page ap in
   let module Lookup_def = Lookup_def.Make (struct
-    let lookup_root_module name =
-      match lookup_unit name with
-      | Env.Found unit -> Some unit
-      | Forward_reference | Not_found -> None
+    let read_typing_env ~unit_name:_ =
+      (* TODO: Load cmts or try using Shape.local_reduce ? *)
+      None
   end) in
   let lookup_def =
-    match m.ocaml_env with
-    | Some env -> Lookup_def.lookup_def env
+    match typing_env with
+    | Some typing_env -> Lookup_def.lookup_def typing_env.Odoc_loader.final_env
     | None -> fun _ -> None
   in
   let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_def } in

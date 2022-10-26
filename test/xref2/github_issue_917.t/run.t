@@ -1,6 +1,8 @@
 # References to pages and items when page and module names are the same.
 
   $ compile foo.mld foo.mli
+  File "foo.cmti":
+  Warning: No implementation file found for the given interface
 
   $ jq_scan_references() { jq -c '.. | .["`Reference"]? | select(.) | .[0]'; }
 

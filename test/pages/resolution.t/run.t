@@ -19,6 +19,8 @@ Check resolution works
   $ odoc compile sub1.mld -I . --parent top1 --child m1
   $ odoc compile sub2.mld -I . --parent top1 --child page-m1
   $ odoc compile m1.cmti -I . --parent sub1
+  File "m1.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc compile m1.mld -I . --parent sub2
   $ for i in *.odoc; do odoc link -I . $i; done
   $ for i in *.odocl; do odoc html-generate -o html $i; done

@@ -26,6 +26,8 @@ And these need to specify compilation unit children as well as mld children
 Parents must be pages
   $ odoc compile top1.mld --child m1
   $ odoc compile m1.cmti -I . --parent top1
+  File "m1.cmti":
+  Warning: No implementation file found for the given interface
   $ odoc compile sub1.mld -I . --parent module-M1
   ERROR: Expecting page as parent
   [1]

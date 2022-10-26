@@ -17,5 +17,7 @@ should _not_ result in an exception, merely a warning.
 
   $ odoc compile --package test test.cmti --enable-missing-root-warning
   File "test.cmti":
+  Warning: No implementation file found for the given interface
+  File "test.cmti":
   Warning: Couldn't find the following modules:
     Test0
