@@ -115,6 +115,7 @@ let save_item ~pkg ~path_list ~path name type_ doc =
       (Db.list_of_string (Odoc_model.Names.ValueName.to_string name))
       ('.' :: path_list)
   in
+  let my_full_name = List.map Char.lowercase_ascii my_full_name in
   Db.store_name my_full_name str_type ;
   Db.store_all str_type
     (List.map (List.map Cache_name.memo) (type_paths ~prefix:[] ~sgn:Pos type_))

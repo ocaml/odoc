@@ -1,5 +1,6 @@
 module Parser = Query_parser
 module Succ = Succ
+module Sort = Sort
 module Storage = Db.Storage
 open Db.Types
 
@@ -74,7 +75,11 @@ let find_inter ~shards names =
     Succ.empty shards
 
 let find_names ~shards names =
-  let names = List.map (fun n -> List.rev (Db.list_of_string n)) names in
+  let names =
+    List.map
+      (fun n -> List.rev (Db.list_of_string (String.lowercase_ascii n)))
+      names
+  in
   Lwt_list.fold_left_s
     (fun acc shard ->
       let db_names = shard.Storage.db_names in
@@ -98,18 +103,3 @@ let pp h set =
         (fun value -> Format.fprintf h "(%i) %s\n%!" cost value.str_type)
         values)
     set
-
-exception Abort of Elt.t list
-
-let to_list results =
-  let lst =
-    try
-      Int_map.fold
-        (fun _ v acc ->
-          let lst = List.rev_append (Elt_set.elements v) acc in
-          if List.length lst > 200 then raise (Abort lst) ;
-          lst)
-        results []
-    with Abort lst -> lst
-  in
-  List.rev lst

@@ -1,5 +1,6 @@
 module Storage = Db.Storage
 module Succ = Query.Succ
+module Sort = Query.Sort
 
 let db_filename = Sys.argv.(1)
 
@@ -7,10 +8,7 @@ let shards =
   let h = Storage.db_open_in db_filename in
   Array.to_list h.Storage.shards
 
-let search raw_query =
-  let has_typ, query_name, query_typ, pretty =
-    Query.Parser.of_string raw_query
-  in
+let search (has_typ, query_name, query_typ) =
   let open Lwt.Syntax in
   let* results_name = Query.find_names ~shards query_name in
   let+ results =
@@ -20,14 +18,18 @@ let search raw_query =
       Succ.inter results_name results_typ
     else Lwt.return results_name
   in
-  results, pretty
+  results
 
 open Lwt.Syntax
 module H = Tyxml.Html
 
-let api query =
-  let* results, pretty = search query in
+let api raw_query =
+  let has_typ, query_name, query_typ, pretty =
+    Query.Parser.of_string raw_query
+  in
+  let* results = search (has_typ, query_name, query_typ) in
   let+ results = Succ.to_list results in
+  let results = Sort.by_name query_name results in
   Ui.render ~pretty results
 
 let api query =
