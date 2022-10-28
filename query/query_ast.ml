@@ -6,6 +6,36 @@ type t =
   | Any
 [@@deriving show]
 
+let rec paths_arrow ~prefix ~sgn = function
+  | Poly _ -> [ "POLY" :: Db.Types.string_of_sgn sgn :: prefix ]
+  | Any -> [ prefix ]
+  | Arrow (a, b) ->
+      let prefix_left = "->0" :: prefix in
+      let prefix_right = "->1" :: prefix in
+      List.rev_append
+        (paths_arrow ~prefix:prefix_left ~sgn:(Db.Types.sgn_not sgn) a)
+        (paths_arrow ~prefix:prefix_right ~sgn b)
+  | Constr (name, args) ->
+      let prefix = name :: Db.Types.string_of_sgn sgn :: prefix in
+      begin
+        match args with
+        | [] -> [ prefix ]
+        | _ ->
+            List.concat
+            @@ List.mapi
+                 (fun i arg ->
+                   let prefix = string_of_int i :: prefix in
+                   paths_arrow ~prefix ~sgn arg)
+                 args
+      end
+  | Tuple args ->
+      List.concat
+      @@ List.mapi
+           (fun i arg ->
+             let prefix = (string_of_int i ^ "*") :: prefix in
+             paths_arrow ~prefix ~sgn arg)
+           args
+
 let rec paths ~prefix ~sgn = function
   | Poly _ -> [ "POLY" :: Db.Types.string_of_sgn sgn :: prefix ]
   | Any -> [ prefix ]

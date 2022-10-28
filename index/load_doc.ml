@@ -50,11 +50,51 @@ let rec tails = function
   | [] -> []
   | _ :: xs as lst -> lst :: tails xs
 
+let fullname t =
+  Pretty.fmt_to_string (fun h -> Pretty.show_type_name_verbose h t)
+
 let all_type_names t =
-  let fullname =
-    Pretty.fmt_to_string (fun h -> Pretty.show_type_name_verbose h t)
-  in
+  let fullname = fullname t in
   tails (String.split_on_char '.' fullname)
+
+let rec paths ~prefix ~sgn = function
+  | Odoc_model.Lang.TypeExpr.Var _ ->
+      let poly = Cache_name.memo "POLY" in
+      [ poly :: Cache_name.memo (Types.string_of_sgn sgn) :: prefix ]
+  | Any ->
+      let poly = Cache_name.memo "POLY" in
+      [ poly :: Cache_name.memo (Types.string_of_sgn sgn) :: prefix ]
+  | Arrow (_, a, b) ->
+      let prefix_left = Cache_name.memo "->0" :: prefix in
+      let prefix_right = Cache_name.memo "->1" :: prefix in
+      List.rev_append
+        (paths ~prefix:prefix_left ~sgn:(Types.sgn_not sgn) a)
+        (paths ~prefix:prefix_right ~sgn b)
+  | Constr (name, args) ->
+      let name = fullname name in
+      let prefix =
+        Cache_name.memo name
+        :: Cache_name.memo (Types.string_of_sgn sgn)
+        :: prefix
+      in
+      begin
+        match args with
+        | [] -> [ prefix ]
+        | _ ->
+            rev_concat
+            @@ List.mapi
+                 (fun i arg ->
+                   let prefix = Cache_name.memo (string_of_int i) :: prefix in
+                   paths ~prefix ~sgn arg)
+                 args
+      end
+  | Tuple args ->
+      rev_concat
+      @@ List.mapi (fun i arg ->
+             let prefix = Cache_name.memo (string_of_int i ^ "*") :: prefix in
+             paths ~prefix ~sgn arg)
+      @@ args
+  | _ -> []
 
 let rec type_paths ~prefix ~sgn = function
   | Odoc_model.Lang.TypeExpr.Var _ ->
@@ -107,8 +147,15 @@ let save_item ~pkg ~path_list ~path name type_ doc =
       | _ -> 0)
     + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
   in
+  let paths = paths ~prefix:[] ~sgn:Pos type_ in
   let str_type =
-    { Db.Elt.name = full_name; cost; str_type = Cache.memo str_type; doc; pkg }
+    { Db.Elt.name = full_name
+    ; cost
+    ; type_paths = paths
+    ; str_type = Cache.memo str_type
+    ; doc
+    ; pkg
+    }
   in
   let my_full_name =
     List.rev_append
@@ -117,8 +164,8 @@ let save_item ~pkg ~path_list ~path name type_ doc =
   in
   let my_full_name = List.map Char.lowercase_ascii my_full_name in
   Db.store_name my_full_name str_type ;
-  Db.store_all str_type
-    (List.map (List.map Cache_name.memo) (type_paths ~prefix:[] ~sgn:Pos type_))
+  let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
+  Db.store_all str_type (List.map (List.map Cache_name.memo) type_paths)
 
 let rec item ~pkg ~path_list ~path =
   let open Odoc_model.Lang in

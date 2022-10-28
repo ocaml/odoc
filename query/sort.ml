@@ -34,11 +34,120 @@ let score_name query_name name =
     (fun acc query_name -> acc + score_name query_name name)
     0 query_name
 
-let by_name query_name results =
+let distance xs ys =
+  let len_xs = List.length xs in
+  let len_ys = List.length ys in
+  let cache = Array.make_matrix (1 + len_xs) (1 + len_ys) (-1) in
+  let rec memo i j xs ys =
+    let r = cache.(i).(j) in
+    if r >= 0
+    then r
+    else begin
+      let r = go i j xs ys in
+      cache.(i).(j) <- r ;
+      r
+    end
+  and go i j xs ys =
+    match xs, ys with
+    | [], _ -> 0
+    | [ "_" ], _ -> 0
+    | _, [] -> List.length xs
+    | x :: xs, y :: ys when String.ends_with ~suffix:x y ->
+        memo (i + 1) (j + 1) xs ys
+    | _, "->1" :: ys -> memo i (j + 1) xs ys
+    | "->1" :: xs, _ -> 1 + memo (i + 1) j xs ys
+    | _ :: xs', _ :: ys' ->
+        7
+        + min
+            (memo (i + 1) (j + 1) xs' ys')
+            (min (memo (i + 1) j xs' ys) (memo i (j + 1) xs ys'))
+  in
+  go 0 0 xs ys
+
+let minimize = function
+  | [] -> 0
+  | arr ->
+      let used = Array.make (List.length (List.hd arr)) false in
+      let arr =
+        Array.map (fun lst ->
+            let lst = (1, None) :: List.mapi (fun i x -> x, Some i) lst in
+            List.sort Stdlib.compare lst)
+        @@ Array.of_list arr
+      in
+      Array.sort (fun xs ys -> Stdlib.compare xs ys) arr ;
+      let heuristics = Array.make (Array.length arr + 1) 0 in
+      for i = Array.length heuristics - 2 downto 0 do
+        let best = fst (List.hd arr.(i)) in
+        heuristics.(i) <- heuristics.(i + 1) + best
+      done ;
+      let best = ref 1000 in
+      let limit = ref 0 in
+      let rec go rem acc i =
+        incr limit ;
+        if !limit > 10_000
+        then false
+        else if rem <= 0
+        then begin
+          let score = acc + (1 * (Array.length arr - i)) in
+          best := min score !best ;
+          true
+        end
+        else if i >= Array.length arr
+        then begin
+          best := min !best (acc + (100 * rem)) ;
+          true
+        end
+        else if acc + heuristics.(i) >= !best
+        then true
+        else
+          let rec find = function
+            | [] -> true
+            | (cost, j) :: rest ->
+                let ok =
+                  match j with
+                  | None ->
+                      go rem
+                        (acc + cost
+                        + if rem > Array.length arr - i then 100 else 0)
+                        (i + 1)
+                  | Some j ->
+                      if used.(j)
+                      then true
+                      else begin
+                        used.(j) <- true ;
+                        let ok = go (rem - 1) (acc + cost) (i + 1) in
+                        used.(j) <- false ;
+                        ok
+                      end
+                in
+                if ok then find rest else false
+          in
+          find arr.(i)
+      in
+      let _ = go (Array.length used) 0 0 in
+      !best
+
+let score_type query_type paths =
+  match paths, query_type with
+  | _, [] | [], _ -> 0
+  | _ ->
+      let arr =
+        List.map
+          (fun p ->
+            let p = List.rev p in
+            List.map (fun q -> distance (List.rev q) p) query_type)
+          paths
+      in
+      minimize arr
+
+let list query_name query_type results =
   let results =
     List.map
       (fun a ->
-        let cost = a.Elt.cost + (2 * score_name query_name a.Elt.name) in
+        let open Elt in
+        let name_cost = score_name query_name a.name in
+        let type_cost = score_type query_type a.type_paths in
+        let cost = a.Elt.cost + (2 * name_cost) + (800 * type_cost) in
         { a with cost })
       results
   in

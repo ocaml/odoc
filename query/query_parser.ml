@@ -23,16 +23,17 @@ let of_string str =
     | _ when guess_type_search str -> true, "", str
     | _ -> false, str, ""
   in
-  let pretty, ps =
+  let pretty, ps, ps_arrow =
     match parse str_typ with
-    | Any -> "_", []
+    | Any -> "_", [], []
     | typ ->
         ( Query_ast.show typ
         , List.filter
             (fun s -> List.length s > 0)
-            (paths ~prefix:[] ~sgn:Db.Types.Pos typ) )
-    | exception _ -> "<parse error>", []
+            (paths ~prefix:[] ~sgn:Db.Types.Pos typ)
+        , paths_arrow ~prefix:[] ~sgn:Db.Types.Pos typ )
+    | exception _ -> "<parse error>", [], []
   in
   let keywords = naive_of_string str_name in
   let keywords_pretty = String.concat " " keywords in
-  ok, keywords, ps, keywords_pretty ^ " : " ^ pretty
+  ok, keywords, ps, ps_arrow, keywords_pretty ^ " : " ^ pretty

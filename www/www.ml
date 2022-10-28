@@ -24,12 +24,12 @@ open Lwt.Syntax
 module H = Tyxml.Html
 
 let api raw_query =
-  let has_typ, query_name, query_typ, pretty =
+  let has_typ, query_name, query_typ, query_typ_arrow, pretty =
     Query.Parser.of_string raw_query
   in
   let* results = search (has_typ, query_name, query_typ) in
   let+ results = Succ.to_list results in
-  let results = Sort.by_name query_name results in
+  let results = Sort.list query_name query_typ_arrow results in
   Ui.render ~pretty results
 
 let api query =
