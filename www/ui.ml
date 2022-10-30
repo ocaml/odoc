@@ -166,5 +166,6 @@ let explain =
             ; link ": 'a list -> ('a * int -> bool) -> 'a list"
             ]
         ]
+    ; Packages.html
     ; link_to_repo
     ]

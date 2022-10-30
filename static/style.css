@@ -163,10 +163,45 @@ code {
 }
 
 .ad {
-  padding-top: 3rem;
+  padding: 3rem 0;
   font-family: monospace;
   font-style: italic;
   font-size: 1rem;
 }
 
 .ad svg { vertical-align: middle; margin-right: 0.5rem }
+
+.categories {
+  margin: 0;
+  margin-top: 3em;
+  margin-left: 2.5em;
+  margin-right: 2.5em;
+  padding: 0;
+  column-count: 4;
+  column-gap: 1em;
+  column-width: 20em;
+  line-height: 1.1em;
+}
+
+.categories .category {
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+}
+
+.category h3 {
+  margin: 0;
+  padding: 0;
+  margin-top: 1.5em;
+  margin-bottom: 0.7em;
+}
+
+.packages a {
+  display: inline-block;
+  white-space: nowrap;
+  margin-right: 1.5em;
+  font-family: monospace;
+}
+.packages a:hover {
+  background: #eee;
+}
