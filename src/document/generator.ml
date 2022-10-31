@@ -21,6 +21,20 @@ open Types
 module O = Codefmt
 open O.Infix
 
+let pp_opt f fs = function
+  | Some x -> Format.fprintf fs "%a" f x
+  | None -> Format.pp_print_string fs "None"
+
+let debug_locs kind id (locs : Odoc_model.Lang.Locations.t) =
+  let debug = false in
+  if debug then (
+    Format.printf "[impl] Loc of %s %s: %a@\n" kind (Paths.Identifier.name id)
+      (pp_opt Odoc_model.Location_.pp)
+      locs.impl;
+    Format.printf "[intf] Loc of %s %s: %a@\n" kind (Paths.Identifier.name id)
+      (pp_opt Odoc_model.Location_.pp)
+      locs.intf)
+
 (* TODO: Title formatting should be a renderer decision *)
 let format_title kind name =
   let mk title =
@@ -820,6 +834,8 @@ module Make (Syntax : SYNTAX) = struct
         | Abstract -> ([], Syntax.Value.semicolon)
         | External _ -> ([ "external" ], Syntax.Type.External.semicolon)
       in
+      (* TODO: link to source *)
+      debug_locs "value" t.id t.locs;
       let name = Paths.Identifier.name t.id in
       let content =
         O.documentedSrc
@@ -1350,6 +1366,8 @@ module Make (Syntax : SYNTAX) = struct
             in
             (link, status, Some page, Some expansion_doc)
       in
+      (* TODO: link to source *)
+      debug_locs "module" t.id t.locs;
       let intro = O.keyword "module" ++ O.txt " " ++ modname in
       let summary = O.ignore intro ++ mdexpr_in_decl t.id t.type_ in
       let modexpr =

@@ -39,6 +39,10 @@ let rec project_id :
           (parent :> Identifier.t)
           Kind.Module
           (ModuleName.to_string name)
+    | `Value (parent, name) ->
+        proj shape
+          (parent :> Identifier.t)
+          Kind.Value (ValueName.to_string name)
     | `Root _ ->
         (* TODO: Assert that's the right root *)
         Some shape

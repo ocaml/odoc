@@ -21,10 +21,11 @@ let location = To_string (fun loc -> Format.asprintf "%a" Location_.pp loc)
 
 let locations =
   let open Lang.Locations in
-  Record [
-    F ("impl", (fun t -> t.impl), Option location);
-    F ("intf", (fun t -> t.intf), Option location);
-  ]
+  Record
+    [
+      F ("impl", (fun t -> t.impl), Option location);
+      F ("intf", (fun t -> t.intf), Option location);
+    ]
 
 (** {3 Module} *)
 

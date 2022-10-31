@@ -287,7 +287,12 @@ end =
 and Value : sig
   type value = Odoc_model.Lang.Value.value
 
-  type t = { doc : CComment.docs; type_ : TypeExpr.t; value : value }
+  type t = {
+    doc : CComment.docs;
+    type_ : TypeExpr.t;
+    value : value;
+    locs : Odoc_model.Lang.Locations.t;
+  }
 end =
   Value
 
@@ -2174,7 +2179,7 @@ module Of_Lang = struct
 
   and value ident_map v =
     let type_ = type_expression ident_map v.Lang.Value.type_ in
-    { Value.type_; doc = docs ident_map v.doc; value = v.value }
+    { Value.type_; doc = docs ident_map v.doc; value = v.value; locs = v.locs }
 
   and include_ ident_map i =
     let open Odoc_model.Lang.Include in

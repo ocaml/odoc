@@ -73,8 +73,9 @@ and content env id =
 
 and value_ env parent t =
   let open Value in
+  let locs = locations env (t.id :> Id.t) t.locs in
   let container = (parent :> Id.Parent.t) in
-  try { t with type_ = type_expression env container t.type_ }
+  try { t with locs; type_ = type_expression env container t.type_ }
   with _ ->
     Errors.report ~what:(`Value t.id) `Compile;
     t
