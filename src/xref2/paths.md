@@ -472,7 +472,14 @@ val sg : Odoc_model.Lang.Signature.t =
               ihash = 818126955; ikey = "r_Root.p_None"},
              F);
          ihash = 748202139; ikey = "m_F.r_Root.p_None"};
-       locs = {Odoc_model.Lang.Locations.impl = None; intf = None}; doc = [];
+       locs =
+        {Odoc_model.Lang.Locations.impl = None;
+         intf =
+          Some
+           {Odoc_model__.Location_.file = "";
+            start = {Odoc_model__.Location_.line = 6; column = 2};
+            end_ = {Odoc_model__.Location_.line = 8; column = 5}}};
+       doc = [];
        type_ =
         Odoc_model.Lang.Module.ModuleType
          (Odoc_model.Lang.ModuleType.Functor
@@ -562,28 +569,25 @@ val sg : Odoc_model.Lang.Signature.t =
                                         `Page (None, None);
                                        ihash = 236059787; ikey = "p_None"},
                                      Root);
-                                 ihash = 818126955; ikey = "r_Root.p_None"},
+                                 ihash = 818126955;
+                                 ikey =
+                                  "r_Root.p"... (* string length 13; truncated *)},
                                 F);
                             ihash = 748202139;
                             ikey =
-                             "m_F.r_Root.p"... (* string length 17; truncated *)};
+                             "m_F.r_Ro"... (* string length 17; truncated *)};
                         ihash = 709672416;
                         ikey =
-                         "___result_"... (* string length 29; truncated *)},
+                         "___resul"... (* string length 29; truncated *)},
                        N);
-                   ihash = 837385364;
-                   ikey = "m_N.___r"... (* string length 33; truncated *)};
-                 locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
-                 doc = [];
-                 type_ =
-                  Odoc_model.Lang.Module.ModuleType
-                   (Odoc_model.Lang.ModuleType.Path ...);
-                  canonical = ...; hidden = ...});
-                ...];
-              compiled = ...; doc = ...}));
-        canonical = ...; hidden = ...});
-      ...];
-    compiled = ...; doc = ...}
+                   ihash = 837385364; ikey = ...};
+                 locs = ...; doc = ...; type_ = ...; canonical = ...;
+                 hidden = ...});
+               ...];
+             compiled = ...; doc = ...}));
+       canonical = ...; hidden = ...});
+     ...];
+   compiled = ...; doc = ...}
 ```
 
 The problem here is that odoc will not generate a page for the module `F(M)`.

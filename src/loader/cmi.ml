@@ -579,6 +579,7 @@ and read_object env fi nm =
 let read_value_description env parent id vd =
   let open Signature in
   let id = Env.find_value_identifier env id in
+  let locs = {Locations.impl= None; intf= Some (Doc_attr.read_location vd.val_loc) } in
   let container =
     (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
   in
@@ -597,7 +598,7 @@ let read_value_description env parent id vd =
         External primitives
     | _ -> assert false
   in
-  Value { Value.id; doc; type_; value }
+  Value { Value.id; locs; doc; type_; value }
 
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
@@ -950,6 +951,7 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in
   let id = (Env.find_module_identifier env ident :> Identifier.Module.t) in
+  let locs = { Locations.impl= None; intf = Some (Doc_attr.read_location md.md_loc) } in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
   let canonical = (canonical :> Path.Module.t option) in
@@ -963,7 +965,7 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
     | Some _ -> false
     | None -> Odoc_model.Root.contains_double_underscore (Ident.name ident)
   in
-  {id; locs = Locations.empty; doc; type_; canonical; hidden }
+  {id; locs; doc; type_; canonical; hidden }
 
 and read_type_rec_status rec_status =
   let open Signature in

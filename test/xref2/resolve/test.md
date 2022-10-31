@@ -246,7 +246,13 @@ Basic resolution 2, environment lookup:
                ihash = 818126955; ikey = "r_Root.p_None"},
               M);
           ihash = 716453475; ikey = "m_M.r_Root.p_None"};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+        locs =
+         {Odoc_model.Lang.Locations.impl = None;
+          intf =
+           Some
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 2; column = 2};
+             end_ = {Odoc_model__.Location_.line = 4; column = 5}}};
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -436,7 +442,13 @@ Basic resolution 3, module type:
                ihash = 818126955; ikey = "r_Root.p_None"},
               N);
           ihash = 502470005; ikey = "m_N.r_Root.p_None"};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+        locs =
+         {Odoc_model.Lang.Locations.impl = None;
+          intf =
+           Some
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 5; column = 2};
+             end_ = {Odoc_model__.Location_.line = 5; column = 14}}};
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -508,11 +520,7 @@ Basic resolution 3, module type:
               (`Resolved
                  (`Type
                     (`Identifier
-                       {Odoc_model__Paths_types.iv =
-                         `Module
-                           ({Odoc_model__Paths_types.iv = `Root (Some ...);
-                              ihash = ...; ikey = ...},
-                             ...);
+                       {Odoc_model__Paths_types.iv = `Module ...;
                          ihash = ...; ikey = ...},
                        ...)),
                  ...));
@@ -598,7 +606,13 @@ Basic resolution 4, module type:
                         ihash = 459143770; ikey = "mt_M.r_Root.p_None"},
                        N);
                    ihash = 998243332; ikey = "m_N.mt_M.r_Root.p_None"};
-                 locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+                 locs =
+                  {Odoc_model.Lang.Locations.impl = None;
+                   intf =
+                    Some
+                     {Odoc_model__.Location_.file = "";
+                      start = {Odoc_model__.Location_.line = 3; column = 6};
+                      end_ = {Odoc_model__.Location_.line = 5; column = 9}}};
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -654,7 +668,13 @@ Basic resolution 4, module type:
                ihash = 818126955; ikey = "r_Root.p_None"},
               A);
           ihash = 353272258; ikey = "m_A.r_Root.p_None"};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+        locs =
+         {Odoc_model.Lang.Locations.impl = None;
+          intf =
+           Some
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 7; column = 2};
+             end_ = {Odoc_model__.Location_.line = 7; column = 14}}};
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -683,7 +703,14 @@ Basic resolution 4, module type:
                             N);
                         ihash = 456955352; ikey = "m_N.m_A.r_Root.p_None"};
                       locs =
-                       {Odoc_model.Lang.Locations.impl = None; intf = None};
+                       {Odoc_model.Lang.Locations.impl = None;
+                        intf =
+                         Some
+                          {Odoc_model__.Location_.file = "";
+                           start =
+                            {Odoc_model__.Location_.line = 3; column = 6};
+                           end_ =
+                            {Odoc_model__.Location_.line = 5; column = 9}}};
                       doc = [];
                       type_ =
                        Odoc_model.Lang.Module.ModuleType
@@ -694,22 +721,7 @@ Basic resolution 4, module type:
                               {Odoc_model.Lang.TypeDecl.id =
                                 {Odoc_model__Paths_types.iv =
                                   `Type
-                                    ({Odoc_model__Paths_types.iv =
-                                       `Module
-                                         ({Odoc_model__Paths_types.iv =
-                                            `Module
-                                              ({Odoc_model__Paths_types.iv =
-                                                 `Root
-                                                   (Some
-                                                     {Odoc_model__Paths_types.iv
-                                                       = `Page (None, None);
-                                                      ihash = 236059787;
-                                                      ikey = "p_None"},
-                                                    Root);
-                                                ihash = ...; ikey = ...},
-                                               ...);
-                                           ihash = ...; ikey = ...},
-                                          ...);
+                                    ({Odoc_model__Paths_types.iv = ...;
                                       ihash = ...; ikey = ...},
                                      ...);
                                  ihash = ...; ikey = ...};
@@ -896,7 +908,13 @@ and then we can look up the type `t`.
                         ihash = 459143770; ikey = "mt_M.r_Root.p_None"},
                        B);
                    ihash = 301928208; ikey = "m_B.mt_M.r_Root.p_None"};
-                 locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+                 locs =
+                  {Odoc_model.Lang.Locations.impl = None;
+                   intf =
+                    Some
+                     {Odoc_model__.Location_.file = "";
+                      start = {Odoc_model__.Location_.line = 6; column = 6};
+                      end_ = {Odoc_model__.Location_.line = 6; column = 18}}};
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -947,15 +965,7 @@ and then we can look up the type `t`.
                             {Odoc_model__Paths_types.iv =
                               `ModuleType
                                 ({Odoc_model__Paths_types.iv =
-                                   `ModuleType
-                                     ({Odoc_model__Paths_types.iv =
-                                        `Root
-                                          (Some
-                                            {Odoc_model__Paths_types.iv = ...;
-                                             ihash = ...; ikey = ...},
-                                           ...);
-                                       ihash = ...; ikey = ...},
-                                      ...);
+                                   `ModuleType (...);
                                   ihash = ...; ikey = ...},
                                  ...);
                              ihash = ...; ikey = ...})});
@@ -1089,7 +1099,13 @@ and then we can look up the type `t`.
                         ihash = 459143770; ikey = "mt_M.r_Root.p_None"},
                        X);
                    ihash = 573009176; ikey = "m_X.mt_M.r_Root.p_None"};
-                 locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+                 locs =
+                  {Odoc_model.Lang.Locations.impl = None;
+                   intf =
+                    Some
+                     {Odoc_model__.Location_.file = "";
+                      start = {Odoc_model__.Location_.line = 6; column = 6};
+                      end_ = {Odoc_model__.Location_.line = 8; column = 9}}};
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -1125,7 +1141,15 @@ and then we can look up the type `t`.
                             ikey = "m_B.m_X.mt_M.r_Root.p_None"};
                           locs =
                            {Odoc_model.Lang.Locations.impl = None;
-                            intf = None};
+                            intf =
+                             Some
+                              {Odoc_model__.Location_.file = "";
+                               start =
+                                {Odoc_model__.Location_.line = 7;
+                                 column = 10};
+                               end_ =
+                                {Odoc_model__.Location_.line = 7;
+                                 column = 22}}};
                           doc = [];
                           type_ =
                            Odoc_model.Lang.Module.ModuleType
@@ -1140,23 +1164,7 @@ and then we can look up the type `t`.
                                          {Odoc_model__Paths_types.iv =
                                            `Type
                                              ({Odoc_model__Paths_types.iv =
-                                                `Module
-                                                  ({Odoc_model__Paths_types.iv
-                                                     =
-                                                     `Module
-                                                       ({Odoc_model__Paths_types.iv
-                                                          =
-                                                          `ModuleType
-                                                            ({Odoc_model__Paths_types.iv
-                                                               = ...;
-                                                              ihash = ...;
-                                                              ikey = ...},
-                                                             ...);
-                                                         ihash = ...;
-                                                         ikey = ...},
-                                                        ...);
-                                                    ihash = ...; ikey = ...},
-                                                   ...);
+                                                ...;
                                                ihash = ...; ikey = ...},
                                               ...);
                                           ihash = ...; ikey = ...};
@@ -1242,7 +1250,13 @@ Ensure a substitution is taken into account during resolution:
                         ihash = 231492881; ikey = "mt_A.r_Root.p_None"},
                        M);
                    ihash = 564635453; ikey = "m_M.mt_A.r_Root.p_None"};
-                 locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+                 locs =
+                  {Odoc_model.Lang.Locations.impl = None;
+                   intf =
+                    Some
+                     {Odoc_model__.Location_.file = "";
+                      start = {Odoc_model__.Location_.line = 3; column = 2};
+                      end_ = {Odoc_model__.Location_.line = 3; column = 34}}};
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -1297,7 +1311,13 @@ Ensure a substitution is taken into account during resolution:
                         ihash = 231492881; ikey = "mt_A.r_Root.p_None"},
                        N);
                    ihash = 50158313; ikey = "m_N.mt_A.r_Root.p_None"};
-                 locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+                 locs =
+                  {Odoc_model.Lang.Locations.impl = None;
+                   intf =
+                    Some
+                     {Odoc_model__.Location_.file = "";
+                      start = {Odoc_model__.Location_.line = 4; column = 2};
+                      end_ = {Odoc_model__.Location_.line = 4; column = 16}}};
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -1338,21 +1358,16 @@ Ensure a substitution is taken into account during resolution:
              ({Odoc_model__Paths_types.iv =
                 `Root
                   (Some
-                    {Odoc_model__Paths_types.iv = `Page (None, None);
-                     ihash = 236059787; ikey = "p_None"},
-                   Root);
-               ihash = 818126955;
-               ikey = "r_Root.p_"... (* string length 13; truncated *)},
-              B);
-          ihash = 814134997;
-          ikey = "m_B.r_Ro"... (* string length 17; truncated *)};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
-        doc = [];
-        type_ = Odoc_model.Lang.Module.ModuleType ...; canonical = ...;
-         hidden = ...});
-       ...];
-     compiled = ...; doc = ...};
-  expansion = ...; linked = ...; canonical = ...}
+                    {Odoc_model__Paths_types.iv = `Page (...); ihash = ...;
+                     ikey = ...},
+                   ...);
+               ihash = ...; ikey = ...},
+              ...);
+          ihash = ...; ikey = ...};
+        locs = ...; doc = ...; type_ = ...; canonical = ...; hidden = ...});
+      ...];
+    compiled = ...; doc = ...};
+ expansion = ...; linked = ...; canonical = ...}
 ```
 
 Ensure a destructive substitution is taken into account during resolution:
@@ -1421,7 +1436,13 @@ Ensure a destructive substitution is taken into account during resolution:
                         ihash = 231492881; ikey = "mt_A.r_Root.p_None"},
                        M);
                    ihash = 564635453; ikey = "m_M.mt_A.r_Root.p_None"};
-                 locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+                 locs =
+                  {Odoc_model.Lang.Locations.impl = None;
+                   intf =
+                    Some
+                     {Odoc_model__.Location_.file = "";
+                      start = {Odoc_model__.Location_.line = 3; column = 2};
+                      end_ = {Odoc_model__.Location_.line = 3; column = 34}}};
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -1476,7 +1497,13 @@ Ensure a destructive substitution is taken into account during resolution:
                         ihash = 231492881; ikey = "mt_A.r_Root.p_None"},
                        N);
                    ihash = 50158313; ikey = "m_N.mt_A.r_Root.p_None"};
-                 locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+                 locs =
+                  {Odoc_model.Lang.Locations.impl = None;
+                   intf =
+                    Some
+                     {Odoc_model__.Location_.file = "";
+                      start = {Odoc_model__.Location_.line = 4; column = 2};
+                      end_ = {Odoc_model__.Location_.line = 4; column = 16}}};
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
@@ -1517,21 +1544,16 @@ Ensure a destructive substitution is taken into account during resolution:
              ({Odoc_model__Paths_types.iv =
                 `Root
                   (Some
-                    {Odoc_model__Paths_types.iv = `Page (None, None);
-                     ihash = 236059787; ikey = "p_None"},
-                   Root);
-               ihash = 818126955;
-               ikey = "r_Root.p_"... (* string length 13; truncated *)},
-              B);
-          ihash = 814134997;
-          ikey = "m_B.r_Ro"... (* string length 17; truncated *)};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
-        doc = [];
-        type_ = Odoc_model.Lang.Module.ModuleType ...; canonical = ...;
-         hidden = ...});
-       ...];
-     compiled = ...; doc = ...};
-  expansion = ...; linked = ...; canonical = ...}
+                    {Odoc_model__Paths_types.iv = `Page (...); ihash = ...;
+                     ikey = ...},
+                   ...);
+               ihash = ...; ikey = ...},
+              ...);
+          ihash = ...; ikey = ...};
+        locs = ...; doc = ...; type_ = ...; canonical = ...; hidden = ...});
+      ...];
+    compiled = ...; doc = ...};
+ expansion = ...; linked = ...; canonical = ...}
 ```
 
 Resolve a module alias:
@@ -1571,7 +1593,13 @@ Resolve a module alias:
                ihash = 818126955; ikey = "r_Root.p_None"},
               A);
           ihash = 353272258; ikey = "m_A.r_Root.p_None"};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+        locs =
+         {Odoc_model.Lang.Locations.impl = None;
+          intf =
+           Some
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 2; column = 2};
+             end_ = {Odoc_model__.Location_.line = 4; column = 5}}};
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -1616,7 +1644,13 @@ Resolve a module alias:
                ihash = 818126955; ikey = "r_Root.p_None"},
               B);
           ihash = 814134997; ikey = "m_B.r_Root.p_None"};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+        locs =
+         {Odoc_model.Lang.Locations.impl = None;
+          intf =
+           Some
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 5; column = 2};
+             end_ = {Odoc_model__.Location_.line = 5; column = 14}}};
         doc = [];
         type_ =
          Odoc_model.Lang.Module.Alias
@@ -1676,21 +1710,16 @@ Resolve a module alias:
                                ({Odoc_model__Paths_types.iv =
                                   `Root
                                     (Some
-                                      {Odoc_model__Paths_types.iv =
-                                        `Page (None, None);
-                                       ihash = 236059787; ikey = "p_None"},
-                                     Root);
-                                 ihash = 818126955;
-                                 ikey =
-                                  "r_Root.p"... (* string length 13; truncated *)},
-                                B);
-                            ihash = 814134997;
-                            ikey =
-                             "m_B.r_Ro"... (* string length 17; truncated *)},
-                           false)),
-                     t)),
-              []));
-          constraints = []};
+                                      {Odoc_model__Paths_types.iv = ...;
+                                       ihash = ...; ikey = ...},
+                                     ...);
+                                 ihash = ...; ikey = ...},
+                                ...);
+                            ihash = ...; ikey = ...},
+                           ...)),
+                     ...)),
+              ...));
+          constraints = ...};
         representation = ...});
       ...];
     compiled = ...; doc = ...};
@@ -1735,7 +1764,13 @@ Resolve a module alias:
                ihash = 818126955; ikey = "r_Root.p_None"},
               A);
           ihash = 353272258; ikey = "m_A.r_Root.p_None"};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+        locs =
+         {Odoc_model.Lang.Locations.impl = None;
+          intf =
+           Some
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 2; column = 2};
+             end_ = {Odoc_model__.Location_.line = 4; column = 5}}};
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -1780,7 +1815,13 @@ Resolve a module alias:
                ihash = 818126955; ikey = "r_Root.p_None"},
               B);
           ihash = 814134997; ikey = "m_B.r_Root.p_None"};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+        locs =
+         {Odoc_model.Lang.Locations.impl = None;
+          intf =
+           Some
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 5; column = 2};
+             end_ = {Odoc_model__.Location_.line = 5; column = 14}}};
         doc = [];
         type_ =
          Odoc_model.Lang.Module.Alias
@@ -1812,7 +1853,13 @@ Resolve a module alias:
                ihash = 818126955; ikey = "r_Root.p_None"},
               C);
           ihash = 43786577; ikey = "m_C.r_Root.p_None"};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+        locs =
+         {Odoc_model.Lang.Locations.impl = None;
+          intf =
+           Some
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 6; column = 2};
+             end_ = {Odoc_model__.Location_.line = 6; column = 14}}};
         doc = [];
         type_ =
          Odoc_model.Lang.Module.Alias
@@ -1830,29 +1877,19 @@ Resolve a module alias:
                              Root);
                          ihash = 818126955; ikey = "r_Root.p_None"},
                         A);
-                    ihash = 353272258; ikey = "m_A.r_Root.p_None"},
+                    ihash = 353272258;
+                    ikey =
+                     "m_A.r_Root.p_"... (* string length 17; truncated *)},
                  `Identifier
                    ({Odoc_model__Paths_types.iv =
                       `Module
-                        ({Odoc_model__Paths_types.iv =
-                           `Root
-                             (Some
-                               {Odoc_model__Paths_types.iv =
-                                 `Page (None, None);
-                                ihash = 236059787; ikey = "p_None"},
-                              Root);
-                          ihash = 818126955;
-                          ikey =
-                           "r_Root.p_No"... (* string length 13; truncated *)},
-                         B);
-                     ihash = 814134997;
-                     ikey = "m_B.r_Ro"... (* string length 17; truncated *)},
-                    false))),
-           None);
-        canonical = None; hidden = false});
-      Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_model.Lang.TypeDecl.id = ...; doc = ...; canonical = ...;
-        equation = ...; representation = ...});
+                        ({Odoc_model__Paths_types.iv = `Root (...);
+                          ihash = ...; ikey = ...},
+                         ...);
+                     ihash = ...; ikey = ...},
+                    ...))),
+           ...);
+        canonical = ...; hidden = ...});
       ...];
     compiled = ...; doc = ...};
  expansion = ...; linked = ...; canonical = ...}
@@ -1942,7 +1979,13 @@ Resolve a functor:
                ihash = 818126955; ikey = "r_Root.p_None"},
               F);
           ihash = 748202139; ikey = "m_F.r_Root.p_None"};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+        locs =
+         {Odoc_model.Lang.Locations.impl = None;
+          intf =
+           Some
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 6; column = 2};
+             end_ = {Odoc_model__.Location_.line = 10; column = 5}}};
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -2018,26 +2061,23 @@ Resolve a functor:
                                      `Page (None, None);
                                     ihash = 236059787; ikey = "p_None"},
                                   Root);
-                              ihash = 818126955; ikey = "r_Root.p_None"},
+                              ihash = 818126955;
+                              ikey =
+                               "r_Root.p_"... (* string length 13; truncated *)},
                              S);
                          ihash = 527535255;
                          ikey =
-                          "mt_S.r_Root.p_"... (* string length 18; truncated *)})}},
+                          "mt_S.r_R"... (* string length 18; truncated *)})}},
             Odoc_model.Lang.ModuleType.Functor
              (Odoc_model.Lang.FunctorParameter.Named
                {Odoc_model.Lang.FunctorParameter.id =
-                 {Odoc_model__Paths_types.iv =
-                   `Parameter
-                     ({Odoc_model__Paths_types.iv = `Result ...; ihash = ...;
-                        ikey = ...},
-                       ...);
-                   ihash = ...; ikey = ...};
-                 expr = ...},
-               ...)));
-         canonical = ...; hidden = ...});
-       ...];
-     compiled = ...; doc = ...};
-  expansion = ...; linked = ...; canonical = ...}
+                 {Odoc_model__Paths_types.iv = ...; ihash = ...; ikey = ...};
+                expr = ...},
+             ...)));
+        canonical = ...; hidden = ...});
+      ...];
+    compiled = ...; doc = ...};
+ expansion = ...; linked = ...; canonical = ...}
 ```
 
 Resolve a functor:
@@ -2369,7 +2409,13 @@ Functor app nightmare:
                ihash = 818126955; ikey = "r_Root.p_None"},
               App);
           ihash = 855073208; ikey = "m_App.r_Root.p_None"};
-        locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
+        locs =
+         {Odoc_model.Lang.Locations.impl = None;
+          intf =
+           Some
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 3; column = 2};
+             end_ = {Odoc_model__.Location_.line = 3; column = 75}}};
         doc = [];
         type_ =
          Odoc_model.Lang.Module.ModuleType
@@ -2441,7 +2487,9 @@ Functor app nightmare:
                                   Root);
                               ihash = 818126955; ikey = "r_Root.p_None"},
                              Type);
-                         ihash = 359972898; ikey = "mt_Type.r_Root.p_None"})}},
+                         ihash = 359972898;
+                         ikey =
+                          "mt_Type.r_Root.p_N"... (* string length 21; truncated *)})}},
             Odoc_model.Lang.ModuleType.Functor
              (Odoc_model.Lang.FunctorParameter.Named
                {Odoc_model.Lang.FunctorParameter.id =
@@ -2449,16 +2497,7 @@ Functor app nightmare:
                    `Parameter
                      ({Odoc_model__Paths_types.iv =
                         `Result
-                          {Odoc_model__Paths_types.iv =
-                            `Module
-                              ({Odoc_model__Paths_types.iv =
-                                 `Root
-                                   (Some
-                                     {Odoc_model__Paths_types.iv = ...;
-                                      ihash = ...; ikey = ...},
-                                    ...);
-                                ihash = ...; ikey = ...},
-                               ...);
+                          {Odoc_model__Paths_types.iv = `Module (...);
                            ihash = ...; ikey = ...};
                        ihash = ...; ikey = ...},
                       ...);

@@ -304,6 +304,7 @@ and Value : sig
     doc : Comment.docs;
     type_ : TypeExpr.t;
     value : value;
+    locs : Locations.t;
   }
 end =
   Value
