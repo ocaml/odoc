@@ -321,7 +321,12 @@ end
 and Value : sig
   type value = Odoc_model.Lang.Value.value
 
-  type t = { doc : CComment.docs; type_ : TypeExpr.t; value : value }
+  type t = {
+    doc : CComment.docs;
+    type_ : TypeExpr.t;
+    value : value;
+    locs : Odoc_model.Lang.Locations.t;
+  }
 end
 
 and Class : sig

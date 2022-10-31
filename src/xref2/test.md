@@ -332,7 +332,12 @@ val module_ : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
      {Odoc_xref2.Component.Module.locs =
-       {Odoc_model.Lang.Locations.impl = None; intf = None};
+       {Odoc_model.Lang.Locations.impl = None;
+        intf =
+         Some
+          {Odoc_model__.Location_.file = "";
+           start = {Odoc_model__.Location_.line = 2; column = 2};
+           end_ = {Odoc_model__.Location_.line = 4; column = 5}}};
       doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
@@ -419,7 +424,12 @@ val module_ : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
      {Odoc_xref2.Component.Module.locs =
-       {Odoc_model.Lang.Locations.impl = None; intf = None};
+       {Odoc_model.Lang.Locations.impl = None;
+        intf =
+         Some
+          {Odoc_model__.Location_.file = "";
+           start = {Odoc_model__.Location_.line = 5; column = 2};
+           end_ = {Odoc_model__.Location_.line = 5; column = 14}}};
       doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
@@ -522,7 +532,14 @@ val m : Component.Element.module_type option =
                 {Odoc_xref2.Component.Delayed.v =
                   Some
                    {Odoc_xref2.Component.Module.locs =
-                     {Odoc_model.Lang.Locations.impl = None; intf = None};
+                     {Odoc_model.Lang.Locations.impl = None;
+                      intf =
+                       Some
+                        {Odoc_model__.Location_.file = "";
+                         start =
+                          {Odoc_model__.Location_.line = 6; column = 6};
+                         end_ =
+                          {Odoc_model__.Location_.line = 6; column = 18}}};
                     doc = [];
                     type_ =
                      Odoc_xref2.Component.Module.ModuleType
@@ -841,7 +858,14 @@ val module_C_lens :
         ihash = 818126955; ikey = "r_Root.p_None"},
        C);
    ihash = 43786577; ikey = "m_C.r_Root.p_None"};
- locs = {Odoc_model.Lang.Locations.impl = None; intf = None}; doc = [];
+ locs =
+  {Odoc_model.Lang.Locations.impl = None;
+   intf =
+    Some
+     {Odoc_model__.Location_.file = "";
+      start = {Odoc_model__.Location_.line = 9; column = 2};
+      end_ = {Odoc_model__.Location_.line = 9; column = 32}}};
+ doc = [];
  type_ =
   Odoc_model.Lang.Module.ModuleType
    (Odoc_model.Lang.ModuleType.With
@@ -890,7 +914,12 @@ val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
      {Odoc_xref2.Component.Module.locs =
-       {Odoc_model.Lang.Locations.impl = None; intf = None};
+       {Odoc_model.Lang.Locations.impl = None;
+        intf =
+         Some
+          {Odoc_model__.Location_.file = "";
+           start = {Odoc_model__.Location_.line = 9; column = 2};
+           end_ = {Odoc_model__.Location_.line = 9; column = 32}}};
       doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
@@ -945,7 +974,12 @@ val sg : Tools.expansion =
        {Odoc_xref2.Component.Delayed.v =
          Some
           {Odoc_xref2.Component.Module.locs =
-            {Odoc_model.Lang.Locations.impl = None; intf = None};
+            {Odoc_model.Lang.Locations.impl = None;
+             intf =
+              Some
+               {Odoc_model__.Location_.file = "";
+                start = {Odoc_model__.Location_.line = 3; column = 2};
+                end_ = {Odoc_model__.Location_.line = 3; column = 34}}};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.Alias
@@ -970,7 +1004,12 @@ val sg : Tools.expansion =
        {Odoc_xref2.Component.Delayed.v =
          Some
           {Odoc_xref2.Component.Module.locs =
-            {Odoc_model.Lang.Locations.impl = None; intf = None};
+            {Odoc_model.Lang.Locations.impl = None;
+             intf =
+              Some
+               {Odoc_model__.Location_.file = "";
+                start = {Odoc_model__.Location_.line = 4; column = 2};
+                end_ = {Odoc_model__.Location_.line = 4; column = 16}}};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
@@ -992,7 +1031,12 @@ val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
      {Odoc_xref2.Component.Module.locs =
-       {Odoc_model.Lang.Locations.impl = None; intf = None};
+       {Odoc_model.Lang.Locations.impl = None;
+        intf =
+         Some
+          {Odoc_model__.Location_.file = "";
+           start = {Odoc_model__.Location_.line = 4; column = 2};
+           end_ = {Odoc_model__.Location_.line = 4; column = 16}}};
       doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
@@ -1518,7 +1562,12 @@ val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
      {Odoc_xref2.Component.Module.locs =
-       {Odoc_model.Lang.Locations.impl = None; intf = None};
+       {Odoc_model.Lang.Locations.impl = None;
+        intf =
+         Some
+          {Odoc_model__.Location_.file = "";
+           start = {Odoc_model__.Location_.line = 3; column = 2};
+           end_ = {Odoc_model__.Location_.line = 3; column = 75}}};
       doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
@@ -1572,7 +1621,12 @@ val sg' : Tools.expansion =
        {Odoc_xref2.Component.Delayed.v =
          Some
           {Odoc_xref2.Component.Module.locs =
-            {Odoc_model.Lang.Locations.impl = None; intf = None};
+            {Odoc_model.Lang.Locations.impl = None;
+             intf =
+              Some
+               {Odoc_model__.Location_.file = "";
+                start = {Odoc_model__.Location_.line = 6; column = 50};
+                end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
@@ -1611,7 +1665,12 @@ val sg' : Tools.expansion =
        {Odoc_xref2.Component.Delayed.v =
          Some
           {Odoc_xref2.Component.Module.locs =
-            {Odoc_model.Lang.Locations.impl = None; intf = None};
+            {Odoc_model.Lang.Locations.impl = None;
+             intf =
+              Some
+               {Odoc_model__.Location_.file = "";
+                start = {Odoc_model__.Location_.line = 6; column = 50};
+                end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
@@ -1650,7 +1709,12 @@ val sg' : Tools.expansion =
        {Odoc_xref2.Component.Delayed.v =
          Some
           {Odoc_xref2.Component.Module.locs =
-            {Odoc_model.Lang.Locations.impl = None; intf = None};
+            {Odoc_model.Lang.Locations.impl = None;
+             intf =
+              Some
+               {Odoc_model__.Location_.file = "";
+                start = {Odoc_model__.Location_.line = 6; column = 50};
+                end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
@@ -1689,7 +1753,12 @@ val sg' : Tools.expansion =
        {Odoc_xref2.Component.Delayed.v =
          Some
           {Odoc_xref2.Component.Module.locs =
-            {Odoc_model.Lang.Locations.impl = None; intf = None};
+            {Odoc_model.Lang.Locations.impl = None;
+             intf =
+              Some
+               {Odoc_model__.Location_.file = "";
+                start = {Odoc_model__.Location_.line = 6; column = 50};
+                end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
@@ -2847,7 +2916,14 @@ let m_e_i_s_value mod_name n val_name =
           false),
        "t"),
    []);
- value = Odoc_model.Lang.Value.Abstract}
+ value = Odoc_model.Lang.Value.Abstract;
+ locs =
+  {Odoc_model.Lang.Locations.impl = None;
+   intf =
+    Some
+     {Odoc_model__.Location_.file = "";
+      start = {Odoc_model__.Location_.line = 4; column = 4};
+      end_ = {Odoc_model__.Location_.line = 4; column = 14}}}}
 # Common.LangUtils.Lens.get (m_e_i_s_value "Foo3" 0 "id2") sg;;
 - : Odoc_model.Lang.Value.t =
 {Odoc_model.Lang.Value.id =
@@ -2887,7 +2963,14 @@ let m_e_i_s_value mod_name n val_name =
         ihash = 271372153; ikey = "t_{t}3.m_Foo3.r_Root.p_None"},
        false),
    []);
- value = Odoc_model.Lang.Value.Abstract}
+ value = Odoc_model.Lang.Value.Abstract;
+ locs =
+  {Odoc_model.Lang.Locations.impl = None;
+   intf =
+    Some
+     {Odoc_model__.Location_.file = "";
+      start = {Odoc_model__.Location_.line = 10; column = 4};
+      end_ = {Odoc_model__.Location_.line = 10; column = 15}}}}
 ```
 
 
@@ -3000,7 +3083,14 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 671044364; ikey = "t_{t}4.m_Foo3.r_Root.p_None"},
            false),
        []);
-     value = Odoc_model.Lang.Value.Abstract}];
+     value = Odoc_model.Lang.Value.Abstract;
+     locs =
+      {Odoc_model.Lang.Locations.impl = None;
+       intf =
+        Some
+         {Odoc_model__.Location_.file = "";
+          start = {Odoc_model__.Location_.line = 4; column = 4};
+          end_ = {Odoc_model__.Location_.line = 4; column = 14}}}}];
  compiled = false; doc = []}
 # Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 1) sg;;
 - : Odoc_model.Lang.Signature.t =
@@ -3084,7 +3174,14 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 67089224; ikey = "t_{t}5.m_Foo3.r_Root.p_None"},
            false),
        []);
-     value = Odoc_model.Lang.Value.Abstract}];
+     value = Odoc_model.Lang.Value.Abstract;
+     locs =
+      {Odoc_model.Lang.Locations.impl = None;
+       intf =
+        Some
+         {Odoc_model__.Location_.file = "";
+          start = {Odoc_model__.Location_.line = 9; column = 4};
+          end_ = {Odoc_model__.Location_.line = 9; column = 15}}}}];
  compiled = false; doc = []}
 ```
 
@@ -3187,7 +3284,14 @@ let sg = Common.signature_of_mli_string test_data;;
             ikey = "coret_int"},
            false),
        []);
-     value = Odoc_model.Lang.Value.Abstract};
+     value = Odoc_model.Lang.Value.Abstract;
+     locs =
+      {Odoc_model.Lang.Locations.impl = None;
+       intf =
+        Some
+         {Odoc_model__.Location_.file = "";
+          start = {Odoc_model__.Location_.line = 4; column = 4};
+          end_ = {Odoc_model__.Location_.line = 4; column = 15}}}};
    Odoc_model.Lang.Signature.Value
     {Odoc_model.Lang.Value.id =
       {Odoc_model__Paths_types.iv =
@@ -3226,7 +3330,14 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 133032212; ikey = "t_{t}6.m_Foo3.r_Root.p_None"},
            false),
        []);
-     value = Odoc_model.Lang.Value.Abstract}];
+     value = Odoc_model.Lang.Value.Abstract;
+     locs =
+      {Odoc_model.Lang.Locations.impl = None;
+       intf =
+        Some
+         {Odoc_model__.Location_.file = "";
+          start = {Odoc_model__.Location_.line = 5; column = 4};
+          end_ = {Odoc_model__.Location_.line = 5; column = 14}}}}];
  compiled = false; doc = []}
 ```
 
@@ -3279,7 +3390,14 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
            {Bar}9);
        ihash = 658027043; ikey = "m_{Bar}9.m_Foo3.r_Root.p_None"};
-     locs = {Odoc_model.Lang.Locations.impl = None; intf = None}; doc = [];
+     locs =
+      {Odoc_model.Lang.Locations.impl = None;
+       intf =
+        Some
+         {Odoc_model__.Location_.file = "";
+          start = {Odoc_model__.Location_.line = 3; column = 5};
+          end_ = {Odoc_model__.Location_.line = 5; column = 8}}};
+     doc = [];
      type_ =
       Odoc_model.Lang.Module.Alias
        (`Dot
@@ -3340,6 +3458,13 @@ let sg = Common.signature_of_mli_string test_data;;
               true),
            "t"),
        []);
-     value = Odoc_model.Lang.Value.Abstract}];
+     value = Odoc_model.Lang.Value.Abstract;
+     locs =
+      {Odoc_model.Lang.Locations.impl = None;
+       intf =
+        Some
+         {Odoc_model__.Location_.file = "";
+          start = {Odoc_model__.Location_.line = 7; column = 5};
+          end_ = {Odoc_model__.Location_.line = 7; column = 19}}}}];
  compiled = false; doc = []}
 ```

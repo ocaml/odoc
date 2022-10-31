@@ -146,6 +146,7 @@ let rec read_core_type env container ctyp =
 let read_value_description env parent vd =
   let open Signature in
   let id = Env.find_value_identifier env vd.val_id in
+  let locs = {Locations.impl= None; intf= Some (Doc_attr.read_location vd.val_loc)} in
   let container =
     (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
   in
@@ -156,7 +157,7 @@ let read_value_description env parent vd =
     | [] -> Value.Abstract
     | primitives -> External primitives
   in
-  Value { Value.id; doc; type_; value }
+  Value { Value.id; locs; doc; type_; value }
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
@@ -610,6 +611,7 @@ and read_module_declaration env parent md =
   let id = Env.find_module_identifier env md.md_id in
 #endif
   let id = (id :> Identifier.Module.t) in
+  let locs = {Locations.impl= None; intf= Some (Doc_attr.read_location md.md_loc)} in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
   let type_, canonical =
@@ -635,7 +637,7 @@ and read_module_declaration env parent md =
     | _ -> false
 #endif
   in
-  Some {id; locs = Locations.empty; doc; type_; canonical; hidden}
+  Some {id; locs; doc; type_; canonical; hidden}
 
 and read_module_declarations env parent mds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
