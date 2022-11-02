@@ -208,14 +208,4 @@ let read_cmt ~make_root ~parent ~filename =
 let read_cmi ~make_root ~parent ~filename =
   wrap_errors ~filename (read_cmi ~make_root ~parent ~filename)
 
-let read_position (x : Lexing.position) =
-  let open Odoc_model.Location_ in
-  { line = x.pos_lnum; column = x.pos_cnum - x.pos_bol }
-
-let read_location (x : Location.t) =
-  let open Odoc_model.Location_ in
-  {
-    file = x.loc_start.pos_fname;
-    start = read_position x.loc_start;
-    end_ = read_position x.loc_end;
-  }
+let read_location = Doc_attr.read_location
