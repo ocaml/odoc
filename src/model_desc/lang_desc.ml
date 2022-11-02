@@ -16,6 +16,17 @@ let inline_status =
     | `Closed -> C0 "`Closed"
     | `Inline -> C0 "`Inline")
 
+(** Ocaml's location type *)
+let location = To_string (fun loc -> Format.asprintf "%a" Location_.pp loc)
+
+let locations =
+  let open Lang.Locations in
+  Record
+    [
+      F ("impl", (fun t -> t.impl), Option location);
+      F ("intf", (fun t -> t.intf), Option location);
+    ]
+
 (** {3 Module} *)
 
 let rec module_decl =
@@ -34,6 +45,7 @@ and module_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
+      F ("locs", (fun t -> t.locs), locations);
       F ("doc", (fun t -> t.doc), docs);
       F ("type_", (fun t -> t.type_), module_decl);
       F

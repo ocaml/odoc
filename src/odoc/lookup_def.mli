@@ -2,4 +2,5 @@
 
 open Odoc_model.Paths
 
-val lookup_def : Odoc_loader.typing_env -> Identifier.t -> Location.t option
+val lookup_def :
+  Odoc_loader.typing_env -> Identifier.t -> Odoc_model.Location_.span option

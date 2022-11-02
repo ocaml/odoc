@@ -76,6 +76,7 @@ module rec Module : sig
     | ModuleType of ModuleType.expr
 
   type t = {
+    locs : Odoc_model.Lang.Locations.t;
     doc : CComment.docs;
     type_ : decl;
     canonical : Odoc_model.Paths.Path.Module.t option;
@@ -2028,7 +2029,13 @@ module Of_Lang = struct
   and module_ ident_map m =
     let type_ = module_decl ident_map m.Odoc_model.Lang.Module.type_ in
     let canonical = m.Odoc_model.Lang.Module.canonical in
-    { Module.doc = docs ident_map m.doc; type_; canonical; hidden = m.hidden }
+    {
+      Module.locs = m.locs;
+      doc = docs ident_map m.doc;
+      type_;
+      canonical;
+      hidden = m.hidden;
+    }
 
   and with_module_type_substitution ident_map m =
     let open Odoc_model.Lang.ModuleType in
@@ -2298,7 +2305,8 @@ module Of_Lang = struct
     let manifest = module_path ident_map t.manifest in
     let canonical = None in
     {
-      Module.doc = docs ident_map t.doc;
+      Module.locs = Lang.Locations.empty;
+      doc = docs ident_map t.doc;
       type_ = Alias (manifest, None);
       canonical;
       hidden = false;
@@ -2405,7 +2413,8 @@ end
 
 let module_of_functor_argument (arg : FunctorParameter.parameter) =
   {
-    Module.doc = [];
+    Module.locs = Odoc_model.Lang.Locations.empty;
+    doc = [];
     type_ = ModuleType arg.expr;
     canonical = None;
     hidden = false;

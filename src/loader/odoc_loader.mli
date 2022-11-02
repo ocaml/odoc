@@ -42,3 +42,5 @@ val read_cmi :
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
+
+val read_location : Location.t -> Location_.span

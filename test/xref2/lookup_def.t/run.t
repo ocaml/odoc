@@ -1,10 +1,26 @@
 Compile the modules:
 
   $ ocamlc -c a.mli a.ml -bin-annot
-
-Compile the pages:
-
   $ odoc compile a.cmti
-  Loc of module M: File "a.ml", line 1, characters 0-21
-  Loc of module N: File "a.ml", lines 3-7, characters 0-3
-  Loc of module S: File "a.ml", lines 4-6, characters 2-5
+
+Show the locations:
+
+  $ odoc_print a.odoc | jq '.. | .locs? | select(.)'
+  {
+    "impl": {
+      "Some": "File \"a.ml\", line 1, characters 0-21"
+    },
+    "intf": "None"
+  }
+  {
+    "impl": {
+      "Some": "File \"a.ml\", line 3, character 0 to line 7, character 3"
+    },
+    "intf": "None"
+  }
+  {
+    "impl": {
+      "Some": "File \"a.ml\", line 4, character 2 to line 6, character 5"
+    },
+    "intf": "None"
+  }

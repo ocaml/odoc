@@ -472,7 +472,7 @@ val sg : Odoc_model.Lang.Signature.t =
               ihash = 818126955; ikey = "r_Root.p_None"},
              F);
          ihash = 748202139; ikey = "m_F.r_Root.p_None"};
-       doc = [];
+       locs = {Odoc_model.Lang.Locations.impl = None; intf = None}; doc = [];
        type_ =
         Odoc_model.Lang.Module.ModuleType
          (Odoc_model.Lang.ModuleType.Functor
@@ -566,19 +566,18 @@ val sg : Odoc_model.Lang.Signature.t =
                                 F);
                             ihash = 748202139;
                             ikey =
-                             "m_F.r_Root.p_No"... (* string length 17; truncated *)};
+                             "m_F.r_Root.p"... (* string length 17; truncated *)};
                         ihash = 709672416;
                         ikey =
-                         "___result__.m"... (* string length 29; truncated *)},
+                         "___result_"... (* string length 29; truncated *)},
                        N);
                    ihash = 837385364;
-                   ikey = "m_N.___res"... (* string length 33; truncated *)};
+                   ikey = "m_N.___r"... (* string length 33; truncated *)};
+                 locs = {Odoc_model.Lang.Locations.impl = None; intf = None};
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
-                   (Odoc_model.Lang.ModuleType.Path
-                     {Odoc_model.Lang.ModuleType.p_expansion = None;
-                      p_path = `Resolved ...});
+                   (Odoc_model.Lang.ModuleType.Path ...);
                   canonical = ...; hidden = ...});
                 ...];
               compiled = ...; doc = ...}));

@@ -66,6 +66,7 @@ module rec Module : sig
     | ModuleType of ModuleType.expr
 
   type t = {
+    locs : Odoc_model.Lang.Locations.t;
     doc : CComment.docs;
     type_ : decl;
     canonical : Odoc_model.Paths.Path.Module.t option;
