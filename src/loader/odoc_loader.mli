@@ -3,7 +3,6 @@ open Odoc_model
 open Odoc_model.Paths
 
 type typing_env = {
-  final_env : Env.t;  (** Might contain only the summary. *)
   uid_to_loc : Location.t Shape.Uid.Tbl.t;
   impl_shape : Shape.t;
 }

@@ -1,45 +1,9 @@
 open Odoc_model.Paths
+open Odoc_model.Names
+open Odoc_xref2.Utils.OptionSyntax
+module Kind = Shape.Sig_component_kind
 
-module Make (Loader : sig
-  val read_typing_env : unit_name:string -> Odoc_loader.typing_env option
-end) =
-struct
-  module Reducer = Shape.Make_reduce (struct
-    type env = Ocaml_env.t
-
-    let fuel = 10
-
-    let read_unit_shape ~unit_name =
-      match Loader.read_typing_env ~unit_name with
-      | Some ty -> Some ty.Odoc_loader.impl_shape
-      | None -> None
-
-    let find_shape env id =
-      Ocaml_env.shape_of_path ~namespace:Shape.Sig_component_kind.Module env
-        (Ocaml_path.Pident id)
-  end)
-
-  let uid_of_path env path ns =
-    let shape = Ocaml_env.shape_of_path ~namespace:ns env path in
-    let r = Reducer.reduce env shape in
-    r.uid
-
-  let rec aux : Identifier.t -> Ocaml_path.t option =
-    let open Odoc_model.Names in
-    let pdot parent name =
-      match aux parent with
-      | Some parent -> Some (Ocaml_path.Pdot (parent, name))
-      | None -> None
-    in
-    fun x ->
-      match x.iv with
-      | `Module (parent, name) ->
-          pdot (parent :> Identifier.t) (ModuleName.to_string name)
-      | `Root (_, name) ->
-          Some
-            (Pident (Ocaml_ident.create_persistent (ModuleName.to_string name)))
-      | _ -> None
-  (*
+(*
    | `Page (_, name) -> PageName.to_string name
    | `LeafPage (_, name) -> PageName.to_string name
    | `Parameter (_, name) -> ModuleName.to_string name
@@ -60,15 +24,28 @@ struct
    | `Label (_, name) -> LabelName.to_string name
 *)
 
-  let path_of_id : [< Identifier.t_pv ] Identifier.id -> Ocaml_path.t option =
-   fun n -> aux (n :> Identifier.t)
+(** Project an identifier into a shape. *)
+let rec project_id :
+    Shape.t -> [< Identifier.t_pv ] Identifier.id -> Shape.t option =
+  let proj shape parent kind name =
+    let* shape = project_id shape parent in
+    let item = Shape.Item.make name kind in
+    Some (Shape.proj shape item)
+  in
+  fun shape id ->
+    match id.iv with
+    | `Module (parent, name) ->
+        proj shape
+          (parent :> Identifier.t)
+          Kind.Module
+          (ModuleName.to_string name)
+    | `Root _ ->
+        (* TODO: Assert that's the right root *)
+        Some shape
+    | _ -> None
 
-  let lookup_def ocaml_env id =
-    let open Odoc_xref2.Utils.OptionSyntax in
-    (* TODO: Compute [ns] from [id]. *)
-    let ns = Shape.Sig_component_kind.Module in
-    let* path = path_of_id id in
-    let* uid = uid_of_path ocaml_env path ns in
-    let tbl = Ocaml_env.get_uid_to_loc_tbl () in
-    Shape.Uid.Tbl.find_opt tbl uid
-end
+let lookup_def (typing_env : Odoc_loader.typing_env) id =
+  let* query = project_id typing_env.impl_shape id in
+  let result = Shape.local_reduce query in
+  let* uid = result.uid in
+  Shape.Uid.Tbl.find_opt typing_env.uid_to_loc uid
