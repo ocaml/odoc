@@ -48,4 +48,5 @@ let lookup_def (typing_env : Odoc_loader.typing_env) id =
   let* query = project_id typing_env.impl_shape id in
   let result = Shape.local_reduce query in
   let* uid = result.uid in
-  Shape.Uid.Tbl.find_opt typing_env.uid_to_loc uid
+  let* loc = Shape.Uid.Tbl.find_opt typing_env.uid_to_loc uid in
+  Some (Odoc_loader.read_location loc)

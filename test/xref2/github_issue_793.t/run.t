@@ -5,6 +5,5 @@ exception shows this working correctly.
 
   $ ocamlc -c irmin_layers_intf.ml -bin-annot -I .
   $ odoc compile -I . irmin_layers_intf.cmt
-  Loc of module Foo: File "irmin_layers_intf.ml", line 1, characters 0-23
 
 

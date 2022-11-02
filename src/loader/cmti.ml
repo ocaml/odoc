@@ -635,7 +635,7 @@ and read_module_declaration env parent md =
     | _ -> false
 #endif
   in
-  Some {id; doc; type_; canonical; hidden}
+  Some {id; locs = Locations.empty; doc; type_; canonical; hidden}
 
 and read_module_declarations env parent mds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in

@@ -444,7 +444,7 @@ and read_module_binding env parent mb =
     | _ -> false
 #endif
   in
-  Some {id; doc; type_; canonical; hidden; }
+  Some {id; locs = Locations.empty; doc; type_; canonical; hidden; }
 
 and read_module_bindings env parent mbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t)

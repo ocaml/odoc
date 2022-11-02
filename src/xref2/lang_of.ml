@@ -702,6 +702,7 @@ and module_ map parent id m =
     let map = { map with shadowed = empty_shadow } in
     {
       Odoc_model.Lang.Module.id;
+      locs = m.locs;
       doc = docs (parent :> Identifier.LabelParent.t) m.doc;
       type_ = module_decl map identifier m.type_;
       canonical = m.canonical;

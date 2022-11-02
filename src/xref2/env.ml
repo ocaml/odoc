@@ -16,7 +16,7 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
-  lookup_def : Identifier.t -> Location.t option;
+  lookup_def : Identifier.t -> Location_.span option;
 }
 
 let unique_id =
@@ -362,6 +362,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
         Lang.Module.
           {
             id = (unit.id :> Paths.Identifier.Module.t);
+            locs = Lang.Locations.empty;
             doc = [];
             type_ = ModuleType (Signature s);
             canonical = unit.canonical;
@@ -375,6 +376,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
         Lang.Module.
           {
             id = (unit.id :> Paths.Identifier.Module.t);
+            locs = Lang.Locations.empty;
             doc = [];
             type_ =
               ModuleType (Signature { items = []; compiled = true; doc = [] });
@@ -598,6 +600,7 @@ let add_functor_parameter : Lang.FunctorParameter.t -> t -> t =
       let m =
         Component.Module.
           {
+            locs = Lang.Locations.empty;
             doc = [];
             type_ =
               ModuleType Component.Of_Lang.(module_type_expr (empty ()) n.expr);
@@ -623,7 +626,8 @@ let add_functor_args' :
                 Ident.Name.typed_functor_parameter
                   arg.Component.FunctorParameter.id ),
             {
-              Component.Module.doc = [];
+              Component.Module.locs = Lang.Locations.empty;
+              doc = [];
               type_ = ModuleType arg.expr;
               canonical = None;
               hidden = false;

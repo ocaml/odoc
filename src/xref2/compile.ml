@@ -11,6 +11,11 @@ module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
 end
 
+let locations env id locs =
+  match locs.Locations.impl with
+  | Some _ -> locs
+  | None -> { locs with impl = Env.lookup_def id env }
+
 let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->
   match p with
@@ -332,15 +337,9 @@ and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
-  (match Env.lookup_def (m.id :> Id.t) env with
-  | Some s ->
-      Format.printf "Loc of module %s: %a@\n"
-        (Paths.Identifier.name m.id)
-        Location.print_loc s
-  | None ->
-      ());
+  let locs = locations env (m.id :> Id.t) m.locs in
   if m.hidden then m
-  else { m with type_ = module_decl env (m.id :> Id.Signature.t) m.type_ }
+  else { m with locs; type_ = module_decl env (m.id :> Id.Signature.t) m.type_ }
 
 and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
  fun env id decl ->
