@@ -212,14 +212,9 @@ let build_compile_env_for_unit
   let imports_map = build_imports_map m in
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
   and lookup_page = lookup_page ap in
-  let module Lookup_def = Lookup_def.Make (struct
-    let read_typing_env ~unit_name:_ =
-      (* TODO: Load cmts or try using Shape.local_reduce ? *)
-      None
-  end) in
   let lookup_def =
     match typing_env with
-    | Some typing_env -> Lookup_def.lookup_def typing_env.Odoc_loader.final_env
+    | Some typing_env -> Lookup_def.lookup_def typing_env
     | None -> fun _ -> None
   in
   let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_def } in

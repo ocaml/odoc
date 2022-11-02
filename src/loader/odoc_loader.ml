@@ -30,7 +30,6 @@ let error_msg file (msg : string) =
   Error.raise_exception (Error.filename_only "%s" msg file)
 
 type typing_env = {
-  final_env : Env.t;
   uid_to_loc : Location.t Shape.Uid.Tbl.t;
   impl_shape : Shape.t;
 }
@@ -48,15 +47,9 @@ exception Not_an_interface
 
 exception Make_root_error of string
 
-let load_typing_env (cmt : Cmt_format.cmt_infos) impl =
+let load_typing_env (cmt : Cmt_format.cmt_infos) =
   match cmt.cmt_impl_shape with
-  | Some impl_shape ->
-      Some
-        {
-          final_env = impl.Typedtree.str_final_env;
-          uid_to_loc = cmt.cmt_uid_to_loc;
-          impl_shape;
-        }
+  | Some impl_shape -> Some { uid_to_loc = cmt.cmt_uid_to_loc; impl_shape }
   | None -> None
 
 let read_typing_env ~filename () =
@@ -64,7 +57,7 @@ let read_typing_env ~filename () =
   | exception Cmi_format.Error _ -> raise Corrupted
   | cmt_info -> (
       match cmt_info.cmt_annots with
-      | Implementation impl -> load_typing_env cmt_info impl
+      | Implementation _ -> load_typing_env cmt_info
       | _ -> raise Not_an_implementation)
 
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
@@ -176,7 +169,7 @@ let read_cmt ~make_root ~parent ~filename () =
           let id, sg, canonical = Cmt.read_implementation parent name impl in
           ( compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
               ~name ~id ?canonical sg,
-            load_typing_env cmt_info impl )
+            load_typing_env cmt_info )
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =
