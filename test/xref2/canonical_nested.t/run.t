@@ -34,7 +34,6 @@ than in module `A`.
   Warning: No implementation file found for the given interface
   $ odoc compile -I . main__.cmt
   $ odoc compile -I . main.cmt
-  Loc of module Container: File "main.ml", line 3, characters 0-28
 
 At this point none of the canonical references are resolved. They should be
 unresolved in the paths though:
@@ -47,6 +46,7 @@ unresolved in the paths though:
         "B"
       ]
     },
+    "locs": { "impl": "None", "intf": "None" },
     "doc": [],
     "type_": {
       "Alias": [
@@ -90,6 +90,10 @@ unresolved in the paths though:
   $ odoc_print -r Container main.odoc
   {
     "id": { "`Module": [ { "`Root": [ "None", "Main" ] }, "Container" ] },
+    "locs": {
+      "impl": { "Some": "File \"main.ml\", line 3, characters 0-28" },
+      "intf": "None"
+    },
     "doc": [],
     "type_": {
       "Alias": [
@@ -132,6 +136,7 @@ unresolved in the paths though:
         "B"
       ]
     },
+    "locs": { "impl": "None", "intf": "None" },
     "doc": [],
     "type_": {
       "Alias": [

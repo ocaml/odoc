@@ -16,6 +16,17 @@
 
 open Paths
 
+module Locations = struct
+  type t = {
+    impl : Location_.span option;
+        (** Location of the definition in the implementation file. *)
+    intf : Location_.span option;
+        (** Location of the declaration in the interface file. *)
+  }
+
+  let empty = { impl = None; intf = None }
+end
+
 (** {3 Modules} *)
 
 module rec Module : sig
@@ -25,6 +36,7 @@ module rec Module : sig
 
   type t = {
     id : Identifier.Module.t;
+    locs : Locations.t;
     doc : Comment.docs;
     type_ : decl;
     canonical : Path.Module.t option;

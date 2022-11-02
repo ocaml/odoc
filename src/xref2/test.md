@@ -331,7 +331,9 @@ val path : Cpath.Resolved.module_ =
 val module_ : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
-     {Odoc_xref2.Component.Module.doc = [];
+     {Odoc_xref2.Component.Module.locs =
+       {Odoc_model.Lang.Locations.impl = None; intf = None};
+      doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Signature
@@ -416,7 +418,9 @@ val path : Cpath.Resolved.module_ =
 val module_ : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
-     {Odoc_xref2.Component.Module.doc = [];
+     {Odoc_xref2.Component.Module.locs =
+       {Odoc_model.Lang.Locations.impl = None; intf = None};
+      doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
@@ -517,7 +521,9 @@ val m : Component.Element.module_type option =
                 Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_xref2.Component.Delayed.v =
                   Some
-                   {Odoc_xref2.Component.Module.doc = [];
+                   {Odoc_xref2.Component.Module.locs =
+                     {Odoc_model.Lang.Locations.impl = None; intf = None};
+                    doc = [];
                     type_ =
                      Odoc_xref2.Component.Module.ModuleType
                       (Odoc_xref2.Component.ModuleType.Path
@@ -835,7 +841,7 @@ val module_C_lens :
         ihash = 818126955; ikey = "r_Root.p_None"},
        C);
    ihash = 43786577; ikey = "m_C.r_Root.p_None"};
- doc = [];
+ locs = {Odoc_model.Lang.Locations.impl = None; intf = None}; doc = [];
  type_ =
   Odoc_model.Lang.Module.ModuleType
    (Odoc_model.Lang.ModuleType.With
@@ -883,7 +889,9 @@ of module `C` we see the following:
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
-     {Odoc_xref2.Component.Module.doc = [];
+     {Odoc_xref2.Component.Module.locs =
+       {Odoc_model.Lang.Locations.impl = None; intf = None};
+      doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.With
@@ -936,7 +944,9 @@ val sg : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.doc = [];
+          {Odoc_xref2.Component.Module.locs =
+            {Odoc_model.Lang.Locations.impl = None; intf = None};
+           doc = [];
            type_ =
             Odoc_xref2.Component.Module.Alias
              (`Identifier
@@ -959,7 +969,9 @@ val sg : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.doc = [];
+          {Odoc_xref2.Component.Module.locs =
+            {Odoc_model.Lang.Locations.impl = None; intf = None};
+           doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
@@ -979,7 +991,9 @@ look up module `N` from within this and find its signature:
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
-     {Odoc_xref2.Component.Module.doc = [];
+     {Odoc_xref2.Component.Module.locs =
+       {Odoc_model.Lang.Locations.impl = None; intf = None};
+      doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
@@ -1503,7 +1517,9 @@ val p : Cpath.Resolved.module_ =
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
-     {Odoc_xref2.Component.Module.doc = [];
+     {Odoc_xref2.Component.Module.locs =
+       {Odoc_model.Lang.Locations.impl = None; intf = None};
+      doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
@@ -1555,7 +1571,9 @@ val sg' : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.doc = [];
+          {Odoc_xref2.Component.Module.locs =
+            {Odoc_model.Lang.Locations.impl = None; intf = None};
+           doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
@@ -1592,7 +1610,9 @@ val sg' : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.doc = [];
+          {Odoc_xref2.Component.Module.locs =
+            {Odoc_model.Lang.Locations.impl = None; intf = None};
+           doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
@@ -1629,7 +1649,9 @@ val sg' : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.doc = [];
+          {Odoc_xref2.Component.Module.locs =
+            {Odoc_model.Lang.Locations.impl = None; intf = None};
+           doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
@@ -1666,7 +1688,9 @@ val sg' : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.doc = [];
+          {Odoc_xref2.Component.Module.locs =
+            {Odoc_model.Lang.Locations.impl = None; intf = None};
+           doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
@@ -3255,7 +3279,7 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
            {Bar}9);
        ihash = 658027043; ikey = "m_{Bar}9.m_Foo3.r_Root.p_None"};
-     doc = [];
+     locs = {Odoc_model.Lang.Locations.impl = None; intf = None}; doc = [];
      type_ =
       Odoc_model.Lang.Module.Alias
        (`Dot

@@ -963,7 +963,7 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
     | Some _ -> false
     | None -> Odoc_model.Root.contains_double_underscore (Ident.name ident)
   in
-    {id; doc; type_; canonical; hidden }
+  {id; locs = Locations.empty; doc; type_; canonical; hidden }
 
 and read_type_rec_status rec_status =
   let open Signature in
