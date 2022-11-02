@@ -338,7 +338,7 @@ and module_ : Env.t -> Module.t -> Module.t =
         (Paths.Identifier.name m.id)
         Location.print_loc s
   | None ->
-      Printf.printf "Shape of module %s: None\n%!" (Paths.Identifier.name m.id));
+      ());
   if m.hidden then m
   else { m with type_ = module_decl env (m.id :> Id.Signature.t) m.type_ }
 

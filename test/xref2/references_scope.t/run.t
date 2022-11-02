@@ -1,6 +1,12 @@
 # Testing the scope of references
 
   $ compile a.mli shadowed.mli shadowed_through_open.mli
+  File "a.cmti":
+  Warning: No implementation file found for the given interface
+  File "shadowed.cmti":
+  Warning: No implementation file found for the given interface
+  File "shadowed_through_open.cmti":
+  Warning: No implementation file found for the given interface
   File "a.mli", line 18, characters 6-24:
   Warning: Failed to resolve reference unresolvedroot(C) Couldn't find "C"
 

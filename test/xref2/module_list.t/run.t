@@ -1,6 +1,12 @@
 # Testing {!modules:...} lists
 
   $ compile external.mli starts_with_open.mli main.mli
+  File "external.cmti":
+  Warning: No implementation file found for the given interface
+  File "starts_with_open.cmti":
+  Warning: No implementation file found for the given interface
+  File "main.cmti":
+  Warning: No implementation file found for the given interface
   File "main.mli", line 63, characters 22-43:
   Warning: Failed to resolve reference unresolvedroot(Resolve_synopsis).t Couldn't find "Resolve_synopsis"
   File "main.mli", line 63, characters 17-21:

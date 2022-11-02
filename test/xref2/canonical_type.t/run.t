@@ -55,8 +55,12 @@ Now we can run odoc
 
   $ odoc compile --package x -I . foo__.cmt
   $ odoc compile --package x -I . foo__type0.cmt
+  Loc of module Identifier: File "foo__type0.ml", lines 1-3, characters 0-3
+  Loc of module Resolved_path: File "foo__type0.ml", lines 5-8, characters 0-3
   $ odoc compile --package x -I . foo__type.cmt
+  Loc of module Path: File "foo__type.ml", lines 1-5, characters 0-3
   $ odoc compile --package x -I . foo.cmt
+  Loc of module Type: File "foo.ml", line 1, characters 0-18
 
 We only need to link `foo` as all the others are hidden
 
