@@ -23,68 +23,46 @@ let predefined_location =
 
 let empty_doc = []
 
-let nullary_equation =
+let mk_equation params =
   let open TypeDecl.Equation in
-  let params = [] in
-  let private_ = false in
-  let manifest = None in
-  let constraints = [] in
-  { params; private_; manifest; constraints }
+  { params; private_ = false; manifest = None; constraints = [] }
 
+let nullary_equation = mk_equation []
 let covariant_equation =
-  let open TypeDecl in
-  let open TypeDecl.Equation in
-  let params =
-    [ { desc = Var "'a"; variance = Some Pos; injectivity = true } ]
-  in
-  let private_ = false in
-  let manifest = None in
-  let constraints = [] in
-  { params; private_; manifest; constraints }
-
+  mk_equation [ { desc = Var "'a"; variance = Some Pos; injectivity = true } ]
 let invariant_equation =
-  let open TypeDecl in
-  let open TypeDecl.Equation in
-  let params = [ { desc = Var "'a"; variance = None; injectivity = true } ] in
-  let private_ = false in
-  let manifest = None in
-  let constraints = [] in
-  { params; private_; manifest; constraints }
+  mk_equation [ { desc = Var "'a"; variance = None; injectivity = true } ]
+
+let mk_type ?(doc = empty_doc) ?(eq = nullary_equation) ?repr id =
+  { TypeDecl.id; doc; canonical = None; equation = eq; representation = repr }
+
+let mk_exn ~args id =
+  let doc = empty_doc
+  and args = TypeDecl.Constructor.Tuple args
+  and res = None in
+  { Exception.id; doc; args; res }
+
+let mk_constr ?(args = TypeDecl.Constructor.Tuple []) id =
+  { TypeDecl.Constructor.id; doc = empty_doc; args; res = None }
 
 module Mk = Paths.Identifier.Mk
 
 let bool_identifier = Mk.core_type "bool"
-
 let int_identifier = Mk.core_type "int"
-
 let char_identifier = Mk.core_type "char"
-
 let bytes_identifier = Mk.core_type "bytes"
-
 let string_identifier = Mk.core_type "string"
-
 let float_identifier = Mk.core_type "float"
-
 let unit_identifier = Mk.core_type "unit"
-
 let exn_identifier = Mk.core_type "exn"
-
 let array_identifier = Mk.core_type "array"
-
 let list_identifier = Mk.core_type "list"
-
 let option_identifier = Mk.core_type "option"
-
 let int32_identifier = Mk.core_type "int32"
-
 let int64_identifier = Mk.core_type "int64"
-
 let nativeint_identifier = Mk.core_type "nativeint"
-
 let lazy_t_identifier = Mk.core_type "lazy_t"
-
 let extension_constructor_identifier = Mk.core_type "extension_constructor"
-
 let floatarray_identifier = Mk.core_type "floatarray"
 
 let false_identifier =
@@ -109,25 +87,15 @@ let some_identifier =
   Mk.constructor (option_identifier, ConstructorName.make_std "Some")
 
 let match_failure_identifier = Mk.core_exception "Match_failure"
-
 let assert_failure_identifier = Mk.core_exception "Assert_failure"
-
 let invalid_argument_identifier = Mk.core_exception "Invalid_argument"
-
 let failure_identifier = Mk.core_exception "Failure"
-
 let not_found_identifier = Mk.core_exception "Not_found"
-
 let out_of_memory_identifier = Mk.core_exception "Out_of_memory"
-
 let stack_overflow_identifier = Mk.core_exception "Stack_overflow"
-
 let sys_error_identifier = Mk.core_exception "Sys_error"
-
 let end_of_file_identifier = Mk.core_exception "End_of_file"
-
 let division_by_zero_identifier = Mk.core_exception "Division_by_zero"
-
 let sys_blocked_io_identifier = Mk.core_exception "Sys_blocked_io"
 
 let undefined_recursive_module_identifier =
@@ -181,106 +149,63 @@ let core_constructor_identifier = function
   | _ -> None
 
 let bool_path = `Resolved (`Identifier bool_identifier)
-
 let int_path = `Resolved (`Identifier int_identifier)
-
 let char_path = `Resolved (`Identifier char_identifier)
-
 let bytes_path = `Resolved (`Identifier bytes_identifier)
-
 let string_path = `Resolved (`Identifier string_identifier)
-
 let float_path = `Resolved (`Identifier float_identifier)
-
 let unit_path = `Resolved (`Identifier unit_identifier)
-
 let exn_path = `Resolved (`Identifier exn_identifier)
-
 let array_path = `Resolved (`Identifier array_identifier)
-
 let list_path = `Resolved (`Identifier list_identifier)
-
 let option_path = `Resolved (`Identifier option_identifier)
-
 let int32_path = `Resolved (`Identifier int32_identifier)
-
 let int64_path = `Resolved (`Identifier int64_identifier)
-
 let nativeint_path = `Resolved (`Identifier nativeint_identifier)
-
 let lazy_t_path = `Resolved (`Identifier lazy_t_identifier)
 
 let extension_constructor_path =
   `Resolved (`Identifier extension_constructor_identifier)
 
 let _floatarray_path = `Resolved (`Identifier floatarray_identifier)
-
 let bool_reference = `Resolved (`Identifier bool_identifier)
-
 let int_reference = `Resolved (`Identifier int_identifier)
-
 let char_reference = `Resolved (`Identifier char_identifier)
-
 let bytes_reference = `Resolved (`Identifier bytes_identifier)
-
 let string_reference = `Resolved (`Identifier string_identifier)
-
 let float_reference = `Resolved (`Identifier float_identifier)
-
 let unit_reference = `Resolved (`Identifier unit_identifier)
-
 let exn_reference = `Resolved (`Identifier exn_identifier)
-
 let array_reference = `Resolved (`Identifier array_identifier)
-
 let list_reference = `Resolved (`Identifier list_identifier)
-
 let option_reference = `Resolved (`Identifier option_identifier)
-
 let int32_reference = `Resolved (`Identifier int32_identifier)
-
 let int64_reference = `Resolved (`Identifier int64_identifier)
-
 let nativeint_reference = `Resolved (`Identifier nativeint_identifier)
-
 let lazy_t_reference = `Resolved (`Identifier lazy_t_identifier)
 
 let extension_constructor_reference =
   `Resolved (`Identifier extension_constructor_identifier)
 
 let _floatarray_reference = `Resolved (`Identifier floatarray_identifier)
-
 let false_reference = `Resolved (`Identifier false_identifier)
-
 let true_reference = `Resolved (`Identifier true_identifier)
-
 let void_reference = `Resolved (`Identifier void_identifier)
-
 let nil_reference = `Resolved (`Identifier nil_identifier)
-
 let cons_reference = `Resolved (`Identifier cons_identifier)
-
 let none_reference = `Resolved (`Identifier none_identifier)
-
 let some_reference = `Resolved (`Identifier some_identifier)
-
 let match_failure_reference = `Resolved (`Identifier match_failure_identifier)
-
 let assert_failure_reference = `Resolved (`Identifier assert_failure_identifier)
 
 let invalid_argument_reference =
   `Resolved (`Identifier invalid_argument_identifier)
 
 let failure_reference = `Resolved (`Identifier failure_identifier)
-
 let not_found_reference = `Resolved (`Identifier not_found_identifier)
-
 let out_of_memory_reference = `Resolved (`Identifier out_of_memory_identifier)
-
 let stack_overflow_reference = `Resolved (`Identifier stack_overflow_identifier)
-
 let sys_error_reference = `Resolved (`Identifier sys_error_identifier)
-
 let end_of_file_reference = `Resolved (`Identifier end_of_file_identifier)
 
 let division_by_zero_reference =
@@ -291,293 +216,51 @@ let sys_blocked_io_reference = `Resolved (`Identifier sys_blocked_io_identifier)
 let undefined_recursive_module_reference =
   `Resolved (`Identifier undefined_recursive_module_identifier)
 
-let false_decl =
-  let open TypeDecl.Constructor in
-  let doc = empty_doc in
-  let args = Tuple [] in
-  let res = None in
-  { id = false_identifier; doc; args; res }
+let string_expr = TypeExpr.Constr (string_path, [])
+let int_expr = TypeExpr.Constr (int_path, [])
 
-let true_decl =
-  let open TypeDecl.Constructor in
-  let doc = empty_doc in
-  let args = Tuple [] in
-  let res = None in
-  { id = true_identifier; doc; args; res }
-
-let void_decl =
-  let open TypeDecl.Constructor in
-  let doc = empty_doc in
-  let args = Tuple [] in
-  let res = None in
-  { id = void_identifier; doc; args; res }
-
-let nil_decl =
-  let open TypeDecl.Constructor in
-  let doc = empty_doc in
-  let args = Tuple [] in
-  let res = None in
-  { id = nil_identifier; doc; args; res }
+let false_decl = mk_constr ~args:(Tuple []) false_identifier
+let true_decl = mk_constr ~args:(Tuple []) true_identifier
+let void_decl = mk_constr ~args:(Tuple []) void_identifier
+let nil_decl = mk_constr ~args:(Tuple []) nil_identifier
 
 let cons_decl =
-  let open TypeDecl.Constructor in
-  let doc = empty_doc in
   let head = TypeExpr.Var "'a" in
   let tail = TypeExpr.(Constr (list_path, [ head ])) in
-  let args = Tuple [ head; tail ] in
-  let res = None in
-  { id = cons_identifier; doc; args; res }
+  mk_constr ~args:(Tuple [ head; tail ]) cons_identifier
 
-let none_decl =
-  let open TypeDecl.Constructor in
-  let doc = empty_doc in
-  let args = Tuple [] in
-  let res = None in
-  { id = none_identifier; doc; args; res }
+let none_decl = mk_constr ~args:(Tuple []) none_identifier
+let some_decl = mk_constr ~args:(Tuple [ TypeExpr.Var "'a" ]) some_identifier
 
-let some_decl =
-  let open TypeDecl.Constructor in
-  let doc = empty_doc in
-  let var = TypeExpr.Var "'a" in
-  let args = Tuple [ var ] in
-  let res = None in
-  { id = some_identifier; doc; args; res }
-
-let int_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = int_identifier in
-  (* let text = [Raw "The type of integer numbers."] in *)
-  (* TODO *)
-  (* let text = [] in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
-let char_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = char_identifier in
-  (* let text = [Raw "The type of characters."] in *)
-  (* let text = [] in *)
-  (* let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
-let bytes_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = bytes_identifier in
-  (* let text = [Raw "The type of (writable) byte sequences."] in *)
-  (* let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
-let string_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = string_identifier in
-  (* let text = [Raw "The type of (read-only) character strings."] in *)
-  (* let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
-let float_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = float_identifier in
-  (* let text = [Raw "The type of floating-point numbers."] in *)
-  (* let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
+let int_decl = mk_type int_identifier
+let char_decl = mk_type char_identifier
+let bytes_decl = mk_type bytes_identifier
+let string_decl = mk_type string_identifier
+let float_decl = mk_type float_identifier
 let bool_decl =
-  let open TypeDecl in
-  let open Representation in
-  (* let open Odoc_model.Comment in *)
-  let id = bool_identifier in
-  (* let text = [Raw "The type of booleans (truth values)."] in *)
-  (* let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = Some (Variant [ false_decl; true_decl ]) in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
-let unit_decl =
-  let open TypeDecl in
-  let open Representation in
-  (* let open Odoc_model.Comment in *)
-  let id = unit_identifier in
-  (* let text = [Raw "The type of the unit value."] in *)
-  (* let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = Some (Variant [ void_decl ]) in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
-let exn_decl =
-  let open TypeDecl in
-  let open Representation in
-  (* let open Odoc_model.Comment in *)
-  let id = exn_identifier in
-  (* let text = [Raw "The type of exception values."] in *)
-  (* let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = Some Extensible in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
-let array_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = array_identifier in
-  (* let text =
-       [Raw "The type of arrays whose elements have type ";
-        Code "'a";
-        Raw "."]
-     in *)
-  (* let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = invariant_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
+  mk_type ~repr:(Variant [ false_decl; true_decl ]) bool_identifier
+let unit_decl = mk_type ~repr:(Variant [ void_decl ]) unit_identifier
+let exn_decl = mk_type ~repr:Extensible exn_identifier
+let array_decl = mk_type ~eq:invariant_equation array_identifier
 
 let list_decl =
-  let open TypeDecl in
-  let open Representation in
-  (* let open Odoc_model.Comment in *)
-  let id = list_identifier in
-  (* let text =
-       [Raw "The type of lists whose elements have type ";
-        Code "'a";
-        Raw "."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = covariant_equation in
-  let representation = Some (Variant [ nil_decl; cons_decl ]) in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
+  mk_type ~eq:covariant_equation
+    ~repr:(Variant [ nil_decl; cons_decl ])
+    list_identifier
 
 let option_decl =
-  let open TypeDecl in
-  let open Representation in
-  (* let open Odoc_model.Comment in *)
-  let id = option_identifier in
-  (* let text =
-       [Raw "The type of optional values of type ";
-        Code "'a";
-        Raw "."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = covariant_equation in
-  let representation = Some (Variant [ none_decl; some_decl ]) in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
+  mk_type ~eq:covariant_equation
+    ~repr:(Variant [ none_decl; some_decl ])
+    option_identifier
 
-let int32_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = int32_identifier in
-  (* let text =
-       [Raw "The type of signed 32-bit integers. See the ";
-        Reference(Element(Root("Int32", TModule)), None);
-        Raw " module."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
-let int64_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = int64_identifier in
-  (* let text =
-       [Raw "The type of signed 64-bit integers. See the ";
-        Reference(Element(Root("Int64", TModule)), None);
-        Raw " module."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
-let nativeint_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = nativeint_identifier in
-  (* let text =
-       [Raw "The type of signed, platform-native integers (32 bits on \
-             32-bit processors, 64 bits on 64-bit processors). See the ";
-        Reference(Element(Root("Nativeint", TModule)), None);
-        Raw " module."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = nullary_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
-let lazy_t_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = lazy_t_identifier in
-  (* let text =
-       [Raw "This type is used to implement the ";
-        Reference(Element(Root("Lazy", TModule)), None);
-        Raw " module. It should not be used directly."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = covariant_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
-
+let int32_decl = mk_type int32_identifier
+let int64_decl = mk_type int64_identifier
+let nativeint_decl = mk_type nativeint_identifier
+let lazy_t_decl = mk_type ~eq:covariant_equation lazy_t_identifier
 let extension_constructor_decl =
-  let open TypeDecl in
-  (* let open Odoc_model.Comment in *)
-  let id = extension_constructor_identifier in
-  (* let text =
-       [Raw "cf. ";
-        Reference(Element(Root("Obj", TModule)), None);
-        Raw " module. It should not be used directly."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let equation = covariant_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
+  mk_type ~eq:covariant_equation extension_constructor_identifier
 
 let floatarray_decl =
-  let open TypeDecl in
-  let id = floatarray_identifier in
   let words ss =
     ss
     |> List.rev_map (fun s -> [ `Space; `Word s ])
@@ -600,205 +283,30 @@ let floatarray_decl =
     ]
     |> List.map (Location_.at predefined_location)
   in
-  let equation = covariant_equation in
-  let representation = None in
-  let canonical = None in
-  { id; doc; canonical; equation; representation }
+  mk_type ~doc ~eq:covariant_equation floatarray_identifier
 
 let match_failure_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = match_failure_identifier in
-  (* let text =
-       [Raw "Exception raised when none of the cases of a pattern matching apply. \
-             The arguments are the location of the ";
-        Code "match";
-        Raw " keyword in the source code (file name, line number, column number)."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let string_expr = TypeExpr.Constr (string_path, []) in
-  let int_expr = TypeExpr.Constr (int_path, []) in
-  let args =
-    TypeDecl.Constructor.Tuple
-      [ TypeExpr.Tuple [ string_expr; int_expr; int_expr ] ]
-  in
-  let res = None in
-  { id; doc; args; res }
-
+  mk_exn
+    ~args:[ TypeExpr.Tuple [ string_expr; int_expr; int_expr ] ]
+    match_failure_identifier
 let assert_failure_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = assert_failure_identifier in
-  (* let text =
-       [Raw "Exception raised when and assertion fails. \
-             The arguments are the location of the ";
-        Code "assert";
-        Raw " keyword in the source code (file name, line number, column number)."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let string_expr = TypeExpr.Constr (string_path, []) in
-  let int_expr = TypeExpr.Constr (int_path, []) in
-  let args =
-    TypeDecl.Constructor.Tuple
-      [ TypeExpr.Tuple [ string_expr; int_expr; int_expr ] ]
-  in
-  let res = None in
-  { id; doc; args; res }
-
+  mk_exn
+    ~args:[ TypeExpr.Tuple [ string_expr; int_expr; int_expr ] ]
+    assert_failure_identifier
 let invalid_argument_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = invalid_argument_identifier in
-  (* let text =
-       [Raw "Exception raised by library functions to signal that the given \
-             arguments do not make sense."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let args = TypeDecl.Constructor.Tuple [ TypeExpr.Constr (string_path, []) ] in
-  let res = None in
-  { id; doc; args; res }
-
-let failure_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = failure_identifier in
-  (* let text =
-       [Raw "Exception raised by library functions to signal that they are \
-             undefined on the given arguments."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let args = TypeDecl.Constructor.Tuple [ TypeExpr.Constr (string_path, []) ] in
-  let res = None in
-  { id; doc; args; res }
-
-let not_found_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = not_found_identifier in
-  (* let text =
-       [Raw "Exception raised by search functions when the desired object \
-             could not be found."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let args = TypeDecl.Constructor.Tuple [] in
-  let res = None in
-  { id; doc; args; res }
-
-let out_of_memory_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = out_of_memory_identifier in
-  (* let text =
-       [Raw "Exception raised by the garbage collector when there is \
-             insufficient memory to complete the computation."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let args = TypeDecl.Constructor.Tuple [] in
-  let res = None in
-  { id; doc; args; res }
-
-(* TODO: Provide reference to the OCaml manual *)
-let stack_overflow_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = stack_overflow_identifier in
-  (* let text =
-       [Raw "Exception raised by the bytecode interpreter when the evaluation \
-             stack reaches its maximal size. This often indicates infinite or \
-             excessively deep recursion in the user's program. (Not fully \
-             implemented by the native-code compiler; see section 11.5 of \
-             the OCaml manual.)"]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let args = TypeDecl.Constructor.Tuple [] in
-  let res = None in
-  { id; doc; args; res }
-
-let sys_error_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = sys_error_identifier in
-  (* let text =
-       [Raw "Exception raised by the input/output functions to report an \
-             operating system error."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let args = TypeDecl.Constructor.Tuple [ TypeExpr.Constr (string_path, []) ] in
-  let res = None in
-  { id; doc; args; res }
-
-let end_of_file_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = end_of_file_identifier in
-  (* let text =
-       [Raw "Exception raised by input functions to signal that the end of \
-             file has been reached."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let args = TypeDecl.Constructor.Tuple [] in
-  let res = None in
-  { id; doc; args; res }
-
-let division_by_zero_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = division_by_zero_identifier in
-  (* let text =
-       [Raw "Exception raised by integer division and remainder operations \
-             when their second argument is zero."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let args = TypeDecl.Constructor.Tuple [] in
-  let res = None in
-  { id; doc; args; res }
-
-let sys_blocked_io_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = sys_blocked_io_identifier in
-  (* let text =
-       [Raw "A special case of ";
-        Reference(Element sys_error_reference, None);
-        Raw " raised when no I/O is possible on a non-blocking I/O channel."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let args = TypeDecl.Constructor.Tuple [] in
-  let res = None in
-  { id; doc; args; res }
-
-(* TODO: Provide reference to the OCaml manual *)
+  mk_exn ~args:[ string_expr ] invalid_argument_identifier
+let failure_decl = mk_exn ~args:[ string_expr ] failure_identifier
+let not_found_decl = mk_exn ~args:[] not_found_identifier
+let out_of_memory_decl = mk_exn ~args:[] out_of_memory_identifier
+let stack_overflow_decl = mk_exn ~args:[] stack_overflow_identifier
+let sys_error_decl = mk_exn ~args:[ string_expr ] sys_error_identifier
+let end_of_file_decl = mk_exn ~args:[] end_of_file_identifier
+let division_by_zero_decl = mk_exn ~args:[] division_by_zero_identifier
+let sys_blocked_io_decl = mk_exn ~args:[] sys_blocked_io_identifier
 let undefined_recursive_module_decl =
-  let open Lang.Exception in
-  (* let open Odoc_model.Comment in *)
-  let id = undefined_recursive_module_identifier in
-  (* let text =
-       [Raw "Exception raised when an ill-founded recursive module definition \
-             is evaluated. (See section 7.8 of the OCaml manual.) The arguments \
-             are the location of the definition in the source code \
-             (file name, line number, column number)."]
-     in
-     let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
-  let string_expr = TypeExpr.Constr (string_path, []) in
-  let int_expr = TypeExpr.Constr (int_path, []) in
-  let args =
-    TypeDecl.Constructor.Tuple
-      [ TypeExpr.Tuple [ string_expr; int_expr; int_expr ] ]
-  in
-  let res = None in
-  { id; doc; args; res }
+  mk_exn
+    ~args:[ TypeExpr.Tuple [ string_expr; int_expr; int_expr ] ]
+    undefined_recursive_module_identifier
 
 let core_types =
   [

@@ -707,15 +707,15 @@ Basic resolution 4, module type:
                                                     Root);
                                                 ihash = 818126955;
                                                 ikey =
-                                                 "r_Root."... (* string length 13; truncated *)},
+                                                 "r_Root.p"... (* string length 13; truncated *)},
                                                A);
                                            ihash = 353272258;
                                            ikey =
-                                            "m_A."... (* string length 17; truncated *)},
+                                            "m_A.r_Ro"... (* string length 17; truncated *)},
                                           N);
                                       ihash = 456955352;
                                       ikey =
-                                       "m"... (* string length 21; truncated *)},
+                                       "m_N.m_A."... (* string length 21; truncated *)},
                                      t);
                                  ihash = ...; ikey = ...};
                                doc = ...; canonical = ...; equation = ...;
