@@ -113,6 +113,7 @@ and ModuleType : sig
 
   type t = {
     id : Identifier.ModuleType.t;
+    locs : Locations.t;
     doc : Comment.docs;
     canonical : Path.ModuleType.t option;
     expr : expr option;
@@ -252,6 +253,7 @@ and TypeDecl : sig
 
   type t = {
     id : Identifier.Type.t;
+    locs : Locations.t;
     doc : Comment.docs;
     canonical : Path.Type.t option;
     equation : Equation.t;
@@ -266,6 +268,7 @@ and Extension : sig
   module Constructor : sig
     type t = {
       id : Identifier.Extension.t;
+      locs : Locations.t;
       doc : Comment.docs;
       args : TypeDecl.Constructor.argument;
       res : TypeExpr.t option;
@@ -287,6 +290,7 @@ end =
 and Exception : sig
   type t = {
     id : Identifier.Exception.t;
+    locs : Locations.t;
     doc : Comment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
@@ -301,10 +305,10 @@ and Value : sig
 
   type t = {
     id : Identifier.Value.t;
+    locs : Locations.t;
+    value : value;
     doc : Comment.docs;
     type_ : TypeExpr.t;
-    value : value;
-    locs : Locations.t;
   }
 end =
   Value
@@ -318,6 +322,7 @@ and Class : sig
 
   type t = {
     id : Identifier.Class.t;
+    locs : Locations.t;
     doc : Comment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -336,6 +341,7 @@ and ClassType : sig
 
   type t = {
     id : Identifier.ClassType.t;
+    locs : Locations.t;
     doc : Comment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;

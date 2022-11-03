@@ -29,6 +29,10 @@ its RHS correctly replaced with an `int`
         "t"
       ]
     },
+    "locs": {
+      "impl": "None",
+      "intf": { "Some": "File \"m.mli\", line 5, characters 2-14" }
+    },
     "doc": [],
     "equation": {
       "params": [],

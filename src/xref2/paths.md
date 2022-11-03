@@ -434,6 +434,13 @@ val sg : Odoc_model.Lang.Signature.t =
               ihash = 818126955; ikey = "r_Root.p_None"},
              ARG);
          ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"};
+       locs =
+        {Odoc_model.Lang.Locations.impl = None;
+         intf =
+          Some
+           {Odoc_model__.Location_.file = "";
+            start = {Odoc_model__.Location_.line = 2; column = 2};
+            end_ = {Odoc_model__.Location_.line = 4; column = 5}}};
        doc = []; canonical = None;
        expr =
         Some
@@ -457,6 +464,13 @@ val sg : Odoc_model.Lang.Signature.t =
                        ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"},
                       S);
                   ihash = 208722936; ikey = "mt_S.mt_ARG.r_Root.p_None"};
+                locs =
+                 {Odoc_model.Lang.Locations.impl = None;
+                  intf =
+                   Some
+                    {Odoc_model__.Location_.file = "";
+                     start = {Odoc_model__.Location_.line = 3; column = 4};
+                     end_ = {Odoc_model__.Location_.line = 3; column = 17}}};
                 doc = []; canonical = None; expr = None}];
             compiled = true; doc = []})};
      Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
@@ -534,6 +548,16 @@ val sg : Odoc_model.Lang.Signature.t =
                                 S);
                             ihash = 313393860;
                             ikey = "mt_S.p_X.m_F.r_Root.p_None"};
+                          locs =
+                           {Odoc_model.Lang.Locations.impl = None;
+                            intf =
+                             Some
+                              {Odoc_model__.Location_.file = "";
+                               start =
+                                {Odoc_model__.Location_.line = 3; column = 4};
+                               end_ =
+                                {Odoc_model__.Location_.line = 3;
+                                 column = 17}}};
                           doc = []; canonical = None; expr = None}];
                       compiled = true; doc = []});
                  p_path =
@@ -550,37 +574,16 @@ val sg : Odoc_model.Lang.Signature.t =
                                  Root);
                              ihash = 818126955; ikey = "r_Root.p_None"},
                             ARG);
-                        ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"})}},
+                        ihash = 379411454;
+                        ikey =
+                         "mt_ARG.r_Root"... (* string length 20; truncated *)})}},
            Odoc_model.Lang.ModuleType.Signature
             {Odoc_model.Lang.Signature.items =
               [Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
-                  {Odoc_model__Paths_types.iv =
-                    `Module
-                      ({Odoc_model__Paths_types.iv =
-                         `Result
-                           {Odoc_model__Paths_types.iv =
-                             `Module
-                               ({Odoc_model__Paths_types.iv =
-                                  `Root
-                                    (Some
-                                      {Odoc_model__Paths_types.iv =
-                                        `Page (None, None);
-                                       ihash = 236059787; ikey = "p_None"},
-                                     Root);
-                                 ihash = 818126955;
-                                 ikey =
-                                  "r_Root.p"... (* string length 13; truncated *)},
-                                F);
-                            ihash = 748202139;
-                            ikey =
-                             "m_F.r_Ro"... (* string length 17; truncated *)};
-                        ihash = 709672416;
-                        ikey =
-                         "___resul"... (* string length 29; truncated *)},
-                       N);
-                   ihash = 837385364; ikey = ...};
+                  {Odoc_model__Paths_types.iv = `Module (...); ihash = ...;
+                   ikey = ...};
                  locs = ...; doc = ...; type_ = ...; canonical = ...;
                  hidden = ...});
                ...];
