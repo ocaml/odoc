@@ -25,6 +25,8 @@ open Odoc_model.Lang
 
 module Env = Ident_env
 
+let read_locations_impl loc =
+  { Locations.impl = Some (Doc_attr.read_location loc); intf = None }
 
 let read_core_type env ctyp =
   Cmi.read_type_expr env ctyp.ctyp_type
@@ -123,7 +125,7 @@ let read_type_extension env parent tyext =
            env parent ext.ext_id ext.ext_type)
       tyext.tyext_constructors
   in
-    { parent; type_path; doc; type_params; private_; constructors; }
+  { parent; type_path; doc; type_params; private_; constructors; }
 
 (** Make a standalone comment out of a comment attached to an item that isn't
     rendered. For example, [constraint] items are read separately and not
@@ -317,6 +319,7 @@ let rec read_class_expr env parent params cl =
 let read_class_declaration env parent cld =
   let open Class in
   let id = Env.find_class_identifier env cld.ci_id_class in
+  let locs = read_locations_impl cld.ci_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cld.ci_attributes in
     Cmi.mark_class_declaration cld.ci_decl;
@@ -330,7 +333,7 @@ let read_class_declaration env parent cld =
         clparams
     in
     let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in
-      { id; doc; virtual_; params; type_; expansion = None }
+    { id; locs; doc; virtual_; params; type_; expansion = None }
 
 let read_class_declarations env parent clds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in

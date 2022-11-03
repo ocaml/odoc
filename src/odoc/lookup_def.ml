@@ -3,27 +3,6 @@ open Odoc_model.Names
 open Odoc_xref2.Utils.OptionSyntax
 module Kind = Shape.Sig_component_kind
 
-(*
-   | `Page (_, name) -> PageName.to_string name
-   | `LeafPage (_, name) -> PageName.to_string name
-   | `Parameter (_, name) -> ModuleName.to_string name
-   | `Result x -> name_aux (x :> t)
-   | `ModuleType (_, name) -> ModuleTypeName.to_string name
-   | `Type (_, name) -> TypeName.to_string name
-   | `CoreType name -> TypeName.to_string name
-   | `Constructor (_, name) -> ConstructorName.to_string name
-   | `Field (_, name) -> FieldName.to_string name
-   | `Extension (_, name) -> ExtensionName.to_string name
-   | `Exception (_, name) -> ExceptionName.to_string name
-   | `CoreException name -> ExceptionName.to_string name
-   | `Value (_, name) -> ValueName.to_string name
-   | `Class (_, name) -> ClassName.to_string name
-   | `ClassType (_, name) -> ClassTypeName.to_string name
-   | `Method (_, name) -> MethodName.to_string name
-   | `InstanceVariable (_, name) -> InstanceVariableName.to_string name
-   | `Label (_, name) -> LabelName.to_string name
-*)
-
 (** Project an identifier into a shape. *)
 let rec project_id :
     Shape.t -> [< Identifier.t_pv ] Identifier.id -> Shape.t option =
@@ -34,19 +13,49 @@ let rec project_id :
   in
   fun shape id ->
     match id.iv with
+    | `Root _ ->
+        (* TODO: Assert that's the right root *)
+        Some shape
     | `Module (parent, name) ->
         proj shape
           (parent :> Identifier.t)
           Kind.Module
           (ModuleName.to_string name)
+    | `ModuleType (parent, name) ->
+        proj shape
+          (parent :> Identifier.t)
+          Kind.Module_type
+          (ModuleTypeName.to_string name)
+    | `Type (parent, name) ->
+        proj shape (parent :> Identifier.t) Kind.Type (TypeName.to_string name)
     | `Value (parent, name) ->
         proj shape
           (parent :> Identifier.t)
           Kind.Value (ValueName.to_string name)
-    | `Root _ ->
-        (* TODO: Assert that's the right root *)
-        Some shape
-    | _ -> None
+    | `Extension (parent, name) ->
+        proj shape
+          (parent :> Identifier.t)
+          Kind.Extension_constructor
+          (ExtensionName.to_string name)
+    | `Exception (parent, name) ->
+        proj shape
+          (parent :> Identifier.t)
+          Kind.Extension_constructor
+          (ExceptionName.to_string name)
+    | `Class (parent, name) ->
+        proj shape
+          (parent :> Identifier.t)
+          Kind.Class (ClassName.to_string name)
+    | `ClassType (parent, name) ->
+        proj shape
+          (parent :> Identifier.t)
+          Kind.Class_type
+          (ClassTypeName.to_string name)
+    | `Page _ | `LeafPage _ | `Label _ | `CoreType _ | `CoreException _
+    | `Constructor _ | `Field _ | `Method _ | `InstanceVariable _ | `Parameter _
+    | `Result _ ->
+        (* Not represented in shapes. *)
+        None
 
 let lookup_def (typing_env : Odoc_loader.typing_env) id =
   let* query = project_id typing_env.impl_shape id in

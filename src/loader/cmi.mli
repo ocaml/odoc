@@ -18,6 +18,7 @@
 
 module Paths = Odoc_model.Paths
 
+val read_locations_intf : Location.t -> Odoc_model.Lang.Locations.t
 
 val read_interface :
   Odoc_model.Paths.Identifier.ContainerPage.t option ->
