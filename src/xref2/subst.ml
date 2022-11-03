@@ -515,13 +515,7 @@ let list conv s xs = List.map (conv s) xs
 let rec type_ s t =
   let open Component.TypeDecl in
   let representation = option_ type_decl_representation s t.representation in
-  let canonical = t.canonical in
-  {
-    equation = type_decl_equation s t.equation;
-    representation;
-    doc = t.doc;
-    canonical;
-  }
+  { t with equation = type_decl_equation s t.equation; representation }
 
 and type_decl_representation s t =
   let open Component.TypeDecl.Representation in
@@ -619,7 +613,7 @@ and module_type s t =
   let expr =
     match t.expr with Some m -> Some (module_type_expr s m) | None -> None
   in
-  { expr; doc = t.doc; canonical = t.canonical }
+  { expr; locs = t.locs; doc = t.doc; canonical = t.canonical }
 
 and module_type_substitution s t =
   let open Component.ModuleTypeSubstitution in
@@ -804,7 +798,7 @@ and exception_ s e =
   let open Component.Exception in
   let res = option_ type_expr s e.res in
   let args = type_decl_constructor_arg s e.args in
-  { args; res; doc = e.doc }
+  { e with args; res }
 
 and extension_constructor s c =
   let open Component.Extension.Constructor in

@@ -148,6 +148,7 @@ and Extension : sig
   module Constructor : sig
     type t = {
       name : string;
+      locs : Odoc_model.Lang.Locations.t;
       doc : CComment.docs;
       args : TypeDecl.Constructor.argument;
       res : TypeExpr.t option;
@@ -166,6 +167,7 @@ end =
 
 and Exception : sig
   type t = {
+    locs : Odoc_model.Lang.Locations.t;
     doc : CComment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
@@ -229,6 +231,7 @@ and ModuleType : sig
     | TypeOf of typeof_t
 
   type t = {
+    locs : Odoc_model.Lang.Locations.t;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.ModuleType.t option;
     expr : expr option;
@@ -276,6 +279,7 @@ and TypeDecl : sig
   end
 
   type t = {
+    locs : Odoc_model.Lang.Locations.t;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.Type.t option;
     equation : Equation.t;
@@ -288,10 +292,10 @@ and Value : sig
   type value = Odoc_model.Lang.Value.value
 
   type t = {
+    locs : Odoc_model.Lang.Locations.t;
     doc : CComment.docs;
     type_ : TypeExpr.t;
     value : value;
-    locs : Odoc_model.Lang.Locations.t;
   }
 end =
   Value
@@ -359,6 +363,7 @@ and Class : sig
     | Arrow of TypeExpr.label option * TypeExpr.t * decl
 
   type t = {
+    locs : Odoc_model.Lang.Locations.t;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -374,6 +379,7 @@ and ClassType : sig
     | Signature of ClassSignature.t
 
   type t = {
+    locs : Odoc_model.Lang.Locations.t;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -1870,7 +1876,8 @@ module Of_Lang = struct
   let rec type_decl ident_map ty =
     let open Odoc_model.Lang.TypeDecl in
     {
-      TypeDecl.doc = docs ident_map ty.doc;
+      TypeDecl.locs = ty.locs;
+      doc = docs ident_map ty.doc;
       canonical = ty.canonical;
       equation = type_equation ident_map ty.equation;
       representation =
@@ -2090,6 +2097,7 @@ module Of_Lang = struct
     let res = Opt.map (type_expression ident_map) c.res in
     {
       Extension.Constructor.name = Paths.Identifier.name c.id;
+      locs = c.locs;
       doc = docs ident_map c.doc;
       args;
       res;
@@ -2099,7 +2107,7 @@ module Of_Lang = struct
     let open Odoc_model.Lang.Exception in
     let args = type_decl_constructor_argument ident_map e.args in
     let res = Opt.map (type_expression ident_map) e.res in
-    { Exception.doc = docs ident_map e.doc; args; res }
+    { Exception.locs = e.locs; doc = docs ident_map e.doc; args; res }
 
   and u_module_type_expr ident_map m =
     let open Odoc_model in
@@ -2181,7 +2189,12 @@ module Of_Lang = struct
     let expr =
       Opt.map (module_type_expr ident_map) m.Odoc_model.Lang.ModuleType.expr
     in
-    { ModuleType.doc = docs ident_map m.doc; canonical = m.canonical; expr }
+    {
+      ModuleType.locs = m.locs;
+      doc = docs ident_map m.doc;
+      canonical = m.canonical;
+      expr;
+    }
 
   and value ident_map v =
     let type_ = type_expression ident_map v.Lang.Value.type_ in
@@ -2205,7 +2218,8 @@ module Of_Lang = struct
     let open Odoc_model.Lang.Class in
     let expansion = Opt.map (class_signature ident_map) c.expansion in
     {
-      Class.doc = docs ident_map c.doc;
+      Class.locs = c.locs;
+      doc = docs ident_map c.doc;
       virtual_ = c.virtual_;
       params = c.params;
       type_ = class_decl ident_map c.type_;
@@ -2231,7 +2245,8 @@ module Of_Lang = struct
     let open Odoc_model.Lang.ClassType in
     let expansion = Opt.map (class_signature ident_map) t.expansion in
     {
-      ClassType.doc = docs ident_map t.doc;
+      ClassType.locs = t.locs;
+      doc = docs ident_map t.doc;
       virtual_ = t.virtual_;
       params = t.params;
       expr = class_type_expr ident_map t.expr;

@@ -34,13 +34,15 @@ let invariant_equation =
   mk_equation [ { desc = Var "'a"; variance = None; injectivity = true } ]
 
 let mk_type ?(doc = empty_doc) ?(eq = nullary_equation) ?repr id =
-  { TypeDecl.id; doc; canonical = None; equation = eq; representation = repr }
+  let locs = Locations.empty and canonical = None in
+  { TypeDecl.id; locs; doc; canonical; equation = eq; representation = repr }
 
 let mk_exn ~args id =
-  let doc = empty_doc
+  let locs = Locations.empty
+  and doc = empty_doc
   and args = TypeDecl.Constructor.Tuple args
   and res = None in
-  { Exception.id; doc; args; res }
+  { Exception.id; locs; doc; args; res }
 
 let mk_constr ?(args = TypeDecl.Constructor.Tuple []) id =
   { TypeDecl.Constructor.id; doc = empty_doc; args; res = None }

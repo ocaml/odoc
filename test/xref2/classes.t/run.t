@@ -22,6 +22,10 @@ resolve correctly. All of the 'Class' json objects should contain
   $ odoc_print -r f f.odoc 
   {
     "id": { "`Value": [ { "`Root": [ "None", "F" ] }, "f" ] },
+    "locs": {
+      "impl": "None",
+      "intf": { "Some": "File \"f.mli\", line 3, characters 0-10" }
+    },
     "doc": [],
     "type_": {
       "Class": [
@@ -40,6 +44,10 @@ resolve correctly. All of the 'Class' json objects should contain
   $ odoc_print e.odoc -r g
   {
     "id": { "`Value": [ { "`Root": [ "None", "E" ] }, "g" ] },
+    "locs": {
+      "impl": "None",
+      "intf": { "Some": "File \"e.mli\", line 6, characters 0-12" }
+    },
     "doc": [],
     "type_": {
       "Class": [
@@ -81,6 +89,10 @@ resolve correctly. All of the 'Class' json objects should contain
   $ odoc_print c.odoc -r g
   {
     "id": { "`Value": [ { "`Root": [ "None", "C" ] }, "g" ] },
+    "locs": {
+      "impl": { "Some": "File \"c.ml\", line 6, characters 4-5" },
+      "intf": { "Some": "File \"c.ml\", line 6, characters 4-5" }
+    },
     "doc": [],
     "type_": {
       "Arrow": [

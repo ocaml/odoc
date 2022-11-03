@@ -768,7 +768,13 @@ let open_module_type_substitution : Lang.ModuleTypeSubstitution.t -> t -> t =
   let open Of_Lang in
   let ty =
     module_type (empty ())
-      { id = t.id; doc = t.doc; expr = Some t.manifest; canonical = None }
+      {
+        id = t.id;
+        locs = Lang.Locations.empty;
+        doc = t.doc;
+        expr = Some t.manifest;
+        canonical = None;
+      }
   in
   add_module_type t.Lang.ModuleTypeSubstitution.id ty env
 

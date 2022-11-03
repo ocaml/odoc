@@ -223,6 +223,13 @@ unresolved in the paths though:
                           "t"
                         ]
                       },
+                      "locs": {
+                        "impl": "None",
+                        "intf": {
+                          "Some":
+                            "File \"main__Container.mli\", line 7, characters 4-10"
+                        }
+                      },
                       "doc": [],
                       "equation": {
                         "params": [],
