@@ -5,17 +5,9 @@
 
   $ odoc compile page.mld --child bar --child module-baz --child Foo --child module-Moo
   $ odoc compile Bar.cmti -I . --parent page
-  File "Bar.cmti":
-  Warning: No implementation file found for the given interface
   $ odoc compile Baz.cmti -I . --parent page-page
-  File "Baz.cmti":
-  Warning: No implementation file found for the given interface
   $ odoc compile foo.cmti -I . --parent page
-  File "foo.cmti":
-  Warning: No implementation file found for the given interface
   $ odoc compile moo.cmti -I . --parent page-page
-  File "moo.cmti":
-  Warning: No implementation file found for the given interface
 
   $ odoc link page-page.odoc -I .
   $ odoc link Bar.odoc -I .

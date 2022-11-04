@@ -21,6 +21,4 @@ warnings raised when we compile the module.
 
   $ ocamlc -c -bin-annot test.mli
   $ odoc compile --package test test.cmti
-  File "test.cmti":
-  Warning: No implementation file found for the given interface
 

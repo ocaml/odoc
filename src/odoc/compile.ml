@@ -41,12 +41,22 @@ let lookup_implementation_of_cmti intf_file =
          (Fs.File.to_string intf_file));
     None)
 
-(** Parse parent and child references. May print warnings. *)
+(** Parse parent and child references. May raise warnings. *)
 let parse_reference f =
   (* This is a command-line error. *)
   let warnings_options = { Error.warn_error = true; print_warnings = true } in
   Semantics.parse_reference f
   |> Error.handle_errors_and_warnings ~warnings_options
+
+(** Raises errors. *)
+let read_source_file file =
+  match Fs.File.read file with
+  | Ok content -> Some content
+  | Error (`Msg msg) ->
+      Error.raise_warning
+        (Error.filename_only "Couldn't load source file %a: %s" Fpath.pp file
+           msg (Fs.File.to_string file));
+      None
 
 let parent resolver parent_cli_spec =
   let find_parent :
@@ -84,17 +94,30 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver ~make_root
+let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
     (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
-  let unit, typing_env =
+  (* [impl_shape] is used to lookup locations in the implementation. It is
+     useless if no source code is given on command line. *)
+  let should_read_impl_shape, impl_source =
+    match impl_source with
+    | Some file -> (true, read_source_file file)
+    | None -> (false, None)
+  and intf_source =
+    match intf_source with Some file -> read_source_file file | None -> None
+  in
+  let unit, impl_shape =
     match input_type with
     | `Cmti ->
         let unit =
           Odoc_loader.read_cmti ~make_root ~parent ~filename
           |> Error.raise_errors_and_warnings
+        and impl_shape =
+          if should_read_impl_shape then
+            lookup_implementation_of_cmti input_file
+          else None
         in
-        (unit, lookup_implementation_of_cmti input_file)
+        (unit, impl_shape)
     | `Cmt ->
         Odoc_loader.read_cmt ~make_root ~parent ~filename
         |> Error.raise_errors_and_warnings
@@ -111,8 +134,15 @@ let resolve_and_substitute ~resolver ~make_root
       else
         Printf.sprintf " Using %S while you should use the .cmti file" filename);
   (* Resolve imports, used by the [link-deps] command. *)
-  let unit = { unit with imports = resolve_imports resolver unit.imports } in
-  let env = Resolver.build_compile_env_for_unit resolver typing_env unit in
+  let unit =
+    {
+      unit with
+      imports = resolve_imports resolver unit.imports;
+      impl_source;
+      intf_source;
+    }
+  in
+  let env = Resolver.build_compile_env_for_unit resolver impl_shape unit in
   let compiled =
     Odoc_xref2.Compile.compile ~filename env unit |> Error.raise_warnings
   in
@@ -229,7 +259,7 @@ let handle_file_ext = function
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options input =
+    ~warnings_options ~impl_source ~intf_source input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
@@ -246,7 +276,8 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver ~make_root parent input input_type)
+          resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
+            parent input input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in

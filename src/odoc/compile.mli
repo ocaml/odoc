@@ -30,5 +30,7 @@ val compile :
   children:string list ->
   output:Fs.File.t ->
   warnings_options:Odoc_model.Error.warnings_options ->
+  impl_source:Fs.File.t option ->
+  intf_source:Fs.File.t option ->
   Fs.File.t ->
   (unit, [> msg ]) result

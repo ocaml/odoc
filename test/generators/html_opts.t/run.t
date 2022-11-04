@@ -1,11 +1,7 @@
   $ ocamlc -c -bin-annot test.mli
   $ ocamlc -c -bin-annot test2.mli
   $ odoc compile --package test test.cmti
-  File "test.cmti":
-  Warning: No implementation file found for the given interface
   $ odoc compile --package test -I . test2.cmti
-  File "test2.cmti":
-  Warning: No implementation file found for the given interface
   $ odoc link test.odoc
   $ odoc link test2.odoc
   $ odoc html-generate test.odocl -o html --indent

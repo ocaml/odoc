@@ -66,8 +66,6 @@ Various tests for the 'compile' command.
   Warning: Unknown tag '@Class'.
   File "ast.mli", line 74, characters 6-13:
   Warning: Unknown tag '@Method'.
-  File "ast.cmti":
-  Warning: No implementation file found for the given interface
 
 Test different parsing errors.
 
@@ -116,8 +114,6 @@ Test different parsing errors.
   File "parser_errors.mli", line 56, characters 4-18:
   Warning: '{x bad markup}': bad markup.
   Suggestion: did you mean '{!x bad markup}' or '[x bad markup]'?
-  File "parser_errors.cmti":
-  Warning: No implementation file found for the given interface
 
 With warn-error enabled.
 
@@ -165,8 +161,6 @@ With warn-error enabled.
   File "parser_errors.mli", line 56, characters 4-18:
   Error: '{x bad markup}': bad markup.
   Suggestion: did you mean '{!x bad markup}' or '[x bad markup]'?
-  File "parser_errors.cmti":
-  Warning: No implementation file found for the given interface
   ERROR: Warnings have been generated.
   [1]
 

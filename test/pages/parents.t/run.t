@@ -22,8 +22,6 @@ Then we need to compile the package mld file, because when you're passing the '-
 This will have produced a file called 'page-package.odoc'. Now we can compile the module odoc file passing that file as parent.
 
   $ odoc compile test.cmti -I . --parent package
-  File "test.cmti":
-  Warning: No implementation file found for the given interface
 
 Link and generate the HTML:
 

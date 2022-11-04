@@ -32,16 +32,8 @@ let render_document renderer ~output:root_dir ~extra_suffix ~extra odoctree =
       close_out oc);
   Ok ()
 
-let render_odoc ?impl ?intf ~resolver ~warnings_options ~syntax ~renderer
+let render_odoc ~resolver ~warnings_options ~syntax ~renderer
     ~output extra file =
-  let render_opt = function
-    | Some src ->
-        let doc = Renderer.document_of_source src in
-        render_document renderer ~output ~extra_suffix:None ~extra doc
-    | None -> Ok ()
-  in
-  render_opt impl >>= fun () ->
-  render_opt intf >>= fun () ->
   document_of_input ~resolver ~warnings_options ~syntax file
   >>= render_document renderer ~output ~extra_suffix:None ~extra
 

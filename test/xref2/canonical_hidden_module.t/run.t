@@ -58,8 +58,6 @@ See the comments on the types at the end of test.mli for the expectation.
 
   $ ocamlc -c -bin-annot test.mli
   $ odoc compile test.cmti
-  File "test.cmti":
-  Warning: No implementation file found for the given interface
   $ odoc link test.odoc
   $ odoc html-generate test.odocl --indent -o .
   $ odoc support-files -o .
