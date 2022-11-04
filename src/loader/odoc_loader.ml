@@ -186,8 +186,7 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmt_shape ~filename =
-  wrap_errors ~filename (read_cmt_shape ~filename)
+let read_cmt_shape ~filename = wrap_errors ~filename (read_cmt_shape ~filename)
 
 let read_cmti ~make_root ~parent ~filename =
   wrap_errors ~filename (read_cmti ~make_root ~parent ~filename)
