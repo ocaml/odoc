@@ -23,8 +23,6 @@ constructor where the second element of the tuple is Resolved.
 
   $ ocamlc -c -bin-annot test.mli
   $ odoc compile --package x test.cmti
-  File "test.cmti":
-  Warning: No implementation file found for the given interface
   $ odoc link test.odoc
 
 Every module type aliases and the path they link to:

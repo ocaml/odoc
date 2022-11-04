@@ -28,8 +28,6 @@ on test1.cmti:
 
   $ odoc compile --package foo test1.cmti --enable-missing-root-warning
   File "test1.cmti":
-  Warning: No implementation file found for the given interface
-  File "test1.cmti":
   Warning: Couldn't find the following modules:
     Test0
 
@@ -37,8 +35,6 @@ Similarly, module `T` also can not be expanded, therefore we expect
 another warning when we run `odoc compile` on test2.cmti:
 
   $ odoc compile --package foo test2.cmti -I . --enable-missing-root-warning
-  File "test2.cmti":
-  Warning: No implementation file found for the given interface
   File "test2.cmti":
   Warning: Couldn't find the following modules:
     Test1

@@ -157,7 +157,8 @@ end = struct
         Fs.File.(set_ext ".odoc" output)
 
   let compile hidden directories resolve_fwd_refs dst package_opt
-      parent_name_opt open_modules children input warnings_options =
+      parent_name_opt open_modules children input warnings_options impl_source
+      intf_source =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -178,7 +179,7 @@ end = struct
     parent_cli_spec >>= fun parent_cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warnings_options input
+      ~warnings_options ~impl_source ~intf_source input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -202,6 +203,23 @@ end = struct
     let default = [] in
     Arg.(
       value & opt_all string default & info ~docv:"CHILD" ~doc [ "c"; "child" ])
+
+  let impl =
+    let doc =
+      "Implementation source file. Read from disk and stored inside .odoc \
+       files, to be rendered in documentation."
+    in
+    Arg.(
+      value
+      & opt (some convert_fs_file) None
+      & info [ "impl" ] ~doc ~docv:"file.ml")
+
+  let intf =
+    let doc = "Interface source file." in
+    Arg.(
+      value
+      & opt (some convert_fs_file) None
+      & info [ "intf" ] ~doc ~docv:"file.mli")
 
   let cmd =
     let package_opt =
@@ -228,7 +246,7 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ package_opt $ parent_opt $ open_modules $ children $ input
-       $ warnings_options))
+       $ warnings_options $ impl $ intf))
 
   let info ~docs =
     let man =
@@ -358,29 +376,15 @@ end = struct
     let doc = "Input file." in
     Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE.odocl" [])
 
-  let impl =
-    let doc = "Implementation source file" in
-    Arg.(
-      value
-      & opt (some convert_fs_file) None
-      & info [ "impl" ] ~doc ~docv:"file.ml")
-
-  let intf =
-    let doc = "Interface source file" in
-    Arg.(
-      value
-      & opt (some convert_fs_file) None
-      & info [ "intf" ] ~doc ~docv:"file.mli")
-
   module Process = struct
-    let process extra _hidden directories output_dir syntax input_file impl intf
+    let process extra _hidden directories output_dir syntax input_file
         warnings_options =
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
       in
       let file = Fs.File.of_string input_file in
-      Rendering.render_odoc ?impl ?intf ~renderer:R.renderer ~resolver
-        ~warnings_options ~syntax ~output:output_dir extra file
+      Rendering.render_odoc ~renderer:R.renderer ~resolver ~warnings_options
+        ~syntax ~output:output_dir extra file
 
     let cmd =
       let syntax =
@@ -394,8 +398,7 @@ end = struct
       Term.(
         const handle_error
         $ (const process $ R.extra_args $ hidden $ odoc_file_directories
-         $ dst ~create:true () $ syntax $ input_odoc $ impl $ intf
-         $ warnings_options))
+         $ dst ~create:true () $ syntax $ input_odoc $ warnings_options))
 
     let info ~docs =
       let doc =

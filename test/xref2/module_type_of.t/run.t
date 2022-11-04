@@ -34,8 +34,6 @@ Compile
 -------
 
   $ compile m.mli
-  File "m.cmti":
-  Warning: No implementation file found for the given interface
 
 Tests
 -----

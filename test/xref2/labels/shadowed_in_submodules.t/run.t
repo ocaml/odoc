@@ -3,8 +3,6 @@ Label in a submodule clashing with a previously defined label
 There should be no ambiguous labels in this example.
 
   $ compile test.mli
-  File "test.cmti":
-  Warning: No implementation file found for the given interface
 
 All the references should resolve and point to what's written in the text.
 

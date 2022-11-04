@@ -17,8 +17,6 @@ its RHS correctly replaced with an `int`
 
   $ ocamlc -c -bin-annot m.mli
   $ odoc compile m.cmti
-  File "m.cmti":
-  Warning: No implementation file found for the given interface
   $ odoc link m.odoc
   $ odoc html-generate m.odocl --indent -o .
   $ odoc_print m.odocl -r T.t
