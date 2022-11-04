@@ -24,10 +24,6 @@ module OptionMonad = struct
   let ( >>= ) = bind
 end
 
-module OptionSyntax = struct
-  let ( let* ) = OptionMonad.bind
-end
-
 module EitherMonad = struct
   type ('a, 'b) t = Left of 'a | Right of 'b
 

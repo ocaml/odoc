@@ -1,3 +1,5 @@
+open Astring
+
 (** Standard definition and types for all renderers *)
 
 type syntax = OCaml | Reason
@@ -35,7 +37,7 @@ let document_of_source v =
   let items =
     match Fs.File.read v with
     | Ok content ->
-        let lines = String.split_on_char '\n' content in
+        let lines = String.cuts ~sep:"\n" content in
         let rec loop i acc = function
           | [] -> acc
           | h :: t ->

@@ -12,6 +12,6 @@
  (public_name odoc.document)
  (instrumentation
   (backend bisect_ppx))
- (libraries odoc_base odoc_model fpath)
+ (libraries odoc_base odoc_model fpath astring)
  (flags
   (:standard -open Odoc_base)))
