@@ -32,3 +32,10 @@
  (applies_to github_issue_793)
  (enabled_if
   (>= %{ocaml_version} 4.13.0)))
+
+; 4.14.0 and above
+
+(cram
+ (applies_to lookup_def)
+ (enabled_if
+  (>= %{ocaml_version} 4.14.0)))

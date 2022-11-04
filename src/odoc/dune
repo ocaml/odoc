@@ -13,7 +13,8 @@
   odoc_model
   odoc_xref2
   tyxml
-  unix)
+  unix
+  compatshape)
  (flags
   (:standard -open Odoc_base))
  (instrumentation

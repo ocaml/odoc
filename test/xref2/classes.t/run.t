@@ -86,38 +86,42 @@ resolve correctly. All of the 'Class' json objects should contain
     ]
   }
 
-  $ odoc_print c.odoc -r g
+  $ odoc_print c.odoc -r g | jq '.type_'
   {
-    "id": { "`Value": [ { "`Root": [ "None", "C" ] }, "g" ] },
-    "locs": {
-      "impl": { "Some": "File \"c.ml\", line 6, characters 4-5" },
-      "intf": { "Some": "File \"c.ml\", line 6, characters 4-5" }
-    },
-    "doc": [],
-    "type_": {
-      "Arrow": [
-        "None",
-        {
-          "Class": [
-            {
-              "`Resolved": {
-                "`ClassType": [
-                  { "`Identifier": { "`Root": [ "None", "B" ] } },
-                  "u"
-                ]
+    "Arrow": [
+      "None",
+      {
+        "Class": [
+          {
+            "`Resolved": {
+              "`ClassType": [
+                {
+                  "`Identifier": {
+                    "`Root": [
+                      "None",
+                      "B"
+                    ]
+                  }
+                },
+                "u"
+              ]
+            }
+          },
+          []
+        ]
+      },
+      {
+        "Constr": [
+          {
+            "`Resolved": {
+              "`Identifier": {
+                "`CoreType": "unit"
               }
-            },
-            []
-          ]
-        },
-        {
-          "Constr": [
-            { "`Resolved": { "`Identifier": { "`CoreType": "unit" } } },
-            []
-          ]
-        }
-      ]
-    },
-    "value": "Abstract"
+            }
+          },
+          []
+        ]
+      }
+    ]
   }
 
