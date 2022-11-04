@@ -82,10 +82,11 @@ and value_ env parent t =
 
 and exception_ env parent e =
   let open Exception in
+  let locs = locations env e.id e.locs in
   let container = (parent :> Id.Parent.t) in
   let res = Opt.map (type_expression env container) e.res in
   let args = type_decl_constructor_argument env container e.args in
-  { e with res; args }
+  { e with locs; res; args }
 
 and extension env parent t =
   let open Extension in
@@ -94,6 +95,7 @@ and extension env parent t =
     let open Constructor in
     {
       c with
+      locs = locations env c.id c.locs;
       args = type_decl_constructor_argument env container c.args;
       res = Opt.map (type_expression env container) c.res;
     }
@@ -134,6 +136,7 @@ and class_type env c =
   in
   {
     c with
+    locs = locations env c.id c.locs;
     expr = class_type_expr env (c.id :> Id.ClassSignature.t) c.expr;
     expansion;
   }
@@ -179,6 +182,7 @@ and inherit_ env parent ih =
 
 and class_ env parent c =
   let open Class in
+  let locs = locations env c.id c.locs in
   let container = (parent :> Id.Parent.t) in
   let expansion =
     match
@@ -203,7 +207,7 @@ and class_ env parent c =
     | Arrow (lbl, expr, decl) ->
         Arrow (lbl, type_expression env container expr, map_decl decl)
   in
-  { c with type_ = map_decl c.type_; expansion }
+  { c with locs; type_ = map_decl c.type_; expansion }
 
 and module_substitution env m =
   let open ModuleSubstitution in
@@ -359,13 +363,14 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
   let open ModuleType in
+  let locs = locations env m.id m.locs in
   let sg_id = (m.id :> Id.Signature.t) in
   let expr =
     match m.expr with
     | None -> None
     | Some e -> Some (module_type_expr env sg_id ~expand_paths:false e)
   in
-  { m with expr }
+  { m with locs; expr }
 
 and include_ : Env.t -> Include.t -> Include.t * Env.t =
  fun env i ->
@@ -709,6 +714,7 @@ and module_type_expr :
 and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
   let open TypeDecl in
+  let locs = locations env t.id t.locs in
   let container =
     match t.id.iv with
     | `Type (parent, _) -> (parent :> Id.Parent.t)
@@ -718,7 +724,7 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
   let representation =
     Opt.map (type_decl_representation env container) t.representation
   in
-  { t with equation; representation }
+  { t with locs; equation; representation }
 
 and type_decl_equation :
     Env.t -> Id.Parent.t -> TypeDecl.Equation.t -> TypeDecl.Equation.t =
