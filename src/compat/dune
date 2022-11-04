@@ -1,3 +1,13 @@
 (library
  (name compatcmdliner)
+ (modules compatcmdliner)
  (libraries cmdliner))
+
+(library
+ (name compatshape)
+ (public_name odoc.compatshape)
+ (modules compatshape)
+ (preprocess
+  (action
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
+ (libraries compiler-libs.common odoc_model))

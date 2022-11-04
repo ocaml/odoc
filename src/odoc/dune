@@ -2,7 +2,7 @@
  (name odoc_odoc)
  (public_name odoc.odoc)
  (libraries compiler-libs.common fpath odoc_base odoc_html odoc_manpage
-   odoc_latex odoc_loader odoc_model odoc_xref2 tyxml)
+   odoc_latex odoc_loader odoc_model odoc_xref2 tyxml compatshape)
  (flags
   (:standard -open Odoc_base))
  (instrumentation

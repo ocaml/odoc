@@ -33,7 +33,7 @@ let lookup_implementation_of_cmti intf_file =
   let input_file = Fs.File.set_ext ".cmt" intf_file in
   if Fs.File.exists input_file then
     let filename = Fs.File.to_string input_file in
-    Odoc_loader.read_typing_env ~filename |> Error.raise_errors_and_warnings
+    Odoc_loader.read_cmt_shape ~filename |> Error.raise_errors_and_warnings
   else (
     Error.raise_warning ~non_fatal:true
       (Error.filename_only

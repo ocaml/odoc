@@ -206,15 +206,20 @@ let create ~important_digests ~directories ~open_modules =
 
 open Odoc_xref2
 
+let lookup_def impl_shape id =
+  match Compatshape.lookup_def impl_shape id with
+  | Some loc -> Some (Odoc_loader.read_location loc)
+  | None -> None
+
 let build_compile_env_for_unit
-    { important_digests; ap; open_modules = open_units } typing_env m =
+    { important_digests; ap; open_modules = open_units } impl_shape m =
   add_unit_to_cache (Odoc_file.Unit_content m);
   let imports_map = build_imports_map m in
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
   and lookup_page = lookup_page ap in
   let lookup_def =
-    match typing_env with
-    | Some typing_env -> Lookup_def.lookup_def typing_env
+    match impl_shape with
+    | Some impl_shape -> lookup_def impl_shape
     | None -> fun _ -> None
   in
   let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_def } in

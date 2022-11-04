@@ -38,7 +38,7 @@ val lookup_page : t -> string -> Odoc_model.Lang.Page.t option
 
 val build_compile_env_for_unit :
   t ->
-  Odoc_loader.typing_env option ->
+  Compatshape.impl_shape option ->
   Odoc_model.Lang.Compilation_unit.t ->
   Odoc_xref2.Env.t
 (** Initialize the environment for compiling the given module. *)
