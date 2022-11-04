@@ -29,6 +29,14 @@ let convert_directory ?(create = false) () : Fs.Directory.t Arg.conv =
   let odoc_dir_printer fmt dir = dir_printer fmt (Fs.Directory.to_string dir) in
   (odoc_dir_parser, odoc_dir_printer)
 
+let convert_fs_file =
+  let parse inp =
+    match Arg.(conv_parser file) inp with
+    | Ok s -> Result.Ok (Fs.File.of_string s)
+    | Error _ as e -> e
+  and print = Fpath.pp in
+  Arg.conv (parse, print)
+
 let handle_error = function
   | Result.Ok () -> ()
   | Error (`Cli_error msg) ->
@@ -352,21 +360,25 @@ end = struct
 
   let impl =
     let doc = "Implementation source file" in
-    Arg.(value & opt (some file) None & info [ "impl" ] ~doc ~docv:"file.ml")
+    Arg.(
+      value
+      & opt (some convert_fs_file) None
+      & info [ "impl" ] ~doc ~docv:"file.ml")
 
   let intf =
     let doc = "Interface source file" in
-    Arg.(value & opt (some file) None & info [ "intf" ] ~doc ~docv:"file.mli")
+    Arg.(
+      value
+      & opt (some convert_fs_file) None
+      & info [ "intf" ] ~doc ~docv:"file.mli")
 
   module Process = struct
-    let process extra _hidden directories output_dir syntax input_file impl_file
-        intf_file warnings_options =
+    let process extra _hidden directories output_dir syntax input_file impl intf
+        warnings_options =
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
       in
       let file = Fs.File.of_string input_file in
-      let impl = Option.map Fs.File.of_string impl_file in
-      let intf = Option.map Fs.File.of_string intf_file in
       Rendering.render_odoc ?impl ?intf ~renderer:R.renderer ~resolver
         ~warnings_options ~syntax ~output:output_dir extra file
 

@@ -412,9 +412,9 @@ let lookup_root_module name env =
   result
 
 let lookup_def id env =
-  let open Utils.OptionSyntax in
-  let* r = env.resolver in
-  r.lookup_def (id :> Paths.Identifier.Any.t)
+  match env.resolver with
+  | Some r -> r.lookup_def (id :> Paths.Identifier.Any.t)
+  | None -> None
 
 let lookup_page name env =
   match env.resolver with None -> None | Some r -> r.lookup_page name
