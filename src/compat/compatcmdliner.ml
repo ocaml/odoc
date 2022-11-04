@@ -61,6 +61,10 @@ module Arg = struct
   let bool = bool
 
   let ( & ) = ( & )
+
+  let conv = conv
+  let conv_parser = conv_parser
+  let conv_printer = conv_printer
 end
 
 [@@@ocaml.warning "+3"]

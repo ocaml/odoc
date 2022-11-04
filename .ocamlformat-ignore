@@ -1,3 +1,4 @@
+src/compat/compatshape.ml
 src/document/*.cppo.ml
 src/loader/cmi.ml
 src/loader/cmi.mli
