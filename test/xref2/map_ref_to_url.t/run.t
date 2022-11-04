@@ -1,6 +1,4 @@
   $ compile foo.mli
-  File "foo.cmti":
-  Warning: No implementation file found for the given interface
 
 Generating html url for a reference
   $ odoc html-url -I . Foo.t

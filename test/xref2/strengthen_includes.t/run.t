@@ -26,8 +26,6 @@ _not_ been strengthened.
 
   $ ocamlc -bin-annot -c test.mli
   $ odoc compile --package x test.cmti
-  File "test.cmti":
-  Warning: No implementation file found for the given interface
   $ odoc link test.odoc
   $ odoc html-generate test.odocl -o html
   $ find html/x/Test/ZZ

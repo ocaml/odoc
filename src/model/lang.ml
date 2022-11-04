@@ -483,6 +483,8 @@ module rec Compilation_unit : sig
     expansion : Signature.t option;
     linked : bool;  (** Whether this unit has been linked. *)
     canonical : Path.Module.t option;
+    impl_source : string option;
+    intf_source : string option;
   }
 end =
   Compilation_unit

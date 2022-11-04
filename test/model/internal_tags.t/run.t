@@ -3,8 +3,6 @@ We expect no warning for "good.mli". The code already ensures that either tags
 are handled of a warning is emitted.
 
   $ compile good.mli
-  File "good.cmti":
-  Warning: No implementation file found for the given interface
 
 We expect warnings to be emitted for each bad tags:
 
@@ -19,5 +17,3 @@ We expect warnings to be emitted for each bad tags:
   Warning: Unexpected tag '@canonical' at this location.
   File "bad.mli", line 21, characters 4-11:
   Warning: Unexpected tag '@inline' at this location.
-  File "bad.cmti":
-  Warning: No implementation file found for the given interface

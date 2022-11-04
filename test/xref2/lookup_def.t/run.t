@@ -1,7 +1,7 @@
 Compile the modules:
 
   $ ocamlc -c a.mli a.ml -bin-annot
-  $ odoc compile a.cmti
+  $ odoc compile --impl a.ml a.cmti
 
 Show the locations:
 
