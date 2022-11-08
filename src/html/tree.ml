@@ -190,9 +190,8 @@ let src_page_creator ~config ~url name content =
   let theme_uri = Config.theme_uri config in
   let _support_uri = Config.support_uri config in
   let path = Link.Path.for_printing url in
-
   let head : Html_types.head Html.elt =
-    let title_string = Printf.sprintf "%s (%s)" name (String.concat "." path) in
+    let title_string = Printf.sprintf "Source: %s (%s)" name (String.concat "." path) in
     let file_uri base file =
       match base with
       | Types.Absolute uri -> uri ^ "/" ^ file
@@ -203,7 +202,7 @@ let src_page_creator ~config ~url name content =
           Link.href ~config ~resolve:(Current url)
             (Odoc_document.Url.from_path page)
     in
-    let odoc_css_uri = file_uri theme_uri "odoc-src.css" in
+    let odoc_css_uri = file_uri theme_uri "odoc.css" in
     let meta_elements =
       [
         Html.link ~rel:[ `Stylesheet ] ~href:odoc_css_uri ();
@@ -222,9 +221,10 @@ let src_page_creator ~config ~url name content =
     in
     Html.head (Html.title (Html.txt title_string)) meta_elements
   in
-
-  let htmlpp_elt = Html.pp_elt ~indent:(Config.indent config) () in
-  let htmlpp = Html.pp ~indent:(Config.indent config) () in
+  (* We never indent as there is a bug in tyxml and it would break lines inside
+     a [pre] *)
+  let htmlpp_elt = Html.pp_elt ~indent:false () in
+  let htmlpp = Html.pp ~indent:false () in
   if Config.content_only config then
     let content ppf =
       htmlpp_elt ppf (Html.div ~a:[ Html.a_class [ "odoc-src" ] ] content)
