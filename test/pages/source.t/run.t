@@ -24,20 +24,20 @@ Compile the pages:
 Check the generated pages:
 
   $ find html -type f | sort
+  html/A/A.ml.html
+  html/A/A.mli.html
   html/A/index.html
-  html/A/index.ml.html
-  html/A/index.mli.html
 
-  $ cat html/A/index.ml.html
+  $ cat html/A/A.ml.html
   <!DOCTYPE html>
-  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: A (A)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span class="LET">let</span> <span class="LIDENT">x</span> <span class="EQUAL">=</span> <span class="INT">2</span><span class="EOL">
+  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: A.ml (A)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span class="LET">let</span> <span class="LIDENT">x</span> <span class="EQUAL">=</span> <span class="INT">2</span><span class="EOL">
   </span><span class="LET">let</span> <span class="LIDENT">y</span> <span class="EQUAL">=</span> <span class="LIDENT">x</span> <span class="PLUS">+</span> <span class="INT">1</span><span class="EOL">
   </span><span class="LET">let</span> <span class="LIDENT">z</span> <span class="LIDENT">a</span> <span class="EQUAL">=</span> <span class="IF">if</span> <span class="LIDENT">x</span> <span class="EQUAL">=</span> <span class="INT">1</span> <span class="BARBAR">||</span> <span class="TRUE">true</span> <span class="THEN">then</span> <span class="LIDENT">x</span> <span class="PLUS">+</span> <span class="LIDENT">y</span> <span class="ELSE">else</span> <span class="INT">0</span><span class="EOL">
   </span></span></code></pre></body></html>
 
-  $ cat html/A/index.mli.html
+  $ cat html/A/A.mli.html
   <!DOCTYPE html>
-  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: A (A)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span class="VAL">val</span> <span class="LIDENT">x</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="EOL">
+  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: A.mli (A)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span class="VAL">val</span> <span class="LIDENT">x</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="EOL">
   </span><span class="VAL">val</span> <span class="LIDENT">y</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="EOL">
   </span><span class="VAL">val</span> <span class="LIDENT">z</span> <span class="COLON">:</span> <span class="LIDENT">int</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span><span class="EOL">
   </span></span></code></pre></body></html>

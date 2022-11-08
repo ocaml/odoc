@@ -16,7 +16,4 @@
 
 let render config page = Odoc_html.Generator.render ~config page
 
-let render_src config src page ext =
-  Odoc_html.Generator.render_src ~config src page ext
-
-let renderer = { Odoc_document.Renderer.name = "html"; render; render_src }
+let renderer = { Odoc_document.Renderer.name = "html"; render }
