@@ -89,7 +89,7 @@ let prepare_preamble comment items =
 let make_expansion_page url comments items =
   let comment = List.concat comments in
   let preamble, items = prepare_preamble comment items in
-  { Page.preamble; items; url }
+  { Page.preamble; items; url; impl_source = None; intf_source = None }
 
 include Generator_signatures
 
@@ -1673,7 +1673,8 @@ module Make (Syntax : SYNTAX) = struct
         | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
-      make_expansion_page url [ unit_doc ] items
+      let page = make_expansion_page url [ unit_doc ] items in
+      { page with impl_source = t.impl_source; intf_source = t.intf_source }
 
     let page (t : Odoc_model.Lang.Page.t) : Page.t =
       (*let name =
@@ -1682,7 +1683,7 @@ module Make (Syntax : SYNTAX) = struct
       (*let title = Odoc_model.Names.PageName.to_string name in*)
       let url = Url.Path.from_identifier t.name in
       let preamble, items = Sectioning.docs t.content in
-      { Page.preamble; items; url }
+      { Page.preamble; items; url; impl_source = None; intf_source = None }
   end
 
   include Page

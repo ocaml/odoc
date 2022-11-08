@@ -5,41 +5,19 @@ let document_of_odocl ~syntax input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
   | Odoc_file.Page_content odoctree ->
-      Ok (Renderer.document_of_page ~syntax odoctree, None, None)
+      Ok (Renderer.document_of_page ~syntax odoctree)
   | Unit_content odoctree ->
-      Ok
-        ( Renderer.document_of_compilation_unit ~syntax odoctree,
-          odoctree.impl_source,
-          odoctree.intf_source )
+      Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
 
 let document_of_input ~resolver ~warnings_options ~syntax input =
   let output = Fs.File.(set_ext ".odocl" input) in
   Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
-  | `Page page -> Ok (Renderer.document_of_page ~syntax page, None, None)
-  | `Module m ->
-      Ok
-        ( Renderer.document_of_compilation_unit ~syntax m,
-          m.impl_source,
-          m.intf_source )
+  | `Page page -> Ok (Renderer.document_of_page ~syntax page)
+  | `Module m -> Ok (Renderer.document_of_compilation_unit ~syntax m)
 
-let render_document renderer ~output:root_dir ~extra_suffix ~extra
-    (odoctree, impl_source, intf_source) =
+let render_document renderer ~output:root_dir ~extra_suffix ~extra odoctree =
   let pages = renderer.Renderer.render extra odoctree in
-  let impl_source_page =
-    impl_source
-    |> Option.map (fun impl_source ->
-           renderer.Renderer.render_src extra impl_source odoctree "ml")
-    |> Option.value ~default:[]
-  in
-  let intf_source_page =
-    intf_source
-    |> Option.map (fun intf_source ->
-           renderer.Renderer.render_src extra intf_source odoctree "mli")
-    |> Option.value ~default:[]
-  in
-  Renderer.traverse
-    (pages @ impl_source_page @ intf_source_page)
-    ~f:(fun filename content ->
+  Renderer.traverse pages ~f:(fun filename content ->
       let filename =
         match extra_suffix with
         | Some s -> Fpath.add_ext s filename
@@ -70,7 +48,7 @@ let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
       document_of_input ~resolver ~warnings_options ~syntax odoctree
     else document_of_odocl ~syntax odoctree
   in
-  doc >>= fun (odoctree, _impl_source, _intf_source) ->
+  doc >>= fun odoctree ->
   let pages = renderer.Renderer.render extra odoctree in
   Renderer.traverse pages ~f:(fun filename _content ->
       let filename = Fpath.normalize @@ Fs.File.append root_dir filename in

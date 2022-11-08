@@ -29,7 +29,7 @@ val make :
   uses_katex:bool ->
   Html_types.div_content Html.elt list ->
   Odoc_document.Renderer.page list ->
-  Odoc_document.Renderer.page list
+  Odoc_document.Renderer.page
 (** [make ?theme_uri (body, children)] calls "the page creator" to turn [body]
     into an [[ `Html ] elt]. If [theme_uri] is provided, it will be used to
     locate the theme files, otherwise the HTML output directory is used. *)
@@ -37,10 +37,9 @@ val make :
 val make_src :
   config:Config.t ->
   url:Odoc_document.Url.Path.t ->
-  ext_prefix:string ->
+  string ->
   Html_types.div_content Html.elt list ->
-  Odoc_document.Renderer.page list ->
-  Odoc_document.Renderer.page list
+  Odoc_document.Renderer.page
 (** [make ?theme_uri (body, children)] calls "the page creator" to turn [body]
     into an [[ `Html ] elt]. If [theme_uri] is provided, it will be used to
     locate the theme files, otherwise the HTML output directory is used. *)

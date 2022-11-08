@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+module Url = Odoc_document.Url
 module Html = Tyxml.Html
 
 let html_of_toc toc =
@@ -83,11 +84,8 @@ let page_creator ~config ~url ~uses_katex header breadcrumbs toc content =
       match base with
       | Types.Absolute uri -> uri ^ "/" ^ file
       | Relative uri ->
-          let page =
-            Odoc_document.Url.Path.{ kind = `File; parent = uri; name = file }
-          in
-          Link.href ~config ~resolve:(Current url)
-            (Odoc_document.Url.from_path page)
+          let page = Url.Path.{ kind = `File; parent = uri; name = file } in
+          Link.href ~config ~resolve:(Current url) (Url.from_path page)
     in
 
     let odoc_css_uri = file_uri theme_uri "odoc.css" in
@@ -156,26 +154,28 @@ let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex content children =
   let content =
     page_creator ~config ~url ~uses_katex header breadcrumbs toc content
   in
-  [ { Odoc_document.Renderer.filename; content; children } ]
+  { Odoc_document.Renderer.filename; content; children }
 
-let src_page_creator ~config ~url content =
+let path_of_module_of_source ppf url =
+  match url.Url.Path.parent with
+  | Some parent ->
+      let path = Link.Path.for_printing parent in
+      Format.fprintf ppf " (%s)" (String.concat "." path)
+  | None -> ()
+
+let src_page_creator ~config ~url name content =
   let theme_uri = Config.theme_uri config in
   let _support_uri = Config.support_uri config in
-  let name = url.Odoc_document.Url.Path.name
-  and path = Link.Path.for_printing url in
   let head : Html_types.head Html.elt =
     let title_string =
-      Printf.sprintf "Source: %s (%s)" name (String.concat "." path)
+      Format.asprintf "Source: %s%a" name path_of_module_of_source url
     in
     let file_uri base file =
       match base with
       | Types.Absolute uri -> uri ^ "/" ^ file
       | Relative uri ->
-          let page =
-            Odoc_document.Url.Path.{ kind = `File; parent = uri; name = file }
-          in
-          Link.href ~config ~resolve:(Current url)
-            (Odoc_document.Url.from_path page)
+          let page = Url.Path.{ kind = `File; parent = uri; name = file } in
+          Link.href ~config ~resolve:(Current url) (Url.from_path page)
     in
     let odoc_css_uri = file_uri theme_uri "odoc.css" in
     let meta_elements =
@@ -205,8 +205,7 @@ let src_page_creator ~config ~url content =
   let content ppf = htmlpp ppf html in
   content
 
-let make_src ~config ~url ~ext_prefix content children =
+let make_src ~config ~url title content =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
-  let filename = Fpath.set_ext (ext_prefix ^ ".html") filename in
-  let content = src_page_creator ~config ~url content in
-  [ { Odoc_document.Renderer.filename; content; children } ]
+  let content = src_page_creator ~config ~url title content in
+  { Odoc_document.Renderer.filename; content; children = [] }

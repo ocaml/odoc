@@ -17,6 +17,7 @@
 open Odoc_document.Types
 module Html = Tyxml.Html
 module Doctree = Odoc_document.Doctree
+module Url = Odoc_document.Url
 
 type any = Html_types.flow5
 
@@ -34,7 +35,7 @@ let mk_anchor_link id =
 let mk_anchor anchor =
   match anchor with
   | None -> ([], [], [])
-  | Some { Odoc_document.Url.Anchor.anchor; _ } ->
+  | Some { Url.Anchor.anchor; _ } ->
       let link = mk_anchor_link anchor in
       let extra_attr = [ Html.a_id anchor ] in
       let extra_class = [ "anchored" ] in
@@ -400,13 +401,21 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
+  let maybe_source ~config ~base_url ~ext = function
+    | Some src ->
+        let name = base_url.Url.Path.name ^ ext in
+        let url = Link.Path.of_source_code ~ext base_url in
+        let doc = Html_source.doc_of_locs src [] in
+        [ Html_page.make_src ~config ~url name [ doc ] ]
+    | None -> []
+
   let rec include_ ~config { Subpage.content; _ } = page ~config content
 
   and subpages ~config subpages =
     Utils.list_concat_map ~f:(include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page list =
-    let ({ Page.preamble; items = i; url } as p) =
+    let { Page.preamble; items = i; url; impl_source; intf_source } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
@@ -424,14 +433,12 @@ module Page = struct
         ~preamble:(items ~config ~resolve preamble :> any Html.elt list)
         ~breadcrumbs ~toc ~url ~uses_katex content subpages
     else
-      Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex content
-        subpages
-
-  and src_page ~config ~ext_prefix src p : Odoc_document.Renderer.page list =
-    let { Page.url; _ } = Doctree.Labels.disambiguate_page p
-    and subpages = [] in
-    let doc = Html_source.doc_of_locs src [] in
-    Html_page.make_src ~config ~url ~ext_prefix [ doc ] subpages
+      [
+        Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
+          content subpages;
+      ]
+      @ maybe_source ~config ~base_url:url ~ext:".ml" impl_source
+      @ maybe_source ~config ~base_url:url ~ext:".mli" intf_source
 end
 
 let render ~config page = Page.page ~config page
@@ -439,6 +446,3 @@ let render ~config page = Page.page ~config page
 let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in
   block ~config ~resolve b
-
-let render_src ~config src page ext_prefix =
-  Page.src_page ~config ~ext_prefix src page
