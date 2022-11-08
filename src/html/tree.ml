@@ -185,3 +185,60 @@ let make ~config ~url ~header ~toc ~uses_katex title content children =
     page_creator ~config ~url ~uses_katex title header toc content
   in
   [ { Odoc_document.Renderer.filename; content; children } ]
+
+let src_page_creator ~config ~url name content =
+  let theme_uri = Config.theme_uri config in
+  let _support_uri = Config.support_uri config in
+  let path = Link.Path.for_printing url in
+
+  let head : Html_types.head Html.elt =
+    let title_string = Printf.sprintf "%s (%s)" name (String.concat "." path) in
+    let file_uri base file =
+      match base with
+      | Types.Absolute uri -> uri ^ "/" ^ file
+      | Relative uri ->
+          let page =
+            Odoc_document.Url.Path.{ kind = `File; parent = uri; name = file }
+          in
+          Link.href ~config ~resolve:(Current url)
+            (Odoc_document.Url.from_path page)
+    in
+    let odoc_css_uri = file_uri theme_uri "odoc-src.css" in
+    let meta_elements =
+      [
+        Html.link ~rel:[ `Stylesheet ] ~href:odoc_css_uri ();
+        Html.meta ~a:[ Html.a_charset "utf-8" ] ();
+        Html.meta
+          ~a:[ Html.a_name "generator"; Html.a_content "odoc %%VERSION%%" ]
+          ();
+        Html.meta
+          ~a:
+            [
+              Html.a_name "viewport";
+              Html.a_content "width=device-width,initial-scale=1.0";
+            ]
+          ();
+      ]
+    in
+    Html.head (Html.title (Html.txt title_string)) meta_elements
+  in
+
+  let htmlpp_elt = Html.pp_elt ~indent:(Config.indent config) () in
+  let htmlpp = Html.pp ~indent:(Config.indent config) () in
+  if Config.content_only config then
+    let content ppf =
+      htmlpp_elt ppf (Html.div ~a:[ Html.a_class [ "odoc-src" ] ] content)
+    in
+    content
+  else
+    let html =
+      Html.html head (Html.body ~a:[ Html.a_class [ "odoc-src" ] ] content)
+    in
+    let content ppf = htmlpp ppf html in
+    content
+
+let make_src ~config ~url ~ext_prefix title content children =
+  let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
+  let filename = Fpath.set_ext (ext_prefix ^ ".html") filename in
+  let content = src_page_creator ~config ~url title content in
+  [ { Odoc_document.Renderer.filename; content; children } ]

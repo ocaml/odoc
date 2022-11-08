@@ -8,3 +8,4 @@ type toc = {
   href : string;
   children : toc list;
 }
+type src_loc = Token of Parser.token
