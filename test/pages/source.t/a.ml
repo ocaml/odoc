@@ -1,3 +1,3 @@
 let x = 2
 let y = x + 1
-let z = x + y
+let z a = if x = 1 || true then x + y else 0

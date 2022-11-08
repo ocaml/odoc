@@ -777,6 +777,44 @@ td.def-doc *:first-child {
   text-decoration: underline;
 }
 
+.TYPE, .LET, .IN {
+  font-weight: bold;
+  color:#C8AD7F
+}
+
+.MATCH, .WHEN, .IF, .ELSE, .THEN, .WITH {
+  color: blue;
+}
+
+.AMPERAMPER {
+  color: brown;
+}
+
+.OF {
+  color: purple;
+}
+
+.failwith {
+  color: red;
+}
+
+.STRING {
+  color:orange;
+}
+.COMMENT {
+  color: grey;
+}
+.str_item:hover {
+  background-color: lightyellow
+}
+.INT {
+  color: darkred;
+}
+.SEMISEMI {
+  color: maroon;
+}
+
+
 /*---------------------------------------------------------------------------
    Copyright (c) 2016 The odoc contributors
 

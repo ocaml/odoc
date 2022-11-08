@@ -32,7 +32,7 @@ module Html = Tyxml.Html
 let docs_to_html docs =
   let rec doc_to_html doc =
     match doc with
-    | Leaf s -> Html.span ~a:[] [ Html.txt s ]
+    | Leaf s -> Html.txt s
     | Tagged (Types.Token tok, docs) ->
         let children = List.map doc_to_html docs in
         Html.span
