@@ -1,4 +1,4 @@
 val doc_of_locs :
   string ->
-  (Types.src_loc * Location.t) list ->
+  (Types.src_loc * (int * int)) list ->
   [> Html_types.pre ] Tyxml.Html.elt
