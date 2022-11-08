@@ -426,6 +426,12 @@ module Page = struct
     else
       Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex content
         subpages
+
+  and src_page ~config ~ext_prefix src p : Odoc_document.Renderer.page list =
+    let { Page.url; _ } = Doctree.Labels.disambiguate_page p
+    and subpages = [] in
+    let doc = Html_source.doc_of_locs src [] in
+    Html_page.make_src ~config ~url ~ext_prefix [ doc ] subpages
 end
 
 let render ~config page = Page.page ~config page
@@ -433,3 +439,6 @@ let render ~config page = Page.page ~config page
 let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in
   block ~config ~resolve b
+
+let render_src ~config src page ext_prefix =
+  Page.src_page ~config ~ext_prefix src page

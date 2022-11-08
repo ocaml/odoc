@@ -14,3 +14,5 @@ type breadcrumb = {
   name : string;
   kind : Odoc_document.Url.Path.kind;
 }
+
+type src_loc = Token of Parser.token

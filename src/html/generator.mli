@@ -3,6 +3,13 @@ val render :
   Odoc_document.Types.Page.t ->
   Odoc_document.Renderer.page list
 
+val render_src :
+  config:Config.t ->
+  string ->
+  Odoc_document.Types.Page.t ->
+  string ->
+  Odoc_document.Renderer.page list
+
 val doc :
   config:Config.t ->
   xref_base_uri:string ->
