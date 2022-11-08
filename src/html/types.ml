@@ -8,4 +8,5 @@ type toc = {
   href : string;
   children : toc list;
 }
-type src_loc = Token of Parser.token
+
+type src_loc = Token of Syntax_highlighter.token

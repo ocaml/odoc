@@ -1,3 +1,5 @@
+type token = Parser.token
+
 let tag_of_token (tok : Parser.token) =
   match tok with
   | Parser.WITH -> "WITH"
@@ -137,8 +139,8 @@ let syntax_highlighting_locs src =
     in
     match tok with
     | Parser.EOF -> []
-    | Parser.COMMENT (_, loc) as tok -> (Types.Token tok, loc) :: collect lexbuf
-    | tok -> (Types.Token tok, loc) :: collect lexbuf
+    | Parser.COMMENT (_, loc) as tok -> (tok, loc) :: collect lexbuf
+    | tok -> (tok, loc) :: collect lexbuf
   in
   let tokens = collect lexbuf in
   tokens

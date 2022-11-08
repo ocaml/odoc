@@ -1,0 +1,6 @@
+(library
+ (name syntax_highlighter)
+ (public_name odoc.html.syntax_highlighter)
+ (instrumentation
+  (backend bisect_ppx))
+ (libraries tyxml ocaml-compiler-libs.common))

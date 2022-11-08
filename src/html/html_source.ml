@@ -61,5 +61,9 @@ let docs_to_html docs =
   Html.span ~a:[] @@ List.map doc_to_html docs
 
 let doc_of_locs src locs =
-  let locs = locs @ Syntax_highlighter.syntax_highlighting_locs src in
+  let syntax_locs =
+    Syntax_highlighter.syntax_highlighting_locs src
+    |> List.map (fun (x, l) -> (Types.Token x, l))
+  in
+  let locs = locs @ syntax_locs in
   Html.pre ~a:[] [ Html.code ~a:[] [ docs_to_html (doc_of_poses src locs) ] ]

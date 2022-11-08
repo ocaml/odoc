@@ -3,4 +3,4 @@
  (public_name odoc.html)
  (instrumentation
   (backend bisect_ppx))
- (libraries odoc_model odoc_document tyxml ocaml-compiler-libs.common))
+ (libraries odoc_model odoc_document tyxml syntax_highlighter))
