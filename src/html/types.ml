@@ -15,4 +15,4 @@ type breadcrumb = {
   kind : Odoc_document.Url.Path.kind;
 }
 
-type src_loc = Token of Parser.token
+type src_loc = Token of Syntax_highlighter.token

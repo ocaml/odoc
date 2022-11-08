@@ -4,26 +4,18 @@ and 'a source_span = Tagged of 'a * 'a source_document | Leaf of string
 let doc_of_poses src posl =
   let l =
     posl
-    |> List.sort (fun a b ->
-           match (a, b) with
-           | ( (_, { Location.loc_start = l1; loc_end = e1; _ }),
-               (_, { loc_start = l2; loc_end = e2; _ }) ) ->
-               if l1.pos_cnum = l2.pos_cnum then
-                 Int.compare e2.pos_cnum e1.pos_cnum
-                 (* If two intervals open at the same time, we open
-                    first the one that closes last *)
-               else Int.compare l1.pos_cnum l2.pos_cnum)
+    |> List.sort (fun (_, (l1, e1)) (_, (l2, e2)) ->
+           if l1 = l2 then Int.compare e2 e1
+             (* If two intervals open at the same time, we open
+                first the one that closes last *)
+           else Int.compare l1 l2)
   in
-  let get_src a b =
-    let a, b = (a.Lexing.pos_cnum, b.Lexing.pos_cnum) in
-    String.sub src a (b - a)
-  in
+  let get_src a b = String.sub src a (b - a) in
   let leaf = function "" -> [] | s -> [ Leaf s ] in
-  let ( < ) a b = a.Lexing.pos_cnum < b.Lexing.pos_cnum in
-  let min a b = if a < b then a else b in
+  let min (a : int) b = if a < b then a else b in
   let rec extract from to_ list aux =
     match list with
-    | (k, { Location.loc_start; loc_end; _ }) :: q when loc_start < to_ ->
+    | (k, (loc_start, loc_end)) :: q when loc_start < to_ ->
         let loc_end = min loc_end to_ in
         (* In case of inconsistent [a  [b    a] b]
            we do                   [a  [b  b]a] *)
@@ -32,18 +24,7 @@ let doc_of_poses src posl =
         extract loc_end to_ q ([ Tagged (k, List.rev next) ] @ initial @ aux)
     | q -> (leaf (get_src from to_) @ aux, q)
   in
-  let doc, _ =
-    extract
-      Lexing.{ pos_bol = 0; pos_cnum = 0; pos_fname = ""; pos_lnum = 1 }
-      Lexing.
-        {
-          pos_bol = 0;
-          pos_cnum = String.length src;
-          pos_fname = "";
-          pos_lnum = 1;
-        }
-      l []
-  in
+  let doc, _ = extract 0 (String.length src) l [] in
   List.rev doc
 
 module Html = Tyxml.Html
@@ -61,5 +42,10 @@ let docs_to_html docs =
   Html.span ~a:[] @@ List.map doc_to_html docs
 
 let doc_of_locs src locs =
-  let locs = locs @ Syntax_highlighter.syntax_highlighting_locs src in
+  let syntax_locs =
+    Syntax_highlighter.syntax_highlighting_locs src
+    |> List.rev_map (fun (x, l) -> (Types.Token x, l))
+    (* The order won't matter and input can be large *)
+  in
+  let locs = List.rev_append locs syntax_locs in
   Html.pre ~a:[] [ Html.code ~a:[] [ docs_to_html (doc_of_poses src locs) ] ]
