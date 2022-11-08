@@ -130,17 +130,11 @@ let syntax_highlighting_locs src =
   let lexbuf = Lexing.from_string ~with_positions:true src in
   let rec collect lexbuf =
     let tok = Lexer.token_with_comments lexbuf in
-    let loc =
-      {
-        Location.loc_start = lexbuf.lex_start_p;
-        loc_end = lexbuf.lex_curr_p;
-        loc_ghost = false;
-      }
-    in
+    let loc_start, loc_end = (lexbuf.lex_start_p, lexbuf.lex_curr_p) in
     match tok with
     | Parser.EOF -> []
-    | Parser.COMMENT (_, loc) as tok -> (tok, loc) :: collect lexbuf
-    | tok -> (tok, loc) :: collect lexbuf
+    | Parser.COMMENT (_, loc) as tok ->
+        (tok, (loc.loc_start.pos_cnum, loc.loc_end.pos_cnum)) :: collect lexbuf
+    | tok -> (tok, (loc_start.pos_cnum, loc_end.pos_cnum)) :: collect lexbuf
   in
-  let tokens = collect lexbuf in
-  tokens
+  collect lexbuf
