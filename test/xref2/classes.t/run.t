@@ -48,7 +48,8 @@ resolve correctly. All of the 'Class' json objects should contain
         {
           "`Resolved": {
             "`ClassType": [
-              { "`Identifier": { "`Root": [ "None", "B" ] } }, "u"
+              { "`Identifier": { "`Root": [ "None", "B" ] } },
+              "u"
             ]
           }
         },
