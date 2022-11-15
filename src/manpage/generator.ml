@@ -482,7 +482,7 @@ let page p =
     Doctree.PageTitle.render_title p @ Shift.compute ~on_sub p.preamble
   in
   let i = Shift.compute ~on_sub p.items in
-  macro "TH" {|%s 3 "" "Odoc" "OCaml Library"|} p.url.path_fragment
+  macro "TH" {|%s 3 "" "Odoc" "OCaml Library"|} p.url.name
   ++ macro "SH" "Name"
   ++ str "%s" (String.concat "." @@ Link.for_printing p.url)
   ++ macro "SH" "Synopsis" ++ vspace ++ item ~nested:false header

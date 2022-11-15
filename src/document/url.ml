@@ -98,7 +98,7 @@ module Path = struct
     | `Page
     | `LeafPage
     | `ModuleType
-    | `Parameter
+    | `Parameter of int
     | `Class
     | `ClassType
     | `File ]
@@ -108,16 +108,16 @@ module Path = struct
     | `Module -> "module"
     | `LeafPage -> "leaf-page"
     | `ModuleType -> "module-type"
-    | `Parameter -> "argument"
+    | `Parameter arg_num -> Printf.sprintf "argument-%d" arg_num
     | `Class -> "class"
     | `ClassType -> "class-type"
     | `File -> "file"
 
   let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
 
-  type t = { kind : kind; parent : t option; path_fragment : string }
+  type t = { kind : kind; parent : t option; name : string }
 
-  let mk ?parent kind path_fragment = { kind; parent; path_fragment }
+  let mk ?parent kind name = { kind; parent; name }
 
   let rec from_identifier : source -> t =
    fun x ->
@@ -129,8 +129,8 @@ module Path = struct
           | None -> None
         in
         let kind = `Module in
-        let path_fragment = ModuleName.to_string unit_name in
-        mk ?parent kind path_fragment
+        let name = ModuleName.to_string unit_name in
+        mk ?parent kind name
     | { iv = `Page (parent, page_name); _ } ->
         let parent =
           match parent with
@@ -138,8 +138,8 @@ module Path = struct
           | None -> None
         in
         let kind = `Page in
-        let path_fragment = PageName.to_string page_name in
-        mk ?parent kind path_fragment
+        let name = PageName.to_string page_name in
+        mk ?parent kind name
     | { iv = `LeafPage (parent, page_name); _ } ->
         let parent =
           match parent with
@@ -147,36 +147,34 @@ module Path = struct
           | None -> None
         in
         let kind = `LeafPage in
-        let path_fragment = PageName.to_string page_name in
-        mk ?parent kind path_fragment
+        let name = PageName.to_string page_name in
+        mk ?parent kind name
     | { iv = `Module (parent, mod_name); _ } ->
         let parent = from_identifier (parent :> source) in
         let kind = `Module in
-        let path_fragment = ModuleName.to_string mod_name in
-        mk ~parent kind path_fragment
+        let name = ModuleName.to_string mod_name in
+        mk ~parent kind name
     | { iv = `Parameter (functor_id, arg_name); _ } as p ->
         let parent = from_identifier (functor_id :> source) in
-        let kind = `Parameter in
         let arg_num = functor_arg_pos p in
-        let path_fragment =
-          Printf.sprintf "%d-%s" arg_num (ModuleName.to_string arg_name)
-        in
-        mk ~parent kind path_fragment
+        let kind = `Parameter arg_num in
+        let name = ModuleName.to_string arg_name in
+        mk ~parent kind name
     | { iv = `ModuleType (parent, modt_name); _ } ->
         let parent = from_identifier (parent :> source) in
         let kind = `ModuleType in
-        let path_fragment = ModuleTypeName.to_string modt_name in
-        mk ~parent kind path_fragment
+        let name = ModuleTypeName.to_string modt_name in
+        mk ~parent kind name
     | { iv = `Class (parent, name); _ } ->
         let parent = from_identifier (parent :> source) in
         let kind = `Class in
-        let path_fragment = ClassName.to_string name in
-        mk ~parent kind path_fragment
+        let name = ClassName.to_string name in
+        mk ~parent kind name
     | { iv = `ClassType (parent, name); _ } ->
         let parent = from_identifier (parent :> source) in
         let kind = `ClassType in
-        let path_fragment = ClassTypeName.to_string name in
-        mk ~parent kind path_fragment
+        let name = ClassTypeName.to_string name in
+        mk ~parent kind name
     | { iv = `Result p; _ } -> from_identifier (p :> source)
 
   let from_identifier p =
@@ -184,18 +182,17 @@ module Path = struct
       (p : [< source_pv ] Odoc_model.Paths.Identifier.id :> source)
 
   let to_list url =
-    let rec loop acc { parent; path_fragment; kind } =
+    let rec loop acc { parent; name; kind } =
       match parent with
-      | None -> (kind, path_fragment) :: acc
-      | Some p -> loop ((kind, path_fragment) :: acc) p
+      | None -> (kind, name) :: acc
+      | Some p -> loop ((kind, name) :: acc) p
     in
     loop [] url
 
   let of_list l =
     let rec inner parent = function
       | [] -> parent
-      | (kind, path_fragment) :: xs ->
-          inner (Some { parent; path_fragment; kind }) xs
+      | (kind, name) :: xs -> inner (Some { parent; name; kind }) xs
     in
     inner None l
 
@@ -243,13 +240,11 @@ module Anchor = struct
 
   type t = { page : Path.t; anchor : string; kind : kind }
 
-  let anchorify_path { Path.parent; path_fragment; kind } =
+  let anchorify_path { Path.parent; name; kind } =
     match parent with
     | None -> assert false (* We got a root, should never happen *)
     | Some page ->
-        let anchor =
-          Printf.sprintf "%s-%s" (Path.string_of_kind kind) path_fragment
-        in
+        let anchor = Printf.sprintf "%s-%s" (Path.string_of_kind kind) name in
         { page; anchor; kind = (kind :> kind) }
 
   let add_suffix ~kind { page; anchor; _ } suffix =

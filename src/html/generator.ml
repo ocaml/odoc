@@ -403,20 +403,7 @@ module Page = struct
       items ~config ~resolve (Doctree.PageTitle.render_title p @ preamble)
     in
     let content = (items ~config ~resolve i :> any Html.elt list) in
-    let name =
-      match url.kind with
-      | `Parameter ->
-          let i =
-            try String.index url.path_fragment '-'
-            with Not_found ->
-              print_endline url.path_fragment;
-              0
-          in
-          String.sub url.path_fragment (i + 1)
-            (String.length url.path_fragment - i - 1)
-      | _ -> url.path_fragment
-    in
-    Tree.make ~config ~header ~toc ~url ~uses_katex name content subpages
+    Tree.make ~config ~header ~toc ~url ~uses_katex url.name content subpages
 end
 
 let render ~config page = Page.page ~config page
