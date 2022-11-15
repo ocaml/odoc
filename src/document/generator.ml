@@ -72,10 +72,10 @@ let prepare_preamble comment items =
   in
   (Comment.standalone preamble, Comment.standalone first_comment @ items)
 
-let make_expansion_page title kind url comments items =
+let make_expansion_page url comments items =
   let comment = List.concat comments in
   let preamble, items = prepare_preamble comment items in
-  { Page.title; kind; preamble; items; url }
+  { Page.preamble; items; url }
 
 include Generator_signatures
 
@@ -1009,9 +1009,7 @@ module Make (Syntax : SYNTAX) = struct
         | Some csig ->
             let expansion_doc, items = class_signature csig in
             let url = Url.Path.from_identifier t.id in
-            let page =
-              make_expansion_page name `Class url [ t.doc; expansion_doc ] items
-            in
+            let page = make_expansion_page url [ t.doc; expansion_doc ] items in
             ( O.documentedSrc @@ path url [ inline @@ Text name ],
               Some page,
               Some expansion_doc )
@@ -1046,10 +1044,7 @@ module Make (Syntax : SYNTAX) = struct
         | Some csig ->
             let url = Url.Path.from_identifier t.id in
             let expansion_doc, items = class_signature csig in
-            let page =
-              make_expansion_page name `ClassType url [ t.doc; expansion_doc ]
-                items
-            in
+            let page = make_expansion_page url [ t.doc; expansion_doc ] items in
             ( O.documentedSrc @@ path url [ inline @@ Text name ],
               Some page,
               Some expansion_doc )
@@ -1173,9 +1168,7 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier arg.id in
             let modname = path url [ inline @@ Text name ] in
             let type_with_expansion =
-              let content =
-                make_expansion_page name `Argument url [ expansion_doc ] items
-              in
+              let content = make_expansion_page url [ expansion_doc ] items in
               let summary = O.render modtyp in
               let status = `Default in
               let expansion =
@@ -1323,10 +1316,7 @@ module Make (Syntax : SYNTAX) = struct
             in
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
-            let page =
-              make_expansion_page modname `Module url [ t.doc; expansion_doc ]
-                items
-            in
+            let page = make_expansion_page url [ t.doc; expansion_doc ] items in
             (link, status, Some page, Some expansion_doc)
       in
       let intro = O.keyword "module" ++ O.txt " " ++ modname in
@@ -1382,10 +1372,7 @@ module Make (Syntax : SYNTAX) = struct
         | Some (expansion_doc, items) ->
             let url = Url.Path.from_identifier id in
             let link = path url [ inline @@ Text modname ] in
-            let page =
-              make_expansion_page modname `ModuleType url [ doc; expansion_doc ]
-                items
-            in
+            let page = make_expansion_page url [ doc; expansion_doc ] items in
             (link, Some page, Some expansion_doc)
       in
       let summary =
@@ -1659,24 +1646,22 @@ module Make (Syntax : SYNTAX) = struct
       List.map f t
 
     let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) : Page.t =
-      let title = Paths.Identifier.name t.id in
       let url = Url.Path.from_identifier t.id in
       let unit_doc, items =
         match t.content with
         | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
-      make_expansion_page title `Module url [ unit_doc ] items
+      make_expansion_page url [ unit_doc ] items
 
     let page (t : Odoc_model.Lang.Page.t) : Page.t =
-      let name =
-        match t.name.iv with `Page (_, name) | `LeafPage (_, name) -> name
-      in
-      let title = Odoc_model.Names.PageName.to_string name in
+      (*let name =
+          match t.name.iv with `Page (_, name) | `LeafPage (_, name) -> name
+        in*)
+      (*let title = Odoc_model.Names.PageName.to_string name in*)
       let url = Url.Path.from_identifier t.name in
       let preamble, items = Sectioning.docs t.content in
-      let kind = `Page in
-      { Page.title; kind; preamble; items; url }
+      { Page.preamble; items; url }
   end
 
   include Page
