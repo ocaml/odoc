@@ -15,9 +15,8 @@ module Link = struct
     match x.parent with
     | Some p ->
         Fmt.pf ppf "%a-%a-%s" flatten_path p Odoc_document.Url.Path.pp_kind
-          x.kind x.path_fragment
-    | None ->
-        Fmt.pf ppf "%a-%s" Odoc_document.Url.Path.pp_kind x.kind x.path_fragment
+          x.kind x.name
+    | None -> Fmt.pf ppf "%a-%s" Odoc_document.Url.Path.pp_kind x.kind x.name
 
   let page p = Format.asprintf "%a" flatten_path p
 

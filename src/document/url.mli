@@ -17,7 +17,7 @@ module Path : sig
     | `Page
     | `LeafPage
     | `ModuleType
-    | `Parameter
+    | `Parameter of int
     | `Class
     | `ClassType
     | `File ]
@@ -26,7 +26,7 @@ module Path : sig
 
   val string_of_kind : kind -> string
 
-  type t = { kind : kind; parent : t option; path_fragment : string }
+  type t = { kind : kind; parent : t option; name : string }
 
   type source_pv =
     [ Identifier.Page.t_pv

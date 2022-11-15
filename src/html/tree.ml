@@ -43,8 +43,7 @@ let page_creator ~config ~url ~uses_katex name header toc content =
       | Types.Absolute uri -> uri ^ "/" ^ file
       | Relative uri ->
           let page =
-            Odoc_document.Url.Path.
-              { kind = `File; parent = uri; path_fragment = file }
+            Odoc_document.Url.Path.{ kind = `File; parent = uri; name = file }
           in
           Link.href ~config ~resolve:(Current url)
             (Odoc_document.Url.from_path page)
@@ -128,12 +127,12 @@ let page_creator ~config ~url ~uses_katex name header toc content =
     match parents with
     | [] -> [] (* Can't happen - Url.Path.to_list returns a non-empty list *)
     | [ _ ] -> [] (* No parents *)
-    | [ x; { path_fragment = "index"; _ } ] ->
+    | [ x; { name = "index"; _ } ] ->
         (* Special case leaf pages called 'index' with one parent. This is for files called
            index.mld that would otherwise clash with their parent. In particular,
            dune and odig both cause this situation right now. *)
         let up_url = "../index.html" in
-        let parent_name = x.path_fragment in
+        let parent_name = x.name in
         make_navigation ~up_url [ Html.txt parent_name ]
     | _ ->
         let up_url = href ~config (List.hd (List.tl (List.rev parents))) in
@@ -146,11 +145,11 @@ let page_creator ~config ~url ~uses_katex name header toc content =
                ~f:(fun url' ->
                  [
                    [
-                     (if url = url' then Html.txt url.path_fragment
+                     (if url = url' then Html.txt url.name
                      else
                        Html.a
                          ~a:[ Html.a_href (href ~config url') ]
-                         [ Html.txt url'.path_fragment ]);
+                         [ Html.txt url'.name ]);
                    ];
                  ])
           |> List.flatten

@@ -477,7 +477,7 @@ module Odoc_html_args = struct
             ~f:(fun acc seg ->
               Some
                 Odoc_document.Url.Path.
-                  { kind = `Page; parent = acc; path_fragment = seg })
+                  { kind = `Page; parent = acc; name = seg })
             l ~init:None
         in
         `Ok
