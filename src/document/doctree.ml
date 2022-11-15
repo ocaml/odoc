@@ -296,20 +296,19 @@ end = struct
     in
     match kind with
     | `Module -> prefix "Module"
-    | `Argument -> prefix "Parameter"
+    | `Parameter -> prefix "Parameter"
     | `ModuleType -> prefix "Module type"
     | `ClassType -> prefix "Class type"
     | `Class -> prefix "Class"
-    | `Page -> []
+    | `Page | `LeafPage | `File -> []
 
-  let make_name_from_path { Url.Path.name; parent; _ } =
+  let make_name_from_path { Url.Path.path_fragment; parent; _ } =
     match parent with
-    | None | Some { kind = `Page; _ } -> name
-    | Some p -> Printf.sprintf "%s.%s" p.name name
+    | None | Some { kind = `Page; _ } -> path_fragment
+    | Some p -> Printf.sprintf "%s.%s" p.path_fragment path_fragment
 
   let render_title (p : Page.t) =
-    format_title p.kind
-      (make_name_from_path p.url)
+    format_title p.url.kind (make_name_from_path p.url)
 end
 
 module Math : sig

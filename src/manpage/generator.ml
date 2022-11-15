@@ -431,7 +431,7 @@ let rec documentedSrc (l : DocumentedSrc.t) =
           let l = list ~sep:break (List.map f lines) in
           indent 2 (break ++ l) ++ break_if_nonempty rest ++ continue rest)
 
-and subpage { title = _; kind = _; preamble = _; items; url = _ } =
+and subpage { preamble = _; items; url = _ } =
   let content = items in
   let surround body =
     if content = [] then sp else indent 2 (break ++ body) ++ break
@@ -482,7 +482,7 @@ let page p =
     Doctree.PageTitle.render_title p @ Shift.compute ~on_sub p.preamble
   in
   let i = Shift.compute ~on_sub p.items in
-  macro "TH" {|%s 3 "" "Odoc" "OCaml Library"|} p.title
+  macro "TH" {|%s 3 "" "Odoc" "OCaml Library"|} p.url.path_fragment
   ++ macro "SH" "Name"
   ++ str "%s" (String.concat "." @@ Link.for_printing p.url)
   ++ macro "SH" "Synopsis" ++ vspace ++ item ~nested:false header

@@ -15,8 +15,9 @@ module Link = struct
     match x.parent with
     | Some p ->
         Fmt.pf ppf "%a-%a-%s" flatten_path p Odoc_document.Url.Path.pp_kind
-          x.kind x.name
-    | None -> Fmt.pf ppf "%a-%s" Odoc_document.Url.Path.pp_kind x.kind x.name
+          x.kind x.path_fragment
+    | None ->
+        Fmt.pf ppf "%a-%s" Odoc_document.Url.Path.pp_kind x.kind x.path_fragment
 
   let page p = Format.asprintf "%a" flatten_path p
 
@@ -459,8 +460,7 @@ module Page = struct
     List.flatten @@ List.map (subpage ~with_children) subpages
 
   and page ~with_children p =
-    let { Page.title = _; kind = _; preamble; items = i; url } =
-      Doctree.Labels.disambiguate_page p
+    let { Page.preamble; items = i; url } = Doctree.Labels.disambiguate_page p
     and subpages = subpages ~with_children @@ Doctree.Subpages.compute p in
     let i = Doctree.Shift.compute ~on_sub i in
     let header = items (Doctree.PageTitle.render_title p @ preamble) in

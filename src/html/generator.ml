@@ -389,8 +389,7 @@ module Page = struct
     Utils.list_concat_map ~f:(include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page list =
-    let { Page.title; kind = _; preamble; items = i; url } =
-      Doctree.Labels.disambiguate_page p
+    let { Page.preamble; items = i; url } = Doctree.Labels.disambiguate_page p
     and subpages =
       (* Don't use the output of [disambiguate_page] to avoid unecessarily
          mangled labels. *)
@@ -404,7 +403,20 @@ module Page = struct
       items ~config ~resolve (Doctree.PageTitle.render_title p @ preamble)
     in
     let content = (items ~config ~resolve i :> any Html.elt list) in
-    Tree.make ~config ~header ~toc ~url ~uses_katex title content subpages
+    let name =
+      match url.kind with
+      | `Parameter ->
+          let i =
+            try String.index url.path_fragment '-'
+            with Not_found ->
+              print_endline url.path_fragment;
+              0
+          in
+          String.sub url.path_fragment (i + 1)
+            (String.length url.path_fragment - i - 1)
+      | _ -> url.path_fragment
+    in
+    Tree.make ~config ~header ~toc ~url ~uses_katex name content subpages
 end
 
 let render ~config page = Page.page ~config page
