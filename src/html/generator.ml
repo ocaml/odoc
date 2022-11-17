@@ -401,21 +401,13 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
-  let maybe_source ~config ~base_url ~ext = function
-    | Some src ->
-        let name = base_url.Url.Path.name ^ ext in
-        let url = Link.Path.of_source_code ~ext base_url in
-        let doc = Html_source.doc_of_locs src [] in
-        [ Html_page.make_src ~config ~url name [ doc ] ]
-    | None -> []
-
   let rec include_ ~config { Subpage.content; _ } = page ~config content
 
   and subpages ~config subpages =
     Utils.list_concat_map ~f:(include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page list =
-    let { Page.preamble; items = i; url; impl_source; intf_source } =
+    let { Page.preamble; items = i; url } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
@@ -437,11 +429,17 @@ module Page = struct
         Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
           content subpages;
       ]
-      @ maybe_source ~config ~base_url:url ~ext:".ml" impl_source
-      @ maybe_source ~config ~base_url:url ~ext:".mli" intf_source
+
+  let source_page ~config sp =
+    let { Source_page.url; contents } = sp in
+    let name = url.Url.Path.name
+    and doc = Html_source.doc_of_locs contents [] in
+    Html_page.make_src ~config ~url name [ doc ]
 end
 
-let render ~config page = Page.page ~config page
+let render ~config doc =
+  Page.page ~config doc.Document.page
+  @ List.map (Page.source_page ~config) doc.source_pages
 
 let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in

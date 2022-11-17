@@ -459,7 +459,7 @@ module Page = struct
     List.flatten @@ List.map (subpage ~with_children) subpages
 
   and page ~with_children p =
-    let { Page.preamble; items = i; url; impl_source = _; intf_source = _ } =
+    let { Page.preamble; items = i; url } =
       Doctree.Labels.disambiguate_page ~enter_subpages:true p
     and subpages = subpages ~with_children @@ Doctree.Subpages.compute p in
     let i = Doctree.Shift.compute ~on_sub i in
@@ -469,4 +469,4 @@ module Page = struct
     page
 end
 
-let render ~with_children page = [ Page.page ~with_children page ]
+let render ~with_children doc = [ Page.page ~with_children doc.Document.page ]
