@@ -17,7 +17,7 @@ let traverse ~f t =
   in
   List.iter aux t
 
-type 'a t = { name : string; render : 'a -> Types.Page.t -> page list }
+type 'a t = { name : string; render : 'a -> Types.Document.t -> page list }
 
 let document_of_page ~syntax v =
   match syntax with Reason -> Reason.page v | OCaml -> ML.page v

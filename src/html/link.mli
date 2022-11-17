@@ -14,8 +14,4 @@ module Path : sig
   val for_linking : is_flat:bool -> Url.Path.t -> string list
 
   val as_filename : is_flat:bool -> Url.Path.t -> Fpath.t
-
-  val of_source_code : ext:string -> Url.Path.t -> Url.Path.t
-  (** Url of the source file corresponding to the url of a page. [ext] is
-      generally [".ml"] or [".mli"]. *)
 end

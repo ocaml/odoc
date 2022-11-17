@@ -101,7 +101,8 @@ module Path = struct
     | `Parameter of int
     | `Class
     | `ClassType
-    | `File ]
+    | `File
+    | `Source_file ]
 
   let string_of_kind : kind -> string = function
     | `Page -> "page"
@@ -112,6 +113,7 @@ module Path = struct
     | `Class -> "class"
     | `ClassType -> "class-type"
     | `File -> "file"
+    | `Source_file -> "source"
 
   let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
 
@@ -180,6 +182,12 @@ module Path = struct
   let from_identifier p =
     from_identifier
       (p : [< source_pv ] Odoc_model.Paths.Identifier.id :> source)
+
+  let source_file_from_identifier ~ext id =
+    let { Identifier.iv = `Root (_, unit_name); _ } = id in
+    let parent = from_identifier (id :> source) in
+    let file_name = ModuleName.to_string unit_name ^ ext in
+    mk ~parent `Source_file file_name
 
   let to_list url =
     let rec loop acc { parent; name; kind } =

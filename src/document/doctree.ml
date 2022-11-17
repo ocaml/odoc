@@ -307,7 +307,7 @@ end = struct
     | `ModuleType -> prefix "Module type"
     | `ClassType -> prefix "Class type"
     | `Class -> prefix "Class"
-    | `Page | `LeafPage | `File -> []
+    | `Page | `LeafPage | `File | `Source_file -> []
 
   let make_name_from_path { Url.Path.name; parent; _ } =
     match parent with

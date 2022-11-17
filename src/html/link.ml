@@ -6,7 +6,7 @@ module Path = struct
 
   let segment_to_string (kind, name) =
     match kind with
-    | `Module | `Page | `File -> name
+    | `Module | `Page | `File | `Source_file -> name
     | _ -> Format.asprintf "%a-%s" Url.Path.pp_kind kind name
 
   let is_leaf_page url = url.Url.Path.kind = `LeafPage
@@ -15,7 +15,7 @@ module Path = struct
     let l = Url.Path.to_list url in
     let is_dir =
       if is_flat then function `Page -> `Always | _ -> `Never
-      else function `LeafPage -> `Never | `File -> `Never | _ -> `Always
+      else function `LeafPage | `File | `Source_file -> `Never | _ -> `Always
     in
     let dir, file = Url.Path.split ~is_dir l in
     let dir = List.map segment_to_string dir in
@@ -24,6 +24,7 @@ module Path = struct
       | [] -> "index.html"
       | [ (`LeafPage, name) ] -> name ^ ".html"
       | [ (`File, name) ] -> name
+      | [ (`Source_file, name) ] -> name ^ ".html"
       | xs ->
           assert is_flat;
           String.concat "-" (List.map segment_to_string xs) ^ ".html"
@@ -36,11 +37,6 @@ module Path = struct
 
   let as_filename ~is_flat (url : Url.Path.t) =
     Fpath.(v @@ String.concat Fpath.dir_sep @@ for_linking ~is_flat url)
-
-  (** Only work for URLs of pages. *)
-  let of_source_code ~ext base_url =
-    let name = base_url.Url.Path.name ^ ext ^ ".html" in
-    { Url.Path.kind = `File; parent = Some base_url; name }
 end
 
 type resolve = Current of Url.Path.t | Base of string
