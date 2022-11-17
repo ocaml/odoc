@@ -111,7 +111,7 @@ let make_expansion_page title kind url ?(header_title = make_name_from_path url)
   let comment = List.concat comments in
   let preamble, items = prepare_preamble comment items in
   let header = format_title kind header_title @ preamble in
-  { Page.title; header; items; url; impl_source = None; intf_source = None }
+  { Page.title; header; items; url }
 
 include Generator_signatures
 
@@ -1669,10 +1669,22 @@ module Make (Syntax : SYNTAX) = struct
 
   open Module
 
-  module Page : sig
-    val compilation_unit : Lang.Compilation_unit.t -> Page.t
+  module Source_page : sig
+    val source :
+      parent:Paths.Identifier.RootModule.t ->
+      ext:string ->
+      contents:string ->
+      Source_page.t
+  end = struct
+    let source ~parent ~ext ~contents =
+      let url = Url.Path.source_file_from_identifier ~ext parent in
+      { Source_page.url; contents }
+  end
 
-    val page : Lang.Page.t -> Page.t
+  module Page : sig
+    val compilation_unit : Lang.Compilation_unit.t -> Document.t
+
+    val page : Lang.Page.t -> Document.t
   end = struct
     let pack : Odoc_model.Lang.Compilation_unit.Packed.t -> Item.t list =
      fun t ->
@@ -1696,7 +1708,11 @@ module Make (Syntax : SYNTAX) = struct
       in
       List.map f t
 
-    let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) : Page.t =
+    let source_opt parent ~ext = function
+      | Some contents -> [ Source_page.source ~parent ~ext ~contents ]
+      | None -> []
+
+    let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) =
       let title = Paths.Identifier.name t.id in
       let url = Url.Path.from_identifier t.id in
       let unit_doc, items =
@@ -1707,17 +1723,21 @@ module Make (Syntax : SYNTAX) = struct
       let page =
         make_expansion_page title ~header_title:title `Mod url [ unit_doc ]
           items
+      and source_pages =
+        source_opt t.id ~ext:".ml" t.impl_source
+        @ source_opt t.id ~ext:".mli" t.intf_source
       in
-      { page with impl_source = t.impl_source; intf_source = t.intf_source }
+      { Document.page; source_pages }
 
-    let page (t : Odoc_model.Lang.Page.t) : Page.t =
+    let page (t : Odoc_model.Lang.Page.t) =
       let name =
         match t.name.iv with `Page (_, name) | `LeafPage (_, name) -> name
       in
       let title = Odoc_model.Names.PageName.to_string name in
       let url = Url.Path.from_identifier t.name in
       let header, items = Sectioning.docs t.content in
-      { Page.title; header; items; url; impl_source = None; intf_source = None }
+      let page = { Page.title; header; items; url } in
+      { Document.page; source_pages = [] }
   end
 
   include Page

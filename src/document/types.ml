@@ -162,11 +162,18 @@ and Page : sig
     header : Item.t list;
     items : Item.t list;
     url : Url.Path.t;
-    impl_source : string option;
-    intf_source : string option;
   }
 end =
   Page
+
+and Source_page : sig
+  type t = { url : Url.Path.t; contents : string }
+end =
+  Source_page
+
+module Document = struct
+  type t = { page : Page.t; source_pages : Source_page.t list }
+end
 
 let inline ?(attr = []) desc = Inline.{ attr; desc }
 

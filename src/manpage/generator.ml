@@ -476,8 +476,7 @@ let on_sub subp =
   | `Page p -> if Link.should_inline p.Subpage.content.url then Some 1 else None
   | `Include incl -> if inline_subpage incl.Include.status then Some 0 else None
 
-let page
-    { Page.title; header; items = i; url; impl_source = _; intf_source = _ } =
+let page { Page.title; header; items = i; url } =
   reset_heading ();
   let header = Shift.compute ~on_sub header in
   let i = Shift.compute ~on_sub i in
@@ -490,11 +489,13 @@ let page
 
 let rec subpage subp =
   let p = subp.Subpage.content in
-  if Link.should_inline p.url then [] else [ render p ]
+  if Link.should_inline p.url then [] else [ render_page p ]
 
-and render (p : Page.t) =
+and render_page (p : Page.t) =
   let p = Doctree.Labels.disambiguate_page p
   and children = Utils.flatmap ~f:subpage @@ Subpages.compute p in
   let content ppf = Format.fprintf ppf "%a@." Roff.pp (page p) in
   let filename = Link.as_filename p.url in
   { Renderer.filename; content; children }
+
+let render doc = render_page doc.Document.page

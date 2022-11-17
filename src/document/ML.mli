@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val compilation_unit : Odoc_model.Lang.Compilation_unit.t -> Types.Page.t
+val compilation_unit : Odoc_model.Lang.Compilation_unit.t -> Types.Document.t
 
-val page : Odoc_model.Lang.Page.t -> Types.Page.t
+val page : Odoc_model.Lang.Page.t -> Types.Document.t
 (** Convert compilation unit or page models into a document *)

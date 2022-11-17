@@ -102,7 +102,7 @@ module type SYNTAX = sig
 end
 
 module type GENERATOR = sig
-  val compilation_unit : Lang.Compilation_unit.t -> Page.t
+  val compilation_unit : Lang.Compilation_unit.t -> Document.t
 
-  val page : Lang.Page.t -> Page.t
+  val page : Lang.Page.t -> Document.t
 end

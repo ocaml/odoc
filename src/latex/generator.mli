@@ -4,5 +4,5 @@ end
 
 val render :
   with_children:bool ->
-  Odoc_document.Types.Page.t ->
+  Odoc_document.Types.Document.t ->
   Odoc_document.Renderer.page list

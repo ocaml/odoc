@@ -19,7 +19,7 @@ let traverse ~f t =
 
 type 'a t = {
   name : string;
-  render : 'a -> Types.Page.t -> page list;
+  render : 'a -> Types.Document.t -> page list;
 }
 
 let document_of_page ~syntax v =
