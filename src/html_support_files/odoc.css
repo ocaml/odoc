@@ -372,15 +372,15 @@ tt, code, pre {
   font-weight: 400;
 }
 
-pre {
+.odoc pre {
   padding: 0.1em;
   border: 1px solid var(--pre-border-color);
   border-radius: 5px;
   overflow-x: auto;
 }
 
-p code,
-li code {
+.odoc p code,
+.odoc li code {
   background-color: var(--li-code-background);
   color: var(--li-code-color);
   border-radius: 3px;
@@ -391,13 +391,13 @@ p a > code {
   color: var(--link-color);
 }
 
-code {
+.odoc code {
   white-space: pre-wrap;
 }
 
 /* Code blocks (e.g. Examples) */
 
-pre code {
+.odoc pre code {
   font-size: 0.893rem;
 }
 
@@ -777,43 +777,48 @@ td.def-doc *:first-child {
   text-decoration: underline;
 }
 
-.TYPE, .LET, .IN {
+.VAL, .TYPE, .LET, .REC, .IN, .OPEN, .NONREC, .MODULE, .METHOD, .LETOP, .INHERIT, .INCLUDE, .FUNCTOR, .EXTERNAL, .CONSTRAINT, .ASSERT, .AND {
   font-weight: bold;
-  color:#C8AD7F
+  color:#C8AD7F;
 }
 
-.MATCH, .WHEN, .IF, .ELSE, .THEN, .WITH {
+.WITH, .WHILE, .WHEN, .VIRTUAL, .TRY, .TO, .THEN, .STRUCT, .SIG, .PRIVATE, .OF, .NEW, .MUTABLE, .MATCH, .LAZY, .IF, .FUNCTION, .FUN, .FOR, .EXCEPTION, .ELSE, .TO, .DOWNTO, .DO, .DONE, .BEGIN, .AS {
   color: blue;
 }
 
-.AMPERAMPER {
-  color: brown;
+.TRUE, .FALSE {
+  color: green;
 }
 
-.OF {
-  color: purple;
-}
-
-.failwith {
+.failwith, .INT, .SEMISEMI {
   color: red;
 }
 
-.STRING {
-  color:orange;
+.STRING, .CHAR {
+  color: darkgoldenrod;
 }
+
+.DOCSTRING {
+  color: orange;
+}
+
 .COMMENT {
   color: grey;
 }
-.str_item:hover {
-  background-color: lightyellow
-}
-.INT {
-  color: darkred;
-}
-.SEMISEMI {
-  color: maroon;
+
+.source_link {
+  position:  absolute;
+  top: 1px;
+  right: 1px;
 }
 
+.source_link::before {
+  content: "Source";
+}
+
+.odoc-spec {
+  position: relative;
+}
 
 /*---------------------------------------------------------------------------
    Copyright (c) 2016 The odoc contributors
