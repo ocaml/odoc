@@ -142,9 +142,8 @@ and Item : sig
     anchor : Url.Anchor.t option;
     content : 'a;
     doc : Block.t;
+    source_anchor : Url.Anchor.t option;
   }
-
-  type declaration = DocumentedSrc.t item
 
   type text = Block.t
 

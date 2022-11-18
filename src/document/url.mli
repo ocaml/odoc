@@ -74,7 +74,8 @@ module Anchor : sig
     | `Method
     | `Val
     | `Constructor
-    | `Field ]
+    | `Field
+    | `SourceLine ]
 
   val pp_kind : Format.formatter -> kind -> unit
 
@@ -90,6 +91,9 @@ module Anchor : sig
   }
 
   val from_identifier : Identifier.t -> (t, Error.t) result
+
+  val source_file_from_identifier :
+    ext:string -> Identifier.t -> Odoc_model.Location_.span -> t option
 
   val polymorphic_variant :
     type_ident:Identifier.t ->
