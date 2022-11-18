@@ -1,0 +1,11 @@
+; Tests related to linking to source code
+
+(env
+ (_
+  (binaries
+   (../odoc_print/odoc_print.exe as odoc_print))))
+
+(cram
+ (enabled_if
+  (>= %{ocaml_version} 4.04.1))
+ (deps %{bin:odoc} %{bin:odoc_print}))
