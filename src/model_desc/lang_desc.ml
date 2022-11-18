@@ -674,6 +674,8 @@ and compilation_unit_content =
 
 and compilation_unit_t =
   let open Lang.Compilation_unit in
+  (* Only show the presence of source code. *)
+  let source_code = To_string (fun _ -> "<source code>") in
   Record
     [
       F ("id", (fun t -> t.id), identifier);
@@ -689,6 +691,8 @@ and compilation_unit_t =
         ( "canonical",
           (fun t -> (t.canonical :> Paths.Path.t option)),
           Option path );
+      F ("impl_source", (fun t -> t.impl_source), Option source_code);
+      F ("intf_source", (fun t -> t.intf_source), Option source_code);
     ]
 
 (** {3 Page} *)
