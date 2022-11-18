@@ -1,10 +1,17 @@
 (rule
  (action
   (with-stdout-to
-   manpage.mld
+   manpage.gen.mld
    (pipe-stdout
     (run odoc)
     (run gen_manpage/gen_manpage.exe)))))
+
+(rule
+ (alias runtest)
+ (enabled_if
+  (> %{ocaml_version} 4.10))
+ (action
+  (diff manpage.mld manpage.gen.mld)))
 
 (documentation
  (package odoc)
