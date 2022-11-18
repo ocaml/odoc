@@ -11,4 +11,6 @@ type toc = {
   children : toc list;
 }
 
-type src_loc = Token of Syntax_highlighter.token
+type src_loc =
+  | Token of Syntax_highlighter.token
+  | Line of Source_line_splitting.line

@@ -38,6 +38,9 @@ let docs_to_html docs =
         Html.span
           ~a:[ Html.a_class [ Syntax_highlighter.tag_of_token tok ] ]
           children
+    | Tagged (Types.Line l, docs) ->
+        let children = List.map doc_to_html docs in
+        Html.span ~a:[ Html.a_id (Printf.sprintf "L%d" l) ] children
   in
   Html.span ~a:[] @@ List.map doc_to_html docs
 
@@ -47,5 +50,10 @@ let doc_of_locs src locs =
     |> List.rev_map (fun (x, l) -> (Types.Token x, l))
     (* The order won't matter and input can be large *)
   in
+  let lines_locs =
+    Source_line_splitting.lines_locs src
+    |> List.rev_map (fun (x, l) -> (Types.Line x, l))
+  in
   let locs = List.rev_append locs syntax_locs in
+  let locs = List.rev_append locs lines_locs in
   Html.pre ~a:[] [ Html.code ~a:[] [ docs_to_html (doc_of_poses src locs) ] ]
