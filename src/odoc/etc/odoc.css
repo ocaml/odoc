@@ -372,15 +372,15 @@ tt, code, pre {
   font-weight: 400;
 }
 
-pre {
+.odoc pre {
   padding: 0.1em;
   border: 1px solid var(--pre-border-color);
   border-radius: 5px;
   overflow-x: auto;
 }
 
-p code,
-li code {
+.odoc p code,
+.odoc li code {
   background-color: var(--li-code-background);
   color: var(--li-code-color);
   border-radius: 3px;
@@ -391,13 +391,13 @@ p a > code {
   color: var(--link-color);
 }
 
-code {
+.odoc code {
   white-space: pre-wrap;
 }
 
 /* Code blocks (e.g. Examples) */
 
-pre code {
+.odoc pre code {
   font-size: 0.893rem;
 }
 
@@ -814,6 +814,15 @@ td.def-doc *:first-child {
   color: maroon;
 }
 
+.source_link {
+  position:  absolute;
+  top: 1px;
+  right: 1px;
+}
+
+.source_link::before {
+  content: "Source"
+}
 
 /*---------------------------------------------------------------------------
    Copyright (c) 2016 The odoc contributors

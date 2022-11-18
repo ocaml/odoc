@@ -46,11 +46,7 @@ let mk_link_to_source ~config ~resolve anchor =
   | None -> []
   | Some url ->
       let href = Link.href ~config ~resolve url in
-      [
-        Html.a
-          ~a:[ Html.a_href href; Html.a_class [ "source_link" ] ]
-          [ Html.txt "Link to source" ];
-      ]
+      [ Html.a ~a:[ Html.a_href href; Html.a_class [ "source_link" ] ] [] ]
 
 let class_ (l : Class.t) = if l = [] then [] else [ Html.a_class l ]
 
