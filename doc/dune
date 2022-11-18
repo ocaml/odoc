@@ -1,10 +1,10 @@
 (rule
+ (deps
+  (package odoc))
  (action
   (with-stdout-to
    manpage.gen.mld
-   (pipe-stdout
-    (run odoc)
-    (run gen_manpage/gen_manpage.exe)))))
+   (run gen_manpage/gen_manpage.exe))))
 
 (rule
  (alias runtest)
