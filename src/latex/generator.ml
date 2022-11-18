@@ -405,14 +405,21 @@ and items l =
         elts |> continue_with rest
     | Heading h :: rest -> heading h |> continue_with rest
     | Include
-        { attr = _; anchor; doc; content = { summary; status = _; content } }
+        {
+          attr = _;
+          source_anchor = _;
+          anchor;
+          doc;
+          content = { summary; status = _; content };
+        }
       :: rest ->
         let included = items content in
         let docs = block ~in_source:true doc in
         let summary = source (inline ~verbatim:false ~in_source:true) summary in
         let content = included in
         label anchor @ docs @ summary @ content |> continue_with rest
-    | Declaration { Item.attr = _; anchor; content; doc } :: rest ->
+    | Declaration { Item.attr = _; source_anchor = _; anchor; content; doc }
+      :: rest ->
         let content = label anchor @ documentedSrc content in
         let elts =
           match doc with

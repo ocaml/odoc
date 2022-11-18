@@ -41,6 +41,17 @@ let mk_anchor anchor =
       let extra_class = [ "anchored" ] in
       (extra_attr, extra_class, link)
 
+let mk_link_to_source ~config ~resolve anchor =
+  match anchor with
+  | None -> []
+  | Some url ->
+      let href = Link.href ~config ~resolve url in
+      [
+        Html.a
+          ~a:[ Html.a_href href; Html.a_class [ "source_link" ] ]
+          [ Html.txt "Link to source" ];
+      ]
+
 let class_ (l : Class.t) = if l = [] then [] else [ Html.a_class l ]
 
 let inline_math (s : Math.t) =
@@ -299,7 +310,14 @@ and items ~config ~resolve l : item Html.elt list =
         (continue_with [@tailcall]) rest content
     | Heading h :: rest ->
         (continue_with [@tailcall]) rest [ heading ~config ~resolve h ]
-    | Include { attr; anchor; doc; content = { summary; status; content } }
+    | Include
+        {
+          attr;
+          anchor;
+          source_anchor;
+          doc;
+          content = { summary; status; content };
+        }
       :: rest ->
         let doc = spec_doc_div ~config ~resolve doc in
         let included_html = (items content :> item Html.elt list) in
@@ -312,8 +330,11 @@ and items ~config ~resolve l : item Html.elt list =
             let open' = if open' then [ Html.a_open () ] else [] in
             let summary =
               let extra_attr, extra_class, anchor_link = mk_anchor anchor in
+              let link_to_source =
+                mk_link_to_source ~config ~resolve source_anchor
+              in
               let a = spec_class (attr @ extra_class) @ extra_attr in
-              Html.summary ~a @@ anchor_link
+              Html.summary ~a @@ anchor_link @ link_to_source
               @ source (inline ~config ~resolve) summary
             in
             let inner =
@@ -331,10 +352,13 @@ and items ~config ~resolve l : item Html.elt list =
           | `Default -> details ~open':(Config.open_details config)
         in
         (continue_with [@tailcall]) rest content
-    | Declaration { Item.attr; anchor; content; doc } :: rest ->
+    | Declaration { Item.attr; anchor; source_anchor; content; doc } :: rest ->
         let extra_attr, extra_class, anchor_link = mk_anchor anchor in
+        let link_to_source = mk_link_to_source ~config ~resolve source_anchor in
         let a = spec_class (attr @ extra_class) @ extra_attr in
-        let content = anchor_link @ documentedSrc ~config ~resolve content in
+        let content =
+          anchor_link @ link_to_source @ documentedSrc ~config ~resolve content
+        in
         let spec =
           let doc = spec_doc_div ~config ~resolve doc in
           [ div ~a:[ Html.a_class [ "odoc-spec" ] ] (div ~a content :: doc) ]

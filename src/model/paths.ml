@@ -55,7 +55,7 @@ module Identifier = struct
 
   let rec root id =
     match id.iv with
-    | `Root _ as root -> Some root
+    | `Root _ as root -> Some { id with iv = root }
     | `Module (parent, _) -> root (parent :> t)
     | `Parameter (parent, _) -> root (parent :> t)
     | `Result x -> root (x :> t)

@@ -381,7 +381,7 @@ module Identifier : sig
 
   val name : [< t_pv ] id -> string
 
-  val root : [< t_pv ] id -> RootModule.t_pv option
+  val root : [< t_pv ] id -> RootModule.t_pv id option
 
   val compare : t -> t -> int
 
