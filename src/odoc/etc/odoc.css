@@ -821,7 +821,11 @@ td.def-doc *:first-child {
 }
 
 .source_link::before {
-  content: "Source"
+  content: "Source";
+}
+
+.odoc-spec {
+  position: relative;
 }
 
 /*---------------------------------------------------------------------------
