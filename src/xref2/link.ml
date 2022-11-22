@@ -66,6 +66,31 @@ let check_ambiguous_label ~loc env
         | xs -> ambiguous_label_warning label_name xs)
     | Ok _ | Error `Not_found -> ()
 
+let expansion_needed self target =
+  let self = (self :> Paths.Path.Resolved.t) in
+  let hidden_alias = Paths.Path.Resolved.is_hidden self
+  and self_canonical =
+    let i = Paths.Path.Resolved.(identifier self) in
+    i = (target :> Paths.Identifier.t)
+  in
+  self_canonical || hidden_alias
+
+module Lookup_expansions : sig
+  val in_sig : Signature.t -> (Id.Module.t * Paths.Path.Module.t) list
+  (** Lookup module aliases that have an expansion and returns their ID and the
+      target path. *)
+end = struct
+  let rec in_sig_item = function
+    | Signature.Module (_, m) -> (
+        match m.Module.type_ with
+        | Alias (path, Some _) -> [ (m.id, path) ]
+        | Alias (_, None) | ModuleType _ -> [])
+    | Include inc -> in_sig inc.Include.expansion.content
+    | _ -> []
+
+  and in_sig sg = Utils.concat_map [] in_sig_item sg.Signature.items
+end
+
 exception Loop
 
 let rec is_forward : Paths.Path.Module.t -> bool = function
@@ -307,12 +332,38 @@ and open_ env parent = function
 
 let rec unit env t =
   let open Compilation_unit in
-  let content =
+  let expansions, content =
     match t.content with
-    | Module sg -> Module (signature env (t.id :> Id.Signature.t) sg)
-    | Pack _ as p -> p
+    | Module sg ->
+        let sg = signature env (t.id :> Id.Signature.t) sg in
+        (Lookup_expansions.in_sig sg, Module sg)
+    | Pack _ as p -> ([], p)
   in
-  { t with content; linked = true }
+  let module M = Id.Maps.Module in
+  let sources =
+    (* Lookup the source code of every expansion after making sure there are no
+       duplicates. Sources code of expanded modules is relocated under the new
+       canonical id. *)
+    let open Source_code in
+    let add_sources =
+      List.fold_left (fun acc src -> M.add src.parent src acc)
+    in
+    List.fold_left
+      (fun acc (id, target_path) ->
+        match Paths.Path.Module.root target_path with
+        | _ when M.mem id acc -> acc
+        | Some root -> (
+            match Env.lookup_root_module root env with
+            | Some (Env.Resolved unit) ->
+                add_sources acc
+                  (List.map (fun src -> { src with parent = id }) unit.sources)
+            | Some Forward | None -> acc)
+        | None -> acc)
+      (add_sources M.empty t.sources)
+      expansions
+  in
+  let sources = M.fold (fun _ src acc -> src :: acc) sources [] in
+  { t with content; linked = true; sources }
 
 and value_ env parent t =
   let open Value in
@@ -475,15 +526,7 @@ and module_ : Env.t -> Module.t -> Module.t =
     let type_ =
       match type_ with
       | Alias (`Resolved p, _) ->
-          let hidden_alias =
-            Paths.Path.Resolved.Module.is_hidden ~weak_canonical_test:false p
-          in
-          let self_canonical =
-            let i = Paths.Path.Resolved.(identifier (p :> t)) in
-            i = (m.id :> Paths.Identifier.t)
-          in
-          let expansion_needed = self_canonical || hidden_alias in
-          if expansion_needed then
+          if expansion_needed p m.id then
             let cp = Component.Of_Lang.(resolved_module_path (empty ()) p) in
             match
               Tools.expansion_of_module_path ~strengthen:false env
@@ -725,16 +768,7 @@ and module_type_expr :
     | Some e, _ ->
         Some (simple_expansion env (id :> Paths.Identifier.Signature.t) e)
     | None, Some (`Resolved p_path) ->
-        let hidden_alias =
-          Paths.Path.Resolved.ModuleType.is_hidden ~weak_canonical_test:false
-            p_path
-        in
-        let self_canonical =
-          let i = Paths.Path.Resolved.(identifier (p_path :> t)) in
-          (id :> Id.t) = i
-        in
-        let expansion_needed = self_canonical || hidden_alias in
-        if expansion_needed then
+        if expansion_needed p_path id then
           let cp =
             Component.Of_Lang.(resolved_module_type_path (empty ()) p_path)
           in

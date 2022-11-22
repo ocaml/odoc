@@ -41,3 +41,13 @@ module EitherMonad = struct
 
   let of_result = function Result.Ok x -> Right x | Error y -> Left y
 end
+
+let rec concat_map acc f = function
+  | hd :: tl -> concat_map (List.rev_append (f hd) acc) f tl
+  | [] -> List.rev acc
+
+let rec filter_map acc f = function
+  | hd :: tl ->
+      let acc = match f hd with Some x -> x :: acc | None -> acc in
+      filter_map acc f tl
+  | [] -> List.rev acc

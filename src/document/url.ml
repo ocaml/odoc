@@ -186,9 +186,8 @@ module Path = struct
       (p : [< source_pv ] Odoc_model.Paths.Identifier.id :> source)
 
   let source_file_from_identifier ~ext id =
-    let { Identifier.iv = `Root (_, unit_name); _ } = id in
     let parent = from_identifier (id :> source) in
-    let file_name = ModuleName.to_string unit_name ^ ext in
+    let file_name = Identifier.name id ^ ext in
     mk ~parent `Source_file file_name
 
   let to_list url =

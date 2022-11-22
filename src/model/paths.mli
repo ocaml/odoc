@@ -497,6 +497,8 @@ module rec Path : sig
       val is_hidden : t -> weak_canonical_test:bool -> bool
 
       val identifier : t -> Identifier.Path.Module.t
+
+      val root : t -> string option
     end
 
     module ModuleType : sig
@@ -528,10 +530,14 @@ module rec Path : sig
     type t = Paths_types.Resolved_path.any
 
     val identifier : t -> Identifier.t
+
+    val is_hidden : t -> bool
   end
 
   module Module : sig
     type t = Paths_types.Path.module_
+
+    val root : t -> string option
   end
 
   module ModuleType : sig

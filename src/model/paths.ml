@@ -721,6 +721,20 @@ module Path = struct
         | `Apply (m, _) -> r m
         | `Alias (dest, _src) -> r dest
         | `OpaqueModule m -> r m
+
+      let rec root : t -> string option = function
+        | `Identifier id -> (
+            match Identifier.root (id :> Identifier.t) with
+            | Some root -> Some (Identifier.name root)
+            | None -> None)
+        | `Subst (_, p)
+        | `Hidden p
+        | `Module (p, _)
+        | `Canonical (p, _)
+        | `Apply (p, _)
+        | `Alias (p, _)
+        | `OpaqueModule p ->
+            root p
     end
 
     module ModuleType = struct
@@ -780,10 +794,22 @@ module Path = struct
       | `CanonicalType (p, _) -> identifier (p :> t)
       | `OpaqueModule m -> identifier (m :> t)
       | `OpaqueModuleType mt -> identifier (mt :> t)
+
+    let is_hidden r = is_resolved_hidden ~weak_canonical_test:false r
   end
 
   module Module = struct
     type t = Paths_types.Path.module_
+
+    let rec root : t -> string option = function
+      | `Resolved r -> Resolved.Module.root r
+      | `Identifier (id, _) -> (
+          match Identifier.root (id :> Identifier.t) with
+          | Some root -> Some (Identifier.name root)
+          | None -> None)
+      | `Root s -> Some s
+      | `Forward _ -> None
+      | `Dot (p, _) | `Apply (p, _) -> root p
   end
 
   module ModuleType = struct

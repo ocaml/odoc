@@ -1672,7 +1672,7 @@ module Make (Syntax : SYNTAX) = struct
 
   module Source_page : sig
     val source :
-      parent:Paths.Identifier.RootModule.t ->
+      parent:Paths.Identifier.Module.t ->
       ext:string ->
       contents:string ->
       Source_page.t
@@ -1687,11 +1687,10 @@ module Make (Syntax : SYNTAX) = struct
 
     val page : Lang.Page.t -> Document.t
   end = struct
-    let pack : Odoc_model.Lang.Compilation_unit.Packed.t -> Item.t list =
+    let pack : Lang.Compilation_unit.Packed.t -> Item.t list =
      fun t ->
-      let open Odoc_model.Lang in
       let f x =
-        let id = x.Compilation_unit.Packed.id in
+        let id = x.Lang.Compilation_unit.Packed.id in
         let modname = Paths.Identifier.name id in
         let md_def =
           O.keyword "module" ++ O.txt " " ++ O.txt modname ++ O.txt " = "
@@ -1713,6 +1712,10 @@ module Make (Syntax : SYNTAX) = struct
       | Some contents -> [ Source_page.source ~parent ~ext ~contents ]
       | None -> []
 
+    let source { Lang.Source_code.parent; intf_source; impl_source } =
+      source_opt parent ~ext:".ml" impl_source
+      @ source_opt parent ~ext:".mli" intf_source
+
     let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) =
       let title = Paths.Identifier.name t.id in
       let url = Url.Path.from_identifier t.id in
@@ -1724,10 +1727,7 @@ module Make (Syntax : SYNTAX) = struct
       let page =
         make_expansion_page title ~header_title:title `Mod url [ unit_doc ]
           items
-      and source_pages =
-        source_opt t.id ~ext:".ml" t.impl_source
-        @ source_opt t.id ~ext:".mli" t.intf_source
-      in
+      and source_pages = List.concat @@ List.map source t.sources in
       { Document.page; source_pages }
 
     let page (t : Odoc_model.Lang.Page.t) =

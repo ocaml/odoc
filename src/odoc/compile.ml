@@ -58,6 +58,10 @@ let read_source_file file =
            msg (Fs.File.to_string file));
       None
 
+let read_source_file_opt = function
+  | Some file -> read_source_file file
+  | None -> None
+
 let parent resolver parent_cli_spec =
   let find_parent :
       Paths.Reference.t -> (Lang.Page.t, [> `Msg of string ]) Result.result =
@@ -99,13 +103,7 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
   let filename = Fs.File.to_string input_file in
   (* [impl_shape] is used to lookup locations in the implementation. It is
      useless if no source code is given on command line. *)
-  let should_read_impl_shape, impl_source =
-    match impl_source with
-    | Some file -> (true, read_source_file file)
-    | None -> (false, None)
-  and intf_source =
-    match intf_source with Some file -> read_source_file file | None -> None
-  in
+  let should_read_impl_shape = impl_source <> None in
   let unit, impl_shape =
     match input_type with
     | `Cmti ->
@@ -128,6 +126,15 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
         in
         (unit, None)
   in
+  let sources =
+    match
+      (read_source_file_opt impl_source, read_source_file_opt intf_source)
+    with
+    | None, None -> []
+    | impl_source, intf_source ->
+        let parent = (unit.id :> Paths.Identifier.Module.t) in
+        [ { Lang.Source_code.parent; intf_source; impl_source } ]
+  in
   if not unit.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
       (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
@@ -135,12 +142,7 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
         Printf.sprintf " Using %S while you should use the .cmti file" filename);
   (* Resolve imports, used by the [link-deps] command. *)
   let unit =
-    {
-      unit with
-      imports = resolve_imports resolver unit.imports;
-      impl_source;
-      intf_source;
-    }
+    { unit with imports = resolve_imports resolver unit.imports; sources }
   in
   let env = Resolver.build_compile_env_for_unit resolver impl_shape unit in
   let compiled =
