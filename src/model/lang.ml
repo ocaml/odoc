@@ -27,6 +27,14 @@ module Locations = struct
   let empty = { impl = None; intf = None }
 end
 
+module Source_code = struct
+  type t = {
+    parent : Identifier.Module.t;
+    intf_source : string option;
+    impl_source : string option;
+  }
+end
+
 (** {3 Modules} *)
 
 module rec Module : sig
@@ -483,8 +491,7 @@ module rec Compilation_unit : sig
     expansion : Signature.t option;
     linked : bool;  (** Whether this unit has been linked. *)
     canonical : Path.Module.t option;
-    impl_source : string option;
-    intf_source : string option;
+    sources : Source_code.t list;
   }
 end =
   Compilation_unit
