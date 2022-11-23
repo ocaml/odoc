@@ -45,7 +45,7 @@ let rec drop_shared_prefix l1 l2 =
   | l1 :: l1s, l2 :: l2s when l1 = l2 -> drop_shared_prefix l1s l2s
   | _, _ -> (l1, l2)
 
-let href ~(config : Config.t) ~resolve t =
+let href ~config ~resolve t =
   let { Url.Anchor.page; anchor; _ } = t in
 
   let target_loc = Path.for_linking ~is_flat:(Config.flat config) page in
