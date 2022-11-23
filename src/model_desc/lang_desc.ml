@@ -23,6 +23,7 @@ let locations =
   let open Lang.Locations in
   Record
     [
+      F ("source_parent", (fun t -> t.source_parent), identifier);
       F ("impl", (fun t -> t.impl), Option location);
       F ("intf", (fun t -> t.intf), Option location);
     ]
@@ -45,7 +46,7 @@ and module_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("locs", (fun t -> t.locs), locations);
+      F ("locs", (fun t -> t.locs), Option locations);
       F ("doc", (fun t -> t.doc), docs);
       F ("type_", (fun t -> t.type_), module_decl);
       F
@@ -179,7 +180,7 @@ and moduletype_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("locs", (fun t -> t.locs), locations);
+      F ("locs", (fun t -> t.locs), Option locations);
       F ("doc", (fun t -> t.doc), docs);
       F
         ( "canonical",

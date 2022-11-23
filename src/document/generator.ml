@@ -1354,7 +1354,11 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "module" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
-      let source_anchor = path_to_source_id t.id t.locs in
+      let source_anchor =
+        match t.locs with
+        | Some locs -> path_to_source_id t.id locs
+        | None -> None
+      in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
     and simple_expansion_in_decl (base : Paths.Identifier.Module.t) se =
@@ -1425,7 +1429,11 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "module-type" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
-      let source_anchor = path_to_source_id t.id t.locs in
+      let source_anchor =
+        match t.locs with
+        | Some locs -> path_to_source_id t.id locs
+        | None -> None
+      in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
     and umty_hidden : Odoc_model.Lang.ModuleType.U.expr -> bool = function

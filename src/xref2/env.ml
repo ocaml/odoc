@@ -356,13 +356,17 @@ let add_extension_constructor identifier
 
 let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
+  let id = (unit.id :> Paths.Identifier.Module.t) in
+  let locs =
+    Some { Lang.Locations.source_parent = id; impl = None; intf = None }
+  in
   match unit.content with
   | Module s ->
       let m =
         Lang.Module.
           {
-            id = (unit.id :> Paths.Identifier.Module.t);
-            locs = Lang.Locations.empty;
+            id;
+            locs;
             doc = [];
             type_ = ModuleType (Signature s);
             canonical = unit.canonical;
@@ -375,8 +379,8 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
       let m =
         Lang.Module.
           {
-            id = (unit.id :> Paths.Identifier.Module.t);
-            locs = Lang.Locations.empty;
+            id;
+            locs;
             doc = [];
             type_ =
               ModuleType (Signature { items = []; compiled = true; doc = [] });
@@ -592,26 +596,22 @@ let lookup_fragment_root env =
       result
   | None -> None
 
+let mk_functor_parameter module_type =
+  let type_ = Component.Module.ModuleType module_type in
+  Component.Module.
+    { locs = None; doc = []; type_; canonical = None; hidden = false }
+
 let add_functor_parameter : Lang.FunctorParameter.t -> t -> t =
  fun p t ->
   match p with
   | Unit -> t
   | Named n ->
+      let id = (n.id :> Paths.Identifier.Path.Module.t) in
       let m =
-        Component.Module.
-          {
-            locs = Lang.Locations.empty;
-            doc = [];
-            type_ =
-              ModuleType Component.Of_Lang.(module_type_expr (empty ()) n.expr);
-            canonical = None;
-            hidden = false;
-          }
+        let open Component.Of_Lang in
+        mk_functor_parameter (module_type_expr (empty ()) n.expr)
       in
-      add_module
-        (n.id :> Paths.Identifier.Path.Module.t)
-        (Component.Delayed.put_val m)
-        [] t
+      add_module id (Component.Delayed.put_val m) [] t
 
 let add_functor_args' :
     Paths.Identifier.Signature.t -> Component.ModuleType.expr -> t -> t =
@@ -625,21 +625,16 @@ let add_functor_args' :
               ( parent,
                 Ident.Name.typed_functor_parameter
                   arg.Component.FunctorParameter.id ),
-            {
-              Component.Module.locs = Lang.Locations.empty;
-              doc = [];
-              type_ = ModuleType arg.expr;
-              canonical = None;
-              hidden = false;
-            } )
+            mk_functor_parameter arg.expr )
           :: find_args (Paths.Identifier.Mk.result parent) res
       | ModuleType.Functor (Unit, res) ->
           find_args (Paths.Identifier.Mk.result parent) res
       | _ -> []
     in
-    (* We substituted back the parameters as identifiers to maintain the invariant that
-       components in the environment are 'self-contained' - that is, they only contain
-       local idents for things that are declared within themselves *)
+    (* We substituted back the parameters as identifiers to maintain the
+       invariant that components in the environment are 'self-contained' - that
+       is, they only contain local idents for things that are declared within
+       themselves *)
     let fold_fn (env, subst) (ident, identifier, m) =
       let ident, identifier =
         ((ident, identifier) :> Ident.path_module * Identifier.Path.Module.t)
@@ -770,7 +765,7 @@ let open_module_type_substitution : Lang.ModuleTypeSubstitution.t -> t -> t =
     module_type (empty ())
       {
         id = t.id;
-        locs = Lang.Locations.empty;
+        locs = None;
         doc = t.doc;
         expr = Some t.manifest;
         canonical = None;

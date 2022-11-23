@@ -18,13 +18,13 @@ open Paths
 
 module Locations = struct
   type t = {
+    source_parent : Identifier.Module.t;
+        (** Correspond to where the source code is stored. Might be different from the root component of the identifier inside expansions. *)
     impl : Location_.span option;
         (** Location of the definition in the implementation file. *)
     intf : Location_.span option;
         (** Location of the declaration in the interface file. *)
   }
-
-  let empty = { impl = None; intf = None }
 end
 
 module Source_code = struct
@@ -44,7 +44,8 @@ module rec Module : sig
 
   type t = {
     id : Identifier.Module.t;
-    locs : Locations.t;
+    locs : Locations.t option;
+        (** Locations might not be set when the module is artificially constructed from a functor argument. *)
     doc : Comment.docs;
     type_ : decl;
     canonical : Path.Module.t option;
@@ -121,7 +122,8 @@ and ModuleType : sig
 
   type t = {
     id : Identifier.ModuleType.t;
-    locs : Locations.t;
+    locs : Locations.t option;
+        (** Can be [None] for module types created by a type substitution. *)
     doc : Comment.docs;
     canonical : Path.ModuleType.t option;
     expr : expr option;

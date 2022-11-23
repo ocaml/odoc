@@ -35,6 +35,18 @@ module Identifier : sig
     val compare : t -> t -> int
   end
 
+  module RootModule : sig
+    type t = Paths_types.Identifier.root_module
+
+    type t_pv = Paths_types.Identifier.root_module_pv
+
+    val equal : t -> t -> bool
+
+    val hash : t -> int
+
+    val compare : t -> t -> int
+  end
+
   module Signature : sig
     type t = Paths_types.Identifier.signature
 
@@ -45,6 +57,8 @@ module Identifier : sig
     val hash : t -> int
 
     val compare : t -> t -> int
+
+    val root : [< t_pv ] id -> RootModule.t
   end
 
   module ClassSignature : sig
@@ -95,18 +109,6 @@ module Identifier : sig
     val compare : t -> t -> int
   end
 
-  module RootModule : sig
-    type t = Paths_types.Identifier.root_module
-
-    type t_pv = Paths_types.Identifier.root_module_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-  end
-
   module Module : sig
     type t = Paths_types.Identifier.module_
 
@@ -117,6 +119,8 @@ module Identifier : sig
     val hash : t -> int
 
     val compare : t -> t -> int
+
+    val root : t -> RootModule.t
   end
 
   module FunctorParameter : sig
@@ -334,6 +338,8 @@ module Identifier : sig
       val hash : t -> int
 
       val compare : t -> t -> int
+
+      val root : t -> RootModule.t
     end
 
     module ModuleType : sig
