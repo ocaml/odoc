@@ -18,7 +18,7 @@ module Html = Tyxml.Html
 
 let html_of_toc toc =
   let open Types in
-  let rec section section =
+  let rec section (section : toc) =
     let link = Html.a ~a:[ Html.a_href section.href ] section.title in
     match section.children with [] -> [ link ] | cs -> [ link; sections cs ]
   and sections the_sections =
@@ -30,13 +30,54 @@ let html_of_toc toc =
   | [] -> []
   | _ -> [ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] [ sections toc ] ]
 
-let page_creator ~config ~url ~uses_katex name header toc content =
+let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
+  let make_navigation ~up_url rest =
+    [
+      Html.nav
+        ~a:[ Html.a_class [ "odoc-nav" ] ]
+        ([ Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ]; Html.txt " – " ]
+        @ rest);
+    ]
+  in
+  match List.rev breadcrumbs with
+  | [] -> [] (* Can't happen - there's always the current page's breadcrumb. *)
+  | [ _ ] -> [] (* No parents *)
+  | [ { name = "index"; _ }; x ] ->
+      (* Special case leaf pages called 'index' with one parent. This is for files called
+          index.mld that would otherwise clash with their parent. In particular,
+          dune and odig both cause this situation right now. *)
+      let up_url = "../index.html" in
+      let parent_name = x.name in
+      make_navigation ~up_url [ Html.txt parent_name ]
+  | current :: up :: bs ->
+      let space = Html.txt " " in
+      let sep = [ space; Html.entity "#x00BB"; space ] in
+      let html =
+        (* Create breadcrumbs *)
+        Utils.list_concat_map ?sep:(Some sep)
+          ~f:(fun (breadcrumb : Types.breadcrumb) ->
+            [
+              [
+                Html.a
+                  ~a:[ Html.a_href breadcrumb.href ]
+                  [ Html.txt breadcrumb.name ];
+              ];
+            ])
+          (up :: bs)
+        |> List.flatten
+      in
+      make_navigation ~up_url:up.href
+        (List.rev html @ sep @ [ Html.txt current.name ])
+
+let page_creator ~config ~url ~uses_katex header breadcrumbs toc content =
   let theme_uri = Config.theme_uri config in
   let support_uri = Config.support_uri config in
   let path = Link.Path.for_printing url in
 
   let head : Html_types.head Html.elt =
-    let title_string = Printf.sprintf "%s (%s)" name (String.concat "." path) in
+    let title_string =
+      Printf.sprintf "%s (%s)" url.name (String.concat "." path)
+    in
 
     let file_uri base file =
       match base with
@@ -99,89 +140,20 @@ let page_creator ~config ~url ~uses_katex name header toc content =
     Html.head (Html.title (Html.txt title_string)) meta_elements
   in
 
-  let gen_breadcrumbs () =
-    let rec get_parents x =
-      match x with
-      | [] -> []
-      | x :: xs -> (
-          match Odoc_document.Url.Path.of_list (List.rev (x :: xs)) with
-          | Some x -> x :: get_parents xs
-          | None -> get_parents xs)
-    in
-    let parents =
-      get_parents (List.rev (Odoc_document.Url.Path.to_list url)) |> List.rev
-    in
-    let href page =
-      Link.href ~resolve:(Current url) (Odoc_document.Url.from_path page)
-    in
-    let make_navigation ~up_url breadcrumbs =
-      [
-        Html.nav
-          ~a:[ Html.a_class [ "odoc-nav" ] ]
-          ([
-             Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ]; Html.txt " – ";
-           ]
-          @ breadcrumbs);
-      ]
-    in
-    match parents with
-    | [] -> [] (* Can't happen - Url.Path.to_list returns a non-empty list *)
-    | [ _ ] -> [] (* No parents *)
-    | [ x; { name = "index"; _ } ] ->
-        (* Special case leaf pages called 'index' with one parent. This is for files called
-           index.mld that would otherwise clash with their parent. In particular,
-           dune and odig both cause this situation right now. *)
-        let up_url = "../index.html" in
-        let parent_name = x.name in
-        make_navigation ~up_url [ Html.txt parent_name ]
-    | _ ->
-        let up_url = href ~config (List.hd (List.tl (List.rev parents))) in
-        let l =
-          (* Create breadcrumbs *)
-          let space = Html.txt " " in
-          parents
-          |> Utils.list_concat_map
-               ?sep:(Some [ space; Html.entity "#x00BB"; space ])
-               ~f:(fun url' ->
-                 [
-                   [
-                     (if url = url' then Html.txt url.name
-                     else
-                       Html.a
-                         ~a:[ Html.a_href (href ~config url') ]
-                         [ Html.txt url'.name ]);
-                   ];
-                 ])
-          |> List.flatten
-        in
-        make_navigation ~up_url l
-  in
-
-  let breadcrumbs =
-    if Config.omit_breadcrumbs config then [] else gen_breadcrumbs ()
-  in
-  let toc = if Config.omit_toc config then [] else html_of_toc toc in
   let body =
-    breadcrumbs
+    html_of_breadcrumbs breadcrumbs
     @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
-    @ toc
+    @ html_of_toc toc
     @ [ Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content ]
   in
-  let htmlpp_elt = Html.pp_elt ~indent:(Config.indent config) () in
   let htmlpp = Html.pp ~indent:(Config.indent config) () in
-  if Config.content_only config then
-    let content ppf =
-      htmlpp_elt ppf (Html.div ~a:[ Html.a_class [ "odoc" ] ] body)
-    in
-    content
-  else
-    let html = Html.html head (Html.body ~a:[ Html.a_class [ "odoc" ] ] body) in
-    let content ppf = htmlpp ppf html in
-    content
+  let html = Html.html head (Html.body ~a:[ Html.a_class [ "odoc" ] ] body) in
+  let content ppf = htmlpp ppf html in
+  content
 
-let make ~config ~url ~header ~toc ~uses_katex title content children =
+let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex content children =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
   let content =
-    page_creator ~config ~url ~uses_katex title header toc content
+    page_creator ~config ~url ~uses_katex header breadcrumbs toc content
   in
   [ { Odoc_document.Renderer.filename; content; children } ]

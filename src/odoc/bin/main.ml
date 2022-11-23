@@ -510,36 +510,30 @@ module Odoc_html_args = struct
 
   let flat =
     let doc =
-      "Output HTML files in 'flat' mode, where the heirarchy of modules / \
+      "Output HTML files in 'flat' mode, where the hierarchy of modules / \
        module types / classes and class types are reflected in the filenames \
-       rather than in the directory structure"
+       rather than in the directory structure."
     in
     Arg.(value & flag & info ~docs ~doc [ "flat" ])
 
-  let omit_breadcrumbs =
-    let doc = "Don't emit the breadcrumbs navigation element" in
-    Arg.(value & flag & info ~docs ~doc [ "omit-breadcrumbs" ])
-
-  let omit_toc =
-    let doc = "Don't emit the table of contents div" in
-    Arg.(value & flag & info ~docs ~doc [ "omit-toc" ])
-
-  let content_only =
+  let as_json =
     let doc =
-      "Only emit the content of the page, not the html, head and body elements"
+      "EXPERIMENTAL: Output HTML files in 'embeddable json' mode, where HTML \
+       fragments (preamble, content) together with metadata (uses_katex, \
+       breadcrumbs, table of contents) are emitted in JSON format."
     in
-    Arg.(value & flag & info ~docs ~doc [ "content-only" ])
+    Arg.(value & flag & info ~doc [ "as-json" ])
 
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri flat
-        omit_breadcrumbs omit_toc content_only =
+        as_json =
       let open_details = not closed_details in
       Odoc_html.Config.v ~theme_uri ~support_uri ~semantic_uris ~indent ~flat
-        ~open_details ~omit_breadcrumbs ~omit_toc ~content_only ()
+        ~open_details ~as_json ()
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ flat $ omit_breadcrumbs $ omit_toc $ content_only)
+      $ support_uri $ flat $ as_json)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)

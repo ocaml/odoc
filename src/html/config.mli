@@ -9,9 +9,7 @@ val v :
   indent:bool ->
   flat:bool ->
   open_details:bool ->
-  omit_breadcrumbs:bool ->
-  omit_toc:bool ->
-  content_only:bool ->
+  as_json:bool ->
   unit ->
   t
 
@@ -27,8 +25,4 @@ val flat : t -> bool
 
 val open_details : t -> bool
 
-val omit_breadcrumbs : t -> bool
-
-val omit_toc : t -> bool
-
-val content_only : t -> bool
+val as_json : t -> bool

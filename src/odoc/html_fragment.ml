@@ -26,8 +26,7 @@ let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
     let page = Odoc_document.Comment.to_ir resolved.content in
     let config =
       Odoc_html.Config.v ~semantic_uris:false ~indent:false ~flat:false
-        ~open_details:false ~omit_breadcrumbs:false ~omit_toc:false
-        ~content_only:false ()
+        ~open_details:false ~as_json:false ()
     in
     let html = Odoc_html.Generator.doc ~config ~xref_base_uri page in
     let oc = open_out (Fs.File.to_string output) in
