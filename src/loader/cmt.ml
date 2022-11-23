@@ -25,14 +25,19 @@ open Odoc_model.Lang
 
 module Env = Ident_env
 
-let read_locations_impl loc =
-  { Locations.impl = Some (Doc_attr.read_location loc); intf = None }
+let read_locations_impl parent loc =
+  let source_parent =
+    match Identifier.root parent with
+    | Some sp -> (sp :> Identifier.Module.t)
+    | None -> assert false
+  and impl = Some (Doc_attr.read_location loc) in
+  { Locations.source_parent; impl; intf = None }
 
 let read_core_type env ctyp =
   Cmi.read_type_expr env ctyp.ctyp_type
 
 let rec read_pattern env parent doc pat =
-  let locs = {Locations.impl= None; intf= Some (Doc_attr.read_location pat.pat_loc)} in
+  let locs id = read_locations_impl id pat.pat_loc in
   let open Signature in
     match pat.pat_desc with
     | Tpat_any -> []
@@ -42,14 +47,14 @@ let rec read_pattern env parent doc pat =
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          [Value {id; locs; doc; type_; value}]
+          [Value {id; locs = locs id; doc; type_; value}]
     | Tpat_alias(pat, id, _) ->
         let open Value in
         let id = Env.find_value_identifier env id in
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          Value {id; locs; doc; type_; value} :: read_pattern env parent doc pat
+          Value {id; locs = locs id; doc; type_; value} :: read_pattern env parent doc pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
         List.concat (List.map (read_pattern env parent doc) pats)
@@ -327,7 +332,7 @@ let rec read_class_expr env parent params cl =
 let read_class_declaration env parent cld =
   let open Class in
   let id = Env.find_class_identifier env cld.ci_id_class in
-  let locs = read_locations_impl cld.ci_loc in
+  let locs = read_locations_impl id cld.ci_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cld.ci_attributes in
     Cmi.mark_class_declaration cld.ci_decl;
@@ -432,7 +437,7 @@ and read_module_binding env parent mb =
   let id = Env.find_module_identifier env mb.mb_id in
 #endif
   let id = (id :> Identifier.Module.t) in
-  let locs = {Locations.impl= None; intf= Some (Doc_attr.read_location mb.mb_loc)} in
+  let locs = Some (read_locations_impl id mb.mb_loc) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mb.mb_attributes in
   let type_, canonical =

@@ -33,12 +33,18 @@ let covariant_equation =
 let invariant_equation =
   mk_equation [ { desc = Var "'a"; variance = None; injectivity = true } ]
 
+let root =
+  let name = ModuleName.make_std "Stdlib" in
+  Paths.Identifier.Mk.root (None, name)
+
+let locations = { Locations.source_parent = root; impl = None; intf = None }
+
 let mk_type ?(doc = empty_doc) ?(eq = nullary_equation) ?repr id =
-  let locs = Locations.empty and canonical = None in
+  let locs = locations and canonical = None in
   { TypeDecl.id; locs; doc; canonical; equation = eq; representation = repr }
 
 let mk_exn ~args id =
-  let locs = Locations.empty
+  let locs = locations
   and doc = empty_doc
   and args = TypeDecl.Constructor.Tuple args
   and res = None in

@@ -76,7 +76,7 @@ module rec Module : sig
     | ModuleType of ModuleType.expr
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t;
+    locs : Odoc_model.Lang.Locations.t option;
     doc : CComment.docs;
     type_ : decl;
     canonical : Odoc_model.Paths.Path.Module.t option;
@@ -231,7 +231,7 @@ and ModuleType : sig
     | TypeOf of typeof_t
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t;
+    locs : Odoc_model.Lang.Locations.t option;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.ModuleType.t option;
     expr : expr option;
@@ -2323,12 +2323,11 @@ module Of_Lang = struct
   and module_of_module_substitution ident_map
       (t : Odoc_model.Lang.ModuleSubstitution.t) =
     let manifest = module_path ident_map t.manifest in
-    let canonical = None in
     {
-      Module.locs = Lang.Locations.empty;
+      Module.locs = None;
       doc = docs ident_map t.doc;
       type_ = Alias (manifest, None);
-      canonical;
+      canonical = None;
       hidden = false;
     }
 
@@ -2433,7 +2432,7 @@ end
 
 let module_of_functor_argument (arg : FunctorParameter.parameter) =
   {
-    Module.locs = Odoc_model.Lang.Locations.empty;
+    Module.locs = None;
     doc = [];
     type_ = ModuleType arg.expr;
     canonical = None;

@@ -45,9 +45,12 @@ unresolved in the paths though:
       ]
     },
     "locs": {
-      "impl": "None",
-      "intf": {
-        "Some": "File \"main__Container.mli\", line 10, characters 2-14"
+      "Some": {
+        "source_parent": { "`Root": [ "None", "Main__Container" ] },
+        "impl": "None",
+        "intf": {
+          "Some": "File \"main__Container.mli\", line 10, characters 2-14"
+        }
       }
     },
     "doc": [],
@@ -94,8 +97,11 @@ unresolved in the paths though:
   {
     "id": { "`Module": [ { "`Root": [ "None", "Main" ] }, "Container" ] },
     "locs": {
-      "impl": { "Some": "File \"main.ml\", line 3, characters 0-28" },
-      "intf": { "Some": "File \"main.ml\", line 3, characters 0-28" }
+      "Some": {
+        "source_parent": { "`Root": [ "None", "Main" ] },
+        "impl": { "Some": "File \"main.ml\", line 3, characters 0-28" },
+        "intf": "None"
+      }
     },
     "doc": [],
     "type_": {
@@ -140,9 +146,12 @@ unresolved in the paths though:
       ]
     },
     "locs": {
-      "impl": "None",
-      "intf": {
-        "Some": "File \"main__Container.mli\", line 10, characters 2-14"
+      "Some": {
+        "source_parent": { "`Root": [ "None", "Main__Container" ] },
+        "impl": "None",
+        "intf": {
+          "Some": "File \"main__Container.mli\", line 10, characters 2-14"
+        }
       }
     },
     "doc": [],
@@ -222,6 +231,9 @@ unresolved in the paths though:
                         ]
                       },
                       "locs": {
+                        "source_parent": {
+                          "`Root": [ "None", "Main__Container" ]
+                        },
                         "impl": "None",
                         "intf": {
                           "Some":

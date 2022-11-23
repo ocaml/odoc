@@ -342,7 +342,7 @@ and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
-  let locs = locations env (m.id :> Id.t) m.locs in
+  let locs = Opt.map (locations env (m.id :> Id.t)) m.locs in
   if m.hidden then m
   else { m with locs; type_ = module_decl env (m.id :> Id.Signature.t) m.type_ }
 
@@ -363,7 +363,7 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
   let open ModuleType in
-  let locs = locations env m.id m.locs in
+  let locs = Opt.map (locations env m.id) m.locs in
   let sg_id = (m.id :> Id.Signature.t) in
   let expr =
     match m.expr with
