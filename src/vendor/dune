@@ -1,5 +1,7 @@
 (rule
  (alias runtest)
+ (enabled_if
+  (> %{ocaml_version} 4.08))
  (deps
   (:x odoc_vendor.ml)
   (glob_files *.js)
