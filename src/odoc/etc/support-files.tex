@@ -1,0 +1,88 @@
+% Helper files for transforming the test files into a pdf
+% compile with
+% TEXINPUTS=${TEXINPUTS}:test_package+ml/ xelatex visualizer.tex
+%
+\documentclass{book}
+
+\usepackage{fontspec}
+\usepackage{xunicode}
+
+\usepackage{changepage}
+\usepackage{longtable}
+\usepackage{listings}
+\usepackage[strings]{underscore}
+
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{color}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+
+\newcommand{\ocamlcodefragment}[1]{{\ttfamily\setlength{\parindent}{0cm}%
+\raggedright#1}}
+\newcommand{\ocamlinlinecode}[1]{{\ttfamily#1}}
+\newcommand{\bold}[1]{{\bfseries#1}}
+\newenvironment{ocamlexception}{\bfseries}{}
+\newenvironment{ocamlextension}{\bfseries}{}
+
+\newenvironment{ocamlkeyword}{\bfseries}{}
+
+\newenvironment{ocamlconstructor}{\bfseries}{}
+\newenvironment{ocamltype-var}{\itshape\ttfamily}{}
+
+\newcommand{\ocamlhighlight}{\bfseries\uline}
+\newcommand{\ocamlerror}{\bfseries}
+\newcommand{\ocamlwarning}{\bfseries}
+
+\newcommand{\ocamltag}[2]{\begin{ocaml#1}#2\end{ocaml#1}}
+
+\definecolor{lightgray}{gray}{0.97}
+\definecolor{gray}{gray}{0.5}
+\newcommand{\ocamlcomment}{\color{gray}\normalfont\small}
+\newcommand{\ocamlstring}{\color{gray}\bfseries}
+\newenvironment{ocamlindent}{\begin{adjustwidth}{2em}{0pt}}{\end{adjustwidth}}
+\newenvironment{ocamltabular}[1]{\begin{tabular}{#1}}%
+{\end{tabular}}
+
+\lstnewenvironment{ocamlcodeblock}{
+  \lstset{
+    backgroundcolor = \color{lightgray},
+    basicstyle=\ttfamily,
+    showstringspaces=false,
+    language=caml,
+    escapeinside={$}{$},
+    columns=fullflexible,
+    stringstyle=\ocamlstring,
+    commentstyle=\ocamlcomment,
+    keepspaces=true,
+    keywordstyle=\ocamlkeyword,
+    moredelim=[is][\ocamlhighlight]{<<}{>>},
+    moredelim=[s][\ocamlstring]{\{|}{|\}},
+    moredelim=[s][\ocamlstring]{\{delimiter|}{|delimiter\}},
+    keywords={[2]{val,initializer,nonrec}}, keywordstyle={[2]\ocamlkeyword},
+    belowskip=0\baselineskip,
+    upquote=true,
+    literate={'"'}{\textquotesingle "\textquotesingle}3
+    {'\\"'}{\textquotesingle \textbackslash"\textquotesingle}4,
+  }
+  }{}
+  \newcommand{\inputchapter}[1]{\chapter{#1}
+    \input{#1}}
+ \begin{document}
+\inputchapter{Recent}
+\inputchapter{Recent_impl}
+\inputchapter{Val}
+\inputchapter{Markup}
+\inputchapter{Section}
+\inputchapter{Module}
+\inputchapter{Include}
+\inputchapter{Include2}
+\inputchapter{Mld}
+\inputchapter{Nested}
+\inputchapter{External}
+\inputchapter{Functor}
+\inputchapter{Class}
+\inputchapter{Stop}
+\inputchapter{Bugs}
+\inputchapter{Bugs_pre_410}
+\inputchapter{Alias}
+\end{document}
