@@ -6,8 +6,12 @@
    manpage.gen.mld
    (run gen_manpage/gen_manpage.exe))))
 
+; Ideally, this would be run with the other tests. Currently depend on the
+; exact output of 'odoc --help', which is not stable and would break the test
+; too often.
+
 (rule
- (alias runtest)
+ (alias docmanpage)
  (enabled_if
   (> %{ocaml_version} 4.10))
  (action
