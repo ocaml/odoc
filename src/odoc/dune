@@ -25,4 +25,13 @@
  (package odoc)
  (section share)
  (files
-  (../html_support_files/odoc.css as odoc-theme/default/odoc.css)))
+  (../html_support_files/odoc.css as odoc-theme/default/odoc.css)
+  (../html_support_files/fonts/FiraMono-Regular.woff2
+   as
+   odoc-theme/default/fonts/FiraMono-Regular.woff2)
+  (../html_support_files/fonts/FiraSans-Regular.woff2
+   as
+   odoc-theme/default/fonts/FiraSans-Regular.woff2)
+  (../html_support_files/fonts/NoticiaText-Regular.ttf
+   as
+   odoc-theme/default/fonts/NoticiaText-Regular.ttf)))

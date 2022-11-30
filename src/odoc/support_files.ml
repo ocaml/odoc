@@ -1,5 +1,10 @@
 let should_include ~without_theme file =
-  if without_theme then match file with "odoc.css" -> false | _ -> true
+  if without_theme then
+    match file with
+    | "odoc.css" | "fonts/FiraMono-Regular.woff2"
+    | "fonts/FiraSans-Regular.woff2" | "fonts/NoticiaText-Regular.ttf" ->
+        false
+    | _ -> true
   else true
 
 let iter_files f ?(without_theme = false) output_directory =

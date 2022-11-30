@@ -2,6 +2,8 @@
   $ find with-theme | sort
   with-theme
   with-theme/fonts
+  with-theme/fonts/FiraMono-Regular.woff2
+  with-theme/fonts/FiraSans-Regular.woff2
   with-theme/fonts/KaTeX_AMS-Regular.woff2
   with-theme/fonts/KaTeX_Caligraphic-Bold.woff2
   with-theme/fonts/KaTeX_Caligraphic-Regular.woff2
@@ -22,6 +24,7 @@
   with-theme/fonts/KaTeX_Size3-Regular.woff2
   with-theme/fonts/KaTeX_Size4-Regular.woff2
   with-theme/fonts/KaTeX_Typewriter-Regular.woff2
+  with-theme/fonts/NoticiaText-Regular.ttf
   with-theme/highlight.pack.js
   with-theme/katex.min.css
   with-theme/katex.min.js
