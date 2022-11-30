@@ -4,9 +4,23 @@
    %%NAME%% %%VERSION%% */
 
 /* Fonts */
-@import url('https://fonts.googleapis.com/css?family=Fira+Mono:400,500');
-@import url('https://fonts.googleapis.com/css?family=Noticia+Text:400,400i,700');
-@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,500,500i,600,600i,700,700i');
+@font-face {
+  font-family: 'Noticia Text';
+  font-weight: 400;
+  src: url('fonts/NoticiaText-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Fira Mono';
+  font-weight: 400;
+  src: url('fonts/FiraMono-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Fira Sans';
+  font-weight: 400;
+  src: url('fonts/FiraSans-Regular.woff2') format('woff2');
+}
 
 :root,
 .light:root {
