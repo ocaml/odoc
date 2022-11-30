@@ -1,3 +1,6 @@
+; Support files for the generated HTML. See the LICENSE file for the licence
+; informations of the vendored projects.
+
 (rule
  (alias runtest)
  (enabled_if
