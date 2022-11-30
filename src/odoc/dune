@@ -25,7 +25,4 @@
  (package odoc)
  (section share)
  (files
-  (../html_support_files/odoc.css as odoc-theme/default/odoc.css)
-  (../html_support_files/highlight.pack.js
-   as
-   odoc-theme/default/highlight.pack.js)))
+  (../html_support_files/odoc.css as odoc-theme/default/odoc.css)))
