@@ -1,12 +1,12 @@
-; Support files for the generated HTML. See the LICENSE file for the licence
-; informations of the vendored projects.
+; Support files for the generated HTML. See the LICENSE file for the licences
+; of the vendored projects.
 
 (rule
  (alias runtest)
  (enabled_if
   (> %{ocaml_version} 4.08))
  (deps
-  (:x odoc_vendor.ml)
+  (:x odoc_html_support_files.ml)
   (glob_files *.js)
   (glob_files *.css)
   (glob_files_rec *.woff2))
@@ -19,6 +19,6 @@
    (diff? %{x} %{x}.corrected))))
 
 (library
- (name odoc_vendor)
- (public_name odoc.vendor)
+ (name odoc_html_support_files)
+ (public_name odoc.html_support_files)
  (wrapped false))

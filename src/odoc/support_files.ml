@@ -1,15 +1,18 @@
+let should_include ~without_theme file =
+  if without_theme then match file with "odoc.css" -> false | _ -> true
+  else true
+
 let iter_files f ?(without_theme = false) output_directory =
   let file name content =
     let name = Fs.File.create ~directory:output_directory ~name in
     f name content
   in
-  if not without_theme then file "odoc.css" Css_file.content;
-  let files = Odoc_vendor.file_list in
+  let files = Odoc_html_support_files.file_list in
   List.iter
     (fun f ->
-      match Odoc_vendor.read f with
-      | Some content -> file f content
-      | None -> ())
+      match Odoc_html_support_files.read f with
+      | Some content when should_include ~without_theme f -> file f content
+      | _ -> ())
     files
 
 let write =

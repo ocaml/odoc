@@ -1,1 +1,1 @@
-../../../src/vendor/highlight.pack.js
+../../../src/html_support_files/highlight.pack.js
