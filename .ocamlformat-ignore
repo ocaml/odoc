@@ -6,5 +6,5 @@ src/loader/cmti.ml
 src/loader/doc_attr.ml
 src/loader/*.cppo.ml
 src/model/*.cppo.ml
-src/vendor/*.ml
+src/html_support_files/*.ml
 test/xref2/lib/*

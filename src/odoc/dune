@@ -5,10 +5,10 @@
   compiler-libs.common
   fpath
   odoc_html
-  odoc_manpage
+  odoc_html_support_files
   odoc_latex
-  odoc_vendor
   odoc_loader
+  odoc_manpage
   odoc_model
   odoc_xref2
   tyxml
@@ -19,23 +19,13 @@
 (documentation
  (package odoc))
 
-(rule
- (targets css_file.ml)
- (deps
-  (:css etc/odoc.css))
- (action
-  (with-stdout-to
-   %{targets}
-   (progn
-    (echo "let content = {css|")
-    (cat %{css})
-    (echo "|css}")))))
-
 ; Install theme files for odig.
 
 (install
  (package odoc)
  (section share)
  (files
-  (etc/odoc.css as odoc-theme/default/odoc.css)
-  (../vendor/highlight.pack.js as odoc-theme/default/highlight.pack.js)))
+  (../html_support_files/odoc.css as odoc-theme/default/odoc.css)
+  (../html_support_files/highlight.pack.js
+   as
+   odoc-theme/default/highlight.pack.js)))
