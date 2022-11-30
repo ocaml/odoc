@@ -1,7 +1,7 @@
 Test the JSON output in the presence of expanded modules.
 
-  $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
-  $ ocamlc -c main.ml -bin-annot -I .
+  $ ocamlc -c -bin-annot -o main__A.cmo a.ml -I .
+  $ ocamlc -c -bin-annot main.ml -I .
   $ odoc compile -I . main__A.cmt
   $ odoc compile -I . main.cmt
   $ odoc link -I . main.odoc
