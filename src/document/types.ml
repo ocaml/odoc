@@ -161,7 +161,12 @@ end =
   Page
 
 and Source_page : sig
-  type t = { url : Url.Path.t; contents : string }
+  type code = span list
+  and span =
+    | Tagged_code of Source_info.Types.info * code
+    | Plain_code of string
+
+  type t = { url : Url.Path.t; contents : code }
 end =
   Source_page
 

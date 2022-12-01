@@ -459,8 +459,7 @@ module Page = struct
 
   and source_page ~config sp =
     let { Source_page.url; contents } = sp in
-    let name = url.Url.Path.name
-    and doc = Html_source.doc_of_locs contents [] in
+    let name = url.Url.Path.name and doc = Html_source.html_of_doc contents in
     Html_page.make_src ~config ~url name [ doc ]
 end
 

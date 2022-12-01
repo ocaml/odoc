@@ -1,7 +1,3 @@
-type line = int
-
-let tag_of_line line = line
-
 let lines_locs src =
   let lines = String.split_on_char '\n' src in
   let _, poses, _ =
@@ -13,3 +9,6 @@ let lines_locs src =
       (1, [], 0) lines
   in
   poses
+
+let split src = lines_locs src |> List.rev_map (fun (x, y) -> (Types.Line x, y))
+(* The order won't matter *)
