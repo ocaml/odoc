@@ -1,0 +1,4 @@
+(library
+ (name source_info)
+ (public_name odoc.source_info)
+ (libraries ocaml-compiler-libs.common syntax_highlighter))

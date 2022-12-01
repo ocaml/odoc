@@ -193,13 +193,53 @@ module Make (Syntax : SYNTAX) = struct
           unresolved [ inline @@ Text txt ]
   end
 
+  module Impl = struct
+    let doc_of_poses src posl =
+      let l =
+        posl
+        |> List.sort (fun (_, (l1, e1)) (_, (l2, e2)) ->
+               if l1 = l2 then Int.compare e2 e1
+                 (* If two intervals open at the same time, we open
+                    first the one that closes last *)
+               else Int.compare l1 l2)
+      in
+      let get_src a b = String.sub src a (b - a) in
+      let plain_code = function
+        | "" -> []
+        | s -> [ Types.Source_page.Plain_code s ]
+      in
+      let min (a : int) b = if a < b then a else b in
+      let rec extract from to_ list aux =
+        match list with
+        | (k, (loc_start, loc_end)) :: q when loc_start < to_ ->
+            let loc_end = min loc_end to_ in
+            (* In case of inconsistent [a  [b    a] b]
+               we do                   [a  [b  b]a] *)
+            let initial = plain_code (get_src from loc_start) in
+            let next, q = extract loc_start loc_end q [] in
+            extract loc_end to_ q
+              ([ Types.Source_page.Tagged_code (k, List.rev next) ]
+              @ initial @ aux)
+        | q -> (plain_code (get_src from to_) @ aux, q)
+      in
+      let doc, _ = extract 0 (String.length src) l [] in
+      List.rev doc
+
+    let impl src =
+      let syntax_locs = Source_info.Syntax.highlight src in
+      let lines_locs = Source_info.Lines.split src in
+      let locs = List.rev_append lines_locs syntax_locs in
+      doc_of_poses src locs
+  end
+
   module Source_page : sig
     val source : Lang.Source_code.t -> Source_page.t list
   end = struct
     let source_opt parent ~ext = function
       | Some contents ->
           let source ~parent ~ext ~contents =
-            let url = Url.Path.source_file_from_identifier ~ext parent in
+            let url = Url.Path.source_file_from_identifier ~ext parent
+            and contents = Impl.impl contents in
             { Source_page.url; contents }
           in
           [ source ~parent ~ext ~contents ]
