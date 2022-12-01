@@ -1,7 +1,17 @@
 Additions
 - New (experimental!) option `--as-json` for the HTML renderer that emits HTML
   fragments (preamble, content) together with metadata (table of contents,
-  breadcrumbs, whether katex is used) in JSON format.
+  breadcrumbs, whether katex is used) in JSON format. (@sabine, #908)
+- New maths support via `{m ... }` and `{math ... }` tags. (@giltho, @gpetiot, #886)
+- Various optimisations (@jonludlam, #870, #883)
+- Better handling of alerts and deprecation notices. (@panglesd, #828)
+- Handle language tags on code blocks (@julow, #848)
+
+Bugfixes
+- Shadowing issues (@jonludlam, #853)
+- Layout fixes and improvements (@panglesd, #832, #839, #847) 
+- Handle comments on class constraints and inherit (@julow, #844)
+- Disable the missing root warning (@jonludlam, #881)
 
 2.1.0
 -----
