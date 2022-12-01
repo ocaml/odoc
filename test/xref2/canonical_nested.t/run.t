@@ -147,7 +147,9 @@ unresolved in the paths though:
     },
     "locs": {
       "Some": {
-        "source_parent": { "`Root": [ "None", "Main__Container" ] },
+        "source_parent": {
+          "`Module": [ { "`Root": [ "None", "Main" ] }, "Container" ]
+        },
         "impl": "None",
         "intf": {
           "Some": "File \"main__Container.mli\", line 10, characters 2-14"
@@ -232,7 +234,20 @@ unresolved in the paths though:
                       },
                       "locs": {
                         "source_parent": {
-                          "`Root": [ "None", "Main__Container" ]
+                          "`Module": [
+                            {
+                              "`Module": [
+                                {
+                                  "`Module": [
+                                    { "`Root": [ "None", "Main" ] },
+                                    "Container"
+                                  ]
+                                },
+                                "Test"
+                              ]
+                            },
+                            "B"
+                          ]
                         },
                         "impl": "None",
                         "intf": {

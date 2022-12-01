@@ -151,8 +151,8 @@ type 'a amb_err = [ `Ambiguous of 'a * 'a list ]
 
 type t = {
   linking : bool;
-  (* True if this is a linking environment - if not,
-     we only put in modules, module types, types, classes and class types *)
+  (* True if this is a linking environment - if not, we only put in modules,
+     module types, types, classes and class types *)
   id : int;
   elts : ElementsByName.t;
       (** Elements mapped by their name. Queried with {!find_by_name}. *)
@@ -162,6 +162,7 @@ type t = {
   resolver : resolver option;
   recorder : recorder option;
   fragmentroot : (int * Component.Signature.t) option;
+  source_parent : Identifier.Module.t option;  (** Root holding source code. *)
 }
 
 let is_linking env = env.linking
@@ -198,11 +199,16 @@ let empty =
     recorder = None;
     ambiguous_labels = Identifier.Maps.Label.empty;
     fragmentroot = None;
+    source_parent = None;
   }
 
 let add_fragment_root sg env =
   let id = unique_id () in
   { env with fragmentroot = Some (id, sg); id }
+
+let set_source_parent parent env =
+  let id = unique_id () in
+  { env with source_parent = Some parent; id }
 
 (** Implements most [add_*] functions. *)
 let add_to_elts kind identifier component env =
@@ -595,6 +601,8 @@ let lookup_fragment_root env =
       maybe_record_result (FragmentRoot i);
       result
   | None -> None
+
+let lookup_source_parent env = env.source_parent
 
 let mk_functor_parameter module_type =
   let type_ = Component.Module.ModuleType module_type in
