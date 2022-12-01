@@ -322,6 +322,14 @@ The above markdown example would be written as:
 *)
 v}
 
+And rendered this becomes:
+
+Here is some python code:
+{@python[
+  def f():
+    return 0
+]}
+
 {4:verbatim_blocks Verbatim Blocks}
 
 It is possible to write language agnostic code blocks, also called verbatim
