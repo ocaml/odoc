@@ -536,6 +536,23 @@ doesn't turn this into a link in the output HTML.
 (written between double quotes), with the given text as comment. {e Note:} 
 As with the file reference, [odoc] doesn't turn this into a link.
 
+{2 Mathematics}
+
+Odoc 2.2 introduced new markup for maths, available both for inline and block
+content. The syntax for the maths itself is LaTeX and it is rendered by {{:https://katex.org/}KaTeX}
+in HTML output, dropped inline in the LaTeX output, and ignored in the man-page
+renderer.
+
+To render maths inline, use [{m <latex>}] and for block mode use [{math <latex>}].
+
+This is an inline equation: {m x=\frac{-b \pm \sqrt{b^2-4ac}}{2a}}, and rendered
+in block form this becomes:
+
+{math x=\frac{-b \pm \sqrt{b^2-4ac}}{2a}}
+
+See the {{:https://katex.org/docs/supported.html}KaTeX documentation} for the
+HTML mode LaTeX support status.
+
 {2 Stop Comments}
 
 The special comment:
