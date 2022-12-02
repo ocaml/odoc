@@ -58,7 +58,9 @@ let lookup_def impl_shape id =
 
 let of_cmt (cmt : Cmt_format.cmt_infos) =
   match cmt.cmt_impl_shape with
-  | Some impl_shape -> Some { uid_to_loc = cmt.cmt_uid_to_loc; impl_shape }
+  | Some impl_shape ->
+      Some ({ uid_to_loc = cmt.cmt_uid_to_loc; impl_shape },
+         Source_info.Local_jmp.jmp_to_def cmt)
   | None -> None
 
 #else
@@ -66,6 +68,6 @@ let of_cmt (cmt : Cmt_format.cmt_infos) =
 type impl_shape = unit
 
 let lookup_def () _id = None
-let of_cmt _ = Some ()
+let of_cmt _ = Some ((), [])
 
 #endif

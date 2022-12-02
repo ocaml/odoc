@@ -33,7 +33,7 @@ let lookup_implementation_of_cmti intf_file =
   let input_file = Fs.File.set_ext ".cmt" intf_file in
   if Fs.File.exists input_file then
     let filename = Fs.File.to_string input_file in
-    Odoc_loader.read_cmt_shape ~filename |> Error.raise_errors_and_warnings
+    Odoc_loader.read_cmt_infos ~filename |> Error.raise_errors_and_warnings
   else (
     Error.raise_warning ~non_fatal:true
       (Error.filename_only
@@ -104,7 +104,7 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
   (* [impl_shape] is used to lookup locations in the implementation. It is
      useless if no source code is given on command line. *)
   let should_read_impl_shape = impl_source <> None in
-  let unit, impl_shape =
+  let unit, cmt_infos =
     match input_type with
     | `Cmti ->
         let unit =
@@ -126,14 +126,16 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
         in
         (unit, None)
   in
+  let impl_shape = Option.map fst cmt_infos in
   let sources =
     match
       (read_source_file_opt impl_source, read_source_file_opt intf_source)
     with
     | None, None -> None
     | impl_source, intf_source ->
+        let impl_info = match cmt_infos with Some (_, i) -> i | None -> [] in
         let parent = (unit.id :> Paths.Identifier.Module.t) in
-        Some { Lang.Source_code.parent; intf_source; impl_source }
+        Some { Lang.Source_code.parent; intf_source; impl_source; impl_info }
   in
   if not unit.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"

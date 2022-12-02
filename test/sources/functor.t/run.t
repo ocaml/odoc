@@ -44,7 +44,7 @@ In this test, the functor expansion contains the right link.
        <code><span><span class="keyword">val</span> y : int</span></code>
 
   $ cat html/A/A.ml.html | grep L3
-  </span><span id="L3"></span>  <span class="LET">let</span> <span class="LIDENT">y</span> <span class="EQUAL">=</span> <span class="UIDENT">S</span><span class="DOT">.</span><span class="LIDENT">x</span> <span class="PLUS">+</span> <span class="INT">1</span><span class="EOL">
+  </span><span id="L3" class="source_line"></span>  <span class="LET">let</span> <span class="LIDENT"><span id="def-y_270"><span id="def-A1">y</span></span></span> <span class="EQUAL">=</span> <span class="UIDENT">S</span><span class="DOT">.</span><span class="LIDENT">x</span> <span class="PLUS">+</span> <span class="INT">1</span><span class="EOL">
 
 However, on functor results, there is no link to source in the file:
 
@@ -60,4 +60,4 @@ links are all to the whole module type definition):
        <code><span><span class="keyword">val</span> x : int</span></code>
 
   $ cat html/A/F/argument-1-S/../../../S/S.ml.html | grep L1
-  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: S.ml (S)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span class="MODULE"><span id="L1"></span>module</span> <span class="TYPE">type</span> <span class="UIDENT">S</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: S.ml (S)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span id="def-S1"><span class="MODULE"><span id="L1" class="source_line"></span>module</span> <span class="TYPE">type</span> <span class="UIDENT">S</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">

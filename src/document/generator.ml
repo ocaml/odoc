@@ -225,29 +225,31 @@ module Make (Syntax : SYNTAX) = struct
       let doc, _ = extract 0 (String.length src) l [] in
       List.rev doc
 
-    let impl src =
+    let impl ~infos src =
       let syntax_locs = Source_info.Syntax.highlight src in
       let lines_locs = Source_info.Lines.split src in
-      let locs = List.rev_append lines_locs syntax_locs in
-      doc_of_poses src locs
+      let infos = List.rev_append infos syntax_locs in
+      let infos = List.rev_append infos lines_locs in
+      doc_of_poses src infos
   end
 
   module Source_page : sig
     val source : Lang.Source_code.t -> Source_page.t list
   end = struct
-    let source_opt parent ~ext = function
+    let source_opt parent ~infos ~ext = function
       | Some contents ->
           let source ~parent ~ext ~contents =
             let url = Url.Path.source_file_from_identifier ~ext parent
-            and contents = Impl.impl contents in
+            and contents = Impl.impl ~infos contents in
             { Source_page.url; contents }
           in
           [ source ~parent ~ext ~contents ]
       | None -> []
 
-    let source { Lang.Source_code.parent; intf_source; impl_source } =
-      source_opt parent ~ext:".ml" impl_source
-      @ source_opt parent ~ext:".mli" intf_source
+    let source { Lang.Source_code.parent; intf_source; impl_source; impl_info }
+        =
+      source_opt parent ~infos:impl_info ~ext:".ml" impl_source
+      @ source_opt parent ~infos:[] ~ext:".mli" intf_source
   end
 
   module Type_expression : sig

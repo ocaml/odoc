@@ -13,9 +13,10 @@ val read_string :
   string ->
   (Comment.docs_or_stop, Error.t) result Error.with_warnings
 
-val read_cmt_shape :
+val read_cmt_infos :
   filename:string ->
-  (Compatshape.impl_shape option, Error.t) result Error.with_warnings
+  ((Compatshape.impl_shape * Source_info.Types.infos) option, Error.t) result
+  Error.with_warnings
 (** Read the shape from a .cmt file. *)
 
 val read_cmti :
@@ -28,7 +29,10 @@ val read_cmt :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
-  (Lang.Compilation_unit.t * Compatshape.impl_shape option, Error.t) result
+  ( Lang.Compilation_unit.t
+    * (Compatshape.impl_shape * Source_info.Types.infos) option,
+    Error.t )
+  result
   Error.with_warnings
 (** The shape is not returned in case of a pack. *)
 
