@@ -55,5 +55,5 @@ Look if all the source files are generated:
 
   $ cat html/Main/A/A.ml.html
   <!DOCTYPE html>
-  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: A.ml (Main.A)</title><link rel="stylesheet" href="../../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span class="LET"><span id="L1"></span>let</span> <span class="LIDENT">x</span> <span class="EQUAL">=</span> <span class="INT">1</span><span class="EOL">
+  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: A.ml (Main.A)</title><link rel="stylesheet" href="../../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span class="LET"><span id="L1" class="source_line"></span>let</span> <span class="LIDENT"><span id="def-x_267"><span id="def-Main__A0">x</span></span></span> <span class="EQUAL">=</span> <span class="INT">1</span><span class="EOL">
   </span></span></code></pre></body></html>

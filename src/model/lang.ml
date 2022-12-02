@@ -32,6 +32,7 @@ module Source_code = struct
     parent : Identifier.Module.t;
     intf_source : string option;
     impl_source : string option;
+    impl_info : Source_info.Types.infos;
   }
 end
 

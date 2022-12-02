@@ -42,7 +42,7 @@ exception Not_an_interface
 
 exception Make_root_error of string
 
-let read_cmt_shape ~filename () =
+let read_cmt_infos ~filename () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error _ -> raise Corrupted
   | cmt_info -> (
@@ -187,7 +187,7 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmt_shape ~filename = wrap_errors ~filename (read_cmt_shape ~filename)
+let read_cmt_infos ~filename = wrap_errors ~filename (read_cmt_infos ~filename)
 
 let read_cmti ~make_root ~parent ~filename =
   wrap_errors ~filename (read_cmti ~make_root ~parent ~filename)

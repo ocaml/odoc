@@ -19,7 +19,10 @@ let html_of_doc docs =
         let children = List.map doc_to_html docs in
         match info with
         | Token tok -> span ~a:[ a_class [ tok ] ] children
-        | Line l -> span ~a:[ a_id (Printf.sprintf "L%d" l) ] children
+        | Line l ->
+            span
+              ~a:[ a_id (Printf.sprintf "L%d" l); a_class [ "source_line" ] ]
+              children
         | Local_jmp (Occurence lbl) -> a ~a:[ a_href ("#def-" ^ lbl) ] children
         | Local_jmp (Def lbl) -> span ~a:[ a_id ("def-" ^ lbl) ] children)
   in
