@@ -204,6 +204,8 @@ module Identifier = struct
     let hash = hash
 
     let compare = compare
+
+    let name { iv = `Root (_, name); _ } = ModuleName.to_string name
   end
 
   module Module = struct

@@ -45,6 +45,8 @@ module Identifier : sig
     val hash : t -> int
 
     val compare : t -> t -> int
+
+    val name : t -> string
   end
 
   module Signature : sig

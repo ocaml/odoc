@@ -35,6 +35,9 @@ and simple_expansion (t : Odoc_model.Lang.ModuleType.simple_expansion) =
       in
       subpages @ simple_expansion expn
 
+and named_expansion (t : Odoc_model.Lang.ModuleType.named_expansion) =
+  simple_expansion t.e_expansion
+
 and module_type_expr (t : Odoc_model.Lang.ModuleType.expr) =
   let open Odoc_model.Lang.ModuleType in
   let opt_expansion e_opt =
@@ -56,7 +59,7 @@ and module_ (t : Odoc_model.Lang.Module.t) =
   let url = Url.Path.from_identifier t.id in
   let subpages =
     match t.type_ with
-    | Alias (_, Some e) -> simple_expansion e
+    | Alias (_, Some e) -> named_expansion e
     | Alias (_, None) -> []
     | ModuleType expr -> module_type_expr expr
   in
