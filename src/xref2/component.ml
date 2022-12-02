@@ -72,7 +72,7 @@ end
 
 module rec Module : sig
   type decl =
-    | Alias of Cpath.module_ * ModuleType.simple_expansion option
+    | Alias of Cpath.module_ * ModuleType.named_expansion option
     | ModuleType of ModuleType.expr
 
   type t = {
@@ -198,6 +198,12 @@ and ModuleType : sig
   type simple_expansion =
     | Signature of Signature.t
     | Functor of FunctorParameter.t * simple_expansion
+
+  type named_expansion = {
+    e_id : Odoc_model.Paths.Identifier.Path.Module.t;
+        (** Identifier not substituted because it is absolute. *)
+    e_expansion : simple_expansion;
+  }
 
   type typeof_t = {
     t_desc : type_of_desc;
@@ -2002,10 +2008,10 @@ module Of_Lang = struct
 
   and module_decl ident_map m =
     match m with
-    | Odoc_model.Lang.Module.Alias (p, e) ->
+    | Lang.Module.Alias (p, e) ->
         Module.Alias
-          (module_path ident_map p, option simple_expansion ident_map e)
-    | Odoc_model.Lang.Module.ModuleType s ->
+          (module_path ident_map p, option named_expansion ident_map e)
+    | Lang.Module.ModuleType s ->
         Module.ModuleType (module_type_expr ident_map s)
 
   and include_decl ident_map m =
@@ -2037,6 +2043,10 @@ module Of_Lang = struct
             Functor (FunctorParameter.Named arg', simple_expansion ident_map' sg)
         | Unit -> Functor (FunctorParameter.Unit, simple_expansion ident_map sg)
         )
+
+  and named_expansion ident_map e =
+    let { Lang.ModuleType.e_id; e_expansion } = e in
+    { ModuleType.e_id; e_expansion = simple_expansion ident_map e_expansion }
 
   and module_ ident_map m =
     let type_ = module_decl ident_map m.Odoc_model.Lang.Module.type_ in

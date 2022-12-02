@@ -39,7 +39,7 @@ end
 
 module rec Module : sig
   type decl =
-    | Alias of (Path.Module.t * ModuleType.simple_expansion option)
+    | Alias of (Path.Module.t * ModuleType.named_expansion option)
     | ModuleType of ModuleType.expr
 
   type t = {
@@ -86,6 +86,11 @@ and ModuleType : sig
   type simple_expansion =
     | Signature of Signature.t
     | Functor of FunctorParameter.t * simple_expansion
+
+  type named_expansion = {
+    e_id : Identifier.Path.Module.t;
+    e_expansion : simple_expansion;
+  }
 
   type typeof_t = {
     t_desc : type_of_desc;

@@ -205,15 +205,52 @@ unresolved in the paths though:
         },
         {
           "Some": {
-            "Signature": {
-              "items": [
+            "e_id": {
+              "`Module": [
                 {
-                  "Type": [
-                    "Ordinary",
+                  "`Module": [
                     {
-                      "id": {
-                        "`Type": [
-                          {
+                      "`Module": [
+                        { "`Root": [ "None", "Main" ] },
+                        "Container"
+                      ]
+                    },
+                    "Test"
+                  ]
+                },
+                "A"
+              ]
+            },
+            "e_expansion": {
+              "Signature": {
+                "items": [
+                  {
+                    "Type": [
+                      "Ordinary",
+                      {
+                        "id": {
+                          "`Type": [
+                            {
+                              "`Module": [
+                                {
+                                  "`Module": [
+                                    {
+                                      "`Module": [
+                                        { "`Root": [ "None", "Main" ] },
+                                        "Container"
+                                      ]
+                                    },
+                                    "Test"
+                                  ]
+                                },
+                                "B"
+                              ]
+                            },
+                            "t"
+                          ]
+                        },
+                        "locs": {
+                          "source_parent": {
                             "`Module": [
                               {
                                 "`Module": [
@@ -229,46 +266,27 @@ unresolved in the paths though:
                               "B"
                             ]
                           },
-                          "t"
-                        ]
-                      },
-                      "locs": {
-                        "source_parent": {
-                          "`Module": [
-                            {
-                              "`Module": [
-                                {
-                                  "`Module": [
-                                    { "`Root": [ "None", "Main" ] },
-                                    "Container"
-                                  ]
-                                },
-                                "Test"
-                              ]
-                            },
-                            "B"
-                          ]
+                          "impl": "None",
+                          "intf": {
+                            "Some":
+                              "File \"main__Container.mli\", line 7, characters 4-10"
+                          }
                         },
-                        "impl": "None",
-                        "intf": {
-                          "Some":
-                            "File \"main__Container.mli\", line 7, characters 4-10"
-                        }
-                      },
-                      "doc": [],
-                      "equation": {
-                        "params": [],
-                        "private_": "false",
-                        "manifest": "None",
-                        "constraints": []
-                      },
-                      "representation": "None"
-                    }
-                  ]
-                }
-              ],
-              "compiled": "true",
-              "doc": []
+                        "doc": [],
+                        "equation": {
+                          "params": [],
+                          "private_": "false",
+                          "manifest": "None",
+                          "constraints": []
+                        },
+                        "representation": "None"
+                      }
+                    ]
+                  }
+                ],
+                "compiled": "true",
+                "doc": []
+              }
             }
           }
         }

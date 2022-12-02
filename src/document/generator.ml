@@ -1293,6 +1293,9 @@ module Make (Syntax : SYNTAX) = struct
           in
           (sg_doc, prelude @ content)
 
+    and named_expansion t =
+      simple_expansion t.Odoc_model.Lang.ModuleType.e_expansion
+
     and expansion_of_module_type_expr :
         Odoc_model.Lang.ModuleType.expr ->
         (Comment.Comment.docs * Item.t list) option =
@@ -1322,7 +1325,7 @@ module Make (Syntax : SYNTAX) = struct
       let modname = Paths.Identifier.name t.id in
       let expansion =
         match t.type_ with
-        | Alias (_, Some e) -> Some (simple_expansion e)
+        | Alias (_, Some e) -> Some (named_expansion e)
         | Alias (_, None) -> None
         | ModuleType e -> expansion_of_module_type_expr e
       in
@@ -1359,13 +1362,15 @@ module Make (Syntax : SYNTAX) = struct
       let source_anchor = opt_source_anchor t.locs in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
-    and simple_expansion_in_decl (base : Paths.Identifier.Module.t) se =
-      let rec ty_of_se :
-          Lang.ModuleType.simple_expansion -> Lang.ModuleType.expr = function
+    and named_expansion_in_decl (base : Paths.Identifier.Module.t) se =
+      let open Lang.ModuleType in
+      let rec ty_of_se : simple_expansion -> expr = function
         | Signature sg -> Signature sg
         | Functor (arg, sg) -> Functor (arg, ty_of_se sg)
       in
-      mty_in_decl (base :> Paths.Identifier.Signature.t) (ty_of_se se)
+      mty_in_decl
+        (base :> Paths.Identifier.Signature.t)
+        (ty_of_se se.e_expansion)
 
     and mdexpr_in_decl (base : Paths.Identifier.Module.t) md =
       let sig_dotdotdot =
@@ -1373,7 +1378,7 @@ module Make (Syntax : SYNTAX) = struct
         ++ O.cut ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       in
       match md with
-      | Alias (_, Some se) -> simple_expansion_in_decl base se
+      | Alias (_, Some se) -> named_expansion_in_decl base se
       | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) ->
           O.txt " =" ++ O.sp ++ mdexpr md
       | Alias _ -> sig_dotdotdot

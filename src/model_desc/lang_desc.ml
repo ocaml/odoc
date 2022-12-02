@@ -38,7 +38,7 @@ let rec module_decl =
         C
           ( "Alias",
             ((x :> Paths.Path.t), y),
-            Pair (path, Option simple_expansion) )
+            Pair (path, Option named_expansion) )
     | ModuleType x -> C ("ModuleType", x, moduletype_expr))
 
 and module_t =
@@ -115,13 +115,21 @@ and moduletype_type_of_desc =
     | ModPath x -> C ("ModPath", (x :> Paths.Path.t), path)
     | StructInclude x -> C ("StructInclude", (x :> Paths.Path.t), path))
 
-and simple_expansion =
+and simple_expansion : Lang.ModuleType.simple_expansion T.t =
   let open Lang.ModuleType in
   Variant
     (function
     | Signature sg -> C ("Signature", sg, signature_t)
     | Functor (p, e) ->
         C ("Functor", (p, e), Pair (functorparameter_t, simple_expansion)))
+
+and named_expansion =
+  let open Lang.ModuleType in
+  Record
+    [
+      F ("e_id", (fun t -> t.e_id), identifier);
+      F ("e_expansion", (fun t -> t.e_expansion), simple_expansion);
+    ]
 
 and moduletype_path_t =
   let open Lang.ModuleType in
