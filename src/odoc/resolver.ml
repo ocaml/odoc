@@ -190,7 +190,12 @@ let lookup_page ap target_name =
 
 (** Add the current unit to the cache. No need to load other units with the same
     name. *)
-let add_unit_to_cache u = Hashtbl.add unit_cache (unit_name u) [ u ]
+let add_unit_to_cache u =
+  let target_name =
+    (match u with Odoc_file.Page_content _ -> "page-" | Unit_content _ -> "")
+    ^ unit_name u
+  in
+  Hashtbl.add unit_cache target_name [ u ]
 
 type t = {
   important_digests : bool;
