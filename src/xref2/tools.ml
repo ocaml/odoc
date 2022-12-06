@@ -1179,38 +1179,62 @@ and reresolve_module_gpath :
         ( reresolve_module_gpath env functor_path,
           reresolve_module_gpath env argument_path )
   | `Module (parent, name) -> `Module (reresolve_module_gpath env parent, name)
-  | `Alias (p1, `Resolved p2) ->
-      `Alias
-        ( reresolve_module_gpath env p1,
-          `Resolved (reresolve_module_gpath env p2) )
   | `Alias (p1, p2) ->
       let dest' = reresolve_module_gpath env p1 in
-      let p2' =
-        if
-          Odoc_model.Paths.Path.Resolved.Module.is_hidden
-            ~weak_canonical_test:false dest'
-        then
-          let cp2 = Component.Of_Lang.(module_path (empty ()) p2) in
-          match
-            resolve_module env ~mark_substituted:false ~add_canonical:true cp2
-          with
-          | Ok (p2', _) ->
-              Lang_of.(
-                Path.module_ (empty ()) (`Resolved (reresolve_module env p2')))
-          | Error _ -> p2
-        else p2
-      in
-      `Alias (dest', p2')
+      if
+        Odoc_model.Paths.Path.Resolved.Module.is_hidden
+          ~weak_canonical_test:false dest'
+      then
+        let cp2 = Component.Of_Lang.(module_path (empty ()) p2) in
+        match
+          resolve_module env ~mark_substituted:false ~add_canonical:true cp2
+        with
+        | Ok (`Alias (_, _, Some p3), _) ->
+            let p = reresolve_module env p3 in
+            Lang_of.(Path.resolved_module (empty ()) p)
+        | _ -> `Alias (dest', p2)
+      else `Alias (dest', p2)
   | `Subst (p1, p2) ->
       `Subst (reresolve_module_type_gpath env p1, reresolve_module_gpath env p2)
   | `Hidden p ->
       let p' = reresolve_module_gpath env p in
       `Hidden p'
-  | `Canonical (p, (`Resolved _ as p2)) ->
-      `Canonical (reresolve_module_gpath env p, p2)
+  | `Canonical (p, `Resolved p2) ->
+      `Canonical
+        (reresolve_module_gpath env p, `Resolved (reresolve_module_gpath env p2))
   | `Canonical (p, p2) ->
       `Canonical (reresolve_module_gpath env p, handle_canonical_module env p2)
   | `OpaqueModule m -> `OpaqueModule (reresolve_module_gpath env m)
+
+and strip_canonical :
+    c:Odoc_model.Paths.Path.Module.t ->
+    Cpath.Resolved.module_ ->
+    Cpath.Resolved.module_ =
+ fun ~c path ->
+  match path with
+  | `Canonical (x, y) when y = c -> strip_canonical ~c x
+  | `Canonical (x, y) -> `Canonical (strip_canonical ~c x, y)
+  | `Alias (x, y, z) -> `Alias (strip_canonical ~c x, y, z)
+  | `Subst (x, y) -> `Subst (x, strip_canonical ~c y)
+  | `Hidden x -> `Hidden (strip_canonical ~c x)
+  | `OpaqueModule x -> `OpaqueModule (strip_canonical ~c x)
+  | `Substituted x -> `Substituted (strip_canonical ~c x)
+  | `Gpath p -> `Gpath (strip_canonical_gpath ~c p)
+  | `Local _ | `Apply _ | `Module _ -> path
+
+and strip_canonical_gpath :
+    c:Odoc_model.Paths.Path.Module.t ->
+    Odoc_model.Paths.Path.Resolved.Module.t ->
+    Odoc_model.Paths.Path.Resolved.Module.t =
+ fun ~c path ->
+  match path with
+  | `Canonical (x, y) when y = c -> strip_canonical_gpath ~c x
+  | `Canonical (x, y) -> `Canonical (strip_canonical_gpath ~c x, y)
+  | `Alias (x, y) -> `Alias (strip_canonical_gpath ~c x, y)
+  | `Subst (x, y) -> `Subst (x, strip_canonical_gpath ~c y)
+  | `Hidden x -> `Hidden (strip_canonical_gpath ~c x)
+  | `OpaqueModule x -> `OpaqueModule (strip_canonical_gpath ~c x)
+  | `Apply _ | `Module _ | `Identifier _ -> path
 
 and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
     =
@@ -1223,24 +1247,28 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
       `Apply
         (reresolve_module env functor_path, reresolve_module env argument_path)
   | `Module (parent, name) -> `Module (reresolve_parent env parent, name)
-  | `Alias (p1, `Resolved p2, p3) ->
-      `Alias (reresolve_module env p1, `Resolved (reresolve_module env p2), p3)
-  | `Alias (p1, p2, p3) ->
+  | `Alias (p1, p2, p3opt) ->
       let dest' = reresolve_module env p1 in
       if Cpath.is_resolved_module_hidden ~weak_canonical_test:false dest' then
-        match
-          resolve_module env ~mark_substituted:false ~add_canonical:true p2
-        with
-        | Ok (`Alias (_, _, Some p3), _) -> reresolve_module env p3
-        | _ -> `Alias (dest', p2, p3)
-      else `Alias (dest', p2, p3)
+        match p3opt with
+        | Some p3 -> reresolve_module env p3
+        | None -> (
+            match
+              resolve_module env ~mark_substituted:false ~add_canonical:true p2
+            with
+            | Ok (`Alias (_, _, Some p3), _) -> reresolve_module env p3
+            | _ -> `Alias (dest', p2, None))
+      else `Alias (dest', p2, p3opt)
   | `Subst (p1, p2) ->
       `Subst (reresolve_module_type env p1, reresolve_module env p2)
   | `Hidden p ->
       let p' = reresolve_module env p in
       `Hidden p'
   | `Canonical (p, `Resolved p2) ->
-      `Canonical (reresolve_module env p, `Resolved p2)
+      let cp2 = Component.Of_Lang.(resolved_module_path (empty ()) p2) in
+      let cp2' = reresolve_module env cp2 in
+      let p2' = Lang_of.(Path.resolved_module (empty ()) cp2') in
+      `Canonical (reresolve_module env p, `Resolved p2')
   | `Canonical (p, p2) -> (
       match handle_canonical_module env p2 with
       | `Resolved _ as r -> `Canonical (p, r)
@@ -1248,17 +1276,60 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
   | `OpaqueModule m -> `OpaqueModule (reresolve_module env m)
 
 and handle_canonical_module_real env p2 =
-  let strip_alias : Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
-   fun x -> match x with `Alias (_, _, Some p) -> p | _ -> x
+  (* Canonical paths are always fully qualified, but this isn't
+     necessarily good for rendering, as the full path would
+     always be written out whenever a canonical module path is
+     encountered.
+
+     Instead the intent of this code is to try to find the shortest
+     path that still correctly references the canonical module.
+
+     It works by starting with the fully qualified path, e.g.
+     A.B.C.D where A is a root module. It then makes the list
+     of possibilities (A).B.C.D (A.B).C.D (A.B.C).D and (A.B.C.D)
+     where brackets represent the part that's an identifier.
+     It then resolved each one in turn and calculates the
+     identifier of the resolved path. The shortest path that
+     has the same identifier as the fully-qualified path is
+     chosen as the canonical path.
+
+     When doing this, we end up resolving each possibility.
+     Additionally, we need to 'reresolve' - resolve the canonical
+     references - while we're doing this. This is because the
+     parent parts of the resolved path can contain aliases and
+     canonical paths themselves which require resolving in order
+     to check the identifier is the same.
+
+     However, we first need to strip off any alias/canonical paths
+     in the resolved module, as we want the identifier for the
+     module itself, not any aliased module, and the canonical path
+     _ought_ to be the same as the one we're _currently_ resolving
+     anyway, so we'd end up looping forever. Note that it's not
+     sufficient to simply ask not to add on the canonical paths
+     at this point (ie, ~add_canonical=false) as the alias chain
+     may include modules that have already been resolved and hence
+     have canonical constructors in their resolved paths.
+  *)
+
+  (* [strip p] strips the top-level aliases and canonical paths from
+     the path [p]. Any aliases/canonicals in parents are left as is. *)
+  let strip : Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
+   fun x ->
+    match x with `Alias (_, _, Some p) -> strip_canonical ~c:p2 p | _ -> x
   in
+
+  (* Resolve the path, then 'reresolve', making sure to strip off the
+     top-level alias and canonicals to avoid looping forever *)
   let resolve env p =
     resolve_module env ~mark_substituted:false ~add_canonical:false p
-    >>= fun (p, m) -> Ok (strip_alias p, m)
+    >>= fun (p, m) -> Ok (reresolve_module env (strip p), m)
   in
+
   let lang_of cpath =
     (Lang_of.(Path.resolved_module (empty ()) cpath)
       :> Odoc_model.Paths.Path.Resolved.t)
   in
+
   let cp2 = Component.Of_Lang.(module_path (empty ()) p2) in
   match canonical_helper env resolve lang_of c_mod_poss cp2 with
   | None -> p2
@@ -1284,30 +1355,42 @@ and handle_canonical_module_real env p2 =
       let expanded =
         match m.type_ with
         | Component.Module.Alias (_, Some _) -> true
-        | Alias (`Resolved p, None) ->
-            (* we're an alias - check to see if we're marked as the canonical path.
-               If not, check for an alias chain with us as canonical in it... *)
-            let rec check m =
-              match m.Component.Module.canonical with
-              | Some p ->
-                  p = p2
-                  (* The canonical path is the same one we're trying to resolve *)
-              | None -> (
-                  match m.type_ with
-                  | Component.Module.Alias (`Resolved p, _) -> (
-                      match lookup_module ~mark_substituted:false env p with
-                      | Error _ -> false
-                      | Ok m ->
-                          let m = Component.Delayed.get m in
-                          check m)
-                  | _ -> false)
-            in
-            let self_canonical () = check m in
-            let hidden =
-              Cpath.is_resolved_module_hidden ~weak_canonical_test:true p
-            in
-            hidden || self_canonical ()
-        | Alias (_, _) -> false
+        | Alias (p, None) -> (
+            match
+              resolve_module ~mark_substituted:false ~add_canonical:false env p
+            with
+            | Ok (rp, _) ->
+                (* we're an alias - check to see if we're marked as the canonical path.
+                   If not, check for an alias chain with us as canonical in it... *)
+                let rec check m =
+                  match m.Component.Module.canonical with
+                  | Some p ->
+                      p = p2
+                      (* The canonical path is the same one we're trying to resolve *)
+                  | None -> (
+                      match m.type_ with
+                      | Component.Module.Alias (p, _) -> (
+                          match
+                            resolve_module ~mark_substituted:false
+                              ~add_canonical:false env p
+                          with
+                          | Ok (rp, _) -> (
+                              match
+                                lookup_module ~mark_substituted:false env rp
+                              with
+                              | Error _ -> false
+                              | Ok m ->
+                                  let m = Component.Delayed.get m in
+                                  check m)
+                          | _ -> false)
+                      | _ -> false)
+                in
+                let self_canonical () = check m in
+                let hidden =
+                  Cpath.is_resolved_module_hidden ~weak_canonical_test:true rp
+                in
+                hidden || self_canonical ()
+            | _ -> false)
         | ModuleType _ -> true
       in
       let cpath =

@@ -594,7 +594,10 @@ module Fmt = struct
       sg.items;
     Format.fprintf ppf "@] (removed=[%a])" removed_item_list sg.removed
 
-  and option pp ppf x =
+  and option :
+      type a.
+      (Format.formatter -> a -> unit) -> Format.formatter -> a option -> unit =
+   fun pp ppf x ->
     match x with
     | Some x -> Format.fprintf ppf "Some(%a)" pp x
     | None -> Format.fprintf ppf "None"
@@ -697,7 +700,10 @@ module Fmt = struct
     | Alias (p, _) -> Format.fprintf ppf "= %a" module_path p
     | ModuleType mt -> Format.fprintf ppf ": %a" module_type_expr mt
 
-  and module_ ppf m = Format.fprintf ppf "%a" module_decl m.type_
+  and module_ ppf m =
+    Format.fprintf ppf "%a (canonical=%a)" module_decl m.type_
+      (option model_path)
+      (m.canonical :> Odoc_model.Paths.Path.t option)
 
   and simple_expansion ppf (m : ModuleType.simple_expansion) =
     match m with
