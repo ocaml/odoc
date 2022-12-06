@@ -14,6 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+module Ocaml_path = Path
+module Ocaml_ident = Ident
+module Ocaml_env = Env
+
 (** Identifiers for definitions *)
 
 module Identifier : sig
@@ -376,6 +380,8 @@ module Identifier : sig
   val hash : t -> int
 
   val name : [< t_pv ] id -> string
+
+  val root : [< t_pv ] id -> RootModule.t_pv option
 
   val compare : t -> t -> int
 
