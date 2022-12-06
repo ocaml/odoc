@@ -51,3 +51,5 @@ let rec filter_map acc f = function
       let acc = match f hd with Some x -> x :: acc | None -> acc in
       filter_map acc f tl
   | [] -> List.rev acc
+
+let option_value ~default v = match v with None -> default | Some v -> v
