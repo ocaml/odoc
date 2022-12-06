@@ -1,0 +1,7 @@
+{0 Page}
+
+default {!foo}
+
+module {!module-foo}
+
+page {!page-foo}
