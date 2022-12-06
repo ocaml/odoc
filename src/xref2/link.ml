@@ -31,7 +31,9 @@ let synopsis_of_module env (m : Component.Module.t) =
         | Signature sg -> Ok sg
       in
       (* If there is no doc, look at the expansion. *)
-      match Tools.expansion_of_module env m >>= handle_expansion with
+      match
+        Tools.expansion_of_module env m >>= fun (_, exp) -> handle_expansion exp
+      with
       | Ok sg -> synopsis_from_comment (Component.extract_signature_doc sg)
       | Error _ -> None)
 
@@ -80,10 +82,15 @@ module Lookup_expansions : sig
   (** Lookup module aliases that have an expansion and returns their ID and the
       target path. *)
 end = struct
+  let rec expansion_sig : ModuleType.simple_expansion -> _ = function
+    | Signature sg -> sg
+    | Functor (_, res) -> expansion_sig res
+
   let rec in_sig_item = function
     | Signature.Module (_, m) -> (
         match m.Module.type_ with
-        | Alias (_, Some { ModuleType.e_id; _ }) -> [ (m.id, e_id) ]
+        | Alias (_, Some { ModuleType.e_id; e_expansion }) ->
+            (m.id, e_id) :: in_sig (expansion_sig e_expansion)
         | Alias (_, None) | ModuleType _ -> [])
     | Include inc -> in_sig inc.Include.expansion.content
     | _ -> []
@@ -538,21 +545,23 @@ and module_ : Env.t -> Module.t -> Module.t =
     let type_ = module_decl env sg_id m.type_ in
     let type_ =
       match type_ with
-      | Alias ((`Resolved p as resolved_path), prev_expansion) ->
+      | Alias ((`Resolved p as resolved_path), _) ->
           if expansion_needed p m.id then
             let cp = Component.Of_Lang.(resolved_module_path (empty ()) p) in
             match
               Tools.expansion_of_module_path ~strengthen:false env
                 (`Resolved cp)
-              >>= Expand_tools.handle_expansion env (m.id :> Id.Signature.t)
+              >>= fun (target_cp, exp) ->
+              Expand_tools.handle_expansion env (m.id :> Id.Signature.t) exp
+              >>= fun (_, exp) -> Ok (target_cp, exp)
             with
-            | Ok (_, e) ->
+            | Ok (target_cp, e) ->
                 let exp =
+                  let target_path =
+                    Lang_of.(Path.resolved_module (empty ())) target_cp
+                  in
                   let e_id =
-                    match prev_expansion with
-                    (* Already expanded once, don't forget about the original identifier. *)
-                    | Some { e_id; _ } -> e_id
-                    | None -> Paths.Path.Resolved.Module.identifier p
+                    Paths.Path.Resolved.Module.identifier target_path
                   in
                   let e_expansion =
                     Lang_of.(simple_expansion (empty ()) sg_id e)

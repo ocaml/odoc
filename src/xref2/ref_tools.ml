@@ -149,7 +149,7 @@ let module_lookup_to_signature_lookup env (ref, cp, m) =
     | Signature sg -> Ok ((ref :> Resolved.Signature.t), `Module cp, sg)
   in
   Tools.expansion_of_module env m
-  >>= handle_expansion
+  >>= (fun (_, exp) -> handle_expansion exp)
   |> map_error (fun e -> `Parent (`Parent_sig e))
 
 let module_type_lookup_to_signature_lookup env (ref, cp, m) =
