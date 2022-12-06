@@ -207,29 +207,52 @@ let create ~important_digests ~directories ~open_modules =
   let ap = Accessible_paths.create ~directories in
   { important_digests; ap; open_modules }
 
-(** [important_digests] and [imports_map] only apply to modules. *)
-let build ?u { important_digests; ap; open_modules } ~imports_map =
-  (match u with Some u -> add_unit_to_cache u | None -> ());
+(** Helpers for creating xref2 env. *)
+
+open Odoc_xref2
+
+let build_compile_env_for_unit
+    { important_digests; ap; open_modules = open_units } m =
+  add_unit_to_cache (Odoc_file.Unit_content m);
+  let imports_map = build_imports_map m in
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
   and lookup_page = lookup_page ap in
-  { Odoc_xref2.Env.open_units = open_modules; lookup_unit; lookup_page }
+  let module Lookup_def = Lookup_def.Make (struct
+    let lookup_root_module name =
+      match lookup_unit name with
+      | Env.Found unit -> Some unit
+      | Forward_reference | Not_found -> None
+  end) in
+  let lookup_def =
+    match m.ocaml_env with
+    | Some env -> Lookup_def.lookup_def env
+    | None -> fun _ -> None
+  in
+  let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_def } in
+  Env.env_of_unit m ~linking:false resolver
 
-let build_env_for_unit t ~linking m =
+(** [important_digests] and [imports_map] only apply to modules. *)
+let build ?(imports_map = StringMap.empty)
+    { important_digests; ap; open_modules = open_units } =
+  let lookup_def _ = failwith "Cannot lookup definition" in
+  let lookup_unit = lookup_unit ~important_digests ~imports_map ap
+  and lookup_page = lookup_page ap in
+  { Env.open_units; lookup_unit; lookup_page; lookup_def }
+
+let build_link_env_for_unit t m =
+  add_unit_to_cache (Odoc_file.Unit_content m);
   let imports_map = build_imports_map m in
-  let resolver = build ~u:(Odoc_file.Unit_content m) t ~imports_map in
-  Odoc_xref2.Env.env_of_unit m ~linking resolver
+  let resolver = build ~imports_map t in
+  Env.env_of_unit m ~linking:true resolver
 
 let build_env_for_page t p =
-  let imports_map = StringMap.empty in
-  let t = { t with important_digests = false } in
-  let resolver = build ~u:(Odoc_file.Page_content p) t ~imports_map in
-  Odoc_xref2.Env.env_of_page p resolver
+  add_unit_to_cache (Odoc_file.Page_content p);
+  let resolver = build { t with important_digests = false } in
+  Env.env_of_page p resolver
 
 let build_env_for_reference t =
-  let imports_map = StringMap.empty in
-  let t = { t with important_digests = false } in
-  let resolver = build t ~imports_map in
-  Odoc_xref2.Env.env_for_reference resolver
+  let resolver = build { t with important_digests = false } in
+  Env.env_for_reference resolver
 
 let lookup_page t target_name = lookup_page t.ap target_name
 

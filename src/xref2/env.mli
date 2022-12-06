@@ -16,6 +16,7 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
+  lookup_def : Identifier.t -> Location.t option;
 }
 
 type lookup_type =
@@ -89,6 +90,9 @@ val lookup_page : string -> t -> Lang.Page.t option
 val module_of_unit : Lang.Compilation_unit.t -> Component.Module.t
 
 val lookup_root_module : string -> t -> root option
+
+val lookup_def :
+  [< Identifier.t_pv ] Paths.Identifier.id -> t -> Location.t option
 
 type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)
