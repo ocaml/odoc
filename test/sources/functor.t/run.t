@@ -40,7 +40,7 @@ In this test, the functor expansion contains the right link.
 
   $ cat html/A/F/index.html | grep source_link --context=1
        <a href="#val-y" class="anchor"></a>
-       <a href="../A.ml.html#L3" class="source_link"></a>
+       <a href="../A.ml.html#L3" class="source_link">Source</a>
        <code><span><span class="keyword">val</span> y : int</span></code>
 
   $ cat html/A/A.ml.html | grep L3
@@ -56,7 +56,7 @@ links are all to the whole module type definition):
 
   $ cat html/A/F/argument-1-S/index.html | grep source_link --context=1
        <a href="#val-x" class="anchor"></a>
-       <a href="../../../S/S.ml.html#L1" class="source_link"></a>
+       <a href="../../../S/S.ml.html#L1" class="source_link">Source</a>
        <code><span><span class="keyword">val</span> x : int</span></code>
 
   $ cat html/A/F/argument-1-S/../../../S/S.ml.html | grep L1

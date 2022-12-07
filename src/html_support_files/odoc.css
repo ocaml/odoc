@@ -14,6 +14,7 @@
 
   --color: #333333;
   --link-color: #2C94BD;
+  --source-color: grey;
   --anchor-hover: #555;
   --anchor-color: #d5d5d5;
   --xref-shadow: #cc6666;
@@ -149,16 +150,16 @@ body {
   background: #FFFFFF;
   color: var(--color);
   background-color: var(--main-background);
+  font-family: "Noticia Text", Georgia, serif;
+  line-height: 1.5;
 }
 
-body {
+body.odoc {
   max-width: 100ex;
   margin-left: calc(10vw + 20ex);
   margin-right: 4ex;
   margin-top: 20px;
   margin-bottom: 50px;
-  font-family: "Noticia Text", Georgia, serif;
-  line-height: 1.5;
 }
 
 header {
@@ -235,7 +236,13 @@ li>*:first-child {
 
 a {
   text-decoration: none;
+}
+
+.odoc a {
   color: var(--link-color);
+}
+.odoc-src a {
+  color: inherit;
 }
 
 a:hover {
@@ -248,7 +255,18 @@ a:hover {
   box-shadow: 0 0px 0 1px var(--target-shadow) !important;
   border-radius: 1px;
 }
-
+.source_line:target {
+  position: absolute;
+  height: 22.5px;
+  width: 100ex;
+  pointer-events: none;
+}
+.source_line {
+  display: absolute;
+}
+html {
+  scroll-behavior: smooth;
+}
 *:hover > a.anchor {
   visibility: visible;
 }
@@ -777,7 +795,7 @@ td.def-doc *:first-child {
   text-decoration: underline;
 }
 
-.VAL, .TYPE, .LET, .REC, .IN, .OPEN, .NONREC, .MODULE, .METHOD, .LETOP, .INHERIT, .INCLUDE, .FUNCTOR, .EXTERNAL, .CONSTRAINT, .ASSERT, .AND {
+.VAL, .TYPE, .LET, .REC, .IN, .OPEN, .NONREC, .MODULE, .METHOD, .LETOP, .INHERIT, .INCLUDE, .FUNCTOR, .EXTERNAL, .CONSTRAINT, .ASSERT, .AND, .END {
   font-weight: bold;
   color:#C8AD7F;
 }
@@ -806,14 +824,11 @@ td.def-doc *:first-child {
   color: grey;
 }
 
-.source_link {
+a.source_link {
   position:  absolute;
   top: 1px;
   right: 1px;
-}
-
-.source_link::before {
-  content: "Source";
+  color: var(--source-color);
 }
 
 .odoc-spec {

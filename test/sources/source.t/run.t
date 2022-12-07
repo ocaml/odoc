@@ -44,28 +44,28 @@ Check the generated pages:
      <div class="odoc-spec">
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
-       <a href="A.ml.html#L1" class="source_link"></a>
+       <a href="A.ml.html#L1" class="source_link">Source</a>
        <code><span><span class="keyword">type</span> t</span></code>
       </div>
      </div>
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="A.ml.html#L2" class="source_link"></a>
+       <a href="A.ml.html#L2" class="source_link">Source</a>
        <code><span><span class="keyword">val</span> x : int</span></code>
       </div>
      </div>
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
-       <a href="A.ml.html#L3" class="source_link"></a>
+       <a href="A.ml.html#L3" class="source_link">Source</a>
        <code><span><span class="keyword">val</span> y : int</span></code>
       </div>
      </div>
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-z">
        <a href="#val-z" class="anchor"></a>
-       <a href="A.ml.html#L4" class="source_link"></a>
+       <a href="A.ml.html#L4" class="source_link">Source</a>
        <code>
         <span><span class="keyword">val</span> z : 
          <span>int <span class="arrow">&#45;&gt;</span></span> int
