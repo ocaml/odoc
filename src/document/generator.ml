@@ -203,7 +203,12 @@ module Make (Syntax : SYNTAX) = struct
                     first the one that closes last *)
                else Int.compare l1 l2)
       in
-      let get_src a b = String.sub src a (b - a) in
+      let get_src a b =
+        let in_bound x = Int.min (Int.max x 0) (String.length src) in
+        let a = in_bound a and b = in_bound b in
+        let a, b = (Int.min a b, Int.max a b) in
+        String.sub src a (b - a)
+      in
       let plain_code = function
         | "" -> []
         | s -> [ Types.Source_page.Plain_code s ]
