@@ -125,7 +125,7 @@ end =
 and Subpage : sig
   type status = [ `Inline | `Open | `Closed | `Default ]
 
-  type t = { status : status; content : Page.t }
+  type t = { status : status; content : Page.t; sources : Source_page.t list }
 end =
   Subpage
 

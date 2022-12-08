@@ -612,7 +612,7 @@ and simple_expansion :
 and named_expansion map id e =
   let open Component.ModuleType in
   let e_expansion = simple_expansion map id e.e_expansion in
-  { Lang.ModuleType.e_id = e.e_id; e_expansion }
+  { Lang.ModuleType.e_id = e.e_id; e_expansion; e_sources = e.e_sources }
 
 and combine_shadowed s1 s2 =
   let open Odoc_model.Lang.Include in

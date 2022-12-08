@@ -203,6 +203,7 @@ and ModuleType : sig
     e_id : Odoc_model.Paths.Identifier.Path.Module.t;
         (** Identifier not substituted because it is absolute. *)
     e_expansion : simple_expansion;
+    e_sources : Odoc_model.Lang.Source_code.t option;
   }
 
   type typeof_t = {
@@ -2045,8 +2046,12 @@ module Of_Lang = struct
         )
 
   and named_expansion ident_map e =
-    let { Lang.ModuleType.e_id; e_expansion } = e in
-    { ModuleType.e_id; e_expansion = simple_expansion ident_map e_expansion }
+    let { Lang.ModuleType.e_id; e_expansion; e_sources } = e in
+    {
+      ModuleType.e_id;
+      e_expansion = simple_expansion ident_map e_expansion;
+      e_sources;
+    }
 
   and module_ ident_map m =
     let type_ = module_decl ident_map m.Odoc_model.Lang.Module.type_ in
