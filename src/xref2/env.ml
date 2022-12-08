@@ -16,7 +16,7 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
-  lookup_def : Identifier.t -> Location_.span option;
+  lookup_def : Identifier.t -> Lang.Locations.uid option;
 }
 
 let unique_id =

@@ -370,10 +370,10 @@ module Anchor = struct
             Error (Unexpected_anchor "core_type label parent")
         | { iv = `Type (gp, _); _ } -> mk ~kind:`Section gp str_name)
 
-  let source_file_from_identifier ~ext root (loc : Odoc_model.Location_.span) =
+  let source_file_from_identifier ~ext root loc =
     let kind = `SourceLine in
     let page = Path.source_file_from_identifier ~ext root in
-    let anchor = Printf.sprintf "L%d" loc.start.line in
+    let anchor = Printf.sprintf "%s" loc in
     Some { page; anchor; kind }
 
   let polymorphic_variant ~type_ident elt =

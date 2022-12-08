@@ -163,7 +163,7 @@ end =
 and Source_page : sig
   type code = span list
   and span =
-    | Tagged_code of Source_info.Types.info * code
+    | Tagged_code of Odoc_model.Lang.Source_code.Info.info * code
     | Plain_code of string
 
   type t = { url : Url.Path.t; contents : code }

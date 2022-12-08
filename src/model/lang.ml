@@ -17,10 +17,12 @@
 open Paths
 
 module Locations = struct
+  type uid = string
+
   type t = {
     source_parent : Identifier.Module.t;
         (** Correspond to where the source code is stored. Might be different from the root component of the identifier inside expansions. *)
-    impl : Location_.span option;
+    impl : uid option;
         (** Location of the definition in the implementation file. *)
     intf : Location_.span option;
         (** Location of the declaration in the interface file. *)
@@ -28,11 +30,21 @@ module Locations = struct
 end
 
 module Source_code = struct
+  module Info = struct
+    type jmp_to_def = Occurence of Locations.uid | Def of string
+
+    type info = Syntax of string | Line of int | Local_jmp of jmp_to_def
+
+    type 'a with_pos = 'a * (int * int)
+
+    type infos = info with_pos list
+  end
+
   type t = {
     parent : Identifier.Module.t;
     intf_source : string option;
     impl_source : string option;
-    impl_info : Source_info.Types.infos;
+    impl_info : Info.infos;
   }
 end
 

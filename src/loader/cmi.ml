@@ -14,10 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+module Loader_Uid = Uid
 open Asttypes
 open Types
-
 module OCamlPath = Path
+module Uid = Loader_Uid
 
 open Odoc_model.Paths
 open Odoc_model.Lang
@@ -68,13 +69,15 @@ let opt_iter f = function
   | None -> ()
   | Some x -> f x
 
-let read_locations_intf parent loc =
+let read_locations parent intf =
   let source_parent =
     match Identifier.root parent with
     | Some sp -> (sp :> Identifier.Module.t)
     | None -> assert false
-  and intf = Some (Doc_attr.read_location loc) in
-  { Locations.source_parent; impl = None; intf }
+  and intf = Some (Doc_attr.read_location intf)
+  and impl = None
+  in
+  { Locations.source_parent; impl; intf }
 
 let read_label lbl =
   let open TypeExpr in
@@ -587,7 +590,7 @@ and read_object env fi nm =
 let read_value_description env parent id vd =
   let open Signature in
   let id = Env.find_value_identifier env id in
-  let locs = read_locations_intf id vd.val_loc in
+  let locs = read_locations id vd.val_loc in
   let container =
     (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
   in
@@ -714,7 +717,7 @@ let read_class_constraints env params =
 let read_type_declaration env parent id decl =
   let open TypeDecl in
   let id = Env.find_type_identifier env id in
-  let locs = read_locations_intf id decl.type_loc in
+  let locs = read_locations id decl.type_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical =
     Doc_attr.attached Odoc_model.Semantics.Expect_canonical container decl.type_attributes
@@ -751,7 +754,7 @@ let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
   let name = Ident.name id in
   let id = Identifier.Mk.extension(parent, Odoc_model.Names.ExtensionName.make_std name) in
-  let locs = read_locations_intf id ext.ext_loc in
+  let locs = read_locations id ext.ext_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
   let args =
@@ -785,7 +788,7 @@ let read_exception env parent id ext =
   let open Exception in
   let name = Ident.name id in
   let id = Identifier.Mk.exception_(parent, Odoc_model.Names.ExceptionName.make_std name) in
-  let locs = read_locations_intf id ext.ext_loc in
+  let locs = read_locations id ext.ext_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
     mark_exception ext;
@@ -879,7 +882,7 @@ let rec read_virtual = function
 let read_class_type_declaration env parent id cltd =
   let open ClassType in
   let id = Env.find_class_type_identifier env id in
-  let locs = read_locations_intf id cltd.clty_loc in
+  let locs = read_locations id cltd.clty_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cltd.clty_attributes in
     mark_class_type_declaration cltd;
@@ -915,7 +918,7 @@ let rec read_class_type env parent params =
 let read_class_declaration env parent id cld =
   let open Class in
   let id = Env.find_class_identifier env id in
-  let locs = read_locations_intf id cld.cty_loc in
+  let locs = read_locations id cld.cty_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cld.cty_attributes in
     mark_class_declaration cld;
@@ -955,7 +958,7 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
 and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_declaration) =
   let open ModuleType in
   let id = Env.find_module_type env id in
-  let locs = Some (read_locations_intf id mtd.mtd_loc) in
+  let locs = Some (read_locations id mtd.mtd_loc) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes in
   let canonical = (canonical :> Path.ModuleType.t option) in
@@ -965,7 +968,7 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in
   let id = (Env.find_module_identifier env ident :> Identifier.Module.t) in
-  let locs = Some (read_locations_intf id md.md_loc) in
+  let locs = Some (read_locations id md.md_loc) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
   let canonical = (canonical :> Path.Module.t option) in

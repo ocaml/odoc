@@ -45,7 +45,7 @@ Look if all the source files are generated:
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="A.ml.html#L1" class="source_link">Source</a>
+       <a href="A.ml.html#def-Main__A0" class="source_link">Source</a>
        <code><span><span class="keyword">val</span> x : int</span></code>
       </div>
      </div>
@@ -55,5 +55,5 @@ Look if all the source files are generated:
 
   $ cat html/Main/A/A.ml.html
   <!DOCTYPE html>
-  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: A.ml (Main.A)</title><link rel="stylesheet" href="../../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span class="LET"><span id="L1" class="source_line"></span>let</span> <span class="LIDENT"><span id="def-x_267"><span id="def-Main__A0">x</span></span></span> <span class="EQUAL">=</span> <span class="INT">1</span><span class="EOL">
+  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: A.ml (Main.A)</title><link rel="stylesheet" href="../../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span class="LET"><span id="L1" class="source_line"></span>let</span> <span id="x_267"><span id="def-Main__A0"><span class="LIDENT">x</span></span></span> <span class="EQUAL">=</span> <span class="INT">1</span><span class="EOL">
   </span></span></code></pre></body></html>

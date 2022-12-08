@@ -1,6 +1,9 @@
 open Result
 module Error = Odoc_model.Error
 
+module Lookup_def = Lookup_def
+module Source_info = Source_info
+
 let read_string parent_definition filename text =
   let location =
     let pos =
@@ -42,12 +45,20 @@ exception Not_an_interface
 
 exception Make_root_error of string
 
+(** [cmt_info.cmt_annots = Implementation _] *)
+let read_cmt_infos' cmt_info =
+  match Lookup_def.of_cmt cmt_info with
+  | None -> None
+  | Some shape ->
+      let jmp_infos = Local_jmp.of_cmt cmt_info in
+      Some (shape, jmp_infos)
+
 let read_cmt_infos ~filename () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error _ -> raise Corrupted
   | cmt_info -> (
       match cmt_info.cmt_annots with
-      | Implementation _ -> Compatshape.of_cmt cmt_info
+      | Implementation _ -> read_cmt_infos' cmt_info
       | _ -> raise Not_an_implementation)
 
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
@@ -160,7 +171,7 @@ let read_cmt ~make_root ~parent ~filename () =
           let id, sg, canonical = Cmt.read_implementation parent name impl in
           ( compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
               ~name ~id ?canonical sg,
-            Compatshape.of_cmt cmt_info )
+            read_cmt_infos' cmt_info )
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =

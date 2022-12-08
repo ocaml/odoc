@@ -133,7 +133,12 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
     with
     | None, None -> None
     | impl_source, intf_source ->
-        let impl_info = match cmt_infos with Some (_, i) -> i | None -> [] in
+        let impl_info =
+          match (cmt_infos, impl_source) with
+          | Some (_, local_jmp), Some impl_source ->
+              Odoc_loader.Source_info.of_source ~local_jmp impl_source
+          | _ -> []
+        in
         let parent = (unit.id :> Paths.Identifier.Module.t) in
         Some { Lang.Source_code.parent; intf_source; impl_source; impl_info }
   in

@@ -99,7 +99,7 @@ unresolved in the paths though:
     "locs": {
       "Some": {
         "source_parent": { "`Root": [ "None", "Main" ] },
-        "impl": { "Some": "File \"main.ml\", line 3, characters 0-28" },
+        "impl": { "Some": "def-Main0" },
         "intf": "None"
       }
     },

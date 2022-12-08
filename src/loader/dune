@@ -22,6 +22,6 @@
  (preprocess
   (action
    (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
- (libraries odoc_base odoc_model odoc-parser compatshape)
+ (libraries odoc_base odoc_model odoc-parser syntax_highlighter)
  (flags
   (:standard -open Odoc_base)))
