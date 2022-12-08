@@ -48,7 +48,7 @@ let rec module_decl =
         C
           ( "Alias",
             ((x :> Paths.Path.t), y),
-            Pair (path, Option named_expansion) )
+            Pair (path, Option expansion_with_source) )
     | ModuleType x -> C ("ModuleType", x, moduletype_expr))
 
 and module_t =
@@ -133,11 +133,10 @@ and simple_expansion : Lang.ModuleType.simple_expansion T.t =
     | Functor (p, e) ->
         C ("Functor", (p, e), Pair (functorparameter_t, simple_expansion)))
 
-and named_expansion =
+and expansion_with_source =
   let open Lang.ModuleType in
   Record
     [
-      F ("e_id", (fun t -> t.e_id), identifier);
       F ("e_expansion", (fun t -> t.e_expansion), simple_expansion);
       F ("e_sources", (fun t -> t.e_sources), Option source_code);
     ]

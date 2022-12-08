@@ -1310,7 +1310,7 @@ module Make (Syntax : SYNTAX) = struct
           in
           (sg_doc, prelude @ content)
 
-    and named_expansion t =
+    and expansion_with_source t =
       simple_expansion t.Odoc_model.Lang.ModuleType.e_expansion
 
     and expansion_of_module_type_expr :
@@ -1348,7 +1348,7 @@ module Make (Syntax : SYNTAX) = struct
               | None -> []
               | Some sources -> Source_page.source sources
             in
-            (Some (named_expansion e), sources)
+            (Some (expansion_with_source e), sources)
         | Alias (_, None) -> (None, [])
         | ModuleType e -> (expansion_of_module_type_expr e, [])
       in
@@ -1385,7 +1385,7 @@ module Make (Syntax : SYNTAX) = struct
       let source_anchor = opt_source_anchor t.locs in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
-    and named_expansion_in_decl (base : Paths.Identifier.Module.t) se =
+    and expansion_with_source_in_decl (base : Paths.Identifier.Module.t) se =
       let open Lang.ModuleType in
       let rec ty_of_se : simple_expansion -> expr = function
         | Signature sg -> Signature sg
@@ -1401,7 +1401,7 @@ module Make (Syntax : SYNTAX) = struct
         ++ O.cut ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       in
       match md with
-      | Alias (_, Some se) -> named_expansion_in_decl base se
+      | Alias (_, Some se) -> expansion_with_source_in_decl base se
       | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) ->
           O.txt " =" ++ O.sp ++ mdexpr md
       | Alias _ -> sig_dotdotdot

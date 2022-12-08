@@ -39,7 +39,7 @@ end
 
 module rec Module : sig
   type decl =
-    | Alias of (Path.Module.t * ModuleType.named_expansion option)
+    | Alias of (Path.Module.t * ModuleType.expansion_with_source option)
     | ModuleType of ModuleType.expr
 
   type t = {
@@ -87,8 +87,7 @@ and ModuleType : sig
     | Signature of Signature.t
     | Functor of FunctorParameter.t * simple_expansion
 
-  type named_expansion = {
-    e_id : Identifier.Path.Module.t;
+  type expansion_with_source = {
     e_sources : Source_code.t option;
     e_expansion : simple_expansion;
   }
