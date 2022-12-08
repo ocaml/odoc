@@ -62,7 +62,7 @@ end
 
 module rec Module : sig
   type decl =
-    | Alias of Cpath.module_ * ModuleType.named_expansion option
+    | Alias of Cpath.module_ * ModuleType.expansion_with_source option
     | ModuleType of ModuleType.expr
 
   type t = {
@@ -182,8 +182,7 @@ and ModuleType : sig
     | Signature of Signature.t
     | Functor of FunctorParameter.t * simple_expansion
 
-  type named_expansion = {
-    e_id : Odoc_model.Paths.Identifier.Path.Module.t;
+  type expansion_with_source = {
     e_expansion : simple_expansion;
     e_sources : Odoc_model.Lang.Source_code.t option;
   }

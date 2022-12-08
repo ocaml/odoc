@@ -487,7 +487,7 @@ and simple_expansion :
       let env' = Env.add_functor_parameter arg env in
       Functor (functor_argument env arg, simple_expansion env' id sg)
 
-and named_expansion env id exp =
+and expansion_with_source env id exp =
   let open ModuleType in
   { exp with e_expansion = simple_expansion env id exp.e_expansion }
 
@@ -532,11 +532,11 @@ and module_ : Env.t -> Module.t -> Module.t =
                   let e_expansion =
                     Lang_of.(simple_expansion (empty ()) sg_id e)
                   in
-                  { ModuleType.e_id; e_expansion; e_sources }
+                  { ModuleType.e_expansion; e_sources }
                 in
                 (* Propagate the new source parent. *)
                 let env = Env.set_source_parent m.id env in
-                Alias (resolved_path, Some (named_expansion env sg_id exp))
+                Alias (resolved_path, Some (expansion_with_source env sg_id exp))
             | Error _ -> type_
           else type_
       | Alias _ | ModuleType _ -> type_
@@ -549,7 +549,8 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
   let open Module in
   match decl with
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
-  | Alias (p, e) -> Alias (module_path env p, Opt.map (named_expansion env id) e)
+  | Alias (p, e) ->
+      Alias (module_path env p, Opt.map (expansion_with_source env id) e)
 
 and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
  fun env id decl ->

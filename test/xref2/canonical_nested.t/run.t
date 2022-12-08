@@ -205,22 +205,6 @@ unresolved in the paths though:
         },
         {
           "Some": {
-            "e_id": {
-              "`Module": [
-                {
-                  "`Module": [
-                    {
-                      "`Module": [
-                        { "`Root": [ "None", "Main" ] },
-                        "Container"
-                      ]
-                    },
-                    "Test"
-                  ]
-                },
-                "A"
-              ]
-            },
             "e_expansion": {
               "Signature": {
                 "items": [
