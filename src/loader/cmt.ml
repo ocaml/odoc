@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+
 open Asttypes
-open Types
 open Typedtree
 
 module OCamlPath = Path
@@ -25,19 +25,22 @@ open Odoc_model.Lang
 
 module Env = Ident_env
 
-let read_locations_impl parent loc =
+let read_locations_impl parent impl =
   let source_parent =
     match Identifier.root parent with
     | Some sp -> (sp :> Identifier.Module.t)
     | None -> assert false
-  and impl = Some (Doc_attr.read_location loc) in
+  and impl = match impl with
+    | None -> None
+    | Some impl -> Some (Uid.string_of_uid impl)
+  in
   { Locations.source_parent; impl; intf = None }
 
 let read_core_type env ctyp =
   Cmi.read_type_expr env ctyp.ctyp_type
 
 let rec read_pattern env parent doc pat =
-  let locs id = read_locations_impl id pat.pat_loc in
+  let locs id = read_locations_impl id None in
   let open Signature in
     match pat.pat_desc with
     | Tpat_any -> []
@@ -119,7 +122,7 @@ let read_type_extension env parent tyext =
   in
   let type_params =
     List.map
-      (Cmi.read_type_parameter false Variance.null)
+      (Cmi.read_type_parameter false Types.Variance.null)
       type_params
   in
   let private_ = (tyext.tyext_private = Private) in
@@ -332,7 +335,8 @@ let rec read_class_expr env parent params cl =
 let read_class_declaration env parent cld =
   let open Class in
   let id = Env.find_class_identifier env cld.ci_id_class in
-  let locs = read_locations_impl id cld.ci_loc in
+  let uid = Uid.of_class_type_declaration cld.ci_type_decl in
+  let locs = read_locations_impl id uid in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cld.ci_attributes in
     Cmi.mark_class_declaration cld.ci_decl;
@@ -342,7 +346,7 @@ let read_class_declaration env parent cld =
     in
     let params =
       List.map
-        (Cmi.read_type_parameter false Variance.null)
+        (Cmi.read_type_parameter false Types.Variance.null)
         clparams
     in
     let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in
@@ -437,7 +441,7 @@ and read_module_binding env parent mb =
   let id = Env.find_module_identifier env mb.mb_id in
 #endif
   let id = (id :> Identifier.Module.t) in
-  let locs = Some (read_locations_impl id mb.mb_loc) in
+  let locs = Some (read_locations_impl id None) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mb.mb_attributes in
   let type_, canonical =

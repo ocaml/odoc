@@ -24,7 +24,7 @@ let locations =
   Record
     [
       F ("source_parent", (fun t -> t.source_parent), identifier);
-      F ("impl", (fun t -> t.impl), Option location);
+      F ("impl", (fun t -> t.impl), Option string);
       F ("intf", (fun t -> t.intf), Option location);
     ]
 

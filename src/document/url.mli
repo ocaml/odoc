@@ -93,7 +93,10 @@ module Anchor : sig
   val from_identifier : Identifier.t -> (t, Error.t) result
 
   val source_file_from_identifier :
-    ext:string -> Identifier.Module.t -> Odoc_model.Location_.span -> t option
+    ext:string ->
+    Identifier.Module.t ->
+    Odoc_model.Lang.Locations.uid ->
+    t option
 
   val polymorphic_variant :
     type_ident:Identifier.t ->

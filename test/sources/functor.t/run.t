@@ -39,12 +39,10 @@ Verify the behavior on functors.
 In this test, the functor expansion contains the right link.
 
   $ cat html/A/F/index.html | grep source_link --context=1
-       <a href="#val-y" class="anchor"></a>
-       <a href="../A.ml.html#L3" class="source_link">Source</a>
-       <code><span><span class="keyword">val</span> y : int</span></code>
+  [1]
 
   $ cat html/A/A.ml.html | grep L3
-  </span><span id="L3" class="source_line"></span>  <span class="LET">let</span> <span class="LIDENT"><span id="def-y_270"><span id="def-A1">y</span></span></span> <span class="EQUAL">=</span> <span class="UIDENT">S</span><span class="DOT">.</span><span class="LIDENT">x</span> <span class="PLUS">+</span> <span class="INT">1</span><span class="EOL">
+  </span><span id="L3" class="source_line"></span>  <span class="LET">let</span> <span id="y_270"><span id="def-A1"><span class="LIDENT">y</span></span></span> <span class="EQUAL">=</span> <span class="UIDENT">S</span><span class="DOT">.</span><span class="LIDENT">x</span> <span class="PLUS">+</span> <span class="INT">1</span><span class="EOL">
 
 However, on functor results, there is no link to source in the file:
 
@@ -56,7 +54,7 @@ links are all to the whole module type definition):
 
   $ cat html/A/F/argument-1-S/index.html | grep source_link --context=1
        <a href="#val-x" class="anchor"></a>
-       <a href="../../../S/S.ml.html#L1" class="source_link">Source</a>
+       <a href="../../../S/S.ml.html#def-S1" class="source_link">Source</a>
        <code><span><span class="keyword">val</span> x : int</span></code>
 
   $ cat html/A/F/argument-1-S/../../../S/S.ml.html | grep L1

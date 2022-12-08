@@ -1,11 +1,14 @@
-src/compat/compatshape.ml
 src/document/*.cppo.ml
+src/loader/*.cppo.ml
 src/loader/cmi.ml
 src/loader/cmi.mli
 src/loader/cmt.ml
 src/loader/cmti.ml
 src/loader/doc_attr.ml
-src/loader/*.cppo.ml
+src/loader/local_jmp.ml
+src/loader/lookup_def.ml
+src/loader/uid.ml
+src/loader/uid.mli
 src/model/*.cppo.ml
 src/html_support_files/*.ml
 test/xref2/lib/*
