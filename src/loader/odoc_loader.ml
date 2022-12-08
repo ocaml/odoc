@@ -87,7 +87,7 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     expansion = None;
     linked = false;
     canonical;
-    sources = [];
+    sources = None;
   }
 
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id

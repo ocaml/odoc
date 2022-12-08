@@ -57,7 +57,7 @@ let opt_source_anchor = function
   | Some locs -> source_anchor locs
   | None -> None
 
-let attach_expansion ?(status = `Default) (eq, o, e) page text =
+let attach_expansion ?(sources = []) ?(status = `Default) (eq, o, e) page text =
   match page with
   | None -> O.documentedSrc text
   | Some (page : Page.t) ->
@@ -65,7 +65,7 @@ let attach_expansion ?(status = `Default) (eq, o, e) page text =
       let summary = O.render text in
       let expansion =
         O.documentedSrc (O.txt eq ++ O.keyword o)
-        @ DocumentedSrc.[ Subpage { status; content = page } ]
+        @ DocumentedSrc.[ Subpage { status; content = page; sources } ]
         @ O.documentedSrc (O.keyword e)
       in
       DocumentedSrc.
@@ -191,6 +191,23 @@ module Make (Syntax : SYNTAX) = struct
       | f ->
           let txt = render_fragment_any (f :> Fragment.t) in
           unresolved [ inline @@ Text txt ]
+  end
+
+  module Source_page : sig
+    val source : Lang.Source_code.t -> Source_page.t list
+  end = struct
+    let source_opt parent ~ext = function
+      | Some contents ->
+          let source ~parent ~ext ~contents =
+            let url = Url.Path.source_file_from_identifier ~ext parent in
+            { Source_page.url; contents }
+          in
+          [ source ~parent ~ext ~contents ]
+      | None -> []
+
+    let source { Lang.Source_code.parent; intf_source; impl_source } =
+      source_opt parent ~ext:".ml" impl_source
+      @ source_opt parent ~ext:".mli" intf_source
   end
 
   module Type_expression : sig
@@ -1192,7 +1209,7 @@ module Make (Syntax : SYNTAX) = struct
               let expansion =
                 O.documentedSrc
                   (O.txt Syntax.Type.annotation_separator ++ O.keyword "sig")
-                @ DocumentedSrc.[ Subpage { content; status } ]
+                @ DocumentedSrc.[ Subpage { content; status; sources = [] } ]
                 @ O.documentedSrc (O.keyword "end")
               in
               DocumentedSrc.
@@ -1323,11 +1340,17 @@ module Make (Syntax : SYNTAX) = struct
     and module_ : Odoc_model.Lang.Module.t -> Item.t =
      fun t ->
       let modname = Paths.Identifier.name t.id in
-      let expansion =
+      let expansion, sources =
         match t.type_ with
-        | Alias (_, Some e) -> Some (named_expansion e)
-        | Alias (_, None) -> None
-        | ModuleType e -> expansion_of_module_type_expr e
+        | Alias (_, Some e) ->
+            let sources =
+              match e.e_sources with
+              | None -> []
+              | Some sources -> Source_page.source sources
+            in
+            (Some (named_expansion e), sources)
+        | Alias (_, None) -> (None, [])
+        | ModuleType e -> (expansion_of_module_type_expr e, [])
       in
       let modname, status, expansion, expansion_doc =
         match expansion with
@@ -1347,7 +1370,7 @@ module Make (Syntax : SYNTAX) = struct
       let intro = O.keyword "module" ++ O.txt " " ++ modname in
       let summary = O.ignore intro ++ mdexpr_in_decl t.id t.type_ in
       let modexpr =
-        attach_expansion ~status
+        attach_expansion ~sources ~status
           (Syntax.Type.annotation_separator, "sig", "end")
           expansion summary
       in
@@ -1647,18 +1670,6 @@ module Make (Syntax : SYNTAX) = struct
 
   open Module
 
-  module Source_page : sig
-    val source :
-      parent:Paths.Identifier.Module.t ->
-      ext:string ->
-      contents:string ->
-      Source_page.t
-  end = struct
-    let source ~parent ~ext ~contents =
-      let url = Url.Path.source_file_from_identifier ~ext parent in
-      { Source_page.url; contents }
-  end
-
   module Page : sig
     val compilation_unit : Lang.Compilation_unit.t -> Document.t
 
@@ -1685,14 +1696,6 @@ module Make (Syntax : SYNTAX) = struct
       in
       List.map f t
 
-    let source_opt parent ~ext = function
-      | Some contents -> [ Source_page.source ~parent ~ext ~contents ]
-      | None -> []
-
-    let source { Lang.Source_code.parent; intf_source; impl_source } =
-      source_opt parent ~ext:".ml" impl_source
-      @ source_opt parent ~ext:".mli" intf_source
-
     let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) =
       let url = Url.Path.from_identifier t.id in
       let unit_doc, items =
@@ -1701,7 +1704,11 @@ module Make (Syntax : SYNTAX) = struct
         | Pack packed -> ([], pack packed)
       in
       let page = make_expansion_page url [ unit_doc ] items
-      and source_pages = List.concat @@ List.map source t.sources in
+      and source_pages =
+        match t.sources with
+        | None -> []
+        | Some sources -> Source_page.source sources
+      in
       { Document.page; source_pages }
 
     let page (t : Odoc_model.Lang.Page.t) =

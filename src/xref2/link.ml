@@ -77,27 +77,6 @@ let expansion_needed self target =
   in
   self_canonical || hidden_alias
 
-module Lookup_expansions : sig
-  val in_sig : Signature.t -> (Id.Module.t * Id.Path.Module.t) list
-  (** Lookup module aliases that have an expansion and returns their ID and the
-      target path. *)
-end = struct
-  let rec expansion_sig : ModuleType.simple_expansion -> _ = function
-    | Signature sg -> sg
-    | Functor (_, res) -> expansion_sig res
-
-  let rec in_sig_item = function
-    | Signature.Module (_, m) -> (
-        match m.Module.type_ with
-        | Alias (_, Some { ModuleType.e_id; e_expansion }) ->
-            (m.id, e_id) :: in_sig (expansion_sig e_expansion)
-        | Alias (_, None) | ModuleType _ -> [])
-    | Include inc -> in_sig inc.Include.expansion.content
-    | _ -> []
-
-  and in_sig sg = Utils.concat_map [] in_sig_item sg.Signature.items
-end
-
 exception Loop
 
 let rec is_forward : Paths.Path.Module.t -> bool = function
@@ -344,37 +323,14 @@ let locations env locs =
 
 let rec unit env t =
   let open Compilation_unit in
-  let expansions, content =
+  let content =
     match t.content with
     | Module sg ->
         let sg = signature env (t.id :> Id.Signature.t) sg in
-        (Lookup_expansions.in_sig sg, Module sg)
-    | Pack _ as p -> ([], p)
+        Module sg
+    | Pack _ as p -> p
   in
-  let module M = Id.Maps.Module in
-  let sources =
-    (* Lookup the source code of every expansion after making sure there are no
-       duplicates. Sources code of expanded modules is relocated under the new
-       canonical id. *)
-    let open Source_code in
-    let add_sources =
-      List.fold_left (fun acc src -> M.add src.parent src acc)
-    in
-    List.fold_left
-      (fun acc (id, target) ->
-        if M.mem id acc then acc
-        else
-          let root = Id.RootModule.name (Id.Path.Module.root target) in
-          match Env.lookup_root_module root env with
-          | Some (Env.Resolved unit) ->
-              add_sources acc
-                (List.map (fun src -> { src with parent = id }) unit.sources)
-          | Some Forward | None -> acc)
-      (add_sources M.empty t.sources)
-      expansions
-  in
-  let sources = M.fold (fun _ src acc -> src :: acc) sources [] in
-  { t with content; linked = true; sources }
+  { t with content; linked = true }
 
 and value_ env parent t =
   let open Value in
@@ -563,10 +519,20 @@ and module_ : Env.t -> Module.t -> Module.t =
                   let e_id =
                     Paths.Path.Resolved.Module.identifier target_path
                   in
+                  let e_sources =
+                    let root = Id.RootModule.name (Id.Path.Module.root e_id) in
+                    match Env.lookup_root_module root env with
+                    | Some (Env.Resolved { sources = Some src; _ }) ->
+                        Some { src with Source_code.parent = m.id }
+                    | Some (Resolved { sources = None; _ })
+                    | Some Forward
+                    | None ->
+                        None
+                  in
                   let e_expansion =
                     Lang_of.(simple_expansion (empty ()) sg_id e)
                   in
-                  { ModuleType.e_id; e_expansion }
+                  { ModuleType.e_id; e_expansion; e_sources }
                 in
                 (* Propagate the new source parent. *)
                 let env = Env.set_source_parent m.id env in

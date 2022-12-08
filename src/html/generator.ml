@@ -430,7 +430,13 @@ module Page = struct
     let { Page.preamble; items = i; url } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
-    let subpages = subpages ~config @@ Doctree.Subpages.compute p in
+    let subpages, sourcepage_list =
+      let subpage_list = Doctree.Subpages.compute p in
+      let sourcepage_list =
+        Utils.list_concat_map ~f:(fun sp -> sp.Subpage.sources) subpage_list
+      in
+      (subpages ~config @@ subpage_list, sourcepage_list)
+    in
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
@@ -449,8 +455,9 @@ module Page = struct
         Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
           content subpages;
       ]
+      @ List.map (source_page ~config) sourcepage_list
 
-  let source_page ~config sp =
+  and source_page ~config sp =
     let { Source_page.url; contents } = sp in
     let name = url.Url.Path.name
     and doc = Html_source.doc_of_locs contents [] in

@@ -28,6 +28,16 @@ let locations =
       F ("intf", (fun t -> t.intf), Option location);
     ]
 
+let source_code =
+  let open Lang.Source_code in
+  let contents = To_string (fun _ -> "<source code>") in
+  Record
+    [
+      F ("parent", (fun t -> t.parent), identifier);
+      F ("intf_source", (fun t -> t.intf_source), contents);
+      F ("impl_source", (fun t -> t.impl_source), contents);
+    ]
+
 (** {3 Module} *)
 
 let rec module_decl =
@@ -129,6 +139,7 @@ and named_expansion =
     [
       F ("e_id", (fun t -> t.e_id), identifier);
       F ("e_expansion", (fun t -> t.e_expansion), simple_expansion);
+      F ("e_sources", (fun t -> t.e_sources), Option source_code);
     ]
 
 and moduletype_path_t =
@@ -682,16 +693,6 @@ and compilation_unit_content =
     | Pack x -> C ("Pack", x, compilation_unit_packed))
 
 and compilation_unit_t =
-  let source_code =
-    let open Lang.Source_code in
-    let contents = To_string (fun _ -> "<source code>") in
-    Record
-      [
-        F ("parent", (fun t -> t.parent), identifier);
-        F ("intf_source", (fun t -> t.intf_source), contents);
-        F ("impl_source", (fun t -> t.impl_source), contents);
-      ]
-  in
   let open Lang.Compilation_unit in
   Record
     [
@@ -708,7 +709,7 @@ and compilation_unit_t =
         ( "canonical",
           (fun t -> (t.canonical :> Paths.Path.t option)),
           Option path );
-      F ("sources", (fun t -> t.sources), List source_code);
+      F ("sources", (fun t -> t.sources), Option source_code);
     ]
 
 (** {3 Page} *)

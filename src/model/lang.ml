@@ -89,6 +89,7 @@ and ModuleType : sig
 
   type named_expansion = {
     e_id : Identifier.Path.Module.t;
+    e_sources : Source_code.t option;
     e_expansion : simple_expansion;
   }
 
@@ -498,7 +499,7 @@ module rec Compilation_unit : sig
     expansion : Signature.t option;
     linked : bool;  (** Whether this unit has been linked. *)
     canonical : Path.Module.t option;
-    sources : Source_code.t list;
+    sources : Source_code.t option;
   }
 end =
   Compilation_unit

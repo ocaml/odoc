@@ -173,7 +173,7 @@ Simplest possible resolution:
           constraints = []};
         representation = None})];
     compiled = true; doc = []};
- expansion = None; linked = false; canonical = None; sources = []}
+ expansion = None; linked = false; canonical = None; sources = None}
 ```
 
 Let's look at a marginally more complicated example. In this case, our type `t`
@@ -392,7 +392,7 @@ Basic resolution 2, environment lookup:
           constraints = []};
         representation = None})];
     compiled = true; doc = []};
- expansion = None; linked = false; canonical = None; sources = []}
+ expansion = None; linked = false; canonical = None; sources = None}
 ```
 
 

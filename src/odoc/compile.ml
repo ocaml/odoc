@@ -130,10 +130,10 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
     match
       (read_source_file_opt impl_source, read_source_file_opt intf_source)
     with
-    | None, None -> []
+    | None, None -> None
     | impl_source, intf_source ->
         let parent = (unit.id :> Paths.Identifier.Module.t) in
-        [ { Lang.Source_code.parent; intf_source; impl_source } ]
+        Some { Lang.Source_code.parent; intf_source; impl_source }
   in
   if not unit.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"

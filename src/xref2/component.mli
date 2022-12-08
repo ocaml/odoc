@@ -185,6 +185,7 @@ and ModuleType : sig
   type named_expansion = {
     e_id : Odoc_model.Paths.Identifier.Path.Module.t;
     e_expansion : simple_expansion;
+    e_sources : Odoc_model.Lang.Source_code.t option;
   }
 
   type typeof_t = {

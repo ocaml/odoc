@@ -287,7 +287,8 @@ unresolved in the paths though:
                 "compiled": "true",
                 "doc": []
               }
-            }
+            },
+            "e_sources": "None"
           }
         }
       ]
