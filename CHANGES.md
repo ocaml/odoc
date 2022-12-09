@@ -1,5 +1,8 @@
+2.2.0
+-----
+
 Additions
-- New (experimental!) option `--as-json` for the HTML renderer that emits HTML
+- New unstable option `--as-json` for the HTML renderer that emits HTML
   fragments (preamble, content) together with metadata (table of contents,
   breadcrumbs, whether katex is used) in JSON format. (@sabine, #908)
 - New maths support via `{m ... }` and `{math ... }` tags. (@giltho, @gpetiot, #886)

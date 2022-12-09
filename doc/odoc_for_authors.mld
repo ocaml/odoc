@@ -30,7 +30,7 @@ v}
 - {{!page-driver}The reference driver} is the simplest driver, useful if you
   want to see how to integrate it with your own projects.
 - {{:https://github.com/ocaml-doc/voodoo}Voodoo} is the driver used to create
-  the docs for {{:https://v3.ocaml.org/packages}the new OCaml website}.
+  the docs for {{:https://www.ocaml.org/packages}the OCaml website}.
 
 {1:interfaces Documenting your interfaces}
 
@@ -296,22 +296,10 @@ v}
 
 {4:language_headers Language Headers}
 
-As of [odoc.2.1] it is possible to write blocks with explicit language headers,
-similar to markdown code blocks:
-
-{@markdown[
-Here is some python code:
-```python
-def f():
-  return 0
-```
-]}
-
-These blocks can be written using the enclosing tags [ {@<language>[ ... ]} ].
-The content of those block should be properly styled if odoc supports the
-styling for the given language. It is encouraged to use them even before proper
-support is available so that you benefit from it as soon as it is released.
-The above markdown example would be written as:
+As of [odoc.2.2] it is possible to write blocks with explicit language headers.
+These blocks can be written using the enclosing tags [{@<language>[ ... ]}].
+The content of those block should be properly styled if highlightjs supports the
+styling for the given language.
 
 {v
 (** Here is some python code:
@@ -333,7 +321,7 @@ Here is some python code:
 {4:verbatim_blocks Verbatim Blocks}
 
 It is possible to write language agnostic code blocks, also called verbatim
-blocks using the enclosing tags [ {v ... v} ]. The content of these blocks will be
+blocks using the enclosing tags [{v ... v}]. The content of these blocks will be
 formatted as code but with no particular style applied.
 
 {[
@@ -346,7 +334,7 @@ formatted as code but with no particular style applied.
 
 {3:escaping Escaping}
 
-In most contexts, the characters [ { [ ] } @ ] all need to be escaped with a backslash.
+In most contexts, the characters [{ [ ] } @] all need to be escaped with a backslash.
 In inline source code style, only square brackets need to be escaped. However, as a
 convenience, {e matched} square brackets need not be escaped to aid in typesetting
 code. For example, the following would be acceptable in a documentation comment:
