@@ -6,7 +6,7 @@ The document built here includes not only the documentation of `odoc` itself, bu
 docs for a subset of `odoc`'s dependent libraries to show how this may be done. For a much more
 complete and comprehensive use of `odoc`, see the [Voodoo project](https://github.com/ocaml-doc/voodoo), the tool that is being used to build
 the package docs for
-[v3.ocaml.org](https://v3.ocaml.org/).
+[www.ocaml.org/packages](https://www.ocaml.org/packages).
 
 First we need to initialise MDX with some libraries and helpful values.
 
