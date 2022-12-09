@@ -564,8 +564,8 @@ module Odoc_html_args = struct
       "EXPERIMENTAL: Output HTML files in 'embeddable json' mode, where HTML \
        fragments (preamble, content) together with metadata (uses_katex, \
        breadcrumbs, table of contents) are emitted in JSON format. The \
-       structure of the output should be considered unstable and no \
-       guarantees are made about backward compatibility."
+       structure of the output should be considered unstable and no guarantees \
+       are made about backward compatibility."
     in
     Arg.(value & flag & info ~doc [ "as-json" ])
 
