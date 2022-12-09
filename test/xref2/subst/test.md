@@ -71,7 +71,7 @@ S: sig
 type tt/5 = local(SubstituteMe/2,false).t
 type uu/4 = local(SubstituteMe/2,false).u
 type vv/3 = local(SubstituteMe/2,false).v
- (removed=[])end
+ (removed=[])end (canonical=None)
 
 AFTER
 ======
@@ -79,7 +79,7 @@ S: sig
 type tt/6 = r(SubTargets/1).t
 type uu/7 = r(SubTargets/1).u
 type vv/8 = r(SubTargets/1).v
- (removed=[])end
+ (removed=[])end (canonical=None)
 
 - : unit = ()
 ```
@@ -139,19 +139,19 @@ module SomeMonad/29 : sig
     val map/35 : ([a] r(t/34)) -> ((a) -> b) -> [b] r(t/34)
     val join/36 : ([[a] r(t/34)] r(t/34)) -> [a] r(t/34)
      (removed=[]))
-   (removed=[])end
+   (removed=[])end (canonical=None)
 module ComplexTypeExpr/28 : sig
   type t/37
   include : r(Monad/30) with [r(root(Monad/30).t) = ([r(int) * a] r(t/37) * [a * r(int)] r(t/37))] (sig =
     val map/38 : (([r(int) * a] r(t/37) * [a * r(int)] r(t/37))) -> ((a) -> b) -> ([r(int) * b] r(t/37) * [b * r(int)] r(t/37))
     val join/39 : (([r(int) * ([r(int) * a] r(t/37) * [a * r(int)] r(t/37))] r(t/37) * [([r(int) * a] r(t/37) * [a * r(int)] r(t/37)) * r(int)] r(t/37))) -> ([r(int) * a] r(t/37) * [a * r(int)] r(t/37))
      (removed=[]))
-   (removed=[])end
+   (removed=[])end (canonical=None)
 module Erase/27 : sig
   include : r(Monad/30) with [r(root(Monad/30).t) = a] (sig = val map/40 : (a) -> ((a) -> b) -> b
                                                               val join/41 : (a) -> a
                                                                (removed=[]))
-   (removed=[])end
+   (removed=[])end (canonical=None)
  (removed=[])
 ```
 
@@ -185,7 +185,7 @@ module SwappedVars/53 : sig
     val join/61 : ([e * [e * a] r(t/59)] r(t/59)) -> [e * a] r(t/59)
     val both/62 : ([e * a] r(t/59)) -> ([e * b] r(t/59)) -> [e * (a * b)] r(t/59)
      (removed=[]))
-   (removed=[])end
+   (removed=[])end (canonical=None)
  (removed=[])
 ```
 
@@ -213,6 +213,6 @@ module M/68 : sig
   include : r(S/69) with [r(root(S/69).t) = [(alias (poly_var [ `A of (a * b) ]) b)] r(t/72)] (sig =
     val map/73 : ([(alias (poly_var [ `A of (a * b) ]) b)] r(t/72)) -> ((a) -> b) -> [(alias (poly_var [ `A of (b * b) ]) b)] r(t/72)
      (removed=[]))
-   (removed=[])end
+   (removed=[])end (canonical=None)
  (removed=[])
 ```
