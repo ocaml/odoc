@@ -1,4 +1,4 @@
-# How to drive `odoc`
+# How to Drive `odoc`
 
 This 'live' document describes how to use `odoc` to produce the documentation of `odoc` itself. The aim is
 to show a short, simple example of how `odoc` can be used, covering most of the important features.
@@ -6,7 +6,7 @@ The document built here includes not only the documentation of `odoc` itself, bu
 docs for a subset of `odoc`'s dependent libraries to show how this may be done. For a much more
 complete and comprehensive use of `odoc`, see the [Voodoo project](https://github.com/ocaml-doc/voodoo), the tool that is being used to build
 the package docs for
-[www.ocaml.org/packages](https://www.ocaml.org/packages).
+[ocaml.org/packages](https://ocaml.org/packages).
 
 First we need to initialise MDX with some libraries and helpful values.
 
