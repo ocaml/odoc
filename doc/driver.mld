@@ -5,8 +5,8 @@ to show a short, simple example of how [odoc] can be used, covering most of the 
 The document built here includes not only the documentation of [odoc] itself, but it also builds the
 docs for a subset of [odoc]'s dependent libraries to show how this may be done. For a much more
 complete and comprehensive use of [odoc], see the {{: https://github.com/ocaml-doc/voodoo} Voodoo project}, 
-the tool used to build the 
-{{: https://v3.ocaml.org/} v3.ocaml.org} package docs.
+the tool used to build the package docs for
+{{: https://ocaml.org/}ocaml.org/packages}.
 
 First, we need to initialise MDX with some libraries and helpful values:
 

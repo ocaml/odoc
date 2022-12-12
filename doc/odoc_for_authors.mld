@@ -30,7 +30,7 @@ v}
 - {{!page-driver}The reference driver} is the simplest driver, useful if you
   want to see how to integrate it with your own projects.
 - {{:https://github.com/ocaml-doc/voodoo}Voodoo} is the driver used to create
-  the docs for {{:https://www.ocaml.org/packages}the OCaml website}.
+  the docs for {{:https://ocaml.org/packages}the OCaml website}.
 
 {1:interfaces Documenting your interfaces}
 
@@ -352,10 +352,10 @@ followed by [ v} ]. It is not currently possible to escape this in either case.
 A link to a URL may be put into the text as follows:
 
 {[
-(** See {{: https://www.ocaml.org/ }the OCaml website} for news about OCaml *)
+(** See {{: https://ocaml.org/ }the OCaml website} for news about OCaml *)
 ]}
 
-This will render as a link to [https://www.ocaml.org/] with the text "the OCaml website" 
+This will render as a link to [https://ocaml.org/] with the text "the OCaml website"
 
 References are links to other elements - e.g., comments might wish to refer to 
 a module or type elsewhere as follows:

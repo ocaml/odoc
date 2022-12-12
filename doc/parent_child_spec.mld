@@ -1,5 +1,5 @@
 {0 Parent/Child Specification}
-This parent/child specification allows more flexible output support, e.g., per library documentation. See {{:https://v3.ocaml.org/packages}v3.ocaml.org/packages}.
+This parent/child specification allows more flexible output support, e.g., per library documentation. See {{:https://ocaml.org/packages}ocaml.org/packages}.
 
 The rules are;
 
