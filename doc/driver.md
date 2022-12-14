@@ -477,22 +477,12 @@ Let's see if there was any output from the `odoc` invocations:
  "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Reg_with_debug_info) Parent_module: Lookup failure (root module): Reg_with_debug_info";
  "page-stdlib.odoc: File \"library_mlds/stdlib.mld\", line 198, characters 0-30:";
  "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Reg_availability_set) Parent_module: Lookup failure (root module): Reg_availability_set";
- "page-stdlib.odoc: File \"library_mlds/stdlib.mld\", line 194, characters 0-15:";
- "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Ratio) Parent_module: Lookup failure (root module): Ratio";
- "page-stdlib.odoc: File \"library_mlds/stdlib.mld\", line 159, characters 0-13:";
- "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Num) Parent_module: Lookup failure (root module): Num";
- "page-stdlib.odoc: File \"library_mlds/stdlib.mld\", line 158, characters 0-13:";
- "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Nat) Parent_module: Lookup failure (root module): Nat";
  "page-stdlib.odoc: File \"library_mlds/stdlib.mld\", line 76, characters 0-29:";
  "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Compute_ranges_intf) Parent_module: Lookup failure (root module): Compute_ranges_intf";
  "page-stdlib.odoc: File \"library_mlds/stdlib.mld\", line 75, characters 0-24:";
  "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Compute_ranges) Parent_module: Lookup failure (root module): Compute_ranges";
- "page-stdlib.odoc: File \"library_mlds/stdlib.mld\", line 24, characters 0-17:";
- "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Big_int) Parent_module: Lookup failure (root module): Big_int";
  "page-stdlib.odoc: File \"library_mlds/stdlib.mld\", line 21, characters 0-24:";
- "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Available_regs) Parent_module: Lookup failure (root module): Available_regs";
- "page-stdlib.odoc: File \"library_mlds/stdlib.mld\", line 9, characters 0-22:";
- "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Arith_status) Parent_module: Lookup failure (root module): Arith_status"]
+ "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Available_regs) Parent_module: Lookup failure (root module): Available_regs"]
 # !generate_output;;
 - : string list =
 ["";
