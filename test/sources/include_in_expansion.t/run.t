@@ -14,8 +14,8 @@ and some have to be kept.
   $ odoc html-generate --indent -o html main.odocl
 
 In Main.A, the source parent of value x should be rewritten to Main.A, while the
-source parent of value y should be left to B. (Not working yet)
+source parent of value y should be left to B.
 
   $ grep source_link html/Main/A/index.html
-         <a href="A.ml.html#def-B0" class="source_link">Source</a>
+         <a href="../../B/B.ml.html#def-B0" class="source_link">Source</a>
        <a href="A.ml.html#def-Main__A0" class="source_link">Source</a>

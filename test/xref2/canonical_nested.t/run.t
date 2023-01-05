@@ -236,18 +236,8 @@ unresolved in the paths though:
                         "locs": {
                           "source_parent": {
                             "`Module": [
-                              {
-                                "`Module": [
-                                  {
-                                    "`Module": [
-                                      { "`Root": [ "None", "Main" ] },
-                                      "Container"
-                                    ]
-                                  },
-                                  "Test"
-                                ]
-                              },
-                              "B"
+                              { "`Root": [ "None", "Main" ] },
+                              "Container"
                             ]
                           },
                           "impl": "None",

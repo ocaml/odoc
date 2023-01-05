@@ -316,10 +316,9 @@ and open_ env parent = function
   | { Odoc_model__Lang.Open.doc; _ } as open_ ->
       { open_ with doc = comment_docs env parent doc }
 
-let locations env locs =
-  match Env.lookup_source_parent env with
-  | Some source_parent -> { locs with Locations.source_parent }
-  | None -> locs
+let locations env (locs : Locations.t) =
+  let source_parent = Env.lookup_source_parent env locs.source_parent in
+  { locs with source_parent }
 
 let rec unit env t =
   let open Compilation_unit in
@@ -512,13 +511,13 @@ and module_ : Env.t -> Module.t -> Module.t =
               >>= fun (_, exp) -> Ok (target_cp, exp)
             with
             | Ok (target_cp, e) ->
-                let exp =
+                let e_id =
                   let target_path =
                     Lang_of.(Path.resolved_module (empty ())) target_cp
                   in
-                  let e_id =
-                    Paths.Path.Resolved.Module.identifier target_path
-                  in
+                  Paths.Path.Resolved.Module.identifier target_path
+                in
+                let exp =
                   let e_sources =
                     let root = Id.RootModule.name (Id.Path.Module.root e_id) in
                     match Env.lookup_root_module root env with
@@ -535,7 +534,12 @@ and module_ : Env.t -> Module.t -> Module.t =
                   { ModuleType.e_expansion; e_sources }
                 in
                 (* Propagate the new source parent. *)
-                let env = Env.set_source_parent m.id env in
+                let env =
+                  match e_id with
+                  | { iv = #Id.Module.t_pv; _ } as e_id ->
+                      Env.set_source_parent e_id m.id env
+                  | _ -> env
+                in
                 Alias (resolved_path, Some (expansion_with_source env sg_id exp))
             | Error _ -> type_
           else type_
