@@ -2,32 +2,32 @@
 \label{module-Type-type-abstract}\ocamlcodefragment{\ocamltag{keyword}{type} abstract}\begin{ocamlindent}Some \emph{documentation}.\end{ocamlindent}%
 \medbreak
 \label{module-Type-type-alias}\ocamlcodefragment{\ocamltag{keyword}{type} alias = int}\\
-\label{module-Type-type-private+u+}\ocamlcodefragment{\ocamltag{keyword}{type} private\_\allowbreak{} = \ocamltag{keyword}{private} int}\\
+\label{module-Type-type-private_}\ocamlcodefragment{\ocamltag{keyword}{type} private\_\allowbreak{} = \ocamltag{keyword}{private} int}\\
 \label{module-Type-type-constructor}\ocamlcodefragment{\ocamltag{keyword}{type} 'a constructor = \ocamltag{type-var}{'a}}\\
 \label{module-Type-type-arrow}\ocamlcodefragment{\ocamltag{keyword}{type} arrow = int \ocamltag{arrow}{$\rightarrow$} int}\\
-\label{module-Type-type-higher+u+order}\ocamlcodefragment{\ocamltag{keyword}{type} higher\_\allowbreak{}order = (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int}\\
+\label{module-Type-type-higher_order}\ocamlcodefragment{\ocamltag{keyword}{type} higher\_\allowbreak{}order = (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int}\\
 \label{module-Type-type-labeled}\ocamlcodefragment{\ocamltag{keyword}{type} labeled = l:int \ocamltag{arrow}{$\rightarrow$} int}\\
 \label{module-Type-type-optional}\ocamlcodefragment{\ocamltag{keyword}{type} optional = ?l:int \ocamltag{arrow}{$\rightarrow$} int}\\
-\label{module-Type-type-labeled+u+higher+u+order}\ocamlcodefragment{\ocamltag{keyword}{type} labeled\_\allowbreak{}higher\_\allowbreak{}order = (l:int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} (?l:int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int}\\
+\label{module-Type-type-labeled_higher_order}\ocamlcodefragment{\ocamltag{keyword}{type} labeled\_\allowbreak{}higher\_\allowbreak{}order = (l:int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} (?l:int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int}\\
 \label{module-Type-type-pair}\ocamlcodefragment{\ocamltag{keyword}{type} pair = int * int}\\
-\label{module-Type-type-parens+u+dropped}\ocamlcodefragment{\ocamltag{keyword}{type} parens\_\allowbreak{}dropped = int * int}\\
+\label{module-Type-type-parens_dropped}\ocamlcodefragment{\ocamltag{keyword}{type} parens\_\allowbreak{}dropped = int * int}\\
 \label{module-Type-type-triple}\ocamlcodefragment{\ocamltag{keyword}{type} triple = int * int * int}\\
-\label{module-Type-type-nested+u+pair}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}pair = (int * int) * int}\\
+\label{module-Type-type-nested_pair}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}pair = (int * int) * int}\\
 \label{module-Type-type-instance}\ocamlcodefragment{\ocamltag{keyword}{type} instance = int \hyperref[module-Type-type-constructor]{\ocamlinlinecode{constructor}}}\\
 \label{module-Type-type-long}\ocamlcodefragment{\ocamltag{keyword}{type} long =
-  \hyperref[module-Type-type-labeled+u+higher+u+order]{\ocamlinlinecode{labeled\_\allowbreak{}higher\_\allowbreak{}order}} \ocamltag{arrow}{$\rightarrow$}
+  \hyperref[module-Type-type-labeled_higher_order]{\ocamlinlinecode{labeled\_\allowbreak{}higher\_\allowbreak{}order}} \ocamltag{arrow}{$\rightarrow$}
   [ `Bar | `Baz of \hyperref[module-Type-type-triple]{\ocamlinlinecode{triple}} ] \ocamltag{arrow}{$\rightarrow$}
   \hyperref[module-Type-type-pair]{\ocamlinlinecode{pair}} \ocamltag{arrow}{$\rightarrow$}
   \hyperref[module-Type-type-labeled]{\ocamlinlinecode{labeled}} \ocamltag{arrow}{$\rightarrow$}
-  \hyperref[module-Type-type-higher+u+order]{\ocamlinlinecode{higher\_\allowbreak{}order}} \ocamltag{arrow}{$\rightarrow$}
+  \hyperref[module-Type-type-higher_order]{\ocamlinlinecode{higher\_\allowbreak{}order}} \ocamltag{arrow}{$\rightarrow$}
   (string \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$}
   (int * float * char * string * char * unit) option \ocamltag{arrow}{$\rightarrow$}
-  \hyperref[module-Type-type-nested+u+pair]{\ocamlinlinecode{nested\_\allowbreak{}pair}} \ocamltag{arrow}{$\rightarrow$}
+  \hyperref[module-Type-type-nested_pair]{\ocamlinlinecode{nested\_\allowbreak{}pair}} \ocamltag{arrow}{$\rightarrow$}
   \hyperref[module-Type-type-arrow]{\ocamlinlinecode{arrow}} \ocamltag{arrow}{$\rightarrow$}
   string \ocamltag{arrow}{$\rightarrow$}
-  \hyperref[module-Type-type-nested+u+pair]{\ocamlinlinecode{nested\_\allowbreak{}pair}} array}\\
-\label{module-Type-type-variant+u+e}\ocamlcodefragment{\ocamltag{keyword}{type} variant\_\allowbreak{}e = \{}\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{module-Type-type-variant+u+e.a}\\
+  \hyperref[module-Type-type-nested_pair]{\ocamlinlinecode{nested\_\allowbreak{}pair}} array}\\
+\label{module-Type-type-variant_e}\ocamlcodefragment{\ocamltag{keyword}{type} variant\_\allowbreak{}e = \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{module-Type-type-variant_e.a}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{\}}\\
@@ -36,26 +36,26 @@
 \ocamlcodefragment{| \ocamltag{constructor}{B} \ocamltag{keyword}{of} int}\label{module-Type-type-variant.B}& \\
 \ocamlcodefragment{| \ocamltag{constructor}{C}}\label{module-Type-type-variant.C}& foo\\
 \ocamlcodefragment{| \ocamltag{constructor}{D}}\label{module-Type-type-variant.D}& \emph{bar}\\
-\ocamlcodefragment{| \ocamltag{constructor}{E} \ocamltag{keyword}{of} \hyperref[module-Type-type-variant+u+e]{\ocamlinlinecode{variant\_\allowbreak{}e}}}\label{module-Type-type-variant.E}& \\
+\ocamlcodefragment{| \ocamltag{constructor}{E} \ocamltag{keyword}{of} \hyperref[module-Type-type-variant_e]{\ocamlinlinecode{variant\_\allowbreak{}e}}}\label{module-Type-type-variant.E}& \\
 \end{ocamltabular}%
 \\
-\label{module-Type-type-variant+u+c}\ocamlcodefragment{\ocamltag{keyword}{type} variant\_\allowbreak{}c = \{}\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{module-Type-type-variant+u+c.a}\\
+\label{module-Type-type-variant_c}\ocamlcodefragment{\ocamltag{keyword}{type} variant\_\allowbreak{}c = \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{module-Type-type-variant_c.a}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{\}}\\
 \label{module-Type-type-gadt}\ocamlcodefragment{\ocamltag{keyword}{type} \_\allowbreak{} gadt = }\\
 \begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} : int \hyperref[module-Type-type-gadt]{\ocamlinlinecode{gadt}}}\label{module-Type-type-gadt.A}\\
 \ocamlcodefragment{| \ocamltag{constructor}{B} : int \ocamltag{arrow}{$\rightarrow$} string \hyperref[module-Type-type-gadt]{\ocamlinlinecode{gadt}}}\label{module-Type-type-gadt.B}\\
-\ocamlcodefragment{| \ocamltag{constructor}{C} : \hyperref[module-Type-type-variant+u+c]{\ocamlinlinecode{variant\_\allowbreak{}c}} \ocamltag{arrow}{$\rightarrow$} unit \hyperref[module-Type-type-gadt]{\ocamlinlinecode{gadt}}}\label{module-Type-type-gadt.C}\\
+\ocamlcodefragment{| \ocamltag{constructor}{C} : \hyperref[module-Type-type-variant_c]{\ocamlinlinecode{variant\_\allowbreak{}c}} \ocamltag{arrow}{$\rightarrow$} unit \hyperref[module-Type-type-gadt]{\ocamlinlinecode{gadt}}}\label{module-Type-type-gadt.C}\\
 \end{ocamltabular}%
 \\
-\label{module-Type-type-degenerate+u+gadt}\ocamlcodefragment{\ocamltag{keyword}{type} degenerate\_\allowbreak{}gadt = }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} : \hyperref[module-Type-type-degenerate+u+gadt]{\ocamlinlinecode{degenerate\_\allowbreak{}gadt}}}\label{module-Type-type-degenerate+u+gadt.A}\\
+\label{module-Type-type-degenerate_gadt}\ocamlcodefragment{\ocamltag{keyword}{type} degenerate\_\allowbreak{}gadt = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} : \hyperref[module-Type-type-degenerate_gadt]{\ocamlinlinecode{degenerate\_\allowbreak{}gadt}}}\label{module-Type-type-degenerate_gadt.A}\\
 \end{ocamltabular}%
 \\
-\label{module-Type-type-private+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} private\_\allowbreak{}variant = \ocamltag{keyword}{private} }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A}}\label{module-Type-type-private+u+variant.A}\\
+\label{module-Type-type-private_variant}\ocamlcodefragment{\ocamltag{keyword}{type} private\_\allowbreak{}variant = \ocamltag{keyword}{private} }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A}}\label{module-Type-type-private_variant.A}\\
 \end{ocamltabular}%
 \\
 \label{module-Type-type-record}\ocamlcodefragment{\ocamltag{keyword}{type} record = \{}\\
@@ -67,58 +67,58 @@
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{\}}\\
-\label{module-Type-type-polymorphic+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} polymorphic\_\allowbreak{}variant = [ }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A}\label{module-Type-type-polymorphic+u+variant.A}\\
-\ocamlinlinecode{| }\ocamlinlinecode{`B \ocamltag{keyword}{of} int}\label{module-Type-type-polymorphic+u+variant.B}\\
-\ocamlinlinecode{| }\ocamlinlinecode{`C \ocamltag{keyword}{of} int * unit}\label{module-Type-type-polymorphic+u+variant.C}\\
-\ocamlinlinecode{| }\ocamlinlinecode{`D}\label{module-Type-type-polymorphic+u+variant.D}\\
+\label{module-Type-type-polymorphic_variant}\ocamlcodefragment{\ocamltag{keyword}{type} polymorphic\_\allowbreak{}variant = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A}\label{module-Type-type-polymorphic_variant.A}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`B \ocamltag{keyword}{of} int}\label{module-Type-type-polymorphic_variant.B}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`C \ocamltag{keyword}{of} int * unit}\label{module-Type-type-polymorphic_variant.C}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`D}\label{module-Type-type-polymorphic_variant.D}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{ ]}\\
-\label{module-Type-type-polymorphic+u+variant+u+extension}\ocamlcodefragment{\ocamltag{keyword}{type} polymorphic\_\allowbreak{}variant\_\allowbreak{}extension = [ }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{\hyperref[module-Type-type-polymorphic+u+variant]{\ocamlinlinecode{polymorphic\_\allowbreak{}variant}}}\label{module-Type-type-polymorphic+u+variant+u+extension.polymorphic+u+variant}\\
-\ocamlinlinecode{| }\ocamlinlinecode{`E}\label{module-Type-type-polymorphic+u+variant+u+extension.E}\\
+\label{module-Type-type-polymorphic_variant_extension}\ocamlcodefragment{\ocamltag{keyword}{type} polymorphic\_\allowbreak{}variant\_\allowbreak{}extension = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{\hyperref[module-Type-type-polymorphic_variant]{\ocamlinlinecode{polymorphic\_\allowbreak{}variant}}}\label{module-Type-type-polymorphic_variant_extension.polymorphic_variant}\\
+\ocamlinlinecode{| }\ocamlinlinecode{`E}\label{module-Type-type-polymorphic_variant_extension.E}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{ ]}\\
-\label{module-Type-type-nested+u+polymorphic+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}polymorphic\_\allowbreak{}variant = [ }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A \ocamltag{keyword}{of} [ `B | `C ]}\label{module-Type-type-nested+u+polymorphic+u+variant.A}\\
+\label{module-Type-type-nested_polymorphic_variant}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}polymorphic\_\allowbreak{}variant = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A \ocamltag{keyword}{of} [ `B | `C ]}\label{module-Type-type-nested_polymorphic_variant.A}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{ ]}\\
-\label{module-Type-type-private+u+extenion}\ocamlcodefragment{\ocamltag{keyword}{type} private\_\allowbreak{}extenion = \ocamltag{keyword}{private} [> }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{\hyperref[module-Type-type-polymorphic+u+variant]{\ocamlinlinecode{polymorphic\_\allowbreak{}variant}}}\label{module-Type-type-private+u+extenion.polymorphic+u+variant}\\
+\label{module-Type-type-private_extenion}\ocamlcodefragment{\ocamltag{keyword}{type} private\_\allowbreak{}extenion = \ocamltag{keyword}{private} [> }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{\hyperref[module-Type-type-polymorphic_variant]{\ocamlinlinecode{polymorphic\_\allowbreak{}variant}}}\label{module-Type-type-private_extenion.polymorphic_variant}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{ ]}\\
-\label{module-Type-type-object+u+}\ocamlcodefragment{\ocamltag{keyword}{type} object\_\allowbreak{} = < a : int ;\allowbreak{} b : int ;\allowbreak{} c : int >}\\
+\label{module-Type-type-object_}\ocamlcodefragment{\ocamltag{keyword}{type} object\_\allowbreak{} = < a : int ;\allowbreak{} b : int ;\allowbreak{} c : int >}\\
 \label{module-Type-module-type-X}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[module-Type-module-type-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{module-Type-module-type-X-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
 \label{module-Type-module-type-X-type-u}\ocamlcodefragment{\ocamltag{keyword}{type} u}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
-\label{module-Type-type-module+u+}\ocamlcodefragment{\ocamltag{keyword}{type} module\_\allowbreak{} = (\ocamltag{keyword}{module} \hyperref[module-Type-module-type-X]{\ocamlinlinecode{X}})}\\
-\label{module-Type-type-module+u+substitution}\ocamlcodefragment{\ocamltag{keyword}{type} module\_\allowbreak{}substitution = (\ocamltag{keyword}{module} \hyperref[module-Type-module-type-X]{\ocamlinlinecode{X}} \ocamltag{keyword}{with} \ocamltag{keyword}{type} \hyperref[module-Type-module-type-X-type-t]{\ocamlinlinecode{t}} = int \ocamltag{keyword}{and} \ocamltag{keyword}{type} \hyperref[module-Type-module-type-X-type-u]{\ocamlinlinecode{u}} = unit)}\\
+\label{module-Type-type-module_}\ocamlcodefragment{\ocamltag{keyword}{type} module\_\allowbreak{} = (\ocamltag{keyword}{module} \hyperref[module-Type-module-type-X]{\ocamlinlinecode{X}})}\\
+\label{module-Type-type-module_substitution}\ocamlcodefragment{\ocamltag{keyword}{type} module\_\allowbreak{}substitution = (\ocamltag{keyword}{module} \hyperref[module-Type-module-type-X]{\ocamlinlinecode{X}} \ocamltag{keyword}{with} \ocamltag{keyword}{type} \hyperref[module-Type-module-type-X-type-t]{\ocamlinlinecode{t}} = int \ocamltag{keyword}{and} \ocamltag{keyword}{type} \hyperref[module-Type-module-type-X-type-u]{\ocamlinlinecode{u}} = unit)}\\
 \label{module-Type-type-covariant}\ocamlcodefragment{\ocamltag{keyword}{type} +'a covariant}\\
 \label{module-Type-type-contravariant}\ocamlcodefragment{\ocamltag{keyword}{type} -'a contravariant}\\
 \label{module-Type-type-bivariant}\ocamlcodefragment{\ocamltag{keyword}{type} \_\allowbreak{} bivariant = int}\\
 \label{module-Type-type-binary}\ocamlcodefragment{\ocamltag{keyword}{type} ('a,\allowbreak{} 'b) binary}\\
-\label{module-Type-type-using+u+binary}\ocamlcodefragment{\ocamltag{keyword}{type} using\_\allowbreak{}binary = (int,\allowbreak{} int) \hyperref[module-Type-type-binary]{\ocamlinlinecode{binary}}}\\
+\label{module-Type-type-using_binary}\ocamlcodefragment{\ocamltag{keyword}{type} using\_\allowbreak{}binary = (int,\allowbreak{} int) \hyperref[module-Type-type-binary]{\ocamlinlinecode{binary}}}\\
 \label{module-Type-type-name}\ocamlcodefragment{\ocamltag{keyword}{type} 'custom name}\\
 \label{module-Type-type-constrained}\ocamlcodefragment{\ocamltag{keyword}{type} 'a constrained = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = int}\\
-\label{module-Type-type-exact+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a exact\_\allowbreak{}variant = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [ `A | `B of int ]}\\
-\label{module-Type-type-lower+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a lower\_\allowbreak{}variant = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [> `A | `B of int ]}\\
-\label{module-Type-type-any+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a any\_\allowbreak{}variant = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [>  ]}\\
-\label{module-Type-type-upper+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a upper\_\allowbreak{}variant = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [< `A | `B of int ]}\\
-\label{module-Type-type-named+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a named\_\allowbreak{}variant = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [< \hyperref[module-Type-type-polymorphic+u+variant]{\ocamlinlinecode{polymorphic\_\allowbreak{}variant}} ]}\\
-\label{module-Type-type-exact+u+object}\ocamlcodefragment{\ocamltag{keyword}{type} 'a exact\_\allowbreak{}object = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = < a : int ;\allowbreak{} b : int >}\\
-\label{module-Type-type-lower+u+object}\ocamlcodefragment{\ocamltag{keyword}{type} 'a lower\_\allowbreak{}object = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = < a : int ;\allowbreak{} b : int.\allowbreak{}.\allowbreak{} >}\\
-\label{module-Type-type-poly+u+object}\ocamlcodefragment{\ocamltag{keyword}{type} 'a poly\_\allowbreak{}object = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = < a : 'a.\allowbreak{} \ocamltag{type-var}{'a} >}\\
-\label{module-Type-type-double+u+constrained}\ocamlcodefragment{\ocamltag{keyword}{type} ('a,\allowbreak{} 'b) double\_\allowbreak{}constrained = \ocamltag{type-var}{'a} * \ocamltag{type-var}{'b} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = int \ocamltag{keyword}{constraint} \ocamltag{type-var}{'b} = unit}\\
-\label{module-Type-type-as+u+}\ocamlcodefragment{\ocamltag{keyword}{type} as\_\allowbreak{} = int \ocamltag{keyword}{as} 'a * \ocamltag{type-var}{'a}}\\
+\label{module-Type-type-exact_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a exact\_\allowbreak{}variant = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [ `A | `B of int ]}\\
+\label{module-Type-type-lower_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a lower\_\allowbreak{}variant = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [> `A | `B of int ]}\\
+\label{module-Type-type-any_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a any\_\allowbreak{}variant = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [>  ]}\\
+\label{module-Type-type-upper_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a upper\_\allowbreak{}variant = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [< `A | `B of int ]}\\
+\label{module-Type-type-named_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a named\_\allowbreak{}variant = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [< \hyperref[module-Type-type-polymorphic_variant]{\ocamlinlinecode{polymorphic\_\allowbreak{}variant}} ]}\\
+\label{module-Type-type-exact_object}\ocamlcodefragment{\ocamltag{keyword}{type} 'a exact\_\allowbreak{}object = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = < a : int ;\allowbreak{} b : int >}\\
+\label{module-Type-type-lower_object}\ocamlcodefragment{\ocamltag{keyword}{type} 'a lower\_\allowbreak{}object = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = < a : int ;\allowbreak{} b : int.\allowbreak{}.\allowbreak{} >}\\
+\label{module-Type-type-poly_object}\ocamlcodefragment{\ocamltag{keyword}{type} 'a poly\_\allowbreak{}object = \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = < a : 'a.\allowbreak{} \ocamltag{type-var}{'a} >}\\
+\label{module-Type-type-double_constrained}\ocamlcodefragment{\ocamltag{keyword}{type} ('a,\allowbreak{} 'b) double\_\allowbreak{}constrained = \ocamltag{type-var}{'a} * \ocamltag{type-var}{'b} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = int \ocamltag{keyword}{constraint} \ocamltag{type-var}{'b} = unit}\\
+\label{module-Type-type-as_}\ocamlcodefragment{\ocamltag{keyword}{type} as\_\allowbreak{} = int \ocamltag{keyword}{as} 'a * \ocamltag{type-var}{'a}}\\
 \label{module-Type-type-extensible}\ocamlcodefragment{\ocamltag{keyword}{type} extensible = .\allowbreak{}.\allowbreak{}}\\
 \label{module-Type-extension-decl-Extension}\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[module-Type-type-extensible]{\ocamlinlinecode{extensible}} += }\\
 \begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{Extension}}\label{module-Type-extension-Extension}& Documentation for \hyperref[module-Type-extension-Extension]{\ocamlinlinecode{\ocamlinlinecode{Extension}}[p\pageref*{module-Type-extension-Extension}]}.\\
-\ocamlcodefragment{| \ocamltag{extension}{Another\_\allowbreak{}extension}}\label{module-Type-extension-Another+u+extension}& Documentation for \hyperref[module-Type-extension-Another+u+extension]{\ocamlinlinecode{\ocamlinlinecode{Another\_\allowbreak{}extension}}[p\pageref*{module-Type-extension-Another+u+extension}]}.\\
+\ocamlcodefragment{| \ocamltag{extension}{Another\_\allowbreak{}extension}}\label{module-Type-extension-Another_extension}& Documentation for \hyperref[module-Type-extension-Another_extension]{\ocamlinlinecode{\ocamlinlinecode{Another\_\allowbreak{}extension}}[p\pageref*{module-Type-extension-Another_extension}]}.\\
 \end{ocamltabular}%
 \\
 \label{module-Type-type-mutually}\ocamlcodefragment{\ocamltag{keyword}{type} mutually = }\\
