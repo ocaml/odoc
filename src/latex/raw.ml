@@ -209,10 +209,20 @@ let ocamltag tag pp ppf x = create2 "ocamltag" Fmt.string pp ppf tag x
 
 let math ppf x = Fmt.pf ppf {|$%s$|} x
 
+let remove_empty_last_line x =
+  let rec find_last_line pos x =
+    if pos < 0 then x
+    else
+      match x.[pos] with
+      | ' ' | '\012' | '\n' | '\r' | '\t' -> find_last_line (pos - 1) x
+      | _ -> if pos = String.length x - 1 then x else String.sub x 0 (pos + 1)
+  in
+  find_last_line (String.length x - 1) x
+
 let equation ppf x =
   let name = "equation*" in
   mbegin ppf name;
   Fmt.cut ppf ();
-  Fmt.string ppf x;
+  Fmt.string ppf (remove_empty_last_line x);
   Fmt.cut ppf ();
   mend ppf name
