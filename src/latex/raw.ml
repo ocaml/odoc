@@ -46,6 +46,11 @@ module Escape = struct
     for i = 0 to String.length s - 1 do
       match s.[i] with
       | '~' -> Fmt.pf ppf "+t+"
+      | '&' -> Fmt.pf ppf "+a+"
+      | '^' -> Fmt.pf ppf "+c+"
+      | '%' -> Fmt.pf ppf "+p+"
+      | '{' -> Fmt.pf ppf "+ob+"
+      | '}' -> Fmt.pf ppf "+cb+"
       | '+' -> Fmt.pf ppf "+++"
       | c -> Fmt.pf ppf "%c" c
     done
