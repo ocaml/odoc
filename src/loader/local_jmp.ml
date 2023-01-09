@@ -1,5 +1,6 @@
 #if OCAML_VERSION >= (4, 14, 0)
 
+open Odoc_model.Lang.Locations
 open Odoc_model.Lang.Source_code.Info
 
 let pos_of_loc loc = (loc.Location.loc_start.pos_cnum, loc.loc_end.pos_cnum)
@@ -13,7 +14,7 @@ module Local_analysis = struct
         let extract_id id =
           match id with
           | Path.Pident id ->
-              let uniq = Ident.unique_name id in
+              let uniq = Resolved { anchor = Ident.unique_name id } in
               poses := (Occurence uniq, pos_of_loc exp_loc) :: !poses
           | _ -> ()
         in
@@ -46,10 +47,10 @@ module Global_analysis = struct
         match Shape.Uid.Tbl.find_opt uid_to_loc value_description.val_uid with
         | None -> ()
         | Some _ ->
-            poses :=
-              ( Occurence (string_of_uid value_description.val_uid),
-                pos_of_loc exp_loc )
-              :: !poses)
+            let uid =
+              Resolved { anchor = string_of_uid value_description.val_uid }
+            in
+            poses := (Occurence uid, pos_of_loc exp_loc) :: !poses)
     | _ -> ()
 end
 

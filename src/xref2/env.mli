@@ -16,7 +16,11 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
-  lookup_def : Identifier.t -> string option;
+  lookup_def : Identifier.t -> Lang.Locations.uid option;
+      (** Lookup the source code location from an identifier. Returns
+          [Some (Unresolved _)] when the location is not available in the unit
+          being compiled but could be resolved by loading more modules. Returns
+          [None] when no location can be found. *)
 }
 
 type lookup_type =

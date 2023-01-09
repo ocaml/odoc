@@ -1,3 +1,5 @@
 module X : sig
-  val x : int
+  module Y : sig
+  val z : int
+end
 end

@@ -26,15 +26,17 @@ open Odoc_model.Lang
 module Env = Ident_env
 
 let read_locations_impl parent impl =
+  let open Locations in
   let source_parent =
     match Identifier.root parent with
     | Some sp -> (sp :> Identifier.Module.t)
     | None -> assert false
-  and impl = match impl with
+  and impl =
+    match impl with
     | None -> None
-    | Some impl -> Some (Uid.string_of_uid impl)
+    | Some impl -> Some (Resolved { anchor = Uid.string_of_uid impl })
   in
-  { Locations.source_parent; impl; intf = None }
+  { source_parent; impl; intf = None }
 
 let read_core_type env ctyp =
   Cmi.read_type_expr env ctyp.ctyp_type

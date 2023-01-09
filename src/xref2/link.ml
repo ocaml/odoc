@@ -318,7 +318,13 @@ and open_ env parent = function
 
 let locations env (locs : Locations.t) =
   let source_parent = Env.lookup_source_parent env locs.source_parent in
-  { locs with source_parent }
+  match locs.impl with
+  | Some (Unresolved unresolved) -> (
+      (* Uid couldn't be resolved locally, resolve again using the model. *)
+      match Locations_tools.lookup_loc env unresolved with
+      | Some locs -> locs
+      | None -> { locs with source_parent; impl = None })
+  | Some (Resolved _) | None -> { locs with source_parent }
 
 let rec unit env t =
   let open Compilation_unit in

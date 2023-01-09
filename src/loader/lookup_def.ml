@@ -1,13 +1,13 @@
 #if OCAML_VERSION >= (4, 14, 0)
 
+open Odoc_model
 open Odoc_model.Paths
 open Odoc_model.Names
 module Kind = Shape.Sig_component_kind
 
-type t = {
-  uid_to_loc : Location.t Shape.Uid.Tbl.t;
-  impl_shape : Shape.t;
-}
+let ( >>= ) m f = match m with Some x -> f x | None -> None
+
+type t = { uid_to_loc : Location.t Shape.Uid.Tbl.t; impl_shape : Shape.t }
 
 (** Project an identifier into a shape. *)
 let rec project_id :
@@ -47,25 +47,69 @@ let rec project_id :
         (* Not represented in shapes. *)
         None
 
+let item_exp item : string * Shape.Sig_component_kind.t =
+  (* This function is missing in compiler-libs. *)
+  Obj.magic item
+
+module MkId = Identifier.Mk
+
+let rec shape_to_module_path shape =
+  match shape.Shape.desc with
+  | Var _ | Struct _ | Leaf -> None
+  | Abs (_, parent) -> shape_to_module_path parent
+  | App (left, _) -> shape_to_module_path left
+  | Proj (parent, item) -> (
+      shape_to_module_path parent >>= fun parent ->
+      let name, kind = item_exp item in
+      match kind with
+      | Module -> Some (`Dot (parent, name))
+      | Module_type | Value | Type | Extension_constructor | Class | Class_type
+        ->
+          None)
+  | Comp_unit name -> Some (`Root name)
+
+let shape_to_unresolved shape =
+  match shape.Shape.desc with
+  | Proj (parent, item) ->
+      shape_to_module_path parent >>= fun parent ->
+      let name, kind = item_exp item in
+      Some
+        (match kind with
+        | Value -> `Value (parent, name)
+        | Type -> `Type (`Dot (parent, name))
+        | Module -> `Module (`Dot (parent, name))
+        | Module_type -> `ModuleType (`Dot (parent, name))
+        | Extension_constructor -> `Extension (parent, name)
+        | Class -> `Class (parent, name)
+        | Class_type -> `ClassType (`Dot (parent, name)))
+  | _ ->
+      (shape_to_module_path shape :> Path.Module.t option) >>= fun m ->
+      Some (`Module m)
+
 let lookup_def impl_shape id =
   match project_id impl_shape.impl_shape id with
   | None -> None
   | Some query -> (
       let result = Shape.local_reduce query in
       match result.uid with
-      | None -> None
-      | Some uid ->
-          if Shape.Uid.Tbl.mem impl_shape.uid_to_loc uid
-          then Some (Uid.string_of_uid (Uid.of_shape_uid uid))
-          else None)
+      | Some uid when Shape.Uid.Tbl.mem impl_shape.uid_to_loc uid ->
+          (* Check whether [uid] has a location in the current unit.
+             [result.uid] might be [Some] but point to something in an other
+             compilation unit, that would need to be resolved again. *)
+          let anchor = Uid.string_of_uid (Uid.of_shape_uid uid) in
+          Some (Lang.Locations.Resolved { anchor })
+      | _ -> (
+          match shape_to_unresolved result with
+          | Some id -> Some (Lang.Locations.Unresolved id)
+          | None -> None))
 
 let of_cmt (cmt : Cmt_format.cmt_infos) =
   match cmt.cmt_impl_shape with
-  | Some impl_shape ->
-      Some ({ uid_to_loc = cmt.cmt_uid_to_loc; impl_shape })
+  | Some impl_shape -> Some { uid_to_loc = cmt.cmt_uid_to_loc; impl_shape }
   | None -> None
 
 #else
+
 type t = unit
 
 let lookup_def () _id = None

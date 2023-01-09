@@ -82,6 +82,13 @@ let filter_in_sig sg f =
   in
   inner f sg.Signature.items
 
+(** Returns the last element of a list. Used to implement [_unambiguous]
+    functions. *)
+let rec disambiguate = function
+  | [ x ] -> Some x
+  | [] -> None
+  | _ :: tl -> disambiguate tl
+
 let module_in_sig sg name =
   find_in_sig sg (function
     | Signature.Module (id, _, m) when N.module_ id = name ->
@@ -101,14 +108,6 @@ let type_in_sig sg name =
     | Class (id, _, c) when N.class_ id = name ->
         Some (`FClass (N.class' id, c))
     | ClassType (id, _, c) when N.class_type id = name ->
-        Some (`FClassType (N.class_type' id, c))
-    | _ -> None)
-
-let class_in_sig sg name =
-  find_in_sig sg (function
-    | Signature.Class (id, _, c) when N.class_ id = name ->
-        Some (`FClass (N.class' id, c))
-    | Signature.ClassType (id, _, c) when N.class_type id = name ->
         Some (`FClassType (N.class_type' id, c))
     | _ -> None)
 
@@ -157,11 +156,6 @@ let careful_type_in_sig sg name =
   | Some _ as x -> x
   | None -> removed_type_in_sig sg name
 
-let careful_class_in_sig sg name =
-  match class_in_sig sg name with
-  | Some _ as x -> x
-  | None -> removed_type_in_sig sg name
-
 let datatype_in_sig sg name =
   find_in_sig sg (function
     | Signature.Type (id, _, t) when N.type_ id = name ->
@@ -175,6 +169,13 @@ let class_in_sig sg name =
     | Signature.ClassType (id, _, c) when N.class_type id = name ->
         Some (`FClassType (N.class_type' id, c))
     | _ -> None)
+
+let class_in_sig_unambiguous sg name = disambiguate (class_in_sig sg name)
+
+let careful_class_in_sig sg name =
+  match class_in_sig_unambiguous sg name with
+  | Some _ as x -> x
+  | None -> removed_type_in_sig sg name
 
 let any_in_type (typ : TypeDecl.t) name =
   let rec find_cons = function
@@ -264,6 +265,8 @@ let value_in_sig sg name =
     | Signature.Value (id, m) when N.value id = name ->
         Some (`FValue (N.typed_value id, Delayed.get m))
     | _ -> None)
+
+let value_in_sig_unambiguous sg name = disambiguate (value_in_sig sg name)
 
 let label_in_sig sg name =
   filter_in_sig sg (function
