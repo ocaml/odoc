@@ -21,10 +21,26 @@ let location = To_string (fun loc -> Format.asprintf "%a" Location_.pp loc)
 
 let locations =
   let open Lang.Locations in
+  let unresolved_to_path : Lang.Locations.unresolved -> _ = function
+    | `Value (parent, name) -> ("value", `Dot (parent, name))
+    | `Type p -> ("type", (p :> Paths.Path.t))
+    | `Module p -> ("module", (p :> Paths.Path.t))
+    | `ModuleType p -> ("module_type", (p :> Paths.Path.t))
+    | `Extension (parent, name) -> ("extension", `Dot (parent, name))
+    | `Class (parent, name) -> ("class", `Dot (parent, name))
+    | `ClassType p -> ("class_type", (p :> Paths.Path.t))
+  in
+  let uid =
+    Variant
+      (function
+      | Resolved { anchor } -> C ("Resolved", anchor, string)
+      | Unresolved x ->
+          C ("Unresolved", unresolved_to_path x, Pair (string, path)))
+  in
   Record
     [
       F ("source_parent", (fun t -> t.source_parent), identifier);
-      F ("impl", (fun t -> t.impl), Option string);
+      F ("impl", (fun t -> t.impl), Option uid);
       F ("intf", (fun t -> t.intf), Option location);
     ]
 

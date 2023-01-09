@@ -17,7 +17,16 @@
 open Paths
 
 module Locations = struct
-  type uid = string
+  type unresolved =
+    [ `Value of Path.Module.t * string
+    | `Type of Path.Type.t
+    | `Module of Path.Module.t
+    | `ModuleType of Path.ModuleType.t
+    | `Extension of Path.Module.t * string
+    | `Class of Path.Module.t * string
+    | `ClassType of Path.ClassType.t ]
+
+  type uid = Resolved of { anchor : string } | Unresolved of unresolved
 
   type t = {
     source_parent : Identifier.Module.t;

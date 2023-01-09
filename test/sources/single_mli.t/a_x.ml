@@ -1,1 +1,3 @@
-let x = 1
+module Y = struct
+let z = 1
+  end

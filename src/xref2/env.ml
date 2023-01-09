@@ -425,9 +425,8 @@ let lookup_root_module name env =
   result
 
 let lookup_def id env =
-  match env.resolver with
-  | Some r -> r.lookup_def (id :> Paths.Identifier.Any.t)
-  | None -> None
+  let id = (id :> Paths.Identifier.Any.t) in
+  match env.resolver with Some r -> r.lookup_def id | None -> None
 
 let lookup_page name env =
   match env.resolver with None -> None | Some r -> r.lookup_page name

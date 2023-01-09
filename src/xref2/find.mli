@@ -96,6 +96,12 @@ val any_in_type_in_sig : Signature.t -> string -> any_in_type_in_sig list
 
 val any_in_class_signature : ClassSignature.t -> string -> any_in_class_sig list
 
+(** Disambiguated lookups, returns the last match. *)
+
+val class_in_sig_unambiguous : Signature.t -> string -> class_ option
+
+val value_in_sig_unambiguous : Signature.t -> string -> value option
+
 (** Lookup removed items *)
 
 type removed_type =
