@@ -628,7 +628,14 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "type"; "extension" ] in
       let anchor = Some (Url.Anchor.extension_decl t) in
       let doc = Comment.to_ir t.doc in
-      Item.Declaration { attr; anchor; doc; content; source_anchor = None }
+      let source_anchor =
+        (* Take the anchor from the first constructor only for consistency with
+           regular variants. *)
+        match t.constructors with
+        | hd :: _ -> source_anchor hd.locs
+        | [] -> None
+      in
+      Item.Declaration { attr; anchor; doc; content; source_anchor }
 
     let exn (t : Odoc_model.Lang.Exception.t) =
       let cstr = constructor (t.id :> Paths.Identifier.t) t.args t.res in
@@ -641,7 +648,8 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "exception" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
-      Item.Declaration { attr; anchor; doc; content; source_anchor = None }
+      let source_anchor = source_anchor t.locs in
+      Item.Declaration { attr; anchor; doc; content; source_anchor }
 
     let polymorphic_variant ~type_ident
         (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) =
