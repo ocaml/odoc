@@ -970,13 +970,11 @@ and resolve_module :
         >>= fun (p, m) -> Ok (`Substituted p, m)
     | `Root r -> (
         match Env.lookup_root_module r env with
-        | Some (Env.Resolved unit) ->
+        | Some (Env.Resolved (_, p, m)) ->
             let p =
               `Gpath
-                (`Identifier
-                  (unit.id :> Odoc_model.Paths.Identifier.Path.Module.t))
+                (`Identifier (p :> Odoc_model.Paths.Identifier.Path.Module.t))
             in
-            let m = Env.module_of_unit unit in
             let p = process_module_path env ~add_canonical m p in
             Ok (p, Component.Delayed.put_val m)
         | Some Env.Forward ->

@@ -10,7 +10,9 @@ type lookup_unit_result =
 
 type lookup_page_result = Lang.Page.t option
 
-type root = Resolved of Lang.Compilation_unit.t | Forward
+type root =
+  | Resolved of (Odoc_model.Root.t * Identifier.Module.t * Component.Module.t)
+  | Forward
 
 type resolver = {
   open_units : string list;
@@ -399,16 +401,21 @@ let lookup_root_module name env =
         match r.lookup_unit name with
         | Forward_reference -> Some Forward
         | Not_found -> None
-        | Found u -> Some (Resolved u))
+        | Found u ->
+            let ({ Odoc_model.Paths.Identifier.iv = `Root _; _ } as id) =
+              u.id
+            in
+            let m = module_of_unit u in
+            Some (Resolved (u.root, id, m)))
   in
   (match (env.recorder, result) with
   | Some r, Some Forward ->
       r.lookups <-
         LookupTypeSet.add (RootModule (name, Some `Forward)) r.lookups
-  | Some r, Some (Resolved unit) ->
+  | Some r, Some (Resolved (root, _, _)) ->
       r.lookups <-
         LookupTypeSet.add
-          (RootModule (name, Some (`Resolved unit.root.digest)))
+          (RootModule (name, Some (`Resolved root.digest)))
           r.lookups
   | Some r, None ->
       r.lookups <- LookupTypeSet.add (RootModule (name, None)) r.lookups
@@ -489,9 +496,10 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
 
 let lookup_root_module_fallback name t =
   match lookup_root_module name t with
-  | Some (Resolved unit) ->
-      let m = Component.Delayed.put (fun () -> module_of_unit unit) in
-      Some (`Module ((unit.id :> Identifier.Path.Module.t), m))
+  | Some (Resolved (_, id, m)) ->
+      Some
+        (`Module
+          ((id :> Identifier.Path.Module.t), Component.Delayed.put_val m))
   | Some Forward | None -> None
 
 let lookup_page_or_root_module_fallback name t =

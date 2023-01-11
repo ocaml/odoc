@@ -10,7 +10,10 @@ type lookup_unit_result =
 
 type lookup_page_result = Lang.Page.t option
 
-type root = Resolved of Lang.Compilation_unit.t | Forward
+type root =
+  | Resolved of
+      (Root.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
+  | Forward
 
 type resolver = {
   open_units : string list;
