@@ -13,7 +13,6 @@ Verify the behavior on functors.
   $ odoc html-generate --indent -o html a.odocl
   $ odoc html-generate --indent -o html b.odocl
 
-
   $ find html | sort
   html
   html/A
@@ -46,8 +45,7 @@ In this test, the functor expansion contains the right link.
 
 However, on functor results, there is no link to source in the file:
 
-  $ cat html/B/R/index.html | grep source_link
-  [1]
+  $ ! cat html/B/R/index.html | grep source_link
 
 On functor parameter, the link is right (modulo the fact that sub-module type
 links are all to the whole module type definition):

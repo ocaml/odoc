@@ -45,7 +45,7 @@ Code source for `A_x` is wanted:
 
   $ [ -f html/A_x/A_x.ml.html ]
 
-`A` should contain a link to `A_x.ml.html`:
+`A` should contain a link to `A.ml.html`:
 
   $ grep source_link html/A/index.html
   [1]
