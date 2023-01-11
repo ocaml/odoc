@@ -57,7 +57,7 @@ let opt_source_anchor = function
   | Some locs -> source_anchor locs
   | None -> None
 
-let attach_expansion ?(sources = []) ?(status = `Default) (eq, o, e) page text =
+let attach_expansion ?(status = `Default) (eq, o, e) page text =
   match page with
   | None -> O.documentedSrc text
   | Some (page : Page.t) ->
@@ -65,7 +65,7 @@ let attach_expansion ?(sources = []) ?(status = `Default) (eq, o, e) page text =
       let summary = O.render text in
       let expansion =
         O.documentedSrc (O.txt eq ++ O.keyword o)
-        @ DocumentedSrc.[ Subpage { status; content = page; sources } ]
+        @ DocumentedSrc.[ Subpage { status; content = page } ]
         @ O.documentedSrc (O.keyword e)
       in
       DocumentedSrc.
@@ -1257,7 +1257,7 @@ module Make (Syntax : SYNTAX) = struct
               let expansion =
                 O.documentedSrc
                   (O.txt Syntax.Type.annotation_separator ++ O.keyword "sig")
-                @ DocumentedSrc.[ Subpage { content; status; sources = [] } ]
+                @ DocumentedSrc.[ Subpage { content; status } ]
                 @ O.documentedSrc (O.keyword "end")
               in
               DocumentedSrc.
@@ -1358,9 +1358,6 @@ module Make (Syntax : SYNTAX) = struct
           in
           (sg_doc, prelude @ content)
 
-    and expansion_with_source t =
-      simple_expansion t.Odoc_model.Lang.ModuleType.e_expansion
-
     and expansion_of_module_type_expr :
         Odoc_model.Lang.ModuleType.expr ->
         (Comment.Comment.docs * Item.t list) option =
@@ -1388,17 +1385,11 @@ module Make (Syntax : SYNTAX) = struct
     and module_ : Odoc_model.Lang.Module.t -> Item.t =
      fun t ->
       let modname = Paths.Identifier.name t.id in
-      let expansion, sources =
+      let expansion =
         match t.type_ with
-        | Alias (_, Some e) ->
-            let sources =
-              match e.e_sources with
-              | None -> []
-              | Some sources -> Source_page.source sources
-            in
-            (Some (expansion_with_source e), sources)
-        | Alias (_, None) -> (None, [])
-        | ModuleType e -> (expansion_of_module_type_expr e, [])
+        | Alias (_, Some e) -> Some (simple_expansion e)
+        | Alias (_, None) -> None
+        | ModuleType e -> expansion_of_module_type_expr e
       in
       let modname, status, expansion, expansion_doc =
         match expansion with
@@ -1418,7 +1409,7 @@ module Make (Syntax : SYNTAX) = struct
       let intro = O.keyword "module" ++ O.txt " " ++ modname in
       let summary = O.ignore intro ++ mdexpr_in_decl t.id t.type_ in
       let modexpr =
-        attach_expansion ~sources ~status
+        attach_expansion ~status
           (Syntax.Type.annotation_separator, "sig", "end")
           expansion summary
       in
@@ -1433,15 +1424,13 @@ module Make (Syntax : SYNTAX) = struct
       let source_anchor = opt_source_anchor t.locs in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
-    and expansion_with_source_in_decl (base : Paths.Identifier.Module.t) se =
-      let open Lang.ModuleType in
-      let rec ty_of_se : simple_expansion -> expr = function
+    and simple_expansion_in_decl (base : Paths.Identifier.Module.t) se =
+      let rec ty_of_se :
+          Lang.ModuleType.simple_expansion -> Lang.ModuleType.expr = function
         | Signature sg -> Signature sg
         | Functor (arg, sg) -> Functor (arg, ty_of_se sg)
       in
-      mty_in_decl
-        (base :> Paths.Identifier.Signature.t)
-        (ty_of_se se.e_expansion)
+      mty_in_decl (base :> Paths.Identifier.Signature.t) (ty_of_se se)
 
     and mdexpr_in_decl (base : Paths.Identifier.Module.t) md =
       let sig_dotdotdot =
@@ -1449,7 +1438,7 @@ module Make (Syntax : SYNTAX) = struct
         ++ O.cut ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       in
       match md with
-      | Alias (_, Some se) -> expansion_with_source_in_decl base se
+      | Alias (_, Some se) -> simple_expansion_in_decl base se
       | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) ->
           O.txt " =" ++ O.sp ++ mdexpr md
       | Alias _ -> sig_dotdotdot

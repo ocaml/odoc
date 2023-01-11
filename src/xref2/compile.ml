@@ -381,8 +381,8 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
       let open Utils.ResultMonad in
       match decl with
       | Alias p ->
-          Tools.expansion_of_module_path env ~strengthen:true p
-          >>= fun (_, exp) -> Tools.assert_not_functor exp
+          Tools.expansion_of_module_path env ~strengthen:true p >>= fun exp ->
+          Tools.assert_not_functor exp
       | ModuleType mty ->
           Tools.signature_of_u_module_type_expr ~mark_substituted:false env mty
     with

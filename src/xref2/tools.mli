@@ -212,14 +212,12 @@ val expansion_of_module_path :
   Env.t ->
   strengthen:bool ->
   Cpath.module_ ->
-  (Cpath.Resolved.module_ * expansion, expansion_of_module_error) Result.result
+  (expansion, expansion_of_module_error) Result.result
 
 val expansion_of_module :
   Env.t ->
   Component.Module.t ->
-  ( Cpath.Resolved.module_ option * expansion,
-    expansion_of_module_error )
-  Result.result
+  (expansion, expansion_of_module_error) Result.result
 
 val expansion_of_module_type :
   Env.t ->

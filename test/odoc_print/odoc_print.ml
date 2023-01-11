@@ -41,7 +41,7 @@ and signature_of_module :
     Odoc_model.Lang.Module.t -> Odoc_model.Lang.Signature.t option =
  fun m ->
   match m.type_ with
-  | Alias (_, Some e) -> Some (signature_of_simple_expansion e.e_expansion)
+  | Alias (_, Some e) -> Some (signature_of_simple_expansion e)
   | Alias (_, None) -> None
   | ModuleType m -> signature_of_module_type_expr m
 

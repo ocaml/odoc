@@ -416,36 +416,35 @@ The values returned are the resolved path to the module, and a representation of
 
 ```ocaml env=e1
 # get_ok @@ Tools.expansion_of_module env (Component.Delayed.get module_);;
-- : Cpath.Resolved.module_ option * Tools.expansion =
-(None,
- Odoc_xref2.Tools.Signature
-  {Odoc_xref2.Component.Signature.items =
-    [Odoc_xref2.Component.Signature.Type (`LType (t, 0),
-      Odoc_model.Lang.Signature.Ordinary,
-      {Odoc_xref2.Component.Delayed.v =
-        Some
-         {Odoc_xref2.Component.TypeDecl.locs =
-           {Odoc_model.Lang.Locations.source_parent =
-             {Odoc_model__Paths_types.iv =
-               `Root
-                 (Some
-                   {Odoc_model__Paths_types.iv = `Page (None, None);
-                    ihash = 236059787; ikey = "p_None"},
-                  Root);
-              ihash = 818126955; ikey = "r_Root.p_None"};
-            impl = None;
-            intf =
-             Some
-              {Odoc_model__.Location_.file = "";
-               start = {Odoc_model__.Location_.line = 3; column = 6};
-               end_ = {Odoc_model__.Location_.line = 3; column = 12}}};
-          doc = []; canonical = None;
-          equation =
-           {Odoc_xref2.Component.TypeDecl.Equation.params = [];
-            private_ = false; manifest = None; constraints = []};
-          representation = None};
-       get = None})];
-   compiled = false; removed = []; doc = []})
+- : Tools.expansion =
+Odoc_xref2.Tools.Signature
+ {Odoc_xref2.Component.Signature.items =
+   [Odoc_xref2.Component.Signature.Type (`LType (t, 0),
+     Odoc_model.Lang.Signature.Ordinary,
+     {Odoc_xref2.Component.Delayed.v =
+       Some
+        {Odoc_xref2.Component.TypeDecl.locs =
+          {Odoc_model.Lang.Locations.source_parent =
+            {Odoc_model__Paths_types.iv =
+              `Root
+                (Some
+                  {Odoc_model__Paths_types.iv = `Page (None, None);
+                   ihash = 236059787; ikey = "p_None"},
+                 Root);
+             ihash = 818126955; ikey = "r_Root.p_None"};
+           impl = None;
+           intf =
+            Some
+             {Odoc_model__.Location_.file = "";
+              start = {Odoc_model__.Location_.line = 3; column = 6};
+              end_ = {Odoc_model__.Location_.line = 3; column = 12}}};
+         doc = []; canonical = None;
+         equation =
+          {Odoc_xref2.Component.TypeDecl.Equation.params = [];
+           private_ = false; manifest = None; constraints = []};
+         representation = None};
+      get = None})];
+  compiled = false; removed = []; doc = []}
 ```
 
 We're now in a position to verify the existence of the type `t` we're
@@ -739,8 +738,7 @@ we look up `A` from the environment:
   let sg = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m) in
   Tools.prefix_signature (`Module p, sg);;
 Line 4, characters 38-40:
-Error: This expression has type
-         Cpath.Resolved.module_ option * Tools.expansion
+Error: This expression has type Tools.expansion
        but an expression was expected of type Component.Signature.t
 ```
 
@@ -1128,78 +1126,77 @@ now we can ask for the signature of this module:
 
 ```ocaml env=e1
 # let sg = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
-val sg : Cpath.Resolved.module_ option * Tools.expansion =
-  (None,
-   Odoc_xref2.Tools.Signature
-    {Odoc_xref2.Component.Signature.items =
-      [Odoc_xref2.Component.Signature.Module (`LModule (M, 37),
-        Odoc_model.Lang.Signature.Ordinary,
-        {Odoc_xref2.Component.Delayed.v =
-          Some
-           {Odoc_xref2.Component.Module.locs =
-             Some
-              {Odoc_model.Lang.Locations.source_parent =
-                {Odoc_model__Paths_types.iv =
-                  `Root
-                    (Some
-                      {Odoc_model__Paths_types.iv = `Page (None, None);
-                       ihash = 236059787; ikey = "p_None"},
-                     Root);
-                 ihash = 818126955; ikey = "r_Root.p_None"};
-               impl = None;
-               intf =
-                Some
-                 {Odoc_model__.Location_.file = "";
-                  start = {Odoc_model__.Location_.line = 3; column = 2};
-                  end_ = {Odoc_model__.Location_.line = 3; column = 34}}};
-            doc = [];
-            type_ =
-             Odoc_xref2.Component.Module.Alias
-              (`Identifier
-                 ({Odoc_model__Paths_types.iv =
-                    `Module
-                      ({Odoc_model__Paths_types.iv =
-                         `Root
-                           (Some
-                             {Odoc_model__Paths_types.iv = `Page (None, None);
-                              ihash = 236059787; ikey = "p_None"},
-                            Root);
-                        ihash = 818126955; ikey = "r_Root.p_None"},
-                       B);
-                   ihash = 814134997; ikey = "m_B.r_Root.p_None"},
-                  false),
-              None);
-            canonical = None; hidden = false};
-         get = None});
-       Odoc_xref2.Component.Signature.Module (`LModule (N, 38),
-        Odoc_model.Lang.Signature.Ordinary,
-        {Odoc_xref2.Component.Delayed.v =
-          Some
-           {Odoc_xref2.Component.Module.locs =
-             Some
-              {Odoc_model.Lang.Locations.source_parent =
-                {Odoc_model__Paths_types.iv =
-                  `Root
-                    (Some
-                      {Odoc_model__Paths_types.iv = `Page (None, None);
-                       ihash = 236059787; ikey = "p_None"},
-                     Root);
-                 ihash = 818126955; ikey = "r_Root.p_None"};
-               impl = None;
-               intf =
-                Some
-                 {Odoc_model__.Location_.file = "";
-                  start = {Odoc_model__.Location_.line = 4; column = 2};
-                  end_ = {Odoc_model__.Location_.line = 4; column = 16}}};
-            doc = [];
-            type_ =
-             Odoc_xref2.Component.Module.ModuleType
-              (Odoc_xref2.Component.ModuleType.Path
-                {Odoc_xref2.Component.ModuleType.p_expansion = None;
-                 p_path = `Dot (`Local (`LModule (M, 37), false), "S")});
-            canonical = None; hidden = false};
-         get = None})];
-     compiled = false; removed = []; doc = []})
+val sg : Tools.expansion =
+  Odoc_xref2.Tools.Signature
+   {Odoc_xref2.Component.Signature.items =
+     [Odoc_xref2.Component.Signature.Module (`LModule (M, 37),
+       Odoc_model.Lang.Signature.Ordinary,
+       {Odoc_xref2.Component.Delayed.v =
+         Some
+          {Odoc_xref2.Component.Module.locs =
+            Some
+             {Odoc_model.Lang.Locations.source_parent =
+               {Odoc_model__Paths_types.iv =
+                 `Root
+                   (Some
+                     {Odoc_model__Paths_types.iv = `Page (None, None);
+                      ihash = 236059787; ikey = "p_None"},
+                    Root);
+                ihash = 818126955; ikey = "r_Root.p_None"};
+              impl = None;
+              intf =
+               Some
+                {Odoc_model__.Location_.file = "";
+                 start = {Odoc_model__.Location_.line = 3; column = 2};
+                 end_ = {Odoc_model__.Location_.line = 3; column = 34}}};
+           doc = [];
+           type_ =
+            Odoc_xref2.Component.Module.Alias
+             (`Identifier
+                ({Odoc_model__Paths_types.iv =
+                   `Module
+                     ({Odoc_model__Paths_types.iv =
+                        `Root
+                          (Some
+                            {Odoc_model__Paths_types.iv = `Page (None, None);
+                             ihash = 236059787; ikey = "p_None"},
+                           Root);
+                       ihash = 818126955; ikey = "r_Root.p_None"},
+                      B);
+                  ihash = 814134997; ikey = "m_B.r_Root.p_None"},
+                 false),
+             None);
+           canonical = None; hidden = false};
+        get = None});
+      Odoc_xref2.Component.Signature.Module (`LModule (N, 38),
+       Odoc_model.Lang.Signature.Ordinary,
+       {Odoc_xref2.Component.Delayed.v =
+         Some
+          {Odoc_xref2.Component.Module.locs =
+            Some
+             {Odoc_model.Lang.Locations.source_parent =
+               {Odoc_model__Paths_types.iv =
+                 `Root
+                   (Some
+                     {Odoc_model__Paths_types.iv = `Page (None, None);
+                      ihash = 236059787; ikey = "p_None"},
+                    Root);
+                ihash = 818126955; ikey = "r_Root.p_None"};
+              impl = None;
+              intf =
+               Some
+                {Odoc_model__.Location_.file = "";
+                 start = {Odoc_model__.Location_.line = 4; column = 2};
+                 end_ = {Odoc_model__.Location_.line = 4; column = 16}}};
+           doc = [];
+           type_ =
+            Odoc_xref2.Component.Module.ModuleType
+             (Odoc_xref2.Component.ModuleType.Path
+               {Odoc_xref2.Component.ModuleType.p_expansion = None;
+                p_path = `Dot (`Local (`LModule (M, 37), false), "S")});
+           canonical = None; hidden = false};
+        get = None})];
+    compiled = false; removed = []; doc = []}
 ```
 
 and we can see the module `M` is now an alias of the root module `B`. We can now
@@ -1255,36 +1252,35 @@ val m : Component.Module.t Component.Delayed.t =
       canonical = None; hidden = false};
    get = None}
 # get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
-- : Cpath.Resolved.module_ option * Tools.expansion =
-(None,
- Odoc_xref2.Tools.Signature
-  {Odoc_xref2.Component.Signature.items =
-    [Odoc_xref2.Component.Signature.Type (`LType (t, 45),
-      Odoc_model.Lang.Signature.Ordinary,
-      {Odoc_xref2.Component.Delayed.v =
-        Some
-         {Odoc_xref2.Component.TypeDecl.locs =
-           {Odoc_model.Lang.Locations.source_parent =
-             {Odoc_model__Paths_types.iv =
-               `Root
-                 (Some
-                   {Odoc_model__Paths_types.iv = `Page (None, None);
-                    ihash = 236059787; ikey = "p_None"},
-                  Root);
-              ihash = 818126955; ikey = "r_Root.p_None"};
-            impl = None;
-            intf =
-             Some
-              {Odoc_model__.Location_.file = "";
-               start = {Odoc_model__.Location_.line = 7; column = 37};
-               end_ = {Odoc_model__.Location_.line = 7; column = 43}}};
-          doc = []; canonical = None;
-          equation =
-           {Odoc_xref2.Component.TypeDecl.Equation.params = [];
-            private_ = false; manifest = None; constraints = []};
-          representation = None};
-       get = None})];
-   compiled = false; removed = []; doc = []})
+- : Tools.expansion =
+Odoc_xref2.Tools.Signature
+ {Odoc_xref2.Component.Signature.items =
+   [Odoc_xref2.Component.Signature.Type (`LType (t, 45),
+     Odoc_model.Lang.Signature.Ordinary,
+     {Odoc_xref2.Component.Delayed.v =
+       Some
+        {Odoc_xref2.Component.TypeDecl.locs =
+          {Odoc_model.Lang.Locations.source_parent =
+            {Odoc_model__Paths_types.iv =
+              `Root
+                (Some
+                  {Odoc_model__Paths_types.iv = `Page (None, None);
+                   ihash = 236059787; ikey = "p_None"},
+                 Root);
+             ihash = 818126955; ikey = "r_Root.p_None"};
+           impl = None;
+           intf =
+            Some
+             {Odoc_model__.Location_.file = "";
+              start = {Odoc_model__.Location_.line = 7; column = 37};
+              end_ = {Odoc_model__.Location_.line = 7; column = 43}}};
+         doc = []; canonical = None;
+         equation =
+          {Odoc_xref2.Component.TypeDecl.Equation.params = [];
+           private_ = false; manifest = None; constraints = []};
+         representation = None};
+      get = None})];
+  compiled = false; removed = []; doc = []}
 ```
 
 where we've correctly identified that a type `t` exists in the signature. The path in
@@ -1828,225 +1824,217 @@ val m : Component.Module.t Component.Delayed.t =
       canonical = None; hidden = false};
    get = None}
 # let sg' = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
-val sg' : Cpath.Resolved.module_ option * Tools.expansion =
-  (None,
-   Odoc_xref2.Tools.Signature
-    {Odoc_xref2.Component.Signature.items =
-      [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 14),
-        Odoc_model.Lang.Signature.Ordinary,
-        {Odoc_xref2.Component.Delayed.v =
-          Some
-           {Odoc_xref2.Component.Module.locs =
-             Some
-              {Odoc_model.Lang.Locations.source_parent =
-                {Odoc_model__Paths_types.iv =
-                  `Root
-                    (Some
-                      {Odoc_model__Paths_types.iv = `Page (None, None);
-                       ihash = 236059787; ikey = "p_None"},
-                     Root);
-                 ihash = 818126955; ikey = "r_Root.p_None"};
-               impl = None;
-               intf =
-                Some
-                 {Odoc_model__.Location_.file = "";
-                  start = {Odoc_model__.Location_.line = 6; column = 50};
-                  end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
-            doc = [];
-            type_ =
-             Odoc_xref2.Component.Module.ModuleType
-              (Odoc_xref2.Component.ModuleType.Path
-                {Odoc_xref2.Component.ModuleType.p_expansion = None;
-                 p_path =
-                  `Dot
-                    (`Resolved
-                       (`Substituted
-                          (`Gpath
-                             (`Identifier
-                                {Odoc_model__Paths_types.iv =
-                                  `Module
-                                    ({Odoc_model__Paths_types.iv =
-                                       `Root
-                                         (Some
-                                           {Odoc_model__Paths_types.iv =
-                                             `Page (None, None);
-                                            ihash = 236059787;
-                                            ikey = "p_None"},
-                                          Root);
-                                      ihash = 818126955;
-                                      ikey = "r_Root.p_None"},
-                                     Bar);
-                                 ihash = 608577;
-                                 ikey = "m_Bar.r_Root.p_None"}))),
-                     "T")});
-            canonical = None; hidden = false};
-         get = None})];
-     compiled = false; removed = []; doc = []})
+val sg' : Tools.expansion =
+  Odoc_xref2.Tools.Signature
+   {Odoc_xref2.Component.Signature.items =
+     [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 14),
+       Odoc_model.Lang.Signature.Ordinary,
+       {Odoc_xref2.Component.Delayed.v =
+         Some
+          {Odoc_xref2.Component.Module.locs =
+            Some
+             {Odoc_model.Lang.Locations.source_parent =
+               {Odoc_model__Paths_types.iv =
+                 `Root
+                   (Some
+                     {Odoc_model__Paths_types.iv = `Page (None, None);
+                      ihash = 236059787; ikey = "p_None"},
+                    Root);
+                ihash = 818126955; ikey = "r_Root.p_None"};
+              impl = None;
+              intf =
+               Some
+                {Odoc_model__.Location_.file = "";
+                 start = {Odoc_model__.Location_.line = 6; column = 50};
+                 end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
+           doc = [];
+           type_ =
+            Odoc_xref2.Component.Module.ModuleType
+             (Odoc_xref2.Component.ModuleType.Path
+               {Odoc_xref2.Component.ModuleType.p_expansion = None;
+                p_path =
+                 `Dot
+                   (`Resolved
+                      (`Substituted
+                         (`Gpath
+                            (`Identifier
+                               {Odoc_model__Paths_types.iv =
+                                 `Module
+                                   ({Odoc_model__Paths_types.iv =
+                                      `Root
+                                        (Some
+                                          {Odoc_model__Paths_types.iv =
+                                            `Page (None, None);
+                                           ihash = 236059787;
+                                           ikey = "p_None"},
+                                         Root);
+                                     ihash = 818126955;
+                                     ikey = "r_Root.p_None"},
+                                    Bar);
+                                ihash = 608577; ikey = "m_Bar.r_Root.p_None"}))),
+                    "T")});
+           canonical = None; hidden = false};
+        get = None})];
+    compiled = false; removed = []; doc = []}
 # let sg' = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
-val sg' : Cpath.Resolved.module_ option * Tools.expansion =
-  (None,
-   Odoc_xref2.Tools.Signature
-    {Odoc_xref2.Component.Signature.items =
-      [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 17),
-        Odoc_model.Lang.Signature.Ordinary,
-        {Odoc_xref2.Component.Delayed.v =
-          Some
-           {Odoc_xref2.Component.Module.locs =
-             Some
-              {Odoc_model.Lang.Locations.source_parent =
-                {Odoc_model__Paths_types.iv =
-                  `Root
-                    (Some
-                      {Odoc_model__Paths_types.iv = `Page (None, None);
-                       ihash = 236059787; ikey = "p_None"},
-                     Root);
-                 ihash = 818126955; ikey = "r_Root.p_None"};
-               impl = None;
-               intf =
-                Some
-                 {Odoc_model__.Location_.file = "";
-                  start = {Odoc_model__.Location_.line = 6; column = 50};
-                  end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
-            doc = [];
-            type_ =
-             Odoc_xref2.Component.Module.ModuleType
-              (Odoc_xref2.Component.ModuleType.Path
-                {Odoc_xref2.Component.ModuleType.p_expansion = None;
-                 p_path =
-                  `Dot
-                    (`Resolved
-                       (`Substituted
-                          (`Gpath
-                             (`Identifier
-                                {Odoc_model__Paths_types.iv =
-                                  `Module
-                                    ({Odoc_model__Paths_types.iv =
-                                       `Root
-                                         (Some
-                                           {Odoc_model__Paths_types.iv =
-                                             `Page (None, None);
-                                            ihash = 236059787;
-                                            ikey = "p_None"},
-                                          Root);
-                                      ihash = 818126955;
-                                      ikey = "r_Root.p_None"},
-                                     Bar);
-                                 ihash = 608577;
-                                 ikey = "m_Bar.r_Root.p_None"}))),
-                     "T")});
-            canonical = None; hidden = false};
-         get = None})];
-     compiled = false; removed = []; doc = []})
+val sg' : Tools.expansion =
+  Odoc_xref2.Tools.Signature
+   {Odoc_xref2.Component.Signature.items =
+     [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 17),
+       Odoc_model.Lang.Signature.Ordinary,
+       {Odoc_xref2.Component.Delayed.v =
+         Some
+          {Odoc_xref2.Component.Module.locs =
+            Some
+             {Odoc_model.Lang.Locations.source_parent =
+               {Odoc_model__Paths_types.iv =
+                 `Root
+                   (Some
+                     {Odoc_model__Paths_types.iv = `Page (None, None);
+                      ihash = 236059787; ikey = "p_None"},
+                    Root);
+                ihash = 818126955; ikey = "r_Root.p_None"};
+              impl = None;
+              intf =
+               Some
+                {Odoc_model__.Location_.file = "";
+                 start = {Odoc_model__.Location_.line = 6; column = 50};
+                 end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
+           doc = [];
+           type_ =
+            Odoc_xref2.Component.Module.ModuleType
+             (Odoc_xref2.Component.ModuleType.Path
+               {Odoc_xref2.Component.ModuleType.p_expansion = None;
+                p_path =
+                 `Dot
+                   (`Resolved
+                      (`Substituted
+                         (`Gpath
+                            (`Identifier
+                               {Odoc_model__Paths_types.iv =
+                                 `Module
+                                   ({Odoc_model__Paths_types.iv =
+                                      `Root
+                                        (Some
+                                          {Odoc_model__Paths_types.iv =
+                                            `Page (None, None);
+                                           ihash = 236059787;
+                                           ikey = "p_None"},
+                                         Root);
+                                     ihash = 818126955;
+                                     ikey = "r_Root.p_None"},
+                                    Bar);
+                                ihash = 608577; ikey = "m_Bar.r_Root.p_None"}))),
+                    "T")});
+           canonical = None; hidden = false};
+        get = None})];
+    compiled = false; removed = []; doc = []}
 # let sg' = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
-val sg' : Cpath.Resolved.module_ option * Tools.expansion =
-  (None,
-   Odoc_xref2.Tools.Signature
-    {Odoc_xref2.Component.Signature.items =
-      [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 20),
-        Odoc_model.Lang.Signature.Ordinary,
-        {Odoc_xref2.Component.Delayed.v =
-          Some
-           {Odoc_xref2.Component.Module.locs =
-             Some
-              {Odoc_model.Lang.Locations.source_parent =
-                {Odoc_model__Paths_types.iv =
-                  `Root
-                    (Some
-                      {Odoc_model__Paths_types.iv = `Page (None, None);
-                       ihash = 236059787; ikey = "p_None"},
-                     Root);
-                 ihash = 818126955; ikey = "r_Root.p_None"};
-               impl = None;
-               intf =
-                Some
-                 {Odoc_model__.Location_.file = "";
-                  start = {Odoc_model__.Location_.line = 6; column = 50};
-                  end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
-            doc = [];
-            type_ =
-             Odoc_xref2.Component.Module.ModuleType
-              (Odoc_xref2.Component.ModuleType.Path
-                {Odoc_xref2.Component.ModuleType.p_expansion = None;
-                 p_path =
-                  `Dot
-                    (`Resolved
-                       (`Substituted
-                          (`Gpath
-                             (`Identifier
-                                {Odoc_model__Paths_types.iv =
-                                  `Module
-                                    ({Odoc_model__Paths_types.iv =
-                                       `Root
-                                         (Some
-                                           {Odoc_model__Paths_types.iv =
-                                             `Page (None, None);
-                                            ihash = 236059787;
-                                            ikey = "p_None"},
-                                          Root);
-                                      ihash = 818126955;
-                                      ikey = "r_Root.p_None"},
-                                     Bar);
-                                 ihash = 608577;
-                                 ikey = "m_Bar.r_Root.p_None"}))),
-                     "T")});
-            canonical = None; hidden = false};
-         get = None})];
-     compiled = false; removed = []; doc = []})
+val sg' : Tools.expansion =
+  Odoc_xref2.Tools.Signature
+   {Odoc_xref2.Component.Signature.items =
+     [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 20),
+       Odoc_model.Lang.Signature.Ordinary,
+       {Odoc_xref2.Component.Delayed.v =
+         Some
+          {Odoc_xref2.Component.Module.locs =
+            Some
+             {Odoc_model.Lang.Locations.source_parent =
+               {Odoc_model__Paths_types.iv =
+                 `Root
+                   (Some
+                     {Odoc_model__Paths_types.iv = `Page (None, None);
+                      ihash = 236059787; ikey = "p_None"},
+                    Root);
+                ihash = 818126955; ikey = "r_Root.p_None"};
+              impl = None;
+              intf =
+               Some
+                {Odoc_model__.Location_.file = "";
+                 start = {Odoc_model__.Location_.line = 6; column = 50};
+                 end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
+           doc = [];
+           type_ =
+            Odoc_xref2.Component.Module.ModuleType
+             (Odoc_xref2.Component.ModuleType.Path
+               {Odoc_xref2.Component.ModuleType.p_expansion = None;
+                p_path =
+                 `Dot
+                   (`Resolved
+                      (`Substituted
+                         (`Gpath
+                            (`Identifier
+                               {Odoc_model__Paths_types.iv =
+                                 `Module
+                                   ({Odoc_model__Paths_types.iv =
+                                      `Root
+                                        (Some
+                                          {Odoc_model__Paths_types.iv =
+                                            `Page (None, None);
+                                           ihash = 236059787;
+                                           ikey = "p_None"},
+                                         Root);
+                                     ihash = 818126955;
+                                     ikey = "r_Root.p_None"},
+                                    Bar);
+                                ihash = 608577; ikey = "m_Bar.r_Root.p_None"}))),
+                    "T")});
+           canonical = None; hidden = false};
+        get = None})];
+    compiled = false; removed = []; doc = []}
 # let sg' = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
-val sg' : Cpath.Resolved.module_ option * Tools.expansion =
-  (None,
-   Odoc_xref2.Tools.Signature
-    {Odoc_xref2.Component.Signature.items =
-      [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 23),
-        Odoc_model.Lang.Signature.Ordinary,
-        {Odoc_xref2.Component.Delayed.v =
-          Some
-           {Odoc_xref2.Component.Module.locs =
-             Some
-              {Odoc_model.Lang.Locations.source_parent =
-                {Odoc_model__Paths_types.iv =
-                  `Root
-                    (Some
-                      {Odoc_model__Paths_types.iv = `Page (None, None);
-                       ihash = 236059787; ikey = "p_None"},
-                     Root);
-                 ihash = 818126955; ikey = "r_Root.p_None"};
-               impl = None;
-               intf =
-                Some
-                 {Odoc_model__.Location_.file = "";
-                  start = {Odoc_model__.Location_.line = 6; column = 50};
-                  end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
-            doc = [];
-            type_ =
-             Odoc_xref2.Component.Module.ModuleType
-              (Odoc_xref2.Component.ModuleType.Path
-                {Odoc_xref2.Component.ModuleType.p_expansion = None;
-                 p_path =
-                  `Dot
-                    (`Resolved
-                       (`Substituted
-                          (`Gpath
-                             (`Identifier
-                                {Odoc_model__Paths_types.iv =
-                                  `Module
-                                    ({Odoc_model__Paths_types.iv =
-                                       `Root
-                                         (Some
-                                           {Odoc_model__Paths_types.iv =
-                                             `Page (None, None);
-                                            ihash = 236059787;
-                                            ikey = "p_None"},
-                                          Root);
-                                      ihash = 818126955;
-                                      ikey = "r_Root.p_None"},
-                                     Bar);
-                                 ihash = 608577;
-                                 ikey = "m_Bar.r_Root.p_None"}))),
-                     "T")});
-            canonical = None; hidden = false};
-         get = None})];
-     compiled = false; removed = []; doc = []})
+val sg' : Tools.expansion =
+  Odoc_xref2.Tools.Signature
+   {Odoc_xref2.Component.Signature.items =
+     [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 23),
+       Odoc_model.Lang.Signature.Ordinary,
+       {Odoc_xref2.Component.Delayed.v =
+         Some
+          {Odoc_xref2.Component.Module.locs =
+            Some
+             {Odoc_model.Lang.Locations.source_parent =
+               {Odoc_model__Paths_types.iv =
+                 `Root
+                   (Some
+                     {Odoc_model__Paths_types.iv = `Page (None, None);
+                      ihash = 236059787; ikey = "p_None"},
+                    Root);
+                ihash = 818126955; ikey = "r_Root.p_None"};
+              impl = None;
+              intf =
+               Some
+                {Odoc_model__.Location_.file = "";
+                 start = {Odoc_model__.Location_.line = 6; column = 50};
+                 end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
+           doc = [];
+           type_ =
+            Odoc_xref2.Component.Module.ModuleType
+             (Odoc_xref2.Component.ModuleType.Path
+               {Odoc_xref2.Component.ModuleType.p_expansion = None;
+                p_path =
+                 `Dot
+                   (`Resolved
+                      (`Substituted
+                         (`Gpath
+                            (`Identifier
+                               {Odoc_model__Paths_types.iv =
+                                 `Module
+                                   ({Odoc_model__Paths_types.iv =
+                                      `Root
+                                        (Some
+                                          {Odoc_model__Paths_types.iv =
+                                            `Page (None, None);
+                                           ihash = 236059787;
+                                           ikey = "p_None"},
+                                         Root);
+                                     ihash = 818126955;
+                                     ikey = "r_Root.p_None"},
+                                    Bar);
+                                ihash = 608577; ikey = "m_Bar.r_Root.p_None"}))),
+                    "T")});
+           canonical = None; hidden = false};
+        get = None})];
+    compiled = false; removed = []; doc = []}
 ```
 
 ```ocaml env=e1
