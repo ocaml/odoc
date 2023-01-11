@@ -71,6 +71,14 @@ Source links generated in the documentation:
        <a href="#type-ext" class="anchor"></a>
        <a href="A.ml.html#def-A9" class="source_link">Source</a>
   --
+      <div class="spec type extension anchored" id="extension-decl-Foo">
+       <a href="#extension-decl-Foo" class="anchor"></a>
+       <a href="A.ml.html#def-A10" class="source_link">Source</a>
+  --
+      <div class="spec exception anchored" id="exception-Exn">
+       <a href="#exception-Exn" class="anchor"></a>
+       <a href="A.ml.html#def-A11" class="source_link">Source</a>
+  --
       <div class="spec class anchored" id="class-cls">
        <a href="#class-cls" class="anchor"></a>
        <a href="A.ml.html#def-A12" class="source_link">Source</a>
