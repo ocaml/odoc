@@ -147,9 +147,7 @@ unresolved in the paths though:
     },
     "locs": {
       "Some": {
-        "source_parent": {
-          "`Module": [ { "`Root": [ "None", "Main" ] }, "Container" ]
-        },
+        "source_parent": { "`Root": [ "None", "Main__Container" ] },
         "impl": "None",
         "intf": {
           "Some": "File \"main__Container.mli\", line 10, characters 2-14"
@@ -205,64 +203,58 @@ unresolved in the paths though:
         },
         {
           "Some": {
-            "e_expansion": {
-              "Signature": {
-                "items": [
-                  {
-                    "Type": [
-                      "Ordinary",
-                      {
-                        "id": {
-                          "`Type": [
-                            {
-                              "`Module": [
-                                {
-                                  "`Module": [
-                                    {
-                                      "`Module": [
-                                        { "`Root": [ "None", "Main" ] },
-                                        "Container"
-                                      ]
-                                    },
-                                    "Test"
-                                  ]
-                                },
-                                "B"
-                              ]
-                            },
-                            "t"
-                          ]
-                        },
-                        "locs": {
-                          "source_parent": {
+            "Signature": {
+              "items": [
+                {
+                  "Type": [
+                    "Ordinary",
+                    {
+                      "id": {
+                        "`Type": [
+                          {
                             "`Module": [
-                              { "`Root": [ "None", "Main" ] },
-                              "Container"
+                              {
+                                "`Module": [
+                                  {
+                                    "`Module": [
+                                      { "`Root": [ "None", "Main" ] },
+                                      "Container"
+                                    ]
+                                  },
+                                  "Test"
+                                ]
+                              },
+                              "B"
                             ]
                           },
-                          "impl": "None",
-                          "intf": {
-                            "Some":
-                              "File \"main__Container.mli\", line 7, characters 4-10"
-                          }
+                          "t"
+                        ]
+                      },
+                      "locs": {
+                        "source_parent": {
+                          "`Root": [ "None", "Main__Container" ]
                         },
-                        "doc": [],
-                        "equation": {
-                          "params": [],
-                          "private_": "false",
-                          "manifest": "None",
-                          "constraints": []
-                        },
-                        "representation": "None"
-                      }
-                    ]
-                  }
-                ],
-                "compiled": "true",
-                "doc": []
-              }
-            },
-            "e_sources": "None"
+                        "impl": "None",
+                        "intf": {
+                          "Some":
+                            "File \"main__Container.mli\", line 7, characters 4-10"
+                        }
+                      },
+                      "doc": [],
+                      "equation": {
+                        "params": [],
+                        "private_": "false",
+                        "manifest": "None",
+                        "constraints": []
+                      },
+                      "representation": "None"
+                    }
+                  ]
+                }
+              ],
+              "compiled": "true",
+              "doc": []
+            }
           }
         }
       ]

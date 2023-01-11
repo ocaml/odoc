@@ -18,7 +18,7 @@ let lookup_parent env parent =
   let r_path = Lang_of.Path.resolved_module (Lang_of.empty ()) r_cpath in
   let id = Path.Resolved.Module.identifier r_path in
   let m = Component.Delayed.get m in
-  Tools.expansion_of_module env m |> of_result >>= fun (_, exp) ->
+  Tools.expansion_of_module env m |> of_result >>= fun exp ->
   Expand_tools.handle_expansion env (id :> Identifier.Signature.t) exp
   |> of_result
   >>= fun (_, exp) -> Some (sig_of_simple_expansion exp)

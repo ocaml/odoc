@@ -32,7 +32,7 @@ let synopsis_of_module env (m : Component.Module.t) =
       in
       (* If there is no doc, look at the expansion. *)
       match
-        Tools.expansion_of_module env m >>= fun (_, exp) -> handle_expansion exp
+        Tools.expansion_of_module env m >>= fun exp -> handle_expansion exp
       with
       | Ok sg -> synopsis_from_comment (Component.extract_signature_doc sg)
       | Error _ -> None)
@@ -317,14 +317,13 @@ and open_ env parent = function
       { open_ with doc = comment_docs env parent doc }
 
 let locations env (locs : Locations.t) =
-  let source_parent = Env.lookup_source_parent env locs.source_parent in
   match locs.impl with
   | Some (Unresolved unresolved) -> (
       (* Uid couldn't be resolved locally, resolve again using the model. *)
       match Locations_tools.lookup_loc env unresolved with
       | Some locs -> locs
-      | None -> { locs with source_parent; impl = None })
-  | Some (Resolved _) | None -> { locs with source_parent }
+      | None -> { locs with impl = None })
+  | Some (Resolved _) | None -> locs
 
 let rec unit env t =
   let open Compilation_unit in
@@ -492,10 +491,6 @@ and simple_expansion :
       let env' = Env.add_functor_parameter arg env in
       Functor (functor_argument env arg, simple_expansion env' id sg)
 
-and expansion_with_source env id exp =
-  let open ModuleType in
-  { exp with e_expansion = simple_expansion env id exp.e_expansion }
-
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
@@ -506,47 +501,17 @@ and module_ : Env.t -> Module.t -> Module.t =
     let type_ = module_decl env sg_id m.type_ in
     let type_ =
       match type_ with
-      | Alias ((`Resolved p as resolved_path), _) ->
+      | Alias (`Resolved p, _) ->
           if expansion_needed p m.id then
             let cp = Component.Of_Lang.(resolved_module_path (empty ()) p) in
             match
               Tools.expansion_of_module_path ~strengthen:false env
                 (`Resolved cp)
-              >>= fun (target_cp, exp) ->
-              Expand_tools.handle_expansion env (m.id :> Id.Signature.t) exp
-              >>= fun (_, exp) -> Ok (target_cp, exp)
+              >>= Expand_tools.handle_expansion env (m.id :> Id.Signature.t)
             with
-            | Ok (target_cp, e) ->
-                let e_id =
-                  let target_path =
-                    Lang_of.(Path.resolved_module (empty ())) target_cp
-                  in
-                  Paths.Path.Resolved.Module.identifier target_path
-                in
-                let exp =
-                  let e_sources =
-                    let root = Id.RootModule.name (Id.Path.Module.root e_id) in
-                    match Env.lookup_root_module root env with
-                    | Some (Env.Resolved { sources = Some src; _ }) ->
-                        Some { src with Source_code.parent = m.id }
-                    | Some (Resolved { sources = None; _ })
-                    | Some Forward
-                    | None ->
-                        None
-                  in
-                  let e_expansion =
-                    Lang_of.(simple_expansion (empty ()) sg_id e)
-                  in
-                  { ModuleType.e_expansion; e_sources }
-                in
-                (* Propagate the new source parent. *)
-                let env =
-                  match e_id with
-                  | { iv = #Id.Module.t_pv; _ } as e_id ->
-                      Env.set_source_parent e_id m.id env
-                  | _ -> env
-                in
-                Alias (resolved_path, Some (expansion_with_source env sg_id exp))
+            | Ok (_, e) ->
+                let le = Lang_of.(simple_expansion (empty ()) sg_id e) in
+                Alias (`Resolved p, Some (simple_expansion env sg_id le))
             | Error _ -> type_
           else type_
       | Alias _ | ModuleType _ -> type_
@@ -560,7 +525,7 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
   match decl with
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
   | Alias (p, e) ->
-      Alias (module_path env p, Opt.map (expansion_with_source env id) e)
+      Alias (module_path env p, Opt.map (simple_expansion env id) e)
 
 and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
  fun env id decl ->

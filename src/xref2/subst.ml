@@ -608,10 +608,6 @@ and simple_expansion :
   | Signature sg -> Signature (signature s sg)
   | Functor (arg, sg) -> Functor (functor_parameter s arg, simple_expansion s sg)
 
-and expansion_with_source s t =
-  let open Component.ModuleType in
-  { t with e_expansion = simple_expansion s t.e_expansion }
-
 and module_type s t =
   let open Component.ModuleType in
   let expr =
@@ -760,7 +756,7 @@ and with_module_type_substitution s sub =
 
 and module_decl s t =
   match t with
-  | Alias (p, e) -> Alias (module_path s p, option_ expansion_with_source s e)
+  | Alias (p, e) -> Alias (module_path s p, option_ simple_expansion s e)
   | ModuleType t -> ModuleType (module_type_expr s t)
 
 and include_decl s t =

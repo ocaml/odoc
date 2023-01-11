@@ -162,9 +162,6 @@ type t = {
   resolver : resolver option;
   recorder : recorder option;
   fragmentroot : (int * Component.Signature.t) option;
-  source_parent : Identifier.Module.t Identifier.Maps.Module.t;
-      (** Roots holding source code. The map keeps track of roots that are moved
-          (due to a hidden alias or canonical). *)
 }
 
 let is_linking env = env.linking
@@ -201,17 +198,11 @@ let empty =
     recorder = None;
     ambiguous_labels = Identifier.Maps.Label.empty;
     fragmentroot = None;
-    source_parent = Identifier.Maps.Module.empty;
   }
 
 let add_fragment_root sg env =
   let id = unique_id () in
   { env with fragmentroot = Some (id, sg); id }
-
-let set_source_parent from to_ env =
-  let id = unique_id () in
-  let source_parent = Identifier.Maps.Module.add from to_ env.source_parent in
-  { env with source_parent; id }
 
 (** Implements most [add_*] functions. *)
 let add_to_elts kind identifier component env =
@@ -603,11 +594,6 @@ let lookup_fragment_root env =
       maybe_record_result (FragmentRoot i);
       result
   | None -> None
-
-let lookup_source_parent env id =
-  match Identifier.Maps.Module.find_opt id env.source_parent with
-  | None -> id
-  | Some id -> id
 
 let mk_functor_parameter module_type =
   let type_ = Component.Module.ModuleType module_type in

@@ -50,9 +50,6 @@ val empty : t
 
 val add_fragment_root : Component.Signature.t -> t -> t
 
-val set_source_parent : Identifier.Module.t -> Identifier.Module.t -> t -> t
-(** Looked up with {!lookup_source_parent}. *)
-
 val add_module :
   Identifier.Path.Module.t ->
   Component.Module.t Component.Delayed.t ->
@@ -91,8 +88,6 @@ val add_module_type_functor_args :
   Component.ModuleType.t -> Identifier.ModuleType.t -> t -> t
 
 val lookup_fragment_root : t -> (int * Component.Signature.t) option
-
-val lookup_source_parent : t -> Identifier.Module.t -> Identifier.Module.t
 
 val lookup_page : string -> t -> Lang.Page.t option
 

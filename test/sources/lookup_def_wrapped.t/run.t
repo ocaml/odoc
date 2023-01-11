@@ -10,9 +10,13 @@ It's a simpler case than Dune's wrapping.
   $ odoc compile --impl b.ml -I . main__B.cmt
   $ odoc compile --impl main.ml -I . main.cmt
 
+  $ odoc link -I . main__A.odoc
+  $ odoc link -I . main__B.odoc
   $ odoc link -I . main.odoc
 
   $ odoc html-generate --indent -o html main.odocl
+  $ odoc html-generate --hidden --indent -o html main__A.odocl
+  $ odoc html-generate --hidden --indent -o html main__B.odocl
 
 Look if all the source files are generated:
 
@@ -20,13 +24,17 @@ Look if all the source files are generated:
   html
   html/Main
   html/Main/A
-  html/Main/A/A.ml.html
   html/Main/A/index.html
   html/Main/B
-  html/Main/B/B.ml.html
   html/Main/B/index.html
   html/Main/Main.ml.html
   html/Main/index.html
+  html/Main__A
+  html/Main__A/Main__A.ml.html
+  html/Main__A/index.html
+  html/Main__B
+  html/Main__B/Main__B.ml.html
+  html/Main__B/index.html
 
   $ cat html/Main/A/index.html
   <!DOCTYPE html>
@@ -49,8 +57,9 @@ Look if all the source files are generated:
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="A.ml.html#def-Main__A0" class="source_link">Source</a>
-       <code><span><span class="keyword">val</span> x : int</span></code>
+       <a href="../../Main__A/Main__A.ml.html#def-Main__A0" class="source_link">
+        Source
+       </a><code><span><span class="keyword">val</span> x : int</span></code>
       </div>
      </div>
     </div>

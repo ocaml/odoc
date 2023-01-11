@@ -609,11 +609,6 @@ and simple_expansion :
   | Functor (Unit, sg) ->
       Functor (Unit, simple_expansion map (Identifier.Mk.result id) sg)
 
-and expansion_with_source map id e =
-  let open Component.ModuleType in
-  let e_expansion = simple_expansion map id e.e_expansion in
-  { Lang.ModuleType.e_expansion; e_sources = e.e_sources }
-
 and combine_shadowed s1 s2 =
   let open Odoc_model.Lang.Include in
   {
@@ -741,7 +736,7 @@ and module_decl :
   match d with
   | Component.Module.Alias (p, s) ->
       Odoc_model.Lang.Module.Alias
-        (Path.module_ map p, Opt.map (expansion_with_source map identifier) s)
+        (Path.module_ map p, Opt.map (simple_expansion map identifier) s)
   | ModuleType mty -> ModuleType (module_type_expr map identifier mty)
 
 and mty_substitution map identifier = function
