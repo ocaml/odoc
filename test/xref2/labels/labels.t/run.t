@@ -58,8 +58,28 @@ There are two references in N, one should point to a local label and the other t
     <header class="odoc-preamble">
      <h1>Module <code><span>Test.N</span></code></h1>
     </header>
-    <nav class="odoc-toc">
-     <ul><li><a href="#B">An other conflicting label</a></li></ul>
+    <nav>
+     <ul class="tabs">
+      <li class="tab">
+       <input checked="checked" type="radio" name="tabs" id="tab1"/>
+       <label for="tab1">Contents</label>
+       <div id="tab-content1" class="content">
+        <ul><li><a href="#B">An other conflicting label</a></li></ul>
+       </div>
+      </li>
+      <li class="tab"><input type="radio" name="tabs" id="tab2"/>
+       <label for="tab2">Index</label>
+       <div id="tab-content2" class="content">
+        <ul>
+         <li>module Test
+          <ul><li><ul><li>module M</li></ul></li>
+           <li><ul><li>module N</li></ul></li>
+          </ul>
+         </li>
+        </ul>
+       </div>
+      </li>
+     </ul>
     </nav>
     <div class="odoc-content">
      <h2 id="B"><a href="#B" class="anchor"></a>An other conflicting label</h2>
@@ -90,10 +110,30 @@ The second occurence of 'B' in the main page should be disambiguated
     <header class="odoc-preamble">
      <h1>Module <code><span>Test</span></code></h1>
     </header>
-    <nav class="odoc-toc">
-     <ul><li><a href="#A">First label</a></li>
-      <li><a href="#B">Floating label</a></li>
-      <li><a href="#B_4">Dupplicate B</a></li>
+    <nav>
+     <ul class="tabs">
+      <li class="tab">
+       <input checked="checked" type="radio" name="tabs" id="tab1"/>
+       <label for="tab1">Contents</label>
+       <div id="tab-content1" class="content">
+        <ul><li><a href="#A">First label</a></li>
+         <li><a href="#B">Floating label</a></li>
+         <li><a href="#B_4">Dupplicate B</a></li>
+        </ul>
+       </div>
+      </li>
+      <li class="tab"><input type="radio" name="tabs" id="tab2"/>
+       <label for="tab2">Index</label>
+       <div id="tab-content2" class="content">
+        <ul>
+         <li>module Test
+          <ul><li><ul><li>module M</li></ul></li>
+           <li><ul><li>module N</li></ul></li>
+          </ul>
+         </li>
+        </ul>
+       </div>
+      </li>
      </ul>
     </nav>
     <div class="odoc-content">

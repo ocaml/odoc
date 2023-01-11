@@ -1,3 +1,4 @@
+open Odoc_model
 open Or_error
 
 let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =

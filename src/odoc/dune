@@ -3,7 +3,6 @@
  (public_name odoc.odoc)
  (libraries
   compiler-libs.common
-  fpath
   odoc_html
   odoc_html_support_files
   odoc_latex
@@ -11,8 +10,7 @@
   odoc_manpage
   odoc_model
   odoc_xref2
-  tyxml
-  unix)
+  tyxml)
  (instrumentation
   (backend bisect_ppx)))
 

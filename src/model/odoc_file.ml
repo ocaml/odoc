@@ -14,14 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Odoc_model
 open Or_error
 
 type content =
   | Page_content of Lang.Page.t
   | Unit_content of Lang.Compilation_unit.t
 
-type t = { content : content; warnings : Odoc_model.Error.t list }
+type t = { content : content; warnings : Error.t list }
 
 (** Written at the top of the files. Checked when loading. *)
 let magic = "odoc-%%VERSION%%"

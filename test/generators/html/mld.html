@@ -13,12 +13,24 @@
      title, like modules and other pages generated fully by odoc do.
    </p><p>It will have a TOC generated from section headings.</p>
   </header>
-  <nav class="odoc-toc">
-   <ul><li><a href="#section">Section</a></li>
-    <li><a href="#another-section">Another section</a>
-     <ul><li><a href="#subsection">Subsection</a></li>
-      <li><a href="#another-subsection">Another Subsection</a></li>
-     </ul>
+  <nav>
+   <ul class="tabs">
+    <li class="tab">
+     <input checked="checked" type="radio" name="tabs" id="tab1"/>
+     <label for="tab1">Contents</label>
+     <div id="tab-content1" class="content">
+      <ul><li><a href="#section">Section</a></li>
+       <li><a href="#another-section">Another section</a>
+        <ul><li><a href="#subsection">Subsection</a></li>
+         <li><a href="#another-subsection">Another Subsection</a></li>
+        </ul>
+       </li>
+      </ul>
+     </div>
+    </li>
+    <li class="tab"><input type="radio" name="tabs" id="tab2"/>
+     <label for="tab2">Index</label>
+     <div id="tab-content2" class="content"></div>
     </li>
    </ul>
   </nav>

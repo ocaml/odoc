@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_model
 open Or_error
 
 (** Produces html fragment files from a mld file. *)

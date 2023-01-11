@@ -33,32 +33,53 @@
    <h1>Module <code><span>Markup</span></code></h1>
    <p>Here, we test the rendering of comment markup.</p>
   </header>
-  <nav class="odoc-toc">
-   <ul>
-    <li><a href="#sections">Sections</a>
-     <ul>
-      <li><a href="#subsection-headings">Subsection headings</a>
-       <ul>
-        <li><a href="#sub-subsection-headings">Sub-subsection headings</a>
-        </li>
-        <li><a href="#anchors">Anchors</a>
-         <ul>
-          <li><a href="#paragraph">Paragraph</a>
-           <ul><li><a href="#subparagraph">Subparagraph</a></li></ul>
-          </li>
-         </ul>
-        </li>
-       </ul>
-      </li>
-     </ul>
-    </li><li><a href="#styling">Styling</a></li>
-    <li><a href="#links-and-references">Links and references</a></li>
-    <li><a href="#preformatted-text">Preformatted text</a></li>
-    <li><a href="#lists">Lists</a></li>
-    <li><a href="#unicode">Unicode</a></li>
-    <li><a href="#raw-html">Raw HTML</a></li>
-    <li><a href="#math">Math</a></li><li><a href="#modules">Modules</a></li>
-    <li><a href="#tags">Tags</a></li>
+  <nav>
+   <ul class="tabs">
+    <li class="tab">
+     <input checked="checked" type="radio" name="tabs" id="tab1"/>
+     <label for="tab1">Contents</label>
+     <div id="tab-content1" class="content">
+      <ul>
+       <li><a href="#sections">Sections</a>
+        <ul>
+         <li><a href="#subsection-headings">Subsection headings</a>
+          <ul>
+           <li><a href="#sub-subsection-headings">Sub-subsection headings</a>
+           </li>
+           <li><a href="#anchors">Anchors</a>
+            <ul>
+             <li><a href="#paragraph">Paragraph</a>
+              <ul><li><a href="#subparagraph">Subparagraph</a></li></ul>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </li>
+        </ul>
+       </li><li><a href="#styling">Styling</a></li>
+       <li><a href="#links-and-references">Links and references</a></li>
+       <li><a href="#preformatted-text">Preformatted text</a></li>
+       <li><a href="#lists">Lists</a></li>
+       <li><a href="#unicode">Unicode</a></li>
+       <li><a href="#raw-html">Raw HTML</a></li>
+       <li><a href="#math">Math</a></li>
+       <li><a href="#modules">Modules</a></li>
+       <li><a href="#tags">Tags</a></li>
+      </ul>
+     </div>
+    </li>
+    <li class="tab"><input type="radio" name="tabs" id="tab2"/>
+     <label for="tab2">Index</label>
+     <div id="tab-content2" class="content">
+      <ul>
+       <li>module Markup
+        <ul><li>val foo</li><li><ul><li>module X</li></ul></li>
+         <li><ul><li>module Y</li></ul></li>
+        </ul>
+       </li>
+      </ul>
+     </div>
+    </li>
    </ul>
   </nav>
   <div class="odoc-content">

@@ -400,17 +400,18 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
-  let rec include_ ~config { Subpage.content; _ } = page ~config content
+  let rec include_ ~config odoc_file { Subpage.content; _ } =
+    page ~config content odoc_file
 
-  and subpages ~config subpages =
-    Utils.list_concat_map ~f:(include_ ~config) subpages
+  and subpages ~config odoc_file subpages =
+    Utils.list_concat_map ~f:(include_ ~config odoc_file) subpages
 
-  and page ~config p : Odoc_document.Renderer.page list =
+  and page ~config p odoc_file : Odoc_document.Renderer.page list =
     let { Page.preamble; items = i; url } = Doctree.Labels.disambiguate_page p
     and subpages =
       (* Don't use the output of [disambiguate_page] to avoid unecessarily
          mangled labels. *)
-      subpages ~config @@ Doctree.Subpages.compute p
+      subpages ~config odoc_file @@ Doctree.Subpages.compute p
     in
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
@@ -427,7 +428,7 @@ module Page = struct
         ~breadcrumbs ~toc ~url ~uses_katex content subpages
     else
       Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex content
-        subpages
+        subpages odoc_file
 end
 
 let render ~config page = Page.page ~config page

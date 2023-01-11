@@ -1,4 +1,5 @@
 open Odoc_document
+open Odoc_model
 open Or_error
 
 val render_odoc :

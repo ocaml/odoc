@@ -15,6 +15,7 @@
  *)
 
 open StdLabels
+open Odoc_model
 open Or_error
 
 module Compile = struct

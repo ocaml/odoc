@@ -16,7 +16,6 @@
 
 (** Load and save [.odoc] and [.odocl] files. *)
 
-open Odoc_model
 open Or_error
 
 (** Either a page or a module. *)

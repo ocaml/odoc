@@ -14,10 +14,44 @@
    <h1>Module <code><span>Nested.F</span></code></h1>
    <p>This is a functor F.</p><p>Some additional comments.</p>
   </header>
-  <nav class="odoc-toc">
-   <ul><li><a href="#parameters">Parameters</a></li>
-    <li><a href="#signature">Signature</a></li>
-    <li><a href="#type_3">Type</a></li>
+  <nav>
+   <ul class="tabs">
+    <li class="tab">
+     <input checked="checked" type="radio" name="tabs" id="tab1"/>
+     <label for="tab1">Contents</label>
+     <div id="tab-content1" class="content">
+      <ul><li><a href="#parameters">Parameters</a></li>
+       <li><a href="#signature">Signature</a></li>
+       <li><a href="#type_3">Type</a></li>
+      </ul>
+     </div>
+    </li>
+    <li class="tab"><input type="radio" name="tabs" id="tab2"/>
+     <label for="tab2">Index</label>
+     <div id="tab-content2" class="content">
+      <ul>
+       <li>module Nested
+        <ul>
+         <li><ul><li>module X<ul><li>type t</li><li>val x</li></ul></li></ul>
+         </li>
+         <li>
+          <ul><li>module type Y<ul><li>type t</li><li>val y</li></ul></li>
+          </ul>
+         </li><li>module F</li>
+         <li>
+          <ul>
+           <li>class z
+            <ul><li>val y</li><li>val y'</li><li>method z</li>
+             <li>method z'</li>
+            </ul>
+           </li>
+          </ul>
+         </li><li><ul><li>class inherits</li></ul></li>
+        </ul>
+       </li>
+      </ul>
+     </div>
+    </li>
    </ul>
   </nav>
   <div class="odoc-content">

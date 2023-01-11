@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_model
 open Or_error
 
 (** Computes the dependencies required for each step of the pipeline to work

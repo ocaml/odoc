@@ -23,7 +23,7 @@ type t
 
 val create :
   important_digests:bool ->
-  directories:Fs.Directory.t list ->
+  directories:Odoc_model.Fs.Directory.t list ->
   open_modules:string list ->
   t
 (** Prepare the environment for a given list of

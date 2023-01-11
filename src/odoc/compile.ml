@@ -1,3 +1,4 @@
+open Odoc_model
 open Or_error
 open Odoc_model.Names
 

@@ -45,6 +45,17 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     <header class="odoc-preamble"><h1>Module <code><span>A</span></code></h1>
      <p>Module A.</p>
     </header>
+    <nav>
+     <ul class="tabs">
+      <li class="tab">
+       <input checked="checked" type="radio" name="tabs" id="tab1"/>
+       <label for="tab1">Index</label>
+       <div id="tab-content1" class="content">
+        <ul><li>module A<ul><li>module B</li></ul></li></ul>
+       </div>
+      </li>
+     </ul>
+    </nav>
     <div class="odoc-content">
      <div class="odoc-spec">
       <div class="spec module anchored" id="module-B">
@@ -85,8 +96,22 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
      <p>Module B. This paragraph is the synopsis.</p>
      <p>This paragraph and the previous are part of the preamble.</p>
     </header>
-    <nav class="odoc-toc">
-     <ul><li><a href="#an-heading">An heading</a></li></ul>
+    <nav>
+     <ul class="tabs">
+      <li class="tab">
+       <input checked="checked" type="radio" name="tabs" id="tab1"/>
+       <label for="tab1">Contents</label>
+       <div id="tab-content1" class="content">
+        <ul><li><a href="#an-heading">An heading</a></li></ul>
+       </div>
+      </li>
+      <li class="tab"><input type="radio" name="tabs" id="tab2"/>
+       <label for="tab2">Index</label>
+       <div id="tab-content2" class="content">
+        <ul><li>module A<ul><li>module B</li></ul></li></ul>
+       </div>
+      </li>
+     </ul>
     </nav>
     <div class="odoc-content">
      <h3 id="an-heading"><a href="#an-heading" class="anchor"></a>An heading
@@ -122,6 +147,16 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>A__b</span></code></h1>
-    </header><div class="odoc-content"></div>
+    </header>
+    <nav>
+     <ul class="tabs">
+      <li class="tab">
+       <input checked="checked" type="radio" name="tabs" id="tab1"/>
+       <label for="tab1">Index</label>
+       <div id="tab-content1" class="content"><ul><li>module A__b</li></ul>
+       </div>
+      </li>
+     </ul>
+    </nav><div class="odoc-content"></div>
    </body>
   </html>

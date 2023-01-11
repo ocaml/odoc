@@ -1,3 +1,5 @@
+open Odoc_model
+
 let should_include ~without_theme file =
   if without_theme then match file with "odoc.css" -> false | _ -> true
   else true

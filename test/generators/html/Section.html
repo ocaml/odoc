@@ -14,24 +14,39 @@
      in it.
    </p>
   </header>
-  <nav class="odoc-toc">
-   <ul><li><a href="#empty-section">Empty section</a></li>
-    <li><a href="#text-only">Text only</a></li>
-    <li><a href="#aside-only">Aside only</a></li>
-    <li><a href="#value-only">Value only</a></li>
-    <li><a href="#empty-section_2">Empty section</a></li>
-    <li><a href="#within-a-comment">within a comment</a>
-     <ul>
-      <li>
-       <a href="#and-one-with-a-nested-section">and one with a nested section
-       </a>
-      </li>
-     </ul>
+  <nav>
+   <ul class="tabs">
+    <li class="tab">
+     <input checked="checked" type="radio" name="tabs" id="tab1"/>
+     <label for="tab1">Contents</label>
+     <div id="tab-content1" class="content">
+      <ul><li><a href="#empty-section">Empty section</a></li>
+       <li><a href="#text-only">Text only</a></li>
+       <li><a href="#aside-only">Aside only</a></li>
+       <li><a href="#value-only">Value only</a></li>
+       <li><a href="#empty-section_2">Empty section</a></li>
+       <li><a href="#within-a-comment">within a comment</a>
+        <ul>
+         <li>
+          <a href="#and-one-with-a-nested-section">and one with a nested
+            section
+          </a>
+         </li>
+        </ul>
+       </li>
+       <li>
+        <a href="#this-section-title-has-markup"><em>This</em> 
+         <code>section</code> <b>title</b> <sub>has</sub> <sup>markup</sup>
+        </a>
+       </li>
+      </ul>
+     </div>
     </li>
-    <li>
-     <a href="#this-section-title-has-markup"><em>This</em> 
-      <code>section</code> <b>title</b> <sub>has</sub> <sup>markup</sup>
-     </a>
+    <li class="tab"><input type="radio" name="tabs" id="tab2"/>
+     <label for="tab2">Index</label>
+     <div id="tab-content2" class="content">
+      <ul><li>module Section<ul><li>val foo</li></ul></li></ul>
+     </div>
     </li>
    </ul>
   </nav>

@@ -16,8 +16,37 @@
 
 module Html = Tyxml.Html
 
-let html_of_toc toc =
+let nav_tab ~id ~label ?(checked = false) content =
+  let tab_id = Printf.sprintf "tab%i" id in
+  let content_id = Printf.sprintf "tab-content%i" id in
+  let input_attrs =
+    [ Html.a_input_type `Radio; Html.a_name "tabs"; Html.a_id tab_id ]
+  in
+  let input_attrs =
+    if checked then Html.a_checked () :: input_attrs else input_attrs
+  in
+  Html.li
+    ~a:[ Html.a_class [ "tab" ] ]
+    [
+      Html.input ~a:input_attrs ();
+      Html.label ~a:[ Html.a_label_for tab_id ] [ Html.txt label ];
+      Html.div content ~a:[ Html.a_id content_id; Html.a_class [ "content" ] ];
+    ]
+
+let nav_tabs tabs = [ Html.nav [ Html.ul tabs ~a:[ Html.a_class [ "tabs" ] ] ] ]
+
+let index_of_odocl input =
+  match Odoc_model.Odoc_file.load input with
+  | Ok unit -> (
+      let open Odoc_document.Renderer.Index in
+      match unit.content with
+      | Page_content odoctree -> of_page odoctree
+      | Unit_content odoctree -> of_unit odoctree)
+  | Error _ -> Odoc_document.Renderer.Index.empty
+
+let html_of_toc toc odoc_file =
   let open Types in
+  let index = index_of_odocl odoc_file in
   let rec section (section : toc) =
     let link = Html.a ~a:[ Html.a_href section.href ] section.title in
     match section.children with [] -> [ link ] | cs -> [ link; sections cs ]
@@ -26,9 +55,34 @@ let html_of_toc toc =
     |> List.map (fun the_section -> Html.li (section the_section))
     |> Html.ul
   in
-  match toc with
-  | [] -> []
-  | _ -> [ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] [ sections toc ] ]
+  let index =
+    let rec html_of_index : Odoc_document.Renderer.Index.t -> _ Html.elt =
+      function
+      | Leaf s -> Html.txt s
+      | Node (s, t) -> (
+          let children =
+            match t with
+            | [] -> Html.txt ""
+            | _ ->
+                Html.ul
+                  (List.map (fun x -> Html.li [ x ]) (List.map html_of_index t))
+          in
+          match s with
+          | "" -> children
+          | _ -> Html.ul [ Html.li [ Html.txt s; children ] ])
+    in
+    html_of_index index
+  in
+  let tabs =
+    match toc with
+    | [] -> [ nav_tab ~id:1 ~label:"Index" ~checked:true [ index ] ]
+    | _ ->
+        [
+          nav_tab ~id:1 ~label:"Contents" ~checked:true [ sections toc ];
+          nav_tab ~id:2 ~label:"Index" [ index ];
+        ]
+  in
+  nav_tabs tabs
 
 let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
   let make_navigation ~up_url rest =
@@ -69,7 +123,8 @@ let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
       make_navigation ~up_url:up.href
         (List.rev html @ sep @ [ Html.txt current.name ])
 
-let page_creator ~config ~url ~uses_katex header breadcrumbs toc content =
+let page_creator ~config ~url ~uses_katex header breadcrumbs toc content
+    odoc_file =
   let theme_uri = Config.theme_uri config in
   let support_uri = Config.support_uri config in
   let path = Link.Path.for_printing url in
@@ -143,7 +198,7 @@ let page_creator ~config ~url ~uses_katex header breadcrumbs toc content =
   let body =
     html_of_breadcrumbs breadcrumbs
     @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
-    @ html_of_toc toc
+    @ html_of_toc toc odoc_file
     @ [ Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content ]
   in
   let htmlpp = Html.pp ~indent:(Config.indent config) () in
@@ -151,9 +206,11 @@ let page_creator ~config ~url ~uses_katex header breadcrumbs toc content =
   let content ppf = htmlpp ppf html in
   content
 
-let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex content children =
+let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex content children
+    odoc_file =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
   let content =
     page_creator ~config ~url ~uses_katex header breadcrumbs toc content
+      odoc_file
   in
   [ { Odoc_document.Renderer.filename; content; children } ]

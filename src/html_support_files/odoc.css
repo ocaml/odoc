@@ -28,9 +28,12 @@
   --li-code-background: #f6f8fa;
   --li-code-color: #0d2b3e;
   --toc-color: #1F2D3D;
-  --toc-before-color: #777;
   --toc-background: #f6f8fa;
   --toc-list-border: #ccc;
+  --toc-tab-color: #555;
+  --toc-tab-background: #ccc;
+  --toc-tab-selected-color: #333;
+  --toc-tab-selected-border: #2C94BD;
 
   --spec-summary-border-color: #5c9cf5;
   --spec-summary-background: var(--code-background);
@@ -607,68 +610,112 @@ td.def-doc *:first-child {
 
 /* Sidebar and TOC */
 
-.odoc-toc:before {
-  display: block;
-  content: "Contents";
-  text-transform: uppercase;
-  font-size: 1em;
-  margin: 1.414em 0 0.5em;
-  font-weight: 500;
-  color: var(--toc-before-color);
-  line-height: 1.2;
+nav {
+  padding: 0;
+  margin: 0;
 }
 
-.odoc-toc {
+.tabs {
   position: fixed;
   top: 0px;
   bottom: 0px;
   left: 0px;
   max-width: 30ex;
-  min-width: 26ex;
   width: 20%;
   background: var(--toc-background);
   overflow: auto;
   color: var(--toc-color);
-  padding-left: 2ex;
-  padding-right: 2ex;
+  padding-left: 10px;
+  padding-right: 10px;
+  display: block;
+  list-style: none;
 }
 
-.odoc-toc ul li a {
+.tabs li a {
   font-family: "Fira Sans", sans-serif;
   font-size: 0.95em;
   color: var(--color);
   font-weight: 400;
   line-height: 1.6em;
-  display: block;
 }
 
-.odoc-toc ul li a:hover {
+.tabs li a:hover {
   box-shadow: none;
   text-decoration: underline;
 }
 
+.tabs .tab {
+  float: left;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.tabs .tab>input[type="radio"] {
+  position: absolute;
+  top: 0;
+  left: -9999px;
+}
+
+.tabs .tab>label {
+  display: block;
+  padding: 6px 10px;
+  font-size: 12px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  color: var(--toc-tab-color);
+  background-color: var(--toc-tab-background);
+  border-bottom: 4px solid var(--toc-tab-background);
+}
+
+.tabs .content {
+  display: none;
+  overflow: hidden;
+  width: 600px;
+  padding: 25px;
+  position: absolute;
+  top: 50px;
+  left: 0;
+  opacity:0;
+  transition: opacity 400ms ease-out;
+}
+
+.tabs>.tab>[id^="tab"]:checked + label {
+  top: 0;
+  color: var(--toc-tab-selected-color);
+  border-bottom: 4px solid var(--toc-tab-selected-border);
+}
+
+.tabs>.tab>[id^="tab"]:checked ~ [id^="tab-content"] {
+  display: block;
+  opacity: 1;
+  transition: opacity 400ms ease-out;
+}
+
 /* First level titles */
 
-.odoc-toc>ul>li>a {
+.tabs .content>ul>li>a {
   font-weight: 500;
 }
 
-.odoc-toc li ul {
+.tabs .content li ul {
   margin: 0px;
 }
 
-.odoc-toc ul {
+.tabs .content ul {
   list-style-type: none;
 }
 
-.odoc-toc ul li {
+.tabs .content ul li {
   margin: 0;
 }
-.odoc-toc>ul>li {
+
+.tabs .content>ul>li {
   margin-bottom: 0.3em;
 }
 
-.odoc-toc ul li li {
+.tabs .content ul li li {
   border-left: 1px solid var(--toc-list-border);
   margin-left: 5px;
   padding-left: 12px;
@@ -680,7 +727,7 @@ td.def-doc *:first-child {
   body.odoc {
     margin: 2em;
   }
-  .odoc-toc {
+  .tabs {
     position: static;
     width: auto;
     min-width: unset;

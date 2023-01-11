@@ -1,3 +1,4 @@
+open Odoc_model
 open Or_error
 
 let link_page ~resolver ~filename page =

@@ -10,9 +10,33 @@
   <header class="odoc-preamble">
    <h1>Module <code><span>Labels</span></code></h1>
   </header>
-  <nav class="odoc-toc">
-   <ul><li><a href="#L1">Attached to unit</a></li>
-    <li><a href="#L2">Attached to nothing</a></li>
+  <nav>
+   <ul class="tabs">
+    <li class="tab">
+     <input checked="checked" type="radio" name="tabs" id="tab1"/>
+     <label for="tab1">Contents</label>
+     <div id="tab-content1" class="content">
+      <ul><li><a href="#L1">Attached to unit</a></li>
+       <li><a href="#L2">Attached to nothing</a></li>
+      </ul>
+     </div>
+    </li>
+    <li class="tab"><input type="radio" name="tabs" id="tab2"/>
+     <label for="tab2">Index</label>
+     <div id="tab-content2" class="content">
+      <ul>
+       <li>module Labels
+        <ul><li><ul><li>module A</li></ul></li><li>type t</li><li>val f</li>
+         <li>val e</li><li><ul><li>module type S</li></ul></li>
+         <li><ul><li>class c</li></ul></li>
+         <li><ul><li>class type cs</li></ul></li><li>exception E</li>
+         <li>type x</li><li>module type S</li><li>type s</li><li>type u</li>
+         <li>type v</li>
+        </ul>
+       </li>
+      </ul>
+     </div>
+    </li>
    </ul>
   </nav>
   <div class="odoc-content">
