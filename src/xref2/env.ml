@@ -18,7 +18,8 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
-  lookup_def : Identifier.t -> Lang.Locations.uid option;
+  lookup_def :
+    Identifier.t -> (Identifier.RootModule.t * Lang.Locations.anchor) option;
 }
 
 let unique_id =
@@ -360,7 +361,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
   let id = (unit.id :> Paths.Identifier.Module.t) in
   let locs =
-    Some { Lang.Locations.source_parent = id; impl = None; intf = None }
+    Some { Lang.Locations.source_parent = unit.id; impl = None; intf = None }
   in
   match unit.content with
   | Module s ->

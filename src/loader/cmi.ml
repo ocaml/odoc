@@ -72,7 +72,7 @@ let opt_iter f = function
 let read_locations parent intf =
   let source_parent =
     match Identifier.root parent with
-    | Some sp -> (sp :> Identifier.Module.t)
+    | Some sp -> sp
     | None -> assert false
   and intf = Some (Doc_attr.read_location intf)
   and impl = None

@@ -45,10 +45,10 @@ Code source for `A_x` is wanted:
 
   $ [ -f html/A_x/A_x.ml.html ]
 
-`A` should contain a link to `A.ml.html`:
+`A` should contain a link to `A_x.ml.html`:
 
   $ grep source_link html/A/index.html
-  [1]
+       <a href="../A_x/A_x.ml.html#compunit-A_x" class="source_link">Source</a>
 
 `A.X` and `A.X.Y` should contain a link to `A_x.ml.html`:
 

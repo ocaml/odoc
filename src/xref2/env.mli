@@ -19,11 +19,10 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
-  lookup_def : Identifier.t -> Lang.Locations.uid option;
+  lookup_def :
+    Identifier.t -> (Identifier.RootModule.t * Lang.Locations.anchor) option;
       (** Lookup the source code location from an identifier. Returns
-          [Some (Unresolved _)] when the location is not available in the unit
-          being compiled but could be resolved by loading more modules. Returns
-          [None] when no location can be found. *)
+          [Some (source_parent, anchor)] when definition is found. *)
 }
 
 type lookup_type =
@@ -99,7 +98,9 @@ val module_of_unit : Lang.Compilation_unit.t -> Component.Module.t
 val lookup_root_module : string -> t -> root option
 
 val lookup_def :
-  [< Identifier.t_pv ] Paths.Identifier.id -> t -> Lang.Locations.uid option
+  [< Identifier.t_pv ] Paths.Identifier.id ->
+  t ->
+  (Identifier.RootModule.t * Lang.Locations.anchor) option
 
 type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)

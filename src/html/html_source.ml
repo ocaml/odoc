@@ -24,10 +24,8 @@ let html_of_doc docs =
             span
               ~a:[ a_id (Printf.sprintf "L%d" l); a_class [ "source_line" ] ]
               children
-        | Local_jmp (Occurence (Resolved { anchor })) ->
+        | Local_jmp (Occurence { anchor }) ->
             a ~a:[ a_href ("#" ^ anchor) ] children
-        | Local_jmp (Occurence (Unresolved _)) ->
-            a ~a:[ a_class [ "xref-unresolved" ] ] children
         | Local_jmp (Def lbl) -> span ~a:[ a_id lbl ] children)
   in
   span ~a:[] @@ List.map doc_to_html docs

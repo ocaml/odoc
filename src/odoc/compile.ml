@@ -110,12 +110,12 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
         let unit =
           Odoc_loader.read_cmti ~make_root ~parent ~filename
           |> Error.raise_errors_and_warnings
-        and impl_shape =
+        and cmt_infos =
           if should_read_impl_shape then
             lookup_implementation_of_cmti input_file
           else None
         in
-        (unit, impl_shape)
+        (unit, cmt_infos)
     | `Cmt ->
         Odoc_loader.read_cmt ~make_root ~parent ~filename
         |> Error.raise_errors_and_warnings
@@ -126,7 +126,9 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
         in
         (unit, None)
   in
-  let impl_shape = Option.map fst cmt_infos in
+  let impl_shape =
+    match cmt_infos with Some (shape, _) -> Some shape | None -> None
+  in
   let sources =
     match
       (read_source_file_opt impl_source, read_source_file_opt intf_source)
@@ -162,7 +164,7 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
      working on. *)
   (*    let expand_env = Env.build env (`Unit resolved) in*)
   (*    let expanded = Odoc_xref2.Expand.expand (Env.expander expand_env) resolved in *)
-  compiled
+  (compiled, impl_shape)
 
 let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   let open Root in

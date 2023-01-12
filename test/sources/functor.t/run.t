@@ -36,24 +36,40 @@ Verify the behavior on functors.
   html/S/module-type-S/index.html
 
 In this test, the functor expansion contains the right link.
+TODO
 
   $ cat html/A/F/index.html | grep source_link --context=1
   [1]
 
   $ cat html/A/A.ml.html | grep L3
-  </span><span id="L3" class="source_line"></span>  <span class="LET">let</span> <span id="y_270"><span id="def-A1"><span class="LIDENT">y</span></span></span> <span class="EQUAL">=</span> <span class="UIDENT">S</span><span class="DOT">.</span><span class="LIDENT">x</span> <span class="PLUS">+</span> <span class="INT">1</span><span class="EOL">
+  </span><span id="L3" class="source_line"></span>  <span class="LET">let</span> <span id="y_272"><span id="def-A2"><span class="LIDENT">y</span></span></span> <span class="EQUAL">=</span> <span class="UIDENT">S</span><span class="DOT">.</span><span class="LIDENT">x</span><span class="EOL">
 
-However, on functor results, there is no link to source in the file:
+However, on functor results, there is a link to source in the file:
 
-  $ ! cat html/B/R/index.html | grep source_link
+  $ cat html/B/R/index.html | grep source_link --context=2
+      <div class="spec type anchored" id="type-t">
+       <a href="#type-t" class="anchor"></a>
+       <a href="../../A/A.ml.html#def-A1" class="source_link">Source</a>
+       <code><span><span class="keyword">type</span> t</span>
+        <span> = <a href="../S/index.html#type-t">S.t</a></span>
+  --
+      <div class="spec value anchored" id="val-y">
+       <a href="#val-y" class="anchor"></a>
+       <a href="../../A/A.ml.html#def-A2" class="source_link">Source</a>
+       <code>
+        <span><span class="keyword">val</span> y : 
 
 On functor parameter, the link is right (modulo the fact that sub-module type
 links are all to the whole module type definition):
 
   $ cat html/A/F/argument-1-S/index.html | grep source_link --context=1
+       <a href="#type-t" class="anchor"></a>
+       <a href="../../../S/S.ml.html#def-S2" class="source_link">Source</a>
+       <code><span><span class="keyword">type</span> t</span></code>
+  --
        <a href="#val-x" class="anchor"></a>
-       <a href="../../../S/S.ml.html#def-S1" class="source_link">Source</a>
-       <code><span><span class="keyword">val</span> x : int</span></code>
+       <a href="../../../S/S.ml.html#def-S2" class="source_link">Source</a>
+       <code>
 
   $ cat html/A/F/argument-1-S/../../../S/S.ml.html | grep L1
-  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: S.ml (S)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span id="def-S1"><span class="MODULE"><span id="L1" class="source_line"></span>module</span> <span class="TYPE">type</span> <span class="UIDENT">S</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+  <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: S.ml (S)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span id="def-S2"><span class="MODULE"><span id="L1" class="source_line"></span>module</span> <span class="TYPE">type</span> <span class="UIDENT">S</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">

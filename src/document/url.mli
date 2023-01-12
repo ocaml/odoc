@@ -95,7 +95,7 @@ module Anchor : sig
   val source_file_from_identifier :
     ext:string ->
     Identifier.Module.t ->
-    Odoc_model.Lang.Locations.uid ->
+    Odoc_model.Lang.Locations.anchor ->
     t option
 
   val polymorphic_variant :

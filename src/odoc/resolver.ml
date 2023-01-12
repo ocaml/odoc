@@ -77,7 +77,8 @@ let build_imports_map m =
 
 let root_name root = Odoc_model.Root.Odoc_file.name root.Odoc_model.Root.file
 
-let unit_name (Odoc_file.Unit_content { root; _ } | Page_content { root; _ }) =
+let unit_name
+    (Odoc_file.Unit_content ({ root; _ }, _) | Page_content { root; _ }) =
   root_name root
 
 (** TODO: Propagate warnings instead of printing. *)
@@ -117,7 +118,7 @@ let rec find_map f = function
 let lookup_unit_with_digest ap target_name digest =
   let unit_that_match_digest u =
     match u with
-    | Odoc_file.Unit_content m
+    | Odoc_file.Unit_content (m, _)
       when Digest.compare m.Odoc_model.Lang.Compilation_unit.digest digest = 0
       ->
         Some m
@@ -150,7 +151,7 @@ let lookup_unit_by_name ap target_name =
           let ambiguous = m :: ambiguous in
           let ambiguous =
             List.map
-              (fun m -> root_name m.Odoc_model.Lang.Compilation_unit.root)
+              (fun (m, _) -> root_name m.Odoc_model.Lang.Compilation_unit.root)
               ambiguous
           in
           let warning =
@@ -160,22 +161,25 @@ let lookup_unit_by_name ap target_name =
               ambiguous target_name
           in
           prerr_endline (Odoc_model.Error.to_string warning));
-      Odoc_xref2.Env.Found m
-  | None -> Not_found
+      Some m
+  | None -> None
 
 (** Lookup an unit. First looks into [imports_map] then searches into the
     paths. *)
 let lookup_unit ~important_digests ~imports_map ap target_name =
+  let of_option f =
+    match f with Some (m, _) -> Odoc_xref2.Env.Found m | None -> Not_found
+  in
   match StringMap.find target_name imports_map with
   | Odoc_model.Lang.Compilation_unit.Import.Unresolved (_, Some digest) ->
       lookup_unit_with_digest ap target_name digest
   | Unresolved (_, None) ->
       if important_digests then Odoc_xref2.Env.Forward_reference
-      else lookup_unit_by_name ap target_name
+      else of_option (lookup_unit_by_name ap target_name)
   | Resolved (root, _) -> lookup_unit_with_digest ap target_name root.digest
   | exception Not_found ->
       if important_digests then Odoc_xref2.Env.Not_found
-      else lookup_unit_by_name ap target_name
+      else of_option (lookup_unit_by_name ap target_name)
 
 (** Lookup a page.
 
@@ -213,13 +217,19 @@ open Odoc_xref2
 
 let build_compile_env_for_unit
     { important_digests; ap; open_modules = open_units } impl_shape m =
-  add_unit_to_cache (Odoc_file.Unit_content m);
+  add_unit_to_cache (Odoc_file.Unit_content (m, impl_shape));
   let imports_map = build_imports_map m in
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
-  and lookup_page = lookup_page ap in
-  let lookup_def =
+  and lookup_page = lookup_page ap
+  and lookup_def =
     match impl_shape with
-    | Some impl_shape -> Odoc_loader.Lookup_def.lookup_def impl_shape
+    | Some impl_shape ->
+        Odoc_loader.Lookup_def.lookup_def
+          (fun x ->
+            match lookup_unit_by_name ap x with
+            | Some (m, Some shape) -> Some (m, shape)
+            | _ -> None)
+          impl_shape
     | None -> fun _ -> None
   in
   let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_def } in
@@ -234,7 +244,7 @@ let build ?(imports_map = StringMap.empty)
   { Env.open_units; lookup_unit; lookup_page; lookup_def }
 
 let build_link_env_for_unit t m =
-  add_unit_to_cache (Odoc_file.Unit_content m);
+  add_unit_to_cache (Odoc_file.Unit_content (m, None));
   let imports_map = build_imports_map m in
   let resolver = build ~imports_map t in
   Env.env_of_unit m ~linking:true resolver

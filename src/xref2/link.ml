@@ -316,15 +316,6 @@ and open_ env parent = function
   | { Odoc_model__Lang.Open.doc; _ } as open_ ->
       { open_ with doc = comment_docs env parent doc }
 
-let locations env (locs : Locations.t) =
-  match locs.impl with
-  | Some (Unresolved unresolved) -> (
-      (* Uid couldn't be resolved locally, resolve again using the model. *)
-      match Locations_tools.lookup_loc env unresolved with
-      | Some locs -> locs
-      | None -> { locs with impl = None })
-  | Some (Resolved _) | None -> locs
-
 let rec unit env t =
   let open Compilation_unit in
   let content =
@@ -340,7 +331,6 @@ and value_ env parent t =
   let open Value in
   {
     t with
-    locs = locations env t.locs;
     doc = comment_docs env parent t.doc;
     type_ = type_expression env parent [] t.type_;
   }
@@ -350,8 +340,7 @@ and exception_ env parent e =
   let res = Opt.map (type_expression env parent []) e.res in
   let args = type_decl_constructor_argument env parent e.args in
   let doc = comment_docs env parent e.doc in
-  let locs = locations env e.locs in
-  { e with locs; res; args; doc }
+  { e with res; args; doc }
 
 and extension env parent t =
   let open Extension in
@@ -359,7 +348,6 @@ and extension env parent t =
     let open Constructor in
     {
       c with
-      locs = locations env c.locs;
       args = type_decl_constructor_argument env parent c.args;
       res = Opt.map (type_expression env parent []) c.res;
       doc = comment_docs env parent c.doc;
@@ -380,8 +368,7 @@ and class_type_expr env parent =
 and class_type env parent c =
   let open ClassType in
   let doc = comment_docs env parent c.doc in
-  let locs = locations env c.locs in
-  { c with locs; expr = class_type_expr env parent c.expr; doc }
+  { c with expr = class_type_expr env parent c.expr; doc }
 
 and class_signature env parent c =
   let open ClassSignature in
@@ -430,8 +417,7 @@ and class_ env parent c =
         Arrow (lbl, type_expression env parent [] expr, map_decl decl)
   in
   let doc = comment_docs env parent c.doc in
-  let locs = locations env c.locs in
-  { c with locs; type_ = map_decl c.type_; doc }
+  { c with type_ = map_decl c.type_; doc }
 
 and module_substitution env parent m =
   let open ModuleSubstitution in
@@ -516,8 +502,7 @@ and module_ : Env.t -> Module.t -> Module.t =
           else type_
       | Alias _ | ModuleType _ -> type_
     in
-    let locs = Opt.map (locations env) m.locs in
-    { m with locs; doc = comment_docs env sg_id m.doc; type_ }
+    { m with doc = comment_docs env sg_id m.doc; type_ }
 
 and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
  fun env id decl ->
@@ -549,9 +534,8 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
          true
        | _ -> false
      in*)
-  let doc = comment_docs env sg_id m.doc
-  and locs = Opt.map (locations env) m.locs in
-  { m with locs; expr = expr'; doc }
+  let doc = comment_docs env sg_id m.doc in
+  { m with expr = expr'; doc }
 
 and module_type_substitution :
     Env.t -> ModuleTypeSubstitution.t -> ModuleTypeSubstitution.t =
@@ -829,8 +813,7 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
   let representation =
     Opt.map (type_decl_representation env parent) t.representation
   in
-  let locs = locations env t.locs in
-  let default = { t with locs; equation; doc; representation } in
+  let default = { t with equation; doc; representation } in
   match hidden_path with
   | Some (p, params) -> (
       let p' = Component.Of_Lang.(resolved_type_path (empty ()) p) in
