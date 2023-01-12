@@ -29,12 +29,12 @@ let read_locations_impl parent impl =
   let open Locations in
   let source_parent =
     match Identifier.root parent with
-    | Some sp -> (sp :> Identifier.Module.t)
+    | Some sp -> sp
     | None -> assert false
   and impl =
     match impl with
     | None -> None
-    | Some impl -> Some (Resolved { anchor = Uid.string_of_uid impl })
+    | Some impl -> Some ({ anchor = Uid.string_of_uid impl })
   in
   { source_parent; impl; intf = None }
 

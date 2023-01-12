@@ -38,9 +38,9 @@ let from_odoc ~resolver ~warnings_options input output =
       >>= fun (page, warnings) ->
       Odoc_file.save_page output ~warnings page;
       Ok (`Page page)
-  | Unit_content m ->
+  | Unit_content (m, shape) ->
       link_unit ~resolver ~filename m
       |> handle_warnings ~input_warnings ~warnings_options
       >>= fun (m, warnings) ->
-      Odoc_file.save_unit output ~warnings m;
+      Odoc_file.save_unit output ~warnings (m, shape);
       Ok (`Module m)

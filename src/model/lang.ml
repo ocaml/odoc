@@ -17,21 +17,12 @@
 open Paths
 
 module Locations = struct
-  type unresolved =
-    [ `Value of Path.Module.t * string
-    | `Type of Path.Type.t
-    | `Module of Path.Module.t
-    | `ModuleType of Path.ModuleType.t
-    | `Extension of Path.Module.t * string
-    | `Class of Path.Module.t * string
-    | `ClassType of Path.ClassType.t ]
-
-  type uid = Resolved of { anchor : string } | Unresolved of unresolved
+  type anchor = { anchor : string }
 
   type t = {
-    source_parent : Identifier.Module.t;
+    source_parent : Identifier.RootModule.t;
         (** Correspond to where the source code is stored. Might be different from the root component of the identifier inside expansions. *)
-    impl : uid option;
+    impl : anchor option;
         (** Location of the definition in the implementation file. *)
     intf : Location_.span option;
         (** Location of the declaration in the interface file. *)
@@ -40,7 +31,7 @@ end
 
 module Source_code = struct
   module Info = struct
-    type jmp_to_def = Occurence of Locations.uid | Def of string
+    type jmp_to_def = Occurence of Locations.anchor | Def of string
 
     type info = Syntax of string | Line of int | Local_jmp of jmp_to_def
 

@@ -1,7 +1,12 @@
-open Odoc_model.Paths
+open Odoc_model
+open Paths
 type t
 
-val lookup_def : t -> Identifier.t -> Odoc_model.Lang.Locations.uid option
+val lookup_def :
+  (string -> (Lang.Compilation_unit.t * t) option) ->
+  t ->
+  Identifier.t ->
+  (Identifier.RootModule.t * Lang.Locations.anchor) option
 
 val of_cmt : Cmt_format.cmt_infos -> t option
 (** Returns [None] if the cmt doesn't have a shape (eg. if it is not an

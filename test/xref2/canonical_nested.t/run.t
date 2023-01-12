@@ -99,7 +99,7 @@ unresolved in the paths though:
     "locs": {
       "Some": {
         "source_parent": { "`Root": [ "None", "Main" ] },
-        "impl": { "Some": { "Resolved": "def-Main0" } },
+        "impl": "None",
         "intf": "None"
       }
     },

@@ -14,7 +14,11 @@ end
 let locations env id locs =
   match locs.Locations.impl with
   | Some _ -> locs
-  | None -> { locs with impl = Env.lookup_def id env }
+  | None -> (
+      match Env.lookup_def id env with
+      | Some (source_parent, impl) ->
+          { locs with impl = Some impl; source_parent }
+      | None -> locs)
 
 let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->

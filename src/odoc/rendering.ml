@@ -6,7 +6,7 @@ let document_of_odocl ~syntax input =
   match unit.content with
   | Odoc_file.Page_content odoctree ->
       Ok (Renderer.document_of_page ~syntax odoctree)
-  | Unit_content odoctree ->
+  | Unit_content (odoctree, _) ->
       Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
 
 let document_of_input ~resolver ~warnings_options ~syntax input =

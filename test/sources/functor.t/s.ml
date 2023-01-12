@@ -1,3 +1,4 @@
 module type S = sig
-   val x : int
+  type t
+  val x : t
 end

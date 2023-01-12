@@ -51,7 +51,9 @@ let source_anchor locs =
   match locs.Odoc_model.Lang.Locations.impl with
   | None -> None
   | Some impl ->
-      Url.Anchor.source_file_from_identifier ~ext:".ml" locs.source_parent impl
+      Url.Anchor.source_file_from_identifier ~ext:".ml"
+        (locs.source_parent :> Paths.Identifier.Module.t)
+        impl
 
 let opt_source_anchor = function
   | Some locs -> source_anchor locs

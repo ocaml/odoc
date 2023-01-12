@@ -67,7 +67,7 @@ let deps_of_odoc_file ~deps input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
   | Page_content _ -> Ok () (* XXX something should certainly be done here *)
-  | Unit_content unit ->
+  | Unit_content (unit, _) ->
       List.iter unit.Odoc_model.Lang.Compilation_unit.imports ~f:(fun import ->
           match import with
           | Odoc_model.Lang.Compilation_unit.Import.Unresolved _ -> ()

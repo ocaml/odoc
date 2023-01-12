@@ -14,7 +14,7 @@ module Local_analysis = struct
         let extract_id id =
           match id with
           | Path.Pident id ->
-              let uniq = Resolved { anchor = Ident.unique_name id } in
+              let uniq = { anchor = Ident.unique_name id } in
               poses := (Occurence uniq, pos_of_loc exp_loc) :: !poses
           | _ -> ()
         in
@@ -48,7 +48,7 @@ module Global_analysis = struct
         | None -> ()
         | Some _ ->
             let uid =
-              Resolved { anchor = string_of_uid value_description.val_uid }
+              { anchor = string_of_uid value_description.val_uid }
             in
             poses := (Occurence uid, pos_of_loc exp_loc) :: !poses)
     | _ -> ()
