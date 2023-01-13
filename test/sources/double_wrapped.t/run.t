@@ -28,10 +28,8 @@ Look if all the source files are generated:
   html/Main/index.html
   html/Main__
   html/Main__/Main__.ml.html
-  html/Main__/index.html
   html/Main__A
   html/Main__A/Main__A.ml.html
-  html/Main__A/index.html
 
   $ cat html/Main/A/index.html
   <!DOCTYPE html>

@@ -476,4 +476,7 @@ module Page = struct
     page
 end
 
-let render ~with_children doc = [ Page.page ~with_children doc.Document.page ]
+let render ~with_children doc =
+  match doc.Document.page with
+  | None -> []
+  | Some page -> [ Page.page ~with_children page ]

@@ -475,19 +475,19 @@ let compile_all () =
   @ mld_odocs
 ```
 
-Linking is now straightforward. We only need to link non-hidden `odoc` files, as any hidden are almost certainly aliased inside the non-hidden ones (a result of namespacing usually, and these aliases will be expanded).
+Linking is now straightforward. We link all `odoc` files.
 
 ```ocaml env=e1
 let link_all odoc_files =
-  let not_hidden (f, _) = not (is_hidden f) in
   List.map
     (fun (odoc_file, ignore_output) ->
       ignore (link ~ignore_output odoc_file);
       Fpath.set_ext "odocl" odoc_file)
-    (List.filter not_hidden odoc_files)
+    odoc_files
 ```
 
 Now we simply run `odoc html-generate` over all of the resulting `odocl` files.
+This will generate sources, as well as documentation for non-hidden units.
 
 ```ocaml env=e1
 let generate_all odocl_files =
