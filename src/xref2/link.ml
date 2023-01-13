@@ -990,7 +990,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
 
 let link ~filename x y =
   Lookup_failures.catch_failures ~filename (fun () ->
-      if y.Lang.Compilation_unit.linked then y else unit x y)
+      if y.Lang.Compilation_unit.linked || y.hidden then y else unit x y)
 
 let page env page =
   let children =

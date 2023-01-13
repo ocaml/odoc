@@ -461,8 +461,12 @@ module Page = struct
 end
 
 let render ~config doc =
-  Page.page ~config doc.Document.page
-  @ List.map (Page.source_page ~config) doc.source_pages
+  let page =
+    match doc.Document.page with
+    | None -> []
+    | Some page -> Page.page ~config page
+  in
+  page @ List.map (Page.source_page ~config) doc.source_pages
 
 let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in

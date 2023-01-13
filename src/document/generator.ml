@@ -1742,7 +1742,9 @@ module Make (Syntax : SYNTAX) = struct
         | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
-      let page = make_expansion_page url [ unit_doc ] items
+      let page =
+        if t.hidden then None
+        else Some (make_expansion_page url [ unit_doc ] items)
       and source_pages =
         match t.sources with
         | None -> []
@@ -1757,7 +1759,7 @@ module Make (Syntax : SYNTAX) = struct
       (*let title = Odoc_model.Names.PageName.to_string name in*)
       let url = Url.Path.from_identifier t.name in
       let preamble, items = Sectioning.docs t.content in
-      let page = { Page.preamble; items; url } in
+      let page = Some { Page.preamble; items; url } in
       { Document.page; source_pages = [] }
   end
 
