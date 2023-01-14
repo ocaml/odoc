@@ -12,11 +12,14 @@ let html_of_doc docs =
         https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories)
         it is validated by the {{:https://validator.w3.org/nu/#textarea}W3C}. *)
   in
-  let rec doc_to_html doc =
+  (* [a] tags should not contain in other [a] tags. If this happens, browsers
+     start to be really weird. If PPX do bad things, such a situation could
+     happen. We manually avoid this situation. *)
+  let rec doc_to_html ~is_in_a doc =
     match doc with
     | Source_page.Plain_code s -> txt s
     | Tagged_code (info, docs) -> (
-        let children = List.map doc_to_html docs in
+        let children = List.map (doc_to_html ~is_in_a) docs in
         match info with
         | Odoc_model.Lang.Source_code.Info.Syntax tok ->
             span ~a:[ a_class [ tok ] ] children
@@ -25,10 +28,13 @@ let html_of_doc docs =
               ~a:[ a_id (Printf.sprintf "L%d" l); a_class [ "source_line" ] ]
               children
         | Local_jmp (Occurence { anchor }) ->
-            a ~a:[ a_href ("#" ^ anchor) ] children
+            if is_in_a then span ~a:[] children
+            else
+              let children = List.map (doc_to_html ~is_in_a:true) docs in
+              a ~a:[ a_href ("#" ^ anchor) ] children
         | Local_jmp (Def lbl) -> span ~a:[ a_id lbl ] children)
   in
-  span ~a:[] @@ List.map doc_to_html docs
+  span ~a:[] @@ List.map (doc_to_html ~is_in_a:false) docs
 
 let html_of_doc doc =
   Tyxml.Html.pre ~a:[] [ Tyxml.Html.code ~a:[] [ html_of_doc doc ] ]
