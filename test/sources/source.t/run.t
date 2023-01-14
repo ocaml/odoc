@@ -94,7 +94,6 @@ Source links generated in the documentation:
 Ids generated in the source code:
 
   $ cat html/A/A.ml.html | tr '> ' '\n\n' | grep '^id'
-  id="selfpat-*_284"
   id="def-A0"
   id="L1"
   id="L2"

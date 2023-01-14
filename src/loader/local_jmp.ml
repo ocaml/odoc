@@ -10,24 +10,18 @@ let string_of_uid uid = Uid.string_of_uid (Uid.of_shape_uid uid)
 module Local_analysis = struct
   let expr poses expr =
     match expr with
-    | { Typedtree.exp_desc = Texp_ident (id, _, _); exp_loc; _ } ->
-        let extract_id id =
-          match id with
-          | Path.Pident id ->
-              let uniq = { anchor = Ident.unique_name id } in
-              poses := (Occurence uniq, pos_of_loc exp_loc) :: !poses
-          | _ -> ()
-        in
-        extract_id id
+    | { Typedtree.exp_desc = Texp_ident (Pident id, _, _); exp_loc; _ }
+      when not exp_loc.loc_ghost ->
+        let uniq = { anchor = Ident.unique_name id } in
+        poses := (Occurence uniq, pos_of_loc exp_loc) :: !poses
     | _ -> ()
   let pat poses (type a) : a Typedtree.general_pattern -> unit = function
     | {
-        Typedtree.pat_desc =
-          ( Typedtree.Tpat_var (id, _stringloc)
-          | Typedtree.Tpat_alias (_, id, _stringloc) );
+        pat_desc = Tpat_var (id, _stringloc) | Tpat_alias (_, id, _stringloc);
         pat_loc;
         _;
-      } ->
+      }
+      when not pat_loc.loc_ghost ->
         let uniq = Ident.unique_name id in
         poses := (Def uniq, pos_of_loc pat_loc) :: !poses
     | _ -> ()
@@ -47,9 +41,7 @@ module Global_analysis = struct
         match Shape.Uid.Tbl.find_opt uid_to_loc value_description.val_uid with
         | None -> ()
         | Some _ ->
-            let uid =
-              { anchor = string_of_uid value_description.val_uid }
-            in
+            let uid = { anchor = string_of_uid value_description.val_uid } in
             poses := (Occurence uid, pos_of_loc exp_loc) :: !poses)
     | _ -> ()
 end
