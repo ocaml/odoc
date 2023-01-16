@@ -200,15 +200,15 @@ module Make (Syntax : SYNTAX) = struct
       let l =
         infos
         |> List.sort (fun (_, (l1, e1)) (_, (l2, e2)) ->
-               if l1 = l2 then Int.compare e2 e1
+               if l1 = l2 then compare e2 e1
                  (* If two intervals open at the same time, we open
                     first the one that closes last *)
-               else Int.compare l1 l2)
+               else compare l1 l2)
       in
       let get_src a b =
-        let in_bound x = Int.min (Int.max x 0) (String.length src) in
+        let in_bound x = min (max x 0) (String.length src) in
         let a = in_bound a and b = in_bound b in
-        let a, b = (Int.min a b, Int.max a b) in
+        let a, b = (min a b, max a b) in
         String.sub src a (b - a)
       in
       let plain_code = function
