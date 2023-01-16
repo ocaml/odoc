@@ -49,40 +49,32 @@ let rec project_id :
 
 module MkId = Identifier.Mk
 
-let comp_unit_of_uid =
-  function
+let comp_unit_of_uid = function
   | Shape.Uid.Compilation_unit s -> Some s
-  | Item {comp_unit ; _} -> Some comp_unit
+  | Item { comp_unit; _ } -> Some comp_unit
   | _ -> None
 
 let lookup_def lookup_unit impl_shape id =
   match project_id impl_shape id with
   | None -> None
-  | Some query -> (
-      let module Reduce = Shape.Make_reduce(
-          struct
-            type env = unit
-            let fuel = 10
-            let read_unit_shape ~unit_name =
-              match lookup_unit unit_name with
-                | Some (_, shape) -> Some shape
-                | None -> None
-            let find_shape _ _ = raise Not_found
-          end
-          )
-      in
-      let result =
-        try Some (Reduce.reduce () query) with
-          Not_found -> None
-      in
-       result >>= fun result ->
-       result.uid >>= fun uid ->
-          let anchor = Uid.string_of_uid (Uid.of_shape_uid uid) in
-          let anchor = { Odoc_model.Lang.Locations.anchor } in
-          (comp_unit_of_uid uid) >>= fun unit_name ->
-           lookup_unit unit_name >>= fun (unit, _) ->
-              Some (unit.Lang.Compilation_unit.id, anchor)
-    )
+  | Some query ->
+      let module Reduce = Shape.Make_reduce (struct
+        type env = unit
+        let fuel = 10
+        let read_unit_shape ~unit_name =
+          match lookup_unit unit_name with
+          | Some (_, shape) -> Some shape
+          | None -> None
+        let find_shape _ _ = raise Not_found
+      end) in
+      let result = try Some (Reduce.reduce () query) with Not_found -> None in
+      result >>= fun result ->
+      result.uid >>= fun uid ->
+      let anchor = Uid.string_of_uid (Uid.of_shape_uid uid) in
+      let anchor = { Odoc_model.Lang.Locations.anchor } in
+      comp_unit_of_uid uid >>= fun unit_name ->
+      lookup_unit unit_name >>= fun (unit, _) ->
+      Some (unit.Lang.Compilation_unit.id, anchor)
 
 let of_cmt (cmt : Cmt_format.cmt_infos) = cmt.cmt_impl_shape
 
@@ -90,7 +82,7 @@ let of_cmt (cmt : Cmt_format.cmt_infos) = cmt.cmt_impl_shape
 
 type t = unit
 
-let lookup_def () _id = None
-let of_cmt _ = Some ((), [])
+let lookup_def _ () _id = None
+let of_cmt _ = Some ()
 
 #endif
