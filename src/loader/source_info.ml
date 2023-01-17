@@ -3,16 +3,16 @@ open Odoc_model.Lang.Source_code.Info
 type local_jmp_infos = jmp_to_def with_pos list
 
 let lines src =
-  let lines = String.split_on_char '\n' src in
-  let _, poses, _ =
-    List.fold_left
-      (fun (i, poses, count) line ->
-        let l = String.length line in
-        let poses = (Line i, (count, count)) :: poses in
-        (i + 1, poses, count + l + 1))
-      (1, [], 0) lines
+  let rec loop (i, poses, count) =
+    try
+      let next_line_index = String.index_from src count '\n' in
+      let poses = (Line i, (count, count)) :: poses in
+      loop (i + 1, poses, next_line_index + 1)
+    with
+    | Not_found -> (Line i, (count, count)) :: poses
+    | Invalid_argument _ -> poses
   in
-  poses
+  loop (1, [], 0)
 
 let highlight src =
   Syntax_highlighter.syntax_highlighting_locs src
