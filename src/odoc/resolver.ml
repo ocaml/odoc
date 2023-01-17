@@ -226,18 +226,13 @@ let build_compile_env_for_unit
   Env.env_of_unit m ~linking:false resolver
 
 (** [important_digests] and [imports_map] only apply to modules. *)
-let build ?(imports_map = StringMap.empty) impl_shape
+let build ?(imports_map = StringMap.empty)
     { important_digests; ap; open_modules = open_units } =
   let lookup_def =
-    match impl_shape with
-    | Some impl_shape ->
-        Odoc_loader.Lookup_def.lookup_def
-          (fun x ->
-            match lookup_unit_by_name ap x with
-            | Some (m, Some shape) -> Some (m, shape)
-            | _ -> None)
-          impl_shape
-    | None -> fun _ -> None
+    Odoc_loader.Lookup_def.lookup_def (fun x ->
+        match lookup_unit_by_name ap x with
+        | Some (m, Some shape) -> Some (m, shape)
+        | _ -> None)
   in
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
   and lookup_page = lookup_page ap in
@@ -246,16 +241,16 @@ let build ?(imports_map = StringMap.empty) impl_shape
 let build_link_env_for_unit t m impl_shape =
   add_unit_to_cache (Odoc_file.Unit_content (m, impl_shape));
   let imports_map = build_imports_map m in
-  let resolver = build ~imports_map impl_shape t in
+  let resolver = build ~imports_map t in
   Env.env_of_unit m ~linking:true resolver
 
 let build_env_for_page t p =
   add_unit_to_cache (Odoc_file.Page_content p);
-  let resolver = build None { t with important_digests = false } in
+  let resolver = build { t with important_digests = false } in
   Env.env_of_page p resolver
 
 let build_env_for_reference t =
-  let resolver = build None { t with important_digests = false } in
+  let resolver = build { t with important_digests = false } in
   Env.env_for_reference resolver
 
 let lookup_page t target_name = lookup_page t.ap target_name

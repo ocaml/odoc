@@ -10,37 +10,38 @@ let ( >>= ) m f = match m with Some x -> f x | None -> None
 type t = Shape.t
 
 (** Project an identifier into a shape. *)
-let rec project_id :
-    Shape.t -> [< Identifier.t_pv ] Identifier.id -> Shape.t option =
-  let proj shape parent kind name =
+let rec shape_of_id lookup_shape :
+ [< Identifier.t_pv ] Identifier.id -> Shape.t option =
+  let proj parent kind name =
     let item = Shape.Item.make name kind in
-    match project_id shape (parent :> Identifier.t) with
+    match shape_of_id lookup_shape (parent :> Identifier.t) with
     | Some shape -> Some (Shape.proj shape item)
     | None -> None
   in
-  fun shape id ->
+  fun id ->
     match id.iv with
-    | `Root _ ->
-        (* TODO: Assert that's the right root *)
-        Some shape
+    | `Root (_, name) ->
+        (match lookup_shape (ModuleName.to_string name) with
+           | Some (_, shape) -> Some shape
+           | None -> None)
     | `Module (parent, name) ->
-        proj shape parent Kind.Module (ModuleName.to_string name)
+        proj parent Kind.Module (ModuleName.to_string name)
     | `ModuleType (parent, name) ->
-        proj shape parent Kind.Module_type (ModuleTypeName.to_string name)
+        proj parent Kind.Module_type (ModuleTypeName.to_string name)
     | `Type (parent, name) ->
-        proj shape parent Kind.Type (TypeName.to_string name)
+        proj parent Kind.Type (TypeName.to_string name)
     | `Value (parent, name) ->
-        proj shape parent Kind.Value (ValueName.to_string name)
+        proj parent Kind.Value (ValueName.to_string name)
     | `Extension (parent, name) ->
-        proj shape parent Kind.Extension_constructor
+        proj parent Kind.Extension_constructor
           (ExtensionName.to_string name)
     | `Exception (parent, name) ->
-        proj shape parent Kind.Extension_constructor
+        proj parent Kind.Extension_constructor
           (ExceptionName.to_string name)
     | `Class (parent, name) ->
-        proj shape parent Kind.Class (ClassName.to_string name)
+        proj parent Kind.Class (ClassName.to_string name)
     | `ClassType (parent, name) ->
-        proj shape parent Kind.Class_type (ClassTypeName.to_string name)
+        proj parent Kind.Class_type (ClassTypeName.to_string name)
     | `Page _ | `LeafPage _ | `Label _ | `CoreType _ | `CoreException _
     | `Constructor _ | `Field _ | `Method _ | `InstanceVariable _ | `Parameter _
     | `Result _ ->
@@ -54,8 +55,8 @@ let comp_unit_of_uid = function
   | Item { comp_unit; _ } -> Some comp_unit
   | _ -> None
 
-let lookup_def lookup_unit impl_shape id =
-  match project_id impl_shape id with
+let lookup_def lookup_unit id =
+  match shape_of_id lookup_unit id with
   | None -> None
   | Some query ->
       let module Reduce = Shape.Make_reduce (struct
@@ -82,7 +83,7 @@ let of_cmt (cmt : Cmt_format.cmt_infos) = cmt.cmt_impl_shape
 
 type t = unit
 
-let lookup_def _ () _id = None
+let lookup_def _ _id = None
 let of_cmt _ = Some ()
 
 #endif
