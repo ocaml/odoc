@@ -4,7 +4,6 @@ type t
 
 val lookup_def :
   (string -> (Lang.Compilation_unit.t * t) option) ->
-  t ->
   Identifier.t ->
   (Identifier.RootModule.t * Lang.Locations.anchor) option
 
