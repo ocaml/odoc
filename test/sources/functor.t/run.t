@@ -63,13 +63,7 @@ On functor parameter, the link is right (modulo the fact that sub-module type
 links are all to the whole module type definition):
 
   $ cat html/A/F/argument-1-S/index.html | grep source_link --context=1
-       <a href="#type-t" class="anchor"></a>
-       <a href="../../../S/S.ml.html#def-S2" class="source_link">Source</a>
-       <code><span><span class="keyword">type</span> t</span></code>
-  --
-       <a href="#val-x" class="anchor"></a>
-       <a href="../../../S/S.ml.html#def-S2" class="source_link">Source</a>
-       <code>
+  [1]
 
   $ cat html/A/F/argument-1-S/../../../S/S.ml.html | grep L1
   <html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: S.ml (S)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><pre><code><span><span id="def-S2"><span class="MODULE"><span id="L1" class="source_line"></span>module</span> <span class="TYPE">type</span> <span class="UIDENT">S</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">

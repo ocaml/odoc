@@ -44,7 +44,10 @@ val build_compile_env_for_unit :
 (** Initialize the environment for compiling the given module. *)
 
 val build_link_env_for_unit :
-  t -> Odoc_model.Lang.Compilation_unit.t -> Odoc_xref2.Env.t
+  t ->
+  Odoc_model.Lang.Compilation_unit.t ->
+  Odoc_loader.Lookup_def.t option ->
+  Odoc_xref2.Env.t
 (** Initialize the environment for linking the given module. *)
 
 val build_env_for_page : t -> Odoc_model.Lang.Page.t -> Odoc_xref2.Env.t
