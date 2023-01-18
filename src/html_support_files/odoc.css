@@ -143,6 +143,7 @@ table {
 
 html {
   font-size: 15px;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -255,18 +256,7 @@ a:hover {
   box-shadow: 0 0px 0 1px var(--target-shadow) !important;
   border-radius: 1px;
 }
-.source_line:target {
-  position: absolute;
-  height: 22.5px;
-  width: 100ex;
-  pointer-events: none;
-}
-.source_line {
-  display: absolute;
-}
-html {
-  scroll-behavior: smooth;
-}
+
 *:hover > a.anchor {
   visibility: visible;
 }
@@ -720,6 +710,27 @@ td.def-doc *:first-child {
   body nav:first-child {
     visibility: hidden;
   }
+}
+
+/* Source code. */
+
+.source_container {
+  display: flex;
+}
+
+.source_line_column {
+  padding-right: 0.5em;
+  text-align: right;
+}
+
+.source_line {
+  padding: 0 1em;
+}
+
+.source_code {
+  flex-grow: 1;
+  background: #fdf6e3;
+  padding: 0 0.3em;
 }
 
 /* Syntax highlighting (based on github-gist) */

@@ -1,7 +1,9 @@
+open Odoc_model.Lang
 open Odoc_document.Types
+open Tyxml
 
 let html_of_doc docs =
-  let open Tyxml.Html in
+  let open Html in
   let a :
       ( [< Html_types.a_attrib ],
         [< Html_types.span_content_fun ],
@@ -17,24 +19,53 @@ let html_of_doc docs =
      happen. We manually avoid this situation. *)
   let rec doc_to_html ~is_in_a doc =
     match doc with
-    | Source_page.Plain_code s -> txt s
+    | Source_page.Plain_code s -> [ txt s ]
     | Tagged_code (info, docs) -> (
-        let children = List.map (doc_to_html ~is_in_a) docs in
+        let children = List.concat @@ List.map (doc_to_html ~is_in_a) docs in
         match info with
-        | Odoc_model.Lang.Source_code.Info.Syntax tok ->
-            span ~a:[ a_class [ tok ] ] children
-        | Line l ->
-            span
-              ~a:[ a_id (Printf.sprintf "L%d" l); a_class [ "source_line" ] ]
-              children
+        | Source_code.Info.Syntax tok ->
+            [ span ~a:[ a_class [ tok ] ] children ]
+        | Line _ -> children
         | Local_jmp (Occurence { anchor }) ->
-            if is_in_a then span ~a:[] children
+            if is_in_a then children
             else
-              let children = List.map (doc_to_html ~is_in_a:true) docs in
-              a ~a:[ a_href ("#" ^ anchor) ] children
-        | Local_jmp (Def lbl) -> span ~a:[ a_id lbl ] children)
+              let children =
+                List.concat @@ List.map (doc_to_html ~is_in_a:true) docs
+              in
+              [ a ~a:[ a_href ("#" ^ anchor) ] children ]
+        | Local_jmp (Def lbl) -> [ span ~a:[ a_id lbl ] children ])
   in
-  span ~a:[] @@ List.map (doc_to_html ~is_in_a:false) docs
+  span ~a:[] @@ List.concat @@ List.map (doc_to_html ~is_in_a:false) docs
 
-let html_of_doc doc =
-  Tyxml.Html.pre ~a:[] [ Tyxml.Html.code ~a:[] [ html_of_doc doc ] ]
+(** Traverse the doc to find the last [Line] number. *)
+let rec count_lines_in_span = function
+  | Source_page.Plain_code _ -> 0
+  | Tagged_code (Source_code.Info.Line l, docs) -> max (count_lines docs) l
+  | Tagged_code (_, docs) -> count_lines docs
+
+and count_lines = function
+  | [] -> 0
+  | hd :: tl -> max (count_lines_in_span hd) (count_lines tl)
+
+let rec line_numbers acc n =
+  let open Html in
+  if n < 1 then acc
+  else
+    let l = string_of_int n in
+    let anchor =
+      a
+        ~a:[ a_id ("L" ^ l); a_class [ "source_line" ]; a_href ("#L" ^ l) ]
+        [ txt l ]
+    in
+    line_numbers (anchor :: txt "\n" :: acc) (n - 1)
+
+let html_of_doc docs =
+  let open Html in
+  pre
+    ~a:[ a_class [ "source_container" ] ]
+    [
+      code
+        ~a:[ a_class [ "source_line_column" ] ]
+        (line_numbers [] (count_lines docs));
+      code ~a:[ a_class [ "source_code" ] ] [ html_of_doc docs ];
+    ]

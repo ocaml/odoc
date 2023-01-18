@@ -47,7 +47,7 @@ In this test, the functor expansion contains the right link.
        <code>
 
   $ cat html/A/A.ml.html | grep L3
-  </span><span id="L3" class="source_line"></span>  <span class="LET">let</span> <span id="y_272"><span id="def-A2"><span class="LIDENT">y</span></span></span> <span class="EQUAL">=</span> <span class="UIDENT">S</span><span class="DOT">.</span><span class="LIDENT">x</span><span class="EOL">
+  <a id="L3" class="source_line" href="#L3">3</a>
 
 However, on functor results, there is a link to source in the file:
 
