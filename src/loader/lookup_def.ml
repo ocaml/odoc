@@ -11,7 +11,7 @@ type t = Shape.t
 
 (** Project an identifier into a shape. *)
 let rec shape_of_id lookup_shape :
- [< Identifier.t_pv ] Identifier.id -> Shape.t option =
+    [< Identifier.t_pv ] Identifier.id -> Shape.t option =
   let proj parent kind name =
     let item = Shape.Item.make name kind in
     match shape_of_id lookup_shape (parent :> Identifier.t) with
@@ -21,30 +21,30 @@ let rec shape_of_id lookup_shape :
   fun id ->
     match id.iv with
     | `Root (_, name) ->
-        (match lookup_shape (ModuleName.to_string name) with
-           | Some (_, shape) -> Some shape
-           | None -> None)
+        lookup_shape (ModuleName.to_string name) >>= fun (_, shape) ->
+        Some shape
     | `Module (parent, name) ->
         proj parent Kind.Module (ModuleName.to_string name)
+    | `Result parent ->
+        (* Apply the functor to an empty signature. This doesn't seem to cause
+           any problem, as the shape would stop resolve on an item inside the
+           result of the function, which is what we want. *)
+        shape_of_id lookup_shape (parent :> Identifier.t) >>= fun parent ->
+        Some (Shape.app parent ~arg:(Shape.str Shape.Item.Map.empty))
     | `ModuleType (parent, name) ->
         proj parent Kind.Module_type (ModuleTypeName.to_string name)
-    | `Type (parent, name) ->
-        proj parent Kind.Type (TypeName.to_string name)
-    | `Value (parent, name) ->
-        proj parent Kind.Value (ValueName.to_string name)
+    | `Type (parent, name) -> proj parent Kind.Type (TypeName.to_string name)
+    | `Value (parent, name) -> proj parent Kind.Value (ValueName.to_string name)
     | `Extension (parent, name) ->
-        proj parent Kind.Extension_constructor
-          (ExtensionName.to_string name)
+        proj parent Kind.Extension_constructor (ExtensionName.to_string name)
     | `Exception (parent, name) ->
-        proj parent Kind.Extension_constructor
-          (ExceptionName.to_string name)
-    | `Class (parent, name) ->
-        proj parent Kind.Class (ClassName.to_string name)
+        proj parent Kind.Extension_constructor (ExceptionName.to_string name)
+    | `Class (parent, name) -> proj parent Kind.Class (ClassName.to_string name)
     | `ClassType (parent, name) ->
         proj parent Kind.Class_type (ClassTypeName.to_string name)
     | `Page _ | `LeafPage _ | `Label _ | `CoreType _ | `CoreException _
     | `Constructor _ | `Field _ | `Method _ | `InstanceVariable _ | `Parameter _
-    | `Result _ ->
+      ->
         (* Not represented in shapes. *)
         None
 
