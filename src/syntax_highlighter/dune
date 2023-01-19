@@ -1,4 +1,7 @@
 (library
  (name syntax_highlighter)
  (public_name odoc.syntax_highlighter)
- (libraries ocaml-compiler-libs.common))
+ (preprocess
+  (action
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
+ (libraries compiler-libs.common))

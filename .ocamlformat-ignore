@@ -9,6 +9,7 @@ src/loader/local_jmp.ml
 src/loader/lookup_def.ml
 src/loader/uid.ml
 src/loader/uid.mli
+src/syntax_highlighter/syntax_highlighter.ml
 src/model/*.cppo.ml
 src/html_support_files/*.ml
 test/xref2/lib/*
