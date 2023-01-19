@@ -721,6 +721,7 @@ td.def-doc *:first-child {
 .source_line_column {
   padding-right: 0.5em;
   text-align: right;
+  background: #eee8d5;
 }
 
 .source_line {
@@ -731,6 +732,7 @@ td.def-doc *:first-child {
   flex-grow: 1;
   background: #fdf6e3;
   padding: 0 0.3em;
+  color: #657b83;
 }
 
 /* Syntax highlighting (based on github-gist) */
@@ -806,33 +808,32 @@ td.def-doc *:first-child {
   text-decoration: underline;
 }
 
-.VAL, .TYPE, .LET, .REC, .IN, .OPEN, .NONREC, .MODULE, .METHOD, .LETOP, .INHERIT, .INCLUDE, .FUNCTOR, .EXTERNAL, .CONSTRAINT, .ASSERT, .AND, .END {
-  font-weight: bold;
-  color:#C8AD7F;
+.VAL, .TYPE, .LET, .REC, .IN, .OPEN, .NONREC, .MODULE, .METHOD, .LETOP, .INHERIT, .INCLUDE, .FUNCTOR, .EXTERNAL, .CONSTRAINT, .ASSERT, .AND, .END, .CLASS, .STRUCT, .SIG {
+  color: #859900;;
 }
 
-.WITH, .WHILE, .WHEN, .VIRTUAL, .TRY, .TO, .THEN, .STRUCT, .SIG, .PRIVATE, .OF, .NEW, .MUTABLE, .MATCH, .LAZY, .IF, .FUNCTION, .FUN, .FOR, .EXCEPTION, .ELSE, .TO, .DOWNTO, .DO, .DONE, .BEGIN, .AS {
-  color: blue;
+.WITH, .WHILE, .WHEN, .VIRTUAL, .TRY, .TO, .THEN, .PRIVATE, .OF, .NEW, .MUTABLE, .MATCH, .LAZY, .IF, .FUNCTION, .FUN, .FOR, .EXCEPTION, .ELSE, .TO, .DOWNTO, .DO, .DONE, .BEGIN, .AS {
+  color: #cb4b16;
 }
 
 .TRUE, .FALSE {
-  color: green;
+  color: #b58900;
 }
 
-.failwith, .INT, .SEMISEMI {
-  color: red;
+.failwith, .INT, .SEMISEMI, .LIDENT {
+  color: #2aa198;
 }
 
-.STRING, .CHAR {
-  color: darkgoldenrod;
+.STRING, .CHAR, .UIDENT {
+  color: #b58900;
 }
 
 .DOCSTRING {
-  color: orange;
+  color: #268bd2;
 }
 
 .COMMENT {
-  color: grey;
+  color: #93a1a1;
 }
 
 a.source_link {
