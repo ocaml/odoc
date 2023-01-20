@@ -34,7 +34,7 @@ let read_locations_impl parent impl =
     | None -> None
     | Some impl -> Some (Uid.string_of_uid impl)
   in
-  { source_parent; anchor }
+  Some { source_parent; anchor }
 
 let read_core_type env ctyp =
   Cmi.read_type_expr env ctyp.ctyp_type
@@ -441,7 +441,7 @@ and read_module_binding env parent mb =
   let id = Env.find_module_identifier env mb.mb_id in
 #endif
   let id = (id :> Identifier.Module.t) in
-  let locs = Some (read_locations_impl id None) in
+  let locs = read_locations_impl id None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mb.mb_attributes in
   let type_, canonical =

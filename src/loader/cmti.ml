@@ -591,7 +591,7 @@ and read_module_type_maybe_canonical env parent container ~canonical mty =
 and read_module_type_declaration env parent mtd =
   let open ModuleType in
   let id = Env.find_module_type env mtd.mtd_id in
-  let locs = Some (read_locations id mtd.mtd_loc) in
+  let locs = read_locations id mtd.mtd_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes in
   let expr, canonical =
@@ -619,7 +619,7 @@ and read_module_declaration env parent md =
   let id = Env.find_module_identifier env md.md_id in
 #endif
   let id = (id :> Identifier.Module.t) in
-  let locs = Some (read_locations id md.md_loc) in
+  let locs = read_locations id md.md_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
   let type_, canonical =

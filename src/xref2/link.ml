@@ -5,6 +5,7 @@ module Id = Paths.Identifier
 
 module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
+  let bind f = function Some x -> f x | None -> None
 end
 
 let locations env id locs =
@@ -19,8 +20,10 @@ let locations env id locs =
         | None -> locs)
   in
   match Env.lookup_unit (Names.ModuleName.to_string unit_name) env with
-  | Some (Env.Found { sources = Some _; _ }) -> locs
-  | _ -> { locs with anchor = None }
+  | Some (Env.Found { sources = Some _; _ }) -> Some locs
+  | _ -> None
+
+let locations env id locs = Opt.bind (locations env id) locs
 
 (** Equivalent to {!Comment.synopsis}. *)
 let synopsis_from_comment (docs : Component.CComment.docs) =
@@ -527,7 +530,7 @@ and module_ : Env.t -> Module.t -> Module.t =
           else type_
       | Alias _ | ModuleType _ -> type_
     in
-    let locs = Opt.map (locations env (m.id :> Id.t)) m.locs in
+    let locs = (locations env (m.id :> Id.t)) m.locs in
     let doc = comment_docs env sg_id m.doc in
     { m with locs; doc; type_ }
 
@@ -562,7 +565,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
        | _ -> false
      in*)
   let doc = comment_docs env sg_id m.doc in
-  let locs = Opt.map (locations env m.id) m.locs in
+  let locs = (locations env m.id) m.locs in
   { m with locs; expr = expr'; doc }
 
 and module_type_substitution :

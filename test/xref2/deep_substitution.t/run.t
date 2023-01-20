@@ -27,7 +27,7 @@ its RHS correctly replaced with an `int`
         "t"
       ]
     },
-    "locs": { "source_parent": { "`Root": [ "None", "M" ] }, "anchor": "None" },
+    "locs": "None",
     "doc": [],
     "equation": {
       "params": [],

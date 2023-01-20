@@ -141,12 +141,7 @@ unresolved in the paths though:
         "B"
       ]
     },
-    "locs": {
-      "Some": {
-        "source_parent": { "`Root": [ "None", "Main__Container" ] },
-        "anchor": "None"
-      }
-    },
+    "locs": "None",
     "doc": [],
     "type_": {
       "Alias": [
@@ -223,12 +218,7 @@ unresolved in the paths though:
                           "t"
                         ]
                       },
-                      "locs": {
-                        "source_parent": {
-                          "`Root": [ "None", "Main__Container" ]
-                        },
-                        "anchor": "None"
-                      },
+                      "locs": "None",
                       "doc": [],
                       "equation": {
                         "params": [],
