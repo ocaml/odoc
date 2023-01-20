@@ -427,6 +427,9 @@ let lookup_def id env =
 let lookup_page name env =
   match env.resolver with None -> None | Some r -> r.lookup_page name
 
+let lookup_unit name env =
+  match env.resolver with None -> None | Some r -> Some (r.lookup_unit name)
+
 type 'a scope = {
   filter : Component.Element.any -> ([< Component.Element.any ] as 'a) option;
   check : (t -> ([< Component.Element.any ] as 'a) -> 'a amb_err option) option;
