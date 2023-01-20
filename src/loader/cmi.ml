@@ -73,7 +73,7 @@ let read_locations parent =
   let source_parent =
     match Identifier.root parent with Some sp -> sp | None -> assert false
   in
-  { Locations.source_parent; anchor = None }
+  Some { Locations.source_parent; anchor = None }
 
 let read_label lbl =
   let open TypeExpr in
@@ -954,7 +954,7 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
 and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_declaration) =
   let open ModuleType in
   let id = Env.find_module_type env id in
-  let locs = Some (read_locations id) in
+  let locs = read_locations id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes in
   let canonical = (canonical :> Path.ModuleType.t option) in
@@ -964,7 +964,7 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in
   let id = (Env.find_module_identifier env ident :> Identifier.Module.t) in
-  let locs = Some (read_locations id) in
+  let locs = read_locations id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
   let canonical = (canonical :> Path.Module.t option) in

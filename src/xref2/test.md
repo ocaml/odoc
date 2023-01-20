@@ -206,15 +206,16 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
            x);
        ihash = 622581103; ikey = "t_x.r_Root.p_None"};
      locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
+      Some
+       {Odoc_model.Lang.Locations.source_parent =
+         {Odoc_model__Paths_types.iv =
+           `Root
+             (Some
+               {Odoc_model__Paths_types.iv = `Page (None, None);
+                ihash = 236059787; ikey = "p_None"},
+              Root);
+          ihash = 818126955; ikey = "r_Root.p_None"};
+        anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -234,15 +235,16 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
            u);
        ihash = 15973539; ikey = "t_u.r_Root.p_None"};
      locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
+      Some
+       {Odoc_model.Lang.Locations.source_parent =
+         {Odoc_model__Paths_types.iv =
+           `Root
+             (Some
+               {Odoc_model__Paths_types.iv = `Page (None, None);
+                ihash = 236059787; ikey = "p_None"},
+              Root);
+          ihash = 818126955; ikey = "r_Root.p_None"};
+        anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -372,15 +374,16 @@ val module_ : Component.Module.t Component.Delayed.t =
               {Odoc_xref2.Component.Delayed.v =
                 Some
                  {Odoc_xref2.Component.TypeDecl.locs =
-                   {Odoc_model.Lang.Locations.source_parent =
-                     {Odoc_model__Paths_types.iv =
-                       `Root
-                         (Some
-                           {Odoc_model__Paths_types.iv = `Page (None, None);
-                            ihash = 236059787; ikey = "p_None"},
-                          Root);
-                      ihash = 818126955; ikey = "r_Root.p_None"};
-                    anchor = None};
+                   Some
+                    {Odoc_model.Lang.Locations.source_parent =
+                      {Odoc_model__Paths_types.iv =
+                        `Root
+                          (Some
+                            {Odoc_model__Paths_types.iv = `Page (None, None);
+                             ihash = 236059787; ikey = "p_None"},
+                           Root);
+                       ihash = 818126955; ikey = "r_Root.p_None"};
+                     anchor = None};
                   doc = []; canonical = None;
                   equation =
                    {Odoc_xref2.Component.TypeDecl.Equation.params = [];
@@ -404,15 +407,16 @@ Odoc_xref2.Tools.Signature
      {Odoc_xref2.Component.Delayed.v =
        Some
         {Odoc_xref2.Component.TypeDecl.locs =
-          {Odoc_model.Lang.Locations.source_parent =
-            {Odoc_model__Paths_types.iv =
-              `Root
-                (Some
-                  {Odoc_model__Paths_types.iv = `Page (None, None);
-                   ihash = 236059787; ikey = "p_None"},
-                 Root);
-             ihash = 818126955; ikey = "r_Root.p_None"};
-           anchor = None};
+          Some
+           {Odoc_model.Lang.Locations.source_parent =
+             {Odoc_model__Paths_types.iv =
+               `Root
+                 (Some
+                   {Odoc_model__Paths_types.iv = `Page (None, None);
+                    ihash = 236059787; ikey = "p_None"},
+                  Root);
+              ihash = 818126955; ikey = "r_Root.p_None"};
+            anchor = None};
          doc = []; canonical = None;
          equation =
           {Odoc_xref2.Component.TypeDecl.Equation.params = [];
@@ -587,17 +591,19 @@ val m : Component.Element.module_type option =
                             {Odoc_xref2.Component.Delayed.v =
                               Some
                                {Odoc_xref2.Component.TypeDecl.locs =
-                                 {Odoc_model.Lang.Locations.source_parent =
-                                   {Odoc_model__Paths_types.iv =
-                                     `Root
-                                       (Some
-                                         {Odoc_model__Paths_types.iv =
-                                           `Page (None, None);
-                                          ihash = 236059787; ikey = "p_None"},
-                                        Root);
-                                    ihash = 818126955;
-                                    ikey = "r_Root.p_None"};
-                                  anchor = None};
+                                 Some
+                                  {Odoc_model.Lang.Locations.source_parent =
+                                    {Odoc_model__Paths_types.iv =
+                                      `Root
+                                        (Some
+                                          {Odoc_model__Paths_types.iv =
+                                            `Page (None, None);
+                                           ihash = 236059787;
+                                           ikey = "p_None"},
+                                         Root);
+                                     ihash = 818126955;
+                                     ikey = "r_Root.p_None"};
+                                   anchor = None};
                                 doc = []; canonical = None;
                                 equation =
                                  {Odoc_xref2.Component.TypeDecl.Equation.params
@@ -1177,15 +1183,16 @@ Odoc_xref2.Tools.Signature
      {Odoc_xref2.Component.Delayed.v =
        Some
         {Odoc_xref2.Component.TypeDecl.locs =
-          {Odoc_model.Lang.Locations.source_parent =
-            {Odoc_model__Paths_types.iv =
-              `Root
-                (Some
-                  {Odoc_model__Paths_types.iv = `Page (None, None);
-                   ihash = 236059787; ikey = "p_None"},
-                 Root);
-             ihash = 818126955; ikey = "r_Root.p_None"};
-           anchor = None};
+          Some
+           {Odoc_model.Lang.Locations.source_parent =
+             {Odoc_model__Paths_types.iv =
+               `Root
+                 (Some
+                   {Odoc_model__Paths_types.iv = `Page (None, None);
+                    ihash = 236059787; ikey = "p_None"},
+                  Root);
+              ihash = 818126955; ikey = "r_Root.p_None"};
+            anchor = None};
          doc = []; canonical = None;
          equation =
           {Odoc_xref2.Component.TypeDecl.Equation.params = [];
@@ -2663,15 +2670,16 @@ let resolved = Common.compile_signature sg;;
        t);
    ihash = 1016576344; ikey = "t_t.r_Root.p_None"};
  locs =
-  {Odoc_model.Lang.Locations.source_parent =
-    {Odoc_model__Paths_types.iv =
-      `Root
-        (Some
-          {Odoc_model__Paths_types.iv = `Page (None, None);
-           ihash = 236059787; ikey = "p_None"},
-         Root);
-     ihash = 818126955; ikey = "r_Root.p_None"};
-   anchor = None};
+  Some
+   {Odoc_model.Lang.Locations.source_parent =
+     {Odoc_model__Paths_types.iv =
+       `Root
+         (Some
+           {Odoc_model__Paths_types.iv = `Page (None, None);
+            ihash = 236059787; ikey = "p_None"},
+          Root);
+      ihash = 818126955; ikey = "r_Root.p_None"};
+    anchor = None};
  doc =
   [{Odoc_model__.Location_.location =
      {Odoc_model__.Location_.file = "";
@@ -2735,18 +2743,7 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 818126955; ikey = "r_Root.p_None"},
            M);
        ihash = 459143770; ikey = "mt_M.r_Root.p_None"};
-     locs =
-      Some
-       {Odoc_model.Lang.Locations.source_parent =
-         {Odoc_model__Paths_types.iv =
-           `Root
-             (Some
-               {Odoc_model__Paths_types.iv = `Page (None, None);
-                ihash = 236059787; ikey = "p_None"},
-              Root);
-          ihash = 818126955; ikey = "r_Root.p_None"};
-        anchor = None};
-     doc = []; canonical = None;
+     locs = None; doc = []; canonical = None;
      expr =
       Some
        (Odoc_model.Lang.ModuleType.Signature
@@ -2770,17 +2767,7 @@ let sg = Common.signature_of_mli_string test_data;;
                      ihash = 459143770; ikey = "mt_M.r_Root.p_None"},
                     t);
                 ihash = 825731485; ikey = "t_t.mt_M.r_Root.p_None"};
-              locs =
-               {Odoc_model.Lang.Locations.source_parent =
-                 {Odoc_model__Paths_types.iv =
-                   `Root
-                     (Some
-                       {Odoc_model__Paths_types.iv = `Page (None, None);
-                        ihash = 236059787; ikey = "p_None"},
-                      Root);
-                  ihash = 818126955; ikey = "r_Root.p_None"};
-                anchor = None};
-              doc = []; canonical = None;
+              locs = None; doc = []; canonical = None;
               equation =
                {Odoc_model.Lang.TypeDecl.Equation.params = [];
                 private_ = false; manifest = None; constraints = []};
@@ -2799,17 +2786,7 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 818126955; ikey = "r_Root.p_None"},
            u);
        ihash = 15973539; ikey = "t_u.r_Root.p_None"};
-     locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
-     doc = []; canonical = None;
+     locs = None; doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
        manifest = None; constraints = []};
@@ -2827,18 +2804,7 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 818126955; ikey = "r_Root.p_None"},
            M1);
        ihash = 756272831; ikey = "mt_M1.r_Root.p_None"};
-     locs =
-      Some
-       {Odoc_model.Lang.Locations.source_parent =
-         {Odoc_model__Paths_types.iv =
-           `Root
-             (Some
-               {Odoc_model__Paths_types.iv = `Page (None, None);
-                ihash = 236059787; ikey = "p_None"},
-              Root);
-          ihash = 818126955; ikey = "r_Root.p_None"};
-        anchor = None};
-     doc = []; canonical = None;
+     locs = None; doc = []; canonical = None;
      expr =
       Some
        (Odoc_model.Lang.ModuleType.With
@@ -2928,17 +2894,7 @@ Odoc_model.Lang.ModuleType.Path
                   ihash = 716453475; ikey = "m_M.r_Root.p_None"},
                  s);
              ihash = 395135148; ikey = "t_s.m_M.r_Root.p_None"};
-           locs =
-            {Odoc_model.Lang.Locations.source_parent =
-              {Odoc_model__Paths_types.iv =
-                `Root
-                  (Some
-                    {Odoc_model__Paths_types.iv = `Page (None, None);
-                     ihash = 236059787; ikey = "p_None"},
-                   Root);
-               ihash = 818126955; ikey = "r_Root.p_None"};
-             anchor = None};
-           doc = []; canonical = None;
+           locs = None; doc = []; canonical = None;
            equation =
             {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
              manifest = None; constraints = []};
@@ -3094,15 +3050,16 @@ let m_e_i_s_value mod_name n val_name =
        id);
    ihash = 424389437; ikey = "v_id.m_Foo3.r_Root.p_None"};
  locs =
-  {Odoc_model.Lang.Locations.source_parent =
-    {Odoc_model__Paths_types.iv =
-      `Root
-        (Some
-          {Odoc_model__Paths_types.iv = `Page (None, None);
-           ihash = 236059787; ikey = "p_None"},
-         Root);
-     ihash = 818126955; ikey = "r_Root.p_None"};
-   anchor = None};
+  Some
+   {Odoc_model.Lang.Locations.source_parent =
+     {Odoc_model__Paths_types.iv =
+       `Root
+         (Some
+           {Odoc_model__Paths_types.iv = `Page (None, None);
+            ihash = 236059787; ikey = "p_None"},
+          Root);
+      ihash = 818126955; ikey = "r_Root.p_None"};
+    anchor = None};
  value = Odoc_model.Lang.Value.Abstract; doc = [];
  type_ =
   Odoc_model.Lang.TypeExpr.Constr
@@ -3141,15 +3098,16 @@ let m_e_i_s_value mod_name n val_name =
        id2);
    ihash = 412619918; ikey = "v_id2.m_Foo3.r_Root.p_None"};
  locs =
-  {Odoc_model.Lang.Locations.source_parent =
-    {Odoc_model__Paths_types.iv =
-      `Root
-        (Some
-          {Odoc_model__Paths_types.iv = `Page (None, None);
-           ihash = 236059787; ikey = "p_None"},
-         Root);
-     ihash = 818126955; ikey = "r_Root.p_None"};
-   anchor = None};
+  Some
+   {Odoc_model.Lang.Locations.source_parent =
+     {Odoc_model__Paths_types.iv =
+       `Root
+         (Some
+           {Odoc_model__Paths_types.iv = `Page (None, None);
+            ihash = 236059787; ikey = "p_None"},
+          Root);
+      ihash = 818126955; ikey = "r_Root.p_None"};
+    anchor = None};
  value = Odoc_model.Lang.Value.Abstract; doc = [];
  type_ =
   Odoc_model.Lang.TypeExpr.Constr
@@ -3222,15 +3180,16 @@ let sg = Common.signature_of_mli_string test_data;;
            {t}4);
        ihash = 671044364; ikey = "t_{t}4.m_Foo3.r_Root.p_None"};
      locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
+      Some
+       {Odoc_model.Lang.Locations.source_parent =
+         {Odoc_model__Paths_types.iv =
+           `Root
+             (Some
+               {Odoc_model__Paths_types.iv = `Page (None, None);
+                ihash = 236059787; ikey = "p_None"},
+              Root);
+          ihash = 818126955; ikey = "r_Root.p_None"};
+        anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -3273,15 +3232,16 @@ let sg = Common.signature_of_mli_string test_data;;
            id);
        ihash = 424389437; ikey = "v_id.m_Foo3.r_Root.p_None"};
      locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
+      Some
+       {Odoc_model.Lang.Locations.source_parent =
+         {Odoc_model__Paths_types.iv =
+           `Root
+             (Some
+               {Odoc_model__Paths_types.iv = `Page (None, None);
+                ihash = 236059787; ikey = "p_None"},
+              Root);
+          ihash = 818126955; ikey = "r_Root.p_None"};
+        anchor = None};
      value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
@@ -3325,15 +3285,16 @@ let sg = Common.signature_of_mli_string test_data;;
            {t}5);
        ihash = 67089224; ikey = "t_{t}5.m_Foo3.r_Root.p_None"};
      locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
+      Some
+       {Odoc_model.Lang.Locations.source_parent =
+         {Odoc_model__Paths_types.iv =
+           `Root
+             (Some
+               {Odoc_model__Paths_types.iv = `Page (None, None);
+                ihash = 236059787; ikey = "p_None"},
+              Root);
+          ihash = 818126955; ikey = "r_Root.p_None"};
+        anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -3376,15 +3337,16 @@ let sg = Common.signature_of_mli_string test_data;;
            id2);
        ihash = 412619918; ikey = "v_id2.m_Foo3.r_Root.p_None"};
      locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
+      Some
+       {Odoc_model.Lang.Locations.source_parent =
+         {Odoc_model__Paths_types.iv =
+           `Root
+             (Some
+               {Odoc_model__Paths_types.iv = `Page (None, None);
+                ihash = 236059787; ikey = "p_None"},
+              Root);
+          ihash = 818126955; ikey = "r_Root.p_None"};
+        anchor = None};
      value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
@@ -3460,15 +3422,16 @@ let sg = Common.signature_of_mli_string test_data;;
            {t}6);
        ihash = 133032212; ikey = "t_{t}6.m_Foo3.r_Root.p_None"};
      locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
+      Some
+       {Odoc_model.Lang.Locations.source_parent =
+         {Odoc_model__Paths_types.iv =
+           `Root
+             (Some
+               {Odoc_model__Paths_types.iv = `Page (None, None);
+                ihash = 236059787; ikey = "p_None"},
+              Root);
+          ihash = 818126955; ikey = "r_Root.p_None"};
+        anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -3511,15 +3474,16 @@ let sg = Common.signature_of_mli_string test_data;;
            {x}7);
        ihash = 314949087; ikey = "v_{x}7.m_Foo3.r_Root.p_None"};
      locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
+      Some
+       {Odoc_model.Lang.Locations.source_parent =
+         {Odoc_model__Paths_types.iv =
+           `Root
+             (Some
+               {Odoc_model__Paths_types.iv = `Page (None, None);
+                ihash = 236059787; ikey = "p_None"},
+              Root);
+          ihash = 818126955; ikey = "r_Root.p_None"};
+        anchor = None};
      value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
@@ -3546,15 +3510,16 @@ let sg = Common.signature_of_mli_string test_data;;
            id);
        ihash = 424389437; ikey = "v_id.m_Foo3.r_Root.p_None"};
      locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
+      Some
+       {Odoc_model.Lang.Locations.source_parent =
+         {Odoc_model__Paths_types.iv =
+           `Root
+             (Some
+               {Odoc_model__Paths_types.iv = `Page (None, None);
+                ihash = 236059787; ikey = "p_None"},
+              Root);
+          ihash = 818126955; ikey = "r_Root.p_None"};
+        anchor = None};
      value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
@@ -3677,15 +3642,16 @@ let sg = Common.signature_of_mli_string test_data;;
            id);
        ihash = 424389437; ikey = "v_id.m_Foo3.r_Root.p_None"};
      locs =
-      {Odoc_model.Lang.Locations.source_parent =
-        {Odoc_model__Paths_types.iv =
-          `Root
-            (Some
-              {Odoc_model__Paths_types.iv = `Page (None, None);
-               ihash = 236059787; ikey = "p_None"},
-             Root);
-         ihash = 818126955; ikey = "r_Root.p_None"};
-       anchor = None};
+      Some
+       {Odoc_model.Lang.Locations.source_parent =
+         {Odoc_model__Paths_types.iv =
+           `Root
+             (Some
+               {Odoc_model__Paths_types.iv = `Page (None, None);
+                ihash = 236059787; ikey = "p_None"},
+              Root);
+          ihash = 818126955; ikey = "r_Root.p_None"};
+        anchor = None};
      value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
