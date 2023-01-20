@@ -1,0 +1,5 @@
+(executable
+ (name gen_manpage)
+ (enabled_if
+  (> %{ocaml_version} 4.10))
+ (libraries astring unix))
