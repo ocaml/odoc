@@ -92,6 +92,8 @@ val lookup_fragment_root : t -> (int * Component.Signature.t) option
 
 val lookup_page : string -> t -> Lang.Page.t option
 
+val lookup_unit : string -> t -> lookup_unit_result option
+
 val module_of_unit : Lang.Compilation_unit.t -> Component.Module.t
 
 val lookup_root_module : string -> t -> root option

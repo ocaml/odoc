@@ -26,7 +26,22 @@ Compile the modules:
 
   $ ocamlc -c a.ml -bin-annot
 
-Compile the pages:
+Compile the pages without --impl:
+
+  $ odoc compile a.cmt
+  $ odoc link -I . a.odoc
+  $ odoc html-generate --indent -o html a.odocl
+
+No source links are generated in the documentation:
+
+  $ ! grep source_link html/A/index.html -B 2
+
+No ids are generated in the source code:
+
+  $ ! cat html/A/A.ml.html
+  cat: html/A/A.ml.html: No such file or directory
+
+Now, compile the pages with the --impl option:
 
   $ odoc compile --impl a.ml a.cmt
   $ odoc link -I . a.odoc

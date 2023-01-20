@@ -8,13 +8,19 @@ module Opt = struct
 end
 
 let locations env id locs =
-  match locs.Locations.anchor with
-  | Some _ -> locs
-  | None -> (
-      match Env.lookup_def id env with
-      | Some (source_parent, anchor) ->
-          { Locations.source_parent; anchor = Some anchor }
-      | None -> locs)
+  let ({ Locations.source_parent = { iv = `Root (_, unit_name); _ }; _ } as
+      locs) =
+    match locs.Locations.anchor with
+    | Some _ -> locs
+    | None -> (
+        match Env.lookup_def id env with
+        | Some (source_parent, anchor) ->
+            { Locations.source_parent; anchor = Some anchor }
+        | None -> locs)
+  in
+  match Env.lookup_unit (Names.ModuleName.to_string unit_name) env with
+  | Some (Env.Found { sources = Some _; _ }) -> locs
+  | _ -> { locs with anchor = None }
 
 (** Equivalent to {!Comment.synopsis}. *)
 let synopsis_from_comment (docs : Component.CComment.docs) =
