@@ -167,6 +167,7 @@ let heading ~config ~resolve (h : Heading.t) =
     | None -> ([], [])
   in
   let content = inline ~config ~resolve h.title in
+  let source_link = mk_link_to_source ~config ~resolve h.source_anchor in
   let mk =
     match h.level with
     | 0 -> Html.h1
@@ -176,7 +177,7 @@ let heading ~config ~resolve (h : Heading.t) =
     | 4 -> Html.h5
     | _ -> Html.h6
   in
-  mk ~a (anchor @ content)
+  mk ~a (anchor @ content @ source_link)
 
 let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
   let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
@@ -431,7 +432,7 @@ module Page = struct
     Utils.list_concat_map ~f:(include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page list =
-    let { Page.preamble; items = i; url } =
+    let { Page.preamble; items = i; url; source_anchor } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
@@ -440,15 +441,21 @@ module Page = struct
     let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
     let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
-    let header =
-      items ~config ~resolve (Doctree.PageTitle.render_title p @ preamble)
-    in
     let content = (items ~config ~resolve i :> any Html.elt list) in
     if Config.as_json config then
+      let source_anchor =
+        match source_anchor with
+        | Some url -> Some (Link.href ~config ~resolve url)
+        | None -> None
+      in
       Html_fragment_json.make ~config
         ~preamble:(items ~config ~resolve preamble :> any Html.elt list)
-        ~breadcrumbs ~toc ~url ~uses_katex content subpages
+        ~breadcrumbs ~toc ~url ~uses_katex ~source_anchor content subpages
     else
+      let header =
+        items ~config ~resolve
+          (Doctree.PageTitle.render_title ?source_anchor p @ preamble)
+      in
       [
         Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
           content subpages;

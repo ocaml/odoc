@@ -50,6 +50,10 @@ Now, compile the pages with the --impl option:
 Source links generated in the documentation:
 
   $ grep source_link html/A/index.html -B 2
+    <header class="odoc-preamble">
+     <h1>Module <code><span>A</span></code>
+      <a href="A.ml.html" class="source_link">Source</a>
+  --
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
        <a href="A.ml.html#def-A0" class="source_link">Source</a>

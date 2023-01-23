@@ -65,7 +65,13 @@ end =
   Description
 
 and Heading : sig
-  type t = { label : string option; level : int; title : Inline.t }
+  type t = {
+    label : string option;
+    level : int;
+    title : Inline.t;
+    source_anchor : Url.t option;
+        (** Used for the source link of the item displayed on the page. *)
+  }
 end =
   Heading
 
@@ -156,7 +162,14 @@ end =
   Item
 
 and Page : sig
-  type t = { preamble : Item.t list; items : Item.t list; url : Url.Path.t }
+  type t = {
+    preamble : Item.t list;
+    items : Item.t list;
+    url : Url.Path.t;
+    source_anchor : Url.t option;
+        (** Url to the corresponding source code. Might be a whole source file
+            or a sub part. *)
+  }
 end =
   Page
 

@@ -62,7 +62,7 @@ end = struct
     | Include { content = { status; content; _ }; _ } ->
         if on_sub status then Rec content else Skip
     | Heading { label = None; _ } -> Skip
-    | Heading { label = Some label; level; title } ->
+    | Heading { label = Some label; level; title; _ } ->
         Heading ((label, title), level)
 
   let node mkurl (anchor, text) children =
@@ -150,9 +150,9 @@ module Shift = struct
   and walk_item ~on_sub shift_state (l : Item.t list) =
     match l with
     | [] -> []
-    | Heading { label; level; title } :: rest ->
+    | Heading { label; level; title; source_anchor } :: rest ->
         let shift_state, level = shift shift_state level in
-        Item.Heading { label; level; title }
+        Item.Heading { label; level; title; source_anchor }
         :: walk_item ~on_sub shift_state rest
     | Include subp :: rest ->
         let content = include_ ~on_sub shift_state subp.content in
@@ -291,12 +291,12 @@ end = struct
 end
 
 module PageTitle : sig
-  val render_title : Page.t -> Item.t list
+  val render_title : ?source_anchor:Url.t -> Page.t -> Item.t list
 end = struct
-  let format_title kind name =
+  let format_title ~source_anchor kind name =
     let mk title =
       let level = 0 and label = None in
-      [ Types.Item.Heading { level; label; title } ]
+      [ Types.Item.Heading { level; label; title; source_anchor } ]
     in
     let prefix s =
       mk (Types.inline (Text (s ^ " ")) :: Codefmt.code (Codefmt.txt name))
@@ -314,8 +314,8 @@ end = struct
     | None | Some { kind = `Page; _ } -> name
     | Some p -> Printf.sprintf "%s.%s" p.name name
 
-  let render_title (p : Page.t) =
-    format_title p.url.kind (make_name_from_path p.url)
+  let render_title ?source_anchor (p : Page.t) =
+    format_title ~source_anchor p.url.kind (make_name_from_path p.url)
 end
 
 module Math : sig

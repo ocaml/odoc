@@ -309,7 +309,8 @@ let heading
   let title = non_link_inline_element_list text in
   let level = heading_level_to_int attrs.Comment.heading_level in
   let label = Some label in
-  Item.Heading { label; level; title }
+  let source_anchor = None in
+  Item.Heading { label; level; title; source_anchor }
 
 let item_element : Comment.block_element -> Item.t list = function
   | #Comment.attached_block_element as e ->
