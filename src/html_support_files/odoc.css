@@ -297,6 +297,14 @@ a.anchor {
   box-shadow: 0 1px 0 0 var(--xref-shadow);
 }
 
+/* Source links float inside preformated text or headings. */
+a.source_link {
+  float: right;
+  color: var(--source-color);
+  font-family: "Fira Sans", Helvetica, Arial, sans-serif;
+  font-size: initial;
+}
+
 /* Section and document divisions.
    Until at least 4.03 many of the modules of the stdlib start at .h7,
    we restart the sequence there like h2  */
@@ -834,17 +842,6 @@ td.def-doc *:first-child {
 
 .COMMENT {
   color: #93a1a1;
-}
-
-a.source_link {
-  position:  absolute;
-  top: 1px;
-  right: 1px;
-  color: var(--source-color);
-}
-
-.odoc-spec {
-  position: relative;
 }
 
 /*---------------------------------------------------------------------------
