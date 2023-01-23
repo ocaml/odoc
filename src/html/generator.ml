@@ -456,8 +456,10 @@ module Page = struct
 
   and source_page ~config sp =
     let { Source_page.url; contents } = sp in
-    let name = url.Url.Path.name and doc = Html_source.html_of_doc contents in
-    Html_page.make_src ~config ~url name [ doc ]
+    let title = url.Url.Path.name and doc = Html_source.html_of_doc contents in
+    if Config.as_json config then
+      Html_fragment_json.make_src ~config ~url ~title [ doc ]
+    else Html_page.make_src ~config ~url title [ doc ]
 end
 
 let render ~config doc =

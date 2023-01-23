@@ -53,3 +53,22 @@ let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex content children =
            ]))
   in
   [ { Odoc_document.Renderer.filename; content; children } ]
+
+let make_src ~config ~url ~title content =
+  let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
+  let filename = Fpath.add_ext ".json" filename in
+  let htmlpp = Html.pp_elt ~indent:(Config.indent config) () in
+  let json_to_string json = Utils.Json.to_string json in
+  let content ppf =
+    Format.pp_print_string ppf
+      (json_to_string
+         (`Object
+           [
+             ("title", `String title);
+             ( "content",
+               `String
+                 (String.concat ""
+                    (List.map (Format.asprintf "%a" htmlpp) content)) );
+           ]))
+  in
+  { Odoc_document.Renderer.filename; content; children = [] }
