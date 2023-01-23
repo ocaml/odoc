@@ -3,6 +3,7 @@
 *)
 
 module Html = Tyxml.Html
+module Url = Odoc_document.Url
 
 let json_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) : Utils.Json.json
     =
@@ -11,7 +12,7 @@ let json_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) : Utils.Json.json
       [
         ("name", `String b.name);
         ("href", `String b.href);
-        ("kind", `String (Odoc_document.Url.Path.string_of_kind b.kind));
+        ("kind", `String (Url.Path.string_of_kind b.kind));
       ]
   in
   let json_breadcrumbs = breadcrumbs |> List.map breadcrumb in
@@ -29,11 +30,15 @@ let json_of_toc (toc : Types.toc list) : Utils.Json.json =
   let toc_json_list = toc |> List.map section in
   `Array toc_json_list
 
-let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex content children =
+let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex ~source_anchor
+    content children =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
   let filename = Fpath.add_ext ".json" filename in
   let htmlpp = Html.pp_elt ~indent:(Config.indent config) () in
   let json_to_string json = Utils.Json.to_string json in
+  let source_anchor =
+    match source_anchor with Some url -> `String url | None -> `Null
+  in
   let content ppf =
     Format.pp_print_string ppf
       (json_to_string
@@ -42,6 +47,7 @@ let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex content children =
              ("uses_katex", `Bool uses_katex);
              ("breadcrumbs", json_of_breadcrumbs breadcrumbs);
              ("toc", json_of_toc toc);
+             ("source_anchor", source_anchor);
              ( "preamble",
                `String
                  (String.concat ""

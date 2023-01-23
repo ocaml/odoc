@@ -17,6 +17,15 @@ Checking that source parents are kept, using include.
 In Main.A, the source parent of value x should be to Main__A, while the
 source parent of value y should be left to B.
 
-  $ grep source_link html/Main/A/index.html
+  $ grep source_link html/Main/A/index.html -C 1
+      <a href="../../Main__A/Main__A.ml.html#compunit-Main__A"
+       class="source_link">Source
+      </a>
+  --
+         <a href="#val-y" class="anchor"></a>
          <a href="../../B/B.ml.html#def-B0" class="source_link">Source</a>
+         <code><span><span class="keyword">val</span> y : int</span></code>
+  --
+       <a href="#val-x" class="anchor"></a>
        <a href="../../Main__A/Main__A.ml.html#def-Main__A0" class="source_link">
+        Source

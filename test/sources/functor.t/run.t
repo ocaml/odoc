@@ -38,6 +38,10 @@ Verify the behavior on functors.
 In this test, the functor expansion contains the right link.
 
   $ cat html/A/F/index.html | grep source_link --context=1
+     <h1>Module <code><span>A.F</span></code>
+      <a href="../A.ml.html#def-A3" class="source_link">Source</a>
+     </h1>
+  --
        <a href="#type-t" class="anchor"></a>
        <a href="../A.ml.html#def-A1" class="source_link">Source</a>
        <code><span><span class="keyword">type</span> t</span>
@@ -52,6 +56,12 @@ In this test, the functor expansion contains the right link.
 However, on functor results, there is a link to source in the file:
 
   $ cat html/B/R/index.html | grep source_link --context=2
+    <header class="odoc-preamble">
+     <h1>Module <code><span>B.R</span></code>
+      <a href="../B.ml.html#def-B3" class="source_link">Source</a>
+     </h1>
+    </header>
+  --
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
        <a href="../../A/A.ml.html#def-A1" class="source_link">Source</a>

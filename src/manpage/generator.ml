@@ -357,7 +357,7 @@ let next_heading, reset_heading =
   and reset () = heading_stack := [] in
   (next, reset)
 
-let heading ~nested { Heading.label = _; level; title } =
+let heading ~nested { Heading.label = _; level; title; source_anchor = _ } =
   let prefix =
     if level = 0 then noop
     else if level <= 3 then str "%s " (next_heading level)

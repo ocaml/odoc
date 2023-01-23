@@ -49,7 +49,11 @@ Look if all the source files are generated:
      <a href="../index.html">Main</a> &#x00BB; A
     </nav>
     <header class="odoc-preamble">
-     <h1>Module <code><span>Main.A</span></code></h1>
+     <h1>Module <code><span>Main.A</span></code>
+      <a href="../../Main__A/Main__A.ml.html#compunit-Main__A"
+       class="source_link">Source
+      </a>
+     </h1>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">
