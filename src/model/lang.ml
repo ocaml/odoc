@@ -32,7 +32,7 @@ module Source_code = struct
 
     type jmp_to_def = Occurence of anchor | Def of string
 
-    type info = Syntax of string | Line of int | Local_jmp of jmp_to_def
+    type info = Syntax of string | Local_jmp of jmp_to_def
 
     type 'a with_pos = 'a * (int * int)
 
