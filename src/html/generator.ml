@@ -428,10 +428,9 @@ module Page = struct
 
   let rec include_ ~config { Subpage.content; _ } = page ~config content
 
-  and subpages ~config subpages =
-    Utils.list_concat_map ~f:(include_ ~config) subpages
+  and subpages ~config subpages = List.map (include_ ~config) subpages
 
-  and page ~config p : Odoc_document.Renderer.page list =
+  and page ~config p : Odoc_document.Renderer.page =
     let { Page.preamble; items = i; url; source_anchor } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
@@ -456,10 +455,8 @@ module Page = struct
         items ~config ~resolve
           (Doctree.PageTitle.render_title ?source_anchor p @ preamble)
       in
-      [
-        Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
-          content subpages;
-      ]
+      Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex content
+        subpages
 
   and source_page ~config sp =
     let { Source_page.url; contents } = sp in
@@ -469,13 +466,9 @@ module Page = struct
     else Html_page.make_src ~config ~url title [ doc ]
 end
 
-let render ~config doc =
-  let page =
-    match doc.Document.page with
-    | None -> []
-    | Some page -> Page.page ~config page
-  in
-  page @ List.map (Page.source_page ~config) doc.source_pages
+let render ~config = function
+  | Document.Page page -> [ Page.page ~config page ]
+  | Source_page src -> [ Page.source_page ~config src ]
 
 let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in

@@ -505,5 +505,6 @@ and render_page (p : Page.t) =
   let filename = Link.as_filename p.url in
   { Renderer.filename; content; children }
 
-let render doc =
-  match doc.Document.page with None -> [] | Some page -> [ render_page page ]
+let render = function
+  | Document.Page page -> [ render_page page ]
+  | Source_page _ -> []

@@ -58,7 +58,7 @@ let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex ~source_anchor
                     (List.map (Format.asprintf "%a" htmlpp) content)) );
            ]))
   in
-  [ { Odoc_document.Renderer.filename; content; children } ]
+  { Odoc_document.Renderer.filename; content; children }
 
 let make_src ~config ~url ~title content =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in

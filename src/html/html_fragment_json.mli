@@ -10,7 +10,7 @@ val make :
   source_anchor:string option ->
   Html_types.div_content Html.elt list ->
   Odoc_document.Renderer.page list ->
-  Odoc_document.Renderer.page list
+  Odoc_document.Renderer.page
 
 val make_src :
   config:Config.t ->
