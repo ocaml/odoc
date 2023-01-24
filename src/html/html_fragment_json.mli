@@ -15,6 +15,6 @@ val make :
 val make_src :
   config:Config.t ->
   url:Odoc_document.Url.Path.t ->
-  title:string ->
+  breadcrumbs:Types.breadcrumb list ->
   Html_types.div_content Html.elt list ->
   Odoc_document.Renderer.page
