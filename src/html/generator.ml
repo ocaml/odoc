@@ -461,8 +461,9 @@ module Page = struct
   and source_page ~config sp =
     let { Source_page.url; contents } = sp in
     let title = url.Url.Path.name and doc = Html_source.html_of_doc contents in
+    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
     if Config.as_json config then
-      Html_fragment_json.make_src ~config ~url ~title [ doc ]
+      Html_fragment_json.make_src ~config ~url ~breadcrumbs [ doc ]
     else Html_page.make_src ~config ~url title [ doc ]
 end
 

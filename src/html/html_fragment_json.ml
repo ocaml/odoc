@@ -44,6 +44,7 @@ let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex ~source_anchor
       (json_to_string
          (`Object
            [
+             ("type", `String "documentation");
              ("uses_katex", `Bool uses_katex);
              ("breadcrumbs", json_of_breadcrumbs breadcrumbs);
              ("toc", json_of_toc toc);
@@ -60,7 +61,7 @@ let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex ~source_anchor
   in
   { Odoc_document.Renderer.filename; content; children }
 
-let make_src ~config ~url ~title content =
+let make_src ~config ~url ~breadcrumbs content =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
   let filename = Fpath.add_ext ".json" filename in
   let htmlpp = Html.pp_elt ~indent:(Config.indent config) () in
@@ -70,7 +71,8 @@ let make_src ~config ~url ~title content =
       (json_to_string
          (`Object
            [
-             ("title", `String title);
+             ("type", `String "source");
+             ("breadcrumbs", json_of_breadcrumbs breadcrumbs);
              ( "content",
                `String
                  (String.concat ""
