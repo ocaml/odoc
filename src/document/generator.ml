@@ -234,7 +234,7 @@ module Make (Syntax : SYNTAX) = struct
   end
 
   module Source_page : sig
-    val source : Lang.Source_code.t -> Source_page.t list
+    val source : Lang.Source_code.t -> Source_page.t option
   end = struct
     let source_opt parent ~infos ~ext = function
       | Some contents ->
@@ -243,8 +243,8 @@ module Make (Syntax : SYNTAX) = struct
             and contents = Impl.impl ~infos contents in
             { Source_page.url; contents }
           in
-          [ source ~parent ~ext ~contents ]
-      | None -> []
+          Some (source ~parent ~ext ~contents)
+      | None -> None
 
     let source { Lang.Source_code.parent; impl_source; impl_info } =
       source_opt parent ~infos:impl_info ~ext:".ml" impl_source
@@ -1711,7 +1711,7 @@ module Make (Syntax : SYNTAX) = struct
   open Module
 
   module Page : sig
-    val compilation_unit : Lang.Compilation_unit.t -> Document.t
+    val compilation_unit : Lang.Compilation_unit.t -> Document.t list
 
     val page : Lang.Page.t -> Document.t
   end = struct
@@ -1753,14 +1753,21 @@ module Make (Syntax : SYNTAX) = struct
         | None -> None
       in
       let page =
-        if t.hidden then None
-        else Some (make_expansion_page ~source_anchor url [ unit_doc ] items)
+        if t.hidden then []
+        else
+          let page =
+            make_expansion_page ~source_anchor url [ unit_doc ] items
+          in
+          [ Document.Page page ]
       and source_pages =
         match t.sources with
         | None -> []
-        | Some sources -> Source_page.source sources
+        | Some sources -> (
+            match Source_page.source sources with
+            | None -> []
+            | Some src_page -> [ Document.Source_page src_page ])
       in
-      { Document.page; source_pages }
+      page @ source_pages
 
     let page (t : Odoc_model.Lang.Page.t) =
       (*let name =
@@ -1770,8 +1777,7 @@ module Make (Syntax : SYNTAX) = struct
       let url = Url.Path.from_identifier t.name in
       let preamble, items = Sectioning.docs t.content in
       let source_anchor = None in
-      let page = Some { Page.preamble; items; url; source_anchor } in
-      { Document.page; source_pages = [] }
+      Document.Page { Page.preamble; items; url; source_anchor }
   end
 
   include Page

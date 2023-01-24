@@ -184,7 +184,7 @@ end =
   Source_page
 
 module Document = struct
-  type t = { page : Page.t option; source_pages : Source_page.t list }
+  type t = Page of Page.t | Source_page of Source_page.t
 end
 
 let inline ?(attr = []) desc = Inline.{ attr; desc }
