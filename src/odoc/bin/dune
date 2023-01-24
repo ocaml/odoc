@@ -2,8 +2,8 @@
  (name main)
  (package odoc)
  (public_name odoc)
- (libraries compatcmdliner odoc_base odoc_model odoc_odoc)
+ (libraries compatcmdliner odoc_model odoc_odoc)
  (flags
-  (:standard -open StdLabels -open Odoc_base))
+  (:standard -open StdLabels))
  (instrumentation
   (backend bisect_ppx)))
