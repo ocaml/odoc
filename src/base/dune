@@ -1,7 +1,0 @@
-(library
- (name odoc_base)
- (public_name odoc.base)
- (instrumentation
-  (backend bisect_ppx))
- (libraries fpath result unix)
- (flags (:standard)))

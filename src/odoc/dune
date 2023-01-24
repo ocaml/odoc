@@ -4,7 +4,6 @@
  (libraries
   compiler-libs.common
   fpath
-  odoc_base
   odoc_html
   odoc_html_support_files
   odoc_latex
@@ -14,8 +13,6 @@
   odoc_xref2
   tyxml
   unix)
- (flags
-  (:standard -open Odoc_base))
  (instrumentation
   (backend bisect_ppx)))
 
