@@ -25,7 +25,6 @@ let html_of_doc docs =
         match info with
         | Source_code.Info.Syntax tok ->
             [ span ~a:[ a_class [ tok ] ] children ]
-        | Line _ -> children
         | Local_jmp (Occurence { anchor }) ->
             if is_in_a then children
             else
@@ -37,15 +36,19 @@ let html_of_doc docs =
   in
   span ~a:[] @@ List.concat @@ List.map (doc_to_html ~is_in_a:false) docs
 
-(** Traverse the doc to find the last [Line] number. *)
+let count_lines_in_string s =
+  let n = ref 0 in
+  String.iter (function '\n' -> incr n | _ -> ()) s;
+  !n
+
+(** Traverse the doc to count the number of lines. *)
 let rec count_lines_in_span = function
-  | Source_page.Plain_code _ -> 0
-  | Tagged_code (Source_code.Info.Line l, docs) -> max (count_lines docs) l
+  | Source_page.Plain_code s -> count_lines_in_string s
   | Tagged_code (_, docs) -> count_lines docs
 
 and count_lines = function
   | [] -> 0
-  | hd :: tl -> max (count_lines_in_span hd) (count_lines tl)
+  | hd :: tl -> count_lines_in_span hd + count_lines tl
 
 let rec line_numbers acc n =
   let open Html in
