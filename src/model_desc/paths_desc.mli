@@ -6,6 +6,8 @@ val modulename : Odoc_model.Names.ModuleName.t Type_desc.t
 
 val identifier : [< Identifier.t_pv ] Odoc_model.Paths.Identifier.id Type_desc.t
 
+val sourcepage_identifier : Odoc_model.Paths.Identifier.SourcePage.t Type_desc.t
+
 val resolved_path : [< Path.Resolved.t ] Type_desc.t
 
 val path : [< Path.t ] Type_desc.t

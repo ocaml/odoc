@@ -359,7 +359,11 @@ let add_extension_constructor identifier
 let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
   let id = (unit.id :> Paths.Identifier.Module.t) in
-  let locs = Some { Lang.Locations.source_parent = unit.id; anchor = None } in
+  let locs =
+    match unit.sources with
+    | Some src -> Some { Lang.Locations.source_parent = src.id; anchor = None }
+    | None -> None
+  in
   match unit.content with
   | Module s ->
       let m =
