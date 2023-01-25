@@ -14,10 +14,7 @@ let locations env id locs =
     match locs.Locations.anchor with
     | Some _ -> locs
     | None -> (
-        match Env.lookup_def id env with
-        | Some (source_parent, anchor) ->
-            { Locations.source_parent; anchor = Some anchor }
-        | None -> locs)
+        match Env.lookup_def id env with Some locs -> locs | None -> locs)
   in
   match Env.lookup_unit (Names.ModuleName.to_string unit_name) env with
   | Some (Env.Found { sources = Some _; _ }) -> Some locs

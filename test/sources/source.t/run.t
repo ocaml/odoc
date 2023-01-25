@@ -56,59 +56,59 @@ Source links generated in the documentation:
   --
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
-       <a href="A.ml.html#def-A0" class="source_link">Source</a>
+       <a href="A.ml.html#def-0" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="A.ml.html#def-A1" class="source_link">Source</a>
+       <a href="A.ml.html#def-1" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
-       <a href="A.ml.html#def-A2" class="source_link">Source</a>
+       <a href="A.ml.html#def-2" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-z">
        <a href="#val-z" class="anchor"></a>
-       <a href="A.ml.html#def-A3" class="source_link">Source</a>
+       <a href="A.ml.html#def-3" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-A">
        <a href="#module-A" class="anchor"></a>
-       <a href="A.ml.html#def-A5" class="source_link">Source</a>
+       <a href="A.ml.html#def-5" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-B">
        <a href="#module-B" class="anchor"></a>
-       <a href="A.ml.html#def-A5" class="source_link">Source</a>
+       <a href="A.ml.html#def-5" class="source_link">Source</a>
   --
       <div class="spec module-type anchored" id="module-type-T">
        <a href="#module-type-T" class="anchor"></a>
-       <a href="A.ml.html#def-A7" class="source_link">Source</a>
+       <a href="A.ml.html#def-7" class="source_link">Source</a>
   --
       <div class="spec module-type anchored" id="module-type-U">
        <a href="#module-type-U" class="anchor"></a>
-       <a href="A.ml.html#def-A8" class="source_link">Source</a>
+       <a href="A.ml.html#def-8" class="source_link">Source</a>
   --
       <div class="spec type anchored" id="type-ext">
        <a href="#type-ext" class="anchor"></a>
-       <a href="A.ml.html#def-A9" class="source_link">Source</a>
+       <a href="A.ml.html#def-9" class="source_link">Source</a>
   --
       <div class="spec type extension anchored" id="extension-decl-Foo">
        <a href="#extension-decl-Foo" class="anchor"></a>
-       <a href="A.ml.html#def-A10" class="source_link">Source</a>
+       <a href="A.ml.html#def-10" class="source_link">Source</a>
   --
       <div class="spec exception anchored" id="exception-Exn">
        <a href="#exception-Exn" class="anchor"></a>
-       <a href="A.ml.html#def-A11" class="source_link">Source</a>
+       <a href="A.ml.html#def-11" class="source_link">Source</a>
   --
       <div class="spec class anchored" id="class-cls">
        <a href="#class-cls" class="anchor"></a>
-       <a href="A.ml.html#def-A12" class="source_link">Source</a>
+       <a href="A.ml.html#def-12" class="source_link">Source</a>
   --
       <div class="spec class anchored" id="class-cls'">
        <a href="#class-cls'" class="anchor"></a>
-       <a href="A.ml.html#def-A14" class="source_link">Source</a>
+       <a href="A.ml.html#def-14" class="source_link">Source</a>
   --
       <div class="spec class-type anchored" id="class-type-ct">
        <a href="#class-type-ct" class="anchor"></a>
-       <a href="A.ml.html#def-A15" class="source_link">Source</a>
+       <a href="A.ml.html#def-15" class="source_link">Source</a>
 
 Ids generated in the source code:
 
@@ -133,21 +133,21 @@ Ids generated in the source code:
   id="L18"
   id="L19"
   id="L20"
-  id="def-A0"
+  id="def-0"
   id="x_268"
-  id="def-A1"
+  id="def-1"
   id="y_269"
-  id="def-A2"
+  id="def-2"
   id="z_270"
-  id="def-A3"
+  id="def-3"
   id="a_272"
-  id="def-A5"
-  id="def-A6"
-  id="def-A7"
-  id="def-A8"
-  id="def-A9"
-  id="def-A10"
-  id="def-A11"
-  id="def-A12"
-  id="def-A14"
-  id="def-A15"
+  id="def-5"
+  id="def-6"
+  id="def-7"
+  id="def-8"
+  id="def-9"
+  id="def-10"
+  id="def-11"
+  id="def-12"
+  id="def-14"
+  id="def-15"

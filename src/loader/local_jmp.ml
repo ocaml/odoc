@@ -4,7 +4,7 @@ open Odoc_model.Lang.Source_code.Info
 
 let pos_of_loc loc = (loc.Location.loc_start.pos_cnum, loc.loc_end.pos_cnum)
 
-let string_of_uid uid = Uid.string_of_uid (Uid.of_shape_uid uid)
+let ( let= ) m f = match m with Some x -> f x | None -> ()
 
 module Local_analysis = struct
   let expr poses expr =
@@ -27,21 +27,28 @@ module Local_analysis = struct
 end
 
 module Global_analysis = struct
+  let anchor_of_uid uid =
+    match Uid.unpack_uid (Uid.of_shape_uid uid) with
+    | Some (_, Some id) -> Some (Uid.anchor_of_id id)
+    | _ -> None
+
+  (** Generate the anchors that will be pointed to by [lookup_def]. *)
   let init poses uid_to_loc =
     Shape.Uid.Tbl.iter
       (fun uid t ->
-        let s = string_of_uid uid in
+        let= s = anchor_of_uid uid in
         poses := (Def s, pos_of_loc t) :: !poses)
       uid_to_loc
+
   let expr poses uid_to_loc expr =
     match expr with
     | { Typedtree.exp_desc = Texp_ident (_, _, value_description); exp_loc; _ }
-      -> (
-        match Shape.Uid.Tbl.find_opt uid_to_loc value_description.val_uid with
-        | None -> ()
-        | Some _ ->
-            let anchor = string_of_uid value_description.val_uid in
-            poses := (Occurence { anchor }, pos_of_loc exp_loc) :: !poses)
+      ->
+        (* Only generate anchor if the uid is in the location table. We don't
+           link to modules outside of the compilation unit. *)
+        let= _ = Shape.Uid.Tbl.find_opt uid_to_loc value_description.val_uid in
+        let= anchor = anchor_of_uid value_description.val_uid in
+        poses := (Occurence { anchor }, pos_of_loc exp_loc) :: !poses
     | _ -> ()
 end
 

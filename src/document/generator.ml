@@ -50,9 +50,18 @@ let path_to_id path =
 let source_anchor locs =
   match locs with
   | Some { Odoc_model.Lang.Locations.anchor = Some anchor; source_parent } ->
-      Url.Anchor.source_file_from_identifier ~ext:".ml"
-        (source_parent :> Paths.Identifier.Module.t)
-        ~anchor
+      let url =
+        Url.Anchor.source_file_from_identifier ~ext:".ml"
+          (source_parent :> Paths.Identifier.Module.t)
+          ~anchor
+      in
+      Some url
+  | Some { Odoc_model.Lang.Locations.anchor = None; source_parent } ->
+      let path =
+        Url.Path.source_file_from_identifier ~ext:".ml"
+          (source_parent :> Paths.Identifier.Module.t)
+      in
+      Some (Url.from_path path)
   | _ -> None
 
 let attach_expansion ?(status = `Default) (eq, o, e) page text =
