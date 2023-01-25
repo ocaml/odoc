@@ -93,7 +93,7 @@ module Anchor : sig
   val from_identifier : Identifier.t -> (t, Error.t) result
 
   val source_file_from_identifier :
-    ext:string -> Identifier.Module.t -> anchor:string -> t option
+    ext:string -> Identifier.Module.t -> anchor:string -> t
 
   val polymorphic_variant :
     type_ident:Identifier.t ->

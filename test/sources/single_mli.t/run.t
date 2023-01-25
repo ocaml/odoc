@@ -49,13 +49,13 @@ Code source for `A_x` is wanted:
 
   $ grep source_link html/A/index.html
       <a href="A.ml.html" class="source_link">Source</a>
-       <a href="../A_x/A_x.ml.html#compunit-A_x" class="source_link">Source</a>
+       <a href="../A_x/A_x.ml.html" class="source_link">Source</a>
 
 `A.X` and `A.X.Y` should contain a link to `A_x.ml.html`:
 
   $ grep source_link html/A/X/index.html
-      <a href="../../A_x/A_x.ml.html#compunit-A_x" class="source_link">Source
-       <a href="../../A_x/A_x.ml.html#def-A_x1" class="source_link">Source</a>
+      <a href="../../A_x/A_x.ml.html" class="source_link">Source</a>
+       <a href="../../A_x/A_x.ml.html#def-1" class="source_link">Source</a>
   $ grep source_link html/A/X/Y/index.html
-      <a href="../../../A_x/A_x.ml.html#def-A_x1" class="source_link">Source
-       <a href="../../../A_x/A_x.ml.html#def-A_x0" class="source_link">Source
+      <a href="../../../A_x/A_x.ml.html#def-1" class="source_link">Source</a>
+       <a href="../../../A_x/A_x.ml.html#def-0" class="source_link">Source</a>

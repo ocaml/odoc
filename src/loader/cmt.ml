@@ -32,7 +32,11 @@ let read_locations_impl parent impl =
   and anchor =
     match impl with
     | None -> None
-    | Some impl -> Some (Uid.string_of_uid impl)
+    | Some impl -> (
+        match Uid.unpack_uid impl with
+        | Some (_, Some id) -> Some (Uid.anchor_of_id id)
+        | _ -> None
+      )
   in
   Some { source_parent; anchor }
 

@@ -18,7 +18,7 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
-  lookup_def : Identifier.t -> (Identifier.RootModule.t * string) option;
+  lookup_def : Identifier.t -> Lang.Locations.t option;
 }
 
 let unique_id =

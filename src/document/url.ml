@@ -373,7 +373,7 @@ module Anchor = struct
   let source_file_from_identifier ~ext root ~anchor =
     let kind = `SourceLine in
     let page = Path.source_file_from_identifier ~ext root in
-    Some { page; anchor; kind }
+    { page; anchor; kind }
 
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =

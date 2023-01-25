@@ -1,8 +1,13 @@
 open Types
 
 type uid
+type id
 
-val string_of_uid : uid -> string
+val anchor_of_id : id -> string
+(** Returns the anchor that will be used to link to the [id]. *)
+
+val unpack_uid : uid -> (string * id option) option
+(** [unpack_uid uid] unpacks a [uid] into [Some (comp_unit, id)] *)
 
 val of_value_description : value_description -> uid option
 val of_type_declaration : type_declaration -> uid option

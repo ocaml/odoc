@@ -50,11 +50,6 @@ let rec shape_of_id lookup_shape :
 
 module MkId = Identifier.Mk
 
-let comp_unit_of_uid = function
-  | Shape.Uid.Compilation_unit s -> Some s
-  | Item { comp_unit; _ } -> Some comp_unit
-  | _ -> None
-
 let lookup_def lookup_unit id =
   match shape_of_id lookup_unit id with
   | None -> None
@@ -71,10 +66,11 @@ let lookup_def lookup_unit id =
       let result = try Some (Reduce.reduce () query) with Not_found -> None in
       result >>= fun result ->
       result.uid >>= fun uid ->
-      let anchor = Uid.string_of_uid (Uid.of_shape_uid uid) in
-      comp_unit_of_uid uid >>= fun unit_name ->
+      Uid.unpack_uid (Uid.of_shape_uid uid) >>= fun (unit_name, id) ->
       lookup_unit unit_name >>= fun (unit, _) ->
-      Some (unit.Lang.Compilation_unit.id, anchor)
+      let anchor = id >>= fun id -> Some (Uid.anchor_of_id id)
+      and source_parent = unit.Lang.Compilation_unit.id in
+      Some {Lang.Locations.source_parent ; anchor}
 
 let of_cmt (cmt : Cmt_format.cmt_infos) = cmt.cmt_impl_shape
 

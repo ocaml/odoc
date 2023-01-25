@@ -1,14 +1,19 @@
+type id = string
+
+let anchor_of_id id = "def-" ^ id
+
 #if OCAML_VERSION >= (4, 14, 0)
+
 open Types
 
 type uid = Shape.Uid.t
 
-let string_of_uid uid =
+let unpack_uid uid =
   match uid with
-  | Shape.Uid.Compilation_unit s -> "compunit-" ^ s
-  | Item { comp_unit; id } -> "def-" ^ comp_unit ^ string_of_int id
-  | Predef s -> "predef-" ^ s
-  | Internal -> "internal"
+  | Shape.Uid.Compilation_unit s -> Some (s, None)
+  | Item { comp_unit; id } -> Some (comp_unit, Some (string_of_int id))
+  | Predef _ -> None
+  | Internal -> None
 
 let of_value_description vd = Some vd.val_uid
 let of_type_declaration decl = Some decl.type_uid
@@ -23,7 +28,7 @@ let of_shape_uid uid = uid
 
 type uid = unit
 
-let string_of_uid () = ""
+let unpack_uid () = None
 
 let of_value_description _vd = None
 let of_type_declaration _decl = None

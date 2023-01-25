@@ -50,17 +50,14 @@ Look if all the source files are generated:
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Main.A</span></code>
-      <a href="../../Main__A/Main__A.ml.html#compunit-Main__A"
-       class="source_link">Source
-      </a>
+      <a href="../../Main__A/Main__A.ml.html" class="source_link">Source</a>
      </h1>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="../../Main__A/Main__A.ml.html#def-Main__A0" class="source_link">
-        Source
+       <a href="../../Main__A/Main__A.ml.html#def-0" class="source_link">Source
        </a><code><span><span class="keyword">val</span> x : int</span></code>
       </div>
      </div>
