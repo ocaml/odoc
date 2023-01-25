@@ -110,8 +110,9 @@ Let's start with some functions to execute the three phases of `odoc`.
 
 Compiling a file with `odoc` requires a few arguments: the file to compile, an
 optional parent, a list of include paths, a list of children for `.mld` files,
-and an output path. Include paths can be just `'.'`, and we can calculate the
-output file from the input because all of the files are going into the same directory.
+optional source implementation and interface file, and an output path. Include
+paths can be just `'.'`, and we can calculate the output file from the input
+because all of the files are going into the same directory.
 
 Linking a file with `odoc` requires the input file and a list of include paths. As
 for compile, we will hard-code the include path.
@@ -135,7 +136,7 @@ let add_prefixed_output cmd list prefix lines =
       !list
       @ Bos.Cmd.to_string cmd :: List.map (fun l -> prefix ^ ": " ^ l) lines
 
-let compile file ?parent ?(ignore_output = false) children =
+let compile file ?parent ?(ignore_output = false) ?impl ?intf children =
   let output_file =
     let ext = Fpath.get_ext file in
     let basename = Fpath.basename (Fpath.rem_ext file) in
@@ -145,8 +146,15 @@ let compile file ?parent ?(ignore_output = false) children =
     | _ -> failwith ("bad extension: " ^ ext)
   in
   let open Cmd in
+  let impl =
+    match impl with None -> Cmd.empty | Some impl -> Cmd.(v "--impl" % p impl)
+  in
+  let intf =
+    match intf with None -> Cmd.empty | Some intf -> Cmd.(v "--intf" % p intf)
+  in
   let cmd =
-    odoc % "compile" % Fpath.to_string file % "-I" % "." % "-o" % output_file
+    odoc % "compile" % Fpath.to_string file %% impl %% intf % "-I" % "." % "-o"
+    % output_file
     |> List.fold_right (fun child cmd -> cmd % "--child" % child) children
   in
   let cmd =
@@ -183,9 +191,12 @@ let support_files () =
   OS.Cmd.(run_out cmd |> to_lines) |> get_ok
 ```
 
-We'll now make some library lists. We have not only external dependency libraries, but
-[odoc] itself is also separated into libraries too. These two sets of libraries will be
-documented in different sections, so we'll keep them in separate lists.
+We'll now make some library lists. We have not only external dependency
+libraries, but `odoc` itself is also separated into libraries too. These two
+sets of libraries will be documented in different sections, so we'll keep them
+in separate lists. Moreover, `odoc` libraries will include the source code, via
+a hardcoded path.
+
 Additionally we'll also construct a list containing the extra documentation pages. Finally let's create a list mapping the section to its parent, which matches
 the hierarchy declared above.
 
@@ -224,6 +235,11 @@ let odoc_libraries = [
     "odoc_model_desc"; "odoc_model"; "odoc_manpage"; "odoc_loader";
     "odoc_latex"; "odoc_html"; "odoc_document"; "odoc_examples" ];;
 
+let source_dir_of_odoc_lib lib =
+  match String.split_on_char '_' lib with
+  | "odoc" :: s -> Some Fpath.(v ".." / "src" / String.concat "_" s)
+  | _ -> None
+
 let all_libraries = dep_libraries @ odoc_libraries;;
 
 let extra_docs = [
@@ -244,7 +260,7 @@ let parents =
 
 ```
 
-[odoc] operates on the compiler outputs. We need to find them for both the files compiled by Dune within this project and those in libraries we compile against.
+`odoc` operates on the compiler outputs. We need to find them for both the files compiled by Dune within this project and those in libraries we compile against.
 The following uses `ocamlfind` to locate the library paths for our dependencies:
 
 ```ocaml env=e1
@@ -325,10 +341,36 @@ let compile_deps f =
 
 Let's now put together a list of all possible modules. We'll keep track of
 which library they're in, and whether that library is a part of `odoc` or a dependency
-library.
+library. For `odoc` libraries, we infer the implementation and interface source file
+path from the library name.
 
 ```ocaml env=e1
 let odoc_all_unit_paths = find_units ".." |> get_ok
+
+let source_files_of_odoc_module lib module_ =
+  let filename =
+    let module_ =
+      match Astring.String.cut ~rev:true ~sep:"__" module_ with
+       | None -> module_
+       | Some (_, "") -> module_
+       | Some (_, module_) -> module_
+    in
+    (* ML.ml should not be renamed *)
+    if String.for_all (fun c -> Char.equal (Char.uppercase_ascii c) c) module_
+    then module_
+    else String.uncapitalize_ascii module_
+  in
+  match source_dir_of_odoc_lib lib with
+  | None -> None, None
+  | Some path ->
+      let path = Fpath.( / ) path filename in
+      let find_by_extension path exts =
+        List.map (fun ext -> Fpath.add_ext ext path) exts
+        |> List.find_opt (fun f -> Bos.OS.File.exists f |> get_ok)
+      in
+      let impl = find_by_extension path ["pp.ml" ;"ml-gen"; "ml"] in
+      let intf = find_by_extension path ["mli"] in
+      (impl, intf)
 
 let odoc_units =
   List.map
@@ -336,7 +378,11 @@ let odoc_units =
       Fpath.Set.fold
         (fun p acc ->
           if Astring.String.is_infix ~affix:lib (Fpath.to_string p) then
-            ("odoc", lib, p) :: acc
+            let impl, intf =
+              let module_ = Fpath.basename p in
+              source_files_of_odoc_module lib module_
+            in
+            ("odoc", lib, p, impl, intf) :: acc
           else acc)
         odoc_all_unit_paths [])
     odoc_libraries
@@ -348,7 +394,7 @@ let all_units =
     List.map
       (fun (lib, p) ->
         Fpath.Set.fold
-          (fun p acc -> ("deps", lib, p) :: acc)
+          (fun p acc -> ("deps", lib, p, None, None) :: acc)
           (find_units p |> get_ok)
           [])
       lib_paths in
@@ -379,7 +425,7 @@ let compile_mlds () =
         let parent = List.assoc library parents in
         let children =
           List.filter_map
-            (fun (parent, lib, child) ->
+            (fun (parent, lib, child, _, _) ->
               if lib = library then Some (Fpath.basename child |> mkmod)
               else None)
             all_units
@@ -398,7 +444,7 @@ Now we get to the compilation phase. For each unit, we query its dependencies, t
 ```ocaml env=e1
 let compile_all () =
   let mld_odocs = compile_mlds () in
-  let rec rec_compile parent lib file =
+  let rec rec_compile ?impl ?intf parent lib file =
     let output = Fpath.(base (set_ext "odoc" file)) in
     if OS.File.exists output |> get_ok then []
     else
@@ -408,22 +454,23 @@ let compile_all () =
           (fun acc (dep_name, digest) ->
             match
               List.find_opt
-                (fun (_, _, f) ->
+                (fun (_, _, f, _, _) ->
                   Fpath.basename f |> String.capitalize_ascii = dep_name)
                 all_units
             with
             | None -> acc
-            | Some (parent, lib, dep_path) ->
+            | Some (parent, lib, dep_path, impl, intf) ->
                 let file = best_file dep_path in
-                rec_compile parent lib file @ acc)
+                rec_compile ?impl ?intf parent lib file @ acc)
           [] deps.deps
       in
       let ignore_output = parent = "deps" in
-      ignore (compile file ~parent:lib ~ignore_output []);
+      ignore (compile file ~parent:lib ?impl ?intf ~ignore_output []);
       (output, ignore_output) :: files
   in
   List.fold_left
-    (fun acc (parent, lib, dep) -> acc @ rec_compile parent lib (best_file dep))
+    (fun acc (parent, lib, dep, impl, intf) ->
+      acc @ rec_compile ?impl ?intf parent lib (best_file dep))
     [] all_units
   @ mld_odocs
 ```
@@ -498,4 +545,88 @@ Let's see if there was any output from the `odoc` invocations:
 ["";
  "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_examples.odocl' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
  "odoc_examples.odocl: Warning, resolved hidden path: Odoc_examples__.Unexposed.t"]
+```
+
+We can have a look at the produced hierarchy of files, which matches the desired output. Note that source files with a `.ml.html` extension are generated for modules compiled with the `--impl` option.
+```sh
+$ ls html/odoc
+contributing.html
+deps
+driver.html
+dune.html
+features.html
+highlight.pack.js
+index.html
+interface.html
+ocamldoc_differences.html
+odoc.css
+odoc_document
+odoc_examples
+odoc_for_authors.html
+odoc_html
+odoc_latex
+odoc_loader
+odoc_manpage
+odoc_model
+odoc_model_desc
+odoc_odoc
+odoc_xref2
+odoc_xref_test
+parent_child_spec.html
+$ ls html/odoc/deps
+astring
+biniou
+cmdliner
+fmt
+fpath
+index.html
+odoc-parser
+result
+stdlib
+tyxml
+yojson
+$ find html/odoc/deps | tail -n 20
+html/odoc/deps/stdlib/Pparse
+html/odoc/deps/stdlib/Pparse/index.html
+html/odoc/deps/stdlib/Typetexp
+html/odoc/deps/stdlib/Typetexp/index.html
+html/odoc/deps/stdlib/Build_export_info
+html/odoc/deps/stdlib/Build_export_info/index.html
+html/odoc/deps/stdlib/Typedecl_properties
+html/odoc/deps/stdlib/Typedecl_properties/index.html
+html/odoc/deps/stdlib/Comballoc
+html/odoc/deps/stdlib/Comballoc/index.html
+html/odoc/deps/stdlib/Printclambda_primitives
+html/odoc/deps/stdlib/Printclambda_primitives/index.html
+html/odoc/deps/stdlib/Pass_wrapper
+html/odoc/deps/stdlib/Pass_wrapper/index.html
+html/odoc/deps/stdlib/Ctype
+html/odoc/deps/stdlib/Ctype/index.html
+html/odoc/deps/stdlib/Toploop
+html/odoc/deps/stdlib/Toploop/index.html
+html/odoc/deps/stdlib/Envaux
+html/odoc/deps/stdlib/Envaux/index.html
+$ find html/odoc/odoc_html
+html/odoc/odoc_html
+html/odoc/odoc_html/index.html
+html/odoc/odoc_html/Odoc_html
+html/odoc/odoc_html/Odoc_html/Generator
+html/odoc/odoc_html/Odoc_html/Generator/Generator.ml.html
+html/odoc/odoc_html/Odoc_html/Generator/index.html
+html/odoc/odoc_html/Odoc_html/Types
+html/odoc/odoc_html/Odoc_html/Types/Types.ml.html
+html/odoc/odoc_html/Odoc_html/Types/index.html
+html/odoc/odoc_html/Odoc_html/Link
+html/odoc/odoc_html/Odoc_html/Link/Path
+html/odoc/odoc_html/Odoc_html/Link/Path/index.html
+html/odoc/odoc_html/Odoc_html/Link/index.html
+html/odoc/odoc_html/Odoc_html/Link/Link.ml.html
+html/odoc/odoc_html/Odoc_html/Odoc_html.ml.html
+html/odoc/odoc_html/Odoc_html/index.html
+html/odoc/odoc_html/Odoc_html/Config
+html/odoc/odoc_html/Odoc_html/Config/index.html
+html/odoc/odoc_html/Odoc_html/Config/Config.ml.html
+html/odoc/odoc_html/Odoc_html/Tree
+html/odoc/odoc_html/Odoc_html/Tree/Tree.ml.html
+html/odoc/odoc_html/Odoc_html/Tree/index.html
 ```
