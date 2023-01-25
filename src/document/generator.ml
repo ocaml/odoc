@@ -48,12 +48,12 @@ let path_to_id path =
   | Ok url -> Some url
 
 let source_anchor locs =
-  match locs.Odoc_model.Lang.Locations.impl with
+  match locs.Odoc_model.Lang.Locations.anchor with
   | None -> None
-  | Some impl ->
+  | Some anchor ->
       Url.Anchor.source_file_from_identifier ~ext:".ml"
         (locs.source_parent :> Paths.Identifier.Module.t)
-        impl
+        ~anchor
 
 let opt_source_anchor = function
   | Some locs -> source_anchor locs
@@ -246,10 +246,8 @@ module Make (Syntax : SYNTAX) = struct
           [ source ~parent ~ext ~contents ]
       | None -> []
 
-    let source { Lang.Source_code.parent; intf_source; impl_source; impl_info }
-        =
+    let source { Lang.Source_code.parent; impl_source; impl_info } =
       source_opt parent ~infos:impl_info ~ext:".ml" impl_source
-      @ source_opt parent ~infos:[] ~ext:".mli" intf_source
   end
 
   module Type_expression : sig

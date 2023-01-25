@@ -98,7 +98,7 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
+let resolve_and_substitute ~resolver ~make_root ~impl_source
     (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
   (* [impl_shape] is used to lookup locations in the implementation. It is
@@ -130,11 +130,9 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
     match cmt_infos with Some (shape, _) -> Some shape | None -> None
   in
   let sources =
-    match
-      (read_source_file_opt impl_source, read_source_file_opt intf_source)
-    with
-    | None, None -> None
-    | impl_source, intf_source ->
+    match read_source_file_opt impl_source with
+    | None -> None
+    | impl_source ->
         let impl_info =
           match (cmt_infos, impl_source) with
           | Some (_, local_jmp), Some impl_source ->
@@ -142,7 +140,7 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
           | _ -> []
         in
         let parent = (unit.id :> Paths.Identifier.Module.t) in
-        Some { Lang.Source_code.parent; intf_source; impl_source; impl_info }
+        Some { Lang.Source_code.parent; impl_source; impl_info }
   in
   if not unit.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
@@ -270,7 +268,7 @@ let handle_file_ext = function
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options ~impl_source ~intf_source input =
+    ~warnings_options ~impl_source input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
@@ -287,8 +285,8 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver ~make_root ~impl_source ~intf_source
-            parent input input_type)
+          resolve_and_substitute ~resolver ~make_root ~impl_source parent input
+            input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in

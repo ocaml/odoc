@@ -135,7 +135,7 @@ let add_prefixed_output cmd list prefix lines =
       !list
       @ Bos.Cmd.to_string cmd :: List.map (fun l -> prefix ^ ": " ^ l) lines
 
-let compile file ?parent ?(ignore_output = false) ?impl ?intf children =
+let compile file ?parent ?(ignore_output = false) ?impl children =
   let output_file =
     let ext = Fpath.get_ext file in
     let basename = Fpath.basename (Fpath.rem_ext file) in
@@ -148,11 +148,8 @@ let compile file ?parent ?(ignore_output = false) ?impl ?intf children =
   let impl =
     match impl with None -> Cmd.empty | Some impl -> Cmd.(v "--impl" % p impl)
   in
-  let intf =
-    match intf with None -> Cmd.empty | Some intf -> Cmd.(v "--intf" % p intf)
-  in
   let cmd =
-    odoc % "compile" % Fpath.to_string file %% impl %% intf % "-I" % "." % "-o"
+    odoc % "compile" % Fpath.to_string file %% impl % "-I" % "." % "-o"
     % output_file
     |> List.fold_right (fun child cmd -> cmd % "--child" % child) children
   in
@@ -359,16 +356,14 @@ let source_files_of_odoc_module lib module_ =
     else String.uncapitalize_ascii module_
   in
   match source_dir_of_odoc_lib lib with
-  | None -> None, None
+  | None -> None
   | Some path ->
       let path = Fpath.( / ) path filename in
       let find_by_extension path exts =
         List.map (fun ext -> Fpath.add_ext ext path) exts
         |> List.find_opt (fun f -> Bos.OS.File.exists f |> get_ok)
       in
-      let impl = find_by_extension path ["pp.ml" ;"ml-gen"; "ml"] in
-      let intf = find_by_extension path ["mli"] in
-      (impl, intf)
+      find_by_extension path ["pp.ml" ;"ml-gen"; "ml"]
 
 let odoc_units =
   List.map
@@ -376,11 +371,11 @@ let odoc_units =
       Fpath.Set.fold
         (fun p acc ->
           if Astring.String.is_infix ~affix:lib (Fpath.to_string p) then
-            let impl, intf =
+            let impl =
               let module_ = Fpath.basename p in
               source_files_of_odoc_module lib module_
             in
-            ("odoc", lib, p, impl, intf) :: acc
+            ("odoc", lib, p, impl) :: acc
           else acc)
         odoc_all_unit_paths [])
     odoc_libraries
@@ -392,7 +387,7 @@ let all_units =
     List.map
       (fun (lib, p) ->
         Fpath.Set.fold
-          (fun p acc -> ("deps", lib, p, None, None) :: acc)
+          (fun p acc -> ("deps", lib, p, None) :: acc)
           (find_units p |> get_ok)
           [])
       lib_paths in
@@ -423,7 +418,7 @@ let compile_mlds () =
         let parent = List.assoc library parents in
         let children =
           List.filter_map
-            (fun (parent, lib, child, _, _) ->
+            (fun (parent, lib, child, _) ->
               if lib = library then Some (Fpath.basename child |> mkmod)
               else None)
             all_units
@@ -442,7 +437,7 @@ Now we get to the compilation phase. For each unit, we query its dependencies, t
 {[
 let compile_all () =
   let mld_odocs = compile_mlds () in
-  let rec rec_compile ?impl ?intf parent lib file =
+  let rec rec_compile ?impl parent lib file =
     let output = Fpath.(base (set_ext "odoc" file)) in
     if OS.File.exists output |> get_ok then []
     else
@@ -452,40 +447,40 @@ let compile_all () =
           (fun acc (dep_name, digest) ->
             match
               List.find_opt
-                (fun (_, _, f, _, _) ->
+                (fun (_, _, f, _) ->
                   Fpath.basename f |> String.capitalize_ascii = dep_name)
                 all_units
             with
             | None -> acc
-            | Some (parent, lib, dep_path, impl, intf) ->
+            | Some (parent, lib, dep_path, impl) ->
                 let file = best_file dep_path in
-                rec_compile ?impl ?intf parent lib file @ acc)
+                rec_compile ?impl parent lib file @ acc)
           [] deps.deps
       in
       let ignore_output = parent = "deps" in
-      ignore (compile file ~parent:lib ?impl ?intf ~ignore_output []);
+      ignore (compile file ~parent:lib ?impl ~ignore_output []);
       (output, ignore_output) :: files
   in
   List.fold_left
-    (fun acc (parent, lib, dep, impl, intf) ->
-      acc @ rec_compile ?impl ?intf parent lib (best_file dep))
+    (fun acc (parent, lib, dep, impl) ->
+      acc @ rec_compile ?impl parent lib (best_file dep))
     [] all_units
   @ mld_odocs
 ]}
 
-Linking is now straightforward. We only need to link non-hidden [odoc] files, as any hidden are almost certainly aliased inside the non-hidden ones (a result of namespacing usually, and these aliases will be expanded).
+Linking is now straightforward. We link all [odoc] files.
 
 {[
 let link_all odoc_files =
-  let not_hidden (f, _) = not (is_hidden f) in
   List.map
     (fun (odoc_file, ignore_output) ->
       ignore (link ~ignore_output odoc_file);
       Fpath.set_ext "odocl" odoc_file)
-    (List.filter not_hidden odoc_files)
+    odoc_files
 ]}
 
 Now we simply run [odoc html-generate] over all of the resulting [odocl] files.
+This will generate sources, as well as documentation for non-hidden units.
 
 {[
 let generate_all odocl_files =

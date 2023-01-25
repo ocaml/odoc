@@ -5,7 +5,9 @@ type t
 val lookup_def :
   (string -> (Lang.Compilation_unit.t * t) option) ->
   Identifier.t ->
-  (Identifier.RootModule.t * Lang.Locations.anchor) option
+  (Identifier.RootModule.t * string) option
+(** Returns the root module containing the definition of the given identifier
+    and the corresponding anchor. *)
 
 val of_cmt : Cmt_format.cmt_infos -> t option
 (** Returns [None] if the cmt doesn't have a shape (eg. if it is not an

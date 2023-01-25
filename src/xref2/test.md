@@ -214,12 +214,7 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 2; column = 4};
-          end_ = {Odoc_model__.Location_.line = 2; column = 10}}};
+       anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -247,12 +242,7 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 3; column = 4};
-          end_ = {Odoc_model__.Location_.line = 3; column = 14}}};
+       anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -371,12 +361,7 @@ val module_ : Component.Module.t Component.Delayed.t =
                  ihash = 236059787; ikey = "p_None"},
                Root);
            ihash = 818126955; ikey = "r_Root.p_None"};
-         impl = None;
-         intf =
-          Some
-           {Odoc_model__.Location_.file = "";
-            start = {Odoc_model__.Location_.line = 2; column = 2};
-            end_ = {Odoc_model__.Location_.line = 4; column = 5}}};
+         anchor = None};
       doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
@@ -395,12 +380,7 @@ val module_ : Component.Module.t Component.Delayed.t =
                             ihash = 236059787; ikey = "p_None"},
                           Root);
                       ihash = 818126955; ikey = "r_Root.p_None"};
-                    impl = None;
-                    intf =
-                     Some
-                      {Odoc_model__.Location_.file = "";
-                       start = {Odoc_model__.Location_.line = 3; column = 6};
-                       end_ = {Odoc_model__.Location_.line = 3; column = 12}}};
+                    anchor = None};
                   doc = []; canonical = None;
                   equation =
                    {Odoc_xref2.Component.TypeDecl.Equation.params = [];
@@ -432,12 +412,7 @@ Odoc_xref2.Tools.Signature
                    ihash = 236059787; ikey = "p_None"},
                  Root);
              ihash = 818126955; ikey = "r_Root.p_None"};
-           impl = None;
-           intf =
-            Some
-             {Odoc_model__.Location_.file = "";
-              start = {Odoc_model__.Location_.line = 3; column = 6};
-              end_ = {Odoc_model__.Location_.line = 3; column = 12}}};
+           anchor = None};
          doc = []; canonical = None;
          equation =
           {Odoc_xref2.Component.TypeDecl.Equation.params = [];
@@ -502,12 +477,7 @@ val module_ : Component.Module.t Component.Delayed.t =
                  ihash = 236059787; ikey = "p_None"},
                Root);
            ihash = 818126955; ikey = "r_Root.p_None"};
-         impl = None;
-         intf =
-          Some
-           {Odoc_model__.Location_.file = "";
-            start = {Odoc_model__.Location_.line = 5; column = 2};
-            end_ = {Odoc_model__.Location_.line = 5; column = 14}}};
+         anchor = None};
       doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
@@ -584,12 +554,7 @@ val m : Component.Element.module_type option =
                    ihash = 236059787; ikey = "p_None"},
                  Root);
              ihash = 818126955; ikey = "r_Root.p_None"};
-           impl = None;
-           intf =
-            Some
-             {Odoc_model__.Location_.file = "";
-              start = {Odoc_model__.Location_.line = 2; column = 2};
-              end_ = {Odoc_model__.Location_.line = 7; column = 5}}};
+           anchor = None};
         doc = []; canonical = None;
         expr =
          Some
@@ -610,14 +575,7 @@ val m : Component.Element.module_type option =
                                ihash = 236059787; ikey = "p_None"},
                              Root);
                          ihash = 818126955; ikey = "r_Root.p_None"};
-                       impl = None;
-                       intf =
-                        Some
-                         {Odoc_model__.Location_.file = "";
-                          start =
-                           {Odoc_model__.Location_.line = 3; column = 6};
-                          end_ =
-                           {Odoc_model__.Location_.line = 5; column = 9}}};
+                       anchor = None};
                     doc = []; canonical = None;
                     expr =
                      Some
@@ -639,16 +597,7 @@ val m : Component.Element.module_type option =
                                         Root);
                                     ihash = 818126955;
                                     ikey = "r_Root.p_None"};
-                                  impl = None;
-                                  intf =
-                                   Some
-                                    {Odoc_model__.Location_.file = "";
-                                     start =
-                                      {Odoc_model__.Location_.line = 4;
-                                       column = 10};
-                                     end_ =
-                                      {Odoc_model__.Location_.line = 4;
-                                       column = 16}}};
+                                  anchor = None};
                                 doc = []; canonical = None;
                                 equation =
                                  {Odoc_xref2.Component.TypeDecl.Equation.params
@@ -674,14 +623,7 @@ val m : Component.Element.module_type option =
                                ihash = 236059787; ikey = "p_None"},
                              Root);
                          ihash = 818126955; ikey = "r_Root.p_None"};
-                       impl = None;
-                       intf =
-                        Some
-                         {Odoc_model__.Location_.file = "";
-                          start =
-                           {Odoc_model__.Location_.line = 6; column = 6};
-                          end_ =
-                           {Odoc_model__.Location_.line = 6; column = 18}}};
+                       anchor = None};
                     doc = [];
                     type_ =
                      Odoc_xref2.Component.Module.ModuleType
@@ -1010,12 +952,7 @@ val module_C_lens :
             ihash = 236059787; ikey = "p_None"},
           Root);
       ihash = 818126955; ikey = "r_Root.p_None"};
-    impl = None;
-    intf =
-     Some
-      {Odoc_model__.Location_.file = "";
-       start = {Odoc_model__.Location_.line = 9; column = 2};
-       end_ = {Odoc_model__.Location_.line = 9; column = 32}}};
+    anchor = None};
  doc = [];
  type_ =
   Odoc_model.Lang.Module.ModuleType
@@ -1074,12 +1011,7 @@ val m : Component.Module.t Component.Delayed.t =
                  ihash = 236059787; ikey = "p_None"},
                Root);
            ihash = 818126955; ikey = "r_Root.p_None"};
-         impl = None;
-         intf =
-          Some
-           {Odoc_model__.Location_.file = "";
-            start = {Odoc_model__.Location_.line = 9; column = 2};
-            end_ = {Odoc_model__.Location_.line = 9; column = 32}}};
+         anchor = None};
       doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
@@ -1143,12 +1075,7 @@ val sg : Tools.expansion =
                       ihash = 236059787; ikey = "p_None"},
                     Root);
                 ihash = 818126955; ikey = "r_Root.p_None"};
-              impl = None;
-              intf =
-               Some
-                {Odoc_model__.Location_.file = "";
-                 start = {Odoc_model__.Location_.line = 3; column = 2};
-                 end_ = {Odoc_model__.Location_.line = 3; column = 34}}};
+              anchor = None};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.Alias
@@ -1182,12 +1109,7 @@ val sg : Tools.expansion =
                       ihash = 236059787; ikey = "p_None"},
                     Root);
                 ihash = 818126955; ikey = "r_Root.p_None"};
-              impl = None;
-              intf =
-               Some
-                {Odoc_model__.Location_.file = "";
-                 start = {Odoc_model__.Location_.line = 4; column = 2};
-                 end_ = {Odoc_model__.Location_.line = 4; column = 16}}};
+              anchor = None};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
@@ -1218,12 +1140,7 @@ val m : Component.Module.t Component.Delayed.t =
                  ihash = 236059787; ikey = "p_None"},
                Root);
            ihash = 818126955; ikey = "r_Root.p_None"};
-         impl = None;
-         intf =
-          Some
-           {Odoc_model__.Location_.file = "";
-            start = {Odoc_model__.Location_.line = 4; column = 2};
-            end_ = {Odoc_model__.Location_.line = 4; column = 16}}};
+         anchor = None};
       doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
@@ -1268,12 +1185,7 @@ Odoc_xref2.Tools.Signature
                    ihash = 236059787; ikey = "p_None"},
                  Root);
              ihash = 818126955; ikey = "r_Root.p_None"};
-           impl = None;
-           intf =
-            Some
-             {Odoc_model__.Location_.file = "";
-              start = {Odoc_model__.Location_.line = 7; column = 37};
-              end_ = {Odoc_model__.Location_.line = 7; column = 43}}};
+           anchor = None};
          doc = []; canonical = None;
          equation =
           {Odoc_xref2.Component.TypeDecl.Equation.params = [];
@@ -1773,12 +1685,7 @@ val m : Component.Module.t Component.Delayed.t =
                  ihash = 236059787; ikey = "p_None"},
                Root);
            ihash = 818126955; ikey = "r_Root.p_None"};
-         impl = None;
-         intf =
-          Some
-           {Odoc_model__.Location_.file = "";
-            start = {Odoc_model__.Location_.line = 3; column = 2};
-            end_ = {Odoc_model__.Location_.line = 3; column = 75}}};
+         anchor = None};
       doc = [];
       type_ =
        Odoc_xref2.Component.Module.ModuleType
@@ -1841,12 +1748,7 @@ val sg' : Tools.expansion =
                       ihash = 236059787; ikey = "p_None"},
                     Root);
                 ihash = 818126955; ikey = "r_Root.p_None"};
-              impl = None;
-              intf =
-               Some
-                {Odoc_model__.Location_.file = "";
-                 start = {Odoc_model__.Location_.line = 6; column = 50};
-                 end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
+              anchor = None};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
@@ -1894,12 +1796,7 @@ val sg' : Tools.expansion =
                       ihash = 236059787; ikey = "p_None"},
                     Root);
                 ihash = 818126955; ikey = "r_Root.p_None"};
-              impl = None;
-              intf =
-               Some
-                {Odoc_model__.Location_.file = "";
-                 start = {Odoc_model__.Location_.line = 6; column = 50};
-                 end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
+              anchor = None};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
@@ -1947,12 +1844,7 @@ val sg' : Tools.expansion =
                       ihash = 236059787; ikey = "p_None"},
                     Root);
                 ihash = 818126955; ikey = "r_Root.p_None"};
-              impl = None;
-              intf =
-               Some
-                {Odoc_model__.Location_.file = "";
-                 start = {Odoc_model__.Location_.line = 6; column = 50};
-                 end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
+              anchor = None};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
@@ -2000,12 +1892,7 @@ val sg' : Tools.expansion =
                       ihash = 236059787; ikey = "p_None"},
                     Root);
                 ihash = 818126955; ikey = "r_Root.p_None"};
-              impl = None;
-              intf =
-               Some
-                {Odoc_model__.Location_.file = "";
-                 start = {Odoc_model__.Location_.line = 6; column = 50};
-                 end_ = {Odoc_model__.Location_.line = 6; column = 66}}};
+              anchor = None};
            doc = [];
            type_ =
             Odoc_xref2.Component.Module.ModuleType
@@ -2784,12 +2671,7 @@ let resolved = Common.compile_signature sg;;
            ihash = 236059787; ikey = "p_None"},
          Root);
      ihash = 818126955; ikey = "r_Root.p_None"};
-   impl = None;
-   intf =
-    Some
-     {Odoc_model__.Location_.file = "";
-      start = {Odoc_model__.Location_.line = 2; column = 2};
-      end_ = {Odoc_model__.Location_.line = 2; column = 8}}};
+   anchor = None};
  doc =
   [{Odoc_model__.Location_.location =
      {Odoc_model__.Location_.file = "";
@@ -2863,12 +2745,7 @@ let sg = Common.signature_of_mli_string test_data;;
                 ihash = 236059787; ikey = "p_None"},
               Root);
           ihash = 818126955; ikey = "r_Root.p_None"};
-        impl = None;
-        intf =
-         Some
-          {Odoc_model__.Location_.file = "";
-           start = {Odoc_model__.Location_.line = 2; column = 2};
-           end_ = {Odoc_model__.Location_.line = 4; column = 5}}};
+        anchor = None};
      doc = []; canonical = None;
      expr =
       Some
@@ -2902,12 +2779,7 @@ let sg = Common.signature_of_mli_string test_data;;
                         ihash = 236059787; ikey = "p_None"},
                       Root);
                   ihash = 818126955; ikey = "r_Root.p_None"};
-                impl = None;
-                intf =
-                 Some
-                  {Odoc_model__.Location_.file = "";
-                   start = {Odoc_model__.Location_.line = 3; column = 4};
-                   end_ = {Odoc_model__.Location_.line = 3; column = 10}}};
+                anchor = None};
               doc = []; canonical = None;
               equation =
                {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -2936,12 +2808,7 @@ let sg = Common.signature_of_mli_string test_data;;
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 6; column = 2};
-          end_ = {Odoc_model__.Location_.line = 6; column = 8}}};
+       anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -2970,12 +2837,7 @@ let sg = Common.signature_of_mli_string test_data;;
                 ihash = 236059787; ikey = "p_None"},
               Root);
           ihash = 818126955; ikey = "r_Root.p_None"};
-        impl = None;
-        intf =
-         Some
-          {Odoc_model__.Location_.file = "";
-           start = {Odoc_model__.Location_.line = 8; column = 2};
-           end_ = {Odoc_model__.Location_.line = 8; column = 36}}};
+        anchor = None};
      doc = []; canonical = None;
      expr =
       Some
@@ -3075,12 +2937,7 @@ Odoc_model.Lang.ModuleType.Path
                      ihash = 236059787; ikey = "p_None"},
                    Root);
                ihash = 818126955; ikey = "r_Root.p_None"};
-             impl = None;
-             intf =
-              Some
-               {Odoc_model__.Location_.file = "";
-                start = {Odoc_model__.Location_.line = 4; column = 24};
-                end_ = {Odoc_model__.Location_.line = 4; column = 39}}};
+             anchor = None};
            doc = []; canonical = None;
            equation =
             {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -3245,12 +3102,7 @@ let m_e_i_s_value mod_name n val_name =
            ihash = 236059787; ikey = "p_None"},
          Root);
      ihash = 818126955; ikey = "r_Root.p_None"};
-   impl = None;
-   intf =
-    Some
-     {Odoc_model__.Location_.file = "";
-      start = {Odoc_model__.Location_.line = 4; column = 4};
-      end_ = {Odoc_model__.Location_.line = 4; column = 14}}};
+   anchor = None};
  value = Odoc_model.Lang.Value.Abstract; doc = [];
  type_ =
   Odoc_model.Lang.TypeExpr.Constr
@@ -3297,12 +3149,7 @@ let m_e_i_s_value mod_name n val_name =
            ihash = 236059787; ikey = "p_None"},
          Root);
      ihash = 818126955; ikey = "r_Root.p_None"};
-   impl = None;
-   intf =
-    Some
-     {Odoc_model__.Location_.file = "";
-      start = {Odoc_model__.Location_.line = 10; column = 4};
-      end_ = {Odoc_model__.Location_.line = 10; column = 15}}};
+   anchor = None};
  value = Odoc_model.Lang.Value.Abstract; doc = [];
  type_ =
   Odoc_model.Lang.TypeExpr.Constr
@@ -3383,12 +3230,7 @@ let sg = Common.signature_of_mli_string test_data;;
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 3; column = 4};
-          end_ = {Odoc_model__.Location_.line = 3; column = 10}}};
+       anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -3439,12 +3281,7 @@ let sg = Common.signature_of_mli_string test_data;;
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 4; column = 4};
-          end_ = {Odoc_model__.Location_.line = 4; column = 14}}};
+       anchor = None};
      value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
@@ -3496,12 +3333,7 @@ let sg = Common.signature_of_mli_string test_data;;
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 8; column = 4};
-          end_ = {Odoc_model__.Location_.line = 8; column = 10}}};
+       anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -3552,12 +3384,7 @@ let sg = Common.signature_of_mli_string test_data;;
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 9; column = 4};
-          end_ = {Odoc_model__.Location_.line = 9; column = 15}}};
+       anchor = None};
      value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
@@ -3641,12 +3468,7 @@ let sg = Common.signature_of_mli_string test_data;;
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 3; column = 4};
-          end_ = {Odoc_model__.Location_.line = 3; column = 10}}};
+       anchor = None};
      doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -3697,12 +3519,7 @@ let sg = Common.signature_of_mli_string test_data;;
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 4; column = 4};
-          end_ = {Odoc_model__.Location_.line = 4; column = 15}}};
+       anchor = None};
      value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
@@ -3737,12 +3554,7 @@ let sg = Common.signature_of_mli_string test_data;;
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 5; column = 4};
-          end_ = {Odoc_model__.Location_.line = 5; column = 14}}};
+       anchor = None};
      value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
@@ -3826,12 +3638,7 @@ let sg = Common.signature_of_mli_string test_data;;
                 ihash = 236059787; ikey = "p_None"},
               Root);
           ihash = 818126955; ikey = "r_Root.p_None"};
-        impl = None;
-        intf =
-         Some
-          {Odoc_model__.Location_.file = "";
-           start = {Odoc_model__.Location_.line = 3; column = 5};
-           end_ = {Odoc_model__.Location_.line = 5; column = 8}}};
+        anchor = None};
      doc = [];
      type_ =
       Odoc_model.Lang.Module.Alias
@@ -3878,12 +3685,7 @@ let sg = Common.signature_of_mli_string test_data;;
                ihash = 236059787; ikey = "p_None"},
              Root);
          ihash = 818126955; ikey = "r_Root.p_None"};
-       impl = None;
-       intf =
-        Some
-         {Odoc_model__.Location_.file = "";
-          start = {Odoc_model__.Location_.line = 7; column = 5};
-          end_ = {Odoc_model__.Location_.line = 7; column = 19}}};
+       anchor = None};
      value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr

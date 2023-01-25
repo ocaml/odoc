@@ -16,11 +16,7 @@ resolve correctly. All of the 'Class' json objects should contain
   $ odoc_print -r f f.odoc 
   {
     "id": { "`Value": [ { "`Root": [ "None", "F" ] }, "f" ] },
-    "locs": {
-      "source_parent": { "`Root": [ "None", "F" ] },
-      "impl": "None",
-      "intf": { "Some": "File \"f.mli\", line 3, characters 0-10" }
-    },
+    "locs": { "source_parent": { "`Root": [ "None", "F" ] }, "anchor": "None" },
     "doc": [],
     "type_": {
       "Class": [
@@ -39,11 +35,7 @@ resolve correctly. All of the 'Class' json objects should contain
   $ odoc_print e.odoc -r g
   {
     "id": { "`Value": [ { "`Root": [ "None", "E" ] }, "g" ] },
-    "locs": {
-      "source_parent": { "`Root": [ "None", "E" ] },
-      "impl": "None",
-      "intf": { "Some": "File \"e.mli\", line 6, characters 0-12" }
-    },
+    "locs": { "source_parent": { "`Root": [ "None", "E" ] }, "anchor": "None" },
     "doc": [],
     "type_": {
       "Class": [
