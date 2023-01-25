@@ -1,6 +1,5 @@
 #if OCAML_VERSION >= (4, 14, 0)
 
-open Odoc_model.Lang.Locations
 open Odoc_model.Lang.Source_code.Info
 
 let pos_of_loc loc = (loc.Location.loc_start.pos_cnum, loc.loc_end.pos_cnum)
@@ -12,8 +11,8 @@ module Local_analysis = struct
     match expr with
     | { Typedtree.exp_desc = Texp_ident (Pident id, _, _); exp_loc; _ }
       when not exp_loc.loc_ghost ->
-        let uniq = { anchor = Ident.unique_name id } in
-        poses := (Occurence uniq, pos_of_loc exp_loc) :: !poses
+        let anchor = Ident.unique_name id in
+        poses := (Occurence { anchor }, pos_of_loc exp_loc) :: !poses
     | _ -> ()
   let pat poses (type a) : a Typedtree.general_pattern -> unit = function
     | {
@@ -41,8 +40,8 @@ module Global_analysis = struct
         match Shape.Uid.Tbl.find_opt uid_to_loc value_description.val_uid with
         | None -> ()
         | Some _ ->
-            let uid = { anchor = string_of_uid value_description.val_uid } in
-            poses := (Occurence uid, pos_of_loc exp_loc) :: !poses)
+            let anchor = string_of_uid value_description.val_uid in
+            poses := (Occurence { anchor }, pos_of_loc exp_loc) :: !poses)
     | _ -> ()
 end
 

@@ -72,7 +72,6 @@ let lookup_def lookup_unit id =
       result >>= fun result ->
       result.uid >>= fun uid ->
       let anchor = Uid.string_of_uid (Uid.of_shape_uid uid) in
-      let anchor = { Odoc_model.Lang.Locations.anchor } in
       comp_unit_of_uid uid >>= fun unit_name ->
       lookup_unit unit_name >>= fun (unit, _) ->
       Some (unit.Lang.Compilation_unit.id, anchor)

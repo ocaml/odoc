@@ -16,17 +16,12 @@ let inline_status =
     | `Closed -> C0 "`Closed"
     | `Inline -> C0 "`Inline")
 
-(** Ocaml's location type *)
-let location = To_string (fun loc -> Format.asprintf "%a" Location_.pp loc)
-
 let locations =
   let open Lang.Locations in
-  let uid = Indirect ((fun { anchor } -> anchor), string) in
   Record
     [
       F ("source_parent", (fun t -> t.source_parent), identifier);
-      F ("impl", (fun t -> t.impl), Option uid);
-      F ("intf", (fun t -> t.intf), Option location);
+      F ("anchor", (fun t -> t.anchor), Option string);
     ]
 
 let source_code =
@@ -35,7 +30,6 @@ let source_code =
   Record
     [
       F ("parent", (fun t -> t.parent), identifier);
-      F ("intf_source", (fun t -> t.intf_source), contents);
       F ("impl_source", (fun t -> t.impl_source), contents);
     ]
 

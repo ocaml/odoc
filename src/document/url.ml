@@ -370,8 +370,7 @@ module Anchor = struct
             Error (Unexpected_anchor "core_type label parent")
         | { iv = `Type (gp, _); _ } -> mk ~kind:`Section gp str_name)
 
-  let source_file_from_identifier ~ext root { Odoc_model.Lang.Locations.anchor }
-      =
+  let source_file_from_identifier ~ext root ~anchor =
     let kind = `SourceLine in
     let page = Path.source_file_from_identifier ~ext root in
     Some { page; anchor; kind }

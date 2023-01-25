@@ -37,7 +37,7 @@ let root =
   let name = ModuleName.make_std "Stdlib" in
   Paths.Identifier.Mk.root (None, name)
 
-let locations = { Locations.source_parent = root; impl = None; intf = None }
+let locations = { Locations.source_parent = root; anchor = None }
 
 let mk_type ?(doc = empty_doc) ?(eq = nullary_equation) ?repr id =
   let locs = locations and canonical = None in

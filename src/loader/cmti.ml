@@ -34,8 +34,7 @@ let opt_map f = function
 
 let read_label = Cmi.read_label
 
-let read_locations id loc =
-  Cmi.read_locations (id :> Identifier.t) loc
+let read_locations id _intf_loc = Cmi.read_locations (id :> Identifier.t)
 
 let rec read_core_type env container ctyp =
   let open TypeExpr in

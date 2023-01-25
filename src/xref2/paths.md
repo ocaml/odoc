@@ -444,12 +444,7 @@ val sg : Odoc_model.Lang.Signature.t =
                   ihash = 236059787; ikey = "p_None"},
                 Root);
             ihash = 818126955; ikey = "r_Root.p_None"};
-          impl = None;
-          intf =
-           Some
-            {Odoc_model__.Location_.file = "";
-             start = {Odoc_model__.Location_.line = 2; column = 2};
-             end_ = {Odoc_model__.Location_.line = 4; column = 5}}};
+          anchor = None};
        doc = []; canonical = None;
        expr =
         Some
@@ -483,12 +478,7 @@ val sg : Odoc_model.Lang.Signature.t =
                            ihash = 236059787; ikey = "p_None"},
                          Root);
                      ihash = 818126955; ikey = "r_Root.p_None"};
-                   impl = None;
-                   intf =
-                    Some
-                     {Odoc_model__.Location_.file = "";
-                      start = {Odoc_model__.Location_.line = 3; column = 4};
-                      end_ = {Odoc_model__.Location_.line = 3; column = 17}}};
+                   anchor = None};
                 doc = []; canonical = None; expr = None}];
             compiled = true; doc = []})};
      Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
@@ -514,12 +504,7 @@ val sg : Odoc_model.Lang.Signature.t =
                   ihash = 236059787; ikey = "p_None"},
                 Root);
             ihash = 818126955; ikey = "r_Root.p_None"};
-          impl = None;
-          intf =
-           Some
-            {Odoc_model__.Location_.file = "";
-             start = {Odoc_model__.Location_.line = 6; column = 2};
-             end_ = {Odoc_model__.Location_.line = 8; column = 5}}};
+          anchor = None};
        doc = [];
        type_ =
         Odoc_model.Lang.Module.ModuleType
@@ -565,27 +550,32 @@ val sg : Odoc_model.Lang.Signature.t =
                                                  ikey = "p_None"},
                                                Root);
                                            ihash = 818126955;
-                                           ikey =
-                                            "r_Root.p_Non"... (* string length 13; truncated *)},
+                                           ikey = "r_Root.p_None"},
                                           F);
                                       ihash = 748202139;
-                                      ikey =
-                                       "m_F.r_Roo"... (* string length 17; truncated *)},
+                                      ikey = "m_F.r_Root.p_None"},
                                      X);
                                  ihash = 930266402;
-                                 ikey =
-                                  "p_X.m_F."... (* string length 21; truncated *)},
+                                 ikey = "p_X.m_F.r_Root.p_None"},
                                 S);
                             ihash = 313393860;
-                            ikey =
-                             "mt_S.p_X"... (* string length 26; truncated *)};
+                            ikey = "mt_S.p_X.m_F.r_Root.p_None"};
                           locs =
                            Some
-                            {Odoc_model.Lang.Locations.source_parent = ...;
-                             impl = ...; intf = ...};
-                          doc = ...; canonical = ...; expr = ...};
-                        ...];
-                      compiled = ...; doc = ...});
+                            {Odoc_model.Lang.Locations.source_parent =
+                              {Odoc_model__Paths_types.iv =
+                                `Root
+                                  (Some
+                                    {Odoc_model__Paths_types.iv =
+                                      `Page (None, None);
+                                     ihash = 236059787; ikey = "p_None"},
+                                   Root);
+                               ihash = 818126955;
+                               ikey =
+                                "r_Root.p_"... (* string length 13; truncated *)};
+                             anchor = None};
+                          doc = []; canonical = None; expr = None}];
+                      compiled = true; doc = []});
                  p_path = ...}},
            ...));
        canonical = ...; hidden = ...});

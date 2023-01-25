@@ -17,21 +17,20 @@
 open Paths
 
 module Locations = struct
-  type anchor = { anchor : string }
-
   type t = {
     source_parent : Identifier.RootModule.t;
-        (** Correspond to where the source code is stored. Might be different from the root component of the identifier inside expansions. *)
-    impl : anchor option;
+        (** Correspond to where the source code is stored. Might be different
+            from the root component of the identifier inside expansions. *)
+    anchor : string option;
         (** Location of the definition in the implementation file. *)
-    intf : Location_.span option;
-        (** Location of the declaration in the interface file. *)
   }
 end
 
 module Source_code = struct
   module Info = struct
-    type jmp_to_def = Occurence of Locations.anchor | Def of string
+    type anchor = { anchor : string }
+
+    type jmp_to_def = Occurence of anchor | Def of string
 
     type info = Syntax of string | Line of int | Local_jmp of jmp_to_def
 
@@ -42,7 +41,6 @@ module Source_code = struct
 
   type t = {
     parent : Identifier.Module.t;
-    intf_source : string option;
     impl_source : string option;
     impl_info : Info.infos;
   }

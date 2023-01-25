@@ -47,10 +47,7 @@ unresolved in the paths though:
     "locs": {
       "Some": {
         "source_parent": { "`Root": [ "None", "Main__Container" ] },
-        "impl": "None",
-        "intf": {
-          "Some": "File \"main__Container.mli\", line 10, characters 2-14"
-        }
+        "anchor": "None"
       }
     },
     "doc": [],
@@ -99,8 +96,7 @@ unresolved in the paths though:
     "locs": {
       "Some": {
         "source_parent": { "`Root": [ "None", "Main" ] },
-        "impl": "None",
-        "intf": "None"
+        "anchor": "None"
       }
     },
     "doc": [],
@@ -148,10 +144,7 @@ unresolved in the paths though:
     "locs": {
       "Some": {
         "source_parent": { "`Root": [ "None", "Main__Container" ] },
-        "impl": "None",
-        "intf": {
-          "Some": "File \"main__Container.mli\", line 10, characters 2-14"
-        }
+        "anchor": "None"
       }
     },
     "doc": [],
@@ -234,11 +227,7 @@ unresolved in the paths though:
                         "source_parent": {
                           "`Root": [ "None", "Main__Container" ]
                         },
-                        "impl": "None",
-                        "intf": {
-                          "Some":
-                            "File \"main__Container.mli\", line 7, characters 4-10"
-                        }
+                        "anchor": "None"
                       },
                       "doc": [],
                       "equation": {

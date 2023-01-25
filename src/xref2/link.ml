@@ -8,12 +8,12 @@ module Opt = struct
 end
 
 let locations env id locs =
-  match locs.Locations.impl with
+  match locs.Locations.anchor with
   | Some _ -> locs
   | None -> (
       match Env.lookup_def id env with
-      | Some (source_parent, impl) ->
-          { locs with impl = Some impl; source_parent }
+      | Some (source_parent, anchor) ->
+          { Locations.source_parent; anchor = Some anchor }
       | None -> locs)
 
 (** Equivalent to {!Comment.synopsis}. *)

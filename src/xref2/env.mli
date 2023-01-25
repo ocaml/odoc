@@ -19,8 +19,7 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
-  lookup_def :
-    Identifier.t -> (Identifier.RootModule.t * Lang.Locations.anchor) option;
+  lookup_def : Identifier.t -> (Identifier.RootModule.t * string) option;
       (** Lookup the source code location from an identifier. Returns
           [Some (source_parent, anchor)] when definition is found. *)
 }
@@ -100,7 +99,9 @@ val lookup_root_module : string -> t -> root option
 val lookup_def :
   [< Identifier.t_pv ] Paths.Identifier.id ->
   t ->
-  (Identifier.RootModule.t * Lang.Locations.anchor) option
+  (Identifier.RootModule.t * string) option
+(** Lookup the definition of the given identifier. Returns the root module and
+    the anchor. *)
 
 type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)
