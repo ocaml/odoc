@@ -5,22 +5,10 @@ module Id = Paths.Identifier
 
 module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
-  let bind f = function Some x -> f x | None -> None
 end
 
 let locations env id locs =
-  let ({ Locations.source_parent = { iv = `Root (_, unit_name); _ }; _ } as
-      locs) =
-    match locs.Locations.anchor with
-    | Some _ -> locs
-    | None -> (
-        match Env.lookup_def id env with Some locs -> locs | None -> locs)
-  in
-  match Env.lookup_unit (Names.ModuleName.to_string unit_name) env with
-  | Some (Env.Found { sources = Some _; _ }) -> Some locs
-  | _ -> None
-
-let locations env id locs = Opt.bind (locations env id) locs
+  match locs with Some _ as locs -> locs | None -> Env.lookup_def id env
 
 (** Equivalent to {!Comment.synopsis}. *)
 let synopsis_from_comment (docs : Component.CComment.docs) =

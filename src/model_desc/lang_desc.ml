@@ -20,7 +20,7 @@ let locations =
   let open Lang.Locations in
   Record
     [
-      F ("source_parent", (fun t -> t.source_parent), identifier);
+      F ("source_parent", (fun t -> t.source_parent), sourcepage_identifier);
       F ("anchor", (fun t -> t.anchor), Option string);
     ]
 
@@ -29,7 +29,7 @@ let source_code =
   let contents = To_string (fun _ -> "<source code>") in
   Record
     [
-      F ("parent", (fun t -> t.parent), identifier);
+      F ("id", (fun t -> t.id), sourcepage_identifier);
       F ("impl_source", (fun t -> t.impl_source), contents);
     ]
 

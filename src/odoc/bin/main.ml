@@ -157,7 +157,8 @@ end = struct
         Fs.File.(set_ext ".odoc" output)
 
   let compile hidden directories resolve_fwd_refs dst package_opt
-      parent_name_opt open_modules children input warnings_options impl_source =
+      parent_name_opt open_modules children input warnings_options impl_source
+      source_parent =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -178,7 +179,7 @@ end = struct
     parent_cli_spec >>= fun parent_cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warnings_options ~impl_source input
+      ~warnings_options ~impl_source ~source_parent input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -213,6 +214,13 @@ end = struct
       & opt (some convert_fs_file) None
       & info [ "impl" ] ~doc ~docv:"file.ml")
 
+  let source_parent =
+    let doc = "Parent page at the base of the source tree." in
+    Arg.(
+      value
+      & opt (some string) None
+      & info [ "source-parent" ] ~doc ~docv:"PARENT")
+
   let cmd =
     let package_opt =
       let doc =
@@ -238,7 +246,7 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ package_opt $ parent_opt $ open_modules $ children $ input
-       $ warnings_options $ impl))
+       $ warnings_options $ impl $ source_parent))
 
   let info ~docs =
     let man =

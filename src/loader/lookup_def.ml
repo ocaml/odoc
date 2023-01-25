@@ -68,9 +68,9 @@ let lookup_def lookup_unit id =
       result.uid >>= fun uid ->
       Uid.unpack_uid (Uid.of_shape_uid uid) >>= fun (unit_name, id) ->
       lookup_unit unit_name >>= fun (unit, _) ->
-      let anchor = id >>= fun id -> Some (Uid.anchor_of_id id)
-      and source_parent = unit.Lang.Compilation_unit.id in
-      Some {Lang.Locations.source_parent ; anchor}
+      unit.Lang.Compilation_unit.sources >>= fun sources ->
+      let anchor = id >>= fun id -> Some (Uid.anchor_of_id id) in
+      Some { Lang.Locations.source_parent = sources.id; anchor }
 
 let of_cmt (cmt : Cmt_format.cmt_infos) = cmt.cmt_impl_shape
 

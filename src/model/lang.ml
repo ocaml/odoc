@@ -18,7 +18,7 @@ open Paths
 
 module Locations = struct
   type t = {
-    source_parent : Identifier.RootModule.t;
+    source_parent : Identifier.SourcePage.t;
         (** Correspond to where the source code is stored. Might be different
             from the root component of the identifier inside expansions. *)
     anchor : string option;
@@ -40,8 +40,8 @@ module Source_code = struct
   end
 
   type t = {
-    parent : Identifier.Module.t;
-    impl_source : string option;
+    id : Identifier.SourcePage.t;
+    impl_source : string;
     impl_info : Info.infos;
   }
 end

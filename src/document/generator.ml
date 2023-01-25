@@ -50,17 +50,9 @@ let path_to_id path =
 let source_anchor locs =
   match locs with
   | Some { Odoc_model.Lang.Locations.anchor = Some anchor; source_parent } ->
-      let url =
-        Url.Anchor.source_file_from_identifier ~ext:".ml"
-          (source_parent :> Paths.Identifier.Module.t)
-          ~anchor
-      in
-      Some url
+      Some (Url.Anchor.source_file_from_identifier source_parent ~anchor)
   | Some { Odoc_model.Lang.Locations.anchor = None; source_parent } ->
-      let path =
-        Url.Path.source_file_from_identifier ~ext:".ml"
-          (source_parent :> Paths.Identifier.Module.t)
-      in
+      let path = Url.Path.source_file_from_identifier source_parent in
       Some (Url.from_path path)
   | _ -> None
 
@@ -243,20 +235,14 @@ module Make (Syntax : SYNTAX) = struct
   end
 
   module Source_page : sig
-    val source : Lang.Source_code.t -> Source_page.t option
+    val url : Paths.Identifier.SourcePage.t -> Url.t
+    val source : Lang.Source_code.t -> Source_page.t
   end = struct
-    let source_opt parent ~infos ~ext = function
-      | Some contents ->
-          let source ~parent ~ext ~contents =
-            let url = Url.Path.source_file_from_identifier ~ext parent
-            and contents = Impl.impl ~infos contents in
-            { Source_page.url; contents }
-          in
-          Some (source ~parent ~ext ~contents)
-      | None -> None
-
-    let source { Lang.Source_code.parent; impl_source; impl_info } =
-      source_opt parent ~infos:impl_info ~ext:".ml" impl_source
+    let path id = Url.Path.source_file_from_identifier id
+    let url id = Url.from_path (path id)
+    let source { Lang.Source_code.id; impl_source; impl_info } =
+      let url = path id and contents = Impl.impl ~infos:impl_info impl_source in
+      { Source_page.url; contents }
   end
 
   module Type_expression : sig
@@ -1754,11 +1740,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let source_anchor =
         match t.sources with
-        | Some src ->
-            let p =
-              Url.Path.source_file_from_identifier ~ext:".ml" src.parent
-            in
-            Some (Url.from_path p)
+        | Some src -> Some (Source_page.url src.id)
         | None -> None
       in
       let page =
@@ -1771,10 +1753,7 @@ module Make (Syntax : SYNTAX) = struct
       and source_pages =
         match t.sources with
         | None -> []
-        | Some sources -> (
-            match Source_page.source sources with
-            | None -> []
-            | Some src_page -> [ Document.Source_page src_page ])
+        | Some sources -> [ Document.Source_page (Source_page.source sources) ]
       in
       page @ source_pages
 

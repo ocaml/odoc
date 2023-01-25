@@ -414,6 +414,14 @@ module Identifier = struct
     let compare = compare
   end
 
+  module SourcePage = struct
+    type t = Paths_types.Identifier.source_page
+    type t_pv = Paths_types.Identifier.source_page_pv
+    let equal = equal
+    let hash = hash
+    let compare = compare
+  end
+
   module OdocId = struct
     type t = Paths_types.Identifier.odoc_id
 
@@ -526,6 +534,9 @@ module Identifier = struct
         ContainerPage.t option * PageName.t ->
         [> `LeafPage of ContainerPage.t option * PageName.t ] id =
       mk_parent_opt PageName.to_string "lp" (fun (p, n) -> `LeafPage (p, n))
+
+    let source_page =
+      mk_parent (fun rp -> rp) "sp" (fun (p, rp) -> `SourcePage (p, rp))
 
     let root :
         ContainerPage.t option * ModuleName.t ->

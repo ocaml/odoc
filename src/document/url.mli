@@ -21,7 +21,7 @@ module Path : sig
     | `Class
     | `ClassType
     | `File
-    | `Source_file ]
+    | `SourcePage ]
 
   val pp_kind : Format.formatter -> kind -> unit
 
@@ -39,10 +39,8 @@ module Path : sig
   val from_identifier : [< source_pv ] Odoc_model.Paths.Identifier.id -> t
 
   val source_file_from_identifier :
-    ext:string ->
-    [< Identifier.Module.t_pv ] Odoc_model.Paths.Identifier.id ->
-    t
-  (** A path of kind [`File] based on an identifier. *)
+    Odoc_model.Paths.Identifier.SourcePage.t -> t
+  (** A path to a source file. *)
 
   val to_list : t -> (kind * string) list
 
@@ -93,7 +91,7 @@ module Anchor : sig
   val from_identifier : Identifier.t -> (t, Error.t) result
 
   val source_file_from_identifier :
-    ext:string -> Identifier.Module.t -> anchor:string -> t
+    Odoc_model.Paths.Identifier.SourcePage.t -> anchor:string -> t
 
   val polymorphic_variant :
     type_ident:Identifier.t ->

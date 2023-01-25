@@ -317,6 +317,14 @@ module Identifier : sig
     val compare : t -> t -> int
   end
 
+  module SourcePage : sig
+    type t = Paths_types.Identifier.source_page
+    type t_pv = Paths_types.Identifier.source_page_pv
+    val equal : t -> t -> bool
+    val hash : t -> int
+    val compare : t -> t -> int
+  end
+
   module OdocId : sig
     type t = Paths_types.Identifier.odoc_id
 
@@ -431,6 +439,8 @@ module Identifier : sig
     val leaf_page :
       ContainerPage.t option * PageName.t ->
       [> `LeafPage of ContainerPage.t option * PageName.t ] id
+
+    val source_page : ContainerPage.t * string -> SourcePage.t
 
     val root :
       ContainerPage.t option * ModuleName.t ->
