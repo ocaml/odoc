@@ -22,6 +22,14 @@ let (>>|=) m f = m >>= fun x -> Ok (f x);;
 let get_ok = function | Ok x -> x | Error (`Msg m) -> failwith m
 ```
 
+Since the mdx file is not at the root of the project, we need a function to turn
+a relative path to one that starts at the beginning of the project:
+
+```ocaml env=e1
+let relativize p = Fpath.(v ".." // p)
+```
+
+
 ## Desired Output
 
 `odoc` produces output files (html or others) in a structured directory tree, so before running `odoc`, the structure of the output must be decided. For these docs, we want the following structure:
@@ -147,7 +155,16 @@ let compile file ?parent ?(ignore_output = false) ?impl children =
   in
   let open Cmd in
   let impl =
-    match impl with None -> Cmd.empty | Some impl -> Cmd.(v "--impl" % p impl)
+    match impl with
+    | None -> Cmd.empty
+    | Some source_relpath ->
+        let source_parent =
+          "page-" ^ (source_relpath |> Fpath.parent |> Fpath.basename)
+        in
+        Cmd.(
+          v "--impl"
+          % p (relativize source_relpath)
+          % "--source-parent" % source_parent)
   in
   let cmd =
     odoc % "compile" % Fpath.to_string file %% impl % "-I" % "." % "-o"
@@ -231,11 +248,6 @@ let odoc_libraries = [
     "odoc_xref_test"; "odoc_xref2"; "odoc_odoc";
     "odoc_model_desc"; "odoc_model"; "odoc_manpage"; "odoc_loader";
     "odoc_latex"; "odoc_html"; "odoc_document"; "odoc_examples" ];;
-
-let source_dir_of_odoc_lib lib =
-  match String.split_on_char '_' lib with
-  | "odoc" :: s -> Some Fpath.(v ".." / "src" / String.concat "_" s)
-  | _ -> None
 
 let all_libraries = dep_libraries @ odoc_libraries;;
 
@@ -336,21 +348,30 @@ let compile_deps f =
   | _ -> Error (`Msg "odd")
 ```
 
-Let's now put together a list of all possible modules. We'll keep track of
-which library they're in, and whether that library is a part of `odoc` or a dependency
-library. For `odoc` libraries, we infer the implementation and interface source file
-path from the library name.
+For `odoc` libraries, we infer the implementation and interface source file path
+from the library name. We generate a hierarchy of mld file, for each directory
+in the hierarchy. The mld contains links, using html specific backend as there
+are no references to source.
+
+Mld files are compiled, with parents and children that correspond to the
+hierarchy. If a page has no children, we artificially add one to make it render
+as `name/index.html`.
 
 ```ocaml env=e1
-let odoc_all_unit_paths = find_units ".." |> get_ok
+let source_dir_of_odoc_lib lib =
+  match String.split_on_char '_' lib with
+  | "odoc" :: s ->
+      let libname = Fpath.(v (String.concat "_" s)) in
+      Some Fpath.(v "src" // libname)
+  | _ -> None
 
 let source_files_of_odoc_module lib module_ =
   let filename =
     let module_ =
       match Astring.String.cut ~rev:true ~sep:"__" module_ with
-       | None -> module_
-       | Some (_, "") -> module_
-       | Some (_, module_) -> module_
+      | None -> module_
+      | Some (_, "") -> module_
+      | Some (_, module_) -> module_
     in
     (* ML.ml should not be renamed *)
     if String.for_all (fun c -> Char.equal (Char.uppercase_ascii c) c) module_
@@ -359,13 +380,109 @@ let source_files_of_odoc_module lib module_ =
   in
   match source_dir_of_odoc_lib lib with
   | None -> None
-  | Some path ->
-      let path = Fpath.( / ) path filename in
-      let find_by_extension path exts =
-        List.map (fun ext -> Fpath.add_ext ext path) exts
-        |> List.find_opt (fun f -> Bos.OS.File.exists f |> get_ok)
+  | Some relpath ->
+      let add_filename path ext =
+        Fpath.( / ) path filename |> Fpath.add_ext ext
       in
-      find_by_extension path ["pp.ml" ;"ml-gen"; "ml"]
+      let find_by_extension path exts =
+        exts
+        |> List.map (fun ext -> add_filename path ext)
+        |> List.find_opt (fun f -> Bos.OS.File.exists (relativize f) |> get_ok)
+      in
+      find_by_extension relpath [ "pp.ml"; "ml" ]
+
+let source_mld title filenames =
+  let title = Format.asprintf "{0 %s}" title in
+  let filenames =
+    Fpath.Set.fold
+      (fun filename acc ->
+        if Fpath.is_dir_path filename then
+          let name = Fpath.basename filename ^ "/index.html" in
+          Format.asprintf
+            {html|- {%%html: <svg aria-label="Directory" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z"></path></svg> <a href="%s">%s</a>%%}|html}
+            name (Fpath.basename filename)
+          :: acc
+        else
+          let name = Fpath.basename filename ^ ".html" in
+          Format.asprintf
+            {html|- {%%html: <svg height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"><path fill-rule="evenodd" d="M3.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 00.25-.25V6h-2.75A1.75 1.75 0 019 4.25V1.5H3.75zm6.75.062V4.25c0 .138.112.25.25.25h2.688a.252.252 0 00-.011-.013l-2.914-2.914a.272.272 0 00-.013-.011zM2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0113.25 16h-9.5A1.75 1.75 0 012 14.25V1.75z"></path></svg> <a href="%s">%s</a>%%}|html}
+            name (Fpath.basename filename)
+          :: acc)
+      filenames []
+  in
+  Format.sprintf "%s\n\n%s\n" title (String.concat "\n" filenames)
+
+let source_mlds_of_units units =
+  let module M = Map.Make (Fpath) in
+  let multi_map_add key v map =
+    M.update key
+      (fun set ->
+        let set = match set with None -> Fpath.Set.empty | Some set -> set in
+        Some (Fpath.Set.add v set))
+      map
+  in
+  let rec add_path map path =
+    if Fpath.is_current_dir path then map
+    else
+      let parent, _ = Fpath.split_base path in
+      let map = multi_map_add parent path map in
+      add_path map parent
+  in
+  List.fold_left
+    (fun map (_, _, _, file) ->
+      match file with None -> map | Some file -> add_path map file)
+    M.empty units
+
+let compile_src_mlds units =
+  let mlds = source_mlds_of_units units in
+  let module M = Map.Make (Fpath) in
+  let mld_name lib =
+    if Fpath.is_current_dir lib then "source" else Fpath.basename lib
+  in
+  let title lib =
+    if Fpath.is_current_dir lib then "source" else Fpath.to_string lib
+  in
+  let rec traverse_parent parent lib acc =
+    if Fpath.is_dir_path lib then
+      match M.find_opt lib mlds with
+      | None -> []
+      | Some set ->
+          let path = Fpath.v @@ mld_name lib ^ ".mld" in
+          let mld_content = source_mld (title lib) set in
+          let () = Bos.OS.File.write path mld_content |> get_ok in
+          let () =
+            let children =
+              match
+                set |> Fpath.Set.to_seq |> List.of_seq
+                |> List.filter_map (fun p ->
+                       if Fpath.is_dir_path p then Some (mld_name p) else None)
+              with
+              | [] ->
+                  [ "dummy" ]
+                  (* Needed to have the mld rendered as [name/index.html] *)
+              | a -> a
+            in
+            compile ?parent path children
+          in
+          let acc =
+            [ (Fpath.v ("page-" ^ mld_name lib ^ ".odoc"), false) ] :: acc
+          in
+          Fpath.Set.fold
+            (fun path acc ->
+              traverse_parent (Some (mld_name lib)) path [] :: acc)
+            set acc
+          |> List.flatten
+    else []
+  in
+  traverse_parent (Some "odoc") (Fpath.v "./") []
+```
+
+Let's now put together a list of all possible modules. We'll keep track of
+which library they're in, and whether that library is a part of `odoc` or a dependency
+library.
+
+```ocaml env=e1
+let odoc_all_unit_paths = find_units ".." |> get_ok
 
 let odoc_units =
   List.map
@@ -405,7 +522,7 @@ let compile_mlds () =
   let mkmld x = Fpath.(add_ext "mld" (v x)) in
   ignore
     (compile (mkmld "odoc")
-       ("page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
+       ("page-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
   ignore (compile (mkmld "deps") ~parent:"odoc" (List.map mkpage dep_libraries));
   let extra_odocs =
     List.map
@@ -439,6 +556,7 @@ Now we get to the compilation phase. For each unit, we query its dependencies, t
 ```ocaml env=e1
 let compile_all () =
   let mld_odocs = compile_mlds () in
+  let src_mlds = compile_src_mlds all_units in
   let rec rec_compile ?impl parent lib file =
     let output = Fpath.(base (set_ext "odoc" file)) in
     if OS.File.exists output |> get_ok then []
@@ -467,7 +585,7 @@ let compile_all () =
     (fun acc (parent, lib, dep, impl) ->
       acc @ rec_compile ?impl parent lib (best_file dep))
     [] all_units
-  @ mld_odocs
+  @ mld_odocs @ src_mlds
 ```
 
 Linking is now straightforward. We link all `odoc` files.
