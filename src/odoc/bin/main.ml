@@ -176,10 +176,20 @@ end = struct
             (`Cli_error
               "Either --package or --parent should be specified, not both")
     in
+    let source_code =
+      match (impl_source, source_parent) with
+      | Some src, Some parent -> Ok (Some (src, parent))
+      | None, Some _ -> Ok None (* [--source-parent] is passed but not used. *)
+      | Some _, None ->
+          Error
+            (`Cli_error "--source-parent is required when --impl is passed.")
+      | None, None -> Ok None
+    in
     parent_cli_spec >>= fun parent_cli_spec ->
+    source_code >>= fun source_code ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warnings_options ~impl_source ~source_parent input
+      ~warnings_options ~source_code input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
