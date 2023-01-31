@@ -106,12 +106,12 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver ~make_root ~impl_source ~source_parent
+let resolve_and_substitute ~resolver ~make_root ~source_code
     (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
   (* [impl_shape] is used to lookup locations in the implementation. It is
      useless if no source code is given on command line. *)
-  let should_read_impl_shape = impl_source <> None in
+  let should_read_impl_shape = source_code <> None in
   let unit, cmt_infos =
     match input_type with
     | `Cmti ->
@@ -138,18 +138,10 @@ let resolve_and_substitute ~resolver ~make_root ~impl_source ~source_parent
     match cmt_infos with Some (shape, _) -> Some shape | None -> None
   in
   let sources =
-    match impl_source with
+    match source_code with
     | None -> None
-    | Some source_path ->
-        let root =
-          match source_parent with
-          | Some parent -> parent
-          | None ->
-              Error.raise_exception
-                (Error.filename_only
-                   "--source-parent must be passed when --impl is." filename)
-        in
-        read_source_file ~root cmt_infos source_path
+    | Some (source_path, source_parent) ->
+        read_source_file ~root:source_parent cmt_infos source_path
   in
   if not unit.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
@@ -277,14 +269,14 @@ let handle_file_ext = function
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options ~impl_source ~source_parent input =
+    ~warnings_options ~source_code input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
-  (match source_parent with
-  | Some parent ->
+  (match source_code with
+  | Some (impl, parent) ->
       parse_parent_explicit resolver parent >>= fun (parent, _) ->
-      Ok (Some parent)
+      Ok (Some (impl, parent))
   | None -> Ok None)
-  >>= fun source_parent ->
+  >>= fun source_code ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
     mld ~parent_spec ~output ~warnings_options ~children input
@@ -300,8 +292,8 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver ~make_root ~impl_source
-            ~source_parent parent input input_type)
+          resolve_and_substitute ~resolver ~make_root ~source_code parent input
+            input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in
