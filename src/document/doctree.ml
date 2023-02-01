@@ -292,6 +292,7 @@ end
 
 module PageTitle : sig
   val render_title : ?source_anchor:Url.t -> Page.t -> Item.t list
+  val render_src_title : Source_page.t -> Item.t list
 end = struct
   let format_title ~source_anchor kind name =
     let mk title =
@@ -307,7 +308,8 @@ end = struct
     | `ModuleType -> prefix "Module type"
     | `ClassType -> prefix "Class type"
     | `Class -> prefix "Class"
-    | `Page | `LeafPage | `File | `SourcePage -> []
+    | `SourcePage -> prefix "Source file"
+    | `Page | `LeafPage | `File -> []
 
   let make_name_from_path { Url.Path.name; parent; _ } =
     match parent with
@@ -316,6 +318,9 @@ end = struct
 
   let render_title ?source_anchor (p : Page.t) =
     format_title ~source_anchor p.url.kind (make_name_from_path p.url)
+
+  let render_src_title (p : Source_page.t) =
+    format_title ~source_anchor:None p.url.kind (make_name_from_path p.url)
 end
 
 module Math : sig
