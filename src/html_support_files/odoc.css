@@ -155,12 +155,19 @@ body {
   line-height: 1.5;
 }
 
-body.odoc {
-  max-width: 100ex;
+body {
   margin-left: calc(10vw + 20ex);
   margin-right: 4ex;
   margin-top: 20px;
   margin-bottom: 50px;
+}
+
+body.odoc {
+  max-width: 100ex;
+}
+
+body.odoc-src {
+  margin-right: calc(10vw + 20ex);
 }
 
 header {
@@ -237,12 +244,10 @@ li>*:first-child {
 
 a {
   text-decoration: none;
-}
-
-.odoc a {
   color: var(--link-color);
 }
-.odoc-src a {
+
+.odoc-src pre a {
   color: inherit;
 }
 
@@ -692,8 +697,8 @@ td.def-doc *:first-child {
 
 /* Mobile adjustements. */
 
-@media only screen and (max-width: 95ex) {
-  body.odoc {
+@media only screen and (max-width: 110ex) {
+  body {
     margin: 2em;
   }
   .odoc-toc {

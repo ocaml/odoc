@@ -462,9 +462,13 @@ module Page = struct
     let { Source_page.url; contents } = sp in
     let title = url.Url.Path.name and doc = Html_source.html_of_doc contents in
     let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
+    let resolve = Link.Current sp.url in
+    let header =
+      items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
+    in
     if Config.as_json config then
       Html_fragment_json.make_src ~config ~url ~breadcrumbs [ doc ]
-    else Html_page.make_src ~config ~url title [ doc ]
+    else Html_page.make_src ~breadcrumbs ~header ~config ~url title [ doc ]
 end
 
 let render ~config = function
