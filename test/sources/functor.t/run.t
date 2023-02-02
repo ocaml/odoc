@@ -4,9 +4,9 @@ Verify the behavior on functors.
   $ ocamlc -c -o s.cmo s.ml -bin-annot -I .
   $ ocamlc -c -o a.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o b.cmo b.ml -bin-annot -I .
-  $ odoc compile --impl s.ml --source-parent page-root -I . s.cmt
-  $ odoc compile --impl a.ml --source-parent page-root -I . a.cmt
-  $ odoc compile --impl b.ml --source-parent page-root -I . b.cmt
+  $ odoc compile --source s.ml --source-parent page-root -I . s.cmt
+  $ odoc compile --source a.ml --source-parent page-root -I . a.cmt
+  $ odoc compile --source b.ml --source-parent page-root -I . b.cmt
   $ odoc link -I . s.odoc
   $ odoc link -I . a.odoc
   $ odoc link -I . b.odoc

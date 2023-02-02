@@ -2,7 +2,7 @@ Checking that source links exists inside recursive modules.
 
   $ odoc compile --child module-main root.mld
   $ ocamlc -c main.ml -bin-annot -I .
-  $ odoc compile --impl main.ml --source-parent page-root -I . main.cmt
+  $ odoc compile --source main.ml --source-parent page-root -I . main.cmt
   $ odoc link -I . main.odoc
   $ odoc html-generate --indent -o html main.odocl
 
