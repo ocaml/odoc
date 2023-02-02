@@ -30,7 +30,7 @@ Compile the modules:
 
   $ ocamlc -c a.ml -bin-annot
 
-Compile the pages without --impl:
+Compile the pages without --source:
 
   $ odoc compile a.cmt
   $ odoc link -I . a.odoc
@@ -45,9 +45,9 @@ No ids are generated in the source code:
   $ ! cat html/root/fake_src/a.ml.html
   cat: html/root/fake_src/a.ml.html: No such file or directory
 
-Now, compile the pages with the --impl option:
+Now, compile the pages with the --source option:
 
-  $ odoc compile -I . --impl a.ml --source-parent page-root a.cmt
+  $ odoc compile -I . --source a.ml --source-parent page-root a.cmt
   $ odoc link -I . a.odoc
   $ odoc html-generate --indent -o html a.odocl
 

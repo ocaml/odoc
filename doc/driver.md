@@ -162,7 +162,7 @@ let compile file ?parent ?(ignore_output = false) ?impl children =
           "page-" ^ (source_relpath |> Fpath.parent |> Fpath.basename)
         in
         Cmd.(
-          v "--impl"
+          v "--source"
           % p (relativize source_relpath)
           % "--source-parent" % source_parent)
   in
@@ -660,7 +660,7 @@ Let's see if there was any output from the `odoc` invocations:
  "odoc_examples.odocl: Warning, resolved hidden path: Odoc_examples__.Unexposed.t"]
 ```
 
-We can have a look at the produced hierarchy of files, which matches the desired output. Note that source files with a `.ml.html` extension are generated for modules compiled with the `--impl` option.
+We can have a look at the produced hierarchy of files, which matches the desired output. Note that source files with a `.ml.html` extension are generated for modules compiled with the `--source` option.
 ```sh
 $ ls html/odoc
 contributing.html

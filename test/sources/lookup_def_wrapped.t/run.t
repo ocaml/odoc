@@ -7,9 +7,9 @@ It's a simpler case than Dune's wrapping.
   $ ocamlc -c -o main__B.cmo b.ml -bin-annot -I .
   $ ocamlc -c main.ml -bin-annot -I .
 
-  $ odoc compile --impl a.ml --source-parent page-root -I . main__A.cmt
-  $ odoc compile --impl b.ml --source-parent page-root -I . main__B.cmt
-  $ odoc compile --impl main.ml --source-parent page-root -I . main.cmt
+  $ odoc compile --source a.ml --source-parent page-root -I . main__A.cmt
+  $ odoc compile --source b.ml --source-parent page-root -I . main__B.cmt
+  $ odoc compile --source main.ml --source-parent page-root -I . main.cmt
 
   $ odoc link -I . main__A.odoc
   $ odoc link -I . main__B.odoc

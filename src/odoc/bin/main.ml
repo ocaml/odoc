@@ -182,7 +182,7 @@ end = struct
       | None, Some _ -> Ok None (* [--source-parent] is passed but not used. *)
       | Some _, None ->
           Error
-            (`Cli_error "--source-parent is required when --impl is passed.")
+            (`Cli_error "--source-parent is required when --source is passed.")
       | None, None -> Ok None
     in
     parent_cli_spec >>= fun parent_cli_spec ->
@@ -214,7 +214,7 @@ end = struct
     Arg.(
       value & opt_all string default & info ~docv:"CHILD" ~doc [ "c"; "child" ])
 
-  let impl =
+  let source =
     let doc =
       "Implementation source file. Read from disk and stored inside .odoc \
        files, to be rendered in documentation."
@@ -222,7 +222,7 @@ end = struct
     Arg.(
       value
       & opt (some convert_fs_file) None
-      & info [ "impl" ] ~doc ~docv:"file.ml")
+      & info [ "source" ] ~doc ~docv:"file.ml")
 
   let source_parent =
     let doc = "Parent page at the base of the source tree." in
@@ -256,7 +256,7 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ package_opt $ parent_opt $ open_modules $ children $ input
-       $ warnings_options $ impl $ source_parent))
+       $ warnings_options $ source $ source_parent))
 
   let info ~docs =
     let man =
