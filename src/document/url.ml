@@ -230,7 +230,7 @@ module Anchor = struct
     | `Val
     | `Constructor
     | `Field
-    | `SourceLine ]
+    | `SourceAnchor ]
 
   let string_of_kind : kind -> string = function
     | #Path.kind as k -> Path.string_of_kind k
@@ -243,7 +243,7 @@ module Anchor = struct
     | `Val -> "val"
     | `Constructor -> "constructor"
     | `Field -> "field"
-    | `SourceLine -> "source-line"
+    | `SourceAnchor -> "source-anchor"
 
   let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
 
@@ -371,7 +371,7 @@ module Anchor = struct
         | { iv = `Type (gp, _); _ } -> mk ~kind:`Section gp str_name)
 
   let source_file_from_identifier id ~anchor =
-    let kind = `SourceLine in
+    let kind = `SourceAnchor in
     let page = Path.source_file_from_identifier id in
     { page; anchor; kind }
 
@@ -405,6 +405,8 @@ module Anchor = struct
     let first_cons = Identifier.name (List.hd decl.constructors).id in
     let anchor = Format.asprintf "%a-%s" pp_kind kind first_cons in
     { page; kind; anchor }
+
+  let source_anchor path anchor = { page = path; anchor; kind = `SourceAnchor }
 end
 
 type kind = Anchor.kind

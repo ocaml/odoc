@@ -460,9 +460,10 @@ module Page = struct
 
   and source_page ~config sp =
     let { Source_page.url; contents } = sp in
-    let title = url.Url.Path.name and doc = Html_source.html_of_doc contents in
-    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
     let resolve = Link.Current sp.url in
+    let title = url.Url.Path.name
+    and doc = Html_source.html_of_doc ~config ~resolve contents in
+    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
     let header =
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in
