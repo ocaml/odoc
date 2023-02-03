@@ -2,7 +2,7 @@ Compile the modules:
 
   $ odoc compile --child module-a root.mld
   $ ocamlc -c a.mli a.ml -bin-annot
-  $ odoc compile --source a.ml --source-parent page-root -I . a.cmti
+  $ odoc compile --source-name a.ml --source-parent page-root -I . a.cmti
   $ odoc link a.odoc
 
 Show the locations:

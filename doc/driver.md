@@ -118,14 +118,18 @@ Let's start with some functions to execute the three phases of `odoc`.
 
 Compiling a file with `odoc` requires a few arguments: the file to compile, an
 optional parent, a list of include paths, a list of children for `.mld` files,
-optional source implementation and interface file, and an output path. Include
+optional parent and name for source implementation, and an output path. Include
 paths can be just `'.'`, and we can calculate the output file from the input
 because all of the files are going into the same directory.
 
 Linking a file with `odoc` requires the input file and a list of include paths. As
 for compile, we will hard-code the include path.
 
-Generating the HTML requires the input `odocl` file and an output path. We will hard-code the output path to be `html`.
+Generating the HTML requires the input `odocl` file, an optional implementation
+source file, and an output path. We will hard-code the output path to be `html`.
+Passing an implementation file to an `odocl` that was not compiled with
+`--source-parent` and `--source-name` will result in an error, and similarly
+when failing to pass it for an `odocl` that was compiled with such options.
 
 In all of these, we'll capture `stdout` and `stderr` so we can check it later.
 
@@ -162,8 +166,8 @@ let compile file ?parent ?(ignore_output = false) ?impl children =
           "page-" ^ (source_relpath |> Fpath.parent |> Fpath.basename)
         in
         Cmd.(
-          v "--source"
-          % p (relativize source_relpath)
+          v "--source-name"
+          % Fpath.basename source_relpath
           % "--source-parent" % source_parent)
   in
   let cmd =
@@ -189,10 +193,11 @@ let link ?(ignore_output = false) file =
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
 
-let html_generate ?(ignore_output = false) file =
+let html_generate ?(ignore_output = false) file source =
   let open Cmd in
+  let source = match source with None -> empty | Some source -> v "--source" % p source in
   let cmd =
-    odoc % "html-generate" % p file % "-o" % "html" % "--theme-uri" % "odoc"
+    odoc % "html-generate" %% source % p file % "-o" % "html" % "--theme-uri" % "odoc"
     % "--support-uri" % "odoc"
   in
   let lines = OS.Cmd.(run_out cmd ~err:err_run_out |> to_lines) |> get_ok in
@@ -465,7 +470,7 @@ let compile_src_mlds units =
             compile ?parent path children
           in
           let acc =
-            [ (Fpath.v ("page-" ^ mld_name lib ^ ".odoc"), false) ] :: acc
+            [ (Fpath.v ("page-" ^ mld_name lib ^ ".odoc"), false, None) ] :: acc
           in
           Fpath.Set.fold
             (fun path acc ->
@@ -547,7 +552,7 @@ let compile_mlds () =
       all_libraries
   in
   List.map
-    (fun f -> (Fpath.v f, false))
+    (fun f -> (Fpath.v f, false, None))
     ("page-odoc.odoc" :: "page-deps.odoc" :: odocs @ extra_odocs)
 ```
 
@@ -579,7 +584,7 @@ let compile_all () =
       in
       let ignore_output = parent = "deps" in
       ignore (compile file ~parent:lib ?impl ~ignore_output []);
-      (output, ignore_output) :: files
+      (output, ignore_output, impl) :: files
   in
   List.fold_left
     (fun acc (parent, lib, dep, impl) ->
@@ -593,9 +598,9 @@ Linking is now straightforward. We link all `odoc` files.
 ```ocaml env=e1
 let link_all odoc_files =
   List.map
-    (fun (odoc_file, ignore_output) ->
+    (fun (odoc_file, ignore_output, source) ->
       ignore (link ~ignore_output odoc_file);
-      Fpath.set_ext "odocl" odoc_file)
+      Fpath.set_ext "odocl" odoc_file, source)
     odoc_files
 ```
 
@@ -604,7 +609,8 @@ This will generate sources, as well as documentation for non-hidden units.
 
 ```ocaml env=e1
 let generate_all odocl_files =
-  List.iter (fun f -> ignore(html_generate f)) odocl_files;
+  let relativize_opt = function None -> None | Some file -> Some (relativize file) in
+  List.iter (fun (f, source) -> ignore(html_generate f (relativize_opt source))) odocl_files;
   support_files ()
 ```
 

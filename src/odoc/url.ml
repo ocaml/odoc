@@ -39,7 +39,7 @@ let resolve url_to_string directories reference =
               print_endline href;
               Ok ()))
 
-let reference_to_url_html config root_url =
+let reference_to_url_html { Html_page.html_config = config; _ } root_url =
   let url_to_string url =
     let base =
       match root_url with

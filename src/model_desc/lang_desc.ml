@@ -24,14 +24,9 @@ let locations =
       F ("anchor", (fun t -> t.anchor), Option string);
     ]
 
-let source_code =
-  let open Lang.Source_code in
-  let contents = To_string (fun _ -> "<source code>") in
-  Record
-    [
-      F ("id", (fun t -> t.id), sourcepage_identifier);
-      F ("impl_source", (fun t -> t.impl_source), contents);
-    ]
+let source_info =
+  let open Lang.Source_info in
+  Record [ F ("id", (fun t -> t.id), sourcepage_identifier) ]
 
 (** {3 Module} *)
 
@@ -695,7 +690,7 @@ and compilation_unit_t =
         ( "canonical",
           (fun t -> (t.canonical :> Paths.Path.t option)),
           Option path );
-      F ("sources", (fun t -> t.sources), Option source_code);
+      F ("sources", (fun t -> t.source_info), Option source_info);
     ]
 
 (** {3 Page} *)

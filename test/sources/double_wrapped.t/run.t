@@ -6,17 +6,17 @@ Similar to the lookup_def_wrapped test.
   $ ocamlc -c -o main__.cmo main__.ml -bin-annot -I .
   $ ocamlc -c -open Main__ main.ml -bin-annot -I .
 
-  $ odoc compile --source a.ml --source-parent page-root -I . main__A.cmt
+  $ odoc compile --source-name a.ml --source-parent page-root -I . main__A.cmt
   $ odoc compile -I . main__.cmt
-  $ odoc compile --source main.ml --source-parent page-root -I . main.cmt
+  $ odoc compile --source-name main.ml --source-parent page-root -I . main.cmt
 
   $ odoc link -I . main.odoc
   $ odoc link -I . main__A.odoc
   $ odoc link -I . main__.odoc
 
-  $ odoc html-generate --indent -o html main.odocl
+  $ odoc html-generate --source main.ml --indent -o html main.odocl
   $ odoc html-generate --hidden --indent -o html main__.odocl
-  $ odoc html-generate --hidden --indent -o html main__A.odocl
+  $ odoc html-generate --source a.ml --hidden --indent -o html main__A.odocl
 
 Look if all the source files are generated:
 

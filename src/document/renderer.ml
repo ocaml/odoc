@@ -17,7 +17,15 @@ let traverse ~f t =
   in
   List.iter aux t
 
-type 'a t = { name : string; render : 'a -> Types.Document.t -> page list }
+type 'a t = {
+  name : string;
+  render : 'a -> Types.Document.t -> page list;
+  extra_documents :
+    'a ->
+    Odoc_model.Lang.Compilation_unit.t ->
+    syntax:syntax ->
+    Types.Document.t list;
+}
 
 let document_of_page ~syntax v =
   match syntax with Reason -> Reason.page v | OCaml -> ML.page v
@@ -26,3 +34,8 @@ let document_of_compilation_unit ~syntax v =
   match syntax with
   | Reason -> Reason.compilation_unit v
   | OCaml -> ML.compilation_unit v
+
+let document_of_source ~syntax =
+  match syntax with
+  | Reason -> Reason.source_page (* Currently, both functions are equivalent *)
+  | OCaml -> ML.source_page

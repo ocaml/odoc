@@ -13,6 +13,7 @@ val render_odoc :
 
 val generate_odoc :
   syntax:Renderer.syntax ->
+  warnings_options:Odoc_model.Error.warnings_options ->
   renderer:'a Renderer.t ->
   output:Fs.directory ->
   extra_suffix:string option ->

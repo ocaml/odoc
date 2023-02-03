@@ -68,7 +68,7 @@ let lookup_def lookup_unit id =
       result.uid >>= fun uid ->
       Uid.unpack_uid (Uid.of_shape_uid uid) >>= fun (unit_name, id) ->
       lookup_unit unit_name >>= fun (unit, _) ->
-      unit.Lang.Compilation_unit.sources >>= fun sources ->
+      unit.Lang.Compilation_unit.source_info >>= fun sources ->
       let anchor = id >>= fun id -> Some (Uid.anchor_of_id id) in
       Some { Lang.Locations.source_parent = sources.id; anchor }
 

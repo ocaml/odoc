@@ -48,25 +48,6 @@ let parse_reference f =
   Semantics.parse_reference f
   |> Error.handle_errors_and_warnings ~warnings_options
 
-(** Raises errors. *)
-let read_source_file ~root cmt_infos source_path =
-  let source_name = Fpath.filename source_path in
-  match Fs.File.read source_path with
-  | Error (`Msg msg) ->
-      Error.raise_warning
-        (Error.filename_only "Couldn't load source file: %s" msg
-           (Fs.File.to_string source_path));
-      None
-  | Ok impl_source ->
-      let impl_info =
-        match cmt_infos with
-        | Some (_, local_jmp) ->
-            Odoc_loader.Source_info.of_source ~local_jmp impl_source
-        | _ -> []
-      in
-      let id = Paths.Identifier.Mk.source_page (root, source_name) in
-      Some { Lang.Source_code.id; impl_source; impl_info }
-
 let parse_parent_explicit resolver f =
   let find_parent :
       Paths.Reference.t -> (Lang.Page.t, [> `Msg of string ]) Result.result =
@@ -106,12 +87,12 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver ~make_root ~source_code
+let resolve_and_substitute ~resolver ~make_root ~source
     (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
   (* [impl_shape] is used to lookup locations in the implementation. It is
      useless if no source code is given on command line. *)
-  let should_read_impl_shape = source_code <> None in
+  let should_read_impl_shape = source <> None in
   let unit, cmt_infos =
     match input_type with
     | `Cmti ->
@@ -137,11 +118,18 @@ let resolve_and_substitute ~resolver ~make_root ~source_code
   let impl_shape =
     match cmt_infos with Some (shape, _) -> Some shape | None -> None
   in
-  let sources =
-    match source_code with
+  let source_info =
+    match source with
+    | Some (parent, name) ->
+        let id = Paths.Identifier.Mk.source_page (parent, name) in
+        let infos =
+          match cmt_infos with
+          | Some (_, local_jmp) ->
+              Odoc_loader.Source_info.of_local_jmp local_jmp
+          | _ -> []
+        in
+        Some { Lang.Source_info.id; infos }
     | None -> None
-    | Some (source_path, source_parent) ->
-        read_source_file ~root:source_parent cmt_infos source_path
   in
   if not unit.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
@@ -150,7 +138,7 @@ let resolve_and_substitute ~resolver ~make_root ~source_code
         Printf.sprintf " Using %S while you should use the .cmti file" filename);
   (* Resolve imports, used by the [link-deps] command. *)
   let unit =
-    { unit with imports = resolve_imports resolver unit.imports; sources }
+    { unit with imports = resolve_imports resolver unit.imports; source_info }
   in
   let env = Resolver.build_compile_env_for_unit resolver impl_shape unit in
   let compiled =
@@ -269,14 +257,14 @@ let handle_file_ext = function
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options ~source_code input =
+    ~warnings_options ~source input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
-  (match source_code with
-  | Some (impl, parent) ->
+  (match source with
+  | Some (parent, name) ->
       parse_parent_explicit resolver parent >>= fun (parent, _) ->
-      Ok (Some (impl, parent))
+      Ok (Some (parent, name))
   | None -> Ok None)
-  >>= fun source_code ->
+  >>= fun source ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
     mld ~parent_spec ~output ~warnings_options ~children input
@@ -292,7 +280,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver ~make_root ~source_code parent input
+          resolve_and_substitute ~resolver ~make_root ~source parent input
             input_type)
     in
     (* Extract warnings to write them into the output file *)

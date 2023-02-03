@@ -1,6 +1,6 @@
 #if OCAML_VERSION >= (4, 14, 0)
 
-open Odoc_model.Lang.Source_code.Info
+open Odoc_model.Lang.Source_info
 
 let pos_of_loc loc = (loc.Location.loc_start.pos_cnum, loc.loc_end.pos_cnum)
 

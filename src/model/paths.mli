@@ -322,6 +322,7 @@ module Identifier : sig
     val equal : t -> t -> bool
     val hash : t -> int
     val compare : t -> t -> int
+    val name : t -> string
   end
 
   module OdocId : sig

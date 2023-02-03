@@ -14,8 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val compilation_unit :
-  Odoc_model.Lang.Compilation_unit.t -> Types.Document.t list
+open Odoc_model
+open Odoc_model.Paths
 
-val page : Odoc_model.Lang.Page.t -> Types.Document.t
+val compilation_unit : Lang.Compilation_unit.t -> Types.Document.t
+
+val page : Lang.Page.t -> Types.Document.t
 (** Convert compilation unit or page models into a document *)
+
+val source_page :
+  Identifier.SourcePage.t ->
+  Lang.Source_info.infos ->
+  string ->
+  Types.Document.t
+(** Highlight the source as OCaml syntax *)

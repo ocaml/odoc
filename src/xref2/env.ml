@@ -360,7 +360,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
   let id = (unit.id :> Paths.Identifier.Module.t) in
   let locs =
-    match unit.sources with
+    match unit.source_info with
     | Some src -> Some { Lang.Locations.source_parent = src.id; anchor = None }
     | None -> None
   in
