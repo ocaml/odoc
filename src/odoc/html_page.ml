@@ -14,6 +14,44 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-let render config page = Odoc_html.Generator.render ~config page
+open Odoc_model
 
-let renderer = { Odoc_document.Renderer.name = "html"; render }
+type args = { html_config : Odoc_html.Config.t; source_file : Fpath.t option }
+
+let render { html_config; source_file = _ } page =
+  Odoc_html.Generator.render ~config:html_config page
+
+let extra_documents args unit ~syntax =
+  match (unit.Lang.Compilation_unit.source_info, args.source_file) with
+  | Some { Lang.Source_info.id; infos }, Some src -> (
+      match Fs.File.read src with
+      | Error (`Msg msg) ->
+          Error.raise_warning
+            (Error.filename_only "Couldn't load source file: %s" msg
+               (Fs.File.to_string src));
+          []
+      | Ok source_code ->
+          let infos = infos @ Odoc_loader.Source_info.of_source source_code in
+          [
+            Odoc_document.Renderer.document_of_source ~syntax id infos
+              source_code;
+          ])
+  | Some { id; _ }, None ->
+      let filename = Paths.Identifier.SourcePage.name id in
+      Error.raise_warning
+        (Error.filename_only
+           "The --source should be passed when generating documents from \
+            compilation units that were compiled with --source-parent and \
+            --source-name"
+           filename);
+      []
+  | None, Some src ->
+      Error.raise_warning
+        (Error.filename_only
+           "--source argument is invalid on compilation unit that were not \
+            compiled with --source-parent and --source-name"
+           (Fs.File.to_string src));
+      []
+  | None, None -> []
+
+let renderer = { Odoc_document.Renderer.name = "html"; render; extra_documents }

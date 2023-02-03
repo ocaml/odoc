@@ -16,4 +16,6 @@
 
 open Odoc_document
 
-val renderer : Odoc_html.Config.t Renderer.t
+type args = { html_config : Odoc_html.Config.t; source_file : Fpath.t option }
+
+val renderer : args Renderer.t

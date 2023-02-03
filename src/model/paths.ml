@@ -419,6 +419,7 @@ module Identifier = struct
     let equal = equal
     let hash = hash
     let compare = compare
+    let name { iv = `SourcePage (_, name); _ } = name
   end
 
   module OdocId = struct

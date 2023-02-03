@@ -3,28 +3,28 @@ Test the JSON output in the presence of expanded modules.
   $ odoc compile --child module-a root.mld
   $ ocamlc -c -bin-annot -o main__A.cmo a.ml -I .
   $ ocamlc -c -bin-annot main.ml -I .
-  $ odoc compile --source a.ml --source-parent page-root -I . main__A.cmt
-  $ odoc compile --source main.ml --source-parent page-root -I . main.cmt
+  $ odoc compile --source-name a.ml --source-parent page-root -I . main__A.cmt
+  $ odoc compile --source-name main.ml --source-parent page-root -I . main.cmt
   $ odoc link -I . main__A.odoc
   $ odoc link -I . main.odoc
 
-  $ odoc html-targets -o html main__A.odocl
+  $ odoc html-targets --source a.ml -o html main__A.odocl
   html/root/a.ml.html
-  $ odoc html-targets -o html main.odocl
+  $ odoc html-targets --source main.ml -o html main.odocl
   html/Main/index.html
   html/Main/A/index.html
   html/Main/A/B/index.html
   html/root/main.ml.html
-  $ odoc html-targets --as-json -o html main__A.odocl
+  $ odoc html-targets --source a.ml --as-json -o html main__A.odocl
   html/root/a.ml.html.json
-  $ odoc html-targets --as-json -o html main.odocl
+  $ odoc html-targets --source main.ml --as-json -o html main.odocl
   html/Main/index.html.json
   html/Main/A/index.html.json
   html/Main/A/B/index.html.json
   html/root/main.ml.html.json
 
-  $ odoc html-generate --as-json -o html main__A.odocl
-  $ odoc html-generate --as-json -o html main.odocl
+  $ odoc html-generate --source a.ml --as-json -o html main__A.odocl
+  $ odoc html-generate --source main.ml --as-json -o html main.odocl
 
   $ cat html/Main/index.html.json
   {"type":"documentation","uses_katex":false,"breadcrumbs":[{"name":"Main","href":"#","kind":"module"}],"toc":[],"source_anchor":"../root/main.ml.html","preamble":"","content":"<div class=\"odoc-spec\"><div class=\"spec module anchored\" id=\"module-A\"><a href=\"#module-A\" class=\"anchor\"></a><a href=\"../root/a.ml.html\" class=\"source_link\">Source</a><code><span><span class=\"keyword\">module</span> <a href=\"A/index.html\">A</a></span><span> : <span class=\"keyword\">sig</span> ... <span class=\"keyword\">end</span></span></code></div></div>"}

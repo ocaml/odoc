@@ -47,9 +47,9 @@ No ids are generated in the source code:
 
 Now, compile the pages with the --source option:
 
-  $ odoc compile -I . --source a.ml --source-parent page-root a.cmt
+  $ odoc compile -I . --source-name a.ml --source-parent page-root a.cmt
   $ odoc link -I . a.odoc
-  $ odoc html-generate --indent -o html a.odocl
+  $ odoc html-generate --source a.ml --indent -o html a.odocl
 
 Source links generated in the documentation:
 
@@ -138,12 +138,12 @@ Ids generated in the source code:
   id="L19"
   id="L20"
   id="def-0"
-  id="x_268"
   id="def-1"
-  id="y_269"
+  id="x_268"
   id="def-2"
-  id="z_270"
+  id="y_269"
   id="def-3"
+  id="z_270"
   id="a_272"
   id="def-5"
   id="def-6"

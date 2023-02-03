@@ -4,15 +4,15 @@ Verify the behavior on functors.
   $ ocamlc -c -o s.cmo s.ml -bin-annot -I .
   $ ocamlc -c -o a.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o b.cmo b.ml -bin-annot -I .
-  $ odoc compile --source s.ml --source-parent page-root -I . s.cmt
-  $ odoc compile --source a.ml --source-parent page-root -I . a.cmt
-  $ odoc compile --source b.ml --source-parent page-root -I . b.cmt
+  $ odoc compile --source-name s.ml --source-parent page-root -I . s.cmt
+  $ odoc compile --source-name a.ml --source-parent page-root -I . a.cmt
+  $ odoc compile --source-name b.ml --source-parent page-root -I . b.cmt
   $ odoc link -I . s.odoc
   $ odoc link -I . a.odoc
   $ odoc link -I . b.odoc
-  $ odoc html-generate --indent -o html s.odocl
-  $ odoc html-generate --indent -o html a.odocl
-  $ odoc html-generate --indent -o html b.odocl
+  $ odoc html-generate --source s.ml --indent -o html s.odocl
+  $ odoc html-generate --source a.ml --indent -o html a.odocl
+  $ odoc html-generate --source b.ml --indent -o html b.odocl
 
   $ find html | sort
   html

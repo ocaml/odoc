@@ -5,8 +5,8 @@ Similar to Astring library.
   $ ocamlc -c a.mli -bin-annot -I .
   $ ocamlc -c a.ml -bin-annot -I .
 
-  $ odoc compile --hidden --source a_x.ml --source-parent page-root -I . a_x.cmt
-  $ odoc compile --source a.ml --source-parent page-root -I . a.cmti
+  $ odoc compile --hidden --source-name a_x.ml --source-parent page-root -I . a_x.cmt
+  $ odoc compile --source-name a.ml --source-parent page-root -I . a.cmti
 
   $ odoc link -I . a_x.odoc
   $ odoc link -I . a.odoc
@@ -18,8 +18,8 @@ TODO: It seems that --hidden do not work:
   $ odoc_print a_x.odocl | grep hidden
     "hidden": "false",
 
-  $ odoc html-generate --indent -o html a_x.odocl
-  $ odoc html-generate --indent -o html a.odocl
+  $ odoc html-generate --source a_x.ml --indent -o html a_x.odocl
+  $ odoc html-generate --source a.ml --indent -o html a.odocl
 
 Look if all the source files are generated:
 

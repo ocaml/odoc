@@ -30,6 +30,6 @@ val compile :
   children:string list ->
   output:Fs.File.t ->
   warnings_options:Odoc_model.Error.warnings_options ->
-  source_code:(Fs.File.t * string) option ->
+  source:(string * string) option ->
   Fs.File.t ->
   (unit, [> msg ]) result

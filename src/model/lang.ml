@@ -26,24 +26,18 @@ module Locations = struct
   }
 end
 
-module Source_code = struct
-  module Info = struct
-    type anchor = { anchor : string }
+module Source_info = struct
+  type anchor = { anchor : string }
 
-    type jmp_to_def = Occurence of anchor | Def of string
+  type jmp_to_def = Occurence of anchor | Def of string
 
-    type info = Syntax of string | Local_jmp of jmp_to_def
+  type info = Syntax of string | Local_jmp of jmp_to_def
 
-    type 'a with_pos = 'a * (int * int)
+  type 'a with_pos = 'a * (int * int)
 
-    type infos = info with_pos list
-  end
+  type infos = info with_pos list
 
-  type t = {
-    id : Identifier.SourcePage.t;
-    impl_source : string;
-    impl_info : Info.infos;
-  }
+  type t = { id : Identifier.SourcePage.t; infos : infos }
 end
 
 (** {3 Modules} *)
@@ -504,7 +498,7 @@ module rec Compilation_unit : sig
     expansion : Signature.t option;
     linked : bool;  (** Whether this unit has been linked. *)
     canonical : Path.Module.t option;
-    sources : Source_code.t option;
+    source_info : Source_info.t option;
   }
 end =
   Compilation_unit
