@@ -73,7 +73,7 @@ module Anchor : sig
     | `Val
     | `Constructor
     | `Field
-    | `SourceLine ]
+    | `SourceAnchor ]
 
   val pp_kind : Format.formatter -> kind -> unit
 
@@ -101,6 +101,8 @@ module Anchor : sig
   val extension_decl : Odoc_model.Lang.Extension.t -> t
   (** Anchor for the extension declaration item itself, which doesn't have an
       identifier in the model. *)
+
+  val source_anchor : Path.t -> string -> t
 end
 
 type kind = Anchor.kind
