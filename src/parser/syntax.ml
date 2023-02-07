@@ -1338,6 +1338,7 @@ and heavy_table ~parent_markup ~parent_markup_location input =
     | token ->
         Parse_error.not_allowed next_token.location ~what:(Token.describe token)
           ~in_what:(Token.describe parent_markup)
+          ~suggestion:"Move outside of {table ...}, or inside {tr ...}"
         |> add_warning input;
         junk input;
         consume_rows acc ~last_loc
@@ -1371,6 +1372,8 @@ and heavy_table_row ~parent_markup input =
     | token ->
         Parse_error.not_allowed next_token.location ~what:(Token.describe token)
           ~in_what:(Token.describe parent_markup)
+          ~suggestion:
+            "Move outside of {table ...}, or inside {td ...} or {th ...}"
         |> add_warning input;
         junk input;
         consume_cell_items acc

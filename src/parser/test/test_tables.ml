@@ -37,6 +37,33 @@ let%expect_test _ =
             (table (syntax heavy) (data ((row ((header ()))))) (align ())))))
          (warnings ())) |}]
 
+    let bad_data =
+      test "{table absurd content}";
+      [%expect
+        {|
+        ((output (((f.ml (1 0) (1 22)) (table (syntax heavy) (data ()) (align ())))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 7-13:\
+           \n'absurd' is not allowed in '{table ...}' (table).\
+           \nSuggestion: Move outside of {table ...}, or inside {tr ...}"
+            "File \"f.ml\", line 1, characters 14-21:\
+           \n'content' is not allowed in '{table ...}' (table).\
+           \nSuggestion: Move outside of {table ...}, or inside {tr ...}"))) |}]
+
+    let bad_row =
+      test "{table {tr absurd content}}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 27)) (table (syntax heavy) (data ((row ()))) (align ())))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 11-17:\
+           \n'absurd' is not allowed in '{tr ...}' (table row).\
+           \nSuggestion: Move outside of {table ...}, or inside {td ...} or {th ...}"
+            "File \"f.ml\", line 1, characters 18-25:\
+           \n'content' is not allowed in '{tr ...}' (table row).\
+           \nSuggestion: Move outside of {table ...}, or inside {td ...} or {th ...}"))) |}]
+
     let multiple_headers =
       test "{table {tr {th}} {tr {th}} {tr {td}}}";
       [%expect
