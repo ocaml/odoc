@@ -63,7 +63,13 @@ module Table = struct
       | _ -> None
 
     let valid_align_row lx = List.map valid_align lx |> Option.join_list
-    let create ~header ~data ~align : Ast.table = `Light (header, data, align)
+
+    let create ~header ~data ~align : Ast.table =
+      let to_block x = Loc.at x.Loc.location (`Paragraph [ x ]) in
+      let cell_to_block = List.map to_block in
+      let row_to_block = List.map cell_to_block in
+      let grid_to_block = List.map row_to_block in
+      ((row_to_block header, grid_to_block data, align), `Light)
 
     let from_grid (grid : _ Ast.grid) : Ast.table =
       match grid with
@@ -87,7 +93,7 @@ module Table = struct
   end
 
   module Heavy_syntax = struct
-    let create ~header ~data ~align : Ast.table = `Heavy (header, data, align)
+    let create ~header ~data ~align : Ast.table = ((header, data, align), `Heavy)
 
     let valid_header_row row =
       List.map

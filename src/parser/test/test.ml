@@ -85,24 +85,20 @@ module Ast_to_sexp = struct
           |> fun items -> List items
         in
         List [ Atom kind; Atom weight; items ]
-    | `Table t -> (
+    | `Table ((header, data, align), s) ->
+        let syntax = function `Light -> "light" | `Heavy -> "heavy" in
         let map name x f = List [ Atom name; List (List.map f x) ] in
-        let to_sexp (type a) ((header, data, align) : a Ast.abstract_table)
-            ~syntax ~f =
-          List
-            [
-              Atom "table";
-              List [ Atom "syntax"; Atom syntax ];
-              ( map "header" header @@ fun cell ->
-                map "cell" cell @@ at.at (f at) );
-              ( map "data" data @@ fun row ->
-                map "row" row @@ fun cell -> map "cell" cell @@ at.at (f at) );
-              map "align" align @@ alignment;
-            ]
-        in
-        match t with
-        | `Light t -> to_sexp t ~syntax:"light" ~f:inline_element
-        | `Heavy t -> to_sexp t ~syntax:"heavy" ~f:nestable_block_element)
+        List
+          [
+            Atom "table";
+            List [ Atom "syntax"; Atom (syntax s) ];
+            ( map "header" header @@ fun cell ->
+              map "cell" cell @@ at.at (nestable_block_element at) );
+            ( map "data" data @@ fun row ->
+              map "row" row @@ fun cell ->
+              map "cell" cell @@ at.at (nestable_block_element at) );
+            map "align" align @@ alignment;
+          ]
 
   let tag at : Ast.tag -> sexp = function
     | `Author s -> List [ Atom "@author"; Atom s ]
