@@ -70,7 +70,8 @@ type t =
     `Begin_list of [ `Unordered | `Ordered ]
   | `Begin_list_item of [ `Li | `Dash ]
   | (* Table markup. *)
-    `Begin_table of [ `Light | `Heavy ]
+    `Begin_table_light
+  | `Begin_table_heavy
   | `Begin_table_row
   | `Begin_table_cell of [ `Header | `Data ]
   | `Minus
@@ -92,9 +93,8 @@ let print : [< t ] -> string = function
   | `Begin_link_with_replacement_text _ -> "'{{:'"
   | `Begin_list_item `Li -> "'{li ...}'"
   | `Begin_list_item `Dash -> "'{- ...}'"
-  | `Begin_table syntax ->
-      let syntax = match syntax with `Light -> "t" | `Heavy -> "table" in
-      Printf.sprintf "'{%s'" syntax
+  | `Begin_table_light -> "{t"
+  | `Begin_table_heavy -> "{table"
   | `Begin_table_row -> "'{tr'"
   | `Begin_table_cell `Header -> "'{th'"
   | `Begin_table_cell `Data -> "'{td'"
@@ -154,8 +154,8 @@ let describe : [< t | `Comment ] -> string = function
   | `Begin_list `Ordered -> "'{ol ...}' (numbered list)"
   | `Begin_list_item `Li -> "'{li ...}' (list item)"
   | `Begin_list_item `Dash -> "'{- ...}' (list item)"
-  | `Begin_table `Light -> "'{t ...}' (table)"
-  | `Begin_table `Heavy -> "'{table ...}' (table)"
+  | `Begin_table_light -> "'{t ...}' (table)"
+  | `Begin_table_heavy -> "'{table ...}' (table)"
   | `Begin_table_row -> "'{tr ...}' (table row)"
   | `Begin_table_cell `Header -> "'{th ... }' (table header cell)"
   | `Begin_table_cell `Data -> "'{td ... }' (table data cell)"

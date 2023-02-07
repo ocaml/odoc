@@ -470,6 +470,47 @@ let%expect_test _ =
                (align (center center center center))))))
            (warnings ())) |}]
 
+    let light_table_markup_with_newlines =
+      test
+        {|
+      {t | h1           | h2          |
+         |--------------|-------------|
+         | {e with
+              newlines} | {b d} [foo] |
+      }
+      |};
+      [%expect {|
+        ((output
+          (((f.ml (2 6) (6 7))
+            (table (syntax light)
+             (data
+              ((row
+                ((header
+                  (((f.ml (2 11) (2 13))
+                    (paragraph (((f.ml (2 11) (2 13)) (word h1)))))))
+                 (header
+                  (((f.ml (2 26) (2 28))
+                    (paragraph (((f.ml (2 26) (2 28)) (word h2)))))))))
+               (row
+                ((data
+                  (((f.ml (4 11) (5 23))
+                    (paragraph
+                     (((f.ml (4 11) (5 23))
+                       (emphasis
+                        (((f.ml (4 14) (4 18)) (word with))
+                         ((f.ml (4 18) (5 14)) space)
+                         ((f.ml (5 14) (5 22)) (word newlines))))))))))
+                 (data
+                  (((f.ml (5 26) (5 31))
+                    (paragraph
+                     (((f.ml (5 26) (5 31)) (bold (((f.ml (5 29) (5 30)) (word d))))))))
+                   ((f.ml (5 32) (5 37))
+                    (paragraph (((f.ml (5 32) (5 37)) (code_span foo)))))))))))
+             (align (center center))))))
+         (warnings
+          ( "File \"f.ml\", line 4, character 18 to line 5, character 14:\
+           \nLine break is not allowed in '{t ...}' (table)."))) |}]
+
     let no_space =
       test
         {|

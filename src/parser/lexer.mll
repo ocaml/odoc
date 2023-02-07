@@ -402,10 +402,10 @@ rule token input = parse
     { emit input (`Begin_list_item `Dash) }
 
   | "{table"
-    { emit input (`Begin_table `Heavy) }
+    { emit input (`Begin_table_heavy) }
 
   | "{t"
-    { emit input (`Begin_table `Light) }
+    { emit input (`Begin_table_light) }
 
   | "{tr"
     { emit input `Begin_table_row }
