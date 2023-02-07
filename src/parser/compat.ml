@@ -2,15 +2,15 @@ module Option = struct
   type 'a t = 'a option = None | Some of 'a
 
   let is_some = function None -> false | Some _ -> true
-
-  let value_exn = function
-    | None -> failwith "Option.value_exn None"
-    | Some x -> x
-
   let value ~default = function None -> default | Some x -> x
 
   let join_list l =
-    if List.for_all is_some l then Some (List.map value_exn l) else None
+    let rec loop acc = function
+      | [] -> Some (List.rev acc)
+      | Some a :: q -> loop (a :: acc) q
+      | None :: _ -> None
+    in
+    loop [] l
 end
 
 module Char = struct
