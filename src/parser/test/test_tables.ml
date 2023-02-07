@@ -506,7 +506,8 @@ let%expect_test _ =
               newlines} | {b d} [foo] |
       }
       |};
-      [%expect {|
+      [%expect
+        {|
         ((output
           (((f.ml (2 6) (6 7))
             (table (syntax light)
