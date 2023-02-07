@@ -121,14 +121,26 @@ let%expect_test _ =
                   (((f.ml (21 14) (25 15))
                     (table (syntax light)
                      (header
-                      ((cell (((f.ml (22 17) (22 18)) (word x))))
-                       (cell (((f.ml (22 21) (22 22)) (word y))))
-                       (cell (((f.ml (22 25) (22 26)) (word z))))))
+                      ((cell
+                        (((f.ml (22 17) (22 18))
+                          (paragraph (((f.ml (22 17) (22 18)) (word x)))))))
+                       (cell
+                        (((f.ml (22 21) (22 22))
+                          (paragraph (((f.ml (22 21) (22 22)) (word y)))))))
+                       (cell
+                        (((f.ml (22 25) (22 26))
+                          (paragraph (((f.ml (22 25) (22 26)) (word z)))))))))
                      (data
                       ((row
-                        ((cell (((f.ml (24 17) (24 18)) (word 1))))
-                         (cell (((f.ml (24 21) (24 22)) (word 2))))
-                         (cell (((f.ml (24 25) (24 26)) (word 3))))))))
+                        ((cell
+                          (((f.ml (24 17) (24 18))
+                            (paragraph (((f.ml (24 17) (24 18)) (word 1)))))))
+                         (cell
+                          (((f.ml (24 21) (24 22))
+                            (paragraph (((f.ml (24 21) (24 22)) (word 2)))))))
+                         (cell
+                          (((f.ml (24 25) (24 26))
+                            (paragraph (((f.ml (24 25) (24 26)) (word 3)))))))))))
                      (align (center center center))))))))))
              (align (center center))))))
          (warnings ())) |}]
@@ -183,7 +195,12 @@ let%expect_test _ =
         ((output
           (((f.ml (2 8) (4 9))
             (table (syntax light) (header ())
-             (data ((row ((cell (((f.ml (3 12) (3 13)) (word a)))))))) (align ())))))
+             (data
+              ((row
+                ((cell
+                  (((f.ml (3 12) (3 13))
+                    (paragraph (((f.ml (3 12) (3 13)) (word a)))))))))))
+             (align ())))))
          (warnings ())) |}]
 
     let stars =
@@ -201,11 +218,19 @@ let%expect_test _ =
             (table (syntax light) (header ())
              (data
               ((row
-                ((cell (((f.ml (3 11) (3 12)) (word a))))
-                 (cell (((f.ml (3 16) (3 19)) (word *b*))))))
+                ((cell
+                  (((f.ml (3 11) (3 12))
+                    (paragraph (((f.ml (3 11) (3 12)) (word a)))))))
+                 (cell
+                  (((f.ml (3 16) (3 19))
+                    (paragraph (((f.ml (3 16) (3 19)) (word *b*)))))))))
                (row
-                ((cell (((f.ml (4 11) (4 13)) (word *c))))
-                 (cell (((f.ml (4 15) (4 17)) (word d*))))))))
+                ((cell
+                  (((f.ml (4 11) (4 13))
+                    (paragraph (((f.ml (4 11) (4 13)) (word *c)))))))
+                 (cell
+                  (((f.ml (4 15) (4 17))
+                    (paragraph (((f.ml (4 15) (4 17)) (word d*)))))))))))
              (align ())))))
          (warnings ())) |}]
 
@@ -222,8 +247,12 @@ let%expect_test _ =
             (table (syntax light) (header ())
              (data
               ((row
-                ((cell (((f.ml (3 11) (3 13)) (word `a))))
-                 (cell (((f.ml (3 15) (3 16)) (word `))))))))
+                ((cell
+                  (((f.ml (3 11) (3 13))
+                    (paragraph (((f.ml (3 11) (3 13)) (word `a)))))))
+                 (cell
+                  (((f.ml (3 15) (3 16))
+                    (paragraph (((f.ml (3 15) (3 16)) (word `)))))))))))
              (align ())))))
          (warnings ())) |}]
 
@@ -241,8 +270,11 @@ let%expect_test _ =
             (table (syntax light) (header ())
              (data
               ((row
-                ((cell (((f.ml (4 9) (4 10)) (word x))))
-                 (cell (((f.ml (4 13) (4 14)) (word y))))))))
+                ((cell
+                  (((f.ml (4 9) (4 10)) (paragraph (((f.ml (4 9) (4 10)) (word x)))))))
+                 (cell
+                  (((f.ml (4 13) (4 14))
+                    (paragraph (((f.ml (4 13) (4 14)) (word y)))))))))))
              (align (center center))))))
          (warnings ())) |}]
 
@@ -260,11 +292,17 @@ let%expect_test _ =
               (table (syntax light) (header ())
                (data
                 ((row
-                  ((cell (((f.ml (3 9) (3 10)) (word x))))
-                   (cell (((f.ml (3 13) (3 14)) (word y))))))
+                  ((cell
+                    (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word x)))))))
+                   (cell
+                    (((f.ml (3 13) (3 14))
+                      (paragraph (((f.ml (3 13) (3 14)) (word y)))))))))
                  (row
-                  ((cell (((f.ml (4 9) (4 10)) (word x))))
-                   (cell (((f.ml (4 13) (4 14)) (word y))))))))
+                  ((cell
+                    (((f.ml (4 9) (4 10)) (paragraph (((f.ml (4 9) (4 10)) (word x)))))))
+                   (cell
+                    (((f.ml (4 13) (4 14))
+                      (paragraph (((f.ml (4 13) (4 14)) (word y)))))))))))
                (align ())))))
            (warnings ())) |}]
 
@@ -294,8 +332,10 @@ let%expect_test _ =
             (((f.ml (2 6) (5 7))
               (table (syntax light)
                (header
-                ((cell (((f.ml (3 9) (3 10)) (word x))))
-                 (cell (((f.ml (3 13) (3 14)) (word y))))))
+                ((cell
+                  (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word x)))))))
+                 (cell
+                  (((f.ml (3 13) (3 14)) (paragraph (((f.ml (3 13) (3 14)) (word y)))))))))
                (data ()) (align (center center))))))
            (warnings ())) |}]
 
@@ -313,10 +353,14 @@ let%expect_test _ =
           (((f.ml (2 6) (5 7))
             (table (syntax light)
              (header
-              ((cell (((f.ml (3 9) (3 10)) (word a))))
-               (cell (((f.ml (3 13) (3 14)) (word b))))
-               (cell (((f.ml (3 17) (3 18)) (word c))))
-               (cell (((f.ml (3 21) (3 22)) (word d))))))
+              ((cell
+                (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word a)))))))
+               (cell
+                (((f.ml (3 13) (3 14)) (paragraph (((f.ml (3 13) (3 14)) (word b)))))))
+               (cell
+                (((f.ml (3 17) (3 18)) (paragraph (((f.ml (3 17) (3 18)) (word c)))))))
+               (cell
+                (((f.ml (3 21) (3 22)) (paragraph (((f.ml (3 21) (3 22)) (word d)))))))))
              (data ()) (align (center left right center))))))
          (warnings ())) |}]
 
@@ -335,16 +379,27 @@ let%expect_test _ =
             (((f.ml (2 6) (6 7))
               (table (syntax light)
                (header
-                ((cell (((f.ml (3 8) (3 9)) (word a))))
-                 (cell (((f.ml (3 12) (3 13)) (word b))))
-                 (cell (((f.ml (3 16) (3 17)) (word c))))
-                 (cell (((f.ml (3 20) (3 21)) (word d))))))
+                ((cell
+                  (((f.ml (3 8) (3 9)) (paragraph (((f.ml (3 8) (3 9)) (word a)))))))
+                 (cell
+                  (((f.ml (3 12) (3 13)) (paragraph (((f.ml (3 12) (3 13)) (word b)))))))
+                 (cell
+                  (((f.ml (3 16) (3 17)) (paragraph (((f.ml (3 16) (3 17)) (word c)))))))
+                 (cell
+                  (((f.ml (3 20) (3 21)) (paragraph (((f.ml (3 20) (3 21)) (word d)))))))))
                (data
                 ((row
-                  ((cell (((f.ml (5 8) (5 9)) (word a))))
-                   (cell (((f.ml (5 12) (5 13)) (word b))))
-                   (cell (((f.ml (5 16) (5 17)) (word c))))
-                   (cell (((f.ml (5 20) (5 21)) (word d))))))))
+                  ((cell
+                    (((f.ml (5 8) (5 9)) (paragraph (((f.ml (5 8) (5 9)) (word a)))))))
+                   (cell
+                    (((f.ml (5 12) (5 13))
+                      (paragraph (((f.ml (5 12) (5 13)) (word b)))))))
+                   (cell
+                    (((f.ml (5 16) (5 17))
+                      (paragraph (((f.ml (5 16) (5 17)) (word c)))))))
+                   (cell
+                    (((f.ml (5 20) (5 21))
+                      (paragraph (((f.ml (5 20) (5 21)) (word d)))))))))))
                (align (center left right center))))))
            (warnings ())) |}]
 
@@ -367,16 +422,27 @@ let%expect_test _ =
             (((f.ml (2 6) (10 7))
               (table (syntax light)
                (header
-                ((cell (((f.ml (4 9) (4 10)) (word a))))
-                 (cell (((f.ml (4 13) (4 14)) (word b))))
-                 (cell (((f.ml (4 17) (4 18)) (word c))))
-                 (cell (((f.ml (4 21) (4 22)) (word d))))))
+                ((cell
+                  (((f.ml (4 9) (4 10)) (paragraph (((f.ml (4 9) (4 10)) (word a)))))))
+                 (cell
+                  (((f.ml (4 13) (4 14)) (paragraph (((f.ml (4 13) (4 14)) (word b)))))))
+                 (cell
+                  (((f.ml (4 17) (4 18)) (paragraph (((f.ml (4 17) (4 18)) (word c)))))))
+                 (cell
+                  (((f.ml (4 21) (4 22)) (paragraph (((f.ml (4 21) (4 22)) (word d)))))))))
                (data
                 ((row
-                  ((cell (((f.ml (8 9) (8 10)) (word a))))
-                   (cell (((f.ml (8 13) (8 14)) (word b))))
-                   (cell (((f.ml (8 17) (8 18)) (word c))))
-                   (cell (((f.ml (8 21) (8 22)) (word d))))))))
+                  ((cell
+                    (((f.ml (8 9) (8 10)) (paragraph (((f.ml (8 9) (8 10)) (word a)))))))
+                   (cell
+                    (((f.ml (8 13) (8 14))
+                      (paragraph (((f.ml (8 13) (8 14)) (word b)))))))
+                   (cell
+                    (((f.ml (8 17) (8 18))
+                      (paragraph (((f.ml (8 17) (8 18)) (word c)))))))
+                   (cell
+                    (((f.ml (8 21) (8 22))
+                      (paragraph (((f.ml (8 21) (8 22)) (word d)))))))))))
                (align (center center center center))))))
            (warnings ())) |}]
 
@@ -395,17 +461,29 @@ let%expect_test _ =
               (table (syntax light)
                (header
                 ((cell
-                  (((f.ml (3 9) (3 14)) (italic (((f.ml (3 12) (3 13)) (word a)))))
-                   ((f.ml (3 15) (3 28)) (google.com ()))
-                   ((f.ml (3 29) (3 31)) (word "\\t"))))
+                  (((f.ml (3 9) (3 14))
+                    (paragraph
+                     (((f.ml (3 9) (3 14)) (italic (((f.ml (3 12) (3 13)) (word a))))))))
+                   ((f.ml (3 15) (3 28))
+                    (paragraph (((f.ml (3 15) (3 28)) (google.com ())))))
+                   ((f.ml (3 29) (3 31))
+                    (paragraph (((f.ml (3 29) (3 31)) (word "\\t")))))))
                  (cell ())
                  (cell
-                  (((f.ml (3 36) (3 41)) (math_span b))
-                   ((f.ml (3 42) (3 47)) (emphasis (((f.ml (3 45) (3 46)) (word c)))))
-                   ((f.ml (3 48) (3 57)) (raw_markup () " xyz "))))
+                  (((f.ml (3 36) (3 41))
+                    (paragraph (((f.ml (3 36) (3 41)) (math_span b)))))
+                   ((f.ml (3 42) (3 47))
+                    (paragraph
+                     (((f.ml (3 42) (3 47))
+                       (emphasis (((f.ml (3 45) (3 46)) (word c))))))))
+                   ((f.ml (3 48) (3 57))
+                    (paragraph (((f.ml (3 48) (3 57)) (raw_markup () " xyz ")))))))
                  (cell
-                  (((f.ml (3 60) (3 65)) (bold (((f.ml (3 63) (3 64)) (word d)))))
-                   ((f.ml (3 66) (3 71)) (code_span foo))))))
+                  (((f.ml (3 60) (3 65))
+                    (paragraph
+                     (((f.ml (3 60) (3 65)) (bold (((f.ml (3 63) (3 64)) (word d))))))))
+                   ((f.ml (3 66) (3 71))
+                    (paragraph (((f.ml (3 66) (3 71)) (code_span foo)))))))))
                (data ()) (align (center center center center))))))
            (warnings ())) |}]
 
@@ -423,10 +501,14 @@ let%expect_test _ =
           (((f.ml (2 7) (5 8))
             (table (syntax light)
              (header
-              ((cell (((f.ml (3 11) (3 12)) (word a))))
-               (cell (((f.ml (3 15) (3 16)) (word b))))
-               (cell (((f.ml (3 18) (3 19)) (word c))))
-               (cell (((f.ml (3 21) (3 22)) (word d))))))
+              ((cell
+                (((f.ml (3 11) (3 12)) (paragraph (((f.ml (3 11) (3 12)) (word a)))))))
+               (cell
+                (((f.ml (3 15) (3 16)) (paragraph (((f.ml (3 15) (3 16)) (word b)))))))
+               (cell
+                (((f.ml (3 18) (3 19)) (paragraph (((f.ml (3 18) (3 19)) (word c)))))))
+               (cell
+                (((f.ml (3 21) (3 22)) (paragraph (((f.ml (3 21) (3 22)) (word d)))))))))
              (data ()) (align (center right left center))))))
          (warnings ())) |}]
 
@@ -449,24 +531,45 @@ let%expect_test _ =
           (((f.ml (2 6) (10 7))
             (table (syntax light)
              (header
-              ((cell ()) (cell (((f.ml (3 9) (3 10)) (word a))))
-               (cell (((f.ml (3 11) (3 12)) (word b))))))
+              ((cell ())
+               (cell
+                (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word a)))))))
+               (cell
+                (((f.ml (3 11) (3 12)) (paragraph (((f.ml (3 11) (3 12)) (word b)))))))))
              (data
               ((row
-                ((cell (((f.ml (5 8) (5 9)) (word c))))
-                 (cell (((f.ml (5 10) (5 11)) (word d))))))
+                ((cell
+                  (((f.ml (5 8) (5 9)) (paragraph (((f.ml (5 8) (5 9)) (word c)))))))
+                 (cell
+                  (((f.ml (5 10) (5 11))
+                    (paragraph (((f.ml (5 10) (5 11)) (word d)))))))))
                (row
-                ((cell (((f.ml (6 8) (6 10)) (word cc))))
-                 (cell (((f.ml (6 11) (6 13)) (word dd))))))
+                ((cell
+                  (((f.ml (6 8) (6 10))
+                    (paragraph (((f.ml (6 8) (6 10)) (word cc)))))))
+                 (cell
+                  (((f.ml (6 11) (6 13))
+                    (paragraph (((f.ml (6 11) (6 13)) (word dd)))))))))
                (row
-                ((cell (((f.ml (7 8) (7 10)) (word -:))))
-                 (cell (((f.ml (7 11) (7 14)) (word :-:))))))
+                ((cell
+                  (((f.ml (7 8) (7 10))
+                    (paragraph (((f.ml (7 8) (7 10)) (word -:)))))))
+                 (cell
+                  (((f.ml (7 11) (7 14))
+                    (paragraph (((f.ml (7 11) (7 14)) (word :-:)))))))))
                (row
-                ((cell (((f.ml (8 8) (8 9)) (word e))))
-                 (cell (((f.ml (8 10) (8 11)) (word f))))))
+                ((cell
+                  (((f.ml (8 8) (8 9)) (paragraph (((f.ml (8 8) (8 9)) (word e)))))))
+                 (cell
+                  (((f.ml (8 10) (8 11))
+                    (paragraph (((f.ml (8 10) (8 11)) (word f)))))))))
                (row
-                ((cell (((f.ml (9 8) (9 9)) (word g))))
-                 (cell (((f.ml (9 10) (9 11)) (word h)))) (cell ())))))
+                ((cell
+                  (((f.ml (9 8) (9 9)) (paragraph (((f.ml (9 8) (9 9)) (word g)))))))
+                 (cell
+                  (((f.ml (9 10) (9 11))
+                    (paragraph (((f.ml (9 10) (9 11)) (word h)))))))
+                 (cell ())))))
              (align (left right))))))
          (warnings ())) |}]
 
@@ -483,8 +586,11 @@ let%expect_test _ =
         ((output
           (((f.ml (2 11) (5 12))
             (table (syntax light)
-             (header ((cell ()) (cell (((f.ml (3 23) (3 24)) (word b)))))) (data ())
-             (align (center center))))))
+             (header
+              ((cell ())
+               (cell
+                (((f.ml (3 23) (3 24)) (paragraph (((f.ml (3 23) (3 24)) (word b)))))))))
+             (data ()) (align (center center))))))
          (warnings
           ( "File \"f.ml\", line 3, characters 13-20:\
            \n'{[...]}' (code block) is not allowed in '{t ...}' (table)."))) |}]
@@ -504,8 +610,10 @@ let%expect_test _ =
           (((f.ml (2 11) (6 12))
             (table (syntax light)
              (header
-              ((cell (((f.ml (4 13) (4 14)) (word a))))
-               (cell (((f.ml (4 17) (4 18)) (word b))))))
+              ((cell
+                (((f.ml (4 13) (4 14)) (paragraph (((f.ml (4 13) (4 14)) (word a)))))))
+               (cell
+                (((f.ml (4 17) (4 18)) (paragraph (((f.ml (4 17) (4 18)) (word b)))))))))
              (data ()) (align (center center))))))
          (warnings
           ( "File \"f.ml\", line 3, characters 11-18:\

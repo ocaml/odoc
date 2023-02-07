@@ -55,9 +55,7 @@ type nestable_block_element =
     {{:https://ocaml.org/releases/4.12/htmlman/ocamldoc.html#sss:ocamldoc-list}manual}).
     *)
 
-and table =
-  [ `Light of inline_element abstract_table
-  | `Heavy of nestable_block_element abstract_table ]
+and table = nestable_block_element abstract_table * [ `Light | `Heavy ]
 
 type internal_tag =
   [ `Canonical of string with_location | `Inline | `Open | `Closed ]
