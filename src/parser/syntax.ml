@@ -130,7 +130,7 @@ module Reader = struct
     consume ()
 
   module Infix = struct
-    let ( let>> ) consume if_token =
+    let ( >>> ) consume if_token =
       match consume with
       | `End (ret, loc) -> (ret, loc)
       | `Token t -> if_token t
@@ -1250,7 +1250,7 @@ and explicit_list_items :
    which is consumed. *)
 and light_table ~parent_markup ~parent_markup_location input =
   let rec consume_rows acc ~last_loc =
-    let>> next_token = Reader.until_rbrace input acc in
+    Reader.until_rbrace input acc >>> fun next_token ->
     match next_token.Loc.value with
     | `Bar | #token_that_always_begins_an_inline_element -> (
         let next, row, last_loc =
@@ -1315,7 +1315,7 @@ and light_table_row ~parent_markup ~last_loc input =
    which is consumed. *)
 and heavy_table ~parent_markup ~parent_markup_location input =
   let rec consume_rows acc ~last_loc =
-    let>> next_token = Reader.until_rbrace input acc in
+    Reader.until_rbrace input acc >>> fun next_token ->
     match next_token.Loc.value with
     | `Begin_table_row as token ->
         junk input;
@@ -1340,7 +1340,7 @@ and heavy_table ~parent_markup ~parent_markup_location input =
    which is consumed. *)
 and heavy_table_row ~parent_markup input =
   let rec consume_cell_items acc =
-    let>> next_token = Reader.until_rbrace input acc in
+    Reader.until_rbrace input acc >>> fun next_token ->
     match next_token.Loc.value with
     | `Begin_table_header as token -> (
         junk input;
@@ -1379,7 +1379,7 @@ and heavy_table_row ~parent_markup input =
    which is consumed. *)
 and heavy_table_header ~parent_markup input =
   let rec consume_items acc =
-    let>> next_token = Reader.until_rbrace input acc in
+    Reader.until_rbrace input acc >>> fun next_token ->
     match next_token.Loc.value with
     | `Begin_paragraph_style style as token ->
         junk input;
