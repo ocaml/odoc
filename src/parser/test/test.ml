@@ -405,7 +405,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
-  let module Plus_minus_words = struct
+  let module Plus_minus_bar_words = struct
     let minus_in_word =
       test "foo-bar";
       [%expect
@@ -442,6 +442,36 @@ let%expect_test _ =
             (paragraph
              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
               ((f.ml (1 4) (1 5)) (word +)))))))
+         (warnings ())) |}]
+
+    let bar_in_word =
+      test "foo|bar";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 7))
+            (paragraph
+             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) (word |))
+              ((f.ml (1 4) (1 7)) (word bar)))))))
+         (warnings ())) |}]
+
+    let escaped_bar_in_word =
+      test "foo\\|bar";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word "foo\\|bar")))))))
+         (warnings ())) |}]
+
+    let bar_as_word =
+      test "foo |";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 5))
+            (paragraph
+             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
+              ((f.ml (1 4) (1 5)) (word |)))))))
          (warnings ())) |}]
 
     let negative_number =

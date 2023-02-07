@@ -204,6 +204,9 @@ let rec inline_element :
   | `Plus ->
       junk input;
       Loc.at location (`Word "+")
+  | `Bar ->
+      junk input;
+      Loc.at location (`Word "|")
   | (`Code_span _ | `Math_span _ | `Raw_markup _) as token ->
       junk input;
       Loc.at location token
@@ -364,6 +367,11 @@ and delimited_inline_element_list :
         junk input;
         let element = Loc.same next_token (`Space ws) in
         consume_elements ~at_start_of_line:true (element :: acc)
+    | `Bar as token ->
+        let acc =
+          inline_element input next_token.location ~context token :: acc
+        in
+        consume_elements ~at_start_of_line:false acc
     | (`Minus | `Plus) as bullet ->
         (if at_start_of_line then
          let suggestion =
@@ -457,8 +465,8 @@ let paragraph : input -> Ast.nestable_block_element with_location =
    fun acc ->
     let next_token = peek input in
     match next_token.value with
-    | (`Space _ | `Minus | `Plus | #token_that_always_begins_an_inline_element)
-      as token ->
+    | ( `Space _ | `Minus | `Plus | `Bar
+      | #token_that_always_begins_an_inline_element ) as token ->
         let element =
           inline_element input next_token.location ~context:Outside_light_table
             token
@@ -748,19 +756,6 @@ let rec block_element_list :
         |> add_warning input;
         junk input;
         consume_block_elements ~parsed_a_tag where_in_line acc
-    (* Bars can never appear directly in block content.
-       They can only appear inside [{t ...}]. *)
-    | { value = `Bar as token; location } ->
-        let suggestion =
-          Printf.sprintf "move %s into %s." (Token.print token)
-            (Token.describe `Begin_table_light)
-        in
-        Parse_error.not_allowed ~what:(Token.describe token)
-          ~in_what:(Token.describe parent_markup)
-          ~suggestion location
-        |> add_warning input;
-        junk input;
-        consume_block_elements ~parsed_a_tag where_in_line acc
     (* Tags. These can appear at the top level only. Also, once one tag is seen,
        the only top-level elements allowed are more tags. *)
     | { value = `Tag tag as token; location } as next_token -> (
@@ -872,8 +867,8 @@ let rec block_element_list :
                 let tag = Loc.at location (`Tag tag) in
                 consume_block_elements ~parsed_a_tag:true `After_text
                   (tag :: acc)))
-    | { value = #token_that_always_begins_an_inline_element; _ } as next_token
-      ->
+    | ( { value = #token_that_always_begins_an_inline_element; _ }
+      | { value = `Bar; _ } ) as next_token ->
         warn_if_after_tags next_token;
         warn_if_after_text next_token;
 
