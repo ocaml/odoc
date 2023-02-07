@@ -7,6 +7,8 @@ module Option = struct
     | None -> failwith "Option.value_exn None"
     | Some x -> x
 
+  let value ~default = function None -> default | Some x -> x
+
   let join_list l =
     if List.for_all is_some l then Some (List.map value_exn l) else None
 end

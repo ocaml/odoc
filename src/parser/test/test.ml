@@ -97,9 +97,7 @@ module Ast_to_sexp = struct
                 map "cell" cell @@ at.at (f at) );
               ( map "data" data @@ fun row ->
                 map "row" row @@ fun cell -> map "cell" cell @@ at.at (f at) );
-              (map "align" align @@ function
-               | Some a -> alignment a
-               | None -> Atom "none");
+              map "align" align @@ alignment;
             ]
         in
         match t with
