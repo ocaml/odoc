@@ -40,22 +40,24 @@ let peek input =
 
 module Table = struct
   module Light_syntax = struct
+    let default_align = `Center
+
     let valid_align = function
       | [ { Loc.value = `Word w; _ } ] -> (
           match String.length w with
-          | 0 -> Some None
+          | 0 -> Some default_align
           | 1 -> (
               match w with
-              | "-" -> Some None
-              | ":" -> Some (Some `Center)
+              | "-" -> Some default_align
+              | ":" -> Some `Center
               | _ -> None)
           | len ->
               if String.for_all (Char.equal '-') (String.sub w 1 (len - 2)) then
                 match (String.get w 0, String.get w (len - 1)) with
-                | ':', ':' -> Some (Some `Center)
-                | ':', '-' -> Some (Some `Left)
-                | '-', ':' -> Some (Some `Right)
-                | '-', '-' -> Some None
+                | ':', ':' -> Some `Center
+                | ':', '-' -> Some `Left
+                | '-', ':' -> Some `Right
+                | '-', '-' -> Some default_align
                 | _ -> None
               else None)
       | _ -> None
@@ -90,8 +92,7 @@ module Table = struct
     let valid_header_row row =
       List.map
         (function
-          | `Header (Some x), y -> Some (Some x, y)
-          | `Header None, y -> Some (None, y)
+          | `Header align, x -> Some (Option.value align ~default:`Center, x)
           | `Data, _ -> None)
         row
       |> Option.join_list

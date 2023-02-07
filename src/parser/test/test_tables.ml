@@ -37,7 +37,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 17))
-            (table (syntax heavy) (header ((cell ()))) (data ()) (align (none))))))
+            (table (syntax heavy) (header ((cell ()))) (data ()) (align (center))))))
          (warnings ())) |}]
 
     let multiple_headers =
@@ -47,7 +47,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 37))
             (table (syntax heavy) (header ((cell ())))
-             (data ((row ((cell ()))) (row ((cell ()))))) (align (none))))))
+             (data ((row ((cell ()))) (row ((cell ()))))) (align (center))))))
          (warnings ())) |}]
 
     let complex_table =
@@ -129,8 +129,8 @@ let%expect_test _ =
                         ((cell (((f.ml (24 17) (24 18)) (word 1))))
                          (cell (((f.ml (24 21) (24 22)) (word 2))))
                          (cell (((f.ml (24 25) (24 26)) (word 3))))))))
-                     (align (none none none))))))))))
-             (align (none none))))))
+                     (align (center center center))))))))))
+             (align (center center))))))
          (warnings ())) |}]
 
     let align =
@@ -243,7 +243,7 @@ let%expect_test _ =
               ((row
                 ((cell (((f.ml (4 9) (4 10)) (word x))))
                  (cell (((f.ml (4 13) (4 14)) (word y))))))))
-             (align (none none))))))
+             (align (center center))))))
          (warnings ())) |}]
 
     let no_align =
@@ -278,7 +278,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (2 6) (4 7))
-            (table (syntax light) (header ()) (data ()) (align (none none))))))
+            (table (syntax light) (header ()) (data ()) (align (center center))))))
          (warnings ())) |}]
 
     let no_data =
@@ -296,7 +296,7 @@ let%expect_test _ =
                (header
                 ((cell (((f.ml (3 9) (3 10)) (word x))))
                  (cell (((f.ml (3 13) (3 14)) (word y))))))
-               (data ()) (align (none none))))))
+               (data ()) (align (center center))))))
            (warnings ())) |}]
 
     let alignment =
@@ -317,7 +317,7 @@ let%expect_test _ =
                (cell (((f.ml (3 13) (3 14)) (word b))))
                (cell (((f.ml (3 17) (3 18)) (word c))))
                (cell (((f.ml (3 21) (3 22)) (word d))))))
-             (data ()) (align (none left right center))))))
+             (data ()) (align (center left right center))))))
          (warnings ())) |}]
 
     let no_bars =
@@ -345,7 +345,7 @@ let%expect_test _ =
                    (cell (((f.ml (5 12) (5 13)) (word b))))
                    (cell (((f.ml (5 16) (5 17)) (word c))))
                    (cell (((f.ml (5 20) (5 21)) (word d))))))))
-               (align (none left right center))))))
+               (align (center left right center))))))
            (warnings ())) |}]
 
     let light_table_new_lines =
@@ -377,7 +377,7 @@ let%expect_test _ =
                    (cell (((f.ml (8 13) (8 14)) (word b))))
                    (cell (((f.ml (8 17) (8 18)) (word c))))
                    (cell (((f.ml (8 21) (8 22)) (word d))))))))
-               (align (none none none none))))))
+               (align (center center center center))))))
            (warnings ())) |}]
 
     let light_table_markup =
@@ -406,7 +406,7 @@ let%expect_test _ =
                  (cell
                   (((f.ml (3 60) (3 65)) (bold (((f.ml (3 63) (3 64)) (word d)))))
                    ((f.ml (3 66) (3 71)) (code_span foo))))))
-               (data ()) (align (none none none none))))))
+               (data ()) (align (center center center center))))))
            (warnings ())) |}]
 
     let no_space =
@@ -427,7 +427,7 @@ let%expect_test _ =
                (cell (((f.ml (3 15) (3 16)) (word b))))
                (cell (((f.ml (3 18) (3 19)) (word c))))
                (cell (((f.ml (3 21) (3 22)) (word d))))))
-             (data ()) (align (none right left center))))))
+             (data ()) (align (center right left center))))))
          (warnings ())) |}]
 
     let multiple_headers =
@@ -484,7 +484,7 @@ let%expect_test _ =
           (((f.ml (2 11) (5 12))
             (table (syntax light)
              (header ((cell ()) (cell (((f.ml (3 23) (3 24)) (word b)))))) (data ())
-             (align (none none))))))
+             (align (center center))))))
          (warnings
           ( "File \"f.ml\", line 3, characters 13-20:\
            \n'{[...]}' (code block) is not allowed in '{t ...}' (table)."))) |}]
@@ -506,7 +506,7 @@ let%expect_test _ =
              (header
               ((cell (((f.ml (4 13) (4 14)) (word a))))
                (cell (((f.ml (4 17) (4 18)) (word b))))))
-             (data ()) (align (none none))))))
+             (data ()) (align (center center))))))
          (warnings
           ( "File \"f.ml\", line 3, characters 11-18:\
            \n'{[...]}' (code block) is not allowed in '{t ...}' (table)."))) |}]

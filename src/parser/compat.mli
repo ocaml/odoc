@@ -5,6 +5,7 @@ module Option : sig
   val is_some : 'a option -> bool
   (** [is_some o] is [true] if and only if [o] is [Some o]. *)
 
+  val value : default:'a -> 'a option -> 'a
   val join_list : 'a option list -> 'a list option
 end
 
