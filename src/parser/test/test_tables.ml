@@ -681,5 +681,65 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 3, characters 11-18:\
            \n'{[...]}' (code block) is not allowed in '{t ...}' (table)."))) |}]
+
+    let more_cells_later =
+      test
+        {|
+      {t
+       | x | y |
+       |---|---|
+       | x | y | z |
+      }
+      |};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 6) (6 7))
+            (table (syntax light)
+             (data
+              ((row
+                ((header
+                  (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word x)))))))
+                 (header
+                  (((f.ml (3 13) (3 14))
+                    (paragraph (((f.ml (3 13) (3 14)) (word y)))))))))
+               (row
+                ((data
+                  (((f.ml (5 9) (5 10)) (paragraph (((f.ml (5 9) (5 10)) (word x)))))))
+                 (data
+                  (((f.ml (5 13) (5 14))
+                    (paragraph (((f.ml (5 13) (5 14)) (word y)))))))
+                 (data
+                  (((f.ml (5 17) (5 18))
+                    (paragraph (((f.ml (5 17) (5 18)) (word z)))))))))))
+             (align (center center))))))
+         (warnings ())) |}]
+
+    let less_cells_later =
+      test
+        {|
+      {t
+       | x | y |
+       |---|---|
+       x 
+      }
+      |};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 6) (6 7))
+            (table (syntax light)
+             (data
+              ((row
+                ((header
+                  (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word x)))))))
+                 (header
+                  (((f.ml (3 13) (3 14))
+                    (paragraph (((f.ml (3 13) (3 14)) (word y)))))))))
+               (row
+                ((data
+                  (((f.ml (5 7) (5 8)) (paragraph (((f.ml (5 7) (5 8)) (word x)))))))))))
+             (align (center center))))))
+         (warnings ())) |}]
   end in
   ()
