@@ -1,4 +1,3 @@
 (library
  (name compatcmdliner)
- (modules compatcmdliner)
  (libraries cmdliner))

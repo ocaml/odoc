@@ -22,4 +22,4 @@
  (preprocess
   (action
    (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
- (libraries odoc_model odoc-parser syntax_highlighter result fpath))
+ (libraries odoc_model odoc-parser syntax_highlighter))
