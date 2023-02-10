@@ -85,18 +85,17 @@ module Ast_to_sexp = struct
           |> fun items -> List items
         in
         List [ Atom kind; Atom weight; items ]
-    | `Table ((header, data, align), s) ->
+    | `Table ((data, align), s) ->
         let syntax = function `Light -> "light" | `Heavy -> "heavy" in
+        let kind = function `Header -> "header" | `Data -> "data" in
         let map name x f = List [ Atom name; List (List.map f x) ] in
         List
           [
             Atom "table";
             List [ Atom "syntax"; Atom (syntax s) ];
-            ( map "header" header @@ fun cell ->
-              map "cell" cell @@ at.at (nestable_block_element at) );
             ( map "data" data @@ fun row ->
-              map "row" row @@ fun cell ->
-              map "cell" cell @@ at.at (nestable_block_element at) );
+              map "row" row @@ fun (cell, k) ->
+              map (kind k) cell @@ at.at (nestable_block_element at) );
             map "align" align @@ alignment;
           ]
 
