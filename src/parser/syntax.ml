@@ -475,7 +475,7 @@ let paragraph : input -> Ast.nestable_block_element with_location =
 (* {3 Helper types} *)
 
 (* The interpretation of tokens in the block parser depends on where on a line
-    each token appears. The five possible "locations" are:
+    each token appears. The seven possible "locations" are:
 
     - [`At_start_of_line], when only whitespace has been read on the current
       line.
