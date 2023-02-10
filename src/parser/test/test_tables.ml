@@ -37,7 +37,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 17))
-            (table (syntax heavy) (header ((cell ()))) (data ()) (align (center))))))
+            (table (syntax heavy) (header ((cell ()))) (data ()) (align ())))))
          (warnings ())) |}]
 
     let multiple_headers =
@@ -47,7 +47,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 37))
             (table (syntax heavy) (header ((cell ())))
-             (data ((row ((cell ()))) (row ((cell ()))))) (align (center))))))
+             (data ((row ((cell ()))) (row ((cell ()))))) (align ())))))
          (warnings ())) |}]
 
     let complex_table =
@@ -142,33 +142,7 @@ let%expect_test _ =
                           (((f.ml (24 25) (24 26))
                             (paragraph (((f.ml (24 25) (24 26)) (word 3)))))))))))
                      (align (center center center))))))))))
-             (align (center center))))))
-         (warnings ())) |}]
-
-    let align =
-      test
-        {|
-        {table
-          {tr
-            {th {L a}}
-            {th {C b}}
-            {th {R c}}
-          }
-        }
-      |};
-      [%expect
-        {|
-        ((output
-          (((f.ml (2 8) (8 9))
-            (table (syntax heavy)
-             (header
-              ((cell
-                (((f.ml (4 19) (4 20)) (paragraph (((f.ml (4 19) (4 20)) (word a)))))))
-               (cell
-                (((f.ml (5 19) (5 20)) (paragraph (((f.ml (5 19) (5 20)) (word b)))))))
-               (cell
-                (((f.ml (6 19) (6 20)) (paragraph (((f.ml (6 19) (6 20)) (word c)))))))))
-             (data ()) (align (left center right))))))
+             (align ())))))
          (warnings ())) |}]
   end in
   ()

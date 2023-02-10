@@ -93,31 +93,25 @@ module Table = struct
   end
 
   module Heavy_syntax = struct
-    let create ~header ~data ~align : Ast.table = ((header, data, align), `Heavy)
+    let create ~header ~data : Ast.table = ((header, data, []), `Heavy)
 
     let valid_header_row row =
-      List.map
-        (function
-          | `Header align, x -> Some (Option.value align ~default:`Center, x)
-          | `Data, _ -> None)
-        row
+      List.map (function `Header, x -> Some x | `Data, _ -> None) row
       |> Option.join_list
 
     let from_grid grid : Ast.table =
       match grid with
-      | [] -> create ~header:[] ~data:[] ~align:[]
+      | [] -> create ~header:[] ~data:[]
       | row1 :: rows2_N ->
-          let header, data, align =
+          let header, data =
             (* If the first line is the header row, everything else is data. *)
             match valid_header_row row1 with
-            | Some header ->
-                let align, header = List.split header in
-                (header, rows2_N, align)
+            | Some header -> (header, rows2_N)
             (* Otherwise everything is considered data. *)
-            | None -> ([], grid, [])
+            | None -> ([], grid)
           in
           let data = List.map (List.map snd) data in
-          create ~header ~data ~align
+          create ~header ~data
   end
 end
 
@@ -1349,14 +1343,12 @@ and heavy_table_row ~parent_markup input =
   let rec consume_cell_items acc =
     Reader.until_rbrace input acc >>> fun next_token ->
     match next_token.Loc.value with
-    | `Begin_table_header as token -> (
+    | `Begin_table_header as token ->
         junk input;
         let content, _brace_location =
           heavy_table_header input ~parent_markup:token
         in
-        match content with
-        | None -> consume_cell_items ((`Header None, []) :: acc)
-        | Some (x, b) -> consume_cell_items ((`Header x, b) :: acc))
+        consume_cell_items ((`Header, content) :: acc)
     | `Begin_table_data as token ->
         junk input;
         let content, token_after_list_item, _where_in_line =
@@ -1378,8 +1370,7 @@ and heavy_table_row ~parent_markup input =
   in
   consume_cell_items []
 
-(* Consumes a table header (that might start with '{L ...}', '{C ...}' or '{R ... }',
-   which are represented by [`Begin_paragraph_style _] tokens).
+(* Consumes a table header.
 
    This function is called immediately after '{th' ([`Begin_table_header]) is
    read. The only "valid" way to exit is by reading a [`Right_brace] token,
@@ -1387,40 +1378,19 @@ and heavy_table_row ~parent_markup input =
 and heavy_table_header ~parent_markup input =
   let rec consume_items acc =
     Reader.until_rbrace input acc >>> fun next_token ->
-    match next_token.Loc.value with
-    | `Begin_paragraph_style style as token ->
-        junk input;
-        (match acc with
-        | Some _ ->
-            Parse_error.not_allowed next_token.location
-              ~what:(Token.describe token)
-              ~in_what:(Token.describe parent_markup)
-            |> add_warning input
-        | None -> ());
-        let content, token_after_list_item, _where_in_line =
-          block_element_list In_table_header ~parent_markup input
-        in
-        (match token_after_list_item.value with
-        | `Right_brace -> junk input
-        | `End ->
-            Parse_error.not_allowed token_after_list_item.location
-              ~what:(Token.describe `End) ~in_what:(Token.describe token)
-            |> add_warning input);
-        consume_items (Some (Some style, content))
-    | token ->
-        (match acc with
-        | Some _ ->
-            Parse_error.not_allowed next_token.location
-              ~what:(Token.describe token)
-              ~in_what:(Token.describe parent_markup)
-            |> add_warning input
-        | None -> ());
-        let content, _token_after_list_item, _where_in_line =
-          block_element_list In_table_header ~parent_markup input
-        in
-        consume_items (Some (None, content))
+    (match acc with
+    | _ :: _ ->
+        Parse_error.not_allowed next_token.location
+          ~what:(Token.describe next_token.value)
+          ~in_what:(Token.describe parent_markup)
+        |> add_warning input
+    | [] -> ());
+    let content, _token_after_list_item, _where_in_line =
+      block_element_list In_table_header ~parent_markup input
+    in
+    consume_items content
   in
-  consume_items None
+  consume_items []
 
 (* {2 Entry point} *)
 
