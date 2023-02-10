@@ -260,9 +260,16 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     ~warnings_options ~source input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
   (match source with
-  | Some (parent, name) ->
-      parse_parent_explicit resolver parent >>= fun (parent, _) ->
-      Ok (Some (parent, name))
+  | Some (parent, name) -> (
+      Odoc_file.load_root parent >>= fun parent_root ->
+      match parent_root.Root.id with
+      | { Paths.Identifier.iv = `Page _; _ } as parent_id ->
+          Ok (Some (parent_id, name))
+      | { iv = `LeafPage _; _ } ->
+          Error (`Msg "Specified source-parent doesn't have any children.")
+      | { iv = `Root _; _ } ->
+          Error
+            (`Msg "Specified source-parent should be a page but is a module."))
   | None -> Ok None)
   >>= fun source ->
   let ext = Fs.File.get_ext input in

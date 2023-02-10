@@ -1,0 +1,3 @@
+{0 lib/foo/}
+
+- {{:foo.ml.html}foo.ml}

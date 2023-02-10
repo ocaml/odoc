@@ -5,8 +5,8 @@ Similar to Astring library.
   $ ocamlc -c a.mli -bin-annot -I .
   $ ocamlc -c a.ml -bin-annot -I .
 
-  $ odoc compile --hidden --source-name a_x.ml --source-parent page-root -I . a_x.cmt
-  $ odoc compile --source-name a.ml --source-parent page-root -I . a.cmti
+  $ odoc compile --hidden --source-name a_x.ml --source-parent-file page-root.odoc -I . a_x.cmt
+  $ odoc compile --source-name a.ml --source-parent-file page-root.odoc -I . a.cmti
 
   $ odoc link -I . a_x.odoc
   $ odoc link -I . a.odoc

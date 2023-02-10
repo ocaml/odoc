@@ -29,7 +29,8 @@ let convert_directory ?(create = false) () : Fs.Directory.t Arg.conv =
   let odoc_dir_printer fmt dir = dir_printer fmt (Fs.Directory.to_string dir) in
   (odoc_dir_parser, odoc_dir_printer)
 
-let convert_fs_file =
+(** On top of the conversion 'file' that checks that the passed file exists. *)
+let convert_fpath =
   let parse inp =
     match Arg.(conv_parser file) inp with
     | Ok s -> Result.Ok (Fs.File.of_string s)
@@ -157,8 +158,8 @@ end = struct
         Fs.File.(set_ext ".odoc" output)
 
   let compile hidden directories resolve_fwd_refs dst package_opt
-      parent_name_opt open_modules children input warnings_options source_parent
-      source_name =
+      parent_name_opt open_modules children input warnings_options
+      source_parent_file source_name =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -177,13 +178,13 @@ end = struct
               "Either --package or --parent should be specified, not both")
     in
     let source =
-      match (source_parent, source_name) with
+      match (source_parent_file, source_name) with
       | Some parent, Some name -> Ok (Some (parent, name))
       | Some _, None | None, Some _ ->
           Error
             (`Cli_error
-              "--source-parent and --source-name must be passed at the same \
-               time.")
+              "--source-parent-file and --source-name must be passed at the \
+               same time.")
       | None, None -> Ok None
     in
     parent_cli_spec >>= fun parent_cli_spec ->
@@ -215,14 +216,15 @@ end = struct
     Arg.(
       value & opt_all string default & info ~docv:"CHILD" ~doc [ "c"; "child" ])
 
-  let source_parent =
+  let source_parent_file =
     let doc =
-      "Parent of the page containing the source code for this compilation unit."
+      ".odoc file of the parent of the page containing the source code for \
+       this compilation unit."
     in
     Arg.(
       value
-      & opt (some string) None
-      & info [ "source-parent" ] ~doc ~docv:"PARENT")
+      & opt (some convert_fpath) None
+      & info [ "source-parent-file" ] ~doc ~docv:"PARENT.odoc")
 
   let source_name =
     let doc =
@@ -257,7 +259,7 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ package_opt $ parent_opt $ open_modules $ children $ input
-       $ warnings_options $ source_parent $ source_name))
+       $ warnings_options $ source_parent_file $ source_name))
 
   let info ~docs =
     let man =
@@ -611,7 +613,7 @@ module Odoc_html_args = struct
     in
     Arg.(
       value
-      & opt (some convert_fs_file) None
+      & opt (some convert_fpath) None
       & info [ "source" ] ~doc ~docv:"file.ml")
 
   let extra_args =
