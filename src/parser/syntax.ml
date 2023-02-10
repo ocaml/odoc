@@ -74,7 +74,7 @@ module Table = struct
     let with_kind kind : 'a with_location list list -> 'a Ast.row =
       List.map (fun c -> (c, kind))
 
-    let from_grid grid : Ast.table =
+    let from_raw_data grid : Ast.table =
       match grid with
       | [] -> create ~grid:[] ~align:[]
       | row1 :: rows2_N -> (
@@ -1253,7 +1253,7 @@ and light_table ~parent_markup ~parent_markup_location input =
   in
   let rows, brace_location = consume_rows [] ~last_loc:parent_markup_location in
   let grid = List.rev rows in
-  (Table.Light_syntax.from_grid grid, brace_location)
+  (Table.Light_syntax.from_raw_data grid, brace_location)
 
 (* Consumes a table row that might start with [`Bar]. *)
 and light_table_row ~parent_markup ~last_loc input =
