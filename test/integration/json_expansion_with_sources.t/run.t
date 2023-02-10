@@ -3,8 +3,8 @@ Test the JSON output in the presence of expanded modules.
   $ odoc compile --child module-a root.mld
   $ ocamlc -c -bin-annot -o main__A.cmo a.ml -I .
   $ ocamlc -c -bin-annot main.ml -I .
-  $ odoc compile --source-name a.ml --source-parent page-root -I . main__A.cmt
-  $ odoc compile --source-name main.ml --source-parent page-root -I . main.cmt
+  $ odoc compile --source-name a.ml --source-parent-file page-root.odoc -I . main__A.cmt
+  $ odoc compile --source-name main.ml --source-parent-file page-root.odoc -I . main.cmt
   $ odoc link -I . main__A.odoc
   $ odoc link -I . main.odoc
 

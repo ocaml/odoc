@@ -6,9 +6,9 @@ Similar to the lookup_def_wrapped test.
   $ ocamlc -c -o main__.cmo main__.ml -bin-annot -I .
   $ ocamlc -c -open Main__ main.ml -bin-annot -I .
 
-  $ odoc compile --source-name a.ml --source-parent page-root -I . main__A.cmt
+  $ odoc compile --source-name a.ml --source-parent-file page-root.odoc -I . main__A.cmt
   $ odoc compile -I . main__.cmt
-  $ odoc compile --source-name main.ml --source-parent page-root -I . main.cmt
+  $ odoc compile --source-name main.ml --source-parent-file page-root.odoc -I . main.cmt
 
   $ odoc link -I . main.odoc
   $ odoc link -I . main__A.odoc

@@ -5,9 +5,9 @@ Checking that source parents are kept, using include.
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
   $ ocamlc -c main.ml -bin-annot -I .
 
-  $ odoc compile --source-name b.ml --source-parent page-root -I . b.cmt
-  $ odoc compile --source-name a.ml --source-parent page-root -I . main__A.cmt
-  $ odoc compile --source-name main.ml --source-parent page-root -I . main.cmt
+  $ odoc compile --source-name b.ml --source-parent-file page-root.odoc -I . b.cmt
+  $ odoc compile --source-name a.ml --source-parent-file page-root.odoc -I . main__A.cmt
+  $ odoc compile --source-name main.ml --source-parent-file page-root.odoc -I . main.cmt
 
   $ odoc link -I . main.odoc
   $ odoc link -I . main__A.odoc
