@@ -72,8 +72,7 @@ type t =
   | (* Table markup. *)
     `Begin_table of [ `Light | `Heavy ]
   | `Begin_table_row
-  | `Begin_table_header
-  | `Begin_table_data
+  | `Begin_table_cell of [ `Header | `Data ]
   | `Minus
   | `Plus
   | `Bar
@@ -97,8 +96,8 @@ let print : [< t ] -> string = function
       let syntax = match syntax with `Light -> "t" | `Heavy -> "table" in
       Printf.sprintf "'{%s'" syntax
   | `Begin_table_row -> "'{tr'"
-  | `Begin_table_header -> "'{th'"
-  | `Begin_table_data -> "'{td'"
+  | `Begin_table_cell `Header -> "'{th'"
+  | `Begin_table_cell `Data -> "'{td'"
   | `Minus -> "'-'"
   | `Plus -> "'+'"
   | `Bar -> "'|'"
@@ -158,8 +157,8 @@ let describe : [< t | `Comment ] -> string = function
   | `Begin_table `Light -> "'{t ...}' (table)"
   | `Begin_table `Heavy -> "'{table ...}' (table)"
   | `Begin_table_row -> "'{tr ...}' (table row)"
-  | `Begin_table_header -> "'{th ... }' (table header cell)"
-  | `Begin_table_data -> "'{td ... }' (table data cell)"
+  | `Begin_table_cell `Header -> "'{th ... }' (table header cell)"
+  | `Begin_table_cell `Data -> "'{td ... }' (table data cell)"
   | `Minus -> "'-' (bulleted list item)"
   | `Plus -> "'+' (numbered list item)"
   | `Bar -> "'|'"

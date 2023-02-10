@@ -411,10 +411,10 @@ rule token input = parse
     { emit input `Begin_table_row }
 
   | "{th"
-    { emit input `Begin_table_header }
+    { emit input (`Begin_table_cell `Header) }
 
   | "{td"
-    { emit input `Begin_table_data }
+    { emit input (`Begin_table_cell `Data) }
 
   | '{' (['0'-'9']+ as level) ':' (([^ '}'] # space_char)* as label)
     { emit

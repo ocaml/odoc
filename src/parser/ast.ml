@@ -30,10 +30,10 @@ type inline_element =
     text. Similarly the [`Link] constructor has the link itself as first parameter
     and the second is the replacement text. *)
 
-type 'a cell = 'a with_location list
+type 'a cell = 'a with_location list * [ `Header | `Data ]
 type 'a row = 'a cell list
 type 'a grid = 'a row list
-type 'a abstract_table = 'a row * 'a grid * alignment list
+type 'a abstract_table = 'a grid * alignment list
 
 type nestable_block_element =
   [ `Paragraph of inline_element with_location list
