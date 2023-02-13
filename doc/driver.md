@@ -126,10 +126,13 @@ Linking a file with `odoc` requires the input file and a list of include paths. 
 for compile, we will hard-code the include path.
 
 Generating the HTML requires the input `odocl` file, an optional implementation
-source file, and an output path. We will hard-code the output path to be `html`.
-Passing an implementation file to an `odocl` that was not compiled with
-`--source-parent` and `--source-name` will result in an error, and similarly
-when failing to pass it for an `odocl` that was compiled with such options.
+source file (passed via the `--source` argument), and an output path. We will
+hard-code the output path to be `html/`.
+
+Using the `--source` argument with an `.odocl` file that was not compiled with
+`--source-parent-file` and `--source-name` will result in an error, and
+similarly omitting `--source` when generating HTML of an `odocl` that was
+compiled with `--source-parent-file` and `--source-name`.
 
 In all of these, we'll capture `stdout` and `stderr` so we can check it later.
 
@@ -148,7 +151,8 @@ let add_prefixed_output cmd list prefix lines =
       !list
       @ Bos.Cmd.to_string cmd :: List.map (fun l -> prefix ^ ": " ^ l) lines
 
-let compile file ?parent ?(ignore_output = false) ?impl children =
+let compile file ?parent ?(output_dir = Fpath.v "./") ?(search_path = [])
+    ?(ignore_output = false) ?source_args children =
   let output_file =
     let ext = Fpath.get_ext file in
     let basename = Fpath.basename (Fpath.rem_ext file) in
@@ -157,22 +161,25 @@ let compile file ?parent ?(ignore_output = false) ?impl children =
     | ".cmt" | ".cmti" | ".cmi" -> basename ^ ".odoc"
     | _ -> failwith ("bad extension: " ^ ext)
   in
+  let search_path =
+    search_path
+    |> List.fold_left
+         (fun acc s_path -> Cmd.(v "-I" % p s_path %% acc))
+         Cmd.empty
+  in
   let open Cmd in
-  let impl =
-    match impl with
+  let source_args =
+    match source_args with
     | None -> Cmd.empty
-    | Some source_relpath ->
-        let source_parent =
-          "page-" ^ (source_relpath |> Fpath.parent |> Fpath.basename)
-        in
+    | Some (source_name, source_parent_file) ->
         Cmd.(
-          v "--source-name"
-          % Fpath.basename source_relpath
-          % "--source-parent" % source_parent)
+          v "--source-name" % source_name % "--source-parent-file"
+          % p source_parent_file)
   in
   let cmd =
-    odoc % "compile" % Fpath.to_string file %% impl % "-I" % "." % "-o"
-    % output_file
+    odoc % "compile" % Fpath.to_string file %% source_args % "-I" % "."
+    %% search_path % "-o"
+    % p (Fpath.( / ) output_dir output_file)
     |> List.fold_right (fun child cmd -> cmd % "--child" % child) children
   in
   let cmd =
@@ -354,15 +361,24 @@ let compile_deps f =
 ```
 
 For `odoc` libraries, we infer the implementation and interface source file path
-from the library name. We generate a hierarchy of mld file, for each directory
-in the hierarchy. The mld contains links, using html specific backend as there
-are no references to source.
+from the library name. For each directory in the hierarchy, we generate an `mld`
+file with links, to the contents of the directory (using html specific backend
+as there are no syntax to reference sources).
+
+The `.mld` files are stored in a specific folder, to avoid conflicts between
+folder names and other page's names. For instance, `page-odoc.odoc` exists both
+because there is a page named after the `odoc` folder and a page named after the
+`odoc` library. Moreover, the original hierarchy is preserved to avoid conflicts
+between different folders name, such as `lib` in `src/foo/lib/` and
+`src/bar/lib/`.
 
 Mld files are compiled, with parents and children that correspond to the
 hierarchy. If a page has no children, we artificially add one to make it render
 as `name/index.html`.
 
 ```ocaml env=e1
+let source_folder = Fpath.v "source_mlds"
+
 let source_dir_of_odoc_lib lib =
   match String.split_on_char '_' lib with
   | "odoc" :: s ->
@@ -447,13 +463,18 @@ let compile_src_mlds units =
   let title lib =
     if Fpath.is_current_dir lib then "source" else Fpath.to_string lib
   in
+  let parent_search_path lib =
+    if Fpath.is_current_dir lib then [ source_folder ]
+    else [ Fpath.( // ) source_folder (Fpath.parent lib) ]
+  in
   let rec traverse_parent parent lib acc =
     if Fpath.is_dir_path lib then
       match M.find_opt lib mlds with
       | None -> []
       | Some set ->
-          let path = Fpath.v @@ mld_name lib ^ ".mld" in
+          let path = Fpath.(source_folder // lib / (mld_name lib ^ ".mld")) in
           let mld_content = source_mld (title lib) set in
+          let _was_created = Bos.OS.Dir.create (Fpath.parent path) |> get_ok in
           let () = Bos.OS.File.write path mld_content |> get_ok in
           let () =
             let children =
@@ -467,10 +488,16 @@ let compile_src_mlds units =
                   (* Needed to have the mld rendered as [name/index.html] *)
               | a -> a
             in
-            compile ?parent path children
+            compile ?parent ~search_path:(parent_search_path lib)
+              ~output_dir:(Fpath.parent path) path children
           in
           let acc =
-            [ (Fpath.v ("page-" ^ mld_name lib ^ ".odoc"), false, None) ] :: acc
+            [
+              ( Fpath.(source_folder // lib / ("page-" ^ mld_name lib ^ ".odoc")),
+                false,
+                None );
+            ]
+            :: acc
           in
           Fpath.Set.fold
             (fun path acc ->
@@ -562,6 +589,18 @@ Now we get to the compilation phase. For each unit, we query its dependencies, t
 let compile_all () =
   let mld_odocs = compile_mlds () in
   let src_mlds = compile_src_mlds all_units in
+  let source_args = function
+    | None -> None
+    | Some source_relpath ->
+        let source_parent_name =
+          Format.sprintf "page-%s.odoc"
+            (source_relpath |> Fpath.parent |> Fpath.basename)
+        in
+        let source_parent_file =
+          Fpath.(v "source_mlds" // parent source_relpath / source_parent_name)
+        and source_name = Fpath.basename source_relpath in
+        Some (source_name, source_parent_file)
+  in
   let rec rec_compile ?impl parent lib file =
     let output = Fpath.(base (set_ext "odoc" file)) in
     if OS.File.exists output |> get_ok then []
@@ -583,7 +622,8 @@ let compile_all () =
           [] deps.deps
       in
       let ignore_output = parent = "deps" in
-      ignore (compile file ~parent:lib ?impl ~ignore_output []);
+      let source_args = source_args impl in
+      compile file ~parent:lib ?source_args ~ignore_output [];
       (output, ignore_output, impl) :: files
   in
   List.fold_left
