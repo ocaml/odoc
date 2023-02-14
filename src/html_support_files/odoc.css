@@ -557,6 +557,12 @@ td.def-doc *:first-child {
 .at-tags li { padding-left: 3ex; text-indent: -3ex; }
 .at-tags .at-tag { text-transform: capitalize }
 
+/* Alert emoji */
+
+.alert::before {
+  content: '⚠️ ';
+}
+
 /* Lists of modules */
 
 .modules { list-style-type: none; margin-left: -3ex; }

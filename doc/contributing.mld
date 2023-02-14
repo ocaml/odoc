@@ -8,7 +8,7 @@ find the information in this file helpful.
 
 {1 Quick start: HTML and CSS}
 
-The [odoc] CSS is found at {{:https://github.com/ocaml/odoc/blob/master/src/odoc/etc/odoc.css}[src/odoc/etc/odoc.css]}. It
+The [odoc] CSS is found at {{:https://github.com/ocaml/odoc/blob/master/src/html_support_files/odoc.css}[src/html_support_files/odoc.css]}. It
 still needs work, and PRs are very welcome. You can edit CSS using your browser's {{:https://developer.mozilla.org/en-US/docs/Tools}developer}
 {{:https://developer.chrome.com/docs/devtools/}tools}. Then send us a PR for the same changes made to this file.
 
