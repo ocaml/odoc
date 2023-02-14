@@ -238,107 +238,69 @@ module Anchor = struct
 
   let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
 
-  type t = { page : Path.t; anchor : string; kind : kind }
+  type t = { page : Path.t; anchor : string; name : string; kind : kind }
 
   let anchorify_path { Path.parent; name; kind } =
     match parent with
     | None -> assert false (* We got a root, should never happen *)
     | Some page ->
         let anchor = Printf.sprintf "%s-%s" (Path.string_of_kind kind) name in
-        { page; anchor; kind = (kind :> kind) }
+        { page; anchor; name; kind = (kind :> kind) }
 
   let add_suffix ~kind { page; anchor; _ } suffix =
-    { page; anchor = anchor ^ "." ^ suffix; kind }
+    { page; anchor = anchor ^ "." ^ suffix; name = suffix; kind }
 
-  let mk ~kind parent str_name =
+  let mk ~kind parent name =
     let page = Path.from_identifier parent in
-    Ok { page; anchor = str_name; kind }
+    let anchor = Format.asprintf "%a-%s" pp_kind kind name in
+    Ok { page; anchor; name; kind }
+
+  let mk_section ~kind parent str_name =
+    let page = Path.from_identifier parent in
+    Ok { page; anchor = str_name; name = str_name; kind }
 
   let rec from_identifier : Identifier.t -> (t, Error.t) result =
     let open Error in
     function
     | { iv = `Module (parent, mod_name); _ } ->
-        let parent = Path.from_identifier (parent :> Path.source) in
-        let kind = `Module in
-        let anchor =
-          Printf.sprintf "%s-%s" (Path.string_of_kind kind)
-            (ModuleName.to_string mod_name)
-        in
-        Ok { page = parent; anchor; kind }
+        mk ~kind:`Module (parent :> Path.source) (ModuleName.to_string mod_name)
     | { iv = `Root _; _ } as p ->
         let page = Path.from_identifier (p :> Path.source) in
-        Ok { page; kind = `Module; anchor = "" }
+        Ok { page; kind = `Module; anchor = ""; name = page.name }
     | { iv = `Page _; _ } as p ->
         let page = Path.from_identifier (p :> Path.source) in
-        Ok { page; kind = `Page; anchor = "" }
+        Ok { page; kind = `Page; anchor = ""; name = page.name }
     | { iv = `LeafPage _; _ } as p ->
         let page = Path.from_identifier (p :> Path.source) in
-        Ok { page; kind = `LeafPage; anchor = "" }
+        Ok { page; kind = `LeafPage; anchor = ""; name = page.name }
     (* For all these identifiers, page names and anchors are the same *)
     | {
         iv = `Parameter _ | `Result _ | `ModuleType _ | `Class _ | `ClassType _;
         _;
       } as p ->
         Ok (anchorify_path @@ Path.from_identifier p)
-    | { iv = `Type (parent, type_name); _ } ->
-        let page = Path.from_identifier (parent :> Path.source) in
-        let kind = `Type in
-        Ok
-          {
-            page;
-            anchor =
-              Format.asprintf "%a-%s" pp_kind kind
-                (TypeName.to_string type_name);
-            kind;
-          }
+    | { iv = `Type (parent, name); _ } ->
+        mk ~kind:`Type (parent :> Path.source) (TypeName.to_string name)
     | { iv = `CoreType ty_name; _ } ->
         Error (Not_linkable ("core_type:" ^ TypeName.to_string ty_name))
     | { iv = `Extension (parent, name); _ } ->
-        let page = Path.from_identifier (parent :> Path.source) in
-        let kind = `Extension in
-        Ok
-          {
-            page;
-            anchor =
-              Format.asprintf "%a-%s" pp_kind kind
-                (ExtensionName.to_string name);
-            kind;
-          }
+        mk ~kind:`Extension
+          (parent :> Path.source)
+          (ExtensionName.to_string name)
     | { iv = `Exception (parent, name); _ } ->
-        let page = Path.from_identifier (parent :> Path.source) in
-        let kind = `Exception in
-        Ok
-          {
-            page;
-            anchor =
-              Format.asprintf "%a-%s" pp_kind kind
-                (ExceptionName.to_string name);
-            kind;
-          }
+        mk ~kind:`Exception
+          (parent :> Path.source)
+          (ExceptionName.to_string name)
     | { iv = `CoreException name; _ } ->
         Error (Not_linkable ("core_exception:" ^ ExceptionName.to_string name))
     | { iv = `Value (parent, name); _ } ->
-        let page = Path.from_identifier (parent :> Path.source) in
-        let kind = `Val in
-        Ok
-          {
-            page;
-            anchor =
-              Format.asprintf "%a-%s" pp_kind kind (ValueName.to_string name);
-            kind;
-          }
+        mk ~kind:`Val (parent :> Path.source) (ValueName.to_string name)
     | { iv = `Method (parent, name); _ } ->
-        let str_name = MethodName.to_string name in
-        let page = Path.from_identifier (parent :> Path.source) in
-        let kind = `Method in
-        Ok
-          { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
+        mk ~kind:`Method (parent :> Path.source) (MethodName.to_string name)
     | { iv = `InstanceVariable (parent, name); _ } ->
-        let str_name = InstanceVariableName.to_string name in
-        let page = Path.from_identifier (parent :> Path.source) in
-        let kind = `Val in
-        Ok
-          { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
+        mk ~kind:`Val
+          (parent :> Path.source)
+          (InstanceVariableName.to_string name)
     | { iv = `Constructor (parent, name); _ } ->
         from_identifier (parent :> Identifier.t) >>= fun page ->
         let kind = `Constructor in
@@ -356,10 +318,10 @@ module Anchor = struct
            grand-parent. *)
         match parent with
         | { iv = #Path.source_pv; _ } as parent ->
-            mk ~kind:`Section parent str_name
+            mk_section ~kind:`Section parent str_name
         | { iv = `CoreType _; _ } ->
             Error (Unexpected_anchor "core_type label parent")
-        | { iv = `Type (gp, _); _ } -> mk ~kind:`Section gp str_name)
+        | { iv = `Type (gp, _); _ } -> mk_section ~kind:`Section gp str_name)
 
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =
@@ -390,7 +352,7 @@ module Anchor = struct
     let kind = `ExtensionDecl in
     let first_cons = Identifier.name (List.hd decl.constructors).id in
     let anchor = Format.asprintf "%a-%s" pp_kind kind first_cons in
-    { page; kind; anchor }
+    { page; kind; name = page.name; anchor }
 end
 
 type kind = Anchor.kind
@@ -398,7 +360,12 @@ type kind = Anchor.kind
 type t = Anchor.t
 
 let from_path page =
-  { Anchor.page; anchor = ""; kind = (page.kind :> Anchor.kind) }
+  {
+    Anchor.page;
+    anchor = "";
+    name = page.name;
+    kind = (page.kind :> Anchor.kind);
+  }
 
 let from_identifier ~stop_before = function
   | { Odoc_model.Paths.Identifier.iv = #Path.source_pv; _ } as p

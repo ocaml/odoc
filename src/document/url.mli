@@ -77,6 +77,7 @@ module Anchor : sig
     page : Path.t;
     anchor : string;
         (** Anchor in {!field-page} where the element is attached *)
+    name : string;  (** Original name, used in TOC. *)
     kind : kind;
         (** What kind of element the path points to.
         e.g. "module", "module-type", "exception", ... *)
