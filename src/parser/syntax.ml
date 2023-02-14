@@ -482,7 +482,7 @@ let paragraph : input -> Ast.nestable_block_element with_location =
    fun acc ->
     match npeek 2 input with
     | { value = `Single_newline ws; location }
-      :: { value = #token_that_always_begins_an_inline_element; _ }
+      :: { value = #token_that_always_begins_an_inline_element | `Bar; _ }
       :: _ ->
         junk input;
         let acc = Loc.at location (`Space ws) :: acc in
