@@ -29,10 +29,11 @@ module Ast_to_sexp = struct
     | `Superscript -> Atom "superscript"
     | `Subscript -> Atom "subscript"
 
-  let alignment : Ast.alignment -> sexp = function
-    | `Left -> Atom "left"
-    | `Center -> Atom "center"
-    | `Right -> Atom "right"
+  let alignment : Ast.alignment option -> sexp = function
+    | Some `Left -> Atom "left"
+    | Some `Center -> Atom "center"
+    | Some `Right -> Atom "right"
+    | None -> Atom "default"
 
   let reference_kind : Ast.reference_kind -> sexp = function
     | `Simple -> Atom "simple"
@@ -89,6 +90,11 @@ module Ast_to_sexp = struct
         let syntax = function `Light -> "light" | `Heavy -> "heavy" in
         let kind = function `Header -> "header" | `Data -> "data" in
         let map name x f = List [ Atom name; List (List.map f x) ] in
+        let alignment =
+          match align with
+          | None -> List [ Atom "align"; Atom "no alignment" ]
+          | Some align -> map "align" align @@ alignment
+        in
         List
           [
             Atom "table";
@@ -96,7 +102,7 @@ module Ast_to_sexp = struct
             ( map "data" data @@ fun row ->
               map "row" row @@ fun (cell, k) ->
               map (kind k) cell @@ at.at (nestable_block_element at) );
-            map "align" align @@ alignment;
+            alignment;
           ]
 
   let tag at : Ast.tag -> sexp = function
