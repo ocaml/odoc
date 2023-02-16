@@ -40,29 +40,35 @@ let peek input =
 
 module Table = struct
   module Light_syntax = struct
-    let default_align = `Center
-
     let valid_align = function
       | [ { Loc.value = `Word w; _ } ] -> (
           match String.length w with
-          | 0 -> Some default_align
+          | 0 -> `Valid None
           | 1 -> (
               match w with
-              | "-" -> Some default_align
-              | ":" -> Some `Center
-              | _ -> None)
+              | "-" -> `Valid None
+              | ":" -> `Valid (Some `Center)
+              | _ -> `Invalid)
           | len ->
               if String.for_all (Char.equal '-') (String.sub w 1 (len - 2)) then
                 match (String.get w 0, String.get w (len - 1)) with
-                | ':', ':' -> Some `Center
-                | ':', '-' -> Some `Left
-                | '-', ':' -> Some `Right
-                | '-', '-' -> Some default_align
-                | _ -> None
-              else None)
-      | _ -> None
+                | ':', ':' -> `Valid (Some `Center)
+                | ':', '-' -> `Valid (Some `Left)
+                | '-', ':' -> `Valid (Some `Right)
+                | '-', '-' -> `Valid None
+                | _ -> `Invalid
+              else `Invalid)
+      | _ -> `Invalid
 
-    let valid_align_row lx = List.map valid_align lx |> Option.join_list
+    let valid_align_row lx =
+      let rec loop acc = function
+        | [] -> Some (List.rev acc)
+        | x :: q -> (
+            match valid_align x with
+            | `Invalid -> None
+            | `Valid alignment -> loop (alignment :: acc) q)
+      in
+      loop [] lx
 
     let create ~grid ~align : Ast.table =
       let to_block x = Loc.at x.Loc.location (`Paragraph [ x ]) in
@@ -76,33 +82,33 @@ module Table = struct
 
     let from_raw_data grid : Ast.table =
       match grid with
-      | [] -> create ~grid:[] ~align:[]
+      | [] -> create ~grid:[] ~align:None
       | row1 :: rows2_N -> (
           match valid_align_row row1 with
           (* If the first line is the align row, everything else is data. *)
-          | Some align ->
+          | Some _ as align ->
               create ~grid:(List.map (with_kind `Data) rows2_N) ~align
           | None -> (
               match rows2_N with
               (* Only 1 line, if this is not the align row this is data. *)
-              | [] -> create ~grid:[ with_kind `Data row1 ] ~align:[]
+              | [] -> create ~grid:[ with_kind `Data row1 ] ~align:None
               | row2 :: rows3_N -> (
                   match valid_align_row row2 with
                   (* If the second line is the align row, the first one is the
                      header and the rest is data. *)
-                  | Some align ->
+                  | Some _ as align ->
                       let header = with_kind `Header row1 in
                       let data = List.map (with_kind `Data) rows3_N in
                       create ~grid:(header :: data) ~align
                   (* No align row in the first 2 lines, everything is considered
                      data. *)
                   | None ->
-                      create ~grid:(List.map (with_kind `Data) grid) ~align:[]))
-          )
+                      create ~grid:(List.map (with_kind `Data) grid) ~align:None
+                  )))
   end
 
   module Heavy_syntax = struct
-    let create ~grid : Ast.table = ((grid, []), `Heavy)
+    let create ~grid : Ast.table = ((grid, None), `Heavy)
     let from_grid grid : Ast.table = create ~grid
   end
 end
