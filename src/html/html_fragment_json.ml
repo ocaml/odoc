@@ -17,12 +17,12 @@ let json_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) : Utils.Json.json
   let json_breadcrumbs = breadcrumbs |> List.map breadcrumb in
   `Array json_breadcrumbs
 
-let json_of_toc (toc : Types.toc list) : Utils.Json.json =
-  let rec section (s : Types.toc) =
+let json_of_toc (toc : Odoc_document.Types.Toc.t) : Utils.Json.json =
+  let rec section (s : Odoc_document.Types.Toc.one) =
     `Object
       [
-        ("title", `String s.title_str);
-        ("href", `String s.href);
+        ("title", `String s.anchor.name);
+        ("href", `String s.anchor.anchor);
         ("children", `Array (List.map section s.children));
       ]
   in

@@ -75,6 +75,31 @@ end = struct
     Rewire.walk ~classify:(classify ~on_sub) ~node:(node mkurl) t
 end
 
+module Better_Toc : sig
+  val compute : Page.t -> Types.Toc.t
+end = struct
+  let rec walk_documentedsrc (l : DocumentedSrc.t) =
+    Utils.flatmap l ~f:(function
+      | DocumentedSrc.Code _ -> []
+      | Documented { anchor = Some anchor; _ } ->
+          [ { Types.Toc.anchor; children = [] } ]
+      | Documented _ -> []
+      | Nested { code; _ } -> walk_documentedsrc code
+      | Subpage _ -> []
+      | Alternative (Expansion r) -> walk_documentedsrc r.expansion)
+
+  let walk_items (l : Item.t list) =
+    Utils.flatmap l ~f:(function
+      | Item.Text _ -> []
+      | Heading _ -> []
+      | Declaration { anchor = Some anchor; content; _ } ->
+          [ { Types.Toc.anchor; children = walk_documentedsrc content } ]
+      | Declaration _ -> []
+      | Include _ -> [])
+
+  let compute (p : Page.t) : Types.Toc.t = walk_items p.items
+end
+
 module Subpages : sig
   val compute : Page.t -> Subpage.t list
 end = struct

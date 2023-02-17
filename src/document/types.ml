@@ -161,6 +161,13 @@ and Page : sig
 end =
   Page
 
+and Toc : sig
+  type t = one list
+
+  and one = { anchor : Url.t; children : t }
+end =
+  Toc
+
 let inline ?(attr = []) desc = Inline.{ attr; desc }
 
 let block ?(attr = []) desc = Block.{ attr; desc }

@@ -367,6 +367,9 @@ module Toc = struct
       { title; title_str; href; children = List.map section children }
     in
     List.map section toc
+  ;;
+
+  ignore gen_toc
 end
 
 module Breadcrumbs = struct
@@ -416,7 +419,8 @@ module Page = struct
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
-    let toc = Toc.gen_toc ~config ~resolve ~path:url i in
+    (*let toc = Toc.gen_toc ~config ~resolve ~path:url i in*)
+    let toc = Doctree.Better_Toc.compute p in
     let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
     let header =
       items ~config ~resolve (Doctree.PageTitle.render_title p @ preamble)

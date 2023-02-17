@@ -83,6 +83,24 @@ let html_of_toc toc odoc_file =
         ]
   in
   nav_tabs tabs
+;;
+ignore html_of_toc
+
+let html_of_toc (toc : Odoc_document.Types.Toc.t) _odoc_file =
+  let rec aux = function
+    | [] -> []
+    | (h : Odoc_document.Types.Toc.one) :: t ->
+        let link =
+          Html.a ~a:[ Html.a_href h.anchor.anchor ] [ Html.txt h.anchor.name ]
+        in
+        let children =
+          match h.children with
+          | [] -> Html.txt ""
+          | _ -> Html.ul (aux h.children)
+        in
+        [ Html.li [ link; children ] ] @ aux t
+  in
+  [ Html.ul (aux toc) ]
 
 let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
   let make_navigation ~up_url rest =
