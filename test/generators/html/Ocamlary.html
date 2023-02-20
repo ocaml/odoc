@@ -27,542 +27,208 @@
     <li class="author"><span class="at-tag">author</span> David Sheets</li>
    </ul>
   </header>
-  <nav>
-   <ul class="tabs">
-    <li class="tab">
-     <input checked="checked" type="radio" name="tabs" id="tab1"/>
-     <label for="tab1">Contents</label>
-     <div id="tab-content1" class="content">
-      <ul>
-       <li><a href="#level-1">Level 1</a>
-        <ul>
-         <li><a href="#level-2">Level 2</a>
-          <ul>
-           <li><a href="#level-3">Level 3</a>
-            <ul><li><a href="#level-4">Level 4</a></li></ul>
-           </li><li><a href="#basic-module-stuff">Basic module stuff</a></li>
-          </ul>
-         </li>
-        </ul>
-       </li>
-       <li><a href="#s9000">Section 9000</a>
-        <ul><li><a href="#emptySig">EmptySig</a></li>
-         <li><a href="#basic-exception-stuff">Basic exception stuff</a></li>
-         <li>
-          <a href="#basic-type-and-value-stuff-with-advanced-doc-comments">
-           Basic type and value stuff with advanced doc comments
-          </a>
-         </li><li><a href="#some-operators">Some Operators</a></li>
-         <li><a href="#advanced-module-stuff">Advanced Module Stuff</a></li>
-         <li><a href="#advanced-type-stuff">Advanced Type Stuff</a></li>
-        </ul>
-       </li>
-       <li><a href="#indexmodules">Trying the {!modules: ...} command.</a>
-        <ul>
-         <li>
-          <a href="#weirder-usages-involving-module-types">Weirder usages
-            involving module types
-          </a>
-         </li>
-        </ul>
-       </li>
-       <li>
-        <a href="#playing-with-@canonical-paths">Playing with @canonical
-          paths
-        </a>
-       </li><li><a href="#aliases">Aliases again</a></li>
-       <li><a href="#section-title-splicing">Section title splicing</a></li>
-       <li><a href="#new-reference-syntax">New reference syntax</a></li>
-      </ul>
-     </div>
+  <ul><li><a href="level-1">level-1</a></li>
+   <li><a href="level-2">level-2</a></li>
+   <li><a href="level-3">level-3</a></li>
+   <li><a href="level-4">level-4</a></li>
+   <li><a href="basic-module-stuff">basic-module-stuff</a></li>
+   <li><a href="module-Empty">Empty</a></li>
+   <li><a href="module-type-Empty">Empty</a></li>
+   <li><a href="module-type-MissingComment">MissingComment</a></li>
+   <li><a href="s9000">s9000</a></li>
+   <li><a href="module-EmptyAlias">EmptyAlias</a></li>
+   <li><a href="emptySig">emptySig</a></li>
+   <li><a href="module-type-EmptySig">EmptySig</a></li>
+   <li><a href="module-type-EmptySigAlias">EmptySigAlias</a></li>
+   <li><a href="module-ModuleWithSignature">ModuleWithSignature</a></li>
+   <li><a href="module-ModuleWithSignatureAlias">ModuleWithSignatureAlias</a>
+   </li><li><a href="module-One">One</a></li>
+   <li><a href="module-type-SigForMod">SigForMod</a></li>
+   <li><a href="module-type-SuperSig">SuperSig</a></li>
+   <li><a href="module-Buffer">Buffer</a></li>
+   <li><a href="basic-exception-stuff">basic-exception-stuff</a></li>
+   <li><a href="exception-Kaboom">Kaboom</a></li>
+   <li><a href="exception-Kablam">Kablam</a></li>
+   <li><a href="exception-Kapow">Kapow</a></li>
+   <li><a href="exception-EmptySig">EmptySig</a></li>
+   <li><a href="exception-EmptySigAlias">EmptySigAlias</a></li>
+   <li>
+    <a href="basic-type-and-value-stuff-with-advanced-doc-comments">
+     basic-type-and-value-stuff-with-advanced-doc-comments
+    </a>
+   </li><li><a href="type-a_function">a_function</a></li>
+   <li><a href="val-a_function">a_function</a></li>
+   <li><a href="val-fun_fun_fun">fun_fun_fun</a></li>
+   <li><a href="val-fun_maybe">fun_maybe</a></li>
+   <li><a href="val-not_found">not_found</a></li>
+   <li><a href="val-ocaml_org">ocaml_org</a></li>
+   <li><a href="val-some_file">some_file</a></li>
+   <li><a href="val-some_doc">some_doc</a></li>
+   <li><a href="val-since_mesozoic">since_mesozoic</a></li>
+   <li><a href="val-changing">changing</a></li>
+   <li><a href="some-operators">some-operators</a></li>
+   <li><a href="val-(~-)">(~-)</a></li><li><a href="val-(!)">(!)</a></li>
+   <li><a href="val-(@)">(@)</a></li><li><a href="val-($)">($)</a></li>
+   <li><a href="val-(%)">(%)</a></li>
+   <li><a href="val-(&amp;)">(&amp;)</a></li>
+   <li><a href="val-(*)">(*)</a></li><li><a href="val-(-)">(-)</a></li>
+   <li><a href="val-(+)">(+)</a></li><li><a href="val-(-?)">(-?)</a></li>
+   <li><a href="val-(/)">(/)</a></li><li><a href="val-(:=)">(:=)</a></li>
+   <li><a href="val-(=)">(=)</a></li><li><a href="val-(land)">(land)</a></li>
+   <li><a href="advanced-module-stuff">advanced-module-stuff</a></li>
+   <li><a href="module-CollectionModule">CollectionModule</a></li>
+   <li><a href="module-type-COLLECTION">COLLECTION</a></li>
+   <li><a href="module-Recollection">Recollection</a></li>
+   <li><a href="module-type-MMM">MMM</a></li>
+   <li><a href="module-type-RECOLLECTION">RECOLLECTION</a></li>
+   <li><a href="module-type-RecollectionModule">RecollectionModule</a></li>
+   <li><a href="module-type-A">A</a></li>
+   <li><a href="module-type-B">B</a></li>
+   <li><a href="module-type-C">C</a></li>
+   <li><a href="module-FunctorTypeOf">FunctorTypeOf</a></li>
+   <li><a href="module-type-IncludeModuleType">IncludeModuleType</a></li>
+   <li><a href="module-type-ToInclude">ToInclude</a></li>
+   <li><a href="advanced-type-stuff">advanced-type-stuff</a></li>
+   <li><a href="type-record">record</a>
+    <ul><li><a href="type-record.field1">field1</a></li>
+     <li><a href="type-record.field2">field2</a></li>
+    </ul>
+   </li>
+   <li><a href="type-mutable_record">mutable_record</a>
+    <ul><li><a href="type-mutable_record.a">a</a></li>
+     <li><a href="type-mutable_record.b">b</a></li>
+     <li><a href="type-mutable_record.c">c</a></li>
+    </ul>
+   </li>
+   <li><a href="type-universe_record">universe_record</a>
+    <ul><li><a href="type-universe_record.nihilate">nihilate</a></li></ul>
+   </li><li><a href="type-variant">variant</a></li>
+   <li><a href="type-poly_variant">poly_variant</a>
+    <ul><li><a href="type-poly_variant.TagA">TagA</a></li>
+     <li><a href="type-poly_variant.ConstrB">ConstrB</a></li>
+    </ul>
+   </li><li><a href="type-full_gadt">full_gadt</a></li>
+   <li><a href="type-partial_gadt">partial_gadt</a></li>
+   <li><a href="type-alias">alias</a></li>
+   <li><a href="type-tuple">tuple</a></li>
+   <li><a href="type-variant_alias">variant_alias</a></li>
+   <li><a href="type-record_alias">record_alias</a>
+    <ul><li><a href="type-record_alias.field1">field1</a></li>
+     <li><a href="type-record_alias.field2">field2</a></li>
+    </ul>
+   </li>
+   <li><a href="type-poly_variant_union">poly_variant_union</a>
+    <ul>
+     <li><a href="type-poly_variant_union.poly_variant">poly_variant</a></li>
+     <li><a href="type-poly_variant_union.TagC">TagC</a></li>
+    </ul>
+   </li>
+   <li><a href="type-poly_poly_variant">poly_poly_variant</a>
+    <ul><li><a href="type-poly_poly_variant.TagA">TagA</a></li></ul>
+   </li>
+   <li><a href="type-bin_poly_poly_variant">bin_poly_poly_variant</a>
+    <ul><li><a href="type-bin_poly_poly_variant.TagA">TagA</a></li>
+     <li><a href="type-bin_poly_poly_variant.ConstrB">ConstrB</a></li>
+    </ul>
+   </li><li><a href="type-open_poly_variant">open_poly_variant</a></li>
+   <li><a href="type-open_poly_variant2">open_poly_variant2</a></li>
+   <li><a href="type-open_poly_variant_alias">open_poly_variant_alias</a>
+   </li><li><a href="type-poly_fun">poly_fun</a></li>
+   <li><a href="type-poly_fun_constraint">poly_fun_constraint</a></li>
+   <li><a href="type-closed_poly_variant">closed_poly_variant</a></li>
+   <li><a href="type-clopen_poly_variant">clopen_poly_variant</a></li>
+   <li><a href="type-nested_poly_variant">nested_poly_variant</a>
+    <ul><li><a href="type-nested_poly_variant.A">A</a></li>
+     <li><a href="type-nested_poly_variant.B">B</a></li>
+     <li><a href="type-nested_poly_variant.C">C</a></li>
+     <li><a href="type-nested_poly_variant.D">D</a></li>
+    </ul>
+   </li><li><a href="type-full_gadt_alias">full_gadt_alias</a></li>
+   <li><a href="type-partial_gadt_alias">partial_gadt_alias</a></li>
+   <li><a href="exception-Exn_arrow">Exn_arrow</a></li>
+   <li><a href="type-mutual_constr_a">mutual_constr_a</a></li>
+   <li><a href="type-mutual_constr_b">mutual_constr_b</a></li>
+   <li><a href="type-rec_obj">rec_obj</a></li>
+   <li><a href="type-open_obj">open_obj</a></li>
+   <li><a href="type-oof">oof</a></li>
+   <li><a href="type-any_obj">any_obj</a></li>
+   <li><a href="type-empty_obj">empty_obj</a></li>
+   <li><a href="type-one_meth">one_meth</a></li>
+   <li><a href="type-ext">ext</a></li>
+   <li><a href="extension-decl-ExtA">Ocamlary</a></li>
+   <li><a href="extension-decl-ExtB">Ocamlary</a></li>
+   <li><a href="extension-decl-ExtC">Ocamlary</a></li>
+   <li><a href="extension-decl-ExtE">Ocamlary</a></li>
+   <li><a href="extension-decl-ExtF">Ocamlary</a></li>
+   <li><a href="type-poly_ext">poly_ext</a></li>
+   <li><a href="extension-decl-Foo">Ocamlary</a></li>
+   <li><a href="extension-decl-Quux">Ocamlary</a></li>
+   <li><a href="module-ExtMod">ExtMod</a></li>
+   <li><a href="extension-decl-ZzzTop0">Ocamlary</a></li>
+   <li><a href="extension-decl-ZzzTop">Ocamlary</a></li>
+   <li><a href="val-launch_missiles">launch_missiles</a></li>
+   <li><a href="type-my_mod">my_mod</a></li>
+   <li><a href="class-empty_class">empty_class</a></li>
+   <li><a href="class-one_method_class">one_method_class</a></li>
+   <li><a href="class-two_method_class">two_method_class</a></li>
+   <li><a href="class-param_class">param_class</a></li>
+   <li><a href="type-my_unit_object">my_unit_object</a></li>
+   <li><a href="type-my_unit_class">my_unit_class</a></li>
+   <li><a href="module-Dep1">Dep1</a></li>
+   <li><a href="module-Dep2">Dep2</a></li>
+   <li><a href="type-dep1">dep1</a></li>
+   <li><a href="module-Dep3">Dep3</a></li>
+   <li><a href="module-Dep4">Dep4</a></li>
+   <li><a href="module-Dep5">Dep5</a></li>
+   <li><a href="type-dep2">dep2</a></li><li><a href="type-dep3">dep3</a></li>
+   <li><a href="module-Dep6">Dep6</a></li>
+   <li><a href="module-Dep7">Dep7</a></li>
+   <li><a href="type-dep4">dep4</a></li>
+   <li><a href="module-Dep8">Dep8</a></li>
+   <li><a href="module-Dep9">Dep9</a></li>
+   <li><a href="module-type-Dep10">Dep10</a></li>
+   <li><a href="module-Dep11">Dep11</a></li>
+   <li><a href="module-Dep12">Dep12</a></li>
+   <li><a href="module-Dep13">Dep13</a></li>
+   <li><a href="type-dep5">dep5</a></li>
+   <li><a href="module-type-With1">With1</a></li>
+   <li><a href="module-With2">With2</a></li>
+   <li><a href="module-With3">With3</a></li>
+   <li><a href="type-with1">with1</a></li>
+   <li><a href="module-With4">With4</a></li>
+   <li><a href="type-with2">with2</a></li>
+   <li><a href="module-With5">With5</a></li>
+   <li><a href="module-With6">With6</a></li>
+   <li><a href="module-With7">With7</a></li>
+   <li><a href="module-type-With8">With8</a></li>
+   <li><a href="module-With9">With9</a></li>
+   <li><a href="module-With10">With10</a></li>
+   <li><a href="module-type-With11">With11</a></li>
+   <li><a href="module-type-NestedInclude1">NestedInclude1</a></li>
+   <li><a href="module-DoubleInclude1">DoubleInclude1</a></li>
+   <li><a href="module-DoubleInclude3">DoubleInclude3</a></li>
+   <li><a href="module-IncludeInclude1">IncludeInclude1</a></li>
+   <li><a href="indexmodules">indexmodules</a></li>
+   <li>
+    <a href="weirder-usages-involving-module-types">
+     weirder-usages-involving-module-types
+    </a>
+   </li>
+   <li>
+    <a href="playing-with-@canonical-paths">playing-with-@canonical-paths</a>
     </li>
-    <li class="tab"><input type="radio" name="tabs" id="tab2"/>
-     <label for="tab2">Index</label>
-     <div id="tab-content2" class="content">
-      <ul>
-       <li>module Ocamlary
-        <ul><li><ul><li>module Empty</li></ul></li>
-         <li><ul><li>module type Empty<ul><li>type t</li></ul></li></ul></li>
-         <li>
-          <ul><li>module type MissingComment<ul><li>type t</li></ul></li>
-          </ul>
-         </li><li>module EmptyAlias</li>
-         <li><ul><li>module type EmptySig</li></ul></li>
-         <li>module type EmptySigAlias</li>
-         <li>module ModuleWithSignature</li>
-         <li>module ModuleWithSignatureAlias</li>
-         <li><ul><li>module One<ul><li>type one</li></ul></li></ul></li>
-         <li>
-          <ul>
-           <li>module type SigForMod
-            <ul>
-             <li>
-              <ul>
-               <li>module Inner
-                <ul><li><ul><li>module type Empty</li></ul></li></ul>
-               </li>
-              </ul>
-             </li>
-            </ul>
-           </li>
-          </ul>
-         </li>
-         <li>
-          <ul>
-           <li>module type SuperSig
-            <ul>
-             <li>
-              <ul>
-               <li>module type SubSigA
-                <ul><li>type t</li>
-                 <li>
-                  <ul>
-                   <li>module SubSigAMod<ul><li>type sub_sig_a_mod</li></ul>
-                   </li>
-                  </ul>
-                 </li>
-                </ul>
-               </li>
-              </ul>
-             </li>
-             <li>
-              <ul><li>module type SubSigB<ul><li>type t</li></ul></li></ul>
-             </li>
-             <li>
-              <ul>
-               <li>module type EmptySig
-                <ul><li>type not_actually_empty</li></ul>
-               </li>
-              </ul>
-             </li>
-             <li><ul><li>module type One<ul><li>type two</li></ul></li></ul>
-             </li><li><ul><li>module type SuperSig</li></ul></li>
-            </ul>
-           </li>
-          </ul>
-         </li><li><ul><li>module Buffer<ul><li>val f</li></ul></li></ul></li>
-         <li>exception Kaboom</li><li>exception Kablam</li>
-         <li>exception Kapow</li><li>exception EmptySig</li>
-         <li>exception EmptySigAlias</li><li>type a_function</li>
-         <li>val a_function</li><li>val fun_fun_fun</li>
-         <li>val fun_maybe</li><li>val not_found</li><li>val ocaml_org</li>
-         <li>val some_file</li><li>val some_doc</li>
-         <li>val since_mesozoic</li><li>val changing</li><li>val (~-)</li>
-         <li>val (!)</li><li>val (@)</li><li>val ($)</li><li>val (%)</li>
-         <li>val (&amp;)</li><li>val (*)</li><li>val (-)</li><li>val (+)</li>
-         <li>val (-?)</li><li>val (/)</li><li>val (:=)</li><li>val (=)</li>
-         <li>val (land)</li>
-         <li>
-          <ul>
-           <li>module CollectionModule
-            <ul><li>type collection</li><li>type element</li>
-             <li>
-              <ul>
-               <li>module InnerModuleA
-                <ul><li>type t</li>
-                 <li>
-                  <ul><li>module InnerModuleA'<ul><li>type t</li></ul></li>
-                  </ul>
-                 </li>
-                 <li>
-                  <ul>
-                   <li>module type InnerModuleTypeA'<ul><li>type t</li></ul>
-                   </li>
-                  </ul>
-                 </li>
-                </ul>
-               </li>
-              </ul>
-             </li><li>module type InnerModuleTypeA</li>
-            </ul>
-           </li>
-          </ul>
-         </li><li>module type COLLECTION</li><li>module Recollection</li>
-         <li><ul><li>module type MMM<ul><li>module C</li></ul></li></ul></li>
-         <li>module type RECOLLECTION</li>
-         <li><ul><li>module type RecollectionModule</li></ul></li>
-         <li>
-          <ul><li>module type A<ul><li>type t</li><li>module Q</li></ul></li>
-          </ul>
-         </li>
-         <li>
-          <ul><li>module type B<ul><li>type t</li><li>module Q</li></ul></li>
-          </ul>
-         </li><li><ul><li>module type C</li></ul></li>
-         <li>module FunctorTypeOf</li>
-         <li><ul><li>module type IncludeModuleType</li></ul></li>
-         <li>
-          <ul>
-           <li>module type ToInclude
-            <ul>
-             <li><ul><li>module IncludedA<ul><li>type t</li></ul></li></ul>
-             </li>
-             <li>
-              <ul><li>module type IncludedB<ul><li>type s</li></ul></li></ul>
-             </li>
-            </ul>
-           </li>
-          </ul>
-         </li><li>type record</li><li>type mutable_record</li>
-         <li>type universe_record</li><li>type variant</li>
-         <li>type poly_variant</li><li>type full_gadt</li>
-         <li>type partial_gadt</li><li>type alias</li><li>type tuple</li>
-         <li>type variant_alias</li><li>type record_alias</li>
-         <li>type poly_variant_union</li><li>type poly_poly_variant</li>
-         <li>type bin_poly_poly_variant</li><li>type open_poly_variant</li>
-         <li>type open_poly_variant2</li>
-         <li>type open_poly_variant_alias</li><li>type poly_fun</li>
-         <li>type poly_fun_constraint</li><li>type closed_poly_variant</li>
-         <li>type clopen_poly_variant</li><li>type nested_poly_variant</li>
-         <li>type full_gadt_alias</li><li>type partial_gadt_alias</li>
-         <li>exception Exn_arrow</li><li>type mutual_constr_a</li>
-         <li>type mutual_constr_b</li><li>type rec_obj</li>
-         <li>type open_obj</li><li>type oof</li><li>type any_obj</li>
-         <li>type empty_obj</li><li>type one_meth</li><li>type ext</li>
-         <li>type poly_ext</li>
-         <li><ul><li>module ExtMod<ul><li>type t</li></ul></li></ul></li>
-         <li>val launch_missiles</li><li>type my_mod</li>
-         <li><ul><li>class empty_class</li></ul></li>
-         <li>
-          <ul><li>class one_method_class<ul><li>method go</li></ul></li></ul>
-         </li>
-         <li>
-          <ul>
-           <li>class two_method_class
-            <ul><li>method one</li><li>method undo</li></ul>
-           </li>
-          </ul>
-         </li><li>class param_class</li><li>type my_unit_object</li>
-         <li>type my_unit_class</li>
-         <li>
-          <ul>
-           <li>module Dep1
-            <ul>
-             <li>
-              <ul>
-               <li>module type S
-                <ul>
-                 <li><ul><li>class c<ul><li>method m</li></ul></li></ul></li>
-                </ul>
-               </li>
-              </ul>
-             </li>
-             <li><ul><li>module X<ul><li>module Y</li></ul></li></ul></li>
-            </ul>
-           </li>
-          </ul>
-         </li><li>module Dep2</li><li>type dep1</li>
-         <li><ul><li>module Dep3<ul><li>type a</li></ul></li></ul></li>
-         <li>
-          <ul>
-           <li>module Dep4
-            <ul>
-             <li><ul><li>module type T<ul><li>type b</li></ul></li></ul></li>
-             <li>
-              <ul>
-               <li>module type S
-                <ul><li>module X</li><li><ul><li>module Y</li></ul></li></ul>
-               </li>
-              </ul>
-             </li><li>module X</li>
-            </ul>
-           </li>
-          </ul>
-         </li><li>module Dep5</li><li>type dep2</li><li>type dep3</li>
-         <li>
-          <ul>
-           <li>module Dep6
-            <ul>
-             <li><ul><li>module type S<ul><li>type d</li></ul></li></ul></li>
-             <li>
-              <ul>
-               <li>module type T
-                <ul><li>module type R</li><li>module Y</li></ul>
-               </li>
-              </ul>
-             </li><li>module X</li>
-            </ul>
-           </li>
-          </ul>
-         </li><li>module Dep7</li><li>type dep4</li>
-         <li>
-          <ul>
-           <li>module Dep8
-            <ul>
-             <li><ul><li>module type T<ul><li>type t</li></ul></li></ul></li>
-            </ul>
-           </li>
-          </ul>
-         </li><li>module Dep9</li><li>module type Dep10</li>
-         <li>
-          <ul>
-           <li>module Dep11
-            <ul>
-             <li>
-              <ul>
-               <li>module type S
-                <ul>
-                 <li><ul><li>class c<ul><li>method m</li></ul></li></ul></li>
-                </ul>
-               </li>
-              </ul>
-             </li>
-            </ul>
-           </li>
-          </ul>
-         </li><li>module Dep12</li><li>module Dep13</li><li>type dep5</li>
-         <li>
-          <ul>
-           <li>module type With1
-            <ul>
-             <li><ul><li>module M<ul><li>module type S</li></ul></li></ul>
-             </li><li>module N</li>
-            </ul>
-           </li>
-          </ul>
-         </li>
-         <li>
-          <ul>
-           <li>module With2
-            <ul>
-             <li><ul><li>module type S<ul><li>type t</li></ul></li></ul></li>
-            </ul>
-           </li>
-          </ul>
-         </li><li>module With3</li><li>type with1</li><li>module With4</li>
-         <li>type with2</li>
-         <li>
-          <ul>
-           <li>module With5
-            <ul>
-             <li><ul><li>module type S<ul><li>type t</li></ul></li></ul></li>
-             <li>module N</li>
-            </ul>
-           </li>
-          </ul>
-         </li>
-         <li>
-          <ul>
-           <li>module With6
-            <ul>
-             <li>
-              <ul>
-               <li>module type T
-                <ul>
-                 <li>
-                  <ul>
-                   <li>module M
-                    <ul><li>module type S</li><li>module N</li></ul>
-                   </li>
-                  </ul>
-                 </li>
-                </ul>
-               </li>
-              </ul>
-             </li>
-            </ul>
-           </li>
-          </ul>
-         </li><li>module With7</li><li>module type With8</li>
-         <li>
-          <ul>
-           <li>module With9
-            <ul>
-             <li><ul><li>module type S<ul><li>type t</li></ul></li></ul></li>
-            </ul>
-           </li>
-          </ul>
-         </li>
-         <li>
-          <ul>
-           <li>module With10
-            <ul>
-             <li>
-              <ul>
-               <li>module type T
-                <ul>
-                 <li>
-                  <ul><li>module M<ul><li>module type S</li></ul></li></ul>
-                 </li><li>module N</li>
-                </ul>
-               </li>
-              </ul>
-             </li>
-            </ul>
-           </li>
-          </ul>
-         </li><li>module type With11</li>
-         <li>
-          <ul>
-           <li>module type NestedInclude1
-            <ul>
-             <li>
-              <ul>
-               <li>module type NestedInclude2
-                <ul><li>type nested_include</li></ul>
-               </li>
-              </ul>
-             </li>
-            </ul>
-           </li>
-          </ul>
-         </li>
-         <li>
-          <ul>
-           <li>module DoubleInclude1
-            <ul>
-             <li>
-              <ul>
-               <li>module DoubleInclude2<ul><li>type double_include</li></ul>
-               </li>
-              </ul>
-             </li>
-            </ul>
-           </li>
-          </ul>
-         </li><li><ul><li>module DoubleInclude3</li></ul></li>
-         <li>
-          <ul>
-           <li>module IncludeInclude1
-            <ul>
-             <li>
-              <ul>
-               <li>module type IncludeInclude2
-                <ul><li>type include_include</li></ul>
-               </li>
-              </ul>
-             </li><li><ul><li>module IncludeInclude2_M</li></ul></li>
-            </ul>
-           </li>
-          </ul>
-         </li>
-         <li>
-          <ul>
-           <li>module CanonicalTest
-            <ul>
-             <li>
-              <ul>
-               <li>module {Base__List}1
-                <ul><li>type t</li><li>val id</li></ul>
-               </li>
-              </ul>
-             </li>
-             <li>
-              <ul><li>module {Base__}2<ul><li>module List</li></ul></li></ul>
-             </li>
-             <li><ul><li>module Base<ul><li>module List</li></ul></li></ul>
-             </li>
-             <li>
-              <ul>
-               <li>module Base_Tests
-                <ul><li>module C</li><li>module L</li><li>val foo</li>
-                 <li>val bar</li><li>val baz</li>
-                </ul>
-               </li>
-              </ul>
-             </li><li>module List_modif</li>
-            </ul>
-           </li>
-          </ul>
-         </li>
-         <li>
-          <ul>
-           <li>module Aliases
-            <ul>
-             <li>
-              <ul>
-               <li>module {Foo__A}3<ul><li>type t</li><li>val id</li></ul>
-               </li>
-              </ul>
-             </li>
-             <li>
-              <ul>
-               <li>module {Foo__B}4<ul><li>type t</li><li>val id</li></ul>
-               </li>
-              </ul>
-             </li>
-             <li>
-              <ul>
-               <li>module {Foo__C}5<ul><li>type t</li><li>val id</li></ul>
-               </li>
-              </ul>
-             </li>
-             <li>
-              <ul>
-               <li>module {Foo__D}6<ul><li>type t</li><li>val id</li></ul>
-               </li>
-              </ul>
-             </li>
-             <li>
-              <ul>
-               <li>module {Foo__E}7<ul><li>type t</li><li>val id</li></ul>
-               </li>
-              </ul>
-             </li>
-             <li>
-              <ul>
-               <li>module {Foo__}8
-                <ul><li>module A</li><li>module B</li><li>module C</li>
-                 <li>module D</li><li>module E</li>
-                </ul>
-               </li>
-              </ul>
-             </li>
-             <li>
-              <ul>
-               <li>module Foo
-                <ul><li>module A</li><li>module B</li><li>module C</li>
-                 <li>module D</li><li>module E</li>
-                </ul>
-               </li>
-              </ul>
-             </li><li>module A'</li><li>type tata</li><li>type tbtb</li>
-             <li>type tete</li><li>type tata'</li><li>type tete2</li>
-             <li>
-              <ul>
-               <li>module Std
-                <ul><li>module A</li><li>module B</li><li>module C</li>
-                 <li>module D</li><li>module E</li>
-                </ul>
-               </li>
-              </ul>
-             </li><li>type stde</li><li>type testa</li>
-             <li>
-              <ul>
-               <li>module P1
-                <ul>
-                 <li>
-                  <ul>
-                   <li>module Y<ul><li>type t</li><li>val id</li></ul></li>
-                  </ul>
-                 </li>
-                </ul>
-               </li>
-              </ul>
-             </li>
-             <li><ul><li>module P2<ul><li>module Z</li></ul></li></ul></li>
-             <li>module X1</li><li>module X2</li><li>type p1</li>
-             <li>type p2</li>
-            </ul>
-           </li>
-          </ul>
-         </li>
-         <li><ul><li>module type M<ul><li>type t</li></ul></li></ul></li>
-         <li><ul><li>module M<ul><li>type t</li></ul></li></ul></li>
-         <li><ul><li>module Only_a_module<ul><li>type t</li></ul></li></ul>
-         </li>
-         <li>
-          <ul>
-           <li>module type TypeExt<ul><li>type t</li><li>val f</li></ul></li>
-          </ul>
-         </li><li>type new_t</li><li>module type TypeExtPruned</li>
-        </ul>
-       </li>
-      </ul>
-     </div>
-    </li>
-   </ul>
-  </nav>
+   <li><a href="module-CanonicalTest">CanonicalTest</a></li>
+   <li><a href="aliases">aliases</a></li>
+   <li><a href="module-Aliases">Aliases</a></li>
+   <li><a href="section-title-splicing">section-title-splicing</a></li>
+   <li><a href="new-reference-syntax">new-reference-syntax</a></li>
+   <li><a href="module-type-M">M</a></li><li><a href="module-M">M</a></li>
+   <li><a href="module-Only_a_module">Only_a_module</a></li>
+   <li><a href="module-type-TypeExt">TypeExt</a></li>
+   <li><a href="type-new_t">new_t</a></li>
+   <li><a href="extension-decl-C">Ocamlary</a></li>
+   <li><a href="module-type-TypeExtPruned">TypeExtPruned</a></li>
+  </ul>
   <div class="odoc-content">
    <p>You may find more information about this HTML documentation renderer
      at 
