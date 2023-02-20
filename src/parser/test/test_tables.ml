@@ -10,7 +10,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 8))
-            (table (syntax heavy) (data ()) (align "no alignment")))))
+            (table (syntax heavy) (grid ()) (align "no alignment")))))
          (warnings ())) |}]
 
     let empty_row =
@@ -19,7 +19,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 14))
-            (table (syntax heavy) (data ((row ()))) (align "no alignment")))))
+            (table (syntax heavy) (grid ((row ()))) (align "no alignment")))))
          (warnings ()))|}]
 
     let no_header =
@@ -28,7 +28,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 17))
-            (table (syntax heavy) (data ((row ((data ()))))) (align "no alignment")))))
+            (table (syntax heavy) (grid ((row ((data ()))))) (align "no alignment")))))
          (warnings ())) |}]
 
     let no_data =
@@ -37,7 +37,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 17))
-            (table (syntax heavy) (data ((row ((header ())))))
+            (table (syntax heavy) (grid ((row ((header ())))))
              (align "no alignment")))))
          (warnings ())) |}]
 
@@ -47,7 +47,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 22))
-            (table (syntax heavy) (data ()) (align "no alignment")))))
+            (table (syntax heavy) (grid ()) (align "no alignment")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 7-13:\
            \n'absurd' is not allowed in '{table ...}' (table).\
@@ -62,7 +62,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 27))
-            (table (syntax heavy) (data ((row ()))) (align "no alignment")))))
+            (table (syntax heavy) (grid ((row ()))) (align "no alignment")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 11-17:\
            \n'absurd' is not allowed in '{tr ...}' (table row).\
@@ -78,7 +78,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 37))
             (table (syntax heavy)
-             (data ((row ((header ()))) (row ((header ()))) (row ((data ())))))
+             (grid ((row ((header ()))) (row ((header ()))) (row ((data ())))))
              (align "no alignment")))))
          (warnings ())) |}]
 
@@ -118,7 +118,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 8) (28 9))
             (table (syntax heavy)
-             (data
+             (grid
               ((row
                 ((header
                   (((f.ml (4 16) (4 19))
@@ -137,7 +137,7 @@ let%expect_test _ =
                        (italic (((f.ml (8 32) (8 35)) (word ddd))))))))))
                  (data
                   (((f.ml (11 15) (11 32))
-                    (table (syntax heavy) (data ((row ((data ())))))
+                    (table (syntax heavy) (grid ((row ((data ())))))
                      (align "no alignment")))))))
                (row
                 ((data
@@ -152,7 +152,7 @@ let%expect_test _ =
                  (data
                   (((f.ml (21 14) (25 15))
                     (table (syntax light)
-                     (data
+                     (grid
                       ((row
                         ((header
                           (((f.ml (22 17) (22 18))
@@ -187,7 +187,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 4))
-            (table (syntax light) (data ()) (align "no alignment")))))
+            (table (syntax light) (grid ()) (align "no alignment")))))
          (warnings ())) |}]
 
     let simple =
@@ -201,7 +201,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 8) (4 9))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((data
                   (((f.ml (3 12) (3 13))
@@ -222,7 +222,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 8) (5 9))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((data
                   (((f.ml (3 11) (3 12))
@@ -251,7 +251,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 6) (4 7))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((data
                   (((f.ml (3 11) (3 13))
@@ -274,7 +274,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 6) (5 7))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((data
                   (((f.ml (4 9) (4 10)) (paragraph (((f.ml (4 9) (4 10)) (word x)))))))
@@ -296,7 +296,7 @@ let%expect_test _ =
           ((output
             (((f.ml (2 6) (5 7))
               (table (syntax light)
-               (data
+               (grid
                 ((row
                   ((data
                     (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word x)))))))
@@ -322,7 +322,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (2 6) (4 7))
-            (table (syntax light) (data ()) (align (default default))))))
+            (table (syntax light) (grid ()) (align (default default))))))
          (warnings ())) |}]
 
     let no_data =
@@ -337,7 +337,7 @@ let%expect_test _ =
           ((output
             (((f.ml (2 6) (5 7))
               (table (syntax light)
-               (data
+               (grid
                 ((row
                   ((header
                     (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word x)))))))
@@ -360,7 +360,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 6) (5 7))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((header
                   (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word a)))))))
@@ -390,7 +390,7 @@ let%expect_test _ =
           ((output
             (((f.ml (2 6) (6 7))
               (table (syntax light)
-               (data
+               (grid
                 ((row
                   ((header
                     (((f.ml (3 8) (3 9)) (paragraph (((f.ml (3 8) (3 9)) (word a)))))))
@@ -436,7 +436,7 @@ let%expect_test _ =
           ((output
             (((f.ml (2 6) (10 7))
               (table (syntax light)
-               (data
+               (grid
                 ((row
                   ((header
                     (((f.ml (4 9) (4 10)) (paragraph (((f.ml (4 9) (4 10)) (word a)))))))
@@ -477,7 +477,7 @@ let%expect_test _ =
           ((output
             (((f.ml (2 6) (5 7))
               (table (syntax light)
-               (data
+               (grid
                 ((row
                   ((header
                     (((f.ml (3 9) (3 14))
@@ -521,7 +521,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 6) (6 7))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((header
                   (((f.ml (2 11) (2 13))
@@ -562,7 +562,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 7) (5 8))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((header
                   (((f.ml (3 11) (3 12))
@@ -597,7 +597,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 6) (10 7))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((header ())
                  (header
@@ -654,7 +654,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 11) (5 12))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((header ())
                  (header
@@ -679,7 +679,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 11) (6 12))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((header
                   (((f.ml (4 13) (4 14))
@@ -706,7 +706,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 6) (6 7))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((header
                   (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word x)))))))
@@ -739,7 +739,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 6) (6 7))
             (table (syntax light)
-             (data
+             (grid
               ((row
                 ((header
                   (((f.ml (3 9) (3 10)) (paragraph (((f.ml (3 9) (3 10)) (word x)))))))
@@ -775,7 +775,7 @@ let%expect_test _ =
             ((output
               (((f.ml (2 8) (5 9))
                 (table (syntax light)
-                 (data
+                 (grid
                   ((row
                     ((header
                       (((f.ml (3 8) (3 10))
@@ -789,7 +789,7 @@ let%expect_test _ =
                  (align (default default default))))
                ((f.ml (7 8) (10 9))
                 (table (syntax light)
-                 (data
+                 (grid
                   ((row
                     ((header
                       (((f.ml (8 9) (8 11))
@@ -803,7 +803,7 @@ let%expect_test _ =
                  (align (default default default))))
                ((f.ml (12 8) (15 9))
                 (table (syntax light)
-                 (data
+                 (grid
                   ((row
                     ((header
                       (((f.ml (13 9) (13 11))
