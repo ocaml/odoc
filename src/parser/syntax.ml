@@ -40,33 +40,80 @@ let peek input =
 
 module Table = struct
   module Light_syntax = struct
+    let split_on_plus w =
+      let len = String.length w in
+      match w with
+      | "+" -> [ "" ]
+      | _ when len > 1 ->
+          let plus = function '+' -> true | _ -> false in
+          let w =
+            if plus (String.get w 0) then String.sub w 1 (len - 1) else w
+          in
+          let len = String.length w in
+          let w =
+            if plus (String.get w (len - 1)) then String.sub w 0 (len - 1)
+            else w
+          in
+          String.split_on_char '+' w
+      | _ -> [ w ]
+
+    let%expect_test _ =
+      let f x =
+        let pp x = Printf.printf "%S " x in
+        List.iter pp (split_on_plus x)
+      in
+      f "";
+      [%expect {| "" |}];
+      f "+";
+      [%expect {| "" |}];
+      f "++";
+      [%expect {| "" |}];
+      f "+--+";
+      [%expect {| "--" |}];
+      f "--";
+      [%expect {| "--" |}];
+      f "--+--+--";
+      [%expect {| "--" "--" "--" |}];
+      f "+----+----+----+";
+      [%expect {| "----" "----" "----" |}]
+
     let valid_align = function
-      | [ { Loc.value = `Word w; _ } ] -> (
-          match String.length w with
-          | 0 -> `Valid None
-          | 1 -> (
-              match w with
-              | "-" -> `Valid None
-              | ":" -> `Valid (Some `Center)
-              | _ -> `Invalid)
-          | len ->
-              if String.for_all (Char.equal '-') (String.sub w 1 (len - 2)) then
-                match (String.get w 0, String.get w (len - 1)) with
-                | ':', ':' -> `Valid (Some `Center)
-                | ':', '-' -> `Valid (Some `Left)
-                | '-', ':' -> `Valid (Some `Right)
-                | '-', '-' -> `Valid None
-                | _ -> `Invalid
-              else `Invalid)
-      | _ -> `Invalid
+      | [ { Loc.value = `Word w; _ } ] ->
+          (* We consider [+----+----+----+] a valid row, as it is a common format. *)
+          let valid_word w =
+            match String.length w with
+            | 0 -> `Valid None
+            | 1 -> (
+                match w with
+                | "-" -> `Valid None
+                | ":" -> `Valid (Some `Center)
+                | _ -> `Invalid)
+            | len ->
+                if String.for_all (Char.equal '-') (String.sub w 1 (len - 2))
+                then
+                  match (String.get w 0, String.get w (len - 1)) with
+                  | ':', ':' -> `Valid (Some `Center)
+                  | ':', '-' -> `Valid (Some `Left)
+                  | '-', ':' -> `Valid (Some `Right)
+                  | '-', '-' -> `Valid None
+                  | _ -> `Invalid
+                else `Invalid
+          in
+          List.map valid_word (split_on_plus w)
+      | _ -> [ `Invalid ]
 
     let valid_align_row lx =
       let rec loop acc = function
         | [] -> Some (List.rev acc)
-        | x :: q -> (
-            match valid_align x with
-            | `Invalid -> None
-            | `Valid alignment -> loop (alignment :: acc) q)
+        | x :: q ->
+            let all_aligns = valid_align x in
+            let valid_aligns =
+              List.filter_map
+                (function `Valid a -> Some a | `Invalid -> None)
+                all_aligns
+            in
+            if List.(length valid_aligns < length all_aligns) then None
+            else loop (List.rev_append valid_aligns acc) q
       in
       loop [] lx
 

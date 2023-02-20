@@ -751,5 +751,70 @@ let%expect_test _ =
                   (((f.ml (5 7) (5 8)) (paragraph (((f.ml (5 7) (5 8)) (word x)))))))))))
              (align (default default))))))
          (warnings ())) |}]
+
+    let with_pluses =
+      test
+        {|
+        {t
+        xx       | yy        | zz
+        ---------+-----------+--------------
+        }
+
+        {t
+         xx       | yy        | zz
+        +---------+-----------+-------------+
+        }
+
+        {t
+         xx       | yy        | zz
+        +---------|-----------+-------------|
+        }
+        |};
+      [%expect
+        {|
+            ((output
+              (((f.ml (2 8) (5 9))
+                (table (syntax light)
+                 (data
+                  ((row
+                    ((header
+                      (((f.ml (3 8) (3 10))
+                        (paragraph (((f.ml (3 8) (3 10)) (word xx)))))))
+                     (header
+                      (((f.ml (3 19) (3 21))
+                        (paragraph (((f.ml (3 19) (3 21)) (word yy)))))))
+                     (header
+                      (((f.ml (3 31) (3 33))
+                        (paragraph (((f.ml (3 31) (3 33)) (word zz)))))))))))
+                 (align (default default default))))
+               ((f.ml (7 8) (10 9))
+                (table (syntax light)
+                 (data
+                  ((row
+                    ((header
+                      (((f.ml (8 9) (8 11))
+                        (paragraph (((f.ml (8 9) (8 11)) (word xx)))))))
+                     (header
+                      (((f.ml (8 20) (8 22))
+                        (paragraph (((f.ml (8 20) (8 22)) (word yy)))))))
+                     (header
+                      (((f.ml (8 32) (8 34))
+                        (paragraph (((f.ml (8 32) (8 34)) (word zz)))))))))))
+                 (align (default default default))))
+               ((f.ml (12 8) (15 9))
+                (table (syntax light)
+                 (data
+                  ((row
+                    ((header
+                      (((f.ml (13 9) (13 11))
+                        (paragraph (((f.ml (13 9) (13 11)) (word xx)))))))
+                     (header
+                      (((f.ml (13 20) (13 22))
+                        (paragraph (((f.ml (13 20) (13 22)) (word yy)))))))
+                     (header
+                      (((f.ml (13 32) (13 34))
+                        (paragraph (((f.ml (13 32) (13 34)) (word zz)))))))))))
+                 (align (default default default))))))
+             (warnings ())) |}]
   end in
   ()
