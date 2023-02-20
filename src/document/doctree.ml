@@ -88,16 +88,22 @@ end = struct
       | Subpage _ -> []
       | Alternative (Expansion r) -> walk_documentedsrc r.expansion)
 
-  let walk_items (l : Item.t list) =
+  let mkurl page anchor =
+    { Url.Anchor.page; anchor; name = anchor; kind = `LeafPage }
+
+  let walk_items p (l : Item.t list) =
     Utils.flatmap l ~f:(function
       | Item.Text _ -> []
-      | Heading _ -> []
+      | Heading { label = None; _ } -> []
+      | Heading { label = Some label; level = _; title = _ } ->
+          let anchor = mkurl p label in
+          [ { Types.Toc.anchor; children = (* TODO: use Rewire.walk *) [] } ]
       | Declaration { anchor = Some anchor; content; _ } ->
           [ { Types.Toc.anchor; children = walk_documentedsrc content } ]
       | Declaration _ -> []
       | Include _ -> [])
 
-  let compute (p : Page.t) : Types.Toc.t = walk_items p.items
+  let compute (p : Page.t) : Types.Toc.t = walk_items p.url p.items
 end
 
 module Subpages : sig
