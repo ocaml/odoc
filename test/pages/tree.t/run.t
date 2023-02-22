@@ -42,9 +42,9 @@ Compile the modules:
 Now compile the pages:
   $ odoc compile top1.mld --child page-sub1
   $ odoc compile top2.mld --child page-sub2
-  $ odoc compile sub1.mld -I . --parent top1 --child page-sub3 --child m1
-  $ odoc compile sub2.mld -I . --parent top2 --child m2
-  $ odoc compile sub3.mld -I . --parent sub1 --child m3
+  $ odoc compile sub1.mld -I . --parent top1 --child page-sub3 --child M1
+  $ odoc compile sub2.mld -I . --parent top2 --child M2
+  $ odoc compile sub3.mld -I . --parent sub1 --child M3
   $ odoc compile m1.cmti -I . --parent sub1
   $ odoc compile m2.cmti -I . --parent sub2
   $ odoc compile m3.cmti -I . --parent sub3

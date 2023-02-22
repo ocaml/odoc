@@ -68,6 +68,7 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     digest;
     imports;
     source;
+    siblings = [];
     interface;
     hidden = Odoc_model.Root.contains_double_underscore name;
     content;

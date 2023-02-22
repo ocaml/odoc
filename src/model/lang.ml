@@ -458,6 +458,7 @@ module rec Compilation_unit : sig
     digest : Digest.t;
     imports : Import.t list;
     source : Source.t option;
+    siblings : Identifier.OdocId.t list;
     interface : bool;
     hidden : bool;
     content : content;
@@ -473,7 +474,7 @@ module rec Page : sig
     name : Identifier.Page.t;
     root : Root.t;
     content : Comment.docs;
-    children : Reference.t list;
+    children : Identifier.OdocId.t list;
     digest : Digest.t;
     linked : bool;
   }

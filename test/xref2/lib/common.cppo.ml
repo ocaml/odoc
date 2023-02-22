@@ -609,6 +609,7 @@ let my_compilation_unit id (s : Odoc_model.Lang.Signature.t) =
     ; digest = "nodigest"
     ; imports = []
     ; source = None
+    ; siblings = []
     ; interface = true
     ; hidden = false
     ; content = Module s
