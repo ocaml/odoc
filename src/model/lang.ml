@@ -509,7 +509,7 @@ module rec Page : sig
     root : Root.t;
     content : Comment.docs;
     children : Reference.t list;
-    source_children : string list;
+    source_children : Identifier.SourcePage.t list;
     digest : Digest.t;
     linked : bool;
   }

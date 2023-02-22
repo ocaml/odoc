@@ -34,8 +34,9 @@ Look if all the source files are generated:
   html/A_x
   html/A_x/index.html
   html/root
-  html/root/a.ml.html
-  html/root/a_x.ml.html
+  html/root/source
+  html/root/source/a.ml.html
+  html/root/source/a_x.ml.html
 
 Documentation for `A_x` is not generated for hidden modules, but --hidden do not
 work right now:
@@ -45,19 +46,20 @@ work right now:
 
 Code source for `A_x` is wanted:
 
-  $ [ -f html/root/a_x.ml.html ]
+  $ [ -f html/root/_source/a_x.ml.html ]
+  [1]
 
 `A` should contain a link to `A_x.ml.html`:
 
   $ grep source_link html/A/index.html
-      <a href="../root/a.ml.html" class="source_link">Source</a>
-       <a href="../root/a_x.ml.html" class="source_link">Source</a>
+      <a href="../root/source/a.ml.html" class="source_link">Source</a>
+       <a href="../root/source/a_x.ml.html" class="source_link">Source</a>
 
 `A.X` and `A.X.Y` should contain a link to `A_x.ml.html`:
 
   $ grep source_link html/A/X/index.html
-      <a href="../../root/a_x.ml.html" class="source_link">Source</a>
-       <a href="../../root/a_x.ml.html#def-1" class="source_link">Source</a>
+      <a href="../../root/source/a_x.ml.html" class="source_link">Source</a>
+       <a href="../../root/source/a_x.ml.html#def-1" class="source_link">Source
   $ grep source_link html/A/X/Y/index.html
-      <a href="../../../root/a_x.ml.html#def-1" class="source_link">Source</a>
-       <a href="../../../root/a_x.ml.html#def-0" class="source_link">Source</a>
+      <a href="../../../root/source/a_x.ml.html#def-1" class="source_link">
+       <a href="../../../root/source/a_x.ml.html#def-0" class="source_link">

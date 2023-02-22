@@ -19,7 +19,7 @@ open Odoc_model.Paths
 
 val compilation_unit : Lang.Compilation_unit.t -> Types.Document.t
 
-val page : Lang.Page.t -> Types.Document.t
+val page : Lang.Page.t -> Types.Document.t list
 (** Convert compilation unit or page models into a document *)
 
 val source_page :

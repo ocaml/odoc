@@ -30,9 +30,10 @@ Look if all the source files are generated:
   html/Main/B/index.html
   html/Main/index.html
   html/root
-  html/root/a.ml.html
-  html/root/b.ml.html
-  html/root/main.ml.html
+  html/root/source
+  html/root/source/a.ml.html
+  html/root/source/b.ml.html
+  html/root/source/main.ml.html
 
   $ cat html/Main/A/index.html
   <!DOCTYPE html>
@@ -50,15 +51,15 @@ Look if all the source files are generated:
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Main.A</span></code>
-      <a href="../../root/a.ml.html" class="source_link">Source</a>
+      <a href="../../root/source/a.ml.html" class="source_link">Source</a>
      </h1>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="../../root/a.ml.html#def-0" class="source_link">Source</a>
-       <code><span><span class="keyword">val</span> x : int</span></code>
+       <a href="../../root/source/a.ml.html#def-0" class="source_link">Source
+       </a><code><span><span class="keyword">val</span> x : int</span></code>
       </div>
      </div>
     </div>

@@ -413,13 +413,24 @@ module Identifier = struct
     let compare = compare
   end
 
+  module SourceDir = struct
+    type t = Paths_types.Identifier.source_dir
+    type t_pv = Paths_types.Identifier.source_dir_pv
+    let equal = equal
+    let hash = hash
+    let compare = compare
+    let rec name = function
+      | { iv = `SourceDir (p, n); _ } -> name p ^ "/" ^ n
+      | { iv = `SourceRoot _; _ } -> "./"
+  end
+
   module SourcePage = struct
     type t = Paths_types.Identifier.source_page
     type t_pv = Paths_types.Identifier.source_page_pv
     let equal = equal
     let hash = hash
     let compare = compare
-    let name { iv = `SourcePage (_, name); _ } = name
+    let name { iv = `SourcePage (p, name); _ } = SourceDir.name p ^ "/" ^ name
   end
 
   module OdocId = struct
@@ -535,8 +546,32 @@ module Identifier = struct
         [> `LeafPage of ContainerPage.t option * PageName.t ] id =
       mk_parent_opt PageName.to_string "lp" (fun (p, n) -> `LeafPage (p, n))
 
-    let source_page =
-      mk_parent (fun rp -> rp) "sp" (fun (p, rp) -> `SourcePage (p, rp))
+    let source_page (container_page, path) =
+      let rec source_dir dir =
+        match dir with
+        | [] ->
+            mk_parent
+              (fun () -> "")
+              "sr"
+              (fun (p, ()) -> `SourceRoot p)
+              (container_page, ())
+        | a :: q ->
+            let parent = source_dir q in
+            mk_parent
+              (fun k -> k)
+              "sd"
+              (fun (p, dir) -> `SourceDir (p, dir))
+              (parent, a)
+      in
+      match List.rev path with
+      | [] -> assert false
+      | file :: dir ->
+          let parent = source_dir dir in
+          mk_parent
+            (fun x -> x)
+            "sp"
+            (fun (p, rp) -> `SourcePage (p, rp))
+            (parent, file)
 
     let root :
         ContainerPage.t option * ModuleName.t ->

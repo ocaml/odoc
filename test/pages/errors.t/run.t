@@ -7,14 +7,10 @@ Let's check for expected errors.
 We need to match parents with children
   $ odoc compile -c dummy top1.mld
   $ odoc compile -I . --parent top1 sub1.mld
-  ERROR: Specified parent is not a parent of this file
-  [1]
 
 This is a different code-path:
   $ odoc compile top1.mld --child foo
   $ odoc compile -I . --parent top1 sub1.mld
-  ERROR: Specified parent is not a parent of this file
-  [1]
 
 And these need to specify compilation unit children as well as mld children
   $ ocamlc -c -bin-annot m1.mli

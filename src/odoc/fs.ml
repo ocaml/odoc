@@ -42,6 +42,7 @@ module File = struct
     | Result.Ok psuf -> Fpath.(normalize @@ (directory // psuf))
 
   let to_string = Fpath.to_string
+  let segs = Fpath.segs
 
   let of_string s =
     match Fpath.of_string s with
