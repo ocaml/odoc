@@ -1,6 +1,6 @@
 Compile the modules:
 
-  $ odoc compile --child module-a root.mld
+  $ odoc compile -c module-a -C a.ml root.mld
   $ ocamlc -c a.mli a.ml -bin-annot
   $ odoc compile --source-name a.ml --source-parent-file page-root.odoc -I . a.cmti
   $ odoc link a.odoc

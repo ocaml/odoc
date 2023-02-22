@@ -1,6 +1,6 @@
 Similar to Astring library.
 
-  $ odoc compile --child module-a root.mld
+  $ odoc compile -c module-a -C a.ml -C a_x.ml root.mld
   $ ocamlc -c -o a_x.cmo a_x.ml -bin-annot -I .
   $ ocamlc -c a.mli -bin-annot -I .
   $ ocamlc -c a.ml -bin-annot -I .

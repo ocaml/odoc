@@ -28,6 +28,9 @@ type parent_cli_spec =
   | CliPackage of string
   | CliNoparent
 
+let check_is_none msg = function None -> Ok () | Some _ -> Error (`Msg msg)
+let check_is_empty msg = function [] -> Ok () | _ :: _ -> Error (`Msg msg)
+
 (** Raises warnings and errors. *)
 let lookup_implementation_of_cmti intf_file =
   let input_file = Fs.File.set_ext ".cmt" intf_file in
@@ -181,7 +184,8 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
       else Error (`Msg "Specified parent is not a parent of this file")
   | Package parent -> result (Some parent)
 
-let mld ~parent_spec ~output ~children ~warnings_options input =
+let mld ~parent_spec ~output ~children ~source_children ~warnings_options input
+    =
   List.fold_left
     (fun acc child_str ->
       match (acc, parse_reference child_str) with
@@ -221,14 +225,16 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
       else Error (`Msg "Specified parent is not a parent of this file")
     in
     let module Mk = Paths.Identifier.Mk in
-    match (parent_spec, children) with
-    | Explicit (p, cs), [] -> check cs @@ Mk.leaf_page (Some p, page_name)
-    | Explicit (p, cs), _ -> check cs @@ Mk.page (Some p, page_name)
-    | Package parent, [] -> Ok (Mk.leaf_page (Some parent, page_name))
-    | Package parent, _ ->
+    let has_children = children <> [] || source_children <> [] in
+    match parent_spec with
+    | Explicit (p, cs) when has_children ->
+        check cs @@ Mk.page (Some p, page_name)
+    | Explicit (p, cs) -> check cs @@ Mk.leaf_page (Some p, page_name)
+    | Package parent when has_children ->
         Ok (Mk.page (Some parent, page_name)) (* This is a bit odd *)
-    | Noparent, [] -> Ok (Mk.leaf_page (None, page_name))
-    | Noparent, _ -> Ok (Mk.page (None, page_name))
+    | Package parent -> Ok (Mk.leaf_page (Some parent, page_name))
+    | Noparent when has_children -> Ok (Mk.page (None, page_name))
+    | Noparent -> Ok (Mk.leaf_page (None, page_name))
   in
   name >>= fun name ->
   let root =
@@ -237,7 +243,16 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
   in
   let resolve content =
     let page =
-      Lang.Page.{ name; root; children; content; digest; linked = false }
+      Lang.Page.
+        {
+          name;
+          root;
+          children;
+          source_children;
+          content;
+          digest;
+          linked = false;
+        }
     in
     Odoc_file.save_page output ~warnings:[] page;
     Ok ()
@@ -257,33 +272,47 @@ let handle_file_ext = function
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options ~source input =
+    ~warnings_options ~source ~source_children input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
-  (match source with
-  | Some (parent, name) -> (
-      Odoc_file.load_root parent >>= fun parent_root ->
-      match parent_root.Root.id with
-      | { Paths.Identifier.iv = `Page _; _ } as parent_id ->
-          Ok (Some (parent_id, name))
-      | { iv = `LeafPage _; _ } ->
-          Error (`Msg "Specified source-parent doesn't have any children.")
-      | { iv = `Root _; _ } ->
-          Error
-            (`Msg "Specified source-parent should be a page but is a module."))
-  | None -> Ok None)
-  >>= fun source ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
-    mld ~parent_spec ~output ~warnings_options ~children input
+    check_is_none "Not expecting source (--source) when compiling pages." source
+    >>= fun () ->
+    mld ~parent_spec ~output ~warnings_options ~children ~source_children input
   else
+    check_is_empty "Not expecting children (--child) when compiling modules."
+      children
+    >>= fun () ->
+    check_is_empty
+      "Not expecting source-children (--source-child) when compiling modules."
+      source_children
+    >>= fun () ->
+    (match source with
+    | Some (parent, name) -> (
+        Odoc_file.load parent >>= fun parent ->
+        match parent.Odoc_file.content with
+        | Odoc_file.Page_content page -> (
+            match page.Lang.Page.name with
+            | { Paths.Identifier.iv = `Page _; _ } as parent_id
+              when List.mem name page.source_children ->
+                Ok (Some (parent_id, name))
+            | _ ->
+                Error
+                  (`Msg
+                    "Specified source-parent is not a parent of the source."))
+        | Unit_content _ ->
+            Error
+              (`Msg "Specified source-parent should be a page but is a module.")
+        )
+    | None -> Ok None)
+    >>= fun source ->
     handle_file_ext ext >>= fun input_type ->
     let parent =
       match parent_spec with
-      | Noparent -> Ok None
-      | Explicit (parent, _) -> Ok (Some parent)
-      | Package parent -> Ok (Some parent)
+      | Noparent -> None
+      | Explicit (parent, _) -> Some parent
+      | Package parent -> Some parent
     in
-    parent >>= fun parent ->
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Error.catch_errors_and_warnings (fun () ->

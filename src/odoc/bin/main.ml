@@ -159,7 +159,7 @@ end = struct
 
   let compile hidden directories resolve_fwd_refs dst package_opt
       parent_name_opt open_modules children input warnings_options
-      source_parent_file source_name =
+      source_parent_file source_name source_children =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -191,7 +191,7 @@ end = struct
     source >>= fun source ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warnings_options ~source input
+      ~warnings_options ~source ~source_children input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -210,11 +210,20 @@ end = struct
   let children =
     let doc =
       "Specify the $(i,.odoc) file as a child. Can be used multiple times. \
-       Only applies to mld files"
+       Only applies to mld files."
     in
     let default = [] in
     Arg.(
       value & opt_all string default & info ~docv:"CHILD" ~doc [ "c"; "child" ])
+
+  let source_children =
+    let doc =
+      "Specify source files. Takes the same paths that are passed to \
+       $(i,--source-name). The page can then be used as a source-parent. Can \
+       be used multiple times. Only applies to mld files."
+    in
+    Arg.(
+      value & opt_all string [] & info ~docv:"PATH" ~doc [ "C"; "source-child" ])
 
   let source_parent_file =
     let doc =
@@ -259,7 +268,7 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ package_opt $ parent_opt $ open_modules $ children $ input
-       $ warnings_options $ source_parent_file $ source_name))
+       $ warnings_options $ source_parent_file $ source_name $ source_children))
 
   let info ~docs =
     let man =
