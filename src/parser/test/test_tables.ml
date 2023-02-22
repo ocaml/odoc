@@ -546,7 +546,7 @@ let%expect_test _ =
                     (paragraph (((f.ml (5 32) (5 37)) (code_span foo)))))))))))
              (align (default default))))))
          (warnings
-          ( "File \"f.ml\", line 4, character 18 to line 5, character 14:\
+          ( "File \"f.ml\", line 4, character 11 to line 5, character 23:\
            \nLine break is not allowed in '{t ...}' (table)."))) |}]
 
     let no_space =
