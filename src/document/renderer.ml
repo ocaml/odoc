@@ -104,56 +104,8 @@ end = struct
     | Module m -> Node (id, sig_items m.items)
     | Pack p -> Node (id, packed p)
 
-  let reference acc (r : Odoc_model.Paths.Reference.t) =
-    match r with
-    | `Module (_s, id) ->
-        let id =
-          Format.asprintf "module %a" Odoc_model.Names.ModuleName.fmt id
-        in
-        Leaf id :: acc
-    | `ModuleType (_s, id) ->
-        let id =
-          Format.asprintf "module type %a" Odoc_model.Names.ModuleTypeName.fmt
-            id
-        in
-        Leaf id :: acc
-    | `Type (_s, id) ->
-        let id = Format.asprintf "type %a" Odoc_model.Names.TypeName.fmt id in
-        Leaf id :: acc
-    | `Exception (_s, id) ->
-        let id =
-          Format.asprintf "exception %a" Odoc_model.Names.ExceptionName.fmt id
-        in
-        Leaf id :: acc
-    | `Value (_s, id) ->
-        let id = Format.asprintf "val %a" Odoc_model.Names.ValueName.fmt id in
-        Leaf id :: acc
-    | `Class (_s, id) ->
-        let id = Format.asprintf "class %a" Odoc_model.Names.ClassName.fmt id in
-        Leaf id :: acc
-    | `ClassType (_s, id) ->
-        let id =
-          Format.asprintf "class type %a" Odoc_model.Names.ClassTypeName.fmt id
-        in
-        Leaf id :: acc
-    | `Method (_s, id) ->
-        let id =
-          Format.asprintf "method %a" Odoc_model.Names.MethodName.fmt id
-        in
-        Leaf id :: acc
-    | `InstanceVariable (_s, id) ->
-        let id =
-          Format.asprintf "val %a" Odoc_model.Names.InstanceVariableName.fmt id
-        in
-        Leaf id :: acc
-    | _ -> acc
-
-  let references (l : Odoc_model.Paths.Reference.t list) =
-    List.rev @@ List.fold_left reference [] l
-
-  let of_page (p : Odoc_model.Lang.Page.t) : t =
+  let of_page (_ : Odoc_model.Lang.Page.t) : t =
     (* ignore page name *)
     (*let id = Format.asprintf "page %a" pp_id p.name in*)
-    let children = references p.children in
-    Node ("", children)
+    Node ("", [])
 end
