@@ -1,7 +1,6 @@
 Build the documentation of a simple Dune library.
 
   $ dune build @install @doc
-  ld: warning: -undefined dynamic_lookup may not work with chained fixups
 
   $ find _build/default/_doc/_html -name '*.html' | sort
   _build/default/_doc/_html/dune_odoc_test/Dune_odoc_test/Bar/index.html
