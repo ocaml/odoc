@@ -1,7 +1,7 @@
 This is what happens when a dune user write a toplevel module.
 Similar to the lookup_def_wrapped test.
 
-  $ odoc compile --child module-a root.mld
+  $ odoc compile -c module-a -C a.ml -C main.ml root.mld
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o main__.cmo main__.ml -bin-annot -I .
   $ ocamlc -c -open Main__ main.ml -bin-annot -I .

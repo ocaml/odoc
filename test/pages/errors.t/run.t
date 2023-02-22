@@ -5,7 +5,7 @@ Let's check for expected errors.
   This is the top1 page.
 
 We need to match parents with children
-  $ odoc compile top1.mld
+  $ odoc compile -c dummy top1.mld
   $ odoc compile -I . --parent top1 sub1.mld
   ERROR: Specified parent is not a parent of this file
   [1]

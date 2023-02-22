@@ -1,6 +1,6 @@
 Checking that source parents are kept, using include.
 
-  $ odoc compile --child module-a root.mld
+  $ odoc compile -c module-a -C a.ml -C b.ml -C main.ml root.mld
   $ ocamlc -c -o b.cmo b.ml -bin-annot -I .
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
   $ ocamlc -c main.ml -bin-annot -I .

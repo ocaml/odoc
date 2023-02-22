@@ -24,7 +24,7 @@ Files containing some values:
 
 Source pages require a parent:
 
-  $ odoc compile --child module-a root.mld
+  $ odoc compile -c module-a -C a.ml root.mld
 
 Compile the modules:
 

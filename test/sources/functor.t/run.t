@@ -1,6 +1,6 @@
 Verify the behavior on functors.
 
-  $ odoc compile --child module-a root.mld
+  $ odoc compile -c module-a -C s.ml -C a.ml -C b.ml root.mld
   $ ocamlc -c -o s.cmo s.ml -bin-annot -I .
   $ ocamlc -c -o a.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o b.cmo b.ml -bin-annot -I .

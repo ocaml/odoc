@@ -2,7 +2,7 @@ Make sure wrapped libraries don't interfere with generating the source code.
 Test both canonical paths and hidden units.
 It's a simpler case than Dune's wrapping.
 
-  $ odoc compile --child module-main root.mld
+  $ odoc compile -c module-main -C a.ml -C b.ml -C main.ml root.mld
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o main__B.cmo b.ml -bin-annot -I .
   $ ocamlc -c main.ml -bin-annot -I .
