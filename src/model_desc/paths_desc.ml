@@ -434,12 +434,24 @@ let modulename = Names.modulename
 let identifier : [< Paths.Identifier.t_pv ] Paths.Identifier.id Type_desc.t =
   Indirect ((fun n -> (n :> Paths.Identifier.t)), General_paths.identifier)
 
+let rec sourcedir_identifier : Paths.Identifier.SourceDir.t Type_desc.t =
+  Variant
+    (fun id ->
+      match id.iv with
+      | `SourceDir (parent, name) ->
+          C ("`SourceDir", (parent, name), Pair (sourcedir_identifier, string))
+      | `SourceRoot parent ->
+          C
+            ( "`SourceRoot",
+              (parent :> Paths.Identifier.t),
+              General_paths.identifier ))
+
 let sourcepage_identifier : Paths.Identifier.SourcePage.t Type_desc.t =
   Indirect
     ( (fun id ->
         let (`SourcePage (parent, name)) = id.iv in
-        ((parent :> Paths.Identifier.t), name)),
-      Pair (General_paths.identifier, string) )
+        (parent, name)),
+      Pair (sourcedir_identifier, string) )
 
 let resolved_path : [< Paths.Path.Resolved.t ] Type_desc.t =
   Indirect ((fun n -> (n :> General_paths.rp)), General_paths.resolved_path)

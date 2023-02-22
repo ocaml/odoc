@@ -18,9 +18,13 @@ module Identifier = struct
   and page = page_pv id
   (** @canonical Odoc_model.Paths.Identifier.Page.t *)
 
-  type source_page_pv = [ `SourcePage of container_page * string ]
-  (** The second argument is the relative path inside the container page,
-      includes the filename.
+  type source_dir_pv =
+    [ `SourceRoot of container_page | `SourceDir of source_dir * string ]
+
+  and source_dir = source_dir_pv id
+
+  type source_page_pv = [ `SourcePage of source_dir * string ]
+  (** The second argument is the filename.
 
      @canonical Odoc_model.Paths.Identifier.SourcePage.t_pv *)
 

@@ -38,6 +38,9 @@ module Path : sig
 
   val from_identifier : [< source_pv ] Odoc_model.Paths.Identifier.id -> t
 
+  val source_dir_from_identifier : Odoc_model.Paths.Identifier.SourceDir.t -> t
+  (** A path to a source dir. *)
+
   val source_file_from_identifier :
     Odoc_model.Paths.Identifier.SourcePage.t -> t
   (** A path to a source file. *)

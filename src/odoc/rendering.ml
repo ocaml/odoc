@@ -16,7 +16,7 @@ let documents_of_odocl ~warnings_options ~renderer ~extra ~syntax input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
   | Odoc_file.Page_content odoctree ->
-      Ok [ Renderer.document_of_page ~syntax odoctree ]
+      Ok (Renderer.document_of_page ~syntax odoctree)
   | Unit_content (odoctree, _) ->
       documents_of_unit ~warnings_options ~syntax ~renderer ~extra odoctree
 
@@ -24,7 +24,7 @@ let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
     input =
   let output = Fs.File.(set_ext ".odocl" input) in
   Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
-  | `Page page -> Ok [ Renderer.document_of_page ~syntax page ]
+  | `Page page -> Ok (Renderer.document_of_page ~syntax page)
   | `Module m -> documents_of_unit ~warnings_options ~syntax ~renderer ~extra m
 
 let render_document renderer ~output:root_dir ~extra_suffix ~extra doc =

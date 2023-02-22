@@ -56,67 +56,67 @@ Source links generated in the documentation:
   $ grep source_link html/A/index.html -B 2
     <header class="odoc-preamble">
      <h1>Module <code><span>A</span></code>
-      <a href="../root/a.ml.html" class="source_link">Source</a>
+      <a href="../root/source/a.ml.html" class="source_link">Source</a>
   --
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
-       <a href="../root/a.ml.html#def-0" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-0" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="../root/a.ml.html#def-1" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-1" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
-       <a href="../root/a.ml.html#def-2" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-2" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-z">
        <a href="#val-z" class="anchor"></a>
-       <a href="../root/a.ml.html#def-3" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-3" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-A">
        <a href="#module-A" class="anchor"></a>
-       <a href="../root/a.ml.html#def-5" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-5" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-B">
        <a href="#module-B" class="anchor"></a>
-       <a href="../root/a.ml.html#def-5" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-5" class="source_link">Source</a>
   --
       <div class="spec module-type anchored" id="module-type-T">
        <a href="#module-type-T" class="anchor"></a>
-       <a href="../root/a.ml.html#def-7" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-7" class="source_link">Source</a>
   --
       <div class="spec module-type anchored" id="module-type-U">
        <a href="#module-type-U" class="anchor"></a>
-       <a href="../root/a.ml.html#def-8" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-8" class="source_link">Source</a>
   --
       <div class="spec type anchored" id="type-ext">
        <a href="#type-ext" class="anchor"></a>
-       <a href="../root/a.ml.html#def-9" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-9" class="source_link">Source</a>
   --
       <div class="spec type extension anchored" id="extension-decl-Foo">
        <a href="#extension-decl-Foo" class="anchor"></a>
-       <a href="../root/a.ml.html#def-10" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-10" class="source_link">Source</a>
   --
       <div class="spec exception anchored" id="exception-Exn">
        <a href="#exception-Exn" class="anchor"></a>
-       <a href="../root/a.ml.html#def-11" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-11" class="source_link">Source</a>
   --
       <div class="spec class anchored" id="class-cls">
        <a href="#class-cls" class="anchor"></a>
-       <a href="../root/a.ml.html#def-12" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-12" class="source_link">Source</a>
   --
       <div class="spec class anchored" id="class-cls'">
        <a href="#class-cls'" class="anchor"></a>
-       <a href="../root/a.ml.html#def-14" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-14" class="source_link">Source</a>
   --
       <div class="spec class-type anchored" id="class-type-ct">
        <a href="#class-type-ct" class="anchor"></a>
-       <a href="../root/a.ml.html#def-15" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#def-15" class="source_link">Source</a>
 
 Ids generated in the source code:
 
-  $ cat html/root/a.ml.html | tr '> ' '\n\n' | grep '^id'
+  $ cat html/root/source/a.ml.html | tr '> ' '\n\n' | grep '^id'
   id="L1"
   id="L2"
   id="L3"

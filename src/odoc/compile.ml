@@ -123,8 +123,7 @@ let resolve_and_substitute ~resolver ~make_root ~source
   in
   let source_info =
     match source with
-    | Some (parent, name) ->
-        let id = Paths.Identifier.Mk.source_page (parent, name) in
+    | Some id ->
         let infos =
           match cmt_infos with
           | Some (_, local_jmp) ->
@@ -219,24 +218,36 @@ let mld ~parent_spec ~output ~children ~source_children ~warnings_options input
           "Warning: Potential name clash - child page named 'index'\n%!"
     | _ -> ()
   in
-  let name =
+  (if children = [] then
+   (* No children, this is a leaf page. *)
+   let id =
+     match parent_spec with
+     | Explicit (p, _) -> Paths.Identifier.Mk.leaf_page (Some p, page_name)
+     | Package parent -> Paths.Identifier.Mk.leaf_page (Some parent, page_name)
+     | Noparent -> Paths.Identifier.Mk.leaf_page (None, page_name)
+   in
+   Ok (id, [])
+  else
+    (* Has children, this is a container page. *)
     let check parents_children v =
       if List.exists check_child parents_children then Ok v
       else Error (`Msg "Specified parent is not a parent of this file")
     in
-    let module Mk = Paths.Identifier.Mk in
-    let has_children = children <> [] || source_children <> [] in
-    match parent_spec with
-    | Explicit (p, cs) when has_children ->
-        check cs @@ Mk.page (Some p, page_name)
-    | Explicit (p, cs) -> check cs @@ Mk.leaf_page (Some p, page_name)
-    | Package parent when has_children ->
-        Ok (Mk.page (Some parent, page_name)) (* This is a bit odd *)
-    | Package parent -> Ok (Mk.leaf_page (Some parent, page_name))
-    | Noparent when has_children -> Ok (Mk.page (None, page_name))
-    | Noparent -> Ok (Mk.leaf_page (None, page_name))
-  in
-  name >>= fun name ->
+    (match parent_spec with
+    | Explicit (p, cs) ->
+        check cs @@ Paths.Identifier.Mk.page (Some p, page_name)
+    | Package parent ->
+        Ok (Paths.Identifier.Mk.page (Some parent, page_name))
+        (* This is a bit odd *)
+    | Noparent -> Ok (Paths.Identifier.Mk.page (None, page_name)))
+    >>= fun id ->
+    let source_children =
+      List.map
+        (fun source_child -> Paths.Identifier.Mk.source_page (id, source_child))
+        source_children
+    in
+    Ok ((id :> Paths.Identifier.Page.t), source_children))
+  >>= fun (name, source_children) ->
   let root =
     let file = Root.Odoc_file.create_page root_name in
     { Root.id = (name :> Paths.Identifier.OdocId.t); file; digest }
@@ -290,16 +301,21 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     (match source with
     | Some (parent, name) -> (
         Odoc_file.load parent >>= fun parent ->
+        let err_not_parent () =
+          Error (`Msg "Specified source-parent is not a parent of the source.")
+        in
         match parent.Odoc_file.content with
         | Odoc_file.Page_content page -> (
             match page.Lang.Page.name with
-            | { Paths.Identifier.iv = `Page _; _ } as parent_id
-              when List.mem name page.source_children ->
-                Ok (Some (parent_id, name))
-            | _ ->
-                Error
-                  (`Msg
-                    "Specified source-parent is not a parent of the source."))
+            | { Paths.Identifier.iv = `Page _; _ } as parent_id ->
+                let name = Paths.Identifier.Mk.source_page (parent_id, name) in
+                if
+                  List.exists
+                    (Paths.Identifier.SourcePage.equal name)
+                    page.source_children
+                then Ok (Some name)
+                else err_not_parent ()
+            | { iv = `LeafPage _; _ } -> err_not_parent ())
         | Unit_content _ ->
             Error
               (`Msg "Specified source-parent should be a page but is a module.")

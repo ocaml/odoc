@@ -183,10 +183,22 @@ module Path = struct
     from_identifier
       (p : [< source_pv ] Odoc_model.Paths.Identifier.id :> source)
 
+  let rec source_dir_from_identifier id =
+    match id.Odoc_model.Paths.Identifier.iv with
+    | `SourceRoot container ->
+        let parent = from_identifier (container :> source) in
+        let kind = `Page in
+        mk ~parent kind "source"
+    | `SourceDir (parent, name) ->
+        let parent = source_dir_from_identifier parent in
+        let kind = `Page in
+        mk ~parent kind name
+
   let source_file_from_identifier id =
     let (`SourcePage (parent, name)) = id.Odoc_model.Paths.Identifier.iv in
-    let parent = from_identifier (parent :> source) in
-    mk ~parent `SourcePage name
+    let parent = source_dir_from_identifier parent in
+    let kind = `SourcePage in
+    mk ~parent kind name
 
   let to_list url =
     let rec loop acc { parent; name; kind } =

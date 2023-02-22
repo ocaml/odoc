@@ -1722,7 +1722,7 @@ module Make (Syntax : SYNTAX) = struct
   module Page : sig
     val compilation_unit : Lang.Compilation_unit.t -> Document.t
 
-    val page : Lang.Page.t -> Document.t
+    val page : Lang.Page.t -> Document.t list
   end = struct
     let pack : Lang.Compilation_unit.Packed.t -> Item.t list =
      fun t ->
@@ -1760,6 +1760,79 @@ module Make (Syntax : SYNTAX) = struct
       let page = make_expansion_page ~source_anchor url [ unit_doc ] items in
       Document.Page page
 
+    let source_dir_page (dir_pages : Paths.Identifier.SourcePage.t list) =
+      let open Paths.Identifier in
+      let module Set = Set.Make (SourceDir) in
+      let module M = Map.Make (SourceDir) in
+      (* mmap is a from a [SourceDir.t] to its [SourceDir.t] and [SourcePage.t]
+         children *)
+      let mmap =
+        let add parent f mmap =
+          let old_value =
+            try M.find parent mmap with Not_found -> (Set.empty, [])
+          in
+          M.add parent (f old_value) mmap
+        and add_file file (set, lp) = (set, file :: lp)
+        and add_dir dir (set, lp) = (Set.add dir set, lp) in
+        let rec dir_ancestors_add dir mmap =
+          match dir.iv with
+          | `SourceDir (parent, _) ->
+              let mmap = add parent (add_dir dir) mmap in
+              dir_ancestors_add parent mmap
+          | `SourceRoot _ -> mmap
+        in
+        let file_ancestors_add ({ iv = `SourcePage (parent, _); _ } as file)
+            mmap =
+          let mmap = add parent (add_file file) mmap in
+          dir_ancestors_add parent mmap
+        in
+        List.fold_left
+          (fun mmap file -> file_ancestors_add file mmap)
+          M.empty dir_pages
+      in
+      let page_of_dir (dir : SourceDir.t) (dir_children, file_children) =
+        let url = Url.Path.source_dir_from_identifier dir in
+        let li name url =
+          let block desc = Block.{ attr = []; desc } in
+          let inline desc = Block.Inline Inline.[ { attr = []; desc } ] in
+          let link url desc =
+            Inline.InternalLink
+              InternalLink.(Resolved (url, [ Inline.{ attr = []; desc } ]))
+          in
+          [ block @@ inline @@ link url (Text name) ]
+        in
+        let li_of_child child =
+          match child with
+          | { iv = `SourceRoot _; _ } ->
+              assert false (* No [`SourceRoot] is child of a [`SourceDir] *)
+          | { iv = `SourceDir (_, name); _ } ->
+              let url =
+                child |> Url.Path.source_dir_from_identifier |> Url.from_path
+              in
+              li name url
+        in
+        let li_of_file_child child =
+          match child with
+          | { iv = `SourcePage (_, name); _ } ->
+              let url =
+                child |> Url.Path.source_file_from_identifier |> Url.from_path
+              in
+              li name url
+        in
+        let items =
+          let text desc = Item.Text [ { attr = []; desc } ] in
+          let list l = Block.List (Block.Unordered, l) in
+          let list_of_children =
+            Set.fold (fun child acc -> li_of_child child :: acc) dir_children []
+            @ List.map (fun child -> li_of_file_child child) file_children
+          in
+          [ text @@ list list_of_children ]
+        in
+        Document.Page
+          { Types.Page.preamble = []; items; url; source_anchor = None }
+      in
+      M.fold (fun dir children acc -> page_of_dir dir children :: acc) mmap []
+
     let page (t : Odoc_model.Lang.Page.t) =
       (*let name =
           match t.name.iv with `Page (_, name) | `LeafPage (_, name) -> name
@@ -1768,7 +1841,8 @@ module Make (Syntax : SYNTAX) = struct
       let url = Url.Path.from_identifier t.name in
       let preamble, items = Sectioning.docs t.content in
       let source_anchor = None in
-      Document.Page { Page.preamble; items; url; source_anchor }
+      let dir_pages = source_dir_page t.source_children in
+      Document.Page { Page.preamble; items; url; source_anchor } :: dir_pages
   end
 
   include Page

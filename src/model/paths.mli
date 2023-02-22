@@ -316,6 +316,15 @@ module Identifier : sig
     val compare : t -> t -> int
   end
 
+  module SourceDir : sig
+    type t = Paths_types.Identifier.source_dir
+    type t_pv = Paths_types.Identifier.source_dir_pv
+    val equal : t -> t -> bool
+    val hash : t -> int
+    val compare : t -> t -> int
+    val name : t -> string
+  end
+
   module SourcePage : sig
     type t = Paths_types.Identifier.source_page
     type t_pv = Paths_types.Identifier.source_page_pv
@@ -440,7 +449,7 @@ module Identifier : sig
       ContainerPage.t option * PageName.t ->
       [> `LeafPage of ContainerPage.t option * PageName.t ] id
 
-    val source_page : ContainerPage.t * string -> SourcePage.t
+    val source_page : ContainerPage.t * string list -> SourcePage.t
 
     val root :
       ContainerPage.t option * ModuleName.t ->

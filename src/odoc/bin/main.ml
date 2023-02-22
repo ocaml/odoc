@@ -38,6 +38,15 @@ let convert_fpath =
   and print = Fpath.pp in
   Arg.conv (parse, print)
 
+(** On top of the conversion 'string', split into segs. *)
+let convert_source_name =
+  let parse inp =
+    match Arg.(conv_parser string) inp with
+    | Ok s -> Result.Ok (s |> Fs.File.of_string |> Fs.File.segs)
+    | Error _ as e -> e
+  and print ppf x = Format.fprintf ppf "%s" (String.concat ~sep:"/" x) in
+  Arg.conv (parse, print)
+
 let handle_error = function
   | Result.Ok () -> ()
   | Error (`Cli_error msg) ->
@@ -223,7 +232,9 @@ end = struct
        be used multiple times. Only applies to mld files."
     in
     Arg.(
-      value & opt_all string [] & info ~docv:"PATH" ~doc [ "C"; "source-child" ])
+      value
+      & opt_all convert_source_name []
+      & info ~docv:"PATH" ~doc [ "C"; "source-child" ])
 
   let source_parent_file =
     let doc =
@@ -241,7 +252,9 @@ end = struct
        within the source_parent."
     in
     Arg.(
-      value & opt (some string) None & info [ "source-name" ] ~doc ~docv:"NAME")
+      value
+      & opt (some convert_source_name) None
+      & info [ "source-name" ] ~doc ~docv:"NAME")
 
   let cmd =
     let package_opt =
