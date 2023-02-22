@@ -162,11 +162,6 @@ type token_that_always_begins_an_inline_element =
 let _check_subset : token_that_always_begins_an_inline_element -> Token.t =
  fun t -> (t :> Token.t)
 
-(* The different contexts in which the inline parser [inline_element] and
-   [delimited_inline_parser] can be called. The inline parser's behavior depends
-   somewhat on the context: new lines are forbidden in light tables. *)
-type inline_context = In_light_table | Outside_light_table
-
 (* Consumes tokens that make up a single non-link inline element:
 
    - a horizontal space ([`Space], significant in inline elements),
@@ -188,12 +183,8 @@ type inline_context = In_light_table | Outside_light_table
 
    This function consumes exactly the tokens that make up the element. *)
 let rec inline_element :
-    input ->
-    Loc.span ->
-    context:inline_context ->
-    _ ->
-    Ast.inline_element with_location =
- fun input location ~context next_token ->
+    input -> Loc.span -> _ -> Ast.inline_element with_location =
+ fun input location next_token ->
   match next_token with
   | `Space _ as token ->
       junk input;
@@ -226,8 +217,7 @@ let rec inline_element :
       in
       let content, brace_location =
         delimited_inline_element_list ~parent_markup
-          ~parent_markup_location:location ~requires_leading_whitespace ~context
-          input
+          ~parent_markup_location:location ~requires_leading_whitespace input
       in
 
       let location = Loc.span [ location; brace_location ] in
@@ -255,7 +245,7 @@ let rec inline_element :
       let content, brace_location =
         delimited_inline_element_list ~parent_markup
           ~parent_markup_location:location ~requires_leading_whitespace:false
-          ~context input
+          input
       in
 
       let location = Loc.span [ location; brace_location ] in
@@ -293,7 +283,7 @@ let rec inline_element :
       let content, brace_location =
         delimited_inline_element_list ~parent_markup
           ~parent_markup_location:location ~requires_leading_whitespace:false
-          ~context input
+          input
       in
 
       `Link (u, content) |> Loc.at (Loc.span [ location; brace_location ])
@@ -324,11 +314,9 @@ and delimited_inline_element_list :
     parent_markup:[< Token.t ] ->
     parent_markup_location:Loc.span ->
     requires_leading_whitespace:bool ->
-    context:inline_context ->
     input ->
     Ast.inline_element with_location list * Loc.span =
- fun ~parent_markup ~parent_markup_location ~requires_leading_whitespace
-     ~context input ->
+ fun ~parent_markup ~parent_markup_location ~requires_leading_whitespace input ->
   (* [~at_start_of_line] is used to interpret [`Minus] and [`Plus]. These are
      word tokens if not the first non-whitespace tokens on their line. Then,
      they are allowed in a non-link element list. *)
@@ -351,17 +339,10 @@ and delimited_inline_element_list :
        it is an internal space, and we want to add it to the non-link inline
        element list. *)
     | (`Space _ | #token_that_always_begins_an_inline_element) as token ->
-        let acc =
-          inline_element input next_token.location ~context token :: acc
-        in
+        let acc = inline_element input next_token.location token :: acc in
         consume_elements ~at_start_of_line:false acc
-    | `Single_newline ws as blank ->
+    | `Single_newline ws ->
         junk input;
-        if context = In_light_table then
-          Parse_error.not_allowed ~what:(Token.describe blank)
-            ~in_what:(Token.describe `Begin_table_light)
-            next_token.location
-          |> add_warning input;
         let element = Loc.same next_token (`Space ws) in
         consume_elements ~at_start_of_line:true (element :: acc)
     | `Blank_line ws as blank ->
@@ -374,9 +355,7 @@ and delimited_inline_element_list :
         let element = Loc.same next_token (`Space ws) in
         consume_elements ~at_start_of_line:true (element :: acc)
     | `Bar as token ->
-        let acc =
-          inline_element input next_token.location ~context token :: acc
-        in
+        let acc = inline_element input next_token.location token :: acc in
         consume_elements ~at_start_of_line:false acc
     | (`Minus | `Plus) as bullet ->
         (if at_start_of_line then
@@ -389,9 +368,7 @@ and delimited_inline_element_list :
            ~suggestion next_token.location
          |> add_warning input);
 
-        let acc =
-          inline_element input next_token.location ~context bullet :: acc
-        in
+        let acc = inline_element input next_token.location bullet :: acc in
         consume_elements ~at_start_of_line:false acc
     | other_token ->
         Parse_error.not_allowed
@@ -473,10 +450,7 @@ let paragraph : input -> Ast.nestable_block_element with_location =
     match next_token.value with
     | ( `Space _ | `Minus | `Plus | `Bar
       | #token_that_always_begins_an_inline_element ) as token ->
-        let element =
-          inline_element input next_token.location ~context:Outside_light_table
-            token
-        in
+        let element = inline_element input next_token.location token in
         paragraph_line (element :: acc)
     | _ -> acc
   in
@@ -1023,7 +997,7 @@ let rec block_element_list :
           let content, brace_location =
             delimited_inline_element_list ~parent_markup:token
               ~parent_markup_location:location ~requires_leading_whitespace:true
-              ~context:Outside_light_table input
+              input
           in
           let location = Loc.span [ location; brace_location ] in
           let paragraph =
@@ -1063,8 +1037,7 @@ let rec block_element_list :
             let content, brace_location =
               delimited_inline_element_list ~parent_markup:token
                 ~parent_markup_location:location
-                ~requires_leading_whitespace:true ~context:Outside_light_table
-                input
+                ~requires_leading_whitespace:true input
             in
             if content = [] then
               Parse_error.should_not_be_empty ~what:(Token.describe token)
@@ -1081,7 +1054,7 @@ let rec block_element_list :
         let content, brace_location =
           delimited_inline_element_list ~parent_markup:token
             ~parent_markup_location:location ~requires_leading_whitespace:true
-            ~context:Outside_light_table input
+            input
         in
         let location = Loc.span [ location; brace_location ] in
 
@@ -1307,9 +1280,13 @@ and light_table_row ~parent_markup ~last_loc input =
         let acc_row = if new_line then [] else List.rev acc_cell :: acc_row in
         consume_row acc_row [] ~new_line:false ~last_loc
     | #token_that_always_begins_an_inline_element as token ->
-        let i =
-          inline_element input next_token.location ~context:In_light_table token
-        in
+        let i = inline_element input next_token.location token in
+        if Loc.spans_multiple_lines i then
+          Parse_error.not_allowed
+            ~what:(Token.describe (`Single_newline ""))
+            ~in_what:(Token.describe `Begin_table_light)
+            i.location
+          |> add_warning input;
         consume_row acc_row (i :: acc_cell) ~new_line:false
           ~last_loc:next_token.location
     | other_token ->
