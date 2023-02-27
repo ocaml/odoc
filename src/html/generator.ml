@@ -342,36 +342,6 @@ and items ~config ~resolve l : item Html.elt list =
   and items l = walk_items [] l in
   items l
 
-module Toc = struct
-  open Odoc_document.Doctree
-  open Types
-
-  let on_sub : Subpage.status -> bool = function
-    | `Closed | `Open | `Default -> false
-    | `Inline -> true
-
-  let gen_toc ~config ~resolve ~path i =
-    let toc = Toc.compute path ~on_sub i in
-    let rec section { Toc.url; text; children } =
-      let text = inline_nolink text in
-      let title =
-        (text
-          : non_link_phrasing Html.elt list
-          :> Html_types.flow5_without_interactive Html.elt list)
-      in
-      let title_str =
-        List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ())) text
-        |> String.concat ""
-      in
-      let href = Link.href ~config ~resolve url in
-      { title; title_str; href; children = List.map section children }
-    in
-    List.map section toc
-  ;;
-
-  ignore gen_toc
-end
-
 module Breadcrumbs = struct
   open Types
 
