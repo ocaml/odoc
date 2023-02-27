@@ -46,8 +46,7 @@ work right now:
 
 Code source for `A_x` is wanted:
 
-  $ [ -f html/root/_source/a_x.ml.html ]
-  [1]
+  $ [ -f html/root/source/a_x.ml.html ]
 
 `A` should contain a link to `A_x.ml.html`:
 
