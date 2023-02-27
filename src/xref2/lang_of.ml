@@ -940,7 +940,9 @@ and type_decl_representation map id (t : Component.TypeDecl.Representation.t) :
     Odoc_model.Lang.TypeDecl.Representation.t =
   match t with
   | Extensible -> Extensible
-  | Variant cs -> Variant (List.map (type_decl_constructor map id) cs)
+  | Variant cs ->
+      Variant
+        (List.map (type_decl_constructor map (id :> Identifier.Parent.t)) cs)
   | Record fs ->
       Record
         (List.map
@@ -949,7 +951,7 @@ and type_decl_representation map id (t : Component.TypeDecl.Representation.t) :
 
 and type_decl_constructor :
     maps ->
-    Odoc_model.Paths.Identifier.Type.t ->
+    Odoc_model.Paths.Identifier.Parent.t ->
     Component.TypeDecl.Constructor.t ->
     Odoc_model.Lang.TypeDecl.Constructor.t =
  fun map id t ->
@@ -959,11 +961,8 @@ and type_decl_constructor :
   {
     id = identifier;
     doc = docs (id :> Identifier.LabelParent.t) t.doc;
-    args =
-      type_decl_constructor_argument map
-        (id :> Odoc_model.Paths.Identifier.Parent.t)
-        t.args;
-    res = Opt.map (type_expr map (id :> Identifier.Parent.t)) t.res;
+    args = type_decl_constructor_argument map id t.args;
+    res = Opt.map (type_expr map id) t.res;
   }
 
 and type_expr_package map parent t =

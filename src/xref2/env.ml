@@ -288,13 +288,14 @@ let add_module identifier m docs env =
   let env' = add_to_elts Kind_Module identifier (`Module (identifier, m)) env in
   if env.linking then add_cdocs identifier docs env' else env'
 
-let add_type identifier t env =
+let add_type (identifier : Identifier.Type.t) t env =
   let open Component in
   let open_typedecl cs =
     let add_cons env (cons : TypeDecl.Constructor.t) =
       let ident =
         Paths.Identifier.Mk.constructor
-          (identifier, ConstructorName.make_std cons.name)
+          ( (identifier :> Identifier.Parent.t),
+            ConstructorName.make_std cons.name )
       in
       add_to_elts Kind_Constructor ident (`Constructor (ident, cons)) env
     and add_field env (field : TypeDecl.Field.t) =

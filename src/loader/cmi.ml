@@ -628,7 +628,7 @@ let read_constructor_declaration_arguments env parent arg =
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let id = Ident_env.find_constructor_identifier env cd.cd_id in
-  let container = (parent : Identifier.DataType.t :> Identifier.LabelParent.t) in
+  let container = (parent :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cd.cd_attributes in
   let args =
     read_constructor_declaration_arguments env
@@ -713,7 +713,7 @@ let read_type_declaration env parent id decl =
   let params = mark_type_declaration decl in
   let manifest = opt_map (read_type_expr env) decl.type_manifest in
   let constraints = read_type_constraints env params in
-  let representation = read_type_kind env id decl.type_kind in
+  let representation = read_type_kind env (id :> Identifier.Parent.t) decl.type_kind in
   let abstr =
     match decl.type_kind with
       Type_abstract ->

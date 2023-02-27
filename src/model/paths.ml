@@ -165,7 +165,7 @@ module Identifier = struct
       | { iv = `Label (p, _); _ } -> p
       | { iv = `Method (p, _); _ } | { iv = `InstanceVariable (p, _); _ } ->
           (p : class_signature :> label_parent)
-      | { iv = `Constructor (p, _); _ } -> (p : datatype :> label_parent)
+      | { iv = `Constructor (p, _); _ } -> (p : parent :> label_parent)
       | { iv = `Field (p, _); _ } -> (p : parent :> label_parent)
 
   let label_parent n = label_parent_aux (n :> Id.non_src)
@@ -572,8 +572,8 @@ module Identifier = struct
       mk_fresh (fun s -> s) "coret" (fun s -> `CoreType (TypeName.make_std s))
 
     let constructor :
-        Type.t * ConstructorName.t ->
-        [> `Constructor of Type.t * ConstructorName.t ] id =
+        Parent.t * ConstructorName.t ->
+        [> `Constructor of Parent.t * ConstructorName.t ] id =
       mk_parent ConstructorName.to_string "ctor" (fun (p, n) ->
           `Constructor (p, n))
 
@@ -1013,8 +1013,7 @@ module Reference = struct
         | `Class _ | `ClassType _ | `ModuleType _ ) as r ->
           (label_parent_identifier r :> Identifier.t)
       | `Field (p, n) -> Identifier.Mk.field (parent_identifier p, n)
-      | `Constructor (s, n) ->
-          Identifier.Mk.constructor (parent_type_identifier s, n)
+      | `Constructor (s, n) -> Identifier.Mk.constructor (parent_identifier s, n)
       | `Extension (p, q) ->
           Identifier.Mk.extension (parent_signature_identifier p, q)
       | `ExtensionDecl (p, q, r) ->

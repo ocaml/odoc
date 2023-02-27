@@ -279,15 +279,6 @@ module DT = struct
   let of_component _env t ~parent_ref name = Ok (`Type (parent_ref, name), t)
 
   let of_element _env (`Type (id, t)) : t = (`Identifier id, t)
-
-  let in_env env name =
-    env_lookup_by_name Env.s_type name env >>= fun e -> Ok (of_element env e)
-
-  let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
-      name =
-    let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.datatype_in_sig sg name >>= fun (`FType (name, t)) ->
-    Ok (`Type (parent', name), t)
 end
 
 module T = struct
@@ -448,14 +439,33 @@ module CS = struct
     env_lookup_by_name Env.s_constructor name env
     >>= fun (`Constructor (id, _)) -> Ok (`Identifier id :> t)
 
-  let in_datatype _env ((parent', t) : datatype_lookup_result) name =
+  let got_a_field name =
+    (* Let's pretend we didn't see the field and say we didn't find anything. *)
+    Error (`Find_by_name (`Cons, name))
+
+  let in_parent _env (parent : label_parent_lookup_result) name =
     let name_s = ConstructorName.to_string name in
-    find Find.any_in_type t name_s >>= function
-    | `FConstructor _ -> Ok (`Constructor (parent', name))
-    | `FField _ -> Error (`Find_by_name (`Cons, name_s))
+    match parent with
+    | `S (parent', parent_cp, sg) -> (
+        let sg = Tools.prefix_signature (parent_cp, sg) in
+        find_ambiguous Find.any_in_type_in_sig sg name_s >>= function
+        | `In_type (_, _, `FField _) -> got_a_field name_s
+        | `In_type (typ_name, _, `FConstructor _) ->
+            Ok (`Constructor (`Type (parent', typ_name), name)))
+    | `T (parent', t) -> (
+        find Find.any_in_type t name_s >>= function
+        | `FField _ -> got_a_field name_s
+        | `FConstructor _ ->
+            Ok
+              (`Constructor
+                ((parent' : Resolved.DataType.t :> Resolved.Parent.t), name)))
+    | (`C _ | `CT _ | `P _) as r -> wrong_kind_error [ `S; `T ] r
 
   let of_component _env parent name =
-    Ok (`Constructor (parent, ConstructorName.make_std name))
+    Ok
+      (`Constructor
+        ( (parent : Resolved.DataType.t :> Resolved.Parent.t),
+          ConstructorName.make_std name ))
 end
 
 module F = struct
@@ -479,7 +489,8 @@ module F = struct
         find_ambiguous Find.any_in_type_in_sig sg name_s >>= function
         | `In_type (_, _, `FConstructor _) -> got_a_constructor name_s
         | `In_type (typ_name, _, `FField _) ->
-            Ok (`Field (`Type (parent', typ_name), name)))
+            Ok (`Field ((`Type (parent', typ_name) :> Resolved.Parent.t), name))
+        )
     | `T (parent', t) -> (
         find Find.any_in_type t name_s >>= function
         | `FConstructor _ -> got_a_constructor name_s
@@ -662,20 +673,6 @@ and resolve_signature_reference :
   in
   resolve env'
 
-and resolve_datatype_reference :
-    Env.t -> DataType.t -> datatype_lookup_result ref_result =
- fun env r ->
-  match r with
-  | `Resolved _ -> failwith "TODO"
-  | `Root (name, (`TType | `TUnknown)) -> DT.in_env env name
-  | `Type (parent, name) ->
-      resolve_signature_reference env parent >>= fun p ->
-      DT.in_signature env p (TypeName.to_string name)
-  | `Dot (parent, name) ->
-      resolve_label_parent_reference env parent
-      >>= signature_lookup_result_of_label_parent
-      >>= fun p -> DT.in_signature env p name
-
 and resolve_module_reference env (r : Module.t) : M.t ref_result =
   match r with
   | `Resolved _r -> failwith "What's going on!?"
@@ -818,8 +815,8 @@ let resolve_reference =
     | `Dot (parent, name) -> resolve_reference_dot env parent name
     | `Root (name, `TConstructor) -> CS.in_env env name >>= resolved1
     | `Constructor (parent, name) ->
-        resolve_datatype_reference env parent >>= fun p ->
-        CS.in_datatype env p name >>= resolved1
+        resolve_label_parent_reference env (parent : Parent.t :> LabelParent.t)
+        >>= fun p -> CS.in_parent env p name >>= resolved1
     | `Root (name, `TException) -> EX.in_env env name >>= resolved1
     | `Exception (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->

@@ -132,7 +132,7 @@ module Identifier = struct
   and type_ = type_pv id
   (** @canonical Odoc_model.Paths.Identifier.Type.t *)
 
-  type constructor_pv = [ `Constructor of type_ * ConstructorName.t ]
+  type constructor_pv = [ `Constructor of parent * ConstructorName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t_pv *)
 
   and constructor = constructor_pv id
@@ -666,7 +666,7 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.constructor
     | `Root of string * [ `TConstructor | `TExtension | `TException | `TUnknown ]
     | `Dot of label_parent * string
-    | `Constructor of datatype * ConstructorName.t
+    | `Constructor of parent * ConstructorName.t
     | `Extension of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t ]
   (** @canonical Odoc_model.Paths.Reference.Constructor.t *)
@@ -756,7 +756,7 @@ module rec Reference : sig
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
-    | `Constructor of datatype * ConstructorName.t
+    | `Constructor of parent * ConstructorName.t
     | `Field of parent * FieldName.t
     | `Extension of signature * ExtensionName.t
     | `ExtensionDecl of signature * ExtensionName.t
@@ -847,7 +847,7 @@ and Resolved_reference : sig
 
   type constructor =
     [ `Identifier of Identifier.reference_constructor
-    | `Constructor of datatype * ConstructorName.t
+    | `Constructor of parent * ConstructorName.t
     | `Extension of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Constructor.t *)
@@ -920,7 +920,7 @@ and Resolved_reference : sig
     | `Hidden of module_
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
-    | `Constructor of datatype * ConstructorName.t
+    | `Constructor of parent * ConstructorName.t
     | `Field of parent * FieldName.t
     | `Extension of signature * ExtensionName.t
     | `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t

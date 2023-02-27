@@ -448,8 +448,24 @@ Explicit, in sig:
           M);
       ihash = 716453475; ikey = "m_M.r_Root.p_None"},
    E2)
-# resolve_ref "constructor:M.C2" (* Not allowed by types *) ;;
-Exception: Failure "resolve_reference: Couldn't find \"M\"".
+# resolve_ref "constructor:M.C2" ;;
+- : ref =
+`Constructor
+  (`Type
+     (`Identifier
+        {Odoc_model__Paths_types.iv =
+          `Module
+            ({Odoc_model__Paths_types.iv =
+               `Root
+                 (Some
+                   {Odoc_model__Paths_types.iv = `Page (None, None);
+                    ihash = 236059787; ikey = "p_None"},
+                  Root);
+              ihash = 818126955; ikey = "r_Root.p_None"},
+             M);
+         ihash = 716453475; ikey = "m_M.r_Root.p_None"},
+      t2),
+   C2)
 # resolve_ref "val:M.e2" ;;
 - : ref =
 `Value
@@ -515,7 +531,7 @@ Exception: Failure "resolve_reference: Couldn't find \"M\"".
       ihash = 716453475; ikey = "m_M.r_Root.p_None"},
    x2)
 # resolve_ref "constructor:M.X2" (* X2 is an extension constructor *) ;;
-Exception: Failure "resolve_reference: Couldn't find \"M\"".
+Exception: Failure "resolve_reference: Couldn't find \"X2\"".
 # resolve_ref "extension:M.X2" ;;
 - : ref =
 `Extension
@@ -2634,7 +2650,7 @@ Exception: Failure "resolve_reference: Couldn't find field \"C\"".
 Exception: Failure "resolve_reference: is of kind type but expected class".
 # (* Lookup a constructor but find a field *)
   resolve_ref "M.constructor-f" ;;
-Exception: Failure "resolve_reference: Couldn't find \"M\"".
+Exception: Failure "resolve_reference: Couldn't find constructor \"f\"".
 # resolve_ref "M.u.constructor-f" ;;
 Exception: Failure "resolve_reference: Couldn't find constructor \"f\"".
 ```
@@ -2666,8 +2682,9 @@ Failure
 # resolve_ref "M.t.method-m" ;;
 Exception:
 Failure "resolve_reference: is of kind type but expected class or class type".
-# resolve_ref "c.constructor-C" (* Type in env but find class (parent of constructor is "datatype") *) ;;
-Exception: Failure "resolve_reference: Couldn't find \"c\"".
+# resolve_ref "c.constructor-C" (* Type in env but find class (parent of constructor is "parent") *) ;;
+Exception:
+Failure "resolve_reference: is of kind class but expected signature or type".
 # resolve_ref "c.field-f" (* Field in class (parent of field is "label_parent") *) ;;
 Exception:
 Failure "resolve_reference: is of kind class but expected signature or type".
@@ -2922,7 +2939,23 @@ Unambiguous:
       ihash = 895481052; ikey = "m_X.r_Root.p_None"},
    u)
 # resolve_ref "X.constructor-Y" ;;
-Exception: Failure "resolve_reference: Couldn't find \"X\"".
+- : ref =
+`Constructor
+  (`Type
+     (`Identifier
+        {Odoc_model__Paths_types.iv =
+          `Module
+            ({Odoc_model__Paths_types.iv =
+               `Root
+                 (Some
+                   {Odoc_model__Paths_types.iv = `Page (None, None);
+                    ihash = 236059787; ikey = "p_None"},
+                  Root);
+              ihash = 818126955; ikey = "r_Root.p_None"},
+             X);
+         ihash = 895481052; ikey = "m_X.r_Root.p_None"},
+      u),
+   Y)
 # resolve_ref "X.module-Y" ;;
 - : ref =
 `Module
@@ -3037,7 +3070,23 @@ Unambiguous 2:
       ihash = 895481052; ikey = "m_X.r_Root.p_None"},
    u)
 # resolve_ref "constructor:X.Y" ;;
-Exception: Failure "resolve_reference: Couldn't find \"X\"".
+- : ref =
+`Constructor
+  (`Type
+     (`Identifier
+        {Odoc_model__Paths_types.iv =
+          `Module
+            ({Odoc_model__Paths_types.iv =
+               `Root
+                 (Some
+                   {Odoc_model__Paths_types.iv = `Page (None, None);
+                    ihash = 236059787; ikey = "p_None"},
+                  Root);
+              ihash = 818126955; ikey = "r_Root.p_None"},
+             X);
+         ihash = 895481052; ikey = "m_X.r_Root.p_None"},
+      u),
+   Y)
 # resolve_ref "module:X.Y" ;;
 - : ref =
 `Module
