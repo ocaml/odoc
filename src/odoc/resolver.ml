@@ -78,7 +78,9 @@ let build_imports_map m =
 let root_name root = Odoc_model.Root.Odoc_file.name root.Odoc_model.Root.file
 
 let unit_name
-    (Odoc_file.Unit_content ({ root; _ }, _) | Page_content { root; _ }) =
+    ( Odoc_file.Unit_content ({ root; _ }, _)
+    | Page_content { root; _ }
+    | Source_tree { root; _ } ) =
   root_name root
 
 (** TODO: Propagate warnings instead of printing. *)
@@ -135,7 +137,9 @@ let lookup_unit_with_digest ap target_name digest =
     TODO: Correctly propagate warnings instead of printing. *)
 let lookup_unit_by_name ap target_name =
   let first_unit u =
-    match u with Odoc_file.Unit_content m -> Some m | Page_content _ -> None
+    match u with
+    | Odoc_file.Unit_content m -> Some m
+    | Page_content _ | Source_tree _ -> None
   in
   let rec find_ambiguous tl =
     match find_map first_unit tl with
@@ -187,7 +191,9 @@ let lookup_unit ~important_digests ~imports_map ap target_name =
 let lookup_page ap target_name =
   let target_name = "page-" ^ target_name in
   let is_page u =
-    match u with Odoc_file.Page_content p -> Some p | Unit_content _ -> None
+    match u with
+    | Odoc_file.Page_content p -> Some p
+    | Unit_content _ | Source_tree _ -> None
   in
   let units = load_units_from_name ap target_name in
   match find_map is_page units with Some (p, _) -> Some p | None -> None
@@ -196,7 +202,10 @@ let lookup_page ap target_name =
     name. *)
 let add_unit_to_cache u =
   let target_name =
-    (match u with Odoc_file.Page_content _ -> "page-" | Unit_content _ -> "")
+    (match u with
+    | Odoc_file.Page_content _ -> "page-"
+    | Unit_content _ -> ""
+    | Source_tree _ -> "page-")
     ^ unit_name u
   in
   Hashtbl.add unit_cache target_name [ u ]

@@ -509,12 +509,21 @@ module rec Page : sig
     root : Root.t;
     content : Comment.docs;
     children : Reference.t list;
-    source_children : Identifier.SourcePage.t list;
     digest : Digest.t;
     linked : bool;
   }
 end =
   Page
+
+module rec SourceTreePage : sig
+  type t = {
+    name : Identifier.Page.t;
+    root : Root.t;
+    source_children : Identifier.SourcePage.t list;
+    digest : Digest.t;
+  }
+end =
+  SourceTreePage
 
 let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
   | Signature sg -> Some (Signature sg)

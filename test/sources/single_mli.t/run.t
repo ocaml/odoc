@@ -1,12 +1,16 @@
 Similar to Astring library.
 
-  $ odoc compile -c module-a -C a.ml -C a_x.ml root.mld
+  $ odoc compile -c module-a -c page-source root.mld
+
+  $ printf "a.ml\na_x.ml\n" > source_tree.map
+  $ odoc source-tree -I . --parent page-root -o page-source.odoc source_tree.map
+
   $ ocamlc -c -o a_x.cmo a_x.ml -bin-annot -I .
   $ ocamlc -c a.mli -bin-annot -I .
   $ ocamlc -c a.ml -bin-annot -I .
 
-  $ odoc compile --hidden --source-name a_x.ml --source-parent-file page-root.odoc -I . a_x.cmt
-  $ odoc compile --source-name a.ml --source-parent-file page-root.odoc -I . a.cmti
+  $ odoc compile --hidden --source-name a_x.ml --source-parent-file page-source.odoc -I . a_x.cmt
+  $ odoc compile --source-name a.ml --source-parent-file page-source.odoc -I . a.cmti
 
   $ odoc link -I . a_x.odoc
   $ odoc link -I . a.odoc

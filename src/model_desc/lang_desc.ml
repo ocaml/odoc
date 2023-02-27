@@ -703,6 +703,15 @@ and page_t =
       F ("root", (fun t -> t.root), root);
       F ("content", (fun t -> t.content), docs);
       F ("digest", (fun t -> t.digest), Digest.t);
+    ]
+
+and source_tree_page_t =
+  let open Lang.SourceTreePage in
+  Record
+    [
+      F ("name", (fun t -> t.name), identifier);
+      F ("root", (fun t -> t.root), root);
+      F ("digest", (fun t -> t.digest), Digest.t);
       F
         ( "source_children",
           (fun t -> t.source_children),

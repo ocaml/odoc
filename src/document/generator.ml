@@ -1722,7 +1722,9 @@ module Make (Syntax : SYNTAX) = struct
   module Page : sig
     val compilation_unit : Lang.Compilation_unit.t -> Document.t
 
-    val page : Lang.Page.t -> Document.t list
+    val page : Lang.Page.t -> Document.t
+
+    val source_tree_pages : Lang.SourceTreePage.t -> Document.t list
   end = struct
     let pack : Lang.Compilation_unit.Packed.t -> Item.t list =
      fun t ->
@@ -1760,7 +1762,18 @@ module Make (Syntax : SYNTAX) = struct
       let page = make_expansion_page ~source_anchor url [ unit_doc ] items in
       Document.Page page
 
-    let source_dir_page (dir_pages : Paths.Identifier.SourcePage.t list) =
+    let page (t : Odoc_model.Lang.Page.t) =
+      (*let name =
+          match t.name.iv with `Page (_, name) | `LeafPage (_, name) -> name
+        in*)
+      (*let title = Odoc_model.Names.PageName.to_string name in*)
+      let url = Url.Path.from_identifier t.name in
+      let preamble, items = Sectioning.docs t.content in
+      let source_anchor = None in
+      Document.Page { Page.preamble; items; url; source_anchor }
+
+    let source_tree_pages t =
+      let dir_pages = t.Odoc_model.Lang.SourceTreePage.source_children in
       let open Paths.Identifier in
       let module Set = Set.Make (SourceDir) in
       let module M = Map.Make (SourceDir) in
@@ -1848,17 +1861,6 @@ module Make (Syntax : SYNTAX) = struct
           { Types.Page.preamble = []; items; url; source_anchor = None }
       in
       M.fold (fun dir children acc -> page_of_dir dir children :: acc) mmap []
-
-    let page (t : Odoc_model.Lang.Page.t) =
-      (*let name =
-          match t.name.iv with `Page (_, name) | `LeafPage (_, name) -> name
-        in*)
-      (*let title = Odoc_model.Names.PageName.to_string name in*)
-      let url = Url.Path.from_identifier t.name in
-      let preamble, items = Sectioning.docs t.content in
-      let source_anchor = None in
-      let dir_pages = source_dir_page t.source_children in
-      Document.Page { Page.preamble; items; url; source_anchor } :: dir_pages
   end
 
   include Page

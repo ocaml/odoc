@@ -22,9 +22,11 @@ type parent_cli_spec =
   | CliPackage of string
   | CliNoparent
 
-val page_name_of_output : is_parent_explicit:bool -> Fs.File.t -> string
+val name_of_output :
+  prefix:string -> is_parent_explicit:bool -> Fs.File.t -> string
 (** Compute the name of the page from the output file. [is_parent_explicit] is
-    whether the parent is specified as [CliParent]. *)
+    whether the parent is specified as [CliParent]. Prefix is the prefix to
+    remove from the filename. *)
 
 val resolve_parent_page :
   Resolver.t ->
