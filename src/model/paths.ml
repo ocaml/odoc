@@ -420,7 +420,7 @@ module Identifier = struct
     let hash = hash
     let compare = compare
     let rec name = function
-      | { iv = `SourceDir (p, n); _ } -> name p ^ "/" ^ n
+      | { iv = `SourceDir (p, n); _ } -> name p ^ n ^ "/"
       | { iv = `SourceRoot _; _ } -> "./"
   end
 
@@ -430,7 +430,7 @@ module Identifier = struct
     let equal = equal
     let hash = hash
     let compare = compare
-    let name { iv = `SourcePage (p, name); _ } = SourceDir.name p ^ "/" ^ name
+    let name { iv = `SourcePage (p, name); _ } = SourceDir.name p ^ name
   end
 
   module OdocId = struct

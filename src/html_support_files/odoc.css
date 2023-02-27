@@ -748,6 +748,24 @@ td.def-doc *:first-child {
   color: #657b83;
 }
 
+/* Source directories */
+
+.odoc-directory::before {
+  content: "📁";
+  margin: 0.3em;
+  font-size: 1.3em;
+}
+
+.odoc-file::before {
+  content: "📄";
+  margin: 0.3em;
+  font-size: 1.3em;
+}
+
+.odoc-folder-list {
+  list-style: none;
+}
+
 /* Syntax highlighting (based on github-gist) */
 
 .hljs {
