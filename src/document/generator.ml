@@ -75,7 +75,8 @@ let prepare_preamble comment items =
 let make_expansion_page url comments items =
   let comment = List.concat comments in
   let preamble, items = prepare_preamble comment items in
-  { Page.preamble; items; url }
+  let toc = Doctree.Better_Toc.compute url items in
+  { Page.preamble; items; url; toc }
 
 include Generator_signatures
 
@@ -1661,7 +1662,8 @@ module Make (Syntax : SYNTAX) = struct
       (*let title = Odoc_model.Names.PageName.to_string name in*)
       let url = Url.Path.from_identifier t.name in
       let preamble, items = Sectioning.docs t.content in
-      { Page.preamble; items; url }
+      let toc = Doctree.Better_Toc.compute url items in
+      { Page.preamble; items; url; toc }
   end
 
   include Page

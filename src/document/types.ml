@@ -157,7 +157,12 @@ end =
   Item
 
 and Page : sig
-  type t = { preamble : Item.t list; items : Item.t list; url : Url.Path.t }
+  type t = {
+    preamble : Item.t list;
+    items : Item.t list;
+    url : Url.Path.t;
+    toc : Toc.t;
+  }
 end =
   Page
 

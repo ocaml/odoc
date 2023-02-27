@@ -76,7 +76,7 @@ end = struct
 end
 
 module Better_Toc : sig
-  val compute : Page.t -> Types.Toc.t
+  val compute : Url.Path.t -> Item.t list -> Types.Toc.t
 end = struct
   let rec walk_documentedsrc (l : DocumentedSrc.t) =
     Utils.flatmap l ~f:(function
@@ -103,7 +103,7 @@ end = struct
       | Declaration _ -> []
       | Include _ -> [])
 
-  let compute (p : Page.t) : Types.Toc.t = walk_items p.url p.items
+  let compute = walk_items
 end
 
 module Subpages : sig
