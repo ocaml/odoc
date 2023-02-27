@@ -24,27 +24,27 @@ Now, compile the pages with the --source option. The source-name must be include
 
 Source pages and source directory pages are generated:
 
-  $ find html
+  $ find html | sort
   html
-  html/root
-  html/root/source
-  html/root/source/lib
-  html/root/source/lib/b
-  html/root/source/lib/b/b.ml.html
-  html/root/source/lib/b/index.html
-  html/root/source/lib/main.ml.html
-  html/root/source/lib/index.html
-  html/root/source/lib/a
-  html/root/source/lib/a/a.ml.html
-  html/root/source/lib/a/index.html
-  html/root/source/index.html
-  html/root/index.html
-  html/C
-  html/C/index.html
   html/A
   html/A/index.html
   html/B
   html/B/index.html
+  html/C
+  html/C/index.html
+  html/root
+  html/root/index.html
+  html/root/source
+  html/root/source/index.html
+  html/root/source/lib
+  html/root/source/lib/a
+  html/root/source/lib/a/a.ml.html
+  html/root/source/lib/a/index.html
+  html/root/source/lib/b
+  html/root/source/lib/b/b.ml.html
+  html/root/source/lib/b/index.html
+  html/root/source/lib/index.html
+  html/root/source/lib/main.ml.html
 
 A directory simply list its children:
 
