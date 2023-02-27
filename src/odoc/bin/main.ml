@@ -168,7 +168,7 @@ end = struct
 
   let compile hidden directories resolve_fwd_refs dst package_opt
       parent_name_opt open_modules children input warnings_options
-      source_parent_file source_name source_children =
+      source_parent_file source_name =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -200,7 +200,7 @@ end = struct
     source >>= fun source ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warnings_options ~source ~source_children input
+      ~warnings_options ~source input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -224,17 +224,6 @@ end = struct
     let default = [] in
     Arg.(
       value & opt_all string default & info ~docv:"CHILD" ~doc [ "c"; "child" ])
-
-  let source_children =
-    let doc =
-      "Specify source files. Takes the same paths that are passed to \
-       $(i,--source-name). The page can then be used as a source-parent. Can \
-       be used multiple times. Only applies to mld files."
-    in
-    Arg.(
-      value
-      & opt_all convert_source_name []
-      & info ~docv:"PATH" ~doc [ "C"; "source-child" ])
 
   let source_parent_file =
     let doc =
@@ -281,7 +270,7 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ package_opt $ parent_opt $ open_modules $ children $ input
-       $ warnings_options $ source_parent_file $ source_name $ source_children))
+       $ warnings_options $ source_parent_file $ source_name))
 
   let info ~docs =
     let man =
@@ -298,6 +287,69 @@ end = struct
        $(i,.odoc) file."
     in
     Term.info "compile" ~docs ~doc ~man
+end
+
+module Source_tree = struct
+  let compile_source_tree directories output parent input warnings_options =
+    let resolver =
+      Resolver.create ~important_digests:true ~directories ~open_modules:[]
+    in
+    Source_tree.compile ~resolver ~parent ~output ~warnings_options input
+
+  let arg_page_output =
+    let open Or_error in
+    let parse inp =
+      match Arg.(conv_parser string) inp with
+      | Ok s ->
+          let f = Fs.File.of_string s in
+          if not (Fs.File.has_ext ".odoc" f) then
+            Error (`Msg "Output file must have '.odoc' extension.")
+          else
+            let basename = Fs.File.to_string (Fs.File.basename f) in
+            if not (Astring.String.is_prefix ~affix:"page-" basename) then
+              Error (`Msg "Output file must be prefixed with 'page-'.")
+            else Ok f
+      | Error _ as e -> e
+    and print = Fpath.pp in
+    Arg.conv (parse, print)
+
+  let cmd =
+    let parent =
+      let doc = "Parent page or subpage." in
+      Arg.(
+        required
+        & opt (some string) None
+        & info ~docs ~docv:"PARENT" ~doc [ "parent" ])
+    in
+    let dst =
+      let doc =
+        "Output file path. Non-existing intermediate directories are created. \
+         The basename must start with the prefix 'page-' and extension \
+         '.odoc'."
+      in
+      Arg.(
+        required
+        & opt (some arg_page_output) None
+        & info ~docs ~docv:"PATH" ~doc [ "o" ])
+    in
+    let input =
+      let doc = "Input text file containing a line-separated list of paths." in
+      Arg.(
+        required & pos 0 (some convert_fpath) None & info ~doc ~docv:"FILE" [])
+    in
+    Term.(
+      const handle_error
+      $ (const compile_source_tree $ odoc_file_directories $ dst $ parent
+       $ input $ warnings_options))
+
+  let info ~docs =
+    let doc =
+      "Compile a source tree into a page. Expect a text file containing the \
+       relative paths to every source files in the source tree. The paths \
+       should be the same as the one passed to $(i,odoc compile \
+       --source-name)."
+    in
+    Term.info "source-tree" ~docs ~doc
 end
 
 module Support_files_command = struct
@@ -929,6 +981,7 @@ let () =
       Odoc_link.(cmd, info ~docs:section_pipeline);
       Odoc_html.generate ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
+      Source_tree.(cmd, info ~docs:section_pipeline);
       Odoc_manpage.generate ~docs:section_generators;
       Odoc_latex.generate ~docs:section_generators;
       Odoc_html_url.(cmd, info ~docs:section_support);

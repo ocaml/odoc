@@ -51,7 +51,7 @@ let parse_reference f =
   Semantics.parse_reference f
   |> Error.handle_errors_and_warnings ~warnings_options
 
-let parse_parent_explicit resolver f =
+let resolve_parent_page resolver f =
   let find_parent :
       Paths.Reference.t -> (Lang.Page.t, [> `Msg of string ]) Result.result =
    fun r ->
@@ -73,7 +73,7 @@ let parse_parent_explicit resolver f =
 let parent resolver parent_cli_spec =
   match parent_cli_spec with
   | CliParent f ->
-      parse_parent_explicit resolver f >>= fun (parent, children) ->
+      resolve_parent_page resolver f >>= fun (parent, children) ->
       Ok (Explicit (parent, children))
   | CliPackage package ->
       Ok (Package (Paths.Identifier.Mk.page (None, PageName.make_std package)))
@@ -183,8 +183,23 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
       else Error (`Msg "Specified parent is not a parent of this file")
   | Package parent -> result (Some parent)
 
-let mld ~parent_spec ~output ~children ~source_children ~warnings_options input
-    =
+let page_name_of_output ~is_parent_explicit output =
+  let page_dash_root =
+    Filename.chop_extension Fs.File.(to_string @@ basename output)
+  in
+  let root_name =
+    String.sub page_dash_root (String.length "page-")
+      (String.length page_dash_root - String.length "page-")
+  in
+  (if is_parent_explicit then
+   match root_name with
+   | "index" ->
+       Format.eprintf
+         "Warning: Potential name clash - child page named 'index'\n%!"
+   | _ -> ());
+  root_name
+
+let mld ~parent_spec ~output ~children ~warnings_options input =
   List.fold_left
     (fun acc child_str ->
       match (acc, parse_reference child_str) with
@@ -196,11 +211,10 @@ let mld ~parent_spec ~output ~children ~source_children ~warnings_options input
     (Ok []) children
   >>= fun children ->
   let root_name =
-    let page_dash_root =
-      Filename.chop_extension Fs.File.(to_string @@ basename output)
+    let is_parent_explicit =
+      match parent_spec with Explicit _ -> true | _ -> false
     in
-    String.sub page_dash_root (String.length "page-")
-      (String.length page_dash_root - String.length "page-")
+    page_name_of_output ~is_parent_explicit output
   in
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
@@ -211,22 +225,13 @@ let mld ~parent_spec ~output ~children ~source_children ~warnings_options input
     | `Root (n, `TUnknown) | `Root (n, `TPage) -> root_name = n
     | _ -> false
   in
-  let _ =
-    match (parent_spec, root_name) with
-    | Explicit _, "index" ->
-        Format.eprintf
-          "Warning: Potential name clash - child page named 'index'\n%!"
-    | _ -> ()
-  in
   (if children = [] then
    (* No children, this is a leaf page. *)
-   let id =
-     match parent_spec with
-     | Explicit (p, _) -> Paths.Identifier.Mk.leaf_page (Some p, page_name)
-     | Package parent -> Paths.Identifier.Mk.leaf_page (Some parent, page_name)
-     | Noparent -> Paths.Identifier.Mk.leaf_page (None, page_name)
-   in
-   Ok (id, [])
+   match parent_spec with
+   | Explicit (p, _) -> Ok (Paths.Identifier.Mk.leaf_page (Some p, page_name))
+   | Package parent ->
+       Ok (Paths.Identifier.Mk.leaf_page (Some parent, page_name))
+   | Noparent -> Ok (Paths.Identifier.Mk.leaf_page (None, page_name))
   else
     (* Has children, this is a container page. *)
     let check parents_children v =
@@ -240,14 +245,8 @@ let mld ~parent_spec ~output ~children ~source_children ~warnings_options input
         Ok (Paths.Identifier.Mk.page (Some parent, page_name))
         (* This is a bit odd *)
     | Noparent -> Ok (Paths.Identifier.Mk.page (None, page_name)))
-    >>= fun id ->
-    let source_children =
-      List.map
-        (fun source_child -> Paths.Identifier.Mk.source_page (id, source_child))
-        source_children
-    in
-    Ok ((id :> Paths.Identifier.Page.t), source_children))
-  >>= fun (name, source_children) ->
+    >>= fun id -> Ok (id :> Paths.Identifier.Page.t))
+  >>= fun name ->
   let root =
     let file = Root.Odoc_file.create_page root_name in
     { Root.id = (name :> Paths.Identifier.OdocId.t); file; digest }
@@ -259,7 +258,7 @@ let mld ~parent_spec ~output ~children ~source_children ~warnings_options input
           name;
           root;
           children;
-          source_children;
+          source_children = [];
           content;
           digest;
           linked = false;
@@ -283,20 +282,15 @@ let handle_file_ext = function
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options ~source ~source_children input =
+    ~warnings_options ~source input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
     check_is_none "Not expecting source (--source) when compiling pages." source
-    >>= fun () ->
-    mld ~parent_spec ~output ~warnings_options ~children ~source_children input
+    >>= fun () -> mld ~parent_spec ~output ~warnings_options ~children input
   else
     check_is_empty "Not expecting children (--child) when compiling modules."
       children
-    >>= fun () ->
-    check_is_empty
-      "Not expecting source-children (--source-child) when compiling modules."
-      source_children
     >>= fun () ->
     (match source with
     | Some (parent, name) -> (
