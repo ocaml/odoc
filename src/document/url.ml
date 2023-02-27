@@ -185,10 +185,7 @@ module Path = struct
 
   let rec source_dir_from_identifier id =
     match id.Odoc_model.Paths.Identifier.iv with
-    | `SourceRoot container ->
-        let parent = from_identifier (container :> source) in
-        let kind = `Page in
-        mk ~parent kind "source"
+    | `SourceRoot container -> from_identifier (container :> source)
     | `SourceDir (parent, name) ->
         let parent = source_dir_from_identifier parent in
         let kind = `Page in

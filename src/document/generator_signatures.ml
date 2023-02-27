@@ -104,7 +104,9 @@ end
 module type GENERATOR = sig
   val compilation_unit : Lang.Compilation_unit.t -> Document.t
 
-  val page : Lang.Page.t -> Document.t list
+  val page : Lang.Page.t -> Document.t
+
+  val source_tree_pages : Lang.SourceTreePage.t -> Document.t list
 
   val source_page :
     Odoc_model.Paths.Identifier.SourcePage.t ->

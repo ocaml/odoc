@@ -2,14 +2,18 @@ Make sure wrapped libraries don't interfere with generating the source code.
 Test both canonical paths and hidden units.
 It's a simpler case than Dune's wrapping.
 
-  $ odoc compile -c module-main -C a.ml -C b.ml -C main.ml root.mld
+  $ odoc compile -c module-main -c page-source root.mld
+
+  $ printf "a.ml\nb.ml\nmain.ml\n" > source_tree.map
+  $ odoc source-tree -I . --parent page-root -o page-source.odoc source_tree.map
+
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o main__B.cmo b.ml -bin-annot -I .
   $ ocamlc -c main.ml -bin-annot -I .
 
-  $ odoc compile --source-name a.ml --source-parent-file page-root.odoc -I . main__A.cmt
-  $ odoc compile --source-name b.ml --source-parent-file page-root.odoc -I . main__B.cmt
-  $ odoc compile --source-name main.ml --source-parent-file page-root.odoc -I . main.cmt
+  $ odoc compile --source-name a.ml --source-parent-file page-source.odoc -I . main__A.cmt
+  $ odoc compile --source-name b.ml --source-parent-file page-source.odoc -I . main__B.cmt
+  $ odoc compile --source-name main.ml --source-parent-file page-source.odoc -I . main.cmt
 
   $ odoc link -I . main__A.odoc
   $ odoc link -I . main__B.odoc

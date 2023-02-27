@@ -24,7 +24,7 @@ Files containing some values:
 
 Source pages require a parent:
 
-  $ odoc compile -c module-a -C a.ml root.mld
+  $ odoc compile -c module-a -c page-source root.mld
 
 Compile the modules:
 
@@ -40,14 +40,12 @@ No source links are generated in the documentation:
 
   $ ! grep source_link html/A/index.html -B 2
 
-No ids are generated in the source code:
-
-  $ ! cat html/root/fake_src/a.ml.html
-  cat: html/root/fake_src/a.ml.html: No such file or directory
-
 Now, compile the pages with the --source option:
 
-  $ odoc compile -I . --source-name a.ml --source-parent-file page-root.odoc a.cmt
+  $ printf "a.ml\n" > source_tree.map
+  $ odoc source-tree -I . --parent page-root -o page-source.odoc source_tree.map
+
+  $ odoc compile -I . --source-name a.ml --source-parent-file page-source.odoc a.cmt
   $ odoc link -I . a.odoc
   $ odoc html-generate --source a.ml --indent -o html a.odocl
 

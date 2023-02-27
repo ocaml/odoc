@@ -18,13 +18,15 @@ let parse_input_file input =
   let is_sep = function '\n' | '\r' -> true | _ -> false in
   Fs.File.read input >>= fun content ->
   Ok
-    ( Digest.file content,
+    ( Digest.file (Fpath.to_string input),
       String.fields ~empty:false ~is_sep content |> List.rev_map parse_path )
 
 let source_child_id parent segs = Id.Mk.source_page (parent, segs)
 
 let compile ~resolver ~parent ~output ~warnings_options:_ input =
-  let root_name = Compile.page_name_of_output ~is_parent_explicit:true output in
+  let root_name =
+    Compile.name_of_output ~prefix:"page-" ~is_parent_explicit:true output
+  in
   let page_name = PageName.make_std root_name in
   Compile.resolve_parent_page resolver parent >>= fun (parent, siblings) ->
   let id = Id.Mk.page (Some parent, page_name) in
@@ -36,16 +38,8 @@ let compile ~resolver ~parent ~output ~warnings_options:_ input =
   in
   let source_children = List.rev_map (source_child_id id) source_tree in
   let page =
-    Lang.Page.
-      {
-        name = (id :> Id.Page.t);
-        root;
-        children = [];
-        source_children;
-        content = [];
-        digest;
-        linked = false;
-      }
+    Lang.SourceTreePage.
+      { name = (id :> Id.Page.t); root; source_children; digest }
   in
-  Odoc_file.save_page output ~warnings:[] page;
+  Odoc_file.save_src_tree_page output ~warnings:[] page;
   Ok ()

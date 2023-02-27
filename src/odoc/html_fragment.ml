@@ -17,15 +17,7 @@ let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
     (* This is a mess. *)
     let page =
       Odoc_model.Lang.Page.
-        {
-          name = id;
-          root;
-          content;
-          children = [];
-          source_children = [];
-          digest;
-          linked = false;
-        }
+        { name = id; root; content; children = []; digest; linked = false }
     in
     let env = Resolver.build_env_for_page resolver page in
     Odoc_xref2.Link.resolve_page ~filename:input_s env page
