@@ -1,22 +1,26 @@
 A page can have source children.
 
-  $ odoc compile -c module-a -c module-b -C lib/a/a.ml -C lib/b/b.ml root.mld
+  $ odoc compile -c module-a -c module-b -C lib/main.ml -C lib/b/b.ml -C lib/a/a.ml root.mld
 
 Compile the modules:
 
   $ ocamlc -c a.ml -bin-annot
   $ ocamlc -c b.ml -bin-annot
+  $ ocamlc -c c.ml -bin-annot
 
 Now, compile the pages with the --source option. The source-name must be included in the source-children of the source-parent:
 
   $ odoc compile -I . --source-name lib/a/a.ml --source-parent-file page-root.odoc a.cmt
   $ odoc compile -I . --source-name lib/b/b.ml --source-parent-file page-root.odoc b.cmt
+  $ odoc compile -I . --source-name lib/main.ml --source-parent-file page-root.odoc c.cmt
   $ odoc link -I . page-root.odoc
   $ odoc link -I . a.odoc
   $ odoc link -I . b.odoc
+  $ odoc link -I . c.odoc
   $ odoc html-generate --indent -o html page-root.odocl
   $ odoc html-generate --source a.ml --indent -o html a.odocl
-  $ odoc html-generate --source a.ml --indent -o html b.odocl
+  $ odoc html-generate --source b.ml --indent -o html b.odocl
+  $ odoc html-generate --source c.ml --indent -o html c.odocl
 
 Source pages and source directory pages are generated:
 
@@ -28,12 +32,15 @@ Source pages and source directory pages are generated:
   html/root/source/lib/b
   html/root/source/lib/b/b.ml.html
   html/root/source/lib/b/index.html
+  html/root/source/lib/main.ml.html
   html/root/source/lib/index.html
   html/root/source/lib/a
   html/root/source/lib/a/a.ml.html
   html/root/source/lib/a/index.html
   html/root/source/index.html
   html/root/index.html
+  html/C
+  html/C/index.html
   html/A
   html/A/index.html
   html/B
@@ -56,9 +63,12 @@ A directory simply list its children:
      <a href="../../index.html">root</a> &#x00BB; 
      <a href="../index.html">source</a> &#x00BB; lib
     </nav><header class="odoc-preamble"></header>
-    <div class="odoc-content">
-     <ul><li><a href="b/index.html">b</a></li>
-      <li><a href="a/index.html">a</a></li>
+    <div class="odoc-content"><h1>./lib/</h1>
+     <ul class="odoc-folder-list">
+      <li><span class="odoc-directory"><a href="a/index.html">a</a></span></li>
+      <li><span class="odoc-directory"><a href="b/index.html">b</a></span></li>
+      <li><span class="odoc-file"><a href="main.ml.html">main.ml</a></span>
+      </li>
      </ul>
     </div>
    </body>

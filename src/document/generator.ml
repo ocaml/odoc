@@ -1792,14 +1792,19 @@ module Make (Syntax : SYNTAX) = struct
       in
       let page_of_dir (dir : SourceDir.t) (dir_children, file_children) =
         let url = Url.Path.source_dir_from_identifier dir in
-        let li name url =
-          let block desc = Block.{ attr = []; desc } in
-          let inline desc = Block.Inline Inline.[ { attr = []; desc } ] in
+        let block ?(attr = []) desc = Block.{ attr; desc } in
+        let inline ?(attr = []) desc = Inline.[ { attr; desc } ] in
+        let header =
+          let title = inline (Text (SourceDir.name dir)) in
+          Item.Heading
+            Heading.{ label = None; level = 0; title; source_anchor = None }
+        in
+        let li ?(attr = []) name url =
           let link url desc =
             Inline.InternalLink
               InternalLink.(Resolved (url, [ Inline.{ attr = []; desc } ]))
           in
-          [ block @@ inline @@ link url (Text name) ]
+          [ block ~attr @@ Block.Inline (inline @@ link url (Text name)) ]
         in
         let li_of_child child =
           match child with
@@ -1809,24 +1814,35 @@ module Make (Syntax : SYNTAX) = struct
               let url =
                 child |> Url.Path.source_dir_from_identifier |> Url.from_path
               in
-              li name url
+              (name, url)
         in
-        let li_of_file_child child =
-          match child with
-          | { iv = `SourcePage (_, name); _ } ->
-              let url =
-                child |> Url.Path.source_file_from_identifier |> Url.from_path
-              in
-              li name url
+        let li_of_file_child ({ iv = `SourcePage (_, name); _ } as child) =
+          let url =
+            child |> Url.Path.source_file_from_identifier |> Url.from_path
+          in
+          (name, url)
         in
         let items =
-          let text desc = Item.Text [ { attr = []; desc } ] in
+          let text ?(attr = []) desc = Item.Text [ { attr; desc } ] in
           let list l = Block.List (Block.Unordered, l) in
           let list_of_children =
-            Set.fold (fun child acc -> li_of_child child :: acc) dir_children []
-            @ List.map (fun child -> li_of_file_child child) file_children
+            let dir_list =
+              Set.fold
+                (fun child acc -> li_of_child child :: acc)
+                dir_children []
+            and file_list =
+              List.map (fun child -> li_of_file_child child) file_children
+            in
+            let sort ?(attr = []) l =
+              l
+              |> List.sort (fun (n1, _) (n2, _) -> String.compare n1 n2)
+              |> List.map (fun (name, url) -> li ~attr name url)
+            in
+            sort ~attr:[ "odoc-directory" ] dir_list
+            @ sort ~attr:[ "odoc-file" ] file_list
           in
-          [ text @@ list list_of_children ]
+          header
+          :: [ text ~attr:[ "odoc-folder-list" ] @@ list list_of_children ]
         in
         Document.Page
           { Types.Page.preamble = []; items; url; source_anchor = None }
