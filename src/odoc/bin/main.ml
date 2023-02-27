@@ -4,7 +4,6 @@
    output the result to. *)
 
 open Odoc_odoc
-open Odoc_model
 open Compatcmdliner
 
 let convert_syntax : Odoc_document.Renderer.syntax Arg.conv =
@@ -816,7 +815,7 @@ end
 
 module Odoc_error = struct
   let errors input =
-    let open Odoc_model in
+    let open Odoc_odoc in
     let open Or_error in
     let input = Fs.File.of_string input in
     Odoc_file.load input >>= fun unit ->

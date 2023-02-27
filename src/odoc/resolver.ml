@@ -31,7 +31,6 @@
    Where we notice this ambiguity we warn the user to wrap their libraries,
    which will generally fix this issue. *)
 
-open Odoc_model
 open Or_error
 
 module Accessible_paths : sig

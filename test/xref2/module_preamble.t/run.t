@@ -44,7 +44,8 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>A</span></code></h1>
      <p>Module A.</p>
-    </header><ul><li><a href="module-B">B</a></li></ul>
+    </header>
+    <nav class="odoc-toc"><ul><li><a href="module-B">B</a></li></ul></nav>
     <div class="odoc-content">
      <div class="odoc-spec">
       <div class="spec module anchored" id="module-B">
@@ -85,9 +86,11 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
      <p>Module B. This paragraph is the synopsis.</p>
      <p>This paragraph and the previous are part of the preamble.</p>
     </header>
-    <ul><li><a href="an-heading">an-heading</a></li>
-     <li><a href="type-t">t</a></li>
-    </ul>
+    <nav class="odoc-toc">
+     <ul><li><a href="an-heading">an-heading</a></li>
+      <li><a href="type-t">t</a></li>
+     </ul>
+    </nav>
     <div class="odoc-content">
      <h3 id="an-heading"><a href="#an-heading" class="anchor"></a>An heading
      </h3>
@@ -122,6 +125,6 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>A__b</span></code></h1>
-    </header><ul></ul><div class="odoc-content"></div>
+    </header><div class="odoc-content"></div>
    </body>
   </html>

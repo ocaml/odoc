@@ -1,5 +1,4 @@
 open Odoc_document
-open Odoc_model
 open Or_error
 
 let document_of_odocl ~syntax input =
@@ -16,9 +15,8 @@ let document_of_input ~resolver ~warnings_options ~syntax input =
   | `Page page -> Ok (Renderer.document_of_page ~syntax page)
   | `Module m -> Ok (Renderer.document_of_compilation_unit ~syntax m)
 
-let render_document renderer ~output:root_dir ~extra_suffix ~extra input_file
-    odoctree =
-  let pages = renderer.Renderer.render extra odoctree input_file in
+let render_document renderer ~output:root_dir ~extra_suffix ~extra odoctree =
+  let pages = renderer.Renderer.render extra odoctree in
   Renderer.traverse pages ~f:(fun filename content ->
       let filename =
         match extra_suffix with
@@ -37,11 +35,11 @@ let render_document renderer ~output:root_dir ~extra_suffix ~extra input_file
 let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
     =
   document_of_input ~resolver ~warnings_options ~syntax file
-  >>= render_document renderer ~output ~extra_suffix:None ~extra file
+  >>= render_document renderer ~output ~extra_suffix:None ~extra
 
 let generate_odoc ~syntax ~renderer ~output ~extra_suffix extra file =
   document_of_odocl ~syntax file
-  >>= render_document renderer ~output ~extra_suffix ~extra file
+  >>= render_document renderer ~output ~extra_suffix ~extra
 
 let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
     ~extra odoctree =
@@ -50,8 +48,8 @@ let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
       document_of_input ~resolver ~warnings_options ~syntax odoctree
     else document_of_odocl ~syntax odoctree
   in
-  doc >>= fun odoctree_page ->
-  let pages = renderer.Renderer.render extra odoctree_page odoctree in
+  doc >>= fun odoctree ->
+  let pages = renderer.Renderer.render extra odoctree in
   Renderer.traverse pages ~f:(fun filename _content ->
       let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
       Format.printf "%a\n" Fpath.pp filename);

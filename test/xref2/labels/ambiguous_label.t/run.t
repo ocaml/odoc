@@ -26,6 +26,15 @@ Contains some ambiguous labels:
 The table of content should point to unique anchors:
 
   $ sed -n '/<nav class="odoc-toc">$/,/<\/nav>/p' html/test/Test/index.html
+    <nav class="odoc-toc">
+     <ul><li><a href="section-1">section-1</a></li>
+      <li><a href="example">example</a></li>
+      <li><a href="section-2">section-2</a></li>
+      <li><a href="example">example</a></li>
+      <li><a href="example">example</a></li>
+      <li><a href="example_3">example_3</a></li><li><a href="val-x">x</a></li>
+     </ul>
+    </nav>
 
 References should resolve to the first occurence of the ambiguous label. It is
 not possible to use the internal label name in references:

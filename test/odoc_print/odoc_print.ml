@@ -1,7 +1,7 @@
 (** Print .odocl files. *)
 
+open Odoc_odoc
 open Odoc_model_desc
-open Odoc_model
 open Or_error
 
 let print_json_desc desc x =

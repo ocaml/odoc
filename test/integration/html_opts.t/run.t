@@ -15,7 +15,7 @@ check it's got the expected content by looking for 'type-t'
   $ grep odoc-nav html/test/Test/index.html
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
   $ grep type-t html/test/Test/index.html
-     <li><a href="type-t">t</a></li><li><a href="section-2">section-2</a></li>
+      <li><a href="type-t">t</a></li><li><a href="section-2">section-2</a></li>
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
 

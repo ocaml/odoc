@@ -14,4 +14,4 @@
   (:standard -w -50))
  (instrumentation
   (backend bisect_ppx))
- (libraries fpath result compiler-libs.common odoc-parser unix))
+ (libraries result compiler-libs.common odoc-parser))

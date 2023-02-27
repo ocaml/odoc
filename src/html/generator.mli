@@ -1,7 +1,6 @@
 val render :
   config:Config.t ->
   Odoc_document.Types.Page.t ->
-  Fpath.t ->
   Odoc_document.Renderer.page list
 
 val doc :
