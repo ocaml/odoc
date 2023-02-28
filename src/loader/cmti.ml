@@ -214,7 +214,7 @@ let read_constructor_declaration_arguments env parent label_parent arg =
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let id = Ident_env.find_constructor_identifier env cd.cd_id in
-  let container = parent in
+  let container = (parent :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag label_container cd.cd_attributes in
   let args =
@@ -231,7 +231,7 @@ let read_type_kind env parent =
         let cstrs = List.map (read_constructor_declaration env parent) cstrs in
           Some (Variant cstrs)
     | Ttype_record lbls ->
-        let parent = (parent ) in
+        let parent = (parent :> Identifier.Parent.t) in
       let label_parent = (parent :> Identifier.LabelParent.t) in
       let lbls =
         List.map (read_label_declaration env parent label_parent) lbls in
@@ -260,7 +260,7 @@ let read_type_declaration env parent decl =
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container decl.typ_attributes in
   let canonical = (canonical :> Path.Type.t option) in
   let equation = read_type_equation env container decl in
-  let representation = read_type_kind env (id :> Identifier.Parent.t) decl.typ_kind in
+  let representation = read_type_kind env id decl.typ_kind in
   {id; locs; doc; canonical; equation; representation}
 
 let read_type_declarations env parent rec_flag decls =

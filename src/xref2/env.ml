@@ -294,7 +294,7 @@ let add_type (identifier : Identifier.Type.t) t env =
     let add_cons env (cons : TypeDecl.Constructor.t) =
       let ident =
         Paths.Identifier.Mk.constructor
-          ( (identifier :> Identifier.Parent.t),
+          ( (identifier :> Identifier.DataType.t),
             ConstructorName.make_std cons.name )
       in
       add_to_elts Kind_Constructor ident (`Constructor (ident, cons)) env

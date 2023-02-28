@@ -456,16 +456,13 @@ module CS = struct
         find Find.any_in_type t name_s >>= function
         | `FField _ -> got_a_field name_s
         | `FConstructor _ ->
-            Ok
-              (`Constructor
-                ((parent' : Resolved.DataType.t :> Resolved.Parent.t), name)))
+            Ok (`Constructor ((parent' : Resolved.DataType.t), name)))
     | (`C _ | `CT _ | `P _) as r -> wrong_kind_error [ `S; `T ] r
 
   let of_component _env parent name =
     Ok
       (`Constructor
-        ( (parent : Resolved.DataType.t :> Resolved.Parent.t),
-          ConstructorName.make_std name ))
+        ((parent : Resolved.DataType.t), ConstructorName.make_std name))
 end
 
 module F = struct

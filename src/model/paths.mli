@@ -290,8 +290,8 @@ module Identifier : sig
     val core_type : string -> [> `CoreType of TypeName.t ] id
 
     val constructor :
-      Parent.t * ConstructorName.t ->
-      [> `Constructor of Parent.t * ConstructorName.t ] id
+      DataType.t * ConstructorName.t ->
+      [> `Constructor of DataType.t * ConstructorName.t ] id
 
     val field :
       Parent.t * FieldName.t -> [> `Field of Parent.t * FieldName.t ] id

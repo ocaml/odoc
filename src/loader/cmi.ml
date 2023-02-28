@@ -713,7 +713,7 @@ let read_type_declaration env parent id decl =
   let params = mark_type_declaration decl in
   let manifest = opt_map (read_type_expr env) decl.type_manifest in
   let constraints = read_type_constraints env params in
-  let representation = read_type_kind env (id :> Identifier.Parent.t) decl.type_kind in
+  let representation = read_type_kind env (id :> Identifier.DataType.t) decl.type_kind in
   let abstr =
     match decl.type_kind with
       Type_abstract ->

@@ -132,7 +132,7 @@ module Identifier = struct
   and type_ = type_pv id
   (** @canonical Odoc_model.Paths.Identifier.Type.t *)
 
-  type constructor_pv = [ `Constructor of parent * ConstructorName.t ]
+  type constructor_pv = [ `Constructor of datatype * ConstructorName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t_pv *)
 
   and constructor = constructor_pv id
@@ -843,7 +843,7 @@ and Resolved_reference : sig
 
   type constructor =
     [ `Identifier of Identifier.reference_constructor
-    | `Constructor of parent * ConstructorName.t
+    | `Constructor of datatype * ConstructorName.t
     | `Extension of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Constructor.t *)
@@ -916,7 +916,7 @@ and Resolved_reference : sig
     | `Hidden of module_
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
-    | `Constructor of parent * ConstructorName.t
+    | `Constructor of datatype * ConstructorName.t
     | `Field of parent * FieldName.t
     | `Extension of signature * ExtensionName.t
     | `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t
