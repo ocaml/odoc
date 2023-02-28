@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_model
 open Odoc_model.Paths
 open Or_error
 
@@ -31,7 +32,7 @@ val name_of_output :
 val resolve_parent_page :
   Resolver.t ->
   string ->
-  (Identifier.ContainerPage.t * Reference.t list, [> msg ]) result
+  (Identifier.ContainerPage.t * Lang.Page.child list, [> msg ]) result
 (** Parse and resolve a parent reference. Returns the identifier of the parent
     and its children as a list of reference. *)
 

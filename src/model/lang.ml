@@ -504,11 +504,13 @@ end =
   Compilation_unit
 
 module rec Page : sig
+  type child = Page_child of string | Module_child of string
+
   type t = {
     name : Identifier.Page.t;
     root : Root.t;
     content : Comment.docs;
-    children : Reference.t list;
+    children : child list;
     digest : Digest.t;
     linked : bool;
   }
