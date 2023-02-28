@@ -24,7 +24,7 @@ type unit_content = Lang.Compilation_unit.t * Odoc_loader.Lookup_def.t option
 (** Either a page or a module. *)
 type content =
   | Page_content of Lang.Page.t
-  | Source_tree of Lang.SourceTreePage.t
+  | Source_tree_content of Lang.SourceTree.t
   | Unit_content of unit_content
 
 type t = { content : content; warnings : Error.t list }
@@ -34,9 +34,9 @@ type t = { content : content; warnings : Error.t list }
 val save_page : Fs.File.t -> warnings:Error.t list -> Lang.Page.t -> unit
 (** Save a page. The [page-] prefix is added to the file name if missing. *)
 
-val save_src_tree_page :
-  Fs.File.t -> warnings:Error.t list -> Lang.SourceTreePage.t -> unit
-(** Save a source tree page. The [page-] prefix is added to the file name if
+val save_source_tree :
+  Fs.File.t -> warnings:Error.t list -> Lang.SourceTree.t -> unit
+(** Save a source tree page. The [src-] prefix is added to the file name if
     missing. *)
 
 val save_unit : Fs.File.t -> warnings:Error.t list -> unit_content -> unit

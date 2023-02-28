@@ -1,18 +1,18 @@
 This is what happens when a dune user write a toplevel module.
 Similar to the lookup_def_wrapped test.
 
-  $ odoc compile -c module-a -c page-source root.mld
+  $ odoc compile -c module-a -c src-source root.mld
 
   $ printf "a.ml\nmain.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o page-source.odoc source_tree.map
+  $ odoc source-tree -I . --parent page-root -o src-source.odoc source_tree.map
 
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o main__.cmo main__.ml -bin-annot -I .
   $ ocamlc -c -open Main__ main.ml -bin-annot -I .
 
-  $ odoc compile --source-name a.ml --source-parent-file page-source.odoc -I . main__A.cmt
+  $ odoc compile --source-name a.ml --source-parent-file src-source.odoc -I . main__A.cmt
   $ odoc compile -I . main__.cmt
-  $ odoc compile --source-name main.ml --source-parent-file page-source.odoc -I . main.cmt
+  $ odoc compile --source-name main.ml --source-parent-file src-source.odoc -I . main.cmt
 
   $ odoc link -I . main.odoc
   $ odoc link -I . main__A.odoc

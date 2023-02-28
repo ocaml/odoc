@@ -706,7 +706,7 @@ and page_t =
     ]
 
 and source_tree_page_t =
-  let open Lang.SourceTreePage in
+  let open Lang.SourceTree in
   Record
     [
       F ("name", (fun t -> t.name), identifier);

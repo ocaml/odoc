@@ -56,6 +56,7 @@ let is_module_name n = String.length n > 0 && Char.Ascii.is_upper n.[0]
 let parse_parent_child_reference s =
   match String.cut ~sep:"-" s with
   | Some ("page", n) -> Ok (Lang.Page.Page_child n)
+  | Some ("src", n) -> Ok (Source_tree_child n)
   | Some ("module", n) -> Ok (Module_child (String.Ascii.capitalize n))
   | Some (k, _) -> Error (`Msg ("Unrecognized kind: " ^ k))
   | None -> if is_module_name s then Ok (Module_child s) else Ok (Page_child s)
@@ -66,7 +67,8 @@ let resolve_parent_page resolver f =
         match Resolver.lookup_page resolver p with
         | Some r -> Ok r
         | None -> Error (`Msg "Couldn't find specified parent page"))
-    | Module_child _ -> Error (`Msg "Expecting page as parent")
+    | Source_tree_child _ | Module_child _ ->
+        Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
     | { Paths.Identifier.iv = `Page _; _ } as container -> Ok container
@@ -178,7 +180,7 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   let check_child = function
     | Lang.Page.Module_child n ->
         String.Ascii.(uncapitalize n = uncapitalize filename)
-    | Page_child _ -> false
+    | Source_tree_child _ | Page_child _ -> false
   in
   match parent_spec with
   | Noparent -> result None
@@ -187,11 +189,14 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
       else Error (`Msg "Specified parent is not a parent of this file")
   | Package parent -> result (Some parent)
 
-let name_of_output ~prefix ~is_parent_explicit output =
+let name_of_output ~prefix output =
   let page_dash_root =
     Filename.chop_extension Fs.File.(to_string @@ basename output)
   in
-  let root_name = String.drop ~max:(String.length prefix) page_dash_root in
+  String.drop ~max:(String.length prefix) page_dash_root
+
+let page_name_of_output ~is_parent_explicit output =
+  let root_name = name_of_output ~prefix:"page-" output in
   (if is_parent_explicit then
    match root_name with
    | "index" ->
@@ -199,8 +204,6 @@ let name_of_output ~prefix ~is_parent_explicit output =
          "Warning: Potential name clash - child page named 'index'\n%!"
    | _ -> ());
   root_name
-
-let page_name_of_output = name_of_output ~prefix:"page-"
 
 let mld ~parent_spec ~output ~children ~warnings_options input =
   List.fold_left
@@ -224,7 +227,7 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
   let page_name = PageName.make_std root_name in
   let check_child = function
     | Lang.Page.Page_child n -> root_name = n
-    | Module_child _ -> false
+    | Source_tree_child _ | Module_child _ -> false
   in
   (if children = [] then
    (* No children, this is a leaf page. *)
@@ -291,8 +294,8 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
           Error (`Msg "Specified source-parent is not a parent of the source.")
         in
         match parent.Odoc_file.content with
-        | Odoc_file.Source_tree page -> (
-            match page.Lang.SourceTreePage.name with
+        | Odoc_file.Source_tree_content page -> (
+            match page.Lang.SourceTree.name with
             | { Paths.Identifier.iv = `Page _; _ } as parent_id ->
                 let name = Paths.Identifier.Mk.source_page (parent_id, name) in
                 if

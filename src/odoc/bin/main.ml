@@ -306,8 +306,8 @@ module Source_tree = struct
             Error (`Msg "Output file must have '.odoc' extension.")
           else
             let basename = Fs.File.to_string (Fs.File.basename f) in
-            if not (Astring.String.is_prefix ~affix:"page-" basename) then
-              Error (`Msg "Output file must be prefixed with 'page-'.")
+            if not (Astring.String.is_prefix ~affix:"src-" basename) then
+              Error (`Msg "Output file must be prefixed with 'src-'.")
             else Ok f
       | Error _ as e -> e
     and print = Fpath.pp in
@@ -324,8 +324,7 @@ module Source_tree = struct
     let dst =
       let doc =
         "Output file path. Non-existing intermediate directories are created. \
-         The basename must start with the prefix 'page-' and extension \
-         '.odoc'."
+         The basename must start with the prefix 'src-' and extension '.odoc'."
       in
       Arg.(
         required

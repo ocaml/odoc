@@ -167,7 +167,7 @@ let run inp ref =
   let inp = Fpath.v inp in
   Odoc_file.load inp >>= fun unit ->
   match unit.content with
-  | Odoc_file.Source_tree tree ->
+  | Odoc_file.Source_tree_content tree ->
       print_json_desc Lang_desc.source_tree_page_t tree;
       Ok ()
   | Odoc_file.Page_content page ->
