@@ -31,9 +31,7 @@ let document_of_page ~syntax v =
   match syntax with Reason -> Reason.page v | OCaml -> ML.page v
 
 let documents_of_source_tree ~syntax v =
-  match syntax with
-  | Reason -> Reason.source_tree_pages v
-  | OCaml -> ML.source_tree_pages v
+  match syntax with Reason -> Reason.source_tree v | OCaml -> ML.source_tree v
 
 let document_of_compilation_unit ~syntax v =
   match syntax with

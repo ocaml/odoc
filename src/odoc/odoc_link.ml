@@ -32,7 +32,8 @@ let from_odoc ~resolver ~warnings_options input output =
   Odoc_file.load input >>= fun unit ->
   let input_warnings = unit.Odoc_file.warnings in
   match unit.content with
-  | Source_tree _ -> Error (`Msg "Source tree pages do not need to be linked.")
+  | Source_tree_content _ ->
+      Error (`Msg "Source tree pages do not need to be linked.")
   | Page_content page ->
       link_page ~resolver ~filename page
       |> handle_warnings ~input_warnings ~warnings_options

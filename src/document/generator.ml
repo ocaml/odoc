@@ -1724,7 +1724,7 @@ module Make (Syntax : SYNTAX) = struct
 
     val page : Lang.Page.t -> Document.t
 
-    val source_tree_pages : Lang.SourceTreePage.t -> Document.t list
+    val source_tree : Lang.SourceTree.t -> Document.t list
   end = struct
     let pack : Lang.Compilation_unit.Packed.t -> Item.t list =
      fun t ->
@@ -1772,8 +1772,8 @@ module Make (Syntax : SYNTAX) = struct
       let source_anchor = None in
       Document.Page { Page.preamble; items; url; source_anchor }
 
-    let source_tree_pages t =
-      let dir_pages = t.Odoc_model.Lang.SourceTreePage.source_children in
+    let source_tree t =
+      let dir_pages = t.Odoc_model.Lang.SourceTree.source_children in
       let open Paths.Identifier in
       let module Set = Set.Make (SourceDir) in
       let module M = Map.Make (SourceDir) in

@@ -17,7 +17,7 @@ let documents_of_odocl ~warnings_options ~renderer ~extra ~syntax input =
   match unit.content with
   | Odoc_file.Page_content odoctree ->
       Ok [ Renderer.document_of_page ~syntax odoctree ]
-  | Source_tree srctree ->
+  | Source_tree_content srctree ->
       Ok (Renderer.documents_of_source_tree ~syntax srctree)
   | Unit_content (odoctree, _) ->
       documents_of_unit ~warnings_options ~syntax ~renderer ~extra odoctree

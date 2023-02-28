@@ -80,7 +80,7 @@ let root_name root = Odoc_model.Root.Odoc_file.name root.Odoc_model.Root.file
 let unit_name
     ( Odoc_file.Unit_content ({ root; _ }, _)
     | Page_content { root; _ }
-    | Source_tree { root; _ } ) =
+    | Source_tree_content { root; _ } ) =
   root_name root
 
 (** TODO: Propagate warnings instead of printing. *)
@@ -139,7 +139,7 @@ let lookup_unit_by_name ap target_name =
   let first_unit u =
     match u with
     | Odoc_file.Unit_content m -> Some m
-    | Page_content _ | Source_tree _ -> None
+    | Page_content _ | Source_tree_content _ -> None
   in
   let rec find_ambiguous tl =
     match find_map first_unit tl with
@@ -193,7 +193,7 @@ let lookup_page ap target_name =
   let is_page u =
     match u with
     | Odoc_file.Page_content p -> Some p
-    | Unit_content _ | Source_tree _ -> None
+    | Unit_content _ | Source_tree_content _ -> None
   in
   let units = load_units_from_name ap target_name in
   match find_map is_page units with Some (p, _) -> Some p | None -> None
@@ -205,7 +205,7 @@ let add_unit_to_cache u =
     (match u with
     | Odoc_file.Page_content _ -> "page-"
     | Unit_content _ -> ""
-    | Source_tree _ -> "page-")
+    | Source_tree_content _ -> "page-")
     ^ unit_name u
   in
   Hashtbl.add unit_cache target_name [ u ]

@@ -504,7 +504,10 @@ end =
   Compilation_unit
 
 module rec Page : sig
-  type child = Page_child of string | Module_child of string
+  type child =
+    | Page_child of string
+    | Module_child of string
+    | Source_tree_child of string
 
   type t = {
     name : Identifier.Page.t;
@@ -517,7 +520,7 @@ module rec Page : sig
 end =
   Page
 
-module rec SourceTreePage : sig
+module rec SourceTree : sig
   type t = {
     name : Identifier.Page.t;
     root : Root.t;
@@ -525,7 +528,7 @@ module rec SourceTreePage : sig
     digest : Digest.t;
   }
 end =
-  SourceTreePage
+  SourceTree
 
 let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
   | Signature sg -> Some (Signature sg)

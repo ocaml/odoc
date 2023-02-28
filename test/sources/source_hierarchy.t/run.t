@@ -1,9 +1,9 @@
 A page can have source children.
 
-  $ odoc compile -c module-a -c module-b -c page-source root.mld
+  $ odoc compile -c module-a -c module-b -c src-source root.mld
 
   $ printf "lib/main.ml\nlib/b/b.ml\nlib/a/a.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o page-source.odoc source_tree.map
+  $ odoc source-tree -I . --parent page-root -o src-source.odoc source_tree.map
 
 Compile the modules:
 
@@ -13,17 +13,15 @@ Compile the modules:
 
 Now, compile the pages with the --source option. The source-name must be included in the source-children of the source-parent:
 
-  $ odoc compile -I . --source-name lib/a/a.ml --source-parent-file page-source.odoc a.cmt
-  $ odoc compile -I . --source-name lib/b/b.ml --source-parent-file page-source.odoc b.cmt
-  $ odoc compile -I . --source-name lib/main.ml --source-parent-file page-source.odoc c.cmt
+  $ odoc compile -I . --source-name lib/a/a.ml --source-parent-file src-source.odoc a.cmt
+  $ odoc compile -I . --source-name lib/b/b.ml --source-parent-file src-source.odoc b.cmt
+  $ odoc compile -I . --source-name lib/main.ml --source-parent-file src-source.odoc c.cmt
   $ odoc link -I . page-root.odoc
-  File "page-root.odoc":
-  Warning: Failed to resolve child reference unresolvedroot(source)
   $ odoc link -I . a.odoc
   $ odoc link -I . b.odoc
   $ odoc link -I . c.odoc
   $ odoc html-generate --indent -o html page-root.odocl
-  $ odoc html-generate --indent -o html page-source.odoc
+  $ odoc html-generate --indent -o html src-source.odoc
   $ odoc html-generate --source a.ml --indent -o html a.odocl
   $ odoc html-generate --source b.ml --indent -o html b.odocl
   $ odoc html-generate --source c.ml --indent -o html c.odocl
