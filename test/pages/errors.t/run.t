@@ -29,4 +29,6 @@ Parents must be pages
 Linking checks the children are all present:
   $ odoc compile top1.mld --child foo
   $ odoc link page-top1.odoc -I .
+  File "page-top1.odoc":
+  Warning: Failed to lookup child page foo
 

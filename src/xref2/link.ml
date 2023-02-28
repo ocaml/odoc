@@ -1010,6 +1010,23 @@ let link ~filename x y =
       if y.Lang.Compilation_unit.linked || y.hidden then y else unit x y)
 
 let page env page =
+  let () =
+    List.iter
+      (fun child ->
+        let check_resolves ~what f name =
+          match f name env with
+          | Some _ -> ()
+          | None -> Errors.report ~what `Lookup
+        in
+        match child with
+        | Page.Source_tree_child _ -> ()
+        | Page.Page_child page ->
+            check_resolves ~what:(`Child_page page) Env.lookup_page page
+        | Page.Module_child mod_ ->
+            check_resolves ~what:(`Child_module mod_) Env.lookup_root_module
+              mod_)
+      page.Lang.Page.children
+  in
   {
     page with
     Page.content = comment_docs env page.Page.name page.content;
