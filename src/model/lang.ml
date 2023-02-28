@@ -29,6 +29,7 @@ module rec Module : sig
     type_ : decl;
     canonical : Path.Module.t option;
     hidden : bool;
+    siblings : Identifier.Any.t list;
   }
 
   module Equation : sig

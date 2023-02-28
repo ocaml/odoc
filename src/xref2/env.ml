@@ -368,6 +368,7 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
             type_ = ModuleType (Signature s);
             canonical = unit.canonical;
             hidden = unit.hidden;
+            siblings = (unit.siblings :> Identifier.Any.t list);
           }
       in
       let ty = Component.Of_Lang.(module_ (empty ()) m) in
@@ -382,6 +383,7 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
               ModuleType (Signature { items = []; compiled = true; doc = [] });
             canonical = unit.canonical;
             hidden = unit.hidden;
+            siblings = (unit.siblings :> Identifier.Any.t list);
           }
       in
       let ty = Component.Of_Lang.(module_ (empty ()) m) in

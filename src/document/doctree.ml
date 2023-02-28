@@ -79,7 +79,7 @@ module Better_Toc : sig
   val compute :
     Url.Path.t ->
     Item.t list ->
-    siblings:Odoc_model.Paths.Identifier.OdocId.t list ->
+    siblings:Odoc_model.Paths.Identifier.Any.t list ->
     Types.Toc.t
 end = struct
   let rec walk_documentedsrc (l : DocumentedSrc.t) =
@@ -110,8 +110,10 @@ end = struct
   let compute p l ~siblings =
     let toc = walk_items p l in
     let ids =
-      List.map
-        (fun x -> Url.from_source_identifier (x :> Url.Path.source))
+      List.filter_map
+        (fun x ->
+          let id = (x :> Odoc_model.Paths.Identifier.t) in
+          Utils.option_of_result (Url.from_identifier ~stop_before:false id))
         siblings
     in
     if List.exists (fun x -> Url.Path.equal p x.Url.Anchor.page) ids then

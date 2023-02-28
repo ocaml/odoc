@@ -1317,7 +1317,10 @@ module Make (Syntax : SYNTAX) = struct
             in
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
-            let page = make_expansion_page url [ t.doc; expansion_doc ] items in
+            let page =
+              make_expansion_page url [ t.doc; expansion_doc ] items
+                ~siblings:t.siblings
+            in
             (link, status, Some page, Some expansion_doc)
       in
       let intro = O.keyword "module" ++ O.txt " " ++ modname in
@@ -1653,7 +1656,8 @@ module Make (Syntax : SYNTAX) = struct
         | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
-      make_expansion_page url [ unit_doc ] items ~siblings:t.siblings
+      let siblings = (t.siblings :> Odoc_model.Paths.Identifier.t list) in
+      make_expansion_page url [ unit_doc ] items ~siblings
 
     let page (t : Odoc_model.Lang.Page.t) : Page.t =
       (*let name =
