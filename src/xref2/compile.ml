@@ -103,7 +103,7 @@ and content env id =
 
 and value_ env parent t =
   let open Value in
-  let container = (parent :> Id.Parent.t) in
+  let container = (parent :> Id.LabelParent.t) in
   try { t with type_ = type_expression env container t.type_ }
   with _ ->
     Errors.report ~what:(`Value t.id) `Compile;
@@ -111,14 +111,14 @@ and value_ env parent t =
 
 and exception_ env parent e =
   let open Exception in
-  let container = (parent :> Id.Parent.t) in
+  let container = (parent :> Id.LabelParent.t) in
   let res = Opt.map (type_expression env container) e.res in
   let args = type_decl_constructor_argument env container e.args in
   { e with res; args }
 
 and extension env parent t =
   let open Extension in
-  let container = (parent :> Id.Parent.t) in
+  let container = (parent :> Id.LabelParent.t) in
   let constructor c =
     let open Constructor in
     {
@@ -133,7 +133,7 @@ and extension env parent t =
 
 and class_type_expr env parent =
   let open ClassType in
-  let container = (parent :> Id.Parent.t) in
+  let container = (parent :> Id.LabelParent.t) in
   function
   | Constr (path, texps) ->
       Constr
@@ -169,7 +169,7 @@ and class_type env c =
 
 and class_signature env parent c =
   let open ClassSignature in
-  let container = (parent : Id.ClassSignature.t :> Id.Parent.t) in
+  let container = (parent : Id.ClassSignature.t :> Id.LabelParent.t) in
   let env = Env.open_class_signature c env in
   let map_item = function
     | Method m -> Method (method_ env parent m)
@@ -186,12 +186,12 @@ and class_signature env parent c =
 
 and method_ env parent m =
   let open Method in
-  let container = (parent :> Id.Parent.t) in
+  let container = (parent :> Id.LabelParent.t) in
   { m with type_ = type_expression env container m.type_ }
 
 and instance_variable env parent i =
   let open InstanceVariable in
-  let container = (parent :> Id.Parent.t) in
+  let container = (parent :> Id.LabelParent.t) in
   { i with type_ = type_expression env container i.type_ }
 
 and class_constraint env parent cst =
@@ -208,7 +208,7 @@ and inherit_ env parent ih =
 
 and class_ env parent c =
   let open Class in
-  let container = (parent :> Id.Parent.t) in
+  let container = (parent :> Id.LabelParent.t) in
   let expansion =
     match
       let open Utils.OptionMonad in
@@ -513,7 +513,7 @@ and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
                   Errors.report ~what:(`With_type cfrag) `Compile;
                   (cfrag, frag)
             in
-            let eqn' = type_decl_equation env (id :> Id.Parent.t) eqn in
+            let eqn' = type_decl_equation env (id :> Id.LabelParent.t) eqn in
             let ceqn' = Component.Of_Lang.(type_equation (empty ()) eqn') in
             Tools.fragmap ~mark_substituted:true env
               (Component.ModuleType.TypeEq (cfrag', ceqn'))
@@ -556,7 +556,7 @@ and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
                   Errors.report ~what:(`With_type cfrag) `Compile;
                   (cfrag, frag)
             in
-            let eqn' = type_decl_equation env (id :> Id.Parent.t) eqn in
+            let eqn' = type_decl_equation env (id :> Id.LabelParent.t) eqn in
             let ceqn' = Component.Of_Lang.(type_equation (empty ()) eqn') in
             Tools.fragmap ~mark_substituted:true env
               (Component.ModuleType.TypeSubst (cfrag', ceqn'))
@@ -739,7 +739,7 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
   let open TypeDecl in
   let container =
     match t.id.iv with
-    | `Type (parent, _) -> (parent :> Id.Parent.t)
+    | `Type (parent, _) -> (parent :> Id.LabelParent.t)
     | `CoreType _ -> assert false
   in
   let equation = type_decl_equation env container t.equation in
@@ -749,7 +749,7 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
   { t with equation; representation }
 
 and type_decl_equation :
-    Env.t -> Id.Parent.t -> TypeDecl.Equation.t -> TypeDecl.Equation.t =
+    Env.t -> Id.LabelParent.t -> TypeDecl.Equation.t -> TypeDecl.Equation.t =
  fun env parent t ->
   let open TypeDecl.Equation in
   let manifest = Opt.map (type_expression env parent) t.manifest in
@@ -763,7 +763,7 @@ and type_decl_equation :
 
 and type_decl_representation :
     Env.t ->
-    Id.Parent.t ->
+    Id.LabelParent.t ->
     TypeDecl.Representation.t ->
     TypeDecl.Representation.t =
  fun env parent r ->
@@ -784,7 +784,10 @@ and type_decl_constructor_argument env parent c =
   | Record fs -> Record (List.map (type_decl_field env parent) fs)
 
 and type_decl_constructor :
-    Env.t -> Id.Parent.t -> TypeDecl.Constructor.t -> TypeDecl.Constructor.t =
+    Env.t ->
+    Id.LabelParent.t ->
+    TypeDecl.Constructor.t ->
+    TypeDecl.Constructor.t =
  fun env parent c ->
   let open TypeDecl.Constructor in
   let args = type_decl_constructor_argument env parent c.args in
@@ -853,7 +856,7 @@ and type_expression_package env parent p =
               }))
   | Error _ -> { p with path = Lang_of.(Path.module_type (empty ()) cp) }
 
-and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
+and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
  fun env parent texpr ->
   let open TypeExpr in
   match texpr with

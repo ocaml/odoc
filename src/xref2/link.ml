@@ -1047,7 +1047,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
                     let t' =
                       Expand_tools.type_expr map
                         Lang_of.(
-                          type_expr (empty ()) (parent :> Id.Parent.t) expr)
+                          type_expr (empty ()) (parent :> Id.LabelParent.t) expr)
                     in
                     type_expression env parent (p :: visited) t'
                   with
@@ -1066,7 +1066,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
             Constr (`Resolved p, ts)
         | Ok (_cp, `FType_removed (_, x, _eq)) ->
             (* Type variables ? *)
-            Lang_of.(type_expr (empty ()) (parent :> Id.Parent.t) x)
+            Lang_of.(type_expr (empty ()) (parent :> Id.LabelParent.t) x)
         | Error _ -> Constr (path', ts))
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent visited v)

@@ -223,25 +223,25 @@ val type_decl_constructor :
 
 val type_expr_package :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.LabelParent.t ->
   Component.TypeExpr.Package.t ->
   Odoc_model.Lang.TypeExpr.Package.t
 
 val type_expr :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.LabelParent.t ->
   Component.TypeExpr.t ->
   Odoc_model.Lang.TypeExpr.t
 
 val type_expr_polyvar :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.LabelParent.t ->
   Component.TypeExpr.Polymorphic_variant.t ->
   Odoc_model.Lang.TypeExpr.Polymorphic_variant.t
 
 val type_expr_object :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.LabelParent.t ->
   Component.TypeExpr.Object.t ->
   Odoc_model.Lang.TypeExpr.Object.t
 

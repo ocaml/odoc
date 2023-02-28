@@ -81,13 +81,13 @@ module Identifier = struct
   and datatype = datatype_pv id
   (** @canonical Odoc_model.Paths.Identifier.DataType.t *)
 
-  type parent_pv = [ signature_pv | datatype_pv | class_signature_pv ]
+  type parent_pv = [ signature_pv | datatype_pv ]
   (** @canonical Odoc_model.Paths.Identifier.Parent.t_pv *)
 
   and parent = parent_pv id
   (** @canonical Odoc_model.Paths.Identifier.Parent.t *)
 
-  type label_parent_pv = [ parent_pv | page_pv ]
+  type label_parent_pv = [ parent_pv | page_pv | class_signature_pv ]
   (** @canonical Odoc_model.Paths.Identifier.LabelParent.t_pv *)
 
   and label_parent = label_parent_pv id
@@ -623,8 +623,6 @@ module rec Reference : sig
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
     | `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Parent.t *)
 
@@ -813,8 +811,6 @@ and Resolved_reference : sig
     | `Module of signature * ModuleName.t
     | `Hidden of module_
     | `ModuleType of signature * ModuleTypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
     | `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Parent.t *)
 

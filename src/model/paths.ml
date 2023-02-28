@@ -997,14 +997,14 @@ module Reference = struct
         as sg ->
           (parent_signature_identifier sg :> Identifier.Parent.t)
       | `Type _ as t -> (parent_type_identifier t :> Identifier.Parent.t)
-      | (`Class _ | `ClassType _) as c ->
-          (parent_class_signature_identifier c :> Identifier.Parent.t)
 
     and label_parent_identifier : label_parent -> Identifier.LabelParent.t =
       function
       | `Identifier id -> id
+      | (`Class _ | `ClassType _) as c ->
+          (parent_class_signature_identifier c :> Identifier.LabelParent.t)
       | ( `Hidden _ | `Alias _ | `AliasModuleType _ | `Module _ | `ModuleType _
-        | `Type _ | `Class _ | `ClassType _ ) as r ->
+        | `Type _ ) as r ->
           (parent_identifier r :> Identifier.LabelParent.t)
 
     and identifier : t -> Identifier.t = function

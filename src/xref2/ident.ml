@@ -16,10 +16,13 @@ type class_signature =
 
 type datatype = [ `LType of TypeName.t * int ]
 
-type parent = [ signature | datatype | class_signature ]
+type parent = [ signature | datatype ]
 
 type label_parent =
-  [ parent | `LPage of PageName.t * int | `LLeafPage of PageName.t * int ]
+  [ parent
+  | `LPage of PageName.t * int
+  | `LLeafPage of PageName.t * int
+  | class_signature ]
 
 type module_ =
   [ `LRoot of ModuleName.t * int
@@ -143,11 +146,12 @@ module Of_Identifier = struct
     match p with
     | { iv = #Signature.t_pv; _ } as s -> (signature s :> parent)
     | { iv = #DataType.t_pv; _ } as s -> (datatype s :> parent)
-    | { iv = #ClassSignature.t_pv; _ } as s -> (class_signature s :> parent)
 
   let label_parent : LabelParent.t -> label_parent =
    fun p ->
     match p with
+    | { iv = #ClassSignature.t_pv; _ } as s ->
+        (class_signature s :> label_parent)
     | { iv = #Parent.t_pv; _ } as s -> (parent s :> label_parent)
     | { iv = `Page (_, n); _ } -> `LPage (n, fresh_int ())
     | { iv = `LeafPage (_, n); _ } -> `LLeafPage (n, fresh_int ())
