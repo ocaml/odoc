@@ -20,8 +20,9 @@ Now, compile the pages with the --source option. The source-name must be include
   $ odoc link -I . a.odoc
   $ odoc link -I . b.odoc
   $ odoc link -I . c.odoc
+  $ odoc link -I . src-source.odoc
   $ odoc html-generate --indent -o html page-root.odocl
-  $ odoc html-generate --indent -o html src-source.odoc
+  $ odoc html-generate --indent -o html src-source.odocl
   $ odoc html-generate --source a.ml --indent -o html a.odocl
   $ odoc html-generate --source b.ml --indent -o html b.odocl
   $ odoc html-generate --source c.ml --indent -o html c.odocl
