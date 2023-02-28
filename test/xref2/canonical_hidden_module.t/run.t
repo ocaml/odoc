@@ -82,11 +82,15 @@ See the comments on the types at the end of test.mli for the expectation.
      <h1>Module <code><span>Test</span></code></h1>
     </header>
     <nav class="odoc-toc">
-     <ul><li><a href="module-A_nonhidden">A_nonhidden</a></li>
-      <li><a href="module-A">A</a></li><li><a href="module-B">B</a></li>
-      <li><a href="module-C">C</a></li><li><a href="module-D">D</a></li>
-      <li><a href="type-a">a</a></li><li><a href="type-b">b</a></li>
-      <li><a href="type-c">c</a></li><li><a href="type-d">d</a></li>
+     <ul>
+      <li><a href="Test">Test</a>
+       <ul><li><a href="module-A_nonhidden">A_nonhidden</a></li>
+        <li><a href="module-A">A</a></li><li><a href="module-B">B</a></li>
+        <li><a href="module-C">C</a></li><li><a href="module-D">D</a></li>
+        <li><a href="type-a">a</a></li><li><a href="type-b">b</a></li>
+        <li><a href="type-c">c</a></li><li><a href="type-d">d</a></li>
+       </ul>
+      </li>
      </ul>
     </nav>
     <div class="odoc-content">

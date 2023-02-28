@@ -54,6 +54,10 @@ module Path : sig
       of directory-type elements and filename-type elements. If the
       [is_dir] function can return [`Always], the caller must be prepared
       to handle the case where the filename part is empty. *)
+
+  val compare : t -> t -> int
+
+  val equal : t -> t -> bool
 end
 
 module Anchor : sig

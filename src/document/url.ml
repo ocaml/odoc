@@ -209,6 +209,16 @@ module Path = struct
       | xs -> (List.rev dirs, xs)
     in
     inner [] l
+
+  let rec compare x y =
+    match String.compare x.name y.name with
+    | 0 -> (
+        match Option.compare compare x.parent y.parent with
+        | 0 -> String.compare (string_of_kind x.kind) (string_of_kind y.kind)
+        | c -> c)
+    | c -> c
+
+  let equal x y = compare x y = 0
 end
 
 module Anchor = struct

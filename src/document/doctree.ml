@@ -109,14 +109,24 @@ end = struct
 
   let compute p l ~siblings =
     let toc = walk_items p l in
-    let siblings =
+    let ids =
       List.map
-        (fun (id : Odoc_model.Paths.Identifier.OdocId.t) ->
-          let anchor = Url.from_source_identifier (id :> Url.Path.source) in
-          { Types.Toc.anchor; children = [] })
+        (fun x -> Url.from_source_identifier (x :> Url.Path.source))
         siblings
     in
-    toc @ siblings
+    if List.exists (fun x -> Url.Path.equal p x.Url.Anchor.page) ids then
+      List.fold_left
+        (fun acc (anchor : Url.Anchor.t) ->
+          let children =
+            if Url.Path.compare anchor.page p = 0 then toc else []
+          in
+          { Types.Toc.anchor; children } :: acc)
+        [] ids
+    else
+      let anchor =
+        { Url.Anchor.page = p; anchor = p.name; name = p.name; kind = `Page }
+      in
+      [ { Types.Toc.anchor; children = toc } ]
 end
 
 module Subpages : sig

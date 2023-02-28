@@ -38,11 +38,14 @@ TODO: Items are not nested inside sections
      <a href="../index.html">foo</a> &#x00BB; A
     </nav>
     <nav class="odoc-toc">
-     <ul><li><a href="section-x">section-x</a></li>
-      <li><a href="type-t">t</a></li><li><a href="module-M">M</a></li>
-      <li><a href="section-y">section-y</a></li>
-      <li><a href="module-N">N</a></li><li><a href="">B</a></li>
-      <li><a href="">A</a></li><li><a href="">bar</a></li>
+     <ul><li><a href="">bar</a></li>
+      <li><a href="">A</a>
+       <ul><li><a href="section-x">section-x</a></li>
+        <li><a href="type-t">t</a></li><li><a href="module-M">M</a></li>
+        <li><a href="section-y">section-y</a></li>
+        <li><a href="module-N">N</a></li>
+       </ul>
+      </li><li><a href="">B</a></li>
      </ul>
     </nav>
 
@@ -54,17 +57,10 @@ TODO: Sub modules TOC don't link to siblings and parents
      <a href="../../index.html">foo</a> &#x00BB; <a href="../index.html">A</a>
       &#x00BB; M
     </nav>
-    <nav class="odoc-toc"><ul><li><a href="type-t">t</a></li></ul></nav>
-    <div class="odoc-content">
-     <div class="odoc-spec">
-      <div class="spec type anchored" id="type-t">
-       <a href="#type-t" class="anchor"></a>
-       <code><span><span class="keyword">type</span> t</span></code>
-      </div>
-     </div>
-    </div>
-   </body>
-  </html>
+    <nav class="odoc-toc">
+     <ul><li><a href="M">M</a><ul><li><a href="type-t">t</a></li></ul></li>
+     </ul>
+    </nav>
 
 The TOC for page 'bar' should mention 'A' and 'B':
 TODO: Pages TOC don't link to siblings and parents
@@ -73,3 +69,7 @@ TODO: Pages TOC don't link to siblings and parents
     <nav class="odoc-nav"><a href="index.html">Up</a> – 
      <a href="index.html">foo</a> &#x00BB; bar
     </nav>
+    <nav class="odoc-toc"><ul><li><a href="bar">bar</a></li></ul></nav>
+    <div class="odoc-content"></div>
+   </body>
+  </html>

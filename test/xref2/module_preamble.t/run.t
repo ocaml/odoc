@@ -45,7 +45,10 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     <header class="odoc-preamble"><h1>Module <code><span>A</span></code></h1>
      <p>Module A.</p>
     </header>
-    <nav class="odoc-toc"><ul><li><a href="module-B">B</a></li></ul></nav>
+    <nav class="odoc-toc">
+     <ul><li><a href="A">A</a><ul><li><a href="module-B">B</a></li></ul></li>
+     </ul>
+    </nav>
     <div class="odoc-content">
      <div class="odoc-spec">
       <div class="spec module anchored" id="module-B">
@@ -87,8 +90,12 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
      <p>This paragraph and the previous are part of the preamble.</p>
     </header>
     <nav class="odoc-toc">
-     <ul><li><a href="an-heading">an-heading</a></li>
-      <li><a href="type-t">t</a></li>
+     <ul>
+      <li><a href="B">B</a>
+       <ul><li><a href="an-heading">an-heading</a></li>
+        <li><a href="type-t">t</a></li>
+       </ul>
+      </li>
      </ul>
     </nav>
     <div class="odoc-content">
@@ -125,6 +132,8 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>A__b</span></code></h1>
-    </header><div class="odoc-content"></div>
+    </header>
+    <nav class="odoc-toc"><ul><li><a href="A__b">A__b</a></li></ul></nav>
+    <div class="odoc-content"></div>
    </body>
   </html>
