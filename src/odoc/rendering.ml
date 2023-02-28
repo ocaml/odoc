@@ -26,6 +26,7 @@ let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
     input =
   let output = Fs.File.(set_ext ".odocl" input) in
   Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
+  | `Source_tree st -> Ok (Renderer.documents_of_source_tree ~syntax st)
   | `Page page -> Ok [ Renderer.document_of_page ~syntax page ]
   | `Module m -> documents_of_unit ~warnings_options ~syntax ~renderer ~extra m
 
