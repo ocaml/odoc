@@ -72,10 +72,10 @@ let prepare_preamble comment items =
   in
   (Comment.standalone preamble, Comment.standalone first_comment @ items)
 
-let make_expansion_page url comments items =
+let make_expansion_page ?(siblings = []) url comments items =
   let comment = List.concat comments in
   let preamble, items = prepare_preamble comment items in
-  let toc = Doctree.Better_Toc.compute url items in
+  let toc = Doctree.Better_Toc.compute url items ~siblings in
   { Page.preamble; items; url; toc }
 
 include Generator_signatures
@@ -1653,7 +1653,7 @@ module Make (Syntax : SYNTAX) = struct
         | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
-      make_expansion_page url [ unit_doc ] items
+      make_expansion_page url [ unit_doc ] items ~siblings:t.siblings
 
     let page (t : Odoc_model.Lang.Page.t) : Page.t =
       (*let name =
@@ -1662,7 +1662,7 @@ module Make (Syntax : SYNTAX) = struct
       (*let title = Odoc_model.Names.PageName.to_string name in*)
       let url = Url.Path.from_identifier t.name in
       let preamble, items = Sectioning.docs t.content in
-      let toc = Doctree.Better_Toc.compute url items in
+      let toc = Doctree.Better_Toc.compute url items ~siblings:[] in
       { Page.preamble; items; url; toc }
   end
 

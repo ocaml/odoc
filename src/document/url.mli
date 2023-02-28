@@ -101,6 +101,8 @@ type t = Anchor.t
 
 val from_path : Path.t -> t
 
+val from_source_identifier : Path.source -> t
+
 val from_identifier : stop_before:bool -> Identifier.t -> (t, Error.t) result
 
 val kind : Identifier.t -> kind

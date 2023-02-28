@@ -367,10 +367,12 @@ let from_path page =
     kind = (page.kind :> Anchor.kind);
   }
 
+let from_source_identifier id = from_path (Path.from_identifier id)
+
 let from_identifier ~stop_before = function
   | { Odoc_model.Paths.Identifier.iv = #Path.source_pv; _ } as p
     when not stop_before ->
-      Ok (from_path @@ Path.from_identifier p)
+      Ok (from_source_identifier p)
   | p -> Anchor.from_identifier p
 
 let kind id =

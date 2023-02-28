@@ -76,7 +76,11 @@ end = struct
 end
 
 module Better_Toc : sig
-  val compute : Url.Path.t -> Item.t list -> Types.Toc.t
+  val compute :
+    Url.Path.t ->
+    Item.t list ->
+    siblings:Odoc_model.Paths.Identifier.OdocId.t list ->
+    Types.Toc.t
 end = struct
   let rec walk_documentedsrc (l : DocumentedSrc.t) =
     Utils.flatmap l ~f:(function
@@ -88,7 +92,7 @@ end = struct
       | Subpage _ -> []
       | Alternative (Expansion r) -> walk_documentedsrc r.expansion)
 
-  let mkurl page anchor =
+  let anchor_of_heading page anchor =
     { Url.Anchor.page; anchor; name = anchor; kind = `LeafPage }
 
   let walk_items p (l : Item.t list) =
@@ -96,14 +100,23 @@ end = struct
       | Item.Text _ -> []
       | Heading { label = None; _ } -> []
       | Heading { label = Some label; level = _; title = _ } ->
-          let anchor = mkurl p label in
+          let anchor = anchor_of_heading p label in
           [ { Types.Toc.anchor; children = (* TODO: use Rewire.walk *) [] } ]
       | Declaration { anchor = Some anchor; content; _ } ->
           [ { Types.Toc.anchor; children = walk_documentedsrc content } ]
       | Declaration _ -> []
       | Include _ -> [])
 
-  let compute = walk_items
+  let compute p l ~siblings =
+    let toc = walk_items p l in
+    let siblings =
+      List.map
+        (fun (id : Odoc_model.Paths.Identifier.OdocId.t) ->
+          let anchor = Url.from_source_identifier (id :> Url.Path.source) in
+          { Types.Toc.anchor; children = [] })
+        siblings
+    in
+    toc @ siblings
 end
 
 module Subpages : sig
