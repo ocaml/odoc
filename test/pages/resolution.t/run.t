@@ -16,7 +16,7 @@ Check resolution works
 
   $ ocamlc -c -bin-annot m1.mli
   $ odoc compile top1.mld --child page-sub1 --child page-sub2
-  $ odoc compile sub1.mld -I . --parent top1 --child m1
+  $ odoc compile sub1.mld -I . --parent top1 --child M1
   $ odoc compile sub2.mld -I . --parent top1 --child page-m1
   $ odoc compile m1.cmti -I . --parent sub1
   $ odoc compile m1.mld -I . --parent sub2

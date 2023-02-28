@@ -1010,20 +1010,9 @@ let link ~filename x y =
       if y.Lang.Compilation_unit.linked || y.hidden then y else unit x y)
 
 let page env page =
-  let children =
-    List.fold_right
-      (fun child res ->
-        match Ref_tools.resolve_reference env child |> Error.raise_warnings with
-        | Ok r -> `Resolved r :: res
-        | Error _ ->
-            Errors.report ~what:(`Child child) `Resolve;
-            res)
-      page.Odoc_model.Lang.Page.children []
-  in
   {
     page with
     Page.content = comment_docs env page.Page.name page.content;
-    children;
     linked = true;
   }
 

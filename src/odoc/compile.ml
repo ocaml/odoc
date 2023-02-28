@@ -1,6 +1,7 @@
-open Or_error
+open Astring
 open Odoc_model
 open Odoc_model.Names
+open Or_error
 
 (*
  * Copyright (c) 2014 Leo White <leo@lpw25.net>
@@ -19,7 +20,7 @@ open Odoc_model.Names
  *)
 
 type parent_spec =
-  | Explicit of Paths.Identifier.ContainerPage.t * Paths.Reference.t list
+  | Explicit of Paths.Identifier.ContainerPage.t * Lang.Page.child list
   | Package of Paths.Identifier.ContainerPage.t
   | Noparent
 
@@ -44,29 +45,34 @@ let lookup_implementation_of_cmti intf_file =
          (Fs.File.to_string intf_file));
     None)
 
-(** Parse parent and child references. May raise warnings. *)
-let parse_reference f =
-  (* This is a command-line error. *)
-  let warnings_options = { Error.warn_error = true; print_warnings = true } in
-  Semantics.parse_reference f
-  |> Error.handle_errors_and_warnings ~warnings_options
+(** Used to disambiguate child references. *)
+let is_module_name n = String.length n > 0 && Char.Ascii.is_upper n.[0]
+
+(** Accepted child references:
+
+    - [page-foo] child is a container or leaf page.
+    - [module-Foo] child is a module.
+    - [module-foo], [Foo] child is a module, for backward compatibility. *)
+let parse_parent_child_reference s =
+  match String.cut ~sep:"-" s with
+  | Some ("page", n) -> Ok (Lang.Page.Page_child n)
+  | Some ("module", n) -> Ok (Module_child (String.Ascii.capitalize n))
+  | Some (k, _) -> Error (`Msg ("Unrecognized kind: " ^ k))
+  | None -> if is_module_name s then Ok (Module_child s) else Ok (Page_child s)
 
 let resolve_parent_page resolver f =
-  let find_parent :
-      Paths.Reference.t -> (Lang.Page.t, [> `Msg of string ]) Result.result =
-   fun r ->
-    match r with
-    | `Root (p, `TPage) | `Root (p, `TUnknown) -> (
+  let find_parent = function
+    | Lang.Page.Page_child p -> (
         match Resolver.lookup_page resolver p with
         | Some r -> Ok r
         | None -> Error (`Msg "Couldn't find specified parent page"))
-    | _ -> Error (`Msg "Expecting page as parent")
+    | Module_child _ -> Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
     | { Paths.Identifier.iv = `Page _; _ } as container -> Ok container
     | _ -> Error (`Msg "Specified parent is not a parent of this file")
   in
-  parse_reference f >>= fun r ->
+  parse_parent_child_reference f >>= fun r ->
   find_parent r >>= fun page ->
   extract_parent page.name >>= fun parent -> Ok (parent, page.children)
 
@@ -169,12 +175,10 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
         digest;
       }
   in
-  let check_child : Paths.Reference.t -> bool =
-   fun c ->
-    match c with
-    | `Root (n, `TUnknown) | `Root (n, `TModule) ->
-        Astring.String.Ascii.(uncapitalize n = uncapitalize filename)
-    | _ -> false
+  let check_child = function
+    | Lang.Page.Module_child n ->
+        String.Ascii.(uncapitalize n = uncapitalize filename)
+    | Page_child _ -> false
   in
   match parent_spec with
   | Noparent -> result None
@@ -187,10 +191,7 @@ let name_of_output ~prefix ~is_parent_explicit output =
   let page_dash_root =
     Filename.chop_extension Fs.File.(to_string @@ basename output)
   in
-  let root_name =
-    String.sub page_dash_root (String.length prefix)
-      (String.length page_dash_root - String.length prefix)
-  in
+  let root_name = String.drop ~max:(String.length prefix) page_dash_root in
   (if is_parent_explicit then
    match root_name with
    | "index" ->
@@ -204,7 +205,7 @@ let page_name_of_output = name_of_output ~prefix:"page-"
 let mld ~parent_spec ~output ~children ~warnings_options input =
   List.fold_left
     (fun acc child_str ->
-      match (acc, parse_reference child_str) with
+      match (acc, parse_parent_child_reference child_str) with
       | Ok acc, Ok r -> Ok (r :: acc)
       | Error m, _ -> Error m
       | _, Error (`Msg m) ->
@@ -221,11 +222,9 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
   let page_name = PageName.make_std root_name in
-  let check_child : Paths.Reference.t -> bool =
-   fun c ->
-    match c with
-    | `Root (n, `TUnknown) | `Root (n, `TPage) -> root_name = n
-    | _ -> false
+  let check_child = function
+    | Lang.Page.Page_child n -> root_name = n
+    | Module_child _ -> false
   in
   (if children = [] then
    (* No children, this is a leaf page. *)

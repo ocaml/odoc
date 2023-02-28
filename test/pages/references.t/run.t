@@ -3,7 +3,7 @@
   $ ocamlc -c -bin-annot foo.mli
   $ ocamlc -c -bin-annot moo.mli
 
-  $ odoc compile page.mld --child bar --child module-baz --child Foo --child module-Moo
+  $ odoc compile page.mld --child Bar --child module-baz --child Foo --child module-Moo
   $ odoc compile Bar.cmti -I . --parent page
   $ odoc compile Baz.cmti -I . --parent page-page
   $ odoc compile foo.cmti -I . --parent page

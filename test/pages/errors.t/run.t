@@ -20,7 +20,7 @@ And these need to specify compilation unit children as well as mld children
   [1]
 
 Parents must be pages
-  $ odoc compile top1.mld --child m1
+  $ odoc compile top1.mld --child M1
   $ odoc compile m1.cmti -I . --parent top1
   $ odoc compile sub1.mld -I . --parent module-M1
   ERROR: Expecting page as parent
@@ -29,6 +29,4 @@ Parents must be pages
 Linking checks the children are all present:
   $ odoc compile top1.mld --child foo
   $ odoc link page-top1.odoc -I .
-  File "page-top1.odoc":
-  Warning: Failed to resolve child reference unresolvedroot(foo)
 
