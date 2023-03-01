@@ -19,7 +19,7 @@ In html, labels in subpages should not be disambiguated since they won't have th
 
   $ cat html/A/index.html | grep 'id='
       <div class="spec module-type anchored" id="module-type-A">
-     <h2 id="first_2"><a href="#first_2" class="anchor"></a>First outer section
+     <h2 id="first"><a href="#first" class="anchor"></a>First outer section
 
   $ cat html/A/module-type-A/index.html | grep 'id='
      <h2 id="first"><a href="#first" class="anchor"></a>First inner section
