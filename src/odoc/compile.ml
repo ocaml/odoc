@@ -52,12 +52,21 @@ let is_module_name n = String.length n > 0 && Char.Ascii.is_upper n.[0]
 
     - [page-foo] child is a container or leaf page.
     - [module-Foo] child is a module.
-    - [module-foo], [Foo] child is a module, for backward compatibility. *)
+    - [module-foo], [Foo] child is a module, for backward compatibility.
+
+  Parses [...-"foo"] as [...-foo] for backward compatibility. *)
 let parse_parent_child_reference s =
+  let unquote s =
+    let len = String.length s in
+    if String.head s = Some '"' && String.head ~rev:true s = Some '"' && len > 1
+    then String.with_range ~first:1 ~len:(len - 2) s
+    else s
+  in
   match String.cut ~sep:"-" s with
-  | Some ("page", n) -> Ok (Lang.Page.Page_child n)
-  | Some ("src", n) -> Ok (Source_tree_child n)
-  | Some ("module", n) -> Ok (Module_child (String.Ascii.capitalize n))
+  | Some ("page", n) -> Ok (Lang.Page.Page_child (unquote n))
+  | Some ("src", n) -> Ok (Source_tree_child (unquote n))
+  | Some ("module", n) ->
+      Ok (Module_child (unquote (String.Ascii.capitalize n)))
   | Some (k, _) -> Error (`Msg ("Unrecognized kind: " ^ k))
   | None -> if is_module_name s then Ok (Module_child s) else Ok (Page_child s)
 
