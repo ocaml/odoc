@@ -173,7 +173,7 @@ let compile file ?parent ?(output_dir = Fpath.v "./") ?(search_path = [])
     | None -> Cmd.empty
     | Some (source_name, source_parent_file) ->
         Cmd.(
-          v "--source-name" % source_name % "--source-parent-file"
+          v "--source-name" % p source_name % "--source-parent-file"
           % p source_parent_file)
   in
   let cmd =
@@ -195,7 +195,6 @@ let link ?(ignore_output = false) file =
   let open Cmd in
   let cmd = odoc % "link" % p file % "-I" % "." in
   let cmd = if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd in
-  Format.printf "%a" pp cmd;
   let lines = OS.Cmd.(run_out ~err:err_run_out cmd |> to_lines) |> get_ok in
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
@@ -257,7 +256,7 @@ let dep_libraries =
     | _ -> dep_libraries_core
 
 let odoc_libraries = [
-    "odoc_xref_test"; "odoc_xref2"; "odoc_odoc";
+    "odoc_xref_test"; "odoc_xref2"; "odoc_odoc"; "odoc_html_support_files";
     "odoc_model_desc"; "odoc_model"; "odoc_manpage"; "odoc_loader";
     "odoc_latex"; "odoc_html"; "odoc_document"; "odoc_examples" ];;
 
@@ -361,23 +360,31 @@ let compile_deps f =
 ```
 
 For `odoc` libraries, we infer the implementation and interface source file path
-from the library name. For each directory in the hierarchy, we generate an `mld`
-file with links, to the contents of the directory (using html specific backend
-as there are no syntax to reference sources).
+from the library name. We list them in a file, passed to `odoc source-tree`, to
+generate `src-source.odoc`. This file contains the source hierarchy, and will be
+linked and passed to `html-generate` just as other pages and compilation units.
 
-The `.mld` files are stored in a specific folder, to avoid conflicts between
-folder names and other page's names. For instance, `page-odoc.odoc` exists both
-because there is a page named after the `odoc` folder and a page named after the
-`odoc` library. Moreover, the original hierarchy is preserved to avoid conflicts
-between different folders name, such as `lib` in `src/foo/lib/` and
-`src/bar/lib/`.
-
-Mld files are compiled, with parents and children that correspond to the
-hierarchy. If a page has no children, we artificially add one to make it render
-as `name/index.html`.
+It is used as the `source-parent` for all units for which we could provide
+sources.
 
 ```ocaml env=e1
-let source_folder = Fpath.v "source_mlds"
+let source_tree_output = ref [ "" ]
+
+let source_tree ?(ignore_output = false) ?(search_path = []) ~parent ~output file =
+  let open Cmd in
+  let search_path =
+    search_path
+    |> List.fold_left
+         (fun acc s_path -> Cmd.(v "-I" % p s_path %% acc))
+         Cmd.empty
+  in
+  let parent = v "--parent" % ("page-\"" ^ parent ^ "\"") in
+  let cmd = odoc % "source-tree" % "-I" % "." %% search_path %% parent % "-o" % p output % p file in
+  let lines = OS.Cmd.(run_out ~err:err_run_out cmd |> to_lines) |> get_ok in
+  if not ignore_output then
+    add_prefixed_output cmd source_tree_output (Fpath.to_string file) lines
+
+let odoc_source_tree = Fpath.v "src-source.odoc"
 
 let source_dir_of_odoc_lib lib =
   match String.split_on_char '_' lib with
@@ -412,101 +419,15 @@ let source_files_of_odoc_module lib module_ =
       in
       find_by_extension relpath [ "pp.ml"; "ml" ]
 
-let source_mld title filenames =
-  let title = Format.asprintf "{0 %s}" title in
-  let filenames =
-    Fpath.Set.fold
-      (fun filename acc ->
-        if Fpath.is_dir_path filename then
-          let name = Fpath.basename filename ^ "/index.html" in
-          Format.asprintf
-            {html|- {%%html: <svg aria-label="Directory" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z"></path></svg> <a href="%s">%s</a>%%}|html}
-            name (Fpath.basename filename)
-          :: acc
-        else
-          let name = Fpath.basename filename ^ ".html" in
-          Format.asprintf
-            {html|- {%%html: <svg height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"><path fill-rule="evenodd" d="M3.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 00.25-.25V6h-2.75A1.75 1.75 0 019 4.25V1.5H3.75zm6.75.062V4.25c0 .138.112.25.25.25h2.688a.252.252 0 00-.011-.013l-2.914-2.914a.272.272 0 00-.013-.011zM2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0113.25 16h-9.5A1.75 1.75 0 012 14.25V1.75z"></path></svg> <a href="%s">%s</a>%%}|html}
-            name (Fpath.basename filename)
-          :: acc)
-      filenames []
+let compile_source_tree units =
+  let sources =
+    List.filter_map (fun (_, _, _, file) -> Option.map Fpath.to_string file) units
   in
-  Format.sprintf "%s\n\n%s\n" title (String.concat "\n" filenames)
+  let source_map = Fpath.v "source_tree.map" in
+  let () = Bos.OS.File.write_lines source_map sources |> get_ok in
+  let () = source_tree ~parent:"odoc" ~output:odoc_source_tree source_map in
+  (odoc_source_tree, false, None)
 
-let source_mlds_of_units units =
-  let module M = Map.Make (Fpath) in
-  let multi_map_add key v map =
-    M.update key
-      (fun set ->
-        let set = match set with None -> Fpath.Set.empty | Some set -> set in
-        Some (Fpath.Set.add v set))
-      map
-  in
-  let rec add_path map path =
-    if Fpath.is_current_dir path then map
-    else
-      let parent, _ = Fpath.split_base path in
-      let map = multi_map_add parent path map in
-      add_path map parent
-  in
-  List.fold_left
-    (fun map (_, _, _, file) ->
-      match file with None -> map | Some file -> add_path map file)
-    M.empty units
-
-let compile_src_mlds units =
-  let mlds = source_mlds_of_units units in
-  let module M = Map.Make (Fpath) in
-  let mld_name lib =
-    if Fpath.is_current_dir lib then "source" else Fpath.basename lib
-  in
-  let title lib =
-    if Fpath.is_current_dir lib then "source" else Fpath.to_string lib
-  in
-  let parent_search_path lib =
-    if Fpath.is_current_dir lib then [ source_folder ]
-    else [ Fpath.( // ) source_folder (Fpath.parent lib) ]
-  in
-  let rec traverse_parent parent lib acc =
-    if Fpath.is_dir_path lib then
-      match M.find_opt lib mlds with
-      | None -> []
-      | Some set ->
-          let path = Fpath.(source_folder // lib / (mld_name lib ^ ".mld")) in
-          let mld_content = source_mld (title lib) set in
-          let _was_created = Bos.OS.Dir.create (Fpath.parent path) |> get_ok in
-          let () = Bos.OS.File.write path mld_content |> get_ok in
-          let () =
-            let children =
-              match
-                set |> Fpath.Set.to_seq |> List.of_seq
-                |> List.filter_map (fun p ->
-                       if Fpath.is_dir_path p then Some (mld_name p) else None)
-              with
-              | [] ->
-                  [ "dummy" ]
-                  (* Needed to have the mld rendered as [name/index.html] *)
-              | a -> a
-            in
-            compile ?parent ~search_path:(parent_search_path lib)
-              ~output_dir:(Fpath.parent path) path children
-          in
-          let acc =
-            [
-              ( Fpath.(source_folder // lib / ("page-" ^ mld_name lib ^ ".odoc")),
-                false,
-                None );
-            ]
-            :: acc
-          in
-          Fpath.Set.fold
-            (fun path acc ->
-              traverse_parent (Some (mld_name lib)) path [] :: acc)
-            set acc
-          |> List.flatten
-    else []
-  in
-  traverse_parent (Some "odoc") (Fpath.v "./") []
 ```
 
 Let's now put together a list of all possible modules. We'll keep track of
@@ -554,7 +475,7 @@ let compile_mlds () =
   let mkmld x = Fpath.(add_ext "mld" (v x)) in
   ignore
     (compile (mkmld "odoc")
-       ("page-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
+       ("src-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
   ignore (compile (mkmld "deps") ~parent:"odoc" (List.map mkpage dep_libraries));
   let extra_odocs =
     List.map
@@ -588,18 +509,9 @@ Now we get to the compilation phase. For each unit, we query its dependencies, t
 ```ocaml env=e1
 let compile_all () =
   let mld_odocs = compile_mlds () in
-  let src_mlds = compile_src_mlds all_units in
-  let source_args = function
-    | None -> None
-    | Some source_relpath ->
-        let source_parent_name =
-          Format.sprintf "page-%s.odoc"
-            (source_relpath |> Fpath.parent |> Fpath.basename)
-        in
-        let source_parent_file =
-          Fpath.(v "source_mlds" // parent source_relpath / source_parent_name)
-        and source_name = Fpath.basename source_relpath in
-        Some (source_name, source_parent_file)
+  let source_tree = compile_source_tree all_units in
+  let source_args =
+    Option.map (fun source_relpath -> (source_relpath, odoc_source_tree))
   in
   let rec rec_compile ?impl parent lib file =
     let output = Fpath.(base (set_ext "odoc" file)) in
@@ -626,11 +538,12 @@ let compile_all () =
       compile file ~parent:lib ?source_args ~ignore_output [];
       (output, ignore_output, impl) :: files
   in
-  List.fold_left
+  source_tree
+  :: List.fold_left
     (fun acc (parent, lib, dep, impl) ->
       acc @ rec_compile ?impl parent lib (best_file dep))
     [] all_units
-  @ mld_odocs @ src_mlds
+  @ mld_odocs
 ```
 
 Linking is now straightforward. We link all `odoc` files.
@@ -699,6 +612,7 @@ Let's see if there was any output from the `odoc` invocations:
  "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Available_regs) Parent_module: Lookup failure (root module): Available_regs";
  "page-stdlib.odoc: File \"library_mlds/stdlib.mld\", line 9, characters 0-22:";
  "page-stdlib.odoc: Warning: Failed to resolve reference unresolvedroot(Arith_status) Parent_module: Lookup failure (root module): Arith_status"]
+# !source_tree_output;;
 # !generate_output;;
 - : string list =
 ["";
