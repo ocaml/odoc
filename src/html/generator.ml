@@ -373,19 +373,21 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
-  let rec include_ ~config { Subpage.content; _ } = page ~config content
+  let rec include_ ~config ~siblings { Subpage.content; _ } = page ~config ~siblings content
 
-  and subpages ~config subpages =
-    Utils.list_concat_map ~f:(include_ ~config) subpages
+  and subpages ~config ~parent_toc subpages =
+    let siblings = childs_of_toc parent in
+    Utils.list_concat_map ~f:(include_ ~config ~siblings) subpages
 
-  and page ~config p : Odoc_document.Renderer.page list =
+  and page ~config ~siblings p : Odoc_document.Renderer.page list =
     let { Page.preamble; items = i; url; toc } =
       Doctree.Labels.disambiguate_page p
     and subpages =
       (* Don't use the output of [disambiguate_page] to avoid unecessarily
          mangled labels. *)
-      subpages ~config @@ Doctree.Subpages.compute p
+      subpages ~config ~parent_toc:toc @@ Doctree.Subpages.compute p
     in
+    let toc = Doctree.Better_toc.add_siblings siblings toc in
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
@@ -403,7 +405,7 @@ module Page = struct
         subpages
 end
 
-let render ~config page = Page.page ~config page
+let render ~config page = Page.page ~config ~siblings:[] page
 
 let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in
