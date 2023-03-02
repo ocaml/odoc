@@ -894,6 +894,11 @@ module Make (Syntax : SYNTAX) = struct
       | Signature _ ->
           Syntax.Class.open_tag ++ O.txt " ... " ++ Syntax.Class.close_tag
 
+    let remove_first_arrow (t : Odoc_model.Lang.TypeExpr.t) =
+       match t with
+       | Arrow (_,_,t) -> t
+       | _ -> t
+
     let method_ (t : Odoc_model.Lang.Method.t) =
       let name = Paths.Identifier.name t.id in
       let virtual_ =
@@ -906,7 +911,7 @@ module Make (Syntax : SYNTAX) = struct
         O.documentedSrc
           (O.keyword "method" ++ O.txt " " ++ private_ ++ virtual_ ++ O.txt name
           ++ O.txt Syntax.Type.annotation_separator
-          ++ type_expr t.type_)
+          ++ type_expr (remove_first_arrow t.type_))
       in
       let attr = [ "method" ] in
       let anchor = path_to_id t.id in
