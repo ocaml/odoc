@@ -998,7 +998,11 @@ module Make (Syntax : SYNTAX) = struct
 
     let class_ (t : Odoc_model.Lang.Class.t) =
       let name = Paths.Identifier.name t.id in
-      let params = format_params ~delim:`brackets t.params in
+      let params =
+        match t.params with
+        | [] -> O.noop
+        | _ :: _ as params -> format_params ~delim:`brackets params ++ O.txt " "
+      in
       let virtual_ =
         if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop
       in
@@ -1023,8 +1027,7 @@ module Make (Syntax : SYNTAX) = struct
           expansion summary
       in
       let content =
-        O.documentedSrc
-          (O.keyword "class" ++ O.txt " " ++ virtual_ ++ params ++ O.txt " ")
+        O.documentedSrc (O.keyword "class" ++ O.txt " " ++ virtual_ ++ params)
         @ cname @ cd
       in
       let attr = [ "class" ] in

@@ -92,7 +92,7 @@ Doc of M'', part 1\.
 Doc of Alias\.
 .nf 
 .sp 
-\f[CB]class\fR  c1 : int \f[CB]\->\fR \f[CB]object\fR \.\.\. \f[CB]end\fR
+\f[CB]class\fR c1 : int \f[CB]\->\fR \f[CB]object\fR \.\.\. \f[CB]end\fR
 .fi 
 .br 
 .ti +2
@@ -106,7 +106,7 @@ Doc of c1, part 1\.
 Doc of ct, part 1\.
 .nf 
 .sp 
-\f[CB]class\fR  c2 : ct
+\f[CB]class\fR c2 : ct
 .fi 
 .br 
 .ti +2

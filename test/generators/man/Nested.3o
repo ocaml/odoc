@@ -79,11 +79,11 @@ This is a functor F\.
 \fB4 Class\fR
 .in 
 .sp 
-\f[CB]class\fR \f[CB]virtual\fR  z : \f[CB]object\fR \.\.\. \f[CB]end\fR
+\f[CB]class\fR \f[CB]virtual\fR z : \f[CB]object\fR \.\.\. \f[CB]end\fR
 .fi 
 .br 
 .ti +2
 This is class z\.
 .nf 
 .sp 
-\f[CB]class\fR \f[CB]virtual\fR  inherits : \f[CB]object\fR \.\.\. \f[CB]end\fR
+\f[CB]class\fR \f[CB]virtual\fR inherits : \f[CB]object\fR \.\.\. \f[CB]end\fR

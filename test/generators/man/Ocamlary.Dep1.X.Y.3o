@@ -11,4 +11,4 @@ Ocamlary\.Dep1\.X\.Y
 .SH Documentation
 .sp 
 .nf 
-\f[CB]class\fR  c : \f[CB]object\fR \.\.\. \f[CB]end\fR
+\f[CB]class\fR c : \f[CB]object\fR \.\.\. \f[CB]end\fR
