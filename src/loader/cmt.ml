@@ -239,7 +239,15 @@ let rec read_class_field env parent cf =
         | Tcfk_virtual typ ->
             true, read_core_type env typ
         | Tcfk_concrete(_, expr) ->
-            false, Cmi.read_type_expr env expr.exp_type
+            (* Types of concrete methods in class implementation begin
+               with the object as first (implicit) argument, so we
+               must keep only the type after the first arrow. *)
+            let type_ =
+              match Cmi.read_type_expr env expr.exp_type with
+              | Arrow (_, _, t) -> t
+              | t -> t
+            in
+            false, type_
       in
         Some (Method {id; doc; private_; virtual_; type_})
   | Tcf_constraint(_, _) -> mk_class_comment doc
@@ -365,7 +373,7 @@ let rec read_module_expr env parent label_parent mexpr =
               in
               let id = Identifier.Mk.parameter (parent, Odoc_model.Names.ModuleName.make_std name) in
               let arg = Cmti.read_module_type env id label_parent arg in
-              
+
               Named { id; expr=arg }, env
           in
         let res = read_module_expr env (Identifier.Mk.result parent) label_parent res in
@@ -545,9 +553,9 @@ and read_include env parent incl =
   | Some m ->
     let decl = ModuleType m in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | _ -> 
+  | _ ->
     content.items
-    
+
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container o.open_attributes in
