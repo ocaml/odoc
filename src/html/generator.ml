@@ -223,18 +223,33 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
   Utils.list_concat_map l ~f:one
 
 and mk_table ~config ~resolve { Table.data; align } =
-  let mk_cell (x, h) = cell_kind h (block ~config ~resolve x) in
-  let mk_row row = Html.tr (List.map mk_cell row) in
-  let grid = List.map mk_row data in
-  let columns =
-    let ( >>= ) = Fun.flip Option.map in
-    align >>= fun align ->
-    let cols =
-      List.map (fun align -> Html.col ~a:(text_align align) ()) align
-    in
-    [ Html.colgroup cols ]
+  let mk_cell ~align (x, h) =
+    let a = text_align align in
+    cell_kind ~a h (block ~config ~resolve x)
   in
-  Html.table ?columns grid
+  let mk_row row =
+    let alignment align =
+      match align with
+      | None -> (None, None)
+      | Some (align :: q) -> (align, Some q)
+      | Some [] -> (None, None)
+      (* We might want to raise a warning, since there is less alignment than
+         rows *)
+    in
+    let acc, _align =
+      List.fold_left
+        (fun (acc, aligns) (x, h) ->
+          let align, aligns = alignment aligns in
+          let cell = mk_cell ~align (x, h) in
+          (cell :: acc, aligns))
+        ([], align) row
+    in
+    (* We might want to raise a warning if _align != Some [] | None as it means
+       there are more alignment instruction than rows *)
+    Html.tr (List.rev acc)
+  in
+  let grid = List.map mk_row data in
+  Html.table grid
 
 (* This coercion is actually sound, but is not currently accepted by Tyxml.
    See https://github.com/ocsigen/tyxml/pull/265 for details
