@@ -177,6 +177,14 @@ let heading ~config ~resolve (h : Heading.t) =
   in
   mk ~a (anchor @ content @ source_link)
 
+let text_align = function
+  | Some `Left -> [ Html.a_style "text-align:left" ]
+  | Some `Center -> [ Html.a_style "text-align:center" ]
+  | Some `Right -> [ Html.a_style "text-align:right" ]
+  | None -> []
+
+let cell_kind = function `Header -> Html.th | `Data -> Html.td
+
 let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
   let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
   let one (t : Block.one) =
@@ -215,38 +223,18 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
   Utils.list_concat_map l ~f:one
 
 and mk_table ~config ~resolve { Table.data; align } =
-  let data =
-    List.map
-      (fun row ->
-        Html.tr
-        @@ List.map
-             (fun (x, h) ->
-               let cell =
-                 match h with `Header -> Html.th | `Data -> Html.td
-               in
-               cell @@ block ~config ~resolve x)
-             row)
-      data
-  in
+  let mk_cell (x, h) = cell_kind h (block ~config ~resolve x) in
+  let mk_row row = Html.tr (List.map mk_cell row) in
+  let grid = List.map mk_row data in
   let columns =
     let ( >>= ) = Fun.flip Option.map in
     align >>= fun align ->
     let cols =
-      List.map
-        (fun align ->
-          let a =
-            match align with
-            | Some `Left -> [ Html.a_style "text-align:left" ]
-            | Some `Center -> [ Html.a_style "text-align:center" ]
-            | Some `Right -> [ Html.a_style "text-align:right" ]
-            | None -> []
-          in
-          Html.col ~a ())
-        align
+      List.map (fun align -> Html.col ~a:(text_align align) ()) align
     in
     [ Html.colgroup cols ]
   in
-  Html.table ?columns data
+  Html.table ?columns grid
 
 (* This coercion is actually sound, but is not currently accepted by Tyxml.
    See https://github.com/ocsigen/tyxml/pull/265 for details
