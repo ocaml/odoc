@@ -232,36 +232,36 @@ from OCamldoc.
 Text within the comments can be formatted using the following markup. Firstly,
 the simple typesetting markup:
 
-- [{b text}] bold
-- [{i text}] italic
-- [{e text}] emphasis
-- [{^ text}] superscript
-- [{_ text}] subscript
+- [{b <text>}] bold
+- [{i <text>}] italic
+- [{e <text>}] emphasis
+- [{^ <text>}] superscript
+- [{_ <text>}] subscript
  
 {3:lists Lists}
 Unordered lists:
 {v
-{ul {- item}
-    {- item}
-    {- item}}
+{ul {- <item>}
+    {- <item>}
+    {- <item>}}
 v}
 and ordered lists:
 {v
-{ol {- item 1}
-    {- item 2}
-    {- item 3}}
+{ol {- <item 1>}
+    {- <item 2>}
+    {- <item 3>}}
 v}
 There is also an abbreviated syntax for lists. The above could be written:
 {v
-- item
-- item
-- item
+- <item>
+- <item>
+- <item>
 v}
 and
 {v
-+ item 1
-+ item 2
-+ item 3
++ <item 1>
++ <item 2>
++ <item 3>
 v}
 
 {3:code_blocks Code Blocks}
@@ -379,19 +379,19 @@ module type [Foo].
 
 The prefixes supported are:
 - [module]
-- [module-type] (also [modtype])
+- [module-type] (and the equivalent deprecated prefix [modtype])
 - [class]
-- [class-type] (also [classtype])
-- [value] (also [val])
+- [class-type] (and the equivalent deprecated prefix [classtype])
+- [val] (and the equivalent deprecated prefix [value])
 - [type]
-- [exn] (also [exception])
+- [exception] (and the equivalent deprecated prefix [exn])
 - [method]
-- [constructor] (also [const])
+- [constructor] (and the equivalent deprecated prefix [const])
 - [extension]
-- [field] (also [recfield])
+- [field] (and the equivalent deprecated prefix [recfield])
 - [instance-variable]
-- [label] (also [section] - for referring to headings)
-- [page] (for referring to [.mld] pages)
+- [section] (and the equivalent deprecated prefix [label]) - for referring to headings
+- [page] - for referring to [.mld] pages
 
 In some cases the element being referenced might have a hyphen, a dot or a space in the name,
 e.g. if trying to refer to a page from a [.mld] file "1.2.3.mld". In this case, the
@@ -505,22 +505,23 @@ These tags have a block of potentially marked-up text associated with them,
 and occasionally some more data too. The block of text is ended by the end
 of the comment or by another tag. They are:
 
-- [@deprecated text] - marks the element as deprecated. [text] should describe
+- [@deprecated <text>] - marks the element as deprecated. [text] should describe
 when the element was deprecated, what to use as a replacement, and possibly
 the reason for the deprecation
-- [@param id text] - Associate the the given description (text) to the given 
+- [@param <id> <text>] - Associate the the given description (text) to the given 
 parameter name id. OCamldoc uses this tag for functions, methods, classes 
 and functors, but [odoc] does not currently enforce this restriction.
-- [@raise exn text] - Indicates that the element may raise [exn]. The text should
+- [@raise <exn> <text>] - Indicates that the element may raise [exn]. The text should
 describe when this might occur. [@raises] is a synonym for this tag.
-- [@return text] - describes the return value. [@returns] is a synonym for this.
-- [@before version text] - Allows differences in past behaviour to be described.
+- [@return <text>] - describes the return value. [@returns] is a synonym for this.
+- [@before <version> <text>] - Allows differences in past behaviour to be described.
 This is intended to be used to document compatibility issues.
-- [@see < URL > text] - Add a reference to the URL with [text] as a comment.
-- [@see 'filename' text] - Add a reference to the given file (written between
+- [@see <<URL>> <text>] - Add a reference to the URL (written between [<] and
+[>] delimiters) with [text] as a comment.
+- [@see '<filename>' <text>] - Add a reference to the given file (written between
 single quotes), with the given text as comment. {e Note:} [odoc] currently
 doesn't turn this into a link in the output HTML.
-- [@see "document-name" text] - Adds a reference to the given document name
+- [@see "<document-name>" <text>] - Adds a reference to the given document name
 (written between double quotes), with the given text as comment. {e Note:} 
 As with the file reference, [odoc] doesn't turn this into a link.
 
@@ -724,23 +725,27 @@ contents and thus should be used to introduce examples, comments or other
 complementary notes. An alternative would be to consider splitting into
 multiple files.
 
+Finally, documentation pages should start with a level-0 heading, see
+{!section-"page-title"}. Level-0 headings should not be used elsewhere.
+
 The syntax for declaring sections is as follows:
 
 {v
-{[0-6] text}
+{[0-5] <text>}
 v}
 or
 {v
-{[0-6]:label text}
+{[0-5]:<label> <text>}
 v}
-where the number represents the sectioning level. [0] is reserved for page titles
-for [.mld] files. [label] is an optional label for the section, allowing it to be
-referenced via the [{!label-...}] reference. For example:
+
+where the number represents the sectioning level. [<label>] is an optional label
+for the section, allowing it to be referenced via the [{!section-<label>}] reference.
+For example:
 
 {v
 {2:foobar Foo Bar}
 ...
-See {!label-foobar} for details
+See {!section-foobar} for details
 v}
 
 In this case the reference text would be "Foo Bar" so the paragraph would read
@@ -755,7 +760,7 @@ name in the reference link as follows:
 {v
 {2:foo-bar Foo Bar}
 ...
-See {!label-"foo-bar"} for details
+See {!section-"foo-bar"} for details
 v}
 
 You can use [_] instead of [-] to avoid this syntax.
