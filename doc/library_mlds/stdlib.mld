@@ -6,7 +6,6 @@
 {!module-Annot}
 {!module-Arch}
 {!module-Arg_helper}
-{!module-Arith_status}
 {!module-Asmgen}
 {!module-Asmlibrarian}
 {!module-Asmlink}
@@ -18,10 +17,8 @@
 {!module-Asttypes}
 {!module-Attr_helper}
 {!module-Augment_specialised_args}
-{!module-Available_regs}
 {!module-Backend_intf}
 {!module-Backend_var}
-{!module-Big_int}
 {!module-Bigarray}
 {!module-Branch_relaxation}
 {!module-Branch_relaxation_intf}
@@ -72,8 +69,6 @@
 {!module-Compile_common}
 {!module-Compilenv}
 {!module-Compmisc}
-{!module-Compute_ranges}
-{!module-Compute_ranges_intf}
 {!module-Condition}
 {!module-Config}
 {!module-Consistbl}
@@ -155,8 +150,6 @@
 {!module-Mtype}
 {!module-Mutable_variable}
 {!module-Mutex}
-{!module-Nat}
-{!module-Num}
 {!module-Numbers}
 {!module-Opcodes}
 {!module-Oprint}
@@ -191,12 +184,9 @@
 {!module-Profile}
 {!module-Profiling}
 {!module-Projection}
-{!module-Ratio}
 {!module-Rec_check}
 {!module-Ref_to_variables}
 {!module-Reg}
-{!module-Reg_availability_set}
-{!module-Reg_with_debug_info}
 {!module-Reload}
 {!module-Reloadgen}
 {!module-Remove_free_vars_equal_to_args}
@@ -238,7 +228,6 @@
 {!module-Tast_mapper}
 {!module-Terminfo}
 {!module-Thread}
-{!module-ThreadUnix}
 {!module-Topdirs}
 {!module-Toploop}
 {!module-Topmain}
