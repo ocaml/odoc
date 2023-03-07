@@ -93,7 +93,7 @@ The second occurence of 'B' in the main page should be disambiguated
     <nav class="odoc-toc">
      <ul><li><a href="#A">First label</a></li>
       <li><a href="#B">Floating label</a></li>
-      <li><a href="#B_4">Dupplicate B</a></li>
+      <li><a href="#B_2">Dupplicate B</a></li>
      </ul>
     </nav>
     <div class="odoc-content">
@@ -122,7 +122,7 @@ The second occurence of 'B' in the main page should be disambiguated
         </span>
        </code>
       </div>
-     </div><h2 id="B_4"><a href="#B_4" class="anchor"></a>Dupplicate B</h2>
+     </div><h2 id="B_2"><a href="#B_2" class="anchor"></a>Dupplicate B</h2>
      <p>Define <code>B</code> again in the same scope.</p>
      <p>References to the labels:</p>
      <p><a href="#A">First label</a> <a href="#B">Dupplicate B</a> 

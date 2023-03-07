@@ -13,19 +13,19 @@
   </header>
   <nav class="odoc-toc">
    <ul>
-    <li><a href="#something-1_2">Something 1</a>
-     <ul><li><a href="#something-2_2">Something 2</a></li></ul>
-    </li><li><a href="#something-1-bis_2">Something 1-bis</a></li>
+    <li><a href="#something-1">Something 1</a>
+     <ul><li><a href="#something-2">Something 2</a></li></ul>
+    </li><li><a href="#something-1-bis">Something 1-bis</a></li>
     <li><a href="#second-include">Second include</a>
      <ul>
-      <li><a href="#something-1_3">Something 1</a>
-       <ul><li><a href="#something-2_3">Something 2</a></li></ul>
-      </li><li><a href="#something-1-bis_3">Something 1-bis</a></li>
+      <li><a href="#something-1_2">Something 1</a>
+       <ul><li><a href="#something-2_2">Something 2</a></li></ul>
+      </li><li><a href="#something-1-bis_2">Something 1-bis</a></li>
       <li><a href="#third-include">Third include</a>
        <ul>
-        <li><a href="#something-1_4">Something 1</a>
-         <ul><li><a href="#something-2_4">Something 2</a></li></ul>
-        </li><li><a href="#something-1-bis_4">Something 1-bis</a></li>
+        <li><a href="#something-1_3">Something 1</a>
+         <ul><li><a href="#something-2_3">Something 2</a></li></ul>
+        </li><li><a href="#something-1-bis_3">Something 1-bis</a></li>
        </ul>
       </li>
      </ul>
@@ -52,14 +52,12 @@
      <code>Something</code>
     </a> once
    </p>
-   <h2 id="something-1_2"><a href="#something-1_2" class="anchor"></a>
-    Something 1
+   <h2 id="something-1"><a href="#something-1" class="anchor"></a>Something 1
    </h2><p>foo</p>
-   <h3 id="something-2_2"><a href="#something-2_2" class="anchor"></a>
-    Something 2
+   <h3 id="something-2"><a href="#something-2" class="anchor"></a>Something 2
    </h3>
-   <h2 id="something-1-bis_2">
-    <a href="#something-1-bis_2" class="anchor"></a>Something 1-bis
+   <h2 id="something-1-bis"><a href="#something-1-bis" class="anchor"></a>
+    Something 1-bis
    </h2><p>Some text.</p>
    <h2 id="second-include"><a href="#second-include" class="anchor"></a>
     Second include
@@ -69,26 +67,26 @@
      <code>Something</code>
     </a> a second time: the heading level should be shift here.
    </p>
-   <h3 id="something-1_3"><a href="#something-1_3" class="anchor"></a>
+   <h3 id="something-1_2"><a href="#something-1_2" class="anchor"></a>
     Something 1
    </h3><p>foo</p>
-   <h4 id="something-2_3"><a href="#something-2_3" class="anchor"></a>
+   <h4 id="something-2_2"><a href="#something-2_2" class="anchor"></a>
     Something 2
    </h4>
-   <h3 id="something-1-bis_3">
-    <a href="#something-1-bis_3" class="anchor"></a>Something 1-bis
+   <h3 id="something-1-bis_2">
+    <a href="#something-1-bis_2" class="anchor"></a>Something 1-bis
    </h3><p>Some text.</p>
    <h3 id="third-include"><a href="#third-include" class="anchor"></a>
     Third include
    </h3><p>Shifted some more.</p>
-   <h4 id="something-1_4"><a href="#something-1_4" class="anchor"></a>
+   <h4 id="something-1_3"><a href="#something-1_3" class="anchor"></a>
     Something 1
    </h4><p>foo</p>
-   <h5 id="something-2_4"><a href="#something-2_4" class="anchor"></a>
+   <h5 id="something-2_3"><a href="#something-2_3" class="anchor"></a>
     Something 2
    </h5>
-   <h4 id="something-1-bis_4">
-    <a href="#something-1-bis_4" class="anchor"></a>Something 1-bis
+   <h4 id="something-1-bis_3">
+    <a href="#something-1-bis_3" class="anchor"></a>Something 1-bis
    </h4><p>Some text.</p>
    <p>And let's include it again, but without inlining it this time: 
     the ToC shouldn't grow.
@@ -109,7 +107,7 @@
        </code>
       </div>
      </div>
-     <h2 id="something-1_5"><a href="#something-1_5" class="anchor"></a>
+     <h2 id="something-1_4"><a href="#something-1_4" class="anchor"></a>
       Something 1
      </h2><p>foo</p>
      <div class="odoc-spec">
@@ -118,7 +116,7 @@
        <code><span><span class="keyword">val</span> foo : unit</span></code>
       </div>
      </div>
-     <h3 id="something-2_5"><a href="#something-2_5" class="anchor"></a>
+     <h3 id="something-2_4"><a href="#something-2_4" class="anchor"></a>
       Something 2
      </h3>
      <div class="odoc-spec">
@@ -127,8 +125,8 @@
        <code><span><span class="keyword">val</span> bar : unit</span></code>
       </div><div class="spec-doc"><p>foo bar</p></div>
      </div>
-     <h2 id="something-1-bis_5">
-      <a href="#something-1-bis_5" class="anchor"></a>Something 1-bis
+     <h2 id="something-1-bis_4">
+      <a href="#something-1-bis_4" class="anchor"></a>Something 1-bis
      </h2><p>Some text.</p>
     </details>
    </div>

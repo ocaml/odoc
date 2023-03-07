@@ -494,7 +494,7 @@ let rec subpage subp =
   if Link.should_inline p.url then [] else [ render p ]
 
 and render (p : Page.t) =
-  let p = Doctree.Labels.disambiguate_page p
+  let p = Doctree.Labels.disambiguate_page ~enter_subpages:true p
   and children = Utils.flatmap ~f:subpage @@ Subpages.compute p in
   let content ppf = Format.fprintf ppf "%a@." Roff.pp (page p) in
   let filename = Link.as_filename p.url in

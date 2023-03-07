@@ -174,14 +174,19 @@ module Shift = struct
 end
 
 module Headings : sig
-  val fold : ('a -> Heading.t -> 'a) -> 'a -> Page.t -> 'a
-  (** Fold over every headings, follow subpages, nested documentedsrc and
-      expansions. *)
+  val fold :
+    enter_subpages:bool -> ('a -> Heading.t -> 'a) -> 'a -> Page.t -> 'a
+  (** Fold over every headings, follow nested documentedsrc and
+      expansions, as well as subpages if [enter_subpages] is [true]. *)
 
   val foldmap :
-    ('a -> Heading.t -> 'a * Heading.t) -> 'a -> Page.t -> 'a * Page.t
+    enter_subpages:bool ->
+    ('a -> Heading.t -> 'a * Heading.t) ->
+    'a ->
+    Page.t ->
+    'a * Page.t
 end = struct
-  let fold =
+  let fold ~enter_subpages =
     let rec w_page f acc page =
       w_items f (w_items f acc page.Page.preamble) page.items
     and w_items f acc ts = List.fold_left (w_item f) acc ts
@@ -194,7 +199,7 @@ end = struct
     and w_documentedsrc_one f acc = function
       | DocumentedSrc.Code _ | Documented _ -> acc
       | Nested t -> w_documentedsrc f acc t.code
-      | Subpage sp -> w_page f acc sp.content
+      | Subpage sp -> if enter_subpages then w_page f acc sp.content else acc
       | Alternative (Expansion exp) -> w_documentedsrc f acc exp.expansion
     in
     w_page
@@ -207,7 +212,7 @@ end = struct
 
   let foldmap_left f acc lst = foldmap_left f acc [] lst
 
-  let foldmap =
+  let foldmap ~enter_subpages =
     let rec w_page f acc page =
       let acc, preamble = w_items f acc page.Page.preamble in
       let acc, items = w_items f acc page.items in
@@ -231,8 +236,10 @@ end = struct
           let acc, code = w_documentedsrc f acc t.code in
           (acc, Nested { t with code })
       | Subpage sp ->
-          let acc, content = w_page f acc sp.content in
-          (acc, Subpage { sp with content })
+          if enter_subpages then
+            let acc, content = w_page f acc sp.content in
+            (acc, Subpage { sp with content })
+          else (acc, Subpage sp)
       | Alternative (Expansion exp) ->
           let acc, expansion = w_documentedsrc f acc exp.expansion in
           (acc, Alternative (Expansion { exp with expansion }))
@@ -241,7 +248,7 @@ end = struct
 end
 
 module Labels : sig
-  val disambiguate_page : Page.t -> Page.t
+  val disambiguate_page : enter_subpages:bool -> Page.t -> Page.t
   (** Colliding labels are allowed in the model but don't make sense in
       generators because we need to link to everything (eg. the TOC).
       Post-process the doctree, add a "_N" suffix to dupplicates, the first
@@ -257,28 +264,28 @@ end = struct
     if StringMap.mem new_label labels then make_label_unique labels di label'
     else new_label
 
-  let disambiguate_page page =
+  let disambiguate_page ~enter_subpages page =
     (* Perform two passes, we need to know every labels before allocating new
         ones. *)
     let labels =
-      Headings.fold
+      Headings.fold ~enter_subpages
         (fun acc h ->
           match h.label with Some l -> StringMap.add l 0 acc | None -> acc)
         StringMap.empty page
     in
-    Headings.foldmap
-      (fun acc h ->
+    Headings.foldmap ~enter_subpages
+      (fun labels h ->
         match h.label with
         | Some l ->
-            let d_index = StringMap.find l acc in
+            let d_index = StringMap.find l labels in
             let h =
               if d_index = 0 then h
               else
-                let label = Some (make_label_unique acc d_index l) in
+                let label = Some (make_label_unique labels d_index l) in
                 { h with label }
             in
-            (StringMap.add l (d_index + 1) acc, h)
-        | None -> (acc, h))
+            (StringMap.add l (d_index + 1) labels, h)
+        | None -> (labels, h))
       labels page
     |> snd
 end
