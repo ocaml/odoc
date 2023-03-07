@@ -17,13 +17,13 @@ Class
 .sp 
 \f[CB]class\fR \f[CB]type\fR  recursive = \f[CB]object\fR \f[CB]end\fR
 .sp 
-\f[CB]class\fR  mutually' : mutually
+\f[CB]class\fR mutually' : mutually
 .sp 
-\f[CB]class\fR  recursive' : recursive
+\f[CB]class\fR recursive' : recursive
 .sp 
 \f[CB]class\fR \f[CB]type\fR \f[CB]virtual\fR  empty_virtual = \f[CB]object\fR \f[CB]end\fR
 .sp 
-\f[CB]class\fR \f[CB]virtual\fR  empty_virtual' : empty
+\f[CB]class\fR \f[CB]virtual\fR empty_virtual' : empty
 .sp 
 \f[CB]class\fR \f[CB]type\fR 'a polymorphic = \f[CB]object\fR \f[CB]end\fR
 .sp 

@@ -16,4 +16,4 @@ Let-open in class types, https://github\.com/ocaml/odoc/issues/543 This was adde
 .nf 
 \f[CB]class\fR \f[CB]type\fR  let_open = \f[CB]object\fR \f[CB]end\fR
 .sp 
-\f[CB]class\fR  let_open' : \f[CB]object\fR \.\.\. \f[CB]end\fR
+\f[CB]class\fR let_open' : \f[CB]object\fR \.\.\. \f[CB]end\fR
