@@ -2,8 +2,8 @@ A page can have source children.
 
   $ odoc compile -c module-a -c module-b -c src-source root.mld
 
-  $ printf "lib/main.ml\nlib/b/b.ml\nlib/a/a.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o src-source.odoc source_tree.map
+  $ printf "lib/main.ml\nlib/b/b.ml\nlib/a/a.ml\n" > source.map
+  $ odoc source-tree -I . --parent page-root source.map
 
 Compile the modules:
 
