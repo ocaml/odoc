@@ -290,7 +290,26 @@ end = struct
 end
 
 module Source_tree = struct
+  let has_src_prefix input =
+    input |> Fs.File.basename |> Fs.File.to_string
+    |> Astring.String.is_prefix ~affix:"src-"
+
+  let output_file ~output ~input =
+    match output with
+    | Some output -> output
+    | None ->
+        let output =
+          if not (has_src_prefix input) then
+            let directory = Fs.File.dirname input in
+            let name = input |> Fs.File.basename |> Fs.File.to_string in
+            let name = "src-" ^ name in
+            Fs.File.create ~directory ~name
+          else input
+        in
+        Fs.File.(set_ext ".odoc" output)
+
   let compile_source_tree directories output parent input warnings_options =
+    let output = output_file ~output ~input in
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
     in
@@ -304,11 +323,9 @@ module Source_tree = struct
           let f = Fs.File.of_string s in
           if not (Fs.File.has_ext ".odoc" f) then
             Error (`Msg "Output file must have '.odoc' extension.")
-          else
-            let basename = Fs.File.to_string (Fs.File.basename f) in
-            if not (Astring.String.is_prefix ~affix:"src-" basename) then
-              Error (`Msg "Output file must be prefixed with 'src-'.")
-            else Ok f
+          else if not (has_src_prefix f) then
+            Error (`Msg "Output file must be prefixed with 'src-'.")
+          else Ok f
       | Error _ as e -> e
     and print = Fpath.pp in
     Arg.conv (parse, print)
@@ -327,7 +344,7 @@ module Source_tree = struct
          The basename must start with the prefix 'src-' and extension '.odoc'."
       in
       Arg.(
-        required
+        value
         & opt (some arg_page_output) None
         & info ~docs ~docv:"PATH" ~doc [ "o" ])
     in
