@@ -71,8 +71,12 @@ module Table = struct
       loop [] lx
 
     let create ~grid ~align : Ast.table =
-      let to_block x = Loc.at x.Loc.location (`Paragraph [ x ]) in
-      let cell_to_block (x, k) = (List.map to_block x, k) in
+      let cell_to_block (x, k) =
+        let whole_loc = Loc.span (List.map (fun x -> x.Loc.location) x) in
+        match x with
+        | [] -> ([], k)
+        | _ -> ([ Loc.at whole_loc (`Paragraph x) ], k)
+      in
       let row_to_block = List.map cell_to_block in
       let grid_to_block = List.map row_to_block in
       ((grid_to_block grid, align), `Light)

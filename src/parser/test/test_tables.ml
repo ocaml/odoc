@@ -480,30 +480,25 @@ let%expect_test _ =
                (grid
                 ((row
                   ((header
-                    (((f.ml (3 9) (3 14))
+                    (((f.ml (3 9) (3 31))
                       (paragraph
                        (((f.ml (3 9) (3 14))
-                         (italic (((f.ml (3 12) (3 13)) (word a))))))))
-                     ((f.ml (3 15) (3 28))
-                      (paragraph (((f.ml (3 15) (3 28)) (google.com ())))))
-                     ((f.ml (3 29) (3 31))
-                      (paragraph (((f.ml (3 29) (3 31)) (word "\\t")))))))
+                         (italic (((f.ml (3 12) (3 13)) (word a)))))
+                        ((f.ml (3 15) (3 28)) (google.com ()))
+                        ((f.ml (3 29) (3 31)) (word "\\t")))))))
                    (header ())
                    (header
-                    (((f.ml (3 36) (3 41))
-                      (paragraph (((f.ml (3 36) (3 41)) (math_span b)))))
-                     ((f.ml (3 42) (3 47))
+                    (((f.ml (3 36) (3 57))
                       (paragraph
-                       (((f.ml (3 42) (3 47))
-                         (emphasis (((f.ml (3 45) (3 46)) (word c))))))))
-                     ((f.ml (3 48) (3 57))
-                      (paragraph (((f.ml (3 48) (3 57)) (raw_markup () " xyz ")))))))
+                       (((f.ml (3 36) (3 41)) (math_span b))
+                        ((f.ml (3 42) (3 47))
+                         (emphasis (((f.ml (3 45) (3 46)) (word c)))))
+                        ((f.ml (3 48) (3 57)) (raw_markup () " xyz ")))))))
                    (header
-                    (((f.ml (3 60) (3 65))
+                    (((f.ml (3 60) (3 71))
                       (paragraph
-                       (((f.ml (3 60) (3 65)) (bold (((f.ml (3 63) (3 64)) (word d))))))))
-                     ((f.ml (3 66) (3 71))
-                      (paragraph (((f.ml (3 66) (3 71)) (code_span foo)))))))))))
+                       (((f.ml (3 60) (3 65)) (bold (((f.ml (3 63) (3 64)) (word d)))))
+                        ((f.ml (3 66) (3 71)) (code_span foo)))))))))))
                (align (default default default default))))))
            (warnings ())) |}]
 
@@ -539,11 +534,10 @@ let%expect_test _ =
                          ((f.ml (4 18) (5 14)) space)
                          ((f.ml (5 14) (5 22)) (word newlines))))))))))
                  (data
-                  (((f.ml (5 26) (5 31))
+                  (((f.ml (5 26) (5 37))
                     (paragraph
-                     (((f.ml (5 26) (5 31)) (bold (((f.ml (5 29) (5 30)) (word d))))))))
-                   ((f.ml (5 32) (5 37))
-                    (paragraph (((f.ml (5 32) (5 37)) (code_span foo)))))))))))
+                     (((f.ml (5 26) (5 31)) (bold (((f.ml (5 29) (5 30)) (word d)))))
+                      ((f.ml (5 32) (5 37)) (code_span foo)))))))))))
              (align (default default))))))
          (warnings
           ( "File \"f.ml\", line 4, character 11 to line 5, character 23:\
@@ -769,24 +763,20 @@ let%expect_test _ =
              (grid
               ((row
                 ((header
-                  (((f.ml (3 4) (3 10))
-                    (paragraph (((f.ml (3 4) (3 10)) (word Header)))))
-                   ((f.ml (3 11) (3 14))
-                    (paragraph (((f.ml (3 11) (3 14)) (word and)))))
-                   ((f.ml (3 15) (3 20))
-                    (paragraph (((f.ml (3 15) (3 20)) (word other)))))
-                   ((f.ml (3 21) (3 25))
-                    (paragraph (((f.ml (3 21) (3 25)) (word word)))))))))
+                  (((f.ml (3 4) (3 25))
+                    (paragraph
+                     (((f.ml (3 4) (3 10)) (word Header))
+                      ((f.ml (3 11) (3 14)) (word and))
+                      ((f.ml (3 15) (3 20)) (word other))
+                      ((f.ml (3 21) (3 25)) (word word)))))))))
                (row
                 ((data
-                  (((f.ml (5 4) (5 8))
-                    (paragraph (((f.ml (5 4) (5 8)) (word cell)))))
-                   ((f.ml (5 9) (5 12))
-                    (paragraph (((f.ml (5 9) (5 12)) (word and)))))
-                   ((f.ml (5 13) (5 18))
-                    (paragraph (((f.ml (5 13) (5 18)) (word other)))))
-                   ((f.ml (5 19) (5 24))
-                    (paragraph (((f.ml (5 19) (5 24)) (word words)))))))))))
+                  (((f.ml (5 4) (5 24))
+                    (paragraph
+                     (((f.ml (5 4) (5 8)) (word cell))
+                      ((f.ml (5 9) (5 12)) (word and))
+                      ((f.ml (5 13) (5 18)) (word other))
+                      ((f.ml (5 19) (5 24)) (word words)))))))))))
              (align (default))))))
          (warnings ())) |}]
 
@@ -807,20 +797,18 @@ let%expect_test _ =
              (grid
               ((row
                 ((header
-                  (((f.ml (3 4) (3 10))
-                    (paragraph (((f.ml (3 4) (3 10)) (word Header)))))
-                   ((f.ml (3 11) (3 16))
-                    (paragraph (((f.ml (3 11) (3 16)) (word other)))))
-                   ((f.ml (3 17) (3 21))
-                    (paragraph (((f.ml (3 17) (3 21)) (word word)))))))))
+                  (((f.ml (3 4) (3 21))
+                    (paragraph
+                     (((f.ml (3 4) (3 10)) (word Header))
+                      ((f.ml (3 11) (3 16)) (word other))
+                      ((f.ml (3 17) (3 21)) (word word)))))))))
                (row
                 ((data
-                  (((f.ml (5 4) (5 10))
-                    (paragraph (((f.ml (5 4) (5 10)) (word Header)))))
-                   ((f.ml (5 11) (5 16))
-                    (paragraph (((f.ml (5 11) (5 16)) (word other)))))
-                   ((f.ml (5 17) (5 21))
-                    (paragraph (((f.ml (5 17) (5 21)) (word word)))))))))))
+                  (((f.ml (5 4) (5 21))
+                    (paragraph
+                     (((f.ml (5 4) (5 10)) (word Header))
+                      ((f.ml (5 11) (5 16)) (word other))
+                      ((f.ml (5 17) (5 21)) (word word)))))))))))
              (align (default))))))
          (warnings ())) |}]
   end in
