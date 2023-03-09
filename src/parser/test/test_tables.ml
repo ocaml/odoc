@@ -751,5 +751,77 @@ let%expect_test _ =
                   (((f.ml (5 7) (5 8)) (paragraph (((f.ml (5 7) (5 8)) (word x)))))))))))
              (align (default default))))))
          (warnings ())) |}]
+
+    let multiple_word =
+      test
+        {|
+      {t
+  | Header and other word |
+  |-----------------------|
+  | cell and other words  |
+      }
+      |};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 6) (6 7))
+            (table (syntax light)
+             (grid
+              ((row
+                ((header
+                  (((f.ml (3 4) (3 10))
+                    (paragraph (((f.ml (3 4) (3 10)) (word Header)))))
+                   ((f.ml (3 11) (3 14))
+                    (paragraph (((f.ml (3 11) (3 14)) (word and)))))
+                   ((f.ml (3 15) (3 20))
+                    (paragraph (((f.ml (3 15) (3 20)) (word other)))))
+                   ((f.ml (3 21) (3 25))
+                    (paragraph (((f.ml (3 21) (3 25)) (word word)))))))))
+               (row
+                ((data
+                  (((f.ml (5 4) (5 8))
+                    (paragraph (((f.ml (5 4) (5 8)) (word cell)))))
+                   ((f.ml (5 9) (5 12))
+                    (paragraph (((f.ml (5 9) (5 12)) (word and)))))
+                   ((f.ml (5 13) (5 18))
+                    (paragraph (((f.ml (5 13) (5 18)) (word other)))))
+                   ((f.ml (5 19) (5 24))
+                    (paragraph (((f.ml (5 19) (5 24)) (word words)))))))))))
+             (align (default))))))
+         (warnings ())) |}]
+
+    let multiple_word_header =
+      test
+        {|
+      {t
+  | Header other word |
+  |-------------------|
+  | Header other word |
+      }
+      |};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 6) (6 7))
+            (table (syntax light)
+             (grid
+              ((row
+                ((header
+                  (((f.ml (3 4) (3 10))
+                    (paragraph (((f.ml (3 4) (3 10)) (word Header)))))
+                   ((f.ml (3 11) (3 16))
+                    (paragraph (((f.ml (3 11) (3 16)) (word other)))))
+                   ((f.ml (3 17) (3 21))
+                    (paragraph (((f.ml (3 17) (3 21)) (word word)))))))))
+               (row
+                ((data
+                  (((f.ml (5 4) (5 10))
+                    (paragraph (((f.ml (5 4) (5 10)) (word Header)))))
+                   ((f.ml (5 11) (5 16))
+                    (paragraph (((f.ml (5 11) (5 16)) (word other)))))
+                   ((f.ml (5 17) (5 21))
+                    (paragraph (((f.ml (5 17) (5 21)) (word word)))))))))))
+             (align (default))))))
+         (warnings ())) |}]
   end in
   ()
