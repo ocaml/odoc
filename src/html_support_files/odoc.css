@@ -701,6 +701,18 @@ td.def-doc *:first-child {
   padding-left: 12px;
 }
 
+/* Tables */
+
+td, th {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  border: 1px solid black;
+}
+
+th {
+  font-weight: bold;
+}
+
 /* Mobile adjustements. */
 
 @media only screen and (max-width: 110ex) {
