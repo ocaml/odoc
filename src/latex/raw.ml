@@ -178,23 +178,35 @@ let input ppf x = create "input" latex_path ppf x
 let ocamltabular ~column_desc pp ppf x =
   env "ocamltabular" ~args:[ column_desc ] pp ppf x
 
-let small_table pp ppf tbl =
-  let columns = List.length (List.hd tbl) in
+let small_table pp ppf (alignment, tbl) =
+  let columns = match tbl with [] -> 1 | _ -> List.length (List.hd tbl) in
   let row ppf x =
     let ampersand ppf () = Fmt.pf ppf "& " in
     Fmt.list ~sep:ampersand pp ppf x;
     break ppf Line
   in
   let matrix ppf m = List.iter (row ppf) m in
-  let rec repeat n s ppf =
-    if n = 0 then () else Fmt.pf ppf "%t%t" s (repeat (n - 1) s)
+  let column_desc =
+    let pp_alignment ppf align =
+      match align with
+      | Types.Default -> Fmt.pf ppf "p"
+      | Types.Left -> Fmt.pf ppf "w{l}"
+      | Types.Right -> Fmt.pf ppf "w{r}"
+      | Types.Center -> Fmt.pf ppf "w{c}"
+    in
+    let cell ppf align =
+      Fmt.pf ppf "%a{%.3f\\textwidth}" pp_alignment align
+        (1.0 /. float_of_int columns)
+    in
+    match alignment with
+    | None ->
+        let rec repeat n s ppf =
+          if n = 0 then () else Fmt.pf ppf "%t%t" s (repeat (n - 1) s)
+        in
+        repeat columns (fun ppf -> cell ppf Types.Default)
+    | Some alignment -> fun ppf -> List.iter (cell ppf) alignment
   in
-  let cell ppf =
-    Fmt.pf ppf "p{%.3f\\textwidth}" (1.0 /. float_of_int columns)
-  in
-  let table ppf tbl =
-    ocamltabular ~column_desc:(repeat columns cell) matrix ppf tbl
-  in
+  let table ppf tbl = ocamltabular ~column_desc matrix ppf tbl in
   (* we add line breaks to never insert tables between delimiters,
      to avoid rendering:
           | `A
