@@ -1,3 +1,9 @@
+UNRELEASED
+----------
+
+Additions
+- Source code rendering (@Julow, @panglesd, #909)
+
 2.2.0
 -----
 
