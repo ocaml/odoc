@@ -43,7 +43,7 @@ let relativize p = Fpath.(v ".." // p) (* this driver is run from the [doc] dir 
 - `odoc/source/...` : rendered source files
 
 The `odoc` model for achieving this is that we have *pages* (`.mld` files) that have *children* which are either *further pages* (`.mld` files), *modules* (from `.cmti` files), or
-a *source parent*. This {{!page-parent_child_spec} parent/child relationship} is specified on the command line. Parent pages must be *compiled* by `odoc` before their children. Then compiling a page `mypage.mld` will produce the file `page-mypage.odoc`.
+*source trees*. This {{!page-parent_child_spec} parent/child relationship} is specified on the command line. Parent pages must be *compiled* by `odoc` before their children. Then compiling a page `mypage.mld` will produce the file `page-mypage.odoc`.
 
 In the example below, there will be a file `odoc.mld` that corresponds with the top-level directory `odoc/`. It will be compiled as follows:
 
