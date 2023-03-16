@@ -559,7 +559,7 @@ td.def-doc *:first-child {
 
 /* Alert emoji */
 
-.alert::before {
+.alert::before, .deprecated::before {
   content: '⚠️ ';
 }
 
