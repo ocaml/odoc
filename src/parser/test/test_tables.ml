@@ -484,20 +484,25 @@ let%expect_test _ =
                       (paragraph
                        (((f.ml (3 9) (3 14))
                          (italic (((f.ml (3 12) (3 13)) (word a)))))
+                        ((f.ml (3 14) (3 15)) space)
                         ((f.ml (3 15) (3 28)) (google.com ()))
+                        ((f.ml (3 28) (3 29)) space)
                         ((f.ml (3 29) (3 31)) (word "\\t")))))))
                    (header ())
                    (header
                     (((f.ml (3 36) (3 57))
                       (paragraph
                        (((f.ml (3 36) (3 41)) (math_span b))
+                        ((f.ml (3 41) (3 42)) space)
                         ((f.ml (3 42) (3 47))
                          (emphasis (((f.ml (3 45) (3 46)) (word c)))))
+                        ((f.ml (3 47) (3 48)) space)
                         ((f.ml (3 48) (3 57)) (raw_markup () " xyz ")))))))
                    (header
                     (((f.ml (3 60) (3 71))
                       (paragraph
                        (((f.ml (3 60) (3 65)) (bold (((f.ml (3 63) (3 64)) (word d)))))
+                        ((f.ml (3 65) (3 66)) space)
                         ((f.ml (3 66) (3 71)) (code_span foo)))))))))))
                (align (default default default default))))))
            (warnings ())) |}]
@@ -537,6 +542,7 @@ let%expect_test _ =
                   (((f.ml (5 26) (5 37))
                     (paragraph
                      (((f.ml (5 26) (5 31)) (bold (((f.ml (5 29) (5 30)) (word d)))))
+                      ((f.ml (5 31) (5 32)) space)
                       ((f.ml (5 32) (5 37)) (code_span foo)))))))))))
              (align (default default))))))
          (warnings
@@ -766,16 +772,19 @@ let%expect_test _ =
                   (((f.ml (3 4) (3 25))
                     (paragraph
                      (((f.ml (3 4) (3 10)) (word Header))
-                      ((f.ml (3 11) (3 14)) (word and))
+                      ((f.ml (3 10) (3 11)) space) ((f.ml (3 11) (3 14)) (word and))
+                      ((f.ml (3 14) (3 15)) space)
                       ((f.ml (3 15) (3 20)) (word other))
+                      ((f.ml (3 20) (3 21)) space)
                       ((f.ml (3 21) (3 25)) (word word)))))))))
                (row
                 ((data
                   (((f.ml (5 4) (5 24))
                     (paragraph
-                     (((f.ml (5 4) (5 8)) (word cell))
-                      ((f.ml (5 9) (5 12)) (word and))
+                     (((f.ml (5 4) (5 8)) (word cell)) ((f.ml (5 8) (5 9)) space)
+                      ((f.ml (5 9) (5 12)) (word and)) ((f.ml (5 12) (5 13)) space)
                       ((f.ml (5 13) (5 18)) (word other))
+                      ((f.ml (5 18) (5 19)) space)
                       ((f.ml (5 19) (5 24)) (word words)))))))))))
              (align (default))))))
          (warnings ())) |}]
@@ -800,14 +809,18 @@ let%expect_test _ =
                   (((f.ml (3 4) (3 21))
                     (paragraph
                      (((f.ml (3 4) (3 10)) (word Header))
+                      ((f.ml (3 10) (3 11)) space)
                       ((f.ml (3 11) (3 16)) (word other))
+                      ((f.ml (3 16) (3 17)) space)
                       ((f.ml (3 17) (3 21)) (word word)))))))))
                (row
                 ((data
                   (((f.ml (5 4) (5 21))
                     (paragraph
                      (((f.ml (5 4) (5 10)) (word Header))
+                      ((f.ml (5 10) (5 11)) space)
                       ((f.ml (5 11) (5 16)) (word other))
+                      ((f.ml (5 16) (5 17)) space)
                       ((f.ml (5 17) (5 21)) (word word)))))))))))
              (align (default))))))
          (warnings ())) |}]
