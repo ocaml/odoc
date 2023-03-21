@@ -1264,7 +1264,7 @@ and light_table ~parent_markup ~parent_markup_location input =
 
 (* Consumes a table row that might start with [`Bar]. *)
 and light_table_row ~parent_markup ~last_loc input =
-  let rec consume_row acc_row acc_cell ~new_line ~last_loc =
+  let rec consume_row acc_row acc_cell acc_space ~new_line ~last_loc =
     let push_cells row cell =
       match cell with [] -> row | _ -> List.rev cell :: row
     in
@@ -1274,16 +1274,17 @@ and light_table_row ~parent_markup ~last_loc input =
     | `Right_brace ->
         junk input;
         (`Stop, return acc_row acc_cell, next_token.location)
-    | `Space _ ->
+    | `Space _ as token ->
         junk input;
-        consume_row acc_row acc_cell ~new_line ~last_loc
+        let i = Loc.at next_token.location token in
+        consume_row acc_row acc_cell (i :: acc_space) ~new_line ~last_loc
     | `Single_newline _ | `Blank_line _ ->
         junk input;
         (`Continue, return acc_row acc_cell, last_loc)
     | `Bar ->
         junk input;
         let acc_row = if new_line then [] else List.rev acc_cell :: acc_row in
-        consume_row acc_row [] ~new_line:false ~last_loc
+        consume_row acc_row [] [] ~new_line:false ~last_loc
     | #token_that_always_begins_an_inline_element as token ->
         let i = inline_element input next_token.location token in
         if Loc.spans_multiple_lines i then
@@ -1292,7 +1293,10 @@ and light_table_row ~parent_markup ~last_loc input =
             ~in_what:(Token.describe `Begin_table_light)
             i.location
           |> add_warning input;
-        consume_row acc_row (i :: acc_cell) ~new_line:false
+        let acc_cell =
+          if acc_cell = [] then [ i ] else (i :: acc_space) @ acc_cell
+        in
+        consume_row acc_row acc_cell [] ~new_line:false
           ~last_loc:next_token.location
     | other_token ->
         Parse_error.not_allowed next_token.location
@@ -1300,9 +1304,9 @@ and light_table_row ~parent_markup ~last_loc input =
           ~in_what:(Token.describe parent_markup)
         |> add_warning input;
         junk input;
-        consume_row acc_row acc_cell ~new_line ~last_loc
+        consume_row acc_row acc_cell acc_space ~new_line ~last_loc
   in
-  consume_row [] [] ~new_line:true ~last_loc
+  consume_row [] [] [] ~new_line:true ~last_loc
 
 (* Consumes a sequence of table rows (starting with '{tr ...}', which are
    represented by [`Begin_table_row] tokens).
