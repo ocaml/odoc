@@ -703,13 +703,17 @@ td.def-doc *:first-child {
 
 /* Tables */
 
-td, th {
+.odoc-table {
+  margin: 1em;
+}
+
+.odoc-table td, .odoc-table th {
   padding-left: 0.5em;
   padding-right: 0.5em;
   border: 1px solid black;
 }
 
-th {
+.odoc-table th {
   font-weight: bold;
 }
 

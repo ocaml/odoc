@@ -249,7 +249,7 @@ and mk_table ~config ~resolve { Table.data; align } =
     Html.tr (List.rev acc)
   in
   let grid = List.map mk_row data in
-  Html.table grid
+  Html.table ~a:[ Html.a_class [ "odoc-table" ] ] grid
 
 (* This coercion is actually sound, but is not currently accepted by Tyxml.
    See https://github.com/ocsigen/tyxml/pull/265 for details
