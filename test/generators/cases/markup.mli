@@ -180,6 +180,13 @@ v}
     }
 
     {t
+        Left | Center | Right | Default
+       :-----|:------:|------:|---------
+         A   |    B   |   C   |    D
+         A much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it   |    B much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it   |   C much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it   |    D much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it
+    }
+
+    {t
         No | Header
         A  | B
     }
@@ -198,7 +205,7 @@ v}
     {table
       {tr
         {th Header 1}
-        {th Data 1}
+        {td Data 1}
       }
       {tr
         {th Header 2}
