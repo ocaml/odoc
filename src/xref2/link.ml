@@ -212,7 +212,9 @@ let rec comment_inline_element :
             match (content, x) with
             | [], `Identifier ({ iv = #Id.Label.t_pv; _ } as i) -> (
                 match Env.lookup_by_id Env.s_label i env with
-                | Some (`Label (_, lbl)) -> lbl.Component.Label.text
+                | Some (`Label (_, lbl)) ->
+                    Odoc_model.Comment.link_content_of_inline_elements
+                      lbl.Component.Label.text
                 | None -> [])
             | content, _ -> content
           in
@@ -292,9 +294,14 @@ and comment_block_element env parent ~loc (x : Comment.block_element) =
   | #Comment.nestable_block_element as x ->
       (comment_nestable_block_element env parent ~loc x
         :> Comment.block_element)
-  | `Heading h as x ->
+  | `Heading (attrs, label, elems) ->
+      let cie = comment_inline_element env in
+      let elems =
+        List.rev_map (fun ele -> with_location cie ele) elems |> List.rev
+      in
+      let h = (attrs, label, elems) in
       check_ambiguous_label ~loc env h;
-      x
+      `Heading h
   | `Tag t -> `Tag (comment_tag env parent ~loc t)
 
 and with_location :

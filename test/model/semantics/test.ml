@@ -1823,13 +1823,11 @@ let%expect_test _ =
               "`Heading": [
                 { "heading_level": "`Subsection", "heading_label_explicit": "false" },
                 { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ] },
-                [ { "`Styled": [ "`Emphasis", [] ] } ]
+                [ { "`Link": [ "foo", [] ] } ]
               ]
             }
           ],
-          "warnings": [
-            "File \"f.ml\", line 1, characters 3-11:\n'{{:...} ...}' (external link) is not allowed in '{2 ...}' (section heading)."
-          ]
+          "warnings": []
         } |}]
 
     let reference_in_markup =
@@ -1842,13 +1840,11 @@ let%expect_test _ =
               "`Heading": [
                 { "heading_level": "`Subsection", "heading_label_explicit": "false" },
                 { "`Label": [ { "`Page": [ "None", "f.ml" ] }, "" ] },
-                [ { "`Styled": [ "`Emphasis", [] ] } ]
+                [ { "`Reference": [ { "`Root": [ "foo", "`TUnknown" ] }, [] ] } ]
               ]
             }
           ],
-          "warnings": [
-            "File \"f.ml\", line 1, characters 3-9:\n'{!...}' (cross-reference) is not allowed in '{2 ...}' (section heading)."
-          ]
+          "warnings": []
         } |}]
 
     let two =

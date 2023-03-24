@@ -150,11 +150,7 @@ let leaf_inline_element :
       | Some target -> Location.same element (`Raw_markup (target, s)))
 
 type surrounding =
-  [ `Heading of
-    int
-    * string option
-    * Odoc_parser.Ast.inline_element Location_.with_location list
-  | `Link of
+  [ `Link of
     string * Odoc_parser.Ast.inline_element Location_.with_location list
   | `Reference of
     [ `Simple | `With_text ]
@@ -290,7 +286,8 @@ let tag :
 
    This must be done in the parser (i.e. early, not at HTML/other output
    generation time), so that the cross-referencer can see these anchors. *)
-let generate_heading_label : Comment.link_content -> string =
+let generate_heading_label : Comment.inline_element with_location list -> string
+    =
  fun content ->
   (* Code spans can contain spaces, so we need to replace them with hyphens. We
      also lowercase all the letters, for consistency with the rest of this
@@ -308,13 +305,14 @@ let generate_heading_label : Comment.link_content -> string =
     Bytes.unsafe_to_string result
   in
 
+  let strip_locs li = List.map (fun ele -> ele.Location.value) li in
   (* Perhaps this should be done using a [Buffer.t]; we can switch to that as
      needed. *)
   let rec scan_inline_elements anchor = function
     | [] -> anchor
     | element :: more ->
         let anchor =
-          match element.Location.value with
+          match (element : Comment.inline_element) with
           | `Space -> anchor ^ "-"
           | `Word w -> anchor ^ Astring.String.Ascii.lowercase w
           | `Code_span c | `Math_span c ->
@@ -323,11 +321,22 @@ let generate_heading_label : Comment.link_content -> string =
               (* TODO Perhaps having raw markup in a section heading should be an
                  error? *)
               anchor
-          | `Styled (_, content) -> scan_inline_elements anchor content
+          | `Styled (_, content) ->
+              content |> strip_locs |> scan_inline_elements anchor
+          | `Reference (_, content) ->
+              content |> strip_locs
+              |> List.map (fun (ele : Comment.non_link_inline_element) ->
+                     (ele :> Comment.inline_element))
+              |> scan_inline_elements anchor
+          | `Link (_, content) ->
+              content |> strip_locs
+              |> List.map (fun (ele : Comment.non_link_inline_element) ->
+                     (ele :> Comment.inline_element))
+              |> scan_inline_elements anchor
         in
         scan_inline_elements anchor more
   in
-  scan_inline_elements "" content
+  content |> List.map (fun ele -> ele.Location.value) |> scan_inline_elements ""
 
 let section_heading :
     status ->
@@ -338,11 +347,7 @@ let section_heading :
  fun status ~top_heading_level location heading ->
   let (`Heading (level, label, content)) = heading in
 
-  let text =
-    non_link_inline_elements status
-      ~surrounding:(heading :> surrounding)
-      content
-  in
+  let text = inline_elements status content in
 
   let heading_label_explicit, label =
     match label with

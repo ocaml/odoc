@@ -332,7 +332,7 @@ let block_element : Comment.block_element -> Block.t = function
   | `Heading (_, _, text) ->
       (* We are not supposed to receive Heading in this context.
          TODO: Remove heading in attached documentation in the model *)
-      [ block @@ Paragraph (non_link_inline_element_list text) ]
+      [ block @@ Paragraph (inline_element_list text) ]
 
 let heading_level_to_int = function
   | `Title -> 0
@@ -345,7 +345,7 @@ let heading_level_to_int = function
 let heading
     (attrs, { Odoc_model.Paths.Identifier.iv = `Label (_, label); _ }, text) =
   let label = Odoc_model.Names.LabelName.to_string label in
-  let title = non_link_inline_element_list text in
+  let title = inline_element_list text in
   let level = heading_level_to_int attrs.Comment.heading_level in
   let label = Some label in
   let source_anchor = None in
