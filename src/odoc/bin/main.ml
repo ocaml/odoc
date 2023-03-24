@@ -38,6 +38,22 @@ let convert_fpath =
   and print = Fpath.pp in
   Arg.conv (parse, print)
 
+let convert_src_fpath =
+  let parse inp =
+    match Arg.(conv_parser file) inp with
+    | Ok s -> Result.Ok (Html_page.File (Fs.File.of_string s))
+    | Error _ as e -> e
+  and print = Html_page.pp in
+  Arg.conv (parse, print)
+
+let convert_src_dir =
+  let parse inp =
+    match Arg.(conv_parser dir) inp with
+    | Ok s -> Result.Ok (Html_page.Root (Fs.File.of_string s))
+    | Error _ as e -> e
+  and print = Html_page.pp in
+  Arg.conv (parse, print)
+
 (** On top of the conversion 'string', split into segs. *)
 let convert_source_name =
   let parse inp =
@@ -714,7 +730,7 @@ module Odoc_html_args = struct
     in
     Arg.(
       value
-      & opt (some convert_fpath) None
+      & opt (some convert_src_fpath) None
       & info [ "source" ] ~doc ~docv:"file.ml")
 
   let assets =
@@ -725,19 +741,38 @@ module Odoc_html_args = struct
     Arg.(
       value & opt_all convert_fpath [] & info [ "asset" ] ~doc ~docv:"file.ext")
 
+  let source_root =
+    let doc =
+      "Source code root for the compilation unit. It must have been compiled \
+       with --source-parent passed."
+    in
+    Arg.(
+      value
+      & opt (some convert_src_dir) None
+      & info [ "source-root" ] ~doc ~docv:"dir")
+
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri flat
-        as_json source_file assets =
+        as_json source_file assets source_root =
       let open_details = not closed_details in
+      let source =
+        match (source_root, source_file) with
+        | Some x, None -> Some x
+        | None, Some x -> Some x
+        | None, None -> None
+        | Some _, Some _ ->
+            Printf.eprintf "ERROR: Can't use both source and source-root\n%!";
+            exit 1
+      in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~semantic_uris ~indent ~flat
           ~open_details ~as_json ()
       in
-      { Html_page.html_config; source_file; assets }
+      { Html_page.html_config; source; assets }
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ flat $ as_json $ source_file $ assets)
+      $ support_uri $ flat $ as_json $ source_file $ assets $ source_root)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)

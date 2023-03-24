@@ -16,23 +16,45 @@
 
 open Odoc_model
 
+type source = File of Fpath.t | Root of Fpath.t
+
+let pp fmt = function
+  | File f -> Format.fprintf fmt "File: %a" Fpath.pp f
+  | Root f -> Format.fprintf fmt "File: %a" Fpath.pp f
+
+let to_string f = Format.asprintf "%a" pp f
+
 type args = {
   html_config : Odoc_html.Config.t;
-  source_file : Fpath.t option;
+  source : source option;
   assets : Fpath.t list;
 }
 
-let render { html_config; source_file = _; assets = _ } page =
+let render { html_config; source = _; assets = _ } page =
   Odoc_html.Generator.render ~config:html_config page
 
-let source_documents source_info source_file ~syntax =
-  match (source_info, source_file) with
+let source_documents source_info source ~syntax =
+  match (source_info, source) with
   | Some { Lang.Source_info.id; infos }, Some src -> (
-      match Fs.File.read src with
+      let file =
+        match src with
+        | File f -> f
+        | Root f ->
+            let open Odoc_model.Paths.Identifier in
+            let rec get_path_dir : SourceDir.t -> Fpath.t = function
+              | { iv = `SourceDir (d, f); _ } -> Fpath.(get_path_dir d / f)
+              | { iv = `Page _; _ } -> f
+            in
+            let get_path : SourcePage.t -> Fpath.t = function
+              | { iv = `SourcePage (d, f); _ } -> Fpath.(get_path_dir d / f)
+            in
+            get_path id
+      in
+      match Fs.File.read file with
       | Error (`Msg msg) ->
           Error.raise_warning
             (Error.filename_only "Couldn't load source file: %s" msg
-               (Fs.File.to_string src));
+               (Fs.File.to_string file));
           []
       | Ok source_code ->
           let syntax_info =
@@ -56,7 +78,7 @@ let source_documents source_info source_file ~syntax =
         (Error.filename_only
            "--source argument is invalid on compilation unit that were not \
             compiled with --source-parent and --source-name"
-           (Fs.File.to_string src));
+           (to_string src));
       []
   | None, None -> []
 
@@ -111,7 +133,7 @@ let asset_documents parent_id children asset_paths =
 let extra_documents args input ~syntax =
   match input with
   | Odoc_document.Renderer.CU unit ->
-      source_documents unit.Lang.Compilation_unit.source_info args.source_file
+      source_documents unit.Lang.Compilation_unit.source_info args.source
         ~syntax
   | Page page -> asset_documents page.Lang.Page.name page.children args.assets
 
