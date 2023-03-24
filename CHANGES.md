@@ -4,6 +4,9 @@ UNRELEASED
 Additions
 - Source code rendering (@Julow, @panglesd, #909)
 
+Bugfixes
+- Fix `--hidden` not always taken into account (@panglesd, #940)
+
 2.2.0
 -----
 

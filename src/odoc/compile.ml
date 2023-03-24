@@ -107,7 +107,7 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver ~make_root ~source
+let resolve_and_substitute ~resolver ~make_root ~source ~hidden
     (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
   (* [impl_shape] is used to lookup locations in the implementation. It is
@@ -135,6 +135,7 @@ let resolve_and_substitute ~resolver ~make_root ~source
         in
         (unit, None)
   in
+  let unit = { unit with hidden = hidden || unit.hidden } in
   let impl_shape =
     match cmt_infos with Some (shape, _) -> Some shape | None -> None
   in
@@ -330,8 +331,8 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver ~make_root ~source parent input
-            input_type)
+          resolve_and_substitute ~resolver ~make_root ~hidden ~source parent
+            input input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in
