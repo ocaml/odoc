@@ -58,6 +58,8 @@ module Arg = struct
 
   let file = file
 
+  let dir = dir
+
   let bool = bool
 
   let ( & ) = ( & )
