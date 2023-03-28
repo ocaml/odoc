@@ -189,10 +189,10 @@ let small_table pp ppf (alignment, tbl) =
   let column_desc =
     let pp_alignment ppf align =
       match align with
-      | Types.Default -> Fmt.pf ppf "p"
-      | Types.Left -> Fmt.pf ppf "w{l}"
-      | Types.Right -> Fmt.pf ppf "w{r}"
-      | Types.Center -> Fmt.pf ppf "w{c}"
+      | None -> Fmt.pf ppf "p"
+      | Some `Left -> Fmt.pf ppf "w{l}"
+      | Some `Right -> Fmt.pf ppf "w{r}"
+      | Some `Center -> Fmt.pf ppf "w{c}"
     in
     let cell ppf align =
       Fmt.pf ppf "%a{%.3f\\textwidth}" pp_alignment align
@@ -203,7 +203,7 @@ let small_table pp ppf (alignment, tbl) =
         let rec repeat n s ppf =
           if n = 0 then () else Fmt.pf ppf "%t%t" s (repeat (n - 1) s)
         in
-        repeat columns (fun ppf -> cell ppf Types.Default)
+        repeat columns (fun ppf -> cell ppf None)
     | Some alignment -> fun ppf -> List.iter (cell ppf) alignment
   in
   let table ppf tbl = ocamltabular ~column_desc matrix ppf tbl in

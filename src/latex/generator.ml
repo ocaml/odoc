@@ -331,17 +331,8 @@ and table_block { Table.data; align } =
   let alignment =
     match align with
     | None -> (
-        match data with
-        | [] -> []
-        | line :: _ -> List.map (fun _ -> Types.Default) line)
-    | Some align ->
-        List.map
-          (function
-            | None -> Types.Default
-            | Some `Right -> Right
-            | Some `Left -> Left
-            | Some `Center -> Center)
-          align
+        match data with [] -> [] | line :: _ -> List.map (fun _ -> None) line)
+    | Some align -> align
   in
   [ Table { alignment; data } ]
 
