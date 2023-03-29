@@ -81,17 +81,16 @@ module Identifier = struct
   and datatype = datatype_pv id
   (** @canonical Odoc_model.Paths.Identifier.DataType.t *)
 
-  type fragment_type_parent_pv = [ signature_pv | datatype_pv ]
-  (** @canonical Odoc_model.Paths.Identifier.FragmentTypeParent.t_pv *)
+  type field_parent_pv = [ signature_pv | datatype_pv ]
+  (** @canonical Odoc_model.Paths.Identifier.FieldParent.t_pv *)
 
   (* fragment_type_parent in identifiers is for record fields parent. It’s type
      (for usual record fields) or [signature] for fields of inline records of
      extension constructor. *)
-  and fragment_type_parent = fragment_type_parent_pv id
-  (** @canonical Odoc_model.Paths.Identifier.FragmentTypeParent.t *)
+  and field_parent = field_parent_pv id
+  (** @canonical Odoc_model.Paths.Identifier.FieldParent.t *)
 
-  type label_parent_pv =
-    [ fragment_type_parent_pv | page_pv | class_signature_pv ]
+  type label_parent_pv = [ field_parent_pv | page_pv | class_signature_pv ]
   (** @canonical Odoc_model.Paths.Identifier.LabelParent.t_pv *)
 
   and label_parent = label_parent_pv id
@@ -142,7 +141,7 @@ module Identifier = struct
   and constructor = constructor_pv id
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t *)
 
-  type field_pv = [ `Field of fragment_type_parent * FieldName.t ]
+  type field_pv = [ `Field of field_parent * FieldName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Field.t_pv *)
 
   and field = field_pv id
@@ -210,7 +209,7 @@ module Identifier = struct
     [ signature_pv
     | class_signature_pv
     | datatype_pv
-    | fragment_type_parent_pv
+    | field_parent_pv
     | label_parent_pv
     | module_pv
     | functor_parameter_pv
@@ -623,7 +622,7 @@ module rec Reference : sig
 
   (* Parent of fields and constructor. Can be either a type or [signature] *)
   and fragment_type_parent =
-    [ `Resolved of Resolved_reference.fragment_type_parent
+    [ `Resolved of Resolved_reference.field_parent
     | `Root of string * tag_parent
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t
@@ -811,8 +810,8 @@ and Resolved_reference : sig
   (* fragment_type_parent in resolved references is for record fields parent.
      It’s type (for usual record fields) or [signature] for fields of inline
      records of extension constructor. *)
-  and fragment_type_parent =
-    [ `Identifier of Identifier.fragment_type_parent
+  and field_parent =
+    [ `Identifier of Identifier.field_parent
     | `Alias of Resolved_path.module_ * module_
     | `AliasModuleType of Resolved_path.module_type * module_type
     | `Module of signature * ModuleName.t
@@ -857,7 +856,7 @@ and Resolved_reference : sig
 
   type field =
     [ `Identifier of Identifier.reference_field
-    | `Field of fragment_type_parent * FieldName.t ]
+    | `Field of field_parent * FieldName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Field.t *)
 
   type extension =
@@ -924,7 +923,7 @@ and Resolved_reference : sig
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
     | `Constructor of datatype * ConstructorName.t
-    | `Field of fragment_type_parent * FieldName.t
+    | `Field of field_parent * FieldName.t
     | `Extension of signature * ExtensionName.t
     | `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t
     | `Exception of signature * ExceptionName.t

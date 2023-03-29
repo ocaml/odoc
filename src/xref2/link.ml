@@ -921,7 +921,7 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
             try
               Expand_tools.collapse_eqns default.equation
                 (Lang_of.type_decl_equation (Lang_of.empty ())
-                   (parent :> Id.FragmentTypeParent.t)
+                   (parent :> Id.FieldParent.t)
                    t'.equation)
                 params
             with _ -> default.equation

@@ -488,19 +488,17 @@ module F = struct
         | `In_type (typ_name, _, `FField _) ->
             Ok
               (`Field
-                ( (`Type (parent', typ_name) :> Resolved.FragmentTypeParent.t),
-                  name )))
+                ((`Type (parent', typ_name) :> Resolved.FieldParent.t), name)))
     | `T (parent', t) -> (
         find Find.any_in_type t name_s >>= function
         | `FConstructor _ -> got_a_constructor name_s
-        | `FField _ ->
-            Ok (`Field ((parent' :> Resolved.FragmentTypeParent.t), name)))
+        | `FField _ -> Ok (`Field ((parent' :> Resolved.FieldParent.t), name)))
     | (`C _ | `CT _ | `P _) as r -> wrong_kind_error [ `S; `T ] r
 
   let of_component _env parent name =
     Ok
       (`Field
-        ( (parent : Resolved.DataType.t :> Resolved.FragmentTypeParent.t),
+        ( (parent : Resolved.DataType.t :> Resolved.FieldParent.t),
           FieldName.make_std name ))
 end
 
