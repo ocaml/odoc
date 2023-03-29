@@ -214,7 +214,7 @@ let parse whole_reference_location s :
         | _ ->
             expected [ "module"; "module-type" ] location
             |> Error.raise_exception)
-  and parent (kind, identifier, location) tokens : Parent.t =
+  and parent (kind, identifier, location) tokens : FragmentTypeParent.t =
     let kind = match_reference_kind location kind in
     match tokens with
     | [] -> (

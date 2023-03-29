@@ -711,7 +711,9 @@ and extension_constructor map parent c =
     locs = c.locs;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     args =
-      type_decl_constructor_argument map (parent :> Identifier.Parent.t) c.args;
+      type_decl_constructor_argument map
+        (parent :> Identifier.FragmentTypeParent.t)
+        c.args;
     res = Opt.map (type_expr map (parent :> Identifier.LabelParent.t)) c.res;
   }
 
@@ -767,11 +769,15 @@ and mty_substitution map identifier = function
   | TypeEq (frag, eqn) ->
       TypeEq
         ( Path.type_fragment map frag,
-          type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
+          type_decl_equation map
+            (identifier :> Identifier.FragmentTypeParent.t)
+            eqn )
   | TypeSubst (frag, eqn) ->
       TypeSubst
         ( Path.type_fragment map frag,
-          type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
+          type_decl_equation map
+            (identifier :> Identifier.FragmentTypeParent.t)
+            eqn )
   | ModuleTypeEq (frag, eqn) ->
       ModuleTypeEq
         (Path.module_type_fragment map frag, module_type_expr map identifier eqn)
@@ -888,7 +894,7 @@ and module_type_substitution :
 
 and type_decl_constructor_argument :
     maps ->
-    Paths.Identifier.Parent.t ->
+    Paths.Identifier.FragmentTypeParent.t ->
     Component.TypeDecl.Constructor.argument ->
     Odoc_model.Lang.TypeDecl.Constructor.argument =
  fun map parent a ->
@@ -896,11 +902,14 @@ and type_decl_constructor_argument :
   | Tuple ls ->
       Tuple (List.map (type_expr map (parent :> Identifier.LabelParent.t)) ls)
   | Record fs ->
-      Record (List.map (type_decl_field map (parent :> Identifier.Parent.t)) fs)
+      Record
+        (List.map
+           (type_decl_field map (parent :> Identifier.FragmentTypeParent.t))
+           fs)
 
 and type_decl_field :
     maps ->
-    Identifier.Parent.t ->
+    Identifier.FragmentTypeParent.t ->
     Component.TypeDecl.Field.t ->
     Odoc_model.Lang.TypeDecl.Field.t =
  fun map parent f ->
@@ -912,7 +921,7 @@ and type_decl_field :
     type_ = type_expr map (parent :> Identifier.LabelParent.t) f.type_;
   }
 
-and type_decl_equation map (parent : Identifier.Parent.t)
+and type_decl_equation map (parent : Identifier.FragmentTypeParent.t)
     (eqn : Component.TypeDecl.Equation.t) : Odoc_model.Lang.TypeDecl.Equation.t
     =
   let parent = (parent :> Identifier.LabelParent.t) in
@@ -932,7 +941,10 @@ and type_decl map parent id (t : Component.TypeDecl.t) :
   {
     id = identifier;
     locs = t.locs;
-    equation = type_decl_equation map (parent :> Identifier.Parent.t) t.equation;
+    equation =
+      type_decl_equation map
+        (parent :> Identifier.FragmentTypeParent.t)
+        t.equation;
     doc = docs (parent :> Identifier.LabelParent.t) t.doc;
     canonical = t.canonical;
     representation =
@@ -947,7 +959,8 @@ and type_decl_representation map id (t : Component.TypeDecl.Representation.t) :
   | Record fs ->
       Record
         (List.map
-           (type_decl_field map (id :> Odoc_model.Paths.Identifier.Parent.t))
+           (type_decl_field map
+              (id :> Odoc_model.Paths.Identifier.FragmentTypeParent.t))
            fs)
 
 and type_decl_constructor :
@@ -963,7 +976,10 @@ and type_decl_constructor :
   {
     id = identifier;
     doc = docs parent t.doc;
-    args = type_decl_constructor_argument map (id :> Identifier.Parent.t) t.args;
+    args =
+      type_decl_constructor_argument map
+        (id :> Identifier.FragmentTypeParent.t)
+        t.args;
     res = Opt.map (type_expr map parent) t.res;
   }
 
@@ -1055,7 +1071,9 @@ and exception_ map parent id (e : Component.Exception.t) :
     locs = e.locs;
     doc = docs (parent :> Identifier.LabelParent.t) e.doc;
     args =
-      type_decl_constructor_argument map (parent :> Identifier.Parent.t) e.args;
+      type_decl_constructor_argument map
+        (parent :> Identifier.FragmentTypeParent.t)
+        e.args;
     res = Opt.map (type_expr map (parent :> Identifier.LabelParent.t)) e.res;
   }
 

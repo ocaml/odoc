@@ -186,19 +186,19 @@ val simple_expansion :
 
 val type_decl_constructor_argument :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.FragmentTypeParent.t ->
   Component.TypeDecl.Constructor.argument ->
   Odoc_model.Lang.TypeDecl.Constructor.argument
 
 val type_decl_field :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.FragmentTypeParent.t ->
   Component.TypeDecl.Field.t ->
   Odoc_model.Lang.TypeDecl.Field.t
 
 val type_decl_equation :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.FragmentTypeParent.t ->
   Component.TypeDecl.Equation.t ->
   Odoc_model.Lang.TypeDecl.Equation.t
 

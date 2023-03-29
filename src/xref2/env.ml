@@ -301,7 +301,7 @@ let add_type (identifier : Identifier.Type.t) t env =
     and add_field env (field : TypeDecl.Field.t) =
       let ident =
         Paths.Identifier.Mk.field
-          ( (identifier :> Paths.Identifier.Parent.t),
+          ( (identifier :> Paths.Identifier.FragmentTypeParent.t),
             FieldName.make_std field.name )
       in
       add_to_elts Kind_Field ident (`Field (ident, field)) env

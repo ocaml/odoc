@@ -141,7 +141,7 @@ module Of_Identifier = struct
     | `Type (_, n) -> `LType (n, i)
     | `CoreType _n -> failwith "Bad"
 
-  let parent : Parent.t -> parent =
+  let parent : FragmentTypeParent.t -> parent =
    fun p ->
     match p with
     | { iv = #Signature.t_pv; _ } as s -> (signature s :> parent)
@@ -152,7 +152,7 @@ module Of_Identifier = struct
     match p with
     | { iv = #ClassSignature.t_pv; _ } as s ->
         (class_signature s :> label_parent)
-    | { iv = #Parent.t_pv; _ } as s -> (parent s :> label_parent)
+    | { iv = #FragmentTypeParent.t_pv; _ } as s -> (parent s :> label_parent)
     | { iv = `Page (_, n); _ } -> `LPage (n, fresh_int ())
     | { iv = `LeafPage (_, n); _ } -> `LLeafPage (n, fresh_int ())
 

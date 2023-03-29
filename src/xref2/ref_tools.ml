@@ -486,18 +486,21 @@ module F = struct
         find_ambiguous Find.any_in_type_in_sig sg name_s >>= function
         | `In_type (_, _, `FConstructor _) -> got_a_constructor name_s
         | `In_type (typ_name, _, `FField _) ->
-            Ok (`Field ((`Type (parent', typ_name) :> Resolved.Parent.t), name))
-        )
+            Ok
+              (`Field
+                ( (`Type (parent', typ_name) :> Resolved.FragmentTypeParent.t),
+                  name )))
     | `T (parent', t) -> (
         find Find.any_in_type t name_s >>= function
         | `FConstructor _ -> got_a_constructor name_s
-        | `FField _ -> Ok (`Field ((parent' :> Resolved.Parent.t), name)))
+        | `FField _ ->
+            Ok (`Field ((parent' :> Resolved.FragmentTypeParent.t), name)))
     | (`C _ | `CT _ | `P _) as r -> wrong_kind_error [ `S; `T ] r
 
   let of_component _env parent name =
     Ok
       (`Field
-        ( (parent : Resolved.DataType.t :> Resolved.Parent.t),
+        ( (parent : Resolved.DataType.t :> Resolved.FragmentTypeParent.t),
           FieldName.make_std name ))
 end
 
@@ -812,7 +815,8 @@ let resolve_reference =
     | `Dot (parent, name) -> resolve_reference_dot env parent name
     | `Root (name, `TConstructor) -> CS.in_env env name >>= resolved1
     | `Constructor (parent, name) ->
-        resolve_label_parent_reference env (parent : Parent.t :> LabelParent.t)
+        resolve_label_parent_reference env
+          (parent : FragmentTypeParent.t :> LabelParent.t)
         >>= fun p -> CS.in_parent env p name >>= resolved1
     | `Root (name, `TException) -> EX.in_env env name >>= resolved1
     | `Exception (parent, name) ->
@@ -828,7 +832,8 @@ let resolve_reference =
         ED.in_signature env p name >>= resolved1
     | `Root (name, `TField) -> F.in_env env name >>= resolved1
     | `Field (parent, name) ->
-        resolve_label_parent_reference env (parent : Parent.t :> LabelParent.t)
+        resolve_label_parent_reference env
+          (parent : FragmentTypeParent.t :> LabelParent.t)
         >>= fun p -> F.in_parent env p name >>= resolved1
     | `Root (name, `TMethod) -> MM.in_env env name >>= resolved1
     | `Method (parent, name) ->

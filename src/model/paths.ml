@@ -166,7 +166,7 @@ module Identifier = struct
       | { iv = `Method (p, _); _ } | { iv = `InstanceVariable (p, _); _ } ->
           (p : class_signature :> label_parent)
       | { iv = `Constructor (p, _); _ } -> (p : datatype :> label_parent)
-      | { iv = `Field (p, _); _ } -> (p : parent :> label_parent)
+      | { iv = `Field (p, _); _ } -> (p : fragment_type_parent :> label_parent)
 
   let label_parent n = label_parent_aux (n :> Id.non_src)
 
@@ -217,9 +217,9 @@ module Identifier = struct
     type t_pv = Id.datatype_pv
   end
 
-  module Parent = struct
-    type t = Id.parent
-    type t_pv = Id.parent_pv
+  module FragmentTypeParent = struct
+    type t = Paths_types.Identifier.fragment_type_parent
+    type t_pv = Paths_types.Identifier.fragment_type_parent_pv
   end
 
   module LabelParent = struct
@@ -578,7 +578,8 @@ module Identifier = struct
           `Constructor (p, n))
 
     let field :
-        Parent.t * FieldName.t -> [> `Field of Parent.t * FieldName.t ] id =
+        FragmentTypeParent.t * FieldName.t ->
+        [> `Field of FragmentTypeParent.t * FieldName.t ] id =
       mk_parent FieldName.to_string "fld" (fun (p, n) -> `Field (p, n))
 
     let extension :
@@ -991,12 +992,14 @@ module Reference = struct
       | `ClassType (sg, s) ->
           Identifier.Mk.class_type (parent_signature_identifier sg, s)
 
-    and parent_identifier : parent -> Identifier.Parent.t = function
+    and parent_identifier :
+        fragment_type_parent -> Identifier.FragmentTypeParent.t = function
       | `Identifier id -> id
       | (`Hidden _ | `Alias _ | `AliasModuleType _ | `Module _ | `ModuleType _)
         as sg ->
-          (parent_signature_identifier sg :> Identifier.Parent.t)
-      | `Type _ as t -> (parent_type_identifier t :> Identifier.Parent.t)
+          (parent_signature_identifier sg :> Identifier.FragmentTypeParent.t)
+      | `Type _ as t ->
+          (parent_type_identifier t :> Identifier.FragmentTypeParent.t)
 
     and label_parent_identifier : label_parent -> Identifier.LabelParent.t =
       function
@@ -1042,8 +1045,8 @@ module Reference = struct
       type t = Paths_types.Resolved_reference.datatype
     end
 
-    module Parent = struct
-      type t = Paths_types.Resolved_reference.parent
+    module FragmentTypeParent = struct
+      type t = Paths_types.Resolved_reference.fragment_type_parent
     end
 
     module LabelParent = struct
@@ -1127,8 +1130,8 @@ module Reference = struct
     type t = Paths_types.Reference.datatype
   end
 
-  module Parent = struct
-    type t = Paths_types.Reference.parent
+  module FragmentTypeParent = struct
+    type t = Paths_types.Reference.fragment_type_parent
   end
 
   module LabelParent = struct

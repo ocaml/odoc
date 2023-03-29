@@ -632,7 +632,7 @@ let read_constructor_declaration env parent cd =
   let doc = Doc_attr.attached_no_tag container cd.cd_attributes in
   let args =
     read_constructor_declaration_arguments env
-      (parent :> Identifier.Parent.t) cd.cd_args
+      (parent :> Identifier.FragmentTypeParent.t) cd.cd_args
   in
   let res = opt_map (read_type_expr env) cd.cd_res in
     {id; doc; args; res}
@@ -652,7 +652,7 @@ let read_type_kind env parent =
     | Type_record(lbls, _) ->
         let lbls =
           List.map
-            (read_label_declaration env (parent :> Identifier.Parent.t))
+            (read_label_declaration env (parent :> Identifier.FragmentTypeParent.t))
             lbls
         in
           Some (Record lbls)
@@ -745,7 +745,7 @@ let read_extension_constructor env parent id ext =
   let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
   let args =
     read_constructor_declaration_arguments env
-      (parent : Identifier.Signature.t :> Identifier.Parent.t) ext.ext_args
+      (parent : Identifier.Signature.t :> Identifier.FragmentTypeParent.t) ext.ext_args
   in
   let res = opt_map (read_type_expr env) ext.ext_ret_type in
   {id; locs; doc; args; res}
@@ -779,7 +779,7 @@ let read_exception env parent id ext =
     mark_exception ext;
     let args =
       read_constructor_declaration_arguments env
-        (parent : Identifier.Signature.t :> Identifier.Parent.t) ext.ext_args
+        (parent : Identifier.Signature.t :> Identifier.FragmentTypeParent.t) ext.ext_args
     in
     let res = opt_map (read_type_expr env) ext.ext_ret_type in
     {id; locs; doc; args; res}
