@@ -122,9 +122,9 @@ val s_module : Component.Element.module_ scope
 
 val s_module_type : Component.Element.module_type scope
 
-val s_datatype : Component.Element.datatype scope
-
 val s_type : Component.Element.type_ scope
+
+val s_datatype : Component.Element.datatype scope
 
 val s_class : Component.Element.class_ scope
 

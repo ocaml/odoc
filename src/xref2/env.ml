@@ -543,11 +543,11 @@ let s_module_type : Component.Element.module_type scope =
     | #Component.Element.module_type as r -> Some r
     | _ -> None)
 
-let s_datatype : Component.Element.datatype scope =
-  make_scope (function #Component.Element.datatype as r -> Some r | _ -> None)
-
 let s_type : Component.Element.type_ scope =
   make_scope (function #Component.Element.type_ as r -> Some r | _ -> None)
+
+let s_datatype : Component.Element.datatype scope =
+  make_scope (function #Component.Element.datatype as r -> Some r | _ -> None)
 
 let s_class : Component.Element.class_ scope =
   make_scope (function #Component.Element.class_ as r -> Some r | _ -> None)

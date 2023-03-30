@@ -52,7 +52,7 @@ let c_ty_poss env p =
   match p with
   | `Dot (p, n) -> (
       let rest = List.map (fun p -> `Dot (p, n)) (c_mod_poss env p) in
-      match Env.lookup_by_name Env.s_type n env with
+      match Env.lookup_by_name Env.s_datatype n env with
       | Ok (`Type (id, _)) ->
           `Identifier ((id :> Odoc_model.Paths.Identifier.Path.Type.t), false)
           :: rest
@@ -64,7 +64,7 @@ let c_daty_poss env p =
   match p with
   | `Dot (p, n) -> (
       let rest = List.map (fun p -> `Dot (p, n)) (c_mod_poss env p) in
-      match Env.lookup_by_name Env.s_type n env with
+      match Env.lookup_by_name Env.s_datatype n env with
       | Ok (`Type (id, _)) ->
           `Identifier
             ((id :> Odoc_model.Paths.Identifier.Path.DataType.t), false)
@@ -436,7 +436,7 @@ let simplify_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
   match m with
   | `Type (`Module (`Gpath (`Identifier p)), name) -> (
       let ident = (Mk.type_ ((p :> Signature.t), name) : Path.Type.t) in
-      match Env.(lookup_by_id s_type (ident :> Path.Type.t) env) with
+      match Env.(lookup_by_id s_datatype (ident :> Path.Type.t) env) with
       | Some _ -> `Gpath (`Identifier ident)
       | None -> m)
   | _ -> m
@@ -858,7 +858,8 @@ and lookup_type_gpath :
               next clause. We just look them up here in the list of core types *)
         Ok (`FType (name, List.assoc (TypeName.to_string name) core_types))
     | `Identifier ({ iv = `Type _; _ } as i) ->
-        of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_type) i env)
+        of_option ~error:(`Lookup_failureT i)
+          (Env.(lookup_by_id s_datatype) i env)
         >>= fun (`Type ({ iv = `CoreType name | `Type (_, name); _ }, t)) ->
         Ok (`FType (name, t))
     | `Identifier ({ iv = `Class _; _ } as i) ->
@@ -899,7 +900,8 @@ and lookup_datatype_gpath :
               next clause. We just look them up here in the list of core types *)
         Ok (`FType (name, List.assoc (TypeName.to_string name) core_types))
     | `Identifier ({ iv = `Type _; _ } as i) ->
-        of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_type) i env)
+        of_option ~error:(`Lookup_failureT i)
+          (Env.(lookup_by_id s_datatype) i env)
         >>= fun (`Type ({ iv = `CoreType name | `Type (_, name); _ }, t)) ->
         Ok (`FType (name, t))
     | `CanonicalDataType (t1, _) -> lookup_datatype_gpath env t1

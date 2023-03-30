@@ -292,8 +292,7 @@ module T = struct
     | `ClassType _ as e -> `CT (CT.of_element env e)
 
   let in_env env name =
-    env_lookup_by_name Env.s_datatype name env >>= fun e ->
-    Ok (of_element env e)
+    env_lookup_by_name Env.s_type name env >>= fun e -> Ok (of_element env e)
 
   (* Don't handle name collisions between class, class types and type decls *)
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)

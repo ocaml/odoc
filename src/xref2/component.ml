@@ -496,7 +496,7 @@ module Element = struct
 
   type module_type = [ `ModuleType of Identifier.ModuleType.t * ModuleType.t ]
 
-  type type_ = [ `Type of Identifier.Type.t * TypeDecl.t ]
+  type datatype = [ `Type of Identifier.Type.t * TypeDecl.t ]
 
   type value = [ `Value of Identifier.Value.t * Value.t ]
 
@@ -506,7 +506,7 @@ module Element = struct
 
   type class_type = [ `ClassType of Identifier.ClassType.t * ClassType.t ]
 
-  type datatype = [ type_ | class_ | class_type ]
+  type type_ = [ datatype | class_ | class_type ]
 
   type signature = [ module_ | module_type ]
 
@@ -527,12 +527,12 @@ module Element = struct
   (* No component for pages yet *)
   type page = [ `Page of Identifier.Page.t * Odoc_model.Lang.Page.t ]
 
-  type label_parent = [ signature | datatype | page ]
+  type label_parent = [ signature | type_ | page ]
 
   type any =
     [ signature
     | value
-    | type_
+    | datatype
     | label
     | class_
     | class_type
