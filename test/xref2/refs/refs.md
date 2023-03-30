@@ -2683,11 +2683,9 @@ Failure
 Exception:
 Failure "resolve_reference: is of kind type but expected class or class type".
 # resolve_ref "c.constructor-C" (* Type in env but find class (parent of constructor is "parent") *) ;;
-Exception:
-Failure "resolve_reference: is of kind class but expected signature or type".
+Exception: Failure "resolve_reference: Couldn't find \"c\"".
 # resolve_ref "c.field-f" (* Field in class (parent of field is "label_parent") *) ;;
-Exception:
-Failure "resolve_reference: is of kind class but expected signature or type".
+Exception: Failure "resolve_reference: Couldn't find \"c\"".
 ```
 
 ## Ambiguous references

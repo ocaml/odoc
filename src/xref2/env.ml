@@ -592,6 +592,11 @@ let s_label_parent : Component.Element.label_parent scope =
     | #Component.Element.label_parent as r -> Some r
     | _ -> None)
 
+let s_fragment_type_parent : Component.Element.fragment_type_parent scope =
+  make_scope ~root:lookup_root_module_fallback (function
+    | #Component.Element.fragment_type_parent as r -> Some r
+    | _ -> None)
+
 let len = ref 0
 
 let n = ref 0

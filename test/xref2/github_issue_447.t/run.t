@@ -10,7 +10,7 @@ faulty reference.
 
   $ odoc link a.odoc
   File "a.mli", line 15, characters 4-22:
-  Warning: Failed to resolve reference unresolvedroot(t).A is of kind class but expected signature or type
+  Warning: Failed to resolve reference unresolvedroot(t).A Couldn't find "t"
 
 Let's now check that the reference point to the right page/anchor:
 

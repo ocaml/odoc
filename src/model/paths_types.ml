@@ -583,8 +583,7 @@ module rec Reference : sig
 
   type tag_datatype = [ `TUnknown | `TType ]
 
-  type tag_parent =
-    [ `TUnknown | `TModule | `TModuleType | `TClass | `TClassType | `TType ]
+  type tag_parent = [ `TUnknown | `TModule | `TModuleType | `TType ]
 
   type tag_label_parent =
     [ `TUnknown

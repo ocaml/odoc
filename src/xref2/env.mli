@@ -144,6 +144,8 @@ val s_field : Component.Element.field scope
 
 val s_label_parent : Component.Element.label_parent scope
 
+val s_fragment_type_parent : Component.Element.fragment_type_parent scope
+
 (* val open_component_signature :
    Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
 

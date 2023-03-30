@@ -493,6 +493,8 @@ module Element : sig
 
   type label_parent = [ signature | type_ | page ]
 
+  type fragment_type_parent = [ signature | datatype ]
+
   type any =
     [ signature
     | value

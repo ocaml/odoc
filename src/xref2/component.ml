@@ -529,6 +529,8 @@ module Element = struct
 
   type label_parent = [ signature | type_ | page ]
 
+  type fragment_type_parent = [ signature | datatype ]
+
   type any =
     [ signature
     | value
