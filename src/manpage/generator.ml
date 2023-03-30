@@ -238,9 +238,7 @@ let strip l =
               { h with desc = Styled (sty, List.rev @@ loop [] content) }
             in
             loop (h :: acc) t
-        | Link (_, content)
-        | InternalLink (Resolved (_, content))
-        | InternalLink (Unresolved content) ->
+        | Link (_, content) | InternalLink { content; _ } ->
             let acc = loop acc content in
             loop acc t
         | Source code ->
@@ -298,7 +296,7 @@ and inline (l : Inline.t) =
       | Styled (sty, content) -> style sty (inline content) ++ inline rest
       | Link (href, content) ->
           env "UR" "UE" href (inline @@ strip content) ++ inline rest
-      | InternalLink (Resolved (_, content) | Unresolved content) ->
+      | InternalLink { content; _ } ->
           font "CI" (inline @@ strip content) ++ inline rest
       | Source content -> source_code content ++ inline rest
       | Math s -> math s ++ inline rest

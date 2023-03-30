@@ -94,24 +94,21 @@ and styled style ~emph_level =
 
 let rec internallink ~config ~emph_level ~resolve ?(a = []) (t : InternalLink.t)
     =
-  match t with
-  | Resolved (uri, content) ->
-      let href = Link.href ~config ~resolve uri in
-      let a = (a :> Html_types.a_attrib Html.attrib list) in
-      let elt =
-        Html.a ~a:(Html.a_href href :: a) (inline_nolink ~emph_level content)
-      in
-      let elt = (elt :> phrasing Html.elt) in
-      [ elt ]
-  | Unresolved content ->
-      (* let title =
-       *   Html.a_title (Printf.sprintf "unresolved reference to %S"
-       *       (ref_to_string ref)
-       * in *)
-      let a = Html.a_class [ "xref-unresolved" ] :: a in
-      let elt = Html.span ~a (inline ~config ~emph_level ~resolve content) in
-      let elt = (elt :> phrasing Html.elt) in
-      [ elt ]
+  let elt =
+    match t.target with
+    | Resolved uri ->
+        let href = Link.href ~config ~resolve uri in
+        let a = (a :> Html_types.a_attrib Html.attrib list) in
+        Html.a ~a:(Html.a_href href :: a) (inline_nolink ~emph_level t.content)
+    | Unresolved ->
+        (* let title =
+         *   Html.a_title (Printf.sprintf "unresolved reference to %S"
+         *       (ref_to_string ref)
+         * in *)
+        let a = Html.a_class [ "xref-unresolved" ] :: a in
+        Html.span ~a (inline ~config ~emph_level ~resolve t.content)
+  in
+  [ (elt :> phrasing Html.elt) ]
 
 and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
     phrasing Html.elt list =

@@ -231,17 +231,14 @@ let source k (t : Source.t) =
   tokens t
 
 let rec internalref ~verbatim ~in_source (t : InternalLink.t) =
-  match t with
-  | Resolved (uri, content) ->
-      let target = Link.label uri in
-      let text = Some (inline ~verbatim ~in_source content) in
-      let short = in_source in
-      Internal_ref { short; text; target }
-  | Unresolved content ->
-      let target = "xref-unresolved" in
-      let text = Some (inline ~verbatim ~in_source content) in
-      let short = in_source in
-      Internal_ref { short; target; text }
+  let target =
+    match t.target with
+    | InternalLink.Resolved uri -> Link.label uri
+    | Unresolved -> "xref-unresolved"
+  in
+  let text = Some (inline ~verbatim ~in_source t.content) in
+  let short = in_source in
+  Internal_ref { short; target; text }
 
 and inline ~in_source ~verbatim (l : Inline.t) =
   let one (t : Inline.one) =

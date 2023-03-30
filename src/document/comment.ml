@@ -69,8 +69,9 @@ module Reference = struct
         | None ->
             let s = source_of_code s in
             [ inline @@ Inline.Source s ]
-        | Some s ->
-            [ inline @@ Inline.InternalLink (InternalLink.Unresolved s) ])
+        | Some content ->
+            let link = { InternalLink.target = Unresolved; content } in
+            [ inline @@ Inline.InternalLink link ])
     | `Dot (parent, s) -> unresolved ?text (parent :> t) s
     | `Module (parent, s) ->
         unresolved ?text (parent :> t) (ModuleName.to_string s)
@@ -100,7 +101,7 @@ module Reference = struct
     | `Resolved r -> (
         (* IDENTIFIER MUST BE RENAMED TO DEFINITION. *)
         let id = Reference.Resolved.identifier r in
-        let txt =
+        let content =
           match text with
           | None ->
               [ inline @@ Inline.Source (source_of_code (render_resolved r)) ]
@@ -108,17 +109,20 @@ module Reference = struct
         in
         match Url.from_identifier ~stop_before id with
         | Ok url ->
-            [ inline @@ Inline.InternalLink (InternalLink.Resolved (url, txt)) ]
-        | Error (Not_linkable _) -> txt
+            let target = InternalLink.Resolved url in
+            [ inline @@ Inline.InternalLink { InternalLink.target; content } ]
+        | Error (Not_linkable _) -> content
         | Error exn ->
             (* FIXME: better error message *)
             Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
-            txt)
+            content)
 
   and unresolved : ?text:Inline.t -> Reference.t -> string -> Inline.t =
    fun ?text parent field ->
     match text with
-    | Some s -> [ inline @@ InternalLink (InternalLink.Unresolved s) ]
+    | Some content ->
+        let link = { InternalLink.target = Unresolved; content } in
+        [ inline @@ InternalLink link ]
     | None ->
         let tail = [ inline @@ Text ("." ^ field) ] in
         let content = to_ir ~stop_before:true parent in

@@ -6,11 +6,9 @@ end =
   Class
 
 and InternalLink : sig
-  type resolved = Url.t * Inline.t
+  type target = Resolved of Url.t | Unresolved
 
-  type unresolved = Inline.t
-
-  type t = Resolved of resolved | Unresolved of Inline.t
+  type t = { target : target; content : Inline.t }
 end =
   InternalLink
 
