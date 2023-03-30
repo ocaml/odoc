@@ -92,21 +92,22 @@ and styled style ~emph_level =
   | `Superscript -> (emph_level, Html.sup ~a:[])
   | `Subscript -> (emph_level, Html.sub ~a:[])
 
-let rec internallink ~config ~emph_level ~resolve ?(a = []) (t : InternalLink.t)
-    =
+let rec internallink ~config ~emph_level ~resolve ?(a = [])
+    { InternalLink.target; content; tooltip } =
+  let a = match tooltip with Some s -> Html.a_title s :: a | None -> a in
   let elt =
-    match t.target with
+    match target with
     | Resolved uri ->
         let href = Link.href ~config ~resolve uri in
         let a = (a :> Html_types.a_attrib Html.attrib list) in
-        Html.a ~a:(Html.a_href href :: a) (inline_nolink ~emph_level t.content)
+        Html.a ~a:(Html.a_href href :: a) (inline_nolink ~emph_level content)
     | Unresolved ->
         (* let title =
          *   Html.a_title (Printf.sprintf "unresolved reference to %S"
          *       (ref_to_string ref)
          * in *)
         let a = Html.a_class [ "xref-unresolved" ] :: a in
-        Html.span ~a (inline ~config ~emph_level ~resolve t.content)
+        Html.span ~a (inline ~config ~emph_level ~resolve content)
   in
   [ (elt :> phrasing Html.elt) ]
 

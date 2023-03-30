@@ -33,13 +33,13 @@ let type_var tv = tag "type-var" (O.txt tv)
 let enclose ~l ~r x = O.span (O.txt l ++ x ++ O.txt r)
 
 let resolved p content =
-  let link = { InternalLink.target = Resolved p; content } in
+  let link = { InternalLink.target = Resolved p; content; tooltip = None } in
   O.elt [ inline @@ InternalLink link ]
 
 let path p content = resolved (Url.from_path p) content
 
 let unresolved content =
-  let link = { InternalLink.target = Unresolved; content } in
+  let link = { InternalLink.target = Unresolved; content; tooltip = None } in
   O.elt [ inline @@ InternalLink link ]
 
 let path_to_id path =
@@ -1814,8 +1814,9 @@ module Make (Syntax : SYNTAX) = struct
         in
         let li ?(attr = []) name url =
           let link url desc =
-            let content = [ Inline.{ attr = []; desc } ] in
-            Inline.InternalLink { InternalLink.target = Resolved url; content }
+            let content = [ Inline.{ attr = []; desc } ] and tooltip = None in
+            Inline.InternalLink
+              { InternalLink.target = Resolved url; content; tooltip }
           in
           [ block ~attr @@ Block.Inline (inline @@ link url (Text name)) ]
         in

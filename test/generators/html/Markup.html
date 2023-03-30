@@ -76,9 +76,10 @@
    <p>but odoc has banned deeper headings. There are also title headings,
      but they are only allowed in mld files.
    </p><h4 id="anchors"><a href="#anchors" class="anchor"></a>Anchors</h4>
-   <p>Sections can have attached <a href="#anchors">Anchors</a>, and 
-    it is possible to <a href="#anchors">link</a> to them. Links to section
-     headers should not be set in source code style.
+   <p>Sections can have attached 
+    <a href="#anchors" title="anchors">Anchors</a>, and it is possible
+     to <a href="#anchors" title="anchors">link</a> to them. Links to
+     section headers should not be set in source code style.
    </p>
    <h5 id="paragraph"><a href="#paragraph" class="anchor"></a>Paragraph</h5>
    <p>Individual paragraphs can have a heading.</p>
@@ -137,17 +138,19 @@
    </p>
    <p>This is a reference to <a href="#val-foo"><code>foo</code></a>.
      References can have replacement text: 
-    <a href="#val-foo">the value foo</a>. Except for the special lookup
-     support, references are pretty much just like links. The replacement
-     text can have nested styles: <a href="#val-foo"><b>bold</b></a>,
-     <a href="#val-foo"><i>italic</i></a>, 
-    <a href="#val-foo"><em>emphasis</em></a>, 
-    <a href="#val-foo">super<sup>script</sup></a>, 
-    <a href="#val-foo">sub<sub>script</sub></a>, and 
-    <a href="#val-foo"><code>code</code></a>. It's also possible to surround
-     a reference in a style: <b><a href="#val-foo"><code>foo</code></a></b>
-    . References can't be nested inside references, and links and references
-     can't be nested inside each other.
+    <a href="#val-foo" title="foo">the value foo</a>. Except for the 
+    special lookup support, references are pretty much just like links.
+     The replacement text can have nested styles: 
+    <a href="#val-foo" title="foo"><b>bold</b></a>, 
+    <a href="#val-foo" title="foo"><i>italic</i></a>, 
+    <a href="#val-foo" title="foo"><em>emphasis</em></a>, 
+    <a href="#val-foo" title="foo">super<sup>script</sup></a>, 
+    <a href="#val-foo" title="foo">sub<sub>script</sub></a>, and 
+    <a href="#val-foo" title="foo"><code>code</code></a>. It's also possible
+     to surround a reference in a style: 
+    <b><a href="#val-foo"><code>foo</code></a></b>. References can't 
+    be nested inside references, and links and references can't be nested
+     inside each other.
    </p>
    <h2 id="preformatted-text">
     <a href="#preformatted-text" class="anchor"></a>Preformatted text

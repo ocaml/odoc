@@ -8,7 +8,7 @@ end =
 and InternalLink : sig
   type target = Resolved of Url.t | Unresolved
 
-  type t = { target : target; content : Inline.t }
+  type t = { target : target; content : Inline.t; tooltip : string option }
 end =
   InternalLink
 
