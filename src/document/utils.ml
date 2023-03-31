@@ -33,10 +33,7 @@ and compute_length_inline (t : Types.Inline.t) : int =
     | Text s -> acc + String.length s
     | Entity _e -> acc + 1
     | Linebreak -> 0 (* TODO *)
-    | Styled (_, t)
-    | Link (_, t)
-    | InternalLink (Resolved (_, t))
-    | InternalLink (Unresolved t) ->
+    | Styled (_, t) | Link (_, t) | InternalLink { content = t; _ } ->
         acc + compute_length_inline t
     | Source s -> acc + compute_length_source s
     | Math _ -> assert false

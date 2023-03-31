@@ -377,15 +377,11 @@ end = struct
       match x.desc with
       | Styled (_, x) -> inline x
       | Link (_, x) -> inline x
-      | InternalLink x -> internallink x
+      | InternalLink x -> inline x.content
       | Math _ -> true
       | Text _ | Entity _ | Linebreak | Source _ | Raw_markup _ -> false
     in
     List.exists inline_ x
-
-  and internallink : InternalLink.t -> bool = function
-    | Resolved (_, x) -> inline x
-    | Unresolved x -> inline x
 
   and description : Description.t -> bool =
    fun x ->

@@ -63,7 +63,7 @@ There are two references in N, one should point to a local label and the other t
     </nav>
     <div class="odoc-content">
      <h2 id="B"><a href="#B" class="anchor"></a>An other conflicting label</h2>
-     <p><a href="#B">An other conflicting label</a> 
+     <p><a href="#B" title="B">An other conflicting label</a> 
       <a href="../M/index.html#B"><code>B</code></a>
      </p>
     </div>
@@ -125,7 +125,8 @@ The second occurence of 'B' in the main page should be disambiguated
      </div><h2 id="B_2"><a href="#B_2" class="anchor"></a>Dupplicate B</h2>
      <p>Define <code>B</code> again in the same scope.</p>
      <p>References to the labels:</p>
-     <p><a href="#A">First label</a> <a href="#B">Dupplicate B</a> 
+     <p><a href="#A" title="A">First label</a> 
+      <a href="#B" title="B">Dupplicate B</a> 
       <a href="M/index.html#C"><code>C</code></a> 
       <a href="M/index.html#D"><code>D</code></a> 
       <a href="M/index.html#B"><code>B</code></a> 

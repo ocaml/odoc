@@ -57,6 +57,34 @@ module Reference = struct
         render_resolved (r :> t) ^ "." ^ InstanceVariableName.to_string s
     | `Label (_, s) -> LabelName.to_string s
 
+  let rec render_unresolved : Reference.t -> string =
+    let open Reference in
+    function
+    | `Resolved r -> render_resolved r
+    | `Root (n, _) -> n
+    | `Dot (p, f) -> render_unresolved (p :> t) ^ "." ^ f
+    | `Module (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ ModuleName.to_string f
+    | `ModuleType (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ ModuleTypeName.to_string f
+    | `Type (p, f) -> render_unresolved (p :> t) ^ "." ^ TypeName.to_string f
+    | `Constructor (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ ConstructorName.to_string f
+    | `Field (p, f) -> render_unresolved (p :> t) ^ "." ^ FieldName.to_string f
+    | `Extension (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ ExtensionName.to_string f
+    | `Exception (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ ExceptionName.to_string f
+    | `Value (p, f) -> render_unresolved (p :> t) ^ "." ^ ValueName.to_string f
+    | `Class (p, f) -> render_unresolved (p :> t) ^ "." ^ ClassName.to_string f
+    | `ClassType (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ ClassTypeName.to_string f
+    | `Method (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ MethodName.to_string f
+    | `InstanceVariable (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ InstanceVariableName.to_string f
+    | `Label (p, f) -> render_unresolved (p :> t) ^ "." ^ LabelName.to_string f
+
   (* This is the entry point. stop_before is false on entry, true on recursive
      call. *)
   let rec to_ir : ?text:Inline.t -> stop_before:bool -> Reference.t -> Inline.t
@@ -69,8 +97,11 @@ module Reference = struct
         | None ->
             let s = source_of_code s in
             [ inline @@ Inline.Source s ]
-        | Some s ->
-            [ inline @@ Inline.InternalLink (InternalLink.Unresolved s) ])
+        | Some content ->
+            let link =
+              { InternalLink.target = Unresolved; content; tooltip = Some s }
+            in
+            [ inline @@ Inline.InternalLink link ])
     | `Dot (parent, s) -> unresolved ?text (parent :> t) s
     | `Module (parent, s) ->
         unresolved ?text (parent :> t) (ModuleName.to_string s)
@@ -100,25 +131,33 @@ module Reference = struct
     | `Resolved r -> (
         (* IDENTIFIER MUST BE RENAMED TO DEFINITION. *)
         let id = Reference.Resolved.identifier r in
-        let txt =
+        let rendered = render_resolved r in
+        let content =
           match text with
-          | None ->
-              [ inline @@ Inline.Source (source_of_code (render_resolved r)) ]
+          | None -> [ inline @@ Inline.Source (source_of_code rendered) ]
           | Some s -> s
+        and tooltip =
+          (* Add a tooltip if the content is not the rendered reference. *)
+          match text with None -> None | Some _ -> Some rendered
         in
         match Url.from_identifier ~stop_before id with
         | Ok url ->
-            [ inline @@ Inline.InternalLink (InternalLink.Resolved (url, txt)) ]
-        | Error (Not_linkable _) -> txt
+            let target = InternalLink.Resolved url in
+            let link = { InternalLink.target; content; tooltip } in
+            [ inline @@ Inline.InternalLink link ]
+        | Error (Not_linkable _) -> content
         | Error exn ->
             (* FIXME: better error message *)
             Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
-            txt)
+            content)
 
   and unresolved : ?text:Inline.t -> Reference.t -> string -> Inline.t =
    fun ?text parent field ->
     match text with
-    | Some s -> [ inline @@ InternalLink (InternalLink.Unresolved s) ]
+    | Some content ->
+        let tooltip = Some (render_unresolved parent ^ "." ^ field) in
+        let link = { InternalLink.target = Unresolved; content; tooltip } in
+        [ inline @@ InternalLink link ]
     | None ->
         let tail = [ inline @@ Text ("." ^ field) ] in
         let content = to_ir ~stop_before:true parent in
