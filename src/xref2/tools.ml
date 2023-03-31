@@ -951,7 +951,8 @@ and resolve_module :
             match handle_apply ~mark_substituted env func_path' arg_path' m with
             | Ok (p, m) -> Ok (p, Component.Delayed.put_val m)
             | Error e -> Error (`Parent (`Parent_expr e)))
-        | _ -> Error `Unresolved_apply)
+        | Error e, _ -> Error e
+        | _, Error e -> Error e)
     | `Identifier (i, hidden) ->
         of_option ~error:(`Lookup_failure i) (Env.(lookup_by_id s_module) i env)
         >>= fun (`Module (_, m)) ->
