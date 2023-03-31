@@ -43,6 +43,8 @@ module Reference = struct
     | `Field (r, s) -> render_resolved (r :> t) ^ "." ^ FieldName.to_string s
     | `Extension (r, s) ->
         render_resolved (r :> t) ^ "." ^ ExtensionName.to_string s
+    | `ExtensionDecl (r, _, s) ->
+        render_resolved (r :> t) ^ "." ^ ExtensionName.to_string s
     | `Exception (r, s) ->
         render_resolved (r :> t) ^ "." ^ ExceptionName.to_string s
     | `Value (r, s) -> render_resolved (r :> t) ^ "." ^ ValueName.to_string s
@@ -72,6 +74,8 @@ module Reference = struct
         render_unresolved (p :> t) ^ "." ^ ConstructorName.to_string f
     | `Field (p, f) -> render_unresolved (p :> t) ^ "." ^ FieldName.to_string f
     | `Extension (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ ExtensionName.to_string f
+    | `ExtensionDecl (p, f) ->
         render_unresolved (p :> t) ^ "." ^ ExtensionName.to_string f
     | `Exception (p, f) ->
         render_unresolved (p :> t) ^ "." ^ ExceptionName.to_string f

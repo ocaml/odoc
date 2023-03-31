@@ -478,7 +478,11 @@ module Element : sig
   type exception_ = [ `Exception of Identifier.Exception.t * Exception.t ]
 
   type extension =
-    [ `Extension of Identifier.Extension.t * Extension.Constructor.t ]
+    [ `Extension of
+      Identifier.Extension.t * Extension.Constructor.t * Extension.t ]
+
+  type extension_decl =
+    [ `ExtensionDecl of Identifier.Extension.t * Extension.Constructor.t ]
 
   type field = [ `Field of Identifier.Field.t * TypeDecl.Field.t ]
 
@@ -497,6 +501,7 @@ module Element : sig
     | constructor
     | exception_
     | extension
+    | extension_decl
     | field
     | page ]
 

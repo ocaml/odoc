@@ -351,8 +351,8 @@ let add_exception identifier (e : Component.Exception.t) env =
   |> add_cdocs identifier e.doc
 
 let add_extension_constructor identifier
-    (ec : Component.Extension.Constructor.t) env =
-  add_to_elts Kind_Extension identifier (`Extension (identifier, ec)) env
+    (ec : Component.Extension.Constructor.t) te env =
+  add_to_elts Kind_Extension identifier (`Extension (identifier, ec, te)) env
   |> add_cdocs identifier ec.doc
 
 let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
@@ -722,10 +722,12 @@ let rec open_signature : Lang.Signature.t -> t -> t =
         | Comment c, true -> add_comment c env
         | TypExt te, true ->
             let doc = docs ident_map te.doc in
+            let te' = extension ident_map te in
             List.fold_left
               (fun env tec ->
                 let ty = extension_constructor ident_map tec in
-                add_extension_constructor tec.L.Extension.Constructor.id ty env)
+                add_extension_constructor tec.L.Extension.Constructor.id ty te'
+                  env)
               env te.L.Extension.constructors
             |> add_cdocs te.L.Extension.parent doc
         | Exception e, true ->
