@@ -312,6 +312,17 @@ module Anchor = struct
                 (ExtensionName.to_string name);
             kind;
           }
+    | { iv = `ExtensionDecl (parent, name, _); _ } ->
+        let page = Path.from_identifier (parent :> Path.any) in
+        let kind = `ExtensionDecl in
+        Ok
+          {
+            page;
+            anchor =
+              Format.asprintf "%a-%s" pp_kind kind
+                (ExtensionName.to_string name);
+            kind;
+          }
     | { iv = `Exception (parent, name); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Exception in

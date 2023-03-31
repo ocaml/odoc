@@ -130,6 +130,11 @@ module General_paths = struct
               ( "`Extension",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.extensionname) )
+        | `ExtensionDecl (parent, name, name') ->
+            C
+              ( "`ExtensionDecl",
+                ((parent :> id_t), name, name'),
+                Triple (identifier, Names.extensionname, Names.extensionname) )
         | `Exception (parent, name) ->
             C
               ( "`Exception",
@@ -184,6 +189,7 @@ module General_paths = struct
       | `TConstructor -> C0 "`TConstructor"
       | `TException -> C0 "`TException"
       | `TExtension -> C0 "`TExtension"
+      | `TExtensionDecl -> C0 "`TExtensionDecl"
       | `TField -> C0 "`TField"
       | `TInstanceVariable -> C0 "`TInstanceVariable"
       | `TLabel -> C0 "`TLabel"
@@ -294,6 +300,11 @@ module General_paths = struct
             ( "`Extension",
               ((x1 :> r), x2),
               Pair (reference, Names.extensionname) )
+      | `ExtensionDecl (x1, x2) ->
+          C
+            ( "`ExtensionDecl",
+              ((x1 :> r), x2),
+              Pair (reference, Names.extensionname) )
       | `Exception (x1, x2) ->
           C
             ( "`Exception",
@@ -346,6 +357,13 @@ module General_paths = struct
             ( "`Extension",
               ((x1 :> rr), x2),
               Pair (resolved_reference, Names.extensionname) )
+      | `ExtensionDecl (x1, x2, x3) ->
+          C
+            ( "`ExtensionDecl",
+              ((x1 :> rr), x2, x3),
+              Triple
+                (resolved_reference, Names.extensionname, Names.extensionname)
+            )
       | `Field (x1, x2) ->
           C
             ( "`Field",

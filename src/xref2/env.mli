@@ -71,7 +71,11 @@ val add_class_type : Identifier.ClassType.t -> Component.ClassType.t -> t -> t
 val add_exception : Identifier.Exception.t -> Component.Exception.t -> t -> t
 
 val add_extension_constructor :
-  Identifier.Extension.t -> Component.Extension.Constructor.t -> t -> t
+  Identifier.Extension.t ->
+  Component.Extension.Constructor.t ->
+  Component.Extension.t ->
+  t ->
+  t
 
 val add_docs : Comment.docs -> t -> t
 

@@ -451,6 +451,9 @@ let anchor_of_identifier id =
     | `Extension (parent, name) ->
         let anchor = anchor `Extension (ExtensionName.to_string name) in
         continue anchor parent
+    | `ExtensionDecl (parent, name, _) ->
+        let anchor = anchor `ExtensionDecl (ExtensionName.to_string name) in
+        continue anchor parent
   in
   anchor_of_identifier [] id |> String.concat "."
 

@@ -68,6 +68,7 @@ let match_extra_odoc_reference_kind (_location as loc) s :
       d loc "exn" "exception";
       Some `TException
   | Some "extension" -> Some `TExtension
+  | Some "extension-decl" -> Some `TExtensionDecl
   | Some "field" -> Some `TField
   | Some "instance-variable" -> Some `TInstanceVariable
   | Some "label" ->
@@ -364,6 +365,9 @@ let parse whole_reference_location s :
             `Field (parent next_token tokens, FieldName.make_std identifier)
         | `TExtension ->
             `Extension
+              (signature next_token tokens, ExtensionName.make_std identifier)
+        | `TExtensionDecl ->
+            `ExtensionDecl
               (signature next_token tokens, ExtensionName.make_std identifier)
         | `TException ->
             `Exception

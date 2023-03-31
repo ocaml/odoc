@@ -147,8 +147,15 @@ module Identifier = struct
   type extension_pv = [ `Extension of signature * ExtensionName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Extension.t_pv *)
 
+  type extension_decl_pv =
+    [ `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.ExtensionDecl.t_pv *)
+
   and extension = extension_pv id
   (** @canonical Odoc_model.Paths.Identifier.Extension.t *)
+
+  and extension_decl = extension_decl_pv id
+  (** @canonical Odoc_model.Paths.Identifier.ExtensionDecl.t *)
 
   type exception_pv =
     [ `Exception of signature * ExceptionName.t
@@ -209,6 +216,7 @@ module Identifier = struct
     | constructor_pv
     | field_pv
     | extension_pv
+    | extension_decl_pv
     | exception_pv
     | value_pv
     | class_pv
@@ -274,6 +282,8 @@ module Identifier = struct
   type reference_field = field
 
   type reference_extension = [ extension_pv | exception_pv ] id
+
+  type reference_extension_decl = extension_decl
 
   type reference_exception = exception_
 
@@ -508,6 +518,7 @@ module rec Reference : sig
     | `TConstructor
     | `TField
     | `TExtension
+    | `TExtensionDecl
     | `TException
     | `TValue
     | `TClass
@@ -632,6 +643,13 @@ module rec Reference : sig
     | `Exception of signature * ExceptionName.t ]
   (** @canonical Odoc_model.Paths.Reference.Extension.t *)
 
+  type extension_decl =
+    [ `Resolved of Resolved_reference.extension_decl
+    | `Root of string * [ `TExtension | `TException | `TUnknown ]
+    | `Dot of label_parent * string
+    | `ExtensionDecl of signature * ExtensionName.t ]
+  (** @canonical Odoc_model.Paths.Reference.ExtensionDecl.t *)
+
   type exception_ =
     [ `Resolved of Resolved_reference.exception_
     | `Root of string * [ `TException | `TUnknown ]
@@ -698,6 +716,7 @@ module rec Reference : sig
     | `Constructor of datatype * ConstructorName.t
     | `Field of parent * FieldName.t
     | `Extension of signature * ExtensionName.t
+    | `ExtensionDecl of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t
     | `Value of signature * ValueName.t
     | `Class of signature * ClassName.t
@@ -801,6 +820,16 @@ and Resolved_reference : sig
     | `Exception of signature * ExceptionName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Extension.t *)
 
+  type extension_decl =
+    [ `Identifier of Identifier.reference_extension_decl
+    | `ExtensionDecl of
+      signature
+      * ExtensionName.t
+        (* The extension_name used in the url.
+           It is the extension_name of the first constructor of the extension (there is always at least 1). *)
+      * ExtensionName.t (* displayed *) ]
+  (** @canonical Odoc_model.Paths.Reference.Resolved.Extension.t *)
+
   type exception_ =
     [ `Identifier of Identifier.reference_exception
     | `Exception of signature * ExceptionName.t ]
@@ -851,6 +880,7 @@ and Resolved_reference : sig
     | `Constructor of datatype * ConstructorName.t
     | `Field of parent * FieldName.t
     | `Extension of signature * ExtensionName.t
+    | `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t
     | `Exception of signature * ExceptionName.t
     | `Value of signature * ValueName.t
     | `Class of signature * ClassName.t

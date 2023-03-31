@@ -40,6 +40,8 @@ let rec shape_of_id env :
     | `Value (parent, name) -> proj parent Kind.Value (ValueName.to_string name)
     | `Extension (parent, name) ->
         proj parent Kind.Extension_constructor (ExtensionName.to_string name)
+    | `ExtensionDecl (parent, name, _) ->
+        proj parent Kind.Extension_constructor (ExtensionName.to_string name)
     | `Exception (parent, name) ->
         proj parent Kind.Extension_constructor (ExceptionName.to_string name)
     | `Class (parent, name) -> proj parent Kind.Class (ClassName.to_string name)
