@@ -1,5 +1,6 @@
 (** {2:splice_me Splice me}
 
-    This is correct {!splice_me}.
-
-    This is incorrect {!Foo.splice_me}. *)
+    Should output only the heading's text:
+    {!splice_me}
+    {!Foo.splice_me}
+    {!page.splice_me} *)
