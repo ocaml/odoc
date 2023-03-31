@@ -88,6 +88,9 @@ let heading_level_should_be_lower_than_top_level :
 let page_heading_required : string -> Error.t =
   Error.filename_only "Pages (.mld files) should start with a heading."
 
+let tags_not_allowed : Location.span -> Error.t =
+  Error.make "Tags are not allowed in pages."
+
 let not_allowed :
     ?suggestion:string ->
     what:string ->
@@ -124,6 +127,7 @@ type alerts =
 
 type status = {
   sections_allowed : sections_allowed;
+  tags_allowed : bool;
   parent_of_sections : Paths.Identifier.LabelParent.t;
 }
 
@@ -268,6 +272,10 @@ let tag :
       internal_tags_removed with_location )
     Result.result =
  fun ~location status tag ->
+  if not status.tags_allowed then
+    (* Trigger a warning but do not remove the tag. Avoid turning tags into
+       text that would render the same. *)
+    Error.raise_warning (tags_not_allowed location);
   let ok t = Result.Ok (Location.at location (`Tag t)) in
   match tag with
   | (`Author _ | `Since _ | `Version _) as tag -> ok tag
@@ -499,23 +507,23 @@ let append_alerts_to_comment alerts
   in
   comment @ (alerts : alerts :> Comment.docs)
 
-let ast_to_comment ~internal_tags ~sections_allowed ~parent_of_sections ast
-    alerts =
+let ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
+    ~parent_of_sections ast alerts =
   Error.catch_warnings (fun () ->
-      let status = { sections_allowed; parent_of_sections } in
+      let status = { sections_allowed; tags_allowed; parent_of_sections } in
       let ast, tags = strip_internal_tags ast in
       let elts =
         top_level_block_elements status ast |> append_alerts_to_comment alerts
       in
       (elts, handle_internal_tags tags internal_tags))
 
-let parse_comment ~internal_tags ~sections_allowed ~containing_definition
-    ~location ~text =
+let parse_comment ~internal_tags ~sections_allowed ~tags_allowed
+    ~containing_definition ~location ~text =
   Error.catch_warnings (fun () ->
       let ast =
         Odoc_parser.parse_comment ~location ~text |> Error.raise_parser_warnings
       in
-      ast_to_comment ~internal_tags ~sections_allowed
+      ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
         ~parent_of_sections:containing_definition ast []
       |> Error.raise_warnings)
 

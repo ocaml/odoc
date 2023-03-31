@@ -113,7 +113,7 @@ let pad_loc loc =
 
 let ast_to_comment ~internal_tags parent ast_docs alerts =
   Odoc_model.Semantics.ast_to_comment ~internal_tags ~sections_allowed:`All
-    ~parent_of_sections:parent ast_docs alerts
+    ~tags_allowed:true ~parent_of_sections:parent ast_docs alerts
   |> Error.raise_warnings
 
 let mk_alert_payload ~loc name p =
@@ -145,21 +145,22 @@ let attached_no_tag parent attrs =
   let x, () = attached Semantics.Expect_none parent attrs in
   x
 
-let read_string internal_tags parent location str =
+let read_string ~tags_allowed internal_tags parent location str =
   Odoc_model.Semantics.parse_comment
     ~internal_tags
     ~sections_allowed:`All
+    ~tags_allowed
     ~containing_definition:parent
     ~location
     ~text:str
   |> Odoc_model.Error.raise_warnings
 
 let read_string_comment internal_tags parent loc str =
-  read_string internal_tags parent (pad_loc loc) str
+  read_string ~tags_allowed:true internal_tags parent (pad_loc loc) str
 
 let page parent loc str =
   let doc, () =
-    read_string Odoc_model.Semantics.Expect_none parent loc.Location.loc_start
+    read_string ~tags_allowed:false Odoc_model.Semantics.Expect_none parent loc.Location.loc_start
       str
   in
   `Docs doc

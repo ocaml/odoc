@@ -15,7 +15,7 @@ let parser_output_desc =
           F ("warnings", snd, List warning_desc);
         ] )
 
-let test ?(sections_allowed = `No_titles)
+let test ?(sections_allowed = `No_titles) ?(tags_allowed = true)
     ?(location = { Location_.line = 1; column = 0 }) str =
   let dummy_filename = "f.ml" in
   let dummy_page =
@@ -31,7 +31,8 @@ let test ?(sections_allowed = `No_titles)
   in
   let parser_output =
     Semantics.parse_comment ~internal_tags:Odoc_model.Semantics.Expect_none
-      ~sections_allowed ~containing_definition:dummy_page ~location ~text:str
+      ~sections_allowed ~tags_allowed ~containing_definition:dummy_page
+      ~location ~text:str
   in
   let print_json_desc desc t =
     let yojson = Type_desc_to_yojson.to_yojson desc t in
@@ -2479,6 +2480,17 @@ let%expect_test _ =
           "value": [ { "`Paragraph": [ { "`Word": "@authorfoo" } ] } ],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-10:\nUnknown tag '@authorfoo'."
+          ]
+        } |}]
+
+    let not_allowed =
+      test ~tags_allowed:false "@author Foo bar";
+      [%expect
+        {|
+        {
+          "value": [ { "`Tag": { "`Author": "Foo bar" } } ],
+          "warnings": [
+            "File \"f.ml\", line 1, characters 0-15:\nTags are not allowed in pages."
           ]
         } |}]
   end in
