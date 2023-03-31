@@ -217,6 +217,9 @@ let equation ppf x =
   let name = "equation*" in
   mbegin ppf name;
   Fmt.cut ppf ();
+  (* A blank line before \end{equation*} is a latex error,
+     we trim on the right the user input to avoid any surprise *)
+  let x = Astring.String.drop ~rev:true ~sat:Astring.Char.Ascii.is_white x in
   Fmt.string ppf x;
   Fmt.cut ppf ();
   mend ppf name
