@@ -446,7 +446,7 @@ and Label : sig
   type t = {
     attrs : Odoc_model.Comment.heading_attrs;
     label : Ident.label;
-    text : Odoc_model.Comment.link_content;
+    text : Odoc_model.Comment.paragraph;
     location : Odoc_model.Location_.span;
   }
 end

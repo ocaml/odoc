@@ -82,7 +82,8 @@ type heading_attrs = {
 
 type block_element =
   [ nestable_block_element
-  | `Heading of heading_attrs * Identifier.Label.t * link_content
+  | `Heading of
+    heading_attrs * Identifier.Label.t * inline_element with_location list
   | `Tag of tag ]
 
 type docs = block_element with_location list
@@ -94,3 +95,17 @@ type docs_or_stop = [ `Docs of docs | `Stop ]
 let synopsis = function
   | { Location_.value = `Paragraph p; _ } :: _ -> Some p
   | _ -> None
+
+let rec link_content_of_inline_element :
+    inline_element with_location -> link_content =
+ fun x ->
+  let v = x.Location_.value in
+  match v with
+  | #leaf_inline_element as e -> [ { x with value = e } ]
+  | `Reference (_, r) -> r
+  | `Link (_, l) -> l
+  | `Styled (st, elems) ->
+      [ { x with value = `Styled (st, link_content_of_inline_elements elems) } ]
+
+and link_content_of_inline_elements l =
+  l |> List.map link_content_of_inline_element |> List.concat

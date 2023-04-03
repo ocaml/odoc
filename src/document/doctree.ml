@@ -55,6 +55,27 @@ end = struct
   type t = one list
 
   and one = { url : Url.t; text : Inline.t; children : t }
+  let rec remove_links l =
+    let open Inline in
+    l
+    |> List.map (fun one ->
+           let return desc = [ { one with desc } ] in
+           match one.desc with
+           | Text _ as t -> return t
+           | Entity _ as t -> return t
+           | Linebreak as t -> return t
+           | Styled (st, content) -> return (Styled (st, remove_links content))
+           | Link (_, t) -> t
+           | InternalLink { target = Resolved _; content = t; _ } -> t
+           | InternalLink { target = Unresolved; content = t; _ } -> t
+           | Source l ->
+               let rec f = function
+                 | Source.Elt t -> Source.Elt (remove_links t)
+                 | Tag (tag, t) -> Tag (tag, List.map f t)
+               in
+               return @@ Source (List.map f l)
+           | (Math _ | Raw_markup _) as t -> return t)
+    |> List.concat
 
   let classify ~on_sub (i : Item.t) : _ Rewire.action =
     match i with
@@ -63,6 +84,7 @@ end = struct
         if on_sub status then Rec content else Skip
     | Heading { label = None; _ } -> Skip
     | Heading { label = Some label; level; title; _ } ->
+        let title = remove_links title in
         Heading ((label, title), level)
 
   let node mkurl (anchor, text) children =
