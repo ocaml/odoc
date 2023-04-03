@@ -78,8 +78,8 @@ type parsed_attribute =
   [ `Text of payload  (* Standalone comment. *)
   | `Doc of payload  (* Attached comment. *)
   | `Stop of Location.t  (* [(**/**)]. *)
-  | `Alert of  string * payload option * Location.t
   | `Hidden of Location.t
+  | `Alert of  string * payload option * Location.t
     (* [`Alert (name, payload, loc)] is for [\[@@alert name "payload"\]] attributes. *) ]
 
 (** Recognize an attribute. *)
@@ -97,6 +97,7 @@ let parse_attribute : Parsetree.attribute -> parsed_attribute option =
       match load_payload attr_payload with
       | Some p -> Some (`Doc p)
       | None -> None)
+  | "hidden" | "ocaml.hidden" -> Some (`Hidden attr_loc)
   | "deprecated" | "ocaml.deprecated" ->
       Some (`Alert ("deprecated", (load_payload attr_payload), attr_loc))
   | "alert" | "ocaml.alert" ->
