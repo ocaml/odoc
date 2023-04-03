@@ -79,6 +79,7 @@ type parsed_attribute =
   | `Doc of payload  (* Attached comment. *)
   | `Stop of Location.t  (* [(**/**)]. *)
   | `Alert of  string * payload option * Location.t
+  | `Hidden of Location.t
     (* [`Alert (name, payload, loc)] is for [\[@@alert name "payload"\]] attributes. *) ]
 
 (** Recognize an attribute. *)
@@ -108,6 +109,9 @@ let parse_attribute : Parsetree.attribute -> parsed_attribute option =
 let is_stop_comment attr =
   match parse_attribute attr with Some (`Stop _) -> true | _ -> false
 
+let is_hidden attr =
+  match parse_attribute attr with Some (`Hidden _) -> true | _ -> false
+
 let pad_loc loc =
   { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
 
@@ -135,7 +139,7 @@ let attached internal_tags parent attrs =
         | Some (`Alert (name, p, loc)) ->
             let elt = mk_alert_payload ~loc name p in
             loop acc_docs (elt :: acc_alerts) rest
-        | Some (`Text _ | `Stop _) | None -> loop acc_docs acc_alerts rest)
+        | Some (`Text _ | `Stop _ | `Hidden _) | None -> loop acc_docs acc_alerts rest)
     | [] -> (List.rev acc_docs, List.rev acc_alerts)
   in
   let ast_docs, alerts = loop [] [] attrs in
@@ -212,7 +216,7 @@ let extract_top_comment internal_tags ~classify parent items =
             let p = match p with Some (p, _) -> Some p | None -> None in
             let attr_loc = read_location attr_loc in
             `Alert (Location_.at attr_loc (`Tag (`Alert (name, p))))
-        | Some (`Stop _) -> `Return (* Stop at stop-comments. *)
+        | Some (`Stop _) | Some (`Hidden _) -> `Return (* Stop at stop-comments and hidden attrs. *)
         | None -> `Skip (* Skip unrecognized attributes. *))
     | Some `Open -> `Skip (* Skip open statements *)
     | None -> `Return

@@ -164,6 +164,8 @@ let filter_map f x =
 
 let rec extract_signature_tree_items hide_item items =
   let open Typedtree in
+  let is_hidden (attrs: attribute list) =
+    hide_item || List.exists Doc_attr.is_hidden attrs in
   match items with
 #if OCAML_VERSION < (4,3,0)
   | { sig_desc = Tsig_type decls; _} :: rest ->
@@ -177,32 +179,33 @@ let rec extract_signature_tree_items hide_item items =
       decls @ extract_signature_tree_items hide_item rest
 
 #if OCAML_VERSION >= (4,10,0)
-  | { sig_desc = Tsig_module { md_id = Some id; _ }; _} :: rest ->
-      [`Module (id, hide_item)] @ extract_signature_tree_items hide_item rest
-  | { sig_desc = Tsig_module _; _ } :: rest ->
-      extract_signature_tree_items hide_item rest
+  | { sig_desc = Tsig_module { md_id = Some id; md_attributes; _ }; _} :: rest ->
+      [`Module (id, is_hidden md_attributes)] @ extract_signature_tree_items hide_item rest
+  | { sig_desc = Tsig_module { md_attributes; _ }; _ } :: rest ->
+      extract_signature_tree_items (is_hidden md_attributes)  rest
   | { sig_desc = Tsig_recmodule mds; _} :: rest ->
     List.fold_right (
       fun md items ->
         match md.md_id with
-        | Some id -> `Module (id, hide_item) :: items
+        | Some id -> `Module (id, is_hidden md.md_attributes) :: items
         | None -> items)
       mds [] @ extract_signature_tree_items hide_item rest
 #else 
-  | { sig_desc = Tsig_module{ md_id; _}; _} :: rest ->
-      [`Module (md_id, hide_item)] @ extract_signature_tree_items hide_item rest
+  | { sig_desc = Tsig_module{ md_id; md_attributes; _}; _} :: rest ->
+      [`Module (md_id, is_hidden md_attributes)] @ extract_signature_tree_items hide_item rest
   | { sig_desc = Tsig_recmodule mds; _ } :: rest ->
-    List.map (fun md -> `Module (md.md_id, hide_item))
+    List.map (fun md -> `Module (md.md_id, is_hidden mds.md_attributes))
       mds @ extract_signature_tree_items hide_item rest
 #endif
-  | { sig_desc = Tsig_value {val_id; _}; _ } :: rest->
-      [`Value (val_id, hide_item)] @ extract_signature_tree_items hide_item rest 
+  | { sig_desc = Tsig_value {val_id; val_attributes; _}; _ } :: rest->
+      [`Value (val_id, is_hidden val_attributes)] @ extract_signature_tree_items hide_item rest
   | { sig_desc = Tsig_modtype mtd; _} :: rest ->
-      [`ModuleType (mtd.mtd_id, hide_item)] @ extract_signature_tree_items hide_item rest
+      [`ModuleType (mtd.mtd_id, is_hidden mtd.mtd_attributes)] @ extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_include incl; _ } :: rest ->
-      [`Include (extract_signature_type_items (Compat.signature incl.incl_type))] @ extract_signature_tree_items hide_item rest
+      [`Include (extract_signature_type_items (Compat.signature incl.incl_type))]
+      @ extract_signature_tree_items (is_hidden incl.incl_attributes) rest
   | {sig_desc = Tsig_attribute attr; _ } :: rest ->
-      let hide_item = if Doc_attr.is_stop_comment attr then not hide_item else hide_item in
+      let hide_item = if Doc_attr.is_stop_comment attr || Doc_attr.is_hidden attr then not hide_item else hide_item in
       extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_class cls; _} :: rest ->
       List.map
