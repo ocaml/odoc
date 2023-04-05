@@ -194,7 +194,7 @@ let rec extract_signature_tree_items hide_item items =
   | { sig_desc = Tsig_module{ md_id; md_attributes; _}; _} :: rest ->
       [`Module (md_id, is_hidden md_attributes)] @ extract_signature_tree_items hide_item rest
   | { sig_desc = Tsig_recmodule mds; _ } :: rest ->
-    List.map (fun md -> `Module (md.md_id, is_hidden mds.md_attributes))
+    List.map (fun md -> `Module (md.md_id, is_hidden md.md_attributes))
       mds @ extract_signature_tree_items hide_item rest
 #endif
   | { sig_desc = Tsig_value {val_id; val_attributes; _}; _ } :: rest->
