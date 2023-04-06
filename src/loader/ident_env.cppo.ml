@@ -217,7 +217,7 @@ let rec extract_signature_tree_items hide_item items =
             cld.ci_id_typehash
 #endif
           in
-          `Class (cld.ci_id_class, cld.ci_id_class_type, cld.ci_id_object, typehash, hide_item))
+          `Class (cld.ci_id_class, cld.ci_id_class_type, cld.ci_id_object, typehash, is_hidden cld.ci_attributes))
             cls @ extract_signature_tree_items hide_item rest
   | { sig_desc = Tsig_class_type cltyps; _ } :: rest ->
     List.map
@@ -230,18 +230,18 @@ let rec extract_signature_tree_items hide_item items =
 #endif
             in
             
-            `ClassType (clty.ci_id_class_type, clty.ci_id_object, typehash, hide_item))
+            `ClassType (clty.ci_id_class_type, clty.ci_id_object, typehash, is_hidden clty.ci_attributes))
               cltyps @ extract_signature_tree_items hide_item rest
 #if OCAML_VERSION >= (4,8,0)
     | { sig_desc = Tsig_modsubst ms; _} :: rest ->
-      [`Module (ms.ms_id, hide_item)] @ extract_signature_tree_items hide_item rest
+      [`Module (ms.ms_id, is_hidden ms.ms_attributes)] @ extract_signature_tree_items hide_item rest
     | { sig_desc = Tsig_typesubst ts; _} :: rest ->
-      List.map (fun decl -> `Type (decl.typ_id, hide_item)) 
+      List.map (fun decl -> `Type (decl.typ_id, is_hidden decl.typ_attributes))
         ts @ extract_signature_tree_items hide_item rest
 #endif
 #if OCAML_VERSION >= (4,13,0)
     | { sig_desc = Tsig_modtypesubst mtd; _ } :: rest ->
-      [`ModuleType (mtd.mtd_id, hide_item)] @ extract_signature_tree_items hide_item rest
+      [`ModuleType (mtd.mtd_id, is_hidden mtd.mtd_attributes)] @ extract_signature_tree_items hide_item rest
 #endif
     | { sig_desc = Tsig_typext _; _} :: rest
     | { sig_desc = Tsig_exception _; _} :: rest
@@ -250,6 +250,8 @@ let rec extract_signature_tree_items hide_item items =
 
 let rec read_pattern hide_item pat =
   let open Typedtree in
+  let hide_item =
+    hide_item || List.exists Doc_attr.is_hidden pat.pat_attributes in
   match pat.pat_desc with
   | Tpat_var(id, _) -> [`Value(id, hide_item)]
   | Tpat_alias(pat, id, _) -> `Value(id, hide_item) :: read_pattern hide_item pat
@@ -272,13 +274,15 @@ let rec read_pattern hide_item pat =
 
 let rec extract_structure_tree_items hide_item items =
   let open Typedtree in
+  let is_hidden (attrs: attribute list) =
+    hide_item || List.exists Doc_attr.is_hidden attrs in
     match items with
 #if OCAML_VERSION < (4,3,0)
     | { str_desc = Tstr_type decls; _ } :: rest ->
 #else
     | { str_desc = Tstr_type (_, decls); _ } :: rest -> (* TODO: handle rec_flag *)
 #endif
-        List.map (fun decl -> `Type (decl.typ_id, hide_item))
+        List.map (fun decl -> `Type (decl.typ_id, is_hidden decl.typ_attributes))
           decls @ extract_structure_tree_items hide_item rest
 
 
@@ -287,32 +291,32 @@ let rec extract_structure_tree_items hide_item items =
 #else
     | { str_desc = Tstr_value (_, vbs); _ } :: rest -> (*TODO: handle rec_flag *)
 #endif
-   ( List.map (fun vb -> read_pattern hide_item vb.vb_pat) vbs
+  ( List.map (fun vb -> read_pattern (is_hidden vb.vb_attributes) vb.vb_pat) vbs
       |> List.flatten) @ extract_structure_tree_items hide_item rest
 
 #if OCAML_VERSION >= (4,10,0)
-    | { str_desc = Tstr_module { mb_id = Some id; _}; _} :: rest ->
-      [`Module (id, hide_item)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_module { mb_id = Some id; mb_attributes; _}; _} :: rest ->
+      [`Module (id, (is_hidden mb_attributes))] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_module _; _} :: rest -> extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_recmodule mbs; _ } :: rest ->
         List.fold_right 
           (fun mb items ->
             match mb.mb_id with
-            | Some id -> `Module (id, hide_item) :: items
+            | Some id -> `Module (id, is_hidden mb.mb_attributes) :: items
             | None -> items) mbs [] @ extract_structure_tree_items hide_item rest
 #else
-    | { str_desc = Tstr_module { mb_id; _}; _} :: rest ->
-        [`Module (mb_id, hide_item)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_module { mb_id; mb_attributes; _}; _} :: rest ->
+        [`Module (mb_id, is_hidden mb_attributes)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_recmodule mbs; _} :: rest ->
-        List.map (fun mb -> `Module (mb.mb_id, hide_item))
+        List.map (fun mb -> `Module (mb.mb_id, is_hidden mbs.mb_attributes))
           mbs @ extract_structure_tree_items hide_item rest
 #endif
     | { str_desc = Tstr_modtype mtd; _ } :: rest ->
-        [`ModuleType (mtd.mtd_id, hide_item)] @ extract_structure_tree_items hide_item rest
+        [`ModuleType (mtd.mtd_id, is_hidden mtd.mtd_attributes)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_include incl; _ } :: rest ->
         [`Include (extract_signature_type_items (Compat.signature incl.incl_type))] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_attribute attr; _} :: rest ->
-        let hide_item = if Doc_attr.is_stop_comment attr then not hide_item else hide_item in
+        let hide_item = if Doc_attr.is_stop_comment attr || Doc_attr.is_hidden attr then not hide_item else hide_item in
         extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_class cls; _ } :: rest ->
         List.map
@@ -328,7 +332,7 @@ let rec extract_structure_tree_items hide_item items =
 #else
                cld.ci_id_typehash,
 #endif
-              hide_item
+              is_hidden cld.ci_attributes
              )) cls @ extract_structure_tree_items hide_item rest
     | {str_desc = Tstr_class_type cltyps; _ } :: rest ->
         List.map
@@ -340,7 +344,7 @@ let rec extract_structure_tree_items hide_item items =
 #else
                clty.ci_id_typehash,
 #endif
-              hide_item
+              is_hidden clty.ci_attributes
              )) cltyps @ extract_structure_tree_items hide_item rest
 #if OCAML_VERSION < (4,8,0)
     | { str_desc = Tstr_open _; _} :: rest -> extract_structure_tree_items hide_item rest
