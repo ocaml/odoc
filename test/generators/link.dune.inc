@@ -190,17 +190,23 @@
    -bin-annot
    -o
    %{target}
-   %{dep:cases/hidden_dead_link_doc.mli})))
+   %{dep:cases/hidden_dead_link_doc.mli}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
 
 (rule
  (target hidden_dead_link_doc.odoc)
  (action
-  (run odoc compile -o %{target} %{dep:hidden_dead_link_doc.cmti})))
+  (run odoc compile -o %{target} %{dep:hidden_dead_link_doc.cmti}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
 
 (rule
  (target hidden_dead_link_doc.odocl)
  (action
-  (run odoc link -o %{target} %{dep:hidden_dead_link_doc.odoc})))
+  (run odoc link -o %{target} %{dep:hidden_dead_link_doc.odoc}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
 
 (rule
  (target include.cmti)
@@ -1916,15 +1922,21 @@
     gen
     -o
     .
-    %{dep:../hidden_dead_link_doc.odocl})))
+    %{dep:../hidden_dead_link_doc.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff Hidden_dead_link_doc.html Hidden_dead_link_doc.html.gen)))
+   (diff Hidden_dead_link_doc.html Hidden_dead_link_doc.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff Hidden_dead_link_doc-Foo.html Hidden_dead_link_doc-Foo.html.gen))))
+   (diff Hidden_dead_link_doc-Foo.html Hidden_dead_link_doc-Foo.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  html
@@ -1932,11 +1944,15 @@
   (action
    (with-outputs-to
     hidden_dead_link_doc.targets.gen
-    (run odoc html-targets -o . %{dep:../hidden_dead_link_doc.odocl} --flat))))
+    (run odoc html-targets -o . %{dep:../hidden_dead_link_doc.odocl} --flat)))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff hidden_dead_link_doc.targets hidden_dead_link_doc.targets.gen))))
+   (diff hidden_dead_link_doc.targets hidden_dead_link_doc.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  latex
@@ -1950,11 +1966,15 @@
     .
     --extra-suffix
     gen
-    %{dep:../hidden_dead_link_doc.odocl})))
+    %{dep:../hidden_dead_link_doc.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff Hidden_dead_link_doc.tex Hidden_dead_link_doc.tex.gen))))
+   (diff Hidden_dead_link_doc.tex Hidden_dead_link_doc.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  latex
@@ -1962,11 +1982,15 @@
   (action
    (with-outputs-to
     hidden_dead_link_doc.targets.gen
-    (run odoc latex-targets -o . %{dep:../hidden_dead_link_doc.odocl}))))
+    (run odoc latex-targets -o . %{dep:../hidden_dead_link_doc.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff hidden_dead_link_doc.targets hidden_dead_link_doc.targets.gen))))
+   (diff hidden_dead_link_doc.targets hidden_dead_link_doc.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  man
@@ -1980,15 +2004,21 @@
     .
     --extra-suffix
     gen
-    %{dep:../hidden_dead_link_doc.odocl})))
+    %{dep:../hidden_dead_link_doc.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff Hidden_dead_link_doc.3o Hidden_dead_link_doc.3o.gen)))
+   (diff Hidden_dead_link_doc.3o Hidden_dead_link_doc.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff Hidden_dead_link_doc.Foo.3o Hidden_dead_link_doc.Foo.3o.gen))))
+   (diff Hidden_dead_link_doc.Foo.3o Hidden_dead_link_doc.Foo.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  man
@@ -1996,11 +2026,15 @@
   (action
    (with-outputs-to
     hidden_dead_link_doc.targets.gen
-    (run odoc man-targets -o . %{dep:../hidden_dead_link_doc.odocl}))))
+    (run odoc man-targets -o . %{dep:../hidden_dead_link_doc.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff hidden_dead_link_doc.targets hidden_dead_link_doc.targets.gen))))
+   (diff hidden_dead_link_doc.targets hidden_dead_link_doc.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  html

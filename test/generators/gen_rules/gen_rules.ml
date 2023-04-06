@@ -47,6 +47,7 @@ let constraints =
   let open Gen_rules_lib in
   [
     ("stop_dead_link_doc.mli", Min "4.04");
+    ("hidden_dead_link_doc.mli", Min "4.04");
     ("bugs_post_406.mli", Min "4.06");
     ("ocamlary.mli", Min "4.07");
     ("recent.mli", Min "4.09");
