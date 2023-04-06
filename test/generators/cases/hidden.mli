@@ -4,7 +4,6 @@ val foo : int
 (** This is normal commented text. *)
 
 val bar : int [@@hidden]
-(** OMG! *)
 
 module M :
 sig
