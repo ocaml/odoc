@@ -308,7 +308,7 @@ let rec extract_structure_tree_items hide_item items =
     | { str_desc = Tstr_module { mb_id; mb_attributes; _}; _} :: rest ->
         [`Module (mb_id, is_hidden mb_attributes)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_recmodule mbs; _} :: rest ->
-        List.map (fun mb -> `Module (mb.mb_id, is_hidden mbs.mb_attributes))
+        List.map (fun mb -> `Module (mb.mb_id, is_hidden mb.mb_attributes))
           mbs @ extract_structure_tree_items hide_item rest
 #endif
     | { str_desc = Tstr_modtype mtd; _ } :: rest ->
