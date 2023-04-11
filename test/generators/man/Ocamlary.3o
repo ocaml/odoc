@@ -391,6 +391,13 @@ This is a_function with param and return type\.
 @raises Not_found: That's all it does
 .nf 
 .sp 
+\f[CB]val\fR kaboom : unit \f[CB]\->\fR unit
+.fi 
+.br 
+.ti +2
+@raises \f[CI]Kaboom\fR: That's all it does
+.nf 
+.sp 
 \f[CB]val\fR ocaml_org : string
 .fi 
 .br 

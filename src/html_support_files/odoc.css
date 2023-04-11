@@ -408,7 +408,7 @@ tt, code, pre {
   padding: 0 0.3ex;
 }
 
-p a > code {
+p a > code, li a > code {
   color: var(--link-color);
 }
 

@@ -274,14 +274,11 @@ let tag : Comment.tag -> Description.one =
   let sp = inline (Text " ") in
   let item ?value ~tag definition =
     let tag_name = inline ~attr:[ "at-tag" ] (Text tag) in
-    let tag_value =
-      match value with
-      | None -> []
-      | Some t -> [ sp; inline ~attr:[ "value" ] t ]
-    in
+    let tag_value = match value with None -> [] | Some t -> sp :: t in
     let key = tag_name :: tag_value in
     { Description.attr = [ tag ]; key; definition }
   in
+  let mk_value desc = [ inline ~attr:[ "value" ] desc ] in
   let text_def s = [ block (Block.Inline [ inline @@ Text s ]) ] in
   let content_to_inline ?(prefix = []) content =
     match content with
@@ -293,23 +290,23 @@ let tag : Comment.tag -> Description.one =
   | `Deprecated content ->
       item ~tag:"deprecated" (nestable_block_element_list content)
   | `Param (name, content) ->
-      let value = Inline.Text name in
+      let value = mk_value (Inline.Text name) in
       item ~tag:"parameter" ~value (nestable_block_element_list content)
-  | `Raise (name, content) ->
-      let value = Inline.Text name in
+  | `Raise (kind, content) ->
+      let value = inline_element (kind :> Comment.inline_element) in
       item ~tag:"raises" ~value (nestable_block_element_list content)
   | `Return content -> item ~tag:"returns" (nestable_block_element_list content)
   | `See (kind, target, content) ->
       let value =
         match kind with
-        | `Url -> Inline.Link (target, [ inline @@ Text target ])
-        | `File -> Inline.Source (source_of_code target)
-        | `Document -> Inline.Text target
+        | `Url -> mk_value (Inline.Link (target, [ inline @@ Text target ]))
+        | `File -> mk_value (Inline.Source (source_of_code target))
+        | `Document -> mk_value (Inline.Text target)
       in
       item ~tag:"see" ~value (nestable_block_element_list content)
   | `Since s -> item ~tag:"since" (text_def s)
   | `Before (version, content) ->
-      let value = Inline.Text version in
+      let value = mk_value (Inline.Text version) in
       item ~tag:"before" ~value (nestable_block_element_list content)
   | `Version s -> item ~tag:"version" (text_def s)
   | `Alert ("deprecated", content) ->
