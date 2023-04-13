@@ -8,13 +8,11 @@ type params =
   ; limit : int
   }
 
-let db_filename = Sys.argv.(1)
-
-let shards =
+let load_shards db_filename =
   let h = Storage.db_open_in db_filename in
   Array.to_list h.Storage.shards
 
-let search query_name query_typ =
+let search ~shards query_name query_typ =
   let open Lwt.Syntax in
   let* results_name = Query.find_names ~shards query_name in
   let+ results =
@@ -37,19 +35,21 @@ let match_packages ~packages results =
   | [] -> results
   | _ -> Lwt_stream.filter (match_packages ~packages) results
 
-let api params =
+let api ~shards params =
   let query_name, query_typ, query_typ_arrow, pretty =
     Query.Parser.of_string params.query
   in
-  let* results = search query_name query_typ in
+  let* results = search ~shards query_name query_typ in
   let results = Succ.to_stream results in
   let results = match_packages ~packages:params.packages results in
   let+ results = Lwt_stream.nget params.limit results in
   let results = Sort.list query_name query_typ_arrow results in
   Ui.render ~pretty results
 
-let api params =
-  if String.trim params.query = "" then Lwt.return Ui.explain else api params
+let api ~shards params =
+  if String.trim params.query = ""
+  then Lwt.return Ui.explain
+  else api ~shards params
 
 open Lwt.Syntax
 
@@ -91,26 +91,51 @@ let root fn params =
   try root fn params
   with _ -> Dream.html (string_of_tyxml @@ Ui.template "" Ui.explain)
 
-let cache : int -> Dream.middleware =
+let cache : int option -> Dream.middleware =
  fun max_age f req ->
   let+ response = f req in
-  Dream.add_header response "Cache-Control"
-    ("public, max-age=" ^ string_of_int max_age) ;
+  begin
+    match max_age with
+    | None -> ()
+    | Some max_age ->
+        Dream.add_header response "Cache-Control"
+          ("public, max-age=" ^ string_of_int max_age)
+  end ;
   response
 
-let () =
+let main db_filename cache_max_age =
+  let shards = load_shards db_filename in
   Dream.run ~interface:"127.0.0.1" ~port:1234
-  @@ Dream.logger (* @@ cache 3600 *)
+  @@ Dream.logger @@ cache cache_max_age
   @@ Dream.router
        [ Dream.get "/"
            (root (fun params ->
-                let+ result = api params in
+                let+ result = api ~shards params in
                 string_of_tyxml @@ Ui.template params.query result))
        ; Dream.get "/api"
            (root (fun params ->
-                let+ result = api params in
+                let+ result = api ~shards params in
                 string_of_tyxml' result))
        ; Dream.get "/s.css" (Dream.from_filesystem "static" "style.css")
        ; Dream.get "/robots.txt" (Dream.from_filesystem "static" "robots.txt")
        ; Dream.get "/favicon.ico" (Dream.from_filesystem "static" "favicon.ico")
        ]
+
+open Cmdliner
+
+let path =
+  let doc = "Database filename" in
+  Arg.(required & pos 0 (some file) None & info [] ~docv:"DB" ~doc)
+
+let cache_max_age =
+  let doc = "HTTP cache max age (in seconds)" in
+  Arg.(value & opt (some int) None & info [ "c"; "cache" ] ~docv:"MAX_AGE" ~doc)
+
+let www = Term.(const main $ path $ cache_max_age)
+
+let cmd =
+  let doc = "Webserver for sherlodoc" in
+  let info = Cmd.info "www" ~doc in
+  Cmd.v info www
+
+let () = exit (Cmd.eval cmd)
