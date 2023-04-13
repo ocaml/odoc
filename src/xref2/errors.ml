@@ -27,7 +27,6 @@ module Tools_error = struct
     [ `Local of
       Env.t * Ident.path_module
       (* Internal error: Found local path during lookup *)
-    | `Unresolved_apply (* [`Apply] argument is not [`Resolved] *)
     | `Find_failure
     | (* Internal error: the module was not found in the parent signature *)
       `Lookup_failure of
@@ -136,7 +135,6 @@ module Tools_error = struct
     | `LocalMT (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Local (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `LocalType (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
-    | `Unresolved_apply -> Format.fprintf fmt "Unresolved apply"
     | `Find_failure -> Format.fprintf fmt "Find failure"
     | `Lookup_failure m ->
         Format.fprintf fmt "Lookup failure (module): %a"
@@ -189,7 +187,6 @@ let is_unexpanded_module_type_of =
     | `Local _ -> false
     | `Find_failure -> false
     | `Lookup_failure _ -> false
-    | `Unresolved_apply -> false
     | `Lookup_failure_root _ -> false
     | `Parent p -> inner (p :> any)
     | `Parent_sig p -> inner (p :> any)
