@@ -17,13 +17,13 @@ let guess_type_search str =
 
 let of_string str =
   let str = String.trim str in
-  let ok, str_name, str_typ =
+  let has_typ, str_name, str_typ =
     match String.split_on_char ':' str with
     | [ a; b ] -> true, a, b
     | _ when guess_type_search str -> true, "", str
     | _ -> false, str, ""
   in
-  let pretty, ps, ps_arrow =
+  let pretty_typ, query_typ, paths_typ =
     match parse str_typ with
     | Any -> "_", [], []
     | typ ->
@@ -34,6 +34,7 @@ let of_string str =
         , paths_arrow ~prefix:[] ~sgn:Db.Types.Pos typ )
     | exception _ -> "<parse error>", [], []
   in
-  let keywords = naive_of_string str_name in
-  let keywords_pretty = String.concat " " keywords in
-  ok, keywords, ps, ps_arrow, keywords_pretty ^ " : " ^ pretty
+  let query_name = naive_of_string str_name in
+  let query_typ = if has_typ then Some query_typ else None in
+  let pretty_query = String.concat " " query_name ^ " : " ^ pretty_typ in
+  query_name, query_typ, paths_typ, pretty_query
