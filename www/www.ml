@@ -91,7 +91,7 @@ let root fn params =
   try root fn params
   with _ -> Dream.html (string_of_tyxml @@ Ui.template "" Ui.explain)
 
-let cache : int option -> Dream.middleware =
+let cache_header : int option -> Dream.middleware =
  fun max_age f req ->
   let+ response = f req in
   begin
@@ -103,10 +103,15 @@ let cache : int option -> Dream.middleware =
   end ;
   response
 
+let cors_header f req =
+  let+ response = f req in
+  Dream.add_header response "Access-Control-Allow-Origin" "*" ;
+  response
+
 let main db_filename cache_max_age =
   let shards = load_shards db_filename in
   Dream.run ~interface:"127.0.0.1" ~port:1234
-  @@ Dream.logger @@ cache cache_max_age
+  @@ Dream.logger @@ cache_header cache_max_age @@ cors_header
   @@ Dream.router
        [ Dream.get "/"
            (root (fun params ->
