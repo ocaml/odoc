@@ -108,6 +108,13 @@ let cors_header f req =
   Dream.add_header response "Access-Control-Allow-Origin" "*" ;
   response
 
+let cors_options =
+  Dream.options "**" (fun _ ->
+      let+ response = Dream.empty `No_Content in
+      Dream.add_header response "Access-Control-Allow-Methods" "GET, OPTIONS" ;
+      Dream.add_header response "Access-Control-Allow-Headers" "*" ;
+      response)
+
 let main db_filename cache_max_age =
   let shards = load_shards db_filename in
   Dream.run ~interface:"127.0.0.1" ~port:1234
@@ -124,6 +131,7 @@ let main db_filename cache_max_age =
        ; Dream.get "/s.css" (Dream.from_filesystem "static" "style.css")
        ; Dream.get "/robots.txt" (Dream.from_filesystem "static" "robots.txt")
        ; Dream.get "/favicon.ico" (Dream.from_filesystem "static" "favicon.ico")
+       ; cors_options
        ]
 
 open Cmdliner
