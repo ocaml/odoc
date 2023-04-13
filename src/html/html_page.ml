@@ -149,7 +149,8 @@ let page_creator ~config ~url ~uses_katex header breadcrumbs toc content =
   let content ppf =
     htmlpp ppf html;
     (* Tyxml's pp doesn't output a newline a the end, so we force one *)
-    Format.pp_force_newline ppf () in
+    Format.pp_force_newline ppf ()
+  in
   content
 
 let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex content children =
@@ -212,7 +213,8 @@ let src_page_creator ~breadcrumbs ~config ~url ~header name content =
   let content ppf =
     htmlpp ppf html;
     (* Tyxml's pp doesn't output a newline a the end, so we force one *)
-    Format.pp_force_newline ppf () in
+    Format.pp_force_newline ppf ()
+  in
   content
 
 let make_src ~config ~url ~breadcrumbs ~header title content =
