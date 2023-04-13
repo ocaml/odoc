@@ -23,24 +23,39 @@ let search (has_typ, query_name, query_typ) =
 open Lwt.Syntax
 module H = Tyxml.Html
 
-let api raw_query =
+let match_packages ~packages { Db.Elt.pkg = package, _version; _ } =
+  List.exists (String.equal package) packages
+
+let match_packages ~packages results =
+  match packages with
+  | [] -> results
+  | _ -> Lwt_stream.filter (match_packages ~packages) results
+
+let api ~packages raw_query =
   let has_typ, query_name, query_typ, query_typ_arrow, pretty =
     Query.Parser.of_string raw_query
   in
   let* results = search (has_typ, query_name, query_typ) in
-  let+ results = Succ.to_list results in
+  let results = Succ.to_stream results in
+  let results = match_packages ~packages results in
+  let+ results = Lwt_stream.nget 100 results in
   let results = Sort.list query_name query_typ_arrow results in
   Ui.render ~pretty results
 
-let api query =
-  if String.trim query = "" then Lwt.return Ui.explain else api query
+let api ~packages query =
+  if String.trim query = "" then Lwt.return Ui.explain else api ~packages query
 
 open Lwt.Syntax
 
 let get_query params = Option.value ~default:"" (Dream.query params "q")
 
-let root ~query fn _params =
-  let* result = fn query in
+let get_packages params =
+  match Dream.query params "packages" with
+  | None -> []
+  | Some str -> String.split_on_char ',' str
+
+let root fn ~query ~packages =
+  let* result = fn ~packages query in
   Dream.html result
 
 let string_of_tyxml html = Format.asprintf "%a" (Tyxml.Html.pp ()) html
@@ -48,7 +63,8 @@ let string_of_tyxml' html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html
 
 let root fn params =
   let query = get_query params in
-  try root ~query fn params
+  let packages = get_packages params in
+  try root fn ~query ~packages
   with err ->
     Format.printf "ERROR: %S@." (Printexc.to_string err) ;
     Dream.html (string_of_tyxml @@ Ui.template query Ui.explain)
@@ -66,15 +82,15 @@ let cache : int -> Dream.middleware =
 
 let () =
   Dream.run ~interface:"127.0.0.1" ~port:1234
-  @@ Dream.logger @@ cache 3600
+  @@ Dream.logger (* @@ cache 3600 *)
   @@ Dream.router
        [ Dream.get "/"
-           (root (fun q ->
-                let+ result = api q in
+           (root (fun ~packages q ->
+                let+ result = api ~packages q in
                 string_of_tyxml @@ Ui.template q result))
        ; Dream.get "/api"
-           (root (fun q ->
-                let+ result = api q in
+           (root (fun ~packages q ->
+                let+ result = api ~packages q in
                 string_of_tyxml' result))
        ; Dream.get "/s.css" (Dream.from_filesystem "static" "style.css")
        ; Dream.get "/robots.txt" (Dream.from_filesystem "static" "robots.txt")

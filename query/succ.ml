@@ -110,24 +110,28 @@ let rec first = function
 
 and first_opt t = try Some (first t) with Not_found -> None
 
-let first t =
-  let rec go n elt acc =
-    if n <= 0
-    then Lwt.return (List.rev acc)
-    else
-      let open Lwt.Syntax in
-      let* () = Lwt.pause () in
-      match succ_ge elt t with
-      | elt' ->
-          assert (Elt.compare elt elt' = 0) ;
-          go_gt (n - 1) elt (elt :: acc)
-      | exception Gt elt -> go n elt acc
-      | exception Not_found -> Lwt.return (List.rev acc)
-  and go_gt n elt acc =
-    match succ_gt elt t with
-    | elt -> go n elt acc
-    | exception Not_found -> Lwt.return (List.rev acc)
+let to_stream t =
+  let state = ref None in
+  let rec go elt =
+    let open Lwt.Syntax in
+    let* () = Lwt.pause () in
+    match succ_ge elt t with
+    | elt' ->
+        assert (Elt.compare elt elt' = 0) ;
+        state := Some elt ;
+        Lwt.return (Some elt)
+    | exception Gt elt -> go elt
+    | exception Not_found -> Lwt.return None
   in
-  Lwt.catch (fun () -> go 100 (first t) []) (fun (_ : exn) -> Lwt.return [])
+  let go_gt () =
+    match !state with
+    | None -> go (first t)
+    | Some previous_elt -> (
+        match succ_gt previous_elt t with
+        | elt -> go elt
+        | exception Not_found -> Lwt.return None)
+  in
+  let next () = Lwt.catch (fun () -> go_gt ()) (fun _ -> Lwt.return None) in
+  Lwt_stream.from next
 
-let to_list t = first t.s
+let to_stream t = to_stream t.s
