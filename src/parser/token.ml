@@ -21,7 +21,7 @@ type tag =
     | `Inline
     | `Open
     | `Closed
-    | `Hidden] ]
+    | `Hidden ] ]
 
 type t =
   [ (* End of input. *)
