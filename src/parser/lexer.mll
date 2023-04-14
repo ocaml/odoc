@@ -468,6 +468,8 @@ rule token input = parse
   | "@closed"
     { emit input (`Tag `Closed) }
 
+  | "@hidden"
+    { emit input (`Tag `Hidden) }
 
 
   | '{'

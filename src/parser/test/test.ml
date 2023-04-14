@@ -140,6 +140,7 @@ module Ast_to_sexp = struct
     | `Inline -> Atom "@inline"
     | `Open -> Atom "@open"
     | `Closed -> Atom "@closed"
+    | `Hidden -> Atom "@hidden"
 
   let block_element at : Ast.block_element -> sexp = function
     | #Ast.nestable_block_element as e -> nestable_block_element at e
@@ -4628,6 +4629,78 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 7)) @closed)
+           ((f.ml (1 8) (1 13))
+            (unordered light
+             ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 8-9:\
+           \n'-' (bulleted list item) should begin on its own line."
+            "File \"f.ml\", line 1, characters 8-9:\
+           \n'-' (bulleted list item) is not allowed in the tags section.\
+           \nSuggestion: move '-' (bulleted list item) before any tags."))) |}]
+  end in
+  ()
+
+let%expect_test _ =
+  let module Hidden = struct
+    let basic =
+      test "@hidden";
+      [%expect {| ((output (((f.ml (1 0) (1 7)) @hidden))) (warnings ())) |}]
+
+    let prefix =
+      test "@hiddenfoo";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 10))
+            (paragraph (((f.ml (1 0) (1 10)) (word @hiddenfoo)))))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 0-10:\
+           \nUnknown tag '@hiddenfoo'."))) |}]
+
+    let extra_whitespace =
+      test "@hidden";
+      [%expect {| ((output (((f.ml (1 0) (1 7)) @hidden))) (warnings ())) |}]
+
+    let followed_by_junk =
+      test "@hidden foo";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 7)) @hidden)
+           ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 8-11:\
+           \nParagraph is not allowed in the tags section.\
+           \nSuggestion: move 'foo' before any tags."
+            "File \"f.ml\", line 1, characters 8-11:\
+           \nParagraph should begin on its own line."))) |}]
+
+    let followed_by_paragraph =
+      test "@hidden\nfoo";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 7)) @hidden)
+           ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
+         (warnings
+          ( "File \"f.ml\", line 2, characters 0-3:\
+           \nParagraph is not allowed in the tags section.\
+           \nSuggestion: move 'foo' before any tags."))) |}]
+
+    let followed_by_tag =
+      test "@hidden\n@deprecated";
+      [%expect
+        {|
+        ((output (((f.ml (1 0) (1 7)) @hidden) ((f.ml (2 0) (2 11)) (@deprecated))))
+         (warnings ())) |}]
+
+    let with_list =
+      test "@hidden - foo";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 7)) @hidden)
            ((f.ml (1 8) (1 13))
             (unordered light
              ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))
