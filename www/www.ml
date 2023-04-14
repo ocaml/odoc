@@ -131,6 +131,7 @@ let main db_filename cache_max_age =
        ; Dream.get "/s.css" (Dream.from_filesystem "static" "style.css")
        ; Dream.get "/robots.txt" (Dream.from_filesystem "static" "robots.txt")
        ; Dream.get "/favicon.ico" (Dream.from_filesystem "static" "favicon.ico")
+       ; Dream.get "/bg.jpg" (Dream.from_filesystem "static" "bg.jpg")
        ; cors_options
        ]
 
