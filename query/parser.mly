@@ -13,6 +13,9 @@
 
 %%
 
+separated_twolong_list(sep, elt):
+  | e1=elt sep e2=elt sep li=separated_list(sep, elt) { e1 :: e2 :: li }
+
 main:
   | t=typ EOF { t }
   | EOF { Any }
@@ -20,7 +23,7 @@ main:
 
 typ:
   | a=typ1 ARROW b=typ { Arrow (a, b) }
-  | a=typ1 ARROW EOF { Arrow (a, Any) }
+  | a=typ1 ARROW { Arrow (a, Any) }
   | ARROW b=typ { Arrow (Any, b) }
   | ARROW EOF { Arrow (Any, Any) }
   | t=typ1 { t }
@@ -47,4 +50,4 @@ typ0:
   | PARENS_OPEN t=typ EOF { t }
   ;
 
-typ_list: ts=separated_list(COMMA, typ) { ts } ;
+typ_list: ts=separated_twolong_list(COMMA, typ) { ts } ;
