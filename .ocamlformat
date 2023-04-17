@@ -1,4 +1,4 @@
-version = 0.24.1
+version = 0.25.1
 let-binding-spacing = compact
 sequence-style = separator
 doc-comments = after-when-possible
