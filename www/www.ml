@@ -8,10 +8,6 @@ type params =
   ; limit : int
   }
 
-let load_shards db_filename =
-  let h = Storage.db_open_in db_filename in
-  Array.to_list h.Storage.shards
-
 let search ~shards query_name query_typ =
   let open Lwt.Syntax in
   let* results_name = Query.find_names ~shards query_name in
@@ -116,7 +112,7 @@ let cors_options =
       response)
 
 let main db_filename cache_max_age =
-  let shards = load_shards db_filename in
+  let shards = Storage.Ancient.load db_filename in
   Dream.run ~interface:"127.0.0.1" ~port:1234
   @@ Dream.logger @@ cache_header cache_max_age @@ cors_header
   @@ Dream.router

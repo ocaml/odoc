@@ -11,10 +11,13 @@ let of_filename f =
 
 let filenames () = List.map of_filename (Files.list odoc_directory)
 
+module Load_doc = Load_doc.Make (Storage.Ancient)
+module Db = Load_doc.Db
+
 let () =
   let files = filenames () in
   let total = List.length files in
-  let h = Storage.open_out db_filename in
+  let h = Storage.Ancient.open_out db_filename in
   let flush () =
     Load_doc.clear () ;
     Db.export h
@@ -30,4 +33,4 @@ let () =
       Load_doc.run ~odoc_directory file)
     files ;
   flush () ;
-  Storage.close_out h
+  Storage.Ancient.close_out h
