@@ -1,8 +1,7 @@
 type t =
-{ db : Types.db
-; db_names : Types.Elt_set.t Types.Tchar.t
-}
-
+  { db : Types.db
+  ; db_names : Types.Elt_set.t Types.Tchar.t
+  }
 
 module type S = sig
   type writer
@@ -12,7 +11,3 @@ module type S = sig
   val close_out : writer -> unit
   val load : string -> t list
 end
-
-module Ancient : S 
-
-module Marshal : S

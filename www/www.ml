@@ -112,7 +112,7 @@ let cors_options =
       response)
 
 let main db_filename cache_max_age =
-  let shards = Storage.Ancient.load db_filename in
+  let shards = Storage_marshal.load db_filename in
   Dream.run ~interface:"127.0.0.1" ~port:1234
   @@ Dream.logger @@ cache_header cache_max_age @@ cors_header
   @@ Dream.router

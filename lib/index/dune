@@ -1,6 +1,7 @@
 (executable
  (name index)
  (libraries
+  storage_marshal
   db
   fpath
   tyxml

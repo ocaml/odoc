@@ -1,4 +1,4 @@
-module Db_common  =Db
+module Db_common = Db
 
 module Make (Storage : Db.Storage.S) = struct
   module Types = Db.Types
@@ -169,8 +169,7 @@ module Make (Storage : Db.Storage.S) = struct
     let my_full_name = List.map Char.lowercase_ascii my_full_name in
     Db.store_name my_full_name str_type ;
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
-    Db.store_all str_type
-      (List.map (List.map Cache_name.memo) type_paths)
+    Db.store_all str_type (List.map (List.map Cache_name.memo) type_paths)
 
   let rec item ~pkg ~path_list ~path =
     let open Odoc_model.Lang in

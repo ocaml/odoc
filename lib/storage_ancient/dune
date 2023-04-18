@@ -1,0 +1,3 @@
+(library
+ (name storage_ancien)
+ (libraries ancient db))
