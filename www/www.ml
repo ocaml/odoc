@@ -2,48 +2,15 @@ module Storage = Db.Storage
 module Succ = Query.Succ
 module Sort = Query.Sort
 
-type params =
-  { query : string
-  ; packages : string list
-  ; limit : int
-  }
-
-let search ~shards query_name query_typ =
-  let open Lwt.Syntax in
-  let* results_name = Query.find_names ~shards query_name in
-  let+ results =
-    match query_typ with
-    | None -> Lwt.return results_name
-    | Some query_typ ->
-        let+ results_typ = Query.find_inter ~shards query_typ in
-        Succ.inter results_name results_typ
-  in
-  results
-
 open Lwt.Syntax
 module H = Tyxml.Html
 
-let match_packages ~packages { Db.Elt.pkg = package, _version; _ } =
-  List.exists (String.equal package) packages
-
-let match_packages ~packages results =
-  match packages with
-  | [] -> results
-  | _ -> Lwt_stream.filter (match_packages ~packages) results
-
 let api ~shards params =
-  let query_name, query_typ, query_typ_arrow, pretty =
-    Query.Parser.of_string params.query
-  in
-  let* results = search ~shards query_name query_typ in
-  let results = Succ.to_stream results in
-  let results = match_packages ~packages:params.packages results in
-  let+ results = Lwt_stream.nget params.limit results in
-  let results = Sort.list query_name query_typ_arrow results in
+  let+ pretty, results = Query.api ~shards params in
   Ui.render ~pretty results
 
 let api ~shards params =
-  if String.trim params.query = ""
+  if String.trim params.Query.query = ""
   then Lwt.return Ui.explain
   else api ~shards params
 
@@ -64,7 +31,7 @@ let get_limit params =
       try max 1 (min default (int_of_string str)) with _ -> default)
 
 let get_params params =
-  { query = get_query params
+  { Query.query = get_query params
   ; packages = get_packages params
   ; limit = get_limit params
   }
