@@ -1,21 +1,18 @@
 module Storage = Db.Storage
 
-let odoc_directory = Sys.argv.(1)
-let db_filename = Sys.argv.(2)
-
 let of_filename f =
   let module_name =
     String.capitalize_ascii Filename.(chop_extension (basename f))
   in
   module_name, f
 
-let filenames () = List.map of_filename (Files.list odoc_directory)
+let filenames odoc_directory = List.map of_filename (Files.list odoc_directory)
 
-let main storage () =
+let main ~odoc_directory ~db_filename storage =
   let module Storage = (val storage : Storage.S) in
   let module Load_doc = Load_doc.Make (Storage) in
   let module Db = Load_doc.Db in
-  let files = filenames () in
+  let files = filenames odoc_directory in
   let total = List.length files in
   let h = Storage.open_out db_filename in
   let flush () =
