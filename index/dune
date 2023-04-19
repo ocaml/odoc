@@ -1,13 +1,3 @@
 (executable
  (name index)
- (libraries
-  storage_marshal
-  db
-  fpath
-  tyxml
-  opam-core
-  odoc.loader
-  odoc.model
-  odoc.xref2
-  odoc.odoc
-  str))
+ (libraries index_lib storage_marshal))
