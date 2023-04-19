@@ -387,6 +387,10 @@ let rec read_module_expr env parent label_parent mexpr =
 #endif
     | Tmod_apply _ ->
         Cmi.read_module_type env parent (Odoc_model.Compat.module_type mexpr.mod_type)
+#if OCAML_VERSION >= (5,1,0)
+    | Tmod_apply_unit _ ->
+        Cmi.read_module_type env parent (Odoc_model.Compat.module_type mexpr.mod_type)
+#endif
     | Tmod_constraint(_, _, Tmodtype_explicit mty, _) ->
         Cmti.read_module_type env parent label_parent mty
     | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
