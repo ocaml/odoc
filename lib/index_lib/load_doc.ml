@@ -1,5 +1,7 @@
 module Db_common = Db
 
+open Strings_of_odoc
+
 module Make (Storage : Db.Storage.S) = struct
   module Types = Db.Types
   module Db = Db.Make (Storage)
@@ -54,8 +56,7 @@ module Make (Storage : Db.Storage.S) = struct
     | [] -> []
     | _ :: xs as lst -> lst :: tails xs
 
-  let fullname t =
-    Pretty.fmt_to_string (fun h -> Pretty.show_type_name_verbose h t)
+  let fullname t = Format.asprintf "%a" Strings_of_odoc.show_type_name_verbose t
 
   let all_type_names t =
     let fullname = fullname t in
@@ -77,9 +78,7 @@ module Make (Storage : Db.Storage.S) = struct
     | Constr (name, args) ->
         let name = fullname name in
         let prefix =
-          Cache_name.memo name
-          :: Cache_name.memo (Types.string_of_sgn sgn)
-          :: prefix
+          name :: Cache_name.memo (Types.string_of_sgn sgn) :: prefix
         in
         begin
           match args with
@@ -129,26 +128,21 @@ module Make (Storage : Db.Storage.S) = struct
     | _ -> []
 
   let save_item ~pkg ~path_list ~path name type_ doc =
-    let b = Buffer.create 16 in
-    let to_b = Format.formatter_of_buffer b in
-    Format.fprintf to_b "%a%!"
-      (Pretty.show_type
-         ~path:(Pretty.fmt_to_string (fun h -> Pretty.pp_path h path))
+    let str_type = Format.asprintf "%a%!"
+      (show_type
+         ~path:( Format.asprintf "%a" pp_path path)
          ~parens:false)
-      type_ ;
-    let str_type = Buffer.contents b in
-    Buffer.reset b ;
-    Format.fprintf to_b "%a%s%!" Pretty.pp_path path
-      (Odoc_model.Names.ValueName.to_string name) ;
-    let full_name = Buffer.contents b in
-    let doc = Option.map Cache_doc.memo (Pretty.string_of_docs doc) in
+      type_ in
+    let full_name = Format.asprintf "%a%s%!" pp_path path
+      (Odoc_model.Names.ValueName.to_string name) in
+    (* let doc = Option.map Cache_doc.memo (Pretty.string_of_docs doc) in *)
     let cost =
       String.length full_name + String.length str_type
       + (5 * List.length path)
       + type_size type_
-      + (match doc with
+      + (*(match doc with
         | None -> 1000
-        | _ -> 0)
+        | _ -> 0) TODO UNDERSTAND *)
       + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
     in
     let paths = paths ~prefix:[] ~sgn:Pos type_ in

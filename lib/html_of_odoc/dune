@@ -1,0 +1,3 @@
+(library
+ (name html_of_odoc)
+ (libraries strings_of_odoc tyxml opam-core odoc.loader odoc.model odoc.xref2 odoc.odoc))

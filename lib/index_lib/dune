@@ -1,6 +1,7 @@
 (library
  (name index_lib)
  (libraries
+  strings_of_odoc
   db
   fpath
   tyxml
