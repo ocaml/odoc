@@ -1,7 +1,0 @@
-(executable
-  (name main)
-  (modes js)
-  (libraries brr query js_of_ocaml-lwt)
-  (preprocess (pps ppx_blob js_of_ocaml-ppx))
-  (preprocessor_deps result.db)
-  )
