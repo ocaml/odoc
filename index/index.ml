@@ -2,6 +2,7 @@ let main odoc_directory db_filename db_format =
   let storage = match db_format with
   | `ancient -> (module Storage_ancient : Db.Storage.S)
   | `marshal -> (module Storage_marshal : Db.Storage.S)
+  | `js -> (module Storage_js : Db.Storage.S)
   in
   Index_lib.main ~odoc_directory ~db_filename storage
 
@@ -9,7 +10,7 @@ open Cmdliner
 
 let db_format =
   let doc = "Databse format" in
-  let kind = Arg.enum ["ancient", `ancient; "marshal", `marshal] in
+  let kind = Arg.enum ["ancient", `ancient; "marshal", `marshal; "js", `js] in
   Arg.(required & opt (some kind) None & info ["format"] ~docv:"DB_FORMAT" ~doc)
 
 let db_filename =

@@ -1,5 +1,4 @@
-let test = [%blob "odoc_result.db"]
-let shards = [ Marshal.from_string test 0 ]
+let db = Storage_js.load Jv.(to_string @@ get global "sherlodb")
 
 open Brr
 open Lwt
@@ -7,9 +6,8 @@ open Syntax
 
 let search input _event =
   let query = El.prop El.Prop.value input |> Jstr.to_string in
-
   let+ pretty_query, results =
-    Query.(api ~shards { query; packages = []; limit = 10 })
+    Query.(api ~shards:db { query; packages = []; limit = 10 })
   in
   let names = List.map (fun r -> r.Db.Elt.name) results in
   let names = String.concat " ; " names in

@@ -1,0 +1,3 @@
+(library
+ (name storage_js)
+ (libraries db base64))
