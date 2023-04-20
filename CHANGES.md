@@ -3,6 +3,7 @@ UNRELEASED
 
 Additions
 - Source code rendering (@Julow, @panglesd, #909)
+- Handle tables markup (@panglesd, @gpetiot, #893)
 
 Bugfixes
 - Fix `--hidden` not always taken into account (@panglesd, #940)
