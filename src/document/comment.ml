@@ -85,49 +85,10 @@ module Reference = struct
         render_unresolved (p :> t) ^ "." ^ InstanceVariableName.to_string f
     | `Label (p, f) -> render_unresolved (p :> t) ^ "." ^ LabelName.to_string f
 
-  (* This is the entry point. stop_before is false on entry, true on recursive
-     call. *)
-  let rec to_ir : ?text:Inline.t -> stop_before:bool -> Reference.t -> Inline.t
-      =
-   fun ?text ~stop_before ref ->
-    let open Reference in
+  (* This is the entry point. *)
+  let to_ir : ?text:Inline.t -> Reference.t -> Inline.t =
+   fun ?text ref ->
     match ref with
-    | `Root (s, _) -> (
-        match text with
-        | None ->
-            let s = source_of_code s in
-            [ inline @@ Inline.Source s ]
-        | Some content ->
-            let link =
-              { InternalLink.target = Unresolved; content; tooltip = Some s }
-            in
-            [ inline @@ Inline.InternalLink link ])
-    | `Dot (parent, s) -> unresolved ?text (parent :> t) s
-    | `Module (parent, s) ->
-        unresolved ?text (parent :> t) (ModuleName.to_string s)
-    | `ModuleType (parent, s) ->
-        unresolved ?text (parent :> t) (ModuleTypeName.to_string s)
-    | `Type (parent, s) -> unresolved ?text (parent :> t) (TypeName.to_string s)
-    | `Constructor (parent, s) ->
-        unresolved ?text (parent :> t) (ConstructorName.to_string s)
-    | `Field (parent, s) ->
-        unresolved ?text (parent :> t) (FieldName.to_string s)
-    | `Extension (parent, s) ->
-        unresolved ?text (parent :> t) (ExtensionName.to_string s)
-    | `Exception (parent, s) ->
-        unresolved ?text (parent :> t) (ExceptionName.to_string s)
-    | `Value (parent, s) ->
-        unresolved ?text (parent :> t) (ValueName.to_string s)
-    | `Class (parent, s) ->
-        unresolved ?text (parent :> t) (ClassName.to_string s)
-    | `ClassType (parent, s) ->
-        unresolved ?text (parent :> t) (ClassTypeName.to_string s)
-    | `Method (parent, s) ->
-        unresolved ?text (parent :> t) (MethodName.to_string s)
-    | `InstanceVariable (parent, s) ->
-        unresolved ?text (parent :> t) (InstanceVariableName.to_string s)
-    | `Label (parent, s) ->
-        unresolved ?text (parent :> t) (LabelName.to_string s)
     | `Resolved r -> (
         (* IDENTIFIER MUST BE RENAMED TO DEFINITION. *)
         let id = Reference.Resolved.identifier r in
@@ -140,7 +101,7 @@ module Reference = struct
           (* Add a tooltip if the content is not the rendered reference. *)
           match text with None -> None | Some _ -> Some rendered
         in
-        match Url.from_identifier ~stop_before id with
+        match Url.from_identifier ~stop_before:false id with
         | Ok url ->
             let target = InternalLink.Resolved url in
             let link = { InternalLink.target; content; tooltip } in
@@ -150,18 +111,17 @@ module Reference = struct
             (* FIXME: better error message *)
             Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
             content)
-
-  and unresolved : ?text:Inline.t -> Reference.t -> string -> Inline.t =
-   fun ?text parent field ->
-    match text with
-    | Some content ->
-        let tooltip = Some (render_unresolved parent ^ "." ^ field) in
-        let link = { InternalLink.target = Unresolved; content; tooltip } in
-        [ inline @@ InternalLink link ]
-    | None ->
-        let tail = [ inline @@ Text ("." ^ field) ] in
-        let content = to_ir ~stop_before:true parent in
-        content @ tail
+    | _ -> (
+        let s = render_unresolved ref in
+        match text with
+        | None ->
+            let s = source_of_code s in
+            [ inline @@ Inline.Source s ]
+        | Some content ->
+            let link =
+              { InternalLink.target = Unresolved; content; tooltip = Some s }
+            in
+            [ inline @@ Inline.InternalLink link ])
 end
 
 let leaf_inline_element : Comment.leaf_inline_element -> Inline.one = function
@@ -199,7 +159,7 @@ let rec inline_element : Comment.inline_element -> Inline.t = function
         | _ -> Some (non_link_inline_element_list content)
         (* XXX Span *)
       in
-      Reference.to_ir ?text:content ~stop_before:false path
+      Reference.to_ir ?text:content path
   | `Link (target, content) ->
       let content =
         match content with
@@ -217,8 +177,7 @@ and inline_element_list elements =
 let module_references ms =
   let module_reference (m : Comment.module_reference) =
     let reference =
-      Reference.to_ir ~stop_before:false
-        (m.module_reference :> Odoc_model.Paths.Reference.t)
+      Reference.to_ir (m.module_reference :> Odoc_model.Paths.Reference.t)
     and synopsis =
       match m.module_synopsis with
       | Some synopsis ->
