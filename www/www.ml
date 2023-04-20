@@ -78,8 +78,13 @@ let cors_options =
       Dream.add_header response "Access-Control-Allow-Headers" "*" ;
       response)
 
-let main db_filename cache_max_age =
-  let shards = Storage_marshal.load db_filename in
+let main db_format db_filename cache_max_age =
+  let storage = match db_format with
+  | `ancient -> (module Storage_ancient : Db.Storage.S)
+  | `marshal -> (module Storage_marshal : Db.Storage.S)
+  in
+  let module Storage = (val storage) in
+  let shards = Storage.load db_filename in
   Dream.run ~interface:"127.0.0.1" ~port:1234
   @@ Dream.logger @@ cache_header cache_max_age @@ cors_header
   @@ Dream.router
@@ -100,7 +105,12 @@ let main db_filename cache_max_age =
 
 open Cmdliner
 
-let path =
+let db_format =
+  let doc = "Databse format" in
+  let kind = Arg.enum ["ancient", `ancient; "marshal", `marshal] in
+  Arg.(required & opt (some kind) None & info ["format"] ~docv:"DB_FORMAT" ~doc)
+
+let db_path =
   let doc = "Database filename" in
   Arg.(required & pos 0 (some file) None & info [] ~docv:"DB" ~doc)
 
@@ -108,7 +118,7 @@ let cache_max_age =
   let doc = "HTTP cache max age (in seconds)" in
   Arg.(value & opt (some int) None & info [ "c"; "cache" ] ~docv:"MAX_AGE" ~doc)
 
-let www = Term.(const main $ path $ cache_max_age)
+let www = Term.(const main $ db_format $ db_path $ cache_max_age)
 
 let cmd =
   let doc = "Webserver for sherlodoc" in
