@@ -301,27 +301,21 @@ These blocks can be written using the enclosing tags [{@<language>[ ... ]}].
 The content of those block should be properly styled if highlightjs supports the
 styling for the given language.
 
-Note: The build of highlightjs that is shipped with Odoc supports only a few languages.
-
 {v
-(** Here is some C code:
-    {@c[
-    int f()
-    {
-      return 0;
-    }
+(** Here is some python code:
+    {@python[
+    def f():
+      return 0
     ]}
 *)
 v}
 
 And rendered this becomes:
 
-Here is some C code:
-{@c[
-int f()
-{
-  return 0;
-}
+Here is some python code:
+{@python[
+  def f():
+    return 0
 ]}
 
 {4:verbatim_blocks Verbatim Blocks}
