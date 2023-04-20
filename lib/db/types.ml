@@ -4,7 +4,7 @@ module Elt = struct
     ; name : string
     ; str_type : string
     ; type_paths : string list list
-    ; doc : Odoc_model.Comment.docs 
+    ; doc : Html_types.li_content_fun Tyxml.Html.elt option
     ; pkg : string * string
     }
 

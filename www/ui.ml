@@ -6,9 +6,6 @@ let list_of_option = function
 
 let render_result r =
   let open Db.Types.Elt in
-  let doc =
-    (*Option.map Cache_doc.memo TODO RESTORE*) Html_of_odoc.string_of_docs r.doc
-  in
   div
     ~a:[ a_class [ "pkg" ] ]
     [ a
@@ -24,7 +21,7 @@ let render_result r =
        ; txt " : "
        ; txt r.str_type
        ]
-  :: list_of_option doc
+  :: list_of_option r.doc
 
 let render ~pretty results =
   match results with
