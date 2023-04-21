@@ -14,3 +14,4 @@ type t =
   }
 
 val api : shards:Db.Storage.t list -> t -> (string * Db.Elt.t list) Lwt.t
+(* TODO : drop the Lwt thing *)
