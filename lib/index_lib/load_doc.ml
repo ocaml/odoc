@@ -166,7 +166,9 @@ module Make (Storage : Db.Storage.S) = struct
     in
     List.iter
       (fun word ->
-        let word = word |> Db_common.list_of_string |> List.rev in
+        let word =
+          word |> Db_common.list_of_string |> List.rev_map Char.lowercase_ascii
+        in
         Db.store_name word str_type)
       doc_words ;
     let my_full_name =
