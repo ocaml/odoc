@@ -6,26 +6,28 @@ open Syntax
 
 let search input _event =
   let query = El.prop El.Prop.value input |> Jstr.to_string in
-  let+ _pretty_query, results =
+  let+ pretty_query, results =
     Query.(api ~shards:db { query; packages = []; limit = 50 })
   in
   let results =
-    results
-    |> List.map (fun elt ->
-           El.(
-             div
-               ([ p
-                    ~at:At.[ style (Jstr.of_string "color:red") ]
-                    [ txt' elt.Db.Elt.name ]
-                ]
-               @
-               match elt.Db.Elt.doc with
-               | None -> []
-               | Some doc ->
-                   [ p
-                       [ txt' @@ Format.asprintf "%a" (Tyxml.Html.pp_elt ()) doc
-                       ]
-                   ])))
+    El.[ p [ txt' pretty_query ] ]
+    @ List.map
+        (fun elt ->
+          El.(
+            div
+              ([ p
+                   ~at:At.[ style (Jstr.of_string "color:red") ]
+                   [ txt' elt.Db.Elt.name ]
+               ]
+              @
+              match elt.Db.Elt.doc with
+              | None -> []
+              | Some doc ->
+                  [ p
+                      [ txt' @@ Format.asprintf "%a" (Tyxml.Html.pp_elt ()) doc
+                      ]
+                  ])))
+        results
   in
 
   let results_div =
