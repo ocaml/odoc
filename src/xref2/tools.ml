@@ -1627,8 +1627,17 @@ and signature_of_u_module_type_expr :
       signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
       let subs = unresolve_subs subs in
       handle_signature_with_subs ~mark_substituted env sg subs
-  | TypeOf { t_expansion = Some (Signature sg); _ } -> Ok sg
-  | TypeOf { t_desc; _ } -> Error (`UnexpandedTypeOf t_desc)
+  | TypeOf t ->
+      expansion_of_module_type_type_of_desc env t >>= assert_not_functor
+
+and expansion_of_module_type_type_of_desc :
+    Env.t ->
+    Component.ModuleType.type_of_desc ->
+    (expansion, expansion_of_module_error) Result.result =
+ fun env desc ->
+  match desc with
+  | ModPath p -> expansion_of_module_path env p ~strengthen:false
+  | StructInclude p -> expansion_of_module_path env p ~strengthen:true
 
 (* and expansion_of_simple_expansion :
      Component.ModuleType.simple_expansion -> expansion =
@@ -1716,7 +1725,7 @@ and umty_of_mty : Component.ModuleType.expr -> Component.ModuleType.U.expr =
   function
   | Signature sg -> Signature sg
   | Path { p_path; _ } -> Path p_path
-  | TypeOf t -> TypeOf t
+  | TypeOf { t_desc; _ } -> TypeOf t_desc
   | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
   | Functor _ -> assert false
 
@@ -1734,21 +1743,13 @@ and fragmap :
     let open Component.Module in
     match decl with
     | Alias (path, _) ->
-        expansion_of_module_path env ~strengthen:true path
-        >>= assert_not_functor
-        >>= fun sg ->
         Ok
           (ModuleType
              (With
                 {
                   w_substitutions = [ subst ];
                   w_expansion = None;
-                  w_expr =
-                    TypeOf
-                      {
-                        t_desc = StructInclude path;
-                        t_expansion = Some (Signature sg);
-                      };
+                  w_expr = TypeOf (StructInclude path);
                 }))
     | ModuleType mty' ->
         Ok
@@ -1799,14 +1800,21 @@ and fragmap :
                     Component.Signature.RType (id, texpr, eq) :: removed ))
         | Component.Signature.Module (id, r, m), { module_ = Some (id', fn); _ }
           when Ident.Name.module_ id = id' -> (
-            fn (Component.Delayed.get m) >>= function
+            let m = Component.Delayed.get m in
+            fn m >>= function
             | Left x ->
+                let old_ty =
+                  match m.type_ with
+                  | ModuleType e -> e
+                  | Alias (m, exp) ->
+                      TypeOf { t_desc = StructInclude m; t_expansion = exp }
+                in
                 Ok
                   ( Component.Signature.Module
                       (id, r, Component.Delayed.put (fun () -> x))
                     :: items,
                     true,
-                    id :: subbed_modules,
+                    (id, old_ty) :: subbed_modules,
                     removed )
             | Right y ->
                 Ok
@@ -1967,11 +1975,12 @@ and fragmap :
   let map_items items =
     (* Invalidate resolved paths containing substituted idents - See the `With11`
        test for an example of why this is necessary *)
-    let sub_of_substituted x sub =
+    let sub_of_substituted (x, exp) sub =
       let x = (x :> Ident.path_module) in
-      (if mark_substituted then Subst.add_module_substitution x sub else sub)
+      (if mark_substituted then Subst.add_module_substitution x exp sub
+      else sub)
       |> Subst.path_invalidate_module x
-      |> Subst.mto_invalidate_module x
+      |> Subst.mto_invalidate_module x exp
     in
 
     let substituted_sub =

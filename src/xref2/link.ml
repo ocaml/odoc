@@ -748,10 +748,8 @@ and u_module_type_expr :
       | Error e ->
           Errors.report ~what:(`Module_type_U cexpr) ~tools_error:e `Resolve;
           unresolved)
-  | TypeOf { t_desc = StructInclude p; t_expansion } ->
-      TypeOf { t_desc = StructInclude (module_path env p); t_expansion }
-  | TypeOf { t_desc = ModPath p; t_expansion } ->
-      TypeOf { t_desc = ModPath (module_path env p); t_expansion }
+  | TypeOf (StructInclude p) -> TypeOf (StructInclude (module_path env p))
+  | TypeOf (ModPath p) -> TypeOf (ModPath (module_path env p))
 
 and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =

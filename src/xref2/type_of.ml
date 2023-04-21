@@ -89,7 +89,7 @@ and module_type env m =
 and module_type_expr_typeof env (id : Id.Signature.t) t =
   let open Odoc_model.Lang.ModuleType in
   let p, strengthen =
-    match t.t_desc with ModPath p -> (p, false) | StructInclude p -> (p, true)
+    match t with ModPath p -> (p, false) | StructInclude p -> (p, true)
   in
   let cp = Component.Of_Lang.(module_path (empty ()) p) in
   let open Expand_tools in
@@ -107,7 +107,7 @@ and module_type_expr env (id : Id.Signature.t) expr =
   | Signature sg -> Signature (signature env sg)
   | With w -> With { w with w_expr = u_module_type_expr env id w.w_expr }
   | TypeOf t -> (
-      match module_type_expr_typeof env id t with
+      match module_type_expr_typeof env id t.t_desc with
       | Ok e ->
           let se = Lang_of.(simple_expansion (empty ()) id e) in
           TypeOf { t with t_expansion = Some (simple_expansion env se) }
@@ -123,17 +123,7 @@ and u_module_type_expr env id expr =
   | Path _ -> expr
   | Signature sg -> Signature (signature env sg)
   | With (subs, w) -> With (subs, u_module_type_expr env id w)
-  | TypeOf t -> (
-      match module_type_expr_typeof env id t with
-      | Ok e ->
-          let se = Lang_of.(simple_expansion (empty ()) id e) in
-          TypeOf { t with t_expansion = Some (simple_expansion env se) }
-      | Error e
-        when Errors.is_unexpanded_module_type_of (e :> Errors.Tools_error.any)
-        ->
-          again := true;
-          expr
-      | Error _e -> expr)
+  | TypeOf t -> TypeOf t
 
 and functor_parameter env p =
   { p with expr = module_type_expr env (p.id :> Id.Signature.t) p.expr }

@@ -592,8 +592,7 @@ and module_type_map_subs env id cexpr subs =
     | Path (`Resolved p) -> Some (`ModuleType p)
     | Path _ -> None
     | With (_, e) -> find_parent e
-    | TypeOf { t_desc = ModPath (`Resolved p); _ }
-    | TypeOf { t_desc = StructInclude (`Resolved p); _ } ->
+    | TypeOf (ModPath (`Resolved p)) | TypeOf (StructInclude (`Resolved p)) ->
         Some (`Module p)
     | TypeOf _ -> None
   in
@@ -635,13 +634,13 @@ and u_module_type_expr :
         in
         let result : ModuleType.U.expr = With (subs', expr') in
         result
-    | TypeOf { t_desc; t_expansion } ->
-        let t_desc =
-          match t_desc with
+    | TypeOf t ->
+        let t =
+          match t with
           | ModPath p -> ModPath (module_path env p)
           | StructInclude p -> StructInclude (module_path env p)
         in
-        TypeOf { t_desc; t_expansion }
+        TypeOf t
   in
   inner expr
 

@@ -182,17 +182,12 @@ and ModuleType : sig
     | Signature of Signature.t
     | Functor of FunctorParameter.t * simple_expansion
 
-  type typeof_t = {
-    t_desc : type_of_desc;
-    t_expansion : simple_expansion option;
-  }
-
   module U : sig
     type expr =
       | Path of Cpath.module_type
       | Signature of Signature.t
       | With of substitution list * expr
-      | TypeOf of typeof_t
+      | TypeOf of type_of_desc
   end
 
   type path_t = {
@@ -204,6 +199,11 @@ and ModuleType : sig
     w_substitutions : substitution list;
     w_expansion : simple_expansion option;
     w_expr : U.expr;
+  }
+
+  type typeof_t = {
+    t_desc : type_of_desc;
+    t_expansion : simple_expansion option;
   }
 
   type expr =
@@ -426,7 +426,7 @@ and Substitution : sig
     type_replacement : (TypeExpr.t * TypeDecl.Equation.t) PathTypeMap.t;
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
     path_invalidating_modules : Ident.path_module list;
-    module_type_of_invalidating_modules : Ident.path_module list;
+    module_type_of_invalidating_modules : ModuleType.expr PathModuleMap.t;
     unresolve_opaque_paths : bool;
   }
 end

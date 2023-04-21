@@ -92,19 +92,12 @@ and ModuleType : sig
     | Signature of Signature.t
     | Functor of FunctorParameter.t * simple_expansion
 
-  type typeof_t = {
-    t_desc : type_of_desc;
-    t_expansion : simple_expansion option;
-  }
-
   module U : sig
     type expr =
       | Path of Path.ModuleType.t
       | Signature of Signature.t
       | With of substitution list * expr
-      | TypeOf of typeof_t
-
-    (* Nb. this may have an expansion! *)
+      | TypeOf of type_of_desc
   end
 
   type path_t = {
@@ -116,6 +109,11 @@ and ModuleType : sig
     w_substitutions : substitution list;
     w_expansion : simple_expansion option;
     w_expr : U.expr;
+  }
+
+  type typeof_t = {
+    t_desc : type_of_desc;
+    t_expansion : simple_expansion option;
   }
 
   type expr =
@@ -534,7 +532,7 @@ let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
   | Signature sg -> Some (Signature sg)
   | Path { p_path; _ } -> Some (Path p_path)
   | Functor _ -> None
-  | TypeOf t -> Some (TypeOf t)
+  | TypeOf t -> Some (TypeOf t.t_desc)
   | With { w_substitutions; w_expr; _ } -> Some (With (w_substitutions, w_expr))
 
 (** Query the top-comment of a signature. This is [s.doc] most of the time with
