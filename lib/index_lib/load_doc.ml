@@ -141,6 +141,9 @@ module Make (Storage : Db.Storage.S) = struct
     Format.fprintf to_b "%a%s%!" Pretty.pp_path path
       (Odoc_model.Names.ValueName.to_string name) ;
     let full_name = Buffer.contents b in
+    let doc_words =
+      doc |> Docstring.words_of_docs |> List.sort_uniq String.compare
+    in
     let doc = Option.map Cache_doc.memo (Pretty.string_of_docs doc) in
     let cost =
       String.length full_name + String.length str_type
@@ -161,6 +164,11 @@ module Make (Storage : Db.Storage.S) = struct
       ; pkg
       }
     in
+    List.iter
+      (fun word ->
+        let word = word |> Db_common.list_of_string |> List.rev in
+        Db.store_name word str_type)
+      doc_words ;
     let my_full_name =
       List.rev_append
         (Db_common.list_of_string (Odoc_model.Names.ValueName.to_string name))
@@ -168,6 +176,7 @@ module Make (Storage : Db.Storage.S) = struct
     in
     let my_full_name = List.map Char.lowercase_ascii my_full_name in
     Db.store_name my_full_name str_type ;
+
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
     Db.store_all str_type (List.map (List.map Cache_name.memo) type_paths)
 

@@ -6,15 +6,32 @@ open Syntax
 
 let search input _event =
   let query = El.prop El.Prop.value input |> Jstr.to_string in
-  let+ pretty_query, results =
-    Query.(api ~shards:db { query; packages = []; limit = 10 })
+  let+ _pretty_query, results =
+    Query.(api ~shards:db { query; packages = []; limit = 50 })
   in
-  let names = List.map (fun r -> r.Db.Elt.name) results in
-  let names = String.concat " ; " names in
+  let results =
+    results
+    |> List.map (fun elt ->
+           El.(
+             div
+               ([ p
+                    ~at:At.[ style (Jstr.of_string "color:red") ]
+                    [ txt' elt.Db.Elt.name ]
+                ]
+               @
+               match elt.Db.Elt.doc with
+               | None -> []
+               | Some doc ->
+                   [ p
+                       [ txt' @@ Format.asprintf "%a" (Tyxml.Html.pp_elt ()) doc
+                       ]
+                   ])))
+  in
+
   let results_div =
     Document.find_el_by_id G.document (Jstr.of_string "results") |> Option.get
   in
-  El.set_children results_div El.[ txt' (pretty_query ^ " => " ^ names) ]
+  El.set_children results_div results
 
 let search input event =
   Js_of_ocaml_lwt.Lwt_js_events.async (fun () -> search input event)

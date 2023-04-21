@@ -17,7 +17,9 @@ let score_name query_name name =
   else if is_substring ~sub:("_" ^ query_name) name
           || is_substring ~sub:(query_name ^ "_") name
   then 3
-  else 4
+  else if is_substring ~sub:query_name name
+  then 4
+  else (* Matches only in the docstring are always worse *) 2000
 
 let score_name query_name name =
   match score_name query_name name with
