@@ -1,4 +1,4 @@
 (executable
  (name main)
  (public_name sherlodoc_api)
- (libraries cmdliner dream db query storage_marshal html_of_odoc))
+ (libraries cmdliner dream db query storage_marshal))
