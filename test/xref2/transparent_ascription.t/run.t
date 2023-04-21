@@ -9,7 +9,8 @@ Transparent ascription
       "`Module": [
         {
           "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Basic" ] }, "P"
+            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Basic" ] },
+            "P"
           ]
         },
         "N"
@@ -33,7 +34,8 @@ Transparent ascription
                             "`Module": [
                               {
                                 "`Module": [
-                                  { "`Root": [ "None", "Test" ] }, "Basic"
+                                  { "`Root": [ "None", "Test" ] },
+                                  "Basic"
                                 ]
                               },
                               "P"
@@ -72,7 +74,8 @@ Transparent ascription
       "`Module": [
         {
           "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] }, "P1"
+            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] },
+            "P1"
           ]
         },
         "N1"
@@ -96,7 +99,8 @@ Transparent ascription
                             "`Module": [
                               {
                                 "`Module": [
-                                  { "`Root": [ "None", "Test" ] }, "Nested"
+                                  { "`Root": [ "None", "Test" ] },
+                                  "Nested"
                                 ]
                               },
                               "P1"
@@ -173,7 +177,8 @@ Transparent ascription
                           "`Resolved": {
                             "`Identifier": {
                               "`ModuleType": [
-                                { "`Root": [ "None", "Test" ] }, "T"
+                                { "`Root": [ "None", "Test" ] },
+                                "T"
                               ]
                             }
                           }
@@ -201,7 +206,8 @@ Transparent ascription
       "`Module": [
         {
           "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] }, "P1"
+            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] },
+            "P1"
           ]
         },
         "N2"
@@ -225,7 +231,8 @@ Transparent ascription
                             "`Module": [
                               {
                                 "`Module": [
-                                  { "`Root": [ "None", "Test" ] }, "Nested"
+                                  { "`Root": [ "None", "Test" ] },
+                                  "Nested"
                                 ]
                               },
                               "P1"
@@ -264,7 +271,8 @@ Transparent ascription
       "`Module": [
         {
           "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] }, "P2"
+            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] },
+            "P2"
           ]
         },
         "N1"
@@ -288,7 +296,8 @@ Transparent ascription
                             "`Module": [
                               {
                                 "`Module": [
-                                  { "`Root": [ "None", "Test" ] }, "Nested"
+                                  { "`Root": [ "None", "Test" ] },
+                                  "Nested"
                                 ]
                               },
                               "P2"
@@ -365,7 +374,8 @@ Transparent ascription
                           "`Resolved": {
                             "`Identifier": {
                               "`ModuleType": [
-                                { "`Root": [ "None", "Test" ] }, "T"
+                                { "`Root": [ "None", "Test" ] },
+                                "T"
                               ]
                             }
                           }
@@ -393,7 +403,8 @@ Transparent ascription
       "`Module": [
         {
           "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] }, "P2"
+            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] },
+            "P2"
           ]
         },
         "N2"
@@ -417,7 +428,8 @@ Transparent ascription
                             "`Module": [
                               {
                                 "`Module": [
-                                  { "`Root": [ "None", "Test" ] }, "Nested"
+                                  { "`Root": [ "None", "Test" ] },
+                                  "Nested"
                                 ]
                               },
                               "P2"
@@ -481,7 +493,8 @@ Transparent ascription
                             "`Module": [
                               {
                                 "`Module": [
-                                  { "`Root": [ "None", "Test" ] }, "Via_alias"
+                                  { "`Root": [ "None", "Test" ] },
+                                  "Via_alias"
                                 ]
                               },
                               "P"
@@ -515,24 +528,29 @@ Transparent ascription
                                       }
                                     },
                                     {
-                                      "`Identifier": {
-                                        "`Module": [
-                                          {
-                                            "`Module": [
-                                              {
-                                                "`Module": [
-                                                  {
-                                                    "`Root": [ "None", "Test" ]
-                                                  },
-                                                  "Via_alias"
-                                                ]
-                                              },
-                                              "P"
-                                            ]
-                                          },
-                                          "M"
-                                        ]
-                                      }
+                                      "`Identifier": [
+                                        {
+                                          "`Module": [
+                                            {
+                                              "`Module": [
+                                                {
+                                                  "`Module": [
+                                                    {
+                                                      "`Root": [
+                                                        "None", "Test"
+                                                      ]
+                                                    },
+                                                    "Via_alias"
+                                                  ]
+                                                },
+                                                "P"
+                                              ]
+                                            },
+                                            "M"
+                                          ]
+                                        },
+                                        "false"
+                                      ]
                                     }
                                   ]
                                 },
@@ -565,7 +583,8 @@ Transparent ascription
       "`Module": [
         {
           "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Cascade" ] }, "P"
+            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Cascade" ] },
+            "P"
           ]
         },
         "N1"
@@ -585,7 +604,8 @@ Transparent ascription
                       "`Module": [
                         {
                           "`Module": [
-                            { "`Root": [ "None", "Test" ] }, "Cascade"
+                            { "`Root": [ "None", "Test" ] },
+                            "Cascade"
                           ]
                         },
                         "P"
@@ -707,7 +727,8 @@ Transparent ascription
       "`Module": [
         {
           "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Cascade" ] }, "P"
+            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Cascade" ] },
+            "P"
           ]
         },
         "N2"
@@ -729,7 +750,8 @@ Transparent ascription
                           "`Module": [
                             {
                               "`Module": [
-                                { "`Root": [ "None", "Test" ] }, "Cascade"
+                                { "`Root": [ "None", "Test" ] },
+                                "Cascade"
                               ]
                             },
                             "P"
@@ -805,7 +827,8 @@ Transparent ascription
           "`Module": [
             {
               "`Module": [
-                { "`Root": [ "None", "Test" ] }, "In_functor_parameter"
+                { "`Root": [ "None", "Test" ] },
+                "In_functor_parameter"
               ]
             },
             "P"
