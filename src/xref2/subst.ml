@@ -667,15 +667,20 @@ and mto_module_path_invalidated : t -> Cpath.module_ -> ModuleType.expr option =
       match mto_module_path_invalidated s p1 with
       | Some _ as ans -> ans
       | None -> mto_module_path_invalidated s p2)
-  | `Local (id, _) ->
-      PathModuleMap.find_opt id s.module_type_of_invalidating_modules
+  | `Local (id, _) -> (
+      match PathModuleMap.find id s.module_type_of_invalidating_modules with
+      | exception Not_found -> None
+      | mty -> Some mty)
   | `Identifier _ -> None
   | `Forward _ -> None
   | `Root _ -> None
 
 and mto_resolved_module_path_invalidated s p =
   match p with
-  | `Local id -> PathModuleMap.find_opt id s.module_type_of_invalidating_modules
+  | `Local id -> (
+      match PathModuleMap.find id s.module_type_of_invalidating_modules with
+      | exception Not_found -> None
+      | mty -> Some mty)
   | `Gpath _ -> None
   | `Apply (p1, p2) -> (
       match mto_resolved_module_path_invalidated s p1 with
