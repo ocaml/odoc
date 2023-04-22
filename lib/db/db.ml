@@ -66,9 +66,9 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     let t = { Storage_toplevel.db = !db; db_names = !db_names } in
     let ho = Hocc2.create 16 in
     let hs = Hset2.create 16 in
-    let (_ : Elt_set.t Occ.t) = T.summarize (occ_merge ~ho ~hs) Occ.empty !db in
-    let (_ : Elt_set.t) =
-      Tchar.summarize (elt_set_union ~hs) Elt_set.empty !db_names
+    let (_ : Elt_set.t Occ.t option) = T.summarize (occ_merge ~ho ~hs) !db in
+    let (_ : Elt_set.t option) =
+      Tchar.summarize (elt_set_union ~hs) !db_names
     in
     Storage.save ~db:h t ;
     db := T.empty () ;

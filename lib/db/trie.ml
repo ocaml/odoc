@@ -68,18 +68,19 @@ module Make (E : ELEMENT) = struct
         find ys (Leaf (xs, outcome))
     | _ -> t
 
-  let rec summarize fn z t =
+  let rec summarize fn t =
     match t with
-    | Leaf (_, outcome) -> outcome
+    | Leaf (_, outcome) -> Some outcome
     | Node ({ leaf; children; _ } as it) ->
-        let acc =
-          match leaf with
-          | None -> z
-          | Some z -> z
-        in
         let sum =
-          M.fold (fun _ c acc -> fn acc (summarize fn z c)) children acc
+          M.fold
+            (fun _ c acc ->
+              let res = summarize fn c in
+              match acc, res with
+              | None, opt | opt, None -> opt
+              | Some acc, Some res -> Some (fn acc res))
+            children leaf
         in
-        it.summary <- Some sum ;
+        it.summary <- sum ;
         sum
 end
