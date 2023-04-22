@@ -1,8 +1,6 @@
 let db = Storage_js.load Jv.(to_string @@ get global "sherlodb")
 
 open Brr
-open Lwt
-open Syntax
 
 let inner_html = El.Prop.jstr (Jstr.v "innerHTML")
 
@@ -16,7 +14,7 @@ let count = ref 0
 
 let search ~id input _event =
   let query = El.prop El.Prop.value input |> Jstr.to_string in
-  let+ pretty_query, results =
+  let pretty_query, results =
     Query.(api ~shards:db { query; packages = []; limit = 50 })
   in
   let results =
@@ -49,7 +47,7 @@ let search ~id input _event =
 let search input event =
   let id = !count in
   count := id + 1 ;
-  Js_of_ocaml_lwt.Lwt_js_events.async (fun () -> search ~id input event)
+  search ~id input event
 
 let main () =
   let search_input =

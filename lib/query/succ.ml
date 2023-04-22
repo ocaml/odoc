@@ -110,18 +110,16 @@ let rec first = function
 
 and first_opt t = try Some (first t) with Not_found -> None
 
-let to_stream t =
+let to_seq t =
   let state = ref None in
   let rec go elt =
-    let open Lwt.Syntax in
-    let* () = Lwt.pause () in
     match succ_ge elt t with
     | elt' ->
         assert (Elt.compare elt elt' = 0) ;
         state := Some elt ;
-        Lwt.return (Some elt)
+        Some elt
     | exception Gt elt -> go elt
-    | exception Not_found -> Lwt.return None
+    | exception Not_found -> None
   in
   let go_gt () =
     match !state with
@@ -129,9 +127,9 @@ let to_stream t =
     | Some previous_elt -> (
         match succ_gt previous_elt t with
         | elt -> go elt
-        | exception Not_found -> Lwt.return None)
+        | exception Not_found -> None)
   in
-  let next () = Lwt.catch (fun () -> go_gt ()) (fun _ -> Lwt.return None) in
-  Lwt_stream.from next
+  let next () = try go_gt () with _ -> None in
+  Seq.of_dispenser next
 
-let to_stream t = to_stream t.s
+let to_seq t = to_seq t.s

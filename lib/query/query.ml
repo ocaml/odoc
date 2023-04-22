@@ -48,7 +48,7 @@ let collapse_trie_with_poly name t =
 let sort x = x
 
 let find_inter ~shards names =
-  Lwt_list.fold_left_s
+  List.fold_left
     (fun acc shard ->
       let db = shard.Storage.db in
       let r =
@@ -61,8 +61,6 @@ let find_inter ~shards names =
                @@ T.find name' db)
              (regroup names)
       in
-      let open Lwt.Syntax in
-      let+ () = Lwt.pause () in
       Succ.union acc r)
     Succ.empty shards
 
@@ -72,11 +70,9 @@ let find_names ~shards names =
       (fun n -> List.rev (Db.list_of_string (String.lowercase_ascii n)))
       names
   in
-  Lwt_list.fold_left_s
+  List.fold_left
     (fun acc shard ->
       let db_names = shard.Storage.db_names in
-      let open Lwt.Syntax in
-      let+ () = Lwt.pause () in
       let candidates =
         List.map
           (fun name ->
@@ -95,18 +91,15 @@ type t =
   }
 
 let search ~shards query_name query_typ =
-  let open Lwt.Syntax in
-  let* results_name = find_names ~shards query_name in
-  let+ results =
+  let results_name = find_names ~shards query_name in
+  let results =
     match query_typ with
-    | None -> Lwt.return results_name
+    | None -> results_name
     | Some query_typ ->
-        let+ results_typ = find_inter ~shards query_typ in
+        let results_typ = find_inter ~shards query_typ in
         Succ.inter results_name results_typ
   in
   results
-
-open Lwt.Syntax
 
 let match_packages ~packages { Db.Elt.pkg = package, _version; _ } =
   List.exists (String.equal package) packages
@@ -114,15 +107,15 @@ let match_packages ~packages { Db.Elt.pkg = package, _version; _ } =
 let match_packages ~packages results =
   match packages with
   | [] -> results
-  | _ -> Lwt_stream.filter (match_packages ~packages) results
+  | _ -> Seq.filter (match_packages ~packages) results
 
 let api ~shards params =
   let query_name, query_typ, query_typ_arrow, pretty =
     Parser.of_string params.query
   in
-  let* results = search ~shards query_name query_typ in
-  let results = Succ.to_stream results in
+  let results = search ~shards query_name query_typ in
+  let results = Succ.to_seq results in
   let results = match_packages ~packages:params.packages results in
-  let+ results = Lwt_stream.nget params.limit results in
+  let results = List.of_seq @@ Seq.take params.limit results in
   let results = Sort.list query_name query_typ_arrow results in
   pretty, results

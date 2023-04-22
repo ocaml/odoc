@@ -23,6 +23,8 @@ module Elt = struct
       end
     | c -> c
 
+  let compare a b = if a == b then 0 else compare a b
+
   let pkg_link { pkg = pkg, v; _ } =
     Printf.sprintf "https://ocaml.org/p/%s/%s" pkg v
 
