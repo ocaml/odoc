@@ -4,6 +4,13 @@ open Brr
 open Lwt
 open Syntax
 
+let inner_html = El.Prop.jstr (Jstr.v "innerHTML")
+
+let raw_html str =
+  let elt = El.div [] in
+  El.set_prop inner_html (Jstr.v str) elt ;
+  elt
+
 let search input _event =
   let query = El.prop El.Prop.value input |> Jstr.to_string in
   let+ pretty_query, results =
@@ -23,9 +30,7 @@ let search input _event =
               match elt.Db.Elt.doc with
               | None -> []
               | Some doc ->
-                  [ p
-                      [ txt' @@ Format.asprintf "%a" (Tyxml.Html.pp_elt ()) doc
-                      ]
+                  [ raw_html @@ Format.asprintf "%a" (Tyxml.Html.pp_elt ()) doc
                   ])))
         results
   in
