@@ -11,7 +11,10 @@ let raw_html str =
   El.set_prop inner_html (Jstr.v str) elt ;
   elt
 
-let search input _event =
+let latest = ref 0
+let count = ref 0
+
+let search ~id input _event =
   let query = El.prop El.Prop.value input |> Jstr.to_string in
   let+ pretty_query, results =
     Query.(api ~shards:db { query; packages = []; limit = 50 })
@@ -34,14 +37,19 @@ let search input _event =
                   ])))
         results
   in
-
   let results_div =
     Document.find_el_by_id G.document (Jstr.of_string "results") |> Option.get
   in
-  El.set_children results_div results
+  if !latest < id
+  then begin
+    latest := id ;
+    El.set_children results_div results
+  end
 
 let search input event =
-  Js_of_ocaml_lwt.Lwt_js_events.async (fun () -> search input event)
+  let id = !count in
+  count := id + 1 ;
+  Js_of_ocaml_lwt.Lwt_js_events.async (fun () -> search ~id input event)
 
 let main () =
   let search_input =
