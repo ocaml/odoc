@@ -114,6 +114,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
       r
 
   let store ~ho ~hs name typ ~count =
+    let name = List.concat_map list_of_string name in
     let rec go db = function
       | [] -> db
       | _ :: next as name ->

@@ -59,14 +59,14 @@ module Make (E : ELEMENT) = struct
   let rec find path t =
     match t, path with
     | _, [] -> t
-    | Node t, p :: path -> begin
-        match M.find p t.children with
+    | Node node, p :: path -> begin
+        match M.find p node.children with
         | child -> find path child
-        | exception Not_found -> empty ()
+        | exception Not_found -> t
       end
     | Leaf (x :: xs, outcome), y :: ys when E.compare x y = 0 ->
         find ys (Leaf (xs, outcome))
-    | _ -> empty ()
+    | _ -> t
 
   let rec summarize fn z t =
     match t with

@@ -51,7 +51,7 @@ let regroup lst =
 
 module Int_map = Map.Make (Int)
 module Elt_set = Set.Make (Elt)
-module T = Trie.Make (String)
+module T = Trie.Make (Char)
 module Tchar = Trie.Make (Char)
 module Occ = Int_map
 

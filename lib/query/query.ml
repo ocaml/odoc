@@ -8,7 +8,7 @@ let inter_list = function
   | [] -> Succ.all
   | x :: xs -> List.fold_left Succ.inter x xs
 
-let collapse_trie t _acc =
+let collapse_trie t =
   let open Db.Types.T in
   match t with
   | Leaf (_, outcome) -> outcome
@@ -16,7 +16,7 @@ let collapse_trie t _acc =
   | _ -> Occ.empty
 
 let collapse_trie t =
-  let r = collapse_trie t Occ.empty in
+  let r = collapse_trie t in
   let r = Occ.map Succ.of_set r in
   r
 
@@ -55,9 +55,10 @@ let find_inter ~shards names =
         sort @@ inter_list
         @@ List.map
              (fun (name, count) ->
+               let name' = List.concat_map Db.list_of_string name in
                collapse_count ~count
                @@ collapse_trie_with_poly name
-               @@ T.find name db)
+               @@ T.find name' db)
              (regroup names)
       in
       let open Lwt.Syntax in
