@@ -21,7 +21,7 @@ let render_result r =
        ; txt " : "
        ; txt r.str_type
        ]
-  :: list_of_option r.doc
+  :: list_of_option (Option.map Unsafe.data r.doc)
 
 let render ~pretty results =
   match results with

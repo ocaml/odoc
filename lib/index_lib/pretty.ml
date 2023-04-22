@@ -65,8 +65,12 @@ let string_of_doc = function
   | `Heading (_, _, p) -> Some (H.p [ string_of_link_content p ])
   | _ -> None
 
-let string_of_docs lst =
+let html_of_docs lst =
   List.find_map (fun elt -> string_of_doc elt.Odoc_model.Location_.value) lst
+
+let string_of_docs doc =
+  let string_of_html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) in
+  Option.map string_of_html (html_of_docs doc)
 
 let make_root ~module_name ~digest =
   let file = Odoc_file.create_unit ~force_hidden:false module_name in

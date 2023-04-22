@@ -6,34 +6,13 @@ module Make (Storage : Db.Storage.S) = struct
   open Odoc_model
   module ModuleName = Odoc_model.Names.ModuleName
 
-  let copy str = String.init (String.length str) (String.get str)
-
-  let deep_copy (type t) (x : t) : t =
-    let buf = Marshal.(to_bytes x [ No_sharing; Closures ]) in
-    Marshal.from_bytes buf 0
-
-  module Cache_doc = Cache.Make (struct
-    type t = Html_types.li_content_fun Tyxml.Html.elt
-
-    let copy x = deep_copy x
-  end)
-
-  module Cache_name = Cache.Make (struct
-    type t = string
-
-    let copy = copy
-  end)
-
   module Cache = Cache.Make (struct
     type t = string
 
-    let copy = copy
+    let copy str = String.init (String.length str) (String.get str)
   end)
 
-  let clear () =
-    Cache.clear () ;
-    Cache_name.clear () ;
-    Cache_doc.clear ()
+  let clear () = Cache.clear ()
 
   let rec type_size = function
     | Odoc_model.Lang.TypeExpr.Var _ -> 1
@@ -63,23 +42,21 @@ module Make (Storage : Db.Storage.S) = struct
 
   let rec paths ~prefix ~sgn = function
     | Odoc_model.Lang.TypeExpr.Var _ ->
-        let poly = Cache_name.memo "POLY" in
-        [ poly :: Cache_name.memo (Types.string_of_sgn sgn) :: prefix ]
+        let poly = Cache.memo "POLY" in
+        [ poly :: Cache.memo (Types.string_of_sgn sgn) :: prefix ]
     | Any ->
-        let poly = Cache_name.memo "POLY" in
-        [ poly :: Cache_name.memo (Types.string_of_sgn sgn) :: prefix ]
+        let poly = Cache.memo "POLY" in
+        [ poly :: Cache.memo (Types.string_of_sgn sgn) :: prefix ]
     | Arrow (_, a, b) ->
-        let prefix_left = Cache_name.memo "->0" :: prefix in
-        let prefix_right = Cache_name.memo "->1" :: prefix in
+        let prefix_left = Cache.memo "->0" :: prefix in
+        let prefix_right = Cache.memo "->1" :: prefix in
         List.rev_append
           (paths ~prefix:prefix_left ~sgn:(Types.sgn_not sgn) a)
           (paths ~prefix:prefix_right ~sgn b)
     | Constr (name, args) ->
         let name = fullname name in
         let prefix =
-          Cache_name.memo name
-          :: Cache_name.memo (Types.string_of_sgn sgn)
-          :: prefix
+          Cache.memo name :: Cache.memo (Types.string_of_sgn sgn) :: prefix
         in
         begin
           match args with
@@ -88,14 +65,14 @@ module Make (Storage : Db.Storage.S) = struct
               rev_concat
               @@ List.mapi
                    (fun i arg ->
-                     let prefix = Cache_name.memo (string_of_int i) :: prefix in
+                     let prefix = Cache.memo (string_of_int i) :: prefix in
                      paths ~prefix ~sgn arg)
                    args
         end
     | Tuple args ->
         rev_concat
         @@ List.mapi (fun i arg ->
-               let prefix = Cache_name.memo (string_of_int i ^ "*") :: prefix in
+               let prefix = Cache.memo (string_of_int i ^ "*") :: prefix in
                paths ~prefix ~sgn arg)
         @@ args
     | _ -> []
@@ -144,7 +121,7 @@ module Make (Storage : Db.Storage.S) = struct
     let doc_words =
       doc |> Docstring.words_of_docs |> List.sort_uniq String.compare
     in
-    let doc = Option.map Cache_doc.memo (Pretty.string_of_docs doc) in
+    let doc = Option.map Cache.memo (Pretty.string_of_docs doc) in
     let cost =
       String.length full_name + String.length str_type
       + (5 * List.length path)
@@ -180,7 +157,7 @@ module Make (Storage : Db.Storage.S) = struct
     Db.store_name my_full_name str_type ;
 
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
-    Db.store_all str_type (List.map (List.map Cache_name.memo) type_paths)
+    Db.store_all str_type (List.map (List.map Cache.memo) type_paths)
 
   let rec item ~pkg ~path_list ~path =
     let open Odoc_model.Lang in

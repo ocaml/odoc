@@ -30,9 +30,7 @@ let search ~id input _event =
               @
               match elt.Db.Elt.doc with
               | None -> []
-              | Some doc ->
-                  [ raw_html @@ Format.asprintf "%a" (Tyxml.Html.pp_elt ()) doc
-                  ])))
+              | Some doc -> [ raw_html doc ])))
         results
   in
   let results_div =

@@ -1,12 +1,11 @@
 module Storage = Db.Storage
 module Succ = Query.Succ
 module Sort = Query.Sort
-open Lwt.Syntax
 module H = Tyxml.Html
 
 let api ~shards params =
-  let+ r = Query.api ~shards params in
-  Marshal.to_string r []
+  let r = Query.api ~shards params in
+  Lwt.return (Marshal.to_string r [])
 
 open Lwt.Syntax
 

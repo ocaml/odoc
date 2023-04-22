@@ -1,13 +1,11 @@
 module Storage = Db.Storage
 module Succ = Query.Succ
 module Sort = Query.Sort
-
-open Lwt.Syntax
 module H = Tyxml.Html
 
 let api ~shards params =
-  let+ pretty, results = Query.api ~shards params in
-  Ui.render ~pretty results
+  let pretty, results = Query.api ~shards params in
+  Lwt.return (Ui.render ~pretty results)
 
 let api ~shards params =
   if String.trim params.Query.query = ""
@@ -79,9 +77,10 @@ let cors_options =
       response)
 
 let main db_format db_filename cache_max_age =
-  let storage = match db_format with
-  | `ancient -> (module Storage_ancient : Db.Storage.S)
-  | `marshal -> (module Storage_marshal : Db.Storage.S)
+  let storage =
+    match db_format with
+    | `ancient -> (module Storage_ancient : Db.Storage.S)
+    | `marshal -> (module Storage_marshal : Db.Storage.S)
   in
   let module Storage = (val storage) in
   let shards = Storage.load db_filename in
@@ -107,8 +106,9 @@ open Cmdliner
 
 let db_format =
   let doc = "Databse format" in
-  let kind = Arg.enum ["ancient", `ancient; "marshal", `marshal] in
-  Arg.(required & opt (some kind) None & info ["format"] ~docv:"DB_FORMAT" ~doc)
+  let kind = Arg.enum [ "ancient", `ancient; "marshal", `marshal ] in
+  Arg.(
+    required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~doc)
 
 let db_path =
   let doc = "Database filename" in
