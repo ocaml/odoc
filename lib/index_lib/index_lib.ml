@@ -8,7 +8,7 @@ let of_filename f =
 
 let filenames odoc_directory = List.map of_filename (Files.list odoc_directory)
 
-let main ~odoc_directory ~db_filename storage =
+let main ~odoc_directory ~db_filename ~optimize storage =
   let module Storage = (val storage : Storage.S) in
   let module Load_doc = Load_doc.Make (Storage) in
   let module Db = Load_doc.Db in
@@ -16,6 +16,7 @@ let main ~odoc_directory ~db_filename storage =
   let total = List.length files in
   let h = Storage.open_out db_filename in
   let flush () =
+    if optimize then Db.optimize () ;
     Load_doc.clear () ;
     Db.export h
   in

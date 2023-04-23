@@ -10,6 +10,7 @@ val list_of_string : string -> char list
 module type S = sig
   type writer
 
+  val optimize : unit -> unit
   val export : writer -> unit
   val store_all : Elt_set.elt -> String_list_map.key list -> unit
   val store_name : Tchar.M.key list -> Elt_set.elt -> unit

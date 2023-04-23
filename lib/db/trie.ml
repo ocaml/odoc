@@ -83,4 +83,22 @@ module Make (E : ELEMENT) = struct
         in
         it.summary <- sum ;
         sum
+
+  let rec fold_map merge transform t =
+    match t with
+    | Leaf (_, outcome) | Node { summary = Some outcome; _ } ->
+        Some (transform outcome)
+    | Node { leaf; children; _ } ->
+        let leaf =
+          match leaf with
+          | None -> None
+          | Some leaf -> Some (transform leaf)
+        in
+        M.fold
+          (fun _ c acc ->
+            let res = fold_map merge transform c in
+            match acc, res with
+            | None, opt | opt, None -> opt
+            | Some acc, Some res -> Some (merge acc res))
+          children leaf
 end

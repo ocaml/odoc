@@ -34,7 +34,9 @@ let union a b =
   | Empty, _ -> b
   | _, Empty -> a
   | All, _ | _, All -> all
-  | x, y -> { cardinal = a.cardinal + b.cardinal; s = Union (x, y) }
+  | x, y ->
+      let x, y = if a.cardinal < b.cardinal then x, y else y, x in
+      { cardinal = a.cardinal + b.cardinal; s = Union (x, y) }
 
 let succ_ge' elt set = Elt_set.find_first (fun e -> Elt.compare e elt >= 0) set
 let succ_gt' elt set = Elt_set.find_first (fun e -> Elt.compare e elt > 0) set

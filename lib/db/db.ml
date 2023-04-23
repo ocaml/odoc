@@ -7,6 +7,7 @@ let list_of_string s = List.init (String.length s) (String.get s)
 module type S = sig
   type writer
 
+  val optimize : unit -> unit
   val export : writer -> unit
   val store_all : Elt_set.elt -> String_list_map.key list -> unit
   val store_name : Tchar.M.key list -> Elt_set.elt -> unit
@@ -61,15 +62,18 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
       Hocc2.add ho (b, a) r ;
       r
 
-  let export h =
-    load_counter := 0 ;
-    let t = { Storage_toplevel.db = !db; db_names = !db_names } in
+  let optimize () =
     let ho = Hocc2.create 16 in
     let hs = Hset2.create 16 in
     let (_ : Elt_set.t Occ.t option) = T.summarize (occ_merge ~ho ~hs) !db in
     let (_ : Elt_set.t option) =
       Tchar.summarize (elt_set_union ~hs) !db_names
     in
+    ()
+
+  let export h =
+    load_counter := 0 ;
+    let t = { Storage_toplevel.db = !db; db_names = !db_names } in
     Storage.save ~db:h t ;
     db := T.empty () ;
     db_names := Tchar.empty ()
@@ -115,9 +119,10 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
 
   let store ~ho ~hs name typ ~count =
     let name = List.concat_map list_of_string name in
-    let rec go db = function
+    let rec go db name =
+      match name with
       | [] -> db
-      | _ :: next as name ->
+      | _ :: next ->
           incr load_counter ;
           let db = T.add name (candidates_add ~ho ~hs typ ~count) db in
           go db next
