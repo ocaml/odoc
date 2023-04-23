@@ -2,6 +2,7 @@ module Parser = Query_parser
 module Succ = Succ
 module Sort = Sort
 module Storage = Db.Storage
+module Trie = Db.Trie
 open Db.Types
 
 let inter_list xs = List.fold_left Succ.inter Succ.all xs
@@ -12,24 +13,22 @@ let collapse_count ~count occs =
     occs Succ.empty
 
 let collapse_trie ~count t =
-  match Db.Types.T.fold_map Succ.union (collapse_count ~count) t with
+  match Trie.fold_map Succ.union (collapse_count ~count) t with
   | None -> Succ.empty
   | Some occ -> occ
 
 let collapse_triechar t =
-  match Db.Types.Tchar.fold_map Succ.union Succ.of_set t with
+  match Trie.fold_map Succ.union Succ.of_set t with
   | None -> Succ.empty
   | Some s -> s
 
 let collapse_trie_with_poly ~count name t =
   match name with
-  | [ "POLY"; _ ] ->
-      let open T in
-      begin
-        match t with
-        | Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_count ~count s
-        | _ -> Succ.empty
-      end
+  | [ "POLY"; _ ] -> begin
+      match t with
+      | Trie.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_count ~count s
+      | _ -> Succ.empty
+    end
   | _ -> collapse_trie ~count t
 
 let find_inter ~shards names =
@@ -41,7 +40,7 @@ let find_inter ~shards names =
         @@ List.map
              (fun (name, count) ->
                let name' = List.concat_map Db.list_of_string name in
-               collapse_trie_with_poly ~count name @@ T.find name' db)
+               collapse_trie_with_poly ~count name @@ Trie.find name' db)
              (regroup names)
       in
       Succ.union acc r)
@@ -59,7 +58,7 @@ let find_names ~shards names =
       let candidates =
         List.map
           (fun name ->
-            let t = Tchar.find name db_names in
+            let t = Trie.find name db_names in
             collapse_triechar t)
           names
       in

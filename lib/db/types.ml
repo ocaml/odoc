@@ -53,12 +53,10 @@ let regroup lst =
 
 module Int_map = Map.Make (Int)
 module Elt_set = Set.Make (Elt)
-module T = Trie.Make (Char)
-module Tchar = Trie.Make (Char)
 module Occ = Int_map
 
 type candidates = Elt_set.t Occ.t
-type db = candidates T.t
+type db = candidates Trie.t
 
 type sgn =
   | Pos

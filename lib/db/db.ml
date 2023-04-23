@@ -1,5 +1,6 @@
 module Types = Types
 module Storage_toplevel = Storage
+module Trie = Trie
 include Types
 
 let list_of_string s = List.init (String.length s) (String.get s)
@@ -10,7 +11,7 @@ module type S = sig
   val optimize : unit -> unit
   val export : writer -> unit
   val store_all : Elt_set.elt -> String_list_map.key list -> unit
-  val store_name : Tchar.M.key list -> Elt_set.elt -> unit
+  val store_name : char list -> Elt_set.elt -> unit
   val load_counter : int ref
 end
 
@@ -18,8 +19,8 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
   type writer = Storage.writer
 
   let load_counter = ref 0
-  let db = ref (T.empty ())
-  let db_names = ref (Tchar.empty ())
+  let db = ref (Trie.empty ())
+  let db_names = ref (Trie.empty ())
 
   module Hset2 = Hashtbl.Make (struct
     type t = Elt_set.t * Elt_set.t
@@ -65,18 +66,16 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
   let optimize () =
     let ho = Hocc2.create 16 in
     let hs = Hset2.create 16 in
-    let (_ : Elt_set.t Occ.t option) = T.summarize (occ_merge ~ho ~hs) !db in
-    let (_ : Elt_set.t option) =
-      Tchar.summarize (elt_set_union ~hs) !db_names
-    in
+    let (_ : Elt_set.t Occ.t option) = Trie.summarize (occ_merge ~ho ~hs) !db in
+    let (_ : Elt_set.t option) = Trie.summarize (elt_set_union ~hs) !db_names in
     ()
 
   let export h =
     load_counter := 0 ;
     let t = { Storage_toplevel.db = !db; db_names = !db_names } in
     Storage.save ~db:h t ;
-    db := T.empty () ;
-    db_names := Tchar.empty ()
+    db := Trie.empty () ;
+    db_names := Trie.empty ()
 
   module Hset = Hashtbl.Make (struct
     type t = Elt_set.t option
@@ -124,7 +123,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
       | [] -> db
       | _ :: next ->
           incr load_counter ;
-          let db = T.add name (candidates_add ~ho ~hs typ ~count) db in
+          let db = Trie.add name (candidates_add ~ho ~hs typ ~count) db in
           go db next
     in
     db := go !db name
@@ -142,7 +141,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
       | [] -> db
       | _ :: next as name ->
           incr load_counter ;
-          let db = Tchar.add name (set_add ~hs typ) db in
+          let db = Trie.add name (set_add ~hs typ) db in
           go db next
     in
     db_names := go !db_names name
