@@ -1,0 +1,58 @@
+body {
+  margin: 2em;
+}
+
+#search-bar {
+  border: 1px solid black;
+}
+
+#search-bar input#search {
+  margin: 0.5em 1em;
+  font-family: monospace;
+  width: 40%;
+}
+
+.result {
+  max-height: 2rem;
+  overflow: hidden;
+  padding: 0 1em;
+}
+
+.result > code {
+  margin: 0;
+  padding: 0 0;
+  font-size: 1.2em;
+  line-height: 2rem;
+  vertical-align: center;
+  display: inline-block;
+  width: 40%;
+  float: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.result > code em {
+  font-weight: bold;
+  font-style: normal;
+}
+
+.result .docstring {
+  display: inline-block;
+  line-height: 2rem;
+  width: 60%;
+  font-style: italic;
+}
+
+.result .docstring p {
+  margin: 0;
+  padding: 0;
+  padding-left: 2em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.result:nth-child(odd) {
+  background: #eee;
+}
