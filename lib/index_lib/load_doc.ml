@@ -130,7 +130,7 @@ module Make (Storage : Db.Storage.S) = struct
     | Tuple args -> rev_concat @@ List.map (type_paths ~prefix ~sgn) @@ args
     | _ -> []
 
-  let save_item ~pkg ~path_list ~path name type_ doc =
+  let save_item ~pkg ~path_list ~path ~kind name type_ doc =
     let b = Buffer.create 16 in
     let to_b = Format.formatter_of_buffer b in
     Format.fprintf to_b "%a%!"
@@ -157,6 +157,7 @@ module Make (Storage : Db.Storage.S) = struct
     let paths = paths ~prefix:[] ~sgn:Pos type_ in
     let str_type =
       { Db_common.Elt.name = full_name
+      ; kind
       ; cost
       ; type_paths = paths
       ; str_type = Cache.memo str_type
@@ -189,11 +190,20 @@ module Make (Storage : Db.Storage.S) = struct
       when Odoc_model.Names.ValueName.is_internal name ->
         ()
     | Signature.Value { id = `Value (_, name); type_; doc; _ } ->
-        save_item ~pkg ~path_list ~path name type_ doc
+        save_item ~pkg ~path_list ~path ~kind:Val name type_ doc
     | Module (_, mdl) ->
         let name = Paths.Identifier.name mdl.id in
         if name = "Stdlib" then () else module_items ~pkg ~path_list ~path mdl
-    | Type (_, _) -> ()
+    | Type
+        ( _
+        , { id = `Type (_, name) | `CoreType name
+          ; doc
+          ; canonical
+          ; equation
+          ; representation
+          } ) ->
+        let name = name in
+        ()
     | Include icl -> items ~pkg ~path_list ~path icl.expansion.content.items
     | TypeSubstitution _ -> () (* type t = Foo.t = actual_definition *)
     | TypExt _ -> () (* type t = .. *)
