@@ -38,7 +38,7 @@ module Elt = struct
         match String.compare a.name b.name with
         | 0 -> begin
             match compare_pkg a.pkg b.pkg with
-            | 0 -> String.compare a.str_type b.str_type
+            | 0 -> Stdlib.compare a.kind b.kind
             | c -> c
           end
         | c -> c

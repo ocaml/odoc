@@ -4,6 +4,22 @@ let list_of_option = function
   | None -> []
   | Some x -> [ x ]
 
+let render_elt elt =
+  let open Db.Elt in
+  match elt.kind with
+  | Db.Elt.Val { str_type; _ } ->
+      [ txt "val "
+      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
+      ; txt " : "
+      ; txt str_type
+      ]
+  | Db.Elt.Type ->
+      [ txt "type "
+      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
+      ; txt " = "
+      ; txt "WIP"
+      ]
+
 let render_result r =
   let open Db.Types.Elt in
   div
@@ -15,12 +31,7 @@ let render_result r =
         ; span ~a:[ a_class [ "version" ] ] [ txt (snd r.pkg) ]
         ]
     ]
-  :: pre
-       [ txt "val "
-       ; a ~a:[ a_href (link r) ] [ em [ txt r.name ] ]
-       ; txt " : "
-       ; txt r.str_type
-       ]
+  :: pre (render_elt r)
   :: list_of_option (Option.map Unsafe.data r.doc)
 
 let render ~pretty results =

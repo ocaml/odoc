@@ -130,58 +130,80 @@ module Make (Storage : Db.Storage.S) = struct
     | Tuple args -> rev_concat @@ List.map (type_paths ~prefix ~sgn) @@ args
     | _ -> []
 
-  let save_item ~pkg ~path_list ~path ~kind name type_ doc =
-    let b = Buffer.create 16 in
-    let to_b = Format.formatter_of_buffer b in
-    Format.fprintf to_b "%a%!"
-      (Pretty.show_type
-         ~path:(Pretty.fmt_to_string (fun h -> Pretty.pp_path h path))
-         ~parens:false)
-      type_ ;
-    let str_type = Buffer.contents b in
-    Buffer.reset b ;
-    Format.fprintf to_b "%a%s%!" Pretty.pp_path path
-      (Odoc_model.Names.ValueName.to_string name) ;
-    let full_name = Buffer.contents b in
+  let save_doc elt doc =
     let doc_words = Docstring.words_of_docs doc in
-    let doc = Option.map Cache.memo (Pretty.string_of_docs doc) in
+    List.iter (fun word -> Db.store_name (Cache_list.memo word) elt) doc_words
+
+  let save_full_name path_list name elt =
+    let my_full_name =
+      List.rev_append (Db_common.list_of_string name) ('.' :: path_list)
+    in
+    let my_full_name = List.map Char.lowercase_ascii my_full_name in
+    Db.store_name (Cache_list.memo my_full_name) elt
+
+  let generic_cost full_name path str_doc =
+    String.length full_name
+    + (5 * List.length path)
+    + (match str_doc with
+      | None -> 1000
+      | _ -> 0)
+    + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
+
+  let save_val ~pkg ~path_list ~path name type_ doc =
+    let str_type =
+      Format.kasprintf Cache.memo "%a%!"
+        (Pretty.show_type
+           ~path:(Pretty.fmt_to_string (fun h -> Pretty.pp_path h path))
+           ~parens:false)
+        type_
+    in
+    let full_name =
+      Format.asprintf "%a%s%!" Pretty.pp_path path
+        (Odoc_model.Names.ValueName.to_string name)
+    in
+
+    let str_doc = Option.map Cache.memo (Pretty.string_of_docs doc) in
     let cost =
-      String.length full_name + String.length str_type
-      + (5 * List.length path)
-      + type_size type_
-      + (match doc with
-        | None -> 1000
-        | _ -> 0)
-      + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
+      generic_cost full_name path str_doc
+      + String.length str_type + type_size type_
     in
     let paths = paths ~prefix:[] ~sgn:Pos type_ in
-    let str_type =
+    let elt =
       { Db_common.Elt.name = full_name
-      ; kind
+      ; kind = Db_common.Elt.Val { type_paths = paths; str_type }
       ; cost
-      ; type_paths = paths
-      ; str_type = Cache.memo str_type
-      ; doc
+      ; doc = str_doc
       ; pkg
       }
     in
-    List.iter
-      (fun word -> Db.store_name (Cache_list.memo word) str_type)
-      doc_words ;
-    let my_full_name =
-      List.rev_append
-        (Db_common.list_of_string (Odoc_model.Names.ValueName.to_string name))
-        ('.' :: path_list)
-    in
-    let my_full_name = List.map Char.lowercase_ascii my_full_name in
-    Db.store_name (Cache_list.memo my_full_name) str_type ;
+    save_doc elt doc ;
+    save_full_name path_list (Odoc_model.Names.ValueName.to_string name) elt ;
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
-    Db.store_all str_type
+    Db.store_all elt
       (List.map
          (fun xs ->
            let xs = List.concat_map Db_common.list_of_string xs in
            Cache_list.memo xs)
          type_paths)
+
+  let save_type ~pkg ~path_list ~path name doc =
+    let full_name =
+      Format.asprintf "%a%s%!" Pretty.pp_path path
+        (Odoc_model.Names.TypeName.to_string name)
+    in
+
+    let str_doc = Option.map Cache.memo (Pretty.string_of_docs doc) in
+    let cost = generic_cost full_name path str_doc in
+    let elt =
+      { Db_common.Elt.name = full_name
+      ; kind = Db_common.Elt.Type
+      ; cost
+      ; doc = str_doc
+      ; pkg
+      }
+    in
+    save_doc elt doc ;
+    save_full_name path_list (Odoc_model.Names.TypeName.to_string name) elt
 
   let rec item ~pkg ~path_list ~path =
     let open Odoc_model.Lang in
@@ -190,20 +212,12 @@ module Make (Storage : Db.Storage.S) = struct
       when Odoc_model.Names.ValueName.is_internal name ->
         ()
     | Signature.Value { id = `Value (_, name); type_; doc; _ } ->
-        save_item ~pkg ~path_list ~path ~kind:Val name type_ doc
+        save_val ~pkg ~path_list ~path name type_ doc
     | Module (_, mdl) ->
         let name = Paths.Identifier.name mdl.id in
         if name = "Stdlib" then () else module_items ~pkg ~path_list ~path mdl
-    | Type
-        ( _
-        , { id = `Type (_, name) | `CoreType name
-          ; doc
-          ; canonical
-          ; equation
-          ; representation
-          } ) ->
-        let name = name in
-        ()
+    | Type (_, { id = `Type (_, name) | `CoreType name; doc; _ }) ->
+        save_type ~pkg ~path_list ~path name doc
     | Include icl -> items ~pkg ~path_list ~path icl.expansion.content.items
     | TypeSubstitution _ -> () (* type t = Foo.t = actual_definition *)
     | TypExt _ -> () (* type t = .. *)

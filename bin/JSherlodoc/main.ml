@@ -12,6 +12,15 @@ let raw_html str =
 let latest = ref 0
 let count = ref 1
 
+let render_elt elt =
+  let open Db.Elt in
+  let open El in
+  match elt.kind with
+  | Db.Elt.Val { str_type; _ } ->
+      [ txt' "val "; em [ txt' elt.Db.Elt.name ]; txt' " : "; txt' str_type ]
+  | Db.Elt.Type ->
+      [ txt' "type "; em [ txt' elt.Db.Elt.name ]; txt' " : "; txt' "WIP" ]
+
 let search ~id input =
   let query = El.prop El.Prop.value input |> Jstr.to_string in
   let _pretty_query, results =
@@ -24,13 +33,7 @@ let search ~id input =
         El.(
           div
             ~at:At.[ class' (Jstr.of_string "result") ]
-            ([ code
-                 [ txt' "val "
-                 ; em [ txt' elt.Db.Elt.name ]
-                 ; txt' " : "
-                 ; txt' elt.Db.Elt.str_type
-                 ]
-             ]
+            ([ code (render_elt elt) ]
             @
             match elt.Db.Elt.doc with
             | None -> []
