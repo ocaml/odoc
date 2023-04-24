@@ -12,6 +12,31 @@ module Make (Storage : Db.Storage.S) = struct
     let copy str = String.init (String.length str) (String.get str)
   end)
 
+  module Cache_list = struct
+    module H = Hashtbl.Make (struct
+      type t = char list
+
+      let equal = List.equal Char.equal
+      let hash = Hashtbl.hash
+    end)
+
+    let cache = H.create 128
+
+    let memo lst =
+      let rec go lst =
+        try H.find cache lst
+        with Not_found ->
+          let lst =
+            match lst with
+            | [] -> []
+            | x :: xs -> x :: go xs
+          in
+          H.add cache lst lst ;
+          lst
+      in
+      go lst
+  end
+
   let clear () = Cache.clear ()
 
   let rec type_size = function
@@ -118,9 +143,7 @@ module Make (Storage : Db.Storage.S) = struct
     Format.fprintf to_b "%a%s%!" Pretty.pp_path path
       (Odoc_model.Names.ValueName.to_string name) ;
     let full_name = Buffer.contents b in
-    let doc_words =
-      doc |> Docstring.words_of_docs |> List.sort_uniq String.compare
-    in
+    let doc_words = Docstring.words_of_docs doc in
     let doc = Option.map Cache.memo (Pretty.string_of_docs doc) in
     let cost =
       String.length full_name + String.length str_type
@@ -142,11 +165,7 @@ module Make (Storage : Db.Storage.S) = struct
       }
     in
     List.iter
-      (fun word ->
-        let word =
-          word |> Db_common.list_of_string |> List.rev_map Char.lowercase_ascii
-        in
-        Db.store_name word str_type)
+      (fun word -> Db.store_name (Cache_list.memo word) str_type)
       doc_words ;
     let my_full_name =
       List.rev_append
@@ -154,10 +173,14 @@ module Make (Storage : Db.Storage.S) = struct
         ('.' :: path_list)
     in
     let my_full_name = List.map Char.lowercase_ascii my_full_name in
-    Db.store_name my_full_name str_type ;
-
+    Db.store_name (Cache_list.memo my_full_name) str_type ;
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
-    Db.store_all str_type (List.map (List.map Cache.memo) type_paths)
+    Db.store_all str_type
+      (List.map
+         (fun xs ->
+           let xs = List.concat_map Db_common.list_of_string xs in
+           Cache_list.memo xs)
+         type_paths)
 
   let rec item ~pkg ~path_list ~path =
     let open Odoc_model.Lang in

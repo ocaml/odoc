@@ -23,8 +23,8 @@ let words_of_resolved = function
   | r -> words_of_identifier r
 
 let words_of_reference = function
-  | `Root (r, _) -> [r]
-  | `Dot (_, n) -> [n]
+  | `Root (r, _) -> [ r ]
+  | `Dot (_, n) -> [ n ]
   | `Resolved r -> words_of_resolved r
   | r -> words_of_identifier r
 
@@ -53,9 +53,21 @@ and words_of_paragraph lst =
     lst
 
 let words_of_doc = function
-  | `Paragraph p ->  words_of_paragraph p 
+  | `Paragraph p -> words_of_paragraph p
   | `Heading (_, _, p) -> words_of_link_content p
   | _ -> []
 
 let words_of_docs lst =
   List.concat_map (fun elt -> words_of_doc elt.Odoc_model.Location_.value) lst
+  |> List.filter_map (fun word ->
+         let word =
+           word |> Db.list_of_string |> List.rev_map Char.lowercase_ascii
+         in
+         let word =
+           List.filter
+             (fun chr ->
+               (chr >= 'a' && chr <= 'z') || (chr >= '0' && chr <= '9'))
+             word
+         in
+         if word = [] then None else Some word)
+  |> List.sort_uniq (List.compare Char.compare)

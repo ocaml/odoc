@@ -12,7 +12,7 @@ module type S = sig
 
   val optimize : unit -> unit
   val export : writer -> unit
-  val store_all : Elt_set.elt -> String_list_map.key list -> unit
+  val store_all : Elt_set.elt -> char list list -> unit
   val store_name : char list -> Elt_set.elt -> unit
   val load_counter : int ref
 end

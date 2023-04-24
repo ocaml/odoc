@@ -10,7 +10,7 @@ module type S = sig
 
   val optimize : unit -> unit
   val export : writer -> unit
-  val store_all : Elt_set.elt -> String_list_map.key list -> unit
+  val store_all : Elt_set.elt -> char list list -> unit
   val store_name : char list -> Elt_set.elt -> unit
   val load_counter : int ref
 end
@@ -117,7 +117,6 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
       r
 
   let store ~ho ~hs name typ ~count =
-    let name = List.concat_map list_of_string name in
     let rec go db name =
       match name with
       | [] -> db
@@ -133,7 +132,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     let hs = Hset.create 16 in
     List.iter
       (fun (path, count) -> store ~ho ~hs ~count path typ)
-      (regroup paths)
+      (regroup_chars paths)
 
   let store_name name typ =
     let hs = Hset.create 16 in

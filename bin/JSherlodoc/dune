@@ -1,5 +1,4 @@
 (executable
-  (name main)
-  (modes js)
-  (libraries tyxml query storage_js brr))
-
+ (name main)
+ (modes js)
+ (libraries tyxml query storage_js brr))
