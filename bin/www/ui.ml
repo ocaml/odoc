@@ -19,6 +19,8 @@ let render_elt elt =
       ; txt " = "
       ; txt "WIP"
       ]
+  | Db.Elt.Module ->
+      [ txt "module "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
 
 let render_result r =
   let open Db.Types.Elt in

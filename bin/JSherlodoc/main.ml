@@ -20,6 +20,7 @@ let render_elt elt =
       [ txt' "val "; em [ txt' elt.Db.Elt.name ]; txt' " : "; txt' str_type ]
   | Db.Elt.Type ->
       [ txt' "type "; em [ txt' elt.Db.Elt.name ]; txt' " : "; txt' "WIP" ]
+  | Db.Elt.Module -> [ txt' "module "; em [ txt' elt.Db.Elt.name ] ]
 
 let search ~id input =
   let query = El.prop El.Prop.value input |> Jstr.to_string in

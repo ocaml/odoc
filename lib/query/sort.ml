@@ -151,7 +151,7 @@ let list query_name query_type results =
         let type_cost =
           match a.kind with
           | Val { type_paths; _ } -> score_type query_type type_paths
-          | Type -> 0
+          | Type | Module -> 0
         in
         let cost = a.Elt.cost + (2 * name_cost) + (800 * type_cost) in
         { a with cost })

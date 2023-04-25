@@ -141,12 +141,15 @@ module Make (Storage : Db.Storage.S) = struct
     let my_full_name = List.map Char.lowercase_ascii my_full_name in
     Db.store_name (Cache_list.memo my_full_name) elt
 
-  let generic_cost full_name path str_doc =
+  let generic_cost ~is_module full_name path str_doc =
     String.length full_name
     + (5 * List.length path)
-    + (match str_doc with
-      | None -> 1000
-      | _ -> 0)
+    + (if is_module
+       then 0
+       else
+         match str_doc with
+         | None -> 1000
+         | _ -> 0)
     + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
 
   let save_val ~pkg ~path_list ~path name type_ doc =
@@ -164,7 +167,7 @@ module Make (Storage : Db.Storage.S) = struct
 
     let str_doc = Option.map Cache.memo (Pretty.string_of_docs doc) in
     let cost =
-      generic_cost full_name path str_doc
+      generic_cost ~is_module:false full_name path str_doc
       + String.length str_type + type_size type_
     in
     let paths = paths ~prefix:[] ~sgn:Pos type_ in
@@ -186,24 +189,20 @@ module Make (Storage : Db.Storage.S) = struct
            Cache_list.memo xs)
          type_paths)
 
-  let save_type ~pkg ~path_list ~path name doc =
-    let full_name =
-      Format.asprintf "%a%s%!" Pretty.pp_path path
-        (Odoc_model.Names.TypeName.to_string name)
-    in
-
+  let save_named_elt ~pkg ~path_list ~path ~kind name doc =
+    let full_name = Format.asprintf "%a%s%!" Pretty.pp_path path name in
     let str_doc = Option.map Cache.memo (Pretty.string_of_docs doc) in
-    let cost = generic_cost full_name path str_doc in
+    let is_module =
+      match kind with
+      | Db_common.Elt.Module -> true
+      | _ -> false
+    in
+    let cost = generic_cost ~is_module full_name path str_doc in
     let elt =
-      { Db_common.Elt.name = full_name
-      ; kind = Db_common.Elt.Type
-      ; cost
-      ; doc = str_doc
-      ; pkg
-      }
+      { Db_common.Elt.name = full_name; kind; cost; doc = str_doc; pkg }
     in
     save_doc elt doc ;
-    save_full_name path_list (Odoc_model.Names.TypeName.to_string name) elt
+    save_full_name path_list name elt
 
   let rec item ~pkg ~path_list ~path =
     let open Odoc_model.Lang in
@@ -213,11 +212,21 @@ module Make (Storage : Db.Storage.S) = struct
         ()
     | Signature.Value { id = `Value (_, name); type_; doc; _ } ->
         save_val ~pkg ~path_list ~path name type_ doc
-    | Module (_, mdl) ->
+    | Module
+        ( _
+        , ({ id = `Module (_, name) | `Root (_, name)
+           ; doc
+           ; hidden =
+               _ (* TODO : should hidden modules show up in search results ?*)
+           ; _
+           } as mdl) ) ->
+        let name = Odoc_model.Names.ModuleName.to_string name in
+        save_named_elt ~pkg ~path_list ~path ~kind:Module name doc ;
         let name = Paths.Identifier.name mdl.id in
         if name = "Stdlib" then () else module_items ~pkg ~path_list ~path mdl
     | Type (_, { id = `Type (_, name) | `CoreType name; doc; _ }) ->
-        save_type ~pkg ~path_list ~path name doc
+        let name = Odoc_model.Names.TypeName.to_string name in
+        save_named_elt ~pkg ~path_list ~path ~kind:Type name doc
     | Include icl -> items ~pkg ~path_list ~path icl.expansion.content.items
     | TypeSubstitution _ -> () (* type t = Foo.t = actual_definition *)
     | TypExt _ -> () (* type t = .. *)

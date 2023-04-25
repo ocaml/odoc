@@ -1,6 +1,6 @@
 module Elt = struct
   type kind =
-    | Type
+    | Type | Module
     | Val of
         { str_type : string
               (** A type can viewed as a tree.
