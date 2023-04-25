@@ -67,11 +67,11 @@ module Ast_to_sexp = struct
         List
           [ Atom "paragraph"; List (List.map (at.at (inline_element at)) es) ]
     | `Math_block s -> List [ Atom "math_block"; Atom s ]
-    | `Code_block { Ast.lang = None; content; output = None; _ } ->
+    | `Code_block { Ast.meta = None; content; output = None; _ } ->
         List [ Atom "code_block"; at.at str content ]
-    | `Code_block { lang = Some meta; content; output = None; _ } ->
+    | `Code_block { meta = Some meta; content; output = None; _ } ->
         List [ Atom "code_block"; code_block_lang at meta; at.at str content ]
-    | `Code_block { lang = Some meta; content; output = Some output; _ } ->
+    | `Code_block { meta = Some meta; content; output = Some output; _ } ->
         List
           [
             Atom "code_block";
@@ -80,7 +80,7 @@ module Ast_to_sexp = struct
             List
               (List.map (fun v -> nestable_block_element at v.Loc.value) output);
           ]
-    | `Code_block { lang = None; content = _; output = Some _output; _ } ->
+    | `Code_block { meta = None; content = _; output = Some _output; _ } ->
         List [ Atom "code_block_err" ]
     | `Verbatim t -> List [ Atom "verbatim"; Atom t ]
     | `Modules ps -> List [ Atom "modules"; List (List.map (at.at str) ps) ]
