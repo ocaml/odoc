@@ -21,6 +21,10 @@ let render_elt elt =
       ]
   | Db.Elt.Module ->
       [ txt "module "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | Db.Elt.ModuleType ->
+      [ txt "module type "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | Db.Elt.Exception ->
+      [ txt "exception "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
 
 let render_result r =
   let open Db.Types.Elt in

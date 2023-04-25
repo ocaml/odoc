@@ -21,6 +21,8 @@ let render_elt elt =
   | Db.Elt.Type ->
       [ txt' "type "; em [ txt' elt.Db.Elt.name ]; txt' " : "; txt' "WIP" ]
   | Db.Elt.Module -> [ txt' "module "; em [ txt' elt.Db.Elt.name ] ]
+  | Db.Elt.ModuleType -> [ txt' "module type"; em [ txt' elt.Db.Elt.name ] ]
+  | Db.Elt.Exception -> [ txt' "exception "; em [ txt' elt.Db.Elt.name ] ]
 
 let search ~id input =
   let query = El.prop El.Prop.value input |> Jstr.to_string in

@@ -141,10 +141,10 @@ module Make (Storage : Db.Storage.S) = struct
     let my_full_name = List.map Char.lowercase_ascii my_full_name in
     Db.store_name (Cache_list.memo my_full_name) elt
 
-  let generic_cost ~is_module full_name path str_doc =
+  let generic_cost ~ignore_no_doc full_name path str_doc =
     String.length full_name
     + (5 * List.length path)
-    + (if is_module
+    + (if ignore_no_doc
        then 0
        else
          match str_doc with
@@ -167,7 +167,7 @@ module Make (Storage : Db.Storage.S) = struct
 
     let str_doc = Option.map Cache.memo (Pretty.string_of_docs doc) in
     let cost =
-      generic_cost ~is_module:false full_name path str_doc
+      generic_cost ~ignore_no_doc:false full_name path str_doc
       + String.length str_type + type_size type_
     in
     let paths = paths ~prefix:[] ~sgn:Pos type_ in
@@ -192,12 +192,12 @@ module Make (Storage : Db.Storage.S) = struct
   let save_named_elt ~pkg ~path_list ~path ~kind name doc =
     let full_name = Format.asprintf "%a%s%!" Pretty.pp_path path name in
     let str_doc = Option.map Cache.memo (Pretty.string_of_docs doc) in
-    let is_module =
+    let ignore_no_doc =
       match kind with
-      | Db_common.Elt.Module -> true
+      | Db_common.Elt.(Module | ModuleType) -> true
       | _ -> false
     in
-    let cost = generic_cost ~is_module full_name path str_doc in
+    let cost = generic_cost ~ignore_no_doc full_name path str_doc in
     let elt =
       { Db_common.Elt.name = full_name; kind; cost; doc = str_doc; pkg }
     in
@@ -230,12 +230,16 @@ module Make (Storage : Db.Storage.S) = struct
     | Include icl -> items ~pkg ~path_list ~path icl.expansion.content.items
     | TypeSubstitution _ -> () (* type t = Foo.t = actual_definition *)
     | TypExt _ -> () (* type t = .. *)
-    | Exception _ -> ()
+    | Exception { id = `Exception (_, name) | `CoreException name; doc; _ } ->
+        let name = Odoc_model.Names.ExceptionName.to_string name in
+        save_named_elt ~pkg ~path_list ~path ~kind:Exception name doc
     | Class _ -> ()
     | ClassType _ -> ()
     | Comment _ -> ()
     | Open _ -> ()
-    | ModuleType _ -> ()
+    | ModuleType { id = `ModuleType (_, name); doc; _ } ->
+        let name = Odoc_model.Names.ModuleTypeName.to_string name in
+        save_named_elt ~pkg ~path_list ~path ~kind:ModuleType name doc
     | ModuleSubstitution _ -> ()
     | ModuleTypeSubstitution _ -> ()
 
