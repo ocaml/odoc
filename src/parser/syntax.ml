@@ -935,7 +935,7 @@ let rec block_element_list :
           Parse_error.should_not_be_empty ~what:(Token.describe token) location
           |> add_warning input;
 
-        let lang =
+        let meta =
           match meta with
           | None -> None
           | Some (language, tags) -> Some { Ast.language; tags }
@@ -944,7 +944,7 @@ let rec block_element_list :
           accepted_in_all_contexts context
             (`Code_block
               {
-                Ast.lang;
+                Ast.meta;
                 delimiter;
                 content = { value = s; location = v_loc };
                 output;

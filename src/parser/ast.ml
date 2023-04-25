@@ -35,13 +35,13 @@ type 'a row = 'a cell list
 type 'a grid = 'a row list
 type 'a abstract_table = 'a grid * alignment option list option
 
-type code_block_lang = {
+type code_block_meta = {
   language : string with_location;
   tags : string with_location option;
 }
 
 type code_block = {
-  lang : code_block_lang option;
+  meta : code_block_meta option;
   delimiter : string option;
   content : string with_location;
   output : nestable_block_element with_location list option;
