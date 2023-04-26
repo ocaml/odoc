@@ -1,41 +1,40 @@
 open Odoc_model
 
 let words_of_string s = String.split_on_char ' ' s
-
-let words_of_identifier = function
-  | `Class (_, n) -> [ Names.ClassName.to_string n ]
-  | `ClassType (_, n) -> [ Names.ClassTypeName.to_string n ]
-  | `Constructor (_, n) -> [ Names.ConstructorName.to_string n ]
-  | `Exception (_, n) -> [ Names.ExceptionName.to_string n ]
-  | `Extension (_, n) -> [ Names.ExtensionName.to_string n ]
-  | `Field (_, n) -> [ Names.FieldName.to_string n ]
-  | `InstanceVariable (_, n) -> [ Names.InstanceVariableName.to_string n ]
-  | `Label (_, n) -> [ Names.LabelName.to_string n ]
-  | `Method (_, n) -> [ Names.MethodName.to_string n ]
-  | `Module (_, n) -> [ Names.ModuleName.to_string n ]
-  | `ModuleType (_, n) -> [ Names.ModuleTypeName.to_string n ]
-  | `Type (_, n) -> [ Names.TypeName.to_string n ]
-  | `Value (_, n) -> [ Names.ValueName.to_string n ]
-  | _ -> []
+let words_of_identifier id = [ Comment.Identifier.name id ]
 
 let words_of_resolved = function
   | `Identifier v -> words_of_identifier v
-  | r -> words_of_identifier r
+  | r -> words_of_identifier (Comment.Reference.Resolved.identifier r)
 
-let words_of_reference = function
+let words_of_reference : Comment.Reference.t -> _ = function
   | `Root (r, _) -> [ r ]
   | `Dot (_, n) -> [ n ]
   | `Resolved r -> words_of_resolved r
-  | r -> words_of_identifier r
+  | `InstanceVariable (_, name) -> [ Names.InstanceVariableName.to_string name ]
+  | `Module (_, name) -> [ Names.ModuleName.to_string name ]
+  | `ModuleType (_, name) -> [ Names.ModuleTypeName.to_string name ]
+  | `Method (_, name) -> [ Names.MethodName.to_string name ]
+  | `Field (_, name) -> [ Names.FieldName.to_string name ]
+  | `Label (_, name) -> [ Names.LabelName.to_string name ]
+  | `Type (_, name) -> [ Names.TypeName.to_string name ]
+  | `Exception (_, name) -> [ Names.ExceptionName.to_string name ]
+  | `Class (_, name) -> [ Names.ClassName.to_string name ]
+  | `ClassType (_, name) -> [ Names.ClassTypeName.to_string name ]
+  | `Value (_, name) -> [ Names.ValueName.to_string name ]
+  | `Constructor (_, name) -> [ Names.ConstructorName.to_string name ]
+  | `Extension (_, name) -> [ Names.ExtensionName.to_string name ]
 
-let rec words_of_non_link = function
+let rec words_of_non_link : Comment.non_link_inline_element -> _ = function
+  | `Math_span s -> words_of_string s
   | `Space -> []
   | `Word w -> [ w ]
   | `Code_span s -> words_of_string s
   | `Raw_markup (_, _s) -> []
   | `Styled (_, lst) -> words_of_link_content lst
 
-and words_of_element = function
+and words_of_element : Comment.inline_element -> _ = function
+  | `Math_span s -> words_of_string s
   | `Styled (_, lst) -> words_of_paragraph lst
   | `Reference (r, _) -> words_of_reference r
   | `Link (_, r) -> words_of_link_content r
@@ -44,20 +43,20 @@ and words_of_element = function
   | `Code_span s -> words_of_string s
   | `Raw_markup (_, _s) -> []
 
-and words_of_link_content lst =
+and words_of_link_content (lst : Comment.link_content) =
   List.concat_map (fun r -> words_of_non_link r.Odoc_model.Location_.value) lst
 
-and words_of_paragraph lst =
+and words_of_paragraph (lst : Comment.paragraph) =
   List.concat_map
     (fun elt -> words_of_element elt.Odoc_model.Location_.value)
     lst
 
-let words_of_doc = function
+let words_of_doc : Comment.block_element -> _ = function
   | `Paragraph p -> words_of_paragraph p
   | `Heading (_, _, p) -> words_of_link_content p
   | _ -> []
 
-let words_of_docs lst =
+let words_of_docs (lst : Odoc_model.Comment.docs) =
   List.concat_map (fun elt -> words_of_doc elt.Odoc_model.Location_.value) lst
   |> List.filter_map (fun word ->
          let word =

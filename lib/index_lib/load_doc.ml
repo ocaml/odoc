@@ -152,7 +152,7 @@ module Make (Storage : Db.Storage.S) = struct
          | _ -> 0)
     + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
 
-  let save_val ~pkg ~path_list ~path name type_ doc =
+  let save_val ~pkg ~path_list ~path name type_ (doc : Comment.docs) =
     let str_type =
       Format.kasprintf Cache.memo "%a%!"
         (Pretty.show_type
@@ -207,14 +207,17 @@ module Make (Storage : Db.Storage.S) = struct
   let rec item ~pkg ~path_list ~path =
     let open Odoc_model.Lang in
     function
-    | Signature.Value { id = `Value (_, name); _ }
+    | Signature.Value { id = { iv = `Value (_, name); _ }; _ }
       when Odoc_model.Names.ValueName.is_internal name ->
         ()
-    | Signature.Value { id = `Value (_, name); type_; doc; _ } ->
+    | Signature.Value { id = { iv = `Value (_, name); _ }; type_; doc; _ } ->
         save_val ~pkg ~path_list ~path name type_ doc
     | Module
         ( _
-        , ({ id = `Module (_, name) | `Root (_, name)
+        , ({ id =
+               { iv = `Module (_, name) | `Root (_, name) | `Parameter (_, name)
+               ; _
+               }
            ; doc
            ; hidden =
                _ (* TODO : should hidden modules show up in search results ?*)
@@ -224,20 +227,22 @@ module Make (Storage : Db.Storage.S) = struct
         save_named_elt ~pkg ~path_list ~path ~kind:Module name doc ;
         let name = Paths.Identifier.name mdl.id in
         if name = "Stdlib" then () else module_items ~pkg ~path_list ~path mdl
-    | Type (_, { id = `Type (_, name) | `CoreType name; doc; _ }) ->
+    | Type (_, { id = { iv = `Type (_, name) | `CoreType name; _ }; doc; _ }) ->
         let name = Odoc_model.Names.TypeName.to_string name in
         save_named_elt ~pkg ~path_list ~path ~kind:Type name doc
     | Include icl -> items ~pkg ~path_list ~path icl.expansion.content.items
     | TypeSubstitution _ -> () (* type t = Foo.t = actual_definition *)
     | TypExt _ -> () (* type t = .. *)
-    | Exception { id = `Exception (_, name) | `CoreException name; doc; _ } ->
+    | Exception
+        { id = { iv = `Exception (_, name) | `CoreException name; _ }; doc; _ }
+      ->
         let name = Odoc_model.Names.ExceptionName.to_string name in
         save_named_elt ~pkg ~path_list ~path ~kind:Exception name doc
     | Class _ -> ()
     | ClassType _ -> ()
     | Comment _ -> ()
     | Open _ -> ()
-    | ModuleType { id = `ModuleType (_, name); doc; _ } ->
+    | ModuleType { id = { iv = `ModuleType (_, name); _ }; doc; _ } ->
         let name = Odoc_model.Names.ModuleTypeName.to_string name in
         save_named_elt ~pkg ~path_list ~path ~kind:ModuleType name doc
     | ModuleSubstitution _ -> ()
