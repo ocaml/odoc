@@ -60,8 +60,7 @@ let rec unit env t =
 and content env id =
   let open Compilation_unit in
   function
-  | Module m ->
-      let sg = Type_of.signature env m in
+  | Module sg ->
       let sg = signature env (id :> Id.Signature.t) sg in
       Module sg
   | Pack p -> Pack p

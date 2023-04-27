@@ -1682,7 +1682,12 @@ and expansion_of_module_type_expr :
   | Component.ModuleType.TypeOf { t_expansion = Some (Signature sg); _ } ->
       Ok (Signature sg)
   | Component.ModuleType.TypeOf { t_desc; _ } ->
-      Error (`UnexpandedTypeOf t_desc)
+      let cp, strengthen =
+        match t_desc with
+        | ModPath p -> (p, false)
+        | StructInclude p -> (p, true)
+      in
+      expansion_of_module_path env ~strengthen cp
 
 and expansion_of_module_type :
     Env.t ->
