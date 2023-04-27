@@ -3,1133 +3,147 @@ Transparent ascription
 
   $ ocamlc -c -bin-annot test.mli
   $ odoc compile test.cmti
-  $ odoc_print test.odoc -r Basic.P.N
+
+The following modules should be expanded (and be a `"Signature": {}`):
+
+  $ odoc_print test.odoc -r Basic.P.N | jq ".type_ | (.ModuleType.Signature|={})"
   {
-    "id": {
-      "`Module": [
-        {
-          "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Basic" ] },
-            "P"
-          ]
-        },
-        "N"
-      ]
-    },
-    "locs": "None",
-    "doc": [],
-    "type_": {
-      "ModuleType": {
-        "Signature": {
-          "items": [
-            {
-              "Type": [
-                "Ordinary",
-                {
-                  "id": {
-                    "`Type": [
-                      {
-                        "`Module": [
-                          {
-                            "`Module": [
-                              {
-                                "`Module": [
-                                  { "`Root": [ "None", "Test" ] },
-                                  "Basic"
-                                ]
-                              },
-                              "P"
-                            ]
-                          },
-                          "N"
-                        ]
-                      },
-                      "t"
-                    ]
-                  },
-                  "locs": "None",
-                  "doc": [],
-                  "equation": {
-                    "params": [],
-                    "private_": "false",
-                    "manifest": "None",
-                    "constraints": []
-                  },
-                  "representation": "None"
-                }
-              ]
-            }
-          ],
-          "compiled": "true",
-          "doc": []
-        }
-      }
-    },
-    "canonical": "None",
-    "hidden": "false"
+    "ModuleType": {
+      "Signature": {}
+    }
   }
-  $ odoc_print test.odoc -r Nested.P1.N1
+
+  $ odoc_print test.odoc -r Nested.P1.N1 | jq ".type_ | (.ModuleType.Signature|={})"
   {
-    "id": {
-      "`Module": [
-        {
-          "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] },
-            "P1"
-          ]
-        },
-        "N1"
-      ]
-    },
-    "locs": "None",
-    "doc": [],
-    "type_": {
-      "ModuleType": {
-        "Signature": {
-          "items": [
-            {
-              "Module": [
-                "Ordinary",
-                {
-                  "id": {
-                    "`Module": [
-                      {
-                        "`Module": [
-                          {
-                            "`Module": [
-                              {
-                                "`Module": [
-                                  { "`Root": [ "None", "Test" ] },
-                                  "Nested"
-                                ]
-                              },
-                              "P1"
-                            ]
-                          },
-                          "N1"
-                        ]
-                      },
-                      "M"
-                    ]
-                  },
-                  "locs": "None",
-                  "doc": [],
-                  "type_": {
-                    "ModuleType": {
-                      "Path": {
-                        "p_expansion": {
-                          "Some": {
-                            "Signature": {
-                              "items": [
-                                {
-                                  "Type": [
-                                    "Ordinary",
-                                    {
-                                      "id": {
-                                        "`Type": [
-                                          {
-                                            "`Module": [
-                                              {
-                                                "`Module": [
-                                                  {
-                                                    "`Module": [
-                                                      {
-                                                        "`Module": [
-                                                          {
-                                                            "`Root": [
-                                                              "None", "Test"
-                                                            ]
-                                                          },
-                                                          "Nested"
-                                                        ]
-                                                      },
-                                                      "P1"
-                                                    ]
-                                                  },
-                                                  "N1"
-                                                ]
-                                              },
-                                              "M"
-                                            ]
-                                          },
-                                          "t"
-                                        ]
-                                      },
-                                      "locs": "None",
-                                      "doc": [],
-                                      "equation": {
-                                        "params": [],
-                                        "private_": "false",
-                                        "manifest": "None",
-                                        "constraints": []
-                                      },
-                                      "representation": "None"
-                                    }
-                                  ]
-                                }
-                              ],
-                              "compiled": "true",
-                              "doc": []
-                            }
-                          }
-                        },
-                        "p_path": {
-                          "`Resolved": {
-                            "`Identifier": {
-                              "`ModuleType": [
-                                { "`Root": [ "None", "Test" ] },
-                                "T"
-                              ]
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "canonical": "None",
-                  "hidden": "false"
-                }
-              ]
-            }
-          ],
-          "compiled": "true",
-          "doc": []
-        }
-      }
-    },
-    "canonical": "None",
-    "hidden": "false"
+    "ModuleType": {
+      "Signature": {}
+    }
   }
-  $ odoc_print test.odoc -r Nested.P1.N2
+
+  $ odoc_print test.odoc -r Nested.P1.N2 | jq ".type_ | (.ModuleType.Signature|={})"
   {
-    "id": {
-      "`Module": [
-        {
-          "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] },
-            "P1"
-          ]
-        },
-        "N2"
-      ]
-    },
-    "locs": "None",
-    "doc": [],
-    "type_": {
-      "ModuleType": {
-        "Signature": {
-          "items": [
-            {
-              "Type": [
-                "Ordinary",
-                {
-                  "id": {
-                    "`Type": [
-                      {
-                        "`Module": [
-                          {
-                            "`Module": [
-                              {
-                                "`Module": [
-                                  { "`Root": [ "None", "Test" ] },
-                                  "Nested"
-                                ]
-                              },
-                              "P1"
-                            ]
-                          },
-                          "N2"
-                        ]
-                      },
-                      "t"
-                    ]
-                  },
-                  "locs": "None",
-                  "doc": [],
-                  "equation": {
-                    "params": [],
-                    "private_": "false",
-                    "manifest": "None",
-                    "constraints": []
-                  },
-                  "representation": "None"
-                }
-              ]
-            }
-          ],
-          "compiled": "true",
-          "doc": []
-        }
-      }
-    },
-    "canonical": "None",
-    "hidden": "false"
+    "ModuleType": {
+      "Signature": {}
+    }
   }
-  $ odoc_print test.odoc -r Nested.P2.N1
+
+  $ odoc_print test.odoc -r Nested.P2.N1 | jq ".type_ | (.ModuleType.Signature|={})"
   {
-    "id": {
-      "`Module": [
-        {
-          "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] },
-            "P2"
-          ]
-        },
-        "N1"
-      ]
-    },
-    "locs": "None",
-    "doc": [],
-    "type_": {
-      "ModuleType": {
-        "Signature": {
-          "items": [
-            {
-              "Module": [
-                "Ordinary",
-                {
-                  "id": {
-                    "`Module": [
-                      {
-                        "`Module": [
-                          {
-                            "`Module": [
-                              {
-                                "`Module": [
-                                  { "`Root": [ "None", "Test" ] },
-                                  "Nested"
-                                ]
-                              },
-                              "P2"
-                            ]
-                          },
-                          "N1"
-                        ]
-                      },
-                      "M"
-                    ]
-                  },
-                  "locs": "None",
-                  "doc": [],
-                  "type_": {
-                    "ModuleType": {
-                      "Path": {
-                        "p_expansion": {
-                          "Some": {
-                            "Signature": {
-                              "items": [
-                                {
-                                  "Type": [
-                                    "Ordinary",
-                                    {
-                                      "id": {
-                                        "`Type": [
-                                          {
-                                            "`Module": [
-                                              {
-                                                "`Module": [
-                                                  {
-                                                    "`Module": [
-                                                      {
-                                                        "`Module": [
-                                                          {
-                                                            "`Root": [
-                                                              "None", "Test"
-                                                            ]
-                                                          },
-                                                          "Nested"
-                                                        ]
-                                                      },
-                                                      "P2"
-                                                    ]
-                                                  },
-                                                  "N1"
-                                                ]
-                                              },
-                                              "M"
-                                            ]
-                                          },
-                                          "t"
-                                        ]
-                                      },
-                                      "locs": "None",
-                                      "doc": [],
-                                      "equation": {
-                                        "params": [],
-                                        "private_": "false",
-                                        "manifest": "None",
-                                        "constraints": []
-                                      },
-                                      "representation": "None"
-                                    }
-                                  ]
-                                }
-                              ],
-                              "compiled": "true",
-                              "doc": []
-                            }
-                          }
-                        },
-                        "p_path": {
-                          "`Resolved": {
-                            "`Identifier": {
-                              "`ModuleType": [
-                                { "`Root": [ "None", "Test" ] },
-                                "T"
-                              ]
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "canonical": "None",
-                  "hidden": "false"
-                }
-              ]
-            }
-          ],
-          "compiled": "true",
-          "doc": []
-        }
-      }
-    },
-    "canonical": "None",
-    "hidden": "false"
+    "ModuleType": {
+      "Signature": {}
+    }
   }
-  $ odoc_print test.odoc -r Nested.P2.N2
+
+  $ odoc_print test.odoc -r Nested.P2.N2 | jq ".type_ | (.ModuleType.Signature|={})"
   {
-    "id": {
-      "`Module": [
-        {
-          "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Nested" ] },
-            "P2"
-          ]
-        },
-        "N2"
-      ]
-    },
-    "locs": "None",
-    "doc": [],
-    "type_": {
-      "ModuleType": {
-        "Signature": {
-          "items": [
-            {
-              "Type": [
-                "Ordinary",
-                {
-                  "id": {
-                    "`Type": [
-                      {
-                        "`Module": [
-                          {
-                            "`Module": [
-                              {
-                                "`Module": [
-                                  { "`Root": [ "None", "Test" ] },
-                                  "Nested"
-                                ]
-                              },
-                              "P2"
-                            ]
-                          },
-                          "N2"
-                        ]
-                      },
-                      "t"
-                    ]
-                  },
-                  "locs": "None",
-                  "doc": [],
-                  "equation": {
-                    "params": [],
-                    "private_": "false",
-                    "manifest": "None",
-                    "constraints": []
-                  },
-                  "representation": "None"
-                }
-              ]
-            }
-          ],
-          "compiled": "true",
-          "doc": []
-        }
-      }
-    },
-    "canonical": "None",
-    "hidden": "false"
+    "ModuleType": {
+      "Signature": {}
+    }
   }
-  $ odoc_print test.odoc -r Via_alias.P.N
+
+  $ odoc_print test.odoc -r Via_alias.P.N | jq ".type_ | (.ModuleType.Signature|={})"
   {
-    "id": {
-      "`Module": [
-        {
-          "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Via_alias" ] },
-            "P"
-          ]
-        },
-        "N"
-      ]
-    },
-    "locs": "None",
-    "doc": [],
-    "type_": {
-      "ModuleType": {
-        "Signature": {
-          "items": [
-            {
-              "Type": [
-                "Ordinary",
-                {
-                  "id": {
-                    "`Type": [
-                      {
-                        "`Module": [
-                          {
-                            "`Module": [
-                              {
-                                "`Module": [
-                                  { "`Root": [ "None", "Test" ] },
-                                  "Via_alias"
-                                ]
-                              },
-                              "P"
-                            ]
-                          },
-                          "N"
-                        ]
-                      },
-                      "t"
-                    ]
-                  },
-                  "locs": "None",
-                  "doc": [],
-                  "equation": {
-                    "params": [],
-                    "private_": "false",
-                    "manifest": {
-                      "Some": {
-                        "Constr": [
-                          {
-                            "`Resolved": {
-                              "`Type": [
-                                {
-                                  "`Alias": [
-                                    {
-                                      "`Identifier": {
-                                        "`Module": [
-                                          { "`Root": [ "None", "Test" ] },
-                                          "Int"
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "`Identifier": [
-                                        {
-                                          "`Module": [
-                                            {
-                                              "`Module": [
-                                                {
-                                                  "`Module": [
-                                                    {
-                                                      "`Root": [
-                                                        "None", "Test"
-                                                      ]
-                                                    },
-                                                    "Via_alias"
-                                                  ]
-                                                },
-                                                "P"
-                                              ]
-                                            },
-                                            "M"
-                                          ]
-                                        },
-                                        "false"
-                                      ]
-                                    }
-                                  ]
-                                },
-                                "t"
-                              ]
-                            }
-                          },
-                          []
-                        ]
-                      }
-                    },
-                    "constraints": []
-                  },
-                  "representation": "None"
-                }
-              ]
-            }
-          ],
-          "compiled": "true",
-          "doc": []
-        }
-      }
-    },
-    "canonical": "None",
-    "hidden": "false"
+    "ModuleType": {
+      "Signature": {}
+    }
   }
-  $ odoc_print test.odoc -r Cascade.P.N1
+
+The following modules expressions should remain as they are typed:
+(the `t_expansion` should be `Some {}`)
+
+  $ odoc_print test.odoc -r Cascade.P.N1 | jq ".type_ | (.ModuleType.TypeOf.t_expansion.Some|={})"
   {
-    "id": {
-      "`Module": [
-        {
-          "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Cascade" ] },
-            "P"
-          ]
-        },
-        "N1"
-      ]
-    },
-    "locs": "None",
-    "doc": [],
-    "type_": {
-      "ModuleType": {
-        "TypeOf": {
-          "t_desc": {
-            "ModPath": {
-              "`Resolved": {
-                "`Identifier": {
-                  "`Module": [
-                    {
-                      "`Module": [
-                        {
-                          "`Module": [
-                            { "`Root": [ "None", "Test" ] },
-                            "Cascade"
-                          ]
-                        },
-                        "P"
-                      ]
-                    },
-                    "O"
-                  ]
-                }
-              }
-            }
-          },
-          "t_expansion": {
-            "Some": {
-              "Signature": {
-                "items": [
-                  {
-                    "Module": [
-                      "Ordinary",
-                      {
-                        "id": {
-                          "`Module": [
-                            {
-                              "`Module": [
-                                {
-                                  "`Module": [
-                                    {
-                                      "`Module": [
-                                        { "`Root": [ "None", "Test" ] },
-                                        "Cascade"
-                                      ]
-                                    },
-                                    "P"
-                                  ]
-                                },
-                                "N1"
-                              ]
-                            },
-                            "I"
-                          ]
-                        },
-                        "locs": "None",
-                        "doc": [],
-                        "type_": {
-                          "ModuleType": {
-                            "Signature": {
-                              "items": [
-                                {
-                                  "Type": [
-                                    "Ordinary",
-                                    {
-                                      "id": {
-                                        "`Type": [
-                                          {
-                                            "`Module": [
-                                              {
-                                                "`Module": [
-                                                  {
-                                                    "`Module": [
-                                                      {
-                                                        "`Module": [
-                                                          {
-                                                            "`Root": [
-                                                              "None", "Test"
-                                                            ]
-                                                          },
-                                                          "Cascade"
-                                                        ]
-                                                      },
-                                                      "P"
-                                                    ]
-                                                  },
-                                                  "N1"
-                                                ]
-                                              },
-                                              "I"
-                                            ]
-                                          },
-                                          "t"
-                                        ]
-                                      },
-                                      "locs": "None",
-                                      "doc": [],
-                                      "equation": {
-                                        "params": [],
-                                        "private_": "false",
-                                        "manifest": "None",
-                                        "constraints": []
-                                      },
-                                      "representation": "None"
-                                    }
-                                  ]
-                                }
-                              ],
-                              "compiled": "true",
-                              "doc": []
-                            }
-                          }
-                        },
-                        "canonical": "None",
-                        "hidden": "false"
-                      }
-                    ]
-                  }
-                ],
-                "compiled": "true",
-                "doc": []
-              }
-            }
-          }
-        }
-      }
-    },
-    "canonical": "None",
-    "hidden": "false"
-  }
-  $ odoc_print test.odoc -r Cascade.P.N2
-  {
-    "id": {
-      "`Module": [
-        {
-          "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Test" ] }, "Cascade" ] },
-            "P"
-          ]
-        },
-        "N2"
-      ]
-    },
-    "locs": "None",
-    "doc": [],
-    "type_": {
-      "ModuleType": {
-        "TypeOf": {
-          "t_desc": {
-            "ModPath": {
-              "`Resolved": {
+    "ModuleType": {
+      "TypeOf": {
+        "t_desc": {
+          "ModPath": {
+            "`Resolved": {
+              "`Identifier": {
                 "`Module": [
                   {
-                    "`Identifier": {
-                      "`Module": [
-                        {
-                          "`Module": [
-                            {
-                              "`Module": [
-                                { "`Root": [ "None", "Test" ] },
-                                "Cascade"
-                              ]
-                            },
-                            "P"
-                          ]
-                        },
-                        "O"
-                      ]
-                    }
+                    "`Module": [
+                      {
+                        "`Module": [
+                          {
+                            "`Root": [
+                              "None",
+                              "Test"
+                            ]
+                          },
+                          "Cascade"
+                        ]
+                      },
+                      "P"
+                    ]
                   },
-                  "I"
+                  "O"
                 ]
               }
             }
-          },
-          "t_expansion": {
-            "Some": {
-              "Signature": {
-                "items": [
-                  {
-                    "Type": [
-                      "Ordinary",
-                      {
-                        "id": {
-                          "`Type": [
-                            {
-                              "`Module": [
-                                {
-                                  "`Module": [
-                                    {
-                                      "`Module": [
-                                        { "`Root": [ "None", "Test" ] },
-                                        "Cascade"
-                                      ]
-                                    },
-                                    "P"
-                                  ]
-                                },
-                                "N2"
-                              ]
-                            },
-                            "t"
-                          ]
-                        },
-                        "locs": "None",
-                        "doc": [],
-                        "equation": {
-                          "params": [],
-                          "private_": "false",
-                          "manifest": "None",
-                          "constraints": []
-                        },
-                        "representation": "None"
-                      }
-                    ]
-                  }
-                ],
-                "compiled": "true",
-                "doc": []
-              }
-            }
           }
+        },
+        "t_expansion": {
+          "Some": {}
         }
       }
-    },
-    "canonical": "None",
-    "hidden": "false"
+    }
   }
-  $ odoc_print test.odoc -r In_functor_parameter.P.G
+
+  $ odoc_print test.odoc -r Cascade.P.N2 | jq ".type_ | (.ModuleType.TypeOf.t_expansion.Some|={})"
   {
-    "id": {
-      "`Module": [
-        {
-          "`Module": [
-            {
+    "ModuleType": {
+      "TypeOf": {
+        "t_desc": {
+          "ModPath": {
+            "`Resolved": {
               "`Module": [
-                { "`Root": [ "None", "Test" ] },
-                "In_functor_parameter"
-              ]
-            },
-            "P"
-          ]
-        },
-        "G"
-      ]
-    },
-    "locs": "None",
-    "doc": [],
-    "type_": {
-      "ModuleType": {
-        "Functor": [
-          {
-            "Named": {
-              "id": {
-                "`Parameter": [
-                  {
+                {
+                  "`Identifier": {
                     "`Module": [
                       {
                         "`Module": [
                           {
                             "`Module": [
-                              { "`Root": [ "None", "Test" ] },
-                              "In_functor_parameter"
+                              {
+                                "`Root": [
+                                  "None",
+                                  "Test"
+                                ]
+                              },
+                              "Cascade"
                             ]
                           },
                           "P"
                         ]
                       },
-                      "G"
+                      "O"
                     ]
-                  },
-                  "X"
-                ]
-              },
-              "expr": {
-                "Signature": {
-                  "items": [
-                    {
-                      "Type": [
-                        "Ordinary",
-                        {
-                          "id": {
-                            "`Type": [
-                              {
-                                "`Parameter": [
-                                  {
-                                    "`Module": [
-                                      {
-                                        "`Module": [
-                                          {
-                                            "`Module": [
-                                              { "`Root": [ "None", "Test" ] },
-                                              "In_functor_parameter"
-                                            ]
-                                          },
-                                          "P"
-                                        ]
-                                      },
-                                      "G"
-                                    ]
-                                  },
-                                  "X"
-                                ]
-                              },
-                              "t"
-                            ]
-                          },
-                          "locs": "None",
-                          "doc": [],
-                          "equation": {
-                            "params": [],
-                            "private_": "false",
-                            "manifest": "None",
-                            "constraints": []
-                          },
-                          "representation": "None"
-                        }
-                      ]
-                    },
-                    {
-                      "Value": {
-                        "id": {
-                          "`Value": [
-                            {
-                              "`Parameter": [
-                                {
-                                  "`Module": [
-                                    {
-                                      "`Module": [
-                                        {
-                                          "`Module": [
-                                            { "`Root": [ "None", "Test" ] },
-                                            "In_functor_parameter"
-                                          ]
-                                        },
-                                        "P"
-                                      ]
-                                    },
-                                    "G"
-                                  ]
-                                },
-                                "X"
-                              ]
-                            },
-                            "plus"
-                          ]
-                        },
-                        "locs": "None",
-                        "doc": [],
-                        "type_": {
-                          "Arrow": [
-                            "None",
-                            {
-                              "Constr": [
-                                {
-                                  "`Resolved": {
-                                    "`Identifier": {
-                                      "`Type": [
-                                        {
-                                          "`Parameter": [
-                                            {
-                                              "`Module": [
-                                                {
-                                                  "`Module": [
-                                                    {
-                                                      "`Module": [
-                                                        {
-                                                          "`Root": [
-                                                            "None", "Test"
-                                                          ]
-                                                        },
-                                                        "In_functor_parameter"
-                                                      ]
-                                                    },
-                                                    "P"
-                                                  ]
-                                                },
-                                                "G"
-                                              ]
-                                            },
-                                            "X"
-                                          ]
-                                        },
-                                        "t"
-                                      ]
-                                    }
-                                  }
-                                },
-                                []
-                              ]
-                            },
-                            {
-                              "Arrow": [
-                                "None",
-                                {
-                                  "Constr": [
-                                    {
-                                      "`Resolved": {
-                                        "`Identifier": {
-                                          "`Type": [
-                                            {
-                                              "`Parameter": [
-                                                {
-                                                  "`Module": [
-                                                    {
-                                                      "`Module": [
-                                                        {
-                                                          "`Module": [
-                                                            {
-                                                              "`Root": [
-                                                                "None", "Test"
-                                                              ]
-                                                            },
-                                                            "In_functor_parameter"
-                                                          ]
-                                                        },
-                                                        "P"
-                                                      ]
-                                                    },
-                                                    "G"
-                                                  ]
-                                                },
-                                                "X"
-                                              ]
-                                            },
-                                            "t"
-                                          ]
-                                        }
-                                      }
-                                    },
-                                    []
-                                  ]
-                                },
-                                {
-                                  "Constr": [
-                                    {
-                                      "`Resolved": {
-                                        "`Identifier": {
-                                          "`Type": [
-                                            {
-                                              "`Parameter": [
-                                                {
-                                                  "`Module": [
-                                                    {
-                                                      "`Module": [
-                                                        {
-                                                          "`Module": [
-                                                            {
-                                                              "`Root": [
-                                                                "None", "Test"
-                                                              ]
-                                                            },
-                                                            "In_functor_parameter"
-                                                          ]
-                                                        },
-                                                        "P"
-                                                      ]
-                                                    },
-                                                    "G"
-                                                  ]
-                                                },
-                                                "X"
-                                              ]
-                                            },
-                                            "t"
-                                          ]
-                                        }
-                                      }
-                                    },
-                                    []
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        "value": "Abstract"
-                      }
-                    }
-                  ],
-                  "compiled": "true",
-                  "doc": []
-                }
-              }
-            }
-          },
-          {
-            "Signature": {
-              "items": [
-                {
-                  "Type": [
-                    "Ordinary",
-                    {
-                      "id": {
-                        "`Type": [
-                          {
-                            "`Result": {
-                              "`Module": [
-                                {
-                                  "`Module": [
-                                    {
-                                      "`Module": [
-                                        { "`Root": [ "None", "Test" ] },
-                                        "In_functor_parameter"
-                                      ]
-                                    },
-                                    "P"
-                                  ]
-                                },
-                                "G"
-                              ]
-                            }
-                          },
-                          "t"
-                        ]
-                      },
-                      "locs": "None",
-                      "doc": [],
-                      "equation": {
-                        "params": [],
-                        "private_": "false",
-                        "manifest": "None",
-                        "constraints": []
-                      },
-                      "representation": "None"
-                    }
-                  ]
-                }
-              ],
-              "compiled": "true",
-              "doc": []
+                  }
+                },
+                "I"
+              ]
             }
           }
-        ]
+        },
+        "t_expansion": {
+          "Some": {}
+        }
       }
-    },
-    "canonical": "None",
-    "hidden": "false"
+    }
   }
+
+  $ odoc_print test.odoc -r In_functor_parameter.P.G | jq ".type_ | (.ModuleType.Functor|=[]) | (.ModuleType.TypeOf.t_expansion.Some|={})"
+  {
+    "ModuleType": {
+      "Functor": [],
+      "TypeOf": {
+        "t_expansion": {
+          "Some": {}
+        }
+      }
+    }
+  }
+
   $ odoc link test.odoc
   $ odoc html-generate test.odocl -o html
   $ odoc support-files -o html
