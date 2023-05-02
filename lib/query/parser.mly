@@ -11,6 +11,7 @@
 %start main
 %type<Query_ast.t> main
 
+%left EOF
 %%
 
 separated_twolong_list(sep, elt):
@@ -49,5 +50,7 @@ typ0:
   | PARENS_OPEN t=typ PARENS_CLOSE { t }
   | PARENS_OPEN t=typ EOF { t }
   ;
+
+(* ( int EOF EOF *)
 
 typ_list: ts=separated_twolong_list(COMMA, typ) { ts } ;

@@ -7,24 +7,60 @@ let list_of_option = function
 let render_elt elt =
   let open Db.Elt in
   match elt.kind with
-  | Db.Elt.Val { str_type; _ } ->
+  | Val { str_type; _ } ->
       [ txt "val "
       ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
       ; txt " : "
       ; txt str_type
       ]
-  | Db.Elt.Type ->
+  | Doc ->
+      [ txt "comment "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | TypeDecl { html = type_decl } ->
       [ txt "type "
       ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
       ; txt " = "
-      ; txt "WIP"
+      ; Unsafe.data type_decl
       ]
-  | Db.Elt.Module ->
+  | Module ->
       [ txt "module "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
-  | Db.Elt.ModuleType ->
-      [ txt "module type "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
-  | Db.Elt.Exception ->
+  | Exception ->
       [ txt "exception "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | Class_type ->
+      [ txt "class type "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | Method ->
+      [ txt "method "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | Class ->
+      [ txt "class "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | TypeExtension ->
+      [ txt "type extension "
+      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
+      ]
+  | ExtensionConstructor ->
+      [ txt "ext constructor "
+      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
+      ]
+  | ModuleType ->
+      [ txt "module type "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | Constructor ->
+      [ txt "constructor "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | Field ->
+      [ txt "field "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | FunctorParameter ->
+      [ txt "functor param "
+      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
+      ]
+  | ModuleSubstitution ->
+      [ txt "module subst "
+      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
+      ]
+  | ModuleTypeSubstitution ->
+      [ txt "module type subst "
+      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
+      ]
+  | InstanceVariable ->
+      [ txt "instance variable "
+      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
+      ]
 
 let render_result r =
   let open Db.Types.Elt in

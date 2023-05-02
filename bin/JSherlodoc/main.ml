@@ -16,13 +16,30 @@ let render_elt elt =
   let open Db.Elt in
   let open El in
   match elt.kind with
-  | Db.Elt.Val { str_type; _ } ->
+  | Val { str_type; _ } ->
       [ txt' "val "; em [ txt' elt.Db.Elt.name ]; txt' " : "; txt' str_type ]
-  | Db.Elt.Type ->
-      [ txt' "type "; em [ txt' elt.Db.Elt.name ]; txt' " : "; txt' "WIP" ]
-  | Db.Elt.Module -> [ txt' "module "; em [ txt' elt.Db.Elt.name ] ]
-  | Db.Elt.ModuleType -> [ txt' "module type"; em [ txt' elt.Db.Elt.name ] ]
-  | Db.Elt.Exception -> [ txt' "exception "; em [ txt' elt.Db.Elt.name ] ]
+  | Doc -> [ txt' "Doc "; em [ txt' elt.Db.Elt.name ] ]
+  | TypeDecl { html = type_decl } ->
+      [ txt' "type "; em [ txt' elt.Db.Elt.name ]; txt' " : "; txt' type_decl ]
+  | Module -> [ txt' "Module "; em [ txt' elt.Db.Elt.name ] ]
+  | Exception -> [ txt' "Exception "; em [ txt' elt.Db.Elt.name ] ]
+  | Class_type -> [ txt' "Class_type "; em [ txt' elt.Db.Elt.name ] ]
+  | Method -> [ txt' "Method "; em [ txt' elt.Db.Elt.name ] ]
+  | Class -> [ txt' "Class "; em [ txt' elt.Db.Elt.name ] ]
+  | TypeExtension -> [ txt' "TypeExtension "; em [ txt' elt.Db.Elt.name ] ]
+  | ExtensionConstructor ->
+      [ txt' "ExtensionConstructor "; em [ txt' elt.Db.Elt.name ] ]
+  | ModuleType -> [ txt' "ModuleType "; em [ txt' elt.Db.Elt.name ] ]
+  | Constructor -> [ txt' "Constructor "; em [ txt' elt.Db.Elt.name ] ]
+  | Field -> [ txt' "Field "; em [ txt' elt.Db.Elt.name ] ]
+  | FunctorParameter ->
+      [ txt' "FunctorParameter "; em [ txt' elt.Db.Elt.name ] ]
+  | ModuleSubstitution ->
+      [ txt' "ModuleSubstitution "; em [ txt' elt.Db.Elt.name ] ]
+  | ModuleTypeSubstitution ->
+      [ txt' "ModuleTypeSubstitution "; em [ txt' elt.Db.Elt.name ] ]
+  | InstanceVariable ->
+      [ txt' "InstanceVariable "; em [ txt' elt.Db.Elt.name ] ]
 
 let search ~id input =
   let query = El.prop El.Prop.value input |> Jstr.to_string in

@@ -1,3 +1,9 @@
 (executable
  (name index)
- (libraries cmdliner index_lib storage_ancient storage_marshal storage_js))
+ (libraries
+  odoc.search
+  cmdliner
+  index_lib
+  storage_ancient
+  storage_marshal
+  storage_js))

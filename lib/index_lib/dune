@@ -5,6 +5,7 @@
   fpath
   tyxml
   opam-core
+  odoc.search
   odoc.loader
   odoc.model
   odoc.xref2

@@ -12,7 +12,7 @@ depends: [
   "ancient"
   "dream"
   "fpath"
-  "odoc" {= "2.2.0"}
+  "odoc" {= "2.1.0"}
   "opam-core"
   "tyxml"
 ]

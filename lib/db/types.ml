@@ -1,9 +1,21 @@
 module Elt = struct
   type kind =
-    | Type
+    | Doc
+    | TypeDecl of { html : string }
     | Module
-    | ModuleType
     | Exception
+    | Class_type
+    | Method
+    | Class
+    | TypeExtension
+    | ExtensionConstructor
+    | ModuleType
+    | Constructor
+    | Field
+    | FunctorParameter
+    | ModuleSubstitution
+    | ModuleTypeSubstitution
+    | InstanceVariable
     | Val of
         { str_type : string
               (** A type can viewed as a tree.
