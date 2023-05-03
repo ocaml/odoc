@@ -1,0 +1,2 @@
+(cram
+ (deps %{bin:odoc} %{bin:sherlodoc_index} ../../bin/JSherlodoc/main.bc.js))
