@@ -8,11 +8,7 @@ let regroup lst =
          String_list_map.add s (count + 1) acc)
        String_list_map.empty lst
 
-module Char_list_map = Map.Make (struct
-  type t = char list
 
-  let compare = List.compare Char.compare
-end)
 
 let regroup_chars lst =
   Char_list_map.bindings
