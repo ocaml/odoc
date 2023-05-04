@@ -2,9 +2,6 @@ open Odoc_model
 module ModuleName = Odoc_model.Names.ModuleName
 module H = Tyxml.Html
 
-
-
-
 let show_module_name h md =
   Format.fprintf h "%s" (Odoc_model.Names.ModuleName.to_string md)
 
@@ -71,4 +68,3 @@ let show_type_name_verbose h : Paths.Path.Type.t -> _ = function
         (Resolved.identifier (t :> Resolved.t))
   | `Identifier (_, b) -> Format.fprintf h "IDENT%b" b
   | `Dot (mdl, x) -> Format.fprintf h "%a.%s" show_module_t mdl x
-

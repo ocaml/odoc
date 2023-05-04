@@ -1,6 +1,11 @@
 open Common
 
 module Elt = struct
+  type displayable =
+    { html : string
+    ; txt : string
+    }
+
   type kind =
     | Doc
     | TypeDecl of { html : string }
@@ -19,7 +24,8 @@ module Elt = struct
     | ModuleTypeSubstitution
     | InstanceVariable
     | Val of
-        { str_type : string
+        { type_ : displayable
+        ; type_paths : string list list
               (** A type can viewed as a tree.
             [a -> b -> c * d] is the following tree :
             {[ ->
@@ -30,13 +36,12 @@ module Elt = struct
                     |- c
                     |- d 
             ]} 
-            [type_paths] is the list of paths from root to leaf in the tree of 
+            {!type_paths} is the list of paths from root to leaf in the tree of 
             the type. There is an annotation to indicate the child's position.
             Here it would be :
             [ [["->";"0"; "a"];["->"; "1"; "->"; "0"; "b"]; ...] ]
             
             It is used to sort results. *)
-        ; type_paths : string list list
         }
 
   type package =
@@ -48,7 +53,7 @@ module Elt = struct
     { cost : int
     ; name : string
     ; kind : kind
-    ; doc : string option
+    ; doc : displayable option
     ; pkg : package option
     }
 

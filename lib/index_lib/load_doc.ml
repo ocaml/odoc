@@ -186,10 +186,11 @@ module Make (Storage : Db.Storage.S) = struct
         Db_common.Elt.TypeDecl { html }
     | Module -> Db_common.Elt.ModuleType
     | Value { value = _; type_ } ->
-        let str_type = Render.html_of_type type_ in
         let paths = paths ~prefix:[] ~sgn:Pos type_ in
-        let str_type = string_of_html str_type in
-        Val { str_type; type_paths = paths }
+        let html = type_ |> Render.html_of_type |> string_of_html in
+        let txt = Render.text_of_type type_ in
+        let type_ = Db_common.Elt.{ html; txt } in
+        Val { type_; type_paths = paths }
     | Doc _ -> Doc
     | Exception _ -> Exception
     | Class_type _ -> Class_type
@@ -233,7 +234,7 @@ module Make (Storage : Db.Storage.S) = struct
     | ModuleTypeSubstitution -> ()
     | InstanceVariable _ -> ()
 
-  let entry
+  let register_entry
       Odoc_search.Index_db.
         { id : Odoc_model.Paths.Identifier.Any.t
         ; doc : Odoc_model.Comment.docs
@@ -244,8 +245,9 @@ module Make (Storage : Db.Storage.S) = struct
     let full_name =
       id |> Odoc_model.Paths.Identifier.fullname |> String.concat "."
     in
-    let doc = doc |> Render.html_of_doc |> string_of_html |> Option.some
-    and doc_txt = Render.text_of_doc doc in
+    let html = doc |> Render.html_of_doc |> string_of_html
+    and txt = Render.text_of_doc doc in
+    let doc = Some Db_common.Elt.{ html; txt } in
     let kind' = convert_kind kind in
 
     let ignore_no_doc =
@@ -257,11 +259,11 @@ module Make (Storage : Db.Storage.S) = struct
     let elt =
       { Db_common.Elt.name = full_name; kind = kind'; cost; doc; pkg = None }
     in
-    register_doc elt doc_txt ;
+    register_doc elt txt ;
     register_full_name full_name elt ;
     register_kind elt kind
 
   module Resolver = Odoc_odoc.Resolver
 
-  let run ~index = List.iter entry index
+  let run ~index = List.iter register_entry index
 end

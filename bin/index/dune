@@ -1,5 +1,5 @@
 (executable
-(public_name sherlodoc_index)
+ (public_name sherlodoc_index)
  (name index)
  (libraries
   odoc.search

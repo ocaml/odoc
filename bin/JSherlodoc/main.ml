@@ -31,7 +31,11 @@ let search query =
     (fun Db.Elt.{ cost = _; name; kind; doc; pkg = _ } ->
       let name = Jstr.of_string name in
       let kind = kind |> string_of_kind |> Jv.of_string in
-      let doc = doc |> Option.value ~default:"" |> Jv.of_string in
+      let doc =
+        doc
+        |> Option.map (fun doc -> Db.Elt.(doc.txt))
+        |> Option.value ~default:"" |> Jv.of_string
+      in
       Jv.(
         obj
           [| "name", of_jstr name
