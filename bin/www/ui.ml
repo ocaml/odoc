@@ -14,8 +14,12 @@ let render_elt elt =
   let open Db.Elt in
   let link = render_link elt in
   match elt.kind with
-  | Val { str_type; _ } ->
-      [ txt "val "; a ~a:link [ em [ txt elt.name ] ]; txt " : "; txt str_type ]
+  | Val { type_; _ } ->
+      [ txt "val "
+      ; a ~a:link [ em [ txt elt.name ] ]
+      ; txt " : "
+      ; txt type_.txt
+      ]
   | Doc -> [ txt "comment "; a ~a:link [ em [ txt elt.name ] ] ]
   | TypeDecl { html = type_decl } ->
       [ txt "type "
@@ -63,8 +67,7 @@ let render_pkg elt =
 
 let render_result elt =
   let open Db.Types.Elt in
-  render_pkg elt
-  @ (pre (render_elt elt) :: list_of_option (Option.map Unsafe.data elt.doc))
+  render_pkg elt @ [ pre (render_elt elt); Unsafe.data elt.doc.Db.Elt.html ]
 
 let render ~pretty results =
   match results with

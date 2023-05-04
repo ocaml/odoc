@@ -10,6 +10,7 @@
   $ du -sh db.js
   12K	db.js
   $ odoc html-generate --with-search --output-dir html main.odocl
+  $ odoc html-generate --with-search --output-dir html page-page.odocl
   $ odoc support-files -o html
   $ cat db.js  ../../../bin/JSherlodoc/main.bc.js > html/index.js
   $ cp -r html /tmp

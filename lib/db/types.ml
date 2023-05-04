@@ -53,8 +53,9 @@ module Elt = struct
     { cost : int
     ; name : string
     ; kind : kind
-    ; doc : displayable option
+    ; doc : displayable
     ; pkg : package option
+    ; url : string
     }
 
   let compare_pkg { name; version = _ } (b : package) =

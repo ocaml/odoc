@@ -142,14 +142,14 @@ module Make (Storage : Db.Storage.S) = struct
     let my_full_name = List.map Char.lowercase_ascii my_full_name in
     Db.store_name (Cache_list.memo my_full_name) elt
 
-  let generic_cost ~ignore_no_doc full_name str_doc =
+  let generic_cost ~ignore_no_doc full_name doc =
     String.length full_name
     (* + (5 * List.length path) TODO : restore depth based ordering *)
     + (if ignore_no_doc
        then 0
        else
-         match str_doc with
-         | None -> 1000
+         match Db_common.Elt.(doc.txt) with
+         | "" -> 1000
          | _ -> 0)
     + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
 
@@ -162,7 +162,7 @@ module Make (Storage : Db.Storage.S) = struct
     | Value { value = _; type_ } ->
         let str_type = type_ |> Render.html_of_type |> string_of_html in
         String.length str_type + type_size type_
-    | Doc _ -> 0
+    | Doc _ -> 200
     | Exception _ -> 0
     | Class_type _ -> 0
     | Method _ -> 0
@@ -245,11 +245,11 @@ module Make (Storage : Db.Storage.S) = struct
     let full_name =
       id |> Odoc_model.Paths.Identifier.fullname |> String.concat "."
     in
+    let url = Render.url id in
     let html = doc |> Render.html_of_doc |> string_of_html
     and txt = Render.text_of_doc doc in
-    let doc = Some Db_common.Elt.{ html; txt } in
+    let doc = Db_common.Elt.{ html; txt } in
     let kind' = convert_kind kind in
-
     let ignore_no_doc =
       match kind with
       | Module | ModuleType -> true
@@ -257,10 +257,18 @@ module Make (Storage : Db.Storage.S) = struct
     in
     let cost = generic_cost ~ignore_no_doc full_name doc + kind_cost kind in
     let elt =
-      { Db_common.Elt.name = full_name; kind = kind'; cost; doc; pkg = None }
+      { Db_common.Elt.name = full_name
+      ; url
+      ; kind = kind'
+      ; cost
+      ; doc
+      ; pkg = None
+      }
     in
     register_doc elt txt ;
-    register_full_name full_name elt ;
+    (match kind with
+    | Doc _ -> ()
+    | _ -> register_full_name full_name elt) ;
     register_kind elt kind
 
   module Resolver = Odoc_odoc.Resolver
