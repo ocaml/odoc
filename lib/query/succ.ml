@@ -1,9 +1,9 @@
-open Db.Types
+open Db
 
 type s =
   | All
   | Empty
-  | Set of Elt_set.t
+  | Set of Elt.Set.t
   | Inter of s * s
   | Union of s * s
 
@@ -16,9 +16,9 @@ let all = { cardinal = -1; s = All }
 let empty = { cardinal = 0; s = Empty }
 
 let of_set s =
-  if Elt_set.is_empty s
+  if Elt.Set.is_empty s
   then empty
-  else { cardinal = Elt_set.cardinal s; s = Set s }
+  else { cardinal = Elt.Set.cardinal s; s = Set s }
 
 let inter a b =
   match a.s, b.s with
@@ -38,9 +38,9 @@ let union a b =
       let x, y = if a.cardinal < b.cardinal then x, y else y, x in
       { cardinal = a.cardinal + b.cardinal; s = Union (x, y) }
 
-let succ_ge' elt set = Elt_set.find_first (fun e -> Elt.compare e elt >= 0) set
-let succ_gt' elt set = Elt_set.find_first (fun e -> Elt.compare e elt > 0) set
-let first' set = Elt_set.find_first (fun _ -> true) set
+let succ_ge' elt set = Elt.Set.find_first (fun e -> Elt.compare e elt >= 0) set
+let succ_gt' elt set = Elt.Set.find_first (fun e -> Elt.compare e elt > 0) set
+let first' set = Elt.Set.find_first (fun _ -> true) set
 
 exception Gt of Elt.t
 

@@ -1,6 +1,6 @@
 type t =
   { db : Types.db
-  ; db_names : Types.Elt_set.t Trie.t
+  ; db_names : Elt.Set.t Trie.t
   }
 
 module type S = sig

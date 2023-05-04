@@ -66,7 +66,7 @@ let render_pkg elt =
   | None -> []
 
 let render_result elt =
-  let open Db.Types.Elt in
+  let open Db.Elt in
   render_pkg elt @ [ pre (render_elt elt); Unsafe.data elt.doc.Db.Elt.html ]
 
 let render ~pretty results =

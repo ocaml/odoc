@@ -1,4 +1,4 @@
-module Elt = Db.Types.Elt
+module Elt = Db.Elt
 
 let is_substring ~sub s =
   let re = Re.(compile (seq [ rep any; str sub ])) in

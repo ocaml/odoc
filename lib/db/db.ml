@@ -1,3 +1,4 @@
+module Elt = Elt
 module Types = Types
 module Storage_toplevel = Storage
 module Trie = Trie
@@ -10,8 +11,8 @@ module type S = sig
 
   val optimize : unit -> unit
   val export : writer -> unit
-  val store_all : Elt_set.elt -> char list list -> unit
-  val store_name : char list -> Elt_set.elt -> unit
+  val store_all : Elt.Set.elt -> char list list -> unit
+  val store_name : char list -> Elt.Set.elt -> unit
   val load_counter : int ref
 end
 
@@ -23,14 +24,14 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
   let db_names = ref (Trie.empty ())
 
   module Hset2 = Hashtbl.Make (struct
-    type t = Elt_set.t * Elt_set.t
+    type t = Elt.Set.t * Elt.Set.t
 
     let hash = Hashtbl.hash
     let equal (a, b) (a', b') = a == a' && b == b'
   end)
 
   module Hocc2 = Hashtbl.Make (struct
-    type t = Elt_set.t Occ.t * Elt_set.t Occ.t
+    type t = Elt.Set.t Occ.t * Elt.Set.t Occ.t
 
     let hash = Hashtbl.hash
     let equal (a, b) (a', b') = a == a' && b == b'
@@ -39,7 +40,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
   let elt_set_union ~hs a b =
     try Hset2.find hs (a, b)
     with Not_found ->
-      let r = Elt_set.union a b in
+      let r = Elt.Set.union a b in
       Hset2.add hs (a, b) r ;
       Hset2.add hs (b, a) r ;
       r
@@ -66,8 +67,8 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
   let optimize () =
     let ho = Hocc2.create 16 in
     let hs = Hset2.create 16 in
-    let (_ : Elt_set.t Occ.t option) = Trie.summarize (occ_merge ~ho ~hs) !db in
-    let (_ : Elt_set.t option) = Trie.summarize (elt_set_union ~hs) !db_names in
+    let (_ : Elt.Set.t Occ.t option) = Trie.summarize (occ_merge ~ho ~hs) !db in
+    let (_ : Elt.Set.t option) = Trie.summarize (elt_set_union ~hs) !db_names in
     ()
 
   let export h =
@@ -78,22 +79,22 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     db_names := Trie.empty ()
 
   module Hset = Hashtbl.Make (struct
-    type t = Elt_set.t option
+    type t = Elt.Set.t option
 
     let hash = Hashtbl.hash
     let equal x y = Option.equal (fun x y -> x == y) x y
   end)
 
   module Hocc = Hashtbl.Make (struct
-    type t = Elt_set.t Occ.t option
+    type t = Elt.Set.t Occ.t option
 
     let hash = Hashtbl.hash
     let equal x y = Option.equal (fun x y -> x == y) x y
   end)
 
   let set_add elt = function
-    | None -> Elt_set.singleton elt
-    | Some s -> Elt_set.add elt s
+    | None -> Elt.Set.singleton elt
+    | Some s -> Elt.Set.add elt s
 
   let set_add ~hs elt opt =
     try Hset.find hs opt
