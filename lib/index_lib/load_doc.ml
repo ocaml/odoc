@@ -255,12 +255,7 @@ module Make (Storage : Db.Storage.S) = struct
     in
     let cost = generic_cost ~ignore_no_doc full_name doc + kind_cost kind in
     let elt =
-      { Db_common.Elt.name = full_name
-      ; kind = kind'
-      ; cost
-      ; doc
-      ; pkg = "fake", "package"
-      }
+      { Db_common.Elt.name = full_name; kind = kind'; cost; doc; pkg = None }
     in
     register_doc elt doc_txt ;
     register_full_name full_name elt ;

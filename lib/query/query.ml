@@ -83,8 +83,10 @@ let search ~shards query_name query_typ =
   in
   results
 
-let match_packages ~packages { Db.Elt.pkg = package, _version; _ } =
-  List.exists (String.equal package) packages
+let match_packages ~packages { Db.Elt.pkg; _ } =
+  match pkg with
+  | Some { name; version = _ } -> List.exists (String.equal name) packages
+  | None -> false
 
 let match_packages ~packages results =
   match packages with

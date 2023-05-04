@@ -4,77 +4,67 @@ let list_of_option = function
   | None -> []
   | Some x -> [ x ]
 
+let render_link elt =
+  let open Db.Elt in
+  match link elt with
+  | Some link -> [ a_href link ]
+  | None -> []
+
 let render_elt elt =
   let open Db.Elt in
+  let link = render_link elt in
   match elt.kind with
   | Val { str_type; _ } ->
-      [ txt "val "
-      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
-      ; txt " : "
-      ; txt str_type
-      ]
-  | Doc ->
-      [ txt "comment "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+      [ txt "val "; a ~a:link [ em [ txt elt.name ] ]; txt " : "; txt str_type ]
+  | Doc -> [ txt "comment "; a ~a:link [ em [ txt elt.name ] ] ]
   | TypeDecl { html = type_decl } ->
       [ txt "type "
-      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
+      ; a ~a:link [ em [ txt elt.name ] ]
       ; txt " = "
       ; Unsafe.data type_decl
       ]
-  | Module ->
-      [ txt "module "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
-  | Exception ->
-      [ txt "exception "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
-  | Class_type ->
-      [ txt "class type "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
-  | Method ->
-      [ txt "method "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
-  | Class ->
-      [ txt "class "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+  | Module -> [ txt "module "; a ~a:link [ em [ txt elt.name ] ] ]
+  | Exception -> [ txt "exception "; a ~a:link [ em [ txt elt.name ] ] ]
+  | Class_type -> [ txt "class type "; a ~a:link [ em [ txt elt.name ] ] ]
+  | Method -> [ txt "method "; a ~a:link [ em [ txt elt.name ] ] ]
+  | Class -> [ txt "class "; a ~a:link [ em [ txt elt.name ] ] ]
   | TypeExtension ->
-      [ txt "type extension "
-      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
-      ]
+      [ txt "type extension "; a ~a:link [ em [ txt elt.name ] ] ]
   | ExtensionConstructor ->
-      [ txt "ext constructor "
-      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
-      ]
-  | ModuleType ->
-      [ txt "module type "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
-  | Constructor ->
-      [ txt "constructor "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
-  | Field ->
-      [ txt "field "; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ] ]
+      [ txt "ext constructor "; a ~a:link [ em [ txt elt.name ] ] ]
+  | ModuleType -> [ txt "module type "; a ~a:link [ em [ txt elt.name ] ] ]
+  | Constructor -> [ txt "constructor "; a ~a:link [ em [ txt elt.name ] ] ]
+  | Field -> [ txt "field "; a ~a:link [ em [ txt elt.name ] ] ]
   | FunctorParameter ->
-      [ txt "functor param "
-      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
-      ]
+      [ txt "functor param "; a ~a:link [ em [ txt elt.name ] ] ]
   | ModuleSubstitution ->
-      [ txt "module subst "
-      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
-      ]
+      [ txt "module subst "; a ~a:link [ em [ txt elt.name ] ] ]
   | ModuleTypeSubstitution ->
-      [ txt "module type subst "
-      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
-      ]
+      [ txt "module type subst "; a ~a:link [ em [ txt elt.name ] ] ]
   | InstanceVariable ->
-      [ txt "instance variable "
-      ; a ~a:[ a_href (link elt) ] [ em [ txt elt.name ] ]
-      ]
+      [ txt "instance variable "; a ~a:link [ em [ txt elt.name ] ] ]
 
-let render_result r =
+let render_pkg elt =
+  let open Db.Elt in
+  match elt.pkg with
+  | Some { name; version } ->
+      let link = elt |> pkg_link |> Option.get in
+      [ div
+          ~a:[ a_class [ "pkg" ] ]
+          [ a
+              ~a:[ a_href link ]
+              [ txt name
+              ; txt " "
+              ; span ~a:[ a_class [ "version" ] ] [ txt version ]
+              ]
+          ]
+      ]
+  | None -> []
+
+let render_result elt =
   let open Db.Types.Elt in
-  div
-    ~a:[ a_class [ "pkg" ] ]
-    [ a
-        ~a:[ a_href (pkg_link r) ]
-        [ txt (fst r.pkg)
-        ; txt " "
-        ; span ~a:[ a_class [ "version" ] ] [ txt (snd r.pkg) ]
-        ]
-    ]
-  :: pre (render_elt r)
-  :: list_of_option (Option.map Unsafe.data r.doc)
+  render_pkg elt
+  @ (pre (render_elt elt) :: list_of_option (Option.map Unsafe.data elt.doc))
 
 let render ~pretty results =
   match results with

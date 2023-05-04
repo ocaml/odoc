@@ -1,3 +1,5 @@
+open Common
+
 module Elt = struct
   type kind =
     | Doc
@@ -37,22 +39,28 @@ module Elt = struct
         ; type_paths : string list list
         }
 
+  type package =
+    { name : string
+    ; version : string
+    }
+
   type t =
     { cost : int
     ; name : string
     ; kind : kind
     ; doc : string option
-    ; pkg : string * string
+    ; pkg : package option
     }
 
-  let compare_pkg (a_name, _) (b_name, _) = String.compare a_name b_name
+  let compare_pkg { name; version = _ } (b : package) =
+    String.compare name b.name
 
   let compare a b =
     match Int.compare a.cost b.cost with
     | 0 -> begin
         match String.compare a.name b.name with
         | 0 -> begin
-            match compare_pkg a.pkg b.pkg with
+            match Option.compare compare_pkg a.pkg b.pkg with
             | 0 -> Stdlib.compare a.kind b.kind
             | c -> c
           end
@@ -62,16 +70,20 @@ module Elt = struct
 
   let compare a b = if a == b then 0 else compare a b
 
-  let pkg_link { pkg = pkg, v; _ } =
-    Printf.sprintf "https://ocaml.org/p/%s/%s" pkg v
+  let pkg_link { pkg; _ } =
+    let open Option.O in
+    let+ { name; version } = pkg in
+    Printf.sprintf "https://ocaml.org/p/%s/%s" name version
 
   let link t =
+    let open Option.O in
     let name, path =
       match List.rev (String.split_on_char '.' t.name) with
       | name :: path -> name, String.concat "/" (List.rev path)
       | _ -> "", ""
     in
-    pkg_link t ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
+    let+ pkg_link = pkg_link t in
+    pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
 end
 
 module String_list_map = Map.Make (struct
