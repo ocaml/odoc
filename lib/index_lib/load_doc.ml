@@ -177,6 +177,33 @@ module Make (Storage : Db.Storage.S) = struct
     | ModuleTypeSubstitution -> 0
     | InstanceVariable _ -> 0
 
+  let searchable_type_of_constructor args res =
+    let open Odoc_model.Lang in
+    match args with
+    | TypeDecl.Constructor.Tuple args -> (
+        match args with
+        | _ :: _ :: _ -> TypeExpr.(Arrow (None, Tuple args, res))
+        | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
+        | _ -> res)
+    | TypeDecl.Constructor.Record fields ->
+        List.fold_left
+          (fun res field ->
+            let open TypeDecl.Field in
+            let field_name = Odoc_model.Paths.Identifier.name field.id in
+            TypeExpr.Arrow (Some (Label field_name), field.type_, res))
+          res fields
+
+  let searchable_type_of_record parent_type type_ =
+    let open Odoc_model.Lang in
+    TypeExpr.Arrow (None, parent_type, type_)
+
+  let display_type_expr type_ =
+    let open Odoc_search in
+    let html = type_ |> Render.html_of_type |> string_of_html in
+    let txt = Render.text_of_type type_ in
+    print_endline txt ;
+    Db_common.Elt.{ html; txt }
+
   let convert_kind (kind : Odoc_search.Index_db.kind) =
     let open Odoc_search in
     let open Odoc_search.Index_db in
@@ -187,10 +214,18 @@ module Make (Storage : Db.Storage.S) = struct
     | Module -> Db_common.Elt.ModuleType
     | Value { value = _; type_ } ->
         let paths = paths ~prefix:[] ~sgn:Pos type_ in
-        let html = type_ |> Render.html_of_type |> string_of_html in
-        let txt = Render.text_of_type type_ in
-        let type_ = Db_common.Elt.{ html; txt } in
+        let type_ = display_type_expr type_ in
         Val { type_; type_paths = paths }
+    | Constructor { args; res } ->
+        let type_ = searchable_type_of_constructor args res in
+        let type_paths = paths ~prefix:[] ~sgn:Pos type_ in
+        let type_ = display_type_expr type_ in
+        Constructor { type_; type_paths }
+    | Field { mutable_ = _; parent_type; type_ } ->
+        let type_ = searchable_type_of_record parent_type type_ in
+        let type_paths = paths ~prefix:[] ~sgn:Pos type_ in
+        let type_ = display_type_expr type_ in
+        Field { type_; type_paths }
     | Doc _ -> Doc
     | Exception _ -> Exception
     | Class_type _ -> Class_type
@@ -199,8 +234,6 @@ module Make (Storage : Db.Storage.S) = struct
     | TypeExtension _ -> TypeExtension
     | ExtensionConstructor _ -> ExtensionConstructor
     | ModuleType -> ModuleType
-    | Constructor _ -> Constructor
-    | Field _ -> Field
     | FunctorParameter -> FunctorParameter
     | ModuleSubstitution _ -> ModuleSubstitution
     | ModuleTypeSubstitution -> ModuleTypeSubstitution
@@ -232,17 +265,9 @@ module Make (Storage : Db.Storage.S) = struct
     | TypeExtension _ -> ()
     | ExtensionConstructor _ -> ()
     | ModuleType -> ()
-    | Constructor { args = TypeDecl.Constructor.Tuple args; res } ->
-        let type_ =
-          match args with
-          | _ :: _ :: _ -> TypeExpr.(Arrow (None, Tuple args, res))
-          | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
-          | _ -> res
-        in
+    | Constructor { args; res } ->
+        let type_ = searchable_type_of_constructor args res in
         register_type_expr elt type_
-    | Constructor
-        { args = Odoc_model.Lang.TypeDecl.Constructor.Record _; res = _ } ->
-        ()
     | Field { mutable_ = _; parent_type; type_ } ->
         let type_ = TypeExpr.Arrow (None, parent_type, type_) in
         register_type_expr elt type_

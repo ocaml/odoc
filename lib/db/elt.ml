@@ -5,27 +5,8 @@ type displayable =
   ; txt : string
   }
 
-type kind =
-  | Doc
-  | TypeDecl of { html : string }
-  | Module
-  | Exception
-  | Class_type
-  | Method
-  | Class
-  | TypeExtension
-  | ExtensionConstructor
-  | ModuleType
-  | Constructor
-  | Field
-  | FunctorParameter
-  | ModuleSubstitution
-  | ModuleTypeSubstitution
-  | InstanceVariable
-  | Val of
-      { type_ : displayable
-      ; type_paths : string list list
-            (** A type can viewed as a tree.
+type type_path = string list list
+(** A type can viewed as a tree.
             [a -> b -> c * d] is the following tree :
             {[ ->
               |- a
@@ -41,6 +22,33 @@ type kind =
             [ [["->";"0"; "a"];["->"; "1"; "->"; "0"; "b"]; ...] ]
             
             It is used to sort results. *)
+
+type kind =
+  | Doc
+  | TypeDecl of { html : string }
+  | Module
+  | Exception
+  | Class_type
+  | Method
+  | Class
+  | TypeExtension
+  | ExtensionConstructor
+  | ModuleType
+  | Constructor of
+      { type_ : displayable
+      ; type_paths : type_path
+      }
+  | Field of
+      { type_ : displayable
+      ; type_paths : type_path
+      }
+  | FunctorParameter
+  | ModuleSubstitution
+  | ModuleTypeSubstitution
+  | InstanceVariable
+  | Val of
+      { type_ : displayable
+      ; type_paths : type_path
       }
 
 type package =

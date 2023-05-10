@@ -37,8 +37,18 @@ let render_elt elt =
   | ExtensionConstructor ->
       [ txt "ext constructor "; a ~a:link [ em [ txt elt.name ] ] ]
   | ModuleType -> [ txt "module type "; a ~a:link [ em [ txt elt.name ] ] ]
-  | Constructor -> [ txt "constructor "; a ~a:link [ em [ txt elt.name ] ] ]
-  | Field -> [ txt "field "; a ~a:link [ em [ txt elt.name ] ] ]
+  | Constructor { type_; _ } ->
+      [ txt "constructor "
+      ; a ~a:link [ em [ txt elt.name ] ]
+      ; txt " : "
+      ; txt type_.txt
+      ]
+  | Field { type_; _ } ->
+      [ txt "field "
+      ; a ~a:link [ em [ txt elt.name ] ]
+      ; txt " : "
+      ; txt type_.txt
+      ]
   | FunctorParameter ->
       [ txt "functor param "; a ~a:link [ em [ txt elt.name ] ] ]
   | ModuleSubstitution ->

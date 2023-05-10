@@ -13,8 +13,8 @@ let string_of_kind (kind : Db.Elt.kind) =
   | TypeExtension -> "type ext"
   | ExtensionConstructor -> "extension constructor"
   | ModuleType -> "module type"
-  | Constructor -> "constructor"
-  | Field -> "field"
+  | Constructor _ -> "constructor"
+  | Field _ -> "field"
   | FunctorParameter -> "functor parameter"
   | ModuleSubstitution -> "module subst"
   | ModuleTypeSubstitution -> "module type subst"
@@ -29,15 +29,23 @@ let search query =
   Jv.of_list
     (fun Db.Elt.{ cost = _; name; url; kind; doc; pkg = _ } ->
       let name = Jstr.of_string name in
-      let kind = kind |> string_of_kind |> Jv.of_string in
-      Jv.(
-        obj
-          [| "name", of_jstr name
-           ; "prefixname", of_string ""
-           ; "kind", kind
-           ; "comment", of_string doc.txt
-           ; "url", of_string url
-          |]))
+      let jkind = kind |> string_of_kind |> Jv.of_string in
+      let o =
+        Jv.(
+          obj
+            [| "name", of_jstr name
+             ; "prefixname", of_string ""
+             ; "kind", jkind
+             ; "comment", of_string doc.txt
+             ; "url", of_string url
+            |])
+      in
+      Db.Elt.(
+        match kind with
+        | Val { type_; _ } | Constructor { type_; _ } | Field { type_; _ } ->
+            Jv.(set o "type" (of_string type_.txt))
+        | _ -> ()) ;
+      o)
     results
 
 let main () =

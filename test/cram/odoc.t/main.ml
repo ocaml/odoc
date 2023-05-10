@@ -43,7 +43,7 @@ type my_type = int * char
 type babar =
   | A of string
   | B 
-  | C of int
+  | C of {z:int; w:char}
 
 type celeste = 
   {x : babar; y : int -> string}
