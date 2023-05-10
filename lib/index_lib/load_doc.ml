@@ -206,19 +206,24 @@ module Make (Storage : Db.Storage.S) = struct
     | ModuleTypeSubstitution -> ModuleTypeSubstitution
     | InstanceVariable _ -> InstanceVariable
 
+  let register_type_expr elt type_ =
+    let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
+    (* let str = String.concat "|" (List.concat_map (fun li -> ";" :: li)  type_paths) in
+        print_endline str; *)
+    Db.store_all elt
+      (List.map
+         (fun xs ->
+           let xs = List.concat_map Db_common.list_of_string xs in
+           Cache_list.memo xs)
+         type_paths)
+
   let register_kind elt (kind : Odoc_search.Index_db.kind) =
     let open Odoc_search.Index_db in
+    let open Odoc_model.Lang in
     match kind with
     | TypeDecl _ -> ()
     | Module -> ()
-    | Value { value = _; type_ } ->
-        let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
-        Db.store_all elt
-          (List.map
-             (fun xs ->
-               let xs = List.concat_map Db_common.list_of_string xs in
-               Cache_list.memo xs)
-             type_paths)
+    | Value { value = _; type_ } -> register_type_expr elt type_
     | Doc _ -> ()
     | Exception _ -> ()
     | Class_type _ -> ()
@@ -227,8 +232,20 @@ module Make (Storage : Db.Storage.S) = struct
     | TypeExtension _ -> ()
     | ExtensionConstructor _ -> ()
     | ModuleType -> ()
-    | Constructor _ -> ()
-    | Field _ -> ()
+    | Constructor { args = TypeDecl.Constructor.Tuple args; res } ->
+        let type_ =
+          match args with
+          | _ :: _ :: _ -> TypeExpr.(Arrow (None, Tuple args, res))
+          | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
+          | _ -> res
+        in
+        register_type_expr elt type_
+    | Constructor
+        { args = Odoc_model.Lang.TypeDecl.Constructor.Record _; res = _ } ->
+        ()
+    | Field { mutable_ = _; parent_type; type_ } ->
+        let type_ = TypeExpr.Arrow (None, parent_type, type_) in
+        register_type_expr elt type_
     | FunctorParameter -> ()
     | ModuleSubstitution _ -> ()
     | ModuleTypeSubstitution -> ()

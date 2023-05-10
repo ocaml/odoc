@@ -26,7 +26,6 @@ let search query =
   let _pretty_query, results =
     Query.(api ~shards:db { query; packages = []; limit = 50 })
   in
-
   Jv.of_list
     (fun Db.Elt.{ cost = _; name; url; kind; doc; pkg = _ } ->
       let name = Jstr.of_string name in

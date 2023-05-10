@@ -8,8 +8,6 @@ let regroup lst =
          String_list_map.add s (count + 1) acc)
        String_list_map.empty lst
 
-
-
 let regroup_chars lst =
   Char_list_map.bindings
   @@ List.fold_left

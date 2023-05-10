@@ -66,5 +66,7 @@ let show_type_name_verbose h : Paths.Path.Type.t -> _ = function
       let open Paths.Path in
       Format.fprintf h "%a" show_ident_long
         (Resolved.identifier (t :> Resolved.t))
-  | `Identifier (_, b) -> Format.fprintf h "IDENT%b" b
+  | `Identifier (path, _hidden) ->
+      let name = Paths.Identifier.(fullname (path :> t)) |> String.concat "." in
+      Format.fprintf h "%s" name
   | `Dot (mdl, x) -> Format.fprintf h "%a.%s" show_module_t mdl x
