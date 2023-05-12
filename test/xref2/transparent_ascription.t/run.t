@@ -123,3 +123,19 @@ a type `t` *and* a value `plus`:
       }
     }
   ]
+
+Bug
+===
+
+  $ ocamlc -c -bin-annot bug.mli
+  $ odoc compile bug.cmti
+
+This should print the items in `Value` (i.e., just the value `print`) but
+instead it prints the items in `Set`
+
+  $ odoc_print bug.odoc -r Inverse \
+  > | jq '.type_.ModuleType.Functor[0].Named.expr.With.w_expansion.Some
+  >       .Signature.items[]
+  >       | select(.Module[1].id."`Module"[1] == "Point")
+  >       | .Module[1].type_.ModuleType.Signature.items[]'
+  * output is currently incorrect *
