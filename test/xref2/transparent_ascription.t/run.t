@@ -4,147 +4,122 @@ Transparent ascription
   $ ocamlc -c -bin-annot test.mli
   $ odoc compile test.cmti
 
-The following modules should be expanded (and be a `"Signature": {}`):
+`Basic.P.N` should be a signature with just one type called `t`:
 
-  $ odoc_print test.odoc -r Basic.P.N | jq ".type_ | (.ModuleType.Signature|={})"
-  {
-    "ModuleType": {
-      "Signature": {}
-    }
-  }
-
-  $ odoc_print test.odoc -r Nested.P1.N1 | jq ".type_ | (.ModuleType.Signature|={})"
-  {
-    "ModuleType": {
-      "Signature": {}
-    }
-  }
-
-  $ odoc_print test.odoc -r Nested.P1.N2 | jq ".type_ | (.ModuleType.Signature|={})"
-  {
-    "ModuleType": {
-      "Signature": {}
-    }
-  }
-
-  $ odoc_print test.odoc -r Nested.P2.N1 | jq ".type_ | (.ModuleType.Signature|={})"
-  {
-    "ModuleType": {
-      "Signature": {}
-    }
-  }
-
-  $ odoc_print test.odoc -r Nested.P2.N2 | jq ".type_ | (.ModuleType.Signature|={})"
-  {
-    "ModuleType": {
-      "Signature": {}
-    }
-  }
-
-  $ odoc_print test.odoc -r Via_alias.P.N | jq ".type_ | (.ModuleType.Signature|={})"
-  {
-    "ModuleType": {
-      "Signature": {}
-    }
-  }
-
-The following modules expressions should remain as they are typed:
-(the `t_expansion` should be `Some {}`)
-
-  $ odoc_print test.odoc -r Cascade.P.N1 | jq ".type_ | (.ModuleType.TypeOf.t_expansion.Some|={})"
-  {
-    "ModuleType": {
-      "TypeOf": {
-        "t_desc": {
-          "ModPath": {
-            "`Resolved": {
-              "`Identifier": {
-                "`Module": [
-                  {
-                    "`Module": [
-                      {
-                        "`Module": [
-                          {
-                            "`Root": [
-                              "None",
-                              "Test"
-                            ]
-                          },
-                          "Cascade"
-                        ]
-                      },
-                      "P"
-                    ]
-                  },
-                  "O"
-                ]
-              }
-            }
-          }
-        },
-        "t_expansion": {
-          "Some": {}
-        }
+  $ odoc_print test.odoc -r Basic.P.N \
+  > | jq '.type_.ModuleType.Signature.items
+  >       | ((.[].Type | select(.)) |= { id: .[1].id."`Type"[1] })'
+  [
+    {
+      "Type": {
+        "id": "t"
       }
     }
-  }
+  ]
 
-  $ odoc_print test.odoc -r Cascade.P.N2 | jq ".type_ | (.ModuleType.TypeOf.t_expansion.Some|={})"
-  {
-    "ModuleType": {
-      "TypeOf": {
-        "t_desc": {
-          "ModPath": {
-            "`Resolved": {
-              "`Module": [
-                {
-                  "`Identifier": {
-                    "`Module": [
-                      {
-                        "`Module": [
-                          {
-                            "`Module": [
-                              {
-                                "`Root": [
-                                  "None",
-                                  "Test"
-                                ]
-                              },
-                              "Cascade"
-                            ]
-                          },
-                          "P"
-                        ]
-                      },
-                      "O"
-                    ]
-                  }
-                },
-                "I"
-              ]
-            }
-          }
-        },
-        "t_expansion": {
-          "Some": {}
-        }
+`Nested.P1.N1.M` should be a module whose type is the resolved module type path
+`T`:
+
+  $ odoc_print test.odoc -r Nested.P1.N1.M \
+  > | jq '.type_.ModuleType.Path.p_path."`Resolved"."`Identifier"."`ModuleType"[1]'
+  "T"
+
+`Nested.P1.N2` should be like `Basic.P.N`:
+
+  $ odoc_print test.odoc -r Nested.P1.N2 \
+  > | jq '.type_.ModuleType.Signature.items
+  >       | ((.[].Type | select(.)) |= { id: .[1].id."`Type"[1] })'
+  [
+    {
+      "Type": {
+        "id": "t"
       }
     }
-  }
+  ]
 
-  $ odoc_print test.odoc -r In_functor_parameter.P.G | jq ".type_ | (.ModuleType.Functor|=[]) | (.ModuleType.TypeOf.t_expansion.Some|={})"
-  {
-    "ModuleType": {
-      "Functor": [],
-      "TypeOf": {
-        "t_expansion": {
-          "Some": {}
-        }
+`Nested.P2.N1.M` should be like `Nested.P1.N1.M`:
+
+  $ odoc_print test.odoc -r Nested.P2.N1.M \
+  > | jq '.type_.ModuleType.Path.p_path."`Resolved"."`Identifier"."`ModuleType"[1]'
+  "T"
+
+`Nested.P2.N2` should be like `Basic.P.N`:
+
+  $ odoc_print test.odoc -r Nested.P2.N2 \
+  > | jq '.type_.ModuleType.Signature.items
+  >       | ((.[].Type | select(.)) |= { id: .[1].id."`Type"[1] })'
+  [
+    {
+      "Type": {
+        "id": "t"
       }
     }
+  ]
+
+`Via_alias.P.N` should be like `Basic.P.N`:
+
+  $ odoc_print test.odoc -r Via_alias.P.N \
+  > | jq '.type_.ModuleType.Signature.items
+  >       | ((.[].Type | select(.)) |= { id: .[1].id."`Type"[1] })'
+  [
+    {
+      "Type": {
+        "id": "t"
+      }
+    }
+  ]
+
+`Cascade.P.N1.I` should be like `Basic.P.N`:
+
+  $ odoc_print test.odoc -r Cascade.P.N1.I \
+  > | jq '.type_.ModuleType.Signature.items
+  >       | ((.[].Type | select(.)) |= { id: .[1].id."`Type"[1] })'
+  [
+    {
+      "Type": {
+        "id": "t"
+      }
+    }
+  ]
+
+`Cascade.P.N2` should actually keep the module type `module type of
+Cascade.P.O.I`, but with an expansion like `Basic.P.N`:
+
+  $ odoc_print test.odoc -r Cascade.P.N2 \
+  > | jq '.type_.ModuleType.TypeOf
+  >       | (.t_desc.ModPath |= "..." + ."`Resolved"."`Module"[1])
+  >       | (.t_expansion |=
+  >            (.Some.Signature.items
+  >             | ((.[].Type | select(.)) |= { id: .[1].id."`Type"[1] })))'
+  {
+    "t_desc": {
+      "ModPath": "...I"
+    },
+    "t_expansion": [
+      {
+        "Type": {
+          "id": "t"
+        }
+      }
+    ]
   }
 
-  $ odoc link test.odoc
-  $ odoc html-generate test.odocl -o html
-  $ odoc support-files -o html
-  $ cp -a html /tmp/test-html
+`In_functor_parameter.P.G` should be a functor type whose argument type has both
+a type `t` *and* a value `plus`:
+
+  $ odoc_print test.odoc -r In_functor_parameter.P.G \
+  > | jq '.type_.ModuleType.Functor[0].Named.expr.Signature.items
+  >       | ((.[].Type | select(.)) |= { id: .[1].id."`Type"[1] })
+  >       | ((.[].Value | select(.)) |= { id: .id."`Value"[1] })'
+  [
+    {
+      "Type": {
+        "id": "t"
+      }
+    },
+    {
+      "Value": {
+        "id": "plus"
+      }
+    }
+  ]

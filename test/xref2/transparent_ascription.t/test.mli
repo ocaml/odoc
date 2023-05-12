@@ -21,7 +21,7 @@ module Basic : sig
     module N : module type of M
   end
 
-  (* [P.N] should just have type [T] because [module type of M] has already
+  (* [P.N] should just have type [t] because [module type of M] has already
      evaluated to [T] *)
   module P : S with module M = Int
 end
@@ -63,6 +63,9 @@ module Via_alias : sig
   module P : S with module M = Int
 end
 
+(* Now we take the module type of something that _itself_ took the module type
+   of [M] *)
+
 module Cascade : sig
   module type S = sig
     module M : T
@@ -73,6 +76,8 @@ module Cascade : sig
 
     module N1 : module type of O
 
+    (* Interestingly, this [module type of] expression is never invalidated
+       and retains the link to [O.I]. *)
     module N2 : module type of O.I
   end
 
@@ -97,5 +102,7 @@ module In_functor_parameter : sig
     module G : module type of F
   end
 
+  (* [P.G]'s argument type should have _both_ [plus] and [t] even though
+     [Identity]'s argument type does not *)
   module P : S with module F = Identity
 end
