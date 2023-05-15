@@ -181,6 +181,7 @@ module Reasoning = struct
 
   type t =
     { is_stdlib : bool
+    ; name_length : int
     ; has_doc : bool
     ; name_matches : Name_match.t list
     ; type_distance : int option
@@ -236,6 +237,8 @@ module Reasoning = struct
     | Elt.InstanceVariable -> InstanceVariable
     | Elt.Val _ -> Val
 
+  let name_length elt = String.length elt.Elt.name
+
   let v query_words query_type elt =
     let is_stdlib = is_stdlib elt in
     let has_doc = has_doc elt in
@@ -244,6 +247,7 @@ module Reasoning = struct
     let type_distance = type_distance query_type elt in
     let type_in_elt = type_in_elt elt in
     let type_in_query = type_in_query query_type in
+    let name_length = name_length elt in
     { is_stdlib
     ; has_doc
     ; name_matches
@@ -251,6 +255,7 @@ module Reasoning = struct
     ; type_in_elt
     ; type_in_query
     ; kind
+    ; name_length
     }
 
   let compare_is_stblib b1 b2 = if b1 && b2 then 0 else if b1 then -1 else 1
@@ -286,11 +291,11 @@ module Reasoning = struct
       ; type_in_elt
       ; type_in_query
       ; kind
+      ; name_length
       } =
     let kind =
       match kind with
-      | Val | Module -> 0
-      | Constructor | Field | TypeDecl -> 10
+      | Val | Module | Constructor | Field | TypeDecl -> 0
       | ModuleType -> 20
       | Exception -> 30
       | Class_type | Class | TypeExtension -> 40
@@ -323,7 +328,7 @@ module Reasoning = struct
     in
     (if is_stdlib then 0 else 100)
     + (if has_doc then 0 else 500)
-    + name_matches + type_cost + kind
+    + name_matches + type_cost + kind + name_length
 
   let compare r r' = Int.compare (score r) (score r')
 end
