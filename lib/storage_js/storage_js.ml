@@ -6,7 +6,7 @@ let close_out = close_out
 let save ~db t =
   let str = Marshal.to_string t [] in
   let str = Base64.encode_string str in
-  Printf.fprintf db "sherlodb=%S;\n%!" str
+  Printf.fprintf db "function sherlodoc_db () { return %S; }\n%!" str
 
 let load str =
   let str = Base64.decode_exn str in

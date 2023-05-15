@@ -1,4 +1,5 @@
-let db = Storage_js.load Jv.(to_string @@ get global "sherlodb")
+let db = lazy (
+Storage_js.load Jv.(to_string @@ call global "sherlodoc_db" [||]))
 
 let string_of_kind (kind : Db.Elt.kind) =
   let open Db.Elt in
@@ -24,7 +25,7 @@ let string_of_kind (kind : Db.Elt.kind) =
 let search query =
   let query = query |> Jv.to_jstr |> Jstr.to_string in
   let _pretty_query, results =
-    Query.(api ~shards:db { query; packages = []; limit = 50 })
+    Query.(api ~shards:(Lazy.force db) { query; packages = []; limit = 50 })
   in
   Jv.of_list
     (fun Db.Elt.{ cost = _; name; url; kind; doc; pkg = _ } ->

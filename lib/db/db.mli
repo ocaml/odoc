@@ -2,6 +2,7 @@ module Elt = Elt
 module Types = Types
 module Storage = Storage
 module Trie = Trie
+module Caches = Caches
 
 val list_of_string : string -> char list
 
@@ -10,8 +11,8 @@ module type S = sig
 
   val optimize : unit -> unit
   val export : writer -> unit
-  val store_all : Elt.Set.elt -> char list list -> unit
-  val store_name : char list -> Elt.Set.elt -> unit
+  val store_type : Elt.t -> char list list -> unit
+  val store_word : string -> Elt.t -> unit
   val load_counter : int ref
 end
 

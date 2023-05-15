@@ -2,7 +2,9 @@ module Elt = Elt
 module Types = Types
 module Storage_toplevel = Storage
 module Trie = Trie
+module Caches = Caches
 include Types
+open Caches
 
 let list_of_string s = List.init (String.length s) (String.get s)
 
@@ -11,8 +13,8 @@ module type S = sig
 
   val optimize : unit -> unit
   val export : writer -> unit
-  val store_all : Elt.Set.elt -> char list list -> unit
-  val store_name : char list -> Elt.Set.elt -> unit
+  val store_type : Elt.t -> char list list -> unit
+  val store_word : string -> Elt.t -> unit
   val load_counter : int ref
 end
 
@@ -117,34 +119,37 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
       Hocc.add ho opt r ;
       r
 
-  let store ~ho ~hs name typ ~count =
+  let store ~ho ~hs name elt ~count =
     let rec go db name =
       match name with
       | [] -> db
       | _ :: next ->
           incr load_counter ;
-          let db = Trie.add name (candidates_add ~ho ~hs typ ~count) db in
+          let db = Trie.add name (candidates_add ~ho ~hs elt ~count) db in
           go db next
     in
     db := go !db name
 
-  let store_all typ paths =
+  let store_type elt paths =
     let ho = Hocc.create 16 in
     let hs = Hset.create 16 in
     List.iter
-      (fun (path, count) -> store ~ho ~hs ~count path typ)
+      (fun (path, count) -> store ~ho ~hs ~count path elt)
       (regroup_chars paths)
 
-  let store_name name typ =
+  let store_chars name elt =
     let hs = Hset.create 16 in
     let rec go db = function
       | [] -> db
       | _ :: next as name ->
           incr load_counter ;
-          let db = Trie.add name (set_add ~hs typ) db in
+          let db = Trie.add name (set_add ~hs elt) db in
           go db next
     in
     db_names := go !db_names name
+
+  let store_word word elt =
+    (word |> list_of_string |> List.rev |> Cache_list.memo |> store_chars) elt
 end
 
 module Storage = Storage

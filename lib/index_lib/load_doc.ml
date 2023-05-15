@@ -1,40 +1,10 @@
 module Db_common = Db
+open Db.Caches
 
 module Make (Storage : Db.Storage.S) = struct
   module Types = Db.Types
   module Db = Db.Make (Storage)
   module ModuleName = Odoc_model.Names.ModuleName
-
-  module Cache = Cache.Make (struct
-    type t = string
-
-    let copy str = String.init (String.length str) (String.get str)
-  end)
-
-  module Cache_list = struct
-    module H = Hashtbl.Make (struct
-      type t = char list
-
-      let equal = List.equal Char.equal
-      let hash = Hashtbl.hash
-    end)
-
-    let cache = H.create 128
-
-    let memo lst =
-      let rec go lst =
-        try H.find cache lst
-        with Not_found ->
-          let lst =
-            match lst with
-            | [] -> []
-            | x :: xs -> x :: go xs
-          in
-          H.add cache lst lst ;
-          lst
-      in
-      go lst
-  end
 
   let clear () = Cache.clear ()
 
@@ -131,51 +101,11 @@ module Make (Storage : Db.Storage.S) = struct
 
   let register_doc elt doc_txt =
     let doc_words = String.split_on_char ' ' doc_txt in
-    List.iter
-      (fun word ->
-        let word = Db_common.list_of_string word in
-        Db.store_name (Cache_list.memo word) elt)
-      doc_words
+    List.iter (fun word -> Db.store_word word elt) doc_words
 
   let register_full_name name elt =
-    let my_full_name = Db_common.list_of_string name in
-    let my_full_name = List.map Char.lowercase_ascii my_full_name in
-    Db.store_name (Cache_list.memo my_full_name) elt
-
-  let generic_cost ~ignore_no_doc full_name doc =
-    String.length full_name
-    (* + (5 * List.length path) TODO : restore depth based ordering *)
-    + (if ignore_no_doc
-       then 0
-       else
-         match Db_common.Elt.(doc.txt) with
-         | "" -> 1000
-         | _ -> 0)
-    + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
-
-  let kind_cost (kind : Odoc_search.Index_db.kind) =
-    let open Odoc_search in
-    let open Odoc_search.Index_db in
-    match kind with
-    | TypeDecl _ -> 0
-    | Module -> 0
-    | Value { value = _; type_ } ->
-        let str_type = type_ |> Render.html_of_type |> string_of_html in
-        String.length str_type + type_size type_
-    | Doc _ -> 200
-    | Exception _ -> 0
-    | Class_type _ -> 0
-    | Method _ -> 0
-    | Class _ -> 0
-    | TypeExtension _ -> 0
-    | ExtensionConstructor _ -> 0
-    | ModuleType -> 0
-    | Constructor _ -> 0
-    | Field _ -> 0
-    | FunctorParameter -> 0
-    | ModuleSubstitution _ -> 0
-    | ModuleTypeSubstitution -> 0
-    | InstanceVariable _ -> 0
+    let name = String.lowercase_ascii name in
+    Db.store_word name elt
 
   let searchable_type_of_constructor args res =
     let open Odoc_model.Lang in
@@ -201,8 +131,36 @@ module Make (Storage : Db.Storage.S) = struct
     let open Odoc_search in
     let html = type_ |> Render.html_of_type |> string_of_html in
     let txt = Render.text_of_type type_ in
-    print_endline txt ;
     Db_common.Elt.{ html; txt }
+
+  let generic_cost ~ignore_no_doc full_name doc =
+    String.length full_name
+    (* + (5 * List.length path) TODO : restore depth based ordering *)
+    + (if ignore_no_doc
+       then 0
+       else
+         match Db_common.Elt.(doc.txt) with
+         | "" -> 1000
+         | _ -> 0)
+    + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
+
+  let type_cost type_ =
+    String.length (display_type_expr type_).txt + type_size type_
+
+  let kind_cost (kind : Odoc_search.Index_db.kind) =
+    let open Odoc_search in
+    let open Odoc_search.Index_db in
+    match kind with
+    | Constructor { args; res } ->
+        type_cost (searchable_type_of_constructor args res)
+    | Field { parent_type; type_; _ } ->
+        type_cost (searchable_type_of_record parent_type type_)
+    | Value { value = _; type_ } -> type_cost type_
+    | Doc _ -> 400
+    | TypeDecl _ | Module | Exception _ | Class_type _ | Method _ | Class _
+    | TypeExtension _ | ExtensionConstructor _ | ModuleType | FunctorParameter
+    | ModuleSubstitution _ | ModuleTypeSubstitution | InstanceVariable _ ->
+        200
 
   let convert_kind (kind : Odoc_search.Index_db.kind) =
     let open Odoc_search in
@@ -243,7 +201,7 @@ module Make (Storage : Db.Storage.S) = struct
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
     (* let str = String.concat "|" (List.concat_map (fun li -> ";" :: li)  type_paths) in
         print_endline str; *)
-    Db.store_all elt
+    Db.store_type elt
       (List.map
          (fun xs ->
            let xs = List.concat_map Db_common.list_of_string xs in
@@ -288,9 +246,11 @@ module Make (Storage : Db.Storage.S) = struct
       id |> Odoc_model.Paths.Identifier.fullname |> String.concat "."
     in
     let url = Render.url id in
-    let html = doc |> Render.html_of_doc |> string_of_html
-    and txt = Render.text_of_doc doc in
-    let doc = Db_common.Elt.{ html; txt } in
+    let doc =
+      let html = doc |> Render.html_of_doc |> string_of_html
+      and txt = Render.text_of_doc doc in
+      Db_common.Elt.{ html; txt }
+    in
     let kind' = convert_kind kind in
     let ignore_no_doc =
       match kind with
@@ -298,16 +258,15 @@ module Make (Storage : Db.Storage.S) = struct
       | _ -> false
     in
     let cost = generic_cost ~ignore_no_doc full_name doc + kind_cost kind in
-    let elt =
-      { Db_common.Elt.name = full_name
-      ; url
-      ; kind = kind'
-      ; cost
-      ; doc
-      ; pkg = None
-      }
+    let name =
+      match kind with
+      | Doc _ -> Odoc_model.Paths.Identifier.prefixname id
+      | _ -> full_name
     in
-    register_doc elt txt ;
+    let elt =
+      Db_common.Elt.{ name; url; kind = kind'; cost; doc; pkg = None }
+    in
+    register_doc elt doc.txt ;
     (match kind with
     | Doc _ -> ()
     | _ -> register_full_name full_name elt) ;
