@@ -1,3 +1,5 @@
+
+module Elt = Db.Elt
 module Db_common = Db
 open Db.Caches
 
@@ -131,7 +133,7 @@ module Make (Storage : Db.Storage.S) = struct
     let open Odoc_search in
     let html = type_ |> Render.html_of_type |> string_of_html in
     let txt = Render.text_of_type type_ in
-    Db_common.Elt.{ html; txt }
+    Elt.{ html; txt }
 
   let generic_cost ~ignore_no_doc full_name doc =
     String.length full_name
@@ -139,7 +141,7 @@ module Make (Storage : Db.Storage.S) = struct
     + (if ignore_no_doc
        then 0
        else
-         match Db_common.Elt.(doc.txt) with
+         match Elt.(doc.txt) with
          | "" -> 1000
          | _ -> 0)
     + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
@@ -148,7 +150,6 @@ module Make (Storage : Db.Storage.S) = struct
     String.length (display_type_expr type_).txt + type_size type_
 
   let kind_cost (kind : Odoc_search.Index_db.kind) =
-    let open Odoc_search in
     let open Odoc_search.Index_db in
     match kind with
     | Constructor { args; res } ->
@@ -168,8 +169,10 @@ module Make (Storage : Db.Storage.S) = struct
     match kind with
     | TypeDecl typedecl ->
         let html = typedecl |> Render.html_of_typedecl |> string_of_html in
-        Db_common.Elt.TypeDecl { html }
-    | Module -> Db_common.Elt.ModuleType
+        let txt = Render.text_of_typedecl typedecl in
+        let type_decl = Elt.{ txt; html } in
+        Elt.TypeDecl { type_decl }
+    | Module -> Elt.ModuleType
     | Value { value = _; type_ } ->
         let paths = paths ~prefix:[] ~sgn:Pos type_ in
         let type_ = display_type_expr type_ in
@@ -249,7 +252,7 @@ module Make (Storage : Db.Storage.S) = struct
     let doc =
       let html = doc |> Render.html_of_doc |> string_of_html
       and txt = Render.text_of_doc doc in
-      Db_common.Elt.{ html; txt }
+      Elt.{ html; txt }
     in
     let kind' = convert_kind kind in
     let ignore_no_doc =
@@ -264,7 +267,7 @@ module Make (Storage : Db.Storage.S) = struct
       | _ -> full_name
     in
     let elt =
-      Db_common.Elt.{ name; url; kind = kind'; cost; doc; pkg = None }
+      Elt.{ name; url; kind = kind'; cost; doc; pkg = None }
     in
     register_doc elt doc.txt ;
     (match kind with

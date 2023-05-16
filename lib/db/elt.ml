@@ -25,7 +25,7 @@ type type_path = string list list
 
 type kind =
   | Doc
-  | TypeDecl of { html : string }
+  | TypeDecl of { type_decl : displayable }
   | Module
   | Exception
   | Class_type

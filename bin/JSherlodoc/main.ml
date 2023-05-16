@@ -1,5 +1,5 @@
-let db = lazy (
-Storage_js.load Jv.(to_string @@ call global "sherlodoc_db" [||]))
+let db =
+  lazy (Storage_js.load Jv.(to_string @@ call global "sherlodoc_db" [||]))
 
 let string_of_kind (kind : Db.Elt.kind) =
   let open Db.Elt in
@@ -45,6 +45,14 @@ let search query =
         match kind with
         | Val { type_; _ } | Constructor { type_; _ } | Field { type_; _ } ->
             Jv.(set o "type" (of_string type_.txt))
+        | TypeDecl { type_decl } ->
+            (* TODO : remove this hack and switch to real typedecl render *)
+            let txt = type_decl.txt in
+            let txt = String.split_on_char '=' txt in
+            if List.length txt > 1
+            then
+              let txt = txt |> List.tl |> String.concat "=" |> String.trim in
+              Jv.(set o "type" (of_string txt))
         | _ -> ()) ;
       o)
     results

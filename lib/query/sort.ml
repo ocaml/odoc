@@ -195,9 +195,9 @@ module Reasoning = struct
     match query_type, elt.kind with
     | [], _ -> None
     | ( _
-      , ( Elt.Constructor { type_paths }
-        | Elt.Field { type_paths }
-        | Elt.Val { type_paths } ) ) ->
+      , ( Elt.Constructor { type_paths; _ }
+        | Elt.Field { type_paths; _ }
+        | Elt.Val { type_paths; _ } ) ) ->
         Some (Type_distance.v query_type type_paths)
     | _ -> None
 
