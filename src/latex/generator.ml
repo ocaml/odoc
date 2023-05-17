@@ -169,7 +169,7 @@ let rec pp_elt ppf = function
   | Code_fragment x -> Raw.code_fragment pp ppf x
   | List { typ; items } -> list typ pp ppf items
   | Description items -> Raw.description pp ppf items
-  | Table { alignment; data } -> Raw.small_table pp ppf (Some alignment, data)
+  | Table { align; data } -> Raw.small_table pp ppf (Some align, data)
   | Layout_table { row_size = Large | Huge; tbl } -> large_table ppf tbl
   | Layout_table { row_size = Small | Empty; tbl } ->
       if List.length tbl <= small_table_height_limit then
@@ -328,16 +328,7 @@ and table_block { Table.data; align } =
            | `Data -> content))
       data
   in
-  let alignment =
-    match align with
-    | None -> (
-        match data with
-        | [] -> []
-        | line :: _ ->
-            List.map (fun _ -> Odoc_document.Types.Table.Default) line)
-    | Some align -> align
-  in
-  [ Table { alignment; data } ]
+  [ Table { align; data } ]
 
 let rec is_only_text l =
   let is_text : Item.t -> _ = function

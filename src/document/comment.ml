@@ -265,18 +265,30 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
                (nestable_block_element_list cell, cell_type)))
           data
       in
+      let generate_align data =
+        let max (a : int) b = if a < b then b else a in
+        (* Length of the longest line of the table *)
+        let max_length =
+          List.fold_left (fun m l -> max m (List.length l)) 0 data
+        in
+        let rec list_init i =
+          if i <= 0 then [] else Table.Default :: list_init (i - 1)
+        in
+        list_init max_length
+      in
       let align =
         match align with
-        | None -> None
+        | None -> generate_align data
         | Some align ->
-            Some
-              (List.map
-                 (function
-                   | None -> Table.Default
-                   | Some `Right -> Right
-                   | Some `Left -> Left
-                   | Some `Center -> Center)
-                 align)
+            List.map
+              (function
+                | None -> Table.Default
+                | Some `Right -> Right
+                | Some `Left -> Left
+                | Some `Center -> Center)
+              align
+        (* We should also check wellness of number of table cells vs alignment,
+           and raise warnings *)
       in
       block @@ Table { data; align }
 

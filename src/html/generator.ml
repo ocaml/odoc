@@ -229,12 +229,9 @@ and mk_table ~config ~resolve { Table.data; align } =
   in
   let mk_row row =
     let alignment align =
-      match align with
-      | None -> (Table.Default, None)
-      | Some (align :: q) -> (align, Some q)
-      | Some [] -> (Table.Default, None)
-      (* We might want to raise a warning, since there is less alignment than
-         rows *)
+      match align with align :: q -> (align, q) | [] -> (Table.Default, [])
+      (* Second case is for recovering from a too short alignment list. A
+         warning should have been raised when loading the doc-comment. *)
     in
     let acc, _align =
       List.fold_left
@@ -244,8 +241,6 @@ and mk_table ~config ~resolve { Table.data; align } =
           (cell :: acc, aligns))
         ([], align) row
     in
-    (* We might want to raise a warning if _align != Some [] | None as it means
-       there are more alignment instruction than rows *)
     Html.tr (List.rev acc)
   in
   let grid = List.map mk_row data in

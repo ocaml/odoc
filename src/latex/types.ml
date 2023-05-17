@@ -35,7 +35,7 @@ and layout_table = { row_size : row_size; tbl : t list list }
 
 and alignment = Odoc_document.Types.Table.alignment
 
-and table = { alignment : alignment list; data : t list list }
+and table = { align : alignment list; data : t list list }
 
 and t = elt list
 

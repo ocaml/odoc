@@ -100,7 +100,7 @@ and Table : sig
 
   type 'a t = {
     data : ('a * [ `Header | `Data ]) list list;
-    align : alignment list option;
+    align : alignment list;
   }
 end =
   Table

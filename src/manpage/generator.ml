@@ -316,7 +316,7 @@ let table pp { Table.data; align } =
   let alignment =
     let alignment =
       match align with
-      | Some align ->
+      | align ->
           List.map
             (function
               (* Since we are enclosing cells in text blocks, the alignment has
@@ -340,8 +340,6 @@ let table pp { Table.data; align } =
               | Right -> "r"
               | Default -> "l")
             align
-      | None ->
-          List.map (fun _ -> "l") (match data with [] -> [] | a :: _ -> a)
     in
     Align_line (String.concat "" alignment)
   in
