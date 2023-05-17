@@ -7,10 +7,6 @@ module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
 end
 
-module Rec_list = struct
-  let map f x = List.rev_map f x |> List.rev
-end
-
 let locations env id locs =
   match locs with Some _ as locs -> locs | None -> Env.lookup_def id env
 
@@ -248,8 +244,9 @@ and comment_nestable_block_element env parent ~loc:_
           |> List.rev )
   | `Table { data; align } ->
       let data =
-        Rec_list.map
-          (Rec_list.map (fun (cell, cell_type) ->
+        let map f x = List.rev_map f x |> List.rev in
+        map
+          (map (fun (cell, cell_type) ->
                (comment_nestable_block_element_list env parent cell, cell_type)))
           data
       in
