@@ -33,7 +33,7 @@ and list_info = { typ : Odoc_document.Types.Block.list_type; items : t list }
 
 and layout_table = { row_size : row_size; tbl : t list list }
 
-and alignment = Odoc_document.Types.Table.alignment option
+and alignment = Odoc_document.Types.Table.alignment
 
 and table = { alignment : alignment list; data : t list list }
 

@@ -265,6 +265,19 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
                (nestable_block_element_list cell, cell_type)))
           data
       in
+      let align =
+        match align with
+        | None -> None
+        | Some align ->
+            Some
+              (List.map
+                 (function
+                   | None -> Table.Default
+                   | Some `Right -> Right
+                   | Some `Left -> Left
+                   | Some `Center -> Center)
+                 align)
+      in
       block @@ Table { data; align }
 
 and paragraph : Comment.paragraph -> Block.one = function

@@ -335,10 +335,10 @@ let table pp { Table.data; align } =
                    | Some `Right -> "rmrj"
                    | None -> "l"
                   ]} *)
-              | Some `Left -> "l"
-              | Some `Center -> "c"
-              | Some `Right -> "r"
-              | None -> "l")
+              | Table.Left -> "l"
+              | Center -> "c"
+              | Right -> "r"
+              | Default -> "l")
             align
       | None ->
           List.map (fun _ -> "l") (match data with [] -> [] | a :: _ -> a)

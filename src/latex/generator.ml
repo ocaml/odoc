@@ -331,7 +331,10 @@ and table_block { Table.data; align } =
   let alignment =
     match align with
     | None -> (
-        match data with [] -> [] | line :: _ -> List.map (fun _ -> None) line)
+        match data with
+        | [] -> []
+        | line :: _ ->
+            List.map (fun _ -> Odoc_document.Types.Table.Default) line)
     | Some align -> align
   in
   [ Table { alignment; data } ]

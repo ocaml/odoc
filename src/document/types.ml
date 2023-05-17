@@ -96,11 +96,11 @@ end =
   Block
 
 and Table : sig
-  type alignment = [ `Left | `Center | `Right ]
+  type alignment = Left | Center | Right | Default
 
   type 'a t = {
     data : ('a * [ `Header | `Data ]) list list;
-    align : alignment option list option;
+    align : alignment list option;
   }
 end =
   Table

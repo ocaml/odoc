@@ -178,10 +178,10 @@ let heading ~config ~resolve (h : Heading.t) =
   mk ~a (anchor @ content @ source_link)
 
 let text_align = function
-  | Some `Left -> [ Html.a_style "text-align:left" ]
-  | Some `Center -> [ Html.a_style "text-align:center" ]
-  | Some `Right -> [ Html.a_style "text-align:right" ]
-  | None -> []
+  | Table.Left -> [ Html.a_style "text-align:left" ]
+  | Center -> [ Html.a_style "text-align:center" ]
+  | Right -> [ Html.a_style "text-align:right" ]
+  | Default -> []
 
 let cell_kind = function `Header -> Html.th | `Data -> Html.td
 
@@ -230,9 +230,9 @@ and mk_table ~config ~resolve { Table.data; align } =
   let mk_row row =
     let alignment align =
       match align with
-      | None -> (None, None)
+      | None -> (Table.Default, None)
       | Some (align :: q) -> (align, Some q)
-      | Some [] -> (None, None)
+      | Some [] -> (Table.Default, None)
       (* We might want to raise a warning, since there is less alignment than
          rows *)
     in
