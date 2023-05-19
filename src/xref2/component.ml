@@ -2438,6 +2438,14 @@ let module_of_functor_argument (arg : FunctorParameter.parameter) =
     hidden = false;
   }
 
+let umty_of_mty (e : ModuleType.expr) : ModuleType.U.expr option =
+  match e with
+  | Path { p_path; _ } -> Some (Path p_path)
+  | Signature s -> Some (Signature s)
+  | With { w_substitutions; w_expr; _ } -> Some (With (w_substitutions, w_expr))
+  | Functor (_, _) -> None
+  | TypeOf { t_desc; _ } -> Some (TypeOf t_desc)
+
 (** This is equivalent to {!Lang.extract_signature_doc}. *)
 let extract_signature_doc (s : Signature.t) =
   match (s.doc, s.items) with

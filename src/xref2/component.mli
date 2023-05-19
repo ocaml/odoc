@@ -796,4 +796,6 @@ end
 
 val module_of_functor_argument : FunctorParameter.parameter -> Module.t
 
+val umty_of_mty : ModuleType.expr -> ModuleType.U.expr option
+
 val extract_signature_doc : Signature.t -> CComment.docs

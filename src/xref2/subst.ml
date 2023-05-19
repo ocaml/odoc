@@ -142,15 +142,6 @@ let rename_class_type : Ident.path_class_type -> Ident.path_class_type -> t -> t
         t.type_;
   }
 
-let u_module_type_expr_of_module_type_expr (e : Component.ModuleType.expr) :
-    Component.ModuleType.U.expr =
-  match e with
-  | Path { p_path; _ } -> Path p_path
-  | Signature s -> Signature s
-  | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
-  | Functor (_, _) -> assert false
-  | TypeOf { t_desc; _ } -> TypeOf t_desc
-
 let rec substitute_vars vars t =
   let open TypeExpr in
   match t with
@@ -716,8 +707,10 @@ and u_module_type_expr s t =
         (List.map (with_module_type_substitution s) subs, u_module_type_expr s e)
   | TypeOf t -> (
       try TypeOf (module_type_type_of_desc s t)
-      with MTOInvalidated e ->
-        u_module_type_expr s (e |> u_module_type_expr_of_module_type_expr))
+      with MTOInvalidated e -> (
+        match Component.umty_of_mty e with
+        | Some e -> u_module_type_expr s e
+        | None -> assert false))
 
 and module_type_of_simple_expansion :
     Component.ModuleType.simple_expansion -> Component.ModuleType.expr =
