@@ -25,7 +25,7 @@ delimited with `(** ... *)`, and outputs HTML.
 """
 
 pin-depends: [
-  ["odoc-parser.dev" "git+https://github.com/ocaml-doc/odoc-parser.git#f98cfe3"]
+  ["odoc-parser.dev" "git+https://github.com/panglesd/odoc-parser.git#c20c756"]
 ]
 
 depends: [
