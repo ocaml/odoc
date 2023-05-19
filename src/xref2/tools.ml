@@ -1811,8 +1811,12 @@ and fragmap :
                 let old_ty =
                   match m.type_ with
                   | ModuleType e -> e
-                  | Alias (m, exp) ->
-                      TypeOf { t_desc = StructInclude m; t_expansion = exp }
+                  | Alias (_, Some exp) ->
+                      (* Avoid creating [module type of] expressions when
+                         possible since they will wind up in the html *)
+                      Component.mty_of_simple_expansion exp
+                  | Alias (m, None) ->
+                      TypeOf { t_desc = StructInclude m; t_expansion = None }
                 in
                 Ok
                   ( Component.Signature.Module

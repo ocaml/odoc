@@ -712,12 +712,6 @@ and u_module_type_expr s t =
         | Some e -> u_module_type_expr s e
         | None -> assert false))
 
-and module_type_of_simple_expansion :
-    Component.ModuleType.simple_expansion -> Component.ModuleType.expr =
-  function
-  | Signature sg -> Signature sg
-  | Functor (arg, e) -> Functor (arg, module_type_of_simple_expansion e)
-
 and module_type_expr s t =
   let open Component.ModuleType in
   match t with
@@ -745,7 +739,7 @@ and module_type_expr s t =
             t_expansion = Some (simple_expansion s e);
           }
       with MTOInvalidated _ ->
-        module_type_expr s (module_type_of_simple_expansion e))
+        module_type_expr s (Component.mty_of_simple_expansion e))
   | TypeOf { t_desc; t_expansion = None } ->
       TypeOf
         { t_desc = module_type_type_of_desc_noexn s t_desc; t_expansion = None }

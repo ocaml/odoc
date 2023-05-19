@@ -2451,3 +2451,8 @@ let extract_signature_doc (s : Signature.t) =
   match (s.doc, s.items) with
   | [], Include { expansion_; status = `Inline; _ } :: _ -> expansion_.doc
   | doc, _ -> doc
+
+let rec mty_of_simple_expansion : ModuleType.simple_expansion -> ModuleType.expr
+    = function
+  | Signature sg -> Signature sg
+  | Functor (arg, e) -> Functor (arg, mty_of_simple_expansion e)
