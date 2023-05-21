@@ -1,7 +1,6 @@
 (documentation
  (package odoc)
  (mld_files
-  contributing
   driver
   dune
   features
