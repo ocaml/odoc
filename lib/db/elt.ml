@@ -25,7 +25,7 @@ type type_path = string list list
 
 type kind =
   | Doc
-  | TypeDecl of { type_decl : displayable }
+  | TypeDecl of { type_decl : string }
   | Module
   | Exception
   | Class_type
@@ -35,11 +35,11 @@ type kind =
   | ExtensionConstructor
   | ModuleType
   | Constructor of
-      { type_ : displayable
+      { type_ : string
       ; type_paths : type_path
       }
   | Field of
-      { type_ : displayable
+      { type_ : string
       ; type_paths : type_path
       }
   | FunctorParameter
@@ -47,7 +47,7 @@ type kind =
   | ModuleTypeSubstitution
   | InstanceVariable
   | Val of
-      { type_ : displayable
+      { type_ : string
       ; type_paths : type_path
       }
 

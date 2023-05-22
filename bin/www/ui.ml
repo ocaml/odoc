@@ -18,14 +18,14 @@ let render_elt elt =
       [ txt "val "
       ; a ~a:link [ em [ txt elt.name ] ]
       ; txt " : "
-      ; txt type_.txt
+      ; txt type_
       ]
   | Doc -> [ txt "comment "; a ~a:link [ em [ txt elt.name ] ] ]
-  | TypeDecl { html = type_decl } ->
+  | TypeDecl { type_decl } ->
       [ txt "type "
       ; a ~a:link [ em [ txt elt.name ] ]
       ; txt " = "
-      ; Unsafe.data type_decl
+      ; txt type_decl
       ]
   | Module -> [ txt "module "; a ~a:link [ em [ txt elt.name ] ] ]
   | Exception -> [ txt "exception "; a ~a:link [ em [ txt elt.name ] ] ]
@@ -41,13 +41,13 @@ let render_elt elt =
       [ txt "constructor "
       ; a ~a:link [ em [ txt elt.name ] ]
       ; txt " : "
-      ; txt type_.txt
+      ; txt type_
       ]
   | Field { type_; _ } ->
       [ txt "field "
       ; a ~a:link [ em [ txt elt.name ] ]
       ; txt " : "
-      ; txt type_.txt
+      ; txt type_
       ]
   | FunctorParameter ->
       [ txt "functor param "; a ~a:link [ em [ txt elt.name ] ] ]
