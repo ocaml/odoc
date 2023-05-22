@@ -1,4 +1,4 @@
-(lang dune 3.0)
+(lang dune 3.7)
 
 (name odoc)
 
@@ -27,3 +27,5 @@
  "Paul-Elliot Angl\195\168s d'Auriac <paul-elliot@tarides.com>")
 
 (cram enable)
+
+(using mdx 0.3)

@@ -150,7 +150,7 @@ For example, inspecting the dependencies required to compile [foo.cmt], we run
 
 and we shall get
 
-{[
+{@text[
   Stdlib aea3513d44d604b62eaff79ad12007b3
   Foo 5ab79b5411a3c3476029260eda0b4a26
   CamlinternalFormatBasics f562e7b79dbe1bb1591060d6b4e854cf

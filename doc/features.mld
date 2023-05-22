@@ -666,6 +666,3 @@ type t = App(Bar)(Foo)(FooBarInt).Foo.bar
 
 This one is left as an exercise to the reader! It can be seen rendered
 by [odoc] {{!Odoc_examples.Resolution.Complicated_2}here}.
-
-
-
