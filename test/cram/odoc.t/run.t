@@ -19,13 +19,14 @@ $ cp  /home/emile/.opam/sherlodoc/var/cache/odig/odoc/dream/**.odocl .
   8.0K	index.odoc_bin
   $ sherlodoc_index --format=js --odoc=index.odoc_bin  --db=db.js      
   $ du -sh db.js
-  20K	db.js
+  16K	db.js
   $ odoc html-generate --with-search --output-dir html main.odocl
-  $ odoc html-generate --with-search --output-dir html dream.odocl
-  odoc: FILE.odocl argument: no 'dream.odocl' file or directory
+  $ odoc html-generate --  $ odoc html-generate --with-search --output-dir html main.odocl
+  odoc: too many arguments, don't know what to do with 'odoc', 'html-generate', '--with-search', '--output-dir', 'html', 'main.odocl'
   Usage: odoc html-generate [OPTION]… FILE.odocl
   Try 'odoc html-generate --help' or 'odoc --help' for more information.
   [2]
+-search --output-dir html dream.odocl
 $ odoc html-generate --with-search --output-dir html stdlib.odocl
   $ odoc html-generate --with-search --output-dir html page-page.odocl
   $ odoc support-files -o html
@@ -33,4 +34,4 @@ $ odoc html-generate --with-search --output-dir html stdlib.odocl
   $ du -sh html/index.js
   3.8M	html/index.js
   $ cp -r html /tmp
-  $ firefox /tmp/html/Main/index.html
+  $ xdg-open /tmp/html/Main/index.html
