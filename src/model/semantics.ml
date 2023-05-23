@@ -19,6 +19,7 @@ let describe_internal_tag = function
   | `Inline -> "@inline"
   | `Open -> "@open"
   | `Closed -> "@closed"
+  | `Hidden -> "@hidden"
 
 let warn_unexpected_tag { Location.value; location } =
   Error.raise_warning
@@ -484,7 +485,7 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
       -> (
         let next tag = loop ({ wloc with value = tag } :: tags) ast' tl in
         match tag with
-        | (`Inline | `Open | `Closed) as tag -> next tag
+        | (`Inline | `Open | `Closed | `Hidden) as tag -> next tag
         | `Canonical { Location.value = s; location = r_location } -> (
             match
               Error.raise_warnings (Reference.read_path_longident r_location s)
