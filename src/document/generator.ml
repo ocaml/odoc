@@ -252,18 +252,42 @@ module Make (Syntax : SYNTAX) = struct
     let path id = Url.Path.from_identifier id
     let url id = Url.from_path (path id)
 
+    let to_link documentation implementation =
+      let documentation =
+        let open Paths.Path.Resolved in
+        match documentation with
+        | Some (`Resolved p) when not (is_hidden (p :> t)) -> (
+            let id = identifier (p :> t) in
+            match Url.from_identifier ~stop_before:false id with
+            | Ok link -> Some link
+            | _ -> None)
+        | _ -> None
+      in
+      let implementation =
+        match implementation with
+        | Some (Odoc_model.Lang.Source_info.Resolved id) -> (
+            match Url.Anchor.from_identifier (id :> Paths.Identifier.t) with
+            | Ok url -> Some url
+            | Error _ -> None)
+        | _ -> None
+      in
+      Some (Source_page.Link { implementation; documentation })
+
     let info_of_info : Lang.Source_info.annotation -> Source_page.info option =
       function
-      | Value id -> (
-          match Url.Anchor.from_identifier (id :> Paths.Identifier.t) with
-          | Ok url -> Some (Link url)
-          | Error _ -> None)
       | Definition id -> (
           match id.iv with
           | `SourceLocation (_, def) -> Some (Anchor (DefName.to_string def))
           | `SourceLocationInternal (_, local) ->
               Some (Anchor (LocalName.to_string local))
           | _ -> None)
+      | Module { documentation; _ } -> to_link documentation None
+      | ModuleType { documentation; _ } -> to_link documentation None
+      | Type { documentation; _ } -> to_link documentation None
+      | ClassType { documentation; _ } -> to_link documentation None
+      | Value { documentation; implementation } ->
+          to_link documentation implementation
+      | Constructor { documentation; _ } -> to_link documentation None
 
     let source id syntax_info infos source_code =
       let url = path id in
@@ -1784,8 +1808,8 @@ module Make (Syntax : SYNTAX) = struct
       in
       let source_anchor =
         match t.source_info with
-        | Some src -> Some (Source_page.url src.id)
-        | None -> None
+        | Some { id = Some id; _ } -> Some (Source_page.url id)
+        | _ -> None
       in
       let page = make_expansion_page ~source_anchor url [ unit_doc ] items in
       Document.Page page

@@ -183,7 +183,11 @@ end =
   Page
 
 and Source_page : sig
-  type info = Syntax of string | Anchor of string | Link of Url.Anchor.t
+  type target = {
+    documentation : Url.Anchor.t option;
+    implementation : Url.Anchor.t option;
+  }
+  type info = Syntax of string | Anchor of string | Link of target
 
   type code = span list
   and span = Tagged_code of info * code | Plain_code of string

@@ -403,13 +403,60 @@ and open_ env parent = function
 let rec unit env t =
   let open Compilation_unit in
   let content =
-    match t.content with
-    | Module sg ->
-        let sg = signature env (t.id :> Id.Signature.t) sg in
-        Module sg
-    | Pack _ as p -> p
+    if t.Lang.Compilation_unit.linked || t.hidden then t.content
+    else
+      match t.content with
+      | Module sg ->
+          let sg = signature env (t.id :> Id.Signature.t) sg in
+          Module sg
+      | Pack _ as p -> p
   in
-  { t with content; linked = true }
+  let source_info =
+    let open Source_info in
+    match t.source_info with
+    | Some inf ->
+        let jump_to v f_impl f_doc =
+          let documentation =
+            match v.documentation with Some p -> Some (f_doc p) | None -> None
+          in
+          let implementation =
+            match v.implementation with
+            | Some (Unresolved p) -> (
+                match f_impl p with
+                | Some x -> Some (Resolved x)
+                | None -> v.implementation)
+            | x -> x
+          in
+          { documentation; implementation }
+        in
+        let infos =
+          List.map
+            (fun (i, pos) ->
+              let info =
+                match i with
+                | Value v ->
+                    Value
+                      (jump_to v
+                         (Shape_tools.lookup_value_path env)
+                         (value_path env))
+                | Module v ->
+                    Module (jump_to v (fun _ -> None) (module_path env))
+                | ModuleType v ->
+                    ModuleType
+                      (jump_to v (fun _ -> None) (module_type_path env))
+                | Type v -> Type (jump_to v (fun _ -> None) (type_path env))
+                | Constructor v ->
+                    Constructor
+                      (jump_to v (fun _ -> None) (constructor_path env))
+                | i -> i
+              in
+              (info, pos))
+            inf.infos
+        in
+        Some { inf with infos }
+    | None -> None
+  in
+  { t with content; linked = true; source_info }
 
 and value_ env parent t =
   let open Value in
@@ -1087,8 +1134,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
   | Package p -> Package (type_expression_package env parent visited p)
 
 let link ~filename x y =
-  Lookup_failures.catch_failures ~filename (fun () ->
-      if y.Lang.Compilation_unit.linked || y.hidden then y else unit x y)
+  Lookup_failures.catch_failures ~filename (fun () -> unit x y)
 
 let page env page =
   let () =

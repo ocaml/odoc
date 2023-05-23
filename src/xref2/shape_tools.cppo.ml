@@ -53,6 +53,49 @@ let rec shape_of_id env :
         (* Not represented in shapes. *)
         None
 
+let rec shape_of_module_path env : _ -> Shape.t option =
+  let proj parent kind name =
+    let item = Shape.Item.make name kind in
+    match shape_of_module_path env (parent :> Odoc_model.Paths.Path.t) with
+    | Some shape -> Some (Shape.proj shape item)
+    | None -> None
+  in
+  fun (path : Odoc_model.Paths.Path.t) ->
+    match path with
+    | `Resolved _ -> None
+    | `Root name -> (
+        match Env.lookup_unit name env with
+        | Some (Env.Found unit) -> (
+            match unit.shape_info with
+            | Some (shape, _) -> Some shape
+            | None -> None)
+        | _ -> None)
+    | `Forward _ -> None
+    | `Dot (parent, name) ->
+        proj (parent :> Odoc_model.Paths.Path.t) Kind.Module name
+    | `Apply (parent, arg) ->
+        shape_of_module_path env (parent :> Odoc_model.Paths.Path.t)
+        >>= fun parent ->
+        shape_of_module_path env (arg :> Odoc_model.Paths.Path.t) >>= fun arg ->
+        Some (Shape.app parent ~arg)
+    | `Identifier (id, _) ->
+        shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
+
+let shape_of_value_path env :
+    Odoc_model.Paths.Path.Value.t -> Shape.t option =
+  let proj parent kind name =
+    let item = Shape.Item.make name kind in
+    match shape_of_module_path env (parent :> Odoc_model.Paths.Path.t) with
+    | Some shape -> Some (Shape.proj shape item)
+    | None -> None
+  in
+  fun (path : Odoc_model.Paths.Path.Value.t) ->
+    match path with
+    | `Resolved _ -> None
+    | `Dot (parent, name) -> proj (parent :> Odoc_model.Paths.Path.t) Kind.Value name
+    | `Identifier (id, _) -> shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
+
+
 module MkId = Identifier.Mk
 
 let unit_of_uid uid =
@@ -95,8 +138,8 @@ let lookup_shape :
     | Some x -> Some x
     | None -> (
       match unit.source_info with
-      | Some si -> Some (MkId.source_location_mod si.id)
-      | None -> None)
+      | Some {id = Some id ; _} -> Some (MkId.source_location_mod id)
+      | _ -> None)
 
 
 let lookup_def :
@@ -105,6 +148,15 @@ let lookup_def :
     Identifier.SourceLocation.t option =
  fun env id ->
   match shape_of_id env id with
+  | None -> None
+  | Some query -> lookup_shape env query
+
+let lookup_value_path :
+    Env.t ->
+    Path.Value.t ->
+    Identifier.SourceLocation.t option
+ = fun env path ->
+  match shape_of_value_path env path with
   | None -> None
   | Some query -> lookup_shape env query
 

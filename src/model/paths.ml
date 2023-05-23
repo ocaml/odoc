@@ -132,16 +132,19 @@ module Identifier = struct
         InstanceVariableName.to_string name :: full_name_aux (parent :> t)
     | `Label (parent, name) ->
         LabelName.to_string name :: full_name_aux (parent :> t)
+    | `SourceDir (parent, name) -> name :: full_name_aux (parent :> t)
+    | `SourceLocation (parent, name) ->
+        DefName.to_string name :: full_name_aux (parent :> t)
+    | `SourceLocationInternal (parent, name) ->
+        LocalName.to_string name :: full_name_aux (parent :> t)
+    | `SourceLocationMod name -> full_name_aux (name :> t)
+    | `SourcePage (parent, name) -> name :: full_name_aux (parent :> t)
     | `AssetFile (parent, name) -> name :: full_name_aux (parent :> t)
-    | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
-    | `SourceLocationInternal _ ->
-        []
 
   let fullname : [< t_pv ] id -> string list =
    fun n -> List.rev @@ full_name_aux (n :> t)
 
   let is_internal : [< t_pv ] id -> bool = fun n -> is_internal (n :> t)
-
   let rec label_parent_aux =
     let open Id in
     fun (n : non_src) ->

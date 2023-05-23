@@ -198,9 +198,11 @@ module Path = struct
     | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)
     | `Substituted s -> resolved_type map s
 
-  and resolved_value map (`Value (p, name) : Cpath.Resolved.value) :
+  and resolved_value map (p : Cpath.Resolved.value) :
       Odoc_model.Paths.Path.Resolved.Value.t =
-    `Value (resolved_parent map p, name)
+    match p with
+    | `Value (p, name) -> `Value (resolved_parent map p, name)
+    | `Gpath y -> y
 
   and resolved_datatype map (p : Cpath.Resolved.datatype) :
       Odoc_model.Paths.Path.Resolved.DataType.t =

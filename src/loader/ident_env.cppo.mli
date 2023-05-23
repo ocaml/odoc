@@ -40,6 +40,8 @@ module Path : sig
   val read_type : t -> Path.t -> Paths.Path.Type.t
 
   val read_class_type : t -> Path.t -> Paths.Path.ClassType.t
+
+  val read_value : t -> Path.t -> Paths.Path.Value.t
 end
 
 val find_module : t -> Ident.t -> Paths.Path.Module.t
