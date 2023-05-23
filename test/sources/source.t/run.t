@@ -88,6 +88,30 @@ Now, compile the pages with the --source option:
 
   $ odoc compile -I . --source-name a.ml --source-parent-file src-source.odoc a.cmt
   $ odoc link -I . a.odoc
+  File "a.odoc":
+  Warning: Failed to resolve module path identifier((root A).F, false) Lookup failure (module): (root A).F
+  File "a.odoc":
+  Warning: Failed to resolve module path identifier((param (root A).F M), false).A Parent_module: Lookup failure (module): (param (root A).F M)
+  File "a.odoc":
+  Warning: Failed to lookup type identifier((root A).a1, false) Lookup failure (type): (root A).a1
+  File "a.odoc":
+  Warning: Failed to resolve module type path identifier((root A).T, false) Lookup failure (module type): (root A).T
+  File "a.odoc":
+  Warning: Failed to resolve module path identifier((root A).A, false) Lookup failure (module): (root A).A
+  File "a.odoc":
+  Warning: Failed to lookup value identifier((root A).y, false) Lookup failure (value): (root A).y
+  File "a.odoc":
+  Warning: Failed to lookup value identifier((root A).{x}2, false) Lookup failure (value): (root A).{x}2
+  File "a.odoc":
+  Warning: Failed to lookup value identifier((root A).{x}2, false) Lookup failure (value): (root A).{x}2
+  File "a.odoc":
+  Warning: Failed to lookup value identifier((root A).y, false) Lookup failure (value): (root A).y
+  File "a.odoc":
+  Warning: Failed to lookup value identifier((root A).{x}2, false) Lookup failure (value): (root A).{x}2
+  File "a.odoc":
+  Warning: Failed to lookup value identifier((root A).{x}2, false) Lookup failure (value): (root A).{x}2
+  File "a.odoc":
+  Warning: Failed to lookup value identifier((root A).{x}2, false) Lookup failure (value): (root A).{x}2
   $ odoc link -I . page-root.odoc
   $ odoc link -I . src-source.odoc
   $ odoc html-generate --indent -o html src-source.odocl
@@ -312,4 +336,3 @@ Ids generated in the source code:
   id="module-FF2"
   id="module-FF2.argument-1-A.module-E"
   id="module-FF2.argument-2-A.module-F"
-

@@ -12,8 +12,16 @@ Verify the behavior on functors.
   $ odoc compile --source-name a.ml --source-parent-file src-source.odoc -I . a.cmt
   $ odoc compile --source-name b.ml --source-parent-file src-source.odoc -I . b.cmt
   $ odoc link -I . s.odoc
+  File "s.odoc":
+  Warning: Failed to lookup type identifier((root S).S.t, false) Lookup failure (type): (root S).S.t
   $ odoc link -I . a.odoc
+  File "a.odoc":
+  Warning: Failed to lookup value identifier((param (root A).F S), false).x Parent_module: Lookup failure (module): (param (root A).F S)
+  File "a.odoc":
+  Warning: Failed to lookup type identifier((param (root A).F S), false).t Parent_module: Lookup failure (module): (param (root A).F S)
   $ odoc link -I . b.odoc
+  File "b.odoc":
+  Warning: Failed to resolve module path identifier((root B).S, false) Lookup failure (module): (root B).S
   $ odoc html-generate --source s.ml --indent -o html s.odocl
   $ odoc html-generate --source a.ml --indent -o html a.odocl
   $ odoc html-generate --source b.ml --indent -o html b.odocl

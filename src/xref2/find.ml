@@ -281,7 +281,10 @@ let module_type_in_sig sg name =
 
 let value_in_sig sg name =
   filter_in_sig sg (function
-    | Signature.Value (id, m) when N.value id = name ->
+    | Signature.Value (id, m)
+      when N.value id = name || N.value id = "(" ^ name ^ ")" ->
+        (* For operator, the value will have name [(<op>)]. We match that even
+           with name [<op>]. *)
         Some (`FValue (N.typed_value id, Delayed.get m))
     | _ -> None)
 

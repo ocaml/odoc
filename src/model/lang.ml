@@ -18,15 +18,31 @@ open Paths
 
 (** {3 Modules} *)
 module Source_info = struct
+  type 'a jump_to_impl =
+    | Unresolved of 'a
+    | Resolved of Identifier.SourceLocation.t
+
+  type ('doc, 'impl) jump_to = {
+    documentation : 'doc option;
+    implementation : 'impl jump_to_impl option;
+  }
+
+  type 'path jump_1 = ('path, 'path) jump_to
+
   type annotation =
     | Definition of Paths.Identifier.SourceLocation.t
-    | Value of Paths.Identifier.SourceLocation.t
+    | Value of Path.Value.t jump_1
+    | Module of Path.Module.t jump_1
+    | ClassType of Path.ClassType.t jump_1
+    | ModuleType of Path.ModuleType.t jump_1
+    | Type of Path.Type.t jump_1
+    | Constructor of Path.Constructor.t jump_1
 
   type 'a with_pos = 'a * (int * int)
 
   type infos = annotation with_pos list
 
-  type t = { id : Identifier.SourcePage.t; infos : infos }
+  type t = { id : Identifier.SourcePage.t option; infos : infos }
 end
 
 module rec Module : sig

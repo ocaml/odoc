@@ -13,3 +13,8 @@ val lookup_def :
   Env.t ->
   Identifier.NonSrc.t ->
   Identifier.SourceLocation.t option
+
+val lookup_value_path :
+  Env.t ->
+  Path.Value.t ->
+  Identifier.SourceLocation.t option

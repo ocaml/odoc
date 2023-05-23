@@ -42,12 +42,12 @@ exception Not_an_interface
 
 exception Make_root_error of string
 
-let read_cmt_infos source_id_opt id ~filename () =
+let read_cmt_infos source_id_opt id ~filename ~count_occurrences () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error _ -> raise Corrupted
   | cmt_info -> (
       match cmt_info.cmt_annots with
-      | Implementation _ -> Implementation.read_cmt_infos source_id_opt id cmt_info
+      | Implementation _ -> Implementation.read_cmt_infos source_id_opt id cmt_info ~count_occurrences
       | _ -> raise Not_an_implementation)
 
 
@@ -99,7 +99,7 @@ let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
   make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     ?canonical ?shape_info content
 
-let read_cmti ~make_root ~parent ~filename ~cmt_filename_opt ~source_id_opt () =
+let read_cmti ~make_root ~parent ~filename ~cmt_filename_opt ~source_id_opt ~count_occurrences () =
   let cmt_info = Cmt_format.read_cmt filename in
   match cmt_info.cmt_annots with
   | Interface intf -> (
@@ -116,15 +116,16 @@ let read_cmti ~make_root ~parent ~filename ~cmt_filename_opt ~source_id_opt () =
           let shape_info, source_info =
             match cmt_filename_opt with
             | Some cmt_filename ->
-                read_cmt_infos source_id_opt id ~filename:cmt_filename ()
-            | None -> (None, None)
+                read_cmt_infos source_id_opt id ~filename:cmt_filename ~count_occurrences ()
+            | None ->
+               (None, None)
           in
           compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
             ~interface ~sourcefile ~name ~id ?shape_info ~source_info
             ?canonical sg)
   | _ -> raise Not_an_interface
 
-let read_cmt ~make_root ~parent ~filename ~source_id_opt () =
+let read_cmt ~make_root ~parent ~filename ~source_id_opt ~count_occurrences () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
       raise Not_an_implementation
@@ -168,7 +169,7 @@ let read_cmt ~make_root ~parent ~filename ~source_id_opt () =
       | Implementation impl ->
           let id, sg, canonical = Cmt.read_implementation parent name impl in
           let shape_info, source_info =
-            read_cmt_infos source_id_opt id ~filename ()
+            read_cmt_infos source_id_opt id ~filename ~count_occurrences ()
           in
           compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
             ~name ~id ?canonical ?shape_info ~source_info sg
@@ -199,12 +200,12 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt =
+let read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt ~count_occurrences =
   wrap_errors ~filename
-    (read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt)
+    (read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt ~count_occurrences)
 
-let read_cmt ~make_root ~parent ~filename ~source_id_opt =
-  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename ~source_id_opt)
+let read_cmt ~make_root ~parent ~filename ~source_id_opt ~count_occurrences =
+  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename ~source_id_opt ~count_occurrences)
 
 let read_cmi ~make_root ~parent ~filename =
   wrap_errors ~filename (read_cmi ~make_root ~parent ~filename)

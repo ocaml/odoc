@@ -206,8 +206,6 @@ module Identifier : sig
 
   val name : [< t_pv ] id -> string
 
-  (* val root : [< t_pv ] id -> RootModule.t_pv id option *)
-
   val fullname : [< t_pv ] id -> string list
   (** The fullname of value [x] in module [M] is [M.x], whereas the regular name
       is [x]. *)
@@ -384,12 +382,6 @@ module rec Path : sig
 
     module Value : sig
       type t = Paths_types.Resolved_path.value
-
-      (* val of_ident : Identifier.Path.Value.t -> t *)
-
-      (* val is_hidden : t -> bool *)
-
-      (* val identifier : t -> Identifier.Path.Type.t *)
     end
 
     module ClassType : sig
