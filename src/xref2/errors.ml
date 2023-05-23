@@ -197,7 +197,7 @@ module Tools_error = struct
           Component.Fmt.model_identifier
           (m :> Odoc_model.Paths.Identifier.t)
     | `Lookup_failureC m ->
-        Format.fprintf fmt "Lookup failure (value): %a"
+        Format.fprintf fmt "Lookup failure (constructor): %a"
           Component.Fmt.model_identifier
           (m :> Odoc_model.Paths.Identifier.t)
     | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"

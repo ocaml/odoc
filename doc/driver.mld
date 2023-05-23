@@ -135,7 +135,8 @@ Compiling a file with [odoc] requires a few arguments: the file to compile, an
 optional parent, a list of include paths, a list of children for [.mld] files,
 optional parent and name for source implementation, and an output path. Include
 paths can be just ['.'], and we can calculate the output file from the input
-because all of the files are going into the same directory.
+because all of the files are going into the same directory. If we wish to count
+occurrences of each identifier, we need to pass the [--count-occurrences] flag.
 
 Linking a file with [odoc] requires the input file and a list of include paths. As
 for compile, we will hard-code the include path.
@@ -147,6 +148,9 @@ hard-code the output path to be [html/].
 Using the [--source] argument with an [.odocl] file that was not compiled with
 [--source-parent-file] and [--source-name] will result in an error, as will omitting [--source] when generating HTML of an [odocl] that was
 compiled with [--source-parent-file] and [--source-name].
+
+To get the number of uses of each identifier, we can use the [count-occurrences]
+command.
 
 In all of these, we'll capture [stdout] and [stderr] so we can check it later.
 
@@ -209,7 +213,7 @@ let add_prefixed_output cmd list prefix lines =
       !list
       @ Bos.Cmd.to_string cmd :: List.map (fun l -> prefix ^ ": " ^ l) lines
 
-let compile file ?parent ?(output_dir = Fpath.v "./")
+let compile file ?(count_occurrences = true) ?parent ?(output_dir = Fpath.v "./")
     ?(ignore_output = false) ?source_args children =
   let output_basename =
     let ext = Fpath.get_ext file in
@@ -237,8 +241,9 @@ let compile file ?parent ?(output_dir = Fpath.v "./")
     | _ -> Cmd.empty
     else Cmd.empty
   in
+  let occ = if count_occurrences then Cmd.v "--count-occurrences" else Cmd.empty in
   let cmd =
-    odoc % "compile" % Fpath.to_string file %% source_args %% cmt_arg
+    odoc % "compile" % Fpath.to_string file %% source_args %% occ %% cmt_arg
     % "-I" % "." % "-o" % p output_file
     |> List.fold_right (fun child cmd -> cmd % "--child" % child) children
   in
@@ -288,6 +293,11 @@ let html_generate ?(ignore_output = false) ?(assets = []) ?(search_uris = []) fi
 let support_files () =
   let open Cmd in
   let cmd = odoc % "support-files" % "-o" % "html/odoc" in
+  run cmd
+
+let count_occurrences output =
+  let open Cmd in
+  let cmd = odoc % "count-occurrences" % "-I" % "." % "-o" % p output in
   run cmd
 ]}
 
@@ -750,6 +760,7 @@ let compiled = compile_all () in
 let linked = link_all compiled in
 let () = index_generate () in
 let _ = js_index () in
+let _ = count_occurrences (Fpath.v "occurrences.txt") in
 generate_all linked
 ]}
 

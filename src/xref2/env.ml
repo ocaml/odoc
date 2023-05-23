@@ -361,8 +361,8 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
   let id = (unit.id :> Paths.Identifier.Module.t) in
   let locs =
     match unit.source_info with
-    | Some src -> Some (Identifier.Mk.source_location_mod src.id)
-    | None -> None
+    | Some { id = Some id; _ } -> Some (Identifier.Mk.source_location_mod id)
+    | _ -> None
   in
   match unit.content with
   | Module s ->

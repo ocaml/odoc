@@ -18,7 +18,7 @@ let inline_status =
 
 let source_info =
   let open Lang.Source_info in
-  Record [ F ("id", (fun t -> t.id), identifier) ]
+  Record [ F ("id", (fun t -> t.id), Option identifier) ]
 
 (** {3 Module} *)
 

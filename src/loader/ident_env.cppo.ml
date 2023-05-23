@@ -718,6 +718,9 @@ module Path = struct
       `Identifier (find_type env id, false)
     with Not_found -> assert false
 
+  let read_value_ident env id : Paths.Path.Value.t =
+    `Identifier (find_value_identifier env id, false)
+
   let read_class_type_ident env id : Paths.Path.ClassType.t =
     try
       `Identifier (find_class_type env id, false)
@@ -794,6 +797,18 @@ module Path = struct
     | Path.Papply(_, _)-> assert false
 #if OCAML_VERSION >= (5,1,0)
     | Path.Pextra_ty (p,_) -> read_type env p
+#endif
+
+  let read_value env = function
+    | Path.Pident id -> read_value_ident env id
+#if OCAML_VERSION >= (4,8,0)
+    | Path.Pdot(p, s) -> `Dot(read_module env p, s)
+#else
+    | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
+#endif
+    | Path.Papply(_, _) -> assert false
+#if OCAML_VERSION >= (5,1,0)
+    | Path.Pextra_ty _ -> assert false
 #endif
 
 end

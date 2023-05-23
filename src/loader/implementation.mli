@@ -2,6 +2,7 @@ val read_cmt_infos :
   Odoc_model.Paths.Identifier.Id.source_page option ->
   Odoc_model.Paths.Identifier.Id.root_module ->
   Cmt_format.cmt_infos ->
+  count_occurrences:bool ->
   (Odoc_model.Compat.shape
   * Odoc_model.Paths.Identifier.Id.source_location
     Odoc_model.Compat.shape_uid_map)

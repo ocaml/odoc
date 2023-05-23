@@ -878,6 +878,29 @@ and lookup_type_gpath :
   in
   res
 
+and lookup_value_gpath :
+    Env.t ->
+    Odoc_model.Paths.Path.Resolved.Value.t ->
+    (Find.value, simple_value_lookup_error) Result.result =
+ fun env p ->
+  let do_value p name =
+    lookup_parent_gpath ~mark_substituted:true env p
+    |> map_error (fun e -> (e :> simple_value_lookup_error))
+    >>= fun (sg, sub) ->
+    match Find.value_in_sig sg name with
+    | `FValue (name, t) :: _ -> Ok (`FValue (name, Subst.value sub t))
+    | [] -> Error `Find_failure
+  in
+  let res =
+    match p with
+    | `Identifier ({ iv = `Value _; _ } as i) ->
+        of_option ~error:(`Lookup_failureV i) (Env.(lookup_by_id s_value) i env)
+        >>= fun (`Value ({ iv = `Value (_, name); _ }, t)) ->
+        Ok (`FValue (name, t))
+    | `Value (p, id) -> do_value p (ValueName.to_string id)
+  in
+  res
+
 and lookup_datatype_gpath :
     Env.t ->
     Odoc_model.Paths.Path.Resolved.DataType.t ->
@@ -1005,13 +1028,16 @@ and lookup_datatype :
 and lookup_value :
     Env.t ->
     Cpath.Resolved.value ->
-    (Find.value, simple_value_lookup_error) Result.result =
- fun env (`Value (p, id)) ->
-  lookup_parent ~mark_substituted:true env p
-  |> map_error (fun e -> (e :> simple_value_lookup_error))
-  >>= fun (sg, sub) ->
-  handle_value_lookup env (ValueName.to_string id) p sg
-  >>= fun (_, `FValue (name, c)) -> Ok (`FValue (name, Subst.value sub c))
+    (_, simple_value_lookup_error) Result.result =
+ fun env p ->
+  match p with
+  | `Value (p, id) ->
+      lookup_parent ~mark_substituted:true env p
+      |> map_error (fun e -> (e :> simple_value_lookup_error))
+      >>= fun (sg, sub) ->
+      handle_value_lookup env (ValueName.to_string id) p sg
+      >>= fun (_, `FValue (name, c)) -> Ok (`FValue (name, Subst.value sub c))
+  | `Gpath p -> lookup_value_gpath env p
 
 and lookup_constructor :
     Env.t ->
@@ -1357,6 +1383,9 @@ and resolve_value : Env.t -> Cpath.value -> resolve_value_result =
         in
         of_option ~error:`Find_failure result
     | `Resolved r -> lookup_value env r >>= fun t -> Ok (r, t)
+    | `Identifier (i, _) ->
+        let i' = `Identifier i in
+        lookup_value env (`Gpath i') >>= fun t -> Ok (`Gpath i', t)
   in
   result
 
@@ -1808,7 +1837,10 @@ and reresolve_datatype :
   result
 
 and reresolve_value : Env.t -> Cpath.Resolved.value -> Cpath.Resolved.value =
- fun env (`Value (p, n)) -> `Value (reresolve_parent env p, n)
+ fun env p ->
+  match p with
+  | `Value (p, n) -> `Value (reresolve_parent env p, n)
+  | `Gpath _ -> p
 
 and reresolve_constructor :
     Env.t -> Cpath.Resolved.constructor -> Cpath.Resolved.constructor =

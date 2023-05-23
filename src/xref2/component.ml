@@ -1060,6 +1060,9 @@ module Fmt = struct
     | `Value (p, t) ->
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.ValueName.to_string t)
+    | `Gpath p ->
+        Format.fprintf ppf "%a" model_resolved_path
+          (p :> Odoc_model.Paths.Path.Resolved.t)
 
   and resolved_constructor_path :
       Format.formatter -> Cpath.Resolved.constructor -> unit =
@@ -1120,6 +1123,10 @@ module Fmt = struct
     | `Value (p, t) ->
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.ValueName.to_string t)
+    | `Identifier (id, b) ->
+        Format.fprintf ppf "identifier(%a, %b)" model_identifier
+          (id :> Odoc_model.Paths.Identifier.t)
+          b
 
   and constructor_path : Format.formatter -> Cpath.constructor -> unit =
    fun ppf p ->
@@ -1872,8 +1879,11 @@ module Of_Lang = struct
 
   and resolved_value_path :
       _ -> Odoc_model.Paths.Path.Resolved.Value.t -> Cpath.Resolved.value =
-   fun ident_map (`Value (p, name)) ->
-    `Value (`Module (resolved_module_path ident_map p), name)
+   fun ident_map p ->
+    match p with
+    | `Value (p, name) ->
+        `Value (`Module (resolved_module_path ident_map p), name)
+    | `Identifier _ -> `Gpath p
 
   and resolved_constructor_path :
       _ ->
@@ -1934,12 +1944,6 @@ module Of_Lang = struct
         | `Local i -> `Local (i, b))
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
 
-  and value_path : _ -> Odoc_model.Paths.Path.Value.t -> Cpath.value =
-   fun ident_map p ->
-    match p with
-    | `Resolved r -> `Resolved (resolved_value_path ident_map r)
-    | `Dot (path', x) -> `Dot (module_path ident_map path', x)
-
   and datatype : _ -> Odoc_model.Paths.Path.DataType.t -> Cpath.datatype =
    fun ident_map p ->
     match p with
@@ -1949,6 +1953,13 @@ module Of_Lang = struct
         | `Identifier i -> `Identifier (i, b)
         | `Local i -> `Local (i, b))
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
+
+  and value_path : _ -> Odoc_model.Paths.Path.Value.t -> Cpath.value =
+   fun ident_map p ->
+    match p with
+    | `Resolved r -> `Resolved (resolved_value_path ident_map r)
+    | `Dot (path', x) -> `Dot (module_path ident_map path', x)
+    | `Identifier (i, b) -> `Identifier (i, b)
 
   and constructor_path :
       _ -> Odoc_model.Paths.Path.Constructor.t -> Cpath.constructor =

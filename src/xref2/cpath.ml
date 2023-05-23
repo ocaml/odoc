@@ -36,7 +36,8 @@ module rec Resolved : sig
     | `Class of parent * ClassName.t
     | `ClassType of parent * ClassTypeName.t ]
 
-  and value = [ `Value of parent * ValueName.t ]
+  and value =
+    [ `Value of parent * ValueName.t | `Gpath of Path.Resolved.Value.t ]
 
   and datatype =
     [ `Local of Ident.path_datatype
@@ -89,7 +90,8 @@ and Cpath : sig
   and value =
     [ `Resolved of Resolved.value
     | `Dot of module_ * string
-    | `Value of Resolved.parent * ValueName.t ]
+    | `Value of Resolved.parent * ValueName.t
+    | `Identifier of Identifier.Value.t * bool ]
 
   and datatype =
     [ `Resolved of Resolved.datatype

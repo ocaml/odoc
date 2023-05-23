@@ -85,7 +85,28 @@ let rec unit env t =
 
 and source_info env si = { si with infos = source_info_infos env si.infos }
 
-and source_info_infos _env infos = infos
+and source_info_infos env infos =
+  let open Source_info in
+  let map_doc f v =
+    let documentation =
+      match v.documentation with Some p -> Some (f p) | None -> None
+    in
+    { v with documentation }
+  in
+  List.map
+    (function
+      | v, pos ->
+          let v =
+            match v with
+            | Value v -> Value (map_doc (value_path env) v)
+            | Module v -> Module (map_doc (module_path env) v)
+            | ModuleType v -> ModuleType (map_doc (module_type_path env) v)
+            | Type v -> Type (map_doc (type_path env) v)
+            | Constructor v -> Constructor (map_doc (constructor_path env) v)
+            | i -> i
+          in
+          (v, pos))
+    infos
 
 and content env id =
   let open Compilation_unit in
