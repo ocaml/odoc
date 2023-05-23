@@ -42,10 +42,6 @@ type kind =
       { type_ : string
       ; type_paths : type_path
       }
-  | FunctorParameter
-  | ModuleSubstitution
-  | ModuleTypeSubstitution
-  | InstanceVariable
   | Val of
       { type_ : string
       ; type_paths : type_path
@@ -58,29 +54,26 @@ type package =
 
 module T = struct
   type t =
-    { cost : int
-    ; name : string
+    { name : string
     ; kind : kind
-    ; doc : displayable
+    ; has_doc: bool
     ; pkg : package option
-    ; url : string
+    ; json_output : string
     }
 
   let compare_pkg { name; version = _ } (b : package) =
     String.compare name b.name
 
   let compare a b =
-    match Int.compare a.cost b.cost with
-    | 0 -> begin
-        match String.compare a.name b.name with
-        | 0 -> begin
-            match Option.compare compare_pkg a.pkg b.pkg with
-            | 0 -> Stdlib.compare a.kind b.kind
-            | c -> c
-          end
-        | c -> c
-      end
-    | c -> c
+    begin
+      match String.compare a.name b.name with
+      | 0 -> begin
+          match Option.compare compare_pkg a.pkg b.pkg with
+          | 0 -> Stdlib.compare a.kind b.kind
+          | c -> c
+        end
+      | c -> c
+    end
 
   let compare a b = if a == b then 0 else compare a b
 end

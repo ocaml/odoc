@@ -1,5 +1,5 @@
 val main :
-     index:Odoc_search.Index_db.index
+     index:Odoc_search.Entry.t list
   -> db_filename:string
   -> optimize:bool
   -> (module Db.Storage.S)

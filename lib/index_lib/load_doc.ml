@@ -144,12 +144,6 @@ module Make (Storage : Db.Storage.S) = struct
     let open Odoc_model.Lang in
     TypeExpr.Arrow (None, parent_type, type_)
 
-  let display_type_expr type_ =
-    let open Odoc_search in
-    let html = type_ |> Render.html_of_type |> string_of_html in
-    let txt = Render.text_of_type type_ in
-    Elt.{ html; txt }
-
   let generic_cost ~ignore_no_doc full_name doc =
     String.length full_name
     (* + (5 * List.length path) TODO : restore depth based ordering *)
@@ -162,10 +156,10 @@ module Make (Storage : Db.Storage.S) = struct
     + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
 
   let type_cost type_ =
-    String.length (display_type_expr type_).txt + type_size type_
+    String.length (Odoc_search.Render.text_of_type type_) + type_size type_
 
-  let kind_cost (kind : Odoc_search.Index_db.kind) =
-    let open Odoc_search.Index_db in
+  let kind_cost (kind : Odoc_search.Entry.extra) =
+    let open Odoc_search.Entry in
     match kind with
     | Constructor { args; res } ->
         type_cost (searchable_type_of_constructor args res)
@@ -174,16 +168,15 @@ module Make (Storage : Db.Storage.S) = struct
     | Value { value = _; type_ } -> type_cost type_
     | Doc _ -> 400
     | TypeDecl _ | Module | Exception _ | Class_type _ | Method _ | Class _
-    | TypeExtension _ | ExtensionConstructor _ | ModuleType | FunctorParameter
-    | ModuleSubstitution _ | ModuleTypeSubstitution | InstanceVariable _ ->
+    | TypeExtension _ | ExtensionConstructor _ | ModuleType ->
         200
 
-  let convert_kind (kind : Odoc_search.Index_db.kind) =
+  let convert_kind (kind : Odoc_search.Entry.extra) =
     let open Odoc_search in
-    let open Odoc_search.Index_db in
+    let open Odoc_search.Entry in
     match kind with
     | TypeDecl typedecl ->
-        let type_decl = Render.text_of_typedecl typedecl in
+        let type_decl = typedecl.txt in
         Elt.TypeDecl { type_decl }
     | Module -> Elt.ModuleType
     | Value { value = _; type_ } ->
@@ -201,7 +194,7 @@ module Make (Storage : Db.Storage.S) = struct
           |> searchable_type_of_record parent_type
           |> paths ~prefix:[] ~sgn:Pos
         in
-        let type_ = (display_type_expr type_).txt in
+        let type_ = Render.text_of_type type_ in
         Field { type_; type_paths }
     | Doc _ -> Doc
     | Exception _ -> Exception
@@ -211,10 +204,6 @@ module Make (Storage : Db.Storage.S) = struct
     | TypeExtension _ -> TypeExtension
     | ExtensionConstructor _ -> ExtensionConstructor
     | ModuleType -> ModuleType
-    | FunctorParameter -> FunctorParameter
-    | ModuleSubstitution _ -> ModuleSubstitution
-    | ModuleTypeSubstitution -> ModuleTypeSubstitution
-    | InstanceVariable _ -> InstanceVariable
 
   let register_type_expr elt type_ =
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
@@ -227,8 +216,8 @@ module Make (Storage : Db.Storage.S) = struct
            Cache_list.memo xs)
          type_paths)
 
-  let register_kind elt (kind : Odoc_search.Index_db.kind) =
-    let open Odoc_search.Index_db in
+  let register_kind elt (kind : Odoc_search.Entry.extra) =
+    let open Odoc_search.Entry in
     let open Odoc_model.Lang in
     match kind with
     | TypeDecl _ -> ()
@@ -248,46 +237,46 @@ module Make (Storage : Db.Storage.S) = struct
     | Field { mutable_ = _; parent_type; type_ } ->
         let type_ = TypeExpr.Arrow (None, parent_type, type_) in
         register_type_expr elt type_
-    | FunctorParameter -> ()
-    | ModuleSubstitution _ -> ()
-    | ModuleTypeSubstitution -> ()
-    | InstanceVariable _ -> ()
+    
 
   let register_entry
-      Odoc_search.Index_db.
+      (Odoc_search.Entry.
         { id : Odoc_model.Paths.Identifier.Any.t
         ; doc : Odoc_model.Comment.docs
-        ; kind : kind
-        } =
+        ; extra : extra
+        } as entry) =
     let open Odoc_search in
-    let open Odoc_search.Index_db in
+    let open Odoc_search.Entry in
     let full_name =
-      id |> Odoc_model.Paths.Identifier.fullname |> String.concat "."
+      id |> Pretty.fullname |> String.concat "."
     in
-    let url = Render.url id in
     let doc =
       let html = doc |> Render.html_of_doc |> string_of_html
       and txt = Render.text_of_doc doc in
       Elt.{ html; txt }
     in
-    let kind' = convert_kind kind in
+    let kind' = convert_kind extra in
     let ignore_no_doc =
-      match kind with
+      match extra with
       | Module | ModuleType -> true
       | _ -> false
     in
-    let cost = generic_cost ~ignore_no_doc full_name doc + kind_cost kind in
+    (* TODO : use entry cost *)
+    let _cost = generic_cost ~ignore_no_doc full_name doc + kind_cost extra in
     let name =
-      match kind with
-      | Doc _ -> Odoc_model.Paths.Identifier.prefixname id
+      match extra with
+      | Doc _ -> Pretty.prefixname id
       | _ -> full_name
     in
-    let elt = Elt.{ name; url; kind = kind'; cost; doc; pkg = None } in
+    let json_output = Json_output.string_of_entry entry in
+    let has_doc = doc.txt <> "" in
+    let elt = Elt.{ name; kind = kind'; pkg = None ; json_output ; has_doc} in
+  
     register_doc elt doc.txt ;
-    (match kind with
+    (match extra with
     | Doc _ -> ()
     | _ -> register_full_name full_name elt) ;
-    register_kind elt kind
+    register_kind elt extra
 
   module Resolver = Odoc_odoc.Resolver
 

@@ -1,12 +1,21 @@
-let main index db_filename db_format =
+let main files db_filename db_format =
+  let index = files |> List.map Fpath.of_string |> List.map Result.get_ok in
   let optimize, storage =
     match db_format with
     | `ancient -> true, (module Storage_ancient : Db.Storage.S)
     | `marshal -> false, (module Storage_marshal : Db.Storage.S)
     | `js -> false, (module Storage_js : Db.Storage.S)
   in
-  let channel = open_in index in
-  let index = Marshal.from_channel channel in
+  let add_entries li e = (Odoc_search.Entry.entries_of_item e) @ li in
+  let index =
+  index |>
+    List.fold_left (fun li file ->
+        file
+        |> Odoc_odoc.Indexing.handle_file
+             ~page:(Odoc_model.Fold.page ~f:add_entries li)
+             ~unit:(Odoc_model.Fold.unit ~f:add_entries li)
+        |> Result.get_ok |> Option.value ~default:[]) [] 
+  in
   Index_lib.main ~index ~db_filename ~optimize storage
 
 open Cmdliner
@@ -21,11 +30,11 @@ let db_filename =
   let doc = "Output filename" in
   Arg.(required & opt (some string) None & info [ "db" ] ~docv:"DB" ~doc)
 
-let odoc_path =
+let odoc_files =
   let doc = "Path to a binary odoc index" in
-  Arg.(required & opt (some file) None & info [ "odoc" ] ~docv:"ODOC_FILE" ~doc)
+  Arg.(non_empty & (pos_all file [] @@ info ~doc ~docv:"ODOC_FILE" []))
 
-let index = Term.(const main $ odoc_path $ db_filename $ db_format)
+let index = Term.(const main $ odoc_files $ db_filename $ db_format)
 
 let cmd =
   let doc = "Index odocl files" in

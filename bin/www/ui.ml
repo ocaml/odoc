@@ -49,14 +49,6 @@ let render_elt elt =
       ; txt " : "
       ; txt type_
       ]
-  | FunctorParameter ->
-      [ txt "functor param "; a ~a:link [ em [ txt elt.name ] ] ]
-  | ModuleSubstitution ->
-      [ txt "module subst "; a ~a:link [ em [ txt elt.name ] ] ]
-  | ModuleTypeSubstitution ->
-      [ txt "module type subst "; a ~a:link [ em [ txt elt.name ] ] ]
-  | InstanceVariable ->
-      [ txt "instance variable "; a ~a:link [ em [ txt elt.name ] ] ]
 
 let render_pkg elt =
   let open Db.Elt in

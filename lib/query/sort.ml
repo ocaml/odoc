@@ -173,10 +173,6 @@ module Reasoning = struct
     | ModuleType
     | Constructor
     | Field
-    | FunctorParameter
-    | ModuleSubstitution
-    | ModuleTypeSubstitution
-    | InstanceVariable
     | Val
 
   type t =
@@ -213,9 +209,6 @@ module Reasoning = struct
     let open Elt in
     String.starts_with ~prefix:"Stdlib." elt.name
 
-  let has_doc elt =
-    let open Elt in
-    elt.doc.txt <> ""
 
   let kind elt =
     match elt.Elt.kind with
@@ -231,17 +224,13 @@ module Reasoning = struct
     | Elt.ModuleType -> ModuleType
     | Elt.Constructor _ -> Constructor
     | Elt.Field _ -> Field
-    | Elt.FunctorParameter -> FunctorParameter
-    | Elt.ModuleSubstitution -> ModuleSubstitution
-    | Elt.ModuleTypeSubstitution -> ModuleTypeSubstitution
-    | Elt.InstanceVariable -> InstanceVariable
     | Elt.Val _ -> Val
 
   let name_length elt = String.length elt.Elt.name
 
   let v query_words query_type elt =
     let is_stdlib = is_stdlib elt in
-    let has_doc = has_doc elt in
+    let has_doc = elt.Elt.has_doc in
     let name_matches = Name_match.with_words query_words elt in
     let kind = kind elt in
     let type_distance = type_distance query_type elt in
@@ -275,11 +264,7 @@ module Reasoning = struct
       | Class -> 4
       | TypeExtension -> 4
       | ExtensionConstructor -> 5
-      | FunctorParameter -> 6
       | Method -> 5
-      | ModuleSubstitution -> 5
-      | ModuleTypeSubstitution -> 5
-      | InstanceVariable -> 6
     in
     Int.compare (to_int k) (to_int k')
 
@@ -299,10 +284,7 @@ module Reasoning = struct
       | ModuleType -> 20
       | Exception -> 30
       | Class_type | Class | TypeExtension -> 40
-      | ExtensionConstructor | Method | ModuleSubstitution
-      | ModuleTypeSubstitution | Doc ->
-          50
-      | FunctorParameter | InstanceVariable -> 60
+      | ExtensionConstructor | Method | Doc -> 50
     in
     let name_matches =
       let open Name_match in
