@@ -58,7 +58,7 @@ module T = struct
     ; kind : kind
     ; has_doc: bool
     ; pkg : package option
-    ; json_output : string
+    ; json_display : string
     }
 
   let compare_pkg { name; version = _ } (b : package) =

@@ -268,9 +268,9 @@ module Make (Storage : Db.Storage.S) = struct
       | Doc _ -> Pretty.prefixname id
       | _ -> full_name
     in
-    let json_output = Json_output.string_of_entry entry in
+    let json_display = entry |> Json_display.of_entry |> Odoc_html.Json.to_string in
     let has_doc = doc.txt <> "" in
-    let elt = Elt.{ name; kind = kind'; pkg = None ; json_output ; has_doc} in
+    let elt = Elt.{ name; kind = kind'; pkg = None ; json_display ; has_doc} in
   
     register_doc elt doc.txt ;
     (match extra with
