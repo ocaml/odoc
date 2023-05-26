@@ -15,11 +15,7 @@ let render_elt elt =
   let link = render_link elt in
   match elt.kind with
   | Val { type_; _ } ->
-      [ txt "val "
-      ; a ~a:link [ em [ txt elt.name ] ]
-      ; txt " : "
-      ; txt type_
-      ]
+      [ txt "val "; a ~a:link [ em [ txt elt.name ] ]; txt " : "; txt type_ ]
   | Doc -> [ txt "comment "; a ~a:link [ em [ txt elt.name ] ] ]
   | TypeDecl { type_decl } ->
       [ txt "type "
@@ -44,11 +40,7 @@ let render_elt elt =
       ; txt type_
       ]
   | Field { type_; _ } ->
-      [ txt "field "
-      ; a ~a:link [ em [ txt elt.name ] ]
-      ; txt " : "
-      ; txt type_
-      ]
+      [ txt "field "; a ~a:link [ em [ txt elt.name ] ]; txt " : "; txt type_ ]
 
 let render_pkg elt =
   let open Db.Elt in

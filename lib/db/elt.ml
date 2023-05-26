@@ -56,7 +56,7 @@ module T = struct
   type t =
     { name : string
     ; kind : kind
-    ; has_doc: bool
+    ; has_doc : bool
     ; pkg : package option
     ; json_display : string
     }

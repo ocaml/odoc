@@ -104,9 +104,11 @@ let rec full_name_aux : Paths.Identifier.t -> string list =
 let fullname : [< Paths.Identifier.t_pv ] Paths.Identifier.id -> string list =
  fun n -> List.rev @@ full_name_aux (n :> Paths.Identifier.t)
 
- let prefixname : [< Paths.Identifier.t_pv ] Paths.Identifier.id -> string =
-  fun n ->
-   match full_name_aux (n :> Paths.Identifier.t) with [] -> "" | _ :: q -> String.concat "." q
+let prefixname : [< Paths.Identifier.t_pv ] Paths.Identifier.id -> string =
+ fun n ->
+  match full_name_aux (n :> Paths.Identifier.t) with
+  | [] -> ""
+  | _ :: q -> String.concat "." q
 
 let show_type_name_verbose h : Paths.Path.Type.t -> _ = function
   | `Resolved t ->

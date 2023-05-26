@@ -216,40 +216,39 @@ module Make (Storage : Db.Storage.S) = struct
            Cache_list.memo xs)
          type_paths)
 
-  let register_kind elt (kind : Odoc_search.Entry.extra) =
+  let register_kind ~type_search elt (kind : Odoc_search.Entry.extra) =
     let open Odoc_search.Entry in
     let open Odoc_model.Lang in
-    match kind with
-    | TypeDecl _ -> ()
-    | Module -> ()
-    | Value { value = _; type_ } -> register_type_expr elt type_
-    | Doc _ -> ()
-    | Exception _ -> ()
-    | Class_type _ -> ()
-    | Method _ -> ()
-    | Class _ -> ()
-    | TypeExtension _ -> ()
-    | ExtensionConstructor _ -> ()
-    | ModuleType -> ()
-    | Constructor { args; res } ->
-        let type_ = searchable_type_of_constructor args res in
-        register_type_expr elt type_
-    | Field { mutable_ = _; parent_type; type_ } ->
-        let type_ = TypeExpr.Arrow (None, parent_type, type_) in
-        register_type_expr elt type_
-    
+    if type_search
+    then
+      match kind with
+      | TypeDecl _ -> ()
+      | Module -> ()
+      | Value { value = _; type_ } -> register_type_expr elt type_
+      | Doc _ -> ()
+      | Exception _ -> ()
+      | Class_type _ -> ()
+      | Method _ -> ()
+      | Class _ -> ()
+      | TypeExtension _ -> ()
+      | ExtensionConstructor _ -> ()
+      | ModuleType -> ()
+      | Constructor { args; res } ->
+          let type_ = searchable_type_of_constructor args res in
+          register_type_expr elt type_
+      | Field { mutable_ = _; parent_type; type_ } ->
+          let type_ = TypeExpr.Arrow (None, parent_type, type_) in
+          register_type_expr elt type_
 
-  let register_entry
+  let register_entry ~empty_payload ~index_name ~type_search ~index_docstring
       (Odoc_search.Entry.
-        { id : Odoc_model.Paths.Identifier.Any.t
-        ; doc : Odoc_model.Comment.docs
-        ; extra : extra
-        } as entry) =
+         { id : Odoc_model.Paths.Identifier.Any.t
+         ; doc : Odoc_model.Comment.docs
+         ; extra : extra
+         } as entry) =
     let open Odoc_search in
     let open Odoc_search.Entry in
-    let full_name =
-      id |> Pretty.fullname |> String.concat "."
-    in
+    let full_name = id |> Pretty.fullname |> String.concat "." in
     let doc =
       let html = doc |> Render.html_of_doc |> string_of_html
       and txt = Render.text_of_doc doc in
@@ -268,17 +267,25 @@ module Make (Storage : Db.Storage.S) = struct
       | Doc _ -> Pretty.prefixname id
       | _ -> full_name
     in
-    let json_display = entry |> Json_display.of_entry |> Odoc_html.Json.to_string in
+    let json_display =
+      if empty_payload
+      then ""
+      else entry |> Json_display.of_entry |> Odoc_html.Json.to_string
+    in
     let has_doc = doc.txt <> "" in
-    let elt = Elt.{ name; kind = kind'; pkg = None ; json_display ; has_doc} in
-  
-    register_doc elt doc.txt ;
-    (match extra with
-    | Doc _ -> ()
-    | _ -> register_full_name full_name elt) ;
-    register_kind elt extra
+    let elt = Elt.{ name; kind = kind'; pkg = None; json_display; has_doc } in
+    if index_docstring then register_doc elt doc.txt ;
+    (if index_name
+     then
+       match extra with
+       | Doc _ -> ()
+       | _ -> register_full_name full_name elt) ;
+    register_kind ~type_search elt extra
 
   module Resolver = Odoc_odoc.Resolver
 
-  let run ~index = List.iter register_entry index
+  let run ~index_docstring ~index_name ~type_search ~empty_payload ~index =
+    List.iter
+      (register_entry ~index_docstring ~index_name ~type_search ~empty_payload)
+      index
 end

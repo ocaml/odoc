@@ -134,7 +134,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     let ho = Hocc.create 16 in
     let hs = Hset.create 16 in
     List.iter
-      (fun (path, count) -> store ~ho ~hs ~count path elt)
+      (fun (path, count) -> store ~ho ~hs ~count (Cache_list.memo path) elt)
       (regroup_chars paths)
 
   let store_chars name elt =

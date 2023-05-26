@@ -27,7 +27,7 @@ let search message =
   Jv.(apply (get global "postMessage"))
     [| Jv.of_list
          (fun Db.Elt.{ json_display; _ } ->
-          json_display |> Jstr.of_string |> Brr.Json.decode |> Result.get_ok)
+           json_display |> Jstr.of_string |> Brr.Json.decode |> Result.get_ok)
          results
     |]
 
