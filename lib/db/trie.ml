@@ -93,3 +93,13 @@ let rec fold_map merge transform t =
           | None, opt | opt, None -> opt
           | Some acc, Some res -> Some (merge acc res))
         children leaf
+
+let rec map_leaf ~f t =
+  match t with
+  | Leaf (v, outcome) -> Leaf (v, f outcome)
+  | Node { leaf; children; summary } ->
+      let leaf = Option.map f leaf in
+      let summary = Option.map f summary in
+
+      let children = M.map (map_leaf ~f) children in
+      Node { leaf; children; summary }

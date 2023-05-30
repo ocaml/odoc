@@ -190,10 +190,8 @@ module Reasoning = struct
     let open Elt in
     match query_type, elt.kind with
     | [], _ -> None
-    | ( _
-      , ( Elt.Constructor { type_paths; _ }
-        | Elt.Field { type_paths; _ }
-        | Elt.Val { type_paths; _ } ) ) ->
+    | _, (Elt.Constructor type_paths | Elt.Field type_paths | Elt.Val type_paths)
+      ->
         Some (Type_distance.v query_type type_paths)
     | _ -> None
 
@@ -209,11 +207,10 @@ module Reasoning = struct
     let open Elt in
     String.starts_with ~prefix:"Stdlib." elt.name
 
-
   let kind elt =
     match elt.Elt.kind with
     | Elt.Doc -> Doc
-    | Elt.TypeDecl _ -> TypeDecl
+    | Elt.TypeDecl -> TypeDecl
     | Elt.Module -> Module
     | Elt.Exception -> Exception
     | Elt.Class_type -> Class_type

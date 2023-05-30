@@ -1,13 +1,13 @@
 module Elt = Db.Elt
 module Db_common = Db
-open Db.Caches
+module Caches = Db.Caches
 
 module Make (Storage : Db.Storage.S) = struct
   module Types = Db.Types
   module Db = Db.Make (Storage)
   module ModuleName = Odoc_model.Names.ModuleName
 
-  let clear () = Cache.clear ()
+  let clear () = Caches.String.clear ()
 
   let rec type_size = function
     | Odoc_model.Lang.TypeExpr.Var _ -> 1
@@ -35,43 +35,49 @@ module Make (Storage : Db.Storage.S) = struct
     let fullname = fullname t in
     tails (String.split_on_char '.' fullname)
 
-  let rec paths ~prefix ~sgn = function
-    | Odoc_model.Lang.TypeExpr.Var _ ->
-        let poly = Cache.memo "POLY" in
-        [ poly :: Cache.memo (Types.string_of_sgn sgn) :: prefix ]
-    | Any ->
-        let poly = Cache.memo "POLY" in
-        [ poly :: Cache.memo (Types.string_of_sgn sgn) :: prefix ]
-    | Arrow (_, a, b) ->
-        let prefix_left = Cache.memo "->0" :: prefix in
-        let prefix_right = Cache.memo "->1" :: prefix in
-        List.rev_append
-          (paths ~prefix:prefix_left ~sgn:(Types.sgn_not sgn) a)
-          (paths ~prefix:prefix_right ~sgn b)
-    | Constr (name, args) ->
-        let name = fullname name in
-        let prefix =
-          Cache.memo name :: Cache.memo (Types.string_of_sgn sgn) :: prefix
-        in
-        begin
-          match args with
-          | [] -> [ prefix ]
-          | _ ->
-              rev_concat
-              @@ List.mapi
-                   (fun i arg ->
-                     let prefix = Cache.memo (string_of_int i) :: prefix in
-                     paths ~prefix ~sgn arg)
-                   args
-        end
-    | Tuple args ->
-        rev_concat
-        @@ List.mapi (fun i arg ->
-               let prefix = Cache.memo (string_of_int i ^ "*") :: prefix in
-               paths ~prefix ~sgn arg)
-        @@ args
-    | _ -> []
+  (** for scoring *)
+  let rec paths ~prefix ~sgn t =
+    let r =
+      match t with
+      | Odoc_model.Lang.TypeExpr.Var _ ->
+          let poly = Caches.String.memo "POLY" in
+          [ poly :: Caches.String.memo (Types.string_of_sgn sgn) :: prefix ]
+      | Any ->
+          let poly = Caches.String.memo "POLY" in
+          [ poly :: Caches.String.memo (Types.string_of_sgn sgn) :: prefix ]
+      | Arrow (_, a, b) ->
+          let prefix_left = Caches.String.memo "->0" :: prefix in
+          let prefix_right = Caches.String.memo "->1" :: prefix in
+          List.rev_append
+            (paths ~prefix:prefix_left ~sgn:(Types.sgn_not sgn) a)
+            (paths ~prefix:prefix_right ~sgn b)
+      | Constr (name, args) ->
+          let name = fullname name in
+          let prefix =
+            Caches.String.memo name :: Caches.String.memo (Types.string_of_sgn sgn) :: prefix
+          in
+          begin
+            match args with
+            | [] -> [ prefix ]
+            | _ ->
+                rev_concat
+                @@ List.mapi
+                     (fun i arg ->
+                       let prefix = Caches.String.memo (string_of_int i) :: prefix in
+                       paths ~prefix ~sgn arg)
+                     args
+          end
+      | Tuple args ->
+          rev_concat
+          @@ List.mapi (fun i arg ->
+                 let prefix = Caches.String.memo (string_of_int i ^ "*") :: prefix in
+                 paths ~prefix ~sgn arg)
+          @@ args
+      | _ -> []
+    in
+    Caches.Cache_string_list_list.memo r
 
+  (** for indexing *)
   let rec type_paths ~prefix ~sgn = function
     | Odoc_model.Lang.TypeExpr.Var _ ->
         [ "POLY" :: Types.string_of_sgn sgn :: prefix ]
@@ -100,6 +106,9 @@ module Make (Storage : Db.Storage.S) = struct
     | Tuple args -> rev_concat @@ List.map (type_paths ~prefix ~sgn) @@ args
     | _ -> []
 
+  let type_paths ~prefix ~sgn t =
+    Caches.Cache_string_list_list.memo (type_paths ~prefix ~sgn t)
+
   let register_doc elt doc_txt =
     let doc_words = String.split_on_char ' ' doc_txt in
     List.iter (fun word -> Db.store_word word elt) doc_words
@@ -123,22 +132,6 @@ module Make (Storage : Db.Storage.S) = struct
             let field_name = Odoc_model.Paths.Identifier.name field.id in
             TypeExpr.Arrow (Some (Label field_name), field.type_, res))
           res fields
-
-  let display_constructor_type args res =
-    let open Odoc_model.Lang in
-    match args with
-    | TypeDecl.Constructor.Tuple args ->
-        let type_ =
-          match args with
-          | _ :: _ :: _ -> TypeExpr.(Arrow (None, Tuple args, res))
-          | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
-          | _ -> res
-        in
-        Odoc_search.Render.text_of_type type_
-    | TypeDecl.Constructor.Record fields ->
-        let fields = Odoc_search.Render.text_of_record fields in
-        let res = Odoc_search.Render.text_of_type res in
-        fields ^ " -> " ^ res
 
   let searchable_type_of_record parent_type type_ =
     let open Odoc_model.Lang in
@@ -172,30 +165,24 @@ module Make (Storage : Db.Storage.S) = struct
         200
 
   let convert_kind (kind : Odoc_search.Entry.extra) =
-    let open Odoc_search in
     let open Odoc_search.Entry in
     match kind with
-    | TypeDecl typedecl ->
-        let type_decl = typedecl.txt in
-        Elt.TypeDecl { type_decl }
+    | TypeDecl _ -> Elt.TypeDecl
     | Module -> Elt.ModuleType
     | Value { value = _; type_ } ->
         let paths = paths ~prefix:[] ~sgn:Pos type_ in
-        let type_ = Render.text_of_type type_ in
-        Val { type_; type_paths = paths }
+        Val paths
     | Constructor { args; res } ->
         let searchable_type = searchable_type_of_constructor args res in
-        let type_paths = type_paths ~prefix:[] ~sgn:Pos searchable_type in
-        let type_ = display_constructor_type args res in
-        Constructor { type_; type_paths }
+        let type_paths = paths ~prefix:[] ~sgn:Pos searchable_type in
+        Constructor type_paths
     | Field { mutable_ = _; parent_type; type_ } ->
         let type_paths =
           type_
           |> searchable_type_of_record parent_type
           |> paths ~prefix:[] ~sgn:Pos
         in
-        let type_ = Render.text_of_type type_ in
-        Field { type_; type_paths }
+        Field type_paths
     | Doc _ -> Doc
     | Exception _ -> Exception
     | Class_type _ -> Class_type
@@ -213,7 +200,7 @@ module Make (Storage : Db.Storage.S) = struct
       (List.map
          (fun xs ->
            let xs = List.concat_map Db_common.list_of_string xs in
-           Cache_list.memo xs)
+           Caches.Char_list.memo xs)
          type_paths)
 
   let register_kind ~type_search elt (kind : Odoc_search.Entry.extra) =

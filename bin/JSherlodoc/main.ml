@@ -5,7 +5,7 @@ let string_of_kind (kind : Db.Elt.kind) =
   let open Db.Elt in
   match kind with
   | Doc -> "doc"
-  | TypeDecl _ -> "type"
+  | TypeDecl -> "type"
   | Module -> "module"
   | Exception -> "exception"
   | Class_type -> "class type"

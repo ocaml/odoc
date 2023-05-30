@@ -25,7 +25,7 @@ type type_path = string list list
 
 type kind =
   | Doc
-  | TypeDecl of { type_decl : string }
+  | TypeDecl
   | Module
   | Exception
   | Class_type
@@ -34,18 +34,9 @@ type kind =
   | TypeExtension
   | ExtensionConstructor
   | ModuleType
-  | Constructor of
-      { type_ : string
-      ; type_paths : type_path
-      }
-  | Field of
-      { type_ : string
-      ; type_paths : type_path
-      }
-  | Val of
-      { type_ : string
-      ; type_paths : type_path
-      }
+  | Constructor of type_path
+  | Field of type_path
+  | Val of type_path
 
 type package =
   { name : string

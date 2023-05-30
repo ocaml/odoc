@@ -4,7 +4,6 @@ module Storage_toplevel = Storage
 module Trie = Trie
 module Caches = Caches
 include Types
-open Caches
 
 let list_of_string s = List.init (String.length s) (String.get s)
 
@@ -134,7 +133,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     let ho = Hocc.create 16 in
     let hs = Hset.create 16 in
     List.iter
-      (fun (path, count) -> store ~ho ~hs ~count (Cache_list.memo path) elt)
+      (fun (path, count) -> store ~ho ~hs ~count (Caches.Char_list.memo path) elt)
       (regroup_chars paths)
 
   let store_chars name elt =
@@ -149,7 +148,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     db_names := go !db_names name
 
   let store_word word elt =
-    (word |> list_of_string |> List.rev |> Cache_list.memo |> store_chars) elt
+    (word |> list_of_string |> List.rev |> Caches.Char_list.memo |> store_chars) elt
 end
 
 module Storage = Storage
