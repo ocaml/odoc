@@ -12,23 +12,23 @@
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  8424	db.js
-  8424	db_empty_payload.js
-  7904	db_no_docstring.js
-  5744	db_no_name.js
-  3168	db_no_type.js
-  2648	db_only_names.js
-  1288	db.js.gz
+  16744	db.js
+  12852	db_empty_payload.js
+  14876	db_no_docstring.js
+  12304	db_no_name.js
+  9988	db_no_type.js
+  4332	db_only_names.js
+  4084	db.js.gz
   1628	megaodocl.gz
 
   $ du -sh *.js *.gz
-  8.3M	db.js
-  8.3M	db_empty_payload.js
-  7.8M	db_no_docstring.js
-  5.7M	db_no_name.js
-  3.1M	db_no_type.js
-  2.6M	db_only_names.js
-  1.3M	db.js.gz
+  17M	db.js
+  13M	db_empty_payload.js
+  15M	db_no_docstring.js
+  13M	db_no_name.js
+  9.8M	db_no_type.js
+  4.3M	db_only_names.js
+  4.0M	db.js.gz
   1.6M	megaodocl.gz
   $ for f in $(find . -name '*.odocl'); do
   >  odoc html-generate --with-search --output-dir html $f 2> /dev/null
@@ -36,6 +36,7 @@
   $ odoc support-files -o html
   $ cat db.js  ../../../bin/JSherlodoc/main.bc.js > html/index.js
   $ du -sh html/index.js
-  13M	html/index.js
+  $ ls html
+  21M	html/index.js
   $ cp -r html /tmp
-  $ firefox /tmp/html/index.html
+  $ firefox /tmp/html/base/index.html

@@ -1,7 +1,7 @@
 module String = Cache.Make (struct
   type t = string
 
-  let copy str = String.init (String.length str) (String.get str) 
+  let copy str = String.init (String.length str) (String.get str)
 end)
 
 module Char_list = struct
@@ -31,9 +31,9 @@ end
 
 module String_list = struct
   module H = Hashtbl.Make (struct
-    type t = string list 
+    type t = string list
 
-    let equal = (List.equal Stdlib.String.equal)
+    let equal = List.equal Stdlib.String.equal
     let hash = Hashtbl.hash
   end)
 
@@ -54,6 +54,7 @@ module String_list = struct
     in
     go lst
 end
+
 module Cache_string_list_list = struct
   module H = Hashtbl.Make (struct
     type t = string list list
@@ -80,8 +81,8 @@ module Cache_string_list_list = struct
     go lst
 end
 
-module Array = Cache.Make( struct 
-type t = Elt.t array
+module Array = Cache.Make (struct
+  type t = Elt.t array
 
-let copy = Fun.id
+  let copy = Fun.id
 end)

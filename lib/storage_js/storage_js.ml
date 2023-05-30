@@ -11,15 +11,14 @@ let save ~db t =
       ( Db.Trie.map_leaf
           ~f:(fun occs ->
             Int.Map.map
-              (fun _sets ->
-                (*sets |> Db.Elt.Set.elements |> Array.of_list
-                |> Db.Caches.Array.memo*) ())
+              (fun set ->
+                set |> Db.Elt.Set.elements |> Array.of_list
+                |> Db.Caches.Array.memo)
               occs)
-          t.db
+          t.db_types
       , Db.Trie.map_leaf
-          ~f:(fun _set ->
-            (*set |> Db.Elt.Set.elements |> Array.of_list |> Db.Caches.Array.memo*)
-            ())
+          ~f:(fun set ->
+            set |> Db.Elt.Set.elements |> Array.of_list |> Db.Caches.Array.memo)
           t.db_names ))
   in
   let str = Marshal.to_string t [] in
@@ -28,4 +27,16 @@ let save ~db t =
 
 let load str =
   let str = Base64.decode_exn str in
-  [ Marshal.from_string str 0 ]
+  let db_types, db_names = Marshal.from_string str 0 in
+  let db_types =
+    Db.Trie.map_leaf
+      ~f:(fun occs ->
+        Int.Map.map (fun arr -> arr |> Array.to_seq |> Db.Elt.Set.of_seq) occs)
+      db_types
+  in
+  let db_names =
+    Db.Trie.map_leaf
+      ~f:(fun arr -> arr |> Array.to_seq |> Db.Elt.Set.of_seq)
+      db_names
+  in
+  [ Db.Storage.{ db_types; db_names } ]

@@ -54,7 +54,9 @@ module Make (Storage : Db.Storage.S) = struct
       | Constr (name, args) ->
           let name = fullname name in
           let prefix =
-            Caches.String.memo name :: Caches.String.memo (Types.string_of_sgn sgn) :: prefix
+            Caches.String.memo name
+            :: Caches.String.memo (Types.string_of_sgn sgn)
+            :: prefix
           in
           begin
             match args with
@@ -63,14 +65,18 @@ module Make (Storage : Db.Storage.S) = struct
                 rev_concat
                 @@ List.mapi
                      (fun i arg ->
-                       let prefix = Caches.String.memo (string_of_int i) :: prefix in
+                       let prefix =
+                         Caches.String.memo (string_of_int i) :: prefix
+                       in
                        paths ~prefix ~sgn arg)
                      args
           end
       | Tuple args ->
           rev_concat
           @@ List.mapi (fun i arg ->
-                 let prefix = Caches.String.memo (string_of_int i ^ "*") :: prefix in
+                 let prefix =
+                   Caches.String.memo (string_of_int i ^ "*") :: prefix
+                 in
                  paths ~prefix ~sgn arg)
           @@ args
       | _ -> []

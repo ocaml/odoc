@@ -1,5 +1,5 @@
 type t =
-  { db : Types.db
+  { db_types : Types.db
   ; db_names : Elt.Set.t Trie.t
   }
 

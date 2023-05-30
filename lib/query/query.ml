@@ -34,7 +34,7 @@ let collapse_trie_with_poly ~count name t =
 let find_inter ~shards names =
   List.fold_left
     (fun acc shard ->
-      let db = shard.Storage.db in
+      let db = shard.Storage.db_types in
       let r =
         inter_list
         @@ List.map
