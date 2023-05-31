@@ -3,6 +3,7 @@
 (** For details on what each of the following examples is showing,
 see the explanations in the {{!page-features}Features page} *)
 
+[@@@warning "-67"]
 module Simple : sig
   (** Demonstrates simple expansion with a type equality *)
 

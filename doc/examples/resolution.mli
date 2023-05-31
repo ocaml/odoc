@@ -4,6 +4,8 @@
 as described in the page {!page-features}. See the explanations there for
 details on what each of these demonstrates. *)
 
+[@@@warning "-67"]
+
 module Alias : sig
   (** Demonstrates a reference to an item in a module that's an alias *)
 

@@ -1,3 +1,3 @@
 open Generator_signatures
 
-module Make (Syntax : SYNTAX) : GENERATOR
+module Make (_ : SYNTAX) : GENERATOR
