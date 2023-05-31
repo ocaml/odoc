@@ -1,3 +1,5 @@
 open Generator_signatures
 
-module Make (_ : SYNTAX) : GENERATOR
+[@@@warning "-67"]
+
+module Make (Syntax : SYNTAX) : GENERATOR
