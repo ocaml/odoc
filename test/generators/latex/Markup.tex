@@ -101,6 +101,96 @@ Math elements can be inline: $\int_{-\infty}^\infty$, or blocks:
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
 \item[{\hyperref[module-Markup-module-X]{\ocamlinlinecode{\ocamlinlinecode{X}}[p\pageref*{module-Markup-module-X}]}}]{}%
 \item[{\hyperref[module-Markup-module-Y]{\ocamlinlinecode{\ocamlinlinecode{Y}}[p\pageref*{module-Markup-module-Y}]}}]{}\end{description}%
+\subsection{Tables\label{tables}}\\
+\begin{ocamltabular}{w{l}{0.250\textwidth}w{c}{0.250\textwidth}w{r}{0.250\textwidth}p{0.250\textwidth}}\bold{Left
+
+}& \bold{Center
+
+}& \bold{Right
+
+}& \bold{Default
+
+}\\
+A
+
+& B
+
+& C
+
+& D
+
+\\
+\end{ocamltabular}%
+\\
+\\
+\begin{ocamltabular}{w{l}{0.250\textwidth}w{c}{0.250\textwidth}w{r}{0.250\textwidth}p{0.250\textwidth}}\bold{Left
+
+}& \bold{Center
+
+}& \bold{Right
+
+}& \bold{Default
+
+}\\
+A
+
+& B
+
+& C
+
+& D
+
+\\
+A much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it
+
+& B much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it
+
+& C much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it
+
+& D much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it
+
+\\
+\end{ocamltabular}%
+\\
+\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}No
+
+& Header
+
+\\
+A
+
+& B
+
+\\
+\end{ocamltabular}%
+\\
+\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\bold{Header 1
+
+}& \bold{Header 2
+
+}\\
+Data 1
+
+& Data 2
+
+\\
+\end{ocamltabular}%
+\\
+\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\bold{Header 1
+
+}& Data 1
+
+\\
+\bold{Header 2
+
+}& Data 2
+
+\\
+\end{ocamltabular}%
+\\
 \subsection{Tags\label{tags}}%
 Each comment can end with zero or more tags. Here are some examples:
 

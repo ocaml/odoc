@@ -111,9 +111,9 @@ let elt_size (x : elt) =
   | List _ | Section _ | Verbatim _ | Raw _ | Code_block _ | Indented _
   | Description _ ->
       Large
-  | Table _ -> Huge
+  | Table _ | Layout_table _ -> Huge
 
-let table = function
+let layout_table = function
   | [] -> []
   | a :: _ as m ->
       let start = List.map (fun _ -> Empty) a in
@@ -128,7 +128,7 @@ let table = function
       in
       let filter_row row = filter_map filter_empty @@ List.combine mask row in
       let row_size = List.fold_left max Empty mask in
-      [ Table { row_size; tbl = List.map filter_row m } ]
+      [ Layout_table { row_size; tbl = List.map filter_row m } ]
 
 let txt ~verbatim ~in_source ws =
   if verbatim then [ Txt ws ]
@@ -169,10 +169,11 @@ let rec pp_elt ppf = function
   | Code_fragment x -> Raw.code_fragment pp ppf x
   | List { typ; items } -> list typ pp ppf items
   | Description items -> Raw.description pp ppf items
-  | Table { row_size = Large | Huge; tbl } -> large_table ppf tbl
-  | Table { row_size = Small | Empty; tbl } ->
+  | Table { align; data } -> Raw.small_table pp ppf (Some align, data)
+  | Layout_table { row_size = Large | Huge; tbl } -> large_table ppf tbl
+  | Layout_table { row_size = Small | Empty; tbl } ->
       if List.length tbl <= small_table_height_limit then
-        Raw.small_table pp ppf tbl
+        Raw.small_table pp ppf (None, tbl)
       else large_table ppf tbl
   | Label x -> Raw.label ppf x
   | Indented x -> Raw.indent pp ppf x
@@ -181,8 +182,8 @@ let rec pp_elt ppf = function
 
 and pp ppf = function
   | [] -> ()
-  | Break _ :: (Table _ :: _ as q) -> pp ppf q
-  | (Table _ as t) :: Break _ :: q -> pp ppf (t :: q)
+  | Break _ :: ((Layout_table _ | Table _) :: _ as q) -> pp ppf q
+  | ((Layout_table _ | Table _) as t) :: Break _ :: q -> pp ppf (t :: q)
   | Break a :: Break b :: q -> pp ppf (Break (max a b) :: q)
   | Ligaturable "-" :: Ligaturable ">" :: q ->
       Raw.rightarrow ppf;
@@ -296,6 +297,7 @@ let rec block ~in_source (l : Block.t) =
         @ if in_source then [] else [ Break Paragraph ]
     | List (typ, l) ->
         [ List { typ; items = List.map (block ~in_source:false) l } ]
+    | Table t -> table_block t
     | Description l ->
         [
           (let item i =
@@ -315,6 +317,18 @@ let rec block ~in_source (l : Block.t) =
         ]
   in
   list_concat_map l ~f:one
+
+and table_block { Table.data; align } =
+  let data =
+    List.map
+      (List.map (fun (cell, cell_type) ->
+           let content = block ~in_source:false cell in
+           match cell_type with
+           | `Header -> [ Style (`Bold, content) ]
+           | `Data -> content))
+      data
+  in
+  [ Table { align; data } ]
 
 let rec is_only_text l =
   let is_text : Item.t -> _ = function
@@ -380,7 +394,7 @@ let rec documentedSrc (t : DocumentedSrc.t) =
           let doc = [ block ~in_source:true dsrc.doc ] in
           (content @ label dsrc.anchor) :: doc
         in
-        table (List.map one l) @ to_latex rest
+        layout_table (List.map one l) @ to_latex rest
   in
   to_latex t
 

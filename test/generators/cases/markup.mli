@@ -171,6 +171,49 @@ v}
     {!modules: X Y}
 
 
+    {1 Tables}
+
+    {t
+        Left | Center | Right | Default
+       :-----|:------:|------:|---------
+         A   |    B   |   C   |    D
+    }
+
+    {t
+        Left | Center | Right | Default
+       :-----|:------:|------:|---------
+         A   |    B   |   C   |    D
+         A much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it   |    B much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it   |   C much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it   |    D much longer paragraph which will need to be wrapped and more content and more content and some different content and we will see what is does if we can see it
+    }
+
+    {t
+        No | Header
+        A  | B
+    }
+
+    {table
+      {tr
+        {th Header 1}
+        {th Header 2}
+      }
+      {tr
+        {td Data 1}
+        {td Data 2}
+      }
+    }
+
+    {table
+      {tr
+        {th Header 1}
+        {td Data 1}
+      }
+      {tr
+        {th Header 2}
+        {td Data 2}
+      }
+    }
+
+
     {1 Tags}
 
     Each comment can end with zero or more tags. Here are some examples:

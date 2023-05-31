@@ -242,6 +242,15 @@ and comment_nestable_block_element env parent ~loc:_
         ( x,
           List.rev_map (comment_nestable_block_element_list env parent) ys
           |> List.rev )
+  | `Table { data; align } ->
+      let data =
+        let map f x = List.rev_map f x |> List.rev in
+        map
+          (map (fun (cell, cell_type) ->
+               (comment_nestable_block_element_list env parent cell, cell_type)))
+          data
+      in
+      `Table { Comment.data; align }
   | `Modules refs ->
       let refs =
         List.rev_map

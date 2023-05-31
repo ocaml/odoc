@@ -25,6 +25,7 @@ type general_block_element =
   | `Modules of Comment.module_reference list
   | `List of
     [ `Unordered | `Ordered ] * general_block_element with_location list list
+  | `Table of general_block_element abstract_table
   | `Heading of
     Comment.heading_attrs * Identifier.Label.t * general_link_content
   | `Tag of general_tag ]
@@ -113,6 +114,22 @@ let rec block_element : general_block_element t =
     | `Modules x -> C ("`Modules", x, List module_reference)
     | `List (x1, x2) ->
         C ("`List", (x1, (x2 :> general_docs list)), Pair (list_kind, List docs))
+    | `Table { data; align } ->
+        let cell_type_desc =
+          Variant (function `Header -> C0 "`Header" | `Data -> C0 "`Data")
+        in
+        let data_desc = List (List (Pair (docs, cell_type_desc))) in
+        let align_desc =
+          Option
+            (Variant
+               (function
+               | `Left -> C0 "`Left"
+               | `Center -> C0 "`Center"
+               | `Right -> C0 "`Right"))
+        in
+        let align_desc = List align_desc in
+        let table_desc = Pair (data_desc, Option align_desc) in
+        C ("`Table", (data, align), table_desc)
     | `Heading h -> C ("`Heading", h, heading)
     | `Tag x -> C ("`Tag", x, tag))
 

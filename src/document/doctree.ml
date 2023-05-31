@@ -384,6 +384,8 @@ end = struct
       | Inline x -> inline x
       | Paragraph x -> inline x
       | List (_, x) -> List.exists block x
+      | Table { data; align = _ } ->
+          List.exists (List.exists (fun (cell, _) -> block cell)) data
       | Description x -> description x
       | Math _ -> true
       | Source _ | Verbatim _ | Raw_markup _ -> false

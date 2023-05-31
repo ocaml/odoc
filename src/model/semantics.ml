@@ -19,6 +19,7 @@ let describe_internal_tag = function
   | `Inline -> "@inline"
   | `Open -> "@open"
   | `Closed -> "@closed"
+  | `Hidden -> "@hidden"
 
 let warn_unexpected_tag { Location.value; location } =
   Error.raise_warning
@@ -252,6 +253,14 @@ let rec nestable_block_element :
   | { value = `List (kind, _syntax, items); location } ->
       `List (kind, List.map (nestable_block_elements status) items)
       |> Location.at location
+  | { value = `Table ((grid, align), (`Heavy | `Light)); location } ->
+      let data =
+        List.map
+          (List.map (fun (cell, cell_type) ->
+               (nestable_block_elements status cell, cell_type)))
+          grid
+      in
+      `Table { Comment.data; align } |> Location.at location
 
 and nestable_block_elements status elements =
   List.map (nestable_block_element status) elements
@@ -476,7 +485,7 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
       -> (
         let next tag = loop ({ wloc with value = tag } :: tags) ast' tl in
         match tag with
-        | (`Inline | `Open | `Closed) as tag -> next tag
+        | (`Inline | `Open | `Closed | `Hidden) as tag -> next tag
         | `Canonical { Location.value = s; location = r_location } -> (
             match
               Error.raise_warnings (Reference.read_path_longident r_location s)

@@ -701,6 +701,22 @@ td.def-doc *:first-child {
   padding-left: 12px;
 }
 
+/* Tables */
+
+.odoc-table {
+  margin: 1em;
+}
+
+.odoc-table td, .odoc-table th {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  border: 1px solid black;
+}
+
+.odoc-table th {
+  font-weight: bold;
+}
+
 /* Mobile adjustements. */
 
 @media only screen and (max-width: 110ex) {

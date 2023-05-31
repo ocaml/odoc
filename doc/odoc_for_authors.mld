@@ -542,6 +542,74 @@ in block form this becomes:
 See the {{:https://katex.org/docs/supported.html}KaTeX documentation} for the
 HTML mode LaTeX support status.
 
+{2 Tables}
+
+Odoc 2.3 introduced new markup for tables. This markup comes in two flavors: the light syntax, and the heavy syntax.
+
+The heavy syntax uses several markup: [{table ...}] to define a table, [{tr ...}] to define a row, and [{th ...}] and [{td ...}] to respectively define a header cell and a data cell.
+Direct children of tables have to be rows, and direct children of rows have to be cells. Similarly, rows have to be direct children of tables, and cells direct children of row. Cells can contain any markup.
+
+For instance, the following table:
+
+{[
+  {table
+    {tr
+      {th Header 1}
+      {th Header 2}
+      {th Header 3}
+    }
+    {tr
+      {td Cell 1}
+      {td Cell with {e emphasized content}}
+      {td {v a block v} }
+    }
+  }
+]}
+
+would render as
+
+{table
+  {tr
+    {th Header 1}
+    {th Header 2}
+    {th Header 3}
+  }
+  {tr
+    {td Cell 1}
+    {td Cell with {e emphasized content}}
+    {td {v a block v} }
+  }
+}
+
+
+The light syntax has the advantages of being simple to read, even as plain text. It is very similar to the {{:https://github.github.com/gfm/#tables-extension-}GFM Markdown syntax}, with the exception that it has to be enclosed in [{t ...}], and that the inline markup is the ocamldoc one. It supports alignment for columns using the [:] notation, from the GFM syntax: [---] is the default alignment, [:--] left-aligned, [--:] right-aligned and [:---:] is centered.
+
+The following table, in light syntax:
+
+{[
+{t
+  | Header 1 | Header 2 | Header 3 | Header 4|
+  | :------: | --------:|:---------|---------|
+  | centered | right    | left     | default |
+    omitted  | bar at   | start and| finish
+  | {e emph} | and | unaligned | bars |
+}
+]}
+
+would render as
+
+{t
+  | Header 1 | Header 2 | Header 3 | Header 4|
+  | :------: | --------:|:---------|---------|
+  | centered | right    | left     | default |
+    omitted  | bar at   | start and| finish
+  | {e emph} | and | unaligned | bars |
+}
+
+The light syntax has the advantages of being arguably more readable for small tables, when viewing the source file directly. However, its content is restricted (for instance, no new line is allowed).
+The heavy syntax is easier to write, can be more readable for big tables, and supports having any kind of content inside. It does not support alignment (yet).
+
+
 {2 Stop Comments}
 
 The special comment:

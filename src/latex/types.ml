@@ -23,6 +23,7 @@ type elt =
   | List of list_info
   | Description of (t * t) list
   | Indented of t
+  | Layout_table of layout_table
   | Table of table
   | Ligaturable of string
 
@@ -30,7 +31,11 @@ and section = { level : int; label : string option; content : t }
 
 and list_info = { typ : Odoc_document.Types.Block.list_type; items : t list }
 
-and table = { row_size : row_size; tbl : t list list }
+and layout_table = { row_size : row_size; tbl : t list list }
+
+and alignment = Odoc_document.Types.Table.alignment
+
+and table = { align : alignment list; data : t list list }
 
 and t = elt list
 

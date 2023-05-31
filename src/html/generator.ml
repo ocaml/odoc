@@ -177,6 +177,14 @@ let heading ~config ~resolve (h : Heading.t) =
   in
   mk ~a (anchor @ content @ source_link)
 
+let text_align = function
+  | Table.Left -> [ Html.a_style "text-align:left" ]
+  | Center -> [ Html.a_style "text-align:center" ]
+  | Right -> [ Html.a_style "text-align:right" ]
+  | Default -> []
+
+let cell_kind = function `Header -> Html.th | `Data -> Html.td
+
 let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
   let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
   let one (t : Block.one) =
@@ -192,6 +200,10 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
     | List (typ, l) ->
         let mk = match typ with Ordered -> Html.ol | Unordered -> Html.ul in
         mk_block mk (List.map (fun x -> Html.li (block ~config ~resolve x)) l)
+    | Table t ->
+        mk_block ~extra_class:[ "odoc-table" ]
+          (fun ?a x -> Html.table ?a x)
+          (mk_rows ~config ~resolve t)
     | Description l ->
         let item i =
           let a = class_ i.Description.attr in
@@ -212,6 +224,29 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
     | Math s -> mk_block Html.div [ block_math s ]
   in
   Utils.list_concat_map l ~f:one
+
+and mk_rows ~config ~resolve { align; data } =
+  let mk_row row =
+    let mk_cell ~align (x, h) =
+      let a = text_align align in
+      cell_kind ~a h (block ~config ~resolve x)
+    in
+    let alignment align =
+      match align with align :: q -> (align, q) | [] -> (Table.Default, [])
+      (* Second case is for recovering from a too short alignment list. A
+         warning should have been raised when loading the doc-comment. *)
+    in
+    let acc, _align =
+      List.fold_left
+        (fun (acc, aligns) (x, h) ->
+          let align, aligns = alignment aligns in
+          let cell = mk_cell ~align (x, h) in
+          (cell :: acc, aligns))
+        ([], align) row
+    in
+    Html.tr (List.rev acc)
+  in
+  List.map mk_row data
 
 (* This coercion is actually sound, but is not currently accepted by Tyxml.
    See https://github.com/ocsigen/tyxml/pull/265 for details

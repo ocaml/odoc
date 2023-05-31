@@ -24,6 +24,10 @@ Odoc is a documentation generator for OCaml. It reads doc comments,
 delimited with `(** ... *)`, and outputs HTML. 
 """
 
+pin-depends: [
+  ["odoc-parser.dev" "git+https://github.com/ocaml-doc/odoc-parser.git#f98cfe3"]
+]
+
 depends: [
   "odoc-parser" {>= "2.0.0"}
   "astring"
