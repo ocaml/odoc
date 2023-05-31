@@ -25,7 +25,7 @@
 (rule
  (alias docgen)
  (deps
-  (:x driver.md)
+  (:x driver.mld)
   (glob_files *.ml*)
   (glob_files *.png)
   (glob_files library_mlds/*.mld)
