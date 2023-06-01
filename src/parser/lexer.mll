@@ -217,6 +217,12 @@ let emit_verbatim input start_offset buffer =
   let t = trim_trailing_blank_lines t in
   emit input (`Verbatim t) ~start_offset
 
+(* The locations have to be treated carefully in this function. We need to ensure that
+   the []`Code_block] location matches the entirety of the block including the terminator,
+   and the content location is precicely the location of the text of the code itself.
+   Note that the location reflects the content _without_ stripping of whitespace, whereas
+   the value of the content in the tree has whitespace stripped from the beginning,
+   and trailing empty lines removed. *)
 let emit_code_block ~start_offset content_offset input metadata delim terminator c has_results =
   let c = Buffer.contents c |> trim_trailing_blank_lines in
   let content_location = input.offset_to_location content_offset in
