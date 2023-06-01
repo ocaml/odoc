@@ -5000,7 +5000,7 @@ let%expect_test _ =
           ( "File \"f.ml\", line 1, characters 0-2:\
            \n'{b' should be followed by space, a tab, or a new line."
             "File \"f.ml\", line 1, characters 2-4:\
-           \n']@}' is not allowed in '{b ...}' (boldface text)."
+           \n']}' is not allowed in '{b ...}' (boldface text)."
             "File \"f.ml\", line 1, characters 0-2:\
            \n'{b ...}' (boldface text) should not be empty."))) |}]
 
@@ -5016,8 +5016,8 @@ let%expect_test _ =
         ((output (((f.ml (1 0) (1 6)) (unordered heavy ()))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-6:\
-           \n']@}' is not allowed in '{ul ...}' (bulleted list).\
-           \nSuggestion: move ']@}' into a list item, '{li ...}' or '{- ...}'."
+           \n']}' is not allowed in '{ul ...}' (bulleted list).\
+           \nSuggestion: move ']}' into a list item, '{li ...}' or '{- ...}'."
             "File \"f.ml\", line 1, characters 6-6:\
            \nEnd of text is not allowed in '{ul ...}' (bulleted list)."
             "File \"f.ml\", line 1, characters 0-3:\
@@ -5041,7 +5041,7 @@ let%expect_test _ =
         ((output (((f.ml (1 0) (1 2)) (2 (label ()) ()))))
          (warnings
           ( "File \"f.ml\", line 1, characters 3-5:\
-           \n']@}' is not allowed in '{2 ...}' (section heading)."
+           \n']}' is not allowed in '{2 ...}' (section heading)."
             "File \"f.ml\", line 1, characters 0-2:\
            \n'{2 ...}' (section heading) should not be empty."))) |}]
 

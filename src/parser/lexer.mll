@@ -267,6 +267,9 @@ let raw_markup_target =
 let language_tag_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ]
 
+let delim_char =
+  ['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ]
+
 
 rule token input = parse
   | horizontal_space* eof
@@ -342,7 +345,7 @@ rule token input = parse
   | "{["
     { code_block (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf }
 
-  | (("{" (language_tag_char* as delim) "@" horizontal_space*) as prefix) (language_tag_char+ as lang_tag_)
+  | (("{" (delim_char* as delim) "@" horizontal_space*) as prefix) (language_tag_char+ as lang_tag_)
     {
       let start_offset = Lexing.lexeme_start lexbuf in
       let lang_tag =
@@ -674,18 +677,18 @@ and code_block_metadata_tail input = parse
     { `Eof }
 
 and code_block start_offset content_offset metadata prefix delim input = parse
-  | ("]" (language_tag_char* as delim') "[") as terminator
+  | ("]" (delim_char* as delim') "[") as terminator
     { if delim = delim'
       then emit_code_block ~start_offset content_offset input metadata delim terminator prefix true
       else
-        (Buffer.add_string prefix ("]" ^ delim' ^ "[");
+        (Buffer.add_string prefix terminator;
         code_block start_offset content_offset metadata prefix delim input lexbuf) }
-  | ("]" (language_tag_char* as delim') "}") as terminator
+  | ("]" (delim_char* as delim') "}") as terminator
     { 
       if delim = delim'
       then emit_code_block ~start_offset content_offset input metadata delim terminator prefix false
       else (
-        Buffer.add_string prefix ("]" ^ delim' ^ "}");
+        Buffer.add_string prefix terminator;
         code_block start_offset content_offset metadata prefix delim input lexbuf
       )
     }
