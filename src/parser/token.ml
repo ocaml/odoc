@@ -152,7 +152,7 @@ let describe : [< t | `Comment ] -> string = function
   | `Single_newline _ -> "line break"
   | `Blank_line _ -> "blank line"
   | `Right_brace -> "'}'"
-  | `Right_code_delimiter -> "']@}'"
+  | `Right_code_delimiter -> "']}'"
   | `Code_block _ -> "'{[...]}' (code block)"
   | `Verbatim _ -> "'{v ... v}' (verbatim text)"
   | `Modules _ -> "'{!modules ...}'"
