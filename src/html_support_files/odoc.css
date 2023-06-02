@@ -260,7 +260,7 @@ header {
 }
 
 nav {
-  font-family: "Fira Sans", Helvetica, Arial, sans-serif;
+  font-family: "Fira Sans", Seravek, "Source Sans Pro", source-sans-pro, sans-serif;
 }
 
 /* Basic markup elements */
@@ -391,7 +391,7 @@ a.anchor {
 a.source_link {
   float: right;
   color: var(--source-color);
-  font-family: "Fira Sans", Helvetica, Arial, sans-serif;
+  font-family: "Fira Sans", Seravek, "Source Sans Pro", source-sans-pro, sans-serif;
   font-size: initial;
 }
 
@@ -400,7 +400,7 @@ a.source_link {
    we restart the sequence there like h2  */
 
 h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10 {
-  font-family: "Fira Sans", Helvetica, Arial, sans-serif;
+  font-family: "Fira Sans", Seravek, "Source Sans Pro", source-sans-pro, sans-serif;
   font-weight: 400;
   padding-top: 0.1em;
   line-height: 1.2;
