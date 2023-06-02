@@ -12,13 +12,13 @@ let open_out filename =
   let ancient = Ancient.attach handle base_addr in
   { write_shard = 0; ancient }
 
-let save ~db (t : Storage.t) =
+let save ~db (t : Elt.t array Db.t) =
   ignore (Ancient.share db.ancient db.write_shard t) ;
   db.write_shard <- db.write_shard + 1
 
 let close_out db = Ancient.detach db.ancient
 
-type reader = { shards : Storage.t array }
+type reader = { shards : Elt.Set.t Db.t array }
 
 let load_shard md shard =
   match Ancient.get md shard with

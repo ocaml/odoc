@@ -1,18 +1,44 @@
+open Common
 module Elt = Elt
 module Types = Types
 module Storage_toplevel = Storage
-module Trie = Trie
-module Caches = Caches
+module Trie = Trie_gen
+module Trie_gen = Trie_gen
+module Trie_compact = Trie_compact
+module Cache = Cache
 include Types
+module Occ = Int.Map
+
+let compact db =
+  let open Types in
+  let { db_types; db_names } = db in
+  let db_types =
+    Trie_gen.map_leaf
+      ~f:(fun occs ->
+        Int.Map.map
+          (fun set ->
+            set |> Elt.Set.elements |> Array.of_list |> Cache.Elt_array.memo)
+          occs)
+      db_types
+  in
+  let db_names =
+    Trie_gen.map_leaf
+      ~f:(fun set ->
+        set |> Elt.Set.elements |> Array.of_list |> Cache.Elt_array.memo)
+      db_names
+  in
+
+  let db_types = Cache.Elt_array_occ_trie_gen.memo db_types in
+  let db_names = Cache.Elt_array_trie_gen.memo db_names in
+  { db_types; db_names }
 
 let list_of_string s = List.init (String.length s) (String.get s)
 
 module type S = sig
   type writer
 
-  val optimize : unit -> unit
   val export : writer -> unit
-  val store_type : Elt.t -> char list list -> unit
+  val store_type_paths : Elt.t -> string list list -> unit
   val store_word : string -> Elt.t -> unit
   val load_counter : int ref
 end
@@ -21,7 +47,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
   type writer = Storage.writer
 
   let load_counter = ref 0
-  let db = ref (Trie.empty ())
+  let db_types = ref (Trie.empty ())
   let db_names = ref (Trie.empty ())
 
   module Hset2 = Hashtbl.Make (struct
@@ -38,45 +64,12 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     let equal (a, b) (a', b') = a == a' && b == b'
   end)
 
-  let elt_set_union ~hs a b =
-    try Hset2.find hs (a, b)
-    with Not_found ->
-      let r = Elt.Set.union a b in
-      Hset2.add hs (a, b) r ;
-      Hset2.add hs (b, a) r ;
-      r
-
-  let occ_merge ~hs a b =
-    if a == b
-    then a
-    else
-      Occ.merge
-        (fun _ ox oy ->
-          match ox, oy with
-          | Some x, Some y -> Some (elt_set_union ~hs x y)
-          | opt, None | None, opt -> opt)
-        a b
-
-  let occ_merge ~ho ~hs a b =
-    try Hocc2.find ho (a, b)
-    with Not_found ->
-      let r = occ_merge ~hs a b in
-      Hocc2.add ho (a, b) r ;
-      Hocc2.add ho (b, a) r ;
-      r
-
-  let optimize () =
-    let ho = Hocc2.create 16 in
-    let hs = Hset2.create 16 in
-    let (_ : Elt.Set.t Occ.t option) = Trie.summarize (occ_merge ~ho ~hs) !db in
-    let (_ : Elt.Set.t option) = Trie.summarize (elt_set_union ~hs) !db_names in
-    ()
-
   let export h =
     load_counter := 0 ;
-    let t = { Storage_toplevel.db_types = !db; db_names = !db_names } in
-    Storage.save ~db:h t ;
-    db := Trie.empty () ;
+    let db = { db_types = !db_types; db_names = !db_names } in
+    let db = compact db in
+    Storage.save ~db:h db ;
+    db_types := Trie.empty () ;
     db_names := Trie.empty ()
 
   module Hset = Hashtbl.Make (struct
@@ -127,15 +120,23 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
           let db = Trie.add name (candidates_add ~ho ~hs elt ~count) db in
           go db next
     in
-    db := go !db name
+    db_types := go !db_types name
 
-  let store_type elt paths =
+  let store_type_paths elt paths =
     let ho = Hocc.create 16 in
     let hs = Hset.create 16 in
     List.iter
       (fun (path, count) ->
-        store ~ho ~hs ~count (Caches.Char_list.memo path) elt)
+        store ~ho ~hs ~count (Cache.Char_list.memo path) elt)
       (regroup_chars paths)
+
+  let store_type_paths elt paths =
+    store_type_paths elt
+      (List.map
+         (fun xs ->
+           let xs = List.concat_map list_of_string xs in
+           xs)
+         paths)
 
   let store_chars name elt =
     let hs = Hset.create 16 in
@@ -149,7 +150,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     db_names := go !db_names name
 
   let store_word word elt =
-    (word |> list_of_string |> List.rev |> Caches.Char_list.memo |> store_chars)
+    (word |> list_of_string |> List.rev |> Cache.Char_list.memo |> store_chars)
       elt
 end
 

@@ -1,9 +1,11 @@
+open Common
 module Parser = Query_parser
 module Succ = Succ
 module Sort = Sort
 module Storage = Db.Storage
-module Trie = Db.Trie
+module Trie = Db.Trie_gen
 open Db.Types
+module Occ = Int.Map
 
 let inter_list xs = List.fold_left Succ.inter Succ.all xs
 
@@ -34,7 +36,7 @@ let collapse_trie_with_poly ~count name t =
 let find_inter ~shards names =
   List.fold_left
     (fun acc shard ->
-      let db = shard.Storage.db_types in
+      let db = shard.db_types in
       let r =
         inter_list
         @@ List.map
@@ -54,7 +56,7 @@ let find_names ~shards names =
   in
   List.fold_left
     (fun acc shard ->
-      let db_names = shard.Storage.db_names in
+      let db_names = shard.db_names in
       let candidates =
         List.map
           (fun name ->

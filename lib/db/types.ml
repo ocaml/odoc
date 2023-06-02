@@ -16,11 +16,6 @@ let regroup_chars lst =
          Char_list_map.add s (count + 1) acc)
        Char_list_map.empty lst
 
-module Occ = Int.Map
-
-type candidates = Elt.Set.t Occ.t
-type db = candidates Trie.t
-
 type sgn =
   | Pos
   | Neg
@@ -35,3 +30,8 @@ let sgn_not = function
   | Pos -> Neg
   | Neg -> Pos
   | Unknown -> Unknown
+
+type 'a t =
+  { db_types : 'a Int.Map.t Trie_gen.t
+  ; db_names : 'a  Trie_gen.t
+  }

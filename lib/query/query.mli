@@ -8,4 +8,4 @@ type t =
   ; limit : int
   }
 
-val api : shards:Db.Storage.t list -> t -> string * Db.Elt.t list
+val api : shards:Db.Elt.Set.t Db.t list -> t -> string * Db.Elt.t list

@@ -1,14 +1,14 @@
-module M = Map.Make (Char)
+open Common
+module M = Char.Map
 
 type 'a t =
   | Leaf of char list * 'a
   | Node of
       { leaf : 'a option
-      ; mutable summary : 'a option
       ; children : 'a t M.t
       }
 
-let empty () = Node { leaf = None; summary = None; children = M.empty }
+let empty () = Node { leaf = None; children = M.empty }
 
 let rec add path leaf t =
   match t, path with
@@ -26,7 +26,6 @@ let rec add path leaf t =
       else
         Node
           { leaf = None
-          ; summary = None
           ; children = M.singleton x (add ys leaf (Leaf (xs, outcome)))
           }
   | Leaf (x :: xs, outcome), y :: ys ->
@@ -34,18 +33,14 @@ let rec add path leaf t =
       let children =
         M.add y (Leaf (ys, leaf None)) @@ M.singleton x (Leaf (xs, outcome))
       in
-      Node { leaf = None; summary = None; children }
+      Node { leaf = None; children }
   | Leaf ([], outcome), [] -> Leaf ([], leaf (Some outcome))
   | Leaf ([], outcome), y :: ys ->
       Node
-        { leaf = Some outcome
-        ; summary = None
-        ; children = M.singleton y (Leaf (ys, leaf None))
-        }
+        { leaf = Some outcome; children = M.singleton y (Leaf (ys, leaf None)) }
   | Leaf (y :: ys, outcome), [] ->
       Node
         { leaf = Some (leaf None)
-        ; summary = None
         ; children = M.singleton y (Leaf (ys, outcome))
         }
 
@@ -60,26 +55,9 @@ let rec find path t =
   | Leaf (x :: xs, outcome), y :: ys when x = y -> find ys (Leaf (xs, outcome))
   | _ -> t
 
-let rec summarize fn t =
-  match t with
-  | Leaf (_, outcome) -> Some outcome
-  | Node ({ leaf; children; _ } as it) ->
-      let sum =
-        M.fold
-          (fun _ c acc ->
-            let res = summarize fn c in
-            match acc, res with
-            | None, opt | opt, None -> opt
-            | Some acc, Some res -> Some (fn acc res))
-          children leaf
-      in
-      it.summary <- sum ;
-      sum
-
 let rec fold_map merge transform t =
   match t with
-  | Leaf (_, outcome) | Node { summary = Some outcome; _ } ->
-      Some (transform outcome)
+  | Leaf (_, outcome) -> Some (transform outcome)
   | Node { leaf; children; _ } ->
       let leaf =
         match leaf with
@@ -87,8 +65,8 @@ let rec fold_map merge transform t =
         | Some leaf -> Some (transform leaf)
       in
       M.fold
-        (fun _ c acc ->
-          let res = fold_map merge transform c in
+        (fun _ child acc ->
+          let res = fold_map merge transform child in
           match acc, res with
           | None, opt | opt, None -> opt
           | Some acc, Some res -> Some (merge acc res))
@@ -97,9 +75,8 @@ let rec fold_map merge transform t =
 let rec map_leaf ~f t =
   match t with
   | Leaf (v, outcome) -> Leaf (v, f outcome)
-  | Node { leaf; children; summary } ->
+  | Node { leaf; children } ->
       let leaf = Option.map f leaf in
-      let summary = Option.map f summary in
-
       let children = M.map (map_leaf ~f) children in
-      Node { leaf; children; summary }
+      Node { leaf; children }
+

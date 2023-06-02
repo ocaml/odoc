@@ -15,14 +15,17 @@ $ cp  /home/emile/.opam/sherlodoc/var/cache/odig/odoc/dream/**.odocl .
   page-page.odocl
   page.mld
   $ sherlodoc_index --format=js --db=db.js *.odocl     
+  Index_lib.main
+  loading doc !
+  doc loaded
   $ du -sh db.js
-  16K	db.js
+  12K	db.js
   $ odoc html-generate --with-search --output-dir html main.odocl
   $ odoc html-generate --with-search --output-dir html page-page.odocl
   $ odoc support-files -o html
   $ cat db.js  ../../../bin/JSherlodoc/main.bc.js > html/index.js
   $ du -sh html/index.js
-  4.0M	html/index.js
+  4.1M	html/index.js
   $ cp -r html /tmp
   $ firefox /tmp/html/Main/index.html
 

@@ -1,11 +1,11 @@
 let main files index_docstring index_name type_search empty_payload db_filename
     db_format =
   let index = files |> List.map Fpath.of_string |> List.map Result.get_ok in
-  let optimize, storage =
+  let storage =
     match db_format with
-    | `ancient -> true, (module Storage_ancient : Db.Storage.S)
-    | `marshal -> false, (module Storage_marshal : Db.Storage.S)
-    | `js -> false, (module Storage_js : Db.Storage.S)
+    | `ancient -> (module Storage_ancient : Db.Storage.S)
+    | `marshal -> (module Storage_marshal : Db.Storage.S)
+    | `js -> (module Storage_js : Db.Storage.S)
   in
   let add_entries li e = Odoc_search.Entry.entries_of_item e @ li in
   let index =
@@ -20,7 +20,7 @@ let main files index_docstring index_name type_search empty_payload db_filename
          []
   in
   Index_lib.main ~index_docstring ~index_name ~type_search ~empty_payload ~index
-    ~db_filename ~optimize storage
+    ~db_filename storage
 
 open Cmdliner
 

@@ -71,6 +71,11 @@ end
 
 include T
 
+let equal a b = compare a b = 0
+let hash : t -> int = Hashtbl.hash
+
+module Set = Set.Make (T)
+
 let pkg_link { pkg; _ } =
   let open Option.O in
   let+ { name; version } = pkg in
@@ -86,4 +91,33 @@ let link t =
   let+ pkg_link = pkg_link t in
   pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
 
-module Set = Set.Make (T)
+module Kind = struct
+  type t = kind
+
+  let doc = Doc
+  let type_decl = TypeDecl
+  let module_ = Module
+  let exception_ = Exception
+  let class_type = Class_type
+  let method_ = Method
+  let class_ = Class
+  let type_extension = TypeExtension
+  let extension_constructor = ExtensionConstructor
+  let module_type = ModuleType
+  let constructor type_path = Constructor type_path
+  let field type_path = Field type_path
+  let val_ type_path = Val type_path
+end
+
+module Package = struct
+  type t = package
+
+  let v ~name ~version = let version = version in
+
+                         { name; version }
+end
+
+let v ~name ~kind ~has_doc ?(pkg = None) ~json_display () =
+  let name = name in
+  let json_display = json_display in
+  { name; kind; has_doc; pkg; json_display }
