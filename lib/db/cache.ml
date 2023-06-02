@@ -89,7 +89,7 @@ module Array (A : Memo) = Make (struct
 
   let equal = Array.equal A.equal
   let hash = Array.hash A.hash
-  let sub ~memo:_ arr = arr
+  let sub ~memo:_ arr = Array.map A.memo arr
 end)
 
 module Char_list = List (Char)
@@ -119,7 +119,14 @@ module Set (A : Memo) (S : Set.S with type elt = A.t) = Make (struct
   let hash m =
     m |> S.elements |> Common.List.map (fun v -> A.hash v) |> Hashtbl.hash
 
-  let sub ~memo:_ = S.map A.memo
+  let sub ~memo set =
+    match set with
+    | S.Empty -> S.Empty
+    | S.Node { l; v; r; h } ->
+        let l = memo l in
+        let v = A.memo v in
+        let r = memo r in
+        S.Node { l; v; r; h }
 end)
 
 module Map (A : Memo) (M : Map.S) = Make (struct
@@ -132,13 +139,14 @@ module Map (A : Memo) (M : Map.S) = Make (struct
     |> Common.List.map (fun (k, v) -> k, A.hash v)
     |> Hashtbl.hash
 
-  let sub ~memo m = match m with
-      M.Empty -> M.Empty
-    | M.Node  {l; v; d; r; h} ->
+  let sub ~memo m =
+    match m with
+    | M.Empty -> M.Empty
+    | M.Node { l; v; d; r; h } ->
         let l = memo l in
         let r = memo r in
         let d = A.memo d in
-        M.Node  {l; v; d; r; h}
+        M.Node { l; v; d; r; h }
 end)
 
 module Array_map (A : Memo) (M : Array_map.S) = Make (struct
@@ -176,75 +184,49 @@ module Elt_set_option = Option (Elt_set)
 module Char_map (A : Memo) = Map (A) (Char.Map)
 module Int_map (A : Memo) = Map (A) (Int.Map)
 module Char_array_map (A : Memo) = Array_map (A) (Char.Array_map)
-module Elt_array_occ = Int_map(Elt_array)
+module Elt_array_occ = Int_map (Elt_array)
 module Elt_set_occ = Int_map (Elt_set)
 module Elt_set_char_map = Char_map (Elt_set)
 
-module Trie_gen (A : Memo) : Memo with type t = A.t Trie_gen.t = struct
-  module rec M : (Memo with type t = A.t Trie_gen.t) = Make_sub_only (struct
-    module Map = Char_map (A)
-    module Option = Option (A)
+module Trie (A : Memo) : Memo with type t = A.t Trie.t = struct
+  module A_option = Option (A)
 
-    type t = A.t Trie_gen.t
+  module rec M : (Memo with type t = A.t Trie.t) = Make_sub_only (struct
+    type t = A.t Trie.t
 
-    let equal = ( = )
+    let equal t1 t2 =
+      (*( = )*)
+      let open Trie in
+      match t1, t2 with
+      | Leaf (chars, elt), Leaf (chars', elt') ->
+          Char_list.equal chars chars' && A.equal elt elt'
+      | Node { leaf; children }, Node { leaf = leaf'; children = children' } ->
+          A_option.equal leaf leaf' && Children.equal children children'
+      | _ -> false
 
     let hash trie =
-      let open Trie_gen in
+      let open Trie in
       match trie with
       | Leaf _ -> Hashtbl.hash trie
       | Node { leaf; children } ->
           Hashtbl.hash (Hashtbl.hash leaf, Children.hash children)
 
     let sub ~memo:_ trie =
-      let open Trie_gen in
+      let open Trie in
       match trie with
       | Leaf (chars, elts) -> Leaf (Char_list.memo chars, A.memo elts)
       | Node { leaf; children } ->
-          let leaf = Option.memo leaf in
+          let leaf = A_option.memo leaf in
           let children = Children.memo children in
           Node { leaf; children }
   end)
 
-  and Children : (Memo with type t = A.t Trie_gen.t Char.Map.t) = Char_map (M)
+  and Children : (Memo with type t = A.t Trie.t Char.Map.t) = Char_map (M)
 
   include M
 end
 
-module Trie_compact (A : Memo) : Memo with type t = A.t Trie_compact.t = struct
-  module rec M : (Memo with type t = A.t Trie_compact.t) = Make_sub_only (struct
-    module Map = Char_map (A)
-    module Option = Option (A)
-
-    type t = A.t Trie_compact.t
-
-    let equal = ( = )
-
-    let hash trie =
-      let open Trie_compact in
-      match trie with
-      | Leaf _ -> Hashtbl.hash trie
-      | Node { leaf; children } ->
-          Hashtbl.hash (Hashtbl.hash leaf, Children.hash children)
-
-    let sub ~memo:_ trie =
-      let open Trie_compact in
-      match trie with
-      | Leaf (chars, elts) -> Leaf (String.memo chars, A.memo elts)
-      | Node { leaf; children } ->
-          let leaf = Option.memo leaf in
-          let children = Children.memo children in
-          Node { leaf; children }
-  end)
-
-  and Children : (Memo with type t = A.t Trie_compact.t Char.Array_map.t) =
-    Char_array_map (M)
-
-  include M
-end
-
-module Elt_set_trie_gen = Trie_gen (Elt_set)
-module Elt_set_occ_trie_gen = Trie_gen (Elt_set_occ)
-
-module Elt_array_trie_gen = Trie_gen (Elt_array)
-module Elt_array_occ_trie_gen = Trie_gen (Elt_array_occ)
+module Elt_set_trie = Trie (Elt_set)
+module Elt_set_occ_trie = Trie (Elt_set_occ)
+module Elt_array_trie = Trie (Elt_array)
+module Elt_array_occ_trie = Trie (Elt_array_occ)

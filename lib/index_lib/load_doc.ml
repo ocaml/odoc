@@ -248,9 +248,8 @@ module Make (Storage : Db.Storage.S) = struct
     let name = name in
     let json_display =
       if empty_payload
-      then  ""
-      else
-        entry |> Json_display.of_entry |> Odoc_html.Json.to_string
+      then ""
+      else entry |> Json_display.of_entry |> Odoc_html.Json.to_string
     in
     let has_doc = doc.txt <> "" in
     let elt = Elt.v ~name ~kind:kind' ~json_display ~has_doc () in

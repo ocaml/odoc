@@ -2,13 +2,12 @@ open Common
 module Elt = Elt
 module Types = Types
 module Storage = Storage
-module Trie_compact = Trie_compact
-module Trie_gen = Trie_gen
+module Trie = Trie
 module Cache = Cache
 
 type 'a t = 'a Types.t =
-  { db_types : 'a Int.Map.t Trie_gen.t
-  ; db_names : 'a Trie_gen.t
+  { db_types : 'a Int.Map.t Trie.t
+  ; db_names : 'a Trie.t
   }
 
 val list_of_string : string -> char list

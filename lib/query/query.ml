@@ -3,7 +3,7 @@ module Parser = Query_parser
 module Succ = Succ
 module Sort = Sort
 module Storage = Db.Storage
-module Trie = Db.Trie_gen
+module Trie = Db.Trie
 open Db.Types
 module Occ = Int.Map
 

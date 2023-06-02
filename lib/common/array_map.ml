@@ -3,7 +3,6 @@ module type S = sig
   type 'a t
 
   val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
-
   val of_seq : (key * 'a) Seq.t -> 'a t
   val to_array : 'a t -> (key * 'a) array
   val find : key:key -> 'a t -> 'a option

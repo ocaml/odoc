@@ -2,9 +2,7 @@ open Common
 module Elt = Elt
 module Types = Types
 module Storage_toplevel = Storage
-module Trie = Trie_gen
-module Trie_gen = Trie_gen
-module Trie_compact = Trie_compact
+module Trie = Trie
 module Cache = Cache
 include Types
 module Occ = Int.Map
@@ -13,7 +11,7 @@ let compact db =
   let open Types in
   let { db_types; db_names } = db in
   let db_types =
-    Trie_gen.map_leaf
+    Trie.map_leaf
       ~f:(fun occs ->
         Int.Map.map
           (fun set ->
@@ -22,14 +20,13 @@ let compact db =
       db_types
   in
   let db_names =
-    Trie_gen.map_leaf
+    Trie.map_leaf
       ~f:(fun set ->
         set |> Elt.Set.elements |> Array.of_list |> Cache.Elt_array.memo)
       db_names
   in
-
-  let db_types = Cache.Elt_array_occ_trie_gen.memo db_types in
-  let db_names = Cache.Elt_array_trie_gen.memo db_names in
+  let db_types = Cache.Elt_array_occ_trie.memo db_types in
+  let db_names = Cache.Elt_array_trie.memo db_names in
   { db_types; db_names }
 
 let list_of_string s = List.init (String.length s) (String.get s)

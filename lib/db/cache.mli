@@ -15,9 +15,7 @@ module Char_list : Memo with type t = char list
 module String_list : Memo with type t = string list
 module String_list_list : Memo with type t = string list list
 module Elt_array : Memo with type t = Elt.t array
-module Elt_set_trie_gen : Memo with type t = Elt.Set.t Trie_gen.t
-module Elt_set_occ_trie_gen : Memo with type t = Elt.Set.t Int.Map.t Trie_gen.t
-module Elt_array_trie_gen : Memo with type t = Elt.t Array.t Trie_gen.t
-
-module Elt_array_occ_trie_gen :
-  Memo with type t = Elt.t Array.t Int.Map.t Trie_gen.t
+module Elt_set_trie : Memo with type t = Elt.Set.t Trie.t
+module Elt_set_occ_trie : Memo with type t = Elt.Set.t Int.Map.t Trie.t
+module Elt_array_trie : Memo with type t = Elt.t Array.t Trie.t
+module Elt_array_occ_trie : Memo with type t = Elt.t Array.t Int.Map.t Trie.t

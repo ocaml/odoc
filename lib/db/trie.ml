@@ -79,4 +79,3 @@ let rec map_leaf ~f t =
       let leaf = Option.map f leaf in
       let children = M.map (map_leaf ~f) children in
       Node { leaf; children }
-

@@ -32,6 +32,6 @@ let sgn_not = function
   | Unknown -> Unknown
 
 type 'a t =
-  { db_types : 'a Int.Map.t Trie_gen.t
-  ; db_names : 'a  Trie_gen.t
+  { db_types : 'a Int.Map.t Trie.t
+  ; db_names : 'a Trie.t
   }
