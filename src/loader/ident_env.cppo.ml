@@ -641,7 +641,11 @@ module Path = struct
     | Path.Pextra_ty _ -> assert false
 #endif
 
-  let[@warning "-unused-rec-flag"] rec read_type env = function
+#if OCAML_VERSION < (5,1,0)
+  let read_type env = function
+#else
+    let rec read_type env = function
+#endif
     | Path.Pident id -> read_type_ident env id
 #if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `Dot(read_module env p, strip_hash s)
