@@ -500,7 +500,7 @@ h4 {
 /* Preformatted and code */
 
 tt, code, pre {
-  font-family: "Fira Mono", courier;
+  font-family: "Fira Mono", monospace;
   font-weight: 400;
 }
 
