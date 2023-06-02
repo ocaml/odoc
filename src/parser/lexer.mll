@@ -274,7 +274,7 @@ let language_tag_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ]
 
 let delim_char =
-  ['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ]
+  ['a'-'z' 'A'-'Z' '0'-'9' '_' ]
 
 
 rule token input = parse
