@@ -36,8 +36,7 @@ let test ?(sections_allowed = `No_titles) ?(tags_allowed = true)
   in
   let print_json_desc desc t =
     let yojson = Type_desc_to_yojson.to_yojson desc t in
-    Yojson.Basic.to_string yojson |>
-    Format.fprintf Format.std_formatter "%s"
+    Format.fprintf Format.std_formatter "%s" (Yojson.Basic.to_string yojson)
   in
   print_json_desc parser_output_desc parser_output;
   Format.pp_print_flush Format.std_formatter ()
