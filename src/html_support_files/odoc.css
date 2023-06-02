@@ -6,7 +6,6 @@
 /* Fonts */
 /* noticia-text-regular - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Noticia Text';
   font-style: normal;
   font-weight: 400;
@@ -15,7 +14,6 @@
 
 /* noticia-text-italic - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Noticia Text';
   font-style: italic;
   font-weight: 400;
@@ -24,7 +22,6 @@
 
 /* noticia-text-700 - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Noticia Text';
   font-style: normal;
   font-weight: 700;
@@ -33,7 +30,6 @@
 
 /* fira-mono-regular - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Fira Mono';
   font-style: normal;
   font-weight: 400;
@@ -42,7 +38,6 @@
 
 /* fira-mono-500 - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Fira Mono';
   font-style: normal;
   font-weight: 500;
@@ -51,7 +46,6 @@
 
 /* fira-sans-regular - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Fira Sans';
   font-style: normal;
   font-weight: 400;
@@ -60,7 +54,6 @@
 
 /* fira-sans-italic - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Fira Sans';
   font-style: italic;
   font-weight: 400;
@@ -69,7 +62,6 @@
 
 /* fira-sans-500 - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Fira Sans';
   font-style: normal;
   font-weight: 500;
@@ -78,7 +70,6 @@
 
 /* fira-sans-500italic - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Fira Sans';
   font-style: italic;
   font-weight: 500;
@@ -87,7 +78,6 @@
 
 /* fira-sans-700 - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Fira Sans';
   font-style: normal;
   font-weight: 700;
@@ -96,7 +86,6 @@
 
 /* fira-sans-700italic - latin */
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
   font-family: 'Fira Sans';
   font-style: italic;
   font-weight: 700;
