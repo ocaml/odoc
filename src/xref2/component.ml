@@ -2446,6 +2446,9 @@ let umty_of_mty (e : ModuleType.expr) : ModuleType.U.expr option =
   | Functor (_, _) -> None
   | TypeOf { t_desc; _ } -> Some (TypeOf t_desc)
 
+let umty_of_mty_exn e =
+  match umty_of_mty e with None -> assert false | Some e -> e
+
 (** This is equivalent to {!Lang.extract_signature_doc}. *)
 let extract_signature_doc (s : Signature.t) =
   match (s.doc, s.items) with

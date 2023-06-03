@@ -644,19 +644,24 @@ and module_type_type_of_desc_noexn s t =
   | ModPath p -> ModPath (module_path s p)
   | StructInclude p -> StructInclude (module_path s p)
 
-(* CR lmaurer: This seems wrong! If a subpath of the path is invalidated, that's
-   not the same as the whole path being invalidated. But I can't seem to get this
-   to break. *)
 and mto_module_path_invalidated : t -> Cpath.module_ -> ModuleType.expr option =
  fun s p ->
   match p with
   | `Resolved p' -> mto_resolved_module_path_invalidated s p'
-  | `Substituted p' | `Dot (p', _) -> mto_module_path_invalidated s p'
-  | `Module (`Module p', _) -> mto_resolved_module_path_invalidated s p'
+  | `Substituted p' -> mto_module_path_invalidated s p'
+  | `Dot (p', id) ->
+      mto_module_path_invalidated s p'
+      |> Option.map (member_of_module_type_expr s id)
+  | `Module (`Module p', id) ->
+      let id = Odoc_model.Names.ModuleName.to_string id in
+      mto_resolved_module_path_invalidated s p'
+      |> Option.map (member_of_module_type_expr s id)
   | `Module (_, _) -> None
   | `Apply (p1, p2) -> (
       match mto_module_path_invalidated s p1 with
-      | Some _ as ans -> ans
+      | Some _ as ans ->
+          Format.eprintf "WOW WE DID IT@.%!";
+          ans
       | None -> mto_module_path_invalidated s p2)
   | `Local (id, _) -> (
       match PathModuleMap.find id s.module_type_of_invalidating_modules with
@@ -674,11 +679,16 @@ and mto_resolved_module_path_invalidated s p =
       | mty -> Some mty)
   | `Gpath _ -> None
   | `Apply (p1, p2) -> (
+      Format.eprintf "WOW WE DID IT HERE@.%a@.%!"
+        Component.Fmt.resolved_module_path p;
       match mto_resolved_module_path_invalidated s p1 with
       | Some _ as ans -> ans
       | None -> mto_resolved_module_path_invalidated s p2)
-  | `Module (`Module p, _) | `Substituted p ->
+  | `Module (`Module p, id) ->
+      let id = Odoc_model.Names.ModuleName.to_string id in
       mto_resolved_module_path_invalidated s p
+      |> Option.map (member_of_module_type_expr s id)
+  | `Substituted p -> mto_resolved_module_path_invalidated s p
   | `Module (_, _) -> None
   | `Alias (p1, _p2, _) -> mto_resolved_module_path_invalidated s p1
   | `Subst (_p1, p2) -> mto_resolved_module_path_invalidated s p2
@@ -686,7 +696,25 @@ and mto_resolved_module_path_invalidated s p =
   | `Canonical (p1, _p2) -> mto_resolved_module_path_invalidated s p1
   | `OpaqueModule p -> mto_resolved_module_path_invalidated s p
 
-and u_module_type_expr s t =
+and member_of_module_type_expr s id (t : ModuleType.expr) =
+  match t with
+  | Signature sg -> member_of_sig s sg id
+  | Path { p_path = _; p_expansion = Some (Signature sg) } ->
+      member_of_sig s sg id
+  | Path _ -> assert false
+  | With _ -> assert false
+  | Functor _ -> assert false
+  | TypeOf _ -> assert false
+
+and member_of_sig _s sg id =
+  match Find.module_in_sig sg id with
+  | None -> assert false
+  | Some (`FModule (_, m)) -> (
+      match m.type_ with
+      | Alias (p, exp) -> TypeOf { t_desc = StructInclude p; t_expansion = exp }
+      | ModuleType e -> e)
+
+and u_module_type_expr s (t as t0) =
   let open Component.ModuleType.U in
   match t with
   | Path p -> (
@@ -710,7 +738,11 @@ and u_module_type_expr s t =
       with MTOInvalidated e -> (
         match Component.umty_of_mty e with
         | Some e -> u_module_type_expr s e
-        | None -> assert false))
+        | None ->
+            Format.eprintf "WELP, LET'S TRY THIS@.%a@.%a@.%!"
+              Component.Fmt.u_module_type_expr t0 Component.Fmt.module_type_expr
+              e;
+            TypeOf (module_type_type_of_desc_noexn s t)))
 
 and module_type_expr s t =
   let open Component.ModuleType in
