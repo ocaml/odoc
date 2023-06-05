@@ -51,14 +51,18 @@ module Identifier = struct
     | `Method (_, name) -> MethodName.to_string name
     | `InstanceVariable (_, name) -> InstanceVariableName.to_string name
     | `Label (_, name) -> LabelName.to_string name
+    | `SourcePage (_, name) -> name
+    | `SourceDir (_, name) -> name
+    | `SourceLocation (_, anchor) -> DefName.to_string anchor
+    | `SourceLocationMod x -> name_aux (x :> t)
 
   let name : [< t_pv ] id -> string = fun n -> name_aux (n :> t)
 
   let rec label_parent_aux =
     let open Id in
-    fun (n : t) ->
+    fun (n : non_src) ->
       match n with
-      | { iv = `Result i; _ } -> label_parent_aux (i :> any)
+      | { iv = `Result i; _ } -> label_parent_aux (i :> non_src)
       | { iv = `CoreType _; _ } | { iv = `CoreException _; _ } -> assert false
       | { iv = `Root _; _ } as p -> (p :> label_parent)
       | { iv = `Page _; _ } as p -> (p :> label_parent)
@@ -79,7 +83,7 @@ module Identifier = struct
       | { iv = `Constructor (p, _); _ } -> (p : datatype :> label_parent)
       | { iv = `Field (p, _); _ } -> (p : parent :> label_parent)
 
-  let label_parent n = label_parent_aux (n :> t)
+  let label_parent n = label_parent_aux (n :> Id.non_src)
 
   let equal x y = x.ihash = y.ihash && x.ikey = y.ikey
 
@@ -255,23 +259,27 @@ module Identifier = struct
     type t_pv = Id.container_page_pv
   end
 
+  module NonSrc = struct
+    type t = Paths_types.Identifier.non_src
+    type t_pv = Paths_types.Identifier.non_src_pv
+  end
+
   module SourceDir = struct
     type t = Id.source_dir
     type t_pv = Id.source_dir_pv
     let equal = equal
     let hash = hash
     let compare = compare
-    let rec name = function
-      | { iv = `SourceDir (p, n); _ } -> name p ^ n ^ "/"
-      | { iv = `SourceRoot _; _ } -> "./"
   end
 
   module SourcePage = struct
     type t = Id.source_page
     type t_pv = Id.source_page_pv
-    let equal = equal
-    let name { iv = `SourcePage (p, name); _ } = SourceDir.name p ^ name
-    
+  end
+
+  module SourceLocation = struct
+    type t = Paths_types.Identifier.source_location
+    type t_pv = Paths_types.Identifier.source_location_pv
   end
 
   module OdocId = struct
@@ -367,12 +375,7 @@ module Identifier = struct
     let source_page (container_page, path) =
       let rec source_dir dir =
         match dir with
-        | [] ->
-            mk_parent
-              (fun () -> "")
-              "sr"
-              (fun (p, ()) -> `SourceRoot p)
-              (container_page, ())
+        | [] -> (container_page : ContainerPage.t :> SourceDir.t)
         | a :: q ->
             let parent = source_dir q in
             mk_parent
@@ -478,6 +481,20 @@ module Identifier = struct
         LabelParent.t * LabelName.t ->
         [> `Label of LabelParent.t * LabelName.t ] id =
       mk_parent LabelName.to_string "l" (fun (p, n) -> `Label (p, n))
+
+    let source_location :
+        SourcePage.t * DefName.t ->
+        [> `SourceLocation of SourcePage.t * DefName.t ] id =
+      mk_parent DefName.to_string "sl" (fun (p, n) -> `SourceLocation (p, n))
+
+    let source_location_mod :
+        SourcePage.t -> [> `SourceLocationMod of SourcePage.t ] id =
+     fun s ->
+      mk_parent
+        (fun () -> "__slm__")
+        ""
+        (fun (s, ()) -> `SourceLocationMod s)
+        (s, ())
   end
 end
 

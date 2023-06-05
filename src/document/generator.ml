@@ -49,11 +49,10 @@ let path_to_id path =
 
 let source_anchor locs =
   match locs with
-  | Some { Odoc_model.Lang.Locations.anchor = Some anchor; source_parent } ->
-      Some (Url.Anchor.source_file_from_identifier source_parent ~anchor)
-  | Some { Odoc_model.Lang.Locations.anchor = None; source_parent } ->
-      let path = Url.Path.source_file_from_identifier source_parent in
-      Some (Url.from_path path)
+  | Some id ->
+      Url.Anchor.from_identifier
+        (id : Paths.Identifier.SourceLocation.t :> Paths.Identifier.t)
+      |> Result.to_option
   | _ -> None
 
 let attach_expansion ?(status = `Default) (eq, o, e) page text =
@@ -242,7 +241,7 @@ module Make (Syntax : SYNTAX) = struct
       string ->
       Source_page.t
   end = struct
-    let path id = Url.Path.source_file_from_identifier id
+    let path id = Url.Path.from_identifier id
     let url id = Url.from_path (path id)
 
     let info_of_info url = function
@@ -1792,7 +1791,7 @@ module Make (Syntax : SYNTAX) = struct
           | `SourceDir (parent, _) ->
               let mmap = add parent (add_dir dir) mmap in
               dir_ancestors_add parent mmap
-          | `SourceRoot _ -> mmap
+          | `Page _ -> mmap
         in
         let file_ancestors_add ({ iv = `SourcePage (parent, _); _ } as file)
             mmap =
@@ -1804,11 +1803,11 @@ module Make (Syntax : SYNTAX) = struct
           M.empty dir_pages
       in
       let page_of_dir (dir : SourceDir.t) (dir_children, file_children) =
-        let url = Url.Path.source_dir_from_identifier dir in
+        let url = Url.Path.from_identifier dir in
         let block ?(attr = []) desc = Block.{ attr; desc } in
         let inline ?(attr = []) desc = Inline.[ { attr; desc } ] in
         let header =
-          let title = inline (Text (SourceDir.name dir)) in
+          let title = inline (Text (name dir)) in
           Item.Heading
             Heading.{ label = None; level = 0; title; source_anchor = None }
         in
@@ -1822,18 +1821,14 @@ module Make (Syntax : SYNTAX) = struct
         in
         let li_of_child child =
           match child with
-          | { iv = `SourceRoot _; _ } ->
-              assert false (* No [`SourceRoot] is child of a [`SourceDir] *)
+          | { iv = `Page _; _ } ->
+              assert false (* No [`Page] is child of a [`SourceDir] *)
           | { iv = `SourceDir (_, name); _ } ->
-              let url =
-                child |> Url.Path.source_dir_from_identifier |> Url.from_path
-              in
+              let url = child |> Url.Path.from_identifier |> Url.from_path in
               (name, url)
         in
         let li_of_file_child ({ iv = `SourcePage (_, name); _ } as child) =
-          let url =
-            child |> Url.Path.source_file_from_identifier |> Url.from_path
-          in
+          let url = child |> Url.Path.from_identifier |> Url.from_path in
           (name, url)
         in
         let items =

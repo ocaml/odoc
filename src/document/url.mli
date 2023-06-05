@@ -29,21 +29,17 @@ module Path : sig
 
   type t = { kind : kind; parent : t option; name : string }
 
-  type source_pv =
+  type nonsrc_pv =
     [ Identifier.Page.t_pv
     | Identifier.Signature.t_pv
     | Identifier.ClassSignature.t_pv ]
 
+  type source_pv =
+    [ nonsrc_pv | Identifier.SourcePage.t_pv | Identifier.SourceDir.t_pv ]
+
   and source = source_pv Odoc_model.Paths.Identifier.id
 
   val from_identifier : [< source_pv ] Odoc_model.Paths.Identifier.id -> t
-
-  val source_dir_from_identifier : Odoc_model.Paths.Identifier.SourceDir.t -> t
-  (** A path to a source dir. *)
-
-  val source_file_from_identifier :
-    Odoc_model.Paths.Identifier.SourcePage.t -> t
-  (** A path to a source file. *)
 
   val to_list : t -> (kind * string) list
 
@@ -92,9 +88,6 @@ module Anchor : sig
   }
 
   val from_identifier : Identifier.t -> (t, Error.t) result
-
-  val source_file_from_identifier :
-    Odoc_model.Paths.Identifier.SourcePage.t -> anchor:string -> t
 
   val polymorphic_variant :
     type_ident:Identifier.t ->

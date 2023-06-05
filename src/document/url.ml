@@ -82,10 +82,13 @@ end
 let ( >>= ) x f = match x with Ok x -> f x | Error _ as e -> e
 
 module Path = struct
-  type source_pv =
+  type nonsrc_pv =
     [ Identifier.Page.t_pv
     | Identifier.Signature.t_pv
     | Identifier.ClassSignature.t_pv ]
+
+  type source_pv =
+    [ nonsrc_pv | Identifier.SourcePage.t_pv | Identifier.SourceDir.t_pv ]
 
   and source = source_pv Odoc_model.Paths.Identifier.id
 
@@ -174,24 +177,15 @@ module Path = struct
         let name = ClassTypeName.to_string name in
         mk ~parent kind name
     | { iv = `Result p; _ } -> from_identifier (p :> source)
+    | { iv = `SourceDir (parent, name); _ }
+    | { iv = `SourcePage (parent, name); _ } ->
+        let parent = from_identifier (parent :> source) in
+        let kind = `Page in
+        mk ~parent kind name
 
   let from_identifier p =
     from_identifier
       (p : [< source_pv ] Odoc_model.Paths.Identifier.id :> source)
-
-  let rec source_dir_from_identifier id =
-    match id.Odoc_model.Paths.Identifier.iv with
-    | `SourceRoot container -> from_identifier (container :> source)
-    | `SourceDir (parent, name) ->
-        let parent = source_dir_from_identifier parent in
-        let kind = `Page in
-        mk ~parent kind name
-
-  let source_file_from_identifier id =
-    let (`SourcePage (parent, name)) = id.Odoc_model.Paths.Identifier.iv in
-    let parent = source_dir_from_identifier parent in
-    let kind = `SourcePage in
-    mk ~parent kind name
 
   let to_list url =
     let rec loop acc { parent; name; kind } =
@@ -369,16 +363,20 @@ module Anchor = struct
            happen, [`Type] may not happen either but just in case, use the
            grand-parent. *)
         match parent with
-        | { iv = #Path.source_pv; _ } as parent ->
-            mk ~kind:`Section parent str_name
         | { iv = `CoreType _; _ } ->
             Error (Unexpected_anchor "core_type label parent")
-        | { iv = `Type (gp, _); _ } -> mk ~kind:`Section gp str_name)
-
-  let source_file_from_identifier id ~anchor =
-    let kind = `SourceAnchor in
-    let page = Path.source_file_from_identifier id in
-    { page; anchor; kind }
+        | { iv = `Type (gp, _); _ } -> mk ~kind:`Section gp str_name
+        | { iv = #Path.nonsrc_pv; _ } as p ->
+            mk ~kind:`Section (p :> Path.source) str_name)
+    | { iv = `SourceLocation (parent, loc); _ } ->
+        let page = Path.from_identifier (parent :> Path.source) in
+        Ok { page; kind = `SourceAnchor; anchor = DefName.to_string loc }
+    | { iv = `SourceLocationMod parent; _ } ->
+        let page = Path.from_identifier (parent :> Path.source) in
+        Ok { page; kind = `SourceAnchor; anchor = "" }
+    | { iv = `SourcePage (p, _name); _ } | { iv = `SourceDir (p, _name); _ } ->
+        let page = Path.from_identifier (p :> Path.source) in
+        Ok { page; kind = `Page; anchor = "" }
 
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =

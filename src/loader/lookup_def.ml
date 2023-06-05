@@ -11,10 +11,10 @@ type t = Shape.t
 
 (** Project an identifier into a shape. *)
 let rec shape_of_id lookup_shape :
-    [< Identifier.t_pv ] Identifier.id -> Shape.t option =
+    [< Identifier.NonSrc.t_pv ] Identifier.id -> Shape.t option =
   let proj parent kind name =
     let item = Shape.Item.make name kind in
-    match shape_of_id lookup_shape (parent :> Identifier.t) with
+    match shape_of_id lookup_shape (parent :> Identifier.NonSrc.t) with
     | Some shape -> Some (Shape.proj shape item)
     | None -> None
   in
@@ -29,7 +29,7 @@ let rec shape_of_id lookup_shape :
         (* Apply the functor to an empty signature. This doesn't seem to cause
            any problem, as the shape would stop resolve on an item inside the
            result of the function, which is what we want. *)
-        shape_of_id lookup_shape (parent :> Identifier.t) >>= fun parent ->
+        shape_of_id lookup_shape (parent :> Identifier.NonSrc.t) >>= fun parent ->
         Some (Shape.app parent ~arg:(Shape.str Shape.Item.Map.empty))
     | `ModuleType (parent, name) ->
         proj parent Kind.Module_type (ModuleTypeName.to_string name)
@@ -69,8 +69,10 @@ let lookup_def lookup_unit id =
       Uid.unpack_uid (Uid.of_shape_uid uid) >>= fun (unit_name, id) ->
       lookup_unit unit_name >>= fun (unit, _) ->
       unit.Lang.Compilation_unit.source_info >>= fun sources ->
-      let anchor = id >>= fun id -> Some (Uid.anchor_of_id id) in
-      Some { Lang.Locations.source_parent = sources.id; anchor }
+      let anchor_opt = id >>= fun id -> Some (Uid.anchor_of_id id) in
+      match anchor_opt with
+      | Some anchor -> Some (Paths.Identifier.Mk.source_location (sources.id,Odoc_model.Names.DefName.make_std anchor))
+      | None -> Some (Paths.Identifier.Mk.source_location_mod sources.id)
 
 let of_cmt (cmt : Cmt_format.cmt_infos) = cmt.cmt_impl_shape
 

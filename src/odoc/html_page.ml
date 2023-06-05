@@ -37,7 +37,7 @@ let extra_documents args unit ~syntax =
               source_code;
           ])
   | Some { id; _ }, None ->
-      let filename = Paths.Identifier.SourcePage.name id in
+      let filename = Paths.Identifier.name id in
       Error.raise_warning
         (Error.filename_only
            "The --source should be passed when generating documents from \

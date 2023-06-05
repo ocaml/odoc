@@ -18,7 +18,7 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
-  lookup_def : Identifier.t -> Lang.Locations.t option;
+  lookup_def : Identifier.NonSrc.t -> Identifier.SourceLocation.t option;
 }
 
 let unique_id =
@@ -361,7 +361,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
   let id = (unit.id :> Paths.Identifier.Module.t) in
   let locs =
     match unit.source_info with
-    | Some src -> Some { Lang.Locations.source_parent = src.id; anchor = None }
+    | Some src -> Some (Identifier.Mk.source_location_mod src.id)
     | None -> None
   in
   match unit.content with
@@ -425,7 +425,7 @@ let lookup_root_module name env =
   result
 
 let lookup_def id env =
-  let id = (id :> Paths.Identifier.Any.t) in
+  let id = (id :> Paths.Identifier.NonSrc.t) in
   match env.resolver with Some r -> r.lookup_def id | None -> None
 
 let lookup_page name env =
