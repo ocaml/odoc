@@ -72,6 +72,11 @@ end
 include T
 
 let equal a b = compare a b = 0
+let ( = ) = equal
+let ( < ) e e' = compare e e' < 0
+let ( <= ) e e' = compare e e' <= 0
+let ( > ) e e' = compare e e' > 0
+let ( >= ) e e' = compare e e' >= 0
 let hash : t -> int = Hashtbl.hash
 
 module Set = Set.Make (T)

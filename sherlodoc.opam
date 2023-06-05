@@ -15,6 +15,7 @@ depends: [
   "odoc" {= "2.1.0"}
   "opam-core"
   "tyxml"
+  "alcotest" {with-test}
 ]
 build: [
   ["dune" "subst"] {dev}

@@ -135,32 +135,8 @@ module Make (Storage : Db.Storage.S) = struct
     let open Odoc_model.Lang in
     TypeExpr.Arrow (None, parent_type, type_)
 
-  let generic_cost ~ignore_no_doc full_name doc =
-    String.length full_name
-    (* + (5 * List.length path) TODO : restore depth based ordering *)
-    + (if ignore_no_doc
-       then 0
-       else
-         match Elt.(doc.txt) with
-         | "" -> 1000
-         | _ -> 0)
-    + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
-
   let type_cost type_ =
     String.length (Odoc_search.Render.text_of_type type_) + type_size type_
-
-  let kind_cost (kind : Odoc_search.Entry.extra) =
-    let open Odoc_search.Entry in
-    match kind with
-    | Constructor { args; res } ->
-        type_cost (searchable_type_of_constructor args res)
-    | Field { parent_type; type_; _ } ->
-        type_cost (searchable_type_of_record parent_type type_)
-    | Value { value = _; type_ } -> type_cost type_
-    | Doc _ -> 400
-    | TypeDecl _ | Module | Exception _ | Class_type _ | Method _ | Class _
-    | TypeExtension _ | ExtensionConstructor _ | ModuleType ->
-        200
 
   let convert_kind (kind : Odoc_search.Entry.extra) =
     let open Odoc_search.Entry in

@@ -96,12 +96,19 @@ let match_packages ~packages results =
   | _ -> Seq.filter (match_packages ~packages) results
 
 let api ~(shards : Db.Elt.t array Db.t list) params =
+  print_endline "api" ;
   let query_name, query_typ, query_typ_arrow, pretty =
     Parser.of_string params.query
   in
+  print_endline "api 1" ;
   let results = search ~shards query_name query_typ in
+  print_endline "api 2" ;
   let results = Succ.to_seq results in
+  print_endline "api 3" ;
   let results = match_packages ~packages:params.packages results in
+  print_endline "api 4" ;
   let results = List.of_seq @@ Seq.take params.limit results in
+  print_endline "api 5" ;
   let results = Sort.list query_name query_typ_arrow results in
+  print_endline "api end" ;
   pretty, results

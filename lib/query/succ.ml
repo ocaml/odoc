@@ -1,9 +1,10 @@
 open Db
+open Common
 
 type s =
   | All
   | Empty
-  | Set of Elt.Set.t
+  | Array of Elt.t array
   | Inter of s * s
   | Union of s * s
 
@@ -15,15 +16,10 @@ type t =
 let all = { cardinal = -1; s = All }
 let empty = { cardinal = 0; s = Empty }
 
-let of_set s =
-  if Elt.Set.is_empty s
-  then empty
-  else { cardinal = Elt.Set.cardinal s; s = Set s }
-
 let of_array arr =
-  let li = Array.to_list arr in
-  let set = Elt.Set.of_list li in
-  of_set set
+  if Array.length arr = 0
+  then empty
+  else { cardinal = Array.length arr; s = Array arr }
 
 let inter a b =
   match a.s, b.s with
@@ -43,17 +39,15 @@ let union a b =
       let x, y = if a.cardinal < b.cardinal then x, y else y, x in
       { cardinal = a.cardinal + b.cardinal; s = Union (x, y) }
 
-let succ_ge' elt set = Elt.Set.find_first (fun e -> Elt.compare e elt >= 0) set
-let succ_gt' elt set = Elt.Set.find_first (fun e -> Elt.compare e elt > 0) set
-let first' set = Elt.Set.find_first (fun _ -> true) set
+let array_first arr = arr.(0)
 
 exception Gt of Elt.t
 
 let rec succ_ge elt = function
   | All -> elt
   | Empty -> raise Not_found
-  | Set s ->
-      let out = succ_ge' elt s in
+  | Array s ->
+      let out = Array.succ_ge_exn ~compare:Elt.compare elt s in
       begin
         match Elt.compare elt out with
         | 0 -> elt
@@ -83,7 +77,7 @@ let rec succ_ge elt = function
 let rec succ_gt elt = function
   | All -> invalid_arg "Succ.succ_gt All"
   | Empty -> raise Not_found
-  | Set s -> succ_gt' elt s
+  | Array s -> Array.succ_gt_exn ~compare:Elt.compare elt s
   | Inter (a, _b) -> succ_gt elt a
   | Union (a, b) -> begin
       match succ_gt_opt elt a, succ_gt_opt elt b with
@@ -101,7 +95,7 @@ and succ_gt_opt elt t = try Some (succ_gt elt t) with Not_found -> None
 let rec first = function
   | All -> invalid_arg "Succ.first All"
   | Empty -> raise Not_found
-  | Set s -> first' s
+  | Array s -> array_first s
   | Inter (a, _b) -> first a
   | Union (a, b) -> begin
       match first_opt a, first_opt b with

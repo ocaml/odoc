@@ -103,6 +103,7 @@ let search message =
   let _pretty_query, results =
     Query.(api ~shards:db { query; packages = []; limit = 50 })
   in
+  Printf.printf "Got %i results\n%!" (List.length results) ;
   let _ =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list

@@ -28,4 +28,5 @@
   (odoc
    (= 2.1.0))
   opam-core
-  tyxml))
+  tyxml
+  (alcotest :with-test)))
