@@ -55,7 +55,34 @@ module T = struct
   let compare_pkg { name; version = _ } (b : package) =
     String.compare name b.name
 
-  let compare a b =
+  let generic_cost ~ignore_no_doc name has_doc =
+    String.length name
+    (* + (5 * List.length path) TODO : restore depth based ordering *)
+    + (if ignore_no_doc || has_doc then 0 else 1000)
+    + if String.starts_with ~prefix:"Stdlib." name then -100 else 0
+
+  let type_cost paths =
+    paths |> List.concat |> List.map String.length |> List.fold_left ( + ) 0
+
+  let kind_cost (kind : kind) =
+    match kind with
+    | Constructor type_path | Field type_path | Val type_path ->
+        type_cost type_path
+    | Doc -> 400
+    | TypeDecl | Module | Exception | Class_type | Method | Class
+    | TypeExtension | ExtensionConstructor | ModuleType ->
+        200
+
+  let cost { name; kind; has_doc; pkg = _; json_display = _ } =
+    let ignore_no_doc =
+      match kind with
+      | Module | ModuleType -> true
+      | _ -> false
+    in
+    (* TODO : use entry cost *)
+    generic_cost ~ignore_no_doc name has_doc + kind_cost kind
+
+  let structural_compare a b =
     begin
       match String.compare a.name b.name with
       | 0 -> begin
@@ -66,7 +93,14 @@ module T = struct
       | c -> c
     end
 
-  let compare a b = if a == b then 0 else compare a b
+  let compare a b =
+    if a == b
+    then 0
+    else
+      let cost_a = cost a in
+      let cost_b = cost b in
+      let cmp = Int.compare cost_a cost_b in
+      if cmp = 0 then structural_compare a b else cmp
 end
 
 include T

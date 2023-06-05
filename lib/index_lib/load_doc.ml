@@ -9,6 +9,9 @@ module Make (Storage : Db.Storage.S) = struct
 
   let clear () = Cache.clear ()
 
+  (*
+  
+  todo : check usefulness 
   let rec type_size = function
     | Odoc_model.Lang.TypeExpr.Var _ -> 1
     | Any -> 1
@@ -20,7 +23,7 @@ module Make (Storage : Db.Storage.S) = struct
     | Constr (_, args) -> List.fold_left (fun acc t -> acc + type_size t) 1 args
     | Tuple args -> List.fold_left (fun acc t -> acc + type_size t) 1 args
     | _ -> 100
-
+*)
   let rev_concat lst =
     List.fold_left (fun acc xs -> List.rev_append xs acc) [] lst
 
@@ -135,9 +138,6 @@ module Make (Storage : Db.Storage.S) = struct
     let open Odoc_model.Lang in
     TypeExpr.Arrow (None, parent_type, type_)
 
-  let type_cost type_ =
-    String.length (Odoc_search.Render.text_of_type type_) + type_size type_
-
   let convert_kind (kind : Odoc_search.Entry.extra) =
     let open Odoc_search.Entry in
     match kind with
@@ -209,13 +209,6 @@ module Make (Storage : Db.Storage.S) = struct
       Elt.{ html; txt }
     in
     let kind' = convert_kind extra in
-    let ignore_no_doc =
-      match extra with
-      | Module | ModuleType -> true
-      | _ -> false
-    in
-    (* TODO : use entry cost *)
-    let _cost = generic_cost ~ignore_no_doc full_name doc + kind_cost extra in
     let name =
       match extra with
       | Doc _ -> Pretty.prefixname id
