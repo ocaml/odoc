@@ -11,7 +11,7 @@ let inter_list xs = List.fold_left Succ.inter Succ.all xs
 
 let collapse_count ~count occs =
   Occ.fold
-    (fun k x acc -> if k < count then acc else Succ.union (Succ.of_set x) acc)
+    (fun k x acc -> if k < count then acc else Succ.union (Succ.of_array x) acc)
     occs Succ.empty
 
 let collapse_trie ~count t =
@@ -20,7 +20,7 @@ let collapse_trie ~count t =
   | Some occ -> occ
 
 let collapse_triechar t =
-  match Trie.fold_map Succ.union Succ.of_set t with
+  match Trie.fold_map Succ.union Succ.of_array t with
   | None -> Succ.empty
   | Some s -> s
 
@@ -42,13 +42,13 @@ let find_inter ~shards names =
         @@ List.map
              (fun (name, count) ->
                let name' = List.concat_map Db.list_of_string name in
-               collapse_trie_with_poly ~count name @@ Trie.find name' db)
+               db |> Trie.find name' |> collapse_trie_with_poly ~count name)
              (regroup names)
       in
       Succ.union acc r)
     Succ.empty shards
 
-let find_names ~shards names =
+let find_names ~(shards : Db.Elt.t array Db.t list) names =
   let names =
     List.map
       (fun n -> List.rev (Db.list_of_string (String.lowercase_ascii n)))
@@ -74,7 +74,7 @@ type t =
   ; limit : int
   }
 
-let search ~shards query_name query_typ =
+let search ~(shards : Db.Elt.t array Db.t list) query_name query_typ =
   let results_name = find_names ~shards query_name in
   let results =
     match query_typ with
@@ -95,7 +95,7 @@ let match_packages ~packages results =
   | [] -> results
   | _ -> Seq.filter (match_packages ~packages) results
 
-let api ~shards params =
+let api ~(shards : Db.Elt.t array Db.t list) params =
   let query_name, query_typ, query_typ_arrow, pretty =
     Parser.of_string params.query
   in

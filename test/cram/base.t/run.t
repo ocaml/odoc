@@ -6,10 +6,10 @@
   loading doc !
   doc loaded
   
-  real	0m16.433s
-  user	0m16.294s
-  sys	0m0.100s
-  $ sherlodoc_index --format=marshal --db=sherlodoc_db.bin $(find . -name '*.odocl') 2> /dev/null
+  real	0m15.087s
+  user	0m14.968s
+  sys	0m0.076s
+  $ sherlodoc_index --format=marshal --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
   Index_lib.main
   loading doc !
   doc loaded
@@ -21,15 +21,15 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
 
   $ gzip -k db.js
   $ gzip -k db_marshal.bin
-  gzip: db_marshal.bin: No such file or directory
-  [1]
 
   $ gzip -k megaodocl
 
-  $ du -s *.js *.gz
+  $ du -s *.js *.gz *.bin
   3056	db.js
   2296	db.js.gz
+  2180	db_marshal.bin.gz
   1628	megaodocl.gz
+  6716	db_marshal.bin
 
 
   $ for f in $(find . -name '*.odocl'); do
@@ -38,6 +38,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ odoc support-files -o html
   $ cat db.js  ../../../bin/JSherlodoc/main.bc.js > html/index.js
   $ cp sherlodoc_db.bin html
+  cp: cannot stat 'sherlodoc_db.bin': No such file or directory
+  [1]
   $ du -sh html/index.js
   7.9M	html/index.js
   $ ls html
@@ -49,6 +51,5 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   katex.min.js
   odoc.css
   odoc_search.js
-  sherlodoc_db.bin
   $ cp -r html /tmp
   $ firefox /tmp/html/base/index.html

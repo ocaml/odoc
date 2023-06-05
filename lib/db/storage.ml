@@ -6,5 +6,5 @@ module type S = sig
   val open_out : string -> writer
   val save : db:writer -> Elt.t array db -> unit
   val close_out : writer -> unit
-  val load : string -> Elt.Set.t db list
+  val load : string -> Elt.t array db list
 end

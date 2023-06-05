@@ -245,7 +245,6 @@ module Make (Storage : Db.Storage.S) = struct
       | Doc _ -> Pretty.prefixname id
       | _ -> full_name
     in
-    let name = name in
     let json_display =
       if empty_payload
       then ""

@@ -20,6 +20,11 @@ let of_set s =
   then empty
   else { cardinal = Elt.Set.cardinal s; s = Set s }
 
+let of_array arr =
+  let li = Array.to_list arr in
+  let set = Elt.Set.of_list li in
+  of_set set
+
 let inter a b =
   match a.s, b.s with
   | Empty, _ | _, Empty -> empty

@@ -118,6 +118,5 @@ module Package = struct
 end
 
 let v ~name ~kind ~has_doc ?(pkg = None) ~json_display () =
-  let name = name in
   let json_display = json_display in
   { name; kind; has_doc; pkg; json_display }

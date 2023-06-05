@@ -6,14 +6,10 @@
   $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
   8.0K	megaodocl
-  $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
+  $ sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
   Index_lib.main
   loading doc !
   doc loaded
-  
-  real	0m0.010s
-  user	0m0.004s
-  sys	0m0.006s
   $ sherlodoc_index --format=marshal --db=sherlodoc_db.bin $(find . -name '*.odocl') 2> /dev/null
   Index_lib.main
   loading doc !
@@ -25,9 +21,6 @@ $ sherlodoc_index --format=js --type-search=false --db=db_no_type.js $(find . -n
 $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstring=false  --db=db_only_names.js $(find . -name '*.odocl') 2> /dev/null
 
   $ gzip -k db.js
-  $ gzip -k db_marshal.bin
-  gzip: db_marshal.bin: No such file or directory
-  [1]
 
   $ gzip -k megaodocl
 

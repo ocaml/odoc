@@ -7,24 +7,34 @@ module Cache = Cache
 include Types
 module Occ = Int.Map
 
+let trie_with_array trie =
+  Trie.map_leaf
+    ~f:(fun set ->
+      set |> Elt.Set.to_seq |> Array.of_seq |> Cache.Elt_array.memo)
+    trie
+
+let trie_with_set trie =
+  Trie.map_leaf ~f:(fun arr -> arr |> Array.to_seq |> Elt.Set.of_seq) trie
+
+let trie_with_array_occ trie =
+  Trie.map_leaf
+    ~f:(fun occs ->
+      occs
+      |> Int.Map.map (fun set ->
+             set |> Elt.Set.to_seq |> Array.of_seq |> Cache.Elt_array.memo))
+    trie
+
+let trie_with_set_occ trie =
+  Trie.map_leaf
+    ~f:(fun occs ->
+      occs |> Int.Map.map (fun arr -> arr |> Array.to_seq |> Elt.Set.of_seq))
+    trie
+
 let compact db =
   let open Types in
   let { db_types; db_names } = db in
-  let db_types =
-    Trie.map_leaf
-      ~f:(fun occs ->
-        Int.Map.map
-          (fun set ->
-            set |> Elt.Set.elements |> Array.of_list |> Cache.Elt_array.memo)
-          occs)
-      db_types
-  in
-  let db_names =
-    Trie.map_leaf
-      ~f:(fun set ->
-        set |> Elt.Set.elements |> Array.of_list |> Cache.Elt_array.memo)
-      db_names
-  in
+  let db_types = trie_with_array_occ db_types in
+  let db_names = trie_with_array db_names in
   let db_types = Cache.Elt_array_occ_trie.memo db_types in
   let db_names = Cache.Elt_array_trie.memo db_names in
   { db_types; db_names }

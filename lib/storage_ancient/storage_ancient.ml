@@ -18,7 +18,7 @@ let save ~db (t : Elt.t array Db.t) =
 
 let close_out db = Ancient.detach db.ancient
 
-type reader = { shards : Elt.Set.t Db.t array }
+type reader = { shards : Elt.t array Db.t array }
 
 let load_shard md shard =
   match Ancient.get md shard with
