@@ -8,6 +8,7 @@ module Opt = struct
 end
 
 let locations env id locs =
+  let id = (id :> Id.NonSrc.t) in
   match locs with Some _ as locs -> locs | None -> Env.lookup_def id env
 
 (** Equivalent to {!Comment.synopsis}. *)
@@ -360,7 +361,7 @@ and value_ env parent t =
   let open Value in
   {
     t with
-    locs = locations env (t.id :> Id.t) t.locs;
+    locs = locations env t.id t.locs;
     doc = comment_docs env parent t.doc;
     type_ = type_expression env parent [] t.type_;
   }
@@ -541,7 +542,7 @@ and module_ : Env.t -> Module.t -> Module.t =
           else type_
       | Alias _ | ModuleType _ -> type_
     in
-    let locs = (locations env (m.id :> Id.t)) m.locs in
+    let locs = locations env m.id m.locs in
     let doc = comment_docs env sg_id m.doc in
     { m with locs; doc; type_ }
 

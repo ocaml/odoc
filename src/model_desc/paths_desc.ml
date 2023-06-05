@@ -37,6 +37,8 @@ module Names = struct
   let pagename = To_string PageName.to_string
 
   let parametername = To_string ModuleName.to_string
+
+  let defname = To_string DefName.to_string
 end
 
 module General_paths = struct
@@ -149,7 +151,21 @@ module General_paths = struct
             C
               ( "`Label",
                 ((parent :> id_t), name),
-                Pair (identifier, Names.labelname) ))
+                Pair (identifier, Names.labelname) )
+        | `SourceDir (parent, name) ->
+            C ("`SourceDir", ((parent :> id_t), name), Pair (identifier, string))
+        | `SourcePage (parent, name) ->
+            C
+              ( "`SourcePage",
+                ((parent :> id_t), name),
+                Pair (identifier, string) )
+        | `SourceLocation (parent, name) ->
+            C
+              ( "`SourceLocation",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.defname) )
+        | `SourceLocationMod parent ->
+            C ("`SourceLocationMod", (parent :> id_t), identifier))
 
   let reference_tag : tag t =
     Variant
@@ -433,25 +449,6 @@ let modulename = Names.modulename
 (* Indirection seems to be required to make the type open. *)
 let identifier : [< Paths.Identifier.t_pv ] Paths.Identifier.id Type_desc.t =
   Indirect ((fun n -> (n :> Paths.Identifier.t)), General_paths.identifier)
-
-let rec sourcedir_identifier : Paths.Identifier.SourceDir.t Type_desc.t =
-  Variant
-    (fun id ->
-      match id.iv with
-      | `SourceDir (parent, name) ->
-          C ("`SourceDir", (parent, name), Pair (sourcedir_identifier, string))
-      | `SourceRoot parent ->
-          C
-            ( "`SourceRoot",
-              (parent :> Paths.Identifier.t),
-              General_paths.identifier ))
-
-let sourcepage_identifier : Paths.Identifier.SourcePage.t Type_desc.t =
-  Indirect
-    ( (fun id ->
-        let (`SourcePage (parent, name)) = id.iv in
-        (parent, name)),
-      Pair (sourcedir_identifier, string) )
 
 let resolved_path : [< Paths.Path.Resolved.t ] Type_desc.t =
   Indirect ((fun n -> (n :> General_paths.rp)), General_paths.resolved_path)

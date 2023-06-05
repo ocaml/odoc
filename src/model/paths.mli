@@ -60,11 +60,8 @@ module Identifier : sig
 
   module Type : IdSig with type t = Id.type_ and type t_pv = Id.type_pv
 
-  module SourceDir : sig
-
-    include IdSig with type t = Id.source_dir and type t_pv = Id.source_dir_pv
-    val name : t -> string
-  end
+  module SourceDir :
+    IdSig with type t = Id.source_dir and type t_pv = Id.source_dir_pv
 
   module Class : IdSig with type t = Id.class_ and type t_pv = Id.class_pv
 
@@ -121,8 +118,8 @@ module Identifier : sig
   end
   module Label :
     IdSig
-      with type t = Paths_types.Identifier.label
-       and type t_pv = Paths_types.Identifier.label_pv
+      with type t = Id.label
+       and type t_pv = Id.label_pv
 
   module Page : sig
     type t = Id.page
@@ -134,12 +131,21 @@ module Identifier : sig
     type t_pv = Id.container_page_pv
   end
 
+  module NonSrc : sig
+    type t = Id.non_src
+    type t_pv = Id.non_src_pv
+  end
+
   module SourcePage : sig
     type t = Id.source_page
     type t_pv = Id.source_page_pv
-    val name : t -> string
-    val equal : t -> t -> bool
   end
+
+  module SourceLocation : sig
+    type t = Id.source_location
+    type t_pv = Id.source_location_pv
+  end
+
   module OdocId : sig
     type t = Id.odoc_id
     type t_pv = Id.odoc_id_pv
@@ -177,7 +183,7 @@ module Identifier : sig
 
   val equal : ([< t_pv ] id as 'a) -> 'a -> bool
 
-  val label_parent : [< t_pv ] id -> LabelParent.t
+  val label_parent : [< NonSrc.t_pv ] id -> LabelParent.t
 
   module Maps : sig
     module Any : Map.S with type key = Any.t
@@ -277,6 +283,13 @@ module Identifier : sig
     val label :
       LabelParent.t * LabelName.t ->
       [> `Label of LabelParent.t * LabelName.t ] id
+
+    val source_location :
+      SourcePage.t * DefName.t ->
+      [> `SourceLocation of SourcePage.t * DefName.t ] id
+
+    val source_location_mod :
+      SourcePage.t -> [> `SourceLocationMod of SourcePage.t ] id
   end
 end
 

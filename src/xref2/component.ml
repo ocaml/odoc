@@ -76,7 +76,7 @@ module rec Module : sig
     | ModuleType of ModuleType.expr
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     type_ : decl;
     canonical : Odoc_model.Paths.Path.Module.t option;
@@ -148,7 +148,7 @@ and Extension : sig
   module Constructor : sig
     type t = {
       name : string;
-      locs : Odoc_model.Lang.Locations.t option;
+      locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
       doc : CComment.docs;
       args : TypeDecl.Constructor.argument;
       res : TypeExpr.t option;
@@ -167,7 +167,7 @@ end =
 
 and Exception : sig
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
@@ -231,7 +231,7 @@ and ModuleType : sig
     | TypeOf of typeof_t
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.ModuleType.t option;
     expr : expr option;
@@ -279,7 +279,7 @@ and TypeDecl : sig
   end
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.Type.t option;
     equation : Equation.t;
@@ -292,7 +292,7 @@ and Value : sig
   type value = Odoc_model.Lang.Value.value
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     type_ : TypeExpr.t;
     value : value;
@@ -363,7 +363,7 @@ and Class : sig
     | Arrow of TypeExpr.label option * TypeExpr.t * decl
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -379,7 +379,7 @@ and ClassType : sig
     | Signature of ClassSignature.t
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -1247,6 +1247,17 @@ module Fmt = struct
           (ExtensionName.to_string name)
     | `Page (_, name) | `LeafPage (_, name) ->
         Format.fprintf ppf "%s" (PageName.to_string name)
+    | `SourcePage (p, name) | `SourceDir (p, name) ->
+        Format.fprintf ppf "%a/%s" model_identifier
+          (p :> Odoc_model.Paths.Identifier.t)
+          name
+    | `SourceLocation (p, def) ->
+        Format.fprintf ppf "%a#%s" model_identifier
+          (p :> Odoc_model.Paths.Identifier.t)
+          (DefName.to_string def)
+    | `SourceLocationMod p ->
+        Format.fprintf ppf "%a#" model_identifier
+          (p :> Odoc_model.Paths.Identifier.t)
 
   and model_fragment ppf (f : Odoc_model.Paths.Fragment.t) =
     match f with
