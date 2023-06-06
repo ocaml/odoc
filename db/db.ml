@@ -33,9 +33,9 @@ let compact db =
   let t1 = Unix.gettimeofday () in
   let db_names = trie_with_array db_names in
   let t2 = Unix.gettimeofday () in
-  let db_types = Cache.Elt_array_occ_trie.memo db_types in
+  let db_types = Cache.Elt_array_occ_trie_.memo db_types in
   let t3 = Unix.gettimeofday () in
-  let db_names = Cache.Elt_array_trie.memo db_names in
+  let db_names = Cache.Elt_array_trie_.memo db_names in
   let t4 = Unix.gettimeofday () in
   Printf.printf
     "trie_with_array_occ:%.2fs\n\

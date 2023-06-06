@@ -16,13 +16,13 @@ module type Cached = sig
       is to register [v] and its subvalues to be shared in the future. *)
 end
 
-module String : Cached with type t = string
-module Char_list : Cached with type t = char list
-module String_list : Cached with type t = string list
-module String_list_list : Cached with type t = string list list
-module Kind : Cached with type t = Elt.Kind.t
-module Elt_array : Cached with type t = Elt.t array
-module Elt_set_trie : Cached with type t = Elt.Set.t Trie.t
-module Elt_set_occ_trie : Cached with type t = Elt.Set.t Int.Map.t Trie.t
-module Elt_array_trie : Cached with type t = Elt.t Array.t Trie.t
-module Elt_array_occ_trie : Cached with type t = Elt.t Array.t Int.Map.t Trie.t
+module String_ : Cached with type t = string
+module Char_list_ : Cached with type t = char list
+module String_list_ : Cached with type t = string list
+module String_list_list_ : Cached with type t = string list list
+module Kind_ : Cached with type t = Elt.Kind.t
+module Elt_array_ : Cached with type t = Elt.t array
+module Elt_set_trie_ : Cached with type t = Elt.Set.t Trie.t
+module Elt_set_occ_trie_ : Cached with type t = Elt.Set.t Int.Map.t Trie.t
+module Elt_array_trie_ : Cached with type t = Elt.t Array.t Trie.t
+module Elt_array_occ_trie_ : Cached with type t = Elt.t Array.t Int.Map.t Trie.t

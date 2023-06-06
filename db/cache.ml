@@ -1,5 +1,7 @@
 open Common
 
+type uid = int
+
 let clears = ref []
 let clear () = Common.List.iter (fun f -> f ()) !clears
 
@@ -12,20 +14,17 @@ end
 (** The result of the [Make] functor. [equal] and [hash] are reexported for 
     composability with other functors. *)
 module type Memo = sig
-  include Cached
+  type t
 
-  val equal : t -> t -> bool
-  val hash : t -> int
+  val memo : t -> uid * t
 end
 
 (** This module specifies what is need to construct a cache. *)
 module type Cachable = sig
   type t
+  type key
 
-  val equal : t -> t -> bool
-  val hash : t -> int
-
-  val sub : memo:(t -> t) -> t -> t
+  val sub : memo:(t -> uid * t) -> t -> key * t
   (** [sub ~memo (v : t)] should replace subvalues [v'] of type [t] by [memo v'],
       and subvalues [a] of type [A.t] by [A.memo a]. *)
 end
@@ -34,37 +33,57 @@ end
 module Make (Elt : Cachable) : Memo with type t = Elt.t = struct
   type t = Elt.t
 
-  let equal = Elt.equal
-  let hash = Elt.hash
+  let equal = ( = )
+  let hash = Hashtbl.hash
+
+  let new_uid =
+    let i = ref 0 in
+    fun () ->
+      let r = !i in
+      i := r + 1 ;
+      r
 
   module H = Hashtbl.Make (struct
-    type t = Elt.t
+    type t = Elt.key
 
-    let equal = Elt.equal
-    let hash = Elt.hash
+    let equal = equal
+    let hash = hash
   end)
 
-  let cache = H.create 16
+  let cache : (int * t) H.t = H.create 16
   let () = clears := (fun () -> H.clear cache) :: !clears
 
-  let rec memo str =
-    try H.find cache str
-    with Not_found ->
-      let str = Elt.sub ~memo str in
-      H.add cache str str ;
-      str
+  let rec memo elt : int * t =
+    let key, elt = Elt.sub ~memo elt in
+    match H.find cache key with
+    | uid, elt -> uid, elt
+    | exception Not_found ->
+        let uid = new_uid () in
+
+        H.add cache key (uid, elt) ;
+        uid, elt
 end
 
 (** Does not build a cache, but exposes functions that caches that subvalues of 
     a given cache. This is useful for big value with a lot of subvalues, an 
     expansive [hash] and [equal] function, and not a lot of opportunities for 
     sharing. *)
-module Make_sub_only (Elt : Cachable) : Memo with type t = Elt.t = struct
-  type t = Elt.t
+(*module Make_sub_only (Elt : Cachable) : Memo with type t = Elt.t = struct
+    type t = Elt.t
+    type key = Elt.key
 
-  let equal = ( = )
-  let hash = Hashtbl.hash
-  let rec memo str = Elt.sub ~memo str
+    let equal = Elt.equal
+    let hash = Elt.hash
+    let rec memo str = Elt.sub ~memo str
+  end
+*)
+
+module Strip (Memo : Memo) : Cached with type t = Memo.t = struct
+  type t = Memo.t
+
+  let memo elt =
+    let _, elt = Memo.memo elt in
+    elt
 end
 
 (** This module does not use {!Make} because it does not actually cache anything, 
@@ -72,9 +91,7 @@ end
 module Char = struct
   type t = char
 
-  let equal = Char.equal
-  let hash = Hashtbl.hash
-  let memo c = c
+  let memo c = Char.code c, c
 
   module Map = Char.Map
   module Array_map = Char.Array_map
@@ -82,45 +99,48 @@ end
 
 module String = Make (struct
   type t = string
+  type key = string
 
-  let hash = Hashtbl.hash
-  let equal = String.equal
-
-  let sub ~memo:_ str =
-    (* not returning [str] here is required by [Ancient]. *)
-    String.init (String.length str) (String.get str)
+  let sub ~memo:_ str = str, str
 end)
 
 module Option (A : Memo) = Make (struct
   type t = A.t option
-
-  let equal = Option.equal A.equal
-  let hash = Option.hash A.hash
+  type key = uid option
 
   let sub ~memo:_ opt =
     match opt with
-    | Some a -> Some (A.memo a)
-    | None -> None
+    | Some a ->
+        let uid, a = A.memo a in
+        Some uid, Some a
+    | None -> None, None
 end)
 
 module List (A : Memo) = Make (struct
   type t = A.t list
 
-  let hash = Hashtbl.hash
-  let equal = List.equal A.equal
+  type key =
+    | Empty
+    | Cons of uid * uid
 
-  let rec sub ~memo lst =
+  let sub ~memo lst =
     match lst with
-    | [] -> []
-    | x :: xs -> A.memo x :: memo (sub ~memo xs)
+    | [] -> Empty, []
+    | elt :: li ->
+        let uid_elt, elt = A.memo elt in
+        let uid_li, li = memo li in
+        Cons (uid_elt, uid_li), elt :: li
 end)
 
 module Array (A : Memo) = Make (struct
   type t = A.t array
+  type key = uid array
 
-  let equal = Array.equal A.equal
-  let hash = Array.hash A.hash
-  let sub ~memo:_ arr = Array.map A.memo arr
+  let sub ~memo:_ arr =
+    let arr = Array.map A.memo arr in
+    let key = Array.map (fun (key, _) -> key) arr in
+    let arr = Array.map (fun (_, elt) -> elt) arr in
+    key, arr
 end)
 
 module Char_list = List (Char)
@@ -130,52 +150,60 @@ module String_list_list = List (String_list)
 module Type = Make (struct
   type t = Elt.type_path
 
-  let equal = ( = )
-  let hash = Hashtbl.hash
+  type key =
+    { str : uid
+    ; paths : uid
+    }
 
   let sub ~memo:_ { Elt.str; paths } =
-    { Elt.str = String.memo str; paths = String_list_list.memo paths }
+    let uid_str, str = String.memo str in
+    let uid_paths, paths = String_list_list.memo paths in
+    { str = uid_str; paths = uid_paths }, Elt.{ str; paths }
 end)
 
 module Kind = Make (struct
   type t = Elt.Kind.t
-
-  let equal = ( = )
-  let hash = Hashtbl.hash
+  type key = uid Elt.Kind.abstract
 
   let sub ~memo:_ k =
     let open Elt.Kind in
     match k with
-    | Constructor type_path -> Constructor (Type.memo type_path)
-    | Field type_path -> Field (Type.memo type_path)
-    | Val type_path -> Val (Type.memo type_path)
-    | _ -> k
+    | Constructor type_ ->
+        let uid, type_ = Type.memo type_ in
+        Constructor uid, Constructor type_
+    | Field type_ ->
+        let uid, type_ = Type.memo type_ in
+        Field uid, Field type_
+    | Val type_ ->
+        let uid, type_ = Type.memo type_ in
+        Val uid, Val type_
+    (* the below looks like it could be [k -> (k, k) but it does not because of typing issues] *)
+    | Doc -> Doc, Doc
+    | TypeDecl -> TypeDecl, TypeDecl
+    | Module -> Module, Module
+    | Exception -> Exception, Exception
+    | Class_type -> Class_type, Class_type
+    | Method -> Method, Method
+    | Class -> Class, Class
+    | TypeExtension -> TypeExtension, TypeExtension
+    | ExtensionConstructor -> ExtensionConstructor, ExtensionConstructor
+    | ModuleType -> ModuleType, ModuleType
 end)
-
-module Package = Make (struct
-  include Elt.Package
-
-  let sub ~memo:_ { name; version } =
-    { name = String.memo name; version = String.memo version }
-end)
-
-module Package_option = Option (Package)
 
 module Elt = struct
   include Make (struct
-    module Kind_memo = Kind
     include Elt
 
-    let equal = ( = )
-    let hash = Hashtbl.hash
+    type key =
+      { name : uid
+      ; score : int
+      }
 
-    let sub ~memo:_ Elt.{ name; kind; score; doc_html; pkg; json_display } =
-      let name = String.memo name in
-      let json_display = String.memo json_display in
-      let doc_html = String.memo doc_html in
-      (* For unknown reasons, this causes a terrible performance drop. *)
+    let sub ~memo:_ Elt.{ name; kind; doc_html; score; pkg; json_display } =
+      let uid_name, name = String.memo name in
       (* let kind = Kind_memo.memo kind in *)
-      Elt.{ name; kind; score; doc_html; pkg; json_display }
+      ( { name = uid_name; score }
+      , Elt.{ name; kind; doc_html; pkg; json_display; score } )
   end)
 
   module Set = Elt.Set
@@ -186,39 +214,48 @@ module Elt_array = Array (Elt)
 module Set (A : Memo) (S : Set.S with type elt = A.t) = Make (struct
   type t = S.t
 
-  let equal = S.equal
-  let hash m = m |> S.elements |> Hashtbl.hash
+  type key =
+    | Empty
+    | Node of
+        { l : uid
+        ; v : uid
+        ; r : uid
+        ; h : int
+        }
 
   let sub ~memo set =
     match set with
-    | S.Empty -> S.Empty
+    | S.Empty -> Empty, S.Empty
     | S.Node { l; v; r; h } ->
         (* This shares subset. Not actually very useful on tested exemples. *)
-        let l = memo l in
-        let v = A.memo v in
-        let r = memo r in
-        S.Node { l; v; r; h }
+        let uid_l, l = memo l in
+        let uid_v, v = A.memo v in
+        let uid_r, r = memo r in
+        Node { l = uid_l; v = uid_v; r = uid_r; h }, S.Node { l; v; r; h }
 end)
 
 module Map (A : Memo) (M : Map.S) = Make (struct
   type t = A.t M.t
 
-  let equal = M.equal A.equal
-
-  let hash m =
-    m |> M.bindings
-    |> Common.List.map (fun (k, v) -> k, A.hash v)
-    |> Hashtbl.hash
+  type key =
+    | Empty
+    | Node of
+        { l : uid
+        ; v : M.key
+        ; d : uid
+        ; r : uid
+        ; h : int
+        }
 
   let sub ~memo m =
     match m with
-    | M.Empty -> M.Empty
+    | M.Empty -> Empty, M.Empty
     | M.Node { l; v; d; r; h } ->
         (* This shares submaps ! *)
-        let l = memo l in
-        let r = memo r in
-        let d = A.memo d in
-        M.Node { l; v; d; r; h }
+        let uid_l, l = memo l in
+        let uid_d, d = A.memo d in
+        let uid_r, r = memo r in
+        Node { l = uid_l; v; d = uid_d; r = uid_r; h }, M.Node { l; v; d; r; h }
 end)
 
 module Elt_set = Set (Elt) (Elt.Set)
@@ -234,32 +271,28 @@ module Trie (A : Memo) : Memo with type t = A.t Trie.t = struct
 
   (* Here [Make_sub_only] is good enough. Using [Make] instead slows down the
      [Base] test by 50s for a 20ko gain. *)
-  module rec M : (Memo with type t = A.t Trie.t) = Make_sub_only (struct
+  module rec M : (Memo with type t = A.t Trie.t) = Make (struct
     type t = A.t Trie.t
 
-    let equal = Trie.equal A.equal
+    type key =
+      | Leaf of uid * uid
+      | Node of
+          { leaf : uid
+          ; children : uid
+          }
 
-    let hash trie =
+    let sub ~memo:_ trie : key * _ =
       let open Trie in
       match trie with
-      | Leaf (chars, a) ->
-          Hashtbl.hash
-            (Leaf (Obj.magic @@ Char_list.hash chars, Obj.magic @@ A.hash a))
+      | Leaf (chars, elts) ->
+          let uid_chars, chars = Char_list.memo chars in
+          let uid_elts, elts = A.memo elts in
+          Leaf (uid_chars, uid_elts), Trie.Leaf (chars, elts)
       | Node { leaf; children } ->
-          Hashtbl.hash
-            (Node
-               { leaf = Obj.magic @@ A_option.hash leaf
-               ; children = Obj.magic @@ Children.hash children
-               })
-
-    let sub ~memo:_ trie =
-      let open Trie in
-      match trie with
-      | Leaf (chars, elts) -> Leaf (Char_list.memo chars, A.memo elts)
-      | Node { leaf; children } ->
-          let leaf = A_option.memo leaf in
-          let children = Children.memo children in
-          Node { leaf; children }
+          let uid_leaf, leaf = A_option.memo leaf in
+          let uid_children, children = Children.memo children in
+          ( Node { leaf = uid_leaf; children = uid_children }
+          , Trie.Node { leaf; children } )
   end)
 
   and Children : (Memo with type t = A.t Trie.t Char.Map.t) = Char_map (M)
@@ -271,3 +304,15 @@ module Elt_set_trie = Trie (Elt_set)
 module Elt_set_occ_trie = Trie (Elt_set_occ)
 module Elt_array_trie = Trie (Elt_array)
 module Elt_array_occ_trie = Trie (Elt_array_occ)
+
+(* Hiding the uids *)
+module String_ = Strip (String)
+module Char_list_ = Strip (Char_list)
+module String_list_ = Strip (String_list)
+module String_list_list_ = Strip (String_list_list)
+module Kind_ = Strip (Kind)
+module Elt_array_ = Strip (Elt_array)
+module Elt_set_trie_ = Strip (Elt_set_trie)
+module Elt_set_occ_trie_ = Strip (Elt_set_occ_trie)
+module Elt_array_trie_ = Strip (Elt_array_trie)
+module Elt_array_occ_trie_ = Strip (Elt_array_occ_trie)

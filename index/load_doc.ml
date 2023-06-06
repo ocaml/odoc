@@ -198,7 +198,7 @@ module Make (Storage : Db.Storage.S) = struct
     | ExtensionConstructor _ -> ExtensionConstructor
     | ModuleType -> ModuleType
 
-  let convert_kind k = k |> convert_kind |> Cache.Kind.memo
+  let convert_kind k = k |> convert_kind |> Cache.Kind_.memo
 
   let register_type_expr elt type_ =
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
