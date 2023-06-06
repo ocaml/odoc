@@ -473,6 +473,7 @@ module Make (Ord : OrderedType) = struct
     | Node { l; v; d; r } -> cons_enum l (More (v, d, r, e))
 
   let compare cmp m1 m2 =
+    if m1 == m2 then 0 else
     let rec compare_aux e1 e2 =
       match e1, e2 with
       | End, End -> 0
@@ -491,6 +492,7 @@ module Make (Ord : OrderedType) = struct
     compare_aux (cons_enum m1 End) (cons_enum m2 End)
 
   let equal cmp m1 m2 =
+    if m1 == m2 then true else
     let rec equal_aux e1 e2 =
       match e1, e2 with
       | End, End -> true

@@ -399,7 +399,9 @@ module Make (Ord : OrderedType) = struct
         let c = Ord.compare v1 v2 in
         if c <> 0 then c else compare_aux (cons_enum r1 e1) (cons_enum r2 e2)
 
-  let compare s1 s2 = compare_aux (cons_enum s1 End) (cons_enum s2 End)
+  let compare s1 s2 =
+    if s1 == s2 then 0 else compare_aux (cons_enum s1 End) (cons_enum s2 End)
+
   let equal s1 s2 = compare s1 s2 = 0
 
   let rec subset s1 s2 =

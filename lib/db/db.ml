@@ -8,10 +8,7 @@ include Types
 module Occ = Int.Map
 
 let trie_with_array trie =
-  Trie.map_leaf
-    ~f:(fun set ->
-      set |> Elt.Set.to_seq |> Array.of_seq |> Cache.Elt_array.memo)
-    trie
+  Trie.map_leaf ~f:(fun set -> set |> Elt.Set.to_seq |> Array.of_seq) trie
 
 let trie_with_set trie =
   Trie.map_leaf ~f:(fun arr -> arr |> Array.to_seq |> Elt.Set.of_seq) trie
@@ -19,9 +16,7 @@ let trie_with_set trie =
 let trie_with_array_occ trie =
   Trie.map_leaf
     ~f:(fun occs ->
-      occs
-      |> Int.Map.map (fun set ->
-             set |> Elt.Set.to_seq |> Array.of_seq |> Cache.Elt_array.memo))
+      occs |> Int.Map.map (fun set -> set |> Elt.Set.to_seq |> Array.of_seq))
     trie
 
 let trie_with_set_occ trie =
@@ -33,10 +28,22 @@ let trie_with_set_occ trie =
 let compact db =
   let open Types in
   let { db_types; db_names } = db in
+  let t0 = Unix.gettimeofday () in
   let db_types = trie_with_array_occ db_types in
+  let t1 = Unix.gettimeofday () in
   let db_names = trie_with_array db_names in
+  let t2 = Unix.gettimeofday () in
   let db_types = Cache.Elt_array_occ_trie.memo db_types in
+  let t3 = Unix.gettimeofday () in
   let db_names = Cache.Elt_array_trie.memo db_names in
+  let t4 = Unix.gettimeofday () in
+  Printf.printf
+    "trie_with_array_occ:%.2fs\n\
+     trie_with_array:%.2fs\n\
+     Cache.Elt_array_occ_trie.memo:%.2fs\n\
+     Cache.Elt_array_trie.memo:%.2fs\n\
+     %!"
+    (t1 -. t0) (t2 -. t1) (t3 -. t2) (t4 -. t3) ;
   { db_types; db_names }
 
 let list_of_string s = List.init (String.length s) (String.get s)
@@ -54,8 +61,8 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
   type writer = Storage.writer
 
   let load_counter = ref 0
-  let db_types = ref (Trie.empty ())
-  let db_names = ref (Trie.empty ())
+  let db_types = ref Trie.empty
+  let db_names = ref Trie.empty
 
   module Hset2 = Hashtbl.Make (struct
     type t = Elt.Set.t * Elt.Set.t
@@ -76,8 +83,8 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     let db = { db_types = !db_types; db_names = !db_names } in
     let db = compact db in
     Storage.save ~db:h db ;
-    db_types := Trie.empty () ;
-    db_names := Trie.empty ()
+    db_types := Trie.empty ;
+    db_names := Trie.empty
 
   module Hset = Hashtbl.Make (struct
     type t = Elt.Set.t option
@@ -133,8 +140,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     let ho = Hocc.create 16 in
     let hs = Hset.create 16 in
     List.iter
-      (fun (path, count) ->
-        store ~ho ~hs ~count (Cache.Char_list.memo path) elt)
+      (fun (path, count) -> store ~ho ~hs ~count path elt)
       (regroup_chars paths)
 
   let store_type_paths elt paths =
@@ -157,8 +163,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     db_names := go !db_names name
 
   let store_word word elt =
-    (word |> list_of_string |> List.rev |> Cache.Char_list.memo |> store_chars)
-      elt
+    (word |> list_of_string |> List.rev |> store_chars) elt
 end
 
 module Storage = Storage

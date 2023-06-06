@@ -8,11 +8,12 @@ type 'a t =
       ; children : 'a t M.t
       }
 
-let empty () = Node { leaf = None; children = M.empty }
+let empty = Node { leaf = None; children = M.empty }
 
 let rec add path leaf t =
   match t, path with
-  | Node t, [] -> Node { t with leaf = Some (leaf t.leaf) }
+  | Node t, [] -> 
+    Node { t with leaf = Some (leaf t.leaf) }
   | Node t, p :: path ->
       let child =
         match M.find p t.children with
@@ -79,3 +80,14 @@ let rec map_leaf ~f t =
       let leaf = Option.map f leaf in
       let children = M.map (map_leaf ~f) children in
       Node { leaf; children }
+
+let rec equal a_eq t1 t2 =
+  if t1 == t2
+  then true
+  else
+    match t1, t2 with
+    | Leaf (chars, elt), Leaf (chars', elt') ->
+        List.equal Char.equal chars chars' && a_eq elt elt'
+    | Node { leaf; children }, Node { leaf = leaf'; children = children' } ->
+        Option.equal a_eq leaf leaf' && M.equal (equal a_eq) children children'
+    | _ -> false

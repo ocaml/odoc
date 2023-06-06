@@ -76,7 +76,7 @@ module Make (Storage : Db.Storage.S) = struct
           @@ args
       | _ -> []
     in
-    Cache.String_list_list.memo r
+    r
 
   (** for indexing *)
   let rec type_paths ~prefix ~sgn = function
@@ -108,7 +108,7 @@ module Make (Storage : Db.Storage.S) = struct
     | _ -> []
 
   let type_paths ~prefix ~sgn t =
-    Cache.String_list_list.memo (type_paths ~prefix ~sgn t)
+    (type_paths ~prefix ~sgn t)
 
   let register_doc elt doc_txt =
     let doc_words = String.split_on_char ' ' doc_txt in
@@ -141,8 +141,8 @@ module Make (Storage : Db.Storage.S) = struct
   let convert_kind (kind : Odoc_search.Entry.extra) =
     let open Odoc_search.Entry in
     match kind with
-    | TypeDecl _ -> Elt.TypeDecl
-    | Module -> Elt.ModuleType
+    | TypeDecl _ -> Elt.Kind.TypeDecl
+    | Module -> Elt.Kind.ModuleType
     | Value { value = _; type_ } ->
         let paths = paths ~prefix:[] ~sgn:Pos type_ in
         Elt.Kind.val_ paths
@@ -165,6 +165,9 @@ module Make (Storage : Db.Storage.S) = struct
     | TypeExtension _ -> TypeExtension
     | ExtensionConstructor _ -> ExtensionConstructor
     | ModuleType -> ModuleType
+
+  let convert_kind k = 
+    k |> convert_kind |> Cache.Kind.memo
 
   let register_type_expr elt type_ =
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in

@@ -144,7 +144,7 @@ module Reasoning = struct
 
     let with_words query_words elt =
       match elt.Elt.kind with
-      | Elt.Doc -> List.map (fun _ : t -> Doc) query_words
+      | Elt.Kind.Doc -> List.map (fun _ : t -> Doc) query_words
       | _ -> List.map (fun word -> with_word word elt.Elt.name) query_words
 
     let compare nm nm' =
@@ -190,7 +190,7 @@ module Reasoning = struct
     let open Elt in
     match query_type, elt.kind with
     | [], _ -> None
-    | _, (Elt.Constructor type_paths | Elt.Field type_paths | Elt.Val type_paths)
+    | _, Elt.Kind.(Constructor type_paths | Field type_paths | Val type_paths)
       ->
         Some (Type_distance.v query_type type_paths)
     | _ -> None
@@ -209,19 +209,19 @@ module Reasoning = struct
 
   let kind elt =
     match elt.Elt.kind with
-    | Elt.Doc -> Doc
-    | Elt.TypeDecl -> TypeDecl
-    | Elt.Module -> Module
-    | Elt.Exception -> Exception
-    | Elt.Class_type -> Class_type
-    | Elt.Method -> Method
-    | Elt.Class -> Class
-    | Elt.TypeExtension -> TypeExtension
-    | Elt.ExtensionConstructor -> ExtensionConstructor
-    | Elt.ModuleType -> ModuleType
-    | Elt.Constructor _ -> Constructor
-    | Elt.Field _ -> Field
-    | Elt.Val _ -> Val
+    | Elt.Kind.Doc -> Doc
+    | Elt.Kind.TypeDecl -> TypeDecl
+    | Elt.Kind.Module -> Module
+    | Elt.Kind.Exception -> Exception
+    | Elt.Kind.Class_type -> Class_type
+    | Elt.Kind.Method -> Method
+    | Elt.Kind.Class -> Class
+    | Elt.Kind.TypeExtension -> TypeExtension
+    | Elt.Kind.ExtensionConstructor -> ExtensionConstructor
+    | Elt.Kind.ModuleType -> ModuleType
+    | Elt.Kind.Constructor _ -> Constructor
+    | Elt.Kind.Field _ -> Field
+    | Elt.Kind.Val _ -> Val
 
   let name_length elt = String.length elt.Elt.name
 
