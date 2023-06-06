@@ -24,389 +24,154 @@ module Identifier : sig
 
   type 'a id = 'a Paths_types.id = { iv : 'a; ihash : int; ikey : string }
 
-  module Any : sig
-    type t = Paths_types.Identifier.any
-
+  module type IdSig = sig
+    type t
+    type t_pv
     val equal : t -> t -> bool
-
     val hash : t -> int
-
     val compare : t -> t -> int
   end
 
-  module RootModule : sig
-    type t = Paths_types.Identifier.root_module
+  module Id = Paths_types.Identifier
 
-    type t_pv = Paths_types.Identifier.root_module_pv
+  module Any : IdSig with type t = Id.any and type t_pv = Id.any_pv
 
-    val equal : t -> t -> bool
+  module RootModule :
+    IdSig with type t = Id.root_module and type t_pv = Id.root_module_pv
 
-    val hash : t -> int
+  module Signature :
+    IdSig with type t = Id.signature and type t_pv = Id.signature_pv
 
-    val compare : t -> t -> int
+  module ClassSignature :
+    IdSig with type t = Id.class_signature and type t_pv = Id.class_signature_pv
 
+  module LabelParent :
+    IdSig with type t = Id.label_parent and type t_pv = Id.label_parent_pv
+
+  module Module : IdSig with type t = Id.module_ and type t_pv = Id.module_pv
+
+  module FunctorParameter :
+    IdSig
+      with type t = Id.functor_parameter
+       and type t_pv = Id.functor_parameter_pv
+
+  module ModuleType :
+    IdSig with type t = Id.module_type and type t_pv = Id.module_type_pv
+
+  module Type : IdSig with type t = Id.type_ and type t_pv = Id.type_pv
+
+  module SourceDir : sig
+
+    include IdSig with type t = Id.source_dir and type t_pv = Id.source_dir_pv
     val name : t -> string
   end
 
-  module Signature : sig
-    type t = Paths_types.Identifier.signature
+  module Class : IdSig with type t = Id.class_ and type t_pv = Id.class_pv
 
-    type t_pv = Paths_types.Identifier.signature_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-
-    val root : [< t_pv ] id -> RootModule.t
-  end
-
-  module ClassSignature : sig
-    type t = Paths_types.Identifier.class_signature
-
-    type t_pv = Paths_types.Identifier.class_signature_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-  end
+  module ClassType :
+    IdSig with type t = Id.class_type and type t_pv = Id.class_type_pv
 
   module DataType : sig
-    type t = Paths_types.Identifier.datatype
-
-    type t_pv = Paths_types.Identifier.datatype_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.datatype
+    type t_pv = Id.datatype_pv
   end
-
   module Parent : sig
-    type t = Paths_types.Identifier.parent
-
-    type t_pv = Paths_types.Identifier.parent_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-  end
-
-  module LabelParent : sig
-    type t = Paths_types.Identifier.label_parent
-
-    type t_pv = Paths_types.Identifier.label_parent_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-  end
-
-  module Module : sig
-    type t = Paths_types.Identifier.module_
-
-    type t_pv = Paths_types.Identifier.module_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-
-    val root : t -> RootModule.t
-  end
-
-  module FunctorParameter : sig
-    type t = Paths_types.Identifier.functor_parameter
-
-    type t_pv = Paths_types.Identifier.functor_parameter_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.parent
+    type t_pv = Id.parent_pv
   end
 
   module FunctorResult : sig
-    type t = Paths_types.Identifier.functor_result
-
-    type t_pv = Paths_types.Identifier.functor_result_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-  end
-
-  module ModuleType : sig
-    type t = Paths_types.Identifier.module_type
-
-    type t_pv = Paths_types.Identifier.module_type_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-  end
-
-  module Type : sig
-    type t = Paths_types.Identifier.type_
-
-    type t_pv = Paths_types.Identifier.type_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.functor_result
+    type t_pv = Id.functor_result_pv
   end
 
   module Constructor : sig
-    type t = Paths_types.Identifier.constructor
-
-    type t_pv = Paths_types.Identifier.constructor_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.constructor
+    type t_pv = Id.constructor_pv
   end
 
   module Field : sig
-    type t = Paths_types.Identifier.field
-
-    type t_pv = Paths_types.Identifier.field_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.field
+    type t_pv = Id.field_pv
   end
 
   module Extension : sig
-    type t = Paths_types.Identifier.extension
-
-    type t_pv = Paths_types.Identifier.extension_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.extension
+    type t_pv = Id.extension_pv
   end
 
   module Exception : sig
-    type t = Paths_types.Identifier.exception_
-
-    type t_pv = Paths_types.Identifier.exception_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.exception_
+    type t_pv = Id.exception_pv
   end
 
   module Value : sig
-    type t = Paths_types.Identifier.value
-
-    type t_pv = Paths_types.Identifier.value_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-  end
-
-  module Class : sig
-    type t = Paths_types.Identifier.class_
-
-    type t_pv = Paths_types.Identifier.class_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-  end
-
-  module ClassType : sig
-    type t = Paths_types.Identifier.class_type
-
-    type t_pv = Paths_types.Identifier.class_type_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.value
+    type t_pv = Id.value_pv
   end
 
   module Method : sig
-    type t = Paths_types.Identifier.method_
-
-    type t_pv = Paths_types.Identifier.method_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.method_
+    type t_pv = Id.method_pv
   end
 
   module InstanceVariable : sig
-    type t = Paths_types.Identifier.instance_variable
-
-    type t_pv = Paths_types.Identifier.instance_variable_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.instance_variable
+    type t_pv = Id.instance_variable_pv
   end
-
-  module Label : sig
-    type t = Paths_types.Identifier.label
-
-    type t_pv = Paths_types.Identifier.label_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-  end
+  module Label :
+    IdSig
+      with type t = Paths_types.Identifier.label
+       and type t_pv = Paths_types.Identifier.label_pv
 
   module Page : sig
-    type t = Paths_types.Identifier.page
-
-    type t_pv = Paths_types.Identifier.page_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+    type t = Id.page
+    type t_pv = Id.page_pv
   end
 
   module ContainerPage : sig
-    type t = Paths_types.Identifier.container_page
-
-    type t_pv = Paths_types.Identifier.container_page_pv
-
-    val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
-  end
-
-  module SourceDir : sig
-    type t = Paths_types.Identifier.source_dir
-    type t_pv = Paths_types.Identifier.source_dir_pv
-    val equal : t -> t -> bool
-    val hash : t -> int
-    val compare : t -> t -> int
-    val name : t -> string
+    type t = Id.container_page
+    type t_pv = Id.container_page_pv
   end
 
   module SourcePage : sig
-    type t = Paths_types.Identifier.source_page
-    type t_pv = Paths_types.Identifier.source_page_pv
-    val equal : t -> t -> bool
-    val hash : t -> int
-    val compare : t -> t -> int
+    type t = Id.source_page
+    type t_pv = Id.source_page_pv
     val name : t -> string
-  end
-
-  module OdocId : sig
-    type t = Paths_types.Identifier.odoc_id
-
-    type t_pv = Paths_types.Identifier.odoc_id_pv
-
     val equal : t -> t -> bool
-
-    val hash : t -> int
-
-    val compare : t -> t -> int
+  end
+  module OdocId : sig
+    type t = Id.odoc_id
+    type t_pv = Id.odoc_id_pv
   end
 
   module Path : sig
-    module Module : sig
-      type t = Paths_types.Identifier.path_module
+    module Module :
+      IdSig with type t = Id.path_module and type t_pv = Id.path_module_pv
 
-      type t_pv = Paths_types.Identifier.path_module_pv
+    module ModuleType :
+      IdSig with type t = Id.path_module_type and type t_pv = Id.module_type_pv
 
-      val equal : t -> t -> bool
+    module Type :
+      IdSig with type t = Id.path_type and type t_pv = Id.path_type_pv
 
-      val hash : t -> int
+    module ClassType :
+      IdSig
+        with type t = Id.path_class_type
+         and type t_pv = Id.path_class_type_pv
 
-      val compare : t -> t -> int
-
-      val root : t -> RootModule.t
-    end
-
-    module ModuleType : sig
-      type t = Paths_types.Identifier.path_module_type
-
-      val equal : t -> t -> bool
-
-      val hash : t -> int
-
-      val compare : t -> t -> int
-    end
-
-    module Type : sig
-      type t = Paths_types.Identifier.path_type
-
-      type t_pv = Paths_types.Identifier.path_type_pv
-
-      val equal : t -> t -> bool
-
-      val hash : t -> int
-
-      val compare : t -> t -> int
-    end
-
-    module ClassType : sig
-      type t = Paths_types.Identifier.path_class_type
-
-      type t_pv = Paths_types.Identifier.path_class_type_pv
-
-      val equal : t -> t -> bool
-
-      val hash : t -> int
-
-      val compare : t -> t -> int
-    end
-
-    type t = Paths_types.Identifier.path_any
+    type t = Id.path_any
   end
 
-  type t_pv = Paths_types.Identifier.any_pv
+  type t = Id.any
 
-  type t = Paths_types.Identifier.any
+  type t_pv = Id.any_pv
 
   val hash : t -> int
 
   val name : [< t_pv ] id -> string
 
-  val root : [< t_pv ] id -> RootModule.t_pv id option
+  (* val root : [< t_pv ] id -> RootModule.t_pv id option *)
 
   val compare : t -> t -> int
 
@@ -523,15 +288,15 @@ module rec Path : sig
 
       val is_hidden : t -> weak_canonical_test:bool -> bool
 
-      val identifier : t -> Identifier.Path.Module.t
+      (* val identifier : t -> Identifier.Path.Module.t *)
 
-      val root : t -> string option
+      (* val root : t -> string option *)
     end
 
     module ModuleType : sig
       type t = Paths_types.Resolved_path.module_type
 
-      val is_hidden : t -> weak_canonical_test:bool -> bool
+      (* val is_hidden : t -> weak_canonical_test:bool -> bool *)
 
       (* val identifier : t -> Identifier.Path.ModuleType.t *)
     end
@@ -539,9 +304,9 @@ module rec Path : sig
     module Type : sig
       type t = Paths_types.Resolved_path.type_
 
-      val of_ident : Identifier.Path.Type.t -> t
+      (* val of_ident : Identifier.Path.Type.t -> t *)
 
-      val is_hidden : t -> bool
+      (* val is_hidden : t -> bool *)
 
       (* val identifier : t -> Identifier.Path.Type.t *)
     end
@@ -549,9 +314,9 @@ module rec Path : sig
     module ClassType : sig
       type t = Paths_types.Resolved_path.class_type
 
-      val of_ident : Identifier.Path.ClassType.t -> t
+      (* val of_ident : Identifier.Path.ClassType.t -> t *)
 
-      val is_hidden : t -> bool
+      (* val is_hidden : t -> bool *)
     end
 
     type t = Paths_types.Resolved_path.any
@@ -564,7 +329,7 @@ module rec Path : sig
   module Module : sig
     type t = Paths_types.Path.module_
 
-    val root : t -> string option
+    (* val root : t -> string option *)
   end
 
   module ModuleType : sig
@@ -589,26 +354,18 @@ module Fragment : sig
   module Resolved : sig
     module Signature : sig
       type t = Paths_types.Resolved_fragment.signature
-
-      val split : t -> string * t option
     end
 
     module Module : sig
       type t = Paths_types.Resolved_fragment.module_
-
-      val split : t -> string * t option
     end
 
     module ModuleType : sig
       type t = Paths_types.Resolved_fragment.module_type
-
-      val split : t -> string * t option
     end
 
     module Type : sig
       type t = Paths_types.Resolved_fragment.type_
-
-      val split : t -> string * t option
     end
 
     type leaf = Paths_types.Resolved_fragment.leaf
@@ -624,26 +381,18 @@ module Fragment : sig
 
   module Signature : sig
     type t = Paths_types.Fragment.signature
-
-    val split : t -> string * t option
   end
 
   module Module : sig
     type t = Paths_types.Fragment.module_
-
-    val split : t -> string * t option
   end
 
   module ModuleType : sig
     type t = Paths_types.Fragment.module_type
-
-    val split : t -> string * t option
   end
 
   module Type : sig
     type t = Paths_types.Fragment.type_
-
-    val split : t -> string * t option
   end
 
   type leaf = Paths_types.Fragment.leaf
