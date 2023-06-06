@@ -219,9 +219,7 @@ and is_module_type_hidden : module_type -> bool = function
 
 and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
   | `Local _ -> false
-  | `Gpath p ->
-      Odoc_model.Paths.Path.Resolved.ModuleType.is_hidden
-        ~weak_canonical_test:false p
+  | `Gpath p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
   | `Substituted p -> is_resolved_module_type_hidden p
   | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
   | `SubstT (p1, p2) ->
@@ -247,7 +245,7 @@ and is_type_hidden : type_ -> bool = function
 
 and is_resolved_type_hidden : Resolved.type_ -> bool = function
   | `Local _ -> false
-  | `Gpath p -> Odoc_model.Paths.Path.Resolved.Type.is_hidden p
+  | `Gpath p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
   | `Substituted p -> is_resolved_type_hidden p
   | `CanonicalType (_, `Resolved _) -> false
   | `CanonicalType (p, _) -> is_resolved_type_hidden p
@@ -256,7 +254,7 @@ and is_resolved_type_hidden : Resolved.type_ -> bool = function
 
 and is_resolved_class_type_hidden : Resolved.class_type -> bool = function
   | `Local _ -> false
-  | `Gpath p -> Odoc_model.Paths.Path.Resolved.ClassType.is_hidden p
+  | `Gpath p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
   | `Substituted p -> is_resolved_class_type_hidden p
   | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p

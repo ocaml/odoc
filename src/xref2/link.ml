@@ -847,7 +847,7 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
   let hidden_path =
     match equation.Equation.manifest with
     | Some (Constr (`Resolved path, params))
-      when Paths.Path.Resolved.Type.is_hidden path
+      when Paths.Path.Resolved.(is_hidden (path :> t))
            || Paths.Path.Resolved.(identifier (path :> t))
               = (t.id :> Paths.Identifier.t) ->
         Some (path, params)
