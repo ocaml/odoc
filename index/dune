@@ -2,9 +2,16 @@
  (public_name sherlodoc_index)
  (name index)
  (libraries
+  db
+  fpath
+  tyxml
+  opam-core
   odoc.search
+  odoc.loader
+  odoc.model
+  odoc.xref2
+  odoc.odoc
   cmdliner
-  index_lib
   storage_ancient
   storage_marshal
   storage_js))

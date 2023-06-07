@@ -30,7 +30,7 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   >  odoc html-generate --with-search --output-dir html $f 2> /dev/null
   > done
   $ odoc support-files -o html
-  $ cat db.js  ../../../bin/JSherlodoc/main.bc.js > html/index.js
+  $ cat db.js  ../../../jsoo/main.bc.js > html/index.js
   $ cp sherlodoc_db.bin html
   cp: cannot stat 'sherlodoc_db.bin': No such file or directory
   [1]
