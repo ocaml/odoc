@@ -48,11 +48,13 @@ let path_to_id path =
   | Ok url -> Some url
 
 let source_anchor locs =
+  (* Remove when dropping support for OCaml < 4.08 *)
+  let to_option = function Result.Ok x -> Some x | Result.Error _ -> None in
   match locs with
   | Some id ->
       Url.Anchor.from_identifier
         (id : Paths.Identifier.SourceLocation.t :> Paths.Identifier.t)
-      |> Result.to_option
+      |> to_option
   | _ -> None
 
 let attach_expansion ?(status = `Default) (eq, o, e) page text =
