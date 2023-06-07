@@ -214,10 +214,7 @@ module Identifier = struct
   (** @canonical Odoc_model.Paths.Identifier.NonSrc.t *)
 
   type any_pv =
-    [ non_src_pv
-    | source_page_pv
-    | source_dir_pv
-    | source_location_pv ]
+    [ non_src_pv | source_page_pv | source_dir_pv | source_location_pv ]
   (** @canonical Odoc_model.Paths.Identifier.t_pv *)
 
   and any = any_pv id

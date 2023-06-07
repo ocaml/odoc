@@ -116,10 +116,7 @@ module Identifier : sig
     type t = Id.instance_variable
     type t_pv = Id.instance_variable_pv
   end
-  module Label :
-    IdSig
-      with type t = Id.label
-       and type t_pv = Id.label_pv
+  module Label : IdSig with type t = Id.label and type t_pv = Id.label_pv
 
   module Page : sig
     type t = Id.page
