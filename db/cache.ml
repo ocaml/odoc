@@ -127,14 +127,24 @@ module Char_list = List (Char)
 module String_list = List (String)
 module String_list_list = List (String_list)
 
+module Type = Make (struct
+  type t = Elt.type_path
+
+  let equal = ( = )
+  let hash = Hashtbl.hash
+
+  let sub ~memo:_ { Elt.str; paths } =
+    { Elt.str = String.memo str; paths = String_list_list.memo paths }
+end)
+
 module Kind = Make (struct
   include Elt.Kind
 
   let sub ~memo:_ k =
     match k with
-    | Constructor type_path -> Constructor (String_list_list.memo type_path)
-    | Field type_path -> Constructor (String_list_list.memo type_path)
-    | Val type_path -> Constructor (String_list_list.memo type_path)
+    | Constructor type_path -> Constructor (Type.memo type_path)
+    | Field type_path -> Field (Type.memo type_path)
+    | Val type_path -> Val (Type.memo type_path)
     | _ -> k
 end)
 
@@ -152,12 +162,13 @@ module Elt = struct
     module Kind_memo = Kind
     include Elt
 
-    let sub ~memo:_ Elt.{ name; kind; has_doc; pkg; json_display } =
+    let sub ~memo:_ Elt.{ name; kind; doc_html; pkg; json_display } =
       let name = String.memo name in
       let json_display = String.memo json_display in
+      let doc_html = String.memo doc_html in
       (* For unknown reasons, this causes a terrible performance drop. *)
       (* let kind = Kind_memo.memo kind in *)
-      Elt.{ name; kind; has_doc; pkg; json_display }
+      Elt.{ name; kind; doc_html; pkg; json_display }
   end)
 
   module Set = Elt.Set

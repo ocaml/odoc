@@ -107,8 +107,7 @@ module Make (Storage : Db.Storage.S) = struct
     | Tuple args -> rev_concat @@ List.map (type_paths ~prefix ~sgn) @@ args
     | _ -> []
 
-  let type_paths ~prefix ~sgn t =
-    (type_paths ~prefix ~sgn t)
+  let type_paths ~prefix ~sgn t = type_paths ~prefix ~sgn t
 
   let register_doc elt doc_txt =
     let doc_words = String.split_on_char ' ' doc_txt in
@@ -139,24 +138,28 @@ module Make (Storage : Db.Storage.S) = struct
     TypeExpr.Arrow (None, parent_type, type_)
 
   let convert_kind (kind : Odoc_search.Entry.extra) =
+    let open Odoc_search in
     let open Odoc_search.Entry in
     match kind with
     | TypeDecl _ -> Elt.Kind.TypeDecl
     | Module -> Elt.Kind.ModuleType
     | Value { value = _; type_ } ->
+        let str = Render.text_of_type type_ in
         let paths = paths ~prefix:[] ~sgn:Pos type_ in
-        Elt.Kind.val_ paths
+        Elt.Kind.val_ { Elt.str; paths }
     | Constructor { args; res } ->
         let searchable_type = searchable_type_of_constructor args res in
-        let type_paths = paths ~prefix:[] ~sgn:Pos searchable_type in
-        Elt.Kind.constructor type_paths
+        let str = Render.text_of_type searchable_type in
+        let paths = paths ~prefix:[] ~sgn:Pos searchable_type in
+        Elt.Kind.constructor { Elt.str; paths }
     | Field { mutable_ = _; parent_type; type_ } ->
-        let type_paths =
+        let str = Render.text_of_type type_ in
+        let paths =
           type_
           |> searchable_type_of_record parent_type
           |> paths ~prefix:[] ~sgn:Pos
         in
-        Elt.Kind.field type_paths
+        Elt.Kind.field { Elt.str; paths }
     | Doc _ -> Doc
     | Exception _ -> Exception
     | Class_type _ -> Class_type
@@ -166,8 +169,7 @@ module Make (Storage : Db.Storage.S) = struct
     | ExtensionConstructor _ -> ExtensionConstructor
     | ModuleType -> ModuleType
 
-  let convert_kind k = 
-    k |> convert_kind |> Cache.Kind.memo
+  let convert_kind k = k |> convert_kind |> Cache.Kind.memo
 
   let register_type_expr elt type_ =
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
@@ -206,10 +208,11 @@ module Make (Storage : Db.Storage.S) = struct
     let open Odoc_search in
     let open Odoc_search.Entry in
     let full_name = id |> Pretty.fullname |> String.concat "." in
-    let doc =
-      let html = doc |> Render.html_of_doc |> string_of_html
-      and txt = Render.text_of_doc doc in
-      Elt.{ html; txt }
+    let doc_txt = Render.text_of_doc doc in
+    let doc_html =
+      match doc_txt with
+      | "" -> ""
+      | _ -> doc |> Render.html_of_doc |> string_of_html
     in
     let kind' = convert_kind extra in
     let name =
@@ -222,9 +225,8 @@ module Make (Storage : Db.Storage.S) = struct
       then ""
       else entry |> Json_display.of_entry |> Odoc_html.Json.to_string
     in
-    let has_doc = doc.txt <> "" in
-    let elt = Elt.v ~name ~kind:kind' ~json_display ~has_doc () in
-    if index_docstring then register_doc elt doc.txt ;
+    let elt = Elt.v ~name ~kind:kind' ~json_display ~doc_html () in
+    if index_docstring then register_doc elt doc_txt ;
     (if index_name
      then
        match extra with

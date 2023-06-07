@@ -192,7 +192,7 @@ module Reasoning = struct
     | [], _ -> None
     | _, Elt.Kind.(Constructor type_paths | Field type_paths | Val type_paths)
       ->
-        Some (Type_distance.v query_type type_paths)
+        Some (Type_distance.v query_type type_paths.paths)
     | _ -> None
 
   let type_in_query query_type = query_type <> []
@@ -227,7 +227,7 @@ module Reasoning = struct
 
   let v query_words query_type elt =
     let is_stdlib = is_stdlib elt in
-    let has_doc = elt.Elt.has_doc in
+    let has_doc = elt.Elt.doc_html <> "" in
     let name_matches = Name_match.with_words query_words elt in
     let kind = kind elt in
     let type_distance = type_distance query_type elt in

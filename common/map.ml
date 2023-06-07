@@ -473,37 +473,41 @@ module Make (Ord : OrderedType) = struct
     | Node { l; v; d; r } -> cons_enum l (More (v, d, r, e))
 
   let compare cmp m1 m2 =
-    if m1 == m2 then 0 else
-    let rec compare_aux e1 e2 =
-      match e1, e2 with
-      | End, End -> 0
-      | End, _ -> -1
-      | _, End -> 1
-      | More (v1, d1, r1, e1), More (v2, d2, r2, e2) ->
-          let c = Ord.compare v1 v2 in
-          if c <> 0
-          then c
-          else
-            let c = cmp d1 d2 in
+    if m1 == m2
+    then 0
+    else
+      let rec compare_aux e1 e2 =
+        match e1, e2 with
+        | End, End -> 0
+        | End, _ -> -1
+        | _, End -> 1
+        | More (v1, d1, r1, e1), More (v2, d2, r2, e2) ->
+            let c = Ord.compare v1 v2 in
             if c <> 0
             then c
-            else compare_aux (cons_enum r1 e1) (cons_enum r2 e2)
-    in
-    compare_aux (cons_enum m1 End) (cons_enum m2 End)
+            else
+              let c = cmp d1 d2 in
+              if c <> 0
+              then c
+              else compare_aux (cons_enum r1 e1) (cons_enum r2 e2)
+      in
+      compare_aux (cons_enum m1 End) (cons_enum m2 End)
 
   let equal cmp m1 m2 =
-    if m1 == m2 then true else
-    let rec equal_aux e1 e2 =
-      match e1, e2 with
-      | End, End -> true
-      | End, _ -> false
-      | _, End -> false
-      | More (v1, d1, r1, e1), More (v2, d2, r2, e2) ->
-          Ord.compare v1 v2 = 0
-          && cmp d1 d2
-          && equal_aux (cons_enum r1 e1) (cons_enum r2 e2)
-    in
-    equal_aux (cons_enum m1 End) (cons_enum m2 End)
+    if m1 == m2
+    then true
+    else
+      let rec equal_aux e1 e2 =
+        match e1, e2 with
+        | End, End -> true
+        | End, _ -> false
+        | _, End -> false
+        | More (v1, d1, r1, e1), More (v2, d2, r2, e2) ->
+            Ord.compare v1 v2 = 0
+            && cmp d1 d2
+            && equal_aux (cons_enum r1 e1) (cons_enum r2 e2)
+      in
+      equal_aux (cons_enum m1 End) (cons_enum m2 End)
 
   let rec cardinal = function
     | Empty -> 0

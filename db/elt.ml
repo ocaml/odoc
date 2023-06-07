@@ -1,11 +1,9 @@
 open Common
 
-type displayable =
-  { html : string
-  ; txt : string
+type type_path =
+  { str : string
+  ; paths : string list list
   }
-
-type type_path = string list list
 (** A type can viewed as a tree.
             [a -> b -> c * d] is the following tree :
             {[ ->
@@ -49,9 +47,9 @@ module Kind = struct
     | TypeExtension | ExtensionConstructor | ModuleType ->
         Hashtbl.hash k
     | Constructor type_path ->
-        Hashtbl.hash (Constructor (hash_type_path type_path))
-    | Field type_path -> Hashtbl.hash (Field (hash_type_path type_path))
-    | Val type_path -> Hashtbl.hash (Val (hash_type_path type_path))
+        Hashtbl.hash (Constructor (hash_type_path type_path.paths))
+    | Field type_path -> Hashtbl.hash (Field (hash_type_path type_path.paths))
+    | Val type_path -> Hashtbl.hash (Val (hash_type_path type_path.paths))
 
   let equal = ( = )
   let doc = Doc
@@ -96,7 +94,7 @@ module T = struct
   type t =
     { name : string
     ; kind : Kind.t
-    ; has_doc : bool
+    ; doc_html : string
     ; pkg : Package.t option
     ; json_display : string
     }
@@ -116,18 +114,19 @@ module T = struct
   let kind_cost (kind : kind) =
     match kind with
     | Constructor type_path | Field type_path | Val type_path ->
-        type_cost type_path
+        type_cost type_path.paths
     | Doc -> 400
     | TypeDecl | Module | Exception | Class_type | Method | Class
     | TypeExtension | ExtensionConstructor | ModuleType ->
         200
 
-  let cost { name; kind; has_doc; pkg = _; json_display = _ } =
+  let cost { name; kind; doc_html; pkg = _; json_display = _ } =
     let ignore_no_doc =
       match kind with
       | Module | ModuleType -> true
       | _ -> false
     in
+    let has_doc = doc_html <> "" in
     (* TODO : use entry cost *)
     generic_cost ~ignore_no_doc name has_doc + kind_cost kind
 
@@ -162,11 +161,11 @@ let ( > ) e e' = compare e e' > 0
 let ( >= ) e e' = compare e e' >= 0
 
 let hash : t -> int =
- fun { name; kind; has_doc; pkg; json_display } ->
+ fun { name; kind; doc_html; pkg; json_display } ->
   Hashtbl.hash
     ( Hashtbl.hash name
     , Kind.hash kind
-    , Hashtbl.hash has_doc
+    , Hashtbl.hash doc_html
     , Option.hash Package.hash pkg
     , Hashtbl.hash json_display )
 
@@ -187,6 +186,5 @@ let link t =
   let+ pkg_link = pkg_link t in
   pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
 
-let v ~name ~kind ~has_doc ?(pkg = None) ~json_display () =
-  let json_display = json_display in
-  { name; kind; has_doc; pkg; json_display }
+let v ~name ~kind ~doc_html ?(pkg = None) ~json_display () =
+  { name; kind; doc_html; pkg; json_display }

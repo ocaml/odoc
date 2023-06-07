@@ -12,8 +12,7 @@ let empty = Node { leaf = None; children = M.empty }
 
 let rec add path leaf t =
   match t, path with
-  | Node t, [] -> 
-    Node { t with leaf = Some (leaf t.leaf) }
+  | Node t, [] -> Node { t with leaf = Some (leaf t.leaf) }
   | Node t, p :: path ->
       let child =
         match M.find p t.children with

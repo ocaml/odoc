@@ -1,5 +1,5 @@
 let string_of_kind (kind : Db.Elt.kind) =
-  let open Db.Elt.Kind in  
+  let open Db.Elt.Kind in
   match kind with
   | Doc -> "doc"
   | TypeDecl -> "type"

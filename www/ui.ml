@@ -13,16 +13,16 @@ let render_link elt =
 let render_elt elt =
   let open Db.Elt in
   let link = render_link elt in
+  let html_txt = Unsafe.data in
   match elt.kind with
-  | Val { type_; _ } ->
-      [ txt "val "; a ~a:link [ em [ txt elt.name ] ]; txt " : "; txt type_ ]
-  | Doc -> [ txt "comment "; a ~a:link [ em [ txt elt.name ] ] ]
-  | TypeDecl { type_decl } ->
-      [ txt "type "
+  | Val { str = type_; _ } ->
+      [ txt "val "
       ; a ~a:link [ em [ txt elt.name ] ]
-      ; txt " = "
-      ; txt type_decl
+      ; txt " : "
+      ; html_txt type_
       ]
+  | Doc -> [ txt "comment "; a ~a:link [ em [ txt elt.name ] ] ]
+  | TypeDecl -> [ txt "type "; a ~a:link [ em [ txt elt.name ] ] ]
   | Module -> [ txt "module "; a ~a:link [ em [ txt elt.name ] ] ]
   | Exception -> [ txt "exception "; a ~a:link [ em [ txt elt.name ] ] ]
   | Class_type -> [ txt "class type "; a ~a:link [ em [ txt elt.name ] ] ]
@@ -33,14 +33,18 @@ let render_elt elt =
   | ExtensionConstructor ->
       [ txt "ext constructor "; a ~a:link [ em [ txt elt.name ] ] ]
   | ModuleType -> [ txt "module type "; a ~a:link [ em [ txt elt.name ] ] ]
-  | Constructor { type_; _ } ->
+  | Constructor { str = type_; _ } ->
       [ txt "constructor "
       ; a ~a:link [ em [ txt elt.name ] ]
       ; txt " : "
-      ; txt type_
+      ; html_txt type_
       ]
-  | Field { type_; _ } ->
-      [ txt "field "; a ~a:link [ em [ txt elt.name ] ]; txt " : "; txt type_ ]
+  | Field { str = type_; _ } ->
+      [ txt "field "
+      ; a ~a:link [ em [ txt elt.name ] ]
+      ; txt " : "
+      ; html_txt type_
+      ]
 
 let render_pkg elt =
   let open Db.Elt in
@@ -61,7 +65,7 @@ let render_pkg elt =
 
 let render_result elt =
   let open Db.Elt in
-  render_pkg elt @ [ pre (render_elt elt); Unsafe.data elt.doc.Db.Elt.html ]
+  render_pkg elt @ [ pre (render_elt elt); Unsafe.data elt.doc_html ]
 
 let render ~pretty results =
   match results with

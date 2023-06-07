@@ -1,3 +1,0 @@
-(executable
- (name www)
- (libraries cmdliner dream db query storage_ancient storage_marshal))
