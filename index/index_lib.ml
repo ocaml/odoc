@@ -11,7 +11,9 @@ let main ~index_docstring ~index_name ~type_search ~empty_payload ~index
     Load_doc.clear () ;
     Db.export h
   in
+  let t0 = Unix.gettimeofday () in
   Load_doc.run ~index_docstring ~index_name ~type_search ~empty_payload ~index ;
-  print_endline "doc loaded" ;
+  let t1 = Unix.gettimeofday () in
+  Format.printf "Indexing in %fs@." (t1 -. t0) ;
   flush () ;
   Storage.close_out h

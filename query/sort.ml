@@ -244,9 +244,6 @@ module Reasoning = struct
     ; name_length
     }
 
-  let compare_is_stblib b1 b2 = if b1 && b2 then 0 else if b1 then -1 else 1
-  let compare_has_doc b1 b2 = if b1 && b2 then 0 else if b1 then -1 else 1
-
   let compare_kind k k' =
     let to_int = function
       | Val -> 0
@@ -309,10 +306,14 @@ module Reasoning = struct
     + (if has_doc then 0 else 500)
     + name_matches + type_cost + kind + name_length
 
-  let compare r r' = Int.compare (score r) (score r')
+  let score ~query_name ~query_type elt = score (v query_name query_type elt)
 end
 
 let list query_name query_type results =
-  let open Reasoning in
-  let f = v query_name query_type in
-  List.sort_map ~f ~compare results
+  let scored =
+    List.map
+      (fun elt -> elt, Reasoning.score ~query_name ~query_type elt)
+      results
+  in
+  let sorted = List.sort (fun (_, a) (_, b) -> Int.compare a b) scored in
+  List.map (fun (elt, _) -> elt) sorted

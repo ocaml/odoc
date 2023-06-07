@@ -9,6 +9,34 @@ module Make (Storage : Db.Storage.S) = struct
 
   let clear () = Cache.clear ()
 
+  let generic_cost ~ignore_no_doc name has_doc =
+    String.length name
+    (* + (5 * List.length path) TODO : restore depth based ordering *)
+    + (if ignore_no_doc || has_doc then 0 else 1000)
+    + if String.starts_with ~prefix:"Stdlib." name then -100 else 0
+
+  let type_cost paths =
+    paths |> List.concat |> List.map String.length |> List.fold_left ( + ) 0
+
+  let kind_cost (kind : Elt.Kind.t) =
+    match kind with
+    | Constructor type_path | Field type_path | Val type_path ->
+        type_cost type_path.paths
+    | Doc -> 400
+    | TypeDecl | Module | Exception | Class_type | Method | Class
+    | TypeExtension | ExtensionConstructor | ModuleType ->
+        200
+
+  let cost ~name ~kind ~doc_html =
+    let ignore_no_doc =
+      match kind with
+      | Elt.Kind.Module | ModuleType -> true
+      | _ -> false
+    in
+    let has_doc = doc_html <> "" in
+    (* TODO : use entry cost *)
+    generic_cost ~ignore_no_doc name has_doc + kind_cost kind
+
   (*
   
   todo : check usefulness 
@@ -24,6 +52,7 @@ module Make (Storage : Db.Storage.S) = struct
     | Tuple args -> List.fold_left (fun acc t -> acc + type_size t) 1 args
     | _ -> 100
 *)
+
   let rev_concat lst =
     List.fold_left (fun acc xs -> List.rev_append xs acc) [] lst
 
@@ -225,7 +254,8 @@ module Make (Storage : Db.Storage.S) = struct
       then ""
       else entry |> Json_display.of_entry |> Odoc_html.Json.to_string
     in
-    let elt = Elt.v ~name ~kind:kind' ~json_display ~doc_html () in
+    let score = cost ~name ~kind:kind' ~doc_html in
+    let elt = Elt.v ~name ~kind:kind' ~json_display ~doc_html ~score () in
     if index_docstring then register_doc elt doc_txt ;
     (if index_name
      then
@@ -237,7 +267,6 @@ module Make (Storage : Db.Storage.S) = struct
   module Resolver = Odoc_odoc.Resolver
 
   let run ~index_docstring ~index_name ~type_search ~empty_payload ~index =
-    print_endline "loading doc !" ;
     List.iter
       (register_entry ~index_docstring ~index_name ~type_search ~empty_payload)
       index

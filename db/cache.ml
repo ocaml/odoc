@@ -106,7 +106,7 @@ end)
 module List (A : Memo) = Make (struct
   type t = A.t list
 
-  let hash = List.hash A.hash
+  let hash = Hashtbl.hash
   let equal = List.equal A.equal
 
   let rec sub ~memo lst =
@@ -138,9 +138,13 @@ module Type = Make (struct
 end)
 
 module Kind = Make (struct
-  include Elt.Kind
+  type t = Elt.Kind.t
+
+  let equal = ( = )
+  let hash = Hashtbl.hash
 
   let sub ~memo:_ k =
+    let open Elt.Kind in
     match k with
     | Constructor type_path -> Constructor (Type.memo type_path)
     | Field type_path -> Field (Type.memo type_path)
@@ -162,13 +166,16 @@ module Elt = struct
     module Kind_memo = Kind
     include Elt
 
-    let sub ~memo:_ Elt.{ name; kind; doc_html; pkg; json_display } =
+    let equal = ( = )
+    let hash = Hashtbl.hash
+
+    let sub ~memo:_ Elt.{ name; kind; score; doc_html; pkg; json_display } =
       let name = String.memo name in
       let json_display = String.memo json_display in
       let doc_html = String.memo doc_html in
       (* For unknown reasons, this causes a terrible performance drop. *)
       (* let kind = Kind_memo.memo kind in *)
-      Elt.{ name; kind; doc_html; pkg; json_display }
+      Elt.{ name; kind; score; doc_html; pkg; json_display }
   end)
 
   module Set = Elt.Set
@@ -180,7 +187,7 @@ module Set (A : Memo) (S : Set.S with type elt = A.t) = Make (struct
   type t = S.t
 
   let equal = S.equal
-  let hash m = m |> S.elements |> Common.List.hash A.hash
+  let hash m = m |> S.elements |> Hashtbl.hash
 
   let sub ~memo set =
     match set with

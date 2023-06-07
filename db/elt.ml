@@ -21,8 +21,6 @@ type type_path =
             
             It is used to sort results. *)
 
-let hash_type_path path = List.hash (List.hash String.hash) path
-
 module Kind = struct
   type 'a abstract =
     | Doc
@@ -40,16 +38,6 @@ module Kind = struct
     | Val of 'a
 
   type t = type_path abstract
-
-  let hash k =
-    match k with
-    | Doc | TypeDecl | Module | Exception | Class_type | Method | Class
-    | TypeExtension | ExtensionConstructor | ModuleType ->
-        Hashtbl.hash k
-    | Constructor type_path ->
-        Hashtbl.hash (Constructor (hash_type_path type_path.paths))
-    | Field type_path -> Hashtbl.hash (Field (hash_type_path type_path.paths))
-    | Val type_path -> Hashtbl.hash (Val (hash_type_path type_path.paths))
 
   let equal = ( = )
   let doc = Doc
@@ -94,6 +82,7 @@ module T = struct
   type t =
     { name : string
     ; kind : Kind.t
+    ; score : int
     ; doc_html : string
     ; pkg : Package.t option
     ; json_display : string
@@ -101,34 +90,6 @@ module T = struct
 
   let compare_pkg { name; version = _ } (b : package) =
     String.compare name b.name
-
-  let generic_cost ~ignore_no_doc name has_doc =
-    String.length name
-    (* + (5 * List.length path) TODO : restore depth based ordering *)
-    + (if ignore_no_doc || has_doc then 0 else 1000)
-    + if String.starts_with ~prefix:"Stdlib." name then -100 else 0
-
-  let type_cost paths =
-    paths |> List.concat |> List.map String.length |> List.fold_left ( + ) 0
-
-  let kind_cost (kind : kind) =
-    match kind with
-    | Constructor type_path | Field type_path | Val type_path ->
-        type_cost type_path.paths
-    | Doc -> 400
-    | TypeDecl | Module | Exception | Class_type | Method | Class
-    | TypeExtension | ExtensionConstructor | ModuleType ->
-        200
-
-  let cost { name; kind; doc_html; pkg = _; json_display = _ } =
-    let ignore_no_doc =
-      match kind with
-      | Module | ModuleType -> true
-      | _ -> false
-    in
-    let has_doc = doc_html <> "" in
-    (* TODO : use entry cost *)
-    generic_cost ~ignore_no_doc name has_doc + kind_cost kind
 
   let structural_compare a b =
     begin
@@ -145,9 +106,7 @@ module T = struct
     if a == b
     then 0
     else
-      let cost_a = cost a in
-      let cost_b = cost b in
-      let cmp = Int.compare cost_a cost_b in
+      let cmp = Int.compare a.score b.score in
       if cmp = 0 then structural_compare a b else cmp
 end
 
@@ -159,15 +118,6 @@ let ( < ) e e' = compare e e' < 0
 let ( <= ) e e' = compare e e' <= 0
 let ( > ) e e' = compare e e' > 0
 let ( >= ) e e' = compare e e' >= 0
-
-let hash : t -> int =
- fun { name; kind; doc_html; pkg; json_display } ->
-  Hashtbl.hash
-    ( Hashtbl.hash name
-    , Kind.hash kind
-    , Hashtbl.hash doc_html
-    , Option.hash Package.hash pkg
-    , Hashtbl.hash json_display )
 
 module Set = Set.Make (T)
 
@@ -186,5 +136,5 @@ let link t =
   let+ pkg_link = pkg_link t in
   pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
 
-let v ~name ~kind ~doc_html ?(pkg = None) ~json_display () =
-  { name; kind; doc_html; pkg; json_display }
+let v ~name ~kind ~score ~doc_html ?(pkg = None) ~json_display () =
+  { name; kind; score; doc_html; pkg; json_display }
