@@ -309,9 +309,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
             | { Paths.Identifier.iv = `Page _; _ } as parent_id ->
                 let name = Paths.Identifier.Mk.source_page (parent_id, name) in
                 if
-                  List.exists
-                    (Paths.Identifier.equal name)
-                    page.source_children
+                  List.exists (Paths.Identifier.equal name) page.source_children
                 then Ok (Some name)
                 else err_not_parent ()
             | { iv = `LeafPage _; _ } -> err_not_parent ())
