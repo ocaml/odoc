@@ -8,12 +8,18 @@
   8.0K	megaodocl
   $ sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
   Index_lib.main
-  loading doc !
-  doc loaded
+  Indexing in 0.002059s
+  trie_with_array_occ:0.00s
+  trie_with_array:0.00s
+  Cache.Elt_array_occ_trie.memo:0.00s
+  Cache.Elt_array_trie.memo:0.00s
   $ sherlodoc_index --format=marshal --db=sherlodoc_db.bin $(find . -name '*.odocl') 2> /dev/null
   Index_lib.main
-  loading doc !
-  doc loaded
+  Indexing in 0.002210s
+  trie_with_array_occ:0.00s
+  trie_with_array:0.00s
+  Cache.Elt_array_occ_trie.memo:0.00s
+  Cache.Elt_array_trie.memo:0.00s
 $ sherlodoc_index --format=js --empty-payload --db=db_empty_payload.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-docstring=false --db=db_no_docstring.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-name=false --db=db_no_name.js $(find . -name '*.odocl') 2> /dev/null
@@ -37,7 +43,7 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ cat db.js  ../../../jsoo/main.bc.js > html/index.js
   $ cp sherlodoc_db.bin html
   $ du -sh html/index.js
-  4.9M	html/index.js
+  13M	html/index.js
   $ ls html
   Main
   fonts

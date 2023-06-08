@@ -7,7 +7,6 @@ module Make (Storage : Db.Storage.S) : sig
        index_docstring:bool
     -> index_name:bool
     -> type_search:bool
-    -> empty_payload:bool
     -> index:Odoc_search.Entry.t list
     -> unit
 end

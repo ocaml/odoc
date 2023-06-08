@@ -1,9 +1,7 @@
 open Common
 
-type type_path =
-  { str : string
-  ; paths : string list list
-  }
+type type_path = string list list
+
 (** A type can viewed as a tree.
             [a -> b -> c * d] is the following tree :
             {[ ->
@@ -81,11 +79,12 @@ type kind = Kind.t
 module T = struct
   type t =
     { name : string
+    ; rhs : string option
+    ; url:string
     ; kind : Kind.t
     ; score : int
     ; doc_html : string
     ; pkg : Package.t option
-    ; json_display : string
     }
 
   let compare_pkg { name; version = _ } (b : package) =
@@ -136,5 +135,5 @@ let link t =
   let+ pkg_link = pkg_link t in
   pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
 
-let v ~name ~kind ~score ~doc_html ?(pkg = None) ~json_display () =
-  { name; kind; score; doc_html; pkg; json_display }
+let v ~name ~kind ~score ~rhs ~doc_html ~url ?(pkg = None) () =
+  { name; kind; url; score; doc_html; pkg; rhs }

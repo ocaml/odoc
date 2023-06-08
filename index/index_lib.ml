@@ -1,6 +1,6 @@
 module Storage = Db.Storage
 
-let main ~index_docstring ~index_name ~type_search ~empty_payload ~index
+let main ~index_docstring ~index_name ~type_search ~index
     ~db_filename storage =
   print_endline "Index_lib.main" ;
   let module Storage = (val storage : Storage.S) in
@@ -12,7 +12,7 @@ let main ~index_docstring ~index_name ~type_search ~empty_payload ~index
     Db.export h
   in
   let t0 = Unix.gettimeofday () in
-  Load_doc.run ~index_docstring ~index_name ~type_search ~empty_payload ~index ;
+  Load_doc.run ~index_docstring ~index_name ~type_search ~index ;
   let t1 = Unix.gettimeofday () in
   Format.printf "Indexing in %fs@." (t1 -. t0) ;
   flush () ;

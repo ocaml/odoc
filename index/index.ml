@@ -1,5 +1,4 @@
-let main files index_docstring index_name type_search empty_payload db_filename
-    db_format =
+let main files index_docstring index_name type_search db_filename db_format =
   let index = files |> List.map Fpath.of_string |> List.map Result.get_ok in
   let storage =
     match db_format with
@@ -19,8 +18,8 @@ let main files index_docstring index_name type_search empty_payload db_filename
            |> Result.get_ok |> Option.value ~default:[])
          []
   in
-  Index_lib.main ~index_docstring ~index_name ~type_search ~empty_payload ~index
-    ~db_filename storage
+  Index_lib.main ~index_docstring ~index_name ~type_search ~index ~db_filename
+    storage
 
 open Cmdliner
 
@@ -35,13 +34,6 @@ let index_name =
 let type_search =
   let doc = "Enable type based search" in
   Arg.(value & opt bool true & info ~doc [ "type-search" ])
-
-let empty_payload =
-  let doc =
-    "Dont put anything in the payloads. For testing purposes, will break the \
-     UI."
-  in
-  Arg.(value & flag & info ~doc [ "empty-payload" ])
 
 let db_format =
   let doc = "Database format" in
@@ -60,7 +52,7 @@ let odoc_files =
 let index =
   Term.(
     const main $ odoc_files $ index_docstring $ index_name $ type_search
-    $ empty_payload $ db_filename $ db_format)
+    $ db_filename $ db_format)
 
 let cmd =
   let doc = "Index odocl files" in

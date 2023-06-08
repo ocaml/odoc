@@ -107,8 +107,15 @@ let search message =
   let _ =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list
-           (fun Db.Elt.{ json_display; _ } ->
-             json_display |> Jstr.of_string |> Brr.Json.decode |> Result.get_ok)
+           (fun Db.Elt.{ name; rhs; doc_html; kind; url; _ } ->
+             let kind = string_of_kind kind in
+             let json_display =
+               Odoc_search.Json_display.of_strings
+                 ~id:(String.split_on_char '.' name)
+                 ~rhs ~doc:doc_html ~kind ~url
+             in
+             json_display |> Odoc_html.Json.to_string |> Jstr.of_string
+             |> Brr.Json.decode |> Result.get_ok)
            results
       |]
   in

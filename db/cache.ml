@@ -146,20 +146,7 @@ end)
 module Char_list = List (Char)
 module String_list = List (String)
 module String_list_list = List (String_list)
-
-module Type = Make (struct
-  type t = Elt.type_path
-
-  type key =
-    { str : uid
-    ; paths : uid
-    }
-
-  let sub ~memo:_ { Elt.str; paths } =
-    let uid_str, str = String.memo str in
-    let uid_paths, paths = String_list_list.memo paths in
-    { str = uid_str; paths = uid_paths }, Elt.{ str; paths }
-end)
+module String_option = Option (String)
 
 module Kind = Make (struct
   type t = Elt.Kind.t
@@ -169,13 +156,13 @@ module Kind = Make (struct
     let open Elt.Kind in
     match k with
     | Constructor type_ ->
-        let uid, type_ = Type.memo type_ in
+        let uid, type_ = String_list_list.memo type_ in
         Constructor uid, Constructor type_
     | Field type_ ->
-        let uid, type_ = Type.memo type_ in
+        let uid, type_ = String_list_list.memo type_ in
         Field uid, Field type_
     | Val type_ ->
-        let uid, type_ = Type.memo type_ in
+        let uid, type_ = String_list_list.memo type_ in
         Val uid, Val type_
     (* the below looks like it could be [k -> (k, k) but it does not because of typing issues] *)
     | Doc -> Doc, Doc
@@ -197,13 +184,15 @@ module Elt = struct
     type key =
       { name : uid
       ; score : int
+      ; rhs : uid
       }
 
-    let sub ~memo:_ Elt.{ name; kind; doc_html; score; pkg; json_display } =
+    let sub ~memo:_ Elt.{ name; kind; doc_html; score; pkg; rhs; url } =
       let uid_name, name = String.memo name in
+      let uid_rhs, rhs = String_option.memo rhs in
       (* let kind = Kind_memo.memo kind in *)
-      ( { name = uid_name; score }
-      , Elt.{ name; kind; doc_html; pkg; json_display; score } )
+      ( { name = uid_name; rhs = uid_rhs; score }
+      , Elt.{ name; kind; doc_html; pkg; rhs; score; url } )
   end)
 
   module Set = Elt.Set

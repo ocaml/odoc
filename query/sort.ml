@@ -192,7 +192,7 @@ module Reasoning = struct
     | [], _ -> None
     | _, Elt.Kind.(Constructor type_paths | Field type_paths | Val type_paths)
       ->
-        Some (Type_distance.v query_type type_paths.paths)
+        Some (Type_distance.v query_type type_paths)
     | _ -> None
 
   let type_in_query query_type = query_type <> []

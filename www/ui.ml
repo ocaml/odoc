@@ -14,37 +14,28 @@ let render_elt elt =
   let open Db.Elt in
   let link = render_link elt in
   let html_txt = Unsafe.data in
-  match elt.kind with
-  | Val { str = type_; _ } ->
-      [ txt "val "
-      ; a ~a:link [ em [ txt elt.name ] ]
-      ; txt " : "
-      ; html_txt type_
-      ]
-  | Doc -> [ txt "comment "; a ~a:link [ em [ txt elt.name ] ] ]
-  | TypeDecl -> [ txt "type "; a ~a:link [ em [ txt elt.name ] ] ]
-  | Module -> [ txt "module "; a ~a:link [ em [ txt elt.name ] ] ]
-  | Exception -> [ txt "exception "; a ~a:link [ em [ txt elt.name ] ] ]
-  | Class_type -> [ txt "class type "; a ~a:link [ em [ txt elt.name ] ] ]
-  | Method -> [ txt "method "; a ~a:link [ em [ txt elt.name ] ] ]
-  | Class -> [ txt "class "; a ~a:link [ em [ txt elt.name ] ] ]
-  | TypeExtension ->
-      [ txt "type extension "; a ~a:link [ em [ txt elt.name ] ] ]
-  | ExtensionConstructor ->
-      [ txt "ext constructor "; a ~a:link [ em [ txt elt.name ] ] ]
-  | ModuleType -> [ txt "module type "; a ~a:link [ em [ txt elt.name ] ] ]
-  | Constructor { str = type_; _ } ->
-      [ txt "constructor "
-      ; a ~a:link [ em [ txt elt.name ] ]
-      ; txt " : "
-      ; html_txt type_
-      ]
-  | Field { str = type_; _ } ->
-      [ txt "field "
-      ; a ~a:link [ em [ txt elt.name ] ]
-      ; txt " : "
-      ; html_txt type_
-      ]
+  let rhs =
+    match elt.rhs with
+    | Some rhs -> [ html_txt rhs ]
+    | None -> []
+  in
+  let kind =
+    match elt.kind with
+    | Val _ -> "val "
+    | Doc -> "comment "
+    | TypeDecl -> "type "
+    | Module -> "module "
+    | Exception -> "exception "
+    | Class_type -> "class type"
+    | Method -> "method "
+    | Class -> "class "
+    | TypeExtension -> "type extension "
+    | ExtensionConstructor -> "ext constructor "
+    | ModuleType -> "module type "
+    | Constructor _ -> "constructor "
+    | Field _ -> "field "
+  in
+  [ txt kind; a ~a:link [ em [ txt elt.name ] ] ] @ rhs
 
 let render_pkg elt =
   let open Db.Elt in
