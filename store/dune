@@ -1,0 +1,14 @@
+(library
+ (name storage_ancient)
+ (modules storage_ancient)
+ (libraries ancient db))
+
+(library
+ (name storage_js)
+ (modules storage_js)
+ (libraries db base64 bigstringaf decompress.zl))
+
+(library
+ (name storage_marshal)
+ (modules storage_marshal)
+ (libraries db))
