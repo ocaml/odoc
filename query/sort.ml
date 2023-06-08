@@ -124,6 +124,9 @@ module Reasoning = struct
       Re.execp re s
 
     let with_word query_word name =
+      let low_query_word = String.lowercase_ascii query_word in
+      let has_case = low_query_word <> query_word in
+      let name = if not has_case then String.lowercase_ascii name else name in
       if String.starts_with ~prefix:query_word name
          || String.ends_with ~suffix:query_word name
       then PrefixSuffix
@@ -138,7 +141,8 @@ module Reasoning = struct
       then SubUnderscore
       else if is_substring ~sub:query_word name
       then Sub
-      else if String.lowercase_ascii query_word = String.lowercase_ascii name
+      else if has_case
+              && is_substring ~sub:low_query_word (String.lowercase_ascii name)
       then Lowercase
       else (* Matches only in the docstring are always worse *) Doc
 
@@ -272,6 +276,11 @@ module Reasoning = struct
       ; kind
       ; name_length
       } =
+    let ignore_no_doc =
+      match kind with
+      | Module | ModuleType -> true
+      | _ -> false
+    in
     let kind =
       match kind with
       | Val | Module | Constructor | Field | TypeDecl -> 0
@@ -292,6 +301,7 @@ module Reasoning = struct
            | Doc -> 1000)
       |> List.fold_left ( + ) 0
     in
+
     let type_cost =
       if type_in_elt && type_in_query
       then Option.get type_distance
@@ -299,11 +309,11 @@ module Reasoning = struct
       then 0
       else
         (* If query request a type, elements which do not have one are not to be
-           placed high. *)
+           placed high. They should never appear anyway. *)
         10000
     in
     (if is_stdlib then 0 else 100)
-    + (if has_doc then 0 else 500)
+    + (if has_doc || ignore_no_doc then 0 else 100)
     + name_matches + type_cost + kind + name_length
 
   let score ~query_name ~query_type elt = score (v query_name query_type elt)

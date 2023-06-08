@@ -12,7 +12,7 @@ module Make (Storage : Db.Storage.S) = struct
   let generic_cost ~ignore_no_doc name has_doc =
     String.length name
     (* + (5 * List.length path) TODO : restore depth based ordering *)
-    + (if ignore_no_doc || has_doc then 0 else 1000)
+    + (if ignore_no_doc || has_doc then 0 else 100)
     + if String.starts_with ~prefix:"Stdlib." name then -100 else 0
 
   let type_cost paths =
@@ -23,9 +23,11 @@ module Make (Storage : Db.Storage.S) = struct
     | Constructor type_path | Field type_path | Val type_path ->
         type_cost type_path
     | Doc -> 400
-    | TypeDecl | Module | Exception | Class_type | Method | Class
-    | TypeExtension | ExtensionConstructor | ModuleType ->
-        200
+    | TypeDecl | Module -> 0 
+    | Exception | Class_type | Method | Class
+    | TypeExtension -> 1000
+    | ExtensionConstructor | ModuleType ->
+        10
 
   let cost ~name ~kind ~doc_html =
     let ignore_no_doc =
@@ -170,7 +172,7 @@ module Make (Storage : Db.Storage.S) = struct
     let open Odoc_search.Entry in
     match kind with
     | TypeDecl _ -> Elt.Kind.TypeDecl
-    | Module -> Elt.Kind.ModuleType
+    | Module -> Elt.Kind.Module
     | Value { value = _; type_ } ->
         let paths = paths ~prefix:[] ~sgn:Pos type_ in
         Elt.Kind.val_ paths
