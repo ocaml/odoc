@@ -17,3 +17,5 @@ _build/
 _doc/
 _coverage/
 _opam/
+**/perf.data
+**/perf.data.old
