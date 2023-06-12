@@ -1,0 +1,6 @@
+(ocamllex unescape)
+
+(executable
+ (name main)
+ (public_name sherlodoc)
+ (libraries cmdliner query storage_marshal))

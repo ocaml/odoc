@@ -1,20 +1,3 @@
-let string_of_kind (kind : Db.Elt.kind) =
-  let open Db.Elt.Kind in
-  match kind with
-  | Doc -> "doc"
-  | TypeDecl -> "type"
-  | Module -> "module"
-  | Exception -> "exception"
-  | Class_type -> "class type"
-  | Method -> "method"
-  | Class -> "class"
-  | TypeExtension -> "type ext"
-  | ExtensionConstructor -> "extension constructor"
-  | ModuleType -> "module type"
-  | Constructor _ -> "constructor"
-  | Field _ -> "field"
-  | Val _ -> "val"
-
 let print_error e =
   let open Jv.Error in
   Printf.eprintf "Error : %s %s\n%s%!"
@@ -108,7 +91,7 @@ let search message =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list
            (fun Db.Elt.{ name; rhs; doc_html; kind; url; _ } ->
-             let kind = string_of_kind kind in
+             let kind = Db.Elt.Kind.to_string kind in
              let json_display =
                Odoc_search.Json_display.of_strings
                  ~id:(String.split_on_char '.' name)

@@ -51,6 +51,21 @@ module Kind = struct
   let constructor type_path = Constructor type_path
   let field type_path = Field type_path
   let val_ type_path = Val type_path
+
+  let to_string = function
+    | Doc -> "doc"
+    | TypeDecl -> "type"
+    | Module -> "module"
+    | Exception -> "exception"
+    | Class_type -> "class type"
+    | Method -> "method"
+    | Class -> "class"
+    | TypeExtension -> "type ext"
+    | ExtensionConstructor -> "extension constructor"
+    | ModuleType -> "module type"
+    | Constructor _ -> "constructor"
+    | Field _ -> "field"
+    | Val _ -> "val"
 end
 
 module Package = struct
@@ -80,7 +95,7 @@ module T = struct
   type t =
     { name : string
     ; rhs : string option
-    ; url:string
+    ; url : string
     ; kind : Kind.t
     ; score : int
     ; doc_html : string

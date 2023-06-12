@@ -105,7 +105,7 @@ let main db_format db_filename cache_max_age =
 open Cmdliner
 
 let db_format =
-  let doc = "Databse format" in
+  let doc = "Database format" in
   let kind = Arg.enum [ "ancient", `ancient; "marshal", `marshal ] in
   Arg.(
     required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~doc)
