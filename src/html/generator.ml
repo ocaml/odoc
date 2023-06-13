@@ -32,9 +32,10 @@ type non_link_phrasing = Html_types.phrasing_without_interactive
 let mk_anchor_link id =
   [ Html.a ~a:[ Html.a_href ("#" ^ id); Html.a_class [ "anchor" ] ] [] ]
 
-let mk_anchor anchor =
+let mk_anchor config anchor =
   match anchor with
   | None -> ([], [], [])
+  | _ when Config.search_result config -> ([], [], [])
   | Some { Url.Anchor.anchor; _ } ->
       let link = mk_anchor_link anchor in
       let extra_attr = [ Html.a_id anchor ] in
@@ -99,8 +100,13 @@ let rec internallink ~config ~emph_level ~resolve ?(a = [])
     match target with
     | Resolved uri ->
         let href = Link.href ~config ~resolve uri in
-        let a = (a :> Html_types.a_attrib Html.attrib list) in
-        Html.a ~a:(Html.a_href href :: a) (inline_nolink ~emph_level content)
+        let content = inline_nolink ~emph_level content in
+        if Config.search_result config then Html.span ~a content
+        else
+          let a =
+            Html.a_href href :: (a :> Html_types.a_attrib Html.attrib list)
+          in
+          Html.a ~a content
     | Unresolved ->
         (* let title =
          *   Html.a_title (Printf.sprintf "unresolved reference to %S"
@@ -125,6 +131,9 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
     | Styled (style, c) ->
         let emph_level, app_style = styled style ~emph_level in
         [ app_style @@ inline ~config ~emph_level ~resolve c ]
+    | Link (_, c) when Config.search_result config ->
+        let content = inline_nolink ~emph_level c in
+        [ Html.span ~a content ]
     | Link (href, c) ->
         let a = (a :> Html_types.a_attrib Html.attrib list) in
         let content = inline_nolink ~emph_level c in
@@ -161,6 +170,7 @@ and inline_nolink ?(emph_level = 0) (l : Inline.t) :
 let heading ~config ~resolve (h : Heading.t) =
   let a, anchor =
     match h.label with
+    | Some _ when Config.search_result config -> ([], [])
     | Some id -> ([ Html.a_id id ], mk_anchor_link id)
     | None -> ([], [])
   in
@@ -314,7 +324,7 @@ let rec documentedSrc ~config ~resolve (t : DocumentedSrc.t) :
                     (delim opening @ block ~config ~resolve doc @ delim closing);
                 ]
           in
-          let extra_attr, extra_class, link = mk_anchor anchor in
+          let extra_attr, extra_class, link = mk_anchor config anchor in
           let content = (content :> any Html.elt list) in
           Html.li
             ~a:(extra_attr @ class_ (attrs @ extra_class))
@@ -363,7 +373,9 @@ and items ~config ~resolve l : item Html.elt list =
           let details ~open' =
             let open' = if open' then [ Html.a_open () ] else [] in
             let summary =
-              let extra_attr, extra_class, anchor_link = mk_anchor anchor in
+              let extra_attr, extra_class, anchor_link =
+                mk_anchor config anchor
+              in
               let link_to_source =
                 mk_link_to_source ~config ~resolve source_anchor
               in
@@ -387,7 +399,7 @@ and items ~config ~resolve l : item Html.elt list =
         in
         (continue_with [@tailcall]) rest content
     | Declaration { Item.attr; anchor; source_anchor; content; doc } :: rest ->
-        let extra_attr, extra_class, anchor_link = mk_anchor anchor in
+        let extra_attr, extra_class, anchor_link = mk_anchor config anchor in
         let link_to_source = mk_link_to_source ~config ~resolve source_anchor in
         let a = spec_class (attr @ extra_class) @ extra_attr in
         let content =
