@@ -25,7 +25,12 @@ module type Cachable = sig
   type key
 
   val sub : memo:(t -> uid * t) -> t -> key * t
-  (** [sub ~memo (v : t)] should replace subvalues [v'] of type [t] by [memo v'],
+  (** [sub ~memo (v : t)] is [(k, v')]. [v'] should be equal to [v], and [k] a
+      hashable shallow copy of [v].
+      For every subvalue [vs] of type [t] we have [ks, vs' = memo vs]. 
+      In [k], [vs] is replaced by [ks].
+      In [v], [vs] is replaced by [vs'].
+
       and subvalues [a] of type [A.t] by [A.memo a]. *)
 end
 
@@ -179,19 +184,36 @@ end)
 
 module Elt = struct
   include Make (struct
-    include Elt
+    type t = Elt.t
 
     type key =
       { name : uid
-      ; score : int
-      ; rhs : uid
+      ; kind : int
       }
+
+    let int_of_kind =
+      let open Elt.Kind in
+      function
+      | Constructor _ -> 0
+      | Field _ -> 1
+      | Val _ -> 2
+      (* the below looks like it could be [k -> (k, k) but it does not because of typing issues] *)
+      | Doc -> 3
+      | TypeDecl -> 4
+      | Module -> 5
+      | Exception -> 6
+      | Class_type -> 7
+      | Method -> 8
+      | Class -> 9
+      | TypeExtension -> 10
+      | ExtensionConstructor -> 11
+      | ModuleType -> 12
 
     let sub ~memo:_ Elt.{ name; kind; doc_html; score; pkg; rhs; url } =
       let uid_name, name = String.memo name in
-      let uid_rhs, rhs = String_option.memo rhs in
-      (* let kind = Kind_memo.memo kind in *)
-      ( { name = uid_name; rhs = uid_rhs; score }
+      let _uid_rhs, rhs = String_option.memo rhs in
+      (*let _uid_kind, kind = Kind.memo kind in*)
+      ( { name = uid_name; kind = int_of_kind kind }
       , Elt.{ name; kind; doc_html; pkg; rhs; score; url } )
   end)
 

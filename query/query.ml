@@ -95,6 +95,7 @@ let match_packages ~packages results =
   | [] -> results
   | _ -> Seq.filter (match_packages ~packages) results
 
+
 let api ~(shards : Db.Elt.t array Db.t list) params =
   let query_name, query_typ, query_typ_arrow, pretty =
     Parser.of_string params.query

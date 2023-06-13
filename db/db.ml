@@ -48,6 +48,10 @@ let compact db =
 
 let list_of_string s = List.init (String.length s) (String.get s)
 
+let list_of_string_rev s =
+  let len = String.length s in
+  List.init len (fun i -> String.get s (len - i - 1))
+
 module type S = sig
   type writer
 
@@ -163,7 +167,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     db_names := go !db_names name
 
   let store_word word elt =
-    (word |> list_of_string |> List.rev |> store_chars) elt
+    (word |> list_of_string_rev |> store_chars) elt
 end
 
 module Storage = Storage

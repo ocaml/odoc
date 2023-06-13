@@ -112,6 +112,7 @@ end
 module Reasoning = struct
   module Name_match = struct
     type t =
+      | DotSuffix
       | PrefixSuffix
       | SubDot
       | SubUnderscore
@@ -127,8 +128,10 @@ module Reasoning = struct
       let low_query_word = String.lowercase_ascii query_word in
       let has_case = low_query_word <> query_word in
       let name = if not has_case then String.lowercase_ascii name else name in
-      if String.starts_with ~prefix:query_word name
-         || String.ends_with ~suffix:query_word name
+      if String.ends_with ~suffix:("." ^ query_word) name
+      then DotSuffix
+      else if String.starts_with ~prefix:query_word name
+              || String.ends_with ~suffix:query_word name
       then PrefixSuffix
       else if is_substring ~sub:("(" ^ query_word) name
               || is_substring ~sub:(query_word ^ ")") name
@@ -154,12 +157,13 @@ module Reasoning = struct
     let compare nm nm' =
       let to_int nm =
         match nm with
-        | PrefixSuffix -> 0
-        | SubDot -> 1
-        | SubUnderscore -> 2
-        | Sub -> 3
-        | Lowercase -> 4
-        | Doc -> 5
+        | DotSuffix -> 0
+        | PrefixSuffix -> 1
+        | SubDot -> 2
+        | SubUnderscore -> 3
+        | Sub -> 4
+        | Lowercase -> 5
+        | Doc -> 6
       in
       Int.compare (to_int nm) (to_int nm')
   end
@@ -199,7 +203,8 @@ module Reasoning = struct
         Some (Type_distance.v query_type type_paths)
     | _ -> None
 
-  let type_in_query query_type = query_type <> []
+  let type_in_query query_type =
+    query_type <> [] && List.exists (( <> ) []) query_type
 
   let type_in_elt elt =
     let open Elt in
@@ -293,11 +298,12 @@ module Reasoning = struct
       let open Name_match in
       name_matches
       |> List.map (function
-           | PrefixSuffix -> 0
-           | SubDot -> 1
-           | SubUnderscore -> 2
-           | Sub -> 3
-           | Lowercase -> 4
+           | DotSuffix -> 0
+           | PrefixSuffix -> 3
+           | SubDot -> 4
+           | SubUnderscore -> 5
+           | Sub -> 6
+           | Lowercase -> 7
            | Doc -> 1000)
       |> List.fold_left ( + ) 0
     in
@@ -307,10 +313,12 @@ module Reasoning = struct
       then Option.get type_distance
       else if type_in_elt
       then 0
-      else
-        (* If query request a type, elements which do not have one are not to be
-           placed high. They should never appear anyway. *)
-        10000
+      else if type_in_query
+      then
+        (* If query request a type, elements which do not have one should never
+           appear. *)
+        assert false
+      else 0
     in
     (if is_stdlib then 0 else 100)
     + (if has_doc || ignore_no_doc then 0 else 100)
@@ -320,10 +328,7 @@ module Reasoning = struct
 end
 
 let list query_name query_type results =
-  let scored =
-    List.map
-      (fun elt -> elt, Reasoning.score ~query_name ~query_type elt)
-      results
-  in
-  let sorted = List.sort (fun (_, a) (_, b) -> Int.compare a b) scored in
-  List.map (fun (elt, _) -> elt) sorted
+  results
+  |> List.map (fun elt ->
+         Elt.{ elt with score = Reasoning.score ~query_name ~query_type elt })
+  |> List.sort Elt.compare
