@@ -25,16 +25,26 @@ let rec search_loop ~print_cost ~db =
   | None -> print_endline "[Search session ended]"
 
 let main db query print_cost =
-  let db = Storage_marshal.load db in
-  match query with
-  | None -> search_loop ~print_cost ~db
-  | Some query -> search ~print_cost ~db query
+  match db with
+  | None ->
+      output_string stderr
+        "No database provided. Provide one by exporting the SHERLODOC_DB \
+         variable, or using the --db option\n" ;
+      exit 1
+  | Some db -> (
+      let db = Storage_marshal.load db in
+      match query with
+      | None -> search_loop ~print_cost ~db
+      | Some query -> search ~print_cost ~db query)
 
 open Cmdliner
 
 let db_filename =
-  let doc = "The database to query" in
-  Arg.(required & opt (some file) None & info [ "db" ] ~docv:"DB" ~doc)
+  let env =
+    let doc = "The database to query" in
+    Cmd.Env.info "SHERLODOC_DB" ~doc
+  in
+  Arg.(value & opt (some file) None & info [ "db" ] ~docv:"DB" ~env)
 
 let limit =
   let doc = "The maximum number of results" in
