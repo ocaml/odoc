@@ -1805,7 +1805,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let page_of_dir (dir : SourceDir.t) (dir_children, file_children) =
         let url = Url.Path.source_dir_from_identifier dir in
-        let block ?(attr = []) desc = Block.{ attr; desc } in
+        let block ?(attr = []) desc = Block.{ attr; desc; label = None } in
         let inline ?(attr = []) desc = Inline.[ { attr; desc } ] in
         let header =
           let title = inline (Text (SourceDir.name dir)) in
@@ -1837,7 +1837,9 @@ module Make (Syntax : SYNTAX) = struct
           (name, url)
         in
         let items =
-          let text ?(attr = []) desc = Item.Text [ { attr; desc } ] in
+          let text ?(attr = []) desc =
+            Item.Text [ { attr; desc; label = None } ]
+          in
           let list l = Block.List (Block.Unordered, l) in
           let list_of_children =
             let dir_list =

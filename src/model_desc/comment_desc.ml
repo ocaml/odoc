@@ -18,10 +18,10 @@ type general_inline_element =
 and general_link_content = general_inline_element with_location list
 
 type general_block_element =
-  [ `Paragraph of general_link_content
-  | `Code_block of string option * string with_location
-  | `Math_block of string
-  | `Verbatim of string
+  [ `Paragraph of Identifier.Label.t * general_link_content
+  | `Code_block of Identifier.Label.t * string option * string with_location
+  | `Math_block of Identifier.Label.t * string
+  | `Verbatim of Identifier.Label.t * string
   | `Modules of Comment.module_reference list
   | `List of
     [ `Unordered | `Ordered ] * general_block_element with_location list list
@@ -105,11 +105,11 @@ let rec block_element : general_block_element t =
   in
   Variant
     (function
-    | `Paragraph x -> C ("`Paragraph", x, link_content)
-    | `Code_block (x1, x2) ->
+    | `Paragraph (_, x) -> C ("`Paragraph", x, link_content)
+    | `Code_block (_, x1, x2) ->
         C ("`Code_block", (x1, ignore_loc x2), Pair (Option string, string))
-    | `Math_block x -> C ("`Math_block", x, string)
-    | `Verbatim x -> C ("`Verbatim", x, string)
+    | `Math_block (_, x) -> C ("`Math_block", x, string)
+    | `Verbatim (_, x) -> C ("`Verbatim", x, string)
     | `Modules x -> C ("`Modules", x, List module_reference)
     | `List (x1, x2) ->
         C ("`List", (x1, (x2 :> general_docs list)), Pair (list_kind, List docs))

@@ -31,7 +31,7 @@
  <body class="odoc">
   <header class="odoc-preamble">
    <h1>Module <code><span>Markup</span></code></h1>
-   <p>Here, we test the rendering of comment markup.</p>
+   <p id="p0">Here, we test the rendering of comment markup.</p>
   </header>
   <nav class="odoc-toc">
    <ul>
@@ -63,40 +63,40 @@
   </nav>
   <div class="odoc-content">
    <h2 id="sections"><a href="#sections" class="anchor"></a>Sections</h2>
-   <p>Let's get these done first, because sections will be used to break
-     up the rest of this test.
-   </p><p>Besides the section heading above, there are also</p>
+   <p id="p1">Let's get these done first, because sections will be used
+     to break up the rest of this test.
+   </p><p id="p2">Besides the section heading above, there are also</p>
    <h3 id="subsection-headings">
     <a href="#subsection-headings" class="anchor"></a>Subsection headings
-   </h3><p>and</p>
+   </h3><p id="p3">and</p>
    <h4 id="sub-subsection-headings">
     <a href="#sub-subsection-headings" class="anchor"></a>Sub-subsection
      headings
    </h4>
-   <p>but odoc has banned deeper headings. There are also title headings,
-     but they are only allowed in mld files.
+   <p id="p4">but odoc has banned deeper headings. There are also title
+     headings, but they are only allowed in mld files.
    </p><h4 id="anchors"><a href="#anchors" class="anchor"></a>Anchors</h4>
-   <p>Sections can have attached 
+   <p id="p5">Sections can have attached 
     <a href="#anchors" title="anchors">Anchors</a>, and it is possible
      to <a href="#anchors" title="anchors">link</a> to them. Links to
      section headers should not be set in source code style.
    </p>
    <h5 id="paragraph"><a href="#paragraph" class="anchor"></a>Paragraph</h5>
-   <p>Individual paragraphs can have a heading.</p>
+   <p id="p6">Individual paragraphs can have a heading.</p>
    <h6 id="subparagraph"><a href="#subparagraph" class="anchor"></a>
     Subparagraph
    </h6>
-   <p>Parts of a longer paragraph that can be considered alone can also
-     have headings.
+   <p id="p7">Parts of a longer paragraph that can be considered alone
+     can also have headings.
    </p><h2 id="styling"><a href="#styling" class="anchor"></a>Styling</h2>
-   <p>This paragraph has some styled elements: <b>bold</b> and <i>italic</i>
-    , <b><i>bold italic</i></b>, <em>emphasis</em>, 
+   <p id="p8">This paragraph has some styled elements: <b>bold</b> and
+     <i>italic</i>, <b><i>bold italic</i></b>, <em>emphasis</em>, 
     <em><em class="odd">emphasis</em> within emphasis</em>, 
     <b><i>bold italic</i></b>, super<sup>script</sup>, sub<sub>script</sub>
     . The line spacing should be enough for superscripts and subscripts
      not to look odd.
    </p>
-   <p>Note: 
+   <p id="p9">Note: 
     <i>In italics <em>emphasis</em> is rendered as normal text while 
      <em>emphasis <em class="odd">in</em> emphasis</em> is rendered in
       italics.
@@ -107,37 +107,37 @@
      </a>
     </i>
    </p>
-   <p><code>code</code> is a different kind of markup that doesn't allow
-     nested markup.
+   <p id="p10"><code>code</code> is a different kind of markup that doesn't
+     allow nested markup.
    </p>
-   <p>It's possible for two markup elements to appear <b>next</b> <i>to</i>
-     each other and have a space, and appear <b>next</b><i>to</i> each
-     other with no space. It doesn't matter <b>how</b> <i>much</i> space
-     it was in the source: in this sentence, it was two space characters.
-     And in this one, there is <b>a</b> <i>newline</i>.
+   <p id="p11">It's possible for two markup elements to appear <b>next</b>
+     <i>to</i> each other and have a space, and appear <b>next</b><i>to</i>
+     each other with no space. It doesn't matter <b>how</b> <i>much</i>
+     space it was in the source: in this sentence, it was two space 
+    characters. And in this one, there is <b>a</b> <i>newline</i>.
    </p>
-   <p>This is also true between <em>non-</em><code>code</code> markup
-     <em>and</em> <code>code</code>.
+   <p id="p12">This is also true between <em>non-</em><code>code</code>
+     markup <em>and</em> <code>code</code>.
    </p>
-   <p>Code can appear <b>inside <code>other</code> markup</b>. Its display
-     shouldn't be affected.
+   <p id="p13">Code can appear <b>inside <code>other</code> markup</b>
+    . Its display shouldn't be affected.
    </p>
    <h2 id="links-and-references">
     <a href="#links-and-references" class="anchor"></a>Links and references
    </h2>
-   <p>This is a <a href="#">link</a>. It sends you to the top of this
-     page. Links can have markup inside them: <a href="#"><b>bold</b></a>
-    , <a href="#"><i>italics</i></a>, <a href="#"><em>emphasis</em></a>
-    , <a href="#">super<sup>script</sup></a>, 
-    <a href="#">sub<sub>script</sub></a>, and 
+   <p id="p14">This is a <a href="#">link</a>. It sends you to the top
+     of this page. Links can have markup inside them: 
+    <a href="#"><b>bold</b></a>, <a href="#"><i>italics</i></a>, 
+    <a href="#"><em>emphasis</em></a>, <a href="#">super<sup>script</sup></a>
+    , <a href="#">sub<sub>script</sub></a>, and 
     <a href="#"><code>code</code></a>. Links can also be nested 
     <em><a href="#">inside</a></em> markup. Links cannot be nested inside
      each other. This link has no replacement text: <a href="#">#</a>
     . The text is filled in by odoc. This is a shorthand link: 
     <a href="#">#</a>. The text is also filled in by odoc in this case.
    </p>
-   <p>This is a reference to <a href="#val-foo"><code>foo</code></a>.
-     References can have replacement text: 
+   <p id="p15">This is a reference to <a href="#val-foo"><code>foo</code></a>
+    . References can have replacement text: 
     <a href="#val-foo" title="foo">the value foo</a>. Except for the 
     special lookup support, references are pretty much just like links.
      The replacement text can have nested styles: 
@@ -154,8 +154,8 @@
    </p>
    <h2 id="preformatted-text">
     <a href="#preformatted-text" class="anchor"></a>Preformatted text
-   </h2><p>This is a code block:</p>
-   <pre class="language-ocaml">
+   </h2><p id="p16">This is a code block:</p>
+   <pre id="code17" class="language-ocaml">
     <code>
      let foo = ()
      (** There are some nested comments in here, but an unpaired comment
@@ -165,9 +165,10 @@
      let bar =
        ignore foo
     </code>
-   </pre><p>There are also verbatim blocks:</p>
-   <pre>The main difference is these don't get syntax highlighting.</pre>
-   <h2 id="lists"><a href="#lists" class="anchor"></a>Lists</h2>
+   </pre><p id="p18">There are also verbatim blocks:</p>
+   <pre id="math19">
+    The main difference is these don't get syntax highlighting.
+   </pre><h2 id="lists"><a href="#lists" class="anchor"></a>Lists</h2>
    <ul><li>This is a</li><li>shorthand bulleted list,</li>
     <li>and the paragraphs in each list item support <em>styling</em>.</li>
    </ul><ol><li>This is a</li><li>shorthand numbered list.</li></ol>
@@ -176,12 +177,12 @@
      to put two paragraphs into a shorthand list item using a double 
      line break
     </li>
-   </ul><p>just creates a paragraph outside the list.</p>
+   </ul><p id="p26">just creates a paragraph outside the list.</p>
    <ul><li>Similarly, inserting a blank line between two list items</li></ul>
    <ul><li>creates two separate lists.</li></ul>
    <ul>
-    <li><p>To get around this limitation, one</p>
-     <p>can use explicitly-delimited lists.</p>
+    <li><p id="p29">To get around this limitation, one</p>
+     <p id="p30">can use explicitly-delimited lists.</p>
     </li><li>This one is bulleted,</li>
    </ul><ol><li>but there is also the numbered variant.</li></ol>
    <ul>
@@ -192,11 +193,11 @@
      </ul>
     </li>
    </ul><h2 id="unicode"><a href="#unicode" class="anchor"></a>Unicode</h2>
-   <p>The parser supports any ASCII-compatible encoding, in particuλar
-     UTF-8.
+   <p id="p37">The parser supports any ASCII-compatible encoding, in 
+    particuλar UTF-8.
    </p><h2 id="raw-html"><a href="#raw-html" class="anchor"></a>Raw HTML</h2>
-   <p>Raw HTML can be <input type="text" placeholder="inserted"> as inline
-     elements into sentences.
+   <p id="p38">Raw HTML can be <input type="text" placeholder="inserted">
+     as inline elements into sentences.
    </p>
    
     <blockquote>
@@ -205,10 +206,10 @@
     </blockquote>
     
    <h2 id="math"><a href="#math" class="anchor"></a>Math</h2>
-   <p>Math elements can be inline: 
+   <p id="p40">Math elements can be inline: 
     <code class="odoc-katex-math">\int_{-\infty}^\infty</code>, or blocks:
    </p>
-   <div>
+   <div id="v41">
     <pre class="odoc-katex-math display">
          % \f is defined as #1f(#2) using the macro
          \newcommand{\f}[2]{#1f(#2)}
@@ -223,42 +224,45 @@
    <ul class="modules"><li><a href="Markup-X.html"><code>X</code></a> </li>
     <li><a href="Markup-Y.html"><code>Y</code></a> </li>
    </ul><h2 id="tags"><a href="#tags" class="anchor"></a>Tags</h2>
-   <p>Each comment can end with zero or more tags. Here are some examples:
+   <p id="p42">Each comment can end with zero or more tags. Here are 
+    some examples:
    </p>
    <ul class="at-tags">
     <li class="author"><span class="at-tag">author</span> antron</li>
    </ul>
    <ul class="at-tags">
     <li class="deprecated"><span class="at-tag">deprecated</span> 
-     <p>a <em>long</em> time ago</p>
+     <p id="p43">a <em>long</em> time ago</p>
     </li>
    </ul>
    <ul class="at-tags">
     <li class="parameter"><span class="at-tag">parameter</span> 
-     <span class="value">foo</span> <p>unused</p>
+     <span class="value">foo</span> <p id="p44">unused</p>
     </li>
    </ul>
    <ul class="at-tags">
     <li class="raises"><span class="at-tag">raises</span> 
-     <code>Failure</code> <p>always</p>
+     <code>Failure</code> <p id="p45">always</p>
     </li>
    </ul>
    <ul class="at-tags">
-    <li class="returns"><span class="at-tag">returns</span> <p>never</p></li>
-   </ul>
-   <ul class="at-tags">
-    <li class="see"><span class="at-tag">see</span> 
-     <a href="#" class="value">#</a> <p>this url</p>
-    </li>
-   </ul>
-   <ul class="at-tags">
-    <li class="see"><span class="at-tag">see</span> 
-     <code class="value">foo.ml</code> <p>this file</p>
+    <li class="returns"><span class="at-tag">returns</span> 
+     <p id="p46">never</p>
     </li>
    </ul>
    <ul class="at-tags">
     <li class="see"><span class="at-tag">see</span> 
-     <span class="value">Foo</span> <p>this document</p>
+     <a href="#" class="value">#</a> <p id="p47">this url</p>
+    </li>
+   </ul>
+   <ul class="at-tags">
+    <li class="see"><span class="at-tag">see</span> 
+     <code class="value">foo.ml</code> <p id="p48">this file</p>
+    </li>
+   </ul>
+   <ul class="at-tags">
+    <li class="see"><span class="at-tag">see</span> 
+     <span class="value">Foo</span> <p id="p49">this document</p>
     </li>
    </ul>
    <ul class="at-tags">
@@ -267,7 +271,7 @@
    <ul class="at-tags">
     <li class="before"><span class="at-tag">before</span> 
      <span class="value">1.0</span> 
-     <p>it was in b<sup>e</sup>t<sub>a</sub></p>
+     <p id="p50">it was in b<sup>e</sup>t<sub>a</sub></p>
     </li>
    </ul>
    <ul class="at-tags">
@@ -279,11 +283,11 @@
      <code><span><span class="keyword">val</span> foo : unit</span></code>
     </div>
     <div class="spec-doc">
-     <p>Comments in structure items <b>support</b> <em>markup</em>, t
-      <sup>o</sup><sub>o</sub>.
+     <p id="p51">Comments in structure items <b>support</b> <em>markup</em>
+      , t<sup>o</sup><sub>o</sub>.
      </p>
     </div>
-   </div><p>Some modules to support references.</p>
+   </div><p id="p52">Some modules to support references.</p>
    <div class="odoc-spec">
     <div class="spec module anchored" id="module-X">
      <a href="#module-X" class="anchor"></a>

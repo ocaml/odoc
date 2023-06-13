@@ -113,8 +113,16 @@ let ambiguous_label_warning name (labels : Component.Element.any list) =
 
 let ambiguous_warning name (results : [< Component.Element.any ] list) =
   let results = (results :> Component.Element.any list) in
-  if List.for_all (function `Label _ -> true | _ -> false) results then
-    ambiguous_label_warning name results
+  if
+    List.for_all
+      (function
+        | `Label
+            (_, { Component.Label.label = _; content = Heading _; location = _ })
+          ->
+            true
+        | _ -> false)
+      results
+  then ambiguous_label_warning name results
   else ambiguous_generic_ref_warning name (List.map ref_kind_of_element results)
 
 let env_lookup_by_name ?(kind = `Any) scope name env =

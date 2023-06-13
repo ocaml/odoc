@@ -432,9 +432,21 @@ and Substitution : sig
 end
 
 and CComment : sig
+  type nestable_block_element =
+    [ `Paragraph of Label.t * Odoc_model.Comment.paragraph
+    | `Code_block of
+      Label.t * string option * string Odoc_model.Comment.with_location
+    | `Math_block of Label.t * string
+    | `Verbatim of Label.t * string
+    | `Modules of Odoc_model.Comment.module_reference list
+    | `List of
+      [ `Unordered | `Ordered ]
+      * nestable_block_element Odoc_model.Comment.with_location list list ]
+
   type block_element =
-    [ Odoc_model.Comment.nestable_block_element
-    | `Heading of Label.t
+    [ nestable_block_element
+    | `Heading of
+      Odoc_model.Comment.heading_attrs * Label.t * Odoc_model.Comment.paragraph
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list
@@ -443,11 +455,14 @@ and CComment : sig
 end
 
 and Label : sig
+  (** In order to generate content for links without content *)
+  type content = Heading of Odoc_model.Comment.paragraph | NestableBlock
+
   type t = {
-    attrs : Odoc_model.Comment.heading_attrs;
     label : Ident.label;
-    text : Odoc_model.Comment.paragraph;
+    content : content;
     location : Odoc_model.Location_.span;
+        (** In order to check for ambiguous labels *)
   }
 end
 

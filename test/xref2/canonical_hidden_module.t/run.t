@@ -153,8 +153,8 @@ See the comments on the types at the end of test.mli for the expectation.
        </code>
       </div>
       <div class="spec-doc">
-       <p>This should render as A.t but link to A_nonhidden/index.html 
-        - since A has no expansion
+       <p id="p4">This should render as A.t but link to A_nonhidden/index.html
+         - since A has no expansion
        </p>
       </div>
      </div>
@@ -164,8 +164,8 @@ See the comments on the types at the end of test.mli for the expectation.
        <code><span><span class="keyword">type</span> b</span></code>
       </div>
       <div class="spec-doc">
-       <p>This should have no RHS as it's hidden and there is no canonical
-         alternative
+       <p id="p5">This should have no RHS as it's hidden and there is no
+         canonical alternative
        </p>
       </div>
      </div>
@@ -177,7 +177,7 @@ See the comments on the types at the end of test.mli for the expectation.
        </code>
       </div>
       <div class="spec-doc">
-       <p>This should render as C.t and link to C/index.html</p>
+       <p id="p6">This should render as C.t and link to C/index.html</p>
       </div>
      </div>
      <div class="odoc-spec">
@@ -188,7 +188,7 @@ See the comments on the types at the end of test.mli for the expectation.
        </code>
       </div>
       <div class="spec-doc">
-       <p>This should render as D.t and link to D/index.html</p>
+       <p id="p7">This should render as D.t and link to D/index.html</p>
       </div>
      </div>
     </div>

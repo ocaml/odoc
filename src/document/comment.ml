@@ -234,16 +234,19 @@ let module_references ms =
 
 let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
  fun content ->
+  let label { Odoc_model.Paths.Identifier.iv = `Label (_, label); _ } =
+    Odoc_model.Names.LabelName.to_string label
+  in
   match content with
-  | `Paragraph p -> paragraph p
-  | `Code_block (lang_tag, code) ->
+  | `Paragraph (lbl, p) -> paragraph ~label:(label lbl) p
+  | `Code_block (lbl, lang_tag, code) ->
       let lang_tag =
         match lang_tag with None -> default_lang_tag | Some t -> t
       in
-      block
+      block ~label:(label lbl)
       @@ Source (lang_tag, source_of_code (Odoc_model.Location_.value code))
-  | `Math_block s -> block @@ Math s
-  | `Verbatim s -> block @@ Verbatim s
+  | `Math_block (lbl, s) -> block ~label:(label lbl) @@ Math s
+  | `Verbatim (lbl, s) -> block ~label:(label lbl) @@ Verbatim s
   | `Modules ms -> module_references ms
   | `List (kind, items) ->
       let kind =
@@ -252,17 +255,20 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
         | `Ordered -> Block.Ordered
       in
       let f = function
-        | [ { Odoc_model.Location_.value = `Paragraph content; _ } ] ->
-            [ block @@ Block.Inline (inline_element_list content) ]
+        | [ { Odoc_model.Location_.value = `Paragraph (lbl, content); _ } ] ->
+            [
+              block ~label:(label lbl)
+              @@ Block.Inline (inline_element_list content);
+            ]
         | item -> nestable_block_element_list item
       in
       let items = List.map f items in
       block @@ Block.List (kind, items)
 
-and paragraph : Comment.paragraph -> Block.one = function
+and paragraph ?label : Comment.paragraph -> Block.one = function
   | [ { value = `Raw_markup (target, s); _ } ] ->
-      block @@ Block.Raw_markup (target, s)
-  | p -> block @@ Block.Paragraph (inline_element_list p)
+      block ?label @@ Block.Raw_markup (target, s)
+  | p -> block ?label @@ Block.Paragraph (inline_element_list p)
 
 and nestable_block_element_list elements =
   elements

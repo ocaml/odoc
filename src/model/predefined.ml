@@ -270,20 +270,27 @@ let floatarray_decl =
     |> List.rev_map (fun s -> [ `Space; `Word s ])
     |> List.flatten |> List.tl |> List.rev
   in
+  let label =
+    Paths.Identifier.Mk.label
+      ( Paths.Identifier.Mk.root (None, ModuleName.make_std "Array"),
+        LabelName.make_std "1" )
+  in
   let doc =
     [
       `Paragraph
-        (words [ "This"; "type"; "is"; "used"; "to"; "implement"; "the" ]
-         @ [
-             `Space;
-             `Reference
-               ( `Module
-                   (`Root ("Array", `TModule), ModuleName.make_std "Floatarray"),
-                 [] );
-             `Space;
-           ]
-         @ words [ "module."; "It"; "should"; "not"; "be"; "used"; "directly." ]
-        |> List.map (Location_.at predefined_location));
+        ( label,
+          words [ "This"; "type"; "is"; "used"; "to"; "implement"; "the" ]
+          @ [
+              `Space;
+              `Reference
+                ( `Module
+                    (`Root ("Array", `TModule), ModuleName.make_std "Floatarray"),
+                  [] );
+              `Space;
+            ]
+          @ words
+              [ "module."; "It"; "should"; "not"; "be"; "used"; "directly." ]
+          |> List.map (Location_.at predefined_location) );
     ]
     |> List.map (Location_.at predefined_location)
   in

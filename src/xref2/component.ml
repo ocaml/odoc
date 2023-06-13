@@ -462,9 +462,21 @@ end =
   Substitution
 
 and CComment : sig
+  type nestable_block_element =
+    [ `Paragraph of Label.t * Odoc_model.Comment.paragraph
+    | `Code_block of
+      Label.t * string option * string Odoc_model.Comment.with_location
+    | `Math_block of Label.t * string
+    | `Verbatim of Label.t * string
+    | `Modules of Odoc_model.Comment.module_reference list
+    | `List of
+      [ `Unordered | `Ordered ]
+      * nestable_block_element Odoc_model.Comment.with_location list list ]
+
   type block_element =
-    [ Odoc_model.Comment.nestable_block_element
-    | `Heading of Label.t
+    [ nestable_block_element
+    | `Heading of
+      Odoc_model.Comment.heading_attrs * Label.t * Odoc_model.Comment.paragraph
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list
@@ -474,11 +486,14 @@ end =
   CComment
 
 and Label : sig
+  (** In order to generate content for links without content *)
+  type content = Heading of Odoc_model.Comment.paragraph | NestableBlock
+
   type t = {
-    attrs : Odoc_model.Comment.heading_attrs;
     label : Ident.label;
-    text : Odoc_model.Comment.paragraph;
+    content : content;
     location : Odoc_model.Location_.span;
+        (** In order to check for ambiguous labels *)
   }
 end =
   Label
@@ -2412,16 +2427,51 @@ module Of_Lang = struct
     in
     { items; removed = []; compiled = sg.compiled; doc = docs ident_map sg.doc }
 
-  and block_element _ b :
+  and nestable_block_element map
+      (b : Odoc_model.Comment.nestable_block_element Comment.with_location) =
+    let mk_label label location =
+      {
+        Label.label = Ident.Of_Identifier.label label;
+        location;
+        content = NestableBlock;
+      }
+    in
+    match b with
+    | { Odoc_model.Location_.value = `Paragraph (label, text); location } ->
+        let label = mk_label label location in
+        let para = `Paragraph (label, text) in
+        Odoc_model.Location_.same b para
+    | { value = `Code_block (label, l, s); location } ->
+        let label = mk_label label location in
+        let cb = `Code_block (label, l, s) in
+        Odoc_model.Location_.same b cb
+    | { value = `Math_block (label, s); location } ->
+        let label = mk_label label location in
+        let mb = `Math_block (label, s) in
+        Odoc_model.Location_.same b mb
+    | { value = `Verbatim (label, s); location } ->
+        let label = mk_label label location in
+        let v = `Verbatim (label, s) in
+        Odoc_model.Location_.same b v
+    | { value = `List (ord, items); _ } ->
+        let items = List.map (List.map (nestable_block_element map)) items in
+        let l = `List (ord, items) in
+        Odoc_model.Location_.same b l
+    | { value = `Modules _; _ } as n -> n
+
+  and block_element map b :
       CComment.block_element Odoc_model.Comment.with_location =
     match b with
     | { Odoc_model.Location_.value = `Heading (attrs, label, text); location }
       ->
         let label = Ident.Of_Identifier.label label in
         Odoc_model.Location_.same b
-          (`Heading { Label.attrs; label; text; location })
+          (`Heading
+            (attrs, { Label.label; content = Heading text; location }, text))
     | { value = `Tag _; _ } as t -> t
-    | { value = #Odoc_model.Comment.nestable_block_element; _ } as n -> n
+    | { value = #Odoc_model.Comment.nestable_block_element; _ } as n ->
+        (nestable_block_element map n
+          :> CComment.block_element Odoc_model.Comment.with_location)
 
   and docs ident_map d = List.map (block_element ident_map) d
 

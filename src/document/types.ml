@@ -78,7 +78,7 @@ and Block : sig
 
   type t = one list
 
-  and one = { attr : Class.t; desc : desc }
+  and one = { attr : Class.t; desc : desc; label : string option }
 
   and desc =
     | Inline of Inline.t
@@ -187,4 +187,4 @@ end
 
 let inline ?(attr = []) desc = Inline.{ attr; desc }
 
-let block ?(attr = []) desc = Block.{ attr; desc }
+let block ?(attr = []) ?label desc = Block.{ attr; desc; label }

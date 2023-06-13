@@ -5,10 +5,10 @@
     File "test.mli", line 3, character 4
     File "test.mli", line 21, character 4
   File "test.mli", line 21, characters 4-22:
-  Warning: Label 'B' is ambiguous. The other occurences are:
+  Warning: Label 'B' is ambiguous. The other occurrences are:
     File "test.mli", line 3, character 4
   File "test.mli", line 3, characters 4-24:
-  Warning: Label 'B' is ambiguous. The other occurences are:
+  Warning: Label 'B' is ambiguous. The other occurrences are:
     File "test.mli", line 21, character 4
 
 Labels:
@@ -63,7 +63,7 @@ There are two references in N, one should point to a local label and the other t
     </nav>
     <div class="odoc-content">
      <h2 id="B"><a href="#B" class="anchor"></a>An other conflicting label</h2>
-     <p><a href="#B" title="B">An other conflicting label</a> 
+     <p id="p0"><a href="#B" title="B">An other conflicting label</a> 
       <a href="../M/index.html#B"><code>B</code></a>
      </p>
     </div>
@@ -123,9 +123,9 @@ The second occurence of 'B' in the main page should be disambiguated
        </code>
       </div>
      </div><h2 id="B_2"><a href="#B_2" class="anchor"></a>Dupplicate B</h2>
-     <p>Define <code>B</code> again in the same scope.</p>
-     <p>References to the labels:</p>
-     <p><a href="#A" title="A">First label</a> 
+     <p id="p1">Define <code>B</code> again in the same scope.</p>
+     <p id="p2">References to the labels:</p>
+     <p id="p3"><a href="#A" title="A">First label</a> 
       <a href="#B" title="B">Dupplicate B</a> 
       <a href="M/index.html#C"><code>C</code></a> 
       <a href="M/index.html#D"><code>D</code></a> 

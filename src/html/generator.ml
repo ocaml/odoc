@@ -181,7 +181,10 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
   let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
   let one (t : Block.one) =
     let mk_block ?(extra_class = []) mk content =
-      let a = Some (class_ (extra_class @ t.attr)) in
+      let id =
+        match t.label with None -> [] | Some label -> [ Html.a_id label ]
+      in
+      let a = Some (id @ class_ (extra_class @ t.attr)) in
       [ mk ?a content ]
     in
     match t.desc with

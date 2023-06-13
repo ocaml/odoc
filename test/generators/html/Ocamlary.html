@@ -10,19 +10,20 @@
  <body class="odoc">
   <header class="odoc-preamble">
    <h1>Module <code><span>Ocamlary</span></code></h1>
-   <p>This is an <i>interface</i> with <b>all</b> of the 
+   <p id="p0">This is an <i>interface</i> with <b>all</b> of the 
     <em>module system</em> features. This documentation demonstrates:
    </p>
    <ul><li>comment formatting</li><li>unassociated comments</li>
     <li>documentation sections</li>
-    <li><p>module system documentation including</p>
+    <li><p id="p4">module system documentation including</p>
      <ol><li>submodules</li><li>module aliases</li><li>module types</li>
       <li>module type aliases</li><li>modules with signatures</li>
       <li>modules with aliased signatures</li>
      </ol>
     </li>
-   </ul><p>A numbered list:</p><ol><li>3</li><li>2</li><li>1</li></ol>
-   <p>David Sheets is the author.</p>
+   </ul><p id="p11">A numbered list:</p>
+   <ol><li>3</li><li>2</li><li>1</li></ol>
+   <p id="p15">David Sheets is the author.</p>
    <ul class="at-tags">
     <li class="author"><span class="at-tag">author</span> David Sheets</li>
    </ul>
@@ -70,14 +71,14 @@
    </ul>
   </nav>
   <div class="odoc-content">
-   <p>You may find more information about this HTML documentation renderer
-     at 
+   <p id="p16">You may find more information about this HTML documentation
+     renderer at 
     <a href="https://github.com/dsheets/ocamlary">github.com/dsheets/ocamlary
     </a>.
-   </p><p>This is some verbatim text:</p><pre>verbatim</pre>
-   <p>This is some verbatim text:</p><pre>[][df[]]}}</pre>
-   <p>Here is some raw LaTeX: </p>
-   <p>Here is an index table of <code>Empty</code> modules:</p>
+   </p><p id="p17">This is some verbatim text:</p>
+   <pre id="math18">verbatim</pre><p id="p19">This is some verbatim text:</p>
+   <pre id="math20">[][df[]]}}</pre><p id="p21">Here is some raw LaTeX: </p>
+   <p id="p22">Here is an index table of <code>Empty</code> modules:</p>
    <ul class="modules">
     <li><a href="Ocamlary-Empty.html"><code>Empty</code></a> 
      <span class="synopsis">A plain, empty module</span>
@@ -85,12 +86,12 @@
     <li><a href="Ocamlary-Empty.html"><code>EmptyAlias</code></a> 
      <span class="synopsis">A plain module alias of <code>Empty</code></span>
     </li>
-   </ul><p>Odoc doesn't support <code>{!indexlist}</code>.</p>
-   <p>Here is some superscript: x<sup>2</sup></p>
-   <p>Here is some subscript: x<sub>0</sub></p>
-   <p>Here are some escaped brackets: { [ @ ] }</p>
-   <p>Here is some <em>emphasis</em> <code>followed by code</code>.</p>
-   <p>An unassociated comment</p>
+   </ul><p id="p23">Odoc doesn't support <code>{!indexlist}</code>.</p>
+   <p id="p24">Here is some superscript: x<sup>2</sup></p>
+   <p id="p25">Here is some subscript: x<sub>0</sub></p>
+   <p id="p26">Here are some escaped brackets: { [ @ ] }</p>
+   <p id="p27">Here is some <em>emphasis</em> <code>followed by code</code>.
+   </p><p id="p28">An unassociated comment</p>
    <h2 id="level-1"><a href="#level-1" class="anchor"></a>Level 1</h2>
    <h3 id="level-2"><a href="#level-2" class="anchor"></a>Level 2</h3>
    <h4 id="level-3"><a href="#level-3" class="anchor"></a>Level 3</h4>
@@ -257,7 +258,7 @@
      </code>
     </div>
    </div>
-   <p>For a good time, see 
+   <p id="p42">For a good time, see 
     <a href="Ocamlary-module-type-SuperSig-module-type-SubSigA.html#subSig">
      <code>subSig</code>
     </a> or 
@@ -289,11 +290,11 @@
        won't resolve.
      </p>
     </div>
-   </div><p>Some text before exception title.</p>
+   </div><p id="p44">Some text before exception title.</p>
    <h4 id="basic-exception-stuff">
     <a href="#basic-exception-stuff" class="anchor"></a>Basic exception
      stuff
-   </h4><p>After exception title.</p>
+   </h4><p id="p45">After exception title.</p>
    <div class="odoc-spec">
     <div class="spec exception anchored" id="exception-Kaboom">
      <a href="#exception-Kaboom" class="anchor"></a>
@@ -302,7 +303,8 @@
        <span class="keyword">of</span> unit
       </span>
      </code>
-    </div><div class="spec-doc"><p>Unary exception constructor</p></div>
+    </div>
+    <div class="spec-doc"><p id="p46">Unary exception constructor</p></div>
    </div>
    <div class="odoc-spec">
     <div class="spec exception anchored" id="exception-Kablam">
@@ -312,7 +314,8 @@
        <span class="keyword">of</span> unit * unit
       </span>
      </code>
-    </div><div class="spec-doc"><p>Binary exception constructor</p></div>
+    </div>
+    <div class="spec-doc"><p id="p47">Binary exception constructor</p></div>
    </div>
    <div class="odoc-spec">
     <div class="spec exception anchored" id="exception-Kapow">
@@ -324,7 +327,7 @@
      </code>
     </div>
     <div class="spec-doc">
-     <p>Unary exception constructor over binary tuple</p>
+     <p id="p48">Unary exception constructor over binary tuple</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -335,7 +338,7 @@
      </code>
     </div>
     <div class="spec-doc">
-     <p>
+     <p id="p49">
       <a href="Ocamlary-module-type-EmptySig.html"><code>EmptySig</code></a>
        is a module and 
       <a href="#exception-EmptySig"><code>EmptySig</code></a> is this
@@ -351,7 +354,8 @@
      </code>
     </div>
     <div class="spec-doc">
-     <p><a href="#exception-EmptySigAlias"><code>EmptySigAlias</code></a>
+     <p id="p50">
+      <a href="#exception-EmptySigAlias"><code>EmptySigAlias</code></a>
        is this exception.
      </p>
     </div>
@@ -376,8 +380,8 @@
      </code>
     </div>
     <div class="spec-doc">
-     <p><a href="#type-a_function"><code>a_function</code></a> is this
-       type and <a href="#val-a_function"><code>a_function</code></a>
+     <p id="p51"><a href="#type-a_function"><code>a_function</code></a>
+       is this type and <a href="#val-a_function"><code>a_function</code></a>
        is the value below.
      </p>
     </div>
@@ -392,15 +396,17 @@
      </code>
     </div>
     <div class="spec-doc">
-     <p>This is <code>a_function</code> with param and return type.</p>
+     <p id="p52">This is <code>a_function</code> with param and return type.
+     </p>
      <ul class="at-tags">
       <li class="parameter"><span class="at-tag">parameter</span> 
-       <span class="value">x</span> <p>the <code>x</code> coordinate</p>
+       <span class="value">x</span> 
+       <p id="p53">the <code>x</code> coordinate</p>
       </li>
      </ul>
      <ul class="at-tags">
       <li class="returns"><span class="at-tag">returns</span> 
-       <p>the <code>y</code> coordinate</p>
+       <p id="p54">the <code>y</code> coordinate</p>
       </li>
      </ul>
     </div>
@@ -447,7 +453,7 @@
     <div class="spec-doc">
      <ul class="at-tags">
       <li class="raises"><span class="at-tag">raises</span> 
-       <code>Not_found</code> <p>That's all it does</p>
+       <code>Not_found</code> <p id="p55">That's all it does</p>
       </li>
      </ul>
     </div>
@@ -465,7 +471,7 @@
      <ul class="at-tags">
       <li class="raises"><span class="at-tag">raises</span> 
        <a href="#exception-Kaboom"><code>Kaboom</code></a> 
-       <p>That's all it does</p>
+       <p id="p56">That's all it does</p>
       </li>
      </ul>
     </div>
@@ -480,7 +486,7 @@
      <ul class="at-tags">
       <li class="see"><span class="at-tag">see</span> 
        <a href="http://ocaml.org/" class="value">http://ocaml.org/</a>
-        <p>The OCaml Web site</p>
+        <p id="p57">The OCaml Web site</p>
       </li>
      </ul>
     </div>
@@ -495,7 +501,7 @@
      <ul class="at-tags">
       <li class="see"><span class="at-tag">see</span> 
        <code class="value">some_file</code> 
-       <p>The file called <code>some_file</code></p>
+       <p id="p58">The file called <code>some_file</code></p>
       </li>
      </ul>
     </div>
@@ -510,7 +516,7 @@
      <ul class="at-tags">
       <li class="see"><span class="at-tag">see</span> 
        <span class="value">some_doc</span> 
-       <p>The document called <code>some_doc</code></p>
+       <p id="p59">The document called <code>some_doc</code></p>
       </li>
      </ul>
     </div>
@@ -523,7 +529,7 @@
      </code>
     </div>
     <div class="spec-doc">
-     <p>This value was introduced in the Mesozoic era.</p>
+     <p id="p60">This value was introduced in the Mesozoic era.</p>
      <ul class="at-tags">
       <li class="since"><span class="at-tag">since</span> mesozoic</li>
      </ul>
@@ -536,15 +542,15 @@
      </code>
     </div>
     <div class="spec-doc">
-     <p>This value has had changes in 1.0.0, 1.1.0, and 1.2.0.</p>
+     <p id="p61">This value has had changes in 1.0.0, 1.1.0, and 1.2.0.</p>
      <ul class="at-tags">
       <li class="before"><span class="at-tag">before</span> 
-       <span class="value">1.0.0</span> <p>before 1.0.0</p>
+       <span class="value">1.0.0</span> <p id="p62">before 1.0.0</p>
       </li>
      </ul>
      <ul class="at-tags">
       <li class="before"><span class="at-tag">before</span> 
-       <span class="value">1.1.0</span> <p>before 1.1.0</p>
+       <span class="value">1.1.0</span> <p id="p63">before 1.1.0</p>
       </li>
      </ul>
      <ul class="at-tags">
@@ -917,7 +923,7 @@
        <a href="#type-record.field1" class="anchor"></a>
        <code><span>field1 : int;</span></code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>This comment is for <code>field1</code>.</p>
+        <p id="p98">This comment is for <code>field1</code>.</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -925,14 +931,15 @@
        <a href="#type-record.field2" class="anchor"></a>
        <code><span>field2 : int;</span></code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>This comment is for <code>field2</code>.</p>
+        <p id="p99">This comment is for <code>field2</code>.</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
      </ol><code><span>}</span></code>
     </div>
-    <div class="spec-doc"><p>This comment is for <code>record</code>.</p>
-     <p>This comment is also for <code>record</code>.</p>
+    <div class="spec-doc">
+     <p id="p96">This comment is for <code>record</code>.</p>
+     <p id="p97">This comment is also for <code>record</code>.</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -947,7 +954,7 @@
        <code><span><span class="keyword">mutable</span> a : int;</span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p><code>a</code> is first and mutable</p>
+        <p id="p100"><code>a</code> is first and mutable</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -955,7 +962,7 @@
        <a href="#type-mutable_record.b" class="anchor"></a>
        <code><span>b : unit;</span></code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p><code>b</code> is second and immutable</p>
+        <p id="p101"><code>b</code> is second and immutable</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -964,7 +971,7 @@
        <code><span><span class="keyword">mutable</span> c : int;</span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p><code>c</code> is third and mutable</p>
+        <p id="p102"><code>c</code> is third and mutable</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -1004,7 +1011,7 @@
         <span><span class="constructor">TagA</span></span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>This comment is for <code>TagA</code>.</p>
+        <p id="p105">This comment is for <code>TagA</code>.</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -1016,7 +1023,7 @@
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>This comment is for <code>ConstrB</code>.</p>
+        <p id="p106">This comment is for <code>ConstrB</code>.</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -1028,7 +1035,7 @@
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>This comment is for binary <code>ConstrC</code>.</p>
+        <p id="p107">This comment is for binary <code>ConstrC</code>.</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -1040,14 +1047,16 @@
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>This comment is for unary <code>ConstrD</code> of binary tuple.
+        <p id="p108">This comment is for unary <code>ConstrD</code> of
+          binary tuple.
         </p><span class="comment-delim">*)</span>
        </div>
       </li>
      </ol>
     </div>
-    <div class="spec-doc"><p>This comment is for <code>variant</code>.</p>
-     <p>This comment is also for <code>variant</code>.</p>
+    <div class="spec-doc">
+     <p id="p103">This comment is for <code>variant</code>.</p>
+     <p id="p104">This comment is also for <code>variant</code>.</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1069,8 +1078,8 @@
      </ol><code><span> ]</span></code>
     </div>
     <div class="spec-doc">
-     <p>This comment is for <code>poly_variant</code>.</p>
-     <p>Wow! It was a polymorphic variant!</p>
+     <p id="p109">This comment is for <code>poly_variant</code>.</p>
+     <p id="p110">Wow! It was a polymorphic variant!</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1129,8 +1138,9 @@
       </li>
      </ol>
     </div>
-    <div class="spec-doc"><p>This comment is for <code>full_gadt</code>.</p>
-     <p>Wow! It was a GADT!</p>
+    <div class="spec-doc">
+     <p id="p111">This comment is for <code>full_gadt</code>.</p>
+     <p id="p112">Wow! It was a GADT!</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1181,8 +1191,8 @@
      </ol>
     </div>
     <div class="spec-doc">
-     <p>This comment is for <code>partial_gadt</code>.</p>
-     <p>Wow! It was a mixed GADT!</p>
+     <p id="p113">This comment is for <code>partial_gadt</code>.</p>
+     <p id="p114">Wow! It was a mixed GADT!</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1192,7 +1202,8 @@
       <span> = <a href="#type-variant">variant</a></span>
      </code>
     </div>
-    <div class="spec-doc"><p>This comment is for <code>alias</code>.</p>
+    <div class="spec-doc">
+     <p id="p115">This comment is for <code>alias</code>.</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1209,7 +1220,8 @@
       </span>
      </code>
     </div>
-    <div class="spec-doc"><p>This comment is for <code>tuple</code>.</p>
+    <div class="spec-doc">
+     <p id="p116">This comment is for <code>tuple</code>.</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1252,7 +1264,7 @@
      </ol>
     </div>
     <div class="spec-doc">
-     <p>This comment is for <code>variant_alias</code>.</p>
+     <p id="p117">This comment is for <code>variant_alias</code>.</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1274,7 +1286,7 @@
      </ol><code><span>}</span></code>
     </div>
     <div class="spec-doc">
-     <p>This comment is for <code>record_alias</code>.</p>
+     <p id="p118">This comment is for <code>record_alias</code>.</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1297,7 +1309,7 @@
      </ol><code><span> ]</span></code>
     </div>
     <div class="spec-doc">
-     <p>This comment is for <code>poly_variant_union</code>.</p>
+     <p id="p119">This comment is for <code>poly_variant_union</code>.</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1556,7 +1568,7 @@
      </ol>
     </div>
     <div class="spec-doc">
-     <p>This comment is for <code>full_gadt_alias</code>.</p>
+     <p id="p120">This comment is for <code>full_gadt_alias</code>.</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1614,7 +1626,7 @@
      </ol>
     </div>
     <div class="spec-doc">
-     <p>This comment is for <code>partial_gadt_alias</code>.</p>
+     <p id="p121">This comment is for <code>partial_gadt_alias</code>.</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1627,7 +1639,7 @@
      </code>
     </div>
     <div class="spec-doc">
-     <p>This comment is for 
+     <p id="p122">This comment is for 
       <a href="#exception-Exn_arrow"><code>Exn_arrow</code></a>.
      </p>
     </div>
@@ -1653,7 +1665,7 @@
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>This comment is between 
+        <p id="p124">This comment is between 
          <a href="#type-mutual_constr_a"><code>mutual_constr_a</code></a>
           and 
          <a href="#type-mutual_constr_b"><code>mutual_constr_b</code></a>
@@ -1664,7 +1676,7 @@
      </ol>
     </div>
     <div class="spec-doc">
-     <p>This comment is for 
+     <p id="p123">This comment is for 
       <a href="#type-mutual_constr_a"><code>mutual_constr_a</code></a>
        then <a href="#type-mutual_constr_b"><code>mutual_constr_b</code></a>
       .
@@ -1692,14 +1704,15 @@
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>This comment must be here for the next to associate correctly.</p>
-        <span class="comment-delim">*)</span>
+        <p id="p126">This comment must be here for the next to associate
+          correctly.
+        </p><span class="comment-delim">*)</span>
        </div>
       </li>
      </ol>
     </div>
     <div class="spec-doc">
-     <p>This comment is for 
+     <p id="p125">This comment is for 
       <a href="#type-mutual_constr_b"><code>mutual_constr_b</code></a>
        then <a href="#type-mutual_constr_a"><code>mutual_constr_a</code></a>
       .
@@ -1777,7 +1790,9 @@
      <code><span><span class="keyword">type</span> ext</span><span> = </span>
       <span>..</span>
      </code>
-    </div><div class="spec-doc"><p>A mystery wrapped in an ellipsis</p></div>
+    </div>
+    <div class="spec-doc"><p id="p127">A mystery wrapped in an ellipsis</p>
+    </div>
    </div>
    <div class="odoc-spec">
     <div class="spec type extension anchored" id="extension-decl-ExtA">
@@ -1877,7 +1892,7 @@
       <span><span class="keyword">type</span> <span>'a poly_ext</span></span>
       <span> = </span><span>..</span>
      </code>
-    </div><div class="spec-doc"><p>'a poly_ext</p></div>
+    </div><div class="spec-doc"><p id="p128">'a poly_ext</p></div>
    </div>
    <div class="odoc-spec">
     <div class="spec type extension anchored" id="extension-decl-Foo">
@@ -1905,7 +1920,7 @@
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>'b poly_ext</p><span class="comment-delim">*)</span>
+        <p id="p129">'b poly_ext</p><span class="comment-delim">*)</span>
        </div>
       </li>
      </ol>
@@ -1928,7 +1943,7 @@
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>'c poly_ext</p><span class="comment-delim">*)</span>
+        <p id="p130">'c poly_ext</p><span class="comment-delim">*)</span>
        </div>
       </li>
      </ol>
@@ -1962,7 +1977,8 @@
         <span><span class="extension">ZzzTop0</span></span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>It's got the rock</p><span class="comment-delim">*)</span>
+        <p id="p131">It's got the rock</p>
+        <span class="comment-delim">*)</span>
        </div>
       </li>
      </ol>
@@ -1985,7 +2001,8 @@
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>and it packs a unit.</p><span class="comment-delim">*)</span>
+        <p id="p132">and it packs a unit.</p>
+        <span class="comment-delim">*)</span>
        </div>
       </li>
      </ol>
@@ -1999,7 +2016,8 @@
        <span>unit <span class="arrow">&#45;&gt;</span></span> unit
       </span>
      </code>
-    </div><div class="spec-doc"><p>Rotate keys on my mark...</p></div>
+    </div>
+    <div class="spec-doc"><p id="p133">Rotate keys on my mark...</p></div>
    </div>
    <div class="odoc-spec">
     <div class="spec type anchored" id="type-my_mod">
@@ -2013,7 +2031,8 @@
       </span>
      </code>
     </div>
-    <div class="spec-doc"><p>A brown paper package tied up with string</p>
+    <div class="spec-doc">
+     <p id="p134">A brown paper package tied up with string</p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -2701,11 +2720,11 @@
    <h2 id="indexmodules"><a href="#indexmodules" class="anchor"></a>Trying
      the {!modules: ...} command.
    </h2>
-   <p>With ocamldoc, toplevel units will be linked and documented, while
-     submodules will behave as simple references.
+   <p id="p136">With ocamldoc, toplevel units will be linked and documented,
+     while submodules will behave as simple references.
    </p>
-   <p>With odoc, everything should be resolved (and linked) but only 
-    toplevel units will be documented.
+   <p id="p137">With odoc, everything should be resolved (and linked)
+     but only toplevel units will be documented.
    </p>
    <ul class="modules">
     <li><a href="Ocamlary-Dep1-X.html"><code>Dep1.X</code></a> </li>
@@ -2749,7 +2768,7 @@
      </code>
     </div>
    </div>
-   <p>Some ref to 
+   <p id="p138">Some ref to 
     <a href="Ocamlary-CanonicalTest-Base_Tests-C.html#type-t">
      <code>CanonicalTest.Base_Tests.C.t</code>
     </a> and 
@@ -2780,7 +2799,7 @@
    <h2 id="section-title-splicing">
     <a href="#section-title-splicing" class="anchor"></a>Section title
      splicing
-   </h2><p>I can refer to</p>
+   </h2><p id="p142">I can refer to</p>
    <ul>
     <li><code>{!section:indexmodules}</code> : 
      <a href="#indexmodules" title="indexmodules">Trying the {!modules:
@@ -2790,7 +2809,7 @@
     <li><code>{!aliases}</code> : 
      <a href="#aliases" title="aliases">Aliases again</a>
     </li>
-   </ul><p>But also to things in submodules:</p>
+   </ul><p id="p145">But also to things in submodules:</p>
    <ul>
     <li><code>{!section:SuperSig.SubSigA.subSig}</code> : 
      <a href="Ocamlary-module-type-SuperSig-module-type-SubSigA.html#subSig">
@@ -2800,7 +2819,7 @@
     <li><code>{!Aliases.incl}</code> : 
      <a href="Ocamlary-Aliases.html#incl"><code>incl</code></a>
     </li>
-   </ul><p>And just to make sure we do not mess up:</p>
+   </ul><p id="p148">And just to make sure we do not mess up:</p>
    <ul>
     <li><code>{{!section:indexmodules}A}</code> : 
      <a href="#indexmodules" title="indexmodules">A</a>
@@ -2846,7 +2865,7 @@
       </span>
      </code>
     </div>
-   </div><p>Here goes:</p>
+   </div><p id="p153">Here goes:</p>
    <ul>
     <li><code>{!module-M.t}</code> : 
      <a href="Ocamlary-M.html#type-t"><code>M.t</code></a>

@@ -13,9 +13,7 @@ let locations env id locs =
 (** Equivalent to {!Comment.synopsis}. *)
 let synopsis_from_comment (docs : Component.CComment.docs) =
   match docs with
-  | ({ value = #Comment.nestable_block_element; _ } as e) :: _ ->
-      (* Only the first element is considered. *)
-      Comment.synopsis [ e ]
+  | { value = `Paragraph (_, text); _ } :: _ -> Some text
   | _ -> None
 
 let synopsis_of_module env (m : Component.Module.t) =
@@ -45,9 +43,22 @@ let ambiguous_label_warning label_name labels =
     Location_.pp_span_start fmt x.Component.Label.location
   in
   Lookup_failures.report_warning
-    "@[<2>Label '%s' is ambiguous. The other occurences are:@ %a@]" label_name
+    "@[<2>Label '%s' is ambiguous. The other occurrences are:@ %a@]" label_name
     (Format.pp_print_list ~pp_sep:Format.pp_force_newline pp_label_loc)
     labels
+
+let ambiguous_labels ~loc env
+    ({ Odoc_model.Paths.Identifier.iv = `Label (_, label_name); _ } as id) =
+  (* Looking for an identical identifier but a different location. *)
+  let conflicting (`Label (id', comp)) =
+    Id.equal id id'
+    && not (Location_.span_equal comp.Component.Label.location loc)
+  in
+  let label_name = Names.LabelName.to_string label_name in
+  match Env.lookup_by_name Env.s_label label_name env with
+  | Ok lbl when conflicting lbl -> [ lbl ]
+  | Error (`Ambiguous (hd, tl)) -> List.filter conflicting (hd :: tl)
+  | Ok _ | Error `Not_found -> []
 
 (** Raise a warning when a label explicitly set by the user collides. This
     warning triggers even if one of the colliding labels have been automatically
@@ -57,19 +68,24 @@ let check_ambiguous_label ~loc env
       ({ Odoc_model.Paths.Identifier.iv = `Label (_, label_name); _ } as id),
       _ ) =
   if attrs.Comment.heading_label_explicit then
-    (* Looking for an identical identifier but a different location. *)
-    let conflicting (`Label (id', comp)) =
-      Id.equal id id'
-      && not (Location_.span_equal comp.Component.Label.location loc)
-    in
     let label_name = Names.LabelName.to_string label_name in
-    match Env.lookup_by_name Env.s_label label_name env with
-    | Ok lbl when conflicting lbl -> ambiguous_label_warning label_name [ lbl ]
-    | Error (`Ambiguous (hd, tl)) -> (
-        match List.filter conflicting (hd :: tl) with
-        | [] -> ()
-        | xs -> ambiguous_label_warning label_name xs)
-    | Ok _ | Error `Not_found -> ()
+    match ambiguous_labels ~loc env id with
+    | [] -> ()
+    | lbls -> ambiguous_label_warning label_name lbls
+
+let disambiguate_label ~loc env
+    ({ Odoc_model.Paths.Identifier.iv = `Label (lbl_parent, label_name); _ } as
+    id) =
+  let label_name = Names.LabelName.to_string label_name in
+  let need_new_label label = ambiguous_labels ~loc env label != [] in
+  let rec give_new_label n =
+    let new_label =
+      Paths.Identifier.Mk.label
+        (lbl_parent, Names.LabelName.make_std (label_name ^ string_of_int n))
+    in
+    if need_new_label new_label then give_new_label (n + 1) else new_label
+  in
+  if need_new_label id then give_new_label 0 else id
 
 let expansion_needed self target =
   let self = (self :> Paths.Path.Resolved.t) in
@@ -212,9 +228,11 @@ let rec comment_inline_element :
             match (content, x) with
             | [], `Identifier ({ iv = #Id.Label.t_pv; _ } as i) -> (
                 match Env.lookup_by_id Env.s_label i env with
-                | Some (`Label (_, lbl)) ->
-                    Odoc_model.Comment.link_content_of_inline_elements
-                      lbl.Component.Label.text
+                | Some (`Label (_, lbl)) -> (
+                    match lbl.content with
+                    | Heading text ->
+                        Odoc_model.Comment.link_content_of_inline_elements text
+                    | NestableBlock -> [])
                 | None -> [])
             | content, _ -> content
           in
@@ -232,11 +250,21 @@ and resolve_external_synopsis env synopsis =
   let env = Env.inherit_resolver env in
   paragraph env synopsis
 
-and comment_nestable_block_element env parent ~loc:_
+and comment_nestable_block_element env parent ~loc
     (x : Comment.nestable_block_element) =
   match x with
-  | `Paragraph elts -> `Paragraph (paragraph env elts)
-  | (`Code_block _ | `Math_block _ | `Verbatim _) as x -> x
+  | `Paragraph (lbl, elts) ->
+      let lbl = disambiguate_label ~loc env lbl in
+      `Paragraph (lbl, paragraph env elts)
+  | `Code_block (lbl, l, s) ->
+      let lbl = disambiguate_label ~loc env lbl in
+      `Code_block (lbl, l, s)
+  | `Math_block (lbl, s) ->
+      let lbl = disambiguate_label ~loc env lbl in
+      `Math_block (lbl, s)
+  | `Verbatim (lbl, s) ->
+      let lbl = disambiguate_label ~loc env lbl in
+      `Verbatim (lbl, s)
   | `List (x, ys) ->
       `List
         ( x,

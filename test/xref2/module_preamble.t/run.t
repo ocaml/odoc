@@ -42,7 +42,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
      <a href="../index.html">test</a> &#x00BB; A
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>A</span></code></h1>
-     <p>Module A.</p>
+     <p id="p0">Module A.</p>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">
@@ -81,8 +81,8 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
       &#x00BB; B
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>A.B</span></code></h1>
-     <p>Module B. This paragraph is the synopsis.</p>
-     <p>This paragraph and the previous are part of the preamble.</p>
+     <p id="p0">Module B. This paragraph is the synopsis.</p>
+     <p id="p1">This paragraph and the previous are part of the preamble.</p>
     </header>
     <nav class="odoc-toc">
      <ul><li><a href="#an-heading">An heading</a></li></ul>
@@ -90,8 +90,8 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     <div class="odoc-content">
      <h3 id="an-heading"><a href="#an-heading" class="anchor"></a>An heading
      </h3>
-     <p>This paragraph is not part of the preamble. It'll be rendered in
-       the &quot;content&quot;.
+     <p id="p2">This paragraph is not part of the preamble. It'll be rendered
+       in the &quot;content&quot;.
      </p>
      <div class="odoc-spec">
       <div class="spec type anchored" id="type-t">

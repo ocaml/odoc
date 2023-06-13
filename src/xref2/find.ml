@@ -211,7 +211,8 @@ let any_in_comment d name =
     match xs with
     | elt :: rest -> (
         match elt.Odoc_model.Location_.value with
-        | `Heading lbl when Ident.Name.label lbl.Label.label = name ->
+        | `Heading (_attrs, lbl, _text)
+          when Ident.Name.label lbl.Label.label = name ->
             Some (`FLabel lbl)
         | _ -> inner rest)
     | [] -> None
