@@ -3,6 +3,7 @@
 type t
 
 val v :
+  ?search_result:bool ->
   ?theme_uri:Types.uri ->
   ?support_uri:Types.uri ->
   semantic_uris:bool ->
@@ -26,3 +27,5 @@ val flat : t -> bool
 val open_details : t -> bool
 
 val as_json : t -> bool
+
+val search_result : t -> bool
