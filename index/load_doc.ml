@@ -232,30 +232,33 @@ module Make (Storage : Db.Storage.S) = struct
         } =
     let open Odoc_search in
     let open Odoc_search.Entry in
-    let full_name = id |> Pretty.fullname |> String.concat "." in
-    let doc_txt = Render.text_of_doc doc in
-    let doc_html =
-      match doc_txt with
-      | "" -> ""
-      | _ -> doc |> Render.html_of_doc |> string_of_html
-    in
-    let kind' = convert_kind extra in
-    let name =
-      match extra with
-      | Doc _ -> Pretty.prefixname id
-      | _ -> full_name
-    in
-    let score = cost ~name ~kind:kind' ~doc_html in
-    let rhs = Json_display.rhs_of_kind extra in
-    let url = Render.url id in
-    let elt = Elt.v ~name ~kind:kind' ~rhs ~doc_html ~score ~url () in
-    if index_docstring then register_doc elt doc_txt ;
-    (if index_name
-     then
-       match extra with
-       | Doc _ -> ()
-       | _ -> register_full_name full_name elt) ;
-    register_kind ~type_search elt extra
+    if Odoc_model.Paths.Identifier.is_internal id
+    then ()
+    else
+      let full_name = id |> Pretty.fullname |> String.concat "." in
+      let doc_txt = Render.text_of_doc doc in
+      let doc_html =
+        match doc_txt with
+        | "" -> ""
+        | _ -> doc |> Render.html_of_doc |> string_of_html
+      in
+      let kind' = convert_kind extra in
+      let name =
+        match extra with
+        | Doc _ -> Pretty.prefixname id
+        | _ -> full_name
+      in
+      let score = cost ~name ~kind:kind' ~doc_html in
+      let rhs = Json_display.rhs_of_kind extra in
+      let url = Render.url id in
+      let elt = Elt.v ~name ~kind:kind' ~rhs ~doc_html ~score ~url () in
+      if index_docstring then register_doc elt doc_txt ;
+      (if index_name
+       then
+         match extra with
+         | Doc _ -> ()
+         | _ -> register_full_name full_name elt) ;
+      register_kind ~type_search elt extra
 
   module Resolver = Odoc_odoc.Resolver
 

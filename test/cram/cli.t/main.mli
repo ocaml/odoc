@@ -49,3 +49,8 @@ end
 module type S = sig end
 
 module S_to_S1 : sig end
+
+(**/**)
+val hidden : foo
+(**/**)
+

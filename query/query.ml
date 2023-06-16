@@ -33,6 +33,11 @@ let collapse_trie_with_poly ~count name t =
     end
   | _ -> collapse_trie ~count t
 
+let find_succ trie name collapse =
+  match Trie.find name trie with
+  | Some trie -> collapse trie
+  | None -> Succ.empty
+
 let find_inter ~shards names =
   List.fold_left
     (fun acc shard ->
@@ -42,7 +47,7 @@ let find_inter ~shards names =
         @@ List.map
              (fun (name, count) ->
                let name' = List.concat_map Db.list_of_string name in
-               db |> Trie.find name' |> collapse_trie_with_poly ~count name)
+               find_succ db name' (collapse_trie_with_poly ~count name))
              (regroup names)
       in
       Succ.union acc r)
@@ -58,11 +63,7 @@ let find_names ~(shards : Db.Elt.t array Db.t list) names =
     (fun acc shard ->
       let db_names = shard.db_names in
       let candidates =
-        List.map
-          (fun name ->
-            let t = Trie.find name db_names in
-            collapse_triechar t)
-          names
+        List.map (fun name -> find_succ db_names name collapse_triechar) names
       in
       let candidates = inter_list candidates in
       Succ.union acc candidates)

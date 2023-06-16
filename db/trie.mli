@@ -9,7 +9,7 @@ type 'a t =
 
 val empty : 'a t
 val add : char list -> ('a option -> 'a) -> 'a t -> 'a t
-val find : char list -> 'a t -> 'a t
+val find : char list -> 'a t -> 'a t option
 val fold_map : ('a -> 'a -> 'a) -> ('b -> 'a) -> 'b t -> 'a option
 val map_leaf : f:('a -> 'b) -> 'a t -> 'b t
 val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
