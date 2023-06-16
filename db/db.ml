@@ -166,8 +166,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     in
     db_names := go !db_names name
 
-  let store_word word elt =
-    (word |> list_of_string_rev |> store_chars) elt
+  let store_word word elt = (word |> list_of_string_rev |> store_chars) elt
 end
 
 module Storage = Storage

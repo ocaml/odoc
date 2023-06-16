@@ -1,3 +1,7 @@
 (cram
  (alias runexamples)
- (deps %{bin:odoc} %{bin:sherlodoc} %{bin:sherlodoc_index} ../../jsoo/main.bc.js))
+ (deps
+  %{bin:odoc}
+  %{bin:sherlodoc}
+  %{bin:sherlodoc_index}
+  ../../jsoo/main.bc.js))

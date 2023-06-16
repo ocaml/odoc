@@ -23,11 +23,9 @@ module Make (Storage : Db.Storage.S) = struct
     | Constructor type_path | Field type_path | Val type_path ->
         type_cost type_path
     | Doc -> 400
-    | TypeDecl | Module -> 0 
-    | Exception | Class_type | Method | Class
-    | TypeExtension -> 1000
-    | ExtensionConstructor | ModuleType ->
-        10
+    | TypeDecl | Module -> 0
+    | Exception | Class_type | Method | Class | TypeExtension -> 1000
+    | ExtensionConstructor | ModuleType -> 10
 
   let cost ~name ~kind ~doc_html =
     let ignore_no_doc =

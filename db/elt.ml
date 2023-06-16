@@ -67,6 +67,7 @@ module Kind = struct
     | Field _ -> "field"
     | Val _ -> "val"
 end
+
 module Package = struct
   type t =
     { name : string

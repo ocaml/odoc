@@ -1,7 +1,6 @@
 module Storage = Db.Storage
 
-let main ~index_docstring ~index_name ~type_search ~index
-    ~db_filename storage =
+let main ~index_docstring ~index_name ~type_search ~index ~db_filename storage =
   print_endline "Index_lib.main" ;
   let module Storage = (val storage : Storage.S) in
   let module Load_doc = Load_doc.Make (Storage) in
