@@ -21,16 +21,16 @@
   val Main.nesting_priority : foo
   val Main.Nest.nesting_priority : foo
   $ sherlodoc --print-cost "list"
-  109 module Main.List
+  109 mod Main.List
   209 type Main.list
-  215 type Main.List.t = 'a list
-  217 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  219 val Main.Map.to_list : foo
+  315 type Main.List.t = 'a list
+  317 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  319 val Main.Map.to_list : foo
   1108 val Main.foo : foo
   1154 doc page
   $ sherlodoc --print-cost "list map"
-  217 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  223 val Main.Map.to_list : foo
+  317 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  423 val Main.Map.to_list : foo
   2108 val Main.foo : foo
   $ sherlodoc --print-cost ":moo"
   210 val Main.value : moo
@@ -40,3 +40,22 @@
   212 val Main.consume : moo -> unit
   215 val Main.consume_2 : moo -> moo -> unit
   221 val Main.consume_2_other : moo -> t -> unit
+  $ sherlodoc --print-cost "modtype"
+  112 sig Main.Modtype
+  325 val Main.Modtype.v_modtype : foo
+  $ sherlodoc --print-cost "S"
+  106 sig Main.S
+  216 mod Main.List
+  216 mod Main.Nest
+  216 mod Main.S_to_S1
+  316 type Main.list
+  318 type Main.List.t = 'a list
+  319 val Main.consume : moo -> unit
+  320 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  321 val Main.consume_2 : moo -> moo -> unit
+  323 val Main.Map.to_list : foo
+  327 val Main.consume_2_other : moo -> t -> unit
+  328 val Main.nesting_priority : foo
+  333 val Main.Nest.nesting_priority : foo
+  1108 val Main.foo : foo
+  1154 doc page

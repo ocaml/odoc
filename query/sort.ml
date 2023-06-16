@@ -128,7 +128,8 @@ module Reasoning = struct
       let low_query_word = String.lowercase_ascii query_word in
       let has_case = low_query_word <> query_word in
       let name = if not has_case then String.lowercase_ascii name else name in
-      if String.ends_with ~suffix:("." ^ query_word) name
+      if String.equal query_word name
+         || String.ends_with ~suffix:("." ^ query_word) name
       then DotSuffix
       else if String.starts_with ~prefix:query_word name
               || String.ends_with ~suffix:query_word name
@@ -288,8 +289,7 @@ module Reasoning = struct
     in
     let kind =
       match kind with
-      | Val | Module | Constructor | Field | TypeDecl -> 0
-      | ModuleType -> 20
+      | Val | Module | ModuleType | Constructor | Field | TypeDecl -> 0
       | Exception -> 30
       | Class_type | Class | TypeExtension -> 40
       | ExtensionConstructor | Method | Doc -> 50
@@ -299,11 +299,11 @@ module Reasoning = struct
       name_matches
       |> List.map (function
            | DotSuffix -> 0
-           | PrefixSuffix -> 3
-           | SubDot -> 4
-           | SubUnderscore -> 5
-           | Sub -> 6
-           | Lowercase -> 7
+           | PrefixSuffix -> 103
+           | SubDot -> 104
+           | SubUnderscore -> 105
+           | Sub -> 106
+           | Lowercase -> 107
            | Doc -> 1000)
       |> List.fold_left ( + ) 0
     in

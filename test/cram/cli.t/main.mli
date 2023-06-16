@@ -40,3 +40,12 @@ val consume_2_other : moo -> t -> unit
 
 val produce : unit -> moo
 val produce_2' : unit -> unit -> moo
+
+
+module type Modtype = sig
+  val v_modtype : foo
+end
+
+module type S = sig end
+
+module S_to_S1 : sig end
