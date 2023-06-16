@@ -9,23 +9,18 @@
   $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl') 2> /dev/null > /dev/null
   $ export SHERLODOC_DB=db.bin
   $ sherlodoc "unique_name"
-  _, []
   val Main.unique_name : foo
   $ sherlodoc "multiple_hit"
-  _, []
   val Main.multiple_hit_1 : foo
   val Main.multiple_hit_2 : foo
   val Main.multiple_hit_3 : foo
   $ sherlodoc "name_conflict"
-  _, []
   type Main.name_conflict = foo
   val Main.name_conflict : foo
   $ sherlodoc "nesting_priority"
-  _, []
   val Main.nesting_priority : foo
   val Main.Nest.nesting_priority : foo
   $ sherlodoc --print-cost "list"
-  _, []
   109 mod Main.List
   209 type Main.list
   315 type Main.List.t = 'a list
@@ -34,27 +29,21 @@
   1108 val Main.foo : foo
   1154 doc page
   $ sherlodoc --print-cost "list map"
-  _, []
-  _, []
   317 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   423 val Main.Map.to_list : foo
   2108 val Main.foo : foo
   $ sherlodoc --print-cost ":moo"
-  _, []
   210 val Main.value : moo
   213 val Main.produce : unit -> moo
   217 val Main.produce_2' : unit -> unit -> moo
   $ sherlodoc --print-cost ":moo -> _"
-  _, []
   212 val Main.consume : moo -> unit
   215 val Main.consume_2 : moo -> moo -> unit
   221 val Main.consume_2_other : moo -> t -> unit
   $ sherlodoc --print-cost "modtype"
-  _, []
   112 sig Main.Modtype
   325 val Main.Modtype.v_modtype : foo
   $ sherlodoc --print-cost "S"
-  _, []
   106 sig Main.S
   216 mod Main.List
   216 mod Main.Nest
@@ -71,4 +60,8 @@
   1108 val Main.foo : foo
   1154 doc page
   $ sherlodoc --print-cost "qwertyuiopasdfghjklzxcvbnm"
+  [No results]
+  $ sherlodoc --print-cost "hidden"
+  [No results]
+  $ sherlodoc --print-cost ":mo"
   [No results]

@@ -47,7 +47,6 @@ let rec add path leaf t =
 let rec find path t =
   match t, path with
   | _, [] ->
-      print_endline "_, []" ;
       Some t
   | Node node, p :: path -> begin
       match M.find p node.children with
@@ -57,7 +56,6 @@ let rec find path t =
   | Leaf (x :: xs, outcome), y :: ys when x = y -> find ys (Leaf (xs, outcome))
   | _ ->
       print_endline "_" ;
-
       None
 
 let rec fold_map merge transform t =
