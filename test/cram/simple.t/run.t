@@ -5,17 +5,17 @@
   $ odoc link -I . page-page.odoc
   $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
-  8.0K	megaodocl
+  12K	megaodocl
   $ sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
   Index_lib.main
-  Indexing in 0.000979s
+  Indexing in 0.001100s
   trie_with_array_occ:0.00s
   trie_with_array:0.00s
   Cache.Elt_array_occ_trie.memo:0.00s
   Cache.Elt_array_trie.memo:0.00s
   $ sherlodoc_index --format=marshal --db=sherlodoc_db.bin $(find . -name '*.odocl') 2> /dev/null
   Index_lib.main
-  Indexing in 0.000850s
+  Indexing in 0.001721s
   trie_with_array_occ:0.00s
   trie_with_array:0.00s
   Cache.Elt_array_occ_trie.memo:0.00s
@@ -31,9 +31,9 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  8	db.js
-  4	db.js.gz
-  4	megaodocl.gz
+  12	db.js
+  8	db.js.gz
+  8	megaodocl.gz
 
 
   $ for f in $(find . -name '*.odocl'); do
