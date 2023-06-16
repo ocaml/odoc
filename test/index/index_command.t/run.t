@@ -31,8 +31,12 @@ $ odoc compile -c module-main -c src-source root.mld
         "kind": "Module"
       },
       "display": {
-        "html": "<div class=\"search-entry module\"><code class=\"entry-title\"><span class=\"entry-kind\">module</span><span class=\"prefix-name\"></span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div></div></div></div>",
-        "url": "Main/index.html"
+        "id": [
+          "Main"
+        ],
+        "url": "Main/index.html",
+        "kind": "module",
+        "doc": "<div></div>"
       }
     },
     {
@@ -54,8 +58,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "constraints": []
       },
       "display": {
-        "html": "<div class=\"search-entry type\"><code class=\"entry-title\"><span class=\"entry-kind\">type</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">t</span><code class=\"entry-rhs\"> = int</code></code><div class=\"entry-comment\"><div><p>A comment</p></div></div></div>",
-        "url": "Main/index.html#type-t"
+        "rhs": " = int",
+        "id": [
+          "Main",
+          "t"
+        ],
+        "url": "Main/index.html#type-t",
+        "kind": "type",
+        "doc": "<div><p>A comment</p></div>"
       }
     },
     {
@@ -75,8 +85,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Heading"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">this-is-a-title</span></code><div class=\"entry-comment\"><div><p>this is a title</p></div></div></div>",
-        "url": "Main/index.html#this-is-a-title"
+        "id": [
+          "Main",
+          "this-is-a-title"
+        ],
+        "url": "Main/index.html#this-is-a-title",
+        "kind": "doc",
+        "doc": "<div><p>this is a title</p></div>"
       }
     },
     {
@@ -92,8 +107,12 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\"></span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div><p>and this is a paragraph</p></div></div></div>",
-        "url": "Main/index.html"
+        "id": [
+          "Main"
+        ],
+        "url": "Main/index.html",
+        "kind": "doc",
+        "doc": "<div><p>and this is a paragraph</p></div>"
       }
     },
     {
@@ -112,8 +131,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "kind": "Module"
       },
       "display": {
-        "html": "<div class=\"search-entry module\"><code class=\"entry-title\"><span class=\"entry-kind\">module</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">M</span></code><div class=\"entry-comment\"><div></div></div></div>",
-        "url": "Main/M/index.html"
+        "id": [
+          "Main",
+          "M"
+        ],
+        "url": "Main/M/index.html",
+        "kind": "module",
+        "doc": "<div></div>"
       }
     },
     {
@@ -139,8 +163,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "constraints": []
       },
       "display": {
-        "html": "<div class=\"search-entry type\"><code class=\"entry-title\"><span class=\"entry-kind\">type</span><span class=\"prefix-name\">Main.M.</span><span class=\"entry-name\">t</span></code><div class=\"entry-comment\"><div><p>dsdsd</p></div></div></div>",
-        "url": "Main/M/index.html#type-t"
+        "id": [
+          "Main",
+          "M",
+          "t"
+        ],
+        "url": "Main/M/index.html#type-t",
+        "kind": "type",
+        "doc": "<div><p>dsdsd</p></div>"
       }
     },
     {
@@ -160,8 +190,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">v</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>a reference <span><code>t</code></span>, and some <em>formatted</em> <b>content</b> with <code>code</code> and</p><pre class=\"language-ocaml\"><code>code blocks</code></pre></div></div></div>",
-        "url": "Main/index.html#val-v"
+        "rhs": " : int",
+        "id": [
+          "Main",
+          "v"
+        ],
+        "url": "Main/index.html#val-v",
+        "kind": "val",
+        "doc": "<div><p>a reference <span><code>t</code></span>, and some <em>formatted</em> <b>content</b> with <code>code</code> and</p><pre class=\"language-ocaml\"><code>code blocks</code></pre></div>"
       }
     },
     {
@@ -181,8 +217,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">lorem</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>lorem 1 and a <span>link</span></p></div></div></div>",
-        "url": "Main/index.html#val-lorem"
+        "rhs": " : int",
+        "id": [
+          "Main",
+          "lorem"
+        ],
+        "url": "Main/index.html#val-lorem",
+        "kind": "val",
+        "doc": "<div><p>lorem 1 and a <span>link</span></p></div>"
       }
     },
     {
@@ -202,8 +244,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">lorem2</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>lorem 2</p></div></div></div>",
-        "url": "Main/index.html#val-lorem2"
+        "rhs": " : int",
+        "id": [
+          "Main",
+          "lorem2"
+        ],
+        "url": "Main/index.html#val-lorem2",
+        "kind": "val",
+        "doc": "<div><p>lorem 2</p></div>"
       }
     },
     {
@@ -223,8 +271,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">lorem3</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>lorem 3</p></div></div></div>",
-        "url": "Main/index.html#val-lorem3"
+        "rhs": " : int",
+        "id": [
+          "Main",
+          "lorem3"
+        ],
+        "url": "Main/index.html#val-lorem3",
+        "kind": "val",
+        "doc": "<div><p>lorem 3</p></div>"
       }
     },
     {
@@ -244,8 +298,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">lorem4</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>lorem 4</p></div></div></div>",
-        "url": "Main/index.html#val-lorem4"
+        "rhs": " : int",
+        "id": [
+          "Main",
+          "lorem4"
+        ],
+        "url": "Main/index.html#val-lorem4",
+        "kind": "val",
+        "doc": "<div><p>lorem 4</p></div>"
       }
     },
     {
@@ -264,8 +324,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "kind": "Module"
       },
       "display": {
-        "html": "<div class=\"search-entry module\"><code class=\"entry-title\"><span class=\"entry-kind\">module</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "module",
+        "doc": "<div></div>"
       }
     },
     {
@@ -289,8 +354,15 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">Main.I.</span><span class=\"entry-name\">x</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>",
-        "url": "Main/I/index.html#val-x"
+        "rhs": " : int",
+        "id": [
+          "Main",
+          "I",
+          "x"
+        ],
+        "url": "Main/I/index.html#val-x",
+        "kind": "val",
+        "doc": "<div></div>"
       }
     },
     {
@@ -310,8 +382,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><p>a paragraph</p></div>"
       }
     },
     {
@@ -331,8 +408,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><p>and another</p></div>"
       }
     },
     {
@@ -352,8 +434,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Verbatim"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><pre>verbatim</pre></div>"
       }
     },
     {
@@ -373,8 +460,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><p><code class=\"odoc-katex-math\">x + 1</code></p></div>"
       }
     },
     {
@@ -394,8 +486,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "CodeBlock"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><pre class=\"language-ocaml\"><code>blibli</code></pre></div>"
       }
     },
     {
@@ -419,8 +516,15 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">Main.I.</span><span class=\"entry-name\">y</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>",
-        "url": "Main/I/index.html#val-y"
+        "rhs": " : int",
+        "id": [
+          "Main",
+          "I",
+          "y"
+        ],
+        "url": "Main/I/index.html#val-y",
+        "kind": "val",
+        "doc": "<div></div>"
       }
     },
     {
@@ -440,8 +544,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">x</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>",
-        "url": "Main/index.html#val-x"
+        "rhs": " : int",
+        "id": [
+          "Main",
+          "x"
+        ],
+        "url": "Main/index.html#val-x",
+        "kind": "val",
+        "doc": "<div></div>"
       }
     },
     {
@@ -461,8 +571,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><p>a paragraph</p></div>"
       }
     },
     {
@@ -482,8 +597,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><p>and another</p></div>"
       }
     },
     {
@@ -503,8 +623,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Verbatim"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><pre>verbatim</pre></div>"
       }
     },
     {
@@ -524,8 +649,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><p><code class=\"odoc-katex-math\">x + 1</code></p></div>"
       }
     },
     {
@@ -545,8 +675,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "CodeBlock"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><pre class=\"language-ocaml\"><code>blibli</code></pre></div>"
       }
     },
     {
@@ -566,8 +701,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">y</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>",
-        "url": "Main/index.html#val-y"
+        "rhs": " : int",
+        "id": [
+          "Main",
+          "y"
+        ],
+        "url": "Main/index.html#val-y",
+        "kind": "val",
+        "doc": "<div></div>"
       }
     },
     {
@@ -587,8 +728,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">uu</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>",
-        "url": "Main/index.html#val-uu"
+        "rhs": " : int",
+        "id": [
+          "Main",
+          "uu"
+        ],
+        "url": "Main/index.html#val-uu",
+        "kind": "val",
+        "doc": "<div></div>"
       }
     },
     {
@@ -608,8 +755,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div></div>",
-        "url": "Main/I/index.html"
+        "id": [
+          "Main",
+          "I"
+        ],
+        "url": "Main/I/index.html",
+        "kind": "doc",
+        "doc": "<div><p>a paragraph two</p></div>"
       }
     },
     {
@@ -624,8 +776,12 @@ $ odoc compile -c module-main -c src-source root.mld
         "kind": "Module"
       },
       "display": {
-        "html": "<div class=\"search-entry module\"><code class=\"entry-title\"><span class=\"entry-kind\">module</span><span class=\"prefix-name\"></span><span class=\"entry-name\">J</span></code><div class=\"entry-comment\"><div><p>a paragraph one</p></div></div></div>",
-        "url": "J/index.html"
+        "id": [
+          "J"
+        ],
+        "url": "J/index.html",
+        "kind": "module",
+        "doc": "<div><p>a paragraph one</p></div>"
       }
     },
     {
@@ -645,8 +801,14 @@ $ odoc compile -c module-main -c src-source root.mld
         "type": "int"
       },
       "display": {
-        "html": "<div class=\"search-entry val\"><code class=\"entry-title\"><span class=\"entry-kind\">val</span><span class=\"prefix-name\">J.</span><span class=\"entry-name\">uu</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>",
-        "url": "J/index.html#val-uu"
+        "rhs": " : int",
+        "id": [
+          "J",
+          "uu"
+        ],
+        "url": "J/index.html#val-uu",
+        "kind": "val",
+        "doc": "<div></div>"
       }
     },
     {
@@ -662,8 +824,12 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\"></span><span class=\"entry-name\">J</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div></div>",
-        "url": "J/index.html"
+        "id": [
+          "J"
+        ],
+        "url": "J/index.html",
+        "kind": "doc",
+        "doc": "<div><p>a paragraph two</p></div>"
       }
     },
     {
@@ -683,8 +849,13 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Heading"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\">page.</span><span class=\"entry-name\">a-title</span></code><div class=\"entry-comment\"><div><p>A title</p></div></div></div>",
-        "url": "page.html#a-title"
+        "id": [
+          "page",
+          "a-title"
+        ],
+        "url": "page.html#a-title",
+        "kind": "doc",
+        "doc": "<div><p>A title</p></div>"
       }
     },
     {
@@ -700,8 +871,12 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\"></span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>A paragraph</p></div></div></div>",
-        "url": "page.html"
+        "id": [
+          "page"
+        ],
+        "url": "page.html",
+        "kind": "doc",
+        "doc": "<div><p>A paragraph</p></div>"
       }
     },
     {
@@ -717,8 +892,12 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Verbatim"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\"></span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><pre>some verbatim</pre></div></div></div>",
-        "url": "page.html"
+        "id": [
+          "page"
+        ],
+        "url": "page.html",
+        "kind": "doc",
+        "doc": "<div><pre>some verbatim</pre></div>"
       }
     },
     {
@@ -734,8 +913,12 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "CodeBlock"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\"></span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>and code</code></pre></div></div></div>",
-        "url": "page.html"
+        "id": [
+          "page"
+        ],
+        "url": "page.html",
+        "kind": "doc",
+        "doc": "<div><pre class=\"language-ocaml\"><code>and code</code></pre></div>"
       }
     },
     {
@@ -751,8 +934,12 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\"></span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>a list <em>of</em> things</p></div></div></div>",
-        "url": "page.html"
+        "id": [
+          "page"
+        ],
+        "url": "page.html",
+        "kind": "doc",
+        "doc": "<div><p>a list <em>of</em> things</p></div>"
       }
     },
     {
@@ -768,8 +955,12 @@ $ odoc compile -c module-main -c src-source root.mld
         "subkind": "Paragraph"
       },
       "display": {
-        "html": "<div class=\"search-entry doc\"><code class=\"entry-title\"><span class=\"entry-kind\">doc</span><span class=\"prefix-name\"></span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>bliblib</p></div></div></div>",
-        "url": "page.html"
+        "id": [
+          "page"
+        ],
+        "url": "page.html",
+        "kind": "doc",
+        "doc": "<div><p>bliblib</p></div>"
       }
     }
   ]
