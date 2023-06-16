@@ -38,7 +38,11 @@ let html_of_search () =
           input ~a:[ a_class [ "search-bar" ]; a_placeholder "🔎 Search..." ] ();
         ])
   in
-  let search_result = Html.div ~a:[ Html.a_class [ "search-result" ] ] [Html.div ~a:[ Html.a_class [ "search-result-inner" ] ] []] in
+  let search_result =
+    Html.div
+      ~a:[ Html.a_class [ "search-result" ] ]
+      [ Html.div ~a:[ Html.a_class [ "search-result-inner" ] ] [] ]
+  in
   Html.(div ~a:[ a_class [ "search-inner" ] ] [ search_bar; search_result ])
 
 let sidebar toc =
