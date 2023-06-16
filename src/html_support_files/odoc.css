@@ -125,6 +125,10 @@
   --spec-summary-hover-background: #ebeff2;
   --spec-details-after-background: rgba(0, 4, 15, 0.05);
   --spec-details-after-shadow: rgba(204, 204, 204, 0.53);
+
+  --search-results-border: #bbb;
+  --search-results-shadow: #bbb;
+
 }
 
 .dark:root {
@@ -163,6 +167,10 @@
   --hljs-variable: #cf6a4c;
 
   --spec-label-color: lightgreen;
+
+  --search-results-border: #505050;
+  --search-results-shadow: #404040;
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -212,6 +220,10 @@
     --hljs-variable: #cf6a4c;
 
     --spec-label-color: lightgreen;
+
+    --search-results-border: #505050;
+    --search-results-shadow: #404040;
+
   }
 }
 
@@ -251,7 +263,7 @@ body {
 body {
   margin-left: calc(10vw + 20ex);
   margin-right: 4ex;
-  margin-top: 20px;
+  margin-top: 30px;
   margin-bottom: 50px;
 }
 
@@ -413,6 +425,10 @@ h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10 {
   padding-top: 0.1em;
   line-height: 1.2;
   overflow-wrap: break-word;
+}
+
+.odoc-preamble h1 {
+  margin-top: 10px;
 }
 
 h1 {
@@ -771,80 +787,116 @@ td.def-doc *:first-child {
 }
 
 .odoc-search {
-  position: relative;
+  position: sticky;
+  top: 0;
+  height: min-content;
+  background: var(--main-background);
+  width: 100%;
+  padding-top: 1rem;
 }
 
+
+.odoc-search .search-inner {
+  width: 100%;
+  position: relative;
+  left:0;
+  transition : left 0.3s, transform 0.3s, width 0.3s; 
+}
+
+.odoc-search:focus-within .search-inner {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110%;
+}
+
+.odoc-search .search-bar {
+  position: relative;
+  z-index: 2;
+  font-size: 1;
+  transition: font-size 0.3s;
+}
+
+.odoc-search:focus-within .search-bar {
+  font-size: 1.1em;
+}
 
 .odoc-search:not(:focus-within) .search-result {
-  display : none;
+  display: none;
 }
 
-.odoc-search .search-result:empty {
-  display : none;
+.odoc-search .search-result-inner:empty {
+  display: none;
 }
+
 
 .odoc-search .search-result {
-  position: absolute;
   background: var(--toc-background);
-  overflow: scroll;
+  position: absolute;
   left: 0;
   right: 0;
-  max-height: 40rem;
-  border:solid;
-  border-color: var(--pre-border-color);
-  border-color: var(--pre-border-color);
+  z-index: 1;  
+}
+
+.odoc-search .search-result-inner {
+  border: solid;
+  border-color: var(--search-results-border);
   border-width: 1px;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-  border-radius: 2px;
-  box-shadow: 5px 5px 5px var(--toc-background);
+  margin-top: 8px;
+  border-radius: 6px;
+  box-shadow: 0 3px 10px 2px var(--search-results-shadow);
+  max-height: 40rem;
+  overflow: scroll;
 }
 
 .search-bar {
   width: 100%;
 }
 
-.search-bar-container {
-  display: flex;
-}
-
 .odoc-search .search-entry {
   color: var(--color);
-  display: block;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  /* border: 3px ridge pink */
-  border-left: 2px solid transparent;
+  display: grid;
+  grid-template-columns: [kinds] 59px [titles] 1fr;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  border-bottom: var(--search-results-border) solid 1px;
+  background-color: inherit;
+  outline:0;
 }
+
 .odoc-search .search-entry p {
-  margin:0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.odoc-search .search-entry:focus-visible {
+  box-shadow: none;
+  background-color: var(--target-background);
 }
 
 .odoc-search .search-entry:hover {
-  border: none;
   box-shadow: none;
-  border-left: 2px solid var(--link-color);
+  background-color: var(--toc-background-emph);
 }
 
-.odoc-search .search-entry.value {
-  /* border: 3px ridge red */
-}
-
-.odoc-search .search-entry .entry-title .entry-kind {
-  font-size: 0.75em;
-  font-weight: 900;
-  border: 1px solid;
-  border-color: var(--color);
-  border-radius: 3px;
-  margin-right: 0.5em;
-  margin-left: 0.25em;
-  padding-right: 0.25em;
-  padding-left: 0.25em;
+.odoc-search .search-entry .entry-kind {
+  grid-row: 1/2;
+  grid-column: 1/2;
+  line-height: 1.4rem;
+  padding-bottom: 0.25rem;
+  padding-top: 0.5rem;
+  font-size: 0.8em;
+  font-weight: bold;
+  margin-right: 0.5rem;
+  text-align: right;
+  position:relative;
+  bottom: 0;
 }
 
 .odoc-search .search-entry pre {
-  border:none;
-  margin:0;
+  border: none;
+  margin: 0;
 }
 
 .odoc-search .search-entry pre code {
@@ -856,34 +908,45 @@ td.def-doc *:first-child {
 }
 
 .odoc-search .search-entry .entry-title {
-  padding-right: 10px;
-  background-color: var(--toc-background-emph);
   width: 100%;
   display: block;
+  grid-column: 2/2;
+  grid-row: 1/2;
+  align-self: end;
+  line-height: 1.4rem;
+  padding-bottom: 0.25rem;
+  padding-top: 0.5rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.odoc-search.active .search-entry .entry-name {
-  font-size: 1.2em;
+.odoc-search .entry-name {
+  font-weight: bold;
 }
 
-.odoc-search.active .search-entry .prefix-name {
-  font-size: 1.2em;
+.odoc-search .prefix-name {
+  font-weight: bold;
 }
 
 .odoc-search .search-entry .prefix-name {
-  opacity: 0.5;
+  opacity: 0.7;
+}
+
+.odoc-search .search-entry .entry-content {
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .odoc-search .search-entry .entry-comment {
-  margin-left: 10px;
-  max-height: 100px;
-  overflow: scroll;
+  max-height: 1.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.8em;
-}
-
-.odoc-search.active .search-entry .entry-comment {
-  max-height: 300px;
-  font-size: 1rem;
+  grid-row: 2/2;
+  grid-column: 2/2;
+  margin-bottom: 0.5rem;
 }
 
 /* First level titles */

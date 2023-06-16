@@ -26,9 +26,10 @@ document.querySelector(".search-bar").addEventListener("input", (ev) => {
 
 worker.onmessage = (e) => {
   let results = e.data;
-  let search_result = document.querySelector(".search-result");
+  let search_result = document.querySelector(".search-result-inner");
   search_result.innerHTML = "";
   let f = (entry) => {
+    /* entry */
     let container = document.createElement("a");
     container.href = base_url + entry.url;
     container.innerHTML = entry.html;

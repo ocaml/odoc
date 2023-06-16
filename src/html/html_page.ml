@@ -31,16 +31,15 @@ let html_of_toc toc =
 
 let html_of_search () =
   let search_bar =
-    Html.div
-      ~a:[ Html.a_class [ "search-bar-container" ] ]
-      [
-        Html.input
-          ~a:[ Html.a_class [ "search-bar" ]; Html.a_placeholder "🔎 Search..." ]
-          ();
-      ]
+    Html.(
+      div
+        ~a:[ a_class [ "search-bar-container" ] ]
+        [
+          input ~a:[ a_class [ "search-bar" ]; a_placeholder "🔎 Search..." ] ();
+        ])
   in
-  let search_result = Html.div ~a:[ Html.a_class [ "search-result" ] ] [] in
-  [ search_bar; search_result ]
+  let search_result = Html.div ~a:[ Html.a_class [ "search-result" ] ] [Html.div ~a:[ Html.a_class [ "search-result-inner" ] ] []] in
+  Html.(div ~a:[ a_class [ "search-inner" ] ] [ search_bar; search_result ])
 
 let sidebar toc =
   let toc, has_toc =
@@ -190,15 +189,14 @@ let page_creator ~config ~url ~uses_katex ~with_search header breadcrumbs toc
 
   let search_bar =
     if with_search then
-      [ Html.div ~a:[ Html.a_class [ "odoc-search" ] ] (html_of_search ()) ]
+      [ Html.div ~a:[ Html.a_class [ "odoc-search" ] ] [ html_of_search () ] ]
     else []
   in
 
   let body =
     html_of_breadcrumbs breadcrumbs
-    @ [
-        Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] (search_bar @ header);
-      ]
+    @ search_bar
+    @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
     @ sidebar toc
     @ [ Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content ]
   in
