@@ -55,19 +55,18 @@ module Kind = struct
   let to_string = function
     | Doc -> "doc"
     | TypeDecl -> "type"
-    | Module -> "module"
-    | Exception -> "exception"
-    | Class_type -> "class type"
-    | Method -> "method"
+    | Module -> "mod"
+    | Exception -> "exn"
+    | Class_type -> "class"
+    | Method -> "meth"
     | Class -> "class"
-    | TypeExtension -> "type ext"
-    | ExtensionConstructor -> "extension constructor"
-    | ModuleType -> "module type"
-    | Constructor _ -> "constructor"
+    | TypeExtension -> "type"
+    | ExtensionConstructor -> "cons"
+    | ModuleType -> "sig"
+    | Constructor _ -> "cons"
     | Field _ -> "field"
     | Val _ -> "val"
 end
-
 module Package = struct
   type t =
     { name : string

@@ -7,7 +7,25 @@ type t = int
 
     *)
 
-module M = struct
+module type Signature = sig end
+
+class istack = object
+  val mutable v = [0; 2]
+
+  method pop =
+    match v with
+    | hd :: tl ->
+      v <- tl;
+      Some hd
+    | [] -> None
+
+  method push hd =
+    v <- hd :: v
+end
+
+class type my_class_type = object end
+
+module Modulule = struct
   type t
   (** dsdsd *)
 end
@@ -55,3 +73,16 @@ type _ celeste =
 type 'a list =
   | Cons of 'a * 'a list
   | Nil
+
+
+(** Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
+    consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+    cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
+    non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. *)
+let long = 3
+
+type ext_t = ..
+
+type ext_t += Ext_const of int

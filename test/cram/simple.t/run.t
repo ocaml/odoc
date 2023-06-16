@@ -56,5 +56,5 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   page.html
   sherlodoc_db.bin
   $ cp -r html /tmp
-  $ firefox /tmp/html/Main/index.html
+$ firefox /tmp/html/Main/index.html
 
