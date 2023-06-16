@@ -299,6 +299,10 @@ module rec Path : sig
     | `Dot of module_ * string
     | `Apply of module_ * module_ ]
   (** @canonical Odoc_model.Paths.Path.t *)
+
+  type projection =
+    [ `Here | `Dot of projection * string | `Apply of projection * module_ ]
+  (** @canonical Odoc_model.Paths.Projection.t *)
 end =
   Path
 

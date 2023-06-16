@@ -205,6 +205,7 @@ and ModuleType : sig
       | Signature of Signature.t
       | With of substitution list * expr
       | TypeOf of type_of_desc
+      | Project of Cpath.projection * expr
   end
 
   type path_t = {
@@ -229,6 +230,7 @@ and ModuleType : sig
     | With of with_t
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
+    | Project of Cpath.projection * expr
 
   type t = {
     locs : Odoc_model.Lang.Locations.t option;
@@ -745,6 +747,8 @@ module Fmt = struct
         Format.fprintf ppf "%a with [%a]" u_module_type_expr e substitution_list
           subs
     | TypeOf t -> module_type_type_of_desc ppf t
+    | Project (proj, e) ->
+        Format.fprintf ppf "(%a)%a" u_module_type_expr e projection proj
 
   and module_type_expr ppf mt =
     let open ModuleType in
@@ -761,6 +765,8 @@ module Fmt = struct
         Format.fprintf ppf "module type of %a" module_path p
     | TypeOf { t_desc = StructInclude p; _ } ->
         Format.fprintf ppf "module type of struct include %a end" module_path p
+    | Project (proj, e) ->
+        Format.fprintf ppf "(%a)%a" module_type_expr e projection proj
 
   and functor_parameter ppf x =
     let open FunctorParameter in
@@ -1084,6 +1090,27 @@ module Fmt = struct
     | `ClassType (p, t) ->
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.ClassTypeName.to_string t)
+
+  and model_projection :
+      Format.formatter -> Odoc_model.Paths.Projection.t -> unit =
+   fun ppf proj ->
+    match proj with
+    | `Here -> ()
+    | `Dot (proj, id) -> Format.fprintf ppf "%a.%s" model_projection proj id
+    | `Apply (proj, p) ->
+        Format.fprintf ppf "%a(%a)" model_projection proj model_path
+          (p :> Odoc_model.Paths.Path.t)
+
+  and projection : Format.formatter -> Cpath.projection -> unit =
+   fun ppf proj ->
+    match proj with
+    | `Here -> ()
+    | `Dot (proj, id) -> Format.fprintf ppf "%a.%s" projection proj id
+    | `Module (proj, id) ->
+        Format.fprintf ppf "%a.%a" projection proj
+          Odoc_model.Names.ModuleName.fmt id
+    | `Apply (proj, p) ->
+        Format.fprintf ppf "%a(%a)" projection proj module_path p
 
   and model_path : Format.formatter -> Odoc_model.Paths.Path.t -> unit =
    fun ppf (p : Odoc_model.Paths.Path.t) ->
@@ -1798,6 +1825,14 @@ module Of_Lang = struct
         | `Local i -> `Local (i, b))
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
 
+  let rec projection : _ -> Odoc_model.Paths.Projection.t -> Cpath.projection =
+   fun ident_map proj ->
+    match proj with
+    | `Here -> `Here
+    | `Dot (proj, s) -> `Dot (projection ident_map proj, s)
+    | `Apply (proj, p) ->
+        `Apply (projection ident_map proj, module_path ident_map p)
+
   let rec resolved_signature_fragment :
       map ->
       Odoc_model.Paths.Fragment.Resolved.Signature.t ->
@@ -2128,6 +2163,9 @@ module Of_Lang = struct
           | StructInclude p -> StructInclude (module_path ident_map p)
         in
         TypeOf t
+    | Project (proj, e) ->
+        let proj' = projection ident_map proj in
+        Project (proj', u_module_type_expr ident_map e)
 
   and module_type_expr ident_map m =
     let open Odoc_model in
@@ -2183,6 +2221,9 @@ module Of_Lang = struct
         in
         let t_expansion = option simple_expansion ident_map t_expansion in
         ModuleType.(TypeOf { t_desc; t_expansion })
+    | Lang.ModuleType.Project (proj, expr) ->
+        ModuleType.Project
+          (projection ident_map proj, module_type_expr ident_map expr)
 
   and module_type ident_map m =
     let expr =
@@ -2438,13 +2479,15 @@ let module_of_functor_argument (arg : FunctorParameter.parameter) =
     hidden = false;
   }
 
-let umty_of_mty (e : ModuleType.expr) : ModuleType.U.expr option =
+let rec umty_of_mty (e : ModuleType.expr) : ModuleType.U.expr option =
   match e with
   | Path { p_path; _ } -> Some (Path p_path)
   | Signature s -> Some (Signature s)
   | With { w_substitutions; w_expr; _ } -> Some (With (w_substitutions, w_expr))
   | Functor (_, _) -> None
   | TypeOf { t_desc; _ } -> Some (TypeOf t_desc)
+  | Project (proj, e) ->
+      umty_of_mty e |> Option.map (fun e -> ModuleType.U.Project (proj, e))
 
 let umty_of_mty_exn e =
   match umty_of_mty e with None -> assert false | Some e -> e

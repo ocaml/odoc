@@ -36,6 +36,10 @@ and signature_of_module_type_expr = function
   | TypeOf _ -> None
   | With { w_expansion = Some e; _ } -> Some (signature_of_simple_expansion e)
   | With _ -> None
+  | Project (`Here, expr) -> signature_of_module_type_expr expr
+  | Project _ ->
+      (* TODO could handle simple cases here *)
+      None
 
 and signature_of_module :
     Odoc_model.Lang.Module.t -> Odoc_model.Lang.Signature.t option =

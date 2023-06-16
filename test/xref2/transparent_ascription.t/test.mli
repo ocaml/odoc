@@ -84,6 +84,69 @@ module Cascade : sig
   module P : S with module M = Int
 end
 
+module List_of (T : T) : sig
+  type t = T.t list
+
+  val iter : t -> f:(T.t -> unit) -> unit
+end
+
+module In_functor : sig
+  module type S = sig
+    module M : functor (T : T) -> T
+
+    module N1 : module type of M
+    module N2 : module type of M (Int)
+    module N2' : sig
+      include module type of M (Int)
+    end
+  end
+
+  (* [P.N] should just have type [t] because [module type of M] has already
+     evaluated to [T] *)
+  module P : S with module M = List_of
+end
+
+module Wrapped_list_of : sig
+  module M = List_of
+end
+
+module In_nested_functor : sig
+  module type S = sig
+    module O : sig
+      module M (_ : T) : T
+    end
+
+    (* {v
+         module N1 : module type of O
+
+         module N1' : module type of struct
+           include O
+         end
+
+         module N1'' : sig
+           include module type of O
+         end
+
+         module N2 : module type of O.M
+
+         module N3 : module type of O.M (Int)
+
+         module N3' : module type of struct
+           include O.M (Int)
+         end
+       v} *)
+    module N3'' : sig
+      include module type of struct
+        include O.M (Int)
+      end
+    end
+  end
+
+  module P1 : S with module O = Wrapped_list_of
+
+  module P2 : S with module O.M = List_of
+end
+
 (* The same logic should apply to functor parameters, but _in reverse_ since
    functor types are contravariant in their parameters. In other words, a
    substitution can _remove_ information from a parameter type and we need
@@ -100,6 +163,11 @@ module In_functor_parameter : sig
     end) : T
 
     module G : module type of F
+    module H : sig
+      include module type of struct
+        include F (Int)
+      end
+    end
   end
 
   (* [P.G]'s argument type should have _both_ [plus] and [t] even though

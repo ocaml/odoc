@@ -1381,6 +1381,7 @@ module Make (Syntax : SYNTAX) = struct
             match simple_expansion_of e with
             | Some e -> Some (Functor (f_parameter, e))
             | None -> None)
+        | Project _ -> failwith "Thought we were done with this"
       in
       match simple_expansion_of t with
       | None -> None
@@ -1513,6 +1514,7 @@ module Make (Syntax : SYNTAX) = struct
       | TypeOf (ModPath m) | TypeOf (StructInclude m) ->
           Paths.Path.(is_hidden (m :> t))
       | Signature _ -> false
+      | Project (_, expr) -> umty_hidden expr
 
     and mty_hidden : Odoc_model.Lang.ModuleType.expr -> bool = function
       | Path { p_path = mty_path; _ } -> Paths.Path.(is_hidden (mty_path :> t))
@@ -1548,6 +1550,7 @@ module Make (Syntax : SYNTAX) = struct
       | Signature _ -> true
       | With (_, expr) -> is_elidable_with_u expr
       | TypeOf _ -> false
+      | Project (_, expr) -> is_elidable_with_u expr (* TODO: Correct? *)
 
     and umty : Odoc_model.Lang.ModuleType.U.expr -> text =
      fun m ->
@@ -1559,6 +1562,7 @@ module Make (Syntax : SYNTAX) = struct
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       | With (subs, expr) -> mty_with subs expr
       | TypeOf t -> mty_typeof t
+      | Project _ -> (* TODO *) O.txt "<unexpanded projection>"
 
     and mty : Odoc_model.Lang.ModuleType.expr -> text =
      fun m ->
@@ -1598,6 +1602,7 @@ module Make (Syntax : SYNTAX) = struct
         | TypeOf { t_desc; _ } -> mty_typeof t_desc
         | Signature _ ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
+        | Project _ -> O.txt "unexpanded projection"
 
     and mty_in_decl :
         Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
@@ -1632,6 +1637,9 @@ module Make (Syntax : SYNTAX) = struct
                    ++ O.cut ++ mty arg.expr ++ O.txt ")"
           in
           O.sp ++ text_arg ++ mty_in_decl base expr
+      | Project _ ->
+          (* TODO *)
+          unresolved [ inline (Text "<projection>") ]
 
     (* TODO : Centralize the list juggling for type parameters *)
     and type_expr_in_subst td typath =

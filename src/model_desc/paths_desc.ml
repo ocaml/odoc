@@ -374,6 +374,14 @@ module General_paths = struct
               ((x1 :> rr), x2),
               Pair (resolved_reference, Names.valuename) ))
 
+  let rec projection : Paths.Projection.t t =
+    Variant
+      (function
+      | `Here -> C0 "`Here"
+      | `Dot (proj, s) -> C ("`Dot", (proj, s), Pair (projection, string))
+      | `Apply (proj, m) ->
+          C ("`Apply", (proj, (m :> p)), Pair (projection, path)))
+
   let resolved_fragment_root : Paths.Fragment.Resolved.root t =
     Variant
       (function
@@ -458,6 +466,8 @@ let resolved_path : [< Paths.Path.Resolved.t ] Type_desc.t =
 
 let path : [< Paths.Path.t ] Type_desc.t =
   Indirect ((fun n -> (n :> General_paths.p)), General_paths.path)
+
+let projection = General_paths.projection
 
 let resolved_fragment =
   Indirect ((fun n -> (n :> General_paths.rf)), General_paths.resolved_fragment)

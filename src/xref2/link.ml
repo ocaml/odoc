@@ -750,6 +750,7 @@ and u_module_type_expr :
           unresolved)
   | TypeOf (StructInclude p) -> TypeOf (StructInclude (module_path env p))
   | TypeOf (ModPath p) -> TypeOf (ModPath (module_path env p))
+  | Project (proj, expr) -> Project (proj, u_module_type_expr env id expr)
 
 and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
@@ -814,6 +815,7 @@ and module_type_expr :
           t_desc = ModPath (module_path env p);
           t_expansion = do_expn t_expansion None;
         }
+  | Project (proj, expr) -> Project (proj, module_type_expr env id expr)
 
 and type_decl_representation :
     Env.t ->

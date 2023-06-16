@@ -21,6 +21,8 @@ type module_modifiers =
 
 type module_type_modifiers = [ `AliasModuleType of Cpath.Resolved.module_type ]
 
+let resolve_module_path_fwd = ref (fun _ _ -> assert false)
+
 (* These three functions take a fully-qualified canonical path and return
    a list of shorter possibilities to test *)
 let c_mod_poss env p =
@@ -1629,6 +1631,9 @@ and signature_of_u_module_type_expr :
       handle_signature_with_subs ~mark_substituted env sg subs
   | TypeOf t ->
       expansion_of_module_type_type_of_desc env t >>= assert_not_functor
+  | Project (proj, expr) ->
+      signature_of_u_module_type_expr ~mark_substituted env expr >>= fun sg ->
+      project_from_signature ~mark_substituted env proj sg
 
 and expansion_of_module_type_type_of_desc :
     Env.t ->
@@ -1688,6 +1693,71 @@ and expansion_of_module_type_expr :
         | StructInclude p -> (p, true)
       in
       expansion_of_module_path env ~strengthen cp
+  | Component.ModuleType.Project (proj, expr) ->
+      expansion_of_module_type_expr ~mark_substituted env expr >>= fun exp ->
+      project_from_expansion ~mark_substituted env proj exp
+
+and project_from_signature :
+    mark_substituted:bool ->
+    Env.t ->
+    Cpath.projection ->
+    Component.Signature.t ->
+    (Component.Signature.t, expansion_of_module_error) Result.result =
+ fun ~mark_substituted env proj sg ->
+  project_from_expansion ~mark_substituted env proj (Signature sg)
+  >>= assert_not_functor
+
+and project_from_expansion :
+    mark_substituted:bool ->
+    Env.t ->
+    Cpath.projection ->
+    expansion ->
+    (expansion, expansion_of_module_error) Result.result =
+ fun ~mark_substituted env proj exp ->
+  match proj with
+  | `Here -> Ok exp
+  | `Dot (proj, id) ->
+      project_from_expansion ~mark_substituted env proj exp >>= fun exp ->
+      find_in_expansion env exp id
+  | `Module (proj, id) ->
+      project_from_expansion ~mark_substituted env proj exp >>= fun exp ->
+      let id = Odoc_model.Names.ModuleName.to_string id in
+      find_in_expansion env exp id
+  | `Apply (proj, arg_path) -> (
+      project_from_expansion ~mark_substituted env proj exp >>= fun exp ->
+      match exp with
+      | Signature _ | Functor (Unit, _) -> assert false
+      | Functor (Named arg, expr) -> (
+          (* CR lmaurer: Get rid of forward declaration *)
+          match !resolve_module_path_fwd env arg_path with
+          | Error err -> Error (`UnresolvedPath (`Module (arg_path, err)))
+          | Ok arg_path ->
+              (* CR lmaurer: Too much C&P from [handle_apply] *)
+              let substitution =
+                if mark_substituted then `Substituted arg_path else arg_path
+              in
+
+              let subst =
+                Subst.add_module
+                  (arg.id :> Ident.path_module)
+                  (`Resolved substitution) substitution Subst.identity
+              in
+              let subst = Subst.unresolve_opaque_paths subst in
+              let expr = Subst.module_type_expr subst expr in
+              expansion_of_module_type_expr ~mark_substituted env expr))
+
+and find_in_expansion :
+    Env.t ->
+    expansion ->
+    string ->
+    (expansion, expansion_of_module_error) Result.result =
+ fun env exp id ->
+  match exp with
+  | Functor _ -> assert false (* CR lmaurer: Better error? *)
+  | Signature sg -> (
+      match Find.module_in_sig sg id with
+      | None -> assert false (* CR lmaurer: Better error? *)
+      | Some (`FModule (_, m)) -> expansion_of_module env m)
 
 and expansion_of_module_type :
     Env.t ->
@@ -1732,6 +1802,7 @@ and umty_of_mty : Component.ModuleType.expr -> Component.ModuleType.U.expr =
   | Path { p_path; _ } -> Path p_path
   | TypeOf { t_desc; _ } -> TypeOf t_desc
   | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
+  | Project (proj, mty) -> Project (proj, umty_of_mty mty)
   | Functor _ -> assert false
 
 and fragmap :
@@ -2315,6 +2386,8 @@ let resolve_module_path env p =
       | Error `OpaqueModule -> Ok (`OpaqueModule p)
       | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p
       | Error (`UnexpandedTypeOf _) -> Ok p)
+
+let () = resolve_module_path_fwd := resolve_module_path
 
 let resolve_module_type_path env p =
   resolve_module_type ~mark_substituted:true ~add_canonical:true env p

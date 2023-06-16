@@ -188,6 +188,7 @@ and ModuleType : sig
       | Signature of Signature.t
       | With of substitution list * expr
       | TypeOf of type_of_desc
+      | Project of Cpath.projection * expr
   end
 
   type path_t = {
@@ -212,6 +213,7 @@ and ModuleType : sig
     | With of with_t
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
+    | Project of Cpath.projection * expr
 
   type t = {
     locs : Odoc_model.Lang.Locations.t option;
@@ -588,6 +590,11 @@ module Fmt : sig
     Format.formatter -> Cpath.Resolved.class_type -> unit
 
   val class_type_path : Format.formatter -> Cpath.class_type -> unit
+
+  val model_projection :
+    Format.formatter -> Odoc_model.Paths.Projection.t -> unit
+
+  val projection : Format.formatter -> Cpath.projection -> unit
 
   val model_path : Format.formatter -> Odoc_model.Paths.Path.t -> unit
 

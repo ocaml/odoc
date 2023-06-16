@@ -208,6 +208,15 @@ module Path = struct
     | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)
     | `Substituted s -> resolved_class_type map s
 
+  let rec projection map (proj : Cpath.projection) :
+      Odoc_model.Paths.Projection.t =
+    match proj with
+    | `Here -> `Here
+    | `Dot (proj, s) -> `Dot (projection map proj, s)
+    | `Module (proj, name) ->
+        `Dot (projection map proj, Names.ModuleName.to_string name)
+    | `Apply (proj, p) -> `Apply (projection map proj, module_ map p)
+
   let rec module_fragment :
       maps -> Cfrag.module_ -> Odoc_model.Paths.Fragment.Module.t =
    fun map f ->
@@ -774,6 +783,8 @@ and u_module_type_expr map identifier = function
           u_module_type_expr map identifier expr )
   | TypeOf (ModPath p) -> TypeOf (ModPath (Path.module_ map p))
   | TypeOf (StructInclude p) -> TypeOf (StructInclude (Path.module_ map p))
+  | Project (proj, expr) ->
+      Project (Path.projection map proj, u_module_type_expr map identifier expr)
 
 and module_type_expr map identifier = function
   | Component.ModuleType.Path { p_path; p_expansion } ->
@@ -821,6 +832,10 @@ and module_type_expr map identifier = function
           t_desc = StructInclude (Path.module_ map p);
           t_expansion = Opt.map (simple_expansion map identifier) t_expansion;
         }
+  | Project (proj, expr) ->
+      (* CR lmaurer: [identifier] seems a bit wrong here but it's not always
+         precise elsewhere, I think? *)
+      Project (Path.projection map proj, module_type_expr map identifier expr)
 
 and module_type :
     maps ->

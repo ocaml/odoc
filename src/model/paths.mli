@@ -584,6 +584,11 @@ module rec Path : sig
   val is_hidden : t -> bool
 end
 
+(** Suffixes of module paths *)
+module Projection : sig
+  type t = Paths_types.Path.projection
+end
+
 (** OCaml path fragments for specifying module substitutions *)
 module Fragment : sig
   module Resolved : sig

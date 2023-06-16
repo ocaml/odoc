@@ -160,7 +160,9 @@ and moduletype_expr =
     | Functor (x1, x2) ->
         C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_expr))
     | With t -> C ("With", t, moduletype_with_t)
-    | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t))
+    | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t)
+    | Project (x1, x2) ->
+        C ("Project", (x1, x2), Pair (projection, moduletype_expr)))
 
 and moduletype_u_expr =
   let open Lang.ModuleType.U in
@@ -173,7 +175,9 @@ and moduletype_u_expr =
           ( "With",
             (t, e),
             Pair (List moduletype_substitution, moduletype_u_expr) )
-    | TypeOf x -> C ("TypeOf", x, moduletype_type_of_desc))
+    | TypeOf x -> C ("TypeOf", x, moduletype_type_of_desc)
+    | Project (x1, x2) ->
+        C ("Project", (x1, x2), Pair (projection, moduletype_u_expr)))
 
 and moduletype_t =
   let open Lang.ModuleType in

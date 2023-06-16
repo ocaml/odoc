@@ -12,6 +12,8 @@ val resolved_path : [< Path.Resolved.t ] Type_desc.t
 
 val path : [< Path.t ] Type_desc.t
 
+val projection : Projection.t Type_desc.t
+
 val resolved_fragment : [< Fragment.Resolved.t ] Type_desc.t
 
 val fragment : [< Fragment.t ] Type_desc.t

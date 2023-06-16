@@ -83,6 +83,12 @@ and Cpath : sig
     | `Dot of module_ * string
     | `Class of Resolved.parent * ClassName.t
     | `ClassType of Resolved.parent * ClassTypeName.t ]
+
+  type projection =
+    [ `Here
+    | `Dot of projection * string
+    | `Module of projection * ModuleName.t
+    | `Apply of projection * module_ ]
 end =
   Cpath
 

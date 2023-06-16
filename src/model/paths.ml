@@ -893,6 +893,10 @@ module Path = struct
   let is_hidden = is_path_hidden
 end
 
+module Projection = struct
+  type t = Paths_types.Path.projection
+end
+
 module Fragment = struct
   module Resolved = struct
     type t = Paths_types.Resolved_fragment.any

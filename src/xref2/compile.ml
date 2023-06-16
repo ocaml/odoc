@@ -594,6 +594,10 @@ and module_type_map_subs env id cexpr subs =
     | TypeOf (ModPath (`Resolved p)) | TypeOf (StructInclude (`Resolved p)) ->
         Some (`Module p)
     | TypeOf _ -> None
+    | Project _ ->
+        (* Preserving the behavior from when this type would have been replaced
+           by its expansion *)
+        None
   in
   match find_parent cexpr with
   | None -> None
@@ -640,6 +644,7 @@ and u_module_type_expr :
           | StructInclude p -> StructInclude (module_path env p)
         in
         TypeOf t
+    | Project (proj, expr) -> Project (proj, inner expr)
   in
   inner expr
 
@@ -696,6 +701,9 @@ and module_type_expr :
         | StructInclude p -> StructInclude (module_path env p)
       in
       TypeOf { t_desc; t_expansion }
+  | Project (proj, expr) ->
+      (* CR lmaurer: Does [id] need to change here? *)
+      Project (proj, module_type_expr env id expr)
 
 and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
