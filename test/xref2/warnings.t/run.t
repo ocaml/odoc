@@ -6,8 +6,8 @@ Test the behavior of warnings generated while compiling and linking.
 A contains both parsing errors and a reference to B that isn't compiled yet:
 
   $ odoc compile --warn-error --package test a.cmti
-  File "a.mli", line 8, characters 23-23:
-  Error: End of text is not allowed in '{!...}' (cross-reference).
+  File "a.mli", line 8, characters 20-23:
+  Error: Open bracket '{!' is never closed.
   File "a.mli", line 8, characters 22-23:
   Error: Identifier in reference should not be empty.
   ERROR: Warnings have been generated.
@@ -15,14 +15,14 @@ A contains both parsing errors and a reference to B that isn't compiled yet:
 
   $ odoc compile --package test b.cmti
   $ odoc compile --package test a.cmti
-  File "a.mli", line 8, characters 23-23:
-  Warning: End of text is not allowed in '{!...}' (cross-reference).
+  File "a.mli", line 8, characters 20-23:
+  Warning: Open bracket '{!' is never closed.
   File "a.mli", line 8, characters 22-23:
   Warning: Identifier in reference should not be empty.
 
   $ odoc errors a.odoc
-  File "a.mli", line 8, characters 23-23:
-  End of text is not allowed in '{!...}' (cross-reference).
+  File "a.mli", line 8, characters 20-23:
+  Open bracket '{!' is never closed.
   File "a.mli", line 8, characters 22-23:
   Identifier in reference should not be empty.
 
@@ -36,8 +36,8 @@ A contains linking errors:
   Warning: Failed to resolve reference unresolvedroot(B).doesn't_exist Couldn't find "B"
 
   $ odoc errors a.odocl
-  File "a.mli", line 8, characters 23-23:
-  End of text is not allowed in '{!...}' (cross-reference).
+  File "a.mli", line 8, characters 20-23:
+  Open bracket '{!' is never closed.
   File "a.mli", line 8, characters 22-23:
   Identifier in reference should not be empty.
   File "a.odoc":
