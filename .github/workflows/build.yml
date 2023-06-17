@@ -38,7 +38,7 @@ jobs:
             odoc.opam
 
       - name: Install dependencies
-        run: opam install -y --deps-only -t ./odoc.opam
+        run: opam install -y --deps-only -t ./odoc.opam ./odoc-parser.opam
 
       - name: Install bisect_ppx
         run: opam install bisect_ppx

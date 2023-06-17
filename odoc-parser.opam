@@ -1,0 +1,39 @@
+opam-version: "2.0"
+
+version: "dev"
+homepage: "http://github.com/ocaml/odoc"
+doc: "https://ocaml.github.io/odoc/"
+bug-reports: "https://github.com/ocaml/odoc/issues"
+license: "ISC"
+
+authors: [
+  "Anton Bachin <antonbachin@yahoo.com>"
+]
+maintainer: "Jon Ludlam <jon@recoil.org>"
+dev-repo: "git+https://github.com/ocaml/odoc.git"
+
+synopsis: "Parser for OCamldoc"
+description: """
+Odoc_parser is a library for parsing the contents of OCaml documentation
+comments, formatted using 'ocamldoc' syntax.
+"""
+
+depends: [
+  "dune" {>= "2.8"}
+  "ocaml" {>= "4.02.0"}
+  "astring"
+  "result"
+]
+
+build: [
+ ["dune" "subst"] {pinned}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+  ]
+]
