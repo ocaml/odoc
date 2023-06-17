@@ -29,23 +29,3 @@ let span spans =
 let nudge_start offset span =
   { span with start = { span.start with column = span.start.column + offset } }
 
-let to_loc span =
-  let loc_start =
-    Lexing.
-      {
-        pos_fname = span.file;
-        pos_lnum = span.start.line;
-        pos_bol = 0;
-        pos_cnum = span.start.column;
-      }
-  in
-  let loc_end =
-    Lexing.
-      {
-        pos_fname = span.file;
-        pos_lnum = span.end_.line;
-        pos_bol = 0;
-        pos_cnum = span.end_.column;
-      }
-  in
-  Location.{ loc_start; loc_end; loc_ghost = false }
