@@ -229,13 +229,14 @@ let rec nestable_block_element :
   match element with
   | { value = `Paragraph content; location } ->
       Location.at location (`Paragraph (inline_elements status content))
-  | { value = `Code_block (metadata, code); location } ->
+  | { value = `Code_block {meta; delimiter=_; content; output}; location } ->
       let lang_tag =
-        match metadata with
-        | Some ({ Location.value; _ }, _) -> Some value
+        match meta with
+        | Some { language = {Location.value; _ }; _} -> Some value
         | None -> None
       in
-      Location.at location (`Code_block (lang_tag, code))
+      let outputs = Option.map (List.map (nestable_block_element status)) output in
+      Location.at location (`Code_block (lang_tag, content, outputs))
   | { value = `Math_block s; location } -> Location.at location (`Math_block s)
   | { value = `Verbatim _; _ } as element -> element
   | { value = `Modules modules; location } ->

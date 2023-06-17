@@ -125,7 +125,7 @@ let%expect_test _ =
       test "{!foo";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml\", line 1, characters 5-5:\nEnd of text is not allowed in '{!...}' (cross-reference)."]} |}]
+        {"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml\", line 1, characters 0-5:\nOpen bracket '{!' is never closed."]} |}]
 
     let empty_kind =
       test "{!:foo}";
@@ -197,7 +197,7 @@ let%expect_test _ =
       test "{!val:foo";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml\", line 1, characters 9-9:\nEnd of text is not allowed in '{!...}' (cross-reference)."]} |}]
+        {"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml\", line 1, characters 0-9:\nOpen bracket '{!' is never closed."]} |}]
 
     let operator =
       test "{!(>>=)}";
