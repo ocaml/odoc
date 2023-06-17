@@ -19,9 +19,6 @@ val nudge_start : int -> span -> span
 (** This adjusts only the column number, implicitly assuming that the offset does
    not move the location across a newline character. *)
 
-val to_loc : span -> Location.t
-(** Returns a {!Warning.loc} that represents the span *)
-
 (** {2 Located values} *)
 
 type +'a with_location = { location : span; value : 'a }

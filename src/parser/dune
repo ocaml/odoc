@@ -5,4 +5,4 @@
  (public_name odoc-parser)
  (instrumentation
   (backend bisect_ppx))
- (libraries astring result compiler-libs.common))
+ (libraries astring result))
