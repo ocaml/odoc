@@ -6,7 +6,13 @@
   $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
   4.0K	megaodocl
-  $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl') 2> /dev/null > /dev/null
+  $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
+  Index_lib.main
+  Indexing in 0.001000s
+  trie_with_array_occ:0.00s
+  trie_with_array:0.00s
+  Cache.Elt_array_occ_trie.memo:0.00s
+  Cache.Elt_array_trie.memo:0.00s
   $ export SHERLODOC_DB=db.bin
   $ sherlodoc "unique_name"
   val Main.unique_name : foo
@@ -64,4 +70,6 @@
   $ sherlodoc --print-cost "hidden"
   [No results]
   $ sherlodoc --print-cost ":mo"
-  [No results]
+  217 val Main.value : moo
+  220 val Main.produce : unit -> moo
+  224 val Main.produce_2' : unit -> unit -> moo

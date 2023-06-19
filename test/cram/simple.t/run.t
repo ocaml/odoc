@@ -8,14 +8,14 @@
   12K	megaodocl
   $ sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
   Index_lib.main
-  Indexing in 0.001100s
+  Indexing in 0.001068s
   trie_with_array_occ:0.00s
   trie_with_array:0.00s
   Cache.Elt_array_occ_trie.memo:0.00s
   Cache.Elt_array_trie.memo:0.00s
   $ sherlodoc_index --format=marshal --db=sherlodoc_db.bin $(find . -name '*.odocl') 2> /dev/null
   Index_lib.main
-  Indexing in 0.001721s
+  Indexing in 0.001206s
   trie_with_array_occ:0.00s
   trie_with_array:0.00s
   Cache.Elt_array_occ_trie.memo:0.00s

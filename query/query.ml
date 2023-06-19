@@ -9,36 +9,67 @@ module Occ = Int.Map
 
 let inter_list xs = List.fold_left Succ.inter Succ.all xs
 
-let collapse_count ~count occs =
+let collapse_occ ~count occs =
   Occ.fold
     (fun k x acc -> if k < count then acc else Succ.union (Succ.of_array x) acc)
     occs Succ.empty
 
-let collapse_trie ~count t =
-  match Trie.fold_map Succ.union (collapse_count ~count) t with
+let collapse_trie_occ ~count t =
+  match Trie.fold_map Succ.union (collapse_occ ~count) t with
   | None -> Succ.empty
   | Some occ -> occ
 
-let collapse_triechar t =
+let collapse_trie t =
   match Trie.fold_map Succ.union Succ.of_array t with
   | None -> Succ.empty
   | Some s -> s
+
+let rec collapse_trie_occ_polar ~parent_char ~polarity ~count t =
+  let open Trie in
+  match t with
+  | Leaf (_, leaf) ->
+      if parent_char = polarity then collapse_occ ~count leaf else Succ.empty
+  | Node { leaf = _; children; _ } ->
+      Char.Map.fold
+        (fun parent_char child acc ->
+          let res =
+            collapse_trie_occ_polar ~parent_char ~polarity ~count child
+          in
+          Succ.union acc res)
+        children Succ.empty
+
+let collapse_trie_occ_polar ~polarity ~count t =
+  let open Trie in
+  match t with
+  | Leaf _ -> Succ.empty
+  | Node { leaf = _; children; _ } ->
+      Char.Map.fold
+        (fun parent_char child acc ->
+          let res =
+            collapse_trie_occ_polar ~parent_char ~polarity ~count child
+          in
+          Succ.union acc res)
+        children Succ.empty
 
 let collapse_trie_with_poly ~count name t =
   match name with
   | [ "POLY"; _ ] -> begin
       match t with
-      | Trie.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_count ~count s
+      | Trie.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_occ ~count s
       | _ -> Succ.empty
     end
-  | _ -> collapse_trie ~count t
+  | _ -> collapse_trie_occ ~count t
 
-let find_succ trie name collapse =
-  match Trie.find name trie with
-  | Some trie -> collapse trie
-  | None -> Succ.empty
+let _collapse_trie_with_poly_polar ~polarity ~count name t =
+  match name with
+  | [ "POLY"; _ ] -> begin
+      match t with
+      | Trie.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_occ ~count s
+      | _ -> Succ.empty
+    end
+  | _ -> collapse_trie_occ_polar ~polarity ~count t
 
-let find_inter ~shards names =
+let find_types ~shards names =
   List.fold_left
     (fun acc shard ->
       let db = shard.db_types in
@@ -47,7 +78,18 @@ let find_inter ~shards names =
         @@ List.map
              (fun (name, count) ->
                let name' = List.concat_map Db.list_of_string name in
-               find_succ db name' (collapse_trie_with_poly ~count name))
+               match Trie.find name' db with
+               | Ok trie -> collapse_trie_with_poly ~count name trie
+               | Error (`Stopped_at (i, sub_trie)) ->
+                   let name_str = name' |> List.to_seq |> String.of_seq in
+                   if i = String.length name_str - 1
+                   then
+                     let polarity = name_str.[i] in
+                     match polarity with
+                     | '-' | '+' ->
+                         collapse_trie_occ_polar ~polarity ~count sub_trie
+                     | _ -> Succ.empty
+                   else Succ.empty)
              (regroup names)
       in
       Succ.union acc r)
@@ -63,7 +105,12 @@ let find_names ~(shards : Db.Elt.t array Db.t list) names =
     (fun acc shard ->
       let db_names = shard.db_names in
       let candidates =
-        List.map (fun name -> find_succ db_names name collapse_triechar) names
+        List.map
+          (fun name ->
+            match Trie.find name db_names with
+            | Ok trie -> collapse_trie trie
+            | Error _ -> Succ.empty)
+          names
       in
       let candidates = inter_list candidates in
       Succ.union acc candidates)
@@ -81,7 +128,7 @@ let search ~(shards : Db.Elt.t array Db.t list) query_name query_typ =
     match query_typ with
     | None -> results_name
     | Some query_typ ->
-        let results_typ = find_inter ~shards query_typ in
+        let results_typ = find_types ~shards query_typ in
         Succ.inter results_name results_typ
   in
   results

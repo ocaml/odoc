@@ -1,7 +1,7 @@
   $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
   5.1M	megaodocl
-  $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
+  $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
   Index_lib.main
   Indexing in 3.526566s
   trie_with_array_occ:0.16s

@@ -44,19 +44,24 @@ let rec add path leaf t =
         ; children = M.singleton y (Leaf (ys, outcome))
         }
 
-let rec find path t =
+
+let find path t = 
+let rec loop i path t =
   match t, path with
   | _, [] ->
-      Some t
+      Ok t
   | Node node, p :: path -> begin
       match M.find p node.children with
-      | child -> find path child
-      | exception Not_found -> None
+      | child -> loop (i + 1) path child
+      | exception Not_found -> Error (`Stopped_at (i, t))
     end
-  | Leaf (x :: xs, outcome), y :: ys when x = y -> find ys (Leaf (xs, outcome))
+  | Leaf (x :: xs, outcome), y :: ys when x = y -> loop (i + 1) ys (Leaf (xs, outcome))
   | _ ->
       print_endline "_" ;
-      None
+      Error (`Stopped_at (i, t))
+
+  in 
+  loop 0 path t
 
 let rec fold_map merge transform t =
   match t with
