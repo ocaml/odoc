@@ -260,22 +260,30 @@ let link ?(ignore_output = false) file =
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
 
-let html_generate ?(ignore_output = false) file source =
+let html_generate ?(ignore_output = false) ?(search_files = []) file source =
   let open Cmd in
   let source = match source with None -> empty | Some source -> v "--source" % p source in
+  let search =
+    List.fold_left
+      (fun acc filename -> acc % "--search-file" % filename)
+      empty
+      (List.map Fpath.filename search_files)
+  in
   let cmd =
-    odoc % "html-generate" %% source % p file % "-o" % "html" % "--theme-uri" % "odoc"
+    odoc % "html-generate" %% source % p file %% search % "-o" % "html" % "--theme-uri" % "odoc"
     % "--support-uri" % "odoc"
   in
   let lines = run cmd in
   if not ignore_output then
     add_prefixed_output cmd generate_output (Fpath.to_string file) lines
 
-let support_files () =
+let support_files  ?(search_files = []) () =
   let open Cmd in
-  let cmd = odoc % "support-files" % "-o" % "html/odoc" in
+  let search = List.fold_left (fun acc f -> acc % "--search-file" % p f) empty search_files in
+  let cmd = odoc % "support-files" % "-o" % "html/odoc" %% search in
   run cmd
 ]}
+
 
 We'll now make some library lists. We have not only external dependency
 libraries, but [odoc] itself is also separated into libraries. These two
@@ -623,12 +631,69 @@ let link_all odoc_files =
 
 Now we simply run [odoc html-generate] over all of the resulting [odocl] files.
 This will generate sources, as well as documentation for non-hidden units.
+We notify the generator that the javascript file to use for search is [index.js].
 
 {[
+let search_file = Fpath.v "index.js"
 let generate_all odocl_files =
+  let search_files = [ search_file ] in
   let relativize_opt = function None -> None | Some file -> Some (relativize file) in
-  List.iter (fun (f, source) -> ignore(html_generate f (relativize_opt source))) odocl_files;
-  support_files ()
+  List.iter
+    (fun (f, source) -> ignore(html_generate ~search_files f (relativize_opt source)))
+     odocl_files;
+  support_files ~search_files ()
+]}
+
+Finally, we generate an index of all values, types, ... This index is meant to be consumed by search engines, to create their own index. It consists of a JSON array, containing entries with the name, full name, associated comment, link and anchor, and kind.
+Generating the index is done via [odoc compile-index], which create a json file. This second format is meant to be consumed by search engines to populate their search index. Search engines written in OCaml can also call the [Odoc_model.Fold.unit] and  [Odoc_model.Fold.page] function, in conjunction with [Odoc_search.Entry.entry_of_item] in order to get a (version stable) OCaml value of each element to be indexed.
+
+{[
+let index_generate ?(ignore_output = false) () =
+  let open Cmd in
+  let cmd = odoc % "compile-index" % "-o" % "html/index.json" % "-I" % "." in
+  let lines = run cmd in
+  if not ignore_output then
+    add_prefixed_output cmd generate_output "index compilation" lines;
+]}
+
+We turn the JSON index into a javascript file. In order to never block the UI, this file will be used as a web worker by [odoc], to perform searches:
+
+- The search query will be sent as a plain string to the web worker, using the standard mechanism of message passing
+- The web worker has to sent back the result as a message to the main thread, containing the list of result. Each entry of this list must have the same form as it had in the original JSON file.
+- The file must be given to the [odoc-support] URI.
+
+In this driver, we use the minisearch javascript library. For more involved application, we could use [index.js] to call a server-side search engine via an API call.
+
+{[
+let js_index () =
+  let index = Bos.OS.File.read Fpath.(v "html" / "index.json") |> get_ok in
+  let minisearch = Bos.OS.File.read Fpath.(v "minisearch.js") |> get_ok in
+  Bos.OS.File.writef search_file {|%s
+let documents = 
+  %s
+;
+
+let miniSearch = new MiniSearch({
+  fields: ['id', 'doc'], // fields to index for full-text search
+  storeFields: ['display'], // fields to return with search results
+  extractField: (document, fieldName) => {
+    if (fieldName === 'id') {
+      return document.id.map(e => e.kind + "-" + e.name).join('.')
+    }
+    return document[fieldName]
+  }
+})
+
+
+// Index all documents (except Type extensions which don't have a unique ID)
+miniSearch.addAll(documents.filter(entry => entry.extra.kind != "TypeExtension"));
+
+onmessage = (m) => {
+  let query = m.data;
+  let result = miniSearch.search(query);
+  postMessage(result.slice(0,200).map(a => a.display));
+}
+|} minisearch index
 ]}
 
 The following code executes all of the above, and we're done!
@@ -636,6 +701,8 @@ The following code executes all of the above, and we're done!
 {[
 let compiled = compile_all () in
 let linked = link_all compiled in
+let () = index_generate () in
+let _ = js_index () in
 generate_all linked
 ]}
 
@@ -683,7 +750,49 @@ Let's see if there was any output from the [odoc] invocations:
 # !generate_output;;
 - : string list =
 ["";
- "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_examples.odocl' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
+ "'../src/odoc/bin/main.exe' 'compile-index' '-o' 'html/index.json' '-I' '.'";
+ "index compilation: Warning, resolved hidden path: {type_id}1";
+ "index compilation: Warning, resolved hidden path: {type_id}1";
+ "index compilation: Warning, resolved hidden path: {type_id}1";
+ "index compilation: Warning, resolved hidden path: {type_id}1";
+ "index compilation: Warning, resolved hidden path: {type_id}1";
+ "index compilation: Warning, resolved hidden path: {type_id}1";
+ "index compilation: Warning, resolved hidden path: {type_id}1";
+ "index compilation: Warning, resolved hidden path: {type_id}1";
+ "index compilation: Warning, resolved hidden path: {type_id}1";
+ "index compilation: Warning, resolved hidden path: {type_id}1";
+ "index compilation: Warning, resolved hidden path: {u}3";
+ "index compilation: Warning, resolved hidden path: {u}3";
+ "index compilation: Warning, resolved hidden path: Odoc_examples__.Unexposed.t";
+ "index compilation: Warning, resolved hidden path: Odoc_examples__.Unexposed.t";
+ "index compilation: Warning, resolved hidden path: {directive_info}22";
+ "index compilation: Warning, resolved hidden path: {directive_fun}21";
+ "index compilation: Warning, resolved hidden path: {directive_info}22";
+ "index compilation: Warning, resolved hidden path: {directive_fun}21";
+ "index compilation: Warning, resolved hidden path: {directive_fun}21";
+ "index compilation: Warning, resolved hidden path: {directive_fun}21";
+ "index compilation: Warning, resolved hidden path: {directive_info}22";
+ "index compilation: Warning, resolved hidden path: {directive_info}22";
+ "index compilation: Warning, resolved hidden path: {directive_fun}21";
+ "index compilation: Warning, resolved hidden path: {directive_fun}21";
+ "index compilation: Warning, resolved hidden path: {directive_info}22";
+ "index compilation: Warning, resolved hidden path: {directive_info}22";
+ "index compilation: Warning, resolved hidden path: {event}41";
+ "index compilation: Warning, resolved hidden path: {event}41";
+ "index compilation: Warning, resolved hidden path: {event}41";
+ "index compilation: Warning, resolved hidden path: {event}41";
+ "index compilation: Warning, resolved hidden path: {lex_tables}5";
+ "index compilation: Warning, resolved hidden path: {lex_tables}5";
+ "index compilation: Warning, resolved hidden path: {lex_tables}5";
+ "index compilation: Warning, resolved hidden path: {lex_tables}5";
+ "index compilation: Warning, resolved hidden path: {parser_env}1";
+ "index compilation: Warning, resolved hidden path: {parser_env}1";
+ "index compilation: Warning, resolved hidden path: {parser_env}1";
+ "index compilation: Warning, resolved hidden path: {parse_tables}2";
+ "index compilation: Warning, resolved hidden path: {parse_tables}2";
+ "index compilation: Warning, resolved hidden path: {parser_env}1";
+ "index compilation: Warning, resolved hidden path: {parser_env}1";
+ "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_examples.odocl' '--search-file' 'index.js' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
  "odoc_examples.odocl: Warning, resolved hidden path: Odoc_examples__.Unexposed.t"]
 ]}
 
@@ -698,6 +807,7 @@ features.html
 fonts
 highlight.pack.js
 index.html
+index.js
 interface.html
 katex.min.css
 katex.min.js
@@ -714,6 +824,7 @@ odoc_manpage
 odoc_model
 odoc_model_desc
 odoc_odoc
+odoc_search.js
 odoc_xref2
 odoc_xref_test
 parent_child_spec.html
