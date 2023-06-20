@@ -37,12 +37,9 @@ description: """
 odoc is part of the [OCaml Platform](https://ocaml.org/docs/platform), the recommended set of tools for OCaml.
 """
 
-pin-depends: [
-  ["odoc-parser.dev" "git+https://github.com/ocaml-doc/odoc-parser.git#f98cfe3"]
-]
 
 depends: [
-  "odoc-parser" {>= "2.0.0"}
+  "odoc-parser" {= version}
   "astring"
   "cmdliner" {>= "1.0.0"}
   "cppo" {build & >= "1.1.0"}
