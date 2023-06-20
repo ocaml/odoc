@@ -1,4 +1,5 @@
 module Lang = Lang
+module Fold = Fold
 module Comment = Comment
 module Paths = Paths
 module Names = Names
