@@ -25,11 +25,6 @@ type type_extension_entry = {
   private_ : bool;
 }
 
-type extension_constructor_entry = {
-  args : TypeDecl.Constructor.argument;
-  res : TypeExpr.t option;
-}
-
 type constructor_entry = {
   args : TypeDecl.Constructor.argument;
   res : TypeExpr.t;
@@ -61,7 +56,7 @@ type extra =
   | Method of method_entry
   | Class of class_entry
   | TypeExtension of type_extension_entry
-  | ExtensionConstructor of extension_constructor_entry
+  | ExtensionConstructor of constructor_entry
   | ModuleType
   | Constructor of constructor_entry
   | Field of field_entry
@@ -98,6 +93,19 @@ let entry_of_constructor id_parent params (constructor : TypeDecl.Constructor.t)
             params )
   in
   let extra = Constructor { args; res } in
+  entry ~id:constructor.id ~doc:constructor.doc ~extra
+
+let entry_of_extension_constructor id_parent params
+    (constructor : Extension.Constructor.t) =
+  let args = constructor.args in
+  let res =
+    match constructor.res with
+    | Some res -> res
+    | None ->
+        let params = varify_params params in
+        TypeExpr.Constr (id_parent, params)
+  in
+  let extra = ExtensionConstructor { args; res } in
   entry ~id:constructor.id ~doc:constructor.doc ~extra
 
 let entry_of_field id_parent params (field : TypeDecl.Field.t) =
@@ -199,14 +207,11 @@ let entries_of_item id (x : Odoc_model.Fold.item) =
             in
             entry ~id:c.id ~doc:te.doc ~extra
           in
-          let extension_constructor (ext_constr : Extension.Constructor.t) =
-            let extra =
-              ExtensionConstructor
-                { args = ext_constr.args; res = ext_constr.res }
-            in
-            entry ~id:ext_constr.id ~doc:ext_constr.doc ~extra
-          in
-          type_entry :: List.map extension_constructor te.constructors)
+
+          type_entry
+          :: List.map
+               (entry_of_extension_constructor te.type_path te.type_params)
+               te.constructors)
   | ModuleType mt -> [ entry ~id:mt.id ~doc:mt.doc ~extra:ModuleType ]
   | Doc `Stop -> []
   | Doc (`Docs d) -> entries_of_docs id d

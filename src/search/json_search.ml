@@ -155,11 +155,7 @@ let of_entry ({ id; doc; extra } as entry : Entry.t) : Odoc_html.Json.json =
         return "TypeExtension" [ ("private", `Bool private_) ]
     | ExtensionConstructor { args; res } ->
         let args = json_of_args args in
-        let res =
-          match res with
-          | None -> `Null
-          | Some res -> `String (Render.text_of_type res)
-        in
+        let res = `String (Render.text_of_type res) in
         return "ExtensionConstructor" [ ("args", args); ("res", res) ]
     | ModuleType -> return "ModuleType" []
     | Constructor { args; res } ->

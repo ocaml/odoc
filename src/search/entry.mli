@@ -25,11 +25,6 @@ type type_extension_entry = {
   private_ : bool;
 }
 
-type extension_constructor_entry = {
-  args : TypeDecl.Constructor.argument;
-  res : TypeExpr.t option;
-}
-
 type constructor_entry = {
   args : TypeDecl.Constructor.argument;
   res : TypeExpr.t;
@@ -61,7 +56,7 @@ type extra =
   | Method of method_entry
   | Class of class_entry
   | TypeExtension of type_extension_entry
-  | ExtensionConstructor of extension_constructor_entry
+  | ExtensionConstructor of constructor_entry
   | ModuleType
   | Constructor of constructor_entry
   | Field of field_entry
