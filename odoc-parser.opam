@@ -1,32 +1,30 @@
 opam-version: "2.0"
-
 version: "dev"
-homepage: "http://github.com/ocaml/odoc"
-doc: "https://ocaml.github.io/odoc/"
-bug-reports: "https://github.com/ocaml/odoc/issues"
-license: "ISC"
-
-authors: [
-  "Anton Bachin <antonbachin@yahoo.com>"
-]
-maintainer: "Jon Ludlam <jon@recoil.org>"
-dev-repo: "git+https://github.com/ocaml/odoc.git"
-
-synopsis: "Parser for OCamldoc"
+synopsis: "Parser for ocaml documentation comments"
 description: """
 Odoc_parser is a library for parsing the contents of OCaml documentation
-comments, formatted using 'ocamldoc' syntax.
-"""
-
+comments, formatted using 'odoc' syntax, an extension of the language
+understood by ocamldoc."""
+maintainer: ["Jon Ludlam <jon@recoil.org>"]
+authors: ["Anton Bachin <antonbachin@yahoo.com>"]
+license: "ISC"
+homepage: "https://github.com/ocaml-doc/odoc-parser"
+bug-reports: "https://github.com/ocaml-doc/odoc-parser/issues"
+dev-repo: "git+https://github.com/ocaml-doc/odoc-parser.git"
+# This template exists because without it dune pop is dependencies and build rules
+# involving odoc. Since odoc depends on this package, this doesn't work.
+doc: "https://ocaml-doc.github.io/odoc-parser/"
 depends: [
   "dune" {>= "2.8"}
   "ocaml" {>= "4.02.0"}
   "astring"
   "result"
+  "camlp-streams"
+  "ppx_expect" {with-test}
+  ("ocaml" {< "4.04.1" & with-test} | "sexplib0" {with-test})
 ]
-
 build: [
- ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
@@ -35,5 +33,7 @@ build: [
     "-j"
     jobs
     "@install"
+    "@runtest" {with-test}
   ]
 ]
+
