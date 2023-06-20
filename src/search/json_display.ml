@@ -64,12 +64,12 @@ let rhs_of_kind extra =
   let open Entry in
   match extra with
   | TypeDecl td -> typedecl_rhs td
-  | Constructor cons -> Some (constructor_rhs cons)
+  | Constructor cons | ExtensionConstructor cons -> Some (constructor_rhs cons)
   | Field field -> Some (field_rhs field)
   | Exception { args; res } -> Some (display_expression_rhs args res)
   | Value { value = _; type_ } -> Some (" : " ^ Render.text_of_type type_)
   | Module | Doc _ | Class_type _ | Method _ | Class _ | TypeExtension _
-  | ExtensionConstructor _ | ModuleType ->
+  | ModuleType ->
       None
 
 let of_strings ~id ~url ~doc ~kind ~rhs : Odoc_html.Json.json =
