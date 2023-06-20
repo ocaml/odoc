@@ -10,6 +10,7 @@
   odoc_loader
   odoc_manpage
   odoc_model
+  odoc_search
   odoc_xref2
   tyxml
   unix)

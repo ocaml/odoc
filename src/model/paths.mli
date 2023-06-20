@@ -200,6 +200,10 @@ module Identifier : sig
 
   (* val root : [< t_pv ] id -> RootModule.t_pv id option *)
 
+  val fullname : [< t_pv ] id -> string list
+
+  val is_internal : [< t_pv ] id -> bool
+
   val compare : t -> t -> int
 
   val equal : ([< t_pv ] id as 'a) -> 'a -> bool

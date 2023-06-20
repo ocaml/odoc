@@ -58,9 +58,11 @@ There are two references in N, one should point to a local label and the other t
     <header class="odoc-preamble">
      <h1>Module <code><span>Test.N</span></code></h1>
     </header>
-    <nav class="odoc-toc">
-     <ul><li><a href="#B">An other conflicting label</a></li></ul>
-    </nav>
+    <div class="odoc-sidebar">
+     <nav class="odoc-toc">
+      <ul><li><a href="#B">An other conflicting label</a></li></ul>
+     </nav>
+    </div>
     <div class="odoc-content">
      <h2 id="B"><a href="#B" class="anchor"></a>An other conflicting label</h2>
      <p><a href="#B" title="B">An other conflicting label</a> 
@@ -90,12 +92,14 @@ The second occurence of 'B' in the main page should be disambiguated
     <header class="odoc-preamble">
      <h1>Module <code><span>Test</span></code></h1>
     </header>
-    <nav class="odoc-toc">
-     <ul><li><a href="#A">First label</a></li>
-      <li><a href="#B">Floating label</a></li>
-      <li><a href="#B_2">Dupplicate B</a></li>
-     </ul>
-    </nav>
+    <div class="odoc-sidebar">
+     <nav class="odoc-toc">
+      <ul><li><a href="#A">First label</a></li>
+       <li><a href="#B">Floating label</a></li>
+       <li><a href="#B_2">Dupplicate B</a></li>
+      </ul>
+     </nav>
+    </div>
     <div class="odoc-content">
      <h2 id="A"><a href="#A" class="anchor"></a>First label</h2>
      <h2 id="B"><a href="#B" class="anchor"></a>Floating label</h2>

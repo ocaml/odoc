@@ -37,6 +37,7 @@
   with-theme/katex.min.css
   with-theme/katex.min.js
   with-theme/odoc.css
+  with-theme/odoc_search.js
 
   $ odoc support-files --without-theme -o without-theme
   $ find without-theme | sort
@@ -76,4 +77,5 @@
   without-theme/highlight.pack.js
   without-theme/katex.min.css
   without-theme/katex.min.js
+  without-theme/odoc_search.js
 
