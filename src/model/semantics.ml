@@ -237,7 +237,9 @@ let rec nestable_block_element :
         | None -> None
       in
       let outputs =
-        Option.map (List.map (nestable_block_element status)) output
+        match output with
+        | None -> None
+        | Some l -> Some (List.map (nestable_block_element status) l)
       in
       Location.at location (`Code_block (lang_tag, content, outputs))
   | { value = `Math_block s; location } -> Location.at location (`Math_block s)
