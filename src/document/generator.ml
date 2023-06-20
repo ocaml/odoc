@@ -470,6 +470,8 @@ module Make (Syntax : SYNTAX) = struct
 
     val extension : Lang.Extension.t -> Item.t
 
+    val record : Lang.TypeDecl.Field.t list -> DocumentedSrc.one list
+
     val exn : Lang.Exception.t -> Item.t
 
     val format_params :
@@ -1887,6 +1889,12 @@ module Make (Syntax : SYNTAX) = struct
   end
 
   include Page
+
+  let type_expr = type_expr
+
+  let type_decl = type_decl
+
+  let record = record
 
   let source_page id syntax_info infos source_code =
     Document.Source_page (Source_page.source id syntax_info infos source_code)

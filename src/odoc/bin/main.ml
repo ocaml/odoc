@@ -395,15 +395,56 @@ module Source_tree = struct
     Term.info "source-tree" ~docs ~doc
 end
 
+module Indexing = struct
+  let output_file ~dst =
+    match dst with
+    | Some file -> Fs.File.of_string file
+    | None -> Fs.File.of_string "index.json"
+
+  let index directories dst warnings_options =
+    let output = output_file ~dst in
+    Indexing.compile ~output ~warnings_options ~resolver:() ~parent:()
+      directories
+
+  let cmd =
+    let dst =
+      let doc =
+        "Output file path. Non-existing intermediate directories are created. \
+         Defaults to index.json"
+      in
+      Arg.(
+        value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
+    in
+    Term.(
+      const handle_error
+      $ (const index $ odoc_file_directories $ dst $ warnings_options))
+
+  let info ~docs =
+    let doc =
+      "Generate an index of all identified entries in the .odocl files found \
+       in the given directories."
+    in
+    Term.info "compile-index" ~docs ~doc
+end
+
 module Support_files_command = struct
-  let support_files without_theme output_dir =
-    Support_files.write ~without_theme output_dir
+  let support_files without_theme search_files output_dir =
+    Support_files.write ~without_theme ~search_files output_dir
 
   let without_theme =
     let doc = "Don't copy the default theme to output directory." in
     Arg.(value & flag & info ~doc [ "without-theme" ])
 
-  let cmd = Term.(const support_files $ without_theme $ dst ~create:true ())
+  let search_files =
+    let doc =
+      "Path to the search files. The name must match one given in \
+       $(i,--search-file) from the $(i,html-generate) command."
+    in
+    Arg.(value & opt_all convert_fpath [] & info ~doc [ "search-file" ])
+
+  let cmd =
+    Term.(
+      const support_files $ without_theme $ search_files $ dst ~create:true ())
 
   let info ~docs =
     let doc =
@@ -723,6 +764,13 @@ module Odoc_html_args = struct
     in
     Arg.(value & flag & info ~doc [ "as-json" ])
 
+  let search_files =
+    let doc =
+      "The name of a javascript file to use for search. Will be run in a \
+       webworker. Using this option adds a search-bar in the generated html."
+    in
+    Arg.(value & opt_all string [] & info ~doc [ "search-file" ])
+
   let source_file =
     let doc =
       "Source code for the compilation unit. It must have been compiled with \
@@ -754,7 +802,7 @@ module Odoc_html_args = struct
 
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri flat
-        as_json source_file assets source_root =
+        as_json source_file assets search_files source_root =
       let open_details = not closed_details in
       let source =
         match (source_root, source_file) with
@@ -767,13 +815,14 @@ module Odoc_html_args = struct
       in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~semantic_uris ~indent ~flat
-          ~open_details ~as_json ()
+          ~open_details ~as_json ~search_files ()
       in
       { Html_page.html_config; source; assets }
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ flat $ as_json $ source_file $ assets $ source_root)
+      $ support_uri $ flat $ as_json $ source_file $ assets $ search_files
+      $ source_root)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)
@@ -994,11 +1043,14 @@ module Targets = struct
   end
 
   module Support_files = struct
-    let list_targets without_theme output_directory =
-      Support_files.print_filenames ~without_theme output_directory
+    let list_targets without_theme search_files output_directory =
+      Support_files.print_filenames ~without_theme ~search_files
+        output_directory
 
     let cmd =
-      Term.(const list_targets $ Support_files_command.without_theme $ dst ())
+      Term.(
+        const list_targets $ Support_files_command.without_theme
+        $ Support_files_command.search_files $ dst ())
 
     let info ~docs =
       Term.info "support-files-targets" ~docs
@@ -1052,6 +1104,7 @@ let () =
       Odoc_html.generate ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
       Source_tree.(cmd, info ~docs:section_pipeline);
+      Indexing.(cmd, info ~docs:section_pipeline);
       Odoc_manpage.generate ~docs:section_generators;
       Odoc_latex.generate ~docs:section_generators;
       Odoc_html_url.(cmd, info ~docs:section_support);

@@ -1,0 +1,4 @@
+(library
+ (name odoc_search)
+ (public_name odoc.search)
+ (libraries odoc_html odoc_model tyxml))

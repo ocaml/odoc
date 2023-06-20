@@ -63,7 +63,81 @@ module Identifier = struct
         name_aux (x :> t) ^ "#" ^ LocalName.to_string anchor
     | `AssetFile (_, name) -> name
 
+  let rec is_internal : t -> bool =
+   fun x ->
+    match x.iv with
+    | `Root (_, name) -> ModuleName.is_internal name
+    | `Page (_, _) -> false
+    | `LeafPage (_, _) -> false
+    | `Module (_, name) -> ModuleName.is_internal name
+    | `Parameter (_, name) -> ModuleName.is_internal name
+    | `Result x -> is_internal (x :> t)
+    | `ModuleType (_, name) -> ModuleTypeName.is_internal name
+    | `Type (_, name) -> TypeName.is_internal name
+    | `CoreType name -> TypeName.is_internal name
+    | `Constructor (parent, _) -> is_internal (parent :> t)
+    | `Field (parent, _) -> is_internal (parent :> t)
+    | `Extension (parent, _) -> is_internal (parent :> t)
+    | `Exception (parent, _) -> is_internal (parent :> t)
+    | `CoreException _ -> false
+    | `Value (_, name) -> ValueName.is_internal name
+    | `Class (_, name) -> ClassName.is_internal name
+    | `ClassType (_, name) -> ClassTypeName.is_internal name
+    | `Method (parent, _) -> is_internal (parent :> t)
+    | `InstanceVariable (parent, _) -> is_internal (parent :> t)
+    | `Label (parent, _) -> is_internal (parent :> t)
+    | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
+    | `SourceLocationInternal _ | `AssetFile _ ->
+        false
+
   let name : [< t_pv ] id -> string = fun n -> name_aux (n :> t)
+
+  let rec full_name_aux : t -> string list =
+   fun x ->
+    match x.iv with
+    | `Root (_, name) -> [ ModuleName.to_string name ]
+    | `Page (_, name) -> [ PageName.to_string name ]
+    | `LeafPage (_, name) -> [ PageName.to_string name ]
+    | `Module (parent, name) ->
+        ModuleName.to_string name :: full_name_aux (parent :> t)
+    | `Parameter (parent, name) ->
+        ModuleName.to_string name :: full_name_aux (parent :> t)
+    | `Result x -> full_name_aux (x :> t)
+    | `ModuleType (parent, name) ->
+        ModuleTypeName.to_string name :: full_name_aux (parent :> t)
+    | `Type (parent, name) ->
+        TypeName.to_string name :: full_name_aux (parent :> t)
+    | `CoreType name -> [ TypeName.to_string name ]
+    | `Constructor (parent, name) ->
+        ConstructorName.to_string name :: full_name_aux (parent :> t)
+    | `Field (parent, name) ->
+        FieldName.to_string name :: full_name_aux (parent :> t)
+    | `Extension (parent, name) ->
+        ExtensionName.to_string name :: full_name_aux (parent :> t)
+    | `Exception (parent, name) ->
+        ExceptionName.to_string name :: full_name_aux (parent :> t)
+    | `CoreException name -> [ ExceptionName.to_string name ]
+    | `Value (parent, name) ->
+        ValueName.to_string name :: full_name_aux (parent :> t)
+    | `Class (parent, name) ->
+        ClassName.to_string name :: full_name_aux (parent :> t)
+    | `ClassType (parent, name) ->
+        ClassTypeName.to_string name :: full_name_aux (parent :> t)
+    | `Method (parent, name) ->
+        MethodName.to_string name :: full_name_aux (parent :> t)
+    | `InstanceVariable (parent, name) ->
+        InstanceVariableName.to_string name :: full_name_aux (parent :> t)
+    | `Label (parent, name) ->
+        LabelName.to_string name :: full_name_aux (parent :> t)
+    | `AssetFile (parent, name) -> name :: full_name_aux (parent :> t)
+    | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
+    | `SourceLocationInternal _ ->
+        []
+
+  let fullname : [< t_pv ] id -> string list =
+   fun n -> List.rev @@ full_name_aux (n :> t)
+
+  let is_internal : [< t_pv ] id -> bool = fun n -> is_internal (n :> t)
 
   let rec label_parent_aux =
     let open Id in

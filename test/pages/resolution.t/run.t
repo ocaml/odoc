@@ -132,6 +132,7 @@ Let's also check the hierarchy of files produced:
   html/katex.min.css
   html/katex.min.js
   html/odoc.css
+  html/odoc_search.js
   html/top1/index.html
   html/top1/sub1/M1/index.html
   html/top1/sub1/index.html
