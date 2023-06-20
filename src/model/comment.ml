@@ -54,7 +54,10 @@ type 'a abstract_table = {
 
 type nestable_block_element =
   [ `Paragraph of paragraph
-  | `Code_block of string option * string with_location * nestable_block_element with_location list option
+  | `Code_block of
+    string option
+    * string with_location
+    * nestable_block_element with_location list option
   | `Math_block of string
   | `Verbatim of string
   | `Modules of module_reference list

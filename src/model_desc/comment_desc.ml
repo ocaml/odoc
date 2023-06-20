@@ -19,7 +19,10 @@ and general_link_content = general_inline_element with_location list
 
 type general_block_element =
   [ `Paragraph of general_link_content
-  | `Code_block of string option * string with_location * general_block_element with_location list option
+  | `Code_block of
+    string option
+    * string with_location
+    * general_block_element with_location list option
   | `Math_block of string
   | `Verbatim of string
   | `Modules of Comment.module_reference list

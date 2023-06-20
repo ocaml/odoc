@@ -191,20 +191,28 @@ let module_references ms =
   let items = List.map module_reference ms in
   block ~attr:[ "modules" ] @@ Description items
 
-let rec nestable_block_element : Comment.nestable_block_element -> Block.one list =
+let rec nestable_block_element :
+    Comment.nestable_block_element -> Block.one list =
  fun content ->
   match content with
-  | `Paragraph p -> [paragraph p]
+  | `Paragraph p -> [ paragraph p ]
   | `Code_block (lang_tag, code, outputs) ->
       let lang_tag =
         match lang_tag with None -> default_lang_tag | Some t -> t
       in
-      let rest = match outputs with | Some xs -> nestable_block_element_list xs | None -> [] in
-      [block
-      @@ Source (lang_tag, source_of_code (Odoc_model.Location_.value code)) ] @ rest
-  | `Math_block s -> [block @@ Math s]
-  | `Verbatim s -> [block @@ Verbatim s]
-  | `Modules ms -> [module_references ms]
+      let rest =
+        match outputs with
+        | Some xs -> nestable_block_element_list xs
+        | None -> []
+      in
+      [
+        block
+        @@ Source (lang_tag, source_of_code (Odoc_model.Location_.value code));
+      ]
+      @ rest
+  | `Math_block s -> [ block @@ Math s ]
+  | `Verbatim s -> [ block @@ Verbatim s ]
+  | `Modules ms -> [ module_references ms ]
   | `List (kind, items) ->
       let kind =
         match kind with
@@ -217,7 +225,7 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one lis
         | item -> nestable_block_element_list item
       in
       let items = List.map f items in
-      [block @@ Block.List (kind, items)]
+      [ block @@ Block.List (kind, items) ]
   | `Table { data; align } ->
       let data =
         List.map
@@ -250,14 +258,17 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one lis
         (* We should also check wellness of number of table cells vs alignment,
            and raise warnings *)
       in
-      [block @@ Table { data; align }]
+      [ block @@ Table { data; align } ]
 
 and paragraph : Comment.paragraph -> Block.one = function
   | [ { value = `Raw_markup (target, s); _ } ] ->
       block @@ Block.Raw_markup (target, s)
   | p -> block @@ Block.Paragraph (inline_element_list p)
 
-and nestable_block_element_list : Comment.nestable_block_element Comment.with_location list -> Block.one list = fun elements ->
+and nestable_block_element_list :
+    Comment.nestable_block_element Comment.with_location list -> Block.one list
+    =
+ fun elements ->
   elements
   |> List.map Odoc_model.Location_.value
   |> List.map nestable_block_element

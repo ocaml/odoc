@@ -305,8 +305,8 @@ module Make (Syntax : SYNTAX) = struct
                           let arguments = style_arguments ~constant arguments in
                           O.span
                             (if Syntax.Type.Variant.parenthesize_params then
-                             constr ++ arguments
-                            else constr ++ O.txt " of" ++ O.sp ++ arguments))
+                               constr ++ arguments
+                             else constr ++ O.txt " of" ++ O.sp ++ arguments))
                   in
                   if add_pipe then O.sp ++ res else res
             in
@@ -536,11 +536,11 @@ module Make (Syntax : SYNTAX) = struct
           O.documentedSrc
             (cstr
             ++ (if Syntax.Type.Variant.parenthesize_params then
-                O.txt "(" ++ params ++ O.txt ")"
-               else
-                 (if is_gadt then O.txt Syntax.Type.annotation_separator
-                 else O.txt " " ++ O.keyword "of" ++ O.txt " ")
-                 ++ params)
+                  O.txt "(" ++ params ++ O.txt ")"
+                else
+                  (if is_gadt then O.txt Syntax.Type.annotation_separator
+                   else O.txt " " ++ O.keyword "of" ++ O.txt " ")
+                  ++ params)
             ++ ret_type)
       | Record fields ->
           if is_gadt then
@@ -788,8 +788,8 @@ module Make (Syntax : SYNTAX) = struct
             O.txt (if is_substitution then " :=" else " =")
             ++ O.sp
             ++ (if private_ then
-                O.keyword Syntax.Type.private_keyword ++ O.txt " "
-               else O.noop)
+                  O.keyword Syntax.Type.private_keyword ++ O.txt " "
+                else O.noop)
             ++ type_expr t
           in
           (manifest, false)
