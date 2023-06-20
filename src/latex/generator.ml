@@ -353,7 +353,7 @@ let rec documentedSrc (t : DocumentedSrc.t) =
         non_empty_code_fragment code @ to_latex rest
     | Alternative (Expansion e) :: rest ->
         (if Link.should_inline e.status e.url then to_latex e.expansion
-        else non_empty_code_fragment e.summary)
+         else non_empty_code_fragment e.summary)
         @ to_latex rest
     | Subpage subp :: rest ->
         Indented (items subp.content.items) :: to_latex rest
