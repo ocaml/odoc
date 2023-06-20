@@ -29,7 +29,7 @@ module Kind = struct
     | Method
     | Class
     | TypeExtension
-    | ExtensionConstructor
+    | ExtensionConstructor of 'a
     | ModuleType
     | Constructor of 'a
     | Field of 'a
@@ -46,7 +46,7 @@ module Kind = struct
   let method_ = Method
   let class_ = Class
   let type_extension = TypeExtension
-  let extension_constructor = ExtensionConstructor
+  let extension_constructor type_path = ExtensionConstructor type_path
   let module_type = ModuleType
   let constructor type_path = Constructor type_path
   let field type_path = Field type_path
@@ -61,7 +61,7 @@ module Kind = struct
     | Method -> "meth"
     | Class -> "class"
     | TypeExtension -> "type"
-    | ExtensionConstructor -> "cons"
+    | ExtensionConstructor _ -> "cons"
     | ModuleType -> "sig"
     | Constructor _ -> "cons"
     | Field _ -> "field"

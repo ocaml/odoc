@@ -199,9 +199,13 @@ module Reasoning = struct
     let open Elt in
     match query_type, elt.kind with
     | [], _ -> None
-    | _, Elt.Kind.(Constructor type_paths | Field type_paths | Val type_paths)
-      ->
-        Some (Type_distance.v query_type type_paths)
+    | ( _
+      , Elt.Kind.(
+          ( ExtensionConstructor paths
+          | Constructor paths
+          | Field paths
+          | Val paths )) ) ->
+        Some (Type_distance.v query_type paths)
     | _ -> None
 
   let type_in_query query_type =
@@ -210,7 +214,7 @@ module Reasoning = struct
   let type_in_elt elt =
     let open Elt in
     match elt.kind with
-    | Constructor _ | Field _ | Val _ -> true
+    | ExtensionConstructor _ | Constructor _ | Field _ | Val _ -> true
     | _ -> false
 
   let is_stdlib elt =
@@ -227,7 +231,7 @@ module Reasoning = struct
     | Elt.Kind.Method -> Method
     | Elt.Kind.Class -> Class
     | Elt.Kind.TypeExtension -> TypeExtension
-    | Elt.Kind.ExtensionConstructor -> ExtensionConstructor
+    | Elt.Kind.ExtensionConstructor _ -> ExtensionConstructor
     | Elt.Kind.ModuleType -> ModuleType
     | Elt.Kind.Constructor _ -> Constructor
     | Elt.Kind.Field _ -> Field

@@ -54,3 +54,14 @@ module S_to_S1 : sig end
 val hidden : foo
 (**/**)
 
+val poly_1 : 'a -> 'b -> 'c
+
+val poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
+
+type 'a boo
+
+val poly_param : 'a boo
+
+type extensible_type = ..
+
+type extensible_type += MyExtension of moo

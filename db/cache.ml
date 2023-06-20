@@ -163,6 +163,9 @@ module Kind = Make (struct
     | Constructor type_ ->
         let uid, type_ = String_list_list.memo type_ in
         Constructor uid, Constructor type_
+    | ExtensionConstructor type_ ->
+        let uid, type_ = String_list_list.memo type_ in
+        ExtensionConstructor uid, ExtensionConstructor type_
     | Field type_ ->
         let uid, type_ = String_list_list.memo type_ in
         Field uid, Field type_
@@ -178,7 +181,6 @@ module Kind = Make (struct
     | Method -> Method, Method
     | Class -> Class, Class
     | TypeExtension -> TypeExtension, TypeExtension
-    | ExtensionConstructor -> ExtensionConstructor, ExtensionConstructor
     | ModuleType -> ModuleType, ModuleType
 end)
 
@@ -206,7 +208,7 @@ module Elt = struct
       | Method -> 8
       | Class -> 9
       | TypeExtension -> 10
-      | ExtensionConstructor -> 11
+      | ExtensionConstructor _ -> 11
       | ModuleType -> 12
 
     let sub ~memo:_ Elt.{ name; kind; doc_html; score; pkg; rhs; url } =

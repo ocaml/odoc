@@ -53,7 +53,7 @@ let collapse_trie_occ_polar ~polarity ~count t =
 
 let collapse_trie_with_poly ~count name t =
   match name with
-  | [ "POLY"; _ ] -> begin
+  | [ "POLY"; ("+" | "-") ] -> begin
       match t with
       | Trie.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_occ ~count s
       | _ -> Succ.empty
@@ -62,7 +62,7 @@ let collapse_trie_with_poly ~count name t =
 
 let _collapse_trie_with_poly_polar ~polarity ~count name t =
   match name with
-  | [ "POLY"; _ ] -> begin
+  | [ "POLY"; ("+" | "-") ] -> begin
       match t with
       | Trie.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_occ ~count s
       | _ -> Succ.empty

@@ -5,10 +5,10 @@
   $ odoc link -I . page-page.odoc
   $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
-  4.0K	megaodocl
+  8.0K	megaodocl
   $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
   Index_lib.main
-  Indexing in 0.001000s
+  Indexing in 0.001179s
   trie_with_array_occ:0.00s
   trie_with_array:0.00s
   Cache.Elt_array_occ_trie.memo:0.00s
@@ -46,6 +46,7 @@
   212 val Main.consume : moo -> unit
   215 val Main.consume_2 : moo -> moo -> unit
   221 val Main.consume_2_other : moo -> t -> unit
+  266 cons Main.MyExtension : moo -> extensible_type
   $ sherlodoc --print-cost "modtype"
   112 sig Main.Modtype
   325 val Main.Modtype.v_modtype : foo
@@ -61,15 +62,31 @@
   321 val Main.consume_2 : moo -> moo -> unit
   323 val Main.Map.to_list : foo
   327 val Main.consume_2_other : moo -> t -> unit
+  327 type Main.extensible_type = ..
   328 val Main.nesting_priority : foo
   333 val Main.Nest.nesting_priority : foo
+  373 cons Main.MyExtension : moo -> extensible_type
   1108 val Main.foo : foo
   1154 doc page
   $ sherlodoc --print-cost "qwertyuiopasdfghjklzxcvbnm"
   [No results]
+TODO : get a result for the query bellow
   $ sherlodoc --print-cost "hidden"
   [No results]
   $ sherlodoc --print-cost ":mo"
   217 val Main.value : moo
   220 val Main.produce : unit -> moo
   224 val Main.produce_2' : unit -> unit -> moo
+  $ sherlodoc ":'a"
+  val Main.poly_1 : 'a -> 'b -> 'c
+  val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
+  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  $ sherlodoc ": 'a -> 'b -> 'c "
+  [No results]
+  $ sherlodoc ": ('a -> 'b) -> 'a t -> 'b t"
+  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+TODO : get a result for the query bellow
+  $ sherlodoc ": 'a bo"
+  [No results]
+  $ sherlodoc ":extensible_type"
+  cons Main.MyExtension : moo -> extensible_type

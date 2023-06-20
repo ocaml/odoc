@@ -57,7 +57,6 @@ let rec loop i path t =
     end
   | Leaf (x :: xs, outcome), y :: ys when x = y -> loop (i + 1) ys (Leaf (xs, outcome))
   | _ ->
-      print_endline "_" ;
       Error (`Stopped_at (i, t))
 
   in 

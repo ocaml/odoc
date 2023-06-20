@@ -25,7 +25,7 @@ module Make (Storage : Db.Storage.S) = struct
     | Doc -> 400
     | TypeDecl | Module -> 0
     | Exception | Class_type | Method | Class | TypeExtension -> 1000
-    | ExtensionConstructor | ModuleType -> 10
+    | ExtensionConstructor _ | ModuleType -> 10
 
   let cost ~name ~kind ~doc_html =
     let ignore_no_doc =
@@ -191,7 +191,10 @@ module Make (Storage : Db.Storage.S) = struct
     | Method _ -> Method
     | Class _ -> Class
     | TypeExtension _ -> TypeExtension
-    | ExtensionConstructor _ -> ExtensionConstructor
+    | ExtensionConstructor { args; res } ->
+        let searchable_type = searchable_type_of_constructor args res in
+        let paths = paths ~prefix:[] ~sgn:Pos searchable_type in
+        Elt.Kind.extension_constructor paths
     | ModuleType -> ModuleType
 
   let convert_kind k = k |> convert_kind |> Cache.Kind_.memo
@@ -215,9 +218,8 @@ module Make (Storage : Db.Storage.S) = struct
       | Method _ -> ()
       | Class _ -> ()
       | TypeExtension _ -> ()
-      | ExtensionConstructor _ -> ()
       | ModuleType -> ()
-      | Constructor { args; res } ->
+      | ExtensionConstructor { args; res } | Constructor { args; res } ->
           let type_ = searchable_type_of_constructor args res in
           register_type_expr elt type_
       | Field { mutable_ = _; parent_type; type_ } ->
@@ -232,7 +234,12 @@ module Make (Storage : Db.Storage.S) = struct
         } =
     let open Odoc_search in
     let open Odoc_search.Entry in
-    if Odoc_model.Paths.Identifier.is_internal id
+    let is_type_extension =
+      match extra with
+      | TypeExtension _ -> true
+      | _ -> false
+    in
+    if Odoc_model.Paths.Identifier.is_internal id || is_type_extension
     then ()
     else
       let full_name = id |> Pretty.fullname |> String.concat "." in
