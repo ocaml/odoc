@@ -9,10 +9,8 @@ maintainer: ["Jon Ludlam <jon@recoil.org>"]
 authors: ["Anton Bachin <antonbachin@yahoo.com>"]
 license: "ISC"
 homepage: "https://github.com/ocaml-doc/odoc-parser"
-bug-reports: "https://github.com/ocaml-doc/odoc-parser/issues"
-dev-repo: "git+https://github.com/ocaml-doc/odoc-parser.git"
-# This template exists because without it dune pop is dependencies and build rules
-# involving odoc. Since odoc depends on this package, this doesn't work.
+bug-reports: "https://github.com/ocaml/odoc/issues"
+dev-repo: "git+https://github.com/ocaml/odoc.git"
 doc: "https://ocaml-doc.github.io/odoc-parser/"
 depends: [
   "dune" {>= "2.8"}
