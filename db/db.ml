@@ -97,13 +97,6 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
     let equal x y = Option.equal (fun x y -> x == y) x y
   end)
 
-  module Hocc = Hashtbl.Make (struct
-    type t = Elt.Set.t Occ.t option
-
-    let hash = Hashtbl.hash
-    let equal x y = Option.equal (fun x y -> x == y) x y
-  end)
-
   let set_add elt = function
     | None -> Elt.Set.singleton elt
     | Some s -> Elt.Set.add elt s
@@ -122,29 +115,22 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
         let s = set_add ~hs elt s in
         Occ.add count s m
 
-  let candidates_add ~ho ~hs elt ~count opt =
-    try Hocc.find ho opt
-    with Not_found ->
-      let r = candidates_add ~hs ~count elt opt in
-      Hocc.add ho opt r ;
-      r
 
-  let store ~ho ~hs name elt ~count =
+  let store ~hs name elt ~count =
     let rec go db name =
       match name with
       | [] -> db
       | _ :: next ->
           incr load_counter ;
-          let db = Trie.add name (candidates_add ~ho ~hs elt ~count) db in
+          let db = Trie.add name (candidates_add  ~hs elt ~count) db in
           go db next
     in
     db_types := go !db_types name
 
   let store_type_paths elt paths =
-    let ho = Hocc.create 16 in
     let hs = Hset.create 16 in
     List.iter
-      (fun (path, count) -> store ~ho ~hs ~count path elt)
+      (fun (path, count) -> store ~hs ~count path elt)
       (regroup_chars paths)
 
   let store_type_paths elt paths =

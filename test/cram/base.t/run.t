@@ -50,15 +50,15 @@
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
-  Indexing in 3.142412s
-  trie_with_array_occ:0.15s
+  Indexing in 3.984759s
+  trie_with_array_occ:0.18s
   trie_with_array:0.09s
-  Cache.Elt_array_occ_trie.memo:0.68s
-  Cache.Elt_array_trie.memo:0.88s
+  Cache.Elt_array_occ_trie.memo:0.92s
+  Cache.Elt_array_trie.memo:1.02s
   
-  real	0m5.366s
-  user	0m5.302s
-  sys	0m0.050s
+  real	0m6.693s
+  user	0m6.558s
+  sys	0m0.106s
 $ sherlodoc_index --format=marshal --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --empty-payload --db=db_empty_payload.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-docstring=false --db=db_no_docstring.js $(find . -name '*.odocl') 2> /dev/null
@@ -71,8 +71,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2888	db.js
-  2176	db.js.gz
+  2896	db.js
+  2184	db.js.gz
   1628	megaodocl.gz
 
 

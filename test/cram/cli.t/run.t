@@ -8,7 +8,7 @@
   8.0K	megaodocl
   $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
   Index_lib.main
-  Indexing in 0.001179s
+  Indexing in 0.002140s
   trie_with_array_occ:0.00s
   trie_with_array:0.00s
   Cache.Elt_array_occ_trie.memo:0.00s
@@ -82,7 +82,8 @@ TODO : get a result for the query bellow
   val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   $ sherlodoc ": 'a -> 'b -> 'c "
-  [No results]
+  val Main.poly_1 : 'a -> 'b -> 'c
+  val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
   $ sherlodoc ": ('a -> 'b) -> 'a t -> 'b t"
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
 TODO : get a result for the query bellow
