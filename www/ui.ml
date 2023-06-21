@@ -19,22 +19,7 @@ let render_elt elt =
     | Some rhs -> [ html_txt rhs ]
     | None -> []
   in
-  let kind =
-    match elt.kind with
-    | Val _ -> "val "
-    | Doc -> "comment "
-    | TypeDecl -> "type "
-    | Module -> "module "
-    | Exception -> "exception "
-    | Class_type -> "class type"
-    | Method -> "method "
-    | Class -> "class "
-    | TypeExtension -> "type extension "
-    | ExtensionConstructor -> "ext constructor "
-    | ModuleType -> "module type "
-    | Constructor _ -> "constructor "
-    | Field _ -> "field "
-  in
+  let kind = Db.Elt.Kind.to_string elt.kind ^ " " in
   [ txt kind; a ~a:link [ em [ txt elt.name ] ] ] @ rhs
 
 let render_pkg elt =

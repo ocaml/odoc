@@ -1,4 +1,4 @@
-open Common
+
 module Elt = Db.Elt
 
 module Type_distance = struct

@@ -4,6 +4,8 @@ module type SET = sig
 
   val of_list : elt list -> t
   val is_empty : t -> bool
+  val pprint : t -> PPrint.document
+  val pprint_elt : elt -> PPrint.document
 end
 
 module Doc = struct
@@ -25,31 +27,28 @@ module Doc = struct
 end
 
 module Buf = struct
-  module Cache = Hashtbl.Make (struct
-    include String
-
-    let hash = Hashtbl.hash
-  end)
+  (** This module allows to construct a big string such that if you add the same
+      string twice, the second addition is not performed. *)
 
   type t =
     { buffer : Buffer.t
-    ; cache : int Cache.t
+    ; cache : int String.Hashtbl.t
     }
 
-  let make () = { buffer = Buffer.create 16; cache = Cache.create 16 }
+  let make () = { buffer = Buffer.create 16; cache = String.Hashtbl.create 16 }
   let contents t = Buffer.contents t.buffer
   let get t i = Buffer.nth t.buffer i
 
   let add { buffer; cache } substr =
-    match Cache.find cache substr with
-    | start -> start
-    | exception Not_found ->
+    match String.Hashtbl.find_opt cache substr with
+    | Some start -> start
+    | None ->
         let start = Buffer.length buffer in
         Buffer.add_string buffer substr ;
         let stop = Buffer.length buffer in
         assert (stop - start = String.length substr) ;
         for idx = 1 to String.length substr - 1 do
-          Cache.add cache
+          String.Hashtbl.add cache
             (String.sub substr idx (String.length substr - idx))
             (start + idx)
         done ;
@@ -57,6 +56,8 @@ module Buf = struct
 end
 
 module Make (S : SET) = struct
+  (** Terminals is the temporary storage for the payload of the leafs. It is 
+      converted into [S.t] after the suffix tree is built. *)
   module Terminals = struct
     type t = S.elt list
 
@@ -71,19 +72,24 @@ module Make (S : SET) = struct
     let hash = Hashtbl.hash
     let equal = List.equal ( == )
 
-    let mem x = function
+    let mem (x : S.elt) = function
       | y :: _ -> x == y
       | _ -> false
-  end
 
-  module Char_map = Map.Make (Char)
+    module Hashtbl = Hashtbl.Make (struct
+      type nonrec t = t
+
+      let hash = hash
+      let equal = equal
+    end)
+  end
 
   type node =
     { mutable start : int
     ; mutable len : int
     ; mutable suffix_link : node option
     ; mutable terminals : Terminals.t
-    ; mutable children : node Char_map.t
+    ; mutable children : node Char.Map.t
     }
 
   type writer =
@@ -96,7 +102,7 @@ module Make (S : SET) = struct
     ; len = 0
     ; suffix_link = None
     ; terminals = Terminals.empty
-    ; children = Char_map.empty
+    ; children = Char.Map.empty
     }
 
   let make () = { root = make_root (); buffer = Buf.make () }
@@ -108,7 +114,7 @@ module Make (S : SET) = struct
       ; len
       ; suffix_link = None
       ; terminals = Terminals.empty
-      ; children = Char_map.singleton split_chr node
+      ; children = Char.Map.singleton split_chr node
       }
     in
     node.start <- node.start + len + 1 ;
@@ -144,7 +150,7 @@ module Make (S : SET) = struct
     ; len
     ; suffix_link = None
     ; terminals = Terminals.singleton doc.Doc.uid
-    ; children = Char_map.empty
+    ; children = Char.Map.empty
     }
 
   let set_suffix_link ~prev ~depth node =
@@ -204,7 +210,7 @@ module Make (S : SET) = struct
               follow_suffix ~prev ~prev_leaf ~parent:node ~depth ~i
             end
         | Char chr -> begin
-            match Char_map.find chr node.children with
+            match Char.Map.find chr node.children with
             | child ->
                 assert (depth >= 0) ;
                 assert (i - depth >= 0) ;
@@ -216,12 +222,12 @@ module Make (S : SET) = struct
                 assert (i < Doc.length doc) ;
                 if len = child.len
                 then
-                  if not (Char_map.is_empty child.children)
+                  if not (Char.Map.is_empty child.children)
                   then go ~prev ~prev_leaf ~depth child i
                   else add_leaf ~prev_leaf ~node ~child ~depth ~i ~len
                 else begin
                   let new_child = split_at ~str:trie.buffer child len in
-                  node.children <- Char_map.add chr new_child node.children ;
+                  node.children <- Char.Map.add chr new_child node.children ;
                   let prev = set_suffix_link ~prev ~depth new_child in
                   assert (prev = None) ;
                   add_leaf ~prev_leaf ~node ~child:new_child ~depth ~i ~len
@@ -230,7 +236,7 @@ module Make (S : SET) = struct
                 let new_leaf =
                   make_leaf ~prev_leaf ~buffer:trie.buffer ~doc i
                 in
-                node.children <- Char_map.add chr new_leaf node.children ;
+                node.children <- Char.Map.add chr new_leaf node.children ;
                 let prev_leaf =
                   set_leaf ~debug:"1" ~prev_leaf
                     ~depth:(depth + Doc.length doc - i)
@@ -285,7 +291,7 @@ module Make (S : SET) = struct
             | None -> None
             | Some (t, depth) -> Some (t, depth, Terminals.empty)
           in
-          child.children <- Char_map.add new_chr new_leaf child.children ;
+          child.children <- Char.Map.add new_chr new_leaf child.children ;
           let prev = Some (child, depth - 1) in
           let i, depth = i - len, depth - len in
           follow_suffix ~prev ~prev_leaf ~parent:node ~depth ~i
@@ -305,6 +311,10 @@ module Make (S : SET) = struct
   let add_suffixes t text elt = add_document t { Doc.text; uid = elt }
 
   module Automata = struct
+    (** Automata is the most compact version that uses arrays for branching. It
+        is not practical to use it for constructing a suffix tree, but it is 
+        better for serialiazing. *)
+
     module Uid = struct
       let gen = ref 0
 
@@ -313,8 +323,6 @@ module Make (S : SET) = struct
         gen := u + 1 ;
         u
     end
-
-    module Hterm = Hashtbl.Make (Terminals)
 
     module T = struct
       type node =
@@ -371,6 +379,8 @@ module Make (S : SET) = struct
         let child = find ~str:t.str t.t pattern 0 in
         { str = t.str; t = child }
 
+      let find t pattern = try Some (find t pattern) with Not_found -> None
+
       let rec collapse acc t =
         let acc = if S.is_empty t.terminals then acc else t.terminals :: acc in
         Array.fold_left collapse acc t.children
@@ -379,10 +389,10 @@ module Make (S : SET) = struct
     end
 
     let export_terminals ~cache_term ts =
-      try Hterm.find cache_term ts
+      try Terminals.Hashtbl.find cache_term ts
       with Not_found ->
         let result = Uid.make (), S.of_list ts in
-        Hterm.add cache_term ts result ;
+        Terminals.Hashtbl.add cache_term ts result ;
         result
 
     let rec export ~cache ~cache_term node =
@@ -390,8 +400,8 @@ module Make (S : SET) = struct
         export_terminals ~cache_term node.terminals
       in
       let children =
-        Char_map.bindings
-        @@ Char_map.map (export ~cache ~cache_term) node.children
+        Char.Map.bindings
+        @@ Char.Map.map (export ~cache ~cache_term) node.children
       in
       let children_uids = List.map (fun (chr, (uid, _)) -> chr, uid) children in
       let key = node.start, node.len, terminals_uid, children_uids in
@@ -409,12 +419,27 @@ module Make (S : SET) = struct
 
     let clear ~str t =
       let cache = Hashtbl.create 16 in
-      let cache_term = Hterm.create 16 in
+      let cache_term = Terminals.Hashtbl.create 16 in
       let _, t = export ~cache ~cache_term t in
       { T.str; t }
+
+    let pprint T.{ t; str } =
+      let open PPrint in
+      let rec node T.{ start; len; terminals; children } =
+        OCaml.string (String.sub str (start -1) (len )) ^^ space
+        ^^ align (S.pprint terminals) ^^ break 1
+        ^^ nest 4
+             (group
+                (Array.fold_left
+                   (fun doc n -> doc ^^ break 1 ^^ group (node n))
+                   (empty) children))
+      in
+      node t
   end
 
   type reader = Automata.T.t
+
+  let pprint = Automata.pprint
 
   let export t =
     let str = Buf.contents t.buffer in
@@ -423,3 +448,6 @@ module Make (S : SET) = struct
   let find = Automata.T.find
   let to_sets = Automata.T.collapse
 end
+
+module With_elts = Make (Elt.Array)
+module With_occ = Make (Occ)

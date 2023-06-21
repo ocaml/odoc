@@ -1,4 +1,3 @@
-open Common
 
 let regroup lst =
   String_list_map.bindings
@@ -31,7 +30,7 @@ let sgn_not = function
   | Neg -> Pos
   | Unknown -> Unknown
 
-type 'a t =
-  { db_types : 'a Int.Map.t Trie.t
-  ; db_names : 'a Trie.t
+type t =
+  { db_types : Suffix_tree.With_occ.reader
+  ; db_names : Suffix_tree.With_elts.reader
   }

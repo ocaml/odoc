@@ -1,4 +1,6 @@
 (library
+(flags
+  (:standard -open Common))
  (name query)
  (libraries lwt re db))
 

@@ -1,23 +1,14 @@
-open Common
 module Elt = Elt
 module Types = Types
 module Storage = Storage
-module Trie = Trie
-module Cache = Cache
+module Suffix_tree = Suffix_tree
 
-val trie_with_array : Elt.Set.t Trie.t -> Elt.t array Trie.t
-val trie_with_set : Elt.t array Trie.t -> Elt.Set.t Trie.t
+type t = Types.t =
 
-val trie_with_array_occ :
-  Elt.Set.t Int.Map.t Trie.t -> Elt.t array Int.Map.t Trie.t
-
-val trie_with_set_occ :
-  Elt.t array Int.Map.t Trie.t -> Elt.Set.t Int.Map.t Trie.t
-
-type 'a t = 'a Types.t =
-  { db_types : 'a Int.Map.t Trie.t
-  ; db_names : 'a Trie.t
+  { db_types : Suffix_tree.With_occ.reader
+  ; db_names : Suffix_tree.With_elts.reader
   }
+
 
 val list_of_string : string -> char list
 

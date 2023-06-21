@@ -2,7 +2,7 @@
     a nuumber a OCaml types. 
     Every sharable element inside a type is also shared.*)
 
-open Common
+
 
 val clear : unit -> unit
 (** [clear ()] removes every value from the caches of every types. *)

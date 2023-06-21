@@ -1,13 +1,11 @@
 module Elt = Db.Elt
 module Db_common = Db
-module Cache = Db.Cache
 
 module Make (Storage : Db.Storage.S) = struct
   module Types = Db.Types
   module Db = Db.Make (Storage)
   module ModuleName = Odoc_model.Names.ModuleName
 
-  let clear () = Cache.clear ()
 
   let generic_cost ~ignore_no_doc name has_doc =
     String.length name
@@ -197,7 +195,7 @@ module Make (Storage : Db.Storage.S) = struct
         Elt.Kind.extension_constructor paths
     | ModuleType -> ModuleType
 
-  let convert_kind k = k |> convert_kind |> Cache.Kind_.memo
+  let convert_kind k = k |> convert_kind (*|> Cache.Kind_.memo*)
 
   let register_type_expr elt type_ =
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in

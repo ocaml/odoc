@@ -1,9 +1,9 @@
-open Common
 module Parser = Query_parser
 module Succ = Succ
 module Sort = Sort
 module Storage = Db.Storage
-module Trie = Db.Trie
+module Tree = Db.Suffix_tree.With_elts
+module Tree_occ = Db.Suffix_tree.With_occ
 open Db.Types
 module Occ = Int.Map
 
@@ -15,60 +15,63 @@ let collapse_occ ~count occs =
     occs Succ.empty
 
 let collapse_trie_occ ~count t =
-  match Trie.fold_map Succ.union (collapse_occ ~count) t with
-  | None -> Succ.empty
-  | Some occ -> occ
+  t |> Tree_occ.to_sets
+  |> List.fold_left
+       (fun succ occ -> Succ.union succ (collapse_occ ~count occ))
+       Succ.empty
 
 let collapse_trie t =
-  match Trie.fold_map Succ.union Succ.of_array t with
-  | None -> Succ.empty
-  | Some s -> s
+  t |> Tree.to_sets
+  |> List.fold_left
+       (fun succ arr -> Succ.union succ (Succ.of_array arr))
+       Succ.empty
 
-let rec collapse_trie_occ_polar ~parent_char ~polarity ~count t =
-  let open Trie in
-  match t with
-  | Leaf (_, leaf) ->
-      if parent_char = polarity then collapse_occ ~count leaf else Succ.empty
-  | Node { leaf = _; children; _ } ->
-      Char.Map.fold
-        (fun parent_char child acc ->
-          let res =
-            collapse_trie_occ_polar ~parent_char ~polarity ~count child
-          in
-          Succ.union acc res)
-        children Succ.empty
+(*let rec collapse_trie_occ_polar ~parent_char ~polarity ~count t =
+    let open Tree in
+    match t with
+    | Leaf (_, leaf) ->
+        if parent_char = polarity then collapse_occ ~count leaf else Succ.empty
+    | Node { leaf = _; children; _ } ->
+        Char.Map.fold
+          (fun parent_char child acc ->
+            let res =
+              collapse_trie_occ_polar ~parent_char ~polarity ~count child
+            in
+            Succ.union acc res)
+          children Succ.empty
 
-let collapse_trie_occ_polar ~polarity ~count t =
-  let open Trie in
-  match t with
-  | Leaf _ -> Succ.empty
-  | Node { leaf = _; children; _ } ->
-      Char.Map.fold
-        (fun parent_char child acc ->
-          let res =
-            collapse_trie_occ_polar ~parent_char ~polarity ~count child
-          in
-          Succ.union acc res)
-        children Succ.empty
 
-let collapse_trie_with_poly ~count name t =
-  match name with
-  | [ "POLY"; ("+" | "-") ] -> begin
-      match t with
-      | Trie.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_occ ~count s
-      | _ -> Succ.empty
-    end
-  | _ -> collapse_trie_occ ~count t
+  let collapse_trie_occ_polar ~polarity ~count t =
+    let open Tree in
+    match t with
+    | Leaf _ -> Succ.empty
+    | Node { leaf = _; children; _ } ->
+        Char.Map.fold
+          (fun parent_char child acc ->
+            let res =
+              collapse_trie_occ_polar ~parent_char ~polarity ~count child
+            in
+            Succ.union acc res)
+          children Succ.empty
 
-let _collapse_trie_with_poly_polar ~polarity ~count name t =
-  match name with
-  | [ "POLY"; ("+" | "-") ] -> begin
-      match t with
-      | Trie.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_occ ~count s
-      | _ -> Succ.empty
-    end
-  | _ -> collapse_trie_occ_polar ~polarity ~count t
+  let collapse_trie_with_poly ~count name t =
+    match name with
+    | [ "POLY"; ("+" | "-") ] -> begin
+        match t with
+        | Tree.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_occ ~count s
+        | _ -> Succ.empty
+      end
+    | _ -> collapse_trie_occ ~count t
 
+  let _collapse_trie_with_poly_polar ~polarity ~count name t =
+    match name with
+    | [ "POLY"; ("+" | "-") ] -> begin
+        match t with
+        | Tree.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_occ ~count s
+        | _ -> Succ.empty
+      end
+    | _ -> collapse_trie_occ_polar ~polarity ~count t
+*)
 let find_types ~shards names =
   List.fold_left
     (fun acc shard ->
@@ -77,9 +80,11 @@ let find_types ~shards names =
         inter_list
         @@ List.map
              (fun (name, count) ->
-               let name' = List.concat_map Db.list_of_string name in
-               match Trie.find name' db with
-               | Ok trie -> collapse_trie_with_poly ~count name trie
+               let name' = String.concat "" name in
+               match Tree_occ.find db name' with
+               | Some trie -> collapse_trie_occ ~count trie
+               | None -> Succ.empty
+               (*
                | Error (`Stopped_at (i, sub_trie)) ->
                    let name_str = name' |> List.to_seq |> String.of_seq in
                    if i = String.length name_str - 1
@@ -89,27 +94,23 @@ let find_types ~shards names =
                      | '-' | '+' ->
                          collapse_trie_occ_polar ~polarity ~count sub_trie
                      | _ -> Succ.empty
-                   else Succ.empty)
+                   else Succ.empty*))
              (regroup names)
       in
       Succ.union acc r)
     Succ.empty shards
 
-let find_names ~(shards : Db.Elt.t array Db.t list) names =
-  let names =
-    List.map
-      (fun n -> List.rev (Db.list_of_string (String.lowercase_ascii n)))
-      names
-  in
+let find_names ~(shards : Db.t list) names =
+  let names = List.map (fun n -> (*String.rev *)(String.lowercase_ascii n)) names in
   List.fold_left
     (fun acc shard ->
       let db_names = shard.db_names in
       let candidates =
         List.map
           (fun name ->
-            match Trie.find name db_names with
-            | Ok trie -> collapse_trie trie
-            | Error _ -> Succ.empty)
+            match Tree.find db_names name with
+            | Some trie -> collapse_trie trie
+            | None -> Succ.empty)
           names
       in
       let candidates = inter_list candidates in
@@ -122,7 +123,7 @@ type t =
   ; limit : int
   }
 
-let search ~(shards : Db.Elt.t array Db.t list) query_name query_typ =
+let search ~(shards : Db.t list) query_name query_typ =
   let results_name = find_names ~shards query_name in
   let results =
     match query_typ with
@@ -143,7 +144,7 @@ let match_packages ~packages results =
   | [] -> results
   | _ -> Seq.filter (match_packages ~packages) results
 
-let api ~(shards : Db.Elt.t array Db.t list) params =
+let api ~(shards : Db.t list) params =
   let query_name, query_typ, query_typ_arrow, pretty =
     Parser.of_string params.query
   in

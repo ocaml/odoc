@@ -1,3 +1,5 @@
 (library
+ (flags
+  (:standard -open Common))
  (name db)
- (libraries unix tyxml common))
+ (libraries unix tyxml common pprint))

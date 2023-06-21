@@ -1,4 +1,3 @@
-open Db
 
 let base_addr = 0x100000000000n
 
@@ -12,13 +11,13 @@ let open_out filename =
   let ancient = Ancient.attach handle base_addr in
   { write_shard = 0; ancient }
 
-let save ~db (t : Elt.t array Db.t) =
+let save ~db (t :  Db.t) =
   ignore (Ancient.share db.ancient db.write_shard t) ;
   db.write_shard <- db.write_shard + 1
 
 let close_out db = Ancient.detach db.ancient
 
-type reader = { shards : Elt.t array Db.t array }
+type reader = { shards : Db.t array }
 
 let load_shard md shard =
   match Ancient.get md shard with

@@ -1,5 +1,3 @@
-open Common
-
 type type_path = string list list
 
 (** A type can viewed as a tree.
@@ -134,6 +132,24 @@ let ( > ) e e' = compare e e' > 0
 let ( >= ) e e' = compare e e' >= 0
 
 module Set = Set.Make (T)
+
+let pprint { name; _ } =
+  let open PPrint in
+   !^name
+
+(** Array of elts. For use in functors that require a type [t] and not ['a t].*)
+module Array = struct
+  type elt = t
+  type nonrec t = t array
+
+  let is_empty = Array.equal equal [||]
+  let of_list = Array.of_list
+  let pprint_elt = pprint
+
+  let pprint arr =
+    let open PPrint in
+    braces @@ flow (break 1) (arr |> Array.map pprint |> Array.to_list)
+end
 
 let pkg_link { pkg; _ } =
   let open Option.O in
