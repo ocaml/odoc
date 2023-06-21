@@ -135,15 +135,20 @@ module Set = Set.Make (T)
 
 let pprint { name; _ } =
   let open PPrint in
-   !^name
+  !^name
 
 (** Array of elts. For use in functors that require a type [t] and not ['a t].*)
 module Array = struct
   type elt = t
   type nonrec t = t array
 
-  let is_empty = Array.equal equal [||]
-  let of_list = Array.of_list
+  let is_empty arr = Int.(Array.length arr = 0)
+
+  let of_list arr =
+    let arr = Array.of_list arr in
+    Array.sort compare arr ;
+    arr
+
   let pprint_elt = pprint
 
   let pprint arr =

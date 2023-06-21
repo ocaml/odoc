@@ -2,4 +2,4 @@
  (flags
   (:standard -open Common))
  (name db)
- (libraries unix tyxml common pprint))
+ (libraries unix common pprint))

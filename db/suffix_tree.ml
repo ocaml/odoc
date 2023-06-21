@@ -379,7 +379,9 @@ module Make (S : SET) = struct
         let child = find ~str:t.str t.t pattern 0 in
         { str = t.str; t = child }
 
-      let find t pattern = try Some (find t pattern) with Not_found -> None
+      let find t pattern = 
+        print_endline pattern;
+        try Some (find t pattern) with Not_found -> None
 
       let rec collapse acc t =
         let acc = if S.is_empty t.terminals then acc else t.terminals :: acc in
@@ -426,7 +428,8 @@ module Make (S : SET) = struct
     let pprint T.{ t; str } =
       let open PPrint in
       let rec node T.{ start; len; terminals; children } =
-        OCaml.string (String.sub str (start -1) (len )) ^^ space
+        let start, len = if start = 0 then start, len else start - 1 , len + 1 in
+        OCaml.string (String.sub str start (len )) ^^ space
         ^^ align (S.pprint terminals) ^^ break 1
         ^^ nest 4
              (group
