@@ -16,13 +16,17 @@
 
 open Odoc_model
 
-type args = { html_config : Odoc_html.Config.t; source_file : Fpath.t option }
+type args = {
+  html_config : Odoc_html.Config.t;
+  source_file : Fpath.t option;
+  assets : Fpath.t list;
+}
 
-let render { html_config; source_file = _ } page =
+let render { html_config; source_file = _; assets = _ } page =
   Odoc_html.Generator.render ~config:html_config page
 
-let extra_documents args unit ~syntax =
-  match (unit.Lang.Compilation_unit.source_info, args.source_file) with
+let source_documents source_info source_file ~syntax =
+  match (source_info, source_file) with
   | Some { Lang.Source_info.id; infos }, Some src -> (
       match Fs.File.read src with
       | Error (`Msg msg) ->
@@ -53,5 +57,47 @@ let extra_documents args unit ~syntax =
            (Fs.File.to_string src));
       []
   | None, None -> []
+
+exception Missing_asset of string
+
+let asset_documents parent_id children asset_paths =
+  let asset_names =
+    List.filter_map
+      (function Lang.Page.Asset_child name -> Some name | _ -> None)
+      children
+  in
+  let rec extract paths name =
+    match paths with
+    | [] -> raise (Missing_asset name)
+    | x :: xs when Fpath.basename x = name -> (xs, (name, x))
+    | x :: xs ->
+        let rest, elt = extract xs name in
+        (x :: rest, elt)
+  in
+  match List.fold_left_map extract asset_paths asset_names with
+  | unmatched, paired ->
+      List.iter
+        (fun asset ->
+          Error.raise_warning
+            (Error.filename_only "this asset was not declared as a child of %s"
+               (Paths.Identifier.name parent_id)
+               (Fs.File.to_string asset)))
+        unmatched;
+      List.map
+        (fun (name, path) ->
+          let asset_id = Paths.Identifier.Mk.asset_file (parent_id, name) in
+          let url = Odoc_document.Url.Path.from_identifier asset_id in
+          Odoc_document.Types.Document.Asset { url; src = path })
+        paired
+  | exception Missing_asset name ->
+      Error.raise_warning (Error.filename_only "asset is missing." name);
+      []
+
+let extra_documents args input ~syntax =
+  match input with
+  | Odoc_document.Renderer.CU unit ->
+      source_documents unit.Lang.Compilation_unit.source_info args.source_file
+        ~syntax
+  | Page page -> asset_documents page.Lang.Page.name page.children args.assets
 
 let renderer = { Odoc_document.Renderer.name = "html"; render; extra_documents }

@@ -88,7 +88,10 @@ module Path = struct
     | Identifier.ClassSignature.t_pv ]
 
   type source_pv =
-    [ nonsrc_pv | Identifier.SourcePage.t_pv | Identifier.SourceDir.t_pv ]
+    [ nonsrc_pv
+    | Identifier.SourcePage.t_pv
+    | Identifier.SourceDir.t_pv
+    | Identifier.AssetFile.t_pv ]
 
   and source = source_pv Odoc_model.Paths.Identifier.id
 
@@ -181,6 +184,10 @@ module Path = struct
     | { iv = `SourcePage (parent, name); _ } ->
         let parent = from_identifier (parent :> source) in
         let kind = `Page in
+        mk ~parent kind name
+    | { iv = `AssetFile (parent, name); _ } ->
+        let parent = from_identifier (parent :> source) in
+        let kind = `File in
         mk ~parent kind name
 
   let from_identifier p =
@@ -377,6 +384,9 @@ module Anchor = struct
     | { iv = `SourcePage (p, _name); _ } | { iv = `SourceDir (p, _name); _ } ->
         let page = Path.from_identifier (p :> Path.source) in
         Ok { page; kind = `Page; anchor = "" }
+    | { iv = `AssetFile (p, _name); _ } ->
+        let page = Path.from_identifier p in
+        Ok { page; kind = `File; anchor = "" }
 
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =

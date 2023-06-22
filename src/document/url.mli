@@ -35,7 +35,10 @@ module Path : sig
     | Identifier.ClassSignature.t_pv ]
 
   type source_pv =
-    [ nonsrc_pv | Identifier.SourcePage.t_pv | Identifier.SourceDir.t_pv ]
+    [ nonsrc_pv
+    | Identifier.SourcePage.t_pv
+    | Identifier.SourceDir.t_pv
+    | Identifier.AssetFile.t_pv ]
 
   and source = source_pv Odoc_model.Paths.Identifier.id
 

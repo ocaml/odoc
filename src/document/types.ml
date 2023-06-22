@@ -192,8 +192,13 @@ and Source_page : sig
 end =
   Source_page
 
+and Asset : sig
+  type t = { url : Url.Path.t; src : Fpath.t }
+end =
+  Asset
+
 module Document = struct
-  type t = Page of Page.t | Source_page of Source_page.t
+  type t = Page of Page.t | Source_page of Source_page.t | Asset of Asset.t
 end
 
 let inline ?(attr = []) desc = Inline.{ attr; desc }

@@ -143,6 +143,11 @@ module Identifier : sig
     type t_pv = Id.source_location_pv
   end
 
+  module AssetFile : sig
+    type t = Id.asset_file
+    type t_pv = Id.asset_file_pv
+  end
+
   module OdocId : sig
     type t = Id.odoc_id
     type t_pv = Id.odoc_id_pv
@@ -218,6 +223,8 @@ module Identifier : sig
       [> `LeafPage of ContainerPage.t option * PageName.t ] id
 
     val source_page : ContainerPage.t * string list -> SourcePage.t
+
+    val asset_file : Page.t * string -> AssetFile.t
 
     val root :
       ContainerPage.t option * ModuleName.t ->

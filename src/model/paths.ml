@@ -55,6 +55,7 @@ module Identifier = struct
     | `SourceDir (_, name) -> name
     | `SourceLocation (_, anchor) -> DefName.to_string anchor
     | `SourceLocationMod x -> name_aux (x :> t)
+    | `AssetFile (_, name) -> name
 
   let name : [< t_pv ] id -> string = fun n -> name_aux (n :> t)
 
@@ -282,6 +283,11 @@ module Identifier = struct
     type t_pv = Paths_types.Identifier.source_location_pv
   end
 
+  module AssetFile = struct
+    type t = Id.asset_file
+    type t_pv = Id.asset_file_pv
+  end
+
   module OdocId = struct
     type t = Id.odoc_id
     type t_pv = Id.odoc_id_pv
@@ -371,6 +377,9 @@ module Identifier = struct
         ContainerPage.t option * PageName.t ->
         [> `LeafPage of ContainerPage.t option * PageName.t ] id =
       mk_parent_opt PageName.to_string "lp" (fun (p, n) -> `LeafPage (p, n))
+
+    let asset_file : Page.t * string -> AssetFile.t =
+      mk_parent (fun k -> k) "asset" (fun (p, n) -> `AssetFile (p, n))
 
     let source_page (container_page, path) =
       let rec source_dir dir =

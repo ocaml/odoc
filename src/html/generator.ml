@@ -503,11 +503,32 @@ module Page = struct
     if Config.as_json config then
       Html_fragment_json.make_src ~config ~url ~breadcrumbs [ doc ]
     else Html_page.make_src ~breadcrumbs ~header ~config ~url title [ doc ]
+
+  let asset ~config { Asset.url; src } =
+    let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
+    let content ppf =
+      let ic = open_in_bin (Fpath.to_string src) in
+      let len = 1024 in
+      let buf = Bytes.create len in
+      let rec loop () =
+        let read = input ic buf 0 len in
+        if read = len then (
+          Format.fprintf ppf "%s" (Bytes.to_string buf);
+          loop ())
+        else if len > 0 then
+          let buf = Bytes.sub buf 0 read in
+          Format.fprintf ppf "%s" (Bytes.to_string buf)
+      in
+      loop ();
+      close_in ic
+    in
+    { Odoc_document.Renderer.filename; content; children = [] }
 end
 
 let render ~config = function
   | Document.Page page -> [ Page.page ~config page ]
   | Source_page src -> [ Page.source_page ~config src ]
+  | Asset asset -> [ Page.asset ~config asset ]
 
 let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in
