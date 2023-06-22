@@ -36,6 +36,8 @@ module rec Resolved : sig
     | `Class of parent * ClassName.t
     | `ClassType of parent * ClassTypeName.t ]
 
+  and value = [ `Value of parent * ValueName.t ]
+
   and class_type =
     [ `Local of Ident.path_class_type
     | `Substituted of class_type
@@ -74,6 +76,11 @@ and Cpath : sig
     | `Type of Resolved.parent * TypeName.t
     | `Class of Resolved.parent * ClassName.t
     | `ClassType of Resolved.parent * ClassTypeName.t ]
+
+  and value =
+    [ `Resolved of Resolved.value
+    | `Dot of module_ * string
+    | `Value of Resolved.parent * ValueName.t ]
 
   and class_type =
     [ `Resolved of Resolved.class_type

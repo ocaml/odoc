@@ -30,6 +30,12 @@ module PathTypeMap = Map.Make (struct
   let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
 end)
 
+module PathValueMap = Map.Make (struct
+  type t = Ident.path_value
+
+  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+end)
+
 module PathClassTypeMap = Map.Make (struct
   type t = Ident.path_class_type
 
@@ -1028,6 +1034,13 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.TypeName.to_string t)
 
+  and resolved_value_path : Format.formatter -> Cpath.Resolved.value -> unit =
+   fun ppf p ->
+    match p with
+    | `Value (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_parent_path p
+          (Odoc_model.Names.ValueName.to_string t)
+
   and resolved_parent_path : Format.formatter -> Cpath.Resolved.parent -> unit =
    fun ppf p ->
     match p with
@@ -1055,6 +1068,15 @@ module Fmt = struct
     | `Type (p, t) ->
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.TypeName.to_string t)
+
+  and value_path : Format.formatter -> Cpath.value -> unit =
+   fun ppf p ->
+    match p with
+    | `Resolved r -> Format.fprintf ppf "r(%a)" resolved_value_path r
+    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" module_path m s
+    | `Value (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_parent_path p
+          (Odoc_model.Names.ValueName.to_string t)
 
   and resolved_class_type_path :
       Format.formatter -> Cpath.Resolved.class_type -> unit =
@@ -1129,6 +1151,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" model_resolved_path
           (parent :> t)
           (Odoc_model.Names.TypeName.to_string name)
+    | `Value (parent, name) ->
+        Format.fprintf ppf "%a.%s" model_resolved_path
+          (parent :> t)
+          (Odoc_model.Names.ValueName.to_string name)
     | `Alias (dest, src) ->
         Format.fprintf ppf "alias(%a,%a)" model_resolved_path
           (dest :> t)
@@ -1770,6 +1796,11 @@ module Of_Lang = struct
     | `ClassType (p, name) ->
         `ClassType (`Module (resolved_module_path ident_map p), name)
 
+  and resolved_value_path :
+      _ -> Odoc_model.Paths.Path.Resolved.Value.t -> Cpath.Resolved.value =
+   fun ident_map (`Value (p, name)) ->
+    `Value (`Module (resolved_module_path ident_map p), name)
+
   and resolved_class_type_path :
       _ ->
       Odoc_model.Paths.Path.Resolved.ClassType.t ->
@@ -1820,6 +1851,12 @@ module Of_Lang = struct
         match identifier Maps.Path.Type.find ident_map.path_types i with
         | `Identifier i -> `Identifier (i, b)
         | `Local i -> `Local (i, b))
+    | `Dot (path', x) -> `Dot (module_path ident_map path', x)
+
+  and value_path : _ -> Odoc_model.Paths.Path.Value.t -> Cpath.value =
+   fun ident_map p ->
+    match p with
+    | `Resolved r -> `Resolved (resolved_value_path ident_map r)
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
 
   and class_type_path :

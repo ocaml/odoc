@@ -265,6 +265,8 @@ module General_paths = struct
       | `OpaqueModuleType x -> C ("`OpaqueModuleType", (x :> rp), resolved_path)
       | `Type (x1, x2) ->
           C ("`Type", ((x1 :> rp), x2), Pair (resolved_path, Names.typename))
+      | `Value (x1, x2) ->
+          C ("`Value", ((x1 :> rp), x2), Pair (resolved_path, Names.valuename))
       | `Class (x1, x2) ->
           C ("`Class", ((x1 :> rp), x2), Pair (resolved_path, Names.classname))
       | `ClassType (x1, x2) ->

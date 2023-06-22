@@ -114,6 +114,7 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
   | `AliasModuleType (x, y) ->
       should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Type (p, _)
+  | `Value (p, _)
   | `Class (p, _)
   | `ClassType (p, _)
   | `ModuleType (p, _)
@@ -141,6 +142,24 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
             `Resolved Lang_of.(Path.resolved_type (empty ()) result)
         | Error e ->
             Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
+            p)
+
+let value_path : Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
+ fun env p ->
+  if not (should_resolve (p :> Paths.Path.t)) then p
+  else
+    let cp = Component.Of_Lang.(value_path (empty ()) p) in
+    match cp with
+    | `Resolved p ->
+        let result = Tools.reresolve_value env p in
+        `Resolved Lang_of.(Path.resolved_value (empty ()) result)
+    | _ -> (
+        match Tools.resolve_value_path env cp with
+        | Ok p' ->
+            let result = Tools.reresolve_value env p' in
+            `Resolved Lang_of.(Path.resolved_value (empty ()) result)
+        | Error e ->
+            Errors.report ~what:(`Value_path cp) ~tools_error:e `Lookup;
             p)
 
 let class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t

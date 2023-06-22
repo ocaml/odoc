@@ -421,6 +421,14 @@ module Identifier = struct
       let compare = compare
     end
 
+    module Value = struct
+      type t = Id.path_value
+      type t_pv = Id.value_pv
+      let equal = equal
+      let hash = hash
+      let compare = compare
+    end
+
     module ClassType = struct
       type t = Id.path_class_type
       type t_pv = Id.path_class_type_pv
@@ -656,6 +664,8 @@ module Path = struct
       | `ModuleType (p, _) -> inner (p : module_ :> any)
       | `Type (_, t) when Names.TypeName.is_internal t -> true
       | `Type (p, _) -> inner (p : module_ :> any)
+      | `Value (_, t) when Names.ValueName.is_internal t -> true
+      | `Value (p, _) -> inner (p : module_ :> any)
       | `Class (p, _) -> inner (p : module_ :> any)
       | `ClassType (p, _) -> inner (p : module_ :> any)
       | `Alias (dest, `Resolved src) ->
@@ -747,6 +757,10 @@ module Path = struct
       type t = Paths_types.Resolved_path.type_
     end
 
+    module Value = struct
+      type t = Paths_types.Resolved_path.value
+    end
+
     module ClassType = struct
       type t = Paths_types.Resolved_path.class_type
     end
@@ -760,6 +774,7 @@ module Path = struct
       | `Canonical (p, _) -> identifier (p :> t)
       | `Apply (m, _) -> identifier (m :> t)
       | `Type (m, n) -> Identifier.Mk.type_ (parent_module_identifier m, n)
+      | `Value (m, n) -> Identifier.Mk.value (parent_module_identifier m, n)
       | `ModuleType (m, n) ->
           Identifier.Mk.module_type (parent_module_identifier m, n)
       | `Class (m, n) -> Identifier.Mk.class_ (parent_module_identifier m, n)
@@ -795,6 +810,10 @@ module Path = struct
 
   module Type = struct
     type t = Paths_types.Path.type_
+  end
+
+  module Value = struct
+    type t = Paths_types.Path.value
   end
 
   module ClassType = struct
