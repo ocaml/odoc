@@ -11,6 +11,8 @@ module ModuleTypeMap : Map.S with type key = Ident.module_type
 
 module PathTypeMap : Map.S with type key = Ident.path_type
 
+module PathValueMap : Map.S with type key = Ident.path_value
+
 module PathClassTypeMap : Map.S with type key = Ident.path_class_type
 
 module IdentMap : Map.S with type key = Ident.any
@@ -580,9 +582,13 @@ module Fmt : sig
 
   val resolved_type_path : Format.formatter -> Cpath.Resolved.type_ -> unit
 
+  val resolved_value_path : Format.formatter -> Cpath.Resolved.value -> unit
+
   val resolved_parent_path : Format.formatter -> Cpath.Resolved.parent -> unit
 
   val type_path : Format.formatter -> Cpath.type_ -> unit
+
+  val value_path : Format.formatter -> Cpath.value -> unit
 
   val resolved_class_type_path :
     Format.formatter -> Cpath.Resolved.class_type -> unit
@@ -645,6 +651,9 @@ module Of_Lang : sig
   val resolved_type_path :
     map -> Odoc_model.Paths.Path.Resolved.Type.t -> Cpath.Resolved.type_
 
+  val resolved_value_path :
+    map -> Odoc_model.Paths.Path.Resolved.Value.t -> Cpath.Resolved.value
+
   val resolved_class_type_path :
     map ->
     Odoc_model.Paths.Path.Resolved.ClassType.t ->
@@ -656,6 +665,8 @@ module Of_Lang : sig
     map -> Odoc_model.Paths.Path.ModuleType.t -> Cpath.module_type
 
   val type_path : map -> Odoc_model.Paths.Path.Type.t -> Cpath.type_
+
+  val value_path : map -> Odoc_model.Paths.Path.Value.t -> Cpath.value
 
   val class_type_path :
     map -> Odoc_model.Paths.Path.ClassType.t -> Cpath.class_type

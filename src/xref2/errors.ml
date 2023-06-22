@@ -72,6 +72,17 @@ module Tools_error = struct
       (* Could not find the module in the environment *)
     | `Parent of parent_lookup_error ]
 
+  and simple_value_lookup_error =
+    [ `LocalValue of
+      Env.t * Ident.path_value
+      (* Internal error: Found local path during lookup *)
+    | `Find_failure
+      (* Internal error: the type was not found in the parent signature *)
+    | `Lookup_failureV of
+      Identifier.Path.Value.t
+      (* Could not find the module in the environment *)
+    | `Parent of parent_lookup_error ]
+
   and parent_lookup_error =
     [ `Parent_sig of
       expansion_of_module_error
@@ -98,6 +109,7 @@ module Tools_error = struct
 
   type any =
     [ simple_type_lookup_error
+    | simple_value_lookup_error
     | simple_module_type_lookup_error
     | simple_module_type_expr_of_module_error
     | simple_module_lookup_error
@@ -135,6 +147,8 @@ module Tools_error = struct
     | `LocalMT (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Local (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `LocalType (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
+    | `LocalValue (_, id) ->
+        Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Find_failure -> Format.fprintf fmt "Find failure"
     | `Lookup_failure m ->
         Format.fprintf fmt "Lookup failure (module): %a"
@@ -148,6 +162,10 @@ module Tools_error = struct
           (m :> Odoc_model.Paths.Identifier.t)
     | `Lookup_failureT m ->
         Format.fprintf fmt "Lookup failure (type): %a"
+          Component.Fmt.model_identifier
+          (m :> Odoc_model.Paths.Identifier.t)
+    | `Lookup_failureV m ->
+        Format.fprintf fmt "Lookup failure (value): %a"
           Component.Fmt.model_identifier
           (m :> Odoc_model.Paths.Identifier.t)
     | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"
@@ -204,7 +222,9 @@ let is_unexpanded_module_type_of =
     | `UnresolvedPath (`Module (_, e)) -> inner (e :> any)
     | `UnresolvedPath (`ModuleType (_, e)) -> inner (e :> any)
     | `Lookup_failureT _ -> false
+    | `Lookup_failureV _ -> false
     | `LocalType _ -> false
+    | `LocalValue _ -> false
     | `Class_replaced -> false
     | `OpaqueClass -> false
     | `Reference (`Parent p) -> inner (p :> any)
@@ -272,6 +292,7 @@ open Paths
 type what =
   [ `Functor_parameter of Identifier.FunctorParameter.t
   | `Value of Identifier.Value.t
+  | `Value_path of Cpath.value
   | `Class of Identifier.Class.t
   | `Class_type of Identifier.ClassType.t
   | `Module of Identifier.Module.t
@@ -328,6 +349,7 @@ let report ~(what : what) ?tools_error action =
         r "module package" module_type_path (path :> Cpath.module_type)
     | `Type cfrag -> r "type" type_fragment cfrag
     | `Type_path path -> r "type" type_path path
+    | `Value_path path -> r "value" value_path path
     | `Class_type_path path -> r "class_type" class_type_path path
     | `With_module frag -> r "module substitution" module_fragment frag
     | `With_module_type frag ->

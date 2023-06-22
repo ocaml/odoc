@@ -260,6 +260,9 @@ type resolve_type_result =
     simple_type_lookup_error )
   Result.result
 
+type resolve_value_result =
+  (Cpath.Resolved.value * Find.value, simple_value_lookup_error) Result.result
+
 type resolve_class_type_result =
   ( Cpath.Resolved.class_type * Find.careful_class,
     simple_type_lookup_error )
@@ -587,6 +590,11 @@ and handle_type_lookup env id p sg =
   | Some (`FType_removed (name, _, _) as t) -> Ok (`Type (p, name), t)
   | None -> Error `Find_failure
 
+and handle_value_lookup _env id p sg =
+  match Find.value_in_sig sg id with
+  | (`FValue (name, _) as v) :: _ -> Ok (`Value (p, name), v)
+  | _ -> Error `Find_failure
+
 and handle_class_type_lookup id p sg =
   match Find.careful_class_in_sig sg id with
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
@@ -886,6 +894,17 @@ and lookup_type :
   in
   res
 
+and lookup_value :
+    Env.t ->
+    Cpath.Resolved.value ->
+    (_, simple_value_lookup_error) Result.result =
+ fun env (`Value (p, id)) ->
+  lookup_parent ~mark_substituted:true env p
+  |> map_error (fun e -> (e :> simple_value_lookup_error))
+  >>= fun (sg, sub) ->
+  handle_value_lookup env (ValueName.to_string id) p sg
+  >>= fun (_, `FValue (name, c)) -> Ok (`FValue (name, Subst.value sub c))
+
 and lookup_class_type :
     Env.t ->
     Cpath.Resolved.class_type ->
@@ -1109,6 +1128,38 @@ and resolve_type :
   | `FType (_, { canonical = Some c; _ }) ->
       if add_canonical then Ok (`CanonicalType (p, c), t) else result
   | _ -> result
+
+and resolve_value : Env.t -> Cpath.value -> resolve_value_result =
+ fun env p ->
+  let result =
+    match p with
+    | `Dot (parent, id) ->
+        resolve_module ~mark_substituted:true ~add_canonical:true env parent
+        |> map_error (fun e -> `Parent (`Parent_module e))
+        >>= fun (p, m) ->
+        let m = Component.Delayed.get m in
+        expansion_of_module_cached env p m
+        |> map_error (fun e -> `Parent (`Parent_sig e))
+        >>= assert_not_functor
+        >>= fun sg ->
+        let sub = prefix_substitution (`Module p) sg in
+        handle_value_lookup env id (`Module p) sg
+        >>= fun (p', `FValue (name, c)) ->
+        Ok (p', `FValue (name, Subst.value sub c))
+    | `Value (parent, id) ->
+        lookup_parent ~mark_substituted:true env parent
+        |> map_error (fun e -> (e :> simple_value_lookup_error))
+        >>= fun (parent_sig, sub) ->
+        let result =
+          match Find.value_in_sig parent_sig (ValueName.to_string id) with
+          | `FValue (name, t) :: _ ->
+              Some (`Value (parent, name), `FValue (name, Subst.value sub t))
+          | [] -> None
+        in
+        of_option ~error:`Find_failure result
+    | `Resolved r -> lookup_value env r >>= fun t -> Ok (r, t)
+  in
+  result
 
 and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
     =
@@ -1499,6 +1550,9 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
     | `ClassType (p, n) -> `ClassType (reresolve_parent env p, n)
   in
   result
+
+and reresolve_value : Env.t -> Cpath.Resolved.value -> Cpath.Resolved.value =
+ fun env (`Value (p, n)) -> `Value (reresolve_parent env p, n)
 
 and reresolve_class_type :
     Env.t -> Cpath.Resolved.class_type -> Cpath.Resolved.class_type =
@@ -2307,6 +2361,8 @@ let resolve_module_type_path env p =
 
 let resolve_type_path env p =
   resolve_type env ~add_canonical:true p >>= fun (p, _) -> Ok p
+
+let resolve_value_path env p = resolve_value env p >>= fun (p, _) -> Ok p
 
 let resolve_class_type_path env p =
   resolve_class_type env p >>= fun (p, _) -> Ok p

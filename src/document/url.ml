@@ -41,6 +41,7 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `ModuleType (p, s) ->
         render_resolved (p :> t) ^ "." ^ ModuleTypeName.to_string s
     | `Type (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
+    | `Value (p, s) -> render_resolved (p :> t) ^ "." ^ ValueName.to_string s
     | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ ClassName.to_string s
     | `ClassType (p, s) ->
         render_resolved (p :> t) ^ "." ^ ClassTypeName.to_string s

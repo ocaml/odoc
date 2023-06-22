@@ -248,6 +248,8 @@ module Identifier = struct
   and path_type = path_type_pv id
   (** @canonical Odoc_model.Paths.Identifier.Path.Type.t *)
 
+  type path_value = value
+
   type path_class_type_pv = [ class_pv | class_type_pv ]
   (** @canonical Odoc_model.Paths.Identifier.Path.ClassType.t_pv *)
 
@@ -255,7 +257,12 @@ module Identifier = struct
   (** @canonical Odoc_model.Paths.Identifier.Path.ClassType.t *)
 
   type path_any =
-    [ path_module_pv | module_type_pv | path_type_pv | path_class_type_pv ] id
+    [ path_module_pv
+    | module_type_pv
+    | path_type_pv
+    | path_class_type_pv
+    | value_pv ]
+    id
   (** @canonical Odoc_model.Paths.Identifier.Path.t *)
 
   type fragment_module = path_module
@@ -314,6 +321,9 @@ module rec Path : sig
     | `Dot of module_ * string ]
   (** @canonical Odoc_model.Paths.Path.Type.t *)
 
+  type value = [ `Resolved of Resolved_path.value | `Dot of module_ * string ]
+  (** @canonical Odoc_model.Paths.Path.Value.t *)
+
   type class_type =
     [ `Resolved of Resolved_path.class_type
     | `Identifier of Identifier.path_class_type * bool
@@ -360,6 +370,9 @@ and Resolved_path : sig
     | `ClassType of module_ * ClassTypeName.t ]
   (** @canonical Odoc_model.Paths.Path.Resolved.Type.t *)
 
+  type value = [ `Value of module_ * ValueName.t ]
+  (** @canonical Odoc_model.Paths.Path.Resolved.Value.t *)
+
   type class_type =
     [ `Identifier of Identifier.path_class_type
     | `Class of module_ * ClassName.t
@@ -384,6 +397,7 @@ and Resolved_path : sig
     | `Class of module_ * ClassName.t
     | `ClassType of module_ * ClassTypeName.t
     | `Class of module_ * ClassName.t
+    | `Value of module_ * ValueName.t
     | `ClassType of module_ * ClassTypeName.t ]
   (** @canonical Odoc_model.Paths.Path.Resolved.t *)
 end =
