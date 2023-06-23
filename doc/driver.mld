@@ -255,7 +255,6 @@ let dep_libraries_core = [
     "fmt";
     "stdlib";
     "yojson";
-    "biniou";
 ];;
 
 let extra_deps = [
