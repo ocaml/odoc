@@ -611,12 +611,31 @@ Let's see if there was any output from the [odoc] invocations:
  "'../src/odoc/bin/main.exe' 'link' 'page-deps.odoc' '-I' '.'";
  "page-deps.odoc: File \"src/fmt.mli\", line 6, characters 4-13:";
  "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Format) Couldn't find \"Format\"";
+ "page-deps.odoc: File \"deps.mld\", line 27, characters 0-79:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Bi_vint) Parent_module: Lookup failure (root module): Bi_vint";
+ "page-deps.odoc: File \"deps.mld\", line 27, characters 0-79:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Bi_util) Parent_module: Lookup failure (root module): Bi_util";
+ "page-deps.odoc: File \"deps.mld\", line 27, characters 0-79:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Bi_stream) Parent_module: Lookup failure (root module): Bi_stream";
+ "page-deps.odoc: File \"deps.mld\", line 27, characters 0-79:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Bi_share) Parent_module: Lookup failure (root module): Bi_share";
+ "page-deps.odoc: File \"deps.mld\", line 27, characters 0-79:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Bi_outbuf) Parent_module: Lookup failure (root module): Bi_outbuf";
+ "page-deps.odoc: File \"deps.mld\", line 27, characters 0-79:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Bi_io) Parent_module: Lookup failure (root module): Bi_io";
+ "page-deps.odoc: File \"deps.mld\", line 27, characters 0-79:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Bi_inbuf) Parent_module: Lookup failure (root module): Bi_inbuf";
+ "page-deps.odoc: File \"deps.mld\", line 27, characters 0-79:";
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Bi_dump) Parent_module: Lookup failure (root module): Bi_dump";
  "page-deps.odoc: File \"src/fpath.mli\", line 8, characters 8-20:";
  "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Map) Couldn't find \"Map\"";
  "page-deps.odoc: File \"src/fpath.mli\", line 7, characters 59-71:";
  "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Set) Couldn't find \"Set\"";
  "page-deps.odoc: File \"src/fpath.mli\", line 7, characters 28-52:";
- "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(file_exts) Couldn't find \"file_exts\""]
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(file_exts) Couldn't find \"file_exts\"";
+ "'../src/odoc/bin/main.exe' 'link' 'page-odoc_for_authors.odoc' '-I' '.'";
+ "page-odoc_for_authors.odoc: File \"odoc_for_authors.mld\", line 496, character 59 to line 497, character 18:";
+ "page-odoc_for_authors.odoc: Warning: Failed to resolve reference unresolvedroot(Features).canonical Couldn't find page \"Features\""]
 # !source_tree_output;;
 - : string list = [""]
 # !generate_output;;
@@ -659,7 +678,6 @@ parent_child_spec.html
 source
 $ ls html/odoc/deps
 astring
-biniou
 cmdliner
 fmt
 fpath
@@ -670,28 +688,29 @@ stdlib
 tyxml
 yojson
 $ find html/odoc/deps | sort | tail -n 20
-html/odoc/deps/tyxml/Xml_wrap/module-type-T/index.html
-html/odoc/deps/tyxml/index.html
+html/odoc/deps/tyxml/Xml_wrap/NoWrap
+html/odoc/deps/tyxml/Xml_wrap/NoWrap/index.html
 html/odoc/deps/yojson
+html/odoc/deps/yojson/index.html
 html/odoc/deps/yojson/Yojson
 html/odoc/deps/yojson/Yojson/Basic
+html/odoc/deps/yojson/Yojson/Basic/index.html
 html/odoc/deps/yojson/Yojson/Basic/Util
 html/odoc/deps/yojson/Yojson/Basic/Util/index.html
-html/odoc/deps/yojson/Yojson/Basic/index.html
+html/odoc/deps/yojson/Yojson/index.html
 html/odoc/deps/yojson/Yojson/Lexer_state
 html/odoc/deps/yojson/Yojson/Lexer_state/index.html
 html/odoc/deps/yojson/Yojson/Raw
+html/odoc/deps/yojson/Yojson/Raw/index.html
 html/odoc/deps/yojson/Yojson/Raw/Util
 html/odoc/deps/yojson/Yojson/Raw/Util/index.html
-html/odoc/deps/yojson/Yojson/Raw/index.html
 html/odoc/deps/yojson/Yojson/Safe
+html/odoc/deps/yojson/Yojson/Safe/index.html
 html/odoc/deps/yojson/Yojson/Safe/Util
 html/odoc/deps/yojson/Yojson/Safe/Util/index.html
-html/odoc/deps/yojson/Yojson/Safe/index.html
-html/odoc/deps/yojson/Yojson/index.html
-html/odoc/deps/yojson/index.html
 $ find html/odoc/odoc_html | sort
 html/odoc/odoc_html
+html/odoc/odoc_html/index.html
 html/odoc/odoc_html/Odoc_html
 html/odoc/odoc_html/Odoc_html/Config
 html/odoc/odoc_html/Odoc_html/Config/index.html
@@ -701,14 +720,13 @@ html/odoc/odoc_html/Odoc_html/Html_fragment_json
 html/odoc/odoc_html/Odoc_html/Html_fragment_json/index.html
 html/odoc/odoc_html/Odoc_html/Html_page
 html/odoc/odoc_html/Odoc_html/Html_page/index.html
+html/odoc/odoc_html/Odoc_html/index.html
 html/odoc/odoc_html/Odoc_html/Link
+html/odoc/odoc_html/Odoc_html/Link/index.html
 html/odoc/odoc_html/Odoc_html/Link/Path
 html/odoc/odoc_html/Odoc_html/Link/Path/index.html
-html/odoc/odoc_html/Odoc_html/Link/index.html
 html/odoc/odoc_html/Odoc_html/Types
 html/odoc/odoc_html/Odoc_html/Types/index.html
-html/odoc/odoc_html/Odoc_html/index.html
-html/odoc/odoc_html/index.html
 ]}
 
 If needed, the list of commands executed so far can be shown by de-commenting this block:
