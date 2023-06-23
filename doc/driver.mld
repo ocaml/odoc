@@ -155,12 +155,15 @@ let link_output = ref [ "" ]
 
 let generate_output = ref [ "" ]
 
+(* Record the commands executed and their running time. *)
 let commands = ref [ ]
 
 let run cmd =
-  let cmd_str = Cmd.to_string cmd in
-  commands := cmd_str :: !commands;
-  OS.Cmd.(run_out ~err:OS.Cmd.err_run_out cmd |> to_lines) |> get_ok
+  let t_start = Sys.time () in
+  let r = OS.Cmd.(run_out ~err:OS.Cmd.err_run_out cmd |> to_lines) |> get_ok in
+  let t_end = Sys.time () in
+  commands := (cmd, t_end -. t_start) :: !commands;
+  r
 
 let add_prefixed_output cmd list prefix lines =
   if List.length lines > 0 then
@@ -733,4 +736,74 @@ If needed, the list of commands executed so far can be shown by de-commenting th
 
 {[
 # (* List.iter (fun (cmd, _) -> Printf.printf "$ %s\n" (Cmd.to_string cmd)) (List.rev !commands);; *)
+]}
+
+This last block analyze the running times so that they can be submitted to
+{{:https://github.com/ocurrent/current-bench}current-bench}.
+
+{[
+(* *)
+#require "yojson" ;;
+
+let compute_metric_cmd cmd =
+  let rec compute min_ max_ total count = function
+    | [] -> (min_, max_, total /. float count, count)
+    | (_, t) :: tl ->
+        compute (min min_ t) (max max_ t) (total +. t) (count + 1) tl
+  in
+  let filtered_commands =
+    List.filter
+      (fun (cmd', _) ->
+        match Bos.Cmd.to_list cmd' with
+        | _ :: cmd' :: _ -> cmd = cmd'
+        | _ -> false)
+      !commands
+  in
+  match filtered_commands with
+  | [] -> []
+  | (_, time) :: tl ->
+      let min, max, avg, count = compute time time time 1 tl in
+      [
+        `Assoc
+          [
+            ("name", `String ("total-" ^ cmd));
+            ("value", `Int count);
+            ( "description",
+              `String ("Number of time 'odoc " ^ cmd ^ "' has run.") );
+          ];
+        `Assoc
+          [
+            ("name", `String ("time-" ^ cmd));
+            ( "value",
+              `Assoc
+                [
+                  ("min", `Float min); ("max", `Float max); ("avg", `Float avg);
+                ] );
+            ("units", `String "s");
+            ("description", `String ("Time taken by 'odoc " ^ cmd ^ "'"));
+            ("trend", `String "lower-is-better");
+          ];
+      ]
+
+let metrics =
+  compute_metric_cmd "compile"
+  @ compute_metric_cmd "compile-deps"
+  @ compute_metric_cmd "link"
+  @ compute_metric_cmd "html-generate"
+
+let bench_results =
+  `Assoc
+    [
+      ("name", `String "odoc");
+      ( "results",
+        `List
+          [
+            `Assoc
+              [ ("name", `String "driver.mld"); ("metrics", `List metrics) ];
+          ] );
+    ]
+
+(* Save the result in a file. This file won't be promoted into the
+   documentation. *)
+let () = Yojson.to_file "driver-benchmarks.json" bench_results
 ]}
