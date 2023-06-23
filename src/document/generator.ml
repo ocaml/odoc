@@ -1522,6 +1522,7 @@ module Make (Syntax : SYNTAX) = struct
       | TypeOf { t_desc = ModPath m; _ }
       | TypeOf { t_desc = StructInclude m; _ } ->
           Paths.Path.(is_hidden (m :> t))
+      | Project (_, expr) -> mty_hidden expr
       | _ -> false
 
     and mty_with subs expr =
