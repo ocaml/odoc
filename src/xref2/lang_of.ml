@@ -769,6 +769,19 @@ and mty_substitution map identifier = function
       ModuleTypeSubst
         (Path.module_type_fragment map frag, module_type_expr map identifier eqn)
 
+and bind_functor_parameter map functor_id = function
+  | Component.FunctorParameter.Named arg ->
+      let name = Ident.Name.typed_functor_parameter arg.id in
+      let identifier' = Identifier.Mk.parameter (functor_id, name) in
+      let map =
+        {
+          map with
+          functor_parameter = (arg.id, identifier') :: map.functor_parameter;
+        }
+      in
+      (map, Odoc_model.Lang.FunctorParameter.Named (functor_parameter map arg))
+  | Unit -> (map, Unit)
+
 and u_module_type_expr map identifier = function
   | Component.ModuleType.U.Path p_path ->
       Odoc_model.Lang.ModuleType.U.Path (Path.module_type map p_path)
@@ -781,6 +794,10 @@ and u_module_type_expr map identifier = function
       With
         ( List.map (mty_substitution map identifier) subs,
           u_module_type_expr map identifier expr )
+  | Functor (param, expr) ->
+      let map, param = bind_functor_parameter map identifier param in
+      Functor
+        (param, u_module_type_expr map (Identifier.Mk.result identifier) expr)
   | TypeOf (ModPath p) -> TypeOf (ModPath (Path.module_ map p))
   | TypeOf (StructInclude p) -> TypeOf (StructInclude (Path.module_ map p))
   | Project (proj, expr) ->
@@ -806,20 +823,10 @@ and module_type_expr map identifier = function
           w_expansion = Opt.map (simple_expansion map identifier) w_expansion;
           w_expr = u_module_type_expr map identifier w_expr;
         }
-  | Functor (Named arg, expr) ->
-      let name = Ident.Name.typed_functor_parameter arg.id in
-      let identifier' = Identifier.Mk.parameter (identifier, name) in
-      let map =
-        {
-          map with
-          functor_parameter = (arg.id, identifier') :: map.functor_parameter;
-        }
-      in
+  | Functor (param, expr) ->
+      let map, param = bind_functor_parameter map identifier param in
       Functor
-        ( Named (functor_parameter map arg),
-          module_type_expr map (Identifier.Mk.result identifier) expr )
-  | Functor (Unit, expr) ->
-      Functor (Unit, module_type_expr map (Identifier.Mk.result identifier) expr)
+        (param, module_type_expr map (Identifier.Mk.result identifier) expr)
   | TypeOf { t_desc = ModPath p; t_expansion } ->
       TypeOf
         {

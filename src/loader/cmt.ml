@@ -544,19 +544,15 @@ and read_include env parent incl =
   let decl_modty =
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) ->
-      Some (ModuleType.U.TypeOf (ModuleType.StructInclude (Env.Path.read_module env p)))
+      ModuleType.U.TypeOf (ModuleType.StructInclude (Env.Path.read_module env p))
     | _ ->
       let mty = read_module_expr env parent container incl.incl_mod in
       umty_of_mty mty
   in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expansion = { content; shadowed; } in
-  match decl_modty with
-  | Some m ->
-    let decl = ModuleType m in
-    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | _ ->
-    content.items
+  let decl = ModuleType decl_modty in
+  [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
 
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in

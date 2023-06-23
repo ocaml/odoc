@@ -371,7 +371,8 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
           Tools.expansion_of_module_path env ~strengthen:true p >>= fun exp ->
           Tools.assert_not_functor exp
       | ModuleType mty ->
-          Tools.signature_of_u_module_type_expr ~mark_substituted:false env mty
+          Tools.expansion_of_u_module_type_expr ~mark_substituted:false env mty
+          >>= fun exp -> Tools.assert_not_functor exp
     with
     | Error e ->
         Errors.report ~what:(`Include decl) ~tools_error:e `Expand;
@@ -591,6 +592,7 @@ and module_type_map_subs env id cexpr subs =
     | Path (`Resolved p) -> Some (`ModuleType p)
     | Path _ -> None
     | With (_, e) -> find_parent e
+    | Functor _ -> None
     | TypeOf (ModPath (`Resolved p)) | TypeOf (StructInclude (`Resolved p)) ->
         Some (`Module p)
     | TypeOf _ -> None
@@ -603,12 +605,15 @@ and module_type_map_subs env id cexpr subs =
   | None -> None
   | Some parent -> (
       match
-        Tools.signature_of_u_module_type_expr ~mark_substituted:true env cexpr
+        Tools.expansion_of_u_module_type_expr ~mark_substituted:true env cexpr
       with
       | Error e ->
           Errors.report ~what:(`Module_type id) ~tools_error:e `Lookup;
           None
-      | Ok sg ->
+      | Ok (Functor _) ->
+          (* [cexpr] was in a [with] and thus should not have been a functor *)
+          assert false
+      | Ok (Signature sg) ->
           let fragment_root =
             match parent with (`ModuleType _ | `Module _) as x -> x
           in
@@ -637,6 +642,13 @@ and u_module_type_expr :
         in
         let result : ModuleType.U.expr = With (subs', expr') in
         result
+    | Functor (param, res) ->
+        let param' = functor_parameter env param in
+        let env' = Env.add_functor_parameter param env in
+        let res' =
+          u_module_type_expr env' (Paths.Identifier.Mk.result id) res
+        in
+        Functor (param', res')
     | TypeOf t ->
         let t =
           match t with

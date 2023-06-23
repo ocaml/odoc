@@ -741,13 +741,19 @@ and u_module_type_expr :
   | With (subs, expr) as unresolved -> (
       let cexpr = Component.Of_Lang.(u_module_type_expr (empty ()) expr) in
       match
-        Tools.signature_of_u_module_type_expr ~mark_substituted:true env cexpr
+        Tools.expansion_of_u_module_type_expr ~mark_substituted:true env cexpr
       with
-      | Ok sg ->
+      | Ok (Signature sg) ->
           With (handle_fragments env id sg subs, u_module_type_expr env id expr)
+      | Ok (Functor _) -> assert false
       | Error e ->
           Errors.report ~what:(`Module_type_U cexpr) ~tools_error:e `Resolve;
           unresolved)
+  | Functor (arg, res) ->
+      let arg' = functor_argument env arg in
+      let env = Env.add_functor_parameter arg' env in
+      let res' = u_module_type_expr env (Paths.Identifier.Mk.result id) res in
+      Functor (arg', res')
   | TypeOf (StructInclude p) -> TypeOf (StructInclude (module_path env p))
   | TypeOf (ModPath p) -> TypeOf (ModPath (module_path env p))
   | Project (proj, expr) -> Project (proj, u_module_type_expr env id expr)
@@ -786,15 +792,16 @@ and module_type_expr :
   | With { w_substitutions; w_expansion; w_expr } as unresolved -> (
       let cexpr = Component.Of_Lang.(u_module_type_expr (empty ()) w_expr) in
       match
-        Tools.signature_of_u_module_type_expr ~mark_substituted:true env cexpr
+        Tools.expansion_of_u_module_type_expr ~mark_substituted:true env cexpr
       with
-      | Ok sg ->
+      | Ok (Signature sg) ->
           With
             {
               w_substitutions = handle_fragments env id sg w_substitutions;
               w_expansion = do_expn w_expansion None;
               w_expr = u_module_type_expr env id w_expr;
             }
+      | Ok (Functor _) -> assert false
       | Error e ->
           Errors.report ~what:(`Module_type_U cexpr) ~tools_error:e `Expand;
           unresolved)

@@ -246,11 +246,11 @@ val expansion_of_module_type_expr :
     be called during compile or link, whereas the reresolve functions should only be called
     during the link phase. *)
 
-val signature_of_u_module_type_expr :
+val expansion_of_u_module_type_expr :
   mark_substituted:bool ->
   Env.t ->
   Component.ModuleType.U.expr ->
-  (Component.Signature.t, expansion_of_module_error) Result.result
+  (expansion, expansion_of_module_error) Result.result
 (** The following functions are use for the resolution of {{!type:Odoc_model.Paths.Fragment.t}Fragments}
       Whilst resolving fragments it is necessary to process them in order, applying
       the 'with' expression of module or type equality or substitution, before resolving

@@ -187,6 +187,7 @@ and ModuleType : sig
       | Path of Cpath.module_type
       | Signature of Signature.t
       | With of substitution list * expr
+      | Functor of FunctorParameter.t * expr
       | TypeOf of type_of_desc
       | Project of Cpath.projection * expr
   end
@@ -803,9 +804,7 @@ end
 
 val module_of_functor_argument : FunctorParameter.parameter -> Module.t
 
-val umty_of_mty : ModuleType.expr -> ModuleType.U.expr option
-
-val umty_of_mty_exn : ModuleType.expr -> ModuleType.U.expr
+val umty_of_mty : ModuleType.expr -> ModuleType.U.expr
 
 val extract_signature_doc : Signature.t -> CComment.docs
 

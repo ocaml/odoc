@@ -96,6 +96,7 @@ and ModuleType : sig
     type expr =
       | Path of Path.ModuleType.t
       | Signature of Signature.t
+      | Functor of FunctorParameter.t * expr
       | With of substitution list * expr
       | TypeOf of type_of_desc
       | Project of Projection.t * expr
@@ -530,14 +531,13 @@ module rec SourceTree : sig
 end =
   SourceTree
 
-let rec umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
-  | Signature sg -> Some (Signature sg)
-  | Path { p_path; _ } -> Some (Path p_path)
-  | Functor _ -> None
-  | TypeOf t -> Some (TypeOf t.t_desc)
-  | With { w_substitutions; w_expr; _ } -> Some (With (w_substitutions, w_expr))
-  | Project (proj, e) ->
-      umty_of_mty e |> Option.map (fun e -> ModuleType.U.Project (proj, e))
+let rec umty_of_mty : ModuleType.expr -> ModuleType.U.expr = function
+  | Signature sg -> Signature sg
+  | Path { p_path; _ } -> Path p_path
+  | Functor (p, e) -> Functor (p, umty_of_mty e)
+  | TypeOf t -> TypeOf t.t_desc
+  | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
+  | Project (proj, e) -> Project (proj, umty_of_mty e)
 
 (** Query the top-comment of a signature. This is [s.doc] most of the time with
     an exception for signature starting with an inline includes. *)

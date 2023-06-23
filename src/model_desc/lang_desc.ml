@@ -170,6 +170,8 @@ and moduletype_u_expr =
     (function
     | Path x -> C ("Path", (x :> Paths.Path.t), path)
     | Signature x -> C ("Signature", x, signature_t)
+    | Functor (x1, x2) ->
+        C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_u_expr))
     | With (t, e) ->
         C
           ( "With",

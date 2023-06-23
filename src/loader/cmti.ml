@@ -553,11 +553,8 @@ and read_module_type env parent label_parent mty =
     | Tmty_with(body, subs) -> (
       let body = read_module_type env parent label_parent body in
       let subs = List.map (read_with_constraint env parent label_parent) subs in
-      match Odoc_model.Lang.umty_of_mty body with
-      | Some w_expr ->
-          With {w_substitutions=subs; w_expansion=None; w_expr }
-      | None ->
-        failwith "error")
+      let w_expr = Odoc_model.Lang.umty_of_mty body in
+      With {w_substitutions=subs; w_expansion=None; w_expr })
     | Tmty_typeof mexpr ->
         let decl =
           match mexpr.mod_desc with
@@ -757,12 +754,8 @@ and read_include env parent incl =
   let expr = read_module_type env parent container incl.incl_mod in
   let umty = Odoc_model.Lang.umty_of_mty expr in 
   let expansion = { content; shadowed; } in
-  match umty with
-  | Some uexpr ->
-    let decl = Include.ModuleType uexpr in
-    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | _ ->
-    content.items
+  let decl = Include.ModuleType umty in
+  [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
 
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in

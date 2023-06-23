@@ -204,6 +204,7 @@ and ModuleType : sig
       | Path of Cpath.module_type
       | Signature of Signature.t
       | With of substitution list * expr
+      | Functor of FunctorParameter.t * expr
       | TypeOf of type_of_desc
       | Project of Cpath.projection * expr
   end
@@ -746,6 +747,9 @@ module Fmt = struct
     | With (subs, e) ->
         Format.fprintf ppf "%a with [%a]" u_module_type_expr e substitution_list
           subs
+    | Functor (arg, res) ->
+        Format.fprintf ppf "(%a) -> %a" functor_parameter arg u_module_type_expr
+          res
     | TypeOf t -> module_type_type_of_desc ppf t
     | Project (proj, e) ->
         Format.fprintf ppf "(%a)%a" u_module_type_expr e projection proj
@@ -2144,6 +2148,24 @@ module Of_Lang = struct
     let res = Opt.map (type_expression ident_map) e.res in
     { Exception.locs = e.locs; doc = docs ident_map e.doc; args; res }
 
+  and bind_functor_parameter ident_map param =
+    let open Odoc_model in
+    match param with
+    | Lang.FunctorParameter.Named arg ->
+        let identifier = arg.Lang.FunctorParameter.id in
+        let id = Ident.Of_Identifier.functor_parameter identifier in
+        let ident_map' =
+          {
+            ident_map with
+            functor_parameters =
+              Paths.Identifier.Maps.FunctorParameter.add identifier id
+                ident_map.functor_parameters;
+          }
+        in
+        let arg' = functor_parameter ident_map' id arg in
+        (ident_map', FunctorParameter.Named arg')
+    | Unit -> (ident_map, FunctorParameter.Unit)
+
   and u_module_type_expr ident_map m =
     let open Odoc_model in
     match m with
@@ -2156,6 +2178,9 @@ module Of_Lang = struct
     | With (w, e) ->
         let w' = List.map (with_module_type_substitution ident_map) w in
         With (w', u_module_type_expr ident_map e)
+    | Functor (arg, expr) ->
+        let ident_map', arg' = bind_functor_parameter ident_map arg in
+        Functor (arg', u_module_type_expr ident_map' expr)
     | TypeOf t ->
         let t =
           match t with
@@ -2169,7 +2194,6 @@ module Of_Lang = struct
 
   and module_type_expr ident_map m =
     let open Odoc_model in
-    let open Paths in
     match m with
     | Lang.ModuleType.Signature s ->
         let s = signature ident_map s in
@@ -2196,23 +2220,10 @@ module Of_Lang = struct
             }
         in
         ModuleType.With w'
-    | Lang.ModuleType.Functor (Named arg, expr) ->
-        let identifier = arg.Lang.FunctorParameter.id in
-        let id = Ident.Of_Identifier.functor_parameter identifier in
-        let ident_map' =
-          {
-            ident_map with
-            functor_parameters =
-              Identifier.Maps.FunctorParameter.add identifier id
-                ident_map.functor_parameters;
-          }
-        in
-        let arg' = functor_parameter ident_map' id arg in
+    | Lang.ModuleType.Functor (arg, expr) ->
+        let ident_map', arg' = bind_functor_parameter ident_map arg in
         let expr' = module_type_expr ident_map' expr in
-        ModuleType.Functor (Named arg', expr')
-    | Lang.ModuleType.Functor (Unit, expr) ->
-        let expr' = module_type_expr ident_map expr in
-        ModuleType.Functor (Unit, expr')
+        ModuleType.Functor (arg', expr')
     | Lang.ModuleType.TypeOf { t_desc; t_expansion } ->
         let t_desc =
           match t_desc with
@@ -2479,18 +2490,14 @@ let module_of_functor_argument (arg : FunctorParameter.parameter) =
     hidden = false;
   }
 
-let rec umty_of_mty (e : ModuleType.expr) : ModuleType.U.expr option =
+let rec umty_of_mty (e : ModuleType.expr) : ModuleType.U.expr =
   match e with
-  | Path { p_path; _ } -> Some (Path p_path)
-  | Signature s -> Some (Signature s)
-  | With { w_substitutions; w_expr; _ } -> Some (With (w_substitutions, w_expr))
-  | Functor (_, _) -> None
-  | TypeOf { t_desc; _ } -> Some (TypeOf t_desc)
-  | Project (proj, e) ->
-      umty_of_mty e |> Option.map (fun e -> ModuleType.U.Project (proj, e))
-
-let umty_of_mty_exn e =
-  match umty_of_mty e with None -> assert false | Some e -> e
+  | Path { p_path; _ } -> Path p_path
+  | Signature s -> Signature s
+  | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
+  | Functor (p, e) -> Functor (p, umty_of_mty e)
+  | TypeOf { t_desc; _ } -> TypeOf t_desc
+  | Project (proj, e) -> Project (proj, umty_of_mty e)
 
 (** This is equivalent to {!Lang.extract_signature_doc}. *)
 let extract_signature_doc (s : Signature.t) =

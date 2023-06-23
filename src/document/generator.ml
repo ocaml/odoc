@@ -1511,6 +1511,7 @@ module Make (Syntax : SYNTAX) = struct
     and umty_hidden : Odoc_model.Lang.ModuleType.U.expr -> bool = function
       | Path p -> Paths.Path.(is_hidden (p :> t))
       | With (_, expr) -> umty_hidden expr
+      | Functor _ -> false
       | TypeOf (ModPath m) | TypeOf (StructInclude m) ->
           Paths.Path.(is_hidden (m :> t))
       | Signature _ -> false
@@ -1549,6 +1550,7 @@ module Make (Syntax : SYNTAX) = struct
       function
       | Path _ -> false
       | Signature _ -> true
+      | Functor (_, expr) -> is_elidable_with_u expr
       | With (_, expr) -> is_elidable_with_u expr
       | TypeOf _ -> false
       | Project (_, expr) -> is_elidable_with_u expr (* TODO: Correct? *)
@@ -1562,6 +1564,7 @@ module Make (Syntax : SYNTAX) = struct
       | With (_, expr) when is_elidable_with_u expr ->
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       | With (subs, expr) -> mty_with subs expr
+      | Functor _ -> (* TODO *) O.txt "<unexpanded functor>"
       | TypeOf t -> mty_typeof t
       | Project _ -> (* TODO *) O.txt "<unexpanded projection>"
 

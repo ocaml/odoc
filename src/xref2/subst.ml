@@ -705,18 +705,18 @@ and u_module_type_expr s t =
           | Signature s -> Signature s
           | TypeOf { t_desc; _ } -> TypeOf t_desc
           | With w -> With (w.w_substitutions, w.w_expr)
-          | Project (proj, e) -> Project (proj, Component.umty_of_mty_exn e)
-          | Functor _ ->
-              (* non functor cannot be substituted away to a functor *)
-              assert false))
+          | Project (proj, e) -> Project (proj, Component.umty_of_mty e)
+          | Functor (param, e) -> Functor (param, Component.umty_of_mty e)))
   | Signature sg -> Signature (signature s sg)
   | With (subs, e) ->
       With
         (List.map (with_module_type_substitution s) subs, u_module_type_expr s e)
+  | Functor (arg, expr) ->
+      Functor (functor_parameter s arg, u_module_type_expr s expr)
   | TypeOf t -> (
       try TypeOf (module_type_type_of_desc s t)
       with MTOInvalidated (proj, e) -> (
-        let e = u_module_type_expr s (Component.umty_of_mty_exn e) in
+        let e = u_module_type_expr s (Component.umty_of_mty e) in
         match proj with `Here -> e | _ -> Project (proj, e)))
   | Project (proj, e) -> Project (proj, u_module_type_expr s e)
 

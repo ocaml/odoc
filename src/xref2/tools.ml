@@ -1613,27 +1613,37 @@ and unresolve_subs subs =
       | x -> x)
     subs
 
-and signature_of_u_module_type_expr :
+and expansion_of_u_module_type_expr :
     mark_substituted:bool ->
     Env.t ->
     Component.ModuleType.U.expr ->
-    (Component.Signature.t, expansion_of_module_error) Result.result =
+    (expansion, expansion_of_module_error) Result.result =
  fun ~mark_substituted env m ->
   match m with
   | Component.ModuleType.U.Path p -> (
       match resolve_module_type ~mark_substituted ~add_canonical:true env p with
-      | Ok (_, mt) -> expansion_of_module_type env mt >>= assert_not_functor
+      | Ok (_, mt) -> expansion_of_module_type env mt
       | Error e -> Error (`UnresolvedPath (`ModuleType (p, e))))
-  | Signature s -> Ok s
+  | Signature s -> Ok (Signature s)
   | With (subs, s) ->
-      signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
+      expansion_of_u_module_type_expr ~mark_substituted env s
+      >>= assert_not_functor
+      >>= fun sg ->
       let subs = unresolve_subs subs in
-      handle_signature_with_subs ~mark_substituted env sg subs
-  | TypeOf t ->
-      expansion_of_module_type_type_of_desc env t >>= assert_not_functor
+      handle_signature_with_subs ~mark_substituted env sg subs >>= fun sg ->
+      Ok (Signature sg)
+  | Functor (arg, expr) ->
+      expansion_of_u_module_type_expr ~mark_substituted env expr >>= fun exp ->
+      let expr : Component.ModuleType.expr =
+        match exp with
+        | Signature sg -> Signature sg
+        | Functor (arg2, expr) -> Functor (arg2, expr)
+      in
+      Ok (Functor (arg, expr))
+  | TypeOf t -> expansion_of_module_type_type_of_desc env t
   | Project (proj, expr) ->
-      signature_of_u_module_type_expr ~mark_substituted env expr >>= fun sg ->
-      project_from_signature ~mark_substituted env proj sg
+      expansion_of_u_module_type_expr ~mark_substituted env expr >>= fun exp ->
+      project_from_expansion ~mark_substituted env proj exp
 
 and expansion_of_module_type_type_of_desc :
     Env.t ->
@@ -1679,7 +1689,9 @@ and expansion_of_module_type_expr :
       items have been removed
   *)
   | Component.ModuleType.With { w_substitutions; w_expr; _ } ->
-      signature_of_u_module_type_expr ~mark_substituted env w_expr >>= fun sg ->
+      expansion_of_u_module_type_expr ~mark_substituted env w_expr
+      >>= assert_not_functor
+      >>= fun sg ->
       let subs = unresolve_subs w_substitutions in
       handle_signature_with_subs ~mark_substituted env sg subs >>= fun sg ->
       Ok (Signature sg)
@@ -1696,16 +1708,6 @@ and expansion_of_module_type_expr :
   | Component.ModuleType.Project (proj, expr) ->
       expansion_of_module_type_expr ~mark_substituted env expr >>= fun exp ->
       project_from_expansion ~mark_substituted env proj exp
-
-and project_from_signature :
-    mark_substituted:bool ->
-    Env.t ->
-    Cpath.projection ->
-    Component.Signature.t ->
-    (Component.Signature.t, expansion_of_module_error) Result.result =
- fun ~mark_substituted env proj sg ->
-  project_from_expansion ~mark_substituted env proj (Signature sg)
-  >>= assert_not_functor
 
 and project_from_expansion :
     mark_substituted:bool ->
