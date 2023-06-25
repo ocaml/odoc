@@ -5,17 +5,13 @@ module Suffix_tree = Suffix_tree
 module Occ = Occ
 
 type t = Types.t =
-  { db_types : Suffix_tree.With_occ.reader
-  ; db_names : Suffix_tree.With_elts.reader
+  { db_names : Suffix_tree.With_elts.reader
+  ; db_types : Suffix_tree.With_occ.reader
   }
 
-module type S = sig
-  type writer
+type writer
 
-  val export : writer -> unit
-  val store_type_paths : Elt.t -> string list list -> unit
-  val store_word : string -> Elt.t -> unit
-  val load_counter : int ref
-end
-
-module Make (Storage : Storage.S) : S with type writer = Storage.writer
+val make : unit -> writer
+val export : writer -> t
+val store_type_paths : writer -> Elt.t -> string list list -> unit
+val store_word : writer -> string -> Elt.t -> unit

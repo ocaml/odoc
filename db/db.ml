@@ -3,47 +3,39 @@ module Types = Types
 module Storage_toplevel = Storage
 module Suffix_tree = Suffix_tree
 module Occ = Occ
+module Storage = Storage
 include Types
 
-module type S = sig
-  type writer
+type writer =
+  { writer_names : Suffix_tree.With_elts.writer
+  ; writer_types : Suffix_tree.With_occ.writer
+  }
 
-  val export : writer -> unit
-  val store_type_paths : Elt.t -> string list list -> unit
-  val store_word : string -> Elt.t -> unit
-  val load_counter : int ref
-end
+let make () =
+  { writer_names = Suffix_tree.With_elts.make ()
+  ; writer_types = Suffix_tree.With_occ.make ()
+  }
 
-module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
-  type writer = Storage.writer
+let export db =
+  let t0 = Unix.gettimeofday () in
+  let db =
+    { db_names = Suffix_tree.With_elts.export db.writer_names
+    ; db_types = Suffix_tree.With_occ.export db.writer_types
+    }
+  in
+  let t1 = Unix.gettimeofday () in
+  Format.printf "Export in %fms@." (1000.0 *. (t1 -. t0)) ;
+  db
 
-  let load_counter = ref 0
-  let db_types = Suffix_tree.With_occ.make ()
-  let db_names = Suffix_tree.With_elts.make ()
+let store db name elt ~count =
+  Suffix_tree.With_occ.add_suffixes db.writer_types name (count, elt)
 
-  let export h =
-    load_counter := 0 ;
-    let t0 = Unix.gettimeofday () in
-    let db =
-      { db_types = Suffix_tree.With_occ.export db_types
-      ; db_names = Suffix_tree.With_elts.export db_names
-      }
-    in
-    let t1 = Unix.gettimeofday () in
-    Format.printf "Export in %fms@." (1000.0 *. (t1 -. t0)) ;
-    Storage.save ~db:h db
+let store_type_paths db elt paths =
+  List.iter
+    (fun (path, count) ->
+      let word = String.concat "" path in
+      store db ~count word elt)
+    (regroup paths)
 
-  let store name elt ~count =
-    Suffix_tree.With_occ.add_suffixes db_types name (count, elt)
-
-  let store_type_paths elt paths =
-    List.iter
-      (fun (path, count) ->
-        let word = String.concat "" path in
-        store ~count word elt)
-      (regroup paths)
-
-  let store_word word elt = Suffix_tree.With_elts.add_suffixes db_names word elt
-end
-
-module Storage = Storage
+let store_word db word elt =
+  Suffix_tree.With_elts.add_suffixes db.writer_names word elt

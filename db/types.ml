@@ -28,6 +28,6 @@ let sgn_not = function
   | Unknown -> Unknown
 
 type t =
-  { db_types : Suffix_tree.With_occ.reader
-  ; db_names : Suffix_tree.With_elts.reader
+  { db_names : Suffix_tree.With_elts.reader
+  ; db_types : Suffix_tree.With_occ.reader
   }
