@@ -295,8 +295,3 @@ let register_entry ~db ~index_name ~type_search ~index_docstring
        | Doc _ -> ()
        | _ -> register_full_name ~db full_name elt) ;
     register_kind ~db ~type_search elt extra
-
-module Resolver = Odoc_odoc.Resolver
-
-let run ~db ~index_docstring ~index_name ~type_search ~index =
-  List.iter (register_entry ~db ~index_docstring ~index_name ~type_search) index

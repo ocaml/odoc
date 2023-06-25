@@ -1,25 +1,38 @@
+let index_file register filename =
+  match Fpath.of_string filename with
+  | Error (`Msg msg) -> Format.printf "FILE ERROR %s: %s@." filename msg
+  | Ok file -> (
+      match
+        Odoc_odoc.Indexing.handle_file
+          ~page:(Odoc_model.Fold.page ~f:register ())
+          ~unit:(Odoc_model.Fold.unit ~f:register ())
+          file
+      with
+      | Ok (Some result) -> result
+      | Ok None -> ()
+      | Error (`Msg msg) -> Format.printf "ODOC ERROR %s: %s@." filename msg)
+
+let storage_module = function
+  | `ancient -> (module Storage_ancient : Db.Storage.S)
+  | `marshal -> (module Storage_marshal : Db.Storage.S)
+  | `js -> (module Storage_js : Db.Storage.S)
+
 let main files index_docstring index_name type_search db_filename db_format =
-  let index = files |> List.map Fpath.of_string |> List.map Result.get_ok in
-  let storage =
-    match db_format with
-    | `ancient -> (module Storage_ancient : Db.Storage.S)
-    | `marshal -> (module Storage_marshal : Db.Storage.S)
-    | `js -> (module Storage_js : Db.Storage.S)
+  let module Storage = (val storage_module db_format) in
+  let db = Db.make () in
+  let register () item =
+    List.iter
+      (Load_doc.register_entry ~db ~index_docstring ~index_name ~type_search)
+      (Odoc_search.Entry.entries_of_item item)
   in
-  let add_entries li e = Odoc_search.Entry.entries_of_item e @ li in
-  let index =
-    index
-    |> List.fold_left
-         (fun li file ->
-           file
-           |> Odoc_odoc.Indexing.handle_file
-                ~page:(Odoc_model.Fold.page ~f:add_entries li)
-                ~unit:(Odoc_model.Fold.unit ~f:add_entries li)
-           |> Result.get_ok |> Option.value ~default:[])
-         []
-  in
-  Index_lib.main ~index_docstring ~index_name ~type_search ~index ~db_filename
-    storage
+  let h = Storage.open_out db_filename in
+  let t0 = Unix.gettimeofday () in
+  List.iter (index_file register) files ;
+  let t1 = Unix.gettimeofday () in
+  Format.printf "Indexing in %fms@." (1000.0 *. (t1 -. t0)) ;
+  let t = Db.export db in
+  Storage.save ~db:h t ;
+  Storage.close_out h
 
 open Cmdliner
 

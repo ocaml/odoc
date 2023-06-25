@@ -1,7 +1,7 @@
-val run :
+val register_entry :
      db:Db.writer
-  -> index_docstring:bool
   -> index_name:bool
   -> type_search:bool
-  -> index:Odoc_search.Entry.t list
+  -> index_docstring:bool
+  -> Odoc_search.Entry.t
   -> unit

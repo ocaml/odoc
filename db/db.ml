@@ -1,6 +1,5 @@
 module Elt = Elt
 module Types = Types
-module Storage_toplevel = Storage
 module Suffix_tree = Suffix_tree
 module Occ = Occ
 module Storage = Storage
