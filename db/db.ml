@@ -2,10 +2,8 @@ module Elt = Elt
 module Types = Types
 module Storage_toplevel = Storage
 module Suffix_tree = Suffix_tree
+module Occ = Occ
 include Types
-module Occ = Int.Map
-
-let list_of_string s = List.init (String.length s) (String.get s)
 
 module type S = sig
   type writer
@@ -23,29 +21,16 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
   let db_types = Suffix_tree.With_occ.make ()
   let db_names = Suffix_tree.With_elts.make ()
 
-  module Hset2 = Hashtbl.Make (struct
-    type t = Elt.Set.t * Elt.Set.t
-
-    let hash = Hashtbl.hash
-    let equal (a, b) (a', b') = a == a' && b == b'
-  end)
-
-  module Hocc2 = Hashtbl.Make (struct
-    type t = Elt.Set.t Occ.t * Elt.Set.t Occ.t
-
-    let hash = Hashtbl.hash
-    let equal (a, b) (a', b') = a == a' && b == b'
-  end)
-
   let export h =
     load_counter := 0 ;
+    let t0 = Unix.gettimeofday () in
     let db =
       { db_types = Suffix_tree.With_occ.export db_types
       ; db_names = Suffix_tree.With_elts.export db_names
       }
     in
-    PPrint.ToChannel.pretty 0.8 120 stdout
-      (Suffix_tree.With_elts.pprint db.db_names) ;
+    let t1 = Unix.gettimeofday () in
+    Format.printf "Export in %fms@." (1000.0 *. (t1 -. t0)) ;
     Storage.save ~db:h db
 
   let store name elt ~count =

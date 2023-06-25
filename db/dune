@@ -1,5 +1,3 @@
 (library
- (flags
-  (:standard -open Common))
  (name db)
- (libraries unix common pprint))
+ (libraries unix))

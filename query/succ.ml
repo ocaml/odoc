@@ -1,6 +1,5 @@
 open Db
 
-
 type s =
   | All
   | Empty
@@ -47,7 +46,7 @@ let rec succ_ge elt = function
   | All -> elt
   | Empty -> raise Not_found
   | Array s ->
-      let out = Array.succ_ge_exn ~compare:Elt.compare elt s in
+      let out = Array_succ.succ_ge_exn ~compare:Elt.compare elt s in
       begin
         match Elt.compare elt out with
         | 0 -> elt
@@ -77,7 +76,7 @@ let rec succ_ge elt = function
 let rec succ_gt elt = function
   | All -> invalid_arg "Succ.succ_gt All"
   | Empty -> raise Not_found
-  | Array s -> Array.succ_gt_exn ~compare:Elt.compare elt s
+  | Array s -> Array_succ.succ_gt_exn ~compare:Elt.compare elt s
   | Inter (a, _b) -> succ_gt elt a
   | Union (a, b) -> begin
       match succ_gt_opt elt a, succ_gt_opt elt b with

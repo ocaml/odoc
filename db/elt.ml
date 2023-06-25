@@ -72,14 +72,7 @@ module Package = struct
     ; version : string
     }
 
-  let hash { name; version } =
-    Hashtbl.hash (String.hash name, String.hash version)
-
-  let equal = ( = )
-
-  let v ~name ~version = let version = version in
-
-                         { name; version }
+  let v ~name ~version = { name; version }
 end
 
 type package = Package.t =
@@ -125,51 +118,38 @@ end
 include T
 
 let equal a b = structural_compare a b = 0
-let ( = ) = equal
-let ( < ) e e' = compare e e' < 0
-let ( <= ) e e' = compare e e' <= 0
-let ( > ) e e' = compare e e' > 0
-let ( >= ) e e' = compare e e' >= 0
 
 module Set = Set.Make (T)
-
-let pprint { name; _ } =
-  let open PPrint in
-  !^name
 
 (** Array of elts. For use in functors that require a type [t] and not ['a t].*)
 module Array = struct
   type elt = t
   type nonrec t = t array
 
-  let is_empty arr = Int.(Array.length arr = 0)
+  let is_empty arr = Array.length arr = 0
 
   let of_list arr =
     let arr = Array.of_list arr in
     Array.sort compare arr ;
     arr
-
-  let pprint_elt = pprint
-
-  let pprint arr =
-    let open PPrint in
-    braces @@ flow (break 1) (arr |> Array.map pprint |> Array.to_list)
 end
 
 let pkg_link { pkg; _ } =
-  let open Option.O in
-  let+ { name; version } = pkg in
-  Printf.sprintf "https://ocaml.org/p/%s/%s" name version
+  match pkg with
+  | None -> None
+  | Some { name; version } ->
+      Some (Printf.sprintf "https://ocaml.org/p/%s/%s" name version)
 
 let link t =
-  let open Option.O in
-  let name, path =
-    match List.rev (String.split_on_char '.' t.name) with
-    | name :: path -> name, String.concat "/" (List.rev path)
-    | _ -> "", ""
-  in
-  let+ pkg_link = pkg_link t in
-  pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
+  match pkg_link t with
+  | None -> None
+  | Some pkg_link ->
+      let name, path =
+        match List.rev (String.split_on_char '.' t.name) with
+        | name :: path -> name, String.concat "/" (List.rev path)
+        | _ -> "", ""
+      in
+      Some (pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name)
 
 let v ~name ~kind ~score ~rhs ~doc_html ~url ?(pkg = None) () =
   { name; kind; url; score; doc_html; pkg; rhs }

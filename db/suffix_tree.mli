@@ -4,8 +4,6 @@ module type SET = sig
 
   val of_list : elt list -> t
   val is_empty : t -> bool
-  val pprint : t -> PPrint.document
-  val pprint_elt : elt -> PPrint.document
 end
 
 module Make (S : SET) : sig
@@ -22,7 +20,6 @@ module Make (S : SET) : sig
   val export : writer -> reader
   val find : reader -> string -> reader option
   val to_sets : reader -> S.t list
-  val pprint : reader -> PPrint.document
 end
 
 module With_elts : module type of Make (Elt.Array)

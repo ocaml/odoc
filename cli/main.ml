@@ -1,5 +1,3 @@
-
-
 let pp_or cond pp_true pp_false ppf = if cond then pp_true ppf else pp_false ppf
 
 let print_result ~print_cost
@@ -7,8 +5,11 @@ let print_result ~print_cost
   let score = if print_cost then string_of_int score ^ " " else "" in
   let kind = kind |> Db.Elt.Kind.to_string |> Unescape.string in
   let name = Unescape.string name in
-  let rhs = Option.map Unescape.string rhs in
-  Format.printf "%s%s %s%a\n" score kind name (Option.pp String.pp) rhs
+  let pp_rhs h = function
+    | None -> ()
+    | Some rhs -> Format.fprintf h "%s" (Unescape.string rhs)
+  in
+  Format.printf "%s%s %s%a\n" score kind name pp_rhs rhs
 
 let search ~print_cost ~db query =
   match Query.(api ~shards:db { query; packages = []; limit = 50 }) with

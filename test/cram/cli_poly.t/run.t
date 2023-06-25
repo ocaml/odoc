@@ -7,12 +7,8 @@
   $ du -sh megaodocl
   4.0K	megaodocl
   $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
-  Index_lib.main
-  Indexing in 0.000579s
-  trie_with_array_occ:0.00s
-  trie_with_array:0.00s
-  Cache.Elt_array_occ_trie.memo:0.00s
-  Cache.Elt_array_trie.memo:0.00s
+  Indexing in 0.602961ms
+  Export in 0.049114ms
   $ export SHERLODOC_DB=db.bin
 TODO : get a result for the query bellow
   $ sherlodoc ":'a"

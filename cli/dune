@@ -2,7 +2,5 @@
 
 (executable
  (name main)
-  (flags
-  (:standard -open Common))
  (public_name sherlodoc)
  (libraries cmdliner query storage_marshal))

@@ -6,7 +6,6 @@ module Make (Storage : Db.Storage.S) = struct
   module Db = Db.Make (Storage)
   module ModuleName = Odoc_model.Names.ModuleName
 
-
   let generic_cost ~ignore_no_doc name has_doc =
     String.length name
     (* + (5 * List.length path) TODO : restore depth based ordering *)
@@ -67,43 +66,63 @@ module Make (Storage : Db.Storage.S) = struct
 
   (** for scoring *)
   let rec paths ~prefix ~sgn t =
-    let r =
-      match t with
-      | Odoc_model.Lang.TypeExpr.Var _ ->
-          let poly = "POLY" in
-          [ poly :: Types.string_of_sgn sgn :: prefix ]
-      | Any ->
-          let poly = "POLY" in
-          [ poly :: Types.string_of_sgn sgn :: prefix ]
-      | Arrow (_, a, b) ->
-          let prefix_left = "->0" :: prefix in
-          let prefix_right = "->1" :: prefix in
-          List.rev_append
-            (paths ~prefix:prefix_left ~sgn:(Types.sgn_not sgn) a)
-            (paths ~prefix:prefix_right ~sgn b)
-      | Constr (name, args) ->
-          let name = fullname name in
-          let prefix = name :: Types.string_of_sgn sgn :: prefix in
-          begin
-            match args with
-            | [] -> [ prefix ]
-            | _ ->
-                rev_concat
-                @@ List.mapi
-                     (fun i arg ->
-                       let prefix = string_of_int i :: prefix in
-                       paths ~prefix ~sgn arg)
-                     args
-          end
-      | Tuple args ->
-          rev_concat
-          @@ List.mapi (fun i arg ->
-                 let prefix = (string_of_int i ^ "*") :: prefix in
-                 paths ~prefix ~sgn arg)
-          @@ args
-      | _ -> []
-    in
-    r
+    match t with
+    | Odoc_model.Lang.TypeExpr.Var _ ->
+        let poly = "POLY" in
+        [ poly :: Types.string_of_sgn sgn :: prefix ]
+    | Any ->
+        let poly = "POLY" in
+        [ poly :: Types.string_of_sgn sgn :: prefix ]
+    | Arrow (_, a, b) ->
+        let prefix_left = "->0" :: prefix in
+        let prefix_right = "->1" :: prefix in
+        List.rev_append
+          (paths ~prefix:prefix_left ~sgn:(Types.sgn_not sgn) a)
+          (paths ~prefix:prefix_right ~sgn b)
+    | Constr (name, args) ->
+        let name = fullname name in
+        let prefix = name :: Types.string_of_sgn sgn :: prefix in
+        begin
+          match args with
+          | [] -> [ prefix ]
+          | _ ->
+              rev_concat
+              @@ List.mapi
+                   (fun i arg ->
+                     let prefix = string_of_int i :: prefix in
+                     paths ~prefix ~sgn arg)
+                   args
+        end
+    | Tuple args ->
+        rev_concat
+        @@ List.mapi (fun i arg ->
+               let prefix = (string_of_int i ^ "*") :: prefix in
+               paths ~prefix ~sgn arg)
+        @@ args
+    | _ -> []
+
+  let hcons_tbl = Hashtbl.create 16
+  let uid_generator = ref 0
+
+  let rec hcons = function
+    | [] -> -1, []
+    | x :: xs -> (
+        let uid_xs, xs = hcons xs in
+        match Hashtbl.find hcons_tbl (uid_xs, x) with
+        | xxs -> xxs
+        | exception Not_found ->
+            let uid = !uid_generator in
+            uid_generator := uid + 1 ;
+            let result = uid, x :: xs in
+            Hashtbl.add hcons_tbl (uid_xs, x) result ;
+            result)
+
+  let paths typ =
+    List.map
+      (fun xs ->
+        let _, xs = hcons xs in
+        xs)
+      (paths ~prefix:[] ~sgn:Pos typ)
 
   (** for indexing *)
   let rec type_paths ~prefix ~sgn = function
@@ -170,18 +189,14 @@ module Make (Storage : Db.Storage.S) = struct
     | TypeDecl _ -> Elt.Kind.TypeDecl
     | Module -> Elt.Kind.Module
     | Value { value = _; type_ } ->
-        let paths = paths ~prefix:[] ~sgn:Pos type_ in
+        let paths = paths type_ in
         Elt.Kind.val_ paths
     | Constructor { args; res } ->
         let searchable_type = searchable_type_of_constructor args res in
-        let paths = paths ~prefix:[] ~sgn:Pos searchable_type in
+        let paths = paths searchable_type in
         Elt.Kind.constructor paths
     | Field { mutable_ = _; parent_type; type_ } ->
-        let paths =
-          type_
-          |> searchable_type_of_record parent_type
-          |> paths ~prefix:[] ~sgn:Pos
-        in
+        let paths = type_ |> searchable_type_of_record parent_type |> paths in
         Elt.Kind.field paths
     | Doc _ -> Doc
     | Exception _ -> Exception
@@ -191,11 +206,9 @@ module Make (Storage : Db.Storage.S) = struct
     | TypeExtension _ -> TypeExtension
     | ExtensionConstructor { args; res } ->
         let searchable_type = searchable_type_of_constructor args res in
-        let paths = paths ~prefix:[] ~sgn:Pos searchable_type in
+        let paths = paths searchable_type in
         Elt.Kind.extension_constructor paths
     | ModuleType -> ModuleType
-
-  let convert_kind k = k |> convert_kind (*|> Cache.Kind_.memo*)
 
   let register_type_expr elt type_ =
     let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in

@@ -5,7 +5,7 @@ module Storage = Db.Storage
 module Tree = Db.Suffix_tree.With_elts
 module Tree_occ = Db.Suffix_tree.With_occ
 open Db.Types
-module Occ = Int.Map
+module Occ = Db.Occ.Int_map
 
 let inter_list xs = List.fold_left Succ.inter Succ.all xs
 
@@ -26,52 +26,6 @@ let collapse_trie t =
        (fun succ arr -> Succ.union succ (Succ.of_array arr))
        Succ.empty
 
-(*let rec collapse_trie_occ_polar ~parent_char ~polarity ~count t =
-    let open Tree in
-    match t with
-    | Leaf (_, leaf) ->
-        if parent_char = polarity then collapse_occ ~count leaf else Succ.empty
-    | Node { leaf = _; children; _ } ->
-        Char.Map.fold
-          (fun parent_char child acc ->
-            let res =
-              collapse_trie_occ_polar ~parent_char ~polarity ~count child
-            in
-            Succ.union acc res)
-          children Succ.empty
-
-
-  let collapse_trie_occ_polar ~polarity ~count t =
-    let open Tree in
-    match t with
-    | Leaf _ -> Succ.empty
-    | Node { leaf = _; children; _ } ->
-        Char.Map.fold
-          (fun parent_char child acc ->
-            let res =
-              collapse_trie_occ_polar ~parent_char ~polarity ~count child
-            in
-            Succ.union acc res)
-          children Succ.empty
-
-  let collapse_trie_with_poly ~count name t =
-    match name with
-    | [ "POLY"; ("+" | "-") ] -> begin
-        match t with
-        | Tree.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_occ ~count s
-        | _ -> Succ.empty
-      end
-    | _ -> collapse_trie_occ ~count t
-
-  let _collapse_trie_with_poly_polar ~polarity ~count name t =
-    match name with
-    | [ "POLY"; ("+" | "-") ] -> begin
-        match t with
-        | Tree.Leaf ([], s) | Node { leaf = Some s; _ } -> collapse_occ ~count s
-        | _ -> Succ.empty
-      end
-    | _ -> collapse_trie_occ_polar ~polarity ~count t
-*)
 let find_types ~shards names =
   List.fold_left
     (fun acc shard ->
@@ -83,25 +37,14 @@ let find_types ~shards names =
                let name' = String.concat "" name in
                match Tree_occ.find db name' with
                | Some trie -> collapse_trie_occ ~count trie
-               | None -> Succ.empty
-               (*
-               | Error (`Stopped_at (i, sub_trie)) ->
-                   let name_str = name' |> List.to_seq |> String.of_seq in
-                   if i = String.length name_str - 1
-                   then
-                     let polarity = name_str.[i] in
-                     match polarity with
-                     | '-' | '+' ->
-                         collapse_trie_occ_polar ~polarity ~count sub_trie
-                     | _ -> Succ.empty
-                   else Succ.empty*))
+               | None -> Succ.empty)
              (regroup names)
       in
       Succ.union acc r)
     Succ.empty shards
 
 let find_names ~(shards : Db.t list) names =
-  let names = List.map (fun n -> (*String.rev *)(String.lowercase_ascii n)) names in
+  let names = List.map String.lowercase_ascii names in
   List.fold_left
     (fun acc shard ->
       let db_names = shard.db_names in

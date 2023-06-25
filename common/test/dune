@@ -1,5 +1,0 @@
-(test
- (name test)
- (flags
-  (:standard -open Common))
- (libraries alcotest common))
