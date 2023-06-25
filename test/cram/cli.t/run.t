@@ -7,8 +7,8 @@
   $ du -sh megaodocl
   8.0K	megaodocl
   $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
-  Indexing in 1.405954ms
-  Export in 0.463009ms
+  Indexing in 1.257896ms
+  Export in 0.494003ms
   $ export SHERLODOC_DB=db.bin
   $ sherlodoc "unique_name"
   val Main.unique_name : foo
@@ -58,17 +58,10 @@
   216 mod Main.S_to_S1
   316 type Main.list
   318 type Main.List.t = 'a list
-  319 val Main.consume : moo -> unit
-  320 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  321 val Main.consume_2 : moo -> moo -> unit
   323 val Main.Map.to_list : foo
-  327 val Main.consume_2_other : moo -> t -> unit
   327 type Main.extensible_type = ..
-  328 val Main.nesting_priority : foo
-  333 val Main.Nest.nesting_priority : foo
   373 cons Main.MyExtension : moo -> extensible_type
   1108 val Main.foo : foo
-  1154 doc page
   $ sherlodoc --print-cost "qwertyuiopasdfghjklzxcvbnm"
   [No results]
 TODO : get a result for the query bellow

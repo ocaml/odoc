@@ -121,7 +121,7 @@ end
 
 include T
 
-let equal a b = structural_compare a b = 0
+let equal a b = compare a b = 0
 
 module Set = Set.Make (T)
 

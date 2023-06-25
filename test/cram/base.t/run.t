@@ -2,58 +2,57 @@
   $ du -sh megaodocl
   5.1M	megaodocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
-  Warning, resolved hidden path: Base__.Int63_emul.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Int63_emul.t
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Hash_set_intf.M_sexp_grammar
-  Warning, resolved hidden path: Base__.Hash_set_intf.M_sexp_grammar
+  Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: {For_generated_code}1.t
+  Warning, resolved hidden path: Base__.Hash_set_intf.M_sexp_grammar
+  Warning, resolved hidden path: Base__.Hash_set_intf.M_sexp_grammar
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
   Warning, resolved hidden path: Base__.Either0.t
+  Warning, resolved hidden path: Base__.Int63_emul.t
+  Warning, resolved hidden path: Base__.Int63_emul.t
   Warning, resolved hidden path: Base__.Either0.t
-  Indexing in 658.329010ms
-  Export in 614.521980ms
-  1.60user 0.05system 0:01.65elapsed 100%CPU (0avgtext+0avgdata 190028maxresident)k
-  0inputs+6408outputs (0major+52927minor)pagefaults 0swaps
-$ sherlodoc_index --format=marshal --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
+  Warning, resolved hidden path: Base__.Either0.t
+  Warning, resolved hidden path: Base__.Either0.t
+  Warning, resolved hidden path: Base__.Either0.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Set_intf.Named.t
+  Warning, resolved hidden path: Base__.Either0.t
+  Indexing in 648.846149ms
+  Export in 515.198946ms
+  1.45user 0.04system 0:01.49elapsed 100%CPU (0avgtext+0avgdata 187536maxresident)k
+  0inputs+5560outputs (0major+52582minor)pagefaults 0swaps
 $ sherlodoc_index --format=js --empty-payload --db=db_empty_payload.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-docstring=false --db=db_no_docstring.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-name=false --db=db_no_name.js $(find . -name '*.odocl') 2> /dev/null
@@ -65,8 +64,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  3200	db.js
-  2412	db.js.gz
+  2776	db.js
+  2092	db.js.gz
   1628	megaodocl.gz
 
 
@@ -91,3 +90,53 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   odoc_search.js
   $ cp -r html /tmp
   $ firefox /tmp/html/base/index.html
+  $ sherlodoc_index --format=marshal --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
+  Indexing in 758.491039ms
+  Export in 544.108868ms
+  $ sherlodoc --db=db_marshal.bin "group b"
+  val Base.List.group : 'a t -> break:('a -> 'a -> bool) -> 'a t t
+  val Base.Sequence.group : 'a t -> break:('a -> 'a -> bool) -> 'a list t
+  val Base.List.Assoc.group : ('a * 'b) list -> equal:('a -> 'a -> bool) -> ('a, 'b list) t
+  val Base.List.groupi : 'a t -> break:(int -> 'a -> 'a -> bool) -> 'a t t
+  val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
+  val Base.List.sort_and_group : 'a t -> compare:('a -> 'a -> int) -> 'a t t
+  val Base.List.Assoc.sort_and_group : ('a * 'b) list -> compare:('a -> 'a -> int) -> ('a, 'b list) t
+  val Base.Set.S_poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
+  val Base.String.split_on_chars : t -> on:char list -> t list
+  val Base.String.Escaping.split_on_chars : string -> on:char list -> escape_char:char -> string list
+  $ sherlodoc --db=db_marshal.bin "group by"
+  val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
+  val Base.Set.Poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
+  val Base.Set.S_poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
+  val Base.Set.Using_comparator.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
+  val Base.Set.Accessors_generic.group_by : ('a, 'cmp) t -> equiv:('a elt -> 'a elt -> bool) -> ('a, 'cmp) t list
+  val Base.Set.Using_comparator.Tree.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
+  val Base.Hashtbl.group : ?growth_allowed:bool ->
+    ?size:int ->
+    'a Key.t ->
+    get_key:('r -> 'a) ->
+    get_data:('r -> 'b) ->
+    combine:('b -> 'b -> 'b) ->
+    'r list ->
+    ('a, 'b) t
+  val Base.Hashtbl.Creators.group : ?growth_allowed:bool ->
+    ?size:int ->
+    'a Key.t ->
+    get_key:('r -> 'a) ->
+    get_data:('r -> 'b) ->
+    combine:('b -> 'b -> 'b) ->
+    'r list ->
+    ('a, 'b) t
+  val Base.String.split_on_chars : t -> on:char list -> t list
+  val Base.String.Escaping.split_on_chars : string -> on:char list -> escape_char:char -> string list
+  $ sherlodoc --db=db_marshal.bin "map2"
+  mod Base.Applicative.Make_using_map2
+  sig Base.Applicative.Basic_using_map2
+  mod Base.Applicative.Make2_using_map2
+  mod Base.Applicative.Make3_using_map2
+  sig Base.Applicative.Basic2_using_map2
+  sig Base.Applicative.Basic3_using_map2
+  mod Base.Applicative.Make_using_map2_local
+  sig Base.Applicative.Basic_using_map2_local
+  mod Base.Applicative.Make2_using_map2_local
+  mod Base.Applicative.Make3_using_map2_local

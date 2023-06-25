@@ -7,11 +7,11 @@
   $ du -sh megaodocl
   12K	megaodocl
   $ sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
-  Indexing in 0.874996ms
-  Export in 0.494003ms
+  Indexing in 1.915932ms
+  Export in 0.855923ms
   $ sherlodoc_index --format=marshal --db=sherlodoc_db.bin $(find . -name '*.odocl') 2> /dev/null
-  Indexing in 0.792980ms
-  Export in 0.483990ms
+  Indexing in 1.312017ms
+  Export in 0.560045ms
 $ sherlodoc_index --format=js --empty-payload --db=db_empty_payload.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-docstring=false --db=db_no_docstring.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-name=false --db=db_no_name.js $(find . -name '*.odocl') 2> /dev/null

@@ -12,7 +12,7 @@ let print_result ~print_cost
   Format.printf "%s%s %s%a\n" score kind name pp_rhs rhs
 
 let search ~print_cost ~db query =
-  match Query.(api ~shards:db { query; packages = []; limit = 50 }) with
+  match Query.(api ~shards:db { query; packages = []; limit = 10 }) with
   | _, [] -> print_endline "[No results]"
   | _, (_ :: _ as results) ->
       List.iter (print_result ~print_cost) results ;
