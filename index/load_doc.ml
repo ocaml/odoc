@@ -155,9 +155,30 @@ module Make (Storage : Db.Storage.S) = struct
 
   let type_paths ~prefix ~sgn t = type_paths ~prefix ~sgn t
 
+  let with_tokenizer str fn =
+    let str = String.lowercase_ascii str in
+    let buf = Buffer.create 16 in
+    let flush () =
+      let word = Buffer.contents buf in
+      if word <> "" then fn word ;
+      Buffer.clear buf
+    in
+    let rec go i =
+      if i >= String.length str
+      then flush ()
+      else
+        let chr = str.[i] in
+        if (chr >= 'a' && chr <= 'z')
+           || (chr >= '0' && chr <= '9')
+           || chr = '_' || chr = '@'
+        then Buffer.add_char buf chr
+        else flush () ;
+        go (i + 1)
+    in
+    go 0
+
   let register_doc elt doc_txt =
-    let doc_words = String.split_on_char ' ' doc_txt in
-    List.iter (fun word -> Db.store_word word elt) doc_words
+    with_tokenizer doc_txt @@ fun word -> Db.store_word word elt
 
   let register_full_name name elt =
     let name = String.lowercase_ascii name in

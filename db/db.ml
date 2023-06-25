@@ -43,9 +43,7 @@ module Make (Storage : Storage.S) : S with type writer = Storage.writer = struct
         store ~count word elt)
       (regroup paths)
 
-  let store_word word elt =
-    let word = word |> String.lowercase_ascii in
-    Suffix_tree.With_elts.add_suffixes db_names word elt
+  let store_word word elt = Suffix_tree.With_elts.add_suffixes db_names word elt
 end
 
 module Storage = Storage
