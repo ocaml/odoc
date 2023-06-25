@@ -101,7 +101,11 @@ module T = struct
       match String.compare a.name b.name with
       | 0 -> begin
           match Option.compare compare_pkg a.pkg b.pkg with
-          | 0 -> Stdlib.compare a.kind b.kind
+          | 0 -> begin
+              match Stdlib.compare a.kind b.kind with
+              | 0 -> Stdlib.compare a.url b.url
+              | c -> c
+            end
           | c -> c
         end
       | c -> c
@@ -132,6 +136,8 @@ module Array = struct
     let arr = Array.of_list arr in
     Array.sort compare arr ;
     arr
+
+  let equal_elt = equal
 end
 
 let pkg_link { pkg; _ } =

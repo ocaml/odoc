@@ -4,6 +4,7 @@ module type SET = sig
 
   val of_list : elt list -> t
   val is_empty : t -> bool
+  val equal_elt : elt -> elt -> bool
 end
 
 module Make (S : SET) : sig

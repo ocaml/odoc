@@ -4,6 +4,7 @@ module type SET = sig
 
   val of_list : elt list -> t
   val is_empty : t -> bool
+  val equal_elt : elt -> elt -> bool
 end
 
 module Doc = struct
@@ -75,10 +76,10 @@ module Make (S : SET) = struct
       | _ -> x :: xs
 
     let hash = Hashtbl.hash
-    let equal = List.equal ( == )
+    let equal = List.equal S.equal_elt
 
     let mem (x : S.elt) = function
-      | y :: _ -> x == y
+      | y :: _ -> S.equal_elt x y
       | _ -> false
 
     module Hashtbl = Hashtbl.Make (struct
