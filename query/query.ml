@@ -21,10 +21,7 @@ let collapse_trie_occ ~count t =
        Succ.empty
 
 let collapse_trie t =
-  t |> Tree.to_sets
-  |> List.fold_left
-       (fun succ arr -> Succ.union succ (Succ.of_array arr))
-       Succ.empty
+  t |> Tree.to_sets |> List.map Succ.of_array |> Succ.union_of_list
 
 let find_types ~shards names =
   List.fold_left

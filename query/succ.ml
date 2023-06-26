@@ -25,6 +25,7 @@ let inter a b =
   | Empty, _ | _, Empty -> empty
   | _, All -> a
   | All, _ -> b
+  | x, y when x == y -> a
   | x, y ->
       let x, y = if a.cardinal < b.cardinal then x, y else y, x in
       { cardinal = min a.cardinal b.cardinal; s = Inter (x, y) }
@@ -34,102 +35,110 @@ let union a b =
   | Empty, _ -> b
   | _, Empty -> a
   | All, _ | _, All -> all
+  | x, y when x == y -> a
   | x, y ->
       let x, y = if a.cardinal < b.cardinal then x, y else y, x in
       { cardinal = a.cardinal + b.cardinal; s = Union (x, y) }
 
-let array_first arr = arr.(0)
+let union_of_array arr =
+  let rec loop lo hi =
+    match hi - lo with
+    | 0 -> empty
+    | 1 -> arr.(lo)
+    | dist ->
+        let mid = lo + (dist / 2) in
+        let left = loop lo mid in
+        let right = loop mid hi in
+        union left right
+  in
+  loop 0 (Array.length arr)
 
-exception Gt of Elt.t
+let union_of_list li = li |> Array.of_list |> union_of_array
 
-let rec succ_ge elt = function
-  | All -> elt
-  | Empty -> raise Not_found
-  | Array s ->
-      let out = Array_succ.succ_ge_exn ~compare:Elt.compare elt s in
-      begin
-        match Elt.compare elt out with
-        | 0 -> elt
-        | _ -> raise (Gt out)
-      end
-  | Inter (a, b) ->
-      let _ = succ_ge elt a in
-      let y = succ_ge elt b in
-      y
-  | Union (a, b) -> begin
-      match succ_ge elt a with
-      | exception Not_found -> succ_ge elt b
-      | exception Gt x -> begin
-          match succ_ge elt b with
-          | exception Not_found -> raise (Gt x)
-          | exception Gt y ->
-              raise
-                (Gt
-                   (match Elt.compare x y with
-                   | c when c <= 0 -> x
-                   | _ -> y))
-          | v -> v
-        end
-      | v -> v
-    end
+let best x y =
+  match Elt.compare x y with
+  | 0 -> x
+  | c when c < 0 -> x
+  | _ -> y
 
-let rec succ_gt elt = function
-  | All -> invalid_arg "Succ.succ_gt All"
-  | Empty -> raise Not_found
-  | Array s -> Array_succ.succ_gt_exn ~compare:Elt.compare elt s
-  | Inter (a, _b) -> succ_gt elt a
-  | Union (a, b) -> begin
-      match succ_gt_opt elt a, succ_gt_opt elt b with
-      | None, None -> raise Not_found
-      | None, Some z | Some z, None -> z
-      | Some x, Some y -> begin
-          match Elt.compare x y with
-          | c when c <= 0 -> x
-          | _ -> y
-        end
-    end
+let update_candidate old_cand new_cand =
+  Some
+    (match old_cand with
+    | Some old_cand -> best old_cand new_cand
+    | None -> new_cand)
 
-and succ_gt_opt elt t = try Some (succ_gt elt t) with Not_found -> None
+let best_opt old_cand new_cand =
+  match old_cand, new_cand with
+  | None, None -> None
+  | None, Some z | Some z, None -> Some z
+  | Some x, Some y -> Some (best x y)
 
-let rec first = function
+let ( let* ) = Option.bind
+
+type strictness =
+  | Gt
+  | Ge
+
+let array_succ ~strictness =
+  match strictness with
+  | Ge -> Array_succ.succ_ge
+  | Gt -> Array_succ.succ_gt
+
+let rec succ ~strictness t elt =
+  (* Printf.printf "depth : %i\n" depth ; *)
+  match t with
+  | All -> invalid_arg "Succ.succ_rec All"
+  | Empty -> None
+  | Array arr -> array_succ ~strictness ~compare:Elt.compare elt arr
+  | Union (l, r) ->
+      let elt_r = succ ~strictness r elt in
+      let elt_l = succ ~strictness l elt in
+      best_opt elt_l elt_r
+  | Inter (l, r) ->
+      let rec loop elt_r =
+        let* elt_l = succ ~strictness l elt_r in
+        let* elt_r = succ ~strictness:Ge r elt_l in
+        if Elt.equal elt_l elt_r then Some elt_l else loop elt_r
+      in
+      loop elt
+
+let succ_ge = succ ~strictness:Ge
+let succ_gt = succ ~strictness:Gt
+
+let rec first candidate t =
+  match t with
   | All -> invalid_arg "Succ.first All"
-  | Empty -> raise Not_found
-  | Array s -> array_first s
-  | Inter (a, _b) -> first a
+  | Empty -> None
+  | Array s -> ( try update_candidate candidate s.(0) with e -> raise e)
+  | Inter (a, _) ->
+      let* elt = first candidate a in
+      succ_ge t elt
   | Union (a, b) -> begin
-      match first_opt a, first_opt b with
-      | None, None -> raise Not_found
-      | None, Some z | Some z, None -> z
-      | Some x, Some y -> begin
-          match Elt.compare x y with
-          | 0 -> x
-          | c when c < 0 -> x
-          | _ -> y
-        end
+      let a = first candidate a in
+      let candidate = best_opt candidate a in
+      first candidate b
     end
 
-and first_opt t = try Some (first t) with Not_found -> None
+let first = first None
+
+let first_exn t =
+  match first t with
+  | Some v -> v
+  | None -> raise Not_found
 
 let to_seq t =
+  (* PPrint.ToChannel.pretty 0.8 80 stdout (pprint t) ; *)
   let state = ref None in
-  let rec go elt =
-    match succ_ge elt t with
-    | elt' ->
-        assert (Elt.compare elt elt' = 0) ;
-        state := Some elt ;
-        Some elt
-    | exception Gt elt -> go elt
-    | exception Not_found -> None
+  let loop () =
+    let elt =
+      match !state with
+      | None -> first t
+      | Some previous_elt -> succ_gt t previous_elt
+    in
+    state := elt ;
+    elt
   in
-  let go_gt () =
-    match !state with
-    | None -> go (first t)
-    | Some previous_elt -> (
-        match succ_gt previous_elt t with
-        | elt -> go elt
-        | exception Not_found -> None)
-  in
-  let next () = try go_gt () with _ -> None in
+  let next () = try Printexc.print loop () with _ -> None in
   Seq.of_dispenser next
 
 let to_seq t = to_seq t.s

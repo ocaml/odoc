@@ -5,8 +5,8 @@
   $ du -sh megaodocl
   4.0K	megaodocl
   $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
-  Indexing in 0.257015ms
-  Export in 0.078201ms
+  Indexing in 0.247002ms
+  Export in 0.077963ms
   $ export SHERLODOC_DB=db.bin
   $ sherlodoc --print-cost "list"
   109 mod Main.List

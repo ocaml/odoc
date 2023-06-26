@@ -49,10 +49,12 @@
   Warning, resolved hidden path: Base__.Set_intf.Named.t
   Warning, resolved hidden path: Base__.Set_intf.Named.t
   Warning, resolved hidden path: Base__.Either0.t
-  Indexing in 648.846149ms
-  Export in 515.198946ms
-  1.45user 0.04system 0:01.49elapsed 100%CPU (0avgtext+0avgdata 187536maxresident)k
-  0inputs+5560outputs (0major+52582minor)pagefaults 0swaps
+  Indexing in 701.358080ms
+  Export in 685.815096ms
+  
+  real	0m1.786s
+  user	0m1.747s
+  sys	0m0.033s
 $ sherlodoc_index --format=js --empty-payload --db=db_empty_payload.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-docstring=false --db=db_no_docstring.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-name=false --db=db_no_name.js $(find . -name '*.odocl') 2> /dev/null
@@ -64,8 +66,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2776	db.js
-  2092	db.js.gz
+  2736	db.js
+  2060	db.js.gz
   1628	megaodocl.gz
 
 
@@ -91,8 +93,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ cp -r html /tmp
   $ firefox /tmp/html/base/index.html
   $ sherlodoc_index --format=marshal --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
-  Indexing in 758.491039ms
-  Export in 544.108868ms
+  Indexing in 708.482981ms
+  Export in 549.648046ms
   $ sherlodoc --db=db_marshal.bin "group b"
   val Base.List.group : 'a t -> break:('a -> 'a -> bool) -> 'a t t
   val Base.Sequence.group : 'a t -> break:('a -> 'a -> bool) -> 'a list t
@@ -127,8 +129,15 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
     combine:('b -> 'b -> 'b) ->
     'r list ->
     ('a, 'b) t
+  val Base.Hashtbl.S_without_submodules.group : ?growth_allowed:bool ->
+    ?size:int ->
+    'a Key.t ->
+    get_key:('r -> 'a) ->
+    get_data:('r -> 'b) ->
+    combine:('b -> 'b -> 'b) ->
+    'r list ->
+    ('a, 'b) t
   val Base.String.split_on_chars : t -> on:char list -> t list
-  val Base.String.Escaping.split_on_chars : string -> on:char list -> escape_char:char -> string list
   $ sherlodoc --db=db_marshal.bin "map2"
   mod Base.Applicative.Make_using_map2
   sig Base.Applicative.Basic_using_map2
