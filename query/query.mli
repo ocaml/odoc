@@ -8,4 +8,9 @@ type t =
   ; limit : int
   }
 
-val api : shards: Db.t list -> t -> string * Db.Elt.t list
+val api : shards:Db.t list -> t -> string * Db.Elt.t list
+
+(** For testing *)
+module Private : sig
+  module Array_succ = Array_succ
+end

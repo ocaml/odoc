@@ -7,6 +7,10 @@ module Tree_occ = Db.Suffix_tree.With_occ
 open Db.Types
 module Occ = Db.Occ.Int_map
 
+module Private = struct
+  module Array_succ = Array_succ
+end
+
 let inter_list xs = List.fold_left Succ.inter Succ.all xs
 
 let collapse_occ ~count occs =
