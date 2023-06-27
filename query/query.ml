@@ -5,7 +5,7 @@ module Storage = Db.Storage
 module Tree = Db.Suffix_tree.With_elts
 module Tree_occ = Db.Suffix_tree.With_occ
 open Db.Types
-module Occ = Db.Occ.Int_map
+module Occ = Db.Occ
 
 module Private = struct
   module Array_succ = Array_succ

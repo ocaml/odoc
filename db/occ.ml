@@ -3,6 +3,8 @@ module Int_map = Map.Make (Int)
 type t = Elt.Array.t Int_map.t
 type elt = int * Elt.t
 
+let find = Int_map.find_opt
+let fold = Int_map.fold
 let is_empty = Int_map.is_empty
 let equal_elt (a_count, a) (b_count, b) = a_count = b_count && Elt.equal a b
 
