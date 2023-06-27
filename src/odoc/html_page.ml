@@ -58,8 +58,6 @@ let source_documents source_info source_file ~syntax =
       []
   | None, None -> []
 
-exception Missing_asset of string
-
 let asset_documents parent_id children asset_paths =
   let asset_names =
     List.filter_map
@@ -68,30 +66,33 @@ let asset_documents parent_id children asset_paths =
   in
   let rec extract paths name =
     match paths with
-    | [] -> raise (Missing_asset name)
-    | x :: xs when Fpath.basename x = name -> (xs, (name, x))
+    | [] -> (paths, (name, None))
+    | x :: xs when Fpath.basename x = name -> (xs, (name, Some x))
     | x :: xs ->
         let rest, elt = extract xs name in
         (x :: rest, elt)
   in
-  match List.fold_left_map extract asset_paths asset_names with
-  | unmatched, paired ->
-      List.iter
-        (fun asset ->
-          Error.raise_warning
-            (Error.filename_only "this asset was not declared as a child of %s"
-               (Paths.Identifier.name parent_id)
-               (Fs.File.to_string asset)))
-        unmatched;
-      List.map
-        (fun (name, path) ->
+  let unmatched, paired_or_missing =
+    List.fold_left_map extract asset_paths asset_names
+  in
+  List.iter
+    (fun asset ->
+      Error.raise_warning
+        (Error.filename_only "this asset was not declared as a child of %s"
+           (Paths.Identifier.name parent_id)
+           (Fs.File.to_string asset)))
+    unmatched;
+  List.filter_map
+    (fun (name, path) ->
+      match path with
+      | None ->
+          Error.raise_warning (Error.filename_only "asset is missing." name);
+          None
+      | Some path ->
           let asset_id = Paths.Identifier.Mk.asset_file (parent_id, name) in
           let url = Odoc_document.Url.Path.from_identifier asset_id in
-          Odoc_document.Types.Document.Asset { url; src = path })
-        paired
-  | exception Missing_asset name ->
-      Error.raise_warning (Error.filename_only "asset is missing." name);
-      []
+          Some (Odoc_document.Types.Document.Asset { url; src = path }))
+    paired_or_missing
 
 let extra_documents args input ~syntax =
   match input with
