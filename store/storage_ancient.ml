@@ -1,4 +1,3 @@
-
 let base_addr = 0x100000000000n
 
 type writer =
@@ -11,7 +10,7 @@ let open_out filename =
   let ancient = Ancient.attach handle base_addr in
   { write_shard = 0; ancient }
 
-let save ~db (t :  Db.t) =
+let save ~db (t : Db.t) =
   ignore (Ancient.share db.ancient db.write_shard t) ;
   db.write_shard <- db.write_shard + 1
 
