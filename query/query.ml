@@ -1,6 +1,6 @@
 module Parser = Query_parser
 module Succ = Succ
-module Sort = Sort
+module Dynamic_cost = Dynamic_cost
 module Storage = Db.Storage
 module Tree = Db.Suffix_tree.With_elts
 module Tree_occ = Db.Suffix_tree.With_occ
@@ -91,7 +91,7 @@ let match_packages ~packages results =
   | [] -> results
   | _ -> Seq.filter (match_packages ~packages) results
 
-let api ~(shards : Db.t list) params =
+let api ~(shards : Db.t list) ?(dynamic_sort = true) params =
   let query_name, query_typ, query_typ_arrow, pretty =
     Parser.of_string params.query
   in
@@ -99,5 +99,14 @@ let api ~(shards : Db.t list) params =
   let results = Succ.to_seq ~compare:Db.Elt.compare results in
   let results = match_packages ~packages:params.packages results in
   let results = List.of_seq @@ Seq.take params.limit results in
-  let results = Sort.list query_name query_typ_arrow results in
+  let results =
+    if dynamic_sort
+    then
+      List.map
+        (Dynamic_cost.elt ~query_name ~query_type:query_typ_arrow)
+        results
+    else results
+  in
+  let results = List.sort Db.Elt.compare results in
+
   pretty, results

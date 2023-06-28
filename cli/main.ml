@@ -11,21 +11,23 @@ let print_result ~print_cost
   in
   Format.printf "%s%s %s%a\n" score kind name pp_rhs rhs
 
-let search ~print_cost ~db query =
-  match Query.(api ~shards:db { query; packages = []; limit = 10 }) with
+let search ~print_cost ~dynamic_sort ~db query =
+  match
+    Query.(api ~shards:db ~dynamic_sort { query; packages = []; limit = 10 })
+  with
   | _, [] -> print_endline "[No results]"
   | _, (_ :: _ as results) ->
       List.iter (print_result ~print_cost) results ;
       flush stdout
 
-let rec search_loop ~print_cost ~db =
+let rec search_loop ~print_cost ~dynamic_sort ~db =
   match In_channel.input_line stdin with
   | Some query ->
-      search ~print_cost ~db query ;
-      search_loop ~print_cost ~db
+      search ~print_cost ~dynamic_sort ~db query ;
+      search_loop ~print_cost ~dynamic_sort ~db
   | None -> print_endline "[Search session ended]"
 
-let main db query print_cost =
+let main db query print_cost dynamic_sort =
   match db with
   | None ->
       output_string stderr
@@ -35,8 +37,8 @@ let main db query print_cost =
   | Some db -> (
       let db = Storage_marshal.load db in
       match query with
-      | None -> search_loop ~print_cost ~db
-      | Some query -> search ~print_cost ~db query)
+      | None -> search_loop ~print_cost ~dynamic_sort ~db
+      | Some query -> search ~print_cost ~dynamic_sort ~db query)
 
 open Cmdliner
 
@@ -59,7 +61,14 @@ let print_cost =
   let doc = "Prints cost of each result" in
   Arg.(value & flag & info [ "print-cost" ] ~doc)
 
-let main = Term.(const main $ db_filename $ query $ print_cost)
+let dynamic_sort =
+  let doc =
+    "Sort the results by looking at the query.\n\
+     Disabling it allows to look at the static costs of elements."
+  in
+  Arg.(value & flag & info [ "dynamic-sort" ] ~doc)
+
+let main = Term.(const main $ db_filename $ query $ print_cost $ dynamic_sort)
 
 let cmd =
   let doc = "CLI interface to query sherlodoc" in

@@ -330,8 +330,5 @@ module Reasoning = struct
   let score ~query_name ~query_type elt = score (v query_name query_type elt)
 end
 
-let list query_name query_type results =
-  results
-  |> List.map (fun elt ->
-         Elt.{ elt with score = Reasoning.score ~query_name ~query_type elt })
-  |> List.sort Elt.compare
+let elt ~query_name ~query_type elt =
+  Elt.{ elt with score = Reasoning.score ~query_name ~query_type elt }
