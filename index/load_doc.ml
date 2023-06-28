@@ -4,10 +4,10 @@ module Types = Db.Types
 module ModuleName = Odoc_model.Names.ModuleName
 
 let generic_cost ~ignore_no_doc name has_doc =
-  (* name length is important not because short identifier are better in the 
-     abstract, but because the shortest result will be close to the query, as 
+  (* name length is important not because short identifier are better in the
+     abstract, but because the shortest result will be close to the query, as
      the suffix tree does not return results shorter than the query*)
-  String.length name * 4
+  (String.length name * 4)
   (* + (5 * List.length path) TODO : restore depth based ordering *)
   + (if ignore_no_doc || has_doc then 0 else 100)
   + if String.starts_with ~prefix:"Stdlib." name then -100 else 0
