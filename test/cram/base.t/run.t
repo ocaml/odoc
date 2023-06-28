@@ -49,12 +49,12 @@
   Warning, resolved hidden path: Base__.Set_intf.Named.t
   Warning, resolved hidden path: Base__.Set_intf.Named.t
   Warning, resolved hidden path: Base__.Either0.t
-  Indexing in 680.731058ms
-  Export in 603.530169ms
+  Indexing in 780.164003ms
+  Export in 694.236994ms
   
-  real	0m1.615s
-  user	0m1.546s
-  sys	0m0.064s
+  real	0m1.876s
+  user	0m1.820s
+  sys	0m0.047s
 $ sherlodoc_index --format=js --empty-payload --db=db_empty_payload.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-docstring=false --db=db_no_docstring.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-name=false --db=db_no_name.js $(find . -name '*.odocl') 2> /dev/null
@@ -93,26 +93,25 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ cp -r html /tmp
 $ firefox /tmp/html/base/index.html
   $ sherlodoc_index --format=marshal --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
-  Indexing in 722.393036ms
-  Export in 560.818911ms
-  $ sherlodoc --db=db_marshal.bin "group b"
-  val Base.List.group : 'a t -> break:('a -> 'a -> bool) -> 'a t t
-  val Base.Sequence.group : 'a t -> break:('a -> 'a -> bool) -> 'a list t
+  Indexing in 853.119850ms
+  Export in 640.402079ms
+  $ sherlodoc --db=db_marshal.bin "group b" | sort
   val Base.List.Assoc.group : ('a * 'b) list -> equal:('a -> 'a -> bool) -> ('a, 'b list) t
-  val Base.List.groupi : 'a t -> break:(int -> 'a -> 'a -> bool) -> 'a t t
-  val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
-  val Base.List.sort_and_group : 'a t -> compare:('a -> 'a -> int) -> 'a t t
   val Base.List.Assoc.sort_and_group : ('a * 'b) list -> compare:('a -> 'a -> int) -> ('a, 'b list) t
+  val Base.List.group : 'a t -> break:('a -> 'a -> bool) -> 'a t t
+  val Base.List.groupi : 'a t -> break:(int -> 'a -> 'a -> bool) -> 'a t t
+  val Base.List.sort_and_group : 'a t -> compare:('a -> 'a -> int) -> 'a t t
+  val Base.Sequence.group : 'a t -> break:('a -> 'a -> bool) -> 'a list t
   val Base.Set.S_poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
-  val Base.String.split_on_chars : t -> on:char list -> t list
-  val Base.String.Escaping.split_on_chars : string -> on:char list -> escape_char:char -> string list
-  $ sherlodoc --db=db_marshal.bin "group by"
   val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
-  val Base.Set.Poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
+  val Base.String.Escaping.split_on_chars : string -> on:char list -> escape_char:char -> string list
+  val Base.String.split_on_chars : t -> on:char list -> t list
+  $ sherlodoc --db=db_marshal.bin "group by"
+  val Base.String.split_on_chars : t -> on:char list -> t list
+  val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
+  val Base.String.Escaping.split_on_chars : string -> on:char list -> escape_char:char -> string list
   val Base.Set.S_poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
-  val Base.Set.Using_comparator.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
-  val Base.Set.Accessors_generic.group_by : ('a, 'cmp) t -> equiv:('a elt -> 'a elt -> bool) -> ('a, 'cmp) t list
-  val Base.Set.Using_comparator.Tree.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
+  val Base.Set.Poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
   val Base.Hashtbl.group : ?growth_allowed:bool ->
     ?size:int ->
     'a Key.t ->
@@ -129,19 +128,20 @@ $ firefox /tmp/html/base/index.html
     combine:('b -> 'b -> 'b) ->
     'r list ->
     ('a, 'b) t
-  val Base.String.split_on_chars : t -> on:char list -> t list
-  val Base.String.Escaping.split_on_chars : string -> on:char list -> escape_char:char -> string list
+  val Base.Set.Using_comparator.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
+  val Base.Set.Accessors_generic.group_by : ('a, 'cmp) t -> equiv:('a elt -> 'a elt -> bool) -> ('a, 'cmp) t list
+  val Base.Set.Using_comparator.Tree.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
   $ sherlodoc --db=db_marshal.bin "map2"
   mod Base.Applicative.Make_using_map2
-  sig Base.Applicative.Basic_using_map2
   mod Base.Applicative.Make2_using_map2
   mod Base.Applicative.Make3_using_map2
+  sig Base.Applicative.Basic_using_map2
   sig Base.Applicative.Basic2_using_map2
   sig Base.Applicative.Basic3_using_map2
   mod Base.Applicative.Make_using_map2_local
-  sig Base.Applicative.Basic_using_map2_local
   mod Base.Applicative.Make2_using_map2_local
   mod Base.Applicative.Make3_using_map2_local
+  sig Base.Applicative.Basic_using_map2_local
   $ sherlodoc --db=db_marshal.bin "Base.Hashtbl.S_without_submodules.group"
   val Base.Hashtbl.S_without_submodules.group : ?growth_allowed:bool ->
     ?size:int ->
