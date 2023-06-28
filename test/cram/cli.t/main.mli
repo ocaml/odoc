@@ -25,6 +25,8 @@ module List : sig
   type 'a t = 'a list
 
   val map : ('a -> 'b) -> 'a t -> 'b t
+  val map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
 end
 
 val foo : foo
@@ -37,10 +39,8 @@ val value : moo
 val consume : moo -> unit
 val consume_2 : moo -> moo -> unit
 val consume_2_other : moo -> t -> unit
-
 val produce : unit -> moo
 val produce_2' : unit -> unit -> moo
-
 
 module type Modtype = sig
   val v_modtype : foo
@@ -51,11 +51,12 @@ module type S = sig end
 module S_to_S1 : sig end
 
 (**/**)
+
 val hidden : foo
+
 (**/**)
 
 val poly_1 : 'a -> 'b -> 'c
-
 val poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
 
 type 'a boo
@@ -63,5 +64,4 @@ type 'a boo
 val poly_param : 'a boo
 
 type extensible_type = ..
-
 type extensible_type += MyExtension of moo

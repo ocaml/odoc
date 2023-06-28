@@ -96,7 +96,7 @@ let api ~(shards : Db.t list) params =
     Parser.of_string params.query
   in
   let results = search ~shards query_name query_typ in
-  let results = Succ.to_seq results in
+  let results = Succ.to_seq ~compare:Db.Elt.compare results in
   let results = match_packages ~packages:params.packages results in
   let results = List.of_seq @@ Seq.take params.limit results in
   let results = Sort.list query_name query_typ_arrow results in

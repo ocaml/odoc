@@ -7,8 +7,8 @@
   $ du -sh megaodocl
   8.0K	megaodocl
   $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
-  Indexing in 1.361132ms
-  Export in 0.602961ms
+  Indexing in 2.419949ms
+  Export in 0.387192ms
   $ export SHERLODOC_DB=db.bin
   $ sherlodoc "unique_name"
   val Main.unique_name : foo
@@ -27,18 +27,27 @@
   209 type Main.list
   315 type Main.List.t = 'a list
   317 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  318 val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   319 val Main.Map.to_list : foo
+  326 val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   1108 val Main.foo : foo
   1154 doc page
   $ sherlodoc --print-cost "map"
   108 mod Main.Map
   213 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  318 val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   320 val Main.Map.to_list : foo
+  327 val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   1108 val Main.foo : foo
   $ sherlodoc --print-cost "list map"
   317 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  422 val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   423 val Main.Map.to_list : foo
+  431 val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   2108 val Main.foo : foo
+  $ sherlodoc --print-cost "map2"
+  214 val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  327 val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   $ sherlodoc --print-cost ":moo"
   210 val Main.value : moo
   213 val Main.produce : unit -> moo
@@ -58,8 +67,8 @@
   216 mod Main.S_to_S1
   316 type Main.list
   318 type Main.List.t = 'a list
+  319 val Main.consume : moo -> unit
   323 val Main.Map.to_list : foo
-  327 type Main.extensible_type = ..
   373 cons Main.MyExtension : moo -> extensible_type
   1108 val Main.foo : foo
   $ sherlodoc --print-cost "qwertyuiopasdfghjklzxcvbnm"
@@ -74,11 +83,16 @@ TODO : get a result for the query bellow
   val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
   val Main.poly_param : 'a boo
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   $ sherlodoc ": 'a -> 'b -> 'c "
   val Main.poly_1 : 'a -> 'b -> 'c
   val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   $ sherlodoc ": ('a -> 'b) -> 'a t -> 'b t"
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
 TODO : get a result for the query bellow
   $ sherlodoc ": 'a bo"
   [No results]
