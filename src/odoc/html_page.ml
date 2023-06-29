@@ -58,9 +58,15 @@ let source_documents source_info source_file ~syntax =
       []
   | None, None -> []
 
+let list_filter_map f lst =
+  List.rev
+  @@ List.fold_left
+       (fun acc x -> match f x with None -> acc | Some x -> x :: acc)
+       [] lst
+
 let asset_documents parent_id children asset_paths =
   let asset_names =
-    List.filter_map
+    list_filter_map
       (function Lang.Page.Asset_child name -> Some name | _ -> None)
       children
   in
@@ -73,7 +79,13 @@ let asset_documents parent_id children asset_paths =
         (x :: rest, elt)
   in
   let unmatched, paired_or_missing =
-    List.fold_left_map extract asset_paths asset_names
+    let rec foldmap paths paired = function
+      | [] -> (paths, paired)
+      | name :: names ->
+          let paths, pair = extract paths name in
+          foldmap paths (pair :: paired) names
+    in
+    foldmap asset_paths [] asset_names
   in
   List.iter
     (fun asset ->
@@ -82,7 +94,7 @@ let asset_documents parent_id children asset_paths =
            (Paths.Identifier.name parent_id)
            (Fs.File.to_string asset)))
     unmatched;
-  List.filter_map
+  list_filter_map
     (fun (name, path) ->
       match path with
       | None ->
