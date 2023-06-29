@@ -380,10 +380,10 @@ module Anchor = struct
     | { iv = `SourceLocationMod parent; _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         Ok { page; kind = `SourceAnchor; anchor = "" }
-    | { iv = `SourcePage (p, _name); _ } | { iv = `SourceDir (p, _name); _ } ->
+    | { iv = `SourcePage _ | `SourceDir _; _ } as p ->
         let page = Path.from_identifier (p :> Path.any) in
         Ok { page; kind = `Page; anchor = "" }
-    | { iv = `AssetFile (p, _name); _ } ->
+    | { iv = `AssetFile _; _ } as p ->
         let page = Path.from_identifier p in
         Ok { page; kind = `File; anchor = "" }
 
