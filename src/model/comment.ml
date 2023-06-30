@@ -6,6 +6,8 @@ type 'a with_location = 'a Location_.with_location
 
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 
+type alignment = [ `Left | `Center | `Right ]
+
 type raw_markup_target = string
 
 type leaf_inline_element =
@@ -41,12 +43,25 @@ type module_reference = {
 (** The [{!modules: ...}] markup. [module_synopsis] is initially [None], it is
     resolved during linking. *)
 
+type 'a cell = 'a with_location list * [ `Header | `Data ]
+type 'a row = 'a cell list
+type 'a grid = 'a row list
+
+type 'a abstract_table = {
+  data : 'a grid;
+  align : alignment option list option;
+}
+
 type nestable_block_element =
   [ `Paragraph of paragraph
-  | `Code_block of string option * string with_location
+  | `Code_block of
+    string option
+    * string with_location
+    * nestable_block_element with_location list option
   | `Math_block of string
   | `Verbatim of string
   | `Modules of module_reference list
+  | `Table of nestable_block_element abstract_table
   | `List of
     [ `Unordered | `Ordered ] * nestable_block_element with_location list list
   ]

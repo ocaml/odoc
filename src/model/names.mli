@@ -95,3 +95,5 @@ module InstanceVariableName : SimpleName
 module LabelName : SimpleName
 
 module PageName : SimpleName
+
+module DefName : SimpleName

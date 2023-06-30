@@ -85,49 +85,10 @@ module Reference = struct
         render_unresolved (p :> t) ^ "." ^ InstanceVariableName.to_string f
     | `Label (p, f) -> render_unresolved (p :> t) ^ "." ^ LabelName.to_string f
 
-  (* This is the entry point. stop_before is false on entry, true on recursive
-     call. *)
-  let rec to_ir : ?text:Inline.t -> stop_before:bool -> Reference.t -> Inline.t
-      =
-   fun ?text ~stop_before ref ->
-    let open Reference in
+  (* This is the entry point. *)
+  let to_ir : ?text:Inline.t -> Reference.t -> Inline.t =
+   fun ?text ref ->
     match ref with
-    | `Root (s, _) -> (
-        match text with
-        | None ->
-            let s = source_of_code s in
-            [ inline @@ Inline.Source s ]
-        | Some content ->
-            let link =
-              { InternalLink.target = Unresolved; content; tooltip = Some s }
-            in
-            [ inline @@ Inline.InternalLink link ])
-    | `Dot (parent, s) -> unresolved ?text (parent :> t) s
-    | `Module (parent, s) ->
-        unresolved ?text (parent :> t) (ModuleName.to_string s)
-    | `ModuleType (parent, s) ->
-        unresolved ?text (parent :> t) (ModuleTypeName.to_string s)
-    | `Type (parent, s) -> unresolved ?text (parent :> t) (TypeName.to_string s)
-    | `Constructor (parent, s) ->
-        unresolved ?text (parent :> t) (ConstructorName.to_string s)
-    | `Field (parent, s) ->
-        unresolved ?text (parent :> t) (FieldName.to_string s)
-    | `Extension (parent, s) ->
-        unresolved ?text (parent :> t) (ExtensionName.to_string s)
-    | `Exception (parent, s) ->
-        unresolved ?text (parent :> t) (ExceptionName.to_string s)
-    | `Value (parent, s) ->
-        unresolved ?text (parent :> t) (ValueName.to_string s)
-    | `Class (parent, s) ->
-        unresolved ?text (parent :> t) (ClassName.to_string s)
-    | `ClassType (parent, s) ->
-        unresolved ?text (parent :> t) (ClassTypeName.to_string s)
-    | `Method (parent, s) ->
-        unresolved ?text (parent :> t) (MethodName.to_string s)
-    | `InstanceVariable (parent, s) ->
-        unresolved ?text (parent :> t) (InstanceVariableName.to_string s)
-    | `Label (parent, s) ->
-        unresolved ?text (parent :> t) (LabelName.to_string s)
     | `Resolved r -> (
         (* IDENTIFIER MUST BE RENAMED TO DEFINITION. *)
         let id = Reference.Resolved.identifier r in
@@ -140,7 +101,7 @@ module Reference = struct
           (* Add a tooltip if the content is not the rendered reference. *)
           match text with None -> None | Some _ -> Some rendered
         in
-        match Url.from_identifier ~stop_before id with
+        match Url.from_identifier ~stop_before:false id with
         | Ok url ->
             let target = InternalLink.Resolved url in
             let link = { InternalLink.target; content; tooltip } in
@@ -150,18 +111,17 @@ module Reference = struct
             (* FIXME: better error message *)
             Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
             content)
-
-  and unresolved : ?text:Inline.t -> Reference.t -> string -> Inline.t =
-   fun ?text parent field ->
-    match text with
-    | Some content ->
-        let tooltip = Some (render_unresolved parent ^ "." ^ field) in
-        let link = { InternalLink.target = Unresolved; content; tooltip } in
-        [ inline @@ InternalLink link ]
-    | None ->
-        let tail = [ inline @@ Text ("." ^ field) ] in
-        let content = to_ir ~stop_before:true parent in
-        content @ tail
+    | _ -> (
+        let s = render_unresolved ref in
+        match text with
+        | None ->
+            let s = source_of_code s in
+            [ inline @@ Inline.Source s ]
+        | Some content ->
+            let link =
+              { InternalLink.target = Unresolved; content; tooltip = Some s }
+            in
+            [ inline @@ Inline.InternalLink link ])
 end
 
 let leaf_inline_element : Comment.leaf_inline_element -> Inline.one = function
@@ -199,7 +159,7 @@ let rec inline_element : Comment.inline_element -> Inline.t = function
         | _ -> Some (non_link_inline_element_list content)
         (* XXX Span *)
       in
-      Reference.to_ir ?text:content ~stop_before:false path
+      Reference.to_ir ?text:content path
   | `Link (target, content) ->
       let content =
         match content with
@@ -217,8 +177,7 @@ and inline_element_list elements =
 let module_references ms =
   let module_reference (m : Comment.module_reference) =
     let reference =
-      Reference.to_ir ~stop_before:false
-        (m.module_reference :> Odoc_model.Paths.Reference.t)
+      Reference.to_ir (m.module_reference :> Odoc_model.Paths.Reference.t)
     and synopsis =
       match m.module_synopsis with
       | Some synopsis ->
@@ -232,19 +191,28 @@ let module_references ms =
   let items = List.map module_reference ms in
   block ~attr:[ "modules" ] @@ Description items
 
-let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
+let rec nestable_block_element :
+    Comment.nestable_block_element -> Block.one list =
  fun content ->
   match content with
-  | `Paragraph p -> paragraph p
-  | `Code_block (lang_tag, code) ->
+  | `Paragraph p -> [ paragraph p ]
+  | `Code_block (lang_tag, code, outputs) ->
       let lang_tag =
         match lang_tag with None -> default_lang_tag | Some t -> t
       in
-      block
-      @@ Source (lang_tag, source_of_code (Odoc_model.Location_.value code))
-  | `Math_block s -> block @@ Math s
-  | `Verbatim s -> block @@ Verbatim s
-  | `Modules ms -> module_references ms
+      let rest =
+        match outputs with
+        | Some xs -> nestable_block_element_list xs
+        | None -> []
+      in
+      [
+        block
+        @@ Source (lang_tag, source_of_code (Odoc_model.Location_.value code));
+      ]
+      @ rest
+  | `Math_block s -> [ block @@ Math s ]
+  | `Verbatim s -> [ block @@ Verbatim s ]
+  | `Modules ms -> [ module_references ms ]
   | `List (kind, items) ->
       let kind =
         match kind with
@@ -257,17 +225,54 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
         | item -> nestable_block_element_list item
       in
       let items = List.map f items in
-      block @@ Block.List (kind, items)
+      [ block @@ Block.List (kind, items) ]
+  | `Table { data; align } ->
+      let data =
+        List.map
+          (List.map (fun (cell, cell_type) ->
+               (nestable_block_element_list cell, cell_type)))
+          data
+      in
+      let generate_align data =
+        let max (a : int) b = if a < b then b else a in
+        (* Length of the longest line of the table *)
+        let max_length =
+          List.fold_left (fun m l -> max m (List.length l)) 0 data
+        in
+        let rec list_init i =
+          if i <= 0 then [] else Table.Default :: list_init (i - 1)
+        in
+        list_init max_length
+      in
+      let align =
+        match align with
+        | None -> generate_align data
+        | Some align ->
+            List.map
+              (function
+                | None -> Table.Default
+                | Some `Right -> Right
+                | Some `Left -> Left
+                | Some `Center -> Center)
+              align
+        (* We should also check wellness of number of table cells vs alignment,
+           and raise warnings *)
+      in
+      [ block @@ Table { data; align } ]
 
 and paragraph : Comment.paragraph -> Block.one = function
   | [ { value = `Raw_markup (target, s); _ } ] ->
       block @@ Block.Raw_markup (target, s)
   | p -> block @@ Block.Paragraph (inline_element_list p)
 
-and nestable_block_element_list elements =
+and nestable_block_element_list :
+    Comment.nestable_block_element Comment.with_location list -> Block.one list
+    =
+ fun elements ->
   elements
   |> List.map Odoc_model.Location_.value
   |> List.map nestable_block_element
+  |> List.concat
 
 let tag : Comment.tag -> Description.one =
  fun t ->
@@ -319,7 +324,7 @@ let tag : Comment.tag -> Description.one =
 
 let attached_block_element : Comment.attached_block_element -> Block.t =
   function
-  | #Comment.nestable_block_element as e -> [ nestable_block_element e ]
+  | #Comment.nestable_block_element as e -> nestable_block_element e
   | `Tag t -> [ block ~attr:[ "at-tags" ] @@ Description [ tag t ] ]
 
 (* TODO collaesce tags *)

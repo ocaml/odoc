@@ -52,8 +52,8 @@ type extracted_item = [
   | `ModuleType of Ident.t * bool
   | `Type of Ident.t * bool
   | `Value of Ident.t * bool
-  | `Class of Ident.t * Ident.t * Ident.t * Ident.t * bool
-  | `ClassType of Ident.t * Ident.t * Ident.t * bool
+  | `Class of Ident.t * Ident.t * Ident.t * Ident.t option * bool
+  | `ClassType of Ident.t * Ident.t * Ident.t option * bool
 ]
 
 type extracted_items =
@@ -80,14 +80,22 @@ let rec extract_signature_type_items items =
     
     | Sig_value(id, _, Exported) :: rest ->
       `Value (id, false) :: extract_signature_type_items rest
-
+#if OCAML_VERSION < (5,1,0)
     | Sig_class(id, _, _, Exported) :: Sig_class_type(ty_id, _, _, _)
         :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
-      `Class (id, ty_id, obj_id, cl_id, false) :: extract_signature_type_items rest
+      `Class (id, ty_id, obj_id, Some cl_id, false) :: extract_signature_type_items rest
 
     | Sig_class_type(id, _, _, Exported) :: Sig_type(obj_id, _, _, _)
       :: Sig_type(cl_id, _, _, _) :: rest ->
-      `ClassType (id, obj_id, cl_id, false) :: extract_signature_type_items rest
+      `ClassType (id, obj_id, Some cl_id, false) :: extract_signature_type_items rest
+#else
+    | Sig_class(id, _, _, Exported) :: Sig_class_type(ty_id, _, _, _)
+        :: Sig_type(obj_id, _, _, _) :: rest ->
+      `Class (id, ty_id, obj_id, None, false) :: extract_signature_type_items rest
+
+    | Sig_class_type(id, _, _, Exported) :: Sig_type(obj_id, _, _, _)  :: rest ->
+      `ClassType (id, obj_id, None, false) :: extract_signature_type_items rest
+#endif
 
     | Sig_typext _ :: rest -> 
         extract_signature_type_items rest
@@ -130,15 +138,22 @@ let rec extract_extended_open_items items =
     
     | Sig_value(id, _, _) :: rest ->
       `Value (id, true) :: extract_extended_open_items rest
-    
+#if OCAML_VERSION < (5,1,0)
     | Sig_class(id, _, _, _) :: Sig_class_type(ty_id, _, _, _)
         :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
-      `Class (id, ty_id, obj_id, cl_id, true) :: extract_extended_open_items rest
+      `Class (id, ty_id, obj_id, Some cl_id, true) :: extract_extended_open_items rest
 
     | Sig_class_type(id, _, _, _) :: Sig_type(obj_id, _, _, _)
       :: Sig_type(cl_id, _, _, _) :: rest ->
-      `ClassType (id, obj_id, cl_id, true) :: extract_extended_open_items rest
+      `ClassType (id, obj_id, Some cl_id, true) :: extract_extended_open_items rest
+#else
+    | Sig_class(id, _, _, _) :: Sig_class_type(ty_id, _, _, _)
+        :: Sig_type(obj_id, _, _, _) :: rest ->
+      `Class (id, ty_id, obj_id, None, true) :: extract_extended_open_items rest
 
+    | Sig_class_type(id, _, _, _) :: Sig_type(obj_id, _, _, _) :: rest ->
+      `ClassType (id, obj_id, None, true) :: extract_extended_open_items rest
+#endif
     |  Sig_typext _ :: rest ->
         extract_extended_open_items rest
 
@@ -209,9 +224,11 @@ let rec extract_signature_tree_items hide_item items =
         (fun cld ->
             let typehash =
 #if OCAML_VERSION < (4,4,0)
-            cld.ci_id_typesharp
+            Some cld.ci_id_typesharp
+#elif OCAML_VERSION < (5,1,0)
+            Some cld.ci_id_typehash
 #else
-            cld.ci_id_typehash
+            None
 #endif
           in
           `Class (cld.ci_id_class, cld.ci_id_class_type, cld.ci_id_object, typehash, hide_item))
@@ -221,9 +238,11 @@ let rec extract_signature_tree_items hide_item items =
       (fun clty ->
           let typehash =
 #if OCAML_VERSION < (4,4,0)
-              clty.ci_id_typesharp
+            Some clty.ci_id_typesharp
+#elif OCAML_VERSION < (5,1,0)
+            Some clty.ci_id_typehash
 #else
-              clty.ci_id_typehash
+            None
 #endif
             in
             
@@ -321,9 +340,11 @@ let rec extract_structure_tree_items hide_item items =
              `Class (cld.ci_id_class,
                cld.ci_id_class_type, cld.ci_id_object,
 #if OCAML_VERSION < (4,4,0)
-               cld.ci_id_typesharp,
+               Some cld.ci_id_typesharp,
+#elif OCAML_VERSION < (5,1,0)
+               Some cld.ci_id_typehash,
 #else
-               cld.ci_id_typehash,
+               None,
 #endif
               hide_item
              )) cls @ extract_structure_tree_items hide_item rest
@@ -333,9 +354,11 @@ let rec extract_structure_tree_items hide_item items =
              `ClassType (clty.ci_id_class_type,
                clty.ci_id_object,
 #if OCAML_VERSION < (4,4,0)
-               clty.ci_id_typesharp,
+               Some clty.ci_id_typesharp,
+#elif OCAML_VERSION < (5,1,0)
+               Some clty.ci_id_typehash,
 #else
-               clty.ci_id_typehash,
+               None,
 #endif
               hide_item
              )) cltyps @ extract_structure_tree_items hide_item rest
@@ -435,27 +458,36 @@ let env_of_items parent items env =
     | `Class (t,t2,t3,t4, is_hidden_item) :: rest ->
       let name = Ident.name t in
       let is_hidden = is_hidden_item || class_name_exists name rest in
+      let class_types = match t4 with
+        | None -> [t;t2;t3]
+        | Some t4 -> [t;t2;t3;t4]
+      in
       let identifier, hidden =
         if is_hidden 
-        then Mk.class_(parent, ClassName.internal_of_string name), t :: t2 :: t3 :: t4 :: env.hidden
+        then Mk.class_(parent, ClassName.internal_of_string name), class_types @ env.hidden
         else Mk.class_(parent, ClassName.make_std name), env.hidden
       in
+
       let classes =
         List.fold_right (fun id classes -> Ident.add id identifier classes)
-          [t; t2; t3; t4] env.classes in
+          class_types env.classes in
       inner rest { env with classes; hidden }
 
     | `ClassType (t,t2,t3, is_hidden_item) :: rest ->
       let name = Ident.name t in
       let is_hidden = is_hidden_item || class_type_name_exists name rest in
+      let class_types = match t3 with
+        | None -> [t;t2]
+        | Some t3 -> [t;t2;t3]
+      in
       let identifier, hidden =
         if is_hidden 
-        then Mk.class_type(parent, ClassTypeName.internal_of_string name), t :: t2 :: t3 :: env.hidden
+        then Mk.class_type(parent, ClassTypeName.internal_of_string name), class_types @ env.hidden
         else Mk.class_type(parent, ClassTypeName.make_std name), env.hidden
       in
       let class_types =
         List.fold_right (fun id class_types -> Ident.add id identifier class_types)
-          [t; t2; t3] env.class_types in
+          class_types env.class_types in
       inner rest { env with class_types; hidden }
 
     | [] -> env
@@ -581,6 +613,9 @@ module Path = struct
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
 #endif
     | Path.Papply(p, arg) -> `Apply(read_module env p, read_module env arg)
+#if OCAML_VERSION >= (5,1,0)
+    | Path.Pextra_ty _ -> assert false
+#endif
 
   let read_module_type env = function
     | Path.Pident id -> read_module_type_ident env id
@@ -590,6 +625,9 @@ module Path = struct
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
 #endif
     | Path.Papply(_, _)-> assert false
+#if OCAML_VERSION >= (5,1,0)
+    | Path.Pextra_ty _ -> assert false
+#endif
 
   let read_class_type env = function
     | Path.Pident id -> read_class_type_ident env id
@@ -599,8 +637,15 @@ module Path = struct
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, strip_hash s)
 #endif
     | Path.Papply(_, _)-> assert false
+#if OCAML_VERSION >= (5,1,0)
+    | Path.Pextra_ty _ -> assert false
+#endif
 
+#if OCAML_VERSION < (5,1,0)
   let read_type env = function
+#else
+    let rec read_type env = function
+#endif
     | Path.Pident id -> read_type_ident env id
 #if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `Dot(read_module env p, strip_hash s)
@@ -608,6 +653,9 @@ module Path = struct
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, strip_hash s)
 #endif
     | Path.Papply(_, _)-> assert false
+#if OCAML_VERSION >= (5,1,0)
+    | Path.Pextra_ty (p,_) -> read_type env p
+#endif
 
 end
 

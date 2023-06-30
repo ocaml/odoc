@@ -8,6 +8,7 @@ module Opt = struct
 end
 
 let locations env id locs =
+  let id = (id :> Id.NonSrc.t) in
   match locs with Some _ as locs -> locs | None -> Env.lookup_def id env
 
 (** Equivalent to {!Comment.synopsis}. *)
@@ -242,6 +243,15 @@ and comment_nestable_block_element env parent ~loc:_
         ( x,
           List.rev_map (comment_nestable_block_element_list env parent) ys
           |> List.rev )
+  | `Table { data; align } ->
+      let data =
+        let map f x = List.rev_map f x |> List.rev in
+        map
+          (map (fun (cell, cell_type) ->
+               (comment_nestable_block_element_list env parent cell, cell_type)))
+          data
+      in
+      `Table { Comment.data; align }
   | `Modules refs ->
       let refs =
         List.rev_map
@@ -351,7 +361,7 @@ and value_ env parent t =
   let open Value in
   {
     t with
-    locs = locations env (t.id :> Id.t) t.locs;
+    locs = locations env t.id t.locs;
     doc = comment_docs env parent t.doc;
     type_ = type_expression env parent [] t.type_;
   }
@@ -532,7 +542,7 @@ and module_ : Env.t -> Module.t -> Module.t =
           else type_
       | Alias _ | ModuleType _ -> type_
     in
-    let locs = (locations env (m.id :> Id.t)) m.locs in
+    let locs = locations env m.id m.locs in
     let doc = comment_docs env sg_id m.doc in
     { m with locs; doc; type_ }
 
@@ -845,7 +855,7 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
   let hidden_path =
     match equation.Equation.manifest with
     | Some (Constr (`Resolved path, params))
-      when Paths.Path.Resolved.Type.is_hidden path
+      when Paths.Path.Resolved.(is_hidden (path :> t))
            || Paths.Path.Resolved.(identifier (path :> t))
               = (t.id :> Paths.Identifier.t) ->
         Some (path, params)

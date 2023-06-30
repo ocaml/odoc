@@ -154,8 +154,8 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
   if not unit.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
       (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
-      else
-        Printf.sprintf " Using %S while you should use the .cmti file" filename);
+       else
+         Printf.sprintf " Using %S while you should use the .cmti file" filename);
   (* Resolve imports, used by the [link-deps] command. *)
   let unit =
     { unit with imports = resolve_imports resolver unit.imports; source_info }
@@ -208,11 +208,11 @@ let name_of_output ~prefix output =
 let page_name_of_output ~is_parent_explicit output =
   let root_name = name_of_output ~prefix:"page-" output in
   (if is_parent_explicit then
-   match root_name with
-   | "index" ->
-       Format.eprintf
-         "Warning: Potential name clash - child page named 'index'\n%!"
-   | _ -> ());
+     match root_name with
+     | "index" ->
+         Format.eprintf
+           "Warning: Potential name clash - child page named 'index'\n%!"
+     | _ -> ());
   root_name
 
 let mld ~parent_spec ~output ~children ~warnings_options input =
@@ -240,26 +240,26 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
     | Source_tree_child _ | Module_child _ -> false
   in
   (if children = [] then
-   (* No children, this is a leaf page. *)
-   match parent_spec with
-   | Explicit (p, _) -> Ok (Paths.Identifier.Mk.leaf_page (Some p, page_name))
-   | Package parent ->
-       Ok (Paths.Identifier.Mk.leaf_page (Some parent, page_name))
-   | Noparent -> Ok (Paths.Identifier.Mk.leaf_page (None, page_name))
-  else
-    (* Has children, this is a container page. *)
-    let check parents_children v =
-      if List.exists check_child parents_children then Ok v
-      else Error (`Msg "Specified parent is not a parent of this file")
-    in
-    (match parent_spec with
-    | Explicit (p, cs) ->
-        check cs @@ Paths.Identifier.Mk.page (Some p, page_name)
-    | Package parent ->
-        Ok (Paths.Identifier.Mk.page (Some parent, page_name))
-        (* This is a bit odd *)
-    | Noparent -> Ok (Paths.Identifier.Mk.page (None, page_name)))
-    >>= fun id -> Ok (id :> Paths.Identifier.Page.t))
+     (* No children, this is a leaf page. *)
+     match parent_spec with
+     | Explicit (p, _) -> Ok (Paths.Identifier.Mk.leaf_page (Some p, page_name))
+     | Package parent ->
+         Ok (Paths.Identifier.Mk.leaf_page (Some parent, page_name))
+     | Noparent -> Ok (Paths.Identifier.Mk.leaf_page (None, page_name))
+   else
+     (* Has children, this is a container page. *)
+     let check parents_children v =
+       if List.exists check_child parents_children then Ok v
+       else Error (`Msg "Specified parent is not a parent of this file")
+     in
+     (match parent_spec with
+     | Explicit (p, cs) ->
+         check cs @@ Paths.Identifier.Mk.page (Some p, page_name)
+     | Package parent ->
+         Ok (Paths.Identifier.Mk.page (Some parent, page_name))
+         (* This is a bit odd *)
+     | Noparent -> Ok (Paths.Identifier.Mk.page (None, page_name)))
+     >>= fun id -> Ok (id :> Paths.Identifier.Page.t))
   >>= fun name ->
   let root =
     let file = Root.Odoc_file.create_page root_name in
@@ -309,9 +309,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
             | { Paths.Identifier.iv = `Page _; _ } as parent_id ->
                 let name = Paths.Identifier.Mk.source_page (parent_id, name) in
                 if
-                  List.exists
-                    (Paths.Identifier.SourcePage.equal name)
-                    page.source_children
+                  List.exists (Paths.Identifier.equal name) page.source_children
                 then Ok (Some name)
                 else err_not_parent ()
             | { iv = `LeafPage _; _ } -> err_not_parent ())

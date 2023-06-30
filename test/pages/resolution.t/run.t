@@ -117,6 +117,17 @@ Let's also check the hierarchy of files produced:
   html/fonts/KaTeX_Size3-Regular.woff2
   html/fonts/KaTeX_Size4-Regular.woff2
   html/fonts/KaTeX_Typewriter-Regular.woff2
+  html/fonts/fira-mono-v14-latin-500.woff2
+  html/fonts/fira-mono-v14-latin-regular.woff2
+  html/fonts/fira-sans-v17-latin-500.woff2
+  html/fonts/fira-sans-v17-latin-500italic.woff2
+  html/fonts/fira-sans-v17-latin-700.woff2
+  html/fonts/fira-sans-v17-latin-700italic.woff2
+  html/fonts/fira-sans-v17-latin-italic.woff2
+  html/fonts/fira-sans-v17-latin-regular.woff2
+  html/fonts/noticia-text-v15-latin-700.woff2
+  html/fonts/noticia-text-v15-latin-italic.woff2
+  html/fonts/noticia-text-v15-latin-regular.woff2
   html/highlight.pack.js
   html/katex.min.css
   html/katex.min.js

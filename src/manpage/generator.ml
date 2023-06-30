@@ -43,6 +43,8 @@ module Roff = struct
     | String of string
     | Vspace
     | Indent of int * t
+    | Align_line of string
+    | Table_cell of t
 
   let noop = Concat []
 
@@ -207,6 +209,13 @@ module Roff = struct
           | Macro (s, args) ->
               pp_macro ppf s "%s" args;
               newline_if ppf (not is_macro)
+          | Align_line s ->
+              Format.pp_print_string ppf (s ^ ".");
+              newline_if ppf (not is_macro)
+          | Table_cell c ->
+              Format.pp_print_text ppf "T{\n";
+              one ~indent ppf c;
+              Format.pp_print_text ppf "\nT}"
           | Indent (i, content) ->
               let indent = indent + i in
               one ~indent ppf content);
@@ -302,6 +311,53 @@ and inline (l : Inline.t) =
       | Math s -> math s ++ inline rest
       | Raw_markup t -> raw_markup t ++ inline rest)
 
+let table pp { Table.data; align } =
+  let sep = '\t' in
+  let alignment =
+    let alignment =
+      match align with
+      | align ->
+          List.map
+            (function
+              (* Since we are enclosing cells in text blocks, the alignment has
+                 no effect on the content of a sufficiently big cell, for some
+                 reason... (see the markup test in generators)
+
+                 One solution would be to use the [m] column specifier to apply
+                 a macro to the text blocks of the columns. Those macros would
+                 be [lj], [ce] or [rj], which define alignment. However, this
+                 breaks both the alignment for small table cells, and the
+                 largeness of columns. For the records, it woulb be:
+
+                 {[
+                   | Some `Left -> "lmlj"
+                   | Some `Center -> "cmce"
+                   | Some `Right -> "rmrj"
+                   | None -> "l"
+                  ]} *)
+              | Table.Left -> "l"
+              | Center -> "c"
+              | Right -> "r"
+              | Default -> "l")
+            align
+    in
+    Align_line (String.concat "" alignment)
+  in
+  env "TS" "TE" ""
+    (str "allbox;" ++ alignment
+    ++ List.fold_left
+         (fun acc row ->
+           acc ++ vspace
+           ++
+           match row with
+           | [] -> noop
+           | (h, _) :: t ->
+               List.fold_left
+                 (fun acc (x, _) -> acc ++ str "%c" sep ++ Table_cell (pp x))
+                 (Table_cell (pp h))
+                 t)
+         noop data)
+
 let rec block (l : Block.t) =
   match l with
   | [] -> noop
@@ -320,6 +376,7 @@ let rec block (l : Block.t) =
             indent 2 (bullet ++ sp ++ block b)
           in
           list ~sep:break (List.mapi f l) ++ continue rest
+      | Table t -> table block t ++ continue rest
       | Description _ ->
           let descrs, _, rest =
             Take.until l ~classify:(function

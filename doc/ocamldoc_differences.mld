@@ -13,7 +13,7 @@ can be seen rendered by [odoc] {{!Odoc_examples.Markup.Foo}here}.
 The following describes the changes between what [odoc] understands and what’s in the OCaml manual.
 
 - Heading levels are more restrictive. In the manual, it suggests any whole number is acceptable. In [odoc],
-  we follow the HTML spec in allowing headings from 1-6, and we also allow heading level [0] for the title
+  similarly to the HTML spec, we allow headings from 1-5, and heading level [0] for the title
   of [.mld] files. [odoc] emits a warning for heading levels outside this range and caps them.
 
 {3 Omissions}
@@ -29,6 +29,7 @@ The following describes the changes between what [odoc] understands and what’s
   An other difference is that documentation starting with a heading or something that is not a paragraph won't have a synopsis ({{:https://github.com/ocaml/odoc/pull/643}github issue}).
 
 {3 Improvements}
+- [odoc] supports writing mathematics and tables with a specific syntax.
 - [odoc] has a better mechanism for disambiguating references in comments. See 'reference syntax' later in this document.
 - Built-in support for standalone [.mld] files. These are documents using the OCamldoc markup, but they’re rendered as distinct pages.
 - Structured output: [odoc] can produce output in a structured directory tree rather a set of files.

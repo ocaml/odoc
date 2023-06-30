@@ -10,11 +10,11 @@ file in the root of your project.
 The following files are a simple example:
 
 - [dune-project]
-{[
+{@text[
 (lang dune 2.0)
 ]}
 - [dune]
-{[
+{@text[
 (library
   (public_name lib))
 ]}
@@ -28,7 +28,7 @@ type t = int (** My type *)
 
 Dune creates the docs for these with this command:
 
-{[
+{@sh[
 $ dune build @doc
 ]}
 

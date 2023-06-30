@@ -4,8 +4,8 @@ type t
 
 val lookup_def :
   (string -> (Lang.Compilation_unit.t * t) option) ->
-  Identifier.t ->
-  Lang.Locations.t option
+  Identifier.NonSrc.t ->
+  Identifier.SourceLocation.t option
 (** Returns the root module containing the definition of the given identifier
     and the corresponding anchor. *)
 

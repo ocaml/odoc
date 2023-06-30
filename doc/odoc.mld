@@ -43,17 +43,12 @@ For guidance on how to document your OCaml project, see {{!page-odoc_for_authors
 To integrate [odoc] into your tool, webpage or any other
 setting, you'll need to understand {{!page-driver}how to drive [odoc]}.
 
-{1 For Developers}
-
-To start contributing to [odoc], please see our {{!page-contributing}contributors guide}.
-
 {1 Page index}
 
 The main other pages of this site:
 - {!page-odoc_for_authors} Odoc For Authors
 - {!page-features} Language Features
 - {!page-driver} Reference Driver
-- {!page-contributing} Contributing
 - {!page-ocamldoc_differences} Differences from OCamldoc
 - {!page-dune} Dune
 - {!page-parent_child_spec} Parent/Child specification

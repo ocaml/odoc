@@ -9,16 +9,131 @@
   (:x odoc_html_support_files.ml)
   (glob_files *.js)
   (glob_files *.css)
+  (glob_files_rec *.ttf)
   (glob_files_rec *.woff2))
  (action
   (progn
    (setenv
     SOURCE_DATE_EPOCH
     0
-    (run ocaml-crunch . -e js -e css -e woff2 -o %{x}.corrected -m plain -s))
+    (run
+     ocaml-crunch
+     .
+     -e
+     js
+     -e
+     css
+     -e
+     ttf
+     -e
+     woff2
+     -o
+     %{x}.corrected
+     -m
+     plain
+     -s))
    (diff? %{x} %{x}.corrected))))
 
 (library
  (name odoc_html_support_files)
  (public_name odoc.html_support_files)
  (wrapped false))
+
+(install
+ (package odoc)
+ (section share)
+ (files
+  (odoc.css as odoc-theme/default/odoc.css)
+  (fonts/KaTeX_AMS-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_AMS-Regular.woff2)
+  (fonts/KaTeX_Caligraphic-Bold.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Caligraphic-Bold.woff2)
+  (fonts/KaTeX_Caligraphic-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Caligraphic-Regular.woff2)
+  (fonts/KaTeX_Fraktur-Bold.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Fraktur-Bold.woff2)
+  (fonts/KaTeX_Fraktur-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Fraktur-Regular.woff2)
+  (fonts/KaTeX_Main-Bold.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Main-Bold.woff2)
+  (fonts/KaTeX_Main-BoldItalic.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Main-BoldItalic.woff2)
+  (fonts/KaTeX_Main-Italic.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Main-Italic.woff2)
+  (fonts/KaTeX_Main-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Main-Regular.woff2)
+  (fonts/KaTeX_Math-BoldItalic.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Math-BoldItalic.woff2)
+  (fonts/KaTeX_Math-Italic.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Math-Italic.woff2)
+  (fonts/KaTeX_SansSerif-Bold.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_SansSerif-Bold.woff2)
+  (fonts/KaTeX_SansSerif-Italic.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_SansSerif-Italic.woff2)
+  (fonts/KaTeX_SansSerif-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_SansSerif-Regular.woff2)
+  (fonts/KaTeX_Script-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Script-Regular.woff2)
+  (fonts/KaTeX_Size1-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Size1-Regular.woff2)
+  (fonts/KaTeX_Size2-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Size2-Regular.woff2)
+  (fonts/KaTeX_Size3-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Size3-Regular.woff2)
+  (fonts/KaTeX_Size4-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Size4-Regular.woff2)
+  (fonts/KaTeX_Typewriter-Regular.woff2
+   as
+   odoc-theme/default/fonts/KaTeX_Typewriter-Regular.woff2)
+  (fonts/fira-mono-v14-latin-500.woff2
+   as
+   odoc-theme/default/fonts/fira-mono-v14-latin-500.woff2)
+  (fonts/fira-mono-v14-latin-regular.woff2
+   as
+   odoc-theme/default/fonts/fira-mono-v14-latin-regular.woff2)
+  (fonts/fira-sans-v17-latin-500.woff2
+   as
+   odoc-theme/default/fonts/fira-sans-v17-latin-500.woff2)
+  (fonts/fira-sans-v17-latin-500italic.woff2
+   as
+   odoc-theme/default/fonts/fira-sans-v17-latin-500italic.woff2)
+  (fonts/fira-sans-v17-latin-700.woff2
+   as
+   odoc-theme/default/fonts/fira-sans-v17-latin-700.woff2)
+  (fonts/fira-sans-v17-latin-700italic.woff2
+   as
+   odoc-theme/default/fonts/fira-sans-v17-latin-700italic.woff2)
+  (fonts/fira-sans-v17-latin-italic.woff2
+   as
+   odoc-theme/default/fonts/fira-sans-v17-latin-italic.woff2)
+  (fonts/fira-sans-v17-latin-regular.woff2
+   as
+   odoc-theme/default/fonts/fira-sans-v17-latin-regular.woff2)
+  (fonts/noticia-text-v15-latin-700.woff2
+   as
+   odoc-theme/default/fonts/noticia-text-v15-latin-700.woff2)
+  (fonts/noticia-text-v15-latin-italic.woff2
+   as
+   odoc-theme/default/fonts/noticia-text-v15-latin-italic.woff2)
+  (fonts/noticia-text-v15-latin-regular.woff2
+   as
+   odoc-theme/default/fonts/noticia-text-v15-latin-regular.woff2)))

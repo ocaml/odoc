@@ -63,7 +63,7 @@ val description : ('a, ('a * 'a) list) tr
 
 val item : 'a t with_options
 
-val small_table : ('a, 'a list list) tr
+val small_table : ('a, Types.alignment list option * 'a list list) tr
 
 val input : Fpath.t Fmt.t
 

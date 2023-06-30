@@ -18,10 +18,11 @@ module Identifier = struct
   and page = page_pv id
   (** @canonical Odoc_model.Paths.Identifier.Page.t *)
 
-  type source_dir_pv =
-    [ `SourceRoot of container_page | `SourceDir of source_dir * string ]
+  type source_dir_pv = [ container_page_pv | `SourceDir of source_dir * string ]
+  (** @canonical Odoc_model.Paths.Identifier.SourceDir.t_pv *)
 
   and source_dir = source_dir_pv id
+  (** @canonical Odoc_model.Paths.Identifier.SourceDir.t *)
 
   type source_page_pv = [ `SourcePage of source_dir * string ]
   (** The second argument is the filename.
@@ -30,6 +31,14 @@ module Identifier = struct
 
   type source_page = source_page_pv id
   (** @canonical Odoc_model.Paths.Identifier.SourcePage.t *)
+
+  type source_location_pv =
+    [ `SourceLocationMod of source_page
+    | `SourceLocation of source_page * DefName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.SourceLocation.t *)
+
+  and source_location = source_location_pv id
+  (** @canonical Odoc_model.Paths.Identifier.SourceLocation.t_pv *)
 
   type odoc_id_pv = [ page_pv | `Root of container_page option * ModuleName.t ]
   (** @canonical Odoc_model.Paths.Identifier.OdocId.t_pv *)
@@ -177,7 +186,7 @@ module Identifier = struct
   and label = label_pv id
   (** @canonical Odoc_model.Paths.Identifier.Label.t *)
 
-  type any_pv =
+  type non_src_pv =
     [ signature_pv
     | class_signature_pv
     | datatype_pv
@@ -199,6 +208,13 @@ module Identifier = struct
     | instance_variable_pv
     | label_pv
     | page_pv ]
+  (** @canonical Odoc_model.Paths.Identifier.NonSrc.t_pv *)
+
+  and non_src = non_src_pv id
+  (** @canonical Odoc_model.Paths.Identifier.NonSrc.t *)
+
+  type any_pv =
+    [ non_src_pv | source_page_pv | source_dir_pv | source_location_pv ]
   (** @canonical Odoc_model.Paths.Identifier.t_pv *)
 
   and any = any_pv id

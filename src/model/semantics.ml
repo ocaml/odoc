@@ -19,6 +19,7 @@ let describe_internal_tag = function
   | `Inline -> "@inline"
   | `Open -> "@open"
   | `Closed -> "@closed"
+  | `Hidden -> "@hidden"
 
 let warn_unexpected_tag { Location.value; location } =
   Error.raise_warning
@@ -88,6 +89,9 @@ let heading_level_should_be_lower_than_top_level :
 let page_heading_required : string -> Error.t =
   Error.filename_only "Pages (.mld files) should start with a heading."
 
+let tags_not_allowed : Location.span -> Error.t =
+  Error.make "Tags are not allowed in pages."
+
 let not_allowed :
     ?suggestion:string ->
     what:string ->
@@ -124,6 +128,7 @@ type alerts =
 
 type status = {
   sections_allowed : sections_allowed;
+  tags_allowed : bool;
   parent_of_sections : Paths.Identifier.LabelParent.t;
 }
 
@@ -224,13 +229,19 @@ let rec nestable_block_element :
   match element with
   | { value = `Paragraph content; location } ->
       Location.at location (`Paragraph (inline_elements status content))
-  | { value = `Code_block (metadata, code); location } ->
+  | { value = `Code_block { meta; delimiter = _; content; output }; location }
+    ->
       let lang_tag =
-        match metadata with
-        | Some ({ Location.value; _ }, _) -> Some value
+        match meta with
+        | Some { language = { Location.value; _ }; _ } -> Some value
         | None -> None
       in
-      Location.at location (`Code_block (lang_tag, code))
+      let outputs =
+        match output with
+        | None -> None
+        | Some l -> Some (List.map (nestable_block_element status) l)
+      in
+      Location.at location (`Code_block (lang_tag, content, outputs))
   | { value = `Math_block s; location } -> Location.at location (`Math_block s)
   | { value = `Verbatim _; _ } as element -> element
   | { value = `Modules modules; location } ->
@@ -252,6 +263,14 @@ let rec nestable_block_element :
   | { value = `List (kind, _syntax, items); location } ->
       `List (kind, List.map (nestable_block_elements status) items)
       |> Location.at location
+  | { value = `Table ((grid, align), (`Heavy | `Light)); location } ->
+      let data =
+        List.map
+          (List.map (fun (cell, cell_type) ->
+               (nestable_block_elements status cell, cell_type)))
+          grid
+      in
+      `Table { Comment.data; align } |> Location.at location
 
 and nestable_block_elements status elements =
   List.map (nestable_block_element status) elements
@@ -264,6 +283,10 @@ let tag :
       internal_tags_removed with_location )
     Result.result =
  fun ~location status tag ->
+  if not status.tags_allowed then
+    (* Trigger a warning but do not remove the tag. Avoid turning tags into
+       text that would render the same. *)
+    Error.raise_warning (tags_not_allowed location);
   let ok t = Result.Ok (Location.at location (`Tag t)) in
   match tag with
   | (`Author _ | `Since _ | `Version _) as tag -> ok tag
@@ -476,7 +499,7 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
       -> (
         let next tag = loop ({ wloc with value = tag } :: tags) ast' tl in
         match tag with
-        | (`Inline | `Open | `Closed) as tag -> next tag
+        | (`Inline | `Open | `Closed | `Hidden) as tag -> next tag
         | `Canonical { Location.value = s; location = r_location } -> (
             match
               Error.raise_warnings (Reference.read_path_longident r_location s)
@@ -513,23 +536,23 @@ let append_alerts_to_comment alerts
   in
   comment @ (alerts : alerts :> Comment.docs)
 
-let ast_to_comment ~internal_tags ~sections_allowed ~parent_of_sections ast
-    alerts =
+let ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
+    ~parent_of_sections ast alerts =
   Error.catch_warnings (fun () ->
-      let status = { sections_allowed; parent_of_sections } in
+      let status = { sections_allowed; tags_allowed; parent_of_sections } in
       let ast, tags = strip_internal_tags ast in
       let elts =
         top_level_block_elements status ast |> append_alerts_to_comment alerts
       in
       (elts, handle_internal_tags tags internal_tags))
 
-let parse_comment ~internal_tags ~sections_allowed ~containing_definition
-    ~location ~text =
+let parse_comment ~internal_tags ~sections_allowed ~tags_allowed
+    ~containing_definition ~location ~text =
   Error.catch_warnings (fun () ->
       let ast =
         Odoc_parser.parse_comment ~location ~text |> Error.raise_parser_warnings
       in
-      ast_to_comment ~internal_tags ~sections_allowed
+      ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
         ~parent_of_sections:containing_definition ast []
       |> Error.raise_warnings)
 

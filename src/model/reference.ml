@@ -336,12 +336,12 @@ let parse whole_reference_location s :
           | `TUnknown -> old_kind
           | _ ->
               (if old_kind <> new_kind then
-               let new_kind_string =
-                 match kind with Some s -> s | None -> ""
-               in
-               reference_kinds_do_not_match old_kind_string new_kind_string
-                 whole_reference_location
-               |> Error.raise_warning);
+                 let new_kind_string =
+                   match kind with Some s -> s | None -> ""
+                 in
+                 reference_kinds_do_not_match old_kind_string new_kind_string
+                   whole_reference_location
+                 |> Error.raise_warning);
               new_kind)
     in
 

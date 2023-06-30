@@ -1,16 +1,26 @@
-UNRELEASED
-----------
+<!--
+The format of this Changelog is based on Keep a Changelog (https://keepachangelog.com/en/1.0.0/).
 
-Additions
+Tags:
+- Changes
+- Added
+- Fixed
+- Documentation
+- Internal
+-->
+
+# 2.3.0 (Unreleased)
+
+### Added
 - Source code rendering (@Julow, @panglesd, #909)
+- Handle tables markup (@panglesd, @gpetiot, #893)
 
-Bugfixes
+### Fixed
 - Fix `--hidden` not always taken into account (@panglesd, #940)
 
-2.2.0
------
+# 2.2.0
 
-Additions
+### Added
 - New unstable option `--as-json` for the HTML renderer that emits HTML
   fragments (preamble, content) together with metadata (table of contents,
   breadcrumbs, whether katex is used) in JSON format. (@sabine, #908)
@@ -19,23 +29,22 @@ Additions
 - Better handling of alerts and deprecation notices. (@panglesd, #828)
 - Handle language tags on code blocks (@julow, #848)
 
-Bugfixes
+### Fixed
 - Shadowing issues (@jonludlam, #853)
 - Layout fixes and improvements (@panglesd, #832, #839, #847) 
 - Handle comments on class constraints and inherit (@julow, #844)
 - Disable the missing root warning (@jonludlam, #881)
 
-2.1.0
------
+# 2.1.0
 
-Additions
+### Added
 - New subcommand to resolve references (@panglesd, @lubegasimon, #812)
 - Improved rendering of long signatures (@panglesd, #782)
 - Handle comments attached to open statement as floating comment, instead
   of dropping them (@panglesd, #797)
 - Empty includes (containing entirely shadowed entries) are now hidden (@panglesd, #798)
 
-Bugs fixed
+### Fixed
 - Fix a missing Result constructor during compile. This will cause some
   functor arguments to have different filenames (@jonludlam, #795)
 - Better memory/disk space usage when handling module alias chains (@jonludlam, #799)
@@ -44,31 +53,29 @@ Bugs fixed
 - Better handling of @canonical tags (@jonludlam, #820)
 - css: improved layout (@jonludlam, @Julow, #822)
 
-2.0.2
------
+# 2.0.2
 
-Additions
+### Added
 - Compatibility with OCaml 4.14 (@patricoferris, @kit-ty-kate, #788)
 
-2.0.1
------
+# 2.0.1
 
-Bugs fixed
+### Fixed
 - Man page renderer fails to output pages that have children (@jonludlam, @Julow, #766)
 - Fix resolution of unprefixed references to pages (@Julow, #755)
 - Fix reporting of ambiguous labels (@Julow, @jonludlam, #773, #781)
 - Allow referencing of labels in the top comment (@jonludlam, #771)
 
-Additions
+### Added
 - Strip unquoted spaces in identifiers for a more flexible reference syntax (@lubegasimon, @panglesd, #783)
 - Add context to messages raised in expansions of includes (@Julow, #780)
 
-2.0.0
------
-Breaking changes
+# 2.0.0
+
+### Changed
 - Remove odoc-parser into a separate repository (@jonludlam, #700)
 
-Additions
+### Added
 - OCaml 4.13 support (@octachron, #687, #689)
 - Better errors/warnings (@Julow, #692, #717, #720, #732)
 - ModuleType 'Alias' support (@jonludlam, #703)
@@ -76,32 +83,30 @@ Additions
 - Improved documentation (@lubegasimon, @jonludlam, #702, #733)
 - Strengthen module types (@jonludlam, #731)
 
-Bugs fixed
+### Fixed
 - `uwt` now can be documented (@jonludlam, #708)
 - Fix resolution involving deeply nested substitutions (@jonludlam, #727)
 - Fix off-by-one error in error reporting (@asavahista, #736)
 
 
-2.0.0~beta4
------------
+# 2.0.0~beta4
 
-Additions
+### Added
 - Handle @canonical tags in the top-comment of modules (@Julow, #662)
 - Simplify paths referring to Stdlib (@jonludlam, #677)
 - New odoc command to report warnings encountered during compilation/linking (@Julow, #667)
 - Anchors on type extensions (@Julow, #684)
 
-Bugs fixed
+### Fixed
 - Resolve references in module synopses (@Julow, #658)
 - Fix reference resolution in the presence of shadowing (@Julow, #682)
 
-2.0.0~beta3
------------
+# 2.0.0~beta3
 
-Breaking changes
+### Changed
 - Refactor the comment parser in preparation for it to be octavius 2 (@jonludlam, #621)
 
-Additions
+### Added
 - Better HTML rendering (@dbuenzli, #607, #612, #615)
 - Better handling of signature comments (@Julow, #627, #629, #640, #643, #647, #654)
 - Centre, left and right alignment constructs now parse correctly (@lubegasimon, #624)
@@ -112,20 +117,18 @@ Additions
 - Alias more when strengthening (@jonludlam, #653)
 - Light theme fixes (@xvw, #660)
 
-Bugs fixed
+### Fixed
 - LaTeX: Hardened description environments (@Octachron, #608)
 
+# 2.0.0~beta2
 
-2.0.0~beta2
------------
-
-Additions
+### Added
 
 - Add the ability to specifiy canonical paths for types and module types (@jonludlam, #596)
 - Several improvements to the HTML tree (@dbuenzli, #600, #605, #589, @Drup, #579)
 - Render module synopses in `{!modules:...}` (@Julow, #597)
 
-Bugs fixed
+### Fixed
 
 - Fix for resolving references in mld files (@jonludlam, #611)
 - Fix placement of documentation in module aliases (@Julow, #606)
@@ -135,29 +138,27 @@ Bugs fixed
 - Don't render shadowed values (@lubegasimon, #580)
 - Fix unresolved references in the first comment of a file (@Julow, #592)
 
+# 2.0.0~beta1
 
-2.0.0~beta1
------------
+### Added
 
 - New model for expanding and cross referencing (@jonludlam, @Julow, @lubegasimon)
 - New document output layer, supporting HTML, LaTeX and man page output (@Drup, @Octachron, @jonludlam, @Julow, @lubegasimon)
 - Experimental parent/child support for structured output (@jonludlam)
 
-1.5.1
------
+# 1.5.1
 
-Additions
+### Added
 
 - Compatibility with OCaml 4.11 (#434, @kit-ty-kate)
 
-1.5.0
------
+# 1.5.0
 
-Additions
+### Added
 
 - Add option to turn warnings into errors (#398, Jules Aguillon)
 
-Bugs fixed
+### Fixed
 
 - Emit quote before identifier in alias type expr (Fixes #391, Anton Bachin)
 - Handle generalized open statements introduced in 4.08 (#393, Jon Ludlam)
@@ -165,10 +166,9 @@ Bugs fixed
   (#400, Jules Aguillon)
 - Build on OCaml 4.10 (#408, Jon Ludlam)
 
-1.4.2
------
+# 1.4.2
 
-Bugs fixed
+### Fixed
 
 - Build on OCaml 4.09 (#383, Anil Madhavapeddy).
 - Handle OCaml 4.08 type and module substitutions (#381, Jon Ludlam).
@@ -181,10 +181,9 @@ Bugs fixed
   Bünzli).
 - Fix bad internal usage of `List.iter2` (#376, Yotam Barnoy).
 
-1.4.1
------
+# 1.4.1
 
-Bugs fixed
+### Fixed
 
 - Messy formatting in large definitions due to lack of `<span>`s (#360, Thomas
   Refis).
@@ -200,10 +199,9 @@ Bugs fixed
   Geoff Reedy).
 - Internal: refactored AST (#351, #364, Jules Aguillon).
 
-1.4.0
------
+# 1.4.0
 
-Changes
+### Changes
 
 - All parsing errors are now recoverable warnings (#238).
 - Page titles are now level-0 headings (`{0 ...}`), and top-level sections
@@ -213,7 +211,7 @@ Changes
 - Rename `--root-uri` option to `--xref-base-uri` (#223, Rizo Isrof).
 - Deprecate redundant reference kind annotations (#246).
 
-Additions
+### Added
 
 - Preliminary compatibility with the current 4.08 beta releases (#309, Jon
   Ludlam).
@@ -223,7 +221,7 @@ Additions
 - Recommend [`bsdoc`](https://ostera.github.io/bsdoc/docs/BsDoc/) for using
   odoc with BuckleScript (#269, Leandro Ostera).
 
-Bugs fixed
+### Fixed
 
 - Improve breadcrumbs on `.mld` pages (#293, Daniel Buenzli).
 - Display tables of contents in nested module and class pages (#261, Rizo
@@ -271,7 +269,7 @@ Bugs fixed
 - `--theme-uri` option not propagated to some subpages (#318, Thomas Refis).
 - Binary files not opened in binary mode (#281, Ulrik Strid).
 
-Build and development
+### Internal
 
 - Always print backtraces for unhandled exceptions (3d10feb).
 - CI on macOS (#216, Leandro Ostera).
@@ -284,10 +282,9 @@ Build and development
 - Remove dependency on `bisect_ppx`, previously present in development
   checkouts (#316).
 
-1.3.0
------
+# 1.3.0
 
-Additions
+### Added
 
 - Reason syntax output (#156, Patrick Stapfer).
 - BuckleScript support (#179, Leandro Ostera).
@@ -302,7 +299,7 @@ Additions
 - Option to convert `.mld` to HTML fragments rather than complete pages
   (#166, Rizo Isrof).
 
-Bugs fixed
+### Fixed
 
 - Use regular dashes in arrows to support ligature fonts (#180, Leandro
   Ostera).
@@ -320,7 +317,7 @@ Bugs fixed
   Elsharnouby, Rudi Grinberg, Rizo Isrof, Leandro Ostera, Bobby
   Priambodo, Thomas Refis, Patrick Stapfer).
 
-Build and development
+### Internal
 
 - `odoc` is now one repo.
 - Dropped several dependencies.
@@ -331,29 +328,32 @@ Build and development
 - Initial NPM packaging (Leandro Ostera, #214).
 - Skeleton of odoc manual (Leandro Ostera, #203).
 
-1.2.0
------
+# 1.2.0
+
+### Added
 
 - Support for standalone documentation pages (`.mld` files) (#61).
 - Display `[@@deprecated]` attributes as the `@deprecated` tag (#57).
 - Allow each component of OCaml paths to be disambiguated using the `kind-identifer` syntax (part of #61).
 - Support OCaml 4.06.
+
+### Fixed
 - Fix spurious leading blank lines in verbatim text (ocaml-doc/octavius#6).
 
-1.1.1
------
+# 1.1.1
+
+### Changes
 
 - make odoc more noisy when generating html for hidden units
-
 - changed `html-deps` subcommand behavior: it now expects to be given a
   directory, not a single odoc file.
 
-1.1.0
------
+# 1.1.0
 
-- switch to jbuilder
+### Internal
 
-1.0.0
------
+- Switch to jbuilder
+
+# 1.0.0
 
 Initial release.

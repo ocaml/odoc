@@ -76,7 +76,7 @@ module rec Module : sig
     | ModuleType of ModuleType.expr
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     type_ : decl;
     canonical : Odoc_model.Paths.Path.Module.t option;
@@ -148,7 +148,7 @@ and Extension : sig
   module Constructor : sig
     type t = {
       name : string;
-      locs : Odoc_model.Lang.Locations.t option;
+      locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
       doc : CComment.docs;
       args : TypeDecl.Constructor.argument;
       res : TypeExpr.t option;
@@ -167,7 +167,7 @@ end =
 
 and Exception : sig
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
@@ -234,7 +234,7 @@ and ModuleType : sig
     | Project of Cpath.projection * expr
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.ModuleType.t option;
     expr : expr option;
@@ -282,7 +282,7 @@ and TypeDecl : sig
   end
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.Type.t option;
     equation : Equation.t;
@@ -295,7 +295,7 @@ and Value : sig
   type value = Odoc_model.Lang.Value.value
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     type_ : TypeExpr.t;
     value : value;
@@ -366,7 +366,7 @@ and Class : sig
     | Arrow of TypeExpr.label option * TypeExpr.t * decl
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -382,7 +382,7 @@ and ClassType : sig
     | Signature of ClassSignature.t
 
   type t = {
-    locs : Odoc_model.Lang.Locations.t option;
+    locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -1278,6 +1278,17 @@ module Fmt = struct
           (ExtensionName.to_string name)
     | `Page (_, name) | `LeafPage (_, name) ->
         Format.fprintf ppf "%s" (PageName.to_string name)
+    | `SourcePage (p, name) | `SourceDir (p, name) ->
+        Format.fprintf ppf "%a/%s" model_identifier
+          (p :> Odoc_model.Paths.Identifier.t)
+          name
+    | `SourceLocation (p, def) ->
+        Format.fprintf ppf "%a#%s" model_identifier
+          (p :> Odoc_model.Paths.Identifier.t)
+          (DefName.to_string def)
+    | `SourceLocationMod p ->
+        Format.fprintf ppf "%a#" model_identifier
+          (p :> Odoc_model.Paths.Identifier.t)
 
   and model_fragment ppf (f : Odoc_model.Paths.Fragment.t) =
     match f with
@@ -2405,59 +2416,59 @@ module Of_Lang = struct
     let items =
       List.rev_map
         (let open Odoc_model.Lang.Signature in
-        let open Odoc_model.Paths in
-        function
-        | Type (r, t) ->
-            let id = Identifier.Maps.Type.find t.id ident_map.types in
-            let t' = Delayed.put (fun () -> type_decl ident_map t) in
-            Signature.Type (id, r, t')
-        | TypeSubstitution t ->
-            let id = Identifier.Maps.Type.find t.id ident_map.types in
-            let t' = type_decl ident_map t in
-            Signature.TypeSubstitution (id, t')
-        | Module (r, m) ->
-            let id =
-              Identifier.Maps.Module.find
-                (m.id :> Identifier.Module.t)
-                ident_map.modules
-            in
-            let m' = Delayed.put (fun () -> module_ ident_map m) in
-            Signature.Module (id, r, m')
-        | ModuleSubstitution m ->
-            let id = Identifier.Maps.Module.find m.id ident_map.modules in
-            let m' = module_substitution ident_map m in
-            Signature.ModuleSubstitution (id, m')
-        | ModuleTypeSubstitution m ->
-            let id =
-              Identifier.Maps.ModuleType.find m.id ident_map.module_types
-            in
-            let m' = module_type_substitution ident_map m in
-            Signature.ModuleTypeSubstitution (id, m')
-        | ModuleType m ->
-            let id =
-              Identifier.Maps.ModuleType.find m.id ident_map.module_types
-            in
-            let m' = Delayed.put (fun () -> module_type ident_map m) in
-            Signature.ModuleType (id, m')
-        | Value v ->
-            let id = Ident.Of_Identifier.value v.id in
-            let v' = Delayed.put (fun () -> value ident_map v) in
-            Signature.Value (id, v')
-        | Comment c -> Comment (docs_or_stop ident_map c)
-        | TypExt e -> TypExt (extension ident_map e)
-        | Exception e ->
-            let id = Ident.Of_Identifier.exception_ e.id in
-            Exception (id, exception_ ident_map e)
-        | Class (r, c) ->
-            let id = Identifier.Maps.Class.find c.id ident_map.classes in
-            Class (id, r, class_ ident_map c)
-        | ClassType (r, c) ->
-            let id =
-              Identifier.Maps.ClassType.find c.id ident_map.class_types
-            in
-            ClassType (id, r, class_type ident_map c)
-        | Open o -> Open (open_ ident_map o)
-        | Include i -> Include (include_ ident_map i))
+         let open Odoc_model.Paths in
+         function
+         | Type (r, t) ->
+             let id = Identifier.Maps.Type.find t.id ident_map.types in
+             let t' = Delayed.put (fun () -> type_decl ident_map t) in
+             Signature.Type (id, r, t')
+         | TypeSubstitution t ->
+             let id = Identifier.Maps.Type.find t.id ident_map.types in
+             let t' = type_decl ident_map t in
+             Signature.TypeSubstitution (id, t')
+         | Module (r, m) ->
+             let id =
+               Identifier.Maps.Module.find
+                 (m.id :> Identifier.Module.t)
+                 ident_map.modules
+             in
+             let m' = Delayed.put (fun () -> module_ ident_map m) in
+             Signature.Module (id, r, m')
+         | ModuleSubstitution m ->
+             let id = Identifier.Maps.Module.find m.id ident_map.modules in
+             let m' = module_substitution ident_map m in
+             Signature.ModuleSubstitution (id, m')
+         | ModuleTypeSubstitution m ->
+             let id =
+               Identifier.Maps.ModuleType.find m.id ident_map.module_types
+             in
+             let m' = module_type_substitution ident_map m in
+             Signature.ModuleTypeSubstitution (id, m')
+         | ModuleType m ->
+             let id =
+               Identifier.Maps.ModuleType.find m.id ident_map.module_types
+             in
+             let m' = Delayed.put (fun () -> module_type ident_map m) in
+             Signature.ModuleType (id, m')
+         | Value v ->
+             let id = Ident.Of_Identifier.value v.id in
+             let v' = Delayed.put (fun () -> value ident_map v) in
+             Signature.Value (id, v')
+         | Comment c -> Comment (docs_or_stop ident_map c)
+         | TypExt e -> TypExt (extension ident_map e)
+         | Exception e ->
+             let id = Ident.Of_Identifier.exception_ e.id in
+             Exception (id, exception_ ident_map e)
+         | Class (r, c) ->
+             let id = Identifier.Maps.Class.find c.id ident_map.classes in
+             Class (id, r, class_ ident_map c)
+         | ClassType (r, c) ->
+             let id =
+               Identifier.Maps.ClassType.find c.id ident_map.class_types
+             in
+             ClassType (id, r, class_type ident_map c)
+         | Open o -> Open (open_ ident_map o)
+         | Include i -> Include (include_ ident_map i))
         sg.items
       |> List.rev
     in

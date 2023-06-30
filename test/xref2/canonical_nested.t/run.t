@@ -36,11 +36,21 @@ than in module `A`.
 At this point none of the canonical references are resolved. They should be
 unresolved in the paths though:
 
-  $ odoc_print -r Test.B main__Container.odoc
+  $ odoc_print -r Test.B main__Container.odoc | jq .
   {
     "id": {
       "`Module": [
-        { "`Module": [ { "`Root": [ "None", "Main__Container" ] }, "Test" ] },
+        {
+          "`Module": [
+            {
+              "`Root": [
+                "None",
+                "Main__Container"
+              ]
+            },
+            "Test"
+          ]
+        },
         "B"
       ]
     },
@@ -56,7 +66,12 @@ unresolved in the paths though:
                   "`Module": [
                     {
                       "`Module": [
-                        { "`Root": [ "None", "Main__Container" ] },
+                        {
+                          "`Root": [
+                            "None",
+                            "Main__Container"
+                          ]
+                        },
                         "Test"
                       ]
                     },
@@ -68,7 +83,14 @@ unresolved in the paths though:
                 "`Dot": [
                   {
                     "`Dot": [
-                      { "`Dot": [ { "`Root": "Main" }, "Container" ] },
+                      {
+                        "`Dot": [
+                          {
+                            "`Root": "Main"
+                          },
+                          "Container"
+                        ]
+                      },
                       "Test"
                     ]
                   },
@@ -85,9 +107,19 @@ unresolved in the paths though:
     "hidden": "false"
   }
 
-  $ odoc_print -r Container main.odoc
+  $ odoc_print -r Container main.odoc | jq .
   {
-    "id": { "`Module": [ { "`Root": [ "None", "Main" ] }, "Container" ] },
+    "id": {
+      "`Module": [
+        {
+          "`Root": [
+            "None",
+            "Main"
+          ]
+        },
+        "Container"
+      ]
+    },
     "locs": "None",
     "doc": [],
     "type_": {
@@ -99,13 +131,25 @@ unresolved in the paths though:
                 "`Module": [
                   {
                     "`Hidden": {
-                      "`Identifier": { "`Root": [ "None", "Main__" ] }
+                      "`Identifier": {
+                        "`Root": [
+                          "None",
+                          "Main__"
+                        ]
+                      }
                     }
                   },
                   "Container"
                 ]
               },
-              { "`Dot": [ { "`Root": "Main" }, "Container" ] }
+              {
+                "`Dot": [
+                  {
+                    "`Root": "Main"
+                  },
+                  "Container"
+                ]
+              }
             ]
           }
         },
@@ -118,13 +162,23 @@ unresolved in the paths though:
 
   $ odoc link -I . main.odoc
 
-  $ odoc_print -r Container.Test.B main.odocl
+  $ odoc_print -r Container.Test.B main.odocl | jq .
   {
     "id": {
       "`Module": [
         {
           "`Module": [
-            { "`Module": [ { "`Root": [ "None", "Main" ] }, "Container" ] },
+            {
+              "`Module": [
+                {
+                  "`Root": [
+                    "None",
+                    "Main"
+                  ]
+                },
+                "Container"
+              ]
+            },
             "Test"
           ]
         },
@@ -145,7 +199,12 @@ unresolved in the paths though:
                       "`Module": [
                         {
                           "`Module": [
-                            { "`Root": [ "None", "Main" ] },
+                            {
+                              "`Root": [
+                                "None",
+                                "Main"
+                              ]
+                            },
                             "Container"
                           ]
                         },
@@ -164,7 +223,12 @@ unresolved in the paths though:
                         "`Module": [
                           {
                             "`Module": [
-                              { "`Root": [ "None", "Main" ] },
+                              {
+                                "`Root": [
+                                  "None",
+                                  "Main"
+                                ]
+                              },
                               "Container"
                             ]
                           },
@@ -195,7 +259,12 @@ unresolved in the paths though:
                                 "`Module": [
                                   {
                                     "`Module": [
-                                      { "`Root": [ "None", "Main" ] },
+                                      {
+                                        "`Root": [
+                                          "None",
+                                          "Main"
+                                        ]
+                                      },
                                       "Container"
                                     ]
                                   },

@@ -22,9 +22,11 @@ open Names
 module Identifier = struct
   type 'a id = 'a Paths_types.id = { iv : 'a; ihash : int; ikey : string }
 
-  type t = Paths_types.Identifier.any
+  module Id = Paths_types.Identifier
 
-  type t_pv = Paths_types.Identifier.any_pv
+  type t = Id.any
+
+  type t_pv = Id.any_pv
 
   let rec name_aux : t -> string =
    fun x ->
@@ -49,36 +51,18 @@ module Identifier = struct
     | `Method (_, name) -> MethodName.to_string name
     | `InstanceVariable (_, name) -> InstanceVariableName.to_string name
     | `Label (_, name) -> LabelName.to_string name
+    | `SourcePage (_, name) -> name
+    | `SourceDir (_, name) -> name
+    | `SourceLocation (_, anchor) -> DefName.to_string anchor
+    | `SourceLocationMod x -> name_aux (x :> t)
 
   let name : [< t_pv ] id -> string = fun n -> name_aux (n :> t)
 
-  let rec root id =
-    match id.iv with
-    | `Root _ as root -> Some { id with iv = root }
-    | `Module (parent, _) -> root (parent :> t)
-    | `Parameter (parent, _) -> root (parent :> t)
-    | `Result x -> root (x :> t)
-    | `ModuleType (parent, _) -> root (parent :> t)
-    | `Type (parent, _) -> root (parent :> t)
-    | `Constructor (parent, _) -> root (parent :> t)
-    | `Field (parent, _) -> root (parent :> t)
-    | `Extension (parent, _) -> root (parent :> t)
-    | `Exception (parent, _) -> root (parent :> t)
-    | `Value (parent, _) -> root (parent :> t)
-    | `Class (parent, _) -> root (parent :> t)
-    | `ClassType (parent, _) -> root (parent :> t)
-    | `Method (parent, _) -> root (parent :> t)
-    | `InstanceVariable (parent, _) -> root (parent :> t)
-    | `Label (parent, _) -> root (parent :> t)
-    | `Page _ | `LeafPage _ | `CoreType _ | `CoreException _ -> None
-
-  let root id = root (id :> t)
-
   let rec label_parent_aux =
-    let open Paths_types.Identifier in
-    fun (n : any) ->
+    let open Id in
+    fun (n : non_src) ->
       match n with
-      | { iv = `Result i; _ } -> label_parent_aux (i :> any)
+      | { iv = `Result i; _ } -> label_parent_aux (i :> non_src)
       | { iv = `CoreType _; _ } | { iv = `CoreException _; _ } -> assert false
       | { iv = `Root _; _ } as p -> (p :> label_parent)
       | { iv = `Page _; _ } as p -> (p :> label_parent)
@@ -99,7 +83,7 @@ module Identifier = struct
       | { iv = `Constructor (p, _); _ } -> (p : datatype :> label_parent)
       | { iv = `Field (p, _); _ } -> (p : parent :> label_parent)
 
-  let label_parent n = label_parent_aux (n :> t)
+  let label_parent n = label_parent_aux (n :> Id.non_src)
 
   let equal x y = x.ihash = y.ihash && x.ikey = y.ikey
 
@@ -109,392 +93,234 @@ module Identifier = struct
 
   type any = t
 
+  type any_pv = t_pv
+
+  module type IdSig = sig
+    type t
+    type t_pv
+    val equal : t -> t -> bool
+    val hash : t -> int
+    val compare : t -> t -> int
+  end
+
   module Any = struct
     type t = any
-
+    type t_pv = any_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
   end
 
   module Signature = struct
-    type t = Paths_types.Identifier.signature
-
-    type t_pv = Paths_types.Identifier.signature_pv
-
+    type t = Id.signature
+    type t_pv = Id.signature_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
-
-    let rec root = function
-      | { iv = `Root _; _ } as root -> root
-      | {
-          iv =
-            ( `ModuleType (parent, _)
-            | `Module (parent, _)
-            | `Parameter (parent, _) );
-          _;
-        } ->
-          root parent
-      | { iv = `Result x; _ } -> root x
-
-    let root id = root (id :> t)
   end
 
   module ClassSignature = struct
-    type t = Paths_types.Identifier.class_signature
-
-    type t_pv = Paths_types.Identifier.class_signature_pv
-
+    type t = Id.class_signature
+    type t_pv = Id.class_signature_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
   end
 
   module DataType = struct
-    type t = Paths_types.Identifier.datatype
-
-    type t_pv = Paths_types.Identifier.datatype_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.datatype
+    type t_pv = Id.datatype_pv
   end
 
   module Parent = struct
-    type t = Paths_types.Identifier.parent
-
-    type t_pv = Paths_types.Identifier.parent_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.parent
+    type t_pv = Id.parent_pv
   end
 
   module LabelParent = struct
-    type t = Paths_types.Identifier.label_parent
-
-    type t_pv = Paths_types.Identifier.label_parent_pv
-
+    type t = Id.label_parent
+    type t_pv = Id.label_parent_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
   end
 
   module RootModule = struct
-    type t = Paths_types.Identifier.root_module
-
-    type t_pv = Paths_types.Identifier.root_module_pv
-
+    type t = Id.root_module
+    type t_pv = Id.root_module_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
-
-    let name { iv = `Root (_, name); _ } = ModuleName.to_string name
   end
 
   module Module = struct
-    type t = Paths_types.Identifier.module_
-
-    type t_pv = Paths_types.Identifier.module_pv
-
+    type t = Id.module_
+    type t_pv = Id.module_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
-
-    let root id = Signature.root (id :> Signature.t)
   end
 
   module FunctorParameter = struct
-    type t = Paths_types.Identifier.functor_parameter
-
-    type t_pv = Paths_types.Identifier.functor_parameter_pv
-
+    type t = Id.functor_parameter
+    type t_pv = Id.functor_parameter_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
   end
 
   module FunctorResult = struct
-    type t = Paths_types.Identifier.functor_result
-
-    type t_pv = Paths_types.Identifier.functor_result_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.functor_result
+    type t_pv = Id.functor_result_pv
   end
 
   module ModuleType = struct
-    type t = Paths_types.Identifier.module_type
-
-    type t_pv = Paths_types.Identifier.module_type_pv
-
+    type t = Id.module_type
+    type t_pv = Id.module_type_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
   end
 
   module Type = struct
-    type t = Paths_types.Identifier.type_
-
-    type t_pv = Paths_types.Identifier.type_pv
-
+    type t = Id.type_
+    type t_pv = Id.type_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
   end
 
   module Constructor = struct
-    type t = Paths_types.Identifier.constructor
-
-    type t_pv = Paths_types.Identifier.constructor_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.constructor
+    type t_pv = Id.constructor_pv
   end
 
   module Field = struct
-    type t = Paths_types.Identifier.field
-
-    type t_pv = Paths_types.Identifier.field_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.field
+    type t_pv = Id.field_pv
   end
 
   module Extension = struct
-    type t = Paths_types.Identifier.extension
-
-    type t_pv = Paths_types.Identifier.extension_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.extension
+    type t_pv = Id.extension_pv
   end
 
   module Exception = struct
-    type t = Paths_types.Identifier.exception_
-
-    type t_pv = Paths_types.Identifier.exception_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.exception_
+    type t_pv = Id.exception_pv
   end
 
   module Value = struct
-    type t = Paths_types.Identifier.value
-
-    type t_pv = Paths_types.Identifier.value_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.value
+    type t_pv = Id.value_pv
   end
 
   module Class = struct
-    type t = Paths_types.Identifier.class_
-
-    type t_pv = Paths_types.Identifier.class_pv
-
+    type t = Id.class_
+    type t_pv = Id.class_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
   end
 
   module ClassType = struct
-    type t = Paths_types.Identifier.class_type
-
-    type t_pv = Paths_types.Identifier.class_type_pv
-
+    type t = Id.class_type
+    type t_pv = Id.class_type_pv
     let equal = equal
-
     let hash = hash
-
     let compare = compare
   end
 
   module Method = struct
-    type t = Paths_types.Identifier.method_
-
-    type t_pv = Paths_types.Identifier.method_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.method_
+    type t_pv = Id.method_pv
   end
 
   module InstanceVariable = struct
-    type t = Paths_types.Identifier.instance_variable
-
-    type t_pv = Paths_types.Identifier.instance_variable_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.instance_variable
+    type t_pv = Id.instance_variable_pv
   end
 
   module Label = struct
     type t = Paths_types.Identifier.label
-
     type t_pv = Paths_types.Identifier.label_pv
-
     let equal = equal
-
     let hash = hash
-
     let compare = compare
   end
 
   module Page = struct
-    type t = Paths_types.Identifier.page
-
-    type t_pv = Paths_types.Identifier.page_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.page
+    type t_pv = Id.page_pv
   end
 
   module ContainerPage = struct
-    type t = Paths_types.Identifier.container_page
+    type t = Id.container_page
+    type t_pv = Id.container_page_pv
+  end
 
-    type t_pv = Paths_types.Identifier.container_page_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+  module NonSrc = struct
+    type t = Paths_types.Identifier.non_src
+    type t_pv = Paths_types.Identifier.non_src_pv
   end
 
   module SourceDir = struct
-    type t = Paths_types.Identifier.source_dir
-    type t_pv = Paths_types.Identifier.source_dir_pv
+    type t = Id.source_dir
+    type t_pv = Id.source_dir_pv
     let equal = equal
     let hash = hash
     let compare = compare
-    let rec name = function
-      | { iv = `SourceDir (p, n); _ } -> name p ^ n ^ "/"
-      | { iv = `SourceRoot _; _ } -> "./"
   end
 
   module SourcePage = struct
-    type t = Paths_types.Identifier.source_page
-    type t_pv = Paths_types.Identifier.source_page_pv
-    let equal = equal
-    let hash = hash
-    let compare = compare
-    let name { iv = `SourcePage (p, name); _ } = SourceDir.name p ^ name
+    type t = Id.source_page
+    type t_pv = Id.source_page_pv
+  end
+
+  module SourceLocation = struct
+    type t = Paths_types.Identifier.source_location
+    type t_pv = Paths_types.Identifier.source_location_pv
   end
 
   module OdocId = struct
-    type t = Paths_types.Identifier.odoc_id
-
-    type t_pv = Paths_types.Identifier.odoc_id_pv
-
-    let equal = equal
-
-    let hash = hash
-
-    let compare = compare
+    type t = Id.odoc_id
+    type t_pv = Id.odoc_id_pv
   end
 
   module Path = struct
     module Module = struct
-      type t = Paths_types.Identifier.path_module
-
-      type t_pv = Paths_types.Identifier.path_module_pv
-
+      type t = Id.path_module
+      type t_pv = Id.path_module_pv
       let equal = equal
-
       let hash = hash
-
       let compare = compare
-
-      let root id = Signature.root (id :> Signature.t)
     end
 
     module ModuleType = struct
-      type t = Paths_types.Identifier.path_module_type
-
+      type t = Id.path_module_type
+      type t_pv = Id.module_type_pv
       let equal = equal
-
       let hash = hash
-
       let compare = compare
     end
 
     module Type = struct
-      type t = Paths_types.Identifier.path_type
-
-      type t_pv = Paths_types.Identifier.path_type_pv
-
+      type t = Id.path_type
+      type t_pv = Id.path_type_pv
       let equal = equal
-
       let hash = hash
-
       let compare = compare
     end
 
     module ClassType = struct
-      type t = Paths_types.Identifier.path_class_type
-
-      type t_pv = Paths_types.Identifier.path_class_type_pv
-
+      type t = Id.path_class_type
+      type t_pv = Id.path_class_type_pv
       let equal = equal
-
       let hash = hash
-
       let compare = compare
     end
 
-    type t = Paths_types.Identifier.path_any
+    type t = Id.path_any
   end
 
   module Maps = struct
@@ -549,12 +375,7 @@ module Identifier = struct
     let source_page (container_page, path) =
       let rec source_dir dir =
         match dir with
-        | [] ->
-            mk_parent
-              (fun () -> "")
-              "sr"
-              (fun (p, ()) -> `SourceRoot p)
-              (container_page, ())
+        | [] -> (container_page : ContainerPage.t :> SourceDir.t)
         | a :: q ->
             let parent = source_dir q in
             mk_parent
@@ -660,6 +481,20 @@ module Identifier = struct
         LabelParent.t * LabelName.t ->
         [> `Label of LabelParent.t * LabelName.t ] id =
       mk_parent LabelName.to_string "l" (fun (p, n) -> `Label (p, n))
+
+    let source_location :
+        SourcePage.t * DefName.t ->
+        [> `SourceLocation of SourcePage.t * DefName.t ] id =
+      mk_parent DefName.to_string "sl" (fun (p, n) -> `SourceLocation (p, n))
+
+    let source_location_mod :
+        SourcePage.t -> [> `SourceLocationMod of SourcePage.t ] id =
+     fun s ->
+      mk_parent
+        (fun () -> "__slm__")
+        ""
+        (fun (s, ()) -> `SourceLocationMod s)
+        (s, ())
   end
 end
 
@@ -774,60 +609,18 @@ module Path = struct
 
       let is_hidden m =
         is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
-
-      let rec identifier : t -> Identifier.Path.Module.t =
-       fun x ->
-        let r = identifier in
-        match x with
-        | `Identifier id -> id
-        | `Subst (_, x) -> r x
-        | `Hidden p -> r p
-        | `Module (m, n) -> Identifier.Mk.module_ (parent_module_identifier m, n)
-        | `Canonical (p, _) -> r p
-        | `Apply (m, _) -> r m
-        | `Alias (dest, _src) -> r dest
-        | `OpaqueModule m -> r m
-
-      let rec root : t -> string option = function
-        | `Identifier id -> (
-            match Identifier.root (id :> Identifier.t) with
-            | Some root -> Some (Identifier.name root)
-            | None -> None)
-        | `Subst (_, p)
-        | `Hidden p
-        | `Module (p, _)
-        | `Canonical (p, _)
-        | `Apply (p, _)
-        | `Alias (p, _)
-        | `OpaqueModule p ->
-            root p
     end
 
     module ModuleType = struct
       type t = Paths_types.Resolved_path.module_type
-
-      let is_hidden m =
-        is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
     end
 
     module Type = struct
       type t = Paths_types.Resolved_path.type_
-
-      let of_ident id = `Identifier id
-
-      let is_hidden m =
-        is_resolved_hidden ~weak_canonical_test:false
-          (m : t :> Paths_types.Resolved_path.any)
     end
 
     module ClassType = struct
       type t = Paths_types.Resolved_path.class_type
-
-      let of_ident id = `Identifier id
-
-      let is_hidden m =
-        is_resolved_hidden ~weak_canonical_test:false
-          (m : t :> Paths_types.Resolved_path.any)
     end
 
     let rec identifier : t -> Identifier.t = function
@@ -866,16 +659,6 @@ module Path = struct
 
   module Module = struct
     type t = Paths_types.Path.module_
-
-    let rec root : t -> string option = function
-      | `Resolved r -> Resolved.Module.root r
-      | `Identifier (id, _) -> (
-          match Identifier.root (id :> Identifier.t) with
-          | Some root -> Some (Identifier.name root)
-          | None -> None)
-      | `Root s -> Some s
-      | `Forward _ -> None
-      | `Dot (p, _) | `Apply (p, _) -> root p
   end
 
   module ModuleType = struct
@@ -903,92 +686,28 @@ module Fragment = struct
 
     type root = Paths_types.Resolved_fragment.root
 
-    let sig_of_mod m =
-      let open Paths_types.Resolved_fragment in
-      (m : module_ :> signature)
-
-    type base_name =
-      | Base of root
-      | Branch of ModuleName.t * Paths_types.Resolved_fragment.signature
-
-    let rec split_parent : Paths_types.Resolved_fragment.signature -> base_name
-        = function
-      | `Root i -> Base i
-      | `Subst (_, p) -> split_parent (sig_of_mod p)
-      | `Alias (_, p) -> split_parent (sig_of_mod p)
-      | `OpaqueModule m -> split_parent (sig_of_mod m)
-      | `Module (p, name) -> (
-          match split_parent p with
-          | Base i -> Branch (name, `Root i)
-          | Branch (base, m) -> Branch (base, `Module (m, name)))
-
     module Signature = struct
       type t = Paths_types.Resolved_fragment.signature
 
-      let rec split : t -> string * t option = function
-        | `Root _ -> ("", None)
-        | `Subst (_, p) -> split (sig_of_mod p)
-        | `Alias (_, p) -> split (sig_of_mod p)
-        | `OpaqueModule m -> split (sig_of_mod m)
-        | `Module (m, name) -> (
-            match split_parent m with
-            | Base _ -> (ModuleName.to_string name, None)
-            | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`Module (m, name))))
-
-      let rec identifier : t -> Identifier.Signature.t = function
+      let rec sgidentifier : t -> Identifier.Signature.t = function
         | `Root (`ModuleType i) -> Path.Resolved.parent_module_type_identifier i
         | `Root (`Module i) -> Path.Resolved.parent_module_identifier i
         | `Subst (s, _) -> Path.Resolved.parent_module_type_identifier s
         | `Alias (i, _) -> Path.Resolved.parent_module_identifier i
-        | `Module (m, n) -> Identifier.Mk.module_ (identifier m, n)
-        | `OpaqueModule m -> identifier (sig_of_mod m)
+        | `Module (m, n) -> Identifier.Mk.module_ (sgidentifier m, n)
+        | `OpaqueModule m -> sgidentifier (m :> t)
     end
 
     module Module = struct
       type t = Paths_types.Resolved_fragment.module_
-
-      let rec split : t -> string * t option = function
-        | `Subst (_, p) -> split p
-        | `Alias (_, p) -> split p
-        | `Module (m, name) -> (
-            match split_parent m with
-            | Base _ -> (ModuleName.to_string name, None)
-            | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`Module (m, name))))
-        | `OpaqueModule m -> split m
     end
 
     module ModuleType = struct
       type t = Paths_types.Resolved_fragment.module_type
-
-      let split : t -> string * t option = function
-        | `Module_type (m, name) -> (
-            match split_parent m with
-            | Base _ -> (ModuleTypeName.to_string name, None)
-            | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`Module_type (m, name))))
     end
 
     module Type = struct
       type t = Paths_types.Resolved_fragment.type_
-
-      let split : t -> string * t option = function
-        | `Type (m, name) -> (
-            match split_parent m with
-            | Base _ -> (TypeName.to_string name, None)
-            | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`Type (m, name))))
-        | `Class (m, name) -> (
-            match split_parent m with
-            | Base _ -> (ClassName.to_string name, None)
-            | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`Class (m, name))))
-        | `ClassType (m, name) -> (
-            match split_parent m with
-            | Base _ -> (ClassTypeName.to_string name, None)
-            | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`ClassType (m, name))))
     end
 
     type leaf = Paths_types.Resolved_fragment.leaf
@@ -999,27 +718,20 @@ module Fragment = struct
       | `Subst (s, _) -> Path.Resolved.identifier (s :> Path.Resolved.t)
       | `Alias (p, _) ->
           (Path.Resolved.parent_module_identifier p :> Identifier.t)
-      | `Module (m, n) -> Identifier.Mk.module_ (Signature.identifier m, n)
+      | `Module (m, n) -> Identifier.Mk.module_ (Signature.sgidentifier m, n)
       | `Module_type (m, n) ->
-          Identifier.Mk.module_type (Signature.identifier m, n)
-      | `Type (m, n) -> Identifier.Mk.type_ (Signature.identifier m, n)
-      | `Class (m, n) -> Identifier.Mk.class_ (Signature.identifier m, n)
-      | `ClassType (m, n) -> Identifier.Mk.class_type (Signature.identifier m, n)
+          Identifier.Mk.module_type (Signature.sgidentifier m, n)
+      | `Type (m, n) -> Identifier.Mk.type_ (Signature.sgidentifier m, n)
+      | `Class (m, n) -> Identifier.Mk.class_ (Signature.sgidentifier m, n)
+      | `ClassType (m, n) ->
+          Identifier.Mk.class_type (Signature.sgidentifier m, n)
       | `OpaqueModule m -> identifier (m :> t)
 
     let rec is_hidden : t -> bool = function
-      | `Root (`ModuleType r) ->
-          Path.is_resolved_hidden ~weak_canonical_test:false
-            (r :> Path.Resolved.t)
-      | `Root (`Module r) ->
-          Path.is_resolved_hidden ~weak_canonical_test:false
-            (r :> Path.Resolved.t)
-      | `Subst (s, _) ->
-          Path.is_resolved_hidden ~weak_canonical_test:false
-            (s :> Path.Resolved.t)
-      | `Alias (s, _) ->
-          Path.is_resolved_hidden ~weak_canonical_test:false
-            (s :> Path.Resolved.t)
+      | `Root (`ModuleType r) -> Path.Resolved.(is_hidden (r :> t))
+      | `Root (`Module r) -> Path.Resolved.(is_hidden (r :> t))
+      | `Subst (s, _) -> Path.Resolved.(is_hidden (s :> t))
+      | `Alias (s, _) -> Path.Resolved.(is_hidden (s :> t))
       | `Module (m, _)
       | `Module_type (m, _)
       | `Type (m, _)
@@ -1031,81 +743,20 @@ module Fragment = struct
 
   type t = Paths_types.Fragment.any
 
-  type base_name =
-    | Base of Resolved.root option
-    | Branch of ModuleName.t * Paths_types.Fragment.signature
-
-  let rec split_parent : Paths_types.Fragment.signature -> base_name = function
-    | `Root -> Base None
-    | `Resolved r -> (
-        match Resolved.split_parent r with
-        | Resolved.Base i -> Base (Some i)
-        | Resolved.Branch (base, m) -> Branch (base, `Resolved m))
-    | `Dot (m, name) -> (
-        match split_parent m with
-        | Base None -> Branch (ModuleName.make_std name, `Root)
-        | Base (Some i) -> Branch (ModuleName.make_std name, `Resolved (`Root i))
-        | Branch (base, m) -> Branch (base, `Dot (m, name)))
-
   module Signature = struct
     type t = Paths_types.Fragment.signature
-
-    let split : t -> string * t option = function
-      | `Root -> ("", None)
-      | `Resolved r ->
-          let base, m = Resolved.Signature.split r in
-          let m = match m with None -> None | Some m -> Some (`Resolved m) in
-          (base, m)
-      | `Dot (m, name) -> (
-          match split_parent m with
-          | Base _ -> (name, None)
-          | Branch (base, m) ->
-              (ModuleName.to_string base, Some (`Dot (m, name))))
   end
 
   module Module = struct
     type t = Paths_types.Fragment.module_
-
-    let split : t -> string * t option = function
-      | `Resolved r ->
-          let base, m = Resolved.Module.split r in
-          let m = match m with None -> None | Some m -> Some (`Resolved m) in
-          (base, m)
-      | `Dot (m, name) -> (
-          match split_parent m with
-          | Base _ -> (name, None)
-          | Branch (base, m) ->
-              (ModuleName.to_string base, Some (`Dot (m, name))))
   end
 
   module ModuleType = struct
     type t = Paths_types.Fragment.module_type
-
-    let split : t -> string * t option = function
-      | `Resolved r ->
-          let base, m = Resolved.ModuleType.split r in
-          let m = match m with None -> None | Some m -> Some (`Resolved m) in
-          (base, m)
-      | `Dot (m, name) -> (
-          match split_parent m with
-          | Base _ -> (name, None)
-          | Branch (base, m) ->
-              (ModuleName.to_string base, Some (`Dot (m, name))))
   end
 
   module Type = struct
     type t = Paths_types.Fragment.type_
-
-    let split : t -> string * t option = function
-      | `Resolved r ->
-          let base, m = Resolved.Type.split r in
-          let m = match m with None -> None | Some m -> Some (`Resolved m) in
-          (base, m)
-      | `Dot (m, name) -> (
-          match split_parent m with
-          | Base _ -> (name, None)
-          | Branch (base, m) ->
-              (ModuleName.to_string base, Some (`Dot (m, name))))
   end
 
   type leaf = Paths_types.Fragment.leaf
@@ -1122,14 +773,14 @@ module Reference = struct
       | `Identifier id -> id
       | `Hidden s -> parent_signature_identifier (s :> signature)
       | `Alias (sub, orig) ->
-          if Path.Resolved.Module.is_hidden ~weak_canonical_test:false sub then
+          if Path.Resolved.(is_hidden (sub :> t)) then
             parent_signature_identifier (orig :> signature)
           else
             (Path.Resolved.parent_module_identifier sub
               :> Identifier.Signature.t)
       | `AliasModuleType (sub, orig) ->
-          if Path.Resolved.ModuleType.is_hidden ~weak_canonical_test:false sub
-          then parent_signature_identifier (orig :> signature)
+          if Path.Resolved.(is_hidden (sub :> t)) then
+            parent_signature_identifier (orig :> signature)
           else
             (Path.Resolved.parent_module_type_identifier sub
               :> Identifier.Signature.t)

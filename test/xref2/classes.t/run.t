@@ -13,9 +13,19 @@ resolve correctly. All of the 'Class' json objects should contain
   $ odoc compile d.cmti -I .
   $ odoc compile e.cmti -I .
   $ odoc compile f.cmti -I .
-  $ odoc_print -r f f.odoc 
+  $ odoc_print -r f f.odoc | jq .
   {
-    "id": { "`Value": [ { "`Root": [ "None", "F" ] }, "f" ] },
+    "id": {
+      "`Value": [
+        {
+          "`Root": [
+            "None",
+            "F"
+          ]
+        },
+        "f"
+      ]
+    },
     "locs": "None",
     "doc": [],
     "type_": {
@@ -23,7 +33,15 @@ resolve correctly. All of the 'Class' json objects should contain
         {
           "`Resolved": {
             "`Identifier": {
-              "`ClassType": [ { "`Root": [ "None", "F" ] }, "u" ]
+              "`ClassType": [
+                {
+                  "`Root": [
+                    "None",
+                    "F"
+                  ]
+                },
+                "u"
+              ]
             }
           }
         },
@@ -32,9 +50,19 @@ resolve correctly. All of the 'Class' json objects should contain
     },
     "value": "Abstract"
   }
-  $ odoc_print e.odoc -r g
+  $ odoc_print e.odoc -r g | jq .
   {
-    "id": { "`Value": [ { "`Root": [ "None", "E" ] }, "g" ] },
+    "id": {
+      "`Value": [
+        {
+          "`Root": [
+            "None",
+            "E"
+          ]
+        },
+        "g"
+      ]
+    },
     "locs": "None",
     "doc": [],
     "type_": {
@@ -42,7 +70,14 @@ resolve correctly. All of the 'Class' json objects should contain
         {
           "`Resolved": {
             "`ClassType": [
-              { "`Identifier": { "`Root": [ "None", "B" ] } },
+              {
+                "`Identifier": {
+                  "`Root": [
+                    "None",
+                    "B"
+                  ]
+                }
+              },
               "u"
             ]
           }

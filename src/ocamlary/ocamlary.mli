@@ -1070,3 +1070,10 @@ type new_t = ..
 type new_t += C
 
 module type TypeExtPruned = TypeExt with type t := new_t
+
+(** {1 Unresolved references} *)
+
+(** - {!Stdlib.Invalid_argument}
+    - {!Hashtbl.t}
+    - {!Set.S.empty}
+    - {!CollectionModule.InnerModuleA.foo} *)

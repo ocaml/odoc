@@ -19,7 +19,7 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
-  lookup_def : Identifier.t -> Lang.Locations.t option;
+  lookup_def : Identifier.NonSrc.t -> Identifier.SourceLocation.t option;
       (** Lookup the source code location from an identifier. Returns
           [Some (source_parent, anchor)] when definition is found. *)
 }
@@ -98,8 +98,7 @@ val module_of_unit : Lang.Compilation_unit.t -> Component.Module.t
 
 val lookup_root_module : string -> t -> root option
 
-val lookup_def :
-  [< Identifier.t_pv ] Paths.Identifier.id -> t -> Lang.Locations.t option
+val lookup_def : Identifier.NonSrc.t -> t -> Identifier.SourceLocation.t option
 (** Lookup the definition of the given identifier. Returns the root module and
     the anchor. *)
 

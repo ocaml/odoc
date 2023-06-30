@@ -1,7 +1,6 @@
 (documentation
  (package odoc)
  (mld_files
-  contributing
   driver
   dune
   features
@@ -11,10 +10,22 @@
   odoc_for_authors
   parent_child_spec))
 
+; Uncomment to run mdx on the documentation's code blocks.
+; (mdx
+;  (files
+;   driver.mld
+;   dune.mld
+;   features.mld
+;   index.mld
+;   interface.mld
+;   ocamldoc_differences.mld
+;   odoc_for_authors.mld
+;   parent_child_spec.mld))
+
 (rule
  (alias docgen)
  (deps
-  (:x driver.md)
+  (:x driver.mld)
   (glob_files *.ml*)
   (glob_files *.png)
   (glob_files library_mlds/*.mld)

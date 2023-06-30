@@ -22,6 +22,17 @@
   with-theme/fonts/KaTeX_Size3-Regular.woff2
   with-theme/fonts/KaTeX_Size4-Regular.woff2
   with-theme/fonts/KaTeX_Typewriter-Regular.woff2
+  with-theme/fonts/fira-mono-v14-latin-500.woff2
+  with-theme/fonts/fira-mono-v14-latin-regular.woff2
+  with-theme/fonts/fira-sans-v17-latin-500.woff2
+  with-theme/fonts/fira-sans-v17-latin-500italic.woff2
+  with-theme/fonts/fira-sans-v17-latin-700.woff2
+  with-theme/fonts/fira-sans-v17-latin-700italic.woff2
+  with-theme/fonts/fira-sans-v17-latin-italic.woff2
+  with-theme/fonts/fira-sans-v17-latin-regular.woff2
+  with-theme/fonts/noticia-text-v15-latin-700.woff2
+  with-theme/fonts/noticia-text-v15-latin-italic.woff2
+  with-theme/fonts/noticia-text-v15-latin-regular.woff2
   with-theme/highlight.pack.js
   with-theme/katex.min.css
   with-theme/katex.min.js
@@ -51,6 +62,17 @@
   without-theme/fonts/KaTeX_Size3-Regular.woff2
   without-theme/fonts/KaTeX_Size4-Regular.woff2
   without-theme/fonts/KaTeX_Typewriter-Regular.woff2
+  without-theme/fonts/fira-mono-v14-latin-500.woff2
+  without-theme/fonts/fira-mono-v14-latin-regular.woff2
+  without-theme/fonts/fira-sans-v17-latin-500.woff2
+  without-theme/fonts/fira-sans-v17-latin-500italic.woff2
+  without-theme/fonts/fira-sans-v17-latin-700.woff2
+  without-theme/fonts/fira-sans-v17-latin-700italic.woff2
+  without-theme/fonts/fira-sans-v17-latin-italic.woff2
+  without-theme/fonts/fira-sans-v17-latin-regular.woff2
+  without-theme/fonts/noticia-text-v15-latin-700.woff2
+  without-theme/fonts/noticia-text-v15-latin-italic.woff2
+  without-theme/fonts/noticia-text-v15-latin-regular.woff2
   without-theme/highlight.pack.js
   without-theme/katex.min.css
   without-theme/katex.min.js
