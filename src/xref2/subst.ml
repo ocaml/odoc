@@ -659,9 +659,7 @@ and mto_module_path_invalidated :
   | `Module (_, _) -> None
   | `Apply (p1, p2) -> (
       match mto_module_path_invalidated s p1 with
-      | Some _ as ans ->
-          Format.eprintf "WOW WE DID IT@.%!";
-          ans
+      | Some _ as ans -> ans
       | None -> mto_module_path_invalidated s p2)
   | `Local (id, _) -> (
       match PathModuleMap.find id s.module_type_of_invalidating_modules with
