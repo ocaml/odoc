@@ -1028,12 +1028,38 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.TypeName.to_string t)
 
+  and resolved_datatype_path :
+      Format.formatter -> Cpath.Resolved.datatype -> unit =
+   fun ppf p ->
+    match p with
+    | `Local id -> Format.fprintf ppf "%a" Ident.fmt id
+    | `Gpath p ->
+        Format.fprintf ppf "%a" model_resolved_path
+          (p :> Odoc_model.Paths.Path.Resolved.t)
+    | `Substituted x ->
+        Format.fprintf ppf "substituted(%a)" resolved_datatype_path x
+    | `CanonicalDataType (t1, t2) ->
+        Format.fprintf ppf "canonicalty(%a,%a)" resolved_datatype_path t1
+          model_path
+          (t2 :> Odoc_model.Paths.Path.t)
+    | `Type (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_parent_path p
+          (Odoc_model.Names.TypeName.to_string t)
+
   and resolved_value_path : Format.formatter -> Cpath.Resolved.value -> unit =
    fun ppf p ->
     match p with
     | `Value (p, t) ->
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.ValueName.to_string t)
+
+  and resolved_constructor_path :
+      Format.formatter -> Cpath.Resolved.constructor -> unit =
+   fun ppf p ->
+    match p with
+    | `Constructor (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_datatype_path p
+          (Odoc_model.Names.ConstructorName.to_string t)
 
   and resolved_parent_path : Format.formatter -> Cpath.Resolved.parent -> unit =
    fun ppf p ->
@@ -1063,6 +1089,21 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.TypeName.to_string t)
 
+  and datatype_path : Format.formatter -> Cpath.datatype -> unit =
+   fun ppf p ->
+    match p with
+    | `Resolved r -> Format.fprintf ppf "r(%a)" resolved_datatype_path r
+    | `Identifier (id, b) ->
+        Format.fprintf ppf "identifier(%a, %b)" model_identifier
+          (id :> Odoc_model.Paths.Identifier.t)
+          b
+    | `Local (id, b) -> Format.fprintf ppf "local(%a,%b)" Ident.fmt id b
+    | `Substituted s -> Format.fprintf ppf "substituted(%a)" datatype_path s
+    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" module_path m s
+    | `Type (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_parent_path p
+          (Odoc_model.Names.TypeName.to_string t)
+
   and value_path : Format.formatter -> Cpath.value -> unit =
    fun ppf p ->
     match p with
@@ -1071,6 +1112,15 @@ module Fmt = struct
     | `Value (p, t) ->
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.ValueName.to_string t)
+
+  and constructor_path : Format.formatter -> Cpath.constructor -> unit =
+   fun ppf p ->
+    match p with
+    | `Resolved r -> Format.fprintf ppf "r(%a)" resolved_constructor_path r
+    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" datatype_path m s
+    | `Constructor (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_datatype_path p
+          (Odoc_model.Names.ConstructorName.to_string t)
 
   and resolved_class_type_path :
       Format.formatter -> Cpath.Resolved.class_type -> unit =
@@ -1145,6 +1195,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" model_resolved_path
           (parent :> t)
           (Odoc_model.Names.TypeName.to_string name)
+    | `Constructor (parent, name) ->
+        Format.fprintf ppf "%a.%s" model_resolved_path
+          (parent :> t)
+          (Odoc_model.Names.ConstructorName.to_string name)
     | `Value (parent, name) ->
         Format.fprintf ppf "%a.%s" model_resolved_path
           (parent :> t)
@@ -1176,6 +1230,11 @@ module Fmt = struct
           (t2 :> Odoc_model.Paths.Path.t)
     | `CanonicalType (t1, t2) ->
         Format.fprintf ppf "canonicalty(%a,%a)" model_resolved_path
+          (t1 :> t)
+          model_path
+          (t2 :> Odoc_model.Paths.Path.t)
+    | `CanonicalDataType (t1, t2) ->
+        Format.fprintf ppf "canonicaldaty(%a,%a)" model_resolved_path
           (t1 :> t)
           model_path
           (t2 :> Odoc_model.Paths.Path.t)
@@ -1778,10 +1837,30 @@ module Of_Lang = struct
     | `ClassType (p, name) ->
         `ClassType (`Module (resolved_module_path ident_map p), name)
 
+  and resolved_datatype_path :
+      _ -> Odoc_model.Paths.Path.Resolved.DataType.t -> Cpath.Resolved.datatype
+      =
+   fun ident_map p ->
+    match p with
+    | `Identifier i -> (
+        match identifier Maps.Type.find ident_map.types i with
+        | `Local l -> `Local l
+        | `Identifier _ -> `Gpath p)
+    | `CanonicalDataType (p1, p2) ->
+        `CanonicalDataType (resolved_datatype_path ident_map p1, p2)
+    | `Type (p, name) -> `Type (`Module (resolved_module_path ident_map p), name)
+
   and resolved_value_path :
       _ -> Odoc_model.Paths.Path.Resolved.Value.t -> Cpath.Resolved.value =
    fun ident_map (`Value (p, name)) ->
     `Value (`Module (resolved_module_path ident_map p), name)
+
+  and resolved_constructor_path :
+      _ ->
+      Odoc_model.Paths.Path.Resolved.Constructor.t ->
+      Cpath.Resolved.constructor =
+   fun ident_map (`Constructor (p, name)) ->
+    `Constructor (resolved_datatype_path ident_map p, name)
 
   and resolved_class_type_path :
       _ ->
@@ -1840,6 +1919,23 @@ module Of_Lang = struct
     match p with
     | `Resolved r -> `Resolved (resolved_value_path ident_map r)
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
+
+  and datatype : _ -> Odoc_model.Paths.Path.DataType.t -> Cpath.datatype =
+   fun ident_map p ->
+    match p with
+    | `Resolved r -> `Resolved (resolved_datatype_path ident_map r)
+    | `Identifier (i, b) -> (
+        match identifier Maps.Type.find ident_map.types i with
+        | `Identifier i -> `Identifier (i, b)
+        | `Local i -> `Local (i, b))
+    | `Dot (path', x) -> `Dot (module_path ident_map path', x)
+
+  and constructor_path :
+      _ -> Odoc_model.Paths.Path.Constructor.t -> Cpath.constructor =
+   fun ident_map p ->
+    match p with
+    | `Resolved r -> `Resolved (resolved_constructor_path ident_map r)
+    | `Dot (path', x) -> `Dot (datatype ident_map path', x)
 
   and class_type_path :
       _ -> Odoc_model.Paths.Path.ClassType.t -> Cpath.class_type =

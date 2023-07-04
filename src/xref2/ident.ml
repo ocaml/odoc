@@ -50,6 +50,8 @@ type class_type = [ `LClassType of ClassTypeName.t * int ]
 
 type path_type = [ type_ | class_ | class_type ]
 
+type path_datatype = type_
+
 type path_value = value
 
 type path_class_type = [ class_ | class_type ]

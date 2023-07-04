@@ -202,6 +202,21 @@ module Path = struct
       Odoc_model.Paths.Path.Resolved.Value.t =
     `Value (resolved_parent map p, name)
 
+  and resolved_datatype map (p : Cpath.Resolved.datatype) :
+      Odoc_model.Paths.Path.Resolved.DataType.t =
+    match p with
+    | `Gpath y -> y
+    | `Local id -> `Identifier (Component.TypeMap.find id map.type_)
+    | `CanonicalDataType (t1, t2) ->
+        `CanonicalDataType (resolved_datatype map t1, t2)
+    | `Type (p, name) -> `Type (resolved_parent map p, name)
+    | `Substituted s -> resolved_datatype map s
+
+  and resolved_constructor map
+      (`Constructor (p, name) : Cpath.Resolved.constructor) :
+      Odoc_model.Paths.Path.Resolved.Constructor.t =
+    `Constructor (resolved_datatype map p, name)
+
   and resolved_class_type map (p : Cpath.Resolved.class_type) :
       Odoc_model.Paths.Path.Resolved.ClassType.t =
     match p with

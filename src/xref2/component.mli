@@ -590,6 +590,8 @@ module Fmt : sig
 
   val value_path : Format.formatter -> Cpath.value -> unit
 
+  val constructor_path : Format.formatter -> Cpath.constructor -> unit
+
   val resolved_class_type_path :
     Format.formatter -> Cpath.Resolved.class_type -> unit
 
@@ -654,6 +656,11 @@ module Of_Lang : sig
   val resolved_value_path :
     map -> Odoc_model.Paths.Path.Resolved.Value.t -> Cpath.Resolved.value
 
+  val resolved_constructor_path :
+    map ->
+    Odoc_model.Paths.Path.Resolved.Constructor.t ->
+    Cpath.Resolved.constructor
+
   val resolved_class_type_path :
     map ->
     Odoc_model.Paths.Path.Resolved.ClassType.t ->
@@ -666,7 +673,12 @@ module Of_Lang : sig
 
   val type_path : map -> Odoc_model.Paths.Path.Type.t -> Cpath.type_
 
+  val datatype : map -> Odoc_model.Paths.Path.DataType.t -> Cpath.datatype
+
   val value_path : map -> Odoc_model.Paths.Path.Value.t -> Cpath.value
+
+  val constructor_path :
+    map -> Odoc_model.Paths.Path.Constructor.t -> Cpath.constructor
 
   val class_type_path :
     map -> Odoc_model.Paths.Path.ClassType.t -> Cpath.class_type
