@@ -51,9 +51,12 @@ module Identifier = struct
     | `Method (_, name) -> MethodName.to_string name
     | `InstanceVariable (_, name) -> InstanceVariableName.to_string name
     | `Label (_, name) -> LabelName.to_string name
-    | `SourcePage (_, name) -> name
-    | `SourceDir (_, name) -> name
-    | `SourceLocation (_, anchor) -> DefName.to_string anchor
+    | `SourcePage (dir, name) -> name_aux (dir :> t) ^ name
+    | `SourceDir (({ iv = `SourceDir _; _ } as p), n) ->
+        name_aux (p :> t) ^ n ^ "/"
+    | `SourceDir (_, n) -> "./" ^ n ^ "/"
+    | `SourceLocation (x, anchor) ->
+        name_aux (x :> t) ^ "#" ^ DefName.to_string anchor
     | `SourceLocationMod x -> name_aux (x :> t)
     | `AssetFile (_, name) -> name
 

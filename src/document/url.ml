@@ -180,10 +180,13 @@ module Path = struct
         let name = ClassTypeName.to_string name in
         mk ~parent kind name
     | { iv = `Result p; _ } -> from_identifier (p :> any)
-    | { iv = `SourceDir (parent, name); _ }
-    | { iv = `SourcePage (parent, name); _ } ->
+    | { iv = `SourceDir (parent, name); _ } ->
         let parent = from_identifier (parent :> any) in
         let kind = `Page in
+        mk ~parent kind name
+    | { iv = `SourcePage (parent, name); _ } ->
+        let parent = from_identifier (parent :> any) in
+        let kind = `SourcePage in
         mk ~parent kind name
     | { iv = `AssetFile (parent, name); _ } ->
         let parent = from_identifier (parent :> any) in
