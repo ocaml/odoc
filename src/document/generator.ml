@@ -725,7 +725,9 @@ module Make (Syntax : SYNTAX) = struct
         let markers = Syntax.Comment.markers in
         try
           let url = Url.Anchor.polymorphic_variant ~type_ident item in
-          let attrs = [ "def"; Url.Anchor.string_of_kind url.kind ] in
+          let attrs =
+            [ "def"; "variant"; Url.Anchor.string_of_kind url.kind ]
+          in
           let anchor = Some url in
           let code = O.code (O.txt "| ") @ cstr in
           let doc = match doc with None -> [] | Some doc -> doc in

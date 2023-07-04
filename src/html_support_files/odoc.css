@@ -550,9 +550,6 @@ div.odoc-spec,.odoc-include {
 .spec.type .variant, .spec.type .record {
   margin-left: 2ch;
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  row-gap: 4px;
 }
 
 .spec.type .record > code, .spec.type .variant > code {
@@ -569,9 +566,8 @@ div.odoc-spec,.odoc-include {
   padding: 0.25em 0.5em;
   margin-left: 10%;
   border-radius: 3px;
-  flex-grow:1;
   background: var(--main-background);
-  box-shadow: 2px 2px 4px lightgrey;
+  box-shadow: 1px 1px 2px lightgrey;
 }
 
 div.def {
