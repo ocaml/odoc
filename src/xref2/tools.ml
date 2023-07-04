@@ -59,6 +59,19 @@ let c_ty_poss env p =
       | Error _ -> rest)
   | p -> [ p ]
 
+let c_daty_poss env p =
+  (* canonical datatype paths *)
+  match p with
+  | `Dot (p, n) -> (
+      let rest = List.map (fun p -> `Dot (p, n)) (c_mod_poss env p) in
+      match Env.lookup_by_name Env.s_type n env with
+      | Ok (`Type (id, _)) ->
+          `Identifier
+            ((id :> Odoc_model.Paths.Identifier.Path.DataType.t), false)
+          :: rest
+      | Error _ -> rest)
+  | p -> [ p ]
+
 (* Small helper function for resolving canonical paths.
    [canonical_helper env resolve lang_of possibilities p2] takes the
    fully-qualified path [p2] and returns the shortest resolved path
@@ -260,8 +273,18 @@ type resolve_type_result =
     simple_type_lookup_error )
   Result.result
 
+type resolve_datatype_result =
+  ( Cpath.Resolved.datatype * Find.careful_datatype,
+    simple_datatype_lookup_error )
+  Result.result
+
 type resolve_value_result =
   (Cpath.Resolved.value * Find.value, simple_value_lookup_error) Result.result
+
+type resolve_constructor_result =
+  ( Cpath.Resolved.constructor * Find.constructor,
+    simple_constructor_lookup_error )
+  Result.result
 
 type resolve_class_type_result =
   ( Cpath.Resolved.class_type * Find.careful_class,
@@ -414,6 +437,18 @@ let simplify_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
   | `Type (`Module (`Gpath (`Identifier p)), name) -> (
       let ident = (Mk.type_ ((p :> Signature.t), name) : Path.Type.t) in
       match Env.(lookup_by_id s_type (ident :> Path.Type.t) env) with
+      | Some _ -> `Gpath (`Identifier ident)
+      | None -> m)
+  | _ -> m
+
+let simplify_datatype :
+    Env.t -> Cpath.Resolved.datatype -> Cpath.Resolved.datatype =
+ fun env m ->
+  let open Odoc_model.Paths.Identifier in
+  match m with
+  | `Type (`Module (`Gpath (`Identifier p)), name) -> (
+      let ident = (Mk.type_ ((p :> Signature.t), name) : Path.DataType.t) in
+      match Env.(lookup_by_id s_datatype (ident :> Path.Type.t) env) with
       | Some _ -> `Gpath (`Identifier ident)
       | None -> m)
   | _ -> m
@@ -590,9 +625,22 @@ and handle_type_lookup env id p sg =
   | Some (`FType_removed (name, _, _) as t) -> Ok (`Type (p, name), t)
   | None -> Error `Find_failure
 
+and handle_datatype_lookup env id p sg =
+  match Find.careful_datatype_in_sig sg id with
+  | Some (`FType (name, _) as t) ->
+      Ok (simplify_datatype env (`Type (p, name)), t)
+  | Some (`FType_removed (name, _, _) as t) -> Ok (`Type (p, name), t)
+  | None -> Error `Find_failure
+
 and handle_value_lookup _env id p sg =
   match Find.value_in_sig sg id with
   | (`FValue (name, _) as v) :: _ -> Ok (`Value (p, name), v)
+  | _ -> Error `Find_failure
+
+and handle_constructor_lookup _env id p t =
+  match Find.constructor_in_type t id with
+  | Some (`FConstructor cons as v) ->
+      Ok (`Constructor (p, ConstructorName.make_std cons.name), v)
   | _ -> Error `Find_failure
 
 and handle_class_type_lookup id p sg =
@@ -829,6 +877,36 @@ and lookup_type_gpath :
   in
   res
 
+and lookup_datatype_gpath :
+    Env.t ->
+    Odoc_model.Paths.Path.Resolved.DataType.t ->
+    (Find.careful_datatype, simple_datatype_lookup_error) Result.result =
+ fun env p ->
+  let do_type p name =
+    lookup_parent_gpath ~mark_substituted:true env p
+    |> map_error (fun e -> (e :> simple_datatype_lookup_error))
+    >>= fun (sg, sub) ->
+    match Find.careful_datatype_in_sig sg name with
+    | Some (`FType (name, t)) -> Ok (`FType (name, Subst.type_ sub t))
+    | Some (`FType_removed (name, texpr, eq)) ->
+        Ok (`FType_removed (name, Subst.type_expr sub texpr, eq))
+    | None -> Error `Find_failure
+  in
+  let res =
+    match p with
+    | `Identifier { iv = `CoreType name; _ } ->
+        (* CoreTypes aren't put into the environment, so they can't be handled by the
+              next clause. We just look them up here in the list of core types *)
+        Ok (`FType (name, List.assoc (TypeName.to_string name) core_types))
+    | `Identifier ({ iv = `Type _; _ } as i) ->
+        of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_type) i env)
+        >>= fun (`Type ({ iv = `CoreType name | `Type (_, name); _ }, t)) ->
+        Ok (`FType (name, t))
+    | `CanonicalDataType (t1, _) -> lookup_datatype_gpath env t1
+    | `Type (p, id) -> do_type p (TypeName.to_string id)
+  in
+  res
+
 and lookup_class_type_gpath :
     Env.t ->
     Odoc_model.Paths.Path.Resolved.ClassType.t ->
@@ -894,16 +972,58 @@ and lookup_type :
   in
   res
 
+and lookup_datatype :
+    Env.t ->
+    Cpath.Resolved.datatype ->
+    (Find.careful_datatype, simple_datatype_lookup_error) Result.result =
+ fun env p ->
+  let do_type p name =
+    lookup_parent ~mark_substituted:true env p
+    |> map_error (fun e -> (e :> simple_datatype_lookup_error))
+    >>= fun (sg, sub) ->
+    handle_datatype_lookup env name p sg >>= fun (_, t') ->
+    let t =
+      match t' with
+      | `FType (name, t) -> `FType (name, Subst.type_ sub t)
+      | `FType_removed (name, texpr, eq) ->
+          `FType_removed (name, Subst.type_expr sub texpr, eq)
+    in
+    Ok t
+  in
+  let res =
+    match p with
+    | `Local id -> Error (`LocalDataType (env, id))
+    | `Gpath p -> lookup_datatype_gpath env p
+    | `CanonicalDataType (t1, _) -> lookup_datatype env t1
+    | `Substituted s -> lookup_datatype env s
+    | `Type (p, id) -> do_type p (TypeName.to_string id)
+  in
+  res
+
 and lookup_value :
     Env.t ->
     Cpath.Resolved.value ->
-    (_, simple_value_lookup_error) Result.result =
+    (Find.value, simple_value_lookup_error) Result.result =
  fun env (`Value (p, id)) ->
   lookup_parent ~mark_substituted:true env p
   |> map_error (fun e -> (e :> simple_value_lookup_error))
   >>= fun (sg, sub) ->
   handle_value_lookup env (ValueName.to_string id) p sg
   >>= fun (_, `FValue (name, c)) -> Ok (`FValue (name, Subst.value sub c))
+
+and lookup_constructor :
+    Env.t ->
+    Cpath.Resolved.constructor ->
+    (Find.constructor, simple_constructor_lookup_error) Result.result =
+ fun env (`Constructor (parent, name)) ->
+  lookup_datatype env parent
+  |> map_error (fun e -> (`ParentC e :> simple_constructor_lookup_error))
+  >>= fun t ->
+  match t with
+  | `FType (_, t) ->
+      handle_constructor_lookup env (ConstructorName.to_string name) parent t
+      >>= fun (_, x) -> Ok x
+  | `FType_removed _ -> Error `Find_failure
 
 and lookup_class_type :
     Env.t ->
@@ -1129,6 +1249,83 @@ and resolve_type :
       if add_canonical then Ok (`CanonicalType (p, c), t) else result
   | _ -> result
 
+and resolve_datatype :
+    Env.t -> add_canonical:bool -> Cpath.datatype -> resolve_datatype_result =
+ fun env ~add_canonical p ->
+  let ( >>> ) = Option.bind in
+  let rec id_datatype_of_type (id : Odoc_model.Comment.Identifier.Id.path_type)
+      : Odoc_model.Comment.Identifier.Id.path_datatype option =
+    match id with
+    | { iv = `Class _ | `ClassType _; _ } -> None
+    | { iv = `CoreType _ | `Type _; _ } as t -> Some t
+  and resolved_datatype_of_type (c : Odoc_model.Comment.Path.Resolved.Type.t) :
+      Odoc_model.Comment.Path.Resolved.DataType.t option =
+    match c with
+    | `Identifier id ->
+        id_datatype_of_type id >>> fun id -> Some (`Identifier id)
+    | `CanonicalType (t, p) ->
+        resolved_datatype_of_type t >>> fun t ->
+        datatype_of_type p >>> fun p -> Some (`CanonicalDataType (t, p))
+    | `Type (m, t) -> Some (`Type (m, t))
+    | `Class _ -> None
+    | `ClassType _ -> None
+  and datatype_of_type (c : Odoc_model.Comment.Path.Type.t) =
+    match c with
+    | `Dot (c, s) -> Some (`Dot (c, s))
+    | `Identifier (id, b) ->
+        id_datatype_of_type id >>> fun id -> Some (`Identifier (id, b))
+    | `Resolved r -> resolved_datatype_of_type r >>> fun r -> Some (`Resolved r)
+  in
+  let result =
+    match p with
+    | `Dot (parent, id) ->
+        resolve_module ~mark_substituted:true ~add_canonical:true env parent
+        |> map_error (fun e -> `Parent (`Parent_module e))
+        >>= fun (p, m) ->
+        let m = Component.Delayed.get m in
+        expansion_of_module_cached env p m
+        |> map_error (fun e -> `Parent (`Parent_sig e))
+        >>= assert_not_functor
+        >>= fun sg ->
+        let sub = prefix_substitution (`Module p) sg in
+        handle_datatype_lookup env id (`Module p) sg >>= fun (p', t') ->
+        let t =
+          match t' with
+          | `FType (name, t) -> `FType (name, Subst.type_ sub t)
+          | `FType_removed (name, texpr, eq) ->
+              `FType_removed (name, Subst.type_expr sub texpr, eq)
+        in
+        Ok (p', t)
+    | `Type (parent, id) ->
+        lookup_parent ~mark_substituted:true env parent
+        |> map_error (fun e -> (e :> simple_datatype_lookup_error))
+        >>= fun (parent_sig, sub) ->
+        let result =
+          match Find.datatype_in_sig parent_sig (TypeName.to_string id) with
+          | Some (`FType (name, t)) ->
+              Some (`Type (parent, name), `FType (name, Subst.type_ sub t))
+          | None -> None
+        in
+        of_option ~error:`Find_failure result
+    | `Identifier (i, _) ->
+        let i' = `Identifier i in
+        lookup_datatype env (`Gpath i') >>= fun t -> Ok (`Gpath i', t)
+    | `Resolved r -> lookup_datatype env r >>= fun t -> Ok (r, t)
+    | `Local (l, _) -> Error (`LocalDataType (env, l))
+    | `Substituted s ->
+        resolve_datatype env ~add_canonical s >>= fun (p, m) ->
+        Ok (`Substituted p, m)
+  in
+  result >>= fun (p, t) ->
+  match t with
+  | `FType (_, { canonical = Some c; _ }) ->
+      if add_canonical then
+        match datatype_of_type c with
+        | None -> result
+        | Some c -> Ok (`CanonicalDataType (p, c), t)
+      else result
+  | _ -> result
+
 and resolve_value : Env.t -> Cpath.value -> resolve_value_result =
  fun env p ->
   let result =
@@ -1160,6 +1357,31 @@ and resolve_value : Env.t -> Cpath.value -> resolve_value_result =
     | `Resolved r -> lookup_value env r >>= fun t -> Ok (r, t)
   in
   result
+
+and resolve_constructor :
+    Env.t -> Cpath.constructor -> resolve_constructor_result =
+ fun env p ->
+  match p with
+  | `Dot (parent, id) -> (
+      resolve_datatype ~add_canonical:true env parent
+      |> map_error (fun e -> `ParentC e)
+      >>= fun (p, m) ->
+      match m with
+      | `FType (_, t) ->
+          handle_constructor_lookup env id p t >>= fun (p', `FConstructor c) ->
+          Ok (p', `FConstructor c)
+      | `FType_removed _ -> Error `Find_failure)
+  | `Constructor (parent, id) -> (
+      lookup_datatype env parent
+      |> map_error (fun e -> (`ParentC e :> simple_constructor_lookup_error))
+      >>= fun parent_type ->
+      match parent_type with
+      | `FType_removed _ -> Error `Find_failure
+      | `FType (_, t) ->
+          handle_constructor_lookup env (ConstructorName.to_string id) parent t)
+  | `Resolved r ->
+      let x = lookup_constructor env r in
+      x >>= fun t -> Ok (r, t)
 
 and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
     =
@@ -1495,6 +1717,24 @@ and handle_canonical_type env p2 =
   | None -> p2
   | Some (rp, _) -> `Resolved Lang_of.(Path.resolved_type (empty ()) rp)
 
+and handle_canonical_datatype env p2 =
+  let cp2 = Component.Of_Lang.(datatype (empty ()) p2) in
+  let lang_of cpath =
+    (Lang_of.(Path.resolved_datatype (empty ()) cpath)
+      :> Odoc_model.Paths.Path.Resolved.t)
+  in
+  let resolve env p =
+    match resolve_datatype env ~add_canonical:false p with
+    | Ok (_, `FType_removed _) -> Error `Find_failure
+    | Ok (x, y) ->
+        (* See comment in handle_canonical_module_type for why we're reresolving here *)
+        Ok (reresolve_datatype env x, y)
+    | Error y -> Error y
+  in
+  match canonical_helper env resolve lang_of c_daty_poss cp2 with
+  | None -> p2
+  | Some (rp, _) -> `Resolved Lang_of.(Path.resolved_datatype (empty ()) rp)
+
 and reresolve_module_type_gpath :
     Env.t ->
     Odoc_model.Paths.Path.Resolved.ModuleType.t ->
@@ -1551,8 +1791,26 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
   in
   result
 
+and reresolve_datatype :
+    Env.t -> Cpath.Resolved.datatype -> Cpath.Resolved.datatype =
+ fun env path ->
+  let result =
+    match path with
+    | `Gpath _ | `Local _ -> path
+    | `Substituted s -> `Substituted (reresolve_datatype env s)
+    | `CanonicalDataType (p1, p2) ->
+        `CanonicalDataType
+          (reresolve_datatype env p1, handle_canonical_datatype env p2)
+    | `Type (p, n) -> `Type (reresolve_parent env p, n)
+  in
+  result
+
 and reresolve_value : Env.t -> Cpath.Resolved.value -> Cpath.Resolved.value =
  fun env (`Value (p, n)) -> `Value (reresolve_parent env p, n)
+
+and reresolve_constructor :
+    Env.t -> Cpath.Resolved.constructor -> Cpath.Resolved.constructor =
+ fun env (`Constructor (p, n)) -> `Constructor (reresolve_datatype env p, n)
 
 and reresolve_class_type :
     Env.t -> Cpath.Resolved.class_type -> Cpath.Resolved.class_type =
@@ -2363,6 +2621,9 @@ let resolve_type_path env p =
   resolve_type env ~add_canonical:true p >>= fun (p, _) -> Ok p
 
 let resolve_value_path env p = resolve_value env p >>= fun (p, _) -> Ok p
+
+let resolve_constructor_path env p =
+  resolve_constructor env p >>= fun (p, _) -> Ok p
 
 let resolve_class_type_path env p =
   resolve_class_type env p >>= fun (p, _) -> Ok p
