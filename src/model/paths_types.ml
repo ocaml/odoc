@@ -256,6 +256,14 @@ module Identifier = struct
   and path_type = path_type_pv id
   (** @canonical Odoc_model.Paths.Identifier.Path.Type.t *)
 
+  type path_datatype_pv = type_pv
+  (** @canonical Odoc_model.Paths.Identifier.Path.DataType.t_pv *)
+
+  and path_datatype = path_datatype_pv id
+  (** @canonical Odoc_model.Paths.Identifier.Path.DataType.t *)
+
+  type path_constructor = constructor
+
   type path_value = value
 
   type path_class_type_pv = [ class_pv | class_type_pv ]
@@ -331,6 +339,16 @@ module rec Path : sig
     | `Dot of module_ * string ]
   (** @canonical Odoc_model.Paths.Path.Type.t *)
 
+  type datatype =
+    [ `Resolved of Resolved_path.datatype
+    | `Identifier of Identifier.path_datatype * bool
+    | `Dot of module_ * string ]
+  (** @canonical Odoc_model.Paths.Path.DataType.t *)
+
+  type constructor =
+    [ `Resolved of Resolved_path.constructor | `Dot of datatype * string ]
+  (** @canonical Odoc_model.Paths.Path.Constructor.t *)
+
   type value = [ `Resolved of Resolved_path.value | `Dot of module_ * string ]
   (** @canonical Odoc_model.Paths.Path.Value.t *)
 
@@ -380,6 +398,15 @@ and Resolved_path : sig
     | `ClassType of module_ * ClassTypeName.t ]
   (** @canonical Odoc_model.Paths.Path.Resolved.Type.t *)
 
+  type datatype =
+    [ `Identifier of Identifier.datatype
+    | `CanonicalDataType of datatype * Path.datatype
+    | `Type of module_ * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Path.Resolved.DataType.t *)
+
+  type constructor = [ `Constructor of datatype * ConstructorName.t ]
+  (** @canonical Odoc_model.Paths.Path.Resolved.Constructor.t *)
+
   type value = [ `Value of module_ * ValueName.t ]
   (** @canonical Odoc_model.Paths.Path.Resolved.Value.t *)
 
@@ -403,7 +430,9 @@ and Resolved_path : sig
     | `SubstT of module_type * module_type
     | `OpaqueModuleType of module_type
     | `CanonicalType of type_ * Path.type_
+    | `CanonicalDataType of datatype * Path.datatype
     | `Type of module_ * TypeName.t
+    | `Constructor of datatype * ConstructorName.t
     | `Class of module_ * ClassName.t
     | `ClassType of module_ * ClassTypeName.t
     | `Class of module_ * ClassName.t
