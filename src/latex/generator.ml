@@ -489,4 +489,4 @@ end
 
 let render ~with_children = function
   | Document.Page page -> [ Page.page ~with_children page ]
-  | Source_page _ -> []
+  | Source_page _ | Asset _ -> []

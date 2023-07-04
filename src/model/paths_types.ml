@@ -32,6 +32,14 @@ module Identifier = struct
   type source_page = source_page_pv id
   (** @canonical Odoc_model.Paths.Identifier.SourcePage.t *)
 
+  type asset_file_pv = [ `AssetFile of page * string ]
+  (** The second argument is the filename.
+
+    @canonical Odoc_model.Paths.Identifier.AssetFile.t_pv *)
+
+  type asset_file = asset_file_pv id
+  (** @canonical Odoc_model.Paths.Identifier.AssetFile.t *)
+
   type source_location_pv =
     [ `SourceLocationMod of source_page
     | `SourceLocation of source_page * DefName.t ]
@@ -214,7 +222,11 @@ module Identifier = struct
   (** @canonical Odoc_model.Paths.Identifier.NonSrc.t *)
 
   type any_pv =
-    [ non_src_pv | source_page_pv | source_dir_pv | source_location_pv ]
+    [ non_src_pv
+    | source_page_pv
+    | source_dir_pv
+    | source_location_pv
+    | asset_file_pv ]
   (** @canonical Odoc_model.Paths.Identifier.t_pv *)
 
   and any = any_pv id

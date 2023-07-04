@@ -74,6 +74,8 @@ module General_paths = struct
               ( "`LeafPage",
                 ((parent :> id_t option), name),
                 Pair (Option identifier, Names.pagename) )
+        | `AssetFile (parent, name) ->
+            C ("`AssetFile", ((parent :> id_t), name), Pair (identifier, string))
         | `Root (parent, name) ->
             C
               ( "`Root",

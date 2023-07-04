@@ -7,7 +7,7 @@ module Id = Paths.Identifier
 let check_is_child_of_parent siblings root_name =
   let check_child = function
     | Lang.Page.Source_tree_child n -> root_name = n
-    | Page_child _ | Module_child _ -> false
+    | Page_child _ | Asset_child _ | Module_child _ -> false
   in
   if List.exists check_child siblings then Ok ()
   else Error (`Msg "Specified parent is not a parent of this file")

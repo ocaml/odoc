@@ -1258,6 +1258,10 @@ module Fmt = struct
     | `SourceLocationMod p ->
         Format.fprintf ppf "%a#" model_identifier
           (p :> Odoc_model.Paths.Identifier.t)
+    | `AssetFile (p, name) ->
+        Format.fprintf ppf "%a/%s" model_identifier
+          (p :> Odoc_model.Paths.Identifier.t)
+          name
 
   and model_fragment ppf (f : Odoc_model.Paths.Fragment.t) =
     match f with

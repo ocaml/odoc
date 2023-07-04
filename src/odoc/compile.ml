@@ -50,9 +50,11 @@ let is_module_name n = String.length n > 0 && Char.Ascii.is_upper n.[0]
 
 (** Accepted child references:
 
-    - [page-foo] child is a container or leaf page.
+    - [asset-foo] child is an arbitrary asset
     - [module-Foo] child is a module.
     - [module-foo], [Foo] child is a module, for backward compatibility.
+    - [page-foo] child is a container or leaf page.
+    - [src-foo] child is a source tree
 
   Parses [...-"foo"] as [...-foo] for backward compatibility. *)
 let parse_parent_child_reference s =
@@ -65,6 +67,7 @@ let parse_parent_child_reference s =
   match String.cut ~sep:"-" s with
   | Some ("page", n) -> Ok (Lang.Page.Page_child (unquote n))
   | Some ("src", n) -> Ok (Source_tree_child (unquote n))
+  | Some ("asset", n) -> Ok (Asset_child (unquote n))
   | Some ("module", n) ->
       Ok (Module_child (unquote (String.Ascii.capitalize n)))
   | Some (k, _) -> Error (`Msg ("Unrecognized kind: " ^ k))
@@ -76,7 +79,7 @@ let resolve_parent_page resolver f =
         match Resolver.lookup_page resolver p with
         | Some r -> Ok r
         | None -> Error (`Msg "Couldn't find specified parent page"))
-    | Source_tree_child _ | Module_child _ ->
+    | Source_tree_child _ | Module_child _ | Asset_child _ ->
         Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
@@ -190,7 +193,7 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   let check_child = function
     | Lang.Page.Module_child n ->
         String.Ascii.(uncapitalize n = uncapitalize filename)
-    | Source_tree_child _ | Page_child _ -> false
+    | Asset_child _ | Source_tree_child _ | Page_child _ -> false
   in
   match parent_spec with
   | Noparent -> result None
@@ -237,7 +240,7 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
   let page_name = PageName.make_std root_name in
   let check_child = function
     | Lang.Page.Page_child n -> root_name = n
-    | Source_tree_child _ | Module_child _ -> false
+    | Asset_child _ | Source_tree_child _ | Module_child _ -> false
   in
   (if children = [] then
      (* No children, this is a leaf page. *)

@@ -3,20 +3,24 @@ open Or_error
 
 let documents_of_unit ~warnings_options ~syntax ~renderer ~extra unit =
   Odoc_model.Error.catch_warnings (fun () ->
-      renderer.Renderer.extra_documents ~syntax extra unit)
+      renderer.Renderer.extra_documents ~syntax extra (CU unit))
   |> Odoc_model.Error.handle_warnings ~warnings_options
   >>= fun extra_docs ->
-  let main_doc =
-    if unit.hidden then []
-    else [ Renderer.document_of_compilation_unit ~syntax unit ]
-  in
-  Ok (main_doc @ extra_docs)
+  Ok
+    (if unit.hidden then extra_docs
+     else Renderer.document_of_compilation_unit ~syntax unit :: extra_docs)
+
+let documents_of_page ~warnings_options ~syntax ~renderer ~extra page =
+  Odoc_model.Error.catch_warnings (fun () ->
+      renderer.Renderer.extra_documents ~syntax extra (Page page))
+  |> Odoc_model.Error.handle_warnings ~warnings_options
+  >>= fun extra_docs -> Ok (Renderer.document_of_page ~syntax page :: extra_docs)
 
 let documents_of_odocl ~warnings_options ~renderer ~extra ~syntax input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
   | Odoc_file.Page_content odoctree ->
-      Ok [ Renderer.document_of_page ~syntax odoctree ]
+      documents_of_page ~warnings_options ~syntax ~renderer ~extra odoctree
   | Source_tree_content srctree ->
       Ok (Renderer.documents_of_source_tree ~syntax srctree)
   | Unit_content (odoctree, _) ->
