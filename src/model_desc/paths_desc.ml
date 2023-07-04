@@ -256,11 +256,21 @@ module General_paths = struct
             ( "`CanonicalType",
               ((x1 :> rp), (x2 :> p)),
               Pair (resolved_path, path) )
+      | `CanonicalDataType (x1, x2) ->
+          C
+            ( "`CanonicalDataType",
+              ((x1 :> rp), (x2 :> p)),
+              Pair (resolved_path, path) )
       | `OpaqueModuleType x -> C ("`OpaqueModuleType", (x :> rp), resolved_path)
       | `Type (x1, x2) ->
           C ("`Type", ((x1 :> rp), x2), Pair (resolved_path, Names.typename))
       | `Value (x1, x2) ->
           C ("`Value", ((x1 :> rp), x2), Pair (resolved_path, Names.valuename))
+      | `Constructor (x1, x2) ->
+          C
+            ( "`Constructor",
+              ((x1 :> rp), x2),
+              Pair (resolved_path, Names.constructorname) )
       | `Class (x1, x2) ->
           C ("`Class", ((x1 :> rp), x2), Pair (resolved_path, Names.classname))
       | `ClassType (x1, x2) ->

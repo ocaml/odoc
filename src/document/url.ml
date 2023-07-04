@@ -33,6 +33,8 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `CanonicalModuleType (p, _) -> render_resolved (p :> t)
     | `CanonicalType (_, `Resolved p) -> render_resolved (p :> t)
     | `CanonicalType (p, _) -> render_resolved (p :> t)
+    | `CanonicalDataType (_, `Resolved p) -> render_resolved (p :> t)
+    | `CanonicalDataType (p, _) -> render_resolved (p :> t)
     | `Apply (rp, p) ->
         render_resolved (rp :> t)
         ^ "("
@@ -42,6 +44,8 @@ let render_path : Odoc_model.Paths.Path.t -> string =
         render_resolved (p :> t) ^ "." ^ ModuleTypeName.to_string s
     | `Type (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
     | `Value (p, s) -> render_resolved (p :> t) ^ "." ^ ValueName.to_string s
+    | `Constructor (p, s) ->
+        render_resolved (p :> t) ^ "." ^ ConstructorName.to_string s
     | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ ClassName.to_string s
     | `ClassType (p, s) ->
         render_resolved (p :> t) ^ "." ^ ClassTypeName.to_string s
