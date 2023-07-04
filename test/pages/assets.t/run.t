@@ -49,12 +49,13 @@ Which matches the output of the targets command (which emits no warning):
   html/index/index.html
 
 Trying to pass an asset which doesn't exist:
+(also: some sed magic due to cmdliner output changing based on the version)
 
-  $ odoc html-generate page-index.odocl --asset img.jpg -o html
+  $ odoc html-generate page-index.odocl --asset img.jpg -o html 2>&1 | \
+  > sed 's/…/.../' | sed "s/\`/'/g"
   odoc: option '--asset': no 'img.jpg' file or directory
-  Usage: odoc html-generate [OPTION]… FILE.odocl
+  Usage: odoc html-generate [OPTION]... FILE.odocl
   Try 'odoc html-generate --help' or 'odoc --help' for more information.
-  [2]
 
 Creating then passing the asset alongside an incorrect one:
 
