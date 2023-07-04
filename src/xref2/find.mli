@@ -71,6 +71,8 @@ val extension_in_sig : Signature.t -> string -> extension option
 
 val any_in_type : TypeDecl.t -> string -> any_in_type option
 
+val constructor_in_type : TypeDecl.t -> string -> constructor option
+
 val any_in_typext : Extension.t -> string -> extension option
 
 val method_in_class_signature : ClassSignature.t -> string -> method_ option
@@ -114,6 +116,8 @@ type careful_module_type =
 
 type careful_type = [ type_ | removed_type ]
 
+type careful_datatype = [ datatype | removed_type ]
+
 type careful_class = [ class_ | removed_type ]
 
 val careful_module_in_sig : Signature.t -> string -> careful_module option
@@ -122,5 +126,7 @@ val careful_module_type_in_sig :
   Signature.t -> string -> careful_module_type option
 
 val careful_type_in_sig : Signature.t -> string -> careful_type option
+
+val careful_datatype_in_sig : Signature.t -> string -> careful_datatype option
 
 val careful_class_in_sig : Signature.t -> string -> careful_class option

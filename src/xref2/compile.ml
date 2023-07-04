@@ -31,6 +31,17 @@ and value_path : Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
       | Ok p' -> `Resolved Lang_of.(Path.resolved_value (empty ()) p')
       | Error _ -> p)
 
+and constructor_path :
+    Env.t -> Paths.Path.Constructor.t -> Paths.Path.Constructor.t =
+ fun env p ->
+  match p with
+  | `Resolved _ -> p
+  | _ -> (
+      let cp = Component.Of_Lang.(constructor_path (empty ()) p) in
+      match Tools.resolve_constructor_path env cp with
+      | Ok p' -> `Resolved Lang_of.(Path.resolved_constructor (empty ()) p')
+      | Error _ -> p)
+
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
  fun env p ->
