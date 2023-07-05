@@ -21,7 +21,8 @@ let kind_cost (kind : Elt.Kind.t) =
       type_cost type_path
   | Doc -> 400
   | TypeDecl | Module -> 0
-  | Exception | Class_type | Method | Class | TypeExtension -> 1000
+  | Exception _ | Class_type | Method | Class -> 10
+  | TypeExtension -> 1000
   | ExtensionConstructor _ | ModuleType -> 10
 
 let cost ~name ~kind ~doc_html =
@@ -220,7 +221,10 @@ let convert_kind (kind : Odoc_search.Entry.extra) =
       let paths = type_ |> searchable_type_of_record parent_type |> paths in
       Elt.Kind.field paths
   | Doc _ -> Doc
-  | Exception _ -> Exception
+  | Exception { args; res } ->
+      let searchable_type = searchable_type_of_constructor args res in
+      let paths = paths searchable_type in
+      Elt.Kind.exception_ paths
   | Class_type _ -> Class_type
   | Method _ -> Method
   | Class _ -> Class
@@ -245,13 +249,14 @@ let register_kind ~db ~type_search elt (kind : Odoc_search.Entry.extra) =
     | Module -> ()
     | Value { value = _; type_ } -> register_type_expr ~db elt type_
     | Doc _ -> ()
-    | Exception _ -> ()
     | Class_type _ -> ()
     | Method _ -> ()
     | Class _ -> ()
     | TypeExtension _ -> ()
     | ModuleType -> ()
-    | ExtensionConstructor { args; res } | Constructor { args; res } ->
+    | ExtensionConstructor { args; res }
+    | Constructor { args; res }
+    | Exception { args; res } ->
         let type_ = searchable_type_of_constructor args res in
         register_type_expr ~db elt type_
     | Field { mutable_ = _; parent_type; type_ } ->

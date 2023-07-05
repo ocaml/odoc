@@ -22,7 +22,7 @@ module Kind = struct
     | Doc
     | TypeDecl
     | Module
-    | Exception
+    | Exception of 'a
     | Class_type
     | Method
     | Class
@@ -39,7 +39,7 @@ module Kind = struct
   let doc = Doc
   let type_decl = TypeDecl
   let module_ = Module
-  let exception_ = Exception
+  let exception_ type_path = Exception type_path
   let class_type = Class_type
   let method_ = Method
   let class_ = Class
@@ -54,7 +54,7 @@ module Kind = struct
     | Doc -> "doc"
     | TypeDecl -> "type"
     | Module -> "mod"
-    | Exception -> "exn"
+    | Exception _ -> "exn"
     | Class_type -> "class"
     | Method -> "meth"
     | Class -> "class"

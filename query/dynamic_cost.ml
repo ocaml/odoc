@@ -225,7 +225,7 @@ module Reasoning = struct
     | Elt.Kind.Doc -> Doc
     | Elt.Kind.TypeDecl -> TypeDecl
     | Elt.Kind.Module -> Module
-    | Elt.Kind.Exception -> Exception
+    | Elt.Kind.Exception _ -> Exception
     | Elt.Kind.Class_type -> Class_type
     | Elt.Kind.Method -> Method
     | Elt.Kind.Class -> Class

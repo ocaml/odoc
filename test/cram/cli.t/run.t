@@ -7,8 +7,8 @@
   $ du -sh megaodocl
   8.0K	megaodocl
   $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
-  Indexing in 2.419949ms
-  Export in 0.387192ms
+  Indexing in 2.393007ms
+  Export in 0.482798ms
   $ export SHERLODOC_DB=db.bin
   $ sherlodoc "unique_name"
   val Main.unique_name : foo
@@ -22,67 +22,67 @@
   $ sherlodoc "nesting_priority"
   val Main.nesting_priority : foo
   val Main.Nest.nesting_priority : foo
-  $ sherlodoc --print-cost "list"
-  109 mod Main.List
-  209 type Main.list
-  315 type Main.List.t = 'a list
-  317 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  318 val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
-  319 val Main.Map.to_list : foo
-  326 val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  1108 val Main.foo : foo
-  1154 doc page
-  $ sherlodoc --print-cost "map"
-  108 mod Main.Map
-  213 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  318 val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
-  320 val Main.Map.to_list : foo
-  327 val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  1108 val Main.foo : foo
-  $ sherlodoc --print-cost "list map"
-  317 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  422 val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
-  423 val Main.Map.to_list : foo
-  431 val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  2108 val Main.foo : foo
-  $ sherlodoc --print-cost "map2"
-  214 val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
-  327 val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  $ sherlodoc --print-cost ":moo"
-  210 val Main.value : moo
-  213 val Main.produce : unit -> moo
-  217 val Main.produce_2' : unit -> unit -> moo
-  $ sherlodoc --print-cost ":moo -> _"
-  212 val Main.consume : moo -> unit
-  215 val Main.consume_2 : moo -> moo -> unit
-  221 val Main.consume_2_other : moo -> t -> unit
-  266 cons Main.MyExtension : moo -> extensible_type
-  $ sherlodoc --print-cost "modtype"
-  112 sig Main.Modtype
-  325 val Main.Modtype.v_modtype : foo
-  $ sherlodoc --print-cost "S"
-  106 sig Main.S
-  216 mod Main.List
-  216 mod Main.Nest
-  216 mod Main.S_to_S1
-  316 type Main.list
-  318 type Main.List.t = 'a list
-  319 val Main.consume : moo -> unit
-  323 val Main.Map.to_list : foo
-  373 cons Main.MyExtension : moo -> extensible_type
-  1108 val Main.foo : foo
-  $ sherlodoc --print-cost "qwertyuiopasdfghjklzxcvbnm"
+  $ sherlodoc "list"
+  mod Main.List
+  val Main.foo : foo
+  type Main.list
+  type Main.List.t = 'a list
+  val Main.Map.to_list : foo
+  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  doc page
+  $ sherlodoc "map"
+  mod Main.Map
+  val Main.foo : foo
+  val Main.Map.to_list : foo
+  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  $ sherlodoc "list map"
+  val Main.foo : foo
+  val Main.Map.to_list : foo
+  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  $ sherlodoc "map2"
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  $ sherlodoc ":moo"
+  val Main.value : moo
+  val Main.produce : unit -> moo
+  val Main.produce_2' : unit -> unit -> moo
+  $ sherlodoc ":moo -> _"
+  cons Main.MyExtension : moo -> extensible_type
+  val Main.consume : moo -> unit
+  val Main.consume_2 : moo -> moo -> unit
+  val Main.consume_2_other : moo -> t -> unit
+  $ sherlodoc "modtype"
+  sig Main.Modtype
+  val Main.Modtype.v_modtype : foo
+  $ sherlodoc "S"
+  sig Main.S
+  mod Main.List
+  mod Main.Nest
+  val Main.foo : foo
+  mod Main.S_to_S1
+  type Main.list
+  type Main.List.t = 'a list
+  val Main.Map.to_list : foo
+  cons Main.MyExtension : moo -> extensible_type
+  val Main.consume : moo -> unit
+  $ sherlodoc "qwertyuiopasdfghjklzxcvbnm"
   [No results]
 TODO : get a result for the query bellow
-  $ sherlodoc --print-cost "hidden"
+  $ sherlodoc "hidden"
   [No results]
-  $ sherlodoc --print-cost ":mo"
+  $ sherlodoc ":mo"
   [No results]
   $ sherlodoc ":'a"
   val Main.poly_1 : 'a -> 'b -> 'c
-  val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
   val Main.poly_param : 'a boo
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   $ sherlodoc ": 'a -> 'b -> 'c "
@@ -98,3 +98,11 @@ TODO : get a result for the query bellow
   [No results]
   $ sherlodoc ":extensible_type"
   cons Main.MyExtension : moo -> extensible_type
+  $ sherlodoc ":exn"
+  exn Main.Explicit_exn : exn_payload -> exn
+  exn Main.Implicit_exn : exn_payload -> exn
+  cons Main.Very_explicit_exn : exn_payload -> exn
+  $ sherlodoc ": exn_payload -> _"
+  exn Main.Explicit_exn : exn_payload -> exn
+  exn Main.Implicit_exn : exn_payload -> exn
+  cons Main.Very_explicit_exn : exn_payload -> exn

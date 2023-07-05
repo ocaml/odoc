@@ -65,3 +65,10 @@ val poly_param : 'a boo
 
 type extensible_type = ..
 type extensible_type += MyExtension of moo
+
+type exn_payload
+
+exception Implicit_exn of exn_payload 
+exception Explicit_exn : exn_payload -> exn
+type exn += Very_explicit_exn : exn_payload -> exn
+
