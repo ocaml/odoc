@@ -1,7 +1,5 @@
 open Query.Private
 
-let print_int ~ch i = output_string ch (string_of_int i)
-
 module Test_array = struct
   let rec succ_ge_reference i ~compare elt arr =
     Printf.printf "ref_succ_ge %i\n%!" i ;
@@ -130,6 +128,34 @@ module Test_succ = struct
 
   let _ = first_reference
 
+  let extra_succ =
+    Succ.(
+      union
+        (inter (of_array [| 0; 1|]) (of_array [| 0; 1;|]))
+        (inter
+           (of_array [| 0; 2; 3 |])
+           (of_array [| 1; 3; 5; 7 |])))
+
+  let to_seq_reference ~compare t =
+    let state = ref None in
+    let loop () =
+      let elt =
+        match !state with
+        | None ->
+            print_endline "None" ;
+            first_reference ~compare t
+        | Some previous_elt ->
+            Printf.printf "Some %i\n%!" previous_elt ;
+            succ_reference ~strictness:Gt ~compare t previous_elt
+      in
+      state := elt ;
+      elt
+    in
+    let next () = try Printexc.print loop () with _ -> None in
+    Seq.of_dispenser next
+
+  let to_seq_reference t = to_seq_reference t.Succ.s
+
   let rec random_succ size =
     if size = 0
     then Succ.empty
@@ -143,39 +169,25 @@ module Test_succ = struct
       | 2 -> Succ.union (random_succ (size / 2)) (random_succ (size / 2))
       | _ -> assert false
 
-  let random_succ size =
-    let t = random_succ size in
-    t.s
+  let test_to_seq tree () =
+    let ref = tree |> to_seq_reference ~compare:Int.compare |> List.of_seq in
+    let real = tree |> Succ.to_seq ~compare:Int.compare |> List.of_seq in
+    Alcotest.(check (list int)) "same int list" ref real
 
-  let tests_succ name test =
-    List.init 20 (fun i ->
-        let i = i * 5 in
-        let elt = Random.full_int ((i * 2) + 1) in
-        let succ = random_succ i in
-        Alcotest.test_case
-          (Printf.sprintf "%s size %i elt %i" name i elt)
-          `Quick (test elt succ))
-
-  let tests_succ_gt elt tree () =
-    let strictness = Succ.Gt in
-    Alcotest.(check (option int))
-      "same int option"
-      (succ_reference ~strictness ~compare:Int.compare tree elt)
-      (Succ.succ ~strictness ~compare:Int.compare tree elt)
-
-  let tests_succ_ge elt tree () =
-    let strictness = Succ.Ge in
-    let ref = succ_reference ~strictness ~compare:Int.compare tree elt in
-    let real = Succ.succ ~strictness ~compare:Int.compare tree elt in
-    Alcotest.(check (option int)) "same int option" ref real
-
-  let tests_succ_ge = tests_succ "succ_ge" tests_succ_ge
-  let tests_succ_gt = tests_succ "succ_gt" tests_succ_gt
+  let tests_to_seq =
+    [ Alcotest.test_case "Succ.to_seq extra" `Quick (test_to_seq extra_succ) ]
+    @ List.init 50 (fun i ->
+          let i = i * 7 in
+          let succ = random_succ i in
+          if i = 75 then Succ.print print_int succ ;
+          Alcotest.test_case
+            (Printf.sprintf "Succ.to_seq size %i" i)
+            `Quick (test_to_seq succ))
 end
 
 let () =
   let open Alcotest in
   run "Query"
     [ "Array_succ", Test_array.tests_succ_ge @ Test_array.tests_succ_gt
-    ; "Succ", Test_succ.tests_succ_ge @ Test_succ.tests_succ_gt
+    ; "Succ", Test_succ.tests_to_seq
     ]

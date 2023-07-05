@@ -103,7 +103,6 @@ let array_succ ~strictness =
   | Gt -> Array_succ.succ_gt
 
 let rec succ ~compare ~strictness t elt =
-  (* Printf.printf "depth : %i\n" depth ; *)
   match t with
   | All -> invalid_arg "Succ.succ_rec All"
   | Empty -> None
@@ -114,29 +113,29 @@ let rec succ ~compare ~strictness t elt =
       best_opt ~compare elt_l elt_r
   | Inter (l, r) ->
       let rec loop elt_r =
-        let* elt_l = succ ~compare ~strictness l elt_r in
+        let* elt_l = succ ~compare ~strictness:Ge l elt_r in
         let* elt_r = succ ~compare ~strictness:Ge r elt_l in
         if compare elt_l elt_r = 0 then Some elt_l else loop elt_r
       in
-      loop elt
+      let* elt_l = succ ~compare ~strictness l elt in
+      loop elt_l
 
 let succ_ge ~compare t elt = succ ~compare ~strictness:Ge t elt
 let succ_gt ~compare t elt = succ ~compare ~strictness:Gt t elt
 
-let rec first ~compare candidate t =
+let rec first ~compare t =
   match t with
   | All -> invalid_arg "Succ.first All"
   | Empty -> None
-  | Array s -> best_opt ~compare candidate (Some s.(0))
-  | Inter (a, _) ->
-      let* elt = first ~compare candidate a in
+  | Array s -> Some s.(0)
+  | Inter (l, _) ->
+      let* elt = first ~compare l in
       succ_ge ~compare t elt
-  | Union (a, b) -> begin
-      let candidate = first ~compare candidate a in
-      first ~compare candidate b
+  | Union (l, r) -> begin
+      let elt_l = first ~compare l in
+      let elt_r = first ~compare r in
+      best_opt ~compare elt_l elt_r
     end
-
-let first ~compare t = first ~compare None t
 
 let first_exn ~compare t =
   match first ~compare t with
@@ -154,6 +153,15 @@ let to_seq ~compare t =
     state := elt ;
     elt
   in
+  (* Here, as stackoverflow could be thrown. In that case, we do not want to
+     crash, as a more complex search will probably not trigger the stackoverflow,
+     and we want the webworker or server to be running when such a request is
+     inputed.
+     The Printexc is very important as we nee dto be able to tell if the
+     situation described above happens.
+     With the current algorithm, such a stackoverflow is never triggered even
+     on big libraries like Base, but it is not tail-rec, so a big enough search
+     db could trigger it. *)
   let next () = try Printexc.print loop () with _ -> None in
   Seq.of_dispenser next
 

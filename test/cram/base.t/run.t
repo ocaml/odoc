@@ -47,12 +47,12 @@
   Warning, resolved hidden path: Base__.Set_intf.Named.t
   Warning, resolved hidden path: Base__.Set_intf.Named.t
   Warning, resolved hidden path: Base__.Either0.t
-  Indexing in 802.123070ms
-  Export in 625.782967ms
+  Indexing in 2168.125868ms
+  Export in 1096.270084ms
   
-  real	0m1.817s
-  user	0m1.735s
-  sys	0m0.063s
+  real	0m4.273s
+  user	0m4.055s
+  sys	0m0.170s
 $ sherlodoc_index --format=js --empty-payload --db=db_empty_payload.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-docstring=false --db=db_no_docstring.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-name=false --db=db_no_name.js $(find . -name '*.odocl') 2> /dev/null
@@ -91,8 +91,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ cp -r html /tmp
 $ firefox /tmp/html/base/index.html
   $ sherlodoc_index --format=marshal --index-docstring=false --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
-  Indexing in 1257.050037ms
-  Export in 1118.567944ms
+  Indexing in 1701.007128ms
+  Export in 951.998949ms
   $ sherlodoc --db=db_marshal.bin "group b" | sort
     'a Key.t ->
     'r list ->
@@ -113,8 +113,12 @@ $ firefox /tmp/html/base/index.html
   val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
   $ sherlodoc --db=db_marshal.bin "group by"
   val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
+  val Base.Set.S_poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
   val Base.Set.Poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
+  val Base.Set.Using_comparator.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
   val Base.Set.Accessors_generic.group_by : ('a, 'cmp) t -> equiv:('a elt -> 'a elt -> bool) -> ('a, 'cmp) t list
+  val Base.Set.Using_comparator.Tree.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
+  val Base.Set.Creators_and_accessors_generic.group_by : ('a, 'cmp) t -> equiv:('a elt -> 'a elt -> bool) -> ('a, 'cmp) t list
   $ sherlodoc --db=db_marshal.bin "map2"
   mod Base.Applicative.Make_using_map2
   mod Base.Applicative.Make2_using_map2
