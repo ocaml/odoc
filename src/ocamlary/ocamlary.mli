@@ -430,7 +430,9 @@ type variant =
 (** This comment is also for [variant]. *)
 
 (** This comment is for [poly_variant]. *)
-type poly_variant = [ `TagA | `ConstrB of int ]
+type poly_variant =
+  [ `TagA  (** This is a comment for [`TagA] *)
+  | `ConstrB of int  (** This is a comment for [`ConstrB] *) ]
 (** Wow! It was a polymorphic variant! *)
 
 (** This comment is for [full_gadt]. *)

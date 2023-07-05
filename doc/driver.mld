@@ -318,7 +318,7 @@ let dep_libraries =
 let odoc_libraries = [
     "odoc_xref_test"; "odoc_xref2"; "odoc_odoc"; "odoc_html_support_files";
     "odoc_model_desc"; "odoc_model"; "odoc_manpage"; "odoc_loader";
-    "odoc_latex"; "odoc_html"; "odoc_document"; "odoc_examples"; "odoc_parser" ];;
+    "odoc_latex"; "odoc_html"; "odoc_document"; "odoc_examples"; "odoc_parser"; "ocamlary" ];;
 
 let all_libraries = dep_libraries @ odoc_libraries;;
 
