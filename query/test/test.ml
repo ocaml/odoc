@@ -131,10 +131,8 @@ module Test_succ = struct
   let extra_succ =
     Succ.(
       union
-        (inter (of_array [| 0; 1|]) (of_array [| 0; 1;|]))
-        (inter
-           (of_array [| 0; 2; 3 |])
-           (of_array [| 1; 3; 5; 7 |])))
+        (inter (of_array [| 0; 1 |]) (of_array [| 0; 1 |]))
+        (inter (of_array [| 0; 2; 3 |]) (of_array [| 1; 3; 5; 7 |])))
 
   let to_seq_reference ~compare t =
     let state = ref None in
