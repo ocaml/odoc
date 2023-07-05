@@ -108,7 +108,7 @@ let prefixname : [< Paths.Identifier.t_pv ] Paths.Identifier.id -> string =
  fun n ->
   match full_name_aux (n :> Paths.Identifier.t) with
   | [] -> ""
-  | _ :: q -> String.concat "." q
+  | _ :: q -> q |> List.rev |> String.concat "."
 
 let show_type_name_verbose h : Paths.Path.Type.t -> _ = function
   | `Resolved t ->
