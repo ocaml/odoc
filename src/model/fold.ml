@@ -46,8 +46,10 @@ and docs ~f acc d = f acc (Doc d)
 and include_ ~f acc inc = signature ~f acc inc.expansion.content
 
 and class_type ~f acc ct =
-  let acc = f acc (ClassType ct) in
-  match ct.expansion with None -> acc | Some cs -> class_signature ~f acc cs
+  if Paths.Identifier.is_internal ct.id then acc
+  else
+    let acc = f acc (ClassType ct) in
+    match ct.expansion with None -> acc | Some cs -> class_signature ~f acc cs
 
 and class_signature ~f acc ct_expr =
   List.fold_left (class_signature_item ~f) acc ct_expr.items
@@ -61,31 +63,40 @@ and class_signature_item ~f acc item =
   | Comment d -> docs ~f acc d
 
 and class_ ~f acc cl =
-  let acc = f acc (Class cl) in
-  match cl.expansion with
-  | None -> acc
-  | Some cl_signature -> class_signature ~f acc cl_signature
+  if Paths.Identifier.is_internal cl.id then acc
+  else
+    let acc = f acc (Class cl) in
+    match cl.expansion with
+    | None -> acc
+    | Some cl_signature -> class_signature ~f acc cl_signature
 
-and exception_ ~f acc exc = f acc (Exception exc)
+and exception_ ~f acc exc =
+  if Paths.Identifier.is_internal exc.id then acc else f acc (Exception exc)
 
 and type_extension ~f acc te = f acc (Extension te)
 
-and value ~f acc v = f acc (Value v)
+and value ~f acc v =
+  if Paths.Identifier.is_internal v.id then acc else f acc (Value v)
 
 and module_ ~f acc m =
-  let acc = f acc (Module m) in
-  match m.type_ with
-  | Alias (_, None) -> acc
-  | Alias (_, Some s_e) -> simple_expansion ~f acc s_e
-  | ModuleType mte -> module_type_expr ~f acc mte
+  if Paths.Identifier.is_internal m.id then acc
+  else
+    let acc = f acc (Module m) in
+    match m.type_ with
+    | Alias (_, None) -> acc
+    | Alias (_, Some s_e) -> simple_expansion ~f acc s_e
+    | ModuleType mte -> module_type_expr ~f acc mte
 
-and type_decl ~f acc td = f acc (TypeDecl td)
+and type_decl ~f acc td =
+  if Paths.Identifier.is_internal td.id then acc else f acc (TypeDecl td)
 
 and module_type ~f acc mt =
-  let acc = f acc (ModuleType mt) in
-  match mt.expr with
-  | None -> acc
-  | Some mt_expr -> module_type_expr ~f acc mt_expr
+  if Paths.Identifier.is_internal mt.id then acc
+  else
+    let acc = f acc (ModuleType mt) in
+    match mt.expr with
+    | None -> acc
+    | Some mt_expr -> module_type_expr ~f acc mt_expr
 
 and simple_expansion ~f acc s_e =
   match s_e with

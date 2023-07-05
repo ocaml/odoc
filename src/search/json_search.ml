@@ -133,11 +133,7 @@ let of_entry ({ id; doc; extra } as entry : Entry.t) : Odoc_html.Json.json =
     | Doc Verbatim -> return "Doc" [ ("subkind", `String "Verbatim") ]
     | Exception { args; res } ->
         let args = json_of_args args in
-        let res =
-          match res with
-          | None -> `Null
-          | Some res -> `String (Render.text_of_type res)
-        in
+        let res = `String (Render.text_of_type res) in
         return "Exception" [ ("args", args); ("res", res) ]
     | Class_type { virtual_; params = _ } ->
         return "ClassType" [ ("virtual", `Bool virtual_) ]

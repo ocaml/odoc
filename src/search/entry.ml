@@ -8,11 +8,6 @@ type type_decl_entry = {
   representation : TypeDecl.Representation.t option;
 }
 
-type exception_entry = {
-  args : TypeDecl.Constructor.argument;
-  res : TypeExpr.t option;
-}
-
 type class_type_entry = { virtual_ : bool; params : TypeDecl.param list }
 
 type method_entry = { private_ : bool; virtual_ : bool; type_ : TypeExpr.t }
@@ -51,7 +46,7 @@ type extra =
   | Module
   | Value of value_entry
   | Doc of doc_entry
-  | Exception of exception_entry
+  | Exception of constructor_entry
   | Class_type of class_type_entry
   | Method of method_entry
   | Class of class_entry
@@ -176,7 +171,11 @@ let entries_of_item id (x : Odoc_model.Fold.item) =
       let extra = Value { value = v.value; type_ = v.type_ } in
       [ entry ~id:v.id ~doc:v.doc ~extra ]
   | Exception exc ->
-      let extra = Exception { args = exc.args; res = exc.res } in
+      let res =
+        Option.value exc.res
+          ~default:(TypeExpr.Constr (Odoc_model.Predefined.exn_path, []))
+      in
+      let extra = Exception { args = exc.args; res } in
       [ entry ~id:exc.id ~doc:exc.doc ~extra ]
   | ClassType ct ->
       let extra = Class_type { virtual_ = ct.virtual_; params = ct.params } in

@@ -8,11 +8,6 @@ type type_decl_entry = {
   representation : TypeDecl.Representation.t option;
 }
 
-type exception_entry = {
-  args : TypeDecl.Constructor.argument;
-  res : TypeExpr.t option;
-}
-
 type class_type_entry = { virtual_ : bool; params : TypeDecl.param list }
 
 type method_entry = { private_ : bool; virtual_ : bool; type_ : TypeExpr.t }
@@ -51,7 +46,7 @@ type extra =
   | Module
   | Value of value_entry
   | Doc of doc_entry
-  | Exception of exception_entry
+  | Exception of constructor_entry
   | Class_type of class_type_entry
   | Method of method_entry
   | Class of class_entry
