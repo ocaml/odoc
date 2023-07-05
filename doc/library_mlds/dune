@@ -11,4 +11,5 @@
   odoc_model_desc
   odoc_odoc
   odoc_xref2
-  odoc_xref_test))
+  odoc_xref_test
+  ocamlary))
