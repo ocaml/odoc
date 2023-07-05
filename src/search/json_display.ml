@@ -2,35 +2,6 @@ module Html = Tyxml.Html
 
 let json_of_namelist li = `Array (List.map (fun str -> `String str) li)
 
-let display_expression_rhs args res =
-  let open Odoc_model.Lang in
-  match res with
-  | Some res -> (
-      " : "
-      ^
-      match args with
-      | TypeDecl.Constructor.Tuple args ->
-          let type_ =
-            match args with
-            | _ :: _ :: _ -> TypeExpr.(Arrow (None, Tuple args, res))
-            | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
-            | _ -> res
-          in
-          Render.text_of_type type_
-      | TypeDecl.Constructor.Record fields ->
-          let fields = Render.text_of_record fields in
-          let res = Render.text_of_type res in
-          fields ^ " -> " ^ res)
-  | None -> (
-      match args with
-      | TypeDecl.Constructor.Tuple args -> (
-          match args with
-          | _ :: _ :: _ -> " of " ^ Render.text_of_type (TypeExpr.Tuple args)
-          | [ arg ] -> " of " ^ Render.text_of_type arg
-          | _ -> "")
-      | TypeDecl.Constructor.Record fields ->
-          let fields = Render.text_of_record fields in
-          " of " ^ fields)
 let display_constructor_type args res =
   let open Odoc_model.Lang in
   match args with
@@ -64,9 +35,9 @@ let rhs_of_kind extra =
   let open Entry in
   match extra with
   | TypeDecl td -> typedecl_rhs td
-  | Constructor cons | ExtensionConstructor cons -> Some (constructor_rhs cons)
+  | Constructor cons | ExtensionConstructor cons | Exception cons ->
+      Some (constructor_rhs cons)
   | Field field -> Some (field_rhs field)
-  | Exception { args; res } -> Some (display_expression_rhs args res)
   | Value { value = _; type_ } -> Some (" : " ^ Render.text_of_type type_)
   | Module | Doc _ | Class_type _ | Method _ | Class _ | TypeExtension _
   | ModuleType ->
@@ -106,15 +77,5 @@ let of_entry ({ id; doc; extra } : Entry.t) : Odoc_html.Json.json =
     | Constructor _ -> "constructor"
     | Field _ -> "field"
   in
-  let rhs =
-    match extra with
-    | TypeDecl td -> typedecl_rhs td
-    | Constructor cons -> Some (constructor_rhs cons)
-    | Field field -> Some (field_rhs field)
-    | Exception { args; res } -> Some (display_expression_rhs args res)
-    | Value { value = _; type_ } -> Some (" : " ^ Render.text_of_type type_)
-    | Module | Doc _ | Class_type _ | Method _ | Class _ | TypeExtension _
-    | ExtensionConstructor _ | ModuleType ->
-        None
-  in
+  let rhs = rhs_of_kind extra in
   of_strings ~id ~url ~doc ~kind ~rhs
