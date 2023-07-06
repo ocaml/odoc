@@ -39,6 +39,8 @@ module Names = struct
   let parametername = To_string ModuleName.to_string
 
   let defname = To_string DefName.to_string
+
+  let localname = To_string LocalName.to_string
 end
 
 module General_paths = struct
@@ -166,6 +168,11 @@ module General_paths = struct
               ( "`SourceLocation",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.defname) )
+        | `SourceLocationInt (parent, name) ->
+            C
+              ( "`SourceLocationInt",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.localname) )
         | `SourceLocationMod parent ->
             C ("`SourceLocationMod", (parent :> id_t), identifier))
 

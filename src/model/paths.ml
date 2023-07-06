@@ -58,6 +58,8 @@ module Identifier = struct
     | `SourceLocation (x, anchor) ->
         name_aux (x :> t) ^ "#" ^ DefName.to_string anchor
     | `SourceLocationMod x -> name_aux (x :> t)
+    | `SourceLocationInt (x, anchor) ->
+        name_aux (x :> t) ^ "#" ^ LocalName.to_string anchor
     | `AssetFile (_, name) -> name
 
   let name : [< t_pv ] id -> string = fun n -> name_aux (n :> t)
@@ -507,6 +509,12 @@ module Identifier = struct
         ""
         (fun (s, ()) -> `SourceLocationMod s)
         (s, ())
+
+    let source_location_int :
+      SourcePage.t * LocalName.t ->
+      [> `SourceLocationInt of SourcePage.t * LocalName.t ] id =
+      mk_parent LocalName.to_string "sli" (fun (p, n) -> `SourceLocationInt (p, n))
+
   end
 end
 
