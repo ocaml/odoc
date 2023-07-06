@@ -18,9 +18,11 @@ open Paths
 
 (** {3 Modules} *)
 module Source_info = struct
-  type anchor = { anchor : string }
-
-  type jmp_to_def = Occurence of anchor | Def of string
+  type jmp_to_def =
+    | Occurence of Names.DefName.t
+    | Def of Names.DefName.t
+    | LocalOccurence of Names.LocalName.t
+    | LocalDef of Names.LocalName.t
 
   type info = Syntax of string | Local_jmp of jmp_to_def
 
