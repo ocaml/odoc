@@ -1255,6 +1255,10 @@ module Fmt = struct
         Format.fprintf ppf "%a#%s" model_identifier
           (p :> Odoc_model.Paths.Identifier.t)
           (DefName.to_string def)
+    | `SourceLocationInt (p, def) ->
+        Format.fprintf ppf "%a#%s" model_identifier
+          (p :> Odoc_model.Paths.Identifier.t)
+          (LocalName.to_string def)
     | `SourceLocationMod p ->
         Format.fprintf ppf "%a#" model_identifier
           (p :> Odoc_model.Paths.Identifier.t)

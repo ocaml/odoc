@@ -380,6 +380,9 @@ module Anchor = struct
     | { iv = `SourceLocation (parent, loc); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         Ok { page; kind = `SourceAnchor; anchor = DefName.to_string loc }
+    | { iv = `SourceLocationInt (parent, loc); _ } ->
+        let page = Path.from_identifier (parent :> Path.any) in
+        Ok { page; kind = `SourceAnchor; anchor = LocalName.to_string loc }
     | { iv = `SourceLocationMod parent; _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         Ok { page; kind = `SourceAnchor; anchor = "" }
