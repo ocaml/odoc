@@ -248,9 +248,12 @@ module Make (Syntax : SYNTAX) = struct
 
     let info_of_info url = function
       | Lang.Source_info.Syntax s -> Source_page.Syntax s
-      | Local_jmp (Occurence { anchor }) ->
-          Link (Url.Anchor.source_anchor url anchor)
-      | Local_jmp (Def string) -> Anchor string
+      | Local_jmp (Occurence anchor) ->
+          Link (Url.Anchor.source_anchor url (DefName.to_string anchor))
+      | Local_jmp (Def def) -> Anchor (DefName.to_string def)
+      | Local_jmp (LocalOccurence anchor) ->
+          Link (Url.Anchor.source_anchor url (LocalName.to_string anchor))
+      | Local_jmp (LocalDef anchor) -> Anchor (LocalName.to_string anchor)
 
     let source id infos source_code =
       let url = path id in
