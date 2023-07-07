@@ -1,6 +1,9 @@
 type t = int
 (** A comment *)
 
+(** A comment aaaaaaaaaa *)
+type tdzdz = A of int * int | B of int list * int
+
 (** {1 this is a title}
 
     and this is a paragraph

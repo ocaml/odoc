@@ -53,29 +53,28 @@ let of_strings ~id ~url ~doc ~kind ~rhs : Odoc_html.Json.json =
   let kind = `String kind in
   `Object (rhs @ [ ("id", j_id); ("url", j_url); ("kind", kind); ("doc", doc) ])
 
-let of_entry ({ id; doc; extra } : Entry.t) : Odoc_html.Json.json =
+let of_entry ({ id; doc; extra; html } : Entry.t) : Odoc_html.Json.json =
   let url = Render.url id in
-  let id = Odoc_model.Paths.Identifier.fullname id in
-  let doc =
-    doc |> Render.html_of_doc |> Format.asprintf "%a" (Tyxml.Html.pp_elt ())
-  in
+  let doc = doc |> Render.html_of_doc in
   let kind =
     match extra with
     | TypeDecl _ -> "type"
     | Module -> "module"
-    | Value _ -> "val"
-    | Doc _ -> "doc"
-    | Exception _ -> "exn"
+    | Value _ -> "value"
+    | Exception _ -> "exception"
     | Class_type _ -> "class type"
     | Method _ -> "method"
     | Class _ -> "class"
-    | TypeExtension _ ->
-        (* TODO: include type_path and type_params *)
-        "type ext"
-    | ExtensionConstructor _ -> "extension constructor"
+    | ExtensionConstructor _ -> "extension"
     | ModuleType -> "module type"
+    | Doc _ -> "doc"
+    | TypeExtension _ -> "type"
     | Constructor _ -> "constructor"
     | Field _ -> "field"
   in
-  let rhs = rhs_of_kind extra in
-  of_strings ~id ~url ~doc ~kind ~rhs
+  let kind = Html.div ~a:[ Html.a_class [ "entry-kind" ] ] [ Html.txt kind ] in
+  let html =
+    Html.div ~a:[ Html.a_class [ "search-entry" ] ] [ kind; html; doc ]
+  in
+  let html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html in
+  `Object [ ("url", `String url); ("html", `String html) ]

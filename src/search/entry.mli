@@ -60,6 +60,7 @@ type t = {
   id : Odoc_model.Paths.Identifier.Any.t;
   doc : Odoc_model.Comment.docs;
   extra : extra;
+  html : Html_types.div Tyxml.Html.elt;
 }
 
 val entries_of_item :

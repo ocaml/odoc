@@ -84,7 +84,8 @@ let of_doc (doc : Odoc_model.Comment.docs) =
   let txt = Render.text_of_doc doc in
   `String txt
 
-let of_entry ({ id; doc; extra } as entry : Entry.t) : Odoc_html.Json.json =
+let of_entry ({ id; doc; extra; html = _ } as entry : Entry.t) :
+    Odoc_html.Json.json =
   let j_id = of_id id in
   let doc = of_doc doc in
   let display = Json_display.of_entry entry in
