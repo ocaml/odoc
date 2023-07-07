@@ -13,9 +13,22 @@ type t = {
   uid_to_loc : Warnings.loc Shape.Uid.Tbl.t
 }
 
-let anchor_of_uid uid =
-  match Uid.unpack_uid uid with
-  | Some (_, Some id) -> Some (Uid.anchor_of_id id)
+let unpack_uid uid =
+  match uid with
+  | Shape.Uid.Compilation_unit s -> Some (s, None)
+  | Item { comp_unit; id } -> Some (comp_unit, Some (string_of_int id))
+  | Predef _ -> None
+  | Internal -> None
+
+let anchorable uid =
+  match unpack_uid uid with
+  | Some (_, Some _) -> true
+  | _ -> false
+
+let fallback_anchor_of_uid uid =
+  let anchor_of_id id = Odoc_model.Names.DefName.make_std ("def-" ^ id) in
+  match unpack_uid uid with
+  | Some (_, Some id) -> Some (anchor_of_id id)
   | _ -> None
 
 (** Project an identifier into a shape. *)
@@ -71,9 +84,7 @@ let anchors_of_shape shape =
   in
   let rec inner shape uid_names cur =
     let add uid =
-      match anchor_of_uid uid with
-      | None -> uid_names
-      | Some _ -> (uid, anchor_of cur) :: uid_names
+      if anchorable uid then (uid, anchor_of cur) :: uid_names else uid_names
     in
     match shape.Shape.uid with
     | None -> uid_names
@@ -108,7 +119,7 @@ let anchor_of_uid v uid =
   match anchor with
   | Some x -> Some x
   | None -> (match Shape.Uid.Tbl.find_opt v.uid_to_loc uid with
-    | Some _ -> anchor_of_uid uid
+    | Some _ -> fallback_anchor_of_uid uid
     | None -> None)
 
 let lookup_def :  (string -> (Lang.Compilation_unit.t * t) option) ->
@@ -129,7 +140,7 @@ let lookup_def :  (string -> (Lang.Compilation_unit.t * t) option) ->
       let result = try Some (Reduce.reduce () query) with Not_found -> None in
       result >>= fun result ->
       result.uid >>= fun uid ->
-      Uid.unpack_uid uid >>= fun (unit_name, _) ->
+      unpack_uid uid >>= fun (unit_name, _) ->
       lookup_unit unit_name >>= fun (unit, v) ->
       let anchor = anchor_of_uid v uid in
       unit.Lang.Compilation_unit.source_info >>= fun sources ->

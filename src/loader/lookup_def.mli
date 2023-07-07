@@ -16,4 +16,8 @@ val of_cmt : Cmt_format.cmt_infos -> t option
     In case of [Some _], returns both the shape and the relevant infos taken
     from the [cmt]. *)
 
+#if OCAML_VERSION >= (4, 14, 0)
+
 val anchor_of_uid : t -> Shape.Uid.t -> Odoc_model.Names.DefName.t option
+
+#endif
