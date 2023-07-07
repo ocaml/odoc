@@ -9,8 +9,7 @@ let ( >>= ) m f = match m with Some x -> f x | None -> None
 
 type t = {
   shape : Shape.t;
-  uid_to_anchor : Odoc_model.Names.DefName.t Shape.Uid.Tbl.t;
-  uid_to_loc : Warnings.loc Shape.Uid.Tbl.t
+  uid_to_id : Identifier.SourceLocation.t Shape.Uid.Tbl.t;
 }
 
 let unpack_uid uid =
@@ -70,9 +69,9 @@ let rec shape_of_id lookup_shape :
         (* Not represented in shapes. *)
         None
 
-let anchors_of_shape shape =
+let anchors_of_shape uid_to_loc shape id =
   let anchor_of x =
-    List.map (fun (name,ty) ->
+    let anchor = List.map (fun (name,ty) ->
       match ty with
       | Shape.Sig_component_kind.Value -> "val-" ^ name
       | Type -> "type-" ^ name
@@ -80,7 +79,12 @@ let anchors_of_shape shape =
       | Module_type -> "module-type-" ^ name
       | Extension_constructor -> "ext-" ^ name
       | Class -> "class-" ^ name
-      | Class_type -> "class-type-" ^ name) x |> List.rev |> String.concat "." |> Odoc_model.Names.DefName.make_std
+      | Class_type -> "class-type-" ^ name) x
+      |> List.rev
+      |> String.concat "." 
+      |> Odoc_model.Names.DefName.make_std 
+    in
+    Paths.Identifier.Mk.source_location (id, anchor)
   in
   let rec inner shape uid_names cur =
     let add uid =
@@ -110,17 +114,21 @@ let anchors_of_shape shape =
           add uid
   in
   let anchors = inner shape [] [] in
-  Shape.Uid.Tbl.of_list anchors
+  let anchors = Shape.Uid.Tbl.of_list anchors in
+  (* Fill in missing uids with fallback ids *)
+  Shape.Uid.Tbl.to_seq_keys uid_to_loc |> Seq.iter (fun uid ->
+    if Shape.Uid.Tbl.mem anchors uid
+    then ()
+    else 
+      match fallback_anchor_of_uid uid with
+      | None -> ()
+      | Some a -> 
+      let id = Paths.Identifier.Mk.source_location (id, a) in
+      Shape.Uid.Tbl.add anchors uid id;
+      ());
+  anchors
 
 module MkId = Identifier.Mk
-
-let anchor_of_uid v uid =
-  let anchor = Shape.Uid.Tbl.find_opt v.uid_to_anchor uid in
-  match anchor with
-  | Some x -> Some x
-  | None -> (match Shape.Uid.Tbl.find_opt v.uid_to_loc uid with
-    | Some _ -> fallback_anchor_of_uid uid
-    | None -> None)
 
 let lookup_def :  (string -> (Lang.Compilation_unit.t * t) option) ->
   Identifier.NonSrc.t ->
@@ -142,19 +150,24 @@ let lookup_def :  (string -> (Lang.Compilation_unit.t * t) option) ->
       result.uid >>= fun uid ->
       unpack_uid uid >>= fun (unit_name, _) ->
       lookup_unit unit_name >>= fun (unit, v) ->
-      let anchor = anchor_of_uid v uid in
-      unit.Lang.Compilation_unit.source_info >>= fun sources ->
+      let anchor = Shape.Uid.Tbl.find_opt v.uid_to_id uid in
       match anchor with
-      | Some anchor -> Some (Paths.Identifier.Mk.source_location (sources.id, anchor))
-      | None -> Some (Paths.Identifier.Mk.source_location_mod sources.id)
+      | Some id -> Some id
+      | None -> unit.source >>= fun s -> Some (Paths.Identifier.Mk.source_location_mod s.id)
 
-let of_cmt (cmt : Cmt_format.cmt_infos) : t option =
+let of_cmt (cmt : Cmt_format.cmt_infos) (id_opt : Paths.Identifier.SourcePage.t option) : t option =
   match cmt.cmt_impl_shape with
   | Some shape ->
-    let uid_to_anchor = anchors_of_shape shape in
-    Some { shape; uid_to_anchor; uid_to_loc = cmt.cmt_uid_to_loc }
+    let uid_to_id =
+      match id_opt with
+      | Some id -> anchors_of_shape cmt.cmt_uid_to_loc shape id
+      | None -> Shape.Uid.Tbl.create 1
+    in
+    Some { shape; uid_to_id }
   | None -> None
 
+let id_of_uid v uid =
+  Shape.Uid.Tbl.find_opt v.uid_to_id uid
 
 #else
 

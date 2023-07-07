@@ -19,9 +19,8 @@ open Paths
 (** {3 Modules} *)
 module Source_info = struct
   type jmp_to_def =
-    | Occurence of Names.DefName.t
+    | Occurence of Identifier.SourceLocation.t
     | Def of Names.DefName.t
-    | LocalOccurence of Names.LocalName.t
     | LocalDef of Names.LocalName.t
 
   type info = Syntax of string | Local_jmp of jmp_to_def
@@ -466,7 +465,7 @@ module rec Compilation_unit : sig
   end
 
   module Source : sig
-    type t = { file : string; build_dir : string; digest : Digest.t }
+    type t = { file : string; build_dir : string; digest : Digest.t; id : Identifier.SourcePage.t }
   end
 
   module Packed : sig

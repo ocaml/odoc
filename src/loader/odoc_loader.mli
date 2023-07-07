@@ -18,6 +18,7 @@ val read_string :
 
 val read_cmt_infos :
   filename:string ->
+  id:Identifier.SourcePage.t option ->
   ((Lookup_def.t * Source_info.local_jmp_infos) option, Error.t) result
   Error.with_warnings
 (** Read the shape from a .cmt file. *)
@@ -26,12 +27,14 @@ val read_cmti :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
+  source:Identifier.SourcePage.t option ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_cmt :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
+  source:Identifier.SourcePage.t option ->
   ( Lang.Compilation_unit.t * (Lookup_def.t * Source_info.local_jmp_infos) option,
     Error.t )
   result

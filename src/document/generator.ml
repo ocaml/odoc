@@ -246,18 +246,16 @@ module Make (Syntax : SYNTAX) = struct
     let path id = Url.Path.from_identifier id
     let url id = Url.from_path (path id)
 
-    let info_of_info url = function
+    let info_of_info = function
       | Lang.Source_info.Syntax s -> Source_page.Syntax s
-      | Local_jmp (Occurence anchor) ->
-          Link (Url.Anchor.source_anchor url (DefName.to_string anchor))
       | Local_jmp (Def def) -> Anchor (DefName.to_string def)
-      | Local_jmp (LocalOccurence anchor) ->
-          Link (Url.Anchor.source_anchor url (LocalName.to_string anchor))
+      | Local_jmp (Occurence id) ->
+          Link (Url.Anchor.from_identifier (id :> Paths.Identifier.t) |> Result.get_ok)
       | Local_jmp (LocalDef anchor) -> Anchor (LocalName.to_string anchor)
 
     let source id infos source_code =
       let url = path id in
-      let mapper (info, loc) = (info_of_info url info, loc) in
+      let mapper (info, loc) = (info_of_info info, loc) in
       let infos = List.map mapper infos in
       let contents = Impl.impl ~infos source_code in
       { Source_page.url; contents }

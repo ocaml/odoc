@@ -9,7 +9,7 @@ val lookup_def :
 (** Returns the root module containing the definition of the given identifier
     and the corresponding anchor. *)
 
-val of_cmt : Cmt_format.cmt_infos -> t option
+val of_cmt : Cmt_format.cmt_infos -> Paths.Identifier.SourcePage.t option -> t option
 (** Returns [None] if the cmt doesn't have a shape (eg. if it is not an
     implementation). Returns [Some _] even if shapes are not implemented.
 
@@ -18,6 +18,6 @@ val of_cmt : Cmt_format.cmt_infos -> t option
 
 #if OCAML_VERSION >= (4, 14, 0)
 
-val anchor_of_uid : t -> Shape.Uid.t -> Odoc_model.Names.DefName.t option
+val id_of_uid : t -> Shape.Uid.t -> Paths.Identifier.SourceLocation.t option
 
 #endif
