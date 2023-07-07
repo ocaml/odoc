@@ -64,8 +64,6 @@ module Test_array = struct
   let tests_succ_gt = tests_arr "succ_gt" test_succ_gt
 end
 
-open Query
-
 module Test_succ = struct
   (** This module does the same thing as Succ, but its correctness is obvious 
       and its performance terrible.  *)

@@ -1,5 +1,4 @@
 module Storage = Db.Storage
-module Succ = Query.Succ
 module H = Tyxml.Html
 
 let api ~shards params =

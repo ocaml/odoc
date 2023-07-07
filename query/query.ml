@@ -1,5 +1,4 @@
 module Parser = Query_parser
-module Succ = Succ
 module Dynamic_cost = Dynamic_cost
 module Storage = Db.Storage
 module Tree = Db.Suffix_tree.With_elts
@@ -9,6 +8,7 @@ module Occ = Db.Occ
 
 module Private = struct
   module Array_succ = Array_succ
+  module Succ = Succ
 end
 
 let inter_list xs = List.fold_left Succ.inter Succ.all xs
