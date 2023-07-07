@@ -7,7 +7,11 @@ module Kind = Shape.Sig_component_kind
 
 let ( >>= ) m f = match m with Some x -> f x | None -> None
 
-type t = Shape.t * Odoc_model.Names.DefName.t Shape.Uid.Tbl.t
+type t = {
+  shape : Shape.t;
+  uid_to_anchor : Odoc_model.Names.DefName.t Shape.Uid.Tbl.t;
+  uid_to_loc : Warnings.loc Shape.Uid.Tbl.t
+}
 
 let anchor_of_uid uid =
   match Uid.unpack_uid uid with
@@ -26,8 +30,8 @@ let rec shape_of_id lookup_shape :
   fun id ->
     match id.iv with
     | `Root (_, name) ->
-        lookup_shape (ModuleName.to_string name) >>= fun (_, (shape, _)) ->
-        Some shape
+        lookup_shape (ModuleName.to_string name) >>= fun (_, v) ->
+        Some v.shape
     | `Module (parent, name) ->
         proj parent Kind.Module (ModuleName.to_string name)
     | `Result parent ->
@@ -99,6 +103,14 @@ let anchors_of_shape shape =
 
 module MkId = Identifier.Mk
 
+let anchor_of_uid v uid =
+  let anchor = Shape.Uid.Tbl.find_opt v.uid_to_anchor uid in
+  match anchor with
+  | Some x -> Some x
+  | None -> (match Shape.Uid.Tbl.find_opt v.uid_to_loc uid with
+    | Some _ -> anchor_of_uid uid
+    | None -> None)
+
 let lookup_def :  (string -> (Lang.Compilation_unit.t * t) option) ->
   Identifier.NonSrc.t ->
   Identifier.SourceLocation.t option = fun lookup_unit id ->
@@ -110,7 +122,7 @@ let lookup_def :  (string -> (Lang.Compilation_unit.t * t) option) ->
         let fuel = 10
         let read_unit_shape ~unit_name =
           match lookup_unit unit_name with
-          | Some (_, (shape, _)) -> Some shape
+          | Some (_, v) -> Some v.shape
           | None -> None
         let find_shape _ _ = raise Not_found
       end) in
@@ -118,21 +130,20 @@ let lookup_def :  (string -> (Lang.Compilation_unit.t * t) option) ->
       result >>= fun result ->
       result.uid >>= fun uid ->
       Uid.unpack_uid uid >>= fun (unit_name, _) ->
-      lookup_unit unit_name >>= fun (unit, (_, uid_to_anchor)) ->
-      let anchor = Shape.Uid.Tbl.find_opt uid_to_anchor uid in
+      lookup_unit unit_name >>= fun (unit, v) ->
+      let anchor = anchor_of_uid v uid in
       unit.Lang.Compilation_unit.source_info >>= fun sources ->
       match anchor with
       | Some anchor -> Some (Paths.Identifier.Mk.source_location (sources.id, anchor))
       | None -> Some (Paths.Identifier.Mk.source_location_mod sources.id)
 
-let of_cmt (cmt : Cmt_format.cmt_infos) =
+let of_cmt (cmt : Cmt_format.cmt_infos) : t option =
   match cmt.cmt_impl_shape with
-  | Some s -> Some (s, anchors_of_shape s)
+  | Some shape ->
+    let uid_to_anchor = anchors_of_shape shape in
+    Some { shape; uid_to_anchor; uid_to_loc = cmt.cmt_uid_to_loc }
   | None -> None
 
-let anchor_of_uid ((_, uid_to_anchor) : t) (uid :Shape.Uid.t) =
-  Shape.Uid.Tbl.find_opt uid_to_anchor uid
-  
 
 #else
 
