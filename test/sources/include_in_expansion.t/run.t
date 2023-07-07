@@ -28,9 +28,9 @@ source parent of value y should be left to B.
      </h1>
   --
          <a href="#val-y" class="anchor"></a>
-         <a href="../../root/source/b.ml.html#def-0" class="source_link">Source
+         <a href="../../root/source/b.ml.html#val-y" class="source_link">Source
          </a><code><span><span class="keyword">val</span> y : int</span></code>
   --
        <a href="#val-x" class="anchor"></a>
-       <a href="../../root/source/a.ml.html#def-0" class="source_link">Source
+       <a href="../../root/source/a.ml.html#val-x" class="source_link">Source
        </a><code><span><span class="keyword">val</span> x : int</span></code>

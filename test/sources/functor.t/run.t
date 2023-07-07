@@ -46,7 +46,7 @@ In this test, the functor expansion contains the right link.
 
   $ cat html/A/F/index.html | grep source_link -C 1
      <h1>Module <code><span>A.F</span></code>
-      <a href="../../root/source/a.ml.html#def-3" class="source_link">Source
+      <a href="../../root/source/a.ml.html#module-F" class="source_link">Source
       </a>
   --
        <a href="#type-t" class="anchor"></a>
@@ -65,7 +65,7 @@ However, on functor results, there is a link to source in the file:
   $ cat html/B/R/index.html | grep source_link -C 2
     <header class="odoc-preamble">
      <h1>Module <code><span>B.R</span></code>
-      <a href="../../root/source/b.ml.html#def-3" class="source_link">Source
+      <a href="../../root/source/b.ml.html#module-R" class="source_link">Source
       </a>
      </h1>
   --
@@ -85,3 +85,4 @@ Source links in functor parameters might not make sense. Currently we generate n
 
   $ cat html/A/F/argument-1-S/index.html | grep source_link -C 1
   [1]
+

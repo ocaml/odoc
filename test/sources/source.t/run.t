@@ -58,59 +58,59 @@ Source links generated in the documentation:
   --
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-0" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#type-t" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-1" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#val-x" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-2" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#val-y" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-z">
        <a href="#val-z" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-3" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#val-z" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-A">
        <a href="#module-A" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-5" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#module-A" class="source_link">Source
   --
       <div class="spec module anchored" id="module-B">
        <a href="#module-B" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-5" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#module-A" class="source_link">Source
   --
       <div class="spec module-type anchored" id="module-type-T">
        <a href="#module-type-T" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-7" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#module-type-T" class="source_link">
   --
       <div class="spec module-type anchored" id="module-type-U">
        <a href="#module-type-U" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-8" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#module-type-U" class="source_link">
   --
       <div class="spec type anchored" id="type-ext">
        <a href="#type-ext" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-9" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#type-ext" class="source_link">Source
   --
       <div class="spec type extension anchored" id="extension-decl-Foo">
        <a href="#extension-decl-Foo" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-10" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#ext-Foo" class="source_link">Source
   --
       <div class="spec exception anchored" id="exception-Exn">
        <a href="#exception-Exn" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-11" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#ext-Exn" class="source_link">Source
   --
       <div class="spec class anchored" id="class-cls">
        <a href="#class-cls" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-12" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#type-hash-cls" class="source_link">
   --
       <div class="spec class anchored" id="class-cls'">
        <a href="#class-cls'" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-14" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#type-hash-cls'" class="source_link">
   --
       <div class="spec class-type anchored" id="class-type-ct">
        <a href="#class-type-ct" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def-15" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#type-hash-ct" class="source_link">
 
 Ids generated in the source code:
 
@@ -135,21 +135,21 @@ Ids generated in the source code:
   id="L18"
   id="L19"
   id="L20"
-  id="def-0"
-  id="def-1"
+  id="type-t"
+  id="val-x"
   id="local_x_21"
-  id="def-2"
+  id="val-y"
   id="local_y_31"
-  id="def-3"
+  id="val-z"
   id="local_z_45"
   id="local_a_47"
-  id="def-5"
+  id="module-A"
   id="def-6"
-  id="def-7"
-  id="def-8"
-  id="def-9"
-  id="def-10"
-  id="def-11"
-  id="def-12"
-  id="def-14"
-  id="def-15"
+  id="module-type-T"
+  id="module-type-U"
+  id="type-ext"
+  id="ext-Foo"
+  id="ext-Exn"
+  id="type-hash-cls"
+  id="type-hash-cls'"
+  id="type-hash-ct"

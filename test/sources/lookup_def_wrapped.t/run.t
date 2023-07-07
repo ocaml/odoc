@@ -62,7 +62,7 @@ Look if all the source files are generated:
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="../../root/source/a.ml.html#def-0" class="source_link">Source
+       <a href="../../root/source/a.ml.html#val-x" class="source_link">Source
        </a><code><span><span class="keyword">val</span> x : int</span></code>
       </div>
      </div>
