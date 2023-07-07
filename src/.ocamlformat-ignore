@@ -7,8 +7,7 @@ loader/cmti.ml
 loader/doc_attr.ml
 loader/local_jmp.ml
 loader/lookup_def.ml
-loader/uid.ml
-loader/uid.mli
+loader/lookup_def.mli
 syntax_highlighter/syntax_highlighter.ml
 model/*.cppo.ml
 html_support_files/*.ml
