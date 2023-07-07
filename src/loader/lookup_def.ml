@@ -174,6 +174,6 @@ let id_of_uid v uid =
 type t = unit
 
 let lookup_def _ _id = None
-let of_cmt _ = Some ()
+let of_cmt _ _ = Some ()
 
 #endif

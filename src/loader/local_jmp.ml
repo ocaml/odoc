@@ -92,6 +92,6 @@ let of_cmt lookup_def_t (cmt : Cmt_format.cmt_infos) id =
 
 #else
 
-let of_cmt _ _ = []
+let of_cmt _ _ _ = []
 
 #endif

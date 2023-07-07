@@ -21,6 +21,7 @@ open Types
 module O = Codefmt
 open O.Infix
 
+let get_ok = function | Result.Ok x -> x | Error _ -> raise (Invalid_argument "get_ok")
 let label t =
   match t with
   | Odoc_model.Lang.TypeExpr.Label s -> O.txt s
@@ -250,7 +251,7 @@ module Make (Syntax : SYNTAX) = struct
       | Lang.Source_info.Syntax s -> Source_page.Syntax s
       | Local_jmp (Def def) -> Anchor (DefName.to_string def)
       | Local_jmp (Occurence id) ->
-          Link (Url.Anchor.from_identifier (id :> Paths.Identifier.t) |> Result.get_ok)
+          Link (Url.Anchor.from_identifier (id :> Paths.Identifier.t) |> get_ok)
       | Local_jmp (LocalDef anchor) -> Anchor (LocalName.to_string anchor)
 
     let source id infos source_code =
