@@ -252,10 +252,8 @@ module Make (Syntax : SYNTAX) = struct
           Link (Url.Anchor.source_anchor url (DefName.to_string anchor))
       | Local_jmp (Def def) -> Anchor (DefName.to_string def)
       | Local_jmp (LocalOccurence anchor) ->
-        Link (Url.Anchor.source_anchor url (LocalName.to_string anchor))
-      | Local_jmp (LocalDef anchor) ->
-        Anchor (LocalName.to_string anchor)
-
+          Link (Url.Anchor.source_anchor url (LocalName.to_string anchor))
+      | Local_jmp (LocalDef anchor) -> Anchor (LocalName.to_string anchor)
 
     let source id infos source_code =
       let url = path id in

@@ -511,10 +511,10 @@ module Identifier = struct
         (s, ())
 
     let source_location_int :
-      SourcePage.t * LocalName.t ->
-      [> `SourceLocationInt of SourcePage.t * LocalName.t ] id =
-      mk_parent LocalName.to_string "sli" (fun (p, n) -> `SourceLocationInt (p, n))
-
+        SourcePage.t * LocalName.t ->
+        [> `SourceLocationInt of SourcePage.t * LocalName.t ] id =
+      mk_parent LocalName.to_string "sli" (fun (p, n) ->
+          `SourceLocationInt (p, n))
   end
 end
 
