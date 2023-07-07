@@ -50,7 +50,7 @@ let read_cmt_infos' cmt_info =
   match Lookup_def.of_cmt cmt_info with
   | None -> None
   | Some shape ->
-      let jmp_infos = Local_jmp.of_cmt cmt_info in
+      let jmp_infos = Local_jmp.of_cmt shape cmt_info in
       Some (shape, jmp_infos)
 
 let read_cmt_infos ~filename () =

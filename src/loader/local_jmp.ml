@@ -13,16 +13,11 @@ type annotations =
   | DefJmp of Odoc_model.Names.DefName.t
 
 module Analysis = struct
-  let anchor_of_uid uid =
-    match Uid.unpack_uid uid with
-    | Some (_, Some id) -> Some (Uid.anchor_of_id id)
-    | _ -> None
-
   (** Generate the anchors that will be pointed to by [lookup_def]. *)
-  let init poses uid_to_loc =
+  let init lookup_def_t poses uid_to_loc =
     Shape.Uid.Tbl.iter
       (fun uid t ->
-        let= s = anchor_of_uid uid in
+        let= s = Lookup_def.anchor_of_uid lookup_def_t uid in
         poses := (Def s, pos_of_loc t) :: !poses)
       uid_to_loc
 
@@ -38,15 +33,14 @@ module Analysis = struct
           poses := (LocalDef (uniq, name), pos_of_loc pat_loc) :: !poses
     | _ -> ()
   
-  let expr poses uid_to_loc expr =
+  let expr poses lookup_def_t expr =
     match expr with
     | { Typedtree.exp_desc = Texp_ident (p, _, value_description); exp_loc; _ }
       -> (
         (* Only generate anchor if the uid is in the location table. We don't
            link to modules outside of the compilation unit. *)
-        match Shape.Uid.Tbl.find_opt uid_to_loc value_description.val_uid with
-        | Some _ ->
-          let= anchor = anchor_of_uid value_description.val_uid in
+        match Lookup_def.anchor_of_uid lookup_def_t value_description.val_uid with
+        | Some anchor ->
           poses := (DefJmp anchor, pos_of_loc exp_loc) :: !poses
         | None ->
           match p with
@@ -57,6 +51,7 @@ module Analysis = struct
           | _ -> ())
     | _ -> ()
 end
+
 
 let postprocess_poses poses =
   let local_def_anchors =
@@ -73,15 +68,15 @@ let postprocess_poses poses =
     | Def x, loc -> Some (Def x, loc)
     | DefJmp x, loc -> Some (Occurence x, loc)) poses 
 
-let of_cmt (cmt : Cmt_format.cmt_infos) =
+let of_cmt lookup_def_t (cmt : Cmt_format.cmt_infos) =
   let ttree = cmt.cmt_annots in
   match ttree with
   | Cmt_format.Implementation structure ->
       let uid_to_loc = cmt.cmt_uid_to_loc in
       let poses = ref [] in
-      Analysis.init poses uid_to_loc;
+      Analysis.init lookup_def_t poses uid_to_loc;
       let expr iterator expr =
-        Analysis.expr poses uid_to_loc expr;
+        Analysis.expr poses lookup_def_t expr;
         Tast_iterator.default_iterator.expr iterator expr
       in
       let pat iterator pat =
@@ -95,6 +90,6 @@ let of_cmt (cmt : Cmt_format.cmt_infos) =
 
 #else
 
-let of_cmt _ = []
+let of_cmt _ _ = []
 
 #endif
