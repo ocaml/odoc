@@ -121,7 +121,7 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
         let unit =
           Odoc_loader.read_cmti ~make_root ~parent ~filename ~source
           |> Error.raise_errors_and_warnings
-        and cmt_infos =          
+        and cmt_infos =
           match source with
           | Some _ -> lookup_implementation_of_cmti source input_file
           | None -> None

@@ -53,7 +53,8 @@ let read_cmt_infos' id cmt_info =
       let jmp_infos =
         match id with
         | Some id -> Local_jmp.of_cmt shape cmt_info id
-        | None -> [] in
+        | None -> []
+      in
       Some (shape, jmp_infos)
 
 let read_cmt_infos ~filename ~id () =
@@ -64,8 +65,8 @@ let read_cmt_infos ~filename ~id () =
       | Implementation _ -> read_cmt_infos' id cmt_info
       | _ -> raise Not_an_implementation)
 
-let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id ~source
-    ?canonical content =
+let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
+    ~source ?canonical content =
   let open Odoc_model.Lang.Compilation_unit in
   let interface, digest =
     match interface with
@@ -84,7 +85,7 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id ~
   let imports = List.filter (fun (name', _) -> name <> name') imports in
   let imports = List.map (fun (s, d) -> Import.Unresolved (s, d)) imports in
   let source =
-    match sourcefile, source with
+    match (sourcefile, source) with
     | Some (Some file, Some digest, build_dir), Some id ->
         Some { Source.file; digest; build_dir; id }
     | _ -> None
@@ -104,11 +105,11 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id ~
     source_info = None;
   }
 
-let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id ~source
-    ?canonical sg =
+let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
+    ~source ?canonical sg =
   let content = Odoc_model.Lang.Compilation_unit.Module sg in
-  make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id ~source
-    ?canonical content
+  make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
+    ~source ?canonical content
 
 let read_cmti ~make_root ~parent ~filename ~source () =
   let cmt_info = Cmt_format.read_cmt filename in
@@ -174,7 +175,7 @@ let read_cmt ~make_root ~parent ~filename ~source () =
           let id, sg, canonical = Cmt.read_implementation parent name impl in
           ( compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
               ~name ~id ~source ?canonical sg,
-            read_cmt_infos' source cmt_info)
+            read_cmt_infos' source cmt_info )
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =
@@ -201,7 +202,8 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmt_infos ~filename ~id = wrap_errors ~filename (read_cmt_infos ~id ~filename)
+let read_cmt_infos ~filename ~id =
+  wrap_errors ~filename (read_cmt_infos ~id ~filename)
 
 let read_cmti ~make_root ~parent ~filename ~source =
   wrap_errors ~filename (read_cmti ~make_root ~parent ~filename ~source)

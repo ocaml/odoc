@@ -21,7 +21,9 @@ open Types
 module O = Codefmt
 open O.Infix
 
-let get_ok = function | Result.Ok x -> x | Error _ -> raise (Invalid_argument "get_ok")
+let get_ok = function
+  | Result.Ok x -> x
+  | Error _ -> raise (Invalid_argument "get_ok")
 let label t =
   match t with
   | Odoc_model.Lang.TypeExpr.Label s -> O.txt s
