@@ -1,2 +1,3 @@
 module-item-spacing=preserve
 version=0.26.0
+ocaml-version=4.02
