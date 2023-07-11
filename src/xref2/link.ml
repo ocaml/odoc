@@ -350,6 +350,11 @@ and open_ env parent = function
 
 let rec unit env t =
   let open Compilation_unit in
+  let search_asset =
+    match t.search_asset with
+    | String sa -> search_asset env t.id sa
+    | _ -> t.search_asset
+  in
   let content =
     match t.content with
     | Module sg ->
@@ -357,7 +362,24 @@ let rec unit env t =
         Module sg
     | Pack _ as p -> p
   in
-  { t with content; linked = true }
+  { t with content; linked = true; search_asset }
+
+and search_asset env id asset =
+  match id.iv with
+  | `Root (Some page_id, _) -> search_asset_page env page_id asset
+  | `Root (None, _) -> String asset
+
+and search_asset_page env ({ iv = `Page (parent, name); _ } as id) asset =
+  let has_asset children =
+    List.exists
+      (function Page.Asset_child a -> String.equal a asset | _ -> false)
+      children
+  in
+  match (Env.lookup_page (Names.PageName.to_string name) env, parent) with
+  | Some { children; _ }, _ when has_asset children ->
+      Compilation_unit.Id (Paths.Identifier.Mk.asset_file (id, asset))
+  | _, Some parent -> search_asset_page env parent asset
+  | _ -> String asset
 
 and value_ env parent t =
   let open Value in

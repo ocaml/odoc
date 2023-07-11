@@ -27,6 +27,7 @@ val make :
   breadcrumbs:Types.breadcrumb list ->
   toc:Types.toc list ->
   uses_katex:bool ->
+  search_url:string option ->
   Html_types.div_content Html.elt list ->
   Odoc_document.Renderer.page list ->
   Odoc_document.Renderer.page

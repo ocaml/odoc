@@ -94,7 +94,7 @@ let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
       make_navigation ~up_url:up.href
         (List.rev html @ sep @ [ Html.txt current.name ])
 
-let page_creator ~config ~url ~uses_katex ~with_search header breadcrumbs toc
+let page_creator ~config ~url ~uses_katex ~search_url header breadcrumbs toc
     content =
   let theme_uri = Config.theme_uri config in
   let support_uri = Config.support_uri config in
@@ -115,32 +115,28 @@ let page_creator ~config ~url ~uses_katex ~with_search header breadcrumbs toc
     let odoc_css_uri = file_uri theme_uri "odoc.css" in
     let highlight_js_uri = file_uri support_uri "highlight.pack.js" in
     let search_scripts =
-      if Config.search_files config = [] then []
-      else
-        let search_urls =
-          let search_url name =
-            Printf.sprintf "'%s'" (file_uri support_uri name)
-          in
-          let search_urls = List.map search_url (Config.search_files config) in
-          "[" ^ String.concat "," search_urls ^ "]"
-        in
-        [
-          Html.script ~a:[]
-            (Html.txt
-               (Format.asprintf "let base_url = '%s'; let search_urls = %s;"
-                  (let page =
-                     Url.Path.{ kind = `File; parent = None; name = "" }
-                   in
-                   Link.href ~config ~resolve:(Current url) (Url.from_path page))
-                  search_urls));
-          Html.script
-            ~a:
-              [
-                Html.a_src (file_uri support_uri "odoc_search.js");
-                Html.a_defer ();
-              ]
-            (Html.txt "");
-        ]
+      match search_url with
+      | None -> []
+      | Some search_url ->
+          let search_urls = "['" ^ search_url ^ "']" in
+          [
+            Html.script ~a:[]
+              (Html.txt
+                 (Format.asprintf "let base_url = '%s'; let search_urls = %s;"
+                    (let page =
+                       Url.Path.{ kind = `File; parent = None; name = "" }
+                     in
+                     Link.href ~config ~resolve:(Current url)
+                       (Url.from_path page))
+                    search_urls));
+            Html.script
+              ~a:
+                [
+                  Html.a_src (file_uri support_uri "odoc_search.js");
+                  Html.a_defer ();
+                ]
+              (Html.txt "");
+          ]
     in
     let default_meta_elements =
       [
@@ -190,11 +186,11 @@ let page_creator ~config ~url ~uses_katex ~with_search header breadcrumbs toc
     let meta_elements = meta_elements @ search_scripts in
     Html.head (Html.title (Html.txt title_string)) meta_elements
   in
-
   let search_bar =
-    if with_search then
-      [ Html.div ~a:[ Html.a_class [ "odoc-search" ] ] [ html_of_search () ] ]
-    else []
+    match search_url with
+    | Some _ ->
+        [ Html.div ~a:[ Html.a_class [ "odoc-search" ] ] [ html_of_search () ] ]
+    | None -> []
   in
 
   let body =
@@ -214,12 +210,12 @@ let page_creator ~config ~url ~uses_katex ~with_search header breadcrumbs toc
   in
   content
 
-let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex content children =
+let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex ~search_url content
+    children =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
   let content =
-    page_creator ~config ~url ~uses_katex
-      ~with_search:(Config.search_files config != [])
-      header breadcrumbs toc content
+    page_creator ~config ~url ~uses_katex ~search_url header breadcrumbs toc
+      content
   in
   { Odoc_document.Renderer.filename; content; children }
 

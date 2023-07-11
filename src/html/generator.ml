@@ -476,7 +476,7 @@ module Page = struct
   and subpages ~config subpages = List.map (include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page =
-    let { Page.preamble; items = i; url; source_anchor } =
+    let { Page.preamble; items = i; url; source_anchor; search_asset } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
@@ -485,6 +485,12 @@ module Page = struct
     let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
     let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
+    let search_url =
+      match search_asset with
+      | Some url ->
+          Some (Link.href ~config ~resolve (Odoc_document.Url.from_path url))
+      | None -> None
+    in
     let content = (items ~config ~resolve i :> any Html.elt list) in
     if Config.as_json config then
       let source_anchor =
@@ -500,8 +506,8 @@ module Page = struct
         items ~config ~resolve
           (Doctree.PageTitle.render_title ?source_anchor p @ preamble)
       in
-      Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex content
-        subpages
+      Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
+        ~search_url content subpages
 
   and source_page ~config sp =
     let { Source_page.url; contents } = sp in
