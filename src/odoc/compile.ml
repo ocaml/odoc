@@ -98,20 +98,21 @@ let resolve_imports resolver imports =
 
 (** Raises warnings and errors. *)
 let resolve_and_substitute ~resolver ~make_root ~source_id_opt ~cmt_filename_opt
-    ~hidden (parent : Paths.Identifier.ContainerPage.t option) input_file
-    input_type =
+    ~hidden ~search_asset (parent : Paths.Identifier.ContainerPage.t option)
+    input_file input_type =
   let filename = Fs.File.to_string input_file in
   let unit =
     match input_type with
     | `Cmti ->
         Odoc_loader.read_cmti ~make_root ~parent ~filename ~source_id_opt
-          ~cmt_filename_opt
+          ~cmt_filename_opt ~search_asset
         |> Error.raise_errors_and_warnings
     | `Cmt ->
         Odoc_loader.read_cmt ~make_root ~parent ~filename ~source_id_opt
+          ~search_asset
         |> Error.raise_errors_and_warnings
     | `Cmi ->
-        Odoc_loader.read_cmi ~make_root ~parent ~filename
+        Odoc_loader.read_cmi ~make_root ~parent ~filename ~search_asset
         |> Error.raise_errors_and_warnings
   in
   let unit = { unit with hidden = hidden || unit.hidden } in
@@ -250,8 +251,13 @@ let handle_file_ext ext =
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options ~source ~cmt_filename_opt input =
+    ~warnings_options ~source ~cmt_filename_opt ~search_asset input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
+  let search_asset =
+    match search_asset with
+    | Some s -> Odoc_model.Lang.Compilation_unit.String s
+    | None -> No
+  in
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
     check_is_none "Not expecting source (--source-*) when compiling pages."
@@ -296,7 +302,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let result =
       Error.catch_errors_and_warnings (fun () ->
           resolve_and_substitute ~resolver ~make_root ~hidden ~source_id_opt
-            ~cmt_filename_opt parent input input_type)
+            ~cmt_filename_opt ~search_asset parent input input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in
