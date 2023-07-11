@@ -294,7 +294,7 @@ end = struct
       Arg.(
         value
         & opt (some string) None
-        & info ~docs ~docv:"ASSET" ~doc [ "search_asset" ])
+        & info ~docs ~docv:"ASSET" ~doc [ "search-asset" ])
     in
     let resolve_fwd_refs =
       let doc = "Try resolving forward references." in
