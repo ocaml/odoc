@@ -184,7 +184,7 @@ end = struct
 
   let compile hidden directories resolve_fwd_refs dst package_opt
       parent_name_opt open_modules children input warnings_options
-      source_parent_file source_name cmt_filename_opt =
+      source_parent_file source_name cmt_filename_opt search_asset =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -220,7 +220,7 @@ end = struct
     source >>= fun source ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warnings_options ~source ~cmt_filename_opt input
+      ~warnings_options ~source ~cmt_filename_opt ~search_asset input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -289,6 +289,13 @@ end = struct
         & opt (some string) None
         & info ~docs ~docv:"PARENT" ~doc [ "parent" ])
     in
+    let search_asset =
+      let doc = "Search asset." in
+      Arg.(
+        value
+        & opt (some string) None
+        & info ~docs ~docv:"ASSET" ~doc [ "search_asset" ])
+    in
     let resolve_fwd_refs =
       let doc = "Try resolving forward references." in
       Arg.(value & flag & info ~doc [ "r"; "resolve-fwd-refs" ])
@@ -297,7 +304,8 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ package_opt $ parent_opt $ open_modules $ children $ input
-       $ warnings_options $ source_parent_file $ source_name $ source_cmt))
+       $ warnings_options $ source_parent_file $ source_name $ source_cmt
+       $ search_asset))
 
   let info ~docs =
     let man =

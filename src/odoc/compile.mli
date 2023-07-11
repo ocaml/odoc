@@ -43,6 +43,7 @@ val compile :
   warnings_options:Odoc_model.Error.warnings_options ->
   source:(Fpath.t * string list) option ->
   cmt_filename_opt:string option ->
+  search_asset:string option ->
   Fs.File.t ->
   (unit, [> msg ]) result
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)
