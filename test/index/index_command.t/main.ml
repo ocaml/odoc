@@ -1,8 +1,13 @@
 type t = int
 (** A comment *)
 
+module X = struct
+  (** A value inside a module  *)
+  let c = 1
+end
+
 (** A comment aaaaaaaaaa *)
-type tdzdz = A of int * int | B of int list * int
+type tdzdz = A of int * int | B of int list * int  (** Bliiiiiiiiiii *)
 
 (** {1 this is a title}
 
