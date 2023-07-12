@@ -41,7 +41,7 @@ type doc_entry = Paragraph | Heading | CodeBlock | MathBlock | Verbatim
 
 type value_entry = { value : Value.value; type_ : TypeExpr.t }
 
-type extra =
+type kind =
   | TypeDecl of type_decl_entry
   | Module
   | Value of value_entry
@@ -59,9 +59,11 @@ type extra =
 type t = {
   id : Odoc_model.Paths.Identifier.Any.t;
   doc : Odoc_model.Comment.docs;
-  extra : extra;
-  html : Html_types.div Tyxml.Html.elt;
+  kind : kind;
 }
+
+type with_html = { entry : t; html : [ `Code | `Div ] Tyxml.Html.elt list }
+(** You can use {!Generator.with_html} to get a value of this type. *)
 
 val entries_of_item :
   Odoc_model.Paths.Identifier.Any.t -> Odoc_model.Fold.item -> t list

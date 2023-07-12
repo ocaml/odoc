@@ -37,12 +37,12 @@ Without error during resolving
         }
       ],
       "doc": "",
-      "extra": {
+      "kind": {
         "kind": "Module"
       },
       "display": {
         "url": "page/Main/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">module</div><div>module Main = struct ... end</div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -57,7 +57,7 @@ Without error during resolving
         }
       ],
       "doc": "A comment",
-      "extra": {
+      "kind": {
         "kind": "TypeDecl",
         "private": false,
         "manifest": "int",
@@ -65,7 +65,52 @@ Without error during resolving
       },
       "display": {
         "url": "page/Main/index.html#type-t",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">type</div><div>type t</div><div><p>A comment</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">type</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">t</span><code class=\"entry_rhs\"> = int</code></code><div class=\"entry-comment\"><div><p>A comment</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "X"
+        }
+      ],
+      "doc": "",
+      "kind": {
+        "kind": "Module"
+      },
+      "display": {
+        "url": "page/Main/X/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">X</span></code><div class=\"entry-comment\"><div></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "X"
+        },
+        {
+          "kind": "Value",
+          "name": "c"
+        }
+      ],
+      "doc": "A value inside a module",
+      "kind": {
+        "kind": "Value",
+        "type": "int"
+      },
+      "display": {
+        "url": "page/Main/X/index.html#val-c",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.X.</span><span class=\"entry-name\">c</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>A value inside a module</p></div></div></div>"
       }
     },
     {
@@ -80,7 +125,7 @@ Without error during resolving
         }
       ],
       "doc": "A comment aaaaaaaaaa",
-      "extra": {
+      "kind": {
         "kind": "TypeDecl",
         "private": false,
         "manifest": null,
@@ -88,7 +133,7 @@ Without error during resolving
       },
       "display": {
         "url": "page/Main/index.html#type-tdzdz",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">type</div><div>type tdzdz = &lt;variant&gt;</div><div><p>A comment aaaaaaaaaa</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">type</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">tdzdz</span><code class=\"entry_rhs\">= A of int * int | B of int list * int</code></code><div class=\"entry-comment\"><div><p>A comment aaaaaaaaaa</p></div></div></div>"
       }
     },
     {
@@ -107,7 +152,7 @@ Without error during resolving
         }
       ],
       "doc": "",
-      "extra": {
+      "kind": {
         "kind": "Constructor",
         "args": {
           "kind": "Tuple",
@@ -120,7 +165,7 @@ Without error during resolving
       },
       "display": {
         "url": "page/Main/index.html#type-tdzdz.A",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">constructor</div><div>constructor A : </div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">cons</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.tdzdz.</span><span class=\"entry-name\">A</span><code class=\"entry_rhs\"> : int * int -&gt; tdzdz</code></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -138,8 +183,8 @@ Without error during resolving
           "name": "B"
         }
       ],
-      "doc": "",
-      "extra": {
+      "doc": "Bliiiiiiiiiii",
+      "kind": {
         "kind": "Constructor",
         "args": {
           "kind": "Tuple",
@@ -152,7 +197,7 @@ Without error during resolving
       },
       "display": {
         "url": "page/Main/index.html#type-tdzdz.B",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">constructor</div><div>constructor B : </div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">cons</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.tdzdz.</span><span class=\"entry-name\">B</span><code class=\"entry_rhs\"> : int list * int -&gt; tdzdz</code></code><div class=\"entry-comment\"><div><p>Bliiiiiiiiiii</p></div></div></div>"
       }
     },
     {
@@ -167,13 +212,13 @@ Without error during resolving
         }
       ],
       "doc": "this is a title",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Heading"
       },
       "display": {
         "url": "page/Main/index.html#this-is-a-title",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>this is a title</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">this-is-a-title</span></code><div class=\"entry-comment\"><div><p>this is a title</p></div></div></div>"
       }
     },
     {
@@ -181,16 +226,20 @@ Without error during resolving
         {
           "kind": "Root",
           "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "X"
         }
       ],
       "doc": "and this is a paragraph",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
-        "url": "page/Main/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>and this is a paragraph</p></div></div>"
+        "url": "page/Main/X/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">X</span></code><div class=\"entry-comment\"><div><p>and this is a paragraph</p></div></div></div>"
       }
     },
     {
@@ -205,12 +254,12 @@ Without error during resolving
         }
       ],
       "doc": "",
-      "extra": {
+      "kind": {
         "kind": "Module"
       },
       "display": {
         "url": "page/Main/M/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">module</div><div>module M : sig ... end</div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">M</span></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -229,7 +278,7 @@ Without error during resolving
         }
       ],
       "doc": "dsdsd",
-      "extra": {
+      "kind": {
         "kind": "TypeDecl",
         "private": false,
         "manifest": null,
@@ -237,7 +286,7 @@ Without error during resolving
       },
       "display": {
         "url": "page/Main/M/index.html#type-t",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">type</div><div>type t</div><div><p>dsdsd</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">type</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.M.</span><span class=\"entry-name\">t</span></code><div class=\"entry-comment\"><div><p>dsdsd</p></div></div></div>"
       }
     },
     {
@@ -252,13 +301,13 @@ Without error during resolving
         }
       ],
       "doc": "a reference , and some formatted content with code and\ncode blocks",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/Main/index.html#val-v",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val v : int</div><div><p>a reference <span><code>t</code></span>, and some <em>formatted</em> <b>content</b> with <code>code</code> and</p><pre class=\"language-ocaml\"><code>code blocks</code></pre></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">v</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>a reference <span><code>t</code></span>, and some <em>formatted</em> <b>content</b> with <code>code</code> and</p><pre class=\"language-ocaml\"><code>code blocks</code></pre></div></div></div>"
       }
     },
     {
@@ -273,13 +322,13 @@ Without error during resolving
         }
       ],
       "doc": "lorem 1 and a link",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/Main/index.html#val-lorem",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val lorem : int</div><div><p>lorem 1 and a <span>link</span></p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">lorem</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>lorem 1 and a <span>link</span></p></div></div></div>"
       }
     },
     {
@@ -294,13 +343,13 @@ Without error during resolving
         }
       ],
       "doc": "lorem 2",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/Main/index.html#val-lorem2",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val lorem2 : int</div><div><p>lorem 2</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">lorem2</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>lorem 2</p></div></div></div>"
       }
     },
     {
@@ -315,13 +364,13 @@ Without error during resolving
         }
       ],
       "doc": "lorem 3",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/Main/index.html#val-lorem3",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val lorem3 : int</div><div><p>lorem 3</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">lorem3</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>lorem 3</p></div></div></div>"
       }
     },
     {
@@ -336,13 +385,13 @@ Without error during resolving
         }
       ],
       "doc": "lorem 4",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/Main/index.html#val-lorem4",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val lorem4 : int</div><div><p>lorem 4</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">lorem4</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>lorem 4</p></div></div></div>"
       }
     },
     {
@@ -357,12 +406,12 @@ Without error during resolving
         }
       ],
       "doc": "",
-      "extra": {
+      "kind": {
         "kind": "Module"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">module</div><div>module I : sig ... end</div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -381,13 +430,13 @@ Without error during resolving
         }
       ],
       "doc": "",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/Main/I/index.html#val-x",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val x : int</div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.I.</span><span class=\"entry-name\">x</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -402,13 +451,13 @@ Without error during resolving
         }
       ],
       "doc": "a paragraph",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>a paragraph</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div></div>"
       }
     },
     {
@@ -423,13 +472,13 @@ Without error during resolving
         }
       ],
       "doc": "and another",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>and another</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div></div>"
       }
     },
     {
@@ -444,13 +493,13 @@ Without error during resolving
         }
       ],
       "doc": "verbatim",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Verbatim"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><pre>verbatim</pre></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div></div>"
       }
     },
     {
@@ -465,13 +514,13 @@ Without error during resolving
         }
       ],
       "doc": "x + 1",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div></div>"
       }
     },
     {
@@ -486,13 +535,13 @@ Without error during resolving
         }
       ],
       "doc": "blibli",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "CodeBlock"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div></div>"
       }
     },
     {
@@ -511,13 +560,13 @@ Without error during resolving
         }
       ],
       "doc": "",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/Main/I/index.html#val-y",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val y : int</div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.I.</span><span class=\"entry-name\">y</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -532,13 +581,13 @@ Without error during resolving
         }
       ],
       "doc": "",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/Main/index.html#val-x",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val x : int</div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">x</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -553,13 +602,13 @@ Without error during resolving
         }
       ],
       "doc": "a paragraph",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>a paragraph</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div></div>"
       }
     },
     {
@@ -574,13 +623,13 @@ Without error during resolving
         }
       ],
       "doc": "and another",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>and another</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div></div>"
       }
     },
     {
@@ -595,13 +644,13 @@ Without error during resolving
         }
       ],
       "doc": "verbatim",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Verbatim"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><pre>verbatim</pre></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div></div>"
       }
     },
     {
@@ -616,13 +665,13 @@ Without error during resolving
         }
       ],
       "doc": "x + 1",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div></div>"
       }
     },
     {
@@ -637,13 +686,13 @@ Without error during resolving
         }
       ],
       "doc": "blibli",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "CodeBlock"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div></div>"
       }
     },
     {
@@ -658,13 +707,13 @@ Without error during resolving
         }
       ],
       "doc": "",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/Main/index.html#val-y",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val y : int</div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">y</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -679,13 +728,13 @@ Without error during resolving
         }
       ],
       "doc": "",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/Main/index.html#val-uu",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val uu : int</div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">uu</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -700,13 +749,13 @@ Without error during resolving
         }
       ],
       "doc": "a paragraph two",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>a paragraph two</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div></div>"
       }
     },
     {
@@ -717,12 +766,12 @@ Without error during resolving
         }
       ],
       "doc": "a paragraph one",
-      "extra": {
+      "kind": {
         "kind": "Module"
       },
       "display": {
         "url": "page/J/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">module</div><div>module J = struct ... end</div><div><p>a paragraph one</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">J</span></code><div class=\"entry-comment\"><div><p>a paragraph one</p></div></div></div>"
       }
     },
     {
@@ -737,13 +786,13 @@ Without error during resolving
         }
       ],
       "doc": "",
-      "extra": {
+      "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
         "url": "page/J/index.html#val-uu",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">value</div><div>val uu : int</div><div></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">J.</span><span class=\"entry-name\">uu</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -754,13 +803,13 @@ Without error during resolving
         }
       ],
       "doc": "a paragraph two",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/J/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>a paragraph two</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">J</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div></div>"
       }
     },
     {
@@ -775,13 +824,13 @@ Without error during resolving
         }
       ],
       "doc": "A title",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Heading"
       },
       "display": {
         "url": "page/index.html#a-title",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>A title</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">page.</span><span class=\"entry-name\">a-title</span></code><div class=\"entry-comment\"><div><p>A title</p></div></div></div>"
       }
     },
     {
@@ -792,13 +841,13 @@ Without error during resolving
         }
       ],
       "doc": "A paragraph",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>A paragraph</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>A paragraph</p></div></div></div>"
       }
     },
     {
@@ -809,13 +858,13 @@ Without error during resolving
         }
       ],
       "doc": "some verbatim",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Verbatim"
       },
       "display": {
         "url": "page/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><pre>some verbatim</pre></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><pre>some verbatim</pre></div></div></div>"
       }
     },
     {
@@ -826,13 +875,13 @@ Without error during resolving
         }
       ],
       "doc": "and code",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "CodeBlock"
       },
       "display": {
         "url": "page/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><pre class=\"language-ocaml\"><code>and code</code></pre></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>and code</code></pre></div></div></div>"
       }
     },
     {
@@ -843,13 +892,13 @@ Without error during resolving
         }
       ],
       "doc": "a list of things",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>a list <em>of</em> things</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>a list <em>of</em> things</p></div></div></div>"
       }
     },
     {
@@ -860,13 +909,13 @@ Without error during resolving
         }
       ],
       "doc": "bliblib",
-      "extra": {
+      "kind": {
         "kind": "Doc",
         "subkind": "Paragraph"
       },
       "display": {
         "url": "page/index.html",
-        "html": "<div class=\"search-entry\"><div class=\"entry-kind\">doc</div><div></div><div><p>bliblib</p></div></div>"
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>bliblib</p></div></div></div>"
       }
     }
   ]
@@ -932,6 +981,8 @@ The index.js file need to provide a odoc_search command, from a
   html/page/Main/I/index.html
   html/page/Main/M
   html/page/Main/M/index.html
+  html/page/Main/X
+  html/page/Main/X/index.html
   html/page/Main/index.html
   html/page/fuse.js.js
   html/page/index.html

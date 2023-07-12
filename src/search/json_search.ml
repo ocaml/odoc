@@ -84,14 +84,15 @@ let of_doc (doc : Odoc_model.Comment.docs) =
   let txt = Render.text_of_doc doc in
   `String txt
 
-let of_entry ({ id; doc; extra; html = _ } as entry : Entry.t) :
+let of_entry
+    ({ entry = { id; doc; kind }; html = _ } as entry : Entry.with_html) :
     Odoc_html.Json.json =
   let j_id = of_id id in
   let doc = of_doc doc in
   let display = Json_display.of_entry entry in
-  let extra =
+  let kind =
     let return kind arr = `Object (("kind", `String kind) :: arr) in
-    match extra with
+    match kind with
     | TypeDecl { canonical = _; equation; representation = _; txt = _ } ->
         let {
           Odoc_model.Lang.TypeDecl.Equation.params = _;
@@ -167,7 +168,7 @@ let of_entry ({ id; doc; extra; html = _ } as entry : Entry.t) :
             ("parent_type", `String (Render.text_of_type parent_type));
           ]
   in
-  `Object [ ("id", j_id); ("doc", doc); ("extra", extra); ("display", display) ]
+  `Object [ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ]
 
 let output_json ppf first entries =
   let output_json json =
@@ -185,6 +186,7 @@ let output_json ppf first entries =
 let unit ppf u =
   let f (first, id) i =
     let entries = Entry.entries_of_item id i in
+    let entries = List.map Generator.with_html entries in
     let id =
       match i with
       | CompilationUnit u -> (u.id :> Odoc_model.Paths.Identifier.t)
@@ -216,6 +218,7 @@ let page ppf (page : Odoc_model.Lang.Page.t) =
     let entries =
       Entry.entries_of_item (page.name :> Odoc_model.Paths.Identifier.t) i
     in
+    let entries = List.map Generator.with_html entries in
     output_json ppf first entries
   in
   let _first = Odoc_model.Fold.page ~f true page in
