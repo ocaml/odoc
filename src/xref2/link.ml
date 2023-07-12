@@ -350,7 +350,7 @@ and open_ env parent = function
 
 let rec unit env t =
   let open Compilation_unit in
-  let search_asset = Option.map (search_asset env) t.search_asset in
+  let search_assets = List.map (search_asset env) t.search_assets in
   let content =
     match t.content with
     | Module sg ->
@@ -358,7 +358,7 @@ let rec unit env t =
         Module sg
     | Pack _ as p -> p
   in
-  { t with content; linked = true; search_asset }
+  { t with content; linked = true; search_assets }
 
 and search_asset env asset =
   match Ref_tools.resolve_asset_reference env asset |> Error.raise_warnings with

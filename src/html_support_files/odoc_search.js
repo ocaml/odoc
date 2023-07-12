@@ -6,9 +6,9 @@ function createWebWorker() {
   var searchs = search_urls.map((search_url) => {
     let parts = document.location.href.split("/");
     parts[parts.length - 1] = search_url;
-    return parts.join("/");
+    return '"' + parts.join("/") + '"';
   });
-  blobContents = ['importScripts("' + searchs.join(",") + '");'];
+  blobContents = ['importScripts(' + searchs.join(",") + ');'];
   var blob = new Blob(blobContents, { type: "application/javascript" });
   var blobUrl = URL.createObjectURL(blob);
 

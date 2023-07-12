@@ -92,10 +92,10 @@ let prepare_preamble comment items =
   in
   (Comment.standalone preamble, Comment.standalone first_comment @ items)
 
-let make_expansion_page ~source_anchor ~search_asset url comments items =
+let make_expansion_page ~source_anchor ~search_assets url comments items =
   let comment = List.concat comments in
   let preamble, items = prepare_preamble comment items in
-  { Page.preamble; items; url; source_anchor; search_asset }
+  { Page.preamble; items; url; source_anchor; search_assets }
 
 include Generator_signatures
 
@@ -1130,7 +1130,7 @@ module Make (Syntax : SYNTAX) = struct
             let expansion_doc, items = class_signature csig in
             let url = Url.Path.from_identifier t.id in
             let page =
-              make_expansion_page ~search_asset:None ~source_anchor url
+              make_expansion_page ~search_assets:[] ~source_anchor url
                 [ t.doc; expansion_doc ] items
             in
             ( O.documentedSrc @@ path url [ inline @@ Text name ],
@@ -1168,7 +1168,7 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier t.id in
             let expansion_doc, items = class_signature csig in
             let page =
-              make_expansion_page ~search_asset:None ~source_anchor url
+              make_expansion_page ~search_assets:[] ~source_anchor url
                 [ t.doc; expansion_doc ] items
             in
             ( O.documentedSrc @@ path url [ inline @@ Text name ],
@@ -1295,7 +1295,7 @@ module Make (Syntax : SYNTAX) = struct
             let modname = path url [ inline @@ Text name ] in
             let type_with_expansion =
               let content =
-                make_expansion_page ~search_asset:None ~source_anchor:None url
+                make_expansion_page ~search_assets:[] ~source_anchor:None url
                   [ expansion_doc ] items
               in
               let summary = O.render modtyp in
@@ -1436,7 +1436,7 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
             let page =
-              make_expansion_page ~search_asset:None ~source_anchor url
+              make_expansion_page ~search_assets:[] ~source_anchor url
                 [ t.doc; expansion_doc ] items
             in
             (link, status, Some page, Some expansion_doc)
@@ -1497,7 +1497,7 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier id in
             let link = path url [ inline @@ Text modname ] in
             let page =
-              make_expansion_page ~search_asset:None ~source_anchor url
+              make_expansion_page ~search_assets:[] ~source_anchor url
                 [ doc; expansion_doc ] items
             in
             (link, Some page, Some expansion_doc)
@@ -1787,14 +1787,16 @@ module Make (Syntax : SYNTAX) = struct
         | Some src -> Some (Source_page.url src.id)
         | None -> None
       in
-      let search_asset =
-        match t.search_asset with
-        | Some (`Resolved (`Identifier id)) ->
-            Some (Url.Path.from_identifier id)
-        | _ -> None
+      let search_assets =
+        List.filter_map
+          (function
+            | `Resolved (`Identifier id) ->
+                Some Url.(from_path @@ Path.from_identifier id)
+            | _ -> None)
+          t.search_assets
       in
       let page =
-        make_expansion_page ~search_asset ~source_anchor url [ unit_doc ] items
+        make_expansion_page ~search_assets ~source_anchor url [ unit_doc ] items
       in
       Document.Page page
 
@@ -1807,7 +1809,7 @@ module Make (Syntax : SYNTAX) = struct
       let preamble, items = Sectioning.docs t.content in
       let source_anchor = None in
       Document.Page
-        { Page.preamble; items; url; source_anchor; search_asset = None }
+        { Page.preamble; items; url; source_anchor; search_assets = [] }
 
     let source_tree t =
       let dir_pages = t.Odoc_model.Lang.SourceTree.source_children in
@@ -1897,7 +1899,7 @@ module Make (Syntax : SYNTAX) = struct
             items;
             url;
             source_anchor = None;
-            search_asset = None;
+            search_assets = [];
           }
       in
       M.fold (fun dir children acc -> page_of_dir dir children :: acc) mmap []

@@ -489,7 +489,7 @@ module rec Compilation_unit : sig
     shape_info :
       (Compat.shape * Paths.Identifier.SourceLocation.t Compat.shape_uid_map)
       option;
-    search_asset : Reference.Asset.t option;
+    search_assets : Reference.Asset.t list;
   }
 end =
   Compilation_unit

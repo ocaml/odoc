@@ -178,7 +178,7 @@ and Page : sig
     source_anchor : Url.t option;
         (** Url to the corresponding source code. Might be a whole source file
             or a sub part. *)
-    search_asset : Url.Path.t option;
+    search_assets : Url.t list;
   }
 end =
   Page

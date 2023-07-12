@@ -184,7 +184,7 @@ end = struct
 
   let compile hidden directories resolve_fwd_refs dst package_opt
       parent_name_opt open_modules children input warnings_options
-      source_parent_file source_name cmt_filename_opt search_asset =
+      source_parent_file source_name cmt_filename_opt search_assets =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -220,7 +220,7 @@ end = struct
     source >>= fun source ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warnings_options ~source ~cmt_filename_opt ~search_asset input
+      ~warnings_options ~source ~cmt_filename_opt ~search_assets input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -292,8 +292,7 @@ end = struct
     let search_asset =
       let doc = "Search asset." in
       Arg.(
-        value
-        & opt (some string) None
+        value & opt_all string []
         & info ~docs ~docv:"ASSET" ~doc [ "search-asset" ])
     in
     let resolve_fwd_refs =
@@ -813,8 +812,7 @@ module Odoc_html_args = struct
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ flat $ as_json $ source_file $ assets
-      $ source_root)
+      $ support_uri $ flat $ as_json $ source_file $ assets $ source_root)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)

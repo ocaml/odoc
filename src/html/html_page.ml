@@ -94,7 +94,7 @@ let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
       make_navigation ~up_url:up.href
         (List.rev html @ sep @ [ Html.txt current.name ])
 
-let page_creator ~config ~url ~uses_katex ~search_url header breadcrumbs toc
+let page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
     content =
   let theme_uri = Config.theme_uri config in
   let support_uri = Config.support_uri config in
@@ -115,10 +115,16 @@ let page_creator ~config ~url ~uses_katex ~search_url header breadcrumbs toc
     let odoc_css_uri = file_uri theme_uri "odoc.css" in
     let highlight_js_uri = file_uri support_uri "highlight.pack.js" in
     let search_scripts =
-      match search_url with
-      | None -> []
-      | Some search_url ->
-          let search_urls = "['" ^ search_url ^ "']" in
+      match search_urls with
+      | [] -> []
+      | search_urls ->
+          let search_urls =
+            let search_url name =
+              Printf.sprintf "'%s'" (file_uri support_uri name)
+            in
+            let search_urls = List.map search_url search_urls in
+            "[" ^ String.concat "," search_urls ^ "]"
+          in
           [
             Html.script ~a:[]
               (Html.txt
@@ -187,10 +193,10 @@ let page_creator ~config ~url ~uses_katex ~search_url header breadcrumbs toc
     Html.head (Html.title (Html.txt title_string)) meta_elements
   in
   let search_bar =
-    match search_url with
-    | Some _ ->
+    match search_urls with
+    | [] -> []
+    | _ ->
         [ Html.div ~a:[ Html.a_class [ "odoc-search" ] ] [ html_of_search () ] ]
-    | None -> []
   in
 
   let body =
@@ -210,11 +216,11 @@ let page_creator ~config ~url ~uses_katex ~search_url header breadcrumbs toc
   in
   content
 
-let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex ~search_url content
+let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex ~search_urls content
     children =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
   let content =
-    page_creator ~config ~url ~uses_katex ~search_url header breadcrumbs toc
+    page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
       content
   in
   { Odoc_document.Renderer.filename; content; children }
