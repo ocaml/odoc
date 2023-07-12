@@ -163,7 +163,7 @@ let html_of_entry (entry : Odoc_model.Fold.item) =
 let html_of_doc doc =
   let config =
     Odoc_html.Config.v ~search_result:true ~semantic_uris:false ~indent:false
-      ~flat:false ~open_details:false ~as_json:false ~search_files:[] ()
+      ~flat:false ~open_details:false ~as_json:false ()
   in
   Tyxml.Html.div ~a:[]
   @@ Odoc_html.Generator.doc ~config ~xref_base_uri:""

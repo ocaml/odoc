@@ -436,23 +436,14 @@ module Indexing = struct
 end
 
 module Support_files_command = struct
-  let support_files without_theme search_files output_dir =
-    Support_files.write ~without_theme ~search_files output_dir
+  let support_files without_theme output_dir =
+    Support_files.write ~without_theme output_dir
 
   let without_theme =
     let doc = "Don't copy the default theme to output directory." in
     Arg.(value & flag & info ~doc [ "without-theme" ])
 
-  let search_files =
-    let doc =
-      "Path to the search files. The name must match one given in \
-       $(i,--search-file) from the $(i,html-generate) command."
-    in
-    Arg.(value & opt_all convert_fpath [] & info ~doc [ "search-file" ])
-
-  let cmd =
-    Term.(
-      const support_files $ without_theme $ search_files $ dst ~create:true ())
+  let cmd = Term.(const support_files $ without_theme $ dst ~create:true ())
 
   let info ~docs =
     let doc =
@@ -772,13 +763,6 @@ module Odoc_html_args = struct
     in
     Arg.(value & flag & info ~doc [ "as-json" ])
 
-  let search_files =
-    let doc =
-      "The name of a javascript file to use for search. Will be run in a \
-       webworker. Using this option adds a search-bar in the generated html."
-    in
-    Arg.(value & opt_all string [] & info ~doc [ "search-file" ])
-
   let source_file =
     let doc =
       "Source code for the compilation unit. It must have been compiled with \
@@ -810,7 +794,7 @@ module Odoc_html_args = struct
 
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri flat
-        as_json source_file assets search_files source_root =
+        as_json source_file assets source_root =
       let open_details = not closed_details in
       let source =
         match (source_root, source_file) with
@@ -823,13 +807,13 @@ module Odoc_html_args = struct
       in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~semantic_uris ~indent ~flat
-          ~open_details ~as_json ~search_files ()
+          ~open_details ~as_json ()
       in
       { Html_page.html_config; source; assets }
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ flat $ as_json $ source_file $ assets $ search_files
+      $ support_uri $ flat $ as_json $ source_file $ assets
       $ source_root)
 end
 
@@ -1051,14 +1035,11 @@ module Targets = struct
   end
 
   module Support_files = struct
-    let list_targets without_theme search_files output_directory =
-      Support_files.print_filenames ~without_theme ~search_files
-        output_directory
+    let list_targets without_theme output_directory =
+      Support_files.print_filenames ~without_theme output_directory
 
     let cmd =
-      Term.(
-        const list_targets $ Support_files_command.without_theme
-        $ Support_files_command.search_files $ dst ())
+      Term.(const list_targets $ Support_files_command.without_theme $ dst ())
 
     let info ~docs =
       Term.info "support-files-targets" ~docs

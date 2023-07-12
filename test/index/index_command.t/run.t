@@ -884,7 +884,7 @@ The index.js file need to provide a odoc_search command, from a
   $ odoc html-generate -o html j.odocl
   $ odoc html-generate -o html main.odocl
   $ odoc html-generate --asset index.js -o html page-page.odocl
-  $ odoc support-files --search-file index.js -o html
+  $ odoc support-files -o html
 
   $ find html | sort
   html
@@ -921,7 +921,6 @@ The index.js file need to provide a odoc_search command, from a
   html/fonts/noticia-text-v15-latin-italic.woff2
   html/fonts/noticia-text-v15-latin-regular.woff2
   html/highlight.pack.js
-  html/index.js
   html/katex.min.css
   html/katex.min.js
   html/odoc.css
