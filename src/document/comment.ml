@@ -88,6 +88,7 @@ module Reference = struct
     | `InstanceVariable (p, f) ->
         render_unresolved (p :> t) ^ "." ^ InstanceVariableName.to_string f
     | `Label (p, f) -> render_unresolved (p :> t) ^ "." ^ LabelName.to_string f
+    | `Asset (p, f) -> render_unresolved (p :> t) ^ "." ^ AssetName.to_string f
 
   (* This is the entry point. *)
   let to_ir : ?text:Inline.t -> Reference.t -> Inline.t =

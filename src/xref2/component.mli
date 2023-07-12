@@ -636,7 +636,13 @@ module Fmt : sig
   val model_resolved_reference :
     Format.formatter -> Odoc_model.Paths.Reference.Resolved.t -> unit
 
+  val model_resolved_asset_reference :
+    Format.formatter -> Odoc_model.Paths.Reference.Resolved.Asset.t -> unit
+
   val model_reference : Format.formatter -> Odoc_model.Paths.Reference.t -> unit
+
+  val model_asset_reference :
+    Format.formatter -> Odoc_model.Paths.Reference.Asset.t -> unit
 end
 
 module Of_Lang : sig

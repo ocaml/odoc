@@ -1499,6 +1499,11 @@ module Fmt = struct
           (parent :> t)
           (LabelName.to_string name)
 
+  and model_resolved_asset_reference ppf
+      (`Identifier id : Odoc_model.Paths.Reference.Resolved.Asset.t) =
+    Format.fprintf ppf "%a" model_identifier
+      (id :> Odoc_model.Paths.Identifier.t)
+
   and model_reference ppf (r : Odoc_model.Paths.Reference.t) =
     let open Odoc_model.Paths.Reference in
     match r with
@@ -1562,6 +1567,23 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" model_reference
           (parent :> t)
           (LabelName.to_string name)
+    | `Asset (parent, name) ->
+        Format.fprintf ppf "%a.%s" model_reference
+          (parent :> t)
+          (AssetName.to_string name)
+
+  and model_asset_reference ppf (r : Odoc_model.Paths.Reference.Asset.t) =
+    let open Odoc_model.Paths.Reference in
+    match r with
+    | `Resolved r' ->
+        Format.fprintf ppf "r(%a)" model_resolved_asset_reference r'
+    | `Root (name, _) -> Format.fprintf ppf "unresolvedroot(%s)" name
+    | `Dot (parent, str) ->
+        Format.fprintf ppf "%a.%s" model_reference (parent :> t) str
+    | `Asset (parent, name) ->
+        Format.fprintf ppf "%a.%s" model_reference
+          (parent :> t)
+          (AssetName.to_string name)
 end
 
 module LocalIdents = struct

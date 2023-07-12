@@ -13,3 +13,6 @@ val resolve_module_reference :
 
 val resolve_reference :
   Env.t -> t -> Resolved.t ref_result Odoc_model.Error.with_warnings
+
+val resolve_asset_reference :
+  Env.t -> Asset.t -> Resolved.Asset.t ref_result Odoc_model.Error.with_warnings

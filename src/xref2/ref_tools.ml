@@ -569,7 +569,43 @@ module Page = struct
     | Some p -> Ok (`Identifier p.Odoc_model.Lang.Page.name, p)
     | None -> Error (`Lookup_by_name (`Page, name))
 
+  let in_env_from_id env (id : Identifier.Page.t) =
+    match id with
+    | { iv = `Page (_, parent_name) | `LeafPage (_, parent_name); _ } ->
+        in_env env (PageName.to_string parent_name)
+
   let of_element _env (`Page (id, page)) : t = (`Identifier id, page)
+end
+
+module A = struct
+  (** Assets *)
+
+  let rec in_page env (page : Odoc_model.Lang.Page.t) (asset_name : string) :
+      (Reference.Resolved.Asset.t, _) result =
+    let has_asset children asset =
+      List.exists
+        (function
+          | Odoc_model.Lang.Page.Asset_child a -> String.equal a asset
+          | _ -> false)
+        children
+    in
+    let parent_id
+        {
+          Odoc_model.Lang.Page.name =
+            { iv = `Page (parent, _) | `LeafPage (parent, _); _ };
+          _;
+        } =
+      parent
+    in
+    if has_asset page.children asset_name then
+      Ok (`Identifier (Identifier.Mk.asset_file (page.name, asset_name)))
+    else
+      let parent = (parent_id page :> Identifier.Page.t option) in
+      match parent with
+      | Some parent ->
+          Page.in_env_from_id env parent >>= fun (_, p) ->
+          in_page env p asset_name
+      | None -> Error (`Lookup_by_name (`Asset, asset_name))
 end
 
 module LP = struct
@@ -784,7 +820,12 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
       Error (`Find_by_name (`Any, name))
 
 let resolve_reference_dot_page env page name =
-  L.in_page env page name >>= resolved1
+  match (L.in_page env page name, page) with
+  | Ok e, _ -> resolved1 e
+  | Error _, `P (_, p) -> (
+      match A.in_page env p name with
+      | Ok e -> resolved1 e
+      | Error _ -> Error (`Find_by_name (`Asset_or_label, name)))
 
 let resolve_reference_dot_type env ~parent_ref t name =
   find Find.any_in_type t name >>= function
@@ -806,27 +847,56 @@ let resolve_reference_dot env parent name =
   | (`C _ | `CT _) as p -> resolve_reference_dot_class env p name
   | `P _ as page -> resolve_reference_dot_page env page name
 
+let resolve_page_reference env (r : Reference.Page.t) =
+  match r with
+  | `Resolved _ -> failwith "unimplemented"
+  | `Dot (_, name) | `Root (name, _) -> Page.in_env env name
+
+let resolve_asset_reference env (m : Reference.Asset.t) =
+  match m with
+  | `Resolved r -> Ok r
+  | `Root (name, _) -> (
+      match Env.parent_page env with
+      | None -> Error (`Lookup_by_name (`Asset, name))
+      | Some parent_page ->
+          Page.in_env_from_id env parent_page >>= fun (_, page) ->
+          A.in_page env page name)
+  | `Dot (parent, name) ->
+      let x =
+        resolve_label_parent_reference env parent >>= function
+        | (`S _ | `T _ | `C _ | `CT _) as c -> wrong_kind_error [ `Page ] c
+        | `P _ as page -> Ok page
+      in
+      x >>= fun (`P (_, p)) -> A.in_page env p name
+  | `Asset (parent_page, name) ->
+      resolve_page_reference env parent_page >>= fun (_, p) ->
+      A.in_page env p (AssetName.to_string name)
+
 (** Warnings may be generated with [Error.implicit_warning] *)
 let resolve_reference =
   let resolved = resolved3 in
-  fun env r ->
+  fun env (r : t) ->
     match r with
     | `Root (name, `TUnknown) -> (
         let identifier id = Ok (`Identifier (id :> Identifier.t)) in
-        env_lookup_by_name Env.s_any name env >>= function
-        | `Module (_, _) as e -> resolved (M.of_element env e)
-        | `ModuleType (_, _) as e -> resolved (MT.of_element env e)
-        | `Value (id, _) -> identifier id
-        | `Type (id, _) -> identifier id
-        | `Label (id, _) -> identifier id
-        | `Class (id, _) -> identifier id
-        | `ClassType (id, _) -> identifier id
-        | `Constructor (id, _) -> identifier id
-        | `Exception (id, _) -> identifier id
-        | `Extension (id, _, _) -> identifier id
-        | `ExtensionDecl (id, _) -> identifier id
-        | `Field (id, _) -> identifier id
-        | `Page (id, _) -> identifier id)
+        match env_lookup_by_name Env.s_any name env with
+        | Ok (`Module (_, _) as e) -> resolved (M.of_element env e)
+        | Ok (`ModuleType (_, _) as e) -> resolved (MT.of_element env e)
+        | Ok (`Value (id, _)) -> identifier id
+        | Ok (`Type (id, _)) -> identifier id
+        | Ok (`Label (id, _)) -> identifier id
+        | Ok (`Class (id, _)) -> identifier id
+        | Ok (`ClassType (id, _)) -> identifier id
+        | Ok (`Constructor (id, _)) -> identifier id
+        | Ok (`Exception (id, _)) -> identifier id
+        | Ok (`Extension (id, _, _)) -> identifier id
+        | Ok (`ExtensionDecl (id, _)) -> identifier id
+        | Ok (`Field (id, _)) -> identifier id
+        | Ok (`Page (id, _)) -> identifier id
+        | Error _ as e -> (
+            match resolve_asset_reference env (`Root (name, `TAsset)) with
+            | Ok res -> resolved1 res
+            | Error _ -> e))
     | `Resolved r -> Ok r
     | `Root (name, (`TModule | `TChildModule)) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->
@@ -885,6 +955,8 @@ let resolve_reference =
         resolve_class_signature_reference env parent >>= fun p ->
         MM.in_class_signature env p name >>= resolved1
     | `Root (name, `TInstanceVariable) -> MV.in_env env name >>= resolved1
+    | (`Asset _ | `Root (_, `TAsset)) as t ->
+        resolve_asset_reference env t >>= resolved1
     | `InstanceVariable (parent, name) ->
         resolve_class_signature_reference env parent >>= fun p ->
         MV.in_class_signature env p name >>= resolved1
@@ -892,5 +964,10 @@ let resolve_reference =
 let resolve_module_reference env m =
   Odoc_model.Error.catch_warnings (fun () -> resolve_module_reference env m)
 
-let resolve_reference env m =
+let resolve_reference :
+    Env.t -> t -> Resolved.t ref_result Odoc_model.Error.with_warnings =
+ fun env m ->
   Odoc_model.Error.catch_warnings (fun () -> resolve_reference env m)
+
+let resolve_asset_reference env m =
+  Odoc_model.Error.catch_warnings (fun () -> resolve_asset_reference env m)

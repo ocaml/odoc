@@ -163,6 +163,7 @@ type t = {
   resolver : resolver option;
   recorder : recorder option;
   fragmentroot : (int * Component.Signature.t) option;
+  parent_page : Identifier.Page.t option;  (** parent page *)
 }
 
 let is_linking env = env.linking
@@ -199,6 +200,7 @@ let empty =
     recorder = None;
     ambiguous_labels = Identifier.Maps.Label.empty;
     fragmentroot = None;
+    parent_page = None;
   }
 
 let add_fragment_root sg env =
@@ -812,12 +814,19 @@ let env_of_unit t ~linking resolver =
     let env = { empty with linking } in
     env |> add_module (t.id :> Identifier.Path.Module.t) dm m.doc
   in
+  let parent_page :> Identifier.Page.t option =
+    match t.id.iv with
+    | `Root (None, _) -> None
+    | `Root (Some parent, _) -> Some parent
+  in
+  let initial_env = { initial_env with parent_page } in
   set_resolver initial_env resolver |> open_units resolver
 
 let open_page page env = add_docs page.Lang.Page.content env
 
 let env_of_page page resolver =
   let initial_env = open_page page empty in
+  let initial_env = { initial_env with parent_page = Some page.name } in
   set_resolver initial_env resolver |> open_units resolver
 
 let env_for_reference resolver =
@@ -880,3 +889,5 @@ let verify_lookups env lookups =
   | true, Some r -> r.lookups <- LookupTypeSet.union r.lookups lookups
   | _ -> ());
   result
+
+let parent_page env = env.parent_page

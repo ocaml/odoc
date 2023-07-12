@@ -34,6 +34,8 @@ module Names = struct
 
   let labelname = To_string LabelName.to_string
 
+  let assetname = To_string AssetName.to_string
+
   let pagename = To_string PageName.to_string
 
   let parametername = To_string ModuleName.to_string
@@ -200,6 +202,7 @@ module General_paths = struct
       | `TType -> C0 "`TType"
       | `TUnknown -> C0 "`TUnknown"
       | `TValue -> C0 "`TValue"
+      | `TAsset -> C0 "`TValue"
       | `TChildPage -> C0 "`TChildPage"
       | `TChildModule -> C0 "`TChildModule")
 
@@ -329,7 +332,9 @@ module General_paths = struct
               ((x1 :> r), x2),
               Pair (reference, Names.instancevariablename) )
       | `Label (x1, x2) ->
-          C ("`Label", ((x1 :> r), x2), Pair (reference, Names.labelname)))
+          C ("`Label", ((x1 :> r), x2), Pair (reference, Names.labelname))
+      | `Asset (x1, x2) ->
+          C ("`Asset", ((x1 :> r), x2), Pair (reference, Names.assetname)))
 
   and resolved_reference : rr t =
     Variant

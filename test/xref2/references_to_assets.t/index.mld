@@ -1,0 +1,10 @@
+{0 Package page}
+
+A {{!asset-"caml.gif"}reference} to an asset.
+
+And a reference using a page parent, with various qualifications:
+- {!page-other_page.asset-"caml_not.gif"}
+- {!page-other_page."caml_not.gif"}
+- {!other_page."caml_not.gif"}
+- {!other_page.asset-"caml_not.gif"}
+- {!"caml.gif"}

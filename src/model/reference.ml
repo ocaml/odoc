@@ -76,6 +76,7 @@ let match_extra_odoc_reference_kind (_location as loc) s :
       Some `TLabel
   | Some "module-type" -> Some `TModuleType
   | Some "page" -> Some `TPage
+  | Some "asset" -> Some `TAsset
   | Some "value" ->
       d loc "value" "val";
       Some `TValue
@@ -298,6 +299,26 @@ let parse whole_reference_location s :
             |> Error.raise_exception)
   in
 
+  let page (kind, identifier, location) tokens : Page.t =
+    let kind = match_reference_kind location kind in
+    match tokens with
+    | [] -> (
+        match kind with
+        | (`TUnknown | `TPage) as kind -> `Root (identifier, kind)
+        | _ -> expected [ "page" ] location |> Error.raise_exception)
+    | next_token :: tokens -> (
+        match kind with
+        | `TUnknown -> `Dot (label_parent next_token tokens, identifier)
+        | _ ->
+            let suggestion =
+              Printf.sprintf "'page-%s' should be first." identifier
+            in
+            not_allowed ~what:"Page label"
+              ~in_what:"the last component of a reference path" ~suggestion
+              location
+            |> Error.raise_exception)
+  in
+
   let start_from_last_component (kind, identifier, location) old_kind tokens =
     let new_kind = match_reference_kind location kind in
     let kind =
@@ -363,6 +384,8 @@ let parse whole_reference_location s :
         | `TLabel ->
             `Label
               (label_parent next_token tokens, LabelName.make_std identifier)
+        | `TAsset ->
+            `Asset (page next_token tokens, AssetName.make_std identifier)
         | `TChildPage | `TChildModule ->
             let suggestion =
               Printf.sprintf "'child-%s' should be first." identifier
