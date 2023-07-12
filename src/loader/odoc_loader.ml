@@ -52,7 +52,7 @@ let read_cmt_infos source_id_opt id ~filename () =
 
 
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical ?shape_info ~source_info ~search_asset content =
+    ?canonical ?shape_info ~source_info ~search_assets content =
   let open Odoc_model.Lang.Compilation_unit in
   let interface, digest =
     match interface with
@@ -90,7 +90,7 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     canonical;
     source_info;
     shape_info;
-    search_asset;
+    search_assets;
   }
 
 
@@ -100,7 +100,7 @@ let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
   make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     ?canonical ?shape_info content
 
-let read_cmti ~make_root ~parent ~filename ~search_asset ~cmt_filename_opt ~source_id_opt () =
+let read_cmti ~make_root ~parent ~filename ~search_assets ~cmt_filename_opt ~source_id_opt () =
   let cmt_info = Cmt_format.read_cmt filename in
   match cmt_info.cmt_annots with
   | Interface intf -> (
@@ -121,11 +121,11 @@ let read_cmti ~make_root ~parent ~filename ~search_asset ~cmt_filename_opt ~sour
             | None -> (None, None)
           in
           compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
-            ~interface ~sourcefile ~name ~id ?shape_info ~source_info ~search_asset
+            ~interface ~sourcefile ~name ~id ?shape_info ~source_info ~search_assets
             ?canonical sg)
   | _ -> raise Not_an_interface
 
-let read_cmt ~make_root ~parent ~filename ~search_asset ~source_id_opt () =
+let read_cmt ~make_root ~parent ~filename ~search_assets ~source_id_opt () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
       raise Not_an_implementation
@@ -165,14 +165,14 @@ let read_cmt ~make_root ~parent ~filename ~search_asset ~source_id_opt () =
           in
           let content = Odoc_model.Lang.Compilation_unit.Pack items in
           make_compilation_unit ~make_root ~imports ~interface ~sourcefile ~name
-            ~id  ~search_asset ~source_info:None content
+            ~id  ~search_assets ~source_info:None content
       | Implementation impl ->
           let id, sg, canonical = Cmt.read_implementation parent name impl in
           let shape_info, source_info =
             read_cmt_infos source_id_opt id ~filename ()
           in
           compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
-            ~name ~id ?canonical ?shape_info  ~search_asset ~source_info sg
+            ~name ~id ?canonical ?shape_info  ~search_assets ~source_info sg
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =
@@ -200,14 +200,14 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt  ~search_asset =
+let read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt  ~search_assets =
   wrap_errors ~filename
-    (read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt  ~search_asset)
+    (read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt  ~search_assets)
 
-let read_cmt ~make_root ~parent ~filename ~source_id_opt ~search_asset =
-  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename ~source_id_opt ~search_asset)
+let read_cmt ~make_root ~parent ~filename ~source_id_opt ~search_assets =
+  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename ~source_id_opt ~search_assets)
 
-let read_cmi ~make_root ~parent ~filename ~search_asset =
-  wrap_errors ~filename (read_cmi ~make_root ~parent ~filename ~search_asset)
+let read_cmi ~make_root ~parent ~filename ~search_assets =
+  wrap_errors ~filename (read_cmi ~make_root ~parent ~filename ~search_assets)
 
 let read_location = Doc_attr.read_location

@@ -98,21 +98,21 @@ let resolve_imports resolver imports =
 
 (** Raises warnings and errors. *)
 let resolve_and_substitute ~resolver ~make_root ~source_id_opt ~cmt_filename_opt
-    ~hidden ~search_asset (parent : Paths.Identifier.ContainerPage.t option)
+    ~hidden ~search_assets (parent : Paths.Identifier.ContainerPage.t option)
     input_file input_type =
   let filename = Fs.File.to_string input_file in
   let unit =
     match input_type with
     | `Cmti ->
         Odoc_loader.read_cmti ~make_root ~parent ~filename ~source_id_opt
-          ~cmt_filename_opt ~search_asset
+          ~cmt_filename_opt ~search_assets
         |> Error.raise_errors_and_warnings
     | `Cmt ->
         Odoc_loader.read_cmt ~make_root ~parent ~filename ~source_id_opt
-          ~search_asset
+          ~search_assets
         |> Error.raise_errors_and_warnings
     | `Cmi ->
-        Odoc_loader.read_cmi ~make_root ~parent ~filename ~search_asset
+        Odoc_loader.read_cmi ~make_root ~parent ~filename ~search_assets
         |> Error.raise_errors_and_warnings
   in
   let unit = { unit with hidden = hidden || unit.hidden } in
@@ -251,10 +251,10 @@ let handle_file_ext ext =
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options ~source ~cmt_filename_opt ~search_asset input =
+    ~warnings_options ~source ~cmt_filename_opt ~search_assets input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
-  let search_asset : Paths.Reference.Asset.t option =
-    match search_asset with None -> None | Some s -> Some (`Root (s, `TAsset))
+  let search_assets : Paths.Reference.Asset.t list =
+    List.map (fun a -> `Root (a, `TAsset)) search_assets
     (* Assets references are considered as "simple" reference, no way to specify
        the parent page of an asset. Therefore, seach assets need to be children
        of a page ancestor. *)
@@ -303,7 +303,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let result =
       Error.catch_errors_and_warnings (fun () ->
           resolve_and_substitute ~resolver ~make_root ~hidden ~source_id_opt
-            ~cmt_filename_opt ~search_asset parent input input_type)
+            ~cmt_filename_opt ~search_assets parent input input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in
