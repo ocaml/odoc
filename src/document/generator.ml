@@ -1789,9 +1789,9 @@ module Make (Syntax : SYNTAX) = struct
       in
       let search_asset =
         match t.search_asset with
-        | No -> None
-        | String _ -> None
-        | Id i -> Some (Url.Path.from_identifier i)
+        | Some (`Resolved (`Identifier id)) ->
+            Some (Url.Path.from_identifier id)
+        | _ -> None
       in
       let page =
         make_expansion_page ~search_asset ~source_anchor url [ unit_doc ] items

@@ -473,8 +473,6 @@ module rec Compilation_unit : sig
 
   type content = Module of Signature.t | Pack of Packed.t
 
-  type search_asset = No | String of string | Id of Identifier.AssetFile.t
-
   type t = {
     id : Identifier.RootModule.t;
     root : Root.t;
@@ -491,7 +489,7 @@ module rec Compilation_unit : sig
     shape_info :
       (Compat.shape * Paths.Identifier.SourceLocation.t Compat.shape_uid_map)
       option;
-    search_asset : search_asset;
+    search_asset : Reference.Asset.t option;
   }
 end =
   Compilation_unit
