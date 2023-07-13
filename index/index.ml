@@ -2,12 +2,16 @@ let index_file register filename =
   match Fpath.of_string filename with
   | Error (`Msg msg) -> Format.printf "FILE ERROR %s: %s@." filename msg
   | Ok file -> (
-      match
-        Odoc_odoc.Indexing.handle_file
-          ~page:(Odoc_model.Fold.page ~f:register ())
-          ~unit:(Odoc_model.Fold.unit ~f:register ())
-          file
-      with
+      let open Odoc_model in
+      let page p =
+        let id = p.Lang.Page.name in
+        Fold.page ~f:(register (id :> Paths.Identifier.t)) () p
+      in
+      let unit u =
+        let id = u.Lang.Compilation_unit.id in
+        Fold.unit ~f:(register (id :> Paths.Identifier.t)) () u
+      in
+      match Odoc_odoc.Indexing.handle_file ~page ~unit file with
       | Ok (Some result) -> result
       | Ok None -> ()
       | Error (`Msg msg) -> Format.printf "ODOC ERROR %s: %s@." filename msg)
@@ -20,10 +24,10 @@ let storage_module = function
 let main files index_docstring index_name type_search db_filename db_format =
   let module Storage = (val storage_module db_format) in
   let db = Db.make () in
-  let register () item =
+  let register id () item =
     List.iter
       (Load_doc.register_entry ~db ~index_docstring ~index_name ~type_search)
-      (Odoc_search.Entry.entries_of_item item)
+      (Odoc_search.Entry.entries_of_item id item)
   in
   let h = Storage.open_out db_filename in
   let t0 = Unix.gettimeofday () in
