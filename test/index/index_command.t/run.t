@@ -27,115 +27,8 @@ Without error during resolving
 
   $ odoc compile-index -I .
 
-  $ cat index.json | jq
+  $ cat index.json | jq sort
   [
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        }
-      ],
-      "doc": "",
-      "kind": {
-        "kind": "Module"
-      },
-      "display": {
-        "url": "page/Main/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Type",
-          "name": "t"
-        }
-      ],
-      "doc": "A comment",
-      "kind": {
-        "kind": "TypeDecl",
-        "private": false,
-        "manifest": "int",
-        "constraints": []
-      },
-      "display": {
-        "url": "page/Main/index.html#type-t",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">type</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">t</span><code class=\"entry_rhs\"> = int</code></code><div class=\"entry-comment\"><div><p>A comment</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "X"
-        }
-      ],
-      "doc": "",
-      "kind": {
-        "kind": "Module"
-      },
-      "display": {
-        "url": "page/Main/X/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">X</span></code><div class=\"entry-comment\"><div></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "X"
-        },
-        {
-          "kind": "Value",
-          "name": "c"
-        }
-      ],
-      "doc": "A value inside a module",
-      "kind": {
-        "kind": "Value",
-        "type": "int"
-      },
-      "display": {
-        "url": "page/Main/X/index.html#val-c",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.X.</span><span class=\"entry-name\">c</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>A value inside a module</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Type",
-          "name": "tdzdz"
-        }
-      ],
-      "doc": "A comment aaaaaaaaaa",
-      "kind": {
-        "kind": "TypeDecl",
-        "private": false,
-        "manifest": null,
-        "constraints": []
-      },
-      "display": {
-        "url": "page/Main/index.html#type-tdzdz",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">type</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">tdzdz</span><code class=\"entry_rhs\">= A of int * int | B of int list * int</code></code><div class=\"entry-comment\"><div><p>A comment aaaaaaaaaa</p></div></div></div>"
-      }
-    },
     {
       "id": [
         {
@@ -204,21 +97,333 @@ Without error during resolving
       "id": [
         {
           "kind": "Root",
+          "name": "J"
+        }
+      ],
+      "doc": "a paragraph two",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Paragraph"
+      },
+      "display": {
+        "url": "page/J/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">J</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Page",
+          "name": "page"
+        }
+      ],
+      "doc": "A paragraph",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Paragraph"
+      },
+      "display": {
+        "url": "page/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>A paragraph</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Page",
+          "name": "page"
+        }
+      ],
+      "doc": "a list of things",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Paragraph"
+      },
+      "display": {
+        "url": "page/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>a list <em>of</em> things</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Page",
+          "name": "page"
+        }
+      ],
+      "doc": "bliblib",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Paragraph"
+      },
+      "display": {
+        "url": "page/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>bliblib</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Page",
+          "name": "page"
+        }
+      ],
+      "doc": "and code",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "CodeBlock"
+      },
+      "display": {
+        "url": "page/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>and code</code></pre></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Page",
+          "name": "page"
+        }
+      ],
+      "doc": "some verbatim",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Verbatim"
+      },
+      "display": {
+        "url": "page/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><pre>some verbatim</pre></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
           "name": "Main"
         },
         {
-          "kind": "Label",
-          "name": "this-is-a-title"
+          "kind": "Module",
+          "name": "I"
         }
       ],
-      "doc": "this is a title",
+      "doc": "x + 1",
       "kind": {
         "kind": "Doc",
-        "subkind": "Heading"
+        "subkind": "Paragraph"
       },
       "display": {
-        "url": "page/Main/index.html#this-is-a-title",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">this-is-a-title</span></code><div class=\"entry-comment\"><div><p>this is a title</p></div></div></div>"
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "x + 1",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Paragraph"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "a paragraph two",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Paragraph"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "a paragraph",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Paragraph"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "a paragraph",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Paragraph"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "and another",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Paragraph"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "and another",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Paragraph"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "blibli",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "CodeBlock"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "blibli",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "CodeBlock"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "verbatim",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Verbatim"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "verbatim",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Verbatim"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div></div>"
       }
     },
     {
@@ -249,6 +454,100 @@ Without error during resolving
           "name": "Main"
         },
         {
+          "kind": "Label",
+          "name": "this-is-a-title"
+        }
+      ],
+      "doc": "this is a title",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Heading"
+      },
+      "display": {
+        "url": "page/Main/index.html#this-is-a-title",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">this-is-a-title</span></code><div class=\"entry-comment\"><div><p>this is a title</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Page",
+          "name": "page"
+        },
+        {
+          "kind": "Label",
+          "name": "a-title"
+        }
+      ],
+      "doc": "A title",
+      "kind": {
+        "kind": "Doc",
+        "subkind": "Heading"
+      },
+      "display": {
+        "url": "page/index.html#a-title",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">page.</span><span class=\"entry-name\">a-title</span></code><div class=\"entry-comment\"><div><p>A title</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "J"
+        }
+      ],
+      "doc": "a paragraph one",
+      "kind": {
+        "kind": "Module"
+      },
+      "display": {
+        "url": "page/J/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">J</span></code><div class=\"entry-comment\"><div><p>a paragraph one</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        }
+      ],
+      "doc": "",
+      "kind": {
+        "kind": "Module"
+      },
+      "display": {
+        "url": "page/Main/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "I"
+        }
+      ],
+      "doc": "",
+      "kind": {
+        "kind": "Module"
+      },
+      "display": {
+        "url": "page/Main/I/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
           "kind": "Module",
           "name": "M"
         }
@@ -260,6 +559,72 @@ Without error during resolving
       "display": {
         "url": "page/Main/M/index.html",
         "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">M</span></code><div class=\"entry-comment\"><div></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "X"
+        }
+      ],
+      "doc": "",
+      "kind": {
+        "kind": "Module"
+      },
+      "display": {
+        "url": "page/Main/X/index.html",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">X</span></code><div class=\"entry-comment\"><div></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Type",
+          "name": "t"
+        }
+      ],
+      "doc": "A comment",
+      "kind": {
+        "kind": "TypeDecl",
+        "private": false,
+        "manifest": "int",
+        "constraints": []
+      },
+      "display": {
+        "url": "page/Main/index.html#type-t",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">type</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">t</span><code class=\"entry_rhs\"> = int</code></code><div class=\"entry-comment\"><div><p>A comment</p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Type",
+          "name": "tdzdz"
+        }
+      ],
+      "doc": "A comment aaaaaaaaaa",
+      "kind": {
+        "kind": "TypeDecl",
+        "private": false,
+        "manifest": null,
+        "constraints": []
+      },
+      "display": {
+        "url": "page/Main/index.html#type-tdzdz",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">type</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">tdzdz</span><code class=\"entry_rhs\">= A of int * int | B of int list * int</code></code><div class=\"entry-comment\"><div><p>A comment aaaaaaaaaa</p></div></div></div>"
       }
     },
     {
@@ -293,42 +658,21 @@ Without error during resolving
       "id": [
         {
           "kind": "Root",
-          "name": "Main"
+          "name": "J"
         },
         {
           "kind": "Value",
-          "name": "v"
+          "name": "uu"
         }
       ],
-      "doc": "a reference , and some formatted content with code and\ncode blocks",
+      "doc": "",
       "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
-        "url": "page/Main/index.html#val-v",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">v</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>a reference <span><code>t</code></span>, and some <em>formatted</em> <b>content</b> with <code>code</code> and</p><pre class=\"language-ocaml\"><code>code blocks</code></pre></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Value",
-          "name": "lorem"
-        }
-      ],
-      "doc": "lorem 1 and a link",
-      "kind": {
-        "kind": "Value",
-        "type": "int"
-      },
-      "display": {
-        "url": "page/Main/index.html#val-lorem",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">lorem</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>lorem 1 and a <span>link</span></p></div></div></div>"
+        "url": "page/J/index.html#val-uu",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">J.</span><span class=\"entry-name\">uu</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -401,17 +745,102 @@ Without error during resolving
           "name": "Main"
         },
         {
-          "kind": "Module",
-          "name": "I"
+          "kind": "Value",
+          "name": "lorem"
+        }
+      ],
+      "doc": "lorem 1 and a link",
+      "kind": {
+        "kind": "Value",
+        "type": "int"
+      },
+      "display": {
+        "url": "page/Main/index.html#val-lorem",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">lorem</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>lorem 1 and a <span>link</span></p></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Value",
+          "name": "uu"
         }
       ],
       "doc": "",
       "kind": {
-        "kind": "Module"
+        "kind": "Value",
+        "type": "int"
       },
       "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div></div></div></div>"
+        "url": "page/Main/index.html#val-uu",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">uu</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Value",
+          "name": "v"
+        }
+      ],
+      "doc": "a reference , and some formatted content with code and\ncode blocks",
+      "kind": {
+        "kind": "Value",
+        "type": "int"
+      },
+      "display": {
+        "url": "page/Main/index.html#val-v",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">v</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>a reference <span><code>t</code></span>, and some <em>formatted</em> <b>content</b> with <code>code</code> and</p><pre class=\"language-ocaml\"><code>code blocks</code></pre></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Value",
+          "name": "x"
+        }
+      ],
+      "doc": "",
+      "kind": {
+        "kind": "Value",
+        "type": "int"
+      },
+      "display": {
+        "url": "page/Main/index.html#val-x",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">x</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Value",
+          "name": "y"
+        }
+      ],
+      "doc": "",
+      "kind": {
+        "kind": "Value",
+        "type": "int"
+      },
+      "display": {
+        "url": "page/Main/index.html#val-y",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">y</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
       }
     },
     {
@@ -448,111 +877,6 @@ Without error during resolving
         {
           "kind": "Module",
           "name": "I"
-        }
-      ],
-      "doc": "a paragraph",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
-        }
-      ],
-      "doc": "and another",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
-        }
-      ],
-      "doc": "verbatim",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Verbatim"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
-        }
-      ],
-      "doc": "x + 1",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
-        }
-      ],
-      "doc": "blibli",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "CodeBlock"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
         },
         {
           "kind": "Value",
@@ -576,346 +900,22 @@ Without error during resolving
           "name": "Main"
         },
         {
+          "kind": "Module",
+          "name": "X"
+        },
+        {
           "kind": "Value",
-          "name": "x"
+          "name": "c"
         }
       ],
-      "doc": "",
+      "doc": "A value inside a module",
       "kind": {
         "kind": "Value",
         "type": "int"
       },
       "display": {
-        "url": "page/Main/index.html#val-x",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">x</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
-        }
-      ],
-      "doc": "a paragraph",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
-        }
-      ],
-      "doc": "and another",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
-        }
-      ],
-      "doc": "verbatim",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Verbatim"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
-        }
-      ],
-      "doc": "x + 1",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
-        }
-      ],
-      "doc": "blibli",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "CodeBlock"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Value",
-          "name": "y"
-        }
-      ],
-      "doc": "",
-      "kind": {
-        "kind": "Value",
-        "type": "int"
-      },
-      "display": {
-        "url": "page/Main/index.html#val-y",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">y</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Value",
-          "name": "uu"
-        }
-      ],
-      "doc": "",
-      "kind": {
-        "kind": "Value",
-        "type": "int"
-      },
-      "display": {
-        "url": "page/Main/index.html#val-uu",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">uu</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "Main"
-        },
-        {
-          "kind": "Module",
-          "name": "I"
-        }
-      ],
-      "doc": "a paragraph two",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/Main/I/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "J"
-        }
-      ],
-      "doc": "a paragraph one",
-      "kind": {
-        "kind": "Module"
-      },
-      "display": {
-        "url": "page/J/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">J</span></code><div class=\"entry-comment\"><div><p>a paragraph one</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "J"
-        },
-        {
-          "kind": "Value",
-          "name": "uu"
-        }
-      ],
-      "doc": "",
-      "kind": {
-        "kind": "Value",
-        "type": "int"
-      },
-      "display": {
-        "url": "page/J/index.html#val-uu",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">J.</span><span class=\"entry-name\">uu</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Root",
-          "name": "J"
-        }
-      ],
-      "doc": "a paragraph two",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/J/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">J</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Page",
-          "name": "page"
-        },
-        {
-          "kind": "Label",
-          "name": "a-title"
-        }
-      ],
-      "doc": "A title",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Heading"
-      },
-      "display": {
-        "url": "page/index.html#a-title",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">page.</span><span class=\"entry-name\">a-title</span></code><div class=\"entry-comment\"><div><p>A title</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Page",
-          "name": "page"
-        }
-      ],
-      "doc": "A paragraph",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>A paragraph</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Page",
-          "name": "page"
-        }
-      ],
-      "doc": "some verbatim",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Verbatim"
-      },
-      "display": {
-        "url": "page/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><pre>some verbatim</pre></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Page",
-          "name": "page"
-        }
-      ],
-      "doc": "and code",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "CodeBlock"
-      },
-      "display": {
-        "url": "page/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>and code</code></pre></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Page",
-          "name": "page"
-        }
-      ],
-      "doc": "a list of things",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>a list <em>of</em> things</p></div></div></div>"
-      }
-    },
-    {
-      "id": [
-        {
-          "kind": "Page",
-          "name": "page"
-        }
-      ],
-      "doc": "bliblib",
-      "kind": {
-        "kind": "Doc",
-        "subkind": "Paragraph"
-      },
-      "display": {
-        "url": "page/index.html",
-        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>bliblib</p></div></div></div>"
+        "url": "page/Main/X/index.html#val-c",
+        "html": "<div class=\"search-entry\"><code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.X.</span><span class=\"entry-name\">c</span><code class=\"entry_rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>A value inside a module</p></div></div></div>"
       }
     }
   ]
