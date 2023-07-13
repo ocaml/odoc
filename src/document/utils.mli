@@ -1,3 +1,4 @@
+val filter_map : ('a -> 'b option) -> 'a list -> 'b list
 val option_of_result : ('a, 'b) Result.result -> 'a option
 val flatmap : ?sep:'a list -> f:('b -> 'a list) -> 'b list -> 'a list
 val skip_until : p:('a -> bool) -> 'a list -> 'a list
