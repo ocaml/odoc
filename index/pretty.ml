@@ -18,7 +18,10 @@ and show_ident_short h (r : Paths.Identifier.t_pv Paths.Identifier.id) =
   | `CoreType n -> Format.fprintf h "%s" (Names.TypeName.to_string n)
   | _ -> Format.fprintf h "%S" (Paths.Identifier.name r)
 
-and show_module_t h = function
+and show_module_t h p =
+  Format.fprintf h "%s" (Odoc_document.Url.render_path (p : Paths.Path.Module.t :> Paths.Path.t))
+    (*
+  function
   | `Resolved t ->
       let open Paths.Path in
       Format.fprintf h "%a" show_ident_long
@@ -30,6 +33,7 @@ and show_module_t h = function
   | `Forward str -> Format.fprintf h "%s" str
   | `Result _ -> ()
   | `Identifier _ -> ()
+      *)
 
 and show_module_path h = function
   | `Identifier (`Module (_, md)) ->
@@ -100,6 +104,12 @@ let rec full_name_aux : Paths.Identifier.t -> string list =
         InstanceVariableName.to_string name :: full_name_aux (parent :> t)
     | `Label (parent, name) ->
         LabelName.to_string name :: full_name_aux (parent :> t)
+    | `AssetFile (parent, name) -> name :: full_name_aux (parent :> t)
+    | `SourceDir (parent, name) -> name :: full_name_aux (parent :> t)
+    | `SourcePage (parent, name) -> name :: full_name_aux (parent :> t)
+    | `SourceLocation (parent, name) ->
+        DefName.to_string name :: full_name_aux (parent :> t)
+    | `SourceLocationMod id -> full_name_aux (id :> t)
 
 let fullname : [< Paths.Identifier.t_pv ] Paths.Identifier.id -> string list =
  fun n -> List.rev @@ full_name_aux (n :> Paths.Identifier.t)
