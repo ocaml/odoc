@@ -93,7 +93,7 @@ let of_entry
   let kind =
     let return kind arr = `Object (("kind", `String kind) :: arr) in
     match kind with
-    | TypeDecl { canonical = _; equation; representation = _; txt = _ } ->
+    | TypeDecl { canonical = _; equation; representation = _ } ->
         let {
           Odoc_model.Lang.TypeDecl.Equation.params = _;
           private_;

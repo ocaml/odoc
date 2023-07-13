@@ -2,7 +2,6 @@ open Odoc_model.Lang
 open Odoc_model.Paths
 
 type type_decl_entry = {
-  txt : string;
   canonical : Path.Type.t option;
   equation : TypeDecl.Equation.t;
   representation : TypeDecl.Representation.t option;
@@ -147,11 +146,9 @@ let entries_of_item id (x : Odoc_model.Fold.item) =
       | Module m -> [ entry ~id:u.id ~doc:m.doc ~kind:Module ]
       | Pack _ -> [])
   | TypeDecl td ->
-      let txt = Render.text_of_typedecl td in
       let kind =
         TypeDecl
           {
-            txt;
             canonical = td.canonical;
             equation = td.equation;
             representation = td.representation;

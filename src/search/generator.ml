@@ -123,7 +123,7 @@ let type_decl_constraint (typ, typ') =
 
 let typedecl_params_of_entry Entry.{ kind; _ } =
   match kind with
-  | Entry.TypeDecl { txt = _; canonical = _; equation; representation = _ } ->
+  | Entry.TypeDecl { canonical = _; equation; representation = _ } ->
       typedecl_params equation.params
   | _ -> None
 

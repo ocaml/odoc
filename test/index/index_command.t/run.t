@@ -989,5 +989,6 @@ The index.js file need to provide a odoc_search command, from a
   html/page/index.js
 
 Run
-$ firefox html/page/Main/index.html
+$ cp -r html /tmp/
+$ firefox /tmp/html/page/Main/index.html
 to manually test the search

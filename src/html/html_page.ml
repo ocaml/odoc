@@ -100,18 +100,18 @@ let page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
   let support_uri = Config.support_uri config in
   let path = Link.Path.for_printing url in
 
-  let file_uri base file =
-    match base with
-    | Types.Absolute uri -> uri ^ "/" ^ file
-    | Relative uri ->
-        let page = Url.Path.{ kind = `File; parent = uri; name = file } in
-        Link.href ~config ~resolve:(Current url) (Url.from_path page)
-  in
   let head : Html_types.head Html.elt =
     let title_string =
       Printf.sprintf "%s (%s)" url.name (String.concat "." path)
     in
 
+    let file_uri base file =
+      match base with
+      | Types.Absolute uri -> uri ^ "/" ^ file
+      | Relative uri ->
+          let page = Url.Path.{ kind = `File; parent = uri; name = file } in
+          Link.href ~config ~resolve:(Current url) (Url.from_path page)
+    in
     let odoc_css_uri = file_uri theme_uri "odoc.css" in
     let highlight_js_uri = file_uri support_uri "highlight.pack.js" in
     let search_scripts =
