@@ -4,6 +4,8 @@ open Odoc_model
 open Lang
 open Printf
 
+let map_option f = function Some x -> Some (f x) | None -> None
+
 let type_from_path : Paths.Path.Type.t -> string =
  fun path ->
   match path with
@@ -79,19 +81,19 @@ let display_constructor_args args =
       | _ :: _ :: _ -> Some TypeExpr.(Tuple args)
       | [ arg ] -> Some arg
       | _ -> None)
-      |> Option.map type_expr
+      |> map_option type_expr
   | TypeDecl.Constructor.Record fields -> Some (Render.text_of_record fields)
 
 let constructor_rhs ~args ~res =
   let args = display_constructor_args args in
-  let res = Option.map type_expr res in
+  let res = map_option type_expr res in
   match (args, res) with
   | None, None -> ""
   | None, Some res -> " : " ^ res
   | Some args, None -> " of " ^ args
   | Some args, Some res -> " : " ^ args ^ " -> " ^ res
 
-let field_rhs Entry.{ mutable_ = _; type_; parent_type = _ } =
+let field_rhs ({ mutable_ = _; type_; parent_type = _ } : Entry.field_entry) =
   " : " ^ type_expr type_
 
 let typedecl_params ?(delim = `parens) params =
@@ -121,7 +123,7 @@ let typedecl_params ?(delim = `parens) params =
 let type_decl_constraint (typ, typ') =
   "constraint" ^ " " ^ type_expr typ ^ " = " ^ type_expr typ'
 
-let typedecl_params_of_entry Entry.{ kind; _ } =
+let typedecl_params_of_entry ({ kind; _ } : Entry.t) =
   match kind with
   | Entry.TypeDecl { canonical = _; equation; representation = _ } ->
       typedecl_params equation.params
@@ -139,17 +141,17 @@ let typedecl_repr ~private_ (repr : TypeDecl.Representation.t) =
   | Extensible -> ".."
   | Variant constructors ->
       constructors
-      |> List.map (fun TypeDecl.Constructor.{ id; args; res; _ } ->
+      |> List.map (fun ({ id; args; res; _ } : TypeDecl.Constructor.t) ->
              constructor ~id ~args ~res)
       |> String.concat " | "
   | Record record -> Render.text_of_record record
 
-let typedecl_rhs Entry.{ equation; representation; _ } =
-  let TypeDecl.Equation.{ private_; manifest; constraints; _ } = equation in
+let typedecl_rhs ({ equation; representation; _ } : Entry.type_decl_entry) =
+  let ({ private_; manifest; constraints; _ } : TypeDecl.Equation.t) =
+    equation
+  in
   let repr =
-    representation
-    |> Option.map (typedecl_repr ~private_)
-    |> Option.value ~default:""
+    match representation with Some r -> typedecl_repr ~private_ r | None -> ""
   in
   let manifest =
     match manifest with None -> "" | Some typ -> " = " ^ type_expr typ
@@ -162,7 +164,8 @@ let typedecl_rhs Entry.{ equation; representation; _ } =
   in
   match repr ^ manifest ^ constraints with "" -> None | r -> Some r
 
-let constructor_rhs Entry.{ args; res } = constructor_rhs ~args ~res:(Some res)
+let constructor_rhs ({ args; res } : Entry.constructor_entry) =
+  constructor_rhs ~args ~res:(Some res)
 
 (** Kinds *)
 
@@ -264,7 +267,7 @@ let html_of_doc doc =
 let html_string_of_doc doc =
   doc |> html_of_doc |> Format.asprintf "%a" (Html.pp_elt ())
 let html_of_entry (entry : Entry.t) =
-  let Entry.{ id; doc; kind } = entry in
+  let ({ id; doc; kind } : Entry.t) = entry in
   let rhs = rhs_of_kind kind in
   let prefix_name, name = title_of_id id in
   let doc = html_string_of_doc doc in
@@ -272,4 +275,4 @@ let html_of_entry (entry : Entry.t) =
   let typedecl_params = typedecl_params_of_entry entry in
   html_of_strings ~kind ~prefix_name ~name ~rhs ~doc ~typedecl_params
 
-let with_html entry = Entry.{ entry; html = html_of_entry entry }
+let with_html entry : Entry.with_html = { entry; html = html_of_entry entry }

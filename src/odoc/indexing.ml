@@ -1,9 +1,11 @@
 open Odoc_search
 open Or_error
 
+let map_result f = function Ok v -> Ok (f v) | Error _ as e -> e
+
 let handle_file file ~unit ~page =
   Odoc_file.load file
-  |> Result.map @@ fun unit' ->
+  |> map_result @@ fun unit' ->
      match unit' with
      | { Odoc_file.content = Unit_content unit'; _ } when not unit'.hidden ->
          Some (unit unit')
