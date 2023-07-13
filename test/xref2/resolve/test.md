@@ -144,7 +144,7 @@ Simplest possible resolution:
         representation = None})];
     compiled = true; doc = []};
  expansion = None; linked = false; canonical = None; source_info = None;
- shape_info = None}
+ shape_info = None; search_assets = []}
 ```
 
 Let's look at a marginally more complicated example. In this case, our type `t`
@@ -318,7 +318,7 @@ Basic resolution 2, environment lookup:
         representation = None})];
     compiled = true; doc = []};
  expansion = None; linked = false; canonical = None; source_info = None;
- shape_info = None}
+ shape_info = None; search_assets = []}
 ```
 
 
@@ -521,7 +521,7 @@ Basic resolution 3, module type:
       ...];
     compiled = ...; doc = ...};
  expansion = ...; linked = ...; canonical = ...; source_info = ...;
- shape_info = ...}
+ shape_info = ...; search_assets = ...}
 ```
 
 This example is very similar but there is one more level of nesting of the modules:
@@ -724,7 +724,7 @@ Basic resolution 4, module type:
       ...];
     compiled = ...; doc = ...};
  expansion = ...; linked = ...; canonical = ...; source_info = ...;
- shape_info = ...}
+ shape_info = ...; search_assets = ...}
 ```
 
 This example is rather more interesting:
@@ -960,7 +960,7 @@ and then we can look up the type `t`.
        ...];
      compiled = ...; doc = ...};
   expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  shape_info = ...; search_assets = ...}
 ```
 
 ```ocaml
@@ -1167,7 +1167,7 @@ and then we can look up the type `t`.
        ...];
      compiled = ...; doc = ...};
   expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  shape_info = ...; search_assets = ...}
 ```
 
 Ensure a substitution is taken into account during resolution:
@@ -1350,7 +1350,7 @@ Ensure a substitution is taken into account during resolution:
        ...];
      compiled = ...; doc = ...};
   expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  shape_info = ...; search_assets = ...}
 ```
 
 Ensure a destructive substitution is taken into account during resolution:
@@ -1533,7 +1533,7 @@ Ensure a destructive substitution is taken into account during resolution:
        ...];
      compiled = ...; doc = ...};
   expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  shape_info = ...; search_assets = ...}
 ```
 
 Resolve a module alias:
@@ -1694,7 +1694,7 @@ Resolve a module alias:
         representation = None})];
     compiled = true; doc = ...};
  expansion = ...; linked = ...; canonical = ...; source_info = ...;
- shape_info = ...}
+ shape_info = ...; search_assets = ...}
 ```
 
 Resolve a module alias:
@@ -1854,7 +1854,7 @@ Resolve a module alias:
       ...];
     compiled = ...; doc = ...};
  expansion = ...; linked = ...; canonical = ...; source_info = ...;
- shape_info = ...}
+ shape_info = ...; search_assets = ...}
 ```
 
 Resolve a functor:
@@ -2036,7 +2036,7 @@ Resolve a functor:
        ...];
      compiled = ...; doc = ...};
   expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  shape_info = ...; search_assets = ...}
 ```
 
 Resolve a functor:
@@ -2243,7 +2243,7 @@ Resolve a functor:
       ...];
     compiled = ...; doc = ...};
  expansion = ...; linked = ...; canonical = ...; source_info = ...;
- shape_info = ...}
+ shape_info = ...; search_assets = ...}
 ```
 
 ```ocaml skip
@@ -2460,5 +2460,5 @@ Functor app nightmare:
        ...];
      compiled = ...; doc = ...};
   expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  shape_info = ...; search_assets = ...}
 ```
