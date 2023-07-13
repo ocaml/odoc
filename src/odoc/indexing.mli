@@ -5,6 +5,8 @@ val handle_file :
   unit:(Odoc_model.Lang.Compilation_unit.t -> 'a) ->
   page:(Odoc_model.Lang.Page.t -> 'a) ->
   ('a option, [> msg ]) result
+(** This function is exposed for custom indexers that uses [odoc] as a library
+    to generate their search index *)
 
 val compile :
   resolver:'a ->

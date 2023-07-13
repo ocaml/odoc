@@ -27,37 +27,7 @@ module Of_document = struct
     in
     String.concat "" @@ List.map one i
 
-  let rec item i =
-    match i with
-    | Odoc_document.Types.Item.Text t -> block t
-    | Heading h -> heading h
-    | Declaration { content; _ } -> documented_src content
-    | Include { content; _ } -> include_ content
-
-  and block b =
-    let one o =
-      match o.Odoc_document.Types.Block.desc with
-      | Inline i -> inline i
-      | Paragraph p -> inline p
-      | List (_, bl) -> String.concat "" @@ List.map block bl
-      | Description d -> description d
-      | Source (_, s) -> source s
-      | Math m -> m
-      | Verbatim v -> v
-      | Raw_markup _ -> ""
-      | Table _ -> ""
-    in
-    String.concat "" @@ List.map one b
-
-  and description d =
-    let one { Odoc_document.Types.Description.key; definition; _ } =
-      inline key ^ block definition
-    in
-    String.concat "" @@ List.map one d
-
-  and heading { title; _ } = inline title
-
-  and documented_src d =
+  let rec documented_src d =
     let one o =
       match o with
       | Odoc_document.Types.DocumentedSrc.Code c -> source c
@@ -67,8 +37,6 @@ module Of_document = struct
       | Alternative (Expansion { summary; _ }) -> source summary
     in
     String.concat "" @@ List.map one d
-
-  and include_ { summary; _ } = source summary
 end
 
 module Of_comments = struct
@@ -150,8 +118,3 @@ let url id =
 let text_of_record fields =
   let te_text = Odoc_document.ML.record fields in
   Of_document.documented_src te_text
-let text_of_typedecl td =
-  let te_text =
-    Odoc_document.ML.type_decl (Odoc_model.Lang.Signature.Ordinary, td)
-  in
-  Of_document.item te_text

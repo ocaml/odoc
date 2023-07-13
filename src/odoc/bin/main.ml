@@ -290,7 +290,12 @@ end = struct
         & info ~docs ~docv:"PARENT" ~doc [ "parent" ])
     in
     let search_asset =
-      let doc = "Search asset." in
+      let doc =
+        "A script that needs to be loaded for search to work. Will be looked \
+         up as an asset of the current compilation unit or one of its parent. \
+         When this argument is present multiple times, the scripts will be \
+         loaded in the same order as in the command line."
+      in
       Arg.(
         value & opt_all string []
         & info ~docs ~docv:"ASSET" ~doc [ "search-asset" ])
