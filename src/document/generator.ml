@@ -247,19 +247,28 @@ module Make (Syntax : SYNTAX) = struct
     let path id = Url.Path.from_identifier id
     let url id = Url.from_path (path id)
 
-    let info_of_info url : Lang.Source_info.annotation -> Source_page.info = function
-      | Occurence anchor ->
-          Link (Url.Anchor.source_anchor url (DefName.to_string anchor))
-      | Def def -> Anchor (DefName.to_string def)
-      | LocalOccurence anchor ->
-          Link (Url.Anchor.source_anchor url (LocalName.to_string anchor))
-      | LocalDef anchor -> Anchor (LocalName.to_string anchor)
+    let info_of_info : Lang.Source_info.annotation -> Source_page.info option =
+      function
+      | Value id -> (
+          match Url.Anchor.from_identifier (id :> Paths.Identifier.t) with
+          | Ok url -> Some (Link url)
+          | Error _ -> None)
+      | Definition id -> (
+          match id.iv with
+          | `SourceLocation (_, def) -> Some (Anchor (DefName.to_string def))
+          | `SourceLocationInt (_, local) ->
+              Some (Anchor (LocalName.to_string local))
+          | _ -> None)
 
     let source id syntax_info infos source_code =
       let url = path id in
-      let mapper (info, loc) = (info_of_info url info, loc) in
-      let infos = List.map mapper infos in
-      let syntax_info = List.map (fun (ty, loc) -> Source_page.Syntax ty, loc) syntax_info in
+      let mapper (info, loc) =
+        match info_of_info info with Some x -> Some (x, loc) | None -> None
+      in
+      let infos = List.filter_map mapper infos in
+      let syntax_info =
+        List.map (fun (ty, loc) -> (Source_page.Syntax ty, loc)) syntax_info
+      in
       let contents = Impl.impl ~infos:(infos @ syntax_info) source_code in
       { Source_page.url; contents }
   end

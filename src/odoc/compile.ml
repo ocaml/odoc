@@ -105,17 +105,21 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
     | `Cmti ->
         let unit =
           Odoc_loader.read_cmti ~make_root ~parent ~filename
-          |> Error.raise_errors_and_warnings
-        and cmt_infos =
+          |> Error.raise_errors_and_warnings in
+        let cmt_infos =
           match source with
           | None -> None
-          | Some (_, filename) ->
-              Odoc_loader.read_cmt_infos ~filename:(Fs.File.to_string filename)
+          | Some (source_id, filename) ->
+              Odoc_loader.read_cmt_infos (Some source_id) unit.id ~filename:(Fs.File.to_string filename)
               |> Error.raise_errors_and_warnings
         in
         (unit, cmt_infos)
     | `Cmt ->
-        Odoc_loader.read_cmt ~make_root ~parent ~filename
+        let source_id_opt =
+          match source with
+          | None -> None
+          | Some (source_id, _) -> Some source_id in
+        Odoc_loader.read_cmt ~make_root ~parent ~filename ~source_id_opt
         |> Error.raise_errors_and_warnings
     | `Cmi ->
         let unit =
@@ -132,9 +136,7 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
     match source with
     | Some (id, _) ->
         let infos =
-          match cmt_infos with
-          | Some (_, local_jmp) -> local_jmp
-          | _ -> []
+          match cmt_infos with Some (_, source_info) -> source_info | _ -> []
         in
         Some { Lang.Source_info.id; infos }
     | None -> None

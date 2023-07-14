@@ -23,6 +23,12 @@ module P = Paths.Path
 
 type type_ident = Paths.Identifier.Path.Type.t
 
+module LocHashtbl = Hashtbl.Make(struct
+    type t = Warnings.loc
+    let equal l1 l2 = l1 = l2
+    let hash = Hashtbl.hash
+  end)
+
 type t =
   { modules : Id.Module.t Ident.tbl;
     module_paths : P.Module.t Ident.tbl;
@@ -31,10 +37,11 @@ type t =
     values: Id.Value.t Ident.tbl;
     classes : Id.Class.t Ident.tbl;
     class_types : Id.ClassType.t Ident.tbl;
+    loc_to_ident : Id.t LocHashtbl.t;
     hidden : Ident.t list; (* we use term hidden to mean shadowed and idents_in_doc_off_mode items*)
   }
 
-let empty =
+let empty () =
   { modules = Ident.empty;
     module_paths = Ident.empty;
     module_types = Ident.empty;
@@ -42,23 +49,24 @@ let empty =
     values = Ident.empty;
     classes = Ident.empty;
     class_types = Ident.empty;
+    loc_to_ident = LocHashtbl.create 100;
     hidden = [];
   }
 
 (* The boolean is an override for whether it should be hidden - true only for
    items introduced by extended open *)
-type extracted_item = [
-    `Module of Ident.t * bool
-  | `ModuleType of Ident.t * bool
-  | `Type of Ident.t * bool
-  | `Value of Ident.t * bool
-  | `Class of Ident.t * Ident.t * Ident.t * Ident.t option * bool
-  | `ClassType of Ident.t * Ident.t * Ident.t option * bool
+type item = [
+    `Module of Ident.t * bool * Warnings.loc option
+  | `ModuleType of Ident.t * bool * Warnings.loc option
+  | `Type of Ident.t * bool * Warnings.loc option
+  | `Value of Ident.t * bool * Warnings.loc option
+  | `Class of Ident.t * Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option
+  | `ClassType of Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option
 ]
 
-type extracted_items =
-  [ extracted_item
-  | `Include of extracted_item list
+type items =
+  [ item
+  | `Include of item list
 ]
 
 let builtin_idents = List.map snd Predef.builtin_idents
@@ -70,31 +78,31 @@ let rec extract_signature_type_items items =
     | Sig_type(id, _, _, Exported) :: rest ->
       if Btype.is_row_name (Ident.name id)
       then extract_signature_type_items rest
-      else `Type (id, false) :: extract_signature_type_items rest 
+      else `Type (id, false, None) :: extract_signature_type_items rest 
 
     | Sig_module(id, _, _, _, Exported) :: rest ->
-      `Module (id, false) :: extract_signature_type_items rest
+      `Module (id, false, None) :: extract_signature_type_items rest
 
     | Sig_modtype(id, _, Exported) :: rest ->
-      `ModuleType (id, false) :: extract_signature_type_items rest
+      `ModuleType (id, false, None) :: extract_signature_type_items rest
     
     | Sig_value(id, _, Exported) :: rest ->
-      `Value (id, false) :: extract_signature_type_items rest
+      `Value (id, false, None) :: extract_signature_type_items rest
 #if OCAML_VERSION < (5,1,0)
     | Sig_class(id, _, _, Exported) :: Sig_class_type(ty_id, _, _, _)
         :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
-      `Class (id, ty_id, obj_id, Some cl_id, false) :: extract_signature_type_items rest
+      `Class (id, ty_id, obj_id, Some cl_id, false, None) :: extract_signature_type_items rest
 
     | Sig_class_type(id, _, _, Exported) :: Sig_type(obj_id, _, _, _)
       :: Sig_type(cl_id, _, _, _) :: rest ->
-      `ClassType (id, obj_id, Some cl_id, false) :: extract_signature_type_items rest
+      `ClassType (id, obj_id, Some cl_id, false, None) :: extract_signature_type_items rest
 #else
     | Sig_class(id, _, _, Exported) :: Sig_class_type(ty_id, _, _, _)
         :: Sig_type(obj_id, _, _, _) :: rest ->
-      `Class (id, ty_id, obj_id, None, false) :: extract_signature_type_items rest
+      `Class (id, ty_id, obj_id, None, false, None) :: extract_signature_type_items rest
 
     | Sig_class_type(id, _, _, Exported) :: Sig_type(obj_id, _, _, _)  :: rest ->
-      `ClassType (id, obj_id, None, false) :: extract_signature_type_items rest
+      `ClassType (id, obj_id, None, false, None) :: extract_signature_type_items rest
 #endif
 
     | Sig_typext _ :: rest -> 
@@ -128,31 +136,31 @@ let rec extract_extended_open_items items =
     | Sig_type(id, _, _, _) :: rest ->
       if Btype.is_row_name (Ident.name id)
       then extract_extended_open_items rest
-      else `Type (id, true) :: extract_extended_open_items rest 
+      else `Type (id, true, None) :: extract_extended_open_items rest 
 
     | Sig_module(id, _, _, _, _) :: rest ->
-      `Module (id, true) :: extract_extended_open_items rest
+      `Module (id, true, None) :: extract_extended_open_items rest
 
     | Sig_modtype(id, _, _) :: rest ->
-      `ModuleType (id, true) :: extract_extended_open_items rest
+      `ModuleType (id, true, None) :: extract_extended_open_items rest
     
     | Sig_value(id, _, _) :: rest ->
-      `Value (id, true) :: extract_extended_open_items rest
+      `Value (id, true, None) :: extract_extended_open_items rest
 #if OCAML_VERSION < (5,1,0)
     | Sig_class(id, _, _, _) :: Sig_class_type(ty_id, _, _, _)
         :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
-      `Class (id, ty_id, obj_id, Some cl_id, true) :: extract_extended_open_items rest
+      `Class (id, ty_id, obj_id, Some cl_id, true, None) :: extract_extended_open_items rest
 
     | Sig_class_type(id, _, _, _) :: Sig_type(obj_id, _, _, _)
       :: Sig_type(cl_id, _, _, _) :: rest ->
-      `ClassType (id, obj_id, Some cl_id, true) :: extract_extended_open_items rest
+      `ClassType (id, obj_id, Some cl_id, true, None) :: extract_extended_open_items rest
 #else
     | Sig_class(id, _, _, _) :: Sig_class_type(ty_id, _, _, _)
         :: Sig_type(obj_id, _, _, _) :: rest ->
-      `Class (id, ty_id, obj_id, None, true) :: extract_extended_open_items rest
+      `Class (id, ty_id, obj_id, None, true, None) :: extract_extended_open_items rest
 
     | Sig_class_type(id, _, _, _) :: Sig_type(obj_id, _, _, _) :: rest ->
-      `ClassType (id, obj_id, None, true) :: extract_extended_open_items rest
+      `ClassType (id, obj_id, None, true, None) :: extract_extended_open_items rest
 #endif
     |  Sig_typext _ :: rest ->
         extract_extended_open_items rest
@@ -177,7 +185,7 @@ let filter_map f x =
        (fun acc x -> match f x with Some x -> x :: acc | None -> acc)
        [] x
 
-let rec extract_signature_tree_items hide_item items =
+let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> items list = fun hide_item items ->
   let open Typedtree in
   match items with
 #if OCAML_VERSION < (4,3,0)
@@ -188,32 +196,32 @@ let rec extract_signature_tree_items hide_item items =
     filter_map (fun decl ->
       if Btype.is_row_name (Ident.name decl.typ_id)
       then None
-      else Some (`Type (decl.typ_id, hide_item)))
+      else Some (`Type (decl.typ_id, hide_item, Some decl.typ_loc)))
       decls @ extract_signature_tree_items hide_item rest
 
 #if OCAML_VERSION >= (4,10,0)
-  | { sig_desc = Tsig_module { md_id = Some id; _ }; _} :: rest ->
-      [`Module (id, hide_item)] @ extract_signature_tree_items hide_item rest
+  | { sig_desc = Tsig_module { md_id = Some id; _ }; sig_loc; _} :: rest ->
+      [`Module (id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
   | { sig_desc = Tsig_module _; _ } :: rest ->
       extract_signature_tree_items hide_item rest
   | { sig_desc = Tsig_recmodule mds; _} :: rest ->
     List.fold_right (
       fun md items ->
         match md.md_id with
-        | Some id -> `Module (id, hide_item) :: items
+        | Some id -> `Module (id, hide_item, Some md.md_loc) :: items
         | None -> items)
       mds [] @ extract_signature_tree_items hide_item rest
 #else 
   | { sig_desc = Tsig_module{ md_id; _}; _} :: rest ->
-      [`Module (md_id, hide_item)] @ extract_signature_tree_items hide_item rest
+      [`Module (md_id, hide_item, None)] @ extract_signature_tree_items hide_item rest
   | { sig_desc = Tsig_recmodule mds; _ } :: rest ->
-    List.map (fun md -> `Module (md.md_id, hide_item))
+    List.map (fun md -> `Module (md.md_id, hide_item, None))
       mds @ extract_signature_tree_items hide_item rest
 #endif
-  | { sig_desc = Tsig_value {val_id; _}; _ } :: rest->
-      [`Value (val_id, hide_item)] @ extract_signature_tree_items hide_item rest 
-  | { sig_desc = Tsig_modtype mtd; _} :: rest ->
-      [`ModuleType (mtd.mtd_id, hide_item)] @ extract_signature_tree_items hide_item rest
+  | { sig_desc = Tsig_value {val_id; _}; sig_loc; _ } :: rest->
+      [`Value (val_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest 
+  | { sig_desc = Tsig_modtype mtd; sig_loc; _} :: rest ->
+      [`ModuleType (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_include incl; _ } :: rest ->
       [`Include (extract_signature_type_items (Compat.signature incl.incl_type))] @ extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_attribute attr; _ } :: rest ->
@@ -231,7 +239,7 @@ let rec extract_signature_tree_items hide_item items =
             None
 #endif
           in
-          `Class (cld.ci_id_class, cld.ci_id_class_type, cld.ci_id_object, typehash, hide_item))
+          `Class (cld.ci_id_class, cld.ci_id_class_type, cld.ci_id_object, typehash, hide_item, Some cld.ci_id_name.loc))
             cls @ extract_signature_tree_items hide_item rest
   | { sig_desc = Tsig_class_type cltyps; _ } :: rest ->
     List.map
@@ -246,18 +254,18 @@ let rec extract_signature_tree_items hide_item items =
 #endif
             in
             
-            `ClassType (clty.ci_id_class_type, clty.ci_id_object, typehash, hide_item))
+            `ClassType (clty.ci_id_class_type, clty.ci_id_object, typehash, hide_item, Some clty.ci_id_name.loc))
               cltyps @ extract_signature_tree_items hide_item rest
 #if OCAML_VERSION >= (4,8,0)
-    | { sig_desc = Tsig_modsubst ms; _} :: rest ->
-      [`Module (ms.ms_id, hide_item)] @ extract_signature_tree_items hide_item rest
-    | { sig_desc = Tsig_typesubst ts; _} :: rest ->
-      List.map (fun decl -> `Type (decl.typ_id, hide_item)) 
+    | { sig_desc = Tsig_modsubst ms; sig_loc; _ } :: rest ->
+      [`Module (ms.ms_id, hide_item, Some sig_loc )] @ extract_signature_tree_items hide_item rest
+    | { sig_desc = Tsig_typesubst ts; sig_loc; _} :: rest ->
+      List.map (fun decl -> `Type (decl.typ_id, hide_item, Some sig_loc)) 
         ts @ extract_signature_tree_items hide_item rest
 #endif
 #if OCAML_VERSION >= (4,13,0)
-    | { sig_desc = Tsig_modtypesubst mtd; _ } :: rest ->
-      [`ModuleType (mtd.mtd_id, hide_item)] @ extract_signature_tree_items hide_item rest
+    | { sig_desc = Tsig_modtypesubst mtd; sig_loc; _ } :: rest ->
+      [`ModuleType (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
 #endif
     | { sig_desc = Tsig_typext _; _} :: rest
     | { sig_desc = Tsig_exception _; _} :: rest
@@ -267,8 +275,8 @@ let rec extract_signature_tree_items hide_item items =
 let rec read_pattern hide_item pat =
   let open Typedtree in
   match pat.pat_desc with
-  | Tpat_var(id, _) -> [`Value(id, hide_item)]
-  | Tpat_alias(pat, id, _) -> `Value(id, hide_item) :: read_pattern hide_item pat
+  | Tpat_var(id, loc) -> [`Value(id, hide_item, Some loc.loc)]
+  | Tpat_alias(pat, id, loc) -> `Value(id, hide_item, Some loc.loc) :: read_pattern hide_item pat
   | Tpat_record(pats, _) -> 
       List.concat (List.map (fun (_, _, pat) -> read_pattern hide_item pat) pats)
 #if OCAML_VERSION < (4,13,0)
@@ -286,15 +294,15 @@ let rec read_pattern hide_item pat =
   | Tpat_exception pat -> read_pattern hide_item pat
 #endif
 
-let rec extract_structure_tree_items hide_item items =
+let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> items list = fun hide_item items ->
   let open Typedtree in
     match items with
 #if OCAML_VERSION < (4,3,0)
-    | { str_desc = Tstr_type decls; _ } :: rest ->
+    | { str_desc = Tstr_type decls; str_loc; _ } :: rest ->
 #else
-    | { str_desc = Tstr_type (_, decls); _ } :: rest -> (* TODO: handle rec_flag *)
+    | { str_desc = Tstr_type (_, decls); str_loc; _ } :: rest -> (* TODO: handle rec_flag *)
 #endif
-        List.map (fun decl -> `Type (decl.typ_id, hide_item))
+        List.map (fun decl -> `Type (decl.typ_id, hide_item, Some str_loc))
           decls @ extract_structure_tree_items hide_item rest
 
 
@@ -307,24 +315,24 @@ let rec extract_structure_tree_items hide_item items =
       |> List.flatten) @ extract_structure_tree_items hide_item rest
 
 #if OCAML_VERSION >= (4,10,0)
-    | { str_desc = Tstr_module { mb_id = Some id; _}; _} :: rest ->
-      [`Module (id, hide_item)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_module { mb_id = Some id; mb_loc; _}; _} :: rest ->
+      [`Module (id, hide_item, Some mb_loc)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_module _; _} :: rest -> extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_recmodule mbs; _ } :: rest ->
         List.fold_right 
           (fun mb items ->
             match mb.mb_id with
-            | Some id -> `Module (id, hide_item) :: items
+            | Some id -> `Module (id, hide_item, Some mb.mb_loc) :: items
             | None -> items) mbs [] @ extract_structure_tree_items hide_item rest
 #else
-    | { str_desc = Tstr_module { mb_id; _}; _} :: rest ->
-        [`Module (mb_id, hide_item)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_module { mb_id; mb_loc}; _} :: rest ->
+        [`Module (mb_id, hide_item, mb_loc)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_recmodule mbs; _} :: rest ->
-        List.map (fun mb -> `Module (mb.mb_id, hide_item))
+        List.map (fun mb -> `Module (mb.mb_id, hide_item, None))
           mbs @ extract_structure_tree_items hide_item rest
 #endif
-    | { str_desc = Tstr_modtype mtd; _ } :: rest ->
-        [`ModuleType (mtd.mtd_id, hide_item)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_modtype mtd; str_loc; _} :: rest ->
+        [`ModuleType (mtd.mtd_id, hide_item, Some str_loc)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_include incl; _ } :: rest ->
         [`Include (extract_signature_type_items (Compat.signature incl.incl_type))] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_attribute attr; _} :: rest ->
@@ -346,7 +354,7 @@ let rec extract_structure_tree_items hide_item items =
 #else
                None,
 #endif
-              hide_item
+              hide_item, Some cld.ci_id_name.loc
              )) cls @ extract_structure_tree_items hide_item rest
     | {str_desc = Tstr_class_type cltyps; _ } :: rest ->
         List.map
@@ -360,23 +368,23 @@ let rec extract_structure_tree_items hide_item items =
 #else
                None,
 #endif
-              hide_item
+              hide_item, Some clty.ci_id_name.loc
              )) cltyps @ extract_structure_tree_items hide_item rest
 #if OCAML_VERSION < (4,8,0)
     | { str_desc = Tstr_open _; _} :: rest -> extract_structure_tree_items hide_item rest
 #else
     | { str_desc = Tstr_open o; _ } :: rest ->
-        ((extract_extended_open o) :> extracted_items list)  @ extract_structure_tree_items hide_item rest
+        ((extract_extended_open o) :> items list)  @ extract_structure_tree_items hide_item rest
 #endif
-    | { str_desc = Tstr_primitive {val_id; _}; _} :: rest ->
-      [`Value (val_id, false)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_primitive {val_id; _}; str_loc; _ } :: rest ->
+      [`Value (val_id, false, Some str_loc)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_eval _; _} :: rest 
     | { str_desc = Tstr_typext _; _} :: rest
     | {str_desc = Tstr_exception _; _ } :: rest -> extract_structure_tree_items hide_item rest
     | [] -> []
 
 
-let flatten_extracted : extracted_items list -> extracted_item list = fun items ->
+let flatten_extracted : items list -> item list = fun items ->
   List.map (function
     | `Type _ 
     | `Module _
@@ -387,28 +395,28 @@ let flatten_extracted : extracted_items list -> extracted_item list = fun items 
     | `Include xs -> xs) items |> List.flatten
 
 let type_name_exists name items =
-  List.exists (function | `Type (id', _) when Ident.name id' = name -> true | _ -> false) items
+  List.exists (function | `Type (id', _, _) when Ident.name id' = name -> true | _ -> false) items
 
 let value_name_exists name items =
-    List.exists (function | `Value (id', _) when Ident.name id' = name -> true | _ -> false) items
+    List.exists (function | `Value (id', _, _) when Ident.name id' = name -> true | _ -> false) items
 
 let module_name_exists name items =
-  List.exists (function | `Module (id', _) when Ident.name id' = name -> true | _ -> false) items
+  List.exists (function | `Module (id', _, _) when Ident.name id' = name -> true | _ -> false) items
 
 let module_type_name_exists name items = 
-  List.exists (function | `ModuleType (id', _) when Ident.name id' = name -> true | _ -> false) items
+  List.exists (function | `ModuleType (id', _, _) when Ident.name id' = name -> true | _ -> false) items
 
 let class_name_exists name items =
-  List.exists (function | `Class (id',_,_,_,_) when Ident.name id' = name -> true | _ -> false) items
+  List.exists (function | `Class (id',_,_,_,_,_) when Ident.name id' = name -> true | _ -> false) items
 
 let class_type_name_exists name items =
-  List.exists (function | `ClassType (id',_,_,_) when Ident.name id' = name -> true | _ -> false) items
+  List.exists (function | `ClassType (id',_,_,_,_) when Ident.name id' = name -> true | _ -> false) items
 
-let env_of_items parent items env =
+let env_of_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
   let open Odoc_model.Paths.Identifier in
   let rec inner items env =
     match items with
-    | `Type (t, is_hidden_item) :: rest ->
+    | `Type (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
       let is_hidden = is_hidden_item || type_name_exists name rest in
         let identifier, hidden =
@@ -416,10 +424,11 @@ let env_of_items parent items env =
         then Mk.type_(parent, TypeName.internal_of_string name), t :: env.hidden
         else Mk.type_(parent, TypeName.make_std name), env.hidden
       in
-      let types = Ident.add t identifier env.types in      
+      let types = Ident.add t identifier env.types in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
       inner rest { env with types; hidden }
 
-    | `Value (t, is_hidden_item) :: rest ->
+    | `Value (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
       let is_hidden = is_hidden_item || value_name_exists name rest in
       let identifier, hidden =
@@ -427,10 +436,11 @@ let env_of_items parent items env =
         then Mk.value(parent, ValueName.internal_of_string name), t :: env.hidden
         else Mk.value(parent, ValueName.make_std name), env.hidden
       in
-      let values = Ident.add t identifier env.values in      
+      let values = Ident.add t identifier env.values in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
       inner rest { env with values; hidden }
 
-    | `ModuleType (t, is_hidden_item) :: rest ->
+    | `ModuleType (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
       let is_hidden = is_hidden_item || module_type_name_exists name rest in
       let identifier, hidden =
@@ -439,9 +449,10 @@ let env_of_items parent items env =
         else Mk.module_type(parent, ModuleTypeName.make_std name), env.hidden
       in
       let module_types = Ident.add t identifier env.module_types in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
       inner rest { env with module_types; hidden }
 
-    | `Module (t, is_hidden_item) :: rest ->
+    | `Module (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
       let double_underscore = Odoc_model.Root.contains_double_underscore name in
       let is_hidden = is_hidden_item || module_name_exists name rest || double_underscore in
@@ -453,9 +464,10 @@ let env_of_items parent items env =
       let path = `Identifier(identifier, is_hidden) in
       let modules = Ident.add t identifier env.modules in
       let module_paths = Ident.add t path env.module_paths in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
       inner rest { env with modules; module_paths; hidden }
 
-    | `Class (t,t2,t3,t4, is_hidden_item) :: rest ->
+    | `Class (t,t2,t3,t4, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
       let is_hidden = is_hidden_item || class_name_exists name rest in
       let class_types = match t4 with
@@ -471,9 +483,12 @@ let env_of_items parent items env =
       let classes =
         List.fold_right (fun id classes -> Ident.add id identifier classes)
           class_types env.classes in
+      
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
+
       inner rest { env with classes; hidden }
 
-    | `ClassType (t,t2,t3, is_hidden_item) :: rest ->
+    | `ClassType (t,t2,t3, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
       let is_hidden = is_hidden_item || class_type_name_exists name rest in
       let class_types = match t3 with
@@ -488,11 +503,14 @@ let env_of_items parent items env =
       let class_types =
         List.fold_right (fun id class_types -> Ident.add id identifier class_types)
           class_types env.class_types in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
       inner rest { env with class_types; hidden }
 
     | [] -> env
     in inner items env
 
+let identifier_of_loc : t -> Warnings.loc -> Odoc_model.Paths.Identifier.t option = fun env loc ->
+  LocHashtbl.find_opt env.loc_to_ident loc
 
 let add_signature_tree_items : Paths.Identifier.Signature.t -> Typedtree.signature -> t -> t = 
   fun parent sg env ->

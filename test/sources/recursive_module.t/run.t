@@ -15,13 +15,13 @@ Both modules should contain source links
   $ grep source_link html/Main/A/index.html -C 2
     <header class="odoc-preamble">
      <h1>Module <code><span>Main.A</span></code>
-      <a href="../../root/source/main.ml.html#def-0" class="source_link">Source
+      <a href="../../root/source/main.ml.html#module-A" class="source_link">
+       Source
       </a>
-     </h1>
 
   $ grep source_link html/Main/B/index.html -C 2
     <header class="odoc-preamble">
      <h1>Module <code><span>Main.B</span></code>
-      <a href="../../root/source/main.ml.html#def-1" class="source_link">Source
+      <a href="../../root/source/main.ml.html#module-B" class="source_link">
+       Source
       </a>
-     </h1>

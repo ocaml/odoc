@@ -603,7 +603,7 @@ and read_structure :
 let read_implementation root name impl =
   let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in
   let sg, canonical =
-    read_structure Odoc_model.Semantics.Expect_canonical Env.empty id impl
+    read_structure Odoc_model.Semantics.Expect_canonical (Env.empty ()) id impl
   in
   (id, sg, (canonical :> Odoc_model.Paths.Path.Module.t option))
 

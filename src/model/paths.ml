@@ -64,8 +64,8 @@ module Identifier = struct
 
   let name : [< t_pv ] id -> string = fun n -> name_aux (n :> t)
 
-  type full_name_ty = [
-    | `Page
+  type full_name_ty =
+    [ `Page
     | `Module
     | `Parameter
     | `ModuleType
@@ -81,57 +81,62 @@ module Identifier = struct
     | `InstanceVariable
     | `Label
     | `Src
-    | `Asset
-  ]
+    | `Asset ]
   let rec full_name_aux : t -> (full_name_ty * string) list =
-    fun x ->
-     match x.iv with
-     | `Root (_, name) -> [ `Module, ModuleName.to_string name ]
-     | `Page (_, name) -> [ `Page, PageName.to_string name ]
-     | `LeafPage (_, name) -> [ `Page, PageName.to_string name ]
-     | `Module (parent, name) ->
-         (`Module, ModuleName.to_string name) :: full_name_aux (parent :> t)
-     | `Parameter (parent, name) ->
-         (`Parameter, ModuleName.to_string name) :: full_name_aux (parent :> t)
-     | `Result x -> full_name_aux (x :> t)
-     | `ModuleType (parent, name) ->
-         (`ModuleType, ModuleTypeName.to_string name) :: full_name_aux (parent :> t)
-     | `Type (parent, name) ->
-         (`Type, TypeName.to_string name) :: full_name_aux (parent :> t)
-     | `CoreType name -> [ `Type, TypeName.to_string name ]
-     | `Constructor (parent, name) ->
-         (`Constructor, ConstructorName.to_string name) :: full_name_aux (parent :> t)
-     | `Field (parent, name) ->
-         (`Field, FieldName.to_string name) :: full_name_aux (parent :> t)
-     | `Extension (parent, name) ->
-         (`Extension, ExtensionName.to_string name) :: full_name_aux (parent :> t)
-     | `Exception (parent, name) ->
-         (`Exception, ExceptionName.to_string name) :: full_name_aux (parent :> t)
-     | `CoreException name -> [ `Exception, ExceptionName.to_string name ]
-     | `Value (parent, name) ->
-         (`Value, ValueName.to_string name) :: full_name_aux (parent :> t)
-     | `Class (parent, name) ->
-         (`Class, ClassName.to_string name) :: full_name_aux (parent :> t)
-     | `ClassType (parent, name) ->
-         (`ClassType, ClassTypeName.to_string name) :: full_name_aux (parent :> t)
-     | `Method (parent, name) ->
-         (`Method, MethodName.to_string name) :: full_name_aux (parent :> t)
-     | `InstanceVariable (parent, name) ->
-         (`InstanceVariable, InstanceVariableName.to_string name) :: full_name_aux (parent :> t)
-     | `Label (parent, name) ->
-         (`Label, LabelName.to_string name) :: full_name_aux (parent :> t)
-     | `SourceDir (parent, name) ->(`Page, name) :: full_name_aux (parent :> t)
-     | `SourceLocation (parent, name) ->
-         (`Src, DefName.to_string name) :: full_name_aux (parent :> t)
-     | `SourceLocationInt (parent, name) ->
-         (`Src, LocalName.to_string name) :: full_name_aux (parent :> t)
-     | `SourceLocationMod name -> full_name_aux (name :> t)
-     | `SourcePage (parent, name) -> (`Page, name) :: full_name_aux (parent :> t)
-     | `AssetFile (parent, name) -> (`Asset, name) :: full_name_aux (parent :> t)
- 
-   let full_name : [< t_pv ] id -> (full_name_ty * string) list =
-    fun n -> List.rev @@ full_name_aux (n :> t)
- 
+   fun x ->
+    match x.iv with
+    | `Root (_, name) -> [ (`Module, ModuleName.to_string name) ]
+    | `Page (_, name) -> [ (`Page, PageName.to_string name) ]
+    | `LeafPage (_, name) -> [ (`Page, PageName.to_string name) ]
+    | `Module (parent, name) ->
+        (`Module, ModuleName.to_string name) :: full_name_aux (parent :> t)
+    | `Parameter (parent, name) ->
+        (`Parameter, ModuleName.to_string name) :: full_name_aux (parent :> t)
+    | `Result x -> full_name_aux (x :> t)
+    | `ModuleType (parent, name) ->
+        (`ModuleType, ModuleTypeName.to_string name)
+        :: full_name_aux (parent :> t)
+    | `Type (parent, name) ->
+        (`Type, TypeName.to_string name) :: full_name_aux (parent :> t)
+    | `CoreType name -> [ (`Type, TypeName.to_string name) ]
+    | `Constructor (parent, name) ->
+        (`Constructor, ConstructorName.to_string name)
+        :: full_name_aux (parent :> t)
+    | `Field (parent, name) ->
+        (`Field, FieldName.to_string name) :: full_name_aux (parent :> t)
+    | `Extension (parent, name) ->
+        (`Extension, ExtensionName.to_string name)
+        :: full_name_aux (parent :> t)
+    | `Exception (parent, name) ->
+        (`Exception, ExceptionName.to_string name)
+        :: full_name_aux (parent :> t)
+    | `CoreException name -> [ (`Exception, ExceptionName.to_string name) ]
+    | `Value (parent, name) ->
+        (`Value, ValueName.to_string name) :: full_name_aux (parent :> t)
+    | `Class (parent, name) ->
+        (`Class, ClassName.to_string name) :: full_name_aux (parent :> t)
+    | `ClassType (parent, name) ->
+        (`ClassType, ClassTypeName.to_string name)
+        :: full_name_aux (parent :> t)
+    | `Method (parent, name) ->
+        (`Method, MethodName.to_string name) :: full_name_aux (parent :> t)
+    | `InstanceVariable (parent, name) ->
+        (`InstanceVariable, InstanceVariableName.to_string name)
+        :: full_name_aux (parent :> t)
+    | `Label (parent, name) ->
+        (`Label, LabelName.to_string name) :: full_name_aux (parent :> t)
+    | `SourceDir (parent, name) -> (`Page, name) :: full_name_aux (parent :> t)
+    | `SourceLocation (parent, name) ->
+        (`Src, DefName.to_string name) :: full_name_aux (parent :> t)
+    | `SourceLocationInt (parent, name) ->
+        (`Src, LocalName.to_string name) :: full_name_aux (parent :> t)
+    | `SourceLocationMod name -> full_name_aux (name :> t)
+    | `SourcePage (parent, name) -> (`Page, name) :: full_name_aux (parent :> t)
+    | `AssetFile (parent, name) -> (`Asset, name) :: full_name_aux (parent :> t)
+
+  let full_name : [< t_pv ] id -> (full_name_ty * string) list =
+   fun n -> List.rev @@ full_name_aux (n :> t)
+
   let rec label_parent_aux =
     let open Id in
     fun (n : non_src) ->

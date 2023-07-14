@@ -1,7 +1,6 @@
 open Result
 module Error = Odoc_model.Error
-
-module Lookup_def = Lookup_def
+module Local_jmp = Local_jmp
 
 let read_string parent_definition filename text =
   let location =
@@ -45,19 +44,17 @@ exception Not_an_interface
 exception Make_root_error of string
 
 (** [cmt_info.cmt_annots = Implementation _] *)
-let read_cmt_infos' cmt_info =
-  match Lookup_def.of_cmt cmt_info with
-  | None -> None
-  | Some shape ->
-      let jmp_infos = Local_jmp.of_cmt cmt_info in
-      Some (shape, jmp_infos)
+let read_cmt_infos' source_id_opt id cmt_info =
+  match Local_jmp.of_cmt source_id_opt id cmt_info with
+  | None, _ -> None
+  | Some shape, jmp_infos -> Some (shape, jmp_infos)
 
-let read_cmt_infos ~filename () =
+let read_cmt_infos source_id_opt id ~filename () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error _ -> raise Corrupted
   | cmt_info -> (
       match cmt_info.cmt_annots with
-      | Implementation _ -> read_cmt_infos' cmt_info
+      | Implementation _ -> read_cmt_infos' source_id_opt id cmt_info
       | _ -> raise Not_an_implementation)
 
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
@@ -124,7 +121,7 @@ let read_cmti ~make_root ~parent ~filename () =
             ~interface ~sourcefile ~name ~id ?canonical sg)
   | _ -> raise Not_an_interface
 
-let read_cmt ~make_root ~parent ~filename () =
+let read_cmt ~make_root ~parent ~filename ~source_id_opt () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
       raise Not_an_implementation
@@ -170,7 +167,7 @@ let read_cmt ~make_root ~parent ~filename () =
           let id, sg, canonical = Cmt.read_implementation parent name impl in
           ( compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
               ~name ~id ?canonical sg,
-            read_cmt_infos' cmt_info )
+            read_cmt_infos' source_id_opt id cmt_info )
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =
@@ -197,13 +194,14 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmt_infos ~filename = wrap_errors ~filename (read_cmt_infos ~filename)
+let read_cmt_infos source_id_opt id ~filename =
+  wrap_errors ~filename (read_cmt_infos source_id_opt id ~filename)
 
 let read_cmti ~make_root ~parent ~filename =
   wrap_errors ~filename (read_cmti ~make_root ~parent ~filename)
 
-let read_cmt ~make_root ~parent ~filename =
-  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename)
+let read_cmt ~make_root ~parent ~filename ~source_id_opt =
+  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename ~source_id_opt)
 
 let read_cmi ~make_root ~parent ~filename =
   wrap_errors ~filename (read_cmi ~make_root ~parent ~filename)

@@ -51,7 +51,7 @@ Code source for `A_x` is wanted:
 
   $ grep source_link html/A/X/index.html
       <a href="../../root/source/a_x.ml.html" class="source_link">Source</a>
-       <a href="../../root/source/a_x.ml.html#def-1" class="source_link">Source
+       <a href="../../root/source/a_x.ml.html#module-Y" class="source_link">
   $ grep source_link html/A/X/Y/index.html
-      <a href="../../../root/source/a_x.ml.html#def-1" class="source_link">
-       <a href="../../../root/source/a_x.ml.html#def-0" class="source_link">
+      <a href="../../../root/source/a_x.ml.html#module-Y" class="source_link">
+        class="source_link">Source

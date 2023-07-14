@@ -39,8 +39,8 @@ let source_documents source_info source_file ~syntax =
             Syntax_highlighter.syntax_highlighting_locs source_code
           in
           [
-            Odoc_document.Renderer.document_of_source ~syntax id syntax_info infos
-              source_code;
+            Odoc_document.Renderer.document_of_source ~syntax id syntax_info
+              infos source_code;
           ])
   | Some { id; _ }, None ->
       let filename = Paths.Identifier.name id in

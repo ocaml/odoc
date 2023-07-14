@@ -18,7 +18,19 @@ open Odoc_model
 
 type t
 
-val empty : t
+type item =
+  [ `Module of Ident.t * bool * Warnings.loc option
+  | `ModuleType of Ident.t * bool * Warnings.loc option
+  | `Type of Ident.t * bool * Warnings.loc option
+  | `Value of Ident.t * bool * Warnings.loc option
+  | `Class of
+    Ident.t * Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option
+  | `ClassType of
+    Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option ]
+
+type items = [ item | `Include of item list ]
+
+val empty : unit -> t
 
 val add_parameter :
   Paths.Identifier.Signature.t -> Ident.t -> Names.ModuleName.t -> t -> t
@@ -67,3 +79,16 @@ module Fragment : sig
 
   val read_type : Longident.t -> Paths.Fragment.Type.t
 end
+
+val flatten_extracted : items list -> item list
+
+val env_of_items : Paths.Identifier.Signature.t -> item list -> t -> t
+
+val extract_structure_tree_items :
+  bool -> Typedtree.structure_item list -> items list
+
+val extract_signature_tree_items :
+  bool -> Typedtree.signature_item list -> items list
+
+val identifier_of_loc :
+  t -> Warnings.loc -> Odoc_model.Paths.Identifier.t option

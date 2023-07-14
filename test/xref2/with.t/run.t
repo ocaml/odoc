@@ -12,7 +12,7 @@ be able to link anywhere because we don't render the inner signature anywhere.
   $ cat compile.sh
   #!/bin/sh
   
-  ocamlc -c -bin-annot test.ml
+  ocamlc -c -bin-annot -dtypedtree test.ml
   odoc compile page.mld --child module-test
   odoc compile -I . --parent page test.cmt
   odoc link -I . test.odoc
@@ -21,6 +21,81 @@ be able to link anywhere because we don't render the inner signature anywhere.
   
 
   $ ./compile.sh
+  [
+    structure_item (test.ml[1,0+0]..test.ml[4,38+39])
+      Tstr_modtype "S/276"
+        module_type (test.ml[1,0+16]..test.ml[4,38+39])
+          Tmty_with
+          module_type (test.ml[1,0+16]..test.ml[4,38+21])
+            Tmty_with
+            module_type (test.ml[1,0+16]..test.ml[4,38+3])
+              Tmty_signature
+              [
+                signature_item (test.ml[2,20+2]..test.ml[2,20+8])
+                  Tsig_type Rec
+                  [
+                    type_declaration t/268 (test.ml[2,20+2]..test.ml[2,20+8])
+                      ptype_params =
+                        []
+                      ptype_cstrs =
+                        []
+                      ptype_kind =
+                        Ttype_abstract
+                      ptype_private = Public
+                      ptype_manifest =
+                        None
+                  ]
+                signature_item (test.ml[3,29+2]..test.ml[3,29+8])
+                  Tsig_type Rec
+                  [
+                    type_declaration u/269 (test.ml[3,29+2]..test.ml[3,29+8])
+                      ptype_params =
+                        []
+                      ptype_cstrs =
+                        []
+                      ptype_kind =
+                        Ttype_abstract
+                      ptype_private = Public
+                      ptype_manifest =
+                        None
+                  ]
+              ]
+            [
+              "t/268"
+                Twith_type
+                  type_declaration t/268 (test.ml[4,38+9]..test.ml[4,38+21])
+                    ptype_params =
+                      []
+                    ptype_cstrs =
+                      []
+                    ptype_kind =
+                      Ttype_abstract
+                    ptype_private = Public
+                    ptype_manifest =
+                      Some
+                        core_type (test.ml[4,38+18]..test.ml[4,38+21])
+                          Ttyp_constr "int/1!"
+                          []
+            ]
+          [
+            "u/272"
+              Twith_type
+                type_declaration u/272 (test.ml[4,38+27]..test.ml[4,38+39])
+                  ptype_params =
+                    []
+                  ptype_cstrs =
+                    []
+                  ptype_kind =
+                    Ttype_abstract
+                  ptype_private = Public
+                  ptype_manifest =
+                    Some
+                      core_type (test.ml[4,38+36]..test.ml[4,38+39])
+                        Ttyp_constr "int/1!"
+                        []
+          ]
+  ]
+  
 
 Let's check which module type `.content.Module.items[0].ModuleType` refers to:
 

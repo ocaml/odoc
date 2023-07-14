@@ -19,10 +19,8 @@ open Paths
 (** {3 Modules} *)
 module Source_info = struct
   type annotation =
-    | Occurence of Names.DefName.t
-    | Def of Names.DefName.t
-    | LocalOccurence of Names.LocalName.t
-    | LocalDef of Names.LocalName.t
+    | Definition of Paths.Identifier.SourceLocation.t
+    | Value of Paths.Identifier.SourceLocation.t
 
   type 'a with_pos = 'a * (int * int)
 

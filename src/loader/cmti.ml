@@ -805,6 +805,6 @@ and read_signature :
 let read_interface root name intf =
   let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in
   let sg, canonical =
-    read_signature Odoc_model.Semantics.Expect_canonical Env.empty id intf
+    read_signature Odoc_model.Semantics.Expect_canonical (Env.empty ()) id intf
   in
   (id, sg, (canonical :> Odoc_model.Paths.Path.Module.t option))
