@@ -1082,5 +1082,5 @@ and read_signature env parent (items : Odoc_model.Compat.signature) =
 
 let read_interface root name intf =
   let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in
-  let items = read_signature Env.empty id intf in
+  let items = read_signature (Env.empty ()) id intf in
   (id, items)

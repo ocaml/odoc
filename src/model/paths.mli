@@ -179,8 +179,8 @@ module Identifier : sig
 
   val name : [< t_pv ] id -> string
 
-  type full_name_ty = [
-    | `Page
+  type full_name_ty =
+    [ `Page
     | `Module
     | `Parameter
     | `ModuleType
@@ -196,8 +196,7 @@ module Identifier : sig
     | `InstanceVariable
     | `Label
     | `Src
-    | `Asset
-  ]
+    | `Asset ]
 
   val full_name : [< t_pv ] id -> (full_name_ty * string) list
 
