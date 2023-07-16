@@ -18,17 +18,15 @@ open Paths
 
 (** {3 Modules} *)
 module Source_info = struct
-  type jmp_to_def =
+  type annotation =
     | Occurence of Names.DefName.t
     | Def of Names.DefName.t
     | LocalOccurence of Names.LocalName.t
     | LocalDef of Names.LocalName.t
 
-  type info = Syntax of string | Local_jmp of jmp_to_def
-
   type 'a with_pos = 'a * (int * int)
 
-  type infos = info with_pos list
+  type infos = annotation with_pos list
 
   type t = { id : Identifier.SourcePage.t; infos : infos }
 end

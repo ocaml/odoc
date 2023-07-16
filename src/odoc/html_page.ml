@@ -35,9 +35,11 @@ let source_documents source_info source_file ~syntax =
                (Fs.File.to_string src));
           []
       | Ok source_code ->
-          let infos = infos @ Odoc_loader.Source_info.of_source source_code in
+          let syntax_info =
+            Syntax_highlighter.syntax_highlighting_locs source_code
+          in
           [
-            Odoc_document.Renderer.document_of_source ~syntax id infos
+            Odoc_document.Renderer.document_of_source ~syntax id syntax_info infos
               source_code;
           ])
   | Some { id; _ }, None ->
