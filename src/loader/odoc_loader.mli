@@ -3,7 +3,6 @@ open Odoc_model
 open Odoc_model.Paths
 
 module Lookup_def = Lookup_def
-module Source_info = Source_info
 
 type make_root =
   module_name:string ->
@@ -18,7 +17,7 @@ val read_string :
 
 val read_cmt_infos :
   filename:string ->
-  ((Lookup_def.t * Source_info.local_jmp_infos) option, Error.t) result
+  ((Lookup_def.t * Lang.Source_info.infos) option, Error.t) result
   Error.with_warnings
 (** Read the shape from a .cmt file. *)
 
@@ -32,7 +31,7 @@ val read_cmt :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
-  ( Lang.Compilation_unit.t * (Lookup_def.t * Source_info.local_jmp_infos) option,
+  ( Lang.Compilation_unit.t * (Lookup_def.t * Lang.Source_info.infos) option,
     Error.t )
   result
   Error.with_warnings

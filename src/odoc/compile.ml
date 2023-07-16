@@ -133,8 +133,7 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
     | Some (id, _) ->
         let infos =
           match cmt_infos with
-          | Some (_, local_jmp) ->
-              Odoc_loader.Source_info.of_local_jmp local_jmp
+          | Some (_, local_jmp) -> local_jmp
           | _ -> []
         in
         Some { Lang.Source_info.id; infos }

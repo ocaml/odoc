@@ -2,7 +2,6 @@ open Result
 module Error = Odoc_model.Error
 
 module Lookup_def = Lookup_def
-module Source_info = Source_info
 
 let read_string parent_definition filename text =
   let location =

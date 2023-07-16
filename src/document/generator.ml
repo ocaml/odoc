@@ -239,6 +239,7 @@ module Make (Syntax : SYNTAX) = struct
     val url : Paths.Identifier.SourcePage.t -> Url.t
     val source :
       Paths.Identifier.SourcePage.t ->
+      Syntax_highlighter.t ->
       Lang.Source_info.infos ->
       string ->
       Source_page.t
@@ -246,20 +247,20 @@ module Make (Syntax : SYNTAX) = struct
     let path id = Url.Path.from_identifier id
     let url id = Url.from_path (path id)
 
-    let info_of_info url = function
-      | Lang.Source_info.Syntax s -> Source_page.Syntax s
-      | Local_jmp (Occurence anchor) ->
+    let info_of_info url : Lang.Source_info.annotation -> Source_page.info = function
+      | Occurence anchor ->
           Link (Url.Anchor.source_anchor url (DefName.to_string anchor))
-      | Local_jmp (Def def) -> Anchor (DefName.to_string def)
-      | Local_jmp (LocalOccurence anchor) ->
+      | Def def -> Anchor (DefName.to_string def)
+      | LocalOccurence anchor ->
           Link (Url.Anchor.source_anchor url (LocalName.to_string anchor))
-      | Local_jmp (LocalDef anchor) -> Anchor (LocalName.to_string anchor)
+      | LocalDef anchor -> Anchor (LocalName.to_string anchor)
 
-    let source id infos source_code =
+    let source id syntax_info infos source_code =
       let url = path id in
       let mapper (info, loc) = (info_of_info url info, loc) in
       let infos = List.map mapper infos in
-      let contents = Impl.impl ~infos source_code in
+      let syntax_info = List.map (fun (ty, loc) -> Source_page.Syntax ty, loc) syntax_info in
+      let contents = Impl.impl ~infos:(infos @ syntax_info) source_code in
       { Source_page.url; contents }
   end
 
@@ -1866,6 +1867,6 @@ module Make (Syntax : SYNTAX) = struct
 
   include Page
 
-  let source_page id infos source_code =
-    Document.Source_page (Source_page.source id infos source_code)
+  let source_page id syntax_info infos source_code =
+    Document.Source_page (Source_page.source id syntax_info infos source_code)
 end
