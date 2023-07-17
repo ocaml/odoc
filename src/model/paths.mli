@@ -179,6 +179,28 @@ module Identifier : sig
 
   val name : [< t_pv ] id -> string
 
+  type full_name_ty = [
+    | `Page
+    | `Module
+    | `Parameter
+    | `ModuleType
+    | `Type
+    | `Constructor
+    | `Field
+    | `Extension
+    | `Exception
+    | `Value
+    | `Class
+    | `ClassType
+    | `Method
+    | `InstanceVariable
+    | `Label
+    | `Src
+    | `Asset
+  ]
+
+  val full_name : [< t_pv ] id -> (full_name_ty * string) list
+
   (* val root : [< t_pv ] id -> RootModule.t_pv id option *)
 
   val compare : t -> t -> int
