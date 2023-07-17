@@ -7,8 +7,8 @@
   $ du -sh megaodocl
   8.0K	megaodocl
   $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
-  Indexing in 2.393007ms
-  Export in 0.482798ms
+  Indexing in 8.804083ms
+  Export in 3.623009ms
   $ export SHERLODOC_DB=db.bin
   $ sherlodoc "unique_name"
   val Main.unique_name : foo

@@ -135,8 +135,8 @@ let rec type_paths ~prefix ~sgn = function
         (type_paths ~prefix ~sgn:(Types.sgn_not sgn) a)
         (type_paths ~prefix ~sgn b)
   | Constr (name, args) ->
-      rev_concat
-      @@ List.map (fun name ->
+      name |> all_type_names
+      |> List.map (fun name ->
              let name = String.concat "." name in
              let prefix = name :: Types.string_of_sgn sgn :: prefix in
              begin
@@ -150,7 +150,7 @@ let rec type_paths ~prefix ~sgn = function
                           type_paths ~prefix ~sgn arg)
                         args
              end)
-      @@ all_type_names name
+      |> rev_concat
   | Tuple args -> rev_concat @@ List.map (type_paths ~prefix ~sgn) @@ args
   | _ -> []
 
@@ -205,7 +205,7 @@ let searchable_type_of_record parent_type type_ =
   let open Odoc_model.Lang in
   TypeExpr.Arrow (None, parent_type, type_)
 
-let convert_kind (kind : Odoc_search.Entry.extra) =
+let convert_kind (kind : Odoc_search.Entry.kind) =
   let open Odoc_search.Entry in
   match kind with
   | TypeDecl _ -> Elt.Kind.TypeDecl
@@ -239,7 +239,7 @@ let register_type_expr ~db elt type_ =
   let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
   Db.store_type_paths db elt type_paths
 
-let register_kind ~db ~type_search elt (kind : Odoc_search.Entry.extra) =
+let register_kind ~db ~type_search elt (kind : Odoc_search.Entry.kind) =
   let open Odoc_search.Entry in
   let open Odoc_model.Lang in
   if type_search
@@ -264,15 +264,11 @@ let register_kind ~db ~type_search elt (kind : Odoc_search.Entry.extra) =
         register_type_expr ~db elt type_
 
 let register_entry ~db ~index_name ~type_search ~index_docstring
-    Odoc_search.Entry.
-      { id : Odoc_model.Paths.Identifier.Any.t
-      ; doc : Odoc_model.Comment.docs
-      ; extra : extra
-      } =
+    Odoc_search.Entry.{ id; doc; kind } =
   let open Odoc_search in
   let open Odoc_search.Entry in
   let is_type_extension =
-    match extra with
+    match kind with
     | TypeExtension _ -> true
     | _ -> false
   in
@@ -286,20 +282,20 @@ let register_entry ~db ~index_name ~type_search ~index_docstring
       | "" -> ""
       | _ -> doc |> Render.html_of_doc |> string_of_html
     in
-    let kind' = convert_kind extra in
+    let kind' = convert_kind kind in
     let name =
-      match extra with
+      match kind with
       | Doc _ -> Pretty.prefixname id
       | _ -> full_name
     in
     let score = cost ~name ~kind:kind' ~doc_html in
-    let rhs = Json_display.rhs_of_kind extra in
+    let rhs = Generator.rhs_of_kind kind in
     let url = Render.url id in
     let elt = Elt.v ~name ~kind:kind' ~rhs ~doc_html ~score ~url () in
     if index_docstring then register_doc ~db elt doc_txt ;
     (if index_name
      then
-       match extra with
+       match kind with
        | Doc _ -> ()
        | _ -> register_full_name ~db full_name elt) ;
-    register_kind ~db ~type_search elt extra
+    register_kind ~db ~type_search elt kind

@@ -50,20 +50,6 @@ module Kind = struct
   let field type_path = Field type_path
   let val_ type_path = Val type_path
 
-  let to_string = function
-    | Doc -> "doc"
-    | TypeDecl -> "type"
-    | Module -> "mod"
-    | Exception _ -> "exn"
-    | Class_type -> "class"
-    | Method -> "meth"
-    | Class -> "class"
-    | TypeExtension -> "type"
-    | ExtensionConstructor _ -> "cons"
-    | ModuleType -> "sig"
-    | Constructor _ -> "cons"
-    | Field _ -> "field"
-    | Val _ -> "val"
 end
 
 module Package = struct

@@ -76,6 +76,24 @@ let inflate str =
 let db =
   Jv.(inflate @@ call global "sherlodoc_db" [||]) |> Fut.map Storage_js.load
 
+let string_of_kind =
+  let open Db.Elt.Kind in
+  let open Odoc_search.Generator in
+  function
+  | Db.Elt.Kind.Doc -> kind_doc
+  | TypeDecl -> kind_typedecl
+  | Module -> kind_module
+  | Exception _ -> kind_exception
+  | Class_type -> kind_class_type
+  | Method -> kind_method
+  | Class -> kind_class
+  | TypeExtension -> kind_extension
+  | ExtensionConstructor _ -> kind_extension_constructor
+  | ModuleType -> kind_module_type
+  | Constructor _ -> kind_constructor
+  | Field _ -> kind_field
+  | Val _ -> kind_value
+
 let search message =
   don't_wait_for
   @@
@@ -91,14 +109,21 @@ let search message =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list
            (fun Db.Elt.{ name; rhs; doc_html; kind; url; _ } ->
-             let kind = Db.Elt.Kind.to_string kind in
-             let json_display =
-               Odoc_search.Json_display.of_strings
-                 ~id:(String.split_on_char '.' name)
-                 ~rhs ~doc:doc_html ~kind ~url
+             let kind = string_of_kind kind in
+             let prefix_name, name =
+               let rev_name = name |> String.split_on_char '.' |> List.rev in
+               ( rev_name |> List.tl |> List.rev |> String.concat "."
+               , List.hd rev_name )
              in
-             json_display |> Odoc_html.Json.to_string |> Jstr.of_string
-             |> Brr.Json.decode |> Result.get_ok)
+             let html =
+               Odoc_search.Generator.html_of_strings ~kind ~prefix_name ~name
+                 ~typedecl_params:None (*TODO pass value*)
+                 ~rhs ~doc:doc_html
+               |> List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ()))
+               |> String.concat "\n"
+             in
+
+             Jv.obj [| "html", Jv.of_string html; url, Jv.of_string url |])
            results
       |]
   in

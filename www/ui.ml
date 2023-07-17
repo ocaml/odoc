@@ -10,6 +10,23 @@ let render_link elt =
   | Some link -> [ a_href link ]
   | None -> []
 
+let string_of_kind =
+  let open Db.Elt.Kind in
+  function
+  | Doc -> "doc"
+  | TypeDecl -> "type"
+  | Module -> "mod"
+  | Exception _ -> "exn"
+  | Class_type -> "class"
+  | Method -> "meth"
+  | Class -> "class"
+  | TypeExtension -> "type"
+  | ExtensionConstructor _ -> "cons"
+  | ModuleType -> "sig"
+  | Constructor _ -> "cons"
+  | Field _ -> "field"
+  | Val _ -> "val"
+
 let render_elt elt =
   let open Db.Elt in
   let link = render_link elt in
@@ -19,7 +36,7 @@ let render_elt elt =
     | Some rhs -> [ html_txt rhs ]
     | None -> []
   in
-  let kind = Db.Elt.Kind.to_string elt.kind ^ " " in
+  let kind = string_of_kind elt.kind ^ " " in
   [ txt kind; a ~a:link [ em [ txt elt.name ] ] ] @ rhs
 
 let render_pkg elt =

@@ -25,7 +25,7 @@ and show_module_t h p =
   | `Resolved t ->
       let open Paths.Path in
       Format.fprintf h "%a" show_ident_long
-        (Resolved.Module.identifier t
+        (Resolved.identifier (t : Resolved.Module.t :> Resolved.t)
           :> Paths.Identifier.t_pv Paths.Identifier.id)
   | `Dot (mdl, x) -> Format.fprintf h "%a.%s" show_module_t mdl x
   | `Root x -> Format.fprintf h "%s" x

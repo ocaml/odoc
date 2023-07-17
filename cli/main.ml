@@ -1,9 +1,26 @@
 let pp_or cond pp_true pp_false ppf = if cond then pp_true ppf else pp_false ppf
 
+let string_of_kind =
+  let open Db.Elt.Kind in
+  function
+  | Doc -> "doc"
+  | TypeDecl -> "type"
+  | Module -> "mod"
+  | Exception _ -> "exn"
+  | Class_type -> "class"
+  | Method -> "meth"
+  | Class -> "class"
+  | TypeExtension -> "type"
+  | ExtensionConstructor _ -> "cons"
+  | ModuleType -> "sig"
+  | Constructor _ -> "cons"
+  | Field _ -> "field"
+  | Val _ -> "val"
+
 let print_result ~print_cost
     Db.Elt.{ name; rhs; url = _; kind; score; doc_html = _; pkg = _ } =
   let score = if print_cost then string_of_int score ^ " " else "" in
-  let kind = kind |> Db.Elt.Kind.to_string |> Unescape.string in
+  let kind = kind |> string_of_kind |> Unescape.string in
   let name = Unescape.string name in
   let pp_rhs h = function
     | None -> ()
