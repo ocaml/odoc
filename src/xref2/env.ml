@@ -527,15 +527,14 @@ let s_module : Component.Element.module_ scope =
 
 let s_any : Component.Element.any scope =
   make_scope ~root:lookup_page_or_root_module_fallback
-    ~check:
-      (fun env -> function
-        | `Label (id, _) -> (
-            try
-              Some
-                (Identifier.Maps.Label.find id env.ambiguous_labels
-                  :> Component.Element.any amb_err)
-            with Not_found -> None)
-        | _ -> None)
+    ~check:(fun env -> function
+      | `Label (id, _) -> (
+          try
+            Some
+              (Identifier.Maps.Label.find id env.ambiguous_labels
+                :> Component.Element.any amb_err)
+          with Not_found -> None)
+      | _ -> None)
     (fun r -> Some r)
 
 let s_module_type : Component.Element.module_type scope =
@@ -562,11 +561,10 @@ let s_value : Component.Element.value scope =
 
 let s_label : Component.Element.label scope =
   make_scope
-    ~check:
-      (fun env -> function
-        | `Label (id, _) -> (
-            try Some (Identifier.Maps.Label.find id env.ambiguous_labels)
-            with Not_found -> None))
+    ~check:(fun env -> function
+      | `Label (id, _) -> (
+          try Some (Identifier.Maps.Label.find id env.ambiguous_labels)
+          with Not_found -> None))
     (function #Component.Element.label as r -> Some r | _ -> None)
 
 let s_constructor : Component.Element.constructor scope =

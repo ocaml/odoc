@@ -262,7 +262,7 @@ module Anchor = struct
     | None -> assert false (* We got a root, should never happen *)
     | Some page ->
         let anchor = Printf.sprintf "%s-%s" (Path.string_of_kind kind) name in
-        { page; anchor; kind = (kind :> kind) }
+        { page; anchor; kind :> kind }
 
   let add_suffix ~kind { page; anchor; _ } suffix =
     { page; anchor = anchor ^ "." ^ suffix; kind }

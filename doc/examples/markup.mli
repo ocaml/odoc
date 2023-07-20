@@ -52,46 +52,42 @@ module type Foo = sig
   val bar : string
   (** This comment is associated to bar. *)
 
-  class cl :
-    object
-
-      (** Interesting information about cl *)
-    end
+  class cl : object
+    (** Interesting information about cl *)
+  end
 
   (** The comment for class my_class *)
-  class my_class :
-    object
-      inherit cl
-      (** A comment to describe inheritance from cl *)
+  class my_class : object
+    inherit cl
+    (** A comment to describe inheritance from cl *)
 
-      val mutable tutu : string
-      (** The comment for attribute tutu *)
+    val mutable tutu : string
+    (** The comment for attribute tutu *)
 
-      val toto : int
-      (** The comment for attribute toto. *)
+    val toto : int
+    (** The comment for attribute toto. *)
 
-      (** This comment is not attached to titi since
+    (** This comment is not attached to titi since
         there is a blank line before titi, but is kept
         as a comment in the class. *)
 
-      val titi : string
+    val titi : string
 
-      method toto : string
-      (** Comment for method toto *)
+    method toto : string
+    (** Comment for method toto *)
 
-      method m : float -> int
-      (** Comment for method m *)
-    end
+    method m : float -> int
+    (** Comment for method m *)
+  end
 
   (** The comment for the class type my_class_type *)
-  class type my_class_type =
-    object
-      val mutable x : int
-      (** The comment for variable x. *)
+  class type my_class_type = object
+    val mutable x : int
+    (** The comment for variable x. *)
 
-      method m : int -> int
-      (** The comment for method m. *)
-    end
+    method m : int -> int
+    (** The comment for method m. *)
+  end
 
   (** The comment for module Foo *)
   module Foo : sig
@@ -119,16 +115,15 @@ end
 module Stop : sig
   (** This module demonstrates the use of stop comments ([(**/**)]) *)
 
-  class type foo =
-    object
-      method m : string
-      (** comment for method m *)
+  class type foo = object
+    method m : string
+    (** comment for method m *)
 
-      (**/**)
+    (**/**)
 
-      method bar : int
-      (** This method won't appear in the documentation *)
-    end
+    method bar : int
+    (** This method won't appear in the documentation *)
+  end
 
   val foo : string
   (** This value appears in the documentation, since the Stop special comment

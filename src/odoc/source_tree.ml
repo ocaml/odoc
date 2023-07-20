@@ -32,7 +32,7 @@ let compile ~resolver ~parent ~output ~warnings_options:_ input =
   parse_input_file input >>= fun (digest, source_tree) ->
   let root =
     let file = Root.Odoc_file.create_page root_name in
-    { Root.id = (id :> Id.OdocId.t); file; digest }
+    { Root.id :> Id.OdocId.t; file; digest }
   in
   let source_children = List.rev_map (source_child_id id) source_tree in
   let page =

@@ -575,23 +575,19 @@ type my_mod = (module COLLECTION)
 
 class empty_class : object end
 
-class one_method_class :
-  object
-    method go : unit
-  end
+class one_method_class : object
+  method go : unit
+end
 
-class two_method_class :
-  object
-    method one : one_method_class
+class two_method_class : object
+  method one : one_method_class
 
-    method undo : unit
-  end
+  method undo : unit
+end
 
-class ['a] param_class :
-  'a
-  -> object
-       method v : 'a
-     end
+class ['a] param_class : 'a -> object
+  method v : 'a
+end
 
 type my_unit_object = unit param_class
 
@@ -605,10 +601,9 @@ type 'a my_unit_class = unit #param_class as 'a
 (* Test resolution of dependently typed modules *)
 module Dep1 : sig
   module type S = sig
-    class c :
-      object
-        method m : int
-      end
+    class c : object
+      method m : int
+    end
   end
 
   module X : sig
@@ -722,10 +717,9 @@ module type Dep10 = Dep9(Dep8).T with type t = int
 
 module Dep11 : sig
   module type S = sig
-    class c :
-      object
-        method m : int
-      end
+    class c : object
+      method m : int
+    end
   end
 end
 
