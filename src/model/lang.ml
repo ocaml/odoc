@@ -508,6 +508,7 @@ module rec Page : sig
     children : child list;
     digest : Digest.t;
     linked : bool;
+    search_assets : Reference.Asset.t list;
   }
 end =
   Page
