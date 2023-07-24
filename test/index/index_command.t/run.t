@@ -7,7 +7,7 @@ $ odoc compile -c module-main -c src-source root.mld
   $ ocamlc -c j.ml -bin-annot -I .
   $ ocamlc -c main.ml -bin-annot -I .
 
-  $ odoc compile --search-asset index.js -I . --child asset-index.js --child asset-fuse.js.js --child module-main --child module-j page.mld
+  $ odoc compile --search-asset fuse.js.js --search-asset index.js -I . --child asset-index.js --child asset-fuse.js.js --child module-main --child module-j page.mld
 
 Search scripts are given as a reference to an asset.
 

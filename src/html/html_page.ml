@@ -119,9 +119,7 @@ let page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
       | [] -> []
       | search_urls ->
           let search_urls =
-            let search_url name =
-              Printf.sprintf "'%s'" (file_uri support_uri name)
-            in
+            let search_url name = Printf.sprintf "'%s'" name in
             let search_urls = List.map search_url search_urls in
             "[" ^ String.concat "," search_urls ^ "]"
           in
