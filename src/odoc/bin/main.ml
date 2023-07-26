@@ -833,8 +833,10 @@ end)
 
 module Depends = struct
   module Compile = struct
-    let list_dependencies input_file =
-      let deps = Depends.for_compile_step (Fs.File.of_string input_file) in
+    let list_dependencies has_src input_file =
+      let deps =
+        Depends.for_compile_step ~has_src (Fs.File.of_string input_file)
+      in
       List.iter
         ~f:(fun t ->
           Printf.printf "%s %s\n" (Depends.Compile.name t)
@@ -850,7 +852,14 @@ module Depends = struct
           & pos 0 (some file) None
           & info ~doc ~docv:"file.cm{i,t,ti}" [])
       in
-      Term.(const list_dependencies $ input)
+      let has_src =
+        let doc =
+          "Include the dependencies needed when compiling with --source-name \
+           and --source-parent-file."
+        in
+        Arg.(value & flag & info ~doc [ "has-src" ])
+      in
+      Term.(const list_dependencies $ has_src $ input)
 
     let info ~docs =
       Term.info "compile-deps" ~docs
