@@ -534,11 +534,11 @@ div.odoc-spec,.odoc-include {
   margin-bottom: 2em;
 }
 
-.spec.type .variant p, .spec.type .record p {
+.spec.type > ol > li p {
   margin: 5px;
 }
 
-.spec.type .variant, .spec.type .record {
+.spec.type > ol > li {
   margin-left: 2ch;
   list-style: none;
   display: flex;
@@ -546,7 +546,7 @@ div.odoc-spec,.odoc-include {
   row-gap: 4px;
 }
 
-.spec.type .record > code, .spec.type .variant > code {
+.spec.type > ol > li code {
   min-width: 40%;
 }
 
@@ -555,7 +555,7 @@ div.odoc-spec,.odoc-include {
   margin-bottom: 0;
 }
 
-.spec.type .record > .def-doc, .spec.type .variant > .def-doc {
+.spec.type .def-doc {
   min-width:50%;
   padding: 0.25em 0.5em;
   margin-left: 10%;
