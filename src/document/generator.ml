@@ -688,12 +688,12 @@ module Make (Syntax : SYNTAX) = struct
         let kind_approx, cstr, doc =
           match item with
           | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te ->
-              ("unknown", O.code (type_expr te), None)
+              ("unknown", O.documentedSrc (type_expr te), None)
           | Constructor { constant; name; arguments; doc; _ } -> (
               let cstr = "`" ^ name in
               ( "constructor",
                 (match arguments with
-                | [] -> O.code (O.txt cstr)
+                | [] -> O.documentedSrc (O.txt cstr)
                 | _ ->
                     (* Multiple arguments in a polymorphic variant constructor correspond
                        to a conjunction of types, not a product: [`Lbl int&float].
@@ -715,7 +715,7 @@ module Make (Syntax : SYNTAX) = struct
                     let params =
                       if constant then O.txt "& " ++ params else params
                     in
-                    O.code
+                    O.documentedSrc
                       (O.txt cstr
                       ++
                       if Syntax.Type.Variant.parenthesize_params then params
@@ -729,16 +729,16 @@ module Make (Syntax : SYNTAX) = struct
             [ "def"; "variant"; Url.Anchor.string_of_kind url.kind ]
           in
           let anchor = Some url in
-          let code = O.code (O.txt "| ") @ cstr in
+          let code = O.documentedSrc (O.txt "| ") @ cstr in
           let doc = match doc with None -> [] | Some doc -> doc in
-          DocumentedSrc.Documented { attrs; anchor; code; doc; markers }
+          DocumentedSrc.Nested { attrs; anchor; code; doc; markers }
         with Failure s ->
           Printf.eprintf "ERROR: %s\n%!" s;
-          let code = O.code (O.txt "| ") @ cstr in
+          let code = O.documentedSrc (O.txt "| ") @ cstr in
           let attrs = [ "def"; kind_approx ] in
           let doc = [] in
           let anchor = None in
-          DocumentedSrc.Documented { attrs; anchor; code; doc; markers }
+          DocumentedSrc.Nested { attrs; anchor; code; doc; markers }
       in
       let variants = List.map row t.elements in
       let intro, ending =

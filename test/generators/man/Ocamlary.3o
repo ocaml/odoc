@@ -1224,8 +1224,14 @@ This comment is also for variant\.
 .ti +2
 | `TagA
 .br 
+.ti +4
+(* This is a comment for `TagA *)
+.br 
 .ti +2
 | `ConstrB \f[CB]of\fR int
+.br 
+.ti +4
+(* This is a comment for `ConstrB *)
 .br 
  ]
 .fi 
