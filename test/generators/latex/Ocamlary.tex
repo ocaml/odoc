@@ -438,8 +438,8 @@ After exception title.
 \begin{ocamlindent}This comment is for \ocamlinlinecode{variant}.This comment is also for \ocamlinlinecode{variant}.\end{ocamlindent}%
 \medbreak
 \label{module-Ocamlary-type-poly_variant}\ocamlcodefragment{\ocamltag{keyword}{type} poly\_\allowbreak{}variant = [ }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`TagA}\label{module-Ocamlary-type-poly_variant.TagA}\\
-\ocamlinlinecode{| }\ocamlinlinecode{`ConstrB \ocamltag{keyword}{of} int}\label{module-Ocamlary-type-poly_variant.ConstrB}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| `TagA}\label{module-Ocamlary-type-poly_variant.TagA}\\
+\ocamlcodefragment{| `ConstrB \ocamltag{keyword}{of} int}\label{module-Ocamlary-type-poly_variant.ConstrB}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{ ]}\begin{ocamlindent}This comment is for \ocamlinlinecode{poly\_\allowbreak{}variant}.Wow! It was a polymorphic variant!\end{ocamlindent}%
@@ -482,20 +482,20 @@ After exception title.
 \ocamlcodefragment{\}}\begin{ocamlindent}This comment is for \ocamlinlinecode{record\_\allowbreak{}alias}.\end{ocamlindent}%
 \medbreak
 \label{module-Ocamlary-type-poly_variant_union}\ocamlcodefragment{\ocamltag{keyword}{type} poly\_\allowbreak{}variant\_\allowbreak{}union = [ }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{\hyperref[module-Ocamlary-type-poly_variant]{\ocamlinlinecode{poly\_\allowbreak{}variant}}}\label{module-Ocamlary-type-poly_variant_union.poly_variant}\\
-\ocamlinlinecode{| }\ocamlinlinecode{`TagC}\label{module-Ocamlary-type-poly_variant_union.TagC}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \hyperref[module-Ocamlary-type-poly_variant]{\ocamlinlinecode{poly\_\allowbreak{}variant}}}\label{module-Ocamlary-type-poly_variant_union.poly_variant}\\
+\ocamlcodefragment{| `TagC}\label{module-Ocamlary-type-poly_variant_union.TagC}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{ ]}\begin{ocamlindent}This comment is for \ocamlinlinecode{poly\_\allowbreak{}variant\_\allowbreak{}union}.\end{ocamlindent}%
 \medbreak
 \label{module-Ocamlary-type-poly_poly_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a poly\_\allowbreak{}poly\_\allowbreak{}variant = [ }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`TagA \ocamltag{keyword}{of} \ocamltag{type-var}{'a}}\label{module-Ocamlary-type-poly_poly_variant.TagA}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| `TagA \ocamltag{keyword}{of} \ocamltag{type-var}{'a}}\label{module-Ocamlary-type-poly_poly_variant.TagA}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{ ]}\\
 \label{module-Ocamlary-type-bin_poly_poly_variant}\ocamlcodefragment{\ocamltag{keyword}{type} ('a,\allowbreak{} 'b) bin\_\allowbreak{}poly\_\allowbreak{}poly\_\allowbreak{}variant = [ }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`TagA \ocamltag{keyword}{of} \ocamltag{type-var}{'a}}\label{module-Ocamlary-type-bin_poly_poly_variant.TagA}\\
-\ocamlinlinecode{| }\ocamlinlinecode{`ConstrB \ocamltag{keyword}{of} \ocamltag{type-var}{'b}}\label{module-Ocamlary-type-bin_poly_poly_variant.ConstrB}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| `TagA \ocamltag{keyword}{of} \ocamltag{type-var}{'a}}\label{module-Ocamlary-type-bin_poly_poly_variant.TagA}\\
+\ocamlcodefragment{| `ConstrB \ocamltag{keyword}{of} \ocamltag{type-var}{'b}}\label{module-Ocamlary-type-bin_poly_poly_variant.ConstrB}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{ ]}\\
@@ -507,10 +507,10 @@ After exception title.
 \label{module-Ocamlary-type-closed_poly_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a closed\_\allowbreak{}poly\_\allowbreak{}variant = [< `One | `Two ] \ocamltag{keyword}{as} 'a}\\
 \label{module-Ocamlary-type-clopen_poly_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a clopen\_\allowbreak{}poly\_\allowbreak{}variant = [< `One | `Two of int | `Three Two Three ] \ocamltag{keyword}{as} 'a}\\
 \label{module-Ocamlary-type-nested_poly_variant}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}poly\_\allowbreak{}variant = [ }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A}\label{module-Ocamlary-type-nested_poly_variant.A}\\
-\ocamlinlinecode{| }\ocamlinlinecode{`B \ocamltag{keyword}{of} [ `B1 | `B2 ]}\label{module-Ocamlary-type-nested_poly_variant.B}\\
-\ocamlinlinecode{| }\ocamlinlinecode{`C}\label{module-Ocamlary-type-nested_poly_variant.C}\\
-\ocamlinlinecode{| }\ocamlinlinecode{`D \ocamltag{keyword}{of} [ `D1 of [ `D1a ] ]}\label{module-Ocamlary-type-nested_poly_variant.D}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| `A}\label{module-Ocamlary-type-nested_poly_variant.A}\\
+\ocamlcodefragment{| `B \ocamltag{keyword}{of} [ `B1 | `B2 ]}\label{module-Ocamlary-type-nested_poly_variant.B}\\
+\ocamlcodefragment{| `C}\label{module-Ocamlary-type-nested_poly_variant.C}\\
+\ocamlcodefragment{| `D \ocamltag{keyword}{of} [ `D1 of [ `D1a ] ]}\label{module-Ocamlary-type-nested_poly_variant.D}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{ ]}\\
