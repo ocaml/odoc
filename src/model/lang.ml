@@ -506,6 +506,7 @@ module rec Page : sig
     | Page_child of string
     | Module_child of string
     | Source_tree_child of string
+    | Asset_child of string
 
   type t = {
     name : Identifier.Page.t;

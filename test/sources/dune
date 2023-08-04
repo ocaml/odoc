@@ -7,5 +7,7 @@
 
 (cram
  (enabled_if
-  (= %{ocaml_version} 4.14.0))
+  (and
+   (>= %{ocaml_version} 4.14.0)
+   (< %{ocaml_version} 5.0.0)))
  (deps %{bin:odoc} %{bin:odoc_print}))

@@ -17,14 +17,14 @@ let traverse ~f t =
   in
   List.iter aux t
 
+type input =
+  | CU of Odoc_model.Lang.Compilation_unit.t
+  | Page of Odoc_model.Lang.Page.t
+
 type 'a t = {
   name : string;
   render : 'a -> Types.Document.t -> page list;
-  extra_documents :
-    'a ->
-    Odoc_model.Lang.Compilation_unit.t ->
-    syntax:syntax ->
-    Types.Document.t list;
+  extra_documents : 'a -> input -> syntax:syntax -> Types.Document.t list;
 }
 
 let document_of_page ~syntax v =

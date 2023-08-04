@@ -1062,7 +1062,7 @@ let page env page =
           | None -> Errors.report ~what `Lookup
         in
         match child with
-        | Page.Source_tree_child _ -> ()
+        | Page.Asset_child _ | Page.Source_tree_child _ -> ()
         | Page.Page_child page ->
             check_resolves ~what:(`Child_page page) Env.lookup_page page
         | Page.Module_child mod_ ->

@@ -562,4 +562,4 @@ and render_page (p : Page.t) =
 
 let render = function
   | Document.Page page -> [ render_page page ]
-  | Source_page _ -> []
+  | Source_page _ | Asset _ -> []
