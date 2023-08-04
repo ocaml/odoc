@@ -4,6 +4,10 @@ A quick test to repro the issue found in #941
 
   $ odoc compile foo.cmti
   $ odoc link foo.odoc
+  File "foo.mli", line 24, characters 10-14:
+  Warning: Reference to 'A' is ambiguous. Please specify its kind: extension-A, extension-decl-A.
+  File "foo.mli", line 21, characters 25-44:
+  Warning: Failed to resolve reference unresolvedroot(B) Couldn't find "B"
 
   $ odoc html-generate --indent -o html/ foo.odocl
 
