@@ -522,6 +522,33 @@ let rec type_fragment : t -> Cfrag.type_ -> Cfrag.type_ =
         type_fragment t frag')
   | `Dot (sg, n) -> `Dot (signature_fragment t sg, n)
 
+let umty_of_simple_expansion exp =
+  Component.umty_of_mty (Component.mty_of_simple_expansion exp)
+
+(* Given the type of a module that is being substituted away as it appeared
+   where the module was declared, convert to the form to put in place of an
+   occurrence of the module in an unexpanded `module type of`. Attempt to
+   preserve older behaviour where substitution effectively expanded the module
+   type in place. See [Basic.P.NI] in the transparent ascription tests for an
+   example. *)
+let rec substituted_module_type_expr :
+    Component.ModuleType.expr -> Component.ModuleType.U.expr =
+ fun e ->
+  match e with
+  | Signature sg -> Signature sg
+  | Functor (p, e) -> Functor (p, substituted_module_type_expr e)
+  | Path { p_expansion = Some exp; _ }
+  | With { w_expansion = Some exp; _ }
+  | TypeOf { t_expansion = Some exp; _ }
+  | Strengthen { s_expansion = Some exp; _ } ->
+      umty_of_simple_expansion exp
+  | Project (proj, e) -> Project (proj, substituted_module_type_expr e)
+  | Path { p_expansion = None; _ }
+  | With { w_expansion = None; _ }
+  | TypeOf { t_expansion = None; _ }
+  | Strengthen { s_expansion = None; _ } ->
+      Component.umty_of_mty e
+
 let option_ conv s x = match x with Some x -> Some (conv s x) | None -> None
 
 let list conv s xs = List.map (conv s) xs
@@ -745,7 +772,8 @@ and u_module_type_expr s t =
       Functor (functor_parameter s arg, u_module_type_expr s expr)
   | TypeOf t -> (
       try TypeOf (module_type_type_of_desc s t)
-      with MTOInvalidated e -> u_module_type_expr s (Component.umty_of_mty e))
+      with MTOInvalidated e ->
+        u_module_type_expr s (substituted_module_type_expr e))
   | Project (proj, e) -> Project (proj, u_module_type_expr s e)
   | Strengthen (path, expr) ->
       Strengthen (module_path s path, u_module_type_expr s expr)

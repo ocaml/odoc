@@ -4,15 +4,80 @@ Transparent ascription
   $ ocamlc -c -bin-annot test.mli
   $ odoc compile test.cmti
 
+<!--
+If the jq in this file gets much more involved, it'll be well worth
+moving it into a jq library (if it isn't already worth it).
+-->
+
 `Basic.P.N` should be a signature with just one type called `t`:
 
   $ odoc_print test.odoc -r Basic.P.N \
   > | jq '.type_.ModuleType.Signature.items
-  >       | ((.[].Type | select(.)) |= { id: .[1].id."`Type"[1] })'
+  >       | ((.[].Type | select(.))
+  >          |= { id: .[1].id."`Type"[1],
+  >               concrete: (.[1].equation.manifest != "None") })'
   [
     {
       "Type": {
-        "id": "t"
+        "id": "t",
+        "concrete": false
+      }
+    }
+  ]
+
+`Basic.P.NS` should be similar but strengthened to `M.t`:
+
+  $ odoc_print test.odoc -r Basic.P.NS \
+  > | jq '.type_.ModuleType.Signature.items
+  >       | ((.[].Type | select(.))
+  >          |= { id: .[1].id."`Type"[1],
+  >               concrete: (.[1].equation.manifest != "None") })'
+  [
+    {
+      "Type": {
+        "id": "t",
+        "concrete": true
+      }
+    }
+  ]
+
+`Basic.P.NI` should be like `Basic.P.N`, only it's a signature that includes such
+a signature. Crucially, to match old behaviour (and for arguably less confusing
+output), the `include` statement should render as `include sig ... end` rather
+than `include T` (which looks like something that would appear in the source but
+does not).
+
+  $ odoc_print test.odoc -r Basic.P.NI \
+  > | jq '.type_.ModuleType.Signature.items[0].Include
+  >       .decl.ModuleType.Signature.items
+  >       | ((.[].Type | select(.))
+  >          |= { id: .[1].id."`Type"[1],
+  >               concrete: (.[1].equation.manifest != "None") })'
+  [
+    {
+      "Type": {
+        "id": "t",
+        "concrete": false
+      }
+    }
+  ]
+
+`Basic.P.NSI` should be like `Basic.P.NI`, only strengthened. In this case,
+substitution complicates the `decl` in the term that's returned, but the
+expansion is the most important thing anyway, so we check `expansion` instead of
+`decl`:
+
+  $ odoc_print test.odoc -r Basic.P.NSI \
+  > | jq '.type_.ModuleType.Signature.items[0].Include
+  >       .expansion.content.items
+  >       | ((.[].Type | select(.))
+  >          |= { id: .[1].id."`Type"[1],
+  >               concrete: (.[1].equation.manifest != "None") })'
+  [
+    {
+      "Type": {
+        "id": "t",
+        "concrete": true
       }
     }
   ]
