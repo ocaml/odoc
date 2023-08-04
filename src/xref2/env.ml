@@ -531,7 +531,11 @@ let s_any : Component.Element.any scope =
                   :> Component.Element.any amb_err)
             with Not_found -> None)
         | _ -> None)
-    (fun r -> Some r)
+    (function
+      (* Reference to [A] could refer to [extension-A] or [extension-decl-A].
+         The legacy behavior refers to the constructor [extension-A]. *)
+      | #Component.Element.extension_decl -> None
+      | r -> Some r)
 
 let s_module_type : Component.Element.module_type scope =
   make_scope (function
