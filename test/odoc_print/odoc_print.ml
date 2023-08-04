@@ -40,6 +40,9 @@ and signature_of_module_type_expr = function
   | Project _ ->
       (* TODO could handle simple cases here *)
       None
+  | Strengthen { s_expansion = Some e; _ } ->
+      Some (signature_of_simple_expansion e)
+  | Strengthen _ -> None
 
 and signature_of_module :
     Odoc_model.Lang.Module.t -> Odoc_model.Lang.Signature.t option =

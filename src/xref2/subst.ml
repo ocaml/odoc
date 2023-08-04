@@ -2,7 +2,7 @@ open Component
 
 exception Invalidated
 
-exception MTOInvalidated of Cpath.projection * Component.ModuleType.expr
+exception MTOInvalidated of Component.ModuleType.expr
 
 type ('a, 'b) or_replaced = Not_replaced of 'a | Replaced of 'b
 
@@ -183,6 +183,20 @@ and substitute_vars_poly_variant vars v =
         Constructor { c with arguments }
   in
   { v with elements = List.map subst_element v.elements }
+
+let rec compose_projections ~first ~second =
+  let next proj = compose_projections ~first ~second:proj in
+  match second with
+  | `Module (proj, f) -> `Module (next proj, f)
+  | `Dot (proj, s) -> `Dot (next proj, s)
+  | `Apply (proj, a) -> `Apply (next proj, a)
+  | `Here -> first
+
+let apply_projection proj e =
+  match e with
+  | ModuleType.Project (first, e) ->
+      ModuleType.Project (compose_projections ~first ~second:proj, e)
+  | _ -> ModuleType.Project (proj, e)
 
 let rec resolved_module_path :
     t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
@@ -631,11 +645,16 @@ and module_type_type_of_desc s t =
   match t with
   | ModPath p -> (
       match mto_module_path_invalidated s p with
-      | Some (proj, e) -> raise (MTOInvalidated (proj, e))
+      | Some e -> raise (MTOInvalidated e)
       | None -> ModPath (module_path s p))
   | StructInclude p -> (
       match mto_module_path_invalidated s p with
-      | Some (proj, e) -> raise (MTOInvalidated (proj, e))
+      | Some e ->
+          let e =
+            Strengthen
+              { s_expr = umty_of_mty e; s_path = p; s_expansion = None }
+          in
+          raise (MTOInvalidated e)
       | None -> StructInclude (module_path s p))
 
 and module_type_type_of_desc_noexn s t =
@@ -644,27 +663,27 @@ and module_type_type_of_desc_noexn s t =
   | ModPath p -> ModPath (module_path s p)
   | StructInclude p -> StructInclude (module_path s p)
 
-and mto_module_path_invalidated :
-    t -> Cpath.module_ -> (Cpath.projection * ModuleType.expr) option =
+and mto_module_path_invalidated : t -> Cpath.module_ -> ModuleType.expr option =
  fun s p ->
   match p with
   | `Resolved p' -> mto_resolved_module_path_invalidated s p'
   | `Substituted p' -> mto_module_path_invalidated s p'
   | `Dot (p', id) ->
       mto_module_path_invalidated s p'
-      |> Option.map (fun (proj, e) -> (`Dot (proj, id), e))
+      |> Option.map (fun e -> apply_projection (`Dot (`Here, id)) e)
   | `Module (`Module p', id) ->
       mto_resolved_module_path_invalidated s p'
-      |> Option.map (fun (proj, e) -> (`Module (proj, id), e))
+      |> Option.map (fun e -> apply_projection (`Module (`Here, id)) e)
   | `Module (_, _) -> None
-  | `Apply (p1, p2) -> (
-      match mto_module_path_invalidated s p1 with
-      | Some _ as ans -> ans
-      | None -> mto_module_path_invalidated s p2)
+  | `Apply (p1, p2) ->
+      (* Only consider invalid if [p1] is invalidated - [p2] can't mess up the
+         type in the same way *)
+      mto_module_path_invalidated s p1
+      |> Option.map (fun e -> apply_projection (`Apply (`Here, p2)) e)
   | `Local (id, _) -> (
       match PathModuleMap.find id s.module_type_of_invalidating_modules with
       | exception Not_found -> None
-      | mty -> Some (`Here, mty))
+      | mty -> Some mty)
   | `Identifier _ -> None
   | `Forward _ -> None
   | `Root _ -> None
@@ -674,18 +693,30 @@ and mto_resolved_module_path_invalidated s p =
   | `Local id -> (
       match PathModuleMap.find id s.module_type_of_invalidating_modules with
       | exception Not_found -> None
-      | mty -> Some (`Here, mty))
+      | mty -> Some mty)
   | `Gpath _ -> None
   | `Apply (p1, p2) ->
-      (* Only consider invalid if [p1] is invalidated - [p2] can't mess up the type in the same way *)
+      (* Only consider invalid if [p1] is invalidated - [p2] can't mess up the
+         type in the same way *)
       mto_resolved_module_path_invalidated s p1
-      |> Option.map (fun (proj, e) -> (`Apply (proj, `Resolved p2), e))
+      |> Option.map (fun e -> apply_projection (`Apply (`Here, `Resolved p2)) e)
   | `Module (`Module p, id) ->
       mto_resolved_module_path_invalidated s p
-      |> Option.map (fun (proj, e) -> (`Module (proj, id), e))
+      |> Option.map (fun e -> apply_projection (`Module (`Here, id)) e)
   | `Substituted p -> mto_resolved_module_path_invalidated s p
   | `Module (_, _) -> None
-  | `Alias (p1, _p2, _) -> mto_resolved_module_path_invalidated s p1
+  | `Alias (p1, _p2, _) ->
+      mto_resolved_module_path_invalidated s p1
+      |> Option.map (fun e ->
+             (* The fact that an alias was used forces a strengthening operation
+                (since the [module type of] resolves to an otherwise-unwritable
+                alias type). *)
+             ModuleType.Strengthen
+               {
+                 s_expr = Component.umty_of_mty e;
+                 s_path = `Resolved p1;
+                 s_expansion = None;
+               })
   | `Subst (_p1, p2) -> mto_resolved_module_path_invalidated s p2
   | `Hidden p -> mto_resolved_module_path_invalidated s p
   | `Canonical (p1, _p2) -> mto_resolved_module_path_invalidated s p1
@@ -704,7 +735,8 @@ and u_module_type_expr s t =
           | TypeOf { t_desc; _ } -> TypeOf t_desc
           | With w -> With (w.w_substitutions, w.w_expr)
           | Project (proj, e) -> Project (proj, Component.umty_of_mty e)
-          | Functor (param, e) -> Functor (param, Component.umty_of_mty e)))
+          | Functor (param, e) -> Functor (param, Component.umty_of_mty e)
+          | Strengthen s -> Strengthen (s.s_path, s.s_expr)))
   | Signature sg -> Signature (signature s sg)
   | With (subs, e) ->
       With
@@ -713,10 +745,10 @@ and u_module_type_expr s t =
       Functor (functor_parameter s arg, u_module_type_expr s expr)
   | TypeOf t -> (
       try TypeOf (module_type_type_of_desc s t)
-      with MTOInvalidated (proj, e) -> (
-        let e = u_module_type_expr s (Component.umty_of_mty e) in
-        match proj with `Here -> e | _ -> Project (proj, e)))
+      with MTOInvalidated e -> u_module_type_expr s (Component.umty_of_mty e))
   | Project (proj, e) -> Project (proj, u_module_type_expr s e)
+  | Strengthen (path, expr) ->
+      Strengthen (module_path s path, u_module_type_expr s expr)
 
 and module_type_expr s t =
   let open Component.ModuleType in
@@ -750,6 +782,13 @@ and module_type_expr s t =
       TypeOf
         { t_desc = module_type_type_of_desc_noexn s t_desc; t_expansion = None }
   | Project (proj, e) -> Project (proj, module_type_expr s e)
+  | Strengthen { s_expr; s_path; s_expansion } ->
+      Strengthen
+        {
+          s_expr = u_module_type_expr s s_expr;
+          s_path = module_path s s_path;
+          s_expansion = option_ simple_expansion s s_expansion;
+        }
 
 and with_module_type_substitution s sub =
   let open Component.ModuleType in

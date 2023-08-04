@@ -417,6 +417,19 @@ let simplify_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
       | None -> m)
   | _ -> m
 
+let strengthen_expansion prefix exp ~deep =
+  match exp with
+  | Signature sg -> Signature (Strengthen.signature prefix sg ~deep)
+  | Functor (param, exp) ->
+      Functor
+        ( param,
+          Strengthen
+            {
+              s_expr = Component.umty_of_mty exp;
+              s_path = prefix;
+              s_expansion = None;
+            } )
+
 let rec handle_apply ~mark_substituted env func_path arg_path m =
   let rec find_functor mty =
     match mty with
@@ -1578,7 +1591,7 @@ and expansion_of_module_path :
             | docs -> { sg with items = Comment (`Docs docs) :: sg.items }
           in
           if strengthen then
-            Ok (Signature (Strengthen.signature (`Resolved p') sg'))
+            Ok (Signature (Strengthen.signature (`Resolved p') sg' ~deep:false))
           else Ok (Signature sg')
       | Functor _ as f -> Ok f)
   | Error _ when Cpath.is_module_forward path -> Error `UnresolvedForwardPath
@@ -1644,6 +1657,9 @@ and expansion_of_u_module_type_expr :
   | Project (proj, expr) ->
       expansion_of_u_module_type_expr ~mark_substituted env expr >>= fun exp ->
       project_from_expansion ~mark_substituted env proj exp
+  | Strengthen (path, expr) ->
+      expansion_of_u_module_type_expr ~mark_substituted env expr >>= fun exp ->
+      Ok (strengthen_expansion path exp ~deep:false)
 
 and expansion_of_module_type_type_of_desc :
     Env.t ->
@@ -1708,6 +1724,9 @@ and expansion_of_module_type_expr :
   | Component.ModuleType.Project (proj, expr) ->
       expansion_of_module_type_expr ~mark_substituted env expr >>= fun exp ->
       project_from_expansion ~mark_substituted env proj exp
+  | Component.ModuleType.Strengthen { s_expr; s_path; _ } ->
+      expansion_of_u_module_type_expr ~mark_substituted env s_expr
+      >>= fun exp -> Ok (strengthen_expansion s_path exp ~deep:false)
 
 and project_from_expansion :
     mark_substituted:bool ->
@@ -1798,15 +1817,6 @@ and expansion_of_module_cached :
   let run env _id = expansion_of_module env m in
   ExpansionOfModuleMemo.memoize run env' id
 
-and umty_of_mty : Component.ModuleType.expr -> Component.ModuleType.U.expr =
-  function
-  | Signature sg -> Signature sg
-  | Path { p_path; _ } -> Path p_path
-  | TypeOf { t_desc; _ } -> TypeOf t_desc
-  | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
-  | Project (proj, mty) -> Project (proj, umty_of_mty mty)
-  | Functor _ -> assert false
-
 and fragmap :
     mark_substituted:bool ->
     Env.t ->
@@ -1836,7 +1846,7 @@ and fragmap :
                 {
                   w_substitutions = [ subst ];
                   w_expansion = None;
-                  w_expr = umty_of_mty mty';
+                  w_expr = Component.umty_of_mty mty';
                 }))
   in
   let map_include_decl decl subst =

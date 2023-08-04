@@ -1371,11 +1371,13 @@ module Make (Syntax : SYNTAX) = struct
         match t with
         | Path { p_expansion = None; _ }
         | TypeOf { t_expansion = None; _ }
-        | With { w_expansion = None; _ } ->
+        | With { w_expansion = None; _ }
+        | Strengthen { s_expansion = None; _ } ->
             None
         | Path { p_expansion = Some e; _ }
         | TypeOf { t_expansion = Some e; _ }
-        | With { w_expansion = Some e; _ } ->
+        | With { w_expansion = Some e; _ }
+        | Strengthen { s_expansion = Some e; _ } ->
             Some e
         | Signature sg -> Some (Signature sg)
         | Functor (f_parameter, e) -> (
@@ -1517,6 +1519,8 @@ module Make (Syntax : SYNTAX) = struct
           Paths.Path.(is_hidden (m :> t))
       | Signature _ -> false
       | Project (_, expr) -> umty_hidden expr
+      | Strengthen (p, expr) ->
+          umty_hidden expr || Paths.Path.(is_hidden (p :> t))
 
     and mty_hidden : Odoc_model.Lang.ModuleType.expr -> bool = function
       | Path { p_path = mty_path; _ } -> Paths.Path.(is_hidden (mty_path :> t))
@@ -1554,20 +1558,25 @@ module Make (Syntax : SYNTAX) = struct
       | Functor (_, expr) -> is_elidable_with_u expr
       | With (_, expr) -> is_elidable_with_u expr
       | TypeOf _ -> false
-      | Project (_, expr) -> is_elidable_with_u expr (* TODO: Correct? *)
+      | Project _ | Strengthen _ ->
+          (* Currently these are only produced in cases where the module type would
+             previously have been replaced by its expansion, which would have been
+             a signature *)
+          true
 
     and umty : Odoc_model.Lang.ModuleType.U.expr -> text =
      fun m ->
-      match m with
-      | Path p -> Link.from_path (p :> Paths.Path.t)
-      | Signature _ ->
-          Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
-      | With (_, expr) when is_elidable_with_u expr ->
-          Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
-      | With (subs, expr) -> mty_with subs expr
-      | Functor _ -> (* TODO *) O.txt "<unexpanded functor>"
-      | TypeOf t -> mty_typeof t
-      | Project _ -> (* TODO *) O.txt "<unexpanded projection>"
+      if is_elidable_with_u m then
+        Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
+      else
+        match m with
+        | Path p -> Link.from_path (p :> Paths.Path.t)
+        | Signature _ | Project _ | Strengthen _ ->
+            (* impossible since [is_elidable_with_u m] was false *)
+            assert false
+        | With (subs, expr) -> mty_with subs expr
+        | Functor _ -> (* shouldn't happen *) O.txt "<unexpanded functor>"
+        | TypeOf t -> mty_typeof t
 
     and mty : Odoc_model.Lang.ModuleType.expr -> text =
      fun m ->
@@ -1608,6 +1617,7 @@ module Make (Syntax : SYNTAX) = struct
         | Signature _ ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
         | Project _ -> O.txt "unexpanded projection"
+        | Strengthen _ -> O.txt "unexpanded strengthening"
 
     and mty_in_decl :
         Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
@@ -1645,6 +1655,9 @@ module Make (Syntax : SYNTAX) = struct
       | Project _ ->
           (* TODO *)
           unresolved [ inline (Text "<projection>") ]
+      | Strengthen _ ->
+          (* TODO *)
+          unresolved [ inline (Text "<strengthening>") ]
 
     (* TODO : Centralize the list juggling for type parameters *)
     and type_expr_in_subst td typath =

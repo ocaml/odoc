@@ -143,6 +143,15 @@ and moduletype_typeof_t =
       F ("t_expansion", (fun t -> t.t_expansion), Option simple_expansion);
     ]
 
+and moduletype_strengthen_t =
+  let open Lang.ModuleType in
+  Record
+    [
+      F ("s_path", (fun t -> (t.s_path :> Paths.Path.t)), path);
+      F ("s_expr", (fun t -> t.s_expr), moduletype_u_expr);
+      F ("s_expansion", (fun t -> t.s_expansion), Option simple_expansion);
+    ]
+
 and moduletype_expr =
   let open Lang.ModuleType in
   Variant
@@ -154,7 +163,8 @@ and moduletype_expr =
     | With t -> C ("With", t, moduletype_with_t)
     | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t)
     | Project (x1, x2) ->
-        C ("Project", (x1, x2), Pair (projection, moduletype_expr)))
+        C ("Project", (x1, x2), Pair (projection, moduletype_expr))
+    | Strengthen x -> C ("Strengthen", x, moduletype_strengthen_t))
 
 and moduletype_u_expr =
   let open Lang.ModuleType.U in
@@ -171,7 +181,12 @@ and moduletype_u_expr =
             Pair (List moduletype_substitution, moduletype_u_expr) )
     | TypeOf x -> C ("TypeOf", x, moduletype_type_of_desc)
     | Project (x1, x2) ->
-        C ("Project", (x1, x2), Pair (projection, moduletype_u_expr)))
+        C ("Project", (x1, x2), Pair (projection, moduletype_u_expr))
+    | Strengthen (x1, x2) ->
+        C
+          ( "Strengthen",
+            ((x1 :> Paths.Path.t), x2),
+            Pair (path, moduletype_u_expr) ))
 
 and moduletype_t =
   let open Lang.ModuleType in

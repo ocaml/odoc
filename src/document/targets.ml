@@ -49,7 +49,8 @@ and module_type_expr (t : Odoc_model.Lang.ModuleType.expr) =
       sub @ module_type_expr e
   | Path { p_expansion = e_opt; _ }
   | With { w_expansion = e_opt; _ }
-  | TypeOf { t_expansion = e_opt; _ } ->
+  | TypeOf { t_expansion = e_opt; _ }
+  | Strengthen { s_expansion = e_opt; _ } ->
       opt_expansion e_opt
   | Project _ ->
       (* TODO *)

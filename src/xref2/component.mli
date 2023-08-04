@@ -190,6 +190,7 @@ and ModuleType : sig
       | Functor of FunctorParameter.t * expr
       | TypeOf of type_of_desc
       | Project of Cpath.projection * expr
+      | Strengthen of Cpath.module_ * expr
   end
 
   type path_t = {
@@ -208,6 +209,12 @@ and ModuleType : sig
     t_expansion : simple_expansion option;
   }
 
+  type strengthen_t = {
+    s_path : Cpath.module_;
+    s_expansion : simple_expansion option;
+    s_expr : U.expr;
+  }
+
   type expr =
     | Path of path_t
     | Signature of Signature.t
@@ -215,6 +222,7 @@ and ModuleType : sig
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
     | Project of Cpath.projection * expr
+    | Strengthen of strengthen_t
 
   type t = {
     locs : Odoc_model.Paths.Identifier.SourceLocation.t option;

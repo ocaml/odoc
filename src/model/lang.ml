@@ -89,6 +89,7 @@ and ModuleType : sig
       | With of substitution list * expr
       | TypeOf of type_of_desc
       | Project of Projection.t * expr
+      | Strengthen of Path.Module.t * expr
   end
 
   type path_t = {
@@ -107,6 +108,12 @@ and ModuleType : sig
     t_expansion : simple_expansion option;
   }
 
+  type strengthen_t = {
+    s_path : Path.Module.t;
+    s_expansion : simple_expansion option;
+    s_expr : U.expr;
+  }
+
   type expr =
     | Path of path_t
     | Signature of Signature.t
@@ -114,6 +121,7 @@ and ModuleType : sig
     | With of with_t
     | TypeOf of typeof_t
     | Project of Projection.t * expr
+    | Strengthen of strengthen_t
 
   type t = {
     id : Identifier.ModuleType.t;
@@ -527,6 +535,7 @@ let rec umty_of_mty : ModuleType.expr -> ModuleType.U.expr = function
   | TypeOf t -> TypeOf t.t_desc
   | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
   | Project (proj, e) -> Project (proj, umty_of_mty e)
+  | Strengthen { s_path; s_expr; _ } -> Strengthen (s_path, s_expr)
 
 (** Query the top-comment of a signature. This is [s.doc] most of the time with
     an exception for signature starting with an inline includes. *)

@@ -383,7 +383,7 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
           match i.strengthened with
           | Some p ->
               let cp = Component.Of_Lang.(module_path (empty ()) p) in
-              Strengthen.signature cp sg
+              Strengthen.signature cp sg ~deep:false
           | None -> sg
         in
         let e = Lang_of.(simple_expansion map i.parent (Signature sg')) in
@@ -600,6 +600,7 @@ and module_type_map_subs env id cexpr subs =
         (* Preserving the behavior from when this type would have been replaced
            by its expansion *)
         None
+    | Strengthen (_, e) -> find_parent e
   in
   match find_parent cexpr with
   | None -> None
@@ -657,6 +658,7 @@ and u_module_type_expr :
         in
         TypeOf t
     | Project (proj, expr) -> Project (proj, inner expr)
+    | Strengthen (path, expr) -> Strengthen (module_path env path, inner expr)
   in
   inner expr
 
@@ -716,6 +718,11 @@ and module_type_expr :
   | Project (proj, expr) ->
       (* CR lmaurer: Does [id] need to change here? *)
       Project (proj, module_type_expr env id expr)
+  | Strengthen { s_path; s_expr; s_expansion } as e ->
+      let s_path = module_path env s_path in
+      let s_expr = u_module_type_expr env id s_expr in
+      let s_expansion = get_expansion s_expansion e in
+      Strengthen { s_path; s_expr; s_expansion }
 
 and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->

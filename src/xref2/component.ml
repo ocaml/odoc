@@ -207,6 +207,7 @@ and ModuleType : sig
       | Functor of FunctorParameter.t * expr
       | TypeOf of type_of_desc
       | Project of Cpath.projection * expr
+      | Strengthen of Cpath.module_ * expr
   end
 
   type path_t = {
@@ -225,6 +226,12 @@ and ModuleType : sig
     t_expansion : simple_expansion option;
   }
 
+  type strengthen_t = {
+    s_path : Cpath.module_;
+    s_expansion : simple_expansion option;
+    s_expr : U.expr;
+  }
+
   type expr =
     | Path of path_t
     | Signature of Signature.t
@@ -232,6 +239,7 @@ and ModuleType : sig
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
     | Project of Cpath.projection * expr
+    | Strengthen of strengthen_t
 
   type t = {
     locs : Odoc_model.Paths.Identifier.SourceLocation.t option;
@@ -753,6 +761,8 @@ module Fmt = struct
     | TypeOf t -> module_type_type_of_desc ppf t
     | Project (proj, e) ->
         Format.fprintf ppf "(%a)%a" u_module_type_expr e projection proj
+    | Strengthen (p, e) ->
+        Format.fprintf ppf "%a with %a" u_module_type_expr e module_path p
 
   and module_type_expr ppf mt =
     let open ModuleType in
@@ -771,6 +781,9 @@ module Fmt = struct
         Format.fprintf ppf "module type of struct include %a end" module_path p
     | Project (proj, e) ->
         Format.fprintf ppf "(%a)%a" module_type_expr e projection proj
+    | Strengthen { s_expr; s_path; _ } ->
+        Format.fprintf ppf "%a with %a" u_module_type_expr s_expr module_path
+          s_path
 
   and functor_parameter ppf x =
     let open FunctorParameter in
@@ -2202,6 +2215,10 @@ module Of_Lang = struct
     | Project (proj, e) ->
         let proj' = projection ident_map proj in
         Project (proj', u_module_type_expr ident_map e)
+    | Strengthen (p, e) ->
+        let p = module_path ident_map p in
+        let e = u_module_type_expr ident_map e in
+        Strengthen (p, e)
 
   and module_type_expr ident_map m =
     let open Odoc_model in
@@ -2246,6 +2263,16 @@ module Of_Lang = struct
     | Lang.ModuleType.Project (proj, expr) ->
         ModuleType.Project
           (projection ident_map proj, module_type_expr ident_map expr)
+    | Lang.ModuleType.Strengthen s ->
+        let s' =
+          ModuleType.
+            {
+              s_path = module_path ident_map s.s_path;
+              s_expr = u_module_type_expr ident_map s.s_expr;
+              s_expansion = option simple_expansion ident_map s.s_expansion;
+            }
+        in
+        ModuleType.Strengthen s'
 
   and module_type ident_map m =
     let expr =
@@ -2509,6 +2536,7 @@ let rec umty_of_mty (e : ModuleType.expr) : ModuleType.U.expr =
   | Functor (p, e) -> Functor (p, umty_of_mty e)
   | TypeOf { t_desc; _ } -> TypeOf t_desc
   | Project (proj, e) -> Project (proj, umty_of_mty e)
+  | Strengthen { s_path; s_expr; _ } -> Strengthen (s_path, s_expr)
 
 (** This is equivalent to {!Lang.extract_signature_doc}. *)
 let extract_signature_doc (s : Signature.t) =

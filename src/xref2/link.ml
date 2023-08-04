@@ -767,6 +767,8 @@ and u_module_type_expr :
   | TypeOf (StructInclude p) -> TypeOf (StructInclude (module_path env p))
   | TypeOf (ModPath p) -> TypeOf (ModPath (module_path env p))
   | Project (proj, expr) -> Project (proj, u_module_type_expr env id expr)
+  | Strengthen (path, expr) ->
+      Strengthen (module_path env path, u_module_type_expr env id expr)
 
 and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
@@ -833,6 +835,13 @@ and module_type_expr :
           t_expansion = do_expn t_expansion None;
         }
   | Project (proj, expr) -> Project (proj, module_type_expr env id expr)
+  | Strengthen { s_path; s_expr; s_expansion } ->
+      Strengthen
+        {
+          s_path = module_path env s_path;
+          s_expr = u_module_type_expr env id s_expr;
+          s_expansion = do_expn s_expansion None;
+        }
 
 and type_decl_representation :
     Env.t ->
