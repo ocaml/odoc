@@ -238,7 +238,6 @@ and ModuleType : sig
     | With of with_t
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
-    | Project of Cpath.projection * expr
     | Strengthen of strengthen_t
 
   type t = {
@@ -779,8 +778,6 @@ module Fmt = struct
         Format.fprintf ppf "module type of %a" module_path p
     | TypeOf { t_desc = StructInclude p; _ } ->
         Format.fprintf ppf "module type of struct include %a end" module_path p
-    | Project (proj, e) ->
-        Format.fprintf ppf "(%a)%a" module_type_expr e projection proj
     | Strengthen { s_expr; s_path; _ } ->
         Format.fprintf ppf "%a with %a" u_module_type_expr s_expr module_path
           s_path
@@ -2264,9 +2261,6 @@ module Of_Lang = struct
         in
         let t_expansion = option simple_expansion ident_map t_expansion in
         ModuleType.(TypeOf { t_desc; t_expansion })
-    | Lang.ModuleType.Project (proj, expr) ->
-        ModuleType.Project
-          (projection ident_map proj, module_type_expr ident_map expr)
     | Lang.ModuleType.Strengthen s ->
         let s' =
           ModuleType.
@@ -2539,7 +2533,6 @@ let rec umty_of_mty (e : ModuleType.expr) : ModuleType.U.expr =
   | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
   | Functor (p, e) -> Functor (p, umty_of_mty e)
   | TypeOf { t_desc; _ } -> TypeOf t_desc
-  | Project (proj, e) -> Project (proj, umty_of_mty e)
   | Strengthen { s_path; s_expr; _ } -> Strengthen (s_path, s_expr)
 
 (** This is equivalent to {!Lang.extract_signature_doc}. *)

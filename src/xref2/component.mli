@@ -221,7 +221,6 @@ and ModuleType : sig
     | With of with_t
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
-    | Project of Cpath.projection * expr
     | Strengthen of strengthen_t
 
   type t = {

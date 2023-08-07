@@ -162,8 +162,6 @@ and moduletype_expr =
         C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_expr))
     | With t -> C ("With", t, moduletype_with_t)
     | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t)
-    | Project (x1, x2) ->
-        C ("Project", (x1, x2), Pair (projection, moduletype_expr))
     | Strengthen x -> C ("Strengthen", x, moduletype_strengthen_t))
 
 and moduletype_u_expr =

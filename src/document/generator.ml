@@ -1384,7 +1384,6 @@ module Make (Syntax : SYNTAX) = struct
             match simple_expansion_of e with
             | Some e -> Some (Functor (f_parameter, e))
             | None -> None)
-        | Project _ -> failwith "Thought we were done with this"
       in
       match simple_expansion_of t with
       | None -> None
@@ -1528,7 +1527,6 @@ module Make (Syntax : SYNTAX) = struct
       | TypeOf { t_desc = ModPath m; _ }
       | TypeOf { t_desc = StructInclude m; _ } ->
           Paths.Path.(is_hidden (m :> t))
-      | Project (_, expr) -> mty_hidden expr
       | _ -> false
 
     and mty_with subs expr =
@@ -1616,7 +1614,6 @@ module Make (Syntax : SYNTAX) = struct
         | TypeOf { t_desc; _ } -> mty_typeof t_desc
         | Signature _ ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
-        | Project _ -> O.txt "unexpanded projection"
         | Strengthen _ -> O.txt "unexpanded strengthening"
 
     and mty_in_decl :
@@ -1652,9 +1649,6 @@ module Make (Syntax : SYNTAX) = struct
                    ++ O.cut ++ mty arg.expr ++ O.txt ")"
           in
           O.sp ++ text_arg ++ mty_in_decl base expr
-      | Project _ ->
-          (* TODO *)
-          unresolved [ inline (Text "<projection>") ]
       | Strengthen _ ->
           (* TODO *)
           unresolved [ inline (Text "<strengthening>") ]

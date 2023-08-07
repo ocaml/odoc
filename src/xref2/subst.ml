@@ -2,7 +2,7 @@ open Component
 
 exception Invalidated
 
-exception MTOInvalidated of Component.ModuleType.expr
+exception MTOInvalidated of Component.ModuleType.U.expr
 
 type ('a, 'b) or_replaced = Not_replaced of 'a | Replaced of 'b
 
@@ -194,9 +194,9 @@ let rec compose_projections ~first ~second =
 
 let apply_projection proj e =
   match e with
-  | ModuleType.Project (first, e) ->
-      ModuleType.Project (compose_projections ~first ~second:proj, e)
-  | _ -> ModuleType.Project (proj, e)
+  | ModuleType.U.Project (first, e) ->
+      ModuleType.U.Project (compose_projections ~first ~second:proj, e)
+  | _ -> ModuleType.U.Project (proj, e)
 
 let rec resolved_module_path :
     t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
@@ -542,7 +542,6 @@ let rec substituted_module_type_expr :
   | TypeOf { t_expansion = Some exp; _ }
   | Strengthen { s_expansion = Some exp; _ } ->
       umty_of_simple_expansion exp
-  | Project (proj, e) -> Project (proj, substituted_module_type_expr e)
   | Path { p_expansion = None; _ }
   | With { w_expansion = None; _ }
   | TypeOf { t_expansion = None; _ }
@@ -677,10 +676,7 @@ and module_type_type_of_desc s t =
   | StructInclude p -> (
       match mto_module_path_invalidated s p with
       | Some e ->
-          let e =
-            Strengthen
-              { s_expr = umty_of_mty e; s_path = p; s_expansion = None }
-          in
+          let e = U.Strengthen (p, e) in
           raise (MTOInvalidated e)
       | None -> StructInclude (module_path s p))
 
@@ -690,7 +686,8 @@ and module_type_type_of_desc_noexn s t =
   | ModPath p -> ModPath (module_path s p)
   | StructInclude p -> StructInclude (module_path s p)
 
-and mto_module_path_invalidated : t -> Cpath.module_ -> ModuleType.expr option =
+and mto_module_path_invalidated : t -> Cpath.module_ -> ModuleType.U.expr option
+    =
  fun s p ->
   match p with
   | `Resolved p' -> mto_resolved_module_path_invalidated s p'
@@ -710,7 +707,7 @@ and mto_module_path_invalidated : t -> Cpath.module_ -> ModuleType.expr option =
   | `Local (id, _) -> (
       match PathModuleMap.find id s.module_type_of_invalidating_modules with
       | exception Not_found -> None
-      | mty -> Some mty)
+      | mty -> Some (substituted_module_type_expr mty))
   | `Identifier _ -> None
   | `Forward _ -> None
   | `Root _ -> None
@@ -720,7 +717,7 @@ and mto_resolved_module_path_invalidated s p =
   | `Local id -> (
       match PathModuleMap.find id s.module_type_of_invalidating_modules with
       | exception Not_found -> None
-      | mty -> Some mty)
+      | mty -> Some (substituted_module_type_expr mty))
   | `Gpath _ -> None
   | `Apply (p1, p2) ->
       (* Only consider invalid if [p1] is invalidated - [p2] can't mess up the
@@ -738,12 +735,7 @@ and mto_resolved_module_path_invalidated s p =
              (* The fact that an alias was used forces a strengthening operation
                 (since the [module type of] resolves to an otherwise-unwritable
                 alias type). *)
-             ModuleType.Strengthen
-               {
-                 s_expr = Component.umty_of_mty e;
-                 s_path = `Resolved p1;
-                 s_expansion = None;
-               })
+             ModuleType.U.Strengthen (`Resolved p1, e))
   | `Subst (_p1, p2) -> mto_resolved_module_path_invalidated s p2
   | `Hidden p -> mto_resolved_module_path_invalidated s p
   | `Canonical (p1, _p2) -> mto_resolved_module_path_invalidated s p1
@@ -761,7 +753,6 @@ and u_module_type_expr s t =
           | Signature s -> Signature s
           | TypeOf { t_desc; _ } -> TypeOf t_desc
           | With w -> With (w.w_substitutions, w.w_expr)
-          | Project (proj, e) -> Project (proj, Component.umty_of_mty e)
           | Functor (param, e) -> Functor (param, Component.umty_of_mty e)
           | Strengthen s -> Strengthen (s.s_path, s.s_expr)))
   | Signature sg -> Signature (signature s sg)
@@ -772,8 +763,7 @@ and u_module_type_expr s t =
       Functor (functor_parameter s arg, u_module_type_expr s expr)
   | TypeOf t -> (
       try TypeOf (module_type_type_of_desc s t)
-      with MTOInvalidated e ->
-        u_module_type_expr s (substituted_module_type_expr e))
+      with MTOInvalidated e -> u_module_type_expr s e)
   | Project (proj, e) -> Project (proj, u_module_type_expr s e)
   | Strengthen (path, expr) ->
       Strengthen (module_path s path, u_module_type_expr s expr)
@@ -809,7 +799,6 @@ and module_type_expr s t =
   | TypeOf { t_desc; t_expansion = None } ->
       TypeOf
         { t_desc = module_type_type_of_desc_noexn s t_desc; t_expansion = None }
-  | Project (proj, e) -> Project (proj, module_type_expr s e)
   | Strengthen { s_expr; s_path; s_expansion } ->
       Strengthen
         {

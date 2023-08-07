@@ -834,7 +834,6 @@ and module_type_expr :
           t_desc = ModPath (module_path env p);
           t_expansion = do_expn t_expansion None;
         }
-  | Project (proj, expr) -> Project (proj, module_type_expr env id expr)
   | Strengthen { s_path; s_expr; s_expansion } ->
       Strengthen
         {

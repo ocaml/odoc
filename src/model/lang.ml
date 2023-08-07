@@ -120,7 +120,6 @@ and ModuleType : sig
     | Functor of FunctorParameter.t * expr
     | With of with_t
     | TypeOf of typeof_t
-    | Project of Projection.t * expr
     | Strengthen of strengthen_t
 
   type t = {
@@ -535,7 +534,6 @@ let rec umty_of_mty : ModuleType.expr -> ModuleType.U.expr = function
   | Functor (p, e) -> Functor (p, umty_of_mty e)
   | TypeOf t -> TypeOf t.t_desc
   | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
-  | Project (proj, e) -> Project (proj, umty_of_mty e)
   | Strengthen { s_path; s_expr; _ } -> Strengthen (s_path, s_expr)
 
 (** Query the top-comment of a signature. This is [s.doc] most of the time with

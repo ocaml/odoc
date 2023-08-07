@@ -841,10 +841,6 @@ and module_type_expr map identifier = function
           t_desc = StructInclude (Path.module_ map p);
           t_expansion = Opt.map (simple_expansion map identifier) t_expansion;
         }
-  | Project (proj, expr) ->
-      (* CR lmaurer: [identifier] seems a bit wrong here but it's not always
-         precise elsewhere, I think? *)
-      Project (Path.projection map proj, module_type_expr map identifier expr)
   | Strengthen { s_path; s_expr; s_expansion } ->
       Strengthen
         {

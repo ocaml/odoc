@@ -1721,9 +1721,6 @@ and expansion_of_module_type_expr :
         | StructInclude p -> (p, true)
       in
       expansion_of_module_path env ~strengthen cp
-  | Component.ModuleType.Project (proj, expr) ->
-      expansion_of_module_type_expr ~mark_substituted env expr >>= fun exp ->
-      project_from_expansion ~mark_substituted env proj exp
   | Component.ModuleType.Strengthen { s_expr; s_path; _ } ->
       expansion_of_u_module_type_expr ~mark_substituted env s_expr
       >>= fun exp -> Ok (strengthen_expansion s_path exp ~deep:false)

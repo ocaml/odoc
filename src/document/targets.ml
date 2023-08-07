@@ -52,9 +52,6 @@ and module_type_expr (t : Odoc_model.Lang.ModuleType.expr) =
   | TypeOf { t_expansion = e_opt; _ }
   | Strengthen { s_expansion = e_opt; _ } ->
       opt_expansion e_opt
-  | Project _ ->
-      (* TODO *)
-      []
 
 and module_ (t : Odoc_model.Lang.Module.t) =
   let url = Url.Path.from_identifier t.id in

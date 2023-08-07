@@ -715,9 +715,6 @@ and module_type_expr :
         | StructInclude p -> StructInclude (module_path env p)
       in
       TypeOf { t_desc; t_expansion }
-  | Project (proj, expr) ->
-      (* CR lmaurer: Does [id] need to change here? *)
-      Project (proj, module_type_expr env id expr)
   | Strengthen { s_path; s_expr; s_expansion } as e ->
       let s_path = module_path env s_path in
       let s_expr = u_module_type_expr env id s_expr in
