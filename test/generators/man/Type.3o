@@ -28,11 +28,11 @@ Some documentation\.
 .sp 
 \f[CB]type\fR higher_order = (int \f[CB]\->\fR int) \f[CB]\->\fR int
 .sp 
-\f[CB]type\fR labeled = l:int \f[CB]\->\fR int
+\f[CB]type\fR labeled = \f[CB]l\fR:int \f[CB]\->\fR int
 .sp 
-\f[CB]type\fR optional = ?l:int \f[CB]\->\fR int
+\f[CB]type\fR optional = \f[CB]?l\fR:int \f[CB]\->\fR int
 .sp 
-\f[CB]type\fR labeled_higher_order = (l:int \f[CB]\->\fR int) \f[CB]\->\fR (?l:int \f[CB]\->\fR int) \f[CB]\->\fR int
+\f[CB]type\fR labeled_higher_order = (\f[CB]l\fR:int \f[CB]\->\fR int) \f[CB]\->\fR (\f[CB]?l\fR:int \f[CB]\->\fR int) \f[CB]\->\fR int
 .sp 
 \f[CB]type\fR pair = int * int
 .sp 

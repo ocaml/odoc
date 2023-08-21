@@ -119,6 +119,7 @@
   --toc-list-border: #ccc;
 
   --spec-summary-border-color: #5c9cf5;
+  --spec-label-color: green;
   --spec-summary-background: var(--code-background);
   --spec-summary-hover-background: #ebeff2;
   --spec-details-after-background: rgba(0, 4, 15, 0.05);
@@ -158,6 +159,8 @@
   --hljs-type: #ac885b;
   --hljs-meta: #82aaff;
   --hljs-variable: #cf6a4c;
+
+  --spec-label-color: lightgreen;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -204,6 +207,8 @@
     --hljs-type: #ac885b;
     --hljs-meta: #82aaff;
     --hljs-variable: #cf6a4c;
+
+    --spec-label-color: lightgreen;
   }
 }
 
@@ -523,6 +528,10 @@ p a > code, li a > code {
   border-left: 4px solid var(--spec-summary-border-color);
   border-right: 5px solid transparent;
   padding: 0.35em 0.5em;
+}
+
+.spec .label, .spec .optlabel {
+  color: var(--spec-label-color);
 }
 
 li:not(:last-child) > .def-doc {
