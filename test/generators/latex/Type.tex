@@ -6,9 +6,9 @@
 \label{module-Type-type-constructor}\ocamlcodefragment{\ocamltag{keyword}{type} 'a constructor = \ocamltag{type-var}{'a}}\\
 \label{module-Type-type-arrow}\ocamlcodefragment{\ocamltag{keyword}{type} arrow = int \ocamltag{arrow}{$\rightarrow$} int}\\
 \label{module-Type-type-higher_order}\ocamlcodefragment{\ocamltag{keyword}{type} higher\_\allowbreak{}order = (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int}\\
-\label{module-Type-type-labeled}\ocamlcodefragment{\ocamltag{keyword}{type} labeled = l:int \ocamltag{arrow}{$\rightarrow$} int}\\
-\label{module-Type-type-optional}\ocamlcodefragment{\ocamltag{keyword}{type} optional = ?l:int \ocamltag{arrow}{$\rightarrow$} int}\\
-\label{module-Type-type-labeled_higher_order}\ocamlcodefragment{\ocamltag{keyword}{type} labeled\_\allowbreak{}higher\_\allowbreak{}order = (l:int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} (?l:int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int}\\
+\label{module-Type-type-labeled}\ocamlcodefragment{\ocamltag{keyword}{type} labeled = \ocamltag{label}{l}:int \ocamltag{arrow}{$\rightarrow$} int}\\
+\label{module-Type-type-optional}\ocamlcodefragment{\ocamltag{keyword}{type} optional = \ocamltag{optlabel}{?l}:int \ocamltag{arrow}{$\rightarrow$} int}\\
+\label{module-Type-type-labeled_higher_order}\ocamlcodefragment{\ocamltag{keyword}{type} labeled\_\allowbreak{}higher\_\allowbreak{}order = (\ocamltag{label}{l}:int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} (\ocamltag{optlabel}{?l}:int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int}\\
 \label{module-Type-type-pair}\ocamlcodefragment{\ocamltag{keyword}{type} pair = int * int}\\
 \label{module-Type-type-parens_dropped}\ocamlcodefragment{\ocamltag{keyword}{type} parens\_\allowbreak{}dropped = int * int}\\
 \label{module-Type-type-triple}\ocamlcodefragment{\ocamltag{keyword}{type} triple = int * int * int}\\

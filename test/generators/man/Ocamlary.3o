@@ -367,7 +367,7 @@ Unary exception constructor over binary tuple
 \f[CI]a_function\fR is this type and \f[CI]a_function\fR is the value below\.
 .nf 
 .sp 
-\f[CB]val\fR a_function : x:int \f[CB]\->\fR int
+\f[CB]val\fR a_function : \f[CB]x\fR:int \f[CB]\->\fR int
 .fi 
 .br 
 .ti +2
@@ -382,7 +382,7 @@ This is a_function with param and return type\.
 .sp 
 \f[CB]val\fR fun_fun_fun : ((int, int) a_function, (unit, unit) a_function) a_function
 .sp 
-\f[CB]val\fR fun_maybe : ?yes:unit \f[CB]\->\fR unit \f[CB]\->\fR int
+\f[CB]val\fR fun_maybe : \f[CB]?yes\fR:unit \f[CB]\->\fR unit \f[CB]\->\fR int
 .sp 
 \f[CB]val\fR not_found : unit \f[CB]\->\fR unit
 .fi 

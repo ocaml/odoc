@@ -68,7 +68,10 @@
     <div class="spec type anchored" id="type-labeled">
      <a href="#type-labeled" class="anchor"></a>
      <code><span><span class="keyword">type</span> labeled</span>
-      <span> = <span>l:int <span class="arrow">&#45;&gt;</span></span> int
+      <span> = 
+       <span><span class="label">l</span>:int 
+        <span class="arrow">&#45;&gt;</span>
+       </span> int
       </span>
      </code>
     </div>
@@ -77,7 +80,10 @@
     <div class="spec type anchored" id="type-optional">
      <a href="#type-optional" class="anchor"></a>
      <code><span><span class="keyword">type</span> optional</span>
-      <span> = <span>?l:int <span class="arrow">&#45;&gt;</span></span> int
+      <span> = 
+       <span><span class="optlabel">?l</span>:int 
+        <span class="arrow">&#45;&gt;</span>
+       </span> int
       </span>
      </code>
     </div>
@@ -89,11 +95,17 @@
       <span><span class="keyword">type</span> labeled_higher_order</span>
       <span> = 
        <span>
-        <span>(<span>l:int <span class="arrow">&#45;&gt;</span></span> int)
+        <span>(
+         <span><span class="label">l</span>:int 
+          <span class="arrow">&#45;&gt;</span>
+         </span> int)
         </span> <span class="arrow">&#45;&gt;</span>
        </span> 
        <span>
-        <span>(<span>?l:int <span class="arrow">&#45;&gt;</span></span> int)
+        <span>(
+         <span><span class="optlabel">?l</span>:int 
+          <span class="arrow">&#45;&gt;</span>
+         </span> int)
         </span> <span class="arrow">&#45;&gt;</span>
        </span> int
       </span>
