@@ -198,6 +198,9 @@ The assets are put as child of their parent
   html/page/index.html
   html/page/index.js
 
+  $ grep -E -o "'[\./]*fuse\.js\.js" html/page/index.html
+  'fuse.js.js
+
 One way to visually try the search is to indent
 $ cp -r html /tmp/
 $ firefox /tmp/html/page/Main/index.html
