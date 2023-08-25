@@ -31,6 +31,7 @@ worker.onmessage = (e) => {
   let f = (entry) => {
     /* entry */
     let container = document.createElement("a");
+    container.classList.add("search-entry");
     container.href = base_url + entry.url;
     container.innerHTML = entry.html;
     search_result.appendChild(container);

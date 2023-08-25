@@ -22,8 +22,8 @@ val typedecl_rhs : Entry.type_decl_entry -> string option
 val value_rhs : Entry.value_entry -> string
 val html_of_strings :
   kind:string ->
-  prefix_name:string ->
-  name:string ->
+  prefix_name:string option ->
+  name:string option ->
   rhs:string option ->
   typedecl_params:string option ->
   doc:string ->

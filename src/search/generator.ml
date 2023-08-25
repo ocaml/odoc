@@ -217,14 +217,22 @@ let html_of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
   let open Tyxml.Html in
   let kind = code ~a:[ a_class [ "entry-kind" ] ] [ txt kind ]
   and prefix_name =
-    span
-      ~a:[ a_class [ "prefix-name" ] ]
-      [
-        txt
-          ((match typedecl_params with None -> "" | Some p -> p ^ " ")
-          ^ prefix_name ^ ".");
-      ]
-  and name = span ~a:[ a_class [ "entry-name" ] ] [ txt name ]
+    match prefix_name with
+    | Some prefix_name ->
+        [
+          span
+            ~a:[ a_class [ "prefix-name" ] ]
+            [
+              txt
+                ((match typedecl_params with None -> "" | Some p -> p ^ " ")
+                ^ prefix_name ^ ".");
+            ];
+        ]
+    | None -> []
+  and name =
+    match name with
+    | Some name -> [ span ~a:[ a_class [ "entry-name" ] ] [ txt name ] ]
+    | None -> []
   and rhs =
     match rhs with
     | None -> []
@@ -232,7 +240,7 @@ let html_of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
   in
   [
     kind;
-    code ~a:[ a_class [ "entry-title" ] ] ([ prefix_name; name ] @ rhs);
+    code ~a:[ a_class [ "entry-title" ] ] (prefix_name @ name @ rhs);
     div ~a:[ a_class [ "entry-comment" ] ] [ Unsafe.data doc ];
   ]
 
@@ -270,6 +278,7 @@ let html_of_entry (entry : Entry.t) =
   let ({ id; doc; kind } : Entry.t) = entry in
   let rhs = rhs_of_kind kind in
   let prefix_name, name = title_of_id id in
+  let prefix_name = Some prefix_name and name = Some name in
   let doc = html_string_of_doc doc in
   let kind = string_of_kind kind in
   let typedecl_params = typedecl_params_of_entry entry in
