@@ -109,12 +109,19 @@ let search message =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list
            (fun Db.Elt.{ name; rhs; doc_html; kind; url; _ } ->
-             let kind = string_of_kind kind in
              let prefix_name, name =
-               let rev_name = name |> String.split_on_char '.' |> List.rev in
-               ( rev_name |> List.tl |> List.rev |> String.concat "."
-               , List.hd rev_name )
+               match kind with
+               | Db.Elt.Kind.Doc -> None, None
+               | _ ->
+                   let rev_name =
+                     name |> String.split_on_char '.' |> List.rev
+                   in
+                   ( rev_name |> List.tl |> List.rev |> String.concat "."
+                     |> Option.some
+                   , rev_name |> List.hd |> Option.some )
              in
+             let kind = string_of_kind kind in
+
              let html =
                Odoc_search.Generator.html_of_strings ~kind ~prefix_name ~name
                  ~typedecl_params:None (*TODO pass value*)
