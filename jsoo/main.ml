@@ -129,8 +129,7 @@ let search message =
                |> List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ()))
                |> String.concat "\n"
              in
-
-             Jv.obj [| "html", Jv.of_string html; url, Jv.of_string url |])
+             Jv.obj [| "html", Jv.of_string html; "url", Jv.of_string url |])
            results
       |]
   in
