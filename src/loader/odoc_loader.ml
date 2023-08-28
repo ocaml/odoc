@@ -1,6 +1,6 @@
 open Result
 module Error = Odoc_model.Error
-module Local_jmp = Local_jmp
+module Shape = Shape_
 
 let read_string parent_definition filename text =
   let location =
@@ -45,7 +45,7 @@ exception Make_root_error of string
 
 (** [cmt_info.cmt_annots = Implementation _] *)
 let read_cmt_infos' source_id_opt id cmt_info =
-  match Local_jmp.of_cmt source_id_opt id cmt_info with
+  match Implementation.of_cmt source_id_opt id cmt_info with
   | None, _ -> None
   | Some shape, jmp_infos -> Some (shape, jmp_infos)
 

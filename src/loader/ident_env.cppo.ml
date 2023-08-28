@@ -325,8 +325,8 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
             | Some id -> `Module (id, hide_item, Some mb.mb_loc) :: items
             | None -> items) mbs [] @ extract_structure_tree_items hide_item rest
 #else
-    | { str_desc = Tstr_module { mb_id; mb_loc}; _} :: rest ->
-        [`Module (mb_id, hide_item, mb_loc)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_module { mb_id; mb_loc; _}; _} :: rest ->
+        [`Module (mb_id, hide_item, Some mb_loc)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_recmodule mbs; _} :: rest ->
         List.map (fun mb -> `Module (mb.mb_id, hide_item, None))
           mbs @ extract_structure_tree_items hide_item rest
