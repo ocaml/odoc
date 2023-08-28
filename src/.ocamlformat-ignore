@@ -5,8 +5,9 @@ loader/cmi.mli
 loader/cmt.ml
 loader/cmti.ml
 loader/doc_attr.ml
-loader/uid.ml
-loader/uid.mli
+loader/implementation.ml
+loader/shape_.ml
+loader/shape_.mli
 syntax_highlighter/syntax_highlighter.ml
 model/*.cppo.ml
 html_support_files/*.ml

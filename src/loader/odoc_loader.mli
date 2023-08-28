@@ -2,7 +2,7 @@ open Result
 open Odoc_model
 open Odoc_model.Paths
 
-module Local_jmp = Local_jmp
+module Shape = Shape_
 
 type make_root =
   module_name:string ->
@@ -19,7 +19,7 @@ val read_cmt_infos :
   Identifier.SourcePage.t option ->
   Identifier.RootModule.t ->
   filename:string ->
-  ((Local_jmp.t * Lang.Source_info.infos) option, Error.t) result
+  ((Shape.t * Lang.Source_info.infos) option, Error.t) result
   Error.with_warnings
 (** Read the shape from a .cmt file. *)
 
@@ -34,7 +34,7 @@ val read_cmt :
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
   source_id_opt:Identifier.SourcePage.t option ->
-  ( Lang.Compilation_unit.t * (Local_jmp.t * Lang.Source_info.infos) option,
+  ( Lang.Compilation_unit.t * (Shape.t * Lang.Source_info.infos) option,
     Error.t )
   result
   Error.with_warnings

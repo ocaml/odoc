@@ -14,11 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Loader_Uid = Uid
 open Asttypes
 open Types
 module OCamlPath = Path
-module Uid = Loader_Uid
 
 open Odoc_model.Paths
 open Odoc_model.Lang
