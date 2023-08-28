@@ -17,6 +17,8 @@
 open StdLabels
 open Or_error
 
+module Odoc_compile = Compile
+
 module Compile = struct
   type t = { unit_name : string; digest : Digest.t }
 
@@ -33,14 +35,18 @@ let for_compile_step_cmt file =
   let cmt_infos = Cmt_format.read_cmt (Fs.File.to_string file) in
   List.fold_left ~f:add_dep ~init:[] cmt_infos.Cmt_format.cmt_imports
 
-let for_compile_step_cmi_or_cmti file =
-  let cmi_infos = Cmi_format.read_cmi (Fs.File.to_string file) in
-  List.fold_left ~f:add_dep ~init:[] cmi_infos.Cmi_format.cmi_crcs
+let for_compile_step_cmi_or_cmti ~has_src file =
+  if has_src then
+    match Odoc_compile.lookup_cmt_of_cmti file with
+    | None -> []
+    | Some file -> for_compile_step_cmt file
+  else
+    let cmi_infos = Cmi_format.read_cmi (Fs.File.to_string file) in
+    List.fold_left ~f:add_dep ~init:[] cmi_infos.Cmi_format.cmi_crcs
 
-let for_compile_step file =
-  match Fs.File.has_ext "cmt" file with
-  | true -> for_compile_step_cmt file
-  | false -> for_compile_step_cmi_or_cmti file
+let for_compile_step ~has_src file =
+  if Fs.File.has_ext "cmt" file then for_compile_step_cmt file
+  else for_compile_step_cmi_or_cmti ~has_src file
 
 module Hash_set : sig
   type t

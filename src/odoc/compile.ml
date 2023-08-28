@@ -32,18 +32,23 @@ type parent_cli_spec =
 let check_is_none msg = function None -> Ok () | Some _ -> Error (`Msg msg)
 let check_is_empty msg = function [] -> Ok () | _ :: _ -> Error (`Msg msg)
 
-(** Raises warnings and errors. *)
-let lookup_implementation_of_cmti intf_file =
+let lookup_cmt_of_cmti intf_file =
   let input_file = Fs.File.set_ext ".cmt" intf_file in
-  if Fs.File.exists input_file then
-    let filename = Fs.File.to_string input_file in
-    Odoc_loader.read_cmt_infos ~filename |> Error.raise_errors_and_warnings
+  if Fs.File.exists input_file then Some input_file
   else (
     Error.raise_warning ~non_fatal:true
       (Error.filename_only
          "No implementation file found for the given interface"
          (Fs.File.to_string intf_file));
     None)
+
+(** Raises warnings and errors. *)
+let lookup_implementation_of_cmti intf_file =
+  match lookup_cmt_of_cmti intf_file with
+  | Some filename ->
+      let filename = Fs.File.to_string filename in
+      Odoc_loader.read_cmt_infos ~filename |> Error.raise_errors_and_warnings
+  | None -> None
 
 (** Used to disambiguate child references. *)
 let is_module_name n = String.length n > 0 && Char.Ascii.is_upper n.[0]

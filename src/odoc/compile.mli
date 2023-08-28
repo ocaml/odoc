@@ -23,6 +23,10 @@ type parent_cli_spec =
   | CliPackage of string
   | CliNoparent
 
+val lookup_cmt_of_cmti : Fs.File.t -> Fs.File.t option
+(** From a cmti file, returns the cmt file if it exists. If it does not esists,
+    raise a warning. *)
+
 val name_of_output : prefix:string -> Fs.File.t -> string
 (** Compute the name of the page from the output file. Prefix is the prefix to
     remove from the filename. *)
