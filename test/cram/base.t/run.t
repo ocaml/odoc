@@ -1,13 +1,13 @@
-q  $ cat $(find . -name '*.odocl') > megaodocl
+  $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
-  5.1M	megaodocl
+  4.9M	megaodocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
-  Indexing in 2934.671164ms
-  Export in 1175.176859ms
+  Indexing in 501.541853ms
+  Export in 528.162003ms
   
-  real	0m5.095s
-  user	0m4.675s
-  sys	0m0.163s
+  real	0m1.372s
+  user	0m1.320s
+  sys	0m0.047s
 $ sherlodoc_index --format=js --empty-payload --db=db_empty_payload.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-docstring=false --db=db_no_docstring.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-name=false --db=db_no_name.js $(find . -name '*.odocl') 2> /dev/null
@@ -19,65 +19,45 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2708	db.js
-  2044	db.js.gz
-  1624	megaodocl.gz
+  2672	db.js
+  2016	db.js.gz
+  1552	megaodocl.gz
 
 
   $ for f in $(find . -name '*.odocl'); do
   >  odoc html-generate --search-file=db.js --search-file=sherlodoc.js --output-dir html $f 
   > done
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Hash_set_intf.M_sexp_grammar
-  Warning, resolved hidden path: Base__.Hash_set_intf.M_sexp_grammar
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Either0.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Set_intf.Named.t
-  Warning, resolved hidden path: Base__.Either0.t
+  odoc: unknown option '--search-file'.
+        unknown option '--search-file'.
+  Usage: odoc html-generate [OPTION]… FILE.odocl
+  Try 'odoc html-generate --help' or 'odoc --help' for more information.
+  odoc: unknown option '--search-file'.
+        unknown option '--search-file'.
+  Usage: odoc html-generate [OPTION]… FILE.odocl
+  Try 'odoc html-generate --help' or 'odoc --help' for more information.
+  odoc: unknown option '--search-file'.
+        unknown option '--search-file'.
+  Usage: odoc html-generate [OPTION]… FILE.odocl
+  Try 'odoc html-generate --help' or 'odoc --help' for more information.
+  odoc: unknown option '--search-file'.
+        unknown option '--search-file'.
+  Usage: odoc html-generate [OPTION]… FILE.odocl
+  Try 'odoc html-generate --help' or 'odoc --help' for more information.
+  odoc: unknown option '--search-file'.
+        unknown option '--search-file'.
+  Usage: odoc html-generate [OPTION]… FILE.odocl
+  Try 'odoc html-generate --help' or 'odoc --help' for more information.
+  odoc: unknown option '--search-file'.
+        unknown option '--search-file'.
+  Usage: odoc html-generate [OPTION]… FILE.odocl
+  Try 'odoc html-generate --help' or 'odoc --help' for more information.
+  [2]
   $ odoc support-files -o html
   $ cp db.js html/
   $ cp ../../../jsoo/main.bc.js html/sherlodoc.js
   $ du -sh html/sherlodoc.js
   13M	html/sherlodoc.js
   $ ls html
-  base
   db.js
   fonts
   highlight.pack.js
@@ -89,8 +69,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ cp -r html /tmp
 $ firefox /tmp/html/base/index.html
   $ sherlodoc_index --format=marshal --index-docstring=false --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
-  Indexing in 1396.560907ms
-  Export in 961.407900ms
+  Indexing in 498.206854ms
+  Export in 444.612980ms
   $ sherlodoc --db=db_marshal.bin "group b" | sort
   val Base.Hashtbl.group : ?growth_allowed:bool -> ?size:int -> 'a t -> get_key:('r -> 'a) -> get_data:('r -> 'b) -> combine:('b -> 'b -> 'b) -> 'r list -> [('a, 'b) t]
   val Base.List.Assoc.group : ('a * 'b) list -> equal:('a -> 'a -> bool) -> [('a, 'b list) t]
