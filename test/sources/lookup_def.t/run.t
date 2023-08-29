@@ -22,6 +22,6 @@ Show the locations:
   [{"`Value":[{"`Root":["None","A"]},"a"]},{"Some":{"`SourceLocation":[{"`SourcePage":[{"`Page":[{"Some":{"`Page":["None","root"]}},"source"]},"a.ml"]},"value-a"]}}]
   [{"`Exception":[{"`Root":["None","A"]},"Exn"]},{"Some":{"`SourceLocation":[{"`SourcePage":[{"`Page":[{"Some":{"`Page":["None","root"]}},"source"]},"a.ml"]},"exception-Exn"]}}]
   [{"`Type":[{"`Root":["None","A"]},"ext"]},{"Some":{"`SourceLocation":[{"`SourcePage":[{"`Page":[{"Some":{"`Page":["None","root"]}},"source"]},"a.ml"]},"type-ext"]}}]
-  [{"`Extension":[{"`Root":["None","A"]},"Ext"]},{"Some":{"`SourceLocation":[{"`SourcePage":[{"`Page":[{"Some":{"`Page":["None","root"]}},"source"]},"a.ml"]},"def_11"]}}]
+  [{"`Extension":[{"`Root":["None","A"]},"Ext"]},{"Some":{"`SourceLocation":[{"`SourcePage":[{"`Page":[{"Some":{"`Page":["None","root"]}},"source"]},"a.ml"]},"extension-Ext"]}}]
   [{"`Class":[{"`Root":["None","A"]},"cls"]},{"Some":{"`SourceLocation":[{"`SourcePage":[{"`Page":[{"Some":{"`Page":["None","root"]}},"source"]},"a.ml"]},"class-cls"]}}]
   [{"`ClassType":[{"`Root":["None","A"]},"clst"]},{"Some":{"`SourceLocation":[{"`SourcePage":[{"`Page":[{"Some":{"`Page":["None","root"]}},"source"]},"a.ml"]},"class_type-clst"]}}]
