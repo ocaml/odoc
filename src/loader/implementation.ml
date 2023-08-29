@@ -174,8 +174,15 @@ module Analysis = struct
     | { exp_desc = Texp_try (e, cases); _ } ->
         expression env e @ List.concat_map (case env) cases
     | { exp_desc = Texp_tuple es; _ } -> List.concat_map (expression env) es
-    | { exp_desc = Texp_construct (_, _, es); _ } ->
-        List.concat_map (expression env) es
+    | { exp_desc = Texp_construct (_, cons_description, es); exp_loc; _ } ->
+      let x =
+        match
+          Shape.Uid.Tbl.find_opt (get_uid_to_loc env) cons_description.cstr_uid
+        with
+        | Some _ -> [ (DefJmp cons_description.cstr_uid, pos_of_loc exp_loc) ]
+        | None -> []
+      in
+        x @ List.concat_map (expression env) es
     | { exp_desc = Texp_variant (_, Some e); _ } -> expression env e
     | { exp_desc = Texp_variant (_, None); _ } -> []
     | { exp_desc = Texp_record { fields; extended_expression; _ }; _ } ->
