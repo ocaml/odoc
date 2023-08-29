@@ -3,6 +3,8 @@ Files containing some values:
   $ cat a.ml
   type t = string
   
+  type truc = A | B
+  
   let x = 2
   let y = x + 1
   let z a = if x = 1 || true then x + y else 0
@@ -14,7 +16,7 @@ Files containing some values:
   module type U = T
   
   type ext = ..
-  type ext += Foo
+  type ext += Foo | Bar
   
   exception Exn
   
@@ -68,6 +70,10 @@ Source links generated in the documentation:
        <a href="#type-t" class="anchor"></a>
        <a href="../root/source/a.ml.html#type-t" class="source_link">Source</a>
   --
+      <div class="spec type anchored" id="type-truc">
+       <a href="#type-truc" class="anchor"></a>
+       <a href="../root/source/a.ml.html#type-truc" class="source_link">Source
+  --
       <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
        <a href="../root/source/a.ml.html#value-y" class="source_link">Source
@@ -98,7 +104,7 @@ Source links generated in the documentation:
   --
       <div class="spec type extension anchored" id="extension-decl-Foo">
        <a href="#extension-decl-Foo" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def_10" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#extension-Foo" class="source_link">
   --
       <div class="spec exception anchored" id="exception-Exn">
        <a href="#exception-Exn" class="anchor"></a>
@@ -146,23 +152,23 @@ Ids generated in the source code:
   id="L21"
   id="L22"
   id="L23"
+  id="L24"
+  id="L25"
   id="type-t"
+  id="type-truc"
   id="value-{x}2"
   id="value-y"
   id="value-z"
-  id="local_a_47"
+  id="local_a_66"
   id="module-A"
   id="module-B"
   id="module_type-T"
   id="module_type-U"
   id="type-ext"
-  id="def_10"
+  id="extension-Foo"
+  id="extension-Bar"
   id="exception-Exn"
   id="class-cls"
   id="class-cls'"
   id="class_type-ct"
   id="value-x"
-
-  $ firefox html/root/source/a.ml.html
-  Gtk-Message: 12:16:26.688: Failed to load module "xapp-gtk3-module"
-  Gtk-Message: 12:16:26.689: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.

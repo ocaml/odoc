@@ -63,8 +63,10 @@ type item = [
   | `Class of Ident.t * Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option
   | `ClassType of Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option
   | `Exception of Ident.t * Warnings.loc option
-  (* Exceptions are never hidden, but we need to add it to the [loc_to_ident]
-     table. *)
+  (* Exceptions needs to be added to the [loc_to_ident] table. *)
+  | `Extension of Ident.t * Warnings.loc option
+  (* Extension constructor also need to be added to the [loc_to_ident] table,
+     since they get an entry in the [uid_to_loc] table. *)
 ]
 
 type items =
@@ -315,6 +317,14 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
        `Exception (tyexn_constructor.ext_id, Some tyexn_constructor.ext_loc) :: extract_structure_tree_items hide_item rest
 #endif
 
+#if OCAML_VERSION < (4,14,0)
+    | { str_desc = Tstr_typext _; _} :: rest -> extract_structure_tree_items hide_item rest
+#else
+  | { str_desc = Tstr_typext { tyext_constructors; _ }; _} :: rest ->
+    let x = List.map (fun { ext_id; ext_loc; _ } -> `Extension (ext_id, Some ext_loc)) tyext_constructors in
+    x @ extract_structure_tree_items hide_item rest
+#endif
+
 #if OCAML_VERSION < (4,3,0)
     | { str_desc = Tstr_value (_, vbs ); _} :: rest ->
 #else
@@ -387,8 +397,7 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
 #endif
     | { str_desc = Tstr_primitive {val_id; _}; str_loc; _ } :: rest ->
       [`Value (val_id, false, Some str_loc)] @ extract_structure_tree_items hide_item rest
-    | { str_desc = Tstr_eval _; _} :: rest 
-    | { str_desc = Tstr_typext _; _} :: rest -> extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_eval _; _} :: rest -> extract_structure_tree_items hide_item rest
     | [] -> []
 
 
@@ -400,6 +409,7 @@ let flatten_extracted : items list -> item list = fun items ->
     | `Value _
     | `Class _
     | `Exception _
+    | `Extension _
     | `ClassType _ as x -> [x]
     | `Include xs -> xs) items |> List.flatten
 
@@ -440,6 +450,12 @@ let env_of_items : Id.Signature.t -> item list -> t -> t = fun parent items env 
     | `Exception (t, loc) :: rest ->
       let name = Ident.name t in
       let identifier = Mk.exception_(parent, ExceptionName.make_std name) in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
+      inner rest env
+
+    | `Extension (t, loc) :: rest ->
+      let name = Ident.name t in
+      let identifier = Mk.extension(parent, ExtensionName.make_std name) in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
       inner rest env
 

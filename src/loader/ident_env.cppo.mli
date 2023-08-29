@@ -26,6 +26,7 @@ type item =
   | `Class of
     Ident.t * Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option
   | `Exception of Ident.t * Warnings.loc option
+  | `Extension of Ident.t * Warnings.loc option
   | `ClassType of
     Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option ]
 
