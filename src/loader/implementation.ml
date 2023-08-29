@@ -10,6 +10,8 @@ type annotations =
   | DefJmp of Shape.Uid.t
 
 module Analysis = struct
+  let (@) = List.rev_append
+
   open Typedtree
   open Odoc_model.Paths
 
