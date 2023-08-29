@@ -156,17 +156,18 @@ module Analysis = struct
 
   and expression env = function
     | { exp_desc = Texp_ident (p, _, value_description); exp_loc; _ } -> (
-        (* Only generate anchor if the uid is in the location table. We don't
-           link to modules outside of the compilation unit. *)
-        match
-          Shape.Uid.Tbl.find_opt (get_uid_to_loc env) value_description.val_uid
-        with
-        | Some _ -> [ (DefJmp value_description.val_uid, pos_of_loc exp_loc) ]
-        | None when not exp_loc.loc_ghost -> (
-            match p with
-            | Pident id -> [ (LocalValue id, pos_of_loc exp_loc) ]
-            | _ -> [])
-        | None -> [])
+        if exp_loc.loc_ghost then []
+        else
+          (* Only generate anchor if the uid is in the location table. We don't
+             link to modules outside of the compilation unit. *)
+          match
+            Shape.Uid.Tbl.find_opt (get_uid_to_loc env) value_description.val_uid
+          with
+          | Some _ -> [ (DefJmp value_description.val_uid, pos_of_loc exp_loc) ]
+          | None -> (
+              match p with
+              | Pident id -> [ (LocalValue id, pos_of_loc exp_loc) ]
+              | _ -> []))
     | { exp_desc = Texp_constant _; _ } -> []
     | { exp_desc = Texp_let (_, vbs, e); _ } ->
         List.concat_map (value_binding env) vbs @ expression env e
@@ -178,13 +179,15 @@ module Analysis = struct
     | { exp_desc = Texp_tuple es; _ } -> List.concat_map (expression env) es
     | { exp_desc = Texp_construct (_, cons_description, es); exp_loc; _ } ->
       let x =
-        match
-          Shape.Uid.Tbl.find_opt (get_uid_to_loc env) cons_description.cstr_uid
-        with
-        | Some _ -> [ (DefJmp cons_description.cstr_uid, pos_of_loc exp_loc) ]
-        | None -> []
+        if exp_loc.loc_ghost then []
+        else
+          match
+            Shape.Uid.Tbl.find_opt (get_uid_to_loc env) cons_description.cstr_uid
+          with
+          | Some _ -> [ (DefJmp cons_description.cstr_uid, pos_of_loc exp_loc) ]
+          | None -> []
       in
-        x @ List.concat_map (expression env) es
+      x @ List.concat_map (expression env) es
     | { exp_desc = Texp_variant (_, Some e); _ } -> expression env e
     | { exp_desc = Texp_variant (_, None); _ } -> []
     | { exp_desc = Texp_record { fields; extended_expression; _ }; _ } ->
