@@ -21,6 +21,9 @@ Files containing some values:
   class cls = object end
   class cls' = cls
   class type ct = object end
+  
+  
+  let x _ = raise Exn
 
 Source pages require a parent:
 
@@ -47,7 +50,12 @@ Now, compile the pages with the --source option:
 
   $ odoc compile -I . --source-name a.ml --source-parent-file src-source.odoc a.cmt
   $ odoc link -I . a.odoc
+  $ odoc link -I . page-root.odoc
+  $ odoc link -I . src-source.odoc
+  $ odoc html-generate --indent -o html src-source.odocl
+  $ odoc html-generate --indent -o html page-root.odocl
   $ odoc html-generate --source a.ml --indent -o html a.odocl
+  $ odoc support-files -o html
 
 Source links generated in the documentation:
 
@@ -59,10 +67,6 @@ Source links generated in the documentation:
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
        <a href="../root/source/a.ml.html#type-t" class="source_link">Source</a>
-  --
-      <div class="spec value anchored" id="val-x">
-       <a href="#val-x" class="anchor"></a>
-       <a href="../root/source/a.ml.html#value-x" class="source_link">Source
   --
       <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
@@ -98,7 +102,7 @@ Source links generated in the documentation:
   --
       <div class="spec exception anchored" id="exception-Exn">
        <a href="#exception-Exn" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def_11" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#exception-Exn" class="source_link">
   --
       <div class="spec class anchored" id="class-cls">
        <a href="#class-cls" class="anchor"></a>
@@ -111,6 +115,10 @@ Source links generated in the documentation:
       <div class="spec class-type anchored" id="class-type-ct">
        <a href="#class-type-ct" class="anchor"></a>
        <a href="../root/source/a.ml.html#class_type-ct" class="source_link">
+  --
+      <div class="spec value anchored" id="val-x">
+       <a href="#val-x" class="anchor"></a>
+       <a href="../root/source/a.ml.html#value-x" class="source_link">Source
 
 Ids generated in the source code:
 
@@ -135,42 +143,26 @@ Ids generated in the source code:
   id="L18"
   id="L19"
   id="L20"
+  id="L21"
+  id="L22"
+  id="L23"
   id="type-t"
-  id="value-x"
+  id="value-{x}2"
   id="value-y"
   id="value-z"
   id="local_a_47"
-  id="def-5"
-  id="def-6"
-  id="def-7"
-  id="def-8"
-  id="def-9"
-  id="def-10"
-  id="def-11"
-  id="def-12"
-  id="def-14"
-  id="def-15"
+  id="module-A"
+  id="module-B"
+  id="module_type-T"
+  id="module_type-U"
+  id="type-ext"
+  id="def_10"
+  id="exception-Exn"
+  id="class-cls"
+  id="class-cls'"
+  id="class_type-ct"
+  id="value-x"
 
-Another example, with a cmti file:
-
-  $ printf "b.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o src-source2.odoc source_tree.map
-
-  $ ocamlc -bin-annot b.mli
-  $ ocamlc -bin-annot b.ml
-
-When giving a .cmti with the source-name and source-parent option, the cmt file
-has to be given explicitely with the --cmt argument:
-
-  $ odoc compile -I . --source-name b.ml --source-parent-file src-source2.odoc b.cmti
-  --cmt has to be passed when --source-parent-file and --source-name are passed and the input file is not a cmt file.
-  [2]
-
-  $ odoc compile -I . --cmt b.cmt --source-name b.ml --source-parent-file src-source2.odoc b.cmti
-
-The --cmt argument has to be compatible with a cmt file given as input:
-
-  $ cp b.cmt other.cmt
-  $ odoc compile -I . --cmt other.cmt --source-name b.ml --source-parent-file src-source2.odoc b.cmt
-  --cmt has to be equal to the input file when this one has .cmt extension.
-  [2]
+  $ firefox html/root/source/a.ml.html
+  Gtk-Message: 12:16:26.688: Failed to load module "xapp-gtk3-module"
+  Gtk-Message: 12:16:26.689: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
