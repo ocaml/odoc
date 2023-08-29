@@ -62,6 +62,9 @@ type item = [
   | `Value of Ident.t * bool * Warnings.loc option
   | `Class of Ident.t * Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option
   | `ClassType of Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option
+  | `Exception of Ident.t * Warnings.loc option
+  (* Exceptions are never hidden, but we need to add it to the [loc_to_ident]
+     table. *)
 ]
 
 type items =
@@ -305,6 +308,12 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
         List.map (fun decl -> `Type (decl.typ_id, hide_item, Some str_loc))
           decls @ extract_structure_tree_items hide_item rest
 
+#if OCAML_VERSION < (4,14,0)
+    | { str_desc = Tstr_exception _; _ } :: rest -> extract_structure_tree_items hide_item rest
+#else
+    | { str_desc = Tstr_exception { tyexn_constructor; tyexn_loc = _; _ }; _ } :: rest ->
+       `Exception (tyexn_constructor.ext_id, Some tyexn_constructor.ext_loc) :: extract_structure_tree_items hide_item rest
+#endif
 
 #if OCAML_VERSION < (4,3,0)
     | { str_desc = Tstr_value (_, vbs ); _} :: rest ->
@@ -379,8 +388,7 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
     | { str_desc = Tstr_primitive {val_id; _}; str_loc; _ } :: rest ->
       [`Value (val_id, false, Some str_loc)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_eval _; _} :: rest 
-    | { str_desc = Tstr_typext _; _} :: rest
-    | {str_desc = Tstr_exception _; _ } :: rest -> extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_typext _; _} :: rest -> extract_structure_tree_items hide_item rest
     | [] -> []
 
 
@@ -391,6 +399,7 @@ let flatten_extracted : items list -> item list = fun items ->
     | `ModuleType _
     | `Value _
     | `Class _
+    | `Exception _
     | `ClassType _ as x -> [x]
     | `Include xs -> xs) items |> List.flatten
 
@@ -427,6 +436,12 @@ let env_of_items : Id.Signature.t -> item list -> t -> t = fun parent items env 
       let types = Ident.add t identifier env.types in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
       inner rest { env with types; hidden }
+
+    | `Exception (t, loc) :: rest ->
+      let name = Ident.name t in
+      let identifier = Mk.exception_(parent, ExceptionName.make_std name) in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
+      inner rest env
 
     | `Value (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
