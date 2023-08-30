@@ -299,25 +299,20 @@ module Analysis = struct
         let sg = structure env parent str in
         sg
     | Tmod_functor (parameter, res) ->
-        let _f_parameter, env =
+        let env =
           match parameter with
-          | Unit -> ([], env)
+          | Unit -> env
           | Named (id_opt, _, _arg) ->
-              let name, env =
+              let env =
                 match id_opt with
                 | Some id ->
-                    ( Ident.name id,
-                      env_wrap
-                        (Ident_env.add_parameter parent id
-                           (ModuleName.of_ident id))
-                        env )
-                | None -> ("_", env)
+                    env_wrap
+                      (Ident_env.add_parameter parent id
+                         (ModuleName.of_ident id))
+                      env
+                | None -> env
               in
-              let _id =
-                Odoc_model.Paths.Identifier.Mk.parameter
-                  (parent, Odoc_model.Names.ModuleName.make_std name)
-              in
-              ([], env)
+              env
         in
         let res =
           module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) res
