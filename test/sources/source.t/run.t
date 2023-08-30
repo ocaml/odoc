@@ -31,6 +31,9 @@ Files containing some values:
   end = struct
     type t = int
   end
+  
+  type a1 = int
+  and a2 = a1
 
 Source pages require a parent:
 
@@ -134,6 +137,14 @@ Source links generated in the documentation:
       <div class="spec module anchored" id="module-X">
        <a href="#module-X" class="anchor"></a>
        <a href="../root/source/a.ml.html#module-X" class="source_link">Source
+  --
+      <div class="spec type anchored" id="type-a1">
+       <a href="#type-a1" class="anchor"></a>
+       <a href="../root/source/a.ml.html#def_24" class="source_link">Source</a>
+  --
+      <div class="spec type anchored" id="type-a2">
+       <a href="#type-a2" class="anchor"></a>
+       <a href="../root/source/a.ml.html#def_25" class="source_link">Source</a>
 
 Ids generated in the source code:
 
@@ -168,6 +179,9 @@ Ids generated in the source code:
   id="L28"
   id="L29"
   id="L30"
+  id="L31"
+  id="L32"
+  id="L33"
   id="type-t"
   id="type-truc"
   id="value-{x}2"
@@ -189,3 +203,5 @@ Ids generated in the source code:
   id="module-X"
   id="module-X.type-t"
   id="module-X.type-t"
+  id="def_24"
+  id="def_25"

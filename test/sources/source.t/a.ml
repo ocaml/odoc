@@ -28,3 +28,6 @@ module X : sig
 end = struct
   type t = int
 end
+
+type a1 = int
+and a2 = a1
