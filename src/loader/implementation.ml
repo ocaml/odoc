@@ -292,28 +292,12 @@ module Analysis = struct
         inner
 
   and module_expr env parent mexpr =
-    let open Odoc_model.Names in
     match mexpr.mod_desc with
     | Tmod_ident _ -> []
     | Tmod_structure str ->
         let sg = structure env parent str in
         sg
-    | Tmod_functor (parameter, res) ->
-        let env =
-          match parameter with
-          | Unit -> env
-          | Named (id_opt, _, _arg) ->
-              let env =
-                match id_opt with
-                | Some id ->
-                    env_wrap
-                      (Ident_env.add_parameter parent id
-                         (ModuleName.of_ident id))
-                      env
-                | None -> env
-              in
-              env
-        in
+    | Tmod_functor (_, res) ->
         let res =
           module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) res
         in
