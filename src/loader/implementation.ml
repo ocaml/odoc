@@ -297,11 +297,23 @@ module Analysis = struct
     | Tmod_structure str ->
         let sg = structure env parent str in
         sg
-    | Tmod_functor (_, res) ->
-        let res =
-          module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) res
+    | Tmod_functor (parameter, res) ->
+      let open Odoc_model.Names in
+      let x, env =
+        match parameter with
+        | Unit -> [], env
+        | Named (id_opt, _, arg) ->
+            match id_opt with
+            | Some id ->
+              let env = env_wrap
+                (Ident_env.add_parameter parent id
+                   (ModuleName.of_ident id))
+                env in
+              let id = Ident_env.find_module_identifier (get_env env) id in
+              module_type env (id :> Identifier.Signature.t) arg, env
+            | None -> [], env
         in
-        res
+        x @ module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) res
     | Tmod_constraint (me, _, constr, _) ->
         let c =
           match constr with

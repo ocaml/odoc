@@ -33,10 +33,12 @@ type a1 = int
 and a2 = a1
 
 module F (M : sig
-  type t
+  module A : sig end
 end) =
-struct end
+struct
+  module B = M.A
+end
 
 module FM = F (struct
-  type t = int
+  module A = struct end
 end)

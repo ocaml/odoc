@@ -367,13 +367,13 @@ let rec read_module_expr env parent label_parent mexpr =
           match parameter with
           | Unit -> FunctorParameter.Unit, env
           | Named (id_opt, _, arg) ->
-              let name, env =
+              let id, env =
                 match id_opt with
-                | Some id -> Ident.name id, Env.add_parameter parent id (ModuleName.of_ident id) env
-                | None -> "_", env
+                | None -> Identifier.Mk.parameter (parent, Odoc_model.Names.ModuleName.make_std "_"), env
+                | Some id -> let env = Env.add_parameter parent id (ModuleName.of_ident id) env in
+                  Env.find_parameter_identifier env id, env
               in
-              let id = Identifier.Mk.parameter (parent, Odoc_model.Names.ModuleName.make_std name) in
-              let arg = Cmti.read_module_type env id label_parent arg in
+              let arg = Cmti.read_module_type env (id :> Identifier.Signature.t) label_parent arg in
 
               Named { id; expr=arg }, env
           in
@@ -381,16 +381,15 @@ let rec read_module_expr env parent label_parent mexpr =
         Functor (f_parameter, res)
 #else
     | Tmod_functor(id, _, arg, res) ->
+        let new_env = Env.add_parameter parent id (ModuleName.of_ident id) env in
         let f_parameter =
           match arg with
           | None -> FunctorParameter.Unit
           | Some arg ->
-              let name = Ident.name id in
-              let id = Identifier.Mk.parameter (parent, ModuleName.make_std name) in
-          let arg = Cmti.read_module_type env id label_parent arg in
-          Named { FunctorParameter. id; expr = arg; }
+              let id = Env.find_parameter_identifier env id in
+              let arg = Cmti.read_module_type env (id :> Identifier.Signature.t) label_parent arg in
+              Named { FunctorParameter. id; expr = arg; }
         in
-        let env = Env.add_parameter parent id (ModuleName.of_ident id) env in
         let res = read_module_expr env (Identifier.Mk.result parent) label_parent res in
         Functor(f_parameter, res)
 #endif

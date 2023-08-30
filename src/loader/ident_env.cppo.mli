@@ -46,6 +46,9 @@ val find_module : t -> Ident.t -> Paths.Path.Module.t
 
 val find_module_identifier : t -> Ident.t -> Paths.Identifier.Module.t
 
+val find_parameter_identifier :
+  t -> Ident.t -> Paths.Identifier.FunctorParameter.t
+
 val find_module_type : t -> Ident.t -> Paths.Identifier.ModuleType.t
 
 val find_value_identifier : t -> Ident.t -> Paths.Identifier.Value.t

@@ -519,31 +519,30 @@ and read_module_type env parent label_parent mty =
           match parameter with
           | Unit -> FunctorParameter.Unit, env
           | Named (id_opt, _, arg) ->
-            let name, env =
+            let id, env =
               match id_opt with
+              | None -> Identifier.Mk.parameter (parent, ModuleName.make_std "_"), env
               | Some id ->
-                 Ident.name id, Env.add_parameter parent id (ModuleName.of_ident id) env
-              | None -> "_", env
+                 let env = Env.add_parameter parent id (ModuleName.of_ident id) env in
+                 Env.find_parameter_identifier env id, env
             in
-            let id = Identifier.Mk.parameter (parent, ModuleName.make_std name) in
-            let arg = read_module_type env id label_parent arg in
+            let arg = read_module_type env (id :> Identifier.Signature.t) label_parent arg in
             Named { id; expr = arg; }, env
         in
         let res = read_module_type env (Identifier.Mk.result parent) label_parent res in
         Functor (f_parameter, res)
 #else
     | Tmty_functor(id, _, arg, res) ->
+        let new_env = Env.add_parameter parent id (ModuleName.of_ident id) env in
         let f_parameter =
           match arg with
           | None -> Odoc_model.Lang.FunctorParameter.Unit
           | Some arg ->
-              let name = Ident.name id in
-              let id = Identifier.Mk.parameter (parent, Odoc_model.Names.ModuleName.make_std name) in
-              let arg = read_module_type env id label_parent arg in
+              let id = Ident_env.find_parameter_identifier new_env id in
+              let arg = read_module_type env (id :> Identifier.Signature.t) label_parent arg in
               Named { FunctorParameter. id; expr = arg }
         in
-        let env = Env.add_parameter parent id (ModuleName.of_ident id) env in
-        let res = read_module_type env (Identifier.Mk.result parent) label_parent res in
+        let res = read_module_type new_env (Identifier.Mk.result parent) label_parent res in
         Functor( f_parameter, res)
 #endif
     | Tmty_with(body, subs) -> (
