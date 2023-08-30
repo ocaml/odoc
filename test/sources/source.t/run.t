@@ -34,6 +34,15 @@ Files containing some values:
   
   type a1 = int
   and a2 = a1
+  
+  module F (M : sig
+    type t
+  end) =
+  struct end
+  
+  module FM = F (struct
+    type t = int
+  end)
 
 Source pages require a parent:
 
@@ -140,11 +149,19 @@ Source links generated in the documentation:
   --
       <div class="spec type anchored" id="type-a1">
        <a href="#type-a1" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def_24" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#type-a1" class="source_link">Source
   --
       <div class="spec type anchored" id="type-a2">
        <a href="#type-a2" class="anchor"></a>
-       <a href="../root/source/a.ml.html#def_25" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#type-a2" class="source_link">Source
+  --
+      <div class="spec module anchored" id="module-F">
+       <a href="#module-F" class="anchor"></a>
+       <a href="../root/source/a.ml.html#module-F" class="source_link">Source
+  --
+      <div class="spec module anchored" id="module-FM">
+       <a href="#module-FM" class="anchor"></a>
+       <a href="../root/source/a.ml.html#module-FM" class="source_link">Source
 
 Ids generated in the source code:
 
@@ -182,6 +199,15 @@ Ids generated in the source code:
   id="L31"
   id="L32"
   id="L33"
+  id="L34"
+  id="L35"
+  id="L36"
+  id="L37"
+  id="L38"
+  id="L39"
+  id="L40"
+  id="L41"
+  id="L42"
   id="type-t"
   id="type-truc"
   id="value-{x}2"
@@ -203,5 +229,9 @@ Ids generated in the source code:
   id="module-X"
   id="module-X.type-t"
   id="module-X.type-t"
-  id="def_24"
-  id="def_25"
+  id="type-a1"
+  id="type-a2"
+  id="module-F"
+  id="def_430_436"
+  id="module-FM"
+  id="def_480_492"

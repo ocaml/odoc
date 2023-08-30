@@ -441,10 +441,11 @@ let of_cmt (source_id_opt : Odoc_model.Paths.Identifier.SourcePage.t option)
               | None -> (
                   match uid with
                   | Compilation_unit _ -> None
-                  | Item { id; _ } ->
+                  | Item _ ->
                       let name =
                         Odoc_model.Names.DefName.make_std
-                          (Printf.sprintf "def_%d" id)
+                          (Printf.sprintf "def_%d_%d" loc.loc_start.pos_cnum
+                             loc.loc_end.pos_cnum)
                       in
                       Some name
                   | _ -> None)
