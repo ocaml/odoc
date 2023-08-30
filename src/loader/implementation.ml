@@ -432,30 +432,34 @@ let of_cmt (source_id_opt : Odoc_model.Paths.Identifier.SourcePage.t option)
           Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t =
         Shape.Uid.Map.filter_map
           (fun uid loc ->
-            let identifier = Ident_env.identifier_of_loc env loc in
-            let anchor =
-              match identifier with
-              | Some x ->
+            if loc.Location.loc_ghost then None
+            else
+              let identifier = Ident_env.identifier_of_loc env loc in
+              let anchor =
+                match identifier with
+                | Some x ->
+                    Some
+                      (Odoc_model.Names.DefName.make_std
+                         (anchor_of_identifier x))
+                | None -> (
+                    match uid with
+                    | Compilation_unit _ -> None
+                    | Item _ ->
+                        let name =
+                          Odoc_model.Names.DefName.make_std
+                            (Printf.sprintf "def_%d_%d" loc.loc_start.pos_cnum
+                               loc.loc_end.pos_cnum)
+                        in
+                        Some name
+                    | _ -> None)
+              in
+              match anchor with
+              | Some a ->
                   Some
-                    (Odoc_model.Names.DefName.make_std (anchor_of_identifier x))
-              | None -> (
-                  match uid with
-                  | Compilation_unit _ -> None
-                  | Item _ ->
-                      let name =
-                        Odoc_model.Names.DefName.make_std
-                          (Printf.sprintf "def_%d_%d" loc.loc_start.pos_cnum
-                             loc.loc_end.pos_cnum)
-                      in
-                      Some name
-                  | _ -> None)
-            in
-            match anchor with
-            | Some a ->
-                Some
-                  (Odoc_model.Paths.Identifier.Mk.source_location (source_id, a)
-                    :> Odoc_model.Paths.Identifier.SourceLocation.t)
-            | None -> None)
+                    (Odoc_model.Paths.Identifier.Mk.source_location
+                       (source_id, a)
+                      :> Odoc_model.Paths.Identifier.SourceLocation.t)
+              | None -> None)
           uid_to_loc_map
       in
 
