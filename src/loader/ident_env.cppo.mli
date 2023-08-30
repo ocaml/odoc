@@ -94,3 +94,6 @@ val extract_signature_tree_items :
 
 val identifier_of_loc :
   t -> Warnings.loc -> Odoc_model.Paths.Identifier.t option
+(** Each generated id has its location stored. This allows to get back the id
+    knowing only the location. This is used to generate links to source from the
+    resolution of a shape. *)
