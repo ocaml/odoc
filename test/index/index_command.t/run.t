@@ -197,7 +197,7 @@ The assets are put as child of their parent
   html/page/fuse.js.js
   html/page/index.html
   html/page/index.js
-
+Checks that the asset is correctly referenced to in the html.
   $ grep -E -o "'[\./]*fuse\.js\.js" html/page/index.html
   'fuse.js.js
 

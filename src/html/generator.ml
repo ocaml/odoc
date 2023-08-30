@@ -132,6 +132,8 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
         let emph_level, app_style = styled style ~emph_level in
         [ app_style @@ inline ~config ~emph_level ~resolve c ]
     | Link (_, c) when Config.search_result config ->
+        (* When displaying for a search result, links are displayed as regular
+           text. *)
         let content = inline_nolink ~emph_level c in
         [ Html.span ~a content ]
     | Link (href, c) ->
