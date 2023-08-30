@@ -10,7 +10,7 @@ type annotations =
   | DefJmp of Shape.Uid.t
 
 module Analysis = struct
-  let (@) = List.rev_append
+  let ( @ ) = List.rev_append
 
   open Typedtree
   open Odoc_model.Paths
@@ -161,7 +161,8 @@ module Analysis = struct
           (* Only generate anchor if the uid is in the location table. We don't
              link to modules outside of the compilation unit. *)
           match
-            Shape.Uid.Tbl.find_opt (get_uid_to_loc env) value_description.val_uid
+            Shape.Uid.Tbl.find_opt (get_uid_to_loc env)
+              value_description.val_uid
           with
           | Some _ -> [ (DefJmp value_description.val_uid, pos_of_loc exp_loc) ]
           | None -> (
@@ -178,16 +179,18 @@ module Analysis = struct
         expression env e @ List.concat_map (case env) cases
     | { exp_desc = Texp_tuple es; _ } -> List.concat_map (expression env) es
     | { exp_desc = Texp_construct (_, cons_description, es); exp_loc; _ } ->
-      let x =
-        if exp_loc.loc_ghost then []
-        else
-          match
-            Shape.Uid.Tbl.find_opt (get_uid_to_loc env) cons_description.cstr_uid
-          with
-          | Some _ -> [ (DefJmp cons_description.cstr_uid, pos_of_loc exp_loc) ]
-          | None -> []
-      in
-      x @ List.concat_map (expression env) es
+        let x =
+          if exp_loc.loc_ghost then []
+          else
+            match
+              Shape.Uid.Tbl.find_opt (get_uid_to_loc env)
+                cons_description.cstr_uid
+            with
+            | Some _ ->
+                [ (DefJmp cons_description.cstr_uid, pos_of_loc exp_loc) ]
+            | None -> []
+        in
+        x @ List.concat_map (expression env) es
     | { exp_desc = Texp_variant (_, Some e); _ } -> expression env e
     | { exp_desc = Texp_variant (_, None); _ } -> []
     | { exp_desc = Texp_record { fields; extended_expression; _ }; _ } ->
@@ -321,12 +324,12 @@ module Analysis = struct
         in
         res
     | Tmod_constraint (me, _, constr, _) ->
-      let c =
-        match constr with
-          Tmodtype_implicit -> []
-        | Tmodtype_explicit mt -> module_type env parent mt
-      in
-      c @ module_expr env parent me
+        let c =
+          match constr with
+          | Tmodtype_implicit -> []
+          | Tmodtype_explicit mt -> module_type env parent mt
+        in
+        c @ module_expr env parent me
     | _ -> []
 
   and unwrap_module_expr_desc = function
