@@ -740,8 +740,7 @@ let read_type_declaration env parent id decl =
 
 let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
-  let name = Ident.name id in
-  let id = Identifier.Mk.extension(parent, Odoc_model.Names.ExtensionName.make_std name) in
+  let id = Env.find_extension_identifier env id in
   let locs = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
@@ -774,8 +773,7 @@ let read_type_extension env parent id ext rest =
 
 let read_exception env parent id ext =
   let open Exception in
-  let name = Ident.name id in
-  let id = Identifier.Mk.exception_(parent, Odoc_model.Names.ExceptionName.make_std name) in
+  let id = Env.find_exception_identifier env id in
   let locs = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
