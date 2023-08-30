@@ -303,11 +303,11 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
   let open Typedtree in
     match items with
 #if OCAML_VERSION < (4,3,0)
-    | { str_desc = Tstr_type decls; str_loc; _ } :: rest ->
+    | { str_desc = Tstr_type decls; _ } :: rest ->
 #else
-    | { str_desc = Tstr_type (_, decls); str_loc; _ } :: rest -> (* TODO: handle rec_flag *)
+    | { str_desc = Tstr_type (_, decls); _ } :: rest -> (* TODO: handle rec_flag *)
 #endif
-        List.map (fun decl -> `Type (decl.typ_id, hide_item, Some str_loc))
+        List.map (fun decl -> `Type (decl.typ_id, hide_item, Some decl.typ_loc))
           decls @ extract_structure_tree_items hide_item rest
 
 #if OCAML_VERSION < (4,14,0)
