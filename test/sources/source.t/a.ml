@@ -31,3 +31,12 @@ end
 
 type a1 = int
 and a2 = a1
+
+module F (M : sig
+  type t
+end) =
+struct end
+
+module FM = F (struct
+  type t = int
+end)
