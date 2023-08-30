@@ -34,6 +34,8 @@ type t =
     module_paths : P.Module.t Ident.tbl;
     module_types : Id.ModuleType.t Ident.tbl;
     types : Id.DataType.t Ident.tbl;
+    exceptions: Id.Exception.t Ident.tbl;
+    extensions: Id.Extension.t Ident.tbl;
     values: Id.Value.t Ident.tbl;
     classes : Id.Class.t Ident.tbl;
     class_types : Id.ClassType.t Ident.tbl;
@@ -46,6 +48,8 @@ let empty () =
     module_paths = Ident.empty;
     module_types = Ident.empty;
     types = Ident.empty;
+    exceptions = Ident.empty;
+    extensions = Ident.empty;
     values = Ident.empty;
     classes = Ident.empty;
     class_types = Ident.empty;
@@ -110,13 +114,19 @@ let rec extract_signature_type_items items =
       `ClassType (id, obj_id, None, false, None) :: extract_signature_type_items rest
 #endif
 
-    | Sig_typext _ :: rest -> 
-        extract_signature_type_items rest
+    | Sig_typext (id, constr, Text_exception, Exported) :: rest ->
+      `Exception (id, Some constr.ext_loc)
+      :: extract_signature_type_items rest
+
+    | Sig_typext (id, constr, _, Exported) :: rest ->
+      `Extension (id, Some constr.ext_loc)
+      :: extract_signature_type_items rest
 
     | Sig_class_type(_, _, _, Hidden) :: Sig_type(_, _, _, _)
       :: Sig_type(_, _, _, _) :: rest
     | Sig_class(_, _, _, Hidden) :: Sig_class_type(_, _, _, _)
         :: Sig_type(_, _, _, _) :: Sig_type(_, _, _, _) :: rest
+    | Sig_typext (_,_,_,Hidden) :: rest
     | Sig_modtype(_, _, Hidden) :: rest
     | Sig_module(_, _, _, _, Hidden) :: rest
     | Sig_type(_, _, _, Hidden) :: rest
@@ -204,6 +214,18 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
       else Some (`Type (decl.typ_id, hide_item, Some decl.typ_loc)))
       decls @ extract_signature_tree_items hide_item rest
 
+#if OCAML_VERSION < (4,8,0)
+    | { sig_desc = Tsig_exception tyexn_constructor; _ } :: rest ->
+#else
+    | { sig_desc = Tsig_exception { tyexn_constructor; _ }; _ } :: rest ->
+#endif
+       `Exception (tyexn_constructor.ext_id, Some tyexn_constructor.ext_loc) :: extract_signature_tree_items hide_item rest
+
+  | { sig_desc = Tsig_typext { tyext_constructors; _ }; _} :: rest ->
+    let x = List.map (fun { ext_id; ext_loc; _ } -> `Extension (ext_id, Some ext_loc)) tyext_constructors in
+    x @ extract_signature_tree_items hide_item rest
+
+
 #if OCAML_VERSION >= (4,10,0)
   | { sig_desc = Tsig_module { md_id = Some id; _ }; sig_loc; _} :: rest ->
       [`Module (id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
@@ -272,8 +294,6 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
     | { sig_desc = Tsig_modtypesubst mtd; sig_loc; _ } :: rest ->
       [`ModuleType (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
 #endif
-    | { sig_desc = Tsig_typext _; _} :: rest
-    | { sig_desc = Tsig_exception _; _} :: rest
     | { sig_desc = Tsig_open _;_} :: rest -> extract_signature_tree_items hide_item rest
     | [] -> []
 
@@ -310,20 +330,16 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
         List.map (fun decl -> `Type (decl.typ_id, hide_item, Some decl.typ_loc))
           decls @ extract_structure_tree_items hide_item rest
 
-#if OCAML_VERSION < (4,14,0)
-    | { str_desc = Tstr_exception _; _ } :: rest -> extract_structure_tree_items hide_item rest
+#if OCAML_VERSION < (4,8,0)
+    | { str_desc = Tstr_exception tyexn_constructor; _ } :: rest ->
 #else
-    | { str_desc = Tstr_exception { tyexn_constructor; tyexn_loc = _; _ }; _ } :: rest ->
-       `Exception (tyexn_constructor.ext_id, Some tyexn_constructor.ext_loc) :: extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_exception { tyexn_constructor; _ }; _ } :: rest ->
 #endif
+       `Exception (tyexn_constructor.ext_id, Some tyexn_constructor.ext_loc) :: extract_structure_tree_items hide_item rest
 
-#if OCAML_VERSION < (4,14,0)
-    | { str_desc = Tstr_typext _; _} :: rest -> extract_structure_tree_items hide_item rest
-#else
   | { str_desc = Tstr_typext { tyext_constructors; _ }; _} :: rest ->
     let x = List.map (fun { ext_id; ext_loc; _ } -> `Extension (ext_id, Some ext_loc)) tyext_constructors in
     x @ extract_structure_tree_items hide_item rest
-#endif
 
 #if OCAML_VERSION < (4,3,0)
     | { str_desc = Tstr_value (_, vbs ); _} :: rest ->
@@ -401,7 +417,7 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
     | [] -> []
 
 
-let flatten_extracted : items list -> item list = fun items ->
+let flatten_includes : items list -> item list = fun items ->
   List.map (function
     | `Type _ 
     | `Module _
@@ -451,13 +467,15 @@ let env_of_items : Id.Signature.t -> item list -> t -> t = fun parent items env 
       let name = Ident.name t in
       let identifier = Mk.exception_(parent, ExceptionName.make_std name) in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
-      inner rest env
+      let exceptions = Ident.add t identifier env.exceptions in
+      inner rest {env with exceptions }
 
     | `Extension (t, loc) :: rest ->
       let name = Ident.name t in
       let identifier = Mk.extension(parent, ExtensionName.make_std name) in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
-      inner rest env
+      let extensions = Ident.add t identifier env.extensions in
+      inner rest {env with extensions }
 
     | `Value (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
@@ -545,12 +563,12 @@ let identifier_of_loc : t -> Warnings.loc -> Odoc_model.Paths.Identifier.t optio
 
 let add_signature_tree_items : Paths.Identifier.Signature.t -> Typedtree.signature -> t -> t = 
   fun parent sg env ->
-    let items = extract_signature_tree_items false sg.sig_items |> flatten_extracted in
+    let items = extract_signature_tree_items false sg.sig_items |> flatten_includes in
     env_of_items parent items env
 
 let add_structure_tree_items : Paths.Identifier.Signature.t -> Typedtree.structure -> t -> t =
   fun parent sg env ->
-  let items = extract_structure_tree_items false sg.str_items |> flatten_extracted in
+  let items = extract_structure_tree_items false sg.str_items |> flatten_includes in
   env_of_items parent items env
 
 let handle_signature_type_items : Paths.Identifier.Signature.t -> Compat.signature -> t -> t =
@@ -575,6 +593,12 @@ let find_module_type env id =
 
 let find_type_identifier env id =
   Ident.find_same id env.types
+
+let find_exception_identifier env id =
+  Ident.find_same id env.exceptions
+
+let find_extension_identifier env id =
+  Ident.find_same id env.extensions
 
 let find_value_identifier env id =
   Ident.find_same id env.values

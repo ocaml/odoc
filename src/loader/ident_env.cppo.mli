@@ -66,6 +66,10 @@ val find_value_identifier : t -> Ident.t -> Paths.Identifier.Value.t
 
 val find_type : t -> Ident.t -> Paths.Identifier.Path.Type.t
 
+val find_extension_identifier : t -> Ident.t -> Paths.Identifier.Extension.t
+
+val find_exception_identifier : t -> Ident.t -> Paths.Identifier.Exception.t
+
 val find_type_identifier : t -> Ident.t -> Paths.Identifier.Type.t
 
 val find_class_identifier : t -> Ident.t -> Paths.Identifier.Class.t

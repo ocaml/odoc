@@ -292,9 +292,7 @@ let read_type_substitutions env parent decls =
 
 let read_extension_constructor env parent ext =
   let open Extension.Constructor in
-  let open Odoc_model.Names in
-  let name = Ident.name ext.ext_id in
-  let id = Identifier.Mk.extension(parent, ExtensionName.make_std name) in
+  let id = Env.find_extension_identifier env ext.ext_id in
   let locs = None in
   let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
@@ -327,9 +325,7 @@ let read_type_extension env parent tyext =
 
 let read_exception env parent (ext : extension_constructor) =
   let open Exception in
-  let open Odoc_model.Names in
-  let name = Ident.name ext.ext_id in
-  let id = Identifier.Mk.exception_(parent, ExceptionName.make_std name) in
+  let id = Env.find_exception_identifier env ext.ext_id in
   let locs = None in
   let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
