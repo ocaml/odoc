@@ -21,5 +21,10 @@ class cls = object end
 class cls' = cls
 class type ct = object end
 
-
 let x _ = raise Exn
+
+module X : sig
+  type t
+end = struct
+  type t = int
+end

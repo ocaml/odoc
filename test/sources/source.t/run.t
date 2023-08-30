@@ -24,8 +24,13 @@ Files containing some values:
   class cls' = cls
   class type ct = object end
   
-  
   let x _ = raise Exn
+  
+  module X : sig
+    type t
+  end = struct
+    type t = int
+  end
 
 Source pages require a parent:
 
@@ -125,6 +130,10 @@ Source links generated in the documentation:
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
        <a href="../root/source/a.ml.html#value-x" class="source_link">Source
+  --
+      <div class="spec module anchored" id="module-X">
+       <a href="#module-X" class="anchor"></a>
+       <a href="../root/source/a.ml.html#module-X" class="source_link">Source
 
 Ids generated in the source code:
 
@@ -154,6 +163,11 @@ Ids generated in the source code:
   id="L23"
   id="L24"
   id="L25"
+  id="L26"
+  id="L27"
+  id="L28"
+  id="L29"
+  id="L30"
   id="type-t"
   id="type-truc"
   id="value-{x}2"
@@ -172,3 +186,6 @@ Ids generated in the source code:
   id="class-cls'"
   id="class_type-ct"
   id="value-x"
+  id="module-X"
+  id="module-X.type-t"
+  id="module-X.type-t"

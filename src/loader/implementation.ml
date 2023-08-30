@@ -320,6 +320,13 @@ module Analysis = struct
           module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) res
         in
         res
+    | Tmod_constraint (me, _, constr, _) ->
+      let c =
+        match constr with
+          Tmodtype_implicit -> []
+        | Tmodtype_explicit mt -> module_type env parent mt
+      in
+      c @ module_expr env parent me
     | _ -> []
 
   and unwrap_module_expr_desc = function
