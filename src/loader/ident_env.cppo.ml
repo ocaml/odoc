@@ -31,6 +31,7 @@ module LocHashtbl = Hashtbl.Make(struct
 
 type t =
   { modules : Id.Module.t Ident.tbl;
+    parameters : Id.FunctorParameter.t Ident.tbl;
     module_paths : P.Module.t Ident.tbl;
     module_types : Id.ModuleType.t Ident.tbl;
     types : Id.DataType.t Ident.tbl;
@@ -45,6 +46,7 @@ type t =
 
 let empty () =
   { modules = Ident.empty;
+    parameters = Ident.empty;
     module_paths = Ident.empty;
     module_types = Ident.empty;
     types = Ident.empty;
@@ -578,15 +580,21 @@ let handle_signature_type_items : Paths.Identifier.Signature.t -> Compat.signatu
 
 let add_parameter parent id name env =
   let hidden = ModuleName.is_hidden name in
-  let path = `Identifier (Odoc_model.Paths.Identifier.Mk.parameter(parent, name), hidden) in
+  let oid = Odoc_model.Paths.Identifier.Mk.parameter(parent, name) in
+  let path = `Identifier (oid, hidden) in
   let module_paths = Ident.add id path env.module_paths in
-  { env with module_paths }
+  let modules = Ident.add id oid env.modules in
+  let parameters = Ident.add id oid env.parameters in
+  { env with module_paths; modules; parameters }
 
 let find_module env id =
   Ident.find_same id env.module_paths
 
 let find_module_identifier env id =
   Ident.find_same id env.modules
+
+let find_parameter_identifier env id =
+  Ident.find_same id env.parameters
 
 let find_module_type env id =
   Ident.find_same id env.module_types

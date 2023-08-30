@@ -36,12 +36,14 @@ Files containing some values:
   and a2 = a1
   
   module F (M : sig
-    type t
+    module A : sig end
   end) =
-  struct end
+  struct
+    module B = M.A
+  end
   
   module FM = F (struct
-    type t = int
+    module A = struct end
   end)
 
 Source pages require a parent:
@@ -208,6 +210,8 @@ Ids generated in the source code:
   id="L40"
   id="L41"
   id="L42"
+  id="L43"
+  id="L44"
   id="type-t"
   id="type-truc"
   id="value-{x}2"
@@ -232,6 +236,7 @@ Ids generated in the source code:
   id="type-a1"
   id="type-a2"
   id="module-F"
-  id="def_430_436"
+  id="module-F.parameter-M.module-A"
+  id="module-F.module-B"
   id="module-FM"
-  id="def_480_492"
+  id="def_509_530"
