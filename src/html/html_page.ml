@@ -123,6 +123,8 @@ let page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
             let search_urls = List.map search_url search_urls in
             "[" ^ String.concat "," search_urls ^ "]"
           in
+          (* The names of the search scripts are put into a js variable. Then
+             the code in [odoc_search.js] load them into a webworker. *)
           [
             Html.script ~a:[]
               (Html.txt

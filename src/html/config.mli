@@ -3,7 +3,9 @@
 type t
 
 val v :
-  ?search_result:bool ->
+  ?search_result:bool
+    (** Indicates whether this is a summary for a search result.
+     In that case, the links will be printed as regular text. *) ->
   ?theme_uri:Types.uri ->
   ?support_uri:Types.uri ->
   semantic_uris:bool ->

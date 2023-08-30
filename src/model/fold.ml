@@ -46,6 +46,10 @@ and docs ~f acc d = f acc (Doc d)
 and include_ ~f acc inc = signature ~f acc inc.expansion.content
 
 and class_type ~f acc ct =
+  (* This check is important because [is_internal] does not work on children of
+     internal items. This means that if [Fold] did not make this check here,
+     it would be difficult to filter for internal items afterwards. This also
+     applies to the same check in functions bellow. *)
   if Paths.Identifier.is_internal ct.id then acc
   else
     let acc = f acc (ClassType ct) in

@@ -1,5 +1,9 @@
+(** This module allows to fold over odoc values. It is notably used to construct
+    a search database of every relevant item. *)
+
 open Lang
 
+(** The type of items you can fold over *)
 type item =
   | CompilationUnit of Compilation_unit.t
   | TypeDecl of TypeDecl.t
@@ -12,6 +16,9 @@ type item =
   | Extension of Extension.t
   | ModuleType of ModuleType.t
   | Doc of Comment.docs_or_stop
+
+(** Bellow are the folding functions. For items that may contain others, such as
+    [signature], it folds recursively on the sub-items.. *)
 
 val unit : f:('a -> item -> 'a) -> 'a -> Compilation_unit.t -> 'a
 val page : f:('a -> item -> 'a) -> 'a -> Page.t -> 'a
