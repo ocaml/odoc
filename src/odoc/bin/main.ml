@@ -835,7 +835,8 @@ module Depends = struct
   module Compile = struct
     let list_dependencies has_src input_file =
       let deps =
-        Depends.for_compile_step ~has_src (Fs.File.of_string input_file)
+        Depends.for_compile_step ~has_src
+          (List.map ~f:Fs.File.of_string input_file)
       in
       List.iter
         ~f:(fun t ->
@@ -846,11 +847,8 @@ module Depends = struct
 
     let cmd =
       let input =
-        let doc = "Input file" in
-        Arg.(
-          required
-          & pos 0 (some file) None
-          & info ~doc ~docv:"file.cm{i,t,ti}" [])
+        let doc = "Input files" in
+        Arg.(non_empty & pos_all file [] & info ~doc ~docv:"file.cm{i,t,ti}" [])
       in
       let has_src =
         let doc =

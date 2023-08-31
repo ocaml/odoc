@@ -56,6 +56,8 @@ module Arg = struct
 
   let pos = pos
 
+  let pos_all = pos_all
+
   let file = file
 
   let bool = bool
@@ -65,6 +67,8 @@ module Arg = struct
   let conv = conv
   let conv_parser = conv_parser
   let conv_printer = conv_printer
+
+  let non_empty = non_empty
 end
 
 [@@@ocaml.warning "+3"]

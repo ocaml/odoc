@@ -27,7 +27,7 @@ module Compile : sig
   val digest : t -> Digest.t
 end
 
-val for_compile_step : has_src:bool -> Fs.File.t -> Compile.t list
+val for_compile_step : has_src:bool -> Fs.File.t list -> Compile.t list
 (** Takes a [.cm{i,t,ti}] file and returns the list of its dependencies. *)
 
 val for_rendering_step :
