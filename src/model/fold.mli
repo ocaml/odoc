@@ -1,5 +1,7 @@
 (** This module allows to fold over odoc values. It is notably used to construct
-    a search database of every relevant item. *)
+    a search database of every relevant item. It appear to be very generic but
+    in reality it is quite specialized to fold over searchable items, and not
+    every kind of odoc value you could fold over.*)
 
 open Lang
 
@@ -22,6 +24,8 @@ type item =
 
 val unit : f:('a -> item -> 'a) -> 'a -> Compilation_unit.t -> 'a
 val page : f:('a -> item -> 'a) -> 'a -> Page.t -> 'a
+
+
 val signature : f:('a -> item -> 'a) -> 'a -> Signature.t -> 'a
 val signature_item : f:('a -> item -> 'a) -> 'a -> Signature.item -> 'a
 val docs : f:('a -> item -> 'a) -> 'a -> Comment.docs_or_stop -> 'a

@@ -61,8 +61,5 @@ type t = {
   kind : kind;
 }
 
-type with_html = { entry : t; html : [ `Code | `Div ] Tyxml.Html.elt list }
-(** You can use {!Generator.with_html} to get a value of this type. *)
-
 val entries_of_item :
   Odoc_model.Paths.Identifier.Any.t -> Odoc_model.Fold.item -> t list

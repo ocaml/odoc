@@ -413,9 +413,9 @@ module Indexing = struct
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.of_string "index.json"
 
-  let index directories dst warnings_options =
+  let index directories dst =
     let output = output_file ~dst in
-    Indexing.compile ~output ~warnings_options ~resolver:() ~parent:()
+    Indexing.compile ~output
       directories
 
   let cmd =
@@ -429,7 +429,7 @@ module Indexing = struct
     in
     Term.(
       const handle_error
-      $ (const index $ odoc_file_directories $ dst $ warnings_options))
+      $ (const index $ odoc_file_directories $ dst ))
 
   let info ~docs =
     let doc =

@@ -4,9 +4,7 @@ let json_of_args (args : Odoc_model.Lang.TypeDecl.Constructor.argument) =
       `Object
         [
           ("kind", `String "Tuple");
-          ( "vals",
-            `Array (List.map (fun te -> `String (Render.text_of_type te)) tel)
-          );
+          ("vals", `Array (List.map (fun te -> `String (Text.of_type te)) tel));
         ]
   | Record fl ->
       `Object
@@ -25,7 +23,7 @@ let json_of_args (args : Odoc_model.Lang.TypeDecl.Constructor.argument) =
                      [
                        ("name", `String (Odoc_model.Paths.Identifier.name id));
                        ("mutable", `Bool mutable_);
-                       ("type", `String (Render.text_of_type type_));
+                       ("type", `String (Text.of_type type_));
                      ])
                  fl) );
         ]
@@ -81,15 +79,13 @@ let rec of_id x =
 let of_id n = `Array (List.rev @@ of_id (n :> Odoc_model.Paths.Identifier.t))
 
 let of_doc (doc : Odoc_model.Comment.docs) =
-  let txt = Render.text_of_doc doc in
+  let txt = Text.of_doc doc in
   `String txt
 
-let of_entry
-    ({ entry = { id; doc; kind }; html = _ } as entry : Entry.with_html) :
-    Odoc_html.Json.json =
+let of_entry ({ Entry.id; doc; kind } as entry) html : Odoc_html.Json.json =
   let j_id = of_id id in
   let doc = of_doc doc in
-  let display = Json_display.of_entry entry in
+  let display = Json_display.of_entry entry html in
   let kind =
     let return kind arr = `Object (("kind", `String kind) :: arr) in
     match kind with
@@ -106,7 +102,7 @@ let of_entry
         let manifest =
           match manifest with
           | None -> `Null
-          | Some te -> `String (Render.text_of_type te)
+          | Some te -> `String (Text.of_type te)
         in
         let constraints =
           `Array
@@ -114,8 +110,8 @@ let of_entry
                (fun (lhs, rhs) ->
                  `Object
                    [
-                     ("lhs", `String (Render.text_of_type lhs));
-                     ("rhs", `String (Render.text_of_type rhs));
+                     ("lhs", `String (Text.of_type lhs));
+                     ("rhs", `String (Text.of_type rhs));
                    ])
                constraints)
         in
@@ -127,7 +123,7 @@ let of_entry
           ]
     | Module -> return "Module" []
     | Value { value = _; type_ } ->
-        return "Value" [ ("type", `String (Render.text_of_type type_)) ]
+        return "Value" [ ("type", `String (Text.of_type type_)) ]
     | Doc Paragraph -> return "Doc" [ ("subkind", `String "Paragraph") ]
     | Doc Heading -> return "Doc" [ ("subkind", `String "Heading") ]
     | Doc CodeBlock -> return "Doc" [ ("subkind", `String "CodeBlock") ]
@@ -135,7 +131,7 @@ let of_entry
     | Doc Verbatim -> return "Doc" [ ("subkind", `String "Verbatim") ]
     | Exception { args; res } ->
         let args = json_of_args args in
-        let res = `String (Render.text_of_type res) in
+        let res = `String (Text.of_type res) in
         return "Exception" [ ("args", args); ("res", res) ]
     | Class_type { virtual_; params = _ } ->
         return "ClassType" [ ("virtual", `Bool virtual_) ]
@@ -144,7 +140,7 @@ let of_entry
           [
             ("virtual", `Bool virtual_);
             ("private", `Bool private_);
-            ("type", `String (Render.text_of_type type_));
+            ("type", `String (Text.of_type type_));
           ]
     | Class { virtual_; params = _ } ->
         return "Class" [ ("virtual", `Bool virtual_) ]
@@ -153,19 +149,19 @@ let of_entry
         return "TypeExtension" [ ("private", `Bool private_) ]
     | ExtensionConstructor { args; res } ->
         let args = json_of_args args in
-        let res = `String (Render.text_of_type res) in
+        let res = `String (Text.of_type res) in
         return "ExtensionConstructor" [ ("args", args); ("res", res) ]
     | ModuleType -> return "ModuleType" []
     | Constructor { args; res } ->
         let args = json_of_args args in
-        let res = `String (Render.text_of_type res) in
+        let res = `String (Text.of_type res) in
         return "Constructor" [ ("args", args); ("res", res) ]
     | Field { mutable_; type_; parent_type } ->
         return "Field"
           [
             ("mutable", `Bool mutable_);
-            ("type", `String (Render.text_of_type type_));
-            ("parent_type", `String (Render.text_of_type parent_type));
+            ("type", `String (Text.of_type type_));
+            ("parent_type", `String (Text.of_type parent_type));
           ]
   in
   `Object [ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ]
@@ -176,8 +172,8 @@ let output_json ppf first entries =
     Format.fprintf ppf "%s\n" str
   in
   List.fold_left
-    (fun first entry ->
-      let json = of_entry entry in
+    (fun first (entry, html) ->
+      let json = of_entry entry html in
       if not first then Format.fprintf ppf ",";
       output_json json;
       false)
@@ -186,7 +182,9 @@ let output_json ppf first entries =
 let unit ppf u =
   let f (first, id) i =
     let entries = Entry.entries_of_item id i in
-    let entries = List.map Generator.with_html entries in
+    let entries =
+      List.map (fun entry -> (entry, Html.of_entry entry)) entries
+    in
     let id =
       match i with
       | CompilationUnit u -> (u.id :> Odoc_model.Paths.Identifier.t)
@@ -218,7 +216,9 @@ let page ppf (page : Odoc_model.Lang.Page.t) =
     let entries =
       Entry.entries_of_item (page.name :> Odoc_model.Paths.Identifier.t) i
     in
-    let entries = List.map Generator.with_html entries in
+    let entries =
+      List.map (fun entry -> (entry, Html.of_entry entry)) entries
+    in
     output_json ppf first entries
   in
   let _first = Odoc_model.Fold.page ~f true page in

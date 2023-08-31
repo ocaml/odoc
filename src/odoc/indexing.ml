@@ -25,7 +25,7 @@ let fold_dirs ~dirs ~unit ~page ~init =
            acc dir)
        (Ok init)
 
-let compile ~resolver:_ ~parent:_ ~output ~warnings_options:_ dirs =
+let compile ~output dirs =
   let output_channel =
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     open_out_bin (Fs.File.to_string output)

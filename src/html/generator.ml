@@ -35,7 +35,10 @@ let mk_anchor_link id =
 let mk_anchor config anchor =
   match anchor with
   | None -> ([], [], [])
-  | _ when Config.search_result config -> ([], [], [])
+  | _ when Config.search_result config ->
+      (* When displaying for a search result, anchor are not added as it would
+         make no sense to add them. *)
+      ([], [], [])
   | Some { Url.Anchor.anchor; _ } ->
       let link = mk_anchor_link anchor in
       let extra_attr = [ Html.a_id anchor ] in
@@ -101,7 +104,10 @@ let rec internallink ~config ~emph_level ~resolve ?(a = [])
     | Resolved uri ->
         let href = Link.href ~config ~resolve uri in
         let content = inline_nolink ~emph_level content in
-        if Config.search_result config then Html.span ~a content
+        if Config.search_result config then
+          (* When displaying for a search result, links are displayed as regular
+             text. *)
+          Html.span ~a content
         else
           let a =
             Html.a_href href :: (a :> Html_types.a_attrib Html.attrib list)
@@ -172,7 +178,10 @@ and inline_nolink ?(emph_level = 0) (l : Inline.t) :
 let heading ~config ~resolve (h : Heading.t) =
   let a, anchor =
     match h.label with
-    | Some _ when Config.search_result config -> ([], [])
+    | Some _ when Config.search_result config ->
+        (* When displaying for a search result, anchor are not added as it would
+           make no sense to add them. *)
+        ([], [])
     | Some id -> ([ Html.a_id id ], mk_anchor_link id)
     | None -> ([], [])
   in
