@@ -154,8 +154,8 @@ module Analysis = struct
 
   and value_binding env vb = pattern env vb.vb_pat @ expression env vb.vb_expr
 
-  and expression env = function
-    | { exp_desc = Texp_ident (p, _, value_description); exp_loc; _ } -> (
+  and expression env { exp_desc; exp_loc; _ } = match exp_desc with
+    | Texp_ident (p, _, value_description) -> (
         if exp_loc.loc_ghost then []
         else
           (* Only generate anchor if the uid is in the location table. We don't
@@ -169,16 +169,16 @@ module Analysis = struct
               match p with
               | Pident id -> [ (LocalValue id, pos_of_loc exp_loc) ]
               | _ -> []))
-    | { exp_desc = Texp_constant _; _ } -> []
-    | { exp_desc = Texp_let (_, vbs, e); _ } ->
+    | Texp_constant _ -> []
+    | Texp_let (_, vbs, e) ->
         List.concat_map (value_binding env) vbs @ expression env e
-    | { exp_desc = Texp_function f; _ } -> List.concat_map (case env) f.cases
-    | { exp_desc = Texp_match (e, cases, _); _ } ->
+    | Texp_function f -> List.concat_map (case env) f.cases
+    | Texp_match (e, cases, _) ->
         expression env e @ List.concat_map (case env) cases
-    | { exp_desc = Texp_try (e, cases); _ } ->
+    | Texp_try (e, cases) ->
         expression env e @ List.concat_map (case env) cases
-    | { exp_desc = Texp_tuple es; _ } -> List.concat_map (expression env) es
-    | { exp_desc = Texp_construct (_, cons_description, es); exp_loc; _ } ->
+    | Texp_tuple es -> List.concat_map (expression env) es
+    | Texp_construct (_, cons_description, es) ->
         let x =
           if exp_loc.loc_ghost then []
           else
@@ -191,50 +191,50 @@ module Analysis = struct
             | None -> []
         in
         x @ List.concat_map (expression env) es
-    | { exp_desc = Texp_variant (_, Some e); _ } -> expression env e
-    | { exp_desc = Texp_variant (_, None); _ } -> []
-    | { exp_desc = Texp_record { fields; extended_expression; _ }; _ } ->
+    | Texp_variant (_, Some e) -> expression env e
+    | Texp_variant (_, None) -> []
+    | Texp_record { fields; extended_expression; _ } ->
         let e =
           match extended_expression with
           | None -> []
           | Some expr -> expression env expr
         in
         e @ List.concat_map (record_fields env) (Array.to_list fields)
-    | { exp_desc = Texp_field (e, _, _); _ } -> expression env e
-    | { exp_desc = Texp_setfield (e1, _, _, e2); _ } ->
+    | Texp_field (e, _, _) -> expression env e
+    | Texp_setfield (e1, _, _, e2) ->
         expression env e1 @ expression env e2
-    | { exp_desc = Texp_array es; _ } -> List.concat_map (expression env) es
-    | { exp_desc = Texp_ifthenelse (e1, e2, e3); _ } ->
+    | Texp_array es -> List.concat_map (expression env) es
+    | Texp_ifthenelse (e1, e2, e3) ->
         let e3 = match e3 with Some e -> expression env e | None -> [] in
         e3 @ expression env e1 @ expression env e2
-    | { exp_desc = Texp_sequence (e1, e2); _ } ->
+    | Texp_sequence (e1, e2) ->
         expression env e1 @ expression env e2
-    | { exp_desc = Texp_while (e1, e2); _ } ->
+    | Texp_while (e1, e2) ->
         expression env e1 @ expression env e2
-    | { exp_desc = Texp_for (id, p, e1, e2, _, e3); _ } ->
+    | Texp_for (id, p, e1, e2, _, e3) ->
         ((LocalValue id, pos_of_loc p.ppat_loc) :: expression env e1)
         @ expression env e2 @ expression env e3
-    | { exp_desc = Texp_send (e, _); _ } -> expression env e
-    | { exp_desc = Texp_new _; _ } -> []
-    | { exp_desc = Texp_instvar (_, _, _); _ } -> []
-    | { exp_desc = Texp_setinstvar (_, _, _, e); _ } -> expression env e
-    | { exp_desc = Texp_override (_, es); _ } ->
+    | Texp_send (e, _) -> expression env e
+    | Texp_new _ -> []
+    | Texp_instvar (_, _, _) -> []
+    | Texp_setinstvar (_, _, _, e) -> expression env e
+    | Texp_override (_, es) ->
         List.concat_map (fun (_, _, e) -> expression env e) es
-    | { exp_desc = Texp_letmodule (_, _, _, _m, e); _ } -> expression env e
-    | { exp_desc = Texp_letexception (_, e); _ } -> expression env e
-    | { exp_desc = Texp_assert e; _ } -> expression env e
-    | { exp_desc = Texp_lazy e; _ } -> expression env e
-    | { exp_desc = Texp_object (_, _); _ } -> []
-    | { exp_desc = Texp_pack _; _ } -> []
-    | { exp_desc = Texp_letop { let_; ands; body; _ }; _ } ->
+    | Texp_letmodule (_, _, _, _m, e) -> expression env e
+    | Texp_letexception (_, e) -> expression env e
+    | Texp_assert e -> expression env e
+    | Texp_lazy e -> expression env e
+    | Texp_object (_, _) -> []
+    | Texp_pack _ -> []
+    | Texp_letop { let_; ands; body; _ } ->
         let e = case env body in
         let let_ = binding_op env let_ in
         let ands = List.concat_map (binding_op env) ands in
         e @ let_ @ ands
-    | { exp_desc = Texp_unreachable; _ } -> []
-    | { exp_desc = Texp_extension_constructor _; _ } -> []
-    | { exp_desc = Texp_open (_, e); _ } -> expression env e
-    | { exp_desc = Texp_apply (e, es); _ } ->
+    | Texp_unreachable -> []
+    | Texp_extension_constructor _ -> []
+    | Texp_open (_, e) -> expression env e
+    | Texp_apply (e, es) ->
         expression env e
         @ List.concat_map
             (function _, Some e -> expression env e | _ -> [])

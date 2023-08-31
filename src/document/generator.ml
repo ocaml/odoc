@@ -239,7 +239,7 @@ module Make (Syntax : SYNTAX) = struct
     val url : Paths.Identifier.SourcePage.t -> Url.t
     val source :
       Paths.Identifier.SourcePage.t ->
-      Syntax_highlighter.t ->
+      Syntax_highlighter.infos ->
       Lang.Source_info.infos ->
       string ->
       Source_page.t

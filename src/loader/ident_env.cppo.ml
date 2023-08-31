@@ -449,7 +449,7 @@ let class_name_exists name items =
 let class_type_name_exists name items =
   List.exists (function | `ClassType (id',_,_,_,_) when Ident.name id' = name -> true | _ -> false) items
 
-let env_of_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
+let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
   let open Odoc_model.Paths.Identifier in
   let rec inner items env =
     match items with
@@ -566,17 +566,17 @@ let identifier_of_loc : t -> Warnings.loc -> Odoc_model.Paths.Identifier.t optio
 let add_signature_tree_items : Paths.Identifier.Signature.t -> Typedtree.signature -> t -> t = 
   fun parent sg env ->
     let items = extract_signature_tree_items false sg.sig_items |> flatten_includes in
-    env_of_items parent items env
+    add_items parent items env
 
 let add_structure_tree_items : Paths.Identifier.Signature.t -> Typedtree.structure -> t -> t =
   fun parent sg env ->
   let items = extract_structure_tree_items false sg.str_items |> flatten_includes in
-  env_of_items parent items env
+  add_items parent items env
 
 let handle_signature_type_items : Paths.Identifier.Signature.t -> Compat.signature -> t -> t =
   fun parent sg env ->
     let items = extract_signature_type_items sg in
-    env_of_items parent items env
+    add_items parent items env
 
 let add_parameter parent id name env =
   let hidden = ModuleName.is_hidden name in
