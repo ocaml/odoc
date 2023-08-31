@@ -78,7 +78,7 @@ let db =
 
 let string_of_kind =
   let open Db.Elt.Kind in
-  let open Odoc_search.Generator in
+  let open Odoc_search.Html in
   function
   | Db.Elt.Kind.Doc -> kind_doc
   | TypeDecl -> kind_typedecl
@@ -123,7 +123,7 @@ let search message =
              let kind = string_of_kind kind in
 
              let html =
-               Odoc_search.Generator.html_of_strings ~kind ~prefix_name ~name
+               Odoc_search.Html.of_strings ~kind ~prefix_name ~name
                  ~typedecl_params:None (*TODO pass value*)
                  ~rhs ~doc:doc_html
                |> List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ()))

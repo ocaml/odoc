@@ -9,19 +9,19 @@ type t = int
 
 module type Signature = sig end
 
-class istack = object
-  val mutable v = [0; 2]
+class istack =
+  object
+    val mutable v = [ 0; 2 ]
 
-  method pop =
-    match v with
-    | hd :: tl ->
-      v <- tl;
-      Some hd
-    | [] -> None
+    method pop =
+      match v with
+      | hd :: tl ->
+          v <- tl ;
+          Some hd
+      | [] -> None
 
-  method push hd =
-    v <- hd :: v
-end
+    method push hd = v <- hd :: v
+  end
 
 class type my_class_type = object end
 
@@ -53,6 +53,12 @@ let lorem3 _ = 'e'
 
 (** lorem 4
   *)
+module Trucmuche = struct
+  let bidule = 4
+end
+
+include Trucmuche
+
 let lorem4 = 1
 
 type my_type = int * char
@@ -74,7 +80,6 @@ type 'a list =
   | Cons of 'a * 'a list
   | Nil
 
-
 (** Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
     tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
     quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
@@ -84,5 +89,4 @@ type 'a list =
 let long = 3
 
 type ext_t = ..
-
 type ext_t += Ext_const of int

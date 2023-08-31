@@ -280,7 +280,7 @@ let register_entry ~db ~index_name ~type_search ~index_docstring
     let doc_html =
       match doc_txt with
       | "" -> ""
-      | _ -> doc |> Render.html_of_doc |> string_of_html
+      | _ -> doc |> Html.of_doc |> string_of_html
     in
     let kind' = convert_kind kind in
     let name =
@@ -289,8 +289,8 @@ let register_entry ~db ~index_name ~type_search ~index_docstring
       | _ -> full_name
     in
     let score = cost ~name ~kind:kind' ~doc_html in
-    let rhs = Generator.rhs_of_kind kind in
-    let url = Render.url id in
+    let rhs = Html.rhs_of_kind kind in
+    let url = Html.url id in
     let elt = Elt.v ~name ~kind:kind' ~rhs ~doc_html ~score ~url () in
     if index_docstring then register_doc ~db elt doc_txt ;
     (if index_name
