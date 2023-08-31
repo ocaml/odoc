@@ -19,8 +19,9 @@ and show_ident_short h (r : Paths.Identifier.t_pv Paths.Identifier.id) =
   | _ -> Format.fprintf h "%S" (Paths.Identifier.name r)
 
 and show_module_t h p =
-  Format.fprintf h "%s" (Odoc_document.Url.render_path (p : Paths.Path.Module.t :> Paths.Path.t))
-    (*
+  Format.fprintf h "%s"
+    (Odoc_document.Url.render_path (p : Paths.Path.Module.t :> Paths.Path.t))
+(*
   function
   | `Resolved t ->
       let open Paths.Path in

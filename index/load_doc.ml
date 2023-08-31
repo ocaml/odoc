@@ -20,7 +20,7 @@ let kind_cost (kind : Elt.Kind.t) =
   | Constructor type_path | Field type_path | Val type_path ->
       type_cost type_path
   | Doc -> 400
-  | TypeDecl | Module -> 0
+  | TypeDecl _ | Module -> 0
   | Exception _ | Class_type | Method | Class -> 10
   | TypeExtension -> 1000
   | ExtensionConstructor _ | ModuleType -> 10
@@ -205,10 +205,11 @@ let searchable_type_of_record parent_type type_ =
   let open Odoc_model.Lang in
   TypeExpr.Arrow (None, parent_type, type_)
 
-let convert_kind (kind : Odoc_search.Entry.kind) =
+let convert_kind (Odoc_search.Entry.{ kind; _ } as entry) =
   let open Odoc_search.Entry in
   match kind with
-  | TypeDecl _ -> Elt.Kind.TypeDecl
+  | TypeDecl _ ->
+      Elt.Kind.TypeDecl (Odoc_search.Html.typedecl_params_of_entry entry)
   | Module -> Elt.Kind.Module
   | Value { value = _; type_ } ->
       let paths = paths type_ in
@@ -264,7 +265,7 @@ let register_kind ~db ~type_search elt (kind : Odoc_search.Entry.kind) =
         register_type_expr ~db elt type_
 
 let register_entry ~db ~index_name ~type_search ~index_docstring
-    Odoc_search.Entry.{ id; doc; kind } =
+    (Odoc_search.Entry.{ id; doc; kind } as entry) =
   let open Odoc_search in
   let open Odoc_search.Entry in
   let is_type_extension =
@@ -282,7 +283,7 @@ let register_entry ~db ~index_name ~type_search ~index_docstring
       | "" -> ""
       | _ -> doc |> Html.of_doc |> string_of_html
     in
-    let kind' = convert_kind kind in
+    let kind' = convert_kind entry in
     let name =
       match kind with
       | Doc _ -> Pretty.prefixname id

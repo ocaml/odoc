@@ -81,7 +81,7 @@ let string_of_kind =
   let open Odoc_search.Html in
   function
   | Db.Elt.Kind.Doc -> kind_doc
-  | TypeDecl -> kind_typedecl
+  | TypeDecl _ -> kind_typedecl
   | Module -> kind_module
   | Exception _ -> kind_exception
   | Class_type -> kind_class_type
@@ -109,6 +109,11 @@ let search message =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list
            (fun Db.Elt.{ name; rhs; doc_html; kind; url; _ } ->
+             let typedecl_params =
+               match kind with
+               | Db.Elt.Kind.TypeDecl args -> args
+               | _ -> None
+             in
              let prefix_name, name =
                match kind with
                | Db.Elt.Kind.Doc -> None, None
@@ -124,8 +129,7 @@ let search message =
 
              let html =
                Odoc_search.Html.of_strings ~kind ~prefix_name ~name
-                 ~typedecl_params:None (*TODO pass value*)
-                 ~rhs ~doc:doc_html
+                 ~typedecl_params ~rhs ~doc:doc_html
                |> List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ()))
                |> String.concat "\n"
              in

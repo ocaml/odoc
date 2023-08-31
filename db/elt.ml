@@ -20,7 +20,7 @@ type type_path = string list list
 module Kind = struct
   type 'a abstract =
     | Doc
-    | TypeDecl
+    | TypeDecl of string option
     | Module
     | Exception of 'a
     | Class_type
@@ -37,7 +37,7 @@ module Kind = struct
 
   let equal = ( = )
   let doc = Doc
-  let type_decl = TypeDecl
+  let type_decl args = TypeDecl args
   let module_ = Module
   let exception_ type_path = Exception type_path
   let class_type = Class_type
@@ -49,7 +49,6 @@ module Kind = struct
   let constructor type_path = Constructor type_path
   let field type_path = Field type_path
   let val_ type_path = Val type_path
-
 end
 
 module Package = struct

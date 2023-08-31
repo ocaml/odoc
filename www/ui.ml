@@ -14,7 +14,7 @@ let string_of_kind =
   let open Db.Elt.Kind in
   function
   | Doc -> "doc"
-  | TypeDecl -> "type"
+  | TypeDecl _ -> "type"
   | Module -> "mod"
   | Exception _ -> "exn"
   | Class_type -> "class"

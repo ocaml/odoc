@@ -223,7 +223,7 @@ module Reasoning = struct
   let kind elt =
     match elt.Elt.kind with
     | Elt.Kind.Doc -> Doc
-    | Elt.Kind.TypeDecl -> TypeDecl
+    | Elt.Kind.TypeDecl _ -> TypeDecl
     | Elt.Kind.Module -> Module
     | Elt.Kind.Exception _ -> Exception
     | Elt.Kind.Class_type -> Class_type
