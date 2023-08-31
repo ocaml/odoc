@@ -1,4 +1,4 @@
-type t = (string * (int * int)) list
+type infos = (string * (int * int)) list
 
 let tag_of_token (tok : Parser.token) =
   match tok with

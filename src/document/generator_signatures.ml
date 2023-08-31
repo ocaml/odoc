@@ -110,7 +110,7 @@ module type GENERATOR = sig
 
   val source_page :
     Odoc_model.Paths.Identifier.SourcePage.t ->
-    Syntax_highlighter.t ->
+    Syntax_highlighter.infos ->
     Lang.Source_info.infos ->
     string ->
     Document.t

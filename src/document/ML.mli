@@ -26,7 +26,7 @@ val source_tree : Lang.SourceTree.t -> Types.Document.t list
 
 val source_page :
   Identifier.SourcePage.t ->
-  Syntax_highlighter.t ->
+  Syntax_highlighter.infos ->
   Lang.Source_info.infos ->
   string ->
   Types.Document.t
