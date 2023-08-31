@@ -1,8 +1,7 @@
 open Odoc_model
 
-type html = [ `Code | `Div ] Tyxml.Html.elt
+type html = Html_types.div_content Tyxml.Html.elt
 
-(* todo use a shorted alias for this ugly type *)
 val of_entry : Entry.t -> html list
 
 val url : Odoc_model.Paths.Identifier.Any.t -> string

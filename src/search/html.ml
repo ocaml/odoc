@@ -1,4 +1,4 @@
-type html = [ `Code | `Div ] Tyxml.Html.elt
+type html = Html_types.div_content Tyxml.Html.elt
 
 open Odoc_model
 open Lang
@@ -287,6 +287,7 @@ let names_of_id id =
       List.hd rev_fullname )
   in
   (prefix_name, name)
+
 let of_doc doc =
   let config =
     Odoc_html.Config.v ~search_result:true ~semantic_uris:false ~indent:false
@@ -298,6 +299,7 @@ let of_doc doc =
 
 let html_string_of_doc doc =
   doc |> of_doc |> Format.asprintf "%a" (Tyxml.Html.pp_elt ())
+
 let of_entry (entry : Entry.t) =
   let ({ id; doc; kind } : Entry.t) = entry in
   let rhs = rhs_of_kind kind in
