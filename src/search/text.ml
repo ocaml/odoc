@@ -1,5 +1,3 @@
-type html = Html_types.div Tyxml.Html.elt
-
 module Of_document = struct
   (** Get plain text doc-comment from a doc comment *)
 
@@ -89,32 +87,13 @@ module Of_comments = struct
     inline (n :> Odoc_model.Comment.inline_element)
 end
 
-let text_of_type te =
+let of_type te =
   let te_text = Odoc_document.ML.type_expr te in
   let te_doc = Odoc_document.Codefmt.render te_text in
   Of_document.source te_doc
 
-let text_of_doc doc = Of_comments.string_of_doc doc
+let of_doc doc = Of_comments.string_of_doc doc
 
-let config =
-  Odoc_html.Config.v ~search_result:true ~semantic_uris:false ~indent:false
-    ~flat:false ~open_details:false ~as_json:false ()
-
-let html_of_doc doc =
-  Tyxml.Html.div ~a:[]
-  @@ Odoc_html.Generator.doc ~config ~xref_base_uri:""
-  @@ Odoc_document.Comment.to_ir doc
-
-let url id =
-  match
-    Odoc_document.Url.from_identifier ~stop_before:false
-      (id :> Odoc_model.Paths.Identifier.t)
-  with
-  | Ok url ->
-      let url = Odoc_html.Link.href ~config ~resolve:(Base "") url in
-      url
-  | Error _ -> assert false
-
-let text_of_record fields =
+let of_record fields =
   let te_text = Odoc_document.ML.record fields in
   Of_document.documented_src te_text

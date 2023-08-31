@@ -369,7 +369,6 @@ a:hover {
 
 *:hover > a.anchor {
   visibility: visible;
-  z-index: -1;
 }
 
 a.anchor:before {
@@ -563,14 +562,7 @@ div.odoc-spec,.odoc-include {
   margin-bottom: 2em;
 }
 
-.odoc-include {
-  /* Otherwise it will appear above search results */
-  z-index: -1;
-  position: relative;
-}
-
-.spec.type .variant p,
-.spec.type .record p {
+.spec.type .variant p, .spec.type .record p {
   margin: 5px;
 }
 
@@ -801,6 +793,7 @@ td.def-doc *:first-child {
   background: var(--main-background);
   width: 100%;
   padding-top: 1rem;
+  z-index: 1;
 }
 
 
@@ -812,6 +805,8 @@ td.def-doc *:first-child {
 }
 
 .odoc-search:focus-within .search-inner {
+  /* Search inner is bigger than its parent, but the overflow needs to be
+     centered. */
   left: 50%;
   transform: translateX(-50%);
   width: 110%;
@@ -820,7 +815,7 @@ td.def-doc *:first-child {
 .odoc-search .search-bar {
   position: relative;
   z-index: 2;
-  font-size: 1;
+  font-size: 1em;
   transition: font-size 0.3s;
 }
 
@@ -842,7 +837,6 @@ td.def-doc *:first-child {
   position: absolute;
   left: 0;
   right: 0;
-  z-index: 1;  
 }
 
 .odoc-search .search-result-inner {
@@ -857,12 +851,17 @@ td.def-doc *:first-child {
 }
 
 .search-bar {
+  /* inputs are of fixed size by default, even if you display:block them */
   width: 100%;
 }
 
 .odoc-search .search-entry {
   color: var(--color);
   display: grid;
+  /* This constant of 59px was carefully chosen to accomodate every possible
+     "kind". We cannot ask CSS to compute it because not every kind will be
+     present in every search result list, and we do not want the size of the
+     column to change with different results. */
   grid-template-columns: [kinds] 59px [titles] 1fr;
   flex-wrap: nowrap;
   flex-direction: row;

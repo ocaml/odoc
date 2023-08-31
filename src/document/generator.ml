@@ -1835,7 +1835,7 @@ module Make (Syntax : SYNTAX) = struct
         Utils.filter_map
           (function
             | `Resolved (`Identifier id) ->
-                Some Url.(from_path @@ Path.from_identifier id)
+                Some (Url.from_path @@ Url.Path.from_identifier id)
             | _ -> None)
           t.search_assets
       in

@@ -72,8 +72,6 @@ type t = {
   kind : kind;
 }
 
-type with_html = { entry : t; html : [ `Code | `Div ] Tyxml.Html.elt list }
-
 let entry ~id ~doc ~kind =
   let id = (id :> Odoc_model.Paths.Identifier.Any.t) in
   { id; kind; doc }

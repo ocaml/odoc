@@ -1,8 +1,22 @@
-module Html = Tyxml.Html
+type html = [ `Code | `Div ] Tyxml.Html.elt
 
 open Odoc_model
 open Lang
 open Printf
+
+let url id =
+  match
+    Odoc_document.Url.from_identifier ~stop_before:false
+      (id :> Odoc_model.Paths.Identifier.t)
+  with
+  | Ok url ->
+      let config =
+        Odoc_html.Config.v ~search_result:true ~semantic_uris:false
+          ~indent:false ~flat:false ~open_details:false ~as_json:false ()
+      in
+      let url = Odoc_html.Link.href ~config ~resolve:(Base "") url in
+      url
+  | Error _ -> assert false (* TODO fix *)
 
 let map_option f = function Some x -> Some (f x) | None -> None
 
@@ -82,7 +96,7 @@ let display_constructor_args args =
       | [ arg ] -> Some arg
       | _ -> None)
       |> map_option type_expr
-  | TypeDecl.Constructor.Record fields -> Some (Render.text_of_record fields)
+  | TypeDecl.Constructor.Record fields -> Some (Text.of_record fields)
 
 let constructor_rhs ~args ~res =
   let args = display_constructor_args args in
@@ -135,7 +149,7 @@ let typedecl_repr ~private_ (repr : TypeDecl.Representation.t) =
     name ^ constructor_rhs ~args ~res
   in
   let private_ = if private_ then "private " else "" in
-  "= " ^ private_
+  " = " ^ private_
   ^
   match repr with
   | Extensible -> ".."
@@ -144,7 +158,7 @@ let typedecl_repr ~private_ (repr : TypeDecl.Representation.t) =
       |> List.map (fun ({ id; args; res; _ } : TypeDecl.Constructor.t) ->
              constructor ~id ~args ~res)
       |> String.concat " | "
-  | Record record -> Render.text_of_record record
+  | Record record -> Text.of_record record
 
 let typedecl_rhs ({ equation; representation; _ } : Entry.type_decl_entry) =
   let ({ private_; manifest; constraints; _ } : TypeDecl.Equation.t) =
@@ -213,21 +227,29 @@ let string_of_kind =
 
 let value_rhs (t : Entry.value_entry) = " : " ^ type_expr t.type_
 
-let html_of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
+let of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
   let open Tyxml.Html in
   let kind = code ~a:[ a_class [ "entry-kind" ] ] [ txt kind ]
+  and typedecl_params =
+    match typedecl_params with
+    | None -> []
+    | Some p ->
+        [
+          span
+            ~a:
+              [
+                a_class
+                  [
+                    (* the parameter of the typedecl are highlighted as if part of main entry name. *)
+                    "entry-name";
+                  ];
+              ]
+            [ txt (p ^ " ") ];
+        ]
   and prefix_name =
     match prefix_name with
     | Some prefix_name ->
-        [
-          span
-            ~a:[ a_class [ "prefix-name" ] ]
-            [
-              txt
-                ((match typedecl_params with None -> "" | Some p -> p ^ " ")
-                ^ prefix_name ^ ".");
-            ];
-        ]
+        [ span ~a:[ a_class [ "prefix-name" ] ] [ txt (prefix_name ^ ".") ] ]
     | None -> []
   and name =
     match name with
@@ -240,7 +262,9 @@ let html_of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
   in
   [
     kind;
-    code ~a:[ a_class [ "entry-title" ] ] (prefix_name @ name @ rhs);
+    code
+      ~a:[ a_class [ "entry-title" ] ]
+      (typedecl_params @ prefix_name @ name @ rhs);
     div ~a:[ a_class [ "entry-comment" ] ] [ Unsafe.data doc ];
   ]
 
@@ -255,7 +279,7 @@ let rhs_of_kind (entry : Entry.kind) =
   | Doc _ ->
       None
 
-let title_of_id id =
+let names_of_id id =
   let fullname = Paths.Identifier.fullname id in
   let prefix_name, name =
     let rev_fullname = List.rev fullname in
@@ -263,7 +287,7 @@ let title_of_id id =
       List.hd rev_fullname )
   in
   (prefix_name, name)
-let html_of_doc doc =
+let of_doc doc =
   let config =
     Odoc_html.Config.v ~search_result:true ~semantic_uris:false ~indent:false
       ~flat:false ~open_details:false ~as_json:false ()
@@ -273,15 +297,13 @@ let html_of_doc doc =
   @@ Odoc_document.Comment.to_ir doc
 
 let html_string_of_doc doc =
-  doc |> html_of_doc |> Format.asprintf "%a" (Html.pp_elt ())
-let html_of_entry (entry : Entry.t) =
+  doc |> of_doc |> Format.asprintf "%a" (Tyxml.Html.pp_elt ())
+let of_entry (entry : Entry.t) =
   let ({ id; doc; kind } : Entry.t) = entry in
   let rhs = rhs_of_kind kind in
-  let prefix_name, name = title_of_id id in
+  let prefix_name, name = names_of_id id in
   let prefix_name = Some prefix_name and name = Some name in
   let doc = html_string_of_doc doc in
   let kind = string_of_kind kind in
   let typedecl_params = typedecl_params_of_entry entry in
-  html_of_strings ~kind ~prefix_name ~name ~rhs ~doc ~typedecl_params
-
-let with_html entry : Entry.with_html = { entry; html = html_of_entry entry }
+  of_strings ~kind ~prefix_name ~name ~rhs ~doc ~typedecl_params

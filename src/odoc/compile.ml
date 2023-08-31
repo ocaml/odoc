@@ -256,9 +256,9 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let search_assets : Paths.Reference.Asset.t list =
     List.map (fun a -> `Root (a, `TAsset)) search_assets
-    (* Assets references are considered as "simple" reference, no way to specify
-       the parent page of an asset. Therefore, seach assets need to be children
-       of a page ancestor. *)
+    (* Assets references are considered as "simple" reference, there is no way
+       to specify the parent page of an asset. Therefore, search assets need to
+       be children of a page ancestor. *)
   in
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
