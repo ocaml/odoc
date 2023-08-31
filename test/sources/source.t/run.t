@@ -24,7 +24,7 @@ Files containing some values:
 
 Source pages require a parent:
 
-  $ odoc compile -c module-a -c src-source root.mld
+  $ odoc compile -c module-a -c src-source -c src-source2 root.mld
 
 Compile the modules:
 
@@ -153,3 +153,28 @@ Ids generated in the source code:
   id="def-12"
   id="def-14"
   id="def-15"
+
+Another example, with a cmti file:
+
+  $ printf "b.ml\n" > source_tree.map
+  $ odoc source-tree -I . --parent page-root -o src-source2.odoc source_tree.map
+
+  $ ocamlc -bin-annot b.mli
+  $ ocamlc -bin-annot b.ml
+
+When giving a .cmti with the source-name and source-parent option, the cmt file
+is looked up automatically:
+
+  $ odoc compile -I . --source-name b.ml --source-parent-file src-source2.odoc b.cmti
+  $ odoc link -I . b.odoc
+
+The --cmt option can be used to explicitely give the cmt:
+
+  $ mv b.cmt new_b.cmt
+
+  $ odoc compile -I . --source-name b.ml --source-parent-file src-source2.odoc b.cmti
+  File "b.cmti":
+  Warning: No implementation file found for the given interface
+  $ odoc compile -I . --cmt new_b.cmt --source-name b.ml --source-parent-file src-source2.odoc b.cmti
+  $ odoc link -I . b.odoc
+
