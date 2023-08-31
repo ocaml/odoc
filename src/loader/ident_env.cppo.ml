@@ -24,7 +24,7 @@ module P = Paths.Path
 type type_ident = Paths.Identifier.Path.Type.t
 
 module LocHashtbl = Hashtbl.Make(struct
-    type t = Warnings.loc
+    type t = Location.t
     let equal l1 l2 = l1 = l2
     let hash = Hashtbl.hash
   end)
@@ -62,15 +62,15 @@ let empty () =
 (* The boolean is an override for whether it should be hidden - true only for
    items introduced by extended open *)
 type item = [
-    `Module of Ident.t * bool * Warnings.loc option
-  | `ModuleType of Ident.t * bool * Warnings.loc option
-  | `Type of Ident.t * bool * Warnings.loc option
-  | `Value of Ident.t * bool * Warnings.loc option
-  | `Class of Ident.t * Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option
-  | `ClassType of Ident.t * Ident.t * Ident.t option * bool * Warnings.loc option
-  | `Exception of Ident.t * Warnings.loc option
+    `Module of Ident.t * bool * Location.t option
+  | `ModuleType of Ident.t * bool * Location.t option
+  | `Type of Ident.t * bool * Location.t option
+  | `Value of Ident.t * bool * Location.t option
+  | `Class of Ident.t * Ident.t * Ident.t * Ident.t option * bool * Location.t option
+  | `ClassType of Ident.t * Ident.t * Ident.t option * bool * Location.t option
+  | `Exception of Ident.t * Location.t option
   (* Exceptions needs to be added to the [loc_to_ident] table. *)
-  | `Extension of Ident.t * Warnings.loc option
+  | `Extension of Ident.t * Location.t option
   (* Extension constructor also need to be added to the [loc_to_ident] table,
      since they get an entry in the [uid_to_loc] table. *)
 ]
@@ -560,8 +560,8 @@ let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
     | [] -> env
     in inner items env
 
-let identifier_of_loc : t -> Warnings.loc -> Odoc_model.Paths.Identifier.t option = fun env loc ->
-  LocHashtbl.find_opt env.loc_to_ident loc
+let identifier_of_loc : t -> Location.t -> Odoc_model.Paths.Identifier.t option = fun env loc ->
+  try Some (LocHashtbl.find env.loc_to_ident loc) with Not_found -> None
 
 let add_signature_tree_items : Paths.Identifier.Signature.t -> Typedtree.signature -> t -> t = 
   fun parent sg env ->

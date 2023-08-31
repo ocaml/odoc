@@ -75,8 +75,7 @@ module Fragment : sig
   val read_type : Longident.t -> Paths.Fragment.Type.t
 end
 
-val identifier_of_loc :
-  t -> Warnings.loc -> Odoc_model.Paths.Identifier.t option
+val identifier_of_loc : t -> Location.t -> Odoc_model.Paths.Identifier.t option
 (** Each generated id has its location stored. This allows to get back the id
     knowing only the location. This is used to generate links to source from the
     resolution of a shape. *)

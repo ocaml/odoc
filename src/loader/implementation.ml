@@ -15,14 +15,14 @@ module Analysis = struct
   open Typedtree
   open Odoc_model.Paths
 
-  type env = Ident_env.t * Warnings.loc Shape.Uid.Tbl.t
+  type env = Ident_env.t * Location.t Shape.Uid.Tbl.t
 
   let env_wrap : (Ident_env.t -> Ident_env.t) -> env -> env =
    fun f (env, uid_to_loc) -> (f env, uid_to_loc)
 
   let get_env : env -> Ident_env.t = fun (env, _) -> env
 
-  let get_uid_to_loc : env -> Warnings.loc Shape.Uid.Tbl.t =
+  let get_uid_to_loc : env -> Location.t Shape.Uid.Tbl.t =
    fun (_, uid_to_loc) -> uid_to_loc
 
   let rec structure env parent str =
@@ -222,7 +222,12 @@ module Analysis = struct
         List.concat_map (fun (_, _, e) -> expression env e) es
     | Texp_letmodule (_, _, _, _m, e) -> expression env e
     | Texp_letexception (_, e) -> expression env e
-    | Texp_assert e -> expression env e
+#if  OCAML_VERSION < (5,1,0)
+    | Texp_assert e
+#else
+    | Texp_assert (e, _)
+#endif
+         -> expression env e
     | Texp_lazy e -> expression env e
     | Texp_object (_, _) -> []
     | Texp_pack _ -> []
