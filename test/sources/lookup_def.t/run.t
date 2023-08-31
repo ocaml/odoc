@@ -6,7 +6,7 @@ Compile the modules:
   $ odoc source-tree -I . --parent page-root -o src-source.odoc source_tree.map
 
   $ ocamlc -c a.mli a.ml -bin-annot
-  $ odoc compile --source-name a.ml --source-parent-file src-source.odoc -I . a.cmti
+  $ odoc compile --cmt a.cmt --source-name a.ml --source-parent-file src-source.odoc -I . a.cmti
   $ odoc link a.odoc
 
 Show the locations:

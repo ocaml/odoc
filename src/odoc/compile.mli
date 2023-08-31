@@ -23,10 +23,6 @@ type parent_cli_spec =
   | CliPackage of string
   | CliNoparent
 
-val lookup_cmt_of_cmti : Fs.File.t -> Fs.File.t option
-(** From a cmti file, returns the cmt file if it exists. If it does not esists,
-    raise a warning. *)
-
 val name_of_output : prefix:string -> Fs.File.t -> string
 (** Compute the name of the page from the output file. Prefix is the prefix to
     remove from the filename. *)
@@ -45,7 +41,7 @@ val compile :
   children:string list ->
   output:Fs.File.t ->
   warnings_options:Odoc_model.Error.warnings_options ->
-  source:(Fpath.t * string list * string option) option ->
+  source:(Fpath.t * string list * Fpath.t) option ->
   Fs.File.t ->
   (unit, [> msg ]) result
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)

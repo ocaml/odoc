@@ -32,24 +32,6 @@ type parent_cli_spec =
 let check_is_none msg = function None -> Ok () | Some _ -> Error (`Msg msg)
 let check_is_empty msg = function [] -> Ok () | _ :: _ -> Error (`Msg msg)
 
-let lookup_cmt_of_cmti intf_file =
-  let input_file = Fs.File.set_ext ".cmt" intf_file in
-  if Fs.File.exists input_file then Some input_file
-  else (
-    Error.raise_warning ~non_fatal:true
-      (Error.filename_only
-         "No implementation file found for the given interface"
-         (Fs.File.to_string intf_file));
-    None)
-
-(** Raises warnings and errors. *)
-let lookup_implementation_of_cmti intf_file =
-  match lookup_cmt_of_cmti intf_file with
-  | Some filename ->
-      let filename = Fs.File.to_string filename in
-      Odoc_loader.read_cmt_infos ~filename |> Error.raise_errors_and_warnings
-  | None -> None
-
 (** Used to disambiguate child references. *)
 let is_module_name n = String.length n > 0 && Char.Ascii.is_upper n.[0]
 
@@ -118,8 +100,6 @@ let resolve_imports resolver imports =
 let resolve_and_substitute ~resolver ~make_root ~source ~hidden
     (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
-  (* [impl_shape] is used to lookup locations in the implementation. It is
-     useless if no source code is given on command line. *)
   let unit, cmt_infos =
     match input_type with
     | `Cmti ->
@@ -129,9 +109,8 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
         and cmt_infos =
           match source with
           | None -> None
-          | Some (_, None) -> lookup_implementation_of_cmti input_file
-          | Some (_, Some filename) ->
-              Odoc_loader.read_cmt_infos ~filename
+          | Some (_, filename) ->
+              Odoc_loader.read_cmt_infos ~filename:(Fs.File.to_string filename)
               |> Error.raise_errors_and_warnings
         in
         (unit, cmt_infos)
@@ -289,7 +268,8 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
   | `Stop -> resolve [] (* TODO: Error? *)
   | `Docs content -> resolve content
 
-let handle_file_ext = function
+let handle_file_ext ext =
+  match ext with
   | ".cmti" -> Ok `Cmti
   | ".cmt" -> Ok `Cmt
   | ".cmi" -> Ok `Cmi

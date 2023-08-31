@@ -174,7 +174,12 @@ end = struct
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
         ~open_modules
     in
-    let input = Fs.File.of_string input in
+    let input = Fs.File.of_string input
+    and source_cmt =
+      match source_cmt with
+      | None -> None
+      | Some cmt -> Some (Fs.File.of_string cmt)
+    in
     let output = output_file ~dst ~input in
     let parent_cli_spec =
       match (parent_name_opt, package_opt) with
@@ -187,14 +192,34 @@ end = struct
               "Either --package or --parent should be specified, not both")
     in
     let source =
-      match (source_parent_file, source_name) with
-      | Some parent, Some name -> Ok (Some (parent, name, source_cmt))
-      | Some _, None | None, Some _ ->
+      match
+        (source_parent_file, source_name, source_cmt, Fs.File.get_ext input)
+      with
+      | Some parent, Some name, None, ".cmt" -> Ok (Some (parent, name, input))
+      | Some parent, Some name, Some cmt, ".cmt" ->
+          if Fpath.equal cmt input then Ok (Some (parent, name, input))
+          else
+            Error
+              (`Cli_error
+                "--cmt has to be equal to the input file when this one has \
+                 .cmt extension.")
+      | Some parent, Some name, Some cmt, _ -> Ok (Some (parent, name, cmt))
+      | Some _, Some _, None, _ ->
+          Error
+            (`Cli_error
+              "--cmt has to be passed when --source-parent-file and \
+               --source-name are passed and the input file is not a cmt file.")
+      | Some _, None, _, _ | None, Some _, _, _ ->
           Error
             (`Cli_error
               "--source-parent-file and --source-name must be passed at the \
                same time.")
-      | None, None -> Ok None
+      | None, None, Some _, _ ->
+          Error
+            (`Cli_error
+              "--cmt should only be passed when --source-parent-file and \
+               --source-name are passed.")
+      | None, None, _, _ -> Ok None
     in
     parent_cli_spec >>= fun parent_cli_spec ->
     source >>= fun source ->
@@ -840,10 +865,9 @@ end)
 
 module Depends = struct
   module Compile = struct
-    let list_dependencies has_src input_file =
+    let list_dependencies input_files =
       let deps =
-        Depends.for_compile_step ~has_src
-          (List.map ~f:Fs.File.of_string input_file)
+        Depends.for_compile_step (List.map ~f:Fs.File.of_string input_files)
       in
       List.iter
         ~f:(fun t ->
@@ -857,14 +881,7 @@ module Depends = struct
         let doc = "Input files" in
         Arg.(non_empty & pos_all file [] & info ~doc ~docv:"file.cm{i,t,ti}" [])
       in
-      let has_src =
-        let doc =
-          "Include the dependencies needed when compiling with --source-name \
-           and --source-parent-file."
-        in
-        Arg.(value & flag & info ~doc [ "has-src" ])
-      in
-      Term.(const list_dependencies $ has_src $ input)
+      Term.(const list_dependencies $ input)
 
     let info ~docs =
       Term.info "compile-deps" ~docs
