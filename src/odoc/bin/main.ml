@@ -168,7 +168,7 @@ end = struct
 
   let compile hidden directories resolve_fwd_refs dst package_opt
       parent_name_opt open_modules children input warnings_options
-      source_parent_file source_name =
+      source_parent_file source_name source_cmt =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -188,7 +188,7 @@ end = struct
     in
     let source =
       match (source_parent_file, source_name) with
-      | Some parent, Some name -> Ok (Some (parent, name))
+      | Some parent, Some name -> Ok (Some (parent, name, source_cmt))
       | Some _, None | None, Some _ ->
           Error
             (`Cli_error
@@ -245,6 +245,13 @@ end = struct
       & opt (some convert_source_name) None
       & info [ "source-name" ] ~doc ~docv:"NAME")
 
+  let source_cmt =
+    let doc =
+      "The .cmt file to use for source code related operations, such as source \
+       code rendering."
+    in
+    Arg.(value & opt (some file) None & info [ "cmt" ] ~doc ~docv:"CMT")
+
   let cmd =
     let package_opt =
       let doc =
@@ -270,7 +277,7 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ package_opt $ parent_opt $ open_modules $ children $ input
-       $ warnings_options $ source_parent_file $ source_name))
+       $ warnings_options $ source_parent_file $ source_name $ source_cmt))
 
   let info ~docs =
     let man =

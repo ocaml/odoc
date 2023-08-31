@@ -120,7 +120,6 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
   let filename = Fs.File.to_string input_file in
   (* [impl_shape] is used to lookup locations in the implementation. It is
      useless if no source code is given on command line. *)
-  let should_read_impl_shape = source <> None in
   let unit, cmt_infos =
     match input_type with
     | `Cmti ->
@@ -128,9 +127,12 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
           Odoc_loader.read_cmti ~make_root ~parent ~filename
           |> Error.raise_errors_and_warnings
         and cmt_infos =
-          if should_read_impl_shape then
-            lookup_implementation_of_cmti input_file
-          else None
+          match source with
+          | None -> None
+          | Some (_, None) -> lookup_implementation_of_cmti input_file
+          | Some (_, Some filename) ->
+              Odoc_loader.read_cmt_infos ~filename
+              |> Error.raise_errors_and_warnings
         in
         (unit, cmt_infos)
     | `Cmt ->
@@ -149,7 +151,7 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
   in
   let source_info =
     match source with
-    | Some id ->
+    | Some (id, _) ->
         let infos =
           match cmt_infos with
           | Some (_, local_jmp) ->
@@ -306,7 +308,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
       children
     >>= fun () ->
     (match source with
-    | Some (parent, name) -> (
+    | Some (parent, name, cmt) -> (
         Odoc_file.load parent >>= fun parent ->
         let err_not_parent () =
           Error (`Msg "Specified source-parent is not a parent of the source.")
@@ -318,7 +320,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
                 let name = Paths.Identifier.Mk.source_page (parent_id, name) in
                 if
                   List.exists (Paths.Identifier.equal name) page.source_children
-                then Ok (Some name)
+                then Ok (Some (name, cmt))
                 else err_not_parent ()
             | { iv = `LeafPage _; _ } -> err_not_parent ())
         | Unit_content _ | Odoc_file.Page_content _ ->
