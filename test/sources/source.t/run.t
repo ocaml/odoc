@@ -163,18 +163,17 @@ Another example, with a cmti file:
   $ ocamlc -bin-annot b.ml
 
 When giving a .cmti with the source-name and source-parent option, the cmt file
-is looked up automatically:
+has to be given explicitely with the --cmt argument:
 
   $ odoc compile -I . --source-name b.ml --source-parent-file src-source2.odoc b.cmti
-  $ odoc link -I . b.odoc
+  --cmt has to be passed when --source-parent-file and --source-name are passed and the input file is not a cmt file.
+  [2]
 
-The --cmt option can be used to explicitely give the cmt:
+  $ odoc compile -I . --cmt b.cmt --source-name b.ml --source-parent-file src-source2.odoc b.cmti
 
-  $ mv b.cmt new_b.cmt
+The --cmt argument has to be compatible with a cmt file given as input:
 
-  $ odoc compile -I . --source-name b.ml --source-parent-file src-source2.odoc b.cmti
-  File "b.cmti":
-  Warning: No implementation file found for the given interface
-  $ odoc compile -I . --cmt new_b.cmt --source-name b.ml --source-parent-file src-source2.odoc b.cmti
-  $ odoc link -I . b.odoc
-
+  $ cp b.cmt other.cmt
+  $ odoc compile -I . --cmt other.cmt --source-name b.ml --source-parent-file src-source2.odoc b.cmt
+  --cmt has to be equal to the input file when this one has .cmt extension.
+  [2]
