@@ -51,7 +51,7 @@ depends: [
   "fmt"
 
   "ocamlfind" {with-test}
-  "yojson" {with-test}
+  "yojson" {>= "1.6.0" & with-test}
   ("ocaml" {< "4.04.1" & with-test} | "sexplib0" {with-test})
   "conf-jq" {with-test}
 
