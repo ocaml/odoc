@@ -494,7 +494,7 @@ examples below. They are:
 - [@since string] - declares from which version the element has been available.
 - [@version string] - declares the version of the element itself.
 - [@canonical string] - declares the path to the canonical instance of this element.
-Can be applied to modules, module types and types. See the {{!page-Features.canonical}
+Can be applied to modules, module types and types. See the {{!page-features.canonical}
 Language Features} page for more details.
 
 The content of the tag is then the rest of the line, and it is uninterpreted,
