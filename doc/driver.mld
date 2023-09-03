@@ -237,6 +237,12 @@ let compile file ?parent ?(output_dir = Fpath.v "./")
     | _ -> Cmd.empty
     else Cmd.empty
   in
+  let search_assets =
+    List.fold_left
+      (fun acc filename -> acc % "--search-asset" % filename)
+      empty
+      (List.map Fpath.filename search_assets)
+  in
   let cmd =
     odoc % "compile" % Fpath.to_string file %% source_args %% cmt_arg
     % "-I" % "." % "-o" % p output_file
@@ -260,27 +266,28 @@ let link ?(ignore_output = false) file =
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
 
-let html_generate ?(ignore_output = false) ?(search_files = []) file source =
+let html_generate ?(ignore_output = false) ?(assets = []) file source =
   let open Cmd in
-  let source = match source with None -> empty | Some source -> v "--source" % p source in
-  let search =
+  let source =
+    match source with None -> empty | Some source -> v "--source" % p source
+  in
+  let assets =
     List.fold_left
-      (fun acc filename -> acc % "--search-file" % filename)
+      (fun acc filename -> acc % "--asset" % filename)
       empty
-      (List.map Fpath.filename search_files)
+      assets
   in
   let cmd =
-    odoc % "html-generate" %% source % p file %% search % "-o" % "html" % "--theme-uri" % "odoc"
-    % "--support-uri" % "odoc"
+    odoc % "html-generate" %% source % p file %% assets % "-o" % "html"
+    % "--theme-uri" % "odoc" % "--support-uri" % "odoc"
   in
   let lines = run cmd in
   if not ignore_output then
     add_prefixed_output cmd generate_output (Fpath.to_string file) lines
 
-let support_files  ?(search_files = []) () =
+let support_files () =
   let open Cmd in
-  let search = List.fold_left (fun acc f -> acc % "--search-file" % p f) empty search_files in
-  let cmd = odoc % "support-files" % "-o" % "html/odoc" %% search in
+  let cmd = odoc % "support-files" % "-o" % "html/odoc" in
   run cmd
 ]}
 
@@ -498,7 +505,7 @@ let compile_source_tree units =
   let source_map = Fpath.v "source.map" in
   let () = Bos.OS.File.write_lines source_map sources |> get_ok in
   let () = source_tree ~parent:"odoc" ~output:odoc_source_tree source_map in
-  (odoc_source_tree, false, None)
+  (odoc_source_tree, false, None, [])
 
 ]}
 
@@ -541,13 +548,15 @@ let all_units =
 Now we'll compile all of the parent [.mld] files. To ensure that the parents are compiled before the children, we start with [odoc.mld], then [deps.mld], and so on. The result of this file is a list of the resulting [odoc] files.
 
 {[
+let search_file = "index.js"
+
 let compile_mlds () =
   let mkpage x = "page-\"" ^ x ^ "\"" in
   let mkmod x = "module-" ^ String.capitalize_ascii x in
   let mkmld x = Fpath.(add_ext "mld" (v x)) in
   ignore
     (compile (mkmld "odoc")
-       ("src-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
+       (("asset-" ^ search_file) :: "src-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
   ignore (compile (mkmld "deps") ~parent:"odoc" (List.map mkpage dep_libraries));
   let extra_odocs =
     List.map
@@ -571,9 +580,10 @@ let compile_mlds () =
         "page-" ^ library ^ ".odoc")
       all_libraries
   in
+  (Fpath.v "page-odoc.odoc", false, None, [search_file]) ::
   List.map
-    (fun f -> (Fpath.v f, false, None))
-    ("page-odoc.odoc" :: "page-deps.odoc" :: odocs @ extra_odocs)
+    (fun f -> (Fpath.v f, false, None, []))
+    ( "page-deps.odoc" :: odocs @ extra_odocs)
 ]}
 
 Now we get to the compilation phase. For each unit, we query its dependencies, then recursively call to compile these dependencies. Once this is done we compile the unit itself. If the unit has already been compiled we don't do anything. Note that we aren't checking the hashes of the dependencies which a build system should do to ensure that the module being compiled is the correct one. Again we benefit from the fact that we're creating the docs for one leaf package and that there must be no module name clashes in its dependencies. The result of this function is a list of the resulting [odoc] files.
@@ -608,14 +618,14 @@ let compile_all () =
       let ignore_output = parent = "deps" in
       let source_args = source_args impl in
       compile file ~parent:lib ?source_args ~ignore_output [];
-      (output, ignore_output, impl) :: files
+      (output, ignore_output, impl, []) :: files
   in
   source_tree
   :: List.fold_left
     (fun acc (parent, lib, dep, impl) ->
       acc @ rec_compile ?impl parent lib (best_file dep))
-    [] all_units
-  @ mld_odocs
+      [] all_units
+   @ mld_odocs
 ]}
 
 Linking is now straightforward. We link all [odoc] files.
@@ -623,9 +633,9 @@ Linking is now straightforward. We link all [odoc] files.
 {[
 let link_all odoc_files =
   List.map
-    (fun (odoc_file, ignore_output, source) ->
+    (fun (odoc_file, ignore_output, source, assets) ->
       ignore (link ~ignore_output odoc_file);
-      Fpath.set_ext "odocl" odoc_file, source)
+      Fpath.set_ext "odocl" odoc_file, source, assets)
     odoc_files
 ]}
 
@@ -634,15 +644,14 @@ This will generate sources, as well as documentation for non-hidden units.
 We notify the generator that the javascript file to use for search is [index.js].
 
 {[
-let search_file = Fpath.v "index.js"
 let generate_all odocl_files =
-  let search_files = [ search_file ] in
   let relativize_opt = function None -> None | Some file -> Some (relativize file) in
   List.iter
-    (fun (f, source) -> ignore(html_generate ~search_files f (relativize_opt source)))
+     (fun (f, source, assets) -> ignore(html_generate ~assets f (relativize_opt source)))
      odocl_files;
-  support_files ~search_files ()
+  support_files ()
 ]}
+
 
 Finally, we generate an index of all values, types, ... This index is meant to be consumed by search engines, to create their own index. It consists of a JSON array, containing entries with the name, full name, associated comment, link and anchor, and kind.
 Generating the index is done via [odoc compile-index], which create a json file. This second format is meant to be consumed by search engines to populate their search index. Search engines written in OCaml can also call the [Odoc_model.Fold.unit] and  [Odoc_model.Fold.page] function, in conjunction with [Odoc_search.Entry.entry_of_item] in order to get a (version stable) OCaml value of each element to be indexed.
@@ -668,14 +677,15 @@ In this driver, we use the minisearch javascript library. For more involved appl
 let js_index () =
   let index = Bos.OS.File.read Fpath.(v "html" / "index.json") |> get_ok in
   let minisearch = Bos.OS.File.read Fpath.(v "minisearch.js") |> get_ok in
-  Bos.OS.File.writef search_file {|%s
+  Bos.OS.File.writef (Fpath.v search_file) {|%s
 let documents = 
   %s
 ;
 
 let miniSearch = new MiniSearch({
-  fields: ['id', 'doc'], // fields to index for full-text search
+  fields: ['id', 'doc', 'entry_id'], // fields to index for full-text search
   storeFields: ['display'], // fields to return with search results
+  idField: 'entry_id',
   extractField: (document, fieldName) => {
     if (fieldName === 'id') {
       return document.id.map(e => e.kind + "-" + e.name).join('.')
@@ -685,8 +695,10 @@ let miniSearch = new MiniSearch({
 })
 
 
-// Index all documents (except Type extensions which don't have a unique ID)
-miniSearch.addAll(documents.filter(entry => entry.extra.kind != "TypeExtension"));
+// Use a unique id since some entries' id are not unique (type extension or
+// standalone doc comments for instance)
+documents.forEach((entry,i) => entry.entry_id = i)
+miniSearch.addAll(documents);
 
 onmessage = (m) => {
   let query = m.data;
