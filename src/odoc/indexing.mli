@@ -8,7 +8,4 @@ val handle_file :
 (** This function is exposed for custom indexers that uses [odoc] as a library
     to generate their search index *)
 
-val compile :
-  output:Fs.file ->
-  Fs.directory list ->
-  (unit, [> msg ]) result
+val compile : output:Fs.file -> Fs.directory list -> (unit, [> msg ]) result
