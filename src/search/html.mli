@@ -22,7 +22,7 @@ val of_strings :
   html list
 (** [of_string] generates the html of an entry using strings associated to 
     the relevant parts of the entry. If the strings have the correct values,
-    it will return the same as {!of_entry} *)
+    it will return the same HTML as {!of_entry}. *)
 
 val names_of_id : Paths.Identifier.t -> string * string
 (** [names_of_id id] is [("X.Y", "foo")] if [id] corresponds to [X.Y.foo]. 
