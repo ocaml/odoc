@@ -82,10 +82,9 @@ let of_doc (doc : Odoc_model.Comment.docs) =
   let txt = Text.of_doc doc in
   `String txt
 
-let of_entry ({ Entry.id; doc; kind } as entry) html : Odoc_html.Json.json =
+let of_entry ({ Entry.id; doc; kind } as entry) html =
   let j_id = of_id id in
   let doc = of_doc doc in
-  let display = Json_display.of_entry entry html in
   let kind =
     let return kind arr = `Object (("kind", `String kind) :: arr) in
     match kind with
@@ -164,7 +163,12 @@ let of_entry ({ Entry.id; doc; kind } as entry) html : Odoc_html.Json.json =
             ("parent_type", `String (Text.of_type parent_type));
           ]
   in
-  `Object [ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ]
+  match Json_display.of_entry entry html with
+  | Ok display ->
+      Ok
+        (`Object
+          [ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ])
+  | Error _ as e -> e
 
 let output_json ppf first entries =
   let output_json json =
@@ -175,8 +179,13 @@ let output_json ppf first entries =
     (fun first (entry, html) ->
       let json = of_entry entry html in
       if not first then Format.fprintf ppf ",";
-      output_json json;
-      false)
+      match json with
+      | Ok json ->
+          output_json json;
+          false
+      | Error e ->
+          Printf.eprintf "%S" (Odoc_document.Url.Error.to_string e);
+          true)
     first entries
 
 let unit ppf u =
