@@ -190,7 +190,7 @@ let of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
   and rhs =
     match rhs with
     | None -> []
-    | Some rhs -> [ code ~a:[ a_class [ "entry_rhs" ] ] [ txt rhs ] ]
+    | Some rhs -> [ code ~a:[ a_class [ "entry-rhs" ] ] [ txt rhs ] ]
   in
   [
     kind;

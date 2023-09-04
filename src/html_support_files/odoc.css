@@ -939,6 +939,10 @@ td.def-doc *:first-child {
   opacity: 0.7;
 }
 
+.odoc-search .entry-rhs {
+  white-space: nowrap;
+}
+
 .odoc-search .search-entry .entry-content {
   flex-grow: 1;
   flex-shrink: 1;
