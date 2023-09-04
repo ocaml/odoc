@@ -868,6 +868,8 @@ td.def-doc *:first-child {
   border-bottom: var(--search-results-border) solid 1px;
   background-color: inherit;
   outline:0;
+  padding-right: 0.5rem;
+
 }
 
 .odoc-search .search-entry p {
@@ -924,6 +926,7 @@ td.def-doc *:first-child {
   padding-bottom: 0.25rem;
   padding-top: 0.5rem;
   white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 
@@ -954,10 +957,39 @@ td.def-doc *:first-child {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.8em;
+  font-size: 0.95em;
   grid-row: 2/2;
   grid-column: 2/2;
   margin-bottom: 0.5rem;
+}
+
+.odoc-search .search-entry .entry-comment ul {
+  white-space: nowrap;
+  display: inline;
+}
+
+.odoc-search .search-entry .entry-comment li {
+  display: inline;
+  white-space: nowrap;
+}
+
+.odoc-search .search-entry .entry-comment ul>li::before {
+  content: '•';
+}
+
+.odoc-search .search-entry .entry-comment div{
+  display: inline;
+  white-space: nowrap;
+}
+
+.odoc-search .search-entry .entry-comment p {
+  display: inline;
+  white-space: nowrap;
+}
+
+.odoc-search .search-entry .entry-comment code {
+  display: inline;
+  white-space: nowrap;
 }
 
 /* First level titles */
