@@ -381,37 +381,79 @@ let postprocess_poses source_id poses uid_to_id uid_to_loc =
   in
   defs @ poses
 
-let string_of_full_name_ty : Odoc_model.Paths.Identifier.full_name_ty -> string
-    = function
-  | `Page -> "page"
-  | `Module -> "module"
-  | `Constructor -> "constructor"
-  | `Field -> "field"
-  | `Extension -> "extension"
-  | `Exception -> "exception"
-  | `Value -> "value"
-  | `Class -> "class"
-  | `ClassType -> "class_type"
-  | `Method -> "method"
-  | `InstanceVariable -> "instance_variable"
-  | `Label -> "label"
-  | `ModuleType -> "module_type"
-  | `Type -> "type"
-  | `Parameter -> "parameter"
-  | `Src -> "src"
-  | `Asset -> "asset"
-
 let anchor_of_identifier id =
-  let full_name = Odoc_model.Paths.Identifier.full_name id in
-  List.filter_map
-    (fun (x, y) ->
-      match x with
-      | `Page -> None
-      | `Src -> None
-      | `Asset -> None
-      | _ -> Some (Printf.sprintf "%s-%s" (string_of_full_name_ty x) y))
-    full_name
-  |> List.tl |> String.concat "."
+  let open Odoc_document.Url in
+  let open Odoc_model.Paths in
+  let open Odoc_model.Names in
+  let rec anchor_of_identifier acc (id : Identifier.t) =
+    let continue anchor parent =
+      anchor_of_identifier (anchor :: acc) (parent :> Identifier.t)
+    in
+    let anchor kind name =
+      Printf.sprintf "%s-%s" (Anchor.string_of_kind kind) name
+    in
+    match id.iv with
+    | `InstanceVariable (parent, name) ->
+        let anchor = anchor `Val (InstanceVariableName.to_string name) in
+        continue anchor parent
+    | `Parameter (parent, name) as iv ->
+        let arg_num =
+          Identifier.FunctorParameter.functor_arg_pos { id with iv }
+        in
+        let kind = `Parameter arg_num in
+        let anchor = anchor kind (ModuleName.to_string name) in
+        continue anchor parent
+    | `Module (parent, name) ->
+        let anchor = anchor `Module (ModuleName.to_string name) in
+        continue anchor parent
+    | `SourceDir _ -> assert false
+    | `ModuleType (parent, name) ->
+        let anchor = anchor `ModuleType (ModuleTypeName.to_string name) in
+        continue anchor parent
+    | `Method (parent, name) ->
+        let anchor = anchor `Method (MethodName.to_string name) in
+        continue anchor parent
+    | `AssetFile _ -> assert false
+    | `Field (parent, name) ->
+        let anchor = anchor `Field (FieldName.to_string name) in
+        continue anchor parent
+    | `SourceLocationMod _ -> assert false
+    | `Result parent -> anchor_of_identifier acc (parent :> Identifier.t)
+    | `SourceLocationInt _ -> assert false
+    | `Type (parent, name) ->
+        let anchor = anchor `Type (TypeName.to_string name) in
+        continue anchor parent
+    | `Label _ -> assert false
+    | `Exception (parent, name) ->
+        let anchor = anchor `Exception (ExceptionName.to_string name) in
+        continue anchor parent
+    | `Class (parent, name) ->
+        let anchor = anchor `Class (ClassName.to_string name) in
+        continue anchor parent
+    | `Page _ -> assert false
+    | `LeafPage _ -> assert false
+    | `CoreType _ -> assert false
+    | `SourceLocation _ -> assert false
+    | `ClassType (parent, name) ->
+        let anchor = anchor `ClassType (ClassTypeName.to_string name) in
+        continue anchor parent
+    | `SourcePage _ -> assert false
+    | `Value (parent, name) ->
+        let anchor = anchor `Val (ValueName.to_string name) in
+        continue anchor parent
+    | `CoreException _ -> assert false
+    | `Constructor (parent, name) ->
+        let anchor = anchor `Constructor (ConstructorName.to_string name) in
+        continue anchor parent
+    | `Root _ ->
+        (* We do not need to include the "container" root module in the anchor
+           to have unique anchors. *)
+        acc
+    | `Extension (parent, name) ->
+        let anchor = anchor `Extension (ExtensionName.to_string name) in
+        continue anchor parent
+  in
+  anchor_of_identifier [] id |> String.concat "."
 
 let of_cmt (source_id_opt : Odoc_model.Paths.Identifier.SourcePage.t option)
     (id : Odoc_model.Paths.Identifier.RootModule.t) (cmt : Cmt_format.cmt_infos)

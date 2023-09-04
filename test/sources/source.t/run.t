@@ -5,6 +5,14 @@ Files containing some values:
   
   type truc = A | B
   
+  let xazaz = A
+  
+  module Yoyo = struct
+    type bli = Aa | Bb
+  end
+  
+  let segr = Yoyo.Aa
+  
   let x = 2
   let y = x + 1
   let z a = if x = 1 || true then x + y else 0
@@ -45,6 +53,14 @@ Files containing some values:
   module FM = F (struct
     module A = struct end
   end)
+  
+  module FF (A : sig end) (B : sig end) = struct end
+  module FF2 (A : sig
+    module E : sig end
+  end) (A : sig
+    module F : sig end
+  end) =
+  struct end
 
 Source pages require a parent:
 
@@ -93,13 +109,25 @@ Source links generated in the documentation:
        <a href="#type-truc" class="anchor"></a>
        <a href="../root/source/a.ml.html#type-truc" class="source_link">Source
   --
+      <div class="spec value anchored" id="val-xazaz">
+       <a href="#val-xazaz" class="anchor"></a>
+       <a href="../root/source/a.ml.html#val-xazaz" class="source_link">Source
+  --
+      <div class="spec module anchored" id="module-Yoyo">
+       <a href="#module-Yoyo" class="anchor"></a>
+       <a href="../root/source/a.ml.html#module-Yoyo" class="source_link">
+  --
+      <div class="spec value anchored" id="val-segr">
+       <a href="#val-segr" class="anchor"></a>
+       <a href="../root/source/a.ml.html#val-segr" class="source_link">Source
+  --
       <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
-       <a href="../root/source/a.ml.html#value-y" class="source_link">Source
+       <a href="../root/source/a.ml.html#val-y" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-z">
        <a href="#val-z" class="anchor"></a>
-       <a href="../root/source/a.ml.html#value-z" class="source_link">Source
+       <a href="../root/source/a.ml.html#val-z" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-A">
        <a href="#module-A" class="anchor"></a>
@@ -111,11 +139,11 @@ Source links generated in the documentation:
   --
       <div class="spec module-type anchored" id="module-type-T">
        <a href="#module-type-T" class="anchor"></a>
-       <a href="../root/source/a.ml.html#module_type-T" class="source_link">
+       <a href="../root/source/a.ml.html#module-type-T" class="source_link">
   --
       <div class="spec module-type anchored" id="module-type-U">
        <a href="#module-type-U" class="anchor"></a>
-       <a href="../root/source/a.ml.html#module_type-U" class="source_link">
+       <a href="../root/source/a.ml.html#module-type-U" class="source_link">
   --
       <div class="spec type anchored" id="type-ext">
        <a href="#type-ext" class="anchor"></a>
@@ -139,11 +167,11 @@ Source links generated in the documentation:
   --
       <div class="spec class-type anchored" id="class-type-ct">
        <a href="#class-type-ct" class="anchor"></a>
-       <a href="../root/source/a.ml.html#class_type-ct" class="source_link">
+       <a href="../root/source/a.ml.html#class-type-ct" class="source_link">
   --
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="../root/source/a.ml.html#value-x" class="source_link">Source
+       <a href="../root/source/a.ml.html#val-x" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-X">
        <a href="#module-X" class="anchor"></a>
@@ -164,6 +192,14 @@ Source links generated in the documentation:
       <div class="spec module anchored" id="module-FM">
        <a href="#module-FM" class="anchor"></a>
        <a href="../root/source/a.ml.html#module-FM" class="source_link">Source
+  --
+      <div class="spec module anchored" id="module-FF">
+       <a href="#module-FF" class="anchor"></a>
+       <a href="../root/source/a.ml.html#module-FF" class="source_link">Source
+  --
+      <div class="spec module anchored" id="module-FF2">
+       <a href="#module-FF2" class="anchor"></a>
+       <a href="../root/source/a.ml.html#module-FF2" class="source_link">Source
 
 Ids generated in the source code:
 
@@ -212,31 +248,56 @@ Ids generated in the source code:
   id="L42"
   id="L43"
   id="L44"
+  id="L45"
+  id="L46"
+  id="L47"
+  id="L48"
+  id="L49"
+  id="L50"
+  id="L51"
+  id="L52"
+  id="L53"
+  id="L54"
+  id="L55"
+  id="L56"
+  id="L57"
+  id="L58"
+  id="L59"
+  id="L60"
   id="type-t"
   id="type-truc"
-  id="value-{x}2"
-  id="value-y"
-  id="value-z"
-  id="local_a_66"
+  id="val-xazaz"
+  id="module-Yoyo"
+  id="module-Yoyo.type-bli"
+  id="val-segr"
+  id="val-{x}2"
+  id="val-y"
+  id="val-z"
+  id="local_a_148"
   id="module-A"
   id="module-B"
-  id="module_type-T"
-  id="module_type-U"
+  id="module-type-T"
+  id="module-type-U"
   id="type-ext"
   id="extension-Foo"
   id="extension-Bar"
   id="exception-Exn"
   id="class-cls"
   id="class-cls'"
-  id="class_type-ct"
-  id="value-x"
+  id="class-type-ct"
+  id="val-x"
   id="module-X"
   id="module-X.type-t"
   id="module-X.type-t"
   id="type-a1"
   id="type-a2"
   id="module-F"
-  id="module-F.parameter-M.module-A"
+  id="module-F.argument-1-M.module-A"
   id="module-F.module-B"
   id="module-FM"
-  id="def_509_530"
+  id="def_591_612"
+  id="module-FF"
+  id="module-FF2"
+  id="module-FF2.argument-1-A.module-E"
+  id="module-FF2.argument-2-A.module-F"
+

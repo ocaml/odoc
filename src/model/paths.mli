@@ -50,10 +50,17 @@ module Identifier : sig
 
   module Module : IdSig with type t = Id.module_ and type t_pv = Id.module_pv
 
-  module FunctorParameter :
-    IdSig
-      with type t = Id.functor_parameter
-       and type t_pv = Id.functor_parameter_pv
+  module FunctorParameter : sig
+    include
+      IdSig
+        with type t = Id.functor_parameter
+         and type t_pv = Id.functor_parameter_pv
+
+    val functor_arg_pos : t -> int
+    (** Gets the index in which the functor argument is, in the argument list.
+      Useful to turn identifiers into unique anchors, since multiple arguments
+      can have the same name. *)
+  end
 
   module ModuleType :
     IdSig with type t = Id.module_type and type t_pv = Id.module_type_pv
@@ -178,27 +185,6 @@ module Identifier : sig
   val hash : t -> int
 
   val name : [< t_pv ] id -> string
-
-  type full_name_ty =
-    [ `Page
-    | `Module
-    | `Parameter
-    | `ModuleType
-    | `Type
-    | `Constructor
-    | `Field
-    | `Extension
-    | `Exception
-    | `Value
-    | `Class
-    | `ClassType
-    | `Method
-    | `InstanceVariable
-    | `Label
-    | `Src
-    | `Asset ]
-
-  val full_name : [< t_pv ] id -> (full_name_ty * string) list
 
   (* val root : [< t_pv ] id -> RootModule.t_pv id option *)
 

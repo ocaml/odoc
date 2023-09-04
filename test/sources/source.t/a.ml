@@ -2,6 +2,14 @@ type t = string
 
 type truc = A | B
 
+let xazaz = A
+
+module Yoyo = struct
+  type bli = Aa | Bb
+end
+
+let segr = Yoyo.Aa
+
 let x = 2
 let y = x + 1
 let z a = if x = 1 || true then x + y else 0
@@ -42,3 +50,11 @@ end
 module FM = F (struct
   module A = struct end
 end)
+
+module FF (A : sig end) (B : sig end) = struct end
+module FF2 (A : sig
+  module E : sig end
+end) (A : sig
+  module F : sig end
+end) =
+struct end
