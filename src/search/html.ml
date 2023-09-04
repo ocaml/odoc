@@ -2,7 +2,6 @@ type html = Html_types.div_content Tyxml.Html.elt
 
 open Odoc_model
 open Lang
-open Printf
 
 let url id =
   match
@@ -20,73 +19,6 @@ let url id =
 
 let map_option f = function Some x -> Some (f x) | None -> None
 
-let type_from_path : Paths.Path.Type.t -> string =
- fun path ->
-  match path with
-  | `Identifier (id, _) -> Paths.Identifier.name id
-  | `Dot (_prefix, suffix) -> sprintf "%s" suffix
-  | `Resolved _ when Paths.Path.is_hidden (path :> Paths.Path.t) -> "TODO"
-  | `Resolved rp ->
-      let id = Paths.Path.Resolved.identifier (rp :> Paths.Path.Resolved.t) in
-      let name = Paths.Identifier.name id in
-      sprintf "%s" name
-
-let rec format_type_path ~delim (params : TypeExpr.t list) path =
-  let enclose =
-    match delim with `brackets -> sprintf "(%s)" | _ -> sprintf "[%s]"
-  in
-  match params with
-  | [] -> path
-  | [ param ] ->
-      let args = type_expr ~needs_parentheses:true param in
-      sprintf "%s %s" args path
-  | params ->
-      let params = List.map type_expr params in
-      let args = sprintf "(%s)" (String.concat ", " params) in
-      enclose @@ sprintf "%s %s" args path
-
-and type_expr ?(needs_parentheses = false) (t : TypeExpr.t) =
-  match t with
-  | Var s -> sprintf "'%s" s
-  | Any -> "_"
-  | Alias (te, alias) ->
-      let res =
-        Printf.sprintf "%s as %s" (type_expr ~needs_parentheses:true te) alias
-      in
-      if needs_parentheses then "(" ^ res ^ ")" else res
-  | Arrow (None, src, dst) ->
-      let res =
-        Printf.sprintf "%s -> %s"
-          (type_expr ~needs_parentheses:true src)
-          (type_expr dst)
-      in
-      if needs_parentheses then "(" ^ res ^ ")" else res
-  | Arrow (Some (Label lbl), src, dst) ->
-      let res =
-        Printf.sprintf "%s:%s -> %s" lbl
-          (type_expr ~needs_parentheses:true src)
-          (type_expr dst)
-      in
-      if not needs_parentheses then res else "(" ^ res ^ ")"
-  | Arrow (Some (Optional lbl), src, dst) ->
-      let res =
-        Printf.sprintf "?%s:%s -> %s" lbl
-          (type_expr ~needs_parentheses:true src)
-          (type_expr dst)
-      in
-      if not needs_parentheses then res else "(" ^ res ^ ")"
-  | Tuple lst ->
-      let ts = List.map (type_expr ~needs_parentheses:true) lst in
-      let res = String.concat " * " ts in
-      if not needs_parentheses then res else "(" ^ res ^ ")"
-  | Constr (args, link) ->
-      format_type_path ~delim:`parens link (type_from_path args)
-  | Polymorphic_variant _ -> "{TODO Polymorphic variant}"
-  | Object _ -> "{TODO Object}"
-  | Class (_, _) -> "{TODO Class}"
-  | Poly (_, _) -> "{TODO Poly}"
-  | Package _ -> "{TODO Package}"
-
 let display_constructor_args args =
   let open Odoc_model.Lang in
   match args with
@@ -95,12 +27,12 @@ let display_constructor_args args =
       | _ :: _ :: _ -> Some TypeExpr.(Tuple args)
       | [ arg ] -> Some arg
       | _ -> None)
-      |> map_option type_expr
+      |> map_option Text.of_type
   | TypeDecl.Constructor.Record fields -> Some (Text.of_record fields)
 
 let constructor_rhs ~args ~res =
   let args = display_constructor_args args in
-  let res = map_option type_expr res in
+  let res = map_option Text.of_type res in
   match (args, res) with
   | None, None -> ""
   | None, Some res -> " : " ^ res
@@ -108,7 +40,7 @@ let constructor_rhs ~args ~res =
   | Some args, Some res -> " : " ^ args ^ " -> " ^ res
 
 let field_rhs ({ mutable_ = _; type_; parent_type = _ } : Entry.field_entry) =
-  " : " ^ type_expr type_
+  " : " ^ Text.of_type type_
 
 let typedecl_params ?(delim = `parens) params =
   let format_param { TypeDecl.desc; variance; injectivity } =
@@ -135,7 +67,7 @@ let typedecl_params ?(delim = `parens) params =
         ^ match delim with `parens -> ")" | `brackets -> "]")
 
 let type_decl_constraint (typ, typ') =
-  "constraint" ^ " " ^ type_expr typ ^ " = " ^ type_expr typ'
+  "constraint" ^ " " ^ Text.of_type typ ^ " = " ^ Text.of_type typ'
 
 let typedecl_params_of_entry ({ kind; _ } : Entry.t) =
   match kind with
@@ -168,7 +100,7 @@ let typedecl_rhs ({ equation; representation; _ } : Entry.type_decl_entry) =
     match representation with Some r -> typedecl_repr ~private_ r | None -> ""
   in
   let manifest =
-    match manifest with None -> "" | Some typ -> " = " ^ type_expr typ
+    match manifest with None -> "" | Some typ -> " = " ^ Text.of_type typ
   in
   let constraints =
     match constraints with
@@ -225,7 +157,7 @@ let string_of_kind =
   | ModuleType -> kind_module_type
   | Doc _ -> kind_doc
 
-let value_rhs (t : Entry.value_entry) = " : " ^ type_expr t.type_
+let value_rhs (t : Entry.value_entry) = " : " ^ Text.of_type t.type_
 
 let of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
   let open Tyxml.Html in
