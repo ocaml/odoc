@@ -25,7 +25,6 @@ type item =
 val unit : f:('a -> item -> 'a) -> 'a -> Compilation_unit.t -> 'a
 val page : f:('a -> item -> 'a) -> 'a -> Page.t -> 'a
 
-
 val signature : f:('a -> item -> 'a) -> 'a -> Signature.t -> 'a
 val signature_item : f:('a -> item -> 'a) -> 'a -> Signature.item -> 'a
 val docs : f:('a -> item -> 'a) -> 'a -> Comment.docs_or_stop -> 'a

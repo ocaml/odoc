@@ -105,9 +105,9 @@ and module_type ~f acc mt =
 and simple_expansion ~f acc s_e =
   match s_e with
   | Signature sg -> signature ~f acc sg
-  | Functor (p, s_e) -> 
-    let acc = functor_parameter ~f acc p in
-    simple_expansion ~f acc s_e
+  | Functor (p, s_e) ->
+      let acc = functor_parameter ~f acc p in
+      simple_expansion ~f acc s_e
 
 and module_type_expr ~f acc mte =
   match mte with
