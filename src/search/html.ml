@@ -14,8 +14,8 @@ let url id =
           ~indent:false ~flat:false ~open_details:false ~as_json:false ()
       in
       let url = Odoc_html.Link.href ~config ~resolve:(Base "") url in
-      url
-  | Error _ -> assert false (* TODO fix *)
+      Ok url
+  | Error _ as e -> e
 
 let map_option f = function Some x -> Some (f x) | None -> None
 
