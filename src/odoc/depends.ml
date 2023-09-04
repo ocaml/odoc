@@ -54,7 +54,7 @@ let for_compile_step files =
         else for_compile_step_cmi_or_cmti acc file)
       ~init:Compile_set.empty files
   in
-  set |> Compile_set.to_seq |> List.of_seq
+  Compile_set.fold (fun a b -> a :: b) set []
 
 module Hash_set : sig
   type t
