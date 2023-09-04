@@ -53,9 +53,9 @@ In this test, the functor expansion contains the right link.
         class="source_link">Source
        </a>
   --
-       <a href="../../root/source/a.ml.html#module-F.value-y"
-        class="source_link">Source
-       </a>
+       <a href="#val-y" class="anchor"></a>
+       <a href="../../root/source/a.ml.html#module-F.val-y" class="source_link">
+        Source
 
   $ cat html/root/source/a.ml.html | grep L3
   <a id="L3" class="source_line" href="#L3">3</a>
@@ -75,11 +75,11 @@ However, on functor results, there is a link to source in the file:
        </a>
        <code><span><span class="keyword">type</span> t</span>
   --
+      <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
-       <a href="../../root/source/a.ml.html#module-F.value-y"
-        class="source_link">Source
+       <a href="../../root/source/a.ml.html#module-F.val-y" class="source_link">
+        Source
        </a>
-       <code>
 
 Source links in functor parameters might not make sense. Currently we generate none:
 

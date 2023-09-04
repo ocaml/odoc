@@ -3,15 +3,6 @@ open Odoc_model.Paths
 open Odoc_model.Names
 module Root = Odoc_model.Root
 
-let functor_arg_pos : Odoc_model.Paths.Identifier.FunctorParameter.t -> int =
-  let open Odoc_model.Paths.Identifier in
-  fun { iv = `Parameter (p, _); _ } ->
-    let rec inner_sig = function
-      | `Result { iv = p; _ } -> 1 + inner_sig p
-      | `Module _ | `ModuleType _ | `Root _ | `Parameter _ -> 1
-    in
-    inner_sig p.iv
-
 let render_path : Odoc_model.Paths.Path.t -> string =
   let open Odoc_model.Paths.Path in
   let rec render_resolved : Odoc_model.Paths.Path.Resolved.t -> string =
@@ -160,7 +151,7 @@ module Path = struct
         mk ~parent kind name
     | { iv = `Parameter (functor_id, arg_name); _ } as p ->
         let parent = from_identifier (functor_id :> any) in
-        let arg_num = functor_arg_pos p in
+        let arg_num = Identifier.FunctorParameter.functor_arg_pos p in
         let kind = `Parameter arg_num in
         let name = ModuleName.to_string arg_name in
         mk ~parent kind name
