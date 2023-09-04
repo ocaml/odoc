@@ -444,6 +444,20 @@ let compile_deps f =
   | _ -> Error (`Msg "odd")
 ]}
 
+For each compiled odoc file, we'll need to remember some options given at
+[odoc compile]-time. An example of this is the source code rendering: when we
+enable the feature at compile time, we need to provide the source file at html
+generation.
+
+{[
+type unit = {
+  file : Fpath.t;
+  ignore_output : bool;
+  source : Fpath.t option;
+  assets : string list;
+}
+]}
+
 For [odoc] libraries, we infer the implementation and interface source file path
 from the library name. We list them in a file, passed to [odoc source-tree], to
 generate [src-source.odoc]. This file contains the source hierarchy, and will be
@@ -505,7 +519,7 @@ let compile_source_tree units =
   let source_map = Fpath.v "source.map" in
   let () = Bos.OS.File.write_lines source_map sources |> get_ok in
   let () = source_tree ~parent:"odoc" ~output:odoc_source_tree source_map in
-  (odoc_source_tree, false, None, [])
+  { file = odoc_source_tree ; ignore_output = false ; source = None ; assets = [] }
 
 ]}
 
@@ -580,9 +594,9 @@ let compile_mlds () =
         "page-" ^ library ^ ".odoc")
       all_libraries
   in
-  (Fpath.v "page-odoc.odoc", false, None, [search_file]) ::
+  { file = Fpath.v "page-odoc.odoc" ; ignore_output = false ; source = None ; assets = [search_file] } ::
   List.map
-    (fun f -> (Fpath.v f, false, None, []))
+    (fun f -> { file = Fpath.v f ; ignore_output = false ; source = None; assets = [] })
     ( "page-deps.odoc" :: odocs @ extra_odocs)
 ]}
 
@@ -618,7 +632,7 @@ let compile_all () =
       let ignore_output = parent = "deps" in
       let source_args = source_args impl in
       compile file ~parent:lib ?source_args ~ignore_output [];
-      (output, ignore_output, impl, []) :: files
+      { file = output ; ignore_output ; source = impl; assets = [] } :: files
   in
   source_tree
   :: List.fold_left
@@ -633,9 +647,9 @@ Linking is now straightforward. We link all [odoc] files.
 {[
 let link_all odoc_files =
   List.map
-    (fun (odoc_file, ignore_output, source, assets) ->
+    (fun ({ file = odoc_file ; ignore_output ; _ } as unit) ->
       ignore (link ~ignore_output odoc_file);
-      Fpath.set_ext "odocl" odoc_file, source, assets)
+      { unit with file = Fpath.set_ext "odocl" odoc_file })
     odoc_files
 ]}
 
@@ -647,7 +661,8 @@ We notify the generator that the javascript file to use for search is [index.js]
 let generate_all odocl_files =
   let relativize_opt = function None -> None | Some file -> Some (relativize file) in
   List.iter
-     (fun (f, source, assets) -> ignore(html_generate ~assets f (relativize_opt source)))
+     (fun ({file = f ; ignore_output = _ ; source ; assets}) ->
+     ignore(html_generate ~assets f (relativize_opt source)))
      odocl_files;
   support_files ()
 ]}
