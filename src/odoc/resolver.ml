@@ -235,7 +235,7 @@ let build_compile_env_for_unit
   in
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
   and lookup_page = lookup_page ap
-  and lookup_def = Odoc_loader.Shape.lookup_def lookup in
+  and lookup_def = Odoc_loader.Lookup_def.lookup_def lookup in
   let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_def } in
   Env.env_of_unit m ~linking:false resolver
 
@@ -247,7 +247,7 @@ let build ?(imports_map = StringMap.empty)
     | Some (m, Some shape) -> Some (m, shape)
     | _ -> None
   in
-  let lookup_def = Odoc_loader.Shape.lookup_def lookup in
+  let lookup_def = Odoc_loader.Lookup_def.lookup_def lookup in
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
   and lookup_page = lookup_page ap in
   { Env.open_units; lookup_unit; lookup_page; lookup_def }
