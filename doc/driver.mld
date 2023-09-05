@@ -155,14 +155,15 @@ let link_output = ref [ "" ]
 
 let generate_output = ref [ "" ]
 
-(* Record the commands executed and their running time. *)
+(* Record the commands executed, their running time and optionally the path to
+   the produced file. *)
 let commands = ref [ ]
 
-let run cmd =
+let run ?output_file cmd =
   let t_start = Sys.time () in
   let r = OS.Cmd.(run_out ~err:OS.Cmd.err_run_out cmd |> to_lines) |> get_ok in
   let t_end = Sys.time () in
-  commands := (cmd, t_end -. t_start) :: !commands;
+  commands := (cmd, t_end -. t_start, output_file) :: !commands;
   r
 
 let add_prefixed_output cmd list prefix lines =
@@ -173,7 +174,7 @@ let add_prefixed_output cmd list prefix lines =
 
 let compile file ?parent ?(output_dir = Fpath.v "./")
     ?(ignore_output = false) ?source_args children =
-  let output_file =
+  let output_basename =
     let ext = Fpath.get_ext file in
     let basename = Fpath.basename (Fpath.rem_ext file) in
     match ext with
@@ -181,6 +182,7 @@ let compile file ?parent ?(output_dir = Fpath.v "./")
     | ".cmt" | ".cmti" | ".cmi" -> basename ^ ".odoc"
     | _ -> failwith ("bad extension: " ^ ext)
   in
+  let output_file = Fpath.(/) output_dir output_basename in
   let open Cmd in
   let source_args =
     match source_args with
@@ -200,8 +202,7 @@ let compile file ?parent ?(output_dir = Fpath.v "./")
   in
   let cmd =
     odoc % "compile" % Fpath.to_string file %% source_args %% cmt_arg
-    % "-I" % "." % "-o"
-    % p (Fpath.( / ) output_dir output_file)
+    % "-I" % "." % "-o" % p output_file
     |> List.fold_right (fun child cmd -> cmd % "--child" % child) children
   in
   let cmd =
@@ -209,15 +210,16 @@ let compile file ?parent ?(output_dir = Fpath.v "./")
     | Some p -> cmd % "--parent" % ("page-\"" ^ p ^ "\"")
     | None -> cmd
   in
-  let lines = run cmd in
+  let lines = run ~output_file cmd in
   if not ignore_output then
     add_prefixed_output cmd compile_output (Fpath.to_string file) lines
 
 let link ?(ignore_output = false) file =
   let open Cmd in
-  let cmd = odoc % "link" % p file % "-I" % "." in
+  let output_file = Fpath.set_ext "odocl" file in
+  let cmd = odoc % "link" % p file % "-o" % p output_file % "-I" % "." in
   let cmd = if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd in
-  let lines = run cmd in
+  let lines = run ~output_file cmd in
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
 
@@ -608,10 +610,11 @@ Let's see if there was any output from the [odoc] invocations:
 - : string list = [""]
 # !link_output;;
 - : string list =
-[""; "'../src/odoc/bin/main.exe' 'link' 'odoc_odoc.odoc' '-I' '.'";
+["";
+ "'../src/odoc/bin/main.exe' 'link' 'odoc_odoc.odoc' '-o' 'odoc_odoc.odocl' '-I' '.'";
  "odoc_odoc.odoc: File \"src/odoc/fs.mli\", line 37, characters 6-73:";
  "odoc_odoc.odoc: Warning: Failed to resolve reference unresolvedroot(Invalid_arg) Couldn't find \"Invalid_arg\"";
- "'../src/odoc/bin/main.exe' 'link' 'page-deps.odoc' '-I' '.'";
+ "'../src/odoc/bin/main.exe' 'link' 'page-deps.odoc' '-o' 'page-deps.odocl' '-I' '.'";
  "page-deps.odoc: File \"src/fmt.mli\", line 6, characters 4-13:";
  "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Format) Couldn't find \"Format\"";
  "page-deps.odoc: File \"deps.mld\", line 27, characters 0-79:";
@@ -636,7 +639,7 @@ Let's see if there was any output from the [odoc] invocations:
  "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Set) Couldn't find \"Set\"";
  "page-deps.odoc: File \"src/fpath.mli\", line 7, characters 28-52:";
  "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(file_exts) Couldn't find \"file_exts\"";
- "'../src/odoc/bin/main.exe' 'link' 'page-odoc_for_authors.odoc' '-I' '.'";
+ "'../src/odoc/bin/main.exe' 'link' 'page-odoc_for_authors.odoc' '-o' 'page-odoc_for_authors.odocl' '-I' '.'";
  "page-odoc_for_authors.odoc: File \"odoc_for_authors.mld\", line 496, character 59 to line 497, character 18:";
  "page-odoc_for_authors.odoc: Warning: Failed to resolve reference unresolvedroot(Features).canonical Couldn't find page \"Features\""]
 # !source_tree_output;;
@@ -745,23 +748,25 @@ This last block analyze the running times so that they can be submitted to
 (* *)
 #require "yojson" ;;
 
+(** Return the list of executed commands where the first argument was [cmd]. *)
+let filter_commands cmd =
+  List.filter
+    (fun (cmd', _, _) ->
+      match Bos.Cmd.to_list cmd' with
+      | _ :: cmd' :: _ -> cmd = cmd'
+      | _ -> false)
+    !commands
+
+(** Analyze the running time of a command. *)
 let compute_metric_cmd cmd =
   let rec compute min_ max_ total count = function
     | [] -> (min_, max_, total /. float count, count)
-    | (_, t) :: tl ->
+    | (_, t, _) :: tl ->
         compute (min min_ t) (max max_ t) (total +. t) (count + 1) tl
   in
-  let filtered_commands =
-    List.filter
-      (fun (cmd', _) ->
-        match Bos.Cmd.to_list cmd' with
-        | _ :: cmd' :: _ -> cmd = cmd'
-        | _ -> false)
-      !commands
-  in
-  match filtered_commands with
+  match filter_commands cmd with
   | [] -> []
-  | (_, time) :: tl ->
+  | (_, time, _) :: tl ->
       let min, max, avg, count = compute time time time 1 tl in
       [
         `Assoc
@@ -785,11 +790,54 @@ let compute_metric_cmd cmd =
           ];
       ]
 
+(** Analyze the size of files produced by a command. *)
+let compute_produced_cmd cmd =
+  let output_file_size = function
+    | _, _, Some output_file -> (
+        match Bos.OS.Path.stat output_file with
+        | Ok st -> Some st.Unix.st_size
+        | Error _ -> None)
+    | _, _, None -> None
+  in
+  let rec compute min_ max_ total count = function
+    | [] -> (min_, max_, int_of_float (total /. float count), count)
+    | size :: tl ->
+        compute (min min_ size) (max max_ size) (total +. float size) (count + 1) tl
+  in
+  match List.filter_map output_file_size (filter_commands cmd) with
+  | [] -> []
+  | size0 :: tl ->
+      let min, max, avg, count = compute size0 size0 (float size0) 1 tl in
+      [
+        `Assoc
+          [
+            ("name", `String ("produced-total-" ^ cmd));
+            ("value", `Int count);
+            ( "description",
+              `String ("Number of file produced by 'odoc " ^ cmd ^ "'") );
+          ];
+        `Assoc
+          [
+            ("name", `String ("produced-size-" ^ cmd));
+            ( "value",
+              `Assoc
+                [
+                  ("min", `Int min); ("max", `Int max); ("avg", `Int avg);
+                ] );
+            ("units", `String "b");
+            ( "description",
+              `String ("Size of file produced by 'odoc " ^ cmd ^ "'") );
+            ("trend", `String "lower-is-better");
+          ];
+      ]
+
 let metrics =
   compute_metric_cmd "compile"
   @ compute_metric_cmd "compile-deps"
   @ compute_metric_cmd "link"
   @ compute_metric_cmd "html-generate"
+  @ compute_produced_cmd "compile"
+  @ compute_produced_cmd "link"
 
 let bench_results =
   `Assoc
