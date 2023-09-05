@@ -37,6 +37,7 @@ type t =
     types : Id.DataType.t Ident.tbl;
     exceptions: Id.Exception.t Ident.tbl;
     extensions: Id.Extension.t Ident.tbl;
+    constructors: Id.Constructor.t Ident.tbl;
     values: Id.Value.t Ident.tbl;
     classes : Id.Class.t Ident.tbl;
     class_types : Id.ClassType.t Ident.tbl;
@@ -51,6 +52,7 @@ let empty () =
     module_types = Ident.empty;
     types = Ident.empty;
     exceptions = Ident.empty;
+    constructors = Ident.empty;
     extensions = Ident.empty;
     values = Ident.empty;
     classes = Ident.empty;
@@ -65,6 +67,8 @@ type item = [
     `Module of Ident.t * bool * Location.t option
   | `ModuleType of Ident.t * bool * Location.t option
   | `Type of Ident.t * bool * Location.t option
+  | `Constructor of Ident.t * Ident.t * Location.t option
+  (* Second ident.t is for the type parent *)
   | `Value of Ident.t * bool * Location.t option
   | `Class of Ident.t * Ident.t * Ident.t * Ident.t option * bool * Location.t option
   | `ClassType of Ident.t * Ident.t * Ident.t option * bool * Location.t option
@@ -86,10 +90,21 @@ let builtin_idents = List.map snd Predef.builtin_idents
 let rec extract_signature_type_items items =
   let open Compat in
     match items with
-    | Sig_type(id, _, _, Exported) :: rest ->
+    | Sig_type(id, td, _, Exported) :: rest ->
       if Btype.is_row_name (Ident.name id)
       then extract_signature_type_items rest
-      else `Type (id, false, None) :: extract_signature_type_items rest 
+      else
+        let constrs = match td.type_kind with
+          | Types.Type_abstract -> []
+          | Type_record (_, _) -> []
+#if OCAML_VERSION < (4,13,0)
+          | Type_variant cstrs ->
+#else
+          | Type_variant (cstrs, _) ->
+#endif
+            List.map (fun c -> `Constructor (c.Types.cd_id, id, Some c.cd_loc)) cstrs
+          | Type_open -> [] in
+        `Type (id, false, None) :: constrs @ extract_signature_type_items rest 
 
     | Sig_module(id, _, _, _, Exported) :: rest ->
       `Module (id, false, None) :: extract_signature_type_items rest
@@ -196,11 +211,13 @@ let extract_extended_open o =
 #endif
 
 
-let filter_map f x =
-  List.rev
-  @@ List.fold_left
-       (fun acc x -> match f x with Some x -> x :: acc | None -> acc)
-       [] x
+let concat_map f l =
+  let rec aux f acc = function
+    | [] -> List.rev acc
+    | x :: l ->
+       let xs = f x in
+       aux f (List.rev_append xs acc) l
+  in aux f [] l
 
 let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> items list = fun hide_item items ->
   let open Typedtree in
@@ -210,10 +227,17 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
 #else
   | { sig_desc = Tsig_type (_, decls); _} :: rest ->
 #endif
-    filter_map (fun decl ->
+    concat_map (fun decl ->
       if Btype.is_row_name (Ident.name decl.typ_id)
-      then None
-      else Some (`Type (decl.typ_id, hide_item, Some decl.typ_loc)))
+      then []
+      else
+        `Type (decl.typ_id, hide_item, Some decl.typ_loc) ::
+        match decl.typ_kind with
+          Ttype_abstract -> []
+        | Ttype_variant constrs -> List.map (fun c -> `Constructor (c.cd_id, decl.typ_id, Some c.cd_loc)) constrs
+        | Ttype_record _ -> []
+        | Ttype_open -> []
+          )
       decls @ extract_signature_tree_items hide_item rest
 
 #if OCAML_VERSION < (4,8,0)
@@ -329,8 +353,15 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
 #else
     | { str_desc = Tstr_type (_, decls); _ } :: rest -> (* TODO: handle rec_flag *)
 #endif
-        List.map (fun decl -> `Type (decl.typ_id, hide_item, Some decl.typ_loc))
-          decls @ extract_structure_tree_items hide_item rest
+  concat_map (fun decl ->
+      `Type (decl.typ_id, hide_item, Some decl.typ_loc) ::
+        (match decl.typ_kind with
+          Ttype_abstract -> []
+        | Ttype_variant constrs -> List.map (fun c -> `Constructor (c.cd_id, decl.typ_id, Some c.cd_loc)) constrs
+        | Ttype_record _ -> []
+        | Ttype_open -> []
+          ))
+           decls @ extract_structure_tree_items hide_item rest
 
 #if OCAML_VERSION < (4,8,0)
     | { str_desc = Tstr_exception tyexn_constructor; _ } :: rest ->
@@ -421,7 +452,8 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
 
 let flatten_includes : items list -> item list = fun items ->
   List.map (function
-    | `Type _ 
+    | `Type _
+    | `Constructor _
     | `Module _
     | `ModuleType _
     | `Value _
@@ -464,6 +496,16 @@ let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
       let types = Ident.add t identifier env.types in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
       inner rest { env with types; hidden }
+
+    | `Constructor (t, t_parent, loc) :: rest ->
+      let name = Ident.name t in
+      let identifier =
+        let parent = Ident.find_same t_parent env.types  in
+        Mk.constructor(parent, ConstructorName.make_std name)
+      in
+      let constructors = Ident.add t identifier env.constructors in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
+      inner rest { env with constructors }
 
     | `Exception (t, loc) :: rest ->
       let name = Ident.name t in
@@ -601,6 +643,9 @@ let find_module_type env id =
 
 let find_type_identifier env id =
   Ident.find_same id env.types
+
+let find_constructor_identifier env id =
+  Ident.find_same id env.constructors
 
 let find_exception_identifier env id =
   Ident.find_same id env.exceptions
