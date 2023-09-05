@@ -43,7 +43,7 @@ module Identifier = struct
   type source_location_pv =
     [ `SourceLocationMod of source_page
     | `SourceLocation of source_page * DefName.t
-    | `SourceLocationInt of source_page * LocalName.t ]
+    | `SourceLocationInternal of source_page * LocalName.t ]
   (** @canonical Odoc_model.Paths.Identifier.SourceLocation.t *)
 
   and source_location = source_location_pv id

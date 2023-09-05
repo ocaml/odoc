@@ -262,7 +262,7 @@ module Make (Syntax : SYNTAX) = struct
       | Definition id -> (
           match id.iv with
           | `SourceLocation (_, def) -> Some (Anchor (DefName.to_string def))
-          | `SourceLocationInt (_, local) ->
+          | `SourceLocationInternal (_, local) ->
               Some (Anchor (LocalName.to_string local))
           | _ -> None)
 
