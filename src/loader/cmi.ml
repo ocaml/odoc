@@ -627,8 +627,7 @@ let read_constructor_declaration_arguments env parent arg =
 
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
-  let name = Ident.name cd.cd_id in
-  let id = Identifier.Mk.constructor (parent, Odoc_model.Names.ConstructorName.make_std name) in
+  let id = Ident_env.find_constructor_identifier env cd.cd_id in
   let container = (parent : Identifier.DataType.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cd.cd_attributes in
   let args =
