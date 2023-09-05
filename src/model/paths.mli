@@ -304,7 +304,7 @@ module Identifier : sig
 
     val source_location_int :
       SourcePage.t * LocalName.t ->
-      [> `SourceLocationInt of SourcePage.t * LocalName.t ] id
+      [> `SourceLocationInternal of SourcePage.t * LocalName.t ] id
   end
 end
 

@@ -6,8 +6,8 @@ loader/cmt.ml
 loader/cmti.ml
 loader/doc_attr.ml
 loader/implementation.ml
-loader/shape_.ml
-loader/shape_.mli
+loader/lookup_def.ml
+loader/lookup_def.mli
 syntax_highlighter/syntax_highlighter.ml
 model/*.cppo.ml
 html_support_files/*.ml

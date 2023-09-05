@@ -168,9 +168,9 @@ module General_paths = struct
               ( "`SourceLocation",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.defname) )
-        | `SourceLocationInt (parent, name) ->
+        | `SourceLocationInternal (parent, name) ->
             C
-              ( "`SourceLocationInt",
+              ( "`SourceLocationInternal",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.localname) )
         | `SourceLocationMod parent ->

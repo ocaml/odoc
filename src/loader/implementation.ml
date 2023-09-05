@@ -419,7 +419,7 @@ let anchor_of_identifier id =
         continue anchor parent
     | `SourceLocationMod _ -> assert false
     | `Result parent -> anchor_of_identifier acc (parent :> Identifier.t)
-    | `SourceLocationInt _ -> assert false
+    | `SourceLocationInternal _ -> assert false
     | `Type (parent, name) ->
         let anchor = anchor `Type (TypeName.to_string name) in
         continue anchor parent
