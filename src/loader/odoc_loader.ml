@@ -1,6 +1,7 @@
 open Result
 module Error = Odoc_model.Error
-module Shape = Shape_
+
+module Lookup_def = Lookup_def
 
 let read_string parent_definition filename text =
   let location =
