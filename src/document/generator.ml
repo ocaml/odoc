@@ -633,7 +633,9 @@ module Make (Syntax : SYNTAX) = struct
       | Error e -> failwith (Url.Error.to_string e)
       | Ok url ->
           let anchor = Some url in
-          let attrs = [ "def"; Url.Anchor.string_of_kind url.kind ] in
+          let attrs =
+            [ "def"; "variant"; Url.Anchor.string_of_kind url.kind ]
+          in
           let code =
             O.documentedSrc (O.txt "| ") @ constructor id t.args t.res
           in
