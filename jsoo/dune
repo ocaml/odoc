@@ -1,4 +1,4 @@
 (executable
  (name main)
  (modes js)
- (libraries tyxml query storage_js brr checkseum.ocaml odoc.search))
+ (libraries tyxml query storage_js brr odoc.search_html_frontend))
