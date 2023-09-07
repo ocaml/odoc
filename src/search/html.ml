@@ -159,47 +159,7 @@ let string_of_kind =
 
 let value_rhs (t : Entry.value_entry) = " : " ^ Text.of_type t.type_
 
-let of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
-  let open Tyxml.Html in
-  let kind = code ~a:[ a_class [ "entry-kind" ] ] [ txt kind ]
-  and typedecl_params =
-    match typedecl_params with
-    | None -> []
-    | Some p ->
-        [
-          span
-            ~a:
-              [
-                a_class
-                  [
-                    (* the parameter of the typedecl are highlighted as if part of main entry name. *)
-                    "entry-name";
-                  ];
-              ]
-            [ txt (p ^ " ") ];
-        ]
-  and prefix_name =
-    match prefix_name with
-    | Some prefix_name ->
-        [ span ~a:[ a_class [ "prefix-name" ] ] [ txt (prefix_name ^ ".") ] ]
-    | None -> []
-  and name =
-    match name with
-    | Some name -> [ span ~a:[ a_class [ "entry-name" ] ] [ txt name ] ]
-    | None -> []
-  and rhs =
-    match rhs with
-    | None -> []
-    | Some rhs -> [ code ~a:[ a_class [ "entry-rhs" ] ] [ txt rhs ] ]
-  in
-  [
-    kind;
-    code
-      ~a:[ a_class [ "entry-title" ] ]
-      (typedecl_params @ prefix_name @ name @ rhs);
-    div ~a:[ a_class [ "entry-comment" ] ] [ Unsafe.data doc ];
-  ]
-
+let of_strings  = Html_frontend.of_strings
 let rhs_of_kind (entry : Entry.kind) =
   match entry with
   | TypeDecl td -> typedecl_rhs td
