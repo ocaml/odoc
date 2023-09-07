@@ -11,8 +11,8 @@ val url :
 (** The below is intended for search engine that do not use the Json output but
     Odoc as a library. Most search engine will use their own representation 
     instead of {!Entry.t}, and may not want to store the whole HTML in their 
-    database. The following functions help rebuild the HTML from any 
-    represention. *)
+    database. The following functions help give correct values to store in a 
+    search database. *)
 
 val of_strings :
   kind:string ->
@@ -22,14 +22,12 @@ val of_strings :
   typedecl_params:string option ->
   doc:string ->
   html list
-(** [of_string] generates the html of an entry using strings associated to 
-    the relevant parts of the entry. If the strings have the correct values,
-    it will return the same HTML as {!of_entry}. *)
+
 
 val names_of_id : Paths.Identifier.t -> string * string
 (** [names_of_id id] is [("X.Y", "foo")] if [id] corresponds to [X.Y.foo]. 
     The tuple is intended to be given respectively to the [prefix_name] and 
-    [name] arguments of {!html_of_strings}. *)
+    [name] arguments of {!Html_frontend.of_strings}. *)
 
 val of_doc : Comment.docs -> html
 (** [of_doc d] returns the HTML associated of the documentation comment [d],
@@ -50,18 +48,4 @@ val typedecl_params_of_entry : Entry.t -> string option
     ['a t]. If the entry is not a typedecl, or if the typedecl does not have a
     type parameter, then it returns [None]. *)
 
-(** Kinds *)
 
-val kind_doc : string
-val kind_typedecl : string
-val kind_module : string
-val kind_exception : string
-val kind_class_type : string
-val kind_class : string
-val kind_method : string
-val kind_extension_constructor : string
-val kind_module_type : string
-val kind_constructor : string
-val kind_field : string
-val kind_value : string
-val kind_extension : string
