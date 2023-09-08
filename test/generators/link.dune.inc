@@ -167,6 +167,48 @@
   (run odoc link -o %{target} %{dep:functor2.odoc})))
 
 (rule
+ (target hidden.cmti)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/hidden.mli})))
+
+(rule
+ (target hidden.odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:hidden.cmti})))
+
+(rule
+ (target hidden.odocl)
+ (action
+  (run odoc link -o %{target} %{dep:hidden.odoc})))
+
+(rule
+ (target hidden_dead_link_doc.cmti)
+ (action
+  (run
+   ocamlc
+   -c
+   -bin-annot
+   -o
+   %{target}
+   %{dep:cases/hidden_dead_link_doc.mli}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target hidden_dead_link_doc.odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:hidden_dead_link_doc.cmti}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target hidden_dead_link_doc.odocl)
+ (action
+  (run odoc link -o %{target} %{dep:hidden_dead_link_doc.odoc}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
  (target include.cmti)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include.mli})))
@@ -1779,6 +1821,220 @@
   (alias runtest)
   (action
    (diff functor2.targets functor2.targets.gen))))
+
+(subdir
+ html
+ (rule
+  (targets Hidden.html.gen Hidden-N.html.gen)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../hidden.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Hidden.html Hidden.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Hidden-N.html Hidden-N.html.gen))))
+
+(subdir
+ html
+ (rule
+  (action
+   (with-outputs-to
+    hidden.targets.gen
+    (run odoc html-targets -o . %{dep:../hidden.odocl} --flat))))
+ (rule
+  (alias runtest)
+  (action
+   (diff hidden.targets hidden.targets.gen))))
+
+(subdir
+ latex
+ (rule
+  (targets Hidden.tex.gen)
+  (action
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../hidden.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Hidden.tex Hidden.tex.gen))))
+
+(subdir
+ latex
+ (rule
+  (action
+   (with-outputs-to
+    hidden.targets.gen
+    (run odoc latex-targets -o . %{dep:../hidden.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff hidden.targets hidden.targets.gen))))
+
+(subdir
+ man
+ (rule
+  (targets Hidden.3o.gen Hidden.N.3o.gen)
+  (action
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../hidden.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Hidden.3o Hidden.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Hidden.N.3o Hidden.N.3o.gen))))
+
+(subdir
+ man
+ (rule
+  (action
+   (with-outputs-to
+    hidden.targets.gen
+    (run odoc man-targets -o . %{dep:../hidden.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff hidden.targets hidden.targets.gen))))
+
+(subdir
+ html
+ (rule
+  (targets Hidden_dead_link_doc.html.gen Hidden_dead_link_doc-Foo.html.gen)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../hidden_dead_link_doc.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Hidden_dead_link_doc.html Hidden_dead_link_doc.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Hidden_dead_link_doc-Foo.html Hidden_dead_link_doc-Foo.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (action
+   (with-outputs-to
+    hidden_dead_link_doc.targets.gen
+    (run odoc html-targets -o . %{dep:../hidden_dead_link_doc.odocl} --flat)))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff hidden_dead_link_doc.targets hidden_dead_link_doc.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (targets Hidden_dead_link_doc.tex.gen)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../hidden_dead_link_doc.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Hidden_dead_link_doc.tex Hidden_dead_link_doc.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (action
+   (with-outputs-to
+    hidden_dead_link_doc.targets.gen
+    (run odoc latex-targets -o . %{dep:../hidden_dead_link_doc.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff hidden_dead_link_doc.targets hidden_dead_link_doc.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (targets Hidden_dead_link_doc.3o.gen Hidden_dead_link_doc.Foo.3o.gen)
+  (action
+   (run
+    odoc
+    man-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../hidden_dead_link_doc.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Hidden_dead_link_doc.3o Hidden_dead_link_doc.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Hidden_dead_link_doc.Foo.3o Hidden_dead_link_doc.Foo.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (action
+   (with-outputs-to
+    hidden_dead_link_doc.targets.gen
+    (run odoc man-targets -o . %{dep:../hidden_dead_link_doc.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff hidden_dead_link_doc.targets hidden_dead_link_doc.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  html

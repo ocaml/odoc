@@ -21,6 +21,8 @@ val empty : Odoc_model.Comment.docs
 
 val is_stop_comment : Parsetree.attribute -> bool
 
+val is_hidden : Parsetree.attribute -> bool
+
 val attached :
   'tags Semantics.handle_internal_tags ->
   Paths.Identifier.LabelParent.t ->

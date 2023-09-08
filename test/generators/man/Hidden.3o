@@ -1,0 +1,24 @@
+
+.TH Hidden 3 "" "Odoc" "OCaml Library"
+.SH Name
+Hidden
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Hidden\fR
+.in 
+.sp 
+.fi 
+This test cases exercise hidden attribute\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR foo : int
+.fi 
+.br 
+.ti +2
+This is normal commented text\.
+.nf 
+.sp 
+\f[CB]module\fR N : \f[CB]sig\fR \.\.\. \f[CB]end\fR
