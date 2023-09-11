@@ -23,6 +23,10 @@ let (>>=) = Result.bind;;
 let (>>|=) m f = m >>= fun x -> Ok (f x);;
 let get_ok = function | Ok x -> x | Error (`Msg m) -> failwith m
 let relativize p = Fpath.(v ".." // p) (* this driver is run from the [doc] dir *)
+
+(* Whether to instrument with landmarks. Result for each commands will be saved
+   to directory [_build/default/doc/landmarks]. *)
+let instrument = false
 ]}
 
 {1 Desired Output}
@@ -165,9 +169,24 @@ type executed_command = {
    the produced file. *)
 let commands = ref [ ]
 
+(* Environment variables passed to commands. *)
+let env =
+  let env = OS.Env.current () |> get_ok in
+  let env =
+    if instrument then (
+      let instrument_dir = Fpath.v "landmarks" in
+      OS.Dir.delete instrument_dir |> get_ok;
+      OS.Dir.create instrument_dir |> get_ok |> ignore;
+      Astring.String.Map.add "OCAML_LANDMARKS"
+        ("time,allocation,format=json,output=temporary:" ^ Fpath.to_string instrument_dir)
+        env
+    ) else env
+  in
+  env
+
 let run ?output_file cmd =
   let t_start = Unix.gettimeofday () in
-  let r = OS.Cmd.(run_out ~err:OS.Cmd.err_run_out cmd |> to_lines) |> get_ok in
+  let r = OS.Cmd.(run_out ~env ~err:OS.Cmd.err_run_out cmd |> to_lines) |> get_ok in
   let t_end = Unix.gettimeofday () in
   let time = t_end -. t_start in
   commands := { cmd; time; output_file } :: !commands;
