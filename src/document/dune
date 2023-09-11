@@ -12,4 +12,6 @@
  (public_name odoc.document)
  (instrumentation
   (backend bisect_ppx))
+ (instrumentation
+  (backend landmarks --auto))
  (libraries odoc_model fpath astring syntax_highlighter))

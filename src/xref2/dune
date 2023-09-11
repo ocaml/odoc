@@ -1,10 +1,21 @@
 (library
  (name odoc_xref2)
  (public_name odoc.xref2)
- (preprocess
-  (action
-   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
+ (instrumentation
+  (backend landmarks --auto))
+ (instrumentation
+  (backend bisect_ppx))
  (libraries odoc_model))
+
+(rule
+ (with-stdout-to
+  shape_tools.ml
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{dep:shape_tools.cppo.ml})))
+
+(rule
+ (with-stdout-to
+  shape_tools.mli
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{dep:shape_tools.cppo.mli})))
 
 (rule
  (alias runmdx)
