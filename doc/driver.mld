@@ -16,7 +16,7 @@ First, we need to initialise MDX with some libraries and helpful values:
 (* Prelude *)
 #require "bos";;
 #install_printer Fpath.pp;;
-#print_length 100;;
+#print_length 655360;;
 #print_depth 10;;
 open Bos;;
 let (>>=) = Result.bind;;
@@ -612,7 +612,6 @@ generate_all linked
 Let's see if there was any output from the [odoc] invocations:
 
 {[
-# #print_length 655360;;
 # !compile_output;;
 - : string list = [""]
 # !link_output;;
