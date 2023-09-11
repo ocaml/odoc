@@ -155,6 +155,12 @@ let link_output = ref [ "" ]
 
 let generate_output = ref [ "" ]
 
+type executed_command = {
+  cmd : Cmd.t;
+  time : float; (** Running time in seconds. *)
+  output_file : Fpath.t option;
+}
+
 (* Record the commands executed, their running time and optionally the path to
    the produced file. *)
 let commands = ref [ ]
@@ -163,7 +169,8 @@ let run ?output_file cmd =
   let t_start = Unix.gettimeofday () in
   let r = OS.Cmd.(run_out ~err:OS.Cmd.err_run_out cmd |> to_lines) |> get_ok in
   let t_end = Unix.gettimeofday () in
-  commands := (cmd, t_end -. t_start, output_file) :: !commands;
+  let time = t_end -. t_start in
+  commands := { cmd; time; output_file } :: !commands;
   r
 
 let add_prefixed_output cmd list prefix lines =
@@ -741,8 +748,8 @@ Some code to analyze the list of executed commands:
 (** Return the list of executed commands where the first argument was [cmd]. *)
 let filter_commands cmd =
   List.filter
-    (fun (cmd', _, _) ->
-      match Bos.Cmd.to_list cmd' with
+    (fun c ->
+      match Bos.Cmd.to_list c.cmd with
       | _ :: cmd' :: _ -> cmd = cmd'
       | _ -> false)
     !commands
@@ -750,12 +757,12 @@ let filter_commands cmd =
 (** Returns the [k] commands that took the most time for a given subcommand. *)
 let k_longest_commands cmd k =
   filter_commands cmd |>
-  List.sort (fun (_, a, _) (_, b, _) -> Float.compare b a) |>
+  List.sort (fun a b -> Float.compare b.time a.time) |>
   List.filteri (fun i _ -> i < k)
 
 (** Print an executed command and its time. *)
-let print_cmd (cmd, t, _) =
-  Printf.printf "[%4.2f] $ %s\n" t (Cmd.to_string cmd)
+let print_cmd c =
+  Printf.printf "[%4.2f] $ %s\n" c.time (Cmd.to_string c.cmd)
 ]}
 
 If needed, the list of commands executed so far can be shown by de-commenting this block:
@@ -768,7 +775,7 @@ If needed, the list of the slowest commands for each subcommands can be shown by
 (for the record, these commands are run from directory `_build/default/doc`)
 
 {[
-# (* List.iter print_cmd (k_longest_commands "compile" 5) *)
+# List.iter print_cmd (k_longest_commands "compile" 5)
 # (* List.iter print_cmd (k_longest_commands "link" 5) *)
 # (* List.iter print_cmd (k_longest_commands "html-generate" 5) *)
 ]}
@@ -784,13 +791,13 @@ This last block analyze the running times so that they can be submitted to
 let compute_metric_cmd cmd =
   let rec compute min_ max_ total count = function
     | [] -> (min_, max_, total /. float count, count)
-    | (_, t, _) :: tl ->
-        compute (min min_ t) (max max_ t) (total +. t) (count + 1) tl
+    | hd :: tl ->
+        compute (min min_ hd.time) (max max_ hd.time) (total +. hd.time) (count + 1) tl
   in
   match filter_commands cmd with
   | [] -> []
-  | (_, time, _) :: tl ->
-      let min, max, avg, count = compute time time time 1 tl in
+  | hd :: tl ->
+      let min, max, avg, count = compute hd.time hd.time hd.time 1 tl in
       [
         `Assoc
           [
@@ -815,12 +822,13 @@ let compute_metric_cmd cmd =
 
 (** Analyze the size of files produced by a command. *)
 let compute_produced_cmd cmd =
-  let output_file_size = function
-    | _, _, Some output_file -> (
-        match Bos.OS.Path.stat output_file with
+  let output_file_size c =
+    match c.output_file with
+    | Some f -> (
+        match Bos.OS.Path.stat f with
         | Ok st -> Some st.Unix.st_size
         | Error _ -> None)
-    | _, _, None -> None
+    | None -> None
   in
   let rec compute min_ max_ total count = function
     | [] -> (min_, max_, int_of_float (total /. float count), count)
