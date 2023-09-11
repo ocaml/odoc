@@ -160,9 +160,9 @@ let generate_output = ref [ "" ]
 let commands = ref [ ]
 
 let run ?output_file cmd =
-  let t_start = Sys.time () in
+  let t_start = Unix.gettimeofday () in
   let r = OS.Cmd.(run_out ~err:OS.Cmd.err_run_out cmd |> to_lines) |> get_ok in
-  let t_end = Sys.time () in
+  let t_end = Unix.gettimeofday () in
   commands := (cmd, t_end -. t_start, output_file) :: !commands;
   r
 
