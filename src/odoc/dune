@@ -15,6 +15,8 @@
   tyxml
   unix)
  (instrumentation
+  (backend landmarks --auto))
+ (instrumentation
   (backend bisect_ppx)))
 
 (documentation

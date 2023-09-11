@@ -6,4 +6,6 @@
  (flags
   (:standard -open StdLabels))
  (instrumentation
+  (backend landmarks --auto))
+ (instrumentation
   (backend bisect_ppx)))

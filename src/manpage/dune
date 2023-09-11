@@ -2,5 +2,7 @@
  (name odoc_manpage)
  (public_name odoc.manpage)
  (instrumentation
+  (backend landmarks --auto))
+ (instrumentation
   (backend bisect_ppx))
  (libraries odoc_model odoc_document))

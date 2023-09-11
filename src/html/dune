@@ -2,5 +2,7 @@
  (name odoc_html)
  (public_name odoc.html)
  (instrumentation
+  (backend landmarks --auto))
+ (instrumentation
   (backend bisect_ppx))
  (libraries odoc_model odoc_document tyxml))

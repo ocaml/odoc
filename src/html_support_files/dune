@@ -37,6 +37,10 @@
 (library
  (name odoc_html_support_files)
  (public_name odoc.html_support_files)
+ (instrumentation
+  (backend landmarks --auto))
+ (instrumentation
+  (backend bisect_ppx))
  (wrapped false))
 
 (install

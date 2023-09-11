@@ -3,6 +3,8 @@
  (inline_tests)
  (enabled_if
   (>= %{ocaml_version} 4.04.1))
+ (instrumentation
+  (backend landmarks --auto))
  (preprocess
   (pps ppx_expect))
  (libraries sexplib0 odoc-parser))
