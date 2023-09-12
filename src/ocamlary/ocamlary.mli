@@ -431,8 +431,10 @@ type variant =
 
 (** This comment is for [poly_variant]. *)
 type poly_variant =
-  [ `TagA  (** This is a comment for [`TagA] *)
-  | `ConstrB of int  (** This is a comment for [`ConstrB] *) ]
+  [ `TagA
+    (* This is a comment for [`TagA]. Disabled for compatibility
+       with 4.02. *)
+  | `ConstrB of int (* This is a comment for [`ConstrB] *) ]
 (** Wow! It was a polymorphic variant! *)
 
 (** This comment is for [full_gadt]. *)
