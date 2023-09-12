@@ -549,6 +549,9 @@ div.odoc-spec,.odoc-include {
 
 .spec.type .variant, .spec.type .record {
   margin-left: 2ch;
+}
+
+.spec.type li.variant, .spec.type li.record {
   list-style: none;
 }
 
