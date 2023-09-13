@@ -561,5 +561,5 @@ and render_page (p : Page.t) =
   { Renderer.filename; content; children }
 
 let render = function
-  | Document.Page page -> [ render_page page ]
+  | Document.Page (page, _) -> [ render_page page ]
   | Source_page _ | Asset _ -> []
