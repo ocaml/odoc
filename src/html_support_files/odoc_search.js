@@ -1,4 +1,3 @@
-
 /* The browsers interpretation of the CORS origin policy prevents to run
    webworkers from javascript files fetched from the file:// protocol. This hack
    is to workaround this restriction. */
@@ -8,7 +7,7 @@ function createWebWorker() {
     parts[parts.length - 1] = search_url;
     return '"' + parts.join("/") + '"';
   });
-  blobContents = ['importScripts(' + searchs.join(",") + ');'];
+  blobContents = ["importScripts(" + searchs.join(",") + ");"];
   var blob = new Blob(blobContents, { type: "application/javascript" });
   var blobUrl = URL.createObjectURL(blob);
 
@@ -18,23 +17,28 @@ function createWebWorker() {
   return worker;
 }
 
-var worker = createWebWorker();
+var worker;
+
+document.querySelector(".search-bar").addEventListener("focus", (ev) => {
+  if (typeof worker == "undefined") {
+    worker = createWebWorker();
+    worker.onmessage = (e) => {
+      let results = e.data;
+      let search_result = document.querySelector(".search-result-inner");
+      search_result.innerHTML = "";
+      let f = (entry) => {
+        /* entry */
+        let container = document.createElement("a");
+        container.classList.add("search-entry");
+        container.href = base_url + entry.url;
+        container.innerHTML = entry.html;
+        search_result.appendChild(container);
+      };
+      results.map(f);
+    };
+  }
+});
 
 document.querySelector(".search-bar").addEventListener("input", (ev) => {
   worker.postMessage(ev.target.value);
 });
-
-worker.onmessage = (e) => {
-  let results = e.data;
-  let search_result = document.querySelector(".search-result-inner");
-  search_result.innerHTML = "";
-  let f = (entry) => {
-    /* entry */
-    let container = document.createElement("a");
-    container.classList.add("search-entry");
-    container.href = base_url + entry.url;
-    container.innerHTML = entry.html;
-    search_result.appendChild(container);
-  };
-  results.map(f);
-};
