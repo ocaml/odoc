@@ -28,7 +28,10 @@ Equivalently, when --search-asset is omitted, the search-asset references from t
   $ odoc link -I . page-page.odoc
 
 This command generates a json index containing all .odocl files found in the search path (-I). If -o is not provided, the file is saved as index.json.
-  $ odoc compile-index -I .
+
+  $ echo -e "main.odocl\npage-page.odocl\nj.odocl\n" > index_map
+
+  $ odoc compile-index index_map
 
 The index file, one entry per file
   $ cat index.json | jq sort | jq '.[]' -c
@@ -209,3 +212,32 @@ One way to visually try the search is to indent
 $ cp -r html /tmp/
 $ firefox /tmp/html/page/Main/index.html
 and run `dune test`.
+
+Testing the warnings:
+
+Passing an inexistent file:
+
+  $ echo -e "inexistent.odocl\n" > index_map
+  $ odoc compile-index index_map
+  File "index_map":
+  Warning: "\"inexistent.odocl\": File does not exist"
+
+Passing an odoc file which is neither a compilation unit nor a page:
+
+  $ odoc compile -c src-source page.mld
+  $ printf "a.ml\n" > source_tree.map
+  $ odoc source-tree -I . --parent page -o src-source.odoc source_tree.map
+
+  $ echo -e "src-source.odoc\n" > index_map
+  $ odoc compile-index index_map
+  File "index_map":
+  Warning: "Only pages and unit are allowed as input when generating an index"
+
+Passing a file which is not a correctly marshalled one:
+
+  $ echo hello > my_file
+  $ echo -e "my_file\n" > index_map
+  $ odoc compile-index index_map
+  File "index_map":
+  Warning: "Error while unmarshalling \"my_file\": End_of_file\n"
+
