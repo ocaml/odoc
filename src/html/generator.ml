@@ -482,15 +482,20 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
-  let rec include_ ~config { Subpage.content; _ } = page ~config content
+  let rec include_ ~config search_assets { Subpage.content; _ } =
+    page ~config search_assets content
 
-  and subpages ~config subpages = List.map (include_ ~config) subpages
+  and subpages ~config search_assets subpages =
+    List.map (include_ ~config search_assets) subpages
 
-  and page ~config p : Odoc_document.Renderer.page =
-    let { Page.preamble; items = i; url; source_anchor; search_assets } =
+  and page ~config (search_assets : Odoc_document.Url.t list) p :
+      Odoc_document.Renderer.page =
+    let { Page.preamble; items = i; url; source_anchor } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
-    let subpages = subpages ~config @@ Doctree.Subpages.compute p in
+    let subpages =
+      subpages ~config search_assets @@ Doctree.Subpages.compute p
+    in
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
@@ -550,7 +555,8 @@ module Page = struct
 end
 
 let render ~config = function
-  | Document.Page page -> [ Page.page ~config page ]
+  | Document.Page (page, search_assets) ->
+      [ Page.page ~config search_assets page ]
   | Source_page src -> [ Page.source_page ~config src ]
   | Asset asset -> [ Page.asset ~config asset ]
 

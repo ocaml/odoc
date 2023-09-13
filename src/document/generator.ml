@@ -92,10 +92,10 @@ let prepare_preamble comment items =
   in
   (Comment.standalone preamble, Comment.standalone first_comment @ items)
 
-let make_expansion_page ~source_anchor ~search_assets url comments items =
+let make_expansion_page ~source_anchor url comments items =
   let comment = List.concat comments in
   let preamble, items = prepare_preamble comment items in
-  { Page.preamble; items; url; source_anchor; search_assets }
+  { Page.preamble; items; url; source_anchor }
 
 include Generator_signatures
 
@@ -997,9 +997,9 @@ module Make (Syntax : SYNTAX) = struct
   end
 
   module Class : sig
-    val class_ : search_assets:Url.t list -> Lang.Class.t -> Item.t
+    val class_ : Lang.Class.t -> Item.t
 
-    val class_type : search_assets:Url.t list -> Lang.ClassType.t -> Item.t
+    val class_type : Lang.ClassType.t -> Item.t
   end = struct
     let class_type_expr (cte : Odoc_model.Lang.ClassType.expr) =
       match cte with
@@ -1111,7 +1111,7 @@ module Make (Syntax : SYNTAX) = struct
             ++ O.txt " " ++ Syntax.Type.arrow)
           ++ O.txt " " ++ class_decl dst
 
-    let class_ ~search_assets (t : Odoc_model.Lang.Class.t) =
+    let class_ (t : Odoc_model.Lang.Class.t) =
       let name = Paths.Identifier.name t.id in
       let params =
         match t.params with
@@ -1130,8 +1130,8 @@ module Make (Syntax : SYNTAX) = struct
             let expansion_doc, items = class_signature csig in
             let url = Url.Path.from_identifier t.id in
             let page =
-              make_expansion_page ~search_assets ~source_anchor url
-                [ t.doc; expansion_doc ] items
+              make_expansion_page ~source_anchor url [ t.doc; expansion_doc ]
+                items
             in
             ( O.documentedSrc @@ path url [ inline @@ Text name ],
               Some page,
@@ -1154,7 +1154,7 @@ module Make (Syntax : SYNTAX) = struct
       let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
-    let class_type ~search_assets (t : Odoc_model.Lang.ClassType.t) =
+    let class_type (t : Odoc_model.Lang.ClassType.t) =
       let name = Paths.Identifier.name t.id in
       let params = format_params ~delim:`brackets t.params in
       let virtual_ =
@@ -1168,8 +1168,8 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier t.id in
             let expansion_doc, items = class_signature csig in
             let page =
-              make_expansion_page ~search_assets ~source_anchor url
-                [ t.doc; expansion_doc ] items
+              make_expansion_page ~source_anchor url [ t.doc; expansion_doc ]
+                items
             in
             ( O.documentedSrc @@ path url [ inline @@ Text name ],
               Some page,
@@ -1192,10 +1192,7 @@ module Make (Syntax : SYNTAX) = struct
   open Class
 
   module Module : sig
-    val signature :
-      search_assets:Url.t list ->
-      Lang.Signature.t ->
-      Comment.Comment.docs * Item.t list
+    val signature : Lang.Signature.t -> Comment.Comment.docs * Item.t list
     (** Returns [header_doc, content]. *)
   end = struct
     let internal_module m =
@@ -1234,7 +1231,7 @@ module Make (Syntax : SYNTAX) = struct
       | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
       | _ -> false
 
-    let rec signature ~search_assets (s : Lang.Signature.t) =
+    let rec signature (s : Lang.Signature.t) =
       let rec loop l acc_items =
         match l with
         | [] -> List.rev acc_items
@@ -1250,13 +1247,12 @@ module Make (Syntax : SYNTAX) = struct
             | ModuleTypeSubstitution m when internal_module_type_substitution m
               ->
                 loop rest acc_items
-            | ModuleTypeSubstitution m ->
-                continue @@ module_type_substitution ~search_assets m
-            | Module (_, m) -> continue @@ module_ ~search_assets m
-            | ModuleType m -> continue @@ module_type ~search_assets m
-            | Class (_, c) -> continue @@ class_ ~search_assets c
-            | ClassType (_, c) -> continue @@ class_type ~search_assets c
-            | Include m -> continue @@ include_ ~search_assets m
+            | ModuleTypeSubstitution m -> continue @@ module_type_substitution m
+            | Module (_, m) -> continue @@ module_ m
+            | ModuleType m -> continue @@ module_type m
+            | Class (_, c) -> continue @@ class_ c
+            | ClassType (_, c) -> continue @@ class_type c
+            | Include m -> continue @@ include_ m
             | ModuleSubstitution m -> continue @@ module_substitution m
             | TypeSubstitution t ->
                 continue @@ type_decl ~is_substitution:true (Ordinary, t)
@@ -1281,20 +1277,16 @@ module Make (Syntax : SYNTAX) = struct
       (Lang.extract_signature_doc s, loop s.items [])
 
     and functor_parameter :
-        search_assets:_ ->
-        Odoc_model.Lang.FunctorParameter.parameter ->
-        DocumentedSrc.t =
-     fun ~search_assets arg ->
+        Odoc_model.Lang.FunctorParameter.parameter -> DocumentedSrc.t =
+     fun arg ->
       let open Odoc_model.Lang.FunctorParameter in
       let name = Paths.Identifier.name arg.id in
       let render_ty = arg.expr in
       let modtyp =
-        mty_in_decl ~search_assets
-          (arg.id :> Paths.Identifier.Signature.t)
-          render_ty
+        mty_in_decl (arg.id :> Paths.Identifier.Signature.t) render_ty
       in
       let modname, mod_decl =
-        match expansion_of_module_type_expr ~search_assets arg.expr with
+        match expansion_of_module_type_expr arg.expr with
         | None ->
             let modname = O.txt (Paths.Identifier.name arg.id) in
             (modname, O.documentedSrc modtyp)
@@ -1303,8 +1295,8 @@ module Make (Syntax : SYNTAX) = struct
             let modname = path url [ inline @@ Text name ] in
             let type_with_expansion =
               let content =
-                make_expansion_page ~search_assets ~source_anchor:None url
-                  [ expansion_doc ] items
+                make_expansion_page ~source_anchor:None url [ expansion_doc ]
+                  items
               in
               let summary = O.render modtyp in
               let status = `Default in
@@ -1338,16 +1330,16 @@ module Make (Syntax : SYNTAX) = struct
       let doc = Comment.to_ir t.doc in
       Item.Declaration { attr; anchor; doc; content; source_anchor = None }
 
-    and module_type_substitution ~search_assets
-        (t : Odoc_model.Lang.ModuleTypeSubstitution.t) =
+    and module_type_substitution (t : Odoc_model.Lang.ModuleTypeSubstitution.t)
+        =
       let prefix =
         O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
       in
       let source_anchor = None in
       let modname = Paths.Identifier.name t.id in
       let modname, expansion_doc, mty =
-        module_type_manifest ~search_assets ~subst:true ~source_anchor modname
-          t.id t.doc (Some t.manifest) prefix
+        module_type_manifest ~subst:true ~source_anchor modname t.id t.doc
+          (Some t.manifest) prefix
       in
       let content =
         O.documentedSrc (prefix ++ modname)
@@ -1361,10 +1353,9 @@ module Make (Syntax : SYNTAX) = struct
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
     and simple_expansion :
-        search_assets:_ ->
         Odoc_model.Lang.ModuleType.simple_expansion ->
         Comment.Comment.docs * Item.t list =
-     fun ~search_assets t ->
+     fun t ->
       let rec extract_functor_params
           (f : Odoc_model.Lang.ModuleType.simple_expansion) =
         match f with
@@ -1378,12 +1369,12 @@ module Make (Syntax : SYNTAX) = struct
             (Some (add_to params), sg)
       in
       match extract_functor_params t with
-      | None, sg -> signature ~search_assets sg
+      | None, sg -> signature sg
       | Some params, sg ->
-          let sg_doc, content = signature ~search_assets sg in
+          let sg_doc, content = signature sg in
           let params =
             Utils.flatmap params ~f:(fun arg ->
-                let content = functor_parameter ~search_assets arg in
+                let content = functor_parameter arg in
                 let attr = [ "parameter" ] in
                 let anchor =
                   Utils.option_of_result
@@ -1400,10 +1391,9 @@ module Make (Syntax : SYNTAX) = struct
           (sg_doc, prelude @ content)
 
     and expansion_of_module_type_expr :
-        search_assets:_ ->
         Odoc_model.Lang.ModuleType.expr ->
         (Comment.Comment.docs * Item.t list) option =
-     fun ~search_assets t ->
+     fun t ->
       let rec simple_expansion_of (t : Odoc_model.Lang.ModuleType.expr) =
         match t with
         | Path { p_expansion = None; _ }
@@ -1422,16 +1412,16 @@ module Make (Syntax : SYNTAX) = struct
       in
       match simple_expansion_of t with
       | None -> None
-      | Some e -> Some (simple_expansion ~search_assets e)
+      | Some e -> Some (simple_expansion e)
 
-    and module_ : search_assets:_ -> Odoc_model.Lang.Module.t -> Item.t =
-     fun ~search_assets t ->
+    and module_ : Odoc_model.Lang.Module.t -> Item.t =
+     fun t ->
       let modname = Paths.Identifier.name t.id in
       let expansion =
         match t.type_ with
-        | Alias (_, Some e) -> Some (simple_expansion ~search_assets e)
+        | Alias (_, Some e) -> Some (simple_expansion e)
         | Alias (_, None) -> None
-        | ModuleType e -> expansion_of_module_type_expr ~search_assets e
+        | ModuleType e -> expansion_of_module_type_expr e
       in
       let source_anchor = source_anchor t.locs in
       let modname, status, expansion, expansion_doc =
@@ -1446,16 +1436,14 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
             let page =
-              make_expansion_page ~search_assets ~source_anchor url
-                [ t.doc; expansion_doc ] items
+              make_expansion_page ~source_anchor url [ t.doc; expansion_doc ]
+                items
             in
             (link, status, Some page, Some expansion_doc)
       in
       (* TODO: link to source *)
       let intro = O.keyword "module" ++ O.txt " " ++ modname in
-      let summary =
-        O.ignore intro ++ mdexpr_in_decl ~search_assets t.id t.type_
-      in
+      let summary = O.ignore intro ++ mdexpr_in_decl t.id t.type_ in
       let modexpr =
         attach_expansion ~status
           (Syntax.Type.annotation_separator, "sig", "end")
@@ -1479,30 +1467,28 @@ module Make (Syntax : SYNTAX) = struct
       in
       mty_in_decl (base :> Paths.Identifier.Signature.t) (ty_of_se se)
 
-    and mdexpr_in_decl ~search_assets (base : Paths.Identifier.Module.t) md =
+    and mdexpr_in_decl (base : Paths.Identifier.Module.t) md =
       let sig_dotdotdot =
         O.txt Syntax.Type.annotation_separator
         ++ O.cut ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       in
       match md with
-      | Alias (_, Some se) -> simple_expansion_in_decl ~search_assets base se
+      | Alias (_, Some se) -> simple_expansion_in_decl base se
       | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) ->
-          O.txt " =" ++ O.sp ++ mdexpr ~search_assets md
+          O.txt " =" ++ O.sp ++ mdexpr md
       | Alias _ -> sig_dotdotdot
-      | ModuleType mt ->
-          mty_in_decl ~search_assets (base :> Paths.Identifier.Signature.t) mt
+      | ModuleType mt -> mty_in_decl (base :> Paths.Identifier.Signature.t) mt
 
-    and mdexpr : search_assets:_ -> Odoc_model.Lang.Module.decl -> text =
-     fun ~search_assets -> function
+    and mdexpr : Odoc_model.Lang.Module.decl -> text = function
       | Alias (mod_path, _) -> Link.from_path (mod_path :> Paths.Path.t)
-      | ModuleType mt -> mty ~search_assets mt
+      | ModuleType mt -> mty mt
 
-    and module_type_manifest ~search_assets ~subst ~source_anchor modname id doc
-        manifest prefix =
+    and module_type_manifest ~subst ~source_anchor modname id doc manifest
+        prefix =
       let expansion =
         match manifest with
         | None -> None
-        | Some e -> expansion_of_module_type_expr ~search_assets e
+        | Some e -> expansion_of_module_type_expr e
       in
       let modname, expansion, expansion_doc =
         match expansion with
@@ -1511,8 +1497,8 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier id in
             let link = path url [ inline @@ Text modname ] in
             let page =
-              make_expansion_page ~search_assets ~source_anchor url
-                [ doc; expansion_doc ] items
+              make_expansion_page ~source_anchor url [ doc; expansion_doc ]
+                items
             in
             (link, Some page, Some expansion_doc)
       in
@@ -1522,21 +1508,21 @@ module Make (Syntax : SYNTAX) = struct
         | Some expr ->
             O.ignore (prefix ++ modname)
             ++ (if subst then O.txt " :=" ++ O.sp else O.txt " =" ++ O.sp)
-            ++ mty ~search_assets expr
+            ++ mty expr
       in
       ( modname,
         expansion_doc,
         attach_expansion (" = ", "sig", "end") expansion summary )
 
-    and module_type ~search_assets (t : Odoc_model.Lang.ModuleType.t) =
+    and module_type (t : Odoc_model.Lang.ModuleType.t) =
       let prefix =
         O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
       in
       let modname = Paths.Identifier.name t.id in
       let source_anchor = source_anchor t.locs in
       let modname, expansion_doc, mty =
-        module_type_manifest ~search_assets ~subst:false ~source_anchor modname
-          t.id t.doc t.expr prefix
+        module_type_manifest ~subst:false ~source_anchor modname t.id t.doc
+          t.expr prefix
       in
       let content =
         O.documentedSrc (prefix ++ modname)
@@ -1565,11 +1551,11 @@ module Make (Syntax : SYNTAX) = struct
           Paths.Path.(is_hidden (m :> t))
       | _ -> false
 
-    and mty_with ~search_assets subs expr =
-      umty ~search_assets expr ++ O.sp ++ O.keyword "with" ++ O.txt " "
+    and mty_with subs expr =
+      umty expr ++ O.sp ++ O.keyword "with" ++ O.txt " "
       ++ O.list
            ~sep:(O.cut ++ O.txt " " ++ O.keyword "and" ++ O.txt " ")
-           ~f:(fun x -> O.span (substitution ~search_assets x))
+           ~f:(fun x -> O.span (substitution x))
            subs
 
     and mty_typeof t_desc =
@@ -1592,19 +1578,19 @@ module Make (Syntax : SYNTAX) = struct
       | With (_, expr) -> is_elidable_with_u expr
       | TypeOf _ -> false
 
-    and umty : search_assets:_ -> Odoc_model.Lang.ModuleType.U.expr -> text =
-     fun ~search_assets m ->
+    and umty : Odoc_model.Lang.ModuleType.U.expr -> text =
+     fun m ->
       match m with
       | Path p -> Link.from_path (p :> Paths.Path.t)
       | Signature _ ->
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       | With (_, expr) when is_elidable_with_u expr ->
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
-      | With (subs, expr) -> mty_with ~search_assets subs expr
+      | With (subs, expr) -> mty_with subs expr
       | TypeOf { t_desc; _ } -> mty_typeof t_desc
 
-    and mty : search_assets:_ -> Odoc_model.Lang.ModuleType.expr -> text =
-     fun ~search_assets m ->
+    and mty : Odoc_model.Lang.ModuleType.expr -> text =
+     fun m ->
       if mty_hidden m then
         Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       else
@@ -1614,12 +1600,10 @@ module Make (Syntax : SYNTAX) = struct
         | Functor (Unit, expr) ->
             (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop)
             ++ O.span (O.txt " () " ++ Syntax.Type.arrow)
-            ++ O.sp ++ mty ~search_assets expr
+            ++ O.sp ++ mty expr
         | Functor (Named arg, expr) ->
             let arg_expr = arg.expr in
-            let stop_before =
-              expansion_of_module_type_expr ~search_assets arg_expr = None
-            in
+            let stop_before = expansion_of_module_type_expr arg_expr = None in
             let name =
               let open Odoc_model.Lang.FunctorParameter in
               let name = Paths.Identifier.name arg.id in
@@ -1633,29 +1617,25 @@ module Make (Syntax : SYNTAX) = struct
             ++ (O.box_hv @@ O.span
                @@ O.txt " (" ++ name
                   ++ O.txt Syntax.Type.annotation_separator
-                  ++ mty ~search_assets arg_expr
-                  ++ O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow)
-            ++ O.sp ++ mty ~search_assets expr
+                  ++ mty arg_expr ++ O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow
+               )
+            ++ O.sp ++ mty expr
         | With { w_expr; _ } when is_elidable_with_u w_expr ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
         | With { w_substitutions; w_expr; _ } ->
-            O.box_hv @@ mty_with ~search_assets w_substitutions w_expr
+            O.box_hv @@ mty_with w_substitutions w_expr
         | TypeOf { t_desc; _ } -> mty_typeof t_desc
         | Signature _ ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
 
     and mty_in_decl :
-        search_assets:_ ->
-        Paths.Identifier.Signature.t ->
-        Odoc_model.Lang.ModuleType.expr ->
-        text =
-     fun ~search_assets base -> function
+        Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
+        =
+     fun base -> function
       | (Path _ | Signature _ | With _ | TypeOf _) as m ->
-          O.txt Syntax.Type.annotation_separator
-          ++ O.cut ++ mty ~search_assets m
+          O.txt Syntax.Type.annotation_separator ++ O.cut ++ mty m
       | Functor _ as m when not Syntax.Mod.functor_contraction ->
-          O.txt Syntax.Type.annotation_separator
-          ++ O.cut ++ mty ~search_assets m
+          O.txt Syntax.Type.annotation_separator ++ O.cut ++ mty m
       | Functor (arg, expr) ->
           let text_arg =
             match arg with
@@ -1663,7 +1643,7 @@ module Make (Syntax : SYNTAX) = struct
             | Named arg ->
                 let arg_expr = arg.expr in
                 let stop_before =
-                  expansion_of_module_type_expr ~search_assets arg_expr = None
+                  expansion_of_module_type_expr arg_expr = None
                 in
                 let name =
                   let open Odoc_model.Lang.FunctorParameter in
@@ -1678,11 +1658,9 @@ module Make (Syntax : SYNTAX) = struct
                 O.box_hv
                 @@ O.txt "(" ++ name
                    ++ O.txt Syntax.Type.annotation_separator
-                   ++ O.cut
-                   ++ mty ~search_assets arg.expr
-                   ++ O.txt ")"
+                   ++ O.cut ++ mty arg.expr ++ O.txt ")"
           in
-          O.sp ++ text_arg ++ mty_in_decl ~search_assets base expr
+          O.sp ++ text_arg ++ mty_in_decl base expr
 
     (* TODO : Centralize the list juggling for type parameters *)
     and type_expr_in_subst td typath =
@@ -1691,19 +1669,18 @@ module Make (Syntax : SYNTAX) = struct
       | [] -> typath
       | l -> Syntax.Type.handle_substitution_params typath (format_params l)
 
-    and substitution :
-        search_assets:_ -> Odoc_model.Lang.ModuleType.substitution -> text =
-     fun ~search_assets -> function
+    and substitution : Odoc_model.Lang.ModuleType.substitution -> text =
+      function
       | ModuleEq (frag_mod, md) ->
           O.box_hv
           @@ O.keyword "module" ++ O.txt " "
              ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
-             ++ O.txt " =" ++ O.sp ++ mdexpr ~search_assets md
+             ++ O.txt " =" ++ O.sp ++ mdexpr md
       | ModuleTypeEq (frag_mty, md) ->
           O.box_hv
           @@ O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
              ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
-             ++ O.txt " =" ++ O.sp ++ mty ~search_assets md
+             ++ O.txt " =" ++ O.sp ++ mty md
       | TypeEq (frag_typ, td) ->
           O.box_hv
           @@ O.keyword "type" ++ O.txt " "
@@ -1721,7 +1698,7 @@ module Make (Syntax : SYNTAX) = struct
           O.box_hv
           @@ O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
              ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
-             ++ O.txt " :=" ++ O.sp ++ mty ~search_assets md
+             ++ O.txt " :=" ++ O.sp ++ mty md
       | TypeSubst (frag_typ, td) -> (
           O.box_hv
           @@ O.keyword "type" ++ O.txt " "
@@ -1732,7 +1709,7 @@ module Make (Syntax : SYNTAX) = struct
              | None -> assert false (* cf loader/cmti *)
              | Some te -> type_expr te)
 
-    and include_ ~search_assets (t : Odoc_model.Lang.Include.t) =
+    and include_ (t : Odoc_model.Lang.Include.t) =
       let decl_hidden =
         match t.decl with
         | Alias p -> Paths.Path.(is_hidden (p :> t))
@@ -1740,7 +1717,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let status = if decl_hidden then `Inline else t.status in
 
-      let _, content = signature ~search_assets t.expansion.content in
+      let _, content = signature t.expansion.content in
       let summary =
         if decl_hidden then O.render (O.keyword "include" ++ O.txt " ...")
         else
@@ -1748,7 +1725,7 @@ module Make (Syntax : SYNTAX) = struct
             match t.decl with
             | Odoc_model.Lang.Include.Alias mod_path ->
                 Link.from_path (mod_path :> Paths.Path.t)
-            | ModuleType mt -> umty ~search_assets mt
+            | ModuleType mt -> umty mt
           in
           O.render
             (O.keyword "include" ++ O.txt " " ++ include_decl
@@ -1810,7 +1787,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let unit_doc, items =
         match t.content with
-        | Module sign -> signature ~search_assets sign
+        | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
       let source_anchor =
@@ -1818,10 +1795,8 @@ module Make (Syntax : SYNTAX) = struct
         | Some src -> Some (Source_page.url src.id)
         | None -> None
       in
-      let page =
-        make_expansion_page ~search_assets ~source_anchor url [ unit_doc ] items
-      in
-      Document.Page page
+      let page = make_expansion_page ~source_anchor url [ unit_doc ] items in
+      Document.Page (page, search_assets)
 
     let page (t : Odoc_model.Lang.Page.t) =
       (*let name =
@@ -1839,7 +1814,7 @@ module Make (Syntax : SYNTAX) = struct
             | _ -> None)
           t.search_assets
       in
-      Document.Page { Page.preamble; items; url; source_anchor; search_assets }
+      Document.Page ({ Page.preamble; items; url; source_anchor }, search_assets)
 
     let source_tree t =
       let dir_pages = t.Odoc_model.Lang.SourceTree.source_children in
@@ -1924,13 +1899,7 @@ module Make (Syntax : SYNTAX) = struct
           :: [ text ~attr:[ "odoc-folder-list" ] @@ list list_of_children ]
         in
         Document.Page
-          {
-            Types.Page.preamble = [];
-            items;
-            url;
-            source_anchor = None;
-            search_assets = [];
-          }
+          ({ Types.Page.preamble = []; items; url; source_anchor = None }, [])
       in
       M.fold (fun dir children acc -> page_of_dir dir children :: acc) mmap []
   end

@@ -178,7 +178,6 @@ and Page : sig
     source_anchor : Url.t option;
         (** Url to the corresponding source code. Might be a whole source file
             or a sub part. *)
-    search_assets : Url.t list;
   }
 end =
   Page
@@ -199,7 +198,10 @@ end =
   Asset
 
 module Document = struct
-  type t = Page of Page.t | Source_page of Source_page.t | Asset of Asset.t
+  type t =
+    | Page of Page.t * Url.t list
+    | Source_page of Source_page.t
+    | Asset of Asset.t
 end
 
 let inline ?(attr = []) desc = Inline.{ attr; desc }
