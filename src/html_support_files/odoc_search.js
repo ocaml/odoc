@@ -24,17 +24,17 @@ document.querySelector(".search-bar").addEventListener("focus", (ev) => {
     worker = createWebWorker();
     worker.onmessage = (e) => {
       let results = e.data;
-      let search_result = document.querySelector(".search-result-inner");
-      search_result.innerHTML = "";
+      let search_results = document.querySelector(".search-result-inner");
+      search_results.innerHTML = "";
       let f = (entry) => {
         /* entry */
-        let container = document.createElement("a");
-        container.classList.add("search-entry");
-        container.href = base_url + entry.url;
-        container.innerHTML = entry.html;
-        search_result.appendChild(container);
+        let search_result = document.createElement("a");
+        search_result.classList.add("search-entry");
+        search_result.href = base_url + entry.url;
+        search_result.innerHTML = entry.html;
+        search_results.appendChild(search_result);
       };
-      results.map(f);
+      results.forEach(f);
     };
   }
 });
