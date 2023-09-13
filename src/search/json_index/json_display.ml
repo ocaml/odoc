@@ -1,3 +1,5 @@
+open Odoc_search
+
 let of_entry { Entry.id; doc = _; kind = _ } h =
   match Html.url id with
   | Ok url ->

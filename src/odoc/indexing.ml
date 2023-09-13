@@ -1,4 +1,4 @@
-open Odoc_search
+open Odoc_json_index
 open Or_error
 
 let map_result f = function Ok v -> Ok (f v) | Error _ as e -> e

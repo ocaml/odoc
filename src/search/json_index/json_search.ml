@@ -1,3 +1,5 @@
+open Odoc_search
+
 let json_of_args (args : Odoc_model.Lang.TypeDecl.Constructor.argument) =
   match args with
   | Tuple tel ->

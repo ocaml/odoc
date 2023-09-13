@@ -1,3 +1,5 @@
+open Odoc_search
+
 val of_entry :
   Entry.t ->
   Html.html list ->
