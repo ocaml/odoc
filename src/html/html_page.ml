@@ -52,7 +52,7 @@ let sidebar toc =
     | _ ->
         ([ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] (html_of_toc toc) ], true)
   in
-  if has_toc then [ Html.div ~a:[ Html.a_class [ "odoc-sidebar" ] ] toc ]
+  if has_toc then  toc
   else []
 
 let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
