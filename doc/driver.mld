@@ -668,13 +668,18 @@ let generate_all odocl_files =
 ]}
 
 
-Finally, we generate an index of all values, types, ... This index is meant to be consumed by search engines, to create their own index. It consists of a JSON array, containing entries with the name, full name, associated comment, link and anchor, and kind.
-Generating the index is done via [odoc compile-index], which create a json file. This second format is meant to be consumed by search engines to populate their search index. Search engines written in OCaml can also call the [Odoc_model.Fold.unit] and  [Odoc_model.Fold.page] function, in conjunction with [Odoc_search.Entry.entry_of_item] in order to get a (version stable) OCaml value of each element to be indexed.
+Finally, we generate an index of all values, types, ... This index is meant to be consumed by search engines, to create their own index. It consists of a JSON array, containing entries with the name, full name, associated comment, link and anchor, and kind. Generating the index is done via [odoc compile-index], which create a json file.
+
+Search engines written in OCaml can also call the [Odoc_model.Fold.unit] and  [Odoc_model.Fold.page] function, in conjunction with [Odoc_search.Entry.entry_of_item] in order to get an OCaml value of each element to be indexed.
 
 {[
 let index_generate ?(ignore_output = false) () =
   let open Cmd in
-  let cmd = odoc % "compile-index" % "-o" % "html/index.json" % "-I" % "." in
+  let files = OS.Dir.contents (Fpath.v ".") |> get_ok |> List.map Fpath.to_string in
+  let index_map = Fpath.v "index.map" in
+  let () = Bos.OS.File.write_lines index_map files |> get_ok in
+  Bos.OS.File.writef (Fpath.v search_file);
+  let cmd = odoc % "compile-index" % "-o" % "html/index.json" % p index_map in
   let lines = run cmd in
   if not ignore_output then
     add_prefixed_output cmd generate_output "index compilation" lines;
