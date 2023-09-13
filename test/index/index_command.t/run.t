@@ -19,6 +19,10 @@ With the right command line arguments:
   $ odoc compile --parent page --search-asset fuse.js.js --search-asset index.js -I . j.cmt
   $ odoc compile --parent page --search-asset fuse.js.js --search-asset index.js -I . main.cmt
 
+Equivalently, when --search-asset is omitted, the search-asset references from the parent are used:
+  $ odoc compile --parent page -I . j.cmt
+  $ odoc compile --parent page -I . main.cmt
+
   $ odoc link -I . j.odoc
   $ odoc link -I . main.odoc
   $ odoc link -I . page-page.odoc

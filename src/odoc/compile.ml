@@ -20,7 +20,10 @@ open Or_error
  *)
 
 type parent_spec =
-  | Explicit of Paths.Identifier.ContainerPage.t * Lang.Page.child list
+  | Explicit of
+      Paths.Identifier.ContainerPage.t
+      * Lang.Page.child list
+      * Paths.Reference.Asset.t list
   | Package of Paths.Identifier.ContainerPage.t
   | Noparent
 
@@ -75,13 +78,15 @@ let resolve_parent_page resolver f =
   in
   parse_parent_child_reference f >>= fun r ->
   find_parent r >>= fun page ->
-  extract_parent page.name >>= fun parent -> Ok (parent, page.children)
+  extract_parent page.name >>= fun parent ->
+  Ok (parent, page.children, page.search_assets)
 
 let parent resolver parent_cli_spec =
   match parent_cli_spec with
   | CliParent f ->
-      resolve_parent_page resolver f >>= fun (parent, children) ->
-      Ok (Explicit (parent, children))
+      resolve_parent_page resolver f
+      >>= fun (parent, children, search_assets) ->
+      Ok (Explicit (parent, children, search_assets))
   | CliPackage package ->
       Ok (Package (Paths.Identifier.Mk.page (None, PageName.make_std package)))
   | CliNoparent -> Ok Noparent
@@ -157,7 +162,7 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   in
   match parent_spec with
   | Noparent -> result None
-  | Explicit (parent, children) ->
+  | Explicit (parent, children, _) ->
       if List.exists check_child children then result (Some parent)
       else Error (`Msg "Specified parent is not a parent of this file")
   | Package parent -> result (Some parent)
@@ -205,7 +210,8 @@ let mld ~parent_spec ~output ~children ~search_assets ~warnings_options input =
   (if children = [] then
      (* No children, this is a leaf page. *)
      match parent_spec with
-     | Explicit (p, _) -> Ok (Paths.Identifier.Mk.leaf_page (Some p, page_name))
+     | Explicit (p, _, _) ->
+         Ok (Paths.Identifier.Mk.leaf_page (Some p, page_name))
      | Package parent ->
          Ok (Paths.Identifier.Mk.leaf_page (Some parent, page_name))
      | Noparent -> Ok (Paths.Identifier.Mk.leaf_page (None, page_name))
@@ -216,7 +222,7 @@ let mld ~parent_spec ~output ~children ~search_assets ~warnings_options input =
        else Error (`Msg "Specified parent is not a parent of this file")
      in
      (match parent_spec with
-     | Explicit (p, cs) ->
+     | Explicit (p, cs, _) ->
          check cs @@ Paths.Identifier.Mk.page (Some p, page_name)
      | Package parent ->
          Ok (Paths.Identifier.Mk.page (Some parent, page_name))
@@ -255,7 +261,10 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     ~warnings_options ~source ~cmt_filename_opt ~search_assets input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let search_assets : Paths.Reference.Asset.t list =
-    List.map (fun a -> `Root (a, `TAsset)) search_assets
+    match (search_assets, parent_spec) with
+    | [], Explicit (_, _, sa) ->
+        sa (* When no search assets are given, we use the one from the parent *)
+    | search_assets, _ -> List.map (fun a -> `Root (a, `TAsset)) search_assets
     (* Assets references are considered as "simple" reference, there is no way
        to specify the parent page of an asset. Therefore, search assets need to
        be children of a page ancestor. *)
@@ -298,7 +307,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let parent =
       match parent_spec with
       | Noparent -> None
-      | Explicit (parent, _) -> Some parent
+      | Explicit (parent, _, _) -> Some parent
       | Package parent -> Some parent
     in
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in

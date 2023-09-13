@@ -30,7 +30,9 @@ val name_of_output : prefix:string -> Fs.File.t -> string
 val resolve_parent_page :
   Resolver.t ->
   string ->
-  (Identifier.ContainerPage.t * Lang.Page.child list, [> msg ]) result
+  ( Identifier.ContainerPage.t * Lang.Page.child list * Reference.Asset.t list,
+    [> msg ] )
+  result
 (** Parse and resolve a parent reference. Returns the identifier of the parent
     and its children as a list of reference. *)
 
