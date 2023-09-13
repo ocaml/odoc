@@ -29,7 +29,7 @@ Equivalently, when --search-asset is omitted, the search-asset references from t
 
 This command generates a json index containing all .odocl files found in the search path (-I). If -o is not provided, the file is saved as index.json.
 
-  $ echo -e "main.odocl\npage-page.odocl\nj.odocl\n" > index_map
+  $ printf "main.odocl\npage-page.odocl\nj.odocl\n" > index_map
 
   $ odoc compile-index index_map
 
@@ -173,12 +173,12 @@ This response should be a JSON entry of the form of the [display] field of a ind
 
 Here, we use fuse.js to generate such an asset.
 
-  $ echo -e "\n\nlet documents = " > index.js
+  $ printf "\n\nlet documents = " > index.js
   $ cat index.json >> index.js
 
-  $ echo -e "\n\nconst options = { keys: ['id', 'doc'] };" >> index.js
-  $ echo -e "\nvar idx_fuse = new Fuse(documents, options);" >> index.js
-  $ echo -e "\nonmessage = (m) => {\n  let query = m.data;\n  let result = idx_fuse.search(query);\n  postMessage(result.slice(0,200).map(a => a.item.display));};" >> index.js
+  $ printf "\n\nconst options = { keys: ['id', 'doc'] };" >> index.js
+  $ printf "\nvar idx_fuse = new Fuse(documents, options);" >> index.js
+  $ printf "\nonmessage = (m) => {\n  let query = m.data;\n  let result = idx_fuse.search(query);\n  postMessage(result.slice(0,200).map(a => a.item.display));};" >> index.js
 
 We now generate the html, passing the assets:
 
@@ -217,7 +217,7 @@ Testing the warnings:
 
 Passing an inexistent file:
 
-  $ echo -e "inexistent.odocl\n" > index_map
+  $ printf "inexistent.odocl\n" > index_map
   $ odoc compile-index index_map
   File "index_map":
   Warning: "\"inexistent.odocl\": File does not exist"
@@ -228,7 +228,7 @@ Passing an odoc file which is neither a compilation unit nor a page:
   $ printf "a.ml\n" > source_tree.map
   $ odoc source-tree -I . --parent page -o src-source.odoc source_tree.map
 
-  $ echo -e "src-source.odoc\n" > index_map
+  $ printf "src-source.odoc\n" > index_map
   $ odoc compile-index index_map
   File "index_map":
   Warning: "Only pages and unit are allowed as input when generating an index"
@@ -236,7 +236,7 @@ Passing an odoc file which is neither a compilation unit nor a page:
 Passing a file which is not a correctly marshalled one:
 
   $ echo hello > my_file
-  $ echo -e "my_file\n" > index_map
+  $ printf "my_file\n" > index_map
   $ odoc compile-index index_map
   File "index_map":
   Warning: "Error while unmarshalling \"my_file\": End_of_file\n"
