@@ -1,11 +1,11 @@
 (library
- (name html_frontend)
+ (name odoc_html_frontend)
  (public_name odoc.search_html_frontend)
  (libraries tyxml)
- (modules html_frontend))
+ (modules odoc_html_frontend))
 
 (library
  (name odoc_search)
  (public_name odoc.search)
- (libraries odoc_html odoc_model html_frontend tyxml)
- (modules :standard \ html_frontend))
+ (libraries odoc_html odoc_model odoc_html_frontend tyxml)
+ (modules :standard \ odoc_html_frontend))
