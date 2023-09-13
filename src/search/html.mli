@@ -23,7 +23,6 @@ val of_strings :
   doc:string ->
   html list
 
-
 val names_of_id : Paths.Identifier.t -> string * string
 (** [names_of_id id] is [("X.Y", "foo")] if [id] corresponds to [X.Y.foo]. 
     The tuple is intended to be given respectively to the [prefix_name] and 
@@ -47,5 +46,3 @@ val typedecl_params_of_entry : Entry.t -> string option
 (** [typedecl_params_of_entry e] is [Some "'a"] if the entry correspond to
     ['a t]. If the entry is not a typedecl, or if the typedecl does not have a
     type parameter, then it returns [None]. *)
-
-

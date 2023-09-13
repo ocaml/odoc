@@ -19,8 +19,9 @@ type item =
   | ModuleType of ModuleType.t
   | Doc of Comment.docs_or_stop
 
-(** Bellow are the folding functions. For items that may contain others, such as
-    [signature], it folds recursively on the sub-items.. *)
+(** Bellow are the folding functions. For items that may contain
+    others, such as [signature], it folds recursively on the
+    sub-items. It does not recurse into internal items. *)
 
 val unit : f:('a -> item -> 'a) -> 'a -> Compilation_unit.t -> 'a
 val page : f:('a -> item -> 'a) -> 'a -> Page.t -> 'a

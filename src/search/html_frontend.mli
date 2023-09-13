@@ -14,14 +14,16 @@ val of_strings :
   name:string option ->
   rhs:string option ->
   typedecl_params:string option ->
-  doc:string -> [> `Code | `Div ] Tyxml_html.elt list
+  doc:string ->
+  [> `Code | `Div ] Tyxml_html.elt list
 (** [of_string] generates the html of an entry using strings associated to 
     the relevant parts of the entry. If the strings have the correct values,
     it will return the same HTML as {!Odoc_search.Html.of_entry}. Correct values
     are given by {!Odoc_search.Html}, and for kinds, bellow. *)
 
-(** Kinds *)
 val kind_doc : string
+(** Kinds *)
+
 val kind_typedecl : string
 val kind_module : string
 val kind_exception : string
