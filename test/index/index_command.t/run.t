@@ -166,12 +166,12 @@ This response should be a JSON entry of the form of the [display] field of a ind
 
 Here, we use fuse.js to generate such an asset.
 
-  $ echo "\n\nlet documents = " > index.js
+  $ echo -e "\n\nlet documents = " > index.js
   $ cat index.json >> index.js
 
-  $ echo "\n\nconst options = { keys: ['id', 'doc'] };" >> index.js
-  $ echo "\nvar idx_fuse = new Fuse(documents, options);" >> index.js
-  $ echo "\nonmessage = (m) => {\n  let query = m.data;\n  let result = idx_fuse.search(query);\n  postMessage(result.slice(0,200).map(a => a.item.display));};" >> index.js
+  $ echo -e "\n\nconst options = { keys: ['id', 'doc'] };" >> index.js
+  $ echo -e "\nvar idx_fuse = new Fuse(documents, options);" >> index.js
+  $ echo -e "\nonmessage = (m) => {\n  let query = m.data;\n  let result = idx_fuse.search(query);\n  postMessage(result.slice(0,200).map(a => a.item.display));};" >> index.js
 
 We now generate the html, passing the assets:
 

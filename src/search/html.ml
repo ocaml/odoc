@@ -159,7 +159,7 @@ let string_of_kind =
 
 let value_rhs (t : Entry.value_entry) = " : " ^ Text.of_type t.type_
 
-let of_strings  = Html_frontend.of_strings
+let of_strings = Html_frontend.of_strings
 let rhs_of_kind (entry : Entry.kind) =
   match entry with
   | TypeDecl td -> typedecl_rhs td
