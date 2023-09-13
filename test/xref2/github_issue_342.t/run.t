@@ -10,16 +10,16 @@ A quick test to repro the issue found in #342
 The table of content:
 
   $ cat html/Foo/index.html | grep "odoc-toc" -A 9
-     <nav class="odoc-toc">
-      <ul>
-       <li>
-        <a href="#references--and-with-text-in-title">References <code>A</code>
-          and with text in title
-        </a>
-       </li>
-       <li>
-        <a href="#an-url--and-with-text-in-a-title">An url http://ocaml.org
-          and with text in a title
+    <nav class="odoc-toc">
+     <ul>
+      <li>
+       <a href="#references--and-with-text-in-title">References <code>A</code>
+         and with text in title
+       </a>
+      </li>
+      <li>
+       <a href="#an-url--and-with-text-in-a-title">An url http://ocaml.org
+         and with text in a title
 
 The rendered headings
 

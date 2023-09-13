@@ -757,7 +757,7 @@ td.def-doc *:first-child {
   line-height: 1.2;
 }
 
-.odoc-sidebar {
+.odoc-toc {
   position: fixed;
   top: 0px;
   bottom: 0px;
@@ -772,7 +772,7 @@ td.def-doc *:first-child {
   padding-right: 2ex;
 }
 
-.odoc-sidebar ul li a {
+.odoc-toc ul li a {
   font-family: "Fira Sans", sans-serif;
   font-size: 0.95em;
   color: var(--color);

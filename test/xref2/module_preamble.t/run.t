@@ -84,11 +84,9 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
      <p>Module B. This paragraph is the synopsis.</p>
      <p>This paragraph and the previous are part of the preamble.</p>
     </header>
-    <div class="odoc-sidebar">
-     <nav class="odoc-toc">
-      <ul><li><a href="#an-heading">An heading</a></li></ul>
-     </nav>
-    </div>
+    <nav class="odoc-toc">
+     <ul><li><a href="#an-heading">An heading</a></li></ul>
+    </nav>
     <div class="odoc-content">
      <h3 id="an-heading"><a href="#an-heading" class="anchor"></a>An heading
      </h3>
