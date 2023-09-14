@@ -187,9 +187,7 @@ end = struct
               "Either --package or --parent should be specified, not both")
     in
     let source =
-      match
-        (source_parent_file, source_name)
-      with
+      match (source_parent_file, source_name) with
       | Some parent, Some name -> Ok (Some (parent, name))
       | Some _, None | None, Some _ ->
           Error
@@ -198,11 +196,10 @@ end = struct
                same time.")
       | None, None -> Ok None
     in
-    begin
-      if Fs.File.get_ext input = ".cmt" && cmt_filename_opt <> None then
-        Error (`Cli_error "--cmt is redundant if the input is a cmt file")
-      else Ok ()
-    end >>= fun () ->
+    (if Fs.File.get_ext input = ".cmt" && cmt_filename_opt <> None then
+       Error (`Cli_error "--cmt is redundant if the input is a cmt file")
+     else Ok ())
+    >>= fun () ->
     parent_cli_spec >>= fun parent_cli_spec ->
     source >>= fun source ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);

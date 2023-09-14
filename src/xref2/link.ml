@@ -9,7 +9,9 @@ end
 
 let locations env id locs =
   let id = (id :> Id.NonSrc.t) in
-  match locs with Some _ as locs -> locs | None -> Shape_tools.lookup_def env id
+  match locs with
+  | Some _ as locs -> locs
+  | None -> Shape_tools.lookup_def env id
 
 (** Equivalent to {!Comment.synopsis}. *)
 let synopsis_from_comment (docs : Component.CComment.docs) =
