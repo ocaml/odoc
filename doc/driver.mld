@@ -679,7 +679,7 @@ let index_generate ?(ignore_output = false) () =
   let index_map = Fpath.v "index.map" in
   let () = Bos.OS.File.write_lines index_map files |> get_ok in
   Bos.OS.File.writef (Fpath.v search_file);
-  let cmd = odoc % "compile-index" % "-o" % "html/index.json" % p index_map in
+  let cmd = odoc % "compile-index" % "-o" % "html/index.json" % "--file-list" % p index_map in
   let lines = run cmd in
   if not ignore_output then
     add_prefixed_output cmd generate_output "index compilation" lines;

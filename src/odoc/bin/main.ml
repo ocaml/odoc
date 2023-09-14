@@ -413,9 +413,15 @@ module Indexing = struct
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.of_string "index.json"
 
-  let index dst warnings_options input =
+  let index dst warnings_options inputs_in_file inputs =
     let output = output_file ~dst in
-    Indexing.compile ~output ~warnings_options input
+    match (inputs_in_file, inputs) with
+    | [], [] ->
+        Error
+          (`Msg
+            "At least one of --file-list or an .odocl file must be passed to \
+             odoc compile-index")
+    | _ -> Indexing.compile ~output ~warnings_options inputs_in_file inputs
 
   let cmd =
     let dst =
@@ -426,12 +432,22 @@ module Indexing = struct
       Arg.(
         value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
     in
-    let input =
-      let doc = "Input text file containing a line-separated list of paths." in
+    let inputs_in_file =
+      let doc =
+        "Input text file containing a line-separated list of paths to .odocl \
+         files to index."
+      in
       Arg.(
-        required & pos 0 (some convert_fpath) None & info ~doc ~docv:"FILE" [])
+        value & opt_all convert_fpath []
+        & info ~doc ~docv:"FILE" [ "file-list" ])
     in
-    Term.(const handle_error $ (const index $ dst $ warnings_options $ input))
+    let inputs =
+      let doc = ".odocl file to index" in
+      Arg.(value & pos_all convert_fpath [] & info ~doc ~docv:"FILE" [])
+    in
+    Term.(
+      const handle_error
+      $ (const index $ dst $ warnings_options $ inputs_in_file $ inputs))
 
   let info ~docs =
     let doc =

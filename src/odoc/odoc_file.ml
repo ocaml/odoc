@@ -64,7 +64,7 @@ let save_unit file ~warnings m =
 let load_ file f =
   let file = Fs.File.to_string file in
   (if Sys.file_exists file then Ok file
-   else Error (`Msg (Printf.sprintf "%S: File does not exist" file)))
+   else Error (`Msg (Printf.sprintf "File does not exist")))
   >>= fun file ->
   let ic = open_in_bin file in
   let res =
