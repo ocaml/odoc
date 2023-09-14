@@ -8,6 +8,9 @@ loader/doc_attr.ml
 loader/implementation.ml
 loader/lookup_def.ml
 loader/lookup_def.mli
+loader/odoc_loader.ml
 syntax_highlighter/syntax_highlighter.ml
 model/*.cppo.ml
 html_support_files/*.ml
+xref2/shape_tools.*
+
