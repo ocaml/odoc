@@ -22,8 +22,17 @@ let parse_input_file input =
   in
   Ok files
 
-let compile ~output ~warnings_options input =
-  parse_input_file input >>= fun files ->
+let parse_input_files input =
+  List.fold_left
+    (fun acc file ->
+      acc >>= fun acc ->
+      parse_input_file file >>= fun files -> Ok (files :: acc))
+    (Ok []) input
+  >>= fun files -> Ok (List.concat files)
+
+let compile ~output ~warnings_options inputs_in_file inputs =
+  parse_input_files inputs_in_file >>= fun files ->
+  let files = List.rev_append inputs files in
   let output_channel =
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     open_out_bin (Fs.File.to_string output)
@@ -47,7 +56,7 @@ let compile ~output ~warnings_options input =
         | Ok acc -> acc
         | Error (`Msg m) ->
             Error.raise_warning ~non_fatal:true
-              (Error.filename_only "%S" m (Fs.File.to_string input));
+              (Error.filename_only "%s" m (Fs.File.to_string file));
             acc)
       true files
   in

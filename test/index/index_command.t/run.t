@@ -27,11 +27,21 @@ Equivalently, when --search-asset is omitted, the search-asset references from t
   $ odoc link -I . main.odoc
   $ odoc link -I . page-page.odoc
 
-This command generates a json index containing all .odocl files found in the search path (-I). If -o is not provided, the file is saved as index.json.
+This command generates a json index containing all .odocl given as input. If -o is not provided, the file is saved as index.json.
+
+Odocl files can be given either in a list (using --file-list, passing a file with the list of line-separated files), or by passing directly the name of the files.
 
   $ printf "main.odocl\npage-page.odocl\nj.odocl\n" > index_map
+  $ odoc compile-index --file-list index_map
 
-  $ odoc compile-index index_map
+Or equivalently:
+
+  $ printf "main.odocl\npage-page.odocl\n" > index_map
+  $ odoc compile-index --file-list index_map j.odocl
+
+Or equivalently:
+
+  $ odoc compile-index main.odocl page-page.odocl j.odocl
 
 The index file, one entry per file
   $ cat index.json | jq sort | jq '.[]' -c
@@ -217,10 +227,16 @@ Testing the warnings:
 
 Passing an inexistent file:
 
+  $ odoc compile-index inexistent.odocl
+  odoc: FILE… arguments: no 'inexistent.odocl' file or directory
+  Usage: odoc compile-index [--file-list=FILE] [OPTION]… [FILE]…
+  Try 'odoc compile-index --help' or 'odoc --help' for more information.
+  [2]
+
   $ printf "inexistent.odocl\n" > index_map
-  $ odoc compile-index index_map
-  File "index_map":
-  Warning: "\"inexistent.odocl\": File does not exist"
+  $ odoc compile-index --file-list index_map
+  File "inexistent.odocl":
+  Warning: File does not exist
 
 Passing an odoc file which is neither a compilation unit nor a page:
 
@@ -228,16 +244,20 @@ Passing an odoc file which is neither a compilation unit nor a page:
   $ printf "a.ml\n" > source_tree.map
   $ odoc source-tree -I . --parent page -o src-source.odoc source_tree.map
 
-  $ printf "src-source.odoc\n" > index_map
-  $ odoc compile-index index_map
-  File "index_map":
-  Warning: "Only pages and unit are allowed as input when generating an index"
+  $ odoc compile-index src-source.odoc
+  File "src-source.odoc":
+  Warning: Only pages and unit are allowed as input when generating an index
 
 Passing a file which is not a correctly marshalled one:
 
   $ echo hello > my_file
-  $ printf "my_file\n" > index_map
-  $ odoc compile-index index_map
-  File "index_map":
-  Warning: "Error while unmarshalling \"my_file\": End_of_file\n"
+  $ odoc compile-index my_file
+  File "my_file":
+  Warning: Error while unmarshalling "my_file": End_of_file
+  
 
+Passing no file:
+
+  $ odoc compile-index
+  ERROR: At least one of --file-list or an .odocl file must be passed to odoc compile-index
+  [1]
