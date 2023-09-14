@@ -18,7 +18,6 @@ type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_page : string -> lookup_page_result;
-  lookup_def : Identifier.NonSrc.t -> Identifier.SourceLocation.t option;
 }
 
 let unique_id =
@@ -423,10 +422,6 @@ let lookup_root_module name env =
       r.lookups <- LookupTypeSet.add (RootModule (name, None)) r.lookups
   | None, _ -> ());
   result
-
-let lookup_def id env =
-  let id = (id :> Paths.Identifier.NonSrc.t) in
-  match env.resolver with Some r -> r.lookup_def id | None -> None
 
 let lookup_page name env =
   match env.resolver with None -> None | Some r -> r.lookup_page name

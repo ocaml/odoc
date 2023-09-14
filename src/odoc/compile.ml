@@ -97,50 +97,22 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver ~make_root ~source ~hidden
+let resolve_and_substitute ~resolver ~make_root ~source_id_opt ~cmt_filename_opt ~hidden
     (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
-  let unit, cmt_infos =
+  let unit =
     match input_type with
     | `Cmti ->
-        let unit =
-          Odoc_loader.read_cmti ~make_root ~parent ~filename
-          |> Error.raise_errors_and_warnings in
-        let cmt_infos =
-          match source with
-          | None -> None
-          | Some (source_id, filename) ->
-              Odoc_loader.read_cmt_infos (Some source_id) unit.id ~filename:(Fs.File.to_string filename)
-              |> Error.raise_errors_and_warnings
-        in
-        (unit, cmt_infos)
+        Odoc_loader.read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt 
+        |> Error.raise_errors_and_warnings
     | `Cmt ->
-        let source_id_opt =
-          match source with
-          | None -> None
-          | Some (source_id, _) -> Some source_id in
         Odoc_loader.read_cmt ~make_root ~parent ~filename ~source_id_opt
         |> Error.raise_errors_and_warnings
     | `Cmi ->
-        let unit =
-          Odoc_loader.read_cmi ~make_root ~parent ~filename
-          |> Error.raise_errors_and_warnings
-        in
-        (unit, None)
+        Odoc_loader.read_cmi ~make_root ~parent ~filename
+        |> Error.raise_errors_and_warnings
   in
   let unit = { unit with hidden = hidden || unit.hidden } in
-  let impl_shape =
-    match cmt_infos with Some (shape, _) -> Some shape | None -> None
-  in
-  let source_info =
-    match source with
-    | Some (id, _) ->
-        let infos =
-          match cmt_infos with Some (_, source_info) -> source_info | _ -> []
-        in
-        Some { Lang.Source_info.id; infos }
-    | None -> None
-  in
   if not unit.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
       (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
@@ -148,9 +120,9 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
          Printf.sprintf " Using %S while you should use the .cmti file" filename);
   (* Resolve imports, used by the [link-deps] command. *)
   let unit =
-    { unit with imports = resolve_imports resolver unit.imports; source_info }
+    { unit with imports = resolve_imports resolver unit.imports }
   in
-  let env = Resolver.build_compile_env_for_unit resolver impl_shape unit in
+  let env = Resolver.build_compile_env_for_unit resolver unit in
   let compiled =
     Odoc_xref2.Compile.compile ~filename env unit |> Error.raise_warnings
   in
@@ -161,7 +133,7 @@ let resolve_and_substitute ~resolver ~make_root ~source ~hidden
      working on. *)
   (*    let expand_env = Env.build env (`Unit resolved) in*)
   (*    let expanded = Odoc_xref2.Expand.expand (Env.expander expand_env) resolved in *)
-  (compiled, impl_shape)
+  compiled
 
 let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   let open Root in
@@ -278,18 +250,20 @@ let handle_file_ext ext =
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options ~source input =
+    ~warnings_options ~source ~cmt_filename_opt input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
-    check_is_none "Not expecting source (--source) when compiling pages." source
+    check_is_none "Not expecting source (--source-*) when compiling pages." source
+    >>= fun () ->
+    check_is_none "Not expecting cmt filename (--cmt) when compiling pages." cmt_filename_opt
     >>= fun () -> mld ~parent_spec ~output ~warnings_options ~children input
   else
     check_is_empty "Not expecting children (--child) when compiling modules."
       children
     >>= fun () ->
     (match source with
-    | Some (parent, name, cmt) -> (
+    | Some (parent, name) -> (
         Odoc_file.load parent >>= fun parent ->
         let err_not_parent () =
           Error (`Msg "Specified source-parent is not a parent of the source.")
@@ -298,10 +272,10 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
         | Odoc_file.Source_tree_content page -> (
             match page.Lang.SourceTree.name with
             | { Paths.Identifier.iv = `Page _; _ } as parent_id ->
-                let name = Paths.Identifier.Mk.source_page (parent_id, name) in
+                let id = Paths.Identifier.Mk.source_page (parent_id, name) in
                 if
-                  List.exists (Paths.Identifier.equal name) page.source_children
-                then Ok (Some (name, cmt))
+                  List.exists (Paths.Identifier.equal id) page.source_children
+                then Ok (Some id)
                 else err_not_parent ()
             | { iv = `LeafPage _; _ } -> err_not_parent ())
         | Unit_content _ | Odoc_file.Page_content _ ->
@@ -309,7 +283,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
               (`Msg "Specified source-parent should be a page but is a module.")
         )
     | None -> Ok None)
-    >>= fun source ->
+    >>= fun source_id_opt ->
     handle_file_ext ext >>= fun input_type ->
     let parent =
       match parent_spec with
@@ -320,8 +294,8 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver ~make_root ~hidden ~source parent
-            input input_type)
+          resolve_and_substitute ~resolver ~make_root ~hidden ~source_id_opt ~cmt_filename_opt
+          parent input input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in

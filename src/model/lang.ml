@@ -486,6 +486,8 @@ module rec Compilation_unit : sig
     linked : bool;  (** Whether this unit has been linked. *)
     canonical : Path.Module.t option;
     source_info : Source_info.t option;
+    shape : Compat.shape option;
+    uid_to_id : Paths.Identifier.SourceLocation.t Compat.shape_uid_map;
   }
 end =
   Compilation_unit

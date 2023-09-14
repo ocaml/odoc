@@ -23,7 +23,7 @@ let documents_of_odocl ~warnings_options ~renderer ~extra ~syntax input =
       documents_of_page ~warnings_options ~syntax ~renderer ~extra odoctree
   | Source_tree_content srctree ->
       Ok (Renderer.documents_of_source_tree ~syntax srctree)
-  | Unit_content (odoctree, _) ->
+  | Unit_content odoctree ->
       documents_of_unit ~warnings_options ~syntax ~renderer ~extra odoctree
 
 let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax

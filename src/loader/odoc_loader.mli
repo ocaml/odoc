@@ -2,8 +2,6 @@ open Result
 open Odoc_model
 open Odoc_model.Paths
 
-module Lookup_def = Lookup_def
-
 type make_root =
   module_name:string ->
   digest:Digest.t ->
@@ -15,18 +13,12 @@ val read_string :
   string ->
   (Comment.docs_or_stop, Error.t) result Error.with_warnings
 
-val read_cmt_infos :
-  Identifier.SourcePage.t option ->
-  Identifier.RootModule.t ->
-  filename:string ->
-  ((Lookup_def.t * Lang.Source_info.infos) option, Error.t) result
-  Error.with_warnings
-(** Read the shape from a .cmt file. *)
-
 val read_cmti :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
+  source_id_opt:Identifier.SourcePage.t option ->
+  cmt_filename_opt:string option ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_cmt :
@@ -34,11 +26,9 @@ val read_cmt :
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
   source_id_opt:Identifier.SourcePage.t option ->
-  ( Lang.Compilation_unit.t * (Lookup_def.t * Lang.Source_info.infos) option,
-    Error.t )
+  ( Lang.Compilation_unit.t,  Error.t )
   result
   Error.with_warnings
-(** The shape is not returned in case of a pack. *)
 
 val read_cmi :
   make_root:make_root ->

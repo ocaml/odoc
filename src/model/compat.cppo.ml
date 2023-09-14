@@ -223,3 +223,27 @@ and modtype_declaration : Types.modtype_declaration -> modtype_declaration = fun
 
 
 #endif
+
+(* Shapes were introduced in OCaml 4.14.0. They're used for resolving to source-code
+   locations *)
+#if OCAML_VERSION >= (4,14,0)
+
+type shape = Shape.t
+
+type 'a shape_uid_map = 'a Shape.Uid.Map.t
+
+let empty_map = Shape.Uid.Map.empty
+
+let shape_of_cmt_infos : Cmt_format.cmt_infos -> shape option = fun x -> x.cmt_impl_shape
+
+#else
+
+type shape = unit
+
+type 'a shape_uid_map = unit
+
+let empty_map = ()
+
+let shape_of_cmt_infos : Cmt_format.cmt_infos -> shape option = fun _ -> None
+
+#endif

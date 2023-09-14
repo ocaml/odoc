@@ -17,7 +17,7 @@
 open Odoc_model
 open Or_error
 
-type unit_content = Lang.Compilation_unit.t * Odoc_loader.Lookup_def.t option
+type unit_content = Lang.Compilation_unit.t
 
 type content =
   | Page_content of Lang.Page.t
@@ -57,9 +57,9 @@ let save_source_tree file ~warnings src_page =
   save_unit file src_page.Lang.SourceTree.root
     { content = Source_tree_content src_page; warnings }
 
-let save_unit file ~warnings (m, s) =
+let save_unit file ~warnings m =
   save_unit file m.Lang.Compilation_unit.root
-    { content = Unit_content (m, s); warnings }
+    { content = Unit_content m; warnings }
 
 let load_ file f =
   let file = Fs.File.to_string file in
