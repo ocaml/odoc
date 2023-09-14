@@ -863,13 +863,60 @@ td.def-doc *:first-child {
      present in every search result list, and we do not want the size of the
      column to change with different results. */
   grid-template-columns: [kinds] 59px [titles] 1fr;
-  flex-wrap: nowrap;
-  flex-direction: row;
   border-bottom: var(--search-results-border) solid 1px;
   background-color: inherit;
   outline:0;
   padding-right: 0.5rem;
 
+}
+
+.odoc-search .search-no-result {
+  color: var(--color);
+  border-bottom: var(--search-results-border) solid 1px;
+  background-color: inherit;
+  outline:0;
+  padding: 10px;
+  padding-right: 0.5rem;
+}
+
+.search-bar-container {
+  display: flex;
+  align-items: center;
+}
+
+.search-snake {
+  display: flex;
+  align-items: center;
+  width: 0;
+  height: 1.75em;
+}
+.search-snake:after {
+  content: " ";
+  display: block;
+  width: 1.75em;
+  height: 1.75em;
+  margin-left: 10px;
+  border-radius: 50%;
+  border: 3px solid #aaa;
+  border-color: #aaa transparent #aaa transparent;
+  animation: search-snake 1.2s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes search-snake {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.search-snake.search-busy {
+  visibility: visible;
+}
+
+.search-snake {
+  visibility: hidden;
 }
 
 .odoc-search .search-entry p {
