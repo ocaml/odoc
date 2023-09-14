@@ -263,26 +263,50 @@ body {
 }
 
 body {
-  margin-left: calc(10vw + 20ex);
-  margin-right: 4ex;
-  margin-top: 30px;
-  margin-bottom: 50px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 4ex;
 }
 
 body.odoc {
-  max-width: 100ex;
+  max-width: 132ex;
+  display: grid;
+  grid-template-columns: min-content 1fr;
+  column-gap: 4ex;
+  row-gap: 2ex;
 }
 
 body.odoc-src {
   margin-right: calc(10vw + 20ex);
 }
 
+.odoc-content {
+  grid-row: 4;
+  grid-column: 2;
+}
+
+.odoc-preamble > *:first-child {
+  /* This make the first thing in the preamble align with the sidebar */
+  padding-top: 0;
+  margin-top: 0;
+}
+
 header {
   margin-bottom: 30px;
 }
 
+header.odoc-preamble {
+  grid-column: 2;
+  grid-row: 3;
+}
+
 nav {
   font-family: "Fira Sans", sans-serif;
+}
+
+nav.odoc-nav {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 /* Basic markup elements */
@@ -480,7 +504,7 @@ h4 {
   font-size: 1.12em;
 }
 
-/* Comment delimiters, hidden but accessible to screen readers and 
+/* Comment delimiters, hidden but accessible to screen readers and
    selected for copy/pasting */
 
 /* Taken from bootstrap */
@@ -759,19 +783,29 @@ td.def-doc *:first-child {
   line-height: 1.2;
 }
 
+.odoc-search + * + .odoc-toc {
+  --toc-top: calc(var(--search-bar-height) + var(--search-padding-top) + 20px);
+  max-height: calc(100vh - 2 * var(--toc-top));
+  top: var(--toc-top)
+}
+
 .odoc-toc {
-  position: fixed;
-  top: 0px;
-  bottom: 0px;
-  left: 0px;
-  max-width: 30ex;
-  min-width: 26ex;
-  width: 20%;
+  --toc-top: 20px;
+  width: 28ex;
   background: var(--toc-background);
   overflow: auto;
   color: var(--toc-color);
   padding-left: 2ex;
   padding-right: 2ex;
+  grid-row-start: 3;
+  grid-row-end: 5;
+  grid-column: 1;
+  height: fit-content;
+  border: solid 1px var(--border);
+  border-radius: 5px;
+  position:sticky;
+  max-height: calc(100vh - 2 * var(--toc-top));
+  top: var(--toc-top)
 }
 
 .odoc-toc ul li a {
@@ -789,18 +823,24 @@ td.def-doc *:first-child {
 }
 
 :root {
-  --search-bar-height: 20px;
+  --search-bar-height: 25px;
+  --search-padding-top: 1rem;
 }
 
 .odoc-search {
-  --padding-top: 1rem;
   position: sticky;
   top: 0;
   background: var(--main-background);
-  height: calc(var(--search-bar-height) + var(--padding-top));
+  /* This amounts to fit-content when the search is not active, but when you
+  have the search results displayed, you do not want the height of the search
+  container to change.  */
+  height: calc(var(--search-bar-height) + var(--search-padding-top));
   width: 100%;
-  padding-top: var(--padding-top);
+  padding-top: var(--search-padding-top);
   z-index: 1;
+  grid-row: 1;
+  grid-column-start: 1;
+  grid-column-end: 3;
 }
 
 
@@ -808,7 +848,6 @@ td.def-doc *:first-child {
   width: 100%;
   position: relative;
   left: 0;
-  transition: left 0.3s, transform 0.3s, width 0.3s;
   display: grid;
   /* The second column is for the search snake, which has 0 width */
   grid-template-columns: 1fr 0fr;
@@ -818,20 +857,13 @@ td.def-doc *:first-child {
   background: transparent;
 }
 
-.odoc-search:focus-within .search-inner {
-  /* Search inner is bigger than its parent, but the overflow needs to be
-     centered. */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 110%;
-}
-
 .odoc-search .search-bar {
   position: relative;
   z-index: 2;
   font-size: 1em;
   transition: font-size 0.3s;
   box-shadow: 0px 0px 0.2rem 0.3em var(--main-background);
+  height: var(--search-bar-height);
 }
 
 .odoc-search:focus-within .search-bar {
@@ -934,7 +966,7 @@ td.def-doc *:first-child {
 .odoc-search .search-entry {
   color: var(--color);
   display: grid;
-  /* Possible kinds are the following : 
+  /* Possible kinds are the following :
      "doc" "type" "mod" "exn" "class" "meth" "cons" "sig" "cons" "field" "val"
      and "ext".
      As the longest is 5 characters (and the font monospace), we give 5
@@ -1113,6 +1145,11 @@ td.def-doc *:first-child {
 @media only screen and (max-width: 110ex) {
   body {
     margin: 2em;
+    padding: 0;
+  }
+
+  body.odoc {
+    display: block;
   }
 
   .odoc-toc {
