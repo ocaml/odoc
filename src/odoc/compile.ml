@@ -97,13 +97,15 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver ~make_root ~source_id_opt ~cmt_filename_opt ~hidden
-    (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
+let resolve_and_substitute ~resolver ~make_root ~source_id_opt ~cmt_filename_opt
+    ~hidden (parent : Paths.Identifier.ContainerPage.t option) input_file
+    input_type =
   let filename = Fs.File.to_string input_file in
   let unit =
     match input_type with
     | `Cmti ->
-        Odoc_loader.read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt 
+        Odoc_loader.read_cmti ~make_root ~parent ~filename ~source_id_opt
+          ~cmt_filename_opt
         |> Error.raise_errors_and_warnings
     | `Cmt ->
         Odoc_loader.read_cmt ~make_root ~parent ~filename ~source_id_opt
@@ -119,9 +121,7 @@ let resolve_and_substitute ~resolver ~make_root ~source_id_opt ~cmt_filename_opt
        else
          Printf.sprintf " Using %S while you should use the .cmti file" filename);
   (* Resolve imports, used by the [link-deps] command. *)
-  let unit =
-    { unit with imports = resolve_imports resolver unit.imports }
-  in
+  let unit = { unit with imports = resolve_imports resolver unit.imports } in
   let env = Resolver.build_compile_env_for_unit resolver unit in
   let compiled =
     Odoc_xref2.Compile.compile ~filename env unit |> Error.raise_warnings
@@ -254,9 +254,11 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
-    check_is_none "Not expecting source (--source-*) when compiling pages." source
+    check_is_none "Not expecting source (--source-*) when compiling pages."
+      source
     >>= fun () ->
-    check_is_none "Not expecting cmt filename (--cmt) when compiling pages." cmt_filename_opt
+    check_is_none "Not expecting cmt filename (--cmt) when compiling pages."
+      cmt_filename_opt
     >>= fun () -> mld ~parent_spec ~output ~warnings_options ~children input
   else
     check_is_empty "Not expecting children (--child) when compiling modules."
@@ -273,8 +275,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
             match page.Lang.SourceTree.name with
             | { Paths.Identifier.iv = `Page _; _ } as parent_id ->
                 let id = Paths.Identifier.Mk.source_page (parent_id, name) in
-                if
-                  List.exists (Paths.Identifier.equal id) page.source_children
+                if List.exists (Paths.Identifier.equal id) page.source_children
                 then Ok (Some id)
                 else err_not_parent ()
             | { iv = `LeafPage _; _ } -> err_not_parent ())
@@ -294,8 +295,8 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver ~make_root ~hidden ~source_id_opt ~cmt_filename_opt
-          parent input input_type)
+          resolve_and_substitute ~resolver ~make_root ~hidden ~source_id_opt
+            ~cmt_filename_opt parent input input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in

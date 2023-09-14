@@ -232,6 +232,7 @@ type shape = Shape.t
 
 type 'a shape_uid_map = 'a Shape.Uid.Map.t
 
+type uid_to_loc = Warnings.loc Types.Uid.Tbl.t
 let empty_map = Shape.Uid.Map.empty
 
 let shape_of_cmt_infos : Cmt_format.cmt_infos -> shape option = fun x -> x.cmt_impl_shape
@@ -242,6 +243,7 @@ type shape = unit
 
 type 'a shape_uid_map = unit
 
+type uid_to_loc = unit
 let empty_map = ()
 
 let shape_of_cmt_infos : Cmt_format.cmt_infos -> shape option = fun _ -> None

@@ -26,9 +26,7 @@ val read_cmt :
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
   source_id_opt:Identifier.SourcePage.t option ->
-  ( Lang.Compilation_unit.t,  Error.t )
-  result
-  Error.with_warnings
+  (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_cmi :
   make_root:make_root ->

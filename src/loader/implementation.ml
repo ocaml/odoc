@@ -505,6 +505,6 @@ let of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
 
 #else
 
-let of_cmt _ _ _ _ = []
+let of_cmt _ _ _ _ = (), []
 
 #endif
