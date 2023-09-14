@@ -455,13 +455,10 @@ let anchor_of_identifier id =
   in
   anchor_of_identifier [] id |> String.concat "."
 
-let of_cmt (source_id_opt : Odoc_model.Paths.Identifier.SourcePage.t option)
-    (id : Odoc_model.Paths.Identifier.RootModule.t) (cmt : Cmt_format.cmt_infos)
+let of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
+    (id : Odoc_model.Paths.Identifier.RootModule.t) (structure : Typedtree.structure)
+    (uid_to_loc : Warnings.loc Types.Uid.Tbl.t)
     =
-  let ttree = cmt.cmt_annots in
-  match (source_id_opt, ttree, cmt.cmt_impl_shape) with
-  | Some source_id, Cmt_format.Implementation structure, Some shape ->
-      let uid_to_loc = cmt.cmt_uid_to_loc in
       let env = Ident_env.empty () in
       let vs =
         Analysis.structure (env, uid_to_loc)
@@ -504,14 +501,10 @@ let of_cmt (source_id_opt : Odoc_model.Paths.Identifier.SourcePage.t option)
           uid_to_loc_map
       in
 
-      ( Some (shape, uid_to_id),
-        postprocess_poses source_id vs uid_to_id uid_to_loc )
-  | None, _, Some shape ->
-      (Some (shape, Shape.Uid.Map.empty), [] (* At least preserve the shape *))
-  | _ -> (None, [])
+      (uid_to_id, postprocess_poses source_id vs uid_to_id uid_to_loc )
 
 #else
 
-let of_cmt _ _ _ = None, []
+let of_cmt _ _ _ _ = []
 
 #endif

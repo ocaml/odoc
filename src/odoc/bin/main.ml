@@ -168,18 +168,13 @@ end = struct
 
   let compile hidden directories resolve_fwd_refs dst package_opt
       parent_name_opt open_modules children input warnings_options
-      source_parent_file source_name source_cmt =
+      source_parent_file source_name cmt_filename_opt =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
         ~open_modules
     in
-    let input = Fs.File.of_string input
-    and source_cmt =
-      match source_cmt with
-      | None -> None
-      | Some cmt -> Some (Fs.File.of_string cmt)
-    in
+    let input = Fs.File.of_string input in
     let output = output_file ~dst ~input in
     let parent_cli_spec =
       match (parent_name_opt, package_opt) with
@@ -193,39 +188,26 @@ end = struct
     in
     let source =
       match
-        (source_parent_file, source_name, source_cmt, Fs.File.get_ext input)
+        (source_parent_file, source_name)
       with
-      | Some parent, Some name, None, ".cmt" -> Ok (Some (parent, name, input))
-      | Some parent, Some name, Some cmt, ".cmt" ->
-          if Fpath.equal cmt input then Ok (Some (parent, name, input))
-          else
-            Error
-              (`Cli_error
-                "--cmt has to be equal to the input file when this one has \
-                 .cmt extension.")
-      | Some parent, Some name, Some cmt, _ -> Ok (Some (parent, name, cmt))
-      | Some _, Some _, None, _ ->
-          Error
-            (`Cli_error
-              "--cmt has to be passed when --source-parent-file and \
-               --source-name are passed and the input file is not a cmt file.")
-      | Some _, None, _, _ | None, Some _, _, _ ->
+      | Some parent, Some name -> Ok (Some (parent, name))
+      | Some _, None | None, Some _ ->
           Error
             (`Cli_error
               "--source-parent-file and --source-name must be passed at the \
                same time.")
-      | None, None, Some _, _ ->
-          Error
-            (`Cli_error
-              "--cmt should only be passed when --source-parent-file and \
-               --source-name are passed.")
-      | None, None, _, _ -> Ok None
+      | None, None -> Ok None
     in
+    begin
+      if Fs.File.get_ext input = ".cmt" && cmt_filename_opt <> None then
+        Error (`Cli_error "--cmt is redundant if the input is a cmt file")
+      else Ok ()
+    end >>= fun () ->
     parent_cli_spec >>= fun parent_cli_spec ->
     source >>= fun source ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warnings_options ~source input
+      ~warnings_options ~source ~cmt_filename_opt input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in

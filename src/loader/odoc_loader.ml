@@ -1,8 +1,6 @@
 open Result
 module Error = Odoc_model.Error
 
-module Lookup_def = Lookup_def
-
 let read_string parent_definition filename text =
   let location =
     let pos =
@@ -46,9 +44,17 @@ exception Make_root_error of string
 
 (** [cmt_info.cmt_annots = Implementation _] *)
 let read_cmt_infos' source_id_opt id cmt_info =
-  match Implementation.of_cmt source_id_opt id cmt_info with
-  | None, _ -> None
-  | Some shape, jmp_infos -> Some (shape, jmp_infos)
+  match Odoc_model.Compat.shape_of_cmt_infos cmt_info with
+  | Some shape -> begin
+    let uid_to_loc = cmt_info.cmt_uid_to_loc in
+    match source_id_opt, cmt_info.cmt_annots with
+    | Some source_id, Implementation impl ->
+      let (map, source_infos) = Implementation.of_cmt source_id id impl uid_to_loc in
+      (Some shape, map, Some { Odoc_model.Lang.Source_info.id=source_id; infos = source_infos})
+    | _, _ ->
+      (Some shape, Odoc_model.Compat.empty_map, None)
+    end
+  | None -> (None, Odoc_model.Compat.empty_map, None)
 
 let read_cmt_infos source_id_opt id ~filename () =
   match Cmt_format.read_cmt filename with
@@ -59,7 +65,7 @@ let read_cmt_infos source_id_opt id ~filename () =
       | _ -> raise Not_an_implementation)
 
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical content =
+    ?canonical ?shape ~uid_to_id ~source_info content =
   let open Odoc_model.Lang.Compilation_unit in
   let interface, digest =
     match interface with
@@ -95,16 +101,18 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     expansion = None;
     linked = false;
     canonical;
-    source_info = None;
+    source_info;
+    shape;
+    uid_to_id;
   }
 
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical sg =
+    ?canonical ?shape ~uid_to_id sg =
   let content = Odoc_model.Lang.Compilation_unit.Module sg in
   make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical content
+    ?canonical ?shape ~uid_to_id content
 
-let read_cmti ~make_root ~parent ~filename () =
+let read_cmti ~make_root ~parent ~filename ~cmt_filename_opt ~source_id_opt () =
   let cmt_info = Cmt_format.read_cmt filename in
   match cmt_info.cmt_annots with
   | Interface intf -> (
@@ -118,8 +126,15 @@ let read_cmti ~make_root ~parent ~filename () =
               cmt_info.cmt_builddir )
           in
           let id, sg, canonical = Cmti.read_interface parent name intf in
+          let (shape, uid_to_id, source_info) =
+            match cmt_filename_opt with
+            | Some cmt_filename ->
+              read_cmt_infos source_id_opt id ~filename:cmt_filename ()
+            | None ->
+              (None, Odoc_model.Compat.empty_map, None)
+          in
           compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
-            ~interface ~sourcefile ~name ~id ?canonical sg)
+            ~interface ~sourcefile ~name ~id ?shape ~uid_to_id ~source_info ?canonical sg)
   | _ -> raise Not_an_interface
 
 let read_cmt ~make_root ~parent ~filename ~source_id_opt () =
@@ -161,14 +176,14 @@ let read_cmt ~make_root ~parent ~filename ~source_id_opt () =
               items
           in
           let content = Odoc_model.Lang.Compilation_unit.Pack items in
-          ( make_compilation_unit ~make_root ~imports ~interface ~sourcefile
-              ~name ~id content,
-            None )
+          make_compilation_unit ~make_root ~imports ~interface ~sourcefile
+              ~name ~id ~uid_to_id:Odoc_model.Compat.empty_map ~source_info:None content
       | Implementation impl ->
           let id, sg, canonical = Cmt.read_implementation parent name impl in
-          ( compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
-              ~name ~id ?canonical sg,
-            read_cmt_infos' source_id_opt id cmt_info )
+          let (shape, uid_to_id, source_info) =
+            read_cmt_infos source_id_opt id ~filename () in
+          compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
+              ~name ~id ?canonical ?shape ~uid_to_id ~source_info sg
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =
@@ -179,7 +194,7 @@ let read_cmi ~make_root ~parent ~filename () =
         Cmi.read_interface parent name
           (Odoc_model.Compat.signature cmi_info.cmi_sign)
       in
-      compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id sg
+      compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id ~source_info:None ~uid_to_id:Odoc_model.Compat.empty_map sg
   | _ -> raise Corrupted
 
 (** Catch errors from reading the object files and some internal errors *)
@@ -195,11 +210,8 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmt_infos source_id_opt id ~filename =
-  wrap_errors ~filename (read_cmt_infos source_id_opt id ~filename)
-
-let read_cmti ~make_root ~parent ~filename =
-  wrap_errors ~filename (read_cmti ~make_root ~parent ~filename)
+let read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt =
+  wrap_errors ~filename (read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt)
 
 let read_cmt ~make_root ~parent ~filename ~source_id_opt =
   wrap_errors ~filename (read_cmt ~make_root ~parent ~filename ~source_id_opt)

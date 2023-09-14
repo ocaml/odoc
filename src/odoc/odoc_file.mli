@@ -19,7 +19,7 @@
 open Odoc_model
 open Or_error
 
-type unit_content = Lang.Compilation_unit.t * Odoc_loader.Lookup_def.t option
+type unit_content = Lang.Compilation_unit.t
 
 (** Either a page or a module. *)
 type content =

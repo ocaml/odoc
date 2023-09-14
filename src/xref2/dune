@@ -1,6 +1,9 @@
 (library
  (name odoc_xref2)
  (public_name odoc.xref2)
+ (preprocess
+  (action
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
  (libraries odoc_model))
 
 (rule
