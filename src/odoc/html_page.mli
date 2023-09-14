@@ -16,9 +16,13 @@
 
 open Odoc_document
 
-type source = File of Fpath.t | Root of Fpath.t
+module Source : sig
+  type t = File of Fpath.t | Root of Fpath.t
 
-val pp : Format.formatter -> source -> unit
+  val pp : Format.formatter -> t -> unit
+end
+
+type source = Source.t
 
 type args = {
   html_config : Odoc_html.Config.t;
