@@ -41,17 +41,17 @@ let convert_fpath =
 let convert_src_fpath =
   let parse inp =
     match Arg.(conv_parser file) inp with
-    | Ok s -> Result.Ok (Html_page.File (Fs.File.of_string s))
+    | Ok s -> Result.Ok (Html_page.Source.File (Fs.File.of_string s))
     | Error _ as e -> e
-  and print = Html_page.pp in
+  and print = Html_page.Source.pp in
   Arg.conv (parse, print)
 
 let convert_src_dir =
   let parse inp =
     match Arg.(conv_parser dir) inp with
-    | Ok s -> Result.Ok (Html_page.Root (Fs.File.of_string s))
+    | Ok s -> Result.Ok (Html_page.Source.Root (Fs.File.of_string s))
     | Error _ as e -> e
-  and print = Html_page.pp in
+  and print = Html_page.Source.pp in
   Arg.conv (parse, print)
 
 (** On top of the conversion 'string', split into segs. *)
@@ -732,8 +732,9 @@ module Odoc_html_args = struct
 
   let source_root =
     let doc =
-      "Source code root for the compilation unit. It must have been compiled \
-       with --source-parent passed."
+      "Source code root for the compilation unit. Used to find the source file \
+       from the value of --source-name it was compiled with. Incompatible with \
+       --source-file."
     in
     Arg.(
       value

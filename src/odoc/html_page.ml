@@ -16,13 +16,17 @@
 
 open Odoc_model
 
-type source = File of Fpath.t | Root of Fpath.t
+module Source = struct
+  type t = File of Fpath.t | Root of Fpath.t
 
-let pp fmt = function
-  | File f -> Format.fprintf fmt "File: %a" Fpath.pp f
-  | Root f -> Format.fprintf fmt "File: %a" Fpath.pp f
+  let pp fmt = function
+    | File f -> Format.fprintf fmt "File: %a" Fpath.pp f
+    | Root f -> Format.fprintf fmt "File: %a" Fpath.pp f
 
-let to_string f = Format.asprintf "%a" pp f
+  let to_string f = Format.asprintf "%a" pp f
+end
+
+type source = Source.t
 
 type args = {
   html_config : Odoc_html.Config.t;
@@ -38,7 +42,7 @@ let source_documents source_info source ~syntax =
   | Some { Lang.Source_info.id; infos }, Some src -> (
       let file =
         match src with
-        | File f -> f
+        | Source.File f -> f
         | Root f ->
             let open Odoc_model.Paths.Identifier in
             let rec get_path_dir : SourceDir.t -> Fpath.t = function
@@ -76,7 +80,7 @@ let source_documents source_info source ~syntax =
         (Error.filename_only
            "--source argument is invalid on compilation unit that were not \
             compiled with --source-parent and --source-name"
-           (to_string src));
+           (Source.to_string src));
       []
   | None, None -> []
 
