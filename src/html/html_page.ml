@@ -36,6 +36,7 @@ let html_of_search () =
         ~a:[ a_class [ "search-bar-container" ] ]
         [
           input ~a:[ a_class [ "search-bar" ]; a_placeholder "🔎 Search..." ] ();
+          div ~a:[ a_class [ "search-snake" ] ] [];
         ])
   in
   let search_result =
@@ -52,8 +53,7 @@ let sidebar toc =
     | _ ->
         ([ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] (html_of_toc toc) ], true)
   in
-  if has_toc then  toc
-  else []
+  if has_toc then toc else []
 
 let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
   let make_navigation ~up_url rest =
