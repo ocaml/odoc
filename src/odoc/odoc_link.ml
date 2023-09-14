@@ -45,5 +45,6 @@ let from_odoc ~resolver ~warnings_options input output =
       link_unit ~resolver ~filename m
       |> handle_warnings ~input_warnings ~warnings_options
       >>= fun (m, warnings) ->
+      let m = { m with Odoc_model.Lang.Compilation_unit.shape = None } in
       Odoc_file.save_unit output ~warnings m;
       Ok (`Module m)
