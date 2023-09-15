@@ -10,8 +10,6 @@ type annotations =
   | DefJmp of Shape.Uid.t
 
 module Analysis = struct
-  let ( @ ) = List.rev_append
-
   open Typedtree
   open Odoc_model.Paths
 
@@ -25,139 +23,122 @@ module Analysis = struct
   let get_uid_to_loc : env -> Location.t Shape.Uid.Tbl.t =
    fun (_, uid_to_loc) -> uid_to_loc
 
-  let rec structure env parent str =
+  let rec structure env parent acc str =
     let env' = env_wrap (Ident_env.add_structure_tree_items parent str) env in
-    List.fold_left
-      (fun items item ->
-        List.rev_append (structure_item env' parent item) items)
-      [] str.str_items
-    |> List.rev
+    List.fold_left (structure_item env' parent) acc str.str_items
 
-  and signature env parent sg =
+  and signature env parent acc sg =
     let env' = env_wrap (Ident_env.add_signature_tree_items parent sg) env in
-    List.fold_left
-      (fun items item ->
-        List.rev_append (signature_item env' parent item) items)
-      [] sg.sig_items
-    |> List.rev
+    List.fold_left (signature_item env' parent) acc sg.sig_items
 
-  and signature_item env parent item =
+  and signature_item env parent acc item =
     match item.sig_desc with
-    | Tsig_value vd -> value_description env parent vd
-    | Tsig_type (_, tds) -> type_declarations env parent tds
-    | Tsig_typesubst tds -> type_declarations env parent tds
-    | Tsig_typext _ -> []
-    | Tsig_exception e -> exception_ env parent e
-    | Tsig_module mb -> module_declaration env parent mb
-    | Tsig_modsubst ms -> module_substitution env parent ms
-    | Tsig_recmodule mbs -> module_declarations env parent mbs
-    | Tsig_modtype mtd -> module_type_declaration env parent mtd
-    | Tsig_modtypesubst mtd -> module_type_declaration env parent mtd
-    | Tsig_open _ -> []
-    | Tsig_include _ -> []
-    | Tsig_class cd -> class_description env parent cd
-    | Tsig_class_type ctd -> class_type_declaration env parent ctd
-    | Tsig_attribute _ -> []
+    | Tsig_value vd -> value_description env parent acc vd
+    | Tsig_type (_, tds) -> type_declarations env parent acc tds
+    | Tsig_typesubst tds -> type_declarations env parent acc tds
+    | Tsig_typext _ -> acc
+    | Tsig_exception e -> exception_ env parent acc e
+    | Tsig_module mb -> module_declaration env parent acc mb
+    | Tsig_modsubst ms -> module_substitution env parent acc ms
+    | Tsig_recmodule mbs -> module_declarations env parent acc mbs
+    | Tsig_modtype mtd -> module_type_declaration env parent acc mtd
+    | Tsig_modtypesubst mtd -> module_type_declaration env parent acc mtd
+    | Tsig_open _ -> acc
+    | Tsig_include _ -> acc
+    | Tsig_class cd -> class_description env parent acc cd
+    | Tsig_class_type ctd -> class_type_declaration env parent acc ctd
+    | Tsig_attribute _ -> acc
 
-  and value_description _env _parent _vd = []
+  and value_description _env _parent acc _vd = acc
 
   (* and type_declaration _env _parent _td = [] *)
 
-  and type_declarations _env _parent _tds = []
+  and type_declarations _env _parent acc _tds = acc
 
-  and exception_ _env _parent _e = []
+  and exception_ _env _parent acc _e = acc
 
-  and module_declaration env _parent md =
+  and module_declaration env _parent acc md =
     match md.md_id with
-    | None -> []
+    | None -> acc
     | Some mb_id ->
         let id = Ident_env.find_module_identifier (get_env env) mb_id in
-        module_type env (id :> Identifier.Signature.t) md.md_type
+        module_type env (id :> Identifier.Signature.t) acc md.md_type
 
-  and module_declarations env parent mds =
-    List.fold_left
-      (fun items md -> List.rev_append (module_declaration env parent md) items)
-      [] mds
-    |> List.rev
+  and module_declarations env parent acc mds =
+    List.fold_left (module_declaration env parent) acc mds
 
-  and module_substitution _env _parent _ms = []
+  and module_substitution _env _parent acc _ms = acc
 
-  and module_type_declaration env _parent mtd =
+  and module_type_declaration env _parent acc mtd =
     let id = Ident_env.find_module_type (get_env env) mtd.mtd_id in
     match mtd.mtd_type with
-    | None -> []
-    | Some mty -> module_type env (id :> Identifier.Signature.t) mty
+    | None -> acc
+    | Some mty -> module_type env (id :> Identifier.Signature.t) acc mty
 
-  and class_description _env _parent _cd = []
+  and class_description _env _parent acc _cd = acc
 
-  and class_type_declaration _env _parent _ctd = []
+  and class_type_declaration _env _parent acc _ctd = acc
 
-  and structure_item env parent item =
+  and structure_item env parent acc item =
     match item.str_desc with
-    | Tstr_eval (e, _) -> expression env e
-    | Tstr_value (_, vbs) -> value_bindings env parent vbs
-    | Tstr_module mb -> module_binding env parent mb
-    | Tstr_recmodule mbs -> module_bindings env parent mbs
-    | Tstr_modtype mtd -> module_type_decl env parent mtd
-    | Tstr_open _ -> []
-    | Tstr_class _ -> []
-    | Tstr_class_type _ -> []
-    | Tstr_include _ -> []
-    | Tstr_attribute _ -> []
-    | Tstr_primitive _ -> []
-    | Tstr_type (_, tds) -> type_declarations env parent tds
-    | Tstr_typext _ -> []
-    | Tstr_exception _ -> []
+    | Tstr_eval (e, _) -> expression env acc e
+    | Tstr_value (_, vbs) -> value_bindings env parent acc vbs
+    | Tstr_module mb -> module_binding env parent acc mb
+    | Tstr_recmodule mbs -> module_bindings env parent acc mbs
+    | Tstr_modtype mtd -> module_type_decl env parent acc mtd
+    | Tstr_open _ -> acc
+    | Tstr_class _ -> acc
+    | Tstr_class_type _ -> acc
+    | Tstr_include _ -> acc
+    | Tstr_attribute _ -> acc
+    | Tstr_primitive _ -> acc
+    | Tstr_type (_, tds) -> type_declarations env parent acc tds
+    | Tstr_typext _ -> acc
+    | Tstr_exception _ -> acc
 
-  and value_bindings env _parent vbs =
-    let items =
-      List.fold_left
-        (fun acc vb ->
-          let vb = value_binding env vb in
-          List.rev_append vb acc)
-        [] vbs
-    in
-    List.rev items
+  and value_bindings env _parent acc vbs =
+    List.fold_left (value_binding env) acc vbs
 
-  and pattern : type a. env -> a general_pattern -> _ =
-   fun env p ->
+  and pattern : type a. env -> _ -> a general_pattern -> _ =
+   fun env acc p ->
     let maybe_localvalue id loc =
       match Ident_env.identifier_of_loc (get_env env) loc with
       | None -> Some (LocalDefinition id, pos_of_loc loc)
       | Some _ -> None
     in
     match p.pat_desc with
-    | Tpat_any -> []
+    | Tpat_any -> acc
     | Tpat_var (id, loc) -> (
-        match maybe_localvalue id loc.loc with Some x -> [ x ] | None -> [])
+        match maybe_localvalue id loc.loc with
+        | Some x -> x :: acc
+        | None -> acc)
     | Tpat_alias (p, id, loc) -> (
         match maybe_localvalue id loc.loc with
-        | Some x -> x :: pattern env p
-        | None -> pattern env p)
-    | Tpat_constant _ -> []
-    | Tpat_tuple ps ->
-        List.fold_left (fun acc p -> List.rev_append (pattern env p) acc) [] ps
-    | Tpat_construct (_, _, ps, _) ->
-        List.fold_left (fun acc p -> List.rev_append (pattern env p) acc) [] ps
-    | Tpat_variant (_, None, _) -> []
-    | Tpat_variant (_, Some p, _) -> pattern env p
+        | Some x -> x :: pattern env acc p
+        | None -> pattern env acc p)
+    | Tpat_constant _ -> acc
+    | Tpat_tuple ps -> List.fold_left (pattern env) acc ps
+    | Tpat_construct (_, _, ps, _) -> List.fold_left (pattern env) acc ps
+    | Tpat_variant (_, None, _) -> acc
+    | Tpat_variant (_, Some p, _) -> pattern env acc p
     | Tpat_record (fields, _) ->
-        List.fold_left
-          (fun acc (_, _, p) -> List.rev_append (pattern env p) acc)
-          [] fields
-    | Tpat_array ps ->
-        List.fold_left (fun acc p -> List.rev_append (pattern env p) acc) [] ps
-    | Tpat_or (p1, p2, _) -> List.rev_append (pattern env p1) (pattern env p2)
-    | Tpat_lazy p -> pattern env p
-    | Tpat_exception p -> pattern env p
-    | Tpat_value p -> pattern env (p :> pattern)
+        List.fold_left (fun acc (_, _, p) -> pattern env acc p) acc fields
+    | Tpat_array ps -> List.fold_left (pattern env) acc ps
+    | Tpat_or (p1, p2, _) ->
+        let acc = pattern env acc p1 in
+        pattern env acc p2
+    | Tpat_lazy p -> pattern env acc p
+    | Tpat_exception p -> pattern env acc p
+    | Tpat_value p -> pattern env acc (p :> pattern)
 
-  and value_binding env vb = pattern env vb.vb_pat @ expression env vb.vb_expr
+  and value_binding env acc vb =
+    let acc = pattern env acc vb.vb_pat in
+    expression env acc vb.vb_expr
 
-  and expression env { exp_desc; exp_loc; _ } =
+  and expression env acc { exp_desc; exp_loc; _ } =
     match exp_desc with
     | Texp_ident (p, _, value_description) -> (
-        if exp_loc.loc_ghost then []
+        if exp_loc.loc_ghost then acc
         else
           (* Only generate anchor if the uid is in the location table. We don't
              link to modules outside of the compilation unit. *)
@@ -165,145 +146,158 @@ module Analysis = struct
             Shape.Uid.Tbl.find_opt (get_uid_to_loc env)
               value_description.val_uid
           with
-          | Some _ -> [ (DefJmp value_description.val_uid, pos_of_loc exp_loc) ]
+          | Some _ ->
+              (DefJmp value_description.val_uid, pos_of_loc exp_loc) :: acc
           | None -> (
               match p with
-              | Pident id -> [ (LocalValue id, pos_of_loc exp_loc) ]
-              | _ -> []))
-    | Texp_constant _ -> []
+              | Pident id -> (LocalValue id, pos_of_loc exp_loc) :: acc
+              | _ -> acc))
+    | Texp_constant _ -> acc
     | Texp_let (_, vbs, e) ->
-        List.concat_map (value_binding env) vbs @ expression env e
-    | Texp_function f -> List.concat_map (case env) f.cases
+        let acc = List.fold_left (value_binding env) acc vbs in
+        expression env acc e
+    | Texp_function f -> List.fold_left (case env) acc f.cases
     | Texp_match (e, cases, _) ->
-        expression env e @ List.concat_map (case env) cases
-    | Texp_try (e, cases) -> expression env e @ List.concat_map (case env) cases
-    | Texp_tuple es -> List.concat_map (expression env) es
+        let acc = expression env acc e in
+        List.fold_left (case env) acc cases
+    | Texp_try (e, cases) ->
+        let acc = expression env acc e in
+        List.fold_left (case env) acc cases
+    | Texp_tuple es -> List.fold_left (expression env) acc es
     | Texp_construct (_, cons_description, es) ->
-        let x =
-          if exp_loc.loc_ghost then []
+        let acc =
+          if exp_loc.loc_ghost then acc
           else
             match
               Shape.Uid.Tbl.find_opt (get_uid_to_loc env)
                 cons_description.cstr_uid
             with
             | Some _ ->
-                [ (DefJmp cons_description.cstr_uid, pos_of_loc exp_loc) ]
-            | None -> []
+                (DefJmp cons_description.cstr_uid, pos_of_loc exp_loc) :: acc
+            | None -> acc
         in
-        x @ List.concat_map (expression env) es
-    | Texp_variant (_, Some e) -> expression env e
-    | Texp_variant (_, None) -> []
+        List.fold_left (expression env) acc es
+    | Texp_variant (_, Some e) -> expression env acc e
+    | Texp_variant (_, None) -> acc
     | Texp_record { fields; extended_expression; _ } ->
-        let e =
+        let acc =
           match extended_expression with
-          | None -> []
-          | Some expr -> expression env expr
+          | None -> acc
+          | Some expr -> expression env acc expr
         in
-        e @ List.concat_map (record_fields env) (Array.to_list fields)
-    | Texp_field (e, _, _) -> expression env e
-    | Texp_setfield (e1, _, _, e2) -> expression env e1 @ expression env e2
-    | Texp_array es -> List.concat_map (expression env) es
+        List.fold_left (record_fields env) acc (Array.to_list fields)
+    | Texp_field (e, _, _) -> expression env acc e
+    | Texp_setfield (e1, _, _, e2) ->
+        let acc = expression env acc e1 in
+        expression env acc e2
+    | Texp_array es -> List.fold_left (expression env) acc es
     | Texp_ifthenelse (e1, e2, e3) ->
-        let e3 = match e3 with Some e -> expression env e | None -> [] in
-        e3 @ expression env e1 @ expression env e2
-    | Texp_sequence (e1, e2) -> expression env e1 @ expression env e2
-    | Texp_while (e1, e2) -> expression env e1 @ expression env e2
+        let acc =
+          match e3 with Some e -> expression env acc e | None -> acc
+        in
+        let acc = expression env acc e1 in
+        expression env acc e2
+    | Texp_sequence (e1, e2) ->
+        let acc = expression env acc e1 in
+        expression env acc e2
+    | Texp_while (e1, e2) ->
+        let acc = expression env acc e1 in
+        expression env acc e2
     | Texp_for (id, p, e1, e2, _, e3) ->
-        ((LocalValue id, pos_of_loc p.ppat_loc) :: expression env e1)
-        @ expression env e2 @ expression env e3
-    | Texp_send (e, _) -> expression env e
-    | Texp_new _ -> []
-    | Texp_instvar (_, _, _) -> []
-    | Texp_setinstvar (_, _, _, e) -> expression env e
+        let acc = (LocalValue id, pos_of_loc p.ppat_loc) :: acc in
+        let acc = expression env acc e1 in
+        let acc = expression env acc e2 in
+        expression env acc e3
+    | Texp_send (e, _) -> expression env acc e
+    | Texp_new _ -> acc
+    | Texp_instvar (_, _, _) -> acc
+    | Texp_setinstvar (_, _, _, e) -> expression env acc e
     | Texp_override (_, es) ->
-        List.concat_map (fun (_, _, e) -> expression env e) es
-    | Texp_letmodule (_, _, _, _m, e) -> expression env e
-    | Texp_letexception (_, e) -> expression env e
+        List.fold_left (fun acc (_, _, e) -> expression env acc e) acc es
+    | Texp_letmodule (_, _, _, _m, e) -> expression env acc e
+    | Texp_letexception (_, e) -> expression env acc e
 #if  OCAML_VERSION < (5,1,0)
     | Texp_assert e
 #else
     | Texp_assert (e, _)
 #endif
-         -> expression env e
-    | Texp_lazy e -> expression env e
-    | Texp_object (_, _) -> []
-    | Texp_pack _ -> []
+         -> expression env acc e
+    | Texp_lazy e -> expression env acc e
+    | Texp_object (_, _) -> acc
+    | Texp_pack _ -> acc
     | Texp_letop { let_; ands; body; _ } ->
-        let e = case env body in
-        let let_ = binding_op env let_ in
-        let ands = List.concat_map (binding_op env) ands in
-        e @ let_ @ ands
-    | Texp_unreachable -> []
-    | Texp_extension_constructor _ -> []
-    | Texp_open (_, e) -> expression env e
+        let acc = case env acc body in
+        let acc = binding_op env acc let_ in
+        List.fold_left (binding_op env) acc ands
+    | Texp_unreachable -> acc
+    | Texp_extension_constructor _ -> acc
+    | Texp_open (_, e) -> expression env acc e
     | Texp_apply (e, es) ->
-        expression env e
-        @ List.concat_map
-            (function _, Some e -> expression env e | _ -> [])
-            es
+        let acc = expression env acc e in
+        List.fold_left
+          (fun acc -> function _, Some e -> expression env acc e | _ -> acc)
+          acc es
 
-  and binding_op env = function { bop_exp; _ } -> expression env bop_exp
+  and binding_op env acc = function
+    | { bop_exp; _ } -> expression env acc bop_exp
 
-  and record_fields env f =
-    match f with _, Overridden (_, e) -> expression env e | _, Kept _ -> []
+  and record_fields env acc f =
+    match f with
+    | _, Overridden (_, e) -> expression env acc e
+    | _, Kept _ -> acc
 
-  and case : type a. env -> a Typedtree.case -> _ =
-   fun env c ->
-    pattern env c.c_lhs
-    @
+  and case : type a. env -> _ -> a Typedtree.case -> _ =
+   fun env acc c ->
+    let acc = pattern env acc c.c_lhs in
     match c.c_guard with
-    | None -> expression env c.c_rhs
-    | Some e -> expression env e @ expression env c.c_rhs
+    | None -> expression env acc c.c_rhs
+    | Some e ->
+        let acc = expression env acc e in
+        expression env acc c.c_rhs
 
-  and module_type_decl env _parent mtd =
+  and module_type_decl env _parent acc mtd =
     let id = Ident_env.find_module_type (get_env env) mtd.mtd_id in
     match mtd.mtd_type with
-    | None -> []
-    | Some mty -> module_type env (id :> Identifier.Signature.t) mty
+    | None -> acc
+    | Some mty -> module_type env (id :> Identifier.Signature.t) acc mty
 
-  and module_type env (parent : Identifier.Signature.t) mty =
+  and module_type env (parent : Identifier.Signature.t) acc mty =
     match mty.mty_desc with
-    | Tmty_signature sg -> signature env (parent : Identifier.Signature.t) sg
-    | Tmty_with (mty, _) -> module_type env parent mty
-    | Tmty_ident _ -> []
-    | Tmty_functor (_, t) -> module_type env parent t
-    | Tmty_alias _ -> []
-    | Tmty_typeof _ -> []
+    | Tmty_signature sg ->
+        signature env (parent : Identifier.Signature.t) acc sg
+    | Tmty_with (mty, _) -> module_type env parent acc mty
+    | Tmty_ident _ -> acc
+    | Tmty_functor (_, t) -> module_type env parent acc t
+    | Tmty_alias _ -> acc
+    | Tmty_typeof _ -> acc
 
-  and module_bindings env parent mbs =
-    let items =
-      List.fold_left
-        (fun acc vb -> List.rev_append (module_binding env parent vb) acc)
-        [] mbs
-    in
-    List.rev items
+  and module_bindings env parent acc mbs =
+    List.fold_left (module_binding env parent) acc mbs
 
-  and module_binding env _parent mb =
+  and module_binding env _parent acc mb =
     match mb.mb_id with
-    | None -> []
+    | None -> acc
     | Some id ->
         let id = Ident_env.find_module_identifier (get_env env) id in
         let id = (id :> Identifier.Module.t) in
         let inner =
           match unwrap_module_expr_desc mb.mb_expr.mod_desc with
-          | Tmod_ident (_p, _) -> []
+          | Tmod_ident (_p, _) -> acc
           | _ ->
               let id = (id :> Identifier.Signature.t) in
-              module_expr env id mb.mb_expr
+              module_expr env id acc mb.mb_expr
         in
         inner
 
-  and module_expr env parent mexpr =
+  and module_expr env parent acc mexpr =
     match mexpr.mod_desc with
-    | Tmod_ident _ -> []
-    | Tmod_structure str ->
-        let sg = structure env parent str in
-        sg
+    | Tmod_ident _ -> acc
+    | Tmod_structure str -> structure env parent acc str
     | Tmod_functor (parameter, res) ->
         let open Odoc_model.Names in
-        let x, env =
+        let acc, env =
           match parameter with
-          | Unit -> ([], env)
+          | Unit -> (acc, env)
           | Named (id_opt, _, arg) -> (
               match id_opt with
               | Some id ->
@@ -314,18 +308,18 @@ module Analysis = struct
                       env
                   in
                   let id = Ident_env.find_module_identifier (get_env env) id in
-                  (module_type env (id :> Identifier.Signature.t) arg, env)
-              | None -> ([], env))
+                  (module_type env (id :> Identifier.Signature.t) acc arg, env)
+              | None -> (acc, env))
         in
-        x @ module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) res
+        module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) acc res
     | Tmod_constraint (me, _, constr, _) ->
-        let c =
+        let acc =
           match constr with
-          | Tmodtype_implicit -> []
-          | Tmodtype_explicit mt -> module_type env parent mt
+          | Tmodtype_implicit -> acc
+          | Tmodtype_explicit mt -> module_type env parent acc mt
         in
-        c @ module_expr env parent me
-    | _ -> []
+        module_expr env parent acc me
+    | _ -> acc
 
   and unwrap_module_expr_desc = function
     | Tmod_constraint (mexpr, _, Tmodtype_implicit, _) ->
@@ -462,7 +456,7 @@ let of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
   let vs =
     Analysis.structure (env, uid_to_loc)
       (id :> Odoc_model.Paths.Identifier.Signature.t)
-      structure
+      [] structure
   in
   let uid_to_loc_map = Shape.Uid.Tbl.to_map uid_to_loc in
   let uid_to_id : Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t =
