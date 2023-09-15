@@ -45,6 +45,12 @@ let from_odoc ~resolver ~warnings_options input output =
       link_unit ~resolver ~filename m
       |> handle_warnings ~input_warnings ~warnings_options
       >>= fun (m, warnings) ->
+      (* Remove the shape here so that we only depend upon odoc types
+         rather than odoc and ocaml types. This means we should be able
+         save an odocl file with odoc x.y compiled with one version of
+         the compiler and load it in odoc x.y compiled with a different
+         version of the compiler. This is an important use case for
+         voodoo. *)
       let m = { m with Odoc_model.Lang.Compilation_unit.shape = None } in
       Odoc_file.save_unit output ~warnings m;
       Ok (`Module m)
