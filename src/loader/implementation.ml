@@ -9,6 +9,12 @@ type annotations =
   | LocalValue of Ident.t
   | DefJmp of Shape.Uid.t
 
+let counter =
+  let c = ref 0 in
+  fun () ->
+    incr c;
+    !c
+
 module Analysis = struct
   open Typedtree
   open Odoc_model.Paths
@@ -331,10 +337,10 @@ let postprocess_poses source_id poses uid_to_id uid_to_loc =
   let local_def_anchors =
     List.filter_map
       (function
-        | LocalDefinition id, (start, _) ->
+        | LocalDefinition id, _ ->
             let name =
               Odoc_model.Names.LocalName.make_std
-                (Printf.sprintf "local_%s_%d" (Ident.name id) start)
+                (Printf.sprintf "local_%s_%d" (Ident.name id) (counter ()))
             in
             let identifier =
               Odoc_model.Paths.Identifier.Mk.source_location_int
@@ -476,8 +482,7 @@ let of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
                 | Item _ ->
                     let name =
                       Odoc_model.Names.DefName.make_std
-                        (Printf.sprintf "def_%d_%d" loc.loc_start.pos_cnum
-                           loc.loc_end.pos_cnum)
+                        (Printf.sprintf "def_%d" (counter ()))
                     in
                     Some name
                 | _ -> None)
