@@ -154,7 +154,8 @@ module Analysis = struct
 
   and value_binding env vb = pattern env vb.vb_pat @ expression env vb.vb_expr
 
-  and expression env { exp_desc; exp_loc; _ } = match exp_desc with
+  and expression env { exp_desc; exp_loc; _ } =
+    match exp_desc with
     | Texp_ident (p, _, value_description) -> (
         if exp_loc.loc_ghost then []
         else
@@ -175,8 +176,7 @@ module Analysis = struct
     | Texp_function f -> List.concat_map (case env) f.cases
     | Texp_match (e, cases, _) ->
         expression env e @ List.concat_map (case env) cases
-    | Texp_try (e, cases) ->
-        expression env e @ List.concat_map (case env) cases
+    | Texp_try (e, cases) -> expression env e @ List.concat_map (case env) cases
     | Texp_tuple es -> List.concat_map (expression env) es
     | Texp_construct (_, cons_description, es) ->
         let x =
@@ -201,16 +201,13 @@ module Analysis = struct
         in
         e @ List.concat_map (record_fields env) (Array.to_list fields)
     | Texp_field (e, _, _) -> expression env e
-    | Texp_setfield (e1, _, _, e2) ->
-        expression env e1 @ expression env e2
+    | Texp_setfield (e1, _, _, e2) -> expression env e1 @ expression env e2
     | Texp_array es -> List.concat_map (expression env) es
     | Texp_ifthenelse (e1, e2, e3) ->
         let e3 = match e3 with Some e -> expression env e | None -> [] in
         e3 @ expression env e1 @ expression env e2
-    | Texp_sequence (e1, e2) ->
-        expression env e1 @ expression env e2
-    | Texp_while (e1, e2) ->
-        expression env e1 @ expression env e2
+    | Texp_sequence (e1, e2) -> expression env e1 @ expression env e2
+    | Texp_while (e1, e2) -> expression env e1 @ expression env e2
     | Texp_for (id, p, e1, e2, _, e3) ->
         ((LocalValue id, pos_of_loc p.ppat_loc) :: expression env e1)
         @ expression env e2 @ expression env e3
@@ -303,20 +300,22 @@ module Analysis = struct
         let sg = structure env parent str in
         sg
     | Tmod_functor (parameter, res) ->
-      let open Odoc_model.Names in
-      let x, env =
-        match parameter with
-        | Unit -> [], env
-        | Named (id_opt, _, arg) ->
-            match id_opt with
-            | Some id ->
-              let env = env_wrap
-                (Ident_env.add_parameter parent id
-                   (ModuleName.of_ident id))
-                env in
-              let id = Ident_env.find_module_identifier (get_env env) id in
-              module_type env (id :> Identifier.Signature.t) arg, env
-            | None -> [], env
+        let open Odoc_model.Names in
+        let x, env =
+          match parameter with
+          | Unit -> ([], env)
+          | Named (id_opt, _, arg) -> (
+              match id_opt with
+              | Some id ->
+                  let env =
+                    env_wrap
+                      (Ident_env.add_parameter parent id
+                         (ModuleName.of_ident id))
+                      env
+                  in
+                  let id = Ident_env.find_module_identifier (get_env env) id in
+                  (module_type env (id :> Identifier.Signature.t) arg, env)
+              | None -> ([], env))
         in
         x @ module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) res
     | Tmod_constraint (me, _, constr, _) ->
@@ -456,52 +455,49 @@ let anchor_of_identifier id =
   anchor_of_identifier [] id |> String.concat "."
 
 let of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
-    (id : Odoc_model.Paths.Identifier.RootModule.t) (structure : Typedtree.structure)
-    (uid_to_loc : Warnings.loc Types.Uid.Tbl.t)
-    =
-      let env = Ident_env.empty () in
-      let vs =
-        Analysis.structure (env, uid_to_loc)
-          (id :> Odoc_model.Paths.Identifier.Signature.t)
-          structure
-      in
-      let uid_to_loc_map = Shape.Uid.Tbl.to_map uid_to_loc in
-      let uid_to_id :
-          Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t =
-        Shape.Uid.Map.filter_map
-          (fun uid loc ->
-            if loc.Location.loc_ghost then None
-            else
-              let identifier = Ident_env.identifier_of_loc env loc in
-              let anchor =
-                match identifier with
-                | Some x ->
-                    Some
-                      (Odoc_model.Names.DefName.make_std
-                         (anchor_of_identifier x))
-                | None -> (
-                    match uid with
-                    | Compilation_unit _ -> None
-                    | Item _ ->
-                        let name =
-                          Odoc_model.Names.DefName.make_std
-                            (Printf.sprintf "def_%d_%d" loc.loc_start.pos_cnum
-                               loc.loc_end.pos_cnum)
-                        in
-                        Some name
-                    | _ -> None)
-              in
-              match anchor with
-              | Some a ->
-                  Some
-                    (Odoc_model.Paths.Identifier.Mk.source_location
-                       (source_id, a)
-                      :> Odoc_model.Paths.Identifier.SourceLocation.t)
-              | None -> None)
-          uid_to_loc_map
-      in
+    (id : Odoc_model.Paths.Identifier.RootModule.t)
+    (structure : Typedtree.structure)
+    (uid_to_loc : Warnings.loc Types.Uid.Tbl.t) =
+  let env = Ident_env.empty () in
+  let vs =
+    Analysis.structure (env, uid_to_loc)
+      (id :> Odoc_model.Paths.Identifier.Signature.t)
+      structure
+  in
+  let uid_to_loc_map = Shape.Uid.Tbl.to_map uid_to_loc in
+  let uid_to_id : Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t =
+    Shape.Uid.Map.filter_map
+      (fun uid loc ->
+        if loc.Location.loc_ghost then None
+        else
+          let identifier = Ident_env.identifier_of_loc env loc in
+          let anchor =
+            match identifier with
+            | Some x ->
+                Some
+                  (Odoc_model.Names.DefName.make_std (anchor_of_identifier x))
+            | None -> (
+                match uid with
+                | Compilation_unit _ -> None
+                | Item _ ->
+                    let name =
+                      Odoc_model.Names.DefName.make_std
+                        (Printf.sprintf "def_%d_%d" loc.loc_start.pos_cnum
+                           loc.loc_end.pos_cnum)
+                    in
+                    Some name
+                | _ -> None)
+          in
+          match anchor with
+          | Some a ->
+              Some
+                (Odoc_model.Paths.Identifier.Mk.source_location (source_id, a)
+                  :> Odoc_model.Paths.Identifier.SourceLocation.t)
+          | None -> None)
+      uid_to_loc_map
+  in
 
-      (uid_to_id, postprocess_poses source_id vs uid_to_id uid_to_loc )
+  (uid_to_id, postprocess_poses source_id vs uid_to_id uid_to_loc)
 
 #else
 
