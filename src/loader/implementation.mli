@@ -1,10 +1,11 @@
-val of_cmt :
-  Odoc_model.Paths.Identifier.SourcePage.t ->
-  Odoc_model.Paths.Identifier.RootModule.t ->
-  Typedtree.structure ->
-  Odoc_model.Compat.uid_to_loc ->
-  Odoc_model.Paths.Identifier.Id.source_location Odoc_model.Compat.shape_uid_map
-  * Odoc_model.Lang.Source_info.infos
+val read_cmt_infos :
+  Odoc_model.Paths.Identifier.Id.source_page option ->
+  Odoc_model.Paths.Identifier.Id.root_module ->
+  Cmt_format.cmt_infos ->
+  Odoc_model.Compat.shape option
+  * Odoc_model.Paths.Identifier.Id.source_location
+    Odoc_model.Compat.shape_uid_map
+  * Odoc_model.Lang.Source_info.t option
 (** Extract all implementation information from a [cmt]: the shape, and the
     {{!Odoc_model.Lang.Source_info.infos}source infos} (local and global
     definitions and occurrences).

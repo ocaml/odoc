@@ -42,41 +42,14 @@ exception Not_an_interface
 
 exception Make_root_error of string
 
-#if OCAML_VERSION >= (4, 14, 0)
-(** [cmt_info.cmt_annots = Implementation _] *)
-let read_cmt_infos' source_id_opt id cmt_info =
-  match Odoc_model.Compat.shape_of_cmt_infos cmt_info with
-  | Some shape -> (
-      let uid_to_loc = cmt_info.cmt_uid_to_loc in
-      match (source_id_opt, cmt_info.cmt_annots) with
-      | Some source_id, Implementation impl ->
-          let map, source_infos =
-            Implementation.of_cmt source_id id impl uid_to_loc
-          in
-          ( Some shape,
-            map,
-            Some
-              {
-                Odoc_model.Lang.Source_info.id = source_id;
-                infos = source_infos;
-              } )
-      | _, _ -> (Some shape, Odoc_model.Compat.empty_map, None))
-  | None -> (None, Odoc_model.Compat.empty_map, None)
-
 let read_cmt_infos source_id_opt id ~filename () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error _ -> raise Corrupted
   | cmt_info -> (
       match cmt_info.cmt_annots with
-      | Implementation _ -> read_cmt_infos' source_id_opt id cmt_info
+      | Implementation _ -> Implementation.read_cmt_infos source_id_opt id cmt_info
       | _ -> raise Not_an_implementation)
 
-#else
-
-let read_cmt_infos _source_id_opt _id ~filename:_ () =
-  (None, Odoc_model.Compat.empty_map, None)
-
-#endif
 
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     ?canonical ?shape ~uid_to_id ~source_info content =

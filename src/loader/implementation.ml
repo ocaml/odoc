@@ -503,8 +503,30 @@ let of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
 
   (uid_to_id, postprocess_poses source_id vs uid_to_id uid_to_loc)
 
+let read_cmt_infos source_id_opt id cmt_info =
+  match Odoc_model.Compat.shape_of_cmt_infos cmt_info with
+  | Some shape -> (
+      let uid_to_loc = cmt_info.cmt_uid_to_loc in
+      match (source_id_opt, cmt_info.cmt_annots) with
+      | Some source_id, Implementation impl ->
+          let map, source_infos =
+            of_cmt source_id id impl uid_to_loc
+          in
+          ( Some shape,
+            map,
+            Some
+              {
+                Odoc_model.Lang.Source_info.id = source_id;
+                infos = source_infos;
+              } )
+      | _, _ -> (Some shape, Odoc_model.Compat.empty_map, None))
+  | None -> (None, Odoc_model.Compat.empty_map, None)
+
+
+
 #else
 
-let of_cmt _ _ _ _ = (), []
+let read_cmt_infos _source_id_opt _id ~filename:_ () =
+  (None, Odoc_model.Compat.empty_map, None)
 
 #endif
