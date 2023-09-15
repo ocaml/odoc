@@ -512,21 +512,20 @@ let read_cmt_infos source_id_opt id cmt_info =
           let map, source_infos =
             of_cmt source_id id impl uid_to_loc
           in
-          ( Some shape,
-            map,
+          ( Some (shape, map),
             Some
               {
                 Odoc_model.Lang.Source_info.id = source_id;
                 infos = source_infos;
               } )
-      | _, _ -> (Some shape, Odoc_model.Compat.empty_map, None))
-  | None -> (None, Odoc_model.Compat.empty_map, None)
+      | _, _ -> (Some (shape, Odoc_model.Compat.empty_map), None))
+  | None -> (None, None)
 
 
 
 #else
 
-let read_cmt_infos _source_id_opt _id ~filename:_ () =
-  (None, Odoc_model.Compat.empty_map, None)
+let read_cmt_infos _source_id_opt _id _cmt_info =
+  (None, None)
 
 #endif
