@@ -16,6 +16,7 @@ Files containing some values:
   let x = 2
   let y = x + 1
   let z a = if x = 1 || true then x + y else a
+  let z' a = if x = 1 || true then x + y else a
   
   module A = struct end
   module B = A
@@ -128,6 +129,10 @@ Source links generated in the documentation:
       <div class="spec value anchored" id="val-z">
        <a href="#val-z" class="anchor"></a>
        <a href="../root/source/a.ml.html#val-z" class="source_link">Source</a>
+  --
+      <div class="spec value anchored" id="val-z'">
+       <a href="#val-z'" class="anchor"></a>
+       <a href="../root/source/a.ml.html#val-z'" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-A">
        <a href="#module-A" class="anchor"></a>
@@ -264,6 +269,7 @@ Ids generated in the source code:
   id="L58"
   id="L59"
   id="L60"
+  id="L61"
   id="type-t"
   id="type-truc"
   id="val-xazaz"
@@ -274,6 +280,8 @@ Ids generated in the source code:
   id="val-y"
   id="val-z"
   id="local_a_2"
+  id="val-z'"
+  id="local_a_3"
   id="module-A"
   id="module-B"
   id="module-type-T"
