@@ -21,7 +21,8 @@ let rec shape_of_id env :
     match id.iv with
     | `Root (_, name) -> begin
         match Env.lookup_unit (ModuleName.to_string name) env with
-        | Some (Env.Found unit) -> unit.shape
+        | Some (Env.Found unit) -> (
+          match unit.shape_info with | Some (shape, _) -> Some shape | None -> None)
         | _ -> None
       end
     | `Module (parent, name) ->
@@ -69,7 +70,8 @@ let lookup_shape :
     let fuel = 10
     let read_unit_shape ~unit_name =
       match Env.lookup_unit unit_name env with
-      | Some (Found unit) -> unit.shape
+      | Some (Found unit) -> (
+        match unit.shape_info with | Some (shape, _) -> Some shape | None -> None)
       | _ -> None
     let find_shape _ _ = raise Not_found
   end) in
@@ -82,7 +84,11 @@ let lookup_shape :
   | Some Forward_reference
   | Some (Not_found) -> None
   | Some (Found unit) -> 
-    let uid_to_id = unit.uid_to_id in
+    let uid_to_id =
+      match unit.shape_info with
+      | Some (_, uid_to_id) -> uid_to_id
+      | None -> Odoc_model.Compat.empty_map
+    in
     match Shape.Uid.Map.find_opt uid uid_to_id with
     | Some x -> Some x
     | None -> (
