@@ -463,6 +463,11 @@ let of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
     Analysis.structure (env, uid_to_loc)
       (id :> Odoc_model.Paths.Identifier.Signature.t)
       [] structure
+    |> List.rev
+    (* Information are accumulated in a list. We need to have the
+       first info first in the list, to assign anchors with increasing
+       numbers, so that adding some content at the end of a file does
+       not modify the anchors for existing anchors. *)
   in
   let uid_to_loc_map = Shape.Uid.Tbl.to_map uid_to_loc in
   let uid_to_id : Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t =
