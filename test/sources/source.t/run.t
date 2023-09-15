@@ -15,7 +15,7 @@ Files containing some values:
   
   let x = 2
   let y = x + 1
-  let z a = if x = 1 || true then x + y else 0
+  let z a = if x = 1 || true then x + y else a
   
   module A = struct end
   module B = A
@@ -273,7 +273,7 @@ Ids generated in the source code:
   id="val-{x}2"
   id="val-y"
   id="val-z"
-  id="local_a_148"
+  id="local_a_2"
   id="module-A"
   id="module-B"
   id="module-type-T"
@@ -295,7 +295,7 @@ Ids generated in the source code:
   id="module-F.argument-1-M.module-A"
   id="module-F.module-B"
   id="module-FM"
-  id="def_591_612"
+  id="def_1"
   id="module-FF"
   id="module-FF2"
   id="module-FF2.argument-1-A.module-E"

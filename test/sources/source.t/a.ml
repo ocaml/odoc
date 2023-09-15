@@ -12,7 +12,7 @@ let segr = Yoyo.Aa
 
 let x = 2
 let y = x + 1
-let z a = if x = 1 || true then x + y else 0
+let z a = if x = 1 || true then x + y else a
 
 module A = struct end
 module B = A
