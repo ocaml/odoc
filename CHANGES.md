@@ -12,11 +12,32 @@ Tags:
 # 2.3.0 (Unreleased)
 
 ### Added
-- Source code rendering (@Julow, @panglesd, #909)
+- Source code rendering (@Julow, @panglesd, @jonludlam #909, #996, #993, #982)
 - Handle tables markup (@panglesd, @gpetiot, #893)
+- Initial support for assets (@trefis, #975)
+- odoc-parser remerged (@jonludlam, #973)
+  This includes table support (@gpetiot, @panglesd, ocaml-doc/odoc-parser#11
+  ocaml-doc/odoc-parser#14) and delimited code blocks with optional output
+  (@jonludlam, ocaml-doc/odoc-parser#17)
+- Add a tooltip to references with text (@Julow, #945)
+- Add emoji to alerts in CSS (@yawaramin, #928)
 
 ### Fixed
 - Fix `--hidden` not always taken into account (@panglesd, #940)
+- Span labels in function arguments (@panglesd, #990)
+- Ensure generated html ends with a newline (@3Rafal, #954)
+- Warn against tags in pages (@Julow, #948) 
+- Remove unhelpful 'Unresolved_apply' errors (@gpetiot, #946)
+- Allow links and references in headings (@EmileTrotignon, #942)
+- Fix rendering of method types (@zoggy, #935)
+- Fix section labelling with submodules (@EmileTrotignon, #931)
+- LaTeX backend fixes (@Octachron, #921 #920)
+
+
+# 2.2.1
+
+### Added
+- OCaml 5.1.0 compatibility (@Octachron, #956)
 
 # 2.2.0
 
