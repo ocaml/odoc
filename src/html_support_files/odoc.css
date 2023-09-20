@@ -786,13 +786,18 @@ td.def-doc *:first-child {
   text-decoration: underline;
 }
 
+:root {
+  --search-bar-height: 20px;
+}
+
 .odoc-search {
+  --padding-top: 1rem;
   position: sticky;
   top: 0;
-  height: min-content;
   background: var(--main-background);
+  height: calc(var(--search-bar-height) + var(--padding-top));
   width: 100%;
-  padding-top: 1rem;
+  padding-top: var(--padding-top);
   z-index: 1;
 }
 
@@ -800,8 +805,15 @@ td.def-doc *:first-child {
 .odoc-search .search-inner {
   width: 100%;
   position: relative;
-  left:0;
-  transition : left 0.3s, transform 0.3s, width 0.3s; 
+  left: 0;
+  transition: left 0.3s, transform 0.3s, width 0.3s;
+  display: grid;
+  /* The second column is for the search snake, which has 0 width */
+  grid-template-columns: 1fr 0fr;
+  grid-row-gap: 1rem;
+  /* The second row is for the search results. It has a width, but only */
+  grid-template-rows: min-content 0px;
+  background: transparent;
 }
 
 .odoc-search:focus-within .search-inner {
@@ -817,6 +829,7 @@ td.def-doc *:first-child {
   z-index: 2;
   font-size: 1em;
   transition: font-size 0.3s;
+  box-shadow: 0px 0px 0.2rem 0.3em var(--main-background);
 }
 
 .odoc-search:focus-within .search-bar {
@@ -827,26 +840,23 @@ td.def-doc *:first-child {
   display: none;
 }
 
-.odoc-search .search-result-inner:empty {
+.odoc-search .search-result:empty {
   display: none;
 }
 
-
 .odoc-search .search-result {
+  grid-row: 2;
   background: var(--toc-background);
   position: absolute;
   left: 0;
   right: 0;
-}
-
-.odoc-search .search-result-inner {
   border: solid;
   border-color: var(--search-results-border);
   border-width: 1px;
-  margin-top: 8px;
   border-radius: 6px;
-  box-shadow: 0 3px 10px 2px var(--search-results-shadow);
-  max-height: 40rem;
+  box-shadow: 0 3px 10px 2px var(--search-results-shadow), 0 0 3px 4px var(--main-background), 0px -1rem 0px 0px var(--main-background);
+  /* Works better on smallish screens with this */
+  max-height: calc(min(40rem, 50vh));
   overflow-y: auto;
 }
 
@@ -855,70 +865,87 @@ td.def-doc *:first-child {
   width: 100%;
 }
 
-.odoc-search .search-entry {
-  color: var(--color);
-  display: grid;
-  /* This constant of 59px was carefully chosen to accomodate every possible
-     "kind". We cannot ask CSS to compute it because not every kind will be
-     present in every search result list, and we do not want the size of the
-     column to change with different results. */
-  grid-template-columns: [kinds] 59px [titles] 1fr;
-  border-bottom: var(--search-results-border) solid 1px;
-  background-color: inherit;
-  outline:0;
-  padding-right: 0.5rem;
-
-}
 
 .odoc-search .search-no-result {
   color: var(--color);
   border-bottom: var(--search-results-border) solid 1px;
   background-color: inherit;
-  outline:0;
+  outline: 0;
   padding: 10px;
   padding-right: 0.5rem;
 }
 
 .search-bar-container {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  border-bottom: 1rem solid var(--main-background);
 }
 
 .search-snake {
+  grid-row: 1;
+  grid-column: 2;
   display: flex;
   align-items: center;
   width: 0;
-  height: 1.75em;
+  z-index: 2;
+  position: relative;
+  left: 0;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  /* Otherwise the search snake flickers for very fast searches. */
+  transition: opacity 0.2s;
+  opacity: 0;
 }
-.search-snake:after {
+
+.search-snake.search-busy {
+  opacity: 1;
+}
+
+.search-snake:before {
   content: " ";
   display: block;
-  width: 1.75em;
-  height: 1.75em;
-  margin-left: 10px;
+  aspect-ratio: 1 / 1;
+  height: 100%;
+  margin-right: 4px;
   border-radius: 50%;
   border: 3px solid #aaa;
-  border-color: #aaa transparent #aaa transparent;
+  border-color: var(--search-snake) transparent var(--search-snake) transparent;
   animation: search-snake 1.2s linear infinite;
-  flex-shrink: 0;
+  position: absolute;
+  right: 0;
 }
+
 @keyframes search-snake {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
 }
 
-.search-snake.search-busy {
-  visibility: visible;
+:root {
+  --kind-font-size-factor: 0.8;
 }
 
-.search-snake {
-  visibility: hidden;
+.odoc-search .search-entry {
+  color: var(--color);
+  display: grid;
+  /* Possible kinds are the following : 
+     "doc" "type" "mod" "exn" "class" "meth" "cons" "sig" "cons" "field" "val"
+     and "ext".
+     As the longest is 5 characters (and the font monospace), we give 5
+     character size to the column. However the font used for kind is a little
+     smaller, so we adjust by this factor.
+     */
+  grid-template-columns: [kinds] calc(var(--kind-font-size-factor) * 5ch) [titles] 1fr;
+  column-gap: 0.5rem;
+  border-bottom: var(--search-results-border) solid 1px;
+  background-color: inherit;
+  outline: 0;
+  padding: 0.4rem 0.4rem 0.7rem 0.7rem;
 }
-
 .odoc-search .search-entry p {
   margin: 0;
   overflow: hidden;
@@ -940,13 +967,10 @@ td.def-doc *:first-child {
   grid-row: 1/2;
   grid-column: 1/2;
   line-height: 1.4rem;
-  padding-bottom: 0.25rem;
-  padding-top: 0.5rem;
-  font-size: 0.8em;
+  font-size: calc(var(--kind-font-size-factor) * 1em);
   font-weight: bold;
-  margin-right: 0.5rem;
   text-align: right;
-  position:relative;
+  position: relative;
   bottom: 0;
 }
 
@@ -970,8 +994,6 @@ td.def-doc *:first-child {
   grid-row: 1/2;
   align-self: end;
   line-height: 1.4rem;
-  padding-bottom: 0.25rem;
-  padding-top: 0.5rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1007,7 +1029,6 @@ td.def-doc *:first-child {
   font-size: 0.95em;
   grid-row: 2/2;
   grid-column: 2/2;
-  margin-bottom: 0.5rem;
 }
 
 .odoc-search .search-entry .entry-comment ul {
@@ -1024,7 +1045,7 @@ td.def-doc *:first-child {
   content: '•';
 }
 
-.odoc-search .search-entry .entry-comment div{
+.odoc-search .search-entry .entry-comment div {
   display: inline;
   white-space: nowrap;
 }
@@ -1056,6 +1077,7 @@ td.def-doc *:first-child {
 .odoc-toc ul li {
   margin: 0;
 }
+
 .odoc-toc>ul>li {
   margin-bottom: 0.3em;
 }
@@ -1072,7 +1094,8 @@ td.def-doc *:first-child {
   margin: 1em;
 }
 
-.odoc-table td, .odoc-table th {
+.odoc-table td,
+.odoc-table th {
   padding-left: 0.5em;
   padding-right: 0.5em;
   border: 1px solid black;
@@ -1088,6 +1111,7 @@ td.def-doc *:first-child {
   body {
     margin: 2em;
   }
+
   .odoc-toc {
     position: static;
     width: auto;
@@ -1107,6 +1131,7 @@ td.def-doc *:first-child {
     color: black;
     background: white;
   }
+
   body nav:first-child {
     visibility: hidden;
   }
@@ -1226,23 +1251,74 @@ td.def-doc *:first-child {
   text-decoration: underline;
 }
 
-.VAL, .TYPE, .LET, .REC, .IN, .OPEN, .NONREC, .MODULE, .METHOD, .LETOP, .INHERIT, .INCLUDE, .FUNCTOR, .EXTERNAL, .CONSTRAINT, .ASSERT, .AND, .END, .CLASS, .STRUCT, .SIG {
-  color: #859900;;
+.VAL,
+.TYPE,
+.LET,
+.REC,
+.IN,
+.OPEN,
+.NONREC,
+.MODULE,
+.METHOD,
+.LETOP,
+.INHERIT,
+.INCLUDE,
+.FUNCTOR,
+.EXTERNAL,
+.CONSTRAINT,
+.ASSERT,
+.AND,
+.END,
+.CLASS,
+.STRUCT,
+.SIG {
+  color: #859900;
+  ;
 }
 
-.WITH, .WHILE, .WHEN, .VIRTUAL, .TRY, .TO, .THEN, .PRIVATE, .OF, .NEW, .MUTABLE, .MATCH, .LAZY, .IF, .FUNCTION, .FUN, .FOR, .EXCEPTION, .ELSE, .TO, .DOWNTO, .DO, .DONE, .BEGIN, .AS {
+.WITH,
+.WHILE,
+.WHEN,
+.VIRTUAL,
+.TRY,
+.TO,
+.THEN,
+.PRIVATE,
+.OF,
+.NEW,
+.MUTABLE,
+.MATCH,
+.LAZY,
+.IF,
+.FUNCTION,
+.FUN,
+.FOR,
+.EXCEPTION,
+.ELSE,
+.TO,
+.DOWNTO,
+.DO,
+.DONE,
+.BEGIN,
+.AS {
   color: #cb4b16;
 }
 
-.TRUE, .FALSE {
+.TRUE,
+.FALSE {
   color: #b58900;
 }
 
-.failwith, .INT, .SEMISEMI, .LIDENT {
+.failwith,
+.INT,
+.SEMISEMI,
+.LIDENT {
   color: #2aa198;
 }
 
-.STRING, .CHAR, .UIDENT {
+.STRING,
+.CHAR,
+.UIDENT {
   color: #b58900;
 }
 
