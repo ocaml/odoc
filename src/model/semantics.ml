@@ -4,6 +4,11 @@ module Ast = Odoc_parser.Ast
 type internal_tags_removed =
   [ `Tag of Ast.ocamldoc_tag
   | `Heading of Ast.heading
+  | `Media of
+    Ast.reference_kind
+    * Ast.media_href Ast.with_location
+    * Ast.inline_element Ast.with_location list
+    * Ast.media
   | Ast.nestable_block_element ]
 (** {!Ast.block_element} without internal tags. *)
 
@@ -106,7 +111,7 @@ let not_allowed :
 let describe_element = function
   | `Reference (`Simple, _, _) -> "'{!...}' (cross-reference)"
   | `Reference (`With_text, _, _) -> "'{{!...} ...}' (cross-reference)"
-  | `Link _ -> "'{{:...} ...}' (external link)"
+  | `Link (_, _) -> "'{{:...} ...}' (external link)"
   | `Heading (level, _, _) ->
       Printf.sprintf "'{%i ...}' (section heading)" level
 
@@ -355,12 +360,7 @@ let generate_heading_label : Comment.inline_element with_location list -> string
               anchor
           | `Styled (_, content) ->
               content |> strip_locs |> scan_inline_elements anchor
-          | `Reference (_, content) ->
-              content |> strip_locs
-              |> List.map (fun (ele : Comment.non_link_inline_element) ->
-                     (ele :> Comment.inline_element))
-              |> scan_inline_elements anchor
-          | `Link (_, content) ->
+          | `Reference (_, content) | `Link (_, content) ->
               content |> strip_locs
               |> List.map (fun (ele : Comment.non_link_inline_element) ->
                      (ele :> Comment.inline_element))
@@ -483,7 +483,62 @@ let top_level_block_elements status ast_elements =
             in
             traverse ~top_heading_level
               (element :: comment_elements_acc)
-              ast_elements)
+              ast_elements
+        | {
+         value = `Media (_, { value = `Link href; _ }, content, m);
+         location;
+        } ->
+            let text = inline_elements status content in
+            let element =
+              `Media (`Link href, m, text) |> Location.at location
+            in
+            traverse ~top_heading_level
+              (element :: comment_elements_acc)
+              ast_elements
+        | {
+         value =
+           `Media
+             ( kind,
+               { value = `Reference href; location = href_location },
+               content,
+               m );
+         location;
+        } -> (
+            match Error.raise_warnings (Reference.parse href_location href) with
+            | Result.Ok target ->
+                let text = inline_elements status content in
+                let target =
+                  match target with
+                  | `Asset _ as a -> a
+                  | `Root (_, `TAsset) as a -> a
+                  | `Root (s, `TUnknown) -> `Root (s, `TAsset)
+                  | `Root _ -> failwith "a"
+                  | `Dot (_, s) -> failwith s
+                  | `Resolved _ -> failwith "todo2"
+                  | _ -> failwith "todo"
+                in
+                let element =
+                  `Media (`Reference target, m, text) |> Location.at location
+                in
+                traverse ~top_heading_level
+                  (element :: comment_elements_acc)
+                  ast_elements
+            | Result.Error error ->
+                Error.raise_warning error;
+                let placeholder =
+                  match kind with
+                  | `Simple -> `Code_span href
+                  | `With_text -> `Styled (`Emphasis, content)
+                in
+                let placeholder =
+                  `Paragraph
+                    (inline_elements status
+                       [ placeholder |> Location.at location ])
+                  |> Location.at location
+                in
+                traverse ~top_heading_level
+                  (placeholder :: comment_elements_acc)
+                  ast_elements))
   in
   let top_heading_level =
     (* Non-page documents have a generated title. *)
@@ -510,7 +565,9 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
                 loop tags ast' tl))
     | ({
          value =
-           `Tag #Ast.ocamldoc_tag | `Heading _ | #Ast.nestable_block_element;
+           ( `Tag #Ast.ocamldoc_tag
+           | `Heading _ | `Media _
+           | #Ast.nestable_block_element );
          _;
        } as hd)
       :: tl ->

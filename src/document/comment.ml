@@ -108,9 +108,9 @@ module Reference = struct
         in
         match Url.from_identifier ~stop_before:false id with
         | Ok url ->
-            let target = InternalLink.Resolved url in
-            let link = { InternalLink.target; content; tooltip } in
-            [ inline @@ Inline.InternalLink link ]
+            let target = Target.Internal (Resolved url) in
+            let link = { Link.target; content; tooltip } in
+            [ inline @@ Inline.Link link ]
         | Error (Not_linkable _) -> content
         | Error exn ->
             (* FIXME: better error message *)
@@ -124,9 +124,9 @@ module Reference = struct
             [ inline @@ Inline.Source s ]
         | Some content ->
             let link =
-              { InternalLink.target = Unresolved; content; tooltip = Some s }
+              { Link.target = Internal Unresolved; content; tooltip = Some s }
             in
-            [ inline @@ Inline.InternalLink link ])
+            [ inline @@ Inline.Link link ])
 end
 
 let leaf_inline_element : Comment.leaf_inline_element -> Inline.one = function
@@ -171,7 +171,7 @@ let rec inline_element : Comment.inline_element -> Inline.t = function
         | [] -> [ inline @@ Text target ]
         | _ -> non_link_inline_element_list content
       in
-      [ inline @@ Link (target, content) ]
+      [ inline @@ Link { target = External target; content; tooltip = None } ]
 
 and inline_element_list elements =
   List.concat
@@ -309,7 +309,14 @@ let tag : Comment.tag -> Description.one =
   | `See (kind, target, content) ->
       let value =
         match kind with
-        | `Url -> mk_value (Inline.Link (target, [ inline @@ Text target ]))
+        | `Url ->
+            mk_value
+              (Inline.Link
+                 {
+                   target = External target;
+                   content = [ inline @@ Text target ];
+                   tooltip = None;
+                 })
         | `File -> mk_value (Inline.Source (source_of_code target))
         | `Document -> mk_value (Inline.Text target)
       in
@@ -331,6 +338,38 @@ let attached_block_element : Comment.attached_block_element -> Block.t =
   function
   | #Comment.nestable_block_element as e -> nestable_block_element e
   | `Tag t -> [ block ~attr:[ "at-tags" ] @@ Description [ tag t ] ]
+  | `Media (href, media, content) ->
+      let content =
+        match (content, href) with
+        | [], `Reference path ->
+            let s = Reference.render_unresolved (path :> Comment.Reference.t) in
+            [ inline @@ Inline.Source (source_of_code s) ]
+        | [], `Link href -> [ inline @@ Inline.Source (source_of_code href) ]
+        | _ -> inline_element_list content
+      in
+      let url =
+        match href with
+        | `Reference (`Resolved r) -> (
+            let id =
+              Odoc_model.Paths.Reference.Resolved.(identifier (r :> t))
+            in
+            match Url.from_identifier ~stop_before:false id with
+            | Ok url -> Target.Internal (Resolved url)
+            | Error exn ->
+                (* FIXME: better error message *)
+                Printf.eprintf "Id.href failed: %S\n%!"
+                  (Url.Error.to_string exn);
+                Internal Unresolved)
+        | `Reference _ -> Internal Unresolved
+        | `Link href -> External href
+      in
+      let i =
+        match media with
+        | `Audio -> Block.Audio (url, content)
+        | `Video -> Video (url, content)
+        | `Image -> Image (url, content)
+      in
+      [ block i ]
 
 (* TODO collaesce tags *)
 

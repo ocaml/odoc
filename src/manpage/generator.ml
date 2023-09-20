@@ -1,6 +1,8 @@
+module ManLink = Link
 open Odoc_document
 open Types
 open Doctree
+module Link = ManLink
 
 (*
 Manpages relies on the (g|t|n)roff document language.
@@ -247,7 +249,7 @@ let strip l =
               { h with desc = Styled (sty, List.rev @@ loop [] content) }
             in
             loop (h :: acc) t
-        | Link (_, content) | InternalLink { content; _ } ->
+        | Link { content; _ } ->
             let acc = loop acc content in
             loop acc t
         | Source code ->
@@ -303,9 +305,9 @@ and inline (l : Inline.t) =
           x ++ inline rest
       | Linebreak -> break ++ inline rest
       | Styled (sty, content) -> style sty (inline content) ++ inline rest
-      | Link (href, content) ->
+      | Link { target = External href; content; _ } ->
           env "UR" "UE" href (inline @@ strip content) ++ inline rest
-      | InternalLink { content; _ } ->
+      | Link { content; _ } ->
           font "CI" (inline @@ strip content) ++ inline rest
       | Source content -> source_code content ++ inline rest
       | Math s -> math s ++ inline rest
@@ -365,6 +367,8 @@ let rec block (l : Block.t) =
       let continue r = if r = [] then noop else vspace ++ block r in
       match b.desc with
       | Inline i -> inline i ++ continue rest
+      | Video (_, content) | Audio (_, content) | Image (_, content) ->
+          inline content ++ continue rest
       | Paragraph i -> inline i ++ continue rest
       | List (list_typ, l) ->
           let f n b =

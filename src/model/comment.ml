@@ -8,6 +8,8 @@ type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 
 type alignment = [ `Left | `Center | `Right ]
 
+type media = [ `Image | `Audio | `Video ]
+
 type raw_markup_target = string
 
 type leaf_inline_element =
@@ -91,7 +93,12 @@ type heading_level =
   | `Paragraph
   | `Subparagraph ]
 
-type attached_block_element = [ nestable_block_element | `Tag of tag ]
+type media_href = [ `Link of string | `Reference of Reference.Asset.t ]
+
+type media_element = [ `Media of media_href * media * paragraph ]
+
+type attached_block_element =
+  [ nestable_block_element | media_element | `Tag of tag ]
 
 type heading_attrs = {
   heading_level : heading_level;
@@ -103,7 +110,8 @@ type block_element =
   [ nestable_block_element
   | `Heading of
     heading_attrs * Identifier.Label.t * inline_element with_location list
-  | `Tag of tag ]
+  | `Tag of tag
+  | media_element ]
 
 type docs = block_element with_location list
 

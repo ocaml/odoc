@@ -1,5 +1,7 @@
+module HLink = Link
 open Odoc_document.Types
 open Tyxml
+module Link = HLink
 
 let html_of_doc ~config ~resolve docs =
   let open Html in

@@ -89,7 +89,17 @@ type ocamldoc_tag =
 type tag = [ ocamldoc_tag | internal_tag ]
 type heading = int * string option * inline_element with_location list
 
+type media = Token.media
+type media_href = Token.media_href
+
 type block_element =
-  [ nestable_block_element | `Heading of heading | `Tag of tag ]
+  [ nestable_block_element
+  | `Heading of heading
+  | `Tag of tag
+  | `Media of
+    reference_kind
+    * media_href with_location
+    * inline_element with_location list
+    * media ]
 
 type t = block_element with_location list

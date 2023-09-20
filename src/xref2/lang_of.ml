@@ -1069,7 +1069,7 @@ and block_element parent
             raise Not_found
         in
         `Heading (attrs, label, text)
-    | `Tag t -> `Tag t
+    | (`Tag _ | `Media _) as orig -> orig
     | #Odoc_model.Comment.nestable_block_element as n -> n
   in
   { d with Odoc_model.Location_.value }

@@ -231,13 +231,13 @@ let source k (t : Source.t) =
   and tokens t = list_concat_map t ~f:token in
   tokens t
 
-let rec internalref ~verbatim ~in_source (t : InternalLink.t) =
+let rec internalref ~verbatim ~in_source (t : Target.internal) (c : Inline.t) =
   let target =
-    match t.target with
-    | InternalLink.Resolved uri -> Link.label uri
+    match t with
+    | Target.Resolved uri -> Link.label uri
     | Unresolved -> "xref-unresolved"
   in
-  let text = Some (inline ~verbatim ~in_source t.content) in
+  let text = Some (inline ~verbatim ~in_source c) in
   let short = in_source in
   Internal_ref { short; target; text }
 
@@ -247,10 +247,11 @@ and inline ~in_source ~verbatim (l : Inline.t) =
     | Text _s -> assert false
     | Linebreak -> [ Break Line ]
     | Styled (style, c) -> [ Style (style, inline ~verbatim ~in_source c) ]
-    | Link (ext, c) ->
+    | Link { target = External ext; content = c; _ } ->
         let content = inline ~verbatim:false ~in_source:false c in
         [ External_ref (ext, Some content) ]
-    | InternalLink c -> [ internalref ~in_source ~verbatim c ]
+    | Link { target = Internal ref_; content = c; _ } ->
+        [ internalref ~in_source ~verbatim ref_ c ]
     | Source c ->
         [ Inlined_code (source (inline ~verbatim:false ~in_source:true) c) ]
     | Math s -> [ Raw (Format.asprintf "%a" Raw.math s) ]
@@ -292,6 +293,9 @@ let rec block ~in_source (l : Block.t) =
   let one (t : Block.one) =
     match t.desc with
     | Inline i -> inline ~verbatim:false ~in_source:false i
+    | Audio (_, content) | Video (_, content) | Image (_, content) ->
+        inline ~verbatim:false ~in_source:false content
+        @ if in_source then [] else [ Break Paragraph ]
     | Paragraph i ->
         inline ~in_source:false ~verbatim:false i
         @ if in_source then [] else [ Break Paragraph ]

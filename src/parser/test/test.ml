@@ -39,6 +39,11 @@ module Ast_to_sexp = struct
     | `Simple -> Atom "simple"
     | `With_text -> Atom "with_text"
 
+  let media : Ast.media -> sexp = function
+    | `Image -> Atom "image"
+    | `Video -> Atom "video"
+    | `Audio -> Atom "audio"
+
   let rec inline_element at : Ast.inline_element -> sexp = function
     | `Space _ -> Atom "space"
     | `Word w -> List [ Atom "word"; Atom w ]
@@ -154,6 +159,10 @@ module Ast_to_sexp = struct
     | `Closed -> Atom "@closed"
     | `Hidden -> Atom "@hidden"
 
+  let media_href = function
+    | `Reference href -> List [ Atom "Reference"; Atom href ]
+    | `Link href -> List [ Atom "Link"; Atom href ]
+
   let block_element at : Ast.block_element -> sexp = function
     | #Ast.nestable_block_element as e -> nestable_block_element at e
     | `Heading (level, label, es) ->
@@ -162,6 +171,14 @@ module Ast_to_sexp = struct
         List
           [ Atom level; label; List (List.map (at.at (inline_element at)) es) ]
     | `Tag t -> tag at t
+    | `Media (kind, href, c, m) ->
+        List
+          [
+            reference_kind kind;
+            at.at media_href href;
+            List (List.map (at.at (inline_element at)) c);
+            media m;
+          ]
 
   let docs at : Ast.t -> sexp =
    fun f -> List (List.map (at.at (block_element at)) f)
