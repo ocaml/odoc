@@ -39,7 +39,7 @@ document.querySelector(".search-bar").addEventListener("focus", (ev) => {
     worker.onmessage = (e) => {
       stop_waiting();
       let results = e.data;
-      let search_results = document.querySelector(".search-result-inner");
+      let search_results = document.querySelector(".search-result");
       search_results.innerHTML = "";
       let f = (entry) => {
         let search_result = document.createElement("a");

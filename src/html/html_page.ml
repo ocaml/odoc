@@ -31,20 +31,12 @@ let html_of_toc toc =
 
 let html_of_search () =
   let search_bar =
-    Html.(
-      div
-        ~a:[ a_class [ "search-bar-container" ] ]
-        [
-          input ~a:[ a_class [ "search-bar" ]; a_placeholder "🔎 Search..." ] ();
-          div ~a:[ a_class [ "search-snake" ] ] [];
-        ])
+    Html.(input ~a:[ a_class [ "search-bar" ]; a_placeholder "🔎 Search..." ] ())
   in
-  let search_result =
-    Html.div
-      ~a:[ Html.a_class [ "search-result" ] ]
-      [ Html.div ~a:[ Html.a_class [ "search-result-inner" ] ] [] ]
-  in
-  Html.(div ~a:[ a_class [ "search-inner" ] ] [ search_bar; search_result ])
+  let snake = Html.(div ~a:[ a_class [ "search-snake" ] ] []) in
+  let search_result = Html.div ~a:[ Html.a_class [ "search-result" ] ] [] in
+  Html.(
+    div ~a:[ a_class [ "search-inner" ] ] [ search_bar; snake; search_result ])
 
 let sidebar toc =
   let toc, has_toc =
