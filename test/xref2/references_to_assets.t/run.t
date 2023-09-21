@@ -1,9 +1,10 @@
 In this file, we test the resolving of asset references.
 
 More precisely we test resolving an an asset reference where the asset lives:
-- in the current page (index.mld references ocaml.gif)
-- in a parent page (test.mli references ocaml.gif)
-- in a sibling page (test.mli references ocaml_not.gif, through page-other_page.ocaml_not.gif)
+- in the current page (index.mld references caml.gif)
+- in a parent page (test.mli references caml.gif)
+- in a sibling page (test.mli references caml_not.gif, through page-other_page.caml_not.gif)
+- in a child page (index.mld references caml_not.gif, through page-other_page.caml_not.gif)
 
 Compile the module first
 
