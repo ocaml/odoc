@@ -2,7 +2,7 @@
 ; of the vendored projects.
 
 (rule
- (aliases runtest html-support-files)
+ (aliases runtest support-files)
  (enabled_if
   (> %{ocaml_version} 4.08))
  (deps
