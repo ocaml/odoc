@@ -10,7 +10,16 @@ module Tools_error = struct
       (* Failed to resolve a module path when applying a fragment item *) ]
 
   type reference_kind =
-    [ `S | `T | `C | `CT | `Page | `Cons | `Field | `Label | `Asset | `Asset_or_label ]
+    [ `S
+    | `T
+    | `C
+    | `CT
+    | `Page
+    | `Cons
+    | `Field
+    | `Label
+    | `Asset
+    | `Asset_or_label ]
 
   type expansion_of_module_error =
     [ `OpaqueModule (* The module does not have an expansion *)
