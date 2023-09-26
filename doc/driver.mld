@@ -813,7 +813,7 @@ let compute_metric_cmd cmd =
         compute (min min_ hd.time) (max max_ hd.time) (total +. hd.time) (count + 1) tl
   in
   match filter_commands cmd with
-  | [] -> []
+  | [] -> failwith ("No commands run for " ^ cmd)
   | hd :: tl ->
       let min, max, avg, count = compute hd.time hd.time hd.time 1 tl in
       [
@@ -854,7 +854,7 @@ let compute_produced_cmd cmd =
         compute (min min_ size) (max max_ size) (total +. float size) (count + 1) tl
   in
   match List.filter_map output_file_size (filter_commands cmd) with
-  | [] -> []
+  | [] -> failwith ("No commands run for " ^ cmd)
   | size0 :: tl ->
       let min, max, avg, count = compute size0 size0 (float size0) 1 tl in
       [
