@@ -12,4 +12,4 @@
 (rule
  (alias bench)
  (action
-  (diff driver-benchmarks.json doc/driver-benchmarks.json)))
+  (cat doc/driver-benchmarks.json)))
