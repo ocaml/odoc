@@ -21,6 +21,7 @@ Tags:
   (@jonludlam, ocaml-doc/odoc-parser#17)
 - Add a tooltip to references with text (@Julow, #945)
 - Add emoji to alerts in CSS (@yawaramin, #928)
+- Add common language in shipped highlightjs (@Julow, #953)
 
 ### Fixed
 - Fix `--hidden` not always taken into account (@panglesd, #940)
