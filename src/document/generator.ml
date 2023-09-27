@@ -123,7 +123,6 @@ module Make (Syntax : SYNTAX) = struct
           link1 ++ O.txt "(" ++ link2 ++ O.txt ")"
       | `Resolved _ when Paths.Path.is_hidden path ->
           let txt = Url.render_path path in
-          Format.eprintf "Warning, resolved hidden path: %s\n%!" txt;
           unresolved [ inline @@ Text txt ]
       | `Resolved rp -> (
           (* If the path is pointing to an opaque module or module type

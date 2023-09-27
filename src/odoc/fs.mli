@@ -34,7 +34,7 @@ module Directory : sig
   val append : t -> t -> t
 
   val reach_from : dir:t -> string -> t
-  (** @raises Invalid_arg if [parent/name] exists but is not a directory. *)
+  (** @raises Invalid_argument if [parent/name] exists but is not a directory. *)
 
   val mkdir_p : t -> unit
 

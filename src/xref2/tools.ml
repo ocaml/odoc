@@ -1900,8 +1900,6 @@ and fragmap :
               with
               | Ok (p, _) -> Ok (Right p)
               | Error e ->
-                  Format.fprintf Format.err_formatter
-                    "failed to resolve path: %a\n%!" Component.Fmt.module_path p;
                   Error (`UnresolvedPath (`Module (p, e)))
             in
             map_signature { id_map with module_ = Some (name, mapfn) } sg.items)
