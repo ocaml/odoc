@@ -28,7 +28,7 @@ Tags:
 - Ensure generated html ends with a newline (@3Rafal, #954)
 - Warn against tags in pages (@Julow, #948) 
 - Remove unhelpful 'Unresolved_apply' errors (@gpetiot, #946)
-- Allow links and references in headings (@EmileTrotignon, #942)
+- Allow links and references in headings (@EmileTrotignon, @panglesd, #942)
 - Fix rendering of method types (@zoggy, #935)
 - Fix section labelling with submodules (@EmileTrotignon, #931)
 - LaTeX backend fixes (@Octachron, #921 #920)
