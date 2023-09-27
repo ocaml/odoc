@@ -25,7 +25,7 @@ Tags:
 
 ### Fixed
 - Fix `--hidden` not always taken into account (@panglesd, #940)
-- Span labels in function arguments (@panglesd, #990)
+- Syntax highlight labels in function arguments (@panglesd, #990)
 - Ensure generated html ends with a newline (@3Rafal, #954)
 - Warn against tags in pages (@Julow, #948) 
 - Remove unhelpful 'Unresolved_apply' errors (@gpetiot, #946)
