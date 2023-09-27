@@ -30,7 +30,7 @@ Tags:
 - Remove unhelpful 'Unresolved_apply' errors (@gpetiot, #946)
 - Allow links and references in headings (@EmileTrotignon, @panglesd, #942)
 - Fix rendering of method types (@zoggy, #935)
-- Fix section labelling with submodules (@EmileTrotignon, #931)
+- Fix section labelling with submodules (@EmileTrotignon, @panglesd, #931)
 - LaTeX backend fixes (@Octachron, #921 #920)
 
 
