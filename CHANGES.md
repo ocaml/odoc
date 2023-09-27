@@ -33,7 +33,8 @@ Tags:
 - Fix rendering of method types (@zoggy, #935)
 - Fix section labelling with submodules (@EmileTrotignon, @panglesd, #931)
 - LaTeX backend fixes (@Octachron, #921 #920)
-
+- html: Remove extra space in class declarations (@Julow, #936)
+- Fix rendering of unresolved references (@Julow, #957)
 
 # 2.2.1
 
