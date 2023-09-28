@@ -27,3 +27,7 @@ Some image:
 {2 Links}
 
 {video:https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm}
+
+{1 Errors}
+
+- Wrong qualification:{image!module-x}

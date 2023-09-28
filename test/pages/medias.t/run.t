@@ -1,6 +1,9 @@
 We need to odoc-compile the package mld file, listing its children
 
   $ odoc compile index.mld --child asset-caml.gif
+  File "index.mld", line 33, characters 30-38:
+  Warning: Non-asset reference is not allowed in media target.
+  Suggestion: Use a reference to an asset
 
 This will have produced a file called 'page-index.odoc'.
 
@@ -15,8 +18,8 @@ Link and generate the HTML (forgetting the asset!):
   $ odoc support-files -o html
 
 To test visually, indent:
-  $ cp -r html /tmp/
-  $ firefox /tmp/html/index/index.html
+ $ cp -r html /tmp/
+ $ firefox /tmp/html/index/index.html
 
 Testing the working references:
 
@@ -58,6 +61,7 @@ Testing latex and manpages
   \ocamlinlinecode{https://picsum.\allowbreak{}photos/200/300}
   \ocamlinlinecode{https://upload.\allowbreak{}wikimedia.\allowbreak{}org/wikipedia/commons/f/f1/Cri\_\allowbreak{}du\_\allowbreak{}chameau.\allowbreak{}ogg}
   \ocamlinlinecode{https://interactive-examples.\allowbreak{}mdn.\allowbreak{}mozilla.\allowbreak{}net/media/cc0-videos/flower.\allowbreak{}webm}
+  \ocamlinlinecode{module-x}
 
   $ odoc man-generate -o man page-index.odocl
   $ cat man/index.3o | grep gif

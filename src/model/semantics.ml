@@ -285,30 +285,38 @@ let rec nestable_block_element :
        (kind, { value = `Reference href; location = href_location }, content, m);
    location;
   } -> (
+      let fallback error =
+        Error.raise_warning error;
+        let placeholder =
+          match kind with
+          | `Simple -> `Code_span href
+          | `With_text -> `Styled (`Emphasis, content)
+        in
+        `Paragraph
+          (inline_elements status [ placeholder |> Location.at location ])
+        |> Location.at location
+      in
       match Error.raise_warnings (Reference.parse href_location href) with
-      | Result.Ok target ->
+      | Result.Ok target -> (
           let text = inline_elements status content in
-          let target =
-            match target with
-            | `Asset _ as a -> a
-            | `Root (_, `TAsset) as a -> a
-            | `Root (s, `TUnknown) -> `Root (s, `TAsset)
-            | `Root _ -> failwith "a"
-            | `Dot (_, s) -> failwith s
-            | `Resolved _ -> failwith "todo2"
-            | _ -> failwith "todo"
+          let asset_ref_of_ref :
+              Paths.Reference.t -> (Paths.Reference.Asset.t, _) Result.result =
+            function
+            | `Asset _ as a -> Result.Ok a
+            | `Root (_, `TAsset) as a -> Ok a
+            | `Root (s, `TUnknown) -> Ok (`Root (s, `TAsset))
+            | `Dot (p, s) -> Ok (`Dot (p, s))
+            | _ ->
+                Error
+                  (not_allowed ~suggestion:"Use a reference to an asset"
+                     href_location ~what:"Non-asset reference"
+                     ~in_what:"media target")
           in
-          `Media (`Reference target, m, text) |> Location.at location
-      | Result.Error error ->
-          Error.raise_warning error;
-          let placeholder =
-            match kind with
-            | `Simple -> `Code_span href
-            | `With_text -> `Styled (`Emphasis, content)
-          in
-          `Paragraph
-            (inline_elements status [ placeholder |> Location.at location ])
-          |> Location.at location)
+          match asset_ref_of_ref target with
+          | Error error -> fallback error
+          | Ok target ->
+              `Media (`Reference target, m, text) |> Location.at location)
+      | Result.Error error -> fallback error)
 
 and nestable_block_elements status elements =
   List.map (nestable_block_element status) elements
