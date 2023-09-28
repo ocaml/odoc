@@ -1,6 +1,8 @@
 {0 Parent/Child Specification}
 This parent/child specification allows more flexible output support, e.g., per library documentation. See {{:https://ocaml.org/packages}ocaml.org/packages}.
 
+{1 Rules}
+
 The rules are;
 
 {ul 
@@ -18,6 +20,8 @@ The rules are;
 
 {b Note:} The [--pkg <package>] option is still supported for backward compatibility in [odoc >= v2.0.0],
 although it's now equivalent to specifying a parent [.mld] file.
+
+{1 Example}
 
 For example, let's consider [John] whose is [Doe] and [Mark]'s father. [Doe] has
 children, [Max], and page [foo], whereas [Mark] has no children. That is to say,
@@ -157,3 +161,34 @@ and we shall get
 ]}
 
 For more about [odoc] commands, simply invoke [odoc --help] in your shell.
+
+{1 Convention for installed packages}
+
+Locally, the build system can make arbitrary complex documentation page
+hierarchies.
+However, the generated HTML documentation is generally not installed as part of
+a package. Instead the documentation source code made of [.mld] pages is
+installed and might be used by a different driver.
+
+{2 Convention}
+
+In order for drivers to build consistent documentation for a package, the
+following convention should be followed.
+
+- [.mld] pages are installed in a package's [share] directory, under the
+  [odoc-pages] sub-directory.
+- [index.mld] is the parent of every other pages. The driver can freely rename
+  this page, for example, it can be named after the package.
+- Other pages are children of the [index.mld] page.
+
+If no [index.mld] is installed, it's the driver's responsibility to generate
+it.
+
+When the rendering of source code is enabled, the source tree will be named
+[source] and will be a child of [index.mld]. As a consequence, no page can be
+named [source.mld].
+
+This convention is followed by the drivers
+{{:https://erratique.ch/software/odig/doc/packaging.html}Odig}
+and {{:https://github.com/ocaml-doc/voodoo}ocaml.org}
+and by the build system {{:https://github.com/ocaml/dune}Dune}.
