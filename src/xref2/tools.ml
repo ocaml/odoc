@@ -1899,8 +1899,7 @@ and fragmap :
                 resolve_module ~mark_substituted ~add_canonical:false env p
               with
               | Ok (p, _) -> Ok (Right p)
-              | Error e ->
-                  Error (`UnresolvedPath (`Module (p, e)))
+              | Error e -> Error (`UnresolvedPath (`Module (p, e)))
             in
             map_signature { id_map with module_ = Some (name, mapfn) } sg.items)
     | ModuleTypeEq (frag, mtye) -> (
