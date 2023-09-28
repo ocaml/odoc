@@ -54,6 +54,10 @@ type 'a abstract_table = {
   align : alignment option list option;
 }
 
+type media_href = [ `Link of string | `Reference of Reference.Asset.t ]
+
+type media_element = [ `Media of media_href * media * paragraph ]
+
 type nestable_block_element =
   [ `Paragraph of paragraph
   | `Code_block of
@@ -66,7 +70,7 @@ type nestable_block_element =
   | `Table of nestable_block_element abstract_table
   | `List of
     [ `Unordered | `Ordered ] * nestable_block_element with_location list list
-  ]
+  | media_element ]
 
 type tag =
   [ `Author of string
@@ -93,12 +97,7 @@ type heading_level =
   | `Paragraph
   | `Subparagraph ]
 
-type media_href = [ `Link of string | `Reference of Reference.Asset.t ]
-
-type media_element = [ `Media of media_href * media * paragraph ]
-
-type attached_block_element =
-  [ nestable_block_element | media_element | `Tag of tag ]
+type attached_block_element = [ nestable_block_element | `Tag of tag ]
 
 type heading_attrs = {
   heading_level : heading_level;
@@ -110,8 +109,7 @@ type block_element =
   [ nestable_block_element
   | `Heading of
     heading_attrs * Identifier.Label.t * inline_element with_location list
-  | `Tag of tag
-  | media_element ]
+  | `Tag of tag ]
 
 type docs = block_element with_location list
 

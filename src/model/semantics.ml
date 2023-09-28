@@ -276,6 +276,39 @@ let rec nestable_block_element :
           grid
       in
       `Table { Comment.data; align } |> Location.at location
+  | { value = `Media (_, { value = `Link href; _ }, content, m); location } ->
+      let text = inline_elements status content in
+      `Media (`Link href, m, text) |> Location.at location
+  | {
+   value =
+     `Media
+       (kind, { value = `Reference href; location = href_location }, content, m);
+   location;
+  } -> (
+      match Error.raise_warnings (Reference.parse href_location href) with
+      | Result.Ok target ->
+          let text = inline_elements status content in
+          let target =
+            match target with
+            | `Asset _ as a -> a
+            | `Root (_, `TAsset) as a -> a
+            | `Root (s, `TUnknown) -> `Root (s, `TAsset)
+            | `Root _ -> failwith "a"
+            | `Dot (_, s) -> failwith s
+            | `Resolved _ -> failwith "todo2"
+            | _ -> failwith "todo"
+          in
+          `Media (`Reference target, m, text) |> Location.at location
+      | Result.Error error ->
+          Error.raise_warning error;
+          let placeholder =
+            match kind with
+            | `Simple -> `Code_span href
+            | `With_text -> `Styled (`Emphasis, content)
+          in
+          `Paragraph
+            (inline_elements status [ placeholder |> Location.at location ])
+          |> Location.at location)
 
 and nestable_block_elements status elements =
   List.map (nestable_block_element status) elements
@@ -483,62 +516,7 @@ let top_level_block_elements status ast_elements =
             in
             traverse ~top_heading_level
               (element :: comment_elements_acc)
-              ast_elements
-        | {
-         value = `Media (_, { value = `Link href; _ }, content, m);
-         location;
-        } ->
-            let text = inline_elements status content in
-            let element =
-              `Media (`Link href, m, text) |> Location.at location
-            in
-            traverse ~top_heading_level
-              (element :: comment_elements_acc)
-              ast_elements
-        | {
-         value =
-           `Media
-             ( kind,
-               { value = `Reference href; location = href_location },
-               content,
-               m );
-         location;
-        } -> (
-            match Error.raise_warnings (Reference.parse href_location href) with
-            | Result.Ok target ->
-                let text = inline_elements status content in
-                let target =
-                  match target with
-                  | `Asset _ as a -> a
-                  | `Root (_, `TAsset) as a -> a
-                  | `Root (s, `TUnknown) -> `Root (s, `TAsset)
-                  | `Root _ -> failwith "a"
-                  | `Dot (_, s) -> failwith s
-                  | `Resolved _ -> failwith "todo2"
-                  | _ -> failwith "todo"
-                in
-                let element =
-                  `Media (`Reference target, m, text) |> Location.at location
-                in
-                traverse ~top_heading_level
-                  (element :: comment_elements_acc)
-                  ast_elements
-            | Result.Error error ->
-                Error.raise_warning error;
-                let placeholder =
-                  match kind with
-                  | `Simple -> `Code_span href
-                  | `With_text -> `Styled (`Emphasis, content)
-                in
-                let placeholder =
-                  `Paragraph
-                    (inline_elements status
-                       [ placeholder |> Location.at location ])
-                  |> Location.at location
-                in
-                traverse ~top_heading_level
-                  (placeholder :: comment_elements_acc)
-                  ast_elements))
+              ast_elements)
   in
   let top_heading_level =
     (* Non-page documents have a generated title. *)

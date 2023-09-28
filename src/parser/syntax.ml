@@ -1150,109 +1150,49 @@ let rec block_element_list :
     | {
         location;
         value = `Begin_media_with_replacement_text (href, media) as token;
-      } as next_token -> (
+      } as next_token ->
         warn_if_after_tags next_token;
 
-        let recover_when_not_at_top_level context =
-          warn_because_not_at_top_level next_token;
-          junk input;
-          let content, brace_location =
-            delimited_inline_element_list ~parent_markup:token
-              ~parent_markup_location:location ~requires_leading_whitespace:true
-              input
-          in
-          let location = Loc.span [ location; brace_location ] in
-          let paragraph =
-            `Paragraph content
-            |> accepted_in_all_contexts context
-            |> Loc.at location
-          in
-          consume_block_elements ~parsed_a_tag `At_start_of_line
-            (paragraph :: acc)
+        junk input;
+
+        let content, brace_location =
+          delimited_inline_element_list ~parent_markup:token
+            ~parent_markup_location:location ~requires_leading_whitespace:false
+            input
         in
+        let r_location =
+          Loc.nudge_start
+            (String.length @@ Token.s_of_media `Replaced media)
+            location
+        in
+        let href = href |> Loc.at r_location in
 
-        match context with
-        | In_shorthand_list ->
-            if where_in_line = `At_start_of_line then
-              (List.rev acc, next_token, where_in_line)
-            else recover_when_not_at_top_level context
-        | In_explicit_list -> recover_when_not_at_top_level context
-        | In_table_cell -> recover_when_not_at_top_level context
-        | In_tag -> recover_when_not_at_top_level context
-        | In_code_results -> recover_when_not_at_top_level context
-        | Top_level ->
-            if where_in_line <> `At_start_of_line then
-              Parse_error.should_begin_on_its_own_line
-                ~what:(Token.describe token) location
-              |> add_warning input;
+        if content = [] then
+          Parse_error.should_not_be_empty ~what:(Token.describe token) location
+          |> add_warning input;
 
-            junk input;
-
-            let content, brace_location =
-              delimited_inline_element_list ~parent_markup:token
-                ~parent_markup_location:location
-                ~requires_leading_whitespace:false input
-            in
-
-            let r_location =
-              Loc.nudge_start
-                (String.length @@ Token.s_of_media `Replaced media)
-                location
-            in
-            let href = href |> Loc.at r_location in
-            let location = Loc.span [ location; brace_location ] in
-            let heading = `Media (`Simple, href, content, media) in
-            let heading = Loc.at location heading in
-            let acc = heading :: acc in
-            consume_block_elements ~parsed_a_tag `After_text acc)
-    | { location; value = `Simple_media (href, media) as token } as next_token
-      -> (
+        let location = Loc.span [ location; brace_location ] in
+        let block = `Media (`Simple, href, content, media) in
+        let block = accepted_in_all_contexts context block in
+        let block = Loc.at location block in
+        let acc = block :: acc in
+        consume_block_elements ~parsed_a_tag `After_text acc
+    | { location; value = `Simple_media (href, media) } as next_token ->
         warn_if_after_tags next_token;
 
-        let recover_when_not_at_top_level context =
-          warn_because_not_at_top_level next_token;
-          junk input;
-          let content =
-            match href with
-            | `Link href -> [ `Word href |> Loc.at location ]
-            | `Reference href -> [ `Word href |> Loc.at location ]
-          in
-          let paragraph =
-            `Paragraph content
-            |> accepted_in_all_contexts context
-            |> Loc.at location
-          in
-          consume_block_elements ~parsed_a_tag `At_start_of_line
-            (paragraph :: acc)
+        junk input;
+
+        let r_location =
+          Loc.nudge_start
+            (String.length @@ Token.s_of_media `Replaced media)
+            location
         in
-
-        match context with
-        | In_shorthand_list ->
-            if where_in_line = `At_start_of_line then
-              (List.rev acc, next_token, where_in_line)
-            else recover_when_not_at_top_level context
-        | In_explicit_list -> recover_when_not_at_top_level context
-        | In_table_cell -> recover_when_not_at_top_level context
-        | In_tag -> recover_when_not_at_top_level context
-        | In_code_results -> recover_when_not_at_top_level context
-        | Top_level ->
-            if where_in_line <> `At_start_of_line then
-              Parse_error.should_begin_on_its_own_line
-                ~what:(Token.describe token) location
-              |> add_warning input;
-
-            junk input;
-
-            let r_location =
-              Loc.nudge_start
-                (String.length @@ Token.s_of_media `Replaced media)
-                location
-            in
-            let href = href |> Loc.at r_location in
-            let heading = `Media (`Simple, href, [], media) in
-            let heading = Loc.at location heading in
-            let acc = heading :: acc in
-            consume_block_elements ~parsed_a_tag `After_text acc)
+        let href = href |> Loc.at r_location in
+        let block = `Media (`Simple, href, [], media) in
+        let block = accepted_in_all_contexts context block in
+        let block = Loc.at location block in
+        let acc = block :: acc in
+        consume_block_elements ~parsed_a_tag `After_text acc
   in
 
   let where_in_line =

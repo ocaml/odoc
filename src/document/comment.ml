@@ -264,6 +264,38 @@ let rec nestable_block_element :
            and raise warnings *)
       in
       [ block @@ Table { data; align } ]
+  | `Media (href, media, content) ->
+      let content =
+        match (content, href) with
+        | [], `Reference path ->
+            let s = Reference.render_unresolved (path :> Comment.Reference.t) in
+            [ inline @@ Inline.Source (source_of_code s) ]
+        | [], `Link href -> [ inline @@ Inline.Source (source_of_code href) ]
+        | _ -> inline_element_list content
+      in
+      let url =
+        match href with
+        | `Reference (`Resolved r) -> (
+            let id =
+              Odoc_model.Paths.Reference.Resolved.(identifier (r :> t))
+            in
+            match Url.from_identifier ~stop_before:false id with
+            | Ok url -> Target.Internal (Resolved url)
+            | Error exn ->
+                (* FIXME: better error message *)
+                Printf.eprintf "Id.href failed: %S\n%!"
+                  (Url.Error.to_string exn);
+                Internal Unresolved)
+        | `Reference _ -> Internal Unresolved
+        | `Link href -> External href
+      in
+      let i =
+        match media with
+        | `Audio -> Block.Audio (url, content)
+        | `Video -> Video (url, content)
+        | `Image -> Image (url, content)
+      in
+      [ block i ]
 
 and paragraph : Comment.paragraph -> Block.one = function
   | [ { value = `Raw_markup (target, s); _ } ] ->
@@ -338,38 +370,6 @@ let attached_block_element : Comment.attached_block_element -> Block.t =
   function
   | #Comment.nestable_block_element as e -> nestable_block_element e
   | `Tag t -> [ block ~attr:[ "at-tags" ] @@ Description [ tag t ] ]
-  | `Media (href, media, content) ->
-      let content =
-        match (content, href) with
-        | [], `Reference path ->
-            let s = Reference.render_unresolved (path :> Comment.Reference.t) in
-            [ inline @@ Inline.Source (source_of_code s) ]
-        | [], `Link href -> [ inline @@ Inline.Source (source_of_code href) ]
-        | _ -> inline_element_list content
-      in
-      let url =
-        match href with
-        | `Reference (`Resolved r) -> (
-            let id =
-              Odoc_model.Paths.Reference.Resolved.(identifier (r :> t))
-            in
-            match Url.from_identifier ~stop_before:false id with
-            | Ok url -> Target.Internal (Resolved url)
-            | Error exn ->
-                (* FIXME: better error message *)
-                Printf.eprintf "Id.href failed: %S\n%!"
-                  (Url.Error.to_string exn);
-                Internal Unresolved)
-        | `Reference _ -> Internal Unresolved
-        | `Link href -> External href
-      in
-      let i =
-        match media with
-        | `Audio -> Block.Audio (url, content)
-        | `Video -> Video (url, content)
-        | `Image -> Image (url, content)
-      in
-      [ block i ]
 
 (* TODO collaesce tags *)
 

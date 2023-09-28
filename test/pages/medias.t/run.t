@@ -7,27 +7,28 @@ This will have produced a file called 'page-index.odoc'.
 Link and generate the HTML (forgetting the asset!):
 
   $ odoc link page-index.odoc
-  File "index.mld", line 21, characters 0-57:
+  File "index.mld", line 12, characters 28-85:
   Warning: Failed to resolve reference unresolvedroot(camezfzeffl.gif) Couldn't find asset "camezfzeffl.gif"
-  File "index.mld", line 17, characters 0-24:
+  File "index.mld", line 11, characters 31-55:
   Warning: Failed to resolve reference unresolvedroot(caqzdqzdml.gif) Couldn't find asset "caqzdqzdml.gif"
   $ odoc html-generate -o html --indent --asset caml.gif page-index.odocl
   $ odoc support-files -o html
 
 To test visually, indent:
- $ cp -r html /tmp/
- $ firefox /tmp/html/index/index.html
+  $ cp -r html /tmp/
+  $ firefox /tmp/html/index/index.html
 
 Testing the working references:
 
   $ cat html/index/index.html | grep img
-      <a href="caml.gif" class="img-link"><img src="caml.gif" alt="caml.gif"/>
-      <a href="caml.gif" class="img-link">
-       <img src="caml.gif" alt="With alt text and emphasis"/>
-      <a href="https://picsum.photos/200/300" class="img-link">
-       <img src="https://picsum.photos/200/300" alt="reference"/>
-      <a href="https://picsum.photos/200/300" class="img-link">
-       <img src="https://picsum.photos/200/300"
+        <a href="caml.gif" class="img-link">
+         <img src="caml.gif" alt="caml.gif"/>
+        <a href="caml.gif" class="img-link">
+         <img src="caml.gif" alt="With alt text and emphasis"/>
+        <a href="https://picsum.photos/200/300" class="img-link">
+         <img src="https://picsum.photos/200/300" alt="reference"/>
+        <a href="https://picsum.photos/200/300" class="img-link">
+         <img src="https://picsum.photos/200/300"
 
   $ cat html/index/index.html | grep video
       <li><a href="#video">Video</a>
@@ -38,15 +39,15 @@ Testing the working references:
 
   $ cat html/index/index.html | grep audio
       <li><a href="#audio">Audio</a>
-     </div><h2 id="audio"><a href="#audio" class="anchor"></a>Audio</h2>
+     </ul><h2 id="audio"><a href="#audio" class="anchor"></a>Audio</h2>
       <audio
       </audio>
 
 Testing the unresolved references:
 
   $ cat html/index/index.html | grep xref-unresolved
-     <div><span class="xref-unresolved"><code>caqzdqzdml.gif</code></span>
-      <span class="xref-unresolved">With alt text and <b>emphasis</b></span>
+       <div><span class="xref-unresolved"><code>caqzdqzdml.gif</code></span>
+        <span class="xref-unresolved">With alt text and <b>emphasis</b></span>
 
 Testing latex and manpages
 

@@ -297,6 +297,15 @@ and comment_nestable_block_element env parent ~loc:_
         |> List.rev
       in
       `Modules refs
+  | `Media (`Reference r, m, content) as orig -> (
+      match Ref_tools.resolve_asset_reference env r |> Error.raise_warnings with
+      | Ok x -> `Media (`Reference (`Resolved x), m, content)
+      | Error e ->
+          Errors.report
+            ~what:(`Reference (r :> Paths.Reference.t))
+            ~tools_error:(`Reference e) `Resolve;
+          orig)
+  | `Media _ as orig -> orig
 
 and comment_nestable_block_element_list env parent
     (xs : Comment.nestable_block_element Comment.with_location list) =
@@ -344,15 +353,6 @@ and comment_block_element env parent ~loc (x : Comment.block_element) =
       check_ambiguous_label ~loc env h;
       `Heading h
   | `Tag t -> `Tag (comment_tag env parent ~loc t)
-  | `Media (`Reference r, m, content) as orig -> (
-      match Ref_tools.resolve_asset_reference env r |> Error.raise_warnings with
-      | Ok x -> `Media (`Reference (`Resolved x), m, content)
-      | Error e ->
-          Errors.report
-            ~what:(`Reference (r :> Paths.Reference.t))
-            ~tools_error:(`Reference e) `Resolve;
-          orig)
-  | `Media _ as orig -> orig
 
 and with_location :
     type a.
