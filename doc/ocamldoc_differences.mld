@@ -33,6 +33,7 @@ The following describes the changes between what [odoc] understands and what’s
 - [odoc] has a better mechanism for disambiguating references in comments. See 'reference syntax' later in this document.
 - Built-in support for standalone [.mld] files. These are documents using the OCamldoc markup, but they’re rendered as distinct pages.
 - Structured output: [odoc] can produce output in a structured directory tree rather a set of files.
+- [odoc] support the inclusion of assets in the structured directory tree.
 - A few extra tags are supported:
   + [@returns] is a synonym for [@return]
   + [@raises] is a synonym for [@raise]
@@ -56,6 +57,7 @@ Additionally we support extra annotations:
 - [instance-variable] refers to instance variables
 - [label] refers to labels introduced in anchors
 - [page] refers to [.mld] pages as outlined above
+- [asset] refers assets as outlined above
 - [value] is recognised as [val]
 
 {3 Referencing items containing hyphens or dots}
