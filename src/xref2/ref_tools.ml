@@ -585,8 +585,7 @@ module A = struct
     let has_asset children asset =
       List.exists
         (function
-          | Odoc_model.Lang.Page.Asset_child a -> String.equal a asset
-          | _ -> false)
+          | Odoc_model.Lang.Page.Asset_child a -> a = asset | _ -> false)
         children
     in
     let parent_id

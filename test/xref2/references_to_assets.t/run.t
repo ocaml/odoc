@@ -16,7 +16,12 @@ children. If we omit the asset child, all assets reference resolving fail:
   $ odoc compile index.mld --child module-test --child page-other_page
   $ odoc compile other_page.mld -I . --parent index
   $ odoc compile test.cmti -I . --parent index
-  $ for i in *.odoc; do odoc link -I . $i; done
+  $ odoc link -I . test.odoc
+  File "test.mli", line 5, characters 39-78:
+  Warning: Failed to resolve reference unresolvedroot(other_page).caml_not.gif Couldn't find asset "caml_not.gif"
+  File "test.mli", line 3, characters 4-34:
+  Warning: Failed to resolve reference unresolvedroot(caml.gif) Couldn't find asset "caml.gif"
+  $ odoc link -I . page-index.odoc
   File "index.mld", line 10, characters 2-15:
   Warning: Failed to resolve reference unresolvedroot(caml.gif) Couldn't find "caml.gif"
   File "index.mld", line 9, characters 2-36:
@@ -29,11 +34,8 @@ children. If we omit the asset child, all assets reference resolving fail:
   Warning: Failed to resolve reference unresolvedroot(other_page).caml_not.gif Couldn't find asset "caml_not.gif"
   File "index.mld", line 3, characters 2-32:
   Warning: Failed to resolve reference unresolvedroot(caml.gif) Couldn't find asset "caml.gif"
+  $ odoc link -I . page-other_page.odoc
   File "other_page.mld", line 3, characters 22-41:
-  Warning: Failed to resolve reference unresolvedroot(caml.gif) Couldn't find asset "caml.gif"
-  File "test.mli", line 4, characters 39-78:
-  Warning: Failed to resolve reference unresolvedroot(other_page).caml_not.gif Couldn't find asset "caml_not.gif"
-  File "test.mli", line 2, characters 4-34:
   Warning: Failed to resolve reference unresolvedroot(caml.gif) Couldn't find asset "caml.gif"
 
 We should pass the asset as child of a page.
@@ -62,8 +64,8 @@ Note that the html links are correct (there are dead links due to missing assets
       <li><a href="other_page/caml_not.gif"><code>caml_not.gif</code></a></li>
       <li><a href="other_page/caml_not.gif"><code>caml_not.gif</code></a></li>
   $ grep caml.gif html/index/Test/index.html
-     <p>A <a href="../caml.gif" title="caml.gif">reference</a> to an asset</p>
+       <p>A <a href="../caml.gif" title="caml.gif">reference</a> to an asset
   $ grep caml_not.gif html/index/Test/index.html
-      <a href="../other_page/caml_not.gif"><code>caml_not.gif</code></a>
+        <a href="../other_page/caml_not.gif"><code>caml_not.gif</code></a>
   $ grep caml.gif html/index/other_page/index.html
      <p>Hello darkness my old <a href="../caml.gif"><code>caml.gif</code></a>.

@@ -1,3 +1,4 @@
+val x : int
 (**
   A {{!asset-"caml.gif"}reference} to an asset
 
