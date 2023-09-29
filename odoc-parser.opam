@@ -13,7 +13,7 @@ bug-reports: "https://github.com/ocaml/odoc/issues"
 dev-repo: "git+https://github.com/ocaml/odoc.git"
 doc: "https://ocaml-doc.github.io/odoc-parser/"
 depends: [
-  "dune" {>= "2.8"}
+  "dune" {>= "3.7.0"}
   "ocaml" {>= "4.02.0"}
   "astring"
   "result"
@@ -31,7 +31,6 @@ build: [
     "-j"
     jobs
     "@install"
-    "@runtest" {with-test}
   ]
 ]
 
