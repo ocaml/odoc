@@ -6,7 +6,9 @@ open Odoc_model
 let handle_file file ~unit ~page =
   Odoc_file.load file >>= fun unit' ->
   match unit' with
-  | { Odoc_file.content = Unit_content unit'; _ } when not unit'.hidden ->
+  | { Odoc_file.content = Unit_content unit'; _ } when unit'.hidden ->
+      Error (`Msg "Hidden units are ignored when generating an index")
+  | { Odoc_file.content = Unit_content unit'; _ } (* when not unit'.hidden *) ->
       Ok (unit unit')
   | { Odoc_file.content = Page_content page'; _ } -> Ok (page page')
   | _ ->
