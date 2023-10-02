@@ -40,5 +40,5 @@ depends: [
   "ocamlfind"
   "bos"
   "yojson" {>= "1.6.0"}
-  "mdx"
+  "mdx" {>= "2.3.0"}
 ]
