@@ -22,17 +22,24 @@
 ;   odoc_for_authors.mld
 ;   parent_child_spec.mld))
 
+; The driver is also used to collect benchmarks. The benchmark result is always
+; generated but is promoted only by the @bench alias.
+
 (rule
- (alias docgen)
- (deps
-  (:x driver.mld)
-  (glob_files *.ml*)
-  (glob_files *.png)
-  (glob_files library_mlds/*.mld)
-  (package odoc))
+ (targets driver.mld.corrected driver-benchmarks.json)
  (enabled_if
   (> %{ocaml_version} 4.11))
+ (deps
+  (package odoc)
+  (universe) ; Benchmark depends on the running time of odoc commands
+  (glob_files *.mld)
+  (glob_files library_mlds/*)
+  (glob_files examples/*.ml*))
+ (action
+  (run ocaml-mdx-test --force-output %{dep:driver.mld})))
+
+(rule
+ (alias docgen)
  (action
   (progn
-   (run ocaml-mdx-test %{x})
-   (diff? %{x} %{x}.corrected))))
+   (diff driver.mld driver.mld.corrected))))

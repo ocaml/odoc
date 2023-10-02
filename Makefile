@@ -13,6 +13,10 @@ publish-docs:
 test :
 	dune runtest
 
+.PHONY : bench
+bench:
+	@dune build @bench
+
 .PHONY : coverage
 coverage :
 	dune build --instrument-with bisect_ppx @test/runtest --no-buffer -j 1 --force || true
