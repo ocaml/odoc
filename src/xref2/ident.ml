@@ -363,8 +363,7 @@ end
 
 let hash : any -> int = Hashtbl.hash
 
-let compare : any -> any -> int =
- fun a b -> compare (int_of_any a) (int_of_any b)
+let compare : any -> any -> int = fun a b -> int_of_any a - int_of_any b
 
 module Maps = struct
   module Module = Map.Make (struct
