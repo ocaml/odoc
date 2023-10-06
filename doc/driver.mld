@@ -793,7 +793,7 @@ If needed, the list of the slowest commands for each subcommands can be shown by
 (for the record, these commands are run from directory `_build/default/doc`)
 
 {[
-# List.iter print_cmd (k_longest_commands "compile" 5)
+# (* List.iter print_cmd (k_longest_commands "compile" 5) *)
 # (* List.iter print_cmd (k_longest_commands "link" 5) *)
 # (* List.iter print_cmd (k_longest_commands "html-generate" 5) *)
 ]}
