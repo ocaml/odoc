@@ -891,11 +891,32 @@ let compute_produced_cmd cmd =
           ];
       ]
 
+(** Analyze the size of files produced by a command. *)
+let compute_longest_cmd cmd =
+  match k_longest_commands cmd 1 with
+  | hd :: _ ->
+      [
+        `Assoc
+          [
+            ("name", `String ("longest-" ^ cmd));
+            ("value", `Float hd.time);
+            ("units", `String "s");
+            ( "description",
+              `String
+                ("Time taken by the longest invokation of 'odoc " ^ cmd ^ "'")
+            );
+            ("trend", `String "lower-is-better");
+          ];
+      ]
+  | [] -> []
+
 let metrics =
   compute_metric_cmd "compile"
   @ compute_metric_cmd "compile-deps"
   @ compute_metric_cmd "link"
   @ compute_metric_cmd "html-generate"
+  @ compute_longest_cmd "compile"
+  @ compute_longest_cmd "link"
   @ compute_produced_cmd "compile"
   @ compute_produced_cmd "link"
 
