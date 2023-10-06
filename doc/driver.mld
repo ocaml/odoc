@@ -169,23 +169,34 @@ type executed_command = {
    the produced file. *)
 let commands = ref [ ]
 
+let instrument_dir =
+  lazy (
+    let dir = Fpath.v "landmarks" in
+    OS.Dir.delete dir |> get_ok;
+    OS.Dir.create dir |> get_ok |> ignore;
+    dir
+  )
+
 (* Environment variables passed to commands. *)
-let env =
-  let env = OS.Env.current () |> get_ok in
-  let env =
-    if instrument then (
-      let instrument_dir = Fpath.v "landmarks" in
-      OS.Dir.delete instrument_dir |> get_ok;
-      OS.Dir.create instrument_dir |> get_ok |> ignore;
-      Astring.String.Map.add "OCAML_LANDMARKS"
-        ("time,allocation,format=json,output=temporary:" ^ Fpath.to_string instrument_dir)
-        env
-    ) else env
-  in
-  env
+let env = OS.Env.current () |> get_ok
 
 let run ?output_file cmd =
   let t_start = Unix.gettimeofday () in
+  let env =
+    if instrument then
+      let lazy instrument_dir = instrument_dir in
+      let instrument_out =
+        match output_file with
+        | Some outf ->
+            Fpath.(/) instrument_dir (Fpath.basename outf ^ ".json")
+            |> Fpath.to_string
+        | None -> "temporary:" ^ Fpath.to_string instrument_dir
+      in
+      Astring.String.Map.add "OCAML_LANDMARKS"
+        ("time,allocation,format=json,output=" ^ instrument_out)
+        env
+    else env
+  in
   let r = OS.Cmd.(run_out ~env ~err:OS.Cmd.err_run_out cmd |> to_lines) |> get_ok in
   let t_end = Unix.gettimeofday () in
   let time = t_end -. t_start in
