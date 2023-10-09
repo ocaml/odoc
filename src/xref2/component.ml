@@ -43,7 +43,7 @@ module IdentMap = Map.Make (struct
 end)
 
 module Delayed = struct
-  let eager = ref false
+  let eager = ref true
 
   type 'a t = { mutable v : 'a option; mutable get : (unit -> 'a) option }
 
