@@ -43,27 +43,13 @@ module IdentMap = Map.Make (struct
 end)
 
 module Delayed = struct
-  let eager = ref true
+  type 'a t = 'a
 
-  type 'a t = { mutable v : 'a option; mutable get : (unit -> 'a) option }
+  external get : 'a t -> 'a = "%identity"
 
-  let get : 'a t -> 'a =
-   fun x ->
-    match (x.v, x.get) with
-    | Some x, _ -> x
-    | None, Some get ->
-        let v = get () in
-        x.v <- Some v;
-        x.get <- None;
-        v
-    | _, _ -> failwith "bad delayed"
+  let put : (unit -> 'a) -> 'a t = fun f -> f ()
 
-  let put : (unit -> 'a) -> 'a t =
-   fun f ->
-    if !eager then { v = Some (f ()); get = None }
-    else { v = None; get = Some f }
-
-  let put_val : 'a -> 'a t = fun v -> { v = Some v; get = None }
+  external put_val : 'a -> 'a t = "%identity"
 end
 
 module Opt = struct

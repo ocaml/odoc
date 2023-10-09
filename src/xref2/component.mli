@@ -18,11 +18,7 @@ module IdentMap : Map.S with type key = Ident.any
 (** Delayed is a bit like Lazy.t but may in the future offer the chance to peek inside
     to be able to optimize the calculation *)
 module Delayed : sig
-  val eager : bool ref
-  (** If [eager] is true then no delaying is done. Most useful for testing and
-        documentation *)
-
-  type 'a t = { mutable v : 'a option; mutable get : (unit -> 'a) option }
+  type 'a t
 
   val get : 'a t -> 'a
 
