@@ -1,6 +1,6 @@
 src/document/*.cppo.ml
-src/loader/cmi.ml
-src/loader/cmi.mli
+src/loader/cmi.cppo.ml
+src/loader/cmi.cppo.mli
 src/loader/cmt.ml
 src/loader/cmti.ml
 src/loader/doc_attr.ml

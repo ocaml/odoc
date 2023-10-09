@@ -16,6 +16,24 @@
    %{workspace_root}
    (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
 
+(rule
+ (targets cmi.ml)
+ (deps
+  (:x cmi.cppo.ml))
+ (action
+  (chdir
+   %{workspace_root}
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
+
+(rule
+ (targets cmi.mli)
+ (deps
+  (:x cmi.cppo.mli))
+ (action
+  (chdir
+   %{workspace_root}
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
+
 (library
  (name odoc_loader)
  (public_name odoc.loader)
