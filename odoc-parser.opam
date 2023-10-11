@@ -8,10 +8,10 @@ understood by ocamldoc."""
 maintainer: ["Jon Ludlam <jon@recoil.org>"]
 authors: ["Anton Bachin <antonbachin@yahoo.com>"]
 license: "ISC"
-homepage: "https://github.com/ocaml-doc/odoc-parser"
+homepage: "https://github.com/ocaml/odoc"
 bug-reports: "https://github.com/ocaml/odoc/issues"
 dev-repo: "git+https://github.com/ocaml/odoc.git"
-doc: "https://ocaml-doc.github.io/odoc-parser/"
+doc: "https://ocaml.github.io/odoc/"
 depends: [
   "dune" {>= "2.8"}
   "ocaml" {>= "4.02.0"}
