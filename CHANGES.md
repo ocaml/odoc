@@ -22,6 +22,7 @@ Tags:
 - Add a tooltip to references with text (@Julow, #945)
 - Add emoji to alerts in CSS (@yawaramin, #928)
 - Add common language in shipped highlightjs (@Julow, #953)
+- Display 'private' keyword for private type extensions (@gpetiot, #1019)
 
 ### Fixed
 - Fix `--hidden` not always taken into account (@panglesd, #940)

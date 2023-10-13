@@ -646,6 +646,9 @@ module Make (Syntax : SYNTAX) = struct
         O.keyword "type" ++ O.txt " "
         ++ Link.from_path (t.type_path :> Paths.Path.t)
         ++ O.txt " +=" ++ O.sp
+        ++
+        if t.private_ then O.keyword Syntax.Type.private_keyword ++ O.sp
+        else O.noop
       in
       let content =
         O.documentedSrc prefix
