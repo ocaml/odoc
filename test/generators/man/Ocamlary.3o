@@ -1515,7 +1515,7 @@ A mystery wrapped in an ellipsis
 | \f[CB]ExtE\fR
 .br 
 .sp 
-\f[CB]type\fR ext += 
+\f[CB]type\fR ext += \f[CB]private\fR 
 .br 
 .ti +2
 | \f[CB]ExtF\fR
