@@ -7,8 +7,8 @@
   $ du -sh megaodocl
   8.0K	megaodocl
   $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
-  Indexing in 8.804083ms
-  Export in 3.623009ms
+  Indexing in 2.303839ms
+  Export in 0.540018ms
   $ export SHERLODOC_DB=db.bin
   $ sherlodoc "unique_name"
   val Main.unique_name : foo
@@ -31,7 +31,7 @@
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  doc page
+  doc 
   $ sherlodoc "map"
   mod Main.Map
   val Main.foo : foo

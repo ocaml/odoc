@@ -7,13 +7,13 @@
   $ du -sh megaodocl
   12K	megaodocl
   $ sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
-  Indexing in 1.797915ms
-  Export in 0.930071ms
+  Indexing in 1.780987ms
+  Export in 0.813007ms
 
 Here cat is used to remove weird permissions on executable built by dune
   $ cat ../../../jsoo/main.bc.js > sherlodoc.js
   $ du -sh sherlodoc.js
-  1.2M	sherlodoc.js
+  5.0M	sherlodoc.js
   $ odoc support-files -o html
   $ for f in $(find . -name '*.odocl'); do
   >  echo $f ;
