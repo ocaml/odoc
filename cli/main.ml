@@ -1,3 +1,6 @@
+(** This executable allows to search in a sherlodoc database on the commandline.
+    It is mainly used for testing, but should work as is as a commandline tool. *)
+
 let pp_or cond pp_true pp_false ppf = if cond then pp_true ppf else pp_false ppf
 
 let string_of_kind =

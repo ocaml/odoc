@@ -1,3 +1,7 @@
+(** This module allows searching for the successor of a value in a sorted array.
+    The array are assumed to be sorted : this is not checked. As this is tricky
+    code, it is unit-tested. *)
+
 let get = Array.get
 
 let rec succ_ge ~compare elt arr lo hi =

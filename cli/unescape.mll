@@ -1,4 +1,7 @@
-
+(* The goal of this lexer is to remove html encoding from strings, so that
+   they display nicely on the command-line. The only encodings included are the
+   one actually used. Because this executable is mainly used for testing, this
+   is fine. *)
 rule buffer b = parse
 | "&amp;" { Buffer.add_char b '&'; buffer b lexbuf } 
 | "&lt;" { Buffer.add_char b '<'; buffer b lexbuf } 
@@ -18,4 +21,4 @@ let string str =
   let b = Buffer.create (String.length str) in
   buffer b lexbuf ;
   Buffer.contents b
-}
+}C

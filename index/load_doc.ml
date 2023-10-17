@@ -291,7 +291,8 @@ let register_entry ~db ~index_name ~type_search ~index_docstring
     in
     let score = cost ~name ~kind:kind' ~doc_html in
     let rhs = Html.rhs_of_kind kind in
-    let url = Html.url id in let url = Result.get_ok url in
+    let url = Html.url id in
+    let url = Result.get_ok url in
     let elt = Elt.v ~name ~kind:kind' ~rhs ~doc_html ~score ~url () in
     if index_docstring then register_doc ~db elt doc_txt ;
     (if index_name

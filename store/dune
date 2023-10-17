@@ -1,3 +1,5 @@
+; This directory contains modules for storing search databases.
+
 (library
  (name storage_ancient)
  (modules storage_ancient)

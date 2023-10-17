@@ -27,54 +27,55 @@ let stream_of_string str =
 
 let don't_wait_for fut = Fut.await fut Fun.id
 
-let string_of_stream stream =
-  print_endline "string_of_stream" ;
-  let buffer = Buffer.create 128 in
-  let append str =
-    Buffer.add_string buffer (str |> Brr.Tarray.of_jv |> Brr.Tarray.to_string)
-  in
-  let open Jv in
-  let reader = call stream "getReader" [||] in
+module Decompress_browser = struct
+  (** This module contains binding to the browser string compression api. It is 
+      much faster than using an OCaml library, and does not require sending code
+      over the network. *)
 
-  let open Fut.Syntax in
-  let rec read_step obj =
-    let done_ = get obj "done" |> to_bool in
-    let str = get obj "value" in
-    if not done_
-    then (
-      append str ;
-      read ())
-    else Fut.return ()
-  and read () : unit Fut.t =
-    let read = call reader "read" [||] in
-    let promise = Fut.of_promise ~ok:Fun.id read in
-    Fut.bind promise (function
-      | Ok v ->
-          (* print_endline "Ok v" ; *)
-          read_step v
-      | Error e ->
-          print_endline "error in string_of_stream" ;
-          print_error e ;
-          Fut.return ())
-  in
-  let+ () = read () in
-  let r = Buffer.contents buffer in
-  (* Printf.printf "Inflated to size %i\n%!" (String.length r) ; *)
-  r
+  let string_of_stream stream =
+    let buffer = Buffer.create 128 in
+    let append str =
+      Buffer.add_string buffer (str |> Brr.Tarray.of_jv |> Brr.Tarray.to_string)
+    in
+    let open Jv in
+    let reader = call stream "getReader" [||] in
 
-let inflate str =
-  (* print_endline "inflating" ; *)
-  let dekompressor =
-    Jv.(new_ "DecompressionStream" [| of_string "deflate" |])
-  in
-  let str = Jv.(call global "atob" [| str |]) |> Jv.to_jstr in
-  (* Printf.printf "String has size %i\n%!" (str |> Jstr.length) ; *)
-  let stream = stream_of_string str in
-  let decompressed_stream = Jv.call stream "pipeThrough" [| dekompressor |] in
-  string_of_stream decompressed_stream
+    let open Fut.Syntax in
+    let rec read_step obj =
+      let done_ = get obj "done" |> to_bool in
+      let str = get obj "value" in
+      if not done_
+      then (
+        append str ;
+        read ())
+      else Fut.return ()
+    and read () : unit Fut.t =
+      let read = call reader "read" [||] in
+      let promise = Fut.of_promise ~ok:Fun.id read in
+      Fut.bind promise (function
+        | Ok v -> read_step v
+        | Error e ->
+            print_endline "error in string_of_stream" ;
+            print_error e ;
+            Fut.return ())
+    in
+    let+ () = read () in
+    let r = Buffer.contents buffer in
+    r
+
+  let inflate str =
+    let dekompressor =
+      Jv.(new_ "DecompressionStream" [| of_string "deflate" |])
+    in
+    let str = Jv.(call global "atob" [| str |]) |> Jv.to_jstr in
+    let stream = stream_of_string str in
+    let decompressed_stream = Jv.call stream "pipeThrough" [| dekompressor |] in
+    string_of_stream decompressed_stream
+end
 
 let db =
-  Jv.(inflate @@ call global "sherlodoc_db" [||]) |> Fut.map Storage_js.load
+  Jv.(Decompress_browser.inflate @@ call global "sherlodoc_db" [||])
+  |> Fut.map Storage_js.load
 
 let string_of_kind =
   let open Db.Elt.Kind in

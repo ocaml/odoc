@@ -97,10 +97,10 @@ let to_seq ~compare t =
     elt
   in
   (* Here, as stackoverflow could be thrown. In that case, we do not want to
-     crash, as a more complex search will probably not trigger the stackoverflow,
-     and we want the webworker or server to be running when such a request is
-     inputed.
-     The Printexc is very important as we nee dto be able to tell if the
+     crash, as a more complex search will have fewer results and probably not
+     trigger the stackoverflow, and we want the webworker or server to be
+     running when such a request is inputed.
+     The Printexc is very important as we need to be able to tell if the
      situation described above happens.
      With the current algorithm, such a stackoverflow is never triggered even
      on big libraries like Base, but it is not tail-rec, so a big enough search
@@ -144,6 +144,8 @@ let union a b =
       let x, y = if a.cardinal < b.cardinal then x, y else y, x in
       { cardinal = a.cardinal + b.cardinal; s = Union (x, y) }
 
+(** This does a dychotomy to avoid building a comb, which would have poor
+    performance. *)
 let union_of_array arr =
   let rec loop lo hi =
     match hi - lo with

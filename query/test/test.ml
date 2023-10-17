@@ -84,6 +84,8 @@ module Test_succ = struct
     let finish (arr, succ) = arr, Succ.finish succ
   end
 
+  (** This is a problematic exemple that was found randomly. It is saved here
+      to check for regressions. *)
   let extra_succ =
     Both.(
       finish

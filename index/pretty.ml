@@ -1,3 +1,8 @@
+(** This file contains useful printer, that are however of dubious 
+    maintainability. Their result is used to be parsed afteward, it is not
+    printed but consumed as the basis for type-search. Because of this it is
+    sensitive code. *)
+
 open Odoc_model
 module ModuleName = Odoc_model.Names.ModuleName
 module H = Tyxml.Html

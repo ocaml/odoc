@@ -1,3 +1,6 @@
+(** The suffix tree datastructure. You need to provide a datastructure for the
+    sets of elements at the leafs of the tree. *)
+
 module type SET = sig
   type t
   type elt
