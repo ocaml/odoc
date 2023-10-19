@@ -9,7 +9,12 @@ Tags:
 - Internal
 -->
 
-# 2.3.0 (Unreleased)
+# (unreleased)
+
+### Added
+- Display 'private' keyword for private type extensions (@gpetiot, #1019)
+
+# 2.3.0
 
 ### Added
 - Source code rendering (@Julow, @panglesd, @jonludlam #909, #996, #993, #982)
@@ -22,7 +27,6 @@ Tags:
 - Add a tooltip to references with text (@Julow, #945)
 - Add emoji to alerts in CSS (@yawaramin, #928)
 - Add common language in shipped highlightjs (@Julow, #953)
-- Display 'private' keyword for private type extensions (@gpetiot, #1019)
 
 ### Fixed
 - Fix `--hidden` not always taken into account (@panglesd, #940)
