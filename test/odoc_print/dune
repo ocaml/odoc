@@ -11,4 +11,4 @@
 (executable
  (name occurrences_print)
  (modules occurrences_print)
- (libraries odoc_model_desc compatcmdliner))
+ (libraries odoc_model_desc compatcmdliner odoc_odoc))

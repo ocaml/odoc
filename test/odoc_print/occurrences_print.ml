@@ -2,11 +2,14 @@ module H = Hashtbl.Make (Odoc_model.Paths.Identifier)
 
 let run inp =
   let ic = open_in_bin inp in
-  let htbl = Marshal.from_channel ic in
-  H.iter
-    (fun id occ ->
+  let htbl : Odoc_odoc.Occurrences.Occtbl.item Odoc_odoc.Occurrences.H.t =
+    Marshal.from_channel ic
+  in
+  Odoc_odoc.Occurrences.Occtbl.iter
+    (fun id { Odoc_odoc.Occurrences.Occtbl.direct; indirect; _ } ->
       let id = String.concat "." (Odoc_model.Paths.Identifier.fullname id) in
-      Format.printf "%s was used %d times\n" id occ)
+      Format.printf "%s was used directly %d times and indirectly %d times\n" id
+        direct indirect)
     htbl
 
 open Compatcmdliner
