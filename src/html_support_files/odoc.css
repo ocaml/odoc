@@ -98,138 +98,175 @@
 
   scroll-padding-top: calc(var(--search-bar-height) + var(--search-padding-top) + 1em);
 
-  --main-background: #FFFFFF;
+  /* light gruvbox theme colors */
+  --bg: #f9f5d7;
+  --bg_h:   #fbf1c7;
+  --bg_s: #f2e5bc;
+  --bg1:  #ebdbb2;
+  --bg2:  #d5c4a1;
+  --bg3:  #bdae93;
+  --bg4:  #a89984;
 
-  --color: #333333;
-  --link-color: #2C94BD;
-  --source-color: grey;
-  --anchor-hover: #555;
-  --anchor-color: #d5d5d5;
-  --xref-shadow: #cc6666;
-  --header-shadow: #ddd;
-  --by-name-version-color: #aaa;
-  --by-name-nav-link-color: #222;
-  --target-background: rgba(187, 239, 253, 0.3);
-  --target-shadow: rgba(187, 239, 253, 0.8);
-  --pre-border-color: #eee;
-  --code-background: #f6f8fa;
+  --fg:  #282828;
+  --fg1: #3c3836;
+  --fg2: #504945;
+  --fg3: #665c54;
+  --fg4: #7c6f64;
 
-  --li-code-background: #f6f8fa;
-  --li-code-color: #0d2b3e;
-  --toc-color: #1F2D3D;
-  --toc-before-color: #777;
-  --toc-background: #f6f8fa;
-  --toc-background-emph: #ecf0f5;
-  --toc-list-border: #ccc;
+  --red:    #9d0006;
+  --green:  #79740e;
+  --yellow: #b57614;
+  --blue:   #076678;
+  --purple: #8f3f71;
+  --aqua:   #427b58;
+  --orange: #af3a03;
+  --gray:   #928374;
 
-  --spec-summary-border-color: #5c9cf5;
-  --spec-label-color: green;
-  --spec-summary-background: var(--code-background);
-  --spec-summary-hover-background: #ebeff2;
-  --spec-details-after-background: rgba(0, 4, 15, 0.05);
-  --spec-details-after-shadow: rgba(204, 204, 204, 0.53);
-
-  --search-results-border: #bbb;
-  --search-results-shadow: #bbb;
-
-  --search-snake: #82aaff;
-
+  --red-dim:    #cc2412;
+  --green-dim:  #98971a;
+  --yellow-dim: #d79921;
+  --blue-dim:   #458598;
+  --purple-dim: #b16286;
+  --aqua-dim:   #689d6a;
+  --orange-dim: #d65d0e;
+  --gray-dim:   #7c6f64;
 }
 
 .dark:root {
-  --main-background: #202020;
-  --code-background: #222;
-  --line-numbers-background: rgba(0, 0, 0, 0.125);
-  --navbar-background: #202020;
+  /* dark gruvbox theme colors */
+  --bg_h: #1d2021;
+  --bg:   #282828;
+  --bg_s: #32302f;
+  --bg1:  #3c3836;
+  --bg2:  #504945;
+  --bg3:  #665c54;
+  --bg4:  #7c6f64;
 
-  --color: #bebebe;
-  --dirname-color: #666;
-  --underline-color: #444;
-  --visited-color: #002800;
-  --visited-number-color: #252;
-  --unvisited-color: #380000;
-  --unvisited-number-color: #622;
-  --somevisited-color: #303000;
-  --highlight-color: #303e3f;
-  --line-number-color: rgba(230, 230, 230, 0.3);
-  --unvisited-margin-color: #622;
-  --border: #333;
-  --navbar-border: #333;
-  --code-color: #ccc;
+  --fg:  #fbf1c7;
+  --fg1: #ebdbb2;
+  --fg2: #d5c4a1;
+  --fg3: #bdae93;
+  --fg4: #a89984;
 
-  --li-code-background: #373737;
-  --li-code-color: #999;
-  --toc-color: #777;
-  --toc-background: #252525;
-  --toc-background-emph: #2a2a2a;
+  --red:    #fb4934;
+  --green:  #b8bb26;
+  --yellow: #fabd2f;
+  --blue:   #83a598;
+  --purple: #d3869b;
+  --aqua:   #8ec07c;
+  --gray:   #928374;
+  --orange: #fe8019;
 
-  --hljs-link: #999;
-  --hljs-keyword: #cda869;
-  --hljs-regexp: #f9ee98;
-  --hljs-title: #dcdcaa;
-  --hljs-type: #ac885b;
-  --hljs-meta: #82aaff;
-  --hljs-variable: #cf6a4c;
-
-  --spec-label-color: lightgreen;
-
-  --search-results-border: #505050;
-  --search-results-shadow: #404040;
-
+  --red-dim:    #cc2412;
+  --green-dim:  #98971a;
+  --yellow-dim: #d79921;
+  --blue-dim:   #458588;
+  --purple-dim: #b16286;
+  --aqua-dim:   #689d6a;
+  --gray-dim:   #a89984;
+  --orange-dim: #d65d0e;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --main-background: #202020;
-    --code-background: #333;
-    --line-numbers-background: rgba(0, 0, 0, 0.125);
-    --navbar-background: #202020;
+    /* dark gruvbox theme colors again */
+    --bg_h: #1d2021;
+    --bg:   #282828;
+    --bg_s: #32302f;
+    --bg1:  #3c3836;
+    --bg2:  #504945;
+    --bg3:  #665c54;
+    --bg4:  #7c6f64;
 
-    --meter-unvisited-color: #622;
-    --meter-visited-color: #252;
-    --meter-separator-color: black;
+    --fg:  #fbf1c7;
+    --fg1: #ebdbb2;
+    --fg2: #d5c4a1;
+    --fg3: #bdae93;
+    --fg4: #a89984;
 
-    --color: #bebebe;
-    --dirname-color: #666;
-    --underline-color: #444;
-    --visited-color: #002800;
-    --visited-number-color: #252;
-    --unvisited-color: #380000;
-    --unvisited-number-color: #622;
-    --somevisited-color: #303000;
-    --highlight-color: #303e3f;
-    --line-number-color: rgba(230, 230, 230, 0.3);
-    --unvisited-margin-color: #622;
-    --border: #333;
-    --navbar-border: #333;
-    --code-color: #ccc;
-    --by-name-nav-link-color: var(--color);
+    --red:    #fb4934;
+    --green:  #b8bb26;
+    --yellow: #fabd2f;
+    --blue:   #83a598;
+    --purple: #d3869b;
+    --aqua:   #8ec07c;
+    --gray:   #928374;
+    --orange: #fe8019;
 
-    --li-code-background: #373737;
-    --li-code-color: #999;
-    --toc-color: #777;
-    --toc-before-color: #777;
-    --toc-background: #252525;
-    --toc-background-emph: #2a2a2a;
-    --toc-list-border: #ccc;
-    --spec-summary-hover-background: #ebeff2;
-    --spec-details-after-background: rgba(0, 4, 15, 0.05);
-    --spec-details-after-shadow: rgba(204, 204, 204, 0.53);
-
-    --hljs-link: #999;
-    --hljs-keyword: #cda869;
-    --hljs-regexp: #f9ee98;
-    --hljs-title: #dcdcaa;
-    --hljs-type: #ac885b;
-    --hljs-meta: #82aaff;
-    --hljs-variable: #cf6a4c;
-
-    --spec-label-color: lightgreen;
-
-    --search-results-border: #505050;
-    --search-results-shadow: #404040;
-
+    --red-dim:    #cc2412;
+    --green-dim:  #98971a;
+    --yellow-dim: #d79921;
+    --blue-dim:   #458588;
+    --purple-dim: #b16286;
+    --aqua-dim:   #689d6a;
+    --gray-dim:   #a89984;
+    --orange-dim: #d65d0e;
   }
+}
+
+:root {
+  --main-background: var(--bg);
+  --color: var(--fg);
+  --source-color: var(--fg4);
+  --anchor-hover: var(--fg1);
+  --anchor-color: var(--bg2);
+  --xref-shadow: var(--red-dim);
+  --xref-unresolved: var(--blue-dim);
+  --header-shadow: var(--bg3);
+  --by-name-version-color: var(--bg4);
+  --by-name-nav-link-color: var(--fg2);
+  --target-background: color-mix(in srgb, var(--main-background) 60%, var(--blue-dim) 40%);
+  --target-border: var(--blue-dim);
+  --pre-border-color: var(--fg1);
+  --code-color: var(--fg1);
+  --link-color: var(--blue);
+  --code-background: var(--bg_s);
+  --li-code-background: var(--bg_s);
+  --li-code-color: var(--fg1);
+  --toc-color: var(--fg);
+  --toc-before-color: var(--fg2);
+  --toc-background: var(--bg_h);
+  --toc-list-border: var(--fg1);
+
+  --hljs-bg: var(--code-background);
+  --hljs-link: var(--fg2);
+  --source-code-keyword: var(--orange);
+  --hljs-regexp: var(--yellow);
+  --hljs-title: var(--yellow-dim);
+
+  --source-code-comment: var(--gray);
+  --source-code-docstring: var(--green-dim);
+  --source-code-lident: var(--fg1);
+  --source-code-uident: var(--blue);
+  --source-code-literal: var(--yellow);
+  --source-code-keyword: var(--red);
+  --source-code-underscore: var(--fg3);
+  --source-code-operator: var(--purple);
+  --source-code-parens: var(--orange-dim);
+  --source-code-separator: var(--orange-dim);
+
+  --hljs-variable: var(--yellow);
+  --hljs-literal: var(--red);
+  --hljs-name: var(--green-dim);
+  --hljs-tag: var(--fg4);
+  --hljs-attr: var(--purple);
+  --hljs-addition: var(--green-dim);
+  --hljs-addition-bg: color-mix(in srgb, var(--hljs-addition) 10%, var(--hljs-bg) 90%);
+  --hljs-deletion: var(--red-dim);
+  --hljs-deletion-bg: color-mix(in srgb, var(--hljs-deletion) 10%, var(--hljs-bg) 90%);
+
+  --source-line-column: var(--fg4);
+  --source-line-column-bg: var(--bg1);
+
+  --spec-label-color: var(--aqua);
+  --spec-summary-background: var(--code-background);
+  --spec-summary-border-color: var(--blue-dim);
+  --spec-summary-hover-background: var(--bg3);
+  --spec-details-after-background: var(--bg1);
+  --spec-details-after-shadow: var(--fg2);
+  --search-results-border: var(--fg1);
+  --search-results-shadow: var(--bg3);
+  --search-snake: var(--blue);
 }
 
 /* Reset a few things. */
@@ -258,7 +295,6 @@ html {
 
 body {
   text-align: left;
-  background: #FFFFFF;
   color: var(--color);
   background-color: var(--main-background);
   font-family: "Noticia Text", Georgia, serif;
@@ -392,8 +428,8 @@ a:hover {
 /* Linked highlight */
 *:target {
   background-color: var(--target-background) !important;
-  box-shadow: 0 0px 0 1px var(--target-shadow) !important;
   border-radius: 1px;
+  border: var(--target-border) 1px solid !important;
 }
 
 *:hover > a.anchor {
@@ -430,7 +466,7 @@ a.anchor {
 }
 
 .xref-unresolved {
-  color: #2C94BD;
+  color: var(--xref-unresolved);
 }
 .xref-unresolved:hover {
   box-shadow: 0 1px 0 0 var(--xref-shadow);
@@ -668,7 +704,7 @@ div.def-doc>*:first-child {
 
 /* FIXME: Does not work in Firefox. */
 .odoc-include summary::-webkit-details-marker {
-  color: #888;
+  color: #888; /* todo : use color from palette */
   transform: scaleX(-1);
   position: absolute;
   top: calc(50% - 5px);
@@ -870,10 +906,26 @@ td.def-doc *:first-child {
   transition: font-size 0.3s;
   box-shadow: 0px 0px 0.2rem 0.3em var(--main-background);
   height: var(--search-bar-height);
+  border: 1px solid var(--fg4);
+  /* inputs are of fixed size by default, even if you display:block them */
+  width: 100%;
+  color: var(--fg);
+  background: var(--bg_s);
+  border-radius: 5px;
+  outline: none;
 }
 
 .odoc-search:focus-within .search-bar {
   font-size: 1.1em;
+  border-color: var(--blue);
+}
+
+.search-bar:focus-visible {
+  outline: 2px solid var(--blue);
+}
+
+.search-bar::placeholder {
+  color: var(--fg3);
 }
 
 .odoc-search:not(:focus-within) .search-result {
@@ -898,11 +950,6 @@ td.def-doc *:first-child {
   /* Works better on smallish screens with this */
   max-height: calc(min(40rem, 50vh));
   overflow-y: auto;
-}
-
-.search-bar {
-  /* inputs are of fixed size by default, even if you display:block them */
-  width: 100%;
 }
 
 
@@ -1192,7 +1239,8 @@ td.def-doc *:first-child {
 .source_line_column {
   padding-right: 0.5em;
   text-align: right;
-  background: #eee8d5;
+  color: var(--source-line-column);
+  background: var(--source-line-column-bg);
 }
 
 .source_line {
@@ -1201,9 +1249,9 @@ td.def-doc *:first-child {
 
 .source_code {
   flex-grow: 1;
-  background: #fdf6e3;
+  background: var(--code-background);
   padding: 0 0.3em;
-  color: #657b83;
+  color: var(--code-color);
 }
 
 /* Source directories */
@@ -1236,7 +1284,7 @@ td.def-doc *:first-child {
 
 .hljs-comment,
 .hljs-meta {
-  color: #969896;
+  color: var(--source-code-comment);
 }
 
 .hljs-string,
@@ -1244,35 +1292,35 @@ td.def-doc *:first-child {
 .hljs-template-variable,
 .hljs-strong,
 .hljs-emphasis,
-.hljs-quote {
-  color: #df5000;
+.hljs-quote,
+.hljs-literal {
+  color: var(--source-code-literal);
 }
 
 .hljs-keyword,
 .hljs-selector-tag {
-  color: #a71d5d;
+  color: var(--source-code-keyword);
 }
 
 .hljs-type,
 .hljs-class .hljs-title {
-  color: #458;
+  color: var(--source-code-uident);
   font-weight: 500;
 }
 
-.hljs-literal,
 .hljs-symbol,
 .hljs-bullet,
 .hljs-attribute {
-  color: #0086b3;
+  color: var(--hljs-literal);
 }
 
 .hljs-section,
 .hljs-name {
-  color: #63a35c;
+  color: var(--hljs-name);
 }
 
 .hljs-tag {
-  color: #333333;
+  color: var(--hljs-tag);
 }
 
 .hljs-attr,
@@ -1280,100 +1328,129 @@ td.def-doc *:first-child {
 .hljs-selector-class,
 .hljs-selector-attr,
 .hljs-selector-pseudo {
-  color: #795da3;
+  color: var(--hljs-attr);
 }
 
 .hljs-addition {
-  color: #55a532;
-  background-color: #eaffea;
+  color: var(--hljs-addition);
+  background-color: var(--hljs-addition-bg);
 }
 
 .hljs-deletion {
-  color: #bd2c00;
-  background-color: #ffecec;
+  color: var(--hljs-deletion);
+  background-color: var(--hljs-deletion-bg);
 }
 
 .hljs-link {
   text-decoration: underline;
 }
 
-.VAL,
-.TYPE,
-.LET,
+/* Keywords */
+.AND, .ANDOP, .AS, .ASSERT,
+.BAR, .BEGIN,
+.CLASS, .CONSTRAINT,
+.DO, .DONE, .DOWNTO,
+.ELSE, .END, .EXCEPTION, .EXTERNAL,
+.FOR, .FUN, .FUNCTION, .FUNCTOR,
+.IF, .IN, .INCLUDE, .INHERIT, .INITIALIZER,
+.LAZY, .LESSMINUS, .LET, .LETOP,
+.MATCH, .METHOD, .MINUSGREATER, .MODULE, .MUTABLE,
+.NEW, .NONREC,
+.OBJECT, .OF, .OPEN,
+.PERCENT, .PRIVATE,
 .REC,
-.IN,
-.OPEN,
-.NONREC,
-.MODULE,
-.METHOD,
-.LETOP,
-.INHERIT,
-.INCLUDE,
-.FUNCTOR,
-.EXTERNAL,
-.CONSTRAINT,
-.ASSERT,
-.AND,
-.END,
-.CLASS,
-.STRUCT,
-.SIG {
-  color: #859900;
-  ;
+.SEMISEMI, .SIG, .STRUCT,
+.THEN, .TO, .TRY, .TYPE,
+.VAL, .VIRTUAL,
+.WHEN, .WITH, .WHILE
+{
+  color: var(--source-code-keyword);;
 }
 
-.WITH,
-.WHILE,
-.WHEN,
-.VIRTUAL,
-.TRY,
-.TO,
-.THEN,
-.PRIVATE,
-.OF,
-.NEW,
-.MUTABLE,
-.MATCH,
-.LAZY,
-.IF,
-.FUNCTION,
-.FUN,
-.FOR,
-.EXCEPTION,
-.ELSE,
-.TO,
-.DOWNTO,
-.DO,
-.DONE,
-.BEGIN,
-.AS {
-  color: #cb4b16;
+/* Separators */
+.COMMA, .COLON, .COLONGREATER, .SEMI {
+  color: var(--source-code-separator);
 }
 
-.TRUE,
-.FALSE {
-  color: #b58900;
+/* Parens
+   `begin` and `end ` are excluded because `end` is used in other, more
+   keyword-y contexts*/
+.BARRBRACKET,
+.LBRACE,
+.LBRACELESS,
+.LBRACKET,
+.LBRACKETAT,
+.LBRACKETATAT,
+.LBRACKETATATAT,
+.LBRACKETBAR,
+.LBRACKETGREATER,
+.LBRACKETLESS,
+.LBRACKETPERCENT,
+.LBRACKETPERCENTPERCENT,
+.LPAREN,
+.RBRACE,
+.RBRACKET,
+.RPAREN
+{
+  color: var(--source-code-parens);
 }
 
-.failwith,
-.INT,
-.SEMISEMI,
-.LIDENT {
-  color: #2aa198;
+/* Prefix operators */
+.ASSERT, .BANG, .PREFIXOP,
+/* Infix operators.
+   A choice had to be made for equal `=` which is both a keyword and an operator.
+   It looked better having it as an operator, because when it is a keyword,
+   there are already loads of keyword around.
+   It would look even nicer if there was a way to distinguish between these
+   two cases.*/
+.INFIXOP0, .INFIXOP1, .INFIXOP2, .INFIXOP3, .INFIXOP4,
+.BARBAR, .PLUS, .STAR, .AMPERAMPER, .AMPERAND, .COLONEQUAL, .GREATER, .LESS,
+.MINUS, .MINUSDOT, .MINUSGREATER, .OR, .PLUSDOT, .PLUSEQ, .EQUAL
+{
+  color: var(--source-code-operator);
 }
 
-.STRING,
-.CHAR,
-.UIDENT {
-  color: #b58900;
+/* Upper case ident
+   `true` and `false` are considered uident here, because you can bind them in a
+   constructor defintion :
+   ```ocaml
+   type my_bool =
+     | true of string
+     | false
+     | Other of int
+   ```
+*/
+.UIDENT, .COLONCOLON, .TRUE, .FALSE {
+  color: var(--source-code-uident);
+
+}
+
+/* Lower case idents.
+   Quotes are here because of `type 'a t = 'a list`,
+   and question mark and tildes because of
+   ```ocaml
+   let f ~a ?b () = Option.map a b
+   ```
+*/
+.LIDENT, .QUESTION, .QUOTE, .TILDE {
+  color: var(--source-code-lident);
+}
+
+/* Litterals */
+ .STRING, .CHAR, .INT, .FLOAT, .QUOTED_STRING_EXPR, .QUOTED_STRING_ITEM {
+  color: var(--source-code-literal);
+}
+
+.UNDERSCORE {
+  color: var(--source-code-underscore);
 }
 
 .DOCSTRING {
-  color: #268bd2;
+  color: var(--source-code-docstring);
 }
 
 .COMMENT {
-  color: #93a1a1;
+  color: var(--source-code-comment);
 }
 
 /*---------------------------------------------------------------------------

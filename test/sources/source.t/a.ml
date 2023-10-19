@@ -59,3 +59,28 @@ end) (A : sig
   module F : sig end
 end) =
 struct end
+
+(* here is a comment *)
+let x = fun x -> function A | (* other comment *) B -> 3
+
+
+(** This is the docstring of this very important custom operator *)
+let ( *.+%) = (+)
+
+let a = 3
+
+let b = 5
+
+let c = 8
+
+let x = a * b *.+% c 
+
+let b = a / c
+
+let x = a mod b
+
+let list = [a ; c; b; 1; 2; 3; 4; 5; 6; 7; 8]
+
+let string = "lorem ipsum"
+
+let string2 = "truc"
