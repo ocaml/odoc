@@ -177,18 +177,23 @@ following convention should be followed.
 
 - [.mld] pages are installed in a package's [share] directory, under the
   [odoc-pages] sub-directory.
-- [index.mld] is the parent of every other pages. The driver can freely rename
-  this page, for example, it can be named after the package.
-- Other pages are children of the [index.mld] page.
-
-If no [index.mld] is installed, it's the driver's responsibility to generate
-it.
+- A page is the parent of every installed pages. The driver can freely name this
+  page, for example it can be named after the package. In what follows, we
+  refer to this page as the [pkg] page.
+- If there is an installed [index.mld] file:
+  + The driver has to use it as content for the [pkg] page.
+  + The can decide to also include a [index] page as child of the [pkg] page.
+    - If it does not, then some references to the [index] page might be
+      unresolved.
+    - If it does, it will create a warning.
+- If there is no installed [index.mld] page, the driver has to generate some
+  content for the [pkg] page.
 
 When the rendering of source code is enabled, the source tree will be named
-[source] and will be a child of [index.mld]. As a consequence, no page can be
-named [source.mld].
+[source] and will be a child of the [pkg] page. As a consequence, no installed
+page can be named [source.mld].
 
-This convention is followed by the drivers
-{{:https://erratique.ch/software/odig/doc/packaging.html}Odig}
-and {{:https://github.com/ocaml-doc/voodoo}ocaml.org}
+This convention is followed by the
+{{:https://github.com/ocaml-doc/voodoo}driver for ocaml.org},
+by the driver {{:https://erratique.ch/software/odig/doc/packaging.html}Odig}
 and by the build system {{:https://github.com/ocaml/dune}Dune}.
