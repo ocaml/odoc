@@ -12,8 +12,7 @@ let index_file register filename =
         Fold.unit ~f:(register (id :> Paths.Identifier.t)) () u
       in
       match Odoc_odoc.Indexing.handle_file ~page ~unit file with
-      | Ok (Some result) -> result
-      | Ok None -> ()
+      | Ok result -> result
       | Error (`Msg msg) -> Format.printf "ODOC ERROR %s: %s@." filename msg)
 
 let storage_module = function

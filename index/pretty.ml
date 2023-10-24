@@ -116,6 +116,8 @@ let rec full_name_aux : Paths.Identifier.t -> string list =
     | `SourceLocation (parent, name) ->
         DefName.to_string name :: full_name_aux (parent :> t)
     | `SourceLocationMod id -> full_name_aux (id :> t)
+    | `SourceLocationInternal (parent, name) ->
+        LocalName.to_string name :: full_name_aux (parent :> t)
 
 let fullname : [< Paths.Identifier.t_pv ] Paths.Identifier.id -> string list =
  fun n -> List.rev @@ full_name_aux (n :> Paths.Identifier.t)
