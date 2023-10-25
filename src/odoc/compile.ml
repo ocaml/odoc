@@ -20,10 +20,7 @@ open Or_error
  *)
 
 type parent_spec =
-  | Explicit of
-      Paths.Identifier.ContainerPage.t
-      * Lang.Page.child list
-      * Paths.Reference.Asset.t list
+  | Explicit of Paths.Identifier.ContainerPage.t * Lang.Page.child list
   | Package of Paths.Identifier.ContainerPage.t
   | Noparent
 
@@ -78,15 +75,13 @@ let resolve_parent_page resolver f =
   in
   parse_parent_child_reference f >>= fun r ->
   find_parent r >>= fun page ->
-  extract_parent page.name >>= fun parent ->
-  Ok (parent, page.children, page.search_assets)
+  extract_parent page.name >>= fun parent -> Ok (parent, page.children)
 
 let parent resolver parent_cli_spec =
   match parent_cli_spec with
   | CliParent f ->
-      resolve_parent_page resolver f
-      >>= fun (parent, children, search_assets) ->
-      Ok (Explicit (parent, children, search_assets))
+      resolve_parent_page resolver f >>= fun (parent, children) ->
+      Ok (Explicit (parent, children))
   | CliPackage package ->
       Ok (Package (Paths.Identifier.Mk.page (None, PageName.make_std package)))
   | CliNoparent -> Ok Noparent
@@ -103,21 +98,20 @@ let resolve_imports resolver imports =
 
 (** Raises warnings and errors. *)
 let resolve_and_substitute ~resolver ~make_root ~source_id_opt ~cmt_filename_opt
-    ~hidden ~search_assets (parent : Paths.Identifier.ContainerPage.t option)
-    input_file input_type =
+    ~hidden (parent : Paths.Identifier.ContainerPage.t option) input_file
+    input_type =
   let filename = Fs.File.to_string input_file in
   let unit =
     match input_type with
     | `Cmti ->
         Odoc_loader.read_cmti ~make_root ~parent ~filename ~source_id_opt
-          ~cmt_filename_opt ~search_assets
+          ~cmt_filename_opt
         |> Error.raise_errors_and_warnings
     | `Cmt ->
         Odoc_loader.read_cmt ~make_root ~parent ~filename ~source_id_opt
-          ~search_assets
         |> Error.raise_errors_and_warnings
     | `Cmi ->
-        Odoc_loader.read_cmi ~make_root ~parent ~filename ~search_assets
+        Odoc_loader.read_cmi ~make_root ~parent ~filename
         |> Error.raise_errors_and_warnings
   in
   let unit = { unit with hidden = hidden || unit.hidden } in
@@ -162,7 +156,7 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   in
   match parent_spec with
   | Noparent -> result None
-  | Explicit (parent, children, _) ->
+  | Explicit (parent, children) ->
       if List.exists check_child children then result (Some parent)
       else Error (`Msg "Specified parent is not a parent of this file")
   | Package parent -> result (Some parent)
@@ -183,7 +177,7 @@ let page_name_of_output ~is_parent_explicit output =
      | _ -> ());
   root_name
 
-let mld ~parent_spec ~output ~children ~search_assets ~warnings_options input =
+let mld ~parent_spec ~output ~children ~warnings_options input =
   List.fold_left
     (fun acc child_str ->
       match (acc, parse_parent_child_reference child_str) with
@@ -210,8 +204,7 @@ let mld ~parent_spec ~output ~children ~search_assets ~warnings_options input =
   (if children = [] then
      (* No children, this is a leaf page. *)
      match parent_spec with
-     | Explicit (p, _, _) ->
-         Ok (Paths.Identifier.Mk.leaf_page (Some p, page_name))
+     | Explicit (p, _) -> Ok (Paths.Identifier.Mk.leaf_page (Some p, page_name))
      | Package parent ->
          Ok (Paths.Identifier.Mk.leaf_page (Some parent, page_name))
      | Noparent -> Ok (Paths.Identifier.Mk.leaf_page (None, page_name))
@@ -222,7 +215,7 @@ let mld ~parent_spec ~output ~children ~search_assets ~warnings_options input =
        else Error (`Msg "Specified parent is not a parent of this file")
      in
      (match parent_spec with
-     | Explicit (p, cs, _) ->
+     | Explicit (p, cs) ->
          check cs @@ Paths.Identifier.Mk.page (Some p, page_name)
      | Package parent ->
          Ok (Paths.Identifier.Mk.page (Some parent, page_name))
@@ -236,8 +229,7 @@ let mld ~parent_spec ~output ~children ~search_assets ~warnings_options input =
   in
   let resolve content =
     let page =
-      Lang.Page.
-        { name; root; children; content; digest; linked = false; search_assets }
+      Lang.Page.{ name; root; children; content; digest; linked = false }
     in
     Odoc_file.save_page output ~warnings:[] page;
     Ok ()
@@ -258,17 +250,8 @@ let handle_file_ext ext =
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options ~source ~cmt_filename_opt ~search_assets input =
+    ~warnings_options ~source ~cmt_filename_opt input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
-  let search_assets : Paths.Reference.Asset.t list =
-    match (search_assets, parent_spec) with
-    | [], Explicit (_, _, sa) ->
-        sa (* When no search assets are given, we use the one from the parent *)
-    | search_assets, _ -> List.map (fun a -> `Root (a, `TAsset)) search_assets
-    (* Assets references are considered as "simple" reference, there is no way
-       to specify the parent page of an asset. Therefore, search assets need to
-       be children of a page ancestor. *)
-  in
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
     check_is_none "Not expecting source (--source-*) when compiling pages."
@@ -276,8 +259,7 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     >>= fun () ->
     check_is_none "Not expecting cmt filename (--cmt) when compiling pages."
       cmt_filename_opt
-    >>= fun () ->
-    mld ~parent_spec ~output ~warnings_options ~search_assets ~children input
+    >>= fun () -> mld ~parent_spec ~output ~warnings_options ~children input
   else
     check_is_empty "Not expecting children (--child) when compiling modules."
       children
@@ -307,14 +289,14 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let parent =
       match parent_spec with
       | Noparent -> None
-      | Explicit (parent, _, _) -> Some parent
+      | Explicit (parent, _) -> Some parent
       | Package parent -> Some parent
     in
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Error.catch_errors_and_warnings (fun () ->
           resolve_and_substitute ~resolver ~make_root ~hidden ~source_id_opt
-            ~cmt_filename_opt ~search_assets parent input input_type)
+            ~cmt_filename_opt parent input input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in

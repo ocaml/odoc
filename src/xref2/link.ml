@@ -350,7 +350,6 @@ and open_ env parent = function
 
 let rec unit env t =
   let open Compilation_unit in
-  let search_assets = List.map (search_asset env) t.search_assets in
   let content =
     match t.content with
     | Module sg ->
@@ -358,15 +357,7 @@ let rec unit env t =
         Module sg
     | Pack _ as p -> p
   in
-  { t with content; linked = true; search_assets }
-
-and search_asset env asset =
-  match Ref_tools.resolve_asset_reference env asset |> Error.raise_warnings with
-  | Ok e -> `Resolved e
-  | Error e ->
-      Errors.report ~what:(`Asset_reference asset) ~tools_error:(`Reference e)
-        `Resolve;
-      asset
+  { t with content; linked = true }
 
 and value_ env parent t =
   let open Value in
@@ -1048,7 +1039,6 @@ let link ~filename x y =
       if y.Lang.Compilation_unit.linked || y.hidden then y else unit x y)
 
 let page env page =
-  let search_assets = List.map (search_asset env) page.Page.search_assets in
   let () =
     List.iter
       (fun child ->
@@ -1070,7 +1060,6 @@ let page env page =
     page with
     Page.content = comment_docs env page.Page.name page.content;
     linked = true;
-    search_assets;
   }
 
 let resolve_page ~filename env p =

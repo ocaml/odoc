@@ -482,26 +482,20 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
-  let rec include_ ~config search_assets { Subpage.content; _ } =
-    page ~config search_assets content
+  let rec include_ ~config { Subpage.content; _ } = page ~config content
 
-  and subpages ~config search_assets subpages =
-    List.map (include_ ~config search_assets) subpages
+  and subpages ~config subpages = List.map (include_ ~config) subpages
 
-  and page ~config (search_assets : Odoc_document.Url.t list) p :
-      Odoc_document.Renderer.page =
+  and page ~config p : Odoc_document.Renderer.page =
     let { Page.preamble; items = i; url; source_anchor } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
-    let subpages =
-      subpages ~config search_assets @@ Doctree.Subpages.compute p
-    in
+    let subpages = subpages ~config @@ Doctree.Subpages.compute p in
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
     let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
-    let search_urls = List.map (Link.href ~config ~resolve) search_assets in
     let content = (items ~config ~resolve i :> any Html.elt list) in
     if Config.as_json config then
       let source_anchor =
@@ -517,8 +511,8 @@ module Page = struct
         items ~config ~resolve
           (Doctree.PageTitle.render_title ?source_anchor p @ preamble)
       in
-      Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
-        ~search_urls content subpages
+      Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex content
+        subpages
 
   and source_page ~config sp =
     let { Source_page.url; contents } = sp in
@@ -555,8 +549,7 @@ module Page = struct
 end
 
 let render ~config = function
-  | Document.Page (page, search_assets) ->
-      [ Page.page ~config search_assets page ]
+  | Document.Page page -> [ Page.page ~config page ]
   | Source_page src -> [ Page.source_page ~config src ]
   | Asset asset -> [ Page.asset ~config asset ]
 

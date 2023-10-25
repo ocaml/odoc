@@ -86,10 +86,10 @@ let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
       make_navigation ~up_url:up.href
         (List.rev html @ sep @ [ Html.txt current.name ])
 
-let page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
-    content =
+let page_creator ~config ~url ~uses_katex header breadcrumbs toc content =
   let theme_uri = Config.theme_uri config in
   let support_uri = Config.support_uri config in
+  let search_uris = Config.search_uris config in
   let path = Link.Path.for_printing url in
 
   let head : Html_types.head Html.elt =
@@ -97,19 +97,26 @@ let page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
       Printf.sprintf "%s (%s)" url.name (String.concat "." path)
     in
 
-    let file_uri base file =
+    let file_uri (base : Types.uri) file =
       match base with
       | Types.Absolute uri -> uri ^ "/" ^ file
       | Relative uri ->
           let page = Url.Path.{ kind = `File; parent = uri; name = file } in
           Link.href ~config ~resolve:(Current url) (Url.from_path page)
     in
+    let search_uri uri =
+      match uri with
+      | Types.Absolute uri -> uri
+      | Relative uri ->
+          Link.href ~config ~resolve:(Current url) (Url.from_path uri)
+    in
     let odoc_css_uri = file_uri theme_uri "odoc.css" in
     let highlight_js_uri = file_uri support_uri "highlight.pack.js" in
     let search_scripts =
-      match search_urls with
+      match search_uris with
       | [] -> []
-      | search_urls ->
+      | _ ->
+          let search_urls = List.map search_uri search_uris in
           let search_urls =
             let search_url name = Printf.sprintf "'%s'" name in
             let search_urls = List.map search_url search_urls in
@@ -120,7 +127,10 @@ let page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
           [
             Html.script ~a:[]
               (Html.txt
-                 (Format.asprintf "let base_url = '%s'; let search_urls = %s;"
+                 (Format.asprintf
+                    {|let base_url = '%s';
+let search_urls = %s;
+|}
                     (let page =
                        Url.Path.{ kind = `File; parent = None; name = "" }
                      in
@@ -185,7 +195,7 @@ let page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
     Html.head (Html.title (Html.txt title_string)) meta_elements
   in
   let search_bar =
-    match search_urls with
+    match search_uris with
     | [] -> []
     | _ ->
         [ Html.div ~a:[ Html.a_class [ "odoc-search" ] ] [ html_of_search () ] ]
@@ -208,12 +218,10 @@ let page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
   in
   content
 
-let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex ~search_urls content
-    children =
+let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex content children =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
   let content =
-    page_creator ~config ~url ~uses_katex ~search_urls header breadcrumbs toc
-      content
+    page_creator ~config ~url ~uses_katex header breadcrumbs toc content
   in
   { Odoc_document.Renderer.filename; content; children }
 
@@ -230,7 +238,7 @@ let src_page_creator ~breadcrumbs ~config ~url ~header name content =
     let title_string =
       Format.asprintf "Source: %s%a" name path_of_module_of_source url
     in
-    let file_uri base file =
+    let file_uri (base : Types.uri) file =
       match base with
       | Types.Absolute uri -> uri ^ "/" ^ file
       | Relative uri ->
