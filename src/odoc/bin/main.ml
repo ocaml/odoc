@@ -184,7 +184,7 @@ end = struct
 
   let compile hidden directories resolve_fwd_refs dst package_opt
       parent_name_opt open_modules children input warnings_options
-      source_parent_file source_name cmt_filename_opt search_assets =
+      source_parent_file source_name cmt_filename_opt =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -220,7 +220,7 @@ end = struct
     source >>= fun source ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warnings_options ~source ~cmt_filename_opt ~search_assets input
+      ~warnings_options ~source ~cmt_filename_opt input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -289,17 +289,6 @@ end = struct
         & opt (some string) None
         & info ~docs ~docv:"PARENT" ~doc [ "parent" ])
     in
-    let search_asset =
-      let doc =
-        "A script that needs to be loaded for search to work. Will be looked \
-         up as an asset of the current compilation unit or one of its parent. \
-         When this argument is present multiple times, the scripts will be \
-         loaded in the same order as in the command line."
-      in
-      Arg.(
-        value & opt_all string []
-        & info ~docs ~docv:"ASSET" ~doc [ "search-asset" ])
-    in
     let resolve_fwd_refs =
       let doc = "Try resolving forward references." in
       Arg.(value & flag & info ~doc [ "r"; "resolve-fwd-refs" ])
@@ -308,8 +297,7 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ package_opt $ parent_opt $ open_modules $ children $ input
-       $ warnings_options $ source_parent_file $ source_name $ source_cmt
-       $ search_asset))
+       $ warnings_options $ source_parent_file $ source_name $ source_cmt))
 
   let info ~docs =
     let man =
@@ -713,59 +701,105 @@ module Odoc_html_args = struct
     let doc = "Format the output HTML files with indentation." in
     Arg.(value & flag (info ~doc [ "indent" ]))
 
-  (* Very basic validation and normalization for URI paths. *)
-  let convert_uri : Odoc_html.Types.uri Arg.conv =
-    let parser str =
-      if String.length str = 0 then `Error "invalid URI"
-      else
-        (* The URI is absolute if it starts with a scheme or with '/'. *)
-        let is_absolute =
-          List.exists [ "http"; "https"; "file"; "data"; "ftp" ]
-            ~f:(fun scheme ->
-              Astring.String.is_prefix ~affix:(scheme ^ ":") str)
-          || str.[0] = '/'
-        in
-        let last_char = str.[String.length str - 1] in
-        let str =
-          if last_char <> '/' then str
-          else String.sub str ~pos:0 ~len:(String.length str - 1)
-        in
-        let conv_rel rel =
-          let l = Astring.String.cuts ~sep:"/" rel in
-          List.fold_left
-            ~f:(fun acc seg ->
-              Some
+  module Uri = struct
+    (* Very basic validation and normalization for URI paths. *)
+
+    open Odoc_html.Types
+
+    let is_absolute str =
+      List.exists [ "http"; "https"; "file"; "data"; "ftp" ] ~f:(fun scheme ->
+          Astring.String.is_prefix ~affix:(scheme ^ ":") str)
+      || str.[0] = '/'
+
+    let conv_rel_dir rel =
+      let l = Astring.String.cuts ~sep:"/" rel in
+      List.fold_left
+        ~f:(fun acc seg ->
+          Some Odoc_document.Url.Path.{ kind = `Page; parent = acc; name = seg })
+        l ~init:None
+
+    let convert_dir : uri Arg.conv =
+      let parser str =
+        if String.length str = 0 then `Error "invalid URI"
+        else
+          (* The URI is absolute if it starts with a scheme or with '/'. *)
+          let last_char = str.[String.length str - 1] in
+          let str =
+            if last_char <> '/' then str
+            else String.sub str ~pos:0 ~len:(String.length str - 1)
+          in
+          `Ok
+            (if is_absolute str then (Absolute str : uri)
+             else
+               Relative
+                 (let u = conv_rel_dir str in
+                  match u with
+                  | None -> None
+                  | Some u -> Some { u with kind = `Page }))
+      in
+      let printer ppf = function
+        | (Absolute uri : uri) -> Format.pp_print_string ppf uri
+        | Relative _uri -> Format.pp_print_string ppf ""
+      in
+      (parser, printer)
+
+    let convert_file_uri : Odoc_html.Types.file_uri Arg.conv =
+      let parser str =
+        if String.length str = 0 then `Error "invalid URI"
+        else
+          let conv_rel_file rel =
+            match Astring.String.cut ~rev:true ~sep:"/" rel with
+            | Some (before, after) ->
+                let base = conv_rel_dir before in
                 Odoc_document.Url.Path.
-                  { kind = `Page; parent = acc; name = seg })
-            l ~init:None
-        in
-        `Ok
-          Odoc_html.Types.(
-            if is_absolute then Absolute str else Relative (conv_rel str))
-    in
-    let printer ppf = function
-      | Odoc_html.Types.Absolute uri -> Format.pp_print_string ppf uri
-      | Odoc_html.Types.Relative _uri -> Format.pp_print_string ppf ""
-    in
-    (parser, printer)
+                  { kind = `File; parent = base; name = after }
+            | None ->
+                Odoc_document.Url.Path.
+                  { kind = `File; parent = None; name = rel }
+          in
+          `Ok
+            (if is_absolute str then (Absolute str : file_uri)
+             else Relative (conv_rel_file str))
+      in
+      let printer ppf = function
+        | Odoc_html.Types.((Absolute uri : file_uri)) ->
+            Format.pp_print_string ppf uri
+        | Odoc_html.Types.Relative _uri -> Format.pp_print_string ppf ""
+      in
+      (parser, printer)
+  end
 
   let theme_uri =
     let doc =
       "Where to look for theme files (e.g. `URI/odoc.css'). Relative URIs are \
        resolved using `--output-dir' as a target."
     in
-    let default = Odoc_html.Types.Relative None in
+    let default : Odoc_html.Types.uri = Odoc_html.Types.Relative None in
     Arg.(
-      value & opt convert_uri default & info ~docv:"URI" ~doc [ "theme-uri" ])
+      value
+      & opt Uri.convert_dir default
+      & info ~docv:"URI" ~doc [ "theme-uri" ])
 
   let support_uri =
     let doc =
       "Where to look for support files (e.g. `URI/highlite.pack.js'). Relative \
        URIs are resolved using `--output-dir' as a target."
     in
-    let default = Odoc_html.Types.Relative None in
+    let default : Odoc_html.Types.uri = Odoc_html.Types.Relative None in
     Arg.(
-      value & opt convert_uri default & info ~docv:"URI" ~doc [ "support-uri" ])
+      value
+      & opt Uri.convert_dir default
+      & info ~docv:"URI" ~doc [ "support-uri" ])
+
+  let search_uri =
+    let doc =
+      "Where to look for search scripts. Relative URIs are resolved using \
+       `--output-dir' as a target."
+    in
+    Arg.(
+      value
+      & opt_all Uri.convert_file_uri []
+      & info ~docv:"URI" ~doc [ "search-uri" ])
 
   let flat =
     let doc =
@@ -815,8 +849,8 @@ module Odoc_html_args = struct
       & info [ "source-root" ] ~doc ~docv:"dir")
 
   let extra_args =
-    let config semantic_uris closed_details indent theme_uri support_uri flat
-        as_json source_file assets source_root =
+    let config semantic_uris closed_details indent theme_uri support_uri
+        search_uris flat as_json source_file assets source_root =
       let open_details = not closed_details in
       let source =
         match (source_root, source_file) with
@@ -828,14 +862,15 @@ module Odoc_html_args = struct
             exit 1
       in
       let html_config =
-        Odoc_html.Config.v ~theme_uri ~support_uri ~semantic_uris ~indent ~flat
-          ~open_details ~as_json ()
+        Odoc_html.Config.v ~theme_uri ~support_uri ~search_uris ~semantic_uris
+          ~indent ~flat ~open_details ~as_json ()
       in
       { Html_page.html_config; source; assets }
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ flat $ as_json $ source_file $ assets $ source_root)
+      $ support_uri $ search_uri $ flat $ as_json $ source_file $ assets
+      $ source_root)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)

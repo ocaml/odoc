@@ -8,6 +8,7 @@ val v :
      In that case, the links will be printed as regular text. *) ->
   ?theme_uri:Types.uri ->
   ?support_uri:Types.uri ->
+  ?search_uris:Types.file_uri list ->
   semantic_uris:bool ->
   indent:bool ->
   flat:bool ->
@@ -19,6 +20,8 @@ val v :
 val theme_uri : t -> Types.uri
 
 val support_uri : t -> Types.uri
+
+val search_uris : t -> Types.file_uri list
 
 val semantic_uris : t -> bool
 

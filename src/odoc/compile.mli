@@ -30,9 +30,7 @@ val name_of_output : prefix:string -> Fs.File.t -> string
 val resolve_parent_page :
   Resolver.t ->
   string ->
-  ( Identifier.ContainerPage.t * Lang.Page.child list * Reference.Asset.t list,
-    [> msg ] )
-  result
+  (Identifier.ContainerPage.t * Lang.Page.child list, [> msg ]) result
 (** Parse and resolve a parent reference. Returns the identifier of the parent
     and its children as a list of reference. *)
 
@@ -45,7 +43,6 @@ val compile :
   warnings_options:Odoc_model.Error.warnings_options ->
   source:(Fpath.t * string list) option ->
   cmt_filename_opt:string option ->
-  search_assets:string list ->
   Fs.File.t ->
   (unit, [> msg ]) result
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)

@@ -1777,14 +1777,6 @@ module Make (Syntax : SYNTAX) = struct
 
     let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) =
       let url = Url.Path.from_identifier t.id in
-      let search_assets =
-        Utils.filter_map
-          (function
-            | `Resolved (`Identifier id) ->
-                Some Url.(from_path @@ Path.from_identifier id)
-            | _ -> None)
-          t.search_assets
-      in
       let unit_doc, items =
         match t.content with
         | Module sign -> signature sign
@@ -1796,7 +1788,7 @@ module Make (Syntax : SYNTAX) = struct
         | None -> None
       in
       let page = make_expansion_page ~source_anchor url [ unit_doc ] items in
-      Document.Page (page, search_assets)
+      Document.Page page
 
     let page (t : Odoc_model.Lang.Page.t) =
       (*let name =
@@ -1806,15 +1798,7 @@ module Make (Syntax : SYNTAX) = struct
       let url = Url.Path.from_identifier t.name in
       let preamble, items = Sectioning.docs t.content in
       let source_anchor = None in
-      let search_assets =
-        Utils.filter_map
-          (function
-            | `Resolved (`Identifier id) ->
-                Some (Url.from_path @@ Url.Path.from_identifier id)
-            | _ -> None)
-          t.search_assets
-      in
-      Document.Page ({ Page.preamble; items; url; source_anchor }, search_assets)
+      Document.Page { Page.preamble; items; url; source_anchor }
 
     let source_tree t =
       let dir_pages = t.Odoc_model.Lang.SourceTree.source_children in
@@ -1899,7 +1883,7 @@ module Make (Syntax : SYNTAX) = struct
           :: [ text ~attr:[ "odoc-folder-list" ] @@ list list_of_children ]
         in
         Document.Page
-          ({ Types.Page.preamble = []; items; url; source_anchor = None }, [])
+          { Types.Page.preamble = []; items; url; source_anchor = None }
       in
       M.fold (fun dir children acc -> page_of_dir dir children :: acc) mmap []
   end

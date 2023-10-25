@@ -3,23 +3,9 @@ Compile the files
   $ ocamlc -c j.ml -bin-annot -I .
   $ ocamlc -c main.ml -bin-annot -I .
 
-When compiling with odoc, if we want support for search, we need to pass the --search-index argument.
-This argument takes a reference to an asset, taken "litterary": index.js will be interpreted as asset-"index.js".
-(As a consequence, the page or one of its parent must have the asset declared as child)
+Compile and link the documentation
 
-  $ odoc compile --search-asset fuse.js.js --search-asset index.js -I . --child asset-index.js --child asset-fuse.js.js --child module-main --child module-j page.mld
-
-An example with an error during the resolving of the reference. Here, neither page nor j has index2.js as declared asset.
-  $ odoc compile --parent page --search-asset index2.js -I . j.cmt
-  $ odoc link -I . j.odoc
-  File "j.odoc":
-  Warning: Failed to resolve asset reference unresolvedroot(index2.js) Couldn't find asset "index2.js"
-
-With the right command line arguments:
-  $ odoc compile --parent page --search-asset fuse.js.js --search-asset index.js -I . j.cmt
-  $ odoc compile --parent page --search-asset fuse.js.js --search-asset index.js -I . main.cmt
-
-Equivalently, when --search-asset is omitted, the search-asset references from the parent are used:
+  $ odoc compile -I . --child module-main --child module-j page.mld
   $ odoc compile --parent page -I . j.cmt
   $ odoc compile --parent page -I . main.cmt
 
@@ -27,23 +13,76 @@ Equivalently, when --search-asset is omitted, the search-asset references from t
   $ odoc link -I . main.odoc
   $ odoc link -I . page-page.odoc
 
-This command generates a json index containing all .odocl given as input. If -o is not provided, the file is saved as index.json.
+When html-generating a page, we can provide, through --search-uri flags, uris to
+search scripts that will be used to answer search queries. The uris can be
+absolute (`https://...` or `/tmp/...` for instance, or relative. If they are
+relative, they are interpreted as relative to the `-o` option).
 
-Odocl files can be given either in a list (using --file-list, passing a file with the list of line-separated files), or by passing directly the name of the files.
+Let us check that `--search-uri` works well:
+
+  $ odoc html-generate --search-uri test.js -o html page-page.odocl
+  $ grep -E "test\.js" html/page/index.html
+  let search_urls = ['../test.js'];
+
+  $ odoc html-generate --search-uri page/test.js -o html page-page.odocl
+  $ grep -E "test\.js" html/page/index.html
+  let search_urls = ['test.js'];
+
+  $ odoc html-generate --search-uri search_scripts/test.js -o html page-page.odocl
+  $ grep -E "test\.js" html/page/index.html
+  let search_urls = ['../search_scripts/test.js'];
+
+  $ odoc html-generate --search-uri /tmp/test.js -o html page-page.odocl
+  $ grep -E "test\.js" html/page/index.html
+  let search_urls = ['/tmp/test.js'];
+
+  $ odoc html-generate --search-uri https://example.org/test.js -o html page-page.odocl
+  $ grep -E "test\.js" html/page/index.html
+  let search_urls = ['https://example.org/test.js'];
+
+In this test, we use `fuse.js.js` (a search engine) combined to `index.js`, a file that
+we will generate.
+
+  $ odoc html-generate --search-uri fuse.js.js --search-uri index.js -o html j.odocl
+  $ odoc html-generate --search-uri fuse.js.js --search-uri index.js -o html main.odocl
+  $ odoc html-generate --search-uri fuse.js.js --search-uri index.js -o html page-page.odocl
+  $ odoc support-files -o html
+
+We now focus on how to generate the index.js file. There are mainly two ways: by
+using odoc as a library, or by using the the `compile-index` command. This
+command generates a json index containing all .odocl given as input, to be
+consumed later by a search engine. If -o is not provided, the file is saved as
+index.json.
+Odocl files can be given either in a list (using --file-list,
+passing a file with the list of line-separated files), or by passing directly
+the name of the files.
 
   $ printf "main.odocl\npage-page.odocl\nj.odocl\n" > index_map
-  $ odoc compile-index --file-list index_map
+  $ odoc compile-index -o index1.json --file-list index_map
 
 Or equivalently:
 
   $ printf "main.odocl\npage-page.odocl\n" > index_map
-  $ odoc compile-index --file-list index_map j.odocl
+  $ odoc compile-index -o index2.json --file-list index_map j.odocl
 
 Or equivalently:
 
   $ odoc compile-index main.odocl page-page.odocl j.odocl
 
-The index file, one entry per file
+Let's check that the previous commands are indeed independent:
+
+  $ diff index.json index1.json
+  $ diff index.json index2.json
+
+The index file contains a json array, each element of the array corresponding to
+a search entry.
+An index entry contains:
+- an ID,
+- the docstring associated (in text format),
+- its kind, and some additional information (that are specific for each kind of entry)
+- Information on how to render it: the link, and some html. (The link cannot be embedded in the html, it is relative to the "root" of the page, and thus may have to be modified). This also corresponds to the json that should be output to odoc in case the entry is selected by the query.
+
+The index file, one entry per line:
   $ cat index.json | jq sort | jq '.[]' -c
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Type","name":"tdzdz"},{"kind":"Constructor","name":"A"}],"doc":"","kind":{"kind":"Constructor","args":{"kind":"Tuple","vals":["int","int"]},"res":"tdzdz"},"display":{"url":"page/Main/index.html#type-tdzdz.A","html":"<code class=\"entry-kind\">cons</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.tdzdz.</span><span class=\"entry-name\">A</span><code class=\"entry-rhs\"> : int * int -&gt; tdzdz</code></code><div class=\"entry-comment\"><div></div></div>"}}
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Type","name":"tdzdz"},{"kind":"Constructor","name":"B"}],"doc":"Bliiiiiiiiiii","kind":{"kind":"Constructor","args":{"kind":"Tuple","vals":["int list","int"]},"res":"tdzdz"},"display":{"url":"page/Main/index.html#type-tdzdz.B","html":"<code class=\"entry-kind\">cons</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.tdzdz.</span><span class=\"entry-name\">B</span><code class=\"entry-rhs\"> : int list * int -&gt; tdzdz</code></code><div class=\"entry-comment\"><div><p>Bliiiiiiiiiii</p></div></div>"}}
@@ -88,11 +127,7 @@ The index file, one entry per file
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"},{"kind":"Value","name":"y"}],"doc":"","kind":{"kind":"Value","type":"int"},"display":{"url":"page/Main/I/index.html#val-y","html":"<code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.I.</span><span class=\"entry-name\">y</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div>"}}
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"X"},{"kind":"Value","name":"c"}],"doc":"A value inside a module","kind":{"kind":"Value","type":"int"},"display":{"url":"page/Main/X/index.html#val-c","html":"<code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.X.</span><span class=\"entry-name\">c</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div><p>A value inside a module</p></div></div>"}}
 
-An index entry contains:
-- an ID,
-- the docstring associated (in text format),
-- its kind, and some additional information (that are specific for each kind of entry)
-- Information on how to render it: the link, and some html. (The link cannot be embedded in the html, it is relative to the "root" of the page, and thus may have to be modified)
+and the first entries formatted:
 
   $ cat index.json | jq sort | head -n 33
   [
@@ -130,7 +165,8 @@ An index entry contains:
     },
 
 Here is the list of ids for entries. Multiple IDs exists as standalone
-paragraphs/codeblocks/... use their parent ID (they don't have one).
+paragraphs, codeblocks, etc. use their parent ID (they don't have one for
+themselves).
 
   $ cat index.json | jq -r '.[].id | map(.kind + "-" + .name) | join(".")' | sort
   Page-page
@@ -176,54 +212,38 @@ paragraphs/codeblocks/... use their parent ID (they don't have one).
   Root-Main.Value-x
   Root-Main.Value-y
 
-Now, from the index.json file, we need to create the assets that we declared as --search-assets.
+Now, from the index.json file, we need to create the scripts and put them as specified with --search-uri
 Those should be javascript file. They will be run in their declared order, in a webworker (so as not to block UI).
 They take their input (a string, the query) as a message sent to the webworker (so they have to listen to it). They answer their result to the query by sending a message.
 This response should be a JSON entry of the form of the [display] field of a index.json entry, for odoc to be able to print it.
 
-Here, we use fuse.js to generate such an asset.
+Here is an example of such search script generation, using the fuse.js search engine.
 
-  $ printf "\n\nlet documents = " > index.js
+  $ printf "let documents = " > index.js
   $ cat index.json >> index.js
 
-  $ printf "\n\nconst options = { keys: ['id', 'doc'] };" >> index.js
-  $ printf "\nvar idx_fuse = new Fuse(documents, options);" >> index.js
-  $ printf "\nonmessage = (m) => {\n  let query = m.data;\n  let result = idx_fuse.search(query);\n  postMessage(result.slice(0,200).map(a => a.item.display));};" >> index.js
+  $ cat << EOF >> index.js
+  > 
+  > const options = { keys: ['id', 'doc'] };
+  > var idx_fuse = new Fuse(documents, options);
+  > onmessage = (m) => {
+  >   let query = m.data;
+  >   let result = idx_fuse.search(query);
+  >   postMessage(result.slice(0,200).map(a => a.item.display));
+  > };
+  > EOF
 
-We now generate the html, passing the assets:
+We should now put the scripts where it was:
 
-  $ odoc html-generate -o html j.odocl
-  $ odoc html-generate -o html main.odocl
-  $ odoc html-generate --asset index.js --asset fuse.js.js -o html page-page.odocl
-  $ odoc support-files -o html
-
-The assets are put as child of their parent
-
-  $ find html/page | sort
-  html/page
-  html/page/J
-  html/page/J/index.html
-  html/page/Main
-  html/page/Main/I
-  html/page/Main/I/index.html
-  html/page/Main/M
-  html/page/Main/M/index.html
-  html/page/Main/X
-  html/page/Main/X/index.html
-  html/page/Main/index.html
-  html/page/fuse.js.js
-  html/page/index.html
-  html/page/index.js
-Checks that the asset is correctly referenced to in the html.
-  $ grep -E -o "'[\./]*fuse\.js\.js" html/page/index.html
-  'fuse.js.js
+  $ cp index.js html/
+  $ cp fuse.js.js html/
 
 One way to visually try the search is to indent
 $ cp -r html /tmp/
 $ firefox /tmp/html/page/Main/index.html
 and run `dune test`.
 
-Testing the warnings:
+Testing the warnings/errors for the `compile-index` command:
 
 Passing an inexistent file:
 

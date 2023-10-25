@@ -198,10 +198,7 @@ end =
   Asset
 
 module Document = struct
-  type t =
-    | Page of Page.t * Url.t list
-    | Source_page of Source_page.t
-    | Asset of Asset.t
+  type t = Page of Page.t | Source_page of Source_page.t | Asset of Asset.t
 end
 
 let inline ?(attr = []) desc = Inline.{ attr; desc }

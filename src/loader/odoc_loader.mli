@@ -19,7 +19,6 @@ val read_cmti :
   filename:string ->
   source_id_opt:Identifier.SourcePage.t option ->
   cmt_filename_opt:string option ->
-  search_assets:Paths.Reference.Asset.t list ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_cmt :
@@ -27,14 +26,12 @@ val read_cmt :
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
   source_id_opt:Identifier.SourcePage.t option ->
-  search_assets:Paths.Reference.Asset.t list ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_cmi :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
-  search_assets:Paths.Reference.Asset.t list ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_location : Location.t -> Location_.span

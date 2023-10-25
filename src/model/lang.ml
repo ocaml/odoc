@@ -489,7 +489,6 @@ module rec Compilation_unit : sig
     shape_info :
       (Compat.shape * Paths.Identifier.SourceLocation.t Compat.shape_uid_map)
       option;
-    search_assets : Reference.Asset.t list;
   }
 end =
   Compilation_unit
@@ -508,7 +507,6 @@ module rec Page : sig
     children : child list;
     digest : Digest.t;
     linked : bool;
-    search_assets : Reference.Asset.t list;
   }
 end =
   Page

@@ -3,6 +3,7 @@
 type t = {
   theme_uri : Types.uri option;
   support_uri : Types.uri option;
+  search_uris : Types.file_uri list;
   semantic_uris : bool;
   search_result : bool;
       (* Used to not render links, for summary in search results *)
@@ -12,8 +13,8 @@ type t = {
   as_json : bool;
 }
 
-let v ?(search_result = false) ?theme_uri ?support_uri ~semantic_uris ~indent
-    ~flat ~open_details ~as_json () =
+let v ?(search_result = false) ?theme_uri ?support_uri ?(search_uris = [])
+    ~semantic_uris ~indent ~flat ~open_details ~as_json () =
   {
     semantic_uris;
     indent;
@@ -21,15 +22,18 @@ let v ?(search_result = false) ?theme_uri ?support_uri ~semantic_uris ~indent
     open_details;
     theme_uri;
     support_uri;
+    search_uris;
     as_json;
     search_result;
   }
 
-let theme_uri config =
+let theme_uri config : Types.uri =
   match config.theme_uri with None -> Types.Relative None | Some uri -> uri
 
-let support_uri config =
+let support_uri config : Types.uri =
   match config.support_uri with None -> Types.Relative None | Some uri -> uri
+
+let search_uris config = config.search_uris
 
 let semantic_uris config = config.semantic_uris
 
