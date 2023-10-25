@@ -11,7 +11,7 @@ license: "ISC"
 homepage: "https://github.com/ocaml/odoc"
 bug-reports: "https://github.com/ocaml/odoc/issues"
 dev-repo: "git+https://github.com/ocaml/odoc.git"
-doc: "https://ocaml.github.io/odoc/"
+doc: "https://ocaml.github.io/odoc/odoc_parser"
 depends: [
   "dune" {>= "3.7"}
   "ocaml" {>= "4.02.0"}
