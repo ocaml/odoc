@@ -892,12 +892,16 @@ Some code to analyze the list of executed commands:
 {[
 (** Return the list of executed commands where the first argument was [cmd]. *)
 let filter_commands cmd =
-  List.filter
-    (fun c ->
-      match Bos.Cmd.to_list c.cmd with
-      | _ :: cmd' :: _ -> cmd = cmd'
-      | _ -> false)
-    !commands
+  match
+    List.filter
+      (fun c ->
+        match Bos.Cmd.to_list c.cmd with
+        | _ :: cmd' :: _ -> cmd = cmd'
+        | _ -> false)
+      !commands
+  with
+  | [] -> failwith ("No commands run for " ^ cmd)
+  | (_ :: _) as cmds -> cmds
 
 (** Returns the [k] commands that took the most time for a given subcommand. *)
 let k_longest_commands cmd k =
@@ -932,38 +936,41 @@ This last block analyze the running times so that they can be submitted to
 (* *)
 #require "yojson" ;;
 
+let rec compute_min_max_avg min_ max_ total count = function
+  | [] -> (min_, max_, total /. float count, count)
+  | hd :: tl ->
+      compute_min_max_avg (min min_ hd) (max max_ hd) (total +. hd) (count + 1) tl
+
+let compute_min_max_avg = function
+  | [] -> assert false
+  | hd :: tl -> compute_min_max_avg hd hd hd 1 tl
+
 (** Analyze the running time of a command. *)
 let compute_metric_cmd cmd =
-  let rec compute min_ max_ total count = function
-    | [] -> (min_, max_, total /. float count, count)
-    | hd :: tl ->
-        compute (min min_ hd.time) (max max_ hd.time) (total +. hd.time) (count + 1) tl
-  in
-  match filter_commands cmd with
-  | [] -> failwith ("No commands run for " ^ cmd)
-  | hd :: tl ->
-      let min, max, avg, count = compute hd.time hd.time hd.time 1 tl in
+  let cmds = filter_commands cmd in
+  let times = List.map (fun c -> c.time) cmds in
+  let min, max, avg, count = compute_min_max_avg times in
+  [
+    `Assoc
       [
-        `Assoc
-          [
-            ("name", `String ("total-" ^ cmd));
-            ("value", `Int count);
-            ( "description",
-              `String ("Number of time 'odoc " ^ cmd ^ "' has run.") );
-          ];
-        `Assoc
-          [
-            ("name", `String ("time-" ^ cmd));
-            ( "value",
-              `Assoc
-                [
-                  ("min", `Float min); ("max", `Float max); ("avg", `Float avg);
-                ] );
-            ("units", `String "s");
-            ("description", `String ("Time taken by 'odoc " ^ cmd ^ "'"));
-            ("trend", `String "lower-is-better");
-          ];
-      ]
+        ("name", `String ("total-" ^ cmd));
+        ("value", `Int count);
+        ( "description",
+          `String ("Number of time 'odoc " ^ cmd ^ "' has run.") );
+      ];
+    `Assoc
+      [
+        ("name", `String ("time-" ^ cmd));
+        ( "value",
+          `Assoc
+            [
+              ("min", `Float min); ("max", `Float max); ("avg", `Float avg);
+            ] );
+        ("units", `String "s");
+        ("description", `String ("Time taken by 'odoc " ^ cmd ^ "'"));
+        ("trend", `String "lower-is-better");
+      ];
+  ]
 
 (** Analyze the size of files produced by a command. *)
 let compute_produced_cmd cmd =
@@ -971,41 +978,37 @@ let compute_produced_cmd cmd =
     match c.output_file with
     | Some f -> (
         match Bos.OS.Path.stat f with
-        | Ok st -> Some st.Unix.st_size
+        | Ok st -> Some (float st.Unix.st_size)
         | Error _ -> None)
     | None -> None
   in
-  let rec compute min_ max_ total count = function
-    | [] -> (min_, max_, int_of_float (total /. float count), count)
-    | size :: tl ->
-        compute (min min_ size) (max max_ size) (total +. float size) (count + 1) tl
-  in
-  match List.filter_map output_file_size (filter_commands cmd) with
-  | [] -> failwith ("No commands run for " ^ cmd)
-  | size0 :: tl ->
-      let min, max, avg, count = compute size0 size0 (float size0) 1 tl in
+  let sizes = List.filter_map output_file_size (filter_commands cmd) in
+  let min, max, avg, count = compute_min_max_avg sizes in
+  let min = int_of_float min in
+  let max = int_of_float max in
+  let avg = int_of_float avg in
+  [
+    `Assoc
       [
-        `Assoc
-          [
-            ("name", `String ("produced-total-" ^ cmd));
-            ("value", `Int count);
-            ( "description",
-              `String ("Number of file produced by 'odoc " ^ cmd ^ "'") );
-          ];
-        `Assoc
-          [
-            ("name", `String ("produced-size-" ^ cmd));
-            ( "value",
-              `Assoc
-                [
-                  ("min", `Int min); ("max", `Int max); ("avg", `Int avg);
-                ] );
-            ("units", `String "b");
-            ( "description",
-              `String ("Size of file produced by 'odoc " ^ cmd ^ "'") );
-            ("trend", `String "lower-is-better");
-          ];
-      ]
+        ("name", `String ("produced-total-" ^ cmd));
+        ("value", `Int count);
+        ( "description",
+          `String ("Number of file produced by 'odoc " ^ cmd ^ "'") );
+      ];
+    `Assoc
+      [
+        ("name", `String ("produced-size-" ^ cmd));
+        ( "value",
+          `Assoc
+            [
+              ("min", `Int min); ("max", `Int max); ("avg", `Int avg);
+            ] );
+        ("units", `String "b");
+        ( "description",
+          `String ("Size of file produced by 'odoc " ^ cmd ^ "'") );
+        ("trend", `String "lower-is-better");
+      ];
+  ]
 
 (** Analyze the size of files produced by a command. *)
 let compute_longest_cmd cmd =
