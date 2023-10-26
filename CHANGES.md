@@ -9,7 +9,11 @@ Tags:
 - Internal
 -->
 
-# 2.3.0 (Unreleased)
+# 2.3.1 (Unreleased)
+
+- Fix 5.1 support (@tmcgilchrist, #1018)
+
+# 2.3.0
 
 ### Added
 - Source code rendering (@Julow, @panglesd, @jonludlam #909, #996, #993, #982)
