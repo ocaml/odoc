@@ -1010,24 +1010,30 @@ let compute_produced_cmd cmd =
       ];
   ]
 
-(** Analyze the size of files produced by a command. *)
+(** Analyze the running time of the slowest commands. *)
 let compute_longest_cmd cmd =
-  match k_longest_commands cmd 1 with
-  | hd :: _ ->
+  let k = 5 in
+  let cmds = k_longest_commands cmd k in
+  let times = List.map (fun c -> c.time) cmds in
+  let min, max, avg, _count = compute_min_max_avg times in
+  [
+    `Assoc
       [
-        `Assoc
-          [
-            ("name", `String ("longest-" ^ cmd));
-            ("value", `Float hd.time);
-            ("units", `String "s");
-            ( "description",
-              `String
-                ("Time taken by the longest invokation of 'odoc " ^ cmd ^ "'")
-            );
-            ("trend", `String "lower-is-better");
-          ];
-      ]
-  | [] -> []
+        ("name", `String ("longest-" ^ cmd));
+        ( "value",
+          `Assoc
+            [
+              ("min", `Float min); ("max", `Float max); ("avg", `Float avg);
+            ] );
+        ("units", `String "s");
+        ( "description",
+          `String
+            (Printf.sprintf "Time taken by the %d longest calls to 'odoc %s'"
+               k cmd)
+        );
+        ("trend", `String "lower-is-better");
+      ];
+  ]
 
 let metrics =
   compute_metric_cmd "compile"
