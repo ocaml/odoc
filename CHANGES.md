@@ -13,6 +13,7 @@ Tags:
 
 ### Added
 - Display 'private' keyword for private type extensions (@gpetiot, #1019)
+- Add support for search (@panglesd, @EmileTrotignon, #972)
 
 ### Fixed
 
