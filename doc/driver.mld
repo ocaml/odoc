@@ -308,6 +308,7 @@ let extra_deps = [
     "base_quickcheck";
     "ppx_sexp_conv";
     "ppx_hash";
+    "core";
 ]
 
 let dep_libraries =
