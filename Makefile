@@ -13,9 +13,11 @@ publish-docs:
 test :
 	dune runtest
 
+# ODOC_BENCHMARK=true will cause the driver to build a larger set of libraries
+# containing more edge cases.
 .PHONY : bench
 bench:
-	@dune build @bench
+	@ODOC_BENCHMARK=true dune build @bench
 
 .PHONY : coverage
 coverage :

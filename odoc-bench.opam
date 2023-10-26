@@ -41,4 +41,5 @@ depends: [
   "bos"
   "yojson" {>= "1.6.0"}
   "mdx" {>= "2.3.0"}
+  "core"
 ]
