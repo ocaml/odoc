@@ -51,6 +51,7 @@ Additionally we support extra annotations:
 - [class-type] is a replacement for [classtype]
 - [exn] is recognised as [exception]
 - [extension] refers to a type extension
+- [extension-decl] refers to the declaration point of an extension constructor
 - [field] is a replacement for [recfield]
 - [instance-variable] refers to instance variables
 - [label] refers to labels introduced in anchors
