@@ -23,6 +23,9 @@ Tags:
 ### Fixed
 - Fix 5.1 support (@tmcgilchrist, #1018)
 
+### Changed
+- Style: Preformatted elements fallback to UA monospace (@toastal, #967)
+
 # 2.3.0
 
 ### Added
