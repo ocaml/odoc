@@ -20,6 +20,9 @@ Tags:
 - Fix rendering of polymorphic variants (@wikku, @panglesd, #971)
 - Add references to extension declarations (@gpetiot, @panglesd, #949)
 
+### Fixed
+- Fix 5.1 support (@tmcgilchrist, #1018)
+
 # 2.3.0
 
 ### Added
