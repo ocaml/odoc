@@ -1,3 +1,9 @@
+2.2.2
+-----
+
+Additions
+- OCaml 5.1.0 further compatibility (@tmcgilchrist, #1018)
+
 2.2.1
 -----
 
