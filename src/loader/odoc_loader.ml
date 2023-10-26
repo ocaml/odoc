@@ -164,14 +164,14 @@ let read_cmt ~make_root ~parent ~filename ~source_id_opt () =
           in
           let content = Odoc_model.Lang.Compilation_unit.Pack items in
           make_compilation_unit ~make_root ~imports ~interface ~sourcefile ~name
-            ~id  ~source_info:None content
+            ~id ~source_info:None content
       | Implementation impl ->
           let id, sg, canonical = Cmt.read_implementation parent name impl in
           let shape_info, source_info =
             read_cmt_infos source_id_opt id ~filename ()
           in
           compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
-            ~name ~id ?canonical ?shape_info  ~source_info sg
+            ~name ~id ?canonical ?shape_info ~source_info sg
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =

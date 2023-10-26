@@ -1,13 +1,5 @@
 let option_of_result = function Result.Ok x -> Some x | Result.Error _ -> None
 
-let filter_map f =
-  let rec aux accu = function
-    | [] -> List.rev accu
-    | x :: l -> (
-        match f x with None -> aux accu l | Some v -> aux (v :: accu) l)
-  in
-  aux []
-
 let rec flatmap ?sep ~f = function
   | [] -> []
   | [ x ] -> f x

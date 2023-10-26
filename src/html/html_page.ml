@@ -39,13 +39,9 @@ let html_of_search () =
     div ~a:[ a_class [ "search-inner" ] ] [ search_bar; snake; search_result ])
 
 let sidebar toc =
-  let toc, has_toc =
-    match toc with
-    | [] -> ([], false)
-    | _ ->
-        ([ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] (html_of_toc toc) ], true)
-  in
-  if has_toc then toc else []
+  match toc with
+  | [] -> []
+  | _ -> [ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] (html_of_toc toc) ]
 
 let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
   let make_navigation ~up_url rest =
