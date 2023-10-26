@@ -26,6 +26,9 @@ Tags:
 ### Changed
 - Style: Preformatted elements fallback to UA monospace (@toastal, #967)
 
+### Changed
+- Style: Remove font fallback to Helvetica, Arial (@Julow, #1028)
+
 # 2.3.0
 
 ### Added
