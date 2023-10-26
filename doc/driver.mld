@@ -237,12 +237,6 @@ let compile file ?parent ?(output_dir = Fpath.v "./")
     | _ -> Cmd.empty
     else Cmd.empty
   in
-  let search_assets =
-    List.fold_left
-      (fun acc filename -> acc % "--search-asset" % filename)
-      empty
-      (List.map Fpath.filename search_assets)
-  in
   let cmd =
     odoc % "compile" % Fpath.to_string file %% source_args %% cmt_arg
     % "-I" % "." % "-o" % p output_file
@@ -266,7 +260,7 @@ let link ?(ignore_output = false) file =
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
 
-let html_generate ?(ignore_output = false) ?(assets = []) file source =
+let html_generate ?(ignore_output = false) ?(assets = []) ?(search_uris = []) file source =
   let open Cmd in
   let source =
     match source with None -> empty | Some source -> v "--source" % p source
@@ -277,8 +271,14 @@ let html_generate ?(ignore_output = false) ?(assets = []) file source =
       empty
       assets
   in
+  let search_uris =
+    List.fold_left
+      (fun acc filename -> acc % "--search-uri" % p filename)
+      empty
+      search_uris
+  in
   let cmd =
-    odoc % "html-generate" %% source % p file %% assets % "-o" % "html"
+    odoc % "html-generate" %% source % p file %% assets %% search_uris % "-o" % "html"
     % "--theme-uri" % "odoc" % "--support-uri" % "odoc"
   in
   let lines = run cmd in
@@ -333,7 +333,8 @@ let dep_libraries =
 let odoc_libraries = [
     "odoc_xref_test"; "odoc_xref2"; "odoc_odoc"; "odoc_html_support_files";
     "odoc_model_desc"; "odoc_model"; "odoc_manpage"; "odoc_loader";
-    "odoc_latex"; "odoc_html"; "odoc_document"; "odoc_examples"; "odoc_parser"; "ocamlary" ];;
+    "odoc_latex"; "odoc_html"; "odoc_document"; "odoc_examples"; "odoc_parser";
+    "ocamlary"; "odoc_search" ; "odoc_html_frontend" ; "odoc_json_index" ];;
 
 let all_libraries = dep_libraries @ odoc_libraries;;
 
@@ -570,7 +571,7 @@ let compile_mlds () =
   let mkmld x = Fpath.(add_ext "mld" (v x)) in
   ignore
     (compile (mkmld "odoc")
-       (("asset-" ^ search_file) :: "src-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
+       ("src-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
   ignore (compile (mkmld "deps") ~parent:"odoc" (List.map mkpage dep_libraries));
   let extra_odocs =
     List.map
@@ -594,7 +595,7 @@ let compile_mlds () =
         "page-" ^ library ^ ".odoc")
       all_libraries
   in
-  { file = Fpath.v "page-odoc.odoc" ; ignore_output = false ; source = None ; assets = [search_file] } ::
+  { file = Fpath.v "page-odoc.odoc" ; ignore_output = false ; source = None ; assets = [] } ::
   List.map
     (fun f -> { file = Fpath.v f ; ignore_output = false ; source = None; assets = [] })
     ( "page-deps.odoc" :: odocs @ extra_odocs)
@@ -660,9 +661,10 @@ We notify the generator that the javascript file to use for search is [index.js]
 {[
 let generate_all odocl_files =
   let relativize_opt = function None -> None | Some file -> Some (relativize file) in
+  let search_uris = [Fpath.v "minisearch.js"; Fpath.v "index.js"] in
   List.iter
      (fun ({file = f ; ignore_output = _ ; source ; assets}) ->
-     ignore(html_generate ~assets f (relativize_opt source)))
+     ignore(html_generate ~assets ~search_uris f (relativize_opt source)))
      odocl_files;
   support_files ()
 ]}
@@ -680,6 +682,7 @@ let index_generate ?(ignore_output = false) () =
     |> get_ok
     |> List.filter (Fpath.has_ext "odocl")
     |> List.filter (fun p -> not (String.equal "src-source.odocl" (Fpath.filename p)))
+    |> List.filter (fun p -> not (is_hidden p))
     |> List.map Fpath.to_string
   in
   let index_map = Fpath.v "index.map" in
@@ -702,39 +705,42 @@ We turn the JSON index into a javascript file. In order to never block the UI, t
 In this driver, we use the minisearch javascript library. For more involved application, we could use [index.js] to call a server-side search engine via an API call.
 
 {[
-let js_index () =
-  let index = Bos.OS.File.read Fpath.(v "html" / "index.json") |> get_ok in
-  let minisearch = Bos.OS.File.read Fpath.(v "minisearch.js") |> get_ok in
-  Bos.OS.File.writef (Fpath.v search_file) {|%s
-let documents = 
-  %s
-;
+  let js_index () =
+    let index = Bos.OS.File.read Fpath.(v "html" / "index.json") |> get_ok in
+ Bos.OS.File.writef (Fpath.v search_file) {|
+ let documents =
+   %s
+ ;
 
-let miniSearch = new MiniSearch({
+ let miniSearch = new MiniSearch({
   fields: ['id', 'doc', 'entry_id'], // fields to index for full-text search
-  storeFields: ['display'], // fields to return with search results
-  idField: 'entry_id',
-  extractField: (document, fieldName) => {
-    if (fieldName === 'id') {
-      return document.id.map(e => e.kind + "-" + e.name).join('.')
-    }
-    return document[fieldName]
-  }
-})
+   storeFields: ['display'], // fields to return with search results
+   idField: 'entry_id',
+   extractField: (document, fieldName) => {
+     if (fieldName === 'id') {
+       return document.id.map(e => e.kind + "-" + e.name).join('.')
+     }
+     return document[fieldName]
+   }
+ })
 
 
-// Use a unique id since some entries' id are not unique (type extension or
-// standalone doc comments for instance)
-documents.forEach((entry,i) => entry.entry_id = i)
-miniSearch.addAll(documents);
+ // Use a unique id since some entries' id are not unique (type extension or
+ // standalone doc comments for instance)
+ documents.forEach((entry,i) => entry.entry_id = i)
+ miniSearch.addAll(documents);
 
-onmessage = (m) => {
-  let query = m.data;
-  let result = miniSearch.search(query);
-  postMessage(result.slice(0,200).map(a => a.display));
-}
-|} minisearch index
+ onmessage = (m) => {
+   let query = m.data;
+   let result = miniSearch.search(query);
+   postMessage(result.slice(0,200).map(a => a.display));
+ }
+ |} index |> get_ok ;
+    Bos.OS.Cmd.run Bos.Cmd.(v "cp" % search_file % "html/") |> get_ok;
+    Bos.OS.Cmd.run Bos.Cmd.(v "cp" % "minisearch.js" % "html/") |> get_ok;
 ]}
+
+
 
 The following code executes all of the above, and we're done!
 
@@ -754,9 +760,9 @@ Let's see if there was any output from the [odoc] invocations:
 # !link_output;;
 - : string list =
 ["";
- "'../src/odoc/bin/main.exe' 'link' 'odoc_odoc.odoc' '-o' 'odoc_odoc.odocl' '-I' '.'";
- "odoc_odoc.odoc: File \"src/odoc/fs.mli\", line 37, characters 6-73:";
- "odoc_odoc.odoc: Warning: Failed to resolve reference unresolvedroot(Invalid_arg) Couldn't find \"Invalid_arg\"";
+ "'../src/odoc/bin/main.exe' 'link' 'odoc_html_frontend.odoc' '-o' 'odoc_html_frontend.odocl' '-I' '.'";
+ "odoc_html_frontend.odoc: File \"src/search/odoc_html_frontend.mli\", line 3, characters 15-25:";
+ "odoc_html_frontend.odoc: Warning: Failed to resolve reference unresolvedroot(Entry).t Couldn't find \"Entry\"";
  "'../src/odoc/bin/main.exe' 'link' 'page-deps.odoc' '-o' 'page-deps.odocl' '-I' '.'";
  "page-deps.odoc: File \"src/fmt.mli\", line 6, characters 4-13:";
  "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Format) Couldn't find \"Format\"";
@@ -781,355 +787,11 @@ Let's see if there was any output from the [odoc] invocations:
  "page-deps.odoc: File \"src/fpath.mli\", line 7, characters 59-71:";
  "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(Set) Couldn't find \"Set\"";
  "page-deps.odoc: File \"src/fpath.mli\", line 7, characters 28-52:";
- "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(file_exts) Couldn't find \"file_exts\"";
- "'../src/odoc/bin/main.exe' 'link' 'page-odoc_for_authors.odoc' '-o' 'page-odoc_for_authors.odocl' '-I' '.'";
- "page-odoc_for_authors.odoc: File \"odoc_for_authors.mld\", line 496, character 59 to line 497, character 18:";
- "page-odoc_for_authors.odoc: Warning: Failed to resolve reference unresolvedroot(Features).canonical Couldn't find page \"Features\""]
+ "page-deps.odoc: Warning: Failed to resolve reference unresolvedroot(file_exts) Couldn't find \"file_exts\""]
 # !source_tree_output;;
 - : string list = [""]
 # !generate_output;;
-- : string list =
-["";
- "'../src/odoc/bin/main.exe' 'compile-index' '-o' 'html/index.json' '--file-list' 'index.map'";
- "index compilation: Warning, resolved hidden path: {u}3";
- "index compilation: Warning, resolved hidden path: {u}3";
- "index compilation: Warning, resolved hidden path: {u}3";
- "index compilation: Warning, resolved hidden path: Odoc_examples__.Unexposed.t";
- "index compilation: Warning, resolved hidden path: Odoc_examples__.Unexposed.t";
- "index compilation: Warning, resolved hidden path: {event}41";
- "index compilation: Warning, resolved hidden path: {event}41";
- "index compilation: Warning, resolved hidden path: {event}41";
- "index compilation: Warning, resolved hidden path: {event}41";
- "index compilation: File \"./odoc_odoc__Html_page.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Url.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model_desc__Type_desc.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Renderer.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Fold.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_examples__Unexposed.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__ML.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Lang_of.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Printexc.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Parsing.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Rendering.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_html__Html_source.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_html__Config.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_examples__Markup.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Uchar.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./dune__exe__Inline_test_runner_odoc_model_semantics_test.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__MoreLabels.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_parser__.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Support_files.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Error.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_loader__Cmti.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__In_channel.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Oo.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Doctree.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Reference.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Depends.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model_semantics_test__Test.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_html__Generator.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Lang.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__StringLabels.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_parser__Token.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Weak.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_parser__Ast.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Url.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_latex__Types.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Expand_tools.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__ArrayLabels.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_parser__Syntax.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model_desc__Comment_desc.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_parser__Loc.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Compile.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Complex.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Nativeint.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Cpath.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_parser__Parse_error.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Fs.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Semaphore.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_html__Html_page.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Names.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Hashtbl.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_loader__Ident_env.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_loader__Doc_attr.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Filename.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Gc.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_parser__Warning.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Predefined.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Domain.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Indexing.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Type_of.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Arg.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Condition.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Bytes.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Effect.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Shape_tools.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Codefmt.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_html__Utils.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Callback.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_examples__Expansion.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_manpage__Link.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Compat.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Latex.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Compile.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Stack.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Out_channel.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Odoc_link.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model_desc__Paths_desc.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Either.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Ephemeron.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Lazy.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Cfrag.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Lexing.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Html_fragment.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__BytesLabels.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model_desc__Lang_desc.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Bigarray.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Component.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Atomic.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_loader__.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref_test__Common.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_examples__Wrapping.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_loader__Cmt.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Scanf.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Format.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__ListLabels.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Types.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Link.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_parser__Lexer.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Random.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Unit.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_html__Types.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Marshal.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_examples__.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Printf.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Root.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_html__Link.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Comment.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_loader__Cmi.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Int.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Or_error.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__List.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Array.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Ident.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Seq.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Man_page.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__String.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__StdLabels.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Compat.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Fun.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Digest.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Lookup_failures.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Map.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Sys.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Generator_signatures.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Resolver.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Odoc_file.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_parser__Compat.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Subst.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Utils.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Bool.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Result.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Targets.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Location_.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Semantics.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Errors.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Float.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Char.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Mutex.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Int64.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Env.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_html__Html_fragment_json.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Buffer.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Tools.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Paths.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Comment.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Reason.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_examples__Resolution.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Strengthen.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_loader__Implementation.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_latex__Generator.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Ref_tools.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Set.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Int32.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_manpage__Generator.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Utils.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_document__Generator.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Queue.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_html__.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_odoc__Source_tree.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Obj.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./stdlib__Option.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_model__Paths_types.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_xref2__Find.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "index compilation: File \"./odoc_latex__Raw.odocl\":";
- "index compilation: Warning: Hidden units are ignored when generating an index";
- "'../src/odoc/bin/main.exe' 'html-generate' 'odoc_examples.odocl' '-o' 'html' '--theme-uri' 'odoc' '--support-uri' 'odoc'";
- "odoc_examples.odocl: Warning, resolved hidden path: Odoc_examples__.Unexposed.t"]
+- : string list = [""]
 ]}
 
 We can have a look at the produced hierarchy of files, which matches the desired output. Note that source files with a [.ml.html] extension are generated for modules compiled with the [--source] option.
@@ -1143,7 +805,6 @@ features.html
 fonts
 highlight.pack.js
 index.html
-index.js
 interface.html
 katex.min.css
 katex.min.js
@@ -1153,13 +814,17 @@ odoc_document
 odoc_examples
 odoc_for_authors.html
 odoc_html
+odoc_html_frontend
 odoc_html_support_files
+odoc_json_index
 odoc_latex
 odoc_loader
 odoc_manpage
 odoc_model
 odoc_model_desc
 odoc_odoc
+odoc_parser
+odoc_search
 odoc_search.js
 odoc_xref2
 odoc_xref_test
@@ -1212,6 +877,8 @@ html/odoc/odoc_html/Odoc_html/Html_fragment_json/index.html
 html/odoc/odoc_html/Odoc_html/Html_page
 html/odoc/odoc_html/Odoc_html/Html_page/index.html
 html/odoc/odoc_html/Odoc_html/index.html
+html/odoc/odoc_html/Odoc_html/Json
+html/odoc/odoc_html/Odoc_html/Json/index.html
 html/odoc/odoc_html/Odoc_html/Link
 html/odoc/odoc_html/Odoc_html/Link/index.html
 html/odoc/odoc_html/Odoc_html/Link/Path
