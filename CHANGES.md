@@ -13,7 +13,11 @@ Tags:
 
 ### Added
 - Display 'private' keyword for private type extensions (@gpetiot, #1019)
+
+### Fixed
+
 - Fix rendering of polymorphic variants (@wikku, @panglesd, #971)
+- Add references to extension declarations (@gpetiot, @panglesd, #949)
 
 # 2.3.0
 
