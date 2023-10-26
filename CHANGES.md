@@ -14,6 +14,9 @@ Tags:
 ### Added
 - Display 'private' keyword for private type extensions (@gpetiot, #1019)
 
+### Fixed
+- Fix 5.1 support (@tmcgilchrist, #1018)
+
 # 2.3.0
 
 ### Added
