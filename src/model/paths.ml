@@ -78,6 +78,7 @@ module Identifier = struct
     | `Constructor (parent, _) -> is_internal (parent :> t)
     | `Field (parent, _) -> is_internal (parent :> t)
     | `Extension (parent, _) -> is_internal (parent :> t)
+    | `ExtensionDecl (parent, _, _) -> is_internal (parent :> t)
     | `Exception (parent, _) -> is_internal (parent :> t)
     | `CoreException _ -> false
     | `Value (_, name) -> ValueName.is_internal name
@@ -113,6 +114,8 @@ module Identifier = struct
     | `Field (parent, name) ->
         FieldName.to_string name :: full_name_aux (parent :> t)
     | `Extension (parent, name) ->
+        ExtensionName.to_string name :: full_name_aux (parent :> t)
+    | `ExtensionDecl (parent, _, name) ->
         ExtensionName.to_string name :: full_name_aux (parent :> t)
     | `Exception (parent, name) ->
         ExceptionName.to_string name :: full_name_aux (parent :> t)
