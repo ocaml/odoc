@@ -132,39 +132,54 @@ module Env = struct
     env
 end
 
-let postprocess_poses source_id poses uid_to_id uid_to_loc :
+module LocHashtbl = Hashtbl.Make (struct
+  type t = Location.t
+  let equal l1 l2 = l1 = l2
+  let hash = Hashtbl.hash
+end)
+
+module IdentHashtbl = Hashtbl.Make (struct
+  type t = Ident.t
+  let equal l1 l2 = l1 = l2
+  let hash = Hashtbl.hash
+end)
+
+(* generate a [loc_to_id] and an [ident_to_id] map *)
+let local_maps source_id poses =
+  let loc_tbl = LocHashtbl.create 10 and ident_to_id = IdentHashtbl.create 10 in
+  List.iter
+    (function
+      | Typedtree_traverse.Analysis.Definition id, loc ->
+          let name =
+            Odoc_model.Names.LocalName.make_std
+              (Printf.sprintf "local_%s_%d" (Ident.name id) (counter ()))
+          in
+          let identifier =
+            Odoc_model.Paths.Identifier.Mk.source_location_int (source_id, name)
+          in
+          IdentHashtbl.add ident_to_id id identifier;
+          LocHashtbl.add loc_tbl loc identifier
+      | _ -> ())
+    poses;
+  (loc_tbl, ident_to_id)
+
+let postprocess_poses poses ident_to_id loc_to_id uid_to_id uid_to_loc :
     Odoc_model.Lang.Source_info.infos =
-  let local_def_anchors =
-    List.filter_map
-      (function
-        | Typedtree_traverse.Analysis.Definition id, _ ->
-            let name =
-              Odoc_model.Names.LocalName.make_std
-                (Printf.sprintf "local_%s_%d" (Ident.name id) (counter ()))
-            in
-            let identifier =
-              Odoc_model.Paths.Identifier.Mk.source_location_int
-                (source_id, name)
-            in
-            Some (id, identifier)
-        | _ -> None)
-      poses
-  in
   let poses =
     List.filter_map
       (function
         | Typedtree_traverse.Analysis.Definition id, loc ->
             Some
               ( Odoc_model.Lang.Source_info.Definition
-                  (List.assoc id local_def_anchors),
-                loc )
+                  (IdentHashtbl.find ident_to_id id),
+                pos_of_loc loc )
         | Value (LocalValue uniq), loc -> (
-            match List.assoc_opt uniq local_def_anchors with
-            | Some anchor -> Some (Value anchor, loc)
+            match IdentHashtbl.find_opt ident_to_id uniq with
+            | Some anchor -> Some (Value anchor, pos_of_loc loc)
             | None -> None)
         | Value (DefJmp x), loc -> (
             match Shape.Uid.Map.find_opt x uid_to_id with
-            | Some id -> Some (Value id, loc)
+            | Some id -> Some (Value id, pos_of_loc loc)
             | None -> None))
       poses
   in
@@ -173,7 +188,7 @@ let postprocess_poses source_id poses uid_to_id uid_to_loc :
       (fun uid id acc ->
         let loc_opt = Shape.Uid.Tbl.find_opt uid_to_loc uid in
         match loc_opt with
-        | Some loc ->
+        | Some loc when not (LocHashtbl.mem loc_to_id loc) ->
             (Odoc_model.Lang.Source_info.Definition id, pos_of_loc loc) :: acc
         | _ -> acc)
       uid_to_id []
@@ -259,43 +274,39 @@ let anchor_of_identifier id =
 
 (** Returns an environment (containing a [loc] to [id] map) and an [uid] to [id]
     maps. *)
-let id_maps_of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
-    (id : Odoc_model.Paths.Identifier.RootModule.t)
-    (structure : Typedtree.structure)
-    (uid_to_loc : Warnings.loc Types.Uid.Tbl.t) =
-  let env = Env.of_structure id structure in
+let id_map_of_cmt env (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
+    (uid_to_loc : Warnings.loc Types.Uid.Tbl.t) local_loc_to_id =
   let uid_to_loc_map = Shape.Uid.Tbl.to_map uid_to_loc in
+  let mk_id name =
+    Some
+      (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
+        :> Odoc_model.Paths.Identifier.SourceLocation.t)
+  in
   let uid_to_id : Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t =
     Shape.Uid.Map.filter_map
       (fun uid loc ->
         if loc.Location.loc_ghost then None
         else
           let identifier = Ident_env.identifier_of_loc env loc in
-          let anchor =
-            match identifier with
-            | Some x ->
-                Some
-                  (Odoc_model.Names.DefName.make_std (anchor_of_identifier x))
-            | None -> (
-                match uid with
-                | Compilation_unit _ -> None
-                | Item _ ->
-                    let name =
-                      Odoc_model.Names.DefName.make_std
-                        (Printf.sprintf "def_%d" (counter ()))
-                    in
-                    Some name
-                | _ -> None)
-          in
-          match anchor with
-          | Some a ->
-              Some
-                (Odoc_model.Paths.Identifier.Mk.source_location (source_id, a)
-                  :> Odoc_model.Paths.Identifier.SourceLocation.t)
-          | None -> None)
+          match identifier with
+          | Some x ->
+              mk_id (Odoc_model.Names.DefName.make_std (anchor_of_identifier x))
+          | None -> (
+              match uid with
+              | Compilation_unit _ -> None
+              | Item _ -> (
+                  match LocHashtbl.find_opt local_loc_to_id loc with
+                  | Some anchor -> Some anchor
+                  | None ->
+                      let name =
+                        Odoc_model.Names.DefName.make_std
+                          (Printf.sprintf "def_%d" (counter ()))
+                      in
+                      mk_id name)
+              | _ -> None))
       uid_to_loc_map
   in
-  (uid_to_id, env)
+  uid_to_id
 
 let read_cmt_infos source_id_opt id cmt_info =
   match Odoc_model.Compat.shape_of_cmt_infos cmt_info with
@@ -303,7 +314,7 @@ let read_cmt_infos source_id_opt id cmt_info =
       let uid_to_loc = cmt_info.cmt_uid_to_loc in
       match (source_id_opt, cmt_info.cmt_annots) with
       | Some source_id, Implementation impl ->
-          let map, env = id_maps_of_cmt source_id id impl uid_to_loc in
+          let env = Env.of_structure id impl in
           let occ_infos =
             Typedtree_traverse.of_cmt env uid_to_loc impl |> List.rev
             (* Information are accumulated in a list. We need to have the
@@ -311,8 +322,10 @@ let read_cmt_infos source_id_opt id cmt_info =
                numbers, so that adding some content at the end of a file does
                not modify the anchors for existing anchors. *)
           in
+          let loc_to_id, ident_to_id = local_maps source_id occ_infos in
+          let map = id_map_of_cmt env source_id uid_to_loc loc_to_id in
           let source_infos =
-            postprocess_poses source_id occ_infos map uid_to_loc
+            postprocess_poses occ_infos ident_to_id loc_to_id map uid_to_loc
           in
           ( Some (shape, map),
             Some

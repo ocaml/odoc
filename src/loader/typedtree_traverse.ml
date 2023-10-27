@@ -1,7 +1,5 @@
 #if OCAML_VERSION >= (4, 14, 0)
 
-let pos_of_loc loc = (loc.Location.loc_start.pos_cnum, loc.loc_end.pos_cnum)
-
 module Analysis = struct
   type value_implementation = LocalValue of Ident.t | DefJmp of Shape.Uid.t
 
@@ -23,14 +21,14 @@ module Analysis = struct
           in
           match implementation with
           | None -> ()
-          | Some impl -> poses := (Value impl, pos_of_loc exp_loc) :: !poses)
+          | Some impl -> poses := (Value impl, exp_loc) :: !poses)
       | _ -> ()
 
   let pat env (type a) poses : a Typedtree.general_pattern -> unit = function
     | { Typedtree.pat_desc; pat_loc; _ } when not pat_loc.loc_ghost ->
         let maybe_localvalue id loc =
           match Ident_env.identifier_of_loc env loc with
-          | None -> Some (Definition id, pos_of_loc loc)
+          | None -> Some (Definition id, loc)
           | Some _ -> None
         in
         let () =
