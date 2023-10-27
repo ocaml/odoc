@@ -56,6 +56,8 @@ let rec of_id x =
       ret "Field" (FieldName.to_string name) :: of_id (parent :> t)
   | `Extension (parent, name) ->
       ret "Extension" (ExtensionName.to_string name) :: of_id (parent :> t)
+  | `ExtensionDecl (parent, _, name) ->
+      ret "ExtensionDecl" (ExtensionName.to_string name) :: of_id (parent :> t)
   | `Exception (parent, name) ->
       ret "Exception" (ExceptionName.to_string name) :: of_id (parent :> t)
   | `CoreException name ->
