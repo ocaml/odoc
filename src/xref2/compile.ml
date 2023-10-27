@@ -74,6 +74,11 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
       | Ok p' -> `Resolved Lang_of.(Path.resolved_class_type (empty ()) p')
       | Error _ -> p)
 
+let () =
+  (* Until those are used *)
+  ignore value_path;
+  ignore constructor_path
+
 let rec unit env t =
   let open Compilation_unit in
   let source_info =
