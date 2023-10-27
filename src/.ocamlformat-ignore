@@ -6,6 +6,7 @@ loader/cmt.ml
 loader/cmti.ml
 loader/doc_attr.ml
 loader/implementation.ml
+loader/typedtree_traverse.ml
 loader/lookup_def.ml
 loader/lookup_def.mli
 loader/odoc_loader.ml

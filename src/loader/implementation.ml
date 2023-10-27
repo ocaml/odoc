@@ -4,340 +4,140 @@
 
 let pos_of_loc loc = (loc.Location.loc_start.pos_cnum, loc.loc_end.pos_cnum)
 
-type annotations =
-  | LocalDefinition of Ident.t
-  | LocalValue of Ident.t
-  | DefJmp of Shape.Uid.t
-
 let counter =
   let c = ref 0 in
   fun () ->
     incr c;
     !c
 
-module Analysis = struct
+module Env = struct
   open Typedtree
   open Odoc_model.Paths
 
-  type env = Ident_env.t * Location.t Shape.Uid.Tbl.t
+  let rec structure env parent str =
+    let env' = Ident_env.add_structure_tree_items parent str env in
+    List.iter (structure_item env' parent) str.str_items
 
-  let env_wrap : (Ident_env.t -> Ident_env.t) -> env -> env =
-   fun f (env, uid_to_loc) -> (f env, uid_to_loc)
+  and signature env parent sg =
+    let env' = Ident_env.add_signature_tree_items parent sg env in
+    List.iter (signature_item env' parent) sg.sig_items
 
-  let get_env : env -> Ident_env.t = fun (env, _) -> env
-
-  let get_uid_to_loc : env -> Location.t Shape.Uid.Tbl.t =
-   fun (_, uid_to_loc) -> uid_to_loc
-
-  let rec structure env parent acc str =
-    let env' = env_wrap (Ident_env.add_structure_tree_items parent str) env in
-    List.fold_left (structure_item env' parent) acc str.str_items
-
-  and signature env parent acc sg =
-    let env' = env_wrap (Ident_env.add_signature_tree_items parent sg) env in
-    List.fold_left (signature_item env' parent) acc sg.sig_items
-
-  and signature_item env parent acc item =
+  and signature_item env parent item =
     match item.sig_desc with
-    | Tsig_value vd -> value_description env parent acc vd
-    | Tsig_type (_, tds) -> type_declarations env parent acc tds
-    | Tsig_typesubst tds -> type_declarations env parent acc tds
-    | Tsig_typext _ -> acc
-    | Tsig_exception e -> exception_ env parent acc e
-    | Tsig_module mb -> module_declaration env parent acc mb
-    | Tsig_modsubst ms -> module_substitution env parent acc ms
-    | Tsig_recmodule mbs -> module_declarations env parent acc mbs
-    | Tsig_modtype mtd -> module_type_declaration env parent acc mtd
-    | Tsig_modtypesubst mtd -> module_type_declaration env parent acc mtd
-    | Tsig_open _ -> acc
-    | Tsig_include _ -> acc
-    | Tsig_class cd -> class_description env parent acc cd
-    | Tsig_class_type ctd -> class_type_declaration env parent acc ctd
-    | Tsig_attribute _ -> acc
+    | Tsig_module mb -> module_declaration env parent mb
+    | Tsig_recmodule mbs -> module_declarations env parent mbs
+    | Tsig_modtype mtd -> module_type_declaration env parent mtd
+    | Tsig_modtypesubst mtd -> module_type_declaration env parent mtd
+    | Tsig_value _ | Tsig_type _ | Tsig_typesubst _ | Tsig_typext _
+    | Tsig_exception _ | Tsig_modsubst _ | Tsig_open _ | Tsig_include _
+    | Tsig_class _ | Tsig_class_type _ | Tsig_attribute _ ->
+        ()
 
-  and value_description _env _parent acc _vd = acc
-
-  (* and type_declaration _env _parent _td = [] *)
-
-  and type_declarations _env _parent acc _tds = acc
-
-  and exception_ _env _parent acc _e = acc
-
-  and module_declaration env _parent acc md =
+  and module_declaration env _parent md =
     match md.md_id with
-    | None -> acc
+    | None -> ()
     | Some mb_id ->
-        let id = Ident_env.find_module_identifier (get_env env) mb_id in
-        module_type env (id :> Identifier.Signature.t) acc md.md_type
+        let id = Ident_env.find_module_identifier env mb_id in
+        module_type env (id :> Identifier.Signature.t) md.md_type
 
-  and module_declarations env parent acc mds =
-    List.fold_left (module_declaration env parent) acc mds
+  and module_declarations env parent mds =
+    List.iter (module_declaration env parent) mds
 
-  and module_substitution _env _parent acc _ms = acc
-
-  and module_type_declaration env _parent acc mtd =
-    let id = Ident_env.find_module_type (get_env env) mtd.mtd_id in
+  and module_type_declaration env _parent mtd =
+    let id = Ident_env.find_module_type env mtd.mtd_id in
     match mtd.mtd_type with
-    | None -> acc
-    | Some mty -> module_type env (id :> Identifier.Signature.t) acc mty
+    | None -> ()
+    | Some mty -> module_type env (id :> Identifier.Signature.t) mty
 
-  and class_description _env _parent acc _cd = acc
-
-  and class_type_declaration _env _parent acc _ctd = acc
-
-  and structure_item env parent acc item =
+  and structure_item env parent item =
     match item.str_desc with
-    | Tstr_eval (e, _) -> expression env acc e
-    | Tstr_value (_, vbs) -> value_bindings env parent acc vbs
-    | Tstr_module mb -> module_binding env parent acc mb
-    | Tstr_recmodule mbs -> module_bindings env parent acc mbs
-    | Tstr_modtype mtd -> module_type_decl env parent acc mtd
-    | Tstr_open _ -> acc
-    | Tstr_class _ -> acc
-    | Tstr_class_type _ -> acc
-    | Tstr_include _ -> acc
-    | Tstr_attribute _ -> acc
-    | Tstr_primitive _ -> acc
-    | Tstr_type (_, tds) -> type_declarations env parent acc tds
-    | Tstr_typext _ -> acc
-    | Tstr_exception _ -> acc
+    | Tstr_module mb -> module_binding env parent mb
+    | Tstr_recmodule mbs -> module_bindings env parent mbs
+    | Tstr_modtype mtd -> module_type_decl env parent mtd
+    | Tstr_open _ | Tstr_value _ | Tstr_class _ | Tstr_eval _
+    | Tstr_class_type _ | Tstr_include _ | Tstr_attribute _ | Tstr_primitive _
+    | Tstr_type _ | Tstr_typext _ | Tstr_exception _ ->
+        ()
 
-  and value_bindings env _parent acc vbs =
-    List.fold_left (value_binding env) acc vbs
-
-  and pattern : type a. env -> _ -> a general_pattern -> _ =
-   fun env acc p ->
-    let maybe_localvalue id loc =
-      match Ident_env.identifier_of_loc (get_env env) loc with
-      | None -> Some (LocalDefinition id, pos_of_loc loc)
-      | Some _ -> None
-    in
-    match p.pat_desc with
-    | Tpat_any -> acc
-    | Tpat_var (id, loc) -> (
-        match maybe_localvalue id loc.loc with
-        | Some x -> x :: acc
-        | None -> acc)
-    | Tpat_alias (p, id, loc) -> (
-        match maybe_localvalue id loc.loc with
-        | Some x -> x :: pattern env acc p
-        | None -> pattern env acc p)
-    | Tpat_constant _ -> acc
-    | Tpat_tuple ps -> List.fold_left (pattern env) acc ps
-    | Tpat_construct (_, _, ps, _) -> List.fold_left (pattern env) acc ps
-    | Tpat_variant (_, None, _) -> acc
-    | Tpat_variant (_, Some p, _) -> pattern env acc p
-    | Tpat_record (fields, _) ->
-        List.fold_left (fun acc (_, _, p) -> pattern env acc p) acc fields
-    | Tpat_array ps -> List.fold_left (pattern env) acc ps
-    | Tpat_or (p1, p2, _) ->
-        let acc = pattern env acc p1 in
-        pattern env acc p2
-    | Tpat_lazy p -> pattern env acc p
-    | Tpat_exception p -> pattern env acc p
-    | Tpat_value p -> pattern env acc (p :> pattern)
-
-  and value_binding env acc vb =
-    let acc = pattern env acc vb.vb_pat in
-    expression env acc vb.vb_expr
-
-  and expression env acc { exp_desc; exp_loc; _ } =
-    match exp_desc with
-    | Texp_ident (p, _, value_description) -> (
-        if exp_loc.loc_ghost then acc
-        else
-          (* Only generate anchor if the uid is in the location table. We don't
-             link to modules outside of the compilation unit. *)
-          match
-            Shape.Uid.Tbl.find_opt (get_uid_to_loc env)
-              value_description.val_uid
-          with
-          | Some _ ->
-              (DefJmp value_description.val_uid, pos_of_loc exp_loc) :: acc
-          | None -> (
-              match p with
-              | Pident id -> (LocalValue id, pos_of_loc exp_loc) :: acc
-              | _ -> acc))
-    | Texp_constant _ -> acc
-    | Texp_let (_, vbs, e) ->
-        let acc = List.fold_left (value_binding env) acc vbs in
-        expression env acc e
-    | Texp_function f -> List.fold_left (case env) acc f.cases
-    | Texp_match (e, cases, _) ->
-        let acc = expression env acc e in
-        List.fold_left (case env) acc cases
-    | Texp_try (e, cases) ->
-        let acc = expression env acc e in
-        List.fold_left (case env) acc cases
-    | Texp_tuple es -> List.fold_left (expression env) acc es
-    | Texp_construct (_, cons_description, es) ->
-        let acc =
-          if exp_loc.loc_ghost then acc
-          else
-            match
-              Shape.Uid.Tbl.find_opt (get_uid_to_loc env)
-                cons_description.cstr_uid
-            with
-            | Some _ ->
-                (DefJmp cons_description.cstr_uid, pos_of_loc exp_loc) :: acc
-            | None -> acc
-        in
-        List.fold_left (expression env) acc es
-    | Texp_variant (_, Some e) -> expression env acc e
-    | Texp_variant (_, None) -> acc
-    | Texp_record { fields; extended_expression; _ } ->
-        let acc =
-          match extended_expression with
-          | None -> acc
-          | Some expr -> expression env acc expr
-        in
-        List.fold_left (record_fields env) acc (Array.to_list fields)
-    | Texp_field (e, _, _) -> expression env acc e
-    | Texp_setfield (e1, _, _, e2) ->
-        let acc = expression env acc e1 in
-        expression env acc e2
-    | Texp_array es -> List.fold_left (expression env) acc es
-    | Texp_ifthenelse (e1, e2, e3) ->
-        let acc =
-          match e3 with Some e -> expression env acc e | None -> acc
-        in
-        let acc = expression env acc e1 in
-        expression env acc e2
-    | Texp_sequence (e1, e2) ->
-        let acc = expression env acc e1 in
-        expression env acc e2
-    | Texp_while (e1, e2) ->
-        let acc = expression env acc e1 in
-        expression env acc e2
-    | Texp_for (id, p, e1, e2, _, e3) ->
-        let acc = (LocalValue id, pos_of_loc p.ppat_loc) :: acc in
-        let acc = expression env acc e1 in
-        let acc = expression env acc e2 in
-        expression env acc e3
-    | Texp_send (e, _) -> expression env acc e
-    | Texp_new _ -> acc
-    | Texp_instvar (_, _, _) -> acc
-    | Texp_setinstvar (_, _, _, e) -> expression env acc e
-    | Texp_override (_, es) ->
-        List.fold_left (fun acc (_, _, e) -> expression env acc e) acc es
-    | Texp_letmodule (_, _, _, _m, e) -> expression env acc e
-    | Texp_letexception (_, e) -> expression env acc e
-#if  OCAML_VERSION < (5,1,0)
-    | Texp_assert e
-#else
-    | Texp_assert (e, _)
-#endif
-         -> expression env acc e
-    | Texp_lazy e -> expression env acc e
-    | Texp_object (_, _) -> acc
-    | Texp_pack _ -> acc
-    | Texp_letop { let_; ands; body; _ } ->
-        let acc = case env acc body in
-        let acc = binding_op env acc let_ in
-        List.fold_left (binding_op env) acc ands
-    | Texp_unreachable -> acc
-    | Texp_extension_constructor _ -> acc
-    | Texp_open (_, e) -> expression env acc e
-    | Texp_apply (e, es) ->
-        let acc = expression env acc e in
-        List.fold_left
-          (fun acc -> function _, Some e -> expression env acc e | _ -> acc)
-          acc es
-
-  and binding_op env acc = function
-    | { bop_exp; _ } -> expression env acc bop_exp
-
-  and record_fields env acc f =
-    match f with
-    | _, Overridden (_, e) -> expression env acc e
-    | _, Kept _ -> acc
-
-  and case : type a. env -> _ -> a Typedtree.case -> _ =
-   fun env acc c ->
-    let acc = pattern env acc c.c_lhs in
-    match c.c_guard with
-    | None -> expression env acc c.c_rhs
-    | Some e ->
-        let acc = expression env acc e in
-        expression env acc c.c_rhs
-
-  and module_type_decl env _parent acc mtd =
-    let id = Ident_env.find_module_type (get_env env) mtd.mtd_id in
+  and module_type_decl env _parent mtd =
+    let id = Ident_env.find_module_type env mtd.mtd_id in
     match mtd.mtd_type with
-    | None -> acc
-    | Some mty -> module_type env (id :> Identifier.Signature.t) acc mty
+    | None -> ()
+    | Some mty -> module_type env (id :> Identifier.Signature.t) mty
 
-  and module_type env (parent : Identifier.Signature.t) acc mty =
+  and module_type env (parent : Identifier.Signature.t) mty =
     match mty.mty_desc with
-    | Tmty_signature sg ->
-        signature env (parent : Identifier.Signature.t) acc sg
-    | Tmty_with (mty, _) -> module_type env parent acc mty
-    | Tmty_ident _ -> acc
-    | Tmty_functor (_, t) -> module_type env parent acc t
-    | Tmty_alias _ -> acc
-    | Tmty_typeof _ -> acc
+    | Tmty_signature sg -> signature env (parent : Identifier.Signature.t) sg
+    | Tmty_with (mty, _) -> module_type env parent mty
+    | Tmty_functor (_, t) -> module_type env parent t
+    | Tmty_ident _ | Tmty_alias _ | Tmty_typeof _ -> ()
 
-  and module_bindings env parent acc mbs =
-    List.fold_left (module_binding env parent) acc mbs
+  and module_bindings env parent mbs = List.iter (module_binding env parent) mbs
 
-  and module_binding env _parent acc mb =
+  and module_binding env _parent mb =
     match mb.mb_id with
-    | None -> acc
+    | None -> ()
     | Some id ->
-        let id = Ident_env.find_module_identifier (get_env env) id in
+        let id = Ident_env.find_module_identifier env id in
         let id = (id :> Identifier.Module.t) in
         let inner =
           match unwrap_module_expr_desc mb.mb_expr.mod_desc with
-          | Tmod_ident (_p, _) -> acc
+          | Tmod_ident (_p, _) -> ()
           | _ ->
               let id = (id :> Identifier.Signature.t) in
-              module_expr env id acc mb.mb_expr
+              module_expr env id mb.mb_expr
         in
         inner
 
-  and module_expr env parent acc mexpr =
+  and module_expr env parent mexpr =
     match mexpr.mod_desc with
-    | Tmod_ident _ -> acc
-    | Tmod_structure str -> structure env parent acc str
+    | Tmod_ident _ -> ()
+    | Tmod_structure str -> structure env parent str
     | Tmod_functor (parameter, res) ->
         let open Odoc_model.Names in
-        let acc, env =
+        let env =
           match parameter with
-          | Unit -> (acc, env)
+          | Unit -> env
           | Named (id_opt, _, arg) -> (
               match id_opt with
               | Some id ->
                   let env =
-                    env_wrap
-                      (Ident_env.add_parameter parent id
-                         (ModuleName.of_ident id))
+                    Ident_env.add_parameter parent id (ModuleName.of_ident id)
                       env
                   in
-                  let id = Ident_env.find_module_identifier (get_env env) id in
-                  (module_type env (id :> Identifier.Signature.t) acc arg, env)
-              | None -> (acc, env))
+                  let id = Ident_env.find_module_identifier env id in
+                  module_type env (id :> Identifier.Signature.t) arg;
+                  env
+              | None -> env)
         in
-        module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) acc res
+        module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) res
     | Tmod_constraint (me, _, constr, _) ->
-        let acc =
+        let () =
           match constr with
-          | Tmodtype_implicit -> acc
-          | Tmodtype_explicit mt -> module_type env parent acc mt
+          | Tmodtype_implicit -> ()
+          | Tmodtype_explicit mt -> module_type env parent mt
         in
-        module_expr env parent acc me
-    | _ -> acc
+        module_expr env parent me
+    | _ -> ()
 
   and unwrap_module_expr_desc = function
     | Tmod_constraint (mexpr, _, Tmodtype_implicit, _) ->
         unwrap_module_expr_desc mexpr.mod_desc
     | desc -> desc
+
+  let of_structure (id : Odoc_model.Paths.Identifier.RootModule.t)
+      (s : Typedtree.structure) =
+    let env = Ident_env.empty () in
+    let () = structure env (id :> Odoc_model.Paths.Identifier.Signature.t) s in
+    env
 end
 
-let postprocess_poses source_id poses uid_to_id uid_to_loc =
+let postprocess_poses source_id poses uid_to_id uid_to_loc :
+    Odoc_model.Lang.Source_info.infos =
   let local_def_anchors =
     List.filter_map
       (function
-        | LocalDefinition id, _ ->
+        | Typedtree_traverse.Analysis.Definition id, _ ->
             let name =
               Odoc_model.Names.LocalName.make_std
                 (Printf.sprintf "local_%s_%d" (Ident.name id) (counter ()))
@@ -353,16 +153,16 @@ let postprocess_poses source_id poses uid_to_id uid_to_loc =
   let poses =
     List.filter_map
       (function
-        | LocalDefinition id, loc ->
+        | Typedtree_traverse.Analysis.Definition id, loc ->
             Some
               ( Odoc_model.Lang.Source_info.Definition
                   (List.assoc id local_def_anchors),
                 loc )
-        | LocalValue uniq, loc -> (
+        | Value (LocalValue uniq), loc -> (
             match List.assoc_opt uniq local_def_anchors with
             | Some anchor -> Some (Value anchor, loc)
             | None -> None)
-        | DefJmp x, loc -> (
+        | Value (DefJmp x), loc -> (
             match Shape.Uid.Map.find_opt x uid_to_id with
             | Some id -> Some (Value id, loc)
             | None -> None))
@@ -457,21 +257,13 @@ let anchor_of_identifier id =
   in
   anchor_of_identifier [] id |> String.concat "."
 
-let of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
+(** Returns an environment (containing a [loc] to [id] map) and an [uid] to [id]
+    maps. *)
+let id_maps_of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
     (id : Odoc_model.Paths.Identifier.RootModule.t)
     (structure : Typedtree.structure)
     (uid_to_loc : Warnings.loc Types.Uid.Tbl.t) =
-  let env = Ident_env.empty () in
-  let vs =
-    Analysis.structure (env, uid_to_loc)
-      (id :> Odoc_model.Paths.Identifier.Signature.t)
-      [] structure
-    |> List.rev
-    (* Information are accumulated in a list. We need to have the
-       first info first in the list, to assign anchors with increasing
-       numbers, so that adding some content at the end of a file does
-       not modify the anchors for existing anchors. *)
-  in
+  let env = Env.of_structure id structure in
   let uid_to_loc_map = Shape.Uid.Tbl.to_map uid_to_loc in
   let uid_to_id : Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t =
     Shape.Uid.Map.filter_map
@@ -503,8 +295,7 @@ let of_cmt (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
           | None -> None)
       uid_to_loc_map
   in
-
-  (uid_to_id, postprocess_poses source_id vs uid_to_id uid_to_loc)
+  (uid_to_id, env)
 
 let read_cmt_infos source_id_opt id cmt_info =
   match Odoc_model.Compat.shape_of_cmt_infos cmt_info with
@@ -512,8 +303,16 @@ let read_cmt_infos source_id_opt id cmt_info =
       let uid_to_loc = cmt_info.cmt_uid_to_loc in
       match (source_id_opt, cmt_info.cmt_annots) with
       | Some source_id, Implementation impl ->
-          let map, source_infos =
-            of_cmt source_id id impl uid_to_loc
+          let map, env = id_maps_of_cmt source_id id impl uid_to_loc in
+          let occ_infos =
+            Typedtree_traverse.of_cmt env uid_to_loc impl |> List.rev
+            (* Information are accumulated in a list. We need to have the
+               first info first in the list, to assign anchors with increasing
+               numbers, so that adding some content at the end of a file does
+               not modify the anchors for existing anchors. *)
+          in
+          let source_infos =
+            postprocess_poses source_id occ_infos map uid_to_loc
           in
           ( Some (shape, map),
             Some
@@ -523,8 +322,6 @@ let read_cmt_infos source_id_opt id cmt_info =
               } )
       | _, _ -> (Some (shape, Odoc_model.Compat.empty_map), None))
   | None -> (None, None)
-
-
 
 #else
 
