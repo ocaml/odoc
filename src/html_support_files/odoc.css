@@ -847,7 +847,7 @@ td.def-doc *:first-child {
   border-radius: 6px;
   box-shadow: 0 3px 10px 2px var(--search-results-shadow);
   max-height: 40rem;
-  overflow: scroll;
+  overflow-y: auto;
 }
 
 .search-bar {
