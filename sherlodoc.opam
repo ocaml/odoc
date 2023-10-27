@@ -14,7 +14,7 @@ depends: [
   "fpath"
   "odoc" {= "2.1.0"}
   "opam-core"
-  "tyxml"
+  "tyxml" {>= "4.6.0"}
 ]
 build: [
   ["dune" "subst"] {dev}
