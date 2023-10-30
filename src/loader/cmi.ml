@@ -924,17 +924,18 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
     | Mty_ident p -> Path {p_path = Env.Path.read_module_type env p; p_expansion=None }
     | Mty_signature sg -> Signature (read_signature env parent sg)
     | Mty_functor(parameter, res) ->
-        let f_parameter, env =
+        let f_parameter =
           match parameter with
-          | Unit -> Odoc_model.Lang.FunctorParameter.Unit, env
+          | Unit -> Odoc_model.Lang.FunctorParameter.Unit
           | Named (id_opt, arg) ->
-              let id, env = match id_opt with
-                | None -> Identifier.Mk.parameter(parent, Odoc_model.Names.ModuleName.make_std "_"), env
-                | Some id -> let env = Env.add_parameter parent id (ModuleName.of_ident id) env in
-                  Ident_env.find_parameter_identifier env id, env
+              let id = match id_opt with
+                | None -> Identifier.Mk.parameter(parent, Odoc_model.Names.ModuleName.make_std "_")
+                | Some id ->
+                   let () = Env.add_parameter parent id (ModuleName.of_ident id) env in
+                   Ident_env.find_parameter_identifier env id
               in
               let arg = read_module_type env (id :> Identifier.Signature.t) arg in
-              Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg }), env
+              Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg })
         in
         let res = read_module_type env (Identifier.Mk.result parent) res in
         Functor( f_parameter, res)
@@ -1082,7 +1083,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     loop ([],{s_modules=[]; s_module_types=[]; s_values=[];s_types=[]; s_classes=[]; s_class_types=[]}) items
 
 and read_signature env parent (items : Odoc_model.Compat.signature) =
-  let env = Env.handle_signature_type_items parent items env in
+  let () = Env.handle_signature_type_items parent items env in
   fst @@ read_signature_noenv env parent items
 
 
