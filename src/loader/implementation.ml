@@ -15,12 +15,12 @@ module Env = struct
   open Odoc_model.Paths
 
   let rec structure env parent str =
-    let env' = Ident_env.add_structure_tree_items parent str env in
-    List.iter (structure_item env' parent) str.str_items
+    let () = Ident_env.add_structure_tree_items parent str env in
+    List.iter (structure_item env parent) str.str_items
 
   and signature env parent sg =
-    let env' = Ident_env.add_signature_tree_items parent sg env in
-    List.iter (signature_item env' parent) sg.sig_items
+    let () = Ident_env.add_signature_tree_items parent sg env in
+    List.iter (signature_item env parent) sg.sig_items
 
   and signature_item env parent item =
     match item.sig_desc with
@@ -95,20 +95,19 @@ module Env = struct
     | Tmod_structure str -> structure env parent str
     | Tmod_functor (parameter, res) ->
         let open Odoc_model.Names in
-        let env =
+        let () =
           match parameter with
-          | Unit -> env
+          | Unit -> ()
           | Named (id_opt, _, arg) -> (
               match id_opt with
               | Some id ->
-                  let env =
+                  let () =
                     Ident_env.add_parameter parent id (ModuleName.of_ident id)
                       env
                   in
                   let id = Ident_env.find_module_identifier env id in
-                  module_type env (id :> Identifier.Signature.t) arg;
-                  env
-              | None -> env)
+                  module_type env (id :> Identifier.Signature.t) arg
+              | None -> ())
         in
         module_expr env (Odoc_model.Paths.Identifier.Mk.result parent) res
     | Tmod_constraint (me, _, constr, _) ->
