@@ -363,19 +363,20 @@ let rec read_module_expr env parent label_parent mexpr =
         Signature sg
 #if OCAML_VERSION >= (4,10,0)
     | Tmod_functor(parameter, res) ->
-        let f_parameter, env =
+        let f_parameter =
           match parameter with
-          | Unit -> FunctorParameter.Unit, env
+          | Unit -> FunctorParameter.Unit
           | Named (id_opt, _, arg) ->
-              let id, env =
+              let id =
                 match id_opt with
-                | None -> Identifier.Mk.parameter (parent, Odoc_model.Names.ModuleName.make_std "_"), env
-                | Some id -> let env = Env.add_parameter parent id (ModuleName.of_ident id) env in
-                  Env.find_parameter_identifier env id, env
+                | None -> Identifier.Mk.parameter (parent, Odoc_model.Names.ModuleName.make_std "_")
+                | Some id ->
+                   let () = Env.add_parameter parent id (ModuleName.of_ident id) env in
+                   Env.find_parameter_identifier env id
               in
               let arg = Cmti.read_module_type env (id :> Identifier.Signature.t) label_parent arg in
 
-              Named { id; expr=arg }, env
+              Named { id; expr=arg }
           in
         let res = read_module_expr env (Identifier.Mk.result parent) label_parent res in
         Functor (f_parameter, res)
@@ -576,7 +577,7 @@ and read_structure :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
       _ * 'tags =
  fun internal_tags env parent str ->
-  let env = Env.add_structure_tree_items parent str env in
+  let () = Env.add_structure_tree_items parent str env in
   let items, (doc, doc_post), tags =
     let classify item =
       match item.str_desc with

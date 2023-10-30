@@ -517,12 +517,12 @@ and read_module_type env parent label_parent mty =
           match parameter with
           | Unit -> FunctorParameter.Unit, env
           | Named (id_opt, _, arg) ->
-            let id, env =
+            let id =
               match id_opt with
-              | None -> Identifier.Mk.parameter (parent, ModuleName.make_std "_"), env
+              | None -> Identifier.Mk.parameter (parent, ModuleName.make_std "_")
               | Some id ->
-                 let env = Env.add_parameter parent id (ModuleName.of_ident id) env in
-                 Env.find_parameter_identifier env id, env
+                 let () = Env.add_parameter parent id (ModuleName.of_ident id) env in
+                 Env.find_parameter_identifier env id
             in
             let arg = read_module_type env (id :> Identifier.Signature.t) label_parent arg in
             Named { id; expr = arg; }, env
@@ -772,7 +772,7 @@ and read_signature :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
       _ * 'tags =
  fun internal_tags env parent sg ->
-  let env = Env.add_signature_tree_items parent sg env in
+  let () = Env.add_signature_tree_items parent sg env in
   let items, (doc, doc_post), tags =
     let classify item =
       match item.sig_desc with
