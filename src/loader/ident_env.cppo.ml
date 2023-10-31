@@ -605,6 +605,9 @@ let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
 let identifier_of_loc : t -> Location.t -> Odoc_model.Paths.Identifier.t option = fun env loc ->
   try Some (LocHashtbl.find env.loc_to_ident loc) with Not_found -> None
 
+let iter_located_identifier : t -> (Location.t -> Odoc_model.Paths.Identifier.t -> unit) -> unit = fun env f ->
+  LocHashtbl.iter f env.loc_to_ident
+
 let add_signature_tree_items : Paths.Identifier.Signature.t -> Typedtree.signature -> t -> t = 
   fun parent sg env ->
     let items = extract_signature_tree_items false sg.sig_items |> flatten_includes in
