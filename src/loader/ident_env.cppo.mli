@@ -77,7 +77,10 @@ module Fragment : sig
   val read_type : Longident.t -> Paths.Fragment.Type.t
 end
 
-val identifier_of_loc : t -> Location.t -> Odoc_model.Paths.Identifier.t option
+val identifier_of_loc : t -> Location.t -> Paths.Identifier.t option
 (** Each generated id has its location stored. This allows to get back the id
     knowing only the location. This is used to generate links to source from the
     resolution of a shape. *)
+
+val iter_located_identifier : t -> (Location.t -> Paths.Identifier.t -> unit) -> unit
+(** Iter on all stored pair [location]-[identifier]. *)

@@ -144,10 +144,11 @@ module IdentHashtbl = Hashtbl.Make (struct
   let hash = Hashtbl.hash
 end)
 
-(* generate a [loc_to_id] and an [ident_to_id] map *)
-let local_maps source_id poses =
-  let loc_tbl = LocHashtbl.create 10 and ident_to_id = IdentHashtbl.create 10 in
-  List.iter
+(* populate a [loc_to_id] and an [ident_to_id] map with local informations. Also
+   removes the definitions from the list, since their information has been taken
+   into account *)
+let process_local_defs source_id poses loc_tbl ident_to_id =
+  List.filter_map
     (function
       | Typedtree_traverse.Analysis.Definition id, loc ->
           let name =
@@ -158,43 +159,13 @@ let local_maps source_id poses =
             Odoc_model.Paths.Identifier.Mk.source_location_int (source_id, name)
           in
           IdentHashtbl.add ident_to_id id identifier;
-          LocHashtbl.add loc_tbl loc identifier
-      | _ -> ())
-    poses;
-  (loc_tbl, ident_to_id)
+          LocHashtbl.add loc_tbl loc identifier;
+          None
+      | x -> Some x)
+    poses
 
-let postprocess_poses poses ident_to_id loc_to_id uid_to_id uid_to_loc :
-    Odoc_model.Lang.Source_info.infos =
-  let poses =
-    List.filter_map
-      (function
-        | Typedtree_traverse.Analysis.Definition id, loc ->
-            Some
-              ( Odoc_model.Lang.Source_info.Definition
-                  (IdentHashtbl.find ident_to_id id),
-                pos_of_loc loc )
-        | Value (LocalValue uniq), loc -> (
-            match IdentHashtbl.find_opt ident_to_id uniq with
-            | Some anchor -> Some (Value anchor, pos_of_loc loc)
-            | None -> None)
-        | Value (DefJmp x), loc -> (
-            match Shape.Uid.Map.find_opt x uid_to_id with
-            | Some id -> Some (Value id, pos_of_loc loc)
-            | None -> None))
-      poses
-  in
-  let defs =
-    Shape.Uid.Map.fold
-      (fun uid id acc ->
-        let loc_opt = Shape.Uid.Tbl.find_opt uid_to_loc uid in
-        match loc_opt with
-        | Some loc when not (LocHashtbl.mem loc_to_id loc) ->
-            (Odoc_model.Lang.Source_info.Definition id, pos_of_loc loc) :: acc
-        | _ -> acc)
-      uid_to_id []
-  in
-  defs @ poses
-
+(* In order to turn an identifier into a source identifier, we need to generate
+   a unique anchor for any identifier. *)
 let anchor_of_identifier id =
   let open Odoc_document.Url in
   let open Odoc_model.Paths in
@@ -272,41 +243,65 @@ let anchor_of_identifier id =
   in
   anchor_of_identifier [] id |> String.concat "."
 
-(** Returns an environment (containing a [loc] to [id] map) and an [uid] to [id]
-    maps. *)
-let id_map_of_cmt env (source_id : Odoc_model.Paths.Identifier.SourcePage.t)
-    (uid_to_loc : Warnings.loc Types.Uid.Tbl.t) local_loc_to_id =
+(* Adds the global defs from the odoc environment to [loc_to_id] table *)
+let process_global_defs env source_id loc_to_id =
+  let mk_src_id id =
+    let name = Odoc_model.Names.DefName.make_std (anchor_of_identifier id) in
+    (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
+      :> Odoc_model.Paths.Identifier.SourceLocation.t)
+  in
+  Ident_env.iter_located_identifier env @@ fun loc id ->
+  LocHashtbl.add loc_to_id loc (mk_src_id id)
+
+(* The [uid_to_id] is useful as when resolving a shape, we get the uid. *)
+let build_uid_to_id source_id uid_to_loc loc_to_id =
   let uid_to_loc_map = Shape.Uid.Tbl.to_map uid_to_loc in
-  let mk_id name =
-    Some
-      (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
-        :> Odoc_model.Paths.Identifier.SourceLocation.t)
+  let mk_src_id () =
+    let name =
+      Odoc_model.Names.DefName.make_std (Printf.sprintf "def_%d" (counter ()))
+    in
+    (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
+      :> Odoc_model.Paths.Identifier.SourceLocation.t)
   in
-  let uid_to_id : Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t =
-    Shape.Uid.Map.filter_map
-      (fun uid loc ->
-        if loc.Location.loc_ghost then None
-        else
-          let identifier = Ident_env.identifier_of_loc env loc in
-          match identifier with
-          | Some x ->
-              mk_id (Odoc_model.Names.DefName.make_std (anchor_of_identifier x))
-          | None -> (
-              match uid with
-              | Compilation_unit _ -> None
-              | Item _ -> (
-                  match LocHashtbl.find_opt local_loc_to_id loc with
-                  | Some anchor -> Some anchor
-                  | None ->
-                      let name =
-                        Odoc_model.Names.DefName.make_std
-                          (Printf.sprintf "def_%d" (counter ()))
-                      in
-                      mk_id name)
-              | _ -> None))
-      uid_to_loc_map
-  in
-  uid_to_id
+  Shape.Uid.Map.filter_map
+    (fun uid loc ->
+      if loc.Location.loc_ghost then None
+      else
+        match LocHashtbl.find_opt loc_to_id loc with
+        | Some id -> Some id
+        | None -> (
+            (* In case there is no entry for the location of the uid, we add one. *)
+            match uid with
+            | Item _ ->
+                let id = mk_src_id () in
+                LocHashtbl.add loc_to_id loc id;
+                Some id
+            | Compilation_unit _ -> None
+            | _ -> None))
+    uid_to_loc_map
+
+(* Turns [Typedtree_traverse] occurrence information into proper source infos *)
+let process_occurrences poses uid_to_id ident_to_id =
+  List.filter_map
+    (function
+      | Typedtree_traverse.Analysis.Value (LocalValue uniq), loc -> (
+          match IdentHashtbl.find_opt ident_to_id uniq with
+          | Some anchor ->
+              Some (Odoc_model.Lang.Source_info.Value anchor, pos_of_loc loc)
+          | None -> None)
+      | Value (DefJmp x), loc -> (
+          match Shape.Uid.Map.find_opt x uid_to_id with
+          | Some id -> Some (Value id, pos_of_loc loc)
+          | None -> None)
+      | Definition _, _ -> None)
+    poses
+
+(* Add definition source info from the [loc_to_id] table *)
+let add_definitions occurrences loc_to_id =
+  LocHashtbl.fold
+    (fun loc id acc ->
+      (Odoc_model.Lang.Source_info.Definition id, pos_of_loc loc) :: acc)
+    loc_to_id occurrences
 
 let read_cmt_infos source_id_opt id cmt_info =
   match Odoc_model.Compat.shape_of_cmt_infos cmt_info with
@@ -322,12 +317,18 @@ let read_cmt_infos source_id_opt id cmt_info =
                numbers, so that adding some content at the end of a file does
                not modify the anchors for existing anchors. *)
           in
-          let loc_to_id, ident_to_id = local_maps source_id occ_infos in
-          let map = id_map_of_cmt env source_id uid_to_loc loc_to_id in
-          let source_infos =
-            postprocess_poses occ_infos ident_to_id loc_to_id map uid_to_loc
+          let loc_to_id = LocHashtbl.create 10
+          and ident_to_id = IdentHashtbl.create 10 in
+          let occurrences =
+            process_local_defs source_id occ_infos loc_to_id ident_to_id
           in
-          ( Some (shape, map),
+          let () = process_global_defs env source_id loc_to_id in
+          let uid_to_id = build_uid_to_id source_id uid_to_loc loc_to_id in
+          let occurrences =
+            process_occurrences occurrences uid_to_id ident_to_id
+          in
+          let source_infos = add_definitions occurrences loc_to_id in
+          ( Some (shape, uid_to_id),
             Some
               {
                 Odoc_model.Lang.Source_info.id = source_id;
