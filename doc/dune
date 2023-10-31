@@ -36,7 +36,9 @@
   (glob_files library_mlds/*)
   (glob_files examples/*.ml*))
  (action
-  (run ocaml-mdx-test --force-output %{dep:driver.mld})))
+  (progn
+   (write-file driver-benchmarks.json "")
+   (run ocaml-mdx-test --force-output %{dep:driver.mld}))))
 
 (rule
  (alias docgen)
