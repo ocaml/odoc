@@ -144,11 +144,12 @@ module IdentHashtbl = Hashtbl.Make (struct
   let hash = Hashtbl.hash
 end)
 
-(* populate a [loc_to_id] and an [ident_to_id] map with local informations. Also
-   removes the definitions from the list, since their information has been taken
-   into account *)
-let process_local_defs source_id poses loc_tbl ident_to_id =
-  List.filter_map
+module UidHashtbl = Shape.Uid.Tbl
+
+(* Adds the local definitions found in traverse infos to the [loc_to_id] and
+   [ident_to_id] tables. *)
+let populate_local_defs source_id poses loc_to_id ident_to_id =
+  List.iter
     (function
       | Typedtree_traverse.Analysis.Definition id, loc ->
           let name =
@@ -159,9 +160,8 @@ let process_local_defs source_id poses loc_tbl ident_to_id =
             Odoc_model.Paths.Identifier.Mk.source_location_int (source_id, name)
           in
           IdentHashtbl.add ident_to_id id identifier;
-          LocHashtbl.add loc_tbl loc identifier;
-          None
-      | x -> Some x)
+          LocHashtbl.add loc_to_id loc identifier
+      | _ -> ())
     poses
 
 (* In order to turn an identifier into a source identifier, we need to generate
@@ -243,19 +243,18 @@ let anchor_of_identifier id =
   in
   anchor_of_identifier [] id |> String.concat "."
 
-(* Adds the global defs from the odoc environment to [loc_to_id] table *)
-let process_global_defs env source_id loc_to_id =
+(* Adds the global definitions, found in the [uid_to_loc], to the [loc_to_id]
+   and [uid_to_id] tables. *)
+let populate_global_defs env source_id loc_to_id uid_to_loc uid_to_id =
   let mk_src_id id =
     let name = Odoc_model.Names.DefName.make_std (anchor_of_identifier id) in
     (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
       :> Odoc_model.Paths.Identifier.SourceLocation.t)
   in
-  Ident_env.iter_located_identifier env @@ fun loc id ->
-  LocHashtbl.add loc_to_id loc (mk_src_id id)
-
-(* The [uid_to_id] is useful as when resolving a shape, we get the uid. *)
-let build_uid_to_id source_id uid_to_loc loc_to_id =
-  let uid_to_loc_map = Shape.Uid.Tbl.to_map uid_to_loc in
+  let () =
+    Ident_env.iter_located_identifier env @@ fun loc id ->
+    LocHashtbl.add loc_to_id loc (mk_src_id id)
+  in
   let mk_src_id () =
     let name =
       Odoc_model.Names.DefName.make_std (Printf.sprintf "def_%d" (counter ()))
@@ -263,24 +262,25 @@ let build_uid_to_id source_id uid_to_loc loc_to_id =
     (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
       :> Odoc_model.Paths.Identifier.SourceLocation.t)
   in
-  Shape.Uid.Map.filter_map
+  Shape.Uid.Tbl.iter
     (fun uid loc ->
-      if loc.Location.loc_ghost then None
+      if loc.Location.loc_ghost then ()
       else
         match LocHashtbl.find_opt loc_to_id loc with
-        | Some id -> Some id
+        | Some id -> UidHashtbl.add uid_to_id uid id
         | None -> (
             (* In case there is no entry for the location of the uid, we add one. *)
             match uid with
             | Item _ ->
                 let id = mk_src_id () in
                 LocHashtbl.add loc_to_id loc id;
-                Some id
-            | Compilation_unit _ -> None
-            | _ -> None))
-    uid_to_loc_map
+                UidHashtbl.add uid_to_id uid id
+            | Compilation_unit _ -> ()
+            | _ -> ()))
+    uid_to_loc
 
-(* Turns [Typedtree_traverse] occurrence information into proper source infos *)
+(* Extract [Typedtree_traverse] occurrence information and turn them into proper
+   source infos *)
 let process_occurrences poses uid_to_id ident_to_id =
   List.filter_map
     (function
@@ -290,14 +290,14 @@ let process_occurrences poses uid_to_id ident_to_id =
               Some (Odoc_model.Lang.Source_info.Value anchor, pos_of_loc loc)
           | None -> None)
       | Value (DefJmp x), loc -> (
-          match Shape.Uid.Map.find_opt x uid_to_id with
+          match UidHashtbl.find_opt uid_to_id x with
           | Some id -> Some (Value id, pos_of_loc loc)
           | None -> None)
       | Definition _, _ -> None)
     poses
 
 (* Add definition source info from the [loc_to_id] table *)
-let add_definitions occurrences loc_to_id =
+let add_definitions loc_to_id occurrences =
   LocHashtbl.fold
     (fun loc id acc ->
       (Odoc_model.Lang.Source_info.Definition id, pos_of_loc loc) :: acc)
@@ -310,7 +310,7 @@ let read_cmt_infos source_id_opt id cmt_info =
       match (source_id_opt, cmt_info.cmt_annots) with
       | Some source_id, Implementation impl ->
           let env = Env.of_structure id impl in
-          let occ_infos =
+          let traverse_infos =
             Typedtree_traverse.of_cmt env uid_to_loc impl |> List.rev
             (* Information are accumulated in a list. We need to have the
                first info first in the list, to assign anchors with increasing
@@ -318,17 +318,18 @@ let read_cmt_infos source_id_opt id cmt_info =
                not modify the anchors for existing anchors. *)
           in
           let loc_to_id = LocHashtbl.create 10
-          and ident_to_id = IdentHashtbl.create 10 in
-          let occurrences =
-            process_local_defs source_id occ_infos loc_to_id ident_to_id
+          and ident_to_id = IdentHashtbl.create 10
+          and uid_to_id = UidHashtbl.create 10 in
+          let () =
+            (* populate [loc_to_id], [ident_to_id] and [uid_to_id] *)
+            populate_local_defs source_id traverse_infos loc_to_id ident_to_id;
+            populate_global_defs env source_id loc_to_id uid_to_loc uid_to_id
           in
-          let () = process_global_defs env source_id loc_to_id in
-          let uid_to_id = build_uid_to_id source_id uid_to_loc loc_to_id in
-          let occurrences =
-            process_occurrences occurrences uid_to_id ident_to_id
+          let source_infos =
+            process_occurrences traverse_infos uid_to_id ident_to_id
+            |> add_definitions loc_to_id
           in
-          let source_infos = add_definitions occurrences loc_to_id in
-          ( Some (shape, uid_to_id),
+          ( Some (shape, Shape.Uid.Tbl.to_map uid_to_id),
             Some
               {
                 Odoc_model.Lang.Source_info.id = source_id;
