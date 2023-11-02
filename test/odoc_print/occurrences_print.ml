@@ -2,7 +2,7 @@ module H = Hashtbl.Make (Odoc_model.Paths.Identifier)
 
 let run inp =
   let ic = open_in_bin inp in
-  let htbl : Odoc_odoc.Occurrences.Occtbl.item Odoc_odoc.Occurrences.H.t =
+  let htbl : Odoc_odoc.Occurrences.Occtbl.t =
     Marshal.from_channel ic
   in
   Odoc_odoc.Occurrences.Occtbl.iter
