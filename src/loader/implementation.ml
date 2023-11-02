@@ -53,17 +53,11 @@ module Env = struct
     match item.str_desc with
     | Tstr_module mb -> module_binding env parent mb
     | Tstr_recmodule mbs -> module_bindings env parent mbs
-    | Tstr_modtype mtd -> module_type_decl env parent mtd
+    | Tstr_modtype mtd -> module_type_declaration env parent mtd
     | Tstr_open _ | Tstr_value _ | Tstr_class _ | Tstr_eval _
     | Tstr_class_type _ | Tstr_include _ | Tstr_attribute _ | Tstr_primitive _
     | Tstr_type _ | Tstr_typext _ | Tstr_exception _ ->
         ()
-
-  and module_type_decl env _parent mtd =
-    let id = Ident_env.find_module_type env mtd.mtd_id in
-    match mtd.mtd_type with
-    | None -> ()
-    | Some mty -> module_type env (id :> Identifier.Signature.t) mty
 
   and module_type env (parent : Identifier.Signature.t) mty =
     match mty.mty_desc with

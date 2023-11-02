@@ -56,6 +56,9 @@ module Analysis = struct
         ()
     | _ -> ()
 
+  (* Add module_binding equivalent of pat *)
+
+
   let module_expr poses mod_expr =
     match mod_expr with
     | { Typedtree.mod_desc = Tmod_ident (p, _); mod_loc; _ }
