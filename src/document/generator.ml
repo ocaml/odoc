@@ -252,7 +252,7 @@ module Make (Syntax : SYNTAX) = struct
     let path id = Url.Path.from_identifier id
     let url id = Url.from_path (path id)
 
-    let to_link documentation implementation =
+    let to_link {Lang.Source_info.documentation; implementation} =
       let documentation =
         let open Paths.Path.Resolved in
         match documentation with
@@ -281,13 +281,12 @@ module Make (Syntax : SYNTAX) = struct
           | `SourceLocationInternal (_, local) ->
               Some (Anchor (LocalName.to_string local))
           | _ -> None)
-      | Module { documentation; _ } -> to_link documentation None
-      | ModuleType { documentation; _ } -> to_link documentation None
-      | Type { documentation; _ } -> to_link documentation None
-      | ClassType { documentation; _ } -> to_link documentation None
-      | Value { documentation; implementation } ->
-          to_link documentation implementation
-      | Constructor { documentation; _ } -> to_link documentation None
+      | Module v -> to_link v
+      | ModuleType v -> to_link v
+      | Type v -> to_link v
+      | ClassType v -> to_link v
+      | Value v -> to_link v
+      | Constructor v -> to_link v
 
     let source id syntax_info infos source_code =
       let url = path id in
