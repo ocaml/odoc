@@ -8,8 +8,6 @@ Compile the modules:
   $ ocamlc -c a.mli a.ml -bin-annot
   $ odoc compile --cmt a.cmt --source-name a.ml --source-parent-file src-source.odoc -I . a.cmti
   $ odoc link a.odoc
-  File "a.odoc":
-  Warning: Failed to resolve module type path identifier((root A).N.S, false) Lookup failure (module type): (root A).N.S
 
 Show the locations:
 
