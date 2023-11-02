@@ -135,8 +135,9 @@ and should_resolve_constructor : Paths.Path.Constructor.t -> bool =
   | `Resolved p -> should_reresolve (p :> Paths.Path.Resolved.t)
   | _ -> true
 
-let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
- fun env p ->
+let type_path :
+    ?report_errors:bool -> Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
+ fun ?(report_errors = true) env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(type_path (empty ()) p) in
@@ -150,11 +151,13 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
             let result = Tools.reresolve_type env p' in
             `Resolved Lang_of.(Path.resolved_type (empty ()) result)
         | Error e ->
-            Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
+            if report_errors then
+              Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
             p)
 
-let value_path : Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
- fun env p ->
+let value_path :
+    ?report_errors:bool -> Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
+ fun ?(report_errors = true) env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(value_path (empty ()) p) in
@@ -168,36 +171,41 @@ let value_path : Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
             let result = Tools.reresolve_value env p' in
             `Resolved Lang_of.(Path.resolved_value (empty ()) result)
         | Error e ->
-            Errors.report ~what:(`Value_path cp) ~tools_error:e `Lookup;
+            if report_errors then
+              Errors.report ~what:(`Value_path cp) ~tools_error:e `Lookup;
             p)
 
 let constructor_path :
-    Env.t -> Paths.Path.Constructor.t -> Paths.Path.Constructor.t =
- fun env p ->
+    ?report_errors:bool ->
+    Env.t ->
+    Paths.Path.Constructor.t ->
+    Paths.Path.Constructor.t =
+ fun ?(report_errors = true) env p ->
+  (* if not (should_resolve (p : Paths.Path.Constructor.t :> Paths.Path.t)) then p *)
+  (* else *)
   if not (should_resolve_constructor p) then p
   else
-    let cp = Component.Of_Lang.(constructor_path (empty ()) p) in
-    match cp with
-    | `Resolved p ->
-        let result = Tools.reresolve_constructor env p in
-        `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
-    | _ -> (
-        match Tools.resolve_constructor_path env cp with
-        | Ok p' ->
-            let result = Tools.reresolve_constructor env p' in
-            `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
-        | Error e ->
+  let cp = Component.Of_Lang.(constructor_path (empty ()) p) in
+  match cp with
+  | `Resolved p ->
+      let result = Tools.reresolve_constructor env p in
+      `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
+  | _ -> (
+      match Tools.resolve_constructor_path env cp with
+      | Ok p' ->
+          let result = Tools.reresolve_constructor env p' in
+          `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
+      | Error e ->
+          if report_errors then
             Errors.report ~what:(`Constructor_path cp) ~tools_error:e `Lookup;
-            p)
+          p)
 
-let () =
-  (* Until those are used *)
-  ignore value_path;
-  ignore constructor_path
-
-let class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
-    =
- fun env p ->
+let class_type_path :
+    ?report_errors:bool ->
+    Env.t ->
+    Paths.Path.ClassType.t ->
+    Paths.Path.ClassType.t =
+ fun ?(report_errors = true) env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(class_type_path (empty ()) p) in
@@ -211,12 +219,16 @@ let class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
             let result = Tools.reresolve_class_type env p' in
             `Resolved Lang_of.(Path.resolved_class_type (empty ()) result)
         | Error e ->
-            Errors.report ~what:(`Class_type_path cp) ~tools_error:e `Lookup;
+            if report_errors then
+              Errors.report ~what:(`Class_type_path cp) ~tools_error:e `Lookup;
             p)
 
 and module_type_path :
-    Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
- fun env p ->
+    ?report_errors:bool ->
+    Env.t ->
+    Paths.Path.ModuleType.t ->
+    Paths.Path.ModuleType.t =
+ fun ?(report_errors = true) env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(module_type_path (empty ()) p) in
@@ -230,11 +242,13 @@ and module_type_path :
             let result = Tools.reresolve_module_type env p' in
             `Resolved Lang_of.(Path.resolved_module_type (empty ()) result)
         | Error e ->
-            Errors.report ~what:(`Module_type_path cp) ~tools_error:e `Resolve;
+            if report_errors then
+              Errors.report ~what:(`Module_type_path cp) ~tools_error:e `Resolve;
             p)
 
-and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
- fun env p ->
+and module_path :
+    ?report_errors:bool -> Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
+ fun ?(report_errors = true) env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(module_path (empty ()) p) in
@@ -249,7 +263,8 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
             `Resolved Lang_of.(Path.resolved_module (empty ()) result)
         | Error _ when is_forward p -> p
         | Error e ->
-            Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
+            if report_errors then
+              Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
             p)
 
 let rec comment_inline_element :
@@ -438,16 +453,16 @@ let rec unit env t =
                     Value
                       (jump_to v
                          (Shape_tools.lookup_value_path env)
-                         (value_path env))
+                         (value_path ~report_errors:false env))
                 | Module v ->
-                    Module (jump_to v (fun _ -> None) (module_path env))
+                    Module (jump_to v (fun _ -> None) (module_path ~report_errors:false env))
                 | ModuleType v ->
                     ModuleType
-                      (jump_to v (fun _ -> None) (module_type_path env))
-                | Type v -> Type (jump_to v (fun _ -> None) (type_path env))
+                      (jump_to v (fun _ -> None) (module_type_path ~report_errors:false env))
+                | Type v -> Type (jump_to v (fun _ -> None) (type_path ~report_errors:false env))
                 | Constructor v ->
                     Constructor
-                      (jump_to v (fun _ -> None) (constructor_path env))
+                      (jump_to v (fun _ -> None) (constructor_path ~report_errors:false env))
                 | i -> i
               in
               (info, pos))

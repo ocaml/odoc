@@ -23,13 +23,7 @@ occurrences information.
   $ odoc link -I . main.odoc
   $ odoc link -I . main__A.odoc
   $ odoc link -I . main__B.odoc
-  File "main__B.odoc":
-  Warning: Failed to lookup value identifier((root Main__B).Z, false).y Parent_module: Lookup failure (module): (root Main__B).Z
-  File "main__B.odoc":
-  Warning: Failed to lookup value identifier((root Main__B).Y, false).x Parent_module: Lookup failure (module): (root Main__B).Y
   $ odoc link -I . main__C.odoc
-  File "main__C.odoc":
-  Warning: Failed to lookup value identifier((root Main__C).Y, false).x Parent_module: Lookup failure (module): (root Main__C).Y
   $ odoc link -I . main__.odoc
 
 The count occurrences command outputs a marshalled hashtable, whose keys are
