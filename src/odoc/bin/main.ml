@@ -1112,27 +1112,74 @@ module Targets = struct
 end
 
 module Occurrences = struct
-  let index directories dst warnings_options =
-    let dst = Fpath.v dst in
-    Occurrences.count ~dst ~warnings_options directories
+  module Count = struct
+    let index directories dst warnings_options =
+      let dst = Fpath.v dst in
+      Occurrences.count ~dst ~warnings_options directories
 
-  let cmd =
-    let dst =
-      let doc = "Output file path." in
-      Arg.(
-        required & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
-    in
-    Term.(
-      const handle_error
-      $ (const index $ odoc_file_directories $ dst $ warnings_options))
+    let cmd =
+      let dst =
+        let doc = "Output file path." in
+        Arg.(
+          required
+          & opt (some string) None
+          & info ~docs ~docv:"PATH" ~doc [ "o" ])
+      in
+      Term.(
+        const handle_error
+        $ (const index $ odoc_file_directories $ dst $ warnings_options))
 
-  let info ~docs =
-    let doc =
-      "Generate a hashtable mapping identifiers to number of occurrences, as \
-       computed from the implementations of .odocl files found in the given \
-       directories."
-    in
-    Term.info "count-occurrences" ~docs ~doc
+    let info ~docs =
+      let doc =
+        "Generate a hashtable mapping identifiers to number of occurrences, as \
+         computed from the implementations of .odocl files found in the given \
+         directories."
+      in
+      Term.info "count-occurrences" ~docs ~doc
+  end
+  module Aggregate = struct
+    let index dst files file_list warnings_options =
+      match (files, file_list) with
+      | [], [] ->
+          Error
+            (`Msg
+              "At least one of --file-list or a path to a file must be passed \
+               to odoc aggregate-occurrences")
+      | _ ->
+          let dst = Fpath.v dst in
+          Occurrences.aggregate ~dst ~warnings_options files file_list
+
+    let cmd =
+      let dst =
+        let doc = "Output file path." in
+        Arg.(
+          required
+          & opt (some string) None
+          & info ~docs ~docv:"PATH" ~doc [ "o" ])
+      in
+      let inputs_in_file =
+        let doc =
+          "Input text file containing a line-separated list of paths to files \
+           created with count-occurrences."
+        in
+        Arg.(
+          value & opt_all convert_fpath []
+          & info ~doc ~docv:"FILE" [ "file-list" ])
+      in
+      let inputs =
+        let doc = "file created with count-occurrences" in
+        Arg.(value & pos_all convert_fpath [] & info ~doc ~docv:"FILE" [])
+      in
+      Term.(
+        const handle_error
+        $ (const index $ dst $ inputs $ inputs_in_file $ warnings_options))
+
+    let info ~docs =
+      let doc =
+        "Aggregate hashtables created with odoc count-occurrences."
+      in
+      Term.info "aggregate-occurrences" ~docs ~doc
+  end
 end
 
 module Odoc_error = struct
@@ -1175,7 +1222,8 @@ let () =
   Printexc.record_backtrace true;
   let subcommands =
     [
-      Occurrences.(cmd, info ~docs:section_pipeline);
+      Occurrences.Count.(cmd, info ~docs:section_pipeline);
+      Occurrences.Aggregate.(cmd, info ~docs:section_pipeline);
       Compile.(cmd, info ~docs:section_pipeline);
       Odoc_link.(cmd, info ~docs:section_pipeline);
       Odoc_html.generate ~docs:section_pipeline;

@@ -142,7 +142,10 @@ let count ~dst ~warnings_options:_ directories =
           | Type { documentation = Some (`Resolved p as p'); _ }, _ ->
               incr htbl p Odoc_model.Paths.Path.((p' : Type.t :> t))
           | _ -> ())
-        (match unit.source_info with None -> [] | Some i -> i.infos)
+        (match unit.source_info with
+        | None -> []
+        | Some i ->
+            i.infos)
     in
     ()
   in
@@ -150,4 +153,54 @@ let count ~dst ~warnings_options:_ directories =
   Fs.Directory.mkdir_p (Fs.File.dirname dst);
   let oc = open_out_bin (Fs.File.to_string dst) in
   Marshal.to_channel oc htbl [];
+  Ok ()
+
+open Astring
+open Or_error
+
+let parse_input_file input =
+  let is_sep = function '\n' | '\r' -> true | _ -> false in
+  Fs.File.read input >>= fun content ->
+  let files =
+    String.fields ~empty:false ~is_sep content |> List.rev_map Fs.File.of_string
+  in
+  Ok files
+
+let parse_input_files input =
+  List.fold_left
+    (fun acc file ->
+      acc >>= fun acc ->
+      parse_input_file file >>= fun files -> Ok (files :: acc))
+    (Ok []) input
+  >>= fun files -> Ok (List.concat files)
+
+let aggregate files file_list ~warnings_options:_ ~dst =
+  parse_input_files file_list >>= fun new_files ->
+  let files = files @ new_files in
+  let from_file file : Occtbl.t =
+    let ic = open_in_bin (Fs.File.to_string file) in
+    Marshal.from_channel ic
+  in
+  let rec loop n f =
+    if n > 0 then (
+      f ();
+      loop (n - 1) f)
+    else ()
+  in
+  let occtbl =
+    match files with
+    | [] -> H.create 0
+    | file1 :: files ->
+        let acc = from_file file1 in
+        List.iter
+          (fun file ->
+            Occtbl.iter
+              (fun id { direct; _ } ->
+                loop direct (fun () -> Occtbl.add acc id))
+              (from_file file))
+          files;
+        acc
+  in
+  let oc = open_out_bin (Fs.File.to_string dst) in
+  Marshal.to_channel oc occtbl [];
   Ok ()
