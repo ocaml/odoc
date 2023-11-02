@@ -185,20 +185,20 @@ let constructor_path :
   (* else *)
   if not (should_resolve_constructor p) then p
   else
-  let cp = Component.Of_Lang.(constructor_path (empty ()) p) in
-  match cp with
-  | `Resolved p ->
-      let result = Tools.reresolve_constructor env p in
-      `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
-  | _ -> (
-      match Tools.resolve_constructor_path env cp with
-      | Ok p' ->
-          let result = Tools.reresolve_constructor env p' in
-          `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
-      | Error e ->
-          if report_errors then
-            Errors.report ~what:(`Constructor_path cp) ~tools_error:e `Lookup;
-          p)
+    let cp = Component.Of_Lang.(constructor_path (empty ()) p) in
+    match cp with
+    | `Resolved p ->
+        let result = Tools.reresolve_constructor env p in
+        `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
+    | _ -> (
+        match Tools.resolve_constructor_path env cp with
+        | Ok p' ->
+            let result = Tools.reresolve_constructor env p' in
+            `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
+        | Error e ->
+            if report_errors then
+              Errors.report ~what:(`Constructor_path cp) ~tools_error:e `Lookup;
+            p)
 
 let class_type_path :
     ?report_errors:bool ->
@@ -427,6 +427,11 @@ let rec unit env t =
       | Pack _ as p -> p
   in
   let source_info =
+    let env =
+      match t.content with
+      | Module sg -> Env.open_signature sg env |> Env.add_docs sg.doc
+      | Pack _ -> env
+    in
     let open Source_info in
     match t.source_info with
     | Some inf ->
@@ -455,14 +460,25 @@ let rec unit env t =
                          (Shape_tools.lookup_value_path env)
                          (value_path ~report_errors:false env))
                 | Module v ->
-                    Module (jump_to v (fun _ -> None) (module_path ~report_errors:false env))
+                    Module
+                      (jump_to v
+                         (fun _ -> None)
+                         (module_path ~report_errors:false env))
                 | ModuleType v ->
                     ModuleType
-                      (jump_to v (fun _ -> None) (module_type_path ~report_errors:false env))
-                | Type v -> Type (jump_to v (fun _ -> None) (type_path ~report_errors:false env))
+                      (jump_to v
+                         (fun _ -> None)
+                         (module_type_path ~report_errors:false env))
+                | Type v ->
+                    Type
+                      (jump_to v
+                         (fun _ -> None)
+                         (type_path ~report_errors:false env))
                 | Constructor v ->
                     Constructor
-                      (jump_to v (fun _ -> None) (constructor_path ~report_errors:false env))
+                      (jump_to v
+                         (fun _ -> None)
+                         (constructor_path ~report_errors:false env))
                 | i -> i
               in
               (info, pos))

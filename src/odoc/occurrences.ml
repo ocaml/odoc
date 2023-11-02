@@ -77,7 +77,7 @@ end = struct
       | `Value (parent, _) -> do_ parent
       | `ClassType (parent, _) -> do_ parent
       | `Root _ -> incr tbl id
-      | `SourcePage _ | `Page _ | `LeafPage _  | `SourceLocation _
+      | `SourcePage _ | `Page _ | `LeafPage _ | `SourceLocation _
       | `CoreException _ | `Label _ | `SourceLocationMod _ | `Result _
       | `AssetFile _ | `SourceDir _ | `SourceLocationInternal _ ->
           assert false
