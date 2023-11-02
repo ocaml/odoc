@@ -2,7 +2,7 @@
 
 module Analysis = struct
   type annotation =
-    | Definition of Ident.t
+    | LocalDefinition of Ident.t
     | Value of Path.t
     | Module of Path.t
     | ClassType of Path.t
@@ -38,7 +38,7 @@ module Analysis = struct
         in
         let maybe_localvalue id loc =
           match Ident_env.identifier_of_loc env loc with
-          | None -> Some (Definition id, loc)
+          | None -> Some (LocalDefinition id, loc)
           | Some _ -> None
         in
         let () =

@@ -141,10 +141,10 @@ module UidHashtbl = Shape.Uid.Tbl
 
 (* Adds the local definitions found in traverse infos to the [loc_to_id] and
    [ident_to_id] tables. *)
-let populate_local_defs source_id poses loc_to_id ident_to_loc =
+let populate_local_defs source_id poses loc_to_id local_ident_to_loc =
   List.iter
     (function
-      | Typedtree_traverse.Analysis.Definition id, loc ->
+      | Typedtree_traverse.Analysis.LocalDefinition id, loc ->
           let name =
             Odoc_model.Names.LocalName.make_std
               (Printf.sprintf "local_%s_%d" (Ident.name id) (counter ()))
@@ -157,7 +157,7 @@ let populate_local_defs source_id poses loc_to_id ident_to_loc =
               LocHashtbl.add loc_to_id loc identifier
            | None -> ()
           );
-            IdentHashtbl.add ident_to_loc id loc;
+            IdentHashtbl.add local_ident_to_loc id loc;
       | _ -> ())
     poses
 
@@ -281,13 +281,13 @@ let (>>=) a b = Option.map b a
 
 (* Extract [Typedtree_traverse] occurrence information and turn them into proper
    source infos *)
-let process_occurrences env poses loc_to_id ident_to_loc =
+let process_occurrences env poses loc_to_id local_ident_to_loc =
   let open Odoc_model.Lang.Source_info in
   let process p find_in_env =
     match p with
-    | Path.Pident id when IdentHashtbl.mem ident_to_loc id -> (
+    | Path.Pident id when IdentHashtbl.mem local_ident_to_loc id -> (
         match
-          LocHashtbl.find_opt loc_to_id (IdentHashtbl.find ident_to_loc id)
+          LocHashtbl.find_opt loc_to_id (IdentHashtbl.find local_ident_to_loc id)
         with
         | None -> None
         | Some id ->
@@ -321,7 +321,7 @@ let process_occurrences env poses loc_to_id ident_to_loc =
       | Constructor _p, loc ->
           (* process p Ident_env.Path.read_constructor *) None >>= fun l ->
           (Constructor l, pos_of_loc loc)
-      | Definition _, _ -> None)
+      | LocalDefinition _, _ -> None)
     poses
 
 
@@ -348,15 +348,15 @@ let read_cmt_infos source_id_opt id cmt_info ~count_occurrences =
                not modify the anchors for existing anchors. *)
           in
           let loc_to_id = LocHashtbl.create 10
-          and ident_to_loc = IdentHashtbl.create 10
+          and local_ident_to_loc = IdentHashtbl.create 10
           and uid_to_id = UidHashtbl.create 10 in
           let () =
             (* populate [loc_to_id], [ident_to_id] and [uid_to_id] *)
-            populate_local_defs source_id traverse_infos loc_to_id ident_to_loc;
+            populate_local_defs source_id traverse_infos loc_to_id local_ident_to_loc;
             populate_global_defs env source_id loc_to_id uid_to_loc uid_to_id
           in
           let source_infos =
-            process_occurrences env traverse_infos loc_to_id ident_to_loc
+            process_occurrences env traverse_infos loc_to_id local_ident_to_loc
             |> add_definitions loc_to_id
           in
           ( Some (shape, Shape.Uid.Tbl.to_map uid_to_id),
