@@ -56,11 +56,11 @@ let rec shape_of_id env :
 let rec shape_of_module_path env : _ -> Shape.t option =
   let proj parent kind name =
     let item = Shape.Item.make name kind in
-    match shape_of_module_path env (parent :> Odoc_model.Paths.Path.t) with
+    match shape_of_module_path env (parent :> Odoc_model.Paths.Path.Module.t) with
     | Some shape -> Some (Shape.proj shape item)
     | None -> None
   in
-  fun (path : Odoc_model.Paths.Path.t) ->
+  fun (path : Odoc_model.Paths.Path.Module.t) ->
     match path with
     | `Resolved _ -> None
     | `Root name -> (
@@ -72,11 +72,11 @@ let rec shape_of_module_path env : _ -> Shape.t option =
         | _ -> None)
     | `Forward _ -> None
     | `Dot (parent, name) ->
-        proj (parent :> Odoc_model.Paths.Path.t) Kind.Module name
+        proj (parent :> Odoc_model.Paths.Path.Module.t) Kind.Module name
     | `Apply (parent, arg) ->
-        shape_of_module_path env (parent :> Odoc_model.Paths.Path.t)
+        shape_of_module_path env (parent :> Odoc_model.Paths.Path.Module.t)
         >>= fun parent ->
-        shape_of_module_path env (arg :> Odoc_model.Paths.Path.t) >>= fun arg ->
+        shape_of_module_path env (arg :> Odoc_model.Paths.Path.Module.t) >>= fun arg ->
         Some (Shape.app parent ~arg)
     | `Identifier (id, _) ->
         shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
@@ -85,14 +85,14 @@ let shape_of_value_path env :
     Odoc_model.Paths.Path.Value.t -> Shape.t option =
   let proj parent kind name =
     let item = Shape.Item.make name kind in
-    match shape_of_module_path env (parent :> Odoc_model.Paths.Path.t) with
+    match shape_of_module_path env parent with
     | Some shape -> Some (Shape.proj shape item)
     | None -> None
   in
   fun (path : Odoc_model.Paths.Path.Value.t) ->
     match path with
     | `Resolved _ -> None
-    | `Dot (parent, name) -> proj (parent :> Odoc_model.Paths.Path.t) Kind.Value name
+    | `Dot (parent, name) -> proj parent Kind.Value name
     | `Identifier (id, _) -> shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
 
 
@@ -157,6 +157,16 @@ let lookup_value_path :
     Identifier.SourceLocation.t option
  = fun env path ->
   match shape_of_value_path env path with
+  | None -> None
+  | Some query -> lookup_shape env query
+
+
+let lookup_module_path :
+    Env.t ->
+    Path.Module.t ->
+    Identifier.SourceLocation.t option
+ = fun env path ->
+  match shape_of_module_path env path with
   | None -> None
   | Some query -> lookup_shape env query
 

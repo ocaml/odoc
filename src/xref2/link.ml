@@ -462,7 +462,7 @@ let rec unit env t =
                 | Module v ->
                     Module
                       (jump_to v
-                         (fun _ -> None)
+                         (Shape_tools.lookup_module_path env)
                          (module_path ~report_errors:false env))
                 | ModuleType v ->
                     ModuleType
