@@ -307,7 +307,7 @@ Ids generated in the source code:
   id="module-F.argument-1-M.module-A"
   id="module-F.module-B"
   id="module-FM"
-  id="def_3"
+  id="local_A_3"
   id="module-FF"
   id="module-FF2"
   id="module-FF2.argument-1-A.module-E"
