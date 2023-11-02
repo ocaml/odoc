@@ -429,7 +429,7 @@ let rec unit env t =
   let source_info =
     let env =
       match t.content with
-      | Module sg -> Env.open_signature sg env |> Env.add_docs sg.doc
+      | Module sg -> Env.open_signature sg env
       | Pack _ -> env
     in
     let open Source_info in
