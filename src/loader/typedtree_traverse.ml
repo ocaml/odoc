@@ -56,8 +56,12 @@ module Analysis = struct
         ()
     | _ -> ()
 
-  (* Add module_binding equivalent of pat *)
-
+  let module_binding env poses = function
+    | { Typedtree.mb_id = Some id; mb_loc; _ } when not mb_loc.loc_ghost -> (
+        match Ident_env.identifier_of_loc env mb_loc with
+        | None -> poses := (LocalDefinition id, mb_loc) :: !poses
+        | Some _ -> ())
+    | _ -> ()
 
   let module_expr poses mod_expr =
     match mod_expr with
@@ -114,6 +118,10 @@ let of_cmt env structure =
     Analysis.class_type poses cl_type;
     Tast_iterator.default_iterator.class_type iterator cl_type
   in
+  let module_binding iterator mb =
+    Analysis.module_binding env poses mb;
+    Tast_iterator.default_iterator.module_binding iterator mb
+  in
   let iterator =
     {
       Tast_iterator.default_iterator with
@@ -123,6 +131,7 @@ let of_cmt env structure =
       typ;
       module_type;
       class_type;
+      module_binding;
     }
   in
   iterator.structure iterator structure;
