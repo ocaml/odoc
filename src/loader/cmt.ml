@@ -382,16 +382,16 @@ let rec read_module_expr env parent label_parent mexpr =
         Functor (f_parameter, res)
 #else
     | Tmod_functor(id, _, arg, res) ->
-        let new_env = Env.add_parameter parent id (ModuleName.of_ident id) env in
+        let () = Env.add_parameter parent id (ModuleName.of_ident id) env in
         let f_parameter =
           match arg with
           | None -> FunctorParameter.Unit
           | Some arg ->
-              let id = Env.find_parameter_identifier new_env id in
+              let id = Env.find_parameter_identifier env id in
               let arg = Cmti.read_module_type env (id :> Identifier.Signature.t) label_parent arg in
               Named { FunctorParameter. id; expr = arg; }
         in
-        let res = read_module_expr new_env (Identifier.Mk.result parent) label_parent res in
+        let res = read_module_expr env (Identifier.Mk.result parent) label_parent res in
         Functor(f_parameter, res)
 #endif
     | Tmod_apply _ ->
