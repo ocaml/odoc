@@ -256,7 +256,7 @@ module Make (Syntax : SYNTAX) = struct
       let documentation =
         let open Paths.Path.Resolved in
         match documentation with
-        | Some (`Resolved p) when not (is_hidden (p :> t)) -> (
+        | Some (`Resolved p, _) when not (is_hidden (p :> t)) -> (
             let id = identifier (p :> t) in
             match Url.from_identifier ~stop_before:false id with
             | Ok link -> Some link

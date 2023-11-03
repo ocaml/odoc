@@ -89,7 +89,9 @@ and source_info_infos env infos =
   let open Source_info in
   let map_doc f v =
     let documentation =
-      match v.documentation with Some p -> Some (f p) | None -> None
+      match v.documentation with
+      | Some (p, persistent) -> Some (f p, persistent)
+      | None -> None
     in
     { v with documentation }
   in
