@@ -565,18 +565,23 @@ let rec unit env t =
                 | ModuleType v ->
                     ModuleType
                       (jump_to v
-                         (fun _ -> None)
+                         (Shape_tools.lookup_module_type_path env)
                          (module_type_path ~report_errors:false env))
                 | Type v ->
                     Type
                       (jump_to v
-                         (fun _ -> None)
+                         (Shape_tools.lookup_type_path env)
                          (type_path ~report_errors:false env))
                 | Constructor v ->
                     Constructor
                       (jump_to v
                          (fun _ -> None)
                          (constructor_path ~report_errors:false env))
+                | ClassType v ->
+                    ClassType
+                      (jump_to v
+                         (Shape_tools.lookup_class_type_path env)
+                         (class_type_path ~report_errors:false env))
                 | i -> i
               in
               (info, pos))
