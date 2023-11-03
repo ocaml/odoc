@@ -252,7 +252,7 @@ module Make (Syntax : SYNTAX) = struct
     let path id = Url.Path.from_identifier id
     let url id = Url.from_path (path id)
 
-    let to_link {Lang.Source_info.documentation; implementation} =
+    let to_link { Lang.Source_info.documentation; implementation } =
       let documentation =
         let open Paths.Path.Resolved in
         match documentation with
