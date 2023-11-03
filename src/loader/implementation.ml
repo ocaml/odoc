@@ -1,6 +1,12 @@
 #if OCAML_VERSION >= (4, 14, 0)
 
-(* open Odoc_model.Lang.Source_info *)
+let rec is_persistent : Path.t -> bool = function
+  | Path.Pident id -> Ident.persistent id
+  | Path.Pdot(p, _) -> is_persistent p
+  | Path.Papply(p, _) -> is_persistent p
+#if OCAML_VERSION >= (5,1,0)
+  | Path.Pextra_ty -> assert false
+#endif
 
 let pos_of_loc loc = (loc.Location.loc_start.pos_cnum, loc.loc_end.pos_cnum)
 
@@ -303,7 +309,7 @@ let process_occurrences env poses loc_to_id local_ident_to_loc =
     | p -> (
         match find_in_env env p with
         | path ->
-            let documentation = Some path
+            let documentation = Some (path, is_persistent p)
             and implementation = Some (Unresolved path) in
             Some { documentation; implementation }
         | exception _ -> None)

@@ -119,28 +119,31 @@ end = struct
       tbl
 end
 
-let count ~dst ~warnings_options:_ directories =
+let count ~dst ~warnings_options:_ directories include_hidden include_persistent =
   let htbl = H.create 100 in
   let f () (unit : Odoc_model.Lang.Compilation_unit.t) =
-    let incr tbl p p' =
-      let id = Odoc_model.Paths.Path.Resolved.(identifier (p :> t)) in
-      if not Odoc_model.Paths.Path.(is_hidden p') then Occtbl.add tbl id
+    let incr tbl p persistent =
+      let p = (p :> Odoc_model.Paths.Path.Resolved.t) in
+      let id = Odoc_model.Paths.Path.Resolved.identifier p in
+      if not (Odoc_model.Paths.Path.Resolved.is_hidden p) || include_hidden then
+        if not persistent || include_persistent then
+          Occtbl.add tbl id
     in
     let () =
       List.iter
         (function
           | ( Odoc_model.Lang.Source_info.Module
-                { documentation = Some (`Resolved p as p'); _ },
+                { documentation = Some (`Resolved p, persistent); _ },
               _ ) ->
-              incr htbl p Odoc_model.Paths.Path.((p' : Module.t :> t))
-          | Value { documentation = Some (`Resolved p as p'); _ }, _ ->
-              incr htbl p Odoc_model.Paths.Path.((p' : Value.t :> t))
-          | ClassType { documentation = Some (`Resolved p as p'); _ }, _ ->
-              incr htbl p Odoc_model.Paths.Path.((p' : ClassType.t :> t))
-          | ModuleType { documentation = Some (`Resolved p as p'); _ }, _ ->
-              incr htbl p Odoc_model.Paths.Path.((p' : ModuleType.t :> t))
-          | Type { documentation = Some (`Resolved p as p'); _ }, _ ->
-              incr htbl p Odoc_model.Paths.Path.((p' : Type.t :> t))
+              incr htbl p persistent
+          | Value { documentation = Some (`Resolved p, persistent); _ }, _ ->
+              incr htbl p persistent
+          | ClassType { documentation = Some (`Resolved p, persistent); _ }, _ ->
+              incr htbl p persistent
+          | ModuleType { documentation = Some (`Resolved p, persistent); _ }, _ ->
+              incr htbl p persistent
+          | Type { documentation = Some (`Resolved p, persistent); _ }, _ ->
+              incr htbl p persistent
           | _ -> ())
         (match unit.source_info with None -> [] | Some i -> i.infos)
     in

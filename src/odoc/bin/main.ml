@@ -1113,9 +1113,11 @@ end
 
 module Occurrences = struct
   module Count = struct
-    let index directories dst warnings_options =
+    let count directories dst warnings_options include_hidden include_persistent
+        =
       let dst = Fpath.v dst in
-      Occurrences.count ~dst ~warnings_options directories
+      Occurrences.count ~dst ~warnings_options directories include_hidden
+        include_persistent
 
     let cmd =
       let dst =
@@ -1125,9 +1127,21 @@ module Occurrences = struct
           & opt (some string) None
           & info ~docs ~docv:"PATH" ~doc [ "o" ])
       in
+      let include_hidden =
+        let doc = "Include hidden identifiers in the table" in
+        Arg.(value & flag & info ~docs ~doc [ "include-hidden" ])
+      in
+      let include_persistent =
+        let doc =
+          "Include persistent identifiers in the table: occurrences of in ids \
+           intheir own implementation."
+        in
+        Arg.(value & flag & info ~docs ~doc [ "include-persistent" ])
+      in
       Term.(
         const handle_error
-        $ (const index $ odoc_file_directories $ dst $ warnings_options))
+        $ (const count $ odoc_file_directories $ dst $ warnings_options
+         $ include_hidden $ include_persistent))
 
     let info ~docs =
       let doc =
