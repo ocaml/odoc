@@ -176,4 +176,8 @@ type t = unit
 
 let lookup_def _ _id = None
 
+let lookup_value_path _ _id = None
+
+let lookup_module_path _ _id = None
+
 #endif

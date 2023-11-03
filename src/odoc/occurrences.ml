@@ -119,15 +119,15 @@ end = struct
       tbl
 end
 
-let count ~dst ~warnings_options:_ directories include_hidden include_persistent =
+let count ~dst ~warnings_options:_ directories include_hidden include_persistent
+    =
   let htbl = H.create 100 in
   let f () (unit : Odoc_model.Lang.Compilation_unit.t) =
     let incr tbl p persistent =
       let p = (p :> Odoc_model.Paths.Path.Resolved.t) in
       let id = Odoc_model.Paths.Path.Resolved.identifier p in
-      if not (Odoc_model.Paths.Path.Resolved.is_hidden p) || include_hidden then
-        if not persistent || include_persistent then
-          Occtbl.add tbl id
+      if (not (Odoc_model.Paths.Path.Resolved.is_hidden p)) || include_hidden
+      then if (not persistent) || include_persistent then Occtbl.add tbl id
     in
     let () =
       List.iter
@@ -138,9 +138,11 @@ let count ~dst ~warnings_options:_ directories include_hidden include_persistent
               incr htbl p persistent
           | Value { documentation = Some (`Resolved p, persistent); _ }, _ ->
               incr htbl p persistent
-          | ClassType { documentation = Some (`Resolved p, persistent); _ }, _ ->
+          | ClassType { documentation = Some (`Resolved p, persistent); _ }, _
+            ->
               incr htbl p persistent
-          | ModuleType { documentation = Some (`Resolved p, persistent); _ }, _ ->
+          | ModuleType { documentation = Some (`Resolved p, persistent); _ }, _
+            ->
               incr htbl p persistent
           | Type { documentation = Some (`Resolved p, persistent); _ }, _ ->
               incr htbl p persistent
