@@ -119,7 +119,7 @@ end = struct
       tbl
 end
 
-let count ~dst ~warnings_options:_ directories include_hidden include_persistent
+let count ~dst ~warnings_options:_ directories include_hidden include_own
     =
   let htbl = H.create 100 in
   let f () (unit : Odoc_model.Lang.Compilation_unit.t) =
@@ -127,7 +127,7 @@ let count ~dst ~warnings_options:_ directories include_hidden include_persistent
       let p = (p :> Odoc_model.Paths.Path.Resolved.t) in
       let id = Odoc_model.Paths.Path.Resolved.identifier p in
       if (not (Odoc_model.Paths.Path.Resolved.is_hidden p)) || include_hidden
-      then if (not persistent) || include_persistent then Occtbl.add tbl id
+      then if persistent || include_own then Occtbl.add tbl id
     in
     let () =
       List.iter

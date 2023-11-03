@@ -57,20 +57,25 @@ Uses of B.Z are not counted since they go to a hidden module.
 Uses of values Y.x and Z.y (in b.ml) are not counted since they come from a "local" module.
 
   $ occurrences_print main.occ | sort
+  Main was used directly 0 times and indirectly 2 times
+  Main.A was used directly 1 times and indirectly 0 times
+  Main.B was used directly 1 times and indirectly 0 times
 
   $ occurrences_print main__.occ | sort
 
   $ occurrences_print main__A.occ | sort
-  string was used directly 1 times and indirectly 0 times
 
   $ occurrences_print main__B.occ | sort
-  Main was used directly 0 times and indirectly 1 times
-  Main.A was used directly 0 times and indirectly 1 times
+  Main was used directly 0 times and indirectly 7 times
+  Main.A was used directly 2 times and indirectly 5 times
+  Main.A.(||>) was used directly 1 times and indirectly 0 times
+  Main.A.M was used directly 2 times and indirectly 0 times
+  Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 1 times and indirectly 0 times
 
   $ occurrences_print main__C.occ | sort
-  Main was used directly 0 times and indirectly 1 times
-  Main.A was used directly 0 times and indirectly 1 times
+  Main was used directly 0 times and indirectly 2 times
+  Main.A was used directly 1 times and indirectly 1 times
   Main.A.x was used directly 1 times and indirectly 0 times
 
 Now we can merge both files
@@ -83,23 +88,40 @@ Now we can merge both files
   $ odoc aggregate-occurrences main.occ main__.occ --file-list files.map -o aggregated.txt
 
   $ occurrences_print aggregated.txt | sort
-  Main was used directly 0 times and indirectly 2 times
-  Main.A was used directly 0 times and indirectly 2 times
+  Main was used directly 0 times and indirectly 11 times
+  Main.A was used directly 4 times and indirectly 6 times
+  Main.A.(||>) was used directly 1 times and indirectly 0 times
+  Main.A.M was used directly 2 times and indirectly 0 times
+  Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 2 times and indirectly 0 times
-  string was used directly 1 times and indirectly 0 times
+  Main.B was used directly 1 times and indirectly 0 times
 
 Compare with the one created directly with all occurrences:
 
   $ odoc count-occurrences -I . -o occurrences.txt
   $ occurrences_print occurrences.txt | sort
-  Main was used directly 0 times and indirectly 2 times
-  Main.A was used directly 0 times and indirectly 2 times
+  Main was used directly 0 times and indirectly 11 times
+  Main.A was used directly 4 times and indirectly 6 times
+  Main.A.(||>) was used directly 1 times and indirectly 0 times
+  Main.A.M was used directly 2 times and indirectly 0 times
+  Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 2 times and indirectly 0 times
-  string was used directly 1 times and indirectly 0 times
+  Main.B was used directly 1 times and indirectly 0 times
 
 We can also include persistent ids, and hidden ids:
 
-  $ odoc count-occurrences -I . -o occurrences.txt --include-persistent
+  $ odoc count-occurrences -I main__A -o occurrences.txt --include-own
+  $ occurrences_print occurrences.txt | sort
+  string was used directly 1 times and indirectly 0 times
+
+  $ odoc count-occurrences -I main__A -o occurrences.txt --include-hidden
+  $ occurrences_print occurrences.txt | sort
+
+  $ odoc count-occurrences -I main__A -o occurrences.txt --include-own --include-hidden
+  $ occurrences_print occurrences.txt | sort
+  string was used directly 1 times and indirectly 0 times
+
+  $ odoc count-occurrences -I . -o occurrences.txt --include-own
   $ occurrences_print occurrences.txt | sort
   Main was used directly 0 times and indirectly 13 times
   Main.A was used directly 4 times and indirectly 8 times
@@ -112,15 +134,21 @@ We can also include persistent ids, and hidden ids:
 
   $ odoc count-occurrences -I . -o occurrences.txt --include-hidden
   $ occurrences_print occurrences.txt | sort
-  Main was used directly 0 times and indirectly 2 times
-  Main.A was used directly 0 times and indirectly 2 times
+  Main was used directly 0 times and indirectly 11 times
+  Main.A was used directly 4 times and indirectly 6 times
+  Main.A.(||>) was used directly 1 times and indirectly 0 times
+  Main.A.M was used directly 2 times and indirectly 0 times
+  Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 2 times and indirectly 0 times
-  Main__B was used directly 0 times and indirectly 1 times
-  Main__B.Z was used directly 0 times and indirectly 1 times
-  Main__B.Z.y was used directly 1 times and indirectly 0 times
-  string was used directly 1 times and indirectly 0 times
+  Main.B was used directly 1 times and indirectly 0 times
+  Main__ was used directly 0 times and indirectly 2 times
+  Main__.C was used directly 1 times and indirectly 1 times
+  Main__.C.y was used directly 1 times and indirectly 0 times
+  Main__A was used directly 1 times and indirectly 0 times
+  Main__B was used directly 1 times and indirectly 0 times
+  Main__C was used directly 1 times and indirectly 0 times
 
-  $ odoc count-occurrences -I . -o occurrences.txt --include-persistent --include-hidden
+  $ odoc count-occurrences -I . -o occurrences.txt --include-own --include-hidden
   $ occurrences_print occurrences.txt | sort
   Main was used directly 0 times and indirectly 13 times
   Main.A was used directly 4 times and indirectly 8 times
