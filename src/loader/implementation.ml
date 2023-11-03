@@ -144,7 +144,8 @@ module IdentHashtbl = Hashtbl.Make (struct
 end)
 
 module AnnotHashtbl = Hashtbl.Make (struct
-  type t = Odoc_model.Lang.Source_info.annotation Odoc_model.Lang.Source_info.with_pos
+  type t =
+    Odoc_model.Lang.Source_info.annotation Odoc_model.Lang.Source_info.with_pos
   let equal l1 l2 = l1 = l2
   let hash = Hashtbl.hash
 end)
@@ -162,14 +163,14 @@ let populate_local_defs source_id poses loc_to_id local_ident_to_loc =
               (Printf.sprintf "local_%s_%d" (Ident.name id) (counter ()))
           in
           (match source_id with
-             Some source_id ->
+          | Some source_id ->
               let identifier =
-                Odoc_model.Paths.Identifier.Mk.source_location_int (source_id, name)
+                Odoc_model.Paths.Identifier.Mk.source_location_int
+                  (source_id, name)
               in
               LocHashtbl.add loc_to_id loc identifier
-           | None -> ()
-          );
-            IdentHashtbl.add local_ident_to_loc id loc;
+          | None -> ());
+          IdentHashtbl.add local_ident_to_loc id loc
       | _ -> ())
     poses
 
@@ -255,39 +256,44 @@ let anchor_of_identifier id =
 (* Adds the global definitions, found in the [uid_to_loc], to the [loc_to_id]
    and [uid_to_id] tables. *)
 let populate_global_defs env source_id loc_to_id uid_to_loc uid_to_id =
-  match source_id with None -> () | Some source_id ->
-  let mk_src_id id =
-    let name = Odoc_model.Names.DefName.make_std (anchor_of_identifier id) in
-    (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
-      :> Odoc_model.Paths.Identifier.SourceLocation.t)
-  in
-  let () =
-    Ident_env.iter_located_identifier env @@ fun loc id ->
-    LocHashtbl.add loc_to_id loc (mk_src_id id)
-  in
-  let mk_src_id () =
-    let name =
-      Odoc_model.Names.DefName.make_std (Printf.sprintf "def_%d" (counter ()))
-    in
-    (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
-      :> Odoc_model.Paths.Identifier.SourceLocation.t)
-  in
-  Shape.Uid.Tbl.iter
-    (fun uid loc ->
-      if loc.Location.loc_ghost then ()
-      else
-        match LocHashtbl.find_opt loc_to_id loc with
-        | Some id -> UidHashtbl.add uid_to_id uid id
-        | None -> (
-            (* In case there is no entry for the location of the uid, we add one. *)
-            match uid with
-            | Item _ ->
-                let id = mk_src_id () in
-                LocHashtbl.add loc_to_id loc id;
-                UidHashtbl.add uid_to_id uid id
-            | Compilation_unit _ -> ()
-            | _ -> ()))
-    uid_to_loc
+  match source_id with
+  | None -> ()
+  | Some source_id ->
+      let mk_src_id id =
+        let name =
+          Odoc_model.Names.DefName.make_std (anchor_of_identifier id)
+        in
+        (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
+          :> Odoc_model.Paths.Identifier.SourceLocation.t)
+      in
+      let () =
+        Ident_env.iter_located_identifier env @@ fun loc id ->
+        LocHashtbl.add loc_to_id loc (mk_src_id id)
+      in
+      let mk_src_id () =
+        let name =
+          Odoc_model.Names.DefName.make_std
+            (Printf.sprintf "def_%d" (counter ()))
+        in
+        (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
+          :> Odoc_model.Paths.Identifier.SourceLocation.t)
+      in
+      Shape.Uid.Tbl.iter
+        (fun uid loc ->
+          if loc.Location.loc_ghost then ()
+          else
+            match LocHashtbl.find_opt loc_to_id loc with
+            | Some id -> UidHashtbl.add uid_to_id uid id
+            | None -> (
+                (* In case there is no entry for the location of the uid, we add one. *)
+                match uid with
+                | Item _ ->
+                    let id = mk_src_id () in
+                    LocHashtbl.add loc_to_id loc id;
+                    UidHashtbl.add uid_to_id uid id
+                | Compilation_unit _ -> ()
+                | _ -> ()))
+        uid_to_loc
 
 (* Extract [Typedtree_traverse] occurrence information and turn them into proper
    source infos *)
@@ -317,24 +323,30 @@ let process_occurrences env poses loc_to_id local_ident_to_loc =
   List.iter
     (function
       | Typedtree_traverse.Analysis.Value p, loc ->
-          process p Ident_env.Path.read_value |> Option.iter @@ fun l ->
-          AnnotHashtbl.replace occ_tbl (Value l, pos_of_loc loc) ()
+          process p Ident_env.Path.read_value
+          |> Option.iter @@ fun l ->
+             AnnotHashtbl.replace occ_tbl (Value l, pos_of_loc loc) ()
       | Module p, loc ->
-          process p Ident_env.Path.read_module |> Option.iter @@ fun l ->
-          AnnotHashtbl.replace occ_tbl (Module l, pos_of_loc loc) ()
+          process p Ident_env.Path.read_module
+          |> Option.iter @@ fun l ->
+             AnnotHashtbl.replace occ_tbl (Module l, pos_of_loc loc) ()
       | ClassType p, loc ->
-          process p Ident_env.Path.read_class_type |> Option.iter @@ fun l ->
-          AnnotHashtbl.replace occ_tbl (ClassType l, pos_of_loc loc) ()
+          process p Ident_env.Path.read_class_type
+          |> Option.iter @@ fun l ->
+             AnnotHashtbl.replace occ_tbl (ClassType l, pos_of_loc loc) ()
       | ModuleType p, loc ->
-          process p Ident_env.Path.read_module_type |> Option.iter @@ fun l ->
-          AnnotHashtbl.replace occ_tbl (ModuleType l, pos_of_loc loc) ()
+          process p Ident_env.Path.read_module_type
+          |> Option.iter @@ fun l ->
+             AnnotHashtbl.replace occ_tbl (ModuleType l, pos_of_loc loc) ()
       | Type p, loc ->
-          process p Ident_env.Path.read_type |> Option.iter @@ fun l ->
-          AnnotHashtbl.replace occ_tbl (Type l, pos_of_loc loc) ()
+          process p Ident_env.Path.read_type
+          |> Option.iter @@ fun l ->
+             AnnotHashtbl.replace occ_tbl (Type l, pos_of_loc loc) ()
       | Constructor _p, loc ->
           (* process p Ident_env.Path.read_constructor *)
-          None |> Option.iter @@ fun l ->
-          AnnotHashtbl.replace occ_tbl (Constructor l, pos_of_loc loc) ()
+          None
+          |> Option.iter @@ fun l ->
+             AnnotHashtbl.replace occ_tbl (Constructor l, pos_of_loc loc) ()
       | LocalDefinition _, _ -> ())
     poses;
   AnnotHashtbl.fold (fun k () acc -> k :: acc) occ_tbl []
@@ -366,7 +378,8 @@ let read_cmt_infos source_id_opt id cmt_info ~count_occurrences =
           and uid_to_id = UidHashtbl.create 10 in
           let () =
             (* populate [loc_to_id], [ident_to_id] and [uid_to_id] *)
-            populate_local_defs source_id traverse_infos loc_to_id local_ident_to_loc;
+            populate_local_defs source_id traverse_infos loc_to_id
+              local_ident_to_loc;
             populate_global_defs env source_id loc_to_id uid_to_loc uid_to_id
           in
           let source_infos =
