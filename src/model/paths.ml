@@ -19,6 +19,15 @@ module Ocaml_env = Env
 
 open Names
 
+let contains_double_underscore s =
+  let len = String.length s in
+  let rec aux i =
+    if i > len - 2 then false
+    else if s.[i] = '_' && s.[i + 1] = '_' then true
+    else aux (i + 1)
+  in
+  aux 0
+
 module Identifier = struct
   type 'a id = 'a Paths_types.id = { iv : 'a; ihash : int; ikey : string }
 
@@ -66,7 +75,9 @@ module Identifier = struct
   let rec is_internal : t -> bool =
    fun x ->
     match x.iv with
-    | `Root (_, name) -> ModuleName.is_internal name
+    | `Root (_, name) ->
+        ModuleName.is_internal name
+        || contains_double_underscore (ModuleName.to_string name)
     | `Page (_, _) -> false
     | `LeafPage (_, _) -> false
     | `Module (_, name) -> ModuleName.is_internal name
@@ -84,6 +95,36 @@ module Identifier = struct
     | `Value (_, name) -> ValueName.is_internal name
     | `Class (_, name) -> ClassName.is_internal name
     | `ClassType (_, name) -> ClassTypeName.is_internal name
+    | `Method (parent, _) -> is_internal (parent :> t)
+    | `InstanceVariable (parent, _) -> is_internal (parent :> t)
+    | `Label (parent, _) -> is_internal (parent :> t)
+    | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
+    | `SourceLocationInternal _ | `AssetFile _ ->
+        false
+
+  let rec is_internal_rec : t -> bool =
+   fun x ->
+    is_internal x
+    ||
+    match x.iv with
+    | `Root (_, name) -> ModuleName.is_internal name
+    | `Page (_, _) -> false
+    | `LeafPage (_, _) -> false
+    | `Module (parent, _) -> is_internal_rec (parent :> t)
+    | `Parameter (parent, _) -> is_internal_rec (parent :> t)
+    | `Result x -> is_internal_rec (x :> t)
+    | `ModuleType (parent, _) -> is_internal_rec (parent :> t)
+    | `Type (parent, _) -> is_internal_rec (parent :> t)
+    | `CoreType name -> TypeName.is_internal name
+    | `Constructor (parent, _) -> is_internal (parent :> t)
+    | `Field (parent, _) -> is_internal (parent :> t)
+    | `Extension (parent, _) -> is_internal (parent :> t)
+    | `ExtensionDecl (parent, _, _) -> is_internal (parent :> t)
+    | `Exception (parent, _) -> is_internal (parent :> t)
+    | `CoreException _ -> false
+    | `Value (parent, _) -> is_internal_rec (parent :> t)
+    | `Class (parent, _) -> is_internal_rec (parent :> t)
+    | `ClassType (parent, _) -> is_internal_rec (parent :> t)
     | `Method (parent, _) -> is_internal (parent :> t)
     | `InstanceVariable (parent, _) -> is_internal (parent :> t)
     | `Label (parent, _) -> is_internal (parent :> t)
@@ -671,7 +712,7 @@ module Path = struct
       | `Identifier { iv = `Module (_, m); _ }
         when Names.ModuleName.is_internal m ->
           true
-      | `Identifier _ -> false
+      | `Identifier i -> Identifier.is_internal_rec i
       | `Canonical (_, `Resolved _) -> false
       | `Canonical (x, _) ->
           (not weak_canonical_test) && inner (x : module_ :> any)
@@ -707,15 +748,6 @@ module Path = struct
       | `OpaqueModuleType mt -> inner (mt :> any)
     in
     inner x
-
-  and contains_double_underscore s =
-    let len = String.length s in
-    let rec aux i =
-      if i > len - 2 then false
-      else if s.[i] = '_' && s.[i + 1] = '_' then true
-      else aux (i + 1)
-    in
-    aux 0
 
   and is_path_hidden : Paths_types.Path.any -> bool =
     let open Paths_types.Path in
