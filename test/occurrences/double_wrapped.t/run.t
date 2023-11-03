@@ -119,6 +119,8 @@ We can also include persistent ids, and hidden ids:
 
   $ odoc count-occurrences -I main__A -o occurrences.txt --include-own --include-hidden
   $ occurrences_print occurrences.txt | sort
+  Main__A was used directly 0 times and indirectly 2 times
+  Main__A.x was used directly 2 times and indirectly 0 times
   string was used directly 1 times and indirectly 0 times
 
   $ odoc count-occurrences -I . -o occurrences.txt --include-own
@@ -160,9 +162,32 @@ We can also include persistent ids, and hidden ids:
   Main__ was used directly 0 times and indirectly 2 times
   Main__.C was used directly 1 times and indirectly 1 times
   Main__.C.y was used directly 1 times and indirectly 0 times
-  Main__A was used directly 1 times and indirectly 0 times
+  Main__A was used directly 1 times and indirectly 2 times
+  Main__A.x was used directly 2 times and indirectly 0 times
   Main__B was used directly 1 times and indirectly 1 times
   Main__B.Z was used directly 0 times and indirectly 1 times
   Main__B.Z.y was used directly 1 times and indirectly 0 times
   Main__C was used directly 1 times and indirectly 0 times
   string was used directly 1 times and indirectly 0 times
+
+
+REMARKS!
+
+  $ odoc count-occurrences -I main__B -o b_only_persistent.occ
+  $ odoc count-occurrences -I main__B -o b_with_own.occ --include-own
+  $ occurrences_print b_only_persistent.occ | sort > only_persistent
+  $ occurrences_print b_with_own.occ | sort > with_own
+  $ diff only_persistent with_own | grep Main.A.x
+  < Main.A.x was used directly 1 times and indirectly 0 times
+  > Main.A.x was used directly 2 times and indirectly 0 times
+
+This is because the persistent Y.x is resolved into Main.A.x. So maybe relying
+on Ident.persistent is not the good way of knowing if it is persistent or not?
+
+  $ odoc count-occurrences -I main__A -o a_with_own_and_hidden.occ --include-own --include-hidden
+  $ occurrences_print a_with_own_and_hidden.occ | sort
+  Main__A was used directly 0 times and indirectly 2 times
+  Main__A.x was used directly 2 times and indirectly 0 times
+  string was used directly 1 times and indirectly 0 times
+
+That's a problem: it should be Main.A and Main.A.x
