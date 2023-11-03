@@ -531,16 +531,16 @@ and read_module_type env parent label_parent mty =
         Functor (f_parameter, res)
 #else
     | Tmty_functor(id, _, arg, res) ->
-        let new_env = Env.add_parameter parent id (ModuleName.of_ident id) env in
+        let () = Env.add_parameter parent id (ModuleName.of_ident id) env in
         let f_parameter =
           match arg with
           | None -> Odoc_model.Lang.FunctorParameter.Unit
           | Some arg ->
-              let id = Ident_env.find_parameter_identifier new_env id in
+              let id = Ident_env.find_parameter_identifier env id in
               let arg = read_module_type env (id :> Identifier.Signature.t) label_parent arg in
               Named { FunctorParameter. id; expr = arg }
         in
-        let res = read_module_type new_env (Identifier.Mk.result parent) label_parent res in
+        let res = read_module_type () (Identifier.Mk.result parent) label_parent res in
         Functor( f_parameter, res)
 #endif
     | Tmty_with(body, subs) -> (
