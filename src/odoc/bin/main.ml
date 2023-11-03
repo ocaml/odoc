@@ -1175,9 +1175,7 @@ module Occurrences = struct
         $ (const index $ dst $ inputs $ inputs_in_file $ warnings_options))
 
     let info ~docs =
-      let doc =
-        "Aggregate hashtables created with odoc count-occurrences."
-      in
+      let doc = "Aggregate hashtables created with odoc count-occurrences." in
       Term.info "aggregate-occurrences" ~docs ~doc
   end
 end

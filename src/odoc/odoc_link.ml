@@ -8,13 +8,7 @@ let link_unit ~resolver ~filename m =
   let open Odoc_model in
   let open Lang.Compilation_unit in
   let m =
-    if Root.Odoc_file.hidden m.root.file then
-      {
-        m with
-        content = Module { items = []; compiled = false; doc = [] };
-        expansion = None;
-      }
-    else m
+    if Root.Odoc_file.hidden m.root.file then { m with expansion = None } else m
   in
   let env = Resolver.build_link_env_for_unit resolver m in
   Odoc_xref2.Link.link ~filename env m

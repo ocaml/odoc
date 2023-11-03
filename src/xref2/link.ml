@@ -415,6 +415,106 @@ and open_ env parent = function
   | { Odoc_model__Lang.Open.doc; _ } as open_ ->
       { open_ with doc = comment_docs env parent doc }
 
+module Build_env = struct
+  let rec unit env t =
+    let open Compilation_unit in
+    match t.content with
+    | Module sg ->
+        let env = signature env sg in
+        env
+    | Pack _ -> env
+
+  and signature env s =
+    let env = Env.open_signature s env in
+    signature_items env s.items
+
+  and simple_expansion : Env.t -> ModuleType.simple_expansion -> Env.t =
+   fun env m ->
+    match m with
+    | Signature sg -> signature env sg
+    | Functor (arg, sg) ->
+        let env = Env.add_functor_parameter arg env in
+        let env = functor_argument env arg in
+        simple_expansion env sg
+
+  and functor_argument env a =
+    match a with
+    | FunctorParameter.Unit -> env
+    | Named arg -> functor_parameter_parameter env arg
+
+  and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> Env.t
+      =
+   fun env a -> module_type_expr env a.expr
+
+  and module_type_expr : Env.t -> ModuleType.expr -> Env.t =
+   fun env expr ->
+    let open ModuleType in
+    match expr with
+    | Signature s -> signature env s
+    | Path { p_path = _; p_expansion = Some p_expansion } ->
+        simple_expansion env p_expansion
+    | Path { p_path = _; p_expansion = None } -> env
+    | With _ -> env
+    | Functor (arg, res) ->
+        let env = functor_argument env arg in
+        let env = Env.add_functor_parameter arg env in
+        let env = module_type_expr env res in
+        env
+    | TypeOf { t_expansion = None; _ } -> env
+    | TypeOf { t_expansion = Some exp; _ } -> simple_expansion env exp
+
+  and signature_items : Env.t -> Signature.item list -> Env.t =
+   fun env s ->
+    let open Signature in
+    List.fold_left
+      (fun env item ->
+        match item with
+        | Module (_, m) -> module_ env m
+        | ModuleSubstitution m -> Env.open_module_substitution m env
+        | Type _ -> env
+        | TypeSubstitution t -> Env.open_type_substitution t env
+        | ModuleType mt -> module_type env mt
+        | ModuleTypeSubstitution mts ->
+            let env = Env.open_module_type_substitution mts env in
+            module_type_substitution env mts
+        | Value _ -> env
+        | Comment _ -> env
+        | TypExt _ -> env
+        | Exception _ -> env
+        | Class _ -> env (* TODO *)
+        | ClassType _ -> env
+        | Include i -> include_ env i
+        | Open _ -> env)
+      env s
+
+  and module_type_substitution : Env.t -> ModuleTypeSubstitution.t -> Env.t =
+   fun env m -> module_type_expr env m.manifest
+
+  and include_ : Env.t -> Include.t -> Env.t =
+   fun env i ->
+    let open Include in
+    signature_items env i.expansion.content.items
+
+  and module_type : Env.t -> ModuleType.t -> Env.t =
+   fun env m ->
+    match m.expr with None -> env | Some expr -> module_type_expr env expr
+
+  and module_ : Env.t -> Module.t -> Env.t =
+   fun env m ->
+    let open Module in
+    let env = module_decl env m.type_ in
+    match m.type_ with
+    | Alias (`Resolved _, Some exp) -> simple_expansion env exp
+    | Alias _ | ModuleType _ -> env
+
+  and module_decl : Env.t -> Module.decl -> Env.t =
+   fun env decl ->
+    let open Module in
+    match decl with
+    | ModuleType expr -> module_type_expr env expr
+    | Alias (_, None) -> env
+    | Alias (_, Some e) -> simple_expansion env e
+end
 let rec unit env t =
   let open Compilation_unit in
   let content =
@@ -427,11 +527,7 @@ let rec unit env t =
       | Pack _ as p -> p
   in
   let source_info =
-    let env =
-      match t.content with
-      | Module sg -> Env.open_signature sg env
-      | Pack _ -> env
-    in
+    let env = Build_env.unit env t in
     let open Source_info in
     match t.source_info with
     | Some inf ->

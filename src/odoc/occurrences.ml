@@ -142,10 +142,7 @@ let count ~dst ~warnings_options:_ directories =
           | Type { documentation = Some (`Resolved p as p'); _ }, _ ->
               incr htbl p Odoc_model.Paths.Path.((p' : Type.t :> t))
           | _ -> ())
-        (match unit.source_info with
-        | None -> []
-        | Some i ->
-            i.infos)
+        (match unit.source_info with None -> [] | Some i -> i.infos)
     in
     ()
   in
