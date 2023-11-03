@@ -19,7 +19,23 @@ val lookup_value_path :
   Path.Value.t ->
   Identifier.SourceLocation.t option
 
+val lookup_type_path :
+  Env.t ->
+  Path.Type.t ->
+  Identifier.SourceLocation.t option
+
 val lookup_module_path :
   Env.t ->
   Path.Module.t ->
   Identifier.SourceLocation.t option
+
+val lookup_module_type_path :
+  Env.t ->
+  Path.ModuleType.t ->
+  Identifier.SourceLocation.t option
+
+val lookup_class_type_path :
+  Env.t ->
+  Path.ClassType.t ->
+  Identifier.SourceLocation.t option
+

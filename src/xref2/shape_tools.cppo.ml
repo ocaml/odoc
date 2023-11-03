@@ -81,20 +81,19 @@ let rec shape_of_module_path env : _ -> Shape.t option =
     | `Identifier (id, _) ->
         shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
 
-let shape_of_value_path env :
-    Odoc_model.Paths.Path.Value.t -> Shape.t option =
+let shape_of_kind_path env kind :
+    _ -> Shape.t option =
   let proj parent kind name =
     let item = Shape.Item.make name kind in
     match shape_of_module_path env parent with
     | Some shape -> Some (Shape.proj shape item)
     | None -> None
   in
-  fun (path : Odoc_model.Paths.Path.Value.t) ->
+  fun path ->
     match path with
     | `Resolved _ -> None
-    | `Dot (parent, name) -> proj parent Kind.Value name
+    | `Dot (parent, name) -> proj parent kind name
     | `Identifier (id, _) -> shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
-
 
 module MkId = Identifier.Mk
 
@@ -151,24 +150,23 @@ let lookup_def :
   | None -> None
   | Some query -> lookup_shape env query
 
-let lookup_value_path :
-    Env.t ->
-    Path.Value.t ->
-    Identifier.SourceLocation.t option
- = fun env path ->
-  match shape_of_value_path env path with
-  | None -> None
-  | Some query -> lookup_shape env query
-
-
-let lookup_module_path :
-    Env.t ->
-    Path.Module.t ->
-    Identifier.SourceLocation.t option
- = fun env path ->
+let lookup_module_path = fun env path ->
   match shape_of_module_path env path with
   | None -> None
   | Some query -> lookup_shape env query
+
+let lookup_kind_path = fun kind env path ->
+  match shape_of_kind_path env kind path with
+  | None -> None
+  | Some query -> lookup_shape env query
+
+let lookup_value_path = lookup_kind_path Kind.Value
+
+let lookup_type_path = lookup_kind_path Kind.Type
+
+let lookup_module_type_path = lookup_kind_path Kind.Module_type
+
+let lookup_class_type_path = lookup_kind_path Kind.Class_type
 
 #else
 
@@ -179,5 +177,11 @@ let lookup_def _ _id = None
 let lookup_value_path _ _id = None
 
 let lookup_module_path _ _id = None
+
+let lookup_type_path _ _id = None
+
+let lookup_module_type_path _ _id = None
+
+let lookup_class_type_path _ _id = None
 
 #endif
