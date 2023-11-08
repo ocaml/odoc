@@ -239,7 +239,7 @@ We should now put the scripts where it was:
   $ cp fuse.js.js html/
 
 One way to visually try the search is to indent
-  $ cp -r html /tmp/
+$ cp -r html /tmp/
 $ firefox /tmp/html/page/Main/index.html
 and run `dune test`.
 

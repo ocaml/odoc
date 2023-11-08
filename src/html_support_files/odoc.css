@@ -99,8 +99,8 @@
   scroll-padding-top: calc(var(--search-bar-height) + var(--search-padding-top) + 1em);
 
   /* light gruvbox theme colors */
-  --bg: #f9f5d7;
-  --bg_h:   #fbf1c7;
+  --bg_h: #f9f5d7;
+  --bg:   #f6f8fa; /*#fbf1c7;*/
   --bg_s: #f2e5bc;
   --bg1:  #ebdbb2;
   --bg2:  #d5c4a1;
@@ -130,46 +130,19 @@
   --aqua-dim:   #689d6a;
   --orange-dim: #d65d0e;
   --gray-dim:   #7c6f64;
-}
 
-.dark:root {
-  /* dark gruvbox theme colors */
-  --bg_h: #1d2021;
-  --bg:   #282828;
-  --bg_s: #32302f;
-  --bg1:  #3c3836;
-  --bg2:  #504945;
-  --bg3:  #665c54;
-  --bg4:  #7c6f64;
+  /* odoc colors */
+  --odoc-blue: #5c9cf5;
+  --odoc-bg: #FFFFFF;
+  --odoc-bg1: #f6f8fa;
+  --odoc-fg: #333333;
+  --odoc-fg1: #1F2D3D;
 
-  --fg:  #fbf1c7;
-  --fg1: #ebdbb2;
-  --fg2: #d5c4a1;
-  --fg3: #bdae93;
-  --fg4: #a89984;
-
-  --red:    #fb4934;
-  --green:  #b8bb26;
-  --yellow: #fabd2f;
-  --blue:   #83a598;
-  --purple: #d3869b;
-  --aqua:   #8ec07c;
-  --gray:   #928374;
-  --orange: #fe8019;
-
-  --red-dim:    #cc2412;
-  --green-dim:  #98971a;
-  --yellow-dim: #d79921;
-  --blue-dim:   #458588;
-  --purple-dim: #b16286;
-  --aqua-dim:   #689d6a;
-  --gray-dim:   #a89984;
-  --orange-dim: #d65d0e;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* dark gruvbox theme colors again */
+    /* dark gruvbox theme colors */
     --bg_h: #1d2021;
     --bg:   #282828;
     --bg_s: #32302f;
@@ -201,13 +174,19 @@
     --aqua-dim:   #689d6a;
     --gray-dim:   #a89984;
     --orange-dim: #d65d0e;
+
+    /* odoc colors */
+    --odoc-blue: #5c9cf5;
+    --odoc-bg: #202020;
+    --odoc-bg1: #252525;
+    --odoc-fg: #bebebe;
+    --odoc-fg1: #777;
   }
 }
 
 :root {
-  --main-background: var(--bg);
-  --color: var(--fg);
-  --source-color: var(--fg4);
+  --main-background: var(--odoc-bg);
+  --color: var(--odoc-fg);
   --anchor-hover: var(--fg1);
   --anchor-color: var(--bg2);
   --xref-shadow: var(--red-dim);
@@ -215,17 +194,16 @@
   --header-shadow: var(--bg3);
   --by-name-version-color: var(--bg4);
   --by-name-nav-link-color: var(--fg2);
-  --target-background: color-mix(in srgb, var(--main-background) 60%, var(--blue-dim) 40%);
-  --target-border: var(--blue-dim);
-  --pre-border-color: var(--fg1);
-  --code-color: var(--fg1);
-  --link-color: var(--blue);
-  --code-background: var(--bg_s);
-  --li-code-background: var(--bg_s);
-  --li-code-color: var(--fg1);
+  --target-background: color-mix(in srgb, var(--main-background) 70%, var(--odoc-blue) 30%);
+  --target-border: var(--odoc-blue);
+  --pre-border-color: var(--fg4);
+  --link-color: var(--odoc-blue);
+  --source-link-color: var(--fg4);
+
+
   --toc-color: var(--fg);
-  --toc-before-color: var(--fg2);
-  --toc-background: var(--bg_h);
+  --toc-before-color: var(--odoc-fg1);
+  --toc-background: var(--odoc-bg1);
   --toc-list-border: var(--fg1);
 
   --hljs-bg: var(--code-background);
@@ -233,6 +211,26 @@
   --source-code-keyword: var(--orange);
   --hljs-regexp: var(--yellow);
   --hljs-title: var(--yellow-dim);
+
+  --spec-label-color: var(--aqua);
+  --spec-summary-background: var(--code-background);
+  --spec-summary-border-color: var(--odoc-blue);
+  --spec-summary-hover-background: var(--odoc-bg1);
+  --spec-details-after-background: var(--odoc-bg1);
+  --spec-details-after-border: var(--fg3);
+  --search-results-border: var(--fg1);
+  --search-results-shadow: var(--bg3);
+  --search-highlight-color: var(--odoc-blue);
+  --search-snake-color: var(--odoc-blue);
+  /* code colors */
+  --code-color: var(--fg);
+  --code-background: var(--bg);
+  --li-code-background: var(--bg);
+  --li-code-color: var(--fg);
+
+
+  --source-line-column: var(--fg3);
+  --source-line-column-bg: var(--bg1);
 
   --source-code-comment: var(--gray);
   --source-code-docstring: var(--green-dim);
@@ -255,18 +253,8 @@
   --hljs-deletion: var(--red-dim);
   --hljs-deletion-bg: color-mix(in srgb, var(--hljs-deletion) 10%, var(--hljs-bg) 90%);
 
-  --source-line-column: var(--fg4);
-  --source-line-column-bg: var(--bg1);
 
-  --spec-label-color: var(--aqua);
-  --spec-summary-background: var(--code-background);
-  --spec-summary-border-color: var(--blue-dim);
-  --spec-summary-hover-background: var(--bg3);
-  --spec-details-after-background: var(--bg1);
-  --spec-details-after-shadow: var(--fg2);
-  --search-results-border: var(--fg1);
-  --search-results-shadow: var(--bg3);
-  --search-snake: var(--blue);
+
 }
 
 /* Reset a few things. */
@@ -475,7 +463,7 @@ a.anchor {
 /* Source links float inside preformated text or headings. */
 a.source_link {
   float: right;
-  color: var(--source-color);
+  color: var(--source-link-color);
   font-family: "Fira Sans", sans-serif;
   font-size: initial;
 }
@@ -688,7 +676,7 @@ div.def-doc>*:first-child {
   bottom: 1px;
   width: 15px;
   background: var(--spec-details-after-background, rgba(0, 4, 15, 0.05));
-  box-shadow: 0 0px 0 1px var(--spec-details-after-shadow, rgba(204, 204, 204, 0.53));
+  box-shadow: 0 0px 0 1px var(--spec-details-after-border, rgba(204, 204, 204, 0.53));
 }
 
 .odoc-include summary {
@@ -909,19 +897,19 @@ td.def-doc *:first-child {
   border: 1px solid var(--fg4);
   /* inputs are of fixed size by default, even if you display:block them */
   width: 100%;
-  color: var(--fg);
-  background: var(--bg_s);
+  color: var(--odoc-fg);
+  background: var(--odoc-bg1);
   border-radius: 5px;
   outline: none;
 }
 
 .odoc-search:focus-within .search-bar {
   font-size: 1.1em;
-  border-color: var(--blue);
+  border-color: var(--search-highlight-color);
 }
 
 .search-bar:focus-visible {
-  outline: 2px solid var(--blue);
+  outline: 2px solid var(--search-highlight-color);
 }
 
 .search-bar::placeholder {
@@ -996,7 +984,7 @@ td.def-doc *:first-child {
   margin-right: 4px;
   border-radius: 50%;
   border: 3px solid #aaa;
-  border-color: var(--search-snake) transparent var(--search-snake) transparent;
+  border-color: var(--search-snake-color) transparent var(--search-snake-color) transparent;
   animation: search-snake 1.2s linear infinite;
   position: absolute;
   right: 0;
@@ -1047,7 +1035,7 @@ td.def-doc *:first-child {
 
 .odoc-search .search-entry:hover {
   box-shadow: none;
-  background-color: var(--toc-background-emph);
+  background-color: var(--main-background);
 }
 
 .odoc-search .search-entry .entry-kind {
@@ -1068,8 +1056,8 @@ td.def-doc *:first-child {
 
 .odoc-search .search-entry pre code {
   font-size: 1em;
-  background-color: var(--li-code-background);
-  color: var(--li-code-color);
+  background-color: var(--code-background);
+  color: var(--code-color);
   border-radius: 3px;
   padding: 0 0.3ex;
 }
