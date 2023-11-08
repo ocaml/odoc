@@ -19,6 +19,7 @@ module Tools_error = struct
       [ `Module of Cpath.module_ * simple_module_lookup_error
       | `ModuleType of Cpath.module_type * simple_module_type_lookup_error ]
       (* The path to the module or module type could not be resolved *)
+    | `UnresolvedOriginalPath of Cpath.module_ * simple_module_lookup_error
     | `UnexpandedTypeOf of
       Component.ModuleType.type_of_desc
       (* The `module type of` expression could not be expanded *) ]
@@ -145,6 +146,11 @@ module Tools_error = struct
         Format.fprintf fmt "Unresolved module type path %a (%a)"
           (module_type_path c) p pp
           (e :> any)
+    | `UnresolvedOriginalPath (p, e) ->
+        Format.fprintf fmt "Unresolved original module path %a (%a)"
+          Component.Fmt.(module_path default)
+          p pp
+          (e :> any)
     | `LocalMT (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Local (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `LocalType (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
@@ -220,6 +226,7 @@ let is_unexpanded_module_type_of =
     | `ApplyNotFunctor -> false
     | `UnresolvedPath (`Module (_, e)) -> inner (e :> any)
     | `UnresolvedPath (`ModuleType (_, e)) -> inner (e :> any)
+    | `UnresolvedOriginalPath (_, e) -> inner (e :> any)
     | `Lookup_failureT _ -> false
     | `Lookup_failureV _ -> false
     | `LocalType _ -> false

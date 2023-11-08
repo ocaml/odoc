@@ -547,7 +547,8 @@ and read_include env parent incl =
   let decl_modty =
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) ->
-      Some (ModuleType.U.TypeOf {t_desc = ModuleType.StructInclude (Env.Path.read_module env p); t_expansion=None })
+      let p = Env.Path.read_module env p in
+      Some (ModuleType.U.TypeOf (ModuleType.StructInclude p, p))
     | _ ->
       let mty = read_module_expr env parent container incl.incl_mod in
       umty_of_mty mty

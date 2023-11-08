@@ -555,10 +555,13 @@ and read_module_type env parent label_parent mty =
         let decl =
           match mexpr.mod_desc with
           | Tmod_ident(p, _) ->
-            TypeOf {t_desc = ModPath (Env.Path.read_module env p); t_expansion=None}
+            let p = Env.Path.read_module env p in
+            TypeOf {t_desc = ModPath p; t_original_path = p; t_expansion = None}
           | Tmod_structure {str_items = [{str_desc = Tstr_include {incl_mod; _}; _}]; _} -> begin
             match Typemod.path_of_module incl_mod with
-            | Some p -> TypeOf {t_desc=StructInclude (Env.Path.read_module env p); t_expansion=None}
+              | Some p ->
+                let p = Env.Path.read_module env p in
+                TypeOf {t_desc=StructInclude p; t_original_path = p; t_expansion = None}
             | None ->
               !read_module_expr env parent label_parent mexpr 
             end

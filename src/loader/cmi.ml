@@ -939,8 +939,9 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
         let res = read_module_type env (Identifier.Mk.result parent) res in
         Functor( f_parameter, res)
     | Mty_alias p ->
-        let t_desc = ModPath (Env.Path.read_module env p) in
-        TypeOf { t_desc; t_expansion = None }
+        let t_original_path = Env.Path.read_module env p in
+        let t_desc = ModPath t_original_path in
+        TypeOf { t_desc; t_expansion = None; t_original_path }
 
 and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_declaration) =
   let open ModuleType in
