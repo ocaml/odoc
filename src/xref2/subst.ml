@@ -1,3 +1,4 @@
+[@@@warning "-unused-value-declaration"]
 open Component
 
 exception Invalidated
@@ -682,7 +683,7 @@ and u_module_type_expr s t =
           match eqn with
           | Path p -> Path p.p_path
           | Signature s -> Signature s
-          | TypeOf t -> TypeOf t
+          | TypeOf t -> TypeOf (t.t_desc, t.t_original_path)
           | With w -> With (w.w_substitutions, w.w_expr)
           | Functor _ ->
               (* non functor cannot be substituted away to a functor *)
@@ -691,56 +692,52 @@ and u_module_type_expr s t =
   | With (subs, e) ->
       With
         (List.map (with_module_type_substitution s) subs, u_module_type_expr s e)
-  | TypeOf { t_desc; t_expansion = Some (Signature e) } -> (
-      try
-        TypeOf
-          {
-            t_desc = module_type_type_of_desc s t_desc;
-            t_expansion = Some (Signature (apply_sig_map_sg s e));
-          }
-      with MTOInvalidated -> u_module_type_expr s (Signature e))
-  | TypeOf { t_expansion = Some (Functor _); _ } -> assert false
-  | TypeOf { t_desc; t_expansion = None } ->
-      TypeOf
-        { t_desc = module_type_type_of_desc_noexn s t_desc; t_expansion = None }
-
-and module_type_of_simple_expansion :
-    Component.ModuleType.simple_expansion -> Component.ModuleType.expr =
-  function
-  | Signature sg -> Signature sg
-  | Functor (arg, e) -> Functor (arg, module_type_of_simple_expansion e)
+  | TypeOf (desc, original_path) ->
+      TypeOf (module_type_type_of_desc_noexn s desc, original_path)
 
 and module_type_expr s t =
   let open Component.ModuleType in
-  match t with
-  | Path { p_path; p_expansion } -> (
-      match module_type_path s p_path with
-      | Not_replaced p_path ->
-          Path { p_path; p_expansion = option_ simple_expansion s p_expansion }
-      | Replaced s -> s)
-  | Signature sg -> Signature (signature s sg)
-  | Functor (arg, expr) ->
-      Functor (functor_parameter s arg, module_type_expr s expr)
-  | With { w_substitutions; w_expansion; w_expr } ->
-      With
-        {
-          w_substitutions =
-            List.map (with_module_type_substitution s) w_substitutions;
-          w_expansion = option_ simple_expansion s w_expansion;
-          w_expr = u_module_type_expr s w_expr;
-        }
-  | TypeOf { t_desc; t_expansion = Some e } -> (
-      try
-        TypeOf
+  try
+    match t with
+    | Path { p_path; p_expansion } -> (
+        match module_type_path s p_path with
+        | Not_replaced p_path ->
+            Path
+              { p_path; p_expansion = option_ simple_expansion s p_expansion }
+        | Replaced s -> s)
+    | Signature sg -> Signature (signature s sg)
+    | Functor (arg, expr) ->
+        Functor (functor_parameter s arg, module_type_expr s expr)
+    | With { w_substitutions; w_expansion; w_expr } ->
+        With
           {
-            t_desc = module_type_type_of_desc s t_desc;
-            t_expansion = Some (simple_expansion s e);
+            w_substitutions =
+              List.map (with_module_type_substitution s) w_substitutions;
+            w_expansion = option_ simple_expansion s w_expansion;
+            w_expr = u_module_type_expr s w_expr;
           }
-      with MTOInvalidated ->
-        module_type_expr s (module_type_of_simple_expansion e))
-  | TypeOf { t_desc; t_expansion = None } ->
-      TypeOf
-        { t_desc = module_type_type_of_desc_noexn s t_desc; t_expansion = None }
+    | TypeOf desc -> TypeOf (module_type_of_type_desc s desc)
+  with MTOInvalidated -> (
+    let sg =
+      match t with
+      | Path { p_expansion = Some sg; _ } -> sg
+      | Signature sg -> Signature sg
+      | With { w_expansion = Some sg; _ } -> sg
+      | TypeOf { t_expansion = Some sg; _ } -> sg
+      | _ -> failwith "No expansion when handling invalidated module type"
+    in
+    match simple_expansion s sg with
+    | Signature sg -> Signature sg
+    | Functor _ ->
+        failwith "Unhandled functor when handling invalidated module type")
+
+and module_type_of_type_desc s
+    { ModuleType.t_desc; t_original_path; t_expansion } =
+  {
+    ModuleType.t_desc = module_type_type_of_desc s t_desc;
+    t_original_path;
+    t_expansion = option_ simple_expansion s t_expansion;
+  }
 
 and with_module_type_substitution s sub =
   let open Component.ModuleType in

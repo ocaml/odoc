@@ -50,8 +50,5 @@ And one to run odoc on the files:
 None of the files really ought to be bigger than 1M!
 
   $ find . -size +1000000c | sort 
-  ./m12.odoc
-  ./m13.odoc
-  ./m14.odoc
 
 

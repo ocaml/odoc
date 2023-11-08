@@ -186,6 +186,7 @@ and ModuleType : sig
 
   type typeof_t = {
     t_desc : type_of_desc;
+    t_original_path : Cpath.module_;
     t_expansion : simple_expansion option;
   }
 
@@ -194,7 +195,7 @@ and ModuleType : sig
       | Path of Cpath.module_type
       | Signature of Signature.t
       | With of substitution list * expr
-      | TypeOf of typeof_t
+      | TypeOf of type_of_desc * Cpath.module_
   end
 
   type path_t = {

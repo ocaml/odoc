@@ -70,6 +70,7 @@ and ModuleType : sig
 
   type typeof_t = {
     t_desc : type_of_desc;
+    t_original_path : Path.Module.t;
     t_expansion : simple_expansion option;
   }
 
@@ -78,7 +79,7 @@ and ModuleType : sig
       | Path of Path.ModuleType.t
       | Signature of Signature.t
       | With of substitution list * expr
-      | TypeOf of typeof_t
+      | TypeOf of type_of_desc * Path.Module.t
 
     (* Nb. this may have an expansion! *)
   end
@@ -549,7 +550,8 @@ let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
   | Signature sg -> Some (Signature sg)
   | Path { p_path; _ } -> Some (Path p_path)
   | Functor _ -> None
-  | TypeOf t -> Some (TypeOf t)
+  | TypeOf { t_desc; t_original_path; _ } ->
+      Some (TypeOf (t_desc, t_original_path))
   | With { w_substitutions; w_expr; _ } -> Some (With (w_substitutions, w_expr))
 
 (** Query the top-comment of a signature. This is [s.doc] most of the time with
@@ -560,7 +562,7 @@ let extract_signature_doc (s : Signature.t) =
     | Signature _ ->
         true (* Hidden in some sense, we certainly want its top comment *)
     | With (_, e) -> uexpr_considered_hidden e
-    | TypeOf { t_desc = ModPath p | StructInclude p; _ } ->
+    | TypeOf (ModPath p, _) | TypeOf (StructInclude p, _) ->
         Path.is_hidden (p :> Path.t)
   in
   let should_take_top = function

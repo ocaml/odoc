@@ -1537,8 +1537,7 @@ module Make (Syntax : SYNTAX) = struct
     and umty_hidden : Odoc_model.Lang.ModuleType.U.expr -> bool = function
       | Path p -> Paths.Path.(is_hidden (p :> t))
       | With (_, expr) -> umty_hidden expr
-      | TypeOf { t_desc = ModPath m; _ }
-      | TypeOf { t_desc = StructInclude m; _ } ->
+      | TypeOf (ModPath m, _) | TypeOf (StructInclude m, _) ->
           Paths.Path.(is_hidden (m :> t))
       | Signature _ -> false
 
@@ -1586,7 +1585,7 @@ module Make (Syntax : SYNTAX) = struct
       | With (_, expr) when is_elidable_with_u expr ->
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       | With (subs, expr) -> mty_with subs expr
-      | TypeOf { t_desc; _ } -> mty_typeof t_desc
+      | TypeOf (t_desc, _) -> mty_typeof t_desc
 
     and mty : Odoc_model.Lang.ModuleType.expr -> text =
      fun m ->
