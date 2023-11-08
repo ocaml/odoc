@@ -1688,6 +1688,40 @@ and unresolve_subs subs =
       | x -> x)
     subs
 
+and signature_of_module_type_of :
+    Env.t ->
+    Component.ModuleType.type_of_desc ->
+    original_path:Cpath.module_ ->
+    (expansion, expansion_of_module_error) Result.result =
+ fun env desc ~original_path ->
+  let p, strengthen =
+    match desc with ModPath p -> (p, false) | StructInclude p -> (p, true)
+  in
+  match Cpath.original_path_cpath original_path with
+  | None -> Error (`UnresolvedOriginalPath (original_path, `Find_failure))
+  | Some cp -> (
+      expansion_of_module_path env ~strengthen p >>= fun exp ->
+      match expansion_of_module_path env ~strengthen:false cp with
+      | Ok _orig_exp ->
+          Ok exp
+          (* Ok (ascribe env ~expansion:exp ~original_expansion:orig_exp) *)
+      | Error lookup_error ->
+          Format.eprintf "Here we are!\n%!";
+          Error lookup_error)
+(*
+  match original_path with
+  | `Resolved p ->
+    begin match
+      lookup_module_gpath ~mark_substituted env p
+    with
+    | Ok orig_exp ->
+        ignore orig_exp;
+        Ok exp
+    | Error lookup_error -> Error (`UnresolvedOriginalPath (original_path, lookup_error))
+    end
+  | _ ->
+    failwith (Format.asprintf "you didn't do the thing: %a" Component.Fmt.model_path (original_path :> Odoc_model.Paths.Path.t)) *)
+
 and signature_of_u_module_type_expr :
     mark_substituted:bool ->
     Env.t ->
@@ -1704,8 +1738,8 @@ and signature_of_u_module_type_expr :
       signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
       let subs = unresolve_subs subs in
       handle_signature_with_subs ~mark_substituted env sg subs
-  | TypeOf { t_expansion = Some (Signature sg); _ } -> Ok sg
-  | TypeOf { t_desc; _ } -> Error (`UnexpandedTypeOf t_desc)
+  | TypeOf (desc, original_path) ->
+      signature_of_module_type_of env desc ~original_path >>= assert_not_functor
 
 (* and expansion_of_simple_expansion :
      Component.ModuleType.simple_expansion -> expansion =
@@ -1750,7 +1784,12 @@ and expansion_of_module_type_expr :
   | Component.ModuleType.TypeOf { t_expansion = Some (Signature sg); _ } ->
       Ok (Signature sg)
   | Component.ModuleType.TypeOf { t_desc; _ } ->
-      Error (`UnexpandedTypeOf t_desc)
+      let p, strengthen =
+        match t_desc with
+        | ModPath p -> (p, false)
+        | StructInclude p -> (p, true)
+      in
+      expansion_of_module_path env ~strengthen p
 
 and expansion_of_module_type :
     Env.t ->
@@ -1789,11 +1828,40 @@ and expansion_of_module_cached :
   let run env _id = expansion_of_module env m in
   ExpansionOfModuleMemo.memoize run env' id
 
+and _ascribe _env ~expansion ~original_expansion =
+  match (expansion, original_expansion) with
+  | Functor _, _ -> expansion
+  | Signature sg, Signature sg' ->
+      let items =
+        List.fold_right
+          (fun item acc ->
+            match item with
+            | Component.Signature.Module (id, _r, _m) ->
+                if Find.module_in_sig sg' (Ident.Name.module_ id) = None then
+                  acc
+                else item :: acc
+            | Component.Signature.ModuleType (id, _m) ->
+                if
+                  Find.module_type_in_sig sg' (Ident.Name.module_type id) = None
+                then acc
+                else item :: acc
+            | Component.Signature.Type (id, _r, _t) ->
+                if Find.type_in_sig sg' (Ident.Name.type_ id) = None then acc
+                else item :: acc
+            | Component.Signature.Value (id, _v) ->
+                if Find.value_in_sig sg' (Ident.Name.value id) = [] then acc
+                else item :: acc
+            | _ -> item :: acc)
+          sg.items []
+      in
+      Signature { sg with items }
+  | _ -> expansion
+
 and umty_of_mty : Component.ModuleType.expr -> Component.ModuleType.U.expr =
   function
   | Signature sg -> Signature sg
   | Path { p_path; _ } -> Path p_path
-  | TypeOf t -> TypeOf t
+  | TypeOf { t_desc; t_original_path; _ } -> TypeOf (t_desc, t_original_path)
   | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
   | Functor _ -> assert false
 
@@ -1813,7 +1881,7 @@ and fragmap :
     | Alias (path, _) ->
         expansion_of_module_path env ~strengthen:true path
         >>= assert_not_functor
-        >>= fun sg ->
+        >>= fun _sg ->
         Ok
           (ModuleType
              (With
@@ -1821,11 +1889,7 @@ and fragmap :
                   w_substitutions = [ subst ];
                   w_expansion = None;
                   w_expr =
-                    TypeOf
-                      {
-                        t_desc = StructInclude path;
-                        t_expansion = Some (Signature sg);
-                      };
+                    TypeOf (StructInclude path, Cpath.unresolve_module_path path);
                 }))
     | ModuleType mty' ->
         Ok
@@ -2245,7 +2309,10 @@ and resolve_module_fragment :
         match expansion_of_module env m' with
         | Ok (_m : expansion) -> f'
         | Error `OpaqueModule -> `OpaqueModule f'
-        | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> f'
+        | Error
+            ( `UnresolvedForwardPath | `UnresolvedPath _
+            | `UnresolvedOriginalPath _ ) ->
+            f'
         | Error (`UnexpandedTypeOf _) -> f'
       in
       Some (fixup_module_cfrag f'')
@@ -2271,7 +2338,7 @@ and resolve_module_type_fragment :
         | Ok (_m : expansion) -> f'
         | Error
             ( `UnresolvedForwardPath | `UnresolvedPath _ | `OpaqueModule
-            | `UnexpandedTypeOf _ ) ->
+            | `UnexpandedTypeOf _ | `UnresolvedOriginalPath _ ) ->
             f'
       in
       Some (fixup_module_type_cfrag f'')
@@ -2364,7 +2431,10 @@ let resolve_module_path env p =
       match expansion_of_module_cached env p m with
       | Ok _ -> Ok p
       | Error `OpaqueModule -> Ok (`OpaqueModule p)
-      | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p
+      | Error
+          ( `UnresolvedForwardPath | `UnresolvedPath _
+          | `UnresolvedOriginalPath _ ) ->
+          Ok p
       | Error (`UnexpandedTypeOf _) -> Ok p)
 
 let resolve_module_type_path env p =
@@ -2373,7 +2443,8 @@ let resolve_module_type_path env p =
   match expansion_of_module_type env mt with
   | Ok _ -> Ok p
   | Error `OpaqueModule -> Ok (`OpaqueModuleType p)
-  | Error (`UnresolvedForwardPath | `UnresolvedPath _)
+  | Error
+      (`UnresolvedForwardPath | `UnresolvedPath _ | `UnresolvedOriginalPath _)
   | Error (`UnexpandedTypeOf _) ->
       Ok p
 

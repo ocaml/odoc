@@ -825,10 +825,10 @@ and u_module_type_expr :
       | Error e ->
           Errors.report ~what:(`Module_type_U cexpr) ~tools_error:e `Resolve;
           unresolved)
-  | TypeOf { t_desc = StructInclude p; t_expansion } ->
-      TypeOf { t_desc = StructInclude (module_path env p); t_expansion }
-  | TypeOf { t_desc = ModPath p; t_expansion } ->
-      TypeOf { t_desc = ModPath (module_path env p); t_expansion }
+  | TypeOf (StructInclude p, original_path) ->
+      TypeOf (StructInclude (module_path env p), original_path)
+  | TypeOf (ModPath p, original_path) ->
+      TypeOf (ModPath (module_path env p), original_path)
 
 and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
@@ -881,17 +881,19 @@ and module_type_expr :
       let env = Env.add_functor_parameter arg env in
       let res' = module_type_expr env (Paths.Identifier.Mk.result id) res in
       Functor (arg', res')
-  | TypeOf { t_desc = StructInclude p; t_expansion } ->
+  | TypeOf { t_desc = StructInclude p; t_expansion; t_original_path } ->
       TypeOf
         {
           t_desc = StructInclude (module_path env p);
           t_expansion = do_expn t_expansion None;
+          t_original_path;
         }
-  | TypeOf { t_desc = ModPath p; t_expansion } ->
+  | TypeOf { t_desc = ModPath p; t_expansion; t_original_path } ->
       TypeOf
         {
           t_desc = ModPath (module_path env p);
           t_expansion = do_expn t_expansion None;
+          t_original_path;
         }
 
 and type_decl_representation :

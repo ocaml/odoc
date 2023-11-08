@@ -96,8 +96,7 @@ and source_info_infos env infos =
 and content env id =
   let open Compilation_unit in
   function
-  | Module m ->
-      let sg = Type_of.signature env m in
+  | Module sg ->
       let sg = signature env (id :> Id.Signature.t) sg in
       Module sg
   | Pack p -> Pack p
@@ -628,8 +627,8 @@ and module_type_map_subs env id cexpr subs =
     | Path (`Resolved p) -> Some (`ModuleType p)
     | Path _ -> None
     | With (_, e) -> find_parent e
-    | TypeOf { t_desc = ModPath (`Resolved p); _ }
-    | TypeOf { t_desc = StructInclude (`Resolved p); _ } ->
+    | TypeOf (ModPath (`Resolved p), _) | TypeOf (StructInclude (`Resolved p), _)
+      ->
         Some (`Module p)
     | TypeOf _ -> None
   in
@@ -671,13 +670,13 @@ and u_module_type_expr :
         in
         let result : ModuleType.U.expr = With (subs', expr') in
         result
-    | TypeOf { t_desc; t_expansion } ->
+    | TypeOf (t_desc, t_original_path) ->
         let t_desc =
           match t_desc with
           | ModPath p -> ModPath (module_path env p)
           | StructInclude p -> StructInclude (module_path env p)
         in
-        TypeOf { t_desc; t_expansion }
+        TypeOf (t_desc, t_original_path)
   in
   inner expr
 
@@ -726,14 +725,14 @@ and module_type_expr :
       let env' = Env.add_functor_parameter param env in
       let res' = module_type_expr env' (Paths.Identifier.Mk.result id) res in
       Functor (param', res')
-  | TypeOf { t_desc; t_expansion } as e ->
+  | TypeOf { t_desc; t_original_path; t_expansion } as e ->
       let t_expansion = get_expansion t_expansion e in
       let t_desc =
         match t_desc with
         | ModPath p -> ModuleType.ModPath (module_path env p)
         | StructInclude p -> StructInclude (module_path env p)
       in
-      TypeOf { t_desc; t_expansion }
+      TypeOf { t_desc; t_original_path; t_expansion }
 
 and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->

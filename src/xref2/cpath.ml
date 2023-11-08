@@ -395,3 +395,64 @@ and unresolve_type_path : type_ -> type_ = function
 and unresolve_class_type_path : class_type -> class_type = function
   | `Resolved m -> unresolve_resolved_class_type_path m
   | y -> y
+
+let rec original_path_cpath : module_ -> module_ option = function
+  | `Resolved p ->
+      Format.eprintf "Originally dangerous...\n%!";
+      original_path_cpath (unresolve_resolved_module_path p)
+  | `Root name -> Some (`Root name)
+  | `Forward _ -> None
+  | `Dot (p, s) -> (
+      match original_path_cpath p with
+      | Some p -> Some (`Dot (p, s))
+      | None -> None)
+  | `Apply (p1, p2) -> (
+      match (original_path_cpath p1, original_path_cpath p2) with
+      | Some p1', Some p2' -> Some (`Apply (p1', p2'))
+      | _ -> None)
+  | `Identifier (i, _) -> (
+      match original_path_module_identifier i with
+      | Some i -> Some (`Resolved i)
+      | None -> None)
+  | `Substituted p -> original_path_cpath p
+  | `Local _ ->
+      Format.eprintf "danger, danger!\n%!";
+      None
+  | `Module _ ->
+      Format.eprintf "lots of danger!\n%!";
+      None
+
+and original_path_module_identifier :
+    Odoc_model.Paths.Identifier.Path.Module.t -> Resolved.module_ option =
+ fun id ->
+  match id.iv with
+  | `Module (sg, name) -> (
+      match original_path_parent_identifier sg with
+      | Some sg' -> Some (`Module (sg', name))
+      | None -> None)
+  | `Root _ -> Some (`Gpath (`Identifier id))
+  | _ ->
+      Format.eprintf "error1\n%!";
+      None
+
+and original_path_parent_identifier :
+    Odoc_model.Paths.Identifier.Signature.t -> Resolved.parent option =
+ fun id ->
+  match id with
+  | { iv = `Module _ | `Root _ | `Parameter _ | `Result _; _ } as mid -> (
+      match original_path_module_identifier mid with
+      | Some m -> Some (`Module m)
+      | None -> None)
+  | { iv = `ModuleType _; _ } as mtid -> (
+      match original_path_module_type_identifier mtid with
+      | Some m -> Some (`ModuleType m)
+      | None -> None)
+
+and original_path_module_type_identifier :
+    Odoc_model.Paths.Identifier.ModuleType.t -> Resolved.module_type option =
+ fun id ->
+  match id.iv with
+  | `ModuleType (sg, name) -> (
+      match original_path_parent_identifier sg with
+      | Some sg' -> Some (`ModuleType (sg', name))
+      | None -> None)
