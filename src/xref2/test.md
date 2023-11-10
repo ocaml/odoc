@@ -347,7 +347,7 @@ val module_ : Component.Module.t Component.Delayed.t =
                     private_ = false; manifest = None; constraints = []};
                   representation = None};
                get = None})];
-           compiled = false; removed = []; doc = []});
+           lookup_cache = <abstr>; compiled = false; removed = []; doc = []});
       canonical = None; hidden = false};
    get = None}
 ```
@@ -370,7 +370,7 @@ Odoc_xref2.Tools.Signature
            private_ = false; manifest = None; constraints = []};
          representation = None};
       get = None})];
-  compiled = false; removed = []; doc = []}
+  lookup_cache = <abstr>; compiled = false; removed = []; doc = []}
 ```
 
 We're now in a position to verify the existence of the type `t` we're
@@ -514,7 +514,8 @@ val m : Component.Element.module_type option =
                                   constraints = []};
                                 representation = None};
                              get = None})];
-                         compiled = false; removed = []; doc = []})};
+                         lookup_cache = <abstr>; compiled = false;
+                         removed = []; doc = []})};
                  get = None});
                Odoc_xref2.Component.Signature.Module (`LModule (B, 0),
                 Odoc_model.Lang.Signature.Ordinary,
@@ -528,7 +529,8 @@ val m : Component.Element.module_type option =
                          p_path = `Local (`LModuleType (N, 1), false)});
                     canonical = None; hidden = false};
                  get = None})];
-             compiled = false; removed = []; doc = []})}))
+             lookup_cache = <abstr>; compiled = false; removed = [];
+             doc = []})}))
 ```
 
 We can see here that module `B` has type `` Path (`Resolved (`Local (`LModuleType (N, 1)))) `` which refers to the module type defined just above it.
@@ -970,7 +972,7 @@ val sg : Tools.expansion =
                 p_path = `Dot (`Local (`LModule (M, 37), false), "S")});
            canonical = None; hidden = false};
         get = None})];
-    compiled = false; removed = []; doc = []}
+    lookup_cache = <abstr>; compiled = false; removed = []; doc = []}
 ```
 
 and we can see the module `M` is now an alias of the root module `B`. We can now
@@ -1024,7 +1026,7 @@ Odoc_xref2.Tools.Signature
            private_ = false; manifest = None; constraints = []};
          representation = None};
       get = None})];
-  compiled = false; removed = []; doc = []}
+  lookup_cache = <abstr>; compiled = false; removed = []; doc = []}
 ```
 
 where we've correctly identified that a type `t` exists in the signature. The path in
@@ -1587,7 +1589,7 @@ val sg' : Tools.expansion =
                     "T")});
            canonical = None; hidden = false};
         get = None})];
-    compiled = false; removed = []; doc = []}
+    lookup_cache = <abstr>; compiled = false; removed = []; doc = []}
 # let sg' = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
 val sg' : Tools.expansion =
   Odoc_xref2.Tools.Signature
@@ -1624,7 +1626,7 @@ val sg' : Tools.expansion =
                     "T")});
            canonical = None; hidden = false};
         get = None})];
-    compiled = false; removed = []; doc = []}
+    lookup_cache = <abstr>; compiled = false; removed = []; doc = []}
 # let sg' = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
 val sg' : Tools.expansion =
   Odoc_xref2.Tools.Signature
@@ -1661,7 +1663,7 @@ val sg' : Tools.expansion =
                     "T")});
            canonical = None; hidden = false};
         get = None})];
-    compiled = false; removed = []; doc = []}
+    lookup_cache = <abstr>; compiled = false; removed = []; doc = []}
 # let sg' = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
 val sg' : Tools.expansion =
   Odoc_xref2.Tools.Signature
@@ -1698,7 +1700,7 @@ val sg' : Tools.expansion =
                     "T")});
            canonical = None; hidden = false};
         get = None})];
-    compiled = false; removed = []; doc = []}
+    lookup_cache = <abstr>; compiled = false; removed = []; doc = []}
 ```
 
 ```ocaml env=e1

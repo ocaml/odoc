@@ -48,6 +48,14 @@ module IdentMap = Map.Make (struct
   let compare = Ident.compare
 end)
 
+module StringMap = struct
+  include Map.Make (String)
+
+  let add_multi k v m =
+    let v' = try find k m with Not_found -> [] in
+    add k (v :: v') m
+end
+
 module Delayed = struct
   let eager = ref false
 
@@ -335,12 +343,24 @@ and Signature : sig
 
   type t = {
     items : item list;
+    mutable lookup_cache : item list StringMap.t;
     compiled : bool;
     removed : removed_item list;
     doc : CComment.docs;
   }
-end =
-  Signature
+
+  val make :
+    item list -> compiled:bool -> removed_item list -> CComment.docs -> t
+
+  val update_items : t -> item list -> t
+end = struct
+  include Signature
+
+  let make items ~compiled removed doc =
+    { items; lookup_cache = StringMap.empty; compiled; removed; doc }
+
+  let update_items sg items = { sg with items; lookup_cache = StringMap.empty }
+end
 
 and Open : sig
   type t = { expansion : Signature.t; doc : CComment.docs }
@@ -2497,7 +2517,7 @@ module Of_Lang = struct
         sg.items
       |> List.rev
     in
-    { items; removed = []; compiled = sg.compiled; doc = docs ident_map sg.doc }
+    Signature.make items ~compiled:sg.compiled [] (docs ident_map sg.doc)
 
   and block_element _ b :
       CComment.block_element Odoc_model.Comment.with_location =

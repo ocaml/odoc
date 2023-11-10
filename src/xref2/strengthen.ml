@@ -71,7 +71,7 @@ and sig_items prefix ?canonical sg =
             (item :: items, s))
       ([], []) sg.items
   in
-  ({ sg with items = List.rev items }, ids)
+  (update_items sg (List.rev items), ids)
 
 and module_ :
     ?canonical:Odoc_model.Paths.Path.Module.t ->

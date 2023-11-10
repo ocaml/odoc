@@ -17,6 +17,14 @@ module PathClassTypeMap : Map.S with type key = Ident.path_class_type
 
 module IdentMap : Map.S with type key = Ident.any
 
+module StringMap : sig
+  include Map.S with type key = string
+
+  val add_multi : key -> 'a -> 'a list t -> 'a list t
+  (** Add a binding to a ['a list]. If the binding already exists in
+      the map, the new value is appended to the corresponding list instead. *)
+end
+
 (** Delayed is a bit like Lazy.t but may in the future offer the chance to peek inside
     to be able to optimize the calculation *)
 module Delayed : sig
@@ -299,10 +307,16 @@ and Signature : sig
 
   type t = {
     items : item list;
+    mutable lookup_cache : item list StringMap.t;
     compiled : bool;
     removed : removed_item list;
     doc : CComment.docs;
   }
+
+  val make :
+    item list -> compiled:bool -> removed_item list -> CComment.docs -> t
+
+  val update_items : t -> item list -> t
 end
 
 and Open : sig

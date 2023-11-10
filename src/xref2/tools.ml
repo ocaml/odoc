@@ -241,7 +241,7 @@ let prefix_signature (path, sg) =
         | Comment c -> Comment c)
       sg.items
   in
-  { sg with items }
+  update_items sg items
 
 open Errors.Tools_error
 
@@ -1660,7 +1660,9 @@ and expansion_of_module_path :
           let sg' =
             match m.doc with
             | [] -> sg
-            | docs -> { sg with items = Comment (`Docs docs) :: sg.items }
+            | docs ->
+                Component.Signature.update_items sg
+                  (Comment (`Docs docs) :: sg.items)
           in
           if strengthen then
             Ok (Signature (Strengthen.signature (`Resolved p') sg'))
@@ -1908,13 +1910,8 @@ and fragmap :
               if handled' then
                 map_include_decl i.decl sub >>= fun decl ->
                 let expansion_ =
-                  Component.Signature.
-                    {
-                      expansion_ with
-                      items = items';
-                      removed = removed';
-                      compiled = false;
-                    }
+                  Component.Signature.make items' ~compiled:false removed'
+                    expansion_.doc
                 in
                 Ok
                   (Component.Signature.Include
@@ -2067,12 +2064,8 @@ and fragmap :
 
   let res =
     Subst.signature sub
-      {
-        Component.Signature.items;
-        removed = removed @ sg.removed;
-        compiled = false;
-        doc = sg.doc;
-      }
+      (Component.Signature.make items ~compiled:false (removed @ sg.removed)
+         sg.doc)
   in
   Ok res
 

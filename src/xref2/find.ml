@@ -61,26 +61,70 @@ let rec find_map f = function
   | hd :: tl -> ( match f hd with Some _ as x -> x | None -> find_map f tl)
   | [] -> None
 
-let find_in_sig sg f =
-  let rec inner f = function
-    | Signature.Include i :: tl -> (
-        match inner f i.Include.expansion_.items with
-        | Some _ as x -> x
-        | None -> inner f tl)
-    | hd :: tl -> ( match f hd with Some _ as x -> x | None -> inner f tl)
-    | [] -> None
-  in
-  inner f sg.Signature.items
+let rec filter_map f = function
+  | hd :: tl -> (
+      match f hd with Some x -> x :: filter_map f tl | None -> filter_map f tl)
+  | [] -> []
 
-let filter_in_sig sg f =
-  let rec inner f = function
-    | Signature.Include i :: tl ->
-        inner f i.Include.expansion_.items @ inner f tl
-    | hd :: tl -> (
-        match f hd with Some x -> x :: inner f tl | None -> inner f tl)
-    | [] -> []
-  in
-  inner f sg.Signature.items
+module Linear_lookup = struct
+  let find_in_sig :
+      Signature.t ->
+      (Signature.item -> 'a option) ->
+      (Signature.item * 'a) option =
+   fun sg f ->
+    let rec inner f = function
+      | Signature.Include i :: tl -> (
+          match inner f i.expansion_.items with
+          | Some _ as x -> x
+          | None -> inner f tl)
+      | hd :: tl -> (
+          match f hd with Some x -> Some (hd, x) | None -> inner f tl)
+      | [] -> None
+    in
+    inner f sg.items
+
+  let filter_in_sig :
+      Signature.t -> (Signature.item -> 'a option) -> (Signature.item * 'a) list
+      =
+   fun sg f ->
+    let rec inner f = function
+      | Signature.Include i :: tl -> inner f i.expansion_.items @ inner f tl
+      | hd :: tl -> (
+          match f hd with Some x -> (hd, x) :: inner f tl | None -> inner f tl)
+      | [] -> []
+    in
+    inner f sg.items
+end
+
+module Cached_lookup = struct
+  let find_in_sig :
+      Signature.t -> string -> (Signature.item -> 'a option) -> 'a option =
+   fun sg name f ->
+    try find_map f (StringMap.find name sg.lookup_cache)
+    with Not_found -> (
+      match Linear_lookup.find_in_sig sg f with
+      | None -> None
+      | Some (item, res) ->
+          sg.lookup_cache <- StringMap.add_multi name item sg.lookup_cache;
+          Some res)
+
+  let filter_in_sig :
+      Signature.t -> string -> (Signature.item -> 'a option) -> 'a list =
+   fun sg name f ->
+    try filter_map f (StringMap.find name sg.lookup_cache)
+    with Not_found -> (
+      match Linear_lookup.filter_in_sig sg f with
+      | [] -> []
+      | items_and_res ->
+          let items, res = List.split items_and_res in
+          sg.lookup_cache <-
+            List.fold_left
+              (fun acc item -> StringMap.add_multi name item acc)
+              sg.lookup_cache items;
+          res)
+end
+
+open Cached_lookup
 
 (** Returns the last element of a list. Used to implement [_unambiguous]
     functions. *)
@@ -90,19 +134,19 @@ let rec disambiguate = function
   | _ :: tl -> disambiguate tl
 
 let module_in_sig sg name =
-  find_in_sig sg (function
+  find_in_sig sg name (function
     | Signature.Module (id, _, m) when N.module_ id = name ->
         Some (`FModule (N.typed_module id, Delayed.get m))
     | _ -> None)
 
 let module_type_in_sig sg name =
-  find_in_sig sg (function
+  find_in_sig sg name (function
     | Signature.ModuleType (id, mt) when N.module_type id = name ->
         Some (`FModuleType (N.typed_module_type id, Delayed.get mt))
     | _ -> None)
 
 let type_in_sig sg name =
-  find_in_sig sg (function
+  find_in_sig sg name (function
     | Signature.Type (id, _, m) when N.type_ id = name ->
         Some (`FType (N.type' id, Delayed.get m))
     | Class (id, _, c) when N.class_ id = name ->
@@ -157,13 +201,13 @@ let careful_type_in_sig sg name =
   | None -> removed_type_in_sig sg name
 
 let datatype_in_sig sg name =
-  find_in_sig sg (function
+  find_in_sig sg name (function
     | Signature.Type (id, _, t) when N.type_ id = name ->
         Some (`FType (N.type' id, Component.Delayed.get t))
     | _ -> None)
 
 let class_in_sig sg name =
-  filter_in_sig sg (function
+  filter_in_sig sg name (function
     | Signature.Class (id, _, c) when N.class_ id = name ->
         Some (`FClass (N.class' id, c))
     | Signature.ClassType (id, _, c) when N.class_type id = name ->
@@ -219,7 +263,7 @@ let any_in_comment d name =
   inner d
 
 let any_in_sig sg name =
-  filter_in_sig sg (function
+  filter_in_sig sg name (function
     | Signature.Module (id, _, m) when N.module_ id = name ->
         Some (`FModule (N.typed_module id, Delayed.get m))
     | ModuleSubstitution (id, ms) when N.module_ id = name ->
@@ -247,7 +291,7 @@ let any_in_sig sg name =
     | _ -> None)
 
 let signature_in_sig sg name =
-  filter_in_sig sg (function
+  filter_in_sig sg name (function
     | Signature.Module (id, _, m) when N.module_ id = name ->
         Some (`FModule (N.typed_module id, Delayed.get m))
     | ModuleType (id, mt) when N.module_type id = name ->
@@ -255,13 +299,13 @@ let signature_in_sig sg name =
     | _ -> None)
 
 let module_type_in_sig sg name =
-  find_in_sig sg (function
+  find_in_sig sg name (function
     | Signature.ModuleType (id, m) when N.module_type id = name ->
         Some (`FModuleType (N.typed_module_type id, Delayed.get m))
     | _ -> None)
 
 let value_in_sig sg name =
-  filter_in_sig sg (function
+  filter_in_sig sg name (function
     | Signature.Value (id, m)
       when N.value id = name || N.value id = "(" ^ name ^ ")" ->
         (* For operator, the value will have name [(<op>)]. We match that even
@@ -272,12 +316,12 @@ let value_in_sig sg name =
 let value_in_sig_unambiguous sg name = disambiguate (value_in_sig sg name)
 
 let label_in_sig sg name =
-  filter_in_sig sg (function
+  filter_in_sig sg name (function
     | Signature.Comment (`Docs d) -> any_in_comment d name
     | _ -> None)
 
 let exception_in_sig sg name =
-  find_in_sig sg (function
+  find_in_sig sg name (function
     | Signature.Exception (id, e) when N.exception_ id = name ->
         Some (`FExn (N.typed_exception id, e))
     | _ -> None)
@@ -288,12 +332,12 @@ let extension_in_sig sg name =
     | _ :: tl -> inner t tl
     | [] -> None
   in
-  find_in_sig sg (function
+  find_in_sig sg name (function
     | Signature.TypExt t -> inner t t.Extension.constructors
     | _ -> None)
 
 let label_parent_in_sig sg name =
-  filter_in_sig sg (function
+  filter_in_sig sg name (function
     | Signature.Module (id, _, m) when N.module_ id = name ->
         Some (`FModule (N.typed_module id, Component.Delayed.get m))
     | ModuleType (id, mt) when N.module_type id = name ->
@@ -307,7 +351,7 @@ let label_parent_in_sig sg name =
     | _ -> None)
 
 let any_in_type_in_sig sg name =
-  filter_in_sig sg (function
+  filter_in_sig sg name (function
     | Signature.Type (id, _, t) -> (
         let t = Delayed.get t in
         match any_in_type t name with

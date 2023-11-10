@@ -1004,15 +1004,16 @@ and rename_bound_idents s sg =
         rest
   | Include ({ expansion_; _ } as i) :: rest ->
       let s, items = rename_bound_idents s [] expansion_.items in
-      rename_bound_idents s
-        (Include { i with expansion_ = { expansion_ with items; removed = [] } }
-        :: sg)
-        rest
+      let expansion_ =
+        make items ~compiled:expansion_.compiled [] expansion_.doc
+      in
+      rename_bound_idents s (Include { i with expansion_ } :: sg) rest
   | Open { expansion; doc } :: rest ->
       let s, items = rename_bound_idents s [] expansion.items in
-      rename_bound_idents s
-        (Open { expansion = { expansion with items; removed = [] }; doc } :: sg)
-        rest
+      let expansion =
+        make items ~compiled:expansion.compiled [] expansion.doc
+      in
+      rename_bound_idents s (Open { expansion; doc } :: sg) rest
   | (Comment _ as item) :: rest -> rename_bound_idents s (item :: sg) rest
 
 and removed_items s items =
@@ -1031,11 +1032,13 @@ and removed_items s items =
 and signature s sg =
   let s, items = rename_bound_idents s [] sg.items in
   let items, removed, dont_recompile = apply_sig_map s items sg.removed in
-  { sg with items; removed; compiled = sg.compiled && dont_recompile }
+  let compiled = sg.compiled && dont_recompile in
+  Component.Signature.make items ~compiled removed sg.doc
 
 and apply_sig_map_sg s (sg : Component.Signature.t) =
   let items, removed, dont_recompile = apply_sig_map s sg.items sg.removed in
-  { sg with items; removed; compiled = sg.compiled && dont_recompile }
+  let compiled = sg.compiled && dont_recompile in
+  Component.Signature.make items ~compiled removed sg.doc
 
 and apply_sig_map_item s item =
   let open Component.Signature in
