@@ -67,10 +67,5 @@ val class_type : t -> Component.ClassType.t -> Component.ClassType.t
 
 val signature : t -> Component.Signature.t -> Component.Signature.t
 
-val apply_sig_map :
-  t ->
-  Signature.item list ->
-  Signature.removed_item list ->
-  Signature.item list * Signature.removed_item list * bool
-(** Apply substitutions. The third value is [false] if the corresponding
-    signature needs to be compiled again and [true] otherwise. *)
+val apply_sig_map_items : t -> Signature.item list -> Signature.item list
+(** Apply substitutions. *)
