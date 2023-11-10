@@ -180,12 +180,8 @@ following convention should be followed.
 - A page is the parent of every installed pages. The driver can freely name this
   page, for example it can be named after the package. In what follows, we
   refer to this page as the [pkg] page.
-- If there is an installed [index.mld] file:
-  + The driver has to use it as content for the [pkg] page.
-  + The can decide to also include a [index] page as child of the [pkg] page.
-    - If it does not, then some references to the [index] page might be
-      unresolved.
-    - If it does, it will create a warning.
+- If there is an installed [index.mld] file, the driver has to use it as
+  content for the [pkg] page.
 - If there is no installed [index.mld] page, the driver has to generate some
   content for the [pkg] page.
 
