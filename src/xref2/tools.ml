@@ -353,7 +353,7 @@ module LookupParentMemo = MakeMemo (struct
   type t = bool * Cpath.Resolved.parent
 
   type result =
-    ( Component.Signature.t * Component.Substitution.t,
+    ( Component.Signature.t * Component.Substitution.t * Find.sig_ctx,
       [ `Parent of parent_lookup_error ] )
     Result.result
 
@@ -598,8 +598,8 @@ and process_module_path env ~add_canonical m rp =
   let p'' = if add_canonical then add_canonical_path m rp' else rp' in
   p''
 
-and handle_module_lookup env ~add_canonical id rparent sg sub =
-  match Find.careful_module_in_sig sg id with
+and handle_module_lookup env ~add_canonical id rparent fctx sub =
+  match Find.careful_module_in_sig fctx id with
   | Some (`FModule (name, m)) ->
       let rp' = simplify_module env (`Module (rparent, name)) in
       let m' = Subst.module_ sub m in
@@ -609,42 +609,42 @@ and handle_module_lookup env ~add_canonical id rparent sg sub =
       lookup_module ~mark_substituted:false env p >>= fun m -> Ok (p, m)
   | None -> Error `Find_failure
 
-and handle_module_type_lookup env ~add_canonical id p sg sub =
+and handle_module_type_lookup env ~add_canonical id p fctx sub =
   let open OptionMonad in
-  Find.module_type_in_sig sg id >>= fun (`FModuleType (name, mt)) ->
+  Find.module_type_in_sig fctx id >>= fun (`FModuleType (name, mt)) ->
   let mt = Subst.module_type sub mt in
   let p' = simplify_module_type env (`ModuleType (p, name)) in
   let p'' = process_module_type env ~add_canonical mt p' in
   Some (p'', mt)
 
-and handle_type_lookup env id p sg =
-  match Find.careful_type_in_sig sg id with
+and handle_type_lookup env id p fctx =
+  match Find.careful_type_in_sig fctx id with
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
   | Some (`FClassType (name, _) as t) -> Ok (`ClassType (p, name), t)
   | Some (`FType (name, _) as t) -> Ok (simplify_type env (`Type (p, name)), t)
   | Some (`FType_removed (name, _, _) as t) -> Ok (`Type (p, name), t)
   | None -> Error `Find_failure
 
-and handle_datatype_lookup env id p sg =
-  match Find.careful_datatype_in_sig sg id with
+and handle_datatype_lookup env id p fctx =
+  match Find.careful_datatype_in_sig fctx id with
   | Some (`FType (name, _) as t) ->
       Ok (simplify_datatype env (`Type (p, name)), t)
   | Some (`FType_removed (name, _, _) as t) -> Ok (`Type (p, name), t)
   | None -> Error `Find_failure
 
-and handle_value_lookup _env id p sg =
-  match Find.value_in_sig sg id with
+and handle_value_lookup _env id p fctx =
+  match Find.value_in_sig fctx id with
   | (`FValue (name, _) as v) :: _ -> Ok (`Value (p, name), v)
   | _ -> Error `Find_failure
 
 and handle_constructor_lookup _env id p t =
-  match Find.constructor_in_type t id with
+  match Find.constructor_in_type (Find.context_of_type t) id with
   | Some (`FConstructor cons as v) ->
       Ok (`Constructor (p, ConstructorName.make_std cons.name), v)
   | _ -> Error `Find_failure
 
-and handle_class_type_lookup id p sg =
-  match Find.careful_class_in_sig sg id with
+and handle_class_type_lookup id p fctx =
+  match Find.careful_class_in_sig fctx id with
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
   | Some (`FClassType (name, _) as t) -> Ok (`ClassType (p, name), t)
   | Some (`FType_removed (_name, _, _) as _t) -> Error `Class_replaced
@@ -671,8 +671,8 @@ and lookup_module_gpath :
       |> map_error (fun e -> `Parent (`Parent_expr e))
       >>= fun (_, m) -> Ok (Component.Delayed.put_val m)
   | `Module (parent, name) ->
-      let find_in_sg sg sub =
-        match Find.careful_module_in_sig sg (ModuleName.to_string name) with
+      let find_in_sg fctx sub =
+        match Find.careful_module_in_sig fctx (ModuleName.to_string name) with
         | None -> Error `Find_failure
         | Some (`FModule (_, m)) ->
             Ok (Component.Delayed.put_val (Subst.module_ sub m))
@@ -680,7 +680,7 @@ and lookup_module_gpath :
       in
       lookup_parent_gpath ~mark_substituted env parent
       |> map_error (fun e -> (e :> simple_module_lookup_error))
-      >>= fun (sg, sub) -> find_in_sg sg sub
+      >>= fun (_sg, sub, fctx) -> find_in_sg fctx sub
   | `Alias (p, _) -> lookup_module_gpath ~mark_substituted env p
   | `Subst (_, p) -> lookup_module_gpath ~mark_substituted env p
   | `Hidden p -> lookup_module_gpath ~mark_substituted env p
@@ -709,8 +709,8 @@ and lookup_module :
         |> map_error (fun e -> `Parent (`Parent_expr e))
         >>= fun (_, m) -> Ok (Component.Delayed.put_val m)
     | `Module (parent, name) ->
-        let find_in_sg sg sub =
-          match Find.careful_module_in_sig sg (ModuleName.to_string name) with
+        let find_in_sg fctx sub =
+          match Find.careful_module_in_sig fctx (ModuleName.to_string name) with
           | None -> Error `Find_failure
           | Some (`FModule (_, m)) ->
               Ok (Component.Delayed.put_val (Subst.module_ sub m))
@@ -718,7 +718,7 @@ and lookup_module :
         in
         lookup_parent ~mark_substituted env parent
         |> map_error (fun e -> (e :> simple_module_lookup_error))
-        >>= fun (sg, sub) -> find_in_sg sg sub
+        >>= fun (_sg, sub, fctx) -> find_in_sg fctx sub
     | `Alias (_, cs, _) -> (
         match resolve_module ~mark_substituted ~add_canonical:false env cs with
         | Ok (_, r) -> Ok r
@@ -744,14 +744,14 @@ and lookup_module_type_gpath :
   | `CanonicalModuleType (s, _) | `SubstT (_, s) ->
       lookup_module_type_gpath ~mark_substituted env s
   | `ModuleType (parent, name) ->
-      let find_in_sg sg sub =
-        match Find.module_type_in_sig sg (ModuleTypeName.to_string name) with
+      let find_in_sg fctx sub =
+        match Find.module_type_in_sig fctx (ModuleTypeName.to_string name) with
         | None -> Error `Find_failure
         | Some (`FModuleType (_, mt)) -> Ok (Subst.module_type sub mt)
       in
       lookup_parent_gpath ~mark_substituted env parent
       |> map_error (fun e -> (e :> simple_module_type_lookup_error))
-      >>= fun (sg, sub) -> find_in_sg sg sub
+      >>= fun (_sg, sub, fctx) -> find_in_sg fctx sub
   | `AliasModuleType (_, mt) ->
       lookup_module_type_gpath ~mark_substituted env mt
   | `OpaqueModuleType m -> lookup_module_type_gpath ~mark_substituted env m
@@ -769,14 +769,16 @@ and lookup_module_type :
     | `Substituted s | `CanonicalModuleType (s, _) | `SubstT (_, s) ->
         lookup_module_type ~mark_substituted env s
     | `ModuleType (parent, name) ->
-        let find_in_sg sg sub =
-          match Find.module_type_in_sig sg (ModuleTypeName.to_string name) with
+        let find_in_sg fctx sub =
+          match
+            Find.module_type_in_sig fctx (ModuleTypeName.to_string name)
+          with
           | None -> Error `Find_failure
           | Some (`FModuleType (_, mt)) -> Ok (Subst.module_type sub mt)
         in
         lookup_parent ~mark_substituted:true env parent
         |> map_error (fun e -> (e :> simple_module_type_lookup_error))
-        >>= fun (sg, sub) -> find_in_sg sg sub
+        >>= fun (_sg, sub, fctx) -> find_in_sg fctx sub
     | `AliasModuleType (_, mt) -> lookup_module_type ~mark_substituted env mt
     | `OpaqueModuleType m -> lookup_module_type ~mark_substituted env m
   in
@@ -786,7 +788,7 @@ and lookup_parent :
     mark_substituted:bool ->
     Env.t ->
     Cpath.Resolved.parent ->
-    ( Component.Signature.t * Component.Substitution.t,
+    ( Component.Signature.t * Component.Substitution.t * Find.sig_ctx,
       [ `Parent of parent_lookup_error ] )
     Result.result =
  fun ~mark_substituted:m env' parent' ->
@@ -800,7 +802,8 @@ and lookup_parent :
         expansion_of_module env m
         |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= assert_not_functor
-        >>= fun sg -> Ok (sg, prefix_substitution parent sg)
+        >>= fun sg ->
+        Ok (sg, prefix_substitution parent sg, Find.context_of_sig sg)
     | `ModuleType p ->
         lookup_module_type ~mark_substituted env p
         |> map_error (fun e -> `Parent (`Parent_module_type e))
@@ -808,11 +811,13 @@ and lookup_parent :
         expansion_of_module_type env mt
         |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= assert_not_functor
-        >>= fun sg -> Ok (sg, prefix_substitution parent sg)
+        >>= fun sg ->
+        Ok (sg, prefix_substitution parent sg, Find.context_of_sig sg)
     | `FragmentRoot ->
         Env.lookup_fragment_root env
         |> of_option ~error:(`Parent `Fragment_root)
-        >>= fun (_, sg) -> Ok (sg, prefix_substitution parent sg)
+        >>= fun (_, sg) ->
+        Ok (sg, prefix_substitution parent sg, Find.context_of_sig sg)
   in
   LookupParentMemo.memoize lookup env' (m, parent')
 
@@ -820,7 +825,7 @@ and lookup_parent_gpath :
     mark_substituted:bool ->
     Env.t ->
     Odoc_model.Paths.Path.Resolved.Module.t ->
-    ( Component.Signature.t * Component.Substitution.t,
+    ( Component.Signature.t * Component.Substitution.t * Find.sig_ctx,
       [ `Parent of parent_lookup_error ] )
     Result.result =
  fun ~mark_substituted env parent ->
@@ -831,7 +836,11 @@ and lookup_parent_gpath :
   expansion_of_module env m
   |> map_error (fun e -> `Parent (`Parent_sig e))
   >>= assert_not_functor
-  >>= fun sg -> Ok (sg, prefix_substitution (`Module (`Gpath parent)) sg)
+  >>= fun sg ->
+  Ok
+    ( sg,
+      prefix_substitution (`Module (`Gpath parent)) sg,
+      Find.context_of_sig sg )
 
 and lookup_type_gpath :
     Env.t ->
@@ -841,8 +850,8 @@ and lookup_type_gpath :
   let do_type p name =
     lookup_parent_gpath ~mark_substituted:true env p
     |> map_error (fun e -> (e :> simple_type_lookup_error))
-    >>= fun (sg, sub) ->
-    match Find.careful_type_in_sig sg name with
+    >>= fun (_sg, sub, fctx) ->
+    match Find.careful_type_in_sig fctx name with
     | Some (`FClass (name, c)) -> Ok (`FClass (name, Subst.class_ sub c))
     | Some (`FClassType (name, ct)) ->
         Ok (`FClassType (name, Subst.class_type sub ct))
@@ -885,8 +894,8 @@ and lookup_datatype_gpath :
   let do_type p name =
     lookup_parent_gpath ~mark_substituted:true env p
     |> map_error (fun e -> (e :> simple_datatype_lookup_error))
-    >>= fun (sg, sub) ->
-    match Find.careful_datatype_in_sig sg name with
+    >>= fun (_sg, sub, fctx) ->
+    match Find.careful_datatype_in_sig fctx name with
     | Some (`FType (name, t)) -> Ok (`FType (name, Subst.type_ sub t))
     | Some (`FType_removed (name, texpr, eq)) ->
         Ok (`FType_removed (name, Subst.type_expr sub texpr, eq))
@@ -915,8 +924,8 @@ and lookup_class_type_gpath :
   let do_type p name =
     lookup_parent_gpath ~mark_substituted:true env p
     |> map_error (fun e -> (e :> simple_type_lookup_error))
-    >>= fun (sg, sub) ->
-    match Find.careful_class_in_sig sg name with
+    >>= fun (_sg, sub, fctx) ->
+    match Find.careful_class_in_sig fctx name with
     | Some (`FClass (name, c)) -> Ok (`FClass (name, Subst.class_ sub c))
     | Some (`FClassType (name, ct)) ->
         Ok (`FClassType (name, Subst.class_type sub ct))
@@ -948,8 +957,8 @@ and lookup_type :
   let do_type p name =
     lookup_parent ~mark_substituted:true env p
     |> map_error (fun e -> (e :> simple_type_lookup_error))
-    >>= fun (sg, sub) ->
-    handle_type_lookup env name p sg >>= fun (_, t') ->
+    >>= fun (_sg, sub, fctx) ->
+    handle_type_lookup env name p fctx >>= fun (_, t') ->
     let t =
       match t' with
       | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
@@ -980,8 +989,8 @@ and lookup_datatype :
   let do_type p name =
     lookup_parent ~mark_substituted:true env p
     |> map_error (fun e -> (e :> simple_datatype_lookup_error))
-    >>= fun (sg, sub) ->
-    handle_datatype_lookup env name p sg >>= fun (_, t') ->
+    >>= fun (_sg, sub, fctx) ->
+    handle_datatype_lookup env name p fctx >>= fun (_, t') ->
     let t =
       match t' with
       | `FType (name, t) -> `FType (name, Subst.type_ sub t)
@@ -1007,8 +1016,8 @@ and lookup_value :
  fun env (`Value (p, id)) ->
   lookup_parent ~mark_substituted:true env p
   |> map_error (fun e -> (e :> simple_value_lookup_error))
-  >>= fun (sg, sub) ->
-  handle_value_lookup env (ValueName.to_string id) p sg
+  >>= fun (_sg, sub, fctx) ->
+  handle_value_lookup env (ValueName.to_string id) p fctx
   >>= fun (_, `FValue (name, c)) -> Ok (`FValue (name, Subst.value sub c))
 
 and lookup_constructor :
@@ -1033,8 +1042,8 @@ and lookup_class_type :
   let do_type p name =
     lookup_parent ~mark_substituted:true env p
     |> map_error (fun e -> (e :> simple_type_lookup_error))
-    >>= fun (sg, sub) ->
-    handle_class_type_lookup name p sg >>= fun (_, t') ->
+    >>= fun (_sg, sub, fctx) ->
+    handle_class_type_lookup name p fctx >>= fun (_, t') ->
     let t =
       match t' with
       | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
@@ -1073,14 +1082,16 @@ and resolve_module :
         |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= assert_not_functor
         >>= fun parent_sig ->
+        (* TODO: These calls should be memoized *)
         let sub = prefix_substitution (`Module p) parent_sig in
-        handle_module_lookup env ~add_canonical id (`Module p) parent_sig sub
+        let fctx = Find.context_of_sig parent_sig in
+        handle_module_lookup env ~add_canonical id (`Module p) fctx sub
     | `Module (parent, id) ->
         lookup_parent ~mark_substituted env parent
         |> map_error (fun e -> (e :> simple_module_lookup_error))
-        >>= fun (parent_sig, sub) ->
+        >>= fun (_sg, sub, fctx) ->
         handle_module_lookup env ~add_canonical (ModuleName.to_string id) parent
-          parent_sig sub
+          fctx sub
     | `Apply (m1, m2) -> (
         let func = resolve_module ~mark_substituted ~add_canonical env m1 in
         let arg = resolve_module ~mark_substituted ~add_canonical env m2 in
@@ -1143,18 +1154,19 @@ and resolve_module_type :
       |> map_error (fun e -> `Parent (`Parent_sig e))
       >>= assert_not_functor
       >>= fun parent_sg ->
+      (* TODO: These calls should be memoized *)
       let sub = prefix_substitution (`Module p) parent_sg in
+      let fctx = Find.context_of_sig parent_sg in
       of_option ~error:`Find_failure
-        (handle_module_type_lookup env ~add_canonical id (`Module p) parent_sg
-           sub)
+        (handle_module_type_lookup env ~add_canonical id (`Module p) fctx sub)
       >>= fun (p', mt) -> Ok (p', mt)
   | `ModuleType (parent, id) ->
       lookup_parent ~mark_substituted env parent
       |> map_error (fun e -> (e :> simple_module_type_lookup_error))
-      >>= fun (parent_sig, sub) ->
+      >>= fun (_sg, sub, fctx) ->
       handle_module_type_lookup env ~add_canonical
         (ModuleTypeName.to_string id)
-        parent parent_sig sub
+        parent fctx sub
       |> of_option ~error:`Find_failure
   | `Identifier (i, _) ->
       of_option ~error:(`Lookup_failureMT i)
@@ -1185,8 +1197,10 @@ and resolve_type :
         |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= assert_not_functor
         >>= fun sg ->
+        (* TODO: These calls should be memoized *)
         let sub = prefix_substitution (`Module p) sg in
-        handle_type_lookup env id (`Module p) sg >>= fun (p', t') ->
+        let fctx = Find.context_of_sig sg in
+        handle_type_lookup env id (`Module p) fctx >>= fun (p', t') ->
         let t =
           match t' with
           | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
@@ -1199,9 +1213,9 @@ and resolve_type :
     | `Type (parent, id) ->
         lookup_parent ~mark_substituted:true env parent
         |> map_error (fun e -> (e :> simple_type_lookup_error))
-        >>= fun (parent_sig, sub) ->
+        >>= fun (_sg, sub, fctx) ->
         let result =
-          match Find.datatype_in_sig parent_sig (TypeName.to_string id) with
+          match Find.datatype_in_sig fctx (TypeName.to_string id) with
           | Some (`FType (name, t)) ->
               Some (`Type (parent, name), `FType (name, Subst.type_ sub t))
           | None -> None
@@ -1210,9 +1224,9 @@ and resolve_type :
     | `Class (parent, id) ->
         lookup_parent ~mark_substituted:true env parent
         |> map_error (fun e -> (e :> simple_type_lookup_error))
-        >>= fun (parent_sig, sub) ->
+        >>= fun (_sg, sub, fctx) ->
         let t =
-          match Find.type_in_sig parent_sig (ClassName.to_string id) with
+          match Find.type_in_sig fctx (ClassName.to_string id) with
           | Some (`FClass (name, t)) ->
               Some (`Class (parent, name), `FClass (name, Subst.class_ sub t))
           | Some _ -> None
@@ -1222,8 +1236,8 @@ and resolve_type :
     | `ClassType (parent, id) ->
         lookup_parent ~mark_substituted:true env parent
         |> map_error (fun e -> (e :> simple_type_lookup_error))
-        >>= fun (parent_sg, sub) ->
-        handle_type_lookup env (ClassTypeName.to_string id) parent parent_sg
+        >>= fun (_sg, sub, fctx) ->
+        handle_type_lookup env (ClassTypeName.to_string id) parent fctx
         >>= fun (p', t') ->
         let t =
           match t' with
@@ -1287,8 +1301,10 @@ and resolve_datatype :
         |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= assert_not_functor
         >>= fun sg ->
+        (* TODO: These calls should be memoized *)
         let sub = prefix_substitution (`Module p) sg in
-        handle_datatype_lookup env id (`Module p) sg >>= fun (p', t') ->
+        let fctx = Find.context_of_sig sg in
+        handle_datatype_lookup env id (`Module p) fctx >>= fun (p', t') ->
         let t =
           match t' with
           | `FType (name, t) -> `FType (name, Subst.type_ sub t)
@@ -1299,9 +1315,9 @@ and resolve_datatype :
     | `Type (parent, id) ->
         lookup_parent ~mark_substituted:true env parent
         |> map_error (fun e -> (e :> simple_datatype_lookup_error))
-        >>= fun (parent_sig, sub) ->
+        >>= fun (_sg, sub, fctx) ->
         let result =
-          match Find.datatype_in_sig parent_sig (TypeName.to_string id) with
+          match Find.datatype_in_sig fctx (TypeName.to_string id) with
           | Some (`FType (name, t)) ->
               Some (`Type (parent, name), `FType (name, Subst.type_ sub t))
           | None -> None
@@ -1339,16 +1355,18 @@ and resolve_value : Env.t -> Cpath.value -> resolve_value_result =
         |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= assert_not_functor
         >>= fun sg ->
+        (* TODO: These calls should be memoized *)
         let sub = prefix_substitution (`Module p) sg in
-        handle_value_lookup env id (`Module p) sg
+        let fctx = Find.context_of_sig sg in
+        handle_value_lookup env id (`Module p) fctx
         >>= fun (p', `FValue (name, c)) ->
         Ok (p', `FValue (name, Subst.value sub c))
     | `Value (parent, id) ->
         lookup_parent ~mark_substituted:true env parent
         |> map_error (fun e -> (e :> simple_value_lookup_error))
-        >>= fun (parent_sig, sub) ->
+        >>= fun (_sg, sub, fctx) ->
         let result =
-          match Find.value_in_sig parent_sig (ValueName.to_string id) with
+          match Find.value_in_sig fctx (ValueName.to_string id) with
           | `FValue (name, t) :: _ ->
               Some (`Value (parent, name), `FValue (name, Subst.value sub t))
           | [] -> None
@@ -1396,8 +1414,10 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
       |> map_error (fun e -> `Parent (`Parent_sig e))
       >>= assert_not_functor
       >>= fun sg ->
+      (* TODO: These calls should be memoized *)
       let sub = prefix_substitution (`Module p) sg in
-      handle_class_type_lookup id (`Module p) sg >>= fun (p', t') ->
+      let fctx = Find.context_of_sig sg in
+      handle_class_type_lookup id (`Module p) fctx >>= fun (p', t') ->
       let t =
         match t' with
         | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
@@ -1417,9 +1437,9 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
   | `Class (parent, id) ->
       lookup_parent ~mark_substituted:true env parent
       |> map_error (fun e -> (e :> simple_type_lookup_error))
-      >>= fun (parent_sig, sub) ->
+      >>= fun (_sg, sub, fctx) ->
       let t =
-        match Find.type_in_sig parent_sig (ClassName.to_string id) with
+        match Find.type_in_sig fctx (ClassName.to_string id) with
         | Some (`FClass (name, t)) ->
             Some (`Class (parent, name), `FClass (name, Subst.class_ sub t))
         | Some _ -> None
@@ -1429,8 +1449,8 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
   | `ClassType (parent, id) ->
       lookup_parent ~mark_substituted:true env parent
       |> map_error (fun e -> (e :> simple_type_lookup_error))
-      >>= fun (parent_sg, sub) ->
-      handle_class_type_lookup (ClassTypeName.to_string id) parent parent_sg
+      >>= fun (_sg, sub, fctx) ->
+      handle_class_type_lookup (ClassTypeName.to_string id) parent fctx
       >>= fun (p', t') ->
       let t =
         match t' with
@@ -2404,7 +2424,8 @@ and find_module_with_replacement :
       simple_module_lookup_error )
     Result.result =
  fun env sg name ->
-  match Find.careful_module_in_sig sg name with
+  let fctx = Find.context_of_sig sg in
+  match Find.careful_module_in_sig fctx name with
   | Some (`FModule (_, m)) -> Ok (Component.Delayed.put_val m)
   | Some (`FModule_removed path) ->
       lookup_module ~mark_substituted:false env path
@@ -2418,7 +2439,8 @@ and find_module_type_with_replacement :
       simple_module_type_lookup_error )
     Result.result =
  fun _env sg name ->
-  match Find.careful_module_type_in_sig sg name with
+  let fctx = Find.context_of_sig sg in
+  match Find.careful_module_type_in_sig fctx name with
   | Some (`FModuleType (_, m)) -> Ok (Component.Delayed.put_val m)
   | None -> Error `Find_failure
   | Some (`FModuleType_removed _mty) -> Error `Find_failure

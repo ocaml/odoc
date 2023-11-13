@@ -55,6 +55,16 @@ type method_ = [ `FMethod of MethodName.t * Method.t ]
 
 type any_in_class_sig = [ instance_variable | method_ ]
 
+type sig_ctx = Signature.t
+type type_ctx = TypeDecl.t
+type typext_ctx = Extension.t
+type class_sig_ctx = ClassSignature.t
+
+let context_of_sig sg = sg
+let context_of_type typ = typ
+let context_of_typext ext = ext
+let context_of_class_sig csig = csig
+
 module N = Ident.Name
 
 let rec find_map f = function

@@ -194,15 +194,6 @@ val reresolve_class_type :
 
 val reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent
 
-val handle_module_type_lookup :
-  Env.t ->
-  add_canonical:bool ->
-  string ->
-  Cpath.Resolved.parent ->
-  Component.Signature.t ->
-  Component.Substitution.t ->
-  (Cpath.Resolved.module_type * Component.ModuleType.t) option
-
 type module_modifiers =
   [ `Aliased of Cpath.Resolved.module_ | `SubstMT of Cpath.Resolved.module_type ]
 
@@ -344,15 +335,6 @@ val fragmap :
     and signature [sg], and a fragment substitution (e.g.
     [ModuleSubst] to destructively substitute a module), and returns the substituted
     signature. *)
-
-val handle_signature_with_subs :
-  mark_substituted:bool ->
-  Env.t ->
-  Component.Signature.t ->
-  Component.ModuleType.substitution list ->
-  (Component.Signature.t, expansion_of_module_error) Result.result
-(** [handle_signature_with_subs ~mark_substituted env sg subs] applies the
-    fragment modifiers [subs], in order, to the supplied signature [sg]. *)
 
 (** {2 Cache handling} *)
 

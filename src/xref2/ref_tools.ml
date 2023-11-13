@@ -200,7 +200,8 @@ module M = struct
       =
     let parent_cp = Tools.reresolve_parent env parent_cp in
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.module_in_sig sg name >>= fun (`FModule (name, m)) ->
+    find Find.module_in_sig (Find.context_of_sig sg) name
+    >>= fun (`FModule (name, m)) ->
     Ok (of_component env m (`Module (parent_cp, name)) (`Module (parent, name)))
 
   let of_element env (`Module (id, m)) : t =
@@ -230,7 +231,8 @@ module MT = struct
   let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
       =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.module_type_in_sig sg name >>= fun (`FModuleType (name, mt)) ->
+    find Find.module_type_in_sig (Find.context_of_sig sg) name
+    >>= fun (`FModuleType (name, mt)) ->
     Ok
       (of_component env mt
          (`ModuleType (parent_cp, name))
@@ -286,8 +288,8 @@ module DT = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.datatype_in_sig sg name >>= fun (`FType (name, t)) ->
-    Ok (`Type (parent', name), t)
+    find Find.datatype_in_sig (Find.context_of_sig sg) name
+    >>= fun (`FType (name, t)) -> Ok (`Type (parent', name), t)
 end
 
 module T = struct
@@ -308,7 +310,7 @@ module T = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.type_in_sig sg name >>= function
+    find Find.type_in_sig (Find.context_of_sig sg) name >>= function
     | `FType (name, t) -> Ok (`T (`Type (parent', name), t))
     | `FClass (name, c) -> Ok (`C (`Class (parent', name), c))
     | `FClassType (name, ct) -> Ok (`CT (`ClassType (parent', name), ct))
@@ -326,7 +328,8 @@ module V = struct
   let of_component _env ~parent_ref name = Ok (`Value (parent_ref, name))
 
   let in_signature _env ((parent', _, sg) : signature_lookup_result) name =
-    find_ambiguous ~kind:`S Find.value_in_sig sg (ValueName.to_string name)
+    find_ambiguous ~kind:`S Find.value_in_sig (Find.context_of_sig sg)
+      (ValueName.to_string name)
     >>= fun _ -> Ok (`Value (parent', name))
 end
 
@@ -364,7 +367,7 @@ module L = struct
   let in_label_parent env (parent : label_parent_lookup_result) name =
     match parent with
     | `S (p, _, sg) ->
-        find_ambiguous ~kind:`Label Find.label_in_sig sg
+        find_ambiguous ~kind:`Label Find.label_in_sig (Find.context_of_sig sg)
           (LabelName.to_string name)
         >>= fun _ -> Ok (`Label ((p :> Resolved.LabelParent.t), name))
     | (`T _ | `C _ | `CT _) as r -> wrong_kind_error [ `S; `Page ] r
@@ -386,8 +389,9 @@ module EC = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.extension_in_sig sg (ExtensionName.to_string name) >>= fun _ ->
-    Ok (`Extension (parent', name))
+    find Find.extension_in_sig (Find.context_of_sig sg)
+      (ExtensionName.to_string name)
+    >>= fun _ -> Ok (`Extension (parent', name))
 end
 
 module ED = struct
@@ -411,7 +415,8 @@ module ED = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.extension_in_sig sg (ExtensionName.to_string name)
+    find Find.extension_in_sig (Find.context_of_sig sg)
+      (ExtensionName.to_string name)
     >>= fun (`FExt (ext, _) : Find.extension) ->
     (* Type extensions always have at least 1 constructor.
        The reference to the type extension shares the same name as the first constructor. *)
@@ -435,8 +440,9 @@ module EX = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.exception_in_sig sg (ExceptionName.to_string name) >>= fun _ ->
-    Ok (`Exception (parent', name))
+    find Find.exception_in_sig (Find.context_of_sig sg)
+      (ExceptionName.to_string name)
+    >>= fun _ -> Ok (`Exception (parent', name))
 end
 
 module CS = struct
@@ -450,7 +456,7 @@ module CS = struct
 
   let in_datatype _env ((parent', t) : datatype_lookup_result) name =
     let name_s = ConstructorName.to_string name in
-    find Find.any_in_type t name_s >>= function
+    find Find.any_in_type (Find.context_of_type t) name_s >>= function
     | `FConstructor _ -> Ok (`Constructor (parent', name))
     | `FField _ -> Error (`Find_by_name (`Cons, name_s))
 
@@ -476,12 +482,13 @@ module F = struct
     match parent with
     | `S (parent', parent_cp, sg) -> (
         let sg = Tools.prefix_signature (parent_cp, sg) in
-        find_ambiguous Find.any_in_type_in_sig sg name_s >>= function
+        find_ambiguous Find.any_in_type_in_sig (Find.context_of_sig sg) name_s
+        >>= function
         | `In_type (_, _, `FConstructor _) -> got_a_constructor name_s
         | `In_type (typ_name, _, `FField _) ->
             Ok (`Field (`Type (parent', typ_name), name)))
     | `T (parent', t) -> (
-        find Find.any_in_type t name_s >>= function
+        find Find.any_in_type (Find.context_of_type t) name_s >>= function
         | `FConstructor _ -> got_a_constructor name_s
         | `FField _ -> Ok (`Field ((parent' :> Resolved.Parent.t), name)))
     | (`C _ | `CT _ | `P _) as r -> wrong_kind_error [ `S; `T ] r
@@ -502,7 +509,9 @@ module MM = struct
   let in_env _env name : t ref_result = Error (`Lookup_by_name (`Any, name))
 
   let in_class_signature _env (parent', cs) name =
-    find Find.method_in_class_signature cs (MethodName.to_string name)
+    find Find.method_in_class_signature
+      (Find.context_of_class_sig cs)
+      (MethodName.to_string name)
     >>= fun _ -> Ok (`Method (parent', name))
 
   let of_component _env parent' name = Ok (`Method (parent', name))
@@ -517,7 +526,8 @@ module MV = struct
   let in_env _env name : t ref_result = Error (`Lookup_by_name (`Any, name))
 
   let in_class_signature _env (parent', cs) name =
-    find Find.instance_variable_in_class_signature cs
+    find Find.instance_variable_in_class_signature
+      (Find.context_of_class_sig cs)
       (InstanceVariableName.to_string name)
     >>= fun _ -> Ok (`InstanceVariable (parent', name))
 
@@ -558,7 +568,8 @@ module LP = struct
   let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
       =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find_ambiguous Find.label_parent_in_sig sg name >>= function
+    find_ambiguous Find.label_parent_in_sig (Find.context_of_sig sg) name
+    >>= function
     | `FModule (name, m) ->
         module_lookup_to_signature_lookup env
           (M.of_component env m
@@ -648,7 +659,9 @@ and resolve_signature_reference :
         >>= fun (parent, parent_cp, sg) ->
         let parent_cp = Tools.reresolve_parent env parent_cp in
         let sg = Tools.prefix_signature (parent_cp, sg) in
-        find_ambiguous ~kind:`S Find.signature_in_sig sg name >>= function
+        find_ambiguous ~kind:`S Find.signature_in_sig (Find.context_of_sig sg)
+          name
+        >>= function
         | `FModule (name, m) ->
             module_lookup_to_signature_lookup env
               (M.of_component env m
@@ -712,7 +725,8 @@ let resolved_type_lookup = function
 let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   let parent_path = Tools.reresolve_parent env parent_path in
   let parent_sg = Tools.prefix_signature (parent_path, parent_sg) in
-  find_ambiguous Find.any_in_sig parent_sg name >>= function
+  find_ambiguous Find.any_in_sig (Find.context_of_sig parent_sg) name
+  >>= function
   | `FModule (name, m) ->
       resolved3
         (M.of_component env m
@@ -743,13 +757,14 @@ let resolve_reference_dot_page env page name =
   L.in_page env page name >>= resolved1
 
 let resolve_reference_dot_type env ~parent_ref t name =
-  find Find.any_in_type t name >>= function
+  find Find.any_in_type (Find.context_of_type t) name >>= function
   | `FConstructor _ -> CS.of_component env parent_ref name >>= resolved1
   | `FField _ -> F.of_component env parent_ref name >>= resolved1
 
 let resolve_reference_dot_class env p name =
   type_lookup_to_class_signature_lookup env p >>= fun (parent_ref, cs) ->
-  find_ambiguous Find.any_in_class_signature cs name >>= function
+  find_ambiguous Find.any_in_class_signature (Find.context_of_class_sig cs) name
+  >>= function
   | `FMethod (name, _) -> MM.of_component env parent_ref name >>= resolved1
   | `FInstance_variable (name, _) ->
       MV.of_component env parent_ref name >>= resolved1
