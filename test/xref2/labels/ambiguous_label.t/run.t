@@ -10,6 +10,8 @@ Labels don't follow OCaml's scoping rules:
     File "test.ml", line 3, character 4
     File "test.ml", line 18, character 4
     File "test.ml", line 9, character 4
+  File "test_2.ml", line 1, characters 4-55:
+  Warning: Reference to 'example' is ambiguous. Please specify its kind: section-example, section-example, section-example.
 
 Contains some ambiguous labels:
 

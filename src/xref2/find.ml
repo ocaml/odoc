@@ -1,5 +1,10 @@
 open Odoc_model.Names
 open Component
+module StringTbl = Hashtbl.Make (struct
+  type t = string
+  let equal : string -> string -> bool = ( = )
+  let hash : string -> int = Hashtbl.hash
+end)
 
 type module_ = [ `FModule of ModuleName.t * Module.t Delayed.t ]
 
@@ -55,78 +60,6 @@ type method_ = [ `FMethod of MethodName.t * Method.t ]
 
 type any_in_class_sig = [ instance_variable | method_ ]
 
-type sig_ctx = Signature.t
-type type_ctx = TypeDecl.t
-type typext_ctx = Extension.t
-type class_sig_ctx = ClassSignature.t
-
-let context_of_sig sg = sg
-let context_of_type typ = typ
-let context_of_typext ext = ext
-let context_of_class_sig csig = csig
-
-module N = Ident.Name
-
-let rec find_map f = function
-  | hd :: tl -> ( match f hd with Some _ as x -> x | None -> find_map f tl)
-  | [] -> None
-
-let find_in_sig sg f =
-  let rec inner f = function
-    | Signature.Include i :: tl -> (
-        match inner f i.Include.expansion_.items with
-        | Some _ as x -> x
-        | None -> inner f tl)
-    | hd :: tl -> ( match f hd with Some _ as x -> x | None -> inner f tl)
-    | [] -> None
-  in
-  inner f sg.Signature.items
-
-let filter_in_sig sg f =
-  let rec inner f = function
-    | Signature.Include i :: tl ->
-        inner f i.Include.expansion_.items @ inner f tl
-    | hd :: tl -> (
-        match f hd with Some x -> x :: inner f tl | None -> inner f tl)
-    | [] -> []
-  in
-  inner f sg.Signature.items
-
-(** Returns the last element of a list. Used to implement [_unambiguous]
-    functions. *)
-let rec disambiguate = function
-  | [ x ] -> Some x
-  | [] -> None
-  | _ :: tl -> disambiguate tl
-
-let module_in_sig sg name =
-  find_in_sig sg (function
-    | Signature.Module (id, _, m) when N.module_ id = name ->
-        Some (`FModule (N.typed_module id, m))
-    | _ -> None)
-
-let module_type_in_sig sg name =
-  find_in_sig sg (function
-    | Signature.ModuleType (id, mt) when N.module_type id = name ->
-        Some (`FModuleType (N.typed_module_type id, mt))
-    | _ -> None)
-
-let type_in_sig sg name =
-  find_in_sig sg (function
-    | Signature.Type (id, _, m) when N.type_ id = name ->
-        Some (`FType (N.type' id, Delayed.get m))
-    | Class (id, _, c) when N.class_ id = name ->
-        Some (`FClass (N.class' id, c))
-    | ClassType (id, _, c) when N.class_type id = name ->
-        Some (`FClassType (N.class_type' id, c))
-    | _ -> None)
-
-let datatype_in_sig sg name =
-  find_in_sig sg (function
-    | Signature.Type (id, _, m) when N.type_ id = name ->
-        Some (`FType (N.type' id, Delayed.get m))
-    | _ -> None)
-
 type removed_type =
   [ `FType_removed of TypeName.t * TypeExpr.t * TypeDecl.Equation.t ]
 
@@ -141,51 +74,145 @@ type careful_datatype = [ datatype | removed_type ]
 
 type careful_class = [ class_ | removed_type ]
 
-let careful_module_in_sig sg name =
-  let removed_module = function
-    | Signature.RModule (id, p) when N.module_ id = name ->
-        Some (`FModule_removed p)
-    | _ -> None
+type careful_any_in_sig =
+  [ any_in_sig | careful_module | careful_module_type | removed_type ]
+
+module N = Ident.Name
+
+type sig_ctx = careful_any_in_sig list StringTbl.t
+type type_ctx = TypeDecl.t
+type typext_ctx = Extension.t
+type class_sig_ctx = ClassSignature.t
+
+(** Add a binding to a ['a list StringTbl.t]. If the binding already exists in
+    the table, the new value is appended to the corresponding list instead. *)
+let tbl_add_multi tbl k v =
+  try StringTbl.replace tbl k (v :: StringTbl.find tbl k)
+  with Not_found -> StringTbl.add tbl k [ v ]
+
+let items_in_type (typ : TypeDecl.t) =
+  let variant_items cons =
+    (cons.TypeDecl.Constructor.name, `FConstructor cons)
   in
-  match module_in_sig sg name with
-  | Some _ as x -> x
-  | None -> find_map removed_module sg.Signature.removed
+  let record_items field = (field.TypeDecl.Field.name, `FField field) in
+  match typ.representation with
+  | Some (Variant cons) -> List.map variant_items cons
+  | Some (Record fields) -> List.map record_items fields
+  | Some Extensible | None -> []
+
+let context_of_sig sg =
+  let tbl : sig_ctx = StringTbl.create 32 in
+  let add name item = tbl_add_multi tbl name (item :> careful_any_in_sig) in
+  let rec add_sig_item = function
+    | Signature.Include i -> List.iter add_sig_item i.Include.expansion_.items
+    | Signature.Module (id, _, m) ->
+        let n = N.typed_module id in
+        add (ModuleName.to_string n) (`FModule (n, m))
+    | ModuleSubstitution (id, ms) -> add (N.module_ id) (`FModule_subst ms)
+    | ModuleType (id, mt) ->
+        let n = N.typed_module_type id in
+        add (ModuleTypeName.to_string n) (`FModuleType (n, mt))
+    | Type (id, _, t) ->
+        let t = Delayed.get t in
+        let n = N.type' id in
+        add (TypeName.to_string n) (`FType (n, t));
+        List.iter
+          (fun (name, item) -> add name (`In_type (n, t, item)))
+          (items_in_type t)
+    | TypeSubstitution (id, ts) -> add (N.type_ id) (`FType_subst ts)
+    | Exception (id, exc) ->
+        let n = N.typed_exception id in
+        add (ExceptionName.to_string n) (`FExn (n, exc))
+    | Value (id, v) ->
+        let n = N.typed_value id in
+        add (ValueName.to_string n) (`FValue (n, v))
+    | Class (id, _, c) ->
+        let n = N.class' id in
+        add (ClassName.to_string n) (`FClass (n, c))
+    | ClassType (id, _, ct) ->
+        let n = N.class_type' id in
+        add (ClassTypeName.to_string n) (`FClassType (n, ct))
+    | TypExt typext ->
+        List.iter
+          (fun (c : Extension.Constructor.t) -> add c.name (`FExt (typext, c)))
+          typext.constructors
+    | Comment (`Docs d) ->
+        List.iter
+          (fun elt ->
+            match elt.Odoc_model.Location_.value with
+            | `Heading lbl ->
+                add (Ident.Name.label lbl.Label.label) (`FLabel lbl)
+            | _ -> ())
+          d
+    | ModuleTypeSubstitution _ | Open _ | Comment `Stop -> ()
+  in
+  let add_removed_item = function
+    | Signature.RModule (id, p) -> add (N.module_ id) (`FModule_removed p)
+    | RType (id, p, eq) ->
+        let n = N.type' id in
+        add (TypeName.to_string n) (`FType_removed (n, p, eq))
+    | RModuleType (id, p) -> add (N.module_type id) (`FModuleType_removed p)
+  in
+  (* Removed items are added first, so they get looked up last. Ensures that a
+     non-removed module is looked up before a removed module. *)
+  List.iter add_removed_item sg.Signature.removed;
+  List.iter add_sig_item sg.Signature.items;
+  tbl
+
+let context_of_type typ = typ
+let context_of_typext ext = ext
+let context_of_class_sig csig = csig
+
+let rec find_map f = function
+  | hd :: tl -> ( match f hd with Some _ as x -> x | None -> find_map f tl)
+  | [] -> None
+
+let rec filter_map f = function
+  | hd :: tl -> (
+      match f hd with Some x -> x :: filter_map f tl | None -> filter_map f tl)
+  | [] -> []
+
+let find_in_sig sg name f =
+  try find_map f (StringTbl.find sg name) with Not_found -> None
+
+let filter_in_sig sg name f =
+  try filter_map f (StringTbl.find sg name) with Not_found -> []
+
+(** Returns the last element of a list. Used to implement [_unambiguous]
+    functions. *)
+let rec disambiguate = function
+  | [ x ] -> Some x
+  | [] -> None
+  | _ :: tl -> disambiguate tl
+
+let module_in_sig sg name =
+  find_in_sig sg name (function #module_ as x -> Some x | _ -> None)
+
+let type_in_sig sg name =
+  find_in_sig sg name (function #type_ as x -> Some x | _ -> None)
+
+let datatype_in_sig sg name =
+  find_in_sig sg name (function #datatype as x -> Some x | _ -> None)
+
+let careful_module_in_sig sg name =
+  find_in_sig sg name (function #careful_module as x -> Some x | _ -> None)
 
 let careful_module_type_in_sig sg name =
-  let removed_module_type = function
-    | Signature.RModuleType (id, p) when N.module_type id = name ->
-        Some (`FModuleType_removed p)
-    | _ -> None
-  in
-  match module_type_in_sig sg name with
-  | Some _ as x -> x
-  | None -> find_map removed_module_type sg.Signature.removed
+  find_in_sig sg name (function
+    | #careful_module_type as x -> Some x
+    | _ -> None)
 
 let removed_type_in_sig sg name =
-  let removed_type = function
-    | Signature.RType (id, p, eq) when N.type_ id = name ->
-        Some (`FType_removed (N.type' id, p, eq))
-    | _ -> None
-  in
-  find_map removed_type sg.Signature.removed
+  find_in_sig sg name (function #removed_type as x -> Some x | _ -> None)
 
 let careful_type_in_sig sg name =
-  match type_in_sig sg name with
-  | Some _ as x -> x
-  | None -> removed_type_in_sig sg name
+  find_in_sig sg name (function #careful_type as x -> Some x | _ -> None)
 
 let careful_datatype_in_sig sg name =
-  match datatype_in_sig sg name with
-  | Some _ as x -> x
-  | None -> removed_type_in_sig sg name
+  find_in_sig sg name (function #careful_datatype as x -> Some x | _ -> None)
 
 let class_in_sig sg name =
-  filter_in_sig sg (function
-    | Signature.Class (id, _, c) when N.class_ id = name ->
-        Some (`FClass (N.class' id, c))
-    | Signature.ClassType (id, _, c) when N.class_type id = name ->
-        Some (`FClassType (N.class_type' id, c))
-    | _ -> None)
+  filter_in_sig sg name (function #class_ as x -> Some x | _ -> None)
 
 let class_in_sig_unambiguous sg name = disambiguate (class_in_sig sg name)
 
@@ -235,110 +262,35 @@ let any_in_typext (typext : Extension.t) name =
   in
   inner typext.constructors
 
-let any_in_comment d name =
-  let rec inner xs =
-    match xs with
-    | elt :: rest -> (
-        match elt.Odoc_model.Location_.value with
-        | `Heading lbl when Ident.Name.label lbl.Label.label = name ->
-            Some (`FLabel lbl)
-        | _ -> inner rest)
-    | [] -> None
-  in
-  inner d
-
 let any_in_sig sg name =
-  filter_in_sig sg (function
-    | Signature.Module (id, _, m) when N.module_ id = name ->
-        Some (`FModule (N.typed_module id, m))
-    | ModuleSubstitution (id, ms) when N.module_ id = name ->
-        Some (`FModule_subst ms)
-    | ModuleType (id, mt) when N.module_type id = name ->
-        Some (`FModuleType (N.typed_module_type id, mt))
-    | Type (id, _, t) when N.type_ id = name ->
-        Some (`FType (N.type' id, Delayed.get t))
-    | TypeSubstitution (id, ts) when N.type_ id = name -> Some (`FType_subst ts)
-    | Exception (id, exc) when N.exception_ id = name ->
-        Some (`FExn (N.typed_exception id, exc))
-    | Value (id, v) when N.value id = name ->
-        Some (`FValue (N.typed_value id, v))
-    | Class (id, _, c) when N.class_ id = name ->
-        Some (`FClass (N.class' id, c))
-    | ClassType (id, _, ct) when N.class_type id = name ->
-        Some (`FClassType (N.class_type' id, ct))
-    | Type (id, _, t) -> (
-        let typ = Delayed.get t in
-        match any_in_type typ name with
-        | Some r -> Some (`In_type (N.type' id, typ, r))
-        | None -> None)
-    | TypExt typext -> any_in_typext typext name
-    | Comment (`Docs d) -> any_in_comment d name
-    | _ -> None)
+  filter_in_sig sg name (function #any_in_sig as x -> Some x | _ -> None)
 
 let signature_in_sig sg name =
-  filter_in_sig sg (function
-    | Signature.Module (id, _, m) when N.module_ id = name ->
-        Some (`FModule (N.typed_module id, m))
-    | ModuleType (id, mt) when N.module_type id = name ->
-        Some (`FModuleType (N.typed_module_type id, mt))
-    | _ -> None)
+  filter_in_sig sg name (function #signature as x -> Some x | _ -> None)
 
 let module_type_in_sig sg name =
-  find_in_sig sg (function
-    | Signature.ModuleType (id, m) when N.module_type id = name ->
-        Some (`FModuleType (N.typed_module_type id, m))
-    | _ -> None)
+  find_in_sig sg name (function #module_type as x -> Some x | _ -> None)
 
 let value_in_sig sg name =
-  filter_in_sig sg (function
-    | Signature.Value (id, m) when N.value id = name ->
-        Some (`FValue (N.typed_value id, m))
-    | _ -> None)
+  filter_in_sig sg name (function #value as x -> Some x | _ -> None)
 
 let value_in_sig_unambiguous sg name = disambiguate (value_in_sig sg name)
 
 let label_in_sig sg name =
-  filter_in_sig sg (function
-    | Signature.Comment (`Docs d) -> any_in_comment d name
-    | _ -> None)
+  filter_in_sig sg name (function #label as x -> Some x | _ -> None)
 
 let exception_in_sig sg name =
-  find_in_sig sg (function
-    | Signature.Exception (id, e) when N.exception_ id = name ->
-        Some (`FExn (N.typed_exception id, e))
-    | _ -> None)
+  find_in_sig sg name (function #exception_ as x -> Some x | _ -> None)
 
 let extension_in_sig sg name =
-  let rec inner t = function
-    | ec :: _ when ec.Extension.Constructor.name = name -> Some (`FExt (t, ec))
-    | _ :: tl -> inner t tl
-    | [] -> None
-  in
-  find_in_sig sg (function
-    | Signature.TypExt t -> inner t t.Extension.constructors
-    | _ -> None)
+  find_in_sig sg name (function #extension as x -> Some x | _ -> None)
 
 let label_parent_in_sig sg name =
-  filter_in_sig sg (function
-    | Signature.Module (id, _, m) when N.module_ id = name ->
-        Some (`FModule (N.typed_module id, m))
-    | ModuleType (id, mt) when N.module_type id = name ->
-        Some (`FModuleType (N.typed_module_type id, mt))
-    | Type (id, _, t) when N.type_ id = name ->
-        Some (`FType (N.type' id, Component.Delayed.get t))
-    | Class (id, _, c) when N.class_ id = name ->
-        Some (`FClass (N.class' id, c))
-    | ClassType (id, _, c) when N.class_type id = name ->
-        Some (`FClassType (N.class_type' id, c))
-    | _ -> None)
+  filter_in_sig sg name (function #label_parent as x -> Some x | _ -> None)
 
 let any_in_type_in_sig sg name =
-  filter_in_sig sg (function
-    | Signature.Type (id, _, t) -> (
-        let t = Delayed.get t in
-        match any_in_type t name with
-        | Some x -> Some (`In_type (N.type' id, t, x))
-        | None -> None)
+  filter_in_sig sg name (function
+    | #any_in_type_in_sig as x -> Some x
     | _ -> None)
 
 let filter_in_class_signature cs f =
