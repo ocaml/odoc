@@ -31,6 +31,8 @@ module Delayed : sig
   val put : (unit -> 'a) -> 'a t
 
   val put_val : 'a -> 'a t
+
+  val map : ('a -> 'b) -> 'a t -> 'b t
 end
 
 module Opt : sig

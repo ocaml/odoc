@@ -15,9 +15,9 @@ val context_of_type : TypeDecl.t -> type_ctx
 val context_of_typext : Extension.t -> typext_ctx
 val context_of_class_sig : ClassSignature.t -> class_sig_ctx
 
-type module_ = [ `FModule of ModuleName.t * Module.t ]
+type module_ = [ `FModule of ModuleName.t * Module.t Delayed.t ]
 
-type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t ]
+type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t Delayed.t ]
 
 type datatype = [ `FType of TypeName.t * TypeDecl.t ]
 
@@ -25,7 +25,7 @@ type class_ =
   [ `FClass of ClassName.t * Class.t
   | `FClassType of ClassTypeName.t * ClassType.t ]
 
-type value = [ `FValue of ValueName.t * Value.t ]
+type value = [ `FValue of ValueName.t * Value.t Delayed.t ]
 
 type label = [ `FLabel of Label.t ]
 

@@ -70,6 +70,8 @@ module Delayed = struct
     else { v = None; get = Some f }
 
   let put_val : 'a -> 'a t = fun v -> { v = Some v; get = None }
+
+  let map f t = put (fun () -> f (get t))
 end
 
 module Opt = struct

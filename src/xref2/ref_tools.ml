@@ -202,6 +202,7 @@ module M = struct
     let sg = Tools.prefix_signature (parent_cp, sg) in
     find Find.module_in_sig (Find.context_of_sig sg) name
     >>= fun (`FModule (name, m)) ->
+    let m = Component.Delayed.get m in
     Ok (of_component env m (`Module (parent_cp, name)) (`Module (parent, name)))
 
   let of_element env (`Module (id, m)) : t =
@@ -234,7 +235,7 @@ module MT = struct
     find Find.module_type_in_sig (Find.context_of_sig sg) name
     >>= fun (`FModuleType (name, mt)) ->
     Ok
-      (of_component env mt
+      (of_component env (Component.Delayed.get mt)
          (`ModuleType (parent_cp, name))
          (`ModuleType (parent', name)))
 
@@ -572,13 +573,13 @@ module LP = struct
     >>= function
     | `FModule (name, m) ->
         module_lookup_to_signature_lookup env
-          (M.of_component env m
+          (M.of_component env (Component.Delayed.get m)
              (`Module (parent_cp, name))
              (`Module (parent', name)))
         >>= fun s -> Ok (`S s)
     | `FModuleType (name, mt) ->
         module_type_lookup_to_signature_lookup env
-          (MT.of_component env mt
+          (MT.of_component env (Component.Delayed.get mt)
              (`ModuleType (parent_cp, name))
              (`ModuleType (parent', name)))
         >>= fun s -> Ok (`S s)
@@ -664,12 +665,12 @@ and resolve_signature_reference :
         >>= function
         | `FModule (name, m) ->
             module_lookup_to_signature_lookup env
-              (M.of_component env m
+              (M.of_component env (Component.Delayed.get m)
                  (`Module (parent_cp, name))
                  (`Module (parent, name)))
         | `FModuleType (name, mt) ->
             module_type_lookup_to_signature_lookup env
-              (MT.of_component env mt
+              (MT.of_component env (Component.Delayed.get mt)
                  (`ModuleType (parent_cp, name))
                  (`ModuleType (parent, name))))
   in
@@ -729,12 +730,12 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   >>= function
   | `FModule (name, m) ->
       resolved3
-        (M.of_component env m
+        (M.of_component env (Component.Delayed.get m)
            (`Module (parent_path, name))
            (`Module (parent_ref, name)))
   | `FModuleType (name, mt) ->
       resolved3
-        (MT.of_component env mt
+        (MT.of_component env (Component.Delayed.get mt)
            (`ModuleType (parent_path, name))
            (`ModuleType (parent_ref, name)))
   | `FType (name, t) -> DT.of_component env t ~parent_ref name >>= resolved2

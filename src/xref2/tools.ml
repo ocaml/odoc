@@ -602,6 +602,7 @@ and handle_module_lookup env ~add_canonical id rparent fctx sub =
   match Find.careful_module_in_sig fctx id with
   | Some (`FModule (name, m)) ->
       let rp' = simplify_module env (`Module (rparent, name)) in
+      let m = Component.Delayed.get m in
       let m' = Subst.module_ sub m in
       let md' = Component.Delayed.put_val m' in
       Ok (process_module_path env ~add_canonical m' rp', md')
@@ -612,6 +613,7 @@ and handle_module_lookup env ~add_canonical id rparent fctx sub =
 and handle_module_type_lookup env ~add_canonical id p fctx sub =
   let open OptionMonad in
   Find.module_type_in_sig fctx id >>= fun (`FModuleType (name, mt)) ->
+  let mt = Component.Delayed.get mt in
   let mt = Subst.module_type sub mt in
   let p' = simplify_module_type env (`ModuleType (p, name)) in
   let p'' = process_module_type env ~add_canonical mt p' in
@@ -675,6 +677,7 @@ and lookup_module_gpath :
         match Find.careful_module_in_sig fctx (ModuleName.to_string name) with
         | None -> Error `Find_failure
         | Some (`FModule (_, m)) ->
+            let m = Component.Delayed.get m in
             Ok (Component.Delayed.put_val (Subst.module_ sub m))
         | Some (`FModule_removed p) -> lookup_module ~mark_substituted env p
       in
@@ -713,6 +716,7 @@ and lookup_module :
           match Find.careful_module_in_sig fctx (ModuleName.to_string name) with
           | None -> Error `Find_failure
           | Some (`FModule (_, m)) ->
+              let m = Component.Delayed.get m in
               Ok (Component.Delayed.put_val (Subst.module_ sub m))
           | Some (`FModule_removed p) -> lookup_module ~mark_substituted env p
         in
@@ -747,7 +751,9 @@ and lookup_module_type_gpath :
       let find_in_sg fctx sub =
         match Find.module_type_in_sig fctx (ModuleTypeName.to_string name) with
         | None -> Error `Find_failure
-        | Some (`FModuleType (_, mt)) -> Ok (Subst.module_type sub mt)
+        | Some (`FModuleType (_, mt)) ->
+            let mt = Component.Delayed.get mt in
+            Ok (Subst.module_type sub mt)
       in
       lookup_parent_gpath ~mark_substituted env parent
       |> map_error (fun e -> (e :> simple_module_type_lookup_error))
@@ -774,7 +780,9 @@ and lookup_module_type :
             Find.module_type_in_sig fctx (ModuleTypeName.to_string name)
           with
           | None -> Error `Find_failure
-          | Some (`FModuleType (_, mt)) -> Ok (Subst.module_type sub mt)
+          | Some (`FModuleType (_, mt)) ->
+              let mt = Component.Delayed.get mt in
+              Ok (Subst.module_type sub mt)
         in
         lookup_parent ~mark_substituted:true env parent
         |> map_error (fun e -> (e :> simple_module_type_lookup_error))
@@ -1018,7 +1026,8 @@ and lookup_value :
   |> map_error (fun e -> (e :> simple_value_lookup_error))
   >>= fun (_sg, sub, fctx) ->
   handle_value_lookup env (ValueName.to_string id) p fctx
-  >>= fun (_, `FValue (name, c)) -> Ok (`FValue (name, Subst.value sub c))
+  >>= fun (_, `FValue (name, c)) ->
+  Ok (`FValue (name, Component.Delayed.map (Subst.value sub) c))
 
 and lookup_constructor :
     Env.t ->
@@ -1360,7 +1369,7 @@ and resolve_value : Env.t -> Cpath.value -> resolve_value_result =
         let fctx = Find.context_of_sig sg in
         handle_value_lookup env id (`Module p) fctx
         >>= fun (p', `FValue (name, c)) ->
-        Ok (p', `FValue (name, Subst.value sub c))
+        Ok (p', `FValue (name, Component.Delayed.map (Subst.value sub) c))
     | `Value (parent, id) ->
         lookup_parent ~mark_substituted:true env parent
         |> map_error (fun e -> (e :> simple_value_lookup_error))
@@ -1368,7 +1377,9 @@ and resolve_value : Env.t -> Cpath.value -> resolve_value_result =
         let result =
           match Find.value_in_sig fctx (ValueName.to_string id) with
           | `FValue (name, t) :: _ ->
-              Some (`Value (parent, name), `FValue (name, Subst.value sub t))
+              Some
+                ( `Value (parent, name),
+                  `FValue (name, Component.Delayed.map (Subst.value sub) t) )
           | [] -> None
         in
         of_option ~error:`Find_failure result
@@ -2117,8 +2128,7 @@ and fragmap :
             fn (Component.Delayed.get t) >>= function
             | Left x ->
                 Ok
-                  ( Component.Signature.Type
-                      (id, r, Component.Delayed.put (fun () -> x))
+                  ( Component.Signature.Type (id, r, Component.Delayed.put_val x)
                     :: items,
                     true,
                     subbed_modules,
@@ -2135,7 +2145,7 @@ and fragmap :
             | Left x ->
                 Ok
                   ( Component.Signature.Module
-                      (id, r, Component.Delayed.put (fun () -> x))
+                      (id, r, Component.Delayed.put_val x)
                     :: items,
                     true,
                     id :: subbed_modules,
@@ -2179,7 +2189,7 @@ and fragmap :
             | Left x ->
                 Ok
                   ( Component.Signature.ModuleType
-                      (id, Component.Delayed.put (fun () -> x))
+                      (id, Component.Delayed.put_val x)
                     :: items,
                     true,
                     subbed_modules,
@@ -2426,7 +2436,7 @@ and find_module_with_replacement :
  fun env sg name ->
   let fctx = Find.context_of_sig sg in
   match Find.careful_module_in_sig fctx name with
-  | Some (`FModule (_, m)) -> Ok (Component.Delayed.put_val m)
+  | Some (`FModule (_, m)) -> Ok m
   | Some (`FModule_removed path) ->
       lookup_module ~mark_substituted:false env path
   | None -> Error `Find_failure
@@ -2441,7 +2451,7 @@ and find_module_type_with_replacement :
  fun _env sg name ->
   let fctx = Find.context_of_sig sg in
   match Find.careful_module_type_in_sig fctx name with
-  | Some (`FModuleType (_, m)) -> Ok (Component.Delayed.put_val m)
+  | Some (`FModuleType (_, mt)) -> Ok mt
   | None -> Error `Find_failure
   | Some (`FModuleType_removed _mty) -> Error `Find_failure
 
