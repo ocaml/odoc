@@ -41,5 +41,6 @@ depends: [
   "bos"
   "yojson" {>= "1.6.0"}
   "mdx" {>= "2.3.0"}
-  "core"
+  "core" {= "v0.16.2"}
+  "core_kernel" {= "v0.16.0"}
 ]
