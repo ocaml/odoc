@@ -12,4 +12,6 @@
 (rule
  (alias bench)
  (action
-  (cat doc/driver-benchmarks.json)))
+  (progn
+   (bash "diff doc/driver.mld doc/driver.mld.corrected >&2 || true")
+   (cat doc/driver-benchmarks.json))))
