@@ -412,6 +412,27 @@
   (>= %{ocaml_version} 4.04)))
 
 (rule
+ (target module_type_of.cmti)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module_type_of.mli}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target module_type_of.odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:module_type_of.cmti}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target module_type_of.odocl)
+ (action
+  (run odoc link -o %{target} %{dep:module_type_of.odoc}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
  (target module_type_subst.cmti)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module_type_subst.mli}))
@@ -3720,6 +3741,217 @@
   (alias runtest)
   (action
    (diff module_type_alias.targets module_type_alias.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (targets
+   Module_type_of.html.gen
+   Module_type_of-module-type-S.html.gen
+   Module_type_of-module-type-S-module-type-T.html.gen
+   Module_type_of-module-type-S-M.html.gen
+   Module_type_of-module-type-S-N.html.gen
+   Module_type_of-X.html.gen
+   Module_type_of-T.html.gen
+   Module_type_of-T-module-type-T.html.gen
+   Module_type_of-T-N.html.gen)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../module_type_of.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of.html Module_type_of.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_of-module-type-S.html
+    Module_type_of-module-type-S.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_of-module-type-S-module-type-T.html
+    Module_type_of-module-type-S-module-type-T.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_of-module-type-S-M.html
+    Module_type_of-module-type-S-M.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_of-module-type-S-N.html
+    Module_type_of-module-type-S-N.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of-X.html Module_type_of-X.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of-T.html Module_type_of-T.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Module_type_of-T-module-type-T.html
+    Module_type_of-T-module-type-T.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of-T-N.html Module_type_of-T-N.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (action
+   (with-outputs-to
+    module_type_of.targets.gen
+    (run odoc html-targets -o . %{dep:../module_type_of.odocl} --flat)))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff module_type_of.targets module_type_of.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (targets Module_type_of.tex.gen Module_type_of.T.tex.gen)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../module_type_of.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of.tex Module_type_of.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of.T.tex Module_type_of.T.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (action
+   (with-outputs-to
+    module_type_of.targets.gen
+    (run odoc latex-targets -o . %{dep:../module_type_of.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff module_type_of.targets module_type_of.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (targets
+   Module_type_of.3o.gen
+   Module_type_of.X.3o.gen
+   Module_type_of.T.3o.gen
+   Module_type_of.T.N.3o.gen)
+  (action
+   (run
+    odoc
+    man-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../module_type_of.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of.3o Module_type_of.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of.X.3o Module_type_of.X.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of.T.3o Module_type_of.T.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of.T.N.3o Module_type_of.T.N.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (action
+   (with-outputs-to
+    module_type_of.targets.gen
+    (run odoc man-targets -o . %{dep:../module_type_of.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff module_type_of.targets module_type_of.targets.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
 

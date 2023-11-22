@@ -1,0 +1,16 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Module_type_of\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Module_type_of\.X\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t
+.sp 
+\f[CB]type\fR u
