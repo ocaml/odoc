@@ -1,0 +1,47 @@
+
+.TH Module_type_of 3 "" "Odoc" "OCaml Library"
+.SH Name
+Module_type_of
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Module_type_of\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR T = \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR M : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR N : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t = M\.t
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR X : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR T : S \f[CB]with\fR \f[CB]module\fR M = X
