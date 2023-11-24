@@ -31,23 +31,23 @@ let print_result ~print_cost
   in
   Format.printf "%s%s %s%a\n" score kind name pp_rhs rhs
 
-let search ~print_cost ~dynamic_sort ~db query =
+let search ~print_cost ~dynamic_sort ~limit ~db query =
   match
-    Query.(api ~shards:db ~dynamic_sort { query; packages = []; limit = 10 })
+    Query.(api ~shards:db ~dynamic_sort { query; packages = []; limit })
   with
   | _, [] -> print_endline "[No results]"
   | _, (_ :: _ as results) ->
       List.iter (print_result ~print_cost) results ;
       flush stdout
 
-let rec search_loop ~print_cost ~dynamic_sort ~db =
+let rec search_loop ~print_cost ~dynamic_sort ~limit ~db =
   match In_channel.input_line stdin with
   | Some query ->
-      search ~print_cost ~dynamic_sort ~db query ;
-      search_loop ~print_cost ~dynamic_sort ~db
+      search ~print_cost ~dynamic_sort ~limit ~db query ;
+      search_loop ~print_cost ~dynamic_sort ~limit ~db
   | None -> print_endline "[Search session ended]"
 
-let main db query print_cost dynamic_sort =
+let main db query print_cost dynamic_sort limit =
   match db with
   | None ->
       output_string stderr
@@ -57,8 +57,8 @@ let main db query print_cost dynamic_sort =
   | Some db -> (
       let db = Storage_marshal.load db in
       match query with
-      | None -> search_loop ~print_cost ~dynamic_sort ~db
-      | Some query -> search ~print_cost ~dynamic_sort ~db query)
+      | None -> search_loop ~print_cost ~dynamic_sort ~limit ~db
+      | Some query -> search ~print_cost ~dynamic_sort ~limit ~db query)
 
 open Cmdliner
 
@@ -88,7 +88,7 @@ let dynamic_sort =
   in
   Arg.(value & flag & info [ "dynamic-sort" ] ~doc)
 
-let main = Term.(const main $ db_filename $ query $ print_cost $ dynamic_sort)
+let main = Term.(const main $ db_filename $ query $ print_cost $ dynamic_sort $ limit)
 
 let cmd =
   let doc = "CLI interface to query sherlodoc" in
