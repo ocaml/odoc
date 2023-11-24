@@ -5,34 +5,32 @@
  (aliases runtest support-files)
  (enabled_if
   (> %{ocaml_version} 4.08))
+ (target odoc_html_support_files.ml)
  (deps
-  (:x odoc_html_support_files.ml)
   (glob_files *.js)
   (glob_files *.css)
   (glob_files_rec *.ttf)
   (glob_files_rec *.woff2))
  (action
-  (progn
-   (setenv
-    SOURCE_DATE_EPOCH
-    0
-    (run
-     ocaml-crunch
-     .
-     -e
-     js
-     -e
-     css
-     -e
-     ttf
-     -e
-     woff2
-     -o
-     %{x}.corrected
-     -m
-     plain
-     -s))
-   (diff? %{x} %{x}.corrected))))
+  (setenv
+   SOURCE_DATE_EPOCH
+   0
+   (run
+    ocaml-crunch
+    .
+    -e
+    js
+    -e
+    css
+    -e
+    ttf
+    -e
+    woff2
+    -o
+    odoc_html_support_files.ml
+    -m
+    plain
+    -s))))
 
 (library
  (name odoc_html_support_files)
