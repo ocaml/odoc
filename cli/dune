@@ -3,4 +3,5 @@
 (executable
  (name main)
  (public_name sherlodoc)
+ (package sherlodoc)
  (libraries cmdliner query storage_marshal))

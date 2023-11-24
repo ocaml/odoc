@@ -1,6 +1,7 @@
 (executable
  (public_name sherlodoc_index)
  (name index)
+ (package sherlodoc)
  (libraries
   db
   fpath
@@ -12,6 +13,6 @@
   odoc.xref2
   odoc.odoc
   cmdliner
-  storage_ancient
+  ; storage_ancient
   storage_marshal
   storage_js))

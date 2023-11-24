@@ -16,7 +16,9 @@ let index_file register filename =
       | Error (`Msg msg) -> Format.printf "Odoc warning or error %s: %s@." filename msg)
 
 let storage_module = function
-  | `ancient -> (module Storage_ancient : Db.Storage.S)
+  | `ancient ->
+      (* (module Storage_ancient : Db.Storage.S) *)
+      failwith "TODO"
   | `marshal -> (module Storage_marshal : Db.Storage.S)
   | `js -> (module Storage_js : Db.Storage.S)
 
