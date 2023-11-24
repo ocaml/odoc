@@ -185,10 +185,6 @@ following convention should be followed.
 - If there is no installed [index.mld] page, the driver has to generate some
   content for the [pkg] page.
 
-When the rendering of source code is enabled, the source tree will be named
-[source] and will be a child of the [pkg] page. As a consequence, no installed
-page can be named [source.mld].
-
 This convention is followed by the
 {{:https://github.com/ocaml-doc/voodoo}driver for ocaml.org},
 by the driver {{:https://erratique.ch/software/odig/doc/packaging.html}Odig}
