@@ -21,4 +21,4 @@ let string str =
   let b = Buffer.create (String.length str) in
   buffer b lexbuf ;
   Buffer.contents b
-}C
+}
