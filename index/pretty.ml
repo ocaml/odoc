@@ -118,6 +118,7 @@ let rec full_name_aux : Paths.Identifier.t -> string list =
     | `SourceLocationMod id -> full_name_aux (id :> t)
     | `SourceLocationInternal (parent, name) ->
         LocalName.to_string name :: full_name_aux (parent :> t)
+    | `ExtensionDecl _ -> failwith "todo"
 
 let fullname : [< Paths.Identifier.t_pv ] Paths.Identifier.id -> string list =
  fun n -> List.rev @@ full_name_aux (n :> Paths.Identifier.t)
