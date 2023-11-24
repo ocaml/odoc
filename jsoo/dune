@@ -2,3 +2,13 @@
  (name main)
  (modes js)
  (libraries tyxml query storage_js brr odoc.search_html_frontend))
+
+(rule
+ (alias all)
+ (action
+  (copy main.bc.js sherlodoc.js)))
+
+(install
+ (files sherlodoc.js)
+ (section bin)
+ (package sherlodoc))
