@@ -1,0 +1,14 @@
+
+.TH Bar 3 "" "Odoc" "OCaml Library"
+.SH Name
+Functor_ml\.Bar
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Functor_ml\.Bar\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t
