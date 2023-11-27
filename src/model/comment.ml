@@ -65,6 +65,7 @@ type nestable_block_element =
   | `Code_block of
     string option
     * string with_location
+    * Odoc_parser.Ast.code_block_tags
     * nestable_block_element with_location list option
   | `Math_block of string
   | `Verbatim of string

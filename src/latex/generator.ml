@@ -318,7 +318,7 @@ let rec block ~in_source (l : Block.t) =
         ]
     | Raw_markup r -> raw_markup r
     | Verbatim s -> [ Verbatim s ]
-    | Source (_, c) -> non_empty_block_code c
+    | Source (_,_,_, c) -> non_empty_block_code c
     | Math s ->
         [
           Break Paragraph;

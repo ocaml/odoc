@@ -218,10 +218,10 @@ let rec nestable_block_element :
       Location.at location (`Paragraph (inline_elements content))
   | { value = `Code_block { meta; delimiter = _; content; output }; location }
     ->
-      let lang_tag =
+      let lang_tag, other_tags =
         match meta with
-        | Some { language = { Location.value; _ }; _ } -> Some value
-        | None -> None
+        | Some { language = { Location.value; _ }; tags } -> (Some value, tags)
+        | None -> (None, [])
       in
       let outputs =
         match output with
@@ -234,7 +234,7 @@ let rec nestable_block_element :
       let warnings = List.map Error.t_of_parser_t warnings in
       List.iter (Error.raise_warning ~non_fatal:true) warnings;
       let content = Location.at content.location trimmed_content in
-      Location.at location (`Code_block (lang_tag, content, outputs))
+      Location.at location (`Code_block (lang_tag, content, other_tags, outputs))
   | { value = `Math_block s; location } -> Location.at location (`Math_block s)
   | { value = `Verbatim v; location } ->
       let v, warnings = Odoc_parser.codeblock_content location v in

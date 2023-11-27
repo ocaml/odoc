@@ -22,6 +22,7 @@ type general_block_element =
   | `Code_block of
     string option
     * string with_location
+    * Odoc_parser.Ast.code_block_tags
     * general_block_element with_location list option
   | `Math_block of string
   | `Verbatim of string
@@ -126,7 +127,7 @@ let rec block_element : general_block_element t =
   Variant
     (function
     | `Paragraph x -> C ("`Paragraph", x, link_content)
-    | `Code_block (x1, x2, _) ->
+    | `Code_block (x1, x2, _, _) ->
         C ("`Code_block", (x1, ignore_loc x2), Pair (Option string, string))
     | `Math_block x -> C ("`Math_block", x, string)
     | `Verbatim x -> C ("`Verbatim", x, string)
