@@ -29,6 +29,9 @@ Tags:
 ### Changed
 - Style: Remove font fallback to Helvetica, Arial (@Julow, #1028)
 
+### Changed
+- Style: Adjusted line height in the TOC to improve readability (@sorawee, #1045)
+
 # 2.3.0
 
 ### Added
