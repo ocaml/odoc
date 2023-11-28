@@ -1070,7 +1070,7 @@ td.def-doc *:first-child {
 
 .odoc-toc li ul {
   margin: 0px;
-  padding-top: 4px;
+  padding-top: 0.25em;
 }
 
 .odoc-toc ul {
@@ -1078,7 +1078,7 @@ td.def-doc *:first-child {
 }
 
 .odoc-toc ul li {
-  padding: 4px 0;
+  padding: 0.25em 0;
 }
 
 .odoc-toc>ul>li {
