@@ -779,7 +779,7 @@ td.def-doc *:first-child {
   font-size: 0.95em;
   color: var(--color);
   font-weight: 400;
-  line-height: 1.6em;
+  line-height: 1.2em;
   display: block;
 }
 
@@ -1070,6 +1070,7 @@ td.def-doc *:first-child {
 
 .odoc-toc li ul {
   margin: 0px;
+  padding-top: 0.25em;
 }
 
 .odoc-toc ul {
@@ -1077,7 +1078,7 @@ td.def-doc *:first-child {
 }
 
 .odoc-toc ul li {
-  margin: 0;
+  padding: 0.25em 0;
 }
 
 .odoc-toc>ul>li {
