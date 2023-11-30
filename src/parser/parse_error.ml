@@ -82,6 +82,6 @@ let truncated_code_block_meta : Loc.span -> Warning.t =
 let truncated_code_block : Loc.span -> Warning.t =
   Warning.make ~suggestion:"add ']}'." "Missing end of code block."
 
-let unclosed_table : Loc.span -> Warning.t =
-  Warning.make ~suggestion:"try to add '}' at the end of table content."
-    "Unclosed table '{t ...' or '{table ...'"
+let invalid_table_syntax : ?suggestion:string -> Loc.span -> Warning.t =
+ fun ?suggestion ->
+  Warning.make ?suggestion "Unclosed table '{t ...' or '{table ...'"

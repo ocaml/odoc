@@ -126,7 +126,9 @@ module Reader = struct
           junk input;
           `End (acc, next_token.location)
       | `End ->
-          Parse_error.unclosed_table next_token.location |> add_warning input;
+          Parse_error.invalid_table_syntax next_token.location
+            ~suggestion:"try to add '}' at the end of table content."
+          |> add_warning input;
           junk input;
           `End (acc, next_token.location)
       | `Space _ | `Single_newline _ | `Blank_line _ ->
@@ -1345,7 +1347,8 @@ and light_table_row ~parent_markup ~last_loc input =
     let next_token = peek input in
     match next_token.value with
     | `End ->
-        Parse_error.unclosed_table next_token.location |> add_warning input;
+        Parse_error.invalid_table_syntax next_token.location
+        |> add_warning input;
         junk input;
         (`Stop, return acc_row acc_cell, next_token.location)
     | `Right_brace ->
