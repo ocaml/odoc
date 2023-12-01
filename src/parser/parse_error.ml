@@ -83,8 +83,6 @@ let truncated_code_block : Loc.span -> Warning.t =
   Warning.make ~suggestion:"add ']}'." "Missing end of code block."
 
 let end_not_allowed :
-    ?suggestion:string -> what:string -> in_what:string -> Loc.span -> Warning.t
-    =
- fun ?suggestion ~what ~in_what ->
-  Warning.make ?suggestion "%s is not allowed in %s." (capitalize_ascii what)
-    in_what
+    ?suggestion:string -> in_what:string -> Loc.span -> Warning.t =
+ fun ?suggestion ~in_what ->
+  Warning.make ?suggestion "End of text is not allowed in %s." in_what
