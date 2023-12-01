@@ -16,14 +16,11 @@ let make () =
   }
 
 let export db =
-  let t0 = Unix.gettimeofday () in
   let db =
     { db_names = Suffix_tree.With_elts.export db.writer_names
     ; db_types = Suffix_tree.With_occ.export db.writer_types
     }
   in
-  let t1 = Unix.gettimeofday () in
-  Format.printf "Export in %fms@." (1000.0 *. (t1 -. t0)) ;
   db
 
 let store db name elt ~count =

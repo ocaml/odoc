@@ -31,10 +31,7 @@ let main files index_docstring index_name type_search db_filename db_format =
       (Odoc_search.Entry.entries_of_item id item)
   in
   let h = Storage.open_out db_filename in
-  let t0 = Unix.gettimeofday () in
   List.iter (index_file register) files ;
-  let t1 = Unix.gettimeofday () in
-  Format.printf "Indexing in %fms@." (1000.0 *. (t1 -. t0)) ;
   let t = Db.export db in
   Storage.save ~db:h t ;
   Storage.close_out h

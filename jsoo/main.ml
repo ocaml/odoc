@@ -28,7 +28,7 @@ let stream_of_string str =
 let don't_wait_for fut = Fut.await fut Fun.id
 
 module Decompress_browser = struct
-  (** This module contains binding to the browser string compression api. It is 
+  (** This module contains binding to the browser string compression api. It is
       much faster than using an OCaml library, and does not require sending code
       over the network. *)
 
@@ -105,7 +105,6 @@ let search message =
   let _pretty_query, results =
     Query.(api ~shards:db { query; packages = []; limit = 50 })
   in
-  Printf.printf "Got %i results\n%!" (List.length results) ;
   let _ =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list

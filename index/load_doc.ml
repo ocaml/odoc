@@ -36,8 +36,8 @@ let cost ~name ~kind ~doc_html =
   generic_cost ~ignore_no_doc name has_doc + kind_cost kind
 
 (*
-  
-  todo : check usefulness 
+
+  todo : check usefulness
   let rec type_size = function
     | Odoc_model.Lang.TypeExpr.Var _ -> 1
     | Any -> 1
