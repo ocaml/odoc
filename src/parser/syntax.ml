@@ -1235,6 +1235,7 @@ and explicit_list_items :
     | `End ->
         Parse_error.not_allowed next_token.location ~what:(Token.describe `End)
           ~in_what:(Token.describe parent_markup)
+          ~suggestion:"try to add '}' at the end of the list content."
         |> add_warning input;
         (List.rev acc, next_token.location)
     | `Right_brace ->
@@ -1283,6 +1284,7 @@ and explicit_list_items :
         | `End ->
             Parse_error.not_allowed token_after_list_item.location
               ~what:(Token.describe `End) ~in_what:(Token.describe token)
+              ~suggestion:"try to add '}' at the end of the list content."
             |> add_warning input);
 
         let acc = content :: acc in
