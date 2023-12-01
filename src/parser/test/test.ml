@@ -3533,7 +3533,8 @@ let%expect_test _ =
         ((output (((f.ml (1 0) (1 3)) (unordered heavy ()))))
          (warnings
           ( "File \"f.ml\", line 1, characters 3-3:\
-           \nEnd of text is not allowed in '{ul ...}' (bulleted list)."
+           \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
+           \nSuggestion: try to add '}' at the end of the list content."
             "File \"f.ml\", line 1, characters 0-3:\
            \n'{ul ...}' (bulleted list) should not be empty."))) |}]
 
@@ -3567,9 +3568,11 @@ let%expect_test _ =
              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 11-11:\
-           \nEnd of text is not allowed in '{li ...}' (list item)."
+           \nEnd of text is not allowed in '{li ...}' (list item).\
+           \nSuggestion: try to add '}' at the end of the list content."
             "File \"f.ml\", line 1, characters 11-11:\
-           \nEnd of text is not allowed in '{ul ...}' (bulleted list)."))) |}]
+           \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
+           \nSuggestion: try to add '}' at the end of the list content."))) |}]
 
     let unterminated_left_curly_brace =
       test "{ul {- foo";
@@ -3581,9 +3584,11 @@ let%expect_test _ =
              ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 10-10:\
-           \nEnd of text is not allowed in '{- ...}' (list item)."
+           \nEnd of text is not allowed in '{- ...}' (list item).\
+           \nSuggestion: try to add '}' at the end of the list content."
             "File \"f.ml\", line 1, characters 10-10:\
-           \nEnd of text is not allowed in '{ul ...}' (bulleted list)."))) |}]
+           \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
+           \nSuggestion: try to add '}' at the end of the list content."))) |}]
 
     let empty_li_styntax =
       test "{ul {li }}";
@@ -5083,7 +5088,8 @@ let%expect_test _ =
            \n']}' is not allowed in '{ul ...}' (bulleted list).\
            \nSuggestion: move ']}' into a list item, '{li ...}' or '{- ...}'."
             "File \"f.ml\", line 1, characters 6-6:\
-           \nEnd of text is not allowed in '{ul ...}' (bulleted list)."
+           \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
+           \nSuggestion: try to add '}' at the end of the list content."
             "File \"f.ml\", line 1, characters 0-3:\
            \n'{ul ...}' (bulleted list) should not be empty."))) |}]
 
@@ -5096,7 +5102,8 @@ let%expect_test _ =
           ( "File \"f.ml\", line 1, characters 4-7:\
            \n'{li ...}' (list item) should not be empty."
             "File \"f.ml\", line 1, characters 11-11:\
-           \nEnd of text is not allowed in '{ul ...}' (bulleted list)."))) |}]
+           \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
+           \nSuggestion: try to add '}' at the end of the list content."))) |}]
 
     let right_bracket_in_heading =
       test "{2 ]}";
