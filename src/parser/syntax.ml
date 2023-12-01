@@ -126,8 +126,11 @@ module Reader = struct
           junk input;
           `End (acc, next_token.location)
       | `End ->
-          Parse_error.invalid_table_syntax next_token.location
-            ~suggestion:"try to add '}' at the end of table content."
+          Parse_error.end_not_allowed next_token.location
+            ~what:(Token.describe `End) ~in_what:"table"
+            ~suggestion:
+              "try to add '}' at the end of table content ('{t ...' or '{table \
+               ...' )."
           |> add_warning input;
           junk input;
           `End (acc, next_token.location)
@@ -1233,7 +1236,8 @@ and explicit_list_items :
     let next_token = peek input in
     match next_token.value with
     | `End ->
-        Parse_error.not_allowed next_token.location ~what:(Token.describe `End)
+        Parse_error.end_not_allowed next_token.location
+          ~what:(Token.describe `End)
           ~in_what:(Token.describe parent_markup)
           ~suggestion:"try to add '}' at the end of the list content."
         |> add_warning input;
@@ -1282,7 +1286,7 @@ and explicit_list_items :
         (match token_after_list_item.value with
         | `Right_brace -> junk input
         | `End ->
-            Parse_error.not_allowed token_after_list_item.location
+            Parse_error.end_not_allowed token_after_list_item.location
               ~what:(Token.describe `End) ~in_what:(Token.describe token)
               ~suggestion:"try to add '}' at the end of the list content."
             |> add_warning input);
@@ -1349,7 +1353,8 @@ and light_table_row ~parent_markup ~last_loc input =
     let next_token = peek input in
     match next_token.value with
     | `End ->
-        Parse_error.invalid_table_syntax next_token.location
+        Parse_error.end_not_allowed next_token.location
+          ~what:(Token.describe `End) ~in_what:"table"
         |> add_warning input;
         junk input;
         (`Stop, return acc_row acc_cell, next_token.location)

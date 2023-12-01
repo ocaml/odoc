@@ -82,6 +82,9 @@ let truncated_code_block_meta : Loc.span -> Warning.t =
 let truncated_code_block : Loc.span -> Warning.t =
   Warning.make ~suggestion:"add ']}'." "Missing end of code block."
 
-let invalid_table_syntax : ?suggestion:string -> Loc.span -> Warning.t =
- fun ?suggestion ->
-  Warning.make ?suggestion "Unclosed table '{t ...' or '{table ...'"
+let end_not_allowed :
+    ?suggestion:string -> what:string -> in_what:string -> Loc.span -> Warning.t
+    =
+ fun ?suggestion ~what ~in_what ->
+  Warning.make ?suggestion "%s is not allowed in %s." (capitalize_ascii what)
+    in_what

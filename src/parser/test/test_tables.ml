@@ -91,8 +91,8 @@ let%expect_test _ =
                 (table (syntax heavy) (grid ((row ((data ()))))) (align "no alignment")))))
              (warnings
               ( "File \"f.ml\", line 1, characters 16-16:\
-               \nUnclosed table '{t ...' or '{table ...'\
-               \nSuggestion: try to add '}' at the end of table content."))) |}]
+               \nEnd of text is not allowed in table.\
+               \nSuggestion: try to add '}' at the end of table content ('{t ...' or '{table ...' )."))) |}]
 
     let complex_table =
       test
@@ -211,8 +211,8 @@ let%expect_test _ =
             (table (syntax light) (grid ()) (align "no alignment")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 2-3:\
-           \nUnclosed table '{t ...' or '{table ...'\
-           \nSuggestion: try to add '}' at the end of table content."))) |}]
+           \nEnd of text is not allowed in table.\
+           \nSuggestion: try to add '}' at the end of table content ('{t ...' or '{table ...' )."))) |}]
 
     let simple =
       test {|
