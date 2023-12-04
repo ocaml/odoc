@@ -24,14 +24,23 @@
   (ocaml
    (>= 4.14.0))
   dune
-  decompress
-  bigstringaf
-  base64
-  fpath
+  (decompress
+   (>= 1.5.3))
+  (bigstringaf
+   (>= 0.9.1))
+  (base64
+   (>= 3.5.1))
+  (lwt
+   (>= 5.7.0))
+  (fpath
+   (>= 0.7.3))
   odoc
-  opam-core
-  (tyxml (>= 4.6.0))
-  brr
+  (opam-core
+   (>= 2.1.5))
+  (tyxml
+   (>= 4.6.0))
+  (brr
+   (>= 0.0.6))
   (alcotest :with-test)))
 
 (package
@@ -42,6 +51,8 @@
    (>= 4.14.0))
   dune
   sherlodoc
-  ancient
-  dream
+  (ancient
+   (>= 0.9.1))
+  (dream
+   (>= 1.0.0~alpha5))
   (alcotest :with-test)))

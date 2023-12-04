@@ -9,15 +9,15 @@ bug-reports: "https://github.com/art-w/sherlodoc/issues"
 depends: [
   "ocaml" {>= "4.14.0"}
   "dune" {>= "2.9"}
-  "decompress"
-  "bigstringaf"
-  "base64"
-  "lwt"
-  "fpath"
+  "decompress" {>= "1.5.3"}
+  "bigstringaf" {>= "0.9.1"}
+  "base64" {>= "3.5.1"}
+  "lwt" {>= "5.7.0"}
+  "fpath" {>= "0.7.3"}
   "odoc"
-  "opam-core"
+  "opam-core" {>= "2.1.5"}
   "tyxml" {>= "4.6.0"}
-  "brr"
+  "brr" {>= "0.0.6"}
   "alcotest" {with-test}
 ]
 build: [
