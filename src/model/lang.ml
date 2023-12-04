@@ -169,12 +169,12 @@ end =
 
 and Include : sig
   type shadowed = {
-    s_modules : string list;
-    s_module_types : string list;
-    s_values : string list;
-    s_types : string list;
-    s_classes : string list;
-    s_class_types : string list;
+    s_modules : (string * Names.ModuleName.t) list;
+    s_module_types : (string * Names.ModuleTypeName.t) list;
+    s_values : (string * Names.ValueName.t) list;
+    s_types : (string * Names.TypeName.t) list;
+    s_classes : (string * Names.ClassName.t) list;
+    s_class_types : (string * Names.ClassTypeName.t) list;
   }
 
   type expansion = { shadowed : shadowed; content : Signature.t }
