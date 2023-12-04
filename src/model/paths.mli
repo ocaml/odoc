@@ -204,7 +204,7 @@ module Identifier : sig
   (** The fullname of value [x] in module [M] is [M.x], whereas the regular name
       is [x]. *)
 
-  val is_internal : [< t_pv ] id -> bool
+  val is_hidden : [< t_pv ] id -> bool
 
   val compare : t -> t -> int
 

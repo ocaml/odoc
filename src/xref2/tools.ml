@@ -1693,34 +1693,21 @@ and signature_of_module_type_of :
     Component.ModuleType.type_of_desc ->
     original_path:Cpath.module_ ->
     (expansion, expansion_of_module_error) Result.result =
- fun env desc ~original_path ->
+ fun env desc ~original_path:_ ->
   let p, strengthen =
     match desc with ModPath p -> (p, false) | StructInclude p -> (p, true)
   in
+  (*
   match Cpath.original_path_cpath original_path with
   | None -> Error (`UnresolvedOriginalPath (original_path, `Find_failure))
-  | Some cp -> (
-      expansion_of_module_path env ~strengthen p >>= fun exp ->
-      match expansion_of_module_path env ~strengthen:false cp with
-      | Ok _orig_exp ->
-          Ok exp
-          (* Ok (ascribe env ~expansion:exp ~original_expansion:orig_exp) *)
-      | Error lookup_error ->
-          Format.eprintf "Here we are!\n%!";
-          Error lookup_error)
-(*
-  match original_path with
-  | `Resolved p ->
-    begin match
-      lookup_module_gpath ~mark_substituted env p
-    with
-    | Ok orig_exp ->
-        ignore orig_exp;
-        Ok exp
-    | Error lookup_error -> Error (`UnresolvedOriginalPath (original_path, lookup_error))
-    end
-  | _ ->
-    failwith (Format.asprintf "you didn't do the thing: %a" Component.Fmt.model_path (original_path :> Odoc_model.Paths.Path.t)) *)
+  | Some cp ->
+  expansion_of_module_path env ~strengthen p >>= fun exp ->
+  match expansion_of_module_path env ~strengthen:false cp with
+  | Ok _orig_exp -> Ok exp
+    | Error _lookup_error ->
+    Ok (exp)
+  *)
+  expansion_of_module_path env ~strengthen p
 
 and signature_of_u_module_type_expr :
     mark_substituted:bool ->
