@@ -57,6 +57,8 @@ variable `SHERLODOC_DB` will be used instead.
 In my example, I gave a query, but if you give none, sherlodoc enter an
 interactive mode where you can enter queries until you decide to quit.
 
+There are more option documented by `sherlodoc --help`.
+
 ### Search your switch
 
 A reasonable use of sherlodoc on the cli is to search for signatures items from
