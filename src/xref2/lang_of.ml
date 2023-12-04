@@ -288,10 +288,10 @@ module ExtractIDs = struct
   open Component
 
   let rec type_decl parent map id =
-    let name = Ident.Name.unsafe_type id in
+    let name = Ident.Name.type_ id in
     let typed_name =
-      if List.mem name map.shadowed.s_types then
-        Odoc_model.Names.TypeName.internal_of_string name
+      if List.mem_assoc name map.shadowed.s_types then
+        List.assoc name map.shadowed.s_types
       else Ident.Name.typed_type id
     in
     let identifier = Identifier.Mk.type_ (parent, typed_name) in
@@ -306,20 +306,20 @@ module ExtractIDs = struct
     }
 
   and module_ parent map id =
-    let name = Ident.Name.unsafe_module id in
+    let name = Ident.Name.module_ id in
     let typed_name =
-      if List.mem name map.shadowed.s_modules then
-        ModuleName.internal_of_string name
+      if List.mem_assoc name map.shadowed.s_modules then
+        List.assoc name map.shadowed.s_modules
       else Ident.Name.typed_module id
     in
     let identifier = Identifier.Mk.module_ (parent, typed_name) in
     { map with module_ = Component.ModuleMap.add id identifier map.module_ }
 
   and module_type parent map id =
-    let name = Ident.Name.unsafe_module_type id in
+    let name = Ident.Name.module_type id in
     let typed_name =
-      if List.mem name map.shadowed.s_module_types then
-        ModuleTypeName.internal_of_string name
+      if List.mem_assoc name map.shadowed.s_module_types then
+        List.assoc name map.shadowed.s_module_types
       else Ident.Name.typed_module_type id
     in
     let identifier = Identifier.Mk.module_type (parent, typed_name) in
@@ -329,10 +329,10 @@ module ExtractIDs = struct
     }
 
   and class_ parent map id =
-    let name = Ident.Name.unsafe_class id in
+    let name = Ident.Name.class_ id in
     let typed_name =
-      if List.mem name map.shadowed.s_classes then
-        ClassName.internal_of_string name
+      if List.mem_assoc name map.shadowed.s_classes then
+        List.assoc name map.shadowed.s_classes
       else Ident.Name.typed_class id
     in
     let identifier = Identifier.Mk.class_ (parent, typed_name) in
@@ -352,10 +352,10 @@ module ExtractIDs = struct
     }
 
   and class_type parent map (id : Ident.class_type) =
-    let name = Ident.Name.unsafe_class_type id in
+    let name = Ident.Name.class_type id in
     let typed_name =
-      if List.mem name map.shadowed.s_class_types then
-        ClassTypeName.internal_of_string name
+      if List.mem_assoc name map.shadowed.s_class_types then
+        List.assoc name map.shadowed.s_class_types
       else Ident.Name.typed_class_type id
     in
     let identifier = Identifier.Mk.class_type (parent, typed_name) in
@@ -664,8 +664,8 @@ and value_ map parent id v =
   let open Component.Value in
   let name = Ident.Name.value id in
   let typed_name =
-    if List.mem name map.shadowed.s_values then
-      ValueName.internal_of_string name
+    if List.mem_assoc name map.shadowed.s_values then
+      List.assoc name map.shadowed.s_values
     else Ident.Name.typed_value id
   in
   let identifier = Identifier.Mk.value (parent, typed_name) in
