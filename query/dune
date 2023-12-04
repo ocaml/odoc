@@ -2,6 +2,7 @@
  (name query)
  (libraries lwt re db))
 
-(menhir (modules parser))
+(menhir
+ (modules parser))
 
 (ocamllex lexer)
