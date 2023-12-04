@@ -144,7 +144,7 @@ let print : [< t ] -> string = function
   | `Simple_media (`Reference _, `Image) -> "{image!...}"
   | `Simple_media (`Reference _, `Audio) -> "{audio!...}"
   | `Simple_media (`Reference _, `Video) -> "{video!...}"
-  | `Simple_media (`Link _, `Image) -> "{image!...}"
+  | `Simple_media (`Link _, `Image) -> "{image:...}"
   | `Simple_media (`Link _, `Audio) -> "{audio:...}"
   | `Simple_media (`Link _, `Video) -> "{video:...}"
   | `Begin_media_with_replacement_text (`Reference _, `Image) ->
@@ -180,9 +180,9 @@ let describe : [< t | `Comment ] -> string = function
   | `Simple_media (`Reference _, `Image) -> "'{image!...}' (image-reference)"
   | `Simple_media (`Reference _, `Audio) -> "'{audio!...}' (audio-reference)"
   | `Simple_media (`Reference _, `Video) -> "'{video!...}' (video-reference)"
-  | `Simple_media (`Link _, `Image) -> "'{image!...}' (image-link)"
-  | `Simple_media (`Link _, `Audio) -> "'{audio:...}' (audio-reference)"
-  | `Simple_media (`Link _, `Video) -> "'{video:...}' (video-reference)"
+  | `Simple_media (`Link _, `Image) -> "'{image:...}' (image-link)"
+  | `Simple_media (`Link _, `Audio) -> "'{audio:...}' (audio-link)"
+  | `Simple_media (`Link _, `Video) -> "'{video:...}' (video-link)"
   | `Begin_media_with_replacement_text (`Reference _, `Image) ->
       "'{{image!...} ...}' (image-reference)"
   | `Begin_media_with_replacement_text (`Reference _, `Audio) ->
@@ -190,11 +190,11 @@ let describe : [< t | `Comment ] -> string = function
   | `Begin_media_with_replacement_text (`Reference _, `Video) ->
       "'{{video!...} ...}' (video-reference)"
   | `Begin_media_with_replacement_text (`Link _, `Image) ->
-      "'{{image:...} ...}' (image-reference)"
+      "'{{image:...} ...}' (image-link)"
   | `Begin_media_with_replacement_text (`Link _, `Audio) ->
-      "'{{audio:...} ...}' (audio-reference)"
+      "'{{audio:...} ...}' (audio-link)"
   | `Begin_media_with_replacement_text (`Link _, `Video) ->
-      "'{{video:...} ...}' (video-reference)"
+      "'{{video:...} ...}' (video-link)"
   | `Simple_link _ -> "'{:...} (external link)'"
   | `Begin_link_with_replacement_text _ -> "'{{:...} ...}' (external link)"
   | `End -> "end of text"
