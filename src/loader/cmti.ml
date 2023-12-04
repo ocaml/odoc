@@ -617,11 +617,11 @@ and read_module_declaration env parent md =
   match md.md_id with
   | None -> None
   | Some id ->
-  let id = Env.find_module_identifier env id in
+  let mid = Env.find_module_identifier env id in
 #else
-  let id = Env.find_module_identifier env md.md_id in
+  let mid = Env.find_module_identifier env md.md_id in
 #endif
-  let id = (id :> Identifier.Module.t) in
+  let id = (mid :> Identifier.Module.t) in
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
@@ -639,12 +639,12 @@ and read_module_declaration env parent md =
   let canonical = (canonical :> Path.Module.t option) in
   let hidden =
 #if OCAML_VERSION >= (4,10,0)
-    match canonical, md.md_id with
-    | None, Some id -> Odoc_model.Names.contains_double_underscore (Ident.name id)
+    match canonical, mid.iv with
+    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | _,_ -> false
 #else
-    match canonical with
-    | None -> Odoc_model.Names.contains_double_underscore (Ident.name md.md_id)
+    match canonical, mid.iv with
+    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | _ -> false
 #endif
   in

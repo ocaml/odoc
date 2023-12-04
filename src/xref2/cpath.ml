@@ -220,7 +220,7 @@ and is_resolved_parent_hidden :
 and is_module_type_hidden : module_type -> bool = function
   | `Resolved r -> is_resolved_module_type_hidden r
   | `Identifier ({ iv = `ModuleType (_, t); _ }, b) ->
-      b || ModuleTypeName.is_internal t
+      b || ModuleTypeName.is_hidden t
   | `Local (_, b) -> b
   | `Substituted p -> is_module_type_hidden p
   | `Dot (p, _) -> is_module_hidden p
@@ -241,10 +241,10 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
 
 and is_type_hidden : type_ -> bool = function
   | `Resolved r -> is_resolved_type_hidden r
-  | `Identifier ({ iv = `Type (_, t); _ }, b) -> b || TypeName.is_internal t
+  | `Identifier ({ iv = `Type (_, t); _ }, b) -> b || TypeName.is_hidden t
   | `Identifier ({ iv = `ClassType (_, t); _ }, b) ->
-      b || ClassTypeName.is_internal t
-  | `Identifier ({ iv = `Class (_, t); _ }, b) -> b || ClassName.is_internal t
+      b || ClassTypeName.is_hidden t
+  | `Identifier ({ iv = `Class (_, t); _ }, b) -> b || ClassName.is_hidden t
   | `Identifier ({ iv = `CoreType _; _ }, b) -> b
   | `Local (_, b) -> b
   | `Substituted p -> is_type_hidden p
@@ -319,7 +319,7 @@ let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
   | `Gpath (`Identifier x) ->
       let hidden =
         match x.iv with
-        | `Module (_, n) -> Odoc_model.Names.ModuleName.is_internal n
+        | `Module (_, n) -> Odoc_model.Names.ModuleName.is_hidden n
         | _ -> false
       in
       `Identifier (x, hidden)

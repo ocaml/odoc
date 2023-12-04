@@ -41,7 +41,7 @@ type t =
     classes : Id.Class.t Ident.tbl;
     class_types : Id.ClassType.t Ident.tbl;
     loc_to_ident : Id.t LocHashtbl.t;
-    hidden : Ident.t list; (* we use term hidden to mean shadowed and idents_in_doc_off_mode items*)
+    shadowed : Ident.t list;
   }
 
 let empty () =
@@ -57,7 +57,7 @@ let empty () =
     classes = Ident.empty;
     class_types = Ident.empty;
     loc_to_ident = LocHashtbl.create 100;
-    hidden = [];
+    shadowed = [];
   }
 
 (* The boolean is an override for whether it should be hidden - true only for
@@ -449,15 +449,15 @@ let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
     match items with
     | `Type (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
-      let is_hidden = is_hidden_item || type_name_exists name rest in
-        let identifier, hidden =
-        if is_hidden
-        then Mk.type_(parent, TypeName.internal_of_string name), t :: env.hidden
-        else Mk.type_(parent, TypeName.make_std name), env.hidden
+      let is_shadowed = type_name_exists name rest in
+      let identifier, shadowed =
+        if is_shadowed
+        then Mk.type_(parent, TypeName.shadowed_of_string name), t :: env.shadowed
+        else Mk.type_(parent, (if is_hidden_item then TypeName.hidden_of_string else TypeName.make_std) name), env.shadowed
       in
       let types = Ident.add t identifier env.types in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
-      inner rest { env with types; hidden }
+      inner rest { env with types; shadowed }
 
     | `Constructor (t, t_parent, loc) :: rest ->
       let name = Ident.name t in
@@ -485,54 +485,53 @@ let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
 
     | `Value (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
-      let is_hidden = is_hidden_item || value_name_exists name rest in
-      let identifier, hidden =
-        if is_hidden
-        then Mk.value(parent, ValueName.internal_of_string name), t :: env.hidden
-        else Mk.value(parent, ValueName.make_std name), env.hidden
+      let is_shadowed = value_name_exists name rest in
+      let identifier, shadowed =
+        if is_shadowed
+        then Mk.value(parent, ValueName.shadowed_of_string name), t :: env.shadowed
+        else Mk.value(parent, (if is_hidden_item then ValueName.hidden_of_string else ValueName.make_std) name), env.shadowed
       in
       let values = Ident.add t identifier env.values in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
-      inner rest { env with values; hidden }
+      inner rest { env with values; shadowed }
 
     | `ModuleType (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
-      let is_hidden = is_hidden_item || module_type_name_exists name rest in
-      let identifier, hidden =
-        if is_hidden
-        then Mk.module_type(parent, ModuleTypeName.internal_of_string name), t :: env.hidden
-        else Mk.module_type(parent, ModuleTypeName.make_std name), env.hidden
+      let is_shadowed = module_type_name_exists name rest in
+      let identifier, shadowed =
+        if is_shadowed
+        then Mk.module_type(parent, ModuleTypeName.shadowed_of_string name), t :: env.shadowed
+        else Mk.module_type(parent,(if is_hidden_item then ModuleTypeName.hidden_of_string else ModuleTypeName.make_std) name), env.shadowed
       in
       let module_types = Ident.add t identifier env.module_types in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
-      inner rest { env with module_types; hidden }
+      inner rest { env with module_types; shadowed }
 
     | `Module (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
-      let double_underscore = Odoc_model.Names.contains_double_underscore name in
-      let is_hidden = is_hidden_item || module_name_exists name rest || double_underscore in
-      let identifier, hidden =
-        if is_hidden 
-        then Mk.module_(parent, ModuleName.internal_of_string name), t :: env.hidden
-        else Mk.module_(parent, ModuleName.make_std name), env.hidden
+      let is_shadowed = module_name_exists name rest in
+      let identifier, shadowed =
+        if is_shadowed 
+        then Mk.module_(parent, ModuleName.shadowed_of_string name), t :: env.shadowed
+        else Mk.module_(parent, (if is_hidden_item then ModuleName.hidden_of_string else ModuleName.make_std) name), env.shadowed
       in
-      let path = `Identifier(identifier, is_hidden) in
+      let path = `Identifier(identifier, is_hidden_item || is_shadowed) in
       let modules = Ident.add t identifier env.modules in
       let module_paths = Ident.add t path env.module_paths in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
-      inner rest { env with modules; module_paths; hidden }
+      inner rest { env with modules; module_paths; shadowed }
 
     | `Class (t,t2,t3,t4, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
-      let is_hidden = is_hidden_item || class_name_exists name rest in
+      let is_shadowed = class_name_exists name rest in
       let class_types = match t4 with
         | None -> [t;t2;t3]
         | Some t4 -> [t;t2;t3;t4]
       in
-      let identifier, hidden =
-        if is_hidden 
-        then Mk.class_(parent, ClassName.internal_of_string name), class_types @ env.hidden
-        else Mk.class_(parent, ClassName.make_std name), env.hidden
+      let identifier, shadowed =
+        if is_shadowed 
+        then Mk.class_(parent, ClassName.shadowed_of_string name), class_types @ env.shadowed
+        else Mk.class_(parent, (if is_hidden_item then ClassName.hidden_of_string else ClassName.make_std) name), env.shadowed
       in
 
       let classes =
@@ -541,25 +540,25 @@ let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
       
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
 
-      inner rest { env with classes; hidden }
+      inner rest { env with classes; shadowed }
 
     | `ClassType (t,t2,t3, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
-      let is_hidden = is_hidden_item || class_type_name_exists name rest in
+      let is_shadowed = class_type_name_exists name rest in
       let class_types = match t3 with
         | None -> [t;t2]
         | Some t3 -> [t;t2;t3]
       in
-      let identifier, hidden =
-        if is_hidden 
-        then Mk.class_type(parent, ClassTypeName.internal_of_string name), class_types @ env.hidden
-        else Mk.class_type(parent, ClassTypeName.make_std name), env.hidden
+      let identifier, shadowed =
+        if is_shadowed 
+        then Mk.class_type(parent, ClassTypeName.shadowed_of_string name), class_types @ env.shadowed
+        else Mk.class_type(parent, (if is_hidden_item then ClassTypeName.hidden_of_string else ClassTypeName.make_std) name), env.shadowed
       in
       let class_types =
         List.fold_right (fun id class_types -> Ident.add id identifier class_types)
           class_types env.class_types in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
-      inner rest { env with class_types; hidden }
+      inner rest { env with class_types; shadowed }
 
     | [] -> env
     in inner items env
@@ -646,7 +645,7 @@ let find_class_type_identifier env id =
 
 let is_shadowed
  env id =
-    List.mem id env.hidden
+    List.mem id env.shadowed
 module Path = struct
 
   let read_module_ident env id =

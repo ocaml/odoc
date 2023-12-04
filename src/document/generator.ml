@@ -1198,37 +1198,37 @@ module Make (Syntax : SYNTAX) = struct
     let internal_module m =
       let open Lang.Module in
       match m.id.iv with
-      | `Module (_, name) when ModuleName.is_internal name -> true
+      | `Module (_, name) when ModuleName.is_hidden name -> true
       | _ -> false
 
     let internal_type t =
       let open Lang.TypeDecl in
       match t.id.iv with
-      | `Type (_, name) when TypeName.is_internal name -> true
+      | `Type (_, name) when TypeName.is_hidden name -> true
       | _ -> false
 
     let internal_value v =
       let open Lang.Value in
       match v.id.iv with
-      | `Value (_, name) when ValueName.is_internal name -> true
+      | `Value (_, name) when ValueName.is_hidden name -> true
       | _ -> false
 
     let internal_module_type t =
       let open Lang.ModuleType in
       match t.id.iv with
-      | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
+      | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
     let internal_module_substitution t =
       let open Lang.ModuleSubstitution in
       match t.id.iv with
-      | `Module (_, name) when ModuleName.is_internal name -> true
+      | `Module (_, name) when ModuleName.is_hidden name -> true
       | _ -> false
 
     let internal_module_type_substitution t =
       let open Lang.ModuleTypeSubstitution in
       match t.id.iv with
-      | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
+      | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
     let rec signature (s : Lang.Signature.t) =
