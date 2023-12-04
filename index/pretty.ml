@@ -1,4 +1,4 @@
-(** This file contains useful printer, that are however of dubious 
+(** This file contains useful printer, that are however of dubious
     maintainability. Their result is used to be parsed afteward, it is not
     printed but consumed as the basis for type-search. Because of this it is
     sensitive code. *)
@@ -118,7 +118,8 @@ let rec full_name_aux : Paths.Identifier.t -> string list =
     | `SourceLocationMod id -> full_name_aux (id :> t)
     | `SourceLocationInternal (parent, name) ->
         LocalName.to_string name :: full_name_aux (parent :> t)
-    | `ExtensionDecl _ -> failwith "todo"
+    | `ExtensionDecl (parent, name, _) ->
+        ExtensionName.to_string name :: full_name_aux (parent :> t)
 
 let fullname : [< Paths.Identifier.t_pv ] Paths.Identifier.id -> string list =
  fun n -> List.rev @@ full_name_aux (n :> Paths.Identifier.t)
