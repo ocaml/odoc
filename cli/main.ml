@@ -70,15 +70,15 @@ let db_filename =
   Arg.(value & opt (some file) None & info [ "db" ] ~docv:"DB" ~env)
 
 let limit =
-  let doc = "The maximum number of results" in
+  let doc = "The maximum number of results per query" in
   Arg.(value & opt int 50 & info [ "limit"; "n" ] ~docv:"N" ~doc)
 
 let query =
-  let doc = "The query" in
+  let doc = "The query. If absent, sherlodoc will read queries in the standard input." in
   Arg.(value & pos 0 (some string) None & info [] ~docv:"QUERY" ~doc)
 
 let print_cost =
-  let doc = "Prints cost of each result" in
+  let doc = "For debugging purposes : prints the cost of each result" in
   Arg.(value & flag & info [ "print-cost" ] ~doc)
 
 let dynamic_sort =
