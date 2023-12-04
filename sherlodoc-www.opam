@@ -9,13 +9,11 @@ bug-reports: "https://github.com/art-w/sherlodoc/issues"
 depends: [
   "ocaml" {>= "4.14.0"}
   "dune" {>= "2.9"}
+  "sherlodoc"
   "ancient"
   "dream"
-  "fpath"
-  "odoc"
-  "opam-core"
-  "tyxml"
   "alcotest" {with-test}
+  "odoc" {with-doc}
 ]
 build: [
   ["dune" "subst"] {dev}

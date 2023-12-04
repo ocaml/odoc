@@ -7,9 +7,14 @@
 (generate_opam_files true)
 
 (name sherlodoc)
-(source (github art-w/sherlodoc))
+
+(source
+ (github art-w/sherlodoc))
+
 (authors "Arthur Wendling")
+
 (maintainers "art.wendling@gmail.com")
+
 (license MIT)
 
 (package
@@ -19,12 +24,13 @@
   (ocaml
    (>= 4.14.0))
   dune
-  ; ancient
-  dream
+  decompress
+  bigstringaf
+  base64
   fpath
   odoc
   opam-core
-  tyxml
+  (tyxml (>= 4.6.0))
   brr
   (alcotest :with-test)))
 
@@ -35,10 +41,7 @@
   (ocaml
    (>= 4.14.0))
   dune
+  sherlodoc
   ancient
   dream
-  fpath
-  odoc
-  opam-core
-  tyxml
   (alcotest :with-test)))
