@@ -4,11 +4,11 @@ Tests for `weak_canonical_test`. When calling `is_resolved_module_hidden`, we no
 
 In the following test, we create a path with an unresolved canonical 
 ```ocaml env=e1
-# let m = `Hidden (`Local (`LModule (Odoc_model.Names.ModuleName.internal_of_string "M", 1)));;
+# let m = `Hidden (`Local (`LModule (Odoc_model.Names.ModuleName.hidden_of_string "M", 1)));;
 val m :
   [> `Hidden of
        [> `Local of [> `LModule of Odoc_model.Names.ModuleName.t * int ] ] ] =
-  `Hidden (`Local (`LModule ({M}1, 1)))
+  `Hidden (`Local (`LModule (M, 1)))
 # let cm = `Root "Foo";;
 val cm : [> `Root of string ] = `Root "Foo"
 # let p = `Canonical(m, cm);;
@@ -18,7 +18,14 @@ val p :
             [> `Local of [> `LModule of Odoc_model.Names.ModuleName.t * int ]
             ] ] *
        [> `Root of string ] ] =
-  `Canonical (`Hidden (`Local (`LModule ({M}1, 1))), `Root "Foo")
+  `Canonical (`Hidden (`Local (`LModule (M, 1))), `Root "Foo")
+```
+
+At this point, `p` is a path to a hidden module that has an unresolved canonical constructor
+
+In the following test, the when `weak_canonical_test` is true, the path should _not_ be hidden.
+
+```ocaml env=e1
 # let r1 = Cpath.is_resolved_module_hidden ~weak_canonical_test:false p;;
 val r1 : bool = true
 # let r2 = Cpath.is_resolved_module_hidden ~weak_canonical_test:true p;;

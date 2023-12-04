@@ -65,17 +65,59 @@ aren't roots.
 This shouldn't cause any warnings:
 
   $ odoc link test.odoc -I .
-  File "test.odoc":
-  Warning: Failed to resolve module path identifier(root(Test).Enclosing,false).Hidden.Still_hidden Parent_module: Find failure
-  File "test.odoc":
-  Warning: Failed to lookup type identifier(root(Test).CanonicalTest,false).Base__.List.t Parent_module: Parent_module: Find failure
   File "test.mli", line 25, characters 8-17:
   Warning: Failed to resolve reference unresolvedroot(List).t Couldn't find "List"
 
 There should be an expansion on `NotHidden`
 
   $ odoc_print test.odocl -r NonCanonical.NotHidden | jq '.type_.Alias[1]'
-  "None"
+  {
+    "Some": {
+      "Signature": {
+        "items": [
+          {
+            "Type": [
+              "Ordinary",
+              {
+                "id": {
+                  "`Type": [
+                    {
+                      "`Module": [
+                        {
+                          "`Module": [
+                            {
+                              "`Root": [
+                                "None",
+                                "Test"
+                              ]
+                            },
+                            "NonCanonical"
+                          ]
+                        },
+                        "NotHidden"
+                      ]
+                    },
+                    "t"
+                  ]
+                },
+                "source_loc": "None",
+                "doc": [],
+                "equation": {
+                  "params": [],
+                  "private_": "false",
+                  "manifest": "None",
+                  "constraints": []
+                },
+                "representation": "None"
+              }
+            ]
+          }
+        ],
+        "compiled": "false",
+        "doc": []
+      }
+    }
+  }
 
   $ odoc_print test.odocl -r NonCanonical.helpful
   {

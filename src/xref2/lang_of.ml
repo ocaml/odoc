@@ -70,7 +70,7 @@ module Path = struct
           b
           ||
           match m.iv with
-          | `Module (_, n) -> Odoc_model.Names.ModuleName.is_internal n
+          | `Module (_, n) -> Odoc_model.Names.ModuleName.is_hidden n
           | _ -> false
         in
         `Identifier (m, hidden)

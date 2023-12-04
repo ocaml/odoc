@@ -26,18 +26,18 @@ module type Name = sig
   val to_string : t -> string
 
   val to_string_unsafe : t -> string
-  (** [to_string_unsafe] will allow even internal names to be turned into
-        strings. Use with caution. *)
 
   val make_std : string -> t
 
   val of_ident : Ident.t -> t
 
-  val internal_of_string : string -> t
+  val hidden_of_string : string -> t
 
-  val internal_of_ident : Ident.t -> t
+  val hidden_of_ident : Ident.t -> t
 
-  val is_internal : t -> bool
+  val shadowed_of_string : string -> t
+
+  val shadowed_of_ident : Ident.t -> t
 
   val equal : t -> t -> bool
 
@@ -46,8 +46,6 @@ module type Name = sig
   val fmt : Format.formatter -> t -> unit
 
   val is_hidden : t -> bool
-  (** Hidden names are those that contain a double underscore, e.g.
-        [Hidden__module] *)
 end
 
 (** Some named objects can't have internal names, so they have this simpler
