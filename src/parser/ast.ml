@@ -65,7 +65,8 @@ and nestable_block_element =
     reference_kind
     * media_href with_location
     * inline_element with_location list
-    * media (** @since 2.3.0 *)]
+    * media
+    (** @since 2.5.0 *) ]
 (** Some block elements may be nested within lists or tags, but not all.
     The [`List] constructor has a parameter of type [\[`Light | `Heavy\]].
     This corresponds to the syntactic constructor used (see the
@@ -98,8 +99,6 @@ type tag = [ ocamldoc_tag | internal_tag ]
 type heading = int * string option * inline_element with_location list
 
 type block_element =
-  [ nestable_block_element
-  | `Heading of heading
-  | `Tag of tag ]
+  [ nestable_block_element | `Heading of heading | `Tag of tag ]
 
 type t = block_element with_location list
