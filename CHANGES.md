@@ -17,6 +17,7 @@ Tags:
 
 ### Fixed
 
+- Fix crash on functors returning an alias (@Julow, #1046)
 - Fix rendering of polymorphic variants (@wikku, @panglesd, #971)
 - Add references to extension declarations (@gpetiot, @panglesd, #949)
 
