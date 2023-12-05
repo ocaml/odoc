@@ -783,6 +783,9 @@ td.def-doc *:first-child {
   line-height: 1.2;
 }
 
+/* When a search bar is present, we need the sticky sidebar to be a bit lower,
+   so `top` is higher  */
+
 .odoc-search + * + .odoc-toc {
   --toc-top: calc(var(--search-bar-height) + var(--search-padding-top) + 20px);
   max-height: calc(100vh - 2 * var(--toc-top));
