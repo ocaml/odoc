@@ -167,6 +167,21 @@
   (run odoc link -o %{target} %{dep:functor2.odoc})))
 
 (rule
+ (target functor_ml.cmt)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/functor_ml.ml})))
+
+(rule
+ (target functor_ml.odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:functor_ml.cmt})))
+
+(rule
+ (target functor_ml.odocl)
+ (action
+  (run odoc link -o %{target} %{dep:functor_ml.odoc})))
+
+(rule
  (target include.cmti)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include.mli})))
@@ -1779,6 +1794,121 @@
   (alias runtest)
   (action
    (diff functor2.targets functor2.targets.gen))))
+
+(subdir
+ html
+ (rule
+  (targets
+   Functor_ml.html.gen
+   Functor_ml-Bar.html.gen
+   Functor_ml-Foo'.html.gen
+   Functor_ml-Foo'-argument-1-X.html.gen)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../functor_ml.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor_ml.html Functor_ml.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor_ml-Bar.html Functor_ml-Bar.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor_ml-Foo'.html Functor_ml-Foo'.html.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff
+    Functor_ml-Foo'-argument-1-X.html
+    Functor_ml-Foo'-argument-1-X.html.gen))))
+
+(subdir
+ html
+ (rule
+  (action
+   (with-outputs-to
+    functor_ml.targets.gen
+    (run odoc html-targets -o . %{dep:../functor_ml.odocl} --flat))))
+ (rule
+  (alias runtest)
+  (action
+   (diff functor_ml.targets functor_ml.targets.gen))))
+
+(subdir
+ latex
+ (rule
+  (targets Functor_ml.tex.gen Functor_ml.Foo'.tex.gen)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../functor_ml.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor_ml.tex Functor_ml.tex.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor_ml.Foo'.tex Functor_ml.Foo'.tex.gen))))
+
+(subdir
+ latex
+ (rule
+  (action
+   (with-outputs-to
+    functor_ml.targets.gen
+    (run odoc latex-targets -o . %{dep:../functor_ml.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff functor_ml.targets functor_ml.targets.gen))))
+
+(subdir
+ man
+ (rule
+  (targets Functor_ml.3o.gen Functor_ml.Bar.3o.gen Functor_ml.Foo'.3o.gen)
+  (action
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../functor_ml.odocl})))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor_ml.3o Functor_ml.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor_ml.Bar.3o Functor_ml.Bar.3o.gen)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Functor_ml.Foo'.3o Functor_ml.Foo'.3o.gen))))
+
+(subdir
+ man
+ (rule
+  (action
+   (with-outputs-to
+    functor_ml.targets.gen
+    (run odoc man-targets -o . %{dep:../functor_ml.odocl}))))
+ (rule
+  (alias runtest)
+  (action
+   (diff functor_ml.targets functor_ml.targets.gen))))
 
 (subdir
  html
