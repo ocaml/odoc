@@ -885,25 +885,25 @@ let%expect_test _ =
       test "{ul {li foo @author Bar}}";
       [%expect
         {|
-        {"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo"},"`Space"]},{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Bar}}"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 12-25:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 1, characters 25-25:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: try to add '}' at the end of the list content.","File \"f.ml\", line 1, characters 25-25:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: try to add '}' at the end of the list content."]} |}]
+        {"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo"},"`Space"]},{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Bar}}"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 12-25:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 1, characters 25-25:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: add '}'.","File \"f.ml\", line 1, characters 25-25:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: add '}'."]} |}]
 
     let in_list_item_at_start =
       test "{ul {li @author Foo}}";
       [%expect
         {|
-        {"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Foo}}"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 8-21:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 1, characters 21-21:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: try to add '}' at the end of the list content.","File \"f.ml\", line 1, characters 21-21:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: try to add '}' at the end of the list content."]} |}]
+        {"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Foo}}"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 8-21:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 1, characters 21-21:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: add '}'.","File \"f.ml\", line 1, characters 21-21:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: add '}'."]} |}]
 
     let in_list_item_on_new_line =
       test "{ul {li foo\n@author Bar}}";
       [%expect
         {|
-        {"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo"}]},{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Bar}}"}]}]]]}],"warnings":["File \"f.ml\", line 2, characters 0-13:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 2, characters 13-13:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: try to add '}' at the end of the list content.","File \"f.ml\", line 2, characters 13-13:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: try to add '}' at the end of the list content."]} |}]
+        {"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo"}]},{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Bar}}"}]}]]]}],"warnings":["File \"f.ml\", line 2, characters 0-13:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 2, characters 13-13:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: add '}'.","File \"f.ml\", line 2, characters 13-13:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: add '}'."]} |}]
 
     let in_list =
       test "{ul @author Foo}";
       [%expect
         {|
-        {"value":[{"`List":["`Unordered",[]]}],"warnings":["File \"f.ml\", line 1, characters 4-16:\n'@author' is not allowed in '{ul ...}' (bulleted list).\nSuggestion: move '@author' outside the list.","File \"f.ml\", line 1, characters 16-16:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: try to add '}' at the end of the list content.","File \"f.ml\", line 1, characters 0-3:\n'{ul ...}' (bulleted list) should not be empty."]} |}]
+        {"value":[{"`List":["`Unordered",[]]}],"warnings":["File \"f.ml\", line 1, characters 4-16:\n'@author' is not allowed in '{ul ...}' (bulleted list).\nSuggestion: move '@author' outside the list.","File \"f.ml\", line 1, characters 16-16:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: add '}'.","File \"f.ml\", line 1, characters 0-3:\n'{ul ...}' (bulleted list) should not be empty."]} |}]
 
     let in_code_block =
       test "{[@author Foo]}";

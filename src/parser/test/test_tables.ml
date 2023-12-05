@@ -92,7 +92,7 @@ let%expect_test _ =
              (warnings
               ( "File \"f.ml\", line 1, characters 16-16:\
                \nEnd of text is not allowed in table.\
-               \nSuggestion: try to add '}' at the end of table content ('{t ...' or '{table ...' )."))) |}]
+               \nSuggestion: add '}'."))) |}]
 
     let complex_table =
       test
@@ -212,7 +212,7 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 1, characters 2-3:\
            \nEnd of text is not allowed in table.\
-           \nSuggestion: try to add '}' at the end of table content ('{t ...' or '{table ...' )."))) |}]
+           \nSuggestion: add '}'."))) |}]
 
     let simple =
       test {|
