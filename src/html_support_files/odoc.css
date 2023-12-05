@@ -95,7 +95,10 @@
 
 :root,
 .light:root {
-   --main-background: #FFFFFF;
+
+  scroll-padding-top: 100px;
+
+  --main-background: #FFFFFF;
 
   --color: #333333;
   --link-color: #2C94BD;
