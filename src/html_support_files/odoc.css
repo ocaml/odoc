@@ -96,7 +96,7 @@
 :root,
 .light:root {
 
-  scroll-padding-top: 100px;
+  scroll-padding-top: calc(var(--search-bar-height) + var(--search-padding-top) + 1em);
 
   --main-background: #FFFFFF;
 
