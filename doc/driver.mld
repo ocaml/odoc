@@ -213,8 +213,9 @@ let add_prefixed_output cmd list prefix lines =
       !list
       @ Bos.Cmd.to_string cmd :: List.map (fun l -> prefix ^ ": " ^ l) lines
 
-let compile file ?(count_occurrences = true) ?parent ?(output_dir = Fpath.v "./")
+let compile file ?(count_occurrences = false) ?parent ?(output_dir = Fpath.v "./")
     ?(ignore_output = false) ?source_args children =
+  let count_occurrences = count_occurrences || (Option.is_some source_args) in
   let output_basename =
     let ext = Fpath.get_ext file in
     let basename = Fpath.basename (Fpath.rem_ext file) in
