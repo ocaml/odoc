@@ -9,6 +9,14 @@
   (flags
    (:standard -g -w -18-53))))
 
+; Note: We exclude any other directory from the default alias, to avoid building
+; docs targets when running `dune build` in the root directory.
+
+(alias
+ (name default)
+ (deps
+  (alias_rec src/default)))
+
 (rule
  (alias bench)
  (action
