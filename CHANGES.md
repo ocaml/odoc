@@ -14,6 +14,8 @@ Tags:
 ### Added
 - Display 'private' keyword for private type extensions (@gpetiot, #1019)
 - Add support for search (@panglesd, @EmileTrotignon, #972)
+- Allow to omit parent type in constructor reference (@panglesd,
+  @EmileTrotignon, #933)
 
 ### Fixed
 
