@@ -326,14 +326,45 @@ let dep_libraries_core = [
 
 let extra_deps = [
     "base";
-    "core_kernel";
+    "base_bigstring";
+    "base_quickcheck";
     "bin_prot";
+    "camlp-streams";
+    "core";
+    "fieldslib";
+    "int_repr";
+    "ocaml-compiler-libs";
+    "parsexp";
+    "ppx_bench.runtime-lib";
+    "ppx_compare";
+    "ppx_enumerate";
+    "ppx_expect";
+    "ppx_expect.collector";
+    "ppx_expect.common";
+    "ppx_expect.config";
+    "ppx_expect.config_types";
+    "ppx_expect.evaluator";
+    "ppx_expect.make_corrected_file";
+    "ppx_expect.matcher";
+    "ppx_expect.payload";
+    "ppx_hash";
+    "ppx_inline_test.config";
+    "ppx_inline_test.runtime-lib";
+    "ppx_module_timer";
+    "ppx_sexp_conv";
+    "ppx_stable_witness";
+    "ppx_stable_witness.runtime";
+    "ppx_stable_witness.stable_witness";
+    "ppxlib";
+    "ppxlib.ast";
+    "ppxlib.astlib";
+    "ppxlib.traverse_builtins";
     "sexplib";
     "sexplib0";
-    "base_quickcheck";
-    "ppx_sexp_conv";
-    "ppx_hash";
-    "core";
+    "splittable_random";
+    "stdio";
+    "typerep";
+    "variantslib";
 ]
 
 let dep_libraries =
@@ -345,7 +376,8 @@ let odoc_libraries = [
     "odoc_xref_test"; "odoc_xref2"; "odoc_odoc"; "odoc_html_support_files";
     "odoc_model_desc"; "odoc_model"; "odoc_manpage"; "odoc_loader";
     "odoc_latex"; "odoc_html"; "odoc_document"; "odoc_examples"; "odoc_parser";
-    "ocamlary"; "odoc_search" ; "odoc_html_frontend" ; "odoc_json_index" ];;
+    "ocamlary"; "odoc_search" ; "odoc_html_frontend" ; "odoc_json_index";
+    "syntax_highlighter"; "type_desc_to_yojson" ];;
 
 let all_libraries = dep_libraries @ odoc_libraries;;
 
