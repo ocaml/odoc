@@ -18,7 +18,8 @@ Let's now check that the reference point to the right page/anchor:
 
   $ cat html/A/index.html | grep \# | grep Foo | grep -v anchor
      <p><a href="#type-u.Foo"><code>Foo</code></a> 
-      <a href="#type-u.Foo"><code>u.Foo</code></a>
+      <a href="#type-u.Foo"><code>u.Foo</code></a> 
+      <a href="#type-u.Foo"><code>Foo</code></a>
      <p><a href="M/index.html#type-t.Foo"><code>M.t.Foo</code></a> and 
       <a href="M/index.html#type-t.Foo"><code>M.t.Foo</code></a>
      <p><a href="M/index.html#type-t.Foo"><code>M.t.Foo</code></a> and 
