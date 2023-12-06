@@ -119,33 +119,28 @@ end = struct
       tbl
 end
 
-let count ~dst ~warnings_options:_ directories include_hidden include_own
-    =
+let count ~dst ~warnings_options:_ directories include_hidden =
   let htbl = H.create 100 in
   let f () (unit : Odoc_model.Lang.Compilation_unit.t) =
-    let incr tbl p persistent =
+    let incr tbl p =
       let p = (p :> Odoc_model.Paths.Path.Resolved.t) in
       let id = Odoc_model.Paths.Path.Resolved.identifier p in
       if (not (Odoc_model.Paths.Path.Resolved.is_hidden p)) || include_hidden
-      then if persistent || include_own then Occtbl.add tbl id
+      then Occtbl.add tbl id
     in
     let () =
       List.iter
         (function
           | ( Odoc_model.Lang.Source_info.Module
-                { documentation = Some (`Resolved p, persistent); _ },
+                { documentation = Some (`Resolved p); _ },
               _ ) ->
-              incr htbl p persistent
-          | Value { documentation = Some (`Resolved p, persistent); _ }, _ ->
-              incr htbl p persistent
-          | ClassType { documentation = Some (`Resolved p, persistent); _ }, _
-            ->
-              incr htbl p persistent
-          | ModuleType { documentation = Some (`Resolved p, persistent); _ }, _
-            ->
-              incr htbl p persistent
-          | Type { documentation = Some (`Resolved p, persistent); _ }, _ ->
-              incr htbl p persistent
+              incr htbl p
+          | Value { documentation = Some (`Resolved p); _ }, _ -> incr htbl p
+          | ClassType { documentation = Some (`Resolved p); _ }, _ ->
+              incr htbl p
+          | ModuleType { documentation = Some (`Resolved p); _ }, _ ->
+              incr htbl p
+          | Type { documentation = Some (`Resolved p); _ }, _ -> incr htbl p
           | _ -> ())
         (match unit.source_info with None -> [] | Some i -> i.infos)
     in

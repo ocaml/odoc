@@ -533,9 +533,7 @@ let rec unit env t =
     | Some inf ->
         let jump_to v f_impl f_doc =
           let documentation =
-            match v.documentation with
-            | Some (p, persistent) -> Some (f_doc p, persistent)
-            | None -> None
+            match v.documentation with Some p -> Some (f_doc p) | None -> None
           in
           let implementation =
             match v.implementation with

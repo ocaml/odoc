@@ -23,9 +23,7 @@ module Source_info = struct
     | Resolved of Identifier.SourceLocation.t
 
   type ('doc, 'impl) jump_to = {
-    documentation : ('doc * bool) option;
-    (* The boolean indicate if the path is "persistent": from the same
-       compilation unit. *)
+    documentation : 'doc option;
     implementation : 'impl jump_to_impl option;
   }
 
