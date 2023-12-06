@@ -122,9 +122,9 @@ val s_module : Component.Element.module_ scope
 
 val s_module_type : Component.Element.module_type scope
 
-val s_datatype : Component.Element.datatype scope
-
 val s_type : Component.Element.type_ scope
+
+val s_datatype : Component.Element.datatype scope
 
 val s_class : Component.Element.class_ scope
 
@@ -143,6 +143,8 @@ val s_extension : Component.Element.extension scope
 val s_field : Component.Element.field scope
 
 val s_label_parent : Component.Element.label_parent scope
+
+val s_fragment_type_parent : Component.Element.fragment_type_parent scope
 
 (* val open_component_signature :
    Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)

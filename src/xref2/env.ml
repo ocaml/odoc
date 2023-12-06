@@ -288,19 +288,20 @@ let add_module identifier m docs env =
   let env' = add_to_elts Kind_Module identifier (`Module (identifier, m)) env in
   if env.linking then add_cdocs identifier docs env' else env'
 
-let add_type identifier t env =
+let add_type (identifier : Identifier.Type.t) t env =
   let open Component in
   let open_typedecl cs =
     let add_cons env (cons : TypeDecl.Constructor.t) =
       let ident =
         Paths.Identifier.Mk.constructor
-          (identifier, ConstructorName.make_std cons.name)
+          ( (identifier :> Identifier.DataType.t),
+            ConstructorName.make_std cons.name )
       in
       add_to_elts Kind_Constructor ident (`Constructor (ident, cons)) env
     and add_field env (field : TypeDecl.Field.t) =
       let ident =
         Paths.Identifier.Mk.field
-          ( (identifier :> Paths.Identifier.Parent.t),
+          ( (identifier :> Paths.Identifier.FieldParent.t),
             FieldName.make_std field.name )
       in
       add_to_elts Kind_Field ident (`Field (ident, field)) env
@@ -542,11 +543,11 @@ let s_module_type : Component.Element.module_type scope =
     | #Component.Element.module_type as r -> Some r
     | _ -> None)
 
-let s_datatype : Component.Element.datatype scope =
-  make_scope (function #Component.Element.datatype as r -> Some r | _ -> None)
-
 let s_type : Component.Element.type_ scope =
   make_scope (function #Component.Element.type_ as r -> Some r | _ -> None)
+
+let s_datatype : Component.Element.datatype scope =
+  make_scope (function #Component.Element.datatype as r -> Some r | _ -> None)
 
 let s_class : Component.Element.class_ scope =
   make_scope (function #Component.Element.class_ as r -> Some r | _ -> None)
@@ -589,6 +590,11 @@ let s_field : Component.Element.field scope =
 let s_label_parent : Component.Element.label_parent scope =
   make_scope ~root:lookup_page_or_root_module_fallback (function
     | #Component.Element.label_parent as r -> Some r
+    | _ -> None)
+
+let s_fragment_type_parent : Component.Element.fragment_type_parent scope =
+  make_scope ~root:lookup_root_module_fallback (function
+    | #Component.Element.fragment_type_parent as r -> Some r
     | _ -> None)
 
 let len = ref 0

@@ -214,7 +214,7 @@ let read_constructor_declaration_arguments env parent label_parent arg =
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let id = Ident_env.find_constructor_identifier env cd.cd_id in
-  let container = (parent : Identifier.DataType.t :> Identifier.Parent.t) in
+  let container = (parent :> Identifier.FieldParent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag label_container cd.cd_attributes in
   let args =
@@ -231,7 +231,7 @@ let read_type_kind env parent =
         let cstrs = List.map (read_constructor_declaration env parent) cstrs in
           Some (Variant cstrs)
     | Ttype_record lbls ->
-        let parent = (parent : Identifier.DataType.t :> Identifier.Parent.t) in
+      let parent = (parent :> Identifier.FieldParent.t) in
       let label_parent = (parent :> Identifier.LabelParent.t) in
       let lbls =
         List.map (read_label_declaration env parent label_parent) lbls in
@@ -260,7 +260,7 @@ let read_type_declaration env parent decl =
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container decl.typ_attributes in
   let canonical = (canonical :> Path.Type.t option) in
   let equation = read_type_equation env container decl in
-  let representation = read_type_kind env (id :> Identifier.DataType.t) decl.typ_kind in
+  let representation = read_type_kind env id decl.typ_kind in
   {id; locs; doc; canonical; equation; representation}
 
 let read_type_declarations env parent rec_flag decls =
@@ -292,7 +292,7 @@ let read_extension_constructor env parent ext =
   let open Extension.Constructor in
   let id = Env.find_extension_identifier env ext.ext_id in
   let locs = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
+  let container = (parent : Identifier.Signature.t :> Identifier.FieldParent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag label_container ext.ext_attributes in
   match ext.ext_kind with
@@ -325,7 +325,7 @@ let read_exception env parent (ext : extension_constructor) =
   let open Exception in
   let id = Env.find_exception_identifier env ext.ext_id in
   let locs = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
+  let container = (parent : Identifier.Signature.t :> Identifier.FieldParent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag label_container ext.ext_attributes in
   match ext.ext_kind with

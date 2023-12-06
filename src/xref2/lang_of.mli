@@ -186,19 +186,19 @@ val simple_expansion :
 
 val type_decl_constructor_argument :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.FieldParent.t ->
   Component.TypeDecl.Constructor.argument ->
   Odoc_model.Lang.TypeDecl.Constructor.argument
 
 val type_decl_field :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.FieldParent.t ->
   Component.TypeDecl.Field.t ->
   Odoc_model.Lang.TypeDecl.Field.t
 
 val type_decl_equation :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.FieldParent.t ->
   Component.TypeDecl.Equation.t ->
   Odoc_model.Lang.TypeDecl.Equation.t
 
@@ -217,31 +217,31 @@ val type_decl_representation :
 
 val type_decl_constructor :
   maps ->
-  Identifier.Type.t ->
+  Identifier.DataType.t ->
   Component.TypeDecl.Constructor.t ->
   Odoc_model.Lang.TypeDecl.Constructor.t
 
 val type_expr_package :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.LabelParent.t ->
   Component.TypeExpr.Package.t ->
   Odoc_model.Lang.TypeExpr.Package.t
 
 val type_expr :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.LabelParent.t ->
   Component.TypeExpr.t ->
   Odoc_model.Lang.TypeExpr.t
 
 val type_expr_polyvar :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.LabelParent.t ->
   Component.TypeExpr.Polymorphic_variant.t ->
   Odoc_model.Lang.TypeExpr.Polymorphic_variant.t
 
 val type_expr_object :
   maps ->
-  Identifier.Parent.t ->
+  Identifier.LabelParent.t ->
   Component.TypeExpr.Object.t ->
   Odoc_model.Lang.TypeExpr.Object.t
 

@@ -628,11 +628,11 @@ let read_constructor_declaration_arguments env parent arg =
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let id = Ident_env.find_constructor_identifier env cd.cd_id in
-  let container = (parent : Identifier.DataType.t :> Identifier.LabelParent.t) in
+  let container = (parent :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cd.cd_attributes in
   let args =
     read_constructor_declaration_arguments env
-      (parent :> Identifier.Parent.t) cd.cd_args
+      (parent :> Identifier.FieldParent.t) cd.cd_args
   in
   let res = opt_map (read_type_expr env) cd.cd_res in
     {id; doc; args; res}
@@ -652,7 +652,7 @@ let read_type_kind env parent =
     | Type_record(lbls, _) ->
         let lbls =
           List.map
-            (read_label_declaration env (parent :> Identifier.Parent.t))
+            (read_label_declaration env (parent :> Identifier.FieldParent.t))
             lbls
         in
           Some (Record lbls)
@@ -713,7 +713,7 @@ let read_type_declaration env parent id decl =
   let params = mark_type_declaration decl in
   let manifest = opt_map (read_type_expr env) decl.type_manifest in
   let constraints = read_type_constraints env params in
-  let representation = read_type_kind env id decl.type_kind in
+  let representation = read_type_kind env (id :> Identifier.DataType.t) decl.type_kind in
   let abstr =
     match decl.type_kind with
       Type_abstract ->
@@ -745,7 +745,7 @@ let read_extension_constructor env parent id ext =
   let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
   let args =
     read_constructor_declaration_arguments env
-      (parent : Identifier.Signature.t :> Identifier.Parent.t) ext.ext_args
+      (parent : Identifier.Signature.t :> Identifier.FieldParent.t) ext.ext_args
   in
   let res = opt_map (read_type_expr env) ext.ext_ret_type in
   {id; locs; doc; args; res}
@@ -779,7 +779,7 @@ let read_exception env parent id ext =
     mark_exception ext;
     let args =
       read_constructor_declaration_arguments env
-        (parent : Identifier.Signature.t :> Identifier.Parent.t) ext.ext_args
+        (parent : Identifier.Signature.t :> Identifier.FieldParent.t) ext.ext_args
     in
     let res = opt_map (read_type_expr env) ext.ext_ret_type in
     {id; locs; doc; args; res}

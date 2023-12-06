@@ -214,18 +214,15 @@ let parse whole_reference_location s :
         | _ ->
             expected [ "module"; "module-type" ] location
             |> Error.raise_exception)
-  and parent (kind, identifier, location) tokens : Parent.t =
+  and parent (kind, identifier, location) tokens : FragmentTypeParent.t =
     let kind = match_reference_kind location kind in
     match tokens with
     | [] -> (
         match kind with
-        | (`TUnknown | `TModule | `TModuleType | `TType | `TClass | `TClassType)
-          as kind ->
+        | (`TUnknown | `TModule | `TModuleType | `TType) as kind ->
             `Root (identifier, kind)
         | _ ->
-            expected
-              [ "module"; "module-type"; "type"; "class"; "class-type" ]
-              location
+            expected [ "module"; "module-type"; "type" ] location
             |> Error.raise_exception)
     | next_token :: tokens -> (
         match kind with
@@ -238,15 +235,8 @@ let parse whole_reference_location s :
               (signature next_token tokens, ModuleTypeName.make_std identifier)
         | `TType ->
             `Type (signature next_token tokens, TypeName.make_std identifier)
-        | `TClass ->
-            `Class (signature next_token tokens, ClassName.make_std identifier)
-        | `TClassType ->
-            `ClassType
-              (signature next_token tokens, ClassTypeName.make_std identifier)
         | _ ->
-            expected
-              [ "module"; "module-type"; "type"; "class"; "class-type" ]
-              location
+            expected [ "module"; "module-type"; "type" ] location
             |> Error.raise_exception)
   in
 
@@ -271,22 +261,6 @@ let parse whole_reference_location s :
         | _ ->
             expected [ "class"; "class-type" ] location |> Error.raise_exception
         )
-  in
-
-  let datatype (kind, identifier, location) tokens : DataType.t =
-    let kind = match_reference_kind location kind in
-    match tokens with
-    | [] -> (
-        match kind with
-        | (`TUnknown | `TType) as kind -> `Root (identifier, kind)
-        | _ -> expected [ "type" ] location |> Error.raise_exception)
-    | next_token :: tokens -> (
-        match kind with
-        | `TUnknown ->
-            `Dot ((parent next_token tokens :> LabelParent.t), identifier)
-        | `TType ->
-            `Type (signature next_token tokens, TypeName.make_std identifier)
-        | _ -> expected [ "type" ] location |> Error.raise_exception)
   in
 
   let rec label_parent (kind, identifier, location) tokens : LabelParent.t =
@@ -360,7 +334,7 @@ let parse whole_reference_location s :
             `Type (signature next_token tokens, TypeName.make_std identifier)
         | `TConstructor ->
             `Constructor
-              (datatype next_token tokens, ConstructorName.make_std identifier)
+              (parent next_token tokens, ConstructorName.make_std identifier)
         | `TField ->
             `Field (parent next_token tokens, FieldName.make_std identifier)
         | `TExtension ->

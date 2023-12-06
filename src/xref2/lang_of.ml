@@ -513,7 +513,7 @@ and class_decl map parent c =
   | Arrow (lbl, t, d) ->
       Arrow
         ( lbl,
-          type_expr map (parent :> Identifier.Parent.t) t,
+          type_expr map (parent :> Identifier.LabelParent.t) t,
           class_decl map parent d )
 
 and class_type_expr map parent c =
@@ -521,7 +521,7 @@ and class_type_expr map parent c =
   | Component.ClassType.Constr (p, ts) ->
       Constr
         ( Path.class_type map p,
-          List.rev_map (type_expr map (parent :> Identifier.Parent.t)) ts
+          List.rev_map (type_expr map (parent :> Identifier.LabelParent.t)) ts
           |> List.rev )
   | Signature s -> Signature (class_signature map parent s)
 
@@ -548,7 +548,7 @@ and class_type map parent id c =
 
 and class_signature map parent sg =
   let open Component.ClassSignature in
-  let pparent = (parent :> Identifier.Parent.t) in
+  let pparent = (parent :> Identifier.LabelParent.t) in
   let items =
     List.rev_map
       (function
@@ -573,7 +573,7 @@ and method_ map parent id m =
     doc = docs (parent :> Identifier.LabelParent.t) m.doc;
     private_ = m.private_;
     virtual_ = m.virtual_;
-    type_ = type_expr map (parent :> Identifier.Parent.t) m.type_;
+    type_ = type_expr map (parent :> Identifier.LabelParent.t) m.type_;
   }
 
 and instance_variable map parent id i =
@@ -587,7 +587,7 @@ and instance_variable map parent id i =
     doc = docs (parent :> Identifier.LabelParent.t) i.doc;
     mutable_ = i.mutable_;
     virtual_ = i.virtual_;
-    type_ = type_expr map (parent :> Identifier.Parent.t) i.type_;
+    type_ = type_expr map (parent :> Identifier.LabelParent.t) i.type_;
   }
 
 and class_constraint map parent cst =
@@ -686,7 +686,7 @@ and value_ map parent id v =
     id = identifier;
     locs = v.locs;
     doc = docs (parent :> Identifier.LabelParent.t) v.doc;
-    type_ = type_expr map (parent :> Identifier.Parent.t) v.type_;
+    type_ = type_expr map (parent :> Identifier.LabelParent.t) v.type_;
     value = v.value;
   }
 
@@ -711,8 +711,10 @@ and extension_constructor map parent c =
     locs = c.locs;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     args =
-      type_decl_constructor_argument map (parent :> Identifier.Parent.t) c.args;
-    res = Opt.map (type_expr map (parent :> Identifier.Parent.t)) c.res;
+      type_decl_constructor_argument map
+        (parent :> Identifier.FieldParent.t)
+        c.args;
+    res = Opt.map (type_expr map (parent :> Identifier.LabelParent.t)) c.res;
   }
 
 and module_ map parent id m =
@@ -767,11 +769,11 @@ and mty_substitution map identifier = function
   | TypeEq (frag, eqn) ->
       TypeEq
         ( Path.type_fragment map frag,
-          type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
+          type_decl_equation map (identifier :> Identifier.FieldParent.t) eqn )
   | TypeSubst (frag, eqn) ->
       TypeSubst
         ( Path.type_fragment map frag,
-          type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
+          type_decl_equation map (identifier :> Identifier.FieldParent.t) eqn )
   | ModuleTypeEq (frag, eqn) ->
       ModuleTypeEq
         (Path.module_type_fragment map frag, module_type_expr map identifier eqn)
@@ -888,17 +890,20 @@ and module_type_substitution :
 
 and type_decl_constructor_argument :
     maps ->
-    Paths.Identifier.Parent.t ->
+    Paths.Identifier.FieldParent.t ->
     Component.TypeDecl.Constructor.argument ->
     Odoc_model.Lang.TypeDecl.Constructor.argument =
  fun map parent a ->
   match a with
-  | Tuple ls -> Tuple (List.map (type_expr map parent) ls)
-  | Record fs -> Record (List.map (type_decl_field map parent) fs)
+  | Tuple ls ->
+      Tuple (List.map (type_expr map (parent :> Identifier.LabelParent.t)) ls)
+  | Record fs ->
+      Record
+        (List.map (type_decl_field map (parent :> Identifier.FieldParent.t)) fs)
 
 and type_decl_field :
     maps ->
-    Identifier.Parent.t ->
+    Identifier.FieldParent.t ->
     Component.TypeDecl.Field.t ->
     Odoc_model.Lang.TypeDecl.Field.t =
  fun map parent f ->
@@ -907,12 +912,13 @@ and type_decl_field :
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) f.doc;
     mutable_ = f.mutable_;
-    type_ = type_expr map parent f.type_;
+    type_ = type_expr map (parent :> Identifier.LabelParent.t) f.type_;
   }
 
-and type_decl_equation map (parent : Identifier.Parent.t)
+and type_decl_equation map (parent : Identifier.FieldParent.t)
     (eqn : Component.TypeDecl.Equation.t) : Odoc_model.Lang.TypeDecl.Equation.t
     =
+  let parent = (parent :> Identifier.LabelParent.t) in
   {
     params = eqn.params;
     private_ = eqn.private_;
@@ -929,7 +935,8 @@ and type_decl map parent id (t : Component.TypeDecl.t) :
   {
     id = identifier;
     locs = t.locs;
-    equation = type_decl_equation map (parent :> Identifier.Parent.t) t.equation;
+    equation =
+      type_decl_equation map (parent :> Identifier.FieldParent.t) t.equation;
     doc = docs (parent :> Identifier.LabelParent.t) t.doc;
     canonical = t.canonical;
     representation =
@@ -944,29 +951,29 @@ and type_decl_representation map id (t : Component.TypeDecl.Representation.t) :
   | Record fs ->
       Record
         (List.map
-           (type_decl_field map (id :> Odoc_model.Paths.Identifier.Parent.t))
+           (type_decl_field map
+              (id :> Odoc_model.Paths.Identifier.FieldParent.t))
            fs)
 
 and type_decl_constructor :
     maps ->
-    Odoc_model.Paths.Identifier.Type.t ->
+    Odoc_model.Paths.Identifier.DataType.t ->
     Component.TypeDecl.Constructor.t ->
     Odoc_model.Lang.TypeDecl.Constructor.t =
  fun map id t ->
   let identifier =
     Identifier.Mk.constructor (id, ConstructorName.make_std t.name)
   in
+  let parent = (id :> Identifier.LabelParent.t) in
   {
     id = identifier;
-    doc = docs (id :> Identifier.LabelParent.t) t.doc;
+    doc = docs parent t.doc;
     args =
-      type_decl_constructor_argument map
-        (id :> Odoc_model.Paths.Identifier.Parent.t)
-        t.args;
-    res = Opt.map (type_expr map (id :> Identifier.Parent.t)) t.res;
+      type_decl_constructor_argument map (id :> Identifier.FieldParent.t) t.args;
+    res = Opt.map (type_expr map parent) t.res;
   }
 
-and type_expr_package map parent t =
+and type_expr_package map (parent : Identifier.LabelParent.t) t =
   {
     Lang.TypeExpr.Package.path =
       Path.module_type map t.Component.TypeExpr.Package.path;
@@ -977,8 +984,8 @@ and type_expr_package map parent t =
         t.substitutions;
   }
 
-and type_expr map (parent : Identifier.Parent.t) (t : Component.TypeExpr.t) :
-    Odoc_model.Lang.TypeExpr.t =
+and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
+    : Odoc_model.Lang.TypeExpr.t =
   try
     match t with
     | Var s -> Var s
@@ -1010,7 +1017,7 @@ and type_expr_polyvar map parent v =
         c.Component.TypeExpr.Polymorphic_variant.Constructor.name;
       constant = c.constant;
       arguments = List.map (type_expr map parent) c.arguments;
-      doc = docs (parent :> Identifier.LabelParent.t) c.doc;
+      doc = docs parent c.doc;
     }
   in
   let element = function
@@ -1054,8 +1061,10 @@ and exception_ map parent id (e : Component.Exception.t) :
     locs = e.locs;
     doc = docs (parent :> Identifier.LabelParent.t) e.doc;
     args =
-      type_decl_constructor_argument map (parent :> Identifier.Parent.t) e.args;
-    res = Opt.map (type_expr map (parent :> Identifier.Parent.t)) e.res;
+      type_decl_constructor_argument map
+        (parent :> Identifier.FieldParent.t)
+        e.args;
+    res = Opt.map (type_expr map (parent :> Identifier.LabelParent.t)) e.res;
   }
 
 and block_element parent

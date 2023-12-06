@@ -79,9 +79,9 @@ module Identifier : sig
     type t = Id.datatype
     type t_pv = Id.datatype_pv
   end
-  module Parent : sig
-    type t = Id.parent
-    type t_pv = Id.parent_pv
+  module FieldParent : sig
+    type t = Id.field_parent
+    type t_pv = Id.field_parent_pv
   end
 
   module FunctorResult : sig
@@ -290,11 +290,12 @@ module Identifier : sig
     val core_type : string -> [> `CoreType of TypeName.t ] id
 
     val constructor :
-      Type.t * ConstructorName.t ->
-      [> `Constructor of Type.t * ConstructorName.t ] id
+      DataType.t * ConstructorName.t ->
+      [> `Constructor of DataType.t * ConstructorName.t ] id
 
     val field :
-      Parent.t * FieldName.t -> [> `Field of Parent.t * FieldName.t ] id
+      FieldParent.t * FieldName.t ->
+      [> `Field of FieldParent.t * FieldName.t ] id
 
     val extension :
       Signature.t * ExtensionName.t ->
@@ -507,8 +508,8 @@ module rec Reference : sig
       type t = Paths_types.Resolved_reference.datatype
     end
 
-    module Parent : sig
-      type t = Paths_types.Resolved_reference.parent
+    module FieldParent : sig
+      type t = Paths_types.Resolved_reference.field_parent
     end
 
     module LabelParent : sig
@@ -592,8 +593,8 @@ module rec Reference : sig
     type t = Paths_types.Reference.datatype
   end
 
-  module Parent : sig
-    type t = Paths_types.Reference.parent
+  module FragmentTypeParent : sig
+    type t = Paths_types.Reference.fragment_type_parent
   end
 
   module LabelParent : sig

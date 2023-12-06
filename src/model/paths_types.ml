@@ -81,13 +81,16 @@ module Identifier = struct
   and datatype = datatype_pv id
   (** @canonical Odoc_model.Paths.Identifier.DataType.t *)
 
-  type parent_pv = [ signature_pv | datatype_pv | class_signature_pv ]
-  (** @canonical Odoc_model.Paths.Identifier.Parent.t_pv *)
+  type field_parent_pv = [ signature_pv | datatype_pv ]
+  (** @canonical Odoc_model.Paths.Identifier.FieldParent.t_pv *)
 
-  and parent = parent_pv id
-  (** @canonical Odoc_model.Paths.Identifier.Parent.t *)
+  (* fragment_type_parent in identifiers is for record fields parent. It’s type
+     (for usual record fields) or [signature] for fields of inline records of
+     extension constructor. *)
+  and field_parent = field_parent_pv id
+  (** @canonical Odoc_model.Paths.Identifier.FieldParent.t *)
 
-  type label_parent_pv = [ parent_pv | page_pv ]
+  type label_parent_pv = [ field_parent_pv | page_pv | class_signature_pv ]
   (** @canonical Odoc_model.Paths.Identifier.LabelParent.t_pv *)
 
   and label_parent = label_parent_pv id
@@ -132,13 +135,13 @@ module Identifier = struct
   and type_ = type_pv id
   (** @canonical Odoc_model.Paths.Identifier.Type.t *)
 
-  type constructor_pv = [ `Constructor of type_ * ConstructorName.t ]
+  type constructor_pv = [ `Constructor of datatype * ConstructorName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t_pv *)
 
   and constructor = constructor_pv id
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t *)
 
-  type field_pv = [ `Field of parent * FieldName.t ]
+  type field_pv = [ `Field of field_parent * FieldName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Field.t_pv *)
 
   and field = field_pv id
@@ -206,7 +209,7 @@ module Identifier = struct
     [ signature_pv
     | class_signature_pv
     | datatype_pv
-    | parent_pv
+    | field_parent_pv
     | label_parent_pv
     | module_pv
     | functor_parameter_pv
@@ -580,8 +583,7 @@ module rec Reference : sig
 
   type tag_datatype = [ `TUnknown | `TType ]
 
-  type tag_parent =
-    [ `TUnknown | `TModule | `TModuleType | `TClass | `TClassType | `TType ]
+  type tag_parent = [ `TUnknown | `TModule | `TModuleType | `TType ]
 
   type tag_label_parent =
     [ `TUnknown
@@ -617,16 +619,15 @@ module rec Reference : sig
     | `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.DataType.t *)
 
-  and parent =
-    [ `Resolved of Resolved_reference.parent
+  (* Parent of fields and constructor. Can be either a type or [signature] *)
+  and fragment_type_parent =
+    [ `Resolved of Resolved_reference.field_parent
     | `Root of string * tag_parent
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
     | `Type of signature * TypeName.t ]
-  (** @canonical Odoc_model.Paths.Reference.Parent.t *)
+  (** @canonical Odoc_model.Paths.Reference.FragmentTypeParent.t *)
 
   and label_parent =
     [ `Resolved of Resolved_reference.label_parent
@@ -666,7 +667,7 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.constructor
     | `Root of string * [ `TConstructor | `TExtension | `TException | `TUnknown ]
     | `Dot of label_parent * string
-    | `Constructor of datatype * ConstructorName.t
+    | `Constructor of fragment_type_parent * ConstructorName.t
     | `Extension of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t ]
   (** @canonical Odoc_model.Paths.Reference.Constructor.t *)
@@ -675,7 +676,7 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.field
     | `Root of string * [ `TField | `TUnknown ]
     | `Dot of label_parent * string
-    | `Field of parent * FieldName.t ]
+    | `Field of fragment_type_parent * FieldName.t ]
   (** @canonical Odoc_model.Paths.Reference.Field.t *)
 
   type extension =
@@ -756,8 +757,8 @@ module rec Reference : sig
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
-    | `Constructor of datatype * ConstructorName.t
-    | `Field of parent * FieldName.t
+    | `Constructor of fragment_type_parent * ConstructorName.t
+    | `Field of fragment_type_parent * FieldName.t
     | `Extension of signature * ExtensionName.t
     | `ExtensionDecl of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t
@@ -805,18 +806,18 @@ and Resolved_reference : sig
     | `ClassType of signature * ClassTypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.ClassSignature.t *)
 
-  (* parent is [ signature | class_signature ] *)
-  and parent =
-    [ `Identifier of Identifier.parent
+  (* fragment_type_parent in resolved references is for record fields parent.
+     It’s type (for usual record fields) or [signature] for fields of inline
+     records of extension constructor. *)
+  and field_parent =
+    [ `Identifier of Identifier.field_parent
     | `Alias of Resolved_path.module_ * module_
     | `AliasModuleType of Resolved_path.module_type * module_type
     | `Module of signature * ModuleName.t
     | `Hidden of module_
     | `ModuleType of signature * ModuleTypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
     | `Type of signature * TypeName.t ]
-  (** @canonical Odoc_model.Paths.Reference.Resolved.Parent.t *)
+  (** @canonical Odoc_model.Paths.Reference.Resolved.FragmentTypeParent.t *)
 
   (* The only difference between parent and label_parent
      is that the Identifier allows more types *)
@@ -854,7 +855,7 @@ and Resolved_reference : sig
 
   type field =
     [ `Identifier of Identifier.reference_field
-    | `Field of parent * FieldName.t ]
+    | `Field of field_parent * FieldName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Field.t *)
 
   type extension =
@@ -921,7 +922,7 @@ and Resolved_reference : sig
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
     | `Constructor of datatype * ConstructorName.t
-    | `Field of parent * FieldName.t
+    | `Field of field_parent * FieldName.t
     | `Extension of signature * ExtensionName.t
     | `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t
     | `Exception of signature * ExceptionName.t
