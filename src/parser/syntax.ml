@@ -118,11 +118,16 @@ module Table = struct
 end
 
 module Reader = struct
-  let until_rbrace input acc =
+  let until_rbrace_or_eof input acc =
     let rec consume () =
       let next_token = peek input in
       match next_token.value with
       | `Right_brace ->
+          junk input;
+          `End (acc, next_token.location)
+      | `End ->
+          Parse_error.end_not_allowed next_token.location ~in_what:"table"
+          |> add_warning input;
           junk input;
           `End (acc, next_token.location)
       | `Space _ | `Single_newline _ | `Blank_line _ ->
@@ -1227,7 +1232,7 @@ and explicit_list_items :
     let next_token = peek input in
     match next_token.value with
     | `End ->
-        Parse_error.not_allowed next_token.location ~what:(Token.describe `End)
+        Parse_error.end_not_allowed next_token.location
           ~in_what:(Token.describe parent_markup)
         |> add_warning input;
         (List.rev acc, next_token.location)
@@ -1275,8 +1280,8 @@ and explicit_list_items :
         (match token_after_list_item.value with
         | `Right_brace -> junk input
         | `End ->
-            Parse_error.not_allowed token_after_list_item.location
-              ~what:(Token.describe `End) ~in_what:(Token.describe token)
+            Parse_error.end_not_allowed token_after_list_item.location
+              ~in_what:(Token.describe token)
             |> add_warning input);
 
         let acc = content :: acc in
@@ -1310,7 +1315,7 @@ and explicit_list_items :
    which is consumed. *)
 and light_table ~parent_markup ~parent_markup_location input =
   let rec consume_rows acc ~last_loc =
-    Reader.until_rbrace input acc >>> fun next_token ->
+    Reader.until_rbrace_or_eof input acc >>> fun next_token ->
     match next_token.Loc.value with
     | `Bar | #token_that_always_begins_an_inline_element -> (
         let next, row, last_loc =
@@ -1340,6 +1345,11 @@ and light_table_row ~parent_markup ~last_loc input =
     let return row cell = List.rev (push_cells row cell) in
     let next_token = peek input in
     match next_token.value with
+    | `End ->
+        Parse_error.end_not_allowed next_token.location ~in_what:"table"
+        |> add_warning input;
+        junk input;
+        (`Stop, return acc_row acc_cell, next_token.location)
     | `Right_brace ->
         junk input;
         (`Stop, return acc_row acc_cell, next_token.location)
@@ -1385,7 +1395,7 @@ and light_table_row ~parent_markup ~last_loc input =
    which is consumed. *)
 and heavy_table ~parent_markup ~parent_markup_location input =
   let rec consume_rows acc ~last_loc =
-    Reader.until_rbrace input acc >>> fun next_token ->
+    Reader.until_rbrace_or_eof input acc >>> fun next_token ->
     match next_token.Loc.value with
     | `Begin_table_row as token ->
         junk input;
@@ -1411,7 +1421,7 @@ and heavy_table ~parent_markup ~parent_markup_location input =
    which is consumed. *)
 and heavy_table_row ~parent_markup input =
   let rec consume_cell_items acc =
-    Reader.until_rbrace input acc >>> fun next_token ->
+    Reader.until_rbrace_or_eof input acc >>> fun next_token ->
     match next_token.Loc.value with
     | `Begin_table_cell kind as token ->
         junk input;

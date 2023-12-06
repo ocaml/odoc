@@ -35,6 +35,10 @@ Tags:
 ### Changed
 - Style: Adjusted line height in the TOC to improve readability (@sorawee, #1045)
 
+### Fixed
+- Warn and exit when table(s) is not closed (@lubegasimon, #1050)
+- Hint when list(s) is not closed (@lubegasimon, #1050)
+
 # 2.3.0
 
 ### Added
