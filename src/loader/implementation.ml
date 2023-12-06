@@ -315,7 +315,7 @@ let process_occurrences env poses loc_to_id local_ident_to_loc =
     | p -> (
         match find_in_env env p with
         | path ->
-            let documentation = Some (path, is_persistent p)
+            let documentation = if is_persistent p then Some path else None
             and implementation = Some (Unresolved path) in
             Some { documentation; implementation }
         | exception _ -> None)

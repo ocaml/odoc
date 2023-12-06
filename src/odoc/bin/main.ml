@@ -1113,11 +1113,9 @@ end
 
 module Occurrences = struct
   module Count = struct
-    let count directories dst warnings_options include_hidden include_own
-        =
+    let count directories dst warnings_options include_hidden =
       let dst = Fpath.v dst in
       Occurrences.count ~dst ~warnings_options directories include_hidden
-        include_own
 
     let cmd =
       let dst =
@@ -1131,16 +1129,10 @@ module Occurrences = struct
         let doc = "Include hidden identifiers in the table" in
         Arg.(value & flag & info ~docs ~doc [ "include-hidden" ])
       in
-      let include_own =
-        let doc =
-          "Include identifiers from the compilation in the table."
-        in
-        Arg.(value & flag & info ~docs ~doc [ "include-own" ])
-      in
       Term.(
         const handle_error
         $ (const count $ odoc_file_directories $ dst $ warnings_options
-         $ include_hidden $ include_own))
+         $ include_hidden))
 
     let info ~docs =
       let doc =

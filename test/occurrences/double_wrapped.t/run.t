@@ -63,8 +63,10 @@ Uses of values Y.x and Z.y (in b.ml) are not counted since they come from a "loc
 
   $ occurrences_print main__.occ | sort
 
+A only uses "persistent" values: one it defines itself.
   $ occurrences_print main__A.occ | sort
 
+"Aliased" values are not counted since they become persistent
   $ occurrences_print main__B.occ | sort
   Main was used directly 0 times and indirectly 7 times
   Main.A was used directly 2 times and indirectly 5 times
@@ -73,12 +75,13 @@ Uses of values Y.x and Z.y (in b.ml) are not counted since they come from a "loc
   Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 1 times and indirectly 0 times
 
+"Aliased" values are not counted since they become persistent
   $ occurrences_print main__C.occ | sort
   Main was used directly 0 times and indirectly 2 times
   Main.A was used directly 1 times and indirectly 1 times
   Main.A.x was used directly 1 times and indirectly 0 times
 
-Now we can merge both files
+Now we can merge all tables
 
   $ cat > files.map << EOF
   > main__A.occ
@@ -87,7 +90,8 @@ Now we can merge both files
   > EOF
   $ odoc aggregate-occurrences main.occ main__.occ --file-list files.map -o aggregated.txt
 
-  $ occurrences_print aggregated.txt | sort
+  $ occurrences_print aggregated.txt | sort > all_merged
+  $ cat all_merged
   Main was used directly 0 times and indirectly 11 times
   Main.A was used directly 4 times and indirectly 6 times
   Main.A.(||>) was used directly 1 times and indirectly 0 times
@@ -99,40 +103,13 @@ Now we can merge both files
 Compare with the one created directly with all occurrences:
 
   $ odoc count-occurrences -I . -o occurrences.txt
-  $ occurrences_print occurrences.txt | sort
-  Main was used directly 0 times and indirectly 11 times
-  Main.A was used directly 4 times and indirectly 6 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 2 times and indirectly 0 times
-  Main.B was used directly 1 times and indirectly 0 times
+  $ occurrences_print occurrences.txt | sort > directly_all
+  $ diff all_merged directly_all
 
-We can also include persistent ids, and hidden ids:
-
-  $ odoc count-occurrences -I main__A -o occurrences.txt --include-own
-  $ occurrences_print occurrences.txt | sort
-  string was used directly 1 times and indirectly 0 times
+We can also include hidden ids:
 
   $ odoc count-occurrences -I main__A -o occurrences.txt --include-hidden
   $ occurrences_print occurrences.txt | sort
-
-  $ odoc count-occurrences -I main__A -o occurrences.txt --include-own --include-hidden
-  $ occurrences_print occurrences.txt | sort
-  Main__A was used directly 0 times and indirectly 2 times
-  Main__A.x was used directly 2 times and indirectly 0 times
-  string was used directly 1 times and indirectly 0 times
-
-  $ odoc count-occurrences -I . -o occurrences.txt --include-own
-  $ occurrences_print occurrences.txt | sort
-  Main was used directly 0 times and indirectly 13 times
-  Main.A was used directly 4 times and indirectly 8 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 4 times and indirectly 0 times
-  Main.B was used directly 1 times and indirectly 0 times
-  string was used directly 1 times and indirectly 0 times
 
   $ odoc count-occurrences -I . -o occurrences.txt --include-hidden
   $ occurrences_print occurrences.txt | sort
@@ -149,45 +126,3 @@ We can also include persistent ids, and hidden ids:
   Main__A was used directly 1 times and indirectly 0 times
   Main__B was used directly 1 times and indirectly 0 times
   Main__C was used directly 1 times and indirectly 0 times
-
-  $ odoc count-occurrences -I . -o occurrences.txt --include-own --include-hidden
-  $ occurrences_print occurrences.txt | sort
-  Main was used directly 0 times and indirectly 13 times
-  Main.A was used directly 4 times and indirectly 8 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 4 times and indirectly 0 times
-  Main.B was used directly 1 times and indirectly 0 times
-  Main__ was used directly 0 times and indirectly 2 times
-  Main__.C was used directly 1 times and indirectly 1 times
-  Main__.C.y was used directly 1 times and indirectly 0 times
-  Main__A was used directly 1 times and indirectly 2 times
-  Main__A.x was used directly 2 times and indirectly 0 times
-  Main__B was used directly 1 times and indirectly 1 times
-  Main__B.Z was used directly 0 times and indirectly 1 times
-  Main__B.Z.y was used directly 1 times and indirectly 0 times
-  Main__C was used directly 1 times and indirectly 0 times
-  string was used directly 1 times and indirectly 0 times
-
-
-REMARKS!
-
-  $ odoc count-occurrences -I main__B -o b_only_persistent.occ
-  $ odoc count-occurrences -I main__B -o b_with_own.occ --include-own
-  $ occurrences_print b_only_persistent.occ | sort > only_persistent
-  $ occurrences_print b_with_own.occ | sort > with_own
-  $ diff only_persistent with_own | grep Main.A.x
-  < Main.A.x was used directly 1 times and indirectly 0 times
-  > Main.A.x was used directly 2 times and indirectly 0 times
-
-This is because the persistent Y.x is resolved into Main.A.x. So maybe relying
-on Ident.persistent is not the good way of knowing if it is persistent or not?
-
-  $ odoc count-occurrences -I main__A -o a_with_own_and_hidden.occ --include-own --include-hidden
-  $ occurrences_print a_with_own_and_hidden.occ | sort
-  Main__A was used directly 0 times and indirectly 2 times
-  Main__A.x was used directly 2 times and indirectly 0 times
-  string was used directly 1 times and indirectly 0 times
-
-That's a problem: it should be Main.A and Main.A.x
