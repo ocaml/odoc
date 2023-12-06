@@ -61,5 +61,11 @@ type t = {
   kind : kind;
 }
 
+val is_from_module_type : t -> bool
+(** [is_from_module_type e] is true if the entry [e] is the child of a module
+    type. This information can be important because such entries do not have
+    implementations and tend to have very generic names like [compare], so a
+    search engine might want to rank them lower. *)
+
 val entries_of_item :
   Odoc_model.Paths.Identifier.Any.t -> Odoc_model.Fold.item -> t list

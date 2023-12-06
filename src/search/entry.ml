@@ -72,6 +72,67 @@ type t = {
   kind : kind;
 }
 
+let rec is_from_module_type (id : Odoc_model.Paths.Identifier.Any.t) =
+  match id.iv with
+  | `InstanceVariable (parent, _name) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Parameter (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Module (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `SourceDir (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `ModuleType _ -> true
+  | `Method (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `AssetFile (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Field (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `SourceLocationMod parent ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Result parent ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Type (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Label (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Exception (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Class (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Page (parent, _) -> (
+      match parent with
+      | None -> false
+      | Some parent ->
+          is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t))
+  | `LeafPage (parent, _) -> (
+      match parent with
+      | None -> false
+      | Some parent ->
+          is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t))
+  | `CoreType _ -> false
+  | `SourceLocation (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `ClassType (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `SourcePage (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Value (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `CoreException _ -> false
+  | `Constructor (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `Root _ -> false
+  | `Extension (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `ExtensionDecl (parent, _, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | `SourceLocationInternal (parent, _) ->
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+
+let is_from_module_type { id; _ } = is_from_module_type id
+
 let entry ~id ~doc ~kind =
   let id = (id :> Odoc_model.Paths.Identifier.Any.t) in
   { id; kind; doc }
