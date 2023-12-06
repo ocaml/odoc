@@ -43,4 +43,5 @@ depends: [
   "mdx" {>= "2.3.0"}
   "core" {= "v0.16.2"}
   "core_kernel" {= "v0.16.0"}
+  "crunch"
 ]
