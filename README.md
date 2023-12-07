@@ -80,9 +80,10 @@ will only return functions that take a string a argument, no matter what they
 return.
 
 There is limited support for polymorphism : you cannot search for `'a -> 'a` and
-get every function `int -> int`, `string -> string` etc. This would be a lot
-harder to program, and probably not a good idea, as it would be impossible to
-search for polymorphic functions.
+get every function `int -> int`, `string -> string` etc. However it will return
+a function whose litteral type is `'a -> 'a`. Having the first behaviour would
+be a lot harder to program, and probably not a good idea, as it would be
+impossible to search for polymorphic functions.
 
 ## Searching on the command line
 
