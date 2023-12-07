@@ -162,14 +162,10 @@ let populate_local_defs source_id poses loc_to_id local_ident_to_loc =
             Odoc_model.Names.LocalName.make_std
               (Printf.sprintf "local_%s_%d" (Ident.name id) (counter ()))
           in
-          (match source_id with
-          | Some source_id ->
-              let identifier =
-                Odoc_model.Paths.Identifier.Mk.source_location_int
-                  (source_id, name)
-              in
-              LocHashtbl.add loc_to_id loc identifier
-          | None -> ());
+          let identifier =
+            Odoc_model.Paths.Identifier.Mk.source_location_int (source_id, name)
+          in
+          LocHashtbl.add loc_to_id loc identifier;
           IdentHashtbl.add local_ident_to_loc id loc
       | _ -> ())
     poses
@@ -256,44 +252,38 @@ let anchor_of_identifier id =
 (* Adds the global definitions, found in the [uid_to_loc], to the [loc_to_id]
    and [uid_to_id] tables. *)
 let populate_global_defs env source_id loc_to_id uid_to_loc uid_to_id =
-  match source_id with
-  | None -> ()
-  | Some source_id ->
-      let mk_src_id id =
-        let name =
-          Odoc_model.Names.DefName.make_std (anchor_of_identifier id)
-        in
-        (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
-          :> Odoc_model.Paths.Identifier.SourceLocation.t)
-      in
-      let () =
-        Ident_env.iter_located_identifier env @@ fun loc id ->
-        LocHashtbl.add loc_to_id loc (mk_src_id id)
-      in
-      let mk_src_id () =
-        let name =
-          Odoc_model.Names.DefName.make_std
-            (Printf.sprintf "def_%d" (counter ()))
-        in
-        (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
-          :> Odoc_model.Paths.Identifier.SourceLocation.t)
-      in
-      Shape.Uid.Tbl.iter
-        (fun uid loc ->
-          if loc.Location.loc_ghost then ()
-          else
-            match LocHashtbl.find_opt loc_to_id loc with
-            | Some id -> UidHashtbl.add uid_to_id uid id
-            | None -> (
-                (* In case there is no entry for the location of the uid, we add one. *)
-                match uid with
-                | Item _ ->
-                    let id = mk_src_id () in
-                    LocHashtbl.add loc_to_id loc id;
-                    UidHashtbl.add uid_to_id uid id
-                | Compilation_unit _ -> ()
-                | _ -> ()))
-        uid_to_loc
+  let mk_src_id id =
+    let name = Odoc_model.Names.DefName.make_std (anchor_of_identifier id) in
+    (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
+      :> Odoc_model.Paths.Identifier.SourceLocation.t)
+  in
+  let () =
+    Ident_env.iter_located_identifier env @@ fun loc id ->
+    LocHashtbl.add loc_to_id loc (mk_src_id id)
+  in
+  let mk_src_id () =
+    let name =
+      Odoc_model.Names.DefName.make_std (Printf.sprintf "def_%d" (counter ()))
+    in
+    (Odoc_model.Paths.Identifier.Mk.source_location (source_id, name)
+      :> Odoc_model.Paths.Identifier.SourceLocation.t)
+  in
+  Shape.Uid.Tbl.iter
+    (fun uid loc ->
+      if loc.Location.loc_ghost then ()
+      else
+        match LocHashtbl.find_opt loc_to_id loc with
+        | Some id -> UidHashtbl.add uid_to_id uid id
+        | None -> (
+            (* In case there is no entry for the location of the uid, we add one. *)
+            match uid with
+            | Item _ ->
+                let id = mk_src_id () in
+                LocHashtbl.add loc_to_id loc id;
+                UidHashtbl.add uid_to_id uid id
+            | Compilation_unit _ -> ()
+            | _ -> ()))
+    uid_to_loc
 
 (* Extract [Typedtree_traverse] occurrence information and turn them into proper
    source infos *)
@@ -377,10 +367,16 @@ let read_cmt_infos source_id_opt id cmt_info ~count_occurrences =
           and local_ident_to_loc = IdentHashtbl.create 10
           and uid_to_id = UidHashtbl.create 10 in
           let () =
-            (* populate [loc_to_id], [ident_to_id] and [uid_to_id] *)
-            populate_local_defs source_id traverse_infos loc_to_id
-              local_ident_to_loc;
-            populate_global_defs env source_id loc_to_id uid_to_loc uid_to_id
+            match source_id with
+            | None -> ()
+            (* populate [loc_to_id], [ident_to_id] and [uid_to_id] only when
+               rendering source code, as these are only used to compute source
+               locations id *)
+            | Some source_id ->
+                populate_local_defs source_id traverse_infos loc_to_id
+                  local_ident_to_loc;
+                populate_global_defs env source_id loc_to_id uid_to_loc
+                  uid_to_id
           in
           let source_infos =
             process_occurrences env traverse_infos loc_to_id local_ident_to_loc
