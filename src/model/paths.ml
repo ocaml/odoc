@@ -91,36 +91,6 @@ module Identifier = struct
     | `SourceLocationInternal _ | `AssetFile _ ->
         false
 
-  let rec is_internal_rec : t -> bool =
-   fun x ->
-    is_internal x
-    ||
-    match x.iv with
-    | `Root (_, name) -> ModuleName.is_internal name
-    | `Page (_, _) -> false
-    | `LeafPage (_, _) -> false
-    | `Module (parent, _) -> is_internal_rec (parent :> t)
-    | `Parameter (parent, _) -> is_internal_rec (parent :> t)
-    | `Result x -> is_internal_rec (x :> t)
-    | `ModuleType (parent, _) -> is_internal_rec (parent :> t)
-    | `Type (parent, _) -> is_internal_rec (parent :> t)
-    | `CoreType name -> TypeName.is_internal name
-    | `Constructor (parent, _) -> is_internal (parent :> t)
-    | `Field (parent, _) -> is_internal (parent :> t)
-    | `Extension (parent, _) -> is_internal (parent :> t)
-    | `ExtensionDecl (parent, _, _) -> is_internal (parent :> t)
-    | `Exception (parent, _) -> is_internal (parent :> t)
-    | `CoreException _ -> false
-    | `Value (parent, _) -> is_internal_rec (parent :> t)
-    | `Class (parent, _) -> is_internal_rec (parent :> t)
-    | `ClassType (parent, _) -> is_internal_rec (parent :> t)
-    | `Method (parent, _) -> is_internal (parent :> t)
-    | `InstanceVariable (parent, _) -> is_internal (parent :> t)
-    | `Label (parent, _) -> is_internal (parent :> t)
-    | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
-    | `SourceLocationInternal _ | `AssetFile _ ->
-        false
-
   let name : [< t_pv ] id -> string = fun n -> name_aux (n :> t)
 
   let rec full_name_aux : t -> string list =
@@ -701,7 +671,7 @@ module Path = struct
       | `Identifier { iv = `Module (_, m); _ }
         when Names.ModuleName.is_internal m ->
           true
-      | `Identifier i -> Identifier.is_internal_rec i
+      | `Identifier _ -> false
       | `Canonical (_, `Resolved _) -> false
       | `Canonical (x, _) ->
           (not weak_canonical_test) && inner (x : module_ :> any)

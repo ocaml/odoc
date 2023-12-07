@@ -481,7 +481,7 @@ module Build_env = struct
         | Comment _ -> env
         | TypExt _ -> env
         | Exception _ -> env
-        | Class _ -> env (* TODO *)
+        | Class _ -> env
         | ClassType _ -> env
         | Include i -> include_ env i
         | Open _ -> env)
