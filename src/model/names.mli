@@ -7,6 +7,8 @@
 *)
 
 val parenthesise : string -> string
+val contains_double_underscore : string -> bool
+(* not the best place for this but. *)
 
 (** Name is the signature for names that could possibly be internal. Internal
     names occur when we generate items that don't have a path that will be

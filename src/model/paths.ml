@@ -19,15 +19,6 @@ module Ocaml_env = Env
 
 open Names
 
-let contains_double_underscore s =
-  let len = String.length s in
-  let rec aux i =
-    if i > len - 2 then false
-    else if s.[i] = '_' && s.[i + 1] = '_' then true
-    else aux (i + 1)
-  in
-  aux 0
-
 module Identifier = struct
   type 'a id = 'a Paths_types.id = { iv : 'a; ihash : int; ikey : string }
 
@@ -75,9 +66,7 @@ module Identifier = struct
   let rec is_internal : t -> bool =
    fun x ->
     match x.iv with
-    | `Root (_, name) ->
-        ModuleName.is_internal name
-        || contains_double_underscore (ModuleName.to_string name)
+    | `Root (_, name) -> ModuleName.is_hidden name
     | `Page (_, _) -> false
     | `LeafPage (_, _) -> false
     | `Module (_, name) -> ModuleName.is_internal name
@@ -754,7 +743,7 @@ module Path = struct
     function
     | `Resolved r -> is_resolved_hidden ~weak_canonical_test:false r
     | `Identifier (_, hidden) -> hidden
-    | `Root s -> contains_double_underscore s
+    | `Root s -> Names.contains_double_underscore s
     | `Forward _ -> false
     | `Dot (p, _) -> is_path_hidden (p : module_ :> any)
     | `Apply (p1, p2) ->

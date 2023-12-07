@@ -450,7 +450,7 @@ and read_module_binding env parent mb =
   let hidden =
 #if OCAML_VERSION >= (4,10,0)
     match canonical, mb.mb_id with
-    | None, Some id -> Odoc_model.Root.contains_double_underscore (Ident.name id)
+    | None, Some id -> Odoc_model.Names.contains_double_underscore (Ident.name id)
     | _, _ -> false
 #else
     match canonical with

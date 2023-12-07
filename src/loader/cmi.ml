@@ -968,7 +968,7 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
   let hidden =
     match canonical with
     | Some _ -> false
-    | None -> Odoc_model.Root.contains_double_underscore (Ident.name ident)
+    | None -> Odoc_model.Names.contains_double_underscore (Ident.name ident)
   in
   {id; locs; doc; type_; canonical; hidden }
 

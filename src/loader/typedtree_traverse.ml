@@ -94,37 +94,38 @@ end
 
 let of_cmt env structure =
   let poses = ref [] in
+  let iter = Tast_iterator.default_iterator in
   let module_expr iterator mod_expr =
     Analysis.module_expr poses mod_expr;
-    Tast_iterator.default_iterator.module_expr iterator mod_expr
+    iter.module_expr iterator mod_expr
   in
   let expr iterator e =
     Analysis.expr poses e;
-    Tast_iterator.default_iterator.expr iterator e
+    iter.expr iterator e
   in
   let pat iterator e =
     Analysis.pat env poses e;
-    Tast_iterator.default_iterator.pat iterator e
+    iter.pat iterator e
   in
   let typ iterator ctyp_expr =
     Analysis.core_type poses ctyp_expr;
-    Tast_iterator.default_iterator.typ iterator ctyp_expr
+    iter.typ iterator ctyp_expr
   in
   let module_type iterator mty =
     Analysis.module_type poses mty;
-    Tast_iterator.default_iterator.module_type iterator mty
+    iter.module_type iterator mty
   in
   let class_type iterator cl_type =
     Analysis.class_type poses cl_type;
-    Tast_iterator.default_iterator.class_type iterator cl_type
+    iter.class_type iterator cl_type
   in
   let module_binding iterator mb =
     Analysis.module_binding env poses mb;
-    Tast_iterator.default_iterator.module_binding iterator mb
+    iter.module_binding iterator mb
   in
   let iterator =
     {
-      Tast_iterator.default_iterator with
+      iter with
       expr;
       pat;
       module_expr;
