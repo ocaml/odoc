@@ -9,10 +9,24 @@
   $ du -sh megaodocl
   4.8M	megaodocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
+  
+  real	0m1.165s
+  user	0m1.099s
+  sys	0m0.063s
 
-  real	0m3.077s
-  user	0m2.886s
-  sys	0m0.122s
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 $ sherlodoc_index --format=js --empty-payload --db=db_empty_payload.js $(find . -name '*.odocl') 2> /dev/null
 $ sherlodoc_index --format=js --index-docstring=false --db=db_no_docstring.js $(find . -name '*.odocl') 2> /dev/null
@@ -25,8 +39,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2700	db.js
-  2036	db.js.gz
+  2736	db.js
+  2064	db.js.gz
   1544	megaodocl.gz
 
 
@@ -52,134 +66,146 @@ indent to see results
 $ cp -r html /tmp
 $ firefox /tmp/html/base/index.html
   $ sherlodoc_index --format=marshal --index-docstring=false --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
-  $ sherlodoc --db=db_marshal.bin "group b"
-  val Base.List.group : 'a t -> break:('a -> 'a -> bool) -> 'a t t
-  val Base.Sequence.group : 'a t -> break:('a -> 'a -> bool) -> 'a list t
-  val Base.List.groupi : 'a t -> break:(int -> 'a -> 'a -> bool) -> 'a t t
-  val Base.List.sort_and_group : 'a t -> compare:('a -> 'a -> int) -> 'a t t
-  val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
-  val Base.List.Assoc.group : ('a * 'b) list -> equal:('a -> 'a -> bool) -> ('a, 'b list) t
-  val Base.List.Assoc.sort_and_group : ('a * 'b) list -> compare:('a -> 'a -> int) -> ('a, 'b list) t
-  val Base.Set.S_poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
-  val Base.Set.Poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
-  val Base.Hashtbl.group : ?growth_allowed:bool ->
-    ?size:int ->
-    'a Key.t ->
-    get_key:('r -> 'a) ->
-    get_data:('r -> 'b) ->
-    combine:('b -> 'b -> 'b) ->
-    'r list ->
-    ('a, 'b) t
-  val Base.Hashtbl.Creators.group : ?growth_allowed:bool ->
-    ?size:int ->
-    'a Key.t ->
-    get_key:('r -> 'a) ->
-    get_data:('r -> 'b) ->
-    combine:('b -> 'b -> 'b) ->
-    'r list ->
-    ('a, 'b) t
-  val Base.Set.Using_comparator.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
-  val Base.Set.Accessors_generic.group_by : ('a, 'cmp) t -> equiv:('a elt -> 'a elt -> bool) -> ('a, 'cmp) t list
-  val Base.Hashtbl.S_poly.group : ?growth_allowed:bool ->
-    ?size:int ->
-    get_key:('r -> 'a key) ->
-    get_data:('r -> 'b) ->
-    combine:('b -> 'b -> 'b) ->
-    'r list ->
-    ('a, 'b) t
-  val Base.Set.Using_comparator.Tree.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
-  val Base.Hashtbl.Poly.group : ?growth_allowed:bool ->
-    ?size:int ->
-    get_key:('r -> 'a key) ->
-    get_data:('r -> 'b) ->
-    combine:('b -> 'b -> 'b) ->
-    'r list ->
-    ('a, 'b) t
-  val Base.Hashtbl.Creators.group : ?growth_allowed:bool ->
-    ?size:int ->
-    get_key:('r -> 'a Key.t) ->
-    get_data:('r -> 'b) ->
-    combine:('b -> 'b -> 'b) ->
-    'r list ->
-    ('a, 'b) t_
-  val Base.Hashtbl.S_without_submodules.group : ?growth_allowed:bool ->
-    ?size:int ->
-    'a Key.t ->
-    get_key:('r -> 'a) ->
-    get_data:('r -> 'b) ->
-    combine:('b -> 'b -> 'b) ->
-    'r list ->
-    ('a, 'b) t
-  val Base.Set.Creators_and_accessors_generic.group_by : ('a, 'cmp) t -> equiv:('a elt -> 'a elt -> bool) -> ('a, 'cmp) t list
-  $ sherlodoc --db=db_marshal.bin "group by"
-  val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
-  val Base.Set.S_poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
-  val Base.Set.Poly.group_by : 'a t -> equiv:('a -> 'a -> bool) -> 'a t list
-  val Base.Set.Using_comparator.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
-  val Base.Set.Accessors_generic.group_by : ('a, 'cmp) t -> equiv:('a elt -> 'a elt -> bool) -> ('a, 'cmp) t list
-  val Base.Set.Using_comparator.Tree.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
-  val Base.Set.Creators_and_accessors_generic.group_by : ('a, 'cmp) t -> equiv:('a elt -> 'a elt -> bool) -> ('a, 'cmp) t list
-  $ sherlodoc --db=db_marshal.bin "map2"
-  mod Base.Applicative.Make_using_map2
-  mod Base.Applicative.Make2_using_map2
-  mod Base.Applicative.Make3_using_map2
-  sig Base.Applicative.Basic_using_map2
-  sig Base.Applicative.Basic2_using_map2
-  sig Base.Applicative.Basic3_using_map2
-  mod Base.Applicative.Make_using_map2_local
-  mod Base.Applicative.Make2_using_map2_local
-  mod Base.Applicative.Make3_using_map2_local
-  sig Base.Applicative.Basic_using_map2_local
-  sig Base.Applicative.Basic2_using_map2_local
-  sig Base.Applicative.Basic3_using_map2_local
-  mod Base.Applicative.Make_using_map2.Applicative_infix
-  mod Base.Applicative.Make2_using_map2.Applicative_infix
-  mod Base.Applicative.Make3_using_map2.Applicative_infix
-  val Base.Applicative.Make_using_map2.(<*>) : ('a -> 'b) X.t -> 'a X.t -> 'b X.t
-  val Base.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  mod Base.Applicative.Make_using_map2_local.Applicative_infix
-  mod Base.Applicative.Make2_using_map2_local.Applicative_infix
-  mod Base.Applicative.Make3_using_map2_local.Applicative_infix
-  type Base.Applicative.Basic_using_map2.t
-  val Base.Applicative.Make_using_map2_local.(<*>) : ('a -> 'b) X.t -> 'a X.t -> 'b X.t
-  type Base.Applicative.Basic2_using_map2.t
-  type Base.Applicative.Basic3_using_map2.t
-  type Base.Applicative.Make_using_map2.X.t
-  val Base.Applicative.Basic_using_map2.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
-  type Base.Applicative.Make2_using_map2.X.t
-  type Base.Applicative.Make3_using_map2.X.t
-  val Base.Applicative.Basic2_using_map2.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
-  val Base.Applicative.Basic3_using_map2.map : [ `Define_using_map2
+  $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin "S_poly"
+  115 sig Base.Map.S_poly
+  115 sig Base.Set.S_poly
+  119 sig Base.Hashtbl.S_poly
+  623 val Base.Set.S_poly.map
+  623 val Base.Set.S_poly.mem
+  625 mod Base.Set.S_poly.Named
+  627 val Base.Hashtbl.S_poly.add
+  628 val Base.Hashtbl.S_poly.data
+  628 val Base.Hashtbl.S_poly.keys
+  721 type Base.Map.S_poly.t
+  721 type Base.Set.S_poly.t
+  723 val Base.Map.S_poly.add
+  723 val Base.Map.S_poly.mem
+  723 val Base.Set.S_poly.add
+  723 val Base.Set.S_poly.nth
+  723 type Base.Set.S_poly.set
+  723 val Base.Set.S_poly.sum
+  724 val Base.Map.S_poly.data
+  724 val Base.Map.S_poly.keys
+  724 type Base.Map.S_poly.tree
+  724 val Base.Set.S_poly.diff
+  724 type Base.Set.S_poly.tree
+  725 type Base.Hashtbl.S_poly.t
+  725 val Base.Map.S_poly.empty
+  725 val Base.Set.S_poly.empty
+  725 val Base.Set.S_poly.equal
+  725 val Base.Set.S_poly.inter
+  725 val Base.Set.S_poly.union
+  726 val Base.Map.S_poly.length
+  726 val Base.Set.S_poly.choose
+  726 val Base.Set.S_poly.length
+  726 val Base.Set.S_poly.remove
+  727 type Base.Hashtbl.S_poly.key
+  727 val Base.Set.S_poly.max_elt
+  727 val Base.Set.S_poly.min_elt
+  727 val Base.Set.S_poly.of_list
+  727 val Base.Set.S_poly.of_tree
+  727 val Base.Set.S_poly.to_list
+  727 val Base.Set.S_poly.to_tree
+  728 val Base.Map.S_poly.of_alist
+  728 val Base.Set.S_poly.elements
+  728 val Base.Set.S_poly.is_empty
+  728 val Base.Set.S_poly.of_array
+  728 val Base.Set.S_poly.to_array
+  729 val Base.Set.S_poly.singleton
+  730 val Base.Set.S_poly.choose_exn
+  730 val Base.Set.S_poly.invariants
+  731 val Base.Set.S_poly.max_elt_exn
+  731 val Base.Set.S_poly.min_elt_exn
+  732 val Base.Hashtbl.S_poly.hashable
+  $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin "group b"
+  218 val Base.List.group
+  221 val Base.Hashtbl.group
+  222 val Base.Sequence.group
+  224 val Base.List.Assoc.group
+  323 val Base.List.groupi
+  324 val Base.Set.group_by
+  326 val Base.Hashtbl.Poly.group
+  330 val Base.Hashtbl.Creators.group
+  330 val Base.List.sort_and_group
+  336 val Base.List.Assoc.sort_and_group
+  429 val Base.Set.Poly.group_by
+  441 val Base.Set.Using_comparator.group_by
+  446 val Base.Set.Using_comparator.Tree.group_by
+  630 val Base.Hashtbl.Creators.group
+  642 val Base.Hashtbl.S_without_submodules.group
+  728 val Base.Hashtbl.S_poly.group
+  831 val Base.Set.S_poly.group_by
+  842 val Base.Set.Accessors_generic.group_by
+  855 val Base.Set.Creators_and_accessors_generic.group_by
+  $ sherlodoc --no-rhs --db=db_marshal.bin "group by"
+  val Base.Set.group_by
+  val Base.Set.Poly.group_by
+  val Base.Set.Using_comparator.group_by
+  val Base.Set.Using_comparator.Tree.group_by
+  val Base.Set.S_poly.group_by
+  val Base.Set.Accessors_generic.group_by
+  val Base.Set.Creators_and_accessors_generic.group_by
+  $ sherlodoc --print-cost --db=db_marshal.bin "map2"
+  214 val Base.List.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t Or_unequal_lengths.t
+  216 val Base.Option.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  218 val Base.Or_error.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  226 val Base.Applicative.Make.map2 : 'a X.t -> 'b X.t -> f:('a -> 'b -> 'c) -> 'c X.t
+  227 val Base.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  235 mod Base.Applicative.Make_using_map2
+  236 sig Base.Applicative.Basic_using_map2
+  236 mod Base.Applicative.Make2_using_map2
+  236 mod Base.Applicative.Make3_using_map2
+  237 sig Base.Applicative.Basic2_using_map2
+  237 sig Base.Applicative.Basic3_using_map2
+  242 val Base.Applicative.Make_using_map2.(<*>) : ('a -> 'b) X.t -> 'a X.t -> 'b X.t
+  243 mod Base.Applicative.Make_using_map2_local
+  244 sig Base.Applicative.Basic_using_map2_local
+  244 mod Base.Applicative.Make2_using_map2_local
+  244 mod Base.Applicative.Make3_using_map2_local
+  245 sig Base.Applicative.Basic2_using_map2_local
+  245 sig Base.Applicative.Basic3_using_map2_local
+  254 mod Base.Applicative.Make_using_map2.Applicative_infix
+  321 val Base.List.rev_map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t Or_unequal_lengths.t
+  322 val Base.List.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  323 val Base.Array.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  340 type Base.Applicative.Make_using_map2.X.t
+  340 val Base.Applicative.Make_using_map2.all : 'a X.t list -> 'a list X.t
+  341 type Base.Applicative.Make2_using_map2.X.t
+  341 type Base.Applicative.Make3_using_map2.X.t
+  342 val Base.Applicative.Make_using_map2.X.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
+  343 val Base.Applicative.Make2_using_map2.X.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
+  343 val Base.Applicative.Make3_using_map2.X.map : [ `Define_using_map2
   | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t ]
-  val Base.Applicative.Make_using_map2.X.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
-  val Base.Applicative.Make2_using_map2.X.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
-  val Base.Applicative.Make3_using_map2.X.map : [ `Define_using_map2
+  343 val Base.Applicative.Make_using_map2.return : 'a -> 'a X.t
+  345 val Base.Applicative.Make_using_map2.X.return : 'a -> 'a t
+  347 type Base.Applicative.Make_using_map2_local.X.t
+  348 type Base.Applicative.Make2_using_map2_local.X.t
+  348 type Base.Applicative.Make3_using_map2_local.X.t
+  349 val Base.Applicative.Make_using_map2_local.X.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
+  350 val Base.Applicative.Make2_using_map2_local.X.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
+  350 val Base.Applicative.Make3_using_map2_local.X.map : [ `Define_using_map2
   | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t ]
-  type Base.Applicative.Basic_using_map2_local.t
-  val Base.Uniform_array.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  type Base.Applicative.Basic2_using_map2_local.t
-  type Base.Applicative.Basic3_using_map2_local.t
-  type Base.Applicative.Make_using_map2_local.X.t
-  val Base.Applicative.Basic_using_map2_local.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
-  type Base.Applicative.Make2_using_map2_local.X.t
-  type Base.Applicative.Make3_using_map2_local.X.t
-  val Base.Applicative.Basic2_using_map2_local.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
-  val Base.Applicative.Basic3_using_map2_local.map : [ `Define_using_map2
+  623 val Base.Applicative.S.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  739 type Base.Applicative.Basic_using_map2.t
+  740 type Base.Applicative.Basic2_using_map2.t
+  740 type Base.Applicative.Basic3_using_map2.t
+  741 val Base.Applicative.Basic_using_map2.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
+  742 val Base.Applicative.Basic2_using_map2.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
+  742 val Base.Applicative.Basic3_using_map2.map : [ `Define_using_map2
   | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t ]
-  val Base.Applicative.Make_using_map2_local.X.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
-  val Base.Applicative.Make_using_map2.return : 'a -> 'a X.t
-  val Base.Applicative.Make2_using_map2_local.X.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
-  val Base.Applicative.Make3_using_map2_local.X.map : [ `Define_using_map2
+  746 type Base.Applicative.Basic_using_map2_local.t
+  747 type Base.Applicative.Basic2_using_map2_local.t
+  747 type Base.Applicative.Basic3_using_map2_local.t
+  748 val Base.Applicative.Basic_using_map2_local.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
+  749 val Base.Applicative.Basic2_using_map2_local.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
+  749 val Base.Applicative.Basic3_using_map2_local.map : [ `Define_using_map2
   | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t ]
-  val Base.Applicative.Make_using_map2.X.return : 'a -> 'a t
-  val Base.Applicative.Make_using_map2.Applicative_infix.(<*>) : ('a -> 'b) X.t -> 'a X.t -> 'b X.t
-  val Base.Applicative.Make2_using_map2.return : 'a -> ('a, _) X.t
-  $ sherlodoc --db=db_marshal.bin "Base.Hashtbl.S_without_submodules.group"
-  val Base.Hashtbl.S_without_submodules.group : ?growth_allowed:bool ->
-    ?size:int ->
-    'a Key.t ->
-    get_key:('r -> 'a) ->
-    get_data:('r -> 'b) ->
-    combine:('b -> 'b -> 'b) ->
-    'r list ->
-    ('a, 'b) t
+  $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin --static-sort "List map2"
+  261 val Base.List.rev_map2_exn
+  267 val Base.List.map2_exn
+  275 val Base.List.map2
+  299 val Base.List.rev_map2
+  351 val Base.List.Cartesian_product.map2
+
+  $ sherlodoc --no-rhs --db=db_marshal.bin "Base.Hashtbl.S_without_submodules.group"
+  val Base.Hashtbl.S_without_submodules.group

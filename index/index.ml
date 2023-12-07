@@ -13,7 +13,8 @@ let index_file register filename =
       in
       match Odoc_odoc.Indexing.handle_file ~page ~unit file with
       | Ok result -> result
-      | Error (`Msg msg) -> Format.printf "Odoc warning or error %s: %s@." filename msg)
+      | Error (`Msg msg) ->
+          Format.printf "Odoc warning or error %s: %s@." filename msg)
 
 let storage_module = function
   | `ancient ->

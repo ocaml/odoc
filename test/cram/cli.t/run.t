@@ -22,27 +22,27 @@
   val Main.Nest.nesting_priority : foo
   $ sherlodoc "list"
   mod Main.List
-  val Main.foo : foo
   type Main.list
   type Main.List.t = 'a list
-  val Main.Map.to_list : foo
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val Main.Map.to_list : foo
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  val Main.foo : foo
   doc 
   $ sherlodoc "map"
   mod Main.Map
-  val Main.foo : foo
-  val Main.Map.to_list : foo
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val Main.Map.to_list : foo
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  val Main.foo : foo
   $ sherlodoc "list map"
-  val Main.foo : foo
-  val Main.Map.to_list : foo
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val Main.Map.to_list : foo
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  val Main.foo : foo
   $ sherlodoc "map2"
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
@@ -51,10 +51,10 @@
   val Main.produce : unit -> moo
   val Main.produce_2' : unit -> unit -> moo
   $ sherlodoc ":moo -> _"
-  cons Main.MyExtension : moo -> extensible_type
   val Main.consume : moo -> unit
   val Main.consume_2 : moo -> moo -> unit
   val Main.consume_2_other : moo -> t -> unit
+  cons Main.MyExtension : moo -> extensible_type
   $ sherlodoc "modtype"
   sig Main.Modtype
   val Main.Modtype.v_modtype : foo
@@ -62,21 +62,21 @@
   sig Main.S
   mod Main.List
   mod Main.Nest
-  val Main.foo : foo
   mod Main.S_to_S1
   type Main.list
   type Main.List.t = 'a list
-  val Main.Map.to_list : foo
-  cons Main.MyExtension : moo -> extensible_type
   val Main.consume : moo -> unit
+  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  val Main.consume_2 : moo -> moo -> unit
+  val Main.Map.to_list : foo
+  val Main.consume_2_other : moo -> t -> unit
   type Main.extensible_type = ..
   val Main.nesting_priority : foo
-  val Main.consume_2 : moo -> moo -> unit
-  val Main.Nest.nesting_priority : foo
-  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  val Main.consume_2_other : moo -> t -> unit
-  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  val Main.Nest.nesting_priority : foo
+  cons Main.MyExtension : moo -> extensible_type
+  val Main.foo : foo
   doc 
   $ sherlodoc "qwertyuiopasdfghjklzxcvbnm"
   [No results]
@@ -87,9 +87,9 @@ TODO : get a result for the query bellow
   [No results]
   $ sherlodoc ":'a"
   val Main.poly_1 : 'a -> 'b -> 'c
+  val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
   val Main.poly_param : 'a boo
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   $ sherlodoc ": 'a -> 'b -> 'c "
@@ -106,10 +106,12 @@ TODO : get a result for the query bellow
   $ sherlodoc ":extensible_type"
   cons Main.MyExtension : moo -> extensible_type
   $ sherlodoc ":exn"
-  exn Main.Explicit_exn : exn_payload -> exn
-  exn Main.Implicit_exn : exn_payload -> exn
-  cons Main.Very_explicit_exn : exn_payload -> exn
+  sherlodoc: internal error, uncaught exception:
+             File "query/dynamic_cost.ml", line 328, characters 8-14: Assertion failed
+             
+  [125]
   $ sherlodoc ": exn_payload -> _"
-  exn Main.Explicit_exn : exn_payload -> exn
-  exn Main.Implicit_exn : exn_payload -> exn
-  cons Main.Very_explicit_exn : exn_payload -> exn
+  sherlodoc: internal error, uncaught exception:
+             File "query/dynamic_cost.ml", line 328, characters 8-14: Assertion failed
+             
+  [125]

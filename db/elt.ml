@@ -8,13 +8,13 @@ type type_path = string list list
                  |- b
                  |- *
                     |- c
-                    |- d 
-            ]} 
-            {!type_paths} is the list of paths from root to leaf in the tree of 
+                    |- d
+            ]}
+            {!type_paths} is the list of paths from root to leaf in the tree of
             the type. There is an annotation to indicate the child's position.
             Here it would be :
             [ [["->";"0"; "a"];["->"; "1"; "->"; "0"; "b"]; ...] ]
-            
+
             It is used to sort results. *)
 
 module Kind = struct
@@ -76,6 +76,7 @@ module T = struct
     ; score : int
     ; doc_html : string
     ; pkg : Package.t option
+    ; is_from_module_type : bool
     }
 
   let compare_pkg { name; version = _ } (b : package) =
@@ -142,5 +143,6 @@ let link t =
       in
       Some (pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name)
 
-let v ~name ~kind ~score ~rhs ~doc_html ~url ?(pkg = None) () =
-  { name; kind; url; score; doc_html; pkg; rhs }
+let v ~name ~kind ~score ~rhs ~doc_html ~url ~is_from_module_type ?(pkg = None)
+    () =
+  { name; kind; url; score; doc_html; pkg; rhs; is_from_module_type }

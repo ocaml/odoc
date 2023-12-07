@@ -7,9 +7,9 @@ let generic_cost ~ignore_no_doc name has_doc =
   (* name length is important not because short identifier are better in the
      abstract, but because the shortest result will be close to the query, as
      the suffix tree does not return results shorter than the query*)
-  (String.length name * 4)
+  (String.length name * 6)
   (* + (5 * List.length path) TODO : restore depth based ordering *)
-  + (if ignore_no_doc || has_doc then 0 else 100)
+  + (if ignore_no_doc || has_doc then 0 else 30)
   + if String.starts_with ~prefix:"Stdlib." name then -100 else 0
 
 let type_cost paths =
@@ -264,6 +264,24 @@ let register_kind ~db ~type_search elt (kind : Odoc_search.Entry.kind) =
         let type_ = TypeExpr.Arrow (None, parent_type, type_) in
         register_type_expr ~db elt type_
 
+let rec is_from_module_type (id : Odoc_model.Paths.Identifier.Any.t) =
+  let open Odoc_model.Paths in
+  match id.iv with
+  | `CoreType _ | `CoreException _ | `Root _ | `Page _ | `LeafPage _ -> false
+  | `ModuleType _ -> true
+  | #Identifier.NonSrc.t_pv as x ->
+      let parent = Identifier.label_parent { id with iv = x } in
+      is_from_module_type (parent :> Identifier.Any.t)
+  | _ -> false
+
+let is_from_module_type Odoc_search.Entry.{ id; _ } =
+  match id.iv with
+  | `ModuleType (parent, _) ->
+      (* A module type itself is not *from* a module type, but it might be if one
+         of its parents is a module type. *)
+      is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | _ -> is_from_module_type id
+
 let register_entry ~db ~index_name ~type_search ~index_docstring
     (Odoc_search.Entry.{ id; doc; kind } as entry) =
   let open Odoc_search in
@@ -293,7 +311,10 @@ let register_entry ~db ~index_name ~type_search ~index_docstring
     let rhs = Html.rhs_of_kind kind in
     let url = Html.url id in
     let url = Result.get_ok url in
-    let elt = Elt.v ~name ~kind:kind' ~rhs ~doc_html ~score ~url () in
+    let is_from_module_type = is_from_module_type entry in
+    let elt =
+      Elt.v ~name ~kind:kind' ~rhs ~doc_html ~score ~url ~is_from_module_type ()
+    in
     if index_docstring then register_doc ~db elt doc_txt ;
     (if index_name
      then

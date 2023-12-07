@@ -192,6 +192,7 @@ module Reasoning = struct
     ; type_in_query : bool
     ; type_in_elt : bool
     ; kind : kind
+    ; is_from_module_type : bool
     }
 
   let type_distance query_type elt =
@@ -237,6 +238,7 @@ module Reasoning = struct
     | Elt.Kind.Val _ -> Val
 
   let name_length elt = String.length elt.Elt.name
+  let is_from_module_type elt = elt.Elt.is_from_module_type
 
   let v query_words query_type elt =
     let is_stdlib = is_stdlib elt in
@@ -247,6 +249,7 @@ module Reasoning = struct
     let type_in_elt = type_in_elt elt in
     let type_in_query = type_in_query query_type in
     let name_length = name_length elt in
+    let is_from_module_type = is_from_module_type elt in
     { is_stdlib
     ; has_doc
     ; name_matches
@@ -255,6 +258,7 @@ module Reasoning = struct
     ; type_in_query
     ; kind
     ; name_length
+    ; is_from_module_type
     }
 
   let compare_kind k k' =
@@ -284,6 +288,7 @@ module Reasoning = struct
       ; type_in_query
       ; kind
       ; name_length
+      ; is_from_module_type
       } =
     let ignore_no_doc =
       match kind with
@@ -323,9 +328,10 @@ module Reasoning = struct
         assert false
       else 0
     in
+    let is_from_module_type_cost = if is_from_module_type then 400 else 0 in
     (if is_stdlib then 0 else 100)
     + (if has_doc || ignore_no_doc then 0 else 100)
-    + name_matches + type_cost + kind + name_length
+    + name_matches + type_cost + kind + name_length + is_from_module_type_cost
 
   let score ~query_name ~query_type elt = score (v query_name query_type elt)
 end
