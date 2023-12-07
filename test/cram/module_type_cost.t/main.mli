@@ -9,3 +9,5 @@ end
 module type Module_type = sig end
 
 module Module_nype : sig end
+
+module Make (M : S) : S

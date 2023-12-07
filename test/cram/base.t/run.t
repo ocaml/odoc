@@ -10,9 +10,9 @@
   4.8M	megaodocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
   
-  real	0m1.165s
-  user	0m1.099s
-  sys	0m0.063s
+  real	0m1.168s
+  user	0m1.131s
+  sys	0m0.030s
 
 
 
