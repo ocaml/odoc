@@ -54,7 +54,3 @@ val compare : t -> t -> int
 val to_string : t -> string
 
 module Hash_table : Hashtbl.S with type key = t
-
-val contains_double_underscore : string -> bool
-
-(* not the best place for this but. *)

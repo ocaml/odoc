@@ -22,21 +22,19 @@ module Source_info = struct
     | Unresolved of 'a
     | Resolved of Identifier.SourceLocation.t
 
-  type ('doc, 'impl) jump_to = {
-    documentation : 'doc option;
-    implementation : 'impl jump_to_impl option;
+  type 'a jump_to = {
+    documentation : 'a option;
+    implementation : 'a jump_to_impl option;
   }
-
-  type 'path jump_1 = ('path, 'path) jump_to
 
   type annotation =
     | Definition of Paths.Identifier.SourceLocation.t
-    | Value of Path.Value.t jump_1
-    | Module of Path.Module.t jump_1
-    | ClassType of Path.ClassType.t jump_1
-    | ModuleType of Path.ModuleType.t jump_1
-    | Type of Path.Type.t jump_1
-    | Constructor of Path.Constructor.t jump_1
+    | Value of Path.Value.t jump_to
+    | Module of Path.Module.t jump_to
+    | ClassType of Path.ClassType.t jump_to
+    | ModuleType of Path.ModuleType.t jump_to
+    | Type of Path.Type.t jump_to
+    | Constructor of Path.Constructor.t jump_to
 
   type 'a with_pos = 'a * (int * int)
 

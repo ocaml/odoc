@@ -14,15 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-let contains_double_underscore s =
-  let len = String.length s in
-  let rec aux i =
-    if i > len - 2 then false
-    else if s.[i] = '_' && s.[i + 1] = '_' then true
-    else aux (i + 1)
-  in
-  aux 0
-
 module Package = struct
   type t = string
 
@@ -41,7 +32,7 @@ module Odoc_file = struct
   type t = Page of string | Compilation_unit of compilation_unit
 
   let create_unit ~force_hidden name =
-    let hidden = force_hidden || contains_double_underscore name in
+    let hidden = force_hidden || Names.contains_double_underscore name in
     Compilation_unit { name; hidden }
 
   let create_page name = Page name

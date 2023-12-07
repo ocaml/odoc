@@ -103,7 +103,8 @@ and source_info_infos env infos =
             | ModuleType v -> ModuleType (map_doc (module_type_path env) v)
             | Type v -> Type (map_doc (type_path env) v)
             | Constructor v -> Constructor (map_doc (constructor_path env) v)
-            | i -> i
+            | ClassType v -> ClassType (map_doc (class_type_path env) v)
+            | Definition _ as d -> d
           in
           (v, pos))
     infos

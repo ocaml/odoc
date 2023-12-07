@@ -553,7 +553,7 @@ let add_items : Id.Signature.t -> item list -> t -> unit = fun parent items env 
 
     | `Module (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
-      let double_underscore = Odoc_model.Root.contains_double_underscore name in
+      let double_underscore = Odoc_model.Names.contains_double_underscore name in
       let is_hidden = is_hidden_item || module_name_exists name rest || double_underscore in
       let identifier =
         if is_hidden

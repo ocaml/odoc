@@ -5,7 +5,7 @@ let rec is_persistent : Path.t -> bool = function
   | Path.Pdot(p, _) -> is_persistent p
   | Path.Papply(p, _) -> is_persistent p
 #if OCAML_VERSION >= (5,1,0)
-  | Path.Pextra_ty _ -> assert false
+  | Path.Pextra_ty (p, _) -> is_persistent p
 #endif
 
 let pos_of_loc loc = (loc.Location.loc_start.pos_cnum, loc.loc_end.pos_cnum)

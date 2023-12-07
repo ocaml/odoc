@@ -15,6 +15,15 @@ let parenthesise name =
         | _ -> "(" ^ name ^ ")"
       else name
 
+let contains_double_underscore s =
+  let len = String.length s in
+  let rec aux i =
+    if i > len - 2 then false
+    else if s.[i] = '_' && s.[i + 1] = '_' then true
+    else aux (i + 1)
+  in
+  aux 0
+
 module type Name = sig
   type t
 
@@ -73,14 +82,7 @@ module Name : Name = struct
   let fmt ppf x = Format.fprintf ppf "%s" (to_string x)
 
   let is_hidden = function
-    | Std s ->
-        let len = String.length s in
-        let rec aux i =
-          if i > len - 2 then false
-          else if s.[i] = '_' && s.[i + 1] = '_' then true
-          else aux (i + 1)
-        in
-        aux 0
+    | Std s -> contains_double_underscore s
     | Internal _ -> true
 end
 
@@ -117,14 +119,7 @@ module SimpleName : SimpleName = struct
 
   let fmt ppf t = Format.pp_print_string ppf (to_string t)
 
-  let is_hidden s =
-    let len = String.length s in
-    let rec aux i =
-      if i > len - 2 then false
-      else if s.[i] = '_' && s.[i + 1] = '_' then true
-      else aux (i + 1)
-    in
-    aux 0
+  let is_hidden s = contains_double_underscore s
 end
 
 module ModuleName = Name
