@@ -29,11 +29,12 @@ sherlodoc_index --format=marshal --db=db.bin a.odocl b.odocl
 ```
 
 The `--format` option determines in which format the database is outputted. The
-available format are `marshal`, `js` and `ancient`. The `js` format, for
-javascript, is the one compatible with odoc, and the `marshal` for most other
-uses. `ancient` uses `<a syscall i forgot>` and you should use it if you know
-what you are doing. It is used for the [online](https://doc.sherlocode.com)
-version of sherlodoc.
+available format are `marshal`, `js` and `ancient`. `ancient` is not supported
+at the moment, but we might bring it back. The `js` format, for javascript, is
+the one compatible with odoc, and the `marshal` for most other uses. `ancient`
+uses `<a syscall i forgot>` and you should use it if you know what you are
+doing. It is used for the [online](https://doc.sherlocode.com) version of
+sherlodoc.
 
 The `--db` option is the filename of the output.
 
@@ -41,6 +42,47 @@ Then you need to provide a list of .odocl files that contains the signatures
 items that are going to be searchable. They are build artifacts of odoc.
 
 There are others options that are documented by `sherlodoc_index --help`.
+
+## Queries
+
+To query sherlodoc, be it on the command-line or in a web interface, you need
+to input a string query. A query is a list of words, separated by spaces.
+Results will be entries that have every word of the list present in them.
+
+```
+list map
+```
+
+The above query will return entries that have both `list` and `map` in them.
+
+You can also add `: <type>` at the end of your query, and in that case, results
+will only be results whose type match <type>. This can only be a value, an
+exception, a constructor or a record field.
+
+Matching a type is fuzzy, if you do the following query :
+
+```
+blabla : string
+```
+
+It could return `val blablabla : int -> string` and `val blabla2 : string`.
+
+You can have just the type-part of the query : `: string -> int` is a valid
+query.
+
+You can use wildcards :
+
+```
+: string -> _
+```
+
+will only return functions that take a string a argument, no matter what they
+return.
+
+There is limited support for polymorphism : you cannot search for `'a -> 'a` and
+get every function `int -> int`, `string -> string` etc. This would be a lot
+harder to program, and probably not a good idea, as it would be impossible to
+search for polymorphic functions.
 
 ## Searching on the command line
 
@@ -57,7 +99,8 @@ variable `SHERLODOC_DB` will be used instead.
 In my example, I gave a query, but if you give none, sherlodoc enter an
 interactive mode where you can enter queries until you decide to quit.
 
-There are more option documented by `sherlodoc --help`.
+There are more option documented by `sherlodoc --help`, some of them are for
+debugging/testing purposes, others might be useful.
 
 ### Search your switch
 

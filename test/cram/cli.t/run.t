@@ -50,6 +50,10 @@
   val Main.value : moo
   val Main.produce : unit -> moo
   val Main.produce_2' : unit -> unit -> moo
+  $ sherlodoc ":_ -> moo"
+  val Main.produce : unit -> moo
+  val Main.produce_2' : unit -> unit -> moo
+  val Main.value : moo
   $ sherlodoc ":moo -> _"
   val Main.consume : moo -> unit
   val Main.consume_2 : moo -> moo -> unit
