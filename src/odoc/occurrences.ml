@@ -172,32 +172,34 @@ let parse_input_files input =
   >>= fun files -> Ok (List.concat files)
 
 let aggregate files file_list ~warnings_options:_ ~dst =
-  parse_input_files file_list >>= fun new_files ->
-  let files = files @ new_files in
-  let from_file file : Occtbl.t =
-    let ic = open_in_bin (Fs.File.to_string file) in
-    Marshal.from_channel ic
-  in
-  let rec loop n f =
-    if n > 0 then (
-      f ();
-      loop (n - 1) f)
-    else ()
-  in
-  let occtbl =
-    match files with
-    | [] -> H.create 0
-    | file1 :: files ->
-        let acc = from_file file1 in
-        List.iter
-          (fun file ->
-            Occtbl.iter
-              (fun id { direct; _ } ->
-                loop direct (fun () -> Occtbl.add acc id))
-              (from_file file))
-          files;
-        acc
-  in
-  let oc = open_out_bin (Fs.File.to_string dst) in
-  Marshal.to_channel oc occtbl [];
-  Ok ()
+  try
+    parse_input_files file_list >>= fun new_files ->
+    let files = files @ new_files in
+    let from_file file : Occtbl.t =
+      let ic = open_in_bin (Fs.File.to_string file) in
+      Marshal.from_channel ic
+    in
+    let rec loop n f =
+      if n > 0 then (
+        f ();
+        loop (n - 1) f)
+      else ()
+    in
+    let occtbl =
+      match files with
+      | [] -> H.create 0
+      | file1 :: files ->
+          let acc = from_file file1 in
+          List.iter
+            (fun file ->
+              Occtbl.iter
+                (fun id { direct; _ } ->
+                  loop direct (fun () -> Occtbl.add acc id))
+                (from_file file))
+            files;
+          acc
+    in
+    let oc = open_out_bin (Fs.File.to_string dst) in
+    Marshal.to_channel oc occtbl [];
+    Ok ()
+  with Sys_error s -> Error (`Msg s)
