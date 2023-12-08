@@ -760,7 +760,7 @@ let compiled = compile_all () in
 let linked = link_all compiled in
 let () = index_generate () in
 let _ = js_index () in
-let _ = count_occurrences (Fpath.v "occurrences.txt") in
+let _ = count_occurrences (Fpath.v "occurrences-odoc_and_deps.odoc") in
 generate_all linked
 ]}
 

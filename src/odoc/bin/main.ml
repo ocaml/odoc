@@ -1111,9 +1111,21 @@ module Targets = struct
 end
 
 module Occurrences = struct
+  let has_occurrences_prefix input =
+    input |> Fs.File.basename |> Fs.File.to_string
+    |> Astring.String.is_prefix ~affix:"occurrences-"
+
+  let dst_of_string s =
+    let f = Fs.File.of_string s in
+    if not (Fs.File.has_ext ".odoc" f) then
+      Error (`Msg "Output file must have '.odoc' extension.")
+    else if not (has_occurrences_prefix f) then
+      Error (`Msg "Output file must be prefixed with 'occurrences-'.")
+    else Ok f
+  open Or_error
   module Count = struct
     let count directories dst warnings_options include_hidden =
-      let dst = Fpath.v dst in
+      dst_of_string dst >>= fun dst ->
       Occurrences.count ~dst ~warnings_options directories include_hidden
 
     let cmd =
@@ -1150,7 +1162,7 @@ module Occurrences = struct
               "At least one of --file-list or a path to a file must be passed \
                to odoc aggregate-occurrences")
       | _ ->
-          let dst = Fpath.v dst in
+          dst_of_string dst >>= fun dst ->
           Occurrences.aggregate ~dst ~warnings_options files file_list
 
     let cmd =
