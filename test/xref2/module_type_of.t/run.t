@@ -38,113 +38,29 @@ Compile
 Tests
 -----
 
-Make sure the expansion of `T` is present
+Make sure the expansion of `T` is present, and check that the expansion of `T`
+contains only 2 modules (the module `X` should have been removed)
 
-Check that the expansion of `T` contains only 2 modules (the module `X` should have been removed)
-
-  $ odoc_print m.odocl | jq ".content.Module.items[2].ModuleType.expr.Some.With.w_expansion.Some.Signature.items" > T_sig.json
-  $ jq "map(map_values(.id))" < T_sig.json
-  [
-    {
-      "ModuleType": {
-        "`ModuleType": [
-          {
-            "`ModuleType": [
-              {
-                "`Root": [
-                  {
-                    "Some": {
-                      "`Page": [
-                        "None",
-                        "test"
-                      ]
-                    }
-                  },
-                  "M"
-                ]
-              },
-              "T"
-            ]
-          },
-          "Y"
-        ]
-      }
-    },
-    {
-      "ModuleType": {
-        "`ModuleType": [
-          {
-            "`ModuleType": [
-              {
-                "`Root": [
-                  {
-                    "Some": {
-                      "`Page": [
-                        "None",
-                        "test"
-                      ]
-                    }
-                  },
-                  "M"
-                ]
-              },
-              "T"
-            ]
-          },
-          "Z"
-        ]
-      }
-    }
-  ]
+  $ odoc_print m.odocl -r T --short --show-expansions
+  module type M.T = M.S with X := M.X1
+    (sig :
+      module type Y = module type of M.X1 (sig : type t end)
+      module type Z = module type of struct include M.X1 end
+        (sig : type t = M.X1.t end)
+     end)
 
 Check that the expansion of 'T.Y' contains only 1 type
 
-  $ jq ".[0].ModuleType.expr.Some.TypeOf.t_expansion.Some.Signature.items" < T_sig.json > T.Y_sig.json
-  $ odoc_print m.odocl | jq "map(keys | .[0])" < T.Y_sig.json
-  [
-    "Type"
-  ]
+  $ odoc_print m.odocl -r T.Y --short --show-expansions
+  module type M.T.Y = module type of M.X1
+    (sig : type t end)
 
 Verify that T.Y.t has not been strengthened
 
-  $ jq ".[0].Type[1].equation.manifest" < T.Y_sig.json
-  "None"
+  $ odoc_print m.odocl -r T.Y.t --short
+  type M.T.Y.t 
 
 But that T.Z.t _has_ been strengthened
 
-  $ jq ".[1].ModuleType.expr.Some.TypeOf.t_expansion.Some.Signature.items" < T_sig.json > T.Z_sig.json
-  $ jq ".[0].Type[1].equation.manifest" < T.Z_sig.json
-  {
-    "Some": {
-      "Constr": [
-        {
-          "`Resolved": {
-            "`Type": [
-              {
-                "`Identifier": {
-                  "`Module": [
-                    {
-                      "`Root": [
-                        {
-                          "Some": {
-                            "`Page": [
-                              "None",
-                              "test"
-                            ]
-                          }
-                        },
-                        "M"
-                      ]
-                    },
-                    "X1"
-                  ]
-                }
-              },
-              "t"
-            ]
-          }
-        },
-        []
-      ]
-    }
-  }
+  $ odoc_print m.odocl -r T.Z.t --short
+  type M.T.Z.t  = M.X1.t

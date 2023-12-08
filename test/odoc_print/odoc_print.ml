@@ -163,8 +163,59 @@ let print_element elt =
   | Element.ClassType v -> print_json_desc Lang_desc.classtype_t v
   | Element.Class v -> print_json_desc Lang_desc.class_t v
 
-let run inp ref =
+let print_short c elt =
+  let open Odoc_xref2 in
+  let open Component.Fmt in
+  match elt with
+  | Element.Module m ->
+      let m' = Component.Of_Lang.(module_ (empty ()) m) in
+      Format.fprintf Format.std_formatter "@[<v 2>module %a %a@]"
+        (model_identifier c)
+        (m.id :> Odoc_model.Paths.Identifier.t)
+        (module_ c) m'
+  | Element.ModuleType m ->
+      let m' = Component.Of_Lang.(module_type (empty ()) m) in
+      Format.fprintf Format.std_formatter "@[<v 2>module type %a %a@]"
+        (model_identifier c)
+        (m.id :> Odoc_model.Paths.Identifier.t)
+        (module_type c) m'
+  | Element.Type t ->
+      let t' = Component.Of_Lang.(type_decl (empty ()) t) in
+      Format.fprintf Format.std_formatter "@[<v 2>type %a %a@]"
+        (model_identifier c)
+        (t.id :> Odoc_model.Paths.Identifier.t)
+        (type_decl c) t'
+  | Element.Value v ->
+      let v' = Component.Of_Lang.(value (empty ()) v) in
+      Format.fprintf Format.std_formatter "@[<v 2>val %a %a@]"
+        (model_identifier c)
+        (v.id :> Odoc_model.Paths.Identifier.t)
+        (value c) v'
+  | Element.ClassType ct ->
+      let ct' = Component.Of_Lang.(class_type (empty ()) ct) in
+      Format.fprintf Format.std_formatter "@[<v 2>val %a %a@]"
+        (model_identifier c)
+        (ct.id :> Odoc_model.Paths.Identifier.t)
+        (class_type c) ct'
+  | Element.Class cls ->
+      let cls' = Component.Of_Lang.(class_ (empty ()) cls) in
+      Format.fprintf Format.std_formatter "@[<v 2>val %a %a@]"
+        (model_identifier c)
+        (cls.id :> Odoc_model.Paths.Identifier.t)
+        (class_ c) cls'
+
+let run inp short long_paths show_canonical show_expansions
+    show_include_expansions show_removed ref =
   let inp = Fpath.v inp in
+  let c =
+    {
+      Odoc_xref2.Component.Fmt.short_paths = not long_paths;
+      show_canonical;
+      show_expansions;
+      show_include_expansions;
+      show_removed;
+    }
+  in
   Odoc_file.load inp >>= fun unit ->
   match unit.content with
   | Odoc_file.Source_tree_content tree ->
@@ -177,25 +228,26 @@ let run inp ref =
       print_json_desc Lang_desc.implementation_t impl;
       Ok ()
   | Unit_content u -> (
-      match ref with
-      | None ->
-          print_json_desc Lang_desc.compilation_unit_t u;
+      match (short, ref, u.content) with
+      | true, None, Module sg ->
+          let sg' = Odoc_xref2.Component.Of_Lang.(signature (empty ()) sg) in
+          Format.printf "%a\n%!" Odoc_xref2.Component.Fmt.(signature c) sg';
           Ok ()
-      | Some r -> (
+      | _, Some r, Module sg -> (
           let r = Odoc_model.Semantics.parse_reference r in
-          let sg =
-            match u.content with
-            | Module m -> m
-            | Pack _ -> failwith "Can't look up in packed modules"
-          in
           match Odoc_model.Error.raise_warnings r with
           | Ok r -> (
               match handle_ref sg r with
               | Some elt ->
-                  print_element elt;
+                  if short then print_short c elt else print_element elt;
                   Ok ()
               | None -> Ok ())
-          | _ -> Ok ()))
+          | _ -> Ok ())
+      | true, None, _ -> Error (`Msg "Can't short-print packed modules")
+      | _, Some _, _ -> Error (`Msg "Can't look up in packed modules")
+      | false, None, _ ->
+          print_json_desc Lang_desc.compilation_unit_t u;
+          Ok ())
 
 open Compatcmdliner
 
@@ -207,9 +259,37 @@ let a_inp =
   let doc = "Input file." in
   Arg.(required & pos 0 (some file) None & info ~doc ~docv:"PATH" [])
 
+let a_short =
+  let doc = "Short output." in
+  Arg.(value & flag & info ~doc [ "short" ])
+
+let a_show_expansions =
+  let doc = "Show expansions in short output" in
+  Arg.(value & flag & info ~doc [ "show-expansions" ])
+
+let a_long_paths =
+  let doc = "Show long paths in short output" in
+  Arg.(value & flag & info ~doc [ "long-paths" ])
+
+let a_show_canonical =
+  let doc = "Show modules canonical reference in short output" in
+  Arg.(value & flag & info ~doc [ "show-canonical" ])
+
+let a_show_include_expansions =
+  let doc = "Show include expansions in short output" in
+  Arg.(value & flag & info ~doc [ "show-include-expansions" ])
+
+let a_show_removed =
+  let doc = "Show removed items in signature expansions in short output." in
+  Arg.(value & flag & info ~doc [ "show-removed" ])
+
 let term =
   let doc = "Print the content of .odoc files into a text format. For tests" in
-  Term.(const run $ a_inp $ reference, info "odoc_print" ~doc)
+  Term.
+    ( const run $ a_inp $ a_short $ a_long_paths $ a_show_canonical
+      $ a_show_expansions $ a_show_include_expansions $ a_show_removed
+      $ reference,
+      info "odoc_print" ~doc )
 
 let () =
   match Term.eval term with
