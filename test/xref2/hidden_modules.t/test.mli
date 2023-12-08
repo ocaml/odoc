@@ -28,3 +28,29 @@ end
 
 val test : 'a CanonicalTest.Base__.List.t -> unit
 
+
+module Enclosing : sig
+  (** This is going to contain a hidden item *)
+
+  (**/**)
+  module Hidden : sig
+    module Still_hidden : sig
+      type t
+    end
+  end
+  
+  (**/**)
+
+end
+
+
+module NonCanonical : sig
+
+  module NotHidden = Enclosing.Hidden.Still_hidden
+  (** This ought to be expanded *)
+
+  type hidden__type = int
+
+  val helpful : hidden__type
+end
+    
