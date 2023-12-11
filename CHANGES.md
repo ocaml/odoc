@@ -1,45 +1,34 @@
-<!--
-The format of this Changelog is based on Keep a Changelog (https://keepachangelog.com/en/1.0.0/).
-
-Tags:
-- Changes
-- Added
-- Fixed
-- Documentation
-- Internal
--->
-
 # (unreleased)
 
+# 2.4.0
+
 ### Added
-- Display 'private' keyword for private type extensions (@gpetiot, #1019)
+
 - Add support for search (@panglesd, @EmileTrotignon, #972)
+
+- Display 'private' keyword for private type extensions (@gpetiot, #1019)
 - Allow to omit parent type in constructor reference (@panglesd,
   @EmileTrotignon, #933)
 
 ### Fixed
 
+- Warn and exit when table(s) is not closed (@lubegasimon, #1050)
+- Hint when list(s) is not closed (@lubegasimon, #1050)
 - Fix crash on functors returning an alias (@Julow, #1046)
 - Fix rendering of polymorphic variants (@wikku, @panglesd, #971)
 - Add references to extension declarations (@gpetiot, @panglesd, #949)
 
-### Fixed
-- Fix 5.1 support (@tmcgilchrist, #1018)
-
 ### Changed
-- Style: Preformatted elements fallback to UA monospace (@toastal, #967)
 
-### Changed
-- Style: Remove font fallback to Helvetica, Arial (@Julow, #1028)
-- Style : Sidebar is now stuck to the left of the content instead of the left 
-  of the viewport (@EmileTrotignon, #999)
-
-### Changed
 - Style: Adjusted line height in the TOC to improve readability (@sorawee, #1045)
+- Style: Remove font fallback to Helvetica, Arial (@Julow, #1028)
+- Style: Preformatted elements fallback to UA monospace (@toastal, #967)
+- Style: Sidebar is now stuck to the left of the content instead of the left of
+  the viewport (@EmileTrotignon, #999)
 
-### Fixed
-- Warn and exit when table(s) is not closed (@lubegasimon, #1050)
-- Hint when list(s) is not closed (@lubegasimon, #1050)
+# 2.3.1
+
+- Fix 5.1 support (@tmcgilchrist, #1018)
 
 # 2.3.0
 
