@@ -93,8 +93,8 @@ let default_meta_elements ~config ~url =
   let theme_uri = Config.theme_uri config in
   let odoc_css_uri = file_uri ~config ~url theme_uri "odoc.css" in
   [
-    Html.link ~rel:[ `Stylesheet ] ~href:odoc_css_uri ();
     Html.meta ~a:[ Html.a_charset "utf-8" ] ();
+    Html.link ~rel:[ `Stylesheet ] ~href:odoc_css_uri ();
     Html.meta
       ~a:[ Html.a_name "generator"; Html.a_content "odoc %%VERSION%%" ]
       ();
