@@ -82,6 +82,31 @@ let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
       make_navigation ~up_url:up.href
         (List.rev html @ sep @ [ Html.txt current.name ])
 
+let file_uri ~config ~url (base : Types.uri) file =
+  match base with
+  | Types.Absolute uri -> uri ^ "/" ^ file
+  | Relative uri ->
+      let page = Url.Path.{ kind = `File; parent = uri; name = file } in
+      Link.href ~config ~resolve:(Current url) (Url.from_path page)
+
+let default_meta_elements ~config ~url =
+  let theme_uri = Config.theme_uri config in
+  let odoc_css_uri = file_uri ~config ~url theme_uri "odoc.css" in
+  [
+    Html.link ~rel:[ `Stylesheet ] ~href:odoc_css_uri ();
+    Html.meta ~a:[ Html.a_charset "utf-8" ] ();
+    Html.meta
+      ~a:[ Html.a_name "generator"; Html.a_content "odoc %%VERSION%%" ]
+      ();
+    Html.meta
+      ~a:
+        [
+          Html.a_name "viewport";
+          Html.a_content "width=device-width,initial-scale=1.0";
+        ]
+      ();
+  ]
+
 let page_creator ~config ~url ~uses_katex header breadcrumbs toc content =
   let theme_uri = Config.theme_uri config in
   let support_uri = Config.support_uri config in
@@ -93,21 +118,13 @@ let page_creator ~config ~url ~uses_katex header breadcrumbs toc content =
       Printf.sprintf "%s (%s)" url.name (String.concat "." path)
     in
 
-    let file_uri (base : Types.uri) file =
-      match base with
-      | Types.Absolute uri -> uri ^ "/" ^ file
-      | Relative uri ->
-          let page = Url.Path.{ kind = `File; parent = uri; name = file } in
-          Link.href ~config ~resolve:(Current url) (Url.from_path page)
-    in
+    let file_uri = file_uri ~config ~url in
     let search_uri uri =
       match uri with
       | Types.Absolute uri -> uri
       | Relative uri ->
           Link.href ~config ~resolve:(Current url) (Url.from_path uri)
     in
-    let odoc_css_uri = file_uri theme_uri "odoc.css" in
-    let highlight_js_uri = file_uri support_uri "highlight.pack.js" in
     let search_scripts =
       match search_uris with
       | [] -> []
@@ -142,30 +159,19 @@ let search_urls = %s;
               (Html.txt "");
           ]
     in
-    let default_meta_elements =
-      [
-        Html.link ~rel:[ `Stylesheet ] ~href:odoc_css_uri ();
-        Html.meta ~a:[ Html.a_charset "utf-8" ] ();
-        Html.meta
-          ~a:[ Html.a_name "generator"; Html.a_content "odoc %%VERSION%%" ]
-          ();
-        Html.meta
-          ~a:
-            [
-              Html.a_name "viewport";
-              Html.a_content "width=device-width,initial-scale=1.0";
-            ]
-          ();
-        Html.script ~a:[ Html.a_src highlight_js_uri ] (Html.txt "");
-        Html.script (Html.txt "hljs.initHighlightingOnLoad();");
-      ]
-    in
     let meta_elements =
-      if uses_katex then
-        let katex_css_uri = file_uri theme_uri "katex.min.css" in
-        let katex_js_uri = file_uri support_uri "katex.min.js" in
-        default_meta_elements
-        @ [
+      let highlightjs_meta =
+        let highlight_js_uri = file_uri support_uri "highlight.pack.js" in
+        [
+          Html.script ~a:[ Html.a_src highlight_js_uri ] (Html.txt "");
+          Html.script (Html.txt "hljs.initHighlightingOnLoad();");
+        ]
+      in
+      let katex_meta =
+        if uses_katex then
+          let katex_css_uri = file_uri theme_uri "katex.min.css" in
+          let katex_js_uri = file_uri support_uri "katex.min.js" in
+          [
             Html.link ~rel:[ `Stylesheet ] ~href:katex_css_uri ();
             Html.script ~a:[ Html.a_src katex_js_uri ] (Html.txt "");
             Html.script
@@ -185,7 +191,9 @@ let search_urls = %s;
           });
         |});
           ]
-      else default_meta_elements
+        else []
+      in
+      default_meta_elements ~config ~url @ highlightjs_meta @ katex_meta
     in
     let meta_elements = meta_elements @ search_scripts in
     Html.head (Html.title (Html.txt title_string)) meta_elements
@@ -229,35 +237,11 @@ let path_of_module_of_source ppf url =
   | None -> ()
 
 let src_page_creator ~breadcrumbs ~config ~url ~header name content =
-  let theme_uri = Config.theme_uri config in
   let head : Html_types.head Html.elt =
     let title_string =
       Format.asprintf "Source: %s%a" name path_of_module_of_source url
     in
-    let file_uri (base : Types.uri) file =
-      match base with
-      | Types.Absolute uri -> uri ^ "/" ^ file
-      | Relative uri ->
-          let page = Url.Path.{ kind = `File; parent = uri; name = file } in
-          Link.href ~config ~resolve:(Current url) (Url.from_path page)
-    in
-    let odoc_css_uri = file_uri theme_uri "odoc.css" in
-    let meta_elements =
-      [
-        Html.link ~rel:[ `Stylesheet ] ~href:odoc_css_uri ();
-        Html.meta ~a:[ Html.a_charset "utf-8" ] ();
-        Html.meta
-          ~a:[ Html.a_name "generator"; Html.a_content "odoc %%VERSION%%" ]
-          ();
-        Html.meta
-          ~a:
-            [
-              Html.a_name "viewport";
-              Html.a_content "width=device-width,initial-scale=1.0";
-            ]
-          ();
-      ]
-    in
+    let meta_elements = default_meta_elements ~config ~url in
     Html.head (Html.title (Html.txt title_string)) meta_elements
   in
   let body =
