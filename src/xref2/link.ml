@@ -135,9 +135,8 @@ and should_resolve : Paths.Path.t -> bool =
 (*   | `Resolved p -> should_reresolve (p :> Paths.Path.Resolved.t) *)
 (*   | _ -> true *)
 
-let type_path :
-    ?report_errors:bool -> Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
- fun ?(report_errors = true) env p ->
+let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
+ fun env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(type_path (empty ()) p) in
@@ -151,13 +150,11 @@ let type_path :
             let result = Tools.reresolve_type env p' in
             `Resolved Lang_of.(Path.resolved_type (empty ()) result)
         | Error e ->
-            if report_errors then
-              Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
+            Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
             p)
 
-let value_path :
-    ?report_errors:bool -> Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
- fun ?(report_errors = true) env p ->
+let value_path : Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
+ fun env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(value_path (empty ()) p) in
@@ -171,16 +168,12 @@ let value_path :
             let result = Tools.reresolve_value env p' in
             `Resolved Lang_of.(Path.resolved_value (empty ()) result)
         | Error e ->
-            if report_errors then
-              Errors.report ~what:(`Value_path cp) ~tools_error:e `Lookup;
+            Errors.report ~what:(`Value_path cp) ~tools_error:e `Lookup;
             p)
 
 let constructor_path :
-    ?report_errors:bool ->
-    Env.t ->
-    Paths.Path.Constructor.t ->
-    Paths.Path.Constructor.t =
- fun ?(report_errors = true) env p ->
+    Env.t -> Paths.Path.Constructor.t -> Paths.Path.Constructor.t =
+ fun env p ->
   (* if not (should_resolve (p : Paths.Path.Constructor.t :> Paths.Path.t)) then p *)
   (* else *)
   if not (should_resolve_constructor p) then p
@@ -196,16 +189,12 @@ let constructor_path :
             let result = Tools.reresolve_constructor env p' in
             `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
         | Error e ->
-            if report_errors then
-              Errors.report ~what:(`Constructor_path cp) ~tools_error:e `Lookup;
+            Errors.report ~what:(`Constructor_path cp) ~tools_error:e `Lookup;
             p)
 
-let class_type_path :
-    ?report_errors:bool ->
-    Env.t ->
-    Paths.Path.ClassType.t ->
-    Paths.Path.ClassType.t =
- fun ?(report_errors = true) env p ->
+let class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
+    =
+ fun env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(class_type_path (empty ()) p) in
@@ -219,16 +208,12 @@ let class_type_path :
             let result = Tools.reresolve_class_type env p' in
             `Resolved Lang_of.(Path.resolved_class_type (empty ()) result)
         | Error e ->
-            if report_errors then
-              Errors.report ~what:(`Class_type_path cp) ~tools_error:e `Lookup;
+            Errors.report ~what:(`Class_type_path cp) ~tools_error:e `Lookup;
             p)
 
 and module_type_path :
-    ?report_errors:bool ->
-    Env.t ->
-    Paths.Path.ModuleType.t ->
-    Paths.Path.ModuleType.t =
- fun ?(report_errors = true) env p ->
+    Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
+ fun env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(module_type_path (empty ()) p) in
@@ -242,13 +227,11 @@ and module_type_path :
             let result = Tools.reresolve_module_type env p' in
             `Resolved Lang_of.(Path.resolved_module_type (empty ()) result)
         | Error e ->
-            if report_errors then
-              Errors.report ~what:(`Module_type_path cp) ~tools_error:e `Resolve;
+            Errors.report ~what:(`Module_type_path cp) ~tools_error:e `Resolve;
             p)
 
-and module_path :
-    ?report_errors:bool -> Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
- fun ?(report_errors = true) env p ->
+and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
+ fun env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(module_path (empty ()) p) in
@@ -263,8 +246,7 @@ and module_path :
             `Resolved Lang_of.(Path.resolved_module (empty ()) result)
         | Error _ when is_forward p -> p
         | Error e ->
-            if report_errors then
-              Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
+            Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
             p)
 
 let rec comment_inline_element :
@@ -415,106 +397,6 @@ and open_ env parent = function
   | { Odoc_model__Lang.Open.doc; _ } as open_ ->
       { open_ with doc = comment_docs env parent doc }
 
-module Build_env = struct
-  let rec unit env t =
-    let open Compilation_unit in
-    match t.content with
-    | Module sg ->
-        let env = signature env sg in
-        env
-    | Pack _ -> env
-
-  and signature env s =
-    let env = Env.open_signature s env in
-    signature_items env s.items
-
-  and simple_expansion : Env.t -> ModuleType.simple_expansion -> Env.t =
-   fun env m ->
-    match m with
-    | Signature sg -> signature env sg
-    | Functor (arg, sg) ->
-        let env = Env.add_functor_parameter arg env in
-        let env = functor_argument env arg in
-        simple_expansion env sg
-
-  and functor_argument env a =
-    match a with
-    | FunctorParameter.Unit -> env
-    | Named arg -> functor_parameter_parameter env arg
-
-  and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> Env.t
-      =
-   fun env a -> module_type_expr env a.expr
-
-  and module_type_expr : Env.t -> ModuleType.expr -> Env.t =
-   fun env expr ->
-    let open ModuleType in
-    match expr with
-    | Signature s -> signature env s
-    | Path { p_path = _; p_expansion = Some p_expansion } ->
-        simple_expansion env p_expansion
-    | Path { p_path = _; p_expansion = None } -> env
-    | With _ -> env
-    | Functor (arg, res) ->
-        let env = functor_argument env arg in
-        let env = Env.add_functor_parameter arg env in
-        let env = module_type_expr env res in
-        env
-    | TypeOf { t_expansion = None; _ } -> env
-    | TypeOf { t_expansion = Some exp; _ } -> simple_expansion env exp
-
-  and signature_items : Env.t -> Signature.item list -> Env.t =
-   fun env s ->
-    let open Signature in
-    List.fold_left
-      (fun env item ->
-        match item with
-        | Module (_, m) -> module_ env m
-        | ModuleSubstitution m -> Env.open_module_substitution m env
-        | Type _ -> env
-        | TypeSubstitution t -> Env.open_type_substitution t env
-        | ModuleType mt -> module_type env mt
-        | ModuleTypeSubstitution mts ->
-            let env = Env.open_module_type_substitution mts env in
-            module_type_substitution env mts
-        | Value _ -> env
-        | Comment _ -> env
-        | TypExt _ -> env
-        | Exception _ -> env
-        | Class _ -> env
-        | ClassType _ -> env
-        | Include i -> include_ env i
-        | Open _ -> env)
-      env s
-
-  and module_type_substitution : Env.t -> ModuleTypeSubstitution.t -> Env.t =
-   fun env m -> module_type_expr env m.manifest
-
-  and include_ : Env.t -> Include.t -> Env.t =
-   fun env i ->
-    let open Include in
-    signature_items env i.expansion.content.items
-
-  and module_type : Env.t -> ModuleType.t -> Env.t =
-   fun env m ->
-    match m.expr with None -> env | Some expr -> module_type_expr env expr
-
-  and module_ : Env.t -> Module.t -> Env.t =
-   fun env m ->
-    let open Module in
-    let env = module_decl env m.type_ in
-    match m.type_ with
-    | Alias (`Resolved _, Some exp) -> simple_expansion env exp
-    | Alias _ | ModuleType _ -> env
-
-  and module_decl : Env.t -> Module.decl -> Env.t =
-   fun env decl ->
-    let open Module in
-    match decl with
-    | ModuleType expr -> module_type_expr env expr
-    | Alias (_, None) -> env
-    | Alias (_, Some e) -> simple_expansion env e
-end
 let rec unit env t =
   let open Compilation_unit in
   let content =
@@ -527,7 +409,6 @@ let rec unit env t =
       | Pack _ as p -> p
   in
   let source_info =
-    let env = Build_env.unit env t in
     let open Source_info in
     match t.source_info with
     | Some inf ->
@@ -554,32 +435,30 @@ let rec unit env t =
                     Value
                       (jump_to v
                          (Shape_tools.lookup_value_path env)
-                         (value_path ~report_errors:false env))
+                         (value_path env))
                 | Module v ->
                     Module
                       (jump_to v
                          (Shape_tools.lookup_module_path env)
-                         (module_path ~report_errors:false env))
+                         (module_path env))
                 | ModuleType v ->
                     ModuleType
                       (jump_to v
                          (Shape_tools.lookup_module_type_path env)
-                         (module_type_path ~report_errors:false env))
+                         (module_type_path env))
                 | Type v ->
                     Type
                       (jump_to v
                          (Shape_tools.lookup_type_path env)
-                         (type_path ~report_errors:false env))
+                         (type_path env))
                 | Constructor v ->
                     Constructor
-                      (jump_to v
-                         (fun _ -> None)
-                         (constructor_path ~report_errors:false env))
+                      (jump_to v (fun _ -> None) (constructor_path env))
                 | ClassType v ->
                     ClassType
                       (jump_to v
                          (Shape_tools.lookup_class_type_path env)
-                         (class_type_path ~report_errors:false env))
+                         (class_type_path env))
                 | i -> i
               in
               (info, pos))
