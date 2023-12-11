@@ -129,11 +129,11 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
 and should_resolve : Paths.Path.t -> bool =
  fun p -> match p with `Resolved p -> should_reresolve p | _ -> true
 
-and should_resolve_constructor : Paths.Path.Constructor.t -> bool =
- fun p ->
-  match p with
-  | `Resolved p -> should_reresolve (p :> Paths.Path.Resolved.t)
-  | _ -> true
+(* and should_resolve_constructor : Paths.Path.Constructor.t -> bool = *)
+(*  fun p -> *)
+(*   match p with *)
+(*   | `Resolved p -> should_reresolve (p :> Paths.Path.Resolved.t) *)
+(*   | _ -> true *)
 
 let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->
@@ -153,47 +153,42 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
             Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
             p)
 
-let value_path : Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
- fun env p ->
-  if not (should_resolve (p :> Paths.Path.t)) then p
-  else
-    let cp = Component.Of_Lang.(value_path (empty ()) p) in
-    match cp with
-    | `Resolved p ->
-        let result = Tools.reresolve_value env p in
-        `Resolved Lang_of.(Path.resolved_value (empty ()) result)
-    | _ -> (
-        match Tools.resolve_value_path env cp with
-        | Ok p' ->
-            let result = Tools.reresolve_value env p' in
-            `Resolved Lang_of.(Path.resolved_value (empty ()) result)
-        | Error e ->
-            Errors.report ~what:(`Value_path cp) ~tools_error:e `Lookup;
-            p)
+(* let value_path : Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t = *)
+(*  fun env p -> *)
+(*   if not (should_resolve (p :> Paths.Path.t)) then p *)
+(*   else *)
+(*     let cp = Component.Of_Lang.(value_path (empty ()) p) in *)
+(*     match cp with *)
+(*     | `Resolved p -> *)
+(*         let result = Tools.reresolve_value env p in *)
+(*         `Resolved Lang_of.(Path.resolved_value (empty ()) result) *)
+(*     | _ -> ( *)
+(*         match Tools.resolve_value_path env cp with *)
+(*         | Ok p' -> *)
+(*             let result = Tools.reresolve_value env p' in *)
+(*             `Resolved Lang_of.(Path.resolved_value (empty ()) result) *)
+(*         | Error e -> *)
+(*             Errors.report ~what:(`Value_path cp) ~tools_error:e `Lookup; *)
+(*             p) *)
 
-let constructor_path :
-    Env.t -> Paths.Path.Constructor.t -> Paths.Path.Constructor.t =
- fun env p ->
-  if not (should_resolve_constructor p) then p
-  else
-    let cp = Component.Of_Lang.(constructor_path (empty ()) p) in
-    match cp with
-    | `Resolved p ->
-        let result = Tools.reresolve_constructor env p in
-        `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
-    | _ -> (
-        match Tools.resolve_constructor_path env cp with
-        | Ok p' ->
-            let result = Tools.reresolve_constructor env p' in
-            `Resolved Lang_of.(Path.resolved_constructor (empty ()) result)
-        | Error e ->
-            Errors.report ~what:(`Constructor_path cp) ~tools_error:e `Lookup;
-            p)
-
-let () =
-  (* Until those are used *)
-  ignore value_path;
-  ignore constructor_path
+(* let constructor_path : *)
+(*     Env.t -> Paths.Path.Constructor.t -> Paths.Path.Constructor.t = *)
+(*  fun env p -> *)
+(*   if not (should_resolve_constructor p) then p *)
+(*   else *)
+(*     let cp = Component.Of_Lang.(constructor_path (empty ()) p) in *)
+(*     match cp with *)
+(*     | `Resolved p -> *)
+(*         let result = Tools.reresolve_constructor env p in *)
+(*         `Resolved Lang_of.(Path.resolved_constructor (empty ()) result) *)
+(*     | _ -> ( *)
+(*         match Tools.resolve_constructor_path env cp with *)
+(*         | Ok p' -> *)
+(*             let result = Tools.reresolve_constructor env p' in *)
+(*             `Resolved Lang_of.(Path.resolved_constructor (empty ()) result) *)
+(*         | Error e -> *)
+(*             Errors.report ~what:(`Constructor_path cp) ~tools_error:e `Lookup; *)
+(*             p) *)
 
 let class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
     =
