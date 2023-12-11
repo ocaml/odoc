@@ -4,7 +4,9 @@
 
 ### Added
 
-- Add support for search (@panglesd, @EmileTrotignon, #972)
+- Add support for external search engines (@panglesd, @EmileTrotignon, #972)
+  This includes the generation of an index and the display of the results in
+  the UI (HTML only).
 
 - Display 'private' keyword for private type extensions (@gpetiot, #1019)
 - Allow to omit parent type in constructor reference (@panglesd,
