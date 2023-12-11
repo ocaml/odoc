@@ -10,14 +10,18 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-latest
           - ubuntu-latest
-          # - windows-latest Windows doesn't work yet
         ocaml-compiler:
-          # Don't include every versions. OCaml-CI already covers that
+          - 4.02.x
+          - 4.04.x
+          - 4.06.x
+          - 4.08.x
+          - 4.10.x
+          - 4.12.x
           - 4.14.x
         include:
           - os: ubuntu-latest # Enable coverage only on a single build
+            ocaml-compiler: 4.14.x
             send-coverage: true
       fail-fast: false
 
