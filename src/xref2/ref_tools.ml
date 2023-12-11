@@ -349,7 +349,7 @@ module L = struct
           | `Heading
               ( _,
                 ({ Odoc_model.Paths.Identifier.iv = `Label (_, name'); _ } as
-                label),
+                 label),
                 _ )
             when name = LabelName.to_string name' ->
               Ok (`Identifier label)
