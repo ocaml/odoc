@@ -168,8 +168,8 @@ let of_entry ({ Entry.id; doc; kind } as entry) html =
           ]
   in
   match Json_display.of_entry entry html with
-  | Ok display ->
-      Ok
+  | Result.Ok display ->
+      Result.Ok
         (`Object
           [ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ])
   | Error _ as e -> e

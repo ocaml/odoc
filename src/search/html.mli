@@ -6,7 +6,7 @@ val of_entry : Entry.t -> html list
 
 val url :
   Odoc_model.Paths.Identifier.Any.t ->
-  (string, Odoc_document.Url.Error.t) result
+  (string, Odoc_document.Url.Error.t) Result.result
 
 (** The below is intended for search engine that do not use the Json output but
     Odoc as a library. Most search engine will use their own representation 
