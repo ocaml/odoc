@@ -3,8 +3,6 @@
 
 (rule
  (aliases runtest support-files)
- (enabled_if
-  (> %{ocaml_version} 4.08))
  (target odoc_html_support_files.ml)
  (deps
   (glob_files *.js)
@@ -29,8 +27,7 @@
     -o
     odoc_html_support_files.ml
     -m
-    plain
-    -s))))
+    plain))))
 
 (library
  (name odoc_html_support_files)
