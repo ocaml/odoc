@@ -400,7 +400,7 @@ and open_ env parent = function
 let rec unit env t =
   let open Compilation_unit in
   let content =
-    if t.Lang.Compilation_unit.linked || t.hidden then t.content
+    if t.hidden then t.content
     else
       match t.content with
       | Module sg ->
@@ -1145,7 +1145,8 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
   | Package p -> Package (type_expression_package env parent visited p)
 
 let link ~filename x y =
-  Lookup_failures.catch_failures ~filename (fun () -> unit x y)
+  Lookup_failures.catch_failures ~filename (fun () ->
+      if y.Lang.Compilation_unit.linked then y else unit x y)
 
 let page env page =
   let () =
