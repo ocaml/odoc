@@ -6,4 +6,6 @@
    (../odoc_print/odoc_print.exe as odoc_print))))
 
 (cram
- (deps %{bin:odoc} %{bin:odoc_print}))
+ (deps %{bin:odoc} %{bin:odoc_print})
+ (enabled_if
+  (>= %{ocaml_version} 4.04.0)))

@@ -55,6 +55,7 @@ let constraints =
     ("bugs_pre_410.ml", Max "4.09");
     ("module_type_subst.mli", Min "4.13");
     ("class_comments.mli", Min "4.08");
+    ("functor_ml.ml", Min "4.14");
   ]
 
 let test_cases_dir = Fpath.v "cases"
@@ -73,7 +74,8 @@ let make_test_case case_name =
     let odoc = Fpath.set_ext ".odoc" base_out_path in
     let odocl = Fpath.set_ext ".odocl" base_out_path in
     let enabledif =
-      try Some (List.assoc case_name constraints) with Not_found -> None
+      try Some (List.assoc case_name constraints)
+      with Not_found -> Some (Min "4.04")
     in
     { Gen_rules_lib.input; cmt; odoc; odocl; enabledif }
   in

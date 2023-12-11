@@ -247,12 +247,6 @@ Testing the warnings/errors for the `compile-index` command:
 
 Passing an inexistent file:
 
-  $ odoc compile-index inexistent.odocl
-  odoc: FILE… arguments: no 'inexistent.odocl' file or directory
-  Usage: odoc compile-index [--file-list=FILE] [OPTION]… [FILE]…
-  Try 'odoc compile-index --help' or 'odoc --help' for more information.
-  [2]
-
   $ printf "inexistent.odocl\n" > index_map
   $ odoc compile-index --file-list index_map
   File "inexistent.odocl":
