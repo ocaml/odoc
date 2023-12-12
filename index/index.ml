@@ -59,11 +59,15 @@ let db_format =
 
 let db_filename =
   let doc = "Output filename" in
-  Arg.(required & opt (some string) None & info [ "db" ] ~docv:"DB" ~doc)
+  Arg.(
+    required
+    & opt (some string) None
+    & info [ "db"; "output"; "o" ] ~docv:"DB" ~doc)
+
 
 let odoc_files =
   let doc = "Path to a binary odoc index" in
-  Arg.(non_empty & (pos_all file [] @@ info ~doc ~docv:"ODOC_FILE" []))
+  Arg.(non_empty & (pos_all file [] @@ info ~doc ~docv:"ODOCL_FILE" []))
 
 let index =
   Term.(
