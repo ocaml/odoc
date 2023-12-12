@@ -88,8 +88,8 @@ module Test_succ = struct
   let extra_succ =
     Both.(
       union
-           (inter (of_array [| 0; 1 |]) (of_array [| 0; 1 |]))
-           (inter (of_array [| 0; 2; 3 |]) (of_array [| 1; 3; 5; 7 |])))
+        (inter (of_array [| 0; 1 |]) (of_array [| 0; 1 |]))
+        (inter (of_array [| 0; 2; 3 |]) (of_array [| 1; 3; 5; 7 |])))
 
   let rec random_set ~empty ~union ~inter ~of_array size =
     let random_set = random_set ~empty ~union ~inter ~of_array in
@@ -116,9 +116,7 @@ module Test_succ = struct
     [ Alcotest.test_case "Succ.to_seq extra" `Quick (test_to_seq extra_succ) ]
     @ List.init 50 (fun i ->
           let i = i * 7 in
-          let succ =
-            i |> Both.(random_set ~empty ~union ~inter ~of_array)
-          in
+          let succ = i |> Both.(random_set ~empty ~union ~inter ~of_array) in
           Alcotest.test_case
             (Printf.sprintf "Succ.to_seq size %i" i)
             `Quick (test_to_seq succ))

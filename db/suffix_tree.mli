@@ -19,7 +19,8 @@ module Make (S : SET) : sig
   val add_suffixes : writer -> string -> S.elt -> unit
 
   type reader
-  (** A reader is a completed suffix tree. You can make queries on it.*)
+  (** A reader is a completed suffix tree. You can make queries on it. Its size
+      is smaller than the equivalent [writer]. *)
 
   val export : writer -> reader
   val find : reader -> string -> reader option
@@ -27,4 +28,9 @@ module Make (S : SET) : sig
 end
 
 module With_elts : module type of Make (Elt.Array)
+(** [With_elts] is a suffix tree with array of elts at the leafs. It is used for
+    the text-based part of the database. *)
+
 module With_occ : module type of Make (Occ)
+(** [With_occ] is a suffix tree with occurence annotated arrays of elts at the
+    leafs. It is used for the type-based part of the database. *)

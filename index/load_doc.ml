@@ -32,7 +32,6 @@ let cost ~name ~kind ~doc_html =
     | _ -> false
   in
   let has_doc = doc_html <> "" in
-  (* TODO : use entry cost *)
   generic_cost ~ignore_no_doc name has_doc + kind_cost kind
 
 (*
@@ -65,8 +64,7 @@ let all_type_names t =
   let fullname = fullname t in
   tails (String.split_on_char '.' fullname)
 
-(** for scoring *)
-let rec paths ~prefix ~sgn t =
+let rec type_distance_paths ~prefix ~sgn t =
   match t with
   | Odoc_model.Lang.TypeExpr.Var _ ->
       let poly = "POLY" in
@@ -78,8 +76,8 @@ let rec paths ~prefix ~sgn t =
       let prefix_left = "->0" :: prefix in
       let prefix_right = "->1" :: prefix in
       List.rev_append
-        (paths ~prefix:prefix_left ~sgn:(Types.sgn_not sgn) a)
-        (paths ~prefix:prefix_right ~sgn b)
+        (type_distance_paths ~prefix:prefix_left ~sgn:(Types.sgn_not sgn) a)
+        (type_distance_paths ~prefix:prefix_right ~sgn b)
   | Constr (name, args) ->
       let name = fullname name in
       let prefix = name :: Types.string_of_sgn sgn :: prefix in
@@ -91,14 +89,14 @@ let rec paths ~prefix ~sgn t =
             @@ List.mapi
                  (fun i arg ->
                    let prefix = string_of_int i :: prefix in
-                   paths ~prefix ~sgn arg)
+                   type_distance_paths ~prefix ~sgn arg)
                  args
       end
   | Tuple args ->
       rev_concat
       @@ List.mapi (fun i arg ->
              let prefix = (string_of_int i ^ "*") :: prefix in
-             paths ~prefix ~sgn arg)
+             type_distance_paths ~prefix ~sgn arg)
       @@ args
   | _ -> []
 
@@ -118,22 +116,24 @@ let rec hcons = function
           Hashtbl.add hcons_tbl (uid_xs, x) result ;
           result)
 
-let paths typ =
+(** [type_distance_paths ~prefix ~sgn t] is a [string list list] representing
+    the type [t]. It allows to compute the distance between two types. It is
+    stored in the database to sort results once they are obtained. *)
+let type_distance_paths typ =
   List.map
     (fun xs ->
       let _, xs = hcons xs in
       xs)
-    (paths ~prefix:[] ~sgn:Pos typ)
+    (type_distance_paths ~prefix:[] ~sgn:Pos typ)
 
-(** for indexing *)
-let rec type_paths ~prefix ~sgn = function
+let rec suffix_tree_type_paths ~prefix ~sgn = function
   | Odoc_model.Lang.TypeExpr.Var _ ->
       [ "POLY" :: Types.string_of_sgn sgn :: prefix ]
   | Any -> [ "POLY" :: Types.string_of_sgn sgn :: prefix ]
   | Arrow (_lbl, a, b) ->
       List.rev_append
-        (type_paths ~prefix ~sgn:(Types.sgn_not sgn) a)
-        (type_paths ~prefix ~sgn b)
+        (suffix_tree_type_paths ~prefix ~sgn:(Types.sgn_not sgn) a)
+        (suffix_tree_type_paths ~prefix ~sgn b)
   | Constr (name, args) ->
       name |> all_type_names
       |> List.map (fun name ->
@@ -147,14 +147,20 @@ let rec type_paths ~prefix ~sgn = function
                    @@ List.mapi
                         (fun i arg ->
                           let prefix = string_of_int i :: prefix in
-                          type_paths ~prefix ~sgn arg)
+                          suffix_tree_type_paths ~prefix ~sgn arg)
                         args
              end)
       |> rev_concat
-  | Tuple args -> rev_concat @@ List.map (type_paths ~prefix ~sgn) @@ args
+  | Tuple args ->
+      rev_concat @@ List.map (suffix_tree_type_paths ~prefix ~sgn) @@ args
   | _ -> []
 
-let type_paths ~prefix ~sgn t = type_paths ~prefix ~sgn t
+(** [suffix_tree_type_paths ~prefix ~sgn t] is a representation of [t] that
+    encodes the polarity of the elements of the type : in [string -> int] [int]
+    is positive and [string] negative.
+    It is registered in the database and search-base type uses this to obtain
+    results that fit the type asked for by the user. *)
+let suffix_tree_type_paths t = suffix_tree_type_paths ~prefix:[] ~sgn:Pos t
 
 let with_tokenizer str fn =
   let str = String.lowercase_ascii str in
@@ -212,19 +218,21 @@ let convert_kind (Odoc_search.Entry.{ kind; _ } as entry) =
       Elt.Kind.TypeDecl (Odoc_search.Html.typedecl_params_of_entry entry)
   | Module -> Elt.Kind.Module
   | Value { value = _; type_ } ->
-      let paths = paths type_ in
+      let paths = type_distance_paths type_ in
       Elt.Kind.val_ paths
   | Constructor { args; res } ->
       let searchable_type = searchable_type_of_constructor args res in
-      let paths = paths searchable_type in
+      let paths = type_distance_paths searchable_type in
       Elt.Kind.constructor paths
   | Field { mutable_ = _; parent_type; type_ } ->
-      let paths = type_ |> searchable_type_of_record parent_type |> paths in
+      let paths =
+        type_ |> searchable_type_of_record parent_type |> type_distance_paths
+      in
       Elt.Kind.field paths
   | Doc _ -> Doc
   | Exception { args; res } ->
       let searchable_type = searchable_type_of_constructor args res in
-      let paths = paths searchable_type in
+      let paths = type_distance_paths searchable_type in
       Elt.Kind.exception_ paths
   | Class_type _ -> Class_type
   | Method _ -> Method
@@ -232,12 +240,12 @@ let convert_kind (Odoc_search.Entry.{ kind; _ } as entry) =
   | TypeExtension _ -> TypeExtension
   | ExtensionConstructor { args; res } ->
       let searchable_type = searchable_type_of_constructor args res in
-      let paths = paths searchable_type in
+      let paths = type_distance_paths searchable_type in
       Elt.Kind.extension_constructor paths
   | ModuleType -> ModuleType
 
 let register_type_expr ~db elt type_ =
-  let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
+  let type_paths = suffix_tree_type_paths type_ in
   Db.store_type_paths db elt type_paths
 
 let register_kind ~db ~type_search elt (kind : Odoc_search.Entry.kind) =

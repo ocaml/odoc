@@ -35,7 +35,9 @@ let print_result ~print_cost ~no_rhs
   let typedecl_params =
     (match kind with
     | Db.Elt.Kind.TypeDecl args -> args
-    | _ -> None) |> Option.map (fun str -> str ^ " ") |> Option.value ~default:""
+    | _ -> None)
+    |> Option.map (fun str -> str ^ " ")
+    |> Option.value ~default:""
   in
   let kind = kind |> string_of_kind |> Unescape.string in
   let name = Unescape.string name in

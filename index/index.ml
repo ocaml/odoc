@@ -64,7 +64,6 @@ let db_filename =
     & opt (some string) None
     & info [ "db"; "output"; "o" ] ~docv:"DB" ~doc)
 
-
 let odoc_files =
   let doc = "Path to a binary odoc index" in
   Arg.(non_empty & (pos_all file [] @@ info ~doc ~docv:"ODOCL_FILE" []))

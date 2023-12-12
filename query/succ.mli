@@ -8,7 +8,6 @@ val to_seq : compare:('a -> 'a -> int) -> 'a t -> 'a Seq.t
 
 (** Functions to build a succ tree *)
 
-
 val all : 'a t
 val empty : 'a t
 
