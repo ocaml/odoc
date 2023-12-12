@@ -31,7 +31,8 @@ build: [
     "-j"
     jobs
     "@install"
-    "@runtest" {with-test}
+    # Tests are not all associated with a package and would be run if using the
+    # default '@runtest'.
+    "@src/parser/runtest" {with-test}
   ]
 ]
-
