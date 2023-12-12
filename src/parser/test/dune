@@ -1,6 +1,5 @@
 (library
  (name odoc_parser_test)
- (package odoc-parser)
  (inline_tests)
  (enabled_if
   (>= %{ocaml_version} 4.04.1))
