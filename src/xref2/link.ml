@@ -421,11 +421,6 @@ let rec unit env t =
                       (jump_to v
                          (Shape_tools.lookup_type_path env)
                          (type_path env))
-                | ClassType v ->
-                    ClassType
-                      (jump_to v
-                         (Shape_tools.lookup_class_type_path env)
-                         (class_type_path env))
                 | i -> i
               in
               (info, pos))

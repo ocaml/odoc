@@ -31,7 +31,6 @@ module Source_info = struct
     | Definition of Paths.Identifier.SourceLocation.t
     | Value of Path.Value.t jump_to
     | Module of Path.Module.t jump_to
-    | ClassType of Path.ClassType.t jump_to
     | ModuleType of Path.ModuleType.t jump_to
     | Type of Path.Type.t jump_to
 

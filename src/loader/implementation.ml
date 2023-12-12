@@ -320,10 +320,6 @@ let process_occurrences env poses loc_to_id local_ident_to_loc =
           process p Ident_env.Path.read_module
           |> Option.iter @@ fun l ->
              AnnotHashtbl.replace occ_tbl (Module l, pos_of_loc loc) ()
-      | ClassType p, loc ->
-          process p Ident_env.Path.read_class_type
-          |> Option.iter @@ fun l ->
-             AnnotHashtbl.replace occ_tbl (ClassType l, pos_of_loc loc) ()
       | ModuleType p, loc ->
           process p Ident_env.Path.read_module_type
           |> Option.iter @@ fun l ->

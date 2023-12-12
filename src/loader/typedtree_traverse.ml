@@ -5,7 +5,6 @@ module Analysis = struct
     | LocalDefinition of Ident.t
     | Value of Path.t
     | Module of Path.t
-    | ClassType of Path.t
     | ModuleType of Path.t
     | Type of Path.t
 
@@ -53,13 +52,6 @@ module Analysis = struct
         poses := (Module p, mod_loc) :: !poses
     | _ -> ()
 
-  let class_type poses cltyp =
-    match cltyp with
-    | { Typedtree.cltyp_desc = Tcty_constr (p, _, _); cltyp_loc; _ }
-      when not cltyp_loc.loc_ghost ->
-        poses := (ClassType p, cltyp_loc) :: !poses
-    | _ -> ()
-
   let module_type poses mty_expr =
     match mty_expr with
     | { Typedtree.mty_desc = Tmty_ident (p, _); mty_loc; _ }
@@ -98,10 +90,6 @@ let of_cmt env structure =
     Analysis.module_type poses mty;
     iter.module_type iterator mty
   in
-  let class_type iterator cl_type =
-    Analysis.class_type poses cl_type;
-    iter.class_type iterator cl_type
-  in
   let module_binding iterator mb =
     Analysis.module_binding env poses mb;
     iter.module_binding iterator mb
@@ -114,7 +102,6 @@ let of_cmt env structure =
       module_expr;
       typ;
       module_type;
-      class_type;
       module_binding;
     }
   in
