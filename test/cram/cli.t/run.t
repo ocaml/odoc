@@ -22,8 +22,8 @@
   val Main.Nest.nesting_priority : foo
   $ sherlodoc "list"
   mod Main.List
-  type Main.list
-  type Main.List.t = 'a list
+  type 'a Main.list
+  type 'a Main.List.t = 'a list
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.Map.to_list : foo
@@ -67,8 +67,8 @@
   mod Main.List
   mod Main.Nest
   mod Main.S_to_S1
-  type Main.list
-  type Main.List.t = 'a list
+  type 'a Main.list
+  type 'a Main.List.t = 'a list
   val Main.consume : moo -> unit
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list

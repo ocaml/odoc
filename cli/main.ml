@@ -32,6 +32,11 @@ let print_result ~print_cost ~no_rhs
       ; is_from_module_type = _
       } =
   let score = if print_cost then string_of_int score ^ " " else "" in
+  let typedecl_params =
+    (match kind with
+    | Db.Elt.Kind.TypeDecl args -> args
+    | _ -> None) |> Option.map (fun str -> str ^ " ") |> Option.value ~default:""
+  in
   let kind = kind |> string_of_kind |> Unescape.string in
   let name = Unescape.string name in
   let pp_rhs h = function
@@ -39,7 +44,7 @@ let print_result ~print_cost ~no_rhs
     | Some _ when no_rhs -> ()
     | Some rhs -> Format.fprintf h "%s" (Unescape.string rhs)
   in
-  Format.printf "%s%s %s%a\n" score kind name pp_rhs rhs
+  Format.printf "%s%s %s%s%a\n" score kind typedecl_params name pp_rhs rhs
 
 let search ~print_cost ~static_sort ~limit ~db ~no_rhs query =
   match

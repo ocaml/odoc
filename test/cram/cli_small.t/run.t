@@ -8,6 +8,6 @@
   $ export SHERLODOC_DB=db.bin
   $ sherlodoc --print-cost "list"
   109 mod Main.List
-  209 type Main.list
-  315 type Main.List.t = 'a list
+  209 type 'a Main.list
+  315 type 'a Main.List.t = 'a list
   317 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t

@@ -10,9 +10,9 @@
   4.8M	megaodocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
   
-  real	0m1.186s
-  user	0m1.140s
-  sys	0m0.034s
+  real	0m1.246s
+  user	0m1.175s
+  sys	0m0.060s
 
 
 
@@ -77,20 +77,20 @@ $ firefox /tmp/html/base/index.html
   627 val Base.Hashtbl.S_poly.add
   628 val Base.Hashtbl.S_poly.data
   628 val Base.Hashtbl.S_poly.keys
-  721 type Base.Map.S_poly.t
-  721 type Base.Set.S_poly.t
+  721 type ('a, 'b) Base.Map.S_poly.t
+  721 type 'elt Base.Set.S_poly.t
   723 val Base.Map.S_poly.add
   723 val Base.Map.S_poly.mem
   723 val Base.Set.S_poly.add
   723 val Base.Set.S_poly.nth
-  723 type Base.Set.S_poly.set
+  723 type ('a, 'cmp) Base.Set.S_poly.set
   723 val Base.Set.S_poly.sum
   724 val Base.Map.S_poly.data
   724 val Base.Map.S_poly.keys
-  724 type Base.Map.S_poly.tree
+  724 type ('a, 'b) Base.Map.S_poly.tree
   724 val Base.Set.S_poly.diff
-  724 type Base.Set.S_poly.tree
-  725 type Base.Hashtbl.S_poly.t
+  724 type 'elt Base.Set.S_poly.tree
+  725 type ('a, 'b) Base.Hashtbl.S_poly.t
   725 val Base.Map.S_poly.empty
   725 val Base.Set.S_poly.empty
   725 val Base.Set.S_poly.equal
@@ -100,7 +100,7 @@ $ firefox /tmp/html/base/index.html
   726 val Base.Set.S_poly.choose
   726 val Base.Set.S_poly.length
   726 val Base.Set.S_poly.remove
-  727 type Base.Hashtbl.S_poly.key
+  727 type 'a Base.Hashtbl.S_poly.key
   727 val Base.Set.S_poly.max_elt
   727 val Base.Set.S_poly.min_elt
   727 val Base.Set.S_poly.of_list
@@ -169,34 +169,34 @@ $ firefox /tmp/html/base/index.html
   321 val Base.List.rev_map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t Or_unequal_lengths.t
   322 val Base.List.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   323 val Base.Array.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  340 type Base.Applicative.Make_using_map2.X.t
+  340 type 'a Base.Applicative.Make_using_map2.X.t
   340 val Base.Applicative.Make_using_map2.all : 'a X.t list -> 'a list X.t
-  341 type Base.Applicative.Make2_using_map2.X.t
-  341 type Base.Applicative.Make3_using_map2.X.t
+  341 type ('a, 'e) Base.Applicative.Make2_using_map2.X.t
+  341 type ('a, 'd, 'e) Base.Applicative.Make3_using_map2.X.t
   342 val Base.Applicative.Make_using_map2.X.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
   343 val Base.Applicative.Make2_using_map2.X.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
   343 val Base.Applicative.Make3_using_map2.X.map : [ `Define_using_map2
   | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t ]
   343 val Base.Applicative.Make_using_map2.return : 'a -> 'a X.t
   345 val Base.Applicative.Make_using_map2.X.return : 'a -> 'a t
-  347 type Base.Applicative.Make_using_map2_local.X.t
-  348 type Base.Applicative.Make2_using_map2_local.X.t
-  348 type Base.Applicative.Make3_using_map2_local.X.t
+  347 type 'a Base.Applicative.Make_using_map2_local.X.t
+  348 type ('a, 'e) Base.Applicative.Make2_using_map2_local.X.t
+  348 type ('a, 'd, 'e) Base.Applicative.Make3_using_map2_local.X.t
   349 val Base.Applicative.Make_using_map2_local.X.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
   350 val Base.Applicative.Make2_using_map2_local.X.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
   350 val Base.Applicative.Make3_using_map2_local.X.map : [ `Define_using_map2
   | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t ]
   623 val Base.Applicative.S.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  739 type Base.Applicative.Basic_using_map2.t
-  740 type Base.Applicative.Basic2_using_map2.t
-  740 type Base.Applicative.Basic3_using_map2.t
+  739 type 'a Base.Applicative.Basic_using_map2.t
+  740 type ('a, 'e) Base.Applicative.Basic2_using_map2.t
+  740 type ('a, 'd, 'e) Base.Applicative.Basic3_using_map2.t
   741 val Base.Applicative.Basic_using_map2.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
   742 val Base.Applicative.Basic2_using_map2.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
   742 val Base.Applicative.Basic3_using_map2.map : [ `Define_using_map2
   | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t ]
-  746 type Base.Applicative.Basic_using_map2_local.t
-  747 type Base.Applicative.Basic2_using_map2_local.t
-  747 type Base.Applicative.Basic3_using_map2_local.t
+  746 type 'a Base.Applicative.Basic_using_map2_local.t
+  747 type ('a, 'e) Base.Applicative.Basic2_using_map2_local.t
+  747 type ('a, 'd, 'e) Base.Applicative.Basic3_using_map2_local.t
   748 val Base.Applicative.Basic_using_map2_local.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
   749 val Base.Applicative.Basic2_using_map2_local.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
   749 val Base.Applicative.Basic3_using_map2_local.map : [ `Define_using_map2
