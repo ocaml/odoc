@@ -2,11 +2,17 @@
 
 # To discuss
 
-- Réfléchir à `ancient`: enlever pour de bon, rétablir le support ?
 - Tester de virer la compression?
+
 - Type extensions: we might want to search for all extensions of a given extensible type.
 
+## With Arthur
+
+- Réfléchir à `ancient`: enlever pour de bon, rétablir le support ?
+
 - pretty-query: vraiment necessaire ?
+
+- ask about `Query.paths_arrow` vs `index/load_doc.type_distance_paths`
 
 # done
 
@@ -26,12 +32,18 @@ they are interpreted as relative to the `-o` option")
 
 - Option prendre un fichier contenant la liste des `odocl` ?
 
+- `index` supprimer les `.db`
+
 # Commentaires/Action Point/...
 
+- refactor `Query.paths_arrow` vs `index/load_doc.type_distance_paths`
+  `Query.paths_arrow` is the right implementation, load_doc should tranform the
+  odoc typeexpr into a sherlodoc query ast typeexpr and then only compute the
+  path.
+  Be careful about hash consing.
 
 - Have something more robust than sizes in tests. Remove them, and use
   current-bench or just a manual benchmark.
-- `index` supprimer les `.db`
 
 - la limitation sur le packages de query n'est plus vraiment fonctionelle
 
@@ -63,6 +75,24 @@ they are interpreted as relative to the `-o` option")
 
 ## Indexation
 
+## Hierarchy structure
+
+Folders:
+
+- `db/` is for the db datastructure. Two datastructures: one for the type
+  agnostic part (`db_names`, or `with_elts`) and one for the type-centric part
+  of the query (`db_types`, or `with_occs`)
+- `index/` is for the action of indexing. Includes a binary.
+- `jsoo` the js access to perform query. Compile to a js file to run on a webworker. Read the (marhsalled,
+  compressed) db from a global variable: `sherlodoc_db`.
+- `cli/` the `cli` access to perform queries. Load the db from a file.
+- `store/` is the access to the database. The two directories above (`jsoo` and
+  `cli`) use the `storage_js` and `storage_marshal` modules for their purpose.
+- `www/` for the webserver running on <https://doc.sherlocode.com>.
+- `static/` static files also for the webserver
+- `test/` self-explained
+- `query/` defines queries and perform them
+
 # Notes personnelles/explications/...
 
 ## Index
@@ -83,23 +113,7 @@ Cela est fait par les fonctions suivantes:
 - `Db.store_type_path` qui transforme la `string list list` en "concaténant les
   path regroupés !" (qui compte les occurrences de chaque type)
 
-## Hierarchy structure
 
-Folders:
-
-- `db/` is for the db datastructure. Two datastructures: one for the type
-  agnostic part (`db_names`, or `with_elts`) and one for the type-centric part
-  of the query (`db_types`, or `with_occs`)
-- `index/` is for the action of indexing. Includes a binary.
-- `jsoo` the js access to perform query. Compile to a js file to run on a webworker. Read the (marhsalled,
-  compressed) db from a global variable: `sherlodoc_db`.
-- `cli/` the `cli` access to perform queries. Load the db from a file.
-- `store/` is the access to the database. The two directories above (`jsoo` and
-  `cli`) use the `storage_js` and `storage_marshal` modules for their purpose.
-- `www/` for the webserver running on <https://doc.sherlocode.com>.
-- `static/` static files also for the webserver
-- `test/` self-explained
-- `query/` defines queries and perform them
 
 
 
