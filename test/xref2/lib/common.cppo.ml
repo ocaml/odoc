@@ -565,13 +565,11 @@ module LangUtils = struct
             | `ModuleType (p, mt) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.ModuleTypeName.to_string mt)
             | `Type (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.TypeName.to_string t)
             | `Value (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.ValueName.to_string t)
-            | `Constructor (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.ConstructorName.to_string t)
             | `OpaqueModule m -> Format.fprintf ppf "opaquemodule(%a)" resolved_path (cast m)
             | `OpaqueModuleType m -> Format.fprintf ppf "opaquemoduletype(%a)" resolved_path (cast m)
             | `SubstT (_, _)
             | `CanonicalModuleType (_, _)
             | `CanonicalType (_, _)
-            | `CanonicalDataType (_, _)
             | `Class (_, _)
             | `ClassType (_, _)
             | `Hidden _
