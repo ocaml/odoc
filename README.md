@@ -33,11 +33,11 @@ available format are `marshal`, `js`.  The `js` format, for
 javascript, is the one compatible with odoc, and the `marshal` for most other
 uses.
 
-The used to be a third format : `ancient`. It is more complicated than the other
-two, you can read on it [here](https://github.com/UnixJunkie/ocaml-ancient). It
-is used for the [online](https://doc.sherlocode.com) version of sherlodoc. We
-might bring it back with some dune magic (as some sort of optionnal dependency,
-it is not compatible with OCaml 5).
+There is a third format : `ancient`, that is only available if the `ancient`
+package is installed. It is more complicated than the other two, you can read on
+it [here](https://github.com/UnixJunkie/ocaml-ancient). It is used for the
+[online](https://doc.sherlocode.com) version of sherlodoc, and is a mandatory
+dependency of the `sherlodoc-www` package.
 
 The `-o` option is the filename of the output.
 

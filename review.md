@@ -8,13 +8,16 @@
 
 ## With Arthur
 
-- Réfléchir à `ancient`: enlever pour de bon, rétablir le support ?
+
 
 - pretty-query: vraiment necessaire ?
 
 - ask about `Query.paths_arrow` vs `index/load_doc.type_distance_paths`
 
 # done
+
+- Réfléchir à `ancient`: enlever pour de bon, rétablir le support ?
+Support is reestablished
 
 - `sherlodoc_index` `--db` pourrait avoir pour alias `-o` done
 

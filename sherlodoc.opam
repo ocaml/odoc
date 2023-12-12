@@ -20,6 +20,7 @@ depends: [
   "brr" {>= "0.0.6"}
   "alcotest" {with-test}
 ]
+depopts: ["ancient"]
 build: [
   ["dune" "subst"] {dev}
   [

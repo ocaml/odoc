@@ -41,7 +41,8 @@
    (>= 4.6.0))
   (brr
    (>= 0.0.6))
-  (alcotest :with-test)))
+  (alcotest :with-test))
+ (depopts ancient))
 
 (package
  (name sherlodoc-www)

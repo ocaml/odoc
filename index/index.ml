@@ -16,12 +16,7 @@ let index_file register filename =
       | Error (`Msg msg) ->
           Format.printf "Odoc warning or error %s: %s@." filename msg)
 
-let storage_module = function
-  | `ancient ->
-      (* (module Storage_ancient : Db.Storage.S) *)
-      failwith "TODO"
-  | `marshal -> (module Storage_marshal : Db.Storage.S)
-  | `js -> (module Storage_js : Db.Storage.S)
+let storage_module = Ancient.storage_module
 
 let main files file_list index_docstring index_name type_search db_filename
     db_format =
@@ -61,7 +56,7 @@ let type_search =
 
 let db_format =
   let doc = "Database format" in
-  let kind = Arg.enum [ "ancient", `ancient; "marshal", `marshal; "js", `js ] in
+  let kind = Arg.enum (Ancient.arg_enum @ [ "marshal", `marshal; "js", `js ]) in
   Arg.(
     required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~doc)
 

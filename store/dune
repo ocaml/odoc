@@ -5,7 +5,8 @@
 (library
  (name storage_ancient)
  (modules storage_ancient)
- (libraries ancient db))
+ (optional)
+ (libraries db ancient))
 
 (library
  (name storage_js)
