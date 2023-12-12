@@ -254,14 +254,18 @@ module Make (Syntax : SYNTAX) = struct
 
     let to_link { Lang.Source_info.documentation; implementation } =
       let documentation =
-        let open Paths.Path.Resolved in
-        match documentation with
-        | Some (`Resolved p) when not (is_hidden (p :> t)) -> (
-            let id = identifier (p :> t) in
-            match Url.from_identifier ~stop_before:false id with
-            | Ok link -> Some link
-            | _ -> None)
-        | _ -> None
+        (* Since documentation link are not rendered, we comment the code to
+           extract the href, and always output [None] *)
+        ignore documentation;
+        None
+        (* let open Paths.Path.Resolved in *)
+        (* match documentation with *)
+        (* | Some (`Resolved p) when not (is_hidden (p :> t)) -> ( *)
+        (*     let id = identifier (p :> t) in *)
+        (*     match Url.from_identifier ~stop_before:false id with *)
+        (*     | Ok link -> Some link *)
+        (*     | _ -> None) *)
+        (* | _ -> None *)
       in
       let implementation =
         match implementation with
