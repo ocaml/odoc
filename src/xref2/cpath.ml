@@ -39,15 +39,6 @@ module rec Resolved : sig
   and value =
     [ `Value of parent * ValueName.t | `Gpath of Path.Resolved.Value.t ]
 
-  and datatype =
-    [ `Local of Ident.path_datatype
-    | `Gpath of Path.Resolved.DataType.t
-    | `Substituted of datatype
-    | `CanonicalDataType of datatype * Path.DataType.t
-    | `Type of parent * TypeName.t ]
-
-  and constructor = [ `Constructor of datatype * ConstructorName.t ]
-
   and class_type =
     [ `Local of Ident.path_class_type
     | `Substituted of class_type
@@ -92,19 +83,6 @@ and Cpath : sig
     | `Dot of module_ * string
     | `Value of Resolved.parent * ValueName.t
     | `Identifier of Identifier.Value.t * bool ]
-
-  and datatype =
-    [ `Resolved of Resolved.datatype
-    | `Substituted of datatype
-    | `Local of Ident.path_datatype * bool
-    | `Identifier of Odoc_model.Paths.Identifier.Path.DataType.t * bool
-    | `Dot of module_ * string
-    | `Type of Resolved.parent * TypeName.t ]
-
-  and constructor =
-    [ `Resolved of Resolved.constructor
-    | `Dot of datatype * string
-    | `Constructor of Resolved.datatype * ConstructorName.t ]
 
   and class_type =
     [ `Resolved of Resolved.class_type
