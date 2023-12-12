@@ -405,7 +405,7 @@ module Indexing = struct
     let output = output_file ~dst in
     match (inputs_in_file, inputs) with
     | [], [] ->
-        Error
+        Result.Error
           (`Msg
             "At least one of --file-list or an .odocl file must be passed to \
              odoc compile-index")
@@ -762,8 +762,7 @@ module Odoc_html_args = struct
              else Relative (conv_rel_file str))
       in
       let printer ppf = function
-        | Odoc_html.Types.((Absolute uri : file_uri)) ->
-            Format.pp_print_string ppf uri
+        | Odoc_html.Types.Absolute uri -> Format.pp_print_string ppf uri
         | Odoc_html.Types.Relative _uri -> Format.pp_print_string ppf ""
       in
       (parser, printer)

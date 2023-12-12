@@ -3,9 +3,7 @@
 type t
 
 val v :
-  ?search_result:bool
-    (** Indicates whether this is a summary for a search result.
-     In that case, the links will be printed as regular text. *) ->
+  ?search_result:bool ->
   ?theme_uri:Types.uri ->
   ?support_uri:Types.uri ->
   ?search_uris:Types.file_uri list ->
@@ -16,6 +14,8 @@ val v :
   as_json:bool ->
   unit ->
   t
+(** [search_result] indicates whether this is a summary for a search result. In
+    that case, the links will be printed as regular text. *)
 
 val theme_uri : t -> Types.uri
 

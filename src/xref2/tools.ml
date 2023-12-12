@@ -1254,7 +1254,7 @@ and resolve_type :
 and resolve_datatype :
     Env.t -> add_canonical:bool -> Cpath.datatype -> resolve_datatype_result =
  fun env ~add_canonical p ->
-  let ( >>> ) = Option.bind in
+  let ( >>> ) = OptionMonad.bind in
   let rec id_datatype_of_type (id : Odoc_model.Comment.Identifier.Id.path_type)
       : Odoc_model.Comment.Identifier.Id.path_datatype option =
     match id with
