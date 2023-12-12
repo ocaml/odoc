@@ -20,9 +20,12 @@ jobs:
           - 4.12.x
           - 4.14.x
         include:
-          - os: ubuntu-latest # Enable coverage only on a single build
+          - os: ubuntu-latest
             ocaml-compiler: 4.14.x
+            # We don't need to compute coverage for more than one build
             send-coverage: true
+            # Mdx tests Mdx tests
+            run-mdx: true
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -44,14 +47,11 @@ jobs:
       - name: Install dependencies
         run: opam install -y --deps-only -t ./odoc.opam ./odoc-parser.opam
 
-      - name: Install bisect_ppx
-        run: opam install bisect_ppx
-
       - name: dune runtest
         run: opam exec -- dune runtest
 
-      # Run Mdx tests that are disabled by default.
       - name: Mdx tests
+        if: matrix.run-mdx == true
         run: |
           opam install -y mdx
           opam exec -- dune build @runmdx
@@ -59,6 +59,7 @@ jobs:
       - name: Send coverage stats to Coveralls
         if: matrix.send-coverage == true
         run: |
+          opam install bisect_ppx
           opam exec -- dune runtest --instrument-with bisect_ppx --force
           opam exec -- bisect-ppx-report send-to Coveralls
         env:
