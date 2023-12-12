@@ -1,18 +1,19 @@
-  $ find . -name '*.odocl'
+  $ find . -name '*.odocl' | sort
+  ./base.odocl
+  ./base_internalhash_types.odocl
   ./caml.odocl
   ./md5_lib.odocl
-  ./base.odocl
-  ./shadow_stdlib.odocl
   ./page-index.odocl
-  ./base_internalhash_types.odocl
+  ./shadow_stdlib.odocl
   $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
   4.8M	megaodocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
   
-  real	0m1.281s
-  user	0m1.174s
-  sys	0m0.090s
+  real	0m1.186s
+  user	0m1.140s
+  sys	0m0.034s
+
 
 
 
