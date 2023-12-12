@@ -830,6 +830,29 @@ and lookup_type_gpath :
   in
   res
 
+and lookup_value_gpath :
+    Env.t ->
+    Odoc_model.Paths.Path.Resolved.Value.t ->
+    (Find.value, simple_value_lookup_error) Result.result =
+ fun env p ->
+  let do_value p name =
+    lookup_parent_gpath ~mark_substituted:true env p
+    |> map_error (fun e -> (e :> simple_value_lookup_error))
+    >>= fun (sg, sub) ->
+    match Find.value_in_sig sg name with
+    | `FValue (name, t) :: _ -> Ok (`FValue (name, Subst.value sub t))
+    | [] -> Error `Find_failure
+  in
+  let res =
+    match p with
+    | `Identifier ({ iv = `Value _; _ } as i) ->
+        of_option ~error:(`Lookup_failureV i) (Env.(lookup_by_id s_value) i env)
+        >>= fun (`Value ({ iv = `Value (_, name); _ }, t)) ->
+        Ok (`FValue (name, t))
+    | `Value (p, id) -> do_value p (ValueName.to_string id)
+  in
+  res
+
 and lookup_class_type_gpath :
     Env.t ->
     Odoc_model.Paths.Path.Resolved.ClassType.t ->

@@ -8,7 +8,6 @@ module Analysis = struct
     | ClassType of Path.t
     | ModuleType of Path.t
     | Type of Path.t
-    | Constructor of Path.t
 
   let expr poses expr =
     let exp_loc = expr.Typedtree.exp_loc in
@@ -16,26 +15,10 @@ module Analysis = struct
     else
       match expr.exp_desc with
       | Texp_ident (p, _, _) -> poses := (Value p, exp_loc) :: !poses
-      | Texp_construct (_, { cstr_res; _ }, _) -> (
-          let desc = Types.get_desc cstr_res in
-          match desc with
-          | Types.Tconstr (p, _, _) ->
-              poses := (Constructor p, exp_loc) :: !poses
-          | _ -> ())
       | _ -> ()
 
   let pat env (type a) poses : a Typedtree.general_pattern -> unit = function
     | { Typedtree.pat_desc; pat_loc; _ } when not pat_loc.loc_ghost ->
-        let () =
-          match pat_desc with
-          | Typedtree.Tpat_construct (_, { cstr_res; _ }, _, _) -> (
-              let desc = Types.get_desc cstr_res in
-              match desc with
-              | Types.Tconstr (p, _, _) ->
-                  poses := (Constructor p, pat_loc) :: !poses
-              | _ -> ())
-          | _ -> ()
-        in
         let maybe_localvalue id loc =
           match Ident_env.identifier_of_loc env loc with
           | None -> Some (LocalDefinition id, loc)
