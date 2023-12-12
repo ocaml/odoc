@@ -16,6 +16,8 @@ occurrences information.
   $ odoc compile --count-occurrences -I . main__A.cmt
   $ odoc compile --count-occurrences -I . main__C.cmt
   $ odoc compile --count-occurrences -I . main__B.cmt
+  File "main__B.cmt":
+  Warning: Failed to compile expansion for class (root Main__B).ct
   $ odoc compile --count-occurrences -I . main__.cmt
   $ odoc compile --count-occurrences -I . main.cmt
 
@@ -68,10 +70,11 @@ A only uses "persistent" values: one it defines itself.
 
 "Aliased" values are not counted since they become persistent
   $ occurrences_print occurrences-main__B.odoc | sort
-  Main was used directly 0 times and indirectly 7 times
-  Main.A was used directly 2 times and indirectly 5 times
+  Main was used directly 0 times and indirectly 8 times
+  Main.A was used directly 2 times and indirectly 6 times
   Main.A.(||>) was used directly 1 times and indirectly 0 times
   Main.A.M was used directly 2 times and indirectly 0 times
+  Main.A.ct was used directly 1 times and indirectly 0 times
   Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 1 times and indirectly 0 times
 
@@ -92,10 +95,11 @@ Now we can merge all tables
 
   $ occurrences_print occurrences-aggregated.odoc | sort > all_merged
   $ cat all_merged
-  Main was used directly 0 times and indirectly 11 times
-  Main.A was used directly 4 times and indirectly 6 times
+  Main was used directly 0 times and indirectly 12 times
+  Main.A was used directly 4 times and indirectly 7 times
   Main.A.(||>) was used directly 1 times and indirectly 0 times
   Main.A.M was used directly 2 times and indirectly 0 times
+  Main.A.ct was used directly 1 times and indirectly 0 times
   Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 2 times and indirectly 0 times
   Main.B was used directly 1 times and indirectly 0 times
@@ -110,10 +114,11 @@ We can also include hidden ids:
 
   $ odoc count-occurrences -I main__B -o occurrences-b.odoc --include-hidden
   $ occurrences_print occurrences-b.odoc | sort
-  Main was used directly 0 times and indirectly 7 times
-  Main.A was used directly 2 times and indirectly 5 times
+  Main was used directly 0 times and indirectly 8 times
+  Main.A was used directly 2 times and indirectly 6 times
   Main.A.(||>) was used directly 1 times and indirectly 0 times
   Main.A.M was used directly 2 times and indirectly 0 times
+  Main.A.ct was used directly 1 times and indirectly 0 times
   Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 1 times and indirectly 0 times
   Main__ was used directly 0 times and indirectly 2 times
@@ -122,10 +127,11 @@ We can also include hidden ids:
 
   $ odoc count-occurrences -I . -o occurrences-all.odoc --include-hidden
   $ occurrences_print occurrences-all.odoc | sort
-  Main was used directly 0 times and indirectly 11 times
-  Main.A was used directly 4 times and indirectly 6 times
+  Main was used directly 0 times and indirectly 12 times
+  Main.A was used directly 4 times and indirectly 7 times
   Main.A.(||>) was used directly 1 times and indirectly 0 times
   Main.A.M was used directly 2 times and indirectly 0 times
+  Main.A.ct was used directly 1 times and indirectly 0 times
   Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 2 times and indirectly 0 times
   Main.B was used directly 1 times and indirectly 0 times
