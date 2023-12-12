@@ -34,7 +34,6 @@ module Source_info = struct
     | ClassType of Path.ClassType.t jump_to
     | ModuleType of Path.ModuleType.t jump_to
     | Type of Path.Type.t jump_to
-    | Constructor of Path.Constructor.t jump_to
 
   type 'a with_pos = 'a * (int * int)
 

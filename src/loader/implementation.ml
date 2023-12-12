@@ -332,11 +332,6 @@ let process_occurrences env poses loc_to_id local_ident_to_loc =
           process p Ident_env.Path.read_type
           |> Option.iter @@ fun l ->
              AnnotHashtbl.replace occ_tbl (Type l, pos_of_loc loc) ()
-      | Constructor _p, loc ->
-          (* process p Ident_env.Path.read_constructor *)
-          None
-          |> Option.iter @@ fun l ->
-             AnnotHashtbl.replace occ_tbl (Constructor l, pos_of_loc loc) ()
       | LocalDefinition _, _ -> ())
     poses;
   AnnotHashtbl.fold (fun k () acc -> k :: acc) occ_tbl []

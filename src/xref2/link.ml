@@ -421,9 +421,6 @@ let rec unit env t =
                       (jump_to v
                          (Shape_tools.lookup_type_path env)
                          (type_path env))
-                | Constructor v ->
-                    Constructor
-                      (jump_to v (fun _ -> None) (constructor_path env))
                 | ClassType v ->
                     ClassType
                       (jump_to v

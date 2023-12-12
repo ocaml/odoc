@@ -286,7 +286,6 @@ module Make (Syntax : SYNTAX) = struct
       | Type v -> to_link v
       | ClassType v -> to_link v
       | Value v -> to_link v
-      | Constructor v -> to_link v
 
     let source id syntax_info infos source_code =
       let url = path id in
