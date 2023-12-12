@@ -1,3 +1,6 @@
+; This is a server to answer sherlocode queries. A version of this runs on
+; https://doc.sherlocode.com
+
 (executable
  (public_name sherlodoc-www)
  (name www)

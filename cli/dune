@@ -1,3 +1,6 @@
+; This binary is usef to perform searches on the command line. It needs a
+; database and a query as input, and print results on the command line.
+
 (ocamllex unescape)
 
 (executable

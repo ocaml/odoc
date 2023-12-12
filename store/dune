@@ -1,4 +1,6 @@
-; This directory contains modules for storing search databases.
+; This directory contains modules for storing search databases. The
+; datastructure itself is the same each time, but the serialisation format is
+; different.
 
 (library
  (name storage_ancient)

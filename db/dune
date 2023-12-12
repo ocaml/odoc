@@ -1,3 +1,5 @@
+; [db] is the database data-structure for sherlodoc.
+
 (library
  (name db)
  (libraries unix))

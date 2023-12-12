@@ -1,3 +1,6 @@
+; This library give functions to meaningfully query the database datastructure
+; defined in `db`.
+
 (library
  (name query)
  (libraries lwt re db))
