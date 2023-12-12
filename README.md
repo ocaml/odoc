@@ -137,7 +137,9 @@ For this to work, you need to generate a search database with format `js`, and
 then add to every call of `odoc html-generate` the flags `--search-uri
 sherlodoc.js --search-uri db.js`. `sherlodoc.js` is installed in your path by
 opam, but `db.js` is the search database you generate and can be renamed as you
-wish.
+wish. After than you should copy the js files in the right spot. You do need to
+have them in correct spot before calling odoc, it does not check if the files
+exist.
 
 Obviously, most people use dune, and do not call `odoc html-generate`. A patch
 for dune is being [worked
