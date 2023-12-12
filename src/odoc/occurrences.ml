@@ -136,8 +136,6 @@ let count ~dst ~warnings_options:_ directories include_hidden =
               _ ) ->
               incr htbl p
           | Value { documentation = Some (`Resolved p); _ }, _ -> incr htbl p
-          | ClassType { documentation = Some (`Resolved p); _ }, _ ->
-              incr htbl p
           | ModuleType { documentation = Some (`Resolved p); _ }, _ ->
               incr htbl p
           | Type { documentation = Some (`Resolved p); _ }, _ -> incr htbl p

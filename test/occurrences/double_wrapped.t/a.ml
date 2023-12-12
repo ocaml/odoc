@@ -7,5 +7,3 @@ module type M = sig end
 let ( ||> ) x y = x + y
 
 let _ = x + x
-
-class ct = object end

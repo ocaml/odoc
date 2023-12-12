@@ -288,7 +288,6 @@ module Make (Syntax : SYNTAX) = struct
       | Module v -> to_link v
       | ModuleType v -> to_link v
       | Type v -> to_link v
-      | ClassType v -> to_link v
       | Value v -> to_link v
 
     let source id syntax_info infos source_code =
