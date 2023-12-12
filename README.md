@@ -135,11 +135,15 @@ embedded.
 
 For this to work, you need to generate a search database with format `js`, and
 then add to every call of `odoc html-generate` the flags `--search-uri
-sherlodoc.js --search-uri db.js`. `sherlodoc.js` is installed in your path by
-opam, but `db.js` is the search database you generate and can be renamed as you
-wish. After than you should copy the js files in the right spot. You do need to
-have them in correct spot before calling odoc, it does not check if the files
-exist.
+sherlodoc.js --search-uri db.js`.
+
+Be sure to copy the two js files in the output directory given to the
+html-generate command :
+
+```bash
+cp $OPAM_SWITCH_PREFIX/share/sherlodoc/sherlodoc.js html_output/sherlodoc.js ;
+cp db.js html_output/db.js ;
+```
 
 Obviously, most people use dune, and do not call `odoc html-generate`. A patch
 for dune is being [worked
