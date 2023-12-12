@@ -13,3 +13,7 @@ module type Y = A.M
 let _ =
   let open A in
   1 ||> 2
+
+let ob = new A.ct
+
+class ct : A.ct = A.ct
