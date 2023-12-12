@@ -24,10 +24,10 @@ they are interpreted as relative to the `-o` option")
 
 - Make it one single type in `succ.mli` (builder vs t)
 
+- Option prendre un fichier contenant la liste des `odocl` ?
 
 # Commentaires/Action Point/...
 
-- Option prendre un fichier contenant la liste des `odocl` ?
 
 - Have something more robust than sizes in tests. Remove them, and use
   current-bench or just a manual benchmark.

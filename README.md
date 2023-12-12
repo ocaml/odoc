@@ -25,18 +25,21 @@ The first step to using sherlodoc is generating a search-database. You do this
 with the command `sherlodoc_index` :
 
 ```bash
-sherlodoc_index --format=marshal --db=db.bin a.odocl b.odocl
+sherlodoc_index --format=marshal -o db.bin a.odocl b.odocl
 ```
 
 The `--format` option determines in which format the database is outputted. The
-available format are `marshal`, `js` and `ancient`. `ancient` is not supported
-at the moment, but we might bring it back. The `js` format, for javascript, is
-the one compatible with odoc, and the `marshal` for most other uses. `ancient`
-uses `<a syscall i forgot>` and you should use it if you know what you are
-doing. It is used for the [online](https://doc.sherlocode.com) version of
-sherlodoc.
+available format are `marshal`, `js`.  The `js` format, for
+javascript, is the one compatible with odoc, and the `marshal` for most other
+uses.
 
-The `--db` option is the filename of the output.
+The used to be a third format : `ancient`. It is more complicated than the other
+two, you can read on it [here](https://github.com/UnixJunkie/ocaml-ancient). It
+is used for the [online](https://doc.sherlocode.com) version of sherlodoc. We
+might bring it back with some dune magic (as some sort of optionnal dependency,
+it is not compatible with OCaml 5).
+
+The `-o` option is the filename of the output.
 
 Then you need to provide a list of .odocl files that contains the signatures
 items that are going to be searchable. They are build artifacts of odoc.
@@ -118,7 +121,7 @@ odig odoc
 Generate the search database :
 
 ```bash
-sherlodoc_index --format=marshal --db=db.bin $(find $OPAM_SWITCH_PREFIX/var/cache/odig/odoc -name "*.odocl")
+sherlodoc_index --format=marshal -o db.bin $(find $OPAM_SWITCH_PREFIX/var/cache/odig/odoc -name "*.odocl")
 ```
 
 Enjoy searching :
