@@ -111,12 +111,6 @@ let type_in_sig sg name =
         Some (`FClassType (N.class_type' id, c))
     | _ -> None)
 
-let datatype_in_sig sg name =
-  find_in_sig sg (function
-    | Signature.Type (id, _, m) when N.type_ id = name ->
-        Some (`FType (N.type' id, Delayed.get m))
-    | _ -> None)
-
 type removed_type =
   [ `FType_removed of TypeName.t * TypeExpr.t * TypeDecl.Equation.t ]
 
@@ -126,8 +120,6 @@ type careful_module_type =
   [ module_type | `FModuleType_removed of ModuleType.expr ]
 
 type careful_type = [ type_ | removed_type ]
-
-type careful_datatype = [ datatype | removed_type ]
 
 type careful_class = [ class_ | removed_type ]
 
@@ -164,10 +156,11 @@ let careful_type_in_sig sg name =
   | Some _ as x -> x
   | None -> removed_type_in_sig sg name
 
-let careful_datatype_in_sig sg name =
-  match datatype_in_sig sg name with
-  | Some _ as x -> x
-  | None -> removed_type_in_sig sg name
+let datatype_in_sig sg name =
+  find_in_sig sg (function
+    | Signature.Type (id, _, t) when N.type_ id = name ->
+        Some (`FType (N.type' id, Component.Delayed.get t))
+    | _ -> None)
 
 let class_in_sig sg name =
   filter_in_sig sg (function
@@ -183,18 +176,6 @@ let careful_class_in_sig sg name =
   match class_in_sig_unambiguous sg name with
   | Some _ as x -> x
   | None -> removed_type_in_sig sg name
-
-let constructor_in_type (typ : TypeDecl.t) name =
-  let rec find_cons = function
-    | ({ TypeDecl.Constructor.name = name'; _ } as cons) :: _ when name' = name
-      ->
-        Some (`FConstructor cons)
-    | _ :: tl -> find_cons tl
-    | [] -> None
-  in
-  match typ.representation with
-  | Some (Variant cons) -> find_cons cons
-  | Some (Record _) | Some Extensible | None -> None
 
 let any_in_type (typ : TypeDecl.t) name =
   let rec find_cons = function

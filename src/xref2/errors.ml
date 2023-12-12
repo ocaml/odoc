@@ -72,17 +72,6 @@ module Tools_error = struct
       (* Could not find the module in the environment *)
     | `Parent of parent_lookup_error ]
 
-  and simple_datatype_lookup_error =
-    [ `LocalDataType of
-      Env.t * Ident.path_datatype
-      (* Internal error: Found local path during lookup *)
-    | `Find_failure
-      (* Internal error: the type was not found in the parent signature *)
-    | `Lookup_failureT of
-      Identifier.Path.Type.t
-      (* Could not find the module in the environment *)
-    | `Parent of parent_lookup_error ]
-
   and simple_value_lookup_error =
     [ `LocalValue of
       Env.t * Ident.path_value
@@ -93,17 +82,6 @@ module Tools_error = struct
       Identifier.Path.Value.t
       (* Could not find the module in the environment *)
     | `Parent of parent_lookup_error ]
-
-  and simple_constructor_lookup_error =
-    [ `LocalConstructor of
-      Env.t * Ident.constructor
-      (* Internal error: Found local path during lookup *)
-    | `Find_failure
-      (* Internal error: the type was not found in the parent signature *)
-    | `Lookup_failureC of
-      Identifier.Path.Constructor.t
-      (* Could not find the module in the environment *)
-    | `ParentC of simple_datatype_lookup_error ]
 
   and parent_lookup_error =
     [ `Parent_sig of
@@ -132,8 +110,6 @@ module Tools_error = struct
   type any =
     [ simple_type_lookup_error
     | simple_value_lookup_error
-    | simple_constructor_lookup_error
-    | simple_datatype_lookup_error
     | simple_module_type_lookup_error
     | simple_module_type_expr_of_module_error
     | simple_module_lookup_error
@@ -171,10 +147,6 @@ module Tools_error = struct
     | `LocalMT (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Local (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `LocalType (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
-    | `LocalDataType (_, id) ->
-        Format.fprintf fmt "Local id found: %a" Ident.fmt id
-    | `LocalConstructor (_, id) ->
-        Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `LocalValue (_, id) ->
         Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Find_failure -> Format.fprintf fmt "Find failure"
@@ -196,14 +168,9 @@ module Tools_error = struct
         Format.fprintf fmt "Lookup failure (value): %a"
           Component.Fmt.model_identifier
           (m :> Odoc_model.Paths.Identifier.t)
-    | `Lookup_failureC m ->
-        Format.fprintf fmt "Lookup failure (constructor): %a"
-          Component.Fmt.model_identifier
-          (m :> Odoc_model.Paths.Identifier.t)
     | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"
     | `Class_replaced -> Format.fprintf fmt "Class replaced"
     | `Parent p -> pp fmt (p :> any)
-    | `ParentC p -> pp fmt (p :> any)
     | `UnexpandedTypeOf t ->
         Format.fprintf fmt "Unexpanded `module type of` expression: %a"
           Component.Fmt.module_type_type_of_desc t
@@ -239,9 +206,7 @@ let is_unexpanded_module_type_of =
     | `Find_failure -> false
     | `Lookup_failure _ -> false
     | `Lookup_failure_root _ -> false
-    | `Lookup_failureC _ -> false
     | `Parent p -> inner (p :> any)
-    | `ParentC p -> inner (p :> any)
     | `Parent_sig p -> inner (p :> any)
     | `Parent_module_type p -> inner (p :> any)
     | `Parent_expr p -> inner (p :> any)
@@ -259,8 +224,6 @@ let is_unexpanded_module_type_of =
     | `Lookup_failureT _ -> false
     | `Lookup_failureV _ -> false
     | `LocalType _ -> false
-    | `LocalDataType _ -> false
-    | `LocalConstructor _ -> false
     | `LocalValue _ -> false
     | `Class_replaced -> false
     | `OpaqueClass -> false
@@ -335,7 +298,6 @@ type what =
   | `Module of Identifier.Module.t
   | `Module_type of Identifier.Signature.t
   | `Module_path of Cpath.module_
-  | `Constructor_path of Cpath.constructor
   | `Module_type_path of Cpath.module_type
   | `Module_type_U of Component.ModuleType.U.expr
   | `Include of Component.Include.decl
@@ -388,7 +350,6 @@ let report ~(what : what) ?tools_error action =
     | `Type cfrag -> r "type" type_fragment cfrag
     | `Type_path path -> r "type" type_path path
     | `Value_path path -> r "value" value_path path
-    | `Constructor_path path -> r "constructor" constructor_path path
     | `Class_type_path path -> r "class_type" class_type_path path
     | `With_module frag -> r "module substitution" module_fragment frag
     | `With_module_type frag ->

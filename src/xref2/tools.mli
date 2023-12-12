@@ -154,11 +154,6 @@ val resolve_value_path :
   Cpath.value ->
   (Cpath.Resolved.value, simple_value_lookup_error) Result.result
 
-val resolve_constructor_path :
-  Env.t ->
-  Cpath.constructor ->
-  (Cpath.Resolved.constructor, simple_constructor_lookup_error) Result.result
-
 val resolve_class_type_path :
   Env.t ->
   Cpath.class_type ->
@@ -177,9 +172,6 @@ val reresolve_module_type :
   Env.t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type
 
 val reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_
-
-val reresolve_constructor :
-  Env.t -> Cpath.Resolved.constructor -> Cpath.Resolved.constructor
 
 val reresolve_value : Env.t -> Cpath.Resolved.value -> Cpath.Resolved.value
 
