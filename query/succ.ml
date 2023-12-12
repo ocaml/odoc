@@ -1,11 +1,11 @@
-type 'a t =
+type 'a node =
   | All
   | Empty
   | Array of 'a array
-  | Inter of 'a t * 'a t
-  | Union of 'a t * 'a t
+  | Inter of 'a node * 'a node
+  | Union of 'a node * 'a node
 
-let rec print a ~depth s =
+let rec print_node a ~depth s =
   print_string (String.make (depth * 4) ' ') ;
   let depth = depth + 1 in
   match s with
@@ -13,12 +13,12 @@ let rec print a ~depth s =
   | Empty -> print_endline "Empty"
   | Inter (l, r) ->
       print_endline "Inter" ;
-      print a ~depth l ;
-      print a ~depth r
+      print_node a ~depth l ;
+      print_node a ~depth r
   | Union (l, r) ->
       print_endline "Union" ;
-      print a ~depth l ;
-      print a ~depth r
+      print_node a ~depth l ;
+      print_node a ~depth r
   | Array arr ->
       print_string "{ " ;
       Array.iter
@@ -28,7 +28,7 @@ let rec print a ~depth s =
         arr ;
       print_endline "}"
 
-let print a s = print a ~depth:0 s
+let print_node a s = print_node a ~depth:0 s
 
 let best ~compare x y =
   match compare x y with
@@ -85,13 +85,18 @@ let rec first ~compare t =
       best_opt ~compare elt_l elt_r
     end
 
-let to_seq ~compare t =
+type 'a t =
+  { cardinal : int
+  ; s : 'a node
+  }
+
+let to_seq ~compare { s; _ } =
   let state = ref None in
   let loop () =
     let elt =
       match !state with
-      | None -> first ~compare t
-      | Some previous_elt -> succ ~strictness:Gt ~compare t previous_elt
+      | None -> first ~compare s
+      | Some previous_elt -> succ ~strictness:Gt ~compare s previous_elt
     in
     state := elt ;
     elt
@@ -110,12 +115,6 @@ let to_seq ~compare t =
 
 (** Functions to build a succ tree *)
 
-type 'a builder =
-  { cardinal : int
-  ; s : 'a t
-  }
-
-let finish a = a.s
 let all = { cardinal = -1; s = All }
 let empty = { cardinal = 0; s = Empty }
 
@@ -160,3 +159,4 @@ let union_of_array arr =
   loop 0 (Array.length arr)
 
 let union_of_list li = li |> Array.of_list |> union_of_array
+let print a { s; _ } = print_node a s

@@ -65,7 +65,7 @@ module Test_array = struct
 end
 
 module Test_succ = struct
-  (** This module does the same thing as Succ, but its correctness is obvious 
+  (** This module does the same thing as Succ, but its correctness is obvious
       and its performance terrible.  *)
   module Reference = struct
     include Set.Make (Int)
@@ -74,22 +74,20 @@ module Test_succ = struct
     let to_seq ~compare:_ = to_seq
   end
 
-  (** This module is used to construct a pair of a "set array" using [Reference] 
+  (** This module is used to construct a pair of a "set array" using [Reference]
       and a Succ that are exactly the same. *)
   module Both = struct
     let empty = Reference.empty, Succ.empty
     let union (l, l') (r, r') = Reference.union l r, Succ.union l' r'
     let inter (l, l') (r, r') = Reference.inter l r, Succ.inter l' r'
     let of_array arr = Reference.of_array arr, Succ.of_array arr
-    let finish (arr, succ) = arr, Succ.finish succ
   end
 
   (** This is a problematic exemple that was found randomly. It is saved here
       to check for regressions. *)
   let extra_succ =
     Both.(
-      finish
-      @@ union
+      union
            (inter (of_array [| 0; 1 |]) (of_array [| 0; 1 |]))
            (inter (of_array [| 0; 2; 3 |]) (of_array [| 1; 3; 5; 7 |])))
 
@@ -119,7 +117,7 @@ module Test_succ = struct
     @ List.init 50 (fun i ->
           let i = i * 7 in
           let succ =
-            i |> Both.(random_set ~empty ~union ~inter ~of_array) |> Both.finish
+            i |> Both.(random_set ~empty ~union ~inter ~of_array)
           in
           Alcotest.test_case
             (Printf.sprintf "Succ.to_seq size %i" i)

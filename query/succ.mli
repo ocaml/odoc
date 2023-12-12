@@ -8,19 +8,17 @@ val to_seq : compare:('a -> 'a -> int) -> 'a t -> 'a Seq.t
 
 (** Functions to build a succ tree *)
 
-type 'a builder
 
-val finish : 'a builder -> 'a t
-val all : 'a builder
-val empty : 'a builder
+val all : 'a t
+val empty : 'a t
 
-val of_array : 'a array -> 'a builder
+val of_array : 'a array -> 'a t
 (** Warning : only provide a sorted array, this is not checked !
     It has to be sorted according to the [compare] function that you will
     eventually pass to [to_seq]. *)
 
-val inter : 'a builder -> 'a builder -> 'a builder
-val union : 'a builder -> 'a builder -> 'a builder
+val inter : 'a t -> 'a t -> 'a t
+val union : 'a t -> 'a t -> 'a t
 
-val union_of_list : 'a builder list -> 'a builder
+val union_of_list : 'a t list -> 'a t
 (** [union_of_list] has better performance than [List.fold_left union empty]. *)
