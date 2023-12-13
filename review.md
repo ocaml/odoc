@@ -37,6 +37,10 @@ they are interpreted as relative to the `-o` option")
 
 - `succ.ml` : remove `All`
 
+- `succ.ml` : soit catcher uniquement StackOverflow, soit catcher tout mais moins profondément !? Dans le jsoo sans doute.
+
+- `Succ.All` is used in `query.ml`
+
 - Documenter parser/lexer de query.
 
 # Commentaires/Action Point/...
@@ -62,9 +66,6 @@ they are interpreted as relative to the `-o` option")
 <!-- - Essayer de comprendre dans `Load_doc.type_path` pourquoi l'ordre ne fait pas d'importance (see) -->
 
 
-- `succ.ml` : soit catcher uniquement StackOverflow, soit catcher tout mais moins profondément !? Dans le jsoo sans doute.
-
-- `Succ.All` is used in `query.ml`
 
 # Explications commentée
 
