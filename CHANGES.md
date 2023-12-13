@@ -1,5 +1,11 @@
 # (unreleased)
 
+### Added
+
+- Improve jump to implementation in rendered source code, and add a
+  `count-occurrences` flag and command to count occurrences of every identifiers
+  (@panglesd, #976)
+
 # 2.4.0
 
 ### Added
@@ -11,8 +17,6 @@
 - Display 'private' keyword for private type extensions (@gpetiot, #1019)
 - Allow to omit parent type in constructor reference (@panglesd,
   @EmileTrotignon, #933)
-- Add jumps to documentation in rendered source code, and a `count-occurrences`
-  flag and command to count occurrences of every identifiers (@panglesd, #976)
 
 ### Fixed
 
