@@ -95,11 +95,7 @@ let string_of_kind =
   | Field _ -> kind_field
   | Val _ -> kind_value
 
-let search message =
-  don't_wait_for
-  @@
-  let open Fut.Syntax in
-  let+ db = db in
+let search message db =
   let query = Jv.get message "data" in
   let query = query |> Jv.to_jstr |> Jstr.to_string in
   let _pretty_query, results =
@@ -138,6 +134,15 @@ let search message =
       |]
   in
   ()
+
+let search message =
+  don't_wait_for
+  @@
+  let open Fut.Syntax in
+  let+ db = db in
+  (* Here we catch any exception and print it. This allows us to keep running
+     and answer requests that do not trigger exceptions. *)
+  try Printexc.print (search message) db with _ -> ()
 
 let main () =
   let module J' = Jstr in

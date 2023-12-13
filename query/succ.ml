@@ -97,17 +97,7 @@ let to_seq ~compare { s; _ } =
     state := elt ;
     elt
   in
-  (* Here, as stackoverflow could be thrown. In that case, we do not want to
-     crash, as a more complex search will have fewer results and probably not
-     trigger the stackoverflow, and we want the webworker or server to be
-     running when such a request is inputed.
-     The Printexc is very important as we need to be able to tell if the
-     situation described above happens.
-     With the current algorithm, such a stackoverflow is never triggered even
-     on big libraries like Base, but it is not tail-rec, so a big enough search
-     db could trigger it. *)
-  let next () = try Printexc.print loop () with _ -> None in
-  Seq.of_dispenser next
+  Seq.of_dispenser loop
 
 (** Functions to build a succ tree *)
 
