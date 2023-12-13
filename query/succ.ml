@@ -1,5 +1,4 @@
 type 'a node =
-  | All
   | Empty
   | Array of 'a array
   | Inter of 'a node * 'a node
@@ -9,7 +8,6 @@ let rec print_node a ~depth s =
   print_string (String.make (depth * 4) ' ') ;
   let depth = depth + 1 in
   match s with
-  | All -> print_endline "All"
   | Empty -> print_endline "Empty"
   | Inter (l, r) ->
       print_endline "Inter" ;
@@ -55,7 +53,6 @@ let array_succ ~strictness =
 
 let rec succ ~compare ~strictness t elt =
   match t with
-  | All -> invalid_arg "Succ.succ_rec All"
   | Empty -> None
   | Array arr -> array_succ ~strictness ~compare elt arr
   | Union (l, r) ->
@@ -73,7 +70,6 @@ let rec succ ~compare ~strictness t elt =
 
 let rec first ~compare t =
   match t with
-  | All -> invalid_arg "Succ.first All"
   | Empty -> None
   | Array s -> Some s.(0)
   | Inter (l, _) ->
@@ -115,7 +111,6 @@ let to_seq ~compare { s; _ } =
 
 (** Functions to build a succ tree *)
 
-let all = { cardinal = -1; s = All }
 let empty = { cardinal = 0; s = Empty }
 
 let of_array arr =
@@ -126,8 +121,6 @@ let of_array arr =
 let inter a b =
   match a.s, b.s with
   | Empty, _ | _, Empty -> empty
-  | _, All -> a
-  | All, _ -> b
   | x, y when x == y -> a
   | x, y ->
       let x, y = if a.cardinal < b.cardinal then x, y else y, x in
@@ -137,7 +130,6 @@ let union a b =
   match a.s, b.s with
   | Empty, _ -> b
   | _, Empty -> a
-  | All, _ | _, All -> all
   | x, y when x == y -> a
   | x, y ->
       let x, y = if a.cardinal < b.cardinal then x, y else y, x in
@@ -160,3 +152,8 @@ let union_of_array arr =
 
 let union_of_list li = li |> Array.of_list |> union_of_array
 let print a { s; _ } = print_node a s
+
+let inter_of_list li =
+  match li with
+  | elt :: li -> List.fold_left inter elt li
+  | [] -> invalid_arg "Succ.inter_of_list []"

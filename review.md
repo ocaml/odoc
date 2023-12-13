@@ -37,6 +37,8 @@ they are interpreted as relative to the `-o` option")
 
 - `index` supprimer les `.db`
 
+- `succ.ml` : remove `All`
+
 # Commentaires/Action Point/...
 
 - refactor `Query.paths_arrow` vs `index/load_doc.type_distance_paths`
@@ -60,7 +62,6 @@ they are interpreted as relative to the `-o` option")
 
 <!-- - Essayer de comprendre dans `Load_doc.type_path` pourquoi l'ordre ne fait pas d'importance (see) -->
 
-- `succ.ml` : remove `All`
 
 - `succ.ml` : soit catcher uniquement StackOverflow, soit catcher tout mais moins profondément !? Dans le jsoo sans doute.
 

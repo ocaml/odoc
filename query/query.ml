@@ -11,8 +11,6 @@ module Private = struct
   module Succ = Succ
 end
 
-let inter_list xs = List.fold_left Succ.inter Succ.all xs
-
 let collapse_occ ~count occs =
   Occ.fold
     (fun k x acc -> if k < count then acc else Succ.union (Succ.of_array x) acc)
@@ -35,7 +33,7 @@ let find_types ~shards names =
     (fun acc shard ->
       let db = shard.db_types in
       let r =
-        inter_list
+        Succ.inter_of_list
         @@ List.map
              (fun (name, count) ->
                let name' = String.concat "" name in
@@ -60,7 +58,7 @@ let find_names ~(shards : Db.t list) names =
             | None -> Succ.empty)
           names
       in
-      let candidates = inter_list candidates in
+      let candidates = Succ.inter_of_list candidates in
       Succ.union acc candidates)
     Succ.empty shards
 
