@@ -66,15 +66,15 @@ type t =
   }
 
 let search ~(shards : Db.t list) query_name query_typ =
-  let results_name = find_names ~shards query_name in
-  let results =
-    match query_typ with
-    | None -> results_name
-    | Some query_typ ->
-        let results_typ = find_types ~shards query_typ in
-        Succ.inter results_name results_typ
-  in
-  results
+  match query_name, query_typ with
+  | [], None -> Succ.empty
+  | _ :: _, None -> find_names ~shards query_name
+  | [], Some query_typ -> find_types ~shards query_typ
+  | _ :: _, Some query_typ ->
+      let results_name = find_names ~shards query_name in
+
+      let results_typ = find_types ~shards query_typ in
+      Succ.inter results_name results_typ
 
 let match_packages ~packages { Db.Elt.pkg; _ } =
   match pkg with
