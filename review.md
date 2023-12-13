@@ -56,7 +56,6 @@ they are interpreted as relative to the `-o` option")
 
 - la limitation sur le packages de query n'est plus vraiment fonctionelle
 
-
 - `Index.Load_doc.with_tokenizer`: think of which character form a word
 
 - It would be cool to be able to see the string corresponding to types, and also of the intermediate string list list

@@ -35,7 +35,7 @@ let find_types ~shards names =
                match Tree_occ.find db name' with
                | Some trie -> collapse_trie_occ ~count trie
                | None -> Succ.empty)
-             (regroup names)
+             (Db.Typepath.regroup names)
       in
       Succ.union acc r)
     Succ.empty shards

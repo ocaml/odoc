@@ -3,6 +3,7 @@ module Types = Types
 module Suffix_tree = Suffix_tree
 module Occ = Occ
 module Storage = Storage
+module Typepath = Typepath
 include Types
 
 type writer =
@@ -31,7 +32,7 @@ let store_type_paths db elt paths =
     (fun (path, count) ->
       let word = String.concat "" path in
       store db ~count word elt)
-    (regroup paths)
+    (Typepath.regroup paths)
 
 let store_word db word elt =
   Suffix_tree.With_elts.add_suffixes db.writer_names word elt

@@ -4,7 +4,7 @@
    without losing functionnality. *)
 
 %{
-  open Query_ast
+  open Db.Typepath
 %}
 
 %token EOF
@@ -14,7 +14,7 @@
 %token<string> POLY
 
 %start main
-%type<Query_ast.t> main
+%type< Db.Typepath.typ> main
 
 %left EOF
 %%

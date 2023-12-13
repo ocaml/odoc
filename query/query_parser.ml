@@ -1,5 +1,3 @@
-open Query_ast
-
 type t = string list
 
 let parse str = Parser.main Lexer.token (Lexing.from_string str)
@@ -27,11 +25,12 @@ let of_string str =
     match parse str_typ with
     | Any -> "_", [], []
     | typ ->
-        ( Query_ast.show typ
+        ( Db.Typepath.show typ
         , List.filter
             (fun s -> List.length s > 0)
-            (paths ~prefix:[] ~sgn:Db.Types.Pos typ)
-        , paths_arrow ~prefix:[] ~sgn:Db.Types.Pos typ )
+            (Db.Typepath.For_suffix_tree.of_typ ~ignore_any:true
+               ~all_names:false typ)
+        , Db.Typepath.For_distance.of_typ ~ignore_any:true typ )
     | exception _ -> "<parse error>", [], []
   in
   let query_name = naive_of_string str_name in

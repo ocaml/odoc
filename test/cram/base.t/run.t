@@ -10,9 +10,11 @@
   4.8M	megaodocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
   
-  real	0m1.246s
-  user	0m1.175s
-  sys	0m0.060s
+  real	0m1.292s
+  user	0m1.218s
+  sys	0m0.033s
+
+
 
 
 
@@ -40,8 +42,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2736	db.js
-  2064	db.js.gz
+  2696	db.js
+  2036	db.js.gz
   1544	megaodocl.gz
 
 
@@ -77,10 +79,13 @@ $ firefox /tmp/html/base/index.html
   627 val Base.Hashtbl.S_poly.add
   628 val Base.Hashtbl.S_poly.data
   628 val Base.Hashtbl.S_poly.keys
+  630 val Base.Hashtbl.S_poly.choose
+  632 val Base.Hashtbl.S_poly.to_alist
   721 type ('a, 'b) Base.Map.S_poly.t
   721 type 'elt Base.Set.S_poly.t
   723 val Base.Map.S_poly.add
   723 val Base.Map.S_poly.mem
+  723 val Base.Map.S_poly.nth
   723 val Base.Set.S_poly.add
   723 val Base.Set.S_poly.nth
   723 type ('a, 'cmp) Base.Set.S_poly.set
@@ -92,15 +97,17 @@ $ firefox /tmp/html/base/index.html
   724 type 'elt Base.Set.S_poly.tree
   725 type ('a, 'b) Base.Hashtbl.S_poly.t
   725 val Base.Map.S_poly.empty
+  725 val Base.Map.S_poly.split
   725 val Base.Set.S_poly.empty
   725 val Base.Set.S_poly.equal
-  725 val Base.Set.S_poly.inter
-  725 val Base.Set.S_poly.union
+  725 val Base.Set.S_poly.split
   726 val Base.Map.S_poly.length
   726 val Base.Set.S_poly.choose
   726 val Base.Set.S_poly.length
   726 val Base.Set.S_poly.remove
   727 type 'a Base.Hashtbl.S_poly.key
+  727 val Base.Map.S_poly.max_elt
+  727 val Base.Map.S_poly.min_elt
   727 val Base.Set.S_poly.max_elt
   727 val Base.Set.S_poly.min_elt
   727 val Base.Set.S_poly.of_list
@@ -110,14 +117,9 @@ $ firefox /tmp/html/base/index.html
   728 val Base.Map.S_poly.of_alist
   728 val Base.Set.S_poly.elements
   728 val Base.Set.S_poly.is_empty
-  728 val Base.Set.S_poly.of_array
-  728 val Base.Set.S_poly.to_array
   729 val Base.Set.S_poly.singleton
   730 val Base.Set.S_poly.choose_exn
-  730 val Base.Set.S_poly.invariants
-  731 val Base.Set.S_poly.max_elt_exn
-  731 val Base.Set.S_poly.min_elt_exn
-  732 val Base.Hashtbl.S_poly.hashable
+  731 val Base.Map.S_poly.of_sequence
   $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin "group b"
   218 val Base.List.group
   221 val Base.Hashtbl.group
@@ -165,7 +167,6 @@ $ firefox /tmp/html/base/index.html
   244 mod Base.Applicative.Make3_using_map2_local
   245 sig Base.Applicative.Basic2_using_map2_local
   245 sig Base.Applicative.Basic3_using_map2_local
-  254 mod Base.Applicative.Make_using_map2.Applicative_infix
   321 val Base.List.rev_map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t Or_unequal_lengths.t
   322 val Base.List.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   323 val Base.Array.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
@@ -173,6 +174,7 @@ $ firefox /tmp/html/base/index.html
   340 val Base.Applicative.Make_using_map2.all : 'a X.t list -> 'a list X.t
   341 type ('a, 'e) Base.Applicative.Make2_using_map2.X.t
   341 type ('a, 'd, 'e) Base.Applicative.Make3_using_map2.X.t
+  341 val Base.Applicative.Make_using_map2.both : 'a X.t -> 'b X.t -> ('a * 'b) X.t
   342 val Base.Applicative.Make_using_map2.X.map : [ `Define_using_map2 | `Custom of 'a t -> f:('a -> 'b) -> 'b t ]
   343 val Base.Applicative.Make2_using_map2.X.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
   343 val Base.Applicative.Make3_using_map2.X.map : [ `Define_using_map2

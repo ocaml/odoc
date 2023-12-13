@@ -50,117 +50,18 @@ let cost ~name ~kind ~doc_html =
     | _ -> 100
 *)
 
-let rev_concat lst =
-  List.fold_left (fun acc xs -> List.rev_append xs acc) [] lst
-
-let rec tails = function
-  | [] -> []
-  | _ :: xs as lst -> lst :: tails xs
-
 let string_of_html = Format.asprintf "%a" (Tyxml.Html.pp_elt ())
 let fullname t = Format.asprintf "%a" Pretty.show_type_name_verbose t
 
-let all_type_names t =
-  let fullname = fullname t in
-  tails (String.split_on_char '.' fullname)
-
-let rec type_distance_paths ~prefix ~sgn t =
-  match t with
-  | Odoc_model.Lang.TypeExpr.Var _ ->
-      let poly = "POLY" in
-      [ poly :: Types.string_of_sgn sgn :: prefix ]
-  | Any ->
-      let poly = "POLY" in
-      [ poly :: Types.string_of_sgn sgn :: prefix ]
-  | Arrow (_, a, b) ->
-      let prefix_left = "->0" :: prefix in
-      let prefix_right = "->1" :: prefix in
-      List.rev_append
-        (type_distance_paths ~prefix:prefix_left ~sgn:(Types.sgn_not sgn) a)
-        (type_distance_paths ~prefix:prefix_right ~sgn b)
+let rec typ_of_odoc_typ otyp =
+  match otyp with
+  | Odoc_model.Lang.TypeExpr.Var str -> Db.Typepath.Poly str
+  | Any -> Db.Typepath.Any
+  | Arrow (_lbl, left, right) ->
+      Db.Typepath.Arrow (typ_of_odoc_typ left, typ_of_odoc_typ right)
   | Constr (name, args) ->
-      let name = fullname name in
-      let prefix = name :: Types.string_of_sgn sgn :: prefix in
-      begin
-        match args with
-        | [] -> [ prefix ]
-        | _ ->
-            rev_concat
-            @@ List.mapi
-                 (fun i arg ->
-                   let prefix = string_of_int i :: prefix in
-                   type_distance_paths ~prefix ~sgn arg)
-                 args
-      end
-  | Tuple args ->
-      rev_concat
-      @@ List.mapi (fun i arg ->
-             let prefix = (string_of_int i ^ "*") :: prefix in
-             type_distance_paths ~prefix ~sgn arg)
-      @@ args
-  | _ -> []
-
-let hcons_tbl = Hashtbl.create 16
-let uid_generator = ref 0
-
-let rec hcons = function
-  | [] -> -1, []
-  | x :: xs -> (
-      let uid_xs, xs = hcons xs in
-      match Hashtbl.find hcons_tbl (uid_xs, x) with
-      | xxs -> xxs
-      | exception Not_found ->
-          let uid = !uid_generator in
-          uid_generator := uid + 1 ;
-          let result = uid, x :: xs in
-          Hashtbl.add hcons_tbl (uid_xs, x) result ;
-          result)
-
-(** [type_distance_paths ~prefix ~sgn t] is a [string list list] representing
-    the type [t]. It allows to compute the distance between two types. It is
-    stored in the database to sort results once they are obtained. *)
-let type_distance_paths typ =
-  List.map
-    (fun xs ->
-      let _, xs = hcons xs in
-      xs)
-    (type_distance_paths ~prefix:[] ~sgn:Pos typ)
-
-let rec suffix_tree_type_paths ~prefix ~sgn = function
-  | Odoc_model.Lang.TypeExpr.Var _ ->
-      [ "POLY" :: Types.string_of_sgn sgn :: prefix ]
-  | Any -> [ "POLY" :: Types.string_of_sgn sgn :: prefix ]
-  | Arrow (_lbl, a, b) ->
-      List.rev_append
-        (suffix_tree_type_paths ~prefix ~sgn:(Types.sgn_not sgn) a)
-        (suffix_tree_type_paths ~prefix ~sgn b)
-  | Constr (name, args) ->
-      name |> all_type_names
-      |> List.map (fun name ->
-             let name = String.concat "." name in
-             let prefix = name :: Types.string_of_sgn sgn :: prefix in
-             begin
-               match args with
-               | [] -> [ prefix ]
-               | _ ->
-                   rev_concat
-                   @@ List.mapi
-                        (fun i arg ->
-                          let prefix = string_of_int i :: prefix in
-                          suffix_tree_type_paths ~prefix ~sgn arg)
-                        args
-             end)
-      |> rev_concat
-  | Tuple args ->
-      rev_concat @@ List.map (suffix_tree_type_paths ~prefix ~sgn) @@ args
-  | _ -> []
-
-(** [suffix_tree_type_paths ~prefix ~sgn t] is a representation of [t] that
-    encodes the polarity of the elements of the type : in [string -> int] [int]
-    is positive and [string] negative.
-    It is registered in the database and search-base type uses this to obtain
-    results that fit the type asked for by the user. *)
-let suffix_tree_type_paths t = suffix_tree_type_paths ~prefix:[] ~sgn:Pos t
+      Db.Typepath.Constr (fullname name, List.map typ_of_odoc_typ args)
+  | _ -> Db.Typepath.Unhandled
 
 let with_tokenizer str fn =
   let str = String.lowercase_ascii str in
@@ -213,26 +114,28 @@ let searchable_type_of_record parent_type type_ =
 
 let convert_kind (Odoc_search.Entry.{ kind; _ } as entry) =
   let open Odoc_search.Entry in
+  let type_path type_ =
+    type_ |> typ_of_odoc_typ
+    |> Db.Typepath.For_distance.of_typ ~ignore_any:false
+  in
   match kind with
   | TypeDecl _ ->
       Elt.Kind.TypeDecl (Odoc_search.Html.typedecl_params_of_entry entry)
   | Module -> Elt.Kind.Module
   | Value { value = _; type_ } ->
-      let paths = type_distance_paths type_ in
+      let paths = type_path type_ in
       Elt.Kind.val_ paths
   | Constructor { args; res } ->
       let searchable_type = searchable_type_of_constructor args res in
-      let paths = type_distance_paths searchable_type in
+      let paths = type_path searchable_type in
       Elt.Kind.constructor paths
   | Field { mutable_ = _; parent_type; type_ } ->
-      let paths =
-        type_ |> searchable_type_of_record parent_type |> type_distance_paths
-      in
+      let paths = type_ |> searchable_type_of_record parent_type |> type_path in
       Elt.Kind.field paths
   | Doc _ -> Doc
   | Exception { args; res } ->
       let searchable_type = searchable_type_of_constructor args res in
-      let paths = type_distance_paths searchable_type in
+      let paths = type_path searchable_type in
       Elt.Kind.exception_ paths
   | Class_type _ -> Class_type
   | Method _ -> Method
@@ -240,12 +143,15 @@ let convert_kind (Odoc_search.Entry.{ kind; _ } as entry) =
   | TypeExtension _ -> TypeExtension
   | ExtensionConstructor { args; res } ->
       let searchable_type = searchable_type_of_constructor args res in
-      let paths = type_distance_paths searchable_type in
+      let paths = type_path searchable_type in
       Elt.Kind.extension_constructor paths
   | ModuleType -> ModuleType
 
 let register_type_expr ~db elt type_ =
-  let type_paths = suffix_tree_type_paths type_ in
+  let type_paths =
+    type_ |> typ_of_odoc_typ
+    |> Db.Typepath.For_suffix_tree.of_typ ~ignore_any:false ~all_names:true
+  in
   Db.store_type_paths db elt type_paths
 
 let register_kind ~db ~type_search elt (kind : Odoc_search.Entry.kind) =

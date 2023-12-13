@@ -3,6 +3,7 @@ module Types = Types
 module Storage = Storage
 module Suffix_tree = Suffix_tree
 module Occ = Occ
+module Typepath = Typepath
 
 type t = Types.t =
   { db_names : Suffix_tree.With_elts.reader
