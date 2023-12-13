@@ -17,10 +17,8 @@ let collapse_occ ~count occs =
     occs Succ.empty
 
 let collapse_trie_occ ~count t =
-  t |> Tree_occ.to_sets
-  |> List.fold_left
-       (fun succ occ -> Succ.union succ (collapse_occ ~count occ))
-       Succ.empty
+  Succ.(
+    Tree_occ.sets_tree ~union ~terminal:(collapse_occ ~count) ~union_of_array t)
 
 let collapse_trie t =
   Succ.(Tree.sets_tree ~union ~terminal:of_array ~union_of_array t)
