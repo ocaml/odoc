@@ -37,6 +37,8 @@ they are interpreted as relative to the `-o` option")
 
 - `succ.ml` : remove `All`
 
+- Documenter parser/lexer de query.
+
 # Commentaires/Action Point/...
 
 - refactor `Query.paths_arrow` vs `index/load_doc.type_distance_paths`
@@ -50,7 +52,6 @@ they are interpreted as relative to the `-o` option")
 
 - la limitation sur le packages de query n'est plus vraiment fonctionelle
 
-- Documenter parser/lexer de query.
 
 - `Index.Load_doc.with_tokenizer`: think of which character form a word
 

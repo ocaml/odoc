@@ -1,3 +1,8 @@
+(* This parser parses types as inputed by the user in a query.
+   It is made in weird way because it is able to correctly parse incomplete
+   types. It has conflicts because of this, which are impossible to resolve
+   without losing functionnality. *)
+
 %{
   open Query_ast
 %}
