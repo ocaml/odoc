@@ -62,7 +62,7 @@ module Buf = struct
 end
 
 module Make (S : SET) = struct
-  (** Terminals is the temporary storage for the payload of the leafs. It is 
+  (** Terminals is the temporary storage for the payload of the leafs. It is
       converted into [S.t] after the suffix tree is built. *)
   module Terminals = struct
     type t = S.elt list
@@ -320,7 +320,7 @@ module Make (S : SET) = struct
 
   module Automata = struct
     (** Automata is the most compact version that uses arrays for branching. It
-        is not practical to use it for constructing a suffix tree, but it is 
+        is not practical to use it for constructing a suffix tree, but it is
         better for serialiazing. *)
 
     module Uid = struct
@@ -394,6 +394,14 @@ module Make (S : SET) = struct
         Array.fold_left collapse acc t.children
 
       let collapse t = collapse [] t.t
+
+      let rec sets_tree ~union ~terminal ~union_of_array t =
+        union (terminal t.terminals)
+          (union_of_array
+             (Array.map (sets_tree ~union ~terminal ~union_of_array) t.children))
+
+      let sets_tree ~union ~terminal ~union_of_array t =
+        sets_tree ~union ~terminal ~union_of_array t.t
     end
 
     let export_terminals ~cache_term ts =
@@ -440,6 +448,7 @@ module Make (S : SET) = struct
 
   let find = Automata.T.find
   let to_sets = Automata.T.collapse
+  let sets_tree = Automata.T.sets_tree
 end
 
 module With_elts = Make (Elt.Array)

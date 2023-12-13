@@ -17,6 +17,7 @@ val of_array : 'a array -> 'a t
 
 val inter : 'a t -> 'a t -> 'a t
 val union : 'a t -> 'a t -> 'a t
+val union_of_array : 'a t array -> 'a t
 
 val union_of_list : 'a t list -> 'a t
 (** [union_of_list] has better performance than [List.fold_left union empty]. *)

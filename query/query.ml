@@ -23,10 +23,7 @@ let collapse_trie_occ ~count t =
        Succ.empty
 
 let collapse_trie t =
-  (* here we use rev_map, because the order is not important, and the list is
-     too long : map would stack overflow.
-     TODO : get a tree instead of a map. *)
-  t |> Tree.to_sets |> List.rev_map Succ.of_array |> Succ.union_of_list
+  Succ.(Tree.sets_tree ~union ~terminal:of_array ~union_of_array t)
 
 let find_types ~shards names =
   List.fold_left

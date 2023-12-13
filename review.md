@@ -8,8 +8,6 @@
 
 ## With Arthur
 
-
-
 - pretty-query: vraiment necessaire ?
 
 - ask about `Query.paths_arrow` vs `index/load_doc.type_distance_paths`

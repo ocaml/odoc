@@ -25,6 +25,13 @@ module Make (S : SET) : sig
   val export : writer -> reader
   val find : reader -> string -> reader option
   val to_sets : reader -> S.t list
+
+  val sets_tree :
+       union:('a -> 'a -> 'a)
+    -> terminal:(S.t -> 'a)
+    -> union_of_array:('a array -> 'a)
+    -> reader
+    -> 'a
 end
 
 module With_elts : module type of Make (Elt.Array)
