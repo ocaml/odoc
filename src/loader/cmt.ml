@@ -363,35 +363,34 @@ let rec read_module_expr env parent label_parent mexpr =
         Signature sg
 #if OCAML_VERSION >= (4,10,0)
     | Tmod_functor(parameter, res) ->
-        let f_parameter =
+        let f_parameter, env =
           match parameter with
-          | Unit -> FunctorParameter.Unit
+          | Unit -> FunctorParameter.Unit, env
           | Named (id_opt, _, arg) ->
-              let id =
+              let id, env =
                 match id_opt with
-                | None -> Identifier.Mk.parameter (parent, Odoc_model.Names.ModuleName.make_std "_")
-                | Some id ->
-                   let () = Env.add_parameter parent id (ModuleName.of_ident id) env in
-                   Env.find_parameter_identifier env id
+                | None -> Identifier.Mk.parameter (parent, Odoc_model.Names.ModuleName.make_std "_"), env
+                | Some id -> let env = Env.add_parameter parent id (ModuleName.of_ident id) env in
+                  Env.find_parameter_identifier env id, env
               in
               let arg = Cmti.read_module_type env (id :> Identifier.Signature.t) label_parent arg in
 
-              Named { id; expr=arg }
+              Named { id; expr=arg }, env
           in
         let res = read_module_expr env (Identifier.Mk.result parent) label_parent res in
         Functor (f_parameter, res)
 #else
     | Tmod_functor(id, _, arg, res) ->
-        let () = Env.add_parameter parent id (ModuleName.of_ident id) env in
+        let new_env = Env.add_parameter parent id (ModuleName.of_ident id) env in
         let f_parameter =
           match arg with
           | None -> FunctorParameter.Unit
           | Some arg ->
-              let id = Env.find_parameter_identifier env id in
+              let id = Env.find_parameter_identifier new_env id in
               let arg = Cmti.read_module_type env (id :> Identifier.Signature.t) label_parent arg in
               Named { FunctorParameter. id; expr = arg; }
         in
-        let res = read_module_expr env (Identifier.Mk.result parent) label_parent res in
+        let res = read_module_expr new_env (Identifier.Mk.result parent) label_parent res in
         Functor(f_parameter, res)
 #endif
     | Tmod_apply _ ->
@@ -577,7 +576,7 @@ and read_structure :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
       _ * 'tags =
  fun internal_tags env parent str ->
-  let () = Env.add_structure_tree_items parent str env in
+  let env = Env.add_structure_tree_items parent str env in
   let items, (doc, doc_post), tags =
     let classify item =
       match item.str_desc with

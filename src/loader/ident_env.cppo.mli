@@ -21,16 +21,16 @@ type t
 val empty : unit -> t
 
 val add_parameter :
-  Paths.Identifier.Signature.t -> Ident.t -> Names.ModuleName.t -> t -> unit
+  Paths.Identifier.Signature.t -> Ident.t -> Names.ModuleName.t -> t -> t
 
 val handle_signature_type_items :
-  Paths.Identifier.Signature.t -> Compat.signature -> t -> unit
+  Paths.Identifier.Signature.t -> Compat.signature -> t -> t
 
 val add_signature_tree_items :
-  Paths.Identifier.Signature.t -> Typedtree.signature -> t -> unit
+  Paths.Identifier.Signature.t -> Typedtree.signature -> t -> t
 
 val add_structure_tree_items :
-  Paths.Identifier.Signature.t -> Typedtree.structure -> t -> unit
+  Paths.Identifier.Signature.t -> Typedtree.structure -> t -> t
 
 module Path : sig
   val read_module : t -> Path.t -> Paths.Path.Module.t
