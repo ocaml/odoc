@@ -1,11 +1,12 @@
 open Or_error
 
 let handle_file file ~f =
-  Odoc_file.load file
-  |> Result.map @@ fun unit' ->
-     match unit' with
-     | { Odoc_file.content = Unit_content unit; _ } -> Some (f unit)
-     | _ -> None
+  Odoc_file.load file |> function
+  | Error _ as e -> e
+  | Ok unit' -> (
+      match unit' with
+      | { Odoc_file.content = Unit_content unit; _ } -> Ok (Some (f unit))
+      | _ -> Ok None)
 
 let fold_dirs ~dirs ~f ~init =
   dirs
