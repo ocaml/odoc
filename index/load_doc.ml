@@ -46,7 +46,6 @@ let cost ~name ~kind ~doc_html =
 *)
 
 let string_of_html = Format.asprintf "%a" (Tyxml.Html.pp_elt ())
-let fullname t = Format.asprintf "%a" Pretty.show_type_name_verbose t
 
 let rec typ_of_odoc_typ otyp =
   let open Db.Typexpr in
@@ -56,7 +55,7 @@ let rec typ_of_odoc_typ otyp =
   | Arrow (_lbl, left, right) ->
       arrow (typ_of_odoc_typ left) (typ_of_odoc_typ right)
   | Constr (name, args) ->
-      constr (fullname name) (List.map typ_of_odoc_typ args)
+      constr (Typename.to_string name) (List.map typ_of_odoc_typ args)
   | _ -> unhandled
 
 let with_tokenizer str fn =
@@ -190,6 +189,14 @@ let is_from_module_type Odoc_search.Entry.{ id; _ } =
       is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
   | _ -> is_from_module_type id
 
+let prefixname n =
+  match
+    (n :> Odoc_model.Paths.Identifier.t)
+    |> Odoc_model.Paths.Identifier.fullname |> List.rev
+  with
+  | [] -> ""
+  | _ :: q -> q |> List.rev |> String.concat "."
+
 let register_entry ~db ~index_name ~type_search ~index_docstring
     (Odoc_search.Entry.{ id; doc; kind } as entry) =
   let open Odoc_search in
@@ -202,7 +209,9 @@ let register_entry ~db ~index_name ~type_search ~index_docstring
   if Odoc_model.Paths.Identifier.is_internal id || is_type_extension
   then ()
   else
-    let full_name = id |> Pretty.fullname |> String.concat "." in
+    let full_name =
+      id |> Odoc_model.Paths.Identifier.fullname |> String.concat "."
+    in
     let doc_txt = Text.of_doc doc in
     let doc_html =
       match doc_txt with
@@ -212,7 +221,7 @@ let register_entry ~db ~index_name ~type_search ~index_docstring
     let kind' = convert_kind entry in
     let name =
       match kind with
-      | Doc _ -> Pretty.prefixname id
+      | Doc _ -> prefixname id
       | _ -> full_name
     in
     let score = cost ~name ~kind:kind' ~doc_html in
