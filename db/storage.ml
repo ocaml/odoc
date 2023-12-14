@@ -1,4 +1,4 @@
-type db = Types.t
+type db = Db_typedef.t
 
 module type S = sig
   type writer

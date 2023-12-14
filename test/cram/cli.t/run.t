@@ -110,12 +110,10 @@ TODO : get a result for the query bellow
   $ sherlodoc ":extensible_type"
   cons Main.MyExtension : moo -> extensible_type
   $ sherlodoc ":exn"
-  sherlodoc: internal error, uncaught exception:
-             File "query/dynamic_cost.ml", line 328, characters 8-14: Assertion failed
-             
-  [125]
+  exn Main.Explicit_exn : exn_payload -> exn
+  exn Main.Implicit_exn : exn_payload -> exn
+  cons Main.Very_explicit_exn : exn_payload -> exn
   $ sherlodoc ": exn_payload -> _"
-  sherlodoc: internal error, uncaught exception:
-             File "query/dynamic_cost.ml", line 328, characters 8-14: Assertion failed
-             
-  [125]
+  exn Main.Explicit_exn : exn_payload -> exn
+  exn Main.Implicit_exn : exn_payload -> exn
+  cons Main.Very_explicit_exn : exn_payload -> exn

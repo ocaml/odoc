@@ -1,11 +1,11 @@
 module Elt = Elt
-module Types = Types
 module Storage = Storage
 module Suffix_tree = Suffix_tree
 module Occ = Occ
 module Typepath = Typepath
+module Typexpr = Typexpr
 
-type t = Types.t =
+type t = Db_typedef.t =
   { db_names : Suffix_tree.With_elts.reader
   ; db_types : Suffix_tree.With_occ.reader
   }

@@ -3,7 +3,6 @@ module Dynamic_cost = Dynamic_cost
 module Storage = Db.Storage
 module Tree = Db.Suffix_tree.With_elts
 module Tree_occ = Db.Suffix_tree.With_occ
-open Db.Types
 module Occ = Db.Occ
 
 module Private = struct
@@ -26,7 +25,7 @@ let collapse_trie t =
 let find_types ~shards names =
   List.fold_left
     (fun acc shard ->
-      let db = shard.db_types in
+      let db = Db.(shard.db_types) in
       let r =
         Succ.inter_of_list
         @@ List.map
@@ -44,7 +43,7 @@ let find_names ~(shards : Db.t list) names =
   let names = List.map String.lowercase_ascii names in
   List.fold_left
     (fun acc shard ->
-      let db_names = shard.db_names in
+      let db_names = Db.(shard.db_names) in
       let candidates =
         List.map
           (fun name ->

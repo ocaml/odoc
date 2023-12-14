@@ -23,15 +23,15 @@ let of_string str =
   in
   let pretty_typ, query_typ, paths_typ =
     match parse str_typ with
-    | Any -> "_", [], []
+    | Any -> "_", [], None
     | typ ->
-        ( Db.Typepath.show typ
+        ( Db.Typexpr.show typ
         , List.filter
             (fun s -> List.length s > 0)
             (Db.Typepath.For_suffix_tree.of_typ ~ignore_any:true
                ~all_names:false typ)
-        , Db.Typepath.For_distance.of_typ ~ignore_any:true typ )
-    | exception _ -> "<parse error>", [], []
+        , Some typ )
+    | exception _ -> "<parse error>", [], None
   in
   let query_name = naive_of_string str_name in
   let query_typ = if has_typ then Some query_typ else None in

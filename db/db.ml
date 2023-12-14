@@ -1,10 +1,10 @@
 module Elt = Elt
-module Types = Types
 module Suffix_tree = Suffix_tree
 module Occ = Occ
 module Storage = Storage
 module Typepath = Typepath
-include Types
+module Typexpr = Typexpr
+include Db_typedef
 
 type writer =
   { writer_names : Suffix_tree.With_elts.writer

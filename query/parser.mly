@@ -4,7 +4,7 @@
    without losing functionnality. *)
 
 %{
-  open Db.Typepath
+  open Db.Typexpr
 %}
 
 %token EOF
@@ -14,7 +14,7 @@
 %token<string> POLY
 
 %start main
-%type< Db.Typepath.typ> main
+%type< Db.Typexpr.t> main
 
 %left EOF
 %%

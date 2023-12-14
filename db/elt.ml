@@ -1,22 +1,3 @@
-type type_path = string list list
-
-(** A type can viewed as a tree.
-            [a -> b -> c * d] is the following tree :
-            {[ ->
-              |- a
-              |- ->
-                 |- b
-                 |- *
-                    |- c
-                    |- d
-            ]}
-            {!type_paths} is the list of paths from root to leaf in the tree of
-            the type. There is an annotation to indicate the child's position.
-            Here it would be :
-            [ [["->";"0"; "a"];["->"; "1"; "->"; "0"; "b"]; ...] ]
-
-            It is used to sort results. *)
-
 module Kind = struct
   type 'a abstract =
     | Doc
@@ -33,7 +14,7 @@ module Kind = struct
     | Field of 'a
     | Val of 'a
 
-  type t = type_path abstract
+  type t = Typexpr.t abstract
 
   let equal = ( = )
   let doc = Doc
