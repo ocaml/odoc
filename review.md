@@ -3,14 +3,22 @@
 # To discuss
 
 - Tester de virer la compression?
+  > Verifier si la double compression a de l'interet
+  > tester que gzip
 
 - Type extensions: we might want to search for all extensions of a given extensible type.
 
 ## With Arthur
 
 - pretty-query: vraiment necessaire ?
+> Mettre a part
 
 - ask about `Query.paths_arrow` vs `index/load_doc.type_distance_paths`
+
+- Should `_ -> int` be supported ?
+> Yes, try to fix it in dynamic cost
+
+- Suffix_tree -> succ conversion
 
 # done
 
