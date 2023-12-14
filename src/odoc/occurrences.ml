@@ -46,7 +46,7 @@ end = struct
     let rec add ?(kind = `Indirect) id =
       let incr htbl id =
         let { direct; indirect; sub } =
-          match H.find_opt htbl id with Some n -> n | None -> v_item ()
+          try H.find htbl id with Not_found -> v_item ()
         in
         let direct, indirect =
           match kind with
