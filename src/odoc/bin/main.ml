@@ -1111,6 +1111,8 @@ module Targets = struct
 end
 
 module Occurrences = struct
+  open Or_error
+
   let has_occurrences_prefix input =
     input |> Fs.File.basename |> Fs.File.to_string
     |> Astring.String.is_prefix ~affix:"occurrences-"
@@ -1122,7 +1124,6 @@ module Occurrences = struct
     else if not (has_occurrences_prefix f) then
       Error (`Msg "Output file must be prefixed with 'occurrences-'.")
     else Ok f
-  open Or_error
   module Count = struct
     let count directories dst warnings_options include_hidden =
       dst_of_string dst >>= fun dst ->

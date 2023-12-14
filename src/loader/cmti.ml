@@ -632,7 +632,7 @@ and read_module_declaration env parent md =
     | _,_ -> false
 #else
     match canonical with
-    | None -> Odoc_model.Root.contains_double_underscore (Ident.name md.md_id)
+    | None -> Odoc_model.Names.contains_double_underscore (Ident.name md.md_id)
     | _ -> false
 #endif
   in
