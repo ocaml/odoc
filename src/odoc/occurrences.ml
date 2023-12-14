@@ -87,9 +87,10 @@ end = struct
     ()
 
   let rec get t id =
-    let ( >>= ) = Option.bind in
     let do_ parent =
-      get t (parent :> key) >>= fun { sub; _ } -> H.find_opt sub id
+      get t (parent :> key) |> function
+      | None -> None
+      | Some { sub; _ } -> ( try Some (H.find sub id) with Not_found -> None)
     in
     match id.iv with
     | `InstanceVariable (parent, _) -> do_ parent
@@ -106,7 +107,7 @@ end = struct
     | `Class (parent, _) -> do_ parent
     | `Value (parent, _) -> do_ parent
     | `ClassType (parent, _) -> do_ parent
-    | `Root _ -> H.find_opt t id
+    | `Root _ -> ( try Some (H.find t id) with Not_found -> None)
     | `SourcePage _ | `Page _ | `LeafPage _ | `CoreType _ | `SourceLocation _
     | `CoreException _ | `Label _ | `SourceLocationMod _ | `Result _
     | `AssetFile _ | `SourceDir _ | `SourceLocationInternal _ ->
