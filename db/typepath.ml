@@ -79,5 +79,3 @@ module For_suffix_tree = struct
   let of_typ ~ignore_any ~all_names t =
     of_typ ~ignore_any ~all_names ~prefix:[] ~sgn:Pos t
 end
-
-

@@ -65,12 +65,16 @@ module T = struct
 
   let structural_compare a b =
     begin
-      match String.compare a.name b.name with
+      match Int.compare (String.length a.name) (String.length b.name) with
       | 0 -> begin
-          match Option.compare compare_pkg a.pkg b.pkg with
+          match String.compare a.name b.name with
           | 0 -> begin
-              match Stdlib.compare a.kind b.kind with
-              | 0 -> Stdlib.compare a.url b.url
+              match Option.compare compare_pkg a.pkg b.pkg with
+              | 0 -> begin
+                  match Stdlib.compare a.kind b.kind with
+                  | 0 -> Stdlib.compare a.url b.url
+                  | c -> c
+                end
               | c -> c
             end
           | c -> c

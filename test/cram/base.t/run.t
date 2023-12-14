@@ -9,10 +9,11 @@
   $ du -sh megaodocl
   4.8M	megaodocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
+  
+  real	0m1.154s
+  user	0m1.110s
+  sys	0m0.041s
 
-  real	0m1.157s
-  user	0m1.111s
-  sys	0m0.043s
 
 
 
@@ -43,8 +44,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2720	db.js
-  2056	db.js.gz
+  2560	db.js
+  1932	db.js.gz
   1544	megaodocl.gz
 
 
@@ -114,12 +115,12 @@ $ firefox /tmp/html/base/index.html
   726 val Base.Set.S_poly.length
   726 val Base.Set.S_poly.remove
   727 type 'a Base.Hashtbl.S_poly.key
+  727 val Base.Set.S_poly.max_elt
   727 val Base.Set.S_poly.of_list
   727 val Base.Set.S_poly.of_tree
   727 val Base.Set.S_poly.to_list
   727 val Base.Set.S_poly.to_tree
   728 val Base.Map.S_poly.of_alist
-  728 val Base.Set.S_poly.is_empty
   729 val Base.Set.S_poly.singleton
   $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin "group b"
   218 val Base.List.group
@@ -129,8 +130,8 @@ $ firefox /tmp/html/base/index.html
   323 val Base.List.groupi
   324 val Base.Set.group_by
   326 val Base.Hashtbl.Poly.group
-  330 val Base.Hashtbl.Creators.group
   330 val Base.List.sort_and_group
+  330 val Base.Hashtbl.Creators.group
   336 val Base.List.Assoc.sort_and_group
   429 val Base.Set.Poly.group_by
   441 val Base.Set.Using_comparator.group_by
@@ -155,16 +156,16 @@ $ firefox /tmp/html/base/index.html
   218 val Base.Or_error.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   222 val Base.Either.First.map2 : ('a, 'e) t -> ('b, 'e) t -> f:('a -> 'b -> 'c) -> ('c, 'e) t
   226 val Base.Applicative.Make.map2 : 'a X.t -> 'b X.t -> f:('a -> 'b -> 'c) -> 'c X.t
+  227 val Base.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   227 val Base.Applicative.Make2.map2 : ('a, 'e) X.t -> ('b, 'e) X.t -> f:('a -> 'b -> 'c) -> ('c, 'e) X.t
   227 val Base.Applicative.Make3.map2 : ('a, 'd, 'e) X.t -> ('b, 'd, 'e) X.t -> f:('a -> 'b -> 'c) -> ('c, 'd, 'e) X.t
-  227 val Base.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   228 val Base.Applicative.Pair.F.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   228 val Base.Applicative.Pair.G.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   230 val Base.Applicative.Of_monad.map2 : 'a M.t -> 'b M.t -> f:('a -> 'b -> 'c) -> 'c M.t
+  231 val Base.Uniform_array.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   231 val Base.Applicative.Compose.F.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   231 val Base.Applicative.Compose.G.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   231 val Base.Applicative.S_to_S2.X.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  231 val Base.Uniform_array.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   235 mod Base.Applicative.Make_using_map2
   236 sig Base.Applicative.Basic_using_map2
   236 mod Base.Applicative.Make2_using_map2
@@ -189,6 +190,7 @@ $ firefox /tmp/html/base/index.html
   343 val Base.Applicative.Make2_using_map2.X.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
   343 val Base.Applicative.Make3_using_map2.X.map : [ `Define_using_map2
   | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t ]
+  343 val Base.Applicative.Make_using_map2.return : 'a -> 'a X.t
   623 val Base.Applicative.S.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   624 val Base.Applicative.S2.map2 : ('a, 'e) t -> ('b, 'e) t -> f:('a -> 'b -> 'c) -> ('c, 'e) t
   624 val Base.Applicative.S3.map2 : ('a, 'd, 'e) t -> ('b, 'd, 'e) t -> f:('a -> 'b -> 'c) -> ('c, 'd, 'e) t
@@ -201,7 +203,6 @@ $ firefox /tmp/html/base/index.html
   742 val Base.Applicative.Basic2_using_map2.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
   742 val Base.Applicative.Basic3_using_map2.map : [ `Define_using_map2
   | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t ]
-  746 type 'a Base.Applicative.Basic_using_map2_local.t
   $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin --static-sort "List map2"
   202 val Base.List.rev_map2_exn
   208 val Base.List.map2_exn

@@ -165,7 +165,9 @@ let minimize = function
       !best
 
 let length typ =
-  typ |> Type_path.of_typ ~ignore_any:false |> List.concat |> List.map String.length |> List.fold_left ( + ) 0
+  typ
+  |> Type_path.of_typ ~ignore_any:false
+  |> List.concat |> List.map String.length |> List.fold_left ( + ) 0
 
 let v ~query ~element =
   let query_paths = Type_path.of_typ ~ignore_any:false query in

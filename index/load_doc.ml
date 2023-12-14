@@ -13,8 +13,7 @@ let generic_cost ~ignore_no_doc name has_doc =
 
 let kind_cost (kind : Elt.Kind.t) =
   match kind with
-  | Constructor typ | Field typ | Val typ ->
-      Db.Typexpr.size typ
+  | Constructor typ | Field typ | Val typ -> Db.Typexpr.size typ
   | Doc -> 400
   | TypeDecl _ | Module -> 0
   | Exception _ | Class_type | Method | Class -> 10
@@ -52,12 +51,13 @@ let fullname t = Format.asprintf "%a" Pretty.show_type_name_verbose t
 let rec typ_of_odoc_typ otyp =
   let open Db.Typexpr in
   match otyp with
-  | Odoc_model.Lang.TypeExpr.Var str -> Poly str
-  | Any -> Any
+  | Odoc_model.Lang.TypeExpr.Var str -> poly str
+  | Any -> any
   | Arrow (_lbl, left, right) ->
-      Arrow (typ_of_odoc_typ left, typ_of_odoc_typ right)
-  | Constr (name, args) -> Constr (fullname name, List.map typ_of_odoc_typ args)
-  | _ -> Unhandled
+      arrow (typ_of_odoc_typ left) (typ_of_odoc_typ right)
+  | Constr (name, args) ->
+      constr (fullname name) (List.map typ_of_odoc_typ args)
+  | _ -> unhandled
 
 let with_tokenizer str fn =
   let str = String.lowercase_ascii str in
@@ -122,7 +122,9 @@ let convert_kind (Odoc_search.Entry.{ kind; _ } as entry) =
       let typ = typ_of_odoc_typ searchable_type in
       Elt.Kind.constructor typ
   | Field { mutable_ = _; parent_type; type_ } ->
-      let typ = type_ |> searchable_type_of_record parent_type |> typ_of_odoc_typ in
+      let typ =
+        type_ |> searchable_type_of_record parent_type |> typ_of_odoc_typ
+      in
       Elt.Kind.field typ
   | Doc _ -> Doc
   | Exception { args; res } ->
