@@ -19,6 +19,12 @@ and record fields.
 
 # Usage
 
+First, install sherlodoc :
+
+```bash
+opam install sherlodoc
+```
+
 ## Generating a search-database
 
 The first step to using sherlodoc is generating a search-database. You do this
