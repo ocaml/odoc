@@ -225,13 +225,13 @@ let register_entry ~db ~index_name ~type_search ~index_docstring
       | Doc _ -> prefixname id
       | _ -> full_name
     in
-    let score = cost ~name ~kind:kind' ~doc_html in
+    let cost = cost ~name ~kind:kind' ~doc_html in
     let rhs = Html.rhs_of_kind kind in
     let url = Html.url id in
     let url = Result.get_ok url in
     let is_from_module_type = is_from_module_type entry in
     let elt =
-      Sherlodoc_entry.v ~name ~kind:kind' ~rhs ~doc_html ~score ~url
+      Sherlodoc_entry.v ~name ~kind:kind' ~rhs ~doc_html ~cost ~url
         ~is_from_module_type ()
     in
     if index_docstring then register_doc ~db elt doc_txt ;

@@ -26,12 +26,12 @@ let print_result ~print_cost ~no_rhs
       ; rhs
       ; url = _
       ; kind
-      ; score
+      ; cost
       ; doc_html = _
       ; pkg = _
       ; is_from_module_type = _
       } =
-  let score = if print_cost then string_of_int score ^ " " else "" in
+  let cost = if print_cost then string_of_int cost ^ " " else "" in
   let typedecl_params =
     (match kind with
     | Db.Entry.Kind.TypeDecl args -> args
@@ -46,7 +46,7 @@ let print_result ~print_cost ~no_rhs
     | Some _ when no_rhs -> ()
     | Some rhs -> Format.fprintf h "%s" (Unescape.string rhs)
   in
-  Format.printf "%s%s %s%s%a\n" score kind typedecl_params name pp_rhs rhs
+  Format.printf "%s%s %s%s%a\n" cost kind typedecl_params name pp_rhs rhs
 
 let search ~print_cost ~static_sort ~limit ~db ~no_rhs query =
   match

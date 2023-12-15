@@ -54,7 +54,7 @@ module T = struct
     ; rhs : string option
     ; url : string
     ; kind : Kind.t
-    ; score : int
+    ; cost : int
     ; doc_html : string
     ; pkg : Package.t option
     ; is_from_module_type : bool
@@ -86,7 +86,7 @@ module T = struct
     if a == b
     then 0
     else
-      let cmp = Int.compare a.score b.score in
+      let cmp = Int.compare a.cost b.cost in
       if cmp = 0 then structural_compare a b else cmp
 end
 
@@ -128,6 +128,6 @@ let link t =
       in
       Some (pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name)
 
-let v ~name ~kind ~score ~rhs ~doc_html ~url ~is_from_module_type ?(pkg = None)
+let v ~name ~kind ~cost ~rhs ~doc_html ~url ~is_from_module_type ?(pkg = None)
     () =
-  { name; kind; url; score; doc_html; pkg; rhs; is_from_module_type }
+  { name; kind; url; cost; doc_html; pkg; rhs; is_from_module_type }

@@ -235,4 +235,4 @@ module Reasoning = struct
 end
 
 let elt ~query_name ~query_type elt =
-  Entry.{ elt with score = Reasoning.score ~query_name ~query_type elt }
+  Entry.{ elt with cost = Reasoning.score ~query_name ~query_type elt }
