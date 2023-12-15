@@ -2,4 +2,4 @@
 
 (library
  (name db)
- (libraries unix))
+ (libraries unix dum))

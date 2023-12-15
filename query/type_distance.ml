@@ -1,5 +1,39 @@
-module Type_path = struct
-  module Sign = Db.Typepath.Sign
+module Type_path : sig
+  (** This module contains the transformation that make it possible to compute the
+  distance between types..
+
+A type can viewed as a tree. [a -> b -> c * d] is the following tree :
+{[ ->
+    |- a
+    |- ->
+        |- b
+        |- *
+           |- c
+           |- d
+]}
+We consider the list of paths from root to leaf in the tree of the type.
+
+Here the paths would be : [ [[-> a]; [-> -> b]; [-> -> * c ]; [-> -> * d]] ]
+
+We encode slightly more information than that. In the above, it not possible by
+looking at a type path to know the child position relative to its parent : In
+the path [[-> a]]; [a] is the first child of [->], and in [[-> -> b]]; [[-> b]]
+is the second child of [->]. This information is not possible to recover without
+the whole tree, so we add it in the list, ass a number after the arrow.
+
+This makes the type path of the example type look like this :
+
+{[ [[-> 1 a]; [-> 2 -> 1 b]; [-> 2 -> 2 * 1 c ]; [-> 2 -> 2 * 2 d]] ]}
+*)
+
+  type t = string list list
+
+  val of_typ : ignore_any:bool -> Db.Typexpr.t -> t
+  (* [of_typ ~ignore_any typ] is the list of type path associated to [typ].
+     If [ignore_any] is true, [Any] constructors in [typ] will be ignored,
+     if it is false, they will be treated like a polymorphic variable. *)
+end = struct
+  module Sign = Db.Type_polarity.Sign
 
   type t = string list list
 
@@ -163,11 +197,6 @@ let minimize = function
       in
       let _ = go (Array.length used) 0 0 in
       !best
-
-let length typ =
-  typ
-  |> Type_path.of_typ ~ignore_any:false
-  |> List.concat |> List.map String.length |> List.fold_left ( + ) 0
 
 let v ~query ~element =
   let query_paths = Type_path.of_typ ~ignore_any:false query in

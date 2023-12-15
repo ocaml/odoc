@@ -4,7 +4,8 @@ type t =
   ; limit : int
   }
 
-val api : shards:Db.t list -> ?dynamic_sort:bool -> t -> string * Db.Elt.t list
+val api :
+  shards:Db.t list -> ?dynamic_sort:bool -> t -> string * Db.Entry.t list
 (** [api ~shard ~dynamic_sort {query; packages; limit}] returns [(pretty_query,
       results)] where [pretty_query] is a re-printed version of [query] and
       [results] is the list of results corresponding to the query and the

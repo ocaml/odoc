@@ -20,16 +20,16 @@ module Kind = struct
   let doc = Doc
   let type_decl args = TypeDecl args
   let module_ = Module
-  let exception_ type_path = Exception type_path
+  let exception_ typ = Exception typ
   let class_type = Class_type
   let method_ = Method
   let class_ = Class
   let type_extension = TypeExtension
-  let extension_constructor type_path = ExtensionConstructor type_path
+  let extension_constructor typ = ExtensionConstructor typ
   let module_type = ModuleType
-  let constructor type_path = Constructor type_path
-  let field type_path = Field type_path
-  let val_ type_path = Val type_path
+  let constructor typ = Constructor typ
+  let field typ = Field typ
+  let val_ typ = Val typ
 end
 
 module Package = struct

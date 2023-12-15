@@ -1,10 +1,4 @@
-type t = string list
-
 let parse str = Parser.main Lexer.token (Lexing.from_string str)
-
-let alphanum = function
-  | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '_' | '.' | '\'' -> true
-  | _ -> false
 
 let naive_of_string str =
   List.filter (fun s -> String.length s > 0) (String.split_on_char ' ' str)
@@ -21,19 +15,18 @@ let of_string str =
     | _ when guess_type_search str -> true, "", str
     | _ -> false, str, ""
   in
-  let pretty_typ, query_typ, paths_typ =
+  let pretty_typ, type_polarities, typ =
     match parse str_typ with
     | Any -> "_", [], None
     | typ ->
         ( Db.Typexpr.show typ
         , List.filter
-            (fun s -> List.length s > 0)
-            (Db.Typepath.For_suffix_tree.of_typ ~ignore_any:true
-               ~all_names:false typ)
+            (fun (word, _count) -> String.length word > 0)
+            (Db.Type_polarity.of_typ ~ignore_any:true ~all_names:false typ)
         , Some typ )
     | exception _ -> "<parse error>", [], None
   in
   let query_name = naive_of_string str_name in
-  let query_typ = if has_typ then Some query_typ else None in
+  let type_polarities = if has_typ then Some type_polarities else None in
   let pretty_query = String.concat " " query_name ^ " : " ^ pretty_typ in
-  query_name, query_typ, paths_typ, pretty_query
+  query_name, type_polarities, typ, pretty_query

@@ -1,8 +1,8 @@
-module Elt = Elt
+module Entry = Entry
 module Suffix_tree = Suffix_tree
 module Occ = Occ
 module Storage = Storage
-module Typepath = Typepath
+module Type_polarity = Type_polarity
 module Typexpr = Typexpr
 include Db_typedef
 
@@ -27,12 +27,8 @@ let export db =
 let store db name elt ~count =
   Suffix_tree.With_occ.add_suffixes db.writer_types name (count, elt)
 
-let store_type_paths db elt paths =
-  List.iter
-    (fun (path, count) ->
-      let word = String.concat "" path in
-      store db ~count word elt)
-    (Typepath.regroup paths)
+let store_type_polarities db elt polarities =
+  List.iter (fun (word, count) -> store db ~count word elt) polarities
 
 let store_word db word elt =
   Suffix_tree.With_elts.add_suffixes db.writer_names word elt

@@ -5,13 +5,13 @@ let list_of_option = function
   | Some x -> [ x ]
 
 let render_link elt =
-  let open Db.Elt in
+  let open Db.Entry in
   match link elt with
   | Some link -> [ a_href link ]
   | None -> []
 
 let string_of_kind =
-  let open Db.Elt.Kind in
+  let open Db.Entry.Kind in
   function
   | Doc -> "doc"
   | TypeDecl _ -> "type"
@@ -28,7 +28,7 @@ let string_of_kind =
   | Val _ -> "val"
 
 let render_elt elt =
-  let open Db.Elt in
+  let open Db.Entry in
   let link = render_link elt in
   let html_txt = Unsafe.data in
   let rhs =
@@ -40,7 +40,7 @@ let render_elt elt =
   [ txt kind; a ~a:link [ em [ txt elt.name ] ] ] @ rhs
 
 let render_pkg elt =
-  let open Db.Elt in
+  let open Db.Entry in
   match elt.pkg with
   | Some { name; version } ->
       let link = elt |> pkg_link |> Option.get in
@@ -57,7 +57,7 @@ let render_pkg elt =
   | None -> []
 
 let render_result elt =
-  let open Db.Elt in
+  let open Db.Entry in
   render_pkg elt @ [ pre (render_elt elt); Unsafe.data elt.doc_html ]
 
 let render ~pretty results =

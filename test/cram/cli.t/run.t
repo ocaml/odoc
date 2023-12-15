@@ -84,11 +84,13 @@
   doc 
   $ sherlodoc "qwertyuiopasdfghjklzxcvbnm"
   [No results]
-TODO : get a result for the query bellow
   $ sherlodoc "hidden"
   [No results]
+TODO : get a result for the query bellow
   $ sherlodoc ":mo"
-  [No results]
+  val Main.value : moo
+  val Main.produce : unit -> moo
+  val Main.produce_2' : unit -> unit -> moo
   $ sherlodoc ":'a"
   val Main.poly_1 : 'a -> 'b -> 'c
   val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
@@ -106,7 +108,7 @@ TODO : get a result for the query bellow
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
 TODO : get a result for the query bellow
   $ sherlodoc ": 'a bo"
-  [No results]
+  val Main.poly_param : 'a boo
   $ sherlodoc ":extensible_type"
   cons Main.MyExtension : moo -> extensible_type
   $ sherlodoc ":exn"
@@ -117,3 +119,10 @@ TODO : get a result for the query bellow
   exn Main.Explicit_exn : exn_payload -> exn
   exn Main.Implicit_exn : exn_payload -> exn
   cons Main.Very_explicit_exn : exn_payload -> exn
+  $ sherlodoc ": long_name_type"
+  val Main.long_name_value : long_name_type
+  $ sherlodoc ": long_nam"
+  val Main.long_name_value : long_name_type
+  $ sherlodoc "long_name"
+  type Main.long_name_type
+  val Main.long_name_value : long_name_type

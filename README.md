@@ -33,9 +33,9 @@ available format are `marshal`, `js`.  The `js` format, for
 javascript, is the one compatible with odoc, and the `marshal` for most other
 uses.
 
-There is a third format : `ancient`, that is only available if the `ancient`
-package is installed. It is more complicated than the other two, you can read on
-it [here](https://github.com/UnixJunkie/ocaml-ancient). It is used for the
+There is a third format : `ancient`, that is only available if the package
+ `ancient` is installed. It is more complicated than the other two, you can read
+on it [here](https://github.com/UnixJunkie/ocaml-ancient). It is used for the
 [online](https://doc.sherlocode.com) version of sherlodoc, and is a mandatory
 dependency of the `sherlodoc-www` package.
 
@@ -53,7 +53,7 @@ to input a string query. A query is a list of words, separated by spaces.
 Results will be entries that have every word of the list present in them.
 
 ```
-list map
+"list map"
 ```
 
 The above query will return entries that have both `list` and `map` in them.
@@ -65,18 +65,18 @@ exception, a constructor or a record field.
 Matching a type is fuzzy, if you do the following query :
 
 ```
-blabla : string
+"blabla : string"
 ```
 
 It could return `val blablabla : int -> string` and `val blabla2 : string`.
 
-You can have just the type-part of the query : `: string -> int` is a valid
+You can have just the type-part of the query : `": string -> int"` is a valid
 query.
 
 You can use wildcards :
 
 ```
-: string -> _
+": string -> _"
 ```
 
 will only return functions that take a string a argument, no matter what they
@@ -84,7 +84,7 @@ return.
 
 There is limited support for polymorphism : you cannot search for `'a -> 'a` and
 get every function `int -> int`, `string -> string` etc. However it will return
-a function whose litteral type is `'a -> 'a`. Having the first behaviour would
+a function whose literal type is `'a -> 'a`. Having the first behaviour would
 be a lot harder to program, and probably not a good idea, as it would be
 impossible to search for polymorphic functions.
 
@@ -149,17 +149,17 @@ cp db.js html_output/db.js ;
 ```
 
 Obviously, most people use dune, and do not call `odoc html-generate`. A patch
-for dune is being [worked
-on](https://github.com/emileTrotignon/dune/tree/sherlodune). If you want to, you
-can test it, it should work. It is still work in progress.
+for dune is being [worked on](https://github.com/emileTrotignon/dune/tree/search-odoc-new).
+If you want to, you can test it, it should work. It is still work in progress.
 
 ## Sherlodoc online
 
 If you want to use sherlodoc as a server, like on
 [doc.sherlocode.com](https://doc.sherlocode.com), you can. This is packaged
-separately in `sherlodoc-www`, but also live in this repo.
+separately in `sherlodoc-www`, but also lives in this repo.
 
-Once you have installed `shelodoc-www`, you need to generate your search database :
+Once you have installed `sherlodoc-www`, you need to generate your search
+database :
 
 ```bash
 sherlodoc_index --format=ancient --db=db.bin $(find /path/to/doc -name "*.odocl")

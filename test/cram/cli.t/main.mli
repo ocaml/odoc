@@ -68,7 +68,10 @@ type extensible_type += MyExtension of moo
 
 type exn_payload
 
-exception Implicit_exn of exn_payload 
+exception Implicit_exn of exn_payload
 exception Explicit_exn : exn_payload -> exn
 type exn += Very_explicit_exn : exn_payload -> exn
 
+type long_name_type
+
+val long_name_value : long_name_type

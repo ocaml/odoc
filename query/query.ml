@@ -30,11 +30,10 @@ let find_types ~shards names =
         Succ.inter_of_list
         @@ List.map
              (fun (name, count) ->
-               let name' = String.concat "" name in
-               match Tree_occ.find db name' with
+               match Tree_occ.find db name with
                | Some trie -> collapse_trie_occ ~count trie
                | None -> Succ.empty)
-             (Db.Typepath.regroup names)
+             names
       in
       Succ.union acc r)
     Succ.empty shards
@@ -69,11 +68,10 @@ let search ~(shards : Db.t list) query_name query_typ =
   | [], Some query_typ -> find_types ~shards query_typ
   | _ :: _, Some query_typ ->
       let results_name = find_names ~shards query_name in
-
       let results_typ = find_types ~shards query_typ in
       Succ.inter results_name results_typ
 
-let match_packages ~packages { Db.Elt.pkg; _ } =
+let match_packages ~packages { Db.Entry.pkg; _ } =
   match pkg with
   | Some { name; version = _ } -> List.exists (String.equal name) packages
   | None -> false
@@ -88,7 +86,7 @@ let api ~(shards : Db.t list) ?(dynamic_sort = true) params =
     Parser.of_string params.query
   in
   let results = search ~shards query_name query_typ in
-  let results = Succ.to_seq ~compare:Db.Elt.compare results in
+  let results = Succ.to_seq ~compare:Db.Entry.compare results in
   let results = match_packages ~packages:params.packages results in
   let results = List.of_seq @@ Seq.take params.limit results in
   let results =
@@ -99,6 +97,6 @@ let api ~(shards : Db.t list) ?(dynamic_sort = true) params =
         results
     else results
   in
-  let results = List.sort Db.Elt.compare results in
+  let results = List.sort Db.Entry.compare results in
 
   pretty, results

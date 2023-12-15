@@ -78,10 +78,10 @@ let db =
   |> Fut.map Storage_js.load
 
 let string_of_kind =
-  let open Db.Elt.Kind in
+  let open Db.Entry.Kind in
   let open Odoc_html_frontend in
   function
-  | Db.Elt.Kind.Doc -> kind_doc
+  | Db.Entry.Kind.Doc -> kind_doc
   | TypeDecl _ -> kind_typedecl
   | Module -> kind_module
   | Exception _ -> kind_exception
@@ -104,15 +104,15 @@ let search message db =
   let _ =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list
-           (fun Db.Elt.{ name; rhs; doc_html; kind; url; _ } ->
+           (fun Db.Entry.{ name; rhs; doc_html; kind; url; _ } ->
              let typedecl_params =
                match kind with
-               | Db.Elt.Kind.TypeDecl args -> args
+               | Db.Entry.Kind.TypeDecl args -> args
                | _ -> None
              in
              let prefix_name, name =
                match kind with
-               | Db.Elt.Kind.Doc -> None, None
+               | Db.Entry.Kind.Doc -> None, None
                | _ ->
                    let rev_name =
                      name |> String.split_on_char '.' |> List.rev

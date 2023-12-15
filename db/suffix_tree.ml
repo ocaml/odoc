@@ -451,5 +451,5 @@ module Make (S : SET) = struct
   let sets_tree = Automata.T.sets_tree
 end
 
-module With_elts = Make (Elt.Array)
+module With_elts = Make (Entry.Array)
 module With_occ = Make (Occ)

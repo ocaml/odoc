@@ -1,4 +1,4 @@
-module Elt = Db.Elt
+module Entry = Db.Entry
 
 module Reasoning = struct
   module Name_match = struct
@@ -42,9 +42,9 @@ module Reasoning = struct
       else (* Matches only in the docstring are always worse *) Doc
 
     let with_words query_words elt =
-      match elt.Elt.kind with
-      | Elt.Kind.Doc -> List.map (fun _ : t -> Doc) query_words
-      | _ -> List.map (fun word -> with_word word elt.Elt.name) query_words
+      match elt.Entry.kind with
+      | Entry.Kind.Doc -> List.map (fun _ : t -> Doc) query_words
+      | _ -> List.map (fun word -> with_word word elt.Entry.name) query_words
 
     let compare nm nm' =
       let to_int nm =
@@ -88,11 +88,11 @@ module Reasoning = struct
     }
 
   let type_distance query_type elt =
-    let open Elt in
+    let open Entry in
     match query_type, elt.kind with
     | None, _ -> None
     | ( Some query_type
-      , Elt.Kind.(
+      , Entry.Kind.(
           ( ExtensionConstructor eltype
           | Constructor eltype
           | Field eltype
@@ -107,7 +107,7 @@ module Reasoning = struct
   let type_in_query query_type = Option.is_some query_type
 
   let type_in_elt elt =
-    let open Elt in
+    let open Entry in
     match elt.kind with
     | ExtensionConstructor _ | Constructor _ | Field _ | Val _ | Exception _ ->
         true
@@ -116,31 +116,31 @@ module Reasoning = struct
         false
 
   let is_stdlib elt =
-    let open Elt in
+    let open Entry in
     String.starts_with ~prefix:"Stdlib." elt.name
 
   let kind elt =
-    match elt.Elt.kind with
-    | Elt.Kind.Doc -> Doc
-    | Elt.Kind.TypeDecl _ -> TypeDecl
-    | Elt.Kind.Module -> Module
-    | Elt.Kind.Exception _ -> Exception
-    | Elt.Kind.Class_type -> Class_type
-    | Elt.Kind.Method -> Method
-    | Elt.Kind.Class -> Class
-    | Elt.Kind.TypeExtension -> TypeExtension
-    | Elt.Kind.ExtensionConstructor _ -> ExtensionConstructor
-    | Elt.Kind.ModuleType -> ModuleType
-    | Elt.Kind.Constructor _ -> Constructor
-    | Elt.Kind.Field _ -> Field
-    | Elt.Kind.Val _ -> Val
+    match elt.Entry.kind with
+    | Entry.Kind.Doc -> Doc
+    | Entry.Kind.TypeDecl _ -> TypeDecl
+    | Entry.Kind.Module -> Module
+    | Entry.Kind.Exception _ -> Exception
+    | Entry.Kind.Class_type -> Class_type
+    | Entry.Kind.Method -> Method
+    | Entry.Kind.Class -> Class
+    | Entry.Kind.TypeExtension -> TypeExtension
+    | Entry.Kind.ExtensionConstructor _ -> ExtensionConstructor
+    | Entry.Kind.ModuleType -> ModuleType
+    | Entry.Kind.Constructor _ -> Constructor
+    | Entry.Kind.Field _ -> Field
+    | Entry.Kind.Val _ -> Val
 
-  let name_length elt = String.length elt.Elt.name
-  let is_from_module_type elt = elt.Elt.is_from_module_type
+  let name_length elt = String.length elt.Entry.name
+  let is_from_module_type elt = elt.Entry.is_from_module_type
 
   let v query_words query_type elt =
     let is_stdlib = is_stdlib elt in
-    let has_doc = elt.Elt.doc_html <> "" in
+    let has_doc = elt.Entry.doc_html <> "" in
     let name_matches = Name_match.with_words query_words elt in
     let kind = kind elt in
     let type_distance = type_distance query_type elt in
@@ -223,8 +223,7 @@ module Reasoning = struct
       then
         (* If query request a type, elements which do not have one should never
            appear. *)
-        (* assert false *)
-        0
+        assert false
       else 0
     in
     let is_from_module_type_cost = if is_from_module_type then 400 else 0 in
@@ -236,4 +235,4 @@ module Reasoning = struct
 end
 
 let elt ~query_name ~query_type elt =
-  Elt.{ elt with score = Reasoning.score ~query_name ~query_type elt }
+  Entry.{ elt with score = Reasoning.score ~query_name ~query_type elt }

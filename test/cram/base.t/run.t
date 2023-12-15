@@ -10,9 +10,9 @@
   4.8M	megaodocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
   
-  real	0m1.154s
-  user	0m1.110s
-  sys	0m0.041s
+  real	0m1.236s
+  user	0m1.181s
+  sys	0m0.050s
 
 
 
@@ -44,8 +44,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2560	db.js
-  1932	db.js.gz
+  2576	db.js
+  1944	db.js.gz
   1544	megaodocl.gz
 
 
@@ -56,7 +56,7 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ cp db.js html/
   $ cp ../../../jsoo/main.bc.js html/sherlodoc.js
   $ du -sh html/sherlodoc.js
-  5.1M	html/sherlodoc.js
+  5.2M	html/sherlodoc.js
   $ ls html
   base
   db.js

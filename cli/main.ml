@@ -4,7 +4,7 @@
 let pp_or cond pp_true pp_false ppf = if cond then pp_true ppf else pp_false ppf
 
 let string_of_kind =
-  let open Db.Elt.Kind in
+  let open Db.Entry.Kind in
   function
   | Doc -> "doc"
   | TypeDecl _ -> "type"
@@ -21,7 +21,7 @@ let string_of_kind =
   | Val _ -> "val"
 
 let print_result ~print_cost ~no_rhs
-    Db.Elt.
+    Db.Entry.
       { name
       ; rhs
       ; url = _
@@ -34,7 +34,7 @@ let print_result ~print_cost ~no_rhs
   let score = if print_cost then string_of_int score ^ " " else "" in
   let typedecl_params =
     (match kind with
-    | Db.Elt.Kind.TypeDecl args -> args
+    | Db.Entry.Kind.TypeDecl args -> args
     | _ -> None)
     |> Option.map (fun str -> str ^ " ")
     |> Option.value ~default:""
