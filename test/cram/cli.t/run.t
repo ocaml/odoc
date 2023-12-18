@@ -29,7 +29,7 @@
   val Main.Map.to_list : foo
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
-  doc
+  doc 
   $ sherlodoc "map"
   mod Main.Map
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
@@ -81,7 +81,7 @@
   val Main.Nest.nesting_priority : foo
   cons Main.MyExtension : moo -> extensible_type
   val Main.foo : foo
-  doc
+  doc 
   $ sherlodoc "qwertyuiopasdfghjklzxcvbnm"
   [No results]
   $ sherlodoc "hidden"
@@ -104,12 +104,10 @@ TODO : get a result for the query bellow
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   $ sherlodoc ": ('a -> 'b) -> 'a t -> 'b t"
-   : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
 TODO : get a result for the query bellow
   $ sherlodoc ": 'a bo"
-   : 'a bo
   val Main.poly_param : 'a boo
   $ sherlodoc ":extensible_type"
   cons Main.MyExtension : moo -> extensible_type
