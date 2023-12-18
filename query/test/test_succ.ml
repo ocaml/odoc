@@ -1,11 +1,9 @@
 open Query.Private
 
-
-  (** This module does the same thing as Succ, but its correctness is obvious
+(** This module does the same thing as Succ, but its correctness is obvious
       and its performance terrible.  *)
 module Reference = struct
   include Set.Make (Int)
-
 
   let of_array arr = arr |> Array.to_seq |> of_seq
   let to_seq ~compare:_ = to_seq

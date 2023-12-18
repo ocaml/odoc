@@ -5,7 +5,6 @@ type t =
   | Poly of string
   | Any
   | Unhandled
-[@@deriving show]
 
 let table = Hashtbl.create 256
 

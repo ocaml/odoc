@@ -5,7 +5,6 @@ type t = private
   | Poly of string
   | Any
   | Unhandled
-  [@@deriving show]
 
 val arrow : t -> t -> t
 val constr : string -> t list -> t
@@ -14,3 +13,4 @@ val poly : string -> t
 val any : t
 val unhandled : t
 val size : t -> int
+val show : t -> string

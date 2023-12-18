@@ -50,6 +50,7 @@ open Tokens_gen
 
 let rec typ tokens =
   match peek tokens with
+  | EOF -> any
   | ARROW ->
       discard tokens ;
       typ tokens
@@ -88,6 +89,7 @@ and parens tokens =
       | WORD w -> constr w params
       | _ -> error "parens 1")
   | PARENS_CLOSE -> typ
+  | EOF -> any
   | _ -> error "parens 2"
 
 and params tokens =
@@ -100,14 +102,16 @@ and params tokens =
 and constr_one_param tokens =
   match peek tokens with
   | WORD w ->
-    discard tokens;
-    fun typ -> constr w [typ]
+      discard tokens ;
+      fun typ -> constr w [ typ ]
   | _ -> Fun.id
 
 and typ1 tokens =
-  let typ = typ0 tokens in
-  constr_one_param tokens typ
-
+  match peek tokens with
+  | EOF -> any
+  | _ ->
+      let typ = typ0 tokens in
+      constr_one_param tokens typ
 
 and typ0 tokens =
   match get tokens with

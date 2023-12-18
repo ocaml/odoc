@@ -20,7 +20,7 @@ let rec random_type size =
 and random_constr_params n =
   constr
     (random_elt [| "list"; "option"; "t"; "result"; "array" |])
-    (List.init (n-1) (fun i -> random_type i))
+    (List.init (n - 1) (fun i -> random_type i))
 
 open Query.Private
 
