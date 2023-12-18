@@ -54,4 +54,4 @@ The main other pages of this site:
 - {!page-parent_child_spec} Parent/Child specification
 - {!page-interface} Interface guarantees
 - {!page-ocamlary} A demonstration of the rendering of most of the OCaml constructs
-
+- {!page-api_reference} Odoc's library API
