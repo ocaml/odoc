@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: html_page.ml (odoc.source.src.html)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">source</a> &#x00BB; <a href="../index.html">src</a> &#x00BB; <a href="index.html">html</a> &#x00BB; html_page.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>html_page.ml</span></code></h1></header><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+<a id="L131" class="source_line" href="#L131">131</a>
+<a id="L132" class="source_line" href="#L132">132</a>
+<a id="L133" class="source_line" href="#L133">133</a>
+<a id="L134" class="source_line" href="#L134">134</a>
+<a id="L135" class="source_line" href="#L135">135</a>
+<a id="L136" class="source_line" href="#L136">136</a>
+<a id="L137" class="source_line" href="#L137">137</a>
+<a id="L138" class="source_line" href="#L138">138</a>
+<a id="L139" class="source_line" href="#L139">139</a>
+<a id="L140" class="source_line" href="#L140">140</a>
+<a id="L141" class="source_line" href="#L141">141</a>
+<a id="L142" class="source_line" href="#L142">142</a>
+<a id="L143" class="source_line" href="#L143">143</a>
+<a id="L144" class="source_line" href="#L144">144</a>
+<a id="L145" class="source_line" href="#L145">145</a>
+<a id="L146" class="source_line" href="#L146">146</a>
+<a id="L147" class="source_line" href="#L147">147</a>
+<a id="L148" class="source_line" href="#L148">148</a>
+<a id="L149" class="source_line" href="#L149">149</a>
+<a id="L150" class="source_line" href="#L150">150</a>
+<a id="L151" class="source_line" href="#L151">151</a>
+<a id="L152" class="source_line" href="#L152">152</a>
+<a id="L153" class="source_line" href="#L153">153</a>
+<a id="L154" class="source_line" href="#L154">154</a>
+<a id="L155" class="source_line" href="#L155">155</a>
+<a id="L156" class="source_line" href="#L156">156</a>
+<a id="L157" class="source_line" href="#L157">157</a>
+<a id="L158" class="source_line" href="#L158">158</a>
+<a id="L159" class="source_line" href="#L159">159</a>
+<a id="L160" class="source_line" href="#L160">160</a>
+<a id="L161" class="source_line" href="#L161">161</a>
+<a id="L162" class="source_line" href="#L162">162</a>
+<a id="L163" class="source_line" href="#L163">163</a>
+<a id="L164" class="source_line" href="#L164">164</a>
+<a id="L165" class="source_line" href="#L165">165</a>
+<a id="L166" class="source_line" href="#L166">166</a>
+<a id="L167" class="source_line" href="#L167">167</a>
+<a id="L168" class="source_line" href="#L168">168</a>
+<a id="L169" class="source_line" href="#L169">169</a>
+<a id="L170" class="source_line" href="#L170">170</a>
+<a id="L171" class="source_line" href="#L171">171</a>
+<a id="L172" class="source_line" href="#L172">172</a>
+<a id="L173" class="source_line" href="#L173">173</a>
+<a id="L174" class="source_line" href="#L174">174</a>
+<a id="L175" class="source_line" href="#L175">175</a>
+<a id="L176" class="source_line" href="#L176">176</a>
+<a id="L177" class="source_line" href="#L177">177</a>
+<a id="L178" class="source_line" href="#L178">178</a>
+<a id="L179" class="source_line" href="#L179">179</a>
+<a id="L180" class="source_line" href="#L180">180</a>
+<a id="L181" class="source_line" href="#L181">181</a>
+<a id="L182" class="source_line" href="#L182">182</a>
+<a id="L183" class="source_line" href="#L183">183</a>
+<a id="L184" class="source_line" href="#L184">184</a>
+<a id="L185" class="source_line" href="#L185">185</a>
+<a id="L186" class="source_line" href="#L186">186</a>
+<a id="L187" class="source_line" href="#L187">187</a>
+<a id="L188" class="source_line" href="#L188">188</a>
+<a id="L189" class="source_line" href="#L189">189</a>
+<a id="L190" class="source_line" href="#L190">190</a>
+<a id="L191" class="source_line" href="#L191">191</a>
+<a id="L192" class="source_line" href="#L192">192</a>
+<a id="L193" class="source_line" href="#L193">193</a>
+<a id="L194" class="source_line" href="#L194">194</a>
+<a id="L195" class="source_line" href="#L195">195</a>
+<a id="L196" class="source_line" href="#L196">196</a>
+<a id="L197" class="source_line" href="#L197">197</a>
+<a id="L198" class="source_line" href="#L198">198</a>
+<a id="L199" class="source_line" href="#L199">199</a>
+<a id="L200" class="source_line" href="#L200">200</a>
+<a id="L201" class="source_line" href="#L201">201</a>
+<a id="L202" class="source_line" href="#L202">202</a>
+<a id="L203" class="source_line" href="#L203">203</a>
+<a id="L204" class="source_line" href="#L204">204</a>
+<a id="L205" class="source_line" href="#L205">205</a>
+<a id="L206" class="source_line" href="#L206">206</a>
+<a id="L207" class="source_line" href="#L207">207</a>
+<a id="L208" class="source_line" href="#L208">208</a>
+<a id="L209" class="source_line" href="#L209">209</a>
+<a id="L210" class="source_line" href="#L210">210</a>
+<a id="L211" class="source_line" href="#L211">211</a>
+<a id="L212" class="source_line" href="#L212">212</a>
+<a id="L213" class="source_line" href="#L213">213</a>
+<a id="L214" class="source_line" href="#L214">214</a>
+<a id="L215" class="source_line" href="#L215">215</a>
+<a id="L216" class="source_line" href="#L216">216</a>
+<a id="L217" class="source_line" href="#L217">217</a>
+<a id="L218" class="source_line" href="#L218">218</a>
+<a id="L219" class="source_line" href="#L219">219</a>
+<a id="L220" class="source_line" href="#L220">220</a>
+<a id="L221" class="source_line" href="#L221">221</a>
+<a id="L222" class="source_line" href="#L222">222</a>
+<a id="L223" class="source_line" href="#L223">223</a>
+<a id="L224" class="source_line" href="#L224">224</a>
+<a id="L225" class="source_line" href="#L225">225</a>
+<a id="L226" class="source_line" href="#L226">226</a>
+<a id="L227" class="source_line" href="#L227">227</a>
+<a id="L228" class="source_line" href="#L228">228</a>
+<a id="L229" class="source_line" href="#L229">229</a>
+<a id="L230" class="source_line" href="#L230">230</a>
+<a id="L231" class="source_line" href="#L231">231</a>
+<a id="L232" class="source_line" href="#L232">232</a>
+<a id="L233" class="source_line" href="#L233">233</a>
+<a id="L234" class="source_line" href="#L234">234</a>
+<a id="L235" class="source_line" href="#L235">235</a>
+<a id="L236" class="source_line" href="#L236">236</a>
+<a id="L237" class="source_line" href="#L237">237</a>
+<a id="L238" class="source_line" href="#L238">238</a>
+<a id="L239" class="source_line" href="#L239">239</a>
+<a id="L240" class="source_line" href="#L240">240</a>
+<a id="L241" class="source_line" href="#L241">241</a>
+<a id="L242" class="source_line" href="#L242">242</a>
+<a id="L243" class="source_line" href="#L243">243</a>
+<a id="L244" class="source_line" href="#L244">244</a>
+<a id="L245" class="source_line" href="#L245">245</a>
+<a id="L246" class="source_line" href="#L246">246</a>
+<a id="L247" class="source_line" href="#L247">247</a>
+<a id="L248" class="source_line" href="#L248">248</a>
+<a id="L249" class="source_line" href="#L249">249</a>
+<a id="L250" class="source_line" href="#L250">250</a>
+<a id="L251" class="source_line" href="#L251">251</a>
+<a id="L252" class="source_line" href="#L252">252</a>
+<a id="L253" class="source_line" href="#L253">253</a>
+<a id="L254" class="source_line" href="#L254">254</a>
+<a id="L255" class="source_line" href="#L255">255</a>
+<a id="L256" class="source_line" href="#L256">256</a>
+<a id="L257" class="source_line" href="#L257">257</a>
+<a id="L258" class="source_line" href="#L258">258</a>
+<a id="L259" class="source_line" href="#L259">259</a>
+<a id="L260" class="source_line" href="#L260">260</a>
+<a id="L261" class="source_line" href="#L261">261</a>
+<a id="L262" class="source_line" href="#L262">262</a>
+<a id="L263" class="source_line" href="#L263">263</a>
+<a id="L264" class="source_line" href="#L264">264</a>
+<a id="L265" class="source_line" href="#L265">265</a>
+<a id="L266" class="source_line" href="#L266">266</a>
+<a id="L267" class="source_line" href="#L267">267</a>
+<a id="L268" class="source_line" href="#L268">268</a>
+<a id="L269" class="source_line" href="#L269">269</a>
+<a id="L270" class="source_line" href="#L270">270</a>
+</code><code class="source_code"><span><span class="COMMENT">(*
+ * Copyright (c) 2016 Thomas Refis &lt;trefis@janestreet.com&gt;
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Url"><span class="MODULE">module</span> <span class="UIDENT">Url</span> <span class="EQUAL">=</span> <span class="UIDENT">Odoc_document</span><span class="DOT">.</span><span class="UIDENT">Url</span></span><span class="EOL">
+</span><span id="module-Html"><span class="MODULE">module</span> <span class="UIDENT">Html</span> <span class="EQUAL">=</span> <span class="UIDENT">Tyxml</span><span class="DOT">.</span><span class="UIDENT">Html</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-html_of_toc"><span class="LIDENT">html_of_toc</span></span> <span id="local_toc_1"><span class="LIDENT">toc</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <span class="UIDENT">Types</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_section_2"><span class="LIDENT">section</span></span> <span class="LPAREN">(</span><span id="local_section_3"><span class="LIDENT">section</span></span> <span class="COLON">:</span> <span class="LIDENT">toc</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_link_4"><span class="LIDENT">link</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_href</span> <a href="#local_section_3"><span class="LIDENT">section</span></a><span class="DOT">.</span><span class="LIDENT">href</span> <span class="RBRACKET">]</span> <a href="#local_section_3"><span class="LIDENT">section</span></a><span class="DOT">.</span><span class="LIDENT">title</span> <span class="IN">in</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_section_3"><span class="LIDENT">section</span></a><span class="DOT">.</span><span class="LIDENT">children</span> <span class="WITH">with</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span> <a href="#local_link_4"><span class="LIDENT">link</span></a> <span class="RBRACKET">]</span> <span class="BAR">|</span> <span id="local_cs_5"><span class="LIDENT">cs</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span> <a href="#local_link_4"><span class="LIDENT">link</span></a><span class="SEMI">;</span> <a href="#local_sections_6"><span class="LIDENT">sections</span></a> <a href="#local_cs_5"><span class="LIDENT">cs</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="AND">and</span> <span id="local_sections_6"><span class="LIDENT">sections</span></span> <span id="local_the_sections_7"><span class="LIDENT">the_sections</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_the_sections_7"><span class="LIDENT">the_sections</span></a><span class="EOL">
+</span>    <span class="INFIXOP0">|&gt;</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_the_section_8"><span class="LIDENT">the_section</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">li</span> <span class="LPAREN">(</span><a href="#local_section_2"><span class="LIDENT">section</span></a> <a href="#local_the_section_8"><span class="LIDENT">the_section</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="INFIXOP0">|&gt;</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">ul</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_toc_1"><span class="LIDENT">toc</span></a> <span class="WITH">with</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span> <a href="#local_sections_6"><span class="LIDENT">sections</span></a> <a href="#local_toc_1"><span class="LIDENT">toc</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-html_of_search"><span class="LIDENT">html_of_search</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_search_bar_9"><span class="LIDENT">search_bar</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="LIDENT">input</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;search-bar&quot;</span> <span class="RBRACKET">]</span><span class="SEMI">;</span> <span class="LIDENT">a_placeholder</span> <span class="STRING">&quot;🔎 Search...&quot;</span> <span class="RBRACKET">]</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_snake_10"><span class="LIDENT">snake</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="LIDENT">div</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;search-snake&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_search_result_11"><span class="LIDENT">search_result</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">div</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;search-result&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="EOL">
+</span>    <span class="LIDENT">div</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;search-inner&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <span class="LBRACKET">[</span> <a href="#local_search_bar_9"><span class="LIDENT">search_bar</span></a><span class="SEMI">;</span> <a href="#local_snake_10"><span class="LIDENT">snake</span></a><span class="SEMI">;</span> <a href="#local_search_result_11"><span class="LIDENT">search_result</span></a> <span class="RBRACKET">]</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-sidebar"><span class="LIDENT">sidebar</span></span> <span id="local_toc_12"><span class="LIDENT">toc</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_toc_12"><span class="LIDENT">toc</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">nav</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;odoc-toc&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <span class="LPAREN">(</span><a href="#val-html_of_toc"><span class="LIDENT">html_of_toc</span></a> <a href="#local_toc_12"><span class="LIDENT">toc</span></a><span class="RPAREN">)</span> <span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-html_of_breadcrumbs"><span class="LIDENT">html_of_breadcrumbs</span></span> <span class="LPAREN">(</span><span id="local_breadcrumbs_13"><span class="LIDENT">breadcrumbs</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">breadcrumb</span> <span class="LIDENT">list</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_make_navigation_14"><span class="LIDENT">make_navigation</span></span> <span class="TILDE">~</span><span id="local_up_url_15"><span class="LIDENT">up_url</span></span> <span id="local_rest_16"><span class="LIDENT">rest</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span><span class="EOL">
+</span>      <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">nav</span><span class="EOL">
+</span>        <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;odoc-nav&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>        <span class="LPAREN">(</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_href</span> <a href="#local_up_url_15"><span class="LIDENT">up_url</span></a> <span class="RBRACKET">]</span> <span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot;Up&quot;</span> <span class="RBRACKET">]</span><span class="SEMI">;</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot; – &quot;</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>        <span class="INFIXOP1">@</span> <a href="#local_rest_16"><span class="LIDENT">rest</span></a><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">rev</span> <a href="#local_breadcrumbs_13"><span class="LIDENT">breadcrumbs</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="COMMENT">(* Can't happen - there's always the current page's breadcrumb. *)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACKET">[</span> <span class="UNDERSCORE">_</span> <span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="COMMENT">(* No parents *)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACKET">[</span> <span class="LBRACE">{</span> <span class="LIDENT">name</span> <span class="EQUAL">=</span> <span class="STRING">&quot;index&quot;</span><span class="SEMI">;</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span><span class="SEMI">;</span> <span id="local_x_17"><span class="LIDENT">x</span></span> <span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Special case leaf pages called 'index' with one parent. This is for files called
+          index.mld that would otherwise clash with their parent. In particular,
+          dune and odig both cause this situation right now. *)</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_up_url_18"><span class="LIDENT">up_url</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;../index.html&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_parent_name_19"><span class="LIDENT">parent_name</span></span> <span class="EQUAL">=</span> <a href="#local_x_17"><span class="LIDENT">x</span></a><span class="DOT">.</span><span class="LIDENT">name</span> <span class="IN">in</span><span class="EOL">
+</span>      <a href="#local_make_navigation_14"><span class="LIDENT">make_navigation</span></a> <span class="TILDE">~</span><a href="#local_up_url_18"><span class="LIDENT">up_url</span></a> <span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <a href="#local_parent_name_19"><span class="LIDENT">parent_name</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_current_20"><span class="LIDENT">current</span></span> <span class="COLONCOLON">::</span> <span id="local_up_21"><span class="LIDENT">up</span></span> <span class="COLONCOLON">::</span> <span id="local_bs_22"><span class="LIDENT">bs</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_space_23"><span class="LIDENT">space</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot; &quot;</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_sep_24"><span class="LIDENT">sep</span></span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <a href="#local_space_23"><span class="LIDENT">space</span></a><span class="SEMI">;</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">entity</span> <span class="STRING">&quot;#x00BB&quot;</span><span class="SEMI">;</span> <a href="#local_space_23"><span class="LIDENT">space</span></a> <span class="RBRACKET">]</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_html_25"><span class="LIDENT">html</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <span class="COMMENT">(* Create breadcrumbs *)</span><span class="EOL">
+</span>        <span class="UIDENT">Utils</span><span class="DOT">.</span><span class="LIDENT">list_concat_map</span> <span class="OPTLABEL">?sep:</span><span class="LPAREN">(</span><span class="UIDENT">Some</span> <a href="#local_sep_24"><span class="LIDENT">sep</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>          <span class="LABEL">~f:</span><span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span id="local_breadcrumb_26"><span class="LIDENT">breadcrumb</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">breadcrumb</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>            <span class="LBRACKET">[</span><span class="EOL">
+</span>              <span class="LBRACKET">[</span><span class="EOL">
+</span>                <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a</span><span class="EOL">
+</span>                  <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_href</span> <a href="#local_breadcrumb_26"><span class="LIDENT">breadcrumb</span></a><span class="DOT">.</span><span class="LIDENT">href</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>                  <span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <a href="#local_breadcrumb_26"><span class="LIDENT">breadcrumb</span></a><span class="DOT">.</span><span class="LIDENT">name</span> <span class="RBRACKET">]</span><span class="SEMI">;</span><span class="EOL">
+</span>              <span class="RBRACKET">]</span><span class="SEMI">;</span><span class="EOL">
+</span>            <span class="RBRACKET">]</span><span class="RPAREN">)</span><span class="EOL">
+</span>          <span class="LPAREN">(</span><a href="#local_up_21"><span class="LIDENT">up</span></a> <span class="COLONCOLON">::</span> <a href="#local_bs_22"><span class="LIDENT">bs</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>        <span class="INFIXOP0">|&gt;</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">flatten</span><span class="EOL">
+</span>      <span class="IN">in</span><span class="EOL">
+</span>      <a href="#local_make_navigation_14"><span class="LIDENT">make_navigation</span></a> <span class="LABEL">~up_url:</span><a href="#local_up_21"><span class="LIDENT">up</span></a><span class="DOT">.</span><span class="LIDENT">href</span><span class="EOL">
+</span>        <span class="LPAREN">(</span><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">rev</span> <a href="#local_html_25"><span class="LIDENT">html</span></a> <span class="INFIXOP1">@</span> <a href="#local_sep_24"><span class="LIDENT">sep</span></a> <span class="INFIXOP1">@</span> <span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <a href="#local_current_20"><span class="LIDENT">current</span></a><span class="DOT">.</span><span class="LIDENT">name</span> <span class="RBRACKET">]</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-file_uri"><span class="LIDENT">file_uri</span></span> <span class="TILDE">~</span><span id="local_config_27"><span class="LIDENT">config</span></span> <span class="TILDE">~</span><span id="local_url_28"><span class="LIDENT">url</span></span> <span class="LPAREN">(</span><span id="local_base_29"><span class="LIDENT">base</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">uri</span><span class="RPAREN">)</span> <span id="local_file_30"><span class="LIDENT">file</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_base_29"><span class="LIDENT">base</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Absolute</span> <span id="local_uri_31"><span class="LIDENT">uri</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_uri_31"><span class="LIDENT">uri</span></a> <span class="INFIXOP1">^</span> <span class="STRING">&quot;/&quot;</span> <span class="INFIXOP1">^</span> <a href="#local_file_30"><span class="LIDENT">file</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Relative</span> <span id="local_uri_32"><span class="LIDENT">uri</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_page_33"><span class="LIDENT">page</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Url</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LBRACE">{</span> <span class="LIDENT">kind</span> <span class="EQUAL">=</span> <span class="BACKQUOTE">`</span><span class="UIDENT">File</span><span class="SEMI">;</span> <span class="LIDENT">parent</span> <span class="EQUAL">=</span> <a href="#local_uri_32"><span class="LIDENT">uri</span></a><span class="SEMI">;</span> <span class="LIDENT">name</span> <span class="EQUAL">=</span> <a href="#local_file_30"><span class="LIDENT">file</span></a> <span class="RBRACE">}</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="UIDENT">Link</span><span class="DOT">.</span><span class="LIDENT">href</span> <span class="TILDE">~</span><a href="#local_config_27"><span class="LIDENT">config</span></a> <span class="LABEL">~resolve:</span><span class="LPAREN">(</span><span class="UIDENT">Current</span> <a href="#local_url_28"><span class="LIDENT">url</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="UIDENT">Url</span><span class="DOT">.</span><span class="LIDENT">from_path</span> <a href="#local_page_33"><span class="LIDENT">page</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-default_meta_elements"><span class="LIDENT">default_meta_elements</span></span> <span class="TILDE">~</span><span id="local_config_34"><span class="LIDENT">config</span></span> <span class="TILDE">~</span><span id="local_url_35"><span class="LIDENT">url</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_theme_uri_36"><span class="LIDENT">theme_uri</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">theme_uri</span> <a href="#local_config_34"><span class="LIDENT">config</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_odoc_css_uri_37"><span class="LIDENT">odoc_css_uri</span></span> <span class="EQUAL">=</span> <a href="#val-file_uri"><span class="LIDENT">file_uri</span></a> <span class="TILDE">~</span><a href="#local_config_34"><span class="LIDENT">config</span></a> <span class="TILDE">~</span><a href="#local_url_35"><span class="LIDENT">url</span></a> <a href="#local_theme_uri_36"><span class="LIDENT">theme_uri</span></a> <span class="STRING">&quot;odoc.css&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LBRACKET">[</span><span class="EOL">
+</span>    <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">meta</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_charset</span> <span class="STRING">&quot;utf-8&quot;</span> <span class="RBRACKET">]</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">link</span> <span class="LABEL">~rel:</span><span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Stylesheet</span> <span class="RBRACKET">]</span> <span class="LABEL">~href:</span><a href="#local_odoc_css_uri_37"><span class="LIDENT">odoc_css_uri</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">meta</span><span class="EOL">
+</span>      <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_name</span> <span class="STRING">&quot;generator&quot;</span><span class="SEMI">;</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_content</span> <span class="STRING">&quot;odoc %%VERSION%%&quot;</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">meta</span><span class="EOL">
+</span>      <span class="LABEL">~a:</span><span class="EOL">
+</span>        <span class="LBRACKET">[</span><span class="EOL">
+</span>          <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_name</span> <span class="STRING">&quot;viewport&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_content</span> <span class="STRING">&quot;width=device-width,initial-scale=1.0&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>        <span class="RBRACKET">]</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-page_creator"><span class="LIDENT">page_creator</span></span> <span class="TILDE">~</span><span id="local_config_38"><span class="LIDENT">config</span></span> <span class="TILDE">~</span><span id="local_url_39"><span class="LIDENT">url</span></span> <span class="TILDE">~</span><span id="local_uses_katex_40"><span class="LIDENT">uses_katex</span></span> <span id="local_header_41"><span class="LIDENT">header</span></span> <span id="local_breadcrumbs_42"><span class="LIDENT">breadcrumbs</span></span> <span id="local_toc_43"><span class="LIDENT">toc</span></span> <span id="local_content_44"><span class="LIDENT">content</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_theme_uri_45"><span class="LIDENT">theme_uri</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">theme_uri</span> <a href="#local_config_38"><span class="LIDENT">config</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_support_uri_46"><span class="LIDENT">support_uri</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">support_uri</span> <a href="#local_config_38"><span class="LIDENT">config</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_search_uris_47"><span class="LIDENT">search_uris</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">search_uris</span> <a href="#local_config_38"><span class="LIDENT">config</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_path_48"><span class="LIDENT">path</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Link</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">for_printing</span> <a href="#local_url_39"><span class="LIDENT">url</span></a> <span class="IN">in</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_head_49"><span class="LIDENT">head</span></span> <span class="COLON">:</span> <span class="UIDENT">Html_types</span><span class="DOT">.</span><span class="LIDENT">head</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">elt</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_title_string_50"><span class="LIDENT">title_string</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">sprintf</span> <span class="STRING">&quot;%s (%s)&quot;</span> <a href="#local_url_39"><span class="LIDENT">url</span></a><span class="DOT">.</span><span class="LIDENT">name</span> <span class="LPAREN">(</span><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">concat</span> <span class="STRING">&quot;.&quot;</span> <a href="#local_path_48"><span class="LIDENT">path</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_file_uri_51"><span class="LIDENT">file_uri</span></span> <span class="EQUAL">=</span> <a href="#val-file_uri"><span class="LIDENT">file_uri</span></a> <span class="TILDE">~</span><a href="#local_config_38"><span class="LIDENT">config</span></a> <span class="TILDE">~</span><a href="#local_url_39"><span class="LIDENT">url</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_search_uri_52"><span class="LIDENT">search_uri</span></span> <span id="local_uri_53"><span class="LIDENT">uri</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="MATCH">match</span> <a href="#local_uri_53"><span class="LIDENT">uri</span></a> <span class="WITH">with</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Absolute</span> <span id="local_uri_54"><span class="LIDENT">uri</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_uri_54"><span class="LIDENT">uri</span></a><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Relative</span> <span id="local_uri_55"><span class="LIDENT">uri</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <span class="UIDENT">Link</span><span class="DOT">.</span><span class="LIDENT">href</span> <span class="TILDE">~</span><a href="#local_config_38"><span class="LIDENT">config</span></a> <span class="LABEL">~resolve:</span><span class="LPAREN">(</span><span class="UIDENT">Current</span> <a href="#local_url_39"><span class="LIDENT">url</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="UIDENT">Url</span><span class="DOT">.</span><span class="LIDENT">from_path</span> <a href="#local_uri_55"><span class="LIDENT">uri</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_search_scripts_56"><span class="LIDENT">search_scripts</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="MATCH">match</span> <a href="#local_search_uris_47"><span class="LIDENT">search_uris</span></a> <span class="WITH">with</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <span class="LET">let</span> <span id="local_search_urls_57"><span class="LIDENT">search_urls</span></span> <span class="EQUAL">=</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <a href="#local_search_uri_52"><span class="LIDENT">search_uri</span></a> <a href="#local_search_uris_47"><span class="LIDENT">search_uris</span></a> <span class="IN">in</span><span class="EOL">
+</span>          <span class="LET">let</span> <span id="local_search_urls_58"><span class="LIDENT">search_urls</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>            <span class="LET">let</span> <span id="local_search_url_59"><span class="LIDENT">search_url</span></span> <span id="local_name_60"><span class="LIDENT">name</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">sprintf</span> <span class="STRING">&quot;'%s'&quot;</span> <a href="#local_name_60"><span class="LIDENT">name</span></a> <span class="IN">in</span><span class="EOL">
+</span>            <span class="LET">let</span> <span id="local_search_urls_61"><span class="LIDENT">search_urls</span></span> <span class="EQUAL">=</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <a href="#local_search_url_59"><span class="LIDENT">search_url</span></a> <a href="#local_search_urls_57"><span class="LIDENT">search_urls</span></a> <span class="IN">in</span><span class="EOL">
+</span>            <span class="STRING">&quot;[&quot;</span> <span class="INFIXOP1">^</span> <span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">concat</span> <span class="STRING">&quot;,&quot;</span> <a href="#local_search_urls_61"><span class="LIDENT">search_urls</span></a> <span class="INFIXOP1">^</span> <span class="STRING">&quot;]&quot;</span><span class="EOL">
+</span>          <span class="IN">in</span><span class="EOL">
+</span>          <span class="COMMENT">(* The names of the search scripts are put into a js variable. Then
+             the code in [odoc_search.js] load them into a webworker. *)</span><span class="EOL">
+</span>          <span class="LBRACKET">[</span><span class="EOL">
+</span>            <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">script</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span>              <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span><span class="EOL">
+</span>                 <span class="LPAREN">(</span><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">asprintf</span><span class="EOL">
+</span>                    <span class="STRING">{|let base_url = '%s';
+let search_urls = %s;
+|}</span><span class="EOL">
+</span>                    <span class="LPAREN">(</span><span class="LET">let</span> <span id="local_page_62"><span class="LIDENT">page</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>                       <span class="UIDENT">Url</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LBRACE">{</span> <span class="LIDENT">kind</span> <span class="EQUAL">=</span> <span class="BACKQUOTE">`</span><span class="UIDENT">File</span><span class="SEMI">;</span> <span class="LIDENT">parent</span> <span class="EQUAL">=</span> <span class="UIDENT">None</span><span class="SEMI">;</span> <span class="LIDENT">name</span> <span class="EQUAL">=</span> <span class="STRING">&quot;&quot;</span> <span class="RBRACE">}</span><span class="EOL">
+</span>                     <span class="IN">in</span><span class="EOL">
+</span>                     <span class="UIDENT">Link</span><span class="DOT">.</span><span class="LIDENT">href</span> <span class="TILDE">~</span><a href="#local_config_38"><span class="LIDENT">config</span></a> <span class="LABEL">~resolve:</span><span class="LPAREN">(</span><span class="UIDENT">Current</span> <a href="#local_url_39"><span class="LIDENT">url</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>                       <span class="LPAREN">(</span><span class="UIDENT">Url</span><span class="DOT">.</span><span class="LIDENT">from_path</span> <a href="#local_page_62"><span class="LIDENT">page</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>                    <a href="#local_search_urls_58"><span class="LIDENT">search_urls</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>            <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">script</span><span class="EOL">
+</span>              <span class="LABEL">~a:</span><span class="EOL">
+</span>                <span class="LBRACKET">[</span><span class="EOL">
+</span>                  <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_src</span> <span class="LPAREN">(</span><a href="#local_file_uri_51"><span class="LIDENT">file_uri</span></a> <a href="#local_support_uri_46"><span class="LIDENT">support_uri</span></a> <span class="STRING">&quot;odoc_search.js&quot;</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>                  <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_defer</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>                <span class="RBRACKET">]</span><span class="EOL">
+</span>              <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot;&quot;</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_meta_elements_63"><span class="LIDENT">meta_elements</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_highlightjs_meta_64"><span class="LIDENT">highlightjs_meta</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_highlight_js_uri_65"><span class="LIDENT">highlight_js_uri</span></span> <span class="EQUAL">=</span> <a href="#local_file_uri_51"><span class="LIDENT">file_uri</span></a> <a href="#local_support_uri_46"><span class="LIDENT">support_uri</span></a> <span class="STRING">&quot;highlight.pack.js&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>        <span class="LBRACKET">[</span><span class="EOL">
+</span>          <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">script</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_src</span> <a href="#local_highlight_js_uri_65"><span class="LIDENT">highlight_js_uri</span></a> <span class="RBRACKET">]</span> <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot;&quot;</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">script</span> <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot;hljs.initHighlightingOnLoad();&quot;</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>        <span class="RBRACKET">]</span><span class="EOL">
+</span>      <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_katex_meta_66"><span class="LIDENT">katex_meta</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <span class="IF">if</span> <a href="#local_uses_katex_40"><span class="LIDENT">uses_katex</span></a> <span class="THEN">then</span><span class="EOL">
+</span>          <span class="LET">let</span> <span id="local_katex_css_uri_67"><span class="LIDENT">katex_css_uri</span></span> <span class="EQUAL">=</span> <a href="#local_file_uri_51"><span class="LIDENT">file_uri</span></a> <a href="#local_theme_uri_45"><span class="LIDENT">theme_uri</span></a> <span class="STRING">&quot;katex.min.css&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>          <span class="LET">let</span> <span id="local_katex_js_uri_68"><span class="LIDENT">katex_js_uri</span></span> <span class="EQUAL">=</span> <a href="#local_file_uri_51"><span class="LIDENT">file_uri</span></a> <a href="#local_support_uri_46"><span class="LIDENT">support_uri</span></a> <span class="STRING">&quot;katex.min.js&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>          <span class="LBRACKET">[</span><span class="EOL">
+</span>            <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">link</span> <span class="LABEL">~rel:</span><span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Stylesheet</span> <span class="RBRACKET">]</span> <span class="LABEL">~href:</span><a href="#local_katex_css_uri_67"><span class="LIDENT">katex_css_uri</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>            <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">script</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_src</span> <a href="#local_katex_js_uri_68"><span class="LIDENT">katex_js_uri</span></a> <span class="RBRACKET">]</span> <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot;&quot;</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>            <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">script</span><span class="EOL">
+</span>              <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">cdata_script</span><span class="EOL">
+</span>                 <span class="STRING">{|
+          document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
+            var elements = Array.from(document.getElementsByClassName(&quot;odoc-katex-math&quot;));
+            for (var i = 0; i &lt; elements.length; i++) {
+              var el = elements[i];
+              var content = el.textContent;
+              var new_el = document.createElement(&quot;span&quot;);
+              new_el.setAttribute(&quot;class&quot;, &quot;odoc-katex-math-rendered&quot;);
+              var display = el.classList.contains(&quot;display&quot;);
+              katex.render(content, new_el, { throwOnError: false, displayMode: display });
+              el.replaceWith(new_el);
+            }
+          });
+        |}</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="RBRACKET">]</span><span class="EOL">
+</span>        <span class="ELSE">else</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span>      <span class="IN">in</span><span class="EOL">
+</span>      <a href="#val-default_meta_elements"><span class="LIDENT">default_meta_elements</span></a> <span class="TILDE">~</span><a href="#local_config_38"><span class="LIDENT">config</span></a> <span class="TILDE">~</span><a href="#local_url_39"><span class="LIDENT">url</span></a> <span class="INFIXOP1">@</span> <a href="#local_highlightjs_meta_64"><span class="LIDENT">highlightjs_meta</span></a> <span class="INFIXOP1">@</span> <a href="#local_katex_meta_66"><span class="LIDENT">katex_meta</span></a><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_meta_elements_69"><span class="LIDENT">meta_elements</span></span> <span class="EQUAL">=</span> <a href="#local_meta_elements_63"><span class="LIDENT">meta_elements</span></a> <span class="INFIXOP1">@</span> <a href="#local_search_scripts_56"><span class="LIDENT">search_scripts</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">head</span> <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">title</span> <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <a href="#local_title_string_50"><span class="LIDENT">title_string</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <a href="#local_meta_elements_69"><span class="LIDENT">meta_elements</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_search_bar_70"><span class="LIDENT">search_bar</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_search_uris_47"><span class="LIDENT">search_uris</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">div</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;odoc-search&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <span class="LBRACKET">[</span> <a href="#val-html_of_search"><span class="LIDENT">html_of_search</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_body_71"><span class="LIDENT">body</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#val-html_of_breadcrumbs"><span class="LIDENT">html_of_breadcrumbs</span></a> <a href="#local_breadcrumbs_42"><span class="LIDENT">breadcrumbs</span></a><span class="EOL">
+</span>    <span class="INFIXOP1">@</span> <a href="#local_search_bar_70"><span class="LIDENT">search_bar</span></a><span class="EOL">
+</span>    <span class="INFIXOP1">@</span> <span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">header</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;odoc-preamble&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <a href="#local_header_41"><span class="LIDENT">header</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="INFIXOP1">@</span> <a href="#val-sidebar"><span class="LIDENT">sidebar</span></a> <a href="#local_toc_43"><span class="LIDENT">toc</span></a><span class="EOL">
+</span>    <span class="INFIXOP1">@</span> <span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">div</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;odoc-content&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <a href="#local_content_44"><span class="LIDENT">content</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_htmlpp_72"><span class="LIDENT">htmlpp</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">pp</span> <span class="LABEL">~indent:</span><span class="LPAREN">(</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">indent</span> <a href="#local_config_38"><span class="LIDENT">config</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_html_73"><span class="LIDENT">html</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">html</span> <a href="#local_head_49"><span class="LIDENT">head</span></a> <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">body</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;odoc&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <a href="#local_body_71"><span class="LIDENT">body</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_content_74"><span class="LIDENT">content</span></span> <span id="local_ppf_75"><span class="LIDENT">ppf</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_htmlpp_72"><span class="LIDENT">htmlpp</span></a> <a href="#local_ppf_75"><span class="LIDENT">ppf</span></a> <a href="#local_html_73"><span class="LIDENT">html</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="COMMENT">(* Tyxml's pp doesn't output a newline a the end, so we force one *)</span><span class="EOL">
+</span>    <span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">pp_force_newline</span> <a href="#local_ppf_75"><span class="LIDENT">ppf</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_content_74"><span class="LIDENT">content</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-make"><span class="LIDENT">make</span></span> <span class="TILDE">~</span><span id="local_config_76"><span class="LIDENT">config</span></span> <span class="TILDE">~</span><span id="local_url_77"><span class="LIDENT">url</span></span> <span class="TILDE">~</span><span id="local_header_78"><span class="LIDENT">header</span></span> <span class="TILDE">~</span><span id="local_breadcrumbs_79"><span class="LIDENT">breadcrumbs</span></span> <span class="TILDE">~</span><span id="local_toc_80"><span class="LIDENT">toc</span></span> <span class="TILDE">~</span><span id="local_uses_katex_81"><span class="LIDENT">uses_katex</span></span> <span id="local_content_82"><span class="LIDENT">content</span></span> <span id="local_children_83"><span class="LIDENT">children</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_filename_84"><span class="LIDENT">filename</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Link</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">as_filename</span> <span class="LABEL">~is_flat:</span><span class="LPAREN">(</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">flat</span> <a href="#local_config_76"><span class="LIDENT">config</span></a><span class="RPAREN">)</span> <a href="#local_url_77"><span class="LIDENT">url</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_content_85"><span class="LIDENT">content</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#val-page_creator"><span class="LIDENT">page_creator</span></a> <span class="TILDE">~</span><a href="#local_config_76"><span class="LIDENT">config</span></a> <span class="TILDE">~</span><a href="#local_url_77"><span class="LIDENT">url</span></a> <span class="TILDE">~</span><a href="#local_uses_katex_81"><span class="LIDENT">uses_katex</span></a> <a href="#local_header_78"><span class="LIDENT">header</span></a> <a href="#local_breadcrumbs_79"><span class="LIDENT">breadcrumbs</span></a> <a href="#local_toc_80"><span class="LIDENT">toc</span></a> <a href="#local_content_82"><span class="LIDENT">content</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <a href="#local_filename_84"><span class="UIDENT">Odoc_document</span><span class="DOT">.</span><span class="UIDENT">Renderer</span><span class="DOT">.</span><span class="LIDENT">filename</span></a><span class="SEMI">;</span> <a href="#local_content_85"><span class="LIDENT">content</span></a><span class="SEMI">;</span> <a href="#local_children_83"><span class="LIDENT">children</span></a> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-path_of_module_of_source"><span class="LIDENT">path_of_module_of_source</span></span> <span id="local_ppf_86"><span class="LIDENT">ppf</span></span> <span id="local_url_87"><span class="LIDENT">url</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_url_87"><span class="LIDENT">url</span></a><span class="DOT">.</span><span class="UIDENT">Url</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">parent</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_parent_88"><span class="LIDENT">parent</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_path_89"><span class="LIDENT">path</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Link</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">for_printing</span> <a href="#local_parent_88"><span class="LIDENT">parent</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">fprintf</span> <a href="#local_ppf_86"><span class="LIDENT">ppf</span></a> <span class="STRING">&quot; (%s)&quot;</span> <span class="LPAREN">(</span><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">concat</span> <span class="STRING">&quot;.&quot;</span> <a href="#local_path_89"><span class="LIDENT">path</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-src_page_creator"><span class="LIDENT">src_page_creator</span></span> <span class="TILDE">~</span><span id="local_breadcrumbs_90"><span class="LIDENT">breadcrumbs</span></span> <span class="TILDE">~</span><span id="local_config_91"><span class="LIDENT">config</span></span> <span class="TILDE">~</span><span id="local_url_92"><span class="LIDENT">url</span></span> <span class="TILDE">~</span><span id="local_header_93"><span class="LIDENT">header</span></span> <span id="local_name_94"><span class="LIDENT">name</span></span> <span id="local_content_95"><span class="LIDENT">content</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_head_96"><span class="LIDENT">head</span></span> <span class="COLON">:</span> <span class="UIDENT">Html_types</span><span class="DOT">.</span><span class="LIDENT">head</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">elt</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_title_string_97"><span class="LIDENT">title_string</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">asprintf</span> <span class="STRING">&quot;Source: %s%a&quot;</span> <a href="#local_name_94"><span class="LIDENT">name</span></a> <a href="#val-path_of_module_of_source"><span class="LIDENT">path_of_module_of_source</span></a> <a href="#local_url_92"><span class="LIDENT">url</span></a><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_meta_elements_98"><span class="LIDENT">meta_elements</span></span> <span class="EQUAL">=</span> <a href="#val-default_meta_elements"><span class="LIDENT">default_meta_elements</span></a> <span class="TILDE">~</span><a href="#local_config_91"><span class="LIDENT">config</span></a> <span class="TILDE">~</span><a href="#local_url_92"><span class="LIDENT">url</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">head</span> <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">title</span> <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">txt</span> <a href="#local_title_string_97"><span class="LIDENT">title_string</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <a href="#local_meta_elements_98"><span class="LIDENT">meta_elements</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_body_99"><span class="LIDENT">body</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#val-html_of_breadcrumbs"><span class="LIDENT">html_of_breadcrumbs</span></a> <a href="#local_breadcrumbs_90"><span class="LIDENT">breadcrumbs</span></a><span class="EOL">
+</span>    <span class="INFIXOP1">@</span> <span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">header</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;odoc-preamble&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <a href="#local_header_93"><span class="LIDENT">header</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="INFIXOP1">@</span> <a href="#local_content_95"><span class="LIDENT">content</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="COMMENT">(* We never indent as there is a bug in tyxml and it would break lines inside
+     a [pre] *)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_htmlpp_100"><span class="LIDENT">htmlpp</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">pp</span> <span class="LABEL">~indent:</span><span class="FALSE">false</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_html_101"><span class="LIDENT">html</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">html</span> <a href="#local_head_96"><span class="LIDENT">head</span></a> <span class="LPAREN">(</span><span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">body</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;odoc-src&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <a href="#local_body_99"><span class="LIDENT">body</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_content_102"><span class="LIDENT">content</span></span> <span id="local_ppf_103"><span class="LIDENT">ppf</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_htmlpp_100"><span class="LIDENT">htmlpp</span></a> <a href="#local_ppf_103"><span class="LIDENT">ppf</span></a> <a href="#local_html_101"><span class="LIDENT">html</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="COMMENT">(* Tyxml's pp doesn't output a newline a the end, so we force one *)</span><span class="EOL">
+</span>    <span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">pp_force_newline</span> <a href="#local_ppf_103"><span class="LIDENT">ppf</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_content_102"><span class="LIDENT">content</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-make_src"><span class="LIDENT">make_src</span></span> <span class="TILDE">~</span><span id="local_config_104"><span class="LIDENT">config</span></span> <span class="TILDE">~</span><span id="local_url_105"><span class="LIDENT">url</span></span> <span class="TILDE">~</span><span id="local_breadcrumbs_106"><span class="LIDENT">breadcrumbs</span></span> <span class="TILDE">~</span><span id="local_header_107"><span class="LIDENT">header</span></span> <span id="local_title_108"><span class="LIDENT">title</span></span> <span id="local_content_109"><span class="LIDENT">content</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_filename_110"><span class="LIDENT">filename</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Link</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">as_filename</span> <span class="LABEL">~is_flat:</span><span class="LPAREN">(</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">flat</span> <a href="#local_config_104"><span class="LIDENT">config</span></a><span class="RPAREN">)</span> <a href="#local_url_105"><span class="LIDENT">url</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_content_111"><span class="LIDENT">content</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#val-src_page_creator"><span class="LIDENT">src_page_creator</span></a> <span class="TILDE">~</span><a href="#local_breadcrumbs_106"><span class="LIDENT">breadcrumbs</span></a> <span class="TILDE">~</span><a href="#local_config_104"><span class="LIDENT">config</span></a> <span class="TILDE">~</span><a href="#local_url_105"><span class="LIDENT">url</span></a> <span class="TILDE">~</span><a href="#local_header_107"><span class="LIDENT">header</span></a> <a href="#local_title_108"><span class="LIDENT">title</span></a> <a href="#local_content_109"><span class="LIDENT">content</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <a href="#local_filename_110"><span class="UIDENT">Odoc_document</span><span class="DOT">.</span><span class="UIDENT">Renderer</span><span class="DOT">.</span><span class="LIDENT">filename</span></a><span class="SEMI">;</span> <a href="#local_content_111"><span class="LIDENT">content</span></a><span class="SEMI">;</span> <span class="LIDENT">children</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="RBRACE">}</span><span class="EOL">
+</span></span></code></pre></body></html>

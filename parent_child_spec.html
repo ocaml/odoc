@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>parent_child_spec (odoc.parent_child_spec)</title><meta charset="utf-8"/><link rel="stylesheet" href="odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../';
+let search_urls = ['sherlodoc_db.js','sherlodoc.js'];
+</script><script src="odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="index.html">odoc</a> &#x00BB; parent_child_spec</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1 id="parent/child-specification"><a href="#parent/child-specification" class="anchor"></a>Parent/Child Specification</h1><p>This parent/child specification allows more flexible output support, e.g., per library documentation. See <a href="https://ocaml.org/packages">ocaml.org/packages</a>.</p></header><nav class="odoc-toc"><ul><li><a href="#rules">Rules</a></li><li><a href="#example">Example</a><ul><li><a href="#compilation">Compilation</a></li><li><a href="#linking">Linking</a></li><li><a href="#generating-html">Generating HTML</a></li></ul></li><li><a href="#convention-for-installed-packages">Convention for installed packages</a><ul><li><a href="#convention">Convention</a></li></ul></li></ul></nav><div class="odoc-content"><h2 id="rules"><a href="#rules" class="anchor"></a>Rules</h2><p>The rules are;</p><ul><li><code>.mld</code> files may or may not have a parent <code>.mld</code>.</li><li>Compilation units must have a parent <code>.mld</code>.</li><li>The parent <code>.mld</code> file must be compiled before any of its children, and the children must be specified at the parent's compilation time.</li><li>The output paths of <code>.mld</code> files and compilation units are subdirectories of their parent's output directory.</li><li>The output directory of a <code>.mld</code> file <code>x.mld</code> with children is <code>&lt;parent_output_directory&gt;/x</code>, and its file name is <code>index.html</code>. That is to say, <code>&lt;parent_output_directory&gt;/x/index.html</code></li><li>The output directory of a <code>.mld</code> file <code>x.mld</code> without children is <code>&lt;parent_output_directory&gt; /x.html</code></li><li>The output directory of a compilation unit <code>X</code> is <code>&lt;parent_output_directory&gt;/X/index.html</code></li></ul><p><b>Note:</b> The <code>--pkg &lt;package&gt;</code> option is still supported for backward compatibility in <code>odoc &gt;= v2.0.0</code>, although it's now equivalent to specifying a parent <code>.mld</code> file.</p><h2 id="example"><a href="#example" class="anchor"></a>Example</h2><p>For example, let's consider <code>John</code> whose is <code>Doe</code> and <code>Mark</code>'s father. <code>Doe</code> has children, <code>Max</code>, and page <code>foo</code>, whereas <code>Mark</code> has no children. That is to say, <code>john.mld</code>, <code>doe.mld</code>, <code>mark.mld</code>, <code>max.mld</code>, <code>foo.ml</code> respectively. For instance;</p><p><code>john.mld</code></p><pre>{0 About John}
+
+I'm John the father to {{!page-doe}Doe} and {{!page-mark}Mark}.</pre><p><code>doe.mld</code></p><pre>{0 About Doe}
+
+I'm Doe, the;
+- son to {{!page-john}John}
+- brother to {{!page-mark}Mark}
+- father to {{!page-max}Max}
+
+I also own page {{!page-foo}foo}</pre><p><code>mark.mld</code></p><pre>{0 About Mark}
+
+I'm Mark {{!page-doe}Doe}'s brother and I have no children.</pre><p><code>max.mld</code></p><pre>{0 About Max}
+
+I'm Max, the child to {{!page-doe}Doe}</pre><p><code>foo.ml</code></p><pre class="language-ocaml"><code>(** I'm foo, a page child to Doe *)</code></pre><h3 id="compilation"><a href="#compilation" class="anchor"></a>Compilation</h3><pre>$ ocamlc -c -bin-annot foo.ml
+  &amp;&amp; odoc compile john.mld -c page-doe -c page-mark
+  &amp;&amp; odoc compile doe.mld -I . --parent page-john -c page-max -c foo
+  &amp;&amp; odoc compile max.mld -I . --parent page-doe
+  &amp;&amp; odoc compile foo.cmt -I . --parent page-doe
+  &amp;&amp; odoc compile mark.mld -I . --parent page-john</pre><p>The output of the compilation phase will be <code>.odoc</code> files, where each will be linked by invoking the <code>odoc link</code> command on them.</p><h3 id="linking"><a href="#linking" class="anchor"></a>Linking</h3><p><code>odoc link -I . &lt;file&gt;.odoc</code></p><pre>$ odoc link -I . page-john.odoc
+  &amp;&amp; odoc link -I . page-doe.odoc
+  &amp;&amp; odoc link -I . page-mark.odoc
+  &amp;&amp; odoc link -I . page-max.odoc
+  &amp;&amp; odoc link -I . foo.odoc</pre><p>The output of the <code>odoc link</code> command is an <code>.odocl</code> file, by default, in the same path as the original <code>.odoc</code> file.</p><h3 id="generating-html"><a href="#generating-html" class="anchor"></a>Generating HTML</h3><pre>$ odoc html-generate --indent -o html page-john.odocl
+  &amp;&amp; odoc html-generate --indent -o html page-doe.odocl
+  &amp;&amp; odoc html-generate --indent -o html page-mark.odocl
+  &amp;&amp; odoc html-generate --indent -o html page-max.odocl
+  &amp;&amp; odoc html-generate --indent -o html foo.odocl
+  &amp;&amp; odoc support-files -o html</pre><p>Then we inspect the contents of the <code>html</code> directory using;</p><pre>$ ls -R html
+  highlight.pack.js
+  john
+  odoc.css
+
+  html/john:
+  doe
+  index.html
+  mark.html
+
+  html/john/doe:
+  Foo
+  index.html
+  max.html
+
+  html/john/doe/Foo:
+  index.</pre><p><b>Note:</b> We generated HTML files only for this example, but it's very possible to generate files in other formats (i.e, latex and man-pages) using:</p><ul><li><code>$ odoc latex-generate -o latex &lt;file&gt;.odocl</code></li><li><code>$ odoc man-generate -o man &lt;file&gt;.odocl</code></li></ul><p>Of course there are different commands that <code>odoc</code> uses for other purposes; e.g., for inspection:</p><ul><li><code>odoc &lt;html/latex/man&gt;-targets ...</code> takes a glimpse of the expected targets</li><li><code>odoc compile-deps ...</code> lists units (with their digest) that need to be compiled in order to compile the current compilation unit. The unit itself and its digest is also reported in the output.</li></ul><p>For example, inspecting the dependencies required to compile <code>foo.cmt</code>, we run</p><p><code>odoc compile-deps foo.cmt</code></p><p>and we shall get</p><pre class="language-text"><code>Stdlib aea3513d44d604b62eaff79ad12007b3
+Foo 5ab79b5411a3c3476029260eda0b4a26
+CamlinternalFormatBasics f562e7b79dbe1bb1591060d6b4e854cf</code></pre><p>For more about <code>odoc</code> commands, simply invoke <code>odoc --help</code> in your shell.</p><h2 id="convention-for-installed-packages"><a href="#convention-for-installed-packages" class="anchor"></a>Convention for installed packages</h2><p>Locally, the build system can make arbitrary complex documentation page hierarchies. However, the generated HTML documentation is generally not installed as part of a package. Instead the documentation source code made of <code>.mld</code> pages is installed and might be used by a different driver.</p><h3 id="convention"><a href="#convention" class="anchor"></a>Convention</h3><p>In order for drivers to build consistent documentation for a package, the following convention should be followed.</p><ul><li><code>.mld</code> pages are installed in a package's <code>share</code> directory, under the <code>odoc-pages</code> sub-directory.</li><li>A page is the parent of every installed pages. The driver can freely name this page, for example it can be named after the package. In what follows, we refer to this page as the <code>pkg</code> page.</li><li>If there is an installed <code>index.mld</code> file, the driver has to use it as content for the <code>pkg</code> page.</li><li>If there is no installed <code>index.mld</code> page, the driver has to generate some content for the <code>pkg</code> page.</li></ul><p>This convention is followed by the <a href="https://github.com/ocaml-doc/voodoo">driver for ocaml.org</a>, by the driver <a href="https://erratique.ch/software/odig/doc/packaging.html">Odig</a> and by the build system <a href="https://github.com/ocaml/dune">Dune</a>.</p></div></body></html>

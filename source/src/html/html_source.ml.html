@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: html_source.ml (odoc.source.src.html)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">source</a> &#x00BB; <a href="../index.html">src</a> &#x00BB; <a href="index.html">html</a> &#x00BB; html_source.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>html_source.ml</span></code></h1></header><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+</code><code class="source_code"><span><span class="OPEN">open</span> <span class="UIDENT">Odoc_document</span><span class="DOT">.</span><span class="UIDENT">Types</span><span class="EOL">
+</span><span class="OPEN">open</span> <span class="UIDENT">Tyxml</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-{html_of_doc}1"><span class="LIDENT">html_of_doc</span></span> <span class="TILDE">~</span><span id="local_config_1"><span class="LIDENT">config</span></span> <span class="TILDE">~</span><span id="local_resolve_2"><span class="LIDENT">resolve</span></span> <span id="local_docs_3"><span class="LIDENT">docs</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <span class="UIDENT">Html</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_a_4"><span class="LIDENT">a</span></span> <span class="COLON">:</span><span class="EOL">
+</span>      <span class="LPAREN">(</span> <span class="LBRACKETLESS">[&lt;</span> <span class="UIDENT">Html_types</span><span class="DOT">.</span><span class="LIDENT">a_attrib</span> <span class="RBRACKET">]</span><span class="COMMA">,</span><span class="EOL">
+</span>        <span class="LBRACKETLESS">[&lt;</span> <span class="UIDENT">Html_types</span><span class="DOT">.</span><span class="LIDENT">span_content_fun</span> <span class="RBRACKET">]</span><span class="COMMA">,</span><span class="EOL">
+</span>        <span class="LBRACKETGREATER">[&gt;</span> <span class="UIDENT">Html_types</span><span class="DOT">.</span><span class="LIDENT">span</span> <span class="RBRACKET">]</span> <span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="LIDENT">star</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="UIDENT">Unsafe</span><span class="DOT">.</span><span class="LIDENT">node</span> <span class="STRING">&quot;a&quot;</span><span class="EOL">
+</span>    <span class="COMMENT">(* Makes it possible to use &lt;a&gt; inside span. Although this is not standard (see
+        https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories)
+        it is validated by the {{:https://validator.w3.org/nu/#textarea}W3C}. *)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="COMMENT">(* [a] tags should not contain in other [a] tags. If this happens, browsers
+     start to be really weird. If PPX do bad things, such a situation could
+     happen. We manually avoid this situation. *)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_doc_to_html_5"><span class="LIDENT">doc_to_html</span></span> <span class="TILDE">~</span><span id="local_is_in_a_6"><span class="LIDENT">is_in_a</span></span> <span id="local_doc_7"><span class="LIDENT">doc</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_doc_7"><span class="LIDENT">doc</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Source_page</span><span class="DOT">.</span><span class="UIDENT">Plain_code</span> <span id="local_s_8"><span class="LIDENT">s</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span> <span class="LIDENT">txt</span> <a href="#local_s_8"><span class="LIDENT">s</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Tagged_code</span> <span class="LPAREN">(</span><span id="local_info_9"><span class="LIDENT">info</span></span><span class="COMMA">,</span> <span id="local_docs_10"><span class="LIDENT">docs</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_is_in_a_11"><span class="LIDENT">is_in_a</span></span> <span class="EQUAL">=</span> <span class="MATCH">match</span> <a href="#local_info_9"><span class="LIDENT">info</span></a> <span class="WITH">with</span> <span class="UIDENT">Link</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="TRUE">true</span> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_is_in_a_6"><span class="LIDENT">is_in_a</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_children_12"><span class="LIDENT">children</span></span> <span class="EQUAL">=</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">concat</span> <span class="INFIXOP1">@@</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <span class="LPAREN">(</span><a href="#local_doc_to_html_5"><span class="LIDENT">doc_to_html</span></a> <span class="TILDE">~</span><a href="#local_is_in_a_11"><span class="LIDENT">is_in_a</span></a><span class="RPAREN">)</span> <a href="#local_docs_10"><span class="LIDENT">docs</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <span class="MATCH">match</span> <a href="#local_info_9"><span class="LIDENT">info</span></a> <span class="WITH">with</span><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="UIDENT">Syntax</span> <span id="local_tok_13"><span class="LIDENT">tok</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span> <span class="LIDENT">span</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <a href="#local_tok_13"><span class="LIDENT">tok</span></a> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span> <a href="#local_children_12"><span class="LIDENT">children</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="UIDENT">Link</span> <span id="local_anchor_14"><span class="LIDENT">anchor</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>            <span class="LET">let</span> <span id="local_href_15"><span class="LIDENT">href</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Link</span><span class="DOT">.</span><span class="LIDENT">href</span> <span class="TILDE">~</span><a href="#local_config_1"><span class="LIDENT">config</span></a> <span class="TILDE">~</span><a href="#local_resolve_2"><span class="LIDENT">resolve</span></a> <a href="#local_anchor_14"><span class="LIDENT">anchor</span></a> <span class="IN">in</span><span class="EOL">
+</span>            <span class="LBRACKET">[</span> <a href="#local_a_4"><span class="LIDENT">a</span></a> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="LIDENT">a_href</span> <a href="#local_href_15"><span class="LIDENT">href</span></a> <span class="RBRACKET">]</span> <a href="#local_children_12"><span class="LIDENT">children</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="UIDENT">Anchor</span> <span id="local_lbl_16"><span class="LIDENT">lbl</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span> <span class="LIDENT">span</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="LIDENT">a_id</span> <a href="#local_lbl_16"><span class="LIDENT">lbl</span></a> <span class="RBRACKET">]</span> <a href="#local_children_12"><span class="LIDENT">children</span></a> <span class="RBRACKET">]</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LIDENT">span</span> <span class="LABEL">~a:</span><span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="INFIXOP1">@@</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">concat</span> <span class="INFIXOP1">@@</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <span class="LPAREN">(</span><a href="#local_doc_to_html_5"><span class="LIDENT">doc_to_html</span></a> <span class="LABEL">~is_in_a:</span><span class="FALSE">false</span><span class="RPAREN">)</span> <a href="#local_docs_3"><span class="LIDENT">docs</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-count_lines_in_string"><span class="LIDENT">count_lines_in_string</span></span> <span id="local_s_17"><span class="LIDENT">s</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_n_18"><span class="LIDENT">n</span></span> <span class="EQUAL">=</span> <span class="LIDENT">ref</span> <span class="INT">0</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">iter</span> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="CHAR">'\n'</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">incr</span> <a href="#local_n_18"><span class="LIDENT">n</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <a href="#local_s_17"><span class="LIDENT">s</span></a><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="BANG">!</span><a href="#local_n_18"><span class="LIDENT">n</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** Traverse the doc to count the number of lines. *)</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-count_lines_in_span"><span class="LIDENT">count_lines_in_span</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Source_page</span><span class="DOT">.</span><span class="UIDENT">Plain_code</span> <span id="local_s_19"><span class="LIDENT">s</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#val-count_lines_in_string"><span class="LIDENT">count_lines_in_string</span></a> <a href="#local_s_19"><span class="LIDENT">s</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Tagged_code</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span id="local_docs_20"><span class="LIDENT">docs</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#val-count_lines"><span class="LIDENT">count_lines</span></a> <a href="#local_docs_20"><span class="LIDENT">docs</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="AND">and</span> <span id="val-count_lines"><span class="LIDENT">count_lines</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="INT">0</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_hd_21"><span class="LIDENT">hd</span></span> <span class="COLONCOLON">::</span> <span id="local_tl_22"><span class="LIDENT">tl</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#val-count_lines_in_span"><span class="LIDENT">count_lines_in_span</span></a> <a href="#local_hd_21"><span class="LIDENT">hd</span></a> <span class="PLUS">+</span> <a href="#val-count_lines"><span class="LIDENT">count_lines</span></a> <a href="#local_tl_22"><span class="LIDENT">tl</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-line_numbers"><span class="LIDENT">line_numbers</span></span> <span id="local_acc_23"><span class="LIDENT">acc</span></span> <span id="local_n_24"><span class="LIDENT">n</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <span class="UIDENT">Html</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="#local_n_24"><span class="LIDENT">n</span></a> <span class="LESS">&lt;</span> <span class="INT">1</span> <span class="THEN">then</span> <a href="#local_acc_23"><span class="LIDENT">acc</span></a><span class="EOL">
+</span>  <span class="ELSE">else</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_l_25"><span class="LIDENT">l</span></span> <span class="EQUAL">=</span> <span class="LIDENT">string_of_int</span> <a href="#local_n_24"><span class="LIDENT">n</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_anchor_26"><span class="LIDENT">anchor</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="LIDENT">a</span><span class="EOL">
+</span>        <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="LIDENT">a_id</span> <span class="LPAREN">(</span><span class="STRING">&quot;L&quot;</span> <span class="INFIXOP1">^</span> <a href="#local_l_25"><span class="LIDENT">l</span></a><span class="RPAREN">)</span><span class="SEMI">;</span> <span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;source_line&quot;</span> <span class="RBRACKET">]</span><span class="SEMI">;</span> <span class="LIDENT">a_href</span> <span class="LPAREN">(</span><span class="STRING">&quot;#L&quot;</span> <span class="INFIXOP1">^</span> <a href="#local_l_25"><span class="LIDENT">l</span></a><span class="RPAREN">)</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>        <span class="LBRACKET">[</span> <span class="LIDENT">txt</span> <a href="#local_l_25"><span class="LIDENT">l</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <a href="#val-line_numbers"><span class="LIDENT">line_numbers</span></a> <span class="LPAREN">(</span><a href="#local_anchor_26"><span class="LIDENT">anchor</span></a> <span class="COLONCOLON">::</span> <span class="LIDENT">txt</span> <span class="STRING">&quot;\n&quot;</span> <span class="COLONCOLON">::</span> <a href="#local_acc_23"><span class="LIDENT">acc</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><a href="#local_n_24"><span class="LIDENT">n</span></a> <span class="MINUS">-</span> <span class="INT">1</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-html_of_doc"><span class="LIDENT">html_of_doc</span></span> <span class="TILDE">~</span><span id="local_config_27"><span class="LIDENT">config</span></span> <span class="TILDE">~</span><span id="local_resolve_28"><span class="LIDENT">resolve</span></span> <span id="local_docs_29"><span class="LIDENT">docs</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <span class="UIDENT">Html</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LIDENT">pre</span><span class="EOL">
+</span>    <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;source_container&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span><span class="EOL">
+</span>      <span class="LIDENT">code</span><span class="EOL">
+</span>        <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;source_line_column&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>        <span class="LPAREN">(</span><a href="#val-line_numbers"><span class="LIDENT">line_numbers</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="LPAREN">(</span><a href="#val-count_lines"><span class="LIDENT">count_lines</span></a> <a href="#local_docs_29"><span class="LIDENT">docs</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LIDENT">code</span><span class="EOL">
+</span>        <span class="LABEL">~a:</span><span class="LBRACKET">[</span> <span class="LIDENT">a_class</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;source_code&quot;</span> <span class="RBRACKET">]</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>        <span class="LBRACKET">[</span> <a href="#val-{html_of_doc}1"><span class="LIDENT">html_of_doc</span></a> <span class="TILDE">~</span><a href="#local_config_27"><span class="LIDENT">config</span></a> <span class="TILDE">~</span><a href="#local_resolve_28"><span class="LIDENT">resolve</span></a> <a href="#local_docs_29"><span class="LIDENT">docs</span></a> <span class="RBRACKET">]</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="RBRACKET">]</span><span class="EOL">
+</span></span></code></pre></body></html>

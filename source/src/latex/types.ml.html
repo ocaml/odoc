@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: types.ml (odoc.source.src.latex)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">source</a> &#x00BB; <a href="../index.html">src</a> &#x00BB; <a href="index.html">latex</a> &#x00BB; types.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>types.ml</span></code></h1></header><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+</code><code class="source_code"><span><span id="type-break_hierarchy"><span class="TYPE">type</span> <span class="LIDENT">break_hierarchy</span> <span class="EQUAL">=</span> <span id="type-break_hierarchy.constructor-Aesthetic"><span class="UIDENT">Aesthetic</span></span> <span id="type-break_hierarchy.constructor-Simple"><span class="BAR">|</span> <span class="UIDENT">Simple</span></span> <span id="type-break_hierarchy.constructor-Line"><span class="BAR">|</span> <span class="UIDENT">Line</span></span> <span id="type-break_hierarchy.constructor-Paragraph"><span class="BAR">|</span> <span class="UIDENT">Paragraph</span></span> <span id="type-break_hierarchy.constructor-Separation"><span class="BAR">|</span> <span class="UIDENT">Separation</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-row_size"><span class="TYPE">type</span> <span class="LIDENT">row_size</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-row_size.constructor-Empty"><span class="BAR">|</span> <span class="UIDENT">Empty</span></span><span class="EOL">
+</span>  <span id="type-row_size.constructor-Small"><span class="BAR">|</span> <span class="UIDENT">Small</span></span>  <span class="DOCSTRING">(** text only *)</span><span class="EOL">
+</span>  <span id="type-row_size.constructor-Large"><span class="BAR">|</span> <span class="UIDENT">Large</span></span>  <span class="DOCSTRING">(** No table *)</span><span class="EOL">
+</span>  <span id="type-row_size.constructor-Huge"><span class="BAR">|</span> <span class="UIDENT">Huge</span></span></span>  <span class="DOCSTRING">(** tables **)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-elt"><span class="TYPE">type</span> <span class="LIDENT">elt</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-elt.constructor-Txt"><span class="BAR">|</span> <span class="UIDENT">Txt</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Section"><span class="BAR">|</span> <span class="UIDENT">Section</span> <span class="OF">of</span> <span class="LIDENT">section</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Verbatim"><span class="BAR">|</span> <span class="UIDENT">Verbatim</span> <span class="OF">of</span> <span class="LIDENT">string</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Internal_ref"><span class="BAR">|</span> <span class="UIDENT">Internal_ref</span> <span class="OF">of</span> <span class="LIDENT">reference</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-External_ref"><span class="BAR">|</span> <span class="UIDENT">External_ref</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="STAR">*</span> <span class="LIDENT">t</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Label"><span class="BAR">|</span> <span class="UIDENT">Label</span> <span class="OF">of</span> <span class="LIDENT">string</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Raw"><span class="BAR">|</span> <span class="UIDENT">Raw</span> <span class="OF">of</span> <span class="LIDENT">string</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Tag"><span class="BAR">|</span> <span class="UIDENT">Tag</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="STAR">*</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Style"><span class="BAR">|</span> <span class="UIDENT">Style</span> <span class="OF">of</span> <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Emphasis</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Bold</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Superscript</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Subscript</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Italic</span> <span class="RBRACKET">]</span> <span class="STAR">*</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Code_block"><span class="BAR">|</span> <span class="UIDENT">Code_block</span> <span class="OF">of</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Inlined_code"><span class="BAR">|</span> <span class="UIDENT">Inlined_code</span> <span class="OF">of</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Code_fragment"><span class="BAR">|</span> <span class="UIDENT">Code_fragment</span> <span class="OF">of</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Break"><span class="BAR">|</span> <span class="UIDENT">Break</span> <span class="OF">of</span> <span class="LIDENT">break_hierarchy</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-List"><span class="BAR">|</span> <span class="UIDENT">List</span> <span class="OF">of</span> <span class="LIDENT">list_info</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Description"><span class="BAR">|</span> <span class="UIDENT">Description</span> <span class="OF">of</span> <span class="LPAREN">(</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">t</span><span class="RPAREN">)</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Indented"><span class="BAR">|</span> <span class="UIDENT">Indented</span> <span class="OF">of</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Layout_table"><span class="BAR">|</span> <span class="UIDENT">Layout_table</span> <span class="OF">of</span> <span class="LIDENT">layout_table</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Table"><span class="BAR">|</span> <span class="UIDENT">Table</span> <span class="OF">of</span> <span class="LIDENT">table</span></span><span class="EOL">
+</span>  <span id="type-elt.constructor-Ligaturable"><span class="BAR">|</span> <span class="UIDENT">Ligaturable</span> <span class="OF">of</span> <span class="LIDENT">string</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-section"><span class="AND">and</span> <span class="LIDENT">section</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">level</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="SEMI">;</span> <span class="LIDENT">label</span> <span class="COLON">:</span> <span class="LIDENT">string</span> <span class="LIDENT">option</span><span class="SEMI">;</span> <span class="LIDENT">content</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-list_info"><span class="AND">and</span> <span class="LIDENT">list_info</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">typ</span> <span class="COLON">:</span> <span class="UIDENT">Odoc_document</span><span class="DOT">.</span><span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Block</span><span class="DOT">.</span><span class="LIDENT">list_type</span><span class="SEMI">;</span> <span class="LIDENT">items</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="LIDENT">list</span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-layout_table"><span class="AND">and</span> <span class="LIDENT">layout_table</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">row_size</span> <span class="COLON">:</span> <span class="LIDENT">row_size</span><span class="SEMI">;</span> <span class="LIDENT">tbl</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="LIDENT">list</span> <span class="LIDENT">list</span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-alignment"><span class="AND">and</span> <span class="LIDENT">alignment</span> <span class="EQUAL">=</span> <span class="UIDENT">Odoc_document</span><span class="DOT">.</span><span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Table</span><span class="DOT">.</span><span class="LIDENT">alignment</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-table"><span class="AND">and</span> <span class="LIDENT">table</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">align</span> <span class="COLON">:</span> <span class="LIDENT">alignment</span> <span class="LIDENT">list</span><span class="SEMI">;</span> <span class="LIDENT">data</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="LIDENT">list</span> <span class="LIDENT">list</span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="AND">and</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">elt</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-reference"><span class="AND">and</span> <span class="LIDENT">reference</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">short</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span> <span class="LIDENT">target</span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="SEMI">;</span> <span class="LIDENT">text</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="LIDENT">option</span> <span class="RBRACE">}</span></span><span class="EOL">
+</span></span></code></pre></body></html>

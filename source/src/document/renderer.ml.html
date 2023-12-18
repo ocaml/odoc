@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: renderer.ml (odoc.source.src.document)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">source</a> &#x00BB; <a href="../index.html">src</a> &#x00BB; <a href="index.html">document</a> &#x00BB; renderer.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>renderer.ml</span></code></h1></header><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+</code><code class="source_code"><span><span class="DOCSTRING">(** Standard definition and types for all renderers *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-syntax"><span class="TYPE">type</span> <span class="LIDENT">syntax</span> <span class="EQUAL">=</span> <span id="type-syntax.constructor-OCaml"><span class="UIDENT">OCaml</span></span> <span id="type-syntax.constructor-Reason"><span class="BAR">|</span> <span class="UIDENT">Reason</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-string_of_syntax"><span class="LIDENT">string_of_syntax</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span> <span class="UIDENT">OCaml</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;ml&quot;</span> <span class="BAR">|</span> <span class="UIDENT">Reason</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;re&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-page"><span class="TYPE">type</span> <span class="LIDENT">page</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span class="LIDENT">filename</span> <span class="COLON">:</span> <span class="UIDENT">Fpath</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">content</span> <span class="COLON">:</span> <span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">formatter</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">children</span> <span class="COLON">:</span> <span class="LIDENT">page</span> <span class="LIDENT">list</span><span class="SEMI">;</span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-traverse"><span class="LIDENT">traverse</span></span> <span class="TILDE">~</span><span id="local_f_1"><span class="LIDENT">f</span></span> <span id="local_t_2"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_aux_3"><span class="LIDENT">aux</span></span> <span id="local_node_4"><span class="LIDENT">node</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_f_1"><span class="LIDENT">f</span></a> <a href="#local_node_4"><span class="LIDENT">node</span></a><span class="DOT">.</span><span class="LIDENT">filename</span> <a href="#local_node_4"><span class="LIDENT">node</span></a><span class="DOT">.</span><span class="LIDENT">content</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">iter</span> <a href="#local_aux_3"><span class="LIDENT">aux</span></a> <a href="#local_node_4"><span class="LIDENT">node</span></a><span class="DOT">.</span><span class="LIDENT">children</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">iter</span> <a href="#local_aux_3"><span class="LIDENT">aux</span></a> <a href="#local_t_2"><span class="LIDENT">t</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-input"><span class="TYPE">type</span> <span class="LIDENT">input</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-input.constructor-CU"><span class="BAR">|</span> <span class="UIDENT">CU</span> <span class="OF">of</span> <span class="UIDENT">Odoc_model</span><span class="DOT">.</span><span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">Compilation_unit</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="type-input.constructor-Page"><span class="BAR">|</span> <span class="UIDENT">Page</span> <span class="OF">of</span> <span class="UIDENT">Odoc_model</span><span class="DOT">.</span><span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">Page</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span class="LIDENT">name</span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">render</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Document</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">page</span> <span class="LIDENT">list</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">extra_documents</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">input</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">syntax</span><span class="COLON">:</span><span class="LIDENT">syntax</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Document</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span><span class="SEMI">;</span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-document_of_page"><span class="LIDENT">document_of_page</span></span> <span class="TILDE">~</span><span id="local_syntax_5"><span class="LIDENT">syntax</span></span> <span id="local_v_6"><span class="LIDENT">v</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_syntax_5"><span class="LIDENT">syntax</span></a> <span class="WITH">with</span> <span class="UIDENT">Reason</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Reason</span><span class="DOT">.</span><span class="LIDENT">page</span> <a href="#local_v_6"><span class="LIDENT">v</span></a> <span class="BAR">|</span> <span class="UIDENT">OCaml</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">ML</span><span class="DOT">.</span><span class="LIDENT">page</span> <a href="#local_v_6"><span class="LIDENT">v</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-documents_of_source_tree"><span class="LIDENT">documents_of_source_tree</span></span> <span class="TILDE">~</span><span id="local_syntax_7"><span class="LIDENT">syntax</span></span> <span id="local_v_8"><span class="LIDENT">v</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_syntax_7"><span class="LIDENT">syntax</span></a> <span class="WITH">with</span> <span class="UIDENT">Reason</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Reason</span><span class="DOT">.</span><span class="LIDENT">source_tree</span> <a href="#local_v_8"><span class="LIDENT">v</span></a> <span class="BAR">|</span> <span class="UIDENT">OCaml</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">ML</span><span class="DOT">.</span><span class="LIDENT">source_tree</span> <a href="#local_v_8"><span class="LIDENT">v</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-document_of_compilation_unit"><span class="LIDENT">document_of_compilation_unit</span></span> <span class="TILDE">~</span><span id="local_syntax_9"><span class="LIDENT">syntax</span></span> <span id="local_v_10"><span class="LIDENT">v</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_syntax_9"><span class="LIDENT">syntax</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Reason</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Reason</span><span class="DOT">.</span><span class="LIDENT">compilation_unit</span> <a href="#local_v_10"><span class="LIDENT">v</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">OCaml</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">ML</span><span class="DOT">.</span><span class="LIDENT">compilation_unit</span> <a href="#local_v_10"><span class="LIDENT">v</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-document_of_source"><span class="LIDENT">document_of_source</span></span> <span class="TILDE">~</span><span id="local_syntax_11"><span class="LIDENT">syntax</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_syntax_11"><span class="LIDENT">syntax</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Reason</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Reason</span><span class="DOT">.</span><span class="LIDENT">source_page</span> <span class="COMMENT">(* Currently, both functions are equivalent *)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">OCaml</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">ML</span><span class="DOT">.</span><span class="LIDENT">source_page</span><span class="EOL">
+</span></span></code></pre></body></html>

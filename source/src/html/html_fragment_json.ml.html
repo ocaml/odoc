@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: html_fragment_json.ml (odoc.source.src.html)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">source</a> &#x00BB; <a href="../index.html">src</a> &#x00BB; <a href="index.html">html</a> &#x00BB; html_fragment_json.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>html_fragment_json.ml</span></code></h1></header><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Rendering of HTML fragments together with metadata. For embedding the
+   generated documentation in existing websites.
+*)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Html"><span class="MODULE">module</span> <span class="UIDENT">Html</span> <span class="EQUAL">=</span> <span class="UIDENT">Tyxml</span><span class="DOT">.</span><span class="UIDENT">Html</span></span><span class="EOL">
+</span><span id="module-Url"><span class="MODULE">module</span> <span class="UIDENT">Url</span> <span class="EQUAL">=</span> <span class="UIDENT">Odoc_document</span><span class="DOT">.</span><span class="UIDENT">Url</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-json_of_breadcrumbs"><span class="LIDENT">json_of_breadcrumbs</span></span> <span class="LPAREN">(</span><span id="local_breadcrumbs_1"><span class="LIDENT">breadcrumbs</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">breadcrumb</span> <span class="LIDENT">list</span><span class="RPAREN">)</span> <span class="COLON">:</span> <span class="UIDENT">Utils</span><span class="DOT">.</span><span class="UIDENT">Json</span><span class="DOT">.</span><span class="LIDENT">json</span><span class="EOL">
+</span>    <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_breadcrumb_2"><span class="LIDENT">breadcrumb</span></span> <span class="LPAREN">(</span><span id="local_b_3"><span class="LIDENT">b</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">breadcrumb</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="BACKQUOTE">`</span><span class="UIDENT">Object</span><span class="EOL">
+</span>      <span class="LBRACKET">[</span><span class="EOL">
+</span>        <span class="LPAREN">(</span><span class="STRING">&quot;name&quot;</span><span class="COMMA">,</span> <span class="BACKQUOTE">`</span><span class="UIDENT">String</span> <a href="#local_b_3"><span class="LIDENT">b</span></a><span class="DOT">.</span><span class="LIDENT">name</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>        <span class="LPAREN">(</span><span class="STRING">&quot;href&quot;</span><span class="COMMA">,</span> <span class="BACKQUOTE">`</span><span class="UIDENT">String</span> <a href="#local_b_3"><span class="LIDENT">b</span></a><span class="DOT">.</span><span class="LIDENT">href</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>        <span class="LPAREN">(</span><span class="STRING">&quot;kind&quot;</span><span class="COMMA">,</span> <span class="BACKQUOTE">`</span><span class="UIDENT">String</span> <span class="LPAREN">(</span><span class="UIDENT">Url</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">string_of_kind</span> <a href="#local_b_3"><span class="LIDENT">b</span></a><span class="DOT">.</span><span class="LIDENT">kind</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_json_breadcrumbs_4"><span class="LIDENT">json_breadcrumbs</span></span> <span class="EQUAL">=</span> <a href="#local_breadcrumbs_1"><span class="LIDENT">breadcrumbs</span></a> <span class="INFIXOP0">|&gt;</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <a href="#local_breadcrumb_2"><span class="LIDENT">breadcrumb</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="BACKQUOTE">`</span><span class="UIDENT">Array</span> <a href="#local_json_breadcrumbs_4"><span class="LIDENT">json_breadcrumbs</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-json_of_toc"><span class="LIDENT">json_of_toc</span></span> <span class="LPAREN">(</span><span id="local_toc_5"><span class="LIDENT">toc</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">toc</span> <span class="LIDENT">list</span><span class="RPAREN">)</span> <span class="COLON">:</span> <span class="UIDENT">Utils</span><span class="DOT">.</span><span class="UIDENT">Json</span><span class="DOT">.</span><span class="LIDENT">json</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_section_6"><span class="LIDENT">section</span></span> <span class="LPAREN">(</span><span id="local_s_7"><span class="LIDENT">s</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">toc</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="BACKQUOTE">`</span><span class="UIDENT">Object</span><span class="EOL">
+</span>      <span class="LBRACKET">[</span><span class="EOL">
+</span>        <span class="LPAREN">(</span><span class="STRING">&quot;title&quot;</span><span class="COMMA">,</span> <span class="BACKQUOTE">`</span><span class="UIDENT">String</span> <a href="#local_s_7"><span class="LIDENT">s</span></a><span class="DOT">.</span><span class="LIDENT">title_str</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>        <span class="LPAREN">(</span><span class="STRING">&quot;href&quot;</span><span class="COMMA">,</span> <span class="BACKQUOTE">`</span><span class="UIDENT">String</span> <a href="#local_s_7"><span class="LIDENT">s</span></a><span class="DOT">.</span><span class="LIDENT">href</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>        <span class="LPAREN">(</span><span class="STRING">&quot;children&quot;</span><span class="COMMA">,</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Array</span> <span class="LPAREN">(</span><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <a href="#local_section_6"><span class="LIDENT">section</span></a> <a href="#local_s_7"><span class="LIDENT">s</span></a><span class="DOT">.</span><span class="LIDENT">children</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_toc_json_list_8"><span class="LIDENT">toc_json_list</span></span> <span class="EQUAL">=</span> <a href="#local_toc_5"><span class="LIDENT">toc</span></a> <span class="INFIXOP0">|&gt;</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <a href="#local_section_6"><span class="LIDENT">section</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="BACKQUOTE">`</span><span class="UIDENT">Array</span> <a href="#local_toc_json_list_8"><span class="LIDENT">toc_json_list</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-make"><span class="LIDENT">make</span></span> <span class="TILDE">~</span><span id="local_config_9"><span class="LIDENT">config</span></span> <span class="TILDE">~</span><span id="local_preamble_10"><span class="LIDENT">preamble</span></span> <span class="TILDE">~</span><span id="local_url_11"><span class="LIDENT">url</span></span> <span class="TILDE">~</span><span id="local_breadcrumbs_12"><span class="LIDENT">breadcrumbs</span></span> <span class="TILDE">~</span><span id="local_toc_13"><span class="LIDENT">toc</span></span> <span class="TILDE">~</span><span id="local_uses_katex_14"><span class="LIDENT">uses_katex</span></span> <span class="TILDE">~</span><span id="local_source_anchor_15"><span class="LIDENT">source_anchor</span></span><span class="EOL">
+</span>    <span id="local_content_16"><span class="LIDENT">content</span></span> <span id="local_children_17"><span class="LIDENT">children</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_filename_18"><span class="LIDENT">filename</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Link</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">as_filename</span> <span class="LABEL">~is_flat:</span><span class="LPAREN">(</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">flat</span> <a href="#local_config_9"><span class="LIDENT">config</span></a><span class="RPAREN">)</span> <a href="#local_url_11"><span class="LIDENT">url</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_filename_19"><span class="LIDENT">filename</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Fpath</span><span class="DOT">.</span><span class="LIDENT">add_ext</span> <span class="STRING">&quot;.json&quot;</span> <a href="#local_filename_18"><span class="LIDENT">filename</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_htmlpp_20"><span class="LIDENT">htmlpp</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">pp_elt</span> <span class="LABEL">~indent:</span><span class="LPAREN">(</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">indent</span> <a href="#local_config_9"><span class="LIDENT">config</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_json_to_string_21"><span class="LIDENT">json_to_string</span></span> <span id="local_json_22"><span class="LIDENT">json</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Utils</span><span class="DOT">.</span><span class="UIDENT">Json</span><span class="DOT">.</span><span class="LIDENT">to_string</span> <a href="#local_json_22"><span class="LIDENT">json</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_source_anchor_23"><span class="LIDENT">source_anchor</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_source_anchor_15"><span class="LIDENT">source_anchor</span></a> <span class="WITH">with</span> <span class="UIDENT">Some</span> <span id="local_url_24"><span class="LIDENT">url</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">String</span> <a href="#local_url_24"><span class="LIDENT">url</span></a> <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Null</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_content_25"><span class="LIDENT">content</span></span> <span id="local_ppf_26"><span class="LIDENT">ppf</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">pp_print_string</span> <a href="#local_ppf_26"><span class="LIDENT">ppf</span></a><span class="EOL">
+</span>      <span class="LPAREN">(</span><a href="#local_json_to_string_21"><span class="LIDENT">json_to_string</span></a><span class="EOL">
+</span>         <span class="LPAREN">(</span><span class="BACKQUOTE">`</span><span class="UIDENT">Object</span><span class="EOL">
+</span>           <span class="LBRACKET">[</span><span class="EOL">
+</span>             <span class="LPAREN">(</span><span class="STRING">&quot;type&quot;</span><span class="COMMA">,</span> <span class="BACKQUOTE">`</span><span class="UIDENT">String</span> <span class="STRING">&quot;documentation&quot;</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>             <span class="LPAREN">(</span><span class="STRING">&quot;uses_katex&quot;</span><span class="COMMA">,</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Bool</span> <a href="#local_uses_katex_14"><span class="LIDENT">uses_katex</span></a><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>             <span class="LPAREN">(</span><span class="STRING">&quot;breadcrumbs&quot;</span><span class="COMMA">,</span> <a href="#val-json_of_breadcrumbs"><span class="LIDENT">json_of_breadcrumbs</span></a> <a href="#local_breadcrumbs_12"><span class="LIDENT">breadcrumbs</span></a><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>             <span class="LPAREN">(</span><span class="STRING">&quot;toc&quot;</span><span class="COMMA">,</span> <a href="#val-json_of_toc"><span class="LIDENT">json_of_toc</span></a> <a href="#local_toc_13"><span class="LIDENT">toc</span></a><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>             <span class="LPAREN">(</span><span class="STRING">&quot;source_anchor&quot;</span><span class="COMMA">,</span> <a href="#local_source_anchor_23"><span class="LIDENT">source_anchor</span></a><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>             <span class="LPAREN">(</span> <span class="STRING">&quot;preamble&quot;</span><span class="COMMA">,</span><span class="EOL">
+</span>               <span class="BACKQUOTE">`</span><span class="UIDENT">String</span><span class="EOL">
+</span>                 <span class="LPAREN">(</span><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">concat</span> <span class="STRING">&quot;&quot;</span><span class="EOL">
+</span>                    <span class="LPAREN">(</span><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <span class="LPAREN">(</span><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">asprintf</span> <span class="STRING">&quot;%a&quot;</span> <a href="#local_htmlpp_20"><span class="LIDENT">htmlpp</span></a><span class="RPAREN">)</span> <a href="#local_preamble_10"><span class="LIDENT">preamble</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>             <span class="LPAREN">(</span> <span class="STRING">&quot;content&quot;</span><span class="COMMA">,</span><span class="EOL">
+</span>               <span class="BACKQUOTE">`</span><span class="UIDENT">String</span><span class="EOL">
+</span>                 <span class="LPAREN">(</span><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">concat</span> <span class="STRING">&quot;&quot;</span><span class="EOL">
+</span>                    <span class="LPAREN">(</span><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <span class="LPAREN">(</span><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">asprintf</span> <span class="STRING">&quot;%a&quot;</span> <a href="#local_htmlpp_20"><span class="LIDENT">htmlpp</span></a><span class="RPAREN">)</span> <a href="#local_content_16"><span class="LIDENT">content</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>           <span class="RBRACKET">]</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <a href="#local_filename_19"><span class="UIDENT">Odoc_document</span><span class="DOT">.</span><span class="UIDENT">Renderer</span><span class="DOT">.</span><span class="LIDENT">filename</span></a><span class="SEMI">;</span> <a href="#local_content_25"><span class="LIDENT">content</span></a><span class="SEMI">;</span> <a href="#local_children_17"><span class="LIDENT">children</span></a> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-make_src"><span class="LIDENT">make_src</span></span> <span class="TILDE">~</span><span id="local_config_27"><span class="LIDENT">config</span></span> <span class="TILDE">~</span><span id="local_url_28"><span class="LIDENT">url</span></span> <span class="TILDE">~</span><span id="local_breadcrumbs_29"><span class="LIDENT">breadcrumbs</span></span> <span id="local_content_30"><span class="LIDENT">content</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_filename_31"><span class="LIDENT">filename</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Link</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">as_filename</span> <span class="LABEL">~is_flat:</span><span class="LPAREN">(</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">flat</span> <a href="#local_config_27"><span class="LIDENT">config</span></a><span class="RPAREN">)</span> <a href="#local_url_28"><span class="LIDENT">url</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_filename_32"><span class="LIDENT">filename</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Fpath</span><span class="DOT">.</span><span class="LIDENT">add_ext</span> <span class="STRING">&quot;.json&quot;</span> <a href="#local_filename_31"><span class="LIDENT">filename</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_htmlpp_33"><span class="LIDENT">htmlpp</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Html</span><span class="DOT">.</span><span class="LIDENT">pp_elt</span> <span class="LABEL">~indent:</span><span class="LPAREN">(</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">indent</span> <a href="#local_config_27"><span class="LIDENT">config</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_json_to_string_34"><span class="LIDENT">json_to_string</span></span> <span id="local_json_35"><span class="LIDENT">json</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Utils</span><span class="DOT">.</span><span class="UIDENT">Json</span><span class="DOT">.</span><span class="LIDENT">to_string</span> <a href="#local_json_35"><span class="LIDENT">json</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_content_36"><span class="LIDENT">content</span></span> <span id="local_ppf_37"><span class="LIDENT">ppf</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">pp_print_string</span> <a href="#local_ppf_37"><span class="LIDENT">ppf</span></a><span class="EOL">
+</span>      <span class="LPAREN">(</span><a href="#local_json_to_string_34"><span class="LIDENT">json_to_string</span></a><span class="EOL">
+</span>         <span class="LPAREN">(</span><span class="BACKQUOTE">`</span><span class="UIDENT">Object</span><span class="EOL">
+</span>           <span class="LBRACKET">[</span><span class="EOL">
+</span>             <span class="LPAREN">(</span><span class="STRING">&quot;type&quot;</span><span class="COMMA">,</span> <span class="BACKQUOTE">`</span><span class="UIDENT">String</span> <span class="STRING">&quot;source&quot;</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>             <span class="LPAREN">(</span><span class="STRING">&quot;breadcrumbs&quot;</span><span class="COMMA">,</span> <a href="#val-json_of_breadcrumbs"><span class="LIDENT">json_of_breadcrumbs</span></a> <a href="#local_breadcrumbs_29"><span class="LIDENT">breadcrumbs</span></a><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>             <span class="LPAREN">(</span> <span class="STRING">&quot;content&quot;</span><span class="COMMA">,</span><span class="EOL">
+</span>               <span class="BACKQUOTE">`</span><span class="UIDENT">String</span><span class="EOL">
+</span>                 <span class="LPAREN">(</span><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">concat</span> <span class="STRING">&quot;&quot;</span><span class="EOL">
+</span>                    <span class="LPAREN">(</span><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <span class="LPAREN">(</span><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">asprintf</span> <span class="STRING">&quot;%a&quot;</span> <a href="#local_htmlpp_33"><span class="LIDENT">htmlpp</span></a><span class="RPAREN">)</span> <a href="#local_content_30"><span class="LIDENT">content</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>           <span class="RBRACKET">]</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <a href="#local_filename_32"><span class="UIDENT">Odoc_document</span><span class="DOT">.</span><span class="UIDENT">Renderer</span><span class="DOT">.</span><span class="LIDENT">filename</span></a><span class="SEMI">;</span> <a href="#local_content_36"><span class="LIDENT">content</span></a><span class="SEMI">;</span> <span class="LIDENT">children</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="RBRACE">}</span><span class="EOL">
+</span></span></code></pre></body></html>

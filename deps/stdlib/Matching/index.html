@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Matching (odoc.deps.stdlib.Matching)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../../../../';
+let search_urls = ['../../../sherlodoc_db.js','../../../sherlodoc.js'];
+</script><script src="../../../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">deps</a> &#x00BB; <a href="../index.html">stdlib</a> &#x00BB; Matching</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1>Module <code><span>Matching</span></code></h1></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-for_function"><a href="#val-for_function" class="anchor"></a><code><span><span class="keyword">val</span> for_function : 
+  <span><span class="label">scopes</span>:<a href="../Debuginfo/Scoped_location/index.html#type-scopes">Debuginfo.Scoped_location.scopes</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Location/index.html#type-t">Location.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><span>int <a href="../Stdlib/index.html#type-ref">ref</a></span> option</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Lambda/index.html#type-lambda">Lambda.lambda</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><span>(<a href="../Typedtree/index.html#type-pattern">Typedtree.pattern</a> * <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Typedtree/index.html#type-partial">Typedtree.partial</a> <span class="arrow">&#45;&gt;</span></span>
+  <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-for_trywith"><a href="#val-for_trywith" class="anchor"></a><code><span><span class="keyword">val</span> for_trywith : 
+  <span><span class="label">scopes</span>:<a href="../Debuginfo/Scoped_location/index.html#type-scopes">Debuginfo.Scoped_location.scopes</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Location/index.html#type-t">Location.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Lambda/index.html#type-lambda">Lambda.lambda</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><span>(<a href="../Typedtree/index.html#type-pattern">Typedtree.pattern</a> * <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-for_let"><a href="#val-for_let" class="anchor"></a><code><span><span class="keyword">val</span> for_let : 
+  <span><span class="label">scopes</span>:<a href="../Debuginfo/Scoped_location/index.html#type-scopes">Debuginfo.Scoped_location.scopes</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Location/index.html#type-t">Location.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Lambda/index.html#type-lambda">Lambda.lambda</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Typedtree/index.html#type-pattern">Typedtree.pattern</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Lambda/index.html#type-lambda">Lambda.lambda</a> <span class="arrow">&#45;&gt;</span></span>
+  <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-for_multiple_match"><a href="#val-for_multiple_match" class="anchor"></a><code><span><span class="keyword">val</span> for_multiple_match : 
+  <span><span class="label">scopes</span>:<a href="../Debuginfo/Scoped_location/index.html#type-scopes">Debuginfo.Scoped_location.scopes</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Location/index.html#type-t">Location.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><a href="../Lambda/index.html#type-lambda">Lambda.lambda</a> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><span>(<a href="../Typedtree/index.html#type-pattern">Typedtree.pattern</a> * <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Typedtree/index.html#type-partial">Typedtree.partial</a> <span class="arrow">&#45;&gt;</span></span>
+  <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-for_tupled_function"><a href="#val-for_tupled_function" class="anchor"></a><code><span><span class="keyword">val</span> for_tupled_function : 
+  <span><span class="label">scopes</span>:<a href="../Debuginfo/Scoped_location/index.html#type-scopes">Debuginfo.Scoped_location.scopes</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Location/index.html#type-t">Location.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><a href="../Ident/index.html#type-t">Ident.t</a> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><span>(<span><a href="../Typedtree/index.html#type-pattern">Typedtree.pattern</a> list</span> * <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Typedtree/index.html#type-partial">Typedtree.partial</a> <span class="arrow">&#45;&gt;</span></span>
+  <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a></span></code></div></div><div class="odoc-spec"><div class="spec exception anchored" id="exception-Cannot_flatten"><a href="#exception-Cannot_flatten" class="anchor"></a><code><span><span class="keyword">exception</span> </span><span><span class="exception">Cannot_flatten</span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-flatten_pattern"><a href="#val-flatten_pattern" class="anchor"></a><code><span><span class="keyword">val</span> flatten_pattern : <span>int <span class="arrow">&#45;&gt;</span></span> <span><a href="../Typedtree/index.html#type-pattern">Typedtree.pattern</a> <span class="arrow">&#45;&gt;</span></span> <span><a href="../Typedtree/index.html#type-pattern">Typedtree.pattern</a> list</span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-expand_stringswitch"><a href="#val-expand_stringswitch" class="anchor"></a><code><span><span class="keyword">val</span> expand_stringswitch : 
+  <span><a href="../Lambda/index.html#type-scoped_location">Lambda.scoped_location</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Lambda/index.html#type-lambda">Lambda.lambda</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><span>(string * <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><a href="../Lambda/index.html#type-lambda">Lambda.lambda</a> option</span> <span class="arrow">&#45;&gt;</span></span>
+  <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-inline_lazy_force"><a href="#val-inline_lazy_force" class="anchor"></a><code><span><span class="keyword">val</span> inline_lazy_force : 
+  <span><a href="../Lambda/index.html#type-lambda">Lambda.lambda</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Lambda/index.html#type-scoped_location">Lambda.scoped_location</a> <span class="arrow">&#45;&gt;</span></span>
+  <a href="../Lambda/index.html#type-lambda">Lambda.lambda</a></span></code></div></div></div></body></html>

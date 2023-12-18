@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Astring (odoc.deps.astring.Astring)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../../../../';
+let search_urls = ['../../../sherlodoc_db.js','../../../sherlodoc.js'];
+</script><script src="../../../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">deps</a> &#x00BB; <a href="../index.html">astring</a> &#x00BB; Astring</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1>Module <code><span>Astring</span></code></h1><p>Alternative <code>Char</code> and <code>String</code> modules.</p><p>Open the module to use it. This defines <a href="#val-strf" title="strf">one value</a> in your scope, redefines the <code>(^)</code> operator, the <code>Char</code> module and the <code>String</code> module.</p><p>Consult the <a href="#diff" title="diff">differences</a> with the OCaml <a href="../../stdlib/Stdlib/String/index.html" title="Stdlib.String"><code>String</code></a> module, the <a href="#port" title="port">porting guide</a> and a few <a href="#examples" title="examples">examples</a>.</p></header><nav class="odoc-toc"><ul><li><a href="#string">String</a></li><li><a href="#diff">Differences with the OCaml <code>String</code> module</a></li><li><a href="#port">Porting guide</a><ul><li><a href="#porttrim">Porting <code>String.trim</code> usages</a></li></ul></li><li><a href="#examples">Examples</a></li></ul></nav><div class="odoc-content"><h2 id="string"><a href="#string" class="anchor"></a>String</h2><div class="odoc-spec"><div class="spec value anchored" id="val-strf"><a href="#val-strf" class="anchor"></a><code><span><span class="keyword">val</span> strf : <span><span><span>(<span class="type-var">'a</span>, <a href="../../stdlib/Stdlib/Format/index.html#type-formatter">Format.formatter</a>, unit, string)</span> <a href="../../stdlib/Stdlib/index.html#type-format4">format4</a></span> <span class="arrow">&#45;&gt;</span></span> <span class="type-var">'a</span></span></code></div><div class="spec-doc"><p><code>strf</code> is <a href="../../stdlib/Stdlib/Format/index.html#val-asprintf"><code>Format.asprintf</code></a>.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-(^)"><a href="#val-(^)" class="anchor"></a><code><span><span class="keyword">val</span> (^) : <span>string <span class="arrow">&#45;&gt;</span></span> <span>string <span class="arrow">&#45;&gt;</span></span> string</span></code></div><div class="spec-doc"><p><code>s ^ s'</code> is <a href="String/index.html#val-append"><code>String.append</code></a>.</p></div></div><div class="odoc-spec"><div class="spec module anchored" id="module-Char"><a href="#module-Char" class="anchor"></a><code><span><span class="keyword">module</span> <a href="Char/index.html">Char</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div><div class="spec-doc"><p>Characters (bytes in fact).</p></div></div><div class="odoc-spec"><div class="spec module anchored" id="module-String"><a href="#module-String" class="anchor"></a><code><span><span class="keyword">module</span> <a href="String/index.html">String</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div><div class="spec-doc"><p>Strings, <span class="xref-unresolved" title="Sub">substrings</span>, string <a href="../../stdlib/Stdlib/Set/index.html" title="Set">sets</a> and <a href="../../stdlib/Stdlib/Map/index.html" title="Map">maps</a>.</p></div></div><h2 id="diff"><a href="#diff" class="anchor"></a>Differences with the OCaml <code>String</code> module</h2><p>First note that it is not a goal of <a href="#"><code>Astring</code></a> to maintain compatibility with the OCaml <a href="../../stdlib/Stdlib/String/index.html" title="Stdlib.String"><code>String</code></a> module.</p><p>In <code>Astring</code>:</p><ul><li>Strings are assumed to be immutable.</li><li>Deprecated functions are not included.</li><li>Some rarely used functions are dropped, some signatures and names are altered, a few often needed functions are added.</li><li>Scanning functions are not doubled for supporting forward and reverse directions. Both directions are supported via a single function and an optional <code>rev</code> argument.</li><li>Functions do not raise <code>Not_found</code>. They return <code>option</code> values instead.</li><li>Functions escaping bytes to printable US-ASCII characters use capital hexadecimal escapes rather than decimal ones.</li><li>US-ASCII string support is collected in the <a href="Char/Ascii/index.html"><code>Char.Ascii</code></a> and <a href="String/Ascii/index.html"><code>String.Ascii</code></a> submodules. The functions make sure to operate only on the US-ASCII code points (rather than <a href="http://www.ecma-international.org/publications/standards/Ecma-094.htm">ISO/IEC 8859-1</a> code points). This means they can safely be used on UTF-8 encoded strings, they will of course only deal with the US-ASCII subset U+0000 to U+007F of <a href="http://unicode.org/glossary/#unicode_scalar_value">Unicode scalar values</a>.</li><li>The module has pre-applied exception safe <a href="String/Set/index.html"><code>String.Set</code></a> and <a href="String/Map/index.html"><code>String.Map</code></a> submodules.</li></ul><h2 id="port"><a href="#port" class="anchor"></a>Porting guide</h2><p>Opening <code>Astring</code> at the top of a module that uses the OCaml standard library in a project that compiles with <code>-safe-string</code> will either result in typing errors or compatible behaviour except for uses of the <a href="String/index.html#val-trim"><code>String.trim</code></a> function, <a href="#porttrim" title="porttrim">see below</a>.</p><p>If for some reason you can't compile your project with <code>-safe-string</code> this <b>may</b> not be a problem. However you have to make sure that your code does not depend on fresh strings being returned by functions of the <code>String</code> module. The functions of <a href="String/index.html"><code>Astring.String</code></a> assume strings to be immutable and thus do not always allocate fresh strings for their results. This is the case for example for the <a href="#val-(^)"><code>(^)</code></a> operator redefinition: no string is allocated whenever one of its arguments is an empty string. That being said it is still better to first make your project compile with <code>-safe-string</code> and then port to <code>Astring</code>.</p><p>The <a href="http://caml.inria.fr/pub/docs/manual-ocaml/libref/String.html#VALsub"><code>String.sub</code></a> function is renamed to <a href="String/index.html#val-with_range"><code>String.with_range</code></a>. If you are working with <a href="String/index.html#val-find"><code>String.find</code></a> you may find it easier to use <a href="String/index.html#val-with_index_range"><code>String.with_index_range</code></a> which takes indices as arguments and is thus directly usable with the result of <a href="String/index.html#val-find"><code>String.find</code></a>. But in general index based string processing should be frowned upon and replaced by <a href="String/index.html#extract" title="extract">substring extraction</a> combinators.</p><h3 id="porttrim"><a href="#porttrim" class="anchor"></a>Porting <code>String.trim</code> usages</h3><p>The standard OCaml <code>String.trim</code> function only trims the characters <code>' '</code>, <code>'\t'</code>, <code>'\n'</code>, <code>'\012'</code>, <code>'\r'</code>. In <code>Astring</code> the <a href="Char/Ascii/index.html#val-is_white" title="Char.Ascii.is_white">default set</a> adds vertical tab (<code>0x0B</code>) to the set to match the behaviour of the C <code>isspace(3)</code> function.</p><p>If you want to preserve the behaviour of the original function you can replace any use of <code>String.trim</code> with the following <code>std_ocaml_trim</code> function:</p><pre class="language-ocaml"><code>let std_ocaml_trim s =
+  let drop = function
+  | ' ' | '\n' | '\012' | '\r' | '\t' -&gt; true
+  | _ -&gt; false
+  in
+  String.trim ~drop s</code></pre><h2 id="examples"><a href="#examples" class="anchor"></a>Examples</h2><p>We show how to use <a href="String/Sub/index.html" title="String.Sub">substrings</a> to quickly devise LL(1) parsers. To keep it simple we do not implement precise error report, but note that it would be easy to add it by replacing the <code>raise Exit</code> calls by an exception with more information: we have everything at hand at these call points to report good error messages.</p><p>The first example parses version numbers structured as follows:</p><pre class="language-ocaml"><code>[v|V]major.minor[.patch</code></pre><p>(+|-)info]</p><p>an unreadable <a href="../../stdlib/Str/index.html"><code>Str</code></a> regular expression for this would be:</p><pre class="language-ocaml"><code>&quot;[vV]?\\([0-9]+\\)\\.\\([0-9]+\\)\\(\\.\\([0-9]+\\)\\)?\\([+-]\\(.*\\)\\)?&quot;</code></pre><p>Using substrings is certainly less terse but note that the parser is made of reusable sub-functions.</p><pre class="language-ocaml"><code>let parse_version : string -&gt; (int * int * int * string option) option =
+fun s -&gt; try
+  let parse_opt_v s = match String.Sub.head s with
+  | Some ('v'|'V') -&gt; String.Sub.tail s
+  | Some _ -&gt; s
+  | None -&gt; raise Exit
+  in
+  let parse_dot s = match String.Sub.head s with
+  | Some '.' -&gt; String.Sub.tail s
+  | Some _ | None -&gt; raise Exit
+  in
+  let parse_int s =
+    match String.Sub.span ~min:1 ~sat:Char.Ascii.is_digit s with
+    | (i, _) when String.Sub.is_empty i -&gt; raise Exit
+    | (i, s) -&gt;
+        match String.Sub.to_int i with
+        | None -&gt; raise Exit | Some i -&gt; i, s
+  in
+  let maj, s = parse_int (parse_opt_v (String.sub s)) in
+  let min, s = parse_int (parse_dot s) in
+  let patch, s = match String.Sub.head s with
+  | Some '.' -&gt; parse_int (parse_dot s)
+  | _ -&gt; 0, s
+  in
+  let info = match String.Sub.head s with
+  | Some ('+' | '-') -&gt; Some (String.Sub.(to_string (tail s)))
+  | Some _ -&gt; raise Exit
+  | None -&gt; None
+  in
+  Some (maj, min, patch, info)
+with Exit -&gt; None</code></pre><p>The second example parses space separated key-value bindings environments of the form:</p><pre class="language-ocaml"><code>key0 = value0 key2 = value2 ...</code></pre><p>To support values with spaces, values can be quoted between two <code>'&quot;'</code> characters. If they are quoted then any <code>&quot;\\\&quot;&quot;</code> subsequence (<code>0x2F</code>,<code>0x22</code>) is interpreted as the character <code>'&quot;'</code> (<code>0x22</code>) and <code>&quot;\\\\&quot;</code> (<code>0x2F</code>,<code>0x2F</code>) is interpreted as the character <code>'\\'</code> (<code>0x22</code>).</p><pre class="language-ocaml"><code>let parse_env : string -&gt; string String.map option =
+fun s -&gt; try
+  let skip_white s = String.Sub.drop ~sat:Char.Ascii.is_white s in
+  let parse_key s =
+    let id_char c = Char.Ascii.is_letter c || c = '_' in
+    match String.Sub.span ~min:1 ~sat:id_char s with
+    | (key, _) when String.Sub.is_empty key -&gt; raise Exit
+    | (key, rem) -&gt; (String.Sub.to_string key), rem
+  in
+  let parse_eq s = match String.Sub.head s with
+  | Some '=' -&gt; String.Sub.tail s
+  | Some _ | None -&gt; raise Exit
+  in
+  let parse_value s = match String.Sub.head s with
+  | Some '&quot;' -&gt; (* quoted *)
+      let is_data = function '\\' | '&quot;' -&gt; false | _ -&gt; true in
+      let rec loop acc s =
+        let data, rem = String.Sub.span ~sat:is_data s in
+        match String.Sub.head rem with
+        | Some '&quot;' -&gt;
+            let acc = List.rev (data :: acc) in
+            String.Sub.(to_string @@ concat acc), (String.Sub.tail rem)
+        | Some '\\' -&gt;
+            let rem = String.Sub.tail rem in
+            begin match String.Sub.head rem with
+            | Some ('&quot;' | '\\' as c) -&gt;
+                let acc = String.(sub (of_char c)) :: data :: acc in
+                loop acc (String.Sub.tail rem)
+            | Some _ | None -&gt; raise Exit
+            end
+        | None | Some _ -&gt; raise Exit
+      in
+      loop [] (String.Sub.tail s)
+  | Some _ -&gt;
+      let is_data c = not (Char.Ascii.is_white c) in
+      let data, rem = String.Sub.span ~sat:is_data s in
+      String.Sub.to_string data, rem
+  | None -&gt; &quot;&quot;, s
+  in
+  let rec parse_bindings acc s =
+    if String.Sub.is_empty s then acc else
+    let key, s = parse_key s in
+    let value, s = s |&gt; skip_white |&gt; parse_eq |&gt; skip_white |&gt; parse_value in
+    parse_bindings (String.Map.add key value acc) (skip_white s)
+  in
+  Some (String.sub s |&gt; skip_white |&gt; parse_bindings String.Map.empty)
+with Exit -&gt; None</code></pre></div></body></html>

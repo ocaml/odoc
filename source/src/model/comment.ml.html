@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: comment.ml (odoc.source.src.model)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">source</a> &#x00BB; <a href="../index.html">src</a> &#x00BB; <a href="index.html">model</a> &#x00BB; comment.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>comment.ml</span></code></h1></header><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+</code><code class="source_code"><span><span id="module-Path"><span class="MODULE">module</span> <span class="UIDENT">Path</span> <span class="EQUAL">=</span> <span class="UIDENT">Paths</span><span class="DOT">.</span><span class="UIDENT">Path</span></span><span class="EOL">
+</span><span id="module-Reference"><span class="MODULE">module</span> <span class="UIDENT">Reference</span> <span class="EQUAL">=</span> <span class="UIDENT">Paths</span><span class="DOT">.</span><span class="UIDENT">Reference</span></span><span class="EOL">
+</span><span id="module-Identifier"><span class="MODULE">module</span> <span class="UIDENT">Identifier</span> <span class="EQUAL">=</span> <span class="UIDENT">Paths</span><span class="DOT">.</span><span class="UIDENT">Identifier</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-with_location"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">with_location</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="UIDENT">Location_</span><span class="DOT">.</span><span class="LIDENT">with_location</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-style"><span class="TYPE">type</span> <span class="LIDENT">style</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Bold</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Italic</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Emphasis</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Superscript</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Subscript</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-alignment"><span class="TYPE">type</span> <span class="LIDENT">alignment</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Left</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Center</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Right</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-raw_markup_target"><span class="TYPE">type</span> <span class="LIDENT">raw_markup_target</span> <span class="EQUAL">=</span> <span class="LIDENT">string</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-leaf_inline_element"><span class="TYPE">type</span> <span class="LIDENT">leaf_inline_element</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Space</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Word</span> <span class="OF">of</span> <span class="LIDENT">string</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Code_span</span> <span class="OF">of</span> <span class="LIDENT">string</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Math_span</span> <span class="OF">of</span> <span class="LIDENT">string</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Raw_markup</span> <span class="OF">of</span> <span class="LIDENT">raw_markup_target</span> <span class="STAR">*</span> <span class="LIDENT">string</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-non_link_inline_element"><span class="TYPE">type</span> <span class="LIDENT">non_link_inline_element</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACKET">[</span> <span class="LIDENT">leaf_inline_element</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Styled</span> <span class="OF">of</span> <span class="LIDENT">style</span> <span class="STAR">*</span> <span class="LIDENT">non_link_inline_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* The cross-referencer stores section heading text, and sometimes pastes it
+   into link contents. This type alias is provided for use by the
+   cross-referencer. *)</span><span class="EOL">
+</span><span id="type-link_content"><span class="TYPE">type</span> <span class="LIDENT">link_content</span> <span class="EQUAL">=</span> <span class="LIDENT">non_link_inline_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-reference_element"><span class="TYPE">type</span> <span class="LIDENT">reference_element</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Reference</span> <span class="OF">of</span> <span class="UIDENT">Reference</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">link_content</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-inline_element"><span class="TYPE">type</span> <span class="LIDENT">inline_element</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACKET">[</span> <span class="LIDENT">leaf_inline_element</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Styled</span> <span class="OF">of</span> <span class="LIDENT">style</span> <span class="STAR">*</span> <span class="LIDENT">inline_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LIDENT">reference_element</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Link</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="STAR">*</span> <span class="LIDENT">link_content</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-paragraph"><span class="TYPE">type</span> <span class="LIDENT">paragraph</span> <span class="EQUAL">=</span> <span class="LIDENT">inline_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-module_reference"><span class="TYPE">type</span> <span class="LIDENT">module_reference</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span class="LIDENT">module_reference</span> <span class="COLON">:</span> <span class="UIDENT">Reference</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">module_synopsis</span> <span class="COLON">:</span> <span class="LIDENT">paragraph</span> <span class="LIDENT">option</span><span class="SEMI">;</span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="DOCSTRING">(** The [{!modules: ...}] markup. [module_synopsis] is initially [None], it is
+    resolved during linking. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-cell"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">cell</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span> <span class="STAR">*</span> <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Header</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Data</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span id="type-row"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">row</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">cell</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span id="type-grid"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">grid</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">row</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-abstract_table"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">abstract_table</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span class="LIDENT">data</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">grid</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">align</span> <span class="COLON">:</span> <span class="LIDENT">alignment</span> <span class="LIDENT">option</span> <span class="LIDENT">list</span> <span class="LIDENT">option</span><span class="SEMI">;</span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-nestable_block_element"><span class="TYPE">type</span> <span class="LIDENT">nestable_block_element</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Paragraph</span> <span class="OF">of</span> <span class="LIDENT">paragraph</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Code_block</span> <span class="OF">of</span><span class="EOL">
+</span>    <span class="LIDENT">string</span> <span class="LIDENT">option</span><span class="EOL">
+</span>    <span class="STAR">*</span> <span class="LIDENT">string</span> <span class="LIDENT">with_location</span><span class="EOL">
+</span>    <span class="STAR">*</span> <span class="LIDENT">nestable_block_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span> <span class="LIDENT">option</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Math_block</span> <span class="OF">of</span> <span class="LIDENT">string</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Verbatim</span> <span class="OF">of</span> <span class="LIDENT">string</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Modules</span> <span class="OF">of</span> <span class="LIDENT">module_reference</span> <span class="LIDENT">list</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Table</span> <span class="OF">of</span> <span class="LIDENT">nestable_block_element</span> <span class="LIDENT">abstract_table</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">List</span> <span class="OF">of</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Unordered</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Ordered</span> <span class="RBRACKET">]</span> <span class="STAR">*</span> <span class="LIDENT">nestable_block_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span> <span class="LIDENT">list</span><span class="EOL">
+</span>  <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-tag"><span class="TYPE">type</span> <span class="LIDENT">tag</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Author</span> <span class="OF">of</span> <span class="LIDENT">string</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Deprecated</span> <span class="OF">of</span> <span class="LIDENT">nestable_block_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Param</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="STAR">*</span> <span class="LIDENT">nestable_block_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Raise</span> <span class="OF">of</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Code_span</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="BAR">|</span> <span class="LIDENT">reference_element</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="STAR">*</span> <span class="LIDENT">nestable_block_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Return</span> <span class="OF">of</span> <span class="LIDENT">nestable_block_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">See</span> <span class="OF">of</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Url</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">File</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Document</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="STAR">*</span> <span class="LIDENT">string</span><span class="EOL">
+</span>    <span class="STAR">*</span> <span class="LIDENT">nestable_block_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Since</span> <span class="OF">of</span> <span class="LIDENT">string</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Before</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="STAR">*</span> <span class="LIDENT">nestable_block_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Version</span> <span class="OF">of</span> <span class="LIDENT">string</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alert</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="STAR">*</span> <span class="LIDENT">string</span> <span class="LIDENT">option</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-heading_level"><span class="TYPE">type</span> <span class="LIDENT">heading_level</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Title</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Section</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Subsection</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Subsubsection</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Paragraph</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Subparagraph</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-attached_block_element"><span class="TYPE">type</span> <span class="LIDENT">attached_block_element</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <span class="LIDENT">nestable_block_element</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Tag</span> <span class="OF">of</span> <span class="LIDENT">tag</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-heading_attrs"><span class="TYPE">type</span> <span class="LIDENT">heading_attrs</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span class="LIDENT">heading_level</span> <span class="COLON">:</span> <span class="LIDENT">heading_level</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">heading_label_explicit</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="DOCSTRING">(** Whether the label have been written by the user. *)</span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-block_element"><span class="TYPE">type</span> <span class="LIDENT">block_element</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACKET">[</span> <span class="LIDENT">nestable_block_element</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Heading</span> <span class="OF">of</span><span class="EOL">
+</span>    <span class="LIDENT">heading_attrs</span> <span class="STAR">*</span> <span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Label</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">inline_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Tag</span> <span class="OF">of</span> <span class="LIDENT">tag</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-docs"><span class="TYPE">type</span> <span class="LIDENT">docs</span> <span class="EQUAL">=</span> <span class="LIDENT">block_element</span> <span class="LIDENT">with_location</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-docs_or_stop"><span class="TYPE">type</span> <span class="LIDENT">docs_or_stop</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Docs</span> <span class="OF">of</span> <span class="LIDENT">docs</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Stop</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** The synopsis is the first element of a comment if it is a paragraph.
+    Otherwise, there is no synopsis. *)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-synopsis"><span class="LIDENT">synopsis</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACE">{</span> <span class="UIDENT">Location_</span><span class="DOT">.</span><span class="LIDENT">value</span> <span class="EQUAL">=</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Paragraph</span> <span id="local_p_1"><span class="LIDENT">p</span></span><span class="SEMI">;</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span> <span class="COLONCOLON">::</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <a href="#local_p_1"><span class="LIDENT">p</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-link_content_of_inline_element"><span class="LIDENT">link_content_of_inline_element</span></span> <span class="COLON">:</span><span class="EOL">
+</span>    <span class="LIDENT">inline_element</span> <span class="LIDENT">with_location</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">link_content</span> <span class="EQUAL">=</span><span class="EOL">
+</span> <span class="FUN">fun</span> <span id="local_x_2"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_v_3"><span class="LIDENT">v</span></span> <span class="EQUAL">=</span> <a href="#local_x_2"><span class="LIDENT">x</span></a><span class="DOT">.</span><span class="UIDENT">Location_</span><span class="DOT">.</span><span class="LIDENT">value</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_v_3"><span class="LIDENT">v</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="HASH">#</span><span class="LIDENT">leaf_inline_element</span> <span class="AS">as</span> <span id="local_e_4"><span class="LIDENT">e</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span> <span class="LBRACE">{</span> <a href="#local_x_2"><span class="LIDENT">x</span></a> <span class="WITH">with</span> <span class="LIDENT">value</span> <span class="EQUAL">=</span> <a href="#local_e_4"><span class="LIDENT">e</span></a> <span class="RBRACE">}</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Reference</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span id="local_r_5"><span class="LIDENT">r</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_r_5"><span class="LIDENT">r</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Link</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span id="local_l_6"><span class="LIDENT">l</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_l_6"><span class="LIDENT">l</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Styled</span> <span class="LPAREN">(</span><span id="local_st_7"><span class="LIDENT">st</span></span><span class="COMMA">,</span> <span id="local_elems_8"><span class="LIDENT">elems</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LBRACKET">[</span> <span class="LBRACE">{</span> <a href="#local_x_2"><span class="LIDENT">x</span></a> <span class="WITH">with</span> <span class="LIDENT">value</span> <span class="EQUAL">=</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Styled</span> <span class="LPAREN">(</span><a href="#local_st_7"><span class="LIDENT">st</span></a><span class="COMMA">,</span> <a href="#val-link_content_of_inline_elements"><span class="LIDENT">link_content_of_inline_elements</span></a> <a href="#local_elems_8"><span class="LIDENT">elems</span></a><span class="RPAREN">)</span> <span class="RBRACE">}</span> <span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="AND">and</span> <span id="val-link_content_of_inline_elements"><span class="LIDENT">link_content_of_inline_elements</span></span> <span id="local_l_9"><span class="LIDENT">l</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_l_9"><span class="LIDENT">l</span></a> <span class="INFIXOP0">|&gt;</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <a href="#val-link_content_of_inline_element"><span class="LIDENT">link_content_of_inline_element</span></a> <span class="INFIXOP0">|&gt;</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">concat</span><span class="EOL">
+</span></span></code></pre></body></html>

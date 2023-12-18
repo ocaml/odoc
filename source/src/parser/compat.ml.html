@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: compat.ml (odoc.source.src.parser)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">source</a> &#x00BB; <a href="../index.html">src</a> &#x00BB; <a href="index.html">parser</a> &#x00BB; compat.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>compat.ml</span></code></h1></header><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+</code><code class="source_code"><span><span id="module-Option"><span class="MODULE">module</span> <span class="UIDENT">Option</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Option.type-t"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">option</span> <span class="EQUAL">=</span> <span id="module-Option.type-t.constructor-None"><span class="UIDENT">None</span></span> <span id="module-Option.type-t.constructor-Some"><span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="OF">of</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Option.val-is_some"><span class="LIDENT">is_some</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="FALSE">false</span> <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="TRUE">true</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Option.val-value"><span class="LIDENT">value</span></span> <span class="TILDE">~</span><span id="local_default_1"><span class="LIDENT">default</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_default_1"><span class="LIDENT">default</span></a> <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_x_2"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_x_2"><span class="LIDENT">x</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Option.val-join_list"><span class="LIDENT">join_list</span></span> <span id="local_l_3"><span class="LIDENT">l</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span class="REC">rec</span> <span id="local_loop_4"><span class="LIDENT">loop</span></span> <span id="local_acc_5"><span class="LIDENT">acc</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">rev</span> <a href="#local_acc_5"><span class="LIDENT">acc</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_a_6"><span class="LIDENT">a</span></span> <span class="COLONCOLON">::</span> <span id="local_q_7"><span class="LIDENT">q</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_loop_4"><span class="LIDENT">loop</span></a> <span class="LPAREN">(</span><a href="#local_a_6"><span class="LIDENT">a</span></a> <span class="COLONCOLON">::</span> <a href="#local_acc_5"><span class="LIDENT">acc</span></a><span class="RPAREN">)</span> <a href="#local_q_7"><span class="LIDENT">q</span></a><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="COLONCOLON">::</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <a href="#local_loop_4"><span class="LIDENT">loop</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <a href="#local_l_3"><span class="LIDENT">l</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Char"><span class="MODULE">module</span> <span class="UIDENT">Char</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Char</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Char.val-equal"><span class="LIDENT">equal</span></span> <span class="LPAREN">(</span><span id="local_x_8"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">char</span><span class="RPAREN">)</span> <span id="local_y_9"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <a href="#local_x_8"><span class="LIDENT">x</span></a> <span class="EQUAL">=</span> <a href="#local_y_9"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-String"><span class="MODULE">module</span> <span class="UIDENT">String</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">String</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-String.val-for_all"><span class="LIDENT">for_all</span></span> <span id="local_f_10"><span class="LIDENT">f</span></span> <span id="local_str_11"><span class="LIDENT">str</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span class="REC">rec</span> <span id="local_aux_12"><span class="LIDENT">aux</span></span> <span id="local_i_13"><span class="LIDENT">i</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_i_13"><span class="LIDENT">i</span></a> <span class="INFIXOP0">&gt;=</span> <span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">length</span> <a href="#local_str_11"><span class="LIDENT">str</span></a> <span class="THEN">then</span> <span class="TRUE">true</span><span class="EOL">
+</span>      <span class="ELSE">else</span> <span class="IF">if</span> <a href="#local_f_10"><span class="LIDENT">f</span></a> <span class="LPAREN">(</span><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">get</span> <a href="#local_str_11"><span class="LIDENT">str</span></a> <a href="#local_i_13"><span class="LIDENT">i</span></a><span class="RPAREN">)</span> <span class="THEN">then</span> <a href="#local_aux_12"><span class="LIDENT">aux</span></a> <span class="LPAREN">(</span><a href="#local_i_13"><span class="LIDENT">i</span></a> <span class="PLUS">+</span> <span class="INT">1</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="ELSE">else</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <a href="#local_aux_12"><span class="LIDENT">aux</span></a> <span class="INT">0</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: compat.ml (odoc.source.src.model)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">source</a> &#x00BB; <a href="../index.html">src</a> &#x00BB; <a href="index.html">model</a> &#x00BB; compat.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>compat.ml</span></code></h1></header><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+</code><code class="source_code"><span># 1 &quot;src/model/compat.cppo.ml&quot;<span class="EOL">
+</span><span class="COMMENT">(*
+ * Copyright (c) 2019 Jon Ludlam &lt;jon@recoil.org&gt;
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* Compatibility for older versions of OCaml *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* This module contains a subset of the types in ocaml.git/typing/types.ml from
+   the latest version of the compiler. There is also conditionally compiled code
+   for older versions of the compiler to convert from their version of types.ml
+   to this version. This simplifies the support for older versions of OCaml.
+
+   This is only done for the subsets of the types that contain the most invasive
+   changes. For other simpler changes we use in-line cppo directives *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-visibility"><span class="TYPE">type</span> <span class="LIDENT">visibility</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-visibility.constructor-Exported"><span class="BAR">|</span> <span class="UIDENT">Exported</span></span><span class="EOL">
+</span>  <span id="type-visibility.constructor-Hidden"><span class="BAR">|</span> <span class="UIDENT">Hidden</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-module_type"><span class="TYPE">type</span> <span class="LIDENT">module_type</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="type-module_type.constructor-Mty_ident"><span class="UIDENT">Mty_ident</span> <span class="OF">of</span> <span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="type-module_type.constructor-Mty_signature"><span class="BAR">|</span> <span class="UIDENT">Mty_signature</span> <span class="OF">of</span> <span class="LIDENT">signature</span></span><span class="EOL">
+</span>  <span id="type-module_type.constructor-Mty_functor"><span class="BAR">|</span> <span class="UIDENT">Mty_functor</span> <span class="OF">of</span> <span class="LIDENT">functor_parameter</span> <span class="STAR">*</span> <span class="LIDENT">module_type</span></span><span class="EOL">
+</span>  <span id="type-module_type.constructor-Mty_alias"><span class="BAR">|</span> <span class="UIDENT">Mty_alias</span> <span class="OF">of</span> <span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-functor_parameter"><span class="AND">and</span> <span class="LIDENT">functor_parameter</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-functor_parameter.constructor-Unit"><span class="BAR">|</span> <span class="UIDENT">Unit</span></span><span class="EOL">
+</span>  <span id="type-functor_parameter.constructor-Named"><span class="BAR">|</span> <span class="UIDENT">Named</span> <span class="OF">of</span> <span class="UIDENT">Ident</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span> <span class="STAR">*</span> <span class="LIDENT">module_type</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-module_presence"><span class="AND">and</span> <span class="LIDENT">module_presence</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-module_presence.constructor-Mp_present"><span class="BAR">|</span> <span class="UIDENT">Mp_present</span></span><span class="EOL">
+</span>  <span id="type-module_presence.constructor-Mp_absent"><span class="BAR">|</span> <span class="UIDENT">Mp_absent</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-signature"><span class="AND">and</span> <span class="LIDENT">signature</span> <span class="EQUAL">=</span> <span class="LIDENT">signature_item</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-signature_item"><span class="AND">and</span> <span class="LIDENT">signature_item</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="type-signature_item.constructor-Sig_value"><span class="UIDENT">Sig_value</span> <span class="OF">of</span> <span class="UIDENT">Ident</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">value_description</span> <span class="STAR">*</span> <span class="LIDENT">visibility</span></span><span class="EOL">
+</span>  <span id="type-signature_item.constructor-Sig_type"><span class="BAR">|</span> <span class="UIDENT">Sig_type</span> <span class="OF">of</span> <span class="UIDENT">Ident</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">type_declaration</span> <span class="STAR">*</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">rec_status</span> <span class="STAR">*</span> <span class="LIDENT">visibility</span></span><span class="EOL">
+</span>  <span id="type-signature_item.constructor-Sig_typext"><span class="BAR">|</span> <span class="UIDENT">Sig_typext</span> <span class="OF">of</span> <span class="UIDENT">Ident</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">extension_constructor</span> <span class="STAR">*</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">ext_status</span> <span class="STAR">*</span> <span class="LIDENT">visibility</span></span><span class="EOL">
+</span>  <span id="type-signature_item.constructor-Sig_module"><span class="BAR">|</span> <span class="UIDENT">Sig_module</span> <span class="OF">of</span><span class="EOL">
+</span>      <span class="UIDENT">Ident</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">module_presence</span> <span class="STAR">*</span> <span class="LIDENT">module_declaration</span> <span class="STAR">*</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">rec_status</span> <span class="STAR">*</span> <span class="LIDENT">visibility</span></span><span class="EOL">
+</span>  <span id="type-signature_item.constructor-Sig_modtype"><span class="BAR">|</span> <span class="UIDENT">Sig_modtype</span> <span class="OF">of</span> <span class="UIDENT">Ident</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">modtype_declaration</span> <span class="STAR">*</span> <span class="LIDENT">visibility</span></span><span class="EOL">
+</span>  <span id="type-signature_item.constructor-Sig_class"><span class="BAR">|</span> <span class="UIDENT">Sig_class</span> <span class="OF">of</span> <span class="UIDENT">Ident</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">class_declaration</span> <span class="STAR">*</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">rec_status</span> <span class="STAR">*</span> <span class="LIDENT">visibility</span></span><span class="EOL">
+</span>  <span id="type-signature_item.constructor-Sig_class_type"><span class="BAR">|</span> <span class="UIDENT">Sig_class_type</span> <span class="OF">of</span> <span class="UIDENT">Ident</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">class_type_declaration</span> <span class="STAR">*</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">rec_status</span> <span class="STAR">*</span> <span class="LIDENT">visibility</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-module_declaration"><span class="AND">and</span> <span class="LIDENT">module_declaration</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACE">{</span><span class="EOL">
+</span>    <span class="LIDENT">md_type</span><span class="COLON">:</span> <span class="LIDENT">module_type</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">md_attributes</span><span class="COLON">:</span> <span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">attributes</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">md_loc</span><span class="COLON">:</span> <span class="UIDENT">Location</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-modtype_declaration"><span class="AND">and</span> <span class="LIDENT">modtype_declaration</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACE">{</span><span class="EOL">
+</span>    <span class="LIDENT">mtd_type</span><span class="COLON">:</span> <span class="LIDENT">module_type</span> <span class="LIDENT">option</span><span class="SEMI">;</span>  <span class="COMMENT">(* Note: abstract *)</span><span class="EOL">
+</span>    <span class="LIDENT">mtd_attributes</span><span class="COLON">:</span> <span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">attributes</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">mtd_loc</span><span class="COLON">:</span> <span class="UIDENT">Location</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-opt"><span class="LIDENT">opt</span></span> <span id="local_conv_1"><span class="LIDENT">conv</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span> <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span> <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_x_2"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><a href="#local_conv_1"><span class="LIDENT">conv</span></a> <a href="#local_x_2"><span class="LIDENT">x</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span># 76 &quot;src/model/compat.cppo.ml&quot;<span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-signature"><span class="LIDENT">signature</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">signature</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">signature</span> <span class="EQUAL">=</span> <span class="FUN">fun</span> <span id="local_x_3"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <a href="#val-signature_item"><span class="LIDENT">signature_item</span></a> <a href="#local_x_3"><span class="LIDENT">x</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="AND">and</span> <span id="val-signature_item"><span class="LIDENT">signature_item</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">signature_item</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">signature_item</span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Sig_value</span> <span class="LPAREN">(</span><span id="local_a_4"><span class="LIDENT">a</span></span><span class="COMMA">,</span><span id="local_b_5"><span class="LIDENT">b</span></span><span class="COMMA">,</span><span id="local_c_6"><span class="LIDENT">c</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Sig_value</span> <span class="LPAREN">(</span><a href="#local_a_4"><span class="LIDENT">a</span></a><span class="COMMA">,</span><a href="#local_b_5"><span class="LIDENT">b</span></a><span class="COMMA">,</span><a href="#val-visibility"><span class="LIDENT">visibility</span></a> <a href="#local_c_6"><span class="LIDENT">c</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Sig_type</span> <span class="LPAREN">(</span><span id="local_a_7"><span class="LIDENT">a</span></span><span class="COMMA">,</span><span id="local_b_8"><span class="LIDENT">b</span></span><span class="COMMA">,</span><span id="local_c_9"><span class="LIDENT">c</span></span><span class="COMMA">,</span><span id="local_d_10"><span class="LIDENT">d</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Sig_type</span> <span class="LPAREN">(</span><a href="#local_a_7"><span class="LIDENT">a</span></a><span class="COMMA">,</span><a href="#local_b_8"><span class="LIDENT">b</span></a><span class="COMMA">,</span><a href="#local_c_9"><span class="LIDENT">c</span></a><span class="COMMA">,</span> <a href="#val-visibility"><span class="LIDENT">visibility</span></a> <a href="#local_d_10"><span class="LIDENT">d</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Sig_typext</span> <span class="LPAREN">(</span><span id="local_a_11"><span class="LIDENT">a</span></span><span class="COMMA">,</span><span id="local_b_12"><span class="LIDENT">b</span></span><span class="COMMA">,</span><span id="local_c_13"><span class="LIDENT">c</span></span><span class="COMMA">,</span><span id="local_d_14"><span class="LIDENT">d</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Sig_typext</span> <span class="LPAREN">(</span><a href="#local_a_11"><span class="LIDENT">a</span></a><span class="COMMA">,</span><a href="#local_b_12"><span class="LIDENT">b</span></a><span class="COMMA">,</span><a href="#local_c_13"><span class="LIDENT">c</span></a><span class="COMMA">,</span><a href="#val-visibility"><span class="LIDENT">visibility</span></a> <a href="#local_d_14"><span class="LIDENT">d</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Sig_module</span> <span class="LPAREN">(</span><span id="local_a_15"><span class="LIDENT">a</span></span><span class="COMMA">,</span><span id="local_b_16"><span class="LIDENT">b</span></span><span class="COMMA">,</span><span id="local_c_17"><span class="LIDENT">c</span></span><span class="COMMA">,</span><span id="local_d_18"><span class="LIDENT">d</span></span><span class="COMMA">,</span><span id="local_e_19"><span class="LIDENT">e</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Sig_module</span> <span class="LPAREN">(</span><a href="#local_a_15"><span class="LIDENT">a</span></a><span class="COMMA">,</span> <a href="#val-module_presence"><span class="LIDENT">module_presence</span></a> <a href="#local_b_16"><span class="LIDENT">b</span></a><span class="COMMA">,</span> <a href="#val-module_declaration"><span class="LIDENT">module_declaration</span></a> <a href="#local_c_17"><span class="LIDENT">c</span></a><span class="COMMA">,</span> <a href="#local_d_18"><span class="LIDENT">d</span></a><span class="COMMA">,</span> <a href="#val-visibility"><span class="LIDENT">visibility</span></a> <a href="#local_e_19"><span class="LIDENT">e</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Sig_modtype</span> <span class="LPAREN">(</span><span id="local_a_20"><span class="LIDENT">a</span></span><span class="COMMA">,</span><span id="local_b_21"><span class="LIDENT">b</span></span><span class="COMMA">,</span><span id="local_c_22"><span class="LIDENT">c</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Sig_modtype</span> <span class="LPAREN">(</span><a href="#local_a_20"><span class="LIDENT">a</span></a><span class="COMMA">,</span> <a href="#val-modtype_declaration"><span class="LIDENT">modtype_declaration</span></a> <a href="#local_b_21"><span class="LIDENT">b</span></a><span class="COMMA">,</span> <a href="#val-visibility"><span class="LIDENT">visibility</span></a> <a href="#local_c_22"><span class="LIDENT">c</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Sig_class</span> <span class="LPAREN">(</span><span id="local_a_23"><span class="LIDENT">a</span></span><span class="COMMA">,</span><span id="local_b_24"><span class="LIDENT">b</span></span><span class="COMMA">,</span><span id="local_c_25"><span class="LIDENT">c</span></span><span class="COMMA">,</span><span id="local_d_26"><span class="LIDENT">d</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Sig_class</span> <span class="LPAREN">(</span><a href="#local_a_23"><span class="LIDENT">a</span></a><span class="COMMA">,</span><a href="#local_b_24"><span class="LIDENT">b</span></a><span class="COMMA">,</span><a href="#local_c_25"><span class="LIDENT">c</span></a><span class="COMMA">,</span> <a href="#val-visibility"><span class="LIDENT">visibility</span></a> <a href="#local_d_26"><span class="LIDENT">d</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Sig_class_type</span> <span class="LPAREN">(</span><span id="local_a_27"><span class="LIDENT">a</span></span><span class="COMMA">,</span><span id="local_b_28"><span class="LIDENT">b</span></span><span class="COMMA">,</span><span id="local_c_29"><span class="LIDENT">c</span></span><span class="COMMA">,</span><span id="local_d_30"><span class="LIDENT">d</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Sig_class_type</span> <span class="LPAREN">(</span><a href="#local_a_27"><span class="LIDENT">a</span></a><span class="COMMA">,</span><a href="#local_b_28"><span class="LIDENT">b</span></a><span class="COMMA">,</span><a href="#local_c_29"><span class="LIDENT">c</span></a><span class="COMMA">,</span> <a href="#val-visibility"><span class="LIDENT">visibility</span></a> <a href="#local_d_30"><span class="LIDENT">d</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="AND">and</span> <span id="val-visibility"><span class="LIDENT">visibility</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">visibility</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">visibility</span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Hidden</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Hidden</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Exported</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Exported</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="AND">and</span> <span id="val-module_type"><span class="LIDENT">module_type</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">module_type</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">module_type</span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Mty_ident</span> <span id="local_p_31"><span class="LIDENT">p</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Mty_ident</span> <a href="#local_p_31"><span class="LIDENT">p</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Mty_signature</span> <span id="local_s_32"><span class="LIDENT">s</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Mty_signature</span> <span class="LPAREN">(</span><a href="#val-signature"><span class="LIDENT">signature</span></a> <a href="#local_s_32"><span class="LIDENT">s</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Mty_functor</span> <span class="LPAREN">(</span><span id="local_a_33"><span class="LIDENT">a</span></span><span class="COMMA">,</span> <span id="local_b_34"><span class="LIDENT">b</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Mty_functor</span><span class="LPAREN">(</span><a href="#val-functor_parameter"><span class="LIDENT">functor_parameter</span></a> <a href="#local_a_33"><span class="LIDENT">a</span></a><span class="COMMA">,</span> <a href="#val-module_type"><span class="LIDENT">module_type</span></a> <a href="#local_b_34"><span class="LIDENT">b</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Mty_alias</span> <span id="local_p_35"><span class="LIDENT">p</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Mty_alias</span> <a href="#local_p_35"><span class="LIDENT">p</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="AND">and</span> <span id="val-functor_parameter"><span class="LIDENT">functor_parameter</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">functor_parameter</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">functor_parameter</span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Unit</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Named</span> <span class="LPAREN">(</span><span id="local_a_36"><span class="LIDENT">a</span></span><span class="COMMA">,</span><span id="local_b_37"><span class="LIDENT">b</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Named</span> <span class="LPAREN">(</span><a href="#local_a_36"><span class="LIDENT">a</span></a><span class="COMMA">,</span> <a href="#val-module_type"><span class="LIDENT">module_type</span></a> <a href="#local_b_37"><span class="LIDENT">b</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="AND">and</span> <span id="val-module_presence"><span class="LIDENT">module_presence</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">module_presence</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">module_presence</span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Mp_present</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Mp_present</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Mp_absent</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Mp_absent</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="AND">and</span> <span id="val-module_declaration"><span class="LIDENT">module_declaration</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">module_declaration</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">module_declaration</span> <span class="EQUAL">=</span> <span class="FUN">fun</span> <span id="local_x_38"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <span class="LIDENT">md_type</span> <span class="EQUAL">=</span> <a href="#val-module_type"><span class="LIDENT">module_type</span></a> <a href="#local_x_38"><span class="LIDENT">x</span></a><span class="DOT">.</span><span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">md_type</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">md_attributes</span> <span class="EQUAL">=</span> <a href="#local_x_38"><span class="LIDENT">x</span></a><span class="DOT">.</span><span class="LIDENT">md_attributes</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">md_loc</span> <span class="EQUAL">=</span> <a href="#local_x_38"><span class="LIDENT">x</span></a><span class="DOT">.</span><span class="LIDENT">md_loc</span> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="AND">and</span> <span id="val-modtype_declaration"><span class="LIDENT">modtype_declaration</span></span> <span class="COLON">:</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">modtype_declaration</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">modtype_declaration</span> <span class="EQUAL">=</span> <span class="FUN">fun</span> <span id="local_x_39"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <span class="LIDENT">mtd_type</span> <span class="EQUAL">=</span> <a href="#val-opt"><span class="LIDENT">opt</span></a> <a href="#val-module_type"><span class="LIDENT">module_type</span></a> <a href="#local_x_39"><span class="LIDENT">x</span></a><span class="DOT">.</span><span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">mtd_type</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">mtd_attributes</span> <span class="EQUAL">=</span> <a href="#local_x_39"><span class="LIDENT">x</span></a><span class="DOT">.</span><span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">mtd_attributes</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">mtd_loc</span> <span class="EQUAL">=</span> <a href="#local_x_39"><span class="LIDENT">x</span></a><span class="DOT">.</span><span class="UIDENT">Types</span><span class="DOT">.</span><span class="LIDENT">mtd_loc</span> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span># 227 &quot;src/model/compat.cppo.ml&quot;<span class="EOL">
+</span><span class="COMMENT">(* Shapes were introduced in OCaml 4.14.0. They're used for resolving to source-code
+   locations *)</span><span class="EOL">
+</span><span class="EOL">
+</span># 231 &quot;src/model/compat.cppo.ml&quot;<span class="EOL">
+</span><span id="type-shape"><span class="TYPE">type</span> <span class="LIDENT">shape</span> <span class="EQUAL">=</span> <span class="UIDENT">Shape</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-shape_uid_map"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">shape_uid_map</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="UIDENT">Shape</span><span class="DOT">.</span><span class="UIDENT">Uid</span><span class="DOT">.</span><span class="UIDENT">Map</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-uid_to_loc"><span class="TYPE">type</span> <span class="LIDENT">uid_to_loc</span> <span class="EQUAL">=</span> <span class="UIDENT">Warnings</span><span class="DOT">.</span><span class="LIDENT">loc</span> <span class="UIDENT">Types</span><span class="DOT">.</span><span class="UIDENT">Uid</span><span class="DOT">.</span><span class="UIDENT">Tbl</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-empty_map"><span class="LIDENT">empty_map</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Shape</span><span class="DOT">.</span><span class="UIDENT">Uid</span><span class="DOT">.</span><span class="UIDENT">Map</span><span class="DOT">.</span><span class="LIDENT">empty</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-shape_of_cmt_infos"><span class="LIDENT">shape_of_cmt_infos</span></span> <span class="COLON">:</span> <span class="UIDENT">Cmt_format</span><span class="DOT">.</span><span class="LIDENT">cmt_infos</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">shape</span> <span class="LIDENT">option</span> <span class="EQUAL">=</span> <span class="FUN">fun</span> <span id="local_x_40"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_x_40"><span class="LIDENT">x</span></a><span class="DOT">.</span><span class="LIDENT">cmt_impl_shape</span><span class="EOL">
+</span><span class="EOL">
+</span></span></code></pre></body></html>
