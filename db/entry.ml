@@ -41,13 +41,6 @@ module Package = struct
   let v ~name ~version = { name; version }
 end
 
-type package = Package.t =
-  { name : string
-  ; version : string
-  }
-
-type kind = Kind.t
-
 module T = struct
   type t =
     { name : string
@@ -60,7 +53,7 @@ module T = struct
     ; is_from_module_type : bool
     }
 
-  let compare_pkg { name; version = _ } (b : package) =
+  let compare_pkg Package.{ name; version = _ } (b : Package.t) =
     String.compare name b.name
 
   let structural_compare a b =

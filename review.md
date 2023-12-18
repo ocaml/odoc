@@ -8,18 +8,6 @@
 
 - Type extensions: we might want to search for all extensions of a given extensible type.
 
-## With Arthur
-
-- pretty-query: vraiment necessaire ?
-> Mettre a part
-
-- ask about `Query.paths_arrow` vs `index/load_doc.type_distance_paths`
-
-- Should `_ -> int` be supported ?
-> Yes, try to fix it in dynamic cost
-
-- Suffix_tree -> succ conversion
-
 # done
 
 - Réfléchir à `ancient`: enlever pour de bon, rétablir le support ?
@@ -51,13 +39,16 @@ they are interpreted as relative to the `-o` option")
 
 - Documenter parser/lexer de query.
 
-# Commentaires/Action Point/...
+- It would be cool to be able to see the string corresponding to types, and also of the intermediate string list list
+> Some examples were added
 
 - refactor `Query.paths_arrow` vs `index/load_doc.type_distance_paths`
   `Query.paths_arrow` is the right implementation, load_doc should tranform the
   odoc typeexpr into a sherlodoc query ast typeexpr and then only compute the
   path.
   Be careful about hash consing.
+
+# TODO
 
 - Have something more robust than sizes in tests. Remove them, and use
   current-bench or just a manual benchmark.
@@ -66,13 +57,16 @@ they are interpreted as relative to the `-o` option")
 
 - `Index.Load_doc.with_tokenizer`: think of which character form a word
 
-- It would be cool to be able to see the string corresponding to types, and also of the intermediate string list list
 
 - Maybe store all "arbitrary constants" relative to the cost function somewhere
 
 <!-- - Essayer de comprendre dans `Load_doc.type_path` pourquoi l'ordre ne fait pas d'importance (see) -->
 
+- Rewrite the type parser in a more flexible framework than menhir (combinator or recursive descent)
 
+- separate pretty_query from the api function
+
+- Try to support `_ -> int` with dynamic cost ?
 
 # Explications commentée
 

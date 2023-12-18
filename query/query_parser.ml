@@ -17,16 +17,17 @@ let of_string str =
   in
   let pretty_typ, type_polarities, typ =
     match parse str_typ with
-    | Any -> "_", [], None
+    | Any ->  "_", None, None
     | typ ->
         ( Db.Typexpr.show typ
-        , List.filter
+        , Some (List.filter
             (fun (word, _count) -> String.length word > 0)
-            (Db.Type_polarity.of_typ ~ignore_any:true ~all_names:false typ)
+            (Db.Type_polarity.of_typ ~ignore_any:true ~all_names:false typ))
         , Some typ )
-    | exception _ -> "<parse error>", [], None
+    | exception Parser.Error ->
+      "<parse error>", None, None
   in
   let query_name = naive_of_string str_name in
-  let type_polarities = if has_typ then Some type_polarities else None in
+  let type_polarities = if has_typ then type_polarities else None in
   let pretty_query = String.concat " " query_name ^ " : " ^ pretty_typ in
   query_name, type_polarities, typ, pretty_query

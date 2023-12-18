@@ -10,9 +10,10 @@
   4.8M	megaodocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
   
-  real	0m1.236s
-  user	0m1.181s
-  sys	0m0.050s
+  real	0m1.170s
+  user	0m1.122s
+  sys	0m0.043s
+
 
 
 
@@ -44,8 +45,8 @@ $ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstr
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2576	db.js
-  1944	db.js.gz
+  2644	db.js
+  1996	db.js.gz
   1544	megaodocl.gz
 
 
@@ -71,7 +72,7 @@ indent to see results
 $ cp -r html /tmp
 $ firefox /tmp/html/base/index.html
   $ sherlodoc_index --format=marshal --index-docstring=false --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
-  $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin "S_poly"
+  $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin --limit 100 "S_poly"
   115 sig Base.Map.S_poly
   115 sig Base.Set.S_poly
   119 sig Base.Hashtbl.S_poly
@@ -83,11 +84,17 @@ $ firefox /tmp/html/base/index.html
   627 val Base.Hashtbl.S_poly.set
   628 val Base.Hashtbl.S_poly.data
   628 val Base.Hashtbl.S_poly.find
+  628 val Base.Hashtbl.S_poly.fold
   628 val Base.Hashtbl.S_poly.keys
+  628 val Base.Hashtbl.S_poly.mapi
   630 val Base.Hashtbl.S_poly.choose
+  632 val Base.Hashtbl.S_poly.find_exn
+  632 val Base.Hashtbl.S_poly.to_alist
+  634 val Base.Hashtbl.S_poly.choose_exn
   721 type ('a, 'b) Base.Map.S_poly.t
   721 type 'elt Base.Set.S_poly.t
   723 val Base.Map.S_poly.add
+  723 val Base.Map.S_poly.map
   723 val Base.Map.S_poly.mem
   723 val Base.Map.S_poly.nth
   723 val Base.Map.S_poly.set
@@ -97,31 +104,75 @@ $ firefox /tmp/html/base/index.html
   723 val Base.Set.S_poly.sum
   724 val Base.Map.S_poly.data
   724 val Base.Map.S_poly.find
+  724 val Base.Map.S_poly.fold
+  724 val Base.Map.S_poly.iter
   724 val Base.Map.S_poly.keys
+  724 val Base.Map.S_poly.mapi
+  724 val Base.Map.S_poly.rank
   724 type ('a, 'b) Base.Map.S_poly.tree
   724 val Base.Set.S_poly.diff
+  724 val Base.Set.S_poly.find
+  724 val Base.Set.S_poly.fold
   724 val Base.Set.S_poly.iter
   724 type 'elt Base.Set.S_poly.tree
   725 type ('a, 'b) Base.Hashtbl.S_poly.t
+  725 val Base.Map.S_poly.count
   725 val Base.Map.S_poly.empty
-  725 val Base.Map.S_poly.split
+  725 val Base.Map.S_poly.iteri
+  725 val Base.Set.S_poly.count
   725 val Base.Set.S_poly.empty
   725 val Base.Set.S_poly.equal
   725 val Base.Set.S_poly.inter
+  725 val Base.Set.S_poly.iter2
   725 val Base.Set.S_poly.split
   725 val Base.Set.S_poly.union
+  726 val Base.Map.S_poly.append
+  726 val Base.Map.S_poly.exists
   726 val Base.Map.S_poly.length
+  726 val Base.Map.S_poly.remove
   726 val Base.Set.S_poly.choose
+  726 val Base.Set.S_poly.exists
+  726 val Base.Set.S_poly.filter
   726 val Base.Set.S_poly.length
   726 val Base.Set.S_poly.remove
   727 type 'a Base.Hashtbl.S_poly.key
+  727 val Base.Hashtbl.S_poly.mem
+  727 val Base.Map.S_poly.add_exn
+  727 val Base.Map.S_poly.max_elt
+  727 val Base.Map.S_poly.min_elt
+  727 val Base.Map.S_poly.nth_exn
+  727 val Base.Map.S_poly.of_tree
+  727 val Base.Map.S_poly.to_tree
+  727 val Base.Set.S_poly.for_all
   727 val Base.Set.S_poly.max_elt
+  727 val Base.Set.S_poly.min_elt
   727 val Base.Set.S_poly.of_list
   727 val Base.Set.S_poly.of_tree
   727 val Base.Set.S_poly.to_list
   727 val Base.Set.S_poly.to_tree
+  728 val Base.Hashtbl.S_poly.copy
+  728 val Base.Map.S_poly.find_exn
+  728 val Base.Map.S_poly.is_empty
+  728 val Base.Map.S_poly.map_keys
   728 val Base.Map.S_poly.of_alist
+  728 val Base.Set.S_poly.elements
+  728 val Base.Set.S_poly.find_exn
+  728 val Base.Set.S_poly.is_empty
+  728 val Base.Set.S_poly.of_array
+  728 val Base.Set.S_poly.to_array
+  729 val Base.Hashtbl.S_poly.clear
+  729 val Base.Map.S_poly.singleton
+  729 val Base.Set.S_poly.is_subset
   729 val Base.Set.S_poly.singleton
+  730 val Base.Hashtbl.S_poly.length
+  730 val Base.Map.S_poly.invariants
+  730 val Base.Set.S_poly.choose_exn
+  730 val Base.Set.S_poly.invariants
+  731 val Base.Map.S_poly.max_elt_exn
+  731 val Base.Map.S_poly.min_elt_exn
+  731 val Base.Set.S_poly.max_elt_exn
+  731 val Base.Set.S_poly.min_elt_exn
+  732 val Base.Hashtbl.S_poly.hashable
   $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin "group b"
   218 val Base.List.group
   221 val Base.Hashtbl.group

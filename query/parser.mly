@@ -16,7 +16,6 @@
 %start main
 %type< Db.Typexpr.t> main
 
-%left EOF
 %%
 
 separated_twolong_list(sep, elt):
@@ -29,7 +28,7 @@ main:
 
 typ:
   | a=typ1 ARROW b=typ { arrow a b }
-  | a=typ1 ARROW { arrow a any }
+  | a=typ1 ARROW EOF { arrow a any }
   | ARROW b=typ { arrow any b }
   | ARROW EOF { arrow any any }
   | t=typ1 { t }

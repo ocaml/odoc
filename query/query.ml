@@ -22,7 +22,7 @@ let collapse_trie_occ ~count t =
 let collapse_trie t =
   Succ.(Tree.sets_tree ~union ~terminal:of_array ~union_of_array t)
 
-let find_types ~shards names =
+let find_types ~shards polarities =
   List.fold_left
     (fun acc shard ->
       let db = Db.(shard.db_types) in
@@ -33,7 +33,7 @@ let find_types ~shards names =
                match Tree_occ.find db name with
                | Some trie -> collapse_trie_occ ~count trie
                | None -> Succ.empty)
-             names
+             polarities
       in
       Succ.union acc r)
     Succ.empty shards
@@ -93,7 +93,7 @@ let api ~(shards : Db.t list) ?(dynamic_sort = true) params =
     if dynamic_sort
     then
       List.map
-        (Dynamic_cost.elt ~query_name ~query_type:query_typ_arrow)
+        (Dynamic_cost.update_entry ~query_name ~query_type:query_typ_arrow)
         results
     else results
   in

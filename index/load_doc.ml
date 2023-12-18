@@ -56,6 +56,7 @@ let rec typ_of_odoc_typ otyp =
       arrow (typ_of_odoc_typ left) (typ_of_odoc_typ right)
   | Constr (name, args) ->
       constr (Typename.to_string name) (List.map typ_of_odoc_typ args)
+  | Tuple li -> tuple (List.map typ_of_odoc_typ li)
   | _ -> unhandled
 
 let with_tokenizer str fn =

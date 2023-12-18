@@ -1,3 +1,6 @@
+
+(** [register_entry ~db ~index_name ~type_search ~index_docstring e] register
+    the entry [e] in [db].   *)
 val register_entry :
      db:Db.writer
   -> index_name:bool

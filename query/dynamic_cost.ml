@@ -1,7 +1,13 @@
 module Entry = Db.Entry
 
 module Reasoning = struct
+  (** The [Reasoning] module contains a representation that include every reason
+      for which a search entry would be ranked higher or lower. It does not
+      decide which reason is more important. *)
+
   module Name_match = struct
+    (** [Name_match.t] represents how good of a match there is between the query
+        and the name of an entry. *)
     type t =
       | DotSuffix
       | PrefixSuffix
@@ -41,25 +47,13 @@ module Reasoning = struct
       then Lowercase
       else (* Matches only in the docstring are always worse *) Doc
 
-    let with_words query_words elt =
-      match elt.Entry.kind with
+    let with_words query_words entry =
+      match entry.Entry.kind with
       | Entry.Kind.Doc -> List.map (fun _ : t -> Doc) query_words
-      | _ -> List.map (fun word -> with_word word elt.Entry.name) query_words
-
-    let compare nm nm' =
-      let to_int nm =
-        match nm with
-        | DotSuffix -> 0
-        | PrefixSuffix -> 1
-        | SubDot -> 2
-        | SubUnderscore -> 3
-        | Sub -> 4
-        | Lowercase -> 5
-        | Doc -> 6
-      in
-      Int.compare (to_int nm) (to_int nm')
+      | _ -> List.map (fun word -> with_word word entry.Entry.name) query_words
   end
 
+  (** The kind of the entry is used to rank it, but the payload is not needed. *)
   type kind =
     | Doc
     | TypeDecl
@@ -82,23 +76,23 @@ module Reasoning = struct
     ; name_matches : Name_match.t list
     ; type_distance : int option
     ; type_in_query : bool
-    ; type_in_elt : bool
+    ; type_in_entry : bool
     ; kind : kind
     ; is_from_module_type : bool
     }
 
-  let type_distance query_type elt =
+  let type_distance query_type entry =
     let open Entry in
-    match query_type, elt.kind with
+    match query_type, entry.kind with
     | None, _ -> None
     | ( Some query_type
       , Entry.Kind.(
-          ( ExtensionConstructor eltype
-          | Constructor eltype
-          | Field eltype
-          | Val eltype
-          | Exception eltype )) ) ->
-        Some (Type_distance.v ~query:query_type ~element:eltype)
+          ( ExtensionConstructor entry_type
+          | Constructor entry_type
+          | Field entry_type
+          | Val entry_type
+          | Exception entry_type )) ) ->
+        Some (Type_distance.v ~query:query_type ~entry:entry_type)
     | ( _
       , ( Doc | TypeDecl _ | Module | Class_type | Method | Class
         | TypeExtension | ModuleType ) ) ->
@@ -106,21 +100,21 @@ module Reasoning = struct
 
   let type_in_query query_type = Option.is_some query_type
 
-  let type_in_elt elt =
+  let type_in_entry entry =
     let open Entry in
-    match elt.kind with
+    match entry.kind with
     | ExtensionConstructor _ | Constructor _ | Field _ | Val _ | Exception _ ->
         true
     | Doc | TypeDecl _ | Module | Class_type | Method | Class | TypeExtension
     | ModuleType ->
         false
 
-  let is_stdlib elt =
+  let is_stdlib entry =
     let open Entry in
-    String.starts_with ~prefix:"Stdlib." elt.name
+    String.starts_with ~prefix:"Stdlib." entry.name
 
-  let kind elt =
-    match elt.Entry.kind with
+  let kind entry =
+    match entry.Entry.kind with
     | Entry.Kind.Doc -> Doc
     | Entry.Kind.TypeDecl _ -> TypeDecl
     | Entry.Kind.Module -> Module
@@ -135,104 +129,83 @@ module Reasoning = struct
     | Entry.Kind.Field _ -> Field
     | Entry.Kind.Val _ -> Val
 
-  let name_length elt = String.length elt.Entry.name
-  let is_from_module_type elt = elt.Entry.is_from_module_type
+  let name_length entry = String.length entry.Entry.name
+  let is_from_module_type entry = entry.Entry.is_from_module_type
 
-  let v query_words query_type elt =
-    let is_stdlib = is_stdlib elt in
-    let has_doc = elt.Entry.doc_html <> "" in
-    let name_matches = Name_match.with_words query_words elt in
-    let kind = kind elt in
-    let type_distance = type_distance query_type elt in
-    let type_in_elt = type_in_elt elt in
-    let type_in_query = type_in_query query_type in
-    let name_length = name_length elt in
-    let is_from_module_type = is_from_module_type elt in
-    { is_stdlib
-    ; has_doc
-    ; name_matches
-    ; type_distance
-    ; type_in_elt
-    ; type_in_query
-    ; kind
-    ; name_length
-    ; is_from_module_type
+  (** Compute the reasoning for the cost of an entry *)
+  let v query_words query_type entry =
+    { is_stdlib = is_stdlib entry
+    ; has_doc = entry.Entry.doc_html <> ""
+    ; name_matches = Name_match.with_words query_words entry
+    ; type_distance = type_distance query_type entry
+    ; type_in_entry = type_in_entry entry
+    ; type_in_query = type_in_query query_type
+    ; kind = kind entry
+    ; name_length = name_length entry
+    ; is_from_module_type = is_from_module_type entry
     }
+end
 
-  let compare_kind k k' =
-    let to_int = function
-      | Val -> 0
-      | Module -> 0
-      | Doc -> 5
-      | Constructor -> 1
-      | Field -> 1
-      | TypeDecl -> 1
-      | ModuleType -> 2
-      | Exception -> 3
-      | Class_type -> 4
-      | Class -> 4
-      | TypeExtension -> 4
-      | ExtensionConstructor -> 5
-      | Method -> 5
-    in
-    Int.compare (to_int k) (to_int k')
-
-  let score
+(** [cost_of_reasoning r] is the cost of a entry according to the reasons
+    contained in [r]. *)
+let cost_of_reasoning
+    Reasoning.
       { is_stdlib
       ; has_doc
       ; name_matches
       ; type_distance
-      ; type_in_elt
+      ; type_in_entry
       ; type_in_query
       ; kind
       ; name_length
       ; is_from_module_type
       } =
-    let ignore_no_doc =
-      match kind with
-      | Module | ModuleType -> true
-      | _ -> false
-    in
-    let kind =
-      match kind with
-      | Val | Module | ModuleType | Constructor | Field | TypeDecl -> 0
-      | Exception -> 30
-      | Class_type | Class | TypeExtension -> 40
-      | ExtensionConstructor | Method | Doc -> 50
-    in
-    let name_matches =
-      let open Name_match in
-      name_matches
-      |> List.map (function
-           | DotSuffix -> 0
-           | PrefixSuffix -> 103
-           | SubDot -> 104
-           | SubUnderscore -> 105
-           | Sub -> 106
-           | Lowercase -> 107
-           | Doc -> 1000)
-      |> List.fold_left ( + ) 0
-    in
+  let ignore_no_doc =
+    match kind with
+    | Module | ModuleType -> true
+    | _ -> false
+  in
+  let kind =
+    match kind with
+    | Val | Module | ModuleType | Constructor | Field | TypeDecl -> 0
+    | Exception -> 30
+    | Class_type | Class | TypeExtension -> 40
+    | ExtensionConstructor | Method | Doc -> 50
+  in
+  let name_matches =
+    let open Reasoning.Name_match in
+    name_matches
+    |> List.map (function
+         | DotSuffix -> 0
+         | PrefixSuffix -> 103
+         | SubDot -> 104
+         | SubUnderscore -> 105
+         | Sub -> 106
+         | Lowercase -> 107
+         | Doc -> 1000)
+    |> List.fold_left ( + ) 0
+  in
+  let type_cost =
+    if type_in_entry && type_in_query
+    then Option.get type_distance
+    else if type_in_entry
+    then 0
+    else if type_in_query
+    then
+      (* If query request a type, elements which do not have one should never
+         appear. *)
+      assert false
+    else 0
+  in
+  let is_from_module_type_cost = if is_from_module_type then 400 else 0 in
+  (if is_stdlib then 0 else 100)
+  + (if has_doc || ignore_no_doc then 0 else 100)
+  + name_matches + type_cost + kind + name_length + is_from_module_type_cost
 
-    let type_cost =
-      if type_in_elt && type_in_query
-      then Option.get type_distance
-      else if type_in_elt
-      then 0
-      else if type_in_query
-      then
-        (* If query request a type, elements which do not have one should never
-           appear. *)
-        assert false
-      else 0
-    in
-    let is_from_module_type_cost = if is_from_module_type then 400 else 0 in
-    (if is_stdlib then 0 else 100)
-    + (if has_doc || ignore_no_doc then 0 else 100)
-    + name_matches + type_cost + kind + name_length + is_from_module_type_cost
+let cost_of_entry ~query_name ~query_type entry =
+  cost_of_reasoning (Reasoning.v query_name query_type entry)
 
-  let score ~query_name ~query_type elt = score (v query_name query_type elt)
-end
-
-let elt ~query_name ~query_type elt =
-  Entry.{ elt with cost = Reasoning.score ~query_name ~query_type elt }
+(** [update_entry ~query_name ~query_type e] updates [e.cost] to take into
+    account the query described by [query_name] and [query_type].  *)
+let update_entry ~query_name ~query_type entry =
+  Entry.{ entry with cost = cost_of_entry ~query_name ~query_type entry }

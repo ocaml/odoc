@@ -198,10 +198,10 @@ let minimize = function
       let _ = go (Array.length used) 0 0 in
       !best
 
-let v ~query ~element =
+let v ~query ~entry =
   let query_paths = Type_path.of_typ ~ignore_any:false query in
-  let element_paths = Type_path.of_typ ~ignore_any:false element in
-  match element_paths, query_paths with
+  let entry_paths = Type_path.of_typ ~ignore_any:false entry in
+  match entry_paths, query_paths with
   | _, [] | [], _ -> 0
   | _ ->
       let arr =
@@ -209,6 +209,6 @@ let v ~query ~element =
           (fun p ->
             let p = List.rev p in
             List.map (fun q -> distance (List.rev q) p) query_paths)
-          element_paths
+          entry_paths
       in
       minimize arr
