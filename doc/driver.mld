@@ -278,7 +278,7 @@ let html_generate ?(ignore_output = false) ?(assets = []) ?(search_uris = []) fi
   in
   let search_uris =
     List.fold_left
-      (fun acc filename -> acc % "--search-uri" % p filename)
+      (fun acc filename -> acc % "--search-uri" % filename)
       empty
       search_uris
   in
@@ -354,10 +354,10 @@ let extra_docs = [
     "driver";
     "parent_child_spec";
     "features";
-    "interface";
     "odoc_for_authors";
     "dune";
     "ocamldoc_differences";
+    "api_reference";
 ]
 
 let parents =
@@ -571,12 +571,29 @@ let all_units =
   odoc_units @ lib_units |> List.flatten
 ]}
 
+Generate the {!api_reference} page to list Odoc's libraries:
+
+{[
+let update_api_reference_page () =
+  let libs =
+    List.sort String.compare odoc_libraries
+    |> List.map String.capitalize_ascii
+  in
+  OS.File.with_oc (Fpath.v "api_reference.mld") (fun oc () ->
+      let pf = Printf.fprintf in
+      pf oc "{0 API Reference}\n\n";
+      List.iter (pf oc "- {!%s}\n") libs;
+      Ok ()
+    ) ()
+  |> get_ok
+  |> get_ok
+]}
+
 Now we'll compile all of the parent [.mld] files. To ensure that the parents are compiled before the children, we start with [odoc.mld], then [deps.mld], and so on. The result of this file is a list of the resulting [odoc] files.
 
 {[
-let search_file = "index.js"
-
 let compile_mlds () =
+  update_api_reference_page ();
   let mkpage x = "page-\"" ^ x ^ "\"" in
   let mkmod x = "module-" ^ String.capitalize_ascii x in
   let mkmld x = Fpath.(add_ext "mld" (v x)) in
@@ -667,12 +684,10 @@ let link_all odoc_files =
 
 Now we simply run [odoc html-generate] over all of the resulting [odocl] files.
 This will generate sources, as well as documentation for non-hidden units.
-We notify the generator that the javascript file to use for search is [index.js].
 
 {[
-let generate_all odocl_files =
+let generate_all ~search_uris odocl_files =
   let relativize_opt = function None -> None | Some file -> Some (relativize file) in
-  let search_uris = [Fpath.v "minisearch.js"; Fpath.v "index.js"] in
   List.iter
      (fun ({file = f ; ignore_output = _ ; source ; assets}) ->
      ignore(html_generate ~assets ~search_uris f (relativize_opt source)))
@@ -680,88 +695,48 @@ let generate_all odocl_files =
   support_files ()
 ]}
 
-
-Finally, we generate an index of all values, types, ... This index is meant to be consumed by search engines, to create their own index. It consists of a JSON array, containing entries with the name, full name, associated comment, link and anchor, and kind. Generating the index is done via [odoc compile-index], which create a json file.
-
-Search engines written in OCaml can also call the [Odoc_model.Fold.unit] and  [Odoc_model.Fold.page] function, in conjunction with [Odoc_search.Entry.entry_of_item] in order to get an OCaml value of each element to be indexed.
+This builds Sherlodoc's database. It returns a list of javascript files to be
+passed to [html-generate], one is Sherlodoc's search engine and the other is
+its database.
 
 {[
-let index_generate ?(ignore_output = false) () =
-  let open Cmd in
-  let files =
-    OS.Dir.contents (Fpath.v ".")
-    |> get_ok
-    |> List.filter (Fpath.has_ext "odocl")
-    |> List.filter (fun p -> not (String.equal "src-source.odocl" (Fpath.filename p)))
-    |> List.filter (fun p -> not (is_hidden p))
-    |> List.map Fpath.to_string
-  in
-  let index_map = Fpath.v "index.map" in
-  let () = Bos.OS.File.write_lines index_map files |> get_ok in
+let opam_switch_prefix = Astring.String.Map.get "OPAM_SWITCH_PREFIX" env
+
+let locate_sherlodoc_js output_file =
+  let src = opam_switch_prefix ^ "/share/sherlodoc/sherlodoc.js" in
+  let cmd = Cmd.(v "cp" % src % output_file) in
+  let (), _ = OS.Cmd.(run_out cmd |> out_stdout) |> get_ok in
+  ()
+
+let build_search_db output_file odocl_files =
+  let odocl_files = List.map (fun u -> Fpath.to_string u.file) odocl_files in
   let cmd =
-    odoc % "compile-index" % "-o" % "html/index.json" % "--file-list"
-    % p index_map
+    Cmd.(
+      v "sherlodoc_index" % "--format=js" % "-o" % output_file
+      %% of_list odocl_files)
   in
-  let lines = run cmd in
-  if not ignore_output then
-    add_prefixed_output cmd generate_output "index compilation" lines
+  let (), _ = OS.Cmd.(run_out cmd |> out_stdout) |> get_ok in
+  ()
+
+let generate_search_assets odocl_files =
+  OS.Dir.create Fpath.(v "html/odoc");
+  (* Returned paths are relative to [html-generate]'s output directory. *)
+  let sherlodoc_js_uri = "odoc/sherlodoc.js" in
+  let sherlodoc_db_uri = "odoc/sherlodoc_db.js" in
+  let output_prefix = "html/" in
+  locate_sherlodoc_js (output_prefix ^ sherlodoc_js_uri);
+  build_search_db (output_prefix ^ sherlodoc_db_uri) odocl_files;
+  [ sherlodoc_db_uri; sherlodoc_js_uri ]
 ]}
-
-We turn the JSON index into a javascript file. In order to never block the UI, this file will be used as a web worker by [odoc], to perform searches:
-
-- The search query will be sent as a plain string to the web worker, using the standard mechanism of message passing
-- The web worker has to sent back the result as a message to the main thread, containing the list of result. Each entry of this list must have the same form as it had in the original JSON file.
-- The file must be given to the [odoc-support] URI.
-
-In this driver, we use the minisearch javascript library. For more involved application, we could use [index.js] to call a server-side search engine via an API call.
-
-{[
-  let js_index () =
-    let index = Bos.OS.File.read Fpath.(v "html" / "index.json") |> get_ok in
- Bos.OS.File.writef (Fpath.v search_file) {|
- let documents =
-   %s
- ;
-
- let miniSearch = new MiniSearch({
-  fields: ['id', 'doc', 'entry_id'], // fields to index for full-text search
-   storeFields: ['display'], // fields to return with search results
-   idField: 'entry_id',
-   extractField: (document, fieldName) => {
-     if (fieldName === 'id') {
-       return document.id.map(e => e.kind + "-" + e.name).join('.')
-     }
-     return document[fieldName]
-   }
- })
-
-
- // Use a unique id since some entries' id are not unique (type extension or
- // standalone doc comments for instance)
- documents.forEach((entry,i) => entry.entry_id = i)
- miniSearch.addAll(documents);
-
- onmessage = (m) => {
-   let query = m.data;
-   let result = miniSearch.search(query);
-   postMessage(result.slice(0,200).map(a => a.display));
- }
- |} index |> get_ok ;
-    Bos.OS.Cmd.run Bos.Cmd.(v "cp" % search_file % "html/") |> get_ok;
-    Bos.OS.Cmd.run Bos.Cmd.(v "cp" % "minisearch.js" % "html/") |> get_ok;
-]}
-
-
 
 The following code executes all of the above, and we're done!
 
 {[
 let compiled = compile_all () in
 let linked = link_all compiled in
-let () = index_generate () in
-let _ = js_index () in
+let search_uris = generate_search_assets linked in
 let _ = count_occurrences (Fpath.v "occurrences-odoc_and_deps.odoc") in
-generate_all linked
+generate_all ~search_uris linked
 ]}
 
 Let's see if there was any output from the [odoc] invocations:
@@ -780,6 +755,7 @@ We can have a look at the produced hierarchy of files, which matches the desired
 
 {@sh[
 $ ls html/odoc
+api_reference.html
 deps
 driver.html
 dune.html
@@ -812,6 +788,8 @@ odoc_search.js
 odoc_xref2
 odoc_xref_test
 parent_child_spec.html
+sherlodoc_db.js
+sherlodoc.js
 source
 $ find html/odoc/odoc_html | sort
 html/odoc/odoc_html
