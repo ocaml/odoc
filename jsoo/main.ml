@@ -98,8 +98,8 @@ let string_of_kind =
 let search message db =
   let query = Jv.get message "data" in
   let query = query |> Jv.to_jstr |> Jstr.to_string in
-  let _pretty_query, results =
-    Query.(api ~shards:db { query; packages = []; limit = 50 })
+  let results =
+    Query.(search ~shards:db { query; packages = []; limit = 50 })
   in
   let _ =
     Jv.(apply (get global "postMessage"))

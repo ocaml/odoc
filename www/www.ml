@@ -2,7 +2,8 @@ module Storage = Db.Storage
 module H = Tyxml.Html
 
 let api ~shards params =
-  let pretty, results = Query.api ~shards params in
+  let results = Query.search ~shards params in
+  let pretty = Query.pretty params in
   Lwt.return (Ui.render ~pretty results)
 
 let api ~shards params =

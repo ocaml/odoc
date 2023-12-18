@@ -51,11 +51,11 @@ let print_result ~print_cost ~no_rhs
 let search ~print_cost ~static_sort ~limit ~db ~no_rhs query =
   match
     Query.(
-      api ~shards:db ~dynamic_sort:(not static_sort)
+      search ~shards:db ~dynamic_sort:(not static_sort)
         { query; packages = []; limit })
   with
-  | _, [] -> print_endline "[No results]"
-  | _, (_ :: _ as results) ->
+  | [] -> print_endline "[No results]"
+  | _ :: _ as results ->
       List.iter (print_result ~print_cost ~no_rhs) results ;
       flush stdout
 

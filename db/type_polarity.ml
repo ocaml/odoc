@@ -35,19 +35,16 @@ let all_type_names name =
   name |> String.split_on_char '.' |> tails |> List.map (String.concat ".")
 
 let rec of_typ ~ignore_any ~all_names ~prefix ~sgn = function
-  | Poly _ -> [ Sign.to_string sgn :: "POLY" ::  prefix ]
+  | Poly _ -> [ Sign.to_string sgn :: "POLY" :: prefix ]
   | Any ->
       if ignore_any
-      then (
-
-        [ prefix ])
-      else [ Sign.to_string sgn :: "POLY" ::  prefix ]
+      then [ prefix ]
+      else [ Sign.to_string sgn :: "POLY" :: prefix ]
   | Arrow (a, b) ->
       List.rev_append
         (of_typ ~ignore_any ~all_names ~prefix ~sgn:(Sign.not sgn) a)
         (of_typ ~ignore_any ~all_names ~prefix ~sgn b)
   | Constr (name, args) ->
-
       name
       |> (if all_names then all_type_names else fun name -> [ name ])
       |> List.map (fun name ->
@@ -68,8 +65,7 @@ let rec of_typ ~ignore_any ~all_names ~prefix ~sgn = function
       rev_concat
       @@ List.map (of_typ ~ignore_any ~all_names ~prefix ~sgn)
       @@ args
-  | Unhandled ->
-    []
+  | Unhandled -> []
 
 (** [of_typ ~ignore_any ~prefix ~sgn t] is a representation of [t] that
     encodes the polarity of the elements of the type : in [string -> int] [int]

@@ -9,25 +9,19 @@ let guess_type_search str =
 
 let of_string str =
   let str = String.trim str in
-  let has_typ, str_name, str_typ =
+  let str_name, str_typ =
     match String.split_on_char ':' str with
-    | [ a; b ] -> true, a, b
-    | _ when guess_type_search str -> true, "", str
-    | _ -> false, str, ""
+    | [ a; b ] -> a, Ok b
+    | _ when guess_type_search str -> "", Ok str
+    | _ -> str, Error `empty
   in
-  let pretty_typ, type_polarities, typ =
-    match parse str_typ with
-    | Any ->  "_", None, None
-    | typ ->
-        ( Db.Typexpr.show typ
-        , Some (List.filter
-            (fun (word, _count) -> String.length word > 0)
-            (Db.Type_polarity.of_typ ~ignore_any:true ~all_names:false typ))
-        , Some typ )
-    | exception Parser.Error ->
-      "<parse error>", None, None
+
+  let typ =
+    Result.bind str_typ (fun str_typ ->
+        match parse str_typ with
+        | Any -> Error `any
+        | typ -> Ok typ
+        | exception Parser.Error -> Error `parse)
   in
-  let query_name = naive_of_string str_name in
-  let type_polarities = if has_typ then type_polarities else None in
-  let pretty_query = String.concat " " query_name ^ " : " ^ pretty_typ in
-  query_name, type_polarities, typ, pretty_query
+  let words = naive_of_string str_name in
+  words, typ

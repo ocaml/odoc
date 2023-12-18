@@ -84,8 +84,8 @@ module Reasoning = struct
   let type_distance query_type entry =
     let open Entry in
     match query_type, entry.kind with
-    | None, _ -> None
-    | ( Some query_type
+    | Error _, _ -> None
+    | ( Ok query_type
       , Entry.Kind.(
           ( ExtensionConstructor entry_type
           | Constructor entry_type
@@ -98,7 +98,7 @@ module Reasoning = struct
         | TypeExtension | ModuleType ) ) ->
         None
 
-  let type_in_query query_type = Option.is_some query_type
+  let type_in_query query_type = Result.is_ok query_type
 
   let type_in_entry entry =
     let open Entry in

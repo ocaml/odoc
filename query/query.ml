@@ -22,7 +22,13 @@ let collapse_trie_occ ~count t =
 let collapse_trie t =
   Succ.(Tree.sets_tree ~union ~terminal:of_array ~union_of_array t)
 
-let find_types ~shards polarities =
+let polarities typ =
+  List.filter
+    (fun (word, _count) -> String.length word > 0)
+    (Db.Type_polarity.of_typ ~ignore_any:true ~all_names:false typ)
+
+let find_types ~shards typ =
+  let polarities = polarities typ in
   List.fold_left
     (fun acc shard ->
       let db = Db.(shard.db_types) in
@@ -63,10 +69,10 @@ type t =
 
 let search ~(shards : Db.t list) query_name query_typ =
   match query_name, query_typ with
-  | [], None -> Succ.empty
-  | _ :: _, None -> find_names ~shards query_name
-  | [], Some query_typ -> find_types ~shards query_typ
-  | _ :: _, Some query_typ ->
+  | [], Error _ -> Succ.empty
+  | _ :: _, Error _ -> find_names ~shards query_name
+  | [], Ok query_typ -> find_types ~shards query_typ
+  | _ :: _, Ok query_typ ->
       let results_name = find_names ~shards query_name in
       let results_typ = find_types ~shards query_typ in
       Succ.inter results_name results_typ
@@ -81,11 +87,9 @@ let match_packages ~packages results =
   | [] -> results
   | _ -> Seq.filter (match_packages ~packages) results
 
-let api ~(shards : Db.t list) ?(dynamic_sort = true) params =
-  let query_name, query_typ, query_typ_arrow, pretty =
-    Parser.of_string params.query
-  in
-  let results = search ~shards query_name query_typ in
+let search ~(shards : Db.t list) ?(dynamic_sort = true) params =
+  let words, typ = Parser.of_string params.query in
+  let results = search ~shards words typ in
   let results = Succ.to_seq ~compare:Db.Entry.compare results in
   let results = match_packages ~packages:params.packages results in
   let results = List.of_seq @@ Seq.take params.limit results in
@@ -93,10 +97,18 @@ let api ~(shards : Db.t list) ?(dynamic_sort = true) params =
     if dynamic_sort
     then
       List.map
-        (Dynamic_cost.update_entry ~query_name ~query_type:query_typ_arrow)
+        (Dynamic_cost.update_entry ~query_name:words ~query_type:typ)
         results
     else results
   in
   let results = List.sort Db.Entry.compare results in
+  results
 
-  pretty, results
+let pretty params =
+  let words, typ = Parser.of_string params.query in
+  let words = String.concat " " words in
+  match typ with
+  | Ok typ -> words ^ " : " ^ Db.Typexpr.show typ
+  | Error `parse -> words ^ " : <parsing error>"
+  | Error `any -> words ^ " : _"
+  | Error `empty -> words

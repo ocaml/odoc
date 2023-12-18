@@ -4,9 +4,8 @@ type t =
   ; limit : int
   }
 
-val api :
-  shards:Db.t list -> ?dynamic_sort:bool -> t -> string * Db.Entry.t list
-(** [api ~shard ~dynamic_sort {query; packages; limit}] returns [(pretty_query,
+val search : shards:Db.t list -> ?dynamic_sort:bool -> t -> Db.Entry.t list
+(** [search ~shard ~dynamic_sort {query; packages; limit}] returns [(pretty_query,
       results)] where [pretty_query] is a re-printed version of [query] and
       [results] is the list of results corresponding to the query and the
       various parameters.
@@ -30,6 +29,8 @@ val api :
       might be an issue.
 
     - [packages] is not function, use [[]] for this argument. *)
+
+val pretty : t -> string
 
 (** For testing *)
 module Private : sig
