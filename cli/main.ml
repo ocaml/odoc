@@ -48,25 +48,23 @@ let print_result ~print_cost ~no_rhs
   in
   Format.printf "%s%s %s%s%a\n" cost kind typedecl_params name pp_rhs rhs
 
-let search ~print_cost ~static_sort ~limit ~db ~no_rhs query =
-  match
-    Query.(
-      search ~shards:db ~dynamic_sort:(not static_sort)
-        { query; packages = []; limit })
-  with
+let search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query query =
+  let query = Query.{ query; packages = []; limit } in
+  if pretty_query then print_endline (Query.pretty query) ;
+  match Query.(search ~shards:db ~dynamic_sort:(not static_sort) query) with
   | [] -> print_endline "[No results]"
   | _ :: _ as results ->
       List.iter (print_result ~print_cost ~no_rhs) results ;
       flush stdout
 
-let rec search_loop ~print_cost ~no_rhs ~static_sort ~limit ~db =
+let rec search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db =
   match In_channel.input_line stdin with
   | Some query ->
-      search ~print_cost ~static_sort ~limit ~db ~no_rhs query ;
-      search_loop ~print_cost ~no_rhs ~static_sort ~limit ~db
+      search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query query ;
+      search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
   | None -> print_endline "[Search session ended]"
 
-let main db query print_cost no_rhs static_sort limit =
+let main db query print_cost no_rhs static_sort limit pretty_query =
   match db with
   | None ->
       output_string stderr
@@ -76,8 +74,11 @@ let main db query print_cost no_rhs static_sort limit =
   | Some db -> (
       let db = Storage_marshal.load db in
       match query with
-      | None -> search_loop ~print_cost ~no_rhs ~static_sort ~limit ~db
-      | Some query -> search ~print_cost ~no_rhs ~static_sort ~limit ~db query)
+      | None ->
+          search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
+      | Some query ->
+          search ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db query
+      )
 
 open Cmdliner
 
@@ -114,9 +115,14 @@ let no_rhs =
   let doc = "Do not print the right-hand side of results." in
   Arg.(value & flag & info [ "no-rhs"; "no-right-hand-side" ] ~doc)
 
+let pretty_query =
+  let doc = "Prints the query itself as it was parsed" in
+  Arg.(value & flag & info [ "pretty-query" ] ~doc)
+
 let main =
   Term.(
-    const main $ db_filename $ query $ print_cost $ no_rhs $ static_sort $ limit)
+    const main $ db_filename $ query $ print_cost $ no_rhs $ static_sort $ limit
+    $ pretty_query)
 
 let cmd =
   let doc = "CLI interface to query sherlodoc" in

@@ -1,4 +1,4 @@
-let parse str = Parser.main Lexer.token (Lexing.from_string str)
+let parse str = Type_parser.of_string str
 
 let naive_of_string str =
   List.filter (fun s -> String.length s > 0) (String.split_on_char ' ' str)
@@ -19,9 +19,9 @@ let of_string str =
   let typ =
     Result.bind str_typ (fun str_typ ->
         match parse str_typ with
-        | Any -> Error `any
-        | typ -> Ok typ
-        | exception Parser.Error -> Error `parse)
+        | Ok Any -> Error `any
+        | Ok typ -> Ok typ
+        | Error _ -> Error `parse)
   in
   let words = naive_of_string str_name in
   words, typ

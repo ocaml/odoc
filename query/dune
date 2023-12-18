@@ -5,7 +5,5 @@
  (name query)
  (libraries lwt re db))
 
-(menhir
- (modules parser))
+(ocamllex type_lexer)
 
-(ocamllex lexer)

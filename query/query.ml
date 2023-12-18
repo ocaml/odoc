@@ -8,6 +8,7 @@ module Occ = Db.Occ
 module Private = struct
   module Array_succ = Array_succ
   module Succ = Succ
+  module Type_parser = Type_parser
 end
 
 let collapse_occ ~count occs =

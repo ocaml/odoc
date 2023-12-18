@@ -2,4 +2,5 @@
 
 (library
  (name db)
+  (preprocess(pps ppx_deriving.show))
  (libraries unix dum))

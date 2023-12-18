@@ -1,7 +1,16 @@
 (* This is the lexer for the [parser.mly]. *)
 
 {
-  open Parser
+  type token =
+  | ARROW
+  | PARENS_OPEN
+  | PARENS_CLOSE
+  | COMMA
+  | ANY
+  | STAR
+  | POLY of string
+  | WORD of string
+  | EOF
 }
 
 rule token = parse

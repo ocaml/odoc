@@ -36,4 +36,5 @@ val pretty : t -> string
 module Private : sig
   module Array_succ = Array_succ
   module Succ = Succ
+  module Type_parser = Type_parser
 end

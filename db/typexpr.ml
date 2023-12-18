@@ -46,7 +46,7 @@ and show_list = function
 
 and show_tuple = function
   | [] -> failwith "show_tuple: empty"
-  | [ x ] -> show x
+  | [ x ] -> show_parens x
   | x :: xs -> show_parens x ^ " * " ^ show_tuple xs
 
 let size typ = typ |> show |> String.length

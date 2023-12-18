@@ -13,6 +13,5 @@
   317 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   319 val Main.List.empty : 'a t * 'b t
   $ export OCAMLRUNPARAM=b
-This is a bug in the parser, there should be results (TODO fix it)
   $ sherlodoc ": (int, 'a) result"
-  [No results]
+  val Main.ok_zero : (int, 'a) result
