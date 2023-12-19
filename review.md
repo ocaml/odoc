@@ -1,5 +1,31 @@
 # review sherlodoc
 
+# TODO
+
+- Tester de virer la compression?
+  > Verifier si la double compression a de l'interet
+  > tester que gzip
+> Not done before vacation. Important ! This one is blocking for a release.
+
+- Have something more robust than sizes in tests. Remove them, and use
+  current-bench or just a manual benchmark.
+  > Not done before vacation. I do not know how to do this, and I believe that
+  size is critical and size changes should make the tests fail.
+  A manual benchmark could be used for test/cram/base_benchmark.t were time to
+  build the db is tested.
+
+- Have a benchmark of the cli
+
+- la limitation sur le packages de query n'est plus vraiment fonctionelle
+> demander a arthur, pas bloquant pour un release mais a nettoyer a un moment
+
+- `Index.Load_doc.with_tokenizer`: think of which character form a word
+> Not done before vacation. I agree that it could be expanded.
+
+- Maybe store all "arbitrary constants" relative to the cost function somewhere
+> I think it is fine as is for now.
+
+
 # To discuss
 
 - Type extensions: we might want to search for all extensions of a given extensible type.
@@ -53,31 +79,6 @@ they are interpreted as relative to the `-o` option")
 
 - Rewrite the type parser in a more flexible framework than menhir (combinator or recursive descent)
 > Not needed in the end
-
-# TODO
-
-- Tester de virer la compression?
-  > Verifier si la double compression a de l'interet
-  > tester que gzip
-> Not done before vacation. Important ! This one is blocking for a release.
-
-- Have something more robust than sizes in tests. Remove them, and use
-  current-bench or just a manual benchmark.
-  > Not done before vacation. I do not know how to do this, and I believe that
-  size is critical and size changes should make the tests fail.
-  A manual benchmark could be used for test/cram/base_benchmark.t were time to
-  build the db is tested.
-
-- Have a benchmark of the cli
-
-- la limitation sur le packages de query n'est plus vraiment fonctionelle
-> demander a arthur, pas bloquant pour un release mais a nettoyer a un moment
-
-- `Index.Load_doc.with_tokenizer`: think of which character form a word
-> Not done before vacation. I agree that it could be expanded.
-
-- Maybe store all "arbitrary constants" relative to the cost function somewhere
-> I think it is fine as is for now.
 
 # Explications commentée
 
