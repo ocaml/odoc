@@ -1,76 +1,10 @@
   $ find . -name '*.odocl' | sort
-  ./base.odocl
-  ./base_internalhash_types.odocl
-  ./caml.odocl
-  ./md5_lib.odocl
-  ./page-index.odocl
-  ./shadow_stdlib.odocl
-  $ cat $(find . -name '*.odocl') > megaodocl
-  $ du -sh megaodocl
-  4.8M	megaodocl
-  $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
-  
-  real	0m1.158s
-  user	0m1.113s
-  sys	0m0.043s
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$ sherlodoc_index --format=js --empty-payload --db=db_empty_payload.js $(find . -name '*.odocl') 2> /dev/null
-$ sherlodoc_index --format=js --index-docstring=false --db=db_no_docstring.js $(find . -name '*.odocl') 2> /dev/null
-$ sherlodoc_index --format=js --index-name=false --db=db_no_name.js $(find . -name '*.odocl') 2> /dev/null
-$ sherlodoc_index --format=js --type-search=false --db=db_no_type.js $(find . -name '*.odocl') 2> /dev/null
-$ sherlodoc_index --format=js --type-search=false --empty-payload --index-docstring=false  --db=db_only_names.js $(find . -name '*.odocl') 2> /dev/null
-
-  $ gzip -k db.js
-
-  $ gzip -k megaodocl
-
-  $ du -s *.js *.gz
-  2644	db.js
-  1996	db.js.gz
-  1544	megaodocl.gz
-
-
-  $ for f in $(find . -name '*.odocl'); do
-  >  odoc html-generate --search-uri=db.js --search-uri=sherlodoc.js --output-dir html $f
-  > done
-  $ odoc support-files -o html
-  $ cp db.js html/
-  $ cp ../../../jsoo/main.bc.js html/sherlodoc.js
-  $ du -sh html/sherlodoc.js
-  5.1M	html/sherlodoc.js
-  $ ls html
-  base
-  db.js
-  fonts
-  highlight.pack.js
-  katex.min.css
-  katex.min.js
-  odoc.css
-  odoc_search.js
-  sherlodoc.js
-indent to see results
-$ cp -r html /tmp
-$ firefox /tmp/html/base/index.html
+  ./base_odocls/base.odocl
+  ./base_odocls/base_internalhash_types.odocl
+  ./base_odocls/caml.odocl
+  ./base_odocls/md5_lib.odocl
+  ./base_odocls/page-index.odocl
+  ./base_odocls/shadow_stdlib.odocl
   $ sherlodoc_index --format=marshal --index-docstring=false --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
   $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin --limit 100 "S_poly"
   115 sig Base.Map.S_poly
@@ -263,3 +197,108 @@ $ firefox /tmp/html/base/index.html
 
   $ sherlodoc --no-rhs --db=db_marshal.bin "Base.Hashtbl.S_without_submodules.group"
   val Base.Hashtbl.S_without_submodules.group
+  $ sherlodoc --print-cost --db=db_marshal.bin "list"
+  109 mod Base.List
+  109 mod Caml.List
+  118 mod Shadow_stdlib.List
+  209 type 'a Base.list = 'a List.t
+  216 type 'a Base.Export.list = 'a List.t
+  217 val Base.List.map : 'a t -> f:('a -> 'b) -> 'b t
+  217 val Base.List.mem : 'a t -> 'a -> equal:('a -> 'a -> bool) -> bool
+  217 val Base.List.rev : 'a t -> 'a t
+  217 val Base.List.sub : 'a t -> pos:int -> len:int -> 'a t
+  217 val Base.List.sum : (module Container.Summable with type t = 'sum) ->
+    'a t ->
+    f:('a -> 'sum) ->
+    'sum
+  218 val Base.List.bind : 'a t -> f:('a -> 'b t) -> 'b t
+  218 val Base.List.drop : 'a t -> int -> 'a t
+  218 val Base.List.find : 'a t -> f:('a -> bool) -> 'a option
+  218 val Base.List.fold : 'a t -> init:'acc -> f:('acc -> 'a -> 'acc) -> 'acc
+  218 val Base.List.init : int -> f:(int -> 'a) -> 'a t
+  218 val Base.List.join : 'a t t -> 'a t
+  218 val Base.List.last : 'a t -> 'a option
+  218 val Base.List.mapi : 'a t -> f:(int -> 'a -> 'b) -> 'b t
+  218 val Base.List.sort : 'a t -> compare:('a -> 'a -> int) -> 'a t
+  218 val Base.List.take : 'a t -> int -> 'a t
+  219 val Base.List.(>>|) : 'a t -> ('a -> 'b) -> 'b t
+  219 mod Base.List.Assoc
+  219 mod Base.List.Infix
+  219 val Base.List.count : 'a t -> f:('a -> bool) -> int
+  219 mod Base.ListLabels
+  219 mod Caml.ListLabels
+  219 val Base.Set.to_list : ('a, _) t -> 'a list
+  220 val Base.List.append : 'a t -> 'a t -> 'a t
+  220 val Base.List.concat : 'a t t -> 'a t
+  220 val Base.List.hd_exn : 'a t -> 'a
+  220 val Base.List.return : 'a -> 'a t
+  220 val Base.List.tl_exn : 'a t -> 'a t
+  221 val Base.List.nth_exn : 'a t -> int -> 'a
+  221 val Base.Bytes.to_list : t -> char list
+  221 val Base.Queue.of_list : 'a list -> 'a t
+  221 val Base.Stack.of_list : 'a list -> 'a t
+  224 mod Base.List.Let_syntax
+  225 mod Base.List.Monad_infix
+  228 mod Shadow_stdlib.ListLabels
+  315 type 'a Base.List.t = 'a list
+  316 val Base.List.hd : 'a t -> 'a option
+  318 val Base.equal_list : 'a. ('a -> 'a -> bool) -> 'a list -> 'a list -> bool
+  320 val Base.compare_list : 'a. ('a -> 'a -> int) -> 'a list -> 'a list -> int
+  320 val Base.sexp_of_list : 'a. ('a -> Sexplib0.Sexp.t) -> 'a list -> Sexplib0.Sexp.t
+  321 type ('a, 'b) Base.List.Assoc.t = ('a * 'b) list
+  321 val Base.list_of_sexp : 'a. (Sexplib0.Sexp.t -> 'a) -> Sexplib0.Sexp.t -> 'a list
+  322 val Base.globalize_list : 'a. ('a -> 'a) -> 'a list -> 'a list
+  322 val Base.hash_fold_list : 'a. (Hash.state -> 'a -> Hash.state) -> Hash.state -> 'a list -> Hash.state
+  623 val Base.Queue.S.of_list : 'a list -> 'a t
+  623 val Base.Stack.S.of_list : 'a list -> 'a t
+  $ sherlodoc --print-cost --db=db_marshal.bin ": list"
+  116 val Base.Map.data : (_, 'v, _) t -> 'v list
+  116 val Base.Map.keys : ('k, _, _) t -> 'k list
+  118 val Base.Set.to_list : ('a, _) t -> 'a list
+  119 val Base.Hashtbl.data : (_, 'b) t -> 'b list
+  119 val Base.Hashtbl.keys : ('a, _) t -> 'a key list
+  119 val Base.Set.elements : ('a, _) t -> 'a list
+  119 val Base.String.split : t -> on:char -> t list
+  119 val Base.Bytes.to_list : t -> char list
+  121 val Base.Map.to_alist : ?key_order:[ `Increasing | `Decreasing ] -> ('k, 'v, _) t -> ('k * 'v) list
+  123 val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
+  123 val Base.Map.find_multi : ('k, 'v list, 'cmp) t -> 'k -> 'v list
+  124 val Base.Hashtbl.to_alist : ('a, 'b) t -> ('a key * 'b) list
+  124 val Base.Hashtbl.Poly.data : (_, 'b) t -> 'b list
+  124 val Base.Pretty_printer.all : unit -> string list
+  124 val Base.String.split_lines : t -> t list
+  124 val Base.String.to_list_rev : t -> char list
+  126 val Base.Sequence.to_list_rev : 'a t -> 'a list
+  210 val Caml.(@) : 'a list -> 'a list -> 'a list
+  213 val Base.Bool.all : t list
+  213 val Base.Char.all : t list
+  213 val Base.Sign.all : t list
+  213 val Base.Unit.all : t list
+  216 val Base.Nothing.all : t list
+  217 val Base.Ordering.all : t list
+  218 val Base.List.to_list : 'a t -> 'a list
+  219 val Shadow_stdlib.(@) : 'a list -> 'a list -> 'a list
+  219 val Base.Array.to_list : 'a t -> 'a list
+  219 val Base.Queue.to_list : 'a t -> 'a list
+  219 val Base.Stack.to_list : 'a t -> 'a list
+  220 val Base.Map.Poly.data : (_, 'v) t -> 'v list
+  220 val Base.Map.Poly.keys : ('k, _) t -> 'k list
+  220 val Base.Option.to_list : 'a t -> 'a list
+  220 val Base.String.to_list : t -> elt list
+  220 val Base.Float.Class.all : t list
+  220 val Base.Sign_or_nan.all : t list
+  221 val Base.Lazy.all : 'a t list -> 'a list t
+  221 val Base.List.all : 'a t list -> 'a list t
+  222 val Base.Sequence.to_list : 'a t -> 'a list
+  222 val Base.Set.Poly.to_list : 'a t -> 'a list
+  223 val Base.Option.all : 'a t list -> 'a list t
+  225 val Base.Result.all : ('a, 'e) t list -> ('a list, 'e) t
+  227 val Base.Monad.Make.all : 'a X.t list -> 'a list X.t
+  526 val Base.Hashtbl.S_poly.data : (_, 'b) t -> 'b list
+  526 val Base.Hashtbl.S_poly.keys : ('a, _) t -> 'a key list
+  621 val Base.Queue.S.to_list : 'a t -> 'a list
+  621 val Base.Stack.S.to_list : 'a t -> 'a list
+  622 val Base.Map.S_poly.data : (_, 'v) t -> 'v list
+  622 val Base.Map.S_poly.keys : ('k, _) t -> 'k list
+  624 val Base.Monad.S.all : 'a t list -> 'a list t
+  627 val Base.Monad.S2.all : ('a, 'e) t list -> ('a list, 'e) t
