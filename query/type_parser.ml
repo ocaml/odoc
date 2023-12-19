@@ -89,7 +89,7 @@ and parens tokens =
       | WORD w -> constr w params
       | _ -> error "parens 1")
   | PARENS_CLOSE -> typ
-  | EOF -> any
+  | EOF -> typ
   | _ -> error "parens 2"
 
 and params tokens =

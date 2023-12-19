@@ -19,5 +19,13 @@
    : string -> _
   [No results]
   $ sherlodoc --pretty-query ": (int"
-   : _
+   : int
   [No results]
+  $ sherlodoc --pretty-query ": (int ->"
+   : int -> _
+  [No results]
+  $ sherlodoc --pretty-query ": (int *"
+   : int * _
+  [No results]
+
+
