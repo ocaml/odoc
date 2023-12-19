@@ -354,10 +354,10 @@ let extra_docs = [
     "driver";
     "parent_child_spec";
     "features";
-    "interface";
     "odoc_for_authors";
     "dune";
     "ocamldoc_differences";
+    "api_reference";
 ]
 
 let parents =
@@ -571,12 +571,31 @@ let all_units =
   odoc_units @ lib_units |> List.flatten
 ]}
 
+Generate the {!api_reference} page to list Odoc's libraries:
+
+{[
+let update_api_reference_page () =
+  let libs =
+    List.sort String.compare odoc_libraries
+    |> List.map String.capitalize_ascii
+  in
+  OS.File.with_oc (Fpath.v "api_reference.mld") (fun oc () ->
+      let pf = Printf.fprintf in
+      pf oc "{0 API Reference}\n\n";
+      List.iter (pf oc "- {!%s}\n") libs;
+      Ok ()
+    ) ()
+  |> get_ok
+  |> get_ok
+]}
+
 Now we'll compile all of the parent [.mld] files. To ensure that the parents are compiled before the children, we start with [odoc.mld], then [deps.mld], and so on. The result of this file is a list of the resulting [odoc] files.
 
 {[
 let search_file = "index.js"
 
 let compile_mlds () =
+  update_api_reference_page ();
   let mkpage x = "page-\"" ^ x ^ "\"" in
   let mkmod x = "module-" ^ String.capitalize_ascii x in
   let mkmld x = Fpath.(add_ext "mld" (v x)) in
@@ -780,6 +799,7 @@ We can have a look at the produced hierarchy of files, which matches the desired
 
 {@sh[
 $ ls html/odoc
+api_reference.html
 deps
 driver.html
 dune.html
