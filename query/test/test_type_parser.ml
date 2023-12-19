@@ -34,7 +34,7 @@ let test_parser typ () =
 
 let tests =
   List.init 50 (fun i ->
-      let i = i in
+      let i = i * 5 in
       let typ = random_type i in
       Alcotest.test_case
         (Printf.sprintf "Type_parser size %i" i)
