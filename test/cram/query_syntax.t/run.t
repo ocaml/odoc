@@ -6,8 +6,13 @@
   $ sherlodoc --pretty-query ": int list option"
    : int list option
   [No results]
-  $ sherlodoc --pretty-query ": ->"
+  $ export OCAMLRUNPARAM=b
+  $ sherlodoc --pretty-query ": _"
    : _
+  [No results]
+
+  $ sherlodoc --pretty-query ": ->"
+   : _ -> _
   [No results]
   $ sherlodoc --pretty-query ": int ->"
    : int -> _

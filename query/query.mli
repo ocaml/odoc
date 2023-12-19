@@ -36,5 +36,8 @@ val pretty : t -> string
 module Private : sig
   module Array_succ = Array_succ
   module Succ = Succ
-  module Type_parser = Type_parser
+
+  module Type_parser : sig
+    val of_string : string -> (Db.Typexpr.t, string) result
+  end
 end

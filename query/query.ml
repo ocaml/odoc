@@ -8,7 +8,12 @@ module Occ = Db.Occ
 module Private = struct
   module Array_succ = Array_succ
   module Succ = Succ
-  module Type_parser = Type_parser
+
+  module Type_parser = struct
+    let of_string str =
+      let lexbuf = Lexing.from_string str in
+      Ok (Type_parser.main Type_lexer.token lexbuf)
+  end
 end
 
 let collapse_occ ~count occs =
@@ -26,10 +31,12 @@ let collapse_trie t =
 let polarities typ =
   List.filter
     (fun (word, _count) -> String.length word > 0)
-    (Db.Type_polarity.of_typ ~ignore_any:true ~all_names:false typ)
+    (Db.Type_polarity.of_typ ~any_is_poly:false ~all_names:false typ)
 
 let find_types ~shards typ =
   let polarities = polarities typ in
+  if polarities = []
+  then failwith "Query.find_types : type with empty polarities" ;
   List.fold_left
     (fun acc shard ->
       let db = Db.(shard.db_types) in

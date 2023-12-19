@@ -72,12 +72,12 @@ type t = string * int
   toplevel documentation of the module.
 *)
 
-val of_typ : ignore_any:bool -> all_names:bool -> Typexpr.t -> t list
+val of_typ : any_is_poly:bool -> all_names:bool -> Typexpr.t -> t list
 (** [of_typ ~ignore_any ~all_names typ] is the list of polarised types
     corresponding to [typ].
 
-  - If [ignore_any] is true, the type [_] will be ignored, otherwise it will be
-    treated like a type variable ['a].
+  - If [any_is_poly] is true, the type [_] will be treated like a type variable
+    ['a], other it will be represented solely by its sign ("+" or "-").
 
   - If [all_names] is true, extra polarities are added for every "possible name"
     of each type constructor. For instance the possible names of

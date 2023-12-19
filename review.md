@@ -50,6 +50,13 @@ they are interpreted as relative to the `-o` option")
 
 - separate pretty_query from the api function
 
+- Try to support `_ -> int` with dynamic cost ?
+> Done, but with polarities. `_` in a query has polarity `"+"` or `"-"`.
+  Previously the two possibilities were `"+POLY"`/`"-POLY"` or nothing.
+
+
+- Rewrite the type parser in a more flexible framework than menhir (combinator or recursive descent)
+> Not needed in the end
 
 # TODO
 
@@ -65,9 +72,7 @@ they are interpreted as relative to the `-o` option")
 
 <!-- - Essayer de comprendre dans `Load_doc.type_path` pourquoi l'ordre ne fait pas d'importance (see) -->
 
-- Rewrite the type parser in a more flexible framework than menhir (combinator or recursive descent)
 
-- Try to support `_ -> int` with dynamic cost ?
 
 # Explications commentée
 

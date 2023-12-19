@@ -7,9 +7,9 @@
   ./base_odocls/shadow_stdlib.odocl
   $ time sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
   
-  real	0m1.449s
-  user	0m1.407s
-  sys	0m0.037s
+  real	0m1.488s
+  user	0m1.409s
+  sys	0m0.067s
 
 
 
