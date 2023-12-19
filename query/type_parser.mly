@@ -2,7 +2,7 @@
    allow for incomplete queries to be reasonably answered. It also has conflicts
    for the same reason. They are impossible to solve.
    Its behaviour on correct types is tested in [query/test/test_type_parser.ml]
-   and its behaviour on incomplete types is tested in [test/cram/query_syntax.t/run.t] *)
+   and its behaviour on incomplete types is tested in [test/cram/query_syntax.t] *)
 
 %{
   open Db.Typexpr
