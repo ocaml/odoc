@@ -22,6 +22,7 @@ and record fields.
 First, install sherlodoc :
 
 ```bash
+opam pin add https://github.com/art-w/sherlodoc.git#jsoo
 opam install sherlodoc
 ```
 
