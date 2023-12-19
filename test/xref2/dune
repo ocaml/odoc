@@ -29,7 +29,7 @@
 ; 4.08.0 and above
 
 (cram
- (applies_to github_issue_587 shadow)
+ (applies_to github_issue_587 shadow github_issue_1066)
  (enabled_if
   (>= %{ocaml_version} 4.08.0)))
 
