@@ -378,58 +378,9 @@ let rec unit env t =
           Module sg
       | Pack _ as p -> p
   in
-  let source_info =
-    let open Source_info in
-    match t.source_info with
-    | Some inf ->
-        let jump_to v f_impl f_doc =
-          let documentation =
-            match v.documentation with Some p -> Some (f_doc p) | None -> None
-          in
-          let implementation =
-            match v.implementation with
-            | Some (Unresolved p) -> (
-                match f_impl p with
-                | Some x -> Some (Resolved x)
-                | None -> v.implementation)
-            | x -> x
-          in
-          { documentation; implementation }
-        in
-        let infos =
-          List.map
-            (fun (i, pos) ->
-              let info =
-                match i with
-                | Value v ->
-                    Value
-                      (jump_to v
-                         (Shape_tools.lookup_value_path env)
-                         (value_path env))
-                | Module v ->
-                    Module
-                      (jump_to v
-                         (Shape_tools.lookup_module_path env)
-                         (module_path env))
-                | ModuleType v ->
-                    ModuleType
-                      (jump_to v
-                         (Shape_tools.lookup_module_type_path env)
-                         (module_type_path env))
-                | Type v ->
-                    Type
-                      (jump_to v
-                         (Shape_tools.lookup_type_path env)
-                         (type_path env))
-                | i -> i
-              in
-              (info, pos))
-            inf.infos
-        in
-        Some { inf with infos }
-    | None -> None
-  in
-  { t with content; linked = true; source_info }
+  let locs = locations env t.id t.locs in
+
+  { t with content; linked = true; locs }
 
 and value_ env parent t =
   let open Value in
@@ -1134,6 +1085,52 @@ let page env page =
     linked = true;
   }
 
+let source_info env infos =
+  let open Source_info in
+  let jump_to v f_impl f_doc =
+    let documentation =
+      match v.documentation with Some p -> Some (f_doc p) | None -> None
+    in
+    let implementation =
+      match v.implementation with
+      | Some (Unresolved p) -> (
+          match f_impl p with
+          | Some x -> Some (Resolved x)
+          | None -> v.implementation)
+      | x -> x
+    in
+    { documentation; implementation }
+  in
+  List.map
+    (fun (i, pos) ->
+      let info =
+        match i with
+        | Value v ->
+            Value
+              (jump_to v (Shape_tools.lookup_value_path env) (value_path env))
+        | Module v ->
+            Module
+              (jump_to v (Shape_tools.lookup_module_path env) (module_path env))
+        | ModuleType v ->
+            ModuleType
+              (jump_to v
+                 (Shape_tools.lookup_module_type_path env)
+                 (module_type_path env))
+        | Type v ->
+            Type (jump_to v (Shape_tools.lookup_type_path env) (type_path env))
+        | i -> i
+      in
+      (info, pos))
+    infos
+
+let impl env i =
+  let open Source_page in
+  { i with source_info = source_info env i.source_info; linked = true }
+
 let resolve_page ~filename env p =
   Lookup_failures.catch_failures ~filename (fun () ->
       if p.Lang.Page.linked then p else page env p)
+
+let resolve_impl ~filename env i =
+  Lookup_failures.catch_failures ~filename (fun () ->
+      if i.Lang.Source_page.linked then i else impl env i)

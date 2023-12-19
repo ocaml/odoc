@@ -254,12 +254,12 @@ Passing an inexistent file:
 
 Passing an odoc file which is neither a compilation unit nor a page:
 
-  $ odoc compile -c src-source page.mld
+  $ odoc compile -c srctree-source page.mld
   $ printf "a.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page -o src-source.odoc source_tree.map
+  $ odoc source-tree -I . --parent page -o srctree-source.odoc source_tree.map
 
-  $ odoc compile-index src-source.odoc
-  File "src-source.odoc":
+  $ odoc compile-index srctree-source.odoc
+  File "srctree-source.odoc":
   Warning: Only pages and unit are allowed as input when generating an index
 
 Passing a file which is not a correctly marshalled one:

@@ -29,7 +29,6 @@ type parent_cli_spec =
   | CliPackage of string
   | CliNoparent
 
-let check_is_none msg = function None -> Ok () | Some _ -> Error (`Msg msg)
 let check_is_empty msg = function [] -> Ok () | _ :: _ -> Error (`Msg msg)
 
 (** Used to disambiguate child references. *)
@@ -53,7 +52,7 @@ let parse_parent_child_reference s =
   in
   match String.cut ~sep:"-" s with
   | Some ("page", n) -> Ok (Lang.Page.Page_child (unquote n))
-  | Some ("src", n) -> Ok (Source_tree_child (unquote n))
+  | Some ("srctree", n) -> Ok (Source_tree_child (unquote n))
   | Some ("asset", n) -> Ok (Asset_child (unquote n))
   | Some ("module", n) ->
       Ok (Module_child (unquote (String.Ascii.capitalize n)))
@@ -97,19 +96,16 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver ~make_root ~source_id_opt ~cmt_filename_opt
-    ~hidden (parent : Paths.Identifier.ContainerPage.t option) input_file
-    input_type ~count_occurrences =
+let resolve_and_substitute ~resolver ~make_root ~hidden
+    (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
   let unit =
     match input_type with
     | `Cmti ->
-        Odoc_loader.read_cmti ~make_root ~parent ~filename ~source_id_opt
-          ~cmt_filename_opt ~count_occurrences
+        Odoc_loader.read_cmti ~make_root ~parent ~filename
         |> Error.raise_errors_and_warnings
     | `Cmt ->
-        Odoc_loader.read_cmt ~make_root ~parent ~filename ~source_id_opt
-          ~count_occurrences
+        Odoc_loader.read_cmt ~make_root ~parent ~filename
         |> Error.raise_errors_and_warnings
     | `Cmi ->
         Odoc_loader.read_cmi ~make_root ~parent ~filename
@@ -251,41 +247,15 @@ let handle_file_ext ext =
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
 let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-    ~warnings_options ~source ~cmt_filename_opt ~count_occurrences input =
+    ~warnings_options input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
-    check_is_none "Not expecting source (--source-*) when compiling pages."
-      source
-    >>= fun () ->
-    check_is_none "Not expecting cmt filename (--cmt) when compiling pages."
-      cmt_filename_opt
-    >>= fun () -> mld ~parent_spec ~output ~warnings_options ~children input
+    mld ~parent_spec ~output ~warnings_options ~children input
   else
     check_is_empty "Not expecting children (--child) when compiling modules."
       children
     >>= fun () ->
-    (match source with
-    | Some (parent, name) -> (
-        Odoc_file.load parent >>= fun parent ->
-        let err_not_parent () =
-          Error (`Msg "Specified source-parent is not a parent of the source.")
-        in
-        match parent.Odoc_file.content with
-        | Odoc_file.Source_tree_content page -> (
-            match page.Lang.SourceTree.name with
-            | { Paths.Identifier.iv = `Page _; _ } as parent_id ->
-                let id = Paths.Identifier.Mk.source_page (parent_id, name) in
-                if List.exists (Paths.Identifier.equal id) page.source_children
-                then Ok (Some id)
-                else err_not_parent ()
-            | { iv = `LeafPage _; _ } -> err_not_parent ())
-        | Unit_content _ | Odoc_file.Page_content _ ->
-            Error
-              (`Msg "Specified source-parent should be a page but is a module.")
-        )
-    | None -> Ok None)
-    >>= fun source_id_opt ->
     handle_file_ext ext >>= fun input_type ->
     let parent =
       match parent_spec with
@@ -296,8 +266,8 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =
       Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver ~make_root ~hidden ~source_id_opt
-            ~cmt_filename_opt ~count_occurrences parent input input_type)
+          resolve_and_substitute ~resolver ~make_root ~hidden parent input
+            input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in

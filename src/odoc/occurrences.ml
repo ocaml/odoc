@@ -5,7 +5,7 @@ let handle_file file ~f =
   | Error _ as e -> e
   | Ok unit' -> (
       match unit' with
-      | { Odoc_file.content = Unit_content unit; _ } -> Ok (Some (f unit))
+      | { Odoc_file.content = Impl_content impl; _ } -> Ok (Some (f impl))
       | _ -> Ok None)
 
 let fold_dirs ~dirs ~f ~init =
@@ -123,7 +123,7 @@ end
 
 let count ~dst ~warnings_options:_ directories include_hidden =
   let htbl = H.create 100 in
-  let f () (unit : Odoc_model.Lang.Compilation_unit.t) =
+  let f () (unit : Odoc_model.Lang.Source_page.t) =
     let incr tbl p =
       let p = (p :> Odoc_model.Paths.Path.Resolved.t) in
       let id = Odoc_model.Paths.Path.Resolved.identifier p in
@@ -142,7 +142,7 @@ let count ~dst ~warnings_options:_ directories include_hidden =
               incr htbl p
           | Type { documentation = Some (`Resolved p); _ }, _ -> incr htbl p
           | _ -> ())
-        (match unit.source_info with None -> [] | Some i -> i.infos)
+        unit.source_info
     in
     ()
   in

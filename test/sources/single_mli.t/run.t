@@ -1,22 +1,28 @@
 Similar to Astring library.
 
-  $ odoc compile -c module-a -c src-source root.mld
+  $ odoc compile -c module-a -c srctree-source root.mld
 
   $ printf "a.ml\na_x.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o src-source.odoc source_tree.map
+  $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
 
   $ ocamlc -c -o a_x.cmo a_x.ml -bin-annot -I .
   $ ocamlc -c a.mli -bin-annot -I .
   $ ocamlc -c a.ml -bin-annot -I .
 
-  $ odoc compile --hidden --source-name a_x.ml --source-parent-file src-source.odoc -I . a_x.cmt
-  $ odoc compile --cmt a.cmt --source-name a.ml --source-parent-file src-source.odoc -I . a.cmti
+  $ odoc compile-src --source-path a_x.ml --source-parent-file srctree-source.odoc -I . a_x.cmt
+  $ odoc compile --hidden -I . a_x.cmt
+  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . a.cmt
+  $ odoc compile -I . a.cmti
 
+  $ odoc link -I . src-a_x.odoc
   $ odoc link -I . a_x.odoc
+  $ odoc link -I . src-a.odoc
   $ odoc link -I . a.odoc
 
-  $ odoc html-generate --source a_x.ml --indent -o html a_x.odocl
-  $ odoc html-generate --source a.ml --indent -o html a.odocl
+  $ odoc html-generate --source a_x.ml --indent -o html src-a_x.odocl
+  $ odoc html-generate --indent -o html a_x.odocl
+  $ odoc html-generate --source a.ml --indent -o html src-a.odocl
+  $ odoc html-generate --indent -o html a.odocl
 
 Look if all the source files are generated:
 

@@ -1,6 +1,6 @@
 A page can have source children.
 
-  $ odoc compile -c module-a -c module-b -c src-source root.mld
+  $ odoc compile -c module-a -c module-b -c srctree-source root.mld
 
   $ printf "lib/main.ml\nlib/b/b.ml\nlib/a/a.ml\n" > source.map
   $ odoc source-tree -I . --parent page-root source.map
@@ -13,19 +13,28 @@ Compile the modules:
 
 Now, compile the pages with the --source option. The source-name must be included in the source-children of the source-parent:
 
-  $ odoc compile -I . --source-name lib/a/a.ml --source-parent-file src-source.odoc a.cmt
-  $ odoc compile -I . --source-name lib/b/b.ml --source-parent-file src-source.odoc b.cmt
-  $ odoc compile -I . --source-name lib/main.ml --source-parent-file src-source.odoc c.cmt
+  $ odoc compile-src -I . --source-path lib/a/a.ml --source-parent-file srctree-source.odoc a.cmt
+  $ odoc compile -I . a.cmt
+  $ odoc compile-src -I . --source-path lib/b/b.ml --source-parent-file srctree-source.odoc b.cmt
+  $ odoc compile -I . b.cmt
+  $ odoc compile-src -I . --source-path lib/main.ml --source-parent-file srctree-source.odoc c.cmt
+  $ odoc compile -I . c.cmt
   $ odoc link -I . page-root.odoc
   $ odoc link -I . a.odoc
   $ odoc link -I . b.odoc
   $ odoc link -I . c.odoc
-  $ odoc link -I . src-source.odoc
+  $ odoc link -I . src-a.odoc
+  $ odoc link -I . src-b.odoc
+  $ odoc link -I . src-c.odoc
+  $ odoc link -I . srctree-source.odoc
   $ odoc html-generate --indent -o html page-root.odocl
-  $ odoc html-generate --indent -o html src-source.odocl
-  $ odoc html-generate --source a.ml --indent -o html a.odocl
-  $ odoc html-generate --source b.ml --indent -o html b.odocl
-  $ odoc html-generate --source c.ml --indent -o html c.odocl
+  $ odoc html-generate --indent -o html srctree-source.odocl
+  $ odoc html-generate --source a.ml --indent -o html src-a.odocl
+  $ odoc html-generate --indent -o html a.odocl
+  $ odoc html-generate --source b.ml --indent -o html src-b.odocl
+  $ odoc html-generate --indent -o html b.odocl
+  $ odoc html-generate --source c.ml --indent -o html src-c.odocl
+  $ odoc html-generate --indent -o html c.odocl
 
 Source pages and source directory pages are generated:
 

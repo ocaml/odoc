@@ -20,20 +20,20 @@ let rec shape_of_id env :
   fun id ->
     if Identifier.is_internal id then None else 
     match id.iv with
-    | `Root (_, name) -> begin
-        match Env.lookup_unit (ModuleName.to_string_unsafe name) env with
-        | Some (Env.Found unit) -> (
-          match unit.shape_info with | Some (shape, _) -> Some shape | None -> None)
-        | _ -> None
-      end
+    | `Root (_, name) -> (
+        match Env.lookup_impl (ModuleName.to_string_unsafe name) env with
+        | Some impl -> (
+            match impl.shape_info with
+            | Some (shape, _) -> Some shape
+            | None -> None)
+        | _ -> None)
     | `Module (parent, name) ->
         proj parent Kind.Module (ModuleName.to_string_unsafe name)
     | `Result parent ->
         (* Apply the functor to an empty signature. This doesn't seem to cause
            any problem, as the shape would stop resolve on an item inside the
            result of the function, which is what we want. *)
-        shape_of_id env (parent :> Identifier.NonSrc.t)
-        >>= fun parent ->
+        shape_of_id env (parent :> Identifier.NonSrc.t) >>= fun parent ->
         Some (Shape.app parent ~arg:(Shape.str Shape.Item.Map.empty))
     | `ModuleType (parent, name) ->
         proj parent Kind.Module_type (ModuleTypeName.to_string_unsafe name)
@@ -57,7 +57,9 @@ let rec shape_of_id env :
 let rec shape_of_module_path env : _ -> Shape.t option =
   let proj parent kind name =
     let item = Shape.Item.make name kind in
-    match shape_of_module_path env (parent :> Odoc_model.Paths.Path.Module.t) with
+    match
+      shape_of_module_path env (parent :> Odoc_model.Paths.Path.Module.t)
+    with
     | Some shape -> Some (Shape.proj shape item)
     | None -> None
   in
@@ -65,9 +67,9 @@ let rec shape_of_module_path env : _ -> Shape.t option =
     match path with
     | `Resolved _ -> None
     | `Root name -> (
-        match Env.lookup_unit name env with
-        | Some (Env.Found unit) -> (
-            match unit.shape_info with
+        match Env.lookup_impl name env with
+        | Some impl -> (
+            match impl.shape_info with
             | Some (shape, _) -> Some shape
             | None -> None)
         | _ -> None)
@@ -77,13 +79,12 @@ let rec shape_of_module_path env : _ -> Shape.t option =
     | `Apply (parent, arg) ->
         shape_of_module_path env (parent :> Odoc_model.Paths.Path.Module.t)
         >>= fun parent ->
-        shape_of_module_path env (arg :> Odoc_model.Paths.Path.Module.t) >>= fun arg ->
-        Some (Shape.app parent ~arg)
+        shape_of_module_path env (arg :> Odoc_model.Paths.Path.Module.t)
+        >>= fun arg -> Some (Shape.app parent ~arg)
     | `Identifier (id, _) ->
         shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
 
-let shape_of_kind_path env kind :
-    _ -> Shape.t option =
+let shape_of_kind_path env kind : _ -> Shape.t option =
   let proj parent kind name =
     let item = Shape.Item.make name kind in
     match shape_of_module_path env parent with
@@ -94,7 +95,8 @@ let shape_of_kind_path env kind :
     match path with
     | `Resolved _ -> None
     | `Dot (parent, name) -> proj parent kind name
-    | `Identifier (id, _) -> shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
+    | `Identifier (id, _) ->
+        shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
 
 module MkId = Identifier.Mk
 
@@ -105,18 +107,17 @@ let unit_of_uid uid =
   | Predef _ -> None
   | Internal -> None
 
-let lookup_shape :
-    Env.t ->
-    Shape.t ->
-    Identifier.SourceLocation.t option =
+let lookup_shape : Env.t -> Shape.t -> Identifier.SourceLocation.t option =
  fun env query ->
   let module Reduce = Shape.Make_reduce (struct
     type env = unit
     let fuel = 10
     let read_unit_shape ~unit_name =
-      match Env.lookup_unit unit_name env with
-      | Some (Found unit) -> (
-        match unit.shape_info with | Some (shape, _) -> Some shape | None -> None)
+      match Env.lookup_impl unit_name env with
+      | Some impl -> (
+          match impl.shape_info with
+          | Some (shape, _) -> Some shape
+          | None -> None)
       | _ -> None
     let find_shape _ _ = raise Not_found
   end) in
@@ -124,39 +125,33 @@ let lookup_shape :
   result >>= fun result ->
   result.uid >>= fun uid ->
   unit_of_uid uid >>= fun unit_name ->
-  match Env.lookup_unit unit_name env with
-  | None 
-  | Some Forward_reference
-  | Some (Not_found) -> None
-  | Some (Found unit) -> 
-    let uid_to_id =
-      match unit.shape_info with
-      | Some (_, uid_to_id) -> uid_to_id
-      | None -> Odoc_model.Compat.empty_map
-    in
-    match Shape.Uid.Map.find_opt uid uid_to_id with
-    | Some x -> Some x
-    | None -> (
-      match unit.source_info with
-      | Some {id = Some id ; _} -> Some (MkId.source_location_mod id)
-      | _ -> None)
-
+  match Env.lookup_impl unit_name env with
+  | None -> None
+  | Some impl -> (
+      let uid_to_id =
+        match impl.shape_info with
+        | Some (_, uid_to_id) -> uid_to_id
+        | None -> Odoc_model.Compat.empty_map
+      in
+      match Shape.Uid.Map.find_opt uid uid_to_id with
+      | Some x -> Some x
+      | None -> (
+          match impl with
+          | { id; _ } -> Some (MkId.source_location_mod id)))
 
 let lookup_def :
-    Env.t ->
-    Identifier.NonSrc.t ->
-    Identifier.SourceLocation.t option =
+    Env.t -> Identifier.NonSrc.t -> Identifier.SourceLocation.t option =
  fun env id ->
   match shape_of_id env id with
   | None -> None
   | Some query -> lookup_shape env query
 
-let lookup_module_path = fun env path ->
+let lookup_module_path env path =
   match shape_of_module_path env path with
   | None -> None
   | Some query -> lookup_shape env query
 
-let lookup_kind_path = fun kind env path ->
+let lookup_kind_path kind env path =
   match shape_of_kind_path env kind path with
   | None -> None
   | Some query -> lookup_shape env query

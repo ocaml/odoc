@@ -1,23 +1,30 @@
 Checking that source parents are kept, using include.
 
-  $ odoc compile -c module-a -c src-source root.mld
+  $ odoc compile -c module-a -c srctree-source root.mld
 
   $ printf "a.ml\nb.ml\nmain.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o src-source.odoc source_tree.map
+  $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
 
   $ ocamlc -c -o b.cmo b.ml -bin-annot -I .
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
   $ ocamlc -c main.ml -bin-annot -I .
 
-  $ odoc compile --source-name b.ml --source-parent-file src-source.odoc -I . b.cmt
-  $ odoc compile --source-name a.ml --source-parent-file src-source.odoc -I . main__A.cmt
-  $ odoc compile --source-name main.ml --source-parent-file src-source.odoc -I . main.cmt
+  $ odoc compile-src --source-path b.ml --source-parent-file srctree-source.odoc -I . b.cmt
+  $ odoc compile -I . b.cmt
+  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . main__A.cmt
+  $ odoc compile -I . main__A.cmt
+  $ odoc compile-src --source-path main.ml --source-parent-file srctree-source.odoc -I . main.cmt
+  $ odoc compile -I . main.cmt
 
   $ odoc link -I . main.odoc
   $ odoc link -I . main__A.odoc
+  $ odoc link -I . src-main.odoc
+  $ odoc link -I . src-main__A.odoc
 
-  $ odoc html-generate --source main.ml --indent -o html main.odocl
-  $ odoc html-generate --source a.ml --hidden --indent -o html main__A.odocl
+  $ odoc html-generate --source main.ml --indent -o html src-main.odocl
+  $ odoc html-generate --indent -o html main.odocl
+  $ odoc html-generate --source a.ml --hidden --indent -o html src-main__A.odocl
+  $ odoc html-generate --hidden --indent -o html main__A.odocl
 
 In Main.A, the source parent of value x should be to Main__A, while the
 source parent of value y should be left to B.

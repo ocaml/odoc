@@ -29,7 +29,10 @@ end
 module Odoc_file = struct
   type compilation_unit = { name : string; hidden : bool }
 
-  type t = Page of string | Compilation_unit of compilation_unit
+  type t =
+    | Page of string
+    | Compilation_unit of compilation_unit
+    | Impl of string
 
   let create_unit ~force_hidden name =
     let hidden = force_hidden || Names.contains_double_underscore name in
@@ -37,9 +40,14 @@ module Odoc_file = struct
 
   let create_page name = Page name
 
-  let name = function Page name | Compilation_unit { name; _ } -> name
+  let create_impl name = Impl name
 
-  let hidden = function Page _ -> false | Compilation_unit m -> m.hidden
+  let name = function
+    | Page name | Compilation_unit { name; _ } | Impl name -> name
+
+  let hidden = function
+    | Page _ | Impl _ -> false
+    | Compilation_unit m -> m.hidden
 end
 
 type t = {
@@ -55,6 +63,13 @@ let hash : t -> int = Hashtbl.hash
 let to_string t =
   let rec pp fmt (id : Paths.Identifier.OdocId.t) =
     match id.iv with
+    | `SourcePage (parent, name) ->
+        let rec loop_pp fmt parent =
+          match parent.Paths.Identifier.iv with
+          | `SourceDir (p, name) -> Format.fprintf fmt "%a::%s" loop_pp p name
+          | `Page _ as iv -> Format.fprintf fmt "%a" pp { parent with iv }
+        in
+        Format.fprintf fmt "%a::%s" loop_pp parent name
     | `LeafPage (parent, name) | `Page (parent, name) -> (
         match parent with
         | Some p ->

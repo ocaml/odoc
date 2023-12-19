@@ -24,7 +24,7 @@ let parse_input_file input =
 let source_child_id parent segs = Id.Mk.source_page (parent, segs)
 
 let compile ~resolver ~parent ~output ~warnings_options:_ input =
-  let root_name = Compile.name_of_output ~prefix:"src-" output in
+  let root_name = Compile.name_of_output ~prefix:"srctree-" output in
   let page_name = PageName.make_std root_name in
   Compile.resolve_parent_page resolver parent >>= fun (parent, siblings) ->
   let id = Id.Mk.page (Some parent, page_name) in

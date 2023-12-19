@@ -15,7 +15,6 @@
  *)
 
 open Odoc_model
-open Odoc_model.Paths
 
 val compilation_unit : Lang.Compilation_unit.t -> Types.Document.t
 
@@ -25,11 +24,7 @@ val page : Lang.Page.t -> Types.Document.t
 val source_tree : Lang.SourceTree.t -> Types.Document.t list
 
 val source_page :
-  Identifier.SourcePage.t ->
-  Syntax_highlighter.infos ->
-  Lang.Source_info.infos ->
-  string ->
-  Types.Document.t
+  Lang.Source_page.t -> Syntax_highlighter.infos -> string -> Types.Document.t
 
 val type_expr : ?needs_parentheses:bool -> Lang.TypeExpr.t -> Codefmt.t
 

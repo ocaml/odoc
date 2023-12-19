@@ -1,1 +1,1 @@
-include B
+let a = B.a

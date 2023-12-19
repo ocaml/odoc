@@ -340,52 +340,65 @@ let add_definitions loc_to_id occurrences =
       (Odoc_model.Lang.Source_info.Definition id, pos_of_loc loc) :: acc)
     loc_to_id occurrences
 
-let read_cmt_infos source_id_opt id cmt_info ~count_occurrences =
-  match Odoc_model.Compat.shape_of_cmt_infos cmt_info with
-  | Some shape -> (
-      let uid_to_loc = cmt_info.cmt_uid_to_loc in
-      match (source_id_opt, count_occurrences, cmt_info.cmt_annots) with
-      | (Some _ as source_id), _, Implementation impl
-      | source_id, true, Implementation impl ->
-          let env = Env.of_structure id impl in
-          let traverse_infos =
-            Typedtree_traverse.of_cmt env impl |> List.rev
-            (* Information are accumulated in a list. We need to have the
-               first info first in the list, to assign anchors with increasing
-               numbers, so that adding some content at the end of a file does
-               not modify the anchors for existing anchors. *)
-          in
-          let loc_to_id = LocHashtbl.create 10
-          and local_ident_to_loc = IdentHashtbl.create 10
-          and uid_to_id = UidHashtbl.create 10 in
-          let () =
-            match source_id with
-            | None -> ()
-            (* populate [loc_to_id], [ident_to_id] and [uid_to_id] only when
-               rendering source code, as these are only used to compute source
-               locations id *)
-            | Some source_id ->
-                populate_local_defs source_id traverse_infos loc_to_id
-                  local_ident_to_loc;
-                populate_global_defs env source_id loc_to_id uid_to_loc
-                  uid_to_id
-          in
-          let source_infos =
-            process_occurrences env traverse_infos loc_to_id local_ident_to_loc
-            |> add_definitions loc_to_id
-          in
-          ( Some (shape, Shape.Uid.Tbl.to_map uid_to_id),
-            Some
-              {
-                Odoc_model.Lang.Source_info.id = source_id;
-                infos = source_infos;
-              } )
-      | _, _, _ -> (Some (shape, Odoc_model.Compat.empty_map), None))
-  | None -> (None, None)
+let read_cmt_infos source_id shape_info impl digest root imports =
+  match shape_info with
+  | Some (shape, uid_to_loc) ->
+      let fake_root_id =
+        Odoc_model.Paths.Identifier.Mk.root
+          (None, Odoc_model.Names.ModuleName.make_std "fake_root")
+      in
+      let env = Env.of_structure fake_root_id impl in
+      let traverse_infos =
+        Typedtree_traverse.of_cmt env impl |> List.rev
+        (* Information are accumulated in a list. We need to have the
+           first info first in the list, to assign anchors with increasing
+           numbers, so that adding some content at the end of a file does
+           not modify the anchors for existing anchors. *)
+      in
+      let loc_to_id = LocHashtbl.create 10
+      and local_ident_to_loc = IdentHashtbl.create 10
+      and uid_to_id = UidHashtbl.create 10 in
+      let () =
+        populate_local_defs source_id traverse_infos loc_to_id
+          local_ident_to_loc;
+        populate_global_defs env source_id loc_to_id uid_to_loc uid_to_id
+      in
+      let source_infos =
+        process_occurrences env traverse_infos loc_to_id local_ident_to_loc
+        |> add_definitions loc_to_id
+      in
+      let shape_info = Some (shape, Shape.Uid.Tbl.to_map uid_to_id) in
+      {
+        Odoc_model.Lang.Source_page.id = source_id;
+        source_info = source_infos;
+        digest;
+        root;
+        linked = false;
+        shape_info;
+        imports;
+      }
+  | None as shape_info -> {
+        Odoc_model.Lang.Source_page.id = source_id;
+        source_info = [];
+        digest;
+        root;
+        linked = false;
+        shape_info;
+        imports;
+      }
+
 
 #else
 
-let read_cmt_infos _source_id_opt _id _cmt_info ~count_occurrences:_ =
-  (None, None)
+let read_cmt_infos source_id shape_info _impl digest root imports =
+  {
+    Odoc_model.Lang.Source_page.id = source_id;
+    source_info = [];
+    digest;
+    root;
+    linked = false;
+    shape_info;
+    imports;
+  }
 
 #endif

@@ -28,11 +28,16 @@ end
 module Odoc_file : sig
   type compilation_unit = { name : string; hidden : bool }
 
-  type t = Page of string | Compilation_unit of compilation_unit
+  type t =
+    | Page of string
+    | Compilation_unit of compilation_unit
+    | Impl of string
 
   val create_unit : force_hidden:bool -> string -> t
 
   val create_page : string -> t
+
+  val create_impl : string -> t
 
   val name : t -> string
 
