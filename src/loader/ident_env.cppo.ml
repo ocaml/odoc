@@ -83,12 +83,12 @@ type items =
   | `Include of item list
 ]
 
-let rec extract_signature_type_items items =
+let rec extract_signature_type_items vis items =
   let open Compat in
     match items with
-    | Sig_type(id, td, _, Exported) :: rest ->
+    | Sig_type(id, td, _, vis') :: rest when vis=vis' ->
       if Btype.is_row_name (Ident.name id)
-      then extract_signature_type_items rest
+      then extract_signature_type_items vis rest
       else
         let constrs = match td.type_kind with
           | Types.Type_abstract -> []
@@ -100,51 +100,51 @@ let rec extract_signature_type_items items =
 #endif
             List.map (fun c -> `Constructor (c.Types.cd_id, id, Some c.cd_loc)) cstrs
           | Type_open -> [] in
-        `Type (id, false, None) :: constrs @ extract_signature_type_items rest 
+        `Type (id, vis'=Hidden, None) :: constrs @ extract_signature_type_items vis rest 
 
-    | Sig_module(id, _, _, _, Exported) :: rest ->
-      `Module (id, false, None) :: extract_signature_type_items rest
+    | Sig_module(id, _, _, _, vis') :: rest when vis=vis' ->
+      `Module (id, vis'=Hidden, None) :: extract_signature_type_items vis rest
 
-    | Sig_modtype(id, _, Exported) :: rest ->
-      `ModuleType (id, false, None) :: extract_signature_type_items rest
+    | Sig_modtype(id, _, vis') :: rest when vis=vis' ->
+      `ModuleType (id, vis'=Hidden, None) :: extract_signature_type_items vis rest
     
-    | Sig_value(id, _, Exported) :: rest ->
-      `Value (id, false, None) :: extract_signature_type_items rest
+    | Sig_value(id, _, vis') :: rest when vis=vis' ->
+      `Value (id, vis'=Hidden, None) :: extract_signature_type_items vis rest
 #if OCAML_VERSION < (5,1,0)
-    | Sig_class(id, _, _, Exported) :: Sig_class_type(ty_id, _, _, _)
-        :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
-      `Class (id, ty_id, obj_id, Some cl_id, false, None) :: extract_signature_type_items rest
+    | Sig_class(id, _, _, vis') :: Sig_class_type(ty_id, _, _, _)
+        :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest when vis=vis' ->
+      `Class (id, ty_id, obj_id, Some cl_id, vis'=Hidden, None) :: extract_signature_type_items vis rest
 
-    | Sig_class_type(id, _, _, Exported) :: Sig_type(obj_id, _, _, _)
-      :: Sig_type(cl_id, _, _, _) :: rest ->
-      `ClassType (id, obj_id, Some cl_id, false, None) :: extract_signature_type_items rest
+    | Sig_class_type(id, _, _, vis') :: Sig_type(obj_id, _, _, _)
+      :: Sig_type(cl_id, _, _, _) :: rest when vis=vis' ->
+      `ClassType (id, obj_id, Some cl_id, vis'=Hidden, None) :: extract_signature_type_items vis rest
 #else
-    | Sig_class(id, _, _, Exported) :: Sig_class_type(ty_id, _, _, _)
-        :: Sig_type(obj_id, _, _, _) :: rest ->
-      `Class (id, ty_id, obj_id, None, false, None) :: extract_signature_type_items rest
+    | Sig_class(id, _, _, vis') :: Sig_class_type(ty_id, _, _, _)
+        :: Sig_type(obj_id, _, _, _) :: rest when vis=vis' ->
+      `Class (id, ty_id, obj_id, None, vis'=Hidden, None) :: extract_signature_type_items vis rest
 
-    | Sig_class_type(id, _, _, Exported) :: Sig_type(obj_id, _, _, _)  :: rest ->
-      `ClassType (id, obj_id, None, false, None) :: extract_signature_type_items rest
+    | Sig_class_type(id, _, _, vis') :: Sig_type(obj_id, _, _, _)  :: rest when vis=vis' ->
+      `ClassType (id, obj_id, None, vis'=Hidden, None) :: extract_signature_type_items vis rest
 #endif
 
     | Sig_typext (id, constr, Text_exception, Exported) :: rest ->
       `Exception (id, Some constr.ext_loc)
-      :: extract_signature_type_items rest
+      :: extract_signature_type_items vis rest
 
     | Sig_typext (id, constr, _, Exported) :: rest ->
       `Extension (id, Some constr.ext_loc)
-      :: extract_signature_type_items rest
+      :: extract_signature_type_items vis rest
 
-    | Sig_class_type(_, _, _, Hidden) :: Sig_type(_, _, _, _)
+    | Sig_class_type(_, _, _, _) :: Sig_type(_, _, _, _)
       :: Sig_type(_, _, _, _) :: rest
-    | Sig_class(_, _, _, Hidden) :: Sig_class_type(_, _, _, _)
+    | Sig_class(_, _, _, _) :: Sig_class_type(_, _, _, _)
         :: Sig_type(_, _, _, _) :: Sig_type(_, _, _, _) :: rest
-    | Sig_typext (_,_,_,Hidden) :: rest
-    | Sig_modtype(_, _, Hidden) :: rest
-    | Sig_module(_, _, _, _, Hidden) :: rest
-    | Sig_type(_, _, _, Hidden) :: rest
-    | Sig_value (_, _, Hidden) :: rest ->
-        extract_signature_type_items rest
+    | Sig_typext (_,_,_,_) :: rest
+    | Sig_modtype(_, _, _) :: rest
+    | Sig_module(_, _, _, _, _) :: rest
+    | Sig_type(_, _, _, _) :: rest
+    | Sig_value (_, _, _) :: rest ->
+        extract_signature_type_items vis rest
 
     | Sig_class _ :: _
     | Sig_class_type _ :: _ -> assert false
@@ -153,57 +153,9 @@ let rec extract_signature_type_items items =
 
 #if OCAML_VERSION >= (4,8,0)
 
-let rec unwrap_module_expr_desc = function
-  | Typedtree.Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
-      unwrap_module_expr_desc mexpr.mod_desc
-  | desc -> desc
-
-let rec extract_extended_open_items items =
-  let open Types in
-    match items with
-    | Sig_type(id, _, _, _) :: rest ->
-      if Btype.is_row_name (Ident.name id)
-      then extract_extended_open_items rest
-      else `Type (id, true, None) :: extract_extended_open_items rest 
-
-    | Sig_module(id, _, _, _, _) :: rest ->
-      `Module (id, true, None) :: extract_extended_open_items rest
-
-    | Sig_modtype(id, _, _) :: rest ->
-      `ModuleType (id, true, None) :: extract_extended_open_items rest
-    
-    | Sig_value(id, _, _) :: rest ->
-      `Value (id, true, None) :: extract_extended_open_items rest
-#if OCAML_VERSION < (5,1,0)
-    | Sig_class(id, _, _, _) :: Sig_class_type(ty_id, _, _, _)
-        :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
-      `Class (id, ty_id, obj_id, Some cl_id, true, None) :: extract_extended_open_items rest
-
-    | Sig_class_type(id, _, _, _) :: Sig_type(obj_id, _, _, _)
-      :: Sig_type(cl_id, _, _, _) :: rest ->
-      `ClassType (id, obj_id, Some cl_id, true, None) :: extract_extended_open_items rest
-#else
-    | Sig_class(id, _, _, _) :: Sig_class_type(ty_id, _, _, _)
-        :: Sig_type(obj_id, _, _, _) :: rest ->
-      `Class (id, ty_id, obj_id, None, true, None) :: extract_extended_open_items rest
-
-    | Sig_class_type(id, _, _, _) :: Sig_type(obj_id, _, _, _) :: rest ->
-      `ClassType (id, obj_id, None, true, None) :: extract_extended_open_items rest
-#endif
-    |  Sig_typext _ :: rest ->
-        extract_extended_open_items rest
-
-    | Sig_class _ :: _
-    | Sig_class_type _ :: _ -> assert false
-
-    | [] -> []
-
 let extract_extended_open o =
   let open Typedtree in
-  match unwrap_module_expr_desc o.open_expr.mod_desc with
-  | Tmod_ident(_, _) -> []
-  | _ ->
-      extract_extended_open_items o.open_bound_items
+  extract_signature_type_items Hidden (Compat.signature o.open_bound_items)
 #endif
 
 
@@ -272,7 +224,7 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
   | { sig_desc = Tsig_modtype mtd; sig_loc; _} :: rest ->
       [`ModuleType (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_include incl; _ } :: rest ->
-      [`Include (extract_signature_type_items (Compat.signature incl.incl_type))] @ extract_signature_tree_items hide_item rest
+      [`Include (extract_signature_type_items Exported (Compat.signature incl.incl_type))] @ extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_attribute attr; _ } :: rest ->
       let hide_item = if Doc_attr.is_stop_comment attr then not hide_item else hide_item in
       extract_signature_tree_items hide_item rest
@@ -398,7 +350,7 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
     | { str_desc = Tstr_modtype mtd; str_loc; _} :: rest ->
         [`ModuleType (mtd.mtd_id, hide_item, Some str_loc)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_include incl; _ } :: rest ->
-        [`Include (extract_signature_type_items (Compat.signature incl.incl_type))] @ extract_structure_tree_items hide_item rest
+        [`Include (extract_signature_type_items Exported (Compat.signature incl.incl_type))] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_attribute attr; _} :: rest ->
         let hide_item = if Doc_attr.is_stop_comment attr then not hide_item else hide_item in
         extract_structure_tree_items hide_item rest
@@ -616,7 +568,7 @@ let add_structure_tree_items : Paths.Identifier.Signature.t -> Typedtree.structu
 
 let handle_signature_type_items : Paths.Identifier.Signature.t -> Compat.signature -> t -> t =
   fun parent sg env ->
-    let items = extract_signature_type_items sg in
+    let items = extract_signature_type_items Exported sg in
     add_items parent items env
 
 let add_parameter parent id name env =
