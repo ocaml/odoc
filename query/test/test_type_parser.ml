@@ -13,14 +13,16 @@ let rec random_type size =
   | _ when Random.int 100 < 20 ->
       let n = 2 + Random.int 3 in
       tuple (List.init n (fun _i -> random_type (size / n)))
+  | _ when Random.int 100 < 5 -> random_constr_params size
   | _ ->
       let size = size / 2 in
       arrow (random_type size) (random_type size)
 
-and random_constr_params n =
+and random_constr_params size =
+  let n_params = 1 + Random.int 3 in
   constr
     (random_elt [| "list"; "option"; "t"; "result"; "array" |])
-    (List.init (n - 1) (fun i -> random_type i))
+    (List.init n_params (fun _i -> random_type (size / n_params)))
 
 open Query.Private
 

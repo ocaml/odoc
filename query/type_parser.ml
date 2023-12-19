@@ -103,7 +103,7 @@ and constr_one_param tokens =
   match peek tokens with
   | WORD w ->
       discard tokens ;
-      fun typ -> constr w [ typ ]
+      fun typ -> constr_one_param tokens @@ constr w [ typ ]
   | _ -> Fun.id
 
 and typ1 tokens =
