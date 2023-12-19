@@ -630,7 +630,12 @@ let compile_mlds () =
   update_api_reference_page ();
   let mkpage x = "page-\"" ^ x ^ "\"" in
   let mkmod x = "module-" ^ String.capitalize_ascii x in
-  let mkmld x = Fpath.(add_ext "mld" (v x)) in
+  let mkmld x =
+    let f = Fpath.(add_ext "mld" (v x)) in
+    if not (Bos.OS.File.exists f |> get_ok) then
+      (Bos.OS.File.write_lines f [Printf.sprintf "{0 %s}" x] |> get_ok);
+    f
+  in
   ignore
     (compile (mkmld "odoc")
        ("src-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
