@@ -17,29 +17,6 @@
 open Paths
 
 (** {3 Modules} *)
-module Source_info = struct
-  type 'a jump_to_impl =
-    | Unresolved of 'a
-    | Resolved of Identifier.SourceLocation.t
-
-  type 'a jump_to = {
-    documentation : 'a option;
-    implementation : 'a jump_to_impl option;
-  }
-
-  type annotation =
-    | Definition of Paths.Identifier.SourceLocation.t
-    | Value of Path.Value.t jump_to
-    | Module of Path.Module.t jump_to
-    | ModuleType of Path.ModuleType.t jump_to
-    | Type of Path.Type.t jump_to
-
-  type 'a with_pos = 'a * (int * int)
-
-  type infos = annotation with_pos list
-
-  type t = { id : Identifier.SourcePage.t option; infos : infos }
-end
 
 module rec Module : sig
   type decl =
@@ -496,14 +473,49 @@ module rec Compilation_unit : sig
     content : content;
     expansion : Signature.t option;
     linked : bool;  (** Whether this unit has been linked. *)
+    locs : Identifier.SourceLocation.t option;
     canonical : Path.Module.t option;
-    source_info : Source_info.t option;
+  }
+end =
+  Compilation_unit
+
+module rec Source_info : sig
+  type 'a jump_to_impl =
+    | Unresolved of 'a
+    | Resolved of Identifier.SourceLocation.t
+
+  type 'a jump_to = {
+    documentation : 'a option;
+    implementation : 'a jump_to_impl option;
+  }
+
+  type annotation =
+    | Definition of Paths.Identifier.SourceLocation.t
+    | Value of Path.Value.t jump_to
+    | Module of Path.Module.t jump_to
+    | ModuleType of Path.ModuleType.t jump_to
+    | Type of Path.Type.t jump_to
+
+  type 'a with_pos = 'a * (int * int)
+
+  type t = annotation with_pos list
+end =
+  Source_info
+
+module rec Source_page : sig
+  type t = {
+    id : Identifier.SourcePage.t;
+    digest : Digest.t;
+    root : Root.t;
+    linked : bool;  (** Whether this unit has been linked. *)
+    imports : Compilation_unit.Import.t list;
+    source_info : Source_info.t;
     shape_info :
       (Compat.shape * Paths.Identifier.SourceLocation.t Compat.shape_uid_map)
       option;
   }
 end =
-  Compilation_unit
+  Source_page
 
 module rec Page : sig
   type child =

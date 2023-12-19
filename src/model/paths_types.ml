@@ -49,7 +49,8 @@ module Identifier = struct
   and source_location = source_location_pv id
   (** @canonical Odoc_model.Paths.Identifier.SourceLocation.t_pv *)
 
-  type odoc_id_pv = [ page_pv | `Root of container_page option * ModuleName.t ]
+  type odoc_id_pv =
+    [ page_pv | source_page_pv | `Root of container_page option * ModuleName.t ]
   (** @canonical Odoc_model.Paths.Identifier.OdocId.t_pv *)
 
   and odoc_id = odoc_id_pv id

@@ -14,3 +14,9 @@ val link :
 
 val resolve_page :
   filename:string -> Env.t -> Lang.Page.t -> Lang.Page.t Error.with_warnings
+
+val resolve_impl :
+  filename:string ->
+  Env.t ->
+  Lang.Source_page.t ->
+  Lang.Source_page.t Error.with_warnings

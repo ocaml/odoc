@@ -1,26 +1,32 @@
 This is what happens when a dune user write a toplevel module.
 Similar to the lookup_def_wrapped test.
 
-  $ odoc compile -c module-a -c src-source root.mld
+  $ odoc compile -c module-a -c srctree-source root.mld
 
-  $ printf "a.ml\nmain.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o src-source.odoc source_tree.map
+  $ printf "a.ml\nmain.ml\nmain__.ml\n" > source_tree.map
+  $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
 
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o main__.cmo main__.ml -bin-annot -I .
   $ ocamlc -c -open Main__ main.ml -bin-annot -I .
 
-  $ odoc compile --source-name a.ml --source-parent-file src-source.odoc -I . main__A.cmt
+  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . main__A.cmt
+  $ odoc compile -I . main__A.cmt
+  $ odoc compile-src --source-path main__.ml --source-parent-file srctree-source.odoc -I . main__.cmt
   $ odoc compile -I . main__.cmt
-  $ odoc compile --source-name main.ml --source-parent-file src-source.odoc -I . main.cmt
+  $ odoc compile-src --source-path main.ml --source-parent-file srctree-source.odoc -I . main.cmt
+  $ odoc compile -I . main.cmt
 
   $ odoc link -I . main.odoc
+  $ odoc link -I . src-main__A.odoc
+  $ odoc link -I . src-main.odoc
+  $ odoc link -I . src-main__.odoc
   $ odoc link -I . main__A.odoc
   $ odoc link -I . main__.odoc
 
-  $ odoc html-generate --source main.ml --indent -o html main.odocl
-  $ odoc html-generate --hidden --indent -o html main__.odocl
-  $ odoc html-generate --source a.ml --hidden --indent -o html main__A.odocl
+  $ odoc html-generate --indent -o html main.odocl
+  $ odoc html-generate --source main.ml --indent -o html src-main.odocl
+  $ odoc html-generate --source a.ml --indent -o html src-main__A.odocl
 
 Look if all the source files are generated:
 
@@ -30,10 +36,6 @@ Look if all the source files are generated:
   html/Main/A
   html/Main/A/index.html
   html/Main/index.html
-  html/Main__
-  html/Main__/index.html
-  html/Main__A
-  html/Main__A/index.html
   html/root
   html/root/source
   html/root/source/a.ml.html

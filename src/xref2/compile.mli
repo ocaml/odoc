@@ -13,4 +13,11 @@ val compile :
   Lang.Compilation_unit.t Error.with_warnings
 (** [filename] is used for generating warnings. *)
 
+val compile_impl :
+  filename:string ->
+  Env.t ->
+  Lang.Source_page.t ->
+  Lang.Source_page.t Error.with_warnings
+(** [filename] is used for generating warnings. *)
+
 val resolve_page : 'a -> 'b -> 'b

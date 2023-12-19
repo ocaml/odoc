@@ -143,8 +143,7 @@ Simplest possible resolution:
           constraints = []};
         representation = None})];
     compiled = true; doc = []};
- expansion = None; linked = false; canonical = None; source_info = None;
- shape_info = None}
+ expansion = None; linked = false; locs = None; canonical = None}
 ```
 
 Let's look at a marginally more complicated example. In this case, our type `t`
@@ -317,8 +316,7 @@ Basic resolution 2, environment lookup:
           constraints = []};
         representation = None})];
     compiled = true; doc = []};
- expansion = None; linked = false; canonical = None; source_info = None;
- shape_info = None}
+ expansion = None; linked = false; locs = None; canonical = None}
 ```
 
 
@@ -520,8 +518,7 @@ Basic resolution 3, module type:
         representation = ...});
       ...];
     compiled = ...; doc = ...};
- expansion = ...; linked = ...; canonical = ...; source_info = ...;
- shape_info = ...}
+ expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```
 
 This example is very similar but there is one more level of nesting of the modules:
@@ -723,8 +720,7 @@ Basic resolution 4, module type:
         canonical = ...; hidden = ...});
       ...];
     compiled = ...; doc = ...};
- expansion = ...; linked = ...; canonical = ...; source_info = ...;
- shape_info = ...}
+ expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```
 
 This example is rather more interesting:
@@ -959,8 +955,7 @@ and then we can look up the type `t`.
               compiled = ...; doc = ...})};
        ...];
      compiled = ...; doc = ...};
-  expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```
 
 ```ocaml
@@ -1166,8 +1161,7 @@ and then we can look up the type `t`.
               compiled = ...; doc = ...})};
        ...];
      compiled = ...; doc = ...};
-  expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```
 
 Ensure a substitution is taken into account during resolution:
@@ -1349,8 +1343,7 @@ Ensure a substitution is taken into account during resolution:
          canonical = ...; hidden = ...});
        ...];
      compiled = ...; doc = ...};
-  expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```
 
 Ensure a destructive substitution is taken into account during resolution:
@@ -1532,8 +1525,7 @@ Ensure a destructive substitution is taken into account during resolution:
          canonical = ...; hidden = ...});
        ...];
      compiled = ...; doc = ...};
-  expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```
 
 Resolve a module alias:
@@ -1693,8 +1685,7 @@ Resolve a module alias:
           constraints = []};
         representation = None})];
     compiled = true; doc = ...};
- expansion = ...; linked = ...; canonical = ...; source_info = ...;
- shape_info = ...}
+ expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```
 
 Resolve a module alias:
@@ -1853,8 +1844,7 @@ Resolve a module alias:
         representation = ...});
       ...];
     compiled = ...; doc = ...};
- expansion = ...; linked = ...; canonical = ...; source_info = ...;
- shape_info = ...}
+ expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```
 
 Resolve a functor:
@@ -2035,8 +2025,7 @@ Resolve a functor:
          canonical = ...; hidden = ...});
        ...];
      compiled = ...; doc = ...};
-  expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```
 
 Resolve a functor:
@@ -2242,8 +2231,7 @@ Resolve a functor:
               p_path = ...}))};
       ...];
     compiled = ...; doc = ...};
- expansion = ...; linked = ...; canonical = ...; source_info = ...;
- shape_info = ...}
+ expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```
 
 ```ocaml skip
@@ -2459,6 +2447,5 @@ Functor app nightmare:
          canonical = ...; hidden = ...});
        ...];
      compiled = ...; doc = ...};
-  expansion = ...; linked = ...; canonical = ...; source_info = ...;
-  shape_info = ...}
+  expansion = ...; linked = ...; locs = ...; canonical = ...}
 ```

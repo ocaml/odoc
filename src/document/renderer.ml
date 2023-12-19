@@ -33,6 +33,9 @@ let document_of_page ~syntax v =
 let documents_of_source_tree ~syntax v =
   match syntax with Reason -> Reason.source_tree v | OCaml -> ML.source_tree v
 
+let documents_of_implementation ~syntax v =
+  match syntax with Reason -> Reason.source_page v | OCaml -> ML.source_page v
+
 let document_of_compilation_unit ~syntax v =
   match syntax with
   | Reason -> Reason.compilation_unit v

@@ -16,10 +16,6 @@ let inline_status =
     | `Closed -> C0 "`Closed"
     | `Inline -> C0 "`Inline")
 
-let source_info =
-  let open Lang.Source_info in
-  Record [ F ("id", (fun t -> t.id), Option identifier) ]
-
 (** {3 Module} *)
 
 let rec module_decl =
@@ -682,7 +678,6 @@ and compilation_unit_t =
         ( "canonical",
           (fun t -> (t.canonical :> Paths.Path.t option)),
           Option path );
-      F ("sources", (fun t -> t.source_info), Option source_info);
     ]
 
 (** {3 Page} *)
@@ -695,6 +690,15 @@ and page_t =
       F ("root", (fun t -> t.root), root);
       F ("content", (fun t -> t.content), docs);
       F ("digest", (fun t -> t.digest), Digest.t);
+    ]
+
+and source_page_t =
+  let open Lang.Source_page in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("digest", (fun t -> t.digest), Digest.t);
+      F ("root", (fun t -> t.root), root);
     ]
 
 and source_tree_page_t =

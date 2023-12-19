@@ -42,17 +42,21 @@ exception Not_an_interface
 
 exception Make_root_error of string
 
-let read_cmt_infos source_id_opt id ~filename ~count_occurrences () =
+let read_cmt_infos source_id ~filename root digest imports () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error _ -> raise Corrupted
   | cmt_info -> (
       match cmt_info.cmt_annots with
-      | Implementation _ -> Implementation.read_cmt_infos source_id_opt id cmt_info ~count_occurrences
+      | Implementation impl ->
+          let shape_infos =
+            Odoc_model.Compat.shape_info_of_cmt_infos cmt_info
+          in
+          Implementation.read_cmt_infos source_id shape_infos impl digest root
+            imports
       | _ -> raise Not_an_implementation)
 
-
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical ?shape_info ~source_info content =
+    ?canonical content =
   let open Odoc_model.Lang.Compilation_unit in
   let interface, digest =
     match interface with
@@ -88,18 +92,16 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     expansion = None;
     linked = false;
     canonical;
-    source_info;
-    shape_info;
+    locs = None;
   }
 
-
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical ?shape_info sg =
+    ?canonical sg =
   let content = Odoc_model.Lang.Compilation_unit.Module sg in
   make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical ?shape_info content
+    ?canonical content
 
-let read_cmti ~make_root ~parent ~filename ~cmt_filename_opt ~source_id_opt ~count_occurrences () =
+let read_cmti ~make_root ~parent ~filename () =
   let cmt_info = Cmt_format.read_cmt filename in
   match cmt_info.cmt_annots with
   | Interface intf -> (
@@ -113,19 +115,11 @@ let read_cmti ~make_root ~parent ~filename ~cmt_filename_opt ~source_id_opt ~cou
               cmt_info.cmt_builddir )
           in
           let id, sg, canonical = Cmti.read_interface parent name intf in
-          let shape_info, source_info =
-            match cmt_filename_opt with
-            | Some cmt_filename ->
-                read_cmt_infos source_id_opt id ~filename:cmt_filename ~count_occurrences ()
-            | None ->
-               (None, None)
-          in
           compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
-            ~interface ~sourcefile ~name ~id ?shape_info ~source_info
-            ?canonical sg)
+            ~interface ~sourcefile ~name ~id ?canonical sg)
   | _ -> raise Not_an_interface
 
-let read_cmt ~make_root ~parent ~filename ~source_id_opt ~count_occurrences () =
+let read_cmt ~make_root ~parent ~filename () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
       raise Not_an_implementation
@@ -165,14 +159,11 @@ let read_cmt ~make_root ~parent ~filename ~source_id_opt ~count_occurrences () =
           in
           let content = Odoc_model.Lang.Compilation_unit.Pack items in
           make_compilation_unit ~make_root ~imports ~interface ~sourcefile ~name
-            ~id ~source_info:None content
+            ~id content
       | Implementation impl ->
           let id, sg, canonical = Cmt.read_implementation parent name impl in
-          let shape_info, source_info =
-            read_cmt_infos source_id_opt id ~filename ~count_occurrences ()
-          in
           compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
-            ~name ~id ?canonical ?shape_info ~source_info sg
+            ~name ~id ?canonical sg
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =
@@ -183,9 +174,47 @@ let read_cmi ~make_root ~parent ~filename () =
         Cmi.read_interface parent name
           (Odoc_model.Compat.signature cmi_info.cmi_sign)
       in
-      compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id
-        ~source_info:None sg
+      compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id sg
   | _ -> raise Corrupted
+
+let read_impl ~make_root ~filename ~source_id () =
+  match Cmt_format.read_cmt filename with
+  | exception Cmi_format.Error (Not_an_interface _) ->
+      raise Not_an_implementation
+  | cmt_info -> (
+      let name = cmt_info.cmt_modname in
+      let _sourcefile =
+        ( cmt_info.cmt_sourcefile,
+          cmt_info.cmt_source_digest,
+          cmt_info.cmt_builddir )
+      in
+      let interface = cmt_info.cmt_interface_digest in
+      let imports = cmt_info.cmt_imports in
+      match cmt_info.cmt_annots with
+      | Implementation _impl ->
+          let digest =
+            match interface with
+            | Some digest -> digest
+            | None -> (
+                match List.assoc name imports with
+                | Some digest -> digest
+                | None -> raise Corrupted
+                | exception Not_found -> raise Corrupted)
+          in
+          let root =
+            match make_root ~module_name:name ~digest with
+            | Ok root -> root
+            | Error (`Msg m) -> raise (Make_root_error m)
+          in
+          let imports = List.filter (fun (name', _) -> name <> name') imports in
+          let imports =
+            List.map
+              (fun (s, d) ->
+                Odoc_model.Lang.Compilation_unit.Import.Unresolved (s, d))
+              imports
+          in
+          read_cmt_infos source_id ~filename root digest imports ()
+      | _ -> raise Not_an_implementation)
 
 (** Catch errors from reading the object files and some internal errors *)
 let wrap_errors ~filename f =
@@ -200,12 +229,14 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt ~count_occurrences =
-  wrap_errors ~filename
-    (read_cmti ~make_root ~parent ~filename ~source_id_opt ~cmt_filename_opt ~count_occurrences)
+let read_cmti ~make_root ~parent ~filename =
+  wrap_errors ~filename (read_cmti ~make_root ~parent ~filename)
 
-let read_cmt ~make_root ~parent ~filename ~source_id_opt ~count_occurrences =
-  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename ~source_id_opt ~count_occurrences)
+let read_cmt ~make_root ~parent ~filename =
+  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename)
+
+let read_impl ~make_root ~filename ~source_id =
+  wrap_errors ~filename (read_impl ~make_root ~source_id ~filename)
 
 let read_cmi ~make_root ~parent ~filename =
   wrap_errors ~filename (read_cmi ~make_root ~parent ~filename)

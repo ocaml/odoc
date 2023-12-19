@@ -1,13 +1,17 @@
 Compile the modules:
 
-  $ odoc compile -c module-a -c src-source root.mld
+  $ odoc compile -c module-a -c srctree-source root.mld
 
   $ printf "a.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o src-source.odoc source_tree.map
+  $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
 
   $ ocamlc -c a.mli a.ml -bin-annot
-  $ odoc compile --cmt a.cmt --source-name a.ml --source-parent-file src-source.odoc -I . a.cmti
-  $ odoc link a.odoc
+
+  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . a.cmt
+  $ odoc compile -I . a.cmti
+
+  $ odoc link -I . src-a.odoc
+  $ odoc link -I . a.odoc
 
 Show the locations:
 

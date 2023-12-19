@@ -10,20 +10,33 @@ The module B depends on both B and C, the module C only depends on A.
   $ ocamlc -c -open Main__ -o main__B.cmo b.ml -bin-annot -I .
   $ ocamlc -c -open Main__ main.ml -bin-annot -I .
 
-Passing the count-occurrences flag to odoc compile makes it collect the
-occurrences information.
+Collecting occurrences is done on implementation files. We thus need a source tree as a parent.
 
-  $ odoc compile --count-occurrences -I . main__A.cmt
-  $ odoc compile --count-occurrences -I . main__C.cmt
-  $ odoc compile --count-occurrences -I . main__B.cmt
-  $ odoc compile --count-occurrences -I . main__.cmt
-  $ odoc compile --count-occurrences -I . main.cmt
+  $ odoc compile -c srctree-source root.mld
+  $ printf "a.ml\nb.ml\nc.ml\nmain.ml\nmain__.ml\n" > source_tree.map
+  $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
 
-  $ odoc link -I . main.odoc
-  $ odoc link -I . main__A.odoc
-  $ odoc link -I . main__B.odoc
-  $ odoc link -I . main__C.odoc
-  $ odoc link -I . main__.odoc
+  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . main__A.cmt
+  $ odoc compile-src --source-path c.ml --source-parent-file srctree-source.odoc -I . main__C.cmt
+  $ odoc compile-src --source-path b.ml --source-parent-file srctree-source.odoc -I . main__B.cmt
+  $ odoc compile-src --source-path main__.ml --source-parent-file srctree-source.odoc -I . main__.cmt
+  $ odoc compile-src --source-path main.ml --source-parent-file srctree-source.odoc -I . main.cmt
+
+We need the interface version to resolve the occurrences
+
+  $ odoc compile -I . main__A.cmt
+  $ odoc compile -I . main__C.cmt
+  $ odoc compile -I . main__B.cmt
+  $ odoc compile -I . main__.cmt
+  $ odoc compile -I . main.cmt
+
+Let's link the implementations
+
+  $ odoc link -I . src-main.odoc
+  $ odoc link -I . src-main__A.odoc
+  $ odoc link -I . src-main__B.odoc
+  $ odoc link -I . src-main__C.odoc
+  $ odoc link -I . src-main__.odoc
 
 The count occurrences command outputs a marshalled hashtable, whose keys are
 odoc identifiers, and whose values are integers corresponding to the number of
@@ -36,11 +49,11 @@ and a hashtable for each compilation unit.
   $ mkdir main__B
   $ mkdir main__C
 
-  $ mv main.odocl main
-  $ mv main__.odocl main__
-  $ mv main__A.odocl main__A
-  $ mv main__B.odocl main__B
-  $ mv main__C.odocl main__C
+  $ mv src-main.odocl main
+  $ mv src-main__.odocl main__
+  $ mv src-main__A.odocl main__A
+  $ mv src-main__B.odocl main__B
+  $ mv src-main__C.odocl main__C
   $ odoc count-occurrences -I main -o occurrences-main.odoc
   $ odoc count-occurrences -I main__ -o occurrences-main__.odoc
   $ odoc count-occurrences -I main__A -o occurrences-main__A.odoc

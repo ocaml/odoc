@@ -65,14 +65,11 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
 
 let rec unit env t =
   let open Compilation_unit in
-  let source_info =
-    match t.source_info with
-    | Some si -> Some (source_info env si)
-    | None -> None
-  in
-  { t with content = content env t.id t.content; source_info }
+  { t with content = content env t.id t.content }
 
-and source_info env si = { si with infos = source_info_infos env si.infos }
+and source_page env sp =
+  let open Source_page in
+  { sp with source_info = source_info_infos env sp.source_info }
 
 and source_info_infos env infos =
   let open Source_info in
@@ -896,5 +893,8 @@ and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
 
 let compile ~filename env compilation_unit =
   Lookup_failures.catch_failures ~filename (fun () -> unit env compilation_unit)
+
+let compile_impl ~filename env i =
+  Lookup_failures.catch_failures ~filename (fun () -> source_page env i)
 
 let resolve_page _resolver y = y

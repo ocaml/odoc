@@ -1,22 +1,31 @@
 Verify the behavior on functors.
 
-  $ odoc compile -c module-a -c src-source root.mld
+  $ odoc compile -c module-a -c srctree-source root.mld
 
   $ printf "s.ml\na.ml\nb.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o src-source.odoc source_tree.map
+  $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
 
   $ ocamlc -c -o s.cmo s.ml -bin-annot -I .
   $ ocamlc -c -o a.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o b.cmo b.ml -bin-annot -I .
-  $ odoc compile --source-name s.ml --source-parent-file src-source.odoc -I . s.cmt
-  $ odoc compile --source-name a.ml --source-parent-file src-source.odoc -I . a.cmt
-  $ odoc compile --source-name b.ml --source-parent-file src-source.odoc -I . b.cmt
+  $ odoc compile-src --source-path s.ml --source-parent-file srctree-source.odoc -I . s.cmt
+  $ odoc compile -I . s.cmt
+  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . a.cmt
+  $ odoc compile -I . a.cmt
+  $ odoc compile-src --source-path b.ml --source-parent-file srctree-source.odoc -I . b.cmt
+  $ odoc compile -I . b.cmt
   $ odoc link -I . s.odoc
   $ odoc link -I . a.odoc
   $ odoc link -I . b.odoc
-  $ odoc html-generate --source s.ml --indent -o html s.odocl
-  $ odoc html-generate --source a.ml --indent -o html a.odocl
-  $ odoc html-generate --source b.ml --indent -o html b.odocl
+  $ odoc link -I . src-s.odoc
+  $ odoc link -I . src-a.odoc
+  $ odoc link -I . src-b.odoc
+  $ odoc html-generate --source s.ml --indent -o html src-s.odocl
+  $ odoc html-generate --indent -o html s.odocl
+  $ odoc html-generate --source a.ml --indent -o html src-a.odocl
+  $ odoc html-generate --indent -o html a.odocl
+  $ odoc html-generate --source b.ml --indent -o html src-b.odocl
+  $ odoc html-generate --indent -o html b.odocl
 
   $ find html | sort
   html

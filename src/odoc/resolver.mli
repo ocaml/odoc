@@ -47,6 +47,14 @@ val build_link_env_for_unit :
 val build_env_for_page : t -> Odoc_model.Lang.Page.t -> Odoc_xref2.Env.t
 (** Initialize the environment for the given page. *)
 
+val build_compile_env_for_impl :
+  t -> Odoc_model.Lang.Source_page.t -> Odoc_xref2.Env.t
+(** Initialize the environment for the given implementation. *)
+
+val build_link_env_for_impl :
+  t -> Odoc_model.Lang.Source_page.t -> Odoc_xref2.Env.t
+(** Initialize the environment for the given implementation. *)
+
 val build_env_for_reference : t -> Odoc_xref2.Env.t
 (** Initialize the environment for a reference. *)
 
