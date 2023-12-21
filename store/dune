@@ -1,6 +1,14 @@
-; This directory contains modules for storing search databases. The
-; datastructure itself is the same each time, but the serialisation format is
-; different.
+(library
+ (name db_store)
+ (modules db_store)
+ (libraries
+  storage_marshal
+  storage_js
+  (select
+   db_store.ml
+   from
+   (storage_ancient -> db_store.with_ancient.ml)
+   (!storage_ancient -> db_store.default.ml))))
 
 (library
  (name storage_ancient)

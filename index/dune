@@ -6,17 +6,11 @@
  (name index)
  (package sherlodoc)
  (libraries
-  (select
-   ancient.ml
-   from
-   (storage_ancient -> ancient.available.ml)
-   (!storage_ancient -> ancient.unavailable.ml))
   db
+  db_store
   fpath
   tyxml
   odoc.search
   odoc.model
   odoc.odoc
-  cmdliner
-  storage_marshal
-  storage_js))
+  cmdliner))

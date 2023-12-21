@@ -5,4 +5,4 @@
  (public_name sherlodoc-www)
  (name www)
  (package sherlodoc-www)
- (libraries cmdliner dream tyxml db query storage_ancient storage_marshal))
+ (libraries cmdliner dream tyxml db db_store query))

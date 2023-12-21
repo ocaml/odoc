@@ -1,4 +1,4 @@
-let arg_enum = []
+let available_backends = [ "marshal", `marshal; "js", `js ]
 
 let storage_module = function
   | `marshal -> (module Storage_marshal : Db.Storage.S)
