@@ -10,7 +10,7 @@ type lookup_unit_result =
 
 type lookup_page_result = Lang.Page.t option
 
-type lookup_impl_result = Lang.Source_page.t option
+type lookup_impl_result = Lang.Implementation.t option
 
 type root =
   | Resolved of
@@ -96,7 +96,7 @@ val lookup_fragment_root : t -> (int * Component.Signature.t) option
 
 val lookup_page : string -> t -> Lang.Page.t option
 
-val lookup_impl : string -> t -> Lang.Source_page.t option
+val lookup_impl : string -> t -> Lang.Implementation.t option
 
 val lookup_unit : string -> t -> lookup_unit_result option
 
@@ -175,7 +175,7 @@ val env_of_unit : Lang.Compilation_unit.t -> linking:bool -> resolver -> t
 val env_of_page : Lang.Page.t -> resolver -> t
 (** Create a new env for a page. *)
 
-val env_of_impl : Lang.Source_page.t -> resolver -> t
+val env_of_impl : Lang.Implementation.t -> resolver -> t
 (** Create a new env for an implementation. *)
 
 val env_for_reference : resolver -> t

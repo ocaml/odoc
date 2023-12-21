@@ -692,8 +692,8 @@ and page_t =
       F ("digest", (fun t -> t.digest), Digest.t);
     ]
 
-and source_page_t =
-  let open Lang.Source_page in
+and implementation_t =
+  let open Lang.Implementation in
   Record
     [
       F ("id", (fun t -> t.id), identifier);

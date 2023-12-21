@@ -261,7 +261,9 @@ let build ?(imports_map = StringMap.empty)
   { Env.open_units; lookup_unit; lookup_page; lookup_impl }
 
 let build_compile_env_for_impl t i =
-  let imports_map = build_imports_map i.Odoc_model.Lang.Source_page.imports in
+  let imports_map =
+    build_imports_map i.Odoc_model.Lang.Implementation.imports
+  in
   let resolver = build ~imports_map t in
   Env.env_of_impl i resolver
 
@@ -272,7 +274,9 @@ let build_link_env_for_unit t m =
   Env.env_of_unit m ~linking:true resolver
 
 let build_link_env_for_impl t i =
-  let imports_map = build_imports_map i.Odoc_model.Lang.Source_page.imports in
+  let imports_map =
+    build_imports_map i.Odoc_model.Lang.Implementation.imports
+  in
   let resolver = build ~imports_map t in
   Env.env_of_impl i resolver
 

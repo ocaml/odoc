@@ -18,5 +18,5 @@ val resolve_page :
 val resolve_impl :
   filename:string ->
   Env.t ->
-  Lang.Source_page.t ->
-  Lang.Source_page.t Error.with_warnings
+  Lang.Implementation.t ->
+  Lang.Implementation.t Error.with_warnings

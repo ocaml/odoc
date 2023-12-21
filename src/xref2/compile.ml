@@ -67,8 +67,8 @@ let rec unit env t =
   let open Compilation_unit in
   { t with content = content env t.id t.content }
 
-and source_page env sp =
-  let open Source_page in
+and implementation env sp =
+  let open Implementation in
   { sp with source_info = source_info_infos env sp.source_info }
 
 and source_info_infos env infos =
@@ -895,6 +895,6 @@ let compile ~filename env compilation_unit =
   Lookup_failures.catch_failures ~filename (fun () -> unit env compilation_unit)
 
 let compile_impl ~filename env i =
-  Lookup_failures.catch_failures ~filename (fun () -> source_page env i)
+  Lookup_failures.catch_failures ~filename (fun () -> implementation env i)
 
 let resolve_page _resolver y = y

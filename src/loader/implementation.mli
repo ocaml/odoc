@@ -7,7 +7,7 @@ val read_cmt_infos :
   string ->
   Root.t ->
   Lang.Compilation_unit.Import.t list ->
-  Lang.Source_page.t
+  Lang.Implementation.t
 (** Extract all implementation information from a [cmt]: the shape, and the
     {{!Odoc_model.Lang.Source_info.infos}source infos} (local and global
     definitions and occurrences).

@@ -10,7 +10,7 @@ type lookup_unit_result =
 
 type lookup_page_result = Lang.Page.t option
 
-type lookup_impl_result = Lang.Source_page.t option
+type lookup_impl_result = Lang.Implementation.t option
 
 type root =
   | Resolved of (Odoc_model.Root.t * Identifier.Module.t * Component.Module.t)

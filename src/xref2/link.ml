@@ -1124,7 +1124,7 @@ let source_info env infos =
     infos
 
 let impl env i =
-  let open Source_page in
+  let open Implementation in
   { i with source_info = source_info env i.source_info; linked = true }
 
 let resolve_page ~filename env p =
@@ -1133,4 +1133,4 @@ let resolve_page ~filename env p =
 
 let resolve_impl ~filename env i =
   Lookup_failures.catch_failures ~filename (fun () ->
-      if i.Lang.Source_page.linked then i else impl env i)
+      if i.Lang.Implementation.linked then i else impl env i)

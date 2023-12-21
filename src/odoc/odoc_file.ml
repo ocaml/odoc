@@ -22,7 +22,7 @@ type unit_content = Lang.Compilation_unit.t
 type content =
   | Page_content of Lang.Page.t
   | Source_tree_content of Lang.SourceTree.t
-  | Impl_content of Lang.Source_page.t
+  | Impl_content of Lang.Implementation.t
   | Unit_content of unit_content
 
 type t = { content : content; warnings : Odoc_model.Error.t list }
@@ -65,7 +65,7 @@ let save_impl file ~warnings impl =
     if Astring.String.is_prefix ~affix:"src-" base then file
     else Fs.File.create ~directory:dir ~name:("src-" ^ base)
   in
-  save_unit file impl.Lang.Source_page.root
+  save_unit file impl.Lang.Implementation.root
     { content = Impl_content impl; warnings }
 
 let save_unit file ~warnings m =

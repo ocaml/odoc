@@ -1774,6 +1774,9 @@ module Make (Syntax : SYNTAX) = struct
     val page : Lang.Page.t -> Document.t
 
     val source_tree : Lang.SourceTree.t -> Document.t list
+
+    val implementation :
+      Lang.Implementation.t -> Syntax_highlighter.infos -> string -> Document.t
   end = struct
     let pack : Lang.Compilation_unit.Packed.t -> Item.t list =
      fun t ->
@@ -1903,6 +1906,11 @@ module Make (Syntax : SYNTAX) = struct
           { Types.Page.preamble = []; items; url; source_anchor = None }
       in
       M.fold (fun dir children acc -> page_of_dir dir children :: acc) mmap []
+
+    let implementation (v : Odoc_model.Lang.Implementation.t) syntax_info
+        source_code =
+      Document.Source_page
+        (Source_page.source v.id syntax_info v.source_info source_code)
   end
 
   include Page
@@ -1910,8 +1918,4 @@ module Make (Syntax : SYNTAX) = struct
   let type_expr = type_expr
 
   let record = record
-
-  let source_page (v : Odoc_model.Lang.Source_page.t) syntax_info source_code =
-    Document.Source_page
-      (Source_page.source v.id syntax_info v.source_info source_code)
 end

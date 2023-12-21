@@ -123,7 +123,7 @@ end
 
 let count ~dst ~warnings_options:_ directories include_hidden =
   let htbl = H.create 100 in
-  let f () (unit : Odoc_model.Lang.Source_page.t) =
+  let f () (unit : Odoc_model.Lang.Implementation.t) =
     let incr tbl p =
       let p = (p :> Odoc_model.Paths.Path.Resolved.t) in
       let id = Odoc_model.Paths.Path.Resolved.identifier p in
