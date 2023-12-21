@@ -1,7 +1,7 @@
 let type_of_string str =
   let lexbuf = Lexing.from_string str in
-  try Ok (Type_parser.main Type_lexer.token lexbuf)
-  with Type_parser.Error -> Error "parse error"
+  try Ok (Type_parser.main Type_lexer.token lexbuf) with
+  | Type_parser.Error -> Error "parse error"
 
 let naive_of_string str =
   List.filter (fun s -> String.length s > 0) (String.split_on_char ' ' str)
@@ -18,13 +18,12 @@ let of_string str =
     | _ when guess_type_search str -> "", Ok str
     | _ -> str, Error `empty
   in
-
   let typ =
     Result.bind str_typ (fun str_typ ->
-        match type_of_string str_typ with
-        | Ok Any -> Error `any
-        | Ok typ -> Ok typ
-        | Error _ -> Error `parse)
+      match type_of_string str_typ with
+      | Ok Any -> Error `any
+      | Ok typ -> Ok typ
+      | Error _ -> Error `parse)
   in
   let words = naive_of_string str_name in
   words, typ

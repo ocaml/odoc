@@ -16,7 +16,7 @@ let rec succ_ge ~compare elt arr lo hi =
     let elt_hi = get arr hi in
     assert (compare elt_hi elt >= 0) ;
     elt_hi)
-  else
+  else (
     let mid = (lo + hi) / 2 in
     let elt' = get arr mid in
     let comp = compare elt' elt in
@@ -24,16 +24,17 @@ let rec succ_ge ~compare elt arr lo hi =
     then elt'
     else if comp > 0
     then succ_ge ~compare elt arr lo mid
-    else succ_ge ~compare elt arr mid hi
+    else succ_ge ~compare elt arr mid hi)
 
 let succ_ge ~compare elt arr =
   if Array.length arr = 0
   then None
-  else
-    let lo = 0 and hi = Array.length arr in
+  else (
+    let lo = 0
+    and hi = Array.length arr in
     if not (compare (get arr (hi - 1)) elt >= 0)
     then None
-    else Some (succ_ge ~compare elt arr lo hi)
+    else Some (succ_ge ~compare elt arr lo hi))
 
 let rec succ_gt ~compare elt arr lo hi =
   let elt_lo = get arr lo in
@@ -48,7 +49,7 @@ let rec succ_gt ~compare elt arr lo hi =
     let elt_hi = get arr hi in
     assert (compare elt_hi elt > 0) ;
     elt_hi)
-  else
+  else (
     let mid = (lo + hi) / 2 in
     let elt' = get arr mid in
     let comp = compare elt' elt in
@@ -56,16 +57,17 @@ let rec succ_gt ~compare elt arr lo hi =
     then get arr (mid + 1)
     else if comp > 0
     then succ_gt ~compare elt arr lo mid
-    else succ_gt ~compare elt arr mid hi
+    else succ_gt ~compare elt arr mid hi)
 
 let succ_gt ~compare elt arr =
   if Array.length arr = 0
   then None
-  else
-    let lo = 0 and hi = Array.length arr in
+  else (
+    let lo = 0
+    and hi = Array.length arr in
     if not (compare (get arr (hi - 1)) elt > 0)
     then None
-    else Some (succ_gt ~compare elt arr lo hi)
+    else Some (succ_gt ~compare elt arr lo hi))
 
 let succ_gt_exn ~compare elt arr =
   match succ_gt ~compare elt arr with

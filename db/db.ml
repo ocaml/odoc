@@ -30,5 +30,4 @@ let store db name elt ~count =
 let store_type_polarities db elt polarities =
   List.iter (fun (word, count) -> store db ~count word elt) polarities
 
-let store_word db word elt =
-  Suffix_tree.With_elts.add_suffixes db.writer_names word elt
+let store_word db word elt = Suffix_tree.With_elts.add_suffixes db.writer_names word elt

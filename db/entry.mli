@@ -69,8 +69,8 @@ end
 val pkg_link : t -> string option
 val link : t -> string option
 
-val v :
-     name:string
+val v
+  :  name:string
   -> kind:Kind.t
   -> cost:int
   -> rhs:string option

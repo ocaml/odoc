@@ -12,8 +12,8 @@ let cache t =
   match Hashtbl.find_opt table t with
   | Some t -> t
   | None ->
-      Hashtbl.add table t t ;
-      t
+    Hashtbl.add table t t ;
+    t
 
 let arrow a b = cache (Arrow (a, b))
 let constr name args = cache (Constr (name, args))

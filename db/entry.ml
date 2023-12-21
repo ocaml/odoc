@@ -60,27 +60,27 @@ module T = struct
     begin
       match Int.compare (String.length a.name) (String.length b.name) with
       | 0 -> begin
-          match String.compare a.name b.name with
+        match String.compare a.name b.name with
+        | 0 -> begin
+          match Option.compare compare_pkg a.pkg b.pkg with
           | 0 -> begin
-              match Option.compare compare_pkg a.pkg b.pkg with
-              | 0 -> begin
-                  match Stdlib.compare a.kind b.kind with
-                  | 0 -> Stdlib.compare a.url b.url
-                  | c -> c
-                end
-              | c -> c
-            end
+            match Stdlib.compare a.kind b.kind with
+            | 0 -> Stdlib.compare a.url b.url
+            | c -> c
+          end
           | c -> c
         end
+        | c -> c
+      end
       | c -> c
     end
 
   let compare a b =
     if a == b
     then 0
-    else
+    else (
       let cmp = Int.compare a.cost b.cost in
-      if cmp = 0 then structural_compare a b else cmp
+      if cmp = 0 then structural_compare a b else cmp)
 end
 
 include T
@@ -108,19 +108,18 @@ let pkg_link { pkg; _ } =
   match pkg with
   | None -> None
   | Some { name; version } ->
-      Some (Printf.sprintf "https://ocaml.org/p/%s/%s" name version)
+    Some (Printf.sprintf "https://ocaml.org/p/%s/%s" name version)
 
 let link t =
   match pkg_link t with
   | None -> None
   | Some pkg_link ->
-      let name, path =
-        match List.rev (String.split_on_char '.' t.name) with
-        | name :: path -> name, String.concat "/" (List.rev path)
-        | _ -> "", ""
-      in
-      Some (pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name)
+    let name, path =
+      match List.rev (String.split_on_char '.' t.name) with
+      | name :: path -> name, String.concat "/" (List.rev path)
+      | _ -> "", ""
+    in
+    Some (pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name)
 
-let v ~name ~kind ~cost ~rhs ~doc_html ~url ~is_from_module_type ?(pkg = None)
-    () =
+let v ~name ~kind ~cost ~rhs ~doc_html ~url ~is_from_module_type ?(pkg = None) () =
   { name; kind; url; cost; doc_html; pkg; rhs; is_from_module_type }

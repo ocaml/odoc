@@ -7,8 +7,8 @@ type t =
 val search : shards:Db.t list -> ?dynamic_sort:bool -> t -> Db.Entry.t list
 (** [search ~shard ~dynamic_sort {query; packages; limit}] returns [(pretty_query,
       results)] where [pretty_query] is a re-printed version of [query] and
-      [results] is the list of results corresponding to the query and the
-      various parameters.
+    [results] is the list of results corresponding to the query and the
+    various parameters.
 
     - [shards] is a list of databases. [results] is the union of the results of
       each database of the list [shards]. If [shards] is a very long list, [api]

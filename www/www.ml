@@ -24,8 +24,9 @@ let get_limit params =
   let default = 100 in
   match Dream.query params "limit" with
   | None -> default
-  | Some str -> (
-      try max 1 (min default (int_of_string str)) with _ -> default)
+  | Some str ->
+    (try max 1 (min default (int_of_string str)) with
+     | _ -> default)
 
 let get_params params =
   { Query.query = get_query params
@@ -42,24 +43,26 @@ let string_of_tyxml' html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html
 
 let root fn params =
   let params = get_params params in
-  try root fn params
-  with err ->
+  try root fn params with
+  | err ->
     Format.printf "ERROR: %S@." (Printexc.to_string err) ;
     Dream.html (string_of_tyxml @@ Ui.template params.query Ui.explain)
 
 let root fn params =
-  try root fn params
-  with _ -> Dream.html (string_of_tyxml @@ Ui.template "" Ui.explain)
+  try root fn params with
+  | _ -> Dream.html (string_of_tyxml @@ Ui.template "" Ui.explain)
 
 let cache_header : int option -> Dream.middleware =
- fun max_age f req ->
+  fun max_age f req ->
   let+ response = f req in
   begin
     match max_age with
     | None -> ()
     | Some max_age ->
-        Dream.add_header response "Cache-Control"
-          ("public, max-age=" ^ string_of_int max_age)
+      Dream.add_header
+        response
+        "Cache-Control"
+        ("public, max-age=" ^ string_of_int max_age)
   end ;
   response
 
@@ -70,10 +73,10 @@ let cors_header f req =
 
 let cors_options =
   Dream.options "**" (fun _ ->
-      let+ response = Dream.empty `No_Content in
-      Dream.add_header response "Access-Control-Allow-Methods" "GET, OPTIONS" ;
-      Dream.add_header response "Access-Control-Allow-Headers" "*" ;
-      response)
+    let+ response = Dream.empty `No_Content in
+    Dream.add_header response "Access-Control-Allow-Methods" "GET, OPTIONS" ;
+    Dream.add_header response "Access-Control-Allow-Headers" "*" ;
+    response)
 
 let main db_format db_filename cache_max_age =
   let storage =
@@ -84,16 +87,20 @@ let main db_format db_filename cache_max_age =
   let module Storage = (val storage) in
   let shards = Storage.load db_filename in
   Dream.run ~interface:"127.0.0.1" ~port:1234
-  @@ Dream.logger @@ cache_header cache_max_age @@ cors_header
+  @@ Dream.logger
+  @@ cache_header cache_max_age
+  @@ cors_header
   @@ Dream.router
-       [ Dream.get "/"
+       [ Dream.get
+           "/"
            (root (fun params ->
-                let+ result = api ~shards params in
-                string_of_tyxml @@ Ui.template params.query result))
-       ; Dream.get "/api"
+              let+ result = api ~shards params in
+              string_of_tyxml @@ Ui.template params.query result))
+       ; Dream.get
+           "/api"
            (root (fun params ->
-                let+ result = api ~shards params in
-                string_of_tyxml' result))
+              let+ result = api ~shards params in
+              string_of_tyxml' result))
        ; Dream.get "/s.css" (Dream.from_filesystem "static" "style.css")
        ; Dream.get "/robots.txt" (Dream.from_filesystem "static" "robots.txt")
        ; Dream.get "/favicon.ico" (Dream.from_filesystem "static" "favicon.ico")
@@ -106,8 +113,7 @@ open Cmdliner
 let db_format =
   let doc = "Database format" in
   let kind = Arg.enum [ "ancient", `ancient; "marshal", `marshal ] in
-  Arg.(
-    required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~doc)
+  Arg.(required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~doc)
 
 let db_path =
   let doc = "Database filename" in

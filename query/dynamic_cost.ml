@@ -25,8 +25,7 @@ module Reasoning = struct
       let low_query_word = String.lowercase_ascii query_word in
       let has_case = low_query_word <> query_word in
       let name = if not has_case then String.lowercase_ascii name else name in
-      if String.equal query_word name
-         || String.ends_with ~suffix:("." ^ query_word) name
+      if String.equal query_word name || String.ends_with ~suffix:("." ^ query_word) name
       then DotSuffix
       else if String.starts_with ~prefix:query_word name
               || String.ends_with ~suffix:query_word name
@@ -42,8 +41,7 @@ module Reasoning = struct
       then SubUnderscore
       else if is_substring ~sub:query_word name
       then Sub
-      else if has_case
-              && is_substring ~sub:low_query_word (String.lowercase_ascii name)
+      else if has_case && is_substring ~sub:low_query_word (String.lowercase_ascii name)
       then Lowercase
       else (* Matches only in the docstring are always worse *) Doc
 
@@ -92,22 +90,21 @@ module Reasoning = struct
           | Field entry_type
           | Val entry_type
           | Exception entry_type )) ) ->
-        Some (Type_distance.v ~query:query_type ~entry:entry_type)
+      Some (Type_distance.v ~query:query_type ~entry:entry_type)
     | ( _
-      , ( Doc | TypeDecl _ | Module | Class_type | Method | Class
-        | TypeExtension | ModuleType ) ) ->
-        None
+      , ( Doc | TypeDecl _ | Module | Class_type | Method | Class | TypeExtension
+        | ModuleType ) ) ->
+      None
 
   let type_in_query query_type = Result.is_ok query_type
 
   let type_in_entry entry =
     let open Entry in
     match entry.kind with
-    | ExtensionConstructor _ | Constructor _ | Field _ | Val _ | Exception _ ->
-        true
-    | Doc | TypeDecl _ | Module | Class_type | Method | Class | TypeExtension
-    | ModuleType ->
-        false
+    | ExtensionConstructor _ | Constructor _ | Field _ | Val _ | Exception _ -> true
+    | Doc | TypeDecl _ | Module | Class_type | Method | Class | TypeExtension | ModuleType
+      ->
+      false
 
   let is_stdlib entry =
     let open Entry in
@@ -149,17 +146,18 @@ end
 (** [cost_of_reasoning r] is the cost of a entry according to the reasons
     contained in [r]. *)
 let cost_of_reasoning
-    Reasoning.
-      { is_stdlib
-      ; has_doc
-      ; name_matches
-      ; type_distance
-      ; type_in_entry
-      ; type_in_query
-      ; kind
-      ; name_length
-      ; is_from_module_type
-      } =
+  Reasoning.
+    { is_stdlib
+    ; has_doc
+    ; name_matches
+    ; type_distance
+    ; type_in_entry
+    ; type_in_query
+    ; kind
+    ; name_length
+    ; is_from_module_type
+    }
+  =
   let ignore_no_doc =
     match kind with
     | Module | ModuleType -> true
@@ -176,13 +174,13 @@ let cost_of_reasoning
     let open Reasoning.Name_match in
     name_matches
     |> List.map (function
-         | DotSuffix -> 0
-         | PrefixSuffix -> 103
-         | SubDot -> 104
-         | SubUnderscore -> 105
-         | Sub -> 106
-         | Lowercase -> 107
-         | Doc -> 1000)
+      | DotSuffix -> 0
+      | PrefixSuffix -> 103
+      | SubDot -> 104
+      | SubUnderscore -> 105
+      | Sub -> 106
+      | Lowercase -> 107
+      | Doc -> 1000)
     |> List.fold_left ( + ) 0
   in
   let type_cost =
@@ -200,12 +198,16 @@ let cost_of_reasoning
   let is_from_module_type_cost = if is_from_module_type then 400 else 0 in
   (if is_stdlib then 0 else 100)
   + (if has_doc || ignore_no_doc then 0 else 100)
-  + name_matches + type_cost + kind + name_length + is_from_module_type_cost
+  + name_matches
+  + type_cost
+  + kind
+  + name_length
+  + is_from_module_type_cost
 
 let cost_of_entry ~query_name ~query_type entry =
   cost_of_reasoning (Reasoning.v query_name query_type entry)
 
 (** [update_entry ~query_name ~query_type e] updates [e.cost] to take into
-    account the query described by [query_name] and [query_type].  *)
+    account the query described by [query_name] and [query_type]. *)
 let update_entry ~query_name ~query_type entry =
   Entry.{ entry with cost = cost_of_entry ~query_name ~query_type entry }

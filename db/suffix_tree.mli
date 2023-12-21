@@ -1,8 +1,8 @@
 (** The suffix tree datastructure. This datastructure allows to efficiently
-  search for strings suffixes.
+    search for strings suffixes.
 
-You need to provide a datastructure for the sets of elements at the leafs of the
-tree. *)
+    You need to provide a datastructure for the sets of elements at the leafs of the
+    tree. *)
 
 module type SET = sig
   type t
@@ -29,8 +29,8 @@ module Make (S : SET) : sig
   val find : reader -> string -> reader option
   val to_sets : reader -> S.t list
 
-  val sets_tree :
-       union:('a -> 'a -> 'a)
+  val sets_tree
+    :  union:('a -> 'a -> 'a)
     -> terminal:(S.t -> 'a)
     -> union_of_array:('a array -> 'a)
     -> reader
@@ -39,8 +39,8 @@ end
 
 module With_elts : module type of Make (Entry.Array)
 (** [With_elts] is a suffix tree with array of entries at the leafs. It is used
-      for the text-based part of the database. *)
+    for the text-based part of the database. *)
 
 module With_occ : module type of Make (Occ)
 (** [With_occ] is a suffix tree with occurence annotated arrays of entries at
-      the leafs. It is used for the type-based part of the database. *)
+    the leafs. It is used for the type-based part of the database. *)

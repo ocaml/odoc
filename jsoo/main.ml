@@ -1,6 +1,7 @@
 let print_error e =
   let open Jv.Error in
-  Printf.eprintf "Error : %s %s\n%s%!"
+  Printf.eprintf
+    "Error : %s %s\n%s%!"
     (Jstr.to_string @@ name e)
     (Jstr.to_string @@ message e)
     (Jstr.to_string @@ stack e)
@@ -8,18 +9,17 @@ let print_error e =
 let new_ cl = Jv.(new' (get global cl))
 
 let stream_of_string str =
-  let str =
-    str |> Brr.Tarray.of_binary_jstr |> Result.get_ok |> Brr.Tarray.to_jv
-  in
+  let str = str |> Brr.Tarray.of_binary_jstr |> Result.get_ok |> Brr.Tarray.to_jv in
   let stream =
-    new_ "ReadableStream"
+    new_
+      "ReadableStream"
       Jv.
         [| obj
              [| ( "start"
                 , callback ~arity:1 (fun controller ->
-                      let _ = call controller "enqueue" [| str |] in
-                      let _ = call controller "close" [||] in
-                      ()) )
+                    let _ = call controller "enqueue" [| str |] in
+                    let _ = call controller "close" [||] in
+                    ()) )
              |]
         |]
   in
@@ -39,7 +39,6 @@ module Decompress_browser = struct
     in
     let open Jv in
     let reader = call stream "getReader" [||] in
-
     let open Fut.Syntax in
     let rec read_step obj =
       let done_ = get obj "done" |> to_bool in
@@ -55,18 +54,16 @@ module Decompress_browser = struct
       Fut.bind promise (function
         | Ok v -> read_step v
         | Error e ->
-            print_endline "error in string_of_stream" ;
-            print_error e ;
-            Fut.return ())
+          print_endline "error in string_of_stream" ;
+          print_error e ;
+          Fut.return ())
     in
     let+ () = read () in
     let r = Buffer.contents buffer in
     r
 
   let inflate str =
-    let dekompressor =
-      Jv.(new_ "DecompressionStream" [| of_string "deflate" |])
-    in
+    let dekompressor = Jv.(new_ "DecompressionStream" [| of_string "deflate" |]) in
     let str = Jv.(call global "atob" [| str |]) |> Jv.to_jstr in
     let stream = stream_of_string str in
     let decompressed_stream = Jv.call stream "pipeThrough" [| dekompressor |] in
@@ -98,9 +95,7 @@ let string_of_kind =
 let search message db =
   let query = Jv.get message "data" in
   let query = query |> Jv.to_jstr |> Jstr.to_string in
-  let results =
-    Query.(search ~shards:db { query; packages = []; limit = 50 })
-  in
+  let results = Query.(search ~shards:db { query; packages = []; limit = 50 }) in
   let _ =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list
@@ -114,18 +109,19 @@ let search message db =
                match kind with
                | Db.Entry.Kind.Doc -> None, None
                | _ ->
-                   let rev_name =
-                     name |> String.split_on_char '.' |> List.rev
-                   in
-                   ( rev_name |> List.tl |> List.rev |> String.concat "."
-                     |> Option.some
-                   , rev_name |> List.hd |> Option.some )
+                 let rev_name = name |> String.split_on_char '.' |> List.rev in
+                 ( rev_name |> List.tl |> List.rev |> String.concat "." |> Option.some
+                 , rev_name |> List.hd |> Option.some )
              in
              let kind = string_of_kind kind in
-
              let html =
-               Odoc_html_frontend.of_strings ~kind ~prefix_name ~name
-                 ~typedecl_params ~rhs ~doc:doc_html
+               Odoc_html_frontend.of_strings
+                 ~kind
+                 ~prefix_name
+                 ~name
+                 ~typedecl_params
+                 ~rhs
+                 ~doc:doc_html
                |> List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ()))
                |> String.concat "\n"
              in
@@ -142,7 +138,8 @@ let search message =
   let+ db = db in
   (* Here we catch any exception and print it. This allows us to keep running
      and answer requests that do not trigger exceptions. *)
-  try Printexc.print (search message) db with _ -> ()
+  try Printexc.print (search message) db with
+  | _ -> ()
 
 let main () =
   let module J' = Jstr in

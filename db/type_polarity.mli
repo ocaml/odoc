@@ -61,28 +61,26 @@ type t = string * int
     {!Suffix_tree}. It is a solely text-based datastructure. Therefore, we need
     a text represention for the polarities.
 
-  The polarity [+t] is represented by ["+t"], and the polarity [-t] is
-  represented by ["-t"].
+    The polarity [+t] is represented by ["+t"], and the polarity [-t] is
+    represented by ["-t"].
 
-  The fact that the sign is in the front is important : ["+flo"] is a prefix of
-  ["+float"], but ["flo+"] is not a prefix nor a suffix of ["float+"]. This
-  allows to answer incomplete queries.
+    The fact that the sign is in the front is important : ["+flo"] is a prefix of
+    ["+float"], but ["flo+"] is not a prefix nor a suffix of ["float+"]. This
+    allows to answer incomplete queries.
 
-  The integer represents the occurences of the polarity, as explained in the
-  toplevel documentation of the module.
-*)
+    The integer represents the occurences of the polarity, as explained in the
+    toplevel documentation of the module. *)
 
 val of_typ : any_is_poly:bool -> all_names:bool -> Typexpr.t -> t list
 (** [of_typ ~ignore_any ~all_names typ] is the list of polarised types
     corresponding to [typ].
 
-  - If [any_is_poly] is true, the type [_] will be treated like a type variable
-    ['a], other it will be represented solely by its sign ("+" or "-").
+    - If [any_is_poly] is true, the type [_] will be treated like a type variable
+      ['a], other it will be represented solely by its sign ("+" or "-").
 
-  - If [all_names] is true, extra polarities are added for every "possible name"
-    of each type constructor. For instance the possible names of
-    [Stdlib.Int64.t] are ["t"], ["Int64.t"] and ["Stdlib.Int64.t"]. This allows
-    for the user to use any of the possible name. It is important to set this
-    when registering entries in the database, but you not need it when computing
-    the polarities of a query.
-    *)
+    - If [all_names] is true, extra polarities are added for every "possible name"
+      of each type constructor. For instance the possible names of
+      [Stdlib.Int64.t] are ["t"], ["Int64.t"] and ["Stdlib.Int64.t"]. This allows
+      for the user to use any of the possible name. It is important to set this
+      when registering entries in the database, but you not need it when computing
+      the polarities of a query. *)

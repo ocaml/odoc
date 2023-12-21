@@ -1,25 +1,23 @@
 let index_file register filename =
   match Fpath.of_string filename with
   | Error (`Msg msg) -> Format.printf "FILE ERROR %s: %s@." filename msg
-  | Ok file -> (
-      let open Odoc_model in
-      let page p =
-        let id = p.Lang.Page.name in
-        Fold.page ~f:(register (id :> Paths.Identifier.t)) () p
-      in
-      let unit u =
-        let id = u.Lang.Compilation_unit.id in
-        Fold.unit ~f:(register (id :> Paths.Identifier.t)) () u
-      in
-      match Odoc_odoc.Indexing.handle_file ~page ~unit file with
-      | Ok result -> result
-      | Error (`Msg msg) ->
-          Format.printf "Odoc warning or error %s: %s@." filename msg)
+  | Ok file ->
+    let open Odoc_model in
+    let page p =
+      let id = p.Lang.Page.name in
+      Fold.page ~f:(register (id :> Paths.Identifier.t)) () p
+    in
+    let unit u =
+      let id = u.Lang.Compilation_unit.id in
+      Fold.unit ~f:(register (id :> Paths.Identifier.t)) () u
+    in
+    (match Odoc_odoc.Indexing.handle_file ~page ~unit file with
+     | Ok result -> result
+     | Error (`Msg msg) -> Format.printf "Odoc warning or error %s: %s@." filename msg)
 
 let storage_module = Ancient.storage_module
 
-let main files file_list index_docstring index_name type_search db_filename
-    db_format =
+let main files file_list index_docstring index_name type_search db_filename db_format =
   let module Storage = (val storage_module db_format) in
   let db = Db.make () in
   let register id () item =
@@ -32,8 +30,8 @@ let main files file_list index_docstring index_name type_search db_filename
     match file_list with
     | None -> files
     | Some file_list ->
-        let file_list = open_in file_list in
-        files @ (file_list |> In_channel.input_all |> String.split_on_char '\n')
+      let file_list = open_in file_list in
+      files @ (file_list |> In_channel.input_all |> String.split_on_char '\n')
   in
   List.iter (index_file register) files ;
   let t = Db.export db in
@@ -57,21 +55,16 @@ let type_search =
 let db_format =
   let doc = "Database format" in
   let kind = Arg.enum (Ancient.arg_enum @ [ "marshal", `marshal; "js", `js ]) in
-  Arg.(
-    required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~doc)
+  Arg.(required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~doc)
 
 let db_filename =
   let doc = "Output filename" in
-  Arg.(
-    required
-    & opt (some string) None
-    & info [ "db"; "output"; "o" ] ~docv:"DB" ~doc)
+  Arg.(required & opt (some string) None & info [ "db"; "output"; "o" ] ~docv:"DB" ~doc)
 
 let file_list =
   let doc =
     "File containing a list of .odocl files.\n\
-     Useful for system where there is a limit on the number of arguments to a \
-     command."
+     Useful for system where there is a limit on the number of arguments to a command."
   in
   Arg.(value & opt (some file) None & info [ "file-list" ] ~doc)
 
@@ -81,8 +74,14 @@ let odoc_files =
 
 let index =
   Term.(
-    const main $ odoc_files $ file_list $ index_docstring $ index_name
-    $ type_search $ db_filename $ db_format)
+    const main
+    $ odoc_files
+    $ file_list
+    $ index_docstring
+    $ index_name
+    $ type_search
+    $ db_filename
+    $ db_format)
 
 let cmd =
   let doc = "Index odocl files" in

@@ -19,14 +19,13 @@ end
 let collapse_occ ~count occs =
   Occ.fold
     (fun k x acc -> if k < count then acc else Succ.union (Succ.of_array x) acc)
-    occs Succ.empty
+    occs
+    Succ.empty
 
 let collapse_trie_occ ~count t =
-  Succ.(
-    Tree_occ.sets_tree ~union ~terminal:(collapse_occ ~count) ~union_of_array t)
+  Succ.(Tree_occ.sets_tree ~union ~terminal:(collapse_occ ~count) ~union_of_array t)
 
-let collapse_trie t =
-  Succ.(Tree.sets_tree ~union ~terminal:of_array ~union_of_array t)
+let collapse_trie t = Succ.(Tree.sets_tree ~union ~terminal:of_array ~union_of_array t)
 
 let polarities typ =
   List.filter
@@ -35,8 +34,7 @@ let polarities typ =
 
 let find_types ~shards typ =
   let polarities = polarities typ in
-  if polarities = []
-  then failwith "Query.find_types : type with empty polarities" ;
+  if polarities = [] then failwith "Query.find_types : type with empty polarities" ;
   List.fold_left
     (fun acc shard ->
       let db = Db.(shard.db_types) in
@@ -50,7 +48,8 @@ let find_types ~shards typ =
              polarities
       in
       Succ.union acc r)
-    Succ.empty shards
+    Succ.empty
+    shards
 
 let find_names ~(shards : Db.t list) names =
   let names = List.map String.lowercase_ascii names in
@@ -67,7 +66,8 @@ let find_names ~(shards : Db.t list) names =
       in
       let candidates = Succ.inter_of_list candidates in
       Succ.union acc candidates)
-    Succ.empty shards
+    Succ.empty
+    shards
 
 type t =
   { query : string
@@ -81,9 +81,9 @@ let search ~(shards : Db.t list) query_name query_typ =
   | _ :: _, Error _ -> find_names ~shards query_name
   | [], Ok query_typ -> find_types ~shards query_typ
   | _ :: _, Ok query_typ ->
-      let results_name = find_names ~shards query_name in
-      let results_typ = find_types ~shards query_typ in
-      Succ.inter results_name results_typ
+    let results_name = find_names ~shards query_name in
+    let results_typ = find_types ~shards query_typ in
+    Succ.inter results_name results_typ
 
 let match_packages ~packages { Db.Entry.pkg; _ } =
   match pkg with
@@ -103,10 +103,7 @@ let search ~(shards : Db.t list) ?(dynamic_sort = true) params =
   let results = List.of_seq @@ Seq.take params.limit results in
   let results =
     if dynamic_sort
-    then
-      List.map
-        (Dynamic_cost.update_entry ~query_name:words ~query_type:typ)
-        results
+    then List.map (Dynamic_cost.update_entry ~query_name:words ~query_type:typ) results
     else results
   in
   let results = List.sort Db.Entry.compare results in
