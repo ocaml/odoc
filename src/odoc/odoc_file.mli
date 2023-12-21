@@ -25,7 +25,7 @@ type unit_content = Lang.Compilation_unit.t
 type content =
   | Page_content of Lang.Page.t
   | Source_tree_content of Lang.SourceTree.t
-  | Impl_content of Lang.Source_page.t
+  | Impl_content of Lang.Implementation.t
   | Unit_content of unit_content
 
 type t = { content : content; warnings : Error.t list }
@@ -43,7 +43,8 @@ val save_source_tree :
 val save_unit : Fs.File.t -> warnings:Error.t list -> unit_content -> unit
 (** Save a module. *)
 
-val save_impl : Fs.File.t -> warnings:Error.t list -> Lang.Source_page.t -> unit
+val save_impl :
+  Fs.File.t -> warnings:Error.t list -> Lang.Implementation.t -> unit
 (** Save an implementation. The [src-] prefix is added to the file name if
     missing. *)
 

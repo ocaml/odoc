@@ -502,7 +502,7 @@ module rec Source_info : sig
 end =
   Source_info
 
-module rec Source_page : sig
+module rec Implementation : sig
   type t = {
     id : Identifier.SourcePage.t;
     digest : Digest.t;
@@ -515,7 +515,7 @@ module rec Source_page : sig
       option;
   }
 end =
-  Source_page
+  Implementation
 
 module rec Page : sig
   type child =

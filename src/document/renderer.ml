@@ -34,14 +34,11 @@ let documents_of_source_tree ~syntax v =
   match syntax with Reason -> Reason.source_tree v | OCaml -> ML.source_tree v
 
 let documents_of_implementation ~syntax v =
-  match syntax with Reason -> Reason.source_page v | OCaml -> ML.source_page v
+  match syntax with
+  | Reason -> Reason.implementation v
+  | OCaml -> ML.implementation v
 
 let document_of_compilation_unit ~syntax v =
   match syntax with
   | Reason -> Reason.compilation_unit v
   | OCaml -> ML.compilation_unit v
-
-let document_of_source ~syntax =
-  match syntax with
-  | Reason -> Reason.source_page (* Currently, both functions are equivalent *)
-  | OCaml -> ML.source_page

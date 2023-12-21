@@ -369,7 +369,7 @@ let read_cmt_infos source_id shape_info impl digest root imports =
       in
       let shape_info = Some (shape, Shape.Uid.Tbl.to_map uid_to_id) in
       {
-        Odoc_model.Lang.Source_page.id = source_id;
+        Odoc_model.Lang.Implementation.id = source_id;
         source_info = source_infos;
         digest;
         root;
@@ -378,7 +378,7 @@ let read_cmt_infos source_id shape_info impl digest root imports =
         imports;
       }
   | None as shape_info -> {
-        Odoc_model.Lang.Source_page.id = source_id;
+        Odoc_model.Lang.Implementation.id = source_id;
         source_info = [];
         digest;
         root;
@@ -392,7 +392,7 @@ let read_cmt_infos source_id shape_info impl digest root imports =
 
 let read_cmt_infos source_id shape_info _impl digest root imports =
   {
-    Odoc_model.Lang.Source_page.id = source_id;
+    Odoc_model.Lang.Implementation.id = source_id;
     source_info = [];
     digest;
     root;

@@ -83,7 +83,7 @@ let deps_of_odoc_file ~deps input =
   | Page_content _ | Source_tree_content _ ->
       Ok () (* XXX something should certainly be done here *)
   | Impl_content impl ->
-      List.iter impl.Odoc_model.Lang.Source_page.imports ~f:(fun import ->
+      List.iter impl.Odoc_model.Lang.Implementation.imports ~f:(fun import ->
           match import with
           | Odoc_model.Lang.Compilation_unit.Import.Unresolved _ -> ()
           | Odoc_model.Lang.Compilation_unit.Import.Resolved (root, _) ->

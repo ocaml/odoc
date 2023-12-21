@@ -53,7 +53,7 @@ let documents_of_implementation ~warnings_options:_ ~syntax impl source =
             let get_path : SourcePage.t -> Fpath.t = function
               | { iv = `SourcePage (d, f); _ } -> Fpath.(get_path_dir d / f)
             in
-            get_path impl.Odoc_model.Lang.Source_page.id
+            get_path impl.Odoc_model.Lang.Implementation.id
       in
       match Fs.File.read source_file with
       | Error (`Msg msg) ->
@@ -64,8 +64,8 @@ let documents_of_implementation ~warnings_options:_ ~syntax impl source =
           in
           Ok
             [
-              Odoc_document.Renderer.document_of_source ~syntax impl syntax_info
-                source_code;
+              Odoc_document.Renderer.documents_of_implementation ~syntax impl
+                syntax_info source_code;
             ])
   | None ->
       Error

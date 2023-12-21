@@ -16,8 +16,8 @@ val compile :
 val compile_impl :
   filename:string ->
   Env.t ->
-  Lang.Source_page.t ->
-  Lang.Source_page.t Error.with_warnings
+  Lang.Implementation.t ->
+  Lang.Implementation.t Error.with_warnings
 (** [filename] is used for generating warnings. *)
 
 val resolve_page : 'a -> 'b -> 'b

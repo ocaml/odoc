@@ -29,7 +29,7 @@ val read_impl :
   make_root:make_root ->
   filename:string ->
   source_id:Identifier.SourcePage.t ->
-  (Lang.Source_page.t, Error.t) result Error.with_warnings
+  (Lang.Implementation.t, Error.t) result Error.with_warnings
 
 val read_cmi :
   make_root:make_root ->
