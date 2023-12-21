@@ -6,7 +6,7 @@
  (name storage_ancient)
  (modules storage_ancient)
  (optional)
- (libraries db ancient))
+ (libraries db ancient unix))
 
 (library
  (name storage_js)
