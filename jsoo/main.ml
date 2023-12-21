@@ -79,15 +79,15 @@ let string_of_kind =
   let open Odoc_html_frontend in
   function
   | Db.Entry.Kind.Doc -> kind_doc
-  | TypeDecl _ -> kind_typedecl
+  | Type_decl _ -> kind_typedecl
   | Module -> kind_module
   | Exception _ -> kind_exception
   | Class_type -> kind_class_type
   | Method -> kind_method
   | Class -> kind_class
-  | TypeExtension -> kind_extension
-  | ExtensionConstructor _ -> kind_extension_constructor
-  | ModuleType -> kind_module_type
+  | Type_extension -> kind_extension
+  | Extension_constructor _ -> kind_extension_constructor
+  | Module_type -> kind_module_type
   | Constructor _ -> kind_constructor
   | Field _ -> kind_field
   | Val _ -> kind_value
@@ -102,7 +102,7 @@ let search message db =
            (fun Db.Entry.{ name; rhs; doc_html; kind; url; _ } ->
              let typedecl_params =
                match kind with
-               | Db.Entry.Kind.TypeDecl args -> args
+               | Db.Entry.Kind.Type_decl args -> args
                | _ -> None
              in
              let prefix_name, name =

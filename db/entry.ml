@@ -1,35 +1,27 @@
 module Kind = struct
-  type 'a abstract =
+  type t =
     | Doc
-    | TypeDecl of string option
     | Module
-    | Exception of 'a
+    | Module_type
+    | Class
     | Class_type
     | Method
-    | Class
-    | TypeExtension
-    | ExtensionConstructor of 'a
-    | ModuleType
-    | Constructor of 'a
-    | Field of 'a
-    | Val of 'a
-
-  type t = Typexpr.t abstract
+    | Val of Typexpr.t
+    | Type_decl of string option
+    | Type_extension
+    | Extension_constructor of Typexpr.t
+    | Exception of Typexpr.t
+    | Constructor of Typexpr.t
+    | Field of Typexpr.t
 
   let equal = ( = )
-  let doc = Doc
-  let type_decl args = TypeDecl args
-  let module_ = Module
-  let exception_ typ = Exception typ
-  let class_type = Class_type
-  let method_ = Method
-  let class_ = Class
-  let type_extension = TypeExtension
-  let extension_constructor typ = ExtensionConstructor typ
-  let module_type = ModuleType
-  let constructor typ = Constructor typ
-  let field typ = Field typ
-  let val_ typ = Val typ
+
+  let get_type = function
+    | Val typ | Extension_constructor typ | Exception typ | Constructor typ | Field typ ->
+      Some typ
+    | Doc | Module | Module_type | Class | Class_type | Method | Type_decl _
+    | Type_extension ->
+      None
 end
 
 module Package = struct
@@ -38,7 +30,8 @@ module Package = struct
     ; version : string
     }
 
-  let v ~name ~version = { name; version }
+  let compare a b = String.compare a.name b.name
+  let link { name; version } = Printf.sprintf "https://ocaml.org/p/%s/%s" name version
 end
 
 module T = struct
@@ -49,44 +42,40 @@ module T = struct
     ; kind : Kind.t
     ; cost : int
     ; doc_html : string
-    ; pkg : Package.t option
+    ; pkg : Package.t
     ; is_from_module_type : bool
     }
 
-  let compare_pkg Package.{ name; version = _ } (b : Package.t) =
-    String.compare name b.name
-
   let structural_compare a b =
-    begin
-      match Int.compare (String.length a.name) (String.length b.name) with
+    match Int.compare (String.length a.name) (String.length b.name) with
+    | 0 -> begin
+      match String.compare a.name b.name with
       | 0 -> begin
-        match String.compare a.name b.name with
+        match Package.compare a.pkg b.pkg with
         | 0 -> begin
-          match Option.compare compare_pkg a.pkg b.pkg with
-          | 0 -> begin
-            match Stdlib.compare a.kind b.kind with
-            | 0 -> Stdlib.compare a.url b.url
-            | c -> c
-          end
+          match Stdlib.compare a.kind b.kind with
+          | 0 -> String.compare a.url b.url
           | c -> c
         end
         | c -> c
       end
       | c -> c
     end
+    | c -> c
 
   let compare a b =
     if a == b
     then 0
-    else (
-      let cmp = Int.compare a.cost b.cost in
-      if cmp = 0 then structural_compare a b else cmp)
+    else begin
+      match Int.compare a.cost b.cost with
+      | 0 -> structural_compare a b
+      | cmp -> cmp
+    end
+
+  let equal a b = compare a b = 0
 end
 
 include T
-
-let equal a b = compare a b = 0
-
 module Set = Set.Make (T)
 
 (** Array of elts. For use in functors that require a type [t] and not ['a t].*)
@@ -104,22 +93,14 @@ module Array = struct
   let equal_elt = equal
 end
 
-let pkg_link { pkg; _ } =
-  match pkg with
-  | None -> None
-  | Some { name; version } ->
-    Some (Printf.sprintf "https://ocaml.org/p/%s/%s" name version)
-
 let link t =
-  match pkg_link t with
-  | None -> None
-  | Some pkg_link ->
-    let name, path =
-      match List.rev (String.split_on_char '.' t.name) with
-      | name :: path -> name, String.concat "/" (List.rev path)
-      | _ -> "", ""
-    in
-    Some (pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name)
+  let pkg_link = Package.link t.pkg in
+  let name, path =
+    match List.rev (String.split_on_char '.' t.name) with
+    | name :: path -> name, String.concat "/" (List.rev path)
+    | _ -> "", ""
+  in
+  pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
 
-let v ~name ~kind ~cost ~rhs ~doc_html ~url ~is_from_module_type ?(pkg = None) () =
+let v ~name ~kind ~cost ~rhs ~doc_html ~url ~is_from_module_type ~pkg () =
   { name; kind; url; cost; doc_html; pkg; rhs; is_from_module_type }

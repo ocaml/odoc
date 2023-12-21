@@ -18,9 +18,10 @@ let index_file register filename =
 let main files file_list index_docstring index_name type_search db_filename db_format =
   let module Storage = (val Db_store.storage_module db_format) in
   let db = Db.make () in
+  let pkg = { Db.Entry.Package.name = ""; version = "" } in
   let register id () item =
     List.iter
-      (Load_doc.register_entry ~db ~index_docstring ~index_name ~type_search)
+      (Load_doc.register_entry ~db ~index_docstring ~index_name ~type_search ~pkg)
       (Odoc_search.Entry.entries_of_item id item)
   in
   let h = Storage.open_out db_filename in

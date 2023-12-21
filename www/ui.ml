@@ -4,25 +4,21 @@ let list_of_option = function
   | None -> []
   | Some x -> [ x ]
 
-let render_link elt =
-  let open Db.Entry in
-  match link elt with
-  | Some link -> [ a_href link ]
-  | None -> []
+let render_link elt = [ a_href (Db.Entry.link elt) ]
 
 let string_of_kind =
   let open Db.Entry.Kind in
   function
   | Doc -> "doc"
-  | TypeDecl _ -> "type"
+  | Type_decl _ -> "type"
   | Module -> "mod"
   | Exception _ -> "exn"
   | Class_type -> "class"
   | Method -> "meth"
   | Class -> "class"
-  | TypeExtension -> "type"
-  | ExtensionConstructor _ -> "cons"
-  | ModuleType -> "sig"
+  | Type_extension -> "type"
+  | Extension_constructor _ -> "cons"
+  | Module_type -> "sig"
   | Constructor _ -> "cons"
   | Field _ -> "field"
   | Val _ -> "val"
@@ -41,17 +37,15 @@ let render_elt elt =
 
 let render_pkg elt =
   let open Db.Entry in
-  match elt.pkg with
-  | Some { name; version } ->
-    let link = elt |> pkg_link |> Option.get in
-    [ div
-        ~a:[ a_class [ "pkg" ] ]
-        [ a
-            ~a:[ a_href link ]
-            [ txt name; txt " "; span ~a:[ a_class [ "version" ] ] [ txt version ] ]
-        ]
-    ]
-  | None -> []
+  let { Package.name; version } = elt.pkg in
+  let link = Package.link elt.pkg in
+  [ div
+      ~a:[ a_class [ "pkg" ] ]
+      [ a
+          ~a:[ a_href link ]
+          [ txt name; txt " "; span ~a:[ a_class [ "version" ] ] [ txt version ] ]
+      ]
+  ]
 
 let render_result elt =
   let open Db.Entry in

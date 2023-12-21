@@ -51,22 +51,6 @@ module Reasoning = struct
       | _ -> List.map (fun word -> with_word word entry.Entry.name) query_words
   end
 
-  (** The kind of the entry is used to rank it, but the payload is not needed. *)
-  type kind =
-    | Doc
-    | TypeDecl
-    | Module
-    | Exception
-    | Class_type
-    | Method
-    | Class
-    | TypeExtension
-    | ExtensionConstructor
-    | ModuleType
-    | Constructor
-    | Field
-    | Val
-
   type t =
     { is_stdlib : bool
     ; name_length : int
@@ -75,56 +59,29 @@ module Reasoning = struct
     ; type_distance : int option
     ; type_in_query : bool
     ; type_in_entry : bool
-    ; kind : kind
+    ; kind : Entry.Kind.t
     ; is_from_module_type : bool
     }
 
   let type_distance query_type entry =
     let open Entry in
-    match query_type, entry.kind with
+    match query_type, Entry.Kind.get_type entry.kind with
     | Error _, _ -> None
-    | ( Ok query_type
-      , Entry.Kind.(
-          ( ExtensionConstructor entry_type
-          | Constructor entry_type
-          | Field entry_type
-          | Val entry_type
-          | Exception entry_type )) ) ->
+    | Ok query_type, Some entry_type ->
       Some (Type_distance.v ~query:query_type ~entry:entry_type)
-    | ( _
-      , ( Doc | TypeDecl _ | Module | Class_type | Method | Class | TypeExtension
-        | ModuleType ) ) ->
-      None
+    | _, None -> None
 
   let type_in_query query_type = Result.is_ok query_type
 
   let type_in_entry entry =
     let open Entry in
-    match entry.kind with
-    | ExtensionConstructor _ | Constructor _ | Field _ | Val _ | Exception _ -> true
-    | Doc | TypeDecl _ | Module | Class_type | Method | Class | TypeExtension | ModuleType
-      ->
-      false
+    match Entry.Kind.get_type entry.kind with
+    | Some _ -> true
+    | None -> false
 
   let is_stdlib entry =
     let open Entry in
     String.starts_with ~prefix:"Stdlib." entry.name
-
-  let kind entry =
-    match entry.Entry.kind with
-    | Entry.Kind.Doc -> Doc
-    | Entry.Kind.TypeDecl _ -> TypeDecl
-    | Entry.Kind.Module -> Module
-    | Entry.Kind.Exception _ -> Exception
-    | Entry.Kind.Class_type -> Class_type
-    | Entry.Kind.Method -> Method
-    | Entry.Kind.Class -> Class
-    | Entry.Kind.TypeExtension -> TypeExtension
-    | Entry.Kind.ExtensionConstructor _ -> ExtensionConstructor
-    | Entry.Kind.ModuleType -> ModuleType
-    | Entry.Kind.Constructor _ -> Constructor
-    | Entry.Kind.Field _ -> Field
-    | Entry.Kind.Val _ -> Val
 
   let name_length entry = String.length entry.Entry.name
   let is_from_module_type entry = entry.Entry.is_from_module_type
@@ -137,7 +94,7 @@ module Reasoning = struct
     ; type_distance = type_distance query_type entry
     ; type_in_entry = type_in_entry entry
     ; type_in_query = type_in_query query_type
-    ; kind = kind entry
+    ; kind = entry.kind
     ; name_length = name_length entry
     ; is_from_module_type = is_from_module_type entry
     }
@@ -160,15 +117,15 @@ let cost_of_reasoning
   =
   let ignore_no_doc =
     match kind with
-    | Module | ModuleType -> true
+    | Module | Module_type -> true
     | _ -> false
   in
   let kind =
     match kind with
-    | Val | Module | ModuleType | Constructor | Field | TypeDecl -> 0
-    | Exception -> 30
-    | Class_type | Class | TypeExtension -> 40
-    | ExtensionConstructor | Method | Doc -> 50
+    | Val _ | Module | Module_type | Constructor _ | Field _ | Type_decl _ -> 0
+    | Exception _ -> 30
+    | Class_type | Class | Type_extension -> 40
+    | Extension_constructor _ | Method | Doc -> 50
   in
   let name_matches =
     let open Reasoning.Name_match in

@@ -7,15 +7,15 @@ let string_of_kind =
   let open Db.Entry.Kind in
   function
   | Doc -> "doc"
-  | TypeDecl _ -> "type"
+  | Type_decl _ -> "type"
   | Module -> "mod"
   | Exception _ -> "exn"
   | Class_type -> "class"
   | Method -> "meth"
   | Class -> "class"
-  | TypeExtension -> "type"
-  | ExtensionConstructor _ -> "cons"
-  | ModuleType -> "sig"
+  | Type_extension -> "type"
+  | Extension_constructor _ -> "cons"
+  | Module_type -> "sig"
   | Constructor _ -> "cons"
   | Field _ -> "field"
   | Val _ -> "val"
@@ -29,7 +29,7 @@ let print_result
   let cost = if print_cost then string_of_int cost ^ " " else "" in
   let typedecl_params =
     (match kind with
-     | Db.Entry.Kind.TypeDecl args -> args
+     | Db.Entry.Kind.Type_decl args -> args
      | _ -> None)
     |> Option.map (fun str -> str ^ " ")
     |> Option.value ~default:""

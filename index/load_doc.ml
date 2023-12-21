@@ -12,18 +12,15 @@ let generic_cost ~ignore_no_doc name has_doc =
   + if String.starts_with ~prefix:"Stdlib." name then -100 else 0
 
 let kind_cost (kind : Entry.Kind.t) =
-  match kind with
-  | Constructor typ | Field typ | Val typ -> Db.Typexpr.size typ
-  | Doc -> 400
-  | TypeDecl _ | Module -> 0
-  | Exception _ | Class_type | Method | Class -> 10
-  | TypeExtension -> 1000
-  | ExtensionConstructor _ | ModuleType -> 10
+  match kind, Entry.Kind.get_type kind with
+  | _, Some typ -> Db.Typexpr.size typ
+  | Doc, _ -> 400
+  | _ -> 0
 
 let cost ~name ~kind ~doc_html =
   let ignore_no_doc =
     match kind with
-    | Entry.Kind.Module | ModuleType -> true
+    | Entry.Kind.Module | Module_type -> true
     | _ -> false
   in
   let has_doc = doc_html <> "" in
@@ -111,32 +108,32 @@ let searchable_type_of_record parent_type type_ =
 let convert_kind (Odoc_search.Entry.{ kind; _ } as entry) =
   let open Odoc_search.Entry in
   match kind with
-  | TypeDecl _ -> Entry.Kind.TypeDecl (Odoc_search.Html.typedecl_params_of_entry entry)
+  | TypeDecl _ -> Entry.Kind.Type_decl (Odoc_search.Html.typedecl_params_of_entry entry)
   | Module -> Entry.Kind.Module
   | Value { value = _; type_ } ->
     let typ = typ_of_odoc_typ type_ in
-    Entry.Kind.val_ typ
+    Entry.Kind.Val typ
   | Constructor { args; res } ->
     let searchable_type = searchable_type_of_constructor args res in
     let typ = typ_of_odoc_typ searchable_type in
-    Entry.Kind.constructor typ
+    Entry.Kind.Constructor typ
   | Field { mutable_ = _; parent_type; type_ } ->
     let typ = type_ |> searchable_type_of_record parent_type |> typ_of_odoc_typ in
-    Entry.Kind.field typ
+    Entry.Kind.Field typ
   | Doc _ -> Doc
   | Exception { args; res } ->
     let searchable_type = searchable_type_of_constructor args res in
     let typ = typ_of_odoc_typ searchable_type in
-    Entry.Kind.exception_ typ
+    Entry.Kind.Exception typ
   | Class_type _ -> Class_type
   | Method _ -> Method
   | Class _ -> Class
-  | TypeExtension _ -> TypeExtension
+  | TypeExtension _ -> Type_extension
   | ExtensionConstructor { args; res } ->
     let searchable_type = searchable_type_of_constructor args res in
     let typ = typ_of_odoc_typ searchable_type in
-    Entry.Kind.extension_constructor typ
-  | ModuleType -> ModuleType
+    Entry.Kind.Extension_constructor typ
+  | ModuleType -> Module_type
 
 let register_type_expr ~db elt type_ =
   let type_polarities =
@@ -200,6 +197,7 @@ let register_entry
   ~index_name
   ~type_search
   ~index_docstring
+  ~pkg
   (Odoc_search.Entry.{ id; doc; kind } as entry)
   =
   let module Sherlodoc_entry = Entry in
@@ -240,6 +238,7 @@ let register_entry
         ~cost
         ~url
         ~is_from_module_type
+        ~pkg
         ()
     in
     if index_docstring then register_doc ~db elt doc_txt ;

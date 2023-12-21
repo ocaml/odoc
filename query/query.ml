@@ -86,9 +86,7 @@ let search ~(shards : Db.t list) query_name query_typ =
     Succ.inter results_name results_typ
 
 let match_packages ~packages { Db.Entry.pkg; _ } =
-  match pkg with
-  | Some { name; version = _ } -> List.exists (String.equal name) packages
-  | None -> false
+  List.exists (String.equal pkg.name) packages
 
 let match_packages ~packages results =
   match packages with

@@ -1,35 +1,21 @@
 module Kind : sig
-  type 'a abstract =
+  type t =
     | Doc
-    | TypeDecl of string option
     | Module
-    | Exception of 'a
+    | Module_type
+    | Class
     | Class_type
     | Method
-    | Class
-    | TypeExtension
-    | ExtensionConstructor of 'a
-    | ModuleType
-    | Constructor of 'a
-    | Field of 'a
-    | Val of 'a
+    | Val of Typexpr.t
+    | Type_decl of string option
+    | Type_extension
+    | Extension_constructor of Typexpr.t
+    | Exception of Typexpr.t
+    | Constructor of Typexpr.t
+    | Field of Typexpr.t
 
-  type t = Typexpr.t abstract
-
-  val equal : 'a -> 'a -> bool
-  val doc : 'a abstract
-  val type_decl : string option -> 'a abstract
-  val module_ : 'a abstract
-  val exception_ : 'a -> 'a abstract
-  val class_type : 'a abstract
-  val method_ : 'a abstract
-  val class_ : 'a abstract
-  val type_extension : 'a abstract
-  val extension_constructor : 'a -> 'a abstract
-  val module_type : 'a abstract
-  val constructor : 'a -> 'a abstract
-  val field : 'a -> 'a abstract
-  val val_ : 'a -> 'a abstract
+  val equal : t -> t -> bool
+  val get_type : t -> Typexpr.t option
 end
 
 module Package : sig
@@ -38,7 +24,7 @@ module Package : sig
     ; version : string
     }
 
-  val v : name:string -> version:string -> t
+  val link : t -> string
 end
 
 type t =
@@ -48,10 +34,23 @@ type t =
   ; kind : Kind.t
   ; cost : int
   ; doc_html : string
-  ; pkg : Package.t option
+  ; pkg : Package.t
   ; is_from_module_type : bool
   }
 
+val v
+  :  name:string
+  -> kind:Kind.t
+  -> cost:int
+  -> rhs:string option
+  -> doc_html:string
+  -> url:string
+  -> is_from_module_type:bool
+  -> pkg:Package.t
+  -> unit
+  -> t
+
+val link : t -> string
 val compare : t -> t -> int
 val equal : t -> t -> bool
 
@@ -65,18 +64,3 @@ module Array : sig
   val of_list : elt list -> t
   val equal_elt : elt -> elt -> bool
 end
-
-val pkg_link : t -> string option
-val link : t -> string option
-
-val v
-  :  name:string
-  -> kind:Kind.t
-  -> cost:int
-  -> rhs:string option
-  -> doc_html:string
-  -> url:string
-  -> is_from_module_type:bool
-  -> ?pkg:Package.t option
-  -> unit
-  -> t
