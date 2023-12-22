@@ -829,7 +829,7 @@ let rec collect_assets env (page : Lang.Page.t) =
         let id = Identifier.Mk.asset_file (page.name, new_asset) in
         add_asset id env)
       env
-      (List.filter_map
+      (Utils.filter_map []
          (function Lang.Page.Asset_child c -> Some c | _ -> None)
          page.children)
   in
