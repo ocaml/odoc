@@ -132,25 +132,25 @@ In this section [odoc] is used to generate the documentation of [odoc] and some 
 Let's start with some functions to execute the three phases of [odoc].
 
 Compiling a file with [odoc] requires a few arguments: the file to compile, an
-optional parent, a list of include paths, a list of children for [.mld] files,
-optional parent and name for source implementation, and an output path. Include
-paths can be just ['.'], and we can calculate the output file from the input
-because all of the files are going into the same directory. If we wish to count
-occurrences of each identifier, we need to pass the [--count-occurrences] flag.
+optional parent, a list of include paths, a list of children for [.mld] files
+and an output path. Include paths can be just ['.'], and we can calculate the
+output file from the input because all of the files are going into the same
+directory.
+
+Odoc supports compiling {i implementations}. This can be useful to render source
+code, generate links from and to source code, and count occurrences of
+identifiers. The [compile-src] command takes a source-tree parent file, and a
+source path which has to be in the source tree.
 
 Linking a file with [odoc] requires the input file and a list of include paths. As
 for compile, we will hard-code the include path.
 
-Generating the HTML requires the input [odocl] file, an optional implementation
-source file (passed via the [--source] argument), and an output path. We will
-hard-code the output path to be [html/].
-
-Using the [--source] argument with an [.odocl] file that was not compiled with
-[--source-parent-file] and [--source-name] will result in an error, as will omitting [--source] when generating HTML of an [odocl] that was
-compiled with [--source-parent-file] and [--source-name].
+Generating the HTML requires the input [odocl] file, and an output path. We will
+hard-code the output path to be [html/]. In the case of implementations, a
+source file (passed via the [--source] argument) is required.
 
 To get the number of uses of each identifier, we can use the [count-occurrences]
-command.
+command on the "implementation" units.
 
 In all of these, we'll capture [stdout] and [stderr] so we can check it later.
 
@@ -158,6 +158,8 @@ In all of these, we'll capture [stdout] and [stderr] so we can check it later.
 let odoc = Cmd.v "../src/odoc/bin/main.exe" (* This is the just-built odoc binary *)
 
 let compile_output = ref [ "" ]
+
+let compile_src_output = ref [ "" ]
 
 let link_output = ref [ "" ]
 
@@ -213,8 +215,8 @@ let add_prefixed_output cmd list prefix lines =
       !list
       @ Bos.Cmd.to_string cmd :: List.map (fun l -> prefix ^ ": " ^ l) lines
 
-let compile file ?(count_occurrences = true) ?parent ?(output_dir = Fpath.v "./")
-    ?(ignore_output = false) ?source_args children =
+let compile file ?parent ?(output_dir = Fpath.v "./") ?(ignore_output = false)
+    children =
   let output_basename =
     let ext = Fpath.get_ext file in
     let basename = Fpath.basename (Fpath.rem_ext file) in
@@ -223,28 +225,10 @@ let compile file ?(count_occurrences = true) ?parent ?(output_dir = Fpath.v "./"
     | ".cmt" | ".cmti" | ".cmi" -> basename ^ ".odoc"
     | _ -> failwith ("bad extension: " ^ ext)
   in
-  let output_file = Fpath.(/) output_dir output_basename in
+  let output_file = Fpath.( / ) output_dir output_basename in
   let open Cmd in
-  let source_args =
-    match source_args with
-    | None -> Cmd.empty
-    | Some (source_name, source_parent_file) ->
-        Cmd.(
-          v "--source-name" % p source_name % "--source-parent-file"
-          % p source_parent_file)
-  in
-  let cmt_arg =
-    let cmt_file = Fpath.set_ext ".cmt" file in
-    if Fpath.get_ext file = ".cmti" then
-    match Bos.OS.File.exists cmt_file with
-    | Ok true -> Cmd.(v "--cmt" % p cmt_file)
-    | _ -> Cmd.empty
-    else Cmd.empty
-  in
-  let occ = if count_occurrences then Cmd.v "--count-occurrences" else Cmd.empty in
   let cmd =
-    odoc % "compile" % Fpath.to_string file %% source_args %% occ %% cmt_arg
-    % "-I" % "." % "-o" % p output_file
+    odoc % "compile" % Fpath.to_string file % "-I" % "." % "-o" % p output_file
     |> List.fold_right (fun child cmd -> cmd % "--child" % child) children
   in
   let cmd =
@@ -256,35 +240,58 @@ let compile file ?(count_occurrences = true) ?parent ?(output_dir = Fpath.v "./"
   if not ignore_output then
     add_prefixed_output cmd compile_output (Fpath.to_string file) lines
 
+let compile_src file ?(output_dir = Fpath.v "./") ?(ignore_output = false)
+    ~source_name ~source_parent_file () =
+  let output_basename =
+    let ext = Fpath.get_ext file in
+    let basename = Fpath.basename (Fpath.rem_ext file) in
+    match ext with
+    | ".cmt" -> "src-" ^ basename ^ ".odoc"
+    | _ -> failwith ("bad extension: " ^ ext)
+  in
+  let output_file = Fpath.( / ) output_dir output_basename in
+  let open Cmd in
+  let source_args =
+    Cmd.(
+      v "--source-path" % p source_name % "--source-parent-file"
+      % p source_parent_file)
+  in
+  let cmd =
+    odoc % "compile-src" % Fpath.to_string file %% source_args % "-I" % "."
+    % "-o" % p output_file
+  in
+  let lines = run ~output_file cmd in
+  if not ignore_output then
+    add_prefixed_output cmd compile_src_output (Fpath.to_string file) lines
+
 let link ?(ignore_output = false) file =
   let open Cmd in
   let output_file = Fpath.set_ext "odocl" file in
   let cmd = odoc % "link" % p file % "-o" % p output_file % "-I" % "." in
-  let cmd = if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd in
+  let cmd =
+    if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd
+  in
   let lines = run ~output_file cmd in
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
 
-let html_generate ?(ignore_output = false) ?(assets = []) ?(search_uris = []) file source =
+let html_generate ?(ignore_output = false) ?(assets = []) ?(search_uris = [])
+    file source =
   let open Cmd in
   let source =
     match source with None -> empty | Some source -> v "--source" % p source
   in
   let assets =
-    List.fold_left
-      (fun acc filename -> acc % "--asset" % filename)
-      empty
-      assets
+    List.fold_left (fun acc filename -> acc % "--asset" % filename) empty assets
   in
   let search_uris =
     List.fold_left
       (fun acc filename -> acc % "--search-uri" % p filename)
-      empty
-      search_uris
+      empty search_uris
   in
   let cmd =
-    odoc % "html-generate" %% source % p file %% assets %% search_uris % "-o" % "html"
-    % "--theme-uri" % "odoc" % "--support-uri" % "odoc"
+    odoc % "html-generate" %% source % p file %% assets %% search_uris % "-o"
+    % "html" % "--theme-uri" % "odoc" % "--support-uri" % "odoc"
   in
   let lines = run cmd in
   if not ignore_output then
@@ -488,10 +495,9 @@ let compile_deps f =
   | _ -> Error (`Msg "odd")
 ]}
 
-For each compiled odoc file, we'll need to remember some options given at
-[odoc compile]-time. An example of this is the source code rendering: when we
-enable the feature at compile time, we need to provide the source file at html
-generation.
+For each compiled odoc file, we'll need to remember some options given at [odoc
+compile]-time. An example of this is the source code rendering: when we compile
+an implementation unit, we need to provide the source file at html generation.
 
 {[
 type unit = {
@@ -521,7 +527,7 @@ let source_tree ?(ignore_output = false) ~parent ~output file =
   if not ignore_output then
     add_prefixed_output cmd source_tree_output (Fpath.to_string file) lines
 
-let odoc_source_tree = Fpath.v "src-source.odoc"
+let odoc_source_tree = Fpath.v "srctree-source.odoc"
 
 let source_dir_of_odoc_lib lib =
   match String.split_on_char '_' lib with
@@ -554,7 +560,7 @@ let source_files_of_odoc_module lib module_ =
         |> List.map (fun ext -> add_filename path ext)
         |> List.find_opt (fun f -> Bos.OS.File.exists (relativize f) |> get_ok)
       in
-      find_by_extension relpath [ "pp.ml"; "ml" ]
+      find_by_extension relpath [ "pp.ml"; "ml"; "ml-gen" ]
 
 let compile_source_tree units =
   let sources =
@@ -638,7 +644,7 @@ let compile_mlds () =
   in
   ignore
     (compile (mkmld "odoc")
-       ("src-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
+       ("srctree-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
   ignore (compile (mkmld "deps") ~parent:"odoc" (List.map mkpage dep_libraries));
   let extra_odocs =
     List.map
@@ -674,8 +680,12 @@ Now we get to the compilation phase. For each unit, we query its dependencies, t
 let compile_all () =
   let mld_odocs = compile_mlds () in
   let source_tree = compile_source_tree all_units in
-  let source_args =
-    Option.map (fun source_relpath -> (source_relpath, odoc_source_tree))
+  let compile_src file ~ignore_output source_args () =
+    match source_args with
+    | None -> ()
+    | Some source_name ->
+        compile_src (Fpath.set_ext "cmt" file) ~source_name ~ignore_output
+          ~source_parent_file:odoc_source_tree ()
   in
   let rec rec_compile ?impl parent lib file =
     let output = Fpath.(base (set_ext "odoc" file)) in
@@ -698,24 +708,30 @@ let compile_all () =
           [] deps.deps
       in
       let ignore_output = parent = "deps" in
-      let source_args = source_args impl in
-      compile file ~parent:lib ?source_args ~ignore_output [];
-      { file = output ; ignore_output ; source = impl; assets = [] } :: files
+      compile_src file impl ~ignore_output ();
+      compile file ~parent:lib ~ignore_output [];
+      { file = output; ignore_output; source = impl; assets = [] } :: files
   in
   source_tree
   :: List.fold_left
-    (fun acc (parent, lib, dep, impl) ->
-      acc @ rec_compile ?impl parent lib (best_file dep))
-      [] all_units
-   @ mld_odocs
+       (fun acc (parent, lib, dep, impl) ->
+         acc @ rec_compile ?impl parent lib (best_file dep))
+       [] all_units
+  @ mld_odocs
 ]}
 
 Linking is now straightforward. We link all [odoc] files.
 
 {[
+let src_file file =
+  let fdir, fname = Fpath.split_base file in
+  let fname = Fpath.v ("src-" ^ Fpath.to_string fname) in
+  Fpath.( // ) fdir fname
+
 let link_all odoc_files =
   List.map
-    (fun ({ file = odoc_file ; ignore_output ; _ } as unit) ->
+    (fun ({ file = odoc_file; ignore_output; source; _ } as unit) ->
+      if Option.is_some source then ignore (link ~ignore_output (src_file odoc_file));
       ignore (link ~ignore_output odoc_file);
       { unit with file = Fpath.set_ext "odocl" odoc_file })
     odoc_files
@@ -727,12 +743,15 @@ We notify the generator that the javascript file to use for search is [index.js]
 
 {[
 let generate_all odocl_files =
-  let relativize_opt = function None -> None | Some file -> Some (relativize file) in
-  let search_uris = [Fpath.v "minisearch.js"; Fpath.v "index.js"] in
+  let search_uris = [ Fpath.v "minisearch.js"; Fpath.v "index.js" ] in
   List.iter
-     (fun ({file = f ; ignore_output = _ ; source ; assets}) ->
-     ignore(html_generate ~assets ~search_uris f (relativize_opt source)))
-     odocl_files;
+    (fun { file; ignore_output = _; source; assets } ->
+      ignore (html_generate ~assets ~search_uris file None);
+      match source with
+      | None -> ()
+      | Some source ->
+          ignore (html_generate (src_file file) (Some (relativize source))))
+    odocl_files;
   support_files ()
 ]}
 
@@ -765,8 +784,8 @@ let index_generate ?(ignore_output = false) () =
     OS.Dir.contents (Fpath.v ".")
     |> get_ok
     |> List.filter (Fpath.has_ext "odocl")
-    |> List.filter (fun p -> not (String.equal "src-source.odocl" (Fpath.filename p)))
-    |> List.filter (fun p -> not (is_hidden p))
+    |> List.filter (fun p ->
+           String.starts_with ~prefix:"src-" (Fpath.filename p))
     |> List.map Fpath.to_string
   in
   let index_map = Fpath.v "index.map" in
@@ -833,7 +852,7 @@ let compiled = compile_all () in
 let linked = link_all compiled in
 let () = index_generate () in
 let _ = js_index () in
-let _ = count_occurrences (Fpath.v "occurrences-odoc_and_deps.odoc") in
+let _ = count_occurrences (Fpath.v "occurrences-from-odoc.odoc") in
 generate_all linked
 ]}
 
@@ -841,6 +860,8 @@ Let's see if there was any output from the [odoc] invocations:
 
 {[
 # !compile_output;;
+- : string list = [""]
+# !compile_src_output;;
 - : string list = [""]
 # (* Not showing output from 'odoc link' as it is unstable. !link_output *);;
 # !source_tree_output;;
