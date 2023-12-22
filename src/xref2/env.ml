@@ -84,6 +84,7 @@ type kind =
   | Kind_Exception
   | Kind_Extension
   | Kind_Field
+  | Kind_asset
 
 module ElementsByName : sig
   type t
@@ -163,7 +164,6 @@ type t = {
   resolver : resolver option;
   recorder : recorder option;
   fragmentroot : (int * Component.Signature.t) option;
-  parent_page : Identifier.Page.t option;  (** parent page *)
 }
 
 let is_linking env = env.linking
@@ -200,7 +200,6 @@ let empty =
     recorder = None;
     ambiguous_labels = Identifier.Maps.Label.empty;
     fragmentroot = None;
-    parent_page = None;
   }
 
 let add_fragment_root sg env =
@@ -357,6 +356,10 @@ let add_extension_constructor identifier
     (ec : Component.Extension.Constructor.t) te env =
   add_to_elts Kind_Extension identifier (`Extension (identifier, ec, te)) env
   |> add_cdocs identifier ec.doc
+
+let add_asset identifier env =
+  if env.linking then add_to_elts Kind_asset identifier (`Asset identifier) env
+  else env
 
 let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
@@ -597,6 +600,9 @@ let s_fragment_type_parent : Component.Element.fragment_type_parent scope =
     | #Component.Element.fragment_type_parent as r -> Some r
     | _ -> None)
 
+let s_asset : Component.Element.asset scope =
+  make_scope (function #Component.Element.asset as r -> Some r | _ -> None)
+
 let len = ref 0
 
 let n = ref 0
@@ -806,6 +812,29 @@ let open_units resolver env =
       | _ -> env)
     env resolver.open_units
 
+let rec collect_assets env (page : Lang.Page.t) =
+  let env =
+    match page.name with
+    | { iv = `Page (Some parent, _); _ }
+    | { iv = `LeafPage (Some parent, _); _ } -> (
+        let parent_name = match parent.iv with `Page (_, name) -> name in
+        match lookup_page (PageName.to_string parent_name) env with
+        | None -> env
+        | Some parent_page -> collect_assets env parent_page)
+    | _ -> env
+  in
+  let env =
+    List.fold_left
+      (fun env new_asset ->
+        let id = Identifier.Mk.asset_file (page.name, new_asset) in
+        add_asset id env)
+      env
+      (List.filter_map
+         (function Lang.Page.Asset_child c -> Some c | _ -> None)
+         page.children)
+  in
+  env
+
 let env_of_unit t ~linking resolver =
   let open Lang.Compilation_unit in
   let initial_env =
@@ -814,20 +843,25 @@ let env_of_unit t ~linking resolver =
     let env = { empty with linking } in
     env |> add_module (t.id :> Identifier.Path.Module.t) dm m.doc
   in
-  let parent_page :> Identifier.Page.t option =
+  let initial_env = set_resolver initial_env resolver |> open_units resolver in
+  let initial_env =
     match t.id.iv with
-    | `Root (None, _) -> None
-    | `Root (Some parent, _) -> Some parent
+    | `Root (None, _) -> initial_env
+    | `Root (Some parent, _) -> (
+        let parent_name = match parent.iv with `Page (_, name) -> name in
+        match lookup_page (PageName.to_string parent_name) initial_env with
+        | None -> initial_env
+        | Some parent_page -> collect_assets initial_env parent_page)
   in
-  let initial_env = { initial_env with parent_page } in
-  set_resolver initial_env resolver |> open_units resolver
+  initial_env
 
 let open_page page env = add_docs page.Lang.Page.content env
 
 let env_of_page page resolver =
   let initial_env = open_page page empty in
-  let initial_env = { initial_env with parent_page = Some page.name } in
-  set_resolver initial_env resolver |> open_units resolver
+  let initial_env = set_resolver initial_env resolver |> open_units resolver in
+  let initial_env = collect_assets initial_env page in
+  initial_env
 
 let env_for_reference resolver =
   set_resolver empty resolver |> open_units resolver
@@ -889,5 +923,3 @@ let verify_lookups env lookups =
   | true, Some r -> r.lookups <- LookupTypeSet.union r.lookups lookups
   | _ -> ());
   result
-
-let parent_page env = env.parent_page

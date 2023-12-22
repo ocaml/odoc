@@ -74,6 +74,7 @@ let ref_kind_of_element = function
   | `ExtensionDecl _ -> "extension-decl"
   | `Field _ -> "field"
   | `Page _ -> "page"
+  | `Asset _ -> "asset"
 
 let ref_kind_of_find = function
   | `FModule _ | `FModule_subst _ -> "module"
@@ -580,6 +581,10 @@ end
 module A = struct
   (** Assets *)
 
+  let in_env env name =
+    env_lookup_by_name ~kind:`Asset Env.s_asset name env >>= fun (`Asset id) ->
+    Ok (`Identifier id)
+
   let rec in_page env (page : Odoc_model.Lang.Page.t) (asset_name : string) :
       (Reference.Resolved.Asset.t, _) result =
     let has_asset children asset =
@@ -854,12 +859,7 @@ let resolve_page_reference env (r : Reference.Page.t) =
 let resolve_asset_reference env (m : Reference.Asset.t) =
   match m with
   | `Resolved r -> Ok r
-  | `Root (name, _) -> (
-      match Env.parent_page env with
-      | None -> Error (`Lookup_by_name (`Asset, name))
-      | Some parent_page ->
-          Page.in_env_from_id env parent_page >>= fun (_, page) ->
-          A.in_page env page name)
+  | `Root (name, _) -> A.in_env env name
   | `Dot (parent, name) ->
       let x =
         resolve_label_parent_reference env parent >>= function
@@ -878,24 +878,21 @@ let resolve_reference =
     match r with
     | `Root (name, `TUnknown) -> (
         let identifier id = Ok (`Identifier (id :> Identifier.t)) in
-        match env_lookup_by_name Env.s_any name env with
-        | Ok (`Module (_, _) as e) -> resolved (M.of_element env e)
-        | Ok (`ModuleType (_, _) as e) -> resolved (MT.of_element env e)
-        | Ok (`Value (id, _)) -> identifier id
-        | Ok (`Type (id, _)) -> identifier id
-        | Ok (`Label (id, _)) -> identifier id
-        | Ok (`Class (id, _)) -> identifier id
-        | Ok (`ClassType (id, _)) -> identifier id
-        | Ok (`Constructor (id, _)) -> identifier id
-        | Ok (`Exception (id, _)) -> identifier id
-        | Ok (`Extension (id, _, _)) -> identifier id
-        | Ok (`ExtensionDecl (id, _)) -> identifier id
-        | Ok (`Field (id, _)) -> identifier id
-        | Ok (`Page (id, _)) -> identifier id
-        | Error _ as e -> (
-            match resolve_asset_reference env (`Root (name, `TAsset)) with
-            | Ok res -> resolved1 res
-            | Error _ -> e))
+        env_lookup_by_name Env.s_any name env >>= function
+        | `Module (_, _) as e -> resolved (M.of_element env e)
+        | `ModuleType (_, _) as e -> resolved (MT.of_element env e)
+        | `Value (id, _) -> identifier id
+        | `Type (id, _) -> identifier id
+        | `Label (id, _) -> identifier id
+        | `Class (id, _) -> identifier id
+        | `ClassType (id, _) -> identifier id
+        | `Constructor (id, _) -> identifier id
+        | `Exception (id, _) -> identifier id
+        | `Extension (id, _, _) -> identifier id
+        | `ExtensionDecl (id, _) -> identifier id
+        | `Field (id, _) -> identifier id
+        | `Page (id, _) -> identifier id
+        | `Asset id -> identifier id)
     | `Resolved r -> Ok r
     | `Root (name, (`TModule | `TChildModule)) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->

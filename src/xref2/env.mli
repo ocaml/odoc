@@ -146,6 +146,8 @@ val s_label_parent : Component.Element.label_parent scope
 
 val s_fragment_type_parent : Component.Element.fragment_type_parent scope
 
+val s_asset : Component.Element.asset scope
+
 (* val open_component_signature :
    Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
 
@@ -184,5 +186,3 @@ val len : int ref
 val n : int ref
 
 val verify_lookups : t -> LookupTypeSet.t -> bool
-
-val parent_page : t -> Identifier.Page.t option

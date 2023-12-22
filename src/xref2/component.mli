@@ -491,6 +491,8 @@ module Element : sig
   (* No component for pages yet *)
   type page = [ `Page of Identifier.Page.t * Odoc_model.Lang.Page.t ]
 
+  type asset = [ `Asset of Identifier.AssetFile.t ]
+
   type label_parent = [ signature | type_ | page ]
 
   type fragment_type_parent = [ signature | datatype ]
@@ -507,7 +509,8 @@ module Element : sig
     | extension
     | extension_decl
     | field
-    | page ]
+    | page
+    | asset ]
 
   val identifier : [< any ] -> Identifier.t
 end

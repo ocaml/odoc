@@ -527,6 +527,8 @@ module Element = struct
   (* No component for pages yet *)
   type page = [ `Page of Identifier.Page.t * Odoc_model.Lang.Page.t ]
 
+  type asset = [ `Asset of Identifier.AssetFile.t ]
+
   type label_parent = [ signature | type_ | page ]
 
   type fragment_type_parent = [ signature | datatype ]
@@ -543,7 +545,8 @@ module Element = struct
     | extension
     | extension_decl
     | field
-    | page ]
+    | page
+    | asset ]
 
   let identifier : [< any ] -> Odoc_model.Paths.Identifier.t =
     let open Odoc_model.Paths.Identifier in
@@ -561,6 +564,7 @@ module Element = struct
     | `Extension (id, _, _) -> (id :> t)
     | `ExtensionDecl (id, _) -> (id :> t)
     | `Page (id, _) -> (id :> t)
+    | `Asset id -> (id :> t)
 end
 
 module Fmt = struct
