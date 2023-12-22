@@ -5,6 +5,7 @@
 - Improve jump to implementation in rendered source code, and add a
   `count-occurrences` flag and command to count occurrences of every identifiers
   (@panglesd, #976)
+- Add ability to reference assets (@panglesd, #1002)
 
 # 2.4.0
 
