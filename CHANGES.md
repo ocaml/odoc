@@ -5,6 +5,8 @@
 - Improve jump to implementation in rendered source code, and add a
   `count-occurrences` flag and command to count occurrences of every identifiers
   (@panglesd, #976)
+- Separate compilation of interface and implementation files, using a new
+  `compile-src` command (@panglesd, #1067).
 
 ### Changed
 
