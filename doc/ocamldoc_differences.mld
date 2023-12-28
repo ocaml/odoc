@@ -62,5 +62,5 @@ Additionally we support extra annotations:
 
 If it is necessary to reference a reference that contains hyphens or dots - e.g. if you have a file [docs-with-dashes.mld] or
 [docs.with.dots.mld], to reference them use quotation marks in the reference. For the previous two examples, the references
-would be [{!page-"docs-with-dashes.mld"}] and [{!page-"docs.with.dots"}].
+would be [{!page-"docs-with-dashes.mld"}] and [{!page-"docs.with.dots.mld"}].
 
