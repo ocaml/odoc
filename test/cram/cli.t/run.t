@@ -6,8 +6,9 @@
   $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
   8.0K	megaodocl
-  $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
   $ export SHERLODOC_DB=db.bin
+  $ export SHERLODOC_FORMAT=ancient
+  $ sherlodoc_index $(find . -name '*.odocl')
   $ sherlodoc "unique_name"
   val Main.unique_name : foo
   $ sherlodoc "multiple_hit"

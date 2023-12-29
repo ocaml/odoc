@@ -25,7 +25,8 @@ let collapse_occ ~count occs =
 let collapse_trie_occ ~count t =
   Succ.(Tree_occ.sets_tree ~union ~terminal:(collapse_occ ~count) ~union_of_array t)
 
-let collapse_trie t = Succ.(Tree.sets_tree ~union ~terminal:of_array ~union_of_array t)
+let collapse_trie t =
+  Succ.(Tree.sets_tree ~union ~terminal:of_array_opt ~union_of_array t)
 
 let polarities typ =
   List.filter

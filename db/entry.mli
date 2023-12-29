@@ -19,11 +19,12 @@ module Kind : sig
 end
 
 module Package : sig
-  type t =
+  type t = private
     { name : string
     ; version : string
     }
 
+  val v : name:string -> version:string -> t
   val link : t -> string
 end
 
@@ -58,8 +59,9 @@ module Set : Set.S with type elt = t
 
 module Array : sig
   type elt = t
-  type nonrec t = t array
+  type t = elt array option
 
+  val empty : t
   val is_empty : t -> bool
   val of_list : elt list -> t
   val equal_elt : elt -> elt -> bool

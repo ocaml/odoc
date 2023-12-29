@@ -4,8 +4,9 @@
   $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
   4.0K	megaodocl
-  $ sherlodoc_index --format=marshal --db=db.bin $(find . -name '*.odocl')
   $ export SHERLODOC_DB=db.bin
+  $ export SHERLODOC_FORMAT=ancient
+  $ sherlodoc_index $(find . -name '*.odocl')
   $ sherlodoc --print-cost "list"
   109 mod Main.List
   209 type 'a Main.list

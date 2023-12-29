@@ -326,7 +326,7 @@ module Make (S : SET) = struct
         { start : int
         ; len : int
         ; terminals : S.t
-        ; children : node array
+        ; children : node array option
         }
 
       type t =
@@ -343,6 +343,10 @@ module Make (S : SET) = struct
             if chr = str.[node.start - 1] then node else go (i + 1))
         in
         go 0
+
+      let array_find ~str chr = function
+        | None -> raise Not_found
+        | Some arr -> array_find ~str chr arr
 
       let lcp i_str i j_str j j_len =
         let j_stop = j + j_len in
@@ -382,15 +386,21 @@ module Make (S : SET) = struct
 
       let rec collapse acc t =
         let acc = if S.is_empty t.terminals then acc else t.terminals :: acc in
-        Array.fold_left collapse acc t.children
+        match t.children with
+        | None -> acc
+        | Some children -> Array.fold_left collapse acc children
 
       let collapse t = collapse [] t.t
 
       let rec sets_tree ~union ~terminal ~union_of_array t =
-        union
-          (terminal t.terminals)
-          (union_of_array
-             (Array.map (sets_tree ~union ~terminal ~union_of_array) t.children))
+        let ts = terminal t.terminals in
+        let cs =
+          match t.children with
+          | None -> [||]
+          | Some children ->
+            Array.map (sets_tree ~union ~terminal ~union_of_array) children
+        in
+        union ts (union_of_array cs)
 
       let sets_tree ~union ~terminal ~union_of_array t =
         sets_tree ~union ~terminal ~union_of_array t.t
@@ -415,6 +425,7 @@ module Make (S : SET) = struct
         let children =
           Array.of_list @@ List.map (fun (_, (_, child)) -> child) children
         in
+        let children = if Array.length children = 0 then None else Some children in
         let node = { T.start = node.start; len = node.len; terminals; children } in
         let result = Uid.make (), node in
         Hashtbl.add cache key result ;

@@ -59,7 +59,7 @@ let rec search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db =
     search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
   | None -> print_endline "[Search session ended]"
 
-let main db query print_cost no_rhs static_sort limit pretty_query =
+let main db_format db query print_cost no_rhs static_sort limit pretty_query =
   match db with
   | None ->
     output_string
@@ -68,13 +68,22 @@ let main db query print_cost no_rhs static_sort limit pretty_query =
        using the --db option\n" ;
     exit 1
   | Some db ->
-    let db = Storage_marshal.load db in
+    let module Storage = (val Db_store.storage_module db_format) in
+    let db = Storage.load db in
     (match query with
      | None -> search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
      | Some query ->
        search ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db query)
 
 open Cmdliner
+
+let db_format =
+  let env =
+    let doc = "Database format" in
+    Cmd.Env.info "SHERLODOC_FORMAT" ~doc
+  in
+  let kind = Arg.enum Db_store.available_backends in
+  Arg.(required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~env)
 
 let db_filename =
   let env =
@@ -114,6 +123,7 @@ let pretty_query =
 let main =
   Term.(
     const main
+    $ db_format
     $ db_filename
     $ query
     $ print_cost

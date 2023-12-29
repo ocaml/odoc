@@ -9,8 +9,9 @@ val to_seq : compare:('a -> 'a -> int) -> 'a t -> 'a Seq.t
 (** Functions to build a succ tree *)
 
 val empty : 'a t
-
 val of_array : 'a array -> 'a t
+
+val of_array_opt : 'a array option -> 'a t
 (** Warning : only provide a sorted array, this is not checked !
     It has to be sorted according to the [compare] function that you will
     eventually pass to [to_seq]. *)

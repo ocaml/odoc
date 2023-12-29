@@ -5,8 +5,10 @@
   ./base_odocls/md5_lib.odocl
   ./base_odocls/page-index.odocl
   ./base_odocls/shadow_stdlib.odocl
-  $ sherlodoc_index --format=marshal --index-docstring=false --db=db_marshal.bin $(find . -name '*.odocl') 2> /dev/null
-  $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin --limit 100 "S_poly"
+  $ export SHERLODOC_DB=db.bin
+  $ export SHERLODOC_FORMAT=ancient
+  $ sherlodoc_index --index-docstring=false $(find . -name '*.odocl') 2> /dev/null
+  $ sherlodoc --print-cost --no-rhs --limit 100 "S_poly"
   115 sig Base.Map.S_poly
   115 sig Base.Set.S_poly
   119 sig Base.Hashtbl.S_poly
@@ -107,7 +109,7 @@
   731 val Base.Set.S_poly.max_elt_exn
   731 val Base.Set.S_poly.min_elt_exn
   732 val Base.Hashtbl.S_poly.hashable
-  $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin "group b"
+  $ sherlodoc --print-cost --no-rhs "group b"
   218 val Base.List.group
   221 val Base.Hashtbl.group
   222 val Base.Sequence.group
@@ -127,7 +129,7 @@
   831 val Base.Set.S_poly.group_by
   842 val Base.Set.Accessors_generic.group_by
   855 val Base.Set.Creators_and_accessors_generic.group_by
-  $ sherlodoc --no-rhs --db=db_marshal.bin "group by"
+  $ sherlodoc --no-rhs "group by"
   val Base.Set.group_by
   val Base.Set.Poly.group_by
   val Base.Set.Using_comparator.group_by
@@ -135,7 +137,7 @@
   val Base.Set.S_poly.group_by
   val Base.Set.Accessors_generic.group_by
   val Base.Set.Creators_and_accessors_generic.group_by
-  $ sherlodoc --print-cost --db=db_marshal.bin "map2"
+  $ sherlodoc --print-cost "map2"
   214 val Base.List.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t Or_unequal_lengths.t
   216 val Base.Option.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   218 val Base.Or_error.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
@@ -188,16 +190,16 @@
   742 val Base.Applicative.Basic2_using_map2.map : [ `Define_using_map2 | `Custom of ('a, 'e) t -> f:('a -> 'b) -> ('b, 'e) t ]
   742 val Base.Applicative.Basic3_using_map2.map : [ `Define_using_map2
   | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t ]
-  $ sherlodoc --print-cost --no-rhs --db=db_marshal.bin --static-sort "List map2"
+  $ sherlodoc --print-cost --no-rhs --static-sort "List map2"
   202 val Base.List.rev_map2_exn
   208 val Base.List.map2_exn
   215 val Base.List.map2
   239 val Base.List.rev_map2
   292 val Base.List.Cartesian_product.map2
 
-  $ sherlodoc --no-rhs --db=db_marshal.bin "Base.Hashtbl.S_without_submodules.group"
+  $ sherlodoc --no-rhs "Base.Hashtbl.S_without_submodules.group"
   val Base.Hashtbl.S_without_submodules.group
-  $ sherlodoc --print-cost --db=db_marshal.bin "list"
+  $ sherlodoc --print-cost "list"
   109 mod Base.List
   109 mod Caml.List
   118 mod Shadow_stdlib.List
@@ -251,7 +253,7 @@
   322 val Base.hash_fold_list : 'a. (Hash.state -> 'a -> Hash.state) -> Hash.state -> 'a list -> Hash.state
   623 val Base.Queue.S.of_list : 'a list -> 'a t
   623 val Base.Stack.S.of_list : 'a list -> 'a t
-  $ sherlodoc --print-cost --db=db_marshal.bin ": list"
+  $ sherlodoc --print-cost ": list"
   116 val Base.Map.data : (_, 'v, _) t -> 'v list
   116 val Base.Map.keys : ('k, _, _) t -> 'k list
   118 val Base.Set.to_list : ('a, _) t -> 'a list

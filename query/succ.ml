@@ -106,6 +106,10 @@ let empty = { cardinal = 0; s = Empty }
 let of_array arr =
   if Array.length arr = 0 then empty else { cardinal = Array.length arr; s = Array arr }
 
+let of_array_opt = function
+  | None -> empty
+  | Some arr -> of_array arr
+
 let inter a b =
   match a.s, b.s with
   | Empty, _ | _, Empty -> empty

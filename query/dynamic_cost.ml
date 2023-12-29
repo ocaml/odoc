@@ -85,11 +85,12 @@ module Reasoning = struct
 
   let name_length entry = String.length entry.Entry.name
   let is_from_module_type entry = entry.Entry.is_from_module_type
+  let has_doc e = e.Entry.doc_html <> ""
 
   (** Compute the reasoning for the cost of an entry *)
   let v query_words query_type entry =
     { is_stdlib = is_stdlib entry
-    ; has_doc = entry.Entry.doc_html <> ""
+    ; has_doc = has_doc entry
     ; name_matches = Name_match.with_words query_words entry
     ; type_distance = type_distance query_type entry
     ; type_in_entry = type_in_entry entry

@@ -18,7 +18,7 @@ let index_file register filename =
 let main files file_list index_docstring index_name type_search db_filename db_format =
   let module Storage = (val Db_store.storage_module db_format) in
   let db = Db.make () in
-  let pkg = { Db.Entry.Package.name = ""; version = "" } in
+  let pkg = Db.Entry.Package.v ~name:"" ~version:"" in
   let register id () item =
     List.iter
       (Load_doc.register_entry ~db ~index_docstring ~index_name ~type_search ~pkg)
@@ -52,13 +52,19 @@ let type_search =
   Arg.(value & opt bool true & info ~doc [ "type-search" ])
 
 let db_format =
-  let doc = "Database format" in
+  let env =
+    let doc = "Database format" in
+    Cmd.Env.info "SHERLODOC_FORMAT" ~doc
+  in
   let kind = Arg.enum Db_store.available_backends in
-  Arg.(required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~doc)
+  Arg.(required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~env)
 
 let db_filename =
-  let doc = "Output filename" in
-  Arg.(required & opt (some string) None & info [ "db"; "output"; "o" ] ~docv:"DB" ~doc)
+  let env =
+    let doc = "The database to create" in
+    Cmd.Env.info "SHERLODOC_DB" ~doc
+  in
+  Arg.(required & opt (some string) None & info [ "db"; "output"; "o" ] ~docv:"DB" ~env)
 
 let file_list =
   let doc =

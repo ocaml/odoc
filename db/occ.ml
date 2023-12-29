@@ -1,6 +1,6 @@
 module Int_map = Map.Make (Int)
 
-type t = Entry.Array.t Int_map.t
+type t = Entry.t array Int_map.t
 type elt = int * Entry.t
 
 let find = Int_map.find_opt

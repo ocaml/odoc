@@ -1,3 +1,6 @@
+let empty_string = String.make 0 '_'
+let non_empty_string s = if s = "" then empty_string else s
+
 module Kind = struct
   type t =
     | Doc
@@ -16,7 +19,8 @@ module Kind = struct
 
   let equal = ( = )
 
-  let get_type = function
+  let get_type t =
+    match t with
     | Val typ | Extension_constructor typ | Exception typ | Constructor typ | Field typ ->
       Some typ
     | Doc | Module | Module_type | Class | Class_type | Method | Type_decl _
@@ -29,6 +33,9 @@ module Package = struct
     { name : string
     ; version : string
     }
+
+  let v ~name ~version =
+    { name = non_empty_string name; version = non_empty_string version }
 
   let compare a b = String.compare a.name b.name
   let link { name; version } = Printf.sprintf "https://ocaml.org/p/%s/%s" name version
@@ -81,14 +88,20 @@ module Set = Set.Make (T)
 (** Array of elts. For use in functors that require a type [t] and not ['a t].*)
 module Array = struct
   type elt = t
-  type nonrec t = t array
+  type t = elt array option
 
-  let is_empty arr = Array.length arr = 0
+  let is_empty = function
+    | None -> true
+    | Some arr ->
+      assert (Array.length arr > 0) ;
+      false
+
+  let empty = None
 
   let of_list arr =
     let arr = Array.of_list arr in
     Array.sort compare arr ;
-    arr
+    if Array.length arr = 0 then empty else Some arr
 
   let equal_elt = equal
 end
@@ -103,4 +116,12 @@ let link t =
   pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
 
 let v ~name ~kind ~cost ~rhs ~doc_html ~url ~is_from_module_type ~pkg () =
-  { name; kind; url; cost; doc_html; pkg; rhs; is_from_module_type }
+  { name = non_empty_string name
+  ; kind
+  ; url = non_empty_string url
+  ; cost
+  ; doc_html = non_empty_string doc_html
+  ; pkg
+  ; rhs = Option.map non_empty_string rhs
+  ; is_from_module_type
+  }

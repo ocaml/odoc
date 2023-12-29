@@ -3,8 +3,9 @@ We need a dummy file because sherlodoc requires an odocl.
   $ ocamlc -c main.mli -bin-annot -I .
   $ odoc compile -I . main.cmti
   $ odoc link -I . main.odoc
-  $ sherlodoc_index --format=marshal --db=db.bin main.odocl
+  $ export SHERLODOC_FORMAT=marshal
   $ export SHERLODOC_DB=db.bin
+  $ sherlodoc_index main.odocl
   $ sherlodoc --pretty-query ": int list option"
    : int list option
   [No results]
