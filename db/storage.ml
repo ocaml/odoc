@@ -1,4 +1,7 @@
-type db = Db_typedef.t
+type db =
+  { db_names : Suffix_tree.With_elts.reader
+  ; db_types : Suffix_tree.With_occ.reader
+  }
 
 module type S = sig
   type writer

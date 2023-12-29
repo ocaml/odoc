@@ -5,7 +5,7 @@ module Occ = Occ
 module Type_polarity = Type_polarity
 module Typexpr = Typexpr
 
-type t = Db_typedef.t =
+type t = Storage.db =
   { db_names : Suffix_tree.With_elts.reader
   ; db_types : Suffix_tree.With_occ.reader
   }

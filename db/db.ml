@@ -4,7 +4,11 @@ module Occ = Occ
 module Storage = Storage
 module Type_polarity = Type_polarity
 module Typexpr = Typexpr
-include Db_typedef
+
+type t = Storage.db =
+  { db_names : Suffix_tree.With_elts.reader
+  ; db_types : Suffix_tree.With_occ.reader
+  }
 
 type writer =
   { writer_names : Suffix_tree.With_elts.writer
@@ -17,12 +21,9 @@ let make () =
   }
 
 let export db =
-  let db =
-    { db_names = Suffix_tree.With_elts.export db.writer_names
-    ; db_types = Suffix_tree.With_occ.export db.writer_types
-    }
-  in
-  db
+  { Storage.db_names = Suffix_tree.With_elts.export db.writer_names
+  ; db_types = Suffix_tree.With_occ.export db.writer_types
+  }
 
 let store db name elt ~count =
   Suffix_tree.With_occ.add_suffixes db.writer_types name (count, elt)
