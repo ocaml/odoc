@@ -35,7 +35,31 @@ Testing incomplete queries
   $ sherlodoc --pretty-query ": (int *"
    : int * _
   [No results]
-Testing syntax errors
+  $ sherlodoc --pretty-query ": foo bar qux"
+   : foo bar qux
+  [No results]
+  $ sherlodoc --pretty-query ": ()"
+   : _
+  [No results]
   $ sherlodoc --pretty-query ": )"
+   : _
+  [No results]
+  $ sherlodoc --pretty-query ": (int,"
+   : int * _
+  [No results]
+  $ sherlodoc --pretty-query ": (int,string"
+   : int * string
+  [No results]
+  $ sherlodoc --pretty-query ": 'a, 'b) result -"
+   : ('a, 'b) result -> _
+  [No results]
+  $ sherlodoc --pretty-query ": 'a * 'b) list"
+   : ('a * 'b) list
+  [No results]
+  $ sherlodoc --pretty-query ": - ,'a * 'b, 'c) result -) - ( -"
+   : ((_ -> _, 'a * 'b, 'c) result -> _) -> _ -> _
+  [No results]
+Testing syntax errors
+  $ sherlodoc --pretty-query ": )("
    : <parsing error>
   [No results]

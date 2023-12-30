@@ -18,9 +18,9 @@ in queryable way, so a size increase is expected. It should just be reasonable.
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2644	db.js
-  1996	db.js.gz
-  1544	megaodocl.gz
+  2700	db.js
+  2036	db.js.gz
+  1548	megaodocl.gz
 
   $ for f in $(find . -name '*.odocl'); do
   >  odoc html-generate --search-uri=db.js --search-uri=sherlodoc.js --output-dir html $f
@@ -31,7 +31,7 @@ The --no-preserve flag is here so that copying to /tmp will not fail because of
 a previous run. .js files built by dune are read only.
   $ cp --no-preserve=mode,ownership ../../jsoo/main.bc.js html/sherlodoc.js
   $ du -sh html/sherlodoc.js
-  264K	html/sherlodoc.js
+  216K	html/sherlodoc.js
   $ ls html
   base
   db.js

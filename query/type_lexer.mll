@@ -1,13 +1,10 @@
-(* This is the lexer for [type_parser.mly]. *)
-
 {
-open Type_parser
+  open Type_parser
 }
 
 rule token = parse
 | ' ' { token lexbuf }
-(* "-" is treated as "->" because we assume it is an incomplete "->"  *)
-| "-" | "->" { ARROW }
+| "-" | "->" { ARROW } (* minus sign is interpreted as an arrow to support partially written queries *)
 | "(" { PARENS_OPEN }
 | ")" { PARENS_CLOSE }
 | "," { COMMA }

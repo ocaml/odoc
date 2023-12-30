@@ -15,12 +15,16 @@ let cache t =
     Hashtbl.add table t t ;
     t
 
-let arrow a b = cache (Arrow (a, b))
-let constr name args = cache (Constr (name, args))
-let tuple args = cache (Tuple args)
-let poly name = cache (Poly name)
 let any = Any
 let unhandled = Unhandled
+let arrow a b = cache (Arrow (a, b))
+let constr name args = cache (Constr (name, args))
+let poly name = cache (Poly name)
+
+let tuple = function
+  | [] -> any
+  | [ x ] -> x
+  | xs -> cache (Tuple xs)
 
 let rec show = function
   | Arrow (a, b) -> show_parens a ^ " -> " ^ show b

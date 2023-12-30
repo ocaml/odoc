@@ -1,8 +1,4 @@
-(* This is a parser for type expressions. It is written in a weird style to
-   allow for incomplete queries to be reasonably answered. It also has conflicts
-   for the same reason. They are impossible to solve.
-   Its behaviour on correct types is tested in [query/test/test_type_parser.ml]
-   and its behaviour on incomplete types is tested in [test/cram/query_syntax.t] *)
+(* Type expressions parser, with error correction to support partially written queries. *)
 
 %{
   open Db.Typexpr
@@ -21,37 +17,37 @@
 
 main:
   | t=typ EOF { t }
-  | EOF { any }
   ;
 
 typ:
-  | a=typ1 ARROW b=typ { arrow a b }
-  | a=typ1 ARROW EOF { arrow a any }
-  | ARROW b=typ { arrow any b }
-  | ARROW EOF { arrow any any }
-  | t=typ1 { t }
+  | t=typ2 { t }
+  | a=typ2 ARROW b=typ { arrow a b }
+  ;
+
+typ2:
+  | xs=list1(typ1, STAR) { tuple xs }
   ;
 
 typ1:
-  | x=typ0 xs=tups { match xs with [] -> x | xs -> tuple (x::xs) }
-  ;
-
-tups:
-  | STAR x=typ0 xs=tups { x::xs }
-  | STAR { [any] }
-  | EOF { [] }
-  | { [] }
+  | { any }
+  | ts=typs { tuple ts }
+  | ts=typs w=WORD ws=list(WORD) {
+      List.fold_left (fun acc w -> constr w [acc]) (constr w ts) ws
+    }
   ;
 
 typ0:
   | ANY { any }
   | w=POLY { poly w }
   | w=WORD { constr w [] }
-  | t=typ0 w=WORD { constr w [t] }
-  | PARENS_OPEN ts=typ_list PARENS_CLOSE w=WORD { constr w ts }
-  | PARENS_OPEN t=typ PARENS_CLOSE { t }
-  | PARENS_OPEN t=typ EOF { t }
-  | PARENS_OPEN EOF { any }
   ;
 
-typ_list: ts=separated_list(COMMA, typ) { ts } ;
+typs:
+  | t=typ0 { [t] }
+  | PARENS_OPEN ts=list1(typ, COMMA) PARENS_CLOSE { ts }
+  ;
+
+list1(term, separator):
+  | x=term { [x] }
+  | x=term separator xs=list1(term, separator) { x::xs }
+  ;

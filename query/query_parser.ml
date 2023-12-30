@@ -1,4 +1,19 @@
+let balance_parens str =
+  let rec go i open_parens close_parens =
+    if i >= String.length str
+    then open_parens, close_parens
+    else (
+      match str.[i] with
+      | '(' -> go (i + 1) (open_parens + 1) close_parens
+      | ')' when open_parens > 0 -> go (i + 1) (open_parens - 1) close_parens
+      | ')' -> go (i + 1) open_parens (close_parens + 1)
+      | _ -> go (i + 1) open_parens close_parens)
+  in
+  let open_parens, close_parens = go 0 0 0 in
+  String.make close_parens '(' ^ str ^ String.make open_parens ')'
+
 let type_of_string str =
+  let str = balance_parens str in
   let lexbuf = Lexing.from_string str in
   try Ok (Type_parser.main Type_lexer.token lexbuf) with
   | Type_parser.Error -> Error "parse error"
