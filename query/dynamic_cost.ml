@@ -18,7 +18,7 @@ module Reasoning = struct
       | Doc
 
     let is_substring ~sub s =
-      let re = Re.(compile (seq [ rep any; str sub ])) in
+      let re = Re.(compile (str sub)) in
       Re.execp re s
 
     let with_word query_word name =
@@ -165,7 +165,5 @@ let cost_of_reasoning
 let cost_of_entry ~query_name ~query_type entry =
   cost_of_reasoning (Reasoning.v query_name query_type entry)
 
-(** [update_entry ~query_name ~query_type e] updates [e.cost] to take into
-    account the query described by [query_name] and [query_type]. *)
 let update_entry ~query_name ~query_type entry =
-  Entry.{ entry with cost = cost_of_entry ~query_name ~query_type entry }
+  Entry.{ entry with cost = entry.cost + cost_of_entry ~query_name ~query_type entry }

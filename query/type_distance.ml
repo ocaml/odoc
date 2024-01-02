@@ -197,7 +197,7 @@ let minimize = function
 
 let v ~query ~entry =
   let query_paths = Type_path.of_typ ~ignore_any:false query in
-  let entry_paths = Type_path.of_typ ~ignore_any:false entry in
+  let entry_paths = Type_path.of_typ ~ignore_any:true entry in
   match entry_paths, query_paths with
   | _, [] | [], _ -> 0
   | _ ->
