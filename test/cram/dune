@@ -3,5 +3,4 @@
   (source_tree base_odocls)
   %{bin:odoc}
   %{bin:sherlodoc}
-  %{bin:sherlodoc_index}
   ../../jsoo/main.bc.js))

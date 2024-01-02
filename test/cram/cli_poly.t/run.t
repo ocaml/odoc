@@ -8,10 +8,10 @@
   4.0K	megaodocl
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=ancient
-  $ sherlodoc_index $(find . -name '*.odocl')
+  $ sherlodoc index $(find . -name '*.odocl')
 TODO : get a result for the query bellow
-  $ sherlodoc ":'a"
+  $ sherlodoc search ":'a"
   val Main.poly_1 : 'a -> 'b -> 'c
-  $ sherlodoc ": 'a -> 'b -> 'c "
+  $ sherlodoc search ": 'a -> 'b -> 'c "
   val Main.poly_1 : 'a -> 'b -> 'c
 TODO : get a result for the query bellow

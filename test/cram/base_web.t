@@ -8,7 +8,7 @@
   $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
   4.8M	megaodocl
-  $ sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
+  $ sherlodoc index --index-docstring=true --index-name=true --type-search=true --format=js --db=db.js $(find . -name '*.odocl')
 
   $ gzip -k db.js
 
@@ -18,8 +18,8 @@ in queryable way, so a size increase is expected. It should just be reasonable.
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2700	db.js
-  2036	db.js.gz
+  2600	db.js
+  1960	db.js.gz
   1548	megaodocl.gz
 
   $ for f in $(find . -name '*.odocl'); do

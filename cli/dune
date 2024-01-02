@@ -1,10 +1,7 @@
-; This binary is usef to perform searches on the command line. It needs a
-; database and a query as input, and print results on the command line.
-
 (ocamllex unescape)
 
 (executable
  (name main)
  (public_name sherlodoc)
  (package sherlodoc)
- (libraries cmdliner query db_store))
+ (libraries index www cmdliner query db_store))

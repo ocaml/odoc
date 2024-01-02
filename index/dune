@@ -1,10 +1,5 @@
-; `sherlodoc_index` is an executable that build a database for sherlodoc taking
-; odocl files as input.
-
-(executable
- (public_name sherlodoc_index)
+(library
  (name index)
- (package sherlodoc)
  (libraries
   db
   db_store

@@ -77,7 +77,7 @@ let odoc_files =
   let doc = "Path to a .odocl file" in
   Arg.(non_empty & (pos_all file [] @@ info ~doc ~docv:"ODOCL_FILE" []))
 
-let index =
+let term =
   Term.(
     const main
     $ odoc_files
@@ -87,10 +87,3 @@ let index =
     $ type_search
     $ db_filename
     $ db_format)
-
-let cmd =
-  let doc = "Index odocl files" in
-  let info = Cmd.info "index" ~doc in
-  Cmd.v info index
-
-let () = exit (Cmd.eval cmd)

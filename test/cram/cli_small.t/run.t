@@ -6,13 +6,12 @@
   4.0K	megaodocl
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=ancient
-  $ sherlodoc_index $(find . -name '*.odocl')
-  $ sherlodoc --print-cost "list"
-  109 mod Main.List
-  209 type 'a Main.list
-  315 type 'a Main.List.t = 'a list
-  317 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  319 val Main.List.empty : 'a t * 'b t
-  $ export OCAMLRUNPARAM=b
-  $ sherlodoc ": (int, 'a) result"
+  $ sherlodoc index $(find . -name '*.odocl')
+  $ sherlodoc search --print-cost "list"
+  263 mod Main.List
+  763 type 'a Main.list
+  891 type 'a Main.List.t = 'a list
+  923 val Main.List.empty : 'a t * 'b t
+  924 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  $ sherlodoc search ": (int, 'a) result"
   val Main.ok_zero : (int, 'a) result

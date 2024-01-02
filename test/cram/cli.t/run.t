@@ -8,61 +8,61 @@
   8.0K	megaodocl
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=ancient
-  $ sherlodoc_index $(find . -name '*.odocl')
-  $ sherlodoc "unique_name"
+  $ sherlodoc index $(find . -name '*.odocl')
+  $ sherlodoc search "unique_name"
   val Main.unique_name : foo
-  $ sherlodoc "multiple_hit"
+  $ sherlodoc search "multiple_hit"
   val Main.multiple_hit_1 : foo
   val Main.multiple_hit_2 : foo
   val Main.multiple_hit_3 : foo
-  $ sherlodoc "name_conflict"
-  type Main.name_conflict = foo
-  val Main.name_conflict : foo
-  $ sherlodoc "nesting_priority"
+  $ sherlodoc search --print-cost "name_conflict"
+  832 val Main.name_conflict : foo
+  832 type Main.name_conflict = foo
+  $ sherlodoc search "nesting_priority"
   val Main.nesting_priority : foo
   val Main.Nest.nesting_priority : foo
-  $ sherlodoc "list"
+  $ sherlodoc search "list"
   mod Main.List
   type 'a Main.list
   type 'a Main.List.t = 'a list
+  val Main.Map.to_list : foo
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
-  val Main.Map.to_list : foo
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
   doc 
-  $ sherlodoc "map"
+  $ sherlodoc search "map"
   mod Main.Map
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.Map.to_list : foo
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
-  $ sherlodoc "list map"
+  $ sherlodoc search "list map"
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.Map.to_list : foo
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
-  $ sherlodoc "map2"
+  $ sherlodoc search "map2"
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  $ sherlodoc ":moo"
+  $ sherlodoc search ":moo"
   val Main.value : moo
   val Main.produce : unit -> moo
   val Main.produce_2' : unit -> unit -> moo
-  $ sherlodoc ":_ -> moo"
+  $ sherlodoc search ":_ -> moo"
   val Main.produce : unit -> moo
   val Main.produce_2' : unit -> unit -> moo
-  $ sherlodoc ":moo -> _"
+  $ sherlodoc search ":moo -> _"
   val Main.consume : moo -> unit
   val Main.consume_2 : moo -> moo -> unit
   val Main.consume_2_other : moo -> t -> unit
   cons Main.MyExtension : moo -> extensible_type
-  $ sherlodoc "modtype"
+  $ sherlodoc search "modtype"
   sig Main.Modtype
   val Main.Modtype.v_modtype : foo
-  $ sherlodoc "S"
+  $ sherlodoc search "S"
   sig Main.S
   mod Main.List
   mod Main.Nest
@@ -70,59 +70,59 @@
   type 'a Main.list
   type 'a Main.List.t = 'a list
   val Main.consume : moo -> unit
-  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
-  val Main.consume_2 : moo -> moo -> unit
   val Main.Map.to_list : foo
-  val Main.consume_2_other : moo -> t -> unit
+  val Main.consume_2 : moo -> moo -> unit
+  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   type Main.extensible_type = ..
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.nesting_priority : foo
-  val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  val Main.Nest.nesting_priority : foo
+  val Main.consume_2_other : moo -> t -> unit
   cons Main.MyExtension : moo -> extensible_type
+  val Main.Nest.nesting_priority : foo
+  val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
   doc 
-  $ sherlodoc "qwertyuiopasdfghjklzxcvbnm"
+  $ sherlodoc search "qwertyuiopasdfghjklzxcvbnm"
   [No results]
-  $ sherlodoc "hidden"
+  $ sherlodoc search "hidden"
   [No results]
 TODO : get a result for the query bellow
-  $ sherlodoc ":mo"
+  $ sherlodoc search ":mo"
   val Main.value : moo
   val Main.produce : unit -> moo
   val Main.produce_2' : unit -> unit -> moo
-  $ sherlodoc ":'a"
+  $ sherlodoc search ":'a"
   val Main.poly_1 : 'a -> 'b -> 'c
   val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
   val Main.poly_param : 'a boo
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  $ sherlodoc ": 'a -> 'b -> 'c "
+  $ sherlodoc search ": 'a -> 'b -> 'c "
   val Main.poly_1 : 'a -> 'b -> 'c
   val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  $ sherlodoc ": ('a -> 'b) -> 'a t -> 'b t"
+  $ sherlodoc search ": ('a -> 'b) -> 'a t -> 'b t"
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
 TODO : get a result for the query bellow
-  $ sherlodoc ": 'a bo"
+  $ sherlodoc search ": 'a bo"
   val Main.poly_param : 'a boo
-  $ sherlodoc ":extensible_type"
+  $ sherlodoc search ":extensible_type"
   cons Main.MyExtension : moo -> extensible_type
-  $ sherlodoc ":exn"
+  $ sherlodoc search ":exn"
   exn Main.Explicit_exn : exn_payload -> exn
   exn Main.Implicit_exn : exn_payload -> exn
   cons Main.Very_explicit_exn : exn_payload -> exn
-  $ sherlodoc ": exn_payload -> _"
+  $ sherlodoc search ": exn_payload -> _"
   exn Main.Explicit_exn : exn_payload -> exn
   exn Main.Implicit_exn : exn_payload -> exn
   cons Main.Very_explicit_exn : exn_payload -> exn
-  $ sherlodoc ": long_name_type"
+  $ sherlodoc search ": long_name_type"
   val Main.long_name_value : long_name_type
-  $ sherlodoc ": long_nam"
+  $ sherlodoc search ": long_nam"
   val Main.long_name_value : long_name_type
-  $ sherlodoc "long_name"
+  $ sherlodoc search "long_name"
   type Main.long_name_type
   val Main.long_name_value : long_name_type

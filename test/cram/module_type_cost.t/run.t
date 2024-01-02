@@ -6,15 +6,15 @@
   4.0K	megaodocl
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=ancient
-  $ sherlodoc_index $(find . -name '*.odocl')
+  $ sherlodoc index $(find . -name '*.odocl')
 Here we expect to have the `my_function` from the module be above the one from
 the module type.
-  $ sherlodoc --print-cost --no-rhs "my_function"
-  218 val Main.M.my_function
-  221 val Main.Make.my_function
-  223 val Main.Make.M.my_function
-  618 val Main.S.my_function
+  $ sherlodoc search --print-cost --no-rhs "my_function"
+  839 val Main.M.my_function
+  860 val Main.Make.my_function
+  874 val Main.Make.M.my_function
+  1239 val Main.S.my_function
 Here we expect both the module type and the module to be ranked the same
-  $ sherlodoc --print-cost "module"
-  220 mod Main.Module_nype
-  220 sig Main.Module_type
+  $ sherlodoc search --print-cost "module"
+  416 mod Main.Module_nype
+  416 sig Main.Module_type

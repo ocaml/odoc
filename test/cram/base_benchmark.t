@@ -7,7 +7,7 @@ are not crazy and discard the changes
   ./base_odocls/md5_lib.odocl
   ./base_odocls/page-index.odocl
   ./base_odocls/shadow_stdlib.odocl
-  $ sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl')
+  $ sherlodoc index --format=js --db=db.js $(find . -name '*.odocl')
 
 
 

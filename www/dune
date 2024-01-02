@@ -1,8 +1,3 @@
-; This is a server to answer sherlocode queries. A version of this runs on
-; https://doc.sherlocode.com
-
-(executable
- (public_name sherlodoc-www)
+(library
  (name www)
- (package sherlodoc-www)
  (libraries cmdliner dream tyxml db db_store query))

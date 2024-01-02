@@ -21,40 +21,17 @@
  (name sherlodoc)
  (synopsis "Fuzzy search in OCaml documentation")
  (depends
-  (ocaml
-   (>= 4.14.0))
-  dune
-  (decompress
-   (>= 1.5.3))
-  (bigstringaf
-   (>= 0.9.1))
-  (base64
-   (>= 3.5.1))
-  (lwt
-   (>= 5.7.0))
-  (fpath
-   (>= 0.7.3))
-  (odoc
-   (>= 2.4.0))
-  (opam-core
-   (>= 2.1.5))
-  (tyxml
-   (>= 4.6.0))
-  (brr
-   (>= 0.0.6))
+  (ocaml (>= 4.14.0))
+  (cmdliner (>= 1.2.0))
+  (decompress (>= 1.5.3))
+  (base64 (>= 3.5.1))
+  (fpath (>= 0.7.3))
+  (lwt (>= 5.7.0))
+  (menhir (>= 20230608))
+  (odoc (>= 2.4.0))
+  (tyxml (>= 4.6.0))
+  (brr (>= 0.0.6))
   (alcotest :with-test))
- (depopts ancient))
-
-(package
- (name sherlodoc-www)
- (synopsis "Website for fuzzy search in OCaml documentation")
- (depends
-  (ocaml
-   (>= 4.14.0))
-  dune
-  sherlodoc
-  (ancient
-   (>= 0.9.1))
-  (dream
-   (>= 1.0.0~alpha5))
-  (alcotest :with-test)))
+ (depopts
+  (dream (>= 1.0.0~alpha5))
+  (ancient (>= 0.9.1))))

@@ -6,7 +6,7 @@
   $ cat $(find . -name '*.odocl') > megaodocl
   $ du -sh megaodocl
   12K	megaodocl
-  $ sherlodoc_index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
+  $ sherlodoc index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
 
 Here cat is used to remove weird permissions on executable built by dune
   $ cat ../../../jsoo/main.bc.js > sherlodoc.js

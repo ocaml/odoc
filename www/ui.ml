@@ -146,7 +146,7 @@ let link_to_repo =
 
 let link str = a ~a:[ a_href ("?q=" ^ Uri.pct_encode str) ] [ code [ txt str ] ]
 
-let explain =
+let explain () =
   div
     ~a:[ a_class [ "doc" ] ]
     [ h1 [ txt "Sherlodoc" ]
@@ -171,6 +171,9 @@ let explain =
             ; link ": 'a list -> ('a * int -> bool) -> 'a list"
             ]
         ]
-    ; Packages.html
+    ; Packages.html ()
     ; link_to_repo
     ]
+
+let explain = lazy (explain ())
+let explain () = Lazy.force explain

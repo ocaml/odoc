@@ -131,7 +131,7 @@ let load filename =
   close_in h ;
   result
 
-let packages =
+let packages () =
   List.fold_left
     (fun acc p -> M.remove p acc)
     (load "./static/packages.csv")
@@ -139,10 +139,10 @@ let packages =
 
 open Tyxml.Html
 
-let html =
+let html () =
   div
     ~a:[ a_class [ "categories" ] ]
-    (M.bindings packages
+    (M.bindings (packages ())
      |> List.map (fun (category, packages) ->
        div
          ~a:[ a_class [ "category" ] ]
@@ -158,3 +158,6 @@ let html =
                     ]
                   [ txt package.name ]))
          ]))
+
+let html = lazy (html ())
+let html () = Lazy.force html

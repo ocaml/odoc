@@ -20,28 +20,23 @@ let string_of_kind =
   | Field _ -> "field"
   | Val _ -> "val"
 
-let print_result
-  ~print_cost
-  ~no_rhs
-  Db.Entry.
-    { name; rhs; url = _; kind; cost; doc_html = _; pkg = _; is_from_module_type = _ }
-  =
-  let cost = if print_cost then string_of_int cost ^ " " else "" in
+let print_result ~print_cost ~no_rhs (elt : Db.Entry.t) =
+  let cost = if print_cost then string_of_int elt.cost ^ " " else "" in
   let typedecl_params =
-    (match kind with
-     | Db.Entry.Kind.Type_decl args -> args
+    (match elt.kind with
+     | Type_decl args -> args
      | _ -> None)
     |> Option.map (fun str -> str ^ " ")
     |> Option.value ~default:""
   in
-  let kind = kind |> string_of_kind |> Unescape.string in
-  let name = Unescape.string name in
+  let kind = elt.kind |> string_of_kind |> Unescape.string in
+  let name = Unescape.string elt.name in
   let pp_rhs h = function
     | None -> ()
     | Some _ when no_rhs -> ()
     | Some rhs -> Format.fprintf h "%s" (Unescape.string rhs)
   in
-  Format.printf "%s%s %s%s%a\n" cost kind typedecl_params name pp_rhs rhs
+  Format.printf "%s%s %s%s%a@." cost kind typedecl_params name pp_rhs elt.rhs
 
 let search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query query =
   let query = Query.{ query; packages = []; limit } in
@@ -132,9 +127,23 @@ let main =
     $ limit
     $ pretty_query)
 
-let cmd =
-  let doc = "CLI interface to query sherlodoc" in
-  let info = Cmd.info "sherlodoc" ~doc in
+let cmd_search =
+  let info = Cmd.info "search" ~doc:"Search" in
   Cmd.v info main
+
+let cmd_index =
+  let doc = "Index odocl files to create a Sherlodoc database" in
+  let info = Cmd.info "index" ~doc in
+  Cmd.v info Index.term
+
+let cmd_serve =
+  let doc = "Webserver interface" in
+  let info = Cmd.info "serve" ~doc in
+  Cmd.v info Www.term
+
+let cmd =
+  let doc = "Sherlodoc" in
+  let info = Cmd.info "sherlodoc" ~doc in
+  Cmd.group info [ cmd_search; cmd_index; cmd_serve ]
 
 let () = exit (Cmd.eval cmd)

@@ -8,7 +8,7 @@ let api ~shards params =
 
 let api ~shards params =
   if String.trim params.Query.query = ""
-  then Lwt.return Ui.explain
+  then Lwt.return (Ui.explain ())
   else api ~shards params
 
 open Lwt.Syntax
@@ -46,11 +46,11 @@ let root fn params =
   try root fn params with
   | err ->
     Format.printf "ERROR: %S@." (Printexc.to_string err) ;
-    Dream.html (string_of_tyxml @@ Ui.template params.query Ui.explain)
+    Dream.html (string_of_tyxml @@ Ui.template params.query (Ui.explain ()))
 
 let root fn params =
   try root fn params with
-  | _ -> Dream.html (string_of_tyxml @@ Ui.template "" Ui.explain)
+  | _ -> Dream.html (string_of_tyxml @@ Ui.template "" (Ui.explain ()))
 
 let cache_header : int option -> Dream.middleware =
   fun max_age f req ->
@@ -118,11 +118,4 @@ let cache_max_age =
   let doc = "HTTP cache max age (in seconds)" in
   Arg.(value & opt (some int) None & info [ "c"; "cache" ] ~docv:"MAX_AGE" ~doc)
 
-let www = Term.(const main $ db_format $ db_path $ cache_max_age)
-
-let cmd =
-  let doc = "Webserver for sherlodoc" in
-  let info = Cmd.info "www" ~doc in
-  Cmd.v info www
-
-let () = exit (Cmd.eval cmd)
+let term = Term.(const main $ db_format $ db_path $ cache_max_age)
