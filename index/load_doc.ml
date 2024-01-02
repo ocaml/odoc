@@ -8,45 +8,30 @@ let generic_cost ~ignore_no_doc name has_doc =
      the suffix tree does not return results shorter than the query*)
   (String.length name * 6)
   (* + (5 * List.length path) TODO : restore depth based ordering *)
-  + (if ignore_no_doc || has_doc then 0 else 30)
-  + if String.starts_with ~prefix:"Stdlib." name then -100 else 0
+  + (if ignore_no_doc || has_doc then 0 else 400)
+  + if String.starts_with ~prefix:"Stdlib." name then 0 else 100
 
-let kind_cost (kind : Entry.Kind.t) =
-  match kind, Entry.Kind.get_type kind with
-  | _, Some typ -> Db.Typexpr.size typ
-  | Doc, _ -> 400
+let kind_cost = function
+  | Entry.Kind.Doc -> 400
   | _ -> 0
 
-let cost ~name ~kind ~doc_html =
+let cost ~name ~kind ~doc_html ~rhs =
   let ignore_no_doc =
     match kind with
     | Entry.Kind.Module | Module_type -> true
     | _ -> false
   in
   let has_doc = doc_html <> "" in
-  generic_cost ~ignore_no_doc name has_doc + kind_cost kind
-
-(*
-   todo : check usefulness
-   let rec type_size = function
-   | Odoc_model.Lang.TypeExpr.Var _ -> 1
-   | Any -> 1
-   | Arrow (lbl, a, b) ->
-   (match lbl with
-   | None -> 0
-   | Some _ -> 1)
-   + type_size a + type_size b
-     | Constr (_, args) -> List.fold_left (fun acc t -> acc + type_size t) 1 args
-     | Tuple args -> List.fold_left (fun acc t -> acc + type_size t) 1 args
-     | _ -> 100
-*)
+  generic_cost ~ignore_no_doc name has_doc
+  + kind_cost kind
+  + String.length (Option.value ~default:"" rhs)
 
 let string_of_html = Format.asprintf "%a" (Tyxml.Html.pp_elt ())
 
 let rec typ_of_odoc_typ otyp =
   let open Db.Typexpr in
   match otyp with
-  | Odoc_model.Lang.TypeExpr.Var str -> poly str
+  | Odoc_model.Lang.TypeExpr.Var _str -> any
   | Any -> any
   | Arrow (_lbl, left, right) -> arrow (typ_of_odoc_typ left) (typ_of_odoc_typ right)
   | Constr (name, args) ->
@@ -80,8 +65,8 @@ let with_tokenizer str fn =
 let register_doc ~db elt doc_txt =
   with_tokenizer doc_txt @@ fun word -> Db.store_word db word elt
 
-let register_full_name ~db name elt =
-  let name = String.lowercase_ascii name in
+let register_full_name ~db (elt : Db.Entry.t) =
+  let name = String.lowercase_ascii elt.name in
   Db.store_word db name elt
 
 let searchable_type_of_constructor args res =
@@ -135,35 +120,15 @@ let convert_kind (Odoc_search.Entry.{ kind; _ } as entry) =
     Entry.Kind.Extension_constructor typ
   | ModuleType -> Module_type
 
-let register_type_expr ~db elt type_ =
-  let type_polarities =
-    type_ |> typ_of_odoc_typ |> Db.Type_polarity.of_typ ~any_is_poly:true ~all_names:true
-  in
+let register_type_expr ~db elt typ =
+  let type_polarities = Db.Type_polarity.of_typ ~any_is_poly:true ~all_names:true typ in
   Db.store_type_polarities db elt type_polarities
 
-let register_kind ~db ~type_search elt (kind : Odoc_search.Entry.kind) =
-  let open Odoc_search.Entry in
-  let open Odoc_model.Lang in
-  if type_search
-  then (
-    match kind with
-    | TypeDecl _ -> ()
-    | Module -> ()
-    | Value { value = _; type_ } -> register_type_expr ~db elt type_
-    | Doc _ -> ()
-    | Class_type _ -> ()
-    | Method _ -> ()
-    | Class _ -> ()
-    | TypeExtension _ -> ()
-    | ModuleType -> ()
-    | ExtensionConstructor { args; res }
-    | Constructor { args; res }
-    | Exception { args; res } ->
-      let type_ = searchable_type_of_constructor args res in
-      register_type_expr ~db elt type_
-    | Field { mutable_ = _; parent_type; type_ } ->
-      let type_ = TypeExpr.Arrow (None, parent_type, type_) in
-      register_type_expr ~db elt type_)
+let register_kind ~db elt =
+  let open Db.Entry in
+  match Kind.get_type elt.kind with
+  | None -> ()
+  | Some typ -> register_type_expr ~db elt typ
 
 let rec is_from_module_type (id : Odoc_model.Paths.Identifier.Any.t) =
   let open Odoc_model.Paths in
@@ -183,14 +148,11 @@ let is_from_module_type Odoc_search.Entry.{ id; _ } =
     is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
   | _ -> is_from_module_type id
 
-let prefixname n =
-  match
-    (n :> Odoc_model.Paths.Identifier.t)
-    |> Odoc_model.Paths.Identifier.fullname
-    |> List.rev
-  with
+let prefixname id =
+  let parts = Odoc_model.Paths.Identifier.fullname id in
+  match List.rev parts with
   | [] -> ""
-  | _ :: q -> q |> List.rev |> String.concat "."
+  | _ :: prefix -> String.concat "." (List.rev prefix)
 
 let register_entry
   ~db
@@ -210,41 +172,30 @@ let register_entry
   in
   if Odoc_model.Paths.Identifier.is_internal id || is_type_extension
   then ()
-  else (
+  else begin
     let full_name = id |> Odoc_model.Paths.Identifier.fullname |> String.concat "." in
     let doc_txt = Text.of_doc doc in
+    let doc_html = doc |> Html.of_doc |> string_of_html in
     let doc_html =
       match doc_txt with
       | "" -> ""
-      | _ -> doc |> Html.of_doc |> string_of_html
+      | _ -> doc_html
     in
-    let kind' = convert_kind entry in
+    let rhs = Html.rhs_of_kind kind in
+    let kind = convert_kind entry in
     let name =
       match kind with
-      | Doc _ -> prefixname id
+      | Doc -> prefixname id
       | _ -> full_name
     in
-    let cost = cost ~name ~kind:kind' ~doc_html in
-    let rhs = Html.rhs_of_kind kind in
+    let cost = cost ~name ~kind ~doc_html ~rhs in
     let url = Html.url id in
     let url = Result.get_ok url in
     let is_from_module_type = is_from_module_type entry in
     let elt =
-      Sherlodoc_entry.v
-        ~name
-        ~kind:kind'
-        ~rhs
-        ~doc_html
-        ~cost
-        ~url
-        ~is_from_module_type
-        ~pkg
-        ()
+      Sherlodoc_entry.v ~name ~kind ~rhs ~doc_html ~cost ~url ~is_from_module_type ~pkg ()
     in
     if index_docstring then register_doc ~db elt doc_txt ;
-    if index_name
-    then (
-      match kind with
-      | Doc _ -> ()
-      | _ -> register_full_name ~db full_name elt) ;
-    register_kind ~db ~type_search elt kind)
+    if index_name && kind <> Doc then register_full_name ~db elt ;
+    if type_search then register_kind ~db elt
+  end
