@@ -1,17 +1,4 @@
-module String_map = Map.Make (String)
 open Typexpr
-
-let regroup lst =
-  String_map.bindings
-  @@ List.fold_left
-       (fun acc s ->
-         let count =
-           try String_map.find s acc with
-           | Not_found -> 0
-         in
-         String_map.add s (count + 1) acc)
-       String_map.empty
-       lst
 
 module Sign = struct
   type t =
@@ -33,17 +20,14 @@ let rec tails = function
   | [] -> []
   | _ :: xs as lst -> lst :: tails xs
 
-type t = string * int
+type t = string * int * Sign.t
 
 let all_type_names name =
   name |> String.split_on_char '.' |> tails |> List.map (String.concat ".")
 
 let rec of_typ ~any_is_poly ~all_names ~prefix ~sgn = function
-  | Poly _ -> [ Sign.to_string sgn :: "POLY" :: prefix ]
-  | Any ->
-    if any_is_poly
-    then [ Sign.to_string sgn :: "POLY" :: prefix ]
-    else [ Sign.to_string sgn :: prefix ]
+  | Poly _ -> [ sgn, "POLY" :: prefix ]
+  | Any -> if any_is_poly then [ sgn, "POLY" :: prefix ] else [ sgn, prefix ]
   | Arrow (a, b) ->
     List.rev_append
       (of_typ ~any_is_poly ~all_names ~prefix ~sgn:(Sign.not sgn) a)
@@ -52,10 +36,10 @@ let rec of_typ ~any_is_poly ~all_names ~prefix ~sgn = function
     name
     |> (if all_names then all_type_names else fun name -> [ name ])
     |> List.map (fun name ->
-      let prefix = Sign.to_string sgn :: name :: prefix in
+      let prefix = name :: prefix in
       begin
         match args with
-        | [] -> [ prefix ]
+        | [] -> [ sgn, prefix ]
         | _ ->
           rev_concat
           @@ List.mapi
@@ -69,8 +53,21 @@ let rec of_typ ~any_is_poly ~all_names ~prefix ~sgn = function
     rev_concat @@ List.map (of_typ ~any_is_poly ~all_names ~prefix ~sgn) @@ args
   | Unhandled -> []
 
+let regroup lst =
+  let h = Hashtbl.create 16 in
+  List.iter
+    (fun v ->
+      let count =
+        try Hashtbl.find h v with
+        | Not_found -> 0
+      in
+      Hashtbl.replace h v (count + 1))
+    lst ;
+  Hashtbl.to_seq h
+
 let of_typ ~any_is_poly ~all_names t =
   t
   |> of_typ ~any_is_poly ~all_names ~prefix:[] ~sgn:Pos
-  |> List.map (String.concat "")
+  |> List.map (fun (polarity, path) -> polarity, String.concat " " path)
   |> regroup
+  |> Seq.map (fun ((polarity, path), count) -> path, count, polarity)

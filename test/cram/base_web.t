@@ -18,8 +18,8 @@ in queryable way, so a size increase is expected. It should just be reasonable.
   $ gzip -k megaodocl
 
   $ du -s *.js *.gz
-  2600	db.js
-  1960	db.js.gz
+  2528	db.js
+  1904	db.js.gz
   1548	megaodocl.gz
 
   $ for f in $(find . -name '*.odocl'); do

@@ -253,3 +253,57 @@
   410 val Base.Map.add_multi : ('k, 'v list, 'cmp) t -> key:'k -> data:'v -> ('k, 'v list, 'cmp) t
   793 val Base.Hashtbl.S_poly.data : (_, 'b) t -> 'b list
   797 val Base.Hashtbl.S_poly.keys : ('a, _) t -> 'a key list
+
+Partial name search:
+  $ sherlodoc search --print-cost "strin"
+  381 mod Base.String
+  381 mod Caml.String
+  409 mod Base.Stringable
+  418 val Base.String.rev : t -> t
+  423 val Base.String.(^) : t -> t -> t
+  423 mod Base.StringLabels
+  423 sig Base.Stringable.S
+  423 mod Caml.StringLabels
+  427 val Base.String.hash : t -> int
+  436 val Base.String.map : t -> f:(elt -> elt) -> t
+  440 val Base.String.equal : t -> t -> bool
+  444 val Base.String.append : t -> t -> t
+  444 mod Base.String.Caseless
+  444 mod Base.String.Escaping
+  444 mod Shadow_stdlib.String
+  445 val Base.String.init : int -> f:(int -> elt) -> t
+  445 val Base.Exn.to_string : t -> string
+  445 val Base.Sexp.of_string : unit
+  445 mod Base.Bytes.To_string
+  446 val Base.String.prefix : t -> int -> t
+  446 val Base.String.suffix : t -> int -> t
+  446 val Base.String.escaped : t -> t
+  447 val Base.String.iter : t -> f:(elt -> unit) -> unit
+  452 sig Base.Blit.S_to_string
+  452 mod Base.Buffer.To_string
+  $ sherlodoc search --print-cost "tring"
+  380 mod Base.String
+  380 mod Caml.String
+  411 mod Base.Stringable
+  418 val Base.String.rev : t -> t
+  423 val Base.String.(^) : t -> t -> t
+  425 mod Base.StringLabels
+  425 sig Base.Stringable.S
+  425 mod Caml.StringLabels
+  427 val Base.String.hash : t -> int
+  436 val Base.String.map : t -> f:(elt -> elt) -> t
+  440 val Base.String.equal : t -> t -> bool
+  443 val Base.Exn.to_string : t -> string
+  443 val Base.Sexp.of_string : unit
+  443 mod Base.Bytes.To_string
+  443 mod Shadow_stdlib.String
+  444 val Base.String.append : t -> t -> t
+  444 mod Base.String.Caseless
+  444 mod Base.String.Escaping
+  445 val Base.String.init : int -> f:(int -> elt) -> t
+  446 val Base.String.prefix : t -> int -> t
+  446 val Base.String.suffix : t -> int -> t
+  446 val Base.String.escaped : t -> t
+  447 val Base.String.iter : t -> f:(elt -> unit) -> unit
+  450 sig Base.Blit.S_to_string
+  450 mod Base.Buffer.To_string

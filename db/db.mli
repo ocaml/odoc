@@ -7,7 +7,8 @@ module Typexpr = Typexpr
 
 type t = Storage.db =
   { db_names : Suffix_tree.With_elts.reader
-  ; db_types : Suffix_tree.With_occ.reader
+  ; db_pos_types : Suffix_tree.With_occ.reader
+  ; db_neg_types : Suffix_tree.With_occ.reader
   }
 (** The type of a search database.
 
@@ -28,6 +29,6 @@ type writer
 val make : unit -> writer
 (** [make ()] returns an empty search database. *)
 
-val store_type_polarities : writer -> Entry.t -> Type_polarity.t list -> unit
+val store_type_polarities : writer -> Entry.t -> Type_polarity.t Seq.t -> unit
 val store_word : writer -> string -> Entry.t -> unit
 val export : writer -> t

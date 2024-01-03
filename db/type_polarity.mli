@@ -56,7 +56,7 @@ module Sign : sig
   val not : t -> t
 end
 
-type t = string * int
+type t = string * int * Sign.t
 (** The search database is a suffix tree structure, implemented in
     {!Suffix_tree}. It is a solely text-based datastructure. Therefore, we need
     a text represention for the polarities.
@@ -71,7 +71,7 @@ type t = string * int
     The integer represents the occurences of the polarity, as explained in the
     toplevel documentation of the module. *)
 
-val of_typ : any_is_poly:bool -> all_names:bool -> Typexpr.t -> t list
+val of_typ : any_is_poly:bool -> all_names:bool -> Typexpr.t -> t Seq.t
 (** [of_typ ~ignore_any ~all_names typ] is the list of polarised types
     corresponding to [typ].
 

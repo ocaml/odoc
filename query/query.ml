@@ -29,20 +29,24 @@ let collapse_trie t =
   Succ.(Tree.sets_tree ~union ~terminal:of_array_opt ~union_of_array t)
 
 let polarities typ =
-  List.filter
-    (fun (word, _count) -> String.length word > 0)
-    (Db.Type_polarity.of_typ ~any_is_poly:false ~all_names:false typ)
+  List.of_seq
+  @@ Seq.filter
+       (fun (word, _count, _) -> String.length word > 0)
+       (Db.Type_polarity.of_typ ~any_is_poly:false ~all_names:false typ)
 
 let find_types ~shards typ =
   let polarities = polarities typ in
-  if polarities = [] then failwith "Query.find_types : type with empty polarities" ;
   List.fold_left
     (fun acc shard ->
-      let db = Db.(shard.db_types) in
       let r =
         Succ.inter_of_list
         @@ List.map
-             (fun (name, count) ->
+             (fun (name, count, polarity) ->
+               let db =
+                 match polarity with
+                 | Db.Type_polarity.Sign.Pos -> shard.Db.db_pos_types
+                 | Neg -> shard.Db.db_neg_types
+               in
                match Tree_occ.find db name with
                | Some trie -> collapse_trie_occ ~count trie
                | None -> Succ.empty)

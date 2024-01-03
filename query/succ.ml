@@ -145,7 +145,6 @@ let union_of_array arr =
 let union_of_list li = li |> Array.of_list |> union_of_array
 let print a { s; _ } = print_node a s
 
-let inter_of_list li =
-  match li with
+let inter_of_list = function
+  | [] -> empty
   | elt :: li -> List.fold_left inter elt li
-  | [] -> invalid_arg "Succ.inter_of_list []"

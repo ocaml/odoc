@@ -13,12 +13,18 @@ module type SET = sig
   val equal_elt : elt -> elt -> bool
 end
 
+module Buf : sig
+  type t
+
+  val make : unit -> t
+end
+
 module Make (S : SET) : sig
   type writer
   (** A writer is an incomplete suffix tree.
       You can add suffixes to it. *)
 
-  val make : unit -> writer
+  val make : Buf.t -> writer
   val add_suffixes : writer -> string -> S.elt -> unit
 
   type reader

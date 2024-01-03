@@ -37,13 +37,24 @@ module Buf = struct
   type t =
     { buffer : Buffer.t
     ; cache : int String_hashtbl.t
+    ; mutable contents : string option
     }
 
-  let make () = { buffer = Buffer.create 16; cache = String_hashtbl.create 16 }
-  let contents t = Buffer.contents t.buffer
+  let make () =
+    { buffer = Buffer.create 16; cache = String_hashtbl.create 16; contents = None }
+
+  let contents t =
+    match t.contents with
+    | Some contents -> contents
+    | None ->
+      let contents = Buffer.contents t.buffer in
+      t.contents <- Some contents ;
+      contents
+
   let get t i = Buffer.nth t.buffer i
 
-  let add { buffer; cache } substr =
+  let add { buffer; cache; contents } substr =
+    assert (contents = None) ;
     match String_hashtbl.find_opt cache substr with
     | Some start -> start
     | None ->
@@ -112,7 +123,7 @@ module Make (S : SET) = struct
     ; children = Char_map.empty
     }
 
-  let make () = { root = make_root (); buffer = Buf.make () }
+  let make buffer = { root = make_root (); buffer }
 
   let split_at ~str node len =
     let split_chr = Buf.get str (node.start + len) in
