@@ -4,4 +4,13 @@
  (name main)
  (public_name sherlodoc)
  (package sherlodoc)
- (libraries index www cmdliner query db_store))
+ (libraries
+  cmdliner
+  index
+  query
+  db_store
+  (select
+   serve.ml
+   from
+   (www -> serve.available.ml)
+   (!www -> serve.unavailable.ml))))

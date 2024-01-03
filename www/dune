@@ -1,3 +1,4 @@
 (library
  (name www)
+ (optional)
  (libraries cmdliner dream tyxml db db_store query))

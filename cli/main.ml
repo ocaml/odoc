@@ -139,7 +139,7 @@ let cmd_index =
 let cmd_serve =
   let doc = "Webserver interface" in
   let info = Cmd.info "serve" ~doc in
-  Cmd.v info Www.term
+  Cmd.v info Serve.term
 
 let cmd =
   let doc = "Sherlodoc" in
