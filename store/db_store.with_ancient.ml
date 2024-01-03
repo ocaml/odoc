@@ -1,3 +1,9 @@
+type db_format =
+  [ `ancient
+  | `marshal
+  | `js
+  ]
+
 let available_backends = [ "ancient", `ancient; "marshal", `marshal; "js", `js ]
 
 let storage_module = function

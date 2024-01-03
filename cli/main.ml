@@ -49,9 +49,26 @@ let rec search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db =
     search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
   | None -> print_endline "[Search session ended]"
 
-let main db_format db query print_cost no_rhs static_sort limit pretty_query =
+let guess_db_format db_format db_filename =
+  match db_format with
+  | Some db_format -> db_format
+  | None -> begin
+    let ext = Filename.extension db_filename in
+    let ext_len = String.length ext in
+    let ext = if ext_len = 0 then ext else String.sub ext 1 (ext_len - 1) in
+    try List.assoc ext Db_store.available_backends with
+    | Not_found ->
+      Format.fprintf
+        Format.err_formatter
+        "Unknown db format extension %S (expected: %s)@."
+        ext
+        (String.concat ", " @@ List.map fst Db_store.available_backends) ;
+      exit 1
+  end
+
+let search query print_cost no_rhs static_sort limit pretty_query db_format db_filename =
   let module Storage = (val Db_store.storage_module db_format) in
-  let db = Storage.load db in
+  let db = Storage.load db_filename in
   match query with
   | None -> search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
   | Some query -> search ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db query
@@ -64,9 +81,16 @@ let db_format =
     Cmd.Env.info "SHERLODOC_FORMAT" ~doc
   in
   let kind = Arg.enum Db_store.available_backends in
-  Arg.(required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~env)
+  Arg.(value & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~env)
 
 let db_filename =
+  let env =
+    let doc = "The database to query" in
+    Cmd.Env.info "SHERLODOC_DB" ~doc
+  in
+  Arg.(required & opt (some string) None & info [ "db" ] ~docv:"DB" ~env)
+
+let db_path =
   let env =
     let doc = "The database to query" in
     Cmd.Env.info "SHERLODOC_DB" ~doc
@@ -101,31 +125,29 @@ let pretty_query =
   let doc = "Prints the query itself as it was parsed" in
   Arg.(value & flag & info [ "pretty-query" ] ~doc)
 
-let main =
-  Term.(
-    const main
-    $ db_format
-    $ db_filename
-    $ query
-    $ print_cost
-    $ no_rhs
-    $ static_sort
-    $ limit
-    $ pretty_query)
+let search_term =
+  Term.(const search $ query $ print_cost $ no_rhs $ static_sort $ limit $ pretty_query)
+
+let with_db fn db_path =
+  let apply fn db_format db_filename =
+    let db_format = guess_db_format db_format db_filename in
+    fn db_format db_filename
+  in
+  Term.(const apply $ fn $ db_format $ db_path)
 
 let cmd_search =
-  let info = Cmd.info "search" ~doc:"Search" in
-  Cmd.v info main
+  let info = Cmd.info "search" ~doc:"Command-line search" in
+  Cmd.v info (with_db search_term db_path)
 
 let cmd_index =
   let doc = "Index odocl files to create a Sherlodoc database" in
   let info = Cmd.info "index" ~doc in
-  Cmd.v info Index.term
+  Cmd.v info (with_db Index.term db_filename)
 
 let cmd_serve =
   let doc = "Webserver interface" in
   let info = Cmd.info "serve" ~doc in
-  Cmd.v info Term.(Serve.term $ db_format $ db_filename)
+  Cmd.v info (with_db Serve.term db_path)
 
 let cmd =
   let doc = "Sherlodoc" in

@@ -15,7 +15,7 @@ let index_file register filename =
      | Ok result -> result
      | Error (`Msg msg) -> Format.printf "Odoc warning or error %s: %s@." filename msg)
 
-let main files file_list index_docstring index_name type_search db_filename db_format =
+let main files file_list index_docstring index_name type_search db_format db_filename =
   let module Storage = (val Db_store.storage_module db_format) in
   let db = Db.make () in
   let pkg = Db.Entry.Package.v ~name:"" ~version:"" in
@@ -51,21 +51,6 @@ let type_search =
   let doc = "Enable type based search" in
   Arg.(value & opt bool true & info ~doc [ "type-search" ])
 
-let db_format =
-  let env =
-    let doc = "Database format" in
-    Cmd.Env.info "SHERLODOC_FORMAT" ~doc
-  in
-  let kind = Arg.enum Db_store.available_backends in
-  Arg.(required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~env)
-
-let db_filename =
-  let env =
-    let doc = "The database to create" in
-    Cmd.Env.info "SHERLODOC_DB" ~doc
-  in
-  Arg.(required & opt (some string) None & info [ "db"; "output"; "o" ] ~docv:"DB" ~env)
-
 let file_list =
   let doc =
     "File containing a list of .odocl files.\n\
@@ -78,12 +63,4 @@ let odoc_files =
   Arg.(non_empty & (pos_all file [] @@ info ~doc ~docv:"ODOCL_FILE" []))
 
 let term =
-  Term.(
-    const main
-    $ odoc_files
-    $ file_list
-    $ index_docstring
-    $ index_name
-    $ type_search
-    $ db_filename
-    $ db_format)
+  Term.(const main $ odoc_files $ file_list $ index_docstring $ index_name $ type_search)
