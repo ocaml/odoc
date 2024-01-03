@@ -78,6 +78,12 @@ let cors_options =
     Dream.add_header response "Access-Control-Allow-Headers" "*" ;
     response)
 
+let static ctype contents = Dream.respond ~headers:[ "Content-Type", ctype ] contents
+let style_css _ = static "text/css" [%blob "www/static/style.css"]
+let favicon_ico _ = static "image/x-icon" [%blob "www/static/favicon.ico"]
+let robots_txt _ = static "text/plain" [%blob "www/static/robots.txt"]
+let bg_jpg _ = static "image/jpeg" [%blob "www/static/bg.jpg"]
+
 let main cache_max_age db_format db_filename =
   let module Storage = (val Db_store.storage_module db_format) in
   let shards = Storage.load db_filename in
@@ -96,10 +102,10 @@ let main cache_max_age db_format db_filename =
            (root (fun params ->
               let+ result = api ~shards params in
               string_of_tyxml' result))
-       ; Dream.get "/s.css" (Dream.from_filesystem "static" "style.css")
-       ; Dream.get "/robots.txt" (Dream.from_filesystem "static" "robots.txt")
-       ; Dream.get "/favicon.ico" (Dream.from_filesystem "static" "favicon.ico")
-       ; Dream.get "/bg.jpg" (Dream.from_filesystem "static" "bg.jpg")
+       ; Dream.get "/s.css" style_css
+       ; Dream.get "/robots.txt" robots_txt
+       ; Dream.get "/favicon.ico" favicon_ico
+       ; Dream.get "/bg.jpg" bg_jpg
        ; cors_options
        ]
 

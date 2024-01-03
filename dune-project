@@ -1,4 +1,4 @@
-(lang dune 2.9)
+(lang dune 3.5)
 
 (cram enable)
 
@@ -8,8 +8,7 @@
 
 (name sherlodoc)
 
-(source
- (github art-w/sherlodoc))
+(source (github art-w/sherlodoc))
 
 (authors "Arthur Wendling")
 
@@ -31,6 +30,7 @@
   (odoc (>= 2.4.0))
   (tyxml (>= 4.6.0))
   (brr (>= 0.0.6))
+  (ppx_blob (>= 0.7.2))
   (alcotest :with-test))
  (depopts
   (dream (>= 1.0.0~alpha5))

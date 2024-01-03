@@ -1,4 +1,11 @@
 (library
  (name www)
- (optional)
- (libraries cmdliner dream tyxml db db_store query))
+ (libraries cmdliner dream tyxml db db_store query)
+ (preprocess
+  (pps ppx_blob))
+ (preprocessor_deps
+  static/bg.jpg
+  static/favicon.ico
+  static/packages.csv
+  static/robots.txt
+  static/style.css))

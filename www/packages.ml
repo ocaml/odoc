@@ -105,37 +105,31 @@ let unescape str =
   done ;
   Buffer.contents buf
 
-let load filename =
-  let h = open_in filename in
-  let rec go acc =
-    match input_line h with
-    | exception End_of_file -> acc
-    | line ->
-      let package =
-        match String.split_on_char '\t' line with
-        | [ category; name; description ] ->
-          { category = pretty category; name; description = unescape description }
-        | [ name; description ] ->
-          { category = pretty ""; name; description = unescape description }
-        | _ -> failwith (Printf.sprintf "invalid package: %S" line)
-      in
-      let set =
-        try M.find package.category acc with
-        | Not_found -> S.empty
-      in
-      let set = S.add package set in
-      let acc = M.add package.category set acc in
-      go acc
+let parse_str str =
+  let parse_line acc line =
+    let package =
+      match String.split_on_char '\t' line with
+      | [ category; name; description ] ->
+        { category = pretty category; name; description = unescape description }
+      | [ name; description ] ->
+        { category = pretty ""; name; description = unescape description }
+      | _ -> failwith (Printf.sprintf "invalid package: %s" line)
+    in
+    let set =
+      try M.find package.category acc with
+      | Not_found -> S.empty
+    in
+    let set = S.add package set in
+    M.add package.category set acc
   in
-  let result = go M.empty in
-  close_in h ;
-  result
+  List.fold_left parse_line M.empty
+  @@ List.filter (( <> ) "")
+  @@ String.split_on_char '\n' str
+
+let packages () = parse_str [%blob "www/static/packages.csv"]
 
 let packages () =
-  List.fold_left
-    (fun acc p -> M.remove p acc)
-    (load "./static/packages.csv")
-    [ "Tezos"; "conf" ]
+  List.fold_left (fun acc p -> M.remove p acc) (packages ()) [ "Tezos"; "conf" ]
 
 open Tyxml.Html
 
