@@ -1,14 +1,14 @@
 module Entry = Entry
 module Storage = Storage
 module Suffix_tree = Suffix_tree
-module Occ = Occ
 module Type_polarity = Type_polarity
 module Typexpr = Typexpr
+module Occurences = Storage.Occurences
 
 type t = Storage.db =
   { db_names : Suffix_tree.With_elts.reader
-  ; db_pos_types : Suffix_tree.With_occ.reader
-  ; db_neg_types : Suffix_tree.With_occ.reader
+  ; db_pos_types : Suffix_tree.With_elts.reader Occurences.t
+  ; db_neg_types : Suffix_tree.With_elts.reader Occurences.t
   }
 (** The type of a search database.
 

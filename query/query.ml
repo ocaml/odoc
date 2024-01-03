@@ -2,8 +2,6 @@ module Parser = Query_parser
 module Dynamic_cost = Dynamic_cost
 module Storage = Db.Storage
 module Tree = Db.Suffix_tree.With_elts
-module Tree_occ = Db.Suffix_tree.With_occ
-module Occ = Db.Occ
 
 module Private = struct
   module Array_succ = Array_succ
@@ -15,15 +13,6 @@ module Private = struct
       Ok (Type_parser.main Type_lexer.token lexbuf)
   end
 end
-
-let collapse_occ ~count occs =
-  Occ.fold
-    (fun k x acc -> if k < count then acc else Succ.union (Succ.of_array x) acc)
-    occs
-    Succ.empty
-
-let collapse_trie_occ ~count t =
-  Succ.(Tree_occ.sets_tree ~union ~terminal:(collapse_occ ~count) ~union_of_array t)
 
 let collapse_trie t =
   Succ.(Tree.sets_tree ~union ~terminal:of_array_opt ~union_of_array t)
@@ -42,14 +31,22 @@ let find_types ~shards typ =
         Succ.inter_of_list
         @@ List.map
              (fun (name, count, polarity) ->
-               let db =
+               let st_occ =
                  match polarity with
                  | Db.Type_polarity.Sign.Pos -> shard.Db.db_pos_types
                  | Neg -> shard.Db.db_neg_types
                in
-               match Tree_occ.find db name with
-               | Some trie -> collapse_trie_occ ~count trie
-               | None -> Succ.empty)
+               Db.Occurences.fold
+                 (fun occurrences st acc ->
+                   if occurrences < count
+                   then acc
+                   else begin
+                     match Tree.find st name with
+                     | Some trie -> Succ.union acc (collapse_trie trie)
+                     | None -> acc
+                   end)
+                 st_occ
+                 Succ.empty)
              polarities
       in
       Succ.union acc r)

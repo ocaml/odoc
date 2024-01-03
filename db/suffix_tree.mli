@@ -46,7 +46,3 @@ end
 module With_elts : module type of Make (Entry.Array)
 (** [With_elts] is a suffix tree with array of entries at the leafs. It is used
     for the text-based part of the database. *)
-
-module With_occ : module type of Make (Occ)
-(** [With_occ] is a suffix tree with occurence annotated arrays of entries at
-    the leafs. It is used for the type-based part of the database. *)

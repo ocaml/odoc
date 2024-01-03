@@ -461,4 +461,3 @@ module Make (S : SET) = struct
 end
 
 module With_elts = Make (Entry.Array)
-module With_occ = Make (Occ)
