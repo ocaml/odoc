@@ -78,7 +78,7 @@ let cors_options =
     Dream.add_header response "Access-Control-Allow-Headers" "*" ;
     response)
 
-let main db_format db_filename cache_max_age =
+let main cache_max_age db_format db_filename =
   let module Storage = (val Db_store.storage_module db_format) in
   let shards = Storage.load db_filename in
   Dream.run ~interface:"127.0.0.1" ~port:1234
@@ -105,17 +105,8 @@ let main db_format db_filename cache_max_age =
 
 open Cmdliner
 
-let db_format =
-  let doc = "Database format" in
-  let kind = Arg.enum Db_store.available_backends in
-  Arg.(required & opt (some kind) None & info [ "format" ] ~docv:"DB_FORMAT" ~doc)
-
-let db_path =
-  let doc = "Database filename" in
-  Arg.(required & pos 0 (some file) None & info [] ~docv:"DB" ~doc)
-
 let cache_max_age =
   let doc = "HTTP cache max age (in seconds)" in
   Arg.(value & opt (some int) None & info [ "c"; "cache" ] ~docv:"MAX_AGE" ~doc)
 
-let term = Term.(const main $ db_format $ db_path $ cache_max_age)
+let term = Term.(const main $ cache_max_age)

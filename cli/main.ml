@@ -1,8 +1,3 @@
-(** This executable allows to search in a sherlodoc database on the commandline.
-    It is mainly used for testing, but should work as is as a commandline tool. *)
-
-let pp_or cond pp_true pp_false ppf = if cond then pp_true ppf else pp_false ppf
-
 let string_of_kind =
   let open Db.Entry.Kind in
   function
@@ -55,20 +50,11 @@ let rec search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db =
   | None -> print_endline "[Search session ended]"
 
 let main db_format db query print_cost no_rhs static_sort limit pretty_query =
-  match db with
-  | None ->
-    output_string
-      stderr
-      "No database provided. Provide one by exporting the SHERLODOC_DB variable, or \
-       using the --db option\n" ;
-    exit 1
-  | Some db ->
-    let module Storage = (val Db_store.storage_module db_format) in
-    let db = Storage.load db in
-    (match query with
-     | None -> search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
-     | Some query ->
-       search ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db query)
+  let module Storage = (val Db_store.storage_module db_format) in
+  let db = Storage.load db in
+  match query with
+  | None -> search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
+  | Some query -> search ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db query
 
 open Cmdliner
 
@@ -85,7 +71,7 @@ let db_filename =
     let doc = "The database to query" in
     Cmd.Env.info "SHERLODOC_DB" ~doc
   in
-  Arg.(value & opt (some file) None & info [ "db" ] ~docv:"DB" ~env)
+  Arg.(required & opt (some file) None & info [ "db" ] ~docv:"DB" ~env)
 
 let limit =
   let doc = "The maximum number of results per query" in
@@ -139,7 +125,7 @@ let cmd_index =
 let cmd_serve =
   let doc = "Webserver interface" in
   let info = Cmd.info "serve" ~doc in
-  Cmd.v info Serve.term
+  Cmd.v info Term.(Serve.term $ db_format $ db_filename)
 
 let cmd =
   let doc = "Sherlodoc" in
