@@ -192,31 +192,6 @@
   733 val Base.Applicative.Make_using_map2.Applicative_infix.(<*>) : ('a -> 'b) X.t -> 'a X.t -> 'b X.t
   776 val Base.Applicative.Make_using_map2_local.Applicative_infix.(<*>) : ('a -> 'b) X.t -> 'a X.t -> 'b X.t
   857 val Base.Option.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  864 val Base.List.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t Or_unequal_lengths.t
-  871 val Base.Or_error.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  917 val Base.Either.First.map2 : ('a, 'e) t -> ('b, 'e) t -> f:('a -> 'b -> 'c) -> ('c, 'e) t
-  924 val Base.Either.Second.map2 : ('a, 'e) t -> ('b, 'e) t -> f:('a -> 'b -> 'c) -> ('c, 'e) t
-  927 val Base.Applicative.Pair.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  933 val Base.Applicative.Make.map2 : 'a X.t -> 'b X.t -> f:('a -> 'b -> 'c) -> 'c X.t
-  941 val Base.Applicative.Pair.F.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  941 val Base.Applicative.Pair.G.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  948 val Base.Applicative.Compose.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  948 val Base.Applicative.S2_to_S.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  948 val Base.Applicative.S3_to_S.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  975 val Base.List.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  982 val Base.Array.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  995 val Base.List.rev_map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t Or_unequal_lengths.t
-  1056 type 'a Base.Applicative.Make_using_map2.X.t
-  1063 type ('a, 'e) Base.Applicative.Make2_using_map2.X.t
-  1063 type ('a, 'd, 'e) Base.Applicative.Make3_using_map2.X.t
-  1306 val Base.Applicative.S.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  1331 val Base.Applicative.S2.map2 : ('a, 'e) t -> ('b, 'e) t -> f:('a -> 'b -> 'c) -> ('c, 'e) t
-  1331 val Base.Either.Focused.map2 : ('a, 'e) t -> ('b, 'e) t -> f:('a -> 'b -> 'c) -> ('c, 'e) t
-  1343 val Base.Applicative.S3.map2 : ('a, 'd, 'e) t -> ('b, 'd, 'e) t -> f:('a -> 'b -> 'c) -> ('c, 'd, 'e) t
-  1348 val Base.Applicative.S_local.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
-  1449 type 'a Base.Applicative.Basic_using_map2.t
-  1456 type ('a, 'e) Base.Applicative.Basic2_using_map2.t
-  1456 type ('a, 'd, 'e) Base.Applicative.Basic3_using_map2.t
   $ sherlodoc search --print-cost --no-rhs --static-sort "List map2"
   277 val Base.List.rev_map2_exn
   650 val Base.List.map2
@@ -250,33 +225,8 @@
   438 val Base.List.(>>|) : 'a t -> ('a -> 'b) -> 'b t
   438 val Base.Set.to_list : ('a, _) t -> 'a list
   439 val Base.List.append : 'a t -> 'a t -> 'a t
-  440 val Base.List.find : 'a t -> f:('a -> bool) -> 'a option
-  440 val Base.List.mapi : 'a t -> f:(int -> 'a -> 'b) -> 'b t
   440 val Base.List.(>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  441 val Base.List.count : 'a t -> f:('a -> bool) -> int
-  443 val Base.List.nth_exn : 'a t -> int -> 'a
-  444 val Base.List.mem : 'a t -> 'a -> equal:('a -> 'a -> bool) -> bool
   444 mod Base.List.Let_syntax
-  446 val Base.List.sort : 'a t -> compare:('a -> 'a -> int) -> 'a t
-  446 val Base.Bytes.to_list : t -> char list
-  447 val Base.List.ignore_m : 'a t -> unit t
-  447 val Base.Queue.of_list : 'a list -> 'a t
-  447 val Base.Stack.of_list : 'a list -> 'a t
-  449 val Base.List.exists : 'a t -> f:('a -> bool) -> bool
-  449 val Base.List.filter : 'a t -> f:('a -> bool) -> 'a t
-  451 mod Base.List.Monad_infix
-  452 val Base.List.split_n : 'a t -> int -> 'a t * 'a t
-  454 val Base.List.group : 'a t -> break:('a -> 'a -> bool) -> 'a t t
-  454 val Base.List.rev_map : 'a t -> f:('a -> 'b) -> 'b t
-  454 val Base.List.all_unit : unit t list -> unit t
-  456 val Base.List.fold : 'a t -> init:'acc -> f:('acc -> 'a -> 'acc) -> 'acc
-  456 val Base.Info.of_list : ?trunc_after:int -> t list -> t
-  456 val Base.List.for_all : 'a t -> f:('a -> bool) -> bool
-  459 val Base.List.drop_last : 'a t -> 'a t option
-  461 val Base.List.find_exn : 'a t -> f:('a -> bool) -> 'a
-  463 val Base.List.transpose : 'a t t -> 'a t t option
-  861 val Base.Queue.S.of_list : 'a list -> 'a t
-  861 val Base.Stack.S.of_list : 'a list -> 'a t
   $ sherlodoc search --print-cost ": list"
   320 val Base.Map.data : (_, 'v, _) t -> 'v list
   320 val Base.Map.keys : ('k, _, _) t -> 'k list
@@ -301,34 +251,5 @@
   403 val Base.Hashtbl.find_multi : ('a, 'b list) t -> 'a key -> 'b list
   404 val Base.Sequence.chunks_exn : 'a t -> int -> 'a list t
   410 val Base.Map.add_multi : ('k, 'v list, 'cmp) t -> key:'k -> data:'v -> ('k, 'v list, 'cmp) t
-  412 val Base.List.find_all_dups : 'a t -> compare:('a -> 'a -> int) -> 'a list
-  414 val Base.String.split_on_chars : t -> on:char list -> t list
-  415 val Base.Map.remove_multi : ('k, 'v list, 'cmp) t -> 'k -> ('k, 'v list, 'cmp) t
-  420 val Base.Hashtbl.Poly.to_alist : ('a, 'b) t -> ('a key * 'b) list
-  424 val Base.List.Assoc.group : ('a * 'b) list -> equal:('a -> 'a -> bool) -> ('a, 'b list) t
-  424 val Base.Map.range_to_alist : ('k, 'v, 'cmp) t -> min:'k -> max:'k -> ('k * 'v) list
-  429 val Base.Or_error.combine_errors : 'a t list -> 'a list t
-  437 val Base.Set.stable_dedup_list : ('a, _) Comparator.Module.t -> 'a list -> 'a list
-  438 val Base.Hashtbl.Poly.find_multi : ('a, 'b list) t -> 'a key -> 'b list
-  440 val Base.Result.combine_errors : ('ok, 'err) t list -> ('ok list, 'err list) t
-  440 val Base.String.Escaping.split : string -> on:char -> escape_char:char -> string list
-  450 val Base.Map.of_alist_multi : ('a, 'cmp) Comparator.Module.t -> ('a * 'b) list -> ('a, 'b list, 'cmp) t
-  472 val Base.Result.combine_errors_unit : (unit, 'err) t list -> (unit, 'err list) t
-  476 val Base.String.Search_pattern.split_on : t -> string -> string list
-  477 val Base.Map.of_sequence_multi : ('a, 'cmp) Comparator.Module.t -> ('a * 'b) Sequence.t -> ('a, 'b list, 'cmp) t
-  485 val Base.Or_error.filter_ok_at_least_one : 'a t list -> 'a list t
-  488 val Base.List.Assoc.sort_and_group : ('a * 'b) list -> compare:('a -> 'a -> int) -> ('a, 'b list) t
-  495 val Base.Hashtbl.of_alist_multi : ?growth_allowed:bool ->
-    ?size:int ->
-    'a Key.t ->
-    ('a * 'b) list ->
-    ('a, 'b list) t
   793 val Base.Hashtbl.S_poly.data : (_, 'b) t -> 'b list
   797 val Base.Hashtbl.S_poly.keys : ('a, _) t -> 'a key list
-  814 val Base.Hashtbl.Accessors.data : (_, 'b) t -> 'b list
-  818 val Base.Hashtbl.Accessors.keys : ('a, _) t -> 'a key list
-  834 val Base.Hashtbl.S_poly.to_alist : ('a, 'b) t -> ('a key * 'b) list
-  845 val Base.Hashtbl.Multi.find_multi : ('a, 'b list) t -> 'a key -> 'b list
-  852 val Base.Hashtbl.S_poly.find_multi : ('a, 'b list) t -> 'a key -> 'b list
-  855 val Base.Hashtbl.Accessors.to_alist : ('a, 'b) t -> ('a key * 'b) list
-  891 val Base.Hashtbl.S_without_submodules.data : (_, 'b) t -> 'b list
