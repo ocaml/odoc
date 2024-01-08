@@ -175,9 +175,9 @@ installed and might be used by a different driver.
 In order for drivers to build consistent documentation for a package, the
 following convention should be followed.
 
-- [.mld] pages are installed in a package's [share] directory, under the
+- [.mld] pages and assets are installed in a package's [share] directory, under the
   [odoc-pages] sub-directory.
-- A page is the parent of every installed pages. The driver can freely name this
+- A page is the parent of every installed pages and assets. The driver can freely name this
   page, for example it can be named after the package. In what follows, we
   refer to this page as the [pkg] page.
 - If there is an installed [index.mld] file, the driver has to use it as
@@ -185,7 +185,7 @@ following convention should be followed.
 - If there is no installed [index.mld] page, the driver has to generate some
   content for the [pkg] page.
 
-This convention is followed by the
+This convention (excluding assets) is followed by the
 {{:https://github.com/ocaml-doc/voodoo}driver for ocaml.org},
 by the driver {{:https://erratique.ch/software/odig/doc/packaging.html}Odig}
 and by the build system {{:https://github.com/ocaml/dune}Dune}.
