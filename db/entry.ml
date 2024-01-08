@@ -53,14 +53,19 @@ module T = struct
     ; is_from_module_type : bool
     }
 
+  let string_compare_shorter a b =
+    match Int.compare (String.length a) (String.length b) with
+    | 0 -> String.compare a b
+    | c -> c
+
   let structural_compare a b =
-    match Int.compare (String.length a.name) (String.length b.name) with
+    match string_compare_shorter a.name b.name with
     | 0 -> begin
-      match String.compare a.name b.name with
+      match Package.compare a.pkg b.pkg with
       | 0 -> begin
-        match Package.compare a.pkg b.pkg with
+        match Stdlib.compare a.kind b.kind with
         | 0 -> begin
-          match Stdlib.compare a.kind b.kind with
+          match string_compare_shorter a.doc_html b.doc_html with
           | 0 -> String.compare a.url b.url
           | c -> c
         end
@@ -98,12 +103,17 @@ module Array = struct
 
   let empty = None
 
+  let minimum = function
+    | None -> None
+    | Some arr -> Some arr.(0)
+
   let of_list arr =
     let arr = Array.of_list arr in
     Array.sort compare arr ;
     if Array.length arr = 0 then empty else Some arr
 
-  let equal_elt = equal
+  let equal_elt = T.equal
+  let compare_elt = T.compare
 end
 
 let link t =

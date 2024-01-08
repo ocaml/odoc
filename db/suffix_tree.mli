@@ -1,16 +1,12 @@
-(** The suffix tree datastructure. This datastructure allows to efficiently
-    search for strings suffixes.
-
-    You need to provide a datastructure for the sets of elements at the leafs of the
-    tree. *)
-
 module type SET = sig
   type t
   type elt
 
   val of_list : elt list -> t
   val is_empty : t -> bool
+  val minimum : t -> elt option
   val equal_elt : elt -> elt -> bool
+  val compare_elt : elt -> elt -> int
 end
 
 module Buf : sig

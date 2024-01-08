@@ -4,7 +4,9 @@ module type SET = sig
 
   val of_list : elt list -> t
   val is_empty : t -> bool
+  val minimum : t -> elt option
   val equal_elt : elt -> elt -> bool
+  val compare_elt : elt -> elt -> int
 end
 
 module Doc = struct
@@ -429,23 +431,39 @@ module Make (S : SET) = struct
       let children =
         Char_map.bindings @@ Char_map.map (export ~cache ~cache_term) node.children
       in
-      let children_uids = List.map (fun (chr, (uid, _)) -> chr, uid) children in
+      let children =
+        List.sort
+          (fun (a_chr, (_, _, a)) (b_chr, (_, _, b)) ->
+            match S.compare_elt a b with
+            | 0 -> Char.compare a_chr b_chr
+            | c -> c)
+          children
+      in
+      let min_terminal = S.minimum terminals in
+      let min_child =
+        match min_terminal, children with
+        | Some a, (_, (_, _, b)) :: _ -> if S.compare_elt a b <= 0 then a else b
+        | Some a, [] -> a
+        | None, (_, (_, _, b)) :: _ -> b
+        | None, [] -> assert false
+      in
+      let children_uids = List.map (fun (chr, (uid, _, _)) -> chr, uid) children in
       let key = node.start, node.len, terminals_uid, children_uids in
       try Hashtbl.find cache key with
       | Not_found ->
         let children =
-          Array.of_list @@ List.map (fun (_, (_, child)) -> child) children
+          Array.of_list @@ List.map (fun (_, (_, child, _)) -> child) children
         in
         let children = if Array.length children = 0 then None else Some children in
         let node = { T.start = node.start; len = node.len; terminals; children } in
-        let result = Uid.make (), node in
+        let result = Uid.make (), node, min_child in
         Hashtbl.add cache key result ;
         result
 
     let clear ~str t =
       let cache = Hashtbl.create 16 in
       let cache_term = Terminals.Hashtbl.create 16 in
-      let _, t = export ~cache ~cache_term t in
+      let _, t, _ = export ~cache ~cache_term t in
       { T.str; t }
   end
 

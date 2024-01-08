@@ -61,8 +61,9 @@ module Array : sig
   type elt = t
   type t = elt array option
 
-  val empty : t
-  val is_empty : t -> bool
   val of_list : elt list -> t
+  val is_empty : t -> bool
+  val minimum : t -> elt option
   val equal_elt : elt -> elt -> bool
+  val compare_elt : elt -> elt -> int
 end
