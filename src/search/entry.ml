@@ -145,6 +145,8 @@ and entries_of_doc id d =
   | `Verbatim _ -> [ entry ~id ~doc:[ d ] ~kind:(Doc Verbatim) ]
   | `Math_block _ -> [ entry ~id ~doc:[ d ] ~kind:(Doc MathBlock) ]
   | `Table _ -> []
+  | `Media (_, _, content) ->
+      entries_of_doc id { d with value = `Paragraph content }
 
 let entries_of_item id (x : Odoc_model.Fold.item) =
   match x with
