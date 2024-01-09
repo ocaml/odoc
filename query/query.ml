@@ -14,9 +14,6 @@ module Private = struct
   end
 end
 
-let collapse_trie t =
-  Succ.(Tree.sets_tree ~union ~terminal:of_array_opt ~union_of_array t)
-
 let polarities typ =
   List.of_seq
   @@ Seq.filter
@@ -42,7 +39,7 @@ let find_types ~shards typ =
                    then acc
                    else begin
                      match Tree.find st name with
-                     | Some trie -> Succ.union acc (collapse_trie trie)
+                     | Some trie -> Succ.union acc (Succ.of_automata trie)
                      | None -> acc
                    end)
                  st_occ
@@ -62,7 +59,7 @@ let find_names ~(shards : Db.t list) names =
         List.map
           (fun name ->
             match Tree.find db_names name with
-            | Some trie -> collapse_trie trie
+            | Some trie -> Succ.of_automata trie
             | None -> Succ.empty)
           names
       in
@@ -98,7 +95,7 @@ let match_packages ~packages results =
 let search ~(shards : Db.t list) ?(dynamic_sort = true) params =
   let words, typ = Parser.of_string params.query in
   let results = search ~shards words typ in
-  let results = Succ.to_seq ~compare:Db.Entry.compare results in
+  let results = Succ.to_seq results in
   let results = match_packages ~packages:params.packages results in
   let results = List.of_seq @@ Seq.take params.limit results in
   let results =

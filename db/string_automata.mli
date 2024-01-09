@@ -14,10 +14,4 @@ type t =
   }
 
 val find : t -> string -> t option
-
-val sets_tree
-  :  union:('a -> 'a -> 'a)
-  -> terminal:(Entry.Array.t -> 'a)
-  -> union_of_array:('a array -> 'a)
-  -> t
-  -> 'a
+val minimum : t -> Entry.t

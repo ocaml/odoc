@@ -1,114 +1,100 @@
-type 'a node =
+module Entry = Db.Entry
+
+type node =
   | Empty
-  | Array of 'a array
-  | Inter of 'a node * 'a node
-  | Union of 'a node * 'a node
+  | Pq of Priority_queue.t
+  | Inter of node * node
+  | Union of node * node
 
-let rec print_node a ~depth s =
-  print_string (String.make (depth * 4) ' ') ;
-  let depth = depth + 1 in
-  match s with
-  | Empty -> print_endline "Empty"
-  | Inter (l, r) ->
-    print_endline "Inter" ;
-    print_node a ~depth l ;
-    print_node a ~depth r
-  | Union (l, r) ->
-    print_endline "Union" ;
-    print_node a ~depth l ;
-    print_node a ~depth r
-  | Array arr ->
-    print_string "{ " ;
-    Array.iter
-      (fun elt ->
-        a elt ;
-        print_string " ")
-      arr ;
-    print_endline "}"
+let best x y = if Entry.compare x y <= 0 then x else y
 
-let print_node a s = print_node a ~depth:0 s
-
-let best ~compare x y =
-  match compare x y with
-  | 0 -> x
-  | c when c < 0 -> x
-  | _ -> y
-
-let best_opt ~compare old_cand new_cand =
+let best_opt old_cand new_cand =
   match old_cand, new_cand with
   | None, None -> None
   | None, Some z | Some z, None -> Some z
-  | Some x, Some y -> Some (best ~compare x y)
-
-let ( let* ) = Option.bind
+  | Some x, Some y -> Some (best x y)
 
 type strictness =
   | Gt
   | Ge
 
-let array_succ ~strictness =
-  match strictness with
-  | Ge -> Array_succ.succ_ge
-  | Gt -> Array_succ.succ_gt
-
-let rec succ ~compare ~strictness t elt =
+let rec succ ~strictness t elt =
   match t with
-  | Empty -> None
-  | Array arr -> array_succ ~strictness ~compare elt arr
-  | Union (l, r) ->
-    let elt_r = succ ~compare ~strictness r elt in
-    let elt_l = succ ~compare ~strictness l elt in
-    best_opt ~compare elt_l elt_r
-  | Inter (l, r) ->
-    let rec loop elt_r =
-      let* elt_l = succ ~compare ~strictness:Ge l elt_r in
-      let* elt_r = succ ~compare ~strictness:Ge r elt_l in
-      if compare elt_l elt_r = 0 then Some elt_l else loop elt_r
+  | Empty -> None, t
+  | Pq pqueue ->
+    let pqueue =
+      match strictness with
+      | Gt -> Priority_queue.pop_lte elt pqueue
+      | Ge -> Priority_queue.pop_lt elt pqueue
     in
-    let* elt_l = succ ~compare ~strictness l elt in
-    loop elt_l
+    begin
+      match Priority_queue.minimum pqueue with
+      | None -> ()
+      | Some e -> assert (Entry.compare elt e <= 0)
+    end ;
+    Priority_queue.minimum pqueue, Pq pqueue
+  | Union (l, r) ->
+    let elt_l, l = succ ~strictness l elt in
+    let elt_r, r = succ ~strictness r elt in
+    best_opt elt_l elt_r, Union (l, r)
+  | Inter (l, r) ->
+    let rec loop elt l r =
+      match succ ~strictness:Ge l elt with
+      | None, _ -> None, Empty
+      | Some elt_l, l -> begin
+        match succ ~strictness:Ge r elt_l with
+        | None, _ -> None, Empty
+        | Some elt_r, r ->
+          assert (Entry.compare elt_l elt_r <= 0) ;
+          if Entry.compare elt_l elt_r = 0
+          then Some elt_l, Inter (l, r)
+          else loop elt_r l r
+      end
+    in
+    begin
+      match succ ~strictness l elt with
+      | None, _ -> None, Empty
+      | Some elt, l -> loop elt l r
+    end
 
-let rec first ~compare t =
+let rec first t =
   match t with
-  | Empty -> None
-  | Array s -> Some s.(0)
-  | Inter (l, _) ->
-    let* elt = first ~compare l in
-    succ ~strictness:Ge ~compare t elt
-  | Union (l, r) -> begin
-    let elt_l = first ~compare l in
-    let elt_r = first ~compare r in
-    best_opt ~compare elt_l elt_r
+  | Empty -> None, Empty
+  | Pq pqueue -> Priority_queue.minimum pqueue, t
+  | Inter (l, r) -> begin
+    match first l with
+    | None, _ -> None, Empty
+    | Some elt, l -> succ ~strictness:Ge (Inter (l, r)) elt
   end
+  | Union (l, r) ->
+    let elt_l, l = first l in
+    let elt_r, r = first r in
+    best_opt elt_l elt_r, Union (l, r)
 
-type 'a t =
+type t =
   { cardinal : int
-  ; s : 'a node
+  ; s : node
   }
 
-let to_seq ~compare { s; _ } =
+let to_seq { s; _ } =
   let state = ref None in
   let loop () =
-    let elt =
+    let elt, s =
       match !state with
-      | None -> first ~compare s
-      | Some previous_elt -> succ ~strictness:Gt ~compare s previous_elt
+      | None -> first s
+      | Some (previous_elt, s) -> succ ~strictness:Gt s previous_elt
     in
-    state := elt ;
-    elt
+    match elt with
+    | None -> None
+    | Some elt ->
+      state := Some (elt, s) ;
+      Some elt
   in
   Seq.of_dispenser loop
 
 (** Functions to build a succ tree *)
 
 let empty = { cardinal = 0; s = Empty }
-
-let of_array arr =
-  if Array.length arr = 0 then empty else { cardinal = Array.length arr; s = Array arr }
-
-let of_array_opt = function
-  | None -> empty
-  | Some arr -> of_array arr
 
 let inter a b =
   match a.s, b.s with
@@ -127,24 +113,11 @@ let union a b =
     let x, y = if a.cardinal < b.cardinal then x, y else y, x in
     { cardinal = a.cardinal + b.cardinal; s = Union (x, y) }
 
-(** This does a dychotomy to avoid building a comb, which would have poor
-    performance. *)
-let union_of_array arr =
-  let rec loop lo hi =
-    match hi - lo with
-    | 0 -> empty
-    | 1 -> arr.(lo)
-    | dist ->
-      let mid = lo + (dist / 2) in
-      let left = loop lo mid in
-      let right = loop mid hi in
-      union left right
-  in
-  loop 0 (Array.length arr)
-
-let union_of_list li = li |> Array.of_list |> union_of_array
-let print a { s; _ } = print_node a s
-
 let inter_of_list = function
   | [] -> empty
   | elt :: li -> List.fold_left inter elt li
+
+let of_automata t = { s = Pq (Priority_queue.of_automata t); cardinal = 1 }
+
+let of_array arr =
+  { s = Pq (Priority_queue.of_sorted_array (Some arr)); cardinal = Array.length arr }

@@ -14,9 +14,10 @@ let array_find ~str chr arr =
   let rec go i =
     if i >= Array.length arr
     then raise Not_found
-    else (
+    else begin
       let node = arr.(i) in
-      if chr = str.[node.start - 1] then node else go (i + 1))
+      if chr = str.[node.start - 1] then node else go (i + 1)
+    end
   in
   go 0
 
@@ -60,14 +61,26 @@ let find t pattern =
   try Some (find t pattern) with
   | Not_found -> None
 
-let rec sets_tree ~union ~terminal ~union_of_array t =
-  let ts = terminal t.terminals in
-  let cs =
-    match t.children with
-    | None -> [||]
-    | Some children -> Array.map (sets_tree ~union ~terminal ~union_of_array) children
-  in
-  union ts (union_of_array cs)
+let min_opt a b =
+  match a, b with
+  | Some x, Some y -> Some (if Entry.compare x y <= 0 then x else y)
+  | Some x, None | None, Some x -> Some x
+  | None, None -> None
 
-let sets_tree ~union ~terminal ~union_of_array t =
-  sets_tree ~union ~terminal ~union_of_array t.t
+let rec minimum t =
+  let min_terminal =
+    match t.terminals with
+    | None -> None
+    | Some arr -> Some arr.(0)
+  in
+  let min_child =
+    match t.children with
+    | None -> None
+    | Some children -> minimum children.(0)
+  in
+  min_opt min_terminal min_child
+
+let minimum { t; _ } =
+  match minimum t with
+  | None -> assert false
+  | Some elt -> elt
