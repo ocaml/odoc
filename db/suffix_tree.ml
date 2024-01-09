@@ -1,14 +1,3 @@
-module type SET = sig
-  type t
-  type elt
-
-  val of_list : elt list -> t
-  val is_empty : t -> bool
-  val minimum : t -> elt option
-  val equal_elt : elt -> elt -> bool
-  val compare_elt : elt -> elt -> int
-end
-
 module Doc = struct
   type 'a t =
     { uid : 'a
@@ -26,8 +15,7 @@ module Doc = struct
 end
 
 module Buf = struct
-  (** This module allows to construct a big string such that if you add the same
-      string twice, the second addition is not performed. *)
+  (* Cache small strings as slices in one bigstring. *)
 
   module String_hashtbl = Hashtbl.Make (struct
       type t = string
@@ -73,409 +61,296 @@ module Buf = struct
       start
 end
 
-module Make (S : SET) = struct
-  (** Terminals is the temporary storage for the payload of the leafs. It is
-      converted into [S.t] after the suffix tree is built. *)
-  module Terminals = struct
-    type t = S.elt list
+module Terminals = struct
+  type t = Entry.t list
 
-    let empty = []
-    let singleton x = [ x ]
+  let empty = []
+  let singleton x = [ x ]
 
-    let add ~hint x xs =
-      match hint with
-      | Some (prev_xs, xxs) when prev_xs == xs -> xxs
-      | _ -> x :: xs
+  let add ~hint x xs =
+    match hint with
+    | Some (prev_xs, xxs) when prev_xs == xs -> xxs
+    | _ -> x :: xs
 
-    let hash = Hashtbl.hash
-    let equal = List.equal S.equal_elt
+  let hash = Hashtbl.hash
+  let equal = List.equal Entry.equal
 
-    let mem (x : S.elt) = function
-      | y :: _ -> S.equal_elt x y
-      | _ -> false
+  let mem x = function
+    | y :: _ -> Entry.equal x y
+    | _ -> false
+end
 
-    module Hashtbl = Hashtbl.Make (struct
-        type nonrec t = t
+module Char_map = Map.Make (Char)
 
-        let hash = hash
-        let equal = equal
-      end)
-  end
+type node =
+  { mutable start : int
+  ; mutable len : int
+  ; mutable suffix_link : node option
+  ; mutable terminals : Terminals.t
+  ; mutable children : node Char_map.t
+  }
 
-  module Char_map = Map.Make (Char)
+type t =
+  { buffer : Buf.t
+  ; root : node
+  }
 
-  type node =
-    { mutable start : int
-    ; mutable len : int
-    ; mutable suffix_link : node option
-    ; mutable terminals : Terminals.t
-    ; mutable children : node Char_map.t
-    }
+let make_root () =
+  { start = 0
+  ; len = 0
+  ; suffix_link = None
+  ; terminals = Terminals.empty
+  ; children = Char_map.empty
+  }
 
-  type writer =
-    { buffer : Buf.t
-    ; root : node
-    }
+let make buffer = { root = make_root (); buffer }
 
-  let make_root () =
-    { start = 0
-    ; len = 0
-    ; suffix_link = None
-    ; terminals = Terminals.empty
-    ; children = Char_map.empty
-    }
-
-  let make buffer = { root = make_root (); buffer }
-
-  let split_at ~str node len =
-    let split_chr = Buf.get str (node.start + len) in
-    let new_node =
-      { start = node.start
-      ; len
-      ; suffix_link = None
-      ; terminals = Terminals.empty
-      ; children = Char_map.singleton split_chr node
-      }
-    in
-    node.start <- node.start + len + 1 ;
-    node.len <- node.len - 1 - len ;
-    new_node
-
-  let lcp i_str i j_str j j_len =
-    let j_stop = j + j_len in
-    let rec go_lcp i j =
-      if i >= String.length i_str || j >= j_stop
-      then i
-      else (
-        let i_chr, j_chr = i_str.[i], Buf.get j_str j in
-        if i_chr <> j_chr then i else go_lcp (i + 1) (j + 1))
-    in
-    let i' = go_lcp i j in
-    i' - i
-
-  let make_leaf ~prev_leaf ~buffer ~doc str_start =
-    let start =
-      match prev_leaf with
-      | None ->
-        let substr = Doc.sub doc (str_start - 1) in
-        let start = Buf.add buffer substr in
-        start + 1
-      | Some (prev_leaf, _depth, _) ->
-        let doc_len = Doc.length doc in
-        prev_leaf.start + prev_leaf.len - (doc_len - str_start) + 1
-    in
-    let len = Doc.length doc - str_start - 1 in
-    assert (start > 0) ;
-    { start
+let split_at ~str node len =
+  let split_chr = Buf.get str (node.start + len) in
+  let new_node =
+    { start = node.start
     ; len
     ; suffix_link = None
-    ; terminals = Terminals.singleton doc.Doc.uid
-    ; children = Char_map.empty
+    ; terminals = Terminals.empty
+    ; children = Char_map.singleton split_chr node
     }
+  in
+  node.start <- node.start + len + 1 ;
+  node.len <- node.len - 1 - len ;
+  new_node
 
-  let set_suffix_link ~prev ~depth node =
-    match prev with
-    | Some (prev, prev_depth) when depth = prev_depth ->
+let lcp i_str i j_str j j_len =
+  let j_stop = j + j_len in
+  let rec go_lcp i j =
+    if i >= String.length i_str || j >= j_stop
+    then i
+    else (
+      let i_chr, j_chr = i_str.[i], Buf.get j_str j in
+      if i_chr <> j_chr then i else go_lcp (i + 1) (j + 1))
+  in
+  let i' = go_lcp i j in
+  i' - i
+
+let make_leaf ~prev_leaf ~buffer ~doc str_start =
+  let start =
+    match prev_leaf with
+    | None ->
+      let substr = Doc.sub doc (str_start - 1) in
+      let start = Buf.add buffer substr in
+      start + 1
+    | Some (prev_leaf, _depth, _) ->
+      let doc_len = Doc.length doc in
+      prev_leaf.start + prev_leaf.len - (doc_len - str_start) + 1
+  in
+  let len = Doc.length doc - str_start - 1 in
+  assert (start > 0) ;
+  { start
+  ; len
+  ; suffix_link = None
+  ; terminals = Terminals.singleton doc.Doc.uid
+  ; children = Char_map.empty
+  }
+
+let set_suffix_link ~prev ~depth node =
+  match prev with
+  | Some (prev, prev_depth) when depth = prev_depth ->
+    begin
+      match prev.suffix_link with
+      | None -> prev.suffix_link <- Some node
+      | Some node' -> assert (node == node')
+    end ;
+    None
+  | _ -> prev
+
+let add_document trie doc =
+  let root = trie.root in
+  let set_leaf ?debug:_ ~prev_leaf ~depth node =
+    if node == root
+    then None
+    else begin
       begin
-        match prev.suffix_link with
-        | None -> prev.suffix_link <- Some node
-        | Some node' -> assert (node == node')
-      end ;
-      None
-    | _ -> prev
-
-  let add_document trie doc =
-    let root = trie.root in
-    let set_leaf ?debug:_ ~prev_leaf ~depth node =
-      if node == root
-      then None
-      else begin
-        begin
-          match prev_leaf with
-          | None -> ()
-          | Some (prev_leaf, prev_depth, _) ->
-            assert (prev_depth = depth) ;
-            begin
-              match prev_leaf.suffix_link with
-              | None -> prev_leaf.suffix_link <- Some node
-              | Some node' -> assert (node' == node)
-            end
-        end ;
-        Some (node, depth - 1)
-      end
-    in
-    let rec go ~prev ~prev_leaf ~depth node i =
-      let prev = set_suffix_link ~prev ~depth node in
-      if i >= Doc.length doc
-      then assert (depth = 0)
-      else (
-        let chr = Doc.get doc i in
-        let i, depth = i + 1, depth + 1 in
-        match chr with
-        | Terminal doc_uid ->
-          if not (Terminals.mem doc_uid node.terminals)
-          then begin
-            let hint =
-              Option.map
-                (fun (t, _, prev_terminals) -> prev_terminals, t.terminals)
-                prev_leaf
-            in
-            let prev_terminals = node.terminals in
-            node.terminals <- Terminals.add ~hint doc_uid node.terminals ;
-            let prev_leaf =
-              match set_leaf ~debug:"0" ~prev_leaf ~depth node with
-              | None -> None
-              | Some (t, depth) -> Some (t, depth, prev_terminals)
-            in
-            follow_suffix ~prev ~prev_leaf ~parent:node ~depth ~i
+        match prev_leaf with
+        | None -> ()
+        | Some (prev_leaf, prev_depth, _) ->
+          assert (prev_depth = depth) ;
+          begin
+            match prev_leaf.suffix_link with
+            | None -> prev_leaf.suffix_link <- Some node
+            | Some node' -> assert (node' == node)
           end
-        | Char chr -> begin
-          match Char_map.find chr node.children with
-          | child ->
-            assert (depth >= 0) ;
-            assert (i - depth >= 0) ;
-            assert (i < Doc.length doc) ;
-            let len = lcp doc.Doc.text i trie.buffer child.start child.len in
-            let i, depth = i + len, depth + len in
-            assert (i < Doc.length doc) ;
-            if len = child.len
-            then
-              if not (Char_map.is_empty child.children)
-              then go ~prev ~prev_leaf ~depth child i
-              else add_leaf ~prev_leaf ~node ~child ~depth ~i ~len
-            else begin
-              let new_child = split_at ~str:trie.buffer child len in
-              node.children <- Char_map.add chr new_child node.children ;
-              let prev = set_suffix_link ~prev ~depth new_child in
-              assert (prev = None) ;
-              add_leaf ~prev_leaf ~node ~child:new_child ~depth ~i ~len
-            end
-          | exception Not_found ->
-            let new_leaf = make_leaf ~prev_leaf ~buffer:trie.buffer ~doc i in
-            node.children <- Char_map.add chr new_leaf node.children ;
-            let prev_leaf =
-              set_leaf ~debug:"1" ~prev_leaf ~depth:(depth + Doc.length doc - i) new_leaf
-            in
-            let prev_leaf =
-              match prev_leaf with
-              | None -> None
-              | Some (t, depth) -> Some (t, depth, Terminals.empty)
-            in
-            follow_suffix ~prev ~prev_leaf ~parent:node ~depth ~i
-        end)
-    and add_leaf ~prev_leaf ~node ~child ~depth ~i ~len =
-      match Doc.get doc i with
+      end ;
+      Some (node, depth - 1)
+    end
+  in
+  let rec go ~prev ~prev_leaf ~depth node i =
+    let prev = set_suffix_link ~prev ~depth node in
+    if i >= Doc.length doc
+    then assert (depth = 0)
+    else (
+      let chr = Doc.get doc i in
+      let i, depth = i + 1, depth + 1 in
+      match chr with
       | Terminal doc_uid ->
-        if not (Terminals.mem doc_uid child.terminals)
+        if not (Terminals.mem doc_uid node.terminals)
         then begin
           let hint =
             Option.map
               (fun (t, _, prev_terminals) -> prev_terminals, t.terminals)
               prev_leaf
           in
-          let prev_terminals = child.terminals in
-          child.terminals <- Terminals.add ~hint doc_uid child.terminals ;
+          let prev_terminals = node.terminals in
+          node.terminals <- Terminals.add ~hint doc_uid node.terminals ;
           let prev_leaf =
-            match set_leaf ~debug:"2" ~prev_leaf ~depth:(depth + 1) child with
+            match set_leaf ~debug:"0" ~prev_leaf ~depth node with
             | None -> None
             | Some (t, depth) -> Some (t, depth, prev_terminals)
           in
-          assert (Doc.length doc - i = 1) ;
-          begin
-            match child.suffix_link with
-            | None ->
-              let i, depth = i - len, depth - len in
-              follow_suffix ~prev:None ~prev_leaf ~parent:node ~depth ~i
-            | Some next_child ->
-              let depth = depth - 1 in
-              go ~prev:None ~prev_leaf:None ~depth next_child i
-          end
+          follow_suffix ~prev ~prev_leaf ~parent:node ~depth ~i
         end
-      | Char new_chr ->
-        let new_leaf = make_leaf ~prev_leaf ~buffer:trie.buffer ~doc (i + 1) in
-        let prev_leaf =
-          set_leaf ~debug:"3" ~prev_leaf ~depth:(depth + Doc.length doc - i) new_leaf
+      | Char chr -> begin
+        match Char_map.find chr node.children with
+        | child ->
+          assert (depth >= 0) ;
+          assert (i - depth >= 0) ;
+          assert (i < Doc.length doc) ;
+          let len = lcp doc.Doc.text i trie.buffer child.start child.len in
+          let i, depth = i + len, depth + len in
+          assert (i < Doc.length doc) ;
+          if len = child.len
+          then
+            if not (Char_map.is_empty child.children)
+            then go ~prev ~prev_leaf ~depth child i
+            else add_leaf ~prev_leaf ~node ~child ~depth ~i ~len
+          else begin
+            let new_child = split_at ~str:trie.buffer child len in
+            node.children <- Char_map.add chr new_child node.children ;
+            let prev = set_suffix_link ~prev ~depth new_child in
+            assert (prev = None) ;
+            add_leaf ~prev_leaf ~node ~child:new_child ~depth ~i ~len
+          end
+        | exception Not_found ->
+          let new_leaf = make_leaf ~prev_leaf ~buffer:trie.buffer ~doc i in
+          node.children <- Char_map.add chr new_leaf node.children ;
+          let prev_leaf =
+            set_leaf ~debug:"1" ~prev_leaf ~depth:(depth + Doc.length doc - i) new_leaf
+          in
+          let prev_leaf =
+            match prev_leaf with
+            | None -> None
+            | Some (t, depth) -> Some (t, depth, Terminals.empty)
+          in
+          follow_suffix ~prev ~prev_leaf ~parent:node ~depth ~i
+      end)
+  and add_leaf ~prev_leaf ~node ~child ~depth ~i ~len =
+    match Doc.get doc i with
+    | Terminal doc_uid ->
+      if not (Terminals.mem doc_uid child.terminals)
+      then begin
+        let hint =
+          Option.map (fun (t, _, prev_terminals) -> prev_terminals, t.terminals) prev_leaf
         in
+        let prev_terminals = child.terminals in
+        child.terminals <- Terminals.add ~hint doc_uid child.terminals ;
         let prev_leaf =
-          match prev_leaf with
+          match set_leaf ~debug:"2" ~prev_leaf ~depth:(depth + 1) child with
           | None -> None
-          | Some (t, depth) -> Some (t, depth, Terminals.empty)
+          | Some (t, depth) -> Some (t, depth, prev_terminals)
         in
-        child.children <- Char_map.add new_chr new_leaf child.children ;
-        let prev = Some (child, depth - 1) in
-        let i, depth = i - len, depth - len in
-        follow_suffix ~prev ~prev_leaf ~parent:node ~depth ~i
-    and follow_suffix ~prev ~prev_leaf ~parent ~depth ~i =
-      match parent.suffix_link with
-      | None -> begin
-        let i = i - depth + 1 in
-        go ~prev:None ~prev_leaf ~depth:0 root i
+        assert (Doc.length doc - i = 1) ;
+        begin
+          match child.suffix_link with
+          | None ->
+            let i, depth = i - len, depth - len in
+            follow_suffix ~prev:None ~prev_leaf ~parent:node ~depth ~i
+          | Some next_child ->
+            let depth = depth - 1 in
+            go ~prev:None ~prev_leaf:None ~depth next_child i
+        end
       end
-      | Some next ->
-        assert (depth >= 2) ;
-        assert (next != root) ;
-        go ~prev ~prev_leaf ~depth:(depth - 2) next (i - 1)
-    in
-    go ~prev:None ~prev_leaf:None ~depth:0 root 0
-
-  let add_suffixes t text elt = add_document t { Doc.text; uid = elt }
-
-  module Automata = struct
-    (** Automata is the most compact version that uses arrays for branching. It
-        is not practical to use it for constructing a suffix tree, but it is
-        better for serialiazing. *)
-
-    module Uid = struct
-      let gen = ref 0
-
-      let make () =
-        let u = !gen in
-        gen := u + 1 ;
-        u
+    | Char new_chr ->
+      let new_leaf = make_leaf ~prev_leaf ~buffer:trie.buffer ~doc (i + 1) in
+      let prev_leaf =
+        set_leaf ~debug:"3" ~prev_leaf ~depth:(depth + Doc.length doc - i) new_leaf
+      in
+      let prev_leaf =
+        match prev_leaf with
+        | None -> None
+        | Some (t, depth) -> Some (t, depth, Terminals.empty)
+      in
+      child.children <- Char_map.add new_chr new_leaf child.children ;
+      let prev = Some (child, depth - 1) in
+      let i, depth = i - len, depth - len in
+      follow_suffix ~prev ~prev_leaf ~parent:node ~depth ~i
+  and follow_suffix ~prev ~prev_leaf ~parent ~depth ~i =
+    match parent.suffix_link with
+    | None -> begin
+      let i = i - depth + 1 in
+      go ~prev:None ~prev_leaf ~depth:0 root i
     end
+    | Some next ->
+      assert (depth >= 2) ;
+      assert (next != root) ;
+      go ~prev ~prev_leaf ~depth:(depth - 2) next (i - 1)
+  in
+  go ~prev:None ~prev_leaf:None ~depth:0 root 0
 
-    module T = struct
-      type node =
-        { start : int
-        ; len : int
-        ; terminals : S.t
-        ; children : node array option
-        }
+let add_suffixes t text elt = add_document t { Doc.text; uid = elt }
 
-      type t =
-        { str : string
-        ; t : node
-        }
+module Uid = struct
+  let gen = ref 0
 
-      let array_find ~str chr arr =
-        let rec go i =
-          if i >= Array.length arr
-          then raise Not_found
-          else (
-            let node = arr.(i) in
-            if chr = str.[node.start - 1] then node else go (i + 1))
-        in
-        go 0
-
-      let array_find ~str chr = function
-        | None -> raise Not_found
-        | Some arr -> array_find ~str chr arr
-
-      let lcp i_str i j_str j j_len =
-        let j_stop = j + j_len in
-        let rec go_lcp i j =
-          if i >= String.length i_str || j >= j_stop
-          then i
-          else (
-            let i_chr, j_chr = i_str.[i], j_str.[j] in
-            if i_chr <> j_chr then i else go_lcp (i + 1) (j + 1))
-        in
-        let i' = go_lcp i j in
-        i' - i
-
-      let rec find ~str node pattern i =
-        if i >= String.length pattern
-        then node
-        else (
-          let chr = pattern.[i] in
-          let child = array_find ~str chr node.children in
-          find_lcp ~str child pattern (i + 1))
-
-      and find_lcp ~str child pattern i =
-        let n = lcp pattern i str child.start child.len in
-        if i + n = String.length pattern
-        then { child with start = child.start + n }
-        else if n = child.len
-        then find ~str child pattern (i + n)
-        else raise Not_found
-
-      let find t pattern =
-        let child = find ~str:t.str t.t pattern 0 in
-        { str = t.str; t = child }
-
-      let find t pattern =
-        try Some (find t pattern) with
-        | Not_found -> None
-
-      let rec collapse acc t =
-        let acc = if S.is_empty t.terminals then acc else t.terminals :: acc in
-        match t.children with
-        | None -> acc
-        | Some children -> Array.fold_left collapse acc children
-
-      let collapse t = collapse [] t.t
-
-      let rec sets_tree ~union ~terminal ~union_of_array t =
-        let ts = terminal t.terminals in
-        let cs =
-          match t.children with
-          | None -> [||]
-          | Some children ->
-            Array.map (sets_tree ~union ~terminal ~union_of_array) children
-        in
-        union ts (union_of_array cs)
-
-      let sets_tree ~union ~terminal ~union_of_array t =
-        sets_tree ~union ~terminal ~union_of_array t.t
-    end
-
-    let export_terminals ~cache_term ts =
-      try Terminals.Hashtbl.find cache_term ts with
-      | Not_found ->
-        let result = Uid.make (), S.of_list ts in
-        Terminals.Hashtbl.add cache_term ts result ;
-        result
-
-    let rec export ~cache ~cache_term node =
-      let terminals_uid, terminals = export_terminals ~cache_term node.terminals in
-      let children =
-        Char_map.bindings @@ Char_map.map (export ~cache ~cache_term) node.children
-      in
-      let children =
-        List.sort
-          (fun (a_chr, (_, _, a)) (b_chr, (_, _, b)) ->
-            match S.compare_elt a b with
-            | 0 -> Char.compare a_chr b_chr
-            | c -> c)
-          children
-      in
-      let min_terminal = S.minimum terminals in
-      let min_child =
-        match min_terminal, children with
-        | Some a, (_, (_, _, b)) :: _ -> if S.compare_elt a b <= 0 then a else b
-        | Some a, [] -> a
-        | None, (_, (_, _, b)) :: _ -> b
-        | None, [] -> assert false
-      in
-      let children_uids = List.map (fun (chr, (uid, _, _)) -> chr, uid) children in
-      let key = node.start, node.len, terminals_uid, children_uids in
-      try Hashtbl.find cache key with
-      | Not_found ->
-        let children =
-          Array.of_list @@ List.map (fun (_, (_, child, _)) -> child) children
-        in
-        let children = if Array.length children = 0 then None else Some children in
-        let node = { T.start = node.start; len = node.len; terminals; children } in
-        let result = Uid.make (), node, min_child in
-        Hashtbl.add cache key result ;
-        result
-
-    let clear ~str t =
-      let cache = Hashtbl.create 16 in
-      let cache_term = Terminals.Hashtbl.create 16 in
-      let _, t, _ = export ~cache ~cache_term t in
-      { T.str; t }
-  end
-
-  type reader = Automata.T.t
-
-  let export t =
-    let str = Buf.contents t.buffer in
-    Automata.clear ~str t.root
-
-  let find = Automata.T.find
-  let to_sets = Automata.T.collapse
-  let sets_tree = Automata.T.sets_tree
+  let make () =
+    let u = !gen in
+    gen := u + 1 ;
+    u
 end
 
-module With_elts = Make (Entry.Array)
+module Terminals_cache = Hashtbl.Make (Terminals)
+
+let export_terminals ~cache_term ts =
+  try Terminals_cache.find cache_term ts with
+  | Not_found ->
+    let result = Uid.make (), Entry.Array.of_list ts in
+    Terminals_cache.add cache_term ts result ;
+    result
+
+let rec export ~cache ~cache_term node =
+  let terminals_uid, terminals = export_terminals ~cache_term node.terminals in
+  let children =
+    Char_map.bindings @@ Char_map.map (export ~cache ~cache_term) node.children
+  in
+  let children =
+    List.sort
+      (fun (a_chr, (_, _, a)) (b_chr, (_, _, b)) ->
+        match Entry.compare a b with
+        | 0 -> Char.compare a_chr b_chr
+        | c -> c)
+      children
+  in
+  let min_terminal = Entry.Array.minimum terminals in
+  let min_child =
+    match min_terminal, children with
+    | Some a, (_, (_, _, b)) :: _ -> if Entry.compare a b <= 0 then a else b
+    | Some a, [] -> a
+    | None, (_, (_, _, b)) :: _ -> b
+    | None, [] -> assert false
+  in
+  let children_uids = List.map (fun (chr, (uid, _, _)) -> chr, uid) children in
+  let key = node.start, node.len, terminals_uid, children_uids in
+  try Hashtbl.find cache key with
+  | Not_found ->
+    let children = Array.of_list @@ List.map (fun (_, (_, child, _)) -> child) children in
+    let children = if Array.length children = 0 then None else Some children in
+    let node =
+      { String_automata.start = node.start; len = node.len; terminals; children }
+    in
+    let result = Uid.make (), node, min_child in
+    Hashtbl.add cache key result ;
+    result
+
+let export { buffer; root = t } =
+  let str = Buf.contents buffer in
+  let cache = Hashtbl.create 16 in
+  let cache_term = Terminals_cache.create 16 in
+  let _, t, _ = export ~cache ~cache_term t in
+  { String_automata.str; t }

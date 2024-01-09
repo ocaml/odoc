@@ -1,7 +1,7 @@
 module Parser = Query_parser
 module Dynamic_cost = Dynamic_cost
 module Storage = Db.Storage
-module Tree = Db.Suffix_tree.With_elts
+module Tree = Db.String_automata
 
 module Private = struct
   module Array_succ = Array_succ
