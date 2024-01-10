@@ -1,11 +1,40 @@
 module Entry = Db.Entry
 
-type node =
+type t =
   | Empty
   | Pq of Priority_queue.t
-  | Inter of node * node
-  | Union of node * node
+  | Inter of t * t
+  | Union of t * t
 
+let empty = Empty
+let of_automata t = Pq (Priority_queue.of_automata t)
+let of_array arr = Pq (Priority_queue.of_sorted_array (Some arr))
+
+let inter a b =
+  match a, b with
+  | Empty, _ | _, Empty -> empty
+  | x, y when x == y -> a
+  | x, y -> Inter (x, y)
+
+let union a b =
+  match a, b with
+  | Empty, _ -> b
+  | _, Empty -> a
+  | x, y when x == y -> a
+  | x, y -> Union (x, y)
+
+let rec join_with fn = function
+  | [] -> []
+  | [ x ] -> [ x ]
+  | a :: b :: xs -> fn a b :: join_with fn xs
+
+let rec perfect fn = function
+  | [] -> Empty
+  | [ x ] -> x
+  | xs -> perfect fn (join_with fn xs)
+
+let inter_of_list xs = perfect inter xs
+let union_of_list xs = perfect union xs
 let best x y = if Entry.compare x y <= 0 then x else y
 
 let best_opt old_cand new_cand =
@@ -71,53 +100,18 @@ let rec first t =
     let elt_r, r = first r in
     best_opt elt_l elt_r, Union (l, r)
 
-type t =
-  { cardinal : int
-  ; s : node
-  }
-
-let to_seq { s; _ } =
+let to_seq t =
   let state = ref None in
   let loop () =
-    let elt, s =
+    let elt, t =
       match !state with
-      | None -> first s
-      | Some (previous_elt, s) -> succ ~strictness:Gt s previous_elt
+      | None -> first t
+      | Some (previous_elt, t) -> succ ~strictness:Gt t previous_elt
     in
     match elt with
     | None -> None
     | Some elt ->
-      state := Some (elt, s) ;
+      state := Some (elt, t) ;
       Some elt
   in
   Seq.of_dispenser loop
-
-(** Functions to build a succ tree *)
-
-let empty = { cardinal = 0; s = Empty }
-
-let inter a b =
-  match a.s, b.s with
-  | Empty, _ | _, Empty -> empty
-  | x, y when x == y -> a
-  | x, y ->
-    let x, y = if a.cardinal < b.cardinal then x, y else y, x in
-    { cardinal = min a.cardinal b.cardinal; s = Inter (x, y) }
-
-let union a b =
-  match a.s, b.s with
-  | Empty, _ -> b
-  | _, Empty -> a
-  | x, y when x == y -> a
-  | x, y ->
-    let x, y = if a.cardinal < b.cardinal then x, y else y, x in
-    { cardinal = a.cardinal + b.cardinal; s = Union (x, y) }
-
-let inter_of_list = function
-  | [] -> empty
-  | elt :: li -> List.fold_left inter elt li
-
-let of_automata t = { s = Pq (Priority_queue.of_automata t); cardinal = 1 }
-
-let of_array arr =
-  { s = Pq (Priority_queue.of_sorted_array (Some arr)); cardinal = Array.length arr }

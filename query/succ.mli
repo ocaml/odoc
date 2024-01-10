@@ -9,4 +9,5 @@ val of_automata : Db.String_automata.t -> t
 val inter : t -> t -> t
 val union : t -> t -> t
 val inter_of_list : t list -> t
+val union_of_list : t list -> t
 val of_array : Db.Entry.t array -> t
