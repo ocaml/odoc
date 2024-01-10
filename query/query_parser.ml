@@ -25,20 +25,31 @@ let guess_type_search str =
   String.length str >= 1
   && (str.[0] = '\'' || String.contains str '-' || String.contains str '(')
 
+type t =
+  { name : string list
+  ; typ : [ `typ of Db.Typexpr.t | `no_typ | `parse_error ]
+  }
+
+let type_of_string str_typ =
+  match type_of_string str_typ with
+  | Ok typ -> `typ typ
+  | Error _ -> `parse_error
+
 let of_string str =
-  let str = String.trim str in
-  let str_name, str_typ =
-    match String.split_on_char ':' str with
-    | [ a; b ] -> a, Ok b
-    | _ when guess_type_search str -> "", Ok str
-    | _ -> str, Error `empty
+  let query_name, typ =
+    match String.index_opt str ':' with
+    | None -> if guess_type_search str then "", type_of_string str else str, `no_typ
+    | Some loc ->
+      let str_name = String.sub str 0 loc in
+      let str_typ = String.sub str (loc + 1) (String.length str - loc - 1) in
+      str_name, type_of_string str_typ
   in
-  let typ =
-    Result.bind str_typ (fun str_typ ->
-      match type_of_string str_typ with
-      | Ok Any -> Error `any
-      | Ok typ -> Ok typ
-      | Error _ -> Error `parse)
-  in
-  let words = naive_of_string str_name in
-  words, typ
+  let name = naive_of_string query_name in
+  { name; typ }
+
+let to_string { name; typ } =
+  let words = String.concat " " name in
+  match typ with
+  | `typ typ -> words ^ " : " ^ Db.Typexpr.show typ
+  | `parse_error -> words ^ " : <parsing error>"
+  | `no_typ -> words

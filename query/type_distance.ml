@@ -195,9 +195,8 @@ let minimize = function
     let _ = go (Array.length used) 0 0 in
     !best
 
-let v ~query ~entry =
-  let query_paths = Type_path.of_typ ~ignore_any:false query in
-  let entry_paths = Type_path.of_typ ~ignore_any:true entry in
+let v ~query_paths ~entry =
+  let entry_paths = Type_path.of_typ ~ignore_any:false entry in
   match entry_paths, query_paths with
   | _, [] | [], _ -> 0
   | _ ->

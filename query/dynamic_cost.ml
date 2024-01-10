@@ -1,5 +1,18 @@
 module Entry = Db.Entry
 
+type query =
+  { name : string list
+  ; type_paths : Type_distance.Type_path.t option
+  }
+
+let of_query { Query_parser.name; typ } =
+  let type_paths =
+    match typ with
+    | `typ t -> Some (Type_distance.Type_path.of_typ ~ignore_any:true t)
+    | _ -> None
+  in
+  { name; type_paths }
+
 module Reasoning = struct
   (** The [Reasoning] module contains a representation that include every reason
       for which a search entry would be ranked higher or lower. It does not
@@ -64,14 +77,14 @@ module Reasoning = struct
     }
 
   let type_distance query_type entry =
-    let open Entry in
-    match query_type, Entry.Kind.get_type entry.kind with
-    | Error _, _ -> None
-    | Ok query_type, Some entry_type ->
-      Some (Type_distance.v ~query:query_type ~entry:entry_type)
-    | _, None -> None
+    match query_type, Entry.Kind.get_type entry.Entry.kind with
+    | Some query_paths, Some entry_type ->
+      Some (Type_distance.v ~query_paths ~entry:entry_type)
+    | _ -> None
 
-  let type_in_query query_type = Result.is_ok query_type
+  let type_in_query = function
+    | Some _ -> true
+    | _ -> false
 
   let type_in_entry entry =
     let open Entry in
@@ -88,7 +101,7 @@ module Reasoning = struct
   let has_doc e = e.Entry.doc_html <> ""
 
   (** Compute the reasoning for the cost of an entry *)
-  let v query_words query_type entry =
+  let v { name = query_words; type_paths = query_type } entry =
     { is_stdlib = is_stdlib entry
     ; has_doc = has_doc entry
     ; name_matches = Name_match.with_words query_words entry
@@ -162,8 +175,7 @@ let cost_of_reasoning
   + name_length
   + is_from_module_type_cost
 
-let cost_of_entry ~query_name ~query_type entry =
-  cost_of_reasoning (Reasoning.v query_name query_type entry)
+let cost_of_entry query entry = cost_of_reasoning (Reasoning.v query entry)
 
-let update_entry ~query_name ~query_type entry =
-  Entry.{ entry with cost = entry.cost + cost_of_entry ~query_name ~query_type entry }
+let update_entry query entry =
+  Entry.{ entry with cost = entry.cost + cost_of_entry query entry }
