@@ -30,6 +30,10 @@ Look if all the source files are generated:
   html/Main/A
   html/Main/A/index.html
   html/Main/index.html
+  html/Main__
+  html/Main__/index.html
+  html/Main__A
+  html/Main__A/index.html
   html/root
   html/root/source
   html/root/source/a.ml.html
