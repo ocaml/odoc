@@ -14,6 +14,7 @@ Test the JSON output in the presence of expanded modules.
   $ odoc link -I . main.odoc
 
   $ odoc html-targets --source a.ml -o html main__A.odocl
+  html/Main__A/index.html
   html/root/source/a.ml.html
   $ odoc html-targets --source main.ml -o html main.odocl
   html/Main/index.html
@@ -21,6 +22,7 @@ Test the JSON output in the presence of expanded modules.
   html/Main/A/B/index.html
   html/root/source/main.ml.html
   $ odoc html-targets --source a.ml --as-json -o html main__A.odocl
+  html/Main__A/index.html.json
   html/root/source/a.ml.html.json
   $ odoc html-targets --source main.ml --as-json -o html main.odocl
   html/Main/index.html.json

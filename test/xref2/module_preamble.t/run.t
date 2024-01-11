@@ -26,6 +26,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
   html/test/A/index.html
   html/test/A/B/index.html
   $ odoc html-targets -o html a__b.odocl
+  html/test/A__b/index.html
 
   $ cat html/test/A/index.html
   <!DOCTYPE html>
@@ -103,7 +104,24 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
    </body>
   </html>
 
-`A__b` shouldn't render:
+`A__b` shouldn't have any real content:
 
-  $ ! cat html/test/A__b/index.html
-  cat: html/test/A__b/index.html: No such file or directory
+  $ cat html/test/A__b/index.html
+  <!DOCTYPE html>
+  <html xmlns="http://www.w3.org/1999/xhtml">
+   <head><title>A__b (test.A__b)</title><meta charset="utf-8"/>
+    <link rel="stylesheet" href="../../odoc.css"/>
+    <meta name="generator" content="odoc %%VERSION%%"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <script src="../../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+   </head>
+   <body class="odoc">
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
+     <a href="../index.html">test</a> &#x00BB; A__b
+    </nav>
+    <header class="odoc-preamble">
+     <h1>Module <code><span>A__b</span></code></h1>
+    </header><div class="odoc-content"></div>
+   </body>
+  </html>
