@@ -1,7 +1,7 @@
 (executable
  (name main)
  (modes js)
- (libraries query storage_js brr))
+ (libraries brr query))
 
 (rule
  (alias all)

@@ -72,7 +72,7 @@ end
 
 let db =
   Jv.(Decompress_browser.inflate @@ call global "sherlodoc_db" [||])
-  |> Fut.map Storage_js.load
+  |> Fut.map (fun str -> [ Marshal.from_string str 0 ])
 
 let string_of_kind =
   let open Db.Entry.Kind in

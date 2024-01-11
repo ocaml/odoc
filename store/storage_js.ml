@@ -29,7 +29,4 @@ let save ~db t =
   let str = Base64.encode_string str in
   Printf.fprintf db "function sherlodoc_db () { return %S; }\n%!" str
 
-let load str =
-  (* let str = Base64.decode_exn str in
-     let str = inflate_string str |> Result.get_ok in *)
-  [ Marshal.from_string str 0 ]
+let load _ = failwith "js database format is unsupported"
