@@ -176,6 +176,3 @@ let cost_of_reasoning
   + is_from_module_type_cost
 
 let cost_of_entry query entry = cost_of_reasoning (Reasoning.v query entry)
-
-let update_entry query entry =
-  Entry.{ entry with cost = entry.cost + cost_of_entry query entry }

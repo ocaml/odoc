@@ -137,7 +137,7 @@
   1391 val Base.Set.S_poly.of_array : 'a array -> 'a t
   1391 val Base.Set.S_poly.to_array : 'a t -> 'a array
   1392 val Base.Set.S_poly.singleton : 'a -> 'a t
-  1395 val Base.Hashtbl.S_poly.mem : ('a, _) t -> 'a key -> bool
+  1395 val Base.Map.S_poly.to_tree : ('k, 'v) t -> ('k, 'v) tree
   $ sherlodoc search --print-cost --no-rhs "group b"
   453 val Base.List.group
   484 val Base.Sequence.group
@@ -225,8 +225,8 @@
   438 val Base.List.(>>|) : 'a t -> ('a -> 'b) -> 'b t
   438 val Base.Set.to_list : ('a, _) t -> 'a list
   439 val Base.List.append : 'a t -> 'a t -> 'a t
-  440 val Base.List.(>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  444 mod Base.List.Let_syntax
+  440 val Base.List.find : 'a t -> f:('a -> bool) -> 'a option
+  440 val Base.List.mapi : 'a t -> f:(int -> 'a -> 'b) -> 'b t
   $ sherlodoc search --print-cost ": list"
   320 val Base.Map.data : (_, 'v, _) t -> 'v list
   320 val Base.Map.keys : ('k, _, _) t -> 'k list
@@ -251,8 +251,8 @@
   403 val Base.Hashtbl.find_multi : ('a, 'b list) t -> 'a key -> 'b list
   404 val Base.Sequence.chunks_exn : 'a t -> int -> 'a list t
   410 val Base.Map.add_multi : ('k, 'v list, 'cmp) t -> key:'k -> data:'v -> ('k, 'v list, 'cmp) t
-  793 val Base.Hashtbl.S_poly.data : (_, 'b) t -> 'b list
-  797 val Base.Hashtbl.S_poly.keys : ('a, _) t -> 'a key list
+  412 val Base.List.find_all_dups : 'a t -> compare:('a -> 'a -> int) -> 'a list
+  414 val Base.String.split_on_chars : t -> on:char list -> t list
 
 Partial name search:
   $ sherlodoc search --print-cost "strin"
@@ -275,12 +275,12 @@ Partial name search:
   445 val Base.Exn.to_string : t -> string
   445 val Base.Sexp.of_string : unit
   445 mod Base.Bytes.To_string
+  446 val Base.String.tr : target:char -> replacement:char -> t -> t
   446 val Base.String.prefix : t -> int -> t
   446 val Base.String.suffix : t -> int -> t
   446 val Base.String.escaped : t -> t
   447 val Base.String.iter : t -> f:(elt -> unit) -> unit
-  452 sig Base.Blit.S_to_string
-  452 mod Base.Buffer.To_string
+  448 val Base.String.split : t -> on:char -> t list
   $ sherlodoc search --print-cost "tring"
   380 mod Base.String
   380 mod Caml.String
@@ -301,9 +301,9 @@ Partial name search:
   444 mod Base.String.Caseless
   444 mod Base.String.Escaping
   445 val Base.String.init : int -> f:(int -> elt) -> t
+  446 val Base.String.tr : target:char -> replacement:char -> t -> t
   446 val Base.String.prefix : t -> int -> t
   446 val Base.String.suffix : t -> int -> t
   446 val Base.String.escaped : t -> t
   447 val Base.String.iter : t -> f:(elt -> unit) -> unit
-  450 sig Base.Blit.S_to_string
-  450 mod Base.Buffer.To_string
+  448 val Base.String.split : t -> on:char -> t list

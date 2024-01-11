@@ -84,20 +84,16 @@ let match_packages ~packages results =
   | _ -> Seq.filter (match_packages ~packages) results
 
 let search ~shards ?(dynamic_sort = true) params =
+  let limit = params.limit in
   let query = Parser.of_string params.query in
   let results = search ~shards query in
   let results = Succ.to_seq results in
   let results = match_packages ~packages:params.packages results in
-  let results = List.of_seq @@ Seq.take params.limit results in
-  let results =
-    if dynamic_sort
-    then begin
-      let query = Dynamic_cost.of_query query in
-      List.map (Dynamic_cost.update_entry query) results
-    end
-    else results
-  in
-  let results = List.sort Db.Entry.compare results in
-  results
+  if dynamic_sort
+  then begin
+    let query = Dynamic_cost.of_query query in
+    List.of_seq @@ Top_results.of_seq ~query ~limit results
+  end
+  else List.of_seq @@ Seq.take params.limit results
 
 let pretty params = Parser.(to_string @@ of_string params.query)

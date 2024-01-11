@@ -83,6 +83,7 @@
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
   doc 
+  doc 
   $ sherlodoc search "qwertyuiopasdfghjklzxcvbnm"
   [No results]
   $ sherlodoc search "hidden"
