@@ -1,3 +1,11 @@
+# 2.4.1
+
+# Fixed
+
+- Revert to outputing a file (without content) when rendering a hidden
+  compilation unit. This fixes cases where the dune rules would
+  fail. (@panglesd, #1069)
+
 # 2.4.0
 
 ### Added
