@@ -28,6 +28,8 @@ Look if all the source files are generated:
   html/A/X/Y/index.html
   html/A/X/index.html
   html/A/index.html
+  html/A_x
+  html/A_x/index.html
   html/root
   html/root/source
   html/root/source/a.ml.html
@@ -36,6 +38,7 @@ Look if all the source files are generated:
 Documentation for `A_x` is not generated for hidden modules:
 
   $ ! [ -f html/A_x/index.html ]
+  [1]
 
 Code source for `A_x` is wanted:
 
