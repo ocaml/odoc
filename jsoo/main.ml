@@ -115,15 +115,14 @@ let search message db =
              in
              let kind = string_of_kind kind in
              let html =
-               Odoc_html_frontend.of_strings
-                 ~kind
-                 ~prefix_name
-                 ~name
-                 ~typedecl_params
-                 ~rhs
-                 ~doc:doc_html
-               |> List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ()))
-               |> String.concat "\n"
+               Tyxml.Html.string_of_list
+               @@ Odoc_html_frontend.of_strings
+                    ~kind
+                    ~prefix_name
+                    ~name
+                    ~typedecl_params
+                    ~rhs
+                    ~doc:doc_html
              in
              Jv.obj [| "html", Jv.of_string html; "url", Jv.of_string url |])
            results

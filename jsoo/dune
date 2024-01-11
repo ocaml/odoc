@@ -1,10 +1,7 @@
-; This provides a javascript file for sherlodoc searches. This is compatible
-; with the api decided by odoc.
-
 (executable
  (name main)
  (modes js)
- (libraries tyxml query storage_js brr odoc.search_html_frontend))
+ (libraries query storage_js brr))
 
 (rule
  (alias all)

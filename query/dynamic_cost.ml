@@ -30,9 +30,22 @@ module Reasoning = struct
       | Lowercase
       | Doc
 
+    let rec is_prefix_at ~sub i s j =
+      if i >= String.length sub
+      then true
+      else if sub.[i] = s.[j]
+      then is_prefix_at ~sub (i + 1) s (j + 1)
+      else false
+
     let is_substring ~sub s =
-      let re = Re.(compile (str sub)) in
-      Re.execp re s
+      let rec go j =
+        if j + String.length sub > String.length s
+        then false
+        else if is_prefix_at ~sub 0 s j
+        then true
+        else go (j + 1)
+      in
+      go 0
 
     let with_word query_word name =
       let low_query_word = String.lowercase_ascii query_word in
