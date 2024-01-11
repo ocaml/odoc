@@ -1,6 +1,13 @@
-(* Type expressions parser, with error correction to support partially written queries. *)
+(* Type expressions parser, with error correction
+   to support incomplete / partially written user queries. *)
 
 %{
+  module Printf = struct
+    (* Without the following placeholder, [menhir_fail] induces
+       a large dependency to [camlinternalFormat] in the js bundle. *)
+    let eprintf _ = ()
+  end
+
   open Db.Typexpr
 %}
 

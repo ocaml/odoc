@@ -1,10 +1,14 @@
 let print_error e =
-  let open Jv.Error in
-  Printf.eprintf
-    "Error : %s %s\n%s%!"
-    (Jstr.to_string @@ name e)
-    (Jstr.to_string @@ message e)
-    (Jstr.to_string @@ stack e)
+  print_string
+  @@ String.concat
+       ""
+       [ "Error : "
+       ; Jstr.to_string @@ Jv.Error.name e
+       ; " "
+       ; Jstr.to_string @@ Jv.Error.message e
+       ; "\n"
+       ; Jstr.to_string @@ Jv.Error.stack e
+       ]
 
 let new_ cl = Jv.(new' (get global cl))
 
@@ -135,10 +139,7 @@ let search message =
   @@
   let open Fut.Syntax in
   let+ db = db in
-  (* Here we catch any exception and print it. This allows us to keep running
-     and answer requests that do not trigger exceptions. *)
-  try Printexc.print (search message) db with
-  | _ -> ()
+  search message db
 
 let main () =
   let module J' = Jstr in

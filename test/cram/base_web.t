@@ -31,7 +31,7 @@ The --no-preserve flag is here so that copying to /tmp will not fail because of
 a previous run. .js files built by dune are read only.
   $ cp --no-preserve=mode,ownership ../../jsoo/main.bc.js html/sherlodoc.js
   $ du -sh html/sherlodoc.js
-  128K	html/sherlodoc.js
+  92K	html/sherlodoc.js
   $ ls html
   base
   db.js
