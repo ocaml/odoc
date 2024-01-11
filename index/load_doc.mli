@@ -1,5 +1,5 @@
 val register_entry
-  :  db:Db.writer
+  :  db:Db_writer.t
   -> index_name:bool
   -> type_search:bool
   -> index_docstring:bool

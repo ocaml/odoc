@@ -63,11 +63,11 @@ let with_tokenizer str fn =
   go 0
 
 let register_doc ~db elt doc_txt =
-  with_tokenizer doc_txt @@ fun word -> Db.store_word db word elt
+  with_tokenizer doc_txt @@ fun word -> Db_writer.store_word db word elt
 
 let register_full_name ~db (elt : Db.Entry.t) =
   let name = String.lowercase_ascii elt.name in
-  Db.store_word db name elt
+  Db_writer.store_word db name elt
 
 let searchable_type_of_constructor args res =
   let open Odoc_model.Lang in
@@ -122,7 +122,7 @@ let convert_kind (Odoc_search.Entry.{ kind; _ } as entry) =
 
 let register_type_expr ~db elt typ =
   let type_polarities = Db.Type_polarity.of_typ ~any_is_poly:true ~all_names:true typ in
-  Db.store_type_polarities db elt type_polarities
+  Db_writer.store_type_polarities db elt type_polarities
 
 let register_kind ~db elt =
   let open Db.Entry in

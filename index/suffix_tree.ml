@@ -61,6 +61,8 @@ module Buf = struct
       start
 end
 
+module Entry = Db.Entry
+
 module Terminals = struct
   type t = Entry.t list
 
@@ -342,7 +344,7 @@ let rec export ~cache ~cache_term node =
     let children = Array.of_list @@ List.map (fun (_, (_, child, _)) -> child) children in
     let children = if Array.length children = 0 then None else Some children in
     let node =
-      { String_automata.start = node.start; len = node.len; terminals; children }
+      { Db.String_automata.start = node.start; len = node.len; terminals; children }
     in
     let result = Uid.make (), node, min_child in
     Hashtbl.add cache key result ;
@@ -353,4 +355,4 @@ let export { buffer; root = t } =
   let cache = Hashtbl.create 16 in
   let cache_term = Terminals_cache.create 16 in
   let _, t, _ = export ~cache ~cache_term t in
-  { String_automata.str; t }
+  { Db.String_automata.str; t }

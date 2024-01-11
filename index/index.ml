@@ -17,7 +17,7 @@ let index_file register filename =
 
 let main files file_list index_docstring index_name type_search db_format db_filename =
   let module Storage = (val Db_store.storage_module db_format) in
-  let db = Db.make () in
+  let db = Db_writer.make () in
   let pkg = Db.Entry.Package.v ~name:"" ~version:"" in
   let register id () item =
     List.iter
@@ -33,7 +33,7 @@ let main files file_list index_docstring index_name type_search db_format db_fil
       files @ (file_list |> In_channel.input_all |> String.split_on_char '\n')
   in
   List.iter (index_file register) files ;
-  let t = Db.export db in
+  let t = Db_writer.export db in
   Storage.save ~db:h t ;
   Storage.close_out h
 
