@@ -40,7 +40,7 @@ let is_module_name n = String.length n > 0 && Char.Ascii.is_upper n.[0]
     - [module-Foo] child is a module.
     - [module-foo], [Foo] child is a module, for backward compatibility.
     - [page-foo] child is a container or leaf page.
-    - [src-foo] child is a source tree
+    - [srctree-foo] child is a source tree
 
   Parses [...-"foo"] as [...-foo] for backward compatibility. *)
 let parse_parent_child_reference s =
@@ -56,6 +56,7 @@ let parse_parent_child_reference s =
   | Some ("asset", n) -> Ok (Asset_child (unquote n))
   | Some ("module", n) ->
       Ok (Module_child (unquote (String.Ascii.capitalize n)))
+  | Some ("src", _) -> Error (`Msg "Implementation unexpected")
   | Some (k, _) -> Error (`Msg ("Unrecognized kind: " ^ k))
   | None -> if is_module_name s then Ok (Module_child s) else Ok (Page_child s)
 
