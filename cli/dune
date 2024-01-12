@@ -13,4 +13,7 @@
    serve.ml
    from
    (www -> serve.available.ml)
-   (!www -> serve.unavailable.ml))))
+   (!www -> serve.unavailable.ml)))
+ (preprocess
+  (pps ppx_blob))
+ (preprocessor_deps ../jsoo/sherlodoc.js))

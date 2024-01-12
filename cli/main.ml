@@ -60,9 +60,23 @@ let cmd_serve =
   let info = Cmd.info "serve" ~doc in
   Cmd.v info (with_db Serve.term db_path)
 
+let cmd_jsoo =
+  let doc = "For dune/odoc integration, sherlodoc compiled as javascript" in
+  let info = Cmd.info "js" ~doc in
+  let target =
+    let doc = "Name of the file to create" in
+    Arg.(value & pos 0 string "" & info [] ~docv:"QUERY" ~doc)
+  in
+  let emit_js_dep filename =
+    let close, h = if filename = "" then false, stdout else true, open_out filename in
+    output_string h [%blob "jsoo/sherlodoc.js"] ;
+    if close then close_out h
+  in
+  Cmd.v info Term.(const emit_js_dep $ target)
+
 let cmd =
   let doc = "Sherlodoc" in
   let info = Cmd.info "sherlodoc" ~doc in
-  Cmd.group info [ cmd_search; cmd_index; cmd_serve ]
+  Cmd.group info [ cmd_search; cmd_index; cmd_serve; cmd_jsoo ]
 
 let () = exit (Cmd.eval cmd)
