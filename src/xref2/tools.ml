@@ -2048,27 +2048,22 @@ and fragmap :
 
   let sub = List.fold_right sub_of_removed removed Subst.identity in
 
-  let map_items items =
-    (* Invalidate resolved paths containing substituted idents - See the `With11`
-       test for an example of why this is necessary *)
-    let sub_of_substituted x sub =
-      let x = (x :> Ident.path_module) in
-      (if mark_substituted then Subst.add_module_substitution x sub else sub)
-      |> Subst.path_invalidate_module x
-      |> Subst.mto_invalidate_module x
-    in
-
-    let substituted_sub =
-      List.fold_right sub_of_substituted subbed_modules Subst.identity
-    in
-    (* Need to call `apply_sig_map` directly as we're substituting for an item
-       that's declared within the signature *)
-    let items, _, _ = Subst.apply_sig_map substituted_sub items [] in
-    (* Finished marking substituted stuff *)
-    items
+  (* Invalidate resolved paths containing substituted idents - See the `With11`
+     test for an example of why this is necessary *)
+  let sub_of_substituted x sub =
+    let x = (x :> Ident.path_module) in
+    (if mark_substituted then Subst.add_module_substitution x sub else sub)
+    |> Subst.path_invalidate_module x
+    |> Subst.mto_invalidate_module x
   in
 
-  let items = map_items items in
+  let substituted_sub =
+    List.fold_right sub_of_substituted subbed_modules Subst.identity
+  in
+
+  (* Need to call `apply_sig_map_items` directly as we're substituting for an item
+     that's declared within the signature *)
+  let items = Subst.apply_sig_map_items substituted_sub items in
 
   let res =
     Subst.signature sub

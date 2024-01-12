@@ -1037,60 +1037,47 @@ and apply_sig_map_sg s (sg : Component.Signature.t) =
   let items, removed, dont_recompile = apply_sig_map s sg.items sg.removed in
   { sg with items; removed; compiled = sg.compiled && dont_recompile }
 
-and apply_sig_map s items removed =
+and apply_sig_map_item s item =
   let open Component.Signature in
-  let rec inner items acc =
-    match items with
-    | [] -> List.rev acc
-    | Module (id, r, m) :: rest ->
-        inner rest
-          (Module
-             ( id,
-               r,
-               Component.Delayed.put (fun () ->
-                   module_ s (Component.Delayed.get m)) )
-          :: acc)
-    | ModuleSubstitution (id, m) :: rest ->
-        inner rest (ModuleSubstitution (id, module_substitution s m) :: acc)
-    | ModuleType (id, mt) :: rest ->
-        inner rest
-          (ModuleType
-             ( id,
-               Component.Delayed.put (fun () ->
-                   module_type s (Component.Delayed.get mt)) )
-          :: acc)
-    | ModuleTypeSubstitution (id, mt) :: rest ->
-        inner rest
-          (ModuleTypeSubstitution (id, module_type_substitution s mt) :: acc)
-    | Type (id, r, t) :: rest ->
-        inner rest
-          (Type
-             ( id,
-               r,
-               Component.Delayed.put (fun () ->
-                   type_ s (Component.Delayed.get t)) )
-          :: acc)
-    | TypeSubstitution (id, t) :: rest ->
-        inner rest (TypeSubstitution (id, type_ s t) :: acc)
-    | Exception (id, e) :: rest ->
-        inner rest (Exception (id, exception_ s e) :: acc)
-    | TypExt e :: rest -> inner rest (TypExt (extension s e) :: acc)
-    | Value (id, v) :: rest ->
-        inner rest
-          (Value
-             ( id,
-               Component.Delayed.put (fun () ->
-                   value s (Component.Delayed.get v)) )
-          :: acc)
-    | Class (id, r, c) :: rest -> inner rest (Class (id, r, class_ s c) :: acc)
-    | ClassType (id, r, c) :: rest ->
-        inner rest (ClassType (id, r, class_type s c) :: acc)
-    | Include i :: rest -> inner rest (Include (include_ s i) :: acc)
-    | Open o :: rest -> inner rest (Open (open_ s o) :: acc)
-    | Comment c :: rest -> inner rest (Comment c :: acc)
-  in
+  match item with
+  | Module (id, r, m) ->
+      Module
+        ( id,
+          r,
+          Component.Delayed.put (fun () -> module_ s (Component.Delayed.get m))
+        )
+  | ModuleSubstitution (id, m) ->
+      ModuleSubstitution (id, module_substitution s m)
+  | ModuleType (id, mt) ->
+      ModuleType
+        ( id,
+          Component.Delayed.put (fun () ->
+              module_type s (Component.Delayed.get mt)) )
+  | ModuleTypeSubstitution (id, mt) ->
+      ModuleTypeSubstitution (id, module_type_substitution s mt)
+  | Type (id, r, t) ->
+      Type
+        ( id,
+          r,
+          Component.Delayed.put (fun () -> type_ s (Component.Delayed.get t)) )
+  | TypeSubstitution (id, t) -> TypeSubstitution (id, type_ s t)
+  | Exception (id, e) -> Exception (id, exception_ s e)
+  | TypExt e -> TypExt (extension s e)
+  | Value (id, v) ->
+      Value
+        (id, Component.Delayed.put (fun () -> value s (Component.Delayed.get v)))
+  | Class (id, r, c) -> Class (id, r, class_ s c)
+  | ClassType (id, r, c) -> ClassType (id, r, class_type s c)
+  | Include i -> Include (include_ s i)
+  | Open o -> Open (open_ s o)
+  | Comment c -> Comment c
+
+and apply_sig_map_items s items =
+  List.rev_map (apply_sig_map_item s) items |> List.rev
+
+and apply_sig_map s items removed =
   let dont_recompile =
     List.length s.path_invalidating_modules = 0
     && List.length s.module_type_of_invalidating_modules = 0
   in
-  (inner items [], removed_items s removed, dont_recompile)
+  (apply_sig_map_items s items, removed_items s removed, dont_recompile)
