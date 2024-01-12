@@ -69,7 +69,7 @@ let asset_documents parent_id children asset_paths =
           Some (Odoc_document.Types.Document.Asset { url; src = path }))
     paired_or_missing
 
-let extra_documents args input ~syntax:_ =
+let extra_documents args input =
   match input with
   | Odoc_document.Renderer.CU _unit ->
       (* Remove assets from [Document.t] and move their rendering in the main

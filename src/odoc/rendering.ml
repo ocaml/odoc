@@ -25,7 +25,7 @@ let documents_of_unit ~warnings_options ~syntax ~source ~renderer ~extra
     ~filename unit =
   Odoc_model.Error.catch_warnings (fun () ->
       check_empty_source_arg source filename;
-      renderer.Renderer.extra_documents ~syntax extra (CU unit))
+      renderer.Renderer.extra_documents extra (CU unit))
   |> Odoc_model.Error.handle_warnings ~warnings_options
   >>= fun extra_docs ->
   Ok (Renderer.document_of_compilation_unit ~syntax unit :: extra_docs)
@@ -34,7 +34,7 @@ let documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
     ~filename page =
   Odoc_model.Error.catch_warnings (fun () ->
       check_empty_source_arg source filename;
-      renderer.Renderer.extra_documents ~syntax extra (Page page))
+      renderer.Renderer.extra_documents extra (Page page))
   |> Odoc_model.Error.handle_warnings ~warnings_options
   >>= fun extra_docs -> Ok (Renderer.document_of_page ~syntax page :: extra_docs)
 
@@ -73,6 +73,13 @@ let documents_of_implementation ~warnings_options:_ ~syntax impl source =
           "--source or --source-root should be passed when generating \
            documents for an implementation.")
 
+let documents_of_source_tree ~warnings_options ~syntax ~source ~filename srctree
+    =
+  Odoc_model.Error.catch_warnings (fun () ->
+      check_empty_source_arg source filename)
+  |> Odoc_model.Error.handle_warnings ~warnings_options
+  >>= fun () -> Ok (Renderer.documents_of_source_tree ~syntax srctree)
+
 let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax input
     =
   Odoc_file.load input >>= fun unit ->
@@ -82,7 +89,8 @@ let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax input
       documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
         ~filename odoctree
   | Source_tree_content srctree ->
-      Ok (Renderer.documents_of_source_tree ~syntax srctree)
+      documents_of_source_tree ~warnings_options ~syntax ~source ~filename
+        srctree
   | Impl_content impl ->
       documents_of_implementation ~warnings_options ~syntax impl source
   | Unit_content odoctree ->

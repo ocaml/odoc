@@ -77,25 +77,23 @@ end = struct
     Odoc_model.Root.Hash_table.fold (fun s () acc -> s :: acc) t []
 end
 
+let deps_of_imports ~deps imports =
+  List.iter imports ~f:(fun import ->
+      match import with
+      | Odoc_model.Lang.Compilation_unit.Import.Unresolved _ -> ()
+      | Odoc_model.Lang.Compilation_unit.Import.Resolved (root, _) ->
+          Hash_set.add deps root);
+  Ok ()
+
 let deps_of_odoc_file ~deps input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
   | Page_content _ | Source_tree_content _ ->
       Ok () (* XXX something should certainly be done here *)
   | Impl_content impl ->
-      List.iter impl.Odoc_model.Lang.Implementation.imports ~f:(fun import ->
-          match import with
-          | Odoc_model.Lang.Compilation_unit.Import.Unresolved _ -> ()
-          | Odoc_model.Lang.Compilation_unit.Import.Resolved (root, _) ->
-              Hash_set.add deps root);
-      Ok ()
+      deps_of_imports ~deps impl.Odoc_model.Lang.Implementation.imports
   | Unit_content unit ->
-      List.iter unit.Odoc_model.Lang.Compilation_unit.imports ~f:(fun import ->
-          match import with
-          | Odoc_model.Lang.Compilation_unit.Import.Unresolved _ -> ()
-          | Odoc_model.Lang.Compilation_unit.Import.Resolved (root, _) ->
-              Hash_set.add deps root);
-      Ok ()
+      deps_of_imports ~deps unit.Odoc_model.Lang.Compilation_unit.imports
 
 let for_rendering_step pkg_dir =
   let deps = Hash_set.create () in

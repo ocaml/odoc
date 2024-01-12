@@ -1,34 +1,23 @@
 open Odoc_model
 open Or_error
 
-let resolve_imports resolver imports =
-  List.map
-    (function
-      | Lang.Compilation_unit.Import.Resolved _ as resolved -> resolved
-      | Unresolved (name, _) as unresolved -> (
-          match Resolver.resolve_import resolver name with
-          | Some root -> Resolved (root, Names.ModuleName.make_std name)
-          | None -> unresolved))
-    imports
-
 let resolve_and_substitute ~resolver ~make_root ~source_id input_file =
   let filename = Fs.File.to_string input_file in
   let impl =
     Odoc_loader.read_impl ~make_root ~filename ~source_id
     |> Error.raise_errors_and_warnings
   in
-  let impl = { impl with imports = resolve_imports resolver impl.imports } in
+  let impl =
+    { impl with imports = Compile.resolve_imports resolver impl.imports }
+  in
   let env = Resolver.build_compile_env_for_impl resolver impl in
   Odoc_xref2.Compile.compile_impl ~filename env impl |> Error.raise_warnings
 
 let root_of_implementation ~source_id ~module_name ~digest =
   let open Root in
-  let result =
-    let file = Odoc_file.create_impl module_name in
-    let id :> Paths.Identifier.OdocId.t = source_id in
-    Ok { id; file; digest }
-  in
-  result
+  let file = Odoc_file.create_impl module_name in
+  let id :> Paths.Identifier.OdocId.t = source_id in
+  Ok { id; file; digest }
 
 let compile ~resolver ~output ~warnings_options ~source_path ~source_parent_file
     input =
