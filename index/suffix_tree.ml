@@ -75,7 +75,12 @@ module Terminals = struct
     | _ -> x :: xs
 
   let hash = Hashtbl.hash
-  let equal = List.equal Entry.equal
+
+  let rec equal xs ys =
+    match xs, ys with
+    | [], [] -> true
+    | x :: xs, y :: ys when Entry.equal x y -> equal xs ys
+    | _ -> false
 
   let mem x = function
     | y :: _ -> Entry.equal x y

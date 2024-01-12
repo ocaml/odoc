@@ -20,8 +20,9 @@
  (name sherlodoc)
  (synopsis "Fuzzy search in OCaml documentation")
  (depends
-  (ocaml (>= 4.14.0))
+  (ocaml (>= 4.0.8))
   (cmdliner (>= 1.2.0))
+  (bigstringaf (>= 0.9.1))
   (decompress (>= 1.5.3))
   (base64 (>= 3.5.1))
   (fpath (>= 0.7.3))

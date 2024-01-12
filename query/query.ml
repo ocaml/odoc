@@ -83,6 +83,15 @@ let match_packages ~packages results =
   | [] -> results
   | _ -> Seq.filter (match_packages ~packages) results
 
+let rec seq_take n xs () =
+  if n = 0
+  then Seq.Nil
+  else begin
+    match xs () with
+    | Seq.Nil -> Seq.Nil
+    | Seq.Cons (x, xs) -> Seq.Cons (x, seq_take (n - 1) xs)
+  end
+
 let search ~shards ?(dynamic_sort = true) params =
   let limit = params.limit in
   let query = Parser.of_string params.query in
@@ -94,6 +103,6 @@ let search ~shards ?(dynamic_sort = true) params =
     let query = Dynamic_cost.of_query query in
     List.of_seq @@ Top_results.of_seq ~query ~limit results
   end
-  else List.of_seq @@ Seq.take params.limit results
+  else List.of_seq @@ seq_take params.limit results
 
 let pretty params = Parser.(to_string @@ of_string params.query)

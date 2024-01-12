@@ -100,6 +100,14 @@ let rec first t =
     let elt_r, r = first r in
     best_opt elt_l elt_r, Union (l, r)
 
+let seq_of_dispenser fn =
+  let rec go () =
+    match fn () with
+    | None -> Seq.Nil
+    | Some x -> Seq.Cons (x, go)
+  in
+  go
+
 let to_seq t =
   let state = ref None in
   let loop () =
@@ -114,4 +122,4 @@ let to_seq t =
       state := Some (elt, t) ;
       Some elt
   in
-  Seq.of_dispenser loop
+  seq_of_dispenser loop

@@ -30,44 +30,29 @@ module Reasoning = struct
       | Lowercase
       | Doc
 
-    let rec is_prefix_at ~sub i s j =
-      if i >= String.length sub
-      then true
-      else if sub.[i] = s.[j]
-      then is_prefix_at ~sub (i + 1) s (j + 1)
-      else false
-
-    let is_substring ~sub s =
-      let rec go j =
-        if j + String.length sub > String.length s
-        then false
-        else if is_prefix_at ~sub 0 s j
-        then true
-        else go (j + 1)
-      in
-      go 0
-
     let with_word query_word name =
       let low_query_word = String.lowercase_ascii query_word in
       let has_case = low_query_word <> query_word in
       let name = if not has_case then String.lowercase_ascii name else name in
-      if String.equal query_word name || String.ends_with ~suffix:("." ^ query_word) name
+      if String.equal query_word name
+         || Name_cost.ends_with ~suffix:("." ^ query_word) name
       then DotSuffix
-      else if String.starts_with ~prefix:query_word name
-              || String.ends_with ~suffix:query_word name
+      else if Name_cost.starts_with ~prefix:query_word name
+              || Name_cost.ends_with ~suffix:query_word name
       then PrefixSuffix
-      else if is_substring ~sub:("(" ^ query_word) name
-              || is_substring ~sub:(query_word ^ ")") name
+      else if Name_cost.is_substring ~sub:("(" ^ query_word) name
+              || Name_cost.is_substring ~sub:(query_word ^ ")") name
       then PrefixSuffix
-      else if is_substring ~sub:("." ^ query_word) name
-              || is_substring ~sub:(query_word ^ ".") name
+      else if Name_cost.is_substring ~sub:("." ^ query_word) name
+              || Name_cost.is_substring ~sub:(query_word ^ ".") name
       then SubDot
-      else if is_substring ~sub:("_" ^ query_word) name
-              || is_substring ~sub:(query_word ^ "_") name
+      else if Name_cost.is_substring ~sub:("_" ^ query_word) name
+              || Name_cost.is_substring ~sub:(query_word ^ "_") name
       then SubUnderscore
-      else if is_substring ~sub:query_word name
+      else if Name_cost.is_substring ~sub:query_word name
       then Sub
-      else if has_case && is_substring ~sub:low_query_word (String.lowercase_ascii name)
+      else if has_case
+              && Name_cost.is_substring ~sub:low_query_word (String.lowercase_ascii name)
       then Lowercase
       else (* Matches only in the docstring are always worse *) Doc
 
@@ -107,7 +92,7 @@ module Reasoning = struct
 
   let is_stdlib entry =
     let open Entry in
-    String.starts_with ~prefix:"Stdlib." entry.name
+    Name_cost.starts_with ~prefix:"Stdlib." entry.name
 
   let name_length entry = String.length entry.Entry.name
   let is_from_module_type entry = entry.Entry.is_from_module_type

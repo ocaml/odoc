@@ -36,7 +36,7 @@ let () = Random.init 123
 
 let random_array size =
   let r =
-    List.init size (fun _ -> Random.full_int (size * 2))
+    List.init size (fun _ -> Random.int (size * 2))
     |> List.sort_uniq Int.compare
     |> Array.of_list
   in
@@ -44,7 +44,7 @@ let random_array size =
 
 let tests_arr name test =
   List.init 50 (fun i ->
-    let elt = Random.full_int ((i * 2) + 1) in
+    let elt = Random.int ((i * 2) + 1) in
     let arr = random_array i in
     let arr_string =
       if i <= 5

@@ -2,6 +2,12 @@ module Entry = Db.Entry
 module Db_common = Db
 module ModuleName = Odoc_model.Names.ModuleName
 
+let string_starts_with ~prefix str =
+  let rec go i =
+    if i >= String.length prefix then true else prefix.[i] = str.[i] && go (i + 1)
+  in
+  String.length prefix <= String.length str && go 0
+
 let generic_cost ~ignore_no_doc name has_doc =
   (* name length is important not because short identifier are better in the
      abstract, but because the shortest result will be close to the query, as
@@ -9,7 +15,7 @@ let generic_cost ~ignore_no_doc name has_doc =
   (String.length name * 6)
   (* + (5 * List.length path) TODO : restore depth based ordering *)
   + (if ignore_no_doc || has_doc then 0 else 400)
-  + if String.starts_with ~prefix:"Stdlib." name then 0 else 100
+  + if string_starts_with ~prefix:"Stdlib." name then 0 else 100
 
 let kind_cost = function
   | Entry.Kind.Doc -> 400

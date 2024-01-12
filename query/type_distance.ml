@@ -124,7 +124,7 @@ let distance xs ys =
     | [], _ -> 0
     | [ "_" ], _ -> 0
     | _, [] -> List.length xs
-    | x :: xs, y :: ys when String.ends_with ~suffix:x y -> memo (i + 1) (j + 1) xs ys
+    | x :: xs, y :: ys when Name_cost.ends_with ~suffix:x y -> memo (i + 1) (j + 1) xs ys
     | _, "->1" :: ys -> memo i (j + 1) xs ys
     | "->1" :: xs, _ -> 1 + memo (i + 1) j xs ys
     | _ :: xs', _ :: ys' ->

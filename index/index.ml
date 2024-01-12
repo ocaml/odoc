@@ -29,8 +29,15 @@ let main files file_list index_docstring index_name type_search db_format db_fil
     match file_list with
     | None -> files
     | Some file_list ->
-      let file_list = open_in file_list in
-      files @ (file_list |> In_channel.input_all |> String.split_on_char '\n')
+      let h = open_in file_list in
+      let rec read_all acc =
+        match Stdlib.input_line h with
+        | exception End_of_file -> List.rev acc
+        | line -> read_all (line :: acc)
+      in
+      let other_files = read_all [] in
+      close_in h ;
+      files @ other_files
   in
   List.iter (index_file register) files ;
   let t = Db_writer.export db in

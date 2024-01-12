@@ -51,7 +51,7 @@ let rec search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db =
   | query ->
     search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query query ;
     search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
-  | None -> print_endline "[Search session ended]"
+  | exception End_of_file -> Printf.printf "\n%!"
 
 let search query print_cost no_rhs static_sort limit pretty_query db_format db_filename =
   let module Storage = (val Db_store.storage_module db_format) in
