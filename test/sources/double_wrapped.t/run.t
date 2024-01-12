@@ -10,11 +10,11 @@ Similar to the lookup_def_wrapped test.
   $ ocamlc -c -o main__.cmo main__.ml -bin-annot -I .
   $ ocamlc -c -open Main__ main.ml -bin-annot -I .
 
-  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . main__A.cmt
+  $ odoc compile-src --source-path a.ml --parent srctree-source.odoc -I . main__A.cmt
   $ odoc compile -I . main__A.cmt
-  $ odoc compile-src --source-path main__.ml --source-parent-file srctree-source.odoc -I . main__.cmt
+  $ odoc compile-src --source-path main__.ml --parent srctree-source.odoc -I . main__.cmt
   $ odoc compile -I . main__.cmt
-  $ odoc compile-src --source-path main.ml --source-parent-file srctree-source.odoc -I . main.cmt
+  $ odoc compile-src --source-path main.ml --parent srctree-source.odoc -I . main.cmt
   $ odoc compile -I . main.cmt
 
   $ odoc link -I . main.odoc

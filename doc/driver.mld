@@ -253,7 +253,7 @@ let compile_src file ?(output_dir = Fpath.v "./") ?(ignore_output = false)
   let open Cmd in
   let source_args =
     Cmd.(
-      v "--source-path" % p source_name % "--source-parent-file"
+      v "--source-path" % p source_name % "--parent"
       % p source_parent_file)
   in
   let cmd =

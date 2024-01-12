@@ -16,11 +16,11 @@ Collecting occurrences is done on implementation files. We thus need a source tr
   $ printf "a.ml\nb.ml\nc.ml\nmain.ml\nmain__.ml\n" > source_tree.map
   $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
 
-  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . main__A.cmt
-  $ odoc compile-src --source-path c.ml --source-parent-file srctree-source.odoc -I . main__C.cmt
-  $ odoc compile-src --source-path b.ml --source-parent-file srctree-source.odoc -I . main__B.cmt
-  $ odoc compile-src --source-path main__.ml --source-parent-file srctree-source.odoc -I . main__.cmt
-  $ odoc compile-src --source-path main.ml --source-parent-file srctree-source.odoc -I . main.cmt
+  $ odoc compile-src --source-path a.ml --parent srctree-source.odoc -I . main__A.cmt
+  $ odoc compile-src --source-path c.ml --parent srctree-source.odoc -I . main__C.cmt
+  $ odoc compile-src --source-path b.ml --parent srctree-source.odoc -I . main__B.cmt
+  $ odoc compile-src --source-path main__.ml --parent srctree-source.odoc -I . main__.cmt
+  $ odoc compile-src --source-path main.ml --parent srctree-source.odoc -I . main.cmt
 
 We need the interface version to resolve the occurrences
 

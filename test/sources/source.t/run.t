@@ -101,7 +101,7 @@ Compile the pages with the --source option:
   $ printf "a.ml\n" > source_tree.map
   $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
 
-  $ odoc compile-src -I . --source-path a.ml --source-parent-file srctree-source.odoc a.cmt
+  $ odoc compile-src -I . --source-path a.ml --parent srctree-source.odoc a.cmt
   $ odoc compile -I . a.cmt
   $ odoc link -I . a.odoc
   $ odoc link -I . src-a.odoc
