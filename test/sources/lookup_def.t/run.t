@@ -7,7 +7,7 @@ Compile the modules:
 
   $ ocamlc -c a.mli a.ml -bin-annot
 
-  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . a.cmt
+  $ odoc compile-src --source-path a.ml --parent srctree-source.odoc -I . a.cmt
   $ odoc compile -I . a.cmti
 
   $ odoc link -I . src-a.odoc

@@ -430,7 +430,7 @@ module Compile_src = struct
       Arg.(
         required
         & opt (some convert_fpath) None
-        & info [ "source-parent-file" ] ~doc ~docv:"srctree-PARENT.odoc")
+        & info [ "parent" ] ~doc ~docv:(Source_tree.prefix ^ "PARENT.odoc"))
     in
     let source_path =
       let doc =

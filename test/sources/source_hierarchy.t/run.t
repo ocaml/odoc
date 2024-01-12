@@ -13,11 +13,11 @@ Compile the modules:
 
 Now, compile the pages with the --source option. The source-name must be included in the source-children of the source-parent:
 
-  $ odoc compile-src -I . --source-path lib/a/a.ml --source-parent-file srctree-source.odoc a.cmt
+  $ odoc compile-src -I . --source-path lib/a/a.ml --parent srctree-source.odoc a.cmt
   $ odoc compile -I . a.cmt
-  $ odoc compile-src -I . --source-path lib/b/b.ml --source-parent-file srctree-source.odoc b.cmt
+  $ odoc compile-src -I . --source-path lib/b/b.ml --parent srctree-source.odoc b.cmt
   $ odoc compile -I . b.cmt
-  $ odoc compile-src -I . --source-path lib/main.ml --source-parent-file srctree-source.odoc c.cmt
+  $ odoc compile-src -I . --source-path lib/main.ml --parent srctree-source.odoc c.cmt
   $ odoc compile -I . c.cmt
   $ odoc link -I . page-root.odoc
   $ odoc link -I . a.odoc

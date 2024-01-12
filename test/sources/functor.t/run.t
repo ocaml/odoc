@@ -8,11 +8,11 @@ Verify the behavior on functors.
   $ ocamlc -c -o s.cmo s.ml -bin-annot -I .
   $ ocamlc -c -o a.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o b.cmo b.ml -bin-annot -I .
-  $ odoc compile-src --source-path s.ml --source-parent-file srctree-source.odoc -I . s.cmt
+  $ odoc compile-src --source-path s.ml --parent srctree-source.odoc -I . s.cmt
   $ odoc compile -I . s.cmt
-  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . a.cmt
+  $ odoc compile-src --source-path a.ml --parent srctree-source.odoc -I . a.cmt
   $ odoc compile -I . a.cmt
-  $ odoc compile-src --source-path b.ml --source-parent-file srctree-source.odoc -I . b.cmt
+  $ odoc compile-src --source-path b.ml --parent srctree-source.odoc -I . b.cmt
   $ odoc compile -I . b.cmt
   $ odoc link -I . s.odoc
   $ odoc link -I . a.odoc

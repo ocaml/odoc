@@ -9,11 +9,11 @@ Checking that source parents are kept, using include.
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
   $ ocamlc -c main.ml -bin-annot -I .
 
-  $ odoc compile-src --source-path b.ml --source-parent-file srctree-source.odoc -I . b.cmt
+  $ odoc compile-src --source-path b.ml --parent srctree-source.odoc -I . b.cmt
   $ odoc compile -I . b.cmt
-  $ odoc compile-src --source-path a.ml --source-parent-file srctree-source.odoc -I . main__A.cmt
+  $ odoc compile-src --source-path a.ml --parent srctree-source.odoc -I . main__A.cmt
   $ odoc compile -I . main__A.cmt
-  $ odoc compile-src --source-path main.ml --source-parent-file srctree-source.odoc -I . main.cmt
+  $ odoc compile-src --source-path main.ml --parent srctree-source.odoc -I . main.cmt
   $ odoc compile -I . main.cmt
 
   $ odoc link -I . main.odoc
