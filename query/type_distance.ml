@@ -79,31 +79,7 @@ end = struct
       @@ args
     | Unhandled -> []
 
-  let hcons_tbl = Hashtbl.create 16
-  let uid_generator = ref 0
-
-  let rec hcons = function
-    | [] -> -1, []
-    | x :: xs ->
-      let uid_xs, xs = hcons xs in
-      (match Hashtbl.find hcons_tbl (uid_xs, x) with
-       | xxs -> xxs
-       | exception Not_found ->
-         let uid = !uid_generator in
-         uid_generator := uid + 1 ;
-         let result = uid, x :: xs in
-         Hashtbl.add hcons_tbl (uid_xs, x) result ;
-         result)
-
-  (** [of_typ t] is a [string list list] representing
-      the type [t]. It allows to compute the distance between two types. It is
-      stored in the database to sort results once they are obtained. *)
-  let of_typ ~ignore_any typ =
-    List.map
-      (fun xs ->
-        let _, xs = hcons xs in
-        xs)
-      (of_typ ~ignore_any ~prefix:[] ~sgn:Pos typ)
+  let of_typ ~ignore_any t = of_typ ~ignore_any ~prefix:[] ~sgn:Pos t
 end
 
 let distance xs ys =

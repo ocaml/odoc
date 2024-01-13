@@ -6,25 +6,10 @@ type t =
   | Any
   | Unhandled
 
-let table = Hashtbl.create 256
-
-let cache t =
-  match Hashtbl.find_opt table t with
-  | Some t -> t
-  | None ->
-    Hashtbl.add table t t ;
-    t
-
-let any = Any
-let unhandled = Unhandled
-let arrow a b = cache (Arrow (a, b))
-let constr name args = cache (Constr (name, args))
-let poly name = cache (Poly name)
-
 let tuple = function
-  | [] -> any
+  | [] -> Any
   | [ x ] -> x
-  | xs -> cache (Tuple xs)
+  | xs -> Tuple xs
 
 let rec show = function
   | Arrow (a, b) -> show_parens a ^ " -> " ^ show b
@@ -53,3 +38,5 @@ and show_tuple = function
   | x :: xs -> show_parens x ^ " * " ^ show_tuple xs
 
 let size typ = typ |> show |> String.length
+let equal = Stdlib.( = )
+let hash = Hashtbl.hash

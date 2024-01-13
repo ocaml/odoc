@@ -1,4 +1,4 @@
-type t = private
+type t =
   | Arrow of t * t
   | Constr of string * t list
   | Tuple of t list
@@ -6,11 +6,8 @@ type t = private
   | Any
   | Unhandled
 
-val arrow : t -> t -> t
-val constr : string -> t list -> t
 val tuple : t list -> t
-val poly : string -> t
-val any : t
-val unhandled : t
 val size : t -> int
 val show : t -> string
+val equal : t -> t -> bool
+val hash : t -> int

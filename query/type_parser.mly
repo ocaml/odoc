@@ -28,7 +28,7 @@ main:
 
 typ:
   | t=typ2 { t }
-  | a=typ2 ARROW b=typ { arrow a b }
+  | a=typ2 ARROW b=typ { Arrow (a, b) }
   ;
 
 typ2:
@@ -36,17 +36,17 @@ typ2:
   ;
 
 typ1:
-  | { any }
+  | { Any }
   | ts=typs { tuple ts }
   | ts=typs w=WORD ws=list(WORD) {
-      List.fold_left (fun acc w -> constr w [acc]) (constr w ts) ws
+      List.fold_left (fun acc w -> Constr (w, [acc])) (Constr (w, ts)) ws
     }
   ;
 
 typ0:
-  | ANY { any }
-  | w=POLY { poly w }
-  | w=WORD { constr w [] }
+  | ANY { Any }
+  | w=POLY { Poly w }
+  | w=WORD { Constr (w, []) }
   ;
 
 typs:

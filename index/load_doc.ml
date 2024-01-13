@@ -34,17 +34,6 @@ let cost ~name ~kind ~doc_html ~rhs =
 
 let string_of_html = Format.asprintf "%a" (Tyxml.Html.pp_elt ())
 
-let rec typ_of_odoc_typ otyp =
-  let open Db.Typexpr in
-  match otyp with
-  | Odoc_model.Lang.TypeExpr.Var _str -> any
-  | Any -> any
-  | Arrow (_lbl, left, right) -> arrow (typ_of_odoc_typ left) (typ_of_odoc_typ right)
-  | Constr (name, args) ->
-    constr (Typename.to_string name) (List.map typ_of_odoc_typ args)
-  | Tuple li -> tuple (List.map typ_of_odoc_typ li)
-  | _ -> unhandled
-
 let with_tokenizer str fn =
   let str = String.lowercase_ascii str in
   let buf = Buffer.create 16 in
@@ -78,11 +67,12 @@ let register_full_name ~db (elt : Db.Entry.t) =
 let searchable_type_of_constructor args res =
   let open Odoc_model.Lang in
   match args with
-  | TypeDecl.Constructor.Tuple args ->
-    (match args with
-     | _ :: _ :: _ -> TypeExpr.(Arrow (None, Tuple args, res))
-     | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
-     | _ -> res)
+  | TypeDecl.Constructor.Tuple args -> begin
+    match args with
+    | _ :: _ :: _ -> TypeExpr.(Arrow (None, Tuple args, res))
+    | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
+    | _ -> res
+  end
   | TypeDecl.Constructor.Record fields ->
     List.fold_left
       (fun res field ->
@@ -93,37 +83,37 @@ let searchable_type_of_constructor args res =
       fields
 
 let searchable_type_of_record parent_type type_ =
-  let open Odoc_model.Lang in
-  TypeExpr.Arrow (None, parent_type, type_)
+  Odoc_model.Lang.TypeExpr.Arrow (None, parent_type, type_)
 
-let convert_kind (Odoc_search.Entry.{ kind; _ } as entry) =
+let convert_kind ~db (Odoc_search.Entry.{ kind; _ } as entry) =
   let open Odoc_search.Entry in
   match kind with
   | TypeDecl _ -> Entry.Kind.Type_decl (Odoc_search.Html.typedecl_params_of_entry entry)
-  | Module -> Entry.Kind.Module
   | Value { value = _; type_ } ->
-    let typ = typ_of_odoc_typ type_ in
+    let typ = Db_writer.type_of_odoc ~db type_ in
     Entry.Kind.Val typ
   | Constructor { args; res } ->
-    let searchable_type = searchable_type_of_constructor args res in
-    let typ = typ_of_odoc_typ searchable_type in
+    let typ = searchable_type_of_constructor args res in
+    let typ = Db_writer.type_of_odoc ~db typ in
     Entry.Kind.Constructor typ
+  | ExtensionConstructor { args; res } ->
+    let typ = searchable_type_of_constructor args res in
+    let typ = Db_writer.type_of_odoc ~db typ in
+    Entry.Kind.Extension_constructor typ
+  | Exception { args; res } ->
+    let typ = searchable_type_of_constructor args res in
+    let typ = Db_writer.type_of_odoc ~db typ in
+    Entry.Kind.Exception typ
   | Field { mutable_ = _; parent_type; type_ } ->
-    let typ = type_ |> searchable_type_of_record parent_type |> typ_of_odoc_typ in
+    let typ = searchable_type_of_record parent_type type_ in
+    let typ = Db_writer.type_of_odoc ~db typ in
     Entry.Kind.Field typ
   | Doc _ -> Doc
-  | Exception { args; res } ->
-    let searchable_type = searchable_type_of_constructor args res in
-    let typ = typ_of_odoc_typ searchable_type in
-    Entry.Kind.Exception typ
   | Class_type _ -> Class_type
   | Method _ -> Method
   | Class _ -> Class
   | TypeExtension _ -> Type_extension
-  | ExtensionConstructor { args; res } ->
-    let searchable_type = searchable_type_of_constructor args res in
-    let typ = typ_of_odoc_typ searchable_type in
-    Entry.Kind.Extension_constructor typ
+  | Module -> Entry.Kind.Module
   | ModuleType -> Module_type
 
 let register_type_expr ~db elt typ =
@@ -188,7 +178,7 @@ let register_entry
       | _ -> doc_html
     in
     let rhs = Html.rhs_of_kind kind in
-    let kind = convert_kind entry in
+    let kind = convert_kind ~db entry in
     let name =
       match kind with
       | Doc -> prefixname id
