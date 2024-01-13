@@ -71,7 +71,7 @@ type t = string * int * Sign.t
     The integer represents the occurences of the polarity, as explained in the
     toplevel documentation of the module. *)
 
-val of_typ : any_is_poly:bool -> all_names:bool -> Typexpr.t -> t Seq.t
+val of_typ : any_is_poly:bool -> Typexpr.t -> t Seq.t
 (** [of_typ ~ignore_any ~all_names typ] is the list of polarised types
     corresponding to [typ].
 

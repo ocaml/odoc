@@ -13,16 +13,16 @@ type t =
 let array_find ~str chr arr =
   let rec go i =
     if i >= Array.length arr
-    then raise Not_found
+    then None
     else begin
       let node = arr.(i) in
-      if chr = str.[node.start - 1] then node else go (i + 1)
+      if chr = str.[node.start - 1] then Some node else go (i + 1)
     end
   in
   go 0
 
 let array_find ~str chr = function
-  | None -> raise Not_found
+  | None -> None
   | Some arr -> array_find ~str chr arr
 
 let lcp i_str i j_str j j_len =
@@ -39,27 +39,84 @@ let lcp i_str i j_str j j_len =
 
 let rec find ~str node pattern i =
   if i >= String.length pattern
-  then node
-  else (
-    let chr = pattern.[i] in
-    let child = array_find ~str chr node.children in
-    find_lcp ~str child pattern (i + 1))
+  then Some node
+  else begin
+    match array_find ~str pattern.[i] node.children with
+    | None -> None
+    | Some child -> find_lcp ~str child pattern (i + 1)
+  end
 
 and find_lcp ~str child pattern i =
   let n = lcp pattern i str child.start child.len in
   if i + n = String.length pattern
-  then { child with start = child.start + n }
+  then Some { child with start = child.start + n; len = child.len - n }
   else if n = child.len
   then find ~str child pattern (i + n)
-  else raise Not_found
+  else None
 
 let find t pattern =
-  let child = find ~str:t.str t.t pattern 0 in
-  { str = t.str; t = child }
+  match find_lcp ~str:t.str t.t pattern 0 with
+  | None -> None
+  | Some child -> Some { str = t.str; t = child }
 
-let find t pattern =
-  try Some (find t pattern) with
-  | Not_found -> None
+let advance node =
+  assert (node.len >= 1) ;
+  { node with start = node.start + 1; len = node.len - 1 }
+
+let stepback node =
+  assert (node.len >= 0) ;
+  { node with start = node.start - 1; len = node.len + 1 }
+
+let rec find_skip ~spaces t pattern =
+  let skip () =
+    let node = t.t in
+    if node.len >= 1
+    then begin
+      let spaces = spaces + if t.str.[node.start] = ' ' then 1 else 0 in
+      if spaces > 1 then [] else find_skip ~spaces { t with t = advance t.t } pattern
+    end
+    else begin
+      match node.children with
+      | None -> []
+      | Some children ->
+        snd
+        @@ List.fold_left
+             (fun (i, acc) child ->
+               let xs = find_skip ~spaces { t with t = stepback child } pattern in
+               i + 1, List.rev_append xs acc)
+             (0, [])
+        @@ Array.to_list children
+    end
+  in
+  if spaces = 0
+  then skip ()
+  else begin
+    let skip = skip () in
+    match find t pattern with
+    | Some here -> here :: skip
+    | None -> skip
+  end
+
+let find_star t pattern =
+  let rec go t = function
+    | [] -> [ t ]
+    | p :: ps -> begin
+      let ts = find_skip ~spaces:0 t p in
+      List.fold_left
+        (fun acc t ->
+          let xs = go t ps in
+          List.rev_append xs acc)
+        []
+        ts
+    end
+  in
+  match String.split_on_char ' ' pattern with
+  | [] -> []
+  | p :: ps -> begin
+    match find t p with
+    | None -> []
+    | Some t -> go t ps
+  end
 
 let min_opt a b =
   match a, b with

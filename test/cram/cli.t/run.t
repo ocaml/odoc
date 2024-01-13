@@ -107,6 +107,7 @@ TODO : get a result for the query bellow
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   $ sherlodoc search ": ('a -> 'b) -> 'a t -> 'b t"
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
 TODO : get a result for the query bellow
   $ sherlodoc search ": 'a bo"

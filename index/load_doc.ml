@@ -117,7 +117,7 @@ let convert_kind ~db (Odoc_search.Entry.{ kind; _ } as entry) =
   | ModuleType -> Module_type
 
 let register_type_expr ~db elt typ =
-  let type_polarities = Db.Type_polarity.of_typ ~any_is_poly:true ~all_names:true typ in
+  let type_polarities = Db.Type_polarity.of_typ ~any_is_poly:true typ in
   Db_writer.store_type_polarities db elt type_polarities
 
 let register_kind ~db elt =

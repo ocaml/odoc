@@ -18,7 +18,7 @@ let polarities typ =
   List.of_seq
   @@ Seq.filter
        (fun (word, _count, _) -> String.length word > 0)
-       (Db.Type_polarity.of_typ ~any_is_poly:false ~all_names:false typ)
+       (Db.Type_polarity.of_typ ~any_is_poly:false typ)
 
 let find_types ~shard typ =
   let polarities = polarities typ in
@@ -30,17 +30,18 @@ let find_types ~shard typ =
            | Db.Type_polarity.Sign.Pos -> shard.Db.db_pos_types
            | Neg -> shard.Db.db_neg_types
          in
-         Db.Occurences.fold
-           (fun occurrences st acc ->
-             if occurrences < count
-             then acc
-             else begin
-               match Tree.find st name with
-               | Some trie -> Succ.union acc (Succ.of_automata trie)
-               | None -> acc
-             end)
-           st_occ
-           Succ.empty)
+         Succ.union_of_list
+         @@ Db.Occurences.fold
+              (fun occurrences st acc ->
+                if occurrences < count
+                then acc
+                else begin
+                  let ts = Tree.find_star st name in
+                  let ss = List.map Succ.of_automata ts in
+                  List.rev_append ss acc
+                end)
+              st_occ
+              [])
        polarities
 
 let find_names ~shard names =
