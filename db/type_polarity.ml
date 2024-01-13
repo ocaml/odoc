@@ -26,7 +26,7 @@ let rec of_typ ~any_is_poly ~prefix ~sgn = function
       (of_typ ~any_is_poly ~prefix ~sgn:(Sign.not sgn) a)
       (of_typ ~any_is_poly ~prefix ~sgn b)
   | Constr (name, args) -> begin
-    let prefix = name :: prefix in
+    let prefix = String.lowercase_ascii name :: prefix in
     match args with
     | [] -> [ sgn, prefix ]
     | _ ->

@@ -228,31 +228,31 @@
   440 val Base.List.find : 'a t -> f:('a -> bool) -> 'a option
   440 val Base.List.mapi : 'a t -> f:(int -> 'a -> 'b) -> 'b t
   $ sherlodoc search --print-cost ": list"
+  314 val Base.List.rev : 'a t -> 'a t
   320 val Base.Map.data : (_, 'v, _) t -> 'v list
   320 val Base.Map.keys : ('k, _, _) t -> 'k list
+  323 val Base.List.join : 'a t t -> 'a t
+  329 val Base.List.drop : 'a t -> int -> 'a t
+  329 val Base.List.take : 'a t -> int -> 'a t
+  332 val Base.List.map : 'a t -> f:('a -> 'b) -> 'b t
+  333 val Base.List.return : 'a -> 'a t
+  335 val Base.List.tl_exn : 'a t -> 'a t
+  337 val Base.List.concat : 'a t t -> 'a t
   337 val Base.Set.to_list : ('a, _) t -> 'a list
+  338 val Base.List.sub : 'a t -> pos:int -> len:int -> 'a t
+  339 val Base.List.init : int -> f:(int -> 'a) -> 'a t
+  341 val Base.List.bind : 'a t -> f:('a -> 'b t) -> 'b t
+  344 val Base.List.(>>|) : 'a t -> ('a -> 'b) -> 'b t
+  344 val Base.List.append : 'a t -> 'a t -> 'a t
   344 val Base.Hashtbl.data : (_, 'b) t -> 'b list
   344 val Base.Set.elements : ('a, _) t -> 'a list
   344 val Base.Bytes.to_list : t -> char list
+  346 val Base.List.(>>=) : 'a t -> ('a -> 'b t) -> 'b t
   346 val Base.String.split : t -> on:char -> t list
+  347 val Base.List.mapi : 'a t -> f:(int -> 'a -> 'b) -> 'b t
   348 val Base.Hashtbl.keys : ('a, _) t -> 'a key list
-  376 val Base.String.split_lines : t -> t list
-  378 val Base.Map.find_multi : ('k, 'v list, 'cmp) t -> 'k -> 'v list
-  379 val Base.Hashtbl.Poly.data : (_, 'b) t -> 'b list
-  379 val Base.String.to_list_rev : t -> char list
-  383 val Base.Hashtbl.Poly.keys : ('a, _) t -> 'a key list
-  384 val Base.Pretty_printer.all : unit -> string list
-  385 val Base.Hashtbl.to_alist : ('a, 'b) t -> ('a key * 'b) list
-  389 val Base.Set.group_by : ('a, 'cmp) t -> equiv:('a -> 'a -> bool) -> ('a, 'cmp) t list
-  389 val Base.Sequence.split_n : 'a t -> int -> 'a list * 'a t
-  392 val Base.Sequence.group : 'a t -> break:('a -> 'a -> bool) -> 'a list t
-  394 val Base.Sequence.to_list_rev : 'a t -> 'a list
-  401 val Base.Map.to_alist : ?key_order:[ `Increasing | `Decreasing ] -> ('k, 'v, _) t -> ('k * 'v) list
-  403 val Base.Hashtbl.find_multi : ('a, 'b list) t -> 'a key -> 'b list
-  404 val Base.Sequence.chunks_exn : 'a t -> int -> 'a list t
-  410 val Base.Map.add_multi : ('k, 'v list, 'cmp) t -> key:'k -> data:'v -> ('k, 'v list, 'cmp) t
-  412 val Base.List.find_all_dups : 'a t -> compare:('a -> 'a -> int) -> 'a list
-  414 val Base.String.split_on_chars : t -> on:char list -> t list
+  351 val Base.List.ignore_m : 'a t -> unit t
+  353 val Base.List.sort : 'a t -> compare:('a -> 'a -> int) -> 'a t
 
 Partial name search:
   $ sherlodoc search --print-cost "strin"
