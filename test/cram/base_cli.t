@@ -80,15 +80,12 @@
     get_key:('r -> 'a key) ->
     'r list ->
     [ `Ok of ('a, 'r) t | `Duplicate_keys of 'a key list ]
-  1092 val Base.Map.S_poly.Make_applicative_traversals.A.(<*>) : ('a -> 'b) t -> 'a t -> 'b t
   1099 val Base.Hashtbl.S_poly.create_mapped : ?growth_allowed:bool ->
     ?size:int ->
     get_key:('r -> 'a key) ->
     get_data:('r -> 'b) ->
     'r list ->
     [ `Ok of ('a, 'b) t | `Duplicate_keys of 'a key list ]
-  1145 mod Base.Map.S_poly.Make_applicative_traversals.A.Applicative_infix
-  1218 val Base.Map.S_poly.Make_applicative_traversals.A.Applicative_infix.(<*>) : ('a -> 'b) t -> 'a t -> 'b t
   1323 type ('a, 'b) Base.Map.S_poly.t
   1323 type 'elt Base.Set.S_poly.t
   1337 type ('a, 'cmp) Base.Set.S_poly.set
@@ -137,7 +134,10 @@
   1391 val Base.Set.S_poly.of_array : 'a array -> 'a t
   1391 val Base.Set.S_poly.to_array : 'a t -> 'a array
   1392 val Base.Set.S_poly.singleton : 'a -> 'a t
+  1395 val Base.Hashtbl.S_poly.mem : ('a, _) t -> 'a key -> bool
+  1395 val Base.Map.S_poly.of_tree : ('k, 'v) tree -> ('k, 'v) t
   1395 val Base.Map.S_poly.to_tree : ('k, 'v) t -> ('k, 'v) tree
+  1396 val Base.Map.S_poly.nth_exn : ('k, 'v) t -> int -> 'k * 'v
   $ sherlodoc search --print-cost --no-rhs "group b"
   453 val Base.List.group
   484 val Base.Sequence.group

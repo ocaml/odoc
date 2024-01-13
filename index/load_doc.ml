@@ -86,7 +86,6 @@ let searchable_type_of_record parent_type type_ =
   Odoc_model.Lang.TypeExpr.Arrow (None, parent_type, type_)
 
 let convert_kind ~db (Odoc_search.Entry.{ kind; _ } as entry) =
-  let open Odoc_search.Entry in
   match kind with
   | TypeDecl _ -> Entry.Kind.Type_decl (Odoc_search.Html.typedecl_params_of_entry entry)
   | Value { value = _; type_ } ->
@@ -126,29 +125,26 @@ let register_kind ~db elt =
   | None -> ()
   | Some typ -> register_type_expr ~db elt typ
 
-let rec is_from_module_type (id : Odoc_model.Paths.Identifier.Any.t) =
+let rec categorize (id : Odoc_model.Paths.Identifier.Any.t) =
   let open Odoc_model.Paths in
   match id.iv with
-  | `CoreType _ | `CoreException _ | `Root _ | `Page _ | `LeafPage _ -> false
-  | `ModuleType _ -> true
+  | `CoreType _ | `CoreException _ | `Root _ | `Page _ | `LeafPage _ -> `definition
+  | `ModuleType _ -> `declaration
+  | `Parameter _ -> `ignore (* redundant with indexed signature *)
   | #Identifier.NonSrc.t_pv as x ->
     let parent = Identifier.label_parent { id with iv = x } in
-    is_from_module_type (parent :> Identifier.Any.t)
-  | _ -> false
+    categorize (parent :> Identifier.Any.t)
+  | `AssetFile _ | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
+  | `SourceLocationInternal _ ->
+    `ignore (* unclear what to do with those *)
 
-let is_from_module_type Odoc_search.Entry.{ id; _ } =
+let categorize Odoc_search.Entry.{ id; _ } =
   match id.iv with
   | `ModuleType (parent, _) ->
     (* A module type itself is not *from* a module type, but it might be if one
        of its parents is a module type. *)
-    is_from_module_type (parent :> Odoc_model.Paths.Identifier.Any.t)
-  | _ -> is_from_module_type id
-
-let prefixname id =
-  let parts = Odoc_model.Paths.Identifier.fullname id in
-  match List.rev parts with
-  | [] -> ""
-  | _ :: prefix -> String.concat "." (List.rev prefix)
+    categorize (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | _ -> categorize id
 
 let register_entry
   ~db
@@ -156,42 +152,44 @@ let register_entry
   ~type_search
   ~index_docstring
   ~pkg
+  ~cat
   (Odoc_search.Entry.{ id; doc; kind } as entry)
   =
   let module Sherlodoc_entry = Entry in
   let open Odoc_search in
-  let open Odoc_search.Entry in
-  let is_type_extension =
+  let name = String.concat "." (Odoc_model.Paths.Identifier.fullname id) in
+  let doc_txt = Text.of_doc doc in
+  let doc_html =
+    match doc_txt with
+    | "" -> ""
+    | _ -> string_of_html (Html.of_doc doc)
+  in
+  let rhs = Html.rhs_of_kind kind in
+  let kind = convert_kind ~db entry in
+  let cost = cost ~name ~kind ~doc_html ~rhs in
+  let url = Result.get_ok (Html.url id) in
+  let is_from_module_type = cat <> `definition in
+  let elt =
+    Sherlodoc_entry.v ~name ~kind ~rhs ~doc_html ~cost ~url ~is_from_module_type ~pkg ()
+  in
+  if index_docstring then register_doc ~db elt doc_txt ;
+  if index_name && kind <> Doc then register_full_name ~db elt ;
+  if type_search then register_kind ~db elt
+
+let register_entry
+  ~db
+  ~index_name
+  ~type_search
+  ~index_docstring
+  ~pkg
+  (Odoc_search.Entry.{ id; kind; _ } as entry)
+  =
+  let cat = categorize entry in
+  let is_pure_documentation =
     match kind with
-    | TypeExtension _ -> true
+    | Doc _ -> true
     | _ -> false
   in
-  if Odoc_model.Paths.Identifier.is_internal id || is_type_extension
+  if is_pure_documentation || cat = `ignore || Odoc_model.Paths.Identifier.is_internal id
   then ()
-  else begin
-    let full_name = id |> Odoc_model.Paths.Identifier.fullname |> String.concat "." in
-    let doc_txt = Text.of_doc doc in
-    let doc_html = doc |> Html.of_doc |> string_of_html in
-    let doc_html =
-      match doc_txt with
-      | "" -> ""
-      | _ -> doc_html
-    in
-    let rhs = Html.rhs_of_kind kind in
-    let kind = convert_kind ~db entry in
-    let name =
-      match kind with
-      | Doc -> prefixname id
-      | _ -> full_name
-    in
-    let cost = cost ~name ~kind ~doc_html ~rhs in
-    let url = Html.url id in
-    let url = Result.get_ok url in
-    let is_from_module_type = is_from_module_type entry in
-    let elt =
-      Sherlodoc_entry.v ~name ~kind ~rhs ~doc_html ~cost ~url ~is_from_module_type ~pkg ()
-    in
-    if index_docstring then register_doc ~db elt doc_txt ;
-    if index_name && kind <> Doc then register_full_name ~db elt ;
-    if type_search then register_kind ~db elt
-  end
+  else register_entry ~db ~index_name ~type_search ~index_docstring ~pkg ~cat entry

@@ -30,7 +30,6 @@
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
-  doc 
   $ sherlodoc search "map"
   mod Main.Map
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
@@ -76,14 +75,13 @@
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   type Main.extensible_type = ..
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  type Main.MyExtension
   val Main.nesting_priority : foo
   val Main.consume_2_other : moo -> t -> unit
   cons Main.MyExtension : moo -> extensible_type
   val Main.Nest.nesting_priority : foo
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
-  doc 
-  doc 
   $ sherlodoc search "qwertyuiopasdfghjklzxcvbnm"
   [No results]
   $ sherlodoc search "hidden"

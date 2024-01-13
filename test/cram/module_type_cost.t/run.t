@@ -12,7 +12,6 @@ the module type.
   $ sherlodoc search --print-cost --no-rhs "my_function"
   839 val Main.M.my_function
   860 val Main.Make.my_function
-  874 val Main.Make.M.my_function
   1239 val Main.S.my_function
 Here we expect both the module type and the module to be ranked the same
   $ sherlodoc search --print-cost "module"
