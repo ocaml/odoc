@@ -62,28 +62,26 @@ let rec succ ~strictness t elt =
       | Some e -> assert (Entry.compare elt e <= 0)
     end ;
     Priority_queue.minimum pqueue, Pq pqueue
-  | Union (l, r) ->
-    let elt_l, l = succ ~strictness l elt in
-    let elt_r, r = succ ~strictness r elt in
-    best_opt elt_l elt_r, Union (l, r)
+  | Union (l, r) -> begin
+    match succ ~strictness l elt with
+    | None, _ -> succ ~strictness r elt
+    | Some elt_l, l when strictness = Ge && Entry.equal elt elt_l -> Some elt, Union (l, r)
+    | elt_l, l ->
+      let elt_r, r = succ ~strictness r elt in
+      best_opt elt_l elt_r, Union (l, r)
+  end
   | Inter (l, r) ->
     let rec loop elt l r =
       match succ ~strictness:Ge l elt with
       | None, _ -> None, Empty
-      | Some elt_l, l -> begin
-        match succ ~strictness:Ge r elt_l with
-        | None, _ -> None, Empty
-        | Some elt_r, r ->
-          assert (Entry.compare elt_l elt_r <= 0) ;
-          if Entry.compare elt_l elt_r = 0
-          then Some elt_l, Inter (l, r)
-          else loop elt_r l r
-      end
+      | Some elt', l ->
+        assert (Entry.compare elt elt' <= 0) ;
+        if Entry.equal elt elt' then Some elt, Inter (l, r) else loop elt' r l
     in
     begin
       match succ ~strictness l elt with
       | None, _ -> None, Empty
-      | Some elt, l -> loop elt l r
+      | Some elt_l, l -> loop elt_l r l
     end
 
 let rec first t =
