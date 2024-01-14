@@ -55,6 +55,6 @@ let regroup lst =
 let of_typ ~any_is_poly t =
   t
   |> of_typ ~any_is_poly ~prefix:[] ~sgn:Pos
-  |> List.map (fun (polarity, path) -> polarity, String.concat " " path)
+  |> List.map (fun (polarity, path) -> polarity, String.concat " " (List.rev path))
   |> regroup
   |> Seq.map (fun ((polarity, path), count) -> path, count, polarity)

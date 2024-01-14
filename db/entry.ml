@@ -50,7 +50,6 @@ module T = struct
     ; cost : int
     ; doc_html : string
     ; pkg : Package.t
-    ; is_from_module_type : bool
     }
 
   let string_compare_shorter a b =
@@ -125,7 +124,7 @@ let link t =
   in
   pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
 
-let v ~name ~kind ~cost ~rhs ~doc_html ~url ~is_from_module_type ~pkg () =
+let v ~name ~kind ~cost ~rhs ~doc_html ~url ~pkg () =
   { name = non_empty_string name
   ; kind
   ; url = non_empty_string url
@@ -133,5 +132,4 @@ let v ~name ~kind ~cost ~rhs ~doc_html ~url ~is_from_module_type ~pkg () =
   ; doc_html = non_empty_string doc_html
   ; pkg
   ; rhs = Option.map non_empty_string rhs
-  ; is_from_module_type
   }

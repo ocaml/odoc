@@ -36,7 +36,6 @@ type t =
   ; cost : int
   ; doc_html : string
   ; pkg : Package.t
-  ; is_from_module_type : bool
   }
 
 val v
@@ -46,7 +45,6 @@ val v
   -> rhs:string option
   -> doc_html:string
   -> url:string
-  -> is_from_module_type:bool
   -> pkg:Package.t
   -> unit
   -> t

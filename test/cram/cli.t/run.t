@@ -16,24 +16,24 @@
   val Main.multiple_hit_2 : foo
   val Main.multiple_hit_3 : foo
   $ sherlodoc search --print-cost "name_conflict"
-  832 val Main.name_conflict : foo
-  832 type Main.name_conflict = foo
+  169 val Main.name_conflict : foo
+  169 type Main.name_conflict = foo
   $ sherlodoc search "nesting_priority"
   val Main.nesting_priority : foo
   val Main.Nest.nesting_priority : foo
   $ sherlodoc search "list"
-  mod Main.List
   type 'a Main.list
-  type 'a Main.List.t = 'a list
   val Main.Map.to_list : foo
+  type 'a Main.List.t = 'a list
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  mod Main.List
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
   $ sherlodoc search "map"
-  mod Main.Map
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.Map.to_list : foo
+  mod Main.Map
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
@@ -56,30 +56,30 @@
   val Main.value : moo
   $ sherlodoc search ":moo -> _"
   val Main.consume : moo -> unit
+  cons Main.MyExtension : moo -> extensible_type
   val Main.consume_2 : moo -> moo -> unit
   val Main.consume_2_other : moo -> t -> unit
-  cons Main.MyExtension : moo -> extensible_type
   $ sherlodoc search "modtype"
   sig Main.Modtype
   val Main.Modtype.v_modtype : foo
   $ sherlodoc search "S"
   sig Main.S
-  mod Main.List
-  mod Main.Nest
   mod Main.S_to_S1
   type 'a Main.list
+  type Main.MyExtension
+  type Main.extensible_type = ..
   type 'a Main.List.t = 'a list
   val Main.consume : moo -> unit
   val Main.Map.to_list : foo
-  val Main.consume_2 : moo -> moo -> unit
-  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  type Main.extensible_type = ..
-  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
-  type Main.MyExtension
   val Main.nesting_priority : foo
+  val Main.consume_2 : moo -> moo -> unit
+  val Main.Nest.nesting_priority : foo
   val Main.consume_2_other : moo -> t -> unit
   cons Main.MyExtension : moo -> extensible_type
-  val Main.Nest.nesting_priority : foo
+  val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  mod Main.List
+  mod Main.Nest
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.foo : foo
   $ sherlodoc search "qwertyuiopasdfghjklzxcvbnm"
@@ -94,19 +94,19 @@ TODO : get a result for the query bellow
   $ sherlodoc search ":'a"
   val Main.poly_1 : 'a -> 'b -> 'c
   val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
-  val Main.poly_param : 'a boo
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  val Main.poly_param : 'a boo
   $ sherlodoc search ": 'a -> 'b -> 'c "
   val Main.poly_1 : 'a -> 'b -> 'c
   val Main.poly_2 : 'a -> 'b -> 'c -> 'a -> 'b -> 'c
-  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   $ sherlodoc search ": ('a -> 'b) -> 'a t -> 'b t"
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
-  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
 TODO : get a result for the query bellow
   $ sherlodoc search ": 'a bo"
   val Main.poly_param : 'a boo

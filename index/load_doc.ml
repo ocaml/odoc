@@ -8,29 +8,29 @@ let string_starts_with ~prefix str =
   in
   String.length prefix <= String.length str && go 0
 
-let generic_cost ~ignore_no_doc name has_doc =
-  (* name length is important not because short identifier are better in the
-     abstract, but because the shortest result will be close to the query, as
-     the suffix tree does not return results shorter than the query*)
-  (String.length name * 6)
-  (* + (5 * List.length path) TODO : restore depth based ordering *)
-  + (if ignore_no_doc || has_doc then 0 else 400)
-  + if string_starts_with ~prefix:"Stdlib." name then 0 else 100
+let path_length str =
+  let rec go i acc =
+    if i >= String.length str
+    then acc
+    else go (i + 1) (if str.[i] = '.' then acc + 1 else acc)
+  in
+  go 0 0
 
 let kind_cost = function
-  | Entry.Kind.Doc -> 400
-  | _ -> 0
+  | Entry.Kind.Constructor _ | Entry.Kind.Exception _ | Entry.Kind.Extension_constructor _
+  | Entry.Kind.Field _ | Entry.Kind.Type_decl _ | Entry.Kind.Type_extension
+  | Entry.Kind.Val _ ->
+    0
+  | _ -> 50
 
-let cost ~name ~kind ~doc_html ~rhs =
-  let ignore_no_doc =
-    match kind with
-    | Entry.Kind.Module | Module_type -> true
-    | _ -> false
-  in
-  let has_doc = doc_html <> "" in
-  generic_cost ~ignore_no_doc name has_doc
-  + kind_cost kind
+let cost ~name ~kind ~doc_html ~rhs ~cat =
+  String.length name
+  + (5 * path_length name)
+  + (if string_starts_with ~prefix:"Stdlib." name then 0 else 20)
   + String.length (Option.value ~default:"" rhs)
+  + kind_cost kind
+  + (if cat = `definition then 0 else 100)
+  + if doc_html <> "" then 0 else 100
 
 let string_of_html = Format.asprintf "%a" (Tyxml.Html.pp_elt ())
 
@@ -166,12 +166,9 @@ let register_entry
   in
   let rhs = Html.rhs_of_kind kind in
   let kind = convert_kind ~db entry in
-  let cost = cost ~name ~kind ~doc_html ~rhs in
+  let cost = cost ~name ~kind ~doc_html ~rhs ~cat in
   let url = Result.get_ok (Html.url id) in
-  let is_from_module_type = cat <> `definition in
-  let elt =
-    Sherlodoc_entry.v ~name ~kind ~rhs ~doc_html ~cost ~url ~is_from_module_type ~pkg ()
-  in
+  let elt = Sherlodoc_entry.v ~name ~kind ~rhs ~doc_html ~cost ~url ~pkg () in
   if index_docstring then register_doc ~db elt doc_txt ;
   if index_name && kind <> Doc then register_full_name ~db elt ;
   if type_search then register_kind ~db elt

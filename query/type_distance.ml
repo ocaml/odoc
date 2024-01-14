@@ -41,25 +41,25 @@ end = struct
 
   let rev_concat lst = List.fold_left (fun acc xs -> List.rev_append xs acc) [] lst
 
-  let rec of_typ ~ignore_any ~prefix ~sgn t =
+  let rec of_typ ~ignore_any ~prefix t =
     match t with
     | Db.Typexpr.Poly _ ->
       let poly = "POLY" in
-      [ poly :: Sign.to_string sgn :: prefix ]
+      [ poly :: prefix ]
     | Any ->
       if ignore_any
-      then [ prefix ]
+      then [ "_" :: prefix ]
       else (
         let poly = "POLY" in
-        [ poly :: Sign.to_string sgn :: prefix ])
+        [ poly :: prefix ])
     | Arrow (a, b) ->
       let prefix_left = "->0" :: prefix in
       let prefix_right = "->1" :: prefix in
       List.rev_append
-        (of_typ ~ignore_any ~prefix:prefix_left ~sgn:(Sign.not sgn) a)
-        (of_typ ~ignore_any ~prefix:prefix_right ~sgn b)
+        (of_typ ~ignore_any ~prefix:prefix_left a)
+        (of_typ ~ignore_any ~prefix:prefix_right b)
     | Constr (name, args) ->
-      let prefix = name :: Sign.to_string sgn :: prefix in
+      let prefix = name :: prefix in
       begin
         match args with
         | [] -> [ prefix ]
@@ -68,19 +68,22 @@ end = struct
           @@ List.mapi
                (fun i arg ->
                  let prefix = string_of_int i :: prefix in
-                 of_typ ~ignore_any ~prefix ~sgn arg)
+                 of_typ ~ignore_any ~prefix arg)
                args
       end
     | Tuple args ->
       rev_concat
       @@ List.mapi (fun i arg ->
         let prefix = (string_of_int i ^ "*") :: prefix in
-        of_typ ~ignore_any ~prefix ~sgn arg)
+        of_typ ~ignore_any ~prefix arg)
       @@ args
     | Unhandled -> []
 
-  let of_typ ~ignore_any t = of_typ ~ignore_any ~prefix:[] ~sgn:Pos t
+  let of_typ ~ignore_any t = List.map List.rev @@ of_typ ~ignore_any ~prefix:[] t
 end
+
+let skip_query x = 10 * String.length x
+let skip_entry _ = 15
 
 let distance xs ys =
   let len_xs = List.length xs in
@@ -97,17 +100,24 @@ let distance xs ys =
     end
   and go i j xs ys =
     match xs, ys with
+    | [], [] -> 0
     | [], _ -> 0
     | [ "_" ], _ -> 0
-    | _, [] -> List.length xs
-    | x :: xs, y :: ys when Name_cost.ends_with ~suffix:x y -> memo (i + 1) (j + 1) xs ys
+    | x :: xs, y :: ys when x = y -> memo (i + 1) (j + 1) xs ys
     | _, "->1" :: ys -> memo i (j + 1) xs ys
     | "->1" :: xs, _ -> 1 + memo (i + 1) j xs ys
-    | _ :: xs', _ :: ys' ->
-      7
-      + min
-          (memo (i + 1) (j + 1) xs' ys')
-          (min (memo (i + 1) j xs' ys) (memo i (j + 1) xs ys'))
+    | xs, [] -> List.fold_left (fun acc x -> acc + skip_query x) 0 xs
+    | x :: xs', y :: ys' ->
+      let skip_x = skip_query x in
+      let skip_y = skip_entry y in
+      let cost =
+        match Name_cost.best_match ~sub:x y with
+        | None -> skip_x + skip_y
+        | Some cost -> cost
+      in
+      min
+        (cost + memo (i + 1) (j + 1) xs' ys')
+        (min (skip_x + memo (i + 1) j xs' ys) (skip_y + memo i (j + 1) xs ys'))
   in
   go 0 0 xs ys
 
@@ -177,10 +187,6 @@ let v ~query_paths ~entry =
   | _, [] | [], _ -> 0
   | _ ->
     let arr =
-      List.map
-        (fun p ->
-          let p = List.rev p in
-          List.map (fun q -> distance (List.rev q) p) query_paths)
-        entry_paths
+      List.map (fun p -> List.map (fun q -> distance q p) query_paths) entry_paths
     in
     minimize arr

@@ -12,7 +12,7 @@ type step =
   | Stop of t
 
 let update_entry query entry =
-  let extra_cost = Dynamic_cost.cost_of_entry query entry in
+  let extra_cost = Dynamic_cost.score query entry in
   Db.Entry.{ entry with cost = entry.cost + extra_cost }
 
 let add ~query ~limit elt t =

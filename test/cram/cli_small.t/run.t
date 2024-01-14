@@ -8,10 +8,10 @@
   $ export SHERLODOC_FORMAT=ancient
   $ sherlodoc index $(find . -name '*.odocl')
   $ sherlodoc search --print-cost "list"
-  263 mod Main.List
-  763 type 'a Main.list
-  891 type 'a Main.List.t = 'a list
-  923 val Main.List.empty : 'a t * 'b t
-  924 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  154 type 'a Main.list
+  221 type 'a Main.List.t = 'a list
+  229 val Main.List.empty : 'a t * 'b t
+  242 val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
+  254 mod Main.List
   $ sherlodoc search ": (int, 'a) result"
   val Main.ok_zero : (int, 'a) result
