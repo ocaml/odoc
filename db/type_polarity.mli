@@ -14,7 +14,7 @@ Once you have computed the polarities of the type of an entry [e], you can
 register each polarity as corresponding to [e] in the search database.
 
 Then, when the user queries for a type, we compute the polarities of the query
-type, and search for the entries. The
+type, and search for the entries.
 
 We then return the result corresponding to intersection of each polarity: if the
 user queries for [int -> string], we want to have every entry which consumes an
@@ -40,11 +40,11 @@ user explicitely asked for two integers to be consumed. To fix this issue, we
 track the number of occurences of each polarity.
 
 The polarities for [int -> int -> string], become [(-int, 2)] and [(+string,
-1)], and allows us to filter entries according to this information. The exact
-mechanism for this is explained in {!Occ}.
+1)], and allows us to filter entries according to this information.
 
 There is a mechanism for types with parameters like ['a list]. I might explain
 it in the future.
+TODO : Give an example even if not the full explanation.
 *)
 
 module Sign : sig
@@ -76,11 +76,11 @@ val of_typ : any_is_poly:bool -> Typexpr.t -> t Seq.t
     corresponding to [typ].
 
     - If [any_is_poly] is true, the type [_] will be treated like a type variable
-      ['a], other it will be represented solely by its sign ("+" or "-").
+      ['a], otherwise it will be represented solely by its sign ("+" or "-").
 
     - If [all_names] is true, extra polarities are added for every "possible name"
       of each type constructor. For instance the possible names of
       [Stdlib.Int64.t] are ["t"], ["Int64.t"] and ["Stdlib.Int64.t"]. This allows
-      for the user to use any of the possible name. It is important to set this
+      the user to use any of the possible name. It is important to set this
       when registering entries in the database, but you not need it when computing
       the polarities of a query. *)
