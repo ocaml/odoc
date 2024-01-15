@@ -21,8 +21,7 @@ let type_distance query_type entry =
   | _ -> None
 
 let score query entry =
-  let found, not_found = Name_cost.best_matches query.name entry.Db.Entry.name in
-  let name_matches = found + not_found in
+  let name_matches = Name_cost.best_matches query.name entry.Db.Entry.name in
   let type_cost =
     match type_distance query.type_paths entry with
     | Some cost -> cost

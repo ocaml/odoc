@@ -124,25 +124,25 @@
   307 val Base.Map.S_poly.rank : ('k, _) t -> 'k -> int option
   307 val Base.Set.S_poly.compare_direct : 'a t -> 'a t -> int
   $ sherlodoc search --print-cost --no-rhs "group b"
-  260 val Base.List.group
-  267 val Base.Sequence.group
   281 val Base.Set.group_by
-  290 val Base.List.Assoc.group
-  290 val Base.List.sort_and_group
-  320 val Base.List.Assoc.sort_and_group
-  358 val Base.List.groupi
+  360 val Base.List.group
+  367 val Base.Sequence.group
   375 val Base.Set.Poly.group_by
-  378 val Base.Hashtbl.group
+  390 val Base.List.Assoc.group
+  390 val Base.List.sort_and_group
   403 val Base.Set.Using_comparator.group_by
   413 val Base.Set.Using_comparator.Tree.group_by
+  420 val Base.List.Assoc.sort_and_group
+  458 val Base.List.groupi
   477 val Base.Set.S_poly.group_by
-  478 val Base.Hashtbl.Poly.group
-  485 val Base.Hashtbl.Creators.group
-  492 val Base.Hashtbl.Creators.group
-  504 val Base.Hashtbl.S_without_submodules.group
+  478 val Base.Hashtbl.group
   512 val Base.Set.Accessors_generic.group_by
   525 val Base.Set.Creators_and_accessors_generic.group_by
-  580 val Base.Hashtbl.S_poly.group
+  578 val Base.Hashtbl.Poly.group
+  585 val Base.Hashtbl.Creators.group
+  592 val Base.Hashtbl.Creators.group
+  604 val Base.Hashtbl.S_without_submodules.group
+  680 val Base.Hashtbl.S_poly.group
   $ sherlodoc search --no-rhs "group by"
   val Base.Set.group_by
   val Base.Set.Poly.group_by

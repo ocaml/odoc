@@ -113,7 +113,7 @@ let distance xs ys =
       let cost =
         match Name_cost.best_match ~sub:x y with
         | None -> skip_x + skip_y
-        | Some cost -> cost
+        | Some (_, cost) -> cost
       in
       min
         (cost + memo (i + 1) (j + 1) xs' ys')

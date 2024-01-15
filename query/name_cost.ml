@@ -37,23 +37,27 @@ let word_boundary s i =
   then 3
   else 10
 
-let best_match ~sub str =
+let best_match ?(after = 0) ~sub str =
   List.fold_left
     (fun acc (i, case_cost) ->
       let left = word_boundary str (i - 1) in
       let right = word_boundary str (i + String.length sub) in
-      let cost = case_cost + left + right in
+      let is_after = if i >= after then 0 else 10 in
+      let cost = case_cost + left + right + is_after in
       match acc with
-      | Some cost' when cost' < cost -> acc
-      | _ -> Some cost)
+      | Some (_, cost') when cost' < cost -> acc
+      | _ -> Some (i, cost))
     None
     (find_all ~sub str)
 
 let best_matches words str =
-  List.fold_left
-    (fun (found, not_found) sub ->
-      match best_match ~sub str with
-      | Some cost -> found + cost, not_found
-      | None -> found, not_found + String.length sub + 50)
-    (0, 0)
-    words
+  let _, found, not_found =
+    List.fold_left
+      (fun (i, found, not_found) sub ->
+        match best_match ~after:i ~sub str with
+        | Some (i, cost) -> i + String.length sub, found + cost, not_found
+        | None -> i, found, not_found + String.length sub + 50)
+      (0, 0, 0)
+      words
+  in
+  found + not_found
