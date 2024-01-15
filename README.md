@@ -40,10 +40,10 @@ Once installed, you can generate your project documentation with [Dune](https://
 $ dune build @doc
 ```
 
-Upon completion, you'll find your freshly minted docs in `_build/default/doc/html/index.html`:
+Upon completion, you'll find your freshly minted docs in `_build/default/_doc/_html/index.html`:
 
 ```
-$ open _build/default/doc/html/index.html
+$ open _build/default/_doc/_html/index.html
 ```
 
 For more in-depth information and usage instructions, see the [odoc website](https://ocaml.github.io/odoc).
