@@ -31,17 +31,18 @@ let extra_succ =
     (inter (of_array [| 0; 1 |]) (of_array [| 0; 1 |]))
     (inter (of_array [| 0; 2; 3 |]) (of_array [| 1; 3; 5; 7 |]))
 
+let random_array size =
+  List.init size (fun _ -> elt @@ Random.int (size * 2))
+  |> List.sort_uniq Db.Entry.compare
+  |> Array.of_list
+
 let rec random_set ~empty ~union ~inter ~of_array size =
   let random_set = random_set ~empty ~union ~inter ~of_array in
   if size = 0
   then empty
   else (
     match Random.int 3 with
-    | 0 ->
-      let arr = Test_array.random_array size in
-      let arr = Array.map elt arr in
-      Array.sort Db.Entry.compare arr ;
-      of_array arr
+    | 0 -> of_array @@ random_array size
     | 1 -> inter (random_set (size / 2)) (random_set (size / 2))
     | 2 -> union (random_set (size / 2)) (random_set (size / 2))
     | _ -> assert false)

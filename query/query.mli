@@ -34,7 +34,6 @@ val pretty : t -> string
 
 (** For testing *)
 module Private : sig
-  module Array_succ = Array_succ
   module Succ = Succ
 
   module Type_parser : sig
