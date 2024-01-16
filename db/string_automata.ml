@@ -1,7 +1,13 @@
+type terminals =
+  | Empty
+  | Terminals of Entry.t array
+  | Summary of Entry.t array
+
 type node =
   { start : int
   ; len : int
-  ; terminals : Entry.Array.t
+  ; size : int
+  ; terminals : terminals
   ; children : node array option
   }
 
@@ -10,7 +16,12 @@ type t =
   ; t : node
   }
 
-let empty = { str = ""; t = { start = 0; len = 0; terminals = None; children = None } }
+let size t = t.t.size
+
+let minimum { t; _ } =
+  match t.terminals with
+  | Empty -> assert false
+  | Terminals arr | Summary arr -> arr.(0)
 
 let array_find ~str chr arr =
   let rec go i =
@@ -32,9 +43,10 @@ let lcp i_str i j_str j j_len =
   let rec go_lcp i j =
     if i >= String.length i_str || j >= j_stop
     then i
-    else (
+    else begin
       let i_chr, j_chr = i_str.[i], j_str.[j] in
-      if i_chr <> j_chr then i else go_lcp (i + 1) (j + 1))
+      if i_chr <> j_chr then i else go_lcp (i + 1) (j + 1)
+    end
   in
   let i' = go_lcp i j in
   i' - i
@@ -69,77 +81,54 @@ let stepback node =
   assert (node.len >= 0) ;
   { node with start = node.start - 1; len = node.len + 1 }
 
-let rec find_skip ~spaces t pattern =
+let rec find_skip ~spaces t pattern yield =
   let skip () =
     let node = t.t in
     if node.len >= 1
     then begin
       let spaces = spaces + if t.str.[node.start] = ' ' then 1 else 0 in
-      if spaces > 1 then [] else find_skip ~spaces { t with t = advance t.t } pattern
+      if spaces > 1
+      then ()
+      else find_skip ~spaces { t with t = advance t.t } pattern yield
     end
     else begin
       match node.children with
-      | None -> []
+      | None -> ()
       | Some children ->
-        snd
-        @@ List.fold_left
-             (fun (i, acc) child ->
-               let xs = find_skip ~spaces { t with t = stepback child } pattern in
-               i + 1, List.rev_append xs acc)
-             (0, [])
-        @@ Array.to_list children
+        Array.iter
+          (fun child -> find_skip ~spaces { t with t = stepback child } pattern yield)
+          children
     end
   in
   if spaces = 0
   then skip ()
-  else begin
-    let skip = skip () in
+  else if spaces = 1 && pattern = Type_polarity.poly
+  then begin
     match find t pattern with
-    | Some here -> here :: skip
-    | None -> skip
+    | None -> ()
+    | Some here -> yield here
+  end
+  else begin
+    skip () ;
+    match find t pattern with
+    | None -> ()
+    | Some here -> yield here
   end
 
-let find_star t pattern =
+let find_star t pattern yield =
   let rec go t = function
-    | [] -> [ t ]
-    | p :: ps -> begin
-      let ts = find_skip ~spaces:0 t p in
-      List.fold_left
-        (fun acc t ->
-          let xs = go t ps in
-          List.rev_append xs acc)
-        []
-        ts
-    end
+    | [] -> yield t
+    | p :: ps -> find_skip ~spaces:0 t p @@ fun t -> go t ps
   in
   match String.split_on_char ' ' pattern with
-  | [] -> []
+  | [] -> ()
   | p :: ps -> begin
     match find t p with
-    | None -> []
+    | None -> ()
     | Some t -> go t ps
   end
 
-let min_opt a b =
-  match a, b with
-  | Some x, Some y -> Some (if Entry.compare x y <= 0 then x else y)
-  | Some x, None | None, Some x -> Some x
-  | None, None -> None
-
-let rec minimum t =
-  let min_terminal =
-    match t.terminals with
-    | None -> None
-    | Some arr -> Some arr.(0)
-  in
-  let min_child =
-    match t.children with
-    | None -> None
-    | Some children -> minimum children.(0)
-  in
-  min_opt min_terminal min_child
-
-let minimum { t; _ } =
-  match minimum t with
-  | None -> assert false
-  | Some elt -> elt
+let find_star t pattern =
+  let found = ref [] in
+  find_star t pattern (fun t -> found := t :: !found) ;
+  !found

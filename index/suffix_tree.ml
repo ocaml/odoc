@@ -63,6 +63,17 @@ end
 
 module Entry = Db.Entry
 
+module Uid = struct
+  type t = int
+
+  let gen = ref 0
+
+  let make () =
+    let u = !gen in
+    gen := u + 1 ;
+    u
+end
+
 module Terminals = struct
   type t = Entry.t list
 
@@ -79,12 +90,23 @@ module Terminals = struct
   let rec equal xs ys =
     match xs, ys with
     | [], [] -> true
-    | x :: xs, y :: ys when Entry.equal x y -> equal xs ys
+    | x :: xs, y :: ys when x == y -> equal xs ys
     | _ -> false
+
+  let equal xs ys = xs == ys || equal xs ys
 
   let mem x = function
     | y :: _ -> Entry.equal x y
     | _ -> false
+
+  let minimum = function
+    | [] -> None
+    | x :: xs ->
+      Some
+        (List.fold_left
+           (fun found elt -> if Entry.compare found elt <= 0 then found else elt)
+           x
+           xs)
 end
 
 module Char_map = Map.Make (Char)
@@ -303,64 +325,110 @@ let add_document trie doc =
 
 let add_suffixes t text elt = add_document t { Doc.text; uid = elt }
 
-module Uid = struct
-  let gen = ref 0
-
-  let make () =
-    let u = !gen in
-    gen := u + 1 ;
-    u
-end
-
 module Terminals_cache = Hashtbl.Make (Terminals)
+module Seen = Set.Make (Db.Entry)
 
-let export_terminals ~cache_term ts =
+let export_terminals ~cache_term ~is_summary ts =
   try Terminals_cache.find cache_term ts with
   | Not_found ->
-    let result = Uid.make (), Entry.Array.of_list ts in
+    let terminals =
+      if ts = []
+      then Db.String_automata.Empty
+      else if is_summary
+      then Db.String_automata.Summary (Array.of_list ts)
+      else Db.String_automata.Terminals (Array.of_list ts)
+    in
+    let result = Uid.make (), terminals in
     Terminals_cache.add cache_term ts result ;
     result
 
-let rec export ~cache ~cache_term node =
-  let terminals_uid, terminals = export_terminals ~cache_term node.terminals in
+type result =
+  { uid : Uid.t
+  ; t : Db.String_automata.node
+  ; min : Entry.t
+  ; seen : Seen.t
+  }
+
+let size_of_terminals = function
+  | Db.String_automata.Empty -> 1
+  | Summary arr | Terminals arr -> Array.length arr
+
+let rec export ~cache ~cache_term ~summarize ~is_root node =
+  let is_summary = summarize && not is_root in
   let children =
-    Char_map.bindings @@ Char_map.map (export ~cache ~cache_term) node.children
+    Char_map.bindings
+    @@ Char_map.map (export ~cache ~cache_term ~summarize ~is_root:false) node.children
   in
   let children =
     List.sort
-      (fun (a_chr, (_, _, a)) (b_chr, (_, _, b)) ->
+      (fun (a_chr, { min = a; _ }) (b_chr, { min = b; _ }) ->
         match Entry.compare a b with
         | 0 -> Char.compare a_chr b_chr
         | c -> c)
       children
   in
-  let min_terminal = Entry.Array.minimum terminals in
-  let min_child =
-    match min_terminal, children with
-    | Some a, (_, (_, _, b)) :: _ -> if Entry.compare a b <= 0 then a else b
-    | Some a, [] -> a
-    | None, (_, (_, _, b)) :: _ -> b
-    | None, [] -> assert false
+  let children_seen =
+    List.fold_left (fun acc (_, child) -> Seen.union acc child.seen) Seen.empty children
   in
-  let children_uids = List.map (fun (chr, (uid, _, _)) -> chr, uid) children in
+  let seen = List.fold_left (fun acc e -> Seen.add e acc) children_seen node.terminals in
+  let children_uids = List.map (fun (chr, { uid; _ }) -> chr, uid) children in
+  let terminals =
+    if is_summary
+    then List.of_seq (Seen.to_seq seen)
+    else List.filter (fun e -> not (Seen.mem e children_seen)) node.terminals
+  in
+  let min_child =
+    match children with
+    | [] -> None
+    | (_, { min = elt; _ }) :: _ -> Some elt
+  in
+  let min_terminal = Terminals.minimum terminals in
+  let min_child, terminals =
+    match min_child, min_terminal with
+    | None, None -> failwith "suffix_tree: empty node"
+    | None, Some min_terminal -> min_terminal, terminals
+    | Some min_child, None -> min_child, min_child :: terminals
+    | Some min_child, Some min_terminal ->
+      if Db.Entry.compare min_child min_terminal < 0
+      then min_child, min_child :: terminals
+      else min_terminal, terminals
+  in
+  assert (terminals <> []) ;
+  let terminals_uid, terminals = export_terminals ~cache_term ~is_summary terminals in
   let key = node.start, node.len, terminals_uid, children_uids in
   try Hashtbl.find cache key with
   | Not_found ->
-    let children = Array.of_list @@ List.map (fun (_, (_, child, _)) -> child) children in
+    let children =
+      Array.of_list @@ List.map (fun (_, { t = child; _ }) -> child) children
+    in
+    let size = size_of_terminals terminals in
+    let size =
+      if is_summary
+      then size
+      else
+        Array.fold_left
+          (fun acc child -> acc + child.Db.String_automata.size)
+          size
+          children
+    in
     let children = if Array.length children = 0 then None else Some children in
     let node =
-      { Db.String_automata.start = node.start; len = node.len; terminals; children }
+      { Db.String_automata.start = node.start; len = node.len; size; terminals; children }
     in
-    let result = Uid.make (), node, min_child in
+    let result = { uid = Uid.make (); t = node; min = min_child; seen } in
     Hashtbl.add cache key result ;
     result
 
-let export { buffer; root = t } =
-  if Char_map.is_empty t.children
-  then Db.String_automata.empty
-  else (
-    let str = Buf.contents buffer in
+let export ~summarize { buffer; root = t } =
+  let str = Buf.contents buffer in
+  if String.length str = 0
+  then
+    { Db.String_automata.str
+    ; t = { start = 0; len = 0; size = 0; children = None; terminals = Empty }
+    }
+  else begin
     let cache = Hashtbl.create 16 in
     let cache_term = Terminals_cache.create 16 in
-    let _, t, _ = export ~cache ~cache_term t in
-    { Db.String_automata.str; t })
+    let { t; _ } = export ~cache ~cache_term ~summarize ~is_root:true t in
+    { Db.String_automata.str; t }
+  end

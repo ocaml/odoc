@@ -18,19 +18,30 @@ let path_length str =
 
 let kind_cost = function
   | Entry.Kind.Constructor _ | Entry.Kind.Exception _ | Entry.Kind.Extension_constructor _
-  | Entry.Kind.Field _ | Entry.Kind.Type_decl _ | Entry.Kind.Type_extension
-  | Entry.Kind.Val _ ->
+  | Entry.Kind.Field _ | Entry.Kind.Module | Entry.Kind.Type_decl _
+  | Entry.Kind.Type_extension | Entry.Kind.Val _ ->
     0
   | _ -> 50
+
+let rhs_cost = function
+  | Some str -> String.length str
+  | None -> 20
+
+let cost_doc = function
+  | Entry.Kind.Constructor _ | Entry.Kind.Exception _ | Entry.Kind.Extension_constructor _
+  | Entry.Kind.Field _ | Entry.Kind.Module | Entry.Kind.Module_type
+  | Entry.Kind.Type_decl _ | Entry.Kind.Type_extension ->
+    0
+  | _ -> 100
 
 let cost ~name ~kind ~doc_html ~rhs ~cat =
   String.length name
   + (5 * path_length name)
-  + (if string_starts_with ~prefix:"Stdlib." name then 0 else 20)
-  + String.length (Option.value ~default:"" rhs)
+  + (if string_starts_with ~prefix:"Stdlib." name then 0 else 50)
+  + rhs_cost rhs
   + kind_cost kind
   + (if cat = `definition then 0 else 100)
-  + if doc_html <> "" then 0 else 100
+  + if doc_html <> "" then 0 else cost_doc kind
 
 let string_of_html = Format.asprintf "%a" (Tyxml.Html.pp_elt ())
 
@@ -125,13 +136,15 @@ let register_kind ~db elt =
   | None -> ()
   | Some typ -> register_type_expr ~db elt typ
 
-let rec categorize (id : Odoc_model.Paths.Identifier.Any.t) =
+let rec categorize id =
   let open Odoc_model.Paths in
-  match id.iv with
+  match id.Identifier.iv with
   | `CoreType _ | `CoreException _ | `Root _ | `Page _ | `LeafPage _ -> `definition
   | `ModuleType _ -> `declaration
   | `Parameter _ -> `ignore (* redundant with indexed signature *)
-  | #Identifier.NonSrc.t_pv as x ->
+  | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
+    | `Exception _ | `Class _ | `ClassType _ | `Value _ | `Constructor _ | `Extension _
+    | `ExtensionDecl _ | `Module _ ) as x ->
     let parent = Identifier.label_parent { id with iv = x } in
     categorize (parent :> Identifier.Any.t)
   | `AssetFile _ | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _

@@ -10,10 +10,10 @@
 Here we expect to have the `my_function` from the module be above the one from
 the module type.
   $ sherlodoc search --print-cost --no-rhs "my_function"
-  181 val Main.M.my_function
-  184 val Main.Make.my_function
-  281 val Main.S.my_function
+  196 val Main.M.my_function
+  199 val Main.Make.my_function
+  296 val Main.S.my_function
 Here we expect both the module type and the module to be ranked the same
   $ sherlodoc search --print-cost "module"
-  281 mod Main.Module_nype
-  281 sig Main.Module_type
+  116 mod Main.Module_nype
+  166 sig Main.Module_type

@@ -7,11 +7,3 @@
  (alias all)
  (action
   (copy main.bc.js sherlodoc.js)))
-
-(install
- (files sherlodoc.js)
- ; (section share)
- ; This ought to be in share, but for now I can only make it work in bin : I did
- ; not manage to fetch sherlodoc.js from share in the dune rules.
- (section bin)
- (package sherlodoc))

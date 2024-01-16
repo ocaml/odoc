@@ -52,16 +52,3 @@ val v
 val link : t -> string
 val compare : t -> t -> int
 val equal : t -> t -> bool
-
-module Set : Set.S with type elt = t
-
-module Array : sig
-  type elt = t
-  type t = elt array option
-
-  val of_list : elt list -> t
-  val is_empty : t -> bool
-  val minimum : t -> elt option
-  val equal_elt : elt -> elt -> bool
-  val compare_elt : elt -> elt -> int
-end

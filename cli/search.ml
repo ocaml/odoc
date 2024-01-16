@@ -36,31 +36,46 @@ let print_result ~print_cost ~no_rhs (elt : Db.Entry.t) =
   in
   Format.printf "%s%s %s%s%a@." cost kind typedecl_params name pp_rhs elt.rhs
 
-let search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query query =
+let search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query ~time query =
   let query = Query.{ query; packages = []; limit } in
   if pretty_query then print_endline (Query.pretty query) ;
-  match Query.search ~shards:db ~dynamic_sort:(not static_sort) query with
+  let t0 = Unix.gettimeofday () in
+  let r = Query.Blocking.search ~shards:db ~dynamic_sort:(not static_sort) query in
+  let t1 = Unix.gettimeofday () in
+  match r with
   | [] -> print_endline "[No results]"
   | _ :: _ as results ->
     List.iter (print_result ~print_cost ~no_rhs) results ;
-    flush stdout
+    flush stdout ;
+    if time then Format.printf "Search in %f@." (t1 -. t0)
 
-let rec search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db =
+let rec search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~time ~db =
   Printf.printf "%ssearch>%s %!" "\027[0;36m" "\027[0;0m" ;
   match Stdlib.input_line stdin with
   | query ->
-    search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query query ;
-    search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
+    search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query ~time query ;
+    search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~time ~db
   | exception End_of_file -> Printf.printf "\n%!"
 
-let search query print_cost no_rhs static_sort limit pretty_query db_format db_filename =
+let search
+  query
+  print_cost
+  no_rhs
+  static_sort
+  limit
+  pretty_query
+  time
+  db_format
+  db_filename
+  =
   let module Storage = (val Db_store.storage_module db_format) in
   let db = Storage.load db_filename in
   match query with
   | None ->
     print_endline header ;
-    search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db
-  | Some query -> search ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~db query
+    search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~time ~db
+  | Some query ->
+    search ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~time ~db query
 
 open Cmdliner
 
@@ -75,6 +90,10 @@ let query =
 let print_cost =
   let doc = "For debugging purposes: prints the cost of each result" in
   Arg.(value & flag & info [ "print-cost" ] ~doc)
+
+let print_time =
+  let doc = "For debugging purposes: prints the search time" in
+  Arg.(value & flag & info [ "print-time" ] ~doc)
 
 let static_sort =
   let doc =
@@ -93,4 +112,12 @@ let pretty_query =
   Arg.(value & flag & info [ "pretty-query" ] ~doc)
 
 let term =
-  Term.(const search $ query $ print_cost $ no_rhs $ static_sort $ limit $ pretty_query)
+  Term.(
+    const search
+    $ query
+    $ print_cost
+    $ no_rhs
+    $ static_sort
+    $ limit
+    $ pretty_query
+    $ print_time)

@@ -10,16 +10,17 @@ let string_of_kind =
   let open Db.Entry.Kind in
   function
   | Doc -> "doc"
-  | Type_decl _ -> "type"
-  | Module -> "mod"
-  | Exception _ -> "exn"
+  | Type_decl None -> "type"
+  | Type_decl (Some str) -> "type " ^ str
+  | Module -> "module"
+  | Exception _ -> "exception"
   | Class_type -> "class"
-  | Method -> "meth"
+  | Method -> "method"
   | Class -> "class"
   | Type_extension -> "type"
-  | Extension_constructor _ -> "cons"
-  | Module_type -> "sig"
-  | Constructor _ -> "cons"
+  | Extension_constructor _ -> "constructor"
+  | Module_type -> "module type"
+  | Constructor _ -> "constructor"
   | Field _ -> "field"
   | Val _ -> "val"
 
@@ -33,7 +34,12 @@ let render_elt elt =
     | None -> []
   in
   let kind = string_of_kind elt.kind ^ " " in
-  [ txt kind; a ~a:link [ em [ txt elt.name ] ] ] @ rhs
+  let doc =
+    if elt.doc_html = ""
+    then []
+    else [ div ~a:[ a_class [ "comment" ] ] [ Unsafe.data elt.doc_html ] ]
+  in
+  pre (txt kind :: a ~a:link [ em [ txt elt.name ] ] :: rhs) :: doc
 
 let render_pkg elt =
   let open Db.Entry in
@@ -47,9 +53,7 @@ let render_pkg elt =
       ]
   ]
 
-let render_result elt =
-  let open Db.Entry in
-  render_pkg elt @ [ pre (render_elt elt); Unsafe.data elt.doc_html ]
+let render_result elt = render_pkg elt @ render_elt elt
 
 let render ~pretty results =
   match results with

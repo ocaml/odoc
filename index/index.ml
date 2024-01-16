@@ -18,13 +18,12 @@ let index_file register filename =
 let main files file_list index_docstring index_name type_search db_format db_filename =
   let module Storage = (val Db_store.storage_module db_format) in
   let db = Db_writer.make () in
-  let pkg = Db.Entry.Package.v ~name:"" ~version:"" in
-  let register id () item =
+  let no_pkg = Db.Entry.Package.v ~name:"" ~version:"" in
+  let register ~pkg id () item =
     List.iter
       (Load_doc.register_entry ~db ~index_docstring ~index_name ~type_search ~pkg)
       (Odoc_search.Entry.entries_of_item id item)
   in
-  let h = Storage.open_out db_filename in
   let files =
     match file_list with
     | None -> files
@@ -39,9 +38,24 @@ let main files file_list index_docstring index_name type_search db_format db_fil
       close_in h ;
       files @ other_files
   in
-  List.iter (index_file register) files ;
-  let t = Db_writer.export db in
-  Storage.save ~db:h t ;
+  let h = Storage.open_out db_filename in
+  let flush () =
+    let t = Db_writer.export ~summarize:(db_format = `ancient) db in
+    Storage.save ~db:h t
+  in
+  List.iter
+    (fun odoc ->
+      let pkg, odoc =
+        match String.split_on_char '\t' odoc with
+        | [ filename ] -> no_pkg, filename
+        | [ name; filename ] -> Db.Entry.Package.v ~name ~version:"", filename
+        | [ name; version; filename ] -> Db.Entry.Package.v ~name ~version, filename
+        | _ -> failwith ("invalid line: " ^ odoc)
+      in
+      index_file (register ~pkg) odoc ;
+      if db_format = `ancient && Db_writer.load db > 1_000_000 then flush ())
+    files ;
+  flush () ;
   Storage.close_out h
 
 open Cmdliner
@@ -67,7 +81,7 @@ let file_list =
 
 let odoc_files =
   let doc = "Path to a .odocl file" in
-  Arg.(non_empty & (pos_all file [] @@ info ~doc ~docv:"ODOCL_FILE" []))
+  Arg.(value & (pos_all file [] @@ info ~doc ~docv:"ODOCL_FILE" []))
 
 let term =
   Term.(const main $ odoc_files $ file_list $ index_docstring $ index_name $ type_search)

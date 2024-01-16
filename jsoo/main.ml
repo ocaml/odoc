@@ -29,8 +29,6 @@ let stream_of_string str =
   in
   stream
 
-let don't_wait_for fut = Fut.await fut Fun.id
-
 module Decompress_browser = struct
   (** This module contains binding to the browser string compression api. It is
       much faster than using an OCaml library, and does not require sending code
@@ -99,7 +97,9 @@ let string_of_kind =
 let search message db =
   let query = Jv.get message "data" in
   let query = query |> Jv.to_jstr |> Jstr.to_string in
-  let results = Query.(search ~shards:db { query; packages = []; limit = 50 }) in
+  let results =
+    Query.Blocking.search ~shards:db { Query.query; packages = []; limit = 50 }
+  in
   let _ =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list
@@ -112,10 +112,12 @@ let search message db =
              let prefix_name, name =
                match kind with
                | Db.Entry.Kind.Doc -> None, None
-               | _ ->
-                 let rev_name = name |> String.split_on_char '.' |> List.rev in
-                 ( rev_name |> List.tl |> List.rev |> String.concat "." |> Option.some
-                 , rev_name |> List.hd |> Option.some )
+               | _ -> begin
+                 match List.rev (String.split_on_char '.' name) with
+                 | [] -> None, None
+                 | [ hd ] -> None, Some hd
+                 | hd :: tl -> Some (String.concat "." (List.rev tl)), Some hd
+               end
              in
              let kind = string_of_kind kind in
              let html =
@@ -133,6 +135,8 @@ let search message db =
       |]
   in
   ()
+
+let don't_wait_for fut = Fut.await fut Fun.id
 
 let search message =
   don't_wait_for

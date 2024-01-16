@@ -1,5 +1,8 @@
 let empty_string = String.make 0 '_'
-let non_empty_string s = if s = "" then empty_string else s
+
+let non_empty_string s =
+  (* to protect against `ancient` segfaulting on statically allocated values *)
+  if s = "" then empty_string else s
 
 module Kind = struct
   type t =
@@ -38,91 +41,101 @@ module Package = struct
     { name = non_empty_string name; version = non_empty_string version }
 
   let compare a b = String.compare a.name b.name
-  let link { name; version } = Printf.sprintf "https://ocaml.org/p/%s/%s" name version
+  let link { name; version } = "https://ocaml.org/p/" ^ name ^ "/" ^ version
 end
 
-module T = struct
-  type t =
-    { name : string
-    ; rhs : string option
-    ; url : string
-    ; kind : Kind.t
-    ; cost : int
-    ; doc_html : string
-    ; pkg : Package.t
-    }
+type t =
+  { name : string
+  ; rhs : string option
+  ; url : string
+  ; kind : Kind.t
+  ; cost : int
+  ; doc_html : string
+  ; pkg : Package.t
+  }
 
-  let string_compare_shorter a b =
-    match Int.compare (String.length a) (String.length b) with
-    | 0 -> String.compare a b
-    | c -> c
+let string_compare_shorter a b =
+  match Int.compare (String.length a) (String.length b) with
+  | 0 -> String.compare a b
+  | c -> c
 
-  let structural_compare a b =
-    match string_compare_shorter a.name b.name with
+let structural_compare a b =
+  match string_compare_shorter a.name b.name with
+  | 0 -> begin
+    match Package.compare a.pkg b.pkg with
     | 0 -> begin
-      match Package.compare a.pkg b.pkg with
+      match Stdlib.compare a.kind b.kind with
       | 0 -> begin
-        match Stdlib.compare a.kind b.kind with
-        | 0 -> begin
-          match string_compare_shorter a.doc_html b.doc_html with
-          | 0 -> String.compare a.url b.url
-          | c -> c
-        end
+        match string_compare_shorter a.doc_html b.doc_html with
+        | 0 -> String.compare a.url b.url
         | c -> c
       end
       | c -> c
     end
     | c -> c
+  end
+  | c -> c
 
-  let compare a b =
-    if a == b
-    then 0
-    else begin
-      match Int.compare a.cost b.cost with
-      | 0 -> structural_compare a b
-      | cmp -> cmp
-    end
+let compare a b =
+  if a == b
+  then 0
+  else begin
+    match Int.compare a.cost b.cost with
+    | 0 -> structural_compare a b
+    | cmp -> cmp
+  end
 
-  let equal a b = compare a b = 0
-end
+let equal a b = compare a b = 0
 
-include T
-module Set = Set.Make (T)
-
-(** Array of elts. For use in functors that require a type [t] and not ['a t].*)
-module Array = struct
-  type elt = t
-  type t = elt array option
-
-  let is_empty = function
-    | None -> true
-    | Some arr ->
-      assert (Array.length arr > 0) ;
-      false
-
-  let empty = None
-
-  let minimum = function
-    | None -> None
-    | Some arr -> Some arr.(0)
-
-  let of_list arr =
-    let arr = Array.of_list arr in
-    Array.sort compare arr ;
-    if Array.length arr = 0 then empty else Some arr
-
-  let equal_elt = T.equal
-  let compare_elt = T.compare
-end
+let stdlib_link ~name t =
+  let path, hashref =
+    match List.rev name, String.index_opt t.url '#' with
+    | _ :: path, Some idx ->
+      let idx = idx + 1 in
+      let tgt =
+        match String.index_from_opt t.url idx '-' with
+        | None -> String.sub t.url idx (String.length t.url - idx)
+        | Some jdx ->
+          let kind = String.sub t.url idx (jdx - idx) in
+          let jdx = jdx + 1 in
+          let target = String.sub t.url jdx (String.length t.url - jdx) in
+          String.uppercase_ascii kind ^ target
+      in
+      path, "#" ^ tgt
+    | path, _ -> path, ""
+  in
+  let path = String.concat "." (List.rev path) in
+  "https://v2.ocaml.org/releases/5.1/api/" ^ path ^ ".html" ^ hashref
 
 let link t =
-  let pkg_link = Package.link t.pkg in
-  let name, path =
-    match List.rev (String.split_on_char '.' t.name) with
-    | name :: path -> name, String.concat "/" (List.rev path)
-    | _ -> "", ""
-  in
-  pkg_link ^ "/doc/" ^ path ^ "/index.html#val-" ^ name
+  let fullname = String.split_on_char '.' t.name in
+  match fullname with
+  | "Stdlib" :: name -> stdlib_link ~name t
+  | _ ->
+    let pkg_link = Package.link t.pkg in
+    let rec align n ys =
+      match ys with
+      | _ when n = 0 -> []
+      | [] -> []
+      | y :: ys -> y :: align (n - 1) ys
+    in
+    let length = List.length fullname in
+    let length =
+      match String.index_opt t.url '#' with
+      | None -> length + 1
+      | Some idx ->
+        let tgt = String.sub t.url idx (String.length t.url - idx) in
+        let count = ref 0 in
+        String.iter
+          (function
+            | '.' -> incr count
+            | _ -> ())
+          tgt ;
+        length - !count
+    in
+    let path = align length (List.rev (String.split_on_char '/' t.url)) in
+    let path = String.concat "/" (List.rev path) in
+    pkg_link ^ "/doc/" ^ path
 
 let v ~name ~kind ~cost ~rhs ~doc_html ~url ~pkg () =
   { name = non_empty_string name

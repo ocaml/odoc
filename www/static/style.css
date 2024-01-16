@@ -8,6 +8,7 @@ body {
   margin-bottom: 1em;
   min-height: 100%;
   background: url("/bg.jpg") no-repeat bottom right;
+  font-family: system-ui, sans-serif;
 }
 
 form {
@@ -54,14 +55,22 @@ a {
   text-decoration: none;
 }
 
-pre {
-  margin: 0.5em;
-  font-size: 1.1rem;
-  white-space: normal;
+.comment p {
+  line-height: 1.3em;
 }
-pre {
+
+.comment pre {
+  margin: 0 2em;
+  font-size: 1.1rem;
+  white-space: pre;
+}
+
+.found > li > pre {
+  margin: 0.5em;
   padding-left: 6em;
   text-indent: -6em;
+  font-size: 1.1rem;
+  white-space: normal;
 }
 
 pre em {
@@ -74,7 +83,7 @@ ul {
   padding: 0;
 }
 
-.found li {
+.found > li {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -83,39 +92,45 @@ ul {
   margin-left: 0.95em;
 }
 
-.found li em {
+.found > li > pre em {
   margin: 0 -3px;
   padding: 3px;
   color: black;
 }
 
-.found li:hover em {
+.found > li:hover > pre em {
   background: #FADFB1;
 }
 
-.found li a:hover em {
+.found > li > pre a:hover em {
   background: #EABB60;
   border-bottom: 2px solid #553515;
 }
 
 
-h1, ul.doc, p {
+h1, ul.doc, .comment {
   margin: 0;
   padding: 0;
   margin-left: 3.4rem;
 }
 
+.comment a, .comment a:visited { color: black }
+.comment .at-tag { font-style: italic }
+.comment li { list-style: square }
+
 h1 {
   margin-bottom: 1em;
   font-size: 3em;
+  font-family: serif;
 }
 
 p.doc {
   margin-bottom: 1em;
+  margin-left: 2.3em;
   font-size: 1.5em;
 }
 
-ul.doc li {
+ul.doc > li {
   margin-bottom: 0.5em;
 }
 
@@ -170,9 +185,13 @@ code {
 
 .ad {
   padding: 3rem 0;
-  font-family: monospace;
+  margin-left: 2.3em;
   font-style: italic;
   font-size: 1rem;
+}
+
+pre, code, .ad, .packages a, input#q {
+  font-family: ui-monospace, 'Fira Code', 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
 }
 
 .ad svg { vertical-align: middle; margin-right: 0.5rem }
@@ -206,7 +225,6 @@ code {
   display: inline-block;
   white-space: nowrap;
   margin-right: 1.5em;
-  font-family: monospace;
 }
 .packages a:hover {
   background: #eee;

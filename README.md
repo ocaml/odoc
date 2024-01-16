@@ -1,182 +1,91 @@
 **Try it online at [doc.sherlocode.com](https://doc.sherlocode.com) !**
 
-A Hoogle-like search engine for OCaml documentation. It can be used in
-differents ways, [online](https://doc.sherlocode.com), or offline with
-the dev version of odoc.
+Sherlodoc is a search engine for OCaml documentation (inspired by [Hoogle](https://hoogle.haskell.org/)), which allows you to search through OCaml libraries by names and approximate type signatures:
 
-It has fuzzy type search supported by a polarity search. As an example, the type
-`string -> int -> char` gets simplified to `{ -string, -int, +char }` which
-means that it consumes a `string` and an `int` and produces a `char`
-(irrespective of the order of the arguments). This polarity search is fast
-enough and yields good candidates which are then sorted by similarity with the
-query. The sort is slower but the number of candidates is small.
+- Search by name: [`list map`](https://doc.sherlocode.com/?q=list%20map)
+- Search inside documentation comments: [`raise Not_found`](https://doc.sherlocode.com/?q=raise%20Not_found)
+- Fuzzy type search is introduced with a colon, e.g. [`: map -> list`](https://doc.sherlocode.com/?q=%3A%20map%20-%3E%20list)
+- Search by name and type with a colon separator [`Bogue : Button.t`](https://doc.sherlocode.com/?q=Bogue%20%3A%20Button.t)
+- An underscore `_` can be used as a wildcard in type queries: [`(int -> _) -> list -> _`](https://doc.sherlocode.com/?q=(int%20-%3E%20_)%20-%3E%20list%20-%3E%20_)
+- Type search supports products and reordering of function arguments: [`array -> ('a * int -> bool) -> array`](https://doc.sherlocode.com/?q=%3A%20array%20-%3E%20(%27a%20*%20int%20-%3E%20bool)%20-%3E%20array)
 
-You can search for anything that can exists in an MLI files : values, types,
-modules, exceptions, constructors etc...
+## Local usage
 
-Fuzzy type search is available for values, sum-types constructors, exceptions,
-and record fields.
-
-# Usage
-
-First, install sherlodoc :
+First, install sherlodoc and odig:
 
 ```bash
-opam pin add https://github.com/art-w/sherlodoc.git#jsoo
-opam install sherlodoc
+$ opam pin add 'https://github.com/art-w/sherlodoc.git'  # optional
+
+$ opam install sherlodoc odig
 ```
 
-## Generating a search-database
-
-The first step to using sherlodoc is generating a search-database. You do this
-with the command `sherlodoc index` :
+[Odig](https://erratique.ch/software/odig) can generate the odoc documentation of your current switch with:
 
 ```bash
-sherlodoc index --format=marshal -o db.marshal a.odocl b.odocl
+$ odig odoc   # followed by `odig doc` to browse your switch documentation
 ```
 
-The `--format` option determines in which format the database is outputted. The
-available format are `marshal`, `js`.  The `js` format, for
-javascript, is the one compatible with odoc, and the `marshal` for most other
-uses.
-
-There is a third format : `ancient`, that is only available if the package
- `ancient` is installed. It is more complicated than the other two, you can read
-on it [here](https://github.com/UnixJunkie/ocaml-ancient). It is used for the
-[online](https://doc.sherlocode.com) version of sherlodoc, and is an optional
-dependency of the `sherlodoc` package.
-
-The `-o` option is the filename of the output.
-
-Then you need to provide a list of .odocl files that contains the signatures
-items that are going to be searchable. They are build artifacts of odoc.
-
-There are others options that are documented by `sherlodoc index --help`.
-
-## Queries
-
-To query sherlodoc, be it on the command-line or in a web interface, you need
-to input a string query. A query is a list of words, separated by spaces.
-Results will be entries that have every word of the list present in them.
-
-```
-"list map"
-```
-
-The above query will return entries that have both `list` and `map` in them.
-
-You can also add `: <type>` at the end of your query, and in that case, results
-will only be results whose type match <type>. This can only be a value, an
-exception, a constructor or a record field.
-
-Matching a type is fuzzy, if you do the following query :
-
-```
-"blabla : string"
-```
-
-It could return `val blablabla : int -> string` and `val blabla2 : string`.
-
-You can have just the type-part of the query : `": string -> int"` is a valid
-query.
-
-You can use wildcards :
-
-```
-": string -> _"
-```
-
-will only return functions that take a string a argument, no matter what they
-return.
-
-There is limited support for polymorphism : you cannot search for `'a -> 'a` and
-get every function `int -> int`, `string -> string` etc. However it will return
-a function whose literal type is `'a -> 'a`. Having the first behaviour would
-be a lot harder to program, and probably not a good idea, as it would be
-impossible to search for polymorphic functions.
-
-## Searching on the command line
-
-If you have a search database in `marshal` format, you can search on the command
-line :
+Which sherlodoc can then index to create a search database:
 
 ```bash
-sherlodoc --db=db.marshal "blabla : int -> string"
+# name your sherlodoc database
+$ export SHERLODOC_DB=/tmp/sherlodoc.marshal
+
+# if you are using OCaml 4, we recommend the `ancient` database format:
+$ opam install ancient
+$ export SHERLODOC_DB=/tmp/sherlodoc.ancient
+
+# index all odoc files generated by odig for your current switch:
+$ sherlodoc index $(find $OPAM_SWITCH_PREFIX/var/cache/odig/odoc -name '*.odocl')
 ```
 
-`--db` is the filename of the search database. If absent, the environment
-variable `SHERLODOC_DB` will be used instead.
-
-In my example, I gave a query, but if you give none, sherlodoc enter an
-interactive mode where you can enter queries until you decide to quit.
-
-There are more option documented by `sherlodoc --help`, some of them are for
-debugging/testing purposes, others might be useful.
-
-### Search your switch
-
-A reasonable use of sherlodoc on the cli is to search for signatures items from
-your whole switch. Since odig can generate the documentation of the switch, we
-can get the .odocl files with it :
-
-Generate the documentation of your switch :
+Enjoy searching from the command-line or run the webserver:
 
 ```bash
-odig odoc
+$ sherlodoc search "map : list"
+$ sherlodoc search # interactice cli
+
+$ opam install dream
+$ sherlodoc serve  # webserver at http://localhost:1234
 ```
 
-Generate the search database :
+The different commands support a `--help` argument for more details/options.
+
+In particular, sherlodoc supports three different file formats for its database, which can be specified either in the filename extension or through the `--db-format=` flag:
+- `ancient` for fast database loading using mmap, but is only compatible with OCaml 4.
+- `marshal` for when ancient is unavailable, with slower database opening.
+- `js` for integration with odoc static html documentation for client-side search without a server.
+
+## Integration with Odoc
+
+Odoc 2.4.0 adds a search bar inside the statically generated html documentation. [Integration with dune is in progress](https://github.com/ocaml/dune/pull/9772), you can try it inside a fresh opam switch with: (warning! this will recompile any installed package that depends on dune!)
 
 ```bash
-sherlodoc index --format=marshal -o db.marshal $(find $OPAM_SWITCH_PREFIX/var/cache/odig/odoc -name "*.odocl")
+$ opam pin https://github.com/emileTrotignon/dune.git#search-odoc-new
+
+$ dune build @doc # in your favorite project
 ```
 
-Enjoy searching :
+Otherwise, manual integration with odoc requires to add to every call of `odoc html-generate` the flags `--search-uri sherlodoc.js --search-uri db.js` to activate the search bar. You'll also need to generate a search database `db.js` and provide the `sherlodoc.js` dependency (a version of the sherlodoc search engine with odoc support, compiled to javascript):
 
 ```bash
-sherlodoc search --db=db.marshal
+$ sherlodoc index --db=_build/default/_doc/_html/YOUR_LIB/db.js \
+    $(find _build/default/_doc/_odocls/YOUR_LIB -name '*.odocl')
+
+$ sherlodoc js > _build/default/_doc/_html/sherlodoc.js
 ```
 
-## Searching from an odoc search bar
+## How it works
 
-The latest unreleased version of odoc is compatible with sherlodoc. This allows
-you to upload the documentation of a package with a search for this package
-embedded.
+The sherlodoc database uses [Suffix Trees](https://en.wikipedia.org/wiki/Suffix_tree) to search for substrings in value names, documentation and types. During indexation, the suffix trees are compressed to state machine automatas. The children of every node are also sorted, such that a sub-tree can be used as a priority queue during search enumeration.
 
-For this to work, you need to generate a search database with format `js`, and
-then add to every call of `odoc html-generate` the flags `--search-uri
-sherlodoc.js --search-uri db.js`.
+To rank the search results, sherlodoc computes a static evaluation of each candidate during indexation. This static scoring biases the search to favor short names, short types, the presence of documentation, etc. When searching, a dynamic evaluation dependent on the user query is used to adjust the static ordering of the results:
 
-Be sure to copy the two js files in the output directory given to the
-html-generate command :
+- How similar is the result name to the search query? (to e.g. prefer results which respect the case: [`map`](https://doc.sherlocode.com/?q=map) vs [`Map`](https://doc.sherlocode.com/?q=Map))
+- How similar are the types? (using a tree diff algorithm, as for example [`('a -> 'b -> 'a) -> 'a -> 'b list -> 'a`](https://doc.sherlocode.com/?q=(%27a%20-%3E%20%27b%20-%3E%20%27a)%20-%3E%20%27a%20-%3E%20%27b%20list%20-%3E%20%27a) and [`('a -> 'b -> 'b) -> 'a list -> 'b -> 'b`](https://doc.sherlocode.com/?q=(%27a%20-%3E%20%27b%20-%3E%20%27b)%20-%3E%20%27a%20list%20-%3E%20%27b%20-%3E%20%27b) are isomorphic yet point to `fold_left` and `fold_right` respectively)
 
-```bash
-sherlodoc js html_output/sherlodoc.js ;
-cp db.js html_output/db.js ;
-```
+For fuzzy type search, sherlodoc aims to provide good results without requiring a precise search query, on the basis that the user doesn't know the exact type of the things they are looking for (e.g. [`string -> file_descr`](https://doc.sherlocode.com/?q=string%20-%3E%20file_descr) is incomplete but should still point in the right direction). In particular when exploring a package documentation, the common question "how do I produce a value of type `foo`" can be answered with the query `: foo` (and "which functions consume a value of type `bar`" with `: bar -> _`). This should also work when the type can only be produced indirectly through a callback (for example [`: Eio.Switch.t`](https://doc.sherlocode.com/?q=%3A%20Eio.Switch.t) has no direct constructor). To achieve this, sherlodoc performs a type decomposition based on the polarity of each term: A value produced by a function is said to be positive, while an argument consumed by a function is negative. This simplifies away the tree shape of types, allowing their indexation in the suffix trees. The cardinality of each value type is also indexed, to e.g. differentiate between [`list -> list`](https://doc.sherlocode.com/?q=list%20-%3E%20list) and [`list -> list -> list`](https://doc.sherlocode.com/?q=list%20-%3E%20list%20-%3E%20list).
 
-Obviously, most people use dune, and do not call `odoc html-generate`. A patch
-for dune is being [worked on](https://github.com/emileTrotignon/dune/tree/search-odoc-new).
-If you want to, you can test it, it should work. It is still work in progress.
+While the polarity search results are satisfying, sherlodoc offers very limited support for polymorphic variables, type aliases and true type isomorphisms. You should check out the extraordinary [Dowsing](https://github.com/Drup/dowsing) project for this!
 
-## Sherlodoc online
-
-If you want to use sherlodoc as a server, like on
-[doc.sherlocode.com](https://doc.sherlocode.com) it is also possible.
-
-As usual, generate your search database :
-
-```bash
-sherlodoc index --format=ancient -o db.ancient $(find /path/to/doc -name "*.odocl")
-```
-
-Then you can run the website :
-
-```bash
-sherlodoc serve db.ancient
-```
-
-The real magic for [doc.sherlocode.com](https://doc.sherlocode.com) is all the
-.odocl artifacts of the package documentation generated for
-[`ocaml.org/packages`](https://ocaml.org/packages), which I got my hands on
-thanks to insider trading (but don't have the bandwidth to share back... sorry!)
+And if you speak French, a more detailed [presentation of Sherlodoc](https://www.irill.org/videos/OUPS/2023-03/wendling.html) (and [Sherlocode](https://sherlocode.com)) was given at the [OCaml Users in PariS (OUPS)](https://oups.frama.io/) in March 2023.

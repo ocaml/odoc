@@ -18,9 +18,11 @@ let rev_concat lst = List.fold_left (fun acc xs -> List.rev_append xs acc) [] ls
 
 type t = string * int * Sign.t
 
+let poly = "@"
+
 let rec of_typ ~any_is_poly ~prefix ~sgn = function
-  | Poly _ -> [ sgn, "POLY" :: prefix ]
-  | Any -> if any_is_poly then [ sgn, "POLY" :: prefix ] else [ sgn, prefix ]
+  | Poly _ -> [ sgn, poly :: prefix ]
+  | Any -> if any_is_poly then [ sgn, poly :: prefix ] else [ sgn, prefix ]
   | Arrow (a, b) ->
     List.rev_append
       (of_typ ~any_is_poly ~prefix ~sgn:(Sign.not sgn) a)

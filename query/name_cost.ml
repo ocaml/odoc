@@ -4,7 +4,7 @@ let rec prefix_at ~case ~sub i s j =
   else if sub.[i] = s.[j]
   then prefix_at ~case ~sub (i + 1) s (j + 1)
   else if sub.[i] = Char.lowercase_ascii s.[j]
-  then prefix_at ~case:(case + 5) ~sub (i + 1) s (j + 1)
+  then prefix_at ~case:(case + 3) ~sub (i + 1) s (j + 1)
   else if Char.lowercase_ascii sub.[i] = s.[j]
   then prefix_at ~case:(case + 10) ~sub (i + 1) s (j + 1)
   else None
@@ -41,7 +41,7 @@ let best_match ?(after = 0) ~sub str =
   List.fold_left
     (fun acc (i, case_cost) ->
       let left = word_boundary str (i - 1) in
-      let right = word_boundary str (i + String.length sub) in
+      let right = word_boundary str (i + String.length sub) / 3 in
       let is_after = if i >= after then 0 else 10 in
       let cost = case_cost + left + right + is_after in
       match acc with

@@ -76,5 +76,6 @@ val of_typ : any_is_poly:bool -> Typexpr.t -> t Seq.t
     corresponding to [typ].
 
     - If [any_is_poly] is true, the type [_] will be treated like a type variable
-      ['a], otherwise it will be represented solely by its sign ("+" or "-").
- *)
+      ['a], otherwise it will be represented solely by its sign ("+" or "-"). *)
+
+val poly : string

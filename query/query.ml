@@ -29,15 +29,14 @@ let find_types ~shard typ =
            | Db.Type_polarity.Sign.Pos -> shard.Db.db_pos_types
            | Neg -> shard.Db.db_neg_types
          in
-         Succ.union_of_list
+         Succ.of_automatas
          @@ Db.Occurences.fold
               (fun occurrences st acc ->
                 if occurrences < count
                 then acc
                 else begin
                   let ts = Tree.find_star st name in
-                  let ss = List.map Succ.of_automata ts in
-                  List.rev_append ss acc
+                  List.rev_append ts acc
                 end)
               st_occ
               [])
@@ -75,6 +74,8 @@ type t =
   ; limit : int
   }
 
+let pretty params = Parser.(to_string @@ of_string params.query)
+
 let match_packages ~packages { Db.Entry.pkg; _ } =
   List.exists (String.equal pkg.name) packages
 
@@ -83,26 +84,33 @@ let match_packages ~packages results =
   | [] -> results
   | _ -> Seq.filter (match_packages ~packages) results
 
-let rec seq_take n xs () =
-  if n = 0
-  then Seq.Nil
-  else begin
-    match xs () with
-    | Seq.Nil -> Seq.Nil
-    | Seq.Cons (x, xs) -> Seq.Cons (x, seq_take (n - 1) xs)
-  end
-
-let search ~shards ?(dynamic_sort = true) params =
-  let limit = params.limit in
+let search ~shards params =
   let query = Parser.of_string params.query in
   let results = search ~shards query in
   let results = Succ.to_seq results in
-  let results = match_packages ~packages:params.packages results in
-  if dynamic_sort
-  then begin
-    let query = Dynamic_cost.of_query query in
-    List.of_seq @@ Top_results.of_seq ~query ~limit results
-  end
-  else List.of_seq @@ seq_take params.limit results
+  query, match_packages ~packages:params.packages results
 
-let pretty params = Parser.(to_string @@ of_string params.query)
+module type IO = Io.S
+
+module Make (Io : IO) = struct
+  module Tr = Top_results.Make (Io)
+
+  let search ~shards ?(dynamic_sort = true) params =
+    let limit = params.limit in
+    let query, results = search ~shards params in
+    let results = Tr.Seq.of_seq results in
+    if dynamic_sort
+    then begin
+      let query = Dynamic_cost.of_query query in
+      Tr.of_seq ~query ~limit results
+    end
+    else Tr.Seq.to_list @@ Tr.Seq.take limit results
+end
+
+module Blocking = Make (struct
+    type 'a t = 'a
+
+    let return x = x
+    let map x f = f x
+    let bind x f = f x
+  end)

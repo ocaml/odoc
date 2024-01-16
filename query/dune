@@ -1,6 +1,6 @@
 (library
  (name query)
- (libraries lwt db))
+ (libraries db))
 
 (menhir
  (modules type_parser)

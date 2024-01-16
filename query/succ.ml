@@ -1,102 +1,134 @@
 module Entry = Db.Entry
 
-type t =
-  | Empty
-  | Pq of Priority_queue.t
-  | Inter of t * t
-  | Union of t * t
+type elt = Entry.t
 
-let empty = Empty
-let of_automata t = Pq (Priority_queue.of_automata t)
-let of_array arr = Pq (Priority_queue.of_sorted_array (Some arr))
+type s =
+  | Empty
+  | All
+  | Pq of Priority_queue.t
+  | Inter of s * s
+  | Union of s * s
+
+type t =
+  { s : s
+  ; size : int
+  }
+
+let all = { s = All; size = 0 }
+let empty = { s = Empty; size = 0 }
+let make_pq t = { s = Pq t; size = Priority_queue.size t }
+let of_automata t = make_pq (Priority_queue.of_automata t)
+let of_automatas ts = make_pq Priority_queue.(of_list (List.map of_automata ts))
+let of_array arr = make_pq (Priority_queue.of_sorted_array arr)
 
 let inter a b =
-  match a, b with
+  match a.s, b.s with
   | Empty, _ | _, Empty -> empty
+  | _, All -> a
+  | All, _ -> b
   | x, y when x == y -> a
-  | x, y -> Inter (x, y)
+  | x, y ->
+    let s = if a.size <= b.size then Inter (x, y) else Inter (y, x) in
+    { s; size = min a.size b.size }
 
 let union a b =
-  match a, b with
-  | Empty, _ -> b
+  match a.s, b.s with
+  | All, _ | _, All -> all
   | _, Empty -> a
+  | Empty, _ -> b
   | x, y when x == y -> a
-  | x, y -> Union (x, y)
+  | x, y ->
+    let s = if a.size >= b.size then Union (x, y) else Union (y, x) in
+    { s; size = a.size + b.size }
 
 let rec join_with fn = function
   | [] -> []
   | [ x ] -> [ x ]
   | a :: b :: xs -> fn a b :: join_with fn xs
 
-let rec perfect fn = function
-  | [] -> Empty
+let rec perfect ~default fn = function
+  | [] -> default
   | [ x ] -> x
-  | xs -> perfect fn (join_with fn xs)
+  | xs -> perfect ~default fn (join_with fn xs)
 
-let inter_of_list xs = perfect inter xs
-let union_of_list xs = perfect union xs
-let best x y = if Entry.compare x y <= 0 then x else y
+let inter_of_list xs =
+  let xs = List.sort (fun a b -> Int.compare a.size b.size) xs in
+  perfect ~default:all inter xs
 
-let best_opt old_cand new_cand =
-  match old_cand, new_cand with
-  | None, None -> None
-  | None, Some z | Some z, None -> Some z
-  | Some x, Some y -> Some (best x y)
+let union_of_list xs =
+  let xs = List.sort (fun a b -> Int.compare b.size a.size) xs in
+  perfect ~default:empty union xs
 
 type strictness =
-  | Gt
-  | Ge
+  | First
+  | Ge of elt
+  | Gt of elt
 
-let rec succ ~strictness t elt =
+type result =
+  | Is_empty
+  | Is_all
+  | Found_eq of s
+  | Found_gt of elt * s
+
+let rec succ ~strictness t =
   match t with
-  | Empty -> None, t
-  | Pq pqueue ->
-    let pqueue =
+  | Empty -> Is_empty
+  | All -> begin
+    match strictness with
+    | First -> Is_all
+    | Gt _ -> Is_all
+    | Ge _ -> Found_eq All
+  end
+  | Pq pqueue -> begin
+    let pqueue' =
       match strictness with
-      | Gt -> Priority_queue.pop_lte elt pqueue
-      | Ge -> Priority_queue.pop_lt elt pqueue
+      | First -> pqueue
+      | Ge elt -> Priority_queue.pop_lt elt pqueue
+      | Gt elt -> Priority_queue.pop_lte elt pqueue
     in
-    begin
-      match Priority_queue.minimum pqueue with
-      | None -> ()
-      | Some e -> assert (Entry.compare elt e <= 0)
-    end ;
-    Priority_queue.minimum pqueue, Pq pqueue
+    match strictness, Priority_queue.minimum pqueue' with
+    | _, None -> Is_empty
+    | Ge elt, Some e when Db.Entry.equal e elt -> Found_eq (Pq pqueue')
+    | _, Some e -> Found_gt (e, Pq pqueue')
+  end
   | Union (l, r) -> begin
-    match succ ~strictness l elt with
-    | None, _ -> succ ~strictness r elt
-    | Some elt_l, l when strictness = Ge && Entry.equal elt elt_l -> Some elt, Union (l, r)
-    | elt_l, l ->
-      let elt_r, r = succ ~strictness r elt in
-      best_opt elt_l elt_r, Union (l, r)
-  end
-  | Inter (l, r) ->
-    let rec loop elt l r =
-      match succ ~strictness:Ge l elt with
-      | None, _ -> None, Empty
-      | Some elt', l ->
-        assert (Entry.compare elt elt' <= 0) ;
-        if Entry.equal elt elt' then Some elt, Inter (l, r) else loop elt' r l
-    in
-    begin
-      match succ ~strictness l elt with
-      | None, _ -> None, Empty
-      | Some elt_l, l -> loop elt_l r l
+    match succ ~strictness l with
+    | Is_empty -> succ ~strictness r
+    | Is_all -> failwith "union all"
+    | Found_eq l -> Found_eq (Union (l, r))
+    | Found_gt (elt_l, l') -> begin
+      match succ ~strictness r with
+      | Is_empty -> Found_gt (elt_l, l')
+      | Is_all -> failwith "union all"
+      | Found_eq r' -> Found_eq (Union (l', r'))
+      | Found_gt (elt_r, r') when Db.Entry.compare elt_l elt_r <= 0 ->
+        Found_gt (elt_l, Union (l', r'))
+      | Found_gt (elt_r, r') -> Found_gt (elt_r, Union (l', r'))
     end
-
-let rec first t =
-  match t with
-  | Empty -> None, Empty
-  | Pq pqueue -> Priority_queue.minimum pqueue, t
-  | Inter (l, r) -> begin
-    match first l with
-    | None, _ -> None, Empty
-    | Some elt, l -> succ ~strictness:Ge (Inter (l, r)) elt
   end
-  | Union (l, r) ->
-    let elt_l, l = first l in
-    let elt_r, r = first r in
-    best_opt elt_l elt_r, Union (l, r)
+  | Inter (l, r) -> begin
+    match succ ~strictness l with
+    | Is_empty -> Is_empty
+    | Is_all -> failwith "inter all"
+    | Found_eq l' -> begin
+      match succ ~strictness r with
+      | Is_empty -> Is_empty
+      | Is_all -> failwith "inter all"
+      | Found_eq r' -> Found_eq (Inter (l', r'))
+      | Found_gt (elt, r') -> Found_gt (elt, Inter (l', r'))
+    end
+    | Found_gt (elt, l') -> Found_gt (elt, Inter (l', r))
+  end
+
+let rec succ_loop ?(count = 0) ~strictness t =
+  match strictness, succ ~strictness t with
+  | _, Is_empty -> None
+  | _, Is_all -> None
+  | Ge elt, Found_eq t -> Some (elt, t)
+  | _, Found_gt (elt, t) -> succ_loop ~count:(count + 1) ~strictness:(Ge elt) t
+  | _ -> assert false
+
+let first t = succ_loop ~strictness:First t
 
 let seq_of_dispenser fn =
   let rec go () =
@@ -106,18 +138,18 @@ let seq_of_dispenser fn =
   in
   go
 
-let to_seq t =
+let to_seq { s = t; _ } =
   let state = ref None in
   let loop () =
-    let elt, t =
+    let result =
       match !state with
       | None -> first t
-      | Some (previous_elt, t) -> succ ~strictness:Gt t previous_elt
+      | Some (previous_elt, t) -> succ_loop ~strictness:(Gt previous_elt) t
     in
-    match elt with
+    match result with
     | None -> None
-    | Some elt ->
-      state := Some (elt, t) ;
+    | Some (elt, _) ->
+      state := result ;
       Some elt
   in
   seq_of_dispenser loop

@@ -1,17 +1,24 @@
 module Storage = Db.Storage
 module H = Tyxml.Html
+open Lwt.Syntax
+
+module Query_lwt = Query.Make (struct
+    type 'a t = 'a Lwt.t
+
+    let return = Lwt.return
+    let map x f = Lwt.map f x
+    let bind x f = Lwt.bind x f
+  end)
 
 let api ~shards params =
-  let results = Query.search ~shards params in
+  let+ results = Query_lwt.search ~shards params in
   let pretty = Query.pretty params in
-  Lwt.return (Ui.render ~pretty results)
+  Ui.render ~pretty results
 
 let api ~shards params =
   if String.trim params.Query.query = ""
   then Lwt.return (Ui.explain ())
   else api ~shards params
-
-open Lwt.Syntax
 
 let get_query params = Option.value ~default:"" (Dream.query params "q")
 

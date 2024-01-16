@@ -15,8 +15,8 @@ let balance_parens str =
 let type_of_string str =
   let str = balance_parens str in
   let lexbuf = Lexing.from_string str in
-  try Ok (Type_parser.main Type_lexer.token lexbuf) with
-  | Type_parser.Error -> Error "parse error"
+  try `typ (Type_parser.main Type_lexer.token lexbuf) with
+  | _ -> `parse_error
 
 let naive_of_string str =
   List.filter (fun s -> String.length s > 0) (String.split_on_char ' ' str)
@@ -29,11 +29,6 @@ type t =
   { name : string list
   ; typ : [ `typ of Db.Typexpr.t | `no_typ | `parse_error ]
   }
-
-let type_of_string str_typ =
-  match type_of_string str_typ with
-  | Ok typ -> `typ typ
-  | Error _ -> `parse_error
 
 let of_string str =
   let query_name, typ =

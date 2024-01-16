@@ -2,13 +2,13 @@ module Entry = Db.Entry
 
 type query =
   { name : string list
-  ; type_paths : Type_distance.Type_path.t option
+  ; type_paths : Type_distance.t option
   }
 
 let of_query { Query_parser.name; typ } =
   let type_paths =
     match typ with
-    | `typ t -> Some (Type_distance.Type_path.of_typ ~ignore_any:true t)
+    | `typ t -> Some (Type_distance.paths_of_type t)
     | _ -> None
   in
   { name; type_paths }
@@ -27,4 +27,4 @@ let score query entry =
     | Some cost -> cost
     | None -> 0
   in
-  10 * (name_matches + type_cost)
+  5 * (name_matches + type_cost)

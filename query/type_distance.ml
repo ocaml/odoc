@@ -1,125 +1,107 @@
-module Type_path : sig
-  (** This module contains the transformation that make it possible to compute the
-      distance between types..
+type step =
+  | Type of string
+  | Poly
+  | Any
+  | Arrow_left
+  | Arrow_right
+  | Product of
+      { pos : int
+      ; length : int
+      }
+  | Argument of
+      { pos : int
+      ; length : int
+      }
 
-      A type can viewed as a tree. [a -> b -> c * d] is the following tree :
-      {[
-        ->
-         |- a
-         |- ->
-             |- b
-             |- *
-                |- c
-                |- d
-      ]}
-      We consider the list of paths from root to leaf in the tree of the type.
+module Sign = Db.Type_polarity.Sign
 
-      Here the paths would be : [ [[-> a]; [-> -> b]; [-> -> * c ]; [-> -> * d]] ]
+type t = step list list
 
-      We encode slightly more information than that. In the above, it not possible by
-      looking at a type path to know the child position relative to its parent : In
-      the path [[-> a]]; [a] is the first child of [->], and in [[-> -> b]]; [[-> b]]
-      is the second child of [->]. This information is not possible to recover without
-      the whole tree, so we add it in the list, ass a number after the arrow.
+let rev_concat lst = List.fold_left (fun acc xs -> List.rev_append xs acc) [] lst
 
-      This makes the type path of the example type look like this :
+let rec paths_of_type ~prefix t =
+  match t with
+  | Db.Typexpr.Poly _ -> [ Poly :: prefix ]
+  | Any -> [ Any :: prefix ]
+  | Arrow (a, b) ->
+    let prefix_left = Arrow_left :: prefix in
+    let prefix_right = Arrow_right :: prefix in
+    List.rev_append
+      (paths_of_type ~prefix:prefix_left a)
+      (paths_of_type ~prefix:prefix_right b)
+  | Constr (name, args) ->
+    let prefix = Type name :: prefix in
+    begin
+      match args with
+      | [] -> [ prefix ]
+      | _ ->
+        let length = List.length args in
+        rev_concat
+        @@ List.mapi
+             (fun i arg ->
+               let prefix = Argument { pos = i; length } :: prefix in
+               paths_of_type ~prefix arg)
+             args
+    end
+  | Tuple args ->
+    let length = List.length args in
+    rev_concat
+    @@ List.mapi (fun i arg ->
+      let prefix = Product { pos = i; length } :: prefix in
+      paths_of_type ~prefix arg)
+    @@ args
+  | Unhandled -> []
 
-      {[
-        [[-> 1 a]; [-> 2 -> 1 b]; [-> 2 -> 2 * 1 c ]; [-> 2 -> 2 * 2 d]]
-      ]} *)
+let paths_of_type t = List.map List.rev @@ paths_of_type ~prefix:[] t
 
-  type t = string list list
+(* *)
 
-  val of_typ : ignore_any:bool -> Db.Typexpr.t -> t
-  (* [of_typ ~ignore_any typ] is the list of type path associated to [typ].
-     If [ignore_any] is true, [Any] constructors in [typ] will be ignored,
-     if it is false, they will be treated like a polymorphic variable. *)
-end = struct
-  module Sign = Db.Type_polarity.Sign
-
-  type t = string list list
-
-  let rev_concat lst = List.fold_left (fun acc xs -> List.rev_append xs acc) [] lst
-
-  let rec of_typ ~ignore_any ~prefix t =
-    match t with
-    | Db.Typexpr.Poly _ ->
-      let poly = "POLY" in
-      [ poly :: prefix ]
-    | Any ->
-      if ignore_any
-      then [ "_" :: prefix ]
-      else (
-        let poly = "POLY" in
-        [ poly :: prefix ])
-    | Arrow (a, b) ->
-      let prefix_left = "->0" :: prefix in
-      let prefix_right = "->1" :: prefix in
-      List.rev_append
-        (of_typ ~ignore_any ~prefix:prefix_left a)
-        (of_typ ~ignore_any ~prefix:prefix_right b)
-    | Constr (name, args) ->
-      let prefix = name :: prefix in
-      begin
-        match args with
-        | [] -> [ prefix ]
-        | _ ->
-          rev_concat
-          @@ List.mapi
-               (fun i arg ->
-                 let prefix = string_of_int i :: prefix in
-                 of_typ ~ignore_any ~prefix arg)
-               args
-      end
-    | Tuple args ->
-      rev_concat
-      @@ List.mapi (fun i arg ->
-        let prefix = (string_of_int i ^ "*") :: prefix in
-        of_typ ~ignore_any ~prefix arg)
-      @@ args
-    | Unhandled -> []
-
-  let of_typ ~ignore_any t = List.map List.rev @@ of_typ ~ignore_any ~prefix:[] t
-end
-
-let skip_query x = 10 * String.length x
-let skip_entry _ = 15
+let skip_entry _ = 10
 
 let distance xs ys =
   let len_xs = List.length xs in
   let len_ys = List.length ys in
   let cache = Array.make_matrix (1 + len_xs) (1 + len_ys) (-1) in
-  let rec memo i j xs ys =
+  let inv = Db.Type_polarity.Sign.not in
+  let rec memo ~xsgn ~ysgn i j xs ys =
     let r = cache.(i).(j) in
     if r >= 0
     then r
     else begin
-      let r = go i j xs ys in
+      let r = go ~xsgn ~ysgn i j xs ys in
       cache.(i).(j) <- r ;
       r
     end
-  and go i j xs ys =
+  and go ~xsgn ~ysgn i j xs ys =
     match xs, ys with
     | [], [] -> 0
     | [], _ -> 0
-    | [ "_" ], _ -> 0
-    | x :: xs, y :: ys when x = y -> memo (i + 1) (j + 1) xs ys
-    | _, "->1" :: ys -> memo i (j + 1) xs ys
-    | "->1" :: xs, _ -> 1 + memo (i + 1) j xs ys
-    | xs, [] -> List.fold_left (fun acc x -> acc + skip_query x) 0 xs
-    | x :: xs', y :: ys' ->
-      let skip_x = skip_query x in
+    | [ Any ], _ when xsgn = ysgn -> 0
+    | [ Poly ], [ (Any | Poly) ] when xsgn = ysgn -> 0
+    | Arrow_left :: xs, Arrow_left :: ys ->
+      memo ~xsgn:(inv xsgn) ~ysgn:(inv ysgn) (i + 1) (j + 1) xs ys
+    | x :: xs, y :: ys when x = y && xsgn = ysgn -> memo ~xsgn ~ysgn (i + 1) (j + 1) xs ys
+    | _, Arrow_left :: ys -> 1 + memo ~xsgn ~ysgn:(inv ysgn) i (j + 1) xs ys
+    | Arrow_left :: xs, _ -> 1 + memo ~xsgn:(inv xsgn) ~ysgn (i + 1) j xs ys
+    | _, Arrow_right :: ys -> memo ~xsgn ~ysgn i (j + 1) xs ys
+    | Arrow_right :: xs, _ -> memo ~xsgn ~ysgn (i + 1) j xs ys
+    | _, [] -> 10_000
+    | Product _ :: xs, Product _ :: ys -> 1 + memo ~xsgn ~ysgn (i + 1) (j + 1) xs ys
+    | Argument _ :: xs, Argument _ :: ys -> 1 + memo ~xsgn ~ysgn (i + 1) (j + 1) xs ys
+    | Product _ :: xs, ys -> 1 + memo ~xsgn ~ysgn (i + 1) j xs ys
+    | xs, Product _ :: ys -> 1 + memo ~xsgn ~ysgn i (j + 1) xs ys
+    | Type x :: xs', Type y :: ys' when xsgn = ysgn -> begin
       let skip_y = skip_entry y in
-      let cost =
-        match Name_cost.best_match ~sub:x y with
-        | None -> skip_x + skip_y
-        | Some (_, cost) -> cost
-      in
-      min
-        (cost + memo (i + 1) (j + 1) xs' ys')
-        (min (skip_x + memo (i + 1) j xs' ys) (skip_y + memo i (j + 1) xs ys'))
+      match Name_cost.best_match ~sub:x y with
+      | None -> skip_y + memo ~xsgn ~ysgn i (j + 1) xs ys'
+      | Some (_, cost) -> (cost / 3) + memo ~xsgn ~ysgn (i + 1) (j + 1) xs' ys'
+    end
+    | xs, Type y :: ys' -> skip_entry y + memo ~xsgn ~ysgn i (j + 1) xs ys'
+    | xs, Argument _ :: ys' -> memo ~xsgn ~ysgn i (j + 1) xs ys'
+    | _, (Any | Poly) :: _ -> 10_000
   in
-  go 0 0 xs ys
+  let pos = Db.Type_polarity.Sign.Pos in
+  go ~xsgn:pos ~ysgn:pos 0 0 xs ys
 
 let minimize = function
   | [] -> 0
@@ -127,7 +109,7 @@ let minimize = function
     let used = Array.make (List.length (List.hd arr)) false in
     let arr =
       Array.map (fun lst ->
-        let lst = (1, None) :: List.mapi (fun i x -> x, Some i) lst in
+        let lst = List.mapi (fun i x -> x, i) lst in
         List.sort Stdlib.compare lst)
       @@ Array.of_list arr
     in
@@ -145,48 +127,46 @@ let minimize = function
       then false
       else if rem <= 0
       then begin
-        let score = acc + (1 * (Array.length arr - i)) in
+        (* entry type is smaller than query type *)
+        let score = acc + (1000 * (Array.length arr - i)) in
         best := min score !best ;
         true
       end
       else if i >= Array.length arr
       then begin
-        best := min !best (acc + (100 * rem)) ;
+        (* query type is smaller than entry type *)
+        let score = acc + (5 * rem) in
+        best := min score !best ;
         true
       end
       else if acc + heuristics.(i) >= !best
       then true
-      else (
+      else begin
         let rec find = function
           | [] -> true
           | (cost, j) :: rest ->
-            let ok =
-              match j with
-              | None ->
-                go rem (acc + cost + if rem > Array.length arr - i then 100 else 0) (i + 1)
-              | Some j ->
-                if used.(j)
-                then true
-                else begin
-                  used.(j) <- true ;
-                  let ok = go (rem - 1) (acc + cost) (i + 1) in
-                  used.(j) <- false ;
-                  ok
-                end
+            let continue =
+              if used.(j)
+              then true
+              else begin
+                used.(j) <- true ;
+                let continue = go (rem - 1) (acc + cost) (i + 1) in
+                used.(j) <- false ;
+                continue
+              end
             in
-            if ok then find rest else false
+            if continue then find rest else false
         in
-        find arr.(i))
+        find arr.(i)
+      end
     in
     let _ = go (Array.length used) 0 0 in
     !best
 
 let v ~query_paths ~entry =
-  let entry_paths = Type_path.of_typ ~ignore_any:false entry in
+  let entry_paths = paths_of_type entry in
   match entry_paths, query_paths with
   | _, [] | [], _ -> 0
   | _ ->
-    let arr =
-      List.map (fun p -> List.map (fun q -> distance q p) query_paths) entry_paths
-    in
+    let arr = List.map (fun p -> List.map (distance p) entry_paths) query_paths in
     minimize arr

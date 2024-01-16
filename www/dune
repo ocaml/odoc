@@ -1,6 +1,7 @@
 (library
  (name www)
- (libraries cmdliner dream tyxml db db_store query)
+ (optional)
+ (libraries lwt cmdliner dream tyxml db db_store query)
  (preprocess
   (pps ppx_blob))
  (preprocessor_deps

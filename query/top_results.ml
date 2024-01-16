@@ -33,21 +33,25 @@ let add ~query ~limit elt t =
     end
   end
 
-let max_seek = 500
+let max_seek = 10
 
-let of_seq ~query ~limit seq =
-  let rec go total_seen t seq =
-    if total_seen >= limit + max_seek
-    then t
-    else begin
-      match seq () with
-      | Seq.Nil -> t
-      | Cons (x, xs) -> begin
-        match add ~query ~limit x t with
-        | Stop t -> t
-        | Continue t -> go (total_seen + 1) t xs
+module Make (IO : Io.S) = struct
+  module Seq = Io.Seq (IO)
+
+  let of_seq ~query ~limit seq =
+    let rec go total_seen t seq =
+      if total_seen >= limit + max_seek
+      then IO.return t
+      else begin
+        IO.bind (seq ())
+        @@ function
+        | Seq.Nil -> IO.return t
+        | Cons (x, xs) -> begin
+          match add ~query ~limit x t with
+          | Stop t -> IO.return t
+          | Continue t -> go (total_seen + 1) t xs
+        end
       end
-    end
-  in
-  let t = go 0 empty seq in
-  Bests.to_seq t.bests
+    in
+    IO.map (go 0 empty seq) @@ fun t -> List.of_seq @@ Bests.to_seq t.bests
+end

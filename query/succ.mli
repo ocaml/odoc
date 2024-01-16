@@ -6,6 +6,7 @@ type t
 val to_seq : t -> Db.Entry.t Seq.t
 val empty : t
 val of_automata : Db.String_automata.t -> t
+val of_automatas : Db.String_automata.t list -> t
 val inter : t -> t -> t
 val union : t -> t -> t
 val inter_of_list : t list -> t
