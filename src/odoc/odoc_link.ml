@@ -4,6 +4,34 @@ let link_page ~resolver ~filename page =
   let env = Resolver.build_env_for_page resolver page in
   Odoc_xref2.Link.resolve_page ~filename env page
 
+let content_for_hidden_modules =
+  let open Odoc_model in
+  let open Lang.Signature in
+  let with_loc v =
+    let open Location_ in
+    {
+      location =
+        {
+          file = "_none_";
+          start = { line = 1; column = 0 };
+          end_ = { line = 1; column = 0 };
+        };
+      value = v;
+    }
+  in
+  let sentence =
+    [
+      `Word "This";
+      `Space;
+      `Word "module";
+      `Space;
+      `Word "is";
+      `Space;
+      `Word "hidden.";
+    ]
+  in
+  [ Comment (`Docs [ with_loc @@ `Paragraph (List.map with_loc sentence) ]) ]
+
 let link_unit ~resolver ~filename m =
   let open Odoc_model in
   let open Lang.Compilation_unit in
@@ -11,7 +39,9 @@ let link_unit ~resolver ~filename m =
     if Root.Odoc_file.hidden m.root.file then
       {
         m with
-        content = Module { items = []; compiled = false; doc = [] };
+        content =
+          Module
+            { items = content_for_hidden_modules; compiled = false; doc = [] };
         expansion = None;
       }
     else m
