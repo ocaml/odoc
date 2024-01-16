@@ -1,13 +1,154 @@
-  $ find . -name '*.odocl' | sort
-  ./base_odocls/base.odocl
-  ./base_odocls/base_internalhash_types.odocl
-  ./base_odocls/caml.odocl
-  ./base_odocls/md5_lib.odocl
-  ./base_odocls/page-index.odocl
-  ./base_odocls/shadow_stdlib.odocl
+  $ mkdir docs
+Generating odocls for base with odig. This might give an error on some
+dependencies so we do not display error (one was encountered with yojson)
+  $ odig odoc --cache-dir=docs base 2> /dev/null
+  Updating documentation, this may take some time...
+  $ find ./docs/odoc/base/ -name '*.odocl' | sort
+  ./docs/odoc/base/base.odocl
+  ./docs/odoc/base/base__.odocl
+  ./docs/odoc/base/base__Applicative.odocl
+  ./docs/odoc/base/base__Applicative_intf.odocl
+  ./docs/odoc/base/base__Array.odocl
+  ./docs/odoc/base/base__Array0.odocl
+  ./docs/odoc/base/base__Array_permute.odocl
+  ./docs/odoc/base/base__Avltree.odocl
+  ./docs/odoc/base/base__Backtrace.odocl
+  ./docs/odoc/base/base__Binary_search.odocl
+  ./docs/odoc/base/base__Binary_searchable.odocl
+  ./docs/odoc/base/base__Binary_searchable_intf.odocl
+  ./docs/odoc/base/base__Blit.odocl
+  ./docs/odoc/base/base__Blit_intf.odocl
+  ./docs/odoc/base/base__Bool.odocl
+  ./docs/odoc/base/base__Bool0.odocl
+  ./docs/odoc/base/base__Buffer.odocl
+  ./docs/odoc/base/base__Buffer_intf.odocl
+  ./docs/odoc/base/base__Bytes.odocl
+  ./docs/odoc/base/base__Bytes0.odocl
+  ./docs/odoc/base/base__Bytes_tr.odocl
+  ./docs/odoc/base/base__Char.odocl
+  ./docs/odoc/base/base__Char0.odocl
+  ./docs/odoc/base/base__Comparable.odocl
+  ./docs/odoc/base/base__Comparable_intf.odocl
+  ./docs/odoc/base/base__Comparator.odocl
+  ./docs/odoc/base/base__Comparisons.odocl
+  ./docs/odoc/base/base__Container.odocl
+  ./docs/odoc/base/base__Container_intf.odocl
+  ./docs/odoc/base/base__Either.odocl
+  ./docs/odoc/base/base__Either0.odocl
+  ./docs/odoc/base/base__Either_intf.odocl
+  ./docs/odoc/base/base__Equal.odocl
+  ./docs/odoc/base/base__Error.odocl
+  ./docs/odoc/base/base__Exn.odocl
+  ./docs/odoc/base/base__Field.odocl
+  ./docs/odoc/base/base__Fieldslib.odocl
+  ./docs/odoc/base/base__Float.odocl
+  ./docs/odoc/base/base__Float0.odocl
+  ./docs/odoc/base/base__Floatable.odocl
+  ./docs/odoc/base/base__Fn.odocl
+  ./docs/odoc/base/base__Formatter.odocl
+  ./docs/odoc/base/base__Globalize.odocl
+  ./docs/odoc/base/base__Hash.odocl
+  ./docs/odoc/base/base__Hash_intf.odocl
+  ./docs/odoc/base/base__Hash_set.odocl
+  ./docs/odoc/base/base__Hash_set_intf.odocl
+  ./docs/odoc/base/base__Hashable.odocl
+  ./docs/odoc/base/base__Hashable_intf.odocl
+  ./docs/odoc/base/base__Hasher.odocl
+  ./docs/odoc/base/base__Hashtbl.odocl
+  ./docs/odoc/base/base__Hashtbl_intf.odocl
+  ./docs/odoc/base/base__Hex_lexer.odocl
+  ./docs/odoc/base/base__Identifiable.odocl
+  ./docs/odoc/base/base__Identifiable_intf.odocl
+  ./docs/odoc/base/base__Import.odocl
+  ./docs/odoc/base/base__Import0.odocl
+  ./docs/odoc/base/base__Indexed_container.odocl
+  ./docs/odoc/base/base__Indexed_container_intf.odocl
+  ./docs/odoc/base/base__Info.odocl
+  ./docs/odoc/base/base__Info_intf.odocl
+  ./docs/odoc/base/base__Int.odocl
+  ./docs/odoc/base/base__Int0.odocl
+  ./docs/odoc/base/base__Int32.odocl
+  ./docs/odoc/base/base__Int63.odocl
+  ./docs/odoc/base/base__Int63_emul.odocl
+  ./docs/odoc/base/base__Int64.odocl
+  ./docs/odoc/base/base__Int_conversions.odocl
+  ./docs/odoc/base/base__Int_intf.odocl
+  ./docs/odoc/base/base__Int_math.odocl
+  ./docs/odoc/base/base__Intable.odocl
+  ./docs/odoc/base/base__Invariant.odocl
+  ./docs/odoc/base/base__Invariant_intf.odocl
+  ./docs/odoc/base/base__Lazy.odocl
+  ./docs/odoc/base/base__Linked_queue.odocl
+  ./docs/odoc/base/base__Linked_queue0.odocl
+  ./docs/odoc/base/base__List.odocl
+  ./docs/odoc/base/base__List0.odocl
+  ./docs/odoc/base/base__List1.odocl
+  ./docs/odoc/base/base__Map.odocl
+  ./docs/odoc/base/base__Map_intf.odocl
+  ./docs/odoc/base/base__Maybe_bound.odocl
+  ./docs/odoc/base/base__Monad.odocl
+  ./docs/odoc/base/base__Monad_intf.odocl
+  ./docs/odoc/base/base__Nativeint.odocl
+  ./docs/odoc/base/base__Nothing.odocl
+  ./docs/odoc/base/base__Obj_array.odocl
+  ./docs/odoc/base/base__Obj_local.odocl
+  ./docs/odoc/base/base__Option.odocl
+  ./docs/odoc/base/base__Option_array.odocl
+  ./docs/odoc/base/base__Or_error.odocl
+  ./docs/odoc/base/base__Ordered_collection_common.odocl
+  ./docs/odoc/base/base__Ordered_collection_common0.odocl
+  ./docs/odoc/base/base__Ordering.odocl
+  ./docs/odoc/base/base__Poly0.odocl
+  ./docs/odoc/base/base__Popcount.odocl
+  ./docs/odoc/base/base__Pow_overflow_bounds.odocl
+  ./docs/odoc/base/base__Ppx_compare_lib.odocl
+  ./docs/odoc/base/base__Ppx_enumerate_lib.odocl
+  ./docs/odoc/base/base__Ppx_hash_lib.odocl
+  ./docs/odoc/base/base__Pretty_printer.odocl
+  ./docs/odoc/base/base__Printf.odocl
+  ./docs/odoc/base/base__Queue.odocl
+  ./docs/odoc/base/base__Queue_intf.odocl
+  ./docs/odoc/base/base__Random.odocl
+  ./docs/odoc/base/base__Random_repr.odocl
+  ./docs/odoc/base/base__Ref.odocl
+  ./docs/odoc/base/base__Result.odocl
+  ./docs/odoc/base/base__Sequence.odocl
+  ./docs/odoc/base/base__Set.odocl
+  ./docs/odoc/base/base__Set_intf.odocl
+  ./docs/odoc/base/base__Sexp.odocl
+  ./docs/odoc/base/base__Sexp_with_comparable.odocl
+  ./docs/odoc/base/base__Sexpable.odocl
+  ./docs/odoc/base/base__Sign.odocl
+  ./docs/odoc/base/base__Sign0.odocl
+  ./docs/odoc/base/base__Sign_or_nan.odocl
+  ./docs/odoc/base/base__Source_code_position.odocl
+  ./docs/odoc/base/base__Source_code_position0.odocl
+  ./docs/odoc/base/base__Stack.odocl
+  ./docs/odoc/base/base__Stack_intf.odocl
+  ./docs/odoc/base/base__Staged.odocl
+  ./docs/odoc/base/base__String.odocl
+  ./docs/odoc/base/base__String0.odocl
+  ./docs/odoc/base/base__Stringable.odocl
+  ./docs/odoc/base/base__Sys.odocl
+  ./docs/odoc/base/base__Sys0.odocl
+  ./docs/odoc/base/base__T.odocl
+  ./docs/odoc/base/base__Type_equal.odocl
+  ./docs/odoc/base/base__Uchar.odocl
+  ./docs/odoc/base/base__Uchar0.odocl
+  ./docs/odoc/base/base__Uniform_array.odocl
+  ./docs/odoc/base/base__Unit.odocl
+  ./docs/odoc/base/base__Variant.odocl
+  ./docs/odoc/base/base__Variantslib.odocl
+  ./docs/odoc/base/base__With_return.odocl
+  ./docs/odoc/base/base__Word_size.odocl
+  ./docs/odoc/base/base_internalhash_types/base_internalhash_types.odocl
+  ./docs/odoc/base/caml/caml.odocl
+  ./docs/odoc/base/md5/md5_lib.odocl
+  ./docs/odoc/base/page-index.odocl
+  ./docs/odoc/base/shadow_stdlib/shadow_stdlib.odocl
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=ancient
-  $ sherlodoc index --index-docstring=false $(find . -name '*.odocl') 2> /dev/null
+  $ sherlodoc index --index-docstring=false $(find ./docs/odoc/base/ -name "*.odocl") > /dev/null
   $ sherlodoc search --print-cost --limit 100 "S_poly"
   195 val Base.Set.S_poly.mem : 'a t -> 'a -> bool
   202 val Base.Hashtbl.S_poly.data : (_, 'b) t -> 'b list
@@ -225,6 +366,7 @@
   97 val Base.String.split_lines : t -> t list
   100 val Base.String.to_list_rev : t -> char list
   103 val Base.Sequence.to_list_rev : 'a t -> 'a list
+  105 val Caml.(@) : 'a list -> 'a list -> 'a list
   105 val Base.Pretty_printer.all : unit -> string list
   109 val Base.Set.to_list : ('a, _) t -> 'a list
   110 val Base.Hashtbl.data : (_, 'b) t -> 'b list
@@ -245,13 +387,20 @@
   142 val Base.Hashtbl.find_multi : ('a, 'b list) t -> 'a key -> 'b list
   143 val Base.List.concat : 'a t t -> 'a t
   145 val Base.List.ignore_m : 'a t -> unit t
-  146 val Base.Hashtbl.Poly.to_alist : ('a, 'b) t -> ('a key * 'b) list
 
 Partial name search:
   $ sherlodoc search --print-cost "strin"
+  169 val Caml.string_of_int : int -> string
+  171 val Caml.string_of_bool : bool -> string
+  173 val Caml.string_of_float : float -> string
   186 val Base.Sexp.of_string : unit
+  189 val Caml.prerr_string : string -> unit
+  189 val Caml.print_string : string -> unit
+  189 val Caml.int_of_string : string -> int
+  191 val Caml.bool_of_string : string -> bool
   192 val Base.Exn.to_string : t -> string
   192 val Base.Sys.max_string_length : int
+  193 val Caml.float_of_string : string -> float
   194 val Base.Float.to_string : t -> string
   197 val Base.Exn.to_string_mach : t -> string
   197 val Base.Info.to_string_hum : t -> string
@@ -259,21 +408,13 @@ Partial name search:
   198 val Base.Error.to_string_hum : t -> string
   198 val Base.Info.to_string_mach : t -> string
   199 val Base.Error.to_string_mach : t -> string
+  200 val Caml.int_of_string_opt : string -> int option
+  201 val Caml.string_of_format : ('a, 'b, 'c, 'd, 'e, 'f) format6 -> string
+  202 val Caml.bool_of_string_opt : string -> bool option
   202 val Base.Or_error.error_string : string -> _ t
   204 val Base.Buffer.add_string : t -> string -> unit
+  204 val Caml.float_of_string_opt : string -> float option
   204 val Base.Sign_or_nan.to_string_hum : t -> string
-  208 val Base.Info.to_string_hum_deprecated : t -> string
-  209 val Base.Error.to_string_hum_deprecated : t -> string
-  209 val Base.Float.to_padded_compact_string : t -> string
-  209 val Base.Source_code_position.to_string : t -> string
-  214 val Base.String.rev : t -> t
-  215 val Base.Int.to_string_hum : ?delimiter:char -> t -> string
-  217 val Base.String.hash : t -> int
-  217 val Base.Int32.to_string_hum : ?delimiter:char -> t -> string
-  217 val Base.Int63.to_string_hum : ?delimiter:char -> t -> string
-  217 val Base.Int64.to_string_hum : ?delimiter:char -> t -> string
-  218 val Base.String.escaped : t -> t
-  218 val Base.String.max_length : int
   $ sherlodoc search --print-cost "tring"
   164 val Base.String.rev : t -> t
   166 val Base.Sexp.of_string : unit
@@ -281,10 +422,15 @@ Partial name search:
   168 val Base.String.escaped : t -> t
   168 val Base.String.max_length : int
   169 val Base.String.(^) : t -> t -> t
+  169 val Caml.prerr_string : string -> unit
+  169 val Caml.print_string : string -> unit
+  169 val Caml.int_of_string : string -> int
   170 val Base.String.uppercase : t -> t
+  171 val Caml.bool_of_string : string -> bool
   171 val Base.String.capitalize : t -> t
   172 val Base.Exn.to_string : t -> string
   172 val Base.String.append : t -> t -> t
+  173 val Caml.float_of_string : string -> float
   174 val Base.String.equal : t -> t -> bool
   174 val Base.String.prefix : t -> int -> t
   174 val Base.String.suffix : t -> int -> t
@@ -294,9 +440,4 @@ Partial name search:
   177 val Base.String.split_lines : t -> t list
   179 val Base.String.drop_prefix : t -> int -> t
   179 val Base.String.drop_suffix : t -> int -> t
-  179 val Base.String.common_prefix : t list -> t
   179 val Base.String.common_suffix : t list -> t
-  180 val Base.String.to_list_rev : t -> char list
-  180 val Base.String.common_prefix2 : t -> t -> t
-  180 val Base.String.common_suffix2 : t -> t -> t
-  182 val Base.Or_error.error_string : string -> _ t

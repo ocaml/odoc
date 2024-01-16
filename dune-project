@@ -32,7 +32,9 @@
   (tyxml (>= 4.6.0))
   (brr (>= 0.0.6))
   (ppx_blob (>= 0.7.2))
-  (alcotest :with-test))
+  (alcotest :with-test)
+  (odig :with-test)
+  (base (and :with-test (= v0.16.3))))
  (depopts
   (dream (>= 1.0.0~alpha5))
   (ancient (>= 0.9.1))))
