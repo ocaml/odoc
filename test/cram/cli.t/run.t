@@ -86,7 +86,6 @@
   [No results]
   $ sherlodoc search "hidden"
   [No results]
-TODO : get a result for the query bellow
   $ sherlodoc search ":mo"
   val Main.value : moo
   val Main.produce : unit -> moo
@@ -107,7 +106,6 @@ TODO : get a result for the query bellow
   val Main.List.map : ('a -> 'b) -> 'a t -> 'b t
   val Main.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   val Main.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
-TODO : get a result for the query bellow
   $ sherlodoc search ": 'a bo"
   val Main.poly_param : 'a boo
   $ sherlodoc search ":extensible_type"
