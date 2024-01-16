@@ -122,6 +122,6 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>A__b</span></code></h1>
-    </header><div class="odoc-content"></div>
+    </header><div class="odoc-content"><p>This module is hidden.</p></div>
    </body>
   </html>
