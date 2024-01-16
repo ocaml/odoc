@@ -356,8 +356,11 @@ let rec export ~cache ~cache_term node =
     result
 
 let export { buffer; root = t } =
-  let str = Buf.contents buffer in
-  let cache = Hashtbl.create 16 in
-  let cache_term = Terminals_cache.create 16 in
-  let _, t, _ = export ~cache ~cache_term t in
-  { Db.String_automata.str; t }
+  if Char_map.is_empty t.children
+  then Db.String_automata.empty
+  else (
+    let str = Buf.contents buffer in
+    let cache = Hashtbl.create 16 in
+    let cache_term = Terminals_cache.create 16 in
+    let _, t, _ = export ~cache ~cache_term t in
+    { Db.String_automata.str; t })

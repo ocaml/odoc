@@ -10,6 +10,8 @@ type t =
   ; t : node
   }
 
+let empty = { str = ""; t = { start = 0; len = 0; terminals = None; children = None } }
+
 let array_find ~str chr arr =
   let rec go i =
     if i >= Array.length arr

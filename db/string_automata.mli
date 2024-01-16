@@ -13,6 +13,7 @@ type t =
   ; t : node
   }
 
+val empty : t
 val find : t -> string -> t option
 val find_star : t -> string -> t list
 val minimum : t -> Entry.t
