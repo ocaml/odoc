@@ -15,10 +15,7 @@ module Html : sig
     val data : string -> t
   end
 end = struct
-  type t =
-    | Raw of string
-    | Txt of string
-    | Concat of t list
+  type t = Raw of string | Txt of string | Concat of t list
 
   let add_escape_string buf s =
     (* https://discuss.ocaml.org/t/html-encoding-of-string/4289/4 *)
@@ -29,9 +26,8 @@ end = struct
       if start < len then Buffer.add_substring buf s start (i - start)
     in
     let rec loop start i =
-      if i > max_idx
-      then flush start i
-      else begin
+      if i > max_idx then flush start i
+      else
         match String.get s i with
         | '&' -> escape "&amp;" start i
         | '<' -> escape "&lt;" start i
@@ -40,10 +36,9 @@ end = struct
         | '"' -> escape "&quot;" start i
         | '@' -> escape "&commat;" start i
         | _ -> loop start (i + 1)
-      end
     and escape amperstr start i =
-      flush start i ;
-      add amperstr ;
+      flush start i;
+      add amperstr;
       let next = i + 1 in
       loop next next
     in
@@ -56,22 +51,22 @@ end = struct
       | Txt s -> add_escape_string buf s
       | Concat xs -> List.iter go xs
     in
-    go t ;
+    go t;
     Buffer.contents buf
 
   let string_of_list lst = to_string (Concat lst)
 
   type attr = t
 
-  let a_class lst = Concat [ Raw "class=\""; Txt (String.concat " " lst); Raw "\"" ]
+  let a_class lst =
+    Concat [ Raw "class=\""; Txt (String.concat " " lst); Raw "\"" ]
 
-  let attrs = function
-    | [] -> Concat []
-    | xs -> Concat (Raw " " :: xs)
+  let attrs = function [] -> Concat [] | xs -> Concat (Raw " " :: xs)
 
   let block name ~a body =
     let name = Raw name in
-    Concat [ Raw "<"; name; attrs a; Raw ">"; Concat body; Raw "</"; name; Raw ">" ]
+    Concat
+      [ Raw "<"; name; attrs a; Raw ">"; Concat body; Raw "</"; name; Raw ">" ]
 
   let code = block "code"
   let span = block "span"
@@ -117,13 +112,14 @@ let of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
     | None -> []
     | Some rhs -> [ code ~a:[ a_class [ "entry-rhs" ] ] [ txt rhs ] ]
   in
-  Html.string_of_list [
-    kind;
-    code
-      ~a:[ a_class [ "entry-title" ] ]
-      (typedecl_params @ prefix_name @ name @ rhs);
-    div ~a:[ a_class [ "entry-comment" ] ] [ Unsafe.data doc ];
-  ]
+  Html.string_of_list
+    [
+      kind;
+      code
+        ~a:[ a_class [ "entry-title" ] ]
+        (typedecl_params @ prefix_name @ name @ rhs);
+      div ~a:[ a_class [ "entry-comment" ] ] [ Unsafe.data doc ];
+    ]
 
 let kind_doc = "doc"
 let kind_typedecl = "type"
