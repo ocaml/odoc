@@ -6,11 +6,17 @@
   `count-occurrences` flag and command to count occurrences of every identifiers
   (@panglesd, #976)
 
+### Changed
+
+- `Odoc_html_frontend` does not use tyxml, for smaller javascript sizes.
+  (#EmileTrotignon, #1072)
+
 # Fixed
 
 - Revert to outputing a file (without content) when rendering a hidden
   compilation unit. This fixes cases where the dune rules would
   fail. (@panglesd, #1069)
+
 
 # 2.4.0
 
@@ -62,7 +68,7 @@
 - Fix `--hidden` not always taken into account (@panglesd, #940)
 - Syntax highlight labels in function arguments (@panglesd, #990)
 - Ensure generated html ends with a newline (@3Rafal, #954)
-- Warn against tags in pages (@Julow, #948) 
+- Warn against tags in pages (@Julow, #948)
 - Remove unhelpful 'Unresolved_apply' errors (@gpetiot, #946)
 - Allow links and references in headings (@EmileTrotignon, @panglesd, #942)
 - Fix rendering of method types (@zoggy, #935)
@@ -89,7 +95,7 @@
 
 ### Fixed
 - Shadowing issues (@jonludlam, #853)
-- Layout fixes and improvements (@panglesd, #832, #839, #847) 
+- Layout fixes and improvements (@panglesd, #832, #839, #847)
 - Handle comments on class constraints and inherit (@julow, #844)
 - Disable the missing root warning (@jonludlam, #881)
 
