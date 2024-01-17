@@ -30,7 +30,7 @@ let db_filename =
     let doc = "The database to query" in
     Cmd.Env.info "SHERLODOC_DB" ~doc
   in
-  Arg.(required & opt (some string) None & info [ "db" ] ~docv:"DB" ~env)
+  Arg.(required & opt (some string) None & info [ "db"; "o" ] ~docv:"DB" ~env)
 
 let db_path =
   let env =

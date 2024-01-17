@@ -29,10 +29,10 @@ opam install sherlodoc
 ## Generating a search-database
 
 The first step to using sherlodoc is generating a search-database. You do this
-with the command `sherlodoc_index` :
+with the command `sherlodoc index` :
 
 ```bash
-sherlodoc_index --format=marshal -o db.bin a.odocl b.odocl
+sherlodoc index --format=marshal -o db.marshal a.odocl b.odocl
 ```
 
 The `--format` option determines in which format the database is outputted. The
@@ -43,15 +43,15 @@ uses.
 There is a third format : `ancient`, that is only available if the package
  `ancient` is installed. It is more complicated than the other two, you can read
 on it [here](https://github.com/UnixJunkie/ocaml-ancient). It is used for the
-[online](https://doc.sherlocode.com) version of sherlodoc, and is a mandatory
-dependency of the `sherlodoc-www` package.
+[online](https://doc.sherlocode.com) version of sherlodoc, and is an optional
+dependency of the `sherlodoc` package.
 
 The `-o` option is the filename of the output.
 
 Then you need to provide a list of .odocl files that contains the signatures
 items that are going to be searchable. They are build artifacts of odoc.
 
-There are others options that are documented by `sherlodoc_index --help`.
+There are others options that are documented by `sherlodoc index --help`.
 
 ## Queries
 
@@ -101,7 +101,7 @@ If you have a search database in `marshal` format, you can search on the command
 line :
 
 ```bash
-sherlodoc --db=db.bin "blabla : int -> string"
+sherlodoc --db=db.marshal "blabla : int -> string"
 ```
 
 `--db` is the filename of the search database. If absent, the environment
@@ -128,13 +128,13 @@ odig odoc
 Generate the search database :
 
 ```bash
-sherlodoc_index --format=marshal -o db.bin $(find $OPAM_SWITCH_PREFIX/var/cache/odig/odoc -name "*.odocl")
+sherlodoc index --format=marshal -o db.marshal $(find $OPAM_SWITCH_PREFIX/var/cache/odig/odoc -name "*.odocl")
 ```
 
 Enjoy searching :
 
 ```bash
-sherlodoc --db-db.bin
+sherlodoc search --db=db.marshal
 ```
 
 ## Searching from an odoc search bar
@@ -151,7 +151,7 @@ Be sure to copy the two js files in the output directory given to the
 html-generate command :
 
 ```bash
-cp $OPAM_SWITCH_PREFIX/share/sherlodoc/sherlodoc.js html_output/sherlodoc.js ;
+sherlodoc js html_output/sherlodoc.js ;
 cp db.js html_output/db.js ;
 ```
 
@@ -162,20 +162,18 @@ If you want to, you can test it, it should work. It is still work in progress.
 ## Sherlodoc online
 
 If you want to use sherlodoc as a server, like on
-[doc.sherlocode.com](https://doc.sherlocode.com), you can. This is packaged
-separately in `sherlodoc-www`, but also lives in this repo.
+[doc.sherlocode.com](https://doc.sherlocode.com) it is also possible.
 
-Once you have installed `sherlodoc-www`, you need to generate your search
-database :
+As usual, generate your search database :
 
 ```bash
-sherlodoc_index --format=ancient --db=db.bin $(find /path/to/doc -name "*.odocl")
+sherlodoc index --format=ancient -o db.ancient $(find /path/to/doc -name "*.odocl")
 ```
 
 Then you can run the website :
 
 ```bash
-sherlodoc-www db.bin
+sherlodoc serve db.ancient
 ```
 
 The real magic for [doc.sherlocode.com](https://doc.sherlocode.com) is all the
