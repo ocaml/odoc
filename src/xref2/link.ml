@@ -7,11 +7,9 @@ module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
 end
 
-let locations env id locs =
+let source_loc env id loc =
   let id = (id :> Id.NonSrc.t) in
-  match locs with
-  | Some _ as locs -> locs
-  | None -> Shape_tools.lookup_def env id
+  match loc with Some _ as loc -> loc | None -> Shape_tools.lookup_def env id
 
 (** Equivalent to {!Comment.synopsis}. *)
 let synopsis_from_comment (docs : Component.CComment.docs) =
@@ -378,15 +376,14 @@ let rec unit env t =
           Module sg
       | Pack _ as p -> p
   in
-  let locs = locations env t.id t.locs in
-
-  { t with content; linked = true; locs }
+  let source_loc = source_loc env t.id t.source_loc in
+  { t with content; linked = true; source_loc }
 
 and value_ env parent t =
   let open Value in
   {
     t with
-    locs = locations env t.id t.locs;
+    source_loc = source_loc env t.id t.source_loc;
     doc = comment_docs env parent t.doc;
     type_ = type_expression env parent [] t.type_;
   }
@@ -395,9 +392,9 @@ and exception_ env parent e =
   let open Exception in
   let res = Opt.map (type_expression env parent []) e.res in
   let args = type_decl_constructor_argument env parent e.args in
-  let locs = locations env e.id e.locs in
+  let source_loc = source_loc env e.id e.source_loc in
   let doc = comment_docs env parent e.doc in
-  { e with locs; res; args; doc }
+  { e with source_loc; res; args; doc }
 
 and extension env parent t =
   let open Extension in
@@ -405,7 +402,7 @@ and extension env parent t =
     let open Constructor in
     {
       c with
-      locs = locations env c.id c.locs;
+      source_loc = source_loc env c.id c.source_loc;
       args = type_decl_constructor_argument env parent c.args;
       res = Opt.map (type_expression env parent []) c.res;
       doc = comment_docs env parent c.doc;
@@ -428,7 +425,7 @@ and class_type env parent c =
   let doc = comment_docs env parent c.doc in
   {
     c with
-    locs = locations env c.id c.locs;
+    source_loc = source_loc env c.id c.source_loc;
     expr = class_type_expr env parent c.expr;
     doc;
   }
@@ -480,9 +477,9 @@ and class_ env parent c =
         Arrow (lbl, type_expression env parent [] expr, map_decl decl)
   in
   let doc = comment_docs env parent c.doc in
-  let locs = locations env c.id c.locs in
+  let source_loc = source_loc env c.id c.source_loc in
   let type_ = map_decl c.type_ in
-  { c with locs; type_; doc }
+  { c with source_loc; type_; doc }
 
 and module_substitution env parent m =
   let open ModuleSubstitution in
@@ -567,9 +564,9 @@ and module_ : Env.t -> Module.t -> Module.t =
           else type_
       | Alias _ | ModuleType _ -> type_
     in
-    let locs = locations env m.id m.locs in
+    let source_loc = source_loc env m.id m.source_loc in
     let doc = comment_docs env sg_id m.doc in
-    { m with locs; doc; type_ }
+    { m with source_loc; doc; type_ }
 
 and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
  fun env id decl ->
@@ -602,8 +599,8 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
        | _ -> false
      in*)
   let doc = comment_docs env sg_id m.doc in
-  let locs = (locations env m.id) m.locs in
-  { m with locs; expr = expr'; doc }
+  let source_loc = (source_loc env m.id) m.source_loc in
+  { m with source_loc; expr = expr'; doc }
 
 and module_type_substitution :
     Env.t -> ModuleTypeSubstitution.t -> ModuleTypeSubstitution.t =
@@ -869,7 +866,7 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
   let open TypeDecl in
   let equation = type_decl_equation env parent t.equation in
   let doc = comment_docs env parent t.doc in
-  let locs = locations env t.id t.locs in
+  let source_loc = source_loc env t.id t.source_loc in
   let hidden_path =
     match equation.Equation.manifest with
     | Some (Constr (`Resolved path, params))
@@ -882,7 +879,7 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
   let representation =
     Opt.map (type_decl_representation env parent) t.representation
   in
-  let default = { t with locs; equation; doc; representation } in
+  let default = { t with source_loc; equation; doc; representation } in
   match hidden_path with
   | Some (p, params) -> (
       let p' = Component.Of_Lang.(resolved_type_path (empty ()) p) in

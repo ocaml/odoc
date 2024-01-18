@@ -484,7 +484,7 @@ and class_ map parent id c =
   in
   {
     id = identifier;
-    locs = c.locs;
+    source_loc = c.source_loc;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     virtual_ = c.virtual_;
     params = c.params;
@@ -522,7 +522,7 @@ and class_type map parent id c =
   in
   {
     Odoc_model.Lang.ClassType.id = identifier;
-    locs = c.locs;
+    source_loc = c.source_loc;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     virtual_ = c.virtual_;
     params = c.params;
@@ -671,7 +671,7 @@ and value_ map parent id v =
   let identifier = Identifier.Mk.value (parent, typed_name) in
   {
     id = identifier;
-    locs = v.locs;
+    source_loc = v.source_loc;
     doc = docs (parent :> Identifier.LabelParent.t) v.doc;
     type_ = type_expr map (parent :> Identifier.LabelParent.t) v.type_;
     value = v.value;
@@ -695,7 +695,7 @@ and extension_constructor map parent c =
   in
   {
     id = identifier;
-    locs = c.locs;
+    source_loc = c.source_loc;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     args =
       type_decl_constructor_argument map
@@ -714,7 +714,7 @@ and module_ map parent id m =
     let map = { map with shadowed = empty_shadow } in
     {
       Odoc_model.Lang.Module.id;
-      locs = m.locs;
+      source_loc = m.source_loc;
       doc = docs (parent :> Identifier.LabelParent.t) m.doc;
       type_ = module_decl map identifier m.type_;
       canonical = m.canonical;
@@ -853,7 +853,7 @@ and module_type :
   let map = { map with shadowed = empty_shadow } in
   {
     Odoc_model.Lang.ModuleType.id = identifier;
-    locs = mty.locs;
+    source_loc = mty.source_loc;
     doc = docs (parent :> Identifier.LabelParent.t) mty.doc;
     canonical = mty.canonical;
     expr = Opt.map (module_type_expr map sig_id) mty.expr;
@@ -921,7 +921,7 @@ and type_decl map parent id (t : Component.TypeDecl.t) :
   let identifier = Component.TypeMap.find id map.type_ in
   {
     id = identifier;
-    locs = t.locs;
+    source_loc = t.source_loc;
     equation =
       type_decl_equation map (parent :> Identifier.FieldParent.t) t.equation;
     doc = docs (parent :> Identifier.LabelParent.t) t.doc;
@@ -1045,7 +1045,7 @@ and exception_ map parent id (e : Component.Exception.t) :
   in
   {
     id = identifier;
-    locs = e.locs;
+    source_loc = e.source_loc;
     doc = docs (parent :> Identifier.LabelParent.t) e.doc;
     args =
       type_decl_constructor_argument map

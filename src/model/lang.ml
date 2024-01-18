@@ -25,7 +25,7 @@ module rec Module : sig
 
   type t = {
     id : Identifier.Module.t;
-    locs : Identifier.SourceLocation.t option;
+    source_loc : Identifier.SourceLocation.t option;
         (** Identifier.SourceLocation might not be set when the module is artificially constructed from a functor argument. *)
     doc : Comment.docs;
     type_ : decl;
@@ -103,7 +103,7 @@ and ModuleType : sig
 
   type t = {
     id : Identifier.ModuleType.t;
-    locs : Identifier.SourceLocation.t option;
+    source_loc : Identifier.SourceLocation.t option;
         (** Can be [None] for module types created by a type substitution. *)
     doc : Comment.docs;
     canonical : Path.ModuleType.t option;
@@ -244,7 +244,7 @@ and TypeDecl : sig
 
   type t = {
     id : Identifier.Type.t;
-    locs : Identifier.SourceLocation.t option;
+    source_loc : Identifier.SourceLocation.t option;
     doc : Comment.docs;
     canonical : Path.Type.t option;
     equation : Equation.t;
@@ -259,7 +259,7 @@ and Extension : sig
   module Constructor : sig
     type t = {
       id : Identifier.Extension.t;
-      locs : Identifier.SourceLocation.t option;
+      source_loc : Identifier.SourceLocation.t option;
       doc : Comment.docs;
       args : TypeDecl.Constructor.argument;
       res : TypeExpr.t option;
@@ -281,7 +281,7 @@ end =
 and Exception : sig
   type t = {
     id : Identifier.Exception.t;
-    locs : Identifier.SourceLocation.t option;
+    source_loc : Identifier.SourceLocation.t option;
     doc : Comment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
@@ -296,7 +296,7 @@ and Value : sig
 
   type t = {
     id : Identifier.Value.t;
-    locs : Identifier.SourceLocation.t option;
+    source_loc : Identifier.SourceLocation.t option;
     value : value;
     doc : Comment.docs;
     type_ : TypeExpr.t;
@@ -313,7 +313,7 @@ and Class : sig
 
   type t = {
     id : Identifier.Class.t;
-    locs : Identifier.SourceLocation.t option;
+    source_loc : Identifier.SourceLocation.t option;
     doc : Comment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -332,7 +332,7 @@ and ClassType : sig
 
   type t = {
     id : Identifier.ClassType.t;
-    locs : Identifier.SourceLocation.t option;
+    source_loc : Identifier.SourceLocation.t option;
     doc : Comment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -473,7 +473,7 @@ module rec Compilation_unit : sig
     content : content;
     expansion : Signature.t option;
     linked : bool;  (** Whether this unit has been linked. *)
-    locs : Identifier.SourceLocation.t option;
+    source_loc : Identifier.SourceLocation.t option;
     canonical : Path.Module.t option;
   }
 end =

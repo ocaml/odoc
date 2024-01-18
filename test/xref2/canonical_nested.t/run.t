@@ -54,7 +54,7 @@ unresolved in the paths though:
         "B"
       ]
     },
-    "locs": "None",
+    "source_loc": "None",
     "doc": [],
     "type_": {
       "Alias": [
@@ -120,7 +120,7 @@ unresolved in the paths though:
         "Container"
       ]
     },
-    "locs": "None",
+    "source_loc": "None",
     "doc": [],
     "type_": {
       "Alias": [
@@ -185,7 +185,7 @@ unresolved in the paths though:
         "B"
       ]
     },
-    "locs": "None",
+    "source_loc": "None",
     "doc": [],
     "type_": {
       "Alias": [
@@ -277,7 +277,7 @@ unresolved in the paths though:
                           "t"
                         ]
                       },
-                      "locs": "None",
+                      "source_loc": "None",
                       "doc": [],
                       "equation": {
                         "params": [],

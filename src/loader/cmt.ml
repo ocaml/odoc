@@ -29,7 +29,7 @@ let read_core_type env ctyp =
   Cmi.read_type_expr env ctyp.ctyp_type
 
 let rec read_pattern env parent doc pat =
-  let locs _id = None in
+  let source_loc = None in
   let open Signature in
     match pat.pat_desc with
     | Tpat_any -> []
@@ -39,14 +39,14 @@ let rec read_pattern env parent doc pat =
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          [Value {id; locs = locs id; doc; type_; value}]
+          [Value {id; source_loc; doc; type_; value}]
     | Tpat_alias(pat, id, _) ->
         let open Value in
         let id = Env.find_value_identifier env id in
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          Value {id; locs = locs id; doc; type_; value} :: read_pattern env parent doc pat
+          Value {id; source_loc; doc; type_; value} :: read_pattern env parent doc pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
         List.concat (List.map (read_pattern env parent doc) pats)
@@ -324,7 +324,7 @@ let rec read_class_expr env parent params cl =
 let read_class_declaration env parent cld =
   let open Class in
   let id = Env.find_class_identifier env cld.ci_id_class in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cld.ci_attributes in
     Cmi.mark_class_declaration cld.ci_decl;
@@ -338,7 +338,7 @@ let read_class_declaration env parent cld =
         clparams
     in
     let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in
-    { id; locs; doc; virtual_; params; type_; expansion = None }
+    { id; source_loc; doc; virtual_; params; type_; expansion = None }
 
 let read_class_declarations env parent clds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -432,7 +432,7 @@ and read_module_binding env parent mb =
   let id = Env.find_module_identifier env mb.mb_id in
 #endif
   let id = (id :> Identifier.Module.t) in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mb.mb_attributes in
   let type_, canonical =
@@ -457,7 +457,7 @@ and read_module_binding env parent mb =
     | _ -> false
 #endif
   in
-  Some {id; locs; doc; type_; canonical; hidden; }
+  Some {id; source_loc; doc; type_; canonical; hidden; }
 
 and read_module_bindings env parent mbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t)

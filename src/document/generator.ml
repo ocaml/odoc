@@ -53,10 +53,10 @@ let path_to_id path =
   | Error _ -> None
   | Ok url -> Some url
 
-let source_anchor locs =
+let source_anchor source_loc =
   (* Remove when dropping support for OCaml < 4.08 *)
   let to_option = function Result.Ok x -> Some x | Result.Error _ -> None in
-  match locs with
+  match source_loc with
   | Some id ->
       Url.Anchor.from_identifier
         (id : Paths.Identifier.SourceLocation.t :> Paths.Identifier.t)
@@ -690,7 +690,7 @@ module Make (Syntax : SYNTAX) = struct
         (* Take the anchor from the first constructor only for consistency with
            regular variants. *)
         match t.constructors with
-        | hd :: _ -> source_anchor hd.locs
+        | hd :: _ -> source_anchor hd.source_loc
         | [] -> None
       in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
@@ -706,7 +706,7 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "exception" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
-      let source_anchor = source_anchor t.locs in
+      let source_anchor = source_anchor t.source_loc in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
     let polymorphic_variant ~type_ident
@@ -919,7 +919,7 @@ module Make (Syntax : SYNTAX) = struct
       let attr = "type" :: (if is_substitution then [ "subst" ] else []) in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
-      let source_anchor = source_anchor t.locs in
+      let source_anchor = source_anchor t.source_loc in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
   end
 
@@ -947,7 +947,7 @@ module Make (Syntax : SYNTAX) = struct
       let attr = [ "value" ] @ extra_attr in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc in
-      let source_anchor = source_anchor t.locs in
+      let source_anchor = source_anchor t.source_loc in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
   end
 
@@ -1144,7 +1144,7 @@ module Make (Syntax : SYNTAX) = struct
         if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop
       in
 
-      let source_anchor = source_anchor t.locs in
+      let source_anchor = source_anchor t.source_loc in
       let cname, expansion, expansion_doc =
         match t.expansion with
         | None -> (O.documentedSrc @@ O.txt name, None, None)
@@ -1182,7 +1182,7 @@ module Make (Syntax : SYNTAX) = struct
       let virtual_ =
         if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop
       in
-      let source_anchor = source_anchor t.locs in
+      let source_anchor = source_anchor t.source_loc in
       let cname, expansion, expansion_doc =
         match t.expansion with
         | None -> (O.documentedSrc @@ O.txt name, None, None)
@@ -1445,7 +1445,7 @@ module Make (Syntax : SYNTAX) = struct
         | Alias (_, None) -> None
         | ModuleType e -> expansion_of_module_type_expr e
       in
-      let source_anchor = source_anchor t.locs in
+      let source_anchor = source_anchor t.source_loc in
       let modname, status, expansion, expansion_doc =
         match expansion with
         | None -> (O.txt modname, `Default, None, None)
@@ -1540,7 +1540,7 @@ module Make (Syntax : SYNTAX) = struct
         O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
       in
       let modname = Paths.Identifier.name t.id in
-      let source_anchor = source_anchor t.locs in
+      let source_anchor = source_anchor t.source_loc in
       let modname, expansion_doc, mty =
         module_type_manifest ~subst:false ~source_anchor modname t.id t.doc
           t.expr prefix
@@ -1806,7 +1806,7 @@ module Make (Syntax : SYNTAX) = struct
         | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
-      let source_anchor = source_anchor t.locs in
+      let source_anchor = source_anchor t.source_loc in
       let page = make_expansion_page ~source_anchor url [ unit_doc ] items in
       Document.Page page
 
