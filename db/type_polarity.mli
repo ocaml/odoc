@@ -77,10 +77,4 @@ val of_typ : any_is_poly:bool -> Typexpr.t -> t Seq.t
 
     - If [any_is_poly] is true, the type [_] will be treated like a type variable
       ['a], otherwise it will be represented solely by its sign ("+" or "-").
-
-    - If [all_names] is true, extra polarities are added for every "possible name"
-      of each type constructor. For instance the possible names of
-      [Stdlib.Int64.t] are ["t"], ["Int64.t"] and ["Stdlib.Int64.t"]. This allows
-      the user to use any of the possible name. It is important to set this
-      when registering entries in the database, but you not need it when computing
-      the polarities of a query. *)
+ *)
