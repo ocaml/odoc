@@ -578,7 +578,7 @@ and read_object env fi nm =
 let read_value_description env parent id vd =
   let open Signature in
   let id = Env.find_value_identifier env id in
-  let locs = None in
+  let source_loc = None in
   let container =
     (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
   in
@@ -597,7 +597,7 @@ let read_value_description env parent id vd =
         External primitives
     | _ -> assert false
   in
-  Value { Value.id; locs; doc; type_; value }
+  Value { Value.id; source_loc; doc; type_; value }
 
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
@@ -704,7 +704,7 @@ let read_class_constraints env params =
 let read_type_declaration env parent id decl =
   let open TypeDecl in
   let id = Env.find_type_identifier env id in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical =
     Doc_attr.attached Odoc_model.Semantics.Expect_canonical container decl.type_attributes
@@ -735,12 +735,12 @@ let read_type_declaration env parent id decl =
   in
   let private_ = (decl.type_private = Private) in
   let equation = Equation.{params; manifest; constraints; private_} in
-  {id; locs; doc; canonical; equation; representation}
+  {id; source_loc; doc; canonical; equation; representation}
 
 let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
   let id = Env.find_extension_identifier env id in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
   let args =
@@ -748,7 +748,7 @@ let read_extension_constructor env parent id ext =
       (parent : Identifier.Signature.t :> Identifier.FieldParent.t) ext.ext_args
   in
   let res = opt_map (read_type_expr env) ext.ext_ret_type in
-  {id; locs; doc; args; res}
+  {id; source_loc; doc; args; res}
 
 let read_type_extension env parent id ext rest =
   let open Extension in
@@ -773,7 +773,7 @@ let read_type_extension env parent id ext rest =
 let read_exception env parent id ext =
   let open Exception in
   let id = Env.find_exception_identifier env id in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
     mark_exception ext;
@@ -782,7 +782,7 @@ let read_exception env parent id ext =
         (parent : Identifier.Signature.t :> Identifier.FieldParent.t) ext.ext_args
     in
     let res = opt_map (read_type_expr env) ext.ext_ret_type in
-    {id; locs; doc; args; res}
+    {id; source_loc; doc; args; res}
 
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
@@ -867,7 +867,7 @@ let rec read_virtual = function
 let read_class_type_declaration env parent id cltd =
   let open ClassType in
   let id = Env.find_class_type_identifier env id in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cltd.clty_attributes in
     mark_class_type_declaration cltd;
@@ -880,7 +880,7 @@ let read_class_type_declaration env parent id cltd =
       read_class_signature env (id :> Identifier.ClassSignature.t) cltd.clty_params cltd.clty_type
     in
     let virtual_ = read_virtual cltd.clty_type in
-    { id; locs; doc; virtual_; params; expr; expansion = None }
+    { id; source_loc; doc; virtual_; params; expr; expansion = None }
 
 let rec read_class_type env parent params =
   let open Class in function
@@ -903,7 +903,7 @@ let rec read_class_type env parent params =
 let read_class_declaration env parent id cld =
   let open Class in
   let id = Env.find_class_identifier env id in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cld.cty_attributes in
     mark_class_declaration cld;
@@ -916,7 +916,7 @@ let read_class_declaration env parent id cld =
       read_class_type env (id :> Identifier.ClassSignature.t) cld.cty_params cld.cty_type
     in
     let virtual_ = cld.cty_new = None in
-    { id; locs; doc; virtual_; params; type_; expansion = None }
+    { id; source_loc; doc; virtual_; params; type_; expansion = None }
 
 let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
   let open ModuleType in
@@ -945,17 +945,17 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
 and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_declaration) =
   let open ModuleType in
   let id = Env.find_module_type env id in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes in
   let canonical = (canonical :> Path.ModuleType.t option) in
   let expr = opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type in
-  {id; locs; doc; canonical; expr }
+  {id; source_loc; doc; canonical; expr }
 
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in
   let id = (Env.find_module_identifier env ident :> Identifier.Module.t) in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
   let canonical = (canonical :> Path.Module.t option) in
@@ -969,7 +969,7 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
     | Some _ -> false
     | None -> Odoc_model.Names.contains_double_underscore (Ident.name ident)
   in
-  {id; locs; doc; type_; canonical; hidden }
+  {id; source_loc; doc; type_; canonical; hidden }
 
 and read_type_rec_status rec_status =
   let open Signature in

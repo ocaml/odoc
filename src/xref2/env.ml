@@ -362,14 +362,13 @@ let add_extension_constructor identifier
 let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
   let id = (unit.id :> Paths.Identifier.Module.t) in
-  let locs = None in
   match unit.content with
   | Module s ->
       let m =
         Lang.Module.
           {
             id;
-            locs;
+            source_loc = None;
             doc = [];
             type_ = ModuleType (Signature s);
             canonical = unit.canonical;
@@ -383,7 +382,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
         Lang.Module.
           {
             id;
-            locs;
+            source_loc = None;
             doc = [];
             type_ =
               ModuleType (Signature { items = []; compiled = true; doc = [] });
@@ -616,7 +615,7 @@ let lookup_fragment_root env =
 let mk_functor_parameter module_type =
   let type_ = Component.Module.ModuleType module_type in
   Component.Module.
-    { locs = None; doc = []; type_; canonical = None; hidden = false }
+    { source_loc = None; doc = []; type_; canonical = None; hidden = false }
 
 let add_functor_parameter : Lang.FunctorParameter.t -> t -> t =
  fun p t ->
@@ -784,7 +783,7 @@ let open_module_type_substitution : Lang.ModuleTypeSubstitution.t -> t -> t =
     module_type (empty ())
       {
         id = t.id;
-        locs = None;
+        source_loc = None;
         doc = t.doc;
         expr = Some t.manifest;
         canonical = None;

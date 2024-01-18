@@ -434,7 +434,7 @@ val sg : Odoc_model.Lang.Signature.t =
               ihash = 818126955; ikey = "r_Root.p_None"},
              ARG);
          ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"};
-       locs = None; doc = []; canonical = None;
+       source_loc = None; doc = []; canonical = None;
        expr =
         Some
          (Odoc_model.Lang.ModuleType.Signature
@@ -457,7 +457,7 @@ val sg : Odoc_model.Lang.Signature.t =
                        ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"},
                       S);
                   ihash = 208722936; ikey = "mt_S.mt_ARG.r_Root.p_None"};
-                locs = None; doc = []; canonical = None; expr = None}];
+                source_loc = None; doc = []; canonical = None; expr = None}];
             compiled = true; doc = []})};
      Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
       {Odoc_model.Lang.Module.id =
@@ -472,7 +472,7 @@ val sg : Odoc_model.Lang.Signature.t =
               ihash = 818126955; ikey = "r_Root.p_None"},
              F);
          ihash = 748202139; ikey = "m_F.r_Root.p_None"};
-       locs = None; doc = [];
+       source_loc = None; doc = [];
        type_ =
         Odoc_model.Lang.Module.ModuleType
          (Odoc_model.Lang.ModuleType.Functor
@@ -527,7 +527,7 @@ val sg : Odoc_model.Lang.Signature.t =
                                 S);
                             ihash = 313393860;
                             ikey = "mt_S.p_X.m_F.r_Root.p_None"};
-                          locs = None; doc = []; canonical = None;
+                          source_loc = None; doc = []; canonical = None;
                           expr = None}];
                       compiled = true; doc = []});
                  p_path =
@@ -574,7 +574,7 @@ val sg : Odoc_model.Lang.Signature.t =
                        N);
                    ihash = 837385364;
                    ikey = "m_N.___r"... (* string length 33; truncated *)};
-                 locs = None; doc = [];
+                 source_loc = None; doc = [];
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
                    (Odoc_model.Lang.ModuleType.Path

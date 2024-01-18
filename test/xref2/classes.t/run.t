@@ -26,7 +26,7 @@ resolve correctly. All of the 'Class' json objects should contain
         "f"
       ]
     },
-    "locs": "None",
+    "source_loc": "None",
     "doc": [],
     "type_": {
       "Class": [
@@ -63,7 +63,7 @@ resolve correctly. All of the 'Class' json objects should contain
         "g"
       ]
     },
-    "locs": "None",
+    "source_loc": "None",
     "doc": [],
     "type_": {
       "Class": [

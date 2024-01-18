@@ -15,7 +15,7 @@ Compile the modules:
 
 Show the locations:
 
-  $ odoc_print a.odocl | jq -c '.. | select(.locs?) | [ .id, .locs ]'
+  $ odoc_print a.odocl | jq -c '.. | select(.source_loc?) | [ .id, .source_loc ]'
   [{"`Module":[{"`Root":["None","A"]},"M"]},{"Some":{"`SourceLocation":[{"`SourcePage":[{"`Page":[{"Some":{"`Page":["None","root"]}},"source"]},"a.ml"]},"module-M"]}}]
   [{"`Module":[{"`Root":["None","A"]},"N"]},{"Some":{"`SourceLocation":[{"`SourcePage":[{"`Page":[{"Some":{"`Page":["None","root"]}},"source"]},"a.ml"]},"module-N"]}}]
   [{"`ModuleType":[{"`Module":[{"`Root":["None","A"]},"N"]},"S"]},{"Some":{"`SourceLocation":[{"`SourcePage":[{"`Page":[{"Some":{"`Page":["None","root"]}},"source"]},"a.ml"]},"module-N.module-type-S"]}}]

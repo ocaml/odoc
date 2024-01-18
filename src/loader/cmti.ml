@@ -146,7 +146,7 @@ let rec read_core_type env container ctyp =
 let read_value_description env parent vd =
   let open Signature in
   let id = Env.find_value_identifier env vd.val_id in
-  let locs = None in
+  let source_loc = None in
   let container =
     (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
   in
@@ -157,7 +157,7 @@ let read_value_description env parent vd =
     | [] -> Value.Abstract
     | primitives -> External primitives
   in
-  Value { Value.id; locs; doc; type_; value }
+  Value { Value.id; source_loc; doc; type_; value }
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
@@ -255,13 +255,13 @@ let read_type_equation env container decl =
 let read_type_declaration env parent decl =
   let open TypeDecl in
   let id = Env.find_type_identifier env decl.typ_id in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container decl.typ_attributes in
   let canonical = (canonical :> Path.Type.t option) in
   let equation = read_type_equation env container decl in
   let representation = read_type_kind env id decl.typ_kind in
-  {id; locs; doc; canonical; equation; representation}
+  {id; source_loc; doc; canonical; equation; representation}
 
 let read_type_declarations env parent rec_flag decls =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -291,7 +291,7 @@ let read_type_substitutions env parent decls =
 let read_extension_constructor env parent ext =
   let open Extension.Constructor in
   let id = Env.find_extension_identifier env ext.ext_id in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.FieldParent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag label_container ext.ext_attributes in
@@ -307,7 +307,7 @@ let read_extension_constructor env parent ext =
         env container label_container args
     in
     let res = opt_map (read_core_type env label_container) res in
-    {id; locs; doc; args; res}
+    {id; source_loc; doc; args; res}
 
 let read_type_extension env parent tyext =
   let open Extension in
@@ -324,7 +324,7 @@ let read_type_extension env parent tyext =
 let read_exception env parent (ext : extension_constructor) =
   let open Exception in
   let id = Env.find_exception_identifier env ext.ext_id in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.FieldParent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag label_container ext.ext_attributes in
@@ -340,7 +340,7 @@ let read_exception env parent (ext : extension_constructor) =
         env container label_container args
     in
     let res = opt_map (read_core_type env label_container) res in
-    {id; locs; doc; args; res}
+    {id; source_loc; doc; args; res}
 
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
@@ -414,13 +414,13 @@ and read_class_signature env parent label_parent cltyp =
 let read_class_type_declaration env parent cltd =
   let open ClassType in
   let id = Env.find_class_type_identifier env cltd.ci_id_class_type in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map read_type_parameter cltd.ci_params in
   let expr = read_class_signature env (id :> Identifier.ClassSignature.t) container cltd.ci_expr in
-  { id; locs; doc; virtual_; params; expr; expansion = None }
+  { id; source_loc; doc; virtual_; params; expr; expansion = None }
 
 let read_class_type_declarations env parent cltds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -453,13 +453,13 @@ let rec read_class_type env parent label_parent cty =
 let read_class_description env parent cld =
   let open Class in
   let id = Env.find_class_identifier env cld.ci_id_class in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container cld.ci_attributes in
   let virtual_ = (cld.ci_virt = Virtual) in
   let params = List.map read_type_parameter cld.ci_params in
   let type_ = read_class_type env (id :> Identifier.ClassSignature.t) container cld.ci_expr in
-  { id; locs; doc; virtual_; params; type_; expansion = None }
+  { id; source_loc; doc; virtual_; params; type_; expansion = None }
 
 let read_class_descriptions env parent clds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -582,7 +582,7 @@ and read_module_type_maybe_canonical env parent container ~canonical mty =
 and read_module_type_declaration env parent mtd =
   let open ModuleType in
   let id = Env.find_module_type env mtd.mtd_id in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes in
   let expr, canonical =
@@ -597,7 +597,7 @@ and read_module_type_declaration env parent mtd =
     | None -> (None, canonical)
   in
   let canonical = (canonical :> Path.ModuleType.t option) in
-  { id; locs; doc; canonical; expr }
+  { id; source_loc; doc; canonical; expr }
 
 and read_module_declaration env parent md =
   let open Module in
@@ -610,7 +610,7 @@ and read_module_declaration env parent md =
   let id = Env.find_module_identifier env md.md_id in
 #endif
   let id = (id :> Identifier.Module.t) in
-  let locs = None in
+  let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
   let type_, canonical =
@@ -636,7 +636,7 @@ and read_module_declaration env parent md =
     | _ -> false
 #endif
   in
-  Some {id; locs; doc; type_; canonical; hidden}
+  Some {id; source_loc; doc; type_; canonical; hidden}
 
 and read_module_declarations env parent mds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in

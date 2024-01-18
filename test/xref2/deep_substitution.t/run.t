@@ -37,7 +37,7 @@ its RHS correctly replaced with an `int`
         "t"
       ]
     },
-    "locs": "None",
+    "source_loc": "None",
     "doc": [],
     "equation": {
       "params": [],
