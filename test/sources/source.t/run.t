@@ -62,6 +62,31 @@ Files containing some values:
     module F : sig end
   end) =
   struct end
+  
+  (* here is a comment *)
+  let x = fun x -> function A | (* other comment *) B -> 3
+  
+  
+  (** This is the docstring of this very important custom operator *)
+  let ( *.+%) = (+)
+  
+  let a = 3
+  
+  let b = 5
+  
+  let c = 8
+  
+  let x = a * b *.+% c 
+  
+  let b = a / c
+  
+  let x = a mod b
+  
+  let list = [a ; c; b; 1; 2; 3; 4; 5; 6; 7; 8]
+  
+  let string = "lorem ipsum"
+  
+  let string2 = "truc"
 
 Source pages require a parent:
 
@@ -174,10 +199,6 @@ Source links generated in the documentation:
        <a href="#class-type-ct" class="anchor"></a>
        <a href="../root/source/a.ml.html#class-type-ct" class="source_link">
   --
-      <div class="spec value anchored" id="val-x">
-       <a href="#val-x" class="anchor"></a>
-       <a href="../root/source/a.ml.html#val-x" class="source_link">Source</a>
-  --
       <div class="spec module anchored" id="module-X">
        <a href="#module-X" class="anchor"></a>
        <a href="../root/source/a.ml.html#module-X" class="source_link">Source
@@ -205,6 +226,38 @@ Source links generated in the documentation:
       <div class="spec module anchored" id="module-FF2">
        <a href="#module-FF2" class="anchor"></a>
        <a href="../root/source/a.ml.html#module-FF2" class="source_link">Source
+  --
+      <div class="spec value anchored" id="val-(*.+%)">
+       <a href="#val-(*.+%)" class="anchor"></a>
+       <a href="../root/source/a.ml.html" class="source_link">Source</a>
+  --
+      <div class="spec value anchored" id="val-a">
+       <a href="#val-a" class="anchor"></a>
+       <a href="../root/source/a.ml.html#val-a" class="source_link">Source</a>
+  --
+      <div class="spec value anchored" id="val-c">
+       <a href="#val-c" class="anchor"></a>
+       <a href="../root/source/a.ml.html#val-c" class="source_link">Source</a>
+  --
+      <div class="spec value anchored" id="val-b">
+       <a href="#val-b" class="anchor"></a>
+       <a href="../root/source/a.ml.html#val-b" class="source_link">Source</a>
+  --
+      <div class="spec value anchored" id="val-x">
+       <a href="#val-x" class="anchor"></a>
+       <a href="../root/source/a.ml.html#val-x" class="source_link">Source</a>
+  --
+      <div class="spec value anchored" id="val-list">
+       <a href="#val-list" class="anchor"></a>
+       <a href="../root/source/a.ml.html#val-list" class="source_link">Source
+  --
+      <div class="spec value anchored" id="val-string">
+       <a href="#val-string" class="anchor"></a>
+       <a href="../root/source/a.ml.html#val-string" class="source_link">Source
+  --
+      <div class="spec value anchored" id="val-string2">
+       <a href="#val-string2" class="anchor"></a>
+       <a href="../root/source/a.ml.html#val-string2" class="source_link">
 
 Ids generated in the source code:
 
@@ -270,6 +323,30 @@ Ids generated in the source code:
   id="L59"
   id="L60"
   id="L61"
+  id="L62"
+  id="L63"
+  id="L64"
+  id="L65"
+  id="L66"
+  id="L67"
+  id="L68"
+  id="L69"
+  id="L70"
+  id="L71"
+  id="L72"
+  id="L73"
+  id="L74"
+  id="L75"
+  id="L76"
+  id="L77"
+  id="L78"
+  id="L79"
+  id="L80"
+  id="L81"
+  id="L82"
+  id="L83"
+  id="L84"
+  id="L85"
   id="type-t"
   id="type-truc"
   id="type-truc.constructor-A"
@@ -280,7 +357,7 @@ Ids generated in the source code:
   id="module-Yoyo.type-bli.constructor-Aa"
   id="module-Yoyo.type-bli.constructor-Bb"
   id="val-segr"
-  id="val-{x}2"
+  id="val-{x}6"
   id="val-y"
   id="val-z"
   id="local_a_1"
@@ -297,7 +374,7 @@ Ids generated in the source code:
   id="class-cls"
   id="class-cls'"
   id="class-type-ct"
-  id="val-x"
+  id="val-{x}7"
   id="module-X"
   id="module-X.type-t"
   id="module-X.type-t"
@@ -312,3 +389,15 @@ Ids generated in the source code:
   id="module-FF2"
   id="module-FF2.argument-1-A.module-E"
   id="module-FF2.argument-2-A.module-F"
+  id="val-{x}8"
+  id="local_x_4"
+  id="val-(*.+%)"
+  id="val-a"
+  id="val-{b}9"
+  id="val-c"
+  id="val-{x}10"
+  id="val-b"
+  id="val-x"
+  id="val-list"
+  id="val-string"
+  id="val-string2"
