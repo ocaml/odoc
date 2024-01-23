@@ -45,22 +45,10 @@ let mk_constr ?(args = TypeDecl.Constructor.Tuple []) id =
 module Mk = Paths.Identifier.Mk
 
 let bool_identifier = Mk.core_type "bool"
-let int_identifier = Mk.core_type "int"
-let char_identifier = Mk.core_type "char"
-let bytes_identifier = Mk.core_type "bytes"
-let string_identifier = Mk.core_type "string"
-let float_identifier = Mk.core_type "float"
 let unit_identifier = Mk.core_type "unit"
 let exn_identifier = Mk.core_type "exn"
-let array_identifier = Mk.core_type "array"
 let list_identifier = Mk.core_type "list"
 let option_identifier = Mk.core_type "option"
-let int32_identifier = Mk.core_type "int32"
-let int64_identifier = Mk.core_type "int64"
-let nativeint_identifier = Mk.core_type "nativeint"
-let lazy_t_identifier = Mk.core_type "lazy_t"
-let extension_constructor_identifier = Mk.core_type "extension_constructor"
-let floatarray_identifier = Mk.core_type "floatarray"
 
 let false_identifier =
   Mk.constructor (bool_identifier, ConstructorName.make_std "false")
@@ -99,76 +87,55 @@ let cons_decl =
 let none_decl = mk_constr ~args:(Tuple []) none_identifier
 let some_decl = mk_constr ~args:(Tuple [ TypeExpr.Var "'a" ]) some_identifier
 
-let int_decl = mk_type int_identifier
-let char_decl = mk_type char_identifier
-let bytes_decl = mk_type bytes_identifier
-let string_decl = mk_type string_identifier
-let float_decl = mk_type float_identifier
-let bool_decl =
-  mk_type ~repr:(Variant [ false_decl; true_decl ]) bool_identifier
-let unit_decl = mk_type ~repr:(Variant [ void_decl ]) unit_identifier
-let exn_decl = mk_type ~repr:Extensible exn_identifier
-let array_decl = mk_type ~eq:invariant_equation array_identifier
+(** The type representation for known core types. *)
+let type_repr_of_core_type =
+  let open TypeDecl.Representation in
+  function
+  | "bool" -> Some (Variant [ false_decl; true_decl ])
+  | "unit" -> Some (Variant [ void_decl ])
+  | "exn" -> Some Extensible
+  | "option" -> Some (Variant [ none_decl; some_decl ])
+  | "list" -> Some (Variant [ nil_decl; cons_decl ])
+  | _ -> None
 
-let list_decl =
-  mk_type ~eq:covariant_equation
-    ~repr:(Variant [ nil_decl; cons_decl ])
-    list_identifier
+let type_eq_of_core_type = function
+  | "lazy_t" | "extension_constructor" -> Some covariant_equation
+  | "array" -> Some invariant_equation
+  | _ -> None
 
-let option_decl =
-  mk_type ~eq:covariant_equation
-    ~repr:(Variant [ none_decl; some_decl ])
-    option_identifier
-
-let int32_decl = mk_type int32_identifier
-let int64_decl = mk_type int64_identifier
-let nativeint_decl = mk_type nativeint_identifier
-let lazy_t_decl = mk_type ~eq:covariant_equation lazy_t_identifier
-let extension_constructor_decl =
-  mk_type ~eq:covariant_equation extension_constructor_identifier
-
-let floatarray_decl =
+let doc_of_core_type =
+  let elt x = Location_.at predefined_location x in
   let words ss =
     ss
-    |> List.rev_map (fun s -> [ `Space; `Word s ])
+    |> List.rev_map (fun s -> [ elt `Space; elt (`Word s) ])
     |> List.flatten |> List.tl |> List.rev
   in
-  let doc =
-    [
-      `Paragraph
-        (words [ "This"; "type"; "is"; "used"; "to"; "implement"; "the" ]
-         @ [
-             `Space;
-             `Reference
-               ( `Module
-                   (`Root ("Array", `TModule), ModuleName.make_std "Floatarray"),
-                 [] );
-             `Space;
-           ]
-         @ words [ "module."; "It"; "should"; "not"; "be"; "used"; "directly." ]
-        |> List.map (Location_.at predefined_location));
-    ]
-    |> List.map (Location_.at predefined_location)
-  in
-  mk_type ~doc ~eq:covariant_equation floatarray_identifier
+  let paragraph x = elt (`Paragraph x) in
+  function
+  | "floatarray" ->
+      Some
+        [
+          paragraph
+            (words [ "This"; "type"; "is"; "used"; "to"; "implement"; "the" ]
+            @ [
+                elt `Space;
+                elt
+                  (`Reference
+                    ( `Module
+                        ( `Root ("Array", `TModule),
+                          ModuleName.make_std "Floatarray" ),
+                      [] ));
+                elt `Space;
+              ]
+            @ words
+                [ "module."; "It"; "should"; "not"; "be"; "used"; "directly." ]
+            );
+        ]
+  | _ -> None
 
-let core_types =
-  [
-    int_decl;
-    char_decl;
-    bytes_decl;
-    string_decl;
-    float_decl;
-    bool_decl;
-    unit_decl;
-    exn_decl;
-    array_decl;
-    list_decl;
-    option_decl;
-    int32_decl;
-    int64_decl;
-    nativeint_decl;
-    lazy_t_decl;
-    extension_constructor_decl;
-    floatarray_decl;
-  ]
+let type_of_core_type name =
+  let identifier = Mk.core_type name
+  and repr = type_repr_of_core_type name
+  and eq = type_eq_of_core_type name
+  and doc = doc_of_core_type name in
+  mk_type ?doc ?repr ?eq identifier
