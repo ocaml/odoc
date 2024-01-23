@@ -105,26 +105,6 @@ let sys_blocked_io_identifier = Mk.core_exception "Sys_blocked_io"
 let undefined_recursive_module_identifier =
   Mk.core_exception "Undefined_recursive_module"
 
-let core_type_identifier = function
-  | "int" -> Some int_identifier
-  | "char" -> Some char_identifier
-  | "bytes" -> Some bytes_identifier
-  | "string" -> Some string_identifier
-  | "float" -> Some float_identifier
-  | "bool" -> Some bool_identifier
-  | "unit" -> Some unit_identifier
-  | "exn" -> Some exn_identifier
-  | "array" -> Some array_identifier
-  | "list" -> Some list_identifier
-  | "option" -> Some option_identifier
-  | "int32" -> Some int32_identifier
-  | "int64" -> Some int64_identifier
-  | "nativeint" -> Some nativeint_identifier
-  | "lazy_t" -> Some lazy_t_identifier
-  | "extension_constructor" -> Some extension_constructor_identifier
-  | "floatarray" -> Some floatarray_identifier
-  | _ -> None
-
 let core_exception_identifier = function
   | "Match_failure" -> Some match_failure_identifier
   | "Out_of_memory" -> Some out_of_memory_identifier

@@ -90,8 +90,6 @@ val sys_blocked_io_identifier : Identifier.Exception.t
 
 val undefined_recursive_module_identifier : Identifier.Exception.t
 
-val core_type_identifier : string -> Identifier.Type.t option
-
 val core_exception_identifier : string -> Identifier.Exception.t option
 
 val core_constructor_identifier : string -> Identifier.Constructor.t option
