@@ -16,10 +16,7 @@
 
 open Paths
 
-(** {3 Paths} *)
-
 val exn_path : Path.Type.t
 
-(** {3 Declarations} *)
-
-val core_types : Lang.TypeDecl.t list
+val type_of_core_type : string -> Lang.TypeDecl.t
+(** The type declaration of a core type given its name. *)

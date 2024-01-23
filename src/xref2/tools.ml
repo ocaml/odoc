@@ -104,14 +104,6 @@ let canonical_helper :
       let find_fn (r, _) = get_identifier r = fallback_id in
       try Some (List.find find_fn resolved) with _ -> None)
 
-let core_types =
-  let open Odoc_model.Lang.TypeDecl in
-  let open Odoc_model.Paths in
-  List.map
-    (fun decl ->
-      (Identifier.name decl.id, Component.Of_Lang.(type_decl (empty ()) decl)))
-    Odoc_model.Predefined.core_types
-
 let prefix_substitution path sg =
   let open Component.Signature in
   let rec get_sub sub' is =
@@ -854,9 +846,15 @@ and lookup_type_gpath :
   let res =
     match p with
     | `Identifier { iv = `CoreType name; _ } ->
-        (* CoreTypes aren't put into the environment, so they can't be handled by the
-              next clause. We just look them up here in the list of core types *)
-        Ok (`FType (name, List.assoc (TypeName.to_string name) core_types))
+        (* CoreTypes aren't put into the environment, so they can't be handled
+           by the next clause. They are already resolved. *)
+        Ok
+          (`FType
+            ( name,
+              Component.Of_Lang.(
+                type_decl (empty ())
+                  (Odoc_model.Predefined.type_of_core_type
+                     (TypeName.to_string name))) ))
     | `Identifier ({ iv = `Type _; _ } as i) ->
         of_option ~error:(`Lookup_failureT i)
           (Env.(lookup_by_id s_datatype) i env)
@@ -898,7 +896,13 @@ and lookup_datatype_gpath :
     | `Identifier { iv = `CoreType name; _ } ->
         (* CoreTypes aren't put into the environment, so they can't be handled by the
               next clause. We just look them up here in the list of core types *)
-        Ok (`FType (name, List.assoc (TypeName.to_string name) core_types))
+        Ok
+          (`FType
+            ( name,
+              Component.Of_Lang.(
+                type_decl (empty ())
+                  (Odoc_model.Predefined.type_of_core_type
+                     (TypeName.to_string name))) ))
     | `Identifier ({ iv = `Type _; _ } as i) ->
         of_option ~error:(`Lookup_failureT i)
           (Env.(lookup_by_id s_datatype) i env)
