@@ -40,26 +40,28 @@ module Accessible_paths : sig
 
   val find : t -> string -> Fs.File.t list
 end = struct
-  type t = { directories : Fs.Directory.t list }
+  type t = (string, Fpath.t (* list *)) Hashtbl.t
 
-  let create ~directories = { directories }
+  let create ~directories =
+    let unit_cache = Hashtbl.create 42 in
+    List.iter
+      (fun directory ->
+        let files = Sys.readdir (Fs.Directory.to_string directory) in
+        Array.iter
+          (fun file ->
+            let file = Fpath.v file in
+            if Fpath.has_ext "odoc" file then
+              Hashtbl.add unit_cache
+                (Astring.String.Ascii.capitalize
+                   (file |> Fpath.rem_ext |> Fpath.basename))
+                (Fs.File.append directory file))
+          files)
+      directories;
+    unit_cache
 
   let find t name =
-    let uname = Astring.String.Ascii.capitalize name ^ ".odoc" in
-    let lname = Astring.String.Ascii.uncapitalize name ^ ".odoc" in
-    let rec loop acc = function
-      | [] -> acc
-      | directory :: dirs -> (
-          let lfile = Fs.File.create ~directory ~name:lname in
-          match Unix.stat (Fs.File.to_string lfile) with
-          | _ -> loop (lfile :: acc) dirs
-          | exception Unix.Unix_error _ -> (
-              let ufile = Fs.File.create ~directory ~name:uname in
-              match Unix.stat (Fs.File.to_string ufile) with
-              | _ -> loop (ufile :: acc) dirs
-              | exception Unix.Unix_error _ -> loop acc dirs))
-    in
-    loop [] t.directories
+    let name = Astring.String.Ascii.capitalize name in
+    Hashtbl.find_all t name
 end
 
 module StringMap = Map.Make (String)
