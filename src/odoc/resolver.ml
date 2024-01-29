@@ -46,16 +46,20 @@ end = struct
     let unit_cache = Hashtbl.create 42 in
     List.iter
       (fun directory ->
-        let files = Sys.readdir (Fs.Directory.to_string directory) in
-        Array.iter
-          (fun file ->
-            let file = Fpath.v file in
-            if Fpath.has_ext "odoc" file then
-              Hashtbl.add unit_cache
-                (Astring.String.Ascii.capitalize
-                   (file |> Fpath.rem_ext |> Fpath.basename))
-                (Fs.File.append directory file))
-          files)
+        try
+          let files = Sys.readdir (Fs.Directory.to_string directory) in
+          Array.iter
+            (fun file ->
+              let file = Fpath.v file in
+              if Fpath.has_ext "odoc" file then
+                Hashtbl.add unit_cache
+                  (Astring.String.Ascii.capitalize
+                     (file |> Fpath.rem_ext |> Fpath.basename))
+                  (Fs.File.append directory file))
+            files
+        with Sys_error _ ->
+          (* TODO: Raise a warning if a directory given as -I cannot be opened *)
+          ())
       directories;
     unit_cache
 
