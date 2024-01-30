@@ -16,6 +16,12 @@ type t =
   ; t : node
   }
 
+let empty = { start = 0; len = 0; size = 0; children = None; terminals = Empty }
+
+let empty () =
+  (* avoid ancient segfaulting on statically allocated values *)
+  Obj.obj @@ Obj.dup @@ Obj.repr empty
+
 let size t = t.t.size
 
 let minimum { t; _ } =

@@ -420,10 +420,7 @@ let rec export ~cache ~cache_term ~summarize ~is_root node =
 let export ~summarize { buffer; root = t } =
   let str = Buf.contents buffer in
   if String.length str = 0
-  then
-    { Db.String_automata.str
-    ; t = { start = 0; len = 0; size = 0; children = None; terminals = Empty }
-    }
+  then { Db.String_automata.str; t = Db.String_automata.empty () }
   else begin
     let cache = Hashtbl.create 16 in
     let cache_term = Terminals_cache.create 16 in
