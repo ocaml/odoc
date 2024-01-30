@@ -15,13 +15,28 @@ let index_file register filename =
      | Ok result -> result
      | Error (`Msg msg) -> Format.printf "Odoc warning or error %s: %s@." filename msg)
 
-let main files file_list index_docstring index_name type_search db_format db_filename =
+let main
+  files
+  file_list
+  index_docstring
+  index_name
+  type_search
+  favoured_prefixes
+  db_format
+  db_filename
+  =
   let module Storage = (val Db_store.storage_module db_format) in
   let db = Db_writer.make () in
   let no_pkg = Db.Entry.Package.v ~name:"" ~version:"" in
   let register ~pkg id () item =
     List.iter
-      (Load_doc.register_entry ~db ~index_docstring ~index_name ~type_search ~pkg)
+      (Load_doc.register_entry
+         ~db
+         ~index_docstring
+         ~index_name
+         ~type_search
+         ~favoured_prefixes
+         ~pkg)
       (Odoc_search.Entry.entries_of_item id item)
   in
   let files =
@@ -69,8 +84,15 @@ let index_name =
   Arg.(value & opt bool true & info ~doc [ "index-name" ])
 
 let type_search =
-  let doc = "Enable type based search" in
+  let doc = "Enable type based search." in
   Arg.(value & opt bool true & info ~doc [ "type-search" ])
+
+let favoured_prefixes =
+  let doc =
+    "The list of favoured prefixes. Entries that start with a favoured prefix are ranked \
+     higher."
+  in
+  Arg.(value & opt (list string) [ "Stdlib." ] & info ~doc [ "favoured-prefixes" ])
 
 let file_list =
   let doc =
@@ -84,4 +106,11 @@ let odoc_files =
   Arg.(value & (pos_all file [] @@ info ~doc ~docv:"ODOCL_FILE" []))
 
 let term =
-  Term.(const main $ odoc_files $ file_list $ index_docstring $ index_name $ type_search)
+  Term.(
+    const main
+    $ odoc_files
+    $ file_list
+    $ index_docstring
+    $ index_name
+    $ type_search
+    $ favoured_prefixes)
