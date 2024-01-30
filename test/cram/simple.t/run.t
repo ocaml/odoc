@@ -11,7 +11,7 @@
 Here cat is used to remove weird permissions on executable built by dune
   $ cat ../../../jsoo/main.bc.js > sherlodoc.js
   $ du -sh sherlodoc.js
-  100K	sherlodoc.js
+  92K	sherlodoc.js
   $ mkdir html
   $ cp sherlodoc.js html
   $ cp db.js html

@@ -98,15 +98,6 @@ module Terminals = struct
   let mem x = function
     | y :: _ -> Entry.equal x y
     | _ -> false
-
-  let minimum = function
-    | [] -> None
-    | x :: xs ->
-      Some
-        (List.fold_left
-           (fun found elt -> if Entry.compare found elt <= 0 then found else elt)
-           x
-           xs)
 end
 
 module Char_map = Map.Make (Char)
@@ -371,18 +362,23 @@ let rec export ~cache ~cache_term ~summarize ~is_root node =
     List.fold_left (fun acc (_, child) -> Seen.union acc child.seen) Seen.empty children
   in
   let seen = List.fold_left (fun acc e -> Seen.add e acc) children_seen node.terminals in
-  let children_uids = List.map (fun (chr, { uid; _ }) -> chr, uid) children in
   let terminals =
     if is_summary
     then List.of_seq (Seen.to_seq seen)
-    else List.filter (fun e -> not (Seen.mem e children_seen)) node.terminals
+    else
+      List.sort Entry.compare
+      @@ List.filter (fun e -> not (Seen.mem e children_seen)) node.terminals
   in
   let min_child =
     match children with
     | [] -> None
     | (_, { min = elt; _ }) :: _ -> Some elt
   in
-  let min_terminal = Terminals.minimum terminals in
+  let min_terminal =
+    match terminals with
+    | [] -> None
+    | hd :: _ -> Some hd
+  in
   let min_child, terminals =
     match min_child, min_terminal with
     | None, None -> failwith "suffix_tree: empty node"
@@ -393,8 +389,10 @@ let rec export ~cache ~cache_term ~summarize ~is_root node =
       then min_child, min_child :: terminals
       else min_terminal, terminals
   in
+  assert (min_child == Seen.min_elt seen) ;
   assert (terminals <> []) ;
   let terminals_uid, terminals = export_terminals ~cache_term ~is_summary terminals in
+  let children_uids = List.map (fun (chr, { uid; _ }) -> chr, uid) children in
   let key = node.start, node.len, terminals_uid, children_uids in
   try Hashtbl.find cache key with
   | Not_found ->
