@@ -71,7 +71,7 @@ let search_form query =
               ; a_value query
               ; a_placeholder "Search..."
               ; a_autofocus ()
-              ; a_autocomplete false
+              ; a_autocomplete `Off
               ]
             ()
         ; input ~a:[ a_input_type `Submit; a_value "Search!" ] ()
