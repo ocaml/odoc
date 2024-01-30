@@ -5,7 +5,7 @@
   $ du -sh megaodocl
   4.0K	megaodocl
   $ export SHERLODOC_DB=db.bin
-  $ export SHERLODOC_FORMAT=marshal
+  $ export SHERLODOC_FORMAT=ancient
   $ sherlodoc index $(find . -name '*.odocl')
   $ sherlodoc search --print-cost "list"
   89 type 'a Main.list

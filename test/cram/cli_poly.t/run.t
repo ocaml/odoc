@@ -7,7 +7,7 @@
   $ du -sh megaodocl
   4.0K	megaodocl
   $ export SHERLODOC_DB=db.bin
-  $ export SHERLODOC_FORMAT=ancient
+  $ export SHERLODOC_FORMAT=marshal
   $ sherlodoc index $(find . -name '*.odocl')
 TODO : get a result for the query bellow
   $ sherlodoc search ":'a"

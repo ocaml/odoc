@@ -147,7 +147,7 @@ dependencies so we do not display error (one was encountered with yojson)
   ./docs/odoc/base/page-index.odocl
   ./docs/odoc/base/shadow_stdlib/shadow_stdlib.odocl
   $ export SHERLODOC_DB=db.bin
-  $ export SHERLODOC_FORMAT=ancient
+  $ export SHERLODOC_FORMAT=marshal
   $ sherlodoc index --index-docstring=false $(find ./docs/odoc/base/ -name "*.odocl") > /dev/null
   $ sherlodoc search --print-cost --limit 100 "S_poly"
   150 sig Base.Map.S_poly
