@@ -1,7 +1,7 @@
   $ export ODOCLS=$(find ../docs/odoc/base/ -name '*.odocl')
   $ cat $ODOCLS > megaodocl
   $ du -sh megaodocl
-  6.2M	megaodocl
+  5.4M	megaodocl
   $ sherlodoc index --index-docstring=true --index-name=true --type-search=true --format=js --db=db.js $ODOCLS > /dev/null
 
   $ gzip -k db.js
@@ -11,8 +11,8 @@ database contains information than the odocl, but the information is organised
 in queryable way, so a size increase is expected. It should just be reasonable.
 
   $ du -s *.js *.gz
-  2108	db.js
-  1592	db.js.gz
+  2064	db.js
+  1560	db.js.gz
 
   $ for f in $(find . -name '*.odocl'); do
   >  odoc html-generate --search-uri=db.js --search-uri=sherlodoc.js --output-dir html $f

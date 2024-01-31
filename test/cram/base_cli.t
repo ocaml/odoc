@@ -230,7 +230,6 @@
   132 val Base.List.filter_opt : 'a option t -> 'a t
   132 val Base.List.transpose_exn : 'a t t -> 'a t t
   132 val Base.List.concat_no_order : 'a t t -> 'a t
-  145 val Caml.(@) : 'a list -> 'a list -> 'a list
   149 val Base.Set.to_list : ('a, _) t -> 'a list
   150 val Base.Hashtbl.data : (_, 'b) t -> 'b list
   150 val Base.Set.elements : ('a, _) t -> 'a list
@@ -240,34 +239,35 @@
   154 val Base.List.append : 'a t -> 'a t -> 'a t
   154 val Base.Hashtbl.keys : ('a, _) t -> 'a key list
   158 val Base.List.rev_append : 'a t -> 'a t -> 'a t
+  161 val Base.List.intersperse : 'a t -> sep:'a -> 'a t
 
 Partial name search:
   $ sherlodoc search --print-cost "strin"
   97 type Base.string = String.t
   109 type Base.Export.string = String.t
-  109 val Caml.string_of_int : int -> string
-  111 val Caml.string_of_bool : bool -> string
-  113 val Caml.string_of_float : float -> string
   116 val Base.Sexp.of_string : unit
   117 type Base.String.t = string
   117 type Base.String.elt = char
   119 val Base.String.rev : t -> t
-  119 val Caml.prerr_string : string -> unit
-  119 val Caml.print_string : string -> unit
-  119 val Caml.int_of_string : string -> int
   121 mod Base.String
   121 mod Caml.String
-  121 val Caml.bool_of_string : string -> bool
   122 val Base.String.hash : t -> int
   122 val Base.Exn.to_string : t -> string
   122 val Base.Sys.max_string_length : int
   123 val Base.String.escaped : t -> t
-  123 val Caml.float_of_string : string -> float
   123 val Base.String.max_length : int
   124 val Base.String.(^) : t -> t -> t
   124 val Base.Float.to_string : t -> string
   125 mod Base.Stringable
   125 val Base.String.uppercase : t -> t
+  126 type Base.String.Caseless.t = t
+  126 val Base.String.capitalize : t -> t
+  127 mod Base.StringLabels
+  127 mod Caml.StringLabels
+  127 val Base.String.append : t -> t -> t
+  127 val Base.Exn.to_string_mach : t -> string
+  127 val Base.Info.to_string_hum : t -> string
+  127 val Base.Sign.to_string_hum : t -> string
   $ sherlodoc search --print-cost "tring"
   127 type Base.string = String.t
   132 type Base.String.t = string
@@ -280,17 +280,17 @@ Partial name search:
   138 val Base.String.escaped : t -> t
   138 val Base.String.max_length : int
   139 val Base.String.(^) : t -> t -> t
-  139 val Caml.prerr_string : string -> unit
-  139 val Caml.print_string : string -> unit
   139 type Base.Export.string = String.t
-  139 val Caml.int_of_string : string -> int
   140 val Base.String.uppercase : t -> t
-  141 val Caml.bool_of_string : string -> bool
   141 type Base.String.Caseless.t = t
   141 val Base.String.capitalize : t -> t
   142 val Base.Exn.to_string : t -> string
   142 val Base.String.append : t -> t -> t
-  143 val Caml.float_of_string : string -> float
   144 val Base.String.equal : t -> t -> bool
   144 val Base.String.prefix : t -> int -> t
+  144 val Base.String.suffix : t -> int -> t
   144 val Base.Float.to_string : t -> string
+  145 val Base.String.compare : t -> t -> int
+  145 mod Shadow_stdlib.String
+  147 val Base.String.ascending : t -> t -> int
+  147 val Base.String.split_lines : t -> t list

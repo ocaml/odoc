@@ -4,4 +4,4 @@
  (action
   (progn
    (run mkdir -p docs)
-   (run odig odoc --cache-dir=docs base))))
+   (run odig odoc --no-pkg-deps --cache-dir=docs base))))
