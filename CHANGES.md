@@ -21,6 +21,9 @@
   used for sidebar (@panglesd, #1145)
 - Allow referencing of polymorphic constructors in polymorphic variant type
   aliases (@panglesd, #1115)
+- Added a `--occurrences` argument to the `compile-index` command to output the
+  number of occurrences of each entry of the index in the json output
+  (@panglesd, #1076).
 
 ### Changed
 
