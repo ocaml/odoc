@@ -3,9 +3,6 @@
   $ odoc compile -I . page.mld
   $ odoc link -I . main.odoc
   $ odoc link -I . page-page.odoc
-  $ cat $(find . -name '*.odocl') > megaodocl
-  $ du -sh megaodocl
-  8.0K	megaodocl
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=marshal
   $ sherlodoc index $(find . -name '*.odocl')

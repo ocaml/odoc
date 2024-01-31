@@ -1,9 +1,6 @@
   $ ocamlc -c main.mli -bin-annot -I .
   $ odoc compile -I . main.cmti
   $ odoc link -I . main.odoc
-  $ cat $(find . -name '*.odocl') > megaodocl
-  $ du -sh megaodocl
-  4.0K	megaodocl
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=marshal
   $ sherlodoc index $(find . -name '*.odocl')
