@@ -5,6 +5,9 @@
 - Improve jump to implementation in rendered source code, and add a
   `count-occurrences` flag and command to count occurrences of every identifiers
   (@panglesd, #976)
+- Added a `--occurrences` argument to the `compile-index` command to output the
+  number of occurrences of each entry of the index in the json output
+  (@panglesd, #1076).
 
 ### Changed
 
