@@ -1,0 +1,7 @@
+(rule
+ (target (dir docs))
+ (deps (package base))
+ (action
+  (progn
+   (run mkdir -p docs)
+   (run odig odoc --cache-dir=docs base))))

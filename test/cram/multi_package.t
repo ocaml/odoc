@@ -1,4 +1,6 @@
-  $ export ODOCLS=$(find ../docs/odoc/base/ -name '*.odocl')
+  $ export ODOCLS=$(find ../docs/odoc/ -name '*.odocl' | sort)
+  $ echo $ODOCLS | wc -w
+  557
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=marshal
   $ sherlodoc index --index-docstring=false $ODOCLS > /dev/null
@@ -118,26 +120,33 @@
   321 val Base.Set.S_poly.are_disjoint : 'a t -> 'a t -> bool
   322 val Base.Set.S_poly.compare_direct : 'a t -> 'a t -> int
   $ sherlodoc search --print-cost --no-rhs "group b"
+  127 val Str.group_beginning
+  170 val Stdlib.Seq.group
+  176 field Signature_group.in_place_patch.replace_by
   181 val Base.Set.group_by
   205 val Base.List.group
   212 val Base.Sequence.group
+  220 field UnixLabels.group_entry.gr_gid
+  224 field UnixLabels.group_entry.gr_name
   225 val Base.List.sort_and_group
+  226 field UnixLabels.group_entry.gr_passwd
   228 val Base.List.groupi
+  229 field UnixLabels.group_entry.gr_mem
   235 val Base.List.Assoc.group
   255 val Base.List.Assoc.sort_and_group
+  275 val UnixLabels.getgroups
+  275 val UnixLabels.setgroups
   275 val Base.Set.Poly.group_by
+  280 val UnixLabels.initgroups
+  297 type UnixLabels.group_entry
   303 val Base.Set.Using_comparator.group_by
   313 val Base.Set.Using_comparator.Tree.group_by
   323 val Base.Hashtbl.group
   377 val Base.Set.S_poly.group_by
   412 val Base.Set.Accessors_generic.group_by
   423 val Base.Hashtbl.Poly.group
-  425 val Base.Set.Creators_and_accessors_generic.group_by
-  430 val Base.Hashtbl.Creators.group
-  437 val Base.Hashtbl.Creators.group
-  449 val Base.Hashtbl.S_without_submodules.group
-  525 val Base.Hashtbl.S_poly.group
   $ sherlodoc search --no-rhs "group by"
+  field Signature_group.in_place_patch.replace_by
   val Base.Set.group_by
   val Base.Set.Poly.group_by
   val Base.Set.Using_comparator.group_by
@@ -146,6 +155,15 @@
   val Base.Set.Accessors_generic.group_by
   val Base.Set.Creators_and_accessors_generic.group_by
   $ sherlodoc search --print-cost "map2"
+  73 val Stdlib.Seq.map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
+  83 val Stdlib.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  86 val Stdlib.Float.Array.map2 : (float -> float -> float) -> t -> t -> t
+  87 val Stdlib.Array.map2 : ('a -> 'b -> 'c) -> 'a array -> 'b array -> 'c array
+  91 val Stdlib.ListLabels.map2 : f:('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  94 val Stdlib.Float.ArrayLabels.map2 : f:(float -> float -> float) -> t -> t -> t
+  95 val Stdlib.ArrayLabels.map2 : f:('a -> 'b -> 'c) -> 'a array -> 'b array -> 'c array
+  97 val Stdlib.List.rev_map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  105 val Stdlib.ListLabels.rev_map2 : f:('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   127 mod Base.Applicative.Make_using_map2
   128 mod Base.Applicative.Make2_using_map2
   128 mod Base.Applicative.Make3_using_map2
@@ -157,30 +175,31 @@
   150 mod Base.Applicative.Make_using_map2.Applicative_infix
   151 mod Base.Applicative.Make2_using_map2.Applicative_infix
   151 mod Base.Applicative.Make3_using_map2.Applicative_infix
+  153 val Misc.Stdlib.List.map2_prefix : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t * 'b t
   155 val Base.Applicative.Make_using_map2.(<*>) : ('a -> 'b) X.t -> 'a X.t -> 'b X.t
   161 mod Base.Applicative.Make_using_map2_local.Applicative_infix
   162 mod Base.Applicative.Make2_using_map2_local.Applicative_infix
   162 mod Base.Applicative.Make3_using_map2_local.Applicative_infix
-  166 val Base.Applicative.Make_using_map2_local.(<*>) : ('a -> 'b) X.t -> 'a X.t -> 'b X.t
-  178 sig Base.Applicative.Basic_using_map2
-  178 val Base.Applicative.Make_using_map2.Applicative_infix.(<*>) : ('a -> 'b) X.t -> 'a X.t -> 'b X.t
-  179 sig Base.Applicative.Basic2_using_map2
-  179 sig Base.Applicative.Basic3_using_map2
-  189 sig Base.Applicative.Basic_using_map2_local
-  189 val Base.Applicative.Make_using_map2_local.Applicative_infix.(<*>) : ('a -> 'b) X.t -> 'a X.t -> 'b X.t
-  190 sig Base.Applicative.Basic2_using_map2_local
-  190 sig Base.Applicative.Basic3_using_map2_local
-  226 val Base.Option.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
 
   $ sherlodoc search --print-cost --static-sort "List map2"
+  78 val Stdlib.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  82 val Stdlib.List.rev_map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  86 val Stdlib.ListLabels.map2 : f:('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  90 val Stdlib.ListLabels.rev_map2 : f:('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   127 val Base.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  143 val Misc.Stdlib.List.map2_prefix : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t * 'b t
   223 val Base.List.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   240 val Base.List.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t Or_unequal_lengths.t
   242 val Base.List.Cartesian_product.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   244 val Base.List.rev_map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t Or_unequal_lengths.t
 
   $ sherlodoc search --print-cost "List map2"
+  88 val Stdlib.List.map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  102 val Stdlib.List.rev_map2 : ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  111 val Stdlib.ListLabels.map2 : f:('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+  125 val Stdlib.ListLabels.rev_map2 : f:('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
   152 val Base.List.rev_map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+  158 val Misc.Stdlib.List.map2_prefix : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t * 'b t
   238 val Base.List.map2_exn : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
   250 val Base.List.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t Or_unequal_lengths.t
   252 val Base.List.Cartesian_product.map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
@@ -189,108 +208,162 @@
   $ sherlodoc search --no-rhs "Base.Hashtbl.S_without_submodules.group"
   val Base.Hashtbl.S_without_submodules.group
   $ sherlodoc search --print-cost "list"
-  81 type 'a Base.list = 'a List.t
-  93 type 'a Base.Export.list = 'a List.t
-  101 type 'a Base.List.t = 'a list
-  104 mod Base.List
-  104 mod Caml.List
-  108 val Base.List.rev : 'a t -> 'a t
-  109 val Base.List.hd_exn : 'a t -> 'a
-  109 val Base.List.return : 'a -> 'a t
-  110 val Base.Bytes.to_list : t -> char list
-  111 val Base.List.join : 'a t t -> 'a t
-  111 val Base.List.tl_exn : 'a t -> 'a t
-  111 val Base.Queue.of_list : 'a list -> 'a t
-  111 val Base.Stack.of_list : 'a list -> 'a t
-  113 val Base.List.concat : 'a t t -> 'a t
-  113 mod Shadow_stdlib.List
-  114 val Base.List.last : 'a t -> 'a option
-  114 val Base.Set.to_list : ('a, _) t -> 'a list
-  115 mod Base.List.Assoc
-  115 mod Base.List.Infix
-  115 cons Base.Sexp.t.List : t list -> t
-  115 val Base.List.ignore_m : 'a t -> unit t
-  115 val Base.Bytes.of_char_list : char list -> t
-  116 val Base.List.drop : 'a t -> int -> 'a t
-  116 val Base.List.take : 'a t -> int -> 'a t
-  117 val Base.List.nth_exn : 'a t -> int -> 'a
+  56 mod Stdlib.List
+  58 cons Stdlib.List.t.[] : 'a t
+  60 val Stdlib.List.hd : 'a list -> 'a
+  64 val Stdlib.Stream.of_list : 'a list -> 'a t
+  65 val Stdlib.List.tl : 'a list -> 'a list
+  65 val Stdlib.List.length : 'a list -> int
+  66 val Stdlib.List.rev : 'a list -> 'a list
+  67 val Stdlib.Array.of_list : 'a list -> 'a array
+  67 val Stdlib.Array.to_list : 'a array -> 'a list
+  68 val Stdlib.List.nth : 'a list -> int -> 'a
+  69 val Stdlib.List.mem : 'a -> 'a list -> bool
+  69 val Stdlib.Option.to_list : 'a option -> 'a list
+  69 val Stdlib.Set.Make.of_list : elt list -> t
+  70 val Stdlib.List.memq : 'a -> 'a list -> bool
+  70 val Stdlib.List.of_seq : 'a Seq.t -> 'a list
+  70 val Stdlib.List.to_seq : 'a list -> 'a Seq.t
+  71 mod Stdlib.StdLabels.List
+  73 val Stdlib.List.cons : 'a -> 'a list -> 'a list
+  73 val Stdlib.ArrayLabels.of_list : 'a list -> 'a array
+  74 cons Stdlib.List.t.:: : 'a * 'a list -> 'a t
+  74 val Stdlib.List.concat : 'a list list -> 'a list
+  75 val Stdlib.List.assq : 'a -> ('a * 'b) list -> 'b
+  75 val Stdlib.List.flatten : 'a list list -> 'a list
+  76 val Stdlib.List.assoc : 'a -> ('a * 'b) list -> 'b
+  77 mod Stdlib.ListLabels
   $ sherlodoc search --print-cost ": list"
-  118 val Base.List.rev : 'a t -> 'a t
-  119 val Base.List.return : 'a -> 'a t
-  120 val Base.Bytes.to_list : t -> char list
-  121 val Base.List.join : 'a t t -> 'a t
-  121 val Base.List.tl_exn : 'a t -> 'a t
-  122 val Base.String.split_lines : t -> t list
-  123 val Base.List.concat : 'a t t -> 'a t
-  125 val Base.List.ignore_m : 'a t -> unit t
-  125 val Base.String.to_list_rev : t -> char list
-  128 val Base.Sequence.to_list_rev : 'a t -> 'a list
-  130 val Base.Pretty_printer.all : unit -> string list
-  132 val Base.List.all_unit : unit t list -> unit t
-  132 val Base.List.filter_opt : 'a option t -> 'a t
-  132 val Base.List.transpose_exn : 'a t t -> 'a t t
-  132 val Base.List.concat_no_order : 'a t t -> 'a t
-  145 val Caml.(@) : 'a list -> 'a list -> 'a list
-  149 val Base.Set.to_list : ('a, _) t -> 'a list
-  150 val Base.Hashtbl.data : (_, 'b) t -> 'b list
-  150 val Base.Set.elements : ('a, _) t -> 'a list
-  151 val Base.List.drop : 'a t -> int -> 'a t
-  151 val Base.List.take : 'a t -> int -> 'a t
-  152 val Base.String.split : t -> on:char -> t list
-  154 val Base.List.append : 'a t -> 'a t -> 'a t
-  154 val Base.Hashtbl.keys : ('a, _) t -> 'a key list
-  158 val Base.List.rev_append : 'a t -> 'a t -> 'a t
+  43 cons Stdlib.List.t.[] : 'a t
+  54 cons Stdlib.ListLabels.t.[] : 'a t
+  70 val Stdlib.List.tl : 'a list -> 'a list
+  71 val Stdlib.List.rev : 'a list -> 'a list
+  75 val Stdlib.List.of_seq : 'a Seq.t -> 'a list
+  76 val Stdlib.ListLabels.tl : 'a list -> 'a list
+  77 val Stdlib.Array.to_list : 'a array -> 'a list
+  77 val Stdlib.ListLabels.rev : 'a list -> 'a list
+  79 val Stdlib.List.concat : 'a list list -> 'a list
+  79 val Stdlib.Option.to_list : 'a option -> 'a list
+  80 val Stdlib.List.flatten : 'a list list -> 'a list
+  80 val Stdlib.Set.Make.elements : t -> elt list
+  81 val Stdlib.ListLabels.of_seq : 'a Seq.t -> 'a list
+  83 val Stdlib.ArrayLabels.to_list : 'a array -> 'a list
+  84 val Stdlib.Float.Array.to_list : t -> float list
+  85 val Stdlib.ListLabels.concat : 'a list list -> 'a list
+  86 val Stdlib.ListLabels.flatten : 'a list list -> 'a list
+  90 val Stdlib.Float.ArrayLabels.to_list : t -> float list
+  97 val Stdlib.(@) : 'a list -> 'a list -> 'a list
+  103 val Stdlib.List.cons : 'a -> 'a list -> 'a list
+  104 val Stdlib.Stream.npeek : int -> 'a t -> 'a list
+  109 cons Stdlib.List.t.:: : 'a * 'a list -> 'a t
+  109 val Stdlib.ListLabels.cons : 'a -> 'a list -> 'a list
+  110 val Stdlib.List.append : 'a list -> 'a list -> 'a list
+  110 val Stdlib.Result.to_list : ('a, 'e) result -> 'a list
 
 Partial name search:
   $ sherlodoc search --print-cost "strin"
-  97 type Base.string = String.t
-  109 type Base.Export.string = String.t
-  109 val Caml.string_of_int : int -> string
-  111 val Caml.string_of_bool : bool -> string
-  113 val Caml.string_of_float : float -> string
-  116 val Base.Sexp.of_string : unit
-  117 type Base.String.t = string
-  117 type Base.String.elt = char
-  119 val Base.String.rev : t -> t
-  119 val Caml.prerr_string : string -> unit
-  119 val Caml.print_string : string -> unit
-  119 val Caml.int_of_string : string -> int
-  121 mod Base.String
-  121 mod Caml.String
-  121 val Caml.bool_of_string : string -> bool
-  122 val Base.String.hash : t -> int
-  122 val Base.Exn.to_string : t -> string
-  122 val Base.Sys.max_string_length : int
-  123 val Base.String.escaped : t -> t
-  123 val Caml.float_of_string : string -> float
-  123 val Base.String.max_length : int
-  124 val Base.String.(^) : t -> t -> t
-  124 val Base.Float.to_string : t -> string
-  125 mod Base.Stringable
-  125 val Base.String.uppercase : t -> t
-  $ sherlodoc search --print-cost "tring"
-  127 type Base.string = String.t
+  61 val Stdlib.string_of_int : int -> string
+  63 val Stdlib.string_of_bool : bool -> string
+  64 val Stdlib.Digest.string : string -> t
+  65 val Stdlib.string_of_float : float -> string
+  69 type Stdlib.String.t = string
+  71 val Stdlib.prerr_string : string -> unit
+  71 val Stdlib.print_string : string -> unit
+  71 val Stdlib.int_of_string : string -> int
+  73 mod Stdlib.String
+  73 val Stdlib.String.empty : string
+  73 val Stdlib.bool_of_string : string -> bool
+  74 val Stdlib.Sys.max_string_length : int
+  75 type Stdlib.StringLabels.t = string
+  75 val Stdlib.Unit.to_string : t -> string
+  75 val Stdlib.float_of_string : string -> float
+  76 val Stdlib.Int.to_string : int -> string
+  78 val Stdlib.Bool.to_string : bool -> string
+  79 mod Stdlib.StringLabels
+  79 val Stdlib.StringLabels.empty : string
+  80 val Stdlib.String.create : int -> bytes
+  80 val Stdlib.Bytes.of_string : string -> bytes
+  80 val Stdlib.Bytes.to_string : bytes -> string
+  80 val Stdlib.Float.of_string : string -> float
+  80 val Stdlib.Float.to_string : float -> string
+  80 val Stdlib.Int32.to_string : int32 -> string
+  $ sherlodoc search --print-cost "base strin"
+  112 type Base.string = String.t
+  124 type Base.Export.string = String.t
+  131 val Base.Sexp.of_string : unit
   132 type Base.String.t = string
   132 type Base.String.elt = char
   134 val Base.String.rev : t -> t
   136 mod Base.String
-  136 mod Caml.String
-  136 val Base.Sexp.of_string : unit
   137 val Base.String.hash : t -> int
+  137 val Base.Exn.to_string : t -> string
+  137 val Base.Sys.max_string_length : int
   138 val Base.String.escaped : t -> t
   138 val Base.String.max_length : int
   139 val Base.String.(^) : t -> t -> t
-  139 val Caml.prerr_string : string -> unit
-  139 val Caml.print_string : string -> unit
-  139 type Base.Export.string = String.t
-  139 val Caml.int_of_string : string -> int
+  139 val Base.Float.to_string : t -> string
+  140 mod Base.Stringable
   140 val Base.String.uppercase : t -> t
-  141 val Caml.bool_of_string : string -> bool
   141 type Base.String.Caseless.t = t
   141 val Base.String.capitalize : t -> t
-  142 val Base.Exn.to_string : t -> string
+  142 mod Base.StringLabels
   142 val Base.String.append : t -> t -> t
-  143 val Caml.float_of_string : string -> float
-  144 val Base.String.equal : t -> t -> bool
-  144 val Base.String.prefix : t -> int -> t
-  144 val Base.Float.to_string : t -> string
+  142 val Base.Exn.to_string_mach : t -> string
+  142 val Base.Info.to_string_hum : t -> string
+  142 val Base.Sign.to_string_hum : t -> string
+  143 val Base.Error.to_string_hum : t -> string
+  143 val Base.Info.to_string_mach : t -> string
+
+  $ sherlodoc search --print-cost "tring"
+  84 type Stdlib.String.t = string
+  88 mod Stdlib.String
+  88 val Stdlib.String.empty : string
+  91 val Stdlib.prerr_string : string -> unit
+  91 val Stdlib.print_string : string -> unit
+  91 val Stdlib.int_of_string : string -> int
+  93 val Stdlib.bool_of_string : string -> bool
+  94 val Stdlib.Digest.string : string -> t
+  95 val Stdlib.String.create : int -> bytes
+  95 val Stdlib.Unit.to_string : t -> string
+  95 val Stdlib.float_of_string : string -> float
+  96 val Stdlib.String.equal : t -> t -> bool
+  96 val Stdlib.Int.to_string : int -> string
+  96 val Stdlib.String.length : string -> int
+  96 val Stdlib.string_of_int : int -> string
+  97 val Stdlib.String.copy : string -> string
+  97 val Stdlib.String.trim : string -> string
+  97 val Stdlib.String.compare : t -> t -> int
+  98 val Stdlib.String.of_seq : char Seq.t -> t
+  98 val Stdlib.String.to_seq : t -> char Seq.t
+  98 val Stdlib.Bool.to_string : bool -> string
+  98 val Stdlib.string_of_bool : bool -> string
+  99 val Stdlib.Sys.max_string_length : int
+  100 val Stdlib.String.escaped : string -> string
+  100 val Stdlib.Int32.to_string : int32 -> string
+  $ sherlodoc search --print-cost "base tring"
+  142 type Base.string = String.t
+  147 type Base.String.t = string
+  147 type Base.String.elt = char
+  149 val Base.String.rev : t -> t
+  151 mod Base.String
+  151 val Base.Sexp.of_string : unit
+  152 val Base.String.hash : t -> int
+  153 val Base.String.escaped : t -> t
+  153 val Base.String.max_length : int
+  154 val Base.String.(^) : t -> t -> t
+  154 type Base.Export.string = String.t
+  155 val Base.String.uppercase : t -> t
+  156 type Base.String.Caseless.t = t
+  156 val Base.String.capitalize : t -> t
+  157 val Base.Exn.to_string : t -> string
+  157 val Base.String.append : t -> t -> t
+  159 val Base.String.equal : t -> t -> bool
+  159 val Base.String.prefix : t -> int -> t
+  159 val Base.String.suffix : t -> int -> t
+  159 val Base.Float.to_string : t -> string
+  160 val Base.String.compare : t -> t -> int
+  162 val Base.String.ascending : t -> t -> int
+  162 val Base.String.split_lines : t -> t list
+  162 val Base.Sys.max_string_length : int
+  164 val Base.String.common_prefix : t list -> t
+

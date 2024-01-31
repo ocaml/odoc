@@ -5,4 +5,4 @@
    (= %{version:menhirLib} 20230608)
    (= %{version:js_of_ocaml} 5.6.0)
    (= %{ocaml_version} 4.14.1)))
- (deps %{bin:odoc} %{bin:sherlodoc}))
+ (deps ../docs %{bin:odoc} %{bin:sherlodoc}))

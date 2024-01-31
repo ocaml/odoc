@@ -16,6 +16,8 @@
 
 (license MIT)
 
+(using directory-targets 0.1)
+
 (package
  (name sherlodoc)
  (synopsis "Search engine for OCaml documentation")

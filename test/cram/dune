@@ -1,6 +1,2 @@
 (cram
- (deps
-  (source_tree base_odocls)
-  %{bin:odoc}
-  %{bin:sherlodoc}
-  ../../jsoo/main.bc.js))
+ (deps ../docs %{bin:odoc} %{bin:sherlodoc}))
