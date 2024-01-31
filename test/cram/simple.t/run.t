@@ -14,15 +14,15 @@ Here cat is used to remove weird permissions on executable built by dune
   $ cp sherlodoc.js html
   $ cp db.js html
   $ odoc support-files -o html
-  $ for f in $(find . -name '*.odocl'); do
+  $ for f in $(find . -name '*.odocl' | sort); do
   >  echo $f ;
   >  cd html ;
   >  odoc html-generate --search-uri db.js --search-uri sherlodoc.js --output-dir . ../$f ;
   >  cd ..
   > done
-  ./page-page.odocl
   ./main.odocl
-  $ ls
+  ./page-page.odocl
+  $ ls | sort
   db.js
   html
   main.cmi
@@ -36,7 +36,7 @@ Here cat is used to remove weird permissions on executable built by dune
   page-page.odocl
   page.mld
   sherlodoc.js
-  $ ls html
+  $ ls html | sort
   db.js
   fonts
   highlight.pack.js
@@ -46,7 +46,7 @@ Here cat is used to remove weird permissions on executable built by dune
   odoc_search.js
   page
   sherlodoc.js
-  $ ls html/page
+  $ ls html/page | sort
   Main
   index.html
   $ find . -name "*.html" -type f | sort
