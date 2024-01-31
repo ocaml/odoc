@@ -408,7 +408,7 @@ module Indexing = struct
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.of_string "index.json"
 
-  let index dst warnings_options inputs_in_file inputs =
+  let index dst warnings_options inputs_in_file inputs occurrences =
     let output = output_file ~dst in
     match (inputs_in_file, inputs) with
     | [], [] ->
@@ -416,7 +416,9 @@ module Indexing = struct
           (`Msg
             "At least one of --file-list or an .odocl file must be passed to \
              odoc compile-index")
-    | _ -> Indexing.compile ~output ~warnings_options inputs_in_file inputs
+    | _ ->
+        Indexing.compile ~output ~warnings_options ~occurrences inputs_in_file
+          inputs
 
   let cmd =
     let dst =
@@ -426,6 +428,13 @@ module Indexing = struct
       in
       Arg.(
         value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
+    in
+    let occurrences =
+      let doc = "Occurrence file." in
+      Arg.(
+        value
+        & opt (some convert_fpath) None
+        & info ~docs ~docv:"PATH" ~doc [ "occurrences" ])
     in
     let inputs_in_file =
       let doc =
@@ -442,7 +451,8 @@ module Indexing = struct
     in
     Term.(
       const handle_error
-      $ (const index $ dst $ warnings_options $ inputs_in_file $ inputs))
+      $ (const index $ dst $ warnings_options $ inputs_in_file $ inputs
+       $ occurrences))
 
   let info ~docs =
     let doc =

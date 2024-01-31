@@ -11,6 +11,7 @@ val handle_file :
 val compile :
   output:Fs.file ->
   warnings_options:Odoc_model.Error.warnings_options ->
+  occurrences:Fs.file option ->
   Fs.file list ->
   Fs.file list ->
   (unit, [> msg ]) result

@@ -32,9 +32,19 @@ let parse_input_files input =
     (Ok []) input
   >>= fun files -> Ok (List.concat files)
 
-let compile ~output ~warnings_options inputs_in_file inputs =
+let read_occurrences file =
+  let ic = open_in_bin file in
+  let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
+  htbl
+
+let compile ~output ~warnings_options ~occurrences inputs_in_file inputs =
   parse_input_files inputs_in_file >>= fun files ->
   let files = List.rev_append inputs files in
+  let occurrences =
+    match occurrences with
+    | None -> None
+    | Some occurrences -> Some (read_occurrences (Fpath.to_string occurrences))
+  in
   let output_channel =
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     open_out_bin (Fs.File.to_string output)
@@ -51,7 +61,7 @@ let compile ~output ~warnings_options inputs_in_file inputs =
       (fun acc file ->
         match
           handle_file
-            ~unit:(print Json_search.unit acc)
+            ~unit:(print (Json_search.unit ?occurrences) acc)
             ~page:(print Json_search.page acc)
             file
         with
