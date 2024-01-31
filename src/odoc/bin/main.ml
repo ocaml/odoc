@@ -524,7 +524,7 @@ module Indexing = struct
     | None, `Marshall -> Ok (Fs.File.of_string "index.odoc-index")
 
   let index dst json warnings_options page_roots lib_roots inputs_in_file inputs
-      =
+      occurrences =
     let marshall = if json then `JSON else `Marshall in
     output_file ~dst marshall >>= fun output ->
     (if
@@ -534,8 +534,8 @@ module Indexing = struct
      then Error (`Msg "Paths given to all -P and -L options must be disjoint")
      else Ok ())
     >>= fun () ->
-    Indexing.compile marshall ~output ~warnings_options ~lib_roots ~page_roots
-      ~inputs_in_file ~odocls:inputs
+    Indexing.compile marshall ~output ~warnings_options ~occurrences ~lib_roots
+      ~page_roots ~inputs_in_file ~odocls:inputs
   let cmd =
     let dst =
       let doc =
@@ -545,6 +545,13 @@ module Indexing = struct
       in
       Arg.(
         value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
+    in
+    let occurrences =
+      let doc = "Occurrence file." in
+      Arg.(
+        value
+        & opt (some convert_fpath) None
+        & info ~docs ~docv:"PATH" ~doc [ "occurrences" ])
     in
     let inputs_in_file =
       let doc =
@@ -587,7 +594,7 @@ module Indexing = struct
     Term.(
       const handle_error
       $ (const index $ dst $ json $ warnings_options $ page_roots $ lib_roots
-       $ inputs_in_file $ inputs))
+       $ inputs_in_file $ inputs $ occurrences))
 
   let info ~docs =
     let doc =

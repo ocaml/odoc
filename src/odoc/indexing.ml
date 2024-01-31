@@ -40,7 +40,7 @@ let parse_input_files input =
     (Ok []) input
   >>= fun files -> Ok (List.concat files)
 
-let compile_to_json ~output ~warnings_options files =
+let compile_to_json ~output ~warnings_options ~occurrences files =
   let output_channel =
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     open_out_bin (Fs.File.to_string output)
@@ -57,7 +57,7 @@ let compile_to_json ~output ~warnings_options files =
       (fun acc file ->
         match
           handle_file
-            ~unit:(print Json_search.unit acc)
+            ~unit:(print (Json_search.unit ?occurrences) acc)
             ~page:(print Json_search.page acc)
             ~occ:(print Json_search.index acc)
             file
@@ -110,13 +110,23 @@ let compile_to_marshall ~output ~warnings_options sidebar files =
   result |> Error.handle_warnings ~warnings_options >>= fun () ->
   Ok (Odoc_file.save_index output (sidebar, final_index))
 
+let read_occurrences file =
+  let ic = open_in_bin file in
+  let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
+  htbl
+
 open Odoc_model.Lang.Sidebar
 
-let compile out_format ~output ~warnings_options ~lib_roots ~page_roots
-    ~inputs_in_file ~odocls =
+let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
+    ~page_roots ~inputs_in_file ~odocls =
   let current_dir = Fs.File.dirname output in
   parse_input_files inputs_in_file >>= fun files ->
   let files = List.rev_append odocls files in
+  let occurrences =
+    match occurrences with
+    | None -> None
+    | Some occurrences -> Some (read_occurrences (Fpath.to_string occurrences))
+  in
   let resolver =
     Resolver.create ~important_digests:false ~directories:[]
       ~roots:
@@ -175,5 +185,5 @@ let compile out_format ~output ~warnings_options ~lib_roots ~page_roots
   in
   let content = { pages; libraries } in
   match out_format with
-  | `JSON -> compile_to_json ~output ~warnings_options files
+  | `JSON -> compile_to_json ~output ~warnings_options ~occurrences files
   | `Marshall -> compile_to_marshall ~output ~warnings_options content files
