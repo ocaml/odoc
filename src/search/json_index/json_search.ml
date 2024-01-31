@@ -86,7 +86,7 @@ let of_doc (doc : Odoc_model.Comment.docs) =
   let txt = Text.of_doc doc in
   `String txt
 
-let of_entry ({ Entry.id; doc; kind } as entry) html =
+let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
   let j_id = of_id id in
   let doc = of_doc doc in
   let kind =
@@ -167,11 +167,27 @@ let of_entry ({ Entry.id; doc; kind } as entry) html =
             ("parent_type", `String (Text.of_type parent_type));
           ]
   in
+  let occurrences =
+    match occurrences with
+    | Some occ ->
+        `Object
+          [
+            ("direct", `Float (float_of_int occ.Odoc_occurrences.Table.direct));
+            ("indirect", `Float (float_of_int occ.indirect));
+          ]
+    | None -> `Null
+  in
   match Json_display.of_entry entry html with
   | Result.Ok display ->
       Result.Ok
         (`Object
-          [ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ])
+          [
+            ("id", j_id);
+            ("doc", doc);
+            ("kind", kind);
+            ("display", display);
+            ("occurrences", occurrences);
+          ])
   | Error _ as e -> e
 
 let output_json ppf first entries =
@@ -180,8 +196,8 @@ let output_json ppf first entries =
     Format.fprintf ppf "%s\n" str
   in
   List.fold_left
-    (fun first (entry, html) ->
-      let json = of_entry entry html in
+    (fun first (entry, html, occurrences) ->
+      let json = of_entry entry html occurrences in
       if not first then Format.fprintf ppf ",";
       match json with
       | Ok json ->
@@ -192,11 +208,20 @@ let output_json ppf first entries =
           true)
     first entries
 
-let unit ppf u =
+let unit ?occurrences ppf u =
+  let get_occ id =
+    match occurrences with
+    | None -> None
+    | Some occurrences -> Odoc_occurrences.Table.get occurrences id
+  in
   let f first i =
     let entries = Entry.entries_of_item i in
     let entries =
-      List.map (fun entry -> (entry, Html.of_entry entry)) entries
+      List.map
+        (fun entry ->
+          let occ = get_occ entry.Entry.id in
+          (entry, Html.of_entry entry, occ))
+        entries
     in
     let first = output_json ppf first entries in
     first
@@ -208,7 +233,7 @@ let page ppf (page : Odoc_model.Lang.Page.t) =
   let f first i =
     let entries = Entry.entries_of_item i in
     let entries =
-      List.map (fun entry -> (entry, Html.of_entry entry)) entries
+      List.map (fun entry -> (entry, Html.of_entry entry, None)) entries
     in
     output_json ppf first entries
   in
@@ -219,7 +244,7 @@ let index ppf (index : Entry.t Odoc_model.Paths.Identifier.Hashtbl.Any.t) =
   let _first =
     Odoc_model.Paths.Identifier.Hashtbl.Any.fold
       (fun _id entry first ->
-        let entry = (entry, Html.of_entry entry) in
+        let entry = (entry, Html.of_entry entry, None) in
         output_json ppf first [ entry ])
       index true
   in

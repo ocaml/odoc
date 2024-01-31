@@ -144,3 +144,76 @@ We can also include hidden ids:
   Main__A was used directly 1 times and indirectly 0 times
   Main__B was used directly 1 times and indirectly 0 times
   Main__C was used directly 1 times and indirectly 0 times
+
+We can use the generated table when generating the json output:
+
+  $ odoc link -I . main.odoc
+
+  $ odoc compile-index --json -o index.json --occurrences occurrences-all.odoc main.odocl
+
+  $ cat index.json | jq sort | jq '.[]' -c
+  {"id":[{"kind":"Root","name":"Main"}],"doc":"Handwritten top-level module","kind":{"kind":"Module"},"display":{"url":"Main/index.html","html":"<code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div><p>Handwritten top-level module</p></div></div>"},"occurrences":{"direct":0,"indirect":11}}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"A"}],"doc":"","kind":{"kind":"Module"},"display":{"url":"Main/index.html#module-A","html":"<code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">A</span></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":{"direct":4,"indirect":6}}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"B"}],"doc":"","kind":{"kind":"Module"},"display":{"url":"Main/index.html#module-B","html":"<code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">B</span></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":{"direct":1,"indirect":0}}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"B"},{"kind":"Module","name":"M"}],"doc":"","kind":{"kind":"Module"},"display":{"url":"Main/B/index.html#module-M","html":"<code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.B.</span><span class=\"entry-name\">M</span></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":null}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"B"},{"kind":"Module","name":"Y"}],"doc":"","kind":{"kind":"Module"},"display":{"url":"Main/B/index.html#module-Y","html":"<code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.B.</span><span class=\"entry-name\">Y</span></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":null}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"B"},{"kind":"Module","name":"Z"}],"doc":"","kind":{"kind":"Module"},"display":{"url":"Main/B/index.html#module-Z","html":"<code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.B.</span><span class=\"entry-name\">Z</span></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":null}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"B"},{"kind":"Module","name":"Z"},{"kind":"Module","name":"Y"}],"doc":"","kind":{"kind":"Module"},"display":{"url":"Main/B/Z/index.html#module-Y","html":"<code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.B.Z.</span><span class=\"entry-name\">Y</span></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":null}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"A"},{"kind":"ModuleType","name":"M"}],"doc":"","kind":{"kind":"ModuleType"},"display":{"url":"Main/A/index.html#module-type-M","html":"<code class=\"entry-kind\">sig</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.A.</span><span class=\"entry-name\">M</span></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":{"direct":2,"indirect":0}}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"B"},{"kind":"ModuleType","name":"Y"}],"doc":"","kind":{"kind":"ModuleType"},"display":{"url":"Main/B/index.html#module-type-Y","html":"<code class=\"entry-kind\">sig</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.B.</span><span class=\"entry-name\">Y</span></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":null}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"A"},{"kind":"Type","name":"t"}],"doc":"","kind":{"kind":"TypeDecl","private":false,"manifest":"string","constraints":[]},"display":{"url":"Main/A/index.html#type-t","html":"<code class=\"entry-kind\">type</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.A.</span><span class=\"entry-name\">t</span><code class=\"entry-rhs\"> = string</code></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":{"direct":1,"indirect":0}}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"A"},{"kind":"Value","name":"(||>)"}],"doc":"","kind":{"kind":"Value","type":"int -> int -> int"},"display":{"url":"Main/A/index.html#val-(||>)","html":"<code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.A.</span><span class=\"entry-name\">(||&gt;)</span><code class=\"entry-rhs\"> : int -&gt; int -&gt; int</code></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":{"direct":1,"indirect":0}}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"A"},{"kind":"Value","name":"x"}],"doc":"","kind":{"kind":"Value","type":"int"},"display":{"url":"Main/A/index.html#val-x","html":"<code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.A.</span><span class=\"entry-name\">x</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":{"direct":2,"indirect":0}}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"B"},{"kind":"Value","name":"y"}],"doc":"","kind":{"kind":"Value","type":"int"},"display":{"url":"Main/B/index.html#val-y","html":"<code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.B.</span><span class=\"entry-name\">y</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":null}
+  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"B"},{"kind":"Module","name":"Z"},{"kind":"Value","name":"y"}],"doc":"","kind":{"kind":"Value","type":"int"},"display":{"url":"Main/B/Z/index.html#val-y","html":"<code class=\"entry-kind\">val</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.B.Z.</span><span class=\"entry-name\">y</span><code class=\"entry-rhs\"> : int</code></code><div class=\"entry-comment\"><div></div></div>"},"occurrences":null}
+
+  $ cat index.json | jq sort | head -n 33
+  [
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        }
+      ],
+      "doc": "Handwritten top-level module",
+      "kind": {
+        "kind": "Module"
+      },
+      "display": {
+        "url": "Main/index.html",
+        "html": "<code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div><p>Handwritten top-level module</p></div></div>"
+      },
+      "occurrences": {
+        "direct": 0,
+        "indirect": 11
+      }
+    },
+    {
+      "id": [
+        {
+          "kind": "Root",
+          "name": "Main"
+        },
+        {
+          "kind": "Module",
+          "name": "A"
+        }
+      ],
+      "doc": "",
+
+  $ cat index.json | jq -r '.[] | "\(.id | map("\(.kind)-\(.name)") | join(".")), direct: \(.occurrences.direct), indirect: \(.occurrences.indirect)"' | sort
+  Root-Main, direct: 0, indirect: 11
+  Root-Main.Module-A, direct: 4, indirect: 6
+  Root-Main.Module-A.ModuleType-M, direct: 2, indirect: 0
+  Root-Main.Module-A.Type-t, direct: 1, indirect: 0
+  Root-Main.Module-A.Value-(||>), direct: 1, indirect: 0
+  Root-Main.Module-A.Value-x, direct: 2, indirect: 0
+  Root-Main.Module-B, direct: 1, indirect: 0
+  Root-Main.Module-B.Module-M, direct: null, indirect: null
+  Root-Main.Module-B.Module-Y, direct: null, indirect: null
+  Root-Main.Module-B.Module-Z, direct: null, indirect: null
+  Root-Main.Module-B.Module-Z.Module-Y, direct: null, indirect: null
+  Root-Main.Module-B.Module-Z.Value-y, direct: null, indirect: null
+  Root-Main.Module-B.ModuleType-Y, direct: null, indirect: null
+  Root-Main.Module-B.Value-y, direct: null, indirect: null

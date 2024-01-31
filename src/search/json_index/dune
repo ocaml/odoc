@@ -1,4 +1,4 @@
 (library
  (name odoc_json_index)
  (public_name odoc.json_index)
- (libraries tyxml odoc_model odoc_search))
+ (libraries tyxml odoc_model odoc_search odoc_occurrences))
