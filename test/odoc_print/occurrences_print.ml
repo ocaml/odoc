@@ -2,9 +2,9 @@ module H = Hashtbl.Make (Odoc_model.Paths.Identifier)
 
 let run inp =
   let ic = open_in_bin inp in
-  let htbl : Odoc_odoc.Occurrences.Occtbl.t = Marshal.from_channel ic in
-  Odoc_odoc.Occurrences.Occtbl.iter
-    (fun id { Odoc_odoc.Occurrences.Occtbl.direct; indirect; _ } ->
+  let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
+  Odoc_occurrences.Table.iter
+    (fun id { Odoc_occurrences.Table.direct; indirect; _ } ->
       let id = String.concat "." (Odoc_model.Paths.Identifier.fullname id) in
       Format.printf "%s was used directly %d times and indirectly %d times\n" id
         direct indirect)
