@@ -34,130 +34,10 @@ let fold_dirs ~dirs ~f ~init =
            acc dir)
        (Ok init)
 
-module H = Hashtbl.Make (Odoc_model.Paths.Identifier)
-
-module Occtbl : sig
-  type item = { direct : int; indirect : int; sub : item H.t }
-  type t = item H.t
-  type key = Odoc_model.Paths.Identifier.t
-  val v : unit -> t
-
-  val add : t -> key -> unit
-
-  val iter : (key -> item -> unit) -> t -> unit
-
-  val get : t -> key -> item option
-end = struct
-  type item = { direct : int; indirect : int; sub : item H.t }
-  type t = item H.t
-  type key = Odoc_model.Paths.Identifier.t
-
-  let v_item () = { direct = 0; indirect = 0; sub = H.create 0 }
-
-  let v () = H.create 0
-
-  let add tbl id =
-    let rec add ?(kind = `Indirect) id =
-      let incr htbl id =
-        let { direct; indirect; sub } =
-          try H.find htbl id with Not_found -> v_item ()
-        in
-        let direct, indirect =
-          match kind with
-          | `Direct -> (direct + 1, indirect)
-          | `Indirect -> (direct, indirect + 1)
-        in
-        H.replace htbl id { direct; indirect; sub };
-        sub
-      in
-      let do_ parent =
-        let htbl = add (parent :> key) in
-        incr htbl id
-      in
-      match id.iv with
-      | `InstanceVariable (parent, _) -> do_ parent
-      | `Parameter (parent, _) -> do_ parent
-      | `Module (parent, _) -> do_ parent
-      | `ModuleType (parent, _) -> do_ parent
-      | `Method (parent, _) -> do_ parent
-      | `Field (parent, _) -> do_ parent
-      | `Extension (parent, _) -> do_ parent
-      | `Type (parent, _) -> do_ parent
-      | `CoreType _ -> incr tbl id
-      | `Constructor (parent, _) -> do_ parent
-      | `Exception (parent, _) -> do_ parent
-      | `ExtensionDecl (parent, _, _) -> do_ parent
-      | `Class (parent, _) -> do_ parent
-      | `Value (parent, _) -> do_ parent
-      | `ClassType (parent, _) -> do_ parent
-      | `Root _ -> incr tbl id
-      | `SourcePage _ | `Page _ | `LeafPage _ | `SourceLocation _
-      | `CoreException _ | `Label _ | `SourceLocationMod _ | `Result _
-      | `AssetFile _ | `SourceDir _ | `SourceLocationInternal _ ->
-          assert false
-    in
-    let _htbl = add ~kind:`Direct id in
-    ()
-
-  let rec get t id =
-    let do_ parent =
-      get t (parent :> key) |> function
-      | None -> None
-      | Some { sub; _ } -> ( try Some (H.find sub id) with Not_found -> None)
-    in
-    match id.iv with
-    | `InstanceVariable (parent, _) -> do_ parent
-    | `Parameter (parent, _) -> do_ parent
-    | `Module (parent, _) -> do_ parent
-    | `ModuleType (parent, _) -> do_ parent
-    | `Method (parent, _) -> do_ parent
-    | `Field (parent, _) -> do_ parent
-    | `Extension (parent, _) -> do_ parent
-    | `ExtensionDecl (parent, _, _) -> do_ parent
-    | `Type (parent, _) -> do_ parent
-    | `Constructor (parent, _) -> do_ parent
-    | `Exception (parent, _) -> do_ parent
-    | `Class (parent, _) -> do_ parent
-    | `Value (parent, _) -> do_ parent
-    | `ClassType (parent, _) -> do_ parent
-    | `Root _ -> ( try Some (H.find t id) with Not_found -> None)
-    | `SourcePage _ | `Page _ | `LeafPage _ | `CoreType _ | `SourceLocation _
-    | `CoreException _ | `Label _ | `SourceLocationMod _ | `Result _
-    | `AssetFile _ | `SourceDir _ | `SourceLocationInternal _ ->
-        assert false
-
-  let rec iter f tbl =
-    H.iter
-      (fun id v ->
-        iter f v.sub;
-        f id v)
-      tbl
-end
-
 let count ~dst ~warnings_options:_ directories include_hidden =
-  let htbl = H.create 100 in
+  let htbl = Odoc_occurrences.Table.v () in
   let f () (unit : Odoc_model.Lang.Implementation.t) =
-    let incr tbl p =
-      let p = (p :> Odoc_model.Paths.Path.Resolved.t) in
-      let id = Odoc_model.Paths.Path.Resolved.identifier p in
-      if (not (Odoc_model.Paths.Path.Resolved.is_hidden p)) || include_hidden
-      then Occtbl.add tbl id
-    in
-    let () =
-      List.iter
-        (function
-          | ( Odoc_model.Lang.Source_info.Module
-                { documentation = Some (`Resolved p); _ },
-              _ ) ->
-              incr htbl p
-          | Value { documentation = Some (`Resolved p); _ }, _ -> incr htbl p
-          | ModuleType { documentation = Some (`Resolved p); _ }, _ ->
-              incr htbl p
-          | Type { documentation = Some (`Resolved p); _ }, _ -> incr htbl p
-          | _ -> ())
-        unit.source_info
-    in
-    ()
+    Odoc_occurrences.of_impl ~include_hidden unit htbl
   in
   fold_dirs ~dirs:directories ~f ~init:() >>= fun () ->
   Fs.Directory.mkdir_p (Fs.File.dirname dst);
@@ -188,27 +68,18 @@ let aggregate files file_list ~warnings_options:_ ~dst =
   try
     parse_input_files file_list >>= fun new_files ->
     let files = files @ new_files in
-    let from_file file : Occtbl.t =
+    let from_file file : Odoc_occurrences.Table.t =
       let ic = open_in_bin (Fs.File.to_string file) in
       Marshal.from_channel ic
     in
-    let rec loop n f =
-      if n > 0 then (
-        f ();
-        loop (n - 1) f)
-      else ()
-    in
     let occtbl =
       match files with
-      | [] -> H.create 0
-      | file1 :: files ->
-          let acc = from_file file1 in
+      | [] -> Odoc_occurrences.Table.v ()
+      | file :: files ->
+          let acc = from_file file in
           List.iter
             (fun file ->
-              Occtbl.iter
-                (fun id { direct; _ } ->
-                  loop direct (fun () -> Occtbl.add acc id))
-                (from_file file))
+              Odoc_occurrences.aggregate ~tbl:acc ~data:(from_file file))
             files;
           acc
     in
