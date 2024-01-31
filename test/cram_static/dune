@@ -1,0 +1,5 @@
+(cram
+ (enabled_if
+  (and
+   (= %{version:brr} 0.0.6) (= %{ocaml_version} 4.14.1)))
+ (deps %{bin:odoc} %{bin:sherlodoc}))

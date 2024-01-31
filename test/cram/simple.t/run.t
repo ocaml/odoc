@@ -9,9 +9,7 @@
   $ sherlodoc index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
 
 Here cat is used to remove weird permissions on executable built by dune
-  $ cat ../../../jsoo/main.bc.js > sherlodoc.js
-  $ du -sh sherlodoc.js
-  100K	sherlodoc.js
+  $ sherlodoc js sherlodoc.js
   $ mkdir html
   $ cp sherlodoc.js html
   $ cp db.js html
