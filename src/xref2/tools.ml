@@ -961,6 +961,21 @@ and lookup_class_type :
   in
   res
 
+and resolve_and_lookup_parent :
+    mark_substituted:bool ->
+    add_canonical:bool ->
+    Env.t ->
+    Cpath.module_ ->
+    ( Cpath.Resolved.parent * Component.Signature.t * Component.Substitution.t,
+      [ `Parent of parent_lookup_error ] )
+    result =
+ fun ~mark_substituted ~add_canonical env parent ->
+  resolve_module ~mark_substituted ~add_canonical env parent
+  |> map_error (fun e -> `Parent (`Parent_module e))
+  >>= fun (parent, _) ->
+  lookup_parent ~mark_substituted env (`Module parent)
+  >>= fun (parent_sig, sub) -> Ok (`Module parent, parent_sig, sub)
+
 and resolve_module :
     mark_substituted:bool ->
     add_canonical:bool ->
@@ -972,16 +987,10 @@ and resolve_module :
   let resolve env (mark_substituted, add_canonical, p) =
     match p with
     | `Dot (parent, id) ->
-        resolve_module ~mark_substituted ~add_canonical env parent
-        |> map_error (fun e' -> `Parent (`Parent_module e'))
-        >>= fun (p, m) ->
-        let m = Component.Delayed.get m in
-        expansion_of_module_cached env p m
-        |> map_error (fun e -> `Parent (`Parent_sig e))
-        >>= assert_not_functor
-        >>= fun parent_sig ->
-        let sub = prefix_substitution (`Module p) parent_sig in
-        handle_module_lookup env ~add_canonical id (`Module p) parent_sig sub
+        resolve_and_lookup_parent ~mark_substituted ~add_canonical env parent
+        |> map_error (fun e -> (e :> simple_module_lookup_error))
+        >>= fun (parent, parent_sig, sub) ->
+        handle_module_lookup env ~add_canonical id parent parent_sig sub
     | `Module (parent, id) ->
         lookup_parent ~mark_substituted env parent
         |> map_error (fun e -> (e :> simple_module_lookup_error))
@@ -1042,18 +1051,11 @@ and resolve_module_type :
  fun ~mark_substituted ~add_canonical env p ->
   match p with
   | `Dot (parent, id) ->
-      resolve_module ~mark_substituted ~add_canonical:true env parent
-      |> map_error (fun e -> `Parent (`Parent_module e))
-      >>= fun (p, m) ->
-      let m = Component.Delayed.get m in
-      expansion_of_module_cached env p m
-      |> map_error (fun e -> `Parent (`Parent_sig e))
-      >>= assert_not_functor
-      >>= fun parent_sg ->
-      let sub = prefix_substitution (`Module p) parent_sg in
+      resolve_and_lookup_parent ~mark_substituted ~add_canonical:true env parent
+      |> map_error (fun e -> (e :> simple_module_type_lookup_error))
+      >>= fun (parent, parent_sig, sub) ->
       of_option ~error:`Find_failure
-        (handle_module_type_lookup env ~add_canonical id (`Module p) parent_sg
-           sub)
+        (handle_module_type_lookup env ~add_canonical id parent parent_sig sub)
       >>= fun (p', mt) -> Ok (p', mt)
   | `ModuleType (parent, id) ->
       lookup_parent ~mark_substituted env parent
@@ -1084,16 +1086,11 @@ and resolve_type :
   let result =
     match p with
     | `Dot (parent, id) ->
-        resolve_module ~mark_substituted:true ~add_canonical:true env parent
-        |> map_error (fun e -> `Parent (`Parent_module e))
-        >>= fun (p, m) ->
-        let m = Component.Delayed.get m in
-        expansion_of_module_cached env p m
-        |> map_error (fun e -> `Parent (`Parent_sig e))
-        >>= assert_not_functor
-        >>= fun sg ->
-        let sub = prefix_substitution (`Module p) sg in
-        handle_type_lookup env id (`Module p) sg >>= fun (p', t') ->
+        resolve_and_lookup_parent ~mark_substituted:true ~add_canonical:true env
+          parent
+        |> map_error (fun e -> (e :> simple_type_lookup_error))
+        >>= fun (parent, parent_sig, sub) ->
+        handle_type_lookup env id parent parent_sig >>= fun (p', t') ->
         let t =
           match t' with
           | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
@@ -1196,16 +1193,11 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
  fun env p ->
   match p with
   | `Dot (parent, id) ->
-      resolve_module ~mark_substituted:true ~add_canonical:true env parent
-      |> map_error (fun e -> `Parent (`Parent_module e))
-      >>= fun (p, m) ->
-      let m = Component.Delayed.get m in
-      expansion_of_module_cached env p m
-      |> map_error (fun e -> `Parent (`Parent_sig e))
-      >>= assert_not_functor
-      >>= fun sg ->
-      let sub = prefix_substitution (`Module p) sg in
-      handle_class_type_lookup id (`Module p) sg >>= fun (p', t') ->
+      resolve_and_lookup_parent ~mark_substituted:true ~add_canonical:true env
+        parent
+      |> map_error (fun e -> (e :> simple_type_lookup_error))
+      >>= fun (parent, parent_sig, sub) ->
+      handle_class_type_lookup id parent parent_sig >>= fun (p', t') ->
       let t =
         match t' with
         | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
