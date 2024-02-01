@@ -4,26 +4,21 @@
   $ odoc link -I . main.odoc
   $ odoc link -I . page-page.odoc
   $ cat $(find . -name '*.odocl') > megaodocl
-  $ du -sh megaodocl
-  12K	megaodocl
-  $ sherlodoc index --format=js --db=db.js $(find . -name '*.odocl') 2> /dev/null
-
-Here cat is used to remove weird permissions on executable built by dune
-  $ sherlodoc js sherlodoc.js
+$ du -sh megaodocl
+12K	megaodocl
   $ mkdir html
-  $ cp sherlodoc.js html
-  $ cp db.js html
+  $ sherlodoc index --format=js --db=html/db.js $(find . -name '*.odocl') 2> /dev/null
+  $ sherlodoc js html/sherlodoc.js
   $ odoc support-files -o html
   $ for f in $(find . -name '*.odocl' | sort); do
   >  echo $f ;
   >  cd html ;
   >  odoc html-generate --search-uri db.js --search-uri sherlodoc.js --output-dir . ../$f ;
   >  cd ..
-  > done
+  > done | sort
   ./main.odocl
   ./page-page.odocl
   $ ls | sort
-  db.js
   html
   main.cmi
   main.cmo
@@ -35,7 +30,6 @@ Here cat is used to remove weird permissions on executable built by dune
   page-page.odoc
   page-page.odocl
   page.mld
-  sherlodoc.js
   $ ls html | sort
   db.js
   fonts
@@ -58,13 +52,11 @@ Here cat is used to remove weird permissions on executable built by dune
   ./html/page/Main/module-type-Signature/index.html
   ./html/page/index.html
   $ find . -name "*.js" -type f | sort
-  ./db.js
   ./html/db.js
   ./html/highlight.pack.js
   ./html/katex.min.js
   ./html/odoc_search.js
   ./html/sherlodoc.js
-  ./sherlodoc.js
 
 Indent to see results
 $ cp -r html /tmp

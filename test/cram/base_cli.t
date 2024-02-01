@@ -1,4 +1,4 @@
-  $ export ODOCLS=$(find ../docs/odoc/base/ -name '*.odocl')
+  $ ODOCLS=$(find ../docs/odoc/base/ -name '*.odocl')
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=marshal
   $ sherlodoc index --index-docstring=false $ODOCLS > /dev/null

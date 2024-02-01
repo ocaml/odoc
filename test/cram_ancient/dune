@@ -1,3 +1,3 @@
 (cram
-(enabled_if %{lib-available:ancient} )
+ (enabled_if %{lib-available:ancient})
  (deps %{bin:odoc} %{bin:sherlodoc}))

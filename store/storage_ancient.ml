@@ -1,4 +1,7 @@
-let base_addr = 0x100000000000n
+let base_addr () =
+  if Sys.word_size > 32
+  then Int64.to_nativeint 0x100000000000L
+  else failwith "TODO: support ancient on 32 bits"
 
 type writer =
   { mutable write_shard : int
@@ -7,7 +10,7 @@ type writer =
 
 let open_out filename =
   let handle = Unix.openfile filename Unix.[ O_RDWR; O_TRUNC; O_CREAT ] 0o640 in
-  let ancient = Ancient.attach handle base_addr in
+  let ancient = Ancient.attach handle (base_addr ()) in
   { write_shard = 0; ancient }
 
 let save ~db (t : Db.t) =
@@ -34,7 +37,7 @@ let load_shards md =
 let db_open_in db : reader =
   let filename = db in
   let handle = Unix.openfile filename Unix.[ O_RDWR ] 0o640 in
-  let md = Ancient.attach handle base_addr in
+  let md = Ancient.attach handle (base_addr ()) in
   { shards = load_shards md }
 
 let load db_filename =

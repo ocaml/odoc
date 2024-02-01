@@ -1,5 +1,5 @@
-  $ export ODOCLS=$(find ../docs/odoc/ -name '*.odocl' | sort)
-  $ echo $ODOCLS | wc -w
+  $ ODOCLS=$(find ../docs/odoc/ -name '*.odocl' | sort)
+  $ echo "$ODOCLS" | awk 'END { print NR }'
   142
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=marshal

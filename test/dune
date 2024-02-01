@@ -1,7 +1,10 @@
 (rule
- (target (dir docs))
- (deps (package base))
+ (target
+  (dir docs))
+ (deps
+  (package base))
  (action
   (progn
    (run mkdir -p docs)
-   (run odig odoc --no-pkg-deps --cache-dir=docs base))))
+   (run odig odoc --cache-dir=docs --no-pkg-deps --quiet base)
+   (run rm docs/html/base/_doc-dir))))

@@ -1,51 +1,52 @@
 (** This module provide a way to transform a type into strings, in such a way
-  that the strings can be used for type search.
+    that the strings can be used for type search.
 
-The chosen representation is polarity : we do not represent the [->] or the [*]
-constructors, but instead compute the "polarity" of every type name/constructor
-like [int] or ['a] that is part of the whole type expression.
+    The chosen representation is polarity : we do not represent the [->] or the [*]
+    constructors, but instead compute the "polarity" of every type name/constructor
+    like [int] or ['a] that is part of the whole type expression.
 
-The polarity of a component of a type indicates if it is produced or consumed by
-the type. In the type [int -> string], [int] has negative polarity because it is
-being consumed, and [string] has positive polarity because it is being produced.
-We say that the polarities of [int -> string] are [-int] and [+string].
+    The polarity of a component of a type indicates if it is produced or consumed by
+    the type. In the type [int -> string], [int] has negative polarity because it is
+    being consumed, and [string] has positive polarity because it is being produced.
+    We say that the polarities of [int -> string] are [-int] and [+string].
 
-Once you have computed the polarities of the type of an entry [e], you can
-register each polarity as corresponding to [e] in the search database.
+    Once you have computed the polarities of the type of an entry [e], you can
+    register each polarity as corresponding to [e] in the search database.
 
-Then, when the user queries for a type, we compute the polarities of the query
-type, and search for the entries.
+    Then, when the user queries for a type, we compute the polarities of the query
+    type, and search for the entries.
 
-We then return the result corresponding to intersection of each polarity: if the
-user queries for [int -> string], we want to have every entry which consumes an
-[int] and produces a [string], that is the intersection of the entries
-associated to [-int] with the entries associated to [+string].
+    We then return the result corresponding to intersection of each polarity: if the
+    user queries for [int -> string], we want to have every entry which consumes an
+    [int] and produces a [string], that is the intersection of the entries
+    associated to [-int] with the entries associated to [+string].
 
-How is polarity computed exactly ? When you have [t -> u], the polarity of [t]
-is inversed, and the polarity of [u] stays the same. A good example of this is
-the type of {!Stdlib.Out_channel.with_open_gen} :
+    How is polarity computed exactly ? When you have [t -> u], the polarity of [t]
+    is inversed, and the polarity of [u] stays the same. A good example of this is
+    the type of {!Stdlib.Out_channel.with_open_gen} :
 
-{| val with_open_gen : open_flag list -> int -> string -> (t -> 'a) -> 'a |}
+    {[
+      val with_open_gen : open_flag list -> int -> string -> (t -> 'a) -> 'a
+    ]}
 
-Here the polarities are [-open_flag list], [-int], [-string], [+Out_channel.t],
-[-'a] and [+'a]. The fact that we have [+Out_channel.t] might be puzzling at
-first, because an [Out_channel.t] is not returned by the function, but
-{!Stdlib.Out_channel.with_open_gen} is indeed one of the possible ways to create
-an [Out_channel.t].
+    Here the polarities are [-open_flag list], [-int], [-string], [+Out_channel.t],
+    [-'a] and [+'a]. The fact that we have [+Out_channel.t] might be puzzling at
+    first, because an [Out_channel.t] is not returned by the function, but
+    {!Stdlib.Out_channel.with_open_gen} is indeed one of the possible ways to create
+    an [Out_channel.t].
 
-There is however a complication. If the user queries for [int -> int -> string],
-then the polarities will be [-int], [-int] and [+string]. An entry of type [int
--> string] would be included in the intersection of these polarities. But the
-user explicitely asked for two integers to be consumed. To fix this issue, we
-track the number of occurences of each polarity.
+    There is however a complication. If the user queries for [int -> int -> string],
+    then the polarities will be [-int], [-int] and [+string]. An entry of type [int
+tring] would be included in the intersection of these polarities. But the
+    user explicitely asked for two integers to be consumed. To fix this issue, we
+    track the number of occurences of each polarity.
 
-The polarities for [int -> int -> string], become [(-int, 2)] and [(+string,
-1)], and allows us to filter entries according to this information.
+    The polarities for [int -> int -> string], become [(-int, 2)] and [(+string, 1)]
+    and allows us to filter entries according to this information.
 
-There is a mechanism for types with parameters like ['a list]. I might explain
-it in the future.
-TODO : Give an example even if not the full explanation.
-*)
+    There is a mechanism for types with parameters like ['a list]. I might explain
+    it in the future.
+    TODO : Give an example even if not the full explanation. *)
 
 module Sign : sig
   type t =
