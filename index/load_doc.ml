@@ -1,252 +1,205 @@
-module Types = Db.Types
-open Odoc_model
+module Entry = Db.Entry
+module Db_common = Db
 module ModuleName = Odoc_model.Names.ModuleName
 
-let copy str = String.init (String.length str) (String.get str)
+let string_starts_with ~prefix str =
+  let rec go i =
+    if i >= String.length prefix then true else prefix.[i] = str.[i] && go (i + 1)
+  in
+  String.length prefix <= String.length str && go 0
 
-let deep_copy (type t) (x : t) : t =
-  let buf = Marshal.(to_bytes x [ No_sharing; Closures ]) in
-  Marshal.from_bytes buf 0
+let path_length str =
+  let rec go i acc =
+    if i >= String.length str
+    then acc
+    else go (i + 1) (if str.[i] = '.' then acc + 1 else acc)
+  in
+  go 0 0
 
-module Cache_doc = Cache.Make (struct
-  type t = Html_types.li_content_fun Tyxml.Html.elt
+let kind_cost = function
+  | Entry.Kind.Constructor _ | Entry.Kind.Exception _ | Entry.Kind.Extension_constructor _
+  | Entry.Kind.Field _ | Entry.Kind.Module | Entry.Kind.Type_decl _
+  | Entry.Kind.Type_extension | Entry.Kind.Val _ ->
+    0
+  | _ -> 50
 
-  let copy x = deep_copy x
-end)
+let rhs_cost = function
+  | Some str -> String.length str
+  | None -> 20
 
-module Cache_name = Cache.Make (struct
-  type t = string
-
-  let copy = copy
-end)
-
-module Cache = Cache.Make (struct
-  type t = string
-
-  let copy = copy
-end)
-
-let clear () =
-  Cache.clear () ;
-  Cache_name.clear () ;
-  Cache_doc.clear ()
-
-let rec type_size = function
-  | Odoc_model.Lang.TypeExpr.Var _ -> 1
-  | Any -> 1
-  | Arrow (lbl, a, b) ->
-      (match lbl with
-      | None -> 0
-      | Some _ -> 1)
-      + type_size a + type_size b
-  | Constr (_, args) -> List.fold_left (fun acc t -> acc + type_size t) 1 args
-  | Tuple args -> List.fold_left (fun acc t -> acc + type_size t) 1 args
+let cost_doc = function
+  | Entry.Kind.Constructor _ | Entry.Kind.Exception _ | Entry.Kind.Extension_constructor _
+  | Entry.Kind.Field _ | Entry.Kind.Module | Entry.Kind.Module_type
+  | Entry.Kind.Type_decl _ | Entry.Kind.Type_extension ->
+    0
   | _ -> 100
 
-let rev_concat lst =
-  List.fold_left (fun acc xs -> List.rev_append xs acc) [] lst
+let cost ~name ~kind ~doc_html ~rhs ~cat =
+  String.length name
+  + (5 * path_length name)
+  + (if string_starts_with ~prefix:"Stdlib." name then 0 else 50)
+  + rhs_cost rhs
+  + kind_cost kind
+  + (if cat = `definition then 0 else 100)
+  + if doc_html <> "" then 0 else cost_doc kind
 
-let rec tails = function
-  | [] -> []
-  | _ :: xs as lst -> lst :: tails xs
+let string_of_html = Format.asprintf "%a" (Tyxml.Html.pp_elt ())
 
-let fullname t =
-  Pretty.fmt_to_string (fun h -> Pretty.show_type_name_verbose h t)
-
-let all_type_names t =
-  let fullname = fullname t in
-  tails (String.split_on_char '.' fullname)
-
-let rec paths ~prefix ~sgn = function
-  | Odoc_model.Lang.TypeExpr.Var _ ->
-      let poly = Cache_name.memo "POLY" in
-      [ poly :: Cache_name.memo (Types.string_of_sgn sgn) :: prefix ]
-  | Any ->
-      let poly = Cache_name.memo "POLY" in
-      [ poly :: Cache_name.memo (Types.string_of_sgn sgn) :: prefix ]
-  | Arrow (_, a, b) ->
-      let prefix_left = Cache_name.memo "->0" :: prefix in
-      let prefix_right = Cache_name.memo "->1" :: prefix in
-      List.rev_append
-        (paths ~prefix:prefix_left ~sgn:(Types.sgn_not sgn) a)
-        (paths ~prefix:prefix_right ~sgn b)
-  | Constr (name, args) ->
-      let name = fullname name in
-      let prefix =
-        Cache_name.memo name
-        :: Cache_name.memo (Types.string_of_sgn sgn)
-        :: prefix
-      in
-      begin
-        match args with
-        | [] -> [ prefix ]
-        | _ ->
-            rev_concat
-            @@ List.mapi
-                 (fun i arg ->
-                   let prefix = Cache_name.memo (string_of_int i) :: prefix in
-                   paths ~prefix ~sgn arg)
-                 args
-      end
-  | Tuple args ->
-      rev_concat
-      @@ List.mapi (fun i arg ->
-             let prefix = Cache_name.memo (string_of_int i ^ "*") :: prefix in
-             paths ~prefix ~sgn arg)
-      @@ args
-  | _ -> []
-
-let rec type_paths ~prefix ~sgn = function
-  | Odoc_model.Lang.TypeExpr.Var _ ->
-      [ "POLY" :: Types.string_of_sgn sgn :: prefix ]
-  | Any -> [ "POLY" :: Types.string_of_sgn sgn :: prefix ]
-  | Arrow (_lbl, a, b) ->
-      List.rev_append
-        (type_paths ~prefix ~sgn:(Types.sgn_not sgn) a)
-        (type_paths ~prefix ~sgn b)
-  | Constr (name, args) ->
-      rev_concat
-      @@ List.map (fun name ->
-             let name = String.concat "." name in
-             let prefix = name :: Types.string_of_sgn sgn :: prefix in
-             begin
-               match args with
-               | [] -> [ prefix ]
-               | _ ->
-                   rev_concat
-                   @@ List.mapi
-                        (fun i arg ->
-                          let prefix = string_of_int i :: prefix in
-                          type_paths ~prefix ~sgn arg)
-                        args
-             end)
-      @@ all_type_names name
-  | Tuple args -> rev_concat @@ List.map (type_paths ~prefix ~sgn) @@ args
-  | _ -> []
-
-let save_item ~pkg ~path_list ~path name type_ doc =
-  let b = Buffer.create 16 in
-  let to_b = Format.formatter_of_buffer b in
-  Format.fprintf to_b "%a%!"
-    (Pretty.show_type
-       ~path:(Pretty.fmt_to_string (fun h -> Pretty.pp_path h path))
-       ~parens:false)
-    type_ ;
-  let str_type = Buffer.contents b in
-  Buffer.reset b ;
-  Format.fprintf to_b "%a%s%!" Pretty.pp_path path
-    (Odoc_model.Names.ValueName.to_string name) ;
-  let full_name = Buffer.contents b in
-  let doc = Option.map Cache_doc.memo (Pretty.string_of_docs doc) in
-  let cost =
-    String.length full_name + String.length str_type
-    + (5 * List.length path)
-    + type_size type_
-    + (match doc with
-      | None -> 1000
-      | _ -> 0)
-    + if String.starts_with ~prefix:"Stdlib." full_name then -100 else 0
+let with_tokenizer str fn =
+  let str = String.lowercase_ascii str in
+  let buf = Buffer.create 16 in
+  let flush () =
+    let word = Buffer.contents buf in
+    if word <> "" then fn word ;
+    Buffer.clear buf
   in
-  let paths = paths ~prefix:[] ~sgn:Pos type_ in
-  let str_type =
-    { Db.Elt.name = full_name
-    ; cost
-    ; type_paths = paths
-    ; str_type = Cache.memo str_type
-    ; doc
-    ; pkg
-    }
+  let rec go i =
+    if i >= String.length str
+    then flush ()
+    else (
+      let chr = str.[i] in
+      if (chr >= 'a' && chr <= 'z')
+         || (chr >= '0' && chr <= '9')
+         || chr = '_'
+         || chr = '@'
+      then Buffer.add_char buf chr
+      else flush () ;
+      go (i + 1))
   in
-  let my_full_name =
-    List.rev_append
-      (Db.list_of_string (Odoc_model.Names.ValueName.to_string name))
-      ('.' :: path_list)
-  in
-  let my_full_name = List.map Char.lowercase_ascii my_full_name in
-  Db.store_name my_full_name str_type ;
-  let type_paths = type_paths ~prefix:[] ~sgn:Pos type_ in
-  Db.store_all str_type (List.map (List.map Cache_name.memo) type_paths)
+  go 0
 
-let rec item ~pkg ~path_list ~path =
+let register_doc ~db elt doc_txt =
+  with_tokenizer doc_txt @@ fun word -> Db_writer.store_word db word elt
+
+let register_full_name ~db (elt : Db.Entry.t) =
+  let name = String.lowercase_ascii elt.name in
+  Db_writer.store_word db name elt
+
+let searchable_type_of_constructor args res =
   let open Odoc_model.Lang in
-  function
-  | Signature.Value { id = `Value (_, name); _ }
-    when Odoc_model.Names.ValueName.is_internal name ->
-      ()
-  | Signature.Value { id = `Value (_, name); type_; doc; _ } ->
-      save_item ~pkg ~path_list ~path name type_ doc
-  | Module (_, mdl) ->
-      let name = Paths.Identifier.name mdl.id in
-      if name = "Stdlib" then () else module_items ~pkg ~path_list ~path mdl
-  | Type (_, _) -> ()
-  | Include icl -> items ~pkg ~path_list ~path icl.expansion.content.items
-  | TypeSubstitution _ -> () (* type t = Foo.t = actual_definition *)
-  | TypExt _ -> () (* type t = .. *)
-  | Exception _ -> ()
-  | Class _ -> ()
-  | ClassType _ -> ()
-  | Comment _ -> ()
-  | Open _ -> ()
-  | ModuleType _ -> ()
-  | ModuleSubstitution _ -> ()
-  | ModuleTypeSubstitution _ -> ()
+  match args with
+  | TypeDecl.Constructor.Tuple args -> begin
+    match args with
+    | _ :: _ :: _ -> TypeExpr.(Arrow (None, Tuple args, res))
+    | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
+    | _ -> res
+  end
+  | TypeDecl.Constructor.Record fields ->
+    List.fold_left
+      (fun res field ->
+        let open TypeDecl.Field in
+        let field_name = Odoc_model.Paths.Identifier.name field.id in
+        TypeExpr.Arrow (Some (Label field_name), field.type_, res))
+      res
+      fields
 
-and items ~pkg ~path_list ~path item_list =
-  List.iter (item ~pkg ~path_list ~path) item_list
+let searchable_type_of_record parent_type type_ =
+  Odoc_model.Lang.TypeExpr.Arrow (None, parent_type, type_)
 
-and module_items ~pkg ~path_list ~path mdl =
-  let open Odoc_model.Lang.Module in
-  let name = Paths.Identifier.name mdl.id in
-  let path = name :: path in
-  let path_list = List.rev_append (Db.list_of_string name) ('.' :: path_list) in
-  match mdl.type_ with
-  | ModuleType e -> module_type_expr ~pkg ~path_list ~path e
-  | Alias (_, Some mdl) -> module_items_ty ~pkg ~path_list ~path mdl
-  | Alias (_, None) -> ()
+let convert_kind ~db (Odoc_search.Entry.{ kind; _ } as entry) =
+  match kind with
+  | TypeDecl _ -> Entry.Kind.Type_decl (Odoc_search.Html.typedecl_params_of_entry entry)
+  | Value { value = _; type_ } ->
+    let typ = Db_writer.type_of_odoc ~db type_ in
+    Entry.Kind.Val typ
+  | Constructor { args; res } ->
+    let typ = searchable_type_of_constructor args res in
+    let typ = Db_writer.type_of_odoc ~db typ in
+    Entry.Kind.Constructor typ
+  | ExtensionConstructor { args; res } ->
+    let typ = searchable_type_of_constructor args res in
+    let typ = Db_writer.type_of_odoc ~db typ in
+    Entry.Kind.Extension_constructor typ
+  | Exception { args; res } ->
+    let typ = searchable_type_of_constructor args res in
+    let typ = Db_writer.type_of_odoc ~db typ in
+    Entry.Kind.Exception typ
+  | Field { mutable_ = _; parent_type; type_ } ->
+    let typ = searchable_type_of_record parent_type type_ in
+    let typ = Db_writer.type_of_odoc ~db typ in
+    Entry.Kind.Field typ
+  | Doc _ -> Doc
+  | Class_type _ -> Class_type
+  | Method _ -> Method
+  | Class _ -> Class
+  | TypeExtension _ -> Type_extension
+  | Module -> Entry.Kind.Module
+  | ModuleType -> Module_type
 
-and module_type_expr ~pkg ~path_list ~path = function
-  | Signature sg -> items ~pkg ~path_list ~path sg.items
-  | Functor (_, sg) -> module_type_expr ~pkg ~path_list ~path sg
-  | With { w_expansion = Some sg; _ }
-  | TypeOf { t_expansion = Some sg; _ }
-  | Path { p_expansion = Some sg; _ } ->
-      simple_expansion ~pkg ~path_list ~path sg
-  | With _ -> ()
-  | TypeOf _ -> ()
-  | Path _ -> ()
-  | _ -> .
+let register_type_expr ~db elt typ =
+  let type_polarities = Db.Type_polarity.of_typ ~any_is_poly:true typ in
+  Db_writer.store_type_polarities db elt type_polarities
 
-and simple_expansion ~pkg ~path_list ~path = function
-  | Signature sg -> items ~pkg ~path_list ~path sg.items
-  | Functor (_, sg) -> simple_expansion ~pkg ~path_list ~path sg
+let register_kind ~db elt =
+  let open Db.Entry in
+  match Kind.get_type elt.kind with
+  | None -> ()
+  | Some typ -> register_type_expr ~db elt typ
 
-and module_items_ty ~pkg ~path_list ~path = function
-  | Functor (_, mdl) -> module_items_ty ~pkg ~path_list ~path mdl
-  | Signature sg -> items ~pkg ~path_list ~path sg.items
+let rec categorize id =
+  let open Odoc_model.Paths in
+  match id.Identifier.iv with
+  | `CoreType _ | `CoreException _ | `Root _ | `Page _ | `LeafPage _ -> `definition
+  | `ModuleType _ -> `declaration
+  | `Parameter _ -> `ignore (* redundant with indexed signature *)
+  | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
+    | `Exception _ | `Class _ | `ClassType _ | `Value _ | `Constructor _ | `Extension _
+    | `ExtensionDecl _ | `Module _ ) as x ->
+    let parent = Identifier.label_parent { id with iv = x } in
+    categorize (parent :> Identifier.Any.t)
+  | `AssetFile _ | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
+  | `SourceLocationInternal _ ->
+    `ignore (* unclear what to do with those *)
 
-module Resolver = Odoc_odoc.Resolver
+let categorize Odoc_search.Entry.{ id; _ } =
+  match id.iv with
+  | `ModuleType (parent, _) ->
+    (* A module type itself is not *from* a module type, but it might be if one
+       of its parents is a module type. *)
+    categorize (parent :> Odoc_model.Paths.Identifier.Any.t)
+  | _ -> categorize id
 
-let run ~odoc_directory (root_name, filename) =
-  let ((package, version) as pkg) =
-    match String.split_on_char '/' filename with
-    | "." :: package :: version :: _ -> package, version
-    | _ ->
-        invalid_arg (Printf.sprintf "not a valid package/version? %S" filename)
+let register_entry
+  ~db
+  ~index_name
+  ~type_search
+  ~index_docstring
+  ~pkg
+  ~cat
+  (Odoc_search.Entry.{ id; doc; kind } as entry)
+  =
+  let module Sherlodoc_entry = Entry in
+  let open Odoc_search in
+  let name = String.concat "." (Odoc_model.Paths.Identifier.fullname id) in
+  let doc_txt = Text.of_doc doc in
+  let doc_html =
+    match doc_txt with
+    | "" -> ""
+    | _ -> string_of_html (Html.of_doc doc)
   in
-  Format.printf "%s %s => %s@." package version root_name ;
-  let filename = Filename.concat odoc_directory filename in
-  let fpath = Result.get_ok @@ Fpath.of_string filename in
-  let t =
-    match Odoc_odoc.Odoc_file.load fpath with
-    | Ok { Odoc_odoc.Odoc_file.content = Unit_content t; _ } -> t
-    | Ok { Odoc_odoc.Odoc_file.content = Page_content _; _ } ->
-        failwith "page content"
-    | Error (`Msg m) -> failwith ("ERROR:" ^ m)
+  let rhs = Html.rhs_of_kind kind in
+  let kind = convert_kind ~db entry in
+  let cost = cost ~name ~kind ~doc_html ~rhs ~cat in
+  let url = Result.get_ok (Html.url id) in
+  let elt = Sherlodoc_entry.v ~name ~kind ~rhs ~doc_html ~cost ~url ~pkg () in
+  if index_docstring then register_doc ~db elt doc_txt ;
+  if index_name && kind <> Doc then register_full_name ~db elt ;
+  if type_search then register_kind ~db elt
+
+let register_entry
+  ~db
+  ~index_name
+  ~type_search
+  ~index_docstring
+  ~pkg
+  (Odoc_search.Entry.{ id; kind; _ } as entry)
+  =
+  let cat = categorize entry in
+  let is_pure_documentation =
+    match kind with
+    | Doc _ -> true
+    | _ -> false
   in
-  let open Odoc_model.Lang.Compilation_unit in
-  match t.content with
-  | Pack _ -> ()
-  | Module t ->
-      let path = [ root_name ] in
-      let path_list = List.rev (Db.list_of_string root_name) in
-      items ~pkg ~path_list ~path t.Odoc_model.Lang.Signature.items
+  if is_pure_documentation || cat = `ignore || Odoc_model.Paths.Identifier.is_internal id
+  then ()
+  else register_entry ~db ~index_name ~type_search ~index_docstring ~pkg ~cat entry

@@ -4,37 +4,65 @@ let list_of_option = function
   | None -> []
   | Some x -> [ x ]
 
-let render_result r =
-  let open Db.Types.Elt in
-  div
-    ~a:[ a_class [ "pkg" ] ]
-    [ a
-        ~a:[ a_href (pkg_link r) ]
-        [ txt (fst r.pkg)
-        ; txt " "
-        ; span ~a:[ a_class [ "version" ] ] [ txt (snd r.pkg) ]
-        ]
-    ]
-  :: pre
-       [ txt "val "
-       ; a ~a:[ a_href (link r) ] [ em [ txt r.name ] ]
-       ; txt " : "
-       ; txt r.str_type
-       ]
-  :: list_of_option r.doc
+let render_link elt = [ a_href (Db.Entry.link elt) ]
+
+let string_of_kind =
+  let open Db.Entry.Kind in
+  function
+  | Doc -> "doc"
+  | Type_decl None -> "type"
+  | Type_decl (Some str) -> "type " ^ str
+  | Module -> "module"
+  | Exception _ -> "exception"
+  | Class_type -> "class"
+  | Method -> "method"
+  | Class -> "class"
+  | Type_extension -> "type"
+  | Extension_constructor _ -> "constructor"
+  | Module_type -> "module type"
+  | Constructor _ -> "constructor"
+  | Field _ -> "field"
+  | Val _ -> "val"
+
+let render_elt elt =
+  let open Db.Entry in
+  let link = render_link elt in
+  let html_txt = Unsafe.data in
+  let rhs =
+    match elt.rhs with
+    | Some rhs -> [ html_txt rhs ]
+    | None -> []
+  in
+  let kind = string_of_kind elt.kind ^ " " in
+  let doc =
+    if elt.doc_html = ""
+    then []
+    else [ div ~a:[ a_class [ "comment" ] ] [ Unsafe.data elt.doc_html ] ]
+  in
+  pre (txt kind :: a ~a:link [ em [ txt elt.name ] ] :: rhs) :: doc
+
+let render_pkg elt =
+  let open Db.Entry in
+  let { Package.name; version } = elt.pkg in
+  let link = Package.link elt.pkg in
+  [ div
+      ~a:[ a_class [ "pkg" ] ]
+      [ a
+          ~a:[ a_href link ]
+          [ txt name; txt " "; span ~a:[ a_class [ "version" ] ] [ txt version ] ]
+      ]
+  ]
+
+let render_result elt = render_pkg elt @ render_elt elt
 
 let render ~pretty results =
   match results with
-  | [] ->
-      div ~a:[ a_class [ "query" ] ] [ txt "No results! "; code [ txt pretty ] ]
+  | [] -> div ~a:[ a_class [ "query" ] ] [ txt "No results! "; code [ txt pretty ] ]
   | _ ->
-      div
-        [ div
-            ~a:[ a_class [ "query" ] ]
-            [ txt "Results for "; code [ txt pretty ] ]
-        ; ul ~a:[ a_class [ "found" ] ]
-          @@ List.map (fun r -> li (render_result r)) results
-        ]
+    div
+      [ div ~a:[ a_class [ "query" ] ] [ txt "Results for "; code [ txt pretty ] ]
+      ; ul ~a:[ a_class [ "found" ] ] @@ List.map (fun r -> li (render_result r)) results
+      ]
 
 let ajax_reload =
   {js|
@@ -85,12 +113,7 @@ let template query contents =
     (head
        (title (txt "Sherlodoc"))
        [ meta ~a:[ a_charset "UTF-8" ] ()
-       ; meta
-           ~a:
-             [ a_name "viewport"
-             ; a_content "width=device-width, initial-scale=1"
-             ]
-           ()
+       ; meta ~a:[ a_name "viewport"; a_content "width=device-width, initial-scale=1" ] ()
        ; link ~rel:[ `Stylesheet ] ~href:"/s.css" ()
        ])
   @@ body [ search_form query; div ~a:[ a_id "results" ] [ contents ] ]
@@ -98,25 +121,19 @@ let template query contents =
 let github_icon =
   let open Tyxml.Svg in
   Tyxml.Html.svg
-    ~a:
-      [ a_width (16., None)
-      ; a_height (16.0, None)
-      ; a_viewBox (0., 0., 16., 16.)
-      ]
+    ~a:[ a_width (16., None); a_height (16.0, None); a_viewBox (0., 0., 16., 16.) ]
     [ path
         ~a:
           [ a_d
-              "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 \
-               7.59.4.07.55-.17.55-.38 \
+              "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 \
                0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 \
                1.08.58 1.23.82.72 1.21 1.87.87 \
                2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 \
-               0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 \
-               2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 \
-               2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 \
-               3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 \
-               1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 \
-               8c0-4.42-3.58-8-8-8z"
+               0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 \
+               1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 \
+               1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 \
+               3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 \
+               8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
           ]
         []
     ]
@@ -133,24 +150,16 @@ let link_to_repo =
 
 let link str = a ~a:[ a_href ("?q=" ^ Uri.pct_encode str) ] [ code [ txt str ] ]
 
-let explain =
+let explain () =
   div
     ~a:[ a_class [ "doc" ] ]
     [ h1 [ txt "Sherlodoc" ]
     ; p
         ~a:[ a_class [ "doc" ] ]
-        [ txt
-            "Fuzzy search in OCaml's documentation for almost all opam \
-             packages."
-        ]
+        [ txt "Fuzzy search in OCaml's documentation for almost all opam packages." ]
     ; ul
         ~a:[ a_class [ "doc" ] ]
-        [ li
-            [ txt "Search by name: "
-            ; link "concat map"
-            ; txt " and "
-            ; link "Lwt pool"
-            ]
+        [ li [ txt "Search by name: "; link "concat map"; txt " and "; link "Lwt pool" ]
         ; li [ txt "Search by type with a colon: "; link ": list list -> list" ]
         ; li
             [ txt "Search on name and type with a colon separator: "
@@ -166,6 +175,9 @@ let explain =
             ; link ": 'a list -> ('a * int -> bool) -> 'a list"
             ]
         ]
-    ; Packages.html
+    ; Packages.html ()
     ; link_to_repo
     ]
+
+let explain = lazy (explain ())
+let explain () = Lazy.force explain

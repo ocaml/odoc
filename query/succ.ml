@@ -1,137 +1,155 @@
-open Db.Types
+module Entry = Db.Entry
+
+type elt = Entry.t
 
 type s =
-  | All
   | Empty
-  | Set of Elt_set.t
+  | All
+  | Pq of Priority_queue.t
   | Inter of s * s
   | Union of s * s
 
 type t =
-  { cardinal : int
-  ; s : s
+  { s : s
+  ; size : int
   }
 
-let all = { cardinal = -1; s = All }
-let empty = { cardinal = 0; s = Empty }
-
-let of_set s =
-  if Elt_set.is_empty s
-  then empty
-  else { cardinal = Elt_set.cardinal s; s = Set s }
+let all = { s = All; size = 0 }
+let empty = { s = Empty; size = 0 }
+let make_pq t = { s = Pq t; size = Priority_queue.size t }
+let of_automata t = make_pq (Priority_queue.of_automata t)
+let of_automatas ts = make_pq Priority_queue.(of_list (List.map of_automata ts))
+let of_array arr = make_pq (Priority_queue.of_sorted_array arr)
 
 let inter a b =
   match a.s, b.s with
   | Empty, _ | _, Empty -> empty
   | _, All -> a
   | All, _ -> b
+  | x, y when x == y -> a
   | x, y ->
-      let x, y = if a.cardinal < b.cardinal then x, y else y, x in
-      { cardinal = min a.cardinal b.cardinal; s = Inter (x, y) }
+    let s = if a.size <= b.size then Inter (x, y) else Inter (y, x) in
+    { s; size = min a.size b.size }
 
 let union a b =
   match a.s, b.s with
-  | Empty, _ -> b
-  | _, Empty -> a
   | All, _ | _, All -> all
-  | x, y -> { cardinal = a.cardinal + b.cardinal; s = Union (x, y) }
+  | _, Empty -> a
+  | Empty, _ -> b
+  | x, y when x == y -> a
+  | x, y ->
+    let s = if a.size >= b.size then Union (x, y) else Union (y, x) in
+    { s; size = a.size + b.size }
 
-let succ_ge' elt set = Elt_set.find_first (fun e -> Elt.compare e elt >= 0) set
-let succ_gt' elt set = Elt_set.find_first (fun e -> Elt.compare e elt > 0) set
-let first' set = Elt_set.find_first (fun _ -> true) set
+let rec join_with fn = function
+  | [] -> []
+  | [ x ] -> [ x ]
+  | a :: b :: xs -> fn a b :: join_with fn xs
 
-exception Gt of Elt.t
+let rec perfect ~default fn = function
+  | [] -> default
+  | [ x ] -> x
+  | xs -> perfect ~default fn (join_with fn xs)
 
-let rec succ_ge elt = function
-  | All -> elt
-  | Empty -> raise Not_found
-  | Set s ->
-      let out = succ_ge' elt s in
-      begin
-        match Elt.compare elt out with
-        | 0 -> elt
-        | _ -> raise (Gt out)
-      end
-  | Inter (a, b) ->
-      let _ = succ_ge elt a in
-      let y = succ_ge elt b in
-      y
-  | Union (a, b) -> begin
-      match succ_ge elt a with
-      | exception Not_found -> succ_ge elt b
-      | exception Gt x -> begin
-          match succ_ge elt b with
-          | exception Not_found -> raise (Gt x)
-          | exception Gt y ->
-              raise
-                (Gt
-                   (match Elt.compare x y with
-                   | c when c <= 0 -> x
-                   | _ -> y))
-          | v -> v
-        end
-      | v -> v
+let inter_of_list xs =
+  let xs = List.sort (fun a b -> Int.compare a.size b.size) xs in
+  perfect ~default:all inter xs
+
+let union_of_list xs =
+  let xs = List.sort (fun a b -> Int.compare b.size a.size) xs in
+  perfect ~default:empty union xs
+
+type strictness =
+  | First
+  | Ge of elt
+  | Gt of elt
+
+type result =
+  | Is_empty
+  | Is_all
+  | Found_eq of s
+  | Found_gt of elt * s
+
+let rec succ ~strictness t =
+  match t with
+  | Empty -> Is_empty
+  | All -> begin
+    match strictness with
+    | First -> Is_all
+    | Gt _ -> Is_all
+    | Ge _ -> Found_eq All
+  end
+  | Pq pqueue -> begin
+    let pqueue' =
+      match strictness with
+      | First -> pqueue
+      | Ge elt -> Priority_queue.pop_lt elt pqueue
+      | Gt elt -> Priority_queue.pop_lte elt pqueue
+    in
+    match strictness, Priority_queue.minimum pqueue' with
+    | _, None -> Is_empty
+    | Ge elt, Some e when Db.Entry.equal e elt -> Found_eq (Pq pqueue')
+    | _, Some e -> Found_gt (e, Pq pqueue')
+  end
+  | Union (l, r) -> begin
+    match succ ~strictness l with
+    | Is_empty -> succ ~strictness r
+    | Is_all -> failwith "union all"
+    | Found_eq l -> Found_eq (Union (l, r))
+    | Found_gt (elt_l, l') -> begin
+      match succ ~strictness r with
+      | Is_empty -> Found_gt (elt_l, l')
+      | Is_all -> failwith "union all"
+      | Found_eq r' -> Found_eq (Union (l', r'))
+      | Found_gt (elt_r, r') when Db.Entry.compare elt_l elt_r <= 0 ->
+        Found_gt (elt_l, Union (l', r'))
+      | Found_gt (elt_r, r') -> Found_gt (elt_r, Union (l', r'))
     end
-
-let rec succ_gt elt = function
-  | All -> invalid_arg "Succ.succ_gt All"
-  | Empty -> raise Not_found
-  | Set s -> succ_gt' elt s
-  | Inter (a, _b) -> succ_gt elt a
-  | Union (a, b) -> begin
-      match succ_gt_opt elt a, succ_gt_opt elt b with
-      | None, None -> raise Not_found
-      | None, Some z | Some z, None -> z
-      | Some x, Some y -> begin
-          match Elt.compare x y with
-          | c when c <= 0 -> x
-          | _ -> y
-        end
+  end
+  | Inter (l, r) -> begin
+    match succ ~strictness l with
+    | Is_empty -> Is_empty
+    | Is_all -> failwith "inter all"
+    | Found_eq l' -> begin
+      match succ ~strictness r with
+      | Is_empty -> Is_empty
+      | Is_all -> failwith "inter all"
+      | Found_eq r' -> Found_eq (Inter (l', r'))
+      | Found_gt (elt, r') -> Found_gt (elt, Inter (l', r'))
     end
+    | Found_gt (elt, l') -> Found_gt (elt, Inter (l', r))
+  end
 
-and succ_gt_opt elt t = try Some (succ_gt elt t) with Not_found -> None
+let rec succ_loop ?(count = 0) ~strictness t =
+  match strictness, succ ~strictness t with
+  | _, Is_empty -> None
+  | _, Is_all -> None
+  | Ge elt, Found_eq t -> Some (elt, t)
+  | _, Found_gt (elt, t) -> succ_loop ~count:(count + 1) ~strictness:(Ge elt) t
+  | _ -> assert false
 
-let rec first = function
-  | All -> invalid_arg "Succ.first All"
-  | Empty -> raise Not_found
-  | Set s -> first' s
-  | Inter (a, _b) -> first a
-  | Union (a, b) -> begin
-      match first_opt a, first_opt b with
-      | None, None -> raise Not_found
-      | None, Some z | Some z, None -> z
-      | Some x, Some y -> begin
-          match Elt.compare x y with
-          | 0 -> x
-          | c when c < 0 -> x
-          | _ -> y
-        end
-    end
+let first t = succ_loop ~strictness:First t
 
-and first_opt t = try Some (first t) with Not_found -> None
+let seq_of_dispenser fn =
+  let rec go () =
+    match fn () with
+    | None -> Seq.Nil
+    | Some x -> Seq.Cons (x, go)
+  in
+  go
 
-let to_stream t =
+let to_seq { s = t; _ } =
   let state = ref None in
-  let rec go elt =
-    let open Lwt.Syntax in
-    let* () = Lwt.pause () in
-    match succ_ge elt t with
-    | elt' ->
-        assert (Elt.compare elt elt' = 0) ;
-        state := Some elt ;
-        Lwt.return (Some elt)
-    | exception Gt elt -> go elt
-    | exception Not_found -> Lwt.return None
+  let loop () =
+    let result =
+      match !state with
+      | None -> first t
+      | Some (previous_elt, t) -> succ_loop ~strictness:(Gt previous_elt) t
+    in
+    match result with
+    | None -> None
+    | Some (elt, _) ->
+      state := result ;
+      Some elt
   in
-  let go_gt () =
-    match !state with
-    | None -> go (first t)
-    | Some previous_elt -> (
-        match succ_gt previous_elt t with
-        | elt -> go elt
-        | exception Not_found -> Lwt.return None)
-  in
-  let next () = Lwt.catch (fun () -> go_gt ()) (fun _ -> Lwt.return None) in
-  Lwt_stream.from next
-
-let to_stream t = to_stream t.s
+  seq_of_dispenser loop

@@ -1,12 +1,11 @@
-(executable
+(library
  (name index)
  (libraries
   db
+  db_store
   fpath
   tyxml
-  opam-core
-  odoc.loader
+  odoc.search
   odoc.model
-  odoc.xref2
   odoc.odoc
-  str))
+  cmdliner))

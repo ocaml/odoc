@@ -1,3 +1,12 @@
-(executable
+(library
  (name www)
- (libraries cmdliner dream db query))
+ (optional)
+ (libraries lwt cmdliner dream tyxml db db_store query)
+ (preprocess
+  (pps ppx_blob))
+ (preprocessor_deps
+  static/bg.jpg
+  static/favicon.ico
+  static/packages.csv
+  static/robots.txt
+  static/style.css))

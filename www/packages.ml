@@ -7,13 +7,11 @@ type package =
 module M = Map.Make (String)
 
 module S = Set.Make (struct
-  type t = package
+    type t = package
 
-  let compare a b =
-    String.compare
-      (String.lowercase_ascii a.name)
-      (String.lowercase_ascii b.name)
-end)
+    let compare a b =
+      String.compare (String.lowercase_ascii a.name) (String.lowercase_ascii b.name)
+  end)
 
 let pretty = function
   | "ai" -> "Sciences"
@@ -95,8 +93,8 @@ let pretty = function
   | "xml" -> "Formats: Xml"
   | "" -> "--- TODO ---"
   | other ->
-      Format.printf "TODO: missing category name %S@." other ;
-      other
+    Format.printf "TODO: missing category name %S@." other ;
+    other
 
 let unescape str =
   let str = String.trim str in
@@ -107,56 +105,53 @@ let unescape str =
   done ;
   Buffer.contents buf
 
-let load filename =
-  let h = open_in filename in
-  let rec go acc =
-    match input_line h with
-    | exception End_of_file -> acc
-    | line ->
-        let package =
-          match String.split_on_char '\t' line with
-          | [ category; name; description ] ->
-              { category = pretty category
-              ; name
-              ; description = unescape description
-              }
-          | [ name; description ] ->
-              { category = pretty ""; name; description = unescape description }
-          | _ -> failwith (Printf.sprintf "invalid package: %S" line)
-        in
-        let set = try M.find package.category acc with Not_found -> S.empty in
-        let set = S.add package set in
-        let acc = M.add package.category set acc in
-        go acc
+let parse_str str =
+  let parse_line acc line =
+    let package =
+      match String.split_on_char '\t' line with
+      | [ category; name; description ] ->
+        { category = pretty category; name; description = unescape description }
+      | [ name; description ] ->
+        { category = pretty ""; name; description = unescape description }
+      | _ -> failwith (Printf.sprintf "invalid package: %s" line)
+    in
+    let set =
+      try M.find package.category acc with
+      | Not_found -> S.empty
+    in
+    let set = S.add package set in
+    M.add package.category set acc
   in
-  let result = go M.empty in
-  close_in h ;
-  result
+  List.fold_left parse_line M.empty
+  @@ List.filter (( <> ) "")
+  @@ String.split_on_char '\n' str
 
-let packages =
-  List.fold_left
-    (fun acc p -> M.remove p acc)
-    (load "./static/packages.csv")
-    [ "Tezos"; "conf" ]
+let packages () = parse_str [%blob "www/static/packages.csv"]
+
+let packages () =
+  List.fold_left (fun acc p -> M.remove p acc) (packages ()) [ "Tezos"; "conf" ]
 
 open Tyxml.Html
 
-let html =
+let html () =
   div
     ~a:[ a_class [ "categories" ] ]
-    (M.bindings packages
-    |> List.map (fun (category, packages) ->
-           div
-             ~a:[ a_class [ "category" ] ]
-             [ h3 [ txt (if category = "" then "Not classified" else category) ]
-             ; div
-                 ~a:[ a_class [ "packages" ] ]
-                 (S.elements packages
-                 |> List.map (fun package ->
-                        a
-                          ~a:
-                            [ a_href ("https://ocaml.org/p/" ^ package.name)
-                            ; a_title package.description
-                            ]
-                          [ txt package.name ]))
-             ]))
+    (M.bindings (packages ())
+     |> List.map (fun (category, packages) ->
+       div
+         ~a:[ a_class [ "category" ] ]
+         [ h3 [ txt (if category = "" then "Not classified" else category) ]
+         ; div
+             ~a:[ a_class [ "packages" ] ]
+             (S.elements packages
+              |> List.map (fun package ->
+                a
+                  ~a:
+                    [ a_href ("https://ocaml.org/p/" ^ package.name)
+                    ; a_title package.description
+                    ]
+                  [ txt package.name ]))
+         ]))
+
+let html = lazy (html ())
+let html () = Lazy.force html
