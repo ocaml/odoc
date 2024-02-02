@@ -56,14 +56,12 @@ module Name : Name = struct
   type t = Internal of string * int | Std of string
 
   let to_string = function
-    | Std s -> s
+    | Std s -> parenthesise s
     | Internal (s, i) -> Printf.sprintf "{%s}%d" s i
 
   let to_string_unsafe = function Std s -> s | Internal (s, _i) -> s
 
-  let make_std s =
-    let s = parenthesise s in
-    Std s
+  let make_std s = Std s
 
   let of_ident id = make_std (Ident.name id)
 

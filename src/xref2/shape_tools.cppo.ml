@@ -18,15 +18,16 @@ let rec shape_of_id env :
     | None -> None
   in
   fun id ->
+    if Identifier.is_internal id then None else 
     match id.iv with
     | `Root (_, name) -> begin
-        match Env.lookup_unit (ModuleName.to_string name) env with
+        match Env.lookup_unit (ModuleName.to_string_unsafe name) env with
         | Some (Env.Found unit) -> (
           match unit.shape_info with | Some (shape, _) -> Some shape | None -> None)
         | _ -> None
       end
     | `Module (parent, name) ->
-        proj parent Kind.Module (ModuleName.to_string name)
+        proj parent Kind.Module (ModuleName.to_string_unsafe name)
     | `Result parent ->
         (* Apply the functor to an empty signature. This doesn't seem to cause
            any problem, as the shape would stop resolve on an item inside the
@@ -35,18 +36,18 @@ let rec shape_of_id env :
         >>= fun parent ->
         Some (Shape.app parent ~arg:(Shape.str Shape.Item.Map.empty))
     | `ModuleType (parent, name) ->
-        proj parent Kind.Module_type (ModuleTypeName.to_string name)
-    | `Type (parent, name) -> proj parent Kind.Type (TypeName.to_string name)
-    | `Value (parent, name) -> proj parent Kind.Value (ValueName.to_string name)
+        proj parent Kind.Module_type (ModuleTypeName.to_string_unsafe name)
+    | `Type (parent, name) -> proj parent Kind.Type (TypeName.to_string_unsafe name)
+    | `Value (parent, name) -> proj parent Kind.Value (ValueName.to_string_unsafe name)
     | `Extension (parent, name) ->
         proj parent Kind.Extension_constructor (ExtensionName.to_string name)
     | `ExtensionDecl (parent, name, _) ->
         proj parent Kind.Extension_constructor (ExtensionName.to_string name)
     | `Exception (parent, name) ->
         proj parent Kind.Extension_constructor (ExceptionName.to_string name)
-    | `Class (parent, name) -> proj parent Kind.Class (ClassName.to_string name)
+    | `Class (parent, name) -> proj parent Kind.Class (ClassName.to_string_unsafe name)
     | `ClassType (parent, name) ->
-        proj parent Kind.Class_type (ClassTypeName.to_string name)
+        proj parent Kind.Class_type (ClassTypeName.to_string_unsafe name)
     | `Page _ | `LeafPage _ | `Label _ | `CoreType _ | `CoreException _
     | `Constructor _ | `Field _ | `Method _ | `InstanceVariable _ | `Parameter _
       ->

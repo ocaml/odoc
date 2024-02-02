@@ -229,7 +229,7 @@ Source links generated in the documentation:
   --
       <div class="spec value anchored" id="val-(*.+%)">
        <a href="#val-(*.+%)" class="anchor"></a>
-       <a href="../root/source/a.ml.html" class="source_link">Source</a>
+       <a href="../root/source/a.ml.html#val-(*.+%)" class="source_link">Source
   --
       <div class="spec value anchored" id="val-a">
        <a href="#val-a" class="anchor"></a>
