@@ -26,10 +26,7 @@ let synopsis_of_module env (m : Component.Module.t) =
   | None -> (
       let rec handle_expansion : Tools.expansion -> _ = function
         | Functor (_, expr) -> (
-            match
-              Tools.expansion_of_module_type_expr ~mark_substituted:true env
-                expr
-            with
+            match Tools.expansion_of_module_type_expr env expr with
             | Ok e -> handle_expansion e
             | Error _ as e -> e)
         | Signature sg -> Ok sg
@@ -90,6 +87,7 @@ let rec is_forward : Paths.Path.Module.t -> bool = function
   | `Identifier _ -> false
   | `Dot (p, _) -> is_forward p
   | `Apply (p1, p2) -> is_forward p1 || is_forward p2
+  | `Substituted s -> is_forward s
 
 let rec should_reresolve : Paths.Path.Resolved.t -> bool =
  fun p ->
@@ -120,6 +118,10 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
       should_reresolve (p :> t)
   | `OpaqueModule m -> should_reresolve (m :> t)
   | `OpaqueModuleType m -> should_reresolve (m :> t)
+  | `Substituted m -> should_reresolve (m :> t)
+  | `SubstitutedMT m -> should_reresolve (m :> t)
+  | `SubstitutedT m -> should_reresolve (m :> t)
+  | `SubstitutedCT m -> should_reresolve (m :> t)
 
 and should_resolve : Paths.Path.t -> bool =
  fun p -> match p with `Resolved p -> should_reresolve p | _ -> true
@@ -711,7 +713,7 @@ and handle_fragments env id sg subs =
             | _ -> frag
           in
           let sg' =
-            Tools.fragmap ~mark_substituted:true env
+            Tools.fragmap env
               Component.Of_Lang.(with_module_type_substitution (empty ()) lsub)
               sg
           in
@@ -729,7 +731,7 @@ and handle_fragments env id sg subs =
             | _ -> frag
           in
           let sg' =
-            Tools.fragmap ~mark_substituted:true env
+            Tools.fragmap env
               Component.Of_Lang.(with_module_type_substitution (empty ()) lsub)
               sg
           in
@@ -747,7 +749,7 @@ and handle_fragments env id sg subs =
             | _ -> frag
           in
           let sg' =
-            Tools.fragmap ~mark_substituted:true env
+            Tools.fragmap env
               Component.Of_Lang.(with_module_type_substitution (empty ()) lsub)
               sg
           in
@@ -765,7 +767,7 @@ and handle_fragments env id sg subs =
             | _ -> frag
           in
           let sg' =
-            Tools.fragmap ~mark_substituted:true env
+            Tools.fragmap env
               Component.Of_Lang.(with_module_type_substitution (empty ()) lsub)
               sg
           in
@@ -783,7 +785,7 @@ and handle_fragments env id sg subs =
             | _ -> frag
           in
           let sg' =
-            Tools.fragmap ~mark_substituted:true env
+            Tools.fragmap env
               Component.Of_Lang.(with_module_type_substitution (empty ()) lsub)
               sg
           in
@@ -801,7 +803,7 @@ and handle_fragments env id sg subs =
             | _ -> frag
           in
           let sg' =
-            Tools.fragmap ~mark_substituted:true env
+            Tools.fragmap env
               Component.Of_Lang.(with_module_type_substitution (empty ()) lsub)
               sg
           in
@@ -819,9 +821,7 @@ and u_module_type_expr :
   | Path p -> Path (module_type_path env p)
   | With (subs, expr) as unresolved -> (
       let cexpr = Component.Of_Lang.(u_module_type_expr (empty ()) expr) in
-      match
-        Tools.signature_of_u_module_type_expr ~mark_substituted:true env cexpr
-      with
+      match Tools.signature_of_u_module_type_expr env cexpr with
       | Ok sg ->
           With (handle_fragments env id sg subs, u_module_type_expr env id expr)
       | Error e ->
@@ -847,7 +847,7 @@ and module_type_expr :
             Component.Of_Lang.(resolved_module_type_path (empty ()) p_path)
           in
           match
-            Tools.expansion_of_module_type_expr ~mark_substituted:false env
+            Tools.expansion_of_module_type_expr env
               (Path { p_path = `Resolved cp; p_expansion = None })
             >>= Expand_tools.handle_expansion env (id :> Id.Signature.t)
           with
@@ -865,9 +865,7 @@ and module_type_expr :
       Path { p_path; p_expansion = do_expn p_expansion (Some p_path) }
   | With { w_substitutions; w_expansion; w_expr } as unresolved -> (
       let cexpr = Component.Of_Lang.(u_module_type_expr (empty ()) w_expr) in
-      match
-        Tools.signature_of_u_module_type_expr ~mark_substituted:true env cexpr
-      with
+      match Tools.signature_of_u_module_type_expr env cexpr with
       | Ok sg ->
           With
             {
@@ -1049,7 +1047,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
       if not (Paths.Path.is_hidden (path :> Paths.Path.t)) then Constr (path, ts)
       else
         let cp = Component.Of_Lang.(type_path (empty ()) path') in
-        match Tools.resolve_type env ~add_canonical:true cp with
+        match Tools.resolve_type env cp with
         | Ok (cp', `FType (_, t)) ->
             let cp' = Tools.reresolve_type env cp' in
             let p = Lang_of.(Path.resolved_type (empty ()) cp') in

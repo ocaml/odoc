@@ -1340,6 +1340,14 @@ module Fmt = struct
           (func :> path)
           (model_path c)
           (arg :> path)
+    | `Substituted m ->
+        wrap c "substituted" model_path ppf (m :> Odoc_model.Paths.Path.t)
+    | `SubstitutedMT m ->
+        wrap c "substitutedmt" model_path ppf (m :> Odoc_model.Paths.Path.t)
+    | `SubstitutedT m ->
+        wrap c "substitutedt" model_path ppf (m :> Odoc_model.Paths.Path.t)
+    | `SubstitutedCT m ->
+        wrap c "substitutedct" model_path ppf (m :> Odoc_model.Paths.Path.t)
 
   and model_resolved_path (c : config) ppf (p : rpath) =
     let open Odoc_model.Paths.Path.Resolved in
@@ -1406,6 +1414,12 @@ module Fmt = struct
     | `OpaqueModule m -> wrap c "opaquemodule" model_resolved_path ppf (m :> t)
     | `OpaqueModuleType m ->
         wrap c "opaquemoduletype" model_resolved_path ppf (m :> t)
+    | `Substituted m -> wrap c "substituted" model_resolved_path ppf (m :> t)
+    | `SubstitutedMT m ->
+        wrap c "substitutedmt" model_resolved_path ppf (m :> t)
+    | `SubstitutedT m -> wrap c "substitutedt" model_resolved_path ppf (m :> t)
+    | `SubstitutedCT m ->
+        wrap c "substitutedct" model_resolved_path ppf (m :> t)
 
   and model_fragment c ppf (f : Odoc_model.Paths.Fragment.t) =
     match f with
@@ -1902,6 +1916,7 @@ module Of_Lang = struct
     | `Canonical (p1, p2) -> `Canonical (recurse p1, p2)
     | `Hidden p1 -> `Hidden (recurse p1)
     | `OpaqueModule m -> `OpaqueModule (recurse m)
+    | `Substituted m -> `Substituted (recurse m)
 
   and resolved_module_type_path :
       _ ->
@@ -1927,6 +1942,7 @@ module Of_Lang = struct
         `SubstT
           ( resolved_module_type_path ident_map p1,
             resolved_module_type_path ident_map p2 )
+    | `SubstitutedMT m -> `Substituted (resolved_module_type_path ident_map m)
 
   and resolved_type_path :
       _ -> Odoc_model.Paths.Path.Resolved.Type.t -> Cpath.Resolved.type_ =
@@ -1943,6 +1959,10 @@ module Of_Lang = struct
         `Class (`Module (resolved_module_path ident_map p), name)
     | `ClassType (p, name) ->
         `ClassType (`Module (resolved_module_path ident_map p), name)
+    | `SubstitutedT m -> `Substituted (resolved_type_path ident_map m)
+    | `SubstitutedCT m ->
+        `Substituted
+          (resolved_class_type_path ident_map m :> Cpath.Resolved.type_)
 
   and resolved_value_path :
       _ -> Odoc_model.Paths.Path.Resolved.Value.t -> Cpath.Resolved.value =
@@ -1968,11 +1988,13 @@ module Of_Lang = struct
         `Class (`Module (resolved_module_path ident_map p), name)
     | `ClassType (p, name) ->
         `ClassType (`Module (resolved_module_path ident_map p), name)
+    | `SubstitutedCT c -> `Substituted (resolved_class_type_path ident_map c)
 
   and module_path : _ -> Odoc_model.Paths.Path.Module.t -> Cpath.module_ =
    fun ident_map p ->
     match p with
     | `Resolved r -> `Resolved (resolved_module_path ident_map r)
+    | `Substituted m -> `Substituted (module_path ident_map m)
     | `Identifier (i, b) -> (
         match identifier find_any_module ident_map i with
         | `Identifier i -> `Identifier (i, b)
@@ -1988,6 +2010,7 @@ module Of_Lang = struct
    fun ident_map p ->
     match p with
     | `Resolved r -> `Resolved (resolved_module_type_path ident_map r)
+    | `SubstitutedMT m -> `Substituted (module_type_path ident_map m)
     | `Identifier (i, b) -> (
         match identifier Maps.ModuleType.find ident_map.module_types i with
         | `Identifier i -> `Identifier (i, b)
@@ -1998,6 +2021,7 @@ module Of_Lang = struct
    fun ident_map p ->
     match p with
     | `Resolved r -> `Resolved (resolved_type_path ident_map r)
+    | `SubstitutedT t -> `Substituted (type_path ident_map t)
     | `Identifier (i, b) -> (
         match identifier Maps.Path.Type.find ident_map.path_types i with
         | `Identifier i -> `Identifier (i, b)
@@ -2016,6 +2040,7 @@ module Of_Lang = struct
    fun ident_map p ->
     match p with
     | `Resolved r -> `Resolved (resolved_class_type_path ident_map r)
+    | `SubstitutedCT c -> `Substituted (class_type_path ident_map c)
     | `Identifier (i, b) -> (
         match
           identifier Maps.Path.ClassType.find ident_map.path_class_types i
