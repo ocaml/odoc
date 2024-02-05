@@ -294,9 +294,9 @@ and Signature : sig
   (* When doing destructive substitution we keep track of the items that have been removed,
        and the path they've been substituted with *)
   type removed_item =
-    | RModule of Ident.module_ * Cpath.Resolved.module_
-    | RType of Ident.type_ * TypeExpr.t * TypeDecl.Equation.t
-    | RModuleType of Ident.module_type * ModuleType.expr
+    | RModule of Odoc_model.Names.ModuleName.t * Cpath.module_
+    | RType of Odoc_model.Names.TypeName.t * TypeExpr.t * TypeDecl.Equation.t
+    | RModuleType of Odoc_model.Names.ModuleTypeName.t * ModuleType.expr
 
   type t = {
     items : item list;

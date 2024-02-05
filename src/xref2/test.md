@@ -245,7 +245,7 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
            []));
        constraints = []};
      representation = None})];
- compiled = true; doc = []}
+ compiled = true; removed = []; doc = []}
 ```
 
 ### One module
@@ -2532,7 +2532,7 @@ let sg = Common.signature_of_mli_string test_data;;
                {Odoc_model.Lang.TypeDecl.Equation.params = [];
                 private_ = false; manifest = None; constraints = []};
               representation = None})];
-          compiled = false; doc = []})};
+          compiled = false; removed = []; doc = []})};
    Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
     {Odoc_model.Lang.TypeDecl.id =
       {Odoc_model__Paths_types.iv =
@@ -2607,7 +2607,7 @@ let sg = Common.signature_of_mli_string test_data;;
                         ihash = 818126955; ikey = "r_Root.p_None"},
                        M);
                    ihash = 459143770; ikey = "mt_M.r_Root.p_None"}))})}];
- compiled = false; doc = []}
+ compiled = false; removed = []; doc = []}
 ```
 
 # Expansion continued
@@ -2724,7 +2724,7 @@ Odoc_model.Lang.ModuleType.Path
                             t)),
                      [])];
                  res = None}])})];
-       compiled = true; doc = []});
+       compiled = true; removed = []; doc = []});
   p_path =
    `Resolved
      (`ModuleType
@@ -2979,7 +2979,7 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 271372153; ikey = "t_{t}3.m_Foo3.r_Root.p_None"},
            false),
        [])}];
- compiled = false; doc = []}
+ compiled = false; removed = []; doc = []}
 # Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 1) sg;;
 - : Odoc_model.Lang.Signature.t =
 {Odoc_model.Lang.Signature.items =
@@ -3062,7 +3062,7 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 671044364; ikey = "t_{t}4.m_Foo3.r_Root.p_None"},
            false),
        [])}];
- compiled = false; doc = []}
+ compiled = false; removed = []; doc = []}
 ```
 
 
@@ -3202,7 +3202,7 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 67089224; ikey = "t_{t}5.m_Foo3.r_Root.p_None"},
            false),
        [])}];
- compiled = false; doc = []}
+ compiled = false; removed = []; doc = []}
 ```
 
 
@@ -3315,5 +3315,5 @@ let sg = Common.signature_of_mli_string test_data;;
               true),
            "t"),
        [])}];
- compiled = false; doc = []}
+ compiled = false; removed = []; doc = []}
 ```
