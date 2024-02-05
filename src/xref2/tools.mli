@@ -41,7 +41,6 @@ type expansion =
 *)
 
 val lookup_module :
-  mark_substituted:bool ->
   Env.t ->
   Cpath.Resolved.module_ ->
   ( Component.Module.t Component.Delayed.t,
@@ -52,7 +51,6 @@ val lookup_module :
 *)
 
 val lookup_module_type :
-  mark_substituted:bool ->
   Env.t ->
   Cpath.Resolved.module_type ->
   (Component.ModuleType.t, simple_module_type_lookup_error) Result.result
@@ -78,8 +76,6 @@ val lookup_class_type :
     or a class. *)
 
 val resolve_module :
-  mark_substituted:bool ->
-  add_canonical:bool ->
   Env.t ->
   Cpath.module_ ->
   ( Cpath.Resolved.module_ * Component.Module.t Component.Delayed.t,
@@ -90,8 +86,6 @@ val resolve_module :
     path alongside a representation of the module itself. *)
 
 val resolve_module_type :
-  mark_substituted:bool ->
-  add_canonical:bool ->
   Env.t ->
   Cpath.module_type ->
   ( Cpath.Resolved.module_type * Component.ModuleType.t,
@@ -103,7 +97,6 @@ val resolve_module_type :
 
 val resolve_type :
   Env.t ->
-  add_canonical:bool ->
   Cpath.type_ ->
   ( Cpath.Resolved.type_ * Find.careful_type,
     simple_type_lookup_error )
@@ -188,7 +181,6 @@ val reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent
 
 val handle_module_type_lookup :
   Env.t ->
-  add_canonical:bool ->
   string ->
   Cpath.Resolved.parent ->
   Component.Signature.t ->
@@ -201,13 +193,10 @@ type module_modifiers =
 type module_type_modifiers = [ `AliasModuleType of Cpath.Resolved.module_type ]
 
 val get_module_path_modifiers :
-  Env.t -> add_canonical:bool -> Component.Module.t -> module_modifiers option
+  Env.t -> Component.Module.t -> module_modifiers option
 
 val get_module_type_path_modifiers :
-  Env.t ->
-  add_canonical:bool ->
-  Component.ModuleType.t ->
-  module_type_modifiers option
+  Env.t -> Component.ModuleType.t -> module_type_modifiers option
 
 val prefix_signature :
   Cpath.Resolved.parent * Component.Signature.t -> Component.Signature.t
@@ -240,7 +229,6 @@ val class_signature_of_class :
 (** {2 Fragment resolution} *)
 
 val expansion_of_module_type_expr :
-  mark_substituted:bool ->
   Env.t ->
   Component.ModuleType.expr ->
   (expansion, expansion_of_module_error) Result.result
@@ -254,7 +242,6 @@ val expansion_of_module_type_expr :
     during the link phase. *)
 
 val signature_of_u_module_type_expr :
-  mark_substituted:bool ->
   Env.t ->
   Component.ModuleType.U.expr ->
   (Component.Signature.t, expansion_of_module_error) Result.result
@@ -327,7 +314,6 @@ val reresolve_module_type_fragment :
 *)
 
 val fragmap :
-  mark_substituted:bool ->
   Env.t ->
   Component.ModuleType.substitution ->
   Component.Signature.t ->
@@ -338,7 +324,6 @@ val fragmap :
     signature. *)
 
 val handle_signature_with_subs :
-  mark_substituted:bool ->
   Env.t ->
   Component.Signature.t ->
   Component.ModuleType.substitution list ->

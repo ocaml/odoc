@@ -680,6 +680,10 @@ module Path = struct
       | `AliasModuleType (p1, p2) ->
           inner (p1 : module_type :> any) && inner (p2 : module_type :> any)
       | `SubstT (p1, p2) -> inner (p1 :> any) || inner (p2 :> any)
+      | `Substituted m -> inner (m :> any)
+      | `SubstitutedMT m -> inner (m :> any)
+      | `SubstitutedT m -> inner (m :> any)
+      | `SubstitutedCT m -> inner (m :> any)
       | `CanonicalModuleType (_, `Resolved _) -> false
       | `CanonicalModuleType (x, _) -> inner (x : module_type :> any)
       | `CanonicalType (_, `Resolved _) -> false
@@ -694,7 +698,11 @@ module Path = struct
     function
     | `Resolved r -> is_resolved_hidden ~weak_canonical_test:false r
     | `Identifier (_, hidden) -> hidden
-    | `Root s -> Names.contains_double_underscore s
+    | `Substituted r -> is_path_hidden (r :> any)
+    | `SubstitutedMT r -> is_path_hidden (r :> any)
+    | `SubstitutedT r -> is_path_hidden (r :> any)
+    | `SubstitutedCT r -> is_path_hidden (r :> any)
+    | `Root s -> contains_double_underscore s
     | `Forward _ -> false
     | `Dot (p, _) -> is_path_hidden (p : module_ :> any)
     | `Apply (p1, p2) ->
@@ -715,6 +723,7 @@ module Path = struct
       | `CanonicalModuleType (_, `Resolved p) -> parent_module_type_identifier p
       | `CanonicalModuleType (p, _) -> parent_module_type_identifier p
       | `OpaqueModuleType mt -> parent_module_type_identifier mt
+      | `SubstitutedMT m -> parent_module_type_identifier m
       | `AliasModuleType (sub, orig) ->
           if is_resolved_hidden ~weak_canonical_test:false (sub :> t) then
             parent_module_type_identifier orig
@@ -735,6 +744,7 @@ module Path = struct
             parent_module_identifier src
           else parent_module_identifier dest
       | `Alias (dest, _src) -> parent_module_identifier dest
+      | `Substituted m -> parent_module_identifier m
       | `OpaqueModule m -> parent_module_identifier m
 
     module Module = struct
@@ -791,6 +801,10 @@ module Path = struct
       | `CanonicalType (p, _) -> identifier (p :> t)
       | `OpaqueModule m -> identifier (m :> t)
       | `OpaqueModuleType mt -> identifier (mt :> t)
+      | `Substituted m -> identifier (m :> t)
+      | `SubstitutedMT m -> identifier (m :> t)
+      | `SubstitutedCT m -> identifier (m :> t)
+      | `SubstitutedT m -> identifier (m :> t)
 
     let is_hidden r = is_resolved_hidden ~weak_canonical_test:false r
   end
