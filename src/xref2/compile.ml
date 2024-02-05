@@ -714,12 +714,22 @@ and module_type_expr :
       Path { p_path = module_type_path env p_path; p_expansion }
   | With { w_substitutions; w_expansion; w_expr } as e -> (
       let w_expansion = get_expansion w_expansion e in
-      let w_expr = u_module_type_expr env id w_expr in
-      let cexpr = Component.Of_Lang.(u_module_type_expr (empty ()) w_expr) in
-      let subs' = module_type_map_subs env id cexpr w_substitutions in
-      match subs' with
-      | None -> With { w_substitutions; w_expansion; w_expr }
-      | Some s -> With { w_substitutions = s; w_expansion; w_expr })
+      let rec all_withs = function
+        | ModuleType.U.With (_, e) -> all_withs e
+        | Signature _ -> true
+        | _ -> false
+      in
+      match (all_withs w_expr, w_expansion) with
+      | true, Some (Signature e) -> Signature e
+      | _ -> (
+          let w_expr = u_module_type_expr env id w_expr in
+          let cexpr =
+            Component.Of_Lang.(u_module_type_expr (empty ()) w_expr)
+          in
+          let subs' = module_type_map_subs env id cexpr w_substitutions in
+          match subs' with
+          | None -> With { w_substitutions; w_expansion; w_expr }
+          | Some s -> With { w_substitutions = s; w_expansion; w_expr }))
   | Functor (param, res) ->
       let param' = functor_parameter env param in
       let env' = Env.add_functor_parameter param env in
