@@ -161,30 +161,7 @@ let prefix_substitution path sg =
     | Include i :: rest -> get_sub (get_sub sub' i.expansion_.items) rest
     | Open o :: rest -> get_sub (get_sub sub' o.expansion.items) rest
   in
-  let extend_sub_removed removed sub =
-    List.fold_right
-      (fun item map ->
-        match item with
-        | Component.Signature.RModule (id, _) ->
-            let name = Ident.Name.typed_module id in
-            Subst.add_module
-              (id :> Ident.path_module)
-              (`Module (path, name))
-              (`Module (path, name))
-              map
-        | Component.Signature.RModuleType (id, _) ->
-            let name = Ident.Name.typed_module_type id in
-            Subst.add_module_type
-              (id :> Ident.module_type)
-              (`ModuleType (path, name))
-              (`ModuleType (path, name))
-              map
-        | Component.Signature.RType (id, _, _) ->
-            let name = Ident.Name.typed_type id in
-            Subst.add_type id (`Type (path, name)) (`Type (path, name)) map)
-      removed sub
-  in
-  get_sub Subst.identity sg.items |> extend_sub_removed sg.removed
+  get_sub Subst.identity sg.items
 
 let prefix_signature (path, sg) =
   let open Component.Signature in
