@@ -76,7 +76,8 @@ let cmd_jsoo =
 
 let cmd =
   let doc = "Sherlodoc" in
-  let info = Cmd.info "sherlodoc" ~doc in
+  let version = "0.2" in
+  let info = Cmd.info "sherlodoc" ~version ~doc in
   Cmd.group info [ cmd_search; cmd_index; cmd_serve; cmd_jsoo ]
 
 let () = exit (Cmd.eval cmd)
