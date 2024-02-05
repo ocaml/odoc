@@ -152,9 +152,15 @@ and Signature : sig
     | Include of Include.t
     | Comment of Comment.docs_or_stop
 
+  type removed_item =
+    | RModule of Names.ModuleName.t * Path.Module.t
+    | RType of Names.TypeName.t * TypeExpr.t * TypeDecl.Equation.t
+    | RModuleType of Names.ModuleTypeName.t * ModuleType.expr
+
   type t = {
     items : item list;
     compiled : bool;
+    removed : removed_item list;
     doc : Comment.docs;  (** The top comment. *)
   }
 end =

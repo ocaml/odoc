@@ -803,9 +803,9 @@ and read_signature :
   in
   match doc_post with
   | [] ->
-    ({ Signature.items; compiled = false; doc }, tags)
+    ({ Signature.items; compiled = false; removed = []; doc }, tags)
   | _ ->
-    ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; doc }, tags)
+    ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; removed = []; doc }, tags)
 
 let read_interface root name intf =
   let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in

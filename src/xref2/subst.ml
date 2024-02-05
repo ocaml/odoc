@@ -1016,13 +1016,10 @@ and removed_items s items =
   let open Component.Signature in
   List.map
     (function
-      | RModule (id, _) as x -> (
-          try
-            match PathModuleMap.find (id :> Ident.path_module) s.module_ with
-            | `Prefixed (_, x) -> RModule (id, x)
-            | _ -> x
-          with Not_found -> x)
-      | x -> x)
+      | RModule (id, p) -> RModule (id, module_path s p)
+      | RType (id, exp, eqn) ->
+          RType (id, type_expr s exp, type_decl_equation s eqn)
+      | RModuleType (id, mty) -> RModuleType (id, module_type_expr s mty))
     items
 
 and signature s sg =

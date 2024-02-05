@@ -1129,7 +1129,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     | Sig_class_type _ :: _
     | Sig_class _ :: _ -> assert false
 
-    | [] -> ({items = List.rev acc; compiled=false; doc = [] }, shadowed)
+    | [] -> ({items = List.rev acc; compiled=false; removed = []; doc = [] }, shadowed)
   in
     loop ([],{s_modules=[]; s_module_types=[]; s_values=[];s_types=[]; s_classes=[]; s_class_types=[]}) items
 

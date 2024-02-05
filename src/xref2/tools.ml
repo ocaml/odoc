@@ -540,7 +540,7 @@ and handle_module_lookup env ~add_canonical id rparent sg sub =
       let md' = Component.Delayed.put_val m' in
       Ok (process_module_path env ~add_canonical m' rp', md')
   | Some (`FModule_removed p) ->
-      lookup_module ~mark_substituted:false env p >>= fun m -> Ok (p, m)
+      resolve_module ~add_canonical:true ~mark_substituted:false env p
   | None -> Error `Find_failure
 
 and handle_module_type_lookup env ~add_canonical id p sg sub =
@@ -597,7 +597,9 @@ and lookup_module_gpath :
         | None -> Error `Find_failure
         | Some (`FModule (_, m)) ->
             Ok (Component.Delayed.put_val (Subst.module_ sub m))
-        | Some (`FModule_removed p) -> lookup_module ~mark_substituted env p
+        | Some (`FModule_removed p) ->
+            resolve_module ~add_canonical:true ~mark_substituted env p
+            >>= fun (_, m) -> Ok m
       in
       lookup_parent_gpath ~mark_substituted env parent
       |> map_error (fun e -> (e :> simple_module_lookup_error))
@@ -635,7 +637,9 @@ and lookup_module :
           | None -> Error `Find_failure
           | Some (`FModule (_, m)) ->
               Ok (Component.Delayed.put_val (Subst.module_ sub m))
-          | Some (`FModule_removed p) -> lookup_module ~mark_substituted env p
+          | Some (`FModule_removed p) ->
+              resolve_module ~add_canonical:true ~mark_substituted env p
+              >>= fun (_, m) -> Ok m
         in
         lookup_parent ~mark_substituted env parent
         |> map_error (fun e -> (e :> simple_module_lookup_error))
@@ -1880,6 +1884,13 @@ and fragmap :
     map_module_decl m.type_ new_subst >>= fun type_ ->
     Ok (Left { m with type_ })
   in
+  let map_removed = function
+    | `RModule (id, p) ->
+        Component.Signature.RModule (Ident.Name.typed_module id, `Resolved p)
+    | `RType (id, x, y) -> RType (Ident.Name.typed_type id, x, y)
+    | `RModuleType (id, x) -> RModuleType (Ident.Name.typed_module_type id, x)
+  in
+
   let rec map_signature map items =
     List.fold_right
       (fun item acc ->
@@ -1901,7 +1912,7 @@ and fragmap :
                   ( items,
                     true,
                     subbed_modules,
-                    Component.Signature.RType (id, texpr, eq) :: removed ))
+                    `RType (id, texpr, eq) :: removed ))
         | Component.Signature.Module (id, r, m), { module_ = Some (id', fn); _ }
           when Ident.Name.module_ id = id' -> (
             fn (Component.Delayed.get m) >>= function
@@ -1914,11 +1925,7 @@ and fragmap :
                     id :: subbed_modules,
                     removed )
             | Right y ->
-                Ok
-                  ( items,
-                    true,
-                    subbed_modules,
-                    Component.Signature.RModule (id, y) :: removed ))
+                Ok (items, true, subbed_modules, `RModule (id, y) :: removed))
         | Component.Signature.Include ({ expansion_; _ } as i), _ ->
             map_signature map expansion_.items
             >>= fun (items', handled', subbed_modules', removed') ->
@@ -1930,7 +1937,7 @@ and fragmap :
                     {
                       expansion_ with
                       items = items';
-                      removed = removed';
+                      removed = List.map map_removed removed';
                       compiled = false;
                     }
                 in
@@ -1958,11 +1965,8 @@ and fragmap :
                     subbed_modules,
                     removed )
             | Right y ->
-                Ok
-                  ( items,
-                    true,
-                    subbed_modules,
-                    Component.Signature.RModuleType (id, y) :: removed ))
+                Ok (items, true, subbed_modules, `RModuleType (id, y) :: removed)
+            )
         | x, _ -> Ok (x :: items, handled, subbed_modules, removed))
       items
       (Ok ([], false, [], []))
@@ -2056,11 +2060,11 @@ and fragmap :
   new_sg >>= fun (items, _handled, subbed_modules, removed) ->
   let sub_of_removed removed sub =
     match removed with
-    | Component.Signature.RModule (id, p) ->
+    | `RModule (id, p) ->
         Subst.add_module (id :> Ident.path_module) (`Resolved p) p sub
-    | Component.Signature.RType (id, r_texpr, r_eq) ->
+    | `RType (id, r_texpr, r_eq) ->
         Subst.add_type_replacement (id :> Ident.path_type) r_texpr r_eq sub
-    | Component.Signature.RModuleType (id, e) ->
+    | `RModuleType (id, e) ->
         Subst.add_module_type_replacement (id :> Ident.module_type) e sub
   in
 
@@ -2087,7 +2091,7 @@ and fragmap :
     Subst.signature sub
       {
         Component.Signature.items;
-        removed = removed @ sg.removed;
+        removed = List.map map_removed removed @ sg.removed;
         compiled = false;
         doc = sg.doc;
       }
@@ -2195,7 +2199,8 @@ and find_module_with_replacement :
   match Find.careful_module_in_sig sg name with
   | Some (`FModule (_, m)) -> Ok (Component.Delayed.put_val m)
   | Some (`FModule_removed path) ->
-      lookup_module ~mark_substituted:false env path
+      resolve_module ~add_canonical:true ~mark_substituted:false env path
+      >>= fun (_, m) -> Ok m
   | None -> Error `Find_failure
 
 and find_module_type_with_replacement :

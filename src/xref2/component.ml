@@ -329,10 +329,10 @@ and Signature : sig
   (* When doing destructive substitution we keep track of the items that have been removed,
        and the path they've been substituted with *)
   type removed_item =
-    | RModule of Ident.module_ * Cpath.Resolved.module_
-    | RType of Ident.type_ * TypeExpr.t * TypeDecl.Equation.t
+    | RModule of Odoc_model.Names.ModuleName.t * Cpath.module_
+    | RType of Odoc_model.Names.TypeName.t * TypeExpr.t * TypeDecl.Equation.t
         (** [RType (_, texpr, eq)], [eq.manifest = Some texpr] *)
-    | RModuleType of Ident.module_type * ModuleType.expr
+    | RModuleType of Odoc_model.Names.ModuleTypeName.t * ModuleType.expr
 
   type t = {
     items : item list;
@@ -864,13 +864,13 @@ module Fmt = struct
     let open Signature in
     match r with
     | RModule (id, path) ->
-        Format.fprintf ppf "module %a (%a)" Ident.fmt id
-          (resolved_module_path c) path
+        Format.fprintf ppf "module %a (%a)" ModuleName.fmt id (module_path c)
+          path
     | RType (id, texpr, eq) ->
-        Format.fprintf ppf "type %a %a = (%a)" type_params eq.params Ident.fmt
-          id (type_expr c) texpr
+        Format.fprintf ppf "type %a %a = (%a)" type_params eq.params
+          TypeName.fmt id (type_expr c) texpr
     | RModuleType (id, mty) ->
-        Format.fprintf ppf "module type %a = %a" Ident.fmt id
+        Format.fprintf ppf "module type %a = %a" ModuleTypeName.fmt id
           (module_type_expr c) mty
 
   and removed_item_list c ppf r =
@@ -2592,6 +2592,14 @@ module Of_Lang = struct
         doc = docs ident_map o.Odoc_model.Lang.Open.doc;
       }
 
+  and removed_item ident_map r =
+    let open Odoc_model.Lang.Signature in
+    match r with
+    | RModule (id, p) -> Signature.RModule (id, module_path ident_map p)
+    | RType (id, texpr, eqn) ->
+        RType (id, type_expression ident_map texpr, type_equation ident_map eqn)
+    | RModuleType (id, m) -> RModuleType (id, module_type_expr ident_map m)
+
   and apply_sig_map ident_map sg =
     let items =
       List.rev_map
@@ -2652,7 +2660,8 @@ module Of_Lang = struct
         sg.items
       |> List.rev
     in
-    { items; removed = []; compiled = sg.compiled; doc = docs ident_map sg.doc }
+    let removed = List.map (removed_item ident_map) sg.removed in
+    { items; removed; compiled = sg.compiled; doc = docs ident_map sg.doc }
 
   and block_element _ b :
       CComment.block_element Odoc_model.Comment.with_location =
