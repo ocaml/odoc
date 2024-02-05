@@ -113,7 +113,7 @@ There should be an expansion on `NotHidden`
             ]
           }
         ],
-        "compiled": "false",
+        "compiled": "true",
         "doc": []
       }
     }

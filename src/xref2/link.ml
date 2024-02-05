@@ -605,7 +605,9 @@ and module_ : Env.t -> Module.t -> Module.t =
             | Ok (_, e) ->
                 let le = Lang_of.(simple_expansion (empty ()) sg_id e) in
                 Alias (`Resolved p, Some (simple_expansion env sg_id le))
-            | Error _ -> type_
+            | Error _e ->
+                (* Format.eprintf "Error with module %a\n%!" Errors.Tools_error.pp (e :> Errors.Tools_error.any); *)
+                type_
           else type_
       | Alias _ | ModuleType _ -> type_
     in

@@ -107,7 +107,7 @@ val value_in_sig_unambiguous : Signature.t -> string -> value option
 type removed_type =
   [ `FType_removed of TypeName.t * TypeExpr.t * TypeDecl.Equation.t ]
 
-type careful_module = [ module_ | `FModule_removed of Cpath.Resolved.module_ ]
+type careful_module = [ module_ | `FModule_removed of Cpath.module_ ]
 
 type careful_module_type =
   [ module_type | `FModuleType_removed of ModuleType.expr ]
