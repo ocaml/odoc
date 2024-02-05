@@ -59,7 +59,7 @@ module Opt = Component.Opt
 module Path = struct
   let rec module_ map (p : Cpath.module_) : Odoc_model.Paths.Path.Module.t =
     match p with
-    | `Substituted x -> module_ map x
+    | `Substituted x -> `Substituted (module_ map x)
     | `Local (id, b) ->
         let m =
           try lookup_module map id
@@ -87,7 +87,7 @@ module Path = struct
   and module_type map (p : Cpath.module_type) :
       Odoc_model.Paths.Path.ModuleType.t =
     match p with
-    | `Substituted x -> module_type map x
+    | `Substituted x -> `SubstitutedMT (module_type map x)
     | `Identifier
         (({ iv = #Odoc_model.Paths.Identifier.ModuleType.t_pv; _ } as y), b) ->
         `Identifier (y, b)
@@ -105,7 +105,7 @@ module Path = struct
 
   and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
     match p with
-    | `Substituted x -> type_ map x
+    | `Substituted x -> `SubstitutedT (type_ map x)
     | `Identifier
         (({ iv = #Odoc_model.Paths.Identifier.Path.Type.t_pv; _ } as y), b) ->
         `Identifier (y, b)
@@ -124,7 +124,7 @@ module Path = struct
   and class_type map (p : Cpath.class_type) : Odoc_model.Paths.Path.ClassType.t
       =
     match p with
-    | `Substituted x -> class_type map x
+    | `Substituted x -> `SubstitutedCT (class_type map x)
     | `Identifier
         (({ iv = #Odoc_model.Paths.Identifier.Path.ClassType.t_pv; _ } as y), b)
       ->
@@ -147,7 +147,7 @@ module Path = struct
           (try lookup_module map id
            with Not_found ->
              failwith (Format.asprintf "Not_found: %a" Ident.fmt id))
-    | `Substituted x -> resolved_module map x
+    | `Substituted x -> `Substituted (resolved_module map x)
     | `Gpath y -> y
     | `Subst (mty, m) ->
         `Subst (resolved_module_type map mty, resolved_module map m)
@@ -177,7 +177,7 @@ module Path = struct
            with Not_found ->
              failwith (Format.asprintf "Not_found: %a" Ident.fmt id))
     | `ModuleType (p, name) -> `ModuleType (resolved_parent map p, name)
-    | `Substituted s -> resolved_module_type map s
+    | `Substituted s -> `SubstitutedMT (resolved_module_type map s)
     | `SubstT (p1, p2) ->
         `SubstT (resolved_module_type map p1, resolved_module_type map p2)
     | `AliasModuleType (p1, p2) ->
@@ -196,7 +196,7 @@ module Path = struct
     | `Type (p, name) -> `Type (resolved_parent map p, name)
     | `Class (p, name) -> `Class (resolved_parent map p, name)
     | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)
-    | `Substituted s -> resolved_type map s
+    | `Substituted s -> `SubstitutedT (resolved_type map s)
 
   and resolved_value map (p : Cpath.Resolved.value) :
       Odoc_model.Paths.Path.Resolved.Value.t =
@@ -212,7 +212,7 @@ module Path = struct
         `Identifier (Component.PathClassTypeMap.find id map.path_class_type)
     | `Class (p, name) -> `Class (resolved_parent map p, name)
     | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)
-    | `Substituted s -> resolved_class_type map s
+    | `Substituted s -> `SubstitutedCT (resolved_class_type map s)
 
   let rec module_fragment :
       maps -> Cfrag.module_ -> Odoc_model.Paths.Fragment.Module.t =

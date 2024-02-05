@@ -33,6 +33,10 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `CanonicalModuleType (p, _) -> render_resolved (p :> t)
     | `CanonicalType (_, `Resolved p) -> render_resolved (p :> t)
     | `CanonicalType (p, _) -> render_resolved (p :> t)
+    | `Substituted c -> render_resolved (c :> t)
+    | `SubstitutedMT c -> render_resolved (c :> t)
+    | `SubstitutedT c -> render_resolved (c :> t)
+    | `SubstitutedCT c -> render_resolved (c :> t)
     | `Apply (rp, p) ->
         render_resolved (rp :> t)
         ^ "("
@@ -55,7 +59,12 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Apply (p1, p2) ->
         render_path (p1 :> t) ^ "(" ^ render_path (p2 :> t) ^ ")"
     | `Resolved rp -> render_resolved rp
+    | `Substituted m -> render_path (m :> t)
+    | `SubstitutedMT m -> render_path (m :> t)
+    | `SubstitutedT m -> render_path (m :> t)
+    | `SubstitutedCT m -> render_path (m :> t)
   in
+
   render_path
 
 module Error = struct
