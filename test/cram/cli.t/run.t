@@ -13,8 +13,8 @@
   val Main.multiple_hit_2 : foo
   val Main.multiple_hit_3 : foo
   $ sherlodoc search --print-cost "name_conflict"
-  84 type Main.name_conflict = foo
-  184 val Main.name_conflict : foo
+  134 type Main.name_conflict = foo
+  234 val Main.name_conflict : foo
   $ sherlodoc search "nesting_priority"
   val Main.nesting_priority : foo
   val Main.Nest.nesting_priority : foo

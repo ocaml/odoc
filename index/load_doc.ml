@@ -34,12 +34,13 @@ let cost_doc = function
     0
   | _ -> 100
 
-let cost ~name ~kind ~doc_html ~rhs ~cat ~favoured_prefixes =
+let cost ~name ~kind ~doc_html ~rhs ~cat ~favourite ~favoured_prefixes =
   String.length name
   + (5 * path_length name)
   + (if List.exists (fun prefix -> string_starts_with ~prefix name) favoured_prefixes
      then 0
      else 50)
+  + (if favourite then 0 else 50)
   + rhs_cost rhs
   + kind_cost kind
   + (if cat = `definition then 0 else 100)
@@ -166,6 +167,7 @@ let register_entry
   ~index_name
   ~type_search
   ~index_docstring
+  ~favourite
   ~favoured_prefixes
   ~pkg
   ~cat
@@ -182,7 +184,7 @@ let register_entry
   in
   let rhs = Html.rhs_of_kind kind in
   let kind = convert_kind ~db entry in
-  let cost = cost ~name ~kind ~doc_html ~rhs ~cat ~favoured_prefixes in
+  let cost = cost ~name ~kind ~doc_html ~rhs ~cat ~favourite ~favoured_prefixes in
   let url = Result.get_ok (Html.url id) in
   let elt = Sherlodoc_entry.v ~name ~kind ~rhs ~doc_html ~cost ~url ~pkg () in
   if index_docstring then register_doc ~db elt doc_txt ;
@@ -194,6 +196,7 @@ let register_entry
   ~index_name
   ~type_search
   ~index_docstring
+  ~favourite
   ~favoured_prefixes
   ~pkg
   (Odoc_search.Entry.{ id; kind; _ } as entry)
@@ -212,6 +215,7 @@ let register_entry
       ~index_name
       ~type_search
       ~index_docstring
+      ~favourite
       ~favoured_prefixes
       ~pkg
       ~cat
