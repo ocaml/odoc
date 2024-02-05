@@ -306,52 +306,15 @@
                                                   "doc": [],
                                                   "type_": {
                                                     "ModuleType": {
-                                                      "With": {
-                                                        "w_substitutions": [
+                                                      "Signature": {
+                                                        "items": [
                                                           {
-                                                            "TypeEq": [
+                                                            "Type": [
+                                                              "Ordinary",
                                                               {
-                                                                "`Dot": [
-                                                                  "`Root", "t"
-                                                                ]
-                                                              },
-                                                              {
-                                                                "params": [],
-                                                                "private_":
-                                                                  "false",
-                                                                "manifest": {
-                                                                  "Some": {
-                                                                    "Constr": [
-                                                                      {
-                                                                      "`Identifier": [
-                                                                      {
-                                                                      "`CoreType":
-                                                                      "int"
-                                                                      },
-                                                                      "false"
-                                                                      ]
-                                                                      },
-                                                                      []
-                                                                    ]
-                                                                  }
-                                                                },
-                                                                "constraints":
-                                                                  []
-                                                              }
-                                                            ]
-                                                          }
-                                                        ],
-                                                        "w_expansion": {
-                                                          "Some": {
-                                                            "Signature": {
-                                                              "items": [
-                                                                {
-                                                                  "Type": [
-                                                                    "Ordinary",
+                                                                "id": {
+                                                                  "`Type": [
                                                                     {
-                                                                      "id": {
-                                                                      "`Type": [
-                                                                      {
                                                                       "`Module": [
                                                                       {
                                                                       "`Module": [
@@ -371,20 +334,19 @@
                                                                       },
                                                                       "M"
                                                                       ]
-                                                                      },
-                                                                      "t"
-                                                                      ]
-                                                                      },
-                                                                      "source_loc":
-                                                                      "None",
-                                                                      "doc": [],
-                                                                      "equation": {
-                                                                      "params":
-                                                                      [],
-                                                                      "private_":
-                                                                      "false",
-                                                                      "manifest": {
-                                                                      "Some": {
+                                                                    },
+                                                                    "t"
+                                                                  ]
+                                                                },
+                                                                "source_loc":
+                                                                  "None",
+                                                                "doc": [],
+                                                                "equation": {
+                                                                  "params": [],
+                                                                  "private_":
+                                                                    "false",
+                                                                  "manifest": {
+                                                                    "Some": {
                                                                       "Constr": [
                                                                       {
                                                                       "`Resolved": {
@@ -396,79 +358,19 @@
                                                                       },
                                                                       []
                                                                       ]
-                                                                      }
-                                                                      },
-                                                                      "constraints":
-                                                                      []
-                                                                      },
-                                                                      "representation":
-                                                                      "None"
                                                                     }
-                                                                  ]
-                                                                }
-                                                              ],
-                                                              "compiled":
-                                                                "true",
-                                                              "doc": []
-                                                            }
-                                                          }
-                                                        },
-                                                        "w_expr": {
-                                                          "Signature": {
-                                                            "items": [
-                                                              {
-                                                                "Type": [
-                                                                  "Ordinary",
-                                                                  {
-                                                                    "id": {
-                                                                      "`Type": [
-                                                                      {
-                                                                      "`Module": [
-                                                                      {
-                                                                      "`Module": [
-                                                                      {
-                                                                      "`Module": [
-                                                                      {
-                                                                      "`Root": [
-                                                                      "None",
-                                                                      "Test"
-                                                                      ]
-                                                                      },
-                                                                      "S"
-                                                                      ]
-                                                                      },
-                                                                      "X"
-                                                                      ]
-                                                                      },
-                                                                      "M"
-                                                                      ]
-                                                                      },
-                                                                      "t"
-                                                                      ]
-                                                                    },
-                                                                    "source_loc":
-                                                                      "None",
-                                                                    "doc": [],
-                                                                    "equation": {
-                                                                      "params":
-                                                                      [],
-                                                                      "private_":
-                                                                      "false",
-                                                                      "manifest":
-                                                                      "None",
-                                                                      "constraints":
-                                                                      []
-                                                                    },
-                                                                    "representation":
-                                                                      "None"
-                                                                  }
-                                                                ]
+                                                                  },
+                                                                  "constraints":
+                                                                    []
+                                                                },
+                                                                "representation":
+                                                                  "None"
                                                               }
-                                                            ],
-                                                            "compiled": "false",
-                                                            "doc": []
+                                                            ]
                                                           }
-                                                        }
+                                                        ],
+                                                        "compiled": "true",
+                                                        "doc": []
                                                       }
                                                     }
                                                   },
