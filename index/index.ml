@@ -15,13 +15,30 @@ let index_file register filename =
      | Ok result -> result
      | Error (`Msg msg) -> Format.printf "Odoc warning or error %s: %s@." filename msg)
 
-let main files file_list index_docstring index_name type_search db_format db_filename =
+let main
+  files
+  favourite_files
+  file_list
+  index_docstring
+  index_name
+  type_search
+  favoured_prefixes
+  db_format
+  db_filename
+  =
   let module Storage = (val Db_store.storage_module db_format) in
   let db = Db_writer.make () in
   let no_pkg = Db.Entry.Package.v ~name:"" ~version:"" in
-  let register ~pkg id () item =
+  let register ~pkg ~favourite id () item =
     List.iter
-      (Load_doc.register_entry ~db ~index_docstring ~index_name ~type_search ~pkg)
+      (Load_doc.register_entry
+         ~db
+         ~index_docstring
+         ~index_name
+         ~type_search
+         ~favourite
+         ~favoured_prefixes
+         ~pkg)
       (Odoc_search.Entry.entries_of_item id item)
   in
   let files =
@@ -43,18 +60,19 @@ let main files file_list index_docstring index_name type_search db_format db_fil
     let t = Db_writer.export ~summarize:(db_format = `ancient) db in
     Storage.save ~db:h t
   in
-  List.iter
-    (fun odoc ->
-      let pkg, odoc =
-        match String.split_on_char '\t' odoc with
-        | [ filename ] -> no_pkg, filename
-        | [ name; filename ] -> Db.Entry.Package.v ~name ~version:"", filename
-        | [ name; version; filename ] -> Db.Entry.Package.v ~name ~version, filename
-        | _ -> failwith ("invalid line: " ^ odoc)
-      in
-      index_file (register ~pkg) odoc ;
-      if db_format = `ancient && Db_writer.load db > 1_000_000 then flush ())
-    files ;
+  let loop ~favourite odoc =
+    let pkg, odoc =
+      match String.split_on_char '\t' odoc with
+      | [ filename ] -> no_pkg, filename
+      | [ name; filename ] -> Db.Entry.Package.v ~name ~version:"", filename
+      | [ name; version; filename ] -> Db.Entry.Package.v ~name ~version, filename
+      | _ -> failwith ("invalid line: " ^ odoc)
+    in
+    index_file (register ~pkg ~favourite) odoc ;
+    if db_format = `ancient && Db_writer.load db > 1_000_000 then flush ()
+  in
+  List.iter (loop ~favourite:false) files ;
+  List.iter (loop ~favourite:true) favourite_files ;
   flush () ;
   Storage.close_out h
 
@@ -69,8 +87,15 @@ let index_name =
   Arg.(value & opt bool true & info ~doc [ "index-name" ])
 
 let type_search =
-  let doc = "Enable type based search" in
+  let doc = "Enable type based search." in
   Arg.(value & opt bool true & info ~doc [ "type-search" ])
+
+let favoured_prefixes =
+  let doc =
+    "The list of favoured prefixes. Entries that start with a favoured prefix are ranked \
+     higher."
+  in
+  Arg.(value & opt (list string) [ "Stdlib." ] & info ~doc [ "favoured-prefixes" ])
 
 let file_list =
   let doc =
@@ -79,9 +104,21 @@ let file_list =
   in
   Arg.(value & opt (some file) None & info [ "file-list" ] ~doc)
 
+let odoc_favourite_file =
+  let doc = "Path to a .odocl file whose entries will be ranked higher." in
+  Arg.(value & opt_all file [] & info [ "favoured" ] ~doc)
+
 let odoc_files =
   let doc = "Path to a .odocl file" in
   Arg.(value & (pos_all file [] @@ info ~doc ~docv:"ODOCL_FILE" []))
 
 let term =
-  Term.(const main $ odoc_files $ file_list $ index_docstring $ index_name $ type_search)
+  Term.(
+    const main
+    $ odoc_files
+    $ odoc_favourite_file
+    $ file_list
+    $ index_docstring
+    $ index_name
+    $ type_search
+    $ favoured_prefixes)

@@ -3,6 +3,8 @@ val register_entry
   -> index_name:bool
   -> type_search:bool
   -> index_docstring:bool
+  -> favourite:bool
+  -> favoured_prefixes:string list
   -> pkg:Db.Entry.Package.t
   -> Odoc_search.Entry.t
   -> unit
