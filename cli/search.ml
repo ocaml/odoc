@@ -18,7 +18,7 @@ let string_of_kind =
   | Field _ -> "field"
   | Val _ -> "val"
 
-let print_result ~print_cost ~no_rhs (elt : Db.Entry.t) =
+let print_result ~print_cost ~print_docstring ~no_rhs (elt : Db.Entry.t) =
   let cost = if print_cost then string_of_int elt.cost ^ " " else "" in
   let typedecl_params =
     (match elt.kind with
@@ -34,9 +34,20 @@ let print_result ~print_cost ~no_rhs (elt : Db.Entry.t) =
     | Some _ when no_rhs -> ()
     | Some rhs -> Format.fprintf h "%s" (Unescape.string rhs)
   in
-  Format.printf "%s%s %s%s%a@." cost kind typedecl_params name pp_rhs elt.rhs
+  let docstring = if print_docstring then "\n" ^ elt.doc_html else "" in
+  Format.printf "%s%s %s%s%a%s@." cost kind typedecl_params name pp_rhs elt.rhs docstring
 
-let search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query ~time query =
+let search
+  ~print_cost
+  ~static_sort
+  ~limit
+  ~db
+  ~no_rhs
+  ~pretty_query
+  ~time
+  ~print_docstring
+  query
+  =
   let query = Query.{ query; packages = []; limit } in
   if pretty_query then print_endline (Query.pretty query) ;
   let t0 = Unix.gettimeofday () in
@@ -45,16 +56,42 @@ let search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query ~time query
   match r with
   | [] -> print_endline "[No results]"
   | _ :: _ as results ->
-    List.iter (print_result ~print_cost ~no_rhs) results ;
+    List.iter (print_result ~print_cost ~print_docstring ~no_rhs) results ;
     flush stdout ;
     if time then Format.printf "Search in %f@." (t1 -. t0)
 
-let rec search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~time ~db =
+let rec search_loop
+  ~print_cost
+  ~no_rhs
+  ~pretty_query
+  ~static_sort
+  ~limit
+  ~time
+  ~print_docstring
+  ~db
+  =
   Printf.printf "%ssearch>%s %!" "\027[0;36m" "\027[0;0m" ;
   match Stdlib.input_line stdin with
   | query ->
-    search ~print_cost ~static_sort ~limit ~db ~no_rhs ~pretty_query ~time query ;
-    search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~time ~db
+    search
+      ~print_cost
+      ~static_sort
+      ~limit
+      ~db
+      ~no_rhs
+      ~pretty_query
+      ~time
+      ~print_docstring
+      query ;
+    search_loop
+      ~print_cost
+      ~no_rhs
+      ~pretty_query
+      ~static_sort
+      ~limit
+      ~time
+      ~print_docstring
+      ~db
   | exception End_of_file -> Printf.printf "\n%!"
 
 let search
@@ -65,6 +102,7 @@ let search
   limit
   pretty_query
   time
+  print_docstring
   db_format
   db_filename
   =
@@ -73,9 +111,26 @@ let search
   match query with
   | None ->
     print_endline header ;
-    search_loop ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~time ~db
+    search_loop
+      ~print_cost
+      ~no_rhs
+      ~pretty_query
+      ~static_sort
+      ~limit
+      ~time
+      ~print_docstring
+      ~db
   | Some query ->
-    search ~print_cost ~no_rhs ~pretty_query ~static_sort ~limit ~time ~db query
+    search
+      ~print_cost
+      ~no_rhs
+      ~pretty_query
+      ~static_sort
+      ~limit
+      ~time
+      ~print_docstring
+      ~db
+      query
 
 open Cmdliner
 
@@ -111,6 +166,10 @@ let pretty_query =
   let doc = "Prints the query itself as it was parsed" in
   Arg.(value & flag & info [ "pretty-query" ] ~doc)
 
+let print_docstring =
+  let doc = "Print the HTML of the docstring of the results" in
+  Arg.(value & flag & info [ "print-docstring-html" ] ~doc)
+
 let term =
   Term.(
     const search
@@ -120,4 +179,5 @@ let term =
     $ static_sort
     $ limit
     $ pretty_query
-    $ print_time)
+    $ print_time
+    $ print_docstring)
