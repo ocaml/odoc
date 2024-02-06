@@ -852,9 +852,7 @@ let resolve_reference_dot env parent name =
   | `P _ as page -> resolve_reference_dot_page env page name
 
 let resolve_page_reference env (r : Reference.Page.t) =
-  match r with
-  | `Resolved _ -> failwith "unimplemented"
-  | `Dot (_, name) | `Root (name, _) -> Page.in_env env name
+  match r with `Dot (_, name) | `Root (name, _) -> Page.in_env env name
 
 let resolve_asset_reference env (m : Reference.Asset.t) =
   match m with

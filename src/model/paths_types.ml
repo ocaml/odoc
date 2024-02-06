@@ -723,9 +723,7 @@ module rec Reference : sig
   (** @canonical Odoc_model.Paths.Reference.Label.t *)
 
   type page =
-    [ `Resolved of Resolved_reference.page
-    | `Root of string * [ `TPage | `TUnknown ]
-    | `Dot of label_parent * string ]
+    [ `Root of string * [ `TPage | `TUnknown ] | `Dot of label_parent * string ]
   (** @canonical Odoc_model.Paths.Reference.Page.t *)
 
   type any =
