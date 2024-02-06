@@ -8,6 +8,8 @@
 
 (name sherlodoc)
 
+(version 0.2)
+
 (source (github art-w/sherlodoc))
 
 (authors "Arthur Wendling" "Emile Trotignon")
