@@ -396,7 +396,7 @@ The prefixes supported are:
 - [asset] - for referring to assets
 
 In some cases the element being referenced might have a hyphen, a dot or a space in the name,
-e.g. if trying to refer to a page from a [.mld] file "1.2.3.mld". In this case, the
+e.g. if trying to refer to a page from a [.mld] file "1.2.3.mld", or to an asset, like a [.txt] file "file.txt". In this case, the
 element name should be quoted with double quote marks:
 
 {v
