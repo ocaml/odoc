@@ -1,3 +1,11 @@
+  $ find ../docs/odoc/base/ -name '*.odocl' -exec basename '{}' ';' | grep -v "__" | sort
+  base.odocl
+  base_internalhash_types.odocl
+  caml.odocl
+  md5_lib.odocl
+  page-index.odocl
+  shadow_stdlib.odocl
+
   $ find ../docs/odoc/base/ -name '*.odocl' -exec basename '{}' ';' | sort
   base.odocl
   base__.odocl

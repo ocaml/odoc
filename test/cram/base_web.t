@@ -1,8 +1,8 @@
-  $ ODOCLS=$(find ../docs/odoc/base/ -name '*.odocl' | sort)
+  $ ODOCLS=$(find ../docs/odoc/base/ -name '*.odocl' | grep -v "__" | sort)
   $ cat $ODOCLS > megaodocl
 $ du -sh megaodocl
 13M	megaodocl
-  $ sherlodoc index --index-docstring=true --index-name=true --type-search=true --format=js --db=db.js $ODOCLS > /dev/null
+  $ sherlodoc index --index-docstring=true --index-name=true --type-search=true --format=js --db=db.js $ODOCLS
 
   $ gzip -k db.js
 
