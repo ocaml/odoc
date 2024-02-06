@@ -44,16 +44,22 @@ We should pass the asset as child of a page.
   $ odoc compile test.cmti -I . --parent index
   $ odoc compile other_page.mld --child asset-caml_not.gif -I . --parent index
 
-Link and generate the HTML (not passing the asset to simplify the command line):
+Link and generate the HTML:
 
   $ for i in *.odoc; do odoc link -I . $i; done
-  $ for i in *.odocl; do odoc html-generate --indent $i -o html; done
-  File "caml.gif":
-  Warning: asset is missing.
-  File "caml_not.gif":
-  Warning: asset is missing.
 
-Note that the html links are correct (there are dead links due to missing assets)
+  $ touch caml.gif
+  $ touch caml_not.gif
+  $ odoc html-generate --asset=caml.gif --indent page-index.odocl -o html
+  $ odoc html-generate --asset=caml_not.gif --indent page-other_page.odocl -o html
+  $ odoc html-generate --indent test.odocl -o html
+
+Note that the html links are correct
+
+  $ find html -name caml.gif
+  html/index/caml.gif
+  $ find html -name caml_not.gif
+  html/index/other_page/caml_not.gif
 
   $ grep caml.gif html/index/index.html
      <p>A <a href="caml.gif" title="caml.gif">reference</a> to an asset.</p>
