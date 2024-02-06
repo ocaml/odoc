@@ -84,7 +84,7 @@ type kind =
   | Kind_Exception
   | Kind_Extension
   | Kind_Field
-  | Kind_asset
+  | Kind_Asset
 
 module ElementsByName : sig
   type t
@@ -358,7 +358,7 @@ let add_extension_constructor identifier
   |> add_cdocs identifier ec.doc
 
 let add_asset identifier env =
-  if env.linking then add_to_elts Kind_asset identifier (`Asset identifier) env
+  if env.linking then add_to_elts Kind_Asset identifier (`Asset identifier) env
   else env
 
 let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =

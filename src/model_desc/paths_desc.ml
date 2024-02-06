@@ -202,7 +202,7 @@ module General_paths = struct
       | `TType -> C0 "`TType"
       | `TUnknown -> C0 "`TUnknown"
       | `TValue -> C0 "`TValue"
-      | `TAsset -> C0 "`TValue"
+      | `TAsset -> C0 "`TAsset"
       | `TChildPage -> C0 "`TChildPage"
       | `TChildModule -> C0 "`TChildModule")
 

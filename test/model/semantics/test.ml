@@ -2353,7 +2353,7 @@ let%expect_test _ =
       test "{!foo.page-bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nPage label is not allowed in the last component of a reference path.\nSuggestion: 'page-bar' should be first."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nPage label is not allowed to have a parent.\nSuggestion: 'page-bar' should be first."]} |}]
 
     let inner_parent_something_in_something =
       test "{!foo.bar.field-baz}";

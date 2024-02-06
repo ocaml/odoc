@@ -15,16 +15,11 @@ let should_not_be_empty : what:string -> Location_.span -> Error.t =
  fun ~what ->
   Error.make "%s should not be empty." (Astring.String.Ascii.capitalize what)
 
-let not_allowed :
-    ?suggestion:string ->
-    what:string ->
-    in_what:string ->
-    Location_.span ->
-    Error.t =
- fun ?suggestion ~what ~in_what ->
-  Error.make ?suggestion "%s is not allowed in %s."
+let should_be_first :
+    ?suggestion:string -> what:string -> Location_.span -> Error.t =
+ fun ?suggestion ~what ->
+  Error.make ?suggestion "%s is not allowed to have a parent."
     (Astring.String.Ascii.capitalize what)
-    in_what
 
 let deprecated_reference_kind location kind replacement =
   deprecated_reference_kind kind replacement location |> Error.raise_warning
@@ -306,17 +301,17 @@ let parse whole_reference_location s :
         match kind with
         | (`TUnknown | `TPage) as kind -> `Root (identifier, kind)
         | _ -> expected [ "page" ] location |> Error.raise_exception)
-    | next_token :: tokens -> (
+    | _ :: _ -> (
         match kind with
-        | `TUnknown -> `Dot (label_parent next_token tokens, identifier)
-        | _ ->
+        | (`TUnknown | `TPage) as k ->
             let suggestion =
-              Printf.sprintf "'page-%s' should be first." identifier
+              match k with
+              | `TUnknown -> Printf.sprintf "'%s' should be first." identifier
+              | `TPage -> Printf.sprintf "'page-%s' should be first." identifier
             in
-            not_allowed ~what:"Page label"
-              ~in_what:"the last component of a reference path" ~suggestion
-              location
-            |> Error.raise_exception)
+            should_be_first ~what:"Page label" ~suggestion location
+            |> Error.raise_exception
+        | _ -> expected [ "page" ] location |> Error.raise_exception)
   in
 
   let start_from_last_component (kind, identifier, location) old_kind tokens =
@@ -390,17 +385,13 @@ let parse whole_reference_location s :
             let suggestion =
               Printf.sprintf "'child-%s' should be first." identifier
             in
-            not_allowed ~what:"Child label"
-              ~in_what:"the last component of a reference path" ~suggestion
-              location
+            should_be_first ~what:"Child label" ~suggestion location
             |> Error.raise_exception
         | `TPage ->
             let suggestion =
               Printf.sprintf "'page-%s' should be first." identifier
             in
-            not_allowed ~what:"Page label"
-              ~in_what:"the last component of a reference path" ~suggestion
-              location
+            should_be_first ~what:"Page label" ~suggestion location
             |> Error.raise_exception)
   in
 
