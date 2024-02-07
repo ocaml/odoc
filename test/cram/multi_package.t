@@ -1,9 +1,9 @@
-  $ ODOCLS=$(find ../docs/odoc/ -name '*.odocl' | sort)
+  $ ODOCLS=$(find ../docs/odoc/ -name '*.odocl'  | grep -v "__" | sort)
   $ echo "$ODOCLS" | awk 'END { print NR }'
-  142
+  6
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=marshal
-  $ sherlodoc index --index-docstring=false $ODOCLS > /dev/null
+  $ sherlodoc index --index-docstring=false $ODOCLS
   $ sherlodoc search --print-cost --limit 100 "S_poly"
   200 sig Base.Map.S_poly
   200 sig Base.Set.S_poly
