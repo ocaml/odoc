@@ -450,7 +450,7 @@ module LangUtils = struct
 
         let identifier ppf i =
             Format.fprintf ppf "%a"
-                Odoc_xref2.Component.Fmt.model_identifier
+                Odoc_xref2.Component.Fmt.(model_identifier default)
                 (i :> Odoc_model.Paths.Identifier.t)
 
         let rec signature ppf sg =

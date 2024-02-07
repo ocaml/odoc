@@ -2378,7 +2378,7 @@ let resolve_ref = resolve_ref_of_mli {|
 # resolve_ref "C.t" ;;
 Exception:
 Failure
- "resolve_reference: Parent_sig: Unexpanded `module type of` expression: module type of identifier((root Root).A, false)".
+ "resolve_reference: Parent_sig: Unexpanded `module type of` expression: module type of identifier(root(Root).A,false)".
 # resolve_ref "D.t" ;;
 - : ref =
 `Type

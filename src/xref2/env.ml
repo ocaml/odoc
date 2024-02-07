@@ -42,16 +42,20 @@ let pp_lookup_type fmt =
     | Some (`Resolved digest) -> Format.fprintf fmt "Some (Resolved %s)" digest
     | None -> Format.fprintf fmt "None"
   in
+  let c = Component.Fmt.default in
   function
   | Module r ->
-      Format.fprintf fmt "Module %a" Component.Fmt.model_identifier
+      Format.fprintf fmt "Module %a"
+        (Component.Fmt.model_identifier c)
         (r :> Identifier.t)
   | ModuleType r ->
-      Format.fprintf fmt "ModuleType %a" Component.Fmt.model_identifier
+      Format.fprintf fmt "ModuleType %a"
+        (Component.Fmt.model_identifier c)
         (r :> Identifier.t)
   | RootModule (str, res) -> Format.fprintf fmt "RootModule %s %a" str fmtrm res
   | ModuleByName (n, r) ->
-      Format.fprintf fmt "ModuleByName %s, %a" n Component.Fmt.model_identifier
+      Format.fprintf fmt "ModuleByName %s, %a" n
+        (Component.Fmt.model_identifier c)
         (r :> Identifier.t)
   | FragmentRoot i -> Format.fprintf fmt "FragmentRoot %d" i
 

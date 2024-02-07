@@ -994,7 +994,9 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     let bt = Printexc.get_backtrace () in
     Format.fprintf Format.err_formatter
       "Exception %s handling type_expr: %a\nbacktrace:\n%s\n%!"
-      (Printexc.to_string e) Component.Fmt.type_expr t bt;
+      (Printexc.to_string e)
+      Component.Fmt.(type_expr default)
+      t bt;
     raise e
 
 and type_expr_polyvar map parent v =

@@ -514,129 +514,152 @@ end
 
 (** Formatting functions for components *)
 module Fmt : sig
-  val signature : Format.formatter -> Signature.t -> unit
+  type config = {
+    short_paths : bool;
+    show_canonical : bool;
+    show_removed : bool;
+    show_expansions : bool;
+    show_include_expansions : bool;
+  }
 
-  val removed_item : Format.formatter -> Signature.removed_item -> unit
+  val default : config
+
+  val signature : config -> Format.formatter -> Signature.t -> unit
+
+  val removed_item :
+    config -> Format.formatter -> Signature.removed_item -> unit
 
   val removed_item_list :
-    Format.formatter -> Signature.removed_item list -> unit
+    config -> Format.formatter -> Signature.removed_item list -> unit
 
-  val class_ : Format.formatter -> Class.t -> unit
+  val class_ : config -> Format.formatter -> Class.t -> unit
 
-  val class_type : Format.formatter -> ClassType.t -> unit
+  val class_type : config -> Format.formatter -> ClassType.t -> unit
 
-  val include_ : Format.formatter -> Include.t -> unit
+  val include_ : config -> Format.formatter -> Include.t -> unit
 
-  val value : Format.formatter -> Value.t -> unit
+  val value : config -> Format.formatter -> Value.t -> unit
 
-  val module_decl : Format.formatter -> Module.decl -> unit
+  val module_decl : config -> Format.formatter -> Module.decl -> unit
 
-  val include_decl : Format.formatter -> Include.decl -> unit
+  val include_decl : config -> Format.formatter -> Include.decl -> unit
 
-  val module_ : Format.formatter -> Module.t -> unit
+  val module_ : config -> Format.formatter -> Module.t -> unit
 
-  val module_type : Format.formatter -> ModuleType.t -> unit
+  val module_type : config -> Format.formatter -> ModuleType.t -> unit
 
-  val simple_expansion : Format.formatter -> ModuleType.simple_expansion -> unit
+  val simple_expansion :
+    config -> bool -> Format.formatter -> ModuleType.simple_expansion -> unit
 
   val module_type_type_of_desc :
-    Format.formatter -> ModuleType.type_of_desc -> unit
+    config -> Format.formatter -> ModuleType.type_of_desc -> unit
 
-  val u_module_type_expr : Format.formatter -> ModuleType.U.expr -> unit
+  val u_module_type_expr :
+    config -> Format.formatter -> ModuleType.U.expr -> unit
 
-  val module_type_expr : Format.formatter -> ModuleType.expr -> unit
+  val module_type_expr : config -> Format.formatter -> ModuleType.expr -> unit
 
-  val functor_parameter : Format.formatter -> FunctorParameter.t -> unit
+  val functor_parameter :
+    config -> Format.formatter -> FunctorParameter.t -> unit
 
   val functor_parameter_parameter :
-    Format.formatter -> FunctorParameter.parameter -> unit
+    config -> Format.formatter -> FunctorParameter.parameter -> unit
 
-  val type_decl : Format.formatter -> TypeDecl.t -> unit
+  val type_decl : config -> Format.formatter -> TypeDecl.t -> unit
 
-  val type_equation : Format.formatter -> TypeDecl.Equation.t -> unit
+  val type_equation : config -> Format.formatter -> TypeDecl.Equation.t -> unit
 
-  val exception_ : Format.formatter -> Exception.t -> unit
+  val exception_ : config -> Format.formatter -> Exception.t -> unit
 
-  val extension : Format.formatter -> Extension.t -> unit
+  val extension : config -> Format.formatter -> Extension.t -> unit
 
-  val substitution : Format.formatter -> ModuleType.substitution -> unit
+  val substitution :
+    config -> Format.formatter -> ModuleType.substitution -> unit
 
   val substitution_list :
-    Format.formatter -> ModuleType.substitution list -> unit
+    config -> Format.formatter -> ModuleType.substitution list -> unit
 
-  val type_expr_list : Format.formatter -> TypeExpr.t list -> unit
+  val type_expr_list : config -> Format.formatter -> TypeExpr.t list -> unit
 
-  val type_object : Format.formatter -> TypeExpr.Object.t -> unit
+  val type_object : config -> Format.formatter -> TypeExpr.Object.t -> unit
 
   val type_class :
-    Format.formatter -> Cpath.class_type * TypeExpr.t list -> unit
+    config -> Format.formatter -> Cpath.class_type * TypeExpr.t list -> unit
 
-  val type_package : Format.formatter -> TypeExpr.Package.t -> unit
+  val type_package : config -> Format.formatter -> TypeExpr.Package.t -> unit
 
   val type_expr_polymorphic_variant :
-    Format.formatter -> TypeExpr.Polymorphic_variant.t -> unit
+    config -> Format.formatter -> TypeExpr.Polymorphic_variant.t -> unit
 
-  val type_expr : Format.formatter -> TypeExpr.t -> unit
+  val type_expr : config -> Format.formatter -> TypeExpr.t -> unit
 
-  val resolved_module_path : Format.formatter -> Cpath.Resolved.module_ -> unit
+  val resolved_module_path :
+    config -> Format.formatter -> Cpath.Resolved.module_ -> unit
 
-  val module_path : Format.formatter -> Cpath.module_ -> unit
+  val module_path : config -> Format.formatter -> Cpath.module_ -> unit
 
   val resolved_module_type_path :
-    Format.formatter -> Cpath.Resolved.module_type -> unit
+    config -> Format.formatter -> Cpath.Resolved.module_type -> unit
 
-  val module_type_path : Format.formatter -> Cpath.module_type -> unit
+  val module_type_path : config -> Format.formatter -> Cpath.module_type -> unit
 
-  val resolved_type_path : Format.formatter -> Cpath.Resolved.type_ -> unit
+  val resolved_type_path :
+    config -> Format.formatter -> Cpath.Resolved.type_ -> unit
 
-  val resolved_value_path : Format.formatter -> Cpath.Resolved.value -> unit
+  val resolved_value_path :
+    config -> Format.formatter -> Cpath.Resolved.value -> unit
 
-  val resolved_parent_path : Format.formatter -> Cpath.Resolved.parent -> unit
+  val resolved_parent_path :
+    config -> Format.formatter -> Cpath.Resolved.parent -> unit
 
-  val type_path : Format.formatter -> Cpath.type_ -> unit
+  val type_path : config -> Format.formatter -> Cpath.type_ -> unit
 
-  val value_path : Format.formatter -> Cpath.value -> unit
+  val value_path : config -> Format.formatter -> Cpath.value -> unit
 
   val resolved_class_type_path :
-    Format.formatter -> Cpath.Resolved.class_type -> unit
+    config -> Format.formatter -> Cpath.Resolved.class_type -> unit
 
-  val class_type_path : Format.formatter -> Cpath.class_type -> unit
+  val class_type_path : config -> Format.formatter -> Cpath.class_type -> unit
 
-  val model_path : Format.formatter -> Odoc_model.Paths.Path.t -> unit
+  val model_path : config -> Format.formatter -> Odoc_model.Paths.Path.t -> unit
 
   val model_resolved_path :
-    Format.formatter -> Odoc_model.Paths.Path.Resolved.t -> unit
+    config -> Format.formatter -> Odoc_model.Paths.Path.Resolved.t -> unit
 
   val model_identifier :
-    Format.formatter -> Odoc_model.Paths.Identifier.t -> unit
+    config -> Format.formatter -> Odoc_model.Paths.Identifier.t -> unit
 
-  val model_fragment : Format.formatter -> Odoc_model.Paths.Fragment.t -> unit
+  val model_fragment :
+    config -> Format.formatter -> Odoc_model.Paths.Fragment.t -> unit
 
   val model_resolved_fragment :
-    Format.formatter -> Odoc_model.Paths.Fragment.Resolved.t -> unit
+    config -> Format.formatter -> Odoc_model.Paths.Fragment.Resolved.t -> unit
 
-  val resolved_root_fragment : Format.formatter -> Cfrag.root -> unit
+  val resolved_root_fragment : config -> Format.formatter -> Cfrag.root -> unit
 
   val resolved_signature_fragment :
-    Format.formatter -> Cfrag.resolved_signature -> unit
+    config -> Format.formatter -> Cfrag.resolved_signature -> unit
 
   val resolved_module_fragment :
-    Format.formatter -> Cfrag.resolved_module -> unit
+    config -> Format.formatter -> Cfrag.resolved_module -> unit
 
-  val resolved_type_fragment : Format.formatter -> Cfrag.resolved_type -> unit
+  val resolved_type_fragment :
+    config -> Format.formatter -> Cfrag.resolved_type -> unit
 
-  val signature_fragment : Format.formatter -> Cfrag.signature -> unit
+  val signature_fragment : config -> Format.formatter -> Cfrag.signature -> unit
 
-  val module_fragment : Format.formatter -> Cfrag.module_ -> unit
+  val module_fragment : config -> Format.formatter -> Cfrag.module_ -> unit
 
-  val module_type_fragment : Format.formatter -> Cfrag.module_type -> unit
+  val module_type_fragment :
+    config -> Format.formatter -> Cfrag.module_type -> unit
 
-  val type_fragment : Format.formatter -> Cfrag.type_ -> unit
+  val type_fragment : config -> Format.formatter -> Cfrag.type_ -> unit
 
   val model_resolved_reference :
-    Format.formatter -> Odoc_model.Paths.Reference.Resolved.t -> unit
+    config -> Format.formatter -> Odoc_model.Paths.Reference.Resolved.t -> unit
 
-  val model_reference : Format.formatter -> Odoc_model.Paths.Reference.t -> unit
+  val model_reference :
+    config -> Format.formatter -> Odoc_model.Paths.Reference.t -> unit
 end
 
 module Of_Lang : sig
