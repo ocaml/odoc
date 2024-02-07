@@ -40,7 +40,7 @@ This shouldn't cause any warnings:
 
   $ odoc link test.odoc -I .
   File "test.odoc":
-  Warning: Failed to lookup type identifier((root Test).CanonicalTest, false).Base__.List.t Parent_module: Parent_module: Find failure
+  Warning: Failed to lookup type identifier(root(Test).CanonicalTest,false).Base__.List.t Parent_module: Parent_module: Find failure
   File "test.mli", line 25, characters 8-17:
   Warning: Failed to resolve reference unresolvedroot(List).t Couldn't find "List"
 

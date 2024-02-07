@@ -564,12 +564,32 @@ module Element = struct
 end
 
 module Fmt = struct
+  type config = {
+    short_paths : bool;
+    show_canonical : bool;
+    show_removed : bool;
+    show_expansions : bool;
+    show_include_expansions : bool;
+  }
+
+  let default =
+    {
+      short_paths = false;
+      show_canonical = true;
+      show_removed = true;
+      show_expansions = true;
+      show_include_expansions = true;
+    }
+
+  type id = Odoc_model.Paths.Identifier.t
+  type path = Odoc_model.Paths.Path.t
+  type rpath = Odoc_model.Paths.Path.Resolved.t
   open Odoc_model.Names
 
   let fpf = Format.fprintf
 
-  let fpp_opt fmt pp_a ppf = function
-    | Some t -> fpf ppf fmt pp_a t
+  let fpp_opt (c : config) fmt pp_a ppf = function
+    | Some t -> fpf ppf fmt (pp_a c) t
     | None -> ()
 
   let fpp_list fmt_sep fmt_outer pp_a ppf t =
@@ -578,251 +598,434 @@ module Fmt = struct
     | [] -> ()
     | t -> fpf ppf fmt_outer (Format.pp_print_list ~pp_sep pp_a) t
 
-  let rec signature ppf sg =
+  let wrap :
+      type a.
+      config ->
+      string ->
+      (config -> Format.formatter -> a -> unit) ->
+      Format.formatter ->
+      a ->
+      unit =
+   fun c txt fn ppf x ->
+    if c.short_paths then Format.fprintf ppf "%a" (fn c) x
+    else Format.fprintf ppf "%s(%a)" txt (fn c) x
+
+  let wrap2 :
+      type a b.
+      config ->
+      string ->
+      (config -> Format.formatter -> a -> unit) ->
+      (config -> Format.formatter -> b -> unit) ->
+      Format.formatter ->
+      a ->
+      b ->
+      unit =
+   fun c txt fn1 fn2 ppf x y ->
+    if c.short_paths then Format.fprintf ppf "%a" (fn1 c) x
+    else Format.fprintf ppf "%s(%a,%a)" txt (fn1 c) x (fn2 c) y
+
+  let wrap2r :
+      type a b.
+      config ->
+      string ->
+      (config -> Format.formatter -> a -> unit) ->
+      (config -> Format.formatter -> b -> unit) ->
+      Format.formatter ->
+      a ->
+      b ->
+      unit =
+   fun c txt fn1 fn2 ppf x y ->
+    if c.short_paths then Format.fprintf ppf "%a" (fn2 c) y
+    else Format.fprintf ppf "%s(%a,%a)" txt (fn1 c) x (fn2 c) y
+
+  let str : config -> Format.formatter -> string -> unit =
+   fun _ ppf s -> Format.fprintf ppf "%s" s
+
+  let bool : config -> Format.formatter -> bool -> unit =
+   fun _ ppf b -> Format.fprintf ppf "%b" b
+
+  let ident_fmt : config -> Format.formatter -> [< Ident.any ] -> unit =
+   fun c ppf i ->
+    if c.short_paths then Ident.short_fmt ppf i else Ident.fmt ppf i
+
+  let rec model_identifier c ppf (p : id) =
+    match p.iv with
+    | `Root (_, unit_name) ->
+        wrap c "root" (fun _ -> ModuleName.fmt) ppf unit_name
+    | `Module (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (parent :> id)
+          (ModuleName.to_string name)
+    | `ModuleType (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (parent :> id)
+          (ModuleTypeName.to_string name)
+    | `Type (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (parent :> id)
+          (TypeName.to_string name)
+    | `Parameter (parent, name) ->
+        Format.fprintf ppf "(param %a %s)" (model_identifier c)
+          (parent :> id)
+          (ModuleName.to_string name)
+    | `Result parent ->
+        if c.short_paths then model_identifier c ppf (parent :> id)
+        else Format.fprintf ppf "%a.result" (model_identifier c) (parent :> id)
+    | `CoreType name -> Format.fprintf ppf "%s" (TypeName.to_string name)
+    | `Constructor (ty, x) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (ty :> id)
+          (ConstructorName.to_string x)
+    | `Value (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (parent :> id)
+          (ValueName.to_string name)
+    | `CoreException name ->
+        Format.fprintf ppf "%s" (ExceptionName.to_string name)
+    | `Class (sg, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (sg :> id)
+          (ClassName.to_string name)
+    | `ClassType (sg, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (sg :> id)
+          (ClassTypeName.to_string name)
+    | `InstanceVariable (sg, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (sg :> id)
+          (InstanceVariableName.to_string name)
+    | `Method (sg, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (sg :> id)
+          (MethodName.to_string name)
+    | `Label (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (parent :> id)
+          (LabelName.to_string name)
+    | `Field (ty, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (ty :> id)
+          (FieldName.to_string name)
+    | `Exception (p, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (p :> id)
+          (ExceptionName.to_string name)
+    | `Extension (p, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (p :> id)
+          (ExtensionName.to_string name)
+    | `ExtensionDecl (p, _, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (p :> id)
+          (ExtensionName.to_string name)
+    | `Page (_, name) | `LeafPage (_, name) ->
+        Format.fprintf ppf "%s" (PageName.to_string name)
+    | `SourcePage (p, name) | `SourceDir (p, name) ->
+        Format.fprintf ppf "%a/%s" (model_identifier c) (p :> id) name
+    | `SourceLocation (p, def) ->
+        Format.fprintf ppf "%a#%s" (model_identifier c)
+          (p :> id)
+          (DefName.to_string def)
+    | `SourceLocationInternal (p, def) ->
+        Format.fprintf ppf "%a#%s" (model_identifier c)
+          (p :> id)
+          (LocalName.to_string def)
+    | `SourceLocationMod p ->
+        Format.fprintf ppf "%a#" (model_identifier c) (p :> id)
+    | `AssetFile (p, name) ->
+        Format.fprintf ppf "%a/%s" (model_identifier c) (p :> id) name
+
+  let rec signature : config -> Format.formatter -> Signature.t -> unit =
+   fun c ppf sg ->
     let open Signature in
-    Format.fprintf ppf "@[<v>";
-    List.iter
-      (function
-        | Module (id, _, m) ->
-            Format.fprintf ppf "@[<v 2>module %a %a@]@," Ident.fmt id module_
-              (Delayed.get m)
-        | ModuleSubstitution (id, m) ->
-            Format.fprintf ppf "@[<v 2>module %a := %a@]@," Ident.fmt id
-              module_path m.ModuleSubstitution.manifest
-        | ModuleType (id, mt) ->
-            Format.fprintf ppf "@[<v 2>module type %a %a@]@," Ident.fmt id
-              module_type (Delayed.get mt)
-        | ModuleTypeSubstitution (id, mts) ->
-            Format.fprintf ppf "@[<v 2>module type %a := %a@]@," Ident.fmt id
-              module_type_expr mts.ModuleTypeSubstitution.manifest
-        | Type (id, _, t) ->
-            Format.fprintf ppf "@[<v 2>type %a%a@]@," Ident.fmt id type_decl
-              (Delayed.get t)
-        | TypeSubstitution (id, t) ->
-            Format.fprintf ppf "@[<v 2>type %a :=%a@]@," Ident.fmt id type_decl
-              t
-        | Exception (id, e) ->
-            Format.fprintf ppf "@[<v 2>exception %a %a@]@," Ident.fmt id
-              exception_ e
-        | TypExt e ->
-            Format.fprintf ppf "@[<v 2>type_extension %a@]@," extension e
-        | Value (id, v) ->
-            Format.fprintf ppf "@[<v 2>val %a %a@]@," Ident.fmt id value
-              (Delayed.get v)
-        | Class (id, _, c) ->
-            Format.fprintf ppf "@[<v 2>class %a %a@]@," Ident.fmt id class_ c
-        | ClassType (id, _, c) ->
-            Format.fprintf ppf "@[<v 2>class type %a %a@]@," Ident.fmt id
-              class_type c
-        | Include i -> Format.fprintf ppf "@[<v 2>include %a@]@," include_ i
-        | Open o -> Format.fprintf ppf "open [ %a ]" signature o.expansion
-        | Comment _c -> ())
-      sg.items;
-    Format.fprintf ppf "@] (removed=[%a])" removed_item_list sg.removed
+    let ident_fmt = if c.short_paths then Ident.short_fmt else Ident.fmt in
+    let sig_item ppf = function
+      | Module (id, _, m) ->
+          Format.fprintf ppf "@[<hov 2>module %a %a@]" ident_fmt id (module_ c)
+            (Delayed.get m)
+      | ModuleSubstitution (id, m) ->
+          Format.fprintf ppf "@[<v 2>module %a := %a@]" ident_fmt id
+            (module_path c) m.ModuleSubstitution.manifest
+      | ModuleType (id, mt) ->
+          Format.fprintf ppf "@[<hov 2>module type %a %a@]" ident_fmt id
+            (module_type c) (Delayed.get mt)
+      | ModuleTypeSubstitution (id, mts) ->
+          Format.fprintf ppf "@[<v 2>module type %a := %a@]" ident_fmt id
+            (module_type_expr c) mts.ModuleTypeSubstitution.manifest
+      | Type (id, _, t) ->
+          Format.fprintf ppf "@[<v 2>type %a%a@]" ident_fmt id (type_decl c)
+            (Delayed.get t)
+      | TypeSubstitution (id, t) ->
+          Format.fprintf ppf "@[<v 2>type %a :=%a@]" ident_fmt id (type_decl c)
+            t
+      | Exception (id, e) ->
+          Format.fprintf ppf "@[<v 2>exception %a %a@]" ident_fmt id
+            (exception_ c) e
+      | TypExt e ->
+          Format.fprintf ppf "@[<v 2>type_extension %a@]" (extension c) e
+      | Value (id, v) ->
+          Format.fprintf ppf "@[<v 2>val %a %a@]" ident_fmt id (value c)
+            (Delayed.get v)
+      | Class (id, _, cls) ->
+          Format.fprintf ppf "@[<v 2>class %a %a@]" ident_fmt id (class_ c) cls
+      | ClassType (id, _, cty) ->
+          Format.fprintf ppf "@[<v 2>class type %a %a@]" ident_fmt id
+            (class_type c) cty
+      | Include i -> Format.fprintf ppf "@[<hov 2>include %a@]" (include_ c) i
+      | Open o -> Format.fprintf ppf "open [ %a ]" (signature c) o.expansion
+      | Comment _c -> ()
+    in
+    let rec inner ppf = function
+      | [ x ] -> sig_item ppf x
+      | x :: xs -> Format.fprintf ppf "%a@ %a" sig_item x inner xs
+      | [] -> ()
+    in
+    let removed_fmt ppf removed =
+      match (c.show_removed, removed) with
+      | false, _ | _, [] -> ()
+      | true, items ->
+          Format.fprintf ppf "@ (removed=%a)" (removed_item_list c) items
+    in
+    Format.fprintf ppf "%a%a" inner sg.items removed_fmt sg.removed
 
   and option :
       type a.
-      (Format.formatter -> a -> unit) -> Format.formatter -> a option -> unit =
-   fun pp ppf x ->
+      config ->
+      (config -> Format.formatter -> a -> unit) ->
+      Format.formatter ->
+      a option ->
+      unit =
+   fun c pp ppf x ->
     match x with
-    | Some x -> Format.fprintf ppf "Some(%a)" pp x
+    | Some x -> Format.fprintf ppf "Some(%a)" (pp c) x
     | None -> Format.fprintf ppf "None"
 
-  and class_signature ppf sg =
+  and class_signature c ppf sg =
     let open ClassSignature in
-    Format.fprintf ppf "@[<v>self=%a@," (option type_expr) sg.self;
+    Format.fprintf ppf "@[<v>self=%a@," (option c type_expr) sg.self;
     List.iter
       (function
         | Method (id, m) ->
-            Format.fprintf ppf "@[<v 2>method %a : %a@]@," Ident.fmt id method_
-              m
+            Format.fprintf ppf "@[<v 2>method %a : %a@]@," Ident.fmt id
+              (method_ c) m
         | InstanceVariable (id, i) ->
             Format.fprintf ppf "@[<v 2>instance variable %a : %a@]@," Ident.fmt
-              id instance_variable i
+              id (instance_variable c) i
         | Constraint cst ->
-            Format.fprintf ppf "@[<v 2>constraint %a = %a@]@," type_expr
-              cst.Constraint.left type_expr cst.right
+            Format.fprintf ppf "@[<v 2>constraint %a = %a@]@," (type_expr c)
+              cst.Constraint.left (type_expr c) cst.right
         | Inherit i ->
-            Format.fprintf ppf "@[<v 2>inherit %a" class_type_expr
+            Format.fprintf ppf "@[<v 2>inherit %a" (class_type_expr c)
               i.Inherit.expr
         | Comment _ -> ())
       sg.items
 
-  and method_ ppf m =
+  and method_ c ppf m =
     let open Method in
     Format.fprintf ppf "%s%s%a"
       (if m.private_ then "private " else "")
       (if m.virtual_ then "virtual " else "")
-      type_expr m.type_
+      (type_expr c) m.type_
 
-  and instance_variable ppf i =
+  and instance_variable c ppf i =
     let open InstanceVariable in
     Format.fprintf ppf "%s%s%a"
       (if i.mutable_ then "mutable " else "")
       (if i.virtual_ then "virtual " else "")
-      type_expr i.type_
+      (type_expr c) i.type_
 
-  and list pp ppf ls =
+  and list c pp ppf ls =
     match ls with
-    | x :: y :: rest -> Format.fprintf ppf "%a, %a" pp x (list pp) (y :: rest)
-    | [ x ] -> Format.fprintf ppf "%a" pp x
+    | x :: y :: rest ->
+        Format.fprintf ppf "%a, %a" (pp c) x (list c pp) (y :: rest)
+    | [ x ] -> Format.fprintf ppf "%a" (pp c) x
     | [] -> ()
 
-  and class_type_expr ppf c =
+  and class_type_expr c ppf cty =
     let open ClassType in
-    match c with
+    match cty with
     | Constr (p, ts) ->
-        Format.fprintf ppf "constr(%a,%a)" class_type_path p (list type_expr) ts
-    | Signature sg -> Format.fprintf ppf "(%a)" class_signature sg
+        Format.fprintf ppf "constr(%a,%a)" (class_type_path c) p
+          (list c type_expr) ts
+    | Signature sg -> Format.fprintf ppf "(%a)" (class_signature c) sg
 
-  and removed_item ppf r =
+  and removed_item c ppf r =
     let open Signature in
     match r with
     | RModule (id, path) ->
-        Format.fprintf ppf "module %a (%a)" Ident.fmt id resolved_module_path
-          path
+        Format.fprintf ppf "module %a (%a)" Ident.fmt id
+          (resolved_module_path c) path
     | RType (id, texpr, eq) ->
         Format.fprintf ppf "type %a %a = (%a)" type_params eq.params Ident.fmt
-          id type_expr texpr
+          id (type_expr c) texpr
     | RModuleType (id, mty) ->
-        Format.fprintf ppf "module type %a = %a" Ident.fmt id module_type_expr
-          mty
+        Format.fprintf ppf "module type %a = %a" Ident.fmt id
+          (module_type_expr c) mty
 
-  and removed_item_list ppf r =
+  and removed_item_list c ppf r =
     match r with
     | [] -> ()
-    | [ x ] -> Format.fprintf ppf "%a" removed_item x
-    | x :: ys -> Format.fprintf ppf "%a;%a" removed_item x removed_item_list ys
+    | [ x ] -> Format.fprintf ppf "%a" (removed_item c) x
+    | x :: ys ->
+        Format.fprintf ppf "%a;%a" (removed_item c) x (removed_item_list c) ys
 
-  and class_decl ppf c =
+  and class_decl c ppf cls =
     let open Class in
-    match c with
-    | ClassType cty -> Format.fprintf ppf "%a" class_type_expr cty
+    match cls with
+    | ClassType cty -> Format.fprintf ppf "%a" (class_type_expr c) cty
     | Arrow (lbl, ty, decl) ->
-        Format.fprintf ppf "%a%a -> %a" type_expr_label lbl type_expr ty
-          class_decl decl
+        Format.fprintf ppf "%a%a -> %a" type_expr_label lbl (type_expr c) ty
+          (class_decl c) decl
 
-  and class_ ppf c = Format.fprintf ppf "%a" class_decl c.type_
+  and class_ c ppf cls = Format.fprintf ppf "%a" (class_decl c) cls.type_
 
-  and class_type ppf _c = Format.fprintf ppf "<todo>"
+  and class_type _c ppf _ = Format.fprintf ppf "<todo>"
 
-  and include_ ppf i =
-    Format.fprintf ppf "%a (sig = %a)" include_decl i.decl signature
-      i.expansion_
+  and include_ c ppf i =
+    Format.fprintf ppf "%a@ %a" (include_decl c) i.decl
+      (simple_expansion c true)
+      (ModuleType.Signature i.expansion_ : ModuleType.simple_expansion)
 
-  and include_decl ppf =
+  and include_decl c ppf =
     let open Include in
     function
-    | Alias p -> Format.fprintf ppf "= %a" module_path p
-    | ModuleType mt -> Format.fprintf ppf ": %a" u_module_type_expr mt
+    | Alias p -> Format.fprintf ppf "%a" (module_path c) p
+    | ModuleType mt -> Format.fprintf ppf "%a" (u_module_type_expr c) mt
 
-  and value ppf v =
+  and value c ppf v =
     let open Value in
-    Format.fprintf ppf ": %a" type_expr v.type_
+    Format.fprintf ppf ": %a" (type_expr c) v.type_
 
-  and module_decl ppf d =
+  and module_decl c ppf d =
     let open Module in
     match d with
-    | Alias (p, _) -> Format.fprintf ppf "= %a" module_path p
-    | ModuleType mt -> Format.fprintf ppf ": %a" module_type_expr mt
+    | Alias (p, _) -> Format.fprintf ppf "=@ %a" (module_path c) p
+    | ModuleType mt ->
+        Format.fprintf ppf ": %a%a" (module_type_expr c) mt
+          (module_type_expansion c) mt
 
-  and module_ ppf m =
-    Format.fprintf ppf "%a (canonical=%a)" module_decl m.type_
-      (option model_path)
-      (m.canonical :> Odoc_model.Paths.Path.t option)
+  and module_ c ppf m =
+    let fmt_canonical ppf popt =
+      if c.show_canonical then
+        Format.fprintf ppf "@ (canonical=%a)" (option c model_path) popt
+      else ()
+    in
+    Format.fprintf ppf "%a%a" (module_decl c) m.type_ fmt_canonical
+      (m.canonical :> path option)
 
-  and simple_expansion ppf (m : ModuleType.simple_expansion) =
-    match m with
-    | ModuleType.Signature sg -> Format.fprintf ppf "sig: %a" signature sg
-    | Functor (arg, sg) ->
-        Format.fprintf ppf "functor: (%a) -> %a" functor_parameter arg
-          simple_expansion sg
+  and simple_expansion c is_include ppf (m : ModuleType.simple_expansion) =
+    if c.show_expansions || (is_include && c.show_include_expansions) then
+      match m with
+      | ModuleType.Signature sg ->
+          Format.fprintf ppf "@[<hv 2>(sig :@ %a@;<1 -1>end@])" (signature c) sg
+      | Functor (arg, sg) ->
+          Format.fprintf ppf "(functor: (%a) -> %a)" (functor_parameter c) arg
+            (simple_expansion c is_include)
+            sg
+    else ()
 
-  and module_type ppf mt =
+  and module_type c ppf mt =
     match mt.expr with
-    | Some x -> Format.fprintf ppf "= %a" module_type_expr x
+    | Some x ->
+        Format.fprintf ppf "= %a%a" (module_type_expr c) x
+          (module_type_expansion c) x
     | None -> ()
 
-  and module_type_type_of_desc ppf t =
+  and module_type_type_of_desc c ppf t =
     match t with
     | ModuleType.ModPath p ->
-        Format.fprintf ppf "module type of %a" module_path p
+        Format.fprintf ppf "module type of %a" (module_path c) p
     | StructInclude p ->
-        Format.fprintf ppf "module type of struct include %a end" module_path p
+        Format.fprintf ppf "module type of struct include %a end"
+          (module_path c) p
 
-  and u_module_type_expr ppf mt =
+  and u_module_type_expr c ppf mt =
     let open ModuleType.U in
     match mt with
-    | Path p -> module_type_path ppf p
-    | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" signature sg
+    | Path p -> module_type_path c ppf p
+    | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" (signature c) sg
     | With (subs, e) ->
-        Format.fprintf ppf "%a with [%a]" u_module_type_expr e substitution_list
-          subs
-    | TypeOf { t_desc; _ } -> module_type_type_of_desc ppf t_desc
+        Format.fprintf ppf "%a with [%a]" (u_module_type_expr c) e
+          (substitution_list c) subs
+    | TypeOf { t_desc; _ } -> module_type_type_of_desc c ppf t_desc
 
-  and module_type_expr ppf mt =
+  and module_type_expr c ppf mt =
     let open ModuleType in
     match mt with
-    | Path { p_path; _ } -> module_type_path ppf p_path
-    | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" signature sg
+    | Path { p_path; _ } -> module_type_path c ppf p_path
+    | Signature sg ->
+        Format.fprintf ppf "@,@[<hv 2>sig@ %a@;<1 -2>end@]" (signature c) sg
     | With { w_substitutions = subs; w_expr; _ } ->
-        Format.fprintf ppf "%a with [%a]" u_module_type_expr w_expr
-          substitution_list subs
+        Format.fprintf ppf "%a with @[<hov 2>%a@]" (u_module_type_expr c) w_expr
+          (substitution_list c) subs
     | Functor (arg, res) ->
-        Format.fprintf ppf "(%a) -> %a" functor_parameter arg module_type_expr
-          res
+        Format.fprintf ppf "(%a) -> %a" (functor_parameter c) arg
+          (module_type_expr c) res
     | TypeOf { t_desc = ModPath p; _ } ->
-        Format.fprintf ppf "module type of %a" module_path p
+        Format.fprintf ppf "module type of %a" (module_path c) p
     | TypeOf { t_desc = StructInclude p; _ } ->
-        Format.fprintf ppf "module type of struct include %a end" module_path p
+        Format.fprintf ppf "module type of struct include %a end"
+          (module_path c) p
 
-  and functor_parameter ppf x =
+  and module_type_expansion c ppf mt =
+    let open ModuleType in
+    match mt with
+    | Signature _ -> ()
+    | Path { p_expansion = Some e; _ }
+    | With { w_expansion = Some e; _ }
+    | TypeOf { t_expansion = Some e; _ } ->
+        Format.fprintf ppf "@ %a" (simple_expansion c false) e
+    | _ -> ()
+
+  and functor_parameter c ppf x =
     let open FunctorParameter in
     match x with
     | Unit -> ()
-    | Named x -> Format.fprintf ppf "%a" functor_parameter_parameter x
+    | Named x -> Format.fprintf ppf "%a" (functor_parameter_parameter c) x
 
-  and functor_parameter_parameter ppf x =
+  and functor_parameter_parameter c ppf x =
     Format.fprintf ppf "%a : %a" Ident.fmt x.FunctorParameter.id
-      module_type_expr x.FunctorParameter.expr
+      (module_type_expr c) x.FunctorParameter.expr
 
-  and type_decl ppf t =
+  and type_decl c ppf t =
     let open TypeDecl in
     match t.representation with
     | Some repr ->
         Format.fprintf ppf "%a = %a"
-          (fpp_opt " : %a" type_expr)
-          t.equation.Equation.manifest type_decl_repr repr
-    | None -> (fpp_opt " = %a" type_expr) ppf t.equation.Equation.manifest
+          (fpp_opt c " : %a" type_expr)
+          t.equation.Equation.manifest (type_decl_repr c) repr
+    | None -> (fpp_opt c " = %a" type_expr) ppf t.equation.Equation.manifest
 
-  and type_decl_repr ppf =
+  and type_decl_repr c ppf =
     let open TypeDecl.Representation in
     function
-    | Variant cs -> fpp_list " | " "%a" type_decl_constructor ppf cs
-    | Record fs -> type_decl_fields ppf fs
+    | Variant cs -> fpp_list " | " "%a" (type_decl_constructor c) ppf cs
+    | Record fs -> type_decl_fields c ppf fs
     | Extensible -> Format.fprintf ppf ".."
 
-  and type_decl_constructor ppf t =
+  and type_decl_constructor c ppf t =
     let open TypeDecl.Constructor in
     match t.res with
     | Some res ->
-        fpf ppf "%s : %a -> %a" t.name type_decl_constructor_arg t.args
-          type_expr res
-    | None -> fpf ppf "%s of %a" t.name type_decl_constructor_arg t.args
+        fpf ppf "%s : %a -> %a" t.name
+          (type_decl_constructor_arg c)
+          t.args (type_expr c) res
+    | None -> fpf ppf "%s of %a" t.name (type_decl_constructor_arg c) t.args
 
-  and type_decl_constructor_arg ppf =
+  and type_decl_constructor_arg c ppf =
     let open TypeDecl.Constructor in
     function
-    | Tuple ts -> type_tuple ppf ts | Record fs -> type_decl_fields ppf fs
+    | Tuple ts -> type_tuple c ppf ts | Record fs -> type_decl_fields c ppf fs
 
-  and type_decl_field ppf t =
+  and type_decl_field c ppf t =
     let open TypeDecl.Field in
     let mutable_ = if t.mutable_ then "mutable " else "" in
-    fpf ppf "%s%s : %a" mutable_ t.name type_expr t.type_
+    fpf ppf "%s%s : %a" mutable_ t.name (type_expr c) t.type_
 
-  and type_decl_fields ppf fs = fpp_list "; " "{ %a }" type_decl_field ppf fs
+  and type_decl_fields c ppf fs =
+    fpp_list "; " "{ %a }" (type_decl_field c) ppf fs
 
-  and type_tuple ppf ts = fpp_list " * " "%a" type_expr ppf ts
+  and type_tuple c ppf ts = fpp_list " * " "%a" (type_expr c) ppf ts
 
   and type_param ppf t =
     let desc =
@@ -836,38 +1039,41 @@ module Fmt = struct
     let pp_sep ppf () = Format.fprintf ppf ", " in
     Format.fprintf ppf "(%a)" (Format.pp_print_list ~pp_sep type_param) ts
 
-  and type_equation ppf t =
+  and type_equation c ppf t =
     match t.TypeDecl.Equation.manifest with
     | None -> ()
-    | Some m -> Format.fprintf ppf " = %a" type_expr m
+    | Some m -> Format.fprintf ppf " = %a" (type_expr c) m
 
-  and exception_ _ppf _e = ()
+  and exception_ _c _ppf _e = ()
 
-  and extension ppf e = Format.fprintf ppf "%a" type_path e.Extension.type_path
+  and extension c ppf e =
+    Format.fprintf ppf "%a" (type_path c) e.Extension.type_path
 
-  and substitution ppf t =
+  and substitution c ppf t =
     let open ModuleType in
     match t with
     | ModuleEq (frag, decl) ->
-        Format.fprintf ppf "%a = %a" module_fragment frag module_decl decl
+        Format.fprintf ppf "%a %a" (module_fragment c) frag (module_decl c) decl
     | ModuleSubst (frag, mpath) ->
-        Format.fprintf ppf "%a := %a" module_fragment frag module_path mpath
+        Format.fprintf ppf "%a := %a" (module_fragment c) frag (module_path c)
+          mpath
     | ModuleTypeEq (frag, mty) ->
-        Format.fprintf ppf "%a = %a" module_type_fragment frag module_type_expr
-          mty
+        Format.fprintf ppf "%a = %a" (module_type_fragment c) frag
+          (module_type_expr c) mty
     | ModuleTypeSubst (frag, mty) ->
-        Format.fprintf ppf "%a := %a" module_type_fragment frag module_type_expr
-          mty
+        Format.fprintf ppf "%a := %a" (module_type_fragment c) frag
+          (module_type_expr c) mty
     | TypeEq (frag, decl) ->
-        Format.fprintf ppf "%a%a" type_fragment frag type_equation decl
+        Format.fprintf ppf "%a%a" (type_fragment c) frag (type_equation c) decl
     | TypeSubst (frag, decl) ->
-        Format.fprintf ppf "%a%a" type_fragment frag type_equation decl
+        Format.fprintf ppf "%a%a" (type_fragment c) frag (type_equation c) decl
 
-  and substitution_list ppf l =
+  and substitution_list c ppf l =
     match l with
-    | [ sub ] -> Format.fprintf ppf "%a" substitution sub
+    | [ sub ] -> Format.fprintf ppf "%a" (substitution c) sub
     | sub :: subs ->
-        Format.fprintf ppf "%a; %a" substitution sub substitution_list subs
+        Format.fprintf ppf "%a; %a" (substitution c) sub (substitution_list c)
+          subs
     | [] -> ()
 
   and type_expr_label ppf l =
@@ -876,27 +1082,29 @@ module Fmt = struct
     | Some (Optional o) -> Format.fprintf ppf "?%s:" o
     | None -> ()
 
-  and type_expr_list ppf l =
+  and type_expr_list c ppf l =
     match l with
-    | [ t ] -> Format.fprintf ppf "%a" type_expr t
-    | t :: ts -> Format.fprintf ppf "%a * %a" type_expr t type_expr_list ts
+    | [ t ] -> Format.fprintf ppf "%a" (type_expr c) t
+    | t :: ts ->
+        Format.fprintf ppf "%a * %a" (type_expr c) t (type_expr_list c) ts
     | [] -> ()
 
-  and type_object ppf _o = Format.fprintf ppf "(object)"
+  and type_object _c ppf _o = Format.fprintf ppf "(object)"
 
-  and type_class ppf (x, ys) =
-    Format.fprintf ppf "(class %a %a)" class_type_path x type_expr_list ys
+  and type_class c ppf (x, ys) =
+    Format.fprintf ppf "(class %a %a)" (class_type_path c) x (type_expr_list c)
+      ys
 
-  and type_package ppf _p = Format.fprintf ppf "(package)"
+  and type_package _c ppf _p = Format.fprintf ppf "(package)"
 
-  and type_expr_polymorphic_variant ppf p =
+  and type_expr_polymorphic_variant c ppf p =
     let open TypeExpr.Polymorphic_variant in
     let pp_element ppf = function
-      | Type t -> type_expr ppf t
-      | Constructor c ->
-          fpf ppf "`%s%a" c.Constructor.name
-            (fpp_list " * " " of %a" type_expr)
-            c.arguments
+      | Type t -> type_expr c ppf t
+      | Constructor cstr ->
+          fpf ppf "`%s%a" cstr.Constructor.name
+            (fpp_list " * " " of %a" (type_expr c))
+            cstr.arguments
     in
     let pp_elements = fpp_list " | " "%a" pp_element in
     match p.kind with
@@ -907,659 +1115,579 @@ module Fmt = struct
           xs
     | Open -> fpf ppf "[> %a ]" pp_elements p.elements
 
-  and type_expr ppf e =
+  and type_expr c ppf e =
     let open TypeExpr in
     match e with
     | Var x -> Format.fprintf ppf "%s" x
     | Any -> Format.fprintf ppf "_"
-    | Alias (x, y) -> Format.fprintf ppf "(alias %a %s)" type_expr x y
+    | Alias (x, y) -> Format.fprintf ppf "(alias %a %s)" (type_expr c) x y
     | Arrow (l, t1, t2) ->
-        Format.fprintf ppf "%a(%a) -> %a" type_expr_label l type_expr t1
-          type_expr t2
-    | Tuple ts -> Format.fprintf ppf "(%a)" type_expr_list ts
+        Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_expr c) t1
+          (type_expr c) t2
+    | Tuple ts -> Format.fprintf ppf "(%a)" (type_expr_list c) ts
     | Constr (p, args) -> (
         match args with
-        | [] -> Format.fprintf ppf "%a" type_path p
-        | _ -> Format.fprintf ppf "[%a] %a" type_expr_list args type_path p)
+        | [] -> Format.fprintf ppf "%a" (type_path c) p
+        | _ ->
+            Format.fprintf ppf "[%a] %a" (type_expr_list c) args (type_path c) p
+        )
     | Polymorphic_variant poly ->
-        Format.fprintf ppf "(poly_var %a)" type_expr_polymorphic_variant poly
-    | Object x -> type_object ppf x
-    | Class (x, y) -> type_class ppf (x, y)
+        Format.fprintf ppf "(poly_var %a)"
+          (type_expr_polymorphic_variant c)
+          poly
+    | Object x -> type_object c ppf x
+    | Class (x, y) -> type_class c ppf (x, y)
     | Poly (_ss, _t) -> Format.fprintf ppf "(poly)"
-    | Package x -> type_package ppf x
+    | Package x -> type_package c ppf x
 
-  and resolved_module_path : Format.formatter -> Cpath.Resolved.module_ -> unit
-      =
-   fun ppf p ->
+  and resolved_module_path :
+      config -> Format.formatter -> Cpath.Resolved.module_ -> unit =
+   fun c ppf p ->
     match p with
-    | `Local ident -> Format.fprintf ppf "%a" Ident.fmt ident
+    | `Local ident -> ident_fmt c ppf ident
     | `Apply (p1, p2) ->
-        Format.fprintf ppf "%a(%a)" resolved_module_path p1 resolved_module_path
-          p2
-    | `Gpath p ->
-        Format.fprintf ppf "%a" model_resolved_path
-          (p :> Odoc_model.Paths.Path.Resolved.t)
-    | `Substituted p ->
-        Format.fprintf ppf "substituted(%a)" resolved_module_path p
+        Format.fprintf ppf "%a(%a)" (resolved_module_path c) p1
+          (resolved_module_path c) p2
+    | `Gpath p -> Format.fprintf ppf "%a" (model_resolved_path c) (p :> rpath)
+    | `Substituted p -> wrap c "substituted" resolved_module_path ppf p
     | `Module (p, m) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ModuleName.to_string m)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ModuleName.to_string m)
     | `Alias (p1, p2, _) ->
-        Format.fprintf ppf "alias(%a,%a)" resolved_module_path p1 module_path p2
+        wrap2r c "alias" resolved_module_path module_path ppf p1 p2
     | `Subst (p1, p2) ->
-        Format.fprintf ppf "subst(%a,%a)" resolved_module_type_path p1
-          resolved_module_path p2
-    | `Hidden p1 -> Format.fprintf ppf "hidden(%a)" resolved_module_path p1
+        wrap2r c "subst" resolved_module_type_path resolved_module_path ppf p1
+          p2
+    | `Hidden p1 -> wrap c "hidden" resolved_module_path ppf p1
     | `Canonical (p1, p2) ->
-        Format.fprintf ppf "canonical(%a,%a)" resolved_module_path p1 model_path
-          (p2 :> Odoc_model.Paths.Path.t)
-    | `OpaqueModule m ->
-        Format.fprintf ppf "opaquemodule(%a)" resolved_module_path m
+        wrap2 c "canonical" resolved_module_path model_path ppf p1 (p2 :> path)
+    | `OpaqueModule m -> wrap c "opaquemodule" resolved_module_path ppf m
 
-  and module_path : Format.formatter -> Cpath.module_ -> unit =
-   fun ppf p ->
+  and module_path : config -> Format.formatter -> Cpath.module_ -> unit =
+   fun c ppf p ->
     match p with
-    | `Resolved p -> Format.fprintf ppf "r(%a)" resolved_module_path p
-    | `Dot (p, str) -> Format.fprintf ppf "%a.%s" module_path p str
+    | `Resolved p -> wrap c "resolved" resolved_module_path ppf p
+    | `Dot (p, str) -> Format.fprintf ppf "%a.%s" (module_path c) p str
     | `Module (p, n) ->
-        Format.fprintf ppf "%a.%a" resolved_parent_path p ModuleName.fmt n
+        Format.fprintf ppf "%a.%a" (resolved_parent_path c) p ModuleName.fmt n
     | `Apply (p1, p2) ->
-        Format.fprintf ppf "%a(%a)" module_path p1 module_path p2
+        Format.fprintf ppf "%a(%a)" (module_path c) p1 (module_path c) p2
     | `Identifier (id, b) ->
-        Format.fprintf ppf "identifier(%a, %b)" model_identifier
-          (id :> Odoc_model.Paths.Identifier.t)
-          b
-    | `Local (id, b) -> Format.fprintf ppf "local(%a,%b)" Ident.fmt id b
-    | `Substituted p -> Format.fprintf ppf "substituted(%a)" module_path p
-    | `Forward s -> Format.fprintf ppf "forward(%s)" s
-    | `Root r -> Format.fprintf ppf "unresolvedroot(%s)" r
+        wrap2 c "identifier" model_identifier bool ppf (id :> id) b
+    | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
+    | `Substituted p -> wrap c "substituted" module_path ppf p
+    | `Forward s -> wrap c "forward" str ppf s
+    | `Root r -> wrap c "unresolvedroot" str ppf r
 
   and resolved_module_type_path :
-      Format.formatter -> Cpath.Resolved.module_type -> unit =
-   fun ppf p ->
+      config -> Format.formatter -> Cpath.Resolved.module_type -> unit =
+   fun c ppf p ->
     match p with
-    | `Local id -> Format.fprintf ppf "%a" Ident.fmt id
-    | `Gpath p ->
-        Format.fprintf ppf "%a" model_resolved_path
-          (p :> Odoc_model.Paths.Path.Resolved.t)
-    | `Substituted x ->
-        Format.fprintf ppf "substituted(%a)" resolved_module_type_path x
+    | `Local id -> ident_fmt c ppf id
+    | `Gpath p -> model_resolved_path c ppf (p :> rpath)
+    | `Substituted x -> wrap c "substituted" resolved_module_type_path ppf x
     | `ModuleType (p, m) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (ModuleTypeName.to_string m)
     | `CanonicalModuleType (m1, m2) ->
-        Format.fprintf ppf "canonicalt(%a,%a)" resolved_module_type_path m1
-          model_path
-          (m2 :> Odoc_model.Paths.Path.t)
+        wrap2 c "canonicalt" resolved_module_type_path model_path ppf m1
+          (m2 :> path)
     | `OpaqueModuleType m ->
-        Format.fprintf ppf "opaquemoduletype(%a)" resolved_module_type_path m
+        wrap c "opaquemoduletype" resolved_module_type_path ppf m
     | `AliasModuleType (mt1, mt2) ->
-        Format.fprintf ppf "aliasmoduletype(%a,%a)" resolved_module_type_path
-          mt1 resolved_module_type_path mt2
+        wrap2 c "aliasmoduletype" resolved_module_type_path
+          resolved_module_type_path ppf mt1 mt2
     | `SubstT (mt1, mt2) ->
-        Format.fprintf ppf "subst(%a,%a)" resolved_module_type_path mt1
-          resolved_module_type_path mt2
+        wrap2 c "substt" resolved_module_type_path resolved_module_type_path ppf
+          mt1 mt2
 
-  and module_type_path : Format.formatter -> Cpath.module_type -> unit =
-   fun ppf m ->
+  and module_type_path : config -> Format.formatter -> Cpath.module_type -> unit
+      =
+   fun c ppf m ->
     match m with
-    | `Resolved p -> Format.fprintf ppf "r(%a)" resolved_module_type_path p
+    | `Resolved p -> wrap c "r" resolved_module_type_path ppf p
     | `Identifier (id, b) ->
-        Format.fprintf ppf "identifier(%a, %b)" model_identifier
-          (id :> Odoc_model.Paths.Identifier.t)
-          b
-    | `Local (id, b) -> Format.fprintf ppf "local(%a,%b)" Ident.fmt id b
-    | `Substituted s -> Format.fprintf ppf "substituted(%a)" module_type_path s
-    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" module_path m s
+        wrap2 c "identifier" model_identifier bool ppf (id :> id) b
+    | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
+    | `Substituted s -> wrap c "substituted" module_type_path ppf s
+    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" (module_path c) m s
     | `ModuleType (m, n) ->
-        Format.fprintf ppf "%a.%a" resolved_parent_path m ModuleTypeName.fmt n
+        Format.fprintf ppf "%a.%a" (resolved_parent_path c) m ModuleTypeName.fmt
+          n
 
-  and resolved_type_path : Format.formatter -> Cpath.Resolved.type_ -> unit =
-   fun ppf p ->
+  and resolved_type_path :
+      config -> Format.formatter -> Cpath.Resolved.type_ -> unit =
+   fun c ppf p ->
     match p with
-    | `Local id -> Format.fprintf ppf "%a" Ident.fmt id
-    | `Gpath p ->
-        Format.fprintf ppf "%a" model_resolved_path
-          (p :> Odoc_model.Paths.Path.Resolved.t)
-    | `Substituted x ->
-        Format.fprintf ppf "substituted(%a)" resolved_type_path x
+    | `Local id -> ident_fmt c ppf id
+    | `Gpath p -> model_resolved_path c ppf (p :> rpath)
+    | `Substituted x -> wrap c "substituted" resolved_type_path ppf x
     | `CanonicalType (t1, t2) ->
-        Format.fprintf ppf "canonicalty(%a,%a)" resolved_type_path t1 model_path
-          (t2 :> Odoc_model.Paths.Path.t)
+        wrap2 c "canonicaltype" resolved_type_path model_path ppf t1
+          (t2 :> path)
     | `Class (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ClassName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ClassName.to_string t)
     | `ClassType (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ClassTypeName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ClassTypeName.to_string t)
     | `Type (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.TypeName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (TypeName.to_string t)
 
-  and resolved_value_path : Format.formatter -> Cpath.Resolved.value -> unit =
-   fun ppf p ->
+  and resolved_value_path :
+      config -> Format.formatter -> Cpath.Resolved.value -> unit =
+   fun c ppf p ->
     match p with
     | `Value (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ValueName.to_string t)
-    | `Gpath p ->
-        Format.fprintf ppf "%a" model_resolved_path
-          (p :> Odoc_model.Paths.Path.Resolved.t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ValueName.to_string t)
+    | `Gpath p -> Format.fprintf ppf "%a" (model_resolved_path c) (p :> rpath)
 
-  and resolved_parent_path : Format.formatter -> Cpath.Resolved.parent -> unit =
-   fun ppf p ->
+  and resolved_parent_path :
+      config -> Format.formatter -> Cpath.Resolved.parent -> unit =
+   fun c ppf p ->
     match p with
-    | `Module m -> resolved_module_path ppf m
-    | `ModuleType m -> Format.fprintf ppf ">>%a<<" resolved_module_type_path m
+    | `Module m -> resolved_module_path c ppf m
+    | `ModuleType m ->
+        if c.short_paths then resolved_module_type_path c ppf m
+        else Format.fprintf ppf ">>%a<<" (resolved_module_type_path c) m
     | `FragmentRoot -> Format.fprintf ppf "FragmentRoot"
 
-  and type_path : Format.formatter -> Cpath.type_ -> unit =
-   fun ppf p ->
+  and type_path : config -> Format.formatter -> Cpath.type_ -> unit =
+   fun c ppf p ->
     match p with
-    | `Resolved r -> Format.fprintf ppf "r(%a)" resolved_type_path r
+    | `Resolved r -> wrap c "resolved" resolved_type_path ppf r
     | `Identifier (id, b) ->
-        Format.fprintf ppf "identifier(%a, %b)" model_identifier
-          (id :> Odoc_model.Paths.Identifier.t)
-          b
-    | `Local (id, b) -> Format.fprintf ppf "local(%a,%b)" Ident.fmt id b
-    | `Substituted s -> Format.fprintf ppf "substituted(%a)" type_path s
-    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" module_path m s
+        wrap2 c "identifier" model_identifier bool ppf (id :> id) b
+    | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
+    | `Substituted s -> wrap c "substituted" type_path ppf s
+    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" (module_path c) m s
     | `Class (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ClassName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ClassName.to_string t)
     | `ClassType (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ClassTypeName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ClassTypeName.to_string t)
     | `Type (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.TypeName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (TypeName.to_string t)
 
-  and value_path : Format.formatter -> Cpath.value -> unit =
-   fun ppf p ->
+  and value_path : config -> Format.formatter -> Cpath.value -> unit =
+   fun c ppf p ->
     match p with
-    | `Resolved r -> Format.fprintf ppf "r(%a)" resolved_value_path r
-    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" module_path m s
+    | `Resolved r -> wrap c "resolved" resolved_value_path ppf r
+    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" (module_path c) m s
     | `Value (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ValueName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ValueName.to_string t)
     | `Identifier (id, b) ->
-        Format.fprintf ppf "identifier(%a, %b)" model_identifier
-          (id :> Odoc_model.Paths.Identifier.t)
-          b
+        wrap2 c "identifier" model_identifier bool ppf (id :> id) b
 
   and resolved_class_type_path :
-      Format.formatter -> Cpath.Resolved.class_type -> unit =
-   fun ppf p ->
+      config -> Format.formatter -> Cpath.Resolved.class_type -> unit =
+   fun c ppf p ->
     match p with
     | `Local id -> Format.fprintf ppf "%a" Ident.fmt id
-    | `Gpath p ->
-        Format.fprintf ppf "%a" model_resolved_path
-          (p :> Odoc_model.Paths.Path.Resolved.t)
-    | `Substituted s ->
-        Format.fprintf ppf "substituted(%a)" resolved_class_type_path s
+    | `Gpath p -> Format.fprintf ppf "%a" (model_resolved_path c) (p :> rpath)
+    | `Substituted s -> wrap c "substituted" resolved_class_type_path ppf s
     | `Class (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ClassName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ClassName.to_string t)
     | `ClassType (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ClassTypeName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ClassTypeName.to_string t)
 
-  and class_type_path : Format.formatter -> Cpath.class_type -> unit =
-   fun ppf p ->
+  and class_type_path : config -> Format.formatter -> Cpath.class_type -> unit =
+   fun c ppf p ->
     match p with
-    | `Resolved r -> Format.fprintf ppf "%a" resolved_class_type_path r
+    | `Resolved r -> Format.fprintf ppf "%a" (resolved_class_type_path c) r
     | `Identifier (id, b) ->
-        Format.fprintf ppf "identifier(%a, %b)" model_identifier
-          (id :> Odoc_model.Paths.Identifier.t)
-          b
-    | `Local (id, b) -> Format.fprintf ppf "local(%a,%b)" Ident.fmt id b
-    | `Substituted s -> Format.fprintf ppf "substituted(%a)" class_type_path s
-    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" module_path m s
+        wrap2 c "identifier" model_identifier bool ppf (id :> id) b
+    | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
+    | `Substituted s -> wrap c "substituted" class_type_path ppf s
+    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" (module_path c) m s
     | `Class (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ClassName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ClassName.to_string t)
     | `ClassType (p, t) ->
-        Format.fprintf ppf "%a.%s" resolved_parent_path p
-          (Odoc_model.Names.ClassTypeName.to_string t)
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (ClassTypeName.to_string t)
 
-  and model_path : Format.formatter -> Odoc_model.Paths.Path.t -> unit =
-   fun ppf (p : Odoc_model.Paths.Path.t) ->
+  and model_path : config -> Format.formatter -> path -> unit =
+   fun c ppf (p : path) ->
     match p with
-    | `Resolved rp -> Format.fprintf ppf "r(%a)" model_resolved_path rp
+    | `Resolved rp -> wrap c "resolved" model_resolved_path ppf rp
     | `Identifier (id, b) ->
-        Format.fprintf ppf "identifier(%a, %b)" model_identifier
-          (id :> Odoc_model.Paths.Identifier.t)
-          b
-    | `Root s -> Format.fprintf ppf "root(%s)" s
-    | `Forward s -> Format.fprintf ppf "forward(%s)" s
+        wrap2 c "identifier" model_identifier bool ppf (id :> id) b
+    | `Root s -> wrap c "root" str ppf s
+    | `Forward s -> wrap c "forward" str ppf s
     | `Dot (parent, s) ->
-        Format.fprintf ppf "%a.%s" model_path
-          (parent :> Odoc_model.Paths.Path.t)
-          s
+        Format.fprintf ppf "%a.%s" (model_path c) (parent :> path) s
     | `Apply (func, arg) ->
-        Format.fprintf ppf "%a(%a)" model_path
-          (func :> Odoc_model.Paths.Path.t)
-          model_path
-          (arg :> Odoc_model.Paths.Path.t)
+        Format.fprintf ppf "%a(%a)" (model_path c)
+          (func :> path)
+          (model_path c)
+          (arg :> path)
 
-  and model_resolved_path ppf (p : Odoc_model.Paths.Path.Resolved.t) =
+  and model_resolved_path (c : config) ppf (p : rpath) =
     let open Odoc_model.Paths.Path.Resolved in
     match p with
-    | `Identifier id ->
-        Format.fprintf ppf "%a" model_identifier
-          (id :> Odoc_model.Paths.Identifier.t)
+    | `Identifier id -> Format.fprintf ppf "%a" (model_identifier c) (id :> id)
     | `Module (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_path
+        Format.fprintf ppf "%a.%s" (model_resolved_path c)
           (parent :> t)
-          (Odoc_model.Names.ModuleName.to_string name)
+          (ModuleName.to_string name)
     | `ModuleType (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_path
+        Format.fprintf ppf "%a.%s" (model_resolved_path c)
           (parent :> t)
-          (Odoc_model.Names.ModuleTypeName.to_string name)
+          (ModuleTypeName.to_string name)
     | `Type (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_path
+        Format.fprintf ppf "%a.%s" (model_resolved_path c)
           (parent :> t)
-          (Odoc_model.Names.TypeName.to_string name)
+          (TypeName.to_string name)
     | `Value (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_path
+        Format.fprintf ppf "%a.%s" (model_resolved_path c)
           (parent :> t)
-          (Odoc_model.Names.ValueName.to_string name)
+          (ValueName.to_string name)
     | `Alias (dest, src) ->
-        Format.fprintf ppf "alias(%a,%a)" model_resolved_path
+        wrap2r c "alias" model_resolved_path model_path ppf
           (dest :> t)
-          model_path
-          (src :> Odoc_model.Paths.Path.t)
+          (src :> path)
     | `AliasModuleType (path, realpath) ->
-        Format.fprintf ppf "aliasmoduletype(%a,%a)" model_resolved_path
+        wrap2r c "aliasmoduletype" model_resolved_path model_resolved_path ppf
           (path :> t)
-          model_resolved_path
           (realpath :> t)
     | `Subst (modty, m) ->
-        Format.fprintf ppf "subst(%a,%a)" model_resolved_path
+        wrap2 c "subst" model_resolved_path model_resolved_path ppf
           (modty :> t)
-          model_resolved_path
           (m :> t)
     | `SubstT (t1, t2) ->
-        Format.fprintf ppf "substt(%a,%a)" model_resolved_path
+        wrap2 c "substt" model_resolved_path model_resolved_path ppf
           (t1 :> t)
-          model_resolved_path
           (t2 :> t)
     | `CanonicalModuleType (t1, t2) ->
-        Format.fprintf ppf "canonicalt(%a,%a)" model_resolved_path
+        wrap2 c "canonicalmoduletype" model_resolved_path model_path ppf
           (t1 :> t)
-          model_path
-          (t2 :> Odoc_model.Paths.Path.t)
+          (t2 :> path)
     | `CanonicalType (t1, t2) ->
-        Format.fprintf ppf "canonicalty(%a,%a)" model_resolved_path
+        wrap2 c "canonicaltype" model_resolved_path model_path ppf
           (t1 :> t)
-          model_path
-          (t2 :> Odoc_model.Paths.Path.t)
+          (t2 :> path)
     | `Apply (funct, arg) ->
-        Format.fprintf ppf "%a(%a)" model_resolved_path
+        Format.fprintf ppf "%a(%a)" (model_resolved_path c)
           (funct :> t)
-          model_resolved_path
+          (model_resolved_path c)
           (arg :> t)
     | `Canonical (p1, p2) ->
-        Format.fprintf ppf "canonical(%a,%a)" model_resolved_path
+        wrap2 c "canonical" model_resolved_path model_path ppf
           (p1 :> t)
-          model_path
-          (p2 :> Odoc_model.Paths.Path.t)
-    | `Hidden p -> Format.fprintf ppf "hidden(%a)" model_resolved_path (p :> t)
+          (p2 :> path)
+    | `Hidden p -> wrap c "hidden" model_resolved_path ppf (p :> t)
     | `Class (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_path
+        Format.fprintf ppf "%a.%s" (model_resolved_path c)
           (parent :> t)
-          (Odoc_model.Names.ClassName.to_string name)
-    | `ClassType (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_path
-          (parent :> t)
-          (Odoc_model.Names.ClassTypeName.to_string name)
-    | `OpaqueModule m ->
-        Format.fprintf ppf "opaquemodule(%a)" model_resolved_path (m :> t)
-    | `OpaqueModuleType m ->
-        Format.fprintf ppf "opaquemoduletype(%a)" model_resolved_path (m :> t)
-
-  and model_identifier ppf (p : Odoc_model.Paths.Identifier.t) =
-    match p.iv with
-    | `Root (_, unit_name) ->
-        Format.fprintf ppf "(root %s)"
-          (Odoc_model.Names.ModuleName.to_string unit_name)
-    | `Module (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (parent :> Odoc_model.Paths.Identifier.t)
-          (Odoc_model.Names.ModuleName.to_string name)
-    | `ModuleType (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (parent :> Odoc_model.Paths.Identifier.t)
-          (Odoc_model.Names.ModuleTypeName.to_string name)
-    | `Type (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (parent :> Odoc_model.Paths.Identifier.t)
-          (Odoc_model.Names.TypeName.to_string name)
-    | `Parameter (parent, name) ->
-        Format.fprintf ppf "(param %a %s)" model_identifier
-          (parent :> Odoc_model.Paths.Identifier.t)
-          (Odoc_model.Names.ModuleName.to_string name)
-    | `Result parent ->
-        Format.fprintf ppf "%a.result" model_identifier
-          (parent :> Odoc_model.Paths.Identifier.t)
-    | `CoreType name ->
-        Format.fprintf ppf "%s" (Odoc_model.Names.TypeName.to_string name)
-    | `Constructor (ty, x) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (ty :> Odoc_model.Paths.Identifier.t)
-          (ConstructorName.to_string x)
-    | `Value (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (parent :> Odoc_model.Paths.Identifier.t)
-          (ValueName.to_string name)
-    | `CoreException name ->
-        Format.fprintf ppf "%s" (ExceptionName.to_string name)
-    | `Class (sg, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (sg :> Odoc_model.Paths.Identifier.t)
           (ClassName.to_string name)
-    | `ClassType (sg, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (sg :> Odoc_model.Paths.Identifier.t)
+    | `ClassType (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_resolved_path c)
+          (parent :> t)
           (ClassTypeName.to_string name)
-    | `InstanceVariable (sg, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (sg :> Odoc_model.Paths.Identifier.t)
-          (InstanceVariableName.to_string name)
-    | `Method (sg, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (sg :> Odoc_model.Paths.Identifier.t)
-          (MethodName.to_string name)
-    | `Label (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (parent :> Odoc_model.Paths.Identifier.t)
-          (LabelName.to_string name)
-    | `Field (ty, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (ty :> Odoc_model.Paths.Identifier.t)
-          (FieldName.to_string name)
-    | `Exception (p, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (p :> Odoc_model.Paths.Identifier.t)
-          (ExceptionName.to_string name)
-    | `Extension (p, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (p :> Odoc_model.Paths.Identifier.t)
-          (ExtensionName.to_string name)
-    | `ExtensionDecl (p, _, name) ->
-        Format.fprintf ppf "%a.%s" model_identifier
-          (p :> Odoc_model.Paths.Identifier.t)
-          (ExtensionName.to_string name)
-    | `Page (_, name) | `LeafPage (_, name) ->
-        Format.fprintf ppf "%s" (PageName.to_string name)
-    | `SourcePage (p, name) | `SourceDir (p, name) ->
-        Format.fprintf ppf "%a/%s" model_identifier
-          (p :> Odoc_model.Paths.Identifier.t)
-          name
-    | `SourceLocation (p, def) ->
-        Format.fprintf ppf "%a#%s" model_identifier
-          (p :> Odoc_model.Paths.Identifier.t)
-          (DefName.to_string def)
-    | `SourceLocationInternal (p, def) ->
-        Format.fprintf ppf "%a#%s" model_identifier
-          (p :> Odoc_model.Paths.Identifier.t)
-          (LocalName.to_string def)
-    | `SourceLocationMod p ->
-        Format.fprintf ppf "%a#" model_identifier
-          (p :> Odoc_model.Paths.Identifier.t)
-    | `AssetFile (p, name) ->
-        Format.fprintf ppf "%a/%s" model_identifier
-          (p :> Odoc_model.Paths.Identifier.t)
-          name
+    | `OpaqueModule m -> wrap c "opaquemodule" model_resolved_path ppf (m :> t)
+    | `OpaqueModuleType m ->
+        wrap c "opaquemoduletype" model_resolved_path ppf (m :> t)
 
-  and model_fragment ppf (f : Odoc_model.Paths.Fragment.t) =
+  and model_fragment c ppf (f : Odoc_model.Paths.Fragment.t) =
     match f with
-    | `Resolved rf -> model_resolved_fragment ppf rf
+    | `Resolved rf -> model_resolved_fragment c ppf rf
     | `Dot (sg, d) ->
-        Format.fprintf ppf "*%a.%s" model_fragment
+        Format.fprintf ppf "*%a.%s" (model_fragment c)
           (sg :> Odoc_model.Paths.Fragment.t)
           d
     | `Root -> ()
 
-  and model_resolved_fragment ppf (f : Odoc_model.Paths.Fragment.Resolved.t) =
+  and model_resolved_fragment c ppf (f : Odoc_model.Paths.Fragment.Resolved.t) =
     let open Odoc_model.Paths.Fragment.Resolved in
     match f with
     | `Root (`ModuleType p) ->
-        Format.fprintf ppf "root(%a)" model_resolved_path
-          (p :> Odoc_model.Paths.Path.Resolved.t)
+        Format.fprintf ppf "root(%a)" (model_resolved_path c) (p :> rpath)
     | `Root (`Module p) ->
-        Format.fprintf ppf "root(%a)" model_resolved_path
-          (p :> Odoc_model.Paths.Path.Resolved.t)
+        Format.fprintf ppf "root(%a)" (model_resolved_path c) (p :> rpath)
+    | `Module (`Root _, m) when c.short_paths ->
+        Format.fprintf ppf "%s" (ModuleName.to_string m)
     | `Module (sg, m) ->
-        Format.fprintf ppf "%a.%s" model_resolved_fragment
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_fragment c)
           (sg :> t)
-          (Odoc_model.Names.ModuleName.to_string m)
+          (ModuleName.to_string m)
+    | `Module_type (`Root _, m) when c.short_paths ->
+        Format.fprintf ppf "%s" (ModuleTypeName.to_string m)
     | `Module_type (sg, mty) ->
-        Format.fprintf ppf "%a.%s" model_resolved_fragment
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_fragment c)
           (sg :> t)
-          (Odoc_model.Names.ModuleTypeName.to_string mty)
+          (ModuleTypeName.to_string mty)
+    | `Type (`Root _, t) when c.short_paths ->
+        Format.fprintf ppf "%s" (TypeName.to_string t)
     | `Type (sg, t) ->
-        Format.fprintf ppf "%a.%s" model_resolved_fragment
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_fragment c)
           (sg :> t)
-          (Odoc_model.Names.TypeName.to_string t)
+          (TypeName.to_string t)
     | `Subst (path, m) ->
-        Format.fprintf ppf "(%a subst -> %a)" model_resolved_path
-          (path :> Odoc_model.Paths.Path.Resolved.t)
-          model_resolved_fragment
+        Format.fprintf ppf "(%a subst -> %a)" (model_resolved_path c)
+          (path :> rpath)
+          (model_resolved_fragment c)
           (m :> t)
     | `Alias (_, _) -> Format.fprintf ppf "UNIMPLEMENTED subst alias!?"
-    | `Class (sg, c) ->
-        Format.fprintf ppf "%a.%s" model_resolved_fragment
+    | `Class (sg, cls) ->
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_fragment c)
           (sg :> t)
-          (Odoc_model.Names.ClassName.to_string c)
-    | `ClassType (sg, c) ->
-        Format.fprintf ppf "%a.%s" model_resolved_fragment
+          (ClassName.to_string cls)
+    | `ClassType (sg, cls) ->
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_fragment c)
           (sg :> t)
-          (Odoc_model.Names.ClassTypeName.to_string c)
+          (ClassTypeName.to_string cls)
     | `OpaqueModule m ->
-        Format.fprintf ppf "opaquemodule(%a)" model_resolved_fragment
+        Format.fprintf ppf "opaquemodule(%a)"
+          (model_resolved_fragment c)
           (m :> Odoc_model.Paths.Fragment.Resolved.t)
 
-  and resolved_root_fragment ppf (f : Cfrag.root) =
+  and resolved_root_fragment c ppf (f : Cfrag.root) =
     match f with
-    | `ModuleType p -> Format.fprintf ppf "root(%a)" resolved_module_type_path p
-    | `Module p -> Format.fprintf ppf "root(%a)" resolved_module_path p
+    | `ModuleType p ->
+        Format.fprintf ppf "root(%a)" (resolved_module_type_path c) p
+    | `Module p -> Format.fprintf ppf "root(%a)" (resolved_module_path c) p
 
-  and resolved_signature_fragment ppf (f : Cfrag.resolved_signature) =
+  and resolved_signature_fragment c ppf (f : Cfrag.resolved_signature) =
     match f with
-    | `Root r -> Format.fprintf ppf "%a" resolved_root_fragment r
-    | (`Subst _ | `Alias _ | `Module _) as x -> resolved_module_fragment ppf x
+    | `Root r -> Format.fprintf ppf "%a" (resolved_root_fragment c) r
+    | (`Subst _ | `Alias _ | `Module _) as x -> resolved_module_fragment c ppf x
     | `OpaqueModule m ->
-        Format.fprintf ppf "opaquemodule(%a)" resolved_module_fragment m
+        Format.fprintf ppf "opaquemodule(%a)" (resolved_module_fragment c) m
 
-  and resolved_module_fragment ppf (f : Cfrag.resolved_module) =
+  and resolved_module_fragment c ppf (f : Cfrag.resolved_module) =
     match f with
     | `Subst (s, f) ->
-        Format.fprintf ppf "subst(%a,%a)" resolved_module_type_path s
-          resolved_module_fragment f
+        wrap2r c "subst" resolved_module_type_path resolved_module_fragment ppf
+          s f
     | `Alias (m, f) ->
-        Format.fprintf ppf "substalias(%a,%a)" resolved_module_path m
-          resolved_module_fragment f
+        wrap2r c "alias" resolved_module_path resolved_module_fragment ppf m f
+    | `Module (`Root _, n) when c.short_paths ->
+        Format.fprintf ppf "%s" (ModuleName.to_string n)
     | `Module (p, n) ->
-        Format.fprintf ppf "%a.%s" resolved_signature_fragment p
-          (ModuleName.to_string n)
-    | `OpaqueModule m ->
-        Format.fprintf ppf "opaquemodule(%a)" resolved_module_fragment m
+        Format.fprintf ppf "%a.%s"
+          (resolved_signature_fragment c)
+          p (ModuleName.to_string n)
+    | `OpaqueModule m -> wrap c "opaquemodule" resolved_module_fragment ppf m
 
-  and resolved_module_type_fragment ppf (f : Cfrag.resolved_module_type) =
+  and resolved_module_type_fragment c ppf (f : Cfrag.resolved_module_type) =
     match f with
+    | `ModuleType (`Root _, n) when c.short_paths ->
+        Format.fprintf ppf "%s" (ModuleTypeName.to_string n)
     | `ModuleType (p, n) ->
-        Format.fprintf ppf "%a.%s" resolved_signature_fragment p
+        Format.fprintf ppf "%a.%s"
+          (resolved_signature_fragment c)
+          p
           (ModuleTypeName.to_string n)
 
-  and resolved_type_fragment ppf (f : Cfrag.resolved_type) =
+  and resolved_type_fragment c ppf (f : Cfrag.resolved_type) =
     match f with
+    | `Type (`Root _, n) when c.short_paths ->
+        Format.fprintf ppf "%s" (TypeName.to_string n)
+    | `Class (`Root _, n) when c.short_paths ->
+        Format.fprintf ppf "%s" (ClassName.to_string n)
+    | `ClassType (`Root _, n) when c.short_paths ->
+        Format.fprintf ppf "%s" (ClassTypeName.to_string n)
     | `Type (s, n) ->
-        Format.fprintf ppf "%a.%s" resolved_signature_fragment s
-          (TypeName.to_string n)
+        Format.fprintf ppf "%a.%s"
+          (resolved_signature_fragment c)
+          s (TypeName.to_string n)
     | `Class (s, n) ->
-        Format.fprintf ppf "%a.%s" resolved_signature_fragment s
-          (ClassName.to_string n)
+        Format.fprintf ppf "%a.%s"
+          (resolved_signature_fragment c)
+          s (ClassName.to_string n)
     | `ClassType (s, n) ->
-        Format.fprintf ppf "%a.%s" resolved_signature_fragment s
+        Format.fprintf ppf "%a.%s"
+          (resolved_signature_fragment c)
+          s
           (ClassTypeName.to_string n)
 
-  and signature_fragment ppf (f : Cfrag.signature) =
-    match f with
-    | `Resolved r -> Format.fprintf ppf "r(%a)" resolved_signature_fragment r
-    | `Dot (s, n) -> Format.fprintf ppf "%a.%s" signature_fragment s n
-    | `Root -> Format.fprintf ppf "root"
-
-  and module_fragment ppf (f : Cfrag.module_) =
-    match f with
-    | `Resolved r -> Format.fprintf ppf "r(%a)" resolved_module_fragment r
-    | `Dot (s, n) -> Format.fprintf ppf "%a.%s" signature_fragment s n
-
-  and module_type_fragment ppf (f : Cfrag.module_type) =
+  and signature_fragment c ppf (f : Cfrag.signature) =
     match f with
     | `Resolved r ->
-        Format.fprintf ppf "resolved(%a)" resolved_module_type_fragment r
-    | `Dot (s, n) -> Format.fprintf ppf "%a.%s" signature_fragment s n
+        Format.fprintf ppf "r(%a)" (resolved_signature_fragment c) r
+    | `Dot (s, n) -> Format.fprintf ppf "%a.%s" (signature_fragment c) s n
+    | `Root -> Format.fprintf ppf "root"
 
-  and type_fragment ppf (f : Cfrag.type_) =
+  and module_fragment c ppf (f : Cfrag.module_) =
     match f with
-    | `Resolved r -> Format.fprintf ppf "r(%a)" resolved_type_fragment r
-    | `Dot (s, n) -> Format.fprintf ppf "%a.%s" signature_fragment s n
+    | `Resolved r -> wrap c "resolved" resolved_module_fragment ppf r
+    | `Dot (`Root, n) when c.short_paths -> Format.fprintf ppf "%s" n
+    | `Dot (s, n) -> Format.fprintf ppf "%a.%s" (signature_fragment c) s n
 
-  and model_resolved_reference ppf (r : Odoc_model.Paths.Reference.Resolved.t) =
+  and module_type_fragment c ppf (f : Cfrag.module_type) =
+    match f with
+    | `Resolved r -> wrap c "resolved" resolved_module_type_fragment ppf r
+    | `Dot (`Root, n) when c.short_paths -> Format.fprintf ppf "%s" n
+    | `Dot (s, n) -> Format.fprintf ppf "%a.%s" (signature_fragment c) s n
+
+  and type_fragment c ppf (f : Cfrag.type_) =
+    match f with
+    | `Resolved r -> wrap c "resolved" resolved_type_fragment ppf r
+    | `Dot (`Root, n) when c.short_paths -> Format.fprintf ppf "%s" n
+    | `Dot (s, n) -> Format.fprintf ppf "%a.%s" (signature_fragment c) s n
+
+  and model_resolved_reference c ppf (r : Odoc_model.Paths.Reference.Resolved.t)
+      =
     let open Odoc_model.Paths.Reference.Resolved in
     match r with
-    | `Identifier id -> Format.fprintf ppf "%a" model_identifier id
+    | `Identifier id -> Format.fprintf ppf "%a" (model_identifier c) id
     | `Hidden p ->
-        Format.fprintf ppf "hidden(%a)" model_resolved_reference (p :> t)
+        Format.fprintf ppf "hidden(%a)" (model_resolved_reference c) (p :> t)
     | `Module (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (ModuleName.to_string name)
     | `ModuleType (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (ModuleTypeName.to_string name)
     | `Type (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (TypeName.to_string name)
     | `Constructor (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (ConstructorName.to_string name)
     | `Field (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (FieldName.to_string name)
     | `Extension (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (ExtensionName.to_string name)
     | `ExtensionDecl (parent, name, _) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (ExtensionName.to_string name)
     | `Exception (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (ExceptionName.to_string name)
     | `Value (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (ValueName.to_string name)
     | `Class (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (ClassName.to_string name)
     | `ClassType (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (ClassTypeName.to_string name)
     | `Method (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (MethodName.to_string name)
     | `InstanceVariable (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (InstanceVariableName.to_string name)
     | `Alias (x, y) ->
-        Format.fprintf ppf "alias(%a,%a)" model_resolved_path
-          (x :> Odoc_model.Paths.Path.Resolved.t)
-          model_resolved_reference
+        Format.fprintf ppf "alias(%a,%a)" (model_resolved_path c)
+          (x :> rpath)
+          (model_resolved_reference c)
           (y :> Odoc_model.Paths.Reference.Resolved.t)
     | `AliasModuleType (x, y) ->
-        Format.fprintf ppf "aliasmoduletype(%a,%a)" model_resolved_path
-          (x :> Odoc_model.Paths.Path.Resolved.t)
-          model_resolved_reference
+        Format.fprintf ppf "aliasmoduletype(%a,%a)" (model_resolved_path c)
+          (x :> rpath)
+          (model_resolved_reference c)
           (y :> Odoc_model.Paths.Reference.Resolved.t)
     | `Label (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_resolved_reference
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
           (parent :> t)
           (LabelName.to_string name)
 
-  and model_reference ppf (r : Odoc_model.Paths.Reference.t) =
+  and model_reference c ppf (r : Odoc_model.Paths.Reference.t) =
     let open Odoc_model.Paths.Reference in
     match r with
-    | `Resolved r' -> Format.fprintf ppf "r(%a)" model_resolved_reference r'
+    | `Resolved r' -> Format.fprintf ppf "r(%a)" (model_resolved_reference c) r'
     | `Root (name, _) -> Format.fprintf ppf "unresolvedroot(%s)" name
     | `Dot (parent, str) ->
-        Format.fprintf ppf "%a.%s" model_reference (parent :> t) str
+        Format.fprintf ppf "%a.%s" (model_reference c) (parent :> t) str
     | `Module (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (ModuleName.to_string name)
     | `ModuleType (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (ModuleTypeName.to_string name)
     | `Type (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (TypeName.to_string name)
     | `Constructor (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (ConstructorName.to_string name)
     | `Field (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (FieldName.to_string name)
     | `Extension (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (ExtensionName.to_string name)
     | `ExtensionDecl (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (ExtensionName.to_string name)
     | `Exception (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (ExceptionName.to_string name)
     | `Value (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (ValueName.to_string name)
     | `Class (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (ClassName.to_string name)
     | `ClassType (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (ClassTypeName.to_string name)
     | `Method (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (MethodName.to_string name)
     | `InstanceVariable (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (InstanceVariableName.to_string name)
     | `Label (parent, name) ->
-        Format.fprintf ppf "%a.%s" model_reference
+        Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (LabelName.to_string name)
 end

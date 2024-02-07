@@ -393,34 +393,35 @@ end
 
 let reset () = counter := 0
 
-let rec fmt_aux ppf (id : any) =
+let rec fmt_aux (id : any) : string * int =
   match id with
-  | `LRoot (n, i) -> Format.fprintf ppf "%s/%d" (ModuleName.to_string n) i
-  | `LModule (n, i) -> Format.fprintf ppf "%s/%d" (ModuleName.to_string n) i
-  | `LParameter (n, i) -> Format.fprintf ppf "%s/%d" (ModuleName.to_string n) i
-  | `LResult (x, _) -> Format.fprintf ppf "result(%a)" fmt_aux (x :> any)
-  | `LModuleType (n, i) ->
-      Format.fprintf ppf "%s/%d" (ModuleTypeName.to_string n) i
-  | `LType (n, i) -> Format.fprintf ppf "%s/%d" (TypeName.to_string n) i
-  | `LConstructor (n, i) ->
-      Format.fprintf ppf "%s/%d" (ConstructorName.to_string n) i
-  | `LField (n, i) -> Format.fprintf ppf "%s/%d" (FieldName.to_string n) i
-  | `LExtension (n, i) ->
-      Format.fprintf ppf "%s/%d" (ExtensionName.to_string n) i
-  | `LException (n, i) ->
-      Format.fprintf ppf "%s/%d" (ExceptionName.to_string n) i
-  | `LValue (n, i) -> Format.fprintf ppf "%s/%d" (ValueName.to_string n) i
-  | `LClass (n, i) -> Format.fprintf ppf "%s/%d" (ClassName.to_string n) i
-  | `LClassType (n, i) ->
-      Format.fprintf ppf "%s/%d" (ClassTypeName.to_string n) i
-  | `LMethod (n, i) -> Format.fprintf ppf "%s/%d" (MethodName.to_string n) i
-  | `LInstanceVariable (n, i) ->
-      Format.fprintf ppf "%s/%d" (InstanceVariableName.to_string n) i
-  | `LLabel (n, i) -> Format.fprintf ppf "%s/%d" (LabelName.to_string n) i
-  | `LPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
-  | `LLeafPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
+  | `LRoot (n, i) -> (ModuleName.to_string n, i)
+  | `LModule (n, i) -> (ModuleName.to_string n, i)
+  | `LParameter (n, i) -> (ModuleName.to_string n, i)
+  | `LResult (x, _) -> fmt_aux (x :> any)
+  | `LModuleType (n, i) -> (ModuleTypeName.to_string n, i)
+  | `LType (n, i) -> (TypeName.to_string n, i)
+  | `LConstructor (n, i) -> (ConstructorName.to_string n, i)
+  | `LField (n, i) -> (FieldName.to_string n, i)
+  | `LExtension (n, i) -> (ExtensionName.to_string n, i)
+  | `LException (n, i) -> (ExceptionName.to_string n, i)
+  | `LValue (n, i) -> (ValueName.to_string n, i)
+  | `LClass (n, i) -> (ClassName.to_string n, i)
+  | `LClassType (n, i) -> (ClassTypeName.to_string n, i)
+  | `LMethod (n, i) -> (MethodName.to_string n, i)
+  | `LInstanceVariable (n, i) -> (InstanceVariableName.to_string n, i)
+  | `LLabel (n, i) -> (LabelName.to_string n, i)
+  | `LPage (n, i) -> (PageName.to_string n, i)
+  | `LLeafPage (n, i) -> (PageName.to_string n, i)
 
 let fmt : Format.formatter -> [< any ] -> unit =
- fun ppf id -> fmt_aux ppf (id :> any)
+ fun ppf id ->
+  let n, i = fmt_aux (id :> any) in
+  Format.fprintf ppf "%s/%d" n i
+
+let short_fmt : Format.formatter -> [< any ] -> unit =
+ fun ppf id ->
+  let n, _i = fmt_aux (id :> any) in
+  Format.fprintf ppf "%s" n
 
 let rename (s, _) = (s, fresh_int ())

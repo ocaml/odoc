@@ -132,17 +132,18 @@ module Tools_error = struct
 
   let rec pp : Format.formatter -> any -> unit =
    fun fmt err ->
+    let open Component.Fmt in
+    let c = default in
     match err with
     | `OpaqueModule -> Format.fprintf fmt "OpaqueModule"
     | `OpaqueClass -> Format.fprintf fmt "Class is abstract"
     | `UnresolvedForwardPath -> Format.fprintf fmt "Unresolved forward path"
     | `UnresolvedPath (`Module (p, e)) ->
-        Format.fprintf fmt "Unresolved module path %a (%a)"
-          Component.Fmt.module_path p pp
+        Format.fprintf fmt "Unresolved module path %a (%a)" (module_path c) p pp
           (e :> any)
     | `UnresolvedPath (`ModuleType (p, e)) ->
         Format.fprintf fmt "Unresolved module type path %a (%a)"
-          Component.Fmt.module_type_path p pp
+          (module_type_path c) p pp
           (e :> any)
     | `LocalMT (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Local (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
@@ -151,29 +152,27 @@ module Tools_error = struct
         Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Find_failure -> Format.fprintf fmt "Find failure"
     | `Lookup_failure m ->
-        Format.fprintf fmt "Lookup failure (module): %a"
-          Component.Fmt.model_identifier
+        Format.fprintf fmt "Lookup failure (module): %a" (model_identifier c)
           (m :> Odoc_model.Paths.Identifier.t)
     | `Lookup_failure_root r ->
         Format.fprintf fmt "Lookup failure (root module): %s" r
     | `Lookup_failureMT m ->
         Format.fprintf fmt "Lookup failure (module type): %a"
-          Component.Fmt.model_identifier
+          (model_identifier c)
           (m :> Odoc_model.Paths.Identifier.t)
     | `Lookup_failureT m ->
-        Format.fprintf fmt "Lookup failure (type): %a"
-          Component.Fmt.model_identifier
+        Format.fprintf fmt "Lookup failure (type): %a" (model_identifier c)
           (m :> Odoc_model.Paths.Identifier.t)
     | `Lookup_failureV m ->
-        Format.fprintf fmt "Lookup failure (value): %a"
-          Component.Fmt.model_identifier
+        Format.fprintf fmt "Lookup failure (value): %a" (model_identifier c)
           (m :> Odoc_model.Paths.Identifier.t)
     | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"
     | `Class_replaced -> Format.fprintf fmt "Class replaced"
     | `Parent p -> pp fmt (p :> any)
     | `UnexpandedTypeOf t ->
         Format.fprintf fmt "Unexpanded `module type of` expression: %a"
-          Component.Fmt.module_type_type_of_desc t
+          (module_type_type_of_desc c)
+          t
     | `Parent_sig e -> Format.fprintf fmt "Parent_sig: %a" pp (e :> any)
     | `Parent_module_type e ->
         Format.fprintf fmt "Parent_module_type: %a" pp (e :> any)
@@ -333,7 +332,8 @@ let report ~(what : what) ?tools_error action =
       Lookup_failures.report_internal "Failed to %s %s %a%a" action subject pp_a
         a pp_tools_error tools_error
     in
-    let fmt_id fmt id = model_identifier fmt (id :> Paths.Identifier.t) in
+    let c = default in
+    let fmt_id fmt id = model_identifier c fmt (id :> Paths.Identifier.t) in
     match what with
     | `Functor_parameter id -> r "functor parameter" fmt_id id
     | `Value id -> r "value" fmt_id id
@@ -341,27 +341,27 @@ let report ~(what : what) ?tools_error action =
     | `Class_type id -> r "class type" fmt_id id
     | `Module id -> r "module" fmt_id id
     | `Module_type id -> r "module type" fmt_id id
-    | `Module_path path -> r "module path" module_path path
-    | `Module_type_path path -> r "module type path" module_type_path path
-    | `Module_type_U expr -> r "module type expr" u_module_type_expr expr
-    | `Include decl -> r "include" include_decl decl
+    | `Module_path path -> r "module path" (module_path c) path
+    | `Module_type_path path -> r "module type path" (module_type_path c) path
+    | `Module_type_U expr -> r "module type expr" (u_module_type_expr c) expr
+    | `Include decl -> r "include" (include_decl c) decl
     | `Package path ->
-        r "module package" module_type_path (path :> Cpath.module_type)
-    | `Type cfrag -> r "type" type_fragment cfrag
-    | `Type_path path -> r "type" type_path path
-    | `Value_path path -> r "value" value_path path
-    | `Class_type_path path -> r "class_type" class_type_path path
-    | `With_module frag -> r "module substitution" module_fragment frag
+        r "module package" (module_type_path c) (path :> Cpath.module_type)
+    | `Type cfrag -> r "type" (type_fragment c) cfrag
+    | `Type_path path -> r "type" (type_path c) path
+    | `Value_path path -> r "value" (value_path c) path
+    | `Class_type_path path -> r "class_type" (class_type_path c) path
+    | `With_module frag -> r "module substitution" (module_fragment c) frag
     | `With_module_type frag ->
-        r "module type substitution" module_type_fragment frag
-    | `With_type frag -> r "type substitution" type_fragment frag
+        r "module type substitution" (module_type_fragment c) frag
+    | `With_type frag -> r "type substitution" (type_fragment c) frag
     | `Module_type_expr cexpr ->
-        r "module type expression" module_type_expr cexpr
+        r "module type expression" (module_type_expr c) cexpr
     | `Module_type_u_expr cexpr ->
-        r "module type u expression" u_module_type_expr cexpr
+        r "module type u expression" (u_module_type_expr c) cexpr
     | `Child_module rf -> r "child module" Astring.String.pp rf
     | `Child_page rf -> r "child page" Astring.String.pp rf
-    | `Reference ref -> r "reference" model_reference ref
+    | `Reference ref -> r "reference" (model_reference c) ref
   in
   match kind_of_error ~what tools_error with
   | Some (`Root name) -> Lookup_failures.report_root ~name

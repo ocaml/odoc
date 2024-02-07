@@ -6,10 +6,11 @@ let simple_strengthening input =
     let cp = Component.Of_Lang.(resolved_module_path (empty ()) p) in
     let c' = Strengthen.signature (`Resolved cp) c in
     let open Format in
+    let cfg = Component.Fmt.default in
     fprintf std_formatter "BEFORE\n======\n%!";
-    fprintf std_formatter "%a\n%!" Component.Fmt.signature c;
+    fprintf std_formatter "%a\n%!" (Component.Fmt.signature cfg) c;
     fprintf std_formatter "AFTER \n======\n%!";
-    fprintf std_formatter "%a\n%!" Component.Fmt.signature c'
+    fprintf std_formatter "%a\n%!" (Component.Fmt.signature cfg) c'
 ```
 
 Simple strengthening
@@ -26,11 +27,9 @@ BEFORE
 ======
 type t/1
 type u/0 = local(t/1,false)
- (removed=[])
 AFTER
 ======
-type t/2 = r((root Root)).t
+type t/2 = resolved(root(Root)).t
 type u/3 = local(t/2,false)
- (removed=[])
 - : unit = ()
 ```
