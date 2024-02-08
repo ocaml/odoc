@@ -12,6 +12,7 @@
 
 - Updated colors for code fragments (@EmileTrotignon, #1023)
 - Fixed complexity of looking up `.odoc` files (@panglesd, #1075)
+- Overhaul of module-type-of expansions and shadowing code (@jonludlam, #1081)
 
 # Fixed
 
