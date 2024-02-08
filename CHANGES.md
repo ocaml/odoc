@@ -21,13 +21,11 @@
   A newline followed by any whitespaces is normalized as one space character.
 - Show all variant constructors, even if they contain hidden types
   (@jonludlam, #1105)
-
-### Changed
-
 - `Odoc_html_frontend` does not use tyxml, for smaller javascript sizes.
   (@EmileTrotignon, #1072)
+- Overhaul of module-type-of expansions and shadowing code (@jonludlam, #1081)
 
-# Fixed
+### Fixed
 
 - Revert to outputing a file (without content) when rendering a hidden
   compilation unit. This fixes cases where the dune rules would
