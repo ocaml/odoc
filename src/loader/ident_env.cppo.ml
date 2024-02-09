@@ -15,7 +15,6 @@
  *)
 
 open Odoc_model
-open Predefined
 open Names
 
 module Id = Paths.Identifier
@@ -83,9 +82,6 @@ type items =
   [ item
   | `Include of item list
 ]
-
-let builtin_idents = List.map snd Predef.builtin_idents
-
 
 let rec extract_signature_type_items items =
   let open Compat in
@@ -659,22 +655,17 @@ let find_extension_identifier env id =
 let find_value_identifier env id =
   Ident.find_same id env.values
 
+(** Lookup a type in the environment. If it isn't found, it's assumed to be a
+    core type. *)
 let find_type env id =
-  try
-    (Ident.find_same id env.types :> Id.Path.Type.t)
-  with Not_found ->
-    try
-      (Ident.find_same id env.classes :> Id.Path.Type.t)
-    with Not_found ->
-      try
-        (Ident.find_same id env.class_types :> Id.Path.Type.t)
+  try (Ident.find_same id env.types :> Id.Path.Type.t)
+  with Not_found -> (
+    try (Ident.find_same id env.classes :> Id.Path.Type.t)
+    with Not_found -> (
+      try (Ident.find_same id env.class_types :> Id.Path.Type.t)
       with Not_found ->
-        if List.mem id builtin_idents then
-            match core_type_identifier (Ident.name id) with
-            | Some id -> (id :> type_ident)
-            | None -> raise Not_found
-        else raise Not_found
-                
+        (Paths.Identifier.Mk.core_type (Ident.name id) :> type_ident)))
+
 let find_class_type env id =
   try
     (Ident.find_same id env.classes :> Id.Path.ClassType.t)
@@ -704,9 +695,7 @@ module Path = struct
     with Not_found -> assert false
 
   let read_type_ident env id =
-    try
-      `Identifier (find_type env id, false)
-    with Not_found -> assert false
+    `Identifier (find_type env id, false)
 
   let read_value_ident env id : Paths.Path.Value.t =
     `Identifier (find_value_identifier env id, false)
