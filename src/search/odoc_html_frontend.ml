@@ -102,7 +102,7 @@ let of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
     | None -> []
     | Some "" -> []
     | Some prefix_name ->
-        [ span ~a:[ a_class [ "prefix-name" ] ] [ txt (prefix_name ^ ".") ] ]
+        [ span ~a:[ a_class [ "prefix-name" ] ] [ txt prefix_name ] ]
   and name =
     match name with
     | Some name -> [ span ~a:[ a_class [ "entry-name" ] ] [ txt name ] ]
