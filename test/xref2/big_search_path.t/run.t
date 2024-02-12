@@ -1,13 +1,17 @@
 We create a lot of directories
 
-  $ for ((i = 1; i <= 1000; i++)); do
-  >   mkdir -p d$i
+  $ i=1
+  > while [ $i -le 1000 ]; do
+  >     mkdir -p d$i
+  >     i=$((i + 1))
   > done
 
   $ echo "{0 Heading}" > p.mld
 
-  $ for ((i = 1; i <= 1000; i++)); do
-  >   echo "{!Module$i}" >> p.mld
+  $ i=1
+  > while [ $i -le 1000 ]; do
+  >     echo "{!Module$i}" >> p.mld
+  >     i=$((i + 1))
   > done
 
   $ odoc compile p.mld
@@ -19,8 +23,10 @@ It should not take more than 0.1 seconds to link p!
 Now let's investigate another scenario: a single directory with many unrelated files.
 
   $ mkdir -p one_dir
-  $ for ((i = 1; i <= 10000; i++)); do
-  >   touch one_dir/file_$i
+  $ i=1
+  > while [ $i -le 1000 ]; do
+  >     touch one_dir/file_$i
+  >     i=$((i + 1))
   > done
 
 Should not take long to link:
