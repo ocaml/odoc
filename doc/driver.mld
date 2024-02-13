@@ -737,19 +737,19 @@ let generate_all odocl_files =
 ]}
 
 
-Finally, we generate an index of all values, types, ... This index is meant to be consumed by search engines, to create their own index. It is in json format. Generating the index is done via [odoc compile-index], which create a json file.
+Finally, we generate an index of all values, types, etc. This index is meant to be consumed by search engines, to create their own index. It is in json format. Generating the index is done via [odoc compile-index], which creates a json file.
 
 Some more details about the json format:
 
 {ul
-  {- The whole file is a json array,}
-  {- each entry of the array correspond to an item to search. An entry is a json object, with the following fields:
+  {- The whole file is a json array.}
+  {- each entry of the array corresponds to an item to search. An entry is a json object, with the following fields:
      {ul
        {- ["id"], which is a string. It corresponds to the id of the entry, for instance: ["Stdlib.List.map"].}
        {- ["doc"], which is a string. It corresponds to a "searchable" version of the docstring: one which is stripped from any html or specific markup. This is to avoid having too many results when searching ["class"], for instance.}
        {- ["kind"] is a json object. It contains the fields:
           {ul
-            {- ["kind"], a string telling the kind of the entry (type, value, module, standalone comment...)}
+            {- ["kind"], a string encoding the kind of the entry (type, value, module, standalone comment, etc.)}
             {- any information that is specific to it (for instance, a type has kind ["TypeDecl"] and also contains the constraints, manifest, and whether the type is private or not). For a comprehensive description of what information is available in this field, please refer to the source file: src/search/json_index/json_search.ml}}}
        {- ["display"], which is a json object. It contains two fields:
           {ul
