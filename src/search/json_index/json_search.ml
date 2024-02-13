@@ -169,25 +169,23 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
   in
   let occurrences =
     match occurrences with
-    | Some occ ->
-        `Object
-          [
-            ("direct", `Float (float_of_int occ.Odoc_occurrences.Table.direct));
-            ("indirect", `Float (float_of_int occ.indirect));
-          ]
-    | None -> `Null
+    | Some (`Direct direct, `Indirect indirect) ->
+        [
+          ( "occurrences",
+            `Object
+              [
+                ("direct", `Float (float_of_int direct));
+                ("indirect", `Float (float_of_int indirect));
+              ] );
+        ]
+    | None -> []
   in
   match Json_display.of_entry entry html with
   | Result.Ok display ->
       Result.Ok
         (`Object
-          [
-            ("id", j_id);
-            ("doc", doc);
-            ("kind", kind);
-            ("display", display);
-            ("occurrences", occurrences);
-          ])
+          ([ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ]
+          @ occurrences))
   | Error _ as e -> e
 
 let output_json ppf first entries =
@@ -212,7 +210,13 @@ let unit ?occurrences ppf u =
   let get_occ id =
     match occurrences with
     | None -> None
-    | Some occurrences -> Odoc_occurrences.Table.get occurrences id
+    | Some occurrences -> (
+        (* We don't want to include the [sub] field of occurrence tables. We use
+           a "polymorphic record" to avoid defining a type, but still get named
+           fields! *)
+        match Odoc_occurrences.Table.get occurrences id with
+        | Some x -> Some (`Direct x.direct, `Indirect x.indirect)
+        | None -> Some (`Direct 0, `Indirect 0))
   in
   let f first i =
     let entries = Entry.entries_of_item i in
