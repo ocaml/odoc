@@ -351,9 +351,9 @@ module Source_tree = struct
 
   let info ~docs =
     let doc =
-      "Compile a source tree into a page. Expect a text file containing the \
-       relative paths to every source files in the source tree. The paths \
-       should be the same as the one passed to $(i,odoc compile \
+      "(EXPERIMENTAL) Compile a source tree into a page. Expect a text file \
+       containing the relative paths to every source files in the source tree. \
+       The paths should be the same as the one passed to $(i,odoc compile \
        --source-name)."
     in
     Term.info "source-tree" ~docs ~doc
@@ -449,8 +449,9 @@ module Compile_src = struct
 
   let info ~docs =
     let doc =
-      "Compile a $(i,NAME.cmt) file to a $(i,src-NAME.odoc) containing the \
-       implementation information needed by odoc for the compilation unit."
+      "(EXPERIMENTAL) Compile a $(i,NAME.cmt) file to a $(i,src-NAME.odoc) \
+       containing the implementation information needed by odoc for the \
+       compilation unit."
     in
     Term.info "compile-src" ~docs ~doc
 end
@@ -671,8 +672,8 @@ end = struct
 
     let source_file =
       let doc =
-        "Source code for the compilation unit. It must have been compiled with \
-         --source-parent passed."
+        "(EXPERIMENTAL) Source code for the compilation unit. It must have \
+         been compiled with --source-parent passed."
       in
       Arg.(
         value
@@ -681,9 +682,9 @@ end = struct
 
     let source_root =
       let doc =
-        "Source code root for the compilation unit. Used to find the source \
-         file from the value of --source-name it was compiled with. \
-         Incompatible with --source-file."
+        "(EXPERIMENTAL) Source code root for the compilation unit. Used to \
+         find the source file from the value of --source-name it was compiled \
+         with. Incompatible with --source-file."
       in
       Arg.(
         value
