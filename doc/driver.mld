@@ -777,7 +777,7 @@ Some more details about the json format:
             {- ["html"], also a string. It is the html odoc uses to display the entry in the search results.}}}
        {- Additionally, the ["occurrences"] field exists if and only if the [--occurrences] flag was given to the [odoc compile-index] command. When it exists, it contains a json object, with two fields:
           {ul
-            {- ["direct"], an integer. It is the number of direct use of the entry. For instance, [open M] and [Make(M)] contain direct uses of [M], while [1 + M.v] contains an indirect use of [M] and a direct use of [M.v].}
+            {- ["direct"], an integer. It is the number of direct uses of the entry. For instance, [open M] and [Make(M)] contain direct uses of [M], while [1 + M.v] contains an indirect use of [M] and a direct use of [M.v].}
             {- ["indirect"], an integer containing the number of indirect uses of the entry.}}}}}}
 
 Search engines written in OCaml can also call the [Odoc_model.Fold.unit] and  [Odoc_model.Fold.page] function, in conjunction with [Odoc_search.Entry.entry_of_item] in order to get an OCaml value of each element to be indexed.
