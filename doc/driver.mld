@@ -783,7 +783,7 @@ Some more details about the json format:
 Search engines written in OCaml can also call the [Odoc_model.Fold.unit] and  [Odoc_model.Fold.page] function, in conjunction with [Odoc_search.Entry.entry_of_item] in order to get an OCaml value of each element to be indexed.
 
 {[
-let index_generate ?(ignore_output = false) () =
+let index_generate ?(ignore_output = false) occurrence_file =
   let open Cmd in
   let files =
     OS.Dir.contents (Fpath.v ".")
@@ -796,7 +796,7 @@ let index_generate ?(ignore_output = false) () =
   let index_map = Fpath.v "index.map" in
   let () = Bos.OS.File.write_lines index_map files |> get_ok in
   let cmd =
-    odoc % "compile-index" % "-o" % "html/index.json" % "--file-list"
+    odoc % "compile-index" % "-o" % "html/index.json" % "--occurrences" % p occurrence_file % "--file-list"
     % p index_map
   in
   let lines = run cmd in
@@ -855,7 +855,9 @@ The following code executes all of the above, and we're done!
 {[
 let compiled = compile_all () in
 let linked = link_all compiled in
-let () = index_generate () in
+let occurrence_file = Fpath.v "occurrences-odoc_and_deps.odoc" in
+let _ = count_occurrences occurrence_file in
+let () = index_generate occurrence_file in
 let _ = js_index () in
 let _ = count_occurrences (Fpath.v "occurrences-from-odoc.odoc") in
 generate_all linked
