@@ -76,7 +76,7 @@ let rec get t id =
   | `SourcePage _ | `Page _ | `LeafPage _ | `CoreType _ | `SourceLocation _
   | `CoreException _ | `Label _ | `SourceLocationMod _ | `Result _
   | `AssetFile _ | `SourceDir _ | `SourceLocationInternal _ ->
-      assert false
+      None
 
 let rec iter f tbl =
   H.iter
