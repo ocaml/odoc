@@ -146,7 +146,7 @@ and entries_of_doc id d =
   | `Math_block _ -> [ entry ~id ~doc:[ d ] ~kind:(Doc MathBlock) ]
   | `Table _ -> []
 
-let entries_of_item id (x : Odoc_model.Fold.item) =
+let entries_of_item (x : Odoc_model.Fold.item) =
   match x with
   | CompilationUnit u -> (
       match u.content with
@@ -219,5 +219,5 @@ let entries_of_item id (x : Odoc_model.Fold.item) =
                (entry_of_extension_constructor te.type_path te.type_params)
                te.constructors)
   | ModuleType mt -> [ entry ~id:mt.id ~doc:mt.doc ~kind:ModuleType ]
-  | Doc `Stop -> []
-  | Doc (`Docs d) -> entries_of_docs id d
+  | Doc (_, `Stop) -> []
+  | Doc (id, `Docs d) -> entries_of_docs id d

@@ -17,23 +17,54 @@ type item =
   | Class of Class.t
   | Extension of Extension.t
   | ModuleType of ModuleType.t
-  | Doc of Comment.docs_or_stop
+  | Doc of Paths.Identifier.LabelParent.t * Comment.docs_or_stop
 
-(** Bellow are the folding functions. For items that may contain
+(** Below are the folding functions. For items that may contain
     others, such as [signature], it folds recursively on the
-    sub-items. It does not recurse into internal items. *)
+    sub-items. It does not recurse into internal items.
+
+ The LabelParent identifier is used to give an id to the doc entries. *)
 
 val unit : f:('a -> item -> 'a) -> 'a -> Compilation_unit.t -> 'a
 val page : f:('a -> item -> 'a) -> 'a -> Page.t -> 'a
 
-val signature : f:('a -> item -> 'a) -> 'a -> Signature.t -> 'a
-val signature_item : f:('a -> item -> 'a) -> 'a -> Signature.item -> 'a
-val docs : f:('a -> item -> 'a) -> 'a -> Comment.docs_or_stop -> 'a
-val include_ : f:('a -> item -> 'a) -> 'a -> Include.t -> 'a
+val signature :
+  f:('a -> item -> 'a) ->
+  Paths.Identifier.LabelParent.t ->
+  'a ->
+  Signature.t ->
+  'a
+val signature_item :
+  f:('a -> item -> 'a) ->
+  Paths.Identifier.LabelParent.t ->
+  'a ->
+  Signature.item ->
+  'a
+val docs :
+  f:('a -> item -> 'a) ->
+  Paths.Identifier.LabelParent.t ->
+  'a ->
+  Comment.docs_or_stop ->
+  'a
+val include_ :
+  f:('a -> item -> 'a) ->
+  Paths.Identifier.LabelParent.t ->
+  'a ->
+  Include.t ->
+  'a
 val class_type : f:('a -> item -> 'a) -> 'a -> ClassType.t -> 'a
-val class_signature : f:('a -> item -> 'a) -> 'a -> ClassSignature.t -> 'a
+val class_signature :
+  f:('a -> item -> 'a) ->
+  Paths.Identifier.LabelParent.t ->
+  'a ->
+  ClassSignature.t ->
+  'a
 val class_signature_item :
-  f:('a -> item -> 'a) -> 'a -> ClassSignature.item -> 'a
+  f:('a -> item -> 'a) ->
+  Paths.Identifier.LabelParent.t ->
+  'a ->
+  ClassSignature.item ->
+  'a
 val class_ : f:('a -> item -> 'a) -> 'a -> Class.t -> 'a
 val exception_ : f:('a -> item -> 'a) -> 'a -> Exception.t -> 'a
 val type_extension : f:('a -> item -> 'a) -> 'a -> Extension.t -> 'a
@@ -42,6 +73,15 @@ val module_ : f:('a -> item -> 'a) -> 'a -> Module.t -> 'a
 val type_decl : f:('a -> item -> 'a) -> 'a -> TypeDecl.t -> 'a
 val module_type : f:('a -> item -> 'a) -> 'a -> ModuleType.t -> 'a
 val simple_expansion :
-  f:('a -> item -> 'a) -> 'a -> ModuleType.simple_expansion -> 'a
-val module_type_expr : f:('a -> item -> 'a) -> 'a -> ModuleType.expr -> 'a
+  f:('a -> item -> 'a) ->
+  Paths.Identifier.LabelParent.t ->
+  'a ->
+  ModuleType.simple_expansion ->
+  'a
+val module_type_expr :
+  f:('a -> item -> 'a) ->
+  Paths.Identifier.LabelParent.t ->
+  'a ->
+  ModuleType.expr ->
+  'a
 val functor_parameter : f:('a -> item -> 'a) -> 'a -> FunctorParameter.t -> 'a
