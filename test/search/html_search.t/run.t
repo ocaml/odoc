@@ -270,6 +270,7 @@ Passing a file which is not a correctly marshalled one:
   Warning: Error while unmarshalling "my_file": End_of_file
   
 
+
 Passing no file:
 
   $ odoc compile-index
