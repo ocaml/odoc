@@ -31,13 +31,17 @@ type t = { content : content; warnings : Odoc_model.Error.t list }
 let magic = "odoc-%%VERSION%%"
 
 (** Exceptions while saving are allowed to leak. *)
-let save_unit file (root : Root.t) (t : t) =
+let save_ file f =
   Fs.Directory.mkdir_p (Fs.File.dirname file);
   let oc = open_out_bin (Fs.File.to_string file) in
   output_string oc magic;
-  Marshal.to_channel oc root [];
-  Marshal.to_channel oc t [];
+  f oc;
   close_out oc
+
+let save_unit file (root : Root.t) (t : t) =
+  save_ file (fun oc ->
+      Marshal.to_channel oc root [];
+      Marshal.to_channel oc t [])
 
 let save_page file ~warnings page =
   let dir = Fs.File.dirname file in
@@ -81,9 +85,7 @@ let load_ file f =
   let res =
     try
       let actual_magic = really_input_string ic (String.length magic) in
-      if actual_magic = magic then
-        let root = Marshal.from_channel ic in
-        f ic root
+      if actual_magic = magic then f ic
       else
         let msg =
           Printf.sprintf "%s: invalid magic number %S, expected %S\n%!" file
@@ -100,7 +102,17 @@ let load_ file f =
   close_in ic;
   res
 
-let load file = load_ file (fun ic _ -> Ok (Marshal.from_channel ic))
+let load file =
+  load_ file (fun ic ->
+      let _root = Marshal.from_channel ic in
+      Ok (Marshal.from_channel ic))
 
 (** The root is saved separately in the files to support this function. *)
-let load_root file = load_ file (fun _ root -> Ok root)
+let load_root file =
+  load_ file (fun ic ->
+      let root = Marshal.from_channel ic in
+      Ok root)
+
+let save_index dst idx = save_ dst (fun oc -> Marshal.to_channel oc idx [])
+
+let load_index file = load_ file (fun ic -> Ok (Marshal.from_channel ic))

@@ -48,33 +48,28 @@ we will generate.
   $ odoc html-generate --search-uri fuse.js.js --search-uri index.js -o html page-page.odocl
   $ odoc support-files -o html
 
-We now focus on how to generate the index.js file. There are mainly two ways: by
-using odoc as a library, or by using the the `compile-index` command. This
-command generates a json index containing all .odocl given as input, to be
-consumed later by a search engine. If -o is not provided, the file is saved as
-index.json.
-Odocl files can be given either in a list (using --file-list,
-passing a file with the list of line-separated files), or by passing directly
-the name of the files.
+We now focus on how to generate the index.js file.
+
+For this, we compute an index of all the values contained in a given list of
+odoc files, using the `compile-index` command.
+
+This command generates has two output format: a json output for consumption by
+external search engine, and an `odoc` specific extension.  The odoc file is
+meant to be consumed either by search engine written in OCaml, which would
+depend on `odoc` as a library, or by `odoc` itself to build a global index
+incrementally: the `compile-index` command can take indexes as input!
+
+If -o is not provided, the file is saved as index.json, or index-index.odoc if
+the --marshall flag is passed.  Odocl files can be given either in a list (using
+--file-list, passing a file with the list of line-separated files), or by
+passing directly the name of the files.
 
   $ printf "main.odocl\npage-page.odocl\nj.odocl\n" > index_map
-  $ odoc compile-index -o index1.json --file-list index_map
+  $ odoc compile-index --json -o index.json --include-rec .
 
-Or equivalently:
+  $ odoc compile-index -o index-main.odoc-index --include-rec .
 
-  $ printf "main.odocl\npage-page.odocl\n" > index_map
-  $ odoc compile-index -o index2.json --file-list index_map j.odocl
-
-Or equivalently:
-
-  $ odoc compile-index main.odocl page-page.odocl j.odocl
-
-Let's check that the previous commands are indeed independent:
-
-  $ diff index.json index1.json
-  $ diff index.json index2.json
-
-The index file contains a json array, each element of the array corresponding to
+The json index file contains a json array, each element of the array corresponding to
 a search entry.
 An index entry contains:
 - an ID,
@@ -247,32 +242,39 @@ Testing the warnings/errors for the `compile-index` command:
 
 Passing an inexistent file:
 
-  $ printf "inexistent.odocl\n" > index_map
-  $ odoc compile-index --file-list index_map
-  File "inexistent.odocl":
-  Warning: File does not exist
+  $ odoc compile-index --include-rec babar
+  $ odoc compile-index --file-list babar
+  odoc: option '--file-list': no 'babar' file or directory
+  Usage: odoc compile-index [--file-list=FILE] [--include-rec=DIR] [--json] [OPTION]… [FILE]…
+  Try 'odoc compile-index --help' or 'odoc --help' for more information.
+  [2]
 
-Passing an odoc file which is neither a compilation unit nor a page:
+Passing an empty folder is allowed:
 
-  $ odoc compile -c srctree-source page.mld
-  $ printf "a.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page -o srctree-source.odoc source_tree.map
+  $ mkdir foo
+  $ odoc compile-index --include-rec foo
 
-  $ odoc compile-index srctree-source.odoc
-  File "srctree-source.odoc":
-  Warning: Only pages and unit are allowed as input when generating an index
+Wrong file extensions:
+
+  $ odoc compile-index -o index.odoc
+  ERROR: When generating a binary index, the output must have a .odoc-index file extension
+  [1]
+  $ odoc compile-index -o index.json
+  ERROR: When generating a binary index, the output must have a .odoc-index file extension
+  [1]
+  $ odoc compile-index  --json  -o index.odoc-index
+  ERROR: When generating a json index, the output must have a .json file extension
+  [1]
 
 Passing a file which is not a correctly marshalled one:
 
-  $ echo hello > my_file
-  $ odoc compile-index my_file
-  File "my_file":
-  Warning: Error while unmarshalling "my_file": End_of_file
+  $ echo hello > my_file.odocl
+  $ odoc compile-index --include-rec .
+  File "./my_file.odocl":
+  Warning: Error while unmarshalling "./my_file.odocl": End_of_file
   
 
 
-Passing no file:
+Passing no file is allowed, generating an empty index:
 
   $ odoc compile-index
-  ERROR: At least one of --file-list or an .odocl file must be passed to odoc compile-index
-  [1]

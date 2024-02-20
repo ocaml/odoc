@@ -44,6 +44,11 @@ module Directory : sig
 
   val to_fpath : t -> Fpath.t
 
+  val fold_files_rec : ?ext:string -> ('a -> file -> 'a) -> 'a -> t -> 'a
+  (** [fold_files_rec_result ~ext f acc d] recursively folds [f] over the files
+      with extension matching [ext] (defaults to [""]) contained in [d]
+      and its sub directories. *)
+
   val fold_files_rec_result :
     ?ext:string ->
     ('a -> file -> ('a, msg) result) ->

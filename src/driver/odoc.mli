@@ -25,6 +25,14 @@ val link :
   unit ->
   unit
 
+val compile_index :
+  ?ignore_output:bool ->
+  dst:Fpath.t ->
+  json:bool ->
+  include_rec:Fpath.set ->
+  unit ->
+  unit
+
 val html_generate :
   output_dir:string ->
   ?ignore_output:bool ->
@@ -36,11 +44,6 @@ val html_generate :
   unit
 val support_files : Fpath.t -> string list
 
-val compile_output : string list ref
-val compile_src_output : string list ref
-val link_output : string list ref
-val generate_output : string list ref
-val source_tree_output : string list ref
 val count_occurrences : Fpath.t -> string list
 val source_tree :
   ?ignore_output:bool -> parent:string -> output:Fpath.t -> Fpath.t -> unit
