@@ -214,3 +214,13 @@ let page ppf (page : Odoc_model.Lang.Page.t) =
   in
   let _first = Odoc_model.Fold.page ~f true page in
   ()
+
+let index ppf (index : Entry.t Odoc_model.Paths.Identifier.Hashtbl.Any.t) =
+  let _first =
+    Odoc_model.Paths.Identifier.Hashtbl.Any.fold
+      (fun _id entry first ->
+        let entry = (entry, Html.of_entry entry) in
+        output_json ppf first [ entry ])
+      index true
+  in
+  ()

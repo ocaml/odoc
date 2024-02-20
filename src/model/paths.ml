@@ -643,6 +643,10 @@ module Identifier = struct
       mk_parent LocalName.to_string "sli" (fun (p, n) ->
           `SourceLocationInternal (p, n))
   end
+
+  module Hashtbl = struct
+    module Any = Hashtbl.Make (Any)
+  end
 end
 
 module Path = struct

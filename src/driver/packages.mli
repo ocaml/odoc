@@ -36,7 +36,6 @@ type modulety = {
   m_intf : intf;
   m_impl : impl option;
   m_hidden : bool;
-  m_package : string;
 }
 
 (** {1 Standalone pages units} *)
