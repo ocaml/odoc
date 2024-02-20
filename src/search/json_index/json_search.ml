@@ -193,42 +193,20 @@ let output_json ppf first entries =
     first entries
 
 let unit ppf u =
-  let f (first, id) i =
-    let entries = Entry.entries_of_item id i in
+  let f first i =
+    let entries = Entry.entries_of_item i in
     let entries =
       List.map (fun entry -> (entry, Html.of_entry entry)) entries
     in
-    let id =
-      match i with
-      | CompilationUnit u -> (u.id :> Odoc_model.Paths.Identifier.t)
-      | TypeDecl _ -> id
-      | Module m -> (m.id :> Odoc_model.Paths.Identifier.t)
-      | Value _ -> id
-      | Exception _ -> id
-      | ClassType ct -> (ct.id :> Odoc_model.Paths.Identifier.t)
-      | Method _ -> id
-      | Class c -> (c.id :> Odoc_model.Paths.Identifier.t)
-      | Extension _ -> id
-      | ModuleType mt -> (mt.id :> Odoc_model.Paths.Identifier.t)
-      | Doc _ -> id
-    in
     let first = output_json ppf first entries in
-    (first, id)
+    first
   in
-  let _first =
-    Odoc_model.Fold.unit ~f
-      ( true,
-        (u.Odoc_model.Lang.Compilation_unit.id :> Odoc_model.Paths.Identifier.t)
-      )
-      u
-  in
+  let _first = Odoc_model.Fold.unit ~f true u in
   ()
 
 let page ppf (page : Odoc_model.Lang.Page.t) =
   let f first i =
-    let entries =
-      Entry.entries_of_item (page.name :> Odoc_model.Paths.Identifier.t) i
-    in
+    let entries = Entry.entries_of_item i in
     let entries =
       List.map (fun entry -> (entry, Html.of_entry entry)) entries
     in
