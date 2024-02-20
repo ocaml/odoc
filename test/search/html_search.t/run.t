@@ -48,14 +48,21 @@ we will generate.
   $ odoc html-generate --search-uri fuse.js.js --search-uri index.js -o html page-page.odocl
   $ odoc support-files -o html
 
-We now focus on how to generate the index.js file. There are mainly two ways: by
-using odoc as a library, or by using the the `compile-index` command. This
-command generates a json index containing all .odocl given as input, to be
-consumed later by a search engine. If -o is not provided, the file is saved as
-index.json.
-Odocl files can be given either in a list (using --file-list,
-passing a file with the list of line-separated files), or by passing directly
-the name of the files.
+We now focus on how to generate the index.js file.
+
+For this, we compute an index of all the values contained in a given list of
+odoc files, using the `compile-index` command.
+
+This command generates has two output format: a json output for consumption by
+external search engine, and an `odoc` specific extension.  The odoc file is
+meant to be consumed either by search engine written in OCaml, which would
+depend on `odoc` as a library, or by `odoc` itself to build a global index
+incrementally: the `compile-index` command can take indexes as input!
+
+If -o is not provided, the file is saved as index.json, or index-index.odoc if
+the --marshall flag is passed.  Odocl files can be given either in a list (using
+--file-list, passing a file with the list of line-separated files), or by
+passing directly the name of the files.
 
   $ printf "main.odocl\npage-page.odocl\nj.odocl\n" > index_map
   $ odoc compile-index -o index1.json --file-list index_map
@@ -74,7 +81,48 @@ Let's check that the previous commands are indeed independent:
   $ diff index.json index1.json
   $ diff index.json index2.json
 
-The index file contains a json array, each element of the array corresponding to
+Let's now test the --marshall flag.
+We compare:
+- the result of outputing as a marshalled file, and then use that to output a json file.
+- Directly outputing a json file
+
+  $ odoc compile-index -o index-main.odoc --marshall main.odocl
+  $ odoc compile-index -o main.json index-main.odoc
+  $ cat main.json | jq sort | jq '.[]' -c | sort > main1.json
+
+  $ odoc compile-index -o main.json main.odocl
+  $ cat main.json | jq sort | jq '.[]' -c | sort > main2.json
+
+  $ diff main1.json main2.json
+
+  $ odoc compile-index -o index-j.odoc --marshall j.odocl
+  $ odoc compile-index -o j.json index-j.odoc
+  $ cat j.json | jq sort | jq '.[]' -c | sort > j1.json
+
+  $ odoc compile-index -o j.json j.odocl
+  $ cat j.json | jq sort | jq '.[]' -c | sort > j2.json
+
+  $ diff j1.json j2.json
+
+  $ odoc compile-index -o index-page.odoc --marshall page-page.odocl
+  $ odoc compile-index -o page.json index-page.odoc
+  $ cat page.json | jq sort | jq '.[]' -c | sort > page1.json
+
+  $ odoc compile-index -o page.json page-page.odocl
+  $ cat page.json | jq sort | jq '.[]' -c | sort > page2.json
+
+  $ diff page1.json page2.json
+
+Now, we compare the combination of the three marshalled files (index-main.odoc,
+index-page.odoc, index-j.odoc).
+
+  $ odoc compile-index -o all.json index-page.odoc index-j.odoc index-main.odoc
+  $ cat all.json | jq sort | jq '.[]' -c | sort > all1.json
+
+  $ cat index.json | jq sort | jq '.[]' -c | sort > all2.json
+  $ diff all1.json all2.json
+
+The json index file contains a json array, each element of the array corresponding to
 a search entry.
 An index entry contains:
 - an ID,
