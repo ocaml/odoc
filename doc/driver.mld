@@ -775,14 +775,14 @@ let build_search_db output_file odocl_files =
   ()
 
 let generate_search_assets odocl_files =
-  OS.Dir.create Fpath.(v "html/odoc");
+  ignore @@ OS.Dir.create Fpath.(v "html/odoc");
   (* Returned paths are relative to [html-generate]'s output directory. *)
   let sherlodoc_js_uri = "odoc/sherlodoc.js" in
   let sherlodoc_db_uri = "odoc/sherlodoc_db.js" in
   let output_prefix = "html/" in
   locate_sherlodoc_js (output_prefix ^ sherlodoc_js_uri);
   build_search_db (output_prefix ^ sherlodoc_db_uri) odocl_files;
-  [ sherlodoc_db_uri; sherlodoc_js_uri ]
+  List.map (fun str -> str |> Fpath.of_string |> Result.get_ok) [ sherlodoc_db_uri; sherlodoc_js_uri ]
 ]}
 
 The following code executes all of the above, and we're done!
