@@ -57,6 +57,8 @@
     Code can appear {b inside [other] markup}. Its display shouldn't be
     affected.
 
+    There is no differences between [a b] and [a
+    b].
 
     {1 Links and references}
 
