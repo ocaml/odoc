@@ -87,6 +87,8 @@ This is also true between non-code markup and code\.
 Code can appear \fBinside other markup\fR\. Its display shouldn't be affected\.
 .sp 
 There is no differences between a b and a b\.
+.sp 
+Consecutive whitespaces not after a newline are conserved as they are: a   b\.
 .nf 
 .sp 
 .in 3

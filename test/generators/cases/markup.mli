@@ -60,6 +60,8 @@
     There is no differences between [a b] and [a
     b].
 
+    Consecutive whitespaces not after a newline are conserved as they are: [a   b].
+
     {1 Links and references}
 
     This is a {{:#} link}. It sends you to the top of this page. Links can have
