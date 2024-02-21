@@ -263,6 +263,8 @@ let horizontal_space =
   [' ' '\t']
 let newline =
   '\n' | "\r\n"
+let whitespace =
+  horizontal_space | newline
 
 let reference_start =
   "{!" | "{{!" | "{:" | "{{:"
@@ -609,13 +611,13 @@ and code_span buffer nesting_level start_offset input = parse
     { Buffer.add_char buffer c;
       code_span buffer nesting_level start_offset input lexbuf }
 
-  | newline newline
+  | newline whitespace+ as sp
     { warning
         input
         (Parse_error.not_allowed
-          ~what:(Token.describe (`Blank_line "\n\n"))
+          ~what:(Token.describe (`Blank_line sp))
           ~in_what:(Token.describe (`Code_span "")));
-      Buffer.add_char buffer '\n';
+      Buffer.add_char buffer ' ';
       code_span buffer nesting_level start_offset input lexbuf }
 
   | eof

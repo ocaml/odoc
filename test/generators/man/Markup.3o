@@ -86,8 +86,7 @@ This is also true between non-code markup and code\.
 .sp 
 Code can appear \fBinside other markup\fR\. Its display shouldn't be affected\.
 .sp 
-There is no differences between a b and a
-    b\.
+There is no differences between a b and a b\.
 .nf 
 .sp 
 .in 3
