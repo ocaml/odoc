@@ -16,6 +16,8 @@
 
 - Updated colors for code fragments (@EmileTrotignon, #1023)
 - Fixed complexity of looking up `.odoc` files (@panglesd, #1075)
+- Normalize whitespaces in codespans (@gpetiot, #1085)
+  A newline followed by any whitespaces is normalized as one space character.
 
 ### Changed
 

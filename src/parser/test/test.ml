@@ -817,8 +817,7 @@ let%expect_test _ =
         {|
     ((output
       (((f.ml (1 0) (3 4))
-        (paragraph (((f.ml (1 0) (3 4)) (code_span  "foo\
-                                                   \nbar")))))))
+        (paragraph (((f.ml (1 0) (3 4)) (code_span "foo bar")))))))
      (warnings
       ( "File \"f.ml\", line 1, character 4 to line 3, character 0:\
        \nBlank line is not allowed in '[...]' (code)."))) |}]
@@ -829,8 +828,7 @@ let%expect_test _ =
         {|
     ((output
       (((f.ml (1 0) (3 4))
-        (paragraph (((f.ml (1 0) (3 4)) (code_span  "foo\
-                                                   \nbar")))))))
+        (paragraph (((f.ml (1 0) (3 4)) (code_span "foo bar")))))))
      (warnings
       ( "File \"f.ml\", line 1, character 4 to line 3, character 0:\
        \nBlank line is not allowed in '[...]' (code)."))) |}]
