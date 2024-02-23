@@ -740,7 +740,6 @@ This will generate sources, as well as documentation for non-hidden units.
 
 {[
 let generate_all ~search_uris odocl_files =
-  let relativize_opt = function None -> None | Some file -> Some (relativize file) in
   List.iter
     (fun { file; ignore_output = _; source; assets } ->
       ignore (html_generate ~assets ~search_uris file None);
@@ -759,7 +758,7 @@ its database.
 {[
 let opam_switch_prefix = Astring.String.Map.get "OPAM_SWITCH_PREFIX" env
 
-let locate_sherlodoc_js output_file =
+let create_sherlodoc_js output_file =
   let cmd = Cmd.(v "sherlodoc" % "js" % output_file) in
   let (), _ = OS.Cmd.(run_out cmd |> out_stdout) |> get_ok in
   ()
@@ -768,19 +767,19 @@ let build_search_db output_file odocl_files =
   let odocl_files = List.map (fun u -> Fpath.to_string u.file) odocl_files in
   let cmd =
     Cmd.(
-      v "sherlodoc_index" % "--format=js" % "-o" % output_file
+      v "sherlodoc" % "index" % "--format=js" % "-o" % output_file
       %% of_list odocl_files)
   in
   let (), _ = OS.Cmd.(run_out cmd |> out_stdout) |> get_ok in
   ()
 
 let generate_search_assets odocl_files =
-  ignore @@ OS.Dir.create Fpath.(v "html/odoc");
+  ignore @@ Result.get_ok (OS.Dir.create Fpath.(v "html/odoc"));
   (* Returned paths are relative to [html-generate]'s output directory. *)
   let sherlodoc_js_uri = "odoc/sherlodoc.js" in
   let sherlodoc_db_uri = "odoc/sherlodoc_db.js" in
   let output_prefix = "html/" in
-  locate_sherlodoc_js (output_prefix ^ sherlodoc_js_uri);
+  create_sherlodoc_js (output_prefix ^ sherlodoc_js_uri);
   build_search_db (output_prefix ^ sherlodoc_db_uri) odocl_files;
   List.map (fun str -> str |> Fpath.of_string |> Result.get_ok) [ sherlodoc_db_uri; sherlodoc_js_uri ]
 ]}
@@ -849,29 +848,49 @@ parent_child_spec.html
 sherlodoc_db.js
 sherlodoc.js
 source
+syntax_highlighter
+type_desc_to_yojson.html
 $ find html/odoc/odoc_html | sort
 html/odoc/odoc_html
 html/odoc/odoc_html/index.html
 html/odoc/odoc_html/Odoc_html
+html/odoc/odoc_html/Odoc_html__
 html/odoc/odoc_html/Odoc_html/Config
+html/odoc/odoc_html/Odoc_html__Config
 html/odoc/odoc_html/Odoc_html/Config/index.html
+html/odoc/odoc_html/Odoc_html__Config/index.html
 html/odoc/odoc_html/Odoc_html_frontend
 html/odoc/odoc_html/Odoc_html_frontend/index.html
 html/odoc/odoc_html/Odoc_html/Generator
+html/odoc/odoc_html/Odoc_html__Generator
 html/odoc/odoc_html/Odoc_html/Generator/index.html
+html/odoc/odoc_html/Odoc_html__Generator/index.html
 html/odoc/odoc_html/Odoc_html/Html_fragment_json
+html/odoc/odoc_html/Odoc_html__Html_fragment_json
 html/odoc/odoc_html/Odoc_html/Html_fragment_json/index.html
+html/odoc/odoc_html/Odoc_html__Html_fragment_json/index.html
 html/odoc/odoc_html/Odoc_html/Html_page
+html/odoc/odoc_html/Odoc_html__Html_page
 html/odoc/odoc_html/Odoc_html/Html_page/index.html
+html/odoc/odoc_html/Odoc_html__Html_page/index.html
+html/odoc/odoc_html/Odoc_html__Html_source
+html/odoc/odoc_html/Odoc_html__Html_source/index.html
 html/odoc/odoc_html/Odoc_html/index.html
+html/odoc/odoc_html/Odoc_html__/index.html
 html/odoc/odoc_html/Odoc_html/Json
 html/odoc/odoc_html/Odoc_html/Json/index.html
 html/odoc/odoc_html/Odoc_html/Link
+html/odoc/odoc_html/Odoc_html__Link
 html/odoc/odoc_html/Odoc_html/Link/index.html
+html/odoc/odoc_html/Odoc_html__Link/index.html
 html/odoc/odoc_html/Odoc_html/Link/Path
 html/odoc/odoc_html/Odoc_html/Link/Path/index.html
 html/odoc/odoc_html/Odoc_html/Types
+html/odoc/odoc_html/Odoc_html__Types
 html/odoc/odoc_html/Odoc_html/Types/index.html
+html/odoc/odoc_html/Odoc_html__Types/index.html
+html/odoc/odoc_html/Odoc_html__Utils
+html/odoc/odoc_html/Odoc_html__Utils/index.html
 ]}
 
 Some code to analyze the list of executed commands:
