@@ -764,11 +764,22 @@ let create_sherlodoc_js output_file =
   ()
 
 let build_search_db output_file odocl_files =
-  let odocl_files = List.map (fun u -> Fpath.to_string u.file) odocl_files in
+  let regexp_dunder = Str.regexp_string "__" in
+  let odocl_files =
+    List.map (fun u ->
+      Fpath.to_string u.file) odocl_files
+      |> List.filter (fun name ->
+          try (ignore (Str.search_forward regexp_dunder name 0); false)
+          with Not_found -> true )
+      |> List.map (fun name ->
+          if String.starts_with ~prefix:"odoc" name then
+            ("--favoured=" ^ name)
+          else name )
+  in
   let cmd =
     Cmd.(
-      v "sherlodoc" % "index" % "--format=js" % "-o" % output_file
-      %% of_list odocl_files)
+      v "sherlodoc" % "index" % "--format=js" % {|--favoured-prefixes=""|}
+      % "-o" % output_file %% of_list odocl_files)
   in
   let (), _ = OS.Cmd.(run_out cmd |> out_stdout) |> get_ok in
   ()
