@@ -119,13 +119,12 @@
 <a id="L118" class="source_line" href="#L118">118</a>
 <a id="L119" class="source_line" href="#L119">119</a>
 <a id="L120" class="source_line" href="#L120">120</a>
-<a id="L121" class="source_line" href="#L121">121</a>
-</code><code class="source_code"><span><span class="OPEN">open</span> <span class="UIDENT">Types</span><span class="EOL">
-</span><span id="module-Lang"><span class="MODULE">module</span> <span class="UIDENT">Lang</span> <span class="EQUAL">=</span> <span class="UIDENT">Odoc_model</span><span class="DOT">.</span><span class="UIDENT">Lang</span></span><span class="EOL">
+</code><code class="source_code"><span><span class="OPEN">open</span> <a href="types.ml.html"><span class="UIDENT">Types</span></a><span class="EOL">
+</span><span id="module-Lang"><span class="MODULE">module</span> <span class="UIDENT">Lang</span> <span class="EQUAL">=</span> <a href="../model/lang.ml.html"><span class="UIDENT">Odoc_model</span><span class="DOT">.</span><span class="UIDENT">Lang</span></a></span><span class="EOL">
 </span><span class="EOL">
 </span><span id="type-rendered_item"><span class="TYPE">type</span> <span class="LIDENT">rendered_item</span> <span class="EQUAL">=</span> <span class="UIDENT">DocumentedSrc</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
 </span><span class="EOL">
-</span><span id="type-text"><span class="TYPE">type</span> <span class="LIDENT">text</span> <span class="EQUAL">=</span> <span class="UIDENT">Codefmt</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span id="type-text"><span class="TYPE">type</span> <span class="LIDENT">text</span> <span class="EQUAL">=</span> <a href="codefmt.ml.html#type-t"><span class="UIDENT">Codefmt</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
 </span><span class="EOL">
 </span><span class="DOCSTRING">(** HTML generation syntax customization module. See {!ML} and
     {!Reason}. *)</span><span class="EOL">
@@ -224,18 +223,17 @@
 </span><span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
 </span><span id="module-type-GENERATOR"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">GENERATOR</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
-</span>  <span id="module-type-GENERATOR.val-compilation_unit"><span class="VAL">val</span> <span class="LIDENT">compilation_unit</span> <span class="COLON">:</span> <span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">Compilation_unit</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Document</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-GENERATOR.val-compilation_unit"><span class="VAL">val</span> <span class="LIDENT">compilation_unit</span> <span class="COLON">:</span> <span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">Compilation_unit</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <a href="types.ml.html#module-Document.type-t"><span class="UIDENT">Document</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
 </span><span class="EOL">
-</span>  <span id="module-type-GENERATOR.val-page"><span class="VAL">val</span> <span class="LIDENT">page</span> <span class="COLON">:</span> <span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">Page</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Document</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-GENERATOR.val-page"><span class="VAL">val</span> <span class="LIDENT">page</span> <span class="COLON">:</span> <span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">Page</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <a href="types.ml.html#module-Document.type-t"><span class="UIDENT">Document</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
 </span><span class="EOL">
-</span>  <span id="module-type-GENERATOR.val-source_tree"><span class="VAL">val</span> <span class="LIDENT">source_tree</span> <span class="COLON">:</span> <span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">SourceTree</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Document</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>  <span id="module-type-GENERATOR.val-source_tree"><span class="VAL">val</span> <span class="LIDENT">source_tree</span> <span class="COLON">:</span> <span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">SourceTree</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <a href="types.ml.html#module-Document.type-t"><span class="UIDENT">Document</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">list</span></span><span class="EOL">
 </span><span class="EOL">
-</span>  <span id="module-type-GENERATOR.val-source_page"><span class="VAL">val</span> <span class="LIDENT">source_page</span> <span class="COLON">:</span><span class="EOL">
-</span>    <span class="UIDENT">Odoc_model</span><span class="DOT">.</span><span class="UIDENT">Paths</span><span class="DOT">.</span><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourcePage</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span id="module-type-GENERATOR.val-implementation"><span class="VAL">val</span> <span class="LIDENT">implementation</span> <span class="COLON">:</span><span class="EOL">
+</span>    <span class="UIDENT">Odoc_model</span><span class="DOT">.</span><span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">Implementation</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
 </span>    <span class="UIDENT">Syntax_highlighter</span><span class="DOT">.</span><span class="LIDENT">infos</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
-</span>    <span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">Source_info</span><span class="DOT">.</span><span class="LIDENT">infos</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
 </span>    <span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
-</span>    <span class="UIDENT">Document</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <a href="types.ml.html#module-Document.type-t"><span class="UIDENT">Document</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
 </span><span class="EOL">
 </span>  <span id="module-type-GENERATOR.val-type_expr"><span class="VAL">val</span> <span class="LIDENT">type_expr</span> <span class="COLON">:</span> <span class="OPTLABEL">?needs_parentheses:</span><span class="LIDENT">bool</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">text</span></span><span class="EOL">
 </span><span class="EOL">

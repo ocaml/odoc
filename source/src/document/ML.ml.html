@@ -101,104 +101,104 @@
 <a id="L100" class="source_line" href="#L100">100</a>
 <a id="L101" class="source_line" href="#L101">101</a>
 <a id="L102" class="source_line" href="#L102">102</a>
-</code><code class="source_code"><span><span class="OPEN">open</span> <span class="UIDENT">Types</span><span class="EOL">
-</span><span id="module-O"><span class="MODULE">module</span> <span class="UIDENT">O</span> <span class="EQUAL">=</span> <span class="UIDENT">Codefmt</span></span><span class="EOL">
+</code><code class="source_code"><span><span class="OPEN">open</span> <a href="types.ml.html"><span class="UIDENT">Types</span></a><span class="EOL">
+</span><span id="module-O"><span class="MODULE">module</span> <span class="UIDENT">O</span> <span class="EQUAL">=</span> <a href="codefmt.ml.html"><span class="UIDENT">Codefmt</span></a></span><span class="EOL">
 </span><span class="OPEN">open</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="UIDENT">Infix</span><span class="EOL">
 </span><span class="EOL">
-</span><span id="module-ML"><span class="MODULE">module</span> <span class="UIDENT">ML</span> <span class="EQUAL">=</span> <span class="UIDENT">Generator</span><span class="DOT">.</span><span class="UIDENT">Make</span> <span class="LPAREN">(</span><span class="STRUCT">struct</span><span class="EOL">
-</span>  <span id="def_53"><span class="MODULE">module</span> <span class="UIDENT">Obj</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_close_tag_closed_1"><span class="LIDENT">close_tag_closed</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot; &gt;&quot;</span><span class="EOL">
+</span><span id="module-ML"><span class="MODULE">module</span> <span class="UIDENT">ML</span> <span class="EQUAL">=</span> <a href="generator.ml.html#module-Make"><span class="UIDENT">Generator</span><span class="DOT">.</span><span class="UIDENT">Make</span></a> <span class="LPAREN">(</span><span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="local_Obj_1"><span class="MODULE">module</span> <span class="UIDENT">Obj</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_close_tag_closed_2"><span class="LIDENT">close_tag_closed</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot; &gt;&quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_close_tag_extendable_2"><span class="LIDENT">close_tag_extendable</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;.. &gt;&quot;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_close_tag_extendable_3"><span class="LIDENT">close_tag_extendable</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;.. &gt;&quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_field_separator_3"><span class="LIDENT">field_separator</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;; &quot;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_field_separator_4"><span class="LIDENT">field_separator</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;; &quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_open_tag_closed_4"><span class="LIDENT">open_tag_closed</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;&lt; &quot;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_open_tag_closed_5"><span class="LIDENT">open_tag_closed</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;&lt; &quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_open_tag_extendable_5"><span class="LIDENT">open_tag_extendable</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;&lt; &quot;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_open_tag_extendable_6"><span class="LIDENT">open_tag_extendable</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;&lt; &quot;</span><span class="EOL">
 </span>  <span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
-</span>  <span id="def_43"><span class="MODULE">module</span> <span class="UIDENT">Type</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_annotation_separator_6"><span class="LIDENT">annotation_separator</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot; : &quot;</span><span class="EOL">
+</span>  <span id="local_Type_7"><span class="MODULE">module</span> <span class="UIDENT">Type</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_annotation_separator_8"><span class="LIDENT">annotation_separator</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot; : &quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_handle_params_7"><span class="LIDENT">handle_params</span></span> <span id="local_name_8"><span class="LIDENT">name</span></span> <span id="local_args_9"><span class="LIDENT">args</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">span</span> <span class="LPAREN">(</span><a href="#local_args_9"><span class="LIDENT">args</span></a> <span class="INFIXOP2">++</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">sp</span> <span class="INFIXOP2">++</span> <a href="#local_name_8"><span class="LIDENT">name</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_handle_params_9"><span class="LIDENT">handle_params</span></span> <span id="local_name_10"><span class="LIDENT">name</span></span> <span id="local_args_11"><span class="LIDENT">args</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">span</span> <span class="LPAREN">(</span><a href="#local_args_11"><span class="LIDENT">args</span></a> <span class="INFIXOP2">++</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">sp</span> <span class="INFIXOP2">++</span> <a href="#local_name_10"><span class="LIDENT">name</span></a><span class="RPAREN">)</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_handle_constructor_params_10"><span class="LIDENT">handle_constructor_params</span></span> <span class="EQUAL">=</span> <a href="#local_handle_params_7"><span class="LIDENT">handle_params</span></a><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_handle_constructor_params_12"><span class="LIDENT">handle_constructor_params</span></span> <span class="EQUAL">=</span> <a href="#local_handle_params_9"><span class="LIDENT">handle_params</span></a><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_handle_substitution_params_11"><span class="LIDENT">handle_substitution_params</span></span> <span id="local_name_12"><span class="LIDENT">name</span></span> <span id="local_args_13"><span class="LIDENT">args</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">span</span> <span class="LPAREN">(</span><a href="#local_args_13"><span class="LIDENT">args</span></a> <span class="INFIXOP2">++</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot; &quot;</span> <span class="INFIXOP2">++</span> <a href="#local_name_12"><span class="LIDENT">name</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_handle_substitution_params_13"><span class="LIDENT">handle_substitution_params</span></span> <span id="local_name_14"><span class="LIDENT">name</span></span> <span id="local_args_15"><span class="LIDENT">args</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">span</span> <span class="LPAREN">(</span><a href="#local_args_15"><span class="LIDENT">args</span></a> <span class="INFIXOP2">++</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot; &quot;</span> <span class="INFIXOP2">++</span> <a href="#local_name_14"><span class="LIDENT">name</span></a><span class="RPAREN">)</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_handle_format_params_14"><span class="LIDENT">handle_format_params</span></span> <span id="local_p_15"><span class="LIDENT">p</span></span> <span class="EQUAL">=</span> <a href="#local_p_15"><span class="LIDENT">p</span></a><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_handle_format_params_16"><span class="LIDENT">handle_format_params</span></span> <span id="local_p_17"><span class="LIDENT">p</span></span> <span class="EQUAL">=</span> <a href="#local_p_17"><span class="LIDENT">p</span></a><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_type_def_semicolon_16"><span class="LIDENT">type_def_semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_type_def_semicolon_18"><span class="LIDENT">type_def_semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_private_keyword_17"><span class="LIDENT">private_keyword</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;private&quot;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_private_keyword_19"><span class="LIDENT">private_keyword</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;private&quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_parenthesize_constructor_18"><span class="LIDENT">parenthesize_constructor</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_parenthesize_constructor_20"><span class="LIDENT">parenthesize_constructor</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span id="def_49"><span class="MODULE">module</span> <span class="UIDENT">Variant</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>      <span class="LET">let</span> <span id="local_parenthesize_params_19"><span class="LIDENT">parenthesize_params</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span id="local_Variant_21"><span class="MODULE">module</span> <span class="UIDENT">Variant</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_parenthesize_params_22"><span class="LIDENT">parenthesize_params</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
 </span>    <span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
-</span>    <span id="def_54"><span class="MODULE">module</span> <span class="UIDENT">Tuple</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>      <span class="LET">let</span> <span id="local_element_separator_20"><span class="LIDENT">element_separator</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">sp</span> <span class="INFIXOP2">++</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot;* &quot;</span><span class="EOL">
+</span>    <span id="local_Tuple_23"><span class="MODULE">module</span> <span class="UIDENT">Tuple</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_element_separator_24"><span class="LIDENT">element_separator</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">sp</span> <span class="INFIXOP2">++</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">txt</span> <span class="STRING">&quot;* &quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>      <span class="LET">let</span> <span id="local_always_parenthesize_21"><span class="LIDENT">always_parenthesize</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_always_parenthesize_25"><span class="LIDENT">always_parenthesize</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
 </span>    <span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
-</span>    <span id="def_51"><span class="MODULE">module</span> <span class="UIDENT">Record</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>      <span class="LET">let</span> <span id="local_field_separator_22"><span class="LIDENT">field_separator</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;;&quot;</span><span class="EOL">
+</span>    <span id="local_Record_26"><span class="MODULE">module</span> <span class="UIDENT">Record</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_field_separator_27"><span class="LIDENT">field_separator</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;;&quot;</span><span class="EOL">
 </span>    <span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_var_prefix_23"><span class="LIDENT">var_prefix</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;'&quot;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_var_prefix_28"><span class="LIDENT">var_prefix</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;'&quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_any_24"><span class="LIDENT">any</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;_&quot;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_any_29"><span class="LIDENT">any</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;_&quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_arrow_25"><span class="LIDENT">arrow</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">span</span> <span class="LABEL">~attr:</span><span class="STRING">&quot;arrow&quot;</span> <span class="LPAREN">(</span><span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">entity</span> <span class="STRING">&quot;#45&quot;</span> <span class="INFIXOP2">++</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">entity</span> <span class="STRING">&quot;gt&quot;</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_arrow_30"><span class="LIDENT">arrow</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">span</span> <span class="LABEL">~attr:</span><span class="STRING">&quot;arrow&quot;</span> <span class="LPAREN">(</span><span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">entity</span> <span class="STRING">&quot;#45&quot;</span> <span class="INFIXOP2">++</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">entity</span> <span class="STRING">&quot;gt&quot;</span><span class="RPAREN">)</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span id="def_45"><span class="MODULE">module</span> <span class="UIDENT">Exception</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>      <span class="LET">let</span> <span id="local_semicolon_26"><span class="LIDENT">semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span id="local_Exception_31"><span class="MODULE">module</span> <span class="UIDENT">Exception</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_semicolon_32"><span class="LIDENT">semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
 </span>    <span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
-</span>    <span id="def_47"><span class="MODULE">module</span> <span class="UIDENT">GADT</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>      <span class="LET">let</span> <span id="local_arrow_27"><span class="LIDENT">arrow</span></span> <span class="EQUAL">=</span> <a href="#local_arrow_25"><span class="LIDENT">arrow</span></a><span class="EOL">
+</span>    <span id="local_GADT_33"><span class="MODULE">module</span> <span class="UIDENT">GADT</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_arrow_34"><span class="LIDENT">arrow</span></span> <span class="EQUAL">=</span> <a href="#local_arrow_30"><span class="LIDENT">arrow</span></a><span class="EOL">
 </span>    <span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
-</span>    <span id="def_52"><span class="MODULE">module</span> <span class="UIDENT">External</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>      <span class="LET">let</span> <span id="local_semicolon_28"><span class="LIDENT">semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span id="local_External_35"><span class="MODULE">module</span> <span class="UIDENT">External</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_semicolon_36"><span class="LIDENT">semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
 </span><span class="EOL">
-</span>      <span class="LET">let</span> <span id="local_handle_primitives_29"><span class="LIDENT">handle_primitives</span></span> <span id="local_prims_30"><span class="LIDENT">prims</span></span> <span class="EQUAL">=</span><span class="EOL">
-</span>        <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_p_31"><span class="LIDENT">p</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">inline</span> <span class="INFIXOP1">@@</span> <span class="UIDENT">Text</span> <span class="LPAREN">(</span><span class="STRING">&quot;\&quot;&quot;</span> <span class="INFIXOP1">^</span> <a href="#local_p_31"><span class="LIDENT">p</span></a> <span class="INFIXOP1">^</span> <span class="STRING">&quot;\&quot; &quot;</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <a href="#local_prims_30"><span class="LIDENT">prims</span></a><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_handle_primitives_37"><span class="LIDENT">handle_primitives</span></span> <span id="local_prims_38"><span class="LIDENT">prims</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_p_39"><span class="LIDENT">p</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="types.ml.html#val-inline"><span class="LIDENT">inline</span></a> <span class="INFIXOP1">@@</span> <span class="UIDENT">Text</span> <span class="LPAREN">(</span><span class="STRING">&quot;\&quot;&quot;</span> <span class="INFIXOP1">^</span> <a href="#local_p_39"><span class="LIDENT">p</span></a> <span class="INFIXOP1">^</span> <span class="STRING">&quot;\&quot; &quot;</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <a href="#local_prims_38"><span class="LIDENT">prims</span></a><span class="EOL">
 </span>    <span class="END">end</span></span><span class="EOL">
 </span>  <span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
-</span>  <span id="def_48"><span class="MODULE">module</span> <span class="UIDENT">Mod</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_open_tag_32"><span class="LIDENT">open_tag</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">keyword</span> <span class="STRING">&quot;sig&quot;</span><span class="EOL">
+</span>  <span id="local_Mod_40"><span class="MODULE">module</span> <span class="UIDENT">Mod</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_open_tag_41"><span class="LIDENT">open_tag</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">keyword</span> <span class="STRING">&quot;sig&quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_close_tag_33"><span class="LIDENT">close_tag</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">keyword</span> <span class="STRING">&quot;end&quot;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_close_tag_42"><span class="LIDENT">close_tag</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">keyword</span> <span class="STRING">&quot;end&quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_close_tag_semicolon_34"><span class="LIDENT">close_tag_semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_close_tag_semicolon_43"><span class="LIDENT">close_tag_semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_include_semicolon_35"><span class="LIDENT">include_semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_include_semicolon_44"><span class="LIDENT">include_semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_functor_keyword_36"><span class="LIDENT">functor_keyword</span></span> <span class="EQUAL">=</span> <span class="TRUE">true</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_functor_keyword_45"><span class="LIDENT">functor_keyword</span></span> <span class="EQUAL">=</span> <span class="TRUE">true</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_functor_contraction_37"><span class="LIDENT">functor_contraction</span></span> <span class="EQUAL">=</span> <span class="TRUE">true</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_functor_contraction_46"><span class="LIDENT">functor_contraction</span></span> <span class="EQUAL">=</span> <span class="TRUE">true</span><span class="EOL">
 </span>  <span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
-</span>  <span id="def_50"><span class="MODULE">module</span> <span class="UIDENT">Class</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_open_tag_38"><span class="LIDENT">open_tag</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">keyword</span> <span class="STRING">&quot;object&quot;</span><span class="EOL">
+</span>  <span id="local_Class_47"><span class="MODULE">module</span> <span class="UIDENT">Class</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_open_tag_48"><span class="LIDENT">open_tag</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">keyword</span> <span class="STRING">&quot;object&quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_close_tag_39"><span class="LIDENT">close_tag</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">keyword</span> <span class="STRING">&quot;end&quot;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_close_tag_49"><span class="LIDENT">close_tag</span></span> <span class="EQUAL">=</span> <span class="UIDENT">O</span><span class="DOT">.</span><span class="LIDENT">keyword</span> <span class="STRING">&quot;end&quot;</span><span class="EOL">
 </span>  <span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
-</span>  <span id="def_46"><span class="MODULE">module</span> <span class="UIDENT">Value</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_variable_keyword_40"><span class="LIDENT">variable_keyword</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;val&quot;</span><span class="EOL">
+</span>  <span id="local_Value_50"><span class="MODULE">module</span> <span class="UIDENT">Value</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_variable_keyword_51"><span class="LIDENT">variable_keyword</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;val&quot;</span><span class="EOL">
 </span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_semicolon_41"><span class="LIDENT">semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_semicolon_52"><span class="LIDENT">semicolon</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="EOL">
 </span>  <span class="END">end</span></span><span class="EOL">
 </span><span class="EOL">
-</span>  <span id="def_44"><span class="MODULE">module</span> <span class="UIDENT">Comment</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
-</span>    <span class="LET">let</span> <span id="local_markers_42"><span class="LIDENT">markers</span></span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="STRING">&quot;(*&quot;</span><span class="COMMA">,</span> <span class="STRING">&quot;*)&quot;</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span id="local_Comment_53"><span class="MODULE">module</span> <span class="UIDENT">Comment</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_markers_54"><span class="LIDENT">markers</span></span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="STRING">&quot;(*&quot;</span><span class="COMMA">,</span> <span class="STRING">&quot;*)&quot;</span><span class="RPAREN">)</span><span class="EOL">
 </span>  <span class="END">end</span></span><span class="EOL">
 </span><span class="END">end</span><span class="RPAREN">)</span></span><span class="EOL">
 </span><span class="EOL">

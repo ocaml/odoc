@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source (odoc.odoc_odoc.Odoc_odoc.Source)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../../../../';
+let search_urls = ['../../../sherlodoc_db.js','../../../sherlodoc.js'];
+</script><script src="../../../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../../index.html">odoc</a> &#x00BB; <a href="../../index.html">odoc_odoc</a> &#x00BB; <a href="../index.html">Odoc_odoc</a> &#x00BB; Source</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1>Module <code><span>Odoc_odoc.Source</span></code><a href="../../../source/src/odoc/source.ml.html" class="source_link">Source</a></h1></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-resolve_and_substitute"><a href="#val-resolve_and_substitute" class="anchor"></a><a href="../../../source/src/odoc/source.ml.html#val-resolve_and_substitute" class="source_link">Source</a><code><span><span class="keyword">val</span> resolve_and_substitute : 
+  <span><span class="label">resolver</span>:<a href="../Resolver/index.html#type-t">Resolver.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">make_root</span>:<a href="../../../odoc_loader/Odoc_loader/index.html#type-make_root">Odoc_loader.make_root</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">source_id</span>:<a href="../../../odoc_model/Odoc_model/Paths/Identifier/SourcePage/index.html#type-t">Odoc_model.Paths.Identifier.SourcePage.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Fs/File/index.html#type-t">Fs.File.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <a href="../../../odoc_model/Odoc_model/Lang/Implementation/index.html#type-t">Odoc_model.Lang.Implementation.t</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-root_of_implementation"><a href="#val-root_of_implementation" class="anchor"></a><a href="../../../source/src/odoc/source.ml.html#val-root_of_implementation" class="source_link">Source</a><code><span><span class="keyword">val</span> root_of_implementation : 
+  <span><span class="label">source_id</span>:
+    <span><span>[&lt; <span>`LeafPage of
+         <span><span><span>[&lt; <a href="../../../odoc_model/Odoc_model/Paths/Identifier/ContainerPage/index.html#type-t_pv">Odoc_model.Paths.Identifier.ContainerPage.t_pv</a> ]</span>
+           <a href="../../../odoc_model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span>
+           option</span>
+         * <a href="../../../odoc_model/Odoc_model/Names/PageName/index.html#type-t">Odoc_model.Names.PageName.t</a></span>
+    <span><span>| `Page</span> of
+      <span><span><span>[&lt; <a href="../../../odoc_model/Odoc_model/Paths/Identifier/ContainerPage/index.html#type-t_pv">Odoc_model.Paths.Identifier.ContainerPage.t_pv</a> ]</span>
+        <a href="../../../odoc_model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span>
+        option</span>
+      * <a href="../../../odoc_model/Odoc_model/Names/PageName/index.html#type-t">Odoc_model.Names.PageName.t</a></span>
+    <span><span>| `Root</span> of
+      <span><span><span>[&lt; <a href="../../../odoc_model/Odoc_model/Paths/Identifier/ContainerPage/index.html#type-t_pv">Odoc_model.Paths.Identifier.ContainerPage.t_pv</a> ]</span>
+        <a href="../../../odoc_model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span>
+        option</span>
+      * <a href="../../../odoc_model/Odoc_model/Names/ModuleName/index.html#type-t">Odoc_model.Names.ModuleName.t</a></span>
+    <span><span>| `SourcePage</span> of
+      <span><span>[&lt; <a href="../../../odoc_model/Odoc_model/Paths/Identifier/SourceDir/index.html#type-t_pv">Odoc_model.Paths.Identifier.SourceDir.t_pv</a> ]</span>
+        <a href="../../../odoc_model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span>
+      * string</span> ]</span>
+      <a href="../../../odoc_model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">module_name</span>:string <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">digest</span>:<a href="../../../deps/stdlib/Stdlib/Digest/index.html#type-t">Digest.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>(<a href="../../../odoc_model/Odoc_model/Root/index.html#type-t">Odoc_model.Root.t</a>, <span class="type-var">'a</span>)</span> <a href="../Or_error/index.html#type-result">Or_error.result</a></span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-compile"><a href="#val-compile" class="anchor"></a><a href="../../../source/src/odoc/source.ml.html#val-compile" class="source_link">Source</a><code><span><span class="keyword">val</span> compile : 
+  <span><span class="label">resolver</span>:<a href="../Resolver/index.html#type-t">Resolver.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">output</span>:<a href="../Fs/File/index.html#type-t">Fs.File.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">warnings_options</span>:<a href="../../../odoc_model/Odoc_model/Error/index.html#type-warnings_options">Odoc_model.Error.warnings_options</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">source_path</span>:<span>string list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">source_parent_file</span>:<a href="../Fs/File/index.html#type-t">Fs.File.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Fs/File/index.html#type-t">Fs.File.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>(unit, <span>[&gt; <a href="../Or_error/index.html#type-msg">Or_error.msg</a> ]</span>)</span> <a href="../Or_error/index.html#type-result">Or_error.result</a></span></span></code></div></div></div></body></html>
