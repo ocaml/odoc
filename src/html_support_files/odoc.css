@@ -946,6 +946,7 @@ td.def-doc *:first-child {
   overflow-y: auto;
 }
 
+
 .odoc-search .search-no-result {
   color: var(--color);
   border-bottom: var(--search-results-border) solid 1px;
