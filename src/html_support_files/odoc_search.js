@@ -68,42 +68,40 @@ document.querySelector(".search-bar").addEventListener("input", (ev) => {
 
 /** Navigation */
 
-var n_focus = null;
-
 let search_result_elt = document.querySelector(".search-result")
 
 function search_results() {
   return search_result_elt.children;
 }
 
-function current_result() {
-  return search_results()[n_focus];
+function enter_search() {
+  document.querySelector(".search-bar").focus();
 }
 
-function update_focus(new_focus) {
-  if (n_focus !== null)
-    current_result().classList.remove("search-nav-focus");
-  n_focus = new_focus;
-  if (new_focus !== null)
-    current_result().classList.add("search-nav-focus");
+function escape_search() {
+  document.activeElement.blur()
 }
 
 function focus_previous_result() {
-  if (n_focus === null)
+  let results = Array.from(search_results());
+  let current_focus = results.findIndex((elt) => (document.activeElement === elt));
+  if (current_focus === undefined)
     return;
-  if (n_focus === 0)
-    update_focus(null);
+  else if (current_focus === 0)
+    enter_search();
   else
-    update_focus(n_focus - 1);
+    results[current_focus - 1].focus();
 }
 
 function focus_next_result() {
-  if (n_focus === null)
-    update_focus(0);
-  else if (n_focus === search_results().length)
-    update_focus(null);
+  let results = Array.from(search_results());
+  let current_focus = results.findIndex((elt) => (document.activeElement === elt));
+  if (current_focus === undefined)
+    results[0].focus();
+  else if (current_focus + 1 === results.length)
+    return;
   else
-    update_focus(n_focus + 1);
+    results[current_focus + 1].focus();
 }
 
 function enter_focus() {
@@ -112,19 +110,15 @@ function enter_focus() {
   elt.click();
 }
 
-function enter_search() {
-  document.querySelector(".search-bar").focus();
-}
-
 function is_searching() {
   return (document.querySelectorAll(".odoc-search:focus-within").length > 0);
 }
 
+function is_typing() {
+  return (document.activeElement === document.querySelector(".search-bar"));
+}
+
 function handle_key_down(event) {
-  if (event.key === "/") {
-    event.preventDefault();
-    enter_search();
-  }
   if (is_searching()) {
     if (event.key === "ArrowUp") {
       event.preventDefault();
@@ -134,9 +128,15 @@ function handle_key_down(event) {
       event.preventDefault();
       focus_next_result();
     }
-    if (event.key === "Enter") {
+    if (event.key === "Escape") {
       event.preventDefault();
-      enter_focus();
+      escape_search();
+    }
+  }
+  if (!(is_typing())) {
+    if (event.key === "/") {
+      event.preventDefault();
+      enter_search();
     }
   }
 }

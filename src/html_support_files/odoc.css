@@ -222,7 +222,6 @@
   --search-results-shadow: var(--bg3);
   --search-highlight-color: var(--odoc-blue);
   --search-snake-color: var(--odoc-blue);
-  --search-nav-focus-border: var(--orange);
   /* code colors */
   --code-color: var(--fg);
   --code-background: var(--bg);
@@ -945,10 +944,6 @@ td.def-doc *:first-child {
   /* Works better on smallish screens with this */
   max-height: calc(min(40rem, 50vh));
   overflow-y: auto;
-}
-
-.odoc-search .search-nav-focus {
-  border: solid 2px var(--search-nav-focus-border);
 }
 
 .odoc-search .search-no-result {
