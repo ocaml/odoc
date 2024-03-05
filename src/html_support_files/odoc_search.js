@@ -134,10 +134,20 @@ function handle_key_down(event) {
     }
   }
   if (!(is_typing())) {
+    let ascii = event.key.charCodeAt(0);
     if (event.key === "/") {
       event.preventDefault();
       enter_search();
     }
+    else if ( event.key.length === 1
+            && (ascii >= 65 && ascii <= 90) // lowercase letter
+            || (ascii >= 97 && ascii <= 122) // uppercase letter
+            || (ascii >= 48 && ascii <= 57) // numbers
+            || (ascii >= 32 && ascii <= 46) // ` ` to `.`
+            || (ascii >= 58 && ascii <= 64) // `:` to `@`
+            )
+      // We do not prevent default because we want the char to be added to the input
+      enter_search ();
   }
 }
 document.addEventListener("keydown", handle_key_down);
