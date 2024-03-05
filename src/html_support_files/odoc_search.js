@@ -85,7 +85,7 @@ function escape_search() {
 function focus_previous_result() {
   let results = Array.from(search_results());
   let current_focus = results.findIndex((elt) => (document.activeElement === elt));
-  if (current_focus === undefined)
+  if (current_focus === -1)
     return;
   else if (current_focus === 0)
     enter_search();
@@ -96,7 +96,7 @@ function focus_previous_result() {
 function focus_next_result() {
   let results = Array.from(search_results());
   let current_focus = results.findIndex((elt) => (document.activeElement === elt));
-  if (current_focus === undefined)
+  if (current_focus === -1)
     results[0].focus();
   else if (current_focus + 1 === results.length)
     return;
