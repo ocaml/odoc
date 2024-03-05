@@ -95,6 +95,7 @@ function focus_previous_result() {
 
 function focus_next_result() {
   let results = Array.from(search_results());
+  if (results.length === 0) return;
   let current_focus = results.findIndex((elt) => (document.activeElement === elt));
   if (current_focus === -1)
     results[0].focus();
