@@ -598,6 +598,16 @@ module Fmt = struct
     | [] -> ()
     | t -> fpf ppf fmt_outer (Format.pp_print_list ~pp_sep pp_a) t
 
+  (* Three helper functions to help with paths. Generally paths
+     have constructors of the form [`Hidden(p1)] or
+     [`Alias(p1,p2)]. When printing these paths, if we're printing a
+     short path we often want to just ignore the constructor and print
+     one of the inner paths, [p1] or [p2]. These functions do that. If
+     [short_paths] is set in the config, we skip to one of the inner
+     paths - in [wrap] there's no choice, but in [wrap2] we pick [p1]
+     and in [wrap2r] we pick [p2]. If [short_paths] is not set, we
+     print a string representing the constructor, and one or both paths
+     with brackets. *)
   let wrap :
       type a.
       config ->
