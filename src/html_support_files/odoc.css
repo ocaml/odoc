@@ -725,13 +725,13 @@ td.def-doc *:first-child {
 /* Alert emoji */
 
 .alert::before, .deprecated::before {
-  content: '⚠️ ';
+  content: '⚠️ ' / '';
 }
 
 /* Since emoji */
 
 .since::before {
-  content: '🕚 ';
+  content: '🕚 ' / '';
 }
 
 /* Lists of modules */
