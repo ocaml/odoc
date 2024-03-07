@@ -910,7 +910,10 @@ module Fmt = struct
   and module_decl c ppf d =
     let open Module in
     match d with
-    | Alias (p, _) -> Format.fprintf ppf "=@ %a" (module_path c) p
+    | Alias (p, Some e) ->
+        Format.fprintf ppf "=@ %a@ %a" (module_path c) p
+          (simple_expansion c false) e
+    | Alias (p, None) -> Format.fprintf ppf "=@ %a" (module_path c) p
     | ModuleType mt ->
         Format.fprintf ppf ": %a%a" (module_type_expr c) mt
           (module_type_expansion c) mt
