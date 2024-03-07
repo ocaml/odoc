@@ -1304,11 +1304,9 @@ and handle_canonical_module_real env p2 =
      in the resolved module, as we want the identifier for the
      module itself, not any aliased module, and the canonical path
      _ought_ to be the same as the one we're _currently_ resolving
-     anyway, so we'd end up looping forever. Note that it's not
-     sufficient to simply ask not to add on the canonical paths
-     at this point (ie, ~add_canonical=false) as the alias chain
-     may include modules that have already been resolved and hence
-     have canonical constructors in their resolved paths.
+     anyway, so we'd end up looping forever. Note that the alias
+     chain may include modules that have already been resolved and
+     hence have canonical constructors in their resolved paths.
   *)
 
   (* [strip p] strips the top-level aliases and canonical paths from
