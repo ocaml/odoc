@@ -75,13 +75,13 @@ and ModuleType : sig
   }
 
   module U : sig
+    (* Unexpanded (aside from Signature, obviously) *)
+
     type expr =
       | Path of Path.ModuleType.t
       | Signature of Signature.t
       | With of substitution list * expr
       | TypeOf of type_of_desc * Path.Module.t
-
-    (* Nb. this may have an expansion! *)
   end
 
   type path_t = {

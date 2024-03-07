@@ -396,9 +396,15 @@ and unresolve_class_type_path : class_type -> class_type = function
   | `Resolved m -> unresolve_resolved_class_type_path m
   | y -> y
 
+(*
+These are left here for later. The idea is to alter a resolved path
+such that all the identifiers in it are turned into fully-qualified
+resolved paths. This is intended to be used to turn the 'original
+path' of `module type of` expressions that was resolved in the
+original context into a path that is valid in _all_ contexts.
+
 let rec original_path_cpath : module_ -> module_ option = function
   | `Resolved p ->
-      Format.eprintf "Originally dangerous...\n%!";
       original_path_cpath (unresolve_resolved_module_path p)
   | `Root name -> Some (`Root name)
   | `Forward _ -> None
@@ -416,11 +422,10 @@ let rec original_path_cpath : module_ -> module_ option = function
       | None -> None)
   | `Substituted p -> original_path_cpath p
   | `Local _ ->
-      Format.eprintf "danger, danger!\n%!";
       None
   | `Module _ ->
-      Format.eprintf "lots of danger!\n%!";
       None
+
 
 and original_path_module_identifier :
     Odoc_model.Paths.Identifier.Path.Module.t -> Resolved.module_ option =
@@ -432,7 +437,6 @@ and original_path_module_identifier :
       | None -> None)
   | `Root _ -> Some (`Gpath (`Identifier id))
   | _ ->
-      Format.eprintf "error1\n%!";
       None
 
 and original_path_parent_identifier :
@@ -456,3 +460,4 @@ and original_path_module_type_identifier :
       match original_path_parent_identifier sg with
       | Some sg' -> Some (`ModuleType (sg', name))
       | None -> None)
+*)
