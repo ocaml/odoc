@@ -7,6 +7,7 @@
   (@panglesd, #976)
 - Separate compilation of interface and implementation files, using a new
   `compile-src` command (@panglesd, #1067).
+- Add clock emoji before `@since` tag (@yawaramin, #1089)
 
 ### Changed
 
