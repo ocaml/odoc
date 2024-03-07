@@ -728,6 +728,12 @@ td.def-doc *:first-child {
   content: '⚠️ ';
 }
 
+/* Since emoji */
+
+.since::before {
+  content: '🕚 ';
+}
+
 /* Lists of modules */
 
 .modules { list-style-type: none; margin-left: -3ex; }
