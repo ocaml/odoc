@@ -1,4 +1,4 @@
-Generate some code that's pretty bad for the odoc 2.0-2.3 implentation of
+Generate some code that's pretty bad for the odoc 2.0-2.3 implementation of
 `module type of`. The problem is that the size of the files becomes
 enormous very quickly.
 
