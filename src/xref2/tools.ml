@@ -1777,9 +1777,6 @@ and fragmap :
     let open Component.Module in
     match decl with
     | Alias (path, _) ->
-        expansion_of_module_path env ~strengthen:true path
-        >>= assert_not_functor
-        >>= fun _sg ->
         Ok
           (ModuleType
              (With
@@ -2207,7 +2204,6 @@ and resolve_module_fragment :
             ( `UnresolvedForwardPath | `UnresolvedPath _
             | `UnresolvedOriginalPath _ ) ->
             f'
-        | Error (`UnexpandedTypeOf _) -> f'
       in
       Some (fixup_module_cfrag f'')
 
@@ -2232,7 +2228,7 @@ and resolve_module_type_fragment :
         | Ok (_m : expansion) -> f'
         | Error
             ( `UnresolvedForwardPath | `UnresolvedPath _ | `OpaqueModule
-            | `UnexpandedTypeOf _ | `UnresolvedOriginalPath _ ) ->
+            | `UnresolvedOriginalPath _ ) ->
             f'
       in
       Some (fixup_module_type_cfrag f'')
@@ -2327,8 +2323,7 @@ let resolve_module_path env p =
       | Error
           ( `UnresolvedForwardPath | `UnresolvedPath _
           | `UnresolvedOriginalPath _ ) ->
-          Ok p
-      | Error (`UnexpandedTypeOf _) -> Ok p)
+          Ok p)
 
 let resolve_module_type_path env p =
   resolve_module_type env p >>= fun (p, mt) ->
@@ -2337,7 +2332,7 @@ let resolve_module_type_path env p =
   | Error `OpaqueModule -> Ok (`OpaqueModuleType p)
   | Error
       (`UnresolvedForwardPath | `UnresolvedPath _ | `UnresolvedOriginalPath _)
-  | Error (`UnexpandedTypeOf _) ->
+    ->
       Ok p
 
 let resolve_type_path env p = resolve_type env p >>= fun (p, _) -> Ok p

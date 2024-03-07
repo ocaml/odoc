@@ -19,10 +19,7 @@ module Tools_error = struct
       [ `Module of Cpath.module_ * simple_module_lookup_error
       | `ModuleType of Cpath.module_type * simple_module_type_lookup_error ]
       (* The path to the module or module type could not be resolved *)
-    | `UnresolvedOriginalPath of Cpath.module_ * simple_module_lookup_error
-    | `UnexpandedTypeOf of
-      Component.ModuleType.type_of_desc
-      (* The `module type of` expression could not be expanded *) ]
+    | `UnresolvedOriginalPath of Cpath.module_ * simple_module_lookup_error ]
 
   and simple_module_lookup_error =
     [ `Local of
@@ -175,10 +172,6 @@ module Tools_error = struct
     | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"
     | `Class_replaced -> Format.fprintf fmt "Class replaced"
     | `Parent p -> pp fmt (p :> any)
-    | `UnexpandedTypeOf t ->
-        Format.fprintf fmt "Unexpanded `module type of` expression: %a"
-          (module_type_type_of_desc c)
-          t
     | `Parent_sig e -> Format.fprintf fmt "Parent_sig: %a" pp (e :> any)
     | `Parent_module_type e ->
         Format.fprintf fmt "Parent_module_type: %a" pp (e :> any)
@@ -202,41 +195,6 @@ module Tools_error = struct
         )
     | `Parent e -> pp fmt (e :> any)
 end
-
-(* Ugh. we need to determine whether this was down to an unexpanded module type error. This is horrendous. *)
-let is_unexpanded_module_type_of =
-  let open Tools_error in
-  let rec inner : any -> bool = function
-    | `Local _ -> false
-    | `Find_failure -> false
-    | `Lookup_failure _ -> false
-    | `Lookup_failure_root _ -> false
-    | `Parent p -> inner (p :> any)
-    | `Parent_sig p -> inner (p :> any)
-    | `Parent_module_type p -> inner (p :> any)
-    | `Parent_expr p -> inner (p :> any)
-    | `Parent_module p -> inner (p :> any)
-    | `Parent_type p -> inner (p :> any)
-    | `Fragment_root -> false
-    | `OpaqueModule -> false
-    | `UnresolvedForwardPath -> false
-    | `UnexpandedTypeOf _ -> true (* woo *)
-    | `LocalMT _ -> false
-    | `Lookup_failureMT _ -> false
-    | `ApplyNotFunctor -> false
-    | `UnresolvedPath (`Module (_, e)) -> inner (e :> any)
-    | `UnresolvedPath (`ModuleType (_, e)) -> inner (e :> any)
-    | `UnresolvedOriginalPath (_, e) -> inner (e :> any)
-    | `Lookup_failureT _ -> false
-    | `Lookup_failureV _ -> false
-    | `LocalType _ -> false
-    | `LocalValue _ -> false
-    | `Class_replaced -> false
-    | `OpaqueClass -> false
-    | `Reference (`Parent p) -> inner (p :> any)
-    | `Reference _ -> false
-  in
-  inner
 
 type kind = [ `OpaqueModule | `Root of string ]
 
@@ -267,7 +225,6 @@ let rec kind_of_error : Tools_error.any -> kind option = function
       | x -> x)
   | `Lookup_failure { iv = `Root (_, name); _ } ->
       Some (`Root (Names.ModuleName.to_string name))
-  | `UnexpandedTypeOf type_of_desc -> kind_of_type_of_desc type_of_desc
   | `Lookup_failure_root name -> Some (`Root name)
   | `Parent (`Parent_sig e) -> kind_of_error (e :> Tools_error.any)
   | `Parent (`Parent_module_type e) -> kind_of_error (e :> Tools_error.any)
