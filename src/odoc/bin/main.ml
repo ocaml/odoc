@@ -457,46 +457,56 @@ module Compile_src = struct
 end
 
 module Indexing = struct
-  let output_file ~dst =
-    match dst with
-    | Some file -> Fs.File.of_string file
-    | None -> Fs.File.of_string "index.json"
+  let output_file ~dst marshall =
+    match (dst, marshall) with
+    | Some file, _ -> Fs.File.of_string file
+    | None, `JSON -> Fs.File.of_string "index.json"
+    | None, `Marshall -> Fs.File.of_string "index-index.odoc"
 
-  let index dst warnings_options inputs_in_file inputs =
-    let output = output_file ~dst in
+  let index dst marshall warnings_options inputs_in_file inputs =
+    let marshall = if marshall then `Marshall else `JSON in
+    let output = output_file ~dst marshall in
     match (inputs_in_file, inputs) with
     | [], [] ->
         Result.Error
           (`Msg
             "At least one of --file-list or an .odocl file must be passed to \
              odoc compile-index")
-    | _ -> Indexing.compile ~output ~warnings_options inputs_in_file inputs
+    | _ ->
+        Indexing.compile marshall ~output ~warnings_options inputs_in_file
+          inputs
 
   let cmd =
     let dst =
       let doc =
         "Output file path. Non-existing intermediate directories are created. \
-         Defaults to index.json"
+         Defaults to index.json, or index-index.odoc if --marshall is passed \
+         (in which case, the $(i,index-) prefix is mandatory)."
       in
       Arg.(
         value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
     in
     let inputs_in_file =
       let doc =
-        "Input text file containing a line-separated list of paths to .odocl \
-         files to index."
+        "Input text file containing a line-separated list of paths to \
+         .odocl/.json files to index."
       in
       Arg.(
         value & opt_all convert_fpath []
         & info ~doc ~docv:"FILE" [ "file-list" ])
     in
+    let marshall =
+      let doc = "whether to output a json file, or an .odoc file" in
+      Arg.(value & flag & info ~doc [ "marshall" ])
+    in
     let inputs =
-      let doc = ".odocl file to index" in
+      let doc = ".odocl/.json file to index" in
       Arg.(value & pos_all convert_fpath [] & info ~doc ~docv:"FILE" [])
     in
     Term.(
       const handle_error
-      $ (const index $ dst $ warnings_options $ inputs_in_file $ inputs))
+      $ (const index $ dst $ marshall $ warnings_options $ inputs_in_file
+       $ inputs))
 
   let info ~docs =
     let doc =

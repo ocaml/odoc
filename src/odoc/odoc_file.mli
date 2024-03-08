@@ -55,3 +55,11 @@ val load : Fs.File.t -> (t, [> msg ]) result
 
 val load_root : Fs.File.t -> (Root.t, [> msg ]) result
 (** Only load the root. Faster than {!load}, used for looking up imports. *)
+
+val save_index :
+  Fs.File.t -> Odoc_search.Entry.t Paths.Identifier.Hashtbl.Any.t -> unit
+
+val load_index :
+  Fs.File.t ->
+  (Odoc_search.Entry.t Paths.Identifier.Hashtbl.Any.t, [> msg ]) result
+(** Load an [.odoc] file. *)

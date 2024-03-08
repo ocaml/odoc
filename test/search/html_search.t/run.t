@@ -48,14 +48,21 @@ we will generate.
   $ odoc html-generate --search-uri fuse.js.js --search-uri index.js -o html page-page.odocl
   $ odoc support-files -o html
 
-We now focus on how to generate the index.js file. There are mainly two ways: by
-using odoc as a library, or by using the the `compile-index` command. This
-command generates a json index containing all .odocl given as input, to be
-consumed later by a search engine. If -o is not provided, the file is saved as
-index.json.
-Odocl files can be given either in a list (using --file-list,
-passing a file with the list of line-separated files), or by passing directly
-the name of the files.
+We now focus on how to generate the index.js file.
+
+For this, we compute an index of all the values contained in a given list of
+odoc files, using the `compile-index` command.
+
+This command generates has two output format: a json output for consumption by
+external search engine, and an `odoc` specific extension.  The odoc file is
+meant to be consumed either by search engine written in OCaml, which would
+depend on `odoc` as a library, or by `odoc` itself to build a global index
+incrementally: the `compile-index` command can take indexes as input!
+
+If -o is not provided, the file is saved as index.json, or index-index.odoc if
+the --marshall flag is passed.  Odocl files can be given either in a list (using
+--file-list, passing a file with the list of line-separated files), or by
+passing directly the name of the files.
 
   $ printf "main.odocl\npage-page.odocl\nj.odocl\n" > index_map
   $ odoc compile-index -o index1.json --file-list index_map
@@ -74,7 +81,48 @@ Let's check that the previous commands are indeed independent:
   $ diff index.json index1.json
   $ diff index.json index2.json
 
-The index file contains a json array, each element of the array corresponding to
+Let's now test the --marshall flag.
+We compare:
+- the result of outputing as a marshalled file, and then use that to output a json file.
+- Directly outputing a json file
+
+  $ odoc compile-index -o index-main.odoc --marshall main.odocl
+  $ odoc compile-index -o main.json index-main.odoc
+  $ cat main.json | jq sort | jq '.[]' -c | sort > main1.json
+
+  $ odoc compile-index -o main.json main.odocl
+  $ cat main.json | jq sort | jq '.[]' -c | sort > main2.json
+
+  $ diff main1.json main2.json
+
+  $ odoc compile-index -o index-j.odoc --marshall j.odocl
+  $ odoc compile-index -o j.json index-j.odoc
+  $ cat j.json | jq sort | jq '.[]' -c | sort > j1.json
+
+  $ odoc compile-index -o j.json j.odocl
+  $ cat j.json | jq sort | jq '.[]' -c | sort > j2.json
+
+  $ diff j1.json j2.json
+
+  $ odoc compile-index -o index-page.odoc --marshall page-page.odocl
+  $ odoc compile-index -o page.json index-page.odoc
+  $ cat page.json | jq sort | jq '.[]' -c | sort > page1.json
+
+  $ odoc compile-index -o page.json page-page.odocl
+  $ cat page.json | jq sort | jq '.[]' -c | sort > page2.json
+
+  $ diff page1.json page2.json
+
+Now, we compare the combination of the three marshalled files (index-main.odoc,
+index-page.odoc, index-j.odoc).
+
+  $ odoc compile-index -o all.json index-page.odoc index-j.odoc index-main.odoc
+  $ cat all.json | jq sort | jq '.[]' -c | sort > all1.json
+
+  $ cat index.json | jq sort | jq '.[]' -c | sort > all2.json
+  $ diff all1.json all2.json
+
+The json index file contains a json array, each element of the array corresponding to
 a search entry.
 An index entry contains:
 - an ID,
@@ -87,23 +135,23 @@ The index file, one entry per line:
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Type","name":"tdzdz"},{"kind":"Constructor","name":"A"}],"doc":"","kind":{"kind":"Constructor","args":{"kind":"Tuple","vals":["int","int"]},"res":"tdzdz"},"display":{"url":"page/Main/index.html#type-tdzdz.A","html":"<code class=\"entry-kind\">cons</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.tdzdz.</span><span class=\"entry-name\">A</span><code class=\"entry-rhs\"> : int * int -&gt; tdzdz</code></code><div class=\"entry-comment\"><div></div></div>"}}
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Type","name":"tdzdz"},{"kind":"Constructor","name":"B"}],"doc":"Bliiiiiiiiiii","kind":{"kind":"Constructor","args":{"kind":"Tuple","vals":["int list","int"]},"res":"tdzdz"},"display":{"url":"page/Main/index.html#type-tdzdz.B","html":"<code class=\"entry-kind\">cons</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.tdzdz.</span><span class=\"entry-name\">B</span><code class=\"entry-rhs\"> : int list * int -&gt; tdzdz</code></code><div class=\"entry-comment\"><div><p>Bliiiiiiiiiii</p></div></div>"}}
   {"id":[{"kind":"Root","name":"J"}],"doc":"a paragraph two","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/J/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">J</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div>"}}
+  {"id":[{"kind":"Root","name":"Main"}],"doc":"x + 1","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div>"}}
+  {"id":[{"kind":"Root","name":"Main"}],"doc":"a paragraph two","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div>"}}
+  {"id":[{"kind":"Root","name":"Main"}],"doc":"a paragraph","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div>"}}
+  {"id":[{"kind":"Root","name":"Main"}],"doc":"and another","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div>"}}
+  {"id":[{"kind":"Root","name":"Main"}],"doc":"and this is a paragraph","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div><p>and this is a paragraph</p></div></div>"}}
+  {"id":[{"kind":"Root","name":"Main"}],"doc":"blibli","kind":{"kind":"Doc","subkind":"CodeBlock"},"display":{"url":"page/Main/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div>"}}
+  {"id":[{"kind":"Root","name":"Main"}],"doc":"verbatim","kind":{"kind":"Doc","subkind":"Verbatim"},"display":{"url":"page/Main/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">Main</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div>"}}
   {"id":[{"kind":"Page","name":"page"}],"doc":"A paragraph","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>A paragraph</p></div></div>"}}
   {"id":[{"kind":"Page","name":"page"}],"doc":"a list of things","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>a list <em>of</em> things</p></div></div>"}}
   {"id":[{"kind":"Page","name":"page"}],"doc":"bliblib","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><p>bliblib</p></div></div>"}}
   {"id":[{"kind":"Page","name":"page"}],"doc":"and code","kind":{"kind":"Doc","subkind":"CodeBlock"},"display":{"url":"page/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>and code</code></pre></div></div>"}}
   {"id":[{"kind":"Page","name":"page"}],"doc":"some verbatim","kind":{"kind":"Doc","subkind":"Verbatim"},"display":{"url":"page/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">page</span></code><div class=\"entry-comment\"><div><pre>some verbatim</pre></div></div>"}}
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"x + 1","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div>"}}
-  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"x + 1","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p><code class=\"odoc-katex-math\">x + 1</code></p></div></div>"}}
-  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"a paragraph two","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph two</p></div></div>"}}
-  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"a paragraph","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div>"}}
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"a paragraph","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>a paragraph</p></div></div>"}}
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"and another","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div>"}}
-  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"and another","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><p>and another</p></div></div>"}}
-  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"blibli","kind":{"kind":"Doc","subkind":"CodeBlock"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div>"}}
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"blibli","kind":{"kind":"Doc","subkind":"CodeBlock"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre class=\"language-ocaml\"><code>blibli</code></pre></div></div>"}}
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"verbatim","kind":{"kind":"Doc","subkind":"Verbatim"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div>"}}
-  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"I"}],"doc":"verbatim","kind":{"kind":"Doc","subkind":"Verbatim"},"display":{"url":"page/Main/I/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">I</span></code><div class=\"entry-comment\"><div><pre>verbatim</pre></div></div>"}}
-  {"id":[{"kind":"Root","name":"Main"},{"kind":"Module","name":"X"}],"doc":"and this is a paragraph","kind":{"kind":"Doc","subkind":"Paragraph"},"display":{"url":"page/Main/X/index.html","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">X</span></code><div class=\"entry-comment\"><div><p>and this is a paragraph</p></div></div>"}}
   {"id":[{"kind":"Root","name":"Main"},{"kind":"Label","name":"this-is-a-title"}],"doc":"this is a title","kind":{"kind":"Doc","subkind":"Heading"},"display":{"url":"page/Main/index.html#this-is-a-title","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">Main.</span><span class=\"entry-name\">this-is-a-title</span></code><div class=\"entry-comment\"><div><p>this is a title</p></div></div>"}}
   {"id":[{"kind":"Page","name":"page"},{"kind":"Label","name":"a-title"}],"doc":"A title","kind":{"kind":"Doc","subkind":"Heading"},"display":{"url":"page/index.html#a-title","html":"<code class=\"entry-kind\">doc</code><code class=\"entry-title\"><span class=\"prefix-name\">page.</span><span class=\"entry-name\">a-title</span></code><div class=\"entry-comment\"><div><p>A title</p></div></div>"}}
   {"id":[{"kind":"Root","name":"J"}],"doc":"a paragraph one","kind":{"kind":"Module"},"display":{"url":"page/J/index.html","html":"<code class=\"entry-kind\">mod</code><code class=\"entry-title\"><span class=\"prefix-name\">.</span><span class=\"entry-name\">J</span></code><div class=\"entry-comment\"><div><p>a paragraph one</p></div></div>"}}
@@ -179,13 +227,14 @@ themselves).
   Root-J
   Root-J.Value-uu
   Root-Main
+  Root-Main
+  Root-Main
+  Root-Main
+  Root-Main
+  Root-Main
+  Root-Main
+  Root-Main
   Root-Main.Label-this-is-a-title
-  Root-Main.Module-I
-  Root-Main.Module-I
-  Root-Main.Module-I
-  Root-Main.Module-I
-  Root-Main.Module-I
-  Root-Main.Module-I
   Root-Main.Module-I
   Root-Main.Module-I
   Root-Main.Module-I
@@ -196,7 +245,6 @@ themselves).
   Root-Main.Module-I.Value-y
   Root-Main.Module-M
   Root-Main.Module-M.Type-t
-  Root-Main.Module-X
   Root-Main.Module-X
   Root-Main.Module-X.Value-c
   Root-Main.Type-t
