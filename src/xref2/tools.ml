@@ -1402,17 +1402,17 @@ and handle_canonical_module env p2 =
 
 and handle_canonical_module_type env p2 =
   let cp2 = Component.Of_Lang.(module_type_path (empty ()) p2) in
-  let strip_alias : Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
+  let rec strip : Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
     function
-    | `AliasModuleType (_, p) -> p
+    | `AliasModuleType (_, p) -> strip p
+    | `CanonicalModuleType (p, _) -> strip p
     | p -> p
   in
   let resolve env p =
     resolve_module_type env p >>= fun (p, m) ->
     (* Note, we reresolve here in case any parent module has a canonical
-       constructor to deal with - we know there's no canonicalmoduletype as we've
-       explicitly asked for it not to be added *)
-    Ok (reresolve_module_type env (strip_alias p), m)
+       constructor to deal with *)
+    Ok (reresolve_module_type env (strip p), m)
   in
   let lang_of cpath =
     (Lang_of.(Path.resolved_module_type (empty ()) cpath)
@@ -1428,12 +1428,18 @@ and handle_canonical_type env p2 =
     (Lang_of.(Path.resolved_type (empty ()) cpath)
       :> Odoc_model.Paths.Path.Resolved.t)
   in
+
+  let rec strip : Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
+   fun x -> match x with `CanonicalType (x, _) -> strip x | _ -> x
+  in
+
   let resolve env p =
     match resolve_type env p with
     | Ok (_, `FType_removed _) -> Error `Find_failure
     | Ok (x, y) ->
         (* See comment in handle_canonical_module_type for why we're reresolving here *)
-        Ok (reresolve_type env x, y)
+        let r = reresolve_type env (strip x) in
+        Ok (r, y)
     | Error y -> Error y
   in
   match canonical_helper env resolve lang_of c_ty_poss cp2 with
