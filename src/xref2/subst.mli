@@ -9,8 +9,6 @@ val unresolve_opaque_paths : t -> t
 
 val path_invalidate_module : Ident.path_module -> t -> t
 
-val mto_invalidate_module : Ident.path_module -> t -> t
-
 val add_module :
   Ident.path_module -> Cpath.module_ -> Cpath.Resolved.module_ -> t -> t
 
