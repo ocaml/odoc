@@ -2000,9 +2000,7 @@ and fragmap :
      test for an example of why this is necessary *)
   let sub_of_substituted x sub =
     let x = (x :> Ident.path_module) in
-    Subst.add_module_substitution x sub
-    |> Subst.path_invalidate_module x
-    |> Subst.mto_invalidate_module x
+    Subst.add_module_substitution x sub |> Subst.path_invalidate_module x
   in
 
   let substituted_sub =
