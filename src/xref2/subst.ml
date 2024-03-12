@@ -617,10 +617,8 @@ and functor_parameter s t =
 and module_type_type_of_desc s t =
   let open Component.ModuleType in
   match t with
-  | ModPath p ->
-      ModPath (module_path s p)
-  | StructInclude p ->
-      StructInclude (module_path s p)
+  | ModPath p -> ModPath (module_path s p)
+  | StructInclude p -> StructInclude (module_path s p)
 
 and u_module_type_expr s t =
   let open Component.ModuleType.U in
@@ -641,10 +639,8 @@ and u_module_type_expr s t =
   | With (subs, e) ->
       With
         (List.map (with_module_type_substitution s) subs, u_module_type_expr s e)
-  | TypeOf (t_desc, t_original_path ) ->
-      TypeOf
-        ( module_type_type_of_desc s t_desc,
-          t_original_path )
+  | TypeOf (t_desc, t_original_path) ->
+      TypeOf (module_type_type_of_desc s t_desc, t_original_path)
 
 and module_type_expr s t =
   let open Component.ModuleType in
@@ -666,8 +662,12 @@ and module_type_expr s t =
           w_expr = u_module_type_expr s w_expr;
         }
   | TypeOf t ->
-        TypeOf
-          { t with t_desc = module_type_type_of_desc s t.t_desc; t_expansion=option_ simple_expansion s t.t_expansion }
+      TypeOf
+        {
+          t with
+          t_desc = module_type_type_of_desc s t.t_desc;
+          t_expansion = option_ simple_expansion s t.t_expansion;
+        }
 
 and with_module_type_substitution s sub =
   let open Component.ModuleType in
@@ -1000,7 +1000,5 @@ and apply_sig_map_items s items =
   List.rev_map (apply_sig_map_item s) items |> List.rev
 
 and apply_sig_map s items removed =
-  let dont_recompile =
-    List.length s.path_invalidating_modules = 0
-  in
+  let dont_recompile = List.length s.path_invalidating_modules = 0 in
   (apply_sig_map_items s items, removed_items s removed, dont_recompile)

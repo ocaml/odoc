@@ -131,8 +131,7 @@ end
 
 module ModuleName = struct
   include Name
-  let is_hidden s =
-    is_hidden s || contains_double_underscore (to_string s)
+  let is_hidden s = is_hidden s || contains_double_underscore (to_string s)
 end
 
 module ModuleTypeName = Name

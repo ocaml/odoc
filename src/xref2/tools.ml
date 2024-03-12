@@ -1430,12 +1430,9 @@ and handle_canonical_type env p2 =
   in
 
   let rec strip : Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
-    fun x ->
-     match x with
-     | `CanonicalType (x, _) -> strip x
-     | _ -> x
-   in
- 
+   fun x -> match x with `CanonicalType (x, _) -> strip x | _ -> x
+  in
+
   let resolve env p =
     match resolve_type env p with
     | Ok (_, `FType_removed _) -> Error `Find_failure
@@ -2003,8 +2000,7 @@ and fragmap :
      test for an example of why this is necessary *)
   let sub_of_substituted x sub =
     let x = (x :> Ident.path_module) in
-    Subst.add_module_substitution x sub
-    |> Subst.path_invalidate_module x
+    Subst.add_module_substitution x sub |> Subst.path_invalidate_module x
   in
 
   let substituted_sub =
@@ -2234,7 +2230,8 @@ and resolve_module_type_fragment :
         | Ok (_m : expansion) -> f'
         | Error
             ( `UnresolvedForwardPath | `UnresolvedPath _ | `OpaqueModule
-            | `UnresolvedOriginalPath _ ) -> f'
+            | `UnresolvedOriginalPath _ ) ->
+            f'
       in
       Some (fixup_module_type_cfrag f'')
 
@@ -2336,7 +2333,8 @@ let resolve_module_type_path env p =
   | Ok _ -> Ok p
   | Error `OpaqueModule -> Ok (`OpaqueModuleType p)
   | Error
-      (`UnresolvedForwardPath | `UnresolvedPath _ | `UnresolvedOriginalPath _) ->
+      (`UnresolvedForwardPath | `UnresolvedPath _ | `UnresolvedOriginalPath _)
+    ->
       Ok p
 
 let resolve_type_path env p = resolve_type env p >>= fun (p, _) -> Ok p

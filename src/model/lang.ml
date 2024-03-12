@@ -76,7 +76,7 @@ and ModuleType : sig
 
   module U : sig
     (* Unexpanded (aside from Signature, obviously) *)
-    
+
     type expr =
       | Path of Path.ModuleType.t
       | Signature of Signature.t
