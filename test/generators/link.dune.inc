@@ -3854,7 +3854,10 @@
 (subdir
  latex
  (rule
-  (targets Module_type_of.tex.gen Module_type_of.T.tex.gen)
+  (targets
+   Module_type_of.tex.gen
+   Module_type_of.T.tex.gen
+   Module_type_of.T.N.tex.gen)
   (action
    (run
     odoc
@@ -3876,6 +3879,12 @@
   (alias runtest)
   (action
    (diff Module_type_of.T.tex Module_type_of.T.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (action
+   (diff Module_type_of.T.N.tex Module_type_of.T.N.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
 

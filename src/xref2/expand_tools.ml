@@ -24,9 +24,6 @@ let handle_expansion env id expansion =
         let subst =
           Subst.add_module (arg.id :> Ident.path_module) p rp Subst.identity
         in
-        let subst =
-          Subst.mto_invalidate_module (arg.id :> Ident.path_module) subst
-        in
         (env', Subst.module_type_expr subst expr)
   in
   let rec expand id env expansion :

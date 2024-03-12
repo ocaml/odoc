@@ -20,4 +20,4 @@ Module_type_of\.T
 .sp 
 \f[CB]module\fR M = X
 .sp 
-\f[CB]module\fR N : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+\f[CB]module\fR N : \f[CB]module\fR \f[CB]type\fR \f[CB]of\fR \f[CB]struct\fR \f[CB]include\fR M \f[CB]end\fR
