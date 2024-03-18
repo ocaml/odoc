@@ -159,7 +159,12 @@ let string_of_kind =
 
 let value_rhs (t : Entry.value_entry) = " : " ^ Text.of_type t.type_
 
-let of_strings = Odoc_html_frontend.of_strings
+let of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
+  [
+    Tyxml.Html.Unsafe.data
+      (Odoc_html_frontend.of_strings ~kind ~prefix_name ~name ~rhs
+         ~typedecl_params ~doc);
+  ]
 let rhs_of_kind (entry : Entry.kind) =
   match entry with
   | TypeDecl td -> typedecl_rhs td
@@ -175,7 +180,9 @@ let names_of_id id =
   let fullname = Paths.Identifier.fullname id in
   let prefix_name, name =
     let rev_fullname = List.rev fullname in
-    ( rev_fullname |> List.tl |> List.rev |> String.concat ".",
+    ( rev_fullname |> List.tl |> List.rev
+      |> List.map (fun str -> str ^ ".")
+      |> String.concat "",
       List.hd rev_fullname )
   in
   (prefix_name, name)

@@ -14,12 +14,18 @@
 - Updated colors for code fragments (@EmileTrotignon, #1023)
 - Fixed complexity of looking up `.odoc` files (@panglesd, #1075)
 
+### Changed
+
+- `Odoc_html_frontend` does not use tyxml, for smaller javascript sizes.
+  (@EmileTrotignon, #1072)
+
 # Fixed
 
 - Revert to outputing a file (without content) when rendering a hidden
   compilation unit. This fixes cases where the dune rules would
   fail. (@panglesd, #1069)
 - Fix issue #1066 with extended opens (@jonludlam, #1082)
+
 
 # 2.4.0
 
