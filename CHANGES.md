@@ -9,7 +9,7 @@
 ### Changed
 
 - `Odoc_html_frontend` does not use tyxml, for smaller javascript sizes.
-  (#EmileTrotignon, #1072)
+  (@EmileTrotignon, #1072)
 
 # Fixed
 
