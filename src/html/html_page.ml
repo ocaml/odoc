@@ -31,7 +31,7 @@ let html_of_toc toc =
 
 let html_of_search () =
   let search_bar =
-    Html.(input ~a:[ a_class [ "search-bar" ]; a_placeholder "🔎 Search..." ] ())
+    Html.(input ~a:[ a_class [ "search-bar" ]; a_placeholder "🔎 Type '/' to search..." ] ())
   in
   let snake = Html.(div ~a:[ a_class [ "search-snake" ] ] []) in
   let search_result = Html.div ~a:[ Html.a_class [ "search-result" ] ] [] in

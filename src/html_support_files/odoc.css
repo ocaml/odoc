@@ -1034,7 +1034,7 @@ td.def-doc *:first-child {
   white-space: nowrap;
 }
 
-.odoc-search .search-entry:focus-visible {
+.odoc-search .search-result .search-entry:focus-visible {
   box-shadow: none;
   background-color: var(--target-background);
 }

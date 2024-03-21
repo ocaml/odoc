@@ -8,6 +8,8 @@
 - Separate compilation of interface and implementation files, using a new
   `compile-src` command (@panglesd, #1067).
 - Add clock emoji before `@since` tag (@yawaramin, #1089)
+- Navigation for the search bar : use '/' to enter search, up and down arrows to
+  select a result, and enter to follow the selected link. (@EmileTrotignon, #1088)
 
 ### Changed
 
