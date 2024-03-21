@@ -32,7 +32,11 @@ let cmt_of_string s =
     let env = Compmisc.initial_env () in
     let l = Lexing.from_string s in
     let p = Parse.implementation l in
+#if OCAML_VERSION < (5,2,0)
     Typemod.type_implementation "" "" "" env p
+#else
+    Typemod.type_implementation (Unit_info.make ~source_file:"" "") env p
+#endif
 
 let parent = Odoc_model.Paths.Identifier.Mk.page (None, Odoc_model.Names.PageName.make_std "None")
 let id = Odoc_model.Paths.Identifier.Mk.root (Some parent, Odoc_model.Names.ModuleName.make_std "Root")
@@ -626,7 +630,10 @@ let mkresolver () =
   Odoc_odoc.Resolver.create
     ~important_digests:false
     ~directories:(List.map Odoc_odoc.Fs.Directory.of_string
-#if OCAML_VERSION >= (4,8,0)
+#if OCAML_VERSION >= (5,2,0)
+  (let paths = Load_path.get_paths () in
+   List.filter (fun s -> s <> "") (paths.visible @ paths.hidden))
+#elif OCAML_VERSION >= (4,8,0)
     (Load_path.get_paths () |> List.filter (fun s -> s <> ""))
 #else
     !Config.load_path

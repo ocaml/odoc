@@ -67,6 +67,7 @@ let lookup_shape :
     Shape.t ->
     Identifier.SourceLocation.t option =
  fun env query ->
+#if OCAML_VERSION < (5,2,0)
   let module Reduce = Shape.Make_reduce (struct
     type env = unit
     let fuel = 10
@@ -80,6 +81,26 @@ let lookup_shape :
   let result = try Some (Reduce.reduce () query) with Not_found -> None in
   result >>= fun result ->
   result.uid >>= fun uid ->
+#else
+  let module Reduce = Shape_reduce.Make(struct
+    let fuel = 10
+    let read_unit_shape ~unit_name =
+      match Env.lookup_unit unit_name env with
+      | Some (Found unit) -> (
+          match unit.shape_info with
+          | Some (shape, _) -> Some shape
+          | None -> None)
+       | _ -> None
+  end) in
+  let result = try Some (Reduce.reduce_for_uid Ocaml_env.empty query) with Not_found -> None in
+  result >>= (function
+    | Resolved uid -> Some uid
+    | Resolved_alias (_::_ as l) ->
+      let last = List.hd (List.rev l) in
+      Some last
+    | Approximated x -> x
+    | _ -> None) >>= fun uid ->
+#endif
   unit_of_uid uid >>= fun unit_name ->
   match Env.lookup_unit unit_name env with
   | None 
