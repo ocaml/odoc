@@ -6,8 +6,7 @@ let documents_of_unit ~warnings_options ~syntax ~renderer ~extra unit =
       renderer.Renderer.extra_documents ~syntax extra (CU unit))
   |> Odoc_model.Error.handle_warnings ~warnings_options
   >>= fun extra_docs ->
-  Ok
-    (Renderer.document_of_compilation_unit ~syntax unit :: extra_docs)
+  Ok (Renderer.document_of_compilation_unit ~syntax unit :: extra_docs)
 
 let documents_of_page ~warnings_options ~syntax ~renderer ~extra page =
   Odoc_model.Error.catch_warnings (fun () ->

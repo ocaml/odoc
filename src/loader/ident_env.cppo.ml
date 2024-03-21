@@ -91,7 +91,11 @@ let rec extract_signature_type_items vis items =
       then extract_signature_type_items vis rest
       else
         let constrs = match td.type_kind with
+#if OCAML_VERSION < (5,2,0)
           | Types.Type_abstract -> []
+#else
+          | Types.Type_abstract _ -> []
+#endif
           | Type_record (_, _) -> []
 #if OCAML_VERSION < (4,13,0)
           | Type_variant cstrs ->
@@ -274,8 +278,18 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
 let rec read_pattern hide_item pat =
   let open Typedtree in
   match pat.pat_desc with
-  | Tpat_var(id, loc) -> [`Value(id, hide_item, Some loc.loc)]
-  | Tpat_alias(pat, id, loc) -> `Value(id, hide_item, Some loc.loc) :: read_pattern hide_item pat
+#if OCAML_VERSION < (5,2,0)
+  | Tpat_var(id, loc) ->
+#else
+  | Tpat_var(id, loc, _) ->
+#endif
+    [`Value(id, hide_item, Some loc.loc)]
+#if OCAML_VERSION < (5,2,0)
+  | Tpat_alias(pat, id, loc) ->
+#else
+  | Tpat_alias(pat, id, loc, _) ->
+#endif
+    `Value(id, hide_item, Some loc.loc) :: read_pattern hide_item pat
   | Tpat_record(pats, _) -> 
       List.concat (List.map (fun (_, _, pat) -> read_pattern hide_item pat) pats)
 #if OCAML_VERSION < (4,13,0)

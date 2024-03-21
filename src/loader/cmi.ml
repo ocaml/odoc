@@ -316,7 +316,11 @@ let mark_constructor_args =
 #endif
 
 let mark_type_kind = function
+#if OCAML_VERSION >= (5,2,0)
+  | Type_abstract _ -> ()
+#else
   | Type_abstract -> ()
+#endif
 #if OCAML_VERSION >= (4,13,0)
   | Type_variant (cds,_) ->
 #else
@@ -639,7 +643,12 @@ let read_constructor_declaration env parent cd =
 
 let read_type_kind env parent =
   let open TypeDecl.Representation in function
-    | Type_abstract -> None
+#if OCAML_VERSION >= (5,2,0)
+  | Type_abstract _ ->
+#else
+  | Type_abstract ->
+#endif
+    None
 #if OCAML_VERSION >= (4,13,0)
   | Type_variant (cstrs,_) ->
 #else
@@ -716,7 +725,11 @@ let read_type_declaration env parent id decl =
   let representation = read_type_kind env (id :> Identifier.DataType.t) decl.type_kind in
   let abstr =
     match decl.type_kind with
-      Type_abstract ->
+#if OCAML_VERSION >= (5,2,0)
+    | Type_abstract _ ->
+#else
+    | Type_abstract ->
+#endif
         decl.type_manifest = None || decl.type_private = Private
     | Type_record _ ->
         decl.type_private = Private
