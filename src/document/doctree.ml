@@ -369,7 +369,7 @@ end = struct
 
   and subpage : Subpage.t -> bool = fun x -> page x.content
 
-  and page : Page.t -> bool = fun x -> items x.items
+  and page : Page.t -> bool = fun x -> items x.preamble || items x.items
 
   and alternative : Alternative.t -> bool = function
     | Expansion x -> documentedsrc x.expansion
