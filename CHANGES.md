@@ -1,3 +1,9 @@
+# Unreleased
+
+### Fixed
+
+- Fix missing katex headers (@panglesd, #1096)
+
 # 2.4.2
 
 ### Added
