@@ -617,7 +617,7 @@ and code_span buffer nesting_level start_offset input = parse
           ~in_what:(Token.describe (`Code_span "")));
       Buffer.add_char buffer ' ';
       code_span buffer nesting_level start_offset input lexbuf }
-  | newline horizontal_space+
+  | newline horizontal_space*
     { Buffer.add_char buffer ' ';
       code_span buffer nesting_level start_offset input lexbuf }
 
