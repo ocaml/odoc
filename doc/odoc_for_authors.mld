@@ -276,6 +276,22 @@ For inline, language agnostic source code style, use square brackets: [ [ ... ] 
 (** Here, [f 0] is [None] *)
 ]}
 
+Two newlines in a row in an inline codeblock are forbidden, but in the interest
+of the 80 char rule, a single newline followed by horizontal space in an inline
+codeblock is considered as a single space:
+
+{[
+(**
+  A very loooooooooooooooooooooooong line and [List.map (fun x -> x +1)].
+
+  is equivalent to:
+
+  A very loooooooooooooooooooooooong line and [List.map
+  (fun x -> x +1)].
+
+*)
+]}
+
 All the other existing ways to insert code are meant to be used for code blocks,
 not inline code fragments. Those will be formatted as a code block and will end
 the paragraph. Attempting to use them inline will trigger a warning.
