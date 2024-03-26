@@ -551,7 +551,7 @@ let%expect_test _ =
       test "{2 [foo\nbar\r\nbaz]}";
       [%expect
         {|
-        {"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar--baz"]},[{"`Code_span":"foo\nbar\r\nbaz"}]]}],"warnings":[]} |}]
+        {"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar-baz"]},[{"`Code_span":"foo bar baz"}]]}],"warnings":[]} |}]
 
     let nested_style =
       test "{2 {e foo bar}}";

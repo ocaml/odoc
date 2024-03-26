@@ -797,8 +797,7 @@ let%expect_test _ =
         {|
     ((output
       (((f.ml (1 0) (2 4))
-        (paragraph (((f.ml (1 0) (2 4)) (code_span  "foo\
-                                                   \nbar")))))))
+        (paragraph (((f.ml (1 0) (2 4)) (code_span "foo bar")))))))
      (warnings ())) |}]
 
     let cr_lf_preserved =
@@ -807,8 +806,7 @@ let%expect_test _ =
         {|
     ((output
       (((f.ml (1 0) (2 4))
-        (paragraph (((f.ml (1 0) (2 4)) (code_span  "foo\r\
-                                                   \nbar")))))))
+        (paragraph (((f.ml (1 0) (2 4)) (code_span "foo bar")))))))
      (warnings ())) |}]
 
     let no_double_new_line =
