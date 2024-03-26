@@ -31,6 +31,6 @@ The rendered headings
   --
      <h2 id="an-url--and-with-text-in-a-title">
       <a href="#an-url--and-with-text-in-a-title" class="anchor"></a>An
-       url <a href="http://ocaml.org">http://ocaml.org</a> and 
-      <a href="http://ocaml.org">with text</a> in a title
+       url 
+      <a href="http://ocaml.org" class="external-link">http://ocaml.org</a>
 

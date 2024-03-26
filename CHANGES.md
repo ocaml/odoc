@@ -11,6 +11,8 @@
 - Navigation for the search bar : use '/' to enter search, up and down arrows to
   select a result, and enter to follow the selected link. (@EmileTrotignon, #1088)
 - OCaml 5.2.0 compatibility (@Octachron, #1094)
+- Added a class to distinguish external and internal links in the html output
+  (@panglesd, #767)
 
 ### Changed
 

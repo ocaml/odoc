@@ -143,7 +143,10 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
         let content = inline_nolink ~emph_level c in
         [ Html.span ~a content ]
     | Link (href, c) ->
-        let a = (a :> Html_types.a_attrib Html.attrib list) in
+        let a =
+          (class_ ("external-link" :: t.attr)
+            :> Html_types.a_attrib Html.attrib list)
+        in
         let content = inline_nolink ~emph_level c in
         [ Html.a ~a:(Html.a_href href :: a) content ]
     | InternalLink c -> internallink ~config ~emph_level ~resolve ~a c
