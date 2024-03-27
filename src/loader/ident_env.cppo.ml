@@ -131,11 +131,11 @@ let rec extract_signature_type_items vis items =
       `ClassType (id, obj_id, None, vis'=Hidden, None) :: extract_signature_type_items vis rest
 #endif
 
-    | Sig_typext (id, constr, Text_exception, Exported) :: rest ->
+    | Sig_typext (id, constr, Text_exception, vis') :: rest when vis=vis' ->
       `Exception (id, Some constr.ext_loc)
       :: extract_signature_type_items vis rest
 
-    | Sig_typext (id, constr, _, Exported) :: rest ->
+    | Sig_typext (id, constr, _, vis') :: rest when vis=vis'->
       `Extension (id, Some constr.ext_loc)
       :: extract_signature_type_items vis rest
 
