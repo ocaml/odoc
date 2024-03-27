@@ -27,7 +27,7 @@
 - Revert to outputing a file (without content) when rendering a hidden
   compilation unit. This fixes cases where the dune rules would
   fail. (@panglesd, #1069)
-- Fix issue #1066 with extended opens (@jonludlam, #1082)
+- Fix issues #1066 and #1095 with extended opens (@jonludlam, #1082, #1100)
 - Fix missing katex headers (@panglesd, #1096)
 
 
