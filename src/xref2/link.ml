@@ -365,6 +365,51 @@ and open_ env parent = function
   | { Odoc_model__Lang.Open.doc; _ } as open_ ->
       { open_ with doc = comment_docs env parent doc }
 
+let warn_on_hidden_representation (id : Id.Type.t)
+    (r : Lang.TypeDecl.Representation.t) =
+  let open Paths.Identifier in
+  let rec internal_typ_exp typ_expr =
+    let open Lang.TypeExpr in
+    let open Paths.Path in
+    match typ_expr with
+    | Constr (p, ts) ->
+        is_hidden (p :> Paths.Path.t)
+        || List.exists (fun t -> internal_typ_exp t) ts
+    | Poly (_, t) | Alias (t, _) -> internal_typ_exp t
+    | Arrow (_, t, t2) -> internal_typ_exp t || internal_typ_exp t2
+    | Tuple ts | Class (_, ts) -> List.exists (fun t -> internal_typ_exp t) ts
+    | _ -> false
+  in
+
+  let internal_cstr_arg t =
+    let open Lang.TypeDecl.Constructor in
+    let open Lang.TypeDecl.Field in
+    match t.args with
+    | Tuple type_exprs ->
+        List.exists (fun type_expr -> internal_typ_exp type_expr) type_exprs
+    | Record fields ->
+        List.exists (fun field -> internal_typ_exp field.type_) fields
+  in
+
+  let internal_field t =
+    let open Lang.TypeDecl.Field in
+    internal_typ_exp t.type_
+  in
+
+  let fmt_cfg = Component.Fmt.{ default with short_paths = true } in
+  match r with
+  | Variant constructors ->
+      if List.exists internal_cstr_arg constructors then
+        Lookup_failures.report_warning "@[<2>Hidden constructors in type '%a'@]"
+          Component.Fmt.(model_identifier fmt_cfg)
+          (id :> Id.any)
+  | Record fields ->
+      if List.exists internal_field fields then
+        Lookup_failures.report_warning "@[<2>Hidden fields in type '%a'@]"
+          Component.Fmt.(model_identifier fmt_cfg)
+          (id :> Id.any)
+  | Extensible -> ()
+
 let rec unit env t =
   let open Compilation_unit in
   let content =
@@ -877,7 +922,12 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
     | _ -> None
   in
   let representation =
-    Opt.map (type_decl_representation env parent) t.representation
+    Opt.map
+      (fun r ->
+        let r' = type_decl_representation env parent r in
+        warn_on_hidden_representation t.id r';
+        r')
+      t.representation
   in
   let default = { t with source_loc; equation; doc; representation } in
   match hidden_path with
