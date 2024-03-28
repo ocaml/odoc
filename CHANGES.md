@@ -18,6 +18,8 @@
 - Fixed complexity of looking up `.odoc` files (@panglesd, #1075)
 - Normalize whitespaces in codespans (@gpetiot, #1085)
   A newline followed by any whitespaces is normalized as one space character.
+- Show all variant constructors, even if they contain hidden types
+  (@jonludlam, #1105)
 
 ### Changed
 
