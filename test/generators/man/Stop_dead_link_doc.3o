@@ -43,10 +43,33 @@ field : Foo\.t;
 | \f[CB]Bar__\fR \f[CB]of\fR Foo\.t option
 .br 
 .sp 
-\f[CB]type\fR another_foo
+\f[CB]type\fR another_foo = 
+.br 
+.ti +2
+| \f[CB]Bar\fR \f[CB]of\fR {Another_Foo}1\.t
+.br 
 .sp 
-\f[CB]type\fR another_bar
+\f[CB]type\fR another_bar = 
+.br 
+.ti +2
+| \f[CB]Bar\fR \f[CB]of\fR {
+.br 
+.ti +6
+field : {Another_Foo}1\.t;
+.br 
+.ti +4
+}
+.br 
 .sp 
-\f[CB]type\fR another_foo_
+\f[CB]type\fR another_foo_ = 
+.br 
+.ti +2
+| \f[CB]Bar_\fR \f[CB]of\fR int * {Another_Foo}1\.t * int
+.br 
 .sp 
-\f[CB]type\fR another_bar_
+\f[CB]type\fR another_bar_ = 
+.br 
+.ti +2
+| \f[CB]Bar__\fR \f[CB]of\fR {Another_Foo}1\.t option
+.br 
+

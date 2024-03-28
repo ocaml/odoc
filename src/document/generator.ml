@@ -594,27 +594,6 @@ module Make (Syntax : SYNTAX) = struct
             O.documentedSrc (cstr ++ O.txt " " ++ O.keyword "of" ++ O.txt " ")
             @ record fields
 
-    let rec read_typ_exp typ_expr =
-      let open Lang.TypeExpr in
-      let open Paths.Path in
-      match typ_expr with
-      | Constr (p, ts) ->
-          is_hidden (p :> Paths.Path.t)
-          || List.exists (fun t -> read_typ_exp t) ts
-      | Poly (_, t) | Alias (t, _) -> read_typ_exp t
-      | Arrow (_, t, t2) -> read_typ_exp t || read_typ_exp t2
-      | Tuple ts | Class (_, ts) -> List.exists (fun t -> read_typ_exp t) ts
-      | _ -> false
-
-    let internal_cstr_arg t =
-      let open Lang.TypeDecl.Constructor in
-      let open Lang.TypeDecl.Field in
-      match t.args with
-      | Tuple type_exprs ->
-          List.exists (fun type_expr -> read_typ_exp type_expr) type_exprs
-      | Record fields ->
-          List.exists (fun field -> read_typ_exp field.type_) fields
-
     let variant cstrs : DocumentedSrc.t =
       let constructor id args res =
         match Url.from_identifier ~stop_before:true id with
@@ -634,7 +613,6 @@ module Make (Syntax : SYNTAX) = struct
       | _ :: _ ->
           let rows =
             cstrs
-            |> List.filter (fun cstr -> not (internal_cstr_arg cstr))
             |> List.map (fun cstr ->
                    let open Odoc_model.Lang.TypeDecl.Constructor in
                    let url, attrs, code =
