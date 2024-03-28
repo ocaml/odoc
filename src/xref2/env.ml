@@ -795,9 +795,6 @@ let open_module_type_substitution : Lang.ModuleTypeSubstitution.t -> t -> t =
   in
   add_module_type t.Lang.ModuleTypeSubstitution.id ty env
 
-let inherit_resolver env =
-  match env.resolver with Some r -> set_resolver empty r | None -> empty
-
 let open_units resolver env =
   List.fold_left
     (fun env m ->
@@ -808,6 +805,13 @@ let open_units resolver env =
           | _ -> env)
       | _ -> env)
     env resolver.open_units
+
+let inherit_resolver env =
+  match env.resolver with
+  | Some r ->
+      let e = set_resolver empty r in
+      open_units r e
+  | None -> empty
 
 let env_of_unit t ~linking resolver =
   let open Lang.Compilation_unit in
