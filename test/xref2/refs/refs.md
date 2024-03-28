@@ -2376,9 +2376,21 @@ let resolve_ref = resolve_ref_of_mli {|
          ihash = 814134997; ikey = "m_B.r_Root.p_None"}),
    t)
 # resolve_ref "C.t" ;;
-Exception:
-Failure
- "resolve_reference: Parent_sig: Unexpanded `module type of` expression: module type of identifier(root(Root).A,false)".
+- : ref =
+`Type
+  (`Identifier
+     {Odoc_model__Paths_types.iv =
+       `Module
+         ({Odoc_model__Paths_types.iv =
+            `Root
+              (Some
+                {Odoc_model__Paths_types.iv = `Page (None, None);
+                 ihash = 236059787; ikey = "p_None"},
+               Root);
+           ihash = 818126955; ikey = "r_Root.p_None"},
+          C);
+      ihash = 43786577; ikey = "m_C.r_Root.p_None"},
+   t)
 # resolve_ref "D.t" ;;
 - : ref =
 `Type

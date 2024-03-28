@@ -213,7 +213,11 @@ module General_paths = struct
       | `Forward x -> C ("`Forward", x, string)
       | `Dot (x1, x2) -> C ("`Dot", ((x1 :> p), x2), Pair (path, string))
       | `Apply (x1, x2) ->
-          C ("`Apply", ((x1 :> p), (x2 :> p)), Pair (path, path)))
+          C ("`Apply", ((x1 :> p), (x2 :> p)), Pair (path, path))
+      | `Substituted m -> C ("`Substituted", (m :> p), path)
+      | `SubstitutedMT m -> C ("`SubstitutedMT", (m :> p), path)
+      | `SubstitutedT m -> C ("`SubstitutedT", (m :> p), path)
+      | `SubstitutedCT m -> C ("`SubstitutedCT", (m :> p), path))
 
   and resolved_path : rp t =
     Variant
@@ -273,7 +277,11 @@ module General_paths = struct
           C
             ( "`ClassType",
               ((x1 :> rp), x2),
-              Pair (resolved_path, Names.classtypename) ))
+              Pair (resolved_path, Names.classtypename) )
+      | `Substituted c -> C ("`Substituted", (c :> rp), resolved_path)
+      | `SubstitutedMT c -> C ("`SubstitutedMT", (c :> rp), resolved_path)
+      | `SubstitutedT c -> C ("`SubstitutedT", (c :> rp), resolved_path)
+      | `SubstitutedCT c -> C ("`SubstitutedCT", (c :> rp), resolved_path))
 
   and reference : r t =
     Variant

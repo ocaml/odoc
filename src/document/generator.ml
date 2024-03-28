@@ -112,6 +112,10 @@ module Make (Syntax : SYNTAX) = struct
       match path with
       | `Identifier (id, _) ->
           unresolved [ inline @@ Text (Identifier.name id) ]
+      | `Substituted m -> from_path (m :> Path.t)
+      | `SubstitutedMT m -> from_path (m :> Path.t)
+      | `SubstitutedT m -> from_path (m :> Path.t)
+      | `SubstitutedCT m -> from_path (m :> Path.t)
       | `Root root -> unresolved [ inline @@ Text root ]
       | `Forward root -> unresolved [ inline @@ Text root ] (* FIXME *)
       | `Dot (prefix, suffix) ->
@@ -1220,37 +1224,37 @@ module Make (Syntax : SYNTAX) = struct
     let internal_module m =
       let open Lang.Module in
       match m.id.iv with
-      | `Module (_, name) when ModuleName.is_internal name -> true
+      | `Module (_, name) when ModuleName.is_hidden name -> true
       | _ -> false
 
     let internal_type t =
       let open Lang.TypeDecl in
       match t.id.iv with
-      | `Type (_, name) when TypeName.is_internal name -> true
+      | `Type (_, name) when TypeName.is_hidden name -> true
       | _ -> false
 
     let internal_value v =
       let open Lang.Value in
       match v.id.iv with
-      | `Value (_, name) when ValueName.is_internal name -> true
+      | `Value (_, name) when ValueName.is_hidden name -> true
       | _ -> false
 
     let internal_module_type t =
       let open Lang.ModuleType in
       match t.id.iv with
-      | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
+      | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
     let internal_module_substitution t =
       let open Lang.ModuleSubstitution in
       match t.id.iv with
-      | `Module (_, name) when ModuleName.is_internal name -> true
+      | `Module (_, name) when ModuleName.is_hidden name -> true
       | _ -> false
 
     let internal_module_type_substitution t =
       let open Lang.ModuleTypeSubstitution in
       match t.id.iv with
-      | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
+      | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
     let rec signature (s : Lang.Signature.t) =
@@ -1559,8 +1563,7 @@ module Make (Syntax : SYNTAX) = struct
     and umty_hidden : Odoc_model.Lang.ModuleType.U.expr -> bool = function
       | Path p -> Paths.Path.(is_hidden (p :> t))
       | With (_, expr) -> umty_hidden expr
-      | TypeOf { t_desc = ModPath m; _ }
-      | TypeOf { t_desc = StructInclude m; _ } ->
+      | TypeOf (ModPath m, _) | TypeOf (StructInclude m, _) ->
           Paths.Path.(is_hidden (m :> t))
       | Signature _ -> false
 
@@ -1608,7 +1611,7 @@ module Make (Syntax : SYNTAX) = struct
       | With (_, expr) when is_elidable_with_u expr ->
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       | With (subs, expr) -> mty_with subs expr
-      | TypeOf { t_desc; _ } -> mty_typeof t_desc
+      | TypeOf (t_desc, _) -> mty_typeof t_desc
 
     and mty : Odoc_model.Lang.ModuleType.expr -> text =
      fun m ->

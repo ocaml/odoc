@@ -146,9 +146,7 @@ let find find sg name =
 let module_lookup_to_signature_lookup env (ref, cp, m) =
   let rec handle_expansion : Tools.expansion -> _ = function
     | Functor (_, expr) -> (
-        match
-          Tools.expansion_of_module_type_expr ~mark_substituted:true env expr
-        with
+        match Tools.expansion_of_module_type_expr env expr with
         | Ok e -> handle_expansion e
         | Error _ as e -> e)
     | Signature sg -> Ok ((ref :> Resolved.Signature.t), `Module cp, sg)
@@ -187,7 +185,7 @@ module M = struct
       else (base_path', base_ref')
     in
     let p, r =
-      match Tools.get_module_path_modifiers env ~add_canonical:true m with
+      match Tools.get_module_path_modifiers env m with
       | None -> (base_path, base_ref)
       | Some (`Aliased cp) ->
           let cp = Tools.reresolve_module env cp in
@@ -223,7 +221,7 @@ module MT = struct
   type t = module_type_lookup_result
 
   let of_component env mt base_path base_ref : t =
-    match Tools.get_module_type_path_modifiers env ~add_canonical:true mt with
+    match Tools.get_module_type_path_modifiers env mt with
     | None -> (base_ref, base_path, mt)
     | Some (`AliasModuleType cp) ->
         let cp = Tools.reresolve_module_type env cp in

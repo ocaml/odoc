@@ -207,6 +207,7 @@ and ModuleType : sig
 
   type typeof_t = {
     t_desc : type_of_desc;
+    t_original_path : Cpath.module_;
     t_expansion : simple_expansion option;
   }
 
@@ -215,7 +216,7 @@ and ModuleType : sig
       | Path of Cpath.module_type
       | Signature of Signature.t
       | With of substitution list * expr
-      | TypeOf of typeof_t
+      | TypeOf of type_of_desc * Cpath.module_
   end
 
   type path_t = {
@@ -328,10 +329,10 @@ and Signature : sig
   (* When doing destructive substitution we keep track of the items that have been removed,
        and the path they've been substituted with *)
   type removed_item =
-    | RModule of Ident.module_ * Cpath.Resolved.module_
-    | RType of Ident.type_ * TypeExpr.t * TypeDecl.Equation.t
+    | RModule of Odoc_model.Names.ModuleName.t * Cpath.module_
+    | RType of Odoc_model.Names.TypeName.t * TypeExpr.t * TypeDecl.Equation.t
         (** [RType (_, texpr, eq)], [eq.manifest = Some texpr] *)
-    | RModuleType of Ident.module_type * ModuleType.expr
+    | RModuleType of Odoc_model.Names.ModuleTypeName.t * ModuleType.expr
 
   type t = {
     items : item list;
@@ -461,7 +462,6 @@ and Substitution : sig
     type_replacement : (TypeExpr.t * TypeDecl.Equation.t) PathTypeMap.t;
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
     path_invalidating_modules : Ident.path_module list;
-    module_type_of_invalidating_modules : Ident.path_module list;
     unresolve_opaque_paths : bool;
   }
 end =
@@ -863,13 +863,13 @@ module Fmt = struct
     let open Signature in
     match r with
     | RModule (id, path) ->
-        Format.fprintf ppf "module %a (%a)" Ident.fmt id
-          (resolved_module_path c) path
+        Format.fprintf ppf "module %a (%a)" ModuleName.fmt id (module_path c)
+          path
     | RType (id, texpr, eq) ->
-        Format.fprintf ppf "type %a %a = (%a)" type_params eq.params Ident.fmt
-          id (type_expr c) texpr
+        Format.fprintf ppf "type %a %a = (%a)" type_params eq.params
+          TypeName.fmt id (type_expr c) texpr
     | RModuleType (id, mty) ->
-        Format.fprintf ppf "module type %a = %a" Ident.fmt id
+        Format.fprintf ppf "module type %a = %a" ModuleTypeName.fmt id
           (module_type_expr c) mty
 
   and removed_item_list c ppf r =
@@ -909,7 +909,10 @@ module Fmt = struct
   and module_decl c ppf d =
     let open Module in
     match d with
-    | Alias (p, _) -> Format.fprintf ppf "=@ %a" (module_path c) p
+    | Alias (p, Some e) ->
+        Format.fprintf ppf "=@ %a@ %a" (module_path c) p
+          (simple_expansion c false) e
+    | Alias (p, None) -> Format.fprintf ppf "=@ %a" (module_path c) p
     | ModuleType mt ->
         Format.fprintf ppf ": %a%a" (module_type_expr c) mt
           (module_type_expansion c) mt
@@ -957,7 +960,7 @@ module Fmt = struct
     | With (subs, e) ->
         Format.fprintf ppf "%a with [%a]" (u_module_type_expr c) e
           (substitution_list c) subs
-    | TypeOf { t_desc; _ } -> module_type_type_of_desc c ppf t_desc
+    | TypeOf (t_desc, _) -> module_type_type_of_desc c ppf t_desc
 
   and module_type_expr c ppf mt =
     let open ModuleType in
@@ -1339,6 +1342,14 @@ module Fmt = struct
           (func :> path)
           (model_path c)
           (arg :> path)
+    | `Substituted m ->
+        wrap c "substituted" model_path ppf (m :> Odoc_model.Paths.Path.t)
+    | `SubstitutedMT m ->
+        wrap c "substitutedmt" model_path ppf (m :> Odoc_model.Paths.Path.t)
+    | `SubstitutedT m ->
+        wrap c "substitutedt" model_path ppf (m :> Odoc_model.Paths.Path.t)
+    | `SubstitutedCT m ->
+        wrap c "substitutedct" model_path ppf (m :> Odoc_model.Paths.Path.t)
 
   and model_resolved_path (c : config) ppf (p : rpath) =
     let open Odoc_model.Paths.Path.Resolved in
@@ -1405,6 +1416,12 @@ module Fmt = struct
     | `OpaqueModule m -> wrap c "opaquemodule" model_resolved_path ppf (m :> t)
     | `OpaqueModuleType m ->
         wrap c "opaquemoduletype" model_resolved_path ppf (m :> t)
+    | `Substituted m -> wrap c "substituted" model_resolved_path ppf (m :> t)
+    | `SubstitutedMT m ->
+        wrap c "substitutedmt" model_resolved_path ppf (m :> t)
+    | `SubstitutedT m -> wrap c "substitutedt" model_resolved_path ppf (m :> t)
+    | `SubstitutedCT m ->
+        wrap c "substitutedct" model_resolved_path ppf (m :> t)
 
   and model_fragment c ppf (f : Odoc_model.Paths.Fragment.t) =
     match f with
@@ -1901,6 +1918,7 @@ module Of_Lang = struct
     | `Canonical (p1, p2) -> `Canonical (recurse p1, p2)
     | `Hidden p1 -> `Hidden (recurse p1)
     | `OpaqueModule m -> `OpaqueModule (recurse m)
+    | `Substituted m -> `Substituted (recurse m)
 
   and resolved_module_type_path :
       _ ->
@@ -1926,6 +1944,7 @@ module Of_Lang = struct
         `SubstT
           ( resolved_module_type_path ident_map p1,
             resolved_module_type_path ident_map p2 )
+    | `SubstitutedMT m -> `Substituted (resolved_module_type_path ident_map m)
 
   and resolved_type_path :
       _ -> Odoc_model.Paths.Path.Resolved.Type.t -> Cpath.Resolved.type_ =
@@ -1942,6 +1961,10 @@ module Of_Lang = struct
         `Class (`Module (resolved_module_path ident_map p), name)
     | `ClassType (p, name) ->
         `ClassType (`Module (resolved_module_path ident_map p), name)
+    | `SubstitutedT m -> `Substituted (resolved_type_path ident_map m)
+    | `SubstitutedCT m ->
+        `Substituted
+          (resolved_class_type_path ident_map m :> Cpath.Resolved.type_)
 
   and resolved_value_path :
       _ -> Odoc_model.Paths.Path.Resolved.Value.t -> Cpath.Resolved.value =
@@ -1967,11 +1990,13 @@ module Of_Lang = struct
         `Class (`Module (resolved_module_path ident_map p), name)
     | `ClassType (p, name) ->
         `ClassType (`Module (resolved_module_path ident_map p), name)
+    | `SubstitutedCT c -> `Substituted (resolved_class_type_path ident_map c)
 
   and module_path : _ -> Odoc_model.Paths.Path.Module.t -> Cpath.module_ =
    fun ident_map p ->
     match p with
     | `Resolved r -> `Resolved (resolved_module_path ident_map r)
+    | `Substituted m -> `Substituted (module_path ident_map m)
     | `Identifier (i, b) -> (
         match identifier find_any_module ident_map i with
         | `Identifier i -> `Identifier (i, b)
@@ -1987,6 +2012,7 @@ module Of_Lang = struct
    fun ident_map p ->
     match p with
     | `Resolved r -> `Resolved (resolved_module_type_path ident_map r)
+    | `SubstitutedMT m -> `Substituted (module_type_path ident_map m)
     | `Identifier (i, b) -> (
         match identifier Maps.ModuleType.find ident_map.module_types i with
         | `Identifier i -> `Identifier (i, b)
@@ -1997,6 +2023,7 @@ module Of_Lang = struct
    fun ident_map p ->
     match p with
     | `Resolved r -> `Resolved (resolved_type_path ident_map r)
+    | `SubstitutedT t -> `Substituted (type_path ident_map t)
     | `Identifier (i, b) -> (
         match identifier Maps.Path.Type.find ident_map.path_types i with
         | `Identifier i -> `Identifier (i, b)
@@ -2015,6 +2042,7 @@ module Of_Lang = struct
    fun ident_map p ->
     match p with
     | `Resolved r -> `Resolved (resolved_class_type_path ident_map r)
+    | `SubstitutedCT c -> `Substituted (class_type_path ident_map c)
     | `Identifier (i, b) -> (
         match
           identifier Maps.Path.ClassType.find ident_map.path_class_types i
@@ -2351,14 +2379,15 @@ module Of_Lang = struct
     | With (w, e) ->
         let w' = List.map (with_module_type_substitution ident_map) w in
         With (w', u_module_type_expr ident_map e)
-    | TypeOf { t_desc; t_expansion } ->
+    | TypeOf (t_desc, t_original_path) ->
         let t_desc =
           match t_desc with
           | ModPath p -> ModuleType.ModPath (module_path ident_map p)
           | StructInclude p -> StructInclude (module_path ident_map p)
         in
-        let t_expansion = Opt.map (simple_expansion ident_map) t_expansion in
-        TypeOf { t_desc; t_expansion }
+        (* see comment in module_type_expr below *)
+        let t_original_path = module_path (empty ()) t_original_path in
+        TypeOf (t_desc, t_original_path)
 
   and module_type_expr ident_map m =
     let open Odoc_model in
@@ -2406,14 +2435,19 @@ module Of_Lang = struct
     | Lang.ModuleType.Functor (Unit, expr) ->
         let expr' = module_type_expr ident_map expr in
         ModuleType.Functor (Unit, expr')
-    | Lang.ModuleType.TypeOf { t_desc; t_expansion } ->
+    | Lang.ModuleType.TypeOf { t_desc; t_original_path; t_expansion } ->
         let t_desc =
           match t_desc with
           | ModPath p -> ModuleType.ModPath (module_path ident_map p)
           | StructInclude p -> StructInclude (module_path ident_map p)
         in
         let t_expansion = option simple_expansion ident_map t_expansion in
-        ModuleType.(TypeOf { t_desc; t_expansion })
+        (* Nb, we _never_ want to relativize this path, because this should always be
+           the _original_ path. That's why we're passing in (empty()) rather than
+           ident_map. We don't leave it as a Lang path because we'll occasionally
+           _create_ a `TypeOf` expression as part of fragmap *)
+        let t_original_path = module_path (empty ()) t_original_path in
+        ModuleType.(TypeOf { t_desc; t_original_path; t_expansion })
 
   and module_type ident_map m =
     let expr =
@@ -2585,6 +2619,14 @@ module Of_Lang = struct
         doc = docs ident_map o.Odoc_model.Lang.Open.doc;
       }
 
+  and removed_item ident_map r =
+    let open Odoc_model.Lang.Signature in
+    match r with
+    | RModule (id, p) -> Signature.RModule (id, module_path ident_map p)
+    | RType (id, texpr, eqn) ->
+        RType (id, type_expression ident_map texpr, type_equation ident_map eqn)
+    | RModuleType (id, m) -> RModuleType (id, module_type_expr ident_map m)
+
   and apply_sig_map ident_map sg =
     let items =
       List.rev_map
@@ -2645,7 +2687,8 @@ module Of_Lang = struct
         sg.items
       |> List.rev
     in
-    { items; removed = []; compiled = sg.compiled; doc = docs ident_map sg.doc }
+    let removed = List.map (removed_item ident_map) sg.removed in
+    { items; removed; compiled = sg.compiled; doc = docs ident_map sg.doc }
 
   and block_element _ b :
       CComment.block_element Odoc_model.Comment.with_location =

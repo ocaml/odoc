@@ -70,17 +70,18 @@ and ModuleType : sig
 
   type typeof_t = {
     t_desc : type_of_desc;
+    t_original_path : Path.Module.t;
     t_expansion : simple_expansion option;
   }
 
   module U : sig
+    (* Unexpanded (aside from Signature, obviously) *)
+
     type expr =
       | Path of Path.ModuleType.t
       | Signature of Signature.t
       | With of substitution list * expr
-      | TypeOf of typeof_t
-
-    (* Nb. this may have an expansion! *)
+      | TypeOf of type_of_desc * Path.Module.t
   end
 
   type path_t = {
@@ -151,9 +152,15 @@ and Signature : sig
     | Include of Include.t
     | Comment of Comment.docs_or_stop
 
+  type removed_item =
+    | RModule of Names.ModuleName.t * Path.Module.t
+    | RType of Names.TypeName.t * TypeExpr.t * TypeDecl.Equation.t
+    | RModuleType of Names.ModuleTypeName.t * ModuleType.expr
+
   type t = {
     items : item list;
     compiled : bool;
+    removed : removed_item list;
     doc : Comment.docs;  (** The top comment. *)
   }
 end =
@@ -168,12 +175,12 @@ end =
 
 and Include : sig
   type shadowed = {
-    s_modules : string list;
-    s_module_types : string list;
-    s_values : string list;
-    s_types : string list;
-    s_classes : string list;
-    s_class_types : string list;
+    s_modules : (string * Names.ModuleName.t) list;
+    s_module_types : (string * Names.ModuleTypeName.t) list;
+    s_values : (string * Names.ValueName.t) list;
+    s_types : (string * Names.TypeName.t) list;
+    s_classes : (string * Names.ClassName.t) list;
+    s_class_types : (string * Names.ClassTypeName.t) list;
   }
 
   type expansion = { shadowed : shadowed; content : Signature.t }
@@ -549,7 +556,8 @@ let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
   | Signature sg -> Some (Signature sg)
   | Path { p_path; _ } -> Some (Path p_path)
   | Functor _ -> None
-  | TypeOf t -> Some (TypeOf t)
+  | TypeOf { t_desc; t_original_path; _ } ->
+      Some (TypeOf (t_desc, t_original_path))
   | With { w_substitutions; w_expr; _ } -> Some (With (w_substitutions, w_expr))
 
 (** Query the top-comment of a signature. This is [s.doc] most of the time with

@@ -435,11 +435,11 @@ and read_module_binding env parent mb =
       match mb.mb_id with
       | None -> None
       | Some id ->
-        let id = Env.find_module_identifier env id in
+        let mid = Env.find_module_identifier env id in
 #else
-  let id = Env.find_module_identifier env mb.mb_id in
+  let mid = Env.find_module_identifier env mb.mb_id in
 #endif
-  let id = (id :> Identifier.Module.t) in
+  let id = (mid :> Identifier.Module.t) in
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mb.mb_attributes in
@@ -456,13 +456,13 @@ and read_module_binding env parent mb =
   let canonical = (canonical :> Path.Module.t option) in
   let hidden =
 #if OCAML_VERSION >= (4,10,0)
-    match canonical, mb.mb_id with
-    | None, Some id -> Odoc_model.Names.contains_double_underscore (Ident.name id)
-    | _, _ -> false
+    match canonical, mid.iv with
+    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
+    | Some _, _ -> false
 #else
-    match canonical with
-    | None -> Odoc_model.Names.contains_double_underscore (Ident.name mb.mb_id)
-    | _ -> false
+    match canonical, mid.iv with
+    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
+    | Some _, _ -> false
 #endif
   in
   Some {id; source_loc; doc; type_; canonical; hidden; }
@@ -555,7 +555,8 @@ and read_include env parent incl =
   let decl_modty =
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) ->
-      Some (ModuleType.U.TypeOf {t_desc = ModuleType.StructInclude (Env.Path.read_module env p); t_expansion=None })
+      let p = Env.Path.read_module env p in
+      Some (ModuleType.U.TypeOf (ModuleType.StructInclude p, p))
     | _ ->
       let mty = read_module_expr env parent container incl.incl_mod in
       umty_of_mty mty
@@ -603,9 +604,9 @@ and read_structure :
   in
   match doc_post with
   | [] ->
-    ({ Signature.items; compiled = false; doc }, tags)
+    ({ Signature.items; compiled = false; removed = []; doc }, tags)
   | _ ->
-    ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; doc }, tags)
+    ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; removed = []; doc }, tags)
 
 let read_implementation root name impl =
   let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in

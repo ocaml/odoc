@@ -24,9 +24,6 @@ let handle_expansion env id expansion =
         let subst =
           Subst.add_module (arg.id :> Ident.path_module) p rp Subst.identity
         in
-        let subst =
-          Subst.mto_invalidate_module (arg.id :> Ident.path_module) subst
-        in
         (env', Subst.module_type_expr subst expr)
   in
   let rec expand id env expansion :
@@ -39,8 +36,7 @@ let handle_expansion env id expansion =
               : Component.ModuleType.simple_expansion) )
     | Functor (arg, expr) ->
         let env', expr' = handle_argument id arg expr env in
-        Tools.expansion_of_module_type_expr ~mark_substituted:false env' expr'
-        >>= fun res ->
+        Tools.expansion_of_module_type_expr env' expr' >>= fun res ->
         expand (Paths.Identifier.Mk.result id) env res >>= fun (env, res) ->
         Ok
           ( env,

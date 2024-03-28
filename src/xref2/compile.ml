@@ -96,8 +96,7 @@ and source_info_infos env infos =
 and content env id =
   let open Compilation_unit in
   function
-  | Module m ->
-      let sg = Type_of.signature env m in
+  | Module sg ->
       let sg = signature env (id :> Id.Signature.t) sg in
       Module sg
   | Pack p -> Pack p
@@ -362,14 +361,14 @@ and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
     {
       Signature.items;
       compiled = true;
+      removed = s.removed;
       doc = s.doc (* comments are ignored while compiling *);
     }
 
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
-  if m.hidden then m
-  else { m with type_ = module_decl env (m.id :> Id.Signature.t) m.type_ }
+  { m with type_ = module_decl env (m.id :> Id.Signature.t) m.type_ }
 
 and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
  fun env id decl ->
@@ -407,8 +406,7 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
       | Alias p ->
           Tools.expansion_of_module_path env ~strengthen:true p >>= fun exp ->
           Tools.assert_not_functor exp
-      | ModuleType mty ->
-          Tools.signature_of_u_module_type_expr ~mark_substituted:false env mty
+      | ModuleType mty -> Tools.signature_of_u_module_type_expr env mty
     with
     | Error e ->
         Errors.report ~what:(`Include decl) ~tools_error:e `Expand;
@@ -496,8 +494,7 @@ and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
             let resolved_csub =
               Component.ModuleType.ModuleEq (cfrag', cdecl')
             in
-            Tools.fragmap ~mark_substituted:true env resolved_csub sg
-            >>= fun sg' ->
+            Tools.fragmap env resolved_csub sg >>= fun sg' ->
             Ok (sg', Odoc_model.Lang.ModuleType.ModuleEq (frag', decl'))
         | TypeEq (frag, eqn) ->
             let cfrag = Component.Of_Lang.(type_fragment (empty ()) frag) in
@@ -516,9 +513,7 @@ and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
             in
             let eqn' = type_decl_equation env (id :> Id.LabelParent.t) eqn in
             let ceqn' = Component.Of_Lang.(type_equation (empty ()) eqn') in
-            Tools.fragmap ~mark_substituted:true env
-              (Component.ModuleType.TypeEq (cfrag', ceqn'))
-              sg
+            Tools.fragmap env (Component.ModuleType.TypeEq (cfrag', ceqn')) sg
             >>= fun sg' ->
             Ok (sg', Odoc_model.Lang.ModuleType.TypeEq (frag', eqn'))
         | ModuleSubst (frag, mpath) ->
@@ -538,7 +533,7 @@ and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
             in
             let mpath' = module_path env mpath in
             let cmpath' = Component.Of_Lang.(module_path (empty ()) mpath') in
-            Tools.fragmap ~mark_substituted:true env
+            Tools.fragmap env
               (Component.ModuleType.ModuleSubst (cfrag', cmpath'))
               sg
             >>= fun sg' ->
@@ -559,7 +554,7 @@ and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
             in
             let eqn' = type_decl_equation env (id :> Id.LabelParent.t) eqn in
             let ceqn' = Component.Of_Lang.(type_equation (empty ()) eqn') in
-            Tools.fragmap ~mark_substituted:true env
+            Tools.fragmap env
               (Component.ModuleType.TypeSubst (cfrag', ceqn'))
               sg
             >>= fun sg' ->
@@ -586,8 +581,7 @@ and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
             let resolved_csub =
               Component.ModuleType.ModuleTypeEq (cfrag', mty')
             in
-            Tools.fragmap ~mark_substituted:true env resolved_csub sg
-            >>= fun sg' ->
+            Tools.fragmap env resolved_csub sg >>= fun sg' ->
             Ok (sg', Odoc_model.Lang.ModuleType.ModuleTypeEq (frag', mty))
         | Odoc_model.Lang.ModuleType.ModuleTypeSubst (frag, mty) ->
             let cfrag =
@@ -611,8 +605,7 @@ and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
             let resolved_csub =
               Component.ModuleType.ModuleTypeSubst (cfrag', mty')
             in
-            Tools.fragmap ~mark_substituted:true env resolved_csub sg
-            >>= fun sg' ->
+            Tools.fragmap env resolved_csub sg >>= fun sg' ->
             Ok (sg', Odoc_model.Lang.ModuleType.ModuleTypeSubst (frag', mty))
       in
 
@@ -628,17 +621,15 @@ and module_type_map_subs env id cexpr subs =
     | Path (`Resolved p) -> Some (`ModuleType p)
     | Path _ -> None
     | With (_, e) -> find_parent e
-    | TypeOf { t_desc = ModPath (`Resolved p); _ }
-    | TypeOf { t_desc = StructInclude (`Resolved p); _ } ->
+    | TypeOf (ModPath (`Resolved p), _) | TypeOf (StructInclude (`Resolved p), _)
+      ->
         Some (`Module p)
     | TypeOf _ -> None
   in
   match find_parent cexpr with
   | None -> None
   | Some parent -> (
-      match
-        Tools.signature_of_u_module_type_expr ~mark_substituted:true env cexpr
-      with
+      match Tools.signature_of_u_module_type_expr env cexpr with
       | Error e ->
           Errors.report ~what:(`Module_type id) ~tools_error:e `Lookup;
           None
@@ -671,13 +662,13 @@ and u_module_type_expr :
         in
         let result : ModuleType.U.expr = With (subs', expr') in
         result
-    | TypeOf { t_desc; t_expansion } ->
+    | TypeOf (t_desc, t_original_path) ->
         let t_desc =
           match t_desc with
           | ModPath p -> ModPath (module_path env p)
           | StructInclude p -> StructInclude (module_path env p)
         in
-        TypeOf { t_desc; t_expansion }
+        TypeOf (t_desc, t_original_path)
   in
   inner expr
 
@@ -695,7 +686,7 @@ and module_type_expr :
     | None -> (
         let ce = Component.Of_Lang.(module_type_expr (empty ()) e) in
         match
-          Tools.expansion_of_module_type_expr ~mark_substituted:false env ce
+          Tools.expansion_of_module_type_expr env ce
           >>= Expand_tools.handle_expansion env id
         with
         | Ok (_, ce) ->
@@ -715,25 +706,35 @@ and module_type_expr :
       Path { p_path = module_type_path env p_path; p_expansion }
   | With { w_substitutions; w_expansion; w_expr } as e -> (
       let w_expansion = get_expansion w_expansion e in
-      let w_expr = u_module_type_expr env id w_expr in
-      let cexpr = Component.Of_Lang.(u_module_type_expr (empty ()) w_expr) in
-      let subs' = module_type_map_subs env id cexpr w_substitutions in
-      match subs' with
-      | None -> With { w_substitutions; w_expansion; w_expr }
-      | Some s -> With { w_substitutions = s; w_expansion; w_expr })
+      let rec all_withs = function
+        | ModuleType.U.With (_, e) -> all_withs e
+        | Signature _ -> true
+        | _ -> false
+      in
+      match (all_withs w_expr, w_expansion) with
+      | true, Some (Signature e) -> Signature e
+      | _ -> (
+          let w_expr = u_module_type_expr env id w_expr in
+          let cexpr =
+            Component.Of_Lang.(u_module_type_expr (empty ()) w_expr)
+          in
+          let subs' = module_type_map_subs env id cexpr w_substitutions in
+          match subs' with
+          | None -> With { w_substitutions; w_expansion; w_expr }
+          | Some s -> With { w_substitutions = s; w_expansion; w_expr }))
   | Functor (param, res) ->
       let param' = functor_parameter env param in
       let env' = Env.add_functor_parameter param env in
       let res' = module_type_expr env' (Paths.Identifier.Mk.result id) res in
       Functor (param', res')
-  | TypeOf { t_desc; t_expansion } as e ->
+  | TypeOf { t_desc; t_original_path; t_expansion } as e ->
       let t_expansion = get_expansion t_expansion e in
       let t_desc =
         match t_desc with
         | ModPath p -> ModuleType.ModPath (module_path env p)
         | StructInclude p -> StructInclude (module_path env p)
       in
-      TypeOf { t_desc; t_expansion }
+      TypeOf { t_desc; t_original_path; t_expansion }
 
 and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
@@ -819,9 +820,7 @@ and type_expression_object env parent o =
 and type_expression_package env parent p =
   let open TypeExpr.Package in
   let cp = Component.Of_Lang.(module_type_path (empty ()) p.path) in
-  match
-    Tools.resolve_module_type ~mark_substituted:true ~add_canonical:true env cp
-  with
+  match Tools.resolve_module_type env cp with
   | Ok (path, mt) -> (
       match p.substitutions with
       | [] ->
@@ -869,7 +868,7 @@ and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
   | Constr (path, ts') -> (
       let cp = Component.Of_Lang.(type_path (empty ()) path) in
       let ts = List.map (type_expression env parent) ts' in
-      match Tools.resolve_type env ~add_canonical:true cp with
+      match Tools.resolve_type env cp with
       | Ok (cp, (`FType _ | `FClass _ | `FClassType _)) ->
           let p = Lang_of.(Path.resolved_type (empty ()) cp) in
           Constr (`Resolved p, ts)

@@ -186,6 +186,7 @@ and ModuleType : sig
 
   type typeof_t = {
     t_desc : type_of_desc;
+    t_original_path : Cpath.module_;
     t_expansion : simple_expansion option;
   }
 
@@ -194,7 +195,7 @@ and ModuleType : sig
       | Path of Cpath.module_type
       | Signature of Signature.t
       | With of substitution list * expr
-      | TypeOf of typeof_t
+      | TypeOf of type_of_desc * Cpath.module_
   end
 
   type path_t = {
@@ -293,9 +294,9 @@ and Signature : sig
   (* When doing destructive substitution we keep track of the items that have been removed,
        and the path they've been substituted with *)
   type removed_item =
-    | RModule of Ident.module_ * Cpath.Resolved.module_
-    | RType of Ident.type_ * TypeExpr.t * TypeDecl.Equation.t
-    | RModuleType of Ident.module_type * ModuleType.expr
+    | RModule of Odoc_model.Names.ModuleName.t * Cpath.module_
+    | RType of Odoc_model.Names.TypeName.t * TypeExpr.t * TypeDecl.Equation.t
+    | RModuleType of Odoc_model.Names.ModuleTypeName.t * ModuleType.expr
 
   type t = {
     items : item list;
@@ -428,7 +429,6 @@ and Substitution : sig
     type_replacement : (TypeExpr.t * TypeDecl.Equation.t) PathTypeMap.t;
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
     path_invalidating_modules : Ident.path_module list;
-    module_type_of_invalidating_modules : Ident.path_module list;
     unresolve_opaque_paths : bool;
   }
 end

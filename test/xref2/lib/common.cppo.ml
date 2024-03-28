@@ -577,6 +577,10 @@ module LangUtils = struct
             | `Class (_, _)
             | `ClassType (_, _)
             | `Hidden _
+            | `SubstitutedT _
+            | `SubstitutedMT _
+            | `Substituted _
+            | `SubstitutedCT _
             | `Canonical _ -> Format.fprintf ppf "unimplemented resolved_path"
 
         and path : Format.formatter -> Odoc_model.Paths.Path.t -> unit =
@@ -588,6 +592,7 @@ module LangUtils = struct
             | `Forward s -> Format.fprintf ppf "%s" s
             | `Dot (parent,s) -> Format.fprintf ppf "%a.%s" path (parent :> Odoc_model.Paths.Path.t) s
             | `Apply (func,arg) -> Format.fprintf ppf "%a(%a)" path (func :> Odoc_model.Paths.Path.t) path (arg :> Odoc_model.Paths.Path.t)
+            | `SubstitutedT _|`SubstitutedMT _|`Substituted _|`SubstitutedCT _ -> Format.fprintf ppf "Unimplemented path"
 
         and model_fragment ppf (f : Odoc_model.Paths.Fragment.t) =
             match f with

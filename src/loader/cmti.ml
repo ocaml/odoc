@@ -564,10 +564,13 @@ and read_module_type env parent label_parent mty =
         let decl =
           match mexpr.mod_desc with
           | Tmod_ident(p, _) ->
-            TypeOf {t_desc = ModPath (Env.Path.read_module env p); t_expansion=None}
+            let p = Env.Path.read_module env p in
+            TypeOf {t_desc = ModPath p; t_original_path = p; t_expansion = None}
           | Tmod_structure {str_items = [{str_desc = Tstr_include {incl_mod; _}; _}]; _} -> begin
             match Typemod.path_of_module incl_mod with
-            | Some p -> TypeOf {t_desc=StructInclude (Env.Path.read_module env p); t_expansion=None}
+              | Some p ->
+                let p = Env.Path.read_module env p in
+                TypeOf {t_desc=StructInclude p; t_original_path = p; t_expansion = None}
             | None ->
               !read_module_expr env parent label_parent mexpr 
             end
@@ -614,11 +617,11 @@ and read_module_declaration env parent md =
   match md.md_id with
   | None -> None
   | Some id ->
-  let id = Env.find_module_identifier env id in
+  let mid = Env.find_module_identifier env id in
 #else
-  let id = Env.find_module_identifier env md.md_id in
+  let mid = Env.find_module_identifier env md.md_id in
 #endif
-  let id = (id :> Identifier.Module.t) in
+  let id = (mid :> Identifier.Module.t) in
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
@@ -636,12 +639,12 @@ and read_module_declaration env parent md =
   let canonical = (canonical :> Path.Module.t option) in
   let hidden =
 #if OCAML_VERSION >= (4,10,0)
-    match canonical, md.md_id with
-    | None, Some id -> Odoc_model.Names.contains_double_underscore (Ident.name id)
+    match canonical, mid.iv with
+    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | _,_ -> false
 #else
-    match canonical with
-    | None -> Odoc_model.Names.contains_double_underscore (Ident.name md.md_id)
+    match canonical, mid.iv with
+    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | _ -> false
 #endif
   in
@@ -800,9 +803,9 @@ and read_signature :
   in
   match doc_post with
   | [] ->
-    ({ Signature.items; compiled = false; doc }, tags)
+    ({ Signature.items; compiled = false; removed = []; doc }, tags)
   | _ ->
-    ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; doc }, tags)
+    ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; removed = []; doc }, tags)
 
 let read_interface root name intf =
   let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in

@@ -16,24 +16,24 @@ Module `C` then includes them both, causing further shadowing.
   $ odoc_print --short --show-include-expansions c.odoc 
   include module type of struct include A end
     (sig :
-      module type {B}7 = A.B
-      include {B}7 (sig : module {A}13 = A.A end)
-      module type {B1}9 = A.B1
-      include {B1}9 (sig : module {A}14 = A.A end)
+      module type {B}1 = A.B
+      include {B}1 (sig : module {A}3 = A.A end)
+      module type {B1}2 = A.B1
+      include {B1}2 (sig : module {A}3 = A.A end)
      end)
   include module type of struct include B end
     (sig :
       module type B = B.B
-      include B (sig : module {A}19 = B.A end)
+      include B (sig : module {A}4 = B.A end)
       module type B1 = B.B1
-      include B1 (sig : module {A}20 = B.A end)
+      include B1 (sig : module {A}4 = B.A end)
      end)
   module A : 
     sig
-      include module type of struct include C.{A}4 end
+      include module type of struct include {A}4 end
         (sig :
           include module type of struct include B.{A}1 end
-            (sig : type t = C.{A}4.t end)
+            (sig : type t = {A}4.t end)
           type b = B.A.b
          end)
     end

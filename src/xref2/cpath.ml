@@ -220,7 +220,7 @@ and is_resolved_parent_hidden :
 and is_module_type_hidden : module_type -> bool = function
   | `Resolved r -> is_resolved_module_type_hidden r
   | `Identifier ({ iv = `ModuleType (_, t); _ }, b) ->
-      b || ModuleTypeName.is_internal t
+      b || ModuleTypeName.is_hidden t
   | `Local (_, b) -> b
   | `Substituted p -> is_module_type_hidden p
   | `Dot (p, _) -> is_module_hidden p
@@ -241,10 +241,10 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
 
 and is_type_hidden : type_ -> bool = function
   | `Resolved r -> is_resolved_type_hidden r
-  | `Identifier ({ iv = `Type (_, t); _ }, b) -> b || TypeName.is_internal t
+  | `Identifier ({ iv = `Type (_, t); _ }, b) -> b || TypeName.is_hidden t
   | `Identifier ({ iv = `ClassType (_, t); _ }, b) ->
-      b || ClassTypeName.is_internal t
-  | `Identifier ({ iv = `Class (_, t); _ }, b) -> b || ClassName.is_internal t
+      b || ClassTypeName.is_hidden t
+  | `Identifier ({ iv = `Class (_, t); _ }, b) -> b || ClassName.is_hidden t
   | `Identifier ({ iv = `CoreType _; _ }, b) -> b
   | `Local (_, b) -> b
   | `Substituted p -> is_type_hidden p
@@ -319,7 +319,7 @@ let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
   | `Gpath (`Identifier x) ->
       let hidden =
         match x.iv with
-        | `Module (_, n) -> Odoc_model.Names.ModuleName.is_internal n
+        | `Module (_, n) -> Odoc_model.Names.ModuleName.is_hidden n
         | _ -> false
       in
       `Identifier (x, hidden)
@@ -395,3 +395,69 @@ and unresolve_type_path : type_ -> type_ = function
 and unresolve_class_type_path : class_type -> class_type = function
   | `Resolved m -> unresolve_resolved_class_type_path m
   | y -> y
+
+(*
+These are left here for later. The idea is to alter a resolved path
+such that all the identifiers in it are turned into fully-qualified
+resolved paths. This is intended to be used to turn the 'original
+path' of `module type of` expressions that was resolved in the
+original context into a path that is valid in _all_ contexts.
+
+let rec original_path_cpath : module_ -> module_ option = function
+  | `Resolved p ->
+      original_path_cpath (unresolve_resolved_module_path p)
+  | `Root name -> Some (`Root name)
+  | `Forward _ -> None
+  | `Dot (p, s) -> (
+      match original_path_cpath p with
+      | Some p -> Some (`Dot (p, s))
+      | None -> None)
+  | `Apply (p1, p2) -> (
+      match (original_path_cpath p1, original_path_cpath p2) with
+      | Some p1', Some p2' -> Some (`Apply (p1', p2'))
+      | _ -> None)
+  | `Identifier (i, _) -> (
+      match original_path_module_identifier i with
+      | Some i -> Some (`Resolved i)
+      | None -> None)
+  | `Substituted p -> original_path_cpath p
+  | `Local _ ->
+      None
+  | `Module _ ->
+      None
+
+
+and original_path_module_identifier :
+    Odoc_model.Paths.Identifier.Path.Module.t -> Resolved.module_ option =
+ fun id ->
+  match id.iv with
+  | `Module (sg, name) -> (
+      match original_path_parent_identifier sg with
+      | Some sg' -> Some (`Module (sg', name))
+      | None -> None)
+  | `Root _ -> Some (`Gpath (`Identifier id))
+  | _ ->
+      None
+
+and original_path_parent_identifier :
+    Odoc_model.Paths.Identifier.Signature.t -> Resolved.parent option =
+ fun id ->
+  match id with
+  | { iv = `Module _ | `Root _ | `Parameter _ | `Result _; _ } as mid -> (
+      match original_path_module_identifier mid with
+      | Some m -> Some (`Module m)
+      | None -> None)
+  | { iv = `ModuleType _; _ } as mtid -> (
+      match original_path_module_type_identifier mtid with
+      | Some m -> Some (`ModuleType m)
+      | None -> None)
+
+and original_path_module_type_identifier :
+    Odoc_model.Paths.Identifier.ModuleType.t -> Resolved.module_type option =
+ fun id ->
+  match id.iv with
+  | `ModuleType (sg, name) -> (
+      match original_path_parent_identifier sg with
+      | Some sg' -> Some (`ModuleType (sg', name))
+      | None -> None)
+*)

@@ -63,30 +63,30 @@ module Identifier = struct
         name_aux (x :> t) ^ "#" ^ LocalName.to_string anchor
     | `AssetFile (_, name) -> name
 
-  let rec is_internal : t -> bool =
+  let rec is_hidden : t -> bool =
    fun x ->
     match x.iv with
     | `Root (_, name) -> ModuleName.is_hidden name
     | `Page (_, _) -> false
     | `LeafPage (_, _) -> false
-    | `Module (_, name) -> ModuleName.is_internal name
-    | `Parameter (_, name) -> ModuleName.is_internal name
-    | `Result x -> is_internal (x :> t)
-    | `ModuleType (_, name) -> ModuleTypeName.is_internal name
-    | `Type (_, name) -> TypeName.is_internal name
-    | `CoreType name -> TypeName.is_internal name
-    | `Constructor (parent, _) -> is_internal (parent :> t)
-    | `Field (parent, _) -> is_internal (parent :> t)
-    | `Extension (parent, _) -> is_internal (parent :> t)
-    | `ExtensionDecl (parent, _, _) -> is_internal (parent :> t)
-    | `Exception (parent, _) -> is_internal (parent :> t)
+    | `Module (_, name) -> ModuleName.is_hidden name
+    | `Parameter (_, name) -> ModuleName.is_hidden name
+    | `Result x -> is_hidden (x :> t)
+    | `ModuleType (_, name) -> ModuleTypeName.is_hidden name
+    | `Type (_, name) -> TypeName.is_hidden name
+    | `CoreType name -> TypeName.is_hidden name
+    | `Constructor (parent, _) -> is_hidden (parent :> t)
+    | `Field (parent, _) -> is_hidden (parent :> t)
+    | `Extension (parent, _) -> is_hidden (parent :> t)
+    | `ExtensionDecl (parent, _, _) -> is_hidden (parent :> t)
+    | `Exception (parent, _) -> is_hidden (parent :> t)
     | `CoreException _ -> false
-    | `Value (_, name) -> ValueName.is_internal name
-    | `Class (_, name) -> ClassName.is_internal name
-    | `ClassType (_, name) -> ClassTypeName.is_internal name
-    | `Method (parent, _) -> is_internal (parent :> t)
-    | `InstanceVariable (parent, _) -> is_internal (parent :> t)
-    | `Label (parent, _) -> is_internal (parent :> t)
+    | `Value (_, name) -> ValueName.is_hidden name
+    | `Class (_, name) -> ClassName.is_hidden name
+    | `ClassType (_, name) -> ClassTypeName.is_hidden name
+    | `Method (parent, _) -> is_hidden (parent :> t)
+    | `InstanceVariable (parent, _) -> is_hidden (parent :> t)
+    | `Label (parent, _) -> is_hidden (parent :> t)
     | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
     | `SourceLocationInternal _ | `AssetFile _ ->
         false
@@ -144,7 +144,8 @@ module Identifier = struct
   let fullname : [< t_pv ] id -> string list =
    fun n -> List.rev @@ full_name_aux (n :> t)
 
-  let is_internal : [< t_pv ] id -> bool = fun n -> is_internal (n :> t)
+  let is_hidden : [< t_pv ] id -> bool = fun n -> is_hidden (n :> t)
+
   let rec label_parent_aux =
     let open Id in
     fun (n : non_src) ->
@@ -647,13 +648,12 @@ module Path = struct
     let open Paths_types.Resolved_path in
     let rec inner : Paths_types.Resolved_path.any -> bool = function
       | `Identifier { iv = `ModuleType (_, m); _ }
-        when Names.ModuleTypeName.is_internal m ->
+        when Names.ModuleTypeName.is_hidden m ->
           true
-      | `Identifier { iv = `Type (_, t); _ } when Names.TypeName.is_internal t
+      | `Identifier { iv = `Type (_, t); _ } when Names.TypeName.is_hidden t ->
+          true
+      | `Identifier { iv = `Module (_, m); _ } when Names.ModuleName.is_hidden m
         ->
-          true
-      | `Identifier { iv = `Module (_, m); _ }
-        when Names.ModuleName.is_internal m ->
           true
       | `Identifier _ -> false
       | `Canonical (_, `Resolved _) -> false
@@ -664,11 +664,11 @@ module Path = struct
           inner (p1 : module_type :> any) || inner (p2 : module_ :> any)
       | `Module (p, _) -> inner (p : module_ :> any)
       | `Apply (p, _) -> inner (p : module_ :> any)
-      | `ModuleType (_, m) when Names.ModuleTypeName.is_internal m -> true
+      | `ModuleType (_, m) when Names.ModuleTypeName.is_hidden m -> true
       | `ModuleType (p, _) -> inner (p : module_ :> any)
-      | `Type (_, t) when Names.TypeName.is_internal t -> true
+      | `Type (_, t) when Names.TypeName.is_hidden t -> true
       | `Type (p, _) -> inner (p : module_ :> any)
-      | `Value (_, t) when Names.ValueName.is_internal t -> true
+      | `Value (_, t) when Names.ValueName.is_hidden t -> true
       | `Value (p, _) -> inner (p : module_ :> any)
       | `Class (p, _) -> inner (p : module_ :> any)
       | `ClassType (p, _) -> inner (p : module_ :> any)
@@ -680,6 +680,10 @@ module Path = struct
       | `AliasModuleType (p1, p2) ->
           inner (p1 : module_type :> any) && inner (p2 : module_type :> any)
       | `SubstT (p1, p2) -> inner (p1 :> any) || inner (p2 :> any)
+      | `Substituted m -> inner (m :> any)
+      | `SubstitutedMT m -> inner (m :> any)
+      | `SubstitutedT m -> inner (m :> any)
+      | `SubstitutedCT m -> inner (m :> any)
       | `CanonicalModuleType (_, `Resolved _) -> false
       | `CanonicalModuleType (x, _) -> inner (x : module_type :> any)
       | `CanonicalType (_, `Resolved _) -> false
@@ -694,7 +698,11 @@ module Path = struct
     function
     | `Resolved r -> is_resolved_hidden ~weak_canonical_test:false r
     | `Identifier (_, hidden) -> hidden
-    | `Root s -> Names.contains_double_underscore s
+    | `Substituted r -> is_path_hidden (r :> any)
+    | `SubstitutedMT r -> is_path_hidden (r :> any)
+    | `SubstitutedT r -> is_path_hidden (r :> any)
+    | `SubstitutedCT r -> is_path_hidden (r :> any)
+    | `Root s -> contains_double_underscore s
     | `Forward _ -> false
     | `Dot (p, _) -> is_path_hidden (p : module_ :> any)
     | `Apply (p1, p2) ->
@@ -715,6 +723,7 @@ module Path = struct
       | `CanonicalModuleType (_, `Resolved p) -> parent_module_type_identifier p
       | `CanonicalModuleType (p, _) -> parent_module_type_identifier p
       | `OpaqueModuleType mt -> parent_module_type_identifier mt
+      | `SubstitutedMT m -> parent_module_type_identifier m
       | `AliasModuleType (sub, orig) ->
           if is_resolved_hidden ~weak_canonical_test:false (sub :> t) then
             parent_module_type_identifier orig
@@ -735,6 +744,7 @@ module Path = struct
             parent_module_identifier src
           else parent_module_identifier dest
       | `Alias (dest, _src) -> parent_module_identifier dest
+      | `Substituted m -> parent_module_identifier m
       | `OpaqueModule m -> parent_module_identifier m
 
     module Module = struct
@@ -791,6 +801,10 @@ module Path = struct
       | `CanonicalType (p, _) -> identifier (p :> t)
       | `OpaqueModule m -> identifier (m :> t)
       | `OpaqueModuleType mt -> identifier (mt :> t)
+      | `Substituted m -> identifier (m :> t)
+      | `SubstitutedMT m -> identifier (m :> t)
+      | `SubstitutedCT m -> identifier (m :> t)
+      | `SubstitutedT m -> identifier (m :> t)
 
     let is_hidden r = is_resolved_hidden ~weak_canonical_test:false r
   end

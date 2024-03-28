@@ -48,6 +48,14 @@ And finally the module we expose everything underneath.
   $ cat foo.ml
   module Type = Type
   
+  
+  (* Canonical loops test *)
+  
+  (** @canonical Foo.t3 *)
+  type t2 = int
+  
+  (** @canonical Foo.t3 *)
+  type t3 = t2
 
   $ ocamlc -c -bin-annot -open Foo__ foo.ml
 

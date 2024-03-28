@@ -136,6 +136,10 @@ and moduletype_typeof_t =
   Record
     [
       F ("t_desc", (fun t -> t.t_desc), moduletype_type_of_desc);
+      F
+        ( "t_original_path",
+          (fun t -> (t.t_original_path :> Odoc_model.Paths.Path.t)),
+          path );
       F ("t_expansion", (fun t -> t.t_expansion), Option simple_expansion);
     ]
 
@@ -161,7 +165,11 @@ and moduletype_u_expr =
           ( "With",
             (t, e),
             Pair (List moduletype_substitution, moduletype_u_expr) )
-    | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t))
+    | TypeOf (t, o) ->
+        C
+          ( "TypeOf",
+            (t, (o :> Paths.Path.t)),
+            Pair (moduletype_type_of_desc, path) ))
 
 and moduletype_t =
   let open Lang.ModuleType in
@@ -253,20 +261,13 @@ and include_shadowed =
   let open Lang.Include in
   Record
     [
-      F ("s_modules", (fun t -> t.s_modules), List string);
-      F ("s_module_types", (fun t -> t.s_module_types), List string);
-      F ("s_values", (fun t -> t.s_values), List string);
-      F ("s_types", (fun t -> t.s_types), List string);
-      F ("s_classes", (fun t -> t.s_classes), List string);
-      F ("s_class_types", (fun t -> t.s_class_types), List string);
-    ]
-
-and include_expansion =
-  let open Lang.Include in
-  Record
-    [
-      F ("shadowed", (fun t -> t.shadowed), include_shadowed);
-      F ("content", (fun t -> t.content), signature_t);
+      (* TODO: fixme *)
+      F ("s_modules", (fun t -> List.map fst t.s_modules), List string);
+      F ("s_module_types", (fun t -> List.map fst t.s_module_types), List string);
+      F ("s_values", (fun t -> List.map fst t.s_values), List string);
+      F ("s_types", (fun t -> List.map fst t.s_types), List string);
+      F ("s_classes", (fun t -> List.map fst t.s_classes), List string);
+      F ("s_class_types", (fun t -> List.map fst t.s_class_types), List string);
     ]
 
 and include_decl =
@@ -275,6 +276,14 @@ and include_decl =
     (function
     | Alias p -> C ("Alias", (p :> Paths.Path.t), path)
     | ModuleType e -> C ("ModuleType", e, moduletype_u_expr))
+
+and include_expansion =
+  let open Lang.Include in
+  Record
+    [
+      F ("shadowed", (fun t -> t.shadowed), include_shadowed);
+      F ("content", (fun t -> t.content), signature_t);
+    ]
 
 and include_t =
   let open Lang.Include in
