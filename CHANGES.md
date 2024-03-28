@@ -29,6 +29,8 @@
   fail. (@panglesd, #1069)
 - Fix issue #1066 with extended opens (@jonludlam, #1082)
 - Fix missing katex headers (@panglesd, #1096)
+- Fix resolution of module synopses in {!modules} lists that require
+  --open (@jonludlam, #1104}
 
 
 # 2.4.0
