@@ -33,14 +33,22 @@ let rec read_pattern env parent doc pat =
   let open Signature in
     match pat.pat_desc with
     | Tpat_any -> []
+#if OCAML_VERSION < (5,2,0)
     | Tpat_var(id, _) ->
+#else
+    | Tpat_var(id,_,_uid) ->
+#endif
         let open Value in
         let id = Env.find_value_identifier env id in
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
           [Value {id; locs = locs id; doc; type_; value}]
+#if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
+#else
+    | Tpat_alias(pat, id, _,_) ->
+#endif
         let open Value in
         let id = Env.find_value_identifier env id in
           Cmi.mark_type_expr pat.pat_type;

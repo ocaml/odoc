@@ -98,7 +98,11 @@ let rec read_core_type env container ctyp =
           Class(p, params)
     | Ttyp_alias(typ, var) ->
         let typ = read_core_type env container typ in
-          Alias(typ, var)
+#if OCAML_VERSION >= (5,2,0)
+        Alias(typ, var.txt)
+#else
+        Alias(typ, var)
+#endif
     | Ttyp_variant(fields, closed, present) ->
         let open TypeExpr.Polymorphic_variant in
         let elements =
@@ -142,6 +146,11 @@ let rec read_core_type env container ctyp =
             pack_fields
         in
           Package {path; substitutions}
+#if OCAML_VERSION >= (5,2,0)
+    | Ttyp_open (_p,_l,t) ->
+      (* TODO: adjust model *)
+      read_core_type env container t
+#endif
 
 let read_value_description env parent vd =
   let open Signature in

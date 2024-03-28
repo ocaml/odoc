@@ -1,3 +1,13 @@
+# 2.4.2
+
+### Added
+
+- OCaml 5.2.0 compatibility (@Octachron, #1094)
+
+### Fixed
+
+- Fix issues #1066 and #1095 with extended opens (@jonludlam, #1082, #1100)
+ 
 # 2.4.1
 
 ### Fixed

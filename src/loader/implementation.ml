@@ -306,7 +306,27 @@ let add_definitions loc_to_id occurrences =
 let read_cmt_infos source_id_opt id cmt_info =
   match Odoc_model.Compat.shape_of_cmt_infos cmt_info with
   | Some shape -> (
+#if OCAML_VERSION >= (5, 2, 0)
+      let loc_of_declaration =
+        let open Typedtree in
+        function
+        | Value v -> v.val_loc
+        | Value_binding vb -> vb.vb_pat.pat_loc
+        | Type t -> t.typ_loc
+        | Constructor c -> c.cd_loc
+        | Extension_constructor e -> e.ext_loc
+        | Label l -> l.ld_loc
+        | Module m -> m.md_loc
+        | Module_substitution ms -> ms.ms_loc
+        | Module_binding mb -> mb.mb_loc
+        | Module_type mt -> mt.mtd_loc
+        | Class cd -> cd.ci_id_name.loc
+        | Class_type ctd -> ctd.ci_id_name.loc
+      in
+      let uid_to_loc = Shape.Uid.Tbl.map cmt_info.cmt_uid_to_decl loc_of_declaration in
+#else
       let uid_to_loc = cmt_info.cmt_uid_to_loc in
+#endif
       match (source_id_opt, cmt_info.cmt_annots) with
       | Some source_id, Implementation impl ->
           let env = Env.of_structure id impl in
