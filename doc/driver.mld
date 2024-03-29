@@ -221,7 +221,7 @@ let compile file ?parent ?(output_dir = Fpath.v "./") ?(ignore_output = false)
     let ext = Fpath.get_ext file in
     let basename = Fpath.basename (Fpath.rem_ext file) in
     match ext with
-    | ".mld" -> "page-" ^ basename ^ ".odoc"
+    | ".mld" | ".md" -> "page-" ^ basename ^ ".odoc"
     | ".cmt" | ".cmti" | ".cmi" -> basename ^ ".odoc"
     | _ -> failwith ("bad extension: " ^ ext)
   in
@@ -397,6 +397,7 @@ let extra_docs = [
     "dune";
     "ocamldoc_differences";
     "api_reference";
+    "ocamlmark";
 ]
 
 let parents =
@@ -637,7 +638,7 @@ let compile_mlds () =
   let mkpage x = "page-\"" ^ x ^ "\"" in
   let mkmod x = "module-" ^ String.capitalize_ascii x in
   let mkmld x =
-    let f = Fpath.(add_ext "mld" (v x)) in
+    let f = if x = "ocamlmark" then Fpath.(add_ext "md" (v x)) else Fpath.(add_ext "mld" (v x)) in
     if not (Bos.OS.File.exists f |> get_ok) then
       (Bos.OS.File.write_lines f [Printf.sprintf "{0 %s}" x] |> get_ok);
     f

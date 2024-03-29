@@ -32,6 +32,7 @@
  (deps
   (package odoc)
   (universe) ; Benchmark depends on the running time of odoc commands
+  ocamlmark.md
   (glob_files *.mld)
   (glob_files *.js)
   (glob_files library_mlds/*)
