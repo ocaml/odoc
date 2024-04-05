@@ -21,8 +21,9 @@ bench:
 
 .PHONY : coverage
 coverage :
-	dune build --instrument-with bisect_ppx @test/runtest --no-buffer -j 1 --force || true
-	bisect-ppx-report html
+	mkdir -p _coverage
+	BISECT_FILE=`pwd`/_coverage/bisect dune build --instrument-with bisect_ppx @test/runtest --no-buffer -j 1 --force || true
+	bisect-ppx-report html --coverage-path `pwd`/_coverage
 	@echo See _coverage/index.html
 
 .PHONY : clean
