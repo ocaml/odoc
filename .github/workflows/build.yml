@@ -19,9 +19,11 @@ jobs:
           - 4.10.x
           - 4.12.x
           - 4.14.x
+          - 5.0.x
+          - 5.1.x
         include:
           - os: ubuntu-latest
-            ocaml-compiler: 4.14.x
+            ocaml-compiler: 5.1.x
             # We don't need to compute coverage for more than one build
             send-coverage: true
             # Mdx tests Mdx tests
@@ -60,8 +62,10 @@ jobs:
         if: matrix.send-coverage == true
         run: |
           opam install bisect_ppx
+          mkdir -p $BISECT_FILE
           opam exec -- dune runtest --instrument-with bisect_ppx --force
-          opam exec -- bisect-ppx-report send-to Coveralls
+          opam exec -- bisect-ppx-report send-to Coveralls --coverage-path /tmp/coverage
         env:
+          BISECT_FILE: /tmp/coverage/bisect
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PULL_REQUEST_NUMBER: ${{ github.event.number }}
