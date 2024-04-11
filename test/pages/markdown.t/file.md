@@ -34,3 +34,6 @@ Absurd but true:
 | Un  |
 
 
+# A heading {#with-a-label}
+
+I'm referencing the [label][!"with-a-label"].

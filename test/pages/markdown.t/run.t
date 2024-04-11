@@ -37,10 +37,15 @@ Here is a markdown file
   | Un  |
   
   
+  # A heading {#with-a-label}
+  
+  I'm referencing the [label][!"with-a-label"].
 
 Compile and link:
 
   $ odoc compile file.md
+  File "file.md", line 37, characters 0-27:
+  Warning: '{1': heading level should be lower than top heading level '1'.
   $ odoc link page-file.odoc
   File "file.md", line 21, characters 19-27:
   Warning: Failed to resolve reference unresolvedroot(y) Couldn't find "y"
@@ -225,6 +230,38 @@ The content of the markdown file after translation:
           ],
           "None"
         ]
+      },
+      {
+        "`Heading": [
+          { "heading_level": "`Section", "heading_label_explicit": "true" },
+          { "`Label": [ { "`LeafPage": [ "None", "file" ] }, "with-a-label" ] },
+          [ { "`Word": "A" }, "`Space", { "`Word": "heading" }, "`Space" ]
+        ]
+      },
+      {
+        "`Paragraph": [
+          { "`Word": "I'm" },
+          "`Space",
+          { "`Word": "referencing" },
+          "`Space",
+          { "`Word": "the" },
+          "`Space",
+          {
+            "`Reference": [
+              {
+                "`Resolved": {
+                  "`Identifier": {
+                    "`Label": [
+                      { "`LeafPage": [ "None", "file" ] }, "with-a-label"
+                    ]
+                  }
+                }
+              },
+              [ { "`Word": "label" } ]
+            ]
+          },
+          { "`Word": "." }
+        ]
       }
     ],
     "digest": "<digest>"
@@ -300,6 +337,11 @@ Since it might be easier to read, here is the html generated:
       <tr><td><p>One</p></td><td><p>Two</p></td><td></td></tr>
       <tr><td><p>Un</p></td><td></td><td></td></tr>
      </table>
+     <h2 id="with-a-label"><a href="#with-a-label" class="anchor"></a>A heading 
+     </h2>
+     <p>I'm referencing the 
+      <a href="#with-a-label" title="with-a-label">label</a>.
+     </p>
     </header><div class="odoc-content"></div>
    </body>
   </html>

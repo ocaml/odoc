@@ -86,6 +86,13 @@ let meta_to_loc ~locator meta = textloc_to_loc ~locator (Meta.textloc meta)
    about the nature of data they apply to. E.g. most assume the
    textloc is on the same line. *)
 
+let chop_end_of_meta_textloc ~count meta =
+  let textloc = Meta.textloc meta in
+  let last_line = Textloc.last_line textloc in
+  let last_byte = Textloc.last_byte textloc - count in
+  let textloc = Textloc.set_last textloc ~last_byte ~last_line in
+  Meta.with_textloc ~keep_id:true meta textloc
+
 let split_info_string_locs ~left_count ~right_count m =
   if right_count = 0 then (Meta.textloc m, Textloc.none)
   else
@@ -424,6 +431,67 @@ and inline_to_inline_elements ~locator defs acc i : inlines_acc =
       inline_to_inline_elements ~locator defs acc i
   | _ -> assert false
 
+(* Heading label support - CommonMark extension. Parses a potential
+   final {#id} in heading inlines. In [id] braces must be escaped
+   otherwise parsing fails; if the rightmost brace is escaped it's
+   not a heading label. The parse runs from right to left *)
+
+let parse_heading_label s =
+  let rec loop s max prev i =
+    if i < 0 then None
+    else
+      match s.[i] with
+      | '{' as c ->
+          if i > 0 && s.[i - 1] = '\\' then loop s max c (i - 1)
+          else if prev = '#' then Some i
+          else None
+      | '}' as c ->
+          if i > 0 && s.[i - 1] = '\\' then loop s max c (i - 1) else None
+      | c -> loop s max c (i - 1)
+  in
+  let max = String.length s - 1 in
+  let last =
+    (* [last] is rightmost non blank, if any. *)
+    let k = ref max in
+    while (not (!k < 0)) && is_blank s.[!k] do
+      decr k
+    done;
+    !k
+  in
+  if last < 1 || s.[last] <> '}' || s.[last - 1] = '\\' then None
+  else
+    match loop s max s.[last] (last - 1) with
+    | None -> None
+    | Some first ->
+        let chop = max - first + 1 in
+        let text = String.sub s 0 first in
+        let first = first + 2 and last = last - 1 in
+        (* remove delims *)
+        let label = String.sub s first (last - first + 1) in
+        Some (text, chop, label)
+
+let heading_inline_and_label h =
+  (* cmarkit claims it's already normalized but let's be defensive :-) *)
+  match Inline.normalize (Block.Heading.inline h) with
+  | Inline.Text (t, m) as inline -> (
+      match parse_heading_label t with
+      | None -> (inline, None)
+      | Some (t, chop, label) ->
+          let m = chop_end_of_meta_textloc ~count:chop m in
+          (Inline.Text (t, m), Some label))
+  | Inline.Inlines (is, m0) as inline -> (
+      match List.rev is with
+      | Inline.Text (t, m1) :: ris -> (
+          match parse_heading_label t with
+          | None -> (inline, None)
+          | Some (t, chop, label) ->
+              let m0 = chop_end_of_meta_textloc ~count:chop m0 in
+              let m1 = chop_end_of_meta_textloc ~count:chop m1 in
+              ( Inline.Inlines (List.rev (Inline.Text (t, m1) :: ris), m0),
+                Some label ))
+      | _ -> (inline, None))
+  | inline -> (inline, None)
+
 (* Block translations *)
 
 let raw_paragraph ~loc ~raw_loc backend raw =
@@ -509,14 +577,11 @@ let heading_to_block_element ~locator defs h m (bs, warns) =
     | 6 -> (5, warn ~loc warn_heading_level_6 warns)
     | level -> (level, warns)
   in
-  let inline =
-    (* cmarkit claims it's already normalized but let's be defensive :-) *)
-    Inline.normalize (Block.Heading.inline h)
-  in
+  let inline, label = heading_inline_and_label h in
   let inlines, warns =
     inline_to_inline_elements ~locator defs ([], warns) inline
   in
-  (Loc.at loc (`Heading (level, None, inlines)) :: bs, warns)
+  (Loc.at loc (`Heading (level, label, inlines)) :: bs, warns)
 
 let try_ocamldoc_reference_directive ~locator i (bs, warns) =
   match i with
