@@ -13,15 +13,23 @@ Here is a markdown file
   
   Some **emphasized** and _italic_ text.
   
+  Some $E=mc^2$ inline math!
+  
+  Absurd but true:
+  
+  ```math
+  \bot\vdash\top
+  ```
+  
   [text][!val-x] and [!val-y]
 
 Compile and link:
 
   $ odoc compile file.md
   $ odoc link page-file.odoc
-  File "file.md", line 13, characters 19-27:
+  File "file.md", line 21, characters 19-27:
   Warning: Failed to resolve reference unresolvedroot(y) Couldn't find "y"
-  File "file.md", line 13, characters 0-14:
+  File "file.md", line 21, characters 0-14:
   Warning: Failed to resolve reference unresolvedroot(x) Couldn't find "x"
 
 The locations seem correct.
@@ -98,6 +106,27 @@ The content of the markdown file after translation:
       },
       {
         "`Paragraph": [
+          { "`Word": "Some" },
+          "`Space",
+          { "`Math_span": "E=mc^2" },
+          "`Space",
+          { "`Word": "inline" },
+          "`Space",
+          { "`Word": "math!" }
+        ]
+      },
+      {
+        "`Paragraph": [
+          { "`Word": "Absurd" },
+          "`Space",
+          { "`Word": "but" },
+          "`Space",
+          { "`Word": "true:" }
+        ]
+      },
+      { "`Math_block": "\\bot\\vdash\\top" },
+      {
+        "`Paragraph": [
           {
             "`Reference": [
               { "`Root": [ "x", "`TValue" ] }, [ { "`Word": "text" } ]
@@ -126,6 +155,28 @@ Since it might be easier to read, here is the html generated:
     <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
     <script src="highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
+    <link rel="stylesheet" href="katex.min.css"/>
+    <script src="katex.min.js"></script>
+    <script>
+     
+  //<![CDATA[
+  
+            document.addEventListener("DOMContentLoaded", function () {
+              var elements = Array.from(document.getElementsByClassName("odoc-katex-math"));
+              for (var i = 0; i < elements.length; i++) {
+                var el = elements[i];
+                var content = el.textContent;
+                var new_el = document.createElement("span");
+                new_el.setAttribute("class", "odoc-katex-math-rendered");
+                var display = el.classList.contains("display");
+                katex.render(content, new_el, { throwOnError: false, displayMode: display });
+                el.replaceWith(new_el);
+              }
+            });
+          
+  //]]>
+  
+    </script>
    </head>
    <body class="odoc">
     <header class="odoc-preamble">
@@ -133,6 +184,9 @@ Since it might be easier to read, here is the html generated:
      </h2><p>A little text</p><ul><li>An item</li><li>list</li></ul>
      <ol><li>And an ordered</li><li>one</li></ol>
      <p>Some <b>emphasized</b> and <em>italic</em> text.</p>
+     <p>Some <code class="odoc-katex-math">E=mc^2</code> inline math!</p>
+     <p>Absurd but true:</p>
+     <div><pre class="odoc-katex-math display">\bot\vdash\top</pre></div>
      <p><span class="xref-unresolved" title="x">text</span> and <code>y</code>
      </p>
     </header><div class="odoc-content"></div>
