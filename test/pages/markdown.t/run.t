@@ -22,6 +22,21 @@ Here is a markdown file
   ```
   
   [text][!val-x] and [!val-y]
+  
+  | Un  | Deux | Trois | Quatre |
+  |-----|:-----|------:|:------:|
+  | One | Two  | Three | Four   |
+  | Un  | Dos  |  Tres | Cuatro |
+  
+  | Un  | Deux |
+  | One | Two  |
+  | Un  | Dos  |
+  
+  | Un  | Deux | Trois |
+  | One | Two  |
+  | Un  |
+  
+  
 
 Compile and link:
 
@@ -137,6 +152,79 @@ The content of the markdown file after translation:
           "`Space",
           { "`Reference": [ { "`Root": [ "y", "`TValue" ] }, [] ] }
         ]
+      },
+      {
+        "`Table": [
+          [
+            [
+              [ [ { "`Paragraph": [ { "`Word": "Un" } ] } ], "`Header" ],
+              [ [ { "`Paragraph": [ { "`Word": "Deux" } ] } ], "`Header" ],
+              [ [ { "`Paragraph": [ { "`Word": "Trois" } ] } ], "`Header" ],
+              [ [ { "`Paragraph": [ { "`Word": "Quatre" } ] } ], "`Header" ]
+            ],
+            [
+              [ [ { "`Paragraph": [ { "`Word": "One" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Two" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Three" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Four" } ] } ], "`Data" ]
+            ],
+            [
+              [ [ { "`Paragraph": [ { "`Word": "Un" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Dos" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Tres" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Cuatro" } ] } ], "`Data" ]
+            ]
+          ],
+          {
+            "Some": [
+              "None",
+              { "Some": "`Left" },
+              { "Some": "`Right" },
+              { "Some": "`Center" }
+            ]
+          }
+        ]
+      },
+      {
+        "`Table": [
+          [
+            [
+              [ [ { "`Paragraph": [ { "`Word": "Un" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Deux" } ] } ], "`Data" ]
+            ],
+            [
+              [ [ { "`Paragraph": [ { "`Word": "One" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Two" } ] } ], "`Data" ]
+            ],
+            [
+              [ [ { "`Paragraph": [ { "`Word": "Un" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Dos" } ] } ], "`Data" ]
+            ]
+          ],
+          "None"
+        ]
+      },
+      {
+        "`Table": [
+          [
+            [
+              [ [ { "`Paragraph": [ { "`Word": "Un" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Deux" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Trois" } ] } ], "`Data" ]
+            ],
+            [
+              [ [ { "`Paragraph": [ { "`Word": "One" } ] } ], "`Data" ],
+              [ [ { "`Paragraph": [ { "`Word": "Two" } ] } ], "`Data" ],
+              [ [], "`Data" ]
+            ],
+            [
+              [ [ { "`Paragraph": [ { "`Word": "Un" } ] } ], "`Data" ],
+              [ [], "`Data" ],
+              [ [], "`Data" ]
+            ]
+          ],
+          "None"
+        ]
       }
     ],
     "digest": "<digest>"
@@ -189,6 +277,29 @@ Since it might be easier to read, here is the html generated:
      <div><pre class="odoc-katex-math display">\bot\vdash\top</pre></div>
      <p><span class="xref-unresolved" title="x">text</span> and <code>y</code>
      </p>
+     <table class="odoc-table">
+      <tr><th><p>Un</p></th><th style="text-align:left"><p>Deux</p></th>
+       <th style="text-align:right"><p>Trois</p></th>
+       <th style="text-align:center"><p>Quatre</p></th>
+      </tr>
+      <tr><td><p>One</p></td><td style="text-align:left"><p>Two</p></td>
+       <td style="text-align:right"><p>Three</p></td>
+       <td style="text-align:center"><p>Four</p></td>
+      </tr>
+      <tr><td><p>Un</p></td><td style="text-align:left"><p>Dos</p></td>
+       <td style="text-align:right"><p>Tres</p></td>
+       <td style="text-align:center"><p>Cuatro</p></td>
+      </tr>
+     </table>
+     <table class="odoc-table"><tr><td><p>Un</p></td><td><p>Deux</p></td></tr>
+      <tr><td><p>One</p></td><td><p>Two</p></td></tr>
+      <tr><td><p>Un</p></td><td><p>Dos</p></td></tr>
+     </table>
+     <table class="odoc-table">
+      <tr><td><p>Un</p></td><td><p>Deux</p></td><td><p>Trois</p></td></tr>
+      <tr><td><p>One</p></td><td><p>Two</p></td><td></td></tr>
+      <tr><td><p>Un</p></td><td></td><td></td></tr>
+     </table>
     </header><div class="odoc-content"></div>
    </body>
   </html>
