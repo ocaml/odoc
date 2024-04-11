@@ -118,6 +118,23 @@ ocamldoc                   ocamlmark
 @version string        ↔   @version string 
 ````
 
+The `odoc` language contains additions (and differences or omissions).
+
+```
+odoc                       ocamlmark
+--------------------------------------------------------
+{m ...}                ↔   $...$
+{math                  ↔   ```math
+  ...                      ...
+}                          ```
+{table                 ←   | a | b |
+  {tr {th a}{th b}}        |---|---|
+  {tr {td c}{td d}}}       | c | d |
+```
+
+Odoc tables do not translate well to markdown since odoc tables can contain
+nestable block elements.
+
 ### Documentation comment structure
 
 CommonMark is sensitive to leading spaces on lines and `ocamldoc`
