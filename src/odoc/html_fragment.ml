@@ -39,7 +39,7 @@ let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
   match Fs.File.read input with
   | Error _ as e -> e
   | Ok str -> (
-      Odoc_loader.read_string id input_s str
+      Odoc_loader.read_string id input_s (`Mld str)
       |> Odoc_model.Error.handle_errors_and_warnings ~warnings_options
       >>= function
       | `Docs content -> to_html content

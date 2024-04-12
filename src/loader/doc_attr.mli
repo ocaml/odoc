@@ -36,7 +36,7 @@ val attached_no_tag :
 val page :
   Paths.Identifier.LabelParent.t ->
   Location.t ->
-  string ->
+  Odoc_model.Semantics.text ->
   Odoc_model.Comment.docs_or_stop
 (** The parent identifier is used to define labels in the given string (i.e.
     for things like [{1:some_section Some title}]) and the location is used for

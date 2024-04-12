@@ -546,12 +546,19 @@ let ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
       in
       (elts, handle_internal_tags tags internal_tags))
 
+type text = [ `Md of string | `Mld of string ]
+
 let parse_comment ~internal_tags ~sections_allowed ~tags_allowed
     ~containing_definition ~location ~text =
   Error.catch_warnings (fun () ->
-      let ast =
-        Odoc_parser.parse_comment ~location ~text |> Error.raise_parser_warnings
+      let ast, warnings =
+        match text with
+        | `Mld text ->
+            let parser_ = Odoc_parser.parse_comment ~location ~text in
+            (Odoc_parser.ast parser_, Odoc_parser.warnings parser_)
+        | `Md text -> Doc_of_md.parse_comment ~location ~text ()
       in
+      Error.raise_parser_warnings warnings;
       ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
         ~parent_of_sections:containing_definition ast []
       |> Error.raise_warnings)

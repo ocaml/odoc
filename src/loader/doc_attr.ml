@@ -128,8 +128,9 @@ let attached internal_tags parent attrs =
         match parse_attribute attr with
         | Some (`Doc (str, loc)) ->
             let ast_docs =
-              Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:str
-              |> Error.raise_parser_warnings
+              let parser_ = Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:str in
+              Error.raise_parser_warnings (Odoc_parser.warnings parser_);
+              Odoc_parser.ast parser_
             in
             loop (List.rev_append ast_docs acc_docs) acc_alerts rest
         | Some (`Alert (name, p, loc)) ->
@@ -170,7 +171,7 @@ let standalone parent (attr : Parsetree.attribute) :
   match parse_attribute attr with
   | Some (`Stop _loc) -> Some `Stop
   | Some (`Text (str, loc)) ->
-      let doc, () = read_string_comment Semantics.Expect_none parent loc str in
+      let doc, () = read_string_comment Semantics.Expect_none parent loc (`Mld str) in
       Some (`Docs doc)
   | Some (`Doc _) -> None
   | Some (`Alert (name, _, attr_loc)) ->
@@ -233,8 +234,9 @@ let extract_top_comment internal_tags ~classify parent items =
         match classify hd with
         | `Text (text, loc) ->
             let ast_docs =
-              Odoc_parser.parse_comment ~location:(pad_loc loc) ~text
-              |> Error.raise_parser_warnings
+              let parser_ = Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:text in
+              Error.raise_parser_warnings (Odoc_parser.warnings parser_);
+              Odoc_parser.ast parser_
             in
             let items, alerts = extract_tail_alerts [] tl in
             (items, ast_docs, alerts)

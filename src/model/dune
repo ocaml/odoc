@@ -16,4 +16,4 @@
   (backend landmarks --auto))
  (instrumentation
   (backend bisect_ppx))
- (libraries result compiler-libs.common odoc-parser))
+ (libraries result compiler-libs.common odoc-parser cmarkit))

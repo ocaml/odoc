@@ -10,7 +10,7 @@ type make_root =
 val read_string :
   Paths.Identifier.LabelParent.t ->
   string ->
-  string ->
+  Odoc_model.Semantics.text ->
   (Comment.docs_or_stop, Error.t) result Error.with_warnings
 
 val read_cmti :

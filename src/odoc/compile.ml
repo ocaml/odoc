@@ -175,7 +175,7 @@ let page_name_of_output ~is_parent_explicit output =
      | _ -> ());
   root_name
 
-let mld ~parent_spec ~output ~children ~warnings_options input =
+let md_or_mld ~parent_spec ~output ~children ~warnings_options input kind =
   List.fold_left
     (fun acc child_str ->
       match (acc, parse_parent_child_reference child_str) with
@@ -233,6 +233,7 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
     Ok ()
   in
   Fs.File.read input >>= fun str ->
+  let str = match kind with `Md -> `Md str | `Mld -> `Mld str in
   Odoc_loader.read_string (name :> Paths.Identifier.LabelParent.t) input_s str
   |> Error.handle_errors_and_warnings ~warnings_options
   >>= function
@@ -251,27 +252,29 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
     ~warnings_options input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
-  if ext = ".mld" then
-    mld ~parent_spec ~output ~warnings_options ~children input
-  else
-    check_is_empty "Not expecting children (--child) when compiling modules."
-      children
-    >>= fun () ->
-    handle_file_ext ext >>= fun input_type ->
-    let parent =
-      match parent_spec with
-      | Noparent -> None
-      | Explicit (parent, _) -> Some parent
-      | Package parent -> Some parent
-    in
-    let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
-    let result =
-      Error.catch_errors_and_warnings (fun () ->
-          resolve_and_substitute ~resolver ~make_root ~hidden parent input
-            input_type)
-    in
-    (* Extract warnings to write them into the output file *)
-    let _, warnings = Error.unpack_warnings result in
-    Error.handle_errors_and_warnings ~warnings_options result >>= fun unit ->
-    Odoc_file.save_unit output ~warnings unit;
-    Ok ()
+  let kind = match ext with ".md" -> `Md | ".mld" -> `Mld | _ -> `Other in
+  match kind with
+  | (`Md | `Mld) as kind ->
+      md_or_mld ~parent_spec ~output ~warnings_options ~children input kind
+  | _ ->
+      check_is_empty "Not expecting children (--child) when compiling modules."
+        children
+      >>= fun () ->
+      handle_file_ext ext >>= fun input_type ->
+      let parent =
+        match parent_spec with
+        | Noparent -> None
+        | Explicit (parent, _) -> Some parent
+        | Package parent -> Some parent
+      in
+      let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
+      let result =
+        Error.catch_errors_and_warnings (fun () ->
+            resolve_and_substitute ~resolver ~make_root ~hidden parent input
+              input_type)
+      in
+      (* Extract warnings to write them into the output file *)
+      let _, warnings = Error.unpack_warnings result in
+      Error.handle_errors_and_warnings ~warnings_options result >>= fun unit ->
+      Odoc_file.save_unit output ~warnings unit;
+      Ok ()

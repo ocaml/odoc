@@ -32,7 +32,7 @@ let test ?(sections_allowed = `No_titles) ?(tags_allowed = true)
   let parser_output =
     Semantics.parse_comment ~internal_tags:Odoc_model.Semantics.Expect_none
       ~sections_allowed ~tags_allowed ~containing_definition:dummy_page
-      ~location ~text:str
+      ~location ~text:(`Mld str)
   in
   let print_json_desc desc t =
     let yojson = Type_desc_to_yojson.to_yojson desc t in

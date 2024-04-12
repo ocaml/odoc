@@ -160,20 +160,23 @@ end = struct
     file |> Fs.File.basename |> Fs.File.to_string
     |> Astring.String.is_prefix ~affix:"page-"
 
+  let has_page_extension input =
+    Fs.File.has_ext ".mld" input || Fs.File.has_ext ".md" input
+
   let output_file ~dst ~input =
     match dst with
     | Some file ->
         let output = Fs.File.of_string file in
-        if Fs.File.has_ext ".mld" input && not (has_page_prefix output) then (
+        if has_page_extension input && not (has_page_prefix output) then (
           Printf.eprintf
-            "ERROR: the name of the .odoc file produced from a .mld must start \
-             with 'page-'\n\
+            "ERROR: the name of the .odoc file produced from a .mld or .md \
+             must start with 'page-'\n\
              %!";
           exit 1);
         output
     | None ->
         let output =
-          if Fs.File.has_ext ".mld" input && not (has_page_prefix input) then
+          if has_page_extension input && not (has_page_prefix input) then
             let directory = Fs.File.dirname input in
             let name = Fs.File.basename input in
             let name = "page-" ^ Fs.File.to_string name in
@@ -207,23 +210,25 @@ end = struct
       ~warnings_options input
 
   let input =
-    let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
+    let doc =
+      "Input $(i,.cmti), $(i,.cmt), $(i,.cmi), $(i,.mld) or $(i,.md) file."
+    in
     Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
 
   let dst =
     let doc =
       "Output file path. Non-existing intermediate directories are created. If \
        absent outputs a $(i,BASE.odoc) file in the same directory as the input \
-       file where $(i,BASE) is the basename of the input file. For mld files \
-       the \"page-\" prefix will be added if not already present in the input \
-       basename."
+       file where $(i,BASE) is the basename of the input file. For mld and md \
+       files the \"page-\" prefix will be added if not already present in the \
+       input basename."
     in
     Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
 
   let children =
     let doc =
       "Specify the $(i,.odoc) file as a child. Can be used multiple times. \
-       Only applies to mld files."
+       Only applies to mld and md files."
     in
     let default = [] in
     Arg.(
@@ -263,12 +268,12 @@ end = struct
         `P
           "Dependencies between compilation units is the same as while \
            compiling the initial OCaml modules.";
-        `P "Mld pages don't have any dependency.";
+        `P "Mld and md pages don't have any dependency.";
       ]
     in
     let doc =
-      "Compile a $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file to an \
-       $(i,.odoc) file."
+      "Compile a $(i,.cmti), $(i,.cmt), $(i,.cmi), $(i,.mld) or $(i,.md) file \
+       to an $(i,.odoc) file."
     in
     Term.info "compile" ~docs ~doc ~man
 end
