@@ -121,8 +121,20 @@ let warn_unsupported_list_start_number start =
 let warn_unsupported_cmark kind =
   strf "%s are unsupported in ocamlmark, dropped." kind
 
+let warn_unsupported_indexlist =
+  "[!indexlist] is unsupported in ocamlmark, dropped."
+
+let warn_not_in_own_paragraph directive =
+  strf "%s must be alone in its own paragraph, dropped." directive
+
 let warn_unsupported_link_title =
   "Link titles are unsupported in ocamlmark, dropped."
+
+let warn_illegal_label_def l =
+  strf "Label %S: label definitions can't start with ! in ocamlmark" l
+
+let warn_illegal_image_ref l =
+  strf "Image cannot reference OCaml reference %S." l
 
 let warn ~loc:location message warns = { Warning.location; message } :: warns
 
@@ -134,12 +146,101 @@ let warn_unsupported_header_nesting ~locator meta (acc, warns) =
   let msg = warn_unsupported_header_nesting in
   (acc, warn ~loc:(meta_to_loc ~locator meta) msg warns)
 
+(* This handle ocamlmark's implementation of ocamldoc's reference
+   syntax during CommonMark parsing. We forbid link reference
+   definitions whose label start with a ! character and on inline
+   reference links resolve these labels to synthetic label definitions
+   that we process specially during the AST translation. *)
+
+type ocamldoc_reference =
+  [ `Reference of string Loc.with_location
+  | `Modules of string Loc.with_location list
+  | `Indexlist ]
+
+let ocamldoc_reference : ocamldoc_reference Meta.key = Meta.key ()
+let make_ocamldoc_reference label ref =
+  (* Synthetic label definition with the ocaml reference  *)
+  let meta = Meta.add ocamldoc_reference ref (Label.meta label) in
+  Label.with_meta meta label
+
+let label_is_ocamldoc_reference l = String.starts_with ~prefix:"!" (Label.key l)
+let indexlist_directive = "!indexlist"
+let modules_directive = "!modules:"
+
 let is_blank = function ' ' | '\t' -> true | _ -> false
 let rec next_blank s ~max i =
   if i > max || is_blank s.[i] then i else next_blank s ~max (i + 1)
 
 let rec next_nonblank s ~max i =
   if i > max || not (is_blank s.[i]) then i else next_nonblank s ~max (i + 1)
+
+let parse_ocamldoc_modules_directive ~locator l =
+  let next_line = function [] -> None | l :: ls -> Some (ls, l) in
+  let flush_tok s meta acc first last =
+    let textloc = textloc_of_sub (Meta.textloc meta) ~first ~last in
+    let loc = textloc_to_loc ~locator textloc in
+    Loc.at loc (String.sub s first (last - first + 1)) :: acc
+  in
+  let rec parse_toks lines s meta acc max start =
+    let nb = next_nonblank s ~max start in
+    if nb > max then
+      match next_line lines with
+      | None -> Some (`Modules (List.rev acc))
+      | Some (ls, (_, (s, m))) -> parse_toks ls s m acc (String.length s - 1) 0
+    else
+      let bl = next_blank s ~max nb in
+      let acc = flush_tok s meta acc nb (bl - 1) in
+      parse_toks lines s meta acc max bl
+  in
+  match next_line (Label.text l) with
+  | None -> None
+  | Some (lines, (_, (s, m))) -> (
+      match String.index_opt s ':' with
+      | None -> None
+      | Some colon -> parse_toks lines s m [] (String.length s - 1) (colon + 1))
+
+let try_parse_ocamldoc_reference ~locator l =
+  match Label.key l (* we match on the normalized label *) with
+  | r when String.equal r indexlist_directive -> Some `Indexlist
+  | r when String.starts_with ~prefix:modules_directive r ->
+      parse_ocamldoc_modules_directive ~locator l
+  | r when String.starts_with ~prefix:"!" r ->
+      let loc = textloc_to_loc ~locator (Meta.textloc (Label.meta l)) in
+      let text = Label.text_to_string l (* the unormalized text *) in
+      let ref = String.sub text 1 (String.length text - 1) in
+      Some (`Reference (Loc.at loc ref))
+  | _ -> None
+
+let define_label ~locator warns label =
+  (* Called on link reference defs *)
+  if not (label_is_ocamldoc_reference label) then Some label
+  else
+    let loc = textloc_to_loc ~locator (Meta.textloc (Label.meta label)) in
+    let label = Label.text_to_string label in
+    warns := warn ~loc (warn_illegal_label_def label) !warns;
+    None
+
+let link_label_ref ~locator _warns label =
+  (* Called on reference links *)
+  match try_parse_ocamldoc_reference ~locator label with
+  | None -> None
+  | Some ref -> Some (make_ocamldoc_reference label ref)
+
+let image_label_ref ~locator warns label =
+  (* Called on images *)
+  if not (label_is_ocamldoc_reference label) then None
+  else
+    let loc = textloc_to_loc ~locator (Meta.textloc (Label.meta label)) in
+    let label = Label.text_to_string label in
+    warns := warn ~loc (warn_illegal_image_ref label) !warns;
+    None
+
+let ocamldoc_reference_resolver ~locator warns = function
+  | `Def (Some _, _) -> None (* XXX we could warn on multiple def here *)
+  | `Def (None, k) -> define_label ~locator warns k
+  | `Ref (_, _, (Some _ as k)) -> k
+  | `Ref (`Link, ref, None) -> link_label_ref ~locator warns ref
+  | `Ref (`Image, ref, None) -> image_label_ref ~locator warns ref
 
 (* Translating blocks and inlines. *)
 
@@ -239,7 +340,22 @@ let text_to_inline_elements ~locator s meta ((is, warns) as acc) =
   let max = String.length s - 1 in
   if max < 0 then acc else tokenize s meta [] max 0 (is_blank s.[0])
 
-let rec link_reference_to_inline_element ~locator defs l m (is, warns) =
+let rec ocamldoc_reference_to_inline_element ~locator defs l m ref (is, warns) =
+  let loc = meta_to_loc ~locator m in
+  let kind, text, warns =
+    match Inline.Link.reference l with
+    | `Ref ((`Collapsed | `Shortcut), _, _) -> (`Simple, [], warns)
+    | `Ref (`Full, _, _) ->
+        let i = Inline.Link.text l in
+        let text, warns =
+          inline_to_inline_elements ~locator defs ([], warns) i
+        in
+        (`With_text, text, warns)
+    | `Inline _ -> assert false
+  in
+  (Loc.at loc (`Reference (kind, ref, text)) :: is, warns)
+
+and link_reference_to_inline_element ~locator defs l m (is, warns) =
   let loc = meta_to_loc ~locator m in
   let ld = link_definition defs l in
   let link =
@@ -258,8 +374,20 @@ let rec link_reference_to_inline_element ~locator defs l m (is, warns) =
   in
   (Loc.at loc (`Link (link, text)) :: is, warns)
 
-and link_to_inline_element ~locator defs l m acc =
-  link_reference_to_inline_element ~locator defs l m acc
+and link_to_inline_element ~locator defs l m ((is, warns) as acc) =
+  match Inline.Link.reference l with
+  | `Inline _ -> link_reference_to_inline_element ~locator defs l m acc
+  | `Ref (_, _, def) -> (
+      match Meta.find ocamldoc_reference (Label.meta def) with
+      | None -> link_reference_to_inline_element ~locator defs l m acc
+      | Some (`Reference ref) ->
+          ocamldoc_reference_to_inline_element ~locator defs l m ref acc
+      | Some `Indexlist ->
+          let w = warn_not_in_own_paragraph "[!indexlist]" in
+          (is, warn ~loc:(meta_to_loc ~locator m) w warns)
+      | Some (`Modules _) ->
+          let w = warn_not_in_own_paragraph "[!modules …]" in
+          (is, warn ~loc:(meta_to_loc ~locator m) w warns))
 
 and emphasis_to_inline_element ~locator defs style e m (is, warns) =
   let loc = meta_to_loc ~locator m in
@@ -373,12 +501,31 @@ let heading_to_block_element ~locator defs h m (bs, warns) =
   in
   (Loc.at loc (`Heading (level, None, inlines)) :: bs, warns)
 
-let paragraph_to_nestable_block_element ~locator defs p m (bs, warns) =
+let try_ocamldoc_reference_directive ~locator i (bs, warns) =
+  match i with
+  | Inline.Link (l, meta) -> (
+      match Inline.Link.reference l with
+      | `Inline _ -> None
+      | `Ref (_, _, def) -> (
+          match Meta.find ocamldoc_reference (Label.meta def) with
+          | None | Some (`Reference _) -> None
+          | Some (`Modules _ as m) ->
+              let loc = meta_to_loc ~locator meta in
+              Some (Loc.at loc m :: bs, warns)
+          | Some `Indexlist ->
+              let loc = meta_to_loc ~locator meta in
+              Some (bs, warn ~loc warn_unsupported_indexlist warns)))
+  | _ -> None
+
+let paragraph_to_nestable_block_element ~locator defs p m ((bs, warns) as acc) =
   (* TODO Parse inlines for @tags support. *)
   let loc = meta_to_loc ~locator m in
   let i = Block.Paragraph.inline p in
-  let is, warns = inline_to_inline_elements ~locator defs ([], warns) i in
-  (Loc.at loc (`Paragraph is) :: bs, warns)
+  match try_ocamldoc_reference_directive ~locator i acc with
+  | Some acc -> acc
+  | None ->
+      let is, warns = inline_to_inline_elements ~locator defs ([], warns) i in
+      (Loc.at loc (`Paragraph is) :: bs, warns)
 
 let thematic_break_to_nestable_block_element ~locator m (bs, warns) =
   let loc = meta_to_loc ~locator m in
@@ -450,5 +597,6 @@ let parse_comment ?buffer:b ~location ~text:s () : Ast.t * Warning.t list =
   in
   let locator, text = massage_comment ~location b s in
   let warns = ref [] and file = location.Lexing.pos_fname in
-  let doc = Doc.of_string ~file ~locs:true ~strict:true text in
+  let resolver = ocamldoc_reference_resolver ~locator warns in
+  let doc = Doc.of_string ~resolver ~file ~locs:true ~strict:true text in
   block_to_ast ~locator (Doc.defs doc) ([], !warns) (Doc.block doc)
