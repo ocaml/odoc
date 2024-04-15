@@ -556,7 +556,7 @@ let parse_comment ~internal_tags ~sections_allowed ~tags_allowed
         | `Mld text ->
             let parser_ = Odoc_parser.parse_comment ~location ~text in
             (Odoc_parser.ast parser_, Odoc_parser.warnings parser_)
-        | `Md text -> Doc_of_md.parse_comment ~location ~text ()
+        | `Md text -> Odoc_markdown.To_ocamldoc.parse_comment ~location ~text ()
       in
       Error.raise_parser_warnings warnings;
       ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
