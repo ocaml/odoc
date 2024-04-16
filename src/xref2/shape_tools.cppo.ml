@@ -107,6 +107,14 @@ let unit_of_uid uid =
   | Predef _ -> None
   | Internal -> None
 
+#if OCAML_VERSION >= (5,2,0)
+let rec traverse_aliases = function
+   | Shape_reduce.Resolved uid -> Some uid
+   | Approximated id -> id
+   | Resolved_alias (_,x) -> traverse_aliases x
+   | _ -> None
+#endif
+
 let lookup_shape : Env.t -> Shape.t -> Identifier.SourceLocation.t option =
  fun env query ->
 #if OCAML_VERSION < (5,2,0)
@@ -137,13 +145,7 @@ let lookup_shape : Env.t -> Shape.t -> Identifier.SourceLocation.t option =
        | _ -> None
   end) in
   let result = try Some (Reduce.reduce_for_uid Ocaml_env.empty query) with Not_found -> None in
-  result >>= (function
-    | Resolved uid -> Some uid
-    | Resolved_alias (_::_ as l) ->
-      let last = List.hd (List.rev l) in
-      Some last
-    | Approximated x -> x
-    | _ -> None) >>= fun uid ->
+  result >>= traverse_aliases >>= fun uid ->
 #endif
   unit_of_uid uid >>= fun unit_name ->
   match Env.lookup_impl unit_name env with
