@@ -2,7 +2,7 @@
 
 ### Added
 
-- OCaml 5.2.0 compatibility (@Octachron, #1094)
+- OCaml 5.2.0 compatibility (@Octachron, #1094, #1112)
 
 ### Fixed
 
