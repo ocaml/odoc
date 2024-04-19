@@ -28,13 +28,13 @@ We expect resolved references and the heading text filled in.
 
   $ odoc_print test.odocl | jq -c '.. | .["`Reference"]? | select(.)'
   [{"`Resolved":{"`Identifier":{"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]},"B"]}}},[{"`Word":"An"},"`Space",{"`Word":"other"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[{"`Word":"Potentially"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
   [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]}}},[{"`Word":"First"},"`Space",{"`Word":"label"}]]
   [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}}},[{"`Word":"Dupplicate"},"`Space",{"`Word":"B"}]]
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"C"]}},[]]
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"D"]}},[]]
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[]]
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]}},"B"]}},[]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"C"]}},[{"`Word":"First"},"`Space",{"`Word":"label"},"`Space",{"`Word":"of"},"`Space",{"`Word":"M"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"D"]}},[{"`Word":"Floating"},"`Space",{"`Word":"label"},"`Space",{"`Word":"in"},"`Space",{"`Word":"M"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[{"`Word":"Potentially"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]}},"B"]}},[{"`Word":"An"},"`Space",{"`Word":"other"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
 
   $ odoc html-generate --indent -o html test.odocl
 
@@ -64,7 +64,7 @@ There are two references in N, one should point to a local label and the other t
     <div class="odoc-content">
      <h2 id="B"><a href="#B" class="anchor"></a>An other conflicting label</h2>
      <p><a href="#B" title="B">An other conflicting label</a> 
-      <a href="../M/index.html#B"><code>B</code></a>
+      <a href="../M/index.html#B" title="B">Potentially conflicting label</a>
      </p>
     </div>
    </body>
@@ -127,10 +127,10 @@ The second occurence of 'B' in the main page should be disambiguated
      <p>References to the labels:</p>
      <p><a href="#A" title="A">First label</a> 
       <a href="#B" title="B">Dupplicate B</a> 
-      <a href="M/index.html#C"><code>C</code></a> 
-      <a href="M/index.html#D"><code>D</code></a> 
-      <a href="M/index.html#B"><code>B</code></a> 
-      <a href="N/index.html#B"><code>B</code></a>
+      <a href="M/index.html#C" title="C">First label of M</a> 
+      <a href="M/index.html#D" title="D">Floating label in M</a> 
+      <a href="M/index.html#B" title="B">Potentially conflicting label</a>
+       <a href="N/index.html#B" title="B">An other conflicting label</a>
      </p>
     </div>
    </body>

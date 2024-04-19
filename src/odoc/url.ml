@@ -26,6 +26,12 @@ let resolve url_to_string directories reference =
           in
           Error (`Msg error)
       | Ok resolved_reference -> (
+          let resolved_reference =
+            match resolved_reference with
+            | `Simple resolved_reference -> resolved_reference
+            | `With_text (resolved_reference, _) ->
+                (resolved_reference :> Odoc_model.Paths.Reference.Resolved.t)
+          in
           let identifier =
             Odoc_model.Paths.Reference.Resolved.identifier resolved_reference
           in
