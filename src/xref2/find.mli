@@ -33,9 +33,12 @@ type label_parent = [ signature | type_ ]
 
 type constructor = [ `FConstructor of TypeDecl.Constructor.t ]
 
+type polymorphic_constructor =
+  [ `FPoly of TypeExpr.Polymorphic_variant.Constructor.t ]
+
 type field = [ `FField of TypeDecl.Field.t ]
 
-type any_in_type = [ constructor | field ]
+type any_in_type = [ constructor | field | polymorphic_constructor ]
 
 type any_in_type_in_sig = [ `In_type of TypeName.t * TypeDecl.t * any_in_type ]
 

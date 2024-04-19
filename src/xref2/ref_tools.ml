@@ -84,6 +84,7 @@ let ref_kind_of_find = function
   | `FClass _ -> "class"
   | `FClassType _ -> "class-type"
   | `FConstructor _ | `In_type (_, _, `FConstructor _) -> "constructor"
+  | `In_type (_, _, `FPoly _) -> "polymorphic constructor"
   | `FExn _ -> "exception"
   | `FExt _ -> "extension"
   | `FExtDecl _ -> "extension-decl"
@@ -480,17 +481,31 @@ module CS = struct
         let sg = Tools.prefix_signature (parent_cp, sg) in
         find_ambiguous Find.any_in_type_in_sig sg name_s >>= function
         | `In_type (_, _, `FField _) -> got_a_field name_s
+        | `In_type (typ_name, _, `FPoly cs) ->
+            Ok
+              (`PolyConstructor
+                (`Type (parent', typ_name), ConstructorName.make_std cs.name))
         | `In_type (typ_name, _, `FConstructor _) ->
             Ok (`Constructor (`Type (parent', typ_name), name)))
     | `T (parent', t) -> (
         find Find.any_in_type t name_s >>= function
         | `FField _ -> got_a_field name_s
+        | `FPoly cs ->
+            Ok
+              (`PolyConstructor
+                ( (parent' : Resolved.DataType.t),
+                  ConstructorName.make_std cs.name ))
         | `FConstructor _ ->
             Ok (`Constructor ((parent' : Resolved.DataType.t), name)))
 
   let of_component _env parent name =
     Ok
       (`Constructor
+        ((parent : Resolved.DataType.t), ConstructorName.make_std name))
+
+  let poly_of_component _env parent name =
+    Ok
+      (`PolyConstructor
         ((parent : Resolved.DataType.t), ConstructorName.make_std name))
 end
 
@@ -514,6 +529,7 @@ module F = struct
         let sg = Tools.prefix_signature (parent_cp, sg) in
         find_ambiguous Find.any_in_type_in_sig sg name_s >>= function
         | `In_type (_, _, `FConstructor _) -> got_a_constructor name_s
+        | `In_type (_, _, `FPoly _) -> got_a_constructor name_s
         | `In_type (typ_name, _, `FField _) ->
             Ok
               (`Field
@@ -521,6 +537,7 @@ module F = struct
     | `T (parent', t) -> (
         find Find.any_in_type t name_s >>= function
         | `FConstructor _ -> got_a_constructor name_s
+        | `FPoly _ -> got_a_constructor name_s
         | `FField _ -> Ok (`Field ((parent' :> Resolved.FieldParent.t), name)))
 
   let of_component _env parent name =
@@ -779,6 +796,7 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
       let parent = `Type (parent_ref, typ_name) in
       match r with
       | `FConstructor _ -> CS.of_component env parent name >>= resolved1
+      | `FPoly p -> CS.poly_of_component env parent p.name >>= resolved1
       | `FField _ -> F.of_component env parent name >>= resolved1)
   | `FModule_subst _ | `FType_subst _ | `FModuleType_subst _ ->
       Error (`Find_by_name (`Any, name))
@@ -789,6 +807,7 @@ let resolve_reference_dot_page env page name =
 let resolve_reference_dot_type env ~parent_ref t name =
   find Find.any_in_type t name >>= function
   | `FConstructor _ -> CS.of_component env parent_ref name >>= resolved1
+  | `FPoly p -> CS.poly_of_component env parent_ref p.name >>= resolved1
   | `FField _ -> F.of_component env parent_ref name >>= resolved1
 
 let resolve_reference_dot_class env p name =

@@ -349,6 +349,11 @@ module General_paths = struct
             ( "`Constructor",
               ((x1 :> rr), x2),
               Pair (resolved_reference, Names.constructorname) )
+      | `PolyConstructor (x1, x2) ->
+          C
+            ( "`PolyConstructor",
+              ((x1 :> rr), x2),
+              Pair (resolved_reference, Names.constructorname) )
       | `Exception (x1, x2) ->
           C
             ( "`Exception",

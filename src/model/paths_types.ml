@@ -898,6 +898,7 @@ and Resolved_reference : sig
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
     | `Constructor of datatype * ConstructorName.t
+    | `PolyConstructor of datatype * ConstructorName.t
     | `Field of field_parent * FieldName.t
     | `Extension of signature * ExtensionName.t
     | `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t

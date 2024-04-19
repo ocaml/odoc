@@ -40,6 +40,8 @@ module Reference = struct
     | `Type (r, s) -> render_resolved (r :> t) ^ "." ^ TypeName.to_string s
     | `Constructor (r, s) ->
         render_resolved (r :> t) ^ "." ^ ConstructorName.to_string s
+    | `PolyConstructor (r, s) ->
+        render_resolved (r :> t) ^ ".`" ^ ConstructorName.to_string s
     | `Field (r, s) -> render_resolved (r :> t) ^ "." ^ FieldName.to_string s
     | `Extension (r, s) ->
         render_resolved (r :> t) ^ "." ^ ExtensionName.to_string s
