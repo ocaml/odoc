@@ -225,25 +225,20 @@ let rec comment_inline_element :
       `Styled (s, List.map (with_location (comment_inline_element env)) ls)
   | `Reference (r, content) as orig -> (
       match Ref_tools.resolve_reference env r |> Error.raise_warnings with
-      | Ok x ->
-          let ref_ =
-            match x with
-            | `Simple r -> r
-            | `With_text (r, _) -> (r :> Paths.Reference.Resolved.t)
-          in
+      | Ok (ref_, c) ->
           let content =
             (* In case of labels, use the heading text as reference text if
                it's not specified. *)
-            match (content, x) with
-            | [], `With_text (_, content) ->
+            match (content, ref_, c) with
+            | [], _, Some content ->
                 Comment.link_content_of_inline_elements content
-            | [], `Simple (`Identifier ({ iv = #Id.Label.t_pv; _ } as i)) -> (
+            | [], `Identifier ({ iv = #Id.Label.t_pv; _ } as i), _ -> (
                 match Env.lookup_by_id Env.s_label i env with
                 | Some (`Label (_, lbl)) ->
                     Odoc_model.Comment.link_content_of_inline_elements
                       lbl.Component.Label.text
                 | None -> [])
-            | content, _ -> content
+            | content, _, _ -> content
           in
           `Reference (`Resolved ref_, content)
       | Error e ->
@@ -316,12 +311,7 @@ and comment_tag env parent ~loc:_ (x : Comment.tag) =
       `Param (name, comment_nestable_block_element_list env parent content)
   | `Raise ((`Reference (r, reference_content) as orig), content) -> (
       match Ref_tools.resolve_reference env r |> Error.raise_warnings with
-      | Ok x ->
-          let x =
-            match x with
-            | `Simple x -> x
-            | `With_text (x, _) -> (x :> Odoc_model.Paths.Reference.Resolved.t)
-          in
+      | Ok (x, _) ->
           `Raise
             ( `Reference (`Resolved x, reference_content),
               comment_nestable_block_element_list env parent content )

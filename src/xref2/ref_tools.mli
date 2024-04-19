@@ -14,7 +14,5 @@ val resolve_module_reference :
 val resolve_reference :
   Env.t ->
   t ->
-  [ `Simple of Resolved.t
-  | `With_text of Resolved.Label.t * Odoc_model.Comment.paragraph ]
-  ref_result
+  (Resolved.t * Odoc_model.Comment.paragraph option) ref_result
   Odoc_model.Error.with_warnings

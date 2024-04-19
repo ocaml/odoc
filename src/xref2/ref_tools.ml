@@ -745,9 +745,9 @@ let resolve_class_signature_reference env (r : ClassSignature.t) =
 
 (***)
 
-let resolved1 r = Ok (`Simple (r :> Resolved.t))
+let resolved1 r = Ok ((r :> Resolved.t), None)
 
-let resolved_with_text (r, txt) = Ok (`With_text (r, txt))
+let resolved_with_text (r, txt) = Ok ((r :> Reference.Resolved.t), Some txt)
 
 let resolved3 (r, _, _) = resolved1 r
 
@@ -817,7 +817,7 @@ let resolve_reference =
   fun env r ->
     match r with
     | `Root (name, `TUnknown) -> (
-        let identifier id = Ok (`Simple (`Identifier (id :> Identifier.t))) in
+        let identifier id = Ok (`Identifier (id :> Identifier.t), None) in
         env_lookup_by_name Env.s_any name env >>= function
         | `Module (_, _) as e -> resolved (M.of_element env e)
         | `ModuleType (_, _) as e -> resolved (MT.of_element env e)
@@ -832,7 +832,7 @@ let resolve_reference =
         | `ExtensionDecl (id, _) -> identifier id
         | `Field (id, _) -> identifier id
         | `Page (id, _) -> identifier id)
-    | `Resolved r -> Ok (`Simple r)
+    | `Resolved r -> Ok (r, None)
     | `Root (name, (`TModule | `TChildModule)) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
