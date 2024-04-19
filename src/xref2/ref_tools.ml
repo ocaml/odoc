@@ -338,9 +338,9 @@ module L = struct
 
   type t = Resolved.Label.t
 
-  let in_env env name : t ref_result =
-    env_lookup_by_name Env.s_label name env >>= fun (`Label (id, _)) ->
-    Ok (`Identifier id)
+  let in_env env name : (t * _) ref_result =
+    env_lookup_by_name Env.s_label name env >>= fun (`Label (id, lbl)) ->
+    Ok (`Identifier id, lbl.text)
 
   let in_page _env (`P (_, p)) name =
     let rec find = function
@@ -350,9 +350,9 @@ module L = struct
               ( _,
                 ({ Odoc_model.Paths.Identifier.iv = `Label (_, name'); _ } as
                  label),
-                _ )
+                content )
             when name = LabelName.to_string name' ->
-              Ok (`Identifier label)
+              Ok (`Identifier label, content)
           | _ -> find tl)
       | [] -> Error (`Find_by_name (`Page, name))
     in
@@ -360,16 +360,19 @@ module L = struct
 
   let of_component _env ~parent_ref label =
     Ok
-      (`Label
-        ( (parent_ref :> Resolved.LabelParent.t),
-          Ident.Name.typed_label label.Component.Label.label ))
+      ( `Label
+          ( (parent_ref :> Resolved.LabelParent.t),
+            Ident.Name.typed_label label.Component.Label.label ),
+        label.text )
 
   let in_label_parent env (parent : label_parent_lookup_result) name =
     match parent with
-    | `S (p, _, sg) ->
+    | `S (p, _, sg) -> (
         find_ambiguous ~kind:`Label Find.label_in_sig sg
           (LabelName.to_string name)
-        >>= fun _ -> Ok (`Label ((p :> Resolved.LabelParent.t), name))
+        >>= function
+        | `FLabel lbl ->
+            Ok (`Label ((p :> Resolved.LabelParent.t), name), lbl.text))
     | (`T _ | `C _ | `CT _) as r -> wrong_kind_error [ `S; `Page ] r
     | `P _ as page -> in_page env page (LabelName.to_string name)
 end
@@ -742,7 +745,9 @@ let resolve_class_signature_reference env (r : ClassSignature.t) =
 
 (***)
 
-let resolved1 r = Ok (r :> Resolved.t)
+let resolved1 r = Ok (`Simple (r :> Resolved.t))
+
+let resolved_with_text (r, txt) = Ok (`With_text (r, txt))
 
 let resolved3 (r, _, _) = resolved1 r
 
@@ -772,7 +777,7 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   | `FClassType (name, ct) ->
       CT.of_component env ct ~parent_ref name >>= resolved2
   | `FValue (name, _) -> V.of_component env ~parent_ref name >>= resolved1
-  | `FLabel label -> L.of_component env ~parent_ref label >>= resolved1
+  | `FLabel label -> L.of_component env ~parent_ref label >>= resolved_with_text
   | `FExn (name, _) -> EX.of_component env ~parent_ref name >>= resolved1
   | `FExt _ -> EC.of_component env ~parent_ref name >>= resolved1
   | `In_type (typ_name, _, r) -> (
@@ -784,7 +789,7 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
       Error (`Find_by_name (`Any, name))
 
 let resolve_reference_dot_page env page name =
-  L.in_page env page name >>= resolved1
+  L.in_page env page name >>= resolved_with_text
 
 let resolve_reference_dot_type env ~parent_ref t name =
   find Find.any_in_type t name >>= function
@@ -812,7 +817,7 @@ let resolve_reference =
   fun env r ->
     match r with
     | `Root (name, `TUnknown) -> (
-        let identifier id = Ok (`Identifier (id :> Identifier.t)) in
+        let identifier id = Ok (`Simple (`Identifier (id :> Identifier.t))) in
         env_lookup_by_name Env.s_any name env >>= function
         | `Module (_, _) as e -> resolved (M.of_element env e)
         | `ModuleType (_, _) as e -> resolved (MT.of_element env e)
@@ -827,7 +832,7 @@ let resolve_reference =
         | `ExtensionDecl (id, _) -> identifier id
         | `Field (id, _) -> identifier id
         | `Page (id, _) -> identifier id)
-    | `Resolved r -> Ok r
+    | `Resolved r -> Ok (`Simple r)
     | `Root (name, (`TModule | `TChildModule)) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
@@ -854,10 +859,10 @@ let resolve_reference =
     | `Value (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
         V.in_signature env p name >>= resolved1
-    | `Root (name, `TLabel) -> L.in_env env name >>= resolved1
+    | `Root (name, `TLabel) -> L.in_env env name >>= resolved_with_text
     | `Label (parent, name) ->
         resolve_label_parent_reference env parent >>= fun p ->
-        L.in_label_parent env p name >>= resolved1
+        L.in_label_parent env p name >>= resolved_with_text
     | `Root (name, (`TPage | `TChildPage)) -> Page.in_env env name >>= resolved2
     | `Dot (parent, name) -> resolve_reference_dot env parent name
     | `Root (name, `TConstructor) -> CS.in_env env name >>= resolved1

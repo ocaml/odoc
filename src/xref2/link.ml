@@ -226,11 +226,18 @@ let rec comment_inline_element :
   | `Reference (r, content) as orig -> (
       match Ref_tools.resolve_reference env r |> Error.raise_warnings with
       | Ok x ->
+          let ref_ =
+            match x with
+            | `Simple r -> r
+            | `With_text (r, _) -> (r :> Paths.Reference.Resolved.t)
+          in
           let content =
             (* In case of labels, use the heading text as reference text if
                it's not specified. *)
             match (content, x) with
-            | [], `Identifier ({ iv = #Id.Label.t_pv; _ } as i) -> (
+            | [], `With_text (_, content) ->
+                Comment.link_content_of_inline_elements content
+            | [], `Simple (`Identifier ({ iv = #Id.Label.t_pv; _ } as i)) -> (
                 match Env.lookup_by_id Env.s_label i env with
                 | Some (`Label (_, lbl)) ->
                     Odoc_model.Comment.link_content_of_inline_elements
@@ -238,7 +245,7 @@ let rec comment_inline_element :
                 | None -> [])
             | content, _ -> content
           in
-          `Reference (`Resolved x, content)
+          `Reference (`Resolved ref_, content)
       | Error e ->
           Errors.report ~what:(`Reference r) ~tools_error:(`Reference e)
             `Resolve;
@@ -310,6 +317,11 @@ and comment_tag env parent ~loc:_ (x : Comment.tag) =
   | `Raise ((`Reference (r, reference_content) as orig), content) -> (
       match Ref_tools.resolve_reference env r |> Error.raise_warnings with
       | Ok x ->
+          let x =
+            match x with
+            | `Simple x -> x
+            | `With_text (x, _) -> (x :> Odoc_model.Paths.Reference.Resolved.t)
+          in
           `Raise
             ( `Reference (`Resolved x, reference_content),
               comment_nestable_block_element_list env parent content )

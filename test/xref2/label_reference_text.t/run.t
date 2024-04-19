@@ -20,8 +20,8 @@ The rendered html
      <h3 id="splice_me"><a href="#splice_me" class="anchor"></a>Splice me</h3>
      <p>Should output only the heading's text: 
       <a href="#splice_me" title="splice_me">Splice me</a> 
-      <a href="#splice_me"><code>splice_me</code></a> 
-      <a href="../page.html#splice_me"><code>splice_me</code></a>
+      <a href="#splice_me" title="splice_me">Splice me</a> 
+      <a href="../page.html#splice_me" title="splice_me">Splice me</a>
      </p>
     </div>
    </body>

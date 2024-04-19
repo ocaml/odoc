@@ -12,4 +12,9 @@ val resolve_module_reference :
   module_lookup_result ref_result Odoc_model.Error.with_warnings
 
 val resolve_reference :
-  Env.t -> t -> Resolved.t ref_result Odoc_model.Error.with_warnings
+  Env.t ->
+  t ->
+  [ `Simple of Resolved.t
+  | `With_text of Resolved.Label.t * Odoc_model.Comment.paragraph ]
+  ref_result
+  Odoc_model.Error.with_warnings
