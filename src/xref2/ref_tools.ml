@@ -815,13 +815,19 @@ let resolve_reference =
   fun env r ->
     match r with
     | `Root (name, `TUnknown) -> (
-        let identifier id = Ok (`Identifier (id :> Identifier.t), None) in
+        let identifier ?text id = Ok (`Identifier (id :> Identifier.t), text) in
         env_lookup_by_name Env.s_any name env >>= function
         | `Module (_, _) as e -> resolved (M.of_element env e)
         | `ModuleType (_, _) as e -> resolved (MT.of_element env e)
         | `Value (id, _) -> identifier id
         | `Type (id, _) -> identifier id
-        | `Label (id, _) -> identifier id
+        | `Label (id, _) ->
+            let text =
+              match Env.lookup_by_id Env.s_label id env with
+              | Some (`Label (_, lbl)) -> Some lbl.Component.Label.text
+              | None -> None
+            in
+            identifier ?text id
         | `Class (id, _) -> identifier id
         | `ClassType (id, _) -> identifier id
         | `Constructor (id, _) -> identifier id
