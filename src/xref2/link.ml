@@ -229,16 +229,10 @@ let rec comment_inline_element :
           let content =
             (* In case of labels, use the heading text as reference text if
                it's not specified. *)
-            match (content, ref_, c) with
-            | [], _, Some content ->
+            match (content, c) with
+            | [], Some content ->
                 Comment.link_content_of_inline_elements content
-            | [], `Identifier ({ iv = #Id.Label.t_pv; _ } as i), _ -> (
-                match Env.lookup_by_id Env.s_label i env with
-                | Some (`Label (_, lbl)) ->
-                    Odoc_model.Comment.link_content_of_inline_elements
-                      lbl.Component.Label.text
-                | None -> [])
-            | content, _, _ -> content
+            | content, _ -> content
           in
           `Reference (`Resolved ref_, content)
       | Error e ->
