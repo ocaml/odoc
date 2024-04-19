@@ -1593,6 +1593,11 @@ module Fmt = struct
           (model_resolved_reference c)
           (parent :> t)
           (ConstructorName.to_string name)
+    | `PolyConstructor (parent, name) ->
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
+          (parent :> t)
+          (ConstructorName.to_string name)
     | `Field (parent, name) ->
         Format.fprintf ppf "%a.%s"
           (model_resolved_reference c)
