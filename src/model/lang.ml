@@ -555,24 +555,21 @@ let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
 (** Query the top-comment of a signature. This is [s.doc] most of the time with
     an exception for signature starting with an inline includes. *)
 let extract_signature_doc (s : Signature.t) =
-  let rec uexpr_is_hidden = function
+  let rec uexpr_considered_hidden = function
     | ModuleType.U.Path p -> Path.is_hidden (p :> Path.t)
     | Signature _ ->
         true (* Hidden in some sense, we certainly want its top comment *)
-    | With (_, e) -> uexpr_is_hidden e
+    | With (_, e) -> uexpr_considered_hidden e
     | TypeOf { t_desc = ModPath p | StructInclude p; _ } ->
         Path.is_hidden (p :> Path.t)
   in
+  let should_take_top = function
+    (* A signature that starts with an include may inherits the
+       top-comment from the expansion. *)
+    | { Include.status = `Inline; _ } -> true
+    | { decl = Alias p; _ } -> Paths.Path.is_hidden (p :> Path.t)
+    | { decl = ModuleType expr; _ } -> uexpr_considered_hidden expr
+  in
   match (s.doc, s.items) with
-  | [], Include { expansion; status = `Inline; _ } :: _ ->
-      (* A signature that starts with an [@inline] include inherits the
-         top-comment from the expansion. This comment is not rendered for
-         [include] items. *)
-      expansion.content.doc
-  | [], Include { expansion; decl = Alias p; _ } :: _
-    when Paths.Path.is_hidden (p :> Path.t) ->
-      expansion.content.doc
-  | [], Include { expansion; decl = ModuleType expr; _ } :: _
-    when uexpr_is_hidden expr ->
-      expansion.content.doc
+  | [], Include inc :: _ when should_take_top inc -> inc.expansion.content.doc
   | doc, _ -> doc
