@@ -1278,6 +1278,23 @@ module Odoc_error = struct
       ~doc:"Print errors that occurred while compiling or linking."
 end
 
+module Classify = struct
+  let libdir =
+    let doc = "The directory containing the libraries" in
+    Arg.(required & opt (some string) None & info ~doc ~docv:"DIR" [ "libdir" ])
+
+  let libraries =
+    let doc = "Specify a library to distribute the modules into" in
+    Arg.(value & opt_all string [] & info ["l"; "library"] ~docv:"COUNT" ~doc)
+  let cmd = Term.(const Classify.classify $ libdir $ libraries)
+
+  let info ~docs =
+    Term.info "classify" ~docs
+      ~doc:
+        "Classify the modules into libraries based on heuristics. \
+         Libraries are specified by the --library option."
+end
+
 let section_pipeline = "COMMANDS: Compilation pipeline"
 let section_generators = "COMMANDS: Alternative generators"
 let section_support = "COMMANDS: Scripting"
@@ -1325,6 +1342,7 @@ let () =
       Depends.Link.(cmd, info ~docs:section_legacy);
       Css.(cmd, info ~docs:section_deprecated);
       Depends.Odoc_html.(cmd, info ~docs:section_deprecated);
+      Classify.(cmd, info ~docs:section_pipeline)
     ]
   in
   let default =
