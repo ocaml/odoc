@@ -70,6 +70,14 @@ module Archive = struct
   let add_module_by_name lib name =
     normalise { lib with modules = StringSet.add name lib.modules }
 
+  let filter_by_cmis valid_cmis lib =
+    {
+      lib with
+      modules = StringSet.filter (fun m -> List.mem m valid_cmis) lib.modules;
+    }
+
+  let has_modules a = StringSet.cardinal a.modules > 0
+
   let pp ppf lib =
     Fmt.pf ppf "Name: %s@.Modules: %a@.Intf deps: %a@.Impl_deps: %a@." lib.name
       Fmt.(list ~sep:sp string)
@@ -179,6 +187,11 @@ let classify dir files libraries =
   in
 
   let cmis = List.filter (fun f -> Fpath.(has_ext ".cmi" (v f))) files in
+  let cmi_names =
+    List.map
+      (fun f -> Fpath.(rem_ext (v f) |> basename |> String.capitalize_ascii))
+      cmis
+  in
 
   let _impls, intfs =
     let check f ext =
@@ -343,14 +356,16 @@ let classify dir files libraries =
 
   List.iter
     (fun a ->
-      let archive =
+      let archive_all =
         List.fold_left
           (fun a (m, lib) ->
             if lib = a.Archive.name then Archive.add_module_by_name a m else a)
           a module_libs
       in
-      Printf.printf "%s %s\n" a.Archive.name
-        (archive.Archive.modules |> StringSet.elements |> String.concat " "))
+      let archive = Archive.filter_by_cmis cmi_names archive_all in
+      if Archive.has_modules archive then
+        Printf.printf "%s %s\n" a.Archive.name
+          (archive.Archive.modules |> StringSet.elements |> String.concat " "))
     archives;
 
   ()
@@ -368,5 +383,5 @@ let classify dir =
       StringSet.empty files
   in
 
-  if StringSet.cardinal libraries = 0 then Error (`Msg "No libraries found")
+  if StringSet.cardinal libraries = 0 then Ok ()
   else Ok (classify dir files libraries)
