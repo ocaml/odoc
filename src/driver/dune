@@ -1,0 +1,4 @@
+(executable
+ (public_name odoc_driver)
+ (package odoc)
+ (libraries bos fpath yojson findlib opam-format logs logs.fmt eio_main))
