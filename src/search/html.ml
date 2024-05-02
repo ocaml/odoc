@@ -3,11 +3,10 @@ type html = Html_types.div_content Tyxml.Html.elt
 open Odoc_model
 open Lang
 
-let url id =
-  match
-    Odoc_document.Url.from_identifier ~stop_before:false
-      (id :> Odoc_model.Paths.Identifier.t)
-  with
+let url { Entry.id; kind; doc = _ } =
+  let open Entry in
+  let stop_before = match kind with Doc _ -> false | _ -> true in
+  match Odoc_document.Url.from_identifier ~stop_before id with
   | Ok url ->
       let config =
         Odoc_html.Config.v ~search_result:true ~semantic_uris:false

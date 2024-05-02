@@ -8,12 +8,19 @@ Compile and link the documentation
   $ odoc link main.odoc
   $ odoc compile-index main.odocl
 
-We have a problem: The ID for Y generates an URL to a file which is not
-generated (as the module does not have an expansion).
+Search results only redirect to their definition point (not the
+expansions). Comments link to the expansion they are in.
 
-  $ cat index.json | jq | grep url |grep Y
-        "url": "Main/Y/index.html",
-
-  $ odoc html-generate -o html main.odocl && ls Main/Y/index.html
-  ls: cannot access 'Main/Y/index.html': No such file or directory
-  [2]
+  $ cat index.json | jq -r '.[] | "\(.id[-1].name) -> \(.display.url)"'
+  Main -> Main/index.html
+  X -> Main/index.html#module-X
+  x -> Main/X/index.html#val-x
+  X -> Main/X/index.html
+  Y -> Main/index.html#module-Y
+  Z -> Main/index.html#module-Z
+  L -> Main/index.html#module-L
+  X -> Main/index.html#module-type-X
+  x -> Main/module-type-X/index.html#val-x
+  Y -> Main/index.html#module-type-Y
+  Z -> Main/index.html#module-type-Z
+  L -> Main/index.html#module-type-L
