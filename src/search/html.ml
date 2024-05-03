@@ -5,7 +5,19 @@ open Lang
 
 let url { Entry.id; kind; doc = _ } =
   let open Entry in
-  let stop_before = match kind with Doc _ -> false | _ -> true in
+  let stop_before =
+    (* Some module/module types/... might not have an expansion, so we need to
+       be careful and set [stop_before] to [true] for those kind of search
+       entries, to avoid linking to an inexistant page.
+
+       Docstring do not have an ID in the model, and use the ID from the parent
+       signature in search entries. Therefore, links to doc comments need
+       [stop_before] to be [false] to point to the page where they are present.
+
+       Values, types, ... are not sensitive to [stop_before], allowing us to
+       shorten the match. *)
+    match kind with Doc _ -> false | _ -> true
+  in
   match Odoc_document.Url.from_identifier ~stop_before id with
   | Ok url ->
       let config =
