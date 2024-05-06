@@ -47,6 +47,7 @@ setting, you'll need to understand {{!page-driver}how to drive [odoc]}.
 
 The main other pages of this site:
 - {!page-odoc_for_authors} Odoc For Authors
+- {!page-cheatsheet} The cheatsheet
 - {!page-features} Language Features
 - {!page-driver} Reference Driver
 - {!page-ocamldoc_differences} Differences from OCamldoc
