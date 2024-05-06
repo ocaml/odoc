@@ -227,7 +227,7 @@ There are no differences in how [odoc] handles comment placement between [.ml]
 and [.mli] files, which is {{!page-ocamldoc_differences}another difference}
 from OCamldoc.
 
-{2 Basic markup}
+{2:basics Basic markup}
 
 Text within the comments can be formatted using the following markup. Firstly,
 the simple typesetting markup:
@@ -347,7 +347,7 @@ In a code block section, the section is ended with a [ \]} ], and in a
 verbatim formatted section, the section is ended with a whitespace character
 followed by [ v} ]. It is not currently possible to escape this in either case.
 
-{2 Links and References}
+{2:links_and_references Links and References}
 
 A link to a URL may be put into the text as follows:
 
@@ -464,7 +464,7 @@ unit or page must be {e compiled} and available to [odoc]. That is, when perform
 [-I] must contain the relevant [.odoc] file. This is normally the responsibility of
 the {{!page-driver}driver}.
 
-{2 Tags}
+{2:tags Tags}
 
 Tags are used to provide specific information for individual elements, such
 as author, version, parameters, etc. Tags start with an [@] symbol, appear
@@ -526,7 +526,7 @@ doesn't turn this into a link in the output HTML.
 (written between double quotes), with the given text as comment. {e Note:} 
 As with the file reference, [odoc] doesn't turn this into a link.
 
-{2 Mathematics}
+{2:math Mathematics}
 
 Odoc 2.2 introduced new markup for maths, available both for inline and block
 content. The syntax for the maths itself is LaTeX and it is rendered by {{:https://katex.org/}KaTeX}
@@ -543,7 +543,7 @@ in block form this becomes:
 See the {{:https://katex.org/docs/supported.html}KaTeX documentation} for the
 HTML mode LaTeX support status.
 
-{2 Tables}
+{2:tables Tables}
 
 Odoc 2.3 introduced new markup for tables. This markup comes in two flavors: the light syntax, and the heavy syntax.
 

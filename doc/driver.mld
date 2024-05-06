@@ -345,6 +345,7 @@ let extra_docs = [
     "parent_child_spec";
     "features";
     "odoc_for_authors";
+    "cheatsheet";
     "dune";
     "ocamldoc_differences";
     "api_reference";
