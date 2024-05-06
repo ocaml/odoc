@@ -29,7 +29,7 @@ let resolve_ref' env ref_str : ref =
   | Error e ->
       Format.kasprintf failwith "resolve_reference: %a"
         Errors.Tools_error.pp_reference_lookup_error e
-  | Ok r -> r
+  | Ok (r, _) -> r
 
 let resolve_ref_of_mli mli =
   let sg = Common.signature_of_mli_string mli in
