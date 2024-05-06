@@ -36,6 +36,8 @@
   --open (@jonludlam, #1104}
 - Fix top comment not being taken from includes often enough (@panglesd, #1117)
 - Fixed 404 links from search results (@panglesd, #1108)
+- Fixed title content not being picked up across pages when rendering references
+  (#1116, @panglesd)
 
 
 # 2.4.0
