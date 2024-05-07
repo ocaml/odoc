@@ -21,13 +21,21 @@ open Or_error
 
 type parent_spec =
   | Explicit of Paths.Identifier.ContainerPage.t * Lang.Page.child list
-  | Package of Paths.Identifier.ContainerPage.t
+  | ParentId of Paths.Identifier.ContainerPage.t
   | Noparent
 
 type parent_cli_spec =
   | CliParent of string
   | CliPackage of string
+  | CliParentId of string
   | CliNoparent
+
+let rec path_of_id output_dir id =
+  match (id : Paths.Identifier.ContainerPage.t).iv with
+  | `Page (None, p) -> Fpath.(v output_dir / PageName.to_string p)
+  | `Page (Some parent, p) ->
+      let d = path_of_id output_dir parent in
+      Fpath.(d / PageName.to_string p)
 
 let check_is_empty msg = function [] -> Ok () | _ :: _ -> Error (`Msg msg)
 
@@ -77,13 +85,21 @@ let resolve_parent_page resolver f =
   find_parent r >>= fun page ->
   extract_parent page.name >>= fun parent -> Ok (parent, page.children)
 
+let mk_id str =
+  let l = String.cuts ~sep:"/" str in
+  List.fold_left
+    (fun acc id -> Some (Paths.Identifier.Mk.page (acc, PageName.make_std id)))
+    None l
+  |> Option.get
+
 let parent resolver parent_cli_spec =
   match parent_cli_spec with
   | CliParent f ->
       resolve_parent_page resolver f >>= fun (parent, children) ->
       Ok (Explicit (parent, children))
   | CliPackage package ->
-      Ok (Package (Paths.Identifier.Mk.page (None, PageName.make_std package)))
+      Ok (ParentId (Paths.Identifier.Mk.page (None, PageName.make_std package)))
+  | CliParentId id -> Ok (ParentId (mk_id id))
   | CliNoparent -> Ok Noparent
 
 let resolve_imports resolver imports =
@@ -135,9 +151,6 @@ let resolve_and_substitute ~resolver ~make_root ~hidden
 
 let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   let open Root in
-  let filename =
-    Filename.chop_extension Fs.File.(to_string @@ basename output)
-  in
   let result parent =
     let file = Odoc_file.create_unit ~force_hidden:hidden module_name in
     Ok
@@ -149,6 +162,9 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   in
   let check_child = function
     | Lang.Page.Module_child n ->
+        let filename =
+          Filename.chop_extension Fs.File.(to_string @@ basename output)
+        in
         String.Ascii.(uncapitalize n = uncapitalize filename)
     | Asset_child _ | Source_tree_child _ | Page_child _ -> false
   in
@@ -157,7 +173,18 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   | Explicit (parent, children) ->
       if List.exists check_child children then result (Some parent)
       else Error (`Msg "Specified parent is not a parent of this file")
-  | Package parent -> result (Some parent)
+  | ParentId parent -> result (Some parent)
+
+(*
+     let d = path_of_id parent in
+     Fs.Directory.mkdir_p (Fs.Directory.of_string (Fpath.to_string d));
+     let file = Odoc_file.create_unit ~force_hidden:hidden module_name in
+     Ok {
+       id = Paths.Identifier.Mk.root (Some parent, ModuleName.make_std module_name);
+       file;
+       digest;
+     }
+   in *)
 
 let name_of_output ~prefix output =
   let page_dash_root =
@@ -175,7 +202,7 @@ let page_name_of_output ~is_parent_explicit output =
      | _ -> ());
   root_name
 
-let mld ~parent_spec ~output ~children ~warnings_options input =
+let mld ~parent_spec ~output ~output_dir ~children ~warnings_options input =
   List.fold_left
     (fun acc child_str ->
       match (acc, parse_parent_child_reference child_str) with
@@ -203,7 +230,7 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
      (* No children, this is a leaf page. *)
      match parent_spec with
      | Explicit (p, _) -> Ok (Paths.Identifier.Mk.leaf_page (Some p, page_name))
-     | Package parent ->
+     | ParentId parent ->
          Ok (Paths.Identifier.Mk.leaf_page (Some parent, page_name))
      | Noparent -> Ok (Paths.Identifier.Mk.leaf_page (None, page_name))
    else
@@ -215,7 +242,7 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
      (match parent_spec with
      | Explicit (p, cs) ->
          check cs @@ Paths.Identifier.Mk.page (Some p, page_name)
-     | Package parent ->
+     | ParentId parent ->
          Ok (Paths.Identifier.Mk.page (Some parent, page_name))
          (* This is a bit odd *)
      | Noparent -> Ok (Paths.Identifier.Mk.page (None, page_name)))
@@ -225,6 +252,19 @@ let mld ~parent_spec ~output ~children ~warnings_options input =
     let file = Root.Odoc_file.create_page root_name in
     { Root.id = (name :> Paths.Identifier.OdocId.t); file; digest }
   in
+  let output =
+    match (parent_spec, output_dir) with
+    | ParentId parent, Some output_dir ->
+        let name = Fs.File.basename input in
+        let name = "page-" ^ Fs.File.to_string name in
+        Fs.File.create
+          ~directory:
+            (path_of_id output_dir parent
+            |> Fpath.to_string |> Fs.Directory.of_string)
+          ~name
+    | _ -> output
+  in
+
   let resolve content =
     let page =
       Lang.Page.{ name; root; children; content; digest; linked = false }
@@ -247,22 +287,33 @@ let handle_file_ext ext =
   | _ ->
       Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")
 
-let compile ~resolver ~parent_cli_spec ~hidden ~children ~output
+let compile ~resolver ~parent_cli_spec ~hidden ~children ~output ~output_dir
     ~warnings_options input =
   parent resolver parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
-    mld ~parent_spec ~output ~warnings_options ~children input
+    mld ~parent_spec ~output ~output_dir ~warnings_options ~children input
   else
     check_is_empty "Not expecting children (--child) when compiling modules."
       children
     >>= fun () ->
     handle_file_ext ext >>= fun input_type ->
-    let parent =
-      match parent_spec with
-      | Noparent -> None
-      | Explicit (parent, _) -> Some parent
-      | Package parent -> Some parent
+    let parent, output =
+      match (parent_spec, output_dir) with
+      | Noparent, _ -> (None, output)
+      | Explicit (parent, _), _ -> (Some parent, output)
+      | ParentId parent, None -> (Some parent, output)
+      | ParentId parent, Some output_dir ->
+          let filename =
+            let name = Fs.File.basename input in
+            Fs.File.create
+              ~directory:
+                (path_of_id output_dir parent
+                |> Fpath.to_string |> Fs.Directory.of_string)
+              ~name:(Fs.File.set_ext ".odoc" name |> Fpath.to_string)
+          in
+
+          (Some parent, Fs.File.(set_ext ".odoc" filename))
     in
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     let result =

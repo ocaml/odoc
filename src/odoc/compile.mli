@@ -21,6 +21,7 @@ open Or_error
 type parent_cli_spec =
   | CliParent of string
   | CliPackage of string
+  | CliParentId of string
   | CliNoparent
 
 val name_of_output : prefix:string -> Fs.File.t -> string
@@ -45,6 +46,7 @@ val compile :
   hidden:bool ->
   children:string list ->
   output:Fs.File.t ->
+  output_dir:string option ->
   warnings_options:Odoc_model.Error.warnings_options ->
   Fs.File.t ->
   (unit, [> msg ]) result
