@@ -182,8 +182,9 @@ end = struct
         in
         Fs.File.(set_ext ".odoc" output)
 
-  let compile hidden directories resolve_fwd_refs dst package_opt
-      parent_name_opt open_modules children input warnings_options =
+  let compile hidden directories resolve_fwd_refs dst output_dir package_opt
+      parent_name_opt parent_id_opt open_modules children input warnings_options
+      =
     let open Or_error in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -192,19 +193,21 @@ end = struct
     let input = Fs.File.of_string input in
     let output = output_file ~dst ~input in
     let parent_cli_spec =
-      match (parent_name_opt, package_opt) with
-      | Some p, None -> Ok (Compile.CliParent p)
-      | None, Some p -> Ok (Compile.CliPackage p)
-      | None, None -> Ok Compile.CliNoparent
-      | Some _, Some _ ->
+      match (parent_name_opt, package_opt, parent_id_opt) with
+      | Some p, None, None -> Ok (Compile.CliParent p)
+      | None, Some p, None -> Ok (Compile.CliPackage p)
+      | None, None, Some p -> Ok (Compile.CliParentId p)
+      | None, None, None -> Ok Compile.CliNoparent
+      | _, _, _ ->
           Error
             (`Cli_error
-              "Either --package or --parent should be specified, not both")
+              "Either --package or --parent or --parent-id should be \
+               specified, not a combination")
     in
     parent_cli_spec >>= fun parent_cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~warnings_options input
+      ~output_dir ~warnings_options input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -219,6 +222,13 @@ end = struct
        basename."
     in
     Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
+
+  let output_dir =
+    let doc = "Output file directory. " in
+    Arg.(
+      value
+      & opt (some string) None
+      & info ~docs ~docv:"PATH" ~doc [ "output-dir" ])
 
   let children =
     let doc =
@@ -246,6 +256,13 @@ end = struct
         & opt (some string) None
         & info ~docs ~docv:"PARENT" ~doc [ "parent" ])
     in
+    let parent_id_opt =
+      let doc = "Parent id." in
+      Arg.(
+        value
+        & opt (some string) None
+        & info ~docs ~docv:"PARENT" ~doc [ "parent-id" ])
+    in
     let resolve_fwd_refs =
       let doc = "Try resolving forward references." in
       Arg.(value & flag & info ~doc [ "r"; "resolve-fwd-refs" ])
@@ -253,8 +270,8 @@ end = struct
     Term.(
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
-       $ package_opt $ parent_opt $ open_modules $ children $ input
-       $ warnings_options))
+       $ output_dir $ package_opt $ parent_opt $ parent_id_opt $ open_modules
+       $ children $ input $ warnings_options))
 
   let info ~docs =
     let man =
@@ -1281,18 +1298,15 @@ end
 module Classify = struct
   let libdir =
     let doc = "The directory containing the libraries" in
-    Arg.(required & opt (some string) None & info ~doc ~docv:"DIR" [ "libdir" ])
+    Arg.(required & pos 0 (some string) None & info ~doc ~docv:"DIR" [])
 
-  let libraries =
-    let doc = "Specify a library to distribute the modules into" in
-    Arg.(value & opt_all string [] & info ["l"; "library"] ~docv:"COUNT" ~doc)
-  let cmd = Term.(const Classify.classify $ libdir $ libraries)
+  let cmd = Term.(const handle_error $ (const Classify.classify $ libdir))
 
   let info ~docs =
     Term.info "classify" ~docs
       ~doc:
-        "Classify the modules into libraries based on heuristics. \
-         Libraries are specified by the --library option."
+        "Classify the modules into libraries based on heuristics. Libraries \
+         are specified by the --library option."
 end
 
 let section_pipeline = "COMMANDS: Compilation pipeline"
@@ -1342,7 +1356,7 @@ let () =
       Depends.Link.(cmd, info ~docs:section_legacy);
       Css.(cmd, info ~docs:section_deprecated);
       Depends.Odoc_html.(cmd, info ~docs:section_deprecated);
-      Classify.(cmd, info ~docs:section_pipeline)
+      Classify.(cmd, info ~docs:section_pipeline);
     ]
   in
   let default =
