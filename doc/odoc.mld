@@ -1,5 +1,7 @@
 {0 odoc}
 
+For a quick look at the [odoc] syntax, see the {{!cheatsheet}cheatsheet}!
+
 {1:overview What is [odoc]?}
 
 [odoc] is a documentation generator for OCaml. It reads doc comments
