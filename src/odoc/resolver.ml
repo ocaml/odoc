@@ -206,7 +206,7 @@ let lookup_page ap target_name =
 
 (** Lookup an implementation. *)
 let lookup_impl ap target_name =
-  let target_name = "src-" ^ Astring.String.Ascii.uncapitalize target_name in
+  let target_name = "impl-" ^ Astring.String.Ascii.uncapitalize target_name in
   let is_impl u =
     match u with
     | Odoc_file.Impl_content p -> Some p

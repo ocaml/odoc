@@ -54,15 +54,6 @@ let convert_src_dir =
   and print = Rendering.Source.pp in
   Arg.conv (parse, print)
 
-(** On top of the conversion 'string', split into segs. *)
-let convert_source_name =
-  let parse inp =
-    match Arg.(conv_parser string) inp with
-    | Ok s -> Result.Ok (s |> Fs.File.of_string |> Fs.File.segs)
-    | Error _ as e -> e
-  and print ppf x = Format.fprintf ppf "%s" (String.concat ~sep:"/" x) in
-  Arg.conv (parse, print)
-
 let handle_error = function
   | Result.Ok () -> ()
   | Error (`Cli_error msg) ->
@@ -376,93 +367,58 @@ module Source_tree = struct
     Term.info "source-tree" ~docs ~doc
 end
 
-module Compile_src = struct
-  let prefix = "src-"
+module Compile_impl = struct
+  let prefix = "impl-"
 
-  let has_src_prefix input =
-    input |> Fs.File.basename |> Fs.File.to_string
-    |> Astring.String.is_prefix ~affix:prefix
+  let output_dir =
+    let doc = "Output file directory. " in
+    Arg.(
+      required
+      & opt (some string) None
+      & info ~docs ~docv:"PATH" ~doc [ "output-dir" ])
+  
+  let output_file output_dir parent_id input =
+    let name = Fs.File.basename input |> Fpath.set_ext "odoc" |> Fs.File.to_string |> String.uncapitalize_ascii in
+    let name = prefix ^ name in
 
-  let output_file ~output ~input =
-    match output with
-    | Some output -> output
-    | None ->
-        let output =
-          if not (has_src_prefix input) then
-            let directory = Fs.File.dirname input in
-            let name = input |> Fs.File.basename |> Fs.File.to_string in
-            let name = prefix ^ name in
-            Fs.File.create ~directory ~name
-          else input
-        in
-        Fs.File.(set_ext ".odoc" output)
+    let dir = Fpath.(append output_dir parent_id) in
+    Fs.File.create ~directory:(Fpath.to_string dir |> Fs.Directory.of_string) ~name
 
-  let compile_source directories output source_parent_file source_path input
+  let compile_impl directories output_dir id source_id input
       warnings_options =
     let input = Fs.File.of_string input in
-    let output = output_file ~output ~input in
+    let output_dir = Fpath.v output_dir in
+    let output = output_file output_dir (Fpath.v id) input in
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
     in
-    Source.compile ~resolver ~source_parent_file ~source_path ~output
+    Source.compile ~resolver ~source_id ~output
       ~warnings_options input
 
-  let arg_page_output =
-    let open Or_error in
-    let parse inp =
-      match Arg.(conv_parser string) inp with
-      | Ok s ->
-          let f = Fs.File.of_string s in
-          if not (Fs.File.has_ext ".odoc" f) then
-            Error (`Msg "Output file must have '.odoc' extension.")
-          else if not (has_src_prefix f) then
-            Error
-              (`Msg
-                (Format.sprintf "Output file must be prefixed with '%s'." prefix))
-          else Ok f
-      | Error _ as e -> e
-    and print = Fpath.pp in
-    Arg.conv (parse, print)
-
   let cmd =
-    let dst =
-      let doc =
-        Format.sprintf
-          "Output file path. Non-existing intermediate directories are \
-           created. The basename must start with the prefix '%s' and extension \
-           '.odoc'."
-          prefix
-      in
-      Arg.(
-        value
-        & opt (some arg_page_output) None
-        & info ~docs ~docv:"PATH" ~doc [ "o" ])
-    in
     let input =
       let doc = "Input $(i,.cmt) file." in
       Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
     in
-    let source_parent_file =
-      let doc = "The source-tree file parent of the implementation." in
+    let source_id =
+      let doc = "The id of the source file" in
       Arg.(
         required
-        & opt (some convert_fpath) None
-        & info [ "parent" ] ~doc ~docv:(Source_tree.prefix ^ "PARENT.odoc"))
+        & opt (some string) None
+        & info [ "source-id" ] ~doc ~docv:("/path/to/source.ml"))
     in
-    let source_path =
-      let doc =
-        "The relative path of the source file. This is used to place the \
-         source file within the parent source tree."
-      in
+    let parent_id =
+      let doc = "The parent id of the implementation" in
       Arg.(
         required
-        & opt (some convert_source_name) None
-        & info [ "source-path" ] ~doc ~docv:"NAME")
+        & opt (some string) None
+        & info [ "parent-id" ] ~doc ~docv:("/path/to/library"))
     in
+
     Term.(
       const handle_error
-      $ (const compile_source $ odoc_file_directories $ dst $ source_parent_file
-       $ source_path $ input $ warnings_options))
+      $ (const compile_impl $ odoc_file_directories $ output_dir $ parent_id $ source_id
+       $ input $ warnings_options))
 
   let info ~docs =
     let doc =
@@ -470,7 +426,7 @@ module Compile_src = struct
        containing the implementation information needed by odoc for the \
        compilation unit."
     in
-    Term.info "compile-src" ~docs ~doc
+    Term.info "compile-impl" ~docs ~doc
 end
 
 module Indexing = struct
@@ -1336,7 +1292,7 @@ let () =
       Odoc_html.generate ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
       Source_tree.(cmd, info ~docs:section_pipeline);
-      Compile_src.(cmd, info ~docs:section_pipeline);
+      Compile_impl.(cmd, info ~docs:section_pipeline);
       Indexing.(cmd, info ~docs:section_pipeline);
       Odoc_manpage.generate ~docs:section_generators;
       Odoc_latex.generate ~docs:section_generators;
