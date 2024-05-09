@@ -62,8 +62,8 @@ let save_impl file ~warnings impl =
   let dir = Fs.File.dirname file in
   let base = Fs.File.(to_string @@ basename file) in
   let file =
-    if Astring.String.is_prefix ~affix:"src-" base then file
-    else Fs.File.create ~directory:dir ~name:("src-" ^ base)
+    if Astring.String.is_prefix ~affix:"impl-" base then file
+    else Fs.File.create ~directory:dir ~name:("impl-" ^ base)
   in
   save_unit file impl.Lang.Implementation.root
     { content = Impl_content impl; warnings }

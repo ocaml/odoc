@@ -40,6 +40,8 @@ val resolve_parent_page :
 (** Parse and resolve a parent reference. Returns the identifier of the parent
     and its children as a list of reference. *)
 
+val mk_id : string -> Identifier.ContainerPage.t
+
 val compile :
   resolver:Resolver.t ->
   parent_cli_spec:parent_cli_spec ->
