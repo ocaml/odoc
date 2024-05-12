@@ -115,44 +115,12 @@ let int_of_any : any -> int = function
 module Of_Identifier = struct
   open Identifier
 
-  let rec signature : Signature.t -> signature =
-   fun sg ->
-    let i = fresh_int () in
-    match sg.iv with
-    | `Root (_, n) -> `LRoot (n, i)
-    | `Module (_, n) -> `LModule (n, i)
-    | `Parameter (_, n) -> `LParameter (n, i)
-    | `ModuleType (_, n) -> `LModuleType (n, i)
-    | `Result s -> `LResult (signature s, i)
-
-  let class_signature : ClassSignature.t -> class_signature =
-   fun sg ->
-    let i = fresh_int () in
-    match sg.iv with
-    | `Class (_, n) -> `LClass (n, i)
-    | `ClassType (_, n) -> `LClassType (n, i)
-
   let datatype : DataType.t -> datatype =
    fun t ->
     let i = fresh_int () in
     match t.iv with
     | `Type (_, n) -> `LType (n, i)
     | `CoreType _n -> failwith "Bad"
-
-  let field_parent : FieldParent.t -> parent =
-   fun p ->
-    match p with
-    | { iv = #Signature.t_pv; _ } as s -> (signature s :> parent)
-    | { iv = #DataType.t_pv; _ } as s -> (datatype s :> parent)
-
-  let label_parent : LabelParent.t -> label_parent =
-   fun p ->
-    match p with
-    | { iv = #ClassSignature.t_pv; _ } as s ->
-        (class_signature s :> label_parent)
-    | { iv = #FieldParent.t_pv; _ } as s -> (field_parent s :> label_parent)
-    | { iv = `Page (_, n); _ } -> `LPage (n, fresh_int ())
-    | { iv = `LeafPage (_, n); _ } -> `LLeafPage (n, fresh_int ())
 
   let module_ : Odoc_model.Paths.Identifier.Module.t -> module_ = function
     | { iv = `Module (_, n) | `Root (_, n); _ } ->
@@ -166,28 +134,12 @@ module Of_Identifier = struct
       Odoc_model.Paths.Identifier.FunctorParameter.t -> functor_parameter =
    fun { iv = `Parameter (_, n); _ } -> `LParameter (n, fresh_int ())
 
-  let path_module : Path.Module.t -> path_module =
-   fun m ->
-    let i = fresh_int () in
-    match m.iv with
-    | `Root (_, n) -> `LRoot (n, i)
-    | `Module (_, n) -> `LModule (n, i)
-    | `Parameter (_, n) -> `LParameter (n, i)
-    | `Result x -> `LResult (signature x, i)
-
   let module_type : ModuleType.t -> module_type =
    fun m ->
     let i = fresh_int () in
     match m.iv with `ModuleType (_, n) -> `LModuleType (n, i)
 
   let type_ : Type.t -> type_ = datatype
-
-  let constructor : Constructor.t -> constructor =
-   fun c ->
-    match c.iv with `Constructor (_, n) -> `LConstructor (n, fresh_int ())
-
-  let field : Field.t -> field =
-   fun f -> match f.iv with `Field (_, n) -> `LField (n, fresh_int ())
 
   let extension : Extension.t -> extension =
    fun e -> match e.iv with `Extension (_, n) -> `LExtension (n, fresh_int ())
@@ -217,12 +169,6 @@ module Of_Identifier = struct
 
   let label : Label.t -> label =
    fun l -> match l.iv with `Label (_, n) -> `LLabel (n, fresh_int ())
-
-  let page : Page.t -> page =
-   fun p ->
-    match p.iv with
-    | `Page (_, n) -> `LPage (n, fresh_int ())
-    | `LeafPage (_, n) -> `LLeafPage (n, fresh_int ())
 end
 
 module Name = struct
