@@ -9,7 +9,7 @@ Quick reference for the odoc language!
     {th Render as}}
   {tr
     {th Paragraphs}
-    {td {[
+    {td {@text[
       A first paragraph
 
       A second paragraph]}}
@@ -19,7 +19,7 @@ Quick reference for the odoc language!
       A second paragraph}}
   {tr
     {th {{!odoc_for_authors.sections}Headings}}
-    {td {[
+    {td {@text[
       {1 Title}
       {2 Subtitle}
       {3 Subsubtitle}
@@ -31,7 +31,7 @@ Quick reference for the odoc language!
 
       Standalone pages must start with a [0] heading:
 
-      {[
+      {@text[
         {0 Page big title}
       ]}}
     {td
@@ -43,15 +43,15 @@ Quick reference for the odoc language!
       See {%html:<a href="#my_id">Referenceable title</a>%}}}
   {tr
     {th {{!odoc_for_authors.basics}Bold, italic and emphasis}}
-    {td {[{b bold} text, {e italic text}, {e emphasized} text]}}
+    {td {@text[{b bold} text, {e italic text}, {e emphasized} text]}}
     {td   {b bold} text, {e italic text}, {e emphasized} text}}
   {tr
     {th {{!odoc_for_authors.basics}Subscripts and superscript}}
-    {td {[H{_ 2}O and 1{^ st}]}}
+    {td {@text[H{_ 2}O and 1{^ st}]}}
     {td   H{_ 2}O and 1{^ st}}}
   {tr
     {th {{!odoc_for_authors.links_and_references}Link} }
-    {td {[
+    {td {@text[
       Here is a link: {:https://www.example.com}.
 
       You can also click {{:https://www.example.com}here}.]}}
@@ -61,7 +61,7 @@ Quick reference for the odoc language!
       You can also click {{:https://www.example.com}here}.}}
   {tr
     {th {{!odoc_for_authors.links_and_references}References} }
-    {td {[
+    {td {@text[
       See {!Odoc_odoc.Compile.compile}.
 
       See {{!Odoc_odoc.Compile.compile}this function}.
@@ -75,7 +75,7 @@ Quick reference for the odoc language!
       See {{!odoc_for_authors.links_and_references}this section} for the syntax of references.}}
     {tr
       {th {{!odoc_for_authors.lists}Lists} }
-    {td {[
+    {td {@text[
       - First item
       - Second item
 
@@ -145,7 +145,7 @@ Quick reference for the odoc language!
     {td {v verbatim text v}}}
   {tr
     {th {{!odoc_for_authors.math}Math} }
-    {td {[
+    {td {@text[
       For inline math: {m \sqrt 2}.
 
       For display math:
@@ -159,7 +159,7 @@ Quick reference for the odoc language!
       {math \sqrt 2}}}
   {tr
     {th {{!odoc_for_authors.tables}Table} }
-    {td {[
+    {td {@text[
       Light syntax:
 
       {t | Header 1 | Header 2 |
