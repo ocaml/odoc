@@ -4,13 +4,12 @@ open Bos
 let ocamlobjinfo = Cmd.v "ocamlobjinfo"
 
 let source_possibilities file =
-  let default = [file] in
+  let default = [ file ] in
   let generated =
-    if Astring.String.is_suffix ~affix:"-gen" file
-    then
+    if Astring.String.is_suffix ~affix:"-gen" file then
       let pos = String.length file - 4 in
-      [Astring.String.take ~max:pos file]
-  else []
+      [ Astring.String.take ~max:pos file ]
+    else []
   in
   default @ generated
 
@@ -28,8 +27,14 @@ let get_source env file =
           in
           let name = Fpath.(filename (v name)) in
           let dir, _ = Fpath.split_base file in
-          let possibilities = List.map (fun poss -> Fpath.(dir / poss)) (source_possibilities name) in
-          List.find_opt (fun f -> Sys.file_exists (Fpath.to_string f)) possibilities
+          let possibilities =
+            List.map
+              (fun poss -> Fpath.(dir / poss))
+              (source_possibilities name)
+          in
+          List.find_opt
+            (fun f -> Sys.file_exists (Fpath.to_string f))
+            possibilities
         else None)
       lines
   in

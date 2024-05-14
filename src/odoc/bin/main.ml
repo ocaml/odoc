@@ -376,24 +376,27 @@ module Compile_impl = struct
       required
       & opt (some string) None
       & info ~docs ~docv:"PATH" ~doc [ "output-dir" ])
-  
+
   let output_file output_dir parent_id input =
-    let name = Fs.File.basename input |> Fpath.set_ext "odoc" |> Fs.File.to_string |> String.uncapitalize_ascii in
+    let name =
+      Fs.File.basename input |> Fpath.set_ext "odoc" |> Fs.File.to_string
+      |> String.uncapitalize_ascii
+    in
     let name = prefix ^ name in
 
     let dir = Fpath.(append output_dir parent_id) in
-    Fs.File.create ~directory:(Fpath.to_string dir |> Fs.Directory.of_string) ~name
+    Fs.File.create
+      ~directory:(Fpath.to_string dir |> Fs.Directory.of_string)
+      ~name
 
-  let compile_impl directories output_dir id source_id input
-      warnings_options =
+  let compile_impl directories output_dir id source_id input warnings_options =
     let input = Fs.File.of_string input in
     let output_dir = Fpath.v output_dir in
     let output = output_file output_dir (Fpath.v id) input in
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
     in
-    Source.compile ~resolver ~source_id ~output
-      ~warnings_options input
+    Source.compile ~resolver ~source_id ~output ~warnings_options input
 
   let cmd =
     let input =
@@ -405,20 +408,20 @@ module Compile_impl = struct
       Arg.(
         required
         & opt (some string) None
-        & info [ "source-id" ] ~doc ~docv:("/path/to/source.ml"))
+        & info [ "source-id" ] ~doc ~docv:"/path/to/source.ml")
     in
     let parent_id =
       let doc = "The parent id of the implementation" in
       Arg.(
         required
         & opt (some string) None
-        & info [ "parent-id" ] ~doc ~docv:("/path/to/library"))
+        & info [ "parent-id" ] ~doc ~docv:"/path/to/library")
     in
 
     Term.(
       const handle_error
-      $ (const compile_impl $ odoc_file_directories $ output_dir $ parent_id $ source_id
-       $ input $ warnings_options))
+      $ (const compile_impl $ odoc_file_directories $ output_dir $ parent_id
+       $ source_id $ input $ warnings_options))
 
   let info ~docs =
     let doc =

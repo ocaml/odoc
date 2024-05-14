@@ -117,20 +117,23 @@ let pkg_to_dir_map () =
         in
         let odoc_pages, other_docs =
           List.fold_left
-            (fun (odoc_pages,others) fpath ->
+            (fun (odoc_pages, others) fpath ->
               match Fpath.segs fpath with
               | "doc" :: _pkg :: "odoc-pages" :: _ ->
-                Logs.debug (fun m -> m "Found odoc page: %a" Fpath.pp fpath);
+                  Logs.debug (fun m -> m "Found odoc page: %a" Fpath.pp fpath);
 
-                (Fpath.Set.add Fpath.(v prefix // fpath) odoc_pages, others)
+                  (Fpath.Set.add Fpath.(v prefix // fpath) odoc_pages, others)
               | "doc" :: _ ->
-                Logs.debug (fun m -> m "Found other doc: %a" Fpath.pp fpath);
-            (odoc_pages, Fpath.Set.add
-                                Fpath.(v prefix // fpath)
-                                others)
-              | _ -> (odoc_pages, others)) Fpath.Set.(empty, empty) contents
+                  Logs.debug (fun m -> m "Found other doc: %a" Fpath.pp fpath);
+                  (odoc_pages, Fpath.Set.add Fpath.(v prefix // fpath) others)
+              | _ -> (odoc_pages, others))
+            Fpath.Set.(empty, empty)
+            contents
         in
-        Logs.debug (fun m -> m "Found %d odoc pages, %d other docs" (Fpath.Set.cardinal odoc_pages) (Fpath.Set.cardinal other_docs));
+        Logs.debug (fun m ->
+            m "Found %d odoc pages, %d other docs"
+              (Fpath.Set.cardinal odoc_pages)
+              (Fpath.Set.cardinal other_docs));
         (p, libs, odoc_pages, other_docs))
       pkgs
   in
