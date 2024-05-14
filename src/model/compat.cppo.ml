@@ -272,3 +272,15 @@ let empty_map = ()
 let shape_info_of_cmt_infos : Cmt_format.cmt_infos -> (shape * uid_to_loc) option = fun _ -> None
 
 #endif
+
+#if OCAML_VERSION >= (5,2,0)
+let compunit_name : Cmo_format.compunit -> string = function | Compunit x -> x
+
+let required_compunit_names x = List.map compunit_name x.Cmo_format.cu_required_compunits
+
+#else
+
+let compunit_name x = x
+
+let required_compunit_names x = List.map Ident.name x.Cmo_format.cu_required_globals
+#endif
