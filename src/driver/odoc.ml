@@ -30,8 +30,7 @@ let compile_deps env f =
   | [ (_, digest) ], deps -> Ok { digest; deps }
   | _ -> Error (`Msg "odd")
 
-let compile env output_dir file
-    includes parent_id =
+let compile env output_dir file includes parent_id =
   let open Cmd in
   let includes =
     Fpath.Set.fold
@@ -39,8 +38,8 @@ let compile env output_dir file
       includes Cmd.empty
   in
   let cmd =
-    odoc % "compile" % Fpath.to_string file % "--output-dir"
-    % p output_dir %% includes % "--enable-missing-root-warning"
+    odoc % "compile" % Fpath.to_string file % "--output-dir" % p output_dir
+    %% includes % "--enable-missing-root-warning"
   in
   let cmd = cmd % "--parent-id" % parent_id in
   let lines = Run.run env cmd in
@@ -50,18 +49,18 @@ let compile_impl env output_dir file includes parent_id source_id =
   let open Cmd in
   let includes =
     Fpath.Set.fold
-    (fun path acc -> Cmd.(acc % "-I" % p path))
-        includes Cmd.empty
+      (fun path acc -> Cmd.(acc % "-I" % p path))
+      includes Cmd.empty
   in
   let cmd =
-    odoc % "compile-impl" % Fpath.to_string file % "--output-dir"
-    % p output_dir %% includes % "--enable-missing-root-warning"
+    odoc % "compile-impl" % Fpath.to_string file % "--output-dir" % p output_dir
+    %% includes % "--enable-missing-root-warning"
   in
   let cmd = cmd % "--parent-id" % parent_id in
   let cmd = cmd % "--source-id" % source_id in
   let lines = Run.run env cmd in
   add_prefixed_output cmd compile_output (Fpath.to_string file) lines
-  
+
 let link env ?(ignore_output = false) file includes =
   let open Cmd in
   let output_file = Fpath.set_ext "odocl" file in
@@ -70,7 +69,10 @@ let link env ?(ignore_output = false) file includes =
       (fun path acc -> Cmd.(acc % "-I" % p path))
       includes Cmd.empty
   in
-  let cmd = odoc % "link" % p file % "-o" % p output_file %% includes % "--enable-missing-root-warning" in
+  let cmd =
+    odoc % "link" % p file % "-o" % p output_file %% includes
+    % "--enable-missing-root-warning"
+  in
   let cmd =
     if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd
   in

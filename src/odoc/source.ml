@@ -19,12 +19,12 @@ let root_of_implementation ~source_id ~module_name ~digest =
   let id :> Paths.Identifier.OdocId.t = source_id in
   Ok { id; file; digest }
 
-
-let compile ~resolver ~output ~warnings_options ~source_id
-    input =
-  let (parent_id, name) = Fpath.(split_base (v source_id)) in
+let compile ~resolver ~output ~warnings_options ~source_id input =
+  let parent_id, name = Fpath.(split_base (v source_id)) in
   let parent = Compile.mk_id Fpath.(to_string (rem_empty_seg parent_id)) in
-  let source_id = Paths.Identifier.Mk.source_page (parent, [Fpath.to_string name]) in  
+  let source_id =
+    Paths.Identifier.Mk.source_page (parent, [ Fpath.to_string name ])
+  in
   let make_root = root_of_implementation ~source_id in
   let result =
     Error.catch_errors_and_warnings (fun () ->

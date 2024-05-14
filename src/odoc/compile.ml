@@ -255,8 +255,8 @@ let mld ~parent_spec ~output ~output_dir ~children ~warnings_options input =
   let output =
     match (parent_spec, output_dir) with
     | ParentId parent, Some output_dir ->
-      let name = Fs.File.set_ext ".odoc" input in
-      let name = Fs.File.basename name in
+        let name = Fs.File.set_ext ".odoc" input in
+        let name = Fs.File.basename name in
         let name = "page-" ^ Fs.File.to_string name in
         Fs.File.create
           ~directory:
@@ -311,7 +311,9 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output ~output_dir
               ~directory:
                 (path_of_id output_dir parent
                 |> Fpath.to_string |> Fs.Directory.of_string)
-              ~name:(Fs.File.set_ext ".odoc" name |> Fpath.to_string |> String.Ascii.uncapitalize)
+              ~name:
+                (Fs.File.set_ext ".odoc" name
+                |> Fpath.to_string |> String.Ascii.uncapitalize)
           in
 
           (Some parent, Fs.File.(set_ext ".odoc" filename))

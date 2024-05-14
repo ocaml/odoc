@@ -448,9 +448,8 @@ let _ =
   let linked = Compile.link env compiled in
   let _ = Compile.html_generate env linked in
 
-  let indexes = Util.StringMap.map (fun _i pkg ->
-    Indexes.package pkg) all in
-  ignore (indexes);
+  let indexes = Util.StringMap.map (fun _i pkg -> Indexes.package pkg) all in
+  ignore indexes;
   (* let map = Ocamlfind.package_to_dir_map () in
      let _dirs = List.map (fun lib -> List.assoc lib map) deps in
 
