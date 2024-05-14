@@ -41,15 +41,15 @@ module Archive = struct
     normalise
       {
         lib with
-        modules = StringSet.add cu.cu_name lib.modules;
+        modules = StringSet.add (Odoc_model.Compat.compunit_name cu.cu_name) lib.modules;
         intf_deps =
           List.fold_left
             (fun deps (cu, _) -> StringSet.add cu deps)
             lib.intf_deps cu.cu_imports;
         impl_deps =
           List.fold_left
-            (fun deps id -> StringSet.add (Ident.name id) deps)
-            lib.impl_deps cu.cu_required_globals;
+            (fun deps id -> StringSet.add id deps)
+            lib.impl_deps (Odoc_model.Compat.required_compunit_names cu);
       }
 
   let add_unit_info lib (unit_info : Cmx_format.unit_infos) =
