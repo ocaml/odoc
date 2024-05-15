@@ -65,5 +65,5 @@ val unpack_warnings : 'a with_warnings -> 'a * t list
 val t_of_parser_t : Odoc_parser.Warning.t -> t
 (** Convert a parsing error into a [t]. *)
 
-val raise_parser_warnings : Odoc_parser.t -> Odoc_parser.Ast.t
-(** Like {!raise_warnings} but handle parsing errors. *)
+val raise_parser_warnings : Odoc_parser.Warning.t list -> unit
+(** Like {!raise_warning} but for parsing warnings. *)

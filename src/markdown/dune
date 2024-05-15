@@ -1,0 +1,8 @@
+(library
+ (name odoc_markdown)
+ (public_name odoc.markdown)
+ (instrumentation
+  (backend landmarks --auto))
+ (instrumentation
+  (backend bisect_ppx))
+ (libraries odoc-parser cmarkit))
