@@ -18,11 +18,13 @@ open Odoc_model
 open Odoc_model.Paths
 open Or_error
 
-type parent_cli_spec =
-  | CliParent of string
-  | CliPackage of string
-  | CliParentId of string
-  | CliNoparent
+
+type cli_spec =
+  | CliNoParent of Fpath.t
+  | CliPackage of { package : string; output : Fpath.t }
+  | CliParent of { parent : string option; children : string list; output : Fpath.t }
+  | CliParentId of { parent_id : string; output_dir : string }
+
 
 val name_of_output : prefix:string -> Fs.File.t -> string
 (** Compute the name of the page from the output file. Prefix is the prefix to
@@ -44,12 +46,9 @@ val mk_id : string -> Identifier.ContainerPage.t
 
 val compile :
   resolver:Resolver.t ->
-  parent_cli_spec:parent_cli_spec ->
   hidden:bool ->
-  children:string list ->
-  output:Fs.File.t ->
-  output_dir:string option ->
+  cli_spec:cli_spec ->
   warnings_options:Odoc_model.Error.warnings_options ->
-  Fs.File.t ->
+  Fpath.t ->
   (unit, [> msg ]) result
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)
