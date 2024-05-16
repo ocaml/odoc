@@ -389,14 +389,15 @@ let parse whole_reference_location s :
 
   let old_kind, s, location =
     let rec find_old_reference_kind_separator index =
-      match s.[index] with
-      | ':' -> index
-      | ')' -> (
-          match String.rindex_from s index '(' with
-          | index -> find_old_reference_kind_separator (index - 1)
-          | exception (Not_found as exn) -> raise exn)
-      | _ -> find_old_reference_kind_separator (index - 1)
-      | exception Invalid_argument _ -> raise Not_found
+      if index < 0 then raise Not_found
+      else
+        match s.[index] with
+        | ':' -> index
+        | ')' -> (
+            match String.rindex_from s index '(' with
+            | index -> find_old_reference_kind_separator (index - 1)
+            | exception (Not_found as exn) -> raise exn)
+        | _ -> find_old_reference_kind_separator (index - 1)
     in
     match find_old_reference_kind_separator (String.length s - 1) with
     | index ->
