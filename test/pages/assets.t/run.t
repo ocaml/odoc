@@ -24,6 +24,7 @@ Compile the module first
 Then we need to odoc-compile the package mld file, listing its children
 
   $ odoc compile index.mld --child module-test --child asset-img.jpg
+  Warning: Potential name clash - child page named 'index'
 
 This will have produced a file called 'page-index.odoc'.
 Now we can odoc-compile the module odoc file passing that file as parent.

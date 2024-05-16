@@ -183,22 +183,35 @@ end = struct
     in
     let input = Fs.File.of_string input in
     let output = output_file ~dst ~input in
-    let parent_cli_spec =
-      match (parent_name_opt, package_opt, parent_id_opt) with
-      | Some p, None, None -> Ok (Compile.CliParent p)
-      | None, Some p, None -> Ok (Compile.CliPackage p)
-      | None, None, Some p -> Ok (Compile.CliParentId p)
-      | None, None, None -> Ok Compile.CliNoparent
-      | _, _, _ ->
-          Error
-            (`Cli_error
-              "Either --package or --parent or --parent-id should be \
-               specified, not a combination")
+    let cli_spec =
+      let error message = Error (`Cli_error message) in
+      match
+        (parent_name_opt, package_opt, parent_id_opt, children, output_dir)
+      with
+      | Some _, None, None, _, None ->
+          Ok (Compile.CliParent { parent = parent_name_opt; children; output })
+      | None, Some p, None, [], None ->
+          Ok (Compile.CliPackage { package = p; output })
+      | None, None, Some p, [], Some output_dir ->
+          Ok (Compile.CliParentId { parent_id = p; output_dir })
+      | None, None, None, _ :: _, None -> Ok (Compile.CliParent {parent=None;output;children})
+      | None, None, None, [] , None -> Ok (Compile.CliNoParent output)
+      | Some _, Some _, _, _, _ ->
+          error "Either --package or --parent should be specified, not both."
+      | _, Some _, Some _, _, _ ->
+          error "Either --package or --parent-id should be specified, not both."
+      | Some _, _, Some _, _, _ ->
+          error "Either --parent or --parent-id should be specified, not both."
+      | _, _, None, _, Some _ ->
+          error "--output-dir can only be passed with --parent-id."
+      | None, _, _, _ :: _, _ ->
+          error "--child can only be passed with --parent."
+      | _, _, Some _, _, None ->
+          error "--output-dir is required when passing --parent-id."
     in
-    parent_cli_spec >>= fun parent_cli_spec ->
+    cli_spec >>= fun cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
-    Compile.compile ~resolver ~parent_cli_spec ~hidden ~children ~output
-      ~output_dir ~warnings_options input
+    Compile.compile ~resolver ~cli_spec ~hidden ~warnings_options input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
