@@ -264,15 +264,45 @@ let lookup_unit ~important_digests ~imports_map ~libs ap target_name =
 
     TODO: Warning on ambiguous lookup. *)
 let lookup_page ~pages ap target_name =
-  ignore pages;
-  let target_name = "page-" ^ target_name in
-  let is_page u =
-    match u with
-    | Odoc_file.Page_content p -> Some p
-    | Impl_content _ | Unit_content _ | Source_tree_content _ -> None
-  in
-  let units = load_units_from_name ap target_name in
-  match find_map is_page units with Some (p, _) -> Some p | None -> None
+  match target_name.[0] with
+  | '#' -> (
+      let reference =
+        String.sub target_name 1 (String.length target_name - 1)
+      in
+      match String.split_on_char '/' reference with
+      | [ name ] -> (
+          let name = "page-" ^ name ^ ".odoc" in
+          match Named_roots.find_by_name ~package:"pkg" ~name pages with
+          | Ok page -> (
+              let units = load_units_from_files page in
+              let is_page u =
+                match u with
+                | Odoc_file.Page_content p -> Some p
+                | Impl_content _ | Unit_content _ | Source_tree_content _ ->
+                    None
+              in
+              match find_map is_page units with
+              | Some (p, _) -> Some p
+              | None ->
+                  failwith
+                    ("Page not found by name: "
+                    ^ string_of_int (List.length units)))
+          | Error _ -> failwith "Not found by name")
+      | [] -> assert false
+      | "" :: package :: path ->
+          let _res = Named_roots.find_by_path ~package ~path pages in
+          failwith "TODO"
+      | _ -> failwith "TODO")
+  | _ -> (
+      ignore pages;
+      let target_name = "page-" ^ target_name in
+      let is_page u =
+        match u with
+        | Odoc_file.Page_content p -> Some p
+        | Impl_content _ | Unit_content _ | Source_tree_content _ -> None
+      in
+      let units = load_units_from_name ap target_name in
+      match find_map is_page units with Some (p, _) -> Some p | None -> None)
 
 (** Lookup an implementation. *)
 let lookup_impl ap target_name =
