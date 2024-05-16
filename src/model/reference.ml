@@ -103,23 +103,29 @@ let match_reference_kind location s : Paths.Reference.tag_any =
       | Some kind -> kind
       | None -> unknown_reference_qualifier s location |> Error.raise_exception)
 
+type token = {
+  kind : string option;
+  identifier : string;
+  location : Location_.span;
+}
+
 (* The string is scanned right-to-left, because we are interested in right-most
    hyphens. The tokens are also returned in right-to-left order, because the
    traversals that consume them prefer to look at the deepest identifier
    first. *)
-let tokenize location s =
+let tokenize location s : token list =
   let rec scan_identifier started_at open_parenthesis_count index tokens =
     match s.[index] with
     | exception Invalid_argument _ ->
         let identifier, location = identifier_ended started_at index in
-        (None, identifier, location) :: tokens
+        { kind = None; identifier; location } :: tokens
     | '-' when open_parenthesis_count = 0 ->
         let identifier, location = identifier_ended started_at index in
         scan_kind identifier location index (index - 1) tokens
     | '.' when open_parenthesis_count = 0 ->
         let identifier, location = identifier_ended started_at index in
         scan_identifier index 0 (index - 1)
-          ((None, identifier, location) :: tokens)
+          ({ kind = None; identifier; location } :: tokens)
     | ')' ->
         scan_identifier started_at
           (open_parenthesis_count + 1)
@@ -159,11 +165,11 @@ let tokenize location s =
     match s.[index] with
     | exception Invalid_argument _ ->
         let kind, location = kind_ended identifier_location started_at index in
-        (kind, identifier, location) :: tokens
+        { kind; identifier; location } :: tokens
     | '.' ->
         let kind, location = kind_ended identifier_location started_at index in
         scan_identifier index 0 (index - 1)
-          ((kind, identifier, location) :: tokens)
+          ({ kind; identifier; location } :: tokens)
     | _ ->
         scan_kind identifier identifier_location started_at (index - 1) tokens
   and kind_ended identifier_location started_at index =
@@ -192,7 +198,7 @@ let parse whole_reference_location s :
     Paths.Reference.t Error.with_errors_and_warnings =
   let open Paths.Reference in
   let open Names in
-  let rec signature (kind, identifier, location) tokens : Signature.t =
+  let rec signature { kind; identifier; location } tokens : Signature.t =
     let kind = match_reference_kind location kind in
     match tokens with
     | [] -> (
@@ -214,7 +220,7 @@ let parse whole_reference_location s :
         | _ ->
             expected [ "module"; "module-type" ] location
             |> Error.raise_exception)
-  and parent (kind, identifier, location) tokens : FragmentTypeParent.t =
+  and parent { kind; identifier; location } tokens : FragmentTypeParent.t =
     let kind = match_reference_kind location kind in
     match tokens with
     | [] -> (
@@ -240,7 +246,7 @@ let parse whole_reference_location s :
             |> Error.raise_exception)
   in
 
-  let class_signature (kind, identifier, location) tokens : ClassSignature.t =
+  let class_signature { kind; identifier; location } tokens : ClassSignature.t =
     let kind = match_reference_kind location kind in
     match tokens with
     | [] -> (
@@ -263,7 +269,7 @@ let parse whole_reference_location s :
         )
   in
 
-  let rec label_parent (kind, identifier, location) tokens : LabelParent.t =
+  let rec label_parent { kind; identifier; location } tokens : LabelParent.t =
     let kind = match_reference_kind location kind in
     match tokens with
     | [] -> (
@@ -298,7 +304,7 @@ let parse whole_reference_location s :
             |> Error.raise_exception)
   in
 
-  let start_from_last_component (kind, identifier, location) old_kind tokens =
+  let start_from_last_component { kind; identifier; location } old_kind tokens =
     let new_kind = match_reference_kind location kind in
     let kind =
       match old_kind with
