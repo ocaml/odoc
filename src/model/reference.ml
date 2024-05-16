@@ -34,49 +34,49 @@ let match_ocamldoc_reference_kind (_location as loc) s :
     Paths.Reference.tag_any option =
   let d = deprecated_reference_kind in
   match s with
-  | Some "module" -> Some `TModule
-  | Some "modtype" ->
+  | "module" -> Some `TModule
+  | "modtype" ->
       d loc "modtype" "module-type";
       Some `TModuleType
-  | Some "class" -> Some `TClass
-  | Some "classtype" ->
+  | "class" -> Some `TClass
+  | "classtype" ->
       d loc "classtype" "class-type";
       Some `TClassType
-  | Some "val" -> Some `TValue
-  | Some "type" -> Some `TType
-  | Some "exception" -> Some `TException
-  | Some "attribute" -> None
-  | Some "method" -> Some `TMethod
-  | Some "section" -> Some `TLabel
-  | Some "const" ->
+  | "val" -> Some `TValue
+  | "type" -> Some `TType
+  | "exception" -> Some `TException
+  | "attribute" -> None
+  | "method" -> Some `TMethod
+  | "section" -> Some `TLabel
+  | "const" ->
       d loc "const" "constructor";
       Some `TConstructor
-  | Some "recfield" ->
+  | "recfield" ->
       d loc "recfield" "field";
       Some `TField
-  | Some "childpage" -> Some `TChildPage
-  | Some "childmodule" -> Some `TChildModule
+  | "childpage" -> Some `TChildPage
+  | "childmodule" -> Some `TChildModule
   | _ -> None
 
 let match_extra_odoc_reference_kind (_location as loc) s :
     Paths.Reference.tag_any option =
   let d = deprecated_reference_kind in
   match s with
-  | Some "class-type" -> Some `TClassType
-  | Some "constructor" -> Some `TConstructor
-  | Some "exn" ->
+  | "class-type" -> Some `TClassType
+  | "constructor" -> Some `TConstructor
+  | "exn" ->
       d loc "exn" "exception";
       Some `TException
-  | Some "extension" -> Some `TExtension
-  | Some "extension-decl" -> Some `TExtensionDecl
-  | Some "field" -> Some `TField
-  | Some "instance-variable" -> Some `TInstanceVariable
-  | Some "label" ->
+  | "extension" -> Some `TExtension
+  | "extension-decl" -> Some `TExtensionDecl
+  | "field" -> Some `TField
+  | "instance-variable" -> Some `TInstanceVariable
+  | "label" ->
       d loc "label" "section";
       Some `TLabel
-  | Some "module-type" -> Some `TModuleType
-  | Some "page" -> Some `TPage
-  | Some "value" ->
+  | "module-type" -> Some `TModuleType
+  | "page" -> Some `TPage
+  | "value" ->
       d loc "value" "val";
       Some `TValue
   | _ -> None
@@ -93,11 +93,11 @@ let match_extra_odoc_reference_kind (_location as loc) s :
 let match_reference_kind location s : Paths.Reference.tag_any =
   match s with
   | None -> `TUnknown
-  | Some s as wrapped -> (
+  | Some s -> (
       let result =
-        match match_ocamldoc_reference_kind location wrapped with
+        match match_ocamldoc_reference_kind location s with
         | Some kind -> Some kind
-        | None -> match_extra_odoc_reference_kind location wrapped
+        | None -> match_extra_odoc_reference_kind location s
       in
       match result with
       | Some kind -> kind
