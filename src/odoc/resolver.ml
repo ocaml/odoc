@@ -339,8 +339,8 @@ type t = {
 }
 
 type roots = {
-  pagenames : (string * Fs.Directory.t) list;
-  libnames : (string * Fs.Directory.t) list;
+  page_pkgnames : (string * Fs.Directory.t) list;
+  lib_pkgnames : (string * Fs.Directory.t) list;
   current_pkg : string;
 }
 
@@ -349,9 +349,9 @@ let create ~important_digests ~directories ~open_modules ~roots =
   let pages, libs =
     match roots with
     | None -> (None, None)
-    | Some { pagenames; libnames; current_pkg } ->
-        ( Some (Named_roots.create ~current_pkg pagenames),
-          Some (Named_roots.create ~current_pkg libnames) )
+    | Some { page_pkgnames; lib_pkgnames; current_pkg } ->
+        ( Some (Named_roots.create ~current_pkg page_pkgnames),
+          Some (Named_roots.create ~current_pkg lib_pkgnames) )
   in
   { important_digests; ap; open_modules; pages; libs }
 

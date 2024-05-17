@@ -618,19 +618,19 @@ end = struct
   let is_page input =
     input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"
 
-  let link directories pkgnames libnames input_file output_file warnings_options
+  let link directories page_pkgnames lib_pkgnames input_file output_file warnings_options
       open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
-    (if not (check_antichain (List.rev_append libnames pkgnames)) then
+    (if not (check_antichain (List.rev_append lib_pkgnames page_pkgnames)) then
        Error
          (`Msg "Arguments given to -P and -L cannot be included in each others")
      else Ok ())
     >>= fun () ->
-    (if is_page input then find_package_of_output pkgnames output
-     else find_package_of_output libnames output)
+    (if is_page input then find_package_of_output page_pkgnames output
+     else find_package_of_output lib_pkgnames output)
     >>= fun current_pkg ->
-    let roots = Some { Resolver.pagenames = pkgnames; libnames; current_pkg } in
+    let roots = Some { Resolver.page_pkgnames; lib_pkgnames; current_pkg } in
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules ~roots
     in
@@ -649,7 +649,7 @@ end = struct
       & opt (some string) None
       & info ~docs ~docv:"PATH.odocl" ~doc [ "o" ])
 
-  let pkgnames =
+  let page_pkgnames =
     let doc =
       "Specifies a directory PATH containing pages that can be referenced by \
        {!/pkgname} during linking. A pkgname can be specified in the -P \
@@ -661,7 +661,7 @@ end = struct
       & opt_all convert_named_root []
       & info ~docs ~docv:"pkgname:PATH" ~doc [ "P" ])
 
-  let libnames =
+  let lib_pkgnames =
     let doc =
       "Specifies a library called libname containing the modules in PATH. \
        Modules can be referenced both using the flat module namespace \
@@ -679,7 +679,7 @@ end = struct
     in
     Term.(
       const handle_error
-      $ (const link $ odoc_file_directories $ pkgnames $ libnames $ input $ dst
+      $ (const link $ odoc_file_directories $ page_pkgnames $ lib_pkgnames $ input $ dst
        $ warnings_options $ open_modules))
 
   let info ~docs =
