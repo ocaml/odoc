@@ -42,6 +42,8 @@ module Directory : sig
 
   val to_string : t -> string
 
+  val to_fpath : t -> Fpath.t
+
   val fold_files_rec_result :
     ?ext:string ->
     ('a -> file -> ('a, msg) result) ->
