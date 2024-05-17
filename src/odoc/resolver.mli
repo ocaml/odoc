@@ -22,8 +22,8 @@
 type t
 
 type roots = {
-  pagenames : (string * Fs.Directory.t) list;
-  libnames : (string * Fs.Directory.t) list;
+  page_pkgnames : (string * Fs.Directory.t) list;
+  lib_pkgnames : (string * Fs.Directory.t) list;
   current_pkg : string;
 }
 
