@@ -54,18 +54,28 @@ end
 
 let internal_counter = ref 0
 
+let unique_id = ref None
+
+let set_unique_ident id =
+  match !unique_id with
+  | Some _ -> failwith "Unique id already set"
+  | None -> unique_id := Some id
+
 module Name : Name = struct
-  type t = Hidden of string | Shadowed of string * int | Std of string
+  type t =
+    | Hidden of string
+    | Shadowed of string * int * string
+    | Std of string
 
   let to_string = function
     | Std s -> parenthesise s
     | Hidden s -> Printf.sprintf "%s" s
-    | Shadowed (s, i) -> Printf.sprintf "{%s}%d" s i
+    | Shadowed (s, i, s2) -> Printf.sprintf "{%s}%d/shadowed/(%s)" s i s2
 
   let to_string_unsafe = function
     | Std s -> s
     | Hidden s -> s
-    | Shadowed (s, _i) -> s
+    | Shadowed (s, _i, _s2) -> s
 
   let make_std s = Std s
 
@@ -77,7 +87,9 @@ module Name : Name = struct
 
   let shadowed_of_string id =
     incr internal_counter;
-    Shadowed (id, !internal_counter)
+    match !unique_id with
+    | None -> failwith "Unset unique id"
+    | Some s -> Shadowed (id, !internal_counter, s)
 
   let shadowed_of_ident id = shadowed_of_string (Ident.name id)
 

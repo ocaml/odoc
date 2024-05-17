@@ -633,13 +633,21 @@ and simple_expansion :
 
 and combine_shadowed s1 s2 =
   let open Odoc_model.Lang.Include in
+  (* If something was already shadowed in the include, it mustn't be
+     added to the combined map. *)
+  let combine s1 s2 =
+    List.fold_left
+      (fun acc (name, typed_name) ->
+        if List.mem_assoc name acc then acc else (name, typed_name) :: acc)
+      s2 s1
+  in
   {
-    s_modules = s1.s_modules @ s2.s_modules;
-    s_module_types = s1.s_module_types @ s2.s_module_types;
-    s_values = s1.s_values @ s2.s_values;
-    s_types = s1.s_types @ s2.s_types;
-    s_classes = s1.s_classes @ s2.s_classes;
-    s_class_types = s1.s_class_types @ s2.s_class_types;
+    s_modules = combine s1.s_modules s2.s_modules;
+    s_module_types = combine s1.s_module_types s2.s_module_types;
+    s_values = combine s1.s_values s2.s_values;
+    s_types = combine s1.s_types s2.s_types;
+    s_classes = combine s1.s_classes s2.s_classes;
+    s_class_types = combine s1.s_class_types s2.s_class_types;
   }
 
 and include_decl :
@@ -648,6 +656,8 @@ and include_decl :
     Component.Include.decl ->
     Odoc_model.Lang.Include.decl =
  fun map identifier d ->
+  let map = { map with shadowed = empty_shadow } in
+  (* Don't start shadowing within any signatures *)
   match d with
   | Alias p -> Alias (Path.module_ map p)
   | ModuleType mty -> ModuleType (u_module_type_expr map identifier mty)

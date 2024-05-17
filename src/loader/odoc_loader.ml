@@ -107,7 +107,8 @@ let read_cmti ~make_root ~parent ~filename () =
   | Interface intf -> (
       match cmt_info.cmt_interface_digest with
       | None -> raise Corrupted
-      | Some _ as interface ->
+      | Some digest as interface ->
+          Odoc_model.Names.set_unique_ident (Digest.to_hex digest);
           let name = cmt_info.cmt_modname in
           let sourcefile =
             ( cmt_info.cmt_sourcefile,
@@ -131,6 +132,9 @@ let read_cmt ~make_root ~parent ~filename () =
           cmt_info.cmt_builddir )
       in
       let interface = cmt_info.cmt_interface_digest in
+      (match cmt_info.cmt_interface_digest with
+      | None -> raise Corrupted
+      | Some digest -> Odoc_model.Names.set_unique_ident (Digest.to_hex digest));
       let imports = cmt_info.cmt_imports in
       match cmt_info.cmt_annots with
       | Packed (_, files) ->
@@ -201,6 +205,7 @@ let read_impl ~make_root ~filename ~source_id () =
                 | None -> raise Corrupted
                 | exception Not_found -> raise Corrupted)
           in
+          Odoc_model.Names.set_unique_ident (Digest.to_hex digest);
           let root =
             match make_root ~module_name:name ~digest with
             | Ok root -> root
