@@ -704,7 +704,7 @@ module Path = struct
     | `SubstitutedCT r -> is_path_hidden (r :> any)
     | `Root s -> contains_double_underscore s
     | `Forward _ -> false
-    | `Dot (p, _) -> is_path_hidden (p : module_ :> any)
+    | `Dot (p, n) -> n.[0] = '{' || is_path_hidden (p : module_ :> any)
     | `Apply (p1, p2) ->
         is_path_hidden (p1 : module_ :> any)
         || is_path_hidden (p2 : module_ :> any)

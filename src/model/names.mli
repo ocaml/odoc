@@ -10,6 +10,8 @@ val parenthesise : string -> string
 val contains_double_underscore : string -> bool
 (* not the best place for this but. *)
 
+val set_unique_ident : string -> unit
+
 (** Name is the signature for names that could possibly be hidden. Hidden
     names occur when we generate items that don't have a path that will be
     exposed in the generated HTML. This can occur for a few reasons:
