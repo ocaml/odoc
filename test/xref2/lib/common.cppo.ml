@@ -630,7 +630,7 @@ let my_compilation_unit id (s : Odoc_model.Lang.Signature.t) =
 
 let mkresolver () =
   Odoc_odoc.Resolver.create
-    ~important_digests:false
+ ~roots:None     ~important_digests:false
     ~directories:(List.map Odoc_odoc.Fs.Directory.of_string
 #if OCAML_VERSION >= (5,2,0)
   (let paths = Load_path.get_paths () in
