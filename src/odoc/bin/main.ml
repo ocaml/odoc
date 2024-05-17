@@ -566,10 +566,33 @@ end = struct
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.(set_ext ".odocl" input)
 
+  (** Check that a list of directories form an antichain: they are all disjoints *)
+  let check_antichain l =
+    let absolute_normalization p =
+      let absolutify (_, p) =
+        let p = Fs.Directory.to_fpath p in
+        if Fpath.is_rel p then Fpath.( // ) (Fpath.v (Sys.getcwd ())) p else p
+      in
+      p |> absolutify |> Fpath.normalize
+    in
+    let l = List.map ~f:absolute_normalization l in
+    let rec check = function
+      | [] -> true
+      | p1 :: rest ->
+          List.for_all
+            ~f:(fun p2 ->
+              (not (Fpath.is_prefix p1 p2)) && not (Fpath.is_prefix p2 p1))
+            rest
+          && check rest
+    in
+    check l
+
   let link directories pkgnames libnames input_file output_file warnings_options
       open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
+    if not (check_antichain (List.rev_append libnames pkgnames)) then
+      failwith "Attention: ce n'est pas une antichaine TODO erreur message yo";
     let resolver =
       Resolver.create ~important_digests:false ~directories ~pkgnames ~libnames
         ~open_modules
