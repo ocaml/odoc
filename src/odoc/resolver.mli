@@ -24,6 +24,8 @@ type t
 val create :
   important_digests:bool ->
   directories:Fs.Directory.t list ->
+  pkgnames:(string * Fs.Directory.t) list ->
+  libnames:(string * Fs.Directory.t) list ->
   open_modules:string list ->
   t
 (** Prepare the environment for a given list of

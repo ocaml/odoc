@@ -3,6 +3,7 @@ open Result
 let resolve url_to_string directories reference =
   let resolver =
     Resolver.create ~important_digests:false ~directories ~open_modules:[]
+      ~pkgnames:[] ~libnames:[]
   in
   let reference =
     let open Odoc_model in

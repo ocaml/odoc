@@ -33,6 +33,74 @@
 
 open Or_error
 
+module Named_roots : sig
+  type t
+
+  type error = NoPackage
+
+  val create : (string * Fs.Directory.t) list -> t
+
+  val find_by_path :
+    t -> package:string -> path:string list -> (Fs.File.t option, error) result
+
+  val find_by_name :
+    t -> package:string -> name:string -> (Fs.File.t list, error) result
+end = struct
+  type flat =
+    | Unvisited of Fs.Directory.t
+    | Visited of (string, Fs.File.t) Hashtbl.t
+
+  type hierarchical = (string list, Fs.File.t) Hashtbl.t
+
+  type pkg = { flat : flat; hierarchical : hierarchical }
+
+  type t = (string, pkg) Hashtbl.t
+
+  type error = NoPackage
+
+  let create pkglist =
+    let cache = Hashtbl.create 42 in
+    List.iter
+      (fun (pkgname, root) ->
+        let flat = Unvisited root and hierarchical = Hashtbl.create 42 in
+        Hashtbl.add cache pkgname { flat; hierarchical })
+      pkglist;
+    cache
+
+  let find_by_path cache ~package ~path =
+    match Hashtbl.find_opt cache package with
+    | Some { hierarchical; _ } -> Ok (Hashtbl.find_opt hierarchical path)
+    | None -> Error NoPackage
+
+  let populate_flat_namespace ~root =
+    let flat_namespace = Hashtbl.create 42 in
+    let () =
+      match
+        Fs.Directory.fold_files_rec_result
+          (fun () path ->
+            let name = Fpath.filename path in
+            Ok (Hashtbl.add flat_namespace name path))
+          () root
+      with
+      | Ok () -> ()
+      | Error _ -> assert false
+      (* The function passed to [fold_files_rec_result] never returns [Error _] *)
+    in
+    flat_namespace
+
+  let find_by_name (cache : t) ~package ~name =
+    match Hashtbl.find_opt cache package with
+    | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
+    | Some ({ flat = Unvisited root; _ } as p) ->
+        let flat = populate_flat_namespace ~root in
+        Hashtbl.replace cache package { p with flat = Visited flat };
+        Ok (Hashtbl.find_all flat name)
+    | None -> Error NoPackage
+end
+
+let () = ignore Named_roots.find_by_name
+let () = ignore Named_roots.find_by_path
+
 module Accessible_paths : sig
   type t
 
@@ -176,7 +244,8 @@ let lookup_unit_by_name ap target_name =
 
 (** Lookup an unit. First looks into [imports_map] then searches into the
     paths. *)
-let lookup_unit ~important_digests ~imports_map ap target_name =
+let lookup_unit ~important_digests ~imports_map ~libs ap target_name =
+  ignore libs;
   let of_option f =
     match f with Some m -> Odoc_xref2.Env.Found m | None -> Not_found
   in
@@ -194,7 +263,8 @@ let lookup_unit ~important_digests ~imports_map ap target_name =
 (** Lookup a page.
 
     TODO: Warning on ambiguous lookup. *)
-let lookup_page ap target_name =
+let lookup_page ~pages ap target_name =
+  ignore pages;
   let target_name = "page-" ^ target_name in
   let is_page u =
     match u with
@@ -231,32 +301,36 @@ let add_unit_to_cache u =
 type t = {
   important_digests : bool;
   ap : Accessible_paths.t;
+  pages : Named_roots.t;
+  libs : Named_roots.t;
   open_modules : string list;
 }
 
-let create ~important_digests ~directories ~open_modules =
+let create ~important_digests ~directories ~pkgnames ~libnames ~open_modules =
   let ap = Accessible_paths.create ~directories in
-  { important_digests; ap; open_modules }
+  let pages = Named_roots.create pkgnames
+  and libs = Named_roots.create libnames in
+  { important_digests; ap; open_modules; pages; libs }
 
 (** Helpers for creating xref2 env. *)
 
 open Odoc_xref2
 
 let build_compile_env_for_unit
-    { important_digests; ap; open_modules = open_units } m =
+    { important_digests; ap; open_modules = open_units; pages; libs } m =
   add_unit_to_cache (Odoc_file.Unit_content m);
   let imports_map = build_imports_map m.imports in
-  let lookup_unit = lookup_unit ~important_digests ~imports_map ap
-  and lookup_page = lookup_page ap
+  let lookup_unit = lookup_unit ~important_digests ~imports_map ~libs ap
+  and lookup_page = lookup_page ~pages ap
   and lookup_impl = lookup_impl ap in
   let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_impl } in
   Env.env_of_unit m ~linking:false resolver
 
 (** [important_digests] and [imports_map] only apply to modules. *)
 let build ?(imports_map = StringMap.empty)
-    { important_digests; ap; open_modules = open_units } =
-  let lookup_unit = lookup_unit ~important_digests ~imports_map ap
-  and lookup_page = lookup_page ap
+    { important_digests; ap; open_modules = open_units; pages; libs } =
+  let lookup_unit = lookup_unit ~libs ~important_digests ~imports_map ap
+  and lookup_page = lookup_page ~pages ap
   and lookup_impl = lookup_impl ap in
   { Env.open_units; lookup_unit; lookup_page; lookup_impl }
 
@@ -289,7 +363,7 @@ let build_env_for_reference t =
   let resolver = build { t with important_digests = false } in
   Env.env_for_reference resolver
 
-let lookup_page t target_name = lookup_page t.ap target_name
+let lookup_page t target_name = lookup_page ~pages:t.pages t.ap target_name
 
 let resolve_import t target_name =
   let rec loop = function

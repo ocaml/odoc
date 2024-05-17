@@ -54,6 +54,17 @@ let convert_src_dir =
   and print = Rendering.Source.pp in
   Arg.conv (parse, print)
 
+let convert_named_root =
+  let parse inp =
+    match String.split_on_char inp ~sep:':' with
+    | [ s1; s2 ] -> Ok (s1, Fs.Directory.of_string s2)
+    | _ -> Error (`Msg "")
+  in
+  let print ppf (s, t) =
+    Format.fprintf ppf "%s:%s" s (Fs.Directory.to_string t)
+  in
+  Arg.conv (parse, print)
+
 let handle_error = function
   | Result.Ok () -> ()
   | Error (`Cli_error msg) ->
@@ -188,7 +199,7 @@ end = struct
     in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
-        ~open_modules
+        ~open_modules ~pkgnames:[] ~libnames:[]
     in
     let input = Fs.File.of_string input in
     let output = output_file ~dst ~input in
@@ -331,6 +342,7 @@ module Source_tree = struct
     let output = output_file ~output ~input in
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
+        ~pkgnames:[] ~libnames:[]
     in
     Source_tree.compile ~resolver ~parent ~output ~warnings_options input
 
@@ -427,6 +439,7 @@ module Compile_impl = struct
     in
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
+        ~pkgnames:[] ~libnames:[]
     in
     Source.compile ~resolver ~source_id ~output ~warnings_options input
 
@@ -553,11 +566,13 @@ end = struct
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.(set_ext ".odocl" input)
 
-  let link directories input_file output_file warnings_options open_modules =
+  let link directories pkgnames libnames input_file output_file warnings_options
+      open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
     let resolver =
-      Resolver.create ~important_digests:false ~directories ~open_modules
+      Resolver.create ~important_digests:false ~directories ~pkgnames ~libnames
+        ~open_modules
     in
     match Odoc_link.from_odoc ~resolver ~warnings_options input output with
     | Error _ as e -> e
@@ -574,6 +589,29 @@ end = struct
       & opt (some string) None
       & info ~docs ~docv:"PATH.odocl" ~doc [ "o" ])
 
+  let pkgnames =
+    let doc =
+      "Specifies a directory PATH containing pages that can be referenced by \
+       {!/pkgname} during linking. A pkgname can be specified in the -P \
+       command only once. All the trees specified by this option must be \
+       disjoint."
+    in
+    Arg.(
+      value
+      & opt_all convert_named_root []
+      & info ~docs ~docv:"pkgname:PATH" ~doc [ "P" ])
+
+  let libnames =
+    let doc =
+      "Specifies a library called libname containing the modules in PATH. \
+       Modules can be referenced both using the flat module namespace \
+       {!Module} and the absolute reference {!/libname/Module}."
+    in
+    Arg.(
+      value
+      & opt_all convert_named_root []
+      & info ~docs ~docv:"libname:PATH" ~doc [ "L" ])
+
   let cmd =
     let input =
       let doc = "Input file" in
@@ -581,8 +619,8 @@ end = struct
     in
     Term.(
       const handle_error
-      $ (const link $ odoc_file_directories $ input $ dst $ warnings_options
-       $ open_modules))
+      $ (const link $ odoc_file_directories $ pkgnames $ libnames $ input $ dst
+       $ warnings_options $ open_modules))
 
   let info ~docs =
     let man =
@@ -630,6 +668,7 @@ end = struct
         warnings_options =
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
+          ~pkgnames:[] ~libnames:[]
       in
       let file = Fs.File.of_string input_file in
       Rendering.render_odoc ~renderer:R.renderer ~resolver ~warnings_options
@@ -730,6 +769,7 @@ end = struct
       let odoc_file = Fs.File.of_string odoc_file in
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
+          ~pkgnames:[] ~libnames:[]
       in
       let warnings_options =
         { Odoc_model.Error.warn_error = false; print_warnings = false }
@@ -988,6 +1028,7 @@ end = struct
       warnings_options =
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules:[]
+        ~pkgnames:[] ~libnames:[]
     in
     let input_file = Fs.File.of_string input_file in
     let output_file = Fs.File.of_string output_file in
