@@ -21,12 +21,17 @@
 
 type t
 
+type roots = {
+  pagenames : (string * Fs.Directory.t) list;
+  libnames : (string * Fs.Directory.t) list;
+  current_pkg : string;
+}
+
 val create :
   important_digests:bool ->
   directories:Fs.Directory.t list ->
-  pkgnames:(string * Fs.Directory.t) list ->
-  libnames:(string * Fs.Directory.t) list ->
   open_modules:string list ->
+  roots:roots option ->
   t
 (** Prepare the environment for a given list of
     {{!Fs.Directory.t} include directories}

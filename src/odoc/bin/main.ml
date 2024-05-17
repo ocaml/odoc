@@ -199,7 +199,7 @@ end = struct
     in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
-        ~open_modules ~pkgnames:[] ~libnames:[]
+        ~open_modules ~roots:None
     in
     let input = Fs.File.of_string input in
     let output = output_file ~dst ~input in
@@ -342,7 +342,7 @@ module Source_tree = struct
     let output = output_file ~output ~input in
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
-        ~pkgnames:[] ~libnames:[]
+        ~roots:None
     in
     Source_tree.compile ~resolver ~parent ~output ~warnings_options input
 
@@ -439,7 +439,7 @@ module Compile_impl = struct
     in
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
-        ~pkgnames:[] ~libnames:[]
+        ~roots:None
     in
     Source.compile ~resolver ~source_id ~output ~warnings_options input
 
@@ -566,16 +566,19 @@ end = struct
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.(set_ext ".odocl" input)
 
+  let absolute_normalization p =
+    let p =
+      if Fpath.is_rel p then Fpath.( // ) (Fpath.v (Sys.getcwd ())) p else p
+    in
+    Fpath.normalize p
+
   (** Check that a list of directories form an antichain: they are all disjoints *)
   let check_antichain l =
-    let absolute_normalization p =
-      let absolutify (_, p) =
-        let p = Fs.Directory.to_fpath p in
-        if Fpath.is_rel p then Fpath.( // ) (Fpath.v (Sys.getcwd ())) p else p
-      in
-      p |> absolutify |> Fpath.normalize
+    let l =
+      List.map
+        ~f:(fun (_, p) -> p |> Fs.Directory.to_fpath |> absolute_normalization)
+        l
     in
-    let l = List.map ~f:absolute_normalization l in
     let rec check = function
       | [] -> true
       | p1 :: rest ->
@@ -587,15 +590,49 @@ end = struct
     in
     check l
 
+  open Or_error
+
+  (** Find the package name the output is part of *)
+  let find_package_of_output l o =
+    let l =
+      List.map
+        ~f:(fun (x, p) ->
+          (x, p |> Fs.Directory.to_fpath |> absolute_normalization))
+        l
+    in
+    let o = absolute_normalization o in
+    match
+      List.find_map
+        ~f:(fun (pkg, path) ->
+          if Fpath.is_prefix path o then Some pkg else None)
+        l
+    with
+    | Some pkg -> Ok pkg
+    | None ->
+        if List.length l > 0 then
+          Error
+            (`Msg
+              "The output file must be part of a directory passed as a -P or -L")
+        else Ok ""
+
+  let is_page input =
+    input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"
+
   let link directories pkgnames libnames input_file output_file warnings_options
       open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
-    if not (check_antichain (List.rev_append libnames pkgnames)) then
-      failwith "Attention: ce n'est pas une antichaine TODO erreur message yo";
+    (if not (check_antichain (List.rev_append libnames pkgnames)) then
+       Error
+         (`Msg "Arguments given to -P and -L cannot be included in each others")
+     else Ok ())
+    >>= fun () ->
+    (if is_page input then find_package_of_output pkgnames output
+     else find_package_of_output libnames output)
+    >>= fun current_pkg ->
+    let roots = Some { Resolver.pagenames = pkgnames; libnames; current_pkg } in
     let resolver =
-      Resolver.create ~important_digests:false ~directories ~pkgnames ~libnames
-        ~open_modules
+      Resolver.create ~important_digests:false ~directories ~open_modules ~roots
     in
     match Odoc_link.from_odoc ~resolver ~warnings_options input output with
     | Error _ as e -> e
@@ -691,7 +728,7 @@ end = struct
         warnings_options =
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
-          ~pkgnames:[] ~libnames:[]
+          ~roots:None
       in
       let file = Fs.File.of_string input_file in
       Rendering.render_odoc ~renderer:R.renderer ~resolver ~warnings_options
@@ -792,7 +829,7 @@ end = struct
       let odoc_file = Fs.File.of_string odoc_file in
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
-          ~pkgnames:[] ~libnames:[]
+          ~roots:None
       in
       let warnings_options =
         { Odoc_model.Error.warn_error = false; print_warnings = false }
@@ -1051,7 +1088,7 @@ end = struct
       warnings_options =
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules:[]
-        ~pkgnames:[] ~libnames:[]
+        ~roots:None
     in
     let input_file = Fs.File.of_string input_file in
     let output_file = Fs.File.of_string output_file in

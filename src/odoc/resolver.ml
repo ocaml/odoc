@@ -38,13 +38,13 @@ module Named_roots : sig
 
   type error = NoPackage
 
-  val create : (string * Fs.Directory.t) list -> t
+  val create : (string * Fs.Directory.t) list -> current_pkg:string -> t
 
   val find_by_path :
-    t -> package:string -> path:string list -> (Fs.File.t option, error) result
+    ?package:string -> t -> path:string list -> (Fs.File.t option, error) result
 
   val find_by_name :
-    t -> package:string -> name:string -> (Fs.File.t list, error) result
+    ?package:string -> t -> name:string -> (Fs.File.t list, error) result
 end = struct
   type flat =
     | Unvisited of Fs.Directory.t
@@ -54,20 +54,21 @@ end = struct
 
   type pkg = { flat : flat; hierarchical : hierarchical }
 
-  type t = (string, pkg) Hashtbl.t
+  type t = { table : (string, pkg) Hashtbl.t; current_pkg : string }
 
   type error = NoPackage
 
-  let create pkglist =
+  let create pkglist ~current_pkg =
     let cache = Hashtbl.create 42 in
     List.iter
       (fun (pkgname, root) ->
         let flat = Unvisited root and hierarchical = Hashtbl.create 42 in
         Hashtbl.add cache pkgname { flat; hierarchical })
       pkglist;
-    cache
+    { current_pkg; table = cache }
 
-  let find_by_path cache ~package ~path =
+  let find_by_path ?package { table = cache; current_pkg } ~path =
+    let package = match package with None -> current_pkg | Some pkg -> pkg in
     match Hashtbl.find_opt cache package with
     | Some { hierarchical; _ } -> Ok (Hashtbl.find_opt hierarchical path)
     | None -> Error NoPackage
@@ -88,7 +89,8 @@ end = struct
     in
     flat_namespace
 
-  let find_by_name (cache : t) ~package ~name =
+  let find_by_name ?package { table = cache; current_pkg } ~name =
+    let package = match package with None -> current_pkg | Some pkg -> pkg in
     match Hashtbl.find_opt cache package with
     | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
     | Some ({ flat = Unvisited root; _ } as p) ->
@@ -264,8 +266,8 @@ let lookup_unit ~important_digests ~imports_map ~libs ap target_name =
 
     TODO: Warning on ambiguous lookup. *)
 let lookup_page ~pages ap target_name =
-  match target_name.[0] with
-  | '#' -> (
+  match (target_name.[0], pages) with
+  | '#', Some pages -> (
       let reference =
         String.sub target_name 1 (String.length target_name - 1)
       in
@@ -331,15 +333,26 @@ let add_unit_to_cache u =
 type t = {
   important_digests : bool;
   ap : Accessible_paths.t;
-  pages : Named_roots.t;
-  libs : Named_roots.t;
+  pages : Named_roots.t option;
+  libs : Named_roots.t option;
   open_modules : string list;
 }
 
-let create ~important_digests ~directories ~pkgnames ~libnames ~open_modules =
+type roots = {
+  pagenames : (string * Fs.Directory.t) list;
+  libnames : (string * Fs.Directory.t) list;
+  current_pkg : string;
+}
+
+let create ~important_digests ~directories ~open_modules ~roots =
   let ap = Accessible_paths.create ~directories in
-  let pages = Named_roots.create pkgnames
-  and libs = Named_roots.create libnames in
+  let pages, libs =
+    match roots with
+    | None -> (None, None)
+    | Some { pagenames; libnames; current_pkg } ->
+        ( Some (Named_roots.create ~current_pkg pagenames),
+          Some (Named_roots.create ~current_pkg libnames) )
+  in
   { important_digests; ap; open_modules; pages; libs }
 
 (** Helpers for creating xref2 env. *)
