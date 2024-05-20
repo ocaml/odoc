@@ -1,32 +1,27 @@
 This is what happens when a dune user write a toplevel module.
 Similar to the lookup_def_wrapped test.
 
-  $ odoc compile -c module-a -c srctree-source root.mld
-
-  $ printf "a.ml\nmain.ml\nmain__.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
-
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o main__.cmo main__.ml -bin-annot -I .
   $ ocamlc -c -open Main__ main.ml -bin-annot -I .
 
-  $ odoc compile-src --source-path a.ml --parent srctree-source.odoc -I . main__A.cmt
+  $ odoc compile-impl --source-id a.ml -I . main__A.cmt --output-dir .
   $ odoc compile -I . main__A.cmt
-  $ odoc compile-src --source-path main__.ml --parent srctree-source.odoc -I . main__.cmt
+  $ odoc compile-impl --source-id main__.ml -I . main__.cmt --output-dir .
   $ odoc compile -I . main__.cmt
-  $ odoc compile-src --source-path main.ml --parent srctree-source.odoc -I . main.cmt
+  $ odoc compile-impl --source-id main.ml -I . main.cmt --output-dir .
   $ odoc compile -I . main.cmt
 
   $ odoc link -I . main.odoc
-  $ odoc link -I . src-main__A.odoc
-  $ odoc link -I . src-main.odoc
-  $ odoc link -I . src-main__.odoc
+  $ odoc link -I . impl-main__A.odoc
+  $ odoc link -I . impl-main.odoc
+  $ odoc link -I . impl-main__.odoc
   $ odoc link -I . main__A.odoc
   $ odoc link -I . main__.odoc
 
   $ odoc html-generate --indent -o html main.odocl
-  $ odoc html-generate --source main.ml --indent -o html src-main.odocl
-  $ odoc html-generate --source a.ml --indent -o html src-main__A.odocl
+  $ odoc html-generate --source main.ml --indent -o html impl-main.odocl
+  $ odoc html-generate --source a.ml --indent -o html impl-main__A.odocl
 
 Look if all the source files are generated:
 
@@ -36,10 +31,8 @@ Look if all the source files are generated:
   html/Main/A
   html/Main/A/index.html
   html/Main/index.html
-  html/root
-  html/root/source
-  html/root/source/a.ml.html
-  html/root/source/main.ml.html
+  html/a.ml.html
+  html/main.ml.html
 
   $ cat html/Main/A/index.html
   <!DOCTYPE html>
@@ -57,15 +50,15 @@ Look if all the source files are generated:
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Main.A</span></code>
-      <a href="../../root/source/a.ml.html" class="source_link">Source</a>
+      <a href="../.././a.ml.html" class="source_link">Source</a>
      </h1>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="../../root/source/a.ml.html#val-x" class="source_link">Source
-       </a><code><span><span class="keyword">val</span> x : int</span></code>
+       <a href="../.././a.ml.html#val-x" class="source_link">Source</a>
+       <code><span><span class="keyword">val</span> x : int</span></code>
       </div>
      </div>
     </div>

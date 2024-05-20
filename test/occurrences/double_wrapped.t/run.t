@@ -10,17 +10,13 @@ The module B depends on both B and C, the module C only depends on A.
   $ ocamlc -c -open Main__ -o main__B.cmo b.ml -bin-annot -I .
   $ ocamlc -c -open Main__ main.ml -bin-annot -I .
 
-Collecting occurrences is done on implementation files. We thus need a source tree as a parent.
+Collecting occurrences is done on implementation files. 
 
-  $ odoc compile -c srctree-source root.mld
-  $ printf "a.ml\nb.ml\nc.ml\nmain.ml\nmain__.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
-
-  $ odoc compile-src --source-path a.ml --parent srctree-source.odoc -I . main__A.cmt
-  $ odoc compile-src --source-path c.ml --parent srctree-source.odoc -I . main__C.cmt
-  $ odoc compile-src --source-path b.ml --parent srctree-source.odoc -I . main__B.cmt
-  $ odoc compile-src --source-path main__.ml --parent srctree-source.odoc -I . main__.cmt
-  $ odoc compile-src --source-path main.ml --parent srctree-source.odoc -I . main.cmt
+  $ odoc compile-impl --source-id a.ml -I . main__A.cmt --output-dir .
+  $ odoc compile-impl --source-id c.ml -I . main__C.cmt --output-dir .
+  $ odoc compile-impl --source-id b.ml -I . main__B.cmt --output-dir .
+  $ odoc compile-impl --source-id main__.ml -I . main__.cmt --output-dir .
+  $ odoc compile-impl --source-id main.ml -I . main.cmt --output-dir .
 
 We need the interface version to resolve the occurrences
 
@@ -32,11 +28,11 @@ We need the interface version to resolve the occurrences
 
 Let's link the implementations
 
-  $ odoc link -I . src-main.odoc
-  $ odoc link -I . src-main__A.odoc
-  $ odoc link -I . src-main__B.odoc
-  $ odoc link -I . src-main__C.odoc
-  $ odoc link -I . src-main__.odoc
+  $ odoc link -I . impl-main.odoc
+  $ odoc link -I . impl-main__A.odoc
+  $ odoc link -I . impl-main__B.odoc
+  $ odoc link -I . impl-main__C.odoc
+  $ odoc link -I . impl-main__.odoc
 
 The count occurrences command outputs a marshalled hashtable, whose keys are
 odoc identifiers, and whose values are integers corresponding to the number of
@@ -49,11 +45,11 @@ and a hashtable for each compilation unit.
   $ mkdir main__B
   $ mkdir main__C
 
-  $ mv src-main.odocl main
-  $ mv src-main__.odocl main__
-  $ mv src-main__A.odocl main__A
-  $ mv src-main__B.odocl main__B
-  $ mv src-main__C.odocl main__C
+  $ mv impl-main.odocl main
+  $ mv impl-main__.odocl main__
+  $ mv impl-main__A.odocl main__A
+  $ mv impl-main__B.odocl main__B
+  $ mv impl-main__C.odocl main__C
   $ odoc count-occurrences -I main -o occurrences-main.odoc
   $ odoc count-occurrences -I main__ -o occurrences-main__.odoc
   $ odoc count-occurrences -I main__A -o occurrences-main__A.odoc
@@ -70,9 +66,6 @@ Uses of B.Z are not counted since they go to a hidden module.
 Uses of values Y.x and Z.y (in b.ml) are not counted since they come from a "local" module.
 
   $ occurrences_print occurrences-main.odoc | sort
-  Main was used directly 0 times and indirectly 2 times
-  Main.A was used directly 1 times and indirectly 0 times
-  Main.B was used directly 1 times and indirectly 0 times
 
   $ occurrences_print occurrences-main__.odoc | sort
 
@@ -81,18 +74,9 @@ A only uses "persistent" values: one it defines itself.
 
 "Aliased" values are not counted since they become persistent
   $ occurrences_print occurrences-main__B.odoc | sort
-  Main was used directly 0 times and indirectly 7 times
-  Main.A was used directly 2 times and indirectly 5 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 1 times and indirectly 0 times
 
 "Aliased" values are not counted since they become persistent
   $ occurrences_print occurrences-main__C.odoc | sort
-  Main was used directly 0 times and indirectly 2 times
-  Main.A was used directly 1 times and indirectly 1 times
-  Main.A.x was used directly 1 times and indirectly 0 times
 
 Now we can merge all tables
 
@@ -105,13 +89,6 @@ Now we can merge all tables
 
   $ occurrences_print occurrences-aggregated.odoc | sort > all_merged
   $ cat all_merged
-  Main was used directly 0 times and indirectly 11 times
-  Main.A was used directly 4 times and indirectly 6 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 2 times and indirectly 0 times
-  Main.B was used directly 1 times and indirectly 0 times
 
 Compare with the one created directly with all occurrences:
 
@@ -123,28 +100,6 @@ We can also include hidden ids:
 
   $ odoc count-occurrences -I main__B -o occurrences-b.odoc --include-hidden
   $ occurrences_print occurrences-b.odoc | sort
-  Main was used directly 0 times and indirectly 7 times
-  Main.A was used directly 2 times and indirectly 5 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 1 times and indirectly 0 times
-  Main__ was used directly 0 times and indirectly 2 times
-  Main__.C was used directly 1 times and indirectly 1 times
-  Main__.C.y was used directly 1 times and indirectly 0 times
 
   $ odoc count-occurrences -I . -o occurrences-all.odoc --include-hidden
   $ occurrences_print occurrences-all.odoc | sort
-  Main was used directly 0 times and indirectly 11 times
-  Main.A was used directly 4 times and indirectly 6 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 2 times and indirectly 0 times
-  Main.B was used directly 1 times and indirectly 0 times
-  Main__ was used directly 0 times and indirectly 2 times
-  Main__.C was used directly 1 times and indirectly 1 times
-  Main__.C.y was used directly 1 times and indirectly 0 times
-  Main__A was used directly 1 times and indirectly 0 times
-  Main__B was used directly 1 times and indirectly 0 times
-  Main__C was used directly 1 times and indirectly 0 times

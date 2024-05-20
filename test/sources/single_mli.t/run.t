@@ -1,27 +1,22 @@
 Similar to Astring library.
 
-  $ odoc compile -c module-a -c srctree-source root.mld
-
-  $ printf "a.ml\na_x.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
-
   $ ocamlc -c -o a_x.cmo a_x.ml -bin-annot -I .
   $ ocamlc -c a.mli -bin-annot -I .
   $ ocamlc -c a.ml -bin-annot -I .
 
-  $ odoc compile-src --source-path a_x.ml --parent srctree-source.odoc -I . a_x.cmt
+  $ odoc compile-impl --source-id a_x.ml -I . a_x.cmt
   $ odoc compile --hidden -I . a_x.cmt
-  $ odoc compile-src --source-path a.ml --parent srctree-source.odoc -I . a.cmt
+  $ odoc compile-impl --source-id a.ml -I . a.cmt
   $ odoc compile -I . a.cmti
 
-  $ odoc link -I . src-a_x.odoc
+  $ odoc link -I . impl-a_x.odoc
   $ odoc link -I . a_x.odoc
-  $ odoc link -I . src-a.odoc
+  $ odoc link -I . impl-a.odoc
   $ odoc link -I . a.odoc
 
-  $ odoc html-generate --source a_x.ml --indent -o html src-a_x.odocl
+  $ odoc html-generate --source a_x.ml --indent -o html impl-a_x.odocl
   $ odoc html-generate --indent -o html a_x.odocl
-  $ odoc html-generate --source a.ml --indent -o html src-a.odocl
+  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
   $ odoc html-generate --indent -o html a.odocl
 
 Look if all the source files are generated:
@@ -36,10 +31,8 @@ Look if all the source files are generated:
   html/A/index.html
   html/A_x
   html/A_x/index.html
-  html/root
-  html/root/source
-  html/root/source/a.ml.html
-  html/root/source/a_x.ml.html
+  html/a.ml.html
+  html/a_x.ml.html
 
 Documentation for `A_x` is not generated for hidden modules:
 
@@ -49,18 +42,19 @@ Documentation for `A_x` is not generated for hidden modules:
 Code source for `A_x` is wanted:
 
   $ [ -f html/root/source/a_x.ml.html ]
+  [1]
 
 `A` should contain a link to `A_x.ml.html`:
 
   $ grep source_link html/A/index.html
-      <a href="../root/source/a.ml.html" class="source_link">Source</a>
-       <a href="../root/source/a_x.ml.html" class="source_link">Source</a>
+      <a href=".././a.ml.html" class="source_link">Source</a>
+       <a href=".././a_x.ml.html" class="source_link">Source</a>
 
 `A.X` and `A.X.Y` should contain a link to `A_x.ml.html`:
 
   $ grep source_link html/A/X/index.html
-      <a href="../../root/source/a_x.ml.html" class="source_link">Source</a>
-       <a href="../../root/source/a_x.ml.html#module-Y" class="source_link">
+      <a href="../.././a_x.ml.html" class="source_link">Source</a>
+       <a href="../.././a_x.ml.html#module-Y" class="source_link">Source</a>
   $ grep source_link html/A/X/Y/index.html
-      <a href="../../../root/source/a_x.ml.html#module-Y" class="source_link">
-        class="source_link">Source
+      <a href="../../.././a_x.ml.html#module-Y" class="source_link">Source</a>
+       <a href="../../.././a_x.ml.html#module-Y.val-z" class="source_link">

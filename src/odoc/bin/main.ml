@@ -373,7 +373,7 @@ module Compile_impl = struct
   let output_dir =
     let doc = "Output file directory. " in
     Arg.(
-      required
+      value
       & opt (some string) None
       & info ~docs ~docv:"PATH" ~doc [ "output-dir" ])
 
@@ -389,10 +389,10 @@ module Compile_impl = struct
       ~directory:(Fpath.to_string dir |> Fs.Directory.of_string)
       ~name
 
-  let compile_impl directories output_dir id source_id input warnings_options =
+  let compile_impl directories output_dir parent_id source_id input warnings_options =
     let input = Fs.File.of_string input in
-    let output_dir = Fpath.v output_dir in
-    let output = output_file output_dir (Fpath.v id) input in
+    let output_dir = match output_dir with | Some x -> Fpath.v x | None -> Fpath.v "." in
+    let output = output_file output_dir (match parent_id with | Some x -> Fpath.v x | None -> Fpath.v ".") input in
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
     in
@@ -413,7 +413,7 @@ module Compile_impl = struct
     let parent_id =
       let doc = "The parent id of the implementation" in
       Arg.(
-        required
+        value
         & opt (some string) None
         & info [ "parent-id" ] ~doc ~docv:"/path/to/library")
     in
