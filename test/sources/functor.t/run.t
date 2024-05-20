@@ -1,30 +1,25 @@
 Verify the behavior on functors.
 
-  $ odoc compile -c module-a -c srctree-source root.mld
-
-  $ printf "s.ml\na.ml\nb.ml\n" > source_tree.map
-  $ odoc source-tree -I . --parent page-root -o srctree-source.odoc source_tree.map
-
   $ ocamlc -c -o s.cmo s.ml -bin-annot -I .
   $ ocamlc -c -o a.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o b.cmo b.ml -bin-annot -I .
-  $ odoc compile-src --source-path s.ml --parent srctree-source.odoc -I . s.cmt
+  $ odoc compile-impl --source-id s.ml -I . s.cmt --output-dir .
   $ odoc compile -I . s.cmt
-  $ odoc compile-src --source-path a.ml --parent srctree-source.odoc -I . a.cmt
+  $ odoc compile-impl --source-id a.ml -I . a.cmt --output-dir .
   $ odoc compile -I . a.cmt
-  $ odoc compile-src --source-path b.ml --parent srctree-source.odoc -I . b.cmt
+  $ odoc compile-impl --source-id b.ml -I . b.cmt --output-dir .
   $ odoc compile -I . b.cmt
   $ odoc link -I . s.odoc
   $ odoc link -I . a.odoc
   $ odoc link -I . b.odoc
-  $ odoc link -I . src-s.odoc
-  $ odoc link -I . src-a.odoc
-  $ odoc link -I . src-b.odoc
-  $ odoc html-generate --source s.ml --indent -o html src-s.odocl
+  $ odoc link -I . impl-s.odoc
+  $ odoc link -I . impl-a.odoc
+  $ odoc link -I . impl-b.odoc
+  $ odoc html-generate --source s.ml --indent -o html impl-s.odocl
   $ odoc html-generate --indent -o html s.odocl
-  $ odoc html-generate --source a.ml --indent -o html src-a.odocl
+  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
   $ odoc html-generate --indent -o html a.odocl
-  $ odoc html-generate --source b.ml --indent -o html src-b.odocl
+  $ odoc html-generate --source b.ml --indent -o html impl-b.odocl
   $ odoc html-generate --indent -o html b.odocl
 
   $ find html | sort
@@ -45,50 +40,49 @@ Verify the behavior on functors.
   html/S/index.html
   html/S/module-type-S
   html/S/module-type-S/index.html
-  html/root
-  html/root/source
-  html/root/source/a.ml.html
-  html/root/source/b.ml.html
-  html/root/source/s.ml.html
+  html/a.ml.html
+  html/b.ml.html
+  html/s.ml.html
 
 In this test, the functor expansion contains the right link.
 
   $ cat html/A/F/index.html | grep source_link -C 1
      <h1>Module <code><span>A.F</span></code>
-      <a href="../../root/source/a.ml.html#module-F" class="source_link">Source
-      </a>
+      <a href="../.././a.ml.html#module-F" class="source_link">Source</a>
+     </h1>
   --
-       <a href="../../root/source/a.ml.html#module-F.type-t"
-        class="source_link">Source
+       <a href="#type-t" class="anchor"></a>
+       <a href="../.././a.ml.html#module-F.type-t" class="source_link">Source
        </a>
   --
        <a href="#val-y" class="anchor"></a>
-       <a href="../../root/source/a.ml.html#module-F.val-y" class="source_link">
-        Source
+       <a href="../.././a.ml.html#module-F.val-y" class="source_link">Source
+       </a>
 
   $ cat html/root/source/a.ml.html | grep L3
-  <a id="L3" class="source_line" href="#L3">3</a>
+  cat: html/root/source/a.ml.html: No such file or directory
+  [1]
 
 However, on functor results, there is a link to source in the file:
 
   $ cat html/B/R/index.html | grep source_link -C 2
     <header class="odoc-preamble">
      <h1>Module <code><span>B.R</span></code>
-      <a href="../../root/source/b.ml.html#module-R" class="source_link">Source
-      </a>
+      <a href="../.././b.ml.html#module-R" class="source_link">Source</a>
      </h1>
+    </header>
   --
+      <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
-       <a href="../../root/source/a.ml.html#module-F.type-t"
-        class="source_link">Source
+       <a href="../.././a.ml.html#module-F.type-t" class="source_link">Source
        </a>
        <code><span><span class="keyword">type</span> t</span>
   --
       <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
-       <a href="../../root/source/a.ml.html#module-F.val-y" class="source_link">
-        Source
+       <a href="../.././a.ml.html#module-F.val-y" class="source_link">Source
        </a>
+       <code>
 
 Source links in functor parameters might not make sense. Currently we generate none:
 
