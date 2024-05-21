@@ -12,11 +12,11 @@ The module B depends on both B and C, the module C only depends on A.
 
 Collecting occurrences is done on implementation files. 
 
-  $ odoc compile-impl --source-id a.ml -I . main__A.cmt --output-dir .
-  $ odoc compile-impl --source-id c.ml -I . main__C.cmt --output-dir .
-  $ odoc compile-impl --source-id b.ml -I . main__B.cmt --output-dir .
-  $ odoc compile-impl --source-id main__.ml -I . main__.cmt --output-dir .
-  $ odoc compile-impl --source-id main.ml -I . main.cmt --output-dir .
+  $ odoc compile-impl --source-id src/a.ml -I . main__A.cmt --output-dir .
+  $ odoc compile-impl --source-id src/c.ml -I . main__C.cmt --output-dir .
+  $ odoc compile-impl --source-id src/b.ml -I . main__B.cmt --output-dir .
+  $ odoc compile-impl --source-id src/main__.ml -I . main__.cmt --output-dir .
+  $ odoc compile-impl --source-id src/main.ml -I . main.cmt --output-dir .
 
 We need the interface version to resolve the occurrences
 

@@ -137,8 +137,7 @@ There should be an expansion on `NotHidden`
               "`Type": [
                 {
                   "`Module": [
-                    { "`Root": [ "None", "Test" ] },
-                    "NonCanonical"
+                    { "`Root": [ "None", "Test" ] }, "NonCanonical"
                   ]
                 },
                 "hidden__type"

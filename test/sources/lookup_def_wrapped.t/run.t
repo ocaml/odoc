@@ -7,11 +7,11 @@ It's a simpler case than Dune's wrapping.
   $ ocamlc -c -o main__B.cmo b.ml -bin-annot -I .
   $ ocamlc -c main.ml -bin-annot -I .
 
-  $ odoc compile-impl --source-id a.ml -I . main__A.cmt
+  $ odoc compile-impl --source-id src/a.ml -I . main__A.cmt
   $ odoc compile -I . main__A.cmt
-  $ odoc compile-impl --source-id b.ml -I . main__B.cmt
+  $ odoc compile-impl --source-id src/b.ml -I . main__B.cmt
   $ odoc compile -I . main__B.cmt
-  $ odoc compile-impl --source-id main.ml -I . main.cmt
+  $ odoc compile-impl --source-id src/main.ml -I . main.cmt
   $ odoc compile -I . main.cmt
 
   $ odoc link -I . impl-main__A.odoc
@@ -42,9 +42,10 @@ Look if all the source files are generated:
   html/Main__A/index.html
   html/Main__B
   html/Main__B/index.html
-  html/a.ml.html
-  html/b.ml.html
-  html/main.ml.html
+  html/src
+  html/src/a.ml.html
+  html/src/b.ml.html
+  html/src/main.ml.html
 
   $ cat html/Main/A/index.html
   <!DOCTYPE html>
@@ -62,14 +63,14 @@ Look if all the source files are generated:
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Main.A</span></code>
-      <a href="../.././a.ml.html" class="source_link">Source</a>
+      <a href="../../src/a.ml.html" class="source_link">Source</a>
      </h1>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href="../.././a.ml.html#val-x" class="source_link">Source</a>
+       <a href="../../src/a.ml.html#val-x" class="source_link">Source</a>
        <code><span><span class="keyword">val</span> x : int</span></code>
       </div>
      </div>

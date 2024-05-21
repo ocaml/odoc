@@ -151,6 +151,10 @@ end = struct
     file |> Fs.File.basename |> Fs.File.to_string
     |> Astring.String.is_prefix ~affix:"page-"
 
+  let unique_id =
+    let doc = "For debugging use" in
+    Arg.(value & opt (some string) None & info ~doc ~docv:"ID" [ "unique-id" ])
+
   let output_file ~dst ~input =
     match dst with
     | Some file ->
@@ -175,8 +179,13 @@ end = struct
 
   let compile hidden directories resolve_fwd_refs dst output_dir package_opt
       parent_name_opt parent_id_opt open_modules children input warnings_options
-      =
+      unique_id =
     let open Or_error in
+    let _ =
+      match unique_id with
+      | Some id -> Odoc_model.Names.set_unique_ident id
+      | None -> ()
+    in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
         ~open_modules
@@ -262,7 +271,7 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ output_dir $ package_opt $ parent_opt $ parent_id_opt $ open_modules
-       $ children $ input $ warnings_options))
+       $ children $ input $ warnings_options $ unique_id))
 
   let info ~docs =
     let man =
