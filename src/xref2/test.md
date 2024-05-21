@@ -39,6 +39,7 @@ open Odoc_model.Names;;
 Odoc_xref2.Component.Delayed.eager := true;;
 Odoc_xref2.Tools.disable_all_caches ();;
 let id = Common.id;;
+let _ = Odoc_model.Names.set_unique_ident "XXXX";;
 ```
 
 Simple resolution
@@ -2958,8 +2959,9 @@ let m_e_i_s_value mod_name n val_name =
                   ihash = 818126955; ikey = "r_Root.p_None"},
                  Foo3);
              ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
-            {t}2);
-        ihash = 1024756092; ikey = "t_{t}2.m_Foo3.r_Root.p_None"},
+            {t}2/shadowed/(XXXX));
+        ihash = 975388256;
+        ikey = "t_{t}2/shadowed/(XXXX).m_Foo3.r_Root.p_None"},
        false),
    [])}
 ```
@@ -3010,8 +3012,9 @@ let sg = Common.signature_of_mli_string test_data;;
                  ihash = 818126955; ikey = "r_Root.p_None"},
                 Foo3);
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
-           {t}3);
-       ihash = 271372153; ikey = "t_{t}3.m_Foo3.r_Root.p_None"};
+           {t}3/shadowed/(XXXX));
+       ihash = 584226322;
+       ikey = "t_{t}3/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
      source_loc = None; doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -3070,8 +3073,9 @@ let sg = Common.signature_of_mli_string test_data;;
                       ihash = 818126955; ikey = "r_Root.p_None"},
                      Foo3);
                  ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
-                {t}3);
-            ihash = 271372153; ikey = "t_{t}3.m_Foo3.r_Root.p_None"},
+                {t}3/shadowed/(XXXX));
+            ihash = 584226322;
+            ikey = "t_{t}3/shadowed/(XXXX).m_Foo3.r_Root.p_None"},
            false),
        [])}];
  compiled = false; removed = []; doc = []}
@@ -3093,8 +3097,9 @@ let sg = Common.signature_of_mli_string test_data;;
                  ihash = 818126955; ikey = "r_Root.p_None"},
                 Foo3);
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
-           {t}4);
-       ihash = 671044364; ikey = "t_{t}4.m_Foo3.r_Root.p_None"};
+           {t}4/shadowed/(XXXX));
+       ihash = 466750041;
+       ikey = "t_{t}4/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
      source_loc = None; doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -3153,8 +3158,9 @@ let sg = Common.signature_of_mli_string test_data;;
                       ihash = 818126955; ikey = "r_Root.p_None"},
                      Foo3);
                  ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
-                {t}4);
-            ihash = 671044364; ikey = "t_{t}4.m_Foo3.r_Root.p_None"},
+                {t}4/shadowed/(XXXX));
+            ihash = 466750041;
+            ikey = "t_{t}4/shadowed/(XXXX).m_Foo3.r_Root.p_None"},
            false),
        [])}];
  compiled = false; removed = []; doc = []}
@@ -3208,8 +3214,9 @@ let sg = Common.signature_of_mli_string test_data;;
                  ihash = 818126955; ikey = "r_Root.p_None"},
                 Foo3);
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
-           {t}5);
-       ihash = 67089224; ikey = "t_{t}5.m_Foo3.r_Root.p_None"};
+           {t}5/shadowed/(XXXX));
+       ihash = 995358055;
+       ikey = "t_{t}5/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
      source_loc = None; doc = []; canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -3249,8 +3256,9 @@ let sg = Common.signature_of_mli_string test_data;;
                  ihash = 818126955; ikey = "r_Root.p_None"},
                 Foo3);
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
-           {x}6);
-       ihash = 677887655; ikey = "v_{x}6.m_Foo3.r_Root.p_None"};
+           {x}6/shadowed/(XXXX));
+       ihash = 1011043008;
+       ikey = "v_{x}6/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
      source_loc = None; value = Odoc_model.Lang.Value.Abstract; doc = [];
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
@@ -3293,8 +3301,9 @@ let sg = Common.signature_of_mli_string test_data;;
                       ihash = 818126955; ikey = "r_Root.p_None"},
                      Foo3);
                  ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
-                {t}5);
-            ihash = 67089224; ikey = "t_{t}5.m_Foo3.r_Root.p_None"},
+                {t}5/shadowed/(XXXX));
+            ihash = 995358055;
+            ikey = "t_{t}5/shadowed/(XXXX).m_Foo3.r_Root.p_None"},
            false),
        [])}];
  compiled = false; removed = []; doc = []}
@@ -3347,8 +3356,9 @@ let sg = Common.signature_of_mli_string test_data;;
                  ihash = 818126955; ikey = "r_Root.p_None"},
                 Foo3);
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
-           {Bar}8);
-       ihash = 286980035; ikey = "m_{Bar}8.m_Foo3.r_Root.p_None"};
+           {Bar}8/shadowed/(XXXX));
+       ihash = 38422300;
+       ikey = "m_{Bar}8/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
      source_loc = None; doc = [];
      type_ =
       Odoc_model.Lang.Module.Alias
@@ -3405,8 +3415,9 @@ let sg = Common.signature_of_mli_string test_data;;
                          ihash = 818126955; ikey = "r_Root.p_None"},
                         Foo3);
                     ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
-                   {Bar}8);
-               ihash = 286980035; ikey = "m_{Bar}8.m_Foo3.r_Root.p_None"},
+                   {Bar}8/shadowed/(XXXX));
+               ihash = 38422300;
+               ikey = "m_{Bar}8/shadowed/(XXXX).m_Foo3.r_Root.p_None"},
               true),
            "t"),
        [])}];
