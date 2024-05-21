@@ -7,6 +7,8 @@ Helpers:
 ```ocaml
 open Odoc_model
 
+let _ = Names.set_unique_ident "XXXXX"
+
 let parse_ref ref_str =
   match Semantics.parse_reference ref_str |> Common.handle_warnings with
   | Ok ref -> ref
