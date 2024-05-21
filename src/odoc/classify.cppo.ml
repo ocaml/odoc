@@ -3,7 +3,6 @@
 (* Given a directory with cmis, cmas and so on, partition the modules between the libraries *)
 (* open Bos *)
 
-open Misc
 open Cmo_format
 
 module StringSet = Set.Make (String)
@@ -148,6 +147,9 @@ let read_cmxa ic init =
   close_in ic;
   Ok (List.fold_left Archive.add_unit_info init (List.map fst li.lib_units))
 
+#if OCAML_VERSION >= (4, 12, 0)
+open Misc
+
 let read_library ic init =
   let open Magic_number in
   match read_current_info ~expected_kind:None ic with
@@ -155,7 +157,16 @@ let read_library ic init =
   | Ok { kind = Cmxa _; version = _ } -> read_cmxa ic init
   | Ok { kind = _; version = _ } -> Error (`Msg "Not a valid library")
   | Error _ -> Error (`Msg "Not a valid file")
+#else
+let read_library ic init =
+  let len_magic_number = String.length Config.cmo_magic_number in
+  let magic_number = really_input_string ic len_magic_number in
+  if magic_number = Config.cma_magic_number then read_cma ic init
+  else if magic_number = Config.cmxa_magic_number then read_cmxa ic init
+  else Error (`Msg "Not a valid library")
+#endif
 
+#if OCAML_VERSION > (4, 12, 0)
 let read_cmi ic =
   let open Magic_number in
   match read_current_info ~expected_kind:None ic with
@@ -165,6 +176,18 @@ let read_cmi ic =
       Ok cmi
   | Ok { kind = _; version = _ } -> Error (`Msg "Not a valid cmi")
   | Error _ -> Error (`Msg "Not a valid file")
+#else
+let read_cmi ic =
+  let len_magic_number = String.length Config.cmo_magic_number in
+  let magic_number = really_input_string ic len_magic_number in
+  if magic_number = Config.cmi_magic_number
+  then begin
+    let cmi = (input_value ic : Cmi_format.cmi_infos) in
+    close_in ic;
+    Ok cmi
+  end else Error (`Msg "Not a valid file")
+
+#endif
 
 let classify dir files libraries =
   let libraries = StringSet.elements libraries in

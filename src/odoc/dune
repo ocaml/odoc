@@ -19,5 +19,14 @@
  (instrumentation
   (backend bisect_ppx)))
 
+(rule
+ (targets classify.ml)
+ (deps
+  (:x classify.cppo.ml))
+ (action
+  (chdir
+   %{workspace_root}
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
+
 (documentation
  (package odoc))
