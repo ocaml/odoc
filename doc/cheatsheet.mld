@@ -43,8 +43,8 @@ Quick reference for the odoc language!
       See {%html:<a href="#my_id">Referenceable title</a>%}}}
   {tr
     {th {{!odoc_for_authors.basics}Bold, italic and emphasis}}
-    {td {@text[{b bold} text, {e italic text}, {e emphasized} text]}}
-    {td   {b bold} text, {e italic text}, {e emphasized} text}}
+    {td {@text[{b bold} text, {i italic} text, {e emphasized} text]}}
+    {td   {b bold} text, {i italic} text, {e emphasized} text}}
   {tr
     {th {{!odoc_for_authors.basics}Subscripts and superscript}}
     {td {@text[H{_ 2}O and 1{^ st}]}}
