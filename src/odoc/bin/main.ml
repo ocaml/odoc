@@ -389,10 +389,17 @@ module Compile_impl = struct
       ~directory:(Fpath.to_string dir |> Fs.Directory.of_string)
       ~name
 
-  let compile_impl directories output_dir parent_id source_id input warnings_options =
+  let compile_impl directories output_dir parent_id source_id input
+      warnings_options =
     let input = Fs.File.of_string input in
-    let output_dir = match output_dir with | Some x -> Fpath.v x | None -> Fpath.v "." in
-    let output = output_file output_dir (match parent_id with | Some x -> Fpath.v x | None -> Fpath.v ".") input in
+    let output_dir =
+      match output_dir with Some x -> Fpath.v x | None -> Fpath.v "."
+    in
+    let output =
+      output_file output_dir
+        (match parent_id with Some x -> Fpath.v x | None -> Fpath.v ".")
+        input
+    in
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
     in
