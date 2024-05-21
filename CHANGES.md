@@ -11,6 +11,7 @@
 - Navigation for the search bar : use '/' to enter search, up and down arrows to
   select a result, and enter to follow the selected link. (@EmileTrotignon, #1088)
 - OCaml 5.2.0 compatibility (@Octachron, #1094, #1112)
+- New driver package (@jonludlam, #1121)
 
 ### Changed
 
