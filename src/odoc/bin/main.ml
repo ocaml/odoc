@@ -203,8 +203,9 @@ end = struct
           Ok (Compile.CliPackage { package = p; output })
       | None, None, Some p, [], Some output_dir ->
           Ok (Compile.CliParentId { parent_id = p; output_dir })
-      | None, None, None, _ :: _, None -> Ok (Compile.CliParent {parent=None;output;children})
-      | None, None, None, [] , None -> Ok (Compile.CliNoParent output)
+      | None, None, None, _ :: _, None ->
+          Ok (Compile.CliParent { parent = None; output; children })
+      | None, None, None, [], None -> Ok (Compile.CliNoParent output)
       | Some _, Some _, _, _, _ ->
           error "Either --package or --parent should be specified, not both."
       | _, Some _, Some _, _, _ ->
@@ -213,8 +214,10 @@ end = struct
           error "Either --parent or --parent-id should be specified, not both."
       | _, _, None, _, Some _ ->
           error "--output-dir can only be passed with --parent-id."
-      | None, _, _, _ :: _, _ ->
-          error "--child can only be passed with --parent."
+      | None, Some _, _, _ :: _, _ ->
+          error "--child cannot be passed with --package."
+      | None, _, Some _, _ :: _, _ ->
+          error "--child cannot be passed with --parent-id."
       | _, _, Some _, _, None ->
           error "--output-dir is required when passing --parent-id."
     in
