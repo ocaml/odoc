@@ -4,9 +4,12 @@
 (* open Bos *)
 
 open Cmo_format
+open Result
 
 module StringSet = Set.Make (String)
-
+let list_of_stringset x =
+  StringSet.fold (fun a b -> a :: b) x []
+  
 let debug = ref false
 
 let log fmt =
@@ -214,7 +217,7 @@ let classify dir files libraries =
   let cmis = List.filter (fun f -> Fpath.(has_ext ".cmi" (v f))) files in
   let cmi_names =
     List.map
-      (fun f -> Fpath.(rem_ext (v f) |> basename |> String.capitalize_ascii))
+      (fun f -> Fpath.(rem_ext (v f) |> basename |> Astring.String.Ascii.capitalize))
       cmis
   in
 
@@ -229,7 +232,7 @@ let classify dir files libraries =
     List.map
       (fun f ->
         let modname =
-          Filename.chop_suffix f ".cmi" |> String.capitalize_ascii
+          Filename.chop_suffix f ".cmi" |> Astring.String.Ascii.capitalize
         in
         (modname, Cmi.get_deps Fpath.(v dir / f |> to_string)))
       intfs
@@ -260,7 +263,7 @@ let classify dir files libraries =
         let rest =
           List.map (fun (x, deps) -> (x, StringSet.diff deps no_dep_names)) rest
         in
-        (StringSet.to_seq no_dep_names |> List.of_seq) @ topo_sort rest
+        (list_of_stringset no_dep_names) @ topo_sort rest
   in
 
   let all_sorted = topo_sort libdeps in
@@ -270,7 +273,7 @@ let classify dir files libraries =
     (* If our module depends on a library, it shouldn't be in any dependency of that library *)
     log "Modules dependencies: %a\n%!"
       Fmt.(list ~sep:sp string)
-      (List.assoc m intfs_deps |> StringSet.to_seq |> List.of_seq);
+      (List.assoc m intfs_deps |> list_of_stringset);
     let denylist =
       List.fold_left
         (fun acc archive ->
@@ -280,12 +283,12 @@ let classify dir files libraries =
           if StringSet.cardinal lib_dependent_modules > 0 then (
             log "Module %s has dependencies [%a] in archive %s\n%!" m
               Fmt.(list ~sep:sp string)
-              (StringSet.to_seq lib_dependent_modules |> List.of_seq)
+                (list_of_stringset lib_dependent_modules)
               archive.Archive.name;
             log "Therefore denying: %a\n%!"
               Fmt.(list ~sep:sp string)
               (List.assoc archive.name libdeps
-              |> StringSet.to_seq |> List.of_seq);
+              |> list_of_stringset);
             StringSet.union acc (List.assoc archive.name libdeps))
           else acc)
         StringSet.empty archives

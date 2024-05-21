@@ -90,7 +90,7 @@ let mk_id str =
   List.fold_left
     (fun acc id -> Some (Paths.Identifier.Mk.page (acc, PageName.make_std id)))
     None l
-  |> Option.get
+  |> (function | Some x -> x | None -> failwith "Failed to create ID")
 
 let parent resolver parent_cli_spec =
   match parent_cli_spec with

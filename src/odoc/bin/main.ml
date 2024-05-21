@@ -380,7 +380,7 @@ module Compile_impl = struct
   let output_file output_dir parent_id input =
     let name =
       Fs.File.basename input |> Fpath.set_ext "odoc" |> Fs.File.to_string
-      |> String.uncapitalize_ascii
+      |> Astring.String.Ascii.uncapitalize
     in
     let name = prefix ^ name in
 

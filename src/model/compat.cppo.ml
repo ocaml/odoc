@@ -278,9 +278,15 @@ let compunit_name : Cmo_format.compunit -> string = function | Compunit x -> x
 
 let required_compunit_names x = List.map compunit_name x.Cmo_format.cu_required_compunits
 
-#else
+#elif OCAML_VERSION >= (4,04,0)
 
 let compunit_name x = x
 
 let required_compunit_names x = List.map Ident.name x.Cmo_format.cu_required_globals
+
+#else
+
+  let compunit_name x = x
+  let required_compunit_names x = List.map fst x.Cmo_format.cu_imports
+
 #endif
