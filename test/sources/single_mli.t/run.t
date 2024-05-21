@@ -4,9 +4,9 @@ Similar to Astring library.
   $ ocamlc -c a.mli -bin-annot -I .
   $ ocamlc -c a.ml -bin-annot -I .
 
-  $ odoc compile-impl --source-id a_x.ml -I . a_x.cmt
+  $ odoc compile-impl --source-id src/a_x.ml -I . a_x.cmt
   $ odoc compile --hidden -I . a_x.cmt
-  $ odoc compile-impl --source-id a.ml -I . a.cmt
+  $ odoc compile-impl --source-id src/a.ml -I . a.cmt
   $ odoc compile -I . a.cmti
 
   $ odoc link -I . impl-a_x.odoc
@@ -31,8 +31,9 @@ Look if all the source files are generated:
   html/A/index.html
   html/A_x
   html/A_x/index.html
-  html/a.ml.html
-  html/a_x.ml.html
+  html/src
+  html/src/a.ml.html
+  html/src/a_x.ml.html
 
 Documentation for `A_x` is not generated for hidden modules:
 
@@ -47,14 +48,14 @@ Code source for `A_x` is wanted:
 `A` should contain a link to `A_x.ml.html`:
 
   $ grep source_link html/A/index.html
-      <a href=".././a.ml.html" class="source_link">Source</a>
-       <a href=".././a_x.ml.html" class="source_link">Source</a>
+      <a href="../src/a.ml.html" class="source_link">Source</a>
+       <a href="../src/a_x.ml.html" class="source_link">Source</a>
 
 `A.X` and `A.X.Y` should contain a link to `A_x.ml.html`:
 
   $ grep source_link html/A/X/index.html
-      <a href="../.././a_x.ml.html" class="source_link">Source</a>
-       <a href="../.././a_x.ml.html#module-Y" class="source_link">Source</a>
+      <a href="../../src/a_x.ml.html" class="source_link">Source</a>
+       <a href="../../src/a_x.ml.html#module-Y" class="source_link">Source</a>
   $ grep source_link html/A/X/Y/index.html
-      <a href="../../.././a_x.ml.html#module-Y" class="source_link">Source</a>
-       <a href="../../.././a_x.ml.html#module-Y.val-z" class="source_link">
+      <a href="../../../src/a_x.ml.html#module-Y" class="source_link">Source
+       <a href="../../../src/a_x.ml.html#module-Y.val-z" class="source_link">

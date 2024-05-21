@@ -21,7 +21,7 @@ were being incorrectly shadowed themselves - ie, the `include sig type nonrec t 
 rewritten to be `include sig type nonrec {t}1/... = t .. end` which is incorrect.
 
   $ ocamlc -bin-annot -c a.mli
-  $ odoc compile a.cmti
+  $ odoc compile a.cmti --unique-id AAAA
   $ odoc link a.odoc
 
 The odocl file ought to show that, within Z, the expansion of module type Y contains a shadowed
@@ -39,7 +39,7 @@ type `t`, but in the subsequent include, the type `t` within the signature _isn'
     sig
       include Y
         (sig :
-          type {t}1/shadowed/(18478640d22e31c0ec8b5408dcc5a525) = int
+          type {t}1/shadowed/(AAAA) = int
           val y : int
           include sigtype t = t
                        val z : tend with [t = int] (sig : val z : int end)
@@ -71,7 +71,7 @@ For comparison, another test case that didn't have the bug:
   end
   
   $ ocamlc -bin-annot -c b.mli
-  $ odoc compile b.cmti
+  $ odoc compile b.cmti --unique-id BBBB
   $ odoc link b.odoc
   $ odoc_print b.odocl --short --show-include-expansions
   module type X = sig type t val z : t end
@@ -81,7 +81,7 @@ For comparison, another test case that didn't have the bug:
     sig
       include Y
         (sig :
-          type {t}1/shadowed/(e471718aa9a93b739316d43f43b29459) = int
+          type {t}1/shadowed/(BBBB) = int
           val y : int
           include X with [t = int] (sig : val z : int end)
          end)

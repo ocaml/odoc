@@ -3,11 +3,11 @@ Verify the behavior on functors.
   $ ocamlc -c -o s.cmo s.ml -bin-annot -I .
   $ ocamlc -c -o a.cmo a.ml -bin-annot -I .
   $ ocamlc -c -o b.cmo b.ml -bin-annot -I .
-  $ odoc compile-impl --source-id s.ml -I . s.cmt --output-dir .
+  $ odoc compile-impl --source-id src/s.ml -I . s.cmt --output-dir .
   $ odoc compile -I . s.cmt
-  $ odoc compile-impl --source-id a.ml -I . a.cmt --output-dir .
+  $ odoc compile-impl --source-id src/a.ml -I . a.cmt --output-dir .
   $ odoc compile -I . a.cmt
-  $ odoc compile-impl --source-id b.ml -I . b.cmt --output-dir .
+  $ odoc compile-impl --source-id src/b.ml -I . b.cmt --output-dir .
   $ odoc compile -I . b.cmt
   $ odoc link -I . s.odoc
   $ odoc link -I . a.odoc
@@ -40,23 +40,24 @@ Verify the behavior on functors.
   html/S/index.html
   html/S/module-type-S
   html/S/module-type-S/index.html
-  html/a.ml.html
-  html/b.ml.html
-  html/s.ml.html
+  html/src
+  html/src/a.ml.html
+  html/src/b.ml.html
+  html/src/s.ml.html
 
 In this test, the functor expansion contains the right link.
 
   $ cat html/A/F/index.html | grep source_link -C 1
      <h1>Module <code><span>A.F</span></code>
-      <a href="../.././a.ml.html#module-F" class="source_link">Source</a>
+      <a href="../../src/a.ml.html#module-F" class="source_link">Source</a>
      </h1>
   --
        <a href="#type-t" class="anchor"></a>
-       <a href="../.././a.ml.html#module-F.type-t" class="source_link">Source
+       <a href="../../src/a.ml.html#module-F.type-t" class="source_link">Source
        </a>
   --
        <a href="#val-y" class="anchor"></a>
-       <a href="../.././a.ml.html#module-F.val-y" class="source_link">Source
+       <a href="../../src/a.ml.html#module-F.val-y" class="source_link">Source
        </a>
 
   $ cat html/root/source/a.ml.html | grep L3
@@ -68,19 +69,19 @@ However, on functor results, there is a link to source in the file:
   $ cat html/B/R/index.html | grep source_link -C 2
     <header class="odoc-preamble">
      <h1>Module <code><span>B.R</span></code>
-      <a href="../.././b.ml.html#module-R" class="source_link">Source</a>
+      <a href="../../src/b.ml.html#module-R" class="source_link">Source</a>
      </h1>
     </header>
   --
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
-       <a href="../.././a.ml.html#module-F.type-t" class="source_link">Source
+       <a href="../../src/a.ml.html#module-F.type-t" class="source_link">Source
        </a>
        <code><span><span class="keyword">type</span> t</span>
   --
       <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
-       <a href="../.././a.ml.html#module-F.val-y" class="source_link">Source
+       <a href="../../src/a.ml.html#module-F.val-y" class="source_link">Source
        </a>
        <code>
 

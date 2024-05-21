@@ -94,7 +94,7 @@ Compile the modules:
 
 Compile the pages with the --source option:
 
-  $ odoc compile-impl -I . --source-id a.ml a.cmt
+  $ odoc compile-impl -I . --source-id src/a.ml a.cmt
   $ odoc compile -I . a.cmt
   $ odoc link -I . a.odoc
   $ odoc link -I . impl-a.odoc
@@ -107,143 +107,143 @@ Source links generated in the documentation:
   $ grep source_link html/A/index.html -B 2
     <header class="odoc-preamble">
      <h1>Module <code><span>A</span></code>
-      <a href=".././a.ml.html" class="source_link">Source</a>
+      <a href="../src/a.ml.html" class="source_link">Source</a>
   --
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>
-       <a href=".././a.ml.html#type-t" class="source_link">Source</a>
+       <a href="../src/a.ml.html#type-t" class="source_link">Source</a>
   --
       <div class="spec type anchored" id="type-truc">
        <a href="#type-truc" class="anchor"></a>
-       <a href=".././a.ml.html#type-truc" class="source_link">Source</a>
+       <a href="../src/a.ml.html#type-truc" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-xazaz">
        <a href="#val-xazaz" class="anchor"></a>
-       <a href=".././a.ml.html#val-xazaz" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-xazaz" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-Yoyo">
        <a href="#module-Yoyo" class="anchor"></a>
-       <a href=".././a.ml.html#module-Yoyo" class="source_link">Source</a>
+       <a href="../src/a.ml.html#module-Yoyo" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-segr">
        <a href="#val-segr" class="anchor"></a>
-       <a href=".././a.ml.html#val-segr" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-segr" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-y">
        <a href="#val-y" class="anchor"></a>
-       <a href=".././a.ml.html#val-y" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-y" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-z">
        <a href="#val-z" class="anchor"></a>
-       <a href=".././a.ml.html#val-z" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-z" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-z'">
        <a href="#val-z'" class="anchor"></a>
-       <a href=".././a.ml.html#val-z'" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-z'" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-A">
        <a href="#module-A" class="anchor"></a>
-       <a href=".././a.ml.html#module-A" class="source_link">Source</a>
+       <a href="../src/a.ml.html#module-A" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-B">
        <a href="#module-B" class="anchor"></a>
-       <a href=".././a.ml.html#module-A" class="source_link">Source</a>
+       <a href="../src/a.ml.html#module-A" class="source_link">Source</a>
   --
       <div class="spec module-type anchored" id="module-type-T">
        <a href="#module-type-T" class="anchor"></a>
-       <a href=".././a.ml.html#module-type-T" class="source_link">Source</a>
+       <a href="../src/a.ml.html#module-type-T" class="source_link">Source</a>
   --
       <div class="spec module-type anchored" id="module-type-U">
        <a href="#module-type-U" class="anchor"></a>
-       <a href=".././a.ml.html#module-type-U" class="source_link">Source</a>
+       <a href="../src/a.ml.html#module-type-U" class="source_link">Source</a>
   --
       <div class="spec type anchored" id="type-ext">
        <a href="#type-ext" class="anchor"></a>
-       <a href=".././a.ml.html#type-ext" class="source_link">Source</a>
+       <a href="../src/a.ml.html#type-ext" class="source_link">Source</a>
   --
       <div class="spec type extension anchored" id="extension-decl-Foo">
        <a href="#extension-decl-Foo" class="anchor"></a>
-       <a href=".././a.ml.html#extension-Foo" class="source_link">Source</a>
+       <a href="../src/a.ml.html#extension-Foo" class="source_link">Source</a>
   --
       <div class="spec exception anchored" id="exception-Exn">
        <a href="#exception-Exn" class="anchor"></a>
-       <a href=".././a.ml.html#exception-Exn" class="source_link">Source</a>
+       <a href="../src/a.ml.html#exception-Exn" class="source_link">Source</a>
   --
       <div class="spec class anchored" id="class-cls">
        <a href="#class-cls" class="anchor"></a>
-       <a href=".././a.ml.html#class-cls" class="source_link">Source</a>
+       <a href="../src/a.ml.html#class-cls" class="source_link">Source</a>
   --
       <div class="spec class anchored" id="class-cls'">
        <a href="#class-cls'" class="anchor"></a>
-       <a href=".././a.ml.html#class-cls'" class="source_link">Source</a>
+       <a href="../src/a.ml.html#class-cls'" class="source_link">Source</a>
   --
       <div class="spec class-type anchored" id="class-type-ct">
        <a href="#class-type-ct" class="anchor"></a>
-       <a href=".././a.ml.html#class-type-ct" class="source_link">Source</a>
+       <a href="../src/a.ml.html#class-type-ct" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-X">
        <a href="#module-X" class="anchor"></a>
-       <a href=".././a.ml.html#module-X" class="source_link">Source</a>
+       <a href="../src/a.ml.html#module-X" class="source_link">Source</a>
   --
       <div class="spec type anchored" id="type-a1">
        <a href="#type-a1" class="anchor"></a>
-       <a href=".././a.ml.html#type-a1" class="source_link">Source</a>
+       <a href="../src/a.ml.html#type-a1" class="source_link">Source</a>
   --
       <div class="spec type anchored" id="type-a2">
        <a href="#type-a2" class="anchor"></a>
-       <a href=".././a.ml.html#type-a2" class="source_link">Source</a>
+       <a href="../src/a.ml.html#type-a2" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-F">
        <a href="#module-F" class="anchor"></a>
-       <a href=".././a.ml.html#module-F" class="source_link">Source</a>
+       <a href="../src/a.ml.html#module-F" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-FM">
        <a href="#module-FM" class="anchor"></a>
-       <a href=".././a.ml.html#module-FM" class="source_link">Source</a>
+       <a href="../src/a.ml.html#module-FM" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-FF">
        <a href="#module-FF" class="anchor"></a>
-       <a href=".././a.ml.html#module-FF" class="source_link">Source</a>
+       <a href="../src/a.ml.html#module-FF" class="source_link">Source</a>
   --
       <div class="spec module anchored" id="module-FF2">
        <a href="#module-FF2" class="anchor"></a>
-       <a href=".././a.ml.html#module-FF2" class="source_link">Source</a>
+       <a href="../src/a.ml.html#module-FF2" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-(*.+%)">
        <a href="#val-(*.+%)" class="anchor"></a>
-       <a href=".././a.ml.html#val-(*.+%)" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-(*.+%)" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-a">
        <a href="#val-a" class="anchor"></a>
-       <a href=".././a.ml.html#val-a" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-a" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-c">
        <a href="#val-c" class="anchor"></a>
-       <a href=".././a.ml.html#val-c" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-c" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-b">
        <a href="#val-b" class="anchor"></a>
-       <a href=".././a.ml.html#val-b" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-b" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
-       <a href=".././a.ml.html#val-x" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-x" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-list">
        <a href="#val-list" class="anchor"></a>
-       <a href=".././a.ml.html#val-list" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-list" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-string">
        <a href="#val-string" class="anchor"></a>
-       <a href=".././a.ml.html#val-string" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-string" class="source_link">Source</a>
   --
       <div class="spec value anchored" id="val-string2">
        <a href="#val-string2" class="anchor"></a>
-       <a href=".././a.ml.html#val-string2" class="source_link">Source</a>
+       <a href="../src/a.ml.html#val-string2" class="source_link">Source</a>
 
 Ids generated in the source code:
 
-  $ cat html/a.ml.html | tr '> ' '\n\n' | grep '^id'
+  $ cat html/src/a.ml.html | tr '> ' '\n\n' | grep '^id'
   id="L1"
   id="L2"
   id="L3"
@@ -339,7 +339,7 @@ Ids generated in the source code:
   id="module-Yoyo.type-bli.constructor-Aa"
   id="module-Yoyo.type-bli.constructor-Bb"
   id="val-segr"
-  id="val-{x}1/shadowed/(b7d2c9c9f02dbd7345d905f9b523044f)"
+  id="val-{x}1/shadowed/(src-a.ml)"
   id="val-y"
   id="val-z"
   id="local_a_1"
@@ -356,7 +356,7 @@ Ids generated in the source code:
   id="class-cls"
   id="class-cls'"
   id="class-type-ct"
-  id="val-{x}2/shadowed/(b7d2c9c9f02dbd7345d905f9b523044f)"
+  id="val-{x}2/shadowed/(src-a.ml)"
   id="module-X"
   id="module-X.type-t"
   id="module-X.type-t"
@@ -371,13 +371,13 @@ Ids generated in the source code:
   id="module-FF2"
   id="module-FF2.argument-1-A.module-E"
   id="module-FF2.argument-2-A.module-F"
-  id="val-{x}3/shadowed/(b7d2c9c9f02dbd7345d905f9b523044f)"
+  id="val-{x}3/shadowed/(src-a.ml)"
   id="local_x_4"
   id="val-(*.+%)"
   id="val-a"
-  id="val-{b}4/shadowed/(b7d2c9c9f02dbd7345d905f9b523044f)"
+  id="val-{b}4/shadowed/(src-a.ml)"
   id="val-c"
-  id="val-{x}5/shadowed/(b7d2c9c9f02dbd7345d905f9b523044f)"
+  id="val-{x}5/shadowed/(src-a.ml)"
   id="val-b"
   id="val-x"
   id="val-list"

@@ -4,8 +4,8 @@ simply finishing!
   $ ocamlc -c import.mli -bin-annot
   $ ocamlc -c a.mli -bin-annot
 
-  $ odoc compile import.cmti -I .
-  $ odoc compile a.cmti -I .
+  $ odoc compile import.cmti -I . --unique-id IIII
+  $ odoc compile a.cmti -I . --unique-id AAAA
 
   $ odoc link import.odoc -I .
   $ odoc link a.odoc -I .
@@ -16,15 +16,10 @@ simply finishing!
     (sig :
       include Import.S0
         (sig :
-          module {Thing}1/shadowed/(3a2d2fba08409314e6d44caea0e32a6c) : 
-            sig module Config : sig  end end
+          module {Thing}1/shadowed/(IIII) : sig module Config : sig  end end
          end)
-      module {Thing}1/shadowed/(6dc74508933c72a27f1a6b60f24a7e4f) : 
-        sig
-          module Config =
-            {Thing}1/shadowed/(3a2d2fba08409314e6d44caea0e32a6c).Config
-            (sig :  end)
-        end
+      module {Thing}1/shadowed/(AAAA) : 
+        sig module Config = {Thing}1/shadowed/(IIII).Config (sig :  end) end
      end)
   module Thing : sig  end
 
