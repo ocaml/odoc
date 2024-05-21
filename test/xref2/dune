@@ -39,6 +39,8 @@
   shadow
   shadow2
   shadow4
+  shadow5
+  js_stack_overflow
   expansion
   github_issue_1066)
  (enabled_if
