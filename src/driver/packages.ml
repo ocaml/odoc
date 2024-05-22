@@ -146,7 +146,7 @@ module Module = struct
       { m_name; m_intf; m_impl; m_hidden }
     in
 
-    List.map mk modules
+    Eio.Fiber.List.map mk modules
 end
 
 module Lib = struct
@@ -186,6 +186,7 @@ let pp ppf t =
     t.libraries
 
 let of_libs env libs =
+  let libs = Util.StringSet.to_seq libs |> List.of_seq in
   match Ocamlfind.deps libs with
   | Error (`Msg e) ->
       Logs.err (fun m ->

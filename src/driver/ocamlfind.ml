@@ -53,7 +53,6 @@ let sub_libraries top =
       let package = String.split_on_char '.' lib |> List.hd in
       if package = top then StringSet.add lib acc else acc)
     StringSet.empty packages
-  |> StringSet.elements
 
 let dir_to_package_map () =
   let package_to_dir = package_to_dir_map () in
