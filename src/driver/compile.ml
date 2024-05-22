@@ -24,10 +24,9 @@ let mk_byhash (pkgs : Packages.t Util.StringMap.t) =
 
 open Eio.Std
 
-let compile env all =
+let compile env output_dir all =
   let hashes = mk_byhash all in
   let tbl = Hashtbl.create 10 in
-  let output_dir = Fpath.v "_odoc" in
 
   let compile_one compile_other hash =
     match Util.StringMap.find_opt hash hashes with
@@ -153,9 +152,10 @@ let link : _ -> compiled list -> _ =
   in
   Fiber.List.map link compiled |> List.concat
 
-let html_generate : _ -> linked list -> _ =
- fun env linked ->
+let html_generate : _ -> Fpath.t -> linked list -> _ =
+ fun env output_dir linked ->
   let html_generate : linked -> unit =
-   fun l -> Odoc.html_generate env l.output_file l.src
+   fun l ->
+    Odoc.html_generate env (Fpath.to_string output_dir) l.output_file l.src
   in
   Fiber.List.iter html_generate linked

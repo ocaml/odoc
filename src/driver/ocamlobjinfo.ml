@@ -11,7 +11,13 @@ let source_possibilities file =
       [ Astring.String.take ~max:pos file ]
     else []
   in
-  default @ generated
+  let pp =
+    if Astring.String.is_suffix ~affix:".pp.ml" file then
+      let pos = String.length file - 5 in
+      [ Astring.String.take ~max:pos file ^ "ml" ]
+    else []
+  in
+  default @ generated @ pp
 
 let get_source env file =
   let cmd = Cmd.(ocamlobjinfo % p file) in

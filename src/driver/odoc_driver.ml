@@ -438,35 +438,73 @@ let odoc_libraries =
    Bos.OS.Cmd.run Bos.Cmd.(v "cp" % search_file % "html/") |> get_ok;
    Bos.OS.Cmd.run Bos.Cmd.(v "cp" % "minisearch.js" % "html/") |> get_ok *)
 
-let _ =
+open Cmdliner
+
+let run libs verbose odoc_dir html_dir =
   Eio_main.run @@ fun env ->
-  Logs.set_level (Some Logs.Debug);
+  if verbose then Logs.set_level (Some Logs.Debug);
   Logs.set_reporter (Logs_fmt.reporter ());
-  let libs = Ocamlfind.sub_libraries "core" in
+  let libs =
+    List.map Ocamlfind.sub_libraries libs
+    |> List.fold_left Util.StringSet.union Util.StringSet.empty
+  in
   let all = Packages.of_libs env libs in
-  let compiled = Compile.compile env all in
+  let compiled = Compile.compile env odoc_dir all in
   let linked = Compile.link env compiled in
-  let _ = Compile.html_generate env linked in
+  let _ = Compile.html_generate env html_dir linked in
+  let _ = Odoc.support_files env html_dir in
 
   let indexes = Util.StringMap.map (fun _i pkg -> Indexes.package pkg) all in
-  ignore indexes;
-  (* let map = Ocamlfind.package_to_dir_map () in
-     let _dirs = List.map (fun lib -> List.assoc lib map) deps in
+  ignore indexes
+
+let fpath_arg =
+  let parse s =
+    match Fpath.of_string s with
+    | Ok v -> Ok v
+    | Error (`Msg m) -> Error (`Msg m)
+  in
+  let print ppf v = Fpath.pp ppf v in
+  Arg.conv (parse, print)
+
+let odoc_dir =
+  let doc = "Directory in which the intermediate odoc files go" in
+  Arg.(value & opt fpath_arg (Fpath.v "_odoc/") & info [ "odoc-dir" ] ~doc)
+
+let html_dir =
+  let doc = "Directory in which the generated HTML files go" in
+  Arg.(value & opt fpath_arg (Fpath.v "_html/") & info [ "html-dir" ] ~doc)
+
+let packages =
+  let doc = "The packages to document" in
+  Arg.(value & opt_all string [] & info [ "p" ] ~doc)
+
+let verbose =
+  let doc = "Enable verbose output" in
+  Arg.(value & flag & info [ "v"; "verbose" ] ~doc)
+
+let cmd =
+  let doc = "Generate odoc documentation" in
+  let info = Cmd.info "odoc_driver" ~doc in
+  Cmd.v info Term.(const run $ packages $ verbose $ odoc_dir $ html_dir)
+
+(* let map = Ocamlfind.package_to_dir_map () in
+   let _dirs = List.map (fun lib -> List.assoc lib map) deps in
 
 
-     let (_, lib_to_pkg_map) = Opam.pkg_to_dir_map () in
-     Opam.StringMap.iter (fun k v ->
-       if k <> v.Opam.name then
-         Format.printf "%s -> %a\n" k Opam.pp v) lib_to_pkg_map;
-     List.iter (fun dep -> Format.printf "%s\n%!" dep) deps;
-     ignore (exit 0); *)
-  (* let all_units = all_units () in
-     let compiled = compile_all all_units in
-     let linked = link_all compiled in
-     let () = index_generate () in
-     (* let _ = js_index () in *)
-     ignore js_index;
-     let _ = Odoc.count_occurrences (Fpath.v "occurrences-from-odoc.odoc") in
-     ignore (generate_all linked);
-     let _ = Stats.bench_results () in *)
-  ()
+   let (_, lib_to_pkg_map) = Opam.pkg_to_dir_map () in
+   Opam.StringMap.iter (fun k v ->
+     if k <> v.Opam.name then
+       Format.printf "%s -> %a\n" k Opam.pp v) lib_to_pkg_map;
+   List.iter (fun dep -> Format.printf "%s\n%!" dep) deps;
+   ignore (exit 0); *)
+(* let all_units = all_units () in
+   let compiled = compile_all all_units in
+   let linked = link_all compiled in
+   let () = index_generate () in
+   (* let _ = js_index () in *)
+   ignore js_index;
+   let _ = Odoc.count_occurrences (Fpath.v "occurrences-from-odoc.odoc") in
+   ignore (generate_all linked);
+   let _ = Stats.bench_results () in *)
+
+let _ = exit (Cmd.eval cmd)

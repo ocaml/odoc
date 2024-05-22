@@ -80,7 +80,7 @@ let link env ?(ignore_output = false) file includes =
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
 
-let html_generate env ?(ignore_output = false) ?(assets = [])
+let html_generate env output_dir ?(ignore_output = false) ?(assets = [])
     ?(search_uris = []) file source =
   let open Cmd in
   let source =
@@ -96,15 +96,15 @@ let html_generate env ?(ignore_output = false) ?(assets = [])
   in
   let cmd =
     odoc % "html-generate" %% source % p file %% assets %% search_uris % "-o"
-    % "html" % "--theme-uri" % "odoc" % "--support-uri" % "odoc"
+    % output_dir
   in
   let lines = Run.run env cmd in
   if not ignore_output then
     add_prefixed_output cmd generate_output (Fpath.to_string file) lines
 
-let support_files env =
+let support_files env path =
   let open Cmd in
-  let cmd = odoc % "support-files" % "-o" % "html/odoc" in
+  let cmd = odoc % "support-files" % "-o" % Fpath.to_string path in
   Run.run env cmd
 let count_occurrences env output =
   let open Cmd in
