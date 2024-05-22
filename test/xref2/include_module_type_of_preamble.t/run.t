@@ -46,8 +46,8 @@ coming from the inline include.
   </html>
 
 Bar includes Foo and should also contain "Preamble for O" twice.
+Bar doesn't contain "Preamble for Foo" on purpose.
 TODO: It contains "Preamble for O" 3 times.
-TODO: It doesn't contain "Preamble for Foo".
 
   $ cat html/test/Bar/index.html
   <!DOCTYPE html>
