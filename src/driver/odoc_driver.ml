@@ -440,16 +440,20 @@ let odoc_libraries =
 
 open Cmdliner
 
-let render_stats env =
+let render_stats env nprocs =
   let open Progress in
   let clock = Eio.Stdenv.clock env in
   let total = Atomic.get Stats.stats.total_units in
   let total_impls = Atomic.get Stats.stats.total_units in
+  let total_mlds = Atomic.get Stats.stats.total_mlds in
   let bar message total =
     let open Progress.Line in
     list [ lpad 16 (const message); spinner (); bar total; count_to total ]
   in
-
+  let procs total =
+    let open Progress.Line in
+    list [ lpad 16 (const "Processes"); bar total; count_to total ]
+  in
   let non_hidden = Atomic.get Stats.stats.non_hidden_units in
 
   let dline x y = Multi.line (bar x y) in
@@ -458,26 +462,35 @@ let render_stats env =
       Multi.(
         dline "Compiling" total
         ++ dline "Compiling impls" total_impls
+        ++ dline "Compiling pages" total_mlds
         ++ dline "Linking" non_hidden
         ++ dline "Linking impls" total_impls
-        ++ line (bar "HTML" (total_impls + non_hidden)))
-      (fun comp compimpl link linkimpl html ->
-        let rec inner (a, b, c, d, e) =
+        ++ dline "Linking mlds" total_mlds
+        ++ dline "HTML" (total_impls + non_hidden + total_mlds)
+        ++ line (procs nprocs))
+      (fun comp compimpl compmld link linkimpl linkmld html procs ->
+        let rec inner (a, b, c, d, e, f, g, h) =
           Eio.Time.sleep clock 0.1;
           let a' = Atomic.get Stats.stats.compiled_units in
           let b' = Atomic.get Stats.stats.compiled_impls in
-          let c' = Atomic.get Stats.stats.linked_units in
-          let d' = Atomic.get Stats.stats.linked_impls in
-          let e' = Atomic.get Stats.stats.generated_units in
+          let c' = Atomic.get Stats.stats.compiled_mlds in
+          let d' = Atomic.get Stats.stats.linked_units in
+          let e' = Atomic.get Stats.stats.linked_impls in
+          let f' = Atomic.get Stats.stats.linked_mlds in
+          let g' = Atomic.get Stats.stats.generated_units in
+          let h' = Atomic.get Stats.stats.processes in
 
           comp (a' - a);
           compimpl (b' - b);
-          link (c' - c);
-          linkimpl (d' - d);
-          html (e' - e);
-          if e' < non_hidden + total_impls then inner (a', b', c', d', e')
+          compmld (c' - c);
+          link (d' - d);
+          linkimpl (e' - e);
+          linkmld (f' - f);
+          html (g' - g);
+          procs (h' - h);
+          if g' < non_hidden + total_impls + total_mlds then inner (a', b', c', d', e', f', g', h')
         in
-        inner (0, 0, 0, 0, 0))
+        inner (0, 0, 0, 0, 0, 0, 0, 0))
   with _ -> ()
 
 let run libs verbose odoc_dir html_dir stats =
@@ -502,7 +515,7 @@ let run libs verbose odoc_dir html_dir stats =
         let _ = Compile.html_generate html_dir linked in
         let _ = Odoc.support_files html_dir in
         ())
-      (fun () -> render_stats env)
+      (fun () -> render_stats env 15)
   in
 
   Format.eprintf "Final stats: %a@.%!" Stats.pp_stats Stats.stats;

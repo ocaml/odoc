@@ -2,7 +2,7 @@ open Bos
 
 type compile_deps = { digest : Digest.t; deps : (string * Digest.t) list }
 
-let odoc = Cmd.v "odoc"
+let odoc = Cmd.v "./_build/default/src/odoc/bin/main.exe"
 (* This is the just-built odoc binary *)
 
 let submit desc cmd output_file =

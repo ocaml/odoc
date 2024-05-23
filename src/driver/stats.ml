@@ -5,43 +5,57 @@
 type stats = {
   mutable total_units : int Atomic.t;
   mutable total_impls : int Atomic.t;
+  mutable total_mlds : int Atomic.t;
   mutable non_hidden_units : int Atomic.t;
   mutable compiled_units : int Atomic.t;
   mutable compiled_impls : int Atomic.t;
+  mutable compiled_mlds : int Atomic.t;
   mutable linked_units : int Atomic.t;
   mutable linked_impls : int Atomic.t;
+  mutable linked_mlds : int Atomic.t;
   mutable generated_units : int Atomic.t;
+  mutable processes : int Atomic.t;
 }
 
 let stats =
   {
     total_units = Atomic.make 0;
     total_impls = Atomic.make 0;
+    total_mlds = Atomic.make 0;
     non_hidden_units = Atomic.make 0;
     compiled_units = Atomic.make 0;
     compiled_impls = Atomic.make 0;
+    compiled_mlds = Atomic.make 0;
     linked_units = Atomic.make 0;
     linked_impls = Atomic.make 0;
+    linked_mlds = Atomic.make 0;
     generated_units = Atomic.make 0;
+    processes = Atomic.make 0;
   }
 
 let pp_stats fmt stats =
   Fmt.pf fmt
     "Total units: %d\n\
      Total impls: %d\n\
+     Total mlds: %d\n\
      Non-hidden units: %d\n\
      Compiled units: %d\n\
      Compiled impls: %d\n\
+     Compiled mlds: %d\n\
      Linked units: %d\n\
      Linked impls: %d\n\
+     Linked mlds: %d\n\
      Generated units: %d\n"
     (Atomic.get stats.total_units)
     (Atomic.get stats.total_impls)
+    (Atomic.get stats.total_mlds)
     (Atomic.get stats.non_hidden_units)
     (Atomic.get stats.compiled_units)
     (Atomic.get stats.compiled_impls)
+    (Atomic.get stats.compiled_mlds)
     (Atomic.get stats.linked_units)
     (Atomic.get stats.linked_impls)
+    (Atomic.get stats.linked_mlds)
     (Atomic.get stats.generated_units)
 
 let k_longest_commands cmd k =

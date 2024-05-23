@@ -8,7 +8,11 @@ let handle_job env request output_file = Run.run env request output_file
 
 let rec run_worker env id : unit =
   let (_, request, output_file), reply = Eio.Stream.take stream in
-  (try Promise.resolve reply (Ok (handle_job env request output_file))
+  Atomic.incr Stats.stats.processes;
+  (try
+    let result = handle_job env request output_file in
+    Atomic.decr Stats.stats.processes;
+    Promise.resolve reply (Ok result)
    with e -> Promise.resolve_error reply e);
   run_worker env id
 
