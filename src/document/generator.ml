@@ -1893,12 +1893,13 @@ module Make (Syntax : SYNTAX) = struct
 
     let implementation (v : Odoc_model.Lang.Implementation.t) syntax_info
         source_code =
-      Option.map
-        (fun id ->
-          Document.Source_page
-            (Source_page.source id syntax_info v.source_info source_code))
-        v.id
-      |> Option.to_list
+      match v.id with
+      | None -> []
+      | Some id ->
+          [
+            Document.Source_page
+              (Source_page.source id syntax_info v.source_info source_code);
+          ]
   end
 
   include Page
