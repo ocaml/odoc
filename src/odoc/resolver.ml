@@ -221,7 +221,7 @@ let add_unit_to_cache u =
   let target_name =
     (match u with
     | Odoc_file.Page_content _ -> "page-"
-    | Impl_content _ -> "src-"
+    | Impl_content _ -> "impl-"
     | Unit_content _ -> ""
     | Source_tree_content _ -> "page-")
     ^ unit_name u
