@@ -440,21 +440,75 @@ let odoc_libraries =
 
 open Cmdliner
 
-let run libs verbose odoc_dir html_dir =
+let render_stats env =
+  let open Progress in
+  let clock = Eio.Stdenv.clock env in
+  let total = Atomic.get Stats.stats.total_units in
+  let total_impls = Atomic.get Stats.stats.total_units in
+  let bar message total =
+    let open Progress.Line in
+    list [ lpad 16 (const message); spinner (); bar total; count_to total ]
+  in
+
+  let non_hidden = Atomic.get Stats.stats.non_hidden_units in
+
+  let dline x y = Multi.line (bar x y) in
+  try
+    with_reporters
+      Multi.(
+        dline "Compiling" total
+        ++ dline "Compiling impls" total_impls
+        ++ dline "Linking" non_hidden
+        ++ dline "Linking impls" total_impls
+        ++ line (bar "HTML" (total_impls + non_hidden)))
+      (fun comp compimpl link linkimpl html ->
+        let rec inner (a, b, c, d, e) =
+          Eio.Time.sleep clock 0.1;
+          let a' = Atomic.get Stats.stats.compiled_units in
+          let b' = Atomic.get Stats.stats.compiled_impls in
+          let c' = Atomic.get Stats.stats.linked_units in
+          let d' = Atomic.get Stats.stats.linked_impls in
+          let e' = Atomic.get Stats.stats.generated_units in
+
+          comp (a' - a);
+          compimpl (b' - b);
+          link (c' - c);
+          linkimpl (d' - d);
+          html (e' - e);
+          if e' < non_hidden + total_impls then inner (a', b', c', d', e')
+        in
+        inner (0, 0, 0, 0, 0))
+  with _ -> ()
+
+let run libs verbose odoc_dir html_dir stats =
   Eio_main.run @@ fun env ->
+  Eio.Switch.run @@ fun sw ->
   if verbose then Logs.set_level (Some Logs.Debug);
   Logs.set_reporter (Logs_fmt.reporter ());
+  let _stream = Worker_pool.start_workers env sw 15 in
+
+  (* Eio.Fiber.List.iter (fun _ -> ignore(Worker_pool.submit (Bos.Cmd.(v "sleep" % "10")))) (List.init 10 (fun x -> x)); *)
   let libs =
     List.map Ocamlfind.sub_libraries libs
     |> List.fold_left Util.StringSet.union Util.StringSet.empty
   in
   let all = Packages.of_libs env libs in
-  let compiled = Compile.compile env odoc_dir all in
-  let linked = Compile.link env compiled in
-  let _ = Compile.html_generate env html_dir linked in
-  let _ = Odoc.support_files env html_dir in
+  Compile.init_stats all;
+  let _ =
+    Eio.Fiber.both
+      (fun () ->
+        let compiled = Compile.compile odoc_dir all in
+        let linked = Compile.link compiled in
+        let _ = Compile.html_generate html_dir linked in
+        let _ = Odoc.support_files html_dir in
+        ())
+      (fun () -> render_stats env)
+  in
 
+  Format.eprintf "Final stats: %a@.%!" Stats.pp_stats Stats.stats;
+  if stats then Stats.bench_results html_dir;
   let indexes = Util.StringMap.map (fun _i pkg -> Indexes.package pkg) all in
+
   ignore indexes
 
 let fpath_arg =
@@ -482,10 +536,14 @@ let verbose =
   let doc = "Enable verbose output" in
   Arg.(value & flag & info [ "v"; "verbose" ] ~doc)
 
+let stats =
+  let doc = "Produce 'driver-benchmarks.json' with run stats" in
+  Arg.(value & flag & info [ "stats" ] ~doc)
+
 let cmd =
   let doc = "Generate odoc documentation" in
   let info = Cmd.info "odoc_driver" ~doc in
-  Cmd.v info Term.(const run $ packages $ verbose $ odoc_dir $ html_dir)
+  Cmd.v info Term.(const run $ packages $ verbose $ odoc_dir $ html_dir $ stats)
 
 (* let map = Ocamlfind.package_to_dir_map () in
    let _dirs = List.map (fun lib -> List.assoc lib map) deps in

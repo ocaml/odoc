@@ -2,6 +2,48 @@
 
 (** Returns the [k] commands that took the most time for a given subcommand. *)
 
+type stats = {
+  mutable total_units : int Atomic.t;
+  mutable total_impls : int Atomic.t;
+  mutable non_hidden_units : int Atomic.t;
+  mutable compiled_units : int Atomic.t;
+  mutable compiled_impls : int Atomic.t;
+  mutable linked_units : int Atomic.t;
+  mutable linked_impls : int Atomic.t;
+  mutable generated_units : int Atomic.t;
+}
+
+let stats =
+  {
+    total_units = Atomic.make 0;
+    total_impls = Atomic.make 0;
+    non_hidden_units = Atomic.make 0;
+    compiled_units = Atomic.make 0;
+    compiled_impls = Atomic.make 0;
+    linked_units = Atomic.make 0;
+    linked_impls = Atomic.make 0;
+    generated_units = Atomic.make 0;
+  }
+
+let pp_stats fmt stats =
+  Fmt.pf fmt
+    "Total units: %d\n\
+     Total impls: %d\n\
+     Non-hidden units: %d\n\
+     Compiled units: %d\n\
+     Compiled impls: %d\n\
+     Linked units: %d\n\
+     Linked impls: %d\n\
+     Generated units: %d\n"
+    (Atomic.get stats.total_units)
+    (Atomic.get stats.total_impls)
+    (Atomic.get stats.non_hidden_units)
+    (Atomic.get stats.compiled_units)
+    (Atomic.get stats.compiled_impls)
+    (Atomic.get stats.linked_units)
+    (Atomic.get stats.linked_impls)
+    (Atomic.get stats.generated_units)
+
 let k_longest_commands cmd k =
   let open Run in
   filter_commands cmd
@@ -94,8 +136,7 @@ let compute_produced_tree cmd dir =
     | Ok st -> float st.Unix.st_size :: acc
     | Error _ -> acc
   in
-  Bos.OS.Dir.fold_contents ~dotfiles:true ~elements:`Files acc_file_sizes []
-    (Fpath.v dir)
+  Bos.OS.Dir.fold_contents ~dotfiles:true ~elements:`Files acc_file_sizes [] dir
   |> Result.get_ok
   |> compute_metric_int "produced" cmd ("files produced by 'odoc " ^ cmd ^ "'")
 
@@ -121,7 +162,7 @@ let compute_longest_cmd cmd =
       ];
   ]
 
-let all_metrics () =
+let all_metrics html_dir =
   compute_metric_cmd "compile"
   @ compute_metric_cmd "compile-deps"
   @ compute_metric_cmd "link"
@@ -130,9 +171,9 @@ let all_metrics () =
   @ compute_longest_cmd "link"
   @ compute_produced_cmd "compile"
   @ compute_produced_cmd "link"
-  @ compute_produced_tree "html-generate" "html/"
+  @ compute_produced_tree "html-generate" html_dir
 
-let bench_results () =
+let bench_results html_dir =
   let result =
     `Assoc
       [
@@ -143,7 +184,7 @@ let bench_results () =
               `Assoc
                 [
                   ("name", `String "driver.mld");
-                  ("metrics", `List (all_metrics ()));
+                  ("metrics", `List (all_metrics html_dir));
                 ];
             ] );
       ]
