@@ -40,6 +40,8 @@
 - Fixed title content not being picked up across pages when rendering references
   (#1116, @panglesd)
 - Fix wrong links to standalone comments in search results (#1118, @panglesd)
+- Remove duplicated or unwanted comments (@Julow, #1133)
+  This could happen with inline includes.
 
 
 # 2.4.0
