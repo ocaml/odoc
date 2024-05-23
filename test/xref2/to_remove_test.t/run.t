@@ -6,6 +6,8 @@
 
   $ odoc compile a/file.mld
 
+  $ odoc link a/page-file.odoc 2>&1 >/dev/null | grep 'Failure'
+        Failure("Not found by name")
   $ odoc link -P pkg:a/ a/page-file.odoc
 
 Testing the collision detection:
