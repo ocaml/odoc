@@ -85,7 +85,8 @@ let resolve_parent_page resolver f =
   in
   let extract_parent = function
     | { Paths.Identifier.iv = `Page _; _ } as container -> Ok container
-    | { Paths.Identifier.iv = `LeafPage _; _ } -> Error (`Msg "leaf page")
+    | { Paths.Identifier.iv = `LeafPage _; _ } ->
+        Error (`Msg "Specified parent is not a parent of this file")
   in
   parse_parent_child_reference f >>= fun r ->
   find_parent r >>= fun page ->
