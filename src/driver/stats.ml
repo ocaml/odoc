@@ -190,3 +190,8 @@ let bench_results html_dir =
       ]
   in
   Yojson.to_file "driver-benchmarks.json" result
+
+let total_time () =
+  let open Run in
+  let cmds = !commands in
+  List.fold_left (fun acc c -> acc +. c.time) 0.0 cmds

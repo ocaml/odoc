@@ -41,6 +41,8 @@ depends: [
   "opam-format"
   "logs"
   "eio_main"
+  "progress"
+  "cmdliner"
 ]
 
 build: [

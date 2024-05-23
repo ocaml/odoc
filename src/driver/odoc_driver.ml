@@ -506,6 +506,7 @@ let run libs verbose odoc_dir html_dir stats =
   in
 
   Format.eprintf "Final stats: %a@.%!" Stats.pp_stats Stats.stats;
+  Format.eprintf "Total time: %f@.%!" (Stats.total_time ());
   if stats then Stats.bench_results html_dir;
   let indexes = Util.StringMap.map (fun _i pkg -> Indexes.package pkg) all in
 
