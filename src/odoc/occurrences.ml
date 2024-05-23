@@ -12,7 +12,7 @@ let string_starts_with ~prefix s =
   len_s >= len_pre && aux 0
 
 let handle_file file ~f =
-  if string_starts_with ~prefix:"src-" (Fpath.filename file) then
+  if string_starts_with ~prefix:"impl-" (Fpath.filename file) then
     Odoc_file.load file |> function
     | Error _ as e -> e
     | Ok unit' -> (

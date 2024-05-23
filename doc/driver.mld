@@ -246,7 +246,7 @@ let compile_src file ?(output_dir = Fpath.v "./") ?(ignore_output = false)
     let ext = Fpath.get_ext file in
     let basename = Fpath.basename (Fpath.rem_ext file) in
     match ext with
-    | ".cmt" -> "src-" ^ basename ^ ".odoc"
+    | ".cmt" -> "impl-" ^ basename ^ ".odoc"
     | _ -> failwith ("bad extension: " ^ ext)
   in
   let output_file = Fpath.( / ) output_dir output_basename in
@@ -726,7 +726,7 @@ Linking is now straightforward. We link all [odoc] files.
 {[
 let src_file file =
   let fdir, fname = Fpath.split_base file in
-  let fname = Fpath.v ("src-" ^ Fpath.to_string fname) in
+  let fname = Fpath.v ("impl-" ^ Fpath.to_string fname) in
   Fpath.( // ) fdir fname
 
 let link_all odoc_files =
@@ -786,7 +786,7 @@ let index_generate ?(ignore_output = false) () =
     |> get_ok
     |> List.filter (Fpath.has_ext "odocl")
     |> List.filter (fun p ->
-           String.starts_with ~prefix:"src-" (Fpath.filename p))
+           String.starts_with ~prefix:"impl-" (Fpath.filename p))
     |> List.map Fpath.to_string
   in
   let index_map = Fpath.v "index.map" in
