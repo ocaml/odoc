@@ -1,3 +1,4 @@
 {0 File}
 
 {!page-"#my_page"}
+{!page-"#/pkg/b/c/my_page"}

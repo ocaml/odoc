@@ -41,7 +41,7 @@ module Named_roots : sig
   val create : (string * Fs.Directory.t) list -> current_pkg:string -> t
 
   val find_by_path :
-    ?package:string -> t -> path:string list -> (Fs.File.t option, error) result
+    ?package:string -> t -> path:Fs.File.t -> (Fs.File.t option, error) result
 
   val find_by_name :
     ?package:string -> t -> name:string -> (Fs.File.t list, error) result
@@ -50,7 +50,7 @@ end = struct
     | Unvisited of Fs.Directory.t
     | Visited of (string, Fs.File.t) Hashtbl.t
 
-  type hierarchical = (string list, Fs.File.t) Hashtbl.t
+  type hierarchical = (Fs.File.t, Fs.File.t) Hashtbl.t * Fs.Directory.t
 
   type pkg = { flat : flat; hierarchical : hierarchical }
 
@@ -67,15 +67,25 @@ end = struct
     let cache = Hashtbl.create 42 in
     List.iter
       (fun (pkgname, root) ->
-        let flat = Unvisited root and hierarchical = Hashtbl.create 42 in
+        let flat = Unvisited root
+        and hierarchical = (Hashtbl.create 42, root) in
         Hashtbl.add cache pkgname { flat; hierarchical })
       pkglist;
     { current_pkg; table = cache }
 
   let find_by_path ?package { table = cache; current_pkg } ~path =
+    let path = Fpath.normalize path in
     let package = match package with None -> current_pkg | Some pkg -> pkg in
     match hashtbl_find_opt cache package with
-    | Some { hierarchical; _ } -> Ok (hashtbl_find_opt hierarchical path)
+    | Some { hierarchical = cache, root; _ } -> (
+        match hashtbl_find_opt cache path with
+        | Some x -> Ok (Some x)
+        | None ->
+            let full_path = Fpath.( // ) (Fs.Directory.to_fpath root) path in
+            if Fs.File.exists full_path then (
+              Hashtbl.add cache path full_path;
+              Ok (Some full_path))
+            else Ok None)
     | None -> Error NoPackage
 
   let populate_flat_namespace ~root =
@@ -272,6 +282,9 @@ let lookup_unit ~important_digests ~imports_map ~libs ap target_name =
     TODO: Warning on ambiguous lookup. *)
 let lookup_page ~pages ap target_name =
   match (target_name.[0], pages) with
+  (* WARNING: This is just a hack to be able to test resolving of references by
+     package until a proper reference syntax is implemented: if a page reference
+     starts with a [#], the reference is resolved in "test mode". *)
   | '#', Some pages -> (
       let reference =
         String.sub target_name 1 (String.length target_name - 1)
@@ -296,12 +309,37 @@ let lookup_page ~pages ap target_name =
                     ^ string_of_int (List.length units)))
           | Error _ -> failwith "Not found by name")
       | [] -> assert false
-      | "" :: package :: path ->
-          let _res = Named_roots.find_by_path ~package ~path pages in
-          failwith "TODO"
-      | _ -> failwith "TODO")
+      | "" :: package :: path -> (
+          let path = Fs.File.of_string @@ String.concat "/" path in
+          let filename = "page-" ^ Fpath.filename path ^ ".odoc" in
+          let path = Fpath.( / ) (Fpath.parent path) filename in
+          match Named_roots.find_by_path ~package ~path pages with
+          | Ok None ->
+              failwith
+              @@ Format.asprintf
+                   "Error during find by path: no file was found with this \
+                    path: %a"
+                   Fpath.pp path
+          | Ok (Some page) -> (
+              let units = load_units_from_files [ page ] in
+              let is_page u =
+                match u with
+                | Odoc_file.Page_content p -> Some p
+                | Impl_content _ | Unit_content _ | Source_tree_content _ ->
+                    None
+              in
+              match find_map is_page units with
+              | Some (p, _) -> Some p
+              | None ->
+                  failwith
+                    ("Page not found by name: "
+                    ^ string_of_int (List.length units)))
+          | Error NoPackage ->
+              failwith
+                "Error during find by path: no package was found with this name"
+          )
+      | _ -> failwith "Relative references (a/b, ../a/b) are not yet tested")
   | _ -> (
-      ignore pages;
       let target_name = "page-" ^ target_name in
       let is_page u =
         match u with
