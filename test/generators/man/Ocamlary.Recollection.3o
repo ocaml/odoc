@@ -8,6 +8,9 @@ Ocamlary\.Recollection
 \fBModule Ocamlary\.Recollection\fR
 .in 
 .sp 
+.fi 
+This comment is for CollectionModule\.
+.nf 
 .SH Documentation
 .sp 
 .nf 
@@ -18,11 +21,6 @@ Ocamlary\.Recollection
 .sp 
 \f[CB]module\fR C : \f[CB]sig\fR
 .br 
-.ti +2
-.fi 
-This comment is for CollectionModule\.
-.nf 
-.sp 
 .ti +2
 \f[CB]type\fR collection
 .fi 
@@ -108,10 +106,6 @@ This comment is for InnerModuleTypeA\.
 .in 3
 \fB2 Signature\fR
 .in 
-.sp 
-.fi 
-This comment is for CollectionModule\.
-.nf 
 .sp 
 \f[CB]type\fR collection = C\.element list
 .fi 

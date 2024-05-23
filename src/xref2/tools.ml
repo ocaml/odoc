@@ -1579,7 +1579,7 @@ and expansion_of_module_path :
           let sg' =
             match m.doc with
             | [] -> sg
-            | docs -> { sg with items = Comment (`Docs docs) :: sg.items }
+            | doc -> { sg with doc }
           in
           if strengthen then
             Ok (Signature (Strengthen.signature (`Resolved p') sg'))
