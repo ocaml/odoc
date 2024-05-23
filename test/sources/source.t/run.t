@@ -383,3 +383,16 @@ Ids generated in the source code:
   id="val-list"
   id="val-string"
   id="val-string2"
+
+
+Compiling without --source-id makes it impossible to generate the source:
+
+  $ odoc compile-impl -I . a.cmt
+  $ odoc compile -I . a.cmt
+  $ odoc link -I . a.odoc
+  $ odoc link -I . impl-a.odoc
+  $ odoc html-generate --indent -o html a.odocl
+  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
+  ERROR: The implementation unit was not compiled with --source-id.
+  [1]
+  $ odoc support-files -o html

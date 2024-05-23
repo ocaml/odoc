@@ -255,6 +255,8 @@ module Identifier : sig
       ContainerPage.t option * ModuleName.t ->
       [> `Root of ContainerPage.t option * ModuleName.t ] id
 
+    val implementation : string -> [> `Implementation of ModuleName.t ] id
+
     val module_ :
       Signature.t * ModuleName.t ->
       [> `Module of Signature.t * ModuleName.t ] id

@@ -438,7 +438,7 @@ module Compile_impl = struct
     let source_id =
       let doc = "The id of the source file" in
       Arg.(
-        required
+        value
         & opt (some string) None
         & info [ "source-id" ] ~doc ~docv:"/path/to/source.ml")
     in
@@ -1193,6 +1193,7 @@ module Occurrences = struct
     else if not (has_occurrences_prefix f) then
       Error (`Msg "Output file must be prefixed with 'occurrences-'.")
     else Ok f
+
   module Count = struct
     let count directories dst warnings_options include_hidden =
       dst_of_string dst >>= fun dst ->

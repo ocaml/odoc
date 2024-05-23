@@ -1757,7 +1757,10 @@ module Make (Syntax : SYNTAX) = struct
     val source_tree : Lang.SourceTree.t -> Document.t list
 
     val implementation :
-      Lang.Implementation.t -> Syntax_highlighter.infos -> string -> Document.t
+      Lang.Implementation.t ->
+      Syntax_highlighter.infos ->
+      string ->
+      Document.t list
   end = struct
     let pack : Lang.Compilation_unit.Packed.t -> Item.t list =
      fun t ->
@@ -1890,8 +1893,12 @@ module Make (Syntax : SYNTAX) = struct
 
     let implementation (v : Odoc_model.Lang.Implementation.t) syntax_info
         source_code =
-      Document.Source_page
-        (Source_page.source v.id syntax_info v.source_info source_code)
+      Option.map
+        (fun id ->
+          Document.Source_page
+            (Source_page.source id syntax_info v.source_info source_code))
+        v.id
+      |> Option.to_list
   end
 
   include Page

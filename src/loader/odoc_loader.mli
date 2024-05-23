@@ -28,7 +28,7 @@ val read_cmt :
 val read_impl :
   make_root:make_root ->
   filename:string ->
-  source_id:Identifier.SourcePage.t ->
+  source_id:Identifier.SourcePage.t option ->
   (Lang.Implementation.t, Error.t) result Error.with_warnings
 
 val read_cmi :

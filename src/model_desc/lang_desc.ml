@@ -705,7 +705,7 @@ and implementation_t =
   let open Lang.Implementation in
   Record
     [
-      F ("id", (fun t -> t.id), identifier);
+      F ("id", (fun t -> t.id), Option identifier);
       F ("digest", (fun t -> t.digest), Digest.t);
       F ("root", (fun t -> t.root), root);
     ]

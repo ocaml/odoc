@@ -511,7 +511,7 @@ end =
 
 module rec Implementation : sig
   type t = {
-    id : Identifier.SourcePage.t;
+    id : Identifier.SourcePage.t option;
     digest : Digest.t;
     root : Root.t;
     linked : bool;  (** Whether this unit has been linked. *)

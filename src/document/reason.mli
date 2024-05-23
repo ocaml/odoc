@@ -27,5 +27,5 @@ val implementation :
   Lang.Implementation.t ->
   Syntax_highlighter.infos ->
   string ->
-  Types.Document.t
+  Types.Document.t list
 (** Highlight the source as OCaml syntax *)

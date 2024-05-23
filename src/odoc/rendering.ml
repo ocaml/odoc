@@ -1,5 +1,6 @@
 open Odoc_document
 open Or_error
+open Odoc_model
 
 module Source = struct
   type t = File of Fpath.t | Root of Fpath.t
@@ -15,37 +16,37 @@ type source = Source.t
 
 let check_empty_source_arg source filename =
   if source <> None then
-    Odoc_model.Error.raise_warning
-    @@ Odoc_model.Error.filename_only
+    Error.raise_warning
+    @@ Error.filename_only
          "--source and --source-root only have an effect when generating from \
           an implementation"
          filename
 
 let documents_of_unit ~warnings_options ~syntax ~source ~renderer ~extra
     ~filename unit =
-  Odoc_model.Error.catch_warnings (fun () ->
+  Error.catch_warnings (fun () ->
       check_empty_source_arg source filename;
       renderer.Renderer.extra_documents extra (CU unit))
-  |> Odoc_model.Error.handle_warnings ~warnings_options
+  |> Error.handle_warnings ~warnings_options
   >>= fun extra_docs ->
   Ok (Renderer.document_of_compilation_unit ~syntax unit :: extra_docs)
 
 let documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
     ~filename page =
-  Odoc_model.Error.catch_warnings (fun () ->
+  Error.catch_warnings (fun () ->
       check_empty_source_arg source filename;
       renderer.Renderer.extra_documents extra (Page page))
-  |> Odoc_model.Error.handle_warnings ~warnings_options
+  |> Error.handle_warnings ~warnings_options
   >>= fun extra_docs -> Ok (Renderer.document_of_page ~syntax page :: extra_docs)
 
 let documents_of_implementation ~warnings_options:_ ~syntax impl source =
-  match source with
-  | Some source -> (
+  match (source, impl.Lang.Implementation.id) with
+  | Some source, Some source_id -> (
       let source_file =
         match source with
         | Source.File f -> f
         | Root f ->
-            let open Odoc_model.Paths.Identifier in
+            let open Paths.Identifier in
             let rec get_path_dir : SourceDir.t -> Fpath.t = function
               | { iv = `SourceDir (d, f); _ } -> Fpath.(get_path_dir d / f)
               | { iv = `Page _; _ } -> f
@@ -53,7 +54,7 @@ let documents_of_implementation ~warnings_options:_ ~syntax impl source =
             let get_path : SourcePage.t -> Fpath.t = function
               | { iv = `SourcePage (d, f); _ } -> Fpath.(get_path_dir d / f)
             in
-            get_path impl.Odoc_model.Lang.Implementation.id
+            get_path source_id
       in
       match Fs.File.read source_file with
       | Error (`Msg msg) ->
@@ -62,12 +63,14 @@ let documents_of_implementation ~warnings_options:_ ~syntax impl source =
           let syntax_info =
             Syntax_highlighter.syntax_highlighting_locs source_code
           in
-          Ok
-            [
-              Odoc_document.Renderer.documents_of_implementation ~syntax impl
-                syntax_info source_code;
-            ])
-  | None ->
+          let rendered =
+            Odoc_document.Renderer.documents_of_implementation ~syntax impl
+              syntax_info source_code
+          in
+          Ok rendered)
+  | _, None ->
+      Error (`Msg "The implementation unit was not compiled with --source-id.")
+  | None, _ ->
       Error
         (`Msg
           "--source or --source-root should be passed when generating \
@@ -75,9 +78,8 @@ let documents_of_implementation ~warnings_options:_ ~syntax impl source =
 
 let documents_of_source_tree ~warnings_options ~syntax ~source ~filename srctree
     =
-  Odoc_model.Error.catch_warnings (fun () ->
-      check_empty_source_arg source filename)
-  |> Odoc_model.Error.handle_warnings ~warnings_options
+  Error.catch_warnings (fun () -> check_empty_source_arg source filename)
+  |> Error.handle_warnings ~warnings_options
   >>= fun () -> Ok (Renderer.documents_of_source_tree ~syntax srctree)
 
 let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax input
@@ -103,7 +105,7 @@ let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
   Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
   | `Source_tree st -> Ok (Renderer.documents_of_source_tree ~syntax st)
   | `Page page -> Ok [ Renderer.document_of_page ~syntax page ]
-  | `Impl impl -> Ok [ Renderer.documents_of_implementation ~syntax impl [] "" ]
+  | `Impl impl -> Ok (Renderer.documents_of_implementation ~syntax impl [] "")
   | `Module m ->
       documents_of_unit ~warnings_options ~source:None ~filename:"" ~syntax
         ~renderer ~extra m
