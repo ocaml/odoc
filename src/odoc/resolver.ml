@@ -58,6 +58,11 @@ end = struct
 
   type error = NoPackage
 
+  let hashtbl_find_opt cache package =
+    match Hashtbl.find cache package with
+    | x -> Some x
+    | exception Not_found -> None
+
   let create pkglist ~current_pkg =
     let cache = Hashtbl.create 42 in
     List.iter
@@ -69,8 +74,8 @@ end = struct
 
   let find_by_path ?package { table = cache; current_pkg } ~path =
     let package = match package with None -> current_pkg | Some pkg -> pkg in
-    match Hashtbl.find_opt cache package with
-    | Some { hierarchical; _ } -> Ok (Hashtbl.find_opt hierarchical path)
+    match hashtbl_find_opt cache package with
+    | Some { hierarchical; _ } -> Ok (hashtbl_find_opt hierarchical path)
     | None -> Error NoPackage
 
   let populate_flat_namespace ~root =
@@ -91,7 +96,7 @@ end = struct
 
   let find_by_name ?package { table = cache; current_pkg } ~name =
     let package = match package with None -> current_pkg | Some pkg -> pkg in
-    match Hashtbl.find_opt cache package with
+    match hashtbl_find_opt cache package with
     | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
     | Some ({ flat = Unvisited root; _ } as p) ->
         let flat = populate_flat_namespace ~root in
@@ -100,8 +105,8 @@ end = struct
     | None -> Error NoPackage
 end
 
-let () = ignore Named_roots.find_by_name
-let () = ignore Named_roots.find_by_path
+let () = (ignore Named_roots.find_by_name [@warning "-5"])
+let () = (ignore Named_roots.find_by_path [@warning "-5"])
 
 module Accessible_paths : sig
   type t
@@ -271,7 +276,7 @@ let lookup_page ~pages ap target_name =
       let reference =
         String.sub target_name 1 (String.length target_name - 1)
       in
-      match String.split_on_char '/' reference with
+      match Astring.String.cuts ~sep:"/" reference with
       | [ name ] -> (
           let name = "page-" ^ name ^ ".odoc" in
           match Named_roots.find_by_name ~package:"pkg" ~name pages with

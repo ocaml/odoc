@@ -56,8 +56,8 @@ let convert_src_dir =
 
 let convert_named_root =
   let parse inp =
-    match String.split_on_char inp ~sep:':' with
-    | [ s1; s2 ] -> Ok (s1, Fs.Directory.of_string s2)
+    match Astring.String.cuts inp ~sep:":" with
+    | [ s1; s2 ] -> Result.Ok (s1, Fs.Directory.of_string s2)
     | _ -> Error (`Msg "")
   in
   let print ppf (s, t) =
@@ -602,7 +602,13 @@ end = struct
     in
     let o = absolute_normalization o in
     match
-      List.find_map
+      (* Taken from OCaml 5.2 standard library *)
+      let rec find_map ~f = function
+        | [] -> None
+        | x :: l -> (
+            match f x with Some _ as result -> result | None -> find_map ~f l)
+      in
+      find_map
         ~f:(fun (pkg, path) ->
           if Fpath.is_prefix path o then Some pkg else None)
         l
@@ -618,8 +624,8 @@ end = struct
   let is_page input =
     input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"
 
-  let link directories page_pkgnames lib_pkgnames input_file output_file warnings_options
-      open_modules =
+  let link directories page_pkgnames lib_pkgnames input_file output_file
+      warnings_options open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
     (if not (check_antichain (List.rev_append lib_pkgnames page_pkgnames)) then
@@ -679,8 +685,8 @@ end = struct
     in
     Term.(
       const handle_error
-      $ (const link $ odoc_file_directories $ page_pkgnames $ lib_pkgnames $ input $ dst
-       $ warnings_options $ open_modules))
+      $ (const link $ odoc_file_directories $ page_pkgnames $ lib_pkgnames
+       $ input $ dst $ warnings_options $ open_modules))
 
   let info ~docs =
     let man =
