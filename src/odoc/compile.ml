@@ -19,15 +19,20 @@ open Or_error
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+type package_spec = { package : string; output : Fpath.t }
+type parent_spec = {
+  parent : string option;
+  children : string list;
+  output : Fpath.t;
+}
+
+type parent_id_spec = { parent_id : string; output_dir : string }
+
 type cli_spec =
   | CliNoParent of Fpath.t
-  | CliPackage of { package : string; output : Fpath.t }
-  | CliParent of {
-      parent : string option;
-      children : string list;
-      output : Fpath.t;
-    }
-  | CliParentId of { parent_id : string; output_dir : string }
+  | CliPackage of package_spec
+  | CliParent of parent_spec
+  | CliParentId of parent_id_spec
 
 type spec = {
   parent_id : Paths.Identifier.ContainerPage.t option;
