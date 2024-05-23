@@ -4,6 +4,7 @@
  (libraries
   cmdliner
   bos
+  progress
   fpath
   yojson
   findlib

@@ -13,6 +13,7 @@ type executed_command = {
   cmd : string list;
   time : float;  (** Running time in seconds. *)
   output_file : Fpath.t option;
+  errors : string;
 }
 
 (* Environment variables passed to commands. *)
@@ -22,7 +23,7 @@ type executed_command = {
 let commands = ref []
 
 (** Return the list of executed commands where the first argument was [cmd]. *)
-let run env cmd =
+let run env cmd output_file =
   let cmd = Bos.Cmd.to_list cmd in
   let proc_mgr = Eio.Stdenv.process_mgr env in
   let t_start = Unix.gettimeofday () in
@@ -36,14 +37,19 @@ let run env cmd =
       env []
     |> Array.of_list
   in
-  Logs.debug (fun m -> m "Running cmd %a" Fmt.(list ~sep:sp string) cmd);
-  let r = Eio.Process.parse_out proc_mgr Eio.Buf_read.take_all ~env cmd in
-  Logs.debug (fun m ->
-      m "Finished running cmd %a" Fmt.(list ~sep:sp string) cmd);
+  let stderr = Buffer.create 1024 in
+  let err = Eio.Flow.buffer_sink stderr in
+  (* Logs.debug (fun m -> m "Running cmd %a" Fmt.(list ~sep:sp string) cmd); *)
+  let r =
+    Eio.Process.parse_out proc_mgr Eio.Buf_read.take_all ~env ~stderr:err cmd
+  in
+  (* Logs.debug (fun m ->
+      m "Finished running cmd %a" Fmt.(list ~sep:sp string) cmd); *)
   let t_end = Unix.gettimeofday () in
   let r = String.split_on_char '\n' r in
   let time = t_end -. t_start in
-  commands := { cmd; time; output_file = None } :: !commands;
+  let errors = Buffer.contents stderr in
+  commands := { cmd; time; output_file; errors } :: !commands;
   r
 
 (** Print an executed command and its time. *)
@@ -59,3 +65,9 @@ let filter_commands cmd =
 
 let print_cmd c =
   Printf.printf "[%4.2f] $ %s\n" c.time (String.concat " " c.cmd)
+
+(** Returns the [k] commands that took the most time for a given subcommand. *)
+let k_longest_commands cmd k =
+  filter_commands cmd
+  |> List.sort (fun a b -> Float.compare b.time a.time)
+  |> List.filteri (fun i _ -> i < k)

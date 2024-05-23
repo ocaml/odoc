@@ -21,7 +21,7 @@ let source_possibilities file =
 
 let get_source env file =
   let cmd = Cmd.(ocamlobjinfo % p file) in
-  let lines = Run.run env cmd in
+  let lines = Run.run env cmd None in
   let f =
     List.filter_map
       (fun line ->

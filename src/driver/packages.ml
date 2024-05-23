@@ -95,7 +95,7 @@ module Module = struct
             // set_ext "odoc" (v (String.uncapitalize_ascii m_name)))
         in
         let mif_odocl_file = Fpath.(set_ext "odocl" mif_odoc_file) in
-        match Odoc.compile_deps env mif_path with
+        match Odoc.compile_deps mif_path with
         | Ok { digest; deps } ->
             {
               mif_odoc_file;
@@ -156,7 +156,7 @@ module Lib = struct
     try
       Logs.debug (fun m ->
           m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
-      let results = Odoc.classify env dir in
+      let results = Odoc.classify dir in
       List.map
         (fun (archive_name, modules) ->
           let lib_name = Util.StringMap.find archive_name libname_of_archive in
@@ -167,9 +167,9 @@ module Lib = struct
           in
           { lib_name; dir; odoc_dir; archive_name; modules })
         results
-    with e ->
-      Logs.err (fun m ->
-          m "Error classifying %a (%s)" Fpath.pp dir (Printexc.to_string e));
+    with _e ->
+      (* Logs.err (fun m ->
+          m "Error classifying %a (%s)" Fpath.pp dir (Printexc.to_string e)); *)
       []
 
   let pp ppf t =
@@ -237,7 +237,15 @@ let of_libs env libs =
             | [] -> map
             | [ archive ] ->
                 Util.StringMap.update archive
-                  (function None -> Some lib | Some _ -> assert false)
+                  (function
+                    | None -> Some lib
+                    | Some x ->
+                        Logs.err (fun m ->
+                            m
+                              "Multiple libraries for archive %s: %s and %s. \
+                               Arbitrarily picking the latter."
+                              archive x lib);
+                        Some lib)
                   map
             | xs ->
                 Logs.err (fun m ->
