@@ -23,13 +23,13 @@ let mk_byhash (pkgs : Packages.t Util.StringMap.t) =
     pkgs Util.StringMap.empty
 
 let init_stats (pkgs : Packages.t Util.StringMap.t) =
-  let total, total_impl, non_hidden =
+  let total, total_impl, non_hidden, mlds =
     Util.StringMap.fold
       (fun _pkg_name pkg acc ->
-        List.fold_left
-          (fun acc (lib : Packages.libty) ->
+        let (tt, ti, nh, md) = List.fold_left
+          (fun (tt, ti, nh, md) (lib : Packages.libty) ->
             List.fold_left
-              (fun (total, total_impl, non_hidden) (m : Packages.modulety) ->
+              (fun (total, total_impl, non_hidden, mlds) (m : Packages.modulety) ->
                 let total = total + 1 in
                 let total_impl =
                   match m.m_impl with
@@ -39,14 +39,17 @@ let init_stats (pkgs : Packages.t Util.StringMap.t) =
                 let non_hidden =
                   if m.m_hidden then non_hidden else non_hidden + 1
                 in
-                (total, total_impl, non_hidden))
-              acc lib.modules)
-          acc pkg.Packages.libraries)
-      pkgs (0, 0, 0)
+                (total, total_impl, non_hidden, mlds))
+              (tt, ti, nh, md) lib.modules)
+          acc pkg.Packages.libraries
+              in           (tt, ti, nh, md + List.length pkg.Packages.mlds)
+              )
+      pkgs (0, 0, 0, 0)
   in
   Atomic.set Stats.stats.total_units total;
   Atomic.set Stats.stats.total_impls total_impl;
-  Atomic.set Stats.stats.non_hidden_units non_hidden
+  Atomic.set Stats.stats.non_hidden_units non_hidden;
+  Atomic.set Stats.stats.total_mlds mlds
 
 open Eio.Std
 
@@ -121,17 +124,9 @@ let compile output_dir all =
         Promise.resolve_ok r result;
         result
   in
-  let mods =
-    Util.StringMap.fold
-      (fun hash modty acc ->
-        match compile hash with
-        | Error exn ->
-            Logs.err (fun m ->
-                m "Error compiling module %s" modty.Packages.m_name);
-            raise exn
-        | Ok x -> x :: acc)
-      hashes []
-  in
+  let all_hashes = Util.StringMap.bindings hashes |> List.map fst in
+  let mod_results = Fiber.List.map compile all_hashes in
+  let mods = List.filter_map (function Ok x -> Some x | Error _ -> None) mod_results in
   Util.StringMap.fold
     (fun _ (pkg : Packages.t) acc ->
       Logs.debug (fun m ->
@@ -143,6 +138,7 @@ let compile output_dir all =
           let output_file = Fpath.(output_dir // mld.Packages.mld_odoc_file) in
           let odoc_output_dir = Fpath.split_base output_file |> fst in
           Odoc.compile output_dir mld.mld_path Fpath.Set.empty mld.mld_parent_id;
+          Atomic.incr Stats.stats.compiled_mlds;
           let include_dirs =
             List.map (fun f -> Fpath.(output_dir // f)) mld.mld_deps
             |> Fpath.Set.of_list
@@ -176,7 +172,7 @@ let link : compiled list -> _ =
     | _ ->
         Logs.debug (fun m -> m "linking %a" Fpath.pp c.output_file);
         Odoc.link c.output_file include_dirs;
-        Atomic.incr Stats.stats.linked_units;
+        (match c.m with | Module _ -> Atomic.incr Stats.stats.linked_units | Mld _ -> Atomic.incr Stats.stats.linked_mlds);
         { output_file = Fpath.(set_ext "odocl" c.output_file); src = None }
         :: impl
   in
