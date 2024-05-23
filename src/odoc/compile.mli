@@ -18,13 +18,15 @@ open Odoc_model
 open Odoc_model.Paths
 open Or_error
 
-
 type cli_spec =
   | CliNoParent of Fpath.t
   | CliPackage of { package : string; output : Fpath.t }
-  | CliParent of { parent : string option; children : string list; output : Fpath.t }
+  | CliParent of {
+      parent : string option;
+      children : string list;
+      output : Fpath.t;
+    }
   | CliParentId of { parent_id : string; output_dir : string }
-
 
 val name_of_output : prefix:string -> Fs.File.t -> string
 (** Compute the name of the page from the output file. Prefix is the prefix to

@@ -32,7 +32,7 @@ type cli_spec =
 type spec = {
   parent_id : Paths.Identifier.ContainerPage.t option;
   output : Fpath.t;
-  siblings : Lang.Page.child list option;
+  parents_children : Lang.Page.child list option;
   children : string list;
 }
 
@@ -148,8 +148,8 @@ let resolve_and_substitute ~resolver ~make_root ~hidden
   (*    let expanded = Odoc_xref2.Expand.expand (Env.expander expand_env) resolved in *)
   compiled
 
-let root_of_compilation_unit ~parent_id ~siblings ~hidden ~output ~module_name
-    ~digest =
+let root_of_compilation_unit ~parent_id ~parents_children ~hidden ~output
+    ~module_name ~digest =
   let open Root in
   let result parent =
     let file = Odoc_file.create_unit ~force_hidden:hidden module_name in
@@ -168,9 +168,9 @@ let root_of_compilation_unit ~parent_id ~siblings ~hidden ~output ~module_name
         String.Ascii.(uncapitalize n = uncapitalize filename)
     | Asset_child _ | Source_tree_child _ | Page_child _ -> false
   in
-  match siblings with
-  | Some siblings ->
-      if List.exists check_child siblings then result parent_id
+  match parents_children with
+  | Some parents_children ->
+      if List.exists check_child parents_children then result parent_id
       else Error (`Msg "Specified parent is not a parent of this file")
   | None -> result parent_id
 
@@ -193,7 +193,7 @@ let name_of_output ~prefix output =
 
 let page_name_of_output output = name_of_output ~prefix:"page-" output
 
-let mld ~parent_id ~siblings ~output ~children ~warnings_options input =
+let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
   List.fold_left
     (fun acc child_str ->
       match (acc, parse_parent_child_reference child_str) with
@@ -221,9 +221,9 @@ let mld ~parent_id ~siblings ~output ~children ~warnings_options input =
        if List.exists check_child parents_children then Ok ()
        else Error (`Msg "Specified parent is not a parent of this file")
      in
-     (match siblings with
-     | Some siblings ->
-         check siblings >>= fun () ->
+     (match parents_children with
+     | Some parents_children ->
+         check parents_children >>= fun () ->
          Ok (Paths.Identifier.Mk.page (parent_id, page_name))
      | None -> Ok (Paths.Identifier.Mk.page (parent_id, page_name)))
      >>= fun id -> Ok (id :> Paths.Identifier.Page.t))
@@ -265,19 +265,20 @@ let resolve_spec ~input resolver cli_spec =
        | _ -> ());
       let parent =
         match Option.map (resolve_parent_page resolver) parent with
-        | Some (Ok (parent_id, siblings)) -> Ok (Some parent_id, Some siblings)
+        | Some (Ok (parent_id, parents_children)) ->
+            Ok (Some parent_id, Some parents_children)
         | None -> Ok (None, None)
         | Some (Error e) -> Error e
       in
-      parent >>= fun (parent_id, siblings) ->
-      Ok { parent_id; siblings; children; output }
+      parent >>= fun (parent_id, parents_children) ->
+      Ok { parent_id; parents_children; children; output }
   | CliPackage { package; output } ->
       Ok
         {
           parent_id =
             Some (Paths.Identifier.Mk.page (None, PageName.make_std package));
           output;
-          siblings = None;
+          parents_children = None;
           children = [];
         }
   | CliParentId { parent_id; output_dir } ->
@@ -294,23 +295,29 @@ let resolve_spec ~input resolver cli_spec =
         else name |> Fpath.to_string |> String.Ascii.uncapitalize
       in
       let output = Fs.File.create ~directory ~name in
-      Ok { parent_id = Some parent_id; output; siblings = None; children = [] }
+      Ok
+        {
+          parent_id = Some parent_id;
+          output;
+          parents_children = None;
+          children = [];
+        }
   | CliNoParent output ->
-      Ok { output; parent_id = None; siblings = None; children = [] }
+      Ok { output; parent_id = None; parents_children = None; children = [] }
 
 let compile ~resolver ~hidden ~cli_spec ~warnings_options input =
   resolve_spec ~input resolver cli_spec
-  >>= fun { parent_id; output; siblings; children } ->
+  >>= fun { parent_id; output; parents_children; children } ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
-    mld ~parent_id ~siblings ~output ~warnings_options ~children input
+    mld ~parent_id ~parents_children ~output ~warnings_options ~children input
   else
     check_is_empty "Not expecting children (--child) when compiling modules."
       children
     >>= fun () ->
     handle_file_ext ext >>= fun input_type ->
     let make_root =
-      root_of_compilation_unit ~parent_id ~siblings ~hidden ~output
+      root_of_compilation_unit ~parent_id ~parents_children ~hidden ~output
     in
     let result =
       Error.catch_errors_and_warnings (fun () ->
