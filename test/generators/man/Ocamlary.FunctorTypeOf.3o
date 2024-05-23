@@ -22,11 +22,6 @@ This comment is for FunctorTypeOf\.
 \f[CB]module\fR Collection : \f[CB]sig\fR
 .br 
 .ti +2
-.fi 
-This comment is for CollectionModule\.
-.nf 
-.sp 
-.ti +2
 \f[CB]type\fR collection
 .fi 
 .br 

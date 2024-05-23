@@ -2,8 +2,7 @@
   $ odoc html-generate -o html --indent foo.odocl
   $ odoc html-generate -o html --indent bar.odocl
 
-Foo contains "Preamble for O" twice: once for the module O definition, once
-coming from the inline include.
+Foo contains "Preamble for O" once.
 
   $ cat html/test/Foo/index.html
   <!DOCTYPE html>
@@ -34,7 +33,7 @@ coming from the inline include.
         </span>
        </code>
       </div><div class="spec-doc"><p>Preamble for O.</p></div>
-     </div><p>Preamble for O.</p>
+     </div>
      <div class="odoc-spec">
       <div class="spec value anchored" id="val-x">
        <a href="#val-x" class="anchor"></a>
@@ -45,9 +44,8 @@ coming from the inline include.
    </body>
   </html>
 
-Bar includes Foo and should also contain "Preamble for O" twice.
+Bar includes Foo and should also contain "Preamble for O" once.
 Bar doesn't contain "Preamble for Foo" on purpose.
-TODO: It contains "Preamble for O" 3 times.
 
   $ cat html/test/Bar/index.html
   <!DOCTYPE html>
@@ -85,7 +83,7 @@ TODO: It contains "Preamble for O" 3 times.
           <span> = <a href="../Foo/O/index.html">Foo.O</a></span>
          </code>
         </div><div class="spec-doc"><p>Preamble for O.</p></div>
-       </div><p>Preamble for O.</p><p>Preamble for O.</p>
+       </div>
        <div class="odoc-spec">
         <div class="spec value anchored" id="val-x">
          <a href="#val-x" class="anchor"></a>

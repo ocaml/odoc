@@ -495,11 +495,6 @@ This comment is for CollectionModule\.
 \f[CB]module\fR \f[CB]type\fR COLLECTION = \f[CB]sig\fR
 .br 
 .ti +2
-.fi 
-This comment is for CollectionModule\.
-.nf 
-.sp 
-.ti +2
 \f[CB]type\fR collection
 .fi 
 .br 
@@ -591,17 +586,17 @@ module type of
   COLLECTION
     \f[CB]with\fR \f[CB]type\fR collection = C\.element list
      \f[CB]and\fR \f[CB]type\fR element = C\.collection
+.fi 
+.br 
+.ti +2
+This comment is for CollectionModule\.
+.nf 
 .sp 
 \f[CB]module\fR \f[CB]type\fR MMM = \f[CB]sig\fR
 .br 
 .ti +2
 \f[CB]module\fR C : \f[CB]sig\fR
 .br 
-.ti +4
-.fi 
-This comment is for CollectionModule\.
-.nf 
-.sp 
 .ti +4
 \f[CB]type\fR collection
 .fi 
@@ -684,6 +679,12 @@ This comment is for InnerModuleTypeA\.
 .br 
 .ti +2
 \f[CB]end\fR
+.fi 
+.br 
+.ti +4
+This comment is for CollectionModule\.
+.nf 
+
 .br 
 \f[CB]end\fR
 .sp 
@@ -782,11 +783,6 @@ This comment is for InnerModuleTypeA\.
 \f[CB]module\fR Q : \f[CB]sig\fR
 .br 
 .ti +4
-.fi 
-This comment is for CollectionModule\.
-.nf 
-.sp 
-.ti +4
 \f[CB]type\fR collection
 .fi 
 .br 
@@ -868,6 +864,12 @@ This comment is for InnerModuleTypeA\.
 .br 
 .ti +2
 \f[CB]end\fR
+.fi 
+.br 
+.ti +4
+This comment is for CollectionModule\.
+.nf 
+
 .br 
 \f[CB]end\fR
 .sp 
@@ -880,11 +882,6 @@ This comment is for InnerModuleTypeA\.
 \f[CB]module\fR Q : \f[CB]sig\fR
 .br 
 .ti +4
-.fi 
-This comment is for CollectionModule\.
-.nf 
-.sp 
-.ti +4
 \f[CB]type\fR collection
 .fi 
 .br 
@@ -966,6 +963,12 @@ This comment is for InnerModuleTypeA\.
 .br 
 .ti +2
 \f[CB]end\fR
+.fi 
+.br 
+.ti +4
+This comment is for CollectionModule\.
+.nf 
+
 .br 
 \f[CB]end\fR
 .sp 
@@ -978,11 +981,6 @@ This comment is for InnerModuleTypeA\.
 \f[CB]module\fR Q : \f[CB]sig\fR
 .br 
 .ti +4
-.fi 
-This comment is for CollectionModule\.
-.nf 
-.sp 
-.ti +4
 \f[CB]type\fR collection
 .fi 
 .br 
@@ -1064,6 +1062,11 @@ This comment is for InnerModuleTypeA\.
 .br 
 .ti +2
 \f[CB]end\fR
+.fi 
+.br 
+.ti +4
+This comment is for CollectionModule\.
+.nf 
 .sp 
 .ti +2
 
