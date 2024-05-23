@@ -167,9 +167,9 @@ module Lib = struct
           in
           { lib_name; dir; odoc_dir; archive_name; modules })
         results
-    with _e ->
-      (* Logs.err (fun m ->
-          m "Error classifying %a (%s)" Fpath.pp dir (Printexc.to_string e)); *)
+    with e ->
+      Logs.err (fun m ->
+          m "Error classifying %a (%s)" Fpath.pp dir (Printexc.to_string e));
       []
 
   let pp ppf t =
@@ -219,7 +219,21 @@ let of_libs env libs =
                 Some (lib, p, archives))
           all_libs
       in
-      let map, rmap = Opam.pkg_to_dir_map () in
+      let (map, rmap) :
+          (Opam.package * Fpath.set * Fpath.set * Fpath.set) list
+          * Opam.package Fpath.map =
+        if Sys.file_exists ".pkg_to_dir_map" then (
+          let ic = open_in_bin ".pkg_to_dir_map" in
+          let result = Marshal.from_channel ic in
+          close_in ic;
+          result)
+        else
+          let result = Opam.pkg_to_dir_map () in
+          let oc = open_out_bin ".pkg_to_dir_map" in
+          Marshal.to_channel oc result [];
+          close_out oc;
+          result
+      in
       let dirs =
         List.fold_left
           (fun set (_lib, p, archives) ->
@@ -292,8 +306,8 @@ let of_libs env libs =
               let pkg', _, odoc_pages, other_docs =
                 List.find
                   (fun (pkg', _, _, _) ->
-                    Logs.debug (fun m ->
-                        m "Checking %s against %s" pkg.Opam.name pkg'.Opam.name);
+                    (* Logs.debug (fun m ->
+                        m "Checking %s against %s" pkg.Opam.name pkg'.Opam.name); *)
                     pkg = pkg')
                   map
               in
