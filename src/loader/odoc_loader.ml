@@ -210,8 +210,14 @@ let read_impl ~make_root ~filename ~source_id () =
                 | None -> raise Corrupted
                 | exception Not_found -> raise Corrupted)
           in
-          Odoc_model.Names.set_unique_ident
-            (Odoc_model.Paths.Identifier.fullname source_id |> String.concat "-");
+          let () =
+            match source_id with
+            | None -> Odoc_model.Names.set_unique_ident filename
+            | Some source_id ->
+                Odoc_model.Names.set_unique_ident
+                  (Odoc_model.Paths.Identifier.fullname source_id
+                  |> String.concat "-")
+          in
           let root =
             match make_root ~module_name:name ~digest with
             | Ok root -> root

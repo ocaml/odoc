@@ -112,7 +112,7 @@ module type GENERATOR = sig
     Odoc_model.Lang.Implementation.t ->
     Syntax_highlighter.infos ->
     string ->
-    Document.t
+    Document.t list
 
   val type_expr : ?needs_parentheses:bool -> Lang.TypeExpr.t -> text
 

@@ -27,7 +27,7 @@ val implementation :
   Lang.Implementation.t ->
   Syntax_highlighter.infos ->
   string ->
-  Types.Document.t
+  Types.Document.t list
 
 val type_expr : ?needs_parentheses:bool -> Lang.TypeExpr.t -> Codefmt.t
 

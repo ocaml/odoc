@@ -154,18 +154,17 @@ let lookup_shape : Env.t -> Shape.t -> Identifier.SourceLocation.t option =
 #endif
   unit_of_uid uid >>= fun unit_name ->
   match Env.lookup_impl unit_name env with
-  | None -> None
-  | Some impl -> (
+  | Some { shape_info ; id = Some id ; _} -> (
       let uid_to_id =
-        match impl.shape_info with
+        match shape_info with
         | Some (_, uid_to_id) -> uid_to_id
         | None -> Odoc_model.Compat.empty_map
       in
       match Shape.Uid.Map.find_opt uid uid_to_id with
       | Some x -> Some x
-      | None -> (
-          match impl with
-          | { id; _ } -> Some (MkId.source_location_mod id)))
+      | None ->  Some (MkId.source_location_mod id))
+  | None
+  | Some { id = None ; _} -> None
 
 let lookup_def :
     Env.t -> Identifier.NonSrc.t -> Identifier.SourceLocation.t option =

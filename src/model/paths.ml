@@ -523,6 +523,12 @@ module Identifier = struct
         [> `Root of ContainerPage.t option * ModuleName.t ] id =
       mk_parent_opt ModuleName.to_string "r" (fun (p, n) -> `Root (p, n))
 
+    let implementation =
+      mk_fresh
+        (fun s -> s)
+        "impl"
+        (fun s -> `Implementation (ModuleName.make_std s))
+
     let module_ :
         Signature.t * ModuleName.t ->
         [> `Module of Signature.t * ModuleName.t ] id =

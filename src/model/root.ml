@@ -82,6 +82,8 @@ let to_string t =
           (parent :> Paths.Identifier.OdocId.t)
           Names.ModuleName.fmt name
     | `Root (None, name) -> Format.fprintf fmt "%a" Names.ModuleName.fmt name
+    | `Implementation name ->
+        Format.fprintf fmt "impl(%a)" Names.ModuleName.fmt name
   in
 
   Format.asprintf "%a" pp t.id
