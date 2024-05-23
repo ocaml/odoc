@@ -264,11 +264,13 @@ let resolve_spec ~input resolver cli_spec =
              "Warning: Potential name clash - child page named 'index'\n%!"
        | _ -> ());
       let parent =
-        match Option.map (resolve_parent_page resolver) parent with
-        | Some (Ok (parent_id, parents_children)) ->
-            Ok (Some parent_id, Some parents_children)
+        match parent with
+        | Some parent -> (
+            match resolve_parent_page resolver parent with
+            | Ok (parent_id, parents_children) ->
+                Ok (Some parent_id, Some parents_children)
+            | Error e -> Error e)
         | None -> Ok (None, None)
-        | Some (Error e) -> Error e
       in
       parent >>= fun (parent_id, parents_children) ->
       Ok { parent_id; parents_children; children; output }
