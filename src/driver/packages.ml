@@ -197,7 +197,9 @@ let of_libs env libs =
         Logs.err (fun m ->
             m "Error finding dependencies of libraries [%s]: %s"
               lib e);
-        acc) Util.StringSet.empty results in
+        Logs.err (fun m ->
+            m "Will attempt to document the library anyway");
+        Util.StringSet.add lib acc) Util.StringSet.empty results in
   let all_libs = Util.StringSet.elements all_libs_set in
   let all_libs = "stdlib" :: all_libs in
     Logs.debug (fun m ->
@@ -227,16 +229,16 @@ let of_libs env libs =
     let (map, rmap) :
         (Opam.package * Fpath.set * Fpath.set * Fpath.set) list
         * Opam.package Fpath.map =
-      if Sys.file_exists ".pkg_to_dir_map" then (
+      (* if Sys.file_exists ".pkg_to_dir_map" then (
         let ic = open_in_bin ".pkg_to_dir_map" in
         let result = Marshal.from_channel ic in
         close_in ic;
         result)
-      else
+      else *)
         let result = Opam.pkg_to_dir_map () in
-        let oc = open_out_bin ".pkg_to_dir_map" in
+        (* let oc = open_out_bin ".pkg_to_dir_map" in
         Marshal.to_channel oc result [];
-        close_out oc;
+        close_out oc; *)
         result
     in
     let dirs =
