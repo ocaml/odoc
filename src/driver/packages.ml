@@ -69,7 +69,7 @@ module Module = struct
 
   let is_hidden name = Astring.String.is_infix ~affix:"__" name
 
-  let vs env pkg_name lib_name dir modules =
+  let vs pkg_name lib_name dir modules =
     let mk m_name =
       let exists ext =
         let p =
@@ -116,7 +116,7 @@ module Module = struct
         in
         let mip_odocl_file = Fpath.(set_ext "odocl" mip_odoc_file) in
         let mip_src_info =
-          match Ocamlobjinfo.get_source env mip_path with
+          match Ocamlobjinfo.get_source mip_path with
           | None ->
               Logs.debug (fun m -> m "No source found for module %s" m_name);
               None
@@ -152,7 +152,7 @@ end
 module Lib = struct
   type t = libty
 
-  let v env libname_of_archive pkg_name dir =
+  let v libname_of_archive pkg_name dir =
     try
       Logs.debug (fun m ->
           m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
@@ -160,7 +160,7 @@ module Lib = struct
       List.map
         (fun (archive_name, modules) ->
           let lib_name = Util.StringMap.find archive_name libname_of_archive in
-          let modules = Module.vs env pkg_name lib_name dir modules in
+          let modules = Module.vs pkg_name lib_name dir modules in
           let odoc_dir =
             List.hd modules |> fun m ->
             m.m_intf.mif_odoc_file |> Fpath.split_base |> fst
@@ -297,7 +297,7 @@ let of_libs env libs =
               Logs.debug (fun m -> m "No package for dir %a\n%!" Fpath.pp dir);
               acc
           | Some pkg ->
-              let libraries = Lib.v env libname_of_archive pkg.name dir in
+              let libraries = Lib.v libname_of_archive pkg.name dir in
               let libraries =
                 List.filter
                   (fun l -> Util.StringSet.mem l.archive_name archives)
