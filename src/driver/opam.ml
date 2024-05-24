@@ -89,12 +89,14 @@ let opam_file { name; version } =
     Format.asprintf "%a/.opam-switch/packages/%s.%s/opam" Fpath.pp prefix name
       version
   in
+  let ic = open_in opam_file in
   try
-    let ic = open_in opam_file in
     let lines = Util.lines_of_channel ic in
     close_in ic;
     Some lines
-  with _ -> None
+  with _ ->
+    close_in ic;
+    None
 
 let pkg_to_dir_map () =
   let pkgs = all_opam_packages () in
