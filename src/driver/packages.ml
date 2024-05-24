@@ -134,19 +134,23 @@ module Module = struct
       let state = (exists "cmt", exists "cmti") in
 
       let m_hidden = is_hidden m_name in
-      let m_intf, m_impl =
-        match state with
-        | Some cmt, Some cmti -> (mk_intf cmti, Some (mk_impl cmt))
-        | Some cmt, None -> (mk_intf cmt, Some (mk_impl cmt))
-        | None, Some cmti -> (mk_intf cmti, None)
-        | None, None ->
-            Logs.err (fun m -> m "No files for module: %s" m_name);
-            failwith "no files"
-      in
-      { m_name; m_intf; m_impl; m_hidden }
+      try
+        let m_intf, m_impl =
+          match state with
+          | Some cmt, Some cmti -> (mk_intf cmti, Some (mk_impl cmt))
+          | Some cmt, None -> (mk_intf cmt, Some (mk_impl cmt))
+          | None, Some cmti -> (mk_intf cmti, None)
+          | None, None ->
+              Logs.err (fun m -> m "No files for module: %s" m_name);
+              failwith "no files"
+        in
+        Some { m_name; m_intf; m_impl; m_hidden }
+      with _ ->
+        Logs.err (fun m -> m "Error processing module %s. Ignoring." m_name);
+        None
     in
 
-    Eio.Fiber.List.map mk modules
+    Eio.Fiber.List.filter_map mk modules
 end
 
 module Lib = struct
@@ -171,7 +175,8 @@ module Lib = struct
             m.m_intf.mif_odoc_file |> Fpath.split_base |> fst
           in
           Some { lib_name; dir; odoc_dir; archive_name; modules }
-        with Unknown_archive x ->
+        with
+        | Unknown_archive x ->
           Logs.debug (fun m ->
               m
                 "Unable to determine library in package '%s' to which archive \
@@ -181,7 +186,12 @@ module Lib = struct
               m "These are the archives I know about: [%a]"
                 Fmt.(list ~sep:sp string)
                 (Util.StringMap.bindings libname_of_archive |> List.map fst));
-          None)
+          None
+        | _ ->
+          Logs.err (fun m ->
+              m "Error processing library %s. Ignoring." archive_name);
+          None
+            )
       results
 
   let pp ppf t =
