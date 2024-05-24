@@ -51,7 +51,10 @@ let archives pkg =
   | "stdlib" -> [ "stdlib.cma"; "stdlib.cmxa" ]
   | _ ->
       get_1 [ "native" ] @ get_1 [ "byte" ]
+      @ get_1 [ "native"; "ppx_driver" ]
+      @ get_1 [ "byte"; "ppx_driver" ]
       |> List.filter (fun x -> String.length x > 0)
+      |> List.sort_uniq String.compare
 
 let sub_libraries top =
   init ();

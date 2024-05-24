@@ -73,7 +73,9 @@ let compile output_dir all =
               match compile_other h with
               | Ok r -> Some r
               | Error _exn ->
-                  Logs.debug (fun m -> m "Missing module %s (hash %s)" n h);
+                  Logs.debug (fun m ->
+                      m "Missing module %s (hash %s, required by %s)" n h
+                        modty.m_name);
                   None)
             deps
         in
