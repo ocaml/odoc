@@ -444,7 +444,7 @@ let render_stats env nprocs =
   let open Progress in
   let clock = Eio.Stdenv.clock env in
   let total = Atomic.get Stats.stats.total_units in
-  let total_impls = Atomic.get Stats.stats.total_units in
+  let total_impls = Atomic.get Stats.stats.total_impls in
   let total_mlds = Atomic.get Stats.stats.total_mlds in
   let bar message total =
     let open Progress.Line in
