@@ -26,24 +26,26 @@ let init_stats (pkgs : Packages.t Util.StringMap.t) =
   let total, total_impl, non_hidden, mlds =
     Util.StringMap.fold
       (fun _pkg_name pkg acc ->
-        let (tt, ti, nh, md) = List.fold_left
-          (fun (tt, ti, nh, md) (lib : Packages.libty) ->
-            List.fold_left
-              (fun (total, total_impl, non_hidden, mlds) (m : Packages.modulety) ->
-                let total = total + 1 in
-                let total_impl =
-                  match m.m_impl with
-                  | Some _ -> total_impl + 1
-                  | None -> total_impl
-                in
-                let non_hidden =
-                  if m.m_hidden then non_hidden else non_hidden + 1
-                in
-                (total, total_impl, non_hidden, mlds))
-              (tt, ti, nh, md) lib.modules)
-          acc pkg.Packages.libraries
-              in           (tt, ti, nh, md + List.length pkg.Packages.mlds)
-              )
+        let tt, ti, nh, md =
+          List.fold_left
+            (fun (tt, ti, nh, md) (lib : Packages.libty) ->
+              List.fold_left
+                (fun (total, total_impl, non_hidden, mlds)
+                     (m : Packages.modulety) ->
+                  let total = total + 1 in
+                  let total_impl =
+                    match m.m_impl with
+                    | Some _ -> total_impl + 1
+                    | None -> total_impl
+                  in
+                  let non_hidden =
+                    if m.m_hidden then non_hidden else non_hidden + 1
+                  in
+                  (total, total_impl, non_hidden, mlds))
+                (tt, ti, nh, md) lib.modules)
+            acc pkg.Packages.libraries
+        in
+        (tt, ti, nh, md + List.length pkg.Packages.mlds))
       pkgs (0, 0, 0, 0)
   in
   Atomic.set Stats.stats.total_units total;
@@ -126,7 +128,9 @@ let compile output_dir all =
   in
   let all_hashes = Util.StringMap.bindings hashes |> List.map fst in
   let mod_results = Fiber.List.map compile all_hashes in
-  let mods = List.filter_map (function Ok x -> Some x | Error _ -> None) mod_results in
+  let mods =
+    List.filter_map (function Ok x -> Some x | Error _ -> None) mod_results
+  in
   Util.StringMap.fold
     (fun _ (pkg : Packages.t) acc ->
       Logs.debug (fun m ->
@@ -172,7 +176,9 @@ let link : compiled list -> _ =
     | _ ->
         Logs.debug (fun m -> m "linking %a" Fpath.pp c.output_file);
         Odoc.link c.output_file include_dirs;
-        (match c.m with | Module _ -> Atomic.incr Stats.stats.linked_units | Mld _ -> Atomic.incr Stats.stats.linked_mlds);
+        (match c.m with
+        | Module _ -> Atomic.incr Stats.stats.linked_units
+        | Mld _ -> Atomic.incr Stats.stats.linked_mlds);
         { output_file = Fpath.(set_ext "odocl" c.output_file); src = None }
         :: impl
   in

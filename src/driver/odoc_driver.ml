@@ -488,7 +488,8 @@ let render_stats env nprocs =
           linkmld (f' - f);
           html (g' - g);
           procs (h' - h);
-          if g' < non_hidden + total_impls + total_mlds then inner (a', b', c', d', e', f', g', h')
+          if g' < non_hidden + total_impls + total_mlds then
+            inner (a', b', c', d', e', f', g', h')
         in
         inner (0, 0, 0, 0, 0, 0, 0, 0))
   with _ -> ()
