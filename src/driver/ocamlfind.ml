@@ -7,7 +7,6 @@ let init () =
   let config = Fpath.(v prefix / "lib" / "findlib.conf" |> to_string) in
   Findlib.init ~config ~env_camllib ()
 
-
 let package_to_dir_map () =
   init ();
   let packages = Fl_package_base.list_packages () in
