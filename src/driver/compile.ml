@@ -35,7 +35,10 @@ let init_stats (pkgs : Packages.t Util.StringMap.t) =
                   let total = total + 1 in
                   let total_impl =
                     match m.m_impl with
-                    | Some _ -> total_impl + 1
+                    | Some impl -> (
+                        match impl.mip_src_info with
+                        | Some _ -> total_impl + 1
+                        | None -> total_impl)
                     | None -> total_impl
                   in
                   let non_hidden =
