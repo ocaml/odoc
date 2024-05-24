@@ -155,24 +155,34 @@ module Lib = struct
   exception Unknown_archive of string
 
   let v libname_of_archive pkg_name dir =
-    try
-      Logs.debug (fun m ->
-          m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
-      let results = Odoc.classify dir in
-      List.map
-        (fun (archive_name, modules) ->
-          let lib_name = try Util.StringMap.find archive_name libname_of_archive with Not_found -> raise (Unknown_archive archive_name) in
+    Logs.debug (fun m ->
+        m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
+    let results = Odoc.classify dir in
+    List.filter_map
+      (fun (archive_name, modules) ->
+        try
+          let lib_name =
+            try Util.StringMap.find archive_name libname_of_archive
+            with Not_found -> raise (Unknown_archive archive_name)
+          in
           let modules = Module.vs pkg_name lib_name dir modules in
           let odoc_dir =
             List.hd modules |> fun m ->
             m.m_intf.mif_odoc_file |> Fpath.split_base |> fst
           in
-          { lib_name; dir; odoc_dir; archive_name; modules })
-        results
-    with Unknown_archive x ->
-      Logs.debug (fun m ->
-          m "Unable to determine library in package '%s' to which archive '%s' belongs" pkg_name x);
-      []
+          Some { lib_name; dir; odoc_dir; archive_name; modules }
+        with Unknown_archive x ->
+          Logs.debug (fun m ->
+              m
+                "Unable to determine library in package '%s' to which archive \
+                 '%s' belongs"
+                pkg_name x);
+          Logs.debug (fun m ->
+              m "These are the archives I know about: [%a]"
+                Fmt.(list ~sep:sp string)
+                (Util.StringMap.bindings libname_of_archive |> List.map fst));
+          None)
+      results
 
   let pp ppf t =
     Fmt.pf ppf "path: %a archive: %a modules: [@[<hov 2>@,%a@]@,]" Fpath.pp
@@ -189,153 +199,159 @@ let pp ppf t =
 
 let of_libs env libs =
   let libs = Util.StringSet.to_seq libs |> List.of_seq in
-  let results = List.map (fun x -> (x, Ocamlfind.deps [x])) libs in
-  let all_libs_set = List.fold_left (fun acc (lib, r) ->
-    match r with
-    | Ok x -> Util.StringSet.(union (of_list x) acc)
-    | Error (`Msg e) ->
-        Logs.err (fun m ->
-            m "Error finding dependencies of libraries [%s]: %s"
-              lib e);
-        Logs.err (fun m ->
-            m "Will attempt to document the library anyway");
-        Util.StringSet.add lib acc) Util.StringSet.empty results in
+  let results = List.map (fun x -> (x, Ocamlfind.deps [ x ])) libs in
+  let all_libs_set =
+    List.fold_left
+      (fun acc (lib, r) ->
+        match r with
+        | Ok x -> Util.StringSet.(union (of_list x) acc)
+        | Error (`Msg e) ->
+            Logs.err (fun m ->
+                m "Error finding dependencies of libraries [%s]: %s" lib e);
+            Logs.err (fun m -> m "Will attempt to document the library anyway");
+            Util.StringSet.add lib acc)
+      Util.StringSet.empty results
+  in
   let all_libs = Util.StringSet.elements all_libs_set in
   let all_libs = "stdlib" :: all_libs in
-    Logs.debug (fun m ->
-        m "Libraries to document: [%a]" Fmt.(list ~sep:sp string) all_libs);
-    let dirs' =
-      List.filter_map
-        (fun lib ->
-          match Ocamlfind.get_dir lib with
-          | Error _ ->
-              Logs.debug (fun m -> m "No dir for library %s" lib);
-              None
-          | Ok p ->
-              let archives = Ocamlfind.archives lib in
-              let archives =
-                List.map
-                  (fun x ->
-                    try Filename.chop_extension x
-                    with e ->
-                      Logs.err (fun m -> m "Can't chop extension from %s" x);
-                      raise e)
-                  archives
-              in
-              let archives = Util.StringSet.(of_list archives) in
-              Some (lib, p, archives))
-        all_libs
-    in
-    let (map, rmap) :
-        (Opam.package * Fpath.set * Fpath.set * Fpath.set) list
-        * Opam.package Fpath.map =
-      (* if Sys.file_exists ".pkg_to_dir_map" then (
-        let ic = open_in_bin ".pkg_to_dir_map" in
-        let result = Marshal.from_channel ic in
-        close_in ic;
-        result)
-      else *)
-        let result = Opam.pkg_to_dir_map () in
-        (* let oc = open_out_bin ".pkg_to_dir_map" in
-        Marshal.to_channel oc result [];
-        close_out oc; *)
-        result
-    in
-    let dirs =
-      List.fold_left
-        (fun set (_lib, p, archives) ->
-          Fpath.Map.update p
-            (function
-              | Some set -> Some (Util.StringSet.union set archives)
-              | None -> Some archives)
-            set)
-        Fpath.Map.empty dirs'
-    in
-    let libname_of_archive =
-      List.fold_left
-        (fun map (lib, _, archives) ->
-          match Util.StringSet.elements archives with
-          | [] -> map
-          | [ archive ] ->
-              Util.StringMap.update archive
-                (function
-                  | None -> Some lib
-                  | Some x ->
-                      Logs.err (fun m ->
-                          m
-                            "Multiple libraries for archive %s: %s and %s. \
-                              Arbitrarily picking the latter."
-                            archive x lib);
-                      Some lib)
-                map
-          | xs ->
-              Logs.err (fun m ->
-                  m "multiple archives detected: [%a]"
-                    Fmt.(list ~sep:sp string)
-                    xs);
-              assert false)
-        Util.StringMap.empty dirs'
-    in
-    ignore libname_of_archive;
-    let mk_mlds _env pkg_name libraries odoc_pages =
-      Fpath.Set.fold
-        (fun mld_path acc ->
-          let mld_parent_id = Printf.sprintf "%s/doc" pkg_name in
-          let page_name = Fpath.(rem_ext mld_path |> filename) in
-          let odoc_file =
-            Fpath.(v mld_parent_id / ("page-" ^ page_name ^ ".odoc"))
-          in
-          let odocl_file = Fpath.(set_ext "odocl" odoc_file) in
-          let mld_deps = List.map (fun l -> l.odoc_dir) libraries in
-          {
-            mld_odoc_file = odoc_file;
-            mld_odocl_file = odocl_file;
-            mld_parent_id;
-            mld_path;
-            mld_deps;
-          }
-          :: acc)
-        odoc_pages []
-    in
-    Fpath.Map.fold
-      (fun dir archives acc ->
-        match Fpath.Map.find dir rmap with
-        | None ->
-            Logs.debug (fun m -> m "No package for dir %a\n%!" Fpath.pp dir);
-            acc
-        | Some pkg ->
-            let libraries = Lib.v libname_of_archive pkg.name dir in
-            let libraries =
-              List.filter
-                (fun l -> Util.StringSet.mem l.archive_name archives)
-                libraries
-            in
-            let pkg', _, odoc_pages, other_docs =
-              List.find
-                (fun (pkg', _, _, _) ->
-                  (* Logs.debug (fun m ->
-                      m "Checking %s against %s" pkg.Opam.name pkg'.Opam.name); *)
-                  pkg = pkg')
-                map
-            in
-            let mlds = mk_mlds env pkg'.name libraries odoc_pages in
+  Logs.debug (fun m ->
+      m "Libraries to document: [%a]" Fmt.(list ~sep:sp string) all_libs);
+  let dirs' =
+    List.filter_map
+      (fun lib ->
+        match Ocamlfind.get_dir lib with
+        | Error _ ->
+            Logs.debug (fun m -> m "No dir for library %s" lib);
+            None
+        | Ok p ->
+            let archives = Ocamlfind.archives lib in
             Logs.debug (fun m ->
-                m "%d mlds for package %s (from %d odoc_pages)"
-                  (List.length mlds) pkg.name
-                  (Fpath.Set.cardinal odoc_pages));
-
-            Util.StringMap.update pkg.name
+                m "Archives for library %s: [%a]" lib
+                  Fmt.(list ~sep:sp string)
+                  archives);
+            let archives =
+              List.map
+                (fun x ->
+                  try Filename.chop_extension x
+                  with e ->
+                    Logs.err (fun m -> m "Can't chop extension from %s" x);
+                    raise e)
+                archives
+            in
+            let archives = Util.StringSet.(of_list archives) in
+            Some (lib, p, archives))
+      all_libs
+  in
+  let (map, rmap) :
+      (Opam.package * Fpath.set * Fpath.set * Fpath.set) list
+      * Opam.package Fpath.map =
+    (* if Sys.file_exists ".pkg_to_dir_map" then (
+         let ic = open_in_bin ".pkg_to_dir_map" in
+         let result = Marshal.from_channel ic in
+         close_in ic;
+         result)
+       else *)
+    let result = Opam.pkg_to_dir_map () in
+    (* let oc = open_out_bin ".pkg_to_dir_map" in
+       Marshal.to_channel oc result [];
+       close_out oc; *)
+    result
+  in
+  let dirs =
+    List.fold_left
+      (fun set (_lib, p, archives) ->
+        Fpath.Map.update p
+          (function
+            | Some set -> Some (Util.StringSet.union set archives)
+            | None -> Some archives)
+          set)
+      Fpath.Map.empty dirs'
+  in
+  let libname_of_archive =
+    List.fold_left
+      (fun map (lib, _, archives) ->
+        match Util.StringSet.elements archives with
+        | [] -> map
+        | [ archive ] ->
+            Util.StringMap.update archive
               (function
-                | Some pkg ->
-                    Some { pkg with libraries = libraries @ pkg.libraries }
-                | None ->
-                    Some
-                      {
-                        name = pkg.name;
-                        version = pkg.version;
-                        libraries;
-                        mlds;
-                        other_docs;
-                      })
-              acc)
-      dirs Util.StringMap.empty
+                | None -> Some lib
+                | Some x ->
+                    Logs.err (fun m ->
+                        m
+                          "Multiple libraries for archive %s: %s and %s. \
+                           Arbitrarily picking the latter."
+                          archive x lib);
+                    Some lib)
+              map
+        | xs ->
+            Logs.err (fun m ->
+                m "multiple archives detected: [%a]"
+                  Fmt.(list ~sep:sp string)
+                  xs);
+            assert false)
+      Util.StringMap.empty dirs'
+  in
+  ignore libname_of_archive;
+  let mk_mlds _env pkg_name libraries odoc_pages =
+    Fpath.Set.fold
+      (fun mld_path acc ->
+        let mld_parent_id = Printf.sprintf "%s/doc" pkg_name in
+        let page_name = Fpath.(rem_ext mld_path |> filename) in
+        let odoc_file =
+          Fpath.(v mld_parent_id / ("page-" ^ page_name ^ ".odoc"))
+        in
+        let odocl_file = Fpath.(set_ext "odocl" odoc_file) in
+        let mld_deps = List.map (fun l -> l.odoc_dir) libraries in
+        {
+          mld_odoc_file = odoc_file;
+          mld_odocl_file = odocl_file;
+          mld_parent_id;
+          mld_path;
+          mld_deps;
+        }
+        :: acc)
+      odoc_pages []
+  in
+  Fpath.Map.fold
+    (fun dir archives acc ->
+      match Fpath.Map.find dir rmap with
+      | None ->
+          Logs.debug (fun m -> m "No package for dir %a\n%!" Fpath.pp dir);
+          acc
+      | Some pkg ->
+          let libraries = Lib.v libname_of_archive pkg.name dir in
+          let libraries =
+            List.filter
+              (fun l -> Util.StringSet.mem l.archive_name archives)
+              libraries
+          in
+          let pkg', _, odoc_pages, other_docs =
+            List.find
+              (fun (pkg', _, _, _) ->
+                (* Logs.debug (fun m ->
+                    m "Checking %s against %s" pkg.Opam.name pkg'.Opam.name); *)
+                pkg = pkg')
+              map
+          in
+          let mlds = mk_mlds env pkg'.name libraries odoc_pages in
+          Logs.debug (fun m ->
+              m "%d mlds for package %s (from %d odoc_pages)" (List.length mlds)
+                pkg.name
+                (Fpath.Set.cardinal odoc_pages));
+
+          Util.StringMap.update pkg.name
+            (function
+              | Some pkg ->
+                  Some { pkg with libraries = libraries @ pkg.libraries }
+              | None ->
+                  Some
+                    {
+                      name = pkg.name;
+                      version = pkg.version;
+                      libraries;
+                      mlds;
+                      other_docs;
+                    })
+            acc)
+    dirs Util.StringMap.empty
