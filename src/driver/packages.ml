@@ -1,8 +1,6 @@
 (* Packages *)
 
-type ty = Cmti | Cmt | Cmi
-
-type dep = string * string
+type dep = string * Digest.t
 
 type intf = {
   mif_odoc_file : Fpath.t;
@@ -154,8 +152,6 @@ module Module = struct
 end
 
 module Lib = struct
-  type t = libty
-
   exception Unknown_archive of string
 
   let v libname_of_archive pkg_name dir =
@@ -177,21 +173,20 @@ module Lib = struct
           Some { lib_name; dir; odoc_dir; archive_name; modules }
         with
         | Unknown_archive x ->
-          Logs.debug (fun m ->
-              m
-                "Unable to determine library in package '%s' to which archive \
-                 '%s' belongs"
-                pkg_name x);
-          Logs.debug (fun m ->
-              m "These are the archives I know about: [%a]"
-                Fmt.(list ~sep:sp string)
-                (Util.StringMap.bindings libname_of_archive |> List.map fst));
-          None
+            Logs.debug (fun m ->
+                m
+                  "Unable to determine library in package '%s' to which \
+                   archive '%s' belongs"
+                  pkg_name x);
+            Logs.debug (fun m ->
+                m "These are the archives I know about: [%a]"
+                  Fmt.(list ~sep:sp string)
+                  (Util.StringMap.bindings libname_of_archive |> List.map fst));
+            None
         | _ ->
-          Logs.err (fun m ->
-              m "Error processing library %s. Ignoring." archive_name);
-          None
-            )
+            Logs.err (fun m ->
+                m "Error processing library %s. Ignoring." archive_name);
+            None)
       results
 
   let pp ppf t =
@@ -207,7 +202,7 @@ let pp ppf t =
     Fmt.(list ~sep:sp Lib.pp)
     t.libraries
 
-let of_libs env libs =
+let of_libs libs =
   let libs = Util.StringSet.to_seq libs |> List.of_seq in
   let results = List.map (fun x -> (x, Ocamlfind.deps [ x ])) libs in
   let all_libs_set =
@@ -303,7 +298,7 @@ let of_libs env libs =
       Util.StringMap.empty dirs'
   in
   ignore libname_of_archive;
-  let mk_mlds _env pkg_name libraries odoc_pages =
+  let mk_mlds pkg_name libraries odoc_pages =
     Fpath.Set.fold
       (fun mld_path acc ->
         let mld_parent_id = Printf.sprintf "%s/doc" pkg_name in
@@ -344,7 +339,7 @@ let of_libs env libs =
                 pkg = pkg')
               map
           in
-          let mlds = mk_mlds env pkg'.name libraries odoc_pages in
+          let mlds = mk_mlds pkg'.name libraries odoc_pages in
           Logs.debug (fun m ->
               m "%d mlds for package %s (from %d odoc_pages)" (List.length mlds)
                 pkg.name

@@ -502,7 +502,7 @@ let run libs verbose odoc_dir html_dir stats nb_workers =
     List.map Ocamlfind.sub_libraries libs
     |> List.fold_left Util.StringSet.union Util.StringSet.empty
   in
-  let all = Packages.of_libs env libs in
+  let all = Packages.of_libs libs in
   Compile.init_stats all;
   let _ =
     Eio.Fiber.both
