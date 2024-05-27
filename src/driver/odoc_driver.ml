@@ -540,6 +540,7 @@ let html_dir =
   Arg.(value & opt fpath_arg (Fpath.v "_html/") & info [ "html-dir" ] ~doc)
 
 let packages =
+  (* TODO: Is it package or library? *)
   let doc = "The packages to document" in
   Arg.(value & opt_all string [] & info [ "p" ] ~doc)
 
