@@ -457,42 +457,40 @@ let render_stats env nprocs =
   let non_hidden = Atomic.get Stats.stats.non_hidden_units in
 
   let dline x y = Multi.line (bar x y) in
-  try
-    with_reporters
-      Multi.(
-        dline "Compiling" total
-        ++ dline "Compiling impls" total_impls
-        ++ dline "Compiling pages" total_mlds
-        ++ dline "Linking" non_hidden
-        ++ dline "Linking impls" total_impls
-        ++ dline "Linking mlds" total_mlds
-        ++ dline "HTML" (total_impls + non_hidden + total_mlds)
-        ++ line (procs nprocs))
-      (fun comp compimpl compmld link linkimpl linkmld html procs ->
-        let rec inner (a, b, c, d, e, f, g, h) =
-          Eio.Time.sleep clock 0.1;
-          let a' = Atomic.get Stats.stats.compiled_units in
-          let b' = Atomic.get Stats.stats.compiled_impls in
-          let c' = Atomic.get Stats.stats.compiled_mlds in
-          let d' = Atomic.get Stats.stats.linked_units in
-          let e' = Atomic.get Stats.stats.linked_impls in
-          let f' = Atomic.get Stats.stats.linked_mlds in
-          let g' = Atomic.get Stats.stats.generated_units in
-          let h' = Atomic.get Stats.stats.processes in
+  with_reporters
+    Multi.(
+      dline "Compiling" total
+      ++ dline "Compiling impls" total_impls
+      ++ dline "Compiling pages" total_mlds
+      ++ dline "Linking" non_hidden
+      ++ dline "Linking impls" total_impls
+      ++ dline "Linking mlds" total_mlds
+      ++ dline "HTML" (total_impls + non_hidden + total_mlds)
+      ++ line (procs nprocs))
+    (fun comp compimpl compmld link linkimpl linkmld html procs ->
+      let rec inner (a, b, c, d, e, f, g, h) =
+        Eio.Time.sleep clock 0.1;
+        let a' = Atomic.get Stats.stats.compiled_units in
+        let b' = Atomic.get Stats.stats.compiled_impls in
+        let c' = Atomic.get Stats.stats.compiled_mlds in
+        let d' = Atomic.get Stats.stats.linked_units in
+        let e' = Atomic.get Stats.stats.linked_impls in
+        let f' = Atomic.get Stats.stats.linked_mlds in
+        let g' = Atomic.get Stats.stats.generated_units in
+        let h' = Atomic.get Stats.stats.processes in
 
-          comp (a' - a);
-          compimpl (b' - b);
-          compmld (c' - c);
-          link (d' - d);
-          linkimpl (e' - e);
-          linkmld (f' - f);
-          html (g' - g);
-          procs (h' - h);
-          if g' < non_hidden + total_impls + total_mlds then
-            inner (a', b', c', d', e', f', g', h')
-        in
-        inner (0, 0, 0, 0, 0, 0, 0, 0))
-  with _ -> ()
+        comp (a' - a);
+        compimpl (b' - b);
+        compmld (c' - c);
+        link (d' - d);
+        linkimpl (e' - e);
+        linkmld (f' - f);
+        html (g' - g);
+        procs (h' - h);
+        if g' < non_hidden + total_impls + total_mlds then
+          inner (a', b', c', d', e', f', g', h')
+      in
+      inner (0, 0, 0, 0, 0, 0, 0, 0))
 
 let run libs verbose odoc_dir html_dir stats =
   Eio_main.run @@ fun env ->
