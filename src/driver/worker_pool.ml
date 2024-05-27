@@ -1,8 +1,12 @@
 (* Worker pool *)
 open Eio
 
-let stream : ((string * Bos.Cmd.t * Fpath.t option) * _) Eio.Stream.t =
-  Eio.Stream.create 0
+type t =
+  ((string * Bos.Cmd.t * Fpath.t option)
+  * (string list, exn) result Eio.Promise.u)
+  Eio.Stream.t
+
+let stream : t = Eio.Stream.create 0
 
 let handle_job env request output_file = Run.run env request output_file
 
@@ -32,4 +36,4 @@ let start_workers env sw n =
   for i = 1 to n do
     spawn_worker (Printf.sprintf "%d" i)
   done;
-  stream
+  ()

@@ -497,9 +497,7 @@ let run libs verbose odoc_dir html_dir stats =
   Eio.Switch.run @@ fun sw ->
   if verbose then Logs.set_level (Some Logs.Debug);
   Logs.set_reporter (Logs_fmt.reporter ());
-  let _stream = Worker_pool.start_workers env sw 15 in
-
-  (* Eio.Fiber.List.iter (fun _ -> ignore(Worker_pool.submit (Bos.Cmd.(v "sleep" % "10")))) (List.init 10 (fun x -> x)); *)
+  let () = Worker_pool.start_workers env sw 15 in
   let libs =
     List.map Ocamlfind.sub_libraries libs
     |> List.fold_left Util.StringSet.union Util.StringSet.empty
