@@ -97,16 +97,16 @@ let compile output_dir all =
               match impl.mip_src_info with
               | Some si ->
                   let output_file = Fpath.(output_dir // impl.mip_odoc_file) in
-                  Odoc.compile_impl output_dir impl.mip_path includes
-                    impl.mip_parent_id si.src_id;
+                  Odoc.compile_impl ~output_dir ~input_file:impl.mip_path
+                    ~includes ~parent_id:impl.mip_parent_id ~source_id:si.src_id;
                   Atomic.incr Stats.stats.compiled_impls;
                   Some (output_file, si.src_path)
               | None -> None)
           | None -> None
         in
 
-        Odoc.compile output_dir modty.m_intf.mif_path includes
-          modty.m_intf.mif_parent_id;
+        Odoc.compile ~output_dir ~input_file:modty.m_intf.mif_path ~includes
+          ~parent_id:modty.m_intf.mif_parent_id;
         Atomic.incr Stats.stats.compiled_units;
 
         let output_dir = Fpath.split_base output_file |> fst in
@@ -146,7 +146,8 @@ let compile output_dir all =
         (fun acc (mld : Packages.mld) ->
           let output_file = Fpath.(output_dir // mld.Packages.mld_odoc_file) in
           let odoc_output_dir = Fpath.split_base output_file |> fst in
-          Odoc.compile output_dir mld.mld_path Fpath.Set.empty mld.mld_parent_id;
+          Odoc.compile ~output_dir ~input_file:mld.mld_path
+            ~includes:Fpath.Set.empty ~parent_id:mld.mld_parent_id;
           Atomic.incr Stats.stats.compiled_mlds;
           let include_dirs =
             List.map (fun f -> Fpath.(output_dir // f)) mld.mld_deps
@@ -164,12 +165,12 @@ let link : compiled list -> _ =
  fun compiled ->
   let link : compiled -> linked list =
    fun c ->
-    let include_dirs = Fpath.Set.add c.output_dir c.include_dirs in
+    let includes = Fpath.Set.add c.output_dir c.include_dirs in
     let impl =
       match c.impl with
       | Some (x, y) ->
           Logs.debug (fun m -> m "Linking impl: %a" Fpath.pp x);
-          Odoc.link x include_dirs;
+          Odoc.link ~input_file:x ~includes ();
           Atomic.incr Stats.stats.linked_impls;
           [ { output_file = Fpath.(set_ext "odocl" x); src = Some y } ]
       | None -> []
@@ -180,7 +181,7 @@ let link : compiled list -> _ =
         impl
     | _ ->
         Logs.debug (fun m -> m "linking %a" Fpath.pp c.output_file);
-        Odoc.link c.output_file include_dirs;
+        Odoc.link ~input_file:c.output_file ~includes ();
         (match c.m with
         | Module _ -> Atomic.incr Stats.stats.linked_units
         | Mld _ -> Atomic.incr Stats.stats.linked_mlds);
@@ -193,7 +194,9 @@ let html_generate : Fpath.t -> linked list -> _ =
  fun output_dir linked ->
   let html_generate : linked -> unit =
    fun l ->
-    Odoc.html_generate (Fpath.to_string output_dir) l.output_file l.src;
+    Odoc.html_generate
+      ~output_dir:(Fpath.to_string output_dir)
+      ~input_file:l.output_file ?source:l.src ();
     Atomic.incr Stats.stats.generated_units
   in
   Fiber.List.iter html_generate linked
