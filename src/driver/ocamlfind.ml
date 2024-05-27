@@ -1,6 +1,3 @@
-module StringSet = Set.Make (String)
-module StringMap = Map.Make (String)
-
 let init () =
   let prefix = Opam.prefix () in
   let env_camllib = Fpath.(v prefix / "lib" / "ocaml" |> to_string) in
@@ -33,8 +30,8 @@ let top_libraries () =
   List.fold_left
     (fun acc lib ->
       let package = String.split_on_char '.' lib |> List.hd in
-      StringSet.add package acc)
-    StringSet.empty packages
+      Util.StringSet.add package acc)
+    Util.StringSet.empty packages
 
 let archives pkg =
   init ();
@@ -62,17 +59,17 @@ let sub_libraries top =
   List.fold_left
     (fun acc lib ->
       let package = String.split_on_char '.' lib |> List.hd in
-      if package = top then StringSet.add lib acc else acc)
-    StringSet.empty packages
+      if package = top then Util.StringSet.add lib acc else acc)
+    Util.StringSet.empty packages
 
 let dir_to_package_map () =
   let package_to_dir = package_to_dir_map () in
   List.fold_left
     (fun map (pkg_name, dir) ->
-      StringMap.update dir
+      Util.StringMap.update dir
         (function None -> Some [ pkg_name ] | Some l -> Some (pkg_name :: l))
         map)
-    StringMap.empty package_to_dir
+    Util.StringMap.empty package_to_dir
 
 let deps pkgs =
   try
