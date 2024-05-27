@@ -247,9 +247,7 @@ let of_libs libs =
             Some (lib, p, archives))
       all_libs
   in
-  let (map, rmap) :
-      (Opam.package * Fpath.set * Fpath.set * Fpath.set) list
-      * Opam.package Fpath.map =
+  let map, rmap =
     (* if Sys.file_exists ".pkg_to_dir_map" then (
          let ic = open_in_bin ".pkg_to_dir_map" in
          let result = Marshal.from_channel ic in
@@ -331,9 +329,9 @@ let of_libs libs =
               (fun l -> Util.StringSet.mem l.archive_name archives)
               libraries
           in
-          let pkg', _, odoc_pages, other_docs =
+          let pkg', { Opam.odoc_pages; other_docs; _ } =
             List.find
-              (fun (pkg', _, _, _) ->
+              (fun (pkg', _) ->
                 (* Logs.debug (fun m ->
                     m "Checking %s against %s" pkg.Opam.name pkg'.Opam.name); *)
                 pkg = pkg')
