@@ -448,7 +448,7 @@ let render_stats env nprocs =
   let total_mlds = Atomic.get Stats.stats.total_mlds in
   let bar message total =
     let open Progress.Line in
-    list [ lpad 16 (const message); spinner (); bar total; count_to total ]
+    list [ lpad 16 (const message); bar total; count_to total ]
   in
   let procs total =
     let open Progress.Line in
