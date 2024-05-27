@@ -1,17 +1,25 @@
 (* Worker pool *)
 open Eio
 
-type t =
-  ((string * Bos.Cmd.t * Fpath.t option)
-  * (string list, exn) result Eio.Promise.u)
-  Eio.Stream.t
+type request = {
+  description : string;
+  request : Bos.Cmd.t;
+  output_file : Fpath.t option;
+}
+
+type response = (string list, exn) result
+type resolver = response Eio.Promise.u
+
+type t = (request * resolver) Eio.Stream.t
 
 let stream : t = Eio.Stream.create 0
 
 let handle_job env request output_file = Run.run env request output_file
 
 let rec run_worker env id : unit =
-  let (_, request, output_file), reply = Eio.Stream.take stream in
+  let { request; output_file; description = _ }, reply =
+    Eio.Stream.take stream
+  in
   Atomic.incr Stats.stats.processes;
   (try
      let result = handle_job env request output_file in
@@ -20,9 +28,9 @@ let rec run_worker env id : unit =
    with e -> Promise.resolve_error reply e);
   run_worker env id
 
-let submit desc request output_file =
+let submit description request output_file =
   let reply, resolve_reply = Promise.create () in
-  Eio.Stream.add stream ((desc, request, output_file), resolve_reply);
+  Eio.Stream.add stream ({ description; request; output_file }, resolve_reply);
   Promise.await reply
 
 let start_workers env sw n =
