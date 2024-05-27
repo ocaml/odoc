@@ -360,3 +360,5 @@ let of_libs libs =
                     })
             acc)
     dirs Util.StringMap.empty
+
+type set = t Util.StringMap.t

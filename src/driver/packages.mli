@@ -73,5 +73,7 @@ type t = {
 
 val pp : Format.formatter -> t -> unit
 
-val of_libs : Util.StringSet.t -> t Util.StringMap.t
+type set = t Util.StringMap.t
+
+val of_libs : Util.StringSet.t -> set
 (** Turns a set of libraries into a map from library name to package *)
