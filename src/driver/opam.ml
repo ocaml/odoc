@@ -83,20 +83,31 @@ let pkg_contents { name; _ } =
   in
   List.map Fpath.v added
 
-let opam_file { name; version } =
-  let prefix = Fpath.v (prefix ()) in
-  let opam_file =
-    Format.asprintf "%a/.opam-switch/packages/%s.%s/opam" Fpath.pp prefix name
-      version
-  in
-  let ic = open_in opam_file in
-  try
-    let lines = Util.lines_of_channel ic in
-    close_in ic;
-    Some lines
-  with _ ->
-    close_in ic;
-    None
+(* let opam_file { name; version } = *)
+(*   let prefix = Fpath.v (prefix ()) in *)
+(*   let opam_file = *)
+(*     Format.asprintf "%a/.opam-switch/packages/%s.%s/opam" Fpath.pp prefix name *)
+(*       version *)
+(*   in *)
+(*   let ic = open_in opam_file in *)
+(*   try *)
+(*     let lines = Util.lines_of_channel ic in *)
+(*     close_in ic; *)
+(*     Some lines *)
+(*   with _ -> *)
+(*     close_in ic; *)
+(*     None *)
+
+type installed_files = {
+  libs : Fpath.set;
+  odoc_pages : Fpath.set;
+  other_docs : Fpath.set;
+}
+
+type package_of_fpath = package Fpath.map
+
+(* Here we use an associative list *)
+type fpaths_of_package = (package * installed_files) list
 
 let pkg_to_dir_map () =
   let pkgs = all_opam_packages () in
@@ -136,12 +147,12 @@ let pkg_to_dir_map () =
             m "Found %d odoc pages, %d other docs"
               (Fpath.Set.cardinal odoc_pages)
               (Fpath.Set.cardinal other_docs));
-        (p, libs, odoc_pages, other_docs))
+        (p, { libs; odoc_pages; other_docs }))
       pkgs
   in
   let map =
     List.fold_left
-      (fun map (p, content, _, _) ->
+      (fun map (p, { libs; _ }) ->
         Fpath.Set.fold
           (fun dir map ->
             Fpath.Map.update dir
@@ -153,7 +164,7 @@ let pkg_to_dir_map () =
                           Fpath.pp dir);
                     Some p)
               map)
-          content map)
+          libs map)
       Fpath.Map.empty pkg_content
   in
   (pkg_content, map)
