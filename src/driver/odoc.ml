@@ -36,7 +36,7 @@ let compile_deps f =
   | [ (_, digest) ], deps -> Ok { digest; deps }
   | _ -> Error (`Msg "odd")
 
-let compile output_dir file includes parent_id =
+let compile ~output_dir ~input_file:file ~includes ~parent_id =
   let open Cmd in
   let includes =
     Fpath.Set.fold
@@ -56,7 +56,7 @@ let compile output_dir file includes parent_id =
   let lines = submit desc cmd output_file in
   add_prefixed_output cmd compile_output (Fpath.to_string file) lines
 
-let compile_impl output_dir file includes parent_id source_id =
+let compile_impl ~output_dir ~input_file:file ~includes ~parent_id ~source_id =
   let open Cmd in
   let includes =
     Fpath.Set.fold
@@ -81,7 +81,7 @@ let compile_impl output_dir file includes parent_id source_id =
   let lines = submit desc cmd output_file in
   add_prefixed_output cmd compile_output (Fpath.to_string file) lines
 
-let link ?(ignore_output = false) file includes =
+let link ?(ignore_output = false) ~input_file:file ~includes () =
   let open Cmd in
   let output_file = Fpath.set_ext "odocl" file in
   let includes =
@@ -102,8 +102,8 @@ let link ?(ignore_output = false) file includes =
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
 
-let html_generate output_dir ?(ignore_output = false) ?(assets = [])
-    ?(search_uris = []) file source =
+let html_generate ~output_dir ?(ignore_output = false) ?(assets = []) ?source
+    ?(search_uris = []) ~input_file:file () =
   let open Cmd in
   let source =
     match source with None -> empty | Some source -> v "--source" % p source
@@ -130,6 +130,7 @@ let support_files path =
   let cmd = odoc % "support-files" % "-o" % Fpath.to_string path in
   let desc = "Generating support files" in
   submit desc cmd None
+
 let count_occurrences output =
   let open Cmd in
   let cmd = odoc % "count-occurrences" % "-I" % "." % "-o" % p output in
