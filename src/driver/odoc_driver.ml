@@ -492,12 +492,12 @@ let render_stats env nprocs =
       in
       inner (0, 0, 0, 0, 0, 0, 0, 0))
 
-let run libs verbose odoc_dir html_dir stats =
+let run libs verbose odoc_dir html_dir stats nb_workers =
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
   if verbose then Logs.set_level (Some Logs.Debug);
   Logs.set_reporter (Logs_fmt.reporter ());
-  let () = Worker_pool.start_workers env sw 15 in
+  let () = Worker_pool.start_workers env sw nb_workers in
   let libs =
     List.map Ocamlfind.sub_libraries libs
     |> List.fold_left Util.StringSet.union Util.StringSet.empty
@@ -512,7 +512,7 @@ let run libs verbose odoc_dir html_dir stats =
         let _ = Compile.html_generate html_dir linked in
         let _ = Odoc.support_files html_dir in
         ())
-      (fun () -> render_stats env 15)
+      (fun () -> render_stats env nb_workers)
   in
 
   Format.eprintf "Final stats: %a@.%!" Stats.pp_stats Stats.stats;
@@ -551,10 +551,16 @@ let stats =
   let doc = "Produce 'driver-benchmarks.json' with run stats" in
   Arg.(value & flag & info [ "stats" ] ~doc)
 
+let nb_workers =
+  let doc = "Number of workers." in
+  Arg.(value & opt int 15 & info [ "j" ] ~doc)
+
 let cmd =
   let doc = "Generate odoc documentation" in
   let info = Cmd.info "odoc_driver" ~doc in
-  Cmd.v info Term.(const run $ packages $ verbose $ odoc_dir $ html_dir $ stats)
+  Cmd.v info
+    Term.(
+      const run $ packages $ verbose $ odoc_dir $ html_dir $ stats $ nb_workers)
 
 (* let map = Ocamlfind.package_to_dir_map () in
    let _dirs = List.map (fun lib -> List.assoc lib map) deps in
