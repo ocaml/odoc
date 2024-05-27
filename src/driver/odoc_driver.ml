@@ -441,6 +441,11 @@ let odoc_libraries =
 open Cmdliner
 
 let render_stats env nprocs =
+  let if_app f =
+    match Logs.level () with Some (App | Warning) | None -> f () | _ -> ()
+  in
+  (* Avoids overkill indentation  *)
+  if_app @@ fun () ->
   let open Progress in
   let clock = Eio.Stdenv.clock env in
   let total = Atomic.get Stats.stats.total_units in
