@@ -2,12 +2,14 @@
 
 type ty = Module of Packages.modulety | Mld of Packages.mld
 
+type impl = { impl : Fpath.t; src : Fpath.t }
+
 type compiled = {
   m : ty;
   output_dir : Fpath.t;
   output_file : Fpath.t;
   include_dirs : Fpath.Set.t;
-  impl : (Fpath.t * Fpath.t) option;
+  impl : impl option;
 }
 
 let mk_byhash (pkgs : Packages.t Util.StringMap.t) =
@@ -100,7 +102,7 @@ let compile output_dir all =
                   Odoc.compile_impl ~output_dir ~input_file:impl.mip_path
                     ~includes ~parent_id:impl.mip_parent_id ~source_id:si.src_id;
                   Atomic.incr Stats.stats.compiled_impls;
-                  Some (output_file, si.src_path)
+                  Some { impl = output_file; src = si.src_path }
               | None -> None)
           | None -> None
         in
@@ -168,11 +170,11 @@ let link : compiled list -> _ =
     let includes = Fpath.Set.add c.output_dir c.include_dirs in
     let impl =
       match c.impl with
-      | Some (x, y) ->
-          Logs.debug (fun m -> m "Linking impl: %a" Fpath.pp x);
-          Odoc.link ~input_file:x ~includes ();
+      | Some { impl; src } ->
+          Logs.debug (fun m -> m "Linking impl: %a" Fpath.pp impl);
+          Odoc.link ~input_file:impl ~includes ();
           Atomic.incr Stats.stats.linked_impls;
-          [ { output_file = Fpath.(set_ext "odocl" x); src = Some y } ]
+          [ { output_file = Fpath.(set_ext "odocl" impl); src = Some src } ]
       | None -> []
     in
     match c.m with
