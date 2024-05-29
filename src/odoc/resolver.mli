@@ -34,7 +34,7 @@ val create :
   roots:roots option ->
   t
 (** Prepare the environment for a given list of
-    {{!Fs.Directory.t} include directories}
+    {{!Fs.Directory.t} include directories}, page roots and library roots.
 
     @param important_digests indicate whether digests should be compared when
     odoc_xref2 tries to lookup or fetch a unit. It defaults to [true]. *)
