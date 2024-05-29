@@ -81,7 +81,7 @@ let compile_impl ~output_dir ~input_file:file ~includes ~parent_id ~source_id =
   let lines = submit desc cmd output_file in
   add_prefixed_output cmd compile_output (Fpath.to_string file) lines
 
-let link ?(ignore_output = false) ~input_file:file ~includes () =
+let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs () =
   let open Cmd in
   let output_file = Fpath.set_ext "odocl" file in
   let includes =
@@ -89,10 +89,25 @@ let link ?(ignore_output = false) ~input_file:file ~includes () =
       (fun path acc -> Cmd.(acc % "-I" % p path))
       includes Cmd.empty
   in
+  let docs =
+    List.fold_left
+      (fun acc (pkgname, path) ->
+        let s = Format.asprintf "%s:%a" pkgname Fpath.pp path in
+        v "-P" % s %% acc)
+      Cmd.empty docs
+  in
+  let libs =
+    List.fold_left
+      (fun acc (pkgname, path) ->
+        let s = Format.asprintf "%s:%a" pkgname Fpath.pp path in
+        v "-L" % s %% acc)
+      Cmd.empty libs
+  in
   let cmd =
-    odoc % "link" % p file % "-o" % p output_file %% includes
+    odoc % "link" % p file % "-o" % p output_file %% includes %% docs %% libs
     % "--enable-missing-root-warning"
   in
+  Logs.debug (fun m -> m "AAAAAAAA %a" pp cmd);
   let cmd =
     if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd
   in

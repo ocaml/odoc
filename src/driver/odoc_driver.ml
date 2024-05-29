@@ -509,7 +509,7 @@ let run libs verbose odoc_dir html_dir stats nb_workers =
   in
   let all = Packages.of_libs libs in
   Compile.init_stats all;
-  let _ =
+  let () =
     Eio.Fiber.both
       (fun () ->
         let compiled = Compile.compile odoc_dir all in
