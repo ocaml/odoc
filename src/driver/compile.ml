@@ -4,12 +4,18 @@ type ty = Module of Packages.modulety | Mld of Packages.mld
 
 type impl = { impl : Fpath.t; src : Fpath.t }
 
+type pkg_args = {
+  docs : (string * Fpath.t) list;
+  libs : (string * Fpath.t) list;
+}
+
 type compiled = {
   m : ty;
   output_dir : Fpath.t;
   output_file : Fpath.t;
   include_dirs : Fpath.Set.t;
   impl : impl option;
+  pkg_args : pkg_args;
 }
 
 let mk_byhash (pkgs : Packages.t Util.StringMap.t) =
@@ -63,6 +69,25 @@ open Eio.Std
 let compile output_dir all =
   let hashes = mk_byhash all in
   let tbl = Hashtbl.create 10 in
+  let pkg_args =
+    let docs, libs =
+      Util.StringMap.fold
+        (fun pkgname pkg (docs, libs) ->
+          let ( / ) = Fpath.( / ) in
+          let doc = (pkgname, output_dir / pkgname / "doc") in
+          let lib =
+            List.map
+              (fun lib ->
+                ( lib.Packages.lib_name,
+                  output_dir / pkgname / "lib" / lib.lib_name ))
+              pkg.Packages.libraries
+          in
+          let docs = doc :: docs and libs = List.rev_append lib libs in
+          (docs, libs))
+        all ([], [])
+    in
+    { docs; libs }
+  in
 
   let compile_one compile_other hash =
     match Util.StringMap.find_opt hash hashes with
@@ -119,6 +144,7 @@ let compile output_dir all =
             output_file;
             include_dirs = includes;
             impl;
+            pkg_args;
           }
   in
 
@@ -156,7 +182,14 @@ let compile output_dir all =
             |> Fpath.Set.of_list
           in
           let include_dirs = Fpath.Set.add odoc_output_dir include_dirs in
-          { m = Mld mld; output_dir; output_file; include_dirs; impl = None }
+          {
+            m = Mld mld;
+            output_dir;
+            output_file;
+            include_dirs;
+            impl = None;
+            pkg_args;
+          }
           :: acc)
         acc pkg.mlds)
     all mods
@@ -172,7 +205,8 @@ let link : compiled list -> _ =
       match c.impl with
       | Some { impl; src } ->
           Logs.debug (fun m -> m "Linking impl: %a" Fpath.pp impl);
-          Odoc.link ~input_file:impl ~includes ();
+          Odoc.link ~input_file:impl ~includes ~libs:c.pkg_args.libs
+            ~docs:c.pkg_args.docs ();
           Atomic.incr Stats.stats.linked_impls;
           [ { output_file = Fpath.(set_ext "odocl" impl); src = Some src } ]
       | None -> []
@@ -183,7 +217,8 @@ let link : compiled list -> _ =
         impl
     | _ ->
         Logs.debug (fun m -> m "linking %a" Fpath.pp c.output_file);
-        Odoc.link ~input_file:c.output_file ~includes ();
+        Odoc.link ~input_file:c.output_file ~includes ~libs:c.pkg_args.libs
+          ~docs:c.pkg_args.docs ();
         (match c.m with
         | Module _ -> Atomic.incr Stats.stats.linked_units
         | Mld _ -> Atomic.incr Stats.stats.linked_mlds);
