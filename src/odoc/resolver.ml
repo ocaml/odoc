@@ -38,13 +38,13 @@ module Named_roots : sig
 
   type error = NoPackage
 
-  val create : (string * Fs.Directory.t) list -> current_pkg:string -> t
+  val create : (string * Fs.Directory.t) list -> current_root:string -> t
 
   val find_by_path :
-    ?package:string -> t -> path:Fs.File.t -> (Fs.File.t option, error) result
+    ?root:string -> t -> path:Fs.File.t -> (Fs.File.t option, error) result
 
   val find_by_name :
-    ?package:string -> t -> name:string -> (Fs.File.t list, error) result
+    ?root:string -> t -> name:string -> (Fs.File.t list, error) result
 end = struct
   type flat =
     | Unvisited of Fs.Directory.t
@@ -54,7 +54,7 @@ end = struct
 
   type pkg = { flat : flat; hierarchical : hierarchical }
 
-  type t = { table : (string, pkg) Hashtbl.t; current_pkg : string }
+  type t = { table : (string, pkg) Hashtbl.t; current_root : string }
 
   type error = NoPackage
 
@@ -63,7 +63,7 @@ end = struct
     | x -> Some x
     | exception Not_found -> None
 
-  let create pkglist ~current_pkg =
+  let create pkglist ~current_root =
     let cache = Hashtbl.create 42 in
     List.iter
       (fun (pkgname, root) ->
@@ -71,12 +71,12 @@ end = struct
         and hierarchical = (Hashtbl.create 42, root) in
         Hashtbl.add cache pkgname { flat; hierarchical })
       pkglist;
-    { current_pkg; table = cache }
+    { current_root; table = cache }
 
-  let find_by_path ?package { table = cache; current_pkg } ~path =
+  let find_by_path ?root { table = cache; current_root } ~path =
     let path = Fpath.normalize path in
-    let package = match package with None -> current_pkg | Some pkg -> pkg in
-    match hashtbl_find_opt cache package with
+    let root = match root with None -> current_root | Some pkg -> pkg in
+    match hashtbl_find_opt cache root with
     | Some { hierarchical = cache, root; _ } -> (
         match hashtbl_find_opt cache path with
         | Some x -> Ok (Some x)
@@ -104,8 +104,8 @@ end = struct
     in
     flat_namespace
 
-  let find_by_name ?package { table = cache; current_pkg } ~name =
-    let package = match package with None -> current_pkg | Some pkg -> pkg in
+  let find_by_name ?root { table = cache; current_root } ~name =
+    let package = match root with None -> current_root | Some pkg -> pkg in
     match hashtbl_find_opt cache package with
     | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
     | Some ({ flat = Unvisited root; _ } as p) ->
@@ -292,7 +292,7 @@ let lookup_page ~pages ap target_name =
       match Astring.String.cuts ~sep:"/" reference with
       | [ name ] -> (
           let name = "page-" ^ name ^ ".odoc" in
-          match Named_roots.find_by_name ~package:"pkg" ~name pages with
+          match Named_roots.find_by_name ~root:"pkg" ~name pages with
           | Ok page -> (
               let units = load_units_from_files page in
               let is_page u =
@@ -309,11 +309,11 @@ let lookup_page ~pages ap target_name =
                     ^ string_of_int (List.length units)))
           | Error _ -> failwith "Not found by name")
       | [] -> assert false
-      | "" :: package :: path -> (
+      | "" :: root :: path -> (
           let path = Fs.File.of_string @@ String.concat "/" path in
           let filename = "page-" ^ Fpath.filename path ^ ".odoc" in
           let path = Fpath.( / ) (Fpath.parent path) filename in
-          match Named_roots.find_by_path ~package ~path pages with
+          match Named_roots.find_by_path ~root ~path pages with
           | Ok None ->
               failwith
               @@ Format.asprintf
@@ -382,9 +382,9 @@ type t = {
 }
 
 type roots = {
-  page_pkgnames : (string * Fs.Directory.t) list;
-  lib_pkgnames : (string * Fs.Directory.t) list;
-  current_pkg : string;
+  page_roots : (string * Fs.Directory.t) list;
+  lib_roots : (string * Fs.Directory.t) list;
+  current_root : string;
 }
 
 let create ~important_digests ~directories ~open_modules ~roots =
@@ -392,9 +392,9 @@ let create ~important_digests ~directories ~open_modules ~roots =
   let pages, libs =
     match roots with
     | None -> (None, None)
-    | Some { page_pkgnames; lib_pkgnames; current_pkg } ->
-        ( Some (Named_roots.create ~current_pkg page_pkgnames),
-          Some (Named_roots.create ~current_pkg lib_pkgnames) )
+    | Some { page_roots; lib_roots; current_root } ->
+        ( Some (Named_roots.create ~current_root page_roots),
+          Some (Named_roots.create ~current_root lib_roots) )
   in
   { important_digests; ap; open_modules; pages; libs }
 

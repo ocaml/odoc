@@ -22,9 +22,9 @@
 type t
 
 type roots = {
-  page_pkgnames : (string * Fs.Directory.t) list;
-  lib_pkgnames : (string * Fs.Directory.t) list;
-  current_pkg : string;
+  page_roots : (string * Fs.Directory.t) list;
+  lib_roots : (string * Fs.Directory.t) list;
+  current_root : string;
 }
 
 val create :
