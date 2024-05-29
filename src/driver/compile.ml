@@ -16,17 +16,17 @@ type compiled = {
   include_dirs : Fpath.Set.t;
   impl : impl option;
   pkg_args : pkg_args;
-  pkgname : string;
+  package_name : string;
 }
 
 let mk_byhash (pkgs : Packages.t Util.StringMap.t) =
   Util.StringMap.fold
-    (fun pkg_name pkg acc ->
+    (fun pkgname pkg acc ->
       List.fold_left
         (fun acc (lib : Packages.libty) ->
           List.fold_left
             (fun acc (m : Packages.modulety) ->
-              Util.StringMap.add m.m_intf.mif_hash (pkg_name, m) acc)
+              Util.StringMap.add m.m_intf.mif_hash (pkgname, m) acc)
             acc lib.modules)
         acc pkg.Packages.libraries)
     pkgs Util.StringMap.empty
@@ -95,7 +95,7 @@ let compile output_dir all =
     | None ->
         Logs.debug (fun m -> m "Error locating hash: %s" hash);
         Error Not_found
-    | Some (pkgname, modty) ->
+    | Some (package_name, modty) ->
         let deps = modty.m_intf.mif_deps in
         let output_file = Fpath.(output_dir // modty.m_intf.mif_odoc_file) in
         let fibers =
@@ -146,7 +146,7 @@ let compile output_dir all =
             include_dirs = includes;
             impl;
             pkg_args;
-            pkgname;
+            package_name;
           }
   in
 
@@ -167,7 +167,7 @@ let compile output_dir all =
     List.filter_map (function Ok x -> Some x | Error _ -> None) mod_results
   in
   Util.StringMap.fold
-    (fun pkgname (pkg : Packages.t) acc ->
+    (fun package_name (pkg : Packages.t) acc ->
       Logs.debug (fun m ->
           m "Package %s mlds: [%a]" pkg.name
             Fmt.(list ~sep:sp Packages.pp_mld)
@@ -191,13 +191,17 @@ let compile output_dir all =
             include_dirs;
             impl = None;
             pkg_args;
-            pkgname : string;
+            package_name;
           }
           :: acc)
         acc pkg.mlds)
     all mods
 
-type linked = { output_file : Fpath.t; src : Fpath.t option; pkgname : string }
+type linked = {
+  output_file : Fpath.t;
+  src : Fpath.t option;
+  package_name : string;
+}
 
 let link : compiled list -> _ =
  fun compiled ->
@@ -216,9 +220,9 @@ let link : compiled list -> _ =
           Atomic.incr Stats.stats.linked_impls;
           [
             {
+              package_name = c.package_name;
               output_file = Fpath.(set_ext "odocl" impl);
               src = Some src;
-              pkgname = c.pkgname;
             };
           ]
       | None -> []
@@ -236,7 +240,7 @@ let link : compiled list -> _ =
         {
           output_file = Fpath.(set_ext "odocl" c.output_file);
           src = None;
-          pkgname = c.pkgname;
+          package_name = c.package_name;
         }
         :: impl
   in
@@ -282,17 +286,37 @@ let sherlodoc ~html_dir ~odoc_dir pkgs =
   in
   Sherlodoc.index ~format ~inputs ~dst ()
 
-let html_generate : Fpath.t -> linked list -> _ =
- fun output_dir linked ->
+let compile_sidebars ~odoc_dir ~output_dir all =
+  Util.StringMap.map
+    (fun (pkg : Packages.t) ->
+      let package_name = pkg.name in
+      let ( / ) = Fpath.( / ) in
+      let libs =
+        List.map
+          (fun lib ->
+            ( lib.Packages.lib_name,
+              odoc_dir / package_name / "lib" / lib.lib_name ))
+          pkg.Packages.libraries
+      in
+      let output_file = Fpath.( / ) output_dir package_name in
+      Odoc.sidebar
+        ~docs:[ (package_name, odoc_dir / package_name / "doc") ]
+        ~libs ~output_file ();
+      output_file)
+    all
+
+let html_generate : Fpath.t -> Fpath.t Util.StringMap.t -> linked list -> _ =
+ fun output_dir sidebars linked ->
   let html_generate : linked -> unit =
    fun l ->
     let search_uris =
       [
-        sherlodoc_js_index_path_relative_to_html l.pkgname;
+        sherlodoc_js_index_path_relative_to_html l.package_name;
         sherlodoc_js_path_relative_to_html;
       ]
     in
-    Odoc.html_generate ~search_uris
+    let sidebar = Util.StringMap.find_opt l.package_name sidebars in
+    Odoc.html_generate ~search_uris ?sidebar
       ~output_dir:(Fpath.to_string output_dir)
       ~input_file:l.output_file ?source:l.src ();
     Atomic.incr Stats.stats.generated_units

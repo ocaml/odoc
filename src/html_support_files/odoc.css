@@ -296,9 +296,13 @@ body {
 }
 
 body.odoc {
-  max-width: 132ex;
+  max-width: 160ex;
   display: grid;
-  grid-template-columns: min-content 1fr;
+  grid-template-columns: min-content 1fr min-content;
+  grid-template-areas:
+    ".         nav      ."
+    "toc-local preamble toc-global"
+    "toc-local content  toc-global";
   column-gap: 4ex;
 }
 
@@ -307,8 +311,7 @@ body.odoc-src {
 }
 
 .odoc-content {
-  grid-row: 4;
-  grid-column: 2;
+  grid-area: content;
 }
 
 .odoc-content > *:first-child {
@@ -326,8 +329,7 @@ header {
 }
 
 header.odoc-preamble {
-  grid-column: 2;
-  grid-row: 3;
+  grid-area: preamble;
 }
 
 nav {
@@ -335,8 +337,7 @@ nav {
 }
 
 nav.odoc-nav {
-  grid-column: 2;
-  grid-row: 2;
+  grid-area: nav;
   margin-bottom: 2ex;
 }
 
@@ -820,13 +821,33 @@ td.def-doc *:first-child {
   line-height: 1.2;
 }
 
+.odoc-toc.odoc-local-toc:before {
+  content: "Local content";
+
+}
+.odoc-toc.odoc-global-toc:before {
+  content: "Global content";
+}
+
 /* When a search bar is present, we need the sticky sidebar to be a bit lower,
    so `top` is higher  */
 
-.odoc-search + * + .odoc-toc {
+.odoc-search + * + .odoc-tocs {
   --toc-top: calc(var(--search-bar-height) + var(--search-padding-top) + 20px);
   max-height: calc(100vh - 2 * var(--toc-top));
   top: var(--toc-top)
+}
+
+.odoc-tocs {
+  display: contents;
+}
+
+.odoc-local-toc {
+  grid-area: toc-local;
+}
+
+.odoc-global-toc {
+  grid-area: toc-global;
 }
 
 .odoc-toc {
@@ -837,9 +858,6 @@ td.def-doc *:first-child {
   color: var(--toc-color);
   padding-left: 2ex;
   padding-right: 2ex;
-  grid-row-start: 3;
-  grid-row-end: 5;
-  grid-column: 1;
   height: fit-content;
   border: solid 1px var(--border);
   border-radius: 5px;
@@ -857,9 +875,8 @@ td.def-doc *:first-child {
   display: block;
 }
 
-.odoc-sidebar ul li a:hover {
-  box-shadow: none;
-  text-decoration: underline;
+.current_unit {
+  background-color: var(--anchor-color);
 }
 
 :root {
@@ -1193,6 +1210,27 @@ td.def-doc *:first-child {
 
 /* Mobile adjustements. */
 
+@media only screen and (max-width: 210ex) {
+  body.odoc {
+    max-width: 132ex;
+    grid-template-areas:
+    ".         nav"
+    "sidebar preamble"
+    "sidebar content";
+  }
+
+  .odoc-tocs {
+      display: flex;
+      grid-area: sidebar;
+      flex-direction : column;
+      gap: 20px;
+  }
+  .odoc-toc {
+      position: unset;
+      max-height: unset;
+  }
+}
+
 @media only screen and (max-width: 110ex) {
   body {
     margin: 2em;
@@ -1200,7 +1238,17 @@ td.def-doc *:first-child {
   }
 
   body.odoc {
-    display: block;
+    grid-template-areas:
+      "nav"
+      "preamble"
+      "toc-local"
+      "content"
+      "toc-global";
+    grid-template-columns: 1fr;
+  }
+
+  .odoc-tocs {
+      display: contents;
   }
 
   .odoc-toc {
@@ -1208,6 +1256,7 @@ td.def-doc *:first-child {
     width: auto;
     min-width: unset;
     max-width: unset;
+    max-height: unset;
     border: none;
     padding: 0.2em 1em;
     border-radius: 5px;

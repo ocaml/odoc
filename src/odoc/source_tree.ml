@@ -31,7 +31,7 @@ let compile ~resolver ~parent ~output ~warnings_options:_ input =
   check_is_child_of_parent siblings root_name >>= fun () ->
   parse_input_file input >>= fun (digest, source_tree) ->
   let root =
-    let file = Root.Odoc_file.create_page root_name in
+    let file = Root.Odoc_file.create_page root_name None in
     { Root.id = (id :> Id.OdocId.t); file; digest }
   in
   let source_children = List.rev_map (source_child_id id) source_tree in

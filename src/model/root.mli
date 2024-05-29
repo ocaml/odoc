@@ -28,14 +28,16 @@ end
 module Odoc_file : sig
   type compilation_unit = { name : string; hidden : bool }
 
+  type page = { name : string; title : Comment.link_content option }
+
   type t =
-    | Page of string
+    | Page of page
     | Compilation_unit of compilation_unit
     | Impl of string
 
   val create_unit : force_hidden:bool -> string -> t
 
-  val create_page : string -> t
+  val create_page : string -> Comment.link_content option -> t
 
   val create_impl : string -> t
 

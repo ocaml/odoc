@@ -14,8 +14,9 @@ A quick test to repro the issue found in #941
 The rendered html
 
   $ cat html/Foo/index.html | grep "splice_me" -A 3
-    <nav class="odoc-toc"><ul><li><a href="#splice_me">Splice me</a></li></ul>
-    </nav>
+      <ul><li><a href="#splice_me">Splice me</a></li></ul>
+     </nav>
+    </div>
     <div class="odoc-content">
      <h3 id="splice_me"><a href="#splice_me" class="anchor"></a>Splice me</h3>
      <p>Should output only the heading's text: 

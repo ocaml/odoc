@@ -516,7 +516,12 @@ let run libs verbose odoc_dir html_dir stats nb_workers =
         let linked = Compile.link compiled in
         let () = Compile.index odoc_dir all in
         let () = Compile.sherlodoc ~html_dir ~odoc_dir all in
-        let () = Compile.html_generate html_dir linked in
+        let sidebars =
+          Compile.compile_sidebars ~odoc_dir
+            ~output_dir:(Fpath.( / ) odoc_dir "sidebars")
+            all
+        in
+        let () = Compile.html_generate html_dir sidebars linked in
         let _ = Odoc.support_files html_dir in
         ())
       (fun () -> render_stats env nb_workers)

@@ -62,6 +62,22 @@ let compile_impl ~output_dir ~input_file:file ~includes ~parent_id ~source_id =
   Cmd_outputs.(
     add_prefixed_output cmd compile_output (Fpath.to_string file) lines)
 
+let doc_args docs =
+  let open Cmd in
+  List.fold_left
+    (fun acc (pkgname, path) ->
+      let s = Format.asprintf "%s:%a" pkgname Fpath.pp path in
+      v "-P" % s %% acc)
+    Cmd.empty docs
+
+let lib_args libs =
+  let open Cmd in
+  List.fold_left
+    (fun acc (libname, path) ->
+      let s = Format.asprintf "%s:%a" libname Fpath.pp path in
+      v "-L" % s %% acc)
+    Cmd.empty libs
+
 let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs
     ~current_package () =
   let open Cmd in
@@ -71,20 +87,8 @@ let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs
       (fun path acc -> Cmd.(acc % "-I" % p path))
       includes Cmd.empty
   in
-  let docs =
-    List.fold_left
-      (fun acc (pkgname, path) ->
-        let s = Format.asprintf "%s:%a" pkgname Fpath.pp path in
-        v "-P" % s %% acc)
-      Cmd.empty docs
-  in
-  let libs =
-    List.fold_left
-      (fun acc (pkgname, path) ->
-        let s = Format.asprintf "%s:%a" pkgname Fpath.pp path in
-        v "-L" % s %% acc)
-      Cmd.empty libs
-  in
+  let docs = doc_args docs in
+  let libs = lib_args libs in
   let cmd =
     odoc % "link" % p file % "-o" % p output_file %% includes %% docs %% libs
     % "--current-package" % current_package % "--enable-missing-root-warning"
@@ -115,11 +119,26 @@ let compile_index ?(ignore_output = false) ~dst ~json ~include_rec () =
     Cmd_outputs.(
       add_prefixed_output cmd link_output (Fpath.to_string dst) lines)
 
-let html_generate ~output_dir ?(ignore_output = false) ?(assets = []) ?source
-    ?(search_uris = []) ~input_file:file () =
+let sidebar ?(ignore_output = false) ~docs ~libs ~output_file () =
+  let open Cmd in
+  let docs = doc_args docs in
+  let libs = lib_args libs in
+  let cmd = odoc % "sidebar" % "-o" % p output_file %% docs %% libs in
+  let desc = Printf.sprintf "Sidebar for %s" (Fpath.to_string output_file) in
+
+  let lines = Cmd_outputs.submit desc cmd (Some output_file) in
+  if not ignore_output then
+    Cmd_outputs.(
+      add_prefixed_output cmd link_output (Fpath.to_string output_file) lines)
+
+let html_generate ~output_dir ?sidebar ?(ignore_output = false) ?(assets = [])
+    ?source ?(search_uris = []) ~input_file:file () =
   let open Cmd in
   let source =
     match source with None -> empty | Some source -> v "--source" % p source
+  in
+  let sidebar =
+    match sidebar with None -> empty | Some sb -> v "--sidebar" % p sb
   in
   let assets =
     List.fold_left (fun acc filename -> acc % "--asset" % filename) empty assets
@@ -130,8 +149,8 @@ let html_generate ~output_dir ?(ignore_output = false) ?(assets = []) ?source
       empty search_uris
   in
   let cmd =
-    odoc % "html-generate" %% source % p file %% assets %% search_uris % "-o"
-    % output_dir
+    odoc % "html-generate" %% source % p file %% assets %% sidebar
+    %% search_uris % "-o" % output_dir
   in
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string file) in
   let lines = Cmd_outputs.submit desc cmd None in

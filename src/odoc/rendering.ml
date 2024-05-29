@@ -1,4 +1,6 @@
+module Sidebar_ = Sidebar
 open Odoc_document
+module Sidebar = Sidebar_
 open Or_error
 open Odoc_model
 
@@ -110,8 +112,18 @@ let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
       documents_of_unit ~warnings_options ~source:None ~filename:"" ~syntax
         ~renderer ~extra m
 
-let render_document renderer ~output:root_dir ~extra_suffix ~extra doc =
-  let pages = renderer.Renderer.render extra doc in
+let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
+    =
+  let url =
+    match doc with
+    | Odoc_document.Types.Document.Page { url; _ } -> url
+    | Source_page { url; _ } -> url
+    | Asset { url; _ } -> url
+  in
+  let sidebar =
+    Option.map (fun sb -> Odoc_document.Sidebar.to_block sb url) sidebar
+  in
+  let pages = renderer.Renderer.render extra sidebar doc in
   Renderer.traverse pages ~f:(fun filename content ->
       let filename =
         match extra_suffix with
@@ -131,14 +143,23 @@ let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
   let extra_suffix = None in
   documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax file
   >>= fun docs ->
-  List.iter (render_document renderer ~output ~extra_suffix ~extra) docs;
+  List.iter
+    (render_document renderer ~sidebar:None ~output ~extra_suffix ~extra)
+    docs;
   Ok ()
 
 let generate_odoc ~syntax ~warnings_options ~renderer ~output ~extra_suffix
-    ~source extra file =
+    ~source ~sidebar extra file =
+  let sidebar =
+    match sidebar with
+    | None -> None
+    | Some x -> Some (x |> Sidebar.read |> Odoc_document.Sidebar.of_lang)
+  in
   documents_of_odocl ~warnings_options ~renderer ~source ~extra ~syntax file
   >>= fun docs ->
-  List.iter (render_document renderer ~output ~extra_suffix ~extra) docs;
+  List.iter
+    (render_document renderer ~output ~sidebar ~extra_suffix ~extra)
+    docs;
   Ok ()
 
 let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
@@ -154,7 +175,7 @@ let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
   docs >>= fun docs ->
   List.iter
     (fun doc ->
-      let pages = renderer.Renderer.render extra doc in
+      let pages = renderer.Renderer.render extra None doc in
       Renderer.traverse pages ~f:(fun filename _content ->
           let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
           Format.printf "%a\n" Fpath.pp filename))
