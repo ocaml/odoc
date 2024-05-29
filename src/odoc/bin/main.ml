@@ -658,9 +658,8 @@ end = struct
   let page_pkgnames =
     let doc =
       "Specifies a directory PATH containing pages that can be referenced by \
-       {!/pkgname} during linking. A pkgname can be specified in the -P \
-       command only once. All the trees specified by this option must be \
-       disjoint."
+       {!/pkgname}. A pkgname can be specified in the -P command only once. \
+       All the trees specified by this option must be disjoint."
     in
     Arg.(
       value
