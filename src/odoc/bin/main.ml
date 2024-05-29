@@ -624,19 +624,19 @@ end = struct
   let is_page input =
     input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"
 
-  let link directories page_pkgnames lib_pkgnames input_file output_file
+  let link directories page_roots lib_roots input_file output_file
       warnings_options open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
-    (if not (check_antichain (List.rev_append lib_pkgnames page_pkgnames)) then
+    (if not (check_antichain (List.rev_append lib_roots page_roots)) then
        Error
          (`Msg "Arguments given to -P and -L cannot be included in each others")
      else Ok ())
     >>= fun () ->
-    (if is_page input then find_package_of_output page_pkgnames output
-     else find_package_of_output lib_pkgnames output)
-    >>= fun current_pkg ->
-    let roots = Some { Resolver.page_pkgnames; lib_pkgnames; current_pkg } in
+    (if is_page input then find_package_of_output page_roots output
+     else find_package_of_output lib_roots output)
+    >>= fun current_root ->
+    let roots = Some { Resolver.page_roots; lib_roots; current_root } in
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules ~roots
     in
@@ -655,18 +655,18 @@ end = struct
       & opt (some string) None
       & info ~docs ~docv:"PATH.odocl" ~doc [ "o" ])
 
-  let page_pkgnames =
+  let page_roots =
     let doc =
       "Specifies a directory PATH containing pages that can be referenced by \
-       {!/pkgname}. A pkgname can be specified in the -P command only once. \
-       All the trees specified by this option must be disjoint."
+       {!/pkgname/pagename}. A pkgname can be specified in the -P command only \
+       once. All the trees specified by this option must be disjoint."
     in
     Arg.(
       value
       & opt_all convert_named_root []
       & info ~docs ~docv:"pkgname:PATH" ~doc [ "P" ])
 
-  let lib_pkgnames =
+  let lib_roots =
     let doc =
       "Specifies a library called libname containing the modules in PATH. \
        Modules can be referenced both using the flat module namespace \
@@ -684,8 +684,8 @@ end = struct
     in
     Term.(
       const handle_error
-      $ (const link $ odoc_file_directories $ page_pkgnames $ lib_pkgnames
-       $ input $ dst $ warnings_options $ open_modules))
+      $ (const link $ odoc_file_directories $ page_roots $ lib_roots $ input
+       $ dst $ warnings_options $ open_modules))
 
   let info ~docs =
     let man =
