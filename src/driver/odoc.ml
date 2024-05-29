@@ -107,7 +107,6 @@ let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs () =
     odoc % "link" % p file % "-o" % p output_file %% includes %% docs %% libs
     % "--enable-missing-root-warning"
   in
-  Logs.debug (fun m -> m "AAAAAAAA %a" pp cmd);
   let cmd =
     if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd
   in
