@@ -1,0 +1,4 @@
+{0 File}
+
+{!page-"#my_page"}
+{!page-"#/pkg/dir1/my_page"}

@@ -1,6 +1,6 @@
 open Odoc_document
 
-let render _ page = Odoc_manpage.Generator.render page
+let render _ _sidebar page = Odoc_manpage.Generator.render page
 
 let extra_documents _args _unit = []
 

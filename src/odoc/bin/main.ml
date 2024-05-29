@@ -783,6 +783,93 @@ end = struct
     Term.info ~docs ~doc ~man "link"
 end
 
+module Sidebar = struct
+  let absolute_normalization p =
+    let p =
+      if Fpath.is_rel p then Fpath.( // ) (Fpath.v (Sys.getcwd ())) p else p
+    in
+    Fpath.normalize p
+
+  (** Check that a list of directories form an antichain: they are all disjoints *)
+  let check_antichain l =
+    let l =
+      List.map
+        ~f:(fun p -> p |> Fs.Directory.to_fpath |> absolute_normalization)
+        l
+    in
+    let rec check = function
+      | [] -> true
+      | p1 :: rest ->
+          List.for_all
+            ~f:(fun p2 ->
+              (not (Fpath.is_prefix p1 p2)) && not (Fpath.is_prefix p2 p1))
+            rest
+          && check rest
+    in
+    check l
+
+  open Or_error
+
+  let sidebar page_roots lib_roots output_file warnings_options =
+    let output = Fs.File.of_string output_file in
+    (if
+       not
+         (check_antichain
+            (List.rev_append
+               (List.map ~f:snd lib_roots)
+               (List.map ~f:snd page_roots)))
+     then Error (`Msg "Paths given to all -P and -L options must be disjoint")
+     else Ok ())
+    >>= fun () ->
+    let lib_roots =
+      List.map ~f:(fun (libname, root) -> (libname, root)) lib_roots
+    in
+    match Sidebar.compile ~lib_roots ~page_roots ~warnings_options ~output with
+    | Error _ as e -> e
+    | Ok _ -> Ok ()
+
+  let dst =
+    let doc =
+      "Output file path. Non-existing intermediate directories are created."
+    in
+    Arg.(
+      required & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
+
+  let page_roots =
+    let doc =
+      "Specifies a directory PATH containing pages that should be included in \
+       the sidebar, under the NAME section."
+    in
+    Arg.(
+      value
+      & opt_all convert_named_root []
+      & info ~docs ~docv:"NAME:PATH" ~doc [ "P" ])
+
+  let lib_roots =
+    let doc =
+      "Specifies a directory PATH containing units that should be included in \
+       the sidebar, as part of the LIBNAME library."
+    in
+
+    Arg.(
+      value
+      & opt_all convert_named_root []
+      & info ~docs ~docv:"LIBNAME:PATH" ~doc [ "L" ])
+
+  let cmd =
+    Term.(
+      const handle_error
+      $ (const sidebar $ page_roots $ lib_roots $ dst $ warnings_options))
+
+  let info ~docs =
+    let doc =
+      "Generate a sidebar file from a list of pages and units. The generated \
+       file ought to be passed to the --sidebar argument of the html-generate \
+       command."
+    in
+    Term.info ~docs ~doc "sidebar"
+end
+
 module type S = sig
   type args
 
@@ -854,11 +941,11 @@ end = struct
           exit 1
 
     let generate extra _hidden output_dir syntax extra_suffix input_file
-        warnings_options source_file source_root =
+        warnings_options source_file source_root sidebar =
       let source = source_of_args source_root source_file in
       let file = Fs.File.of_string input_file in
       Rendering.generate_odoc ~renderer:R.renderer ~warnings_options ~syntax
-        ~output:output_dir ~extra_suffix ~source extra file
+        ~output:output_dir ~extra_suffix ~source ~sidebar extra file
 
     let source_file =
       let doc =
@@ -881,6 +968,13 @@ end = struct
         & opt (some convert_src_dir) None
         & info [ "source-root" ] ~doc ~docv:"dir")
 
+    let sidebar =
+      let doc = "Use FILE to generate the global sidebar." in
+      Arg.(
+        value
+        & opt (some convert_fpath) None
+        & info [ "sidebar" ] ~doc ~docv:"FILE")
+
     let cmd =
       let syntax =
         let doc = "Available options: ml | re" in
@@ -894,7 +988,7 @@ end = struct
         const handle_error
         $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
          $ extra_suffix $ input_odocl $ warnings_options $ source_file
-         $ source_root))
+         $ source_root $ sidebar))
 
     let info ~docs =
       let doc =
@@ -1509,6 +1603,7 @@ let () =
       Occurrences.Aggregate.(cmd, info ~docs:section_pipeline);
       Compile.(cmd, info ~docs:section_pipeline);
       Odoc_link.(cmd, info ~docs:section_pipeline);
+      Sidebar.(cmd, info ~docs:section_pipeline);
       Odoc_html.generate ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
       Source_tree.(cmd, info ~docs:section_pipeline);

@@ -97,8 +97,12 @@ module Identifier = struct
    fun x ->
     match x.iv with
     | `Root (_, name) -> [ ModuleName.to_string name ]
-    | `Page (_, name) -> [ PageName.to_string name ]
-    | `LeafPage (_, name) -> [ PageName.to_string name ]
+    | `Page (None, name) -> [ PageName.to_string name ]
+    | `Page (Some parent, name) ->
+        PageName.to_string name :: full_name_aux (parent :> t)
+    | `LeafPage (None, name) -> [ PageName.to_string name ]
+    | `LeafPage (Some parent, name) ->
+        PageName.to_string name :: full_name_aux (parent :> t)
     | `Module (parent, name) ->
         ModuleName.to_string name :: full_name_aux (parent :> t)
     | `Parameter (parent, name) ->

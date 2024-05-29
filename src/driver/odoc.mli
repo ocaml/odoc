@@ -33,8 +33,17 @@ val compile_index :
   unit ->
   unit
 
+val sidebar :
+  ?ignore_output:bool ->
+  docs:(string * Fpath.t) list ->
+  libs:(string * Fpath.t) list ->
+  output_file:Fpath.t ->
+  unit ->
+  unit
+
 val html_generate :
   output_dir:string ->
+  ?sidebar:Fpath.t ->
   ?ignore_output:bool ->
   ?assets:string list ->
   ?source:Fpath.t ->

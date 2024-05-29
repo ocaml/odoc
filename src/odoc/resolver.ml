@@ -40,6 +40,8 @@ module Named_roots : sig
 
   val create : (string * Fs.Directory.t) list -> current_root:string option -> t
 
+  val all_of : ?root:string -> ext:string -> t -> (Fs.File.t list, error) result
+
   val find_by_path :
     ?root:string -> t -> path:Fs.File.t -> (Fs.File.t option, error) result
 
@@ -123,6 +125,21 @@ end = struct
         Hashtbl.replace cache package { p with flat = Visited flat };
         Ok (Hashtbl.find_all flat name)
     | None -> Error NoPackage
+
+  let all_of ?root ~ext { table; current_root } =
+    let my_root = match root with None -> current_root | Some pkg -> pkg in
+    let return flat =
+      let values = Hashtbl.fold (fun _ v acc -> v :: acc) flat [] in
+      let values = List.filter (Fpath.has_ext ext) values in
+      Ok values
+    in
+    match Hashtbl.find table my_root with
+    | { flat = Visited flat; _ } -> return flat
+    | { flat = Unvisited root; _ } as p ->
+        let flat = populate_flat_namespace ~root in
+        Hashtbl.replace table my_root { p with flat = Visited flat };
+        return flat
+    | exception Not_found -> Error NoPackage
 end
 
 let () = (ignore Named_roots.find_by_name [@warning "-5"])
@@ -396,6 +413,53 @@ type t = {
   libs : Named_roots.t option;
   open_modules : string list;
 }
+
+let rec filter_map acc f = function
+  | hd :: tl ->
+      let acc = match f hd with Some x -> x :: acc | None -> acc in
+      filter_map acc f tl
+  | [] -> List.rev acc
+
+let all_roots ?root named_roots =
+  let all_files =
+    match Named_roots.all_of ?root named_roots ~ext:"odocl" with
+    | Ok x -> x
+    | Error NoPackage -> []
+  in
+  let load page =
+    match Odoc_file.load_root page with Error _ -> None | Ok root -> Some root
+  in
+  filter_map [] load all_files
+
+let all_pages ?root ({ pages; _ } : t) =
+  let filter (root : Odoc_model.Root.t) =
+    match root with
+    | {
+     file = Page { title; _ };
+     id = { iv = #Odoc_model.Paths.Identifier.Page.t_pv; _ } as id;
+     _;
+    } ->
+        Some (id, title)
+    | _ -> None
+  in
+  match pages with
+  | None -> []
+  | Some pages -> filter_map [] filter @@ all_roots ?root pages
+
+let all_units ~library ({ libs; _ } : t) =
+  let filter (root : Odoc_model.Root.t) =
+    match root with
+    | {
+     file = Compilation_unit _;
+     id = { iv = #Odoc_model.Paths.Identifier.RootModule.t_pv; _ } as id;
+     _;
+    } ->
+        Some id
+    | _ -> None
+  in
+  match libs with
+  | None -> []
+  | Some libs -> filter_map [] filter @@ all_roots ~root:library libs
 
 type roots = {
   page_roots : (string * Fs.Directory.t) list;

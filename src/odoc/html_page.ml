@@ -18,8 +18,8 @@ open Odoc_model
 
 type args = { html_config : Odoc_html.Config.t; assets : Fpath.t list }
 
-let render { html_config; assets = _ } page =
-  Odoc_html.Generator.render ~config:html_config page
+let render { html_config; assets = _ } sidebar page =
+  Odoc_html.Generator.render ~config:html_config ~sidebar page
 
 let list_filter_map f lst =
   List.rev
