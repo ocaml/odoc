@@ -1,60 +1,85 @@
-  $ odoc compile my_page.mld
-  $ mkdir -p a/b/c/
-  $ mkdir -p z
-  $ cp page-my_page.odoc a/b/c/
-  $ cp file.mld a/
 
-  $ odoc compile a/file.mld
+  $ mkdir _odoc
+ $ odoc compile --output-dir _odoc/ --parent-id pkg/doc/dir1 my_page.mld
+ $ odoc compile --output-dir _odoc/ --parent-id pkg/doc file.mld
+ $ odoc compile --output-dir _odoc/ --parent-id pkg/lib/libname unit.cmt
 
-  $ odoc link a/page-file.odoc 2>&1 >/dev/null | grep 'Failure'
-        Failure("Not found by name")
-  $ odoc link -P pkg:a/ a/page-file.odoc
+ $ tree _odoc
+
+ $ odoc link _odoc/pkg/doc/page-file.odoc 2>&1 >/dev/null | grep 'Failure'
+ [1]
+ $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/doc/page-file.odoc
+ $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/doc/dir1/page-my_page.odoc
+ $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/lib/libname/unit.odoc
+
+
+  $ ocamlc -c -bin-annot unit.ml
+
+  $ odoc compile --output-dir _odoc/ --parent-id pkg/doc/dir1 my_page.mld
+  $ odoc compile --output-dir _odoc/ --parent-id pkg/doc file.mld
+  $ odoc compile --output-dir _odoc/ --parent-id pkg/lib/libname unit.cmt
+
+  $ odoc link _odoc/pkg/doc/page-file.odoc 2>&1 >/dev/null | grep 'Failure'
+  [1]
+  $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/doc/page-file.odoc
 
 Testing the collision detection:
 
 Same directory used twice
-  $ odoc link -P pkg:a/ -P pkg2:a/ a/page-file.odoc
+  $ odoc link -P pkg:_odoc/pkg/doc -P pkg2:_odoc/pkg/doc _odoc/pkg/doc/page-file.odoc
   ERROR: Arguments given to -P and -L cannot be included in each others
   [1]
 
 # Two directories given relatively
  Right input:
-  $ odoc link -P pkg:a/ -P pkg2:z/ a/page-file.odoc
+  $ mkdir _odoc/pkg2
+  $ odoc link -P pkg:_odoc/pkg/doc/ -P pkg2:_odoc/pkg2/ _odoc/pkg/doc/page-file.odoc
  Wrong input:
-  $ odoc link -P pkg:a/ -P pkg2:a/b a/page-file.odoc
+  $ odoc link -P pkg:_odoc/pkg/doc -P pkg2:_odoc/pkg _odoc/pkg/doc/page-file.odoc
   ERROR: Arguments given to -P and -L cannot be included in each others
   [1]
 
 # One directory given relatively, the other absolutely
  Right input
-  $ odoc link -P pkg:a/ -P pkg2:$PWD/z/ a/page-file.odoc
+  $ odoc link -P pkg:_odoc/pkg/doc/ -P pkg2:$PWD/_odoc/pkg2 _odoc/pkg/doc/page-file.odoc
  Wrong input
-  $ odoc link -P pkg:a/ -P pkg2:$PWD/a/b page-file.odoc
-  odoc: FILE.odoc argument: no 'page-file.odoc' file or directory
-  Usage: odoc link [--open=MODULE] [OPTION]… FILE.odoc
-  Try 'odoc link --help' or 'odoc --help' for more information.
-  [2]
+  $ odoc link -P pkg:_odoc/pkg/doc/ -P pkg2:$PWD/_odoc/pkg _odoc/pkg/doc/page-file.odoc
+  ERROR: Arguments given to -P and -L cannot be included in each others
+  [1]
 
 # Two directories given absolutely
  Right input
-  $ odoc link -P pkg:$PWD/a/ -P pkg2:$PWD/z/ a/page-file.odoc
+  $ odoc link -P pkg:$PWD/_odoc/pkg/doc/ -P pkg2:$PWD/_odoc/pkg2 _odoc/pkg/doc/page-file.odoc
  Wrong input
-  $ odoc link -P pkg:$PWD/a/ -P pkg2:$PWD/a/b a/page-file.odoc
+  $ odoc link -P pkg:$PWD/_odoc/pkg/doc/ -P pkg2:$PWD/_odoc/pkg _odoc/pkg/doc/page-file.odoc
   ERROR: Arguments given to -P and -L cannot be included in each others
   [1]
 
 # With a bit of relative faff
  Right input:
-  $ odoc link -P pkg:a/../a -P pkg2:z/../z a/page-file.odoc
+  $ odoc link -P pkg:_odoc/../_odoc/pkg/doc/ -P pkg2:_odoc/../_odoc/pkg2 _odoc/pkg/doc/page-file.odoc
  Wrong input:
-  $ odoc link -P pkg:a/../a -P pkg2:z/../a/b a/page-file.odoc
+  $ odoc link -P pkg:_odoc/../_odoc/pkg/doc/ -P pkg2:_odoc/../_odoc/pkg _odoc/pkg/doc/page-file.odoc
   ERROR: Arguments given to -P and -L cannot be included in each others
   [1]
 
 Testing detection of package:
-  $ mkdir alpha
-  $ cp a/page-file.odoc alpha/page-file.odoc
-  $ odoc link -P pkg:a/ -P alpha:alpha alpha/page-file.odoc
-  $ odoc link -P pkg:a/  alpha/page-file.odoc
-  ERROR: The output file must be part of a directory passed as a -P or -L
-  [1]
+ Can detect:
+  $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/doc/page-file.odoc
+ Cannot detect due to wrong input:
+  $ odoc link -P pkg2:_odoc/pkg/doc/ _odoc/pkg/doc/page-file.odoc
+  Not found by nameError during find by path: no package was found with this name
+  File "file.mld", line 4, characters 0-28:
+  Warning: Failed to resolve reference unresolvedroot(#/pkg/dir1/my_page) Couldn't find page "#/pkg/dir1/my_page"
+  File "file.mld", line 3, characters 0-18:
+  Warning: Failed to resolve reference unresolvedroot(#my_page) Couldn't find page "#my_page"
+
+Testing missing file:
+  $ rm _odoc/pkg/doc/dir1/page-my_page.odoc*
+  $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/doc/page-file.odoc
+  Page not found by name: 0
+  Error during find by path: no file was found with this path: dir1/page-my_page.odoc
+  File "file.mld", line 4, characters 0-28:
+  Warning: Failed to resolve reference unresolvedroot(#/pkg/dir1/my_page) Couldn't find page "#/pkg/dir1/my_page"
+  File "file.mld", line 3, characters 0-18:
+  Warning: Failed to resolve reference unresolvedroot(#my_page) Couldn't find page "#my_page"
