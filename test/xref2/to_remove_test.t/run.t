@@ -39,6 +39,15 @@ Same directory used twice
   ERROR: Arguments given to -P and -L cannot be included in each others
   [1]
 
+# Two directories given relatively with -L
+ Right input:
+  $ mkdir _odoc/mylib
+  $ odoc link -P pkg:_odoc/pkg/doc/ -L mylib:_odoc/mylib/ _odoc/pkg/doc/page-file.odoc
+ Wrong input:
+  $ odoc link -P pkg:_odoc/pkg/doc -L pkg2:_odoc/pkg _odoc/pkg/doc/page-file.odoc
+  ERROR: Arguments given to -P and -L cannot be included in each others
+  [1]
+
 # One directory given relatively, the other absolutely
  Right input
   $ odoc link -P pkg:_odoc/pkg/doc/ -P pkg2:$PWD/_odoc/pkg2 _odoc/pkg/doc/page-file.odoc
