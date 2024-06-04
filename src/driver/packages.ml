@@ -316,6 +316,13 @@ let of_libs libs =
         :: acc)
       odoc_pages []
   in
+  let update_mlds mlds libraries =
+    List.map
+      (fun mld ->
+        let mld_deps = List.map (fun l -> l.odoc_dir) libraries in
+        { mld with mld_deps })
+      mlds
+  in
   Fpath.Map.fold
     (fun dir archives acc ->
       match Fpath.Map.find dir rmap with
@@ -342,11 +349,16 @@ let of_libs libs =
               m "%d mlds for package %s (from %d odoc_pages)" (List.length mlds)
                 pkg.name
                 (Fpath.Set.cardinal odoc_pages));
-
           Util.StringMap.update pkg.name
             (function
               | Some pkg ->
-                  Some { pkg with libraries = libraries @ pkg.libraries }
+                  let libraries = libraries @ pkg.libraries in
+                  Some
+                    {
+                      pkg with
+                      libraries;
+                      mlds = update_mlds pkg.mlds libraries;
+                    }
               | None ->
                   Some
                     {
