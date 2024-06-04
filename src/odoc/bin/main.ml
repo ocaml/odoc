@@ -657,26 +657,26 @@ end = struct
 
   let page_roots =
     let doc =
-      "Specifies a directory PATH containing pages that can be referenced by \
+      "Specifies a directory DIR containing pages that can be referenced by \
        {!/pkgname/pagename}. A pkgname can be specified in the -P command only \
        once. All the trees specified by this option and -L must be disjoint."
     in
     Arg.(
       value
       & opt_all convert_named_root []
-      & info ~docs ~docv:"pkgname:PATH" ~doc [ "P" ])
+      & info ~docs ~docv:"pkgname:DIR" ~doc [ "P" ])
 
   let lib_roots =
     let doc =
-      "Specifies a library called libname containing the modules in PATH. \
-       Modules can be referenced both using the flat module namespace \
+      "Specifies a library called libname containing the modules in directory \
+       DIR. Modules can be referenced both using the flat module namespace \
        {!Module} and the absolute reference {!/libname/Module}. All the trees \
        specified by this option and -P must be disjoint."
     in
     Arg.(
       value
       & opt_all convert_named_root []
-      & info ~docs ~docv:"libname:PATH" ~doc [ "L" ])
+      & info ~docs ~docv:"libname:DIR" ~doc [ "L" ])
 
   let cmd =
     let input =
