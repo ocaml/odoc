@@ -659,7 +659,7 @@ end = struct
     let doc =
       "Specifies a directory PATH containing pages that can be referenced by \
        {!/pkgname/pagename}. A pkgname can be specified in the -P command only \
-       once. All the trees specified by this option must be disjoint."
+       once. All the trees specified by this option and -L must be disjoint."
     in
     Arg.(
       value
@@ -670,7 +670,8 @@ end = struct
     let doc =
       "Specifies a library called libname containing the modules in PATH. \
        Modules can be referenced both using the flat module namespace \
-       {!Module} and the absolute reference {!/libname/Module}."
+       {!Module} and the absolute reference {!/libname/Module}. All the trees \
+       specified by this option and -P must be disjoint."
     in
     Arg.(
       value
