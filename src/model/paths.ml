@@ -1096,6 +1096,7 @@ module Reference = struct
   type t = Paths_types.Reference.any
 
   type tag_any = Paths_types.Reference.tag_any
+  type tag_page_path = Paths_types.Reference.tag_page_path
 
   module Signature = struct
     type t = Paths_types.Reference.signature
@@ -1175,5 +1176,9 @@ module Reference = struct
 
   module Page = struct
     type t = Paths_types.Reference.page
+  end
+
+  module PagePath = struct
+    type t = Paths_types.Reference.page_path
   end
 end
