@@ -59,12 +59,19 @@ module Reference = struct
         render_resolved (r :> t) ^ "." ^ InstanceVariableName.to_string s
     | `Label (_, s) -> LabelName.to_string s
 
+  let rec render_page_path = function
+    | `Root (s, `TRelativePath) -> "./" ^ s
+    | `Root (s, `TAbsolutePath) -> "/" ^ s
+    | `Root (s, `TCurrentPackage) -> "//" ^ s
+    | `Slash (p, s) -> render_page_path p ^ "/" ^ s
+
   let rec render_unresolved : Reference.t -> string =
     let open Reference in
     function
     | `Resolved r -> render_resolved r
     | `Root (n, _) -> n
     | `Dot (p, f) -> render_unresolved (p :> t) ^ "." ^ f
+    | `Page_path p -> render_page_path p
     | `Module (p, f) ->
         render_unresolved (p :> t) ^ "." ^ ModuleName.to_string f
     | `ModuleType (p, f) ->

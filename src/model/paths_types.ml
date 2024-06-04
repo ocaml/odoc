@@ -553,6 +553,11 @@ module rec Reference : sig
 
   type tag_only_child_module = [ `TChildModule ]
 
+  type tag_page_path =
+    [ `TRelativePath (* {!identifier/} *)
+    | `TAbsolutePath (* {!/identifier} *)
+    | `TCurrentPackage (* {!//identifier} *) ]
+
   type tag_any =
     [ `TModule
     | `TModuleType
@@ -592,10 +597,16 @@ module rec Reference : sig
     | `TChildPage
     | `TChildModule ]
 
+  type page_path =
+    [ `Root of string * tag_page_path
+    | `Slash of page_path * string (* {!page_path/identifier} *) ]
+  (** @canonical Odoc_model.Paths.Reference.PagePath.t *)
+
   type signature =
     [ `Resolved of Resolved_reference.signature
     | `Root of string * tag_signature
     | `Dot of label_parent * string
+    | `Page_path of page_path
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Signature.t *)
@@ -629,6 +640,7 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.label_parent
     | `Root of string * tag_label_parent
     | `Dot of label_parent * string
+    | `Page_path of page_path
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
     | `Class of signature * ClassName.t
@@ -743,13 +755,15 @@ module rec Reference : sig
   type page =
     [ `Resolved of Resolved_reference.page
     | `Root of string * [ `TPage | `TUnknown ]
-    | `Dot of label_parent * string ]
+    | `Dot of label_parent * string
+    | `Page_path of page_path ]
   (** @canonical Odoc_model.Paths.Reference.Page.t *)
 
   type any =
     [ `Resolved of Resolved_reference.any
     | `Root of string * tag_any
     | `Dot of label_parent * string
+    | `Page_path of page_path
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
