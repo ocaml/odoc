@@ -304,10 +304,13 @@ let lookup_page ~pages ap target_name =
               match find_map is_page units with
               | Some (p, _) -> Some p
               | None ->
-                  failwith
+                  Format.eprintf "%s\n"
                     ("Page not found by name: "
-                    ^ string_of_int (List.length units)))
-          | Error _ -> failwith "Not found by name")
+                    ^ string_of_int (List.length units));
+                  None)
+          | Error _ ->
+              Format.eprintf "Not found by name";
+              None)
       | [] -> assert false
       | "" :: root :: path -> (
           let path = Fs.File.of_string @@ String.concat "/" path in
@@ -315,11 +318,12 @@ let lookup_page ~pages ap target_name =
           let path = Fpath.( / ) (Fpath.parent path) filename in
           match Named_roots.find_by_path ~root ~path pages with
           | Ok None ->
-              failwith
+              Format.eprintf "%s\n"
               @@ Format.asprintf
                    "Error during find by path: no file was found with this \
                     path: %a"
-                   Fpath.pp path
+                   Fpath.pp path;
+              None
           | Ok (Some page) -> (
               let units = load_units_from_files [ page ] in
               let is_page u =
@@ -335,9 +339,10 @@ let lookup_page ~pages ap target_name =
                     ("Page not found by name: "
                     ^ string_of_int (List.length units)))
           | Error NoPackage ->
-              failwith
-                "Error during find by path: no package was found with this name"
-          )
+              Format.eprintf "%s\n"
+              @@ "Error during find by path: no package was found with this \
+                  name";
+              None)
       | _ -> failwith "Relative references (a/b, ../a/b) are not yet tested")
   | _ -> (
       let target_name = "page-" ^ target_name in
