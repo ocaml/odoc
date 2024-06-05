@@ -276,11 +276,10 @@ module Identifier : sig
       [> `ModuleType of Signature.t * ModuleTypeName.t ] id
 
     val class_ :
-      Signature.t * ClassName.t -> [> `Class of Signature.t * ClassName.t ] id
+      Signature.t * TypeName.t -> [> `Class of Signature.t * TypeName.t ] id
 
     val class_type :
-      Signature.t * ClassTypeName.t ->
-      [> `ClassType of Signature.t * ClassTypeName.t ] id
+      Signature.t * TypeName.t -> [> `ClassType of Signature.t * TypeName.t ] id
 
     val type_ :
       Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ] id

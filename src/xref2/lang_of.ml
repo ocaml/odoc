@@ -116,9 +116,9 @@ module Path = struct
     | `Type (`Module p, n) ->
         `Dot (`Resolved (resolved_module map p), TypeName.to_string n)
     | `Class (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), ClassName.to_string n)
+        `Dot (`Resolved (resolved_module map p), TypeName.to_string n)
     | `ClassType (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), ClassTypeName.to_string n)
+        `Dot (`Resolved (resolved_module map p), TypeName.to_string n)
     | `Type _ | `Class _ | `ClassType _ -> failwith "Probably shouldn't happen"
 
   and class_type map (p : Cpath.class_type) : Odoc_model.Paths.Path.ClassType.t
@@ -134,9 +134,9 @@ module Path = struct
     | `Resolved x -> `Resolved (resolved_class_type map x)
     | `Dot (p, n) -> `Dot (module_ map p, n)
     | `Class (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), ClassName.to_string n)
+        `Dot (`Resolved (resolved_module map p), TypeName.to_string n)
     | `ClassType (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), ClassTypeName.to_string n)
+        `Dot (`Resolved (resolved_module map p), TypeName.to_string n)
     | `Class _ | `ClassType _ -> failwith "Probably shouldn't happen"
 
   and resolved_module map (p : Cpath.Resolved.module_) :

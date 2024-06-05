@@ -179,8 +179,8 @@ and Include : sig
     s_module_types : (string * Names.ModuleTypeName.t) list;
     s_values : (string * Names.ValueName.t) list;
     s_types : (string * Names.TypeName.t) list;
-    s_classes : (string * Names.ClassName.t) list;
-    s_class_types : (string * Names.ClassTypeName.t) list;
+    s_classes : (string * Names.TypeName.t) list;
+    s_class_types : (string * Names.TypeName.t) list;
   }
 
   type expansion = { shadowed : shadowed; content : Signature.t }

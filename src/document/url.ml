@@ -45,9 +45,8 @@ let render_path : Odoc_model.Paths.Path.t -> string =
         render_resolved (p :> t) ^ "." ^ ModuleTypeName.to_string s
     | `Type (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
     | `Value (p, s) -> render_resolved (p :> t) ^ "." ^ ValueName.to_string s
-    | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ ClassName.to_string s
-    | `ClassType (p, s) ->
-        render_resolved (p :> t) ^ "." ^ ClassTypeName.to_string s
+    | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
+    | `ClassType (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
   and render_path : Odoc_model.Paths.Path.t -> string =
    fun x ->
     match x with
@@ -172,12 +171,12 @@ module Path = struct
     | { iv = `Class (parent, name); _ } ->
         let parent = from_identifier (parent :> any) in
         let kind = `Class in
-        let name = ClassName.to_string name in
+        let name = TypeName.to_string name in
         mk ~parent kind name
     | { iv = `ClassType (parent, name); _ } ->
         let parent = from_identifier (parent :> any) in
         let kind = `ClassType in
-        let name = ClassTypeName.to_string name in
+        let name = TypeName.to_string name in
         mk ~parent kind name
     | { iv = `Result p; _ } -> from_identifier (p :> any)
     | { iv = `SourceDir (parent, name); _ } ->

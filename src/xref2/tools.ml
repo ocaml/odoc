@@ -768,8 +768,8 @@ and lookup_type_gpath :
         Ok (`FClassType (name, t))
     | `CanonicalType (t1, _) -> lookup_type_gpath env t1
     | `Type (p, id) -> do_type p (TypeName.to_string id)
-    | `Class (p, id) -> do_type p (ClassName.to_string id)
-    | `ClassType (p, id) -> do_type p (ClassTypeName.to_string id)
+    | `Class (p, id) -> do_type p (TypeName.to_string id)
+    | `ClassType (p, id) -> do_type p (TypeName.to_string id)
     | `SubstitutedT t -> lookup_type_gpath env t
     | `SubstitutedCT t ->
         lookup_type_gpath env (t :> Odoc_model.Paths.Path.Resolved.Type.t)
@@ -827,8 +827,8 @@ and lookup_class_type_gpath :
           (Env.(lookup_by_id s_class_type) i env)
         >>= fun (`ClassType ({ iv = `ClassType (_, name); _ }, t)) ->
         Ok (`FClassType (name, t))
-    | `Class (p, id) -> do_type p (ClassName.to_string id)
-    | `ClassType (p, id) -> do_type p (ClassTypeName.to_string id)
+    | `Class (p, id) -> do_type p (TypeName.to_string id)
+    | `ClassType (p, id) -> do_type p (TypeName.to_string id)
     | `SubstitutedCT c -> lookup_class_type_gpath env c
   in
   res
@@ -859,8 +859,8 @@ and lookup_type :
     | `CanonicalType (t1, _) -> lookup_type env t1
     | `Substituted s -> lookup_type env s
     | `Type (p, id) -> do_type p (TypeName.to_string id)
-    | `Class (p, id) -> do_type p (ClassName.to_string id)
-    | `ClassType (p, id) -> do_type p (ClassTypeName.to_string id)
+    | `Class (p, id) -> do_type p (TypeName.to_string id)
+    | `ClassType (p, id) -> do_type p (TypeName.to_string id)
   in
   res
 
@@ -901,8 +901,8 @@ and lookup_class_type :
     | `Local id -> Error (`LocalType (env, (id :> Ident.path_type)))
     | `Gpath p -> lookup_class_type_gpath env p
     | `Substituted s -> lookup_class_type env s
-    | `Class (p, id) -> do_type p (ClassName.to_string id)
-    | `ClassType (p, id) -> do_type p (ClassTypeName.to_string id)
+    | `Class (p, id) -> do_type p (TypeName.to_string id)
+    | `ClassType (p, id) -> do_type p (TypeName.to_string id)
   in
   res
 
@@ -1042,7 +1042,7 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
         |> map_error (fun e -> (e :> simple_type_lookup_error))
         >>= fun (parent_sig, sub) ->
         let t =
-          match Find.type_in_sig parent_sig (ClassName.to_string id) with
+          match Find.type_in_sig parent_sig (TypeName.to_string id) with
           | Some (`FClass (name, t)) ->
               Some (`Class (parent, name), `FClass (name, Subst.class_ sub t))
           | Some _ -> None
@@ -1053,7 +1053,7 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
         lookup_parent env parent
         |> map_error (fun e -> (e :> simple_type_lookup_error))
         >>= fun (parent_sg, sub) ->
-        handle_type_lookup env (ClassTypeName.to_string id) parent parent_sg
+        handle_type_lookup env (TypeName.to_string id) parent parent_sg
         >>= fun (p', t') ->
         let t =
           match t' with
@@ -1142,7 +1142,7 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
       |> map_error (fun e -> (e :> simple_type_lookup_error))
       >>= fun (parent_sig, sub) ->
       let t =
-        match Find.type_in_sig parent_sig (ClassName.to_string id) with
+        match Find.type_in_sig parent_sig (TypeName.to_string id) with
         | Some (`FClass (name, t)) ->
             Some (`Class (parent, name), `FClass (name, Subst.class_ sub t))
         | Some _ -> None
@@ -1153,7 +1153,7 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
       lookup_parent env parent
       |> map_error (fun e -> (e :> simple_type_lookup_error))
       >>= fun (parent_sg, sub) ->
-      handle_class_type_lookup (ClassTypeName.to_string id) parent parent_sg
+      handle_class_type_lookup (TypeName.to_string id) parent parent_sg
       >>= fun (p', t') ->
       let t =
         match t' with

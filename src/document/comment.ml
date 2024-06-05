@@ -50,9 +50,8 @@ module Reference = struct
     | `Exception (r, s) ->
         render_resolved (r :> t) ^ "." ^ ExceptionName.to_string s
     | `Value (r, s) -> render_resolved (r :> t) ^ "." ^ ValueName.to_string s
-    | `Class (r, s) -> render_resolved (r :> t) ^ "." ^ ClassName.to_string s
-    | `ClassType (r, s) ->
-        render_resolved (r :> t) ^ "." ^ ClassTypeName.to_string s
+    | `Class (r, s) -> render_resolved (r :> t) ^ "." ^ TypeName.to_string s
+    | `ClassType (r, s) -> render_resolved (r :> t) ^ "." ^ TypeName.to_string s
     | `Method (r, s) ->
         (* CR trefis: do we really want to print anything more than [s] here?  *)
         render_resolved (r :> t) ^ "." ^ MethodName.to_string s
@@ -94,9 +93,9 @@ module Reference = struct
     | `Exception (p, f) ->
         render_unresolved (p :> t) ^ "." ^ ExceptionName.to_string f
     | `Value (p, f) -> render_unresolved (p :> t) ^ "." ^ ValueName.to_string f
-    | `Class (p, f) -> render_unresolved (p :> t) ^ "." ^ ClassName.to_string f
+    | `Class (p, f) -> render_unresolved (p :> t) ^ "." ^ TypeName.to_string f
     | `ClassType (p, f) ->
-        render_unresolved (p :> t) ^ "." ^ ClassTypeName.to_string f
+        render_unresolved (p :> t) ^ "." ^ TypeName.to_string f
     | `Method (p, f) ->
         render_unresolved (p :> t) ^ "." ^ MethodName.to_string f
     | `InstanceVariable (p, f) ->

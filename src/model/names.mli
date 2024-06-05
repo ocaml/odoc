@@ -89,10 +89,6 @@ module ExceptionName : SimpleName
 
 module ValueName : Name
 
-module ClassName : Name
-
-module ClassTypeName : Name
-
 module MethodName : SimpleName
 
 module InstanceVariableName : SimpleName

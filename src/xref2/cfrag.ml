@@ -23,8 +23,8 @@ and resolved_module_type =
 
 and resolved_type =
   [ `Type of resolved_signature * TypeName.t
-  | `Class of resolved_signature * ClassName.t
-  | `ClassType of resolved_signature * ClassTypeName.t ]
+  | `Class of resolved_signature * TypeName.t
+  | `ClassType of resolved_signature * TypeName.t ]
 
 (* and signature = [ `Resolved of resolved_signature ] *)
 
@@ -115,12 +115,12 @@ let resolved_type_split : resolved_type -> string * resolved_type option =
       )
   | `Class (m, name) -> (
       match resolved_signature_split_parent m with
-      | RBase _ -> (ClassName.to_string name, None)
+      | RBase _ -> (TypeName.to_string name, None)
       | RBranch (base, m) -> (ModuleName.to_string base, Some (`Class (m, name)))
       )
   | `ClassType (m, name) -> (
       match resolved_signature_split_parent m with
-      | RBase _ -> (ClassTypeName.to_string name, None)
+      | RBase _ -> (TypeName.to_string name, None)
       | RBranch (base, m) ->
           (ModuleName.to_string base, Some (`ClassType (m, name))))
 
@@ -147,9 +147,9 @@ and unresolve_type : resolved_type -> type_ = function
   | `Type (parent, name) ->
       `Dot (unresolve_signature parent, TypeName.to_string name)
   | `ClassType (parent, name) ->
-      `Dot (unresolve_signature parent, ClassTypeName.to_string name)
+      `Dot (unresolve_signature parent, TypeName.to_string name)
   | `Class (parent, name) ->
-      `Dot (unresolve_signature parent, ClassName.to_string name)
+      `Dot (unresolve_signature parent, TypeName.to_string name)
 
 and unresolve_module_type : resolved_module_type -> module_type = function
   | `ModuleType (parent, name) ->

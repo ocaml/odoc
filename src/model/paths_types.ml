@@ -72,8 +72,7 @@ module Identifier = struct
   (** @canonical Odoc_model.Paths.Identifier.Signature.t *)
 
   type class_signature_pv =
-    [ `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t ]
+    [ `Class of signature * TypeName.t | `ClassType of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.ClassSignature.t_pv *)
 
   and class_signature = class_signature_pv id
@@ -179,13 +178,13 @@ module Identifier = struct
   and value = value_pv id
   (** @canonical Odoc_model.Paths.Identifier.Value.t *)
 
-  type class_pv = [ `Class of signature * ClassName.t ]
+  type class_pv = [ `Class of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Class.t_pv *)
 
   and class_ = class_pv id
   (** @canonical Odoc_model.Paths.Identifier.Class.t *)
 
-  type class_type_pv = [ `ClassType of signature * ClassTypeName.t ]
+  type class_type_pv = [ `ClassType of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.ClassType.t_pv *)
 
   and class_type = class_type_pv id
@@ -400,8 +399,8 @@ and Resolved_path : sig
   type class_type =
     [ `Identifier of Identifier.path_class_type
     | `SubstitutedCT of class_type
-    | `Class of module_ * ClassName.t
-    | `ClassType of module_ * ClassTypeName.t ]
+    | `Class of module_ * TypeName.t
+    | `ClassType of module_ * TypeName.t ]
 
   type type_ =
     [ `Identifier of Identifier.path_type
@@ -409,8 +408,8 @@ and Resolved_path : sig
     | `SubstitutedCT of class_type
     | `CanonicalType of type_ * Path.type_
     | `Type of module_ * TypeName.t
-    | `Class of module_ * ClassName.t
-    | `ClassType of module_ * ClassTypeName.t ]
+    | `Class of module_ * TypeName.t
+    | `ClassType of module_ * TypeName.t ]
   (** @canonical Odoc_model.Paths.Path.Resolved.Type.t *)
 
   type any =
@@ -433,11 +432,11 @@ and Resolved_path : sig
     | `OpaqueModuleType of module_type
     | `CanonicalType of type_ * Path.type_
     | `Type of module_ * TypeName.t
-    | `Class of module_ * ClassName.t
-    | `ClassType of module_ * ClassTypeName.t
-    | `Class of module_ * ClassName.t
+    | `Class of module_ * TypeName.t
+    | `ClassType of module_ * TypeName.t
+    | `Class of module_ * TypeName.t
     | `Value of module_ * ValueName.t
-    | `ClassType of module_ * ClassTypeName.t ]
+    | `ClassType of module_ * TypeName.t ]
   (** @canonical Odoc_model.Paths.Path.Resolved.t *)
 end =
   Resolved_path
@@ -494,8 +493,8 @@ and Resolved_fragment : sig
 
   type type_ =
     [ `Type of signature * TypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t ]
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Fragment.Resolved.Type.t *)
 
   and module_type = [ `Module_type of signature * ModuleTypeName.t ]
@@ -512,8 +511,8 @@ and Resolved_fragment : sig
     | `Module of signature * ModuleName.t
     | `Module_type of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t
     | `OpaqueModule of module_ ]
   (** @canonical Odoc_model.Paths.Fragment.Resolved.t *)
 end =
@@ -616,8 +615,8 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.class_signature
     | `Root of string * tag_class_signature
     | `Dot of label_parent * string
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t ]
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.ClassSignature.t *)
 
   and datatype =
@@ -647,8 +646,8 @@ module rec Reference : sig
     | `Any_path of hierarchy
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t
     | `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.LabelParent.t *)
 
@@ -671,8 +670,8 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.type_
     | `Root of string * [ `TType | `TClass | `TClassType | `TUnknown ]
     | `Dot of label_parent * string
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t
     | `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Type.t *)
 
@@ -725,15 +724,15 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.class_
     | `Root of string * [ `TClass | `TUnknown ]
     | `Dot of label_parent * string
-    | `Class of signature * ClassName.t ]
+    | `Class of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Class.t *)
 
   type class_type =
     [ `Resolved of Resolved_reference.class_type
     | `Root of string * [ `TClass | `TClassType | `TUnknown ]
     | `Dot of label_parent * string
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t ]
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.ClassType.t *)
 
   type method_ =
@@ -780,8 +779,8 @@ module rec Reference : sig
     | `ExtensionDecl of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t
     | `Value of signature * ValueName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t
     | `Method of class_signature * MethodName.t
     | `InstanceVariable of class_signature * InstanceVariableName.t
     | `Label of label_parent * LabelName.t ]
@@ -819,8 +818,8 @@ and Resolved_reference : sig
 
   and class_signature =
     [ `Identifier of Identifier.class_signature
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t ]
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.ClassSignature.t *)
 
   (* fragment_type_parent in resolved references is for record fields parent.
@@ -845,8 +844,8 @@ and Resolved_reference : sig
     | `Module of signature * ModuleName.t
     | `Hidden of module_
     | `ModuleType of signature * ModuleTypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t
     | `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.LabelParent.t *)
 
@@ -859,8 +858,8 @@ and Resolved_reference : sig
   type type_ =
     [ `Identifier of Identifier.reference_type
     | `Type of signature * TypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t ]
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Type.t *)
 
   type constructor =
@@ -903,13 +902,13 @@ and Resolved_reference : sig
 
   type class_ =
     [ `Identifier of Identifier.reference_class
-    | `Class of signature * ClassName.t ]
+    | `Class of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Class.t *)
 
   type class_type =
     [ `Identifier of Identifier.reference_class_type
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t ]
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.ClassType.t *)
 
   type method_ =
@@ -945,8 +944,8 @@ and Resolved_reference : sig
     | `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t
     | `Exception of signature * ExceptionName.t
     | `Value of signature * ValueName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
+    | `Class of signature * TypeName.t
+    | `ClassType of signature * TypeName.t
     | `Method of class_signature * MethodName.t
     | `InstanceVariable of class_signature * InstanceVariableName.t
     | `Label of label_parent * LabelName.t ]

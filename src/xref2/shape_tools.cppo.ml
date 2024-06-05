@@ -45,9 +45,9 @@ let rec shape_of_id env :
         proj parent Kind.Extension_constructor (ExtensionName.to_string name)
     | `Exception (parent, name) ->
         proj parent Kind.Extension_constructor (ExceptionName.to_string name)
-    | `Class (parent, name) -> proj parent Kind.Class (ClassName.to_string_unsafe name)
+    | `Class (parent, name) -> proj parent Kind.Class (TypeName.to_string_unsafe name)
     | `ClassType (parent, name) ->
-        proj parent Kind.Class_type (ClassTypeName.to_string_unsafe name)
+        proj parent Kind.Class_type (TypeName.to_string_unsafe name)
     | `Page _ | `LeafPage _ | `Label _ | `CoreType _ | `CoreException _
     | `Constructor _ | `Field _ | `Method _ | `InstanceVariable _ | `Parameter _
       ->
