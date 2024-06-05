@@ -343,10 +343,10 @@ let parse whole_reference_location s :
         | `TUnknown ->
             `Dot ((parent next_token tokens :> LabelParent.t), identifier)
         | `TClass ->
-            `Class (signature next_token tokens, ClassName.make_std identifier)
+            `Class (signature next_token tokens, TypeName.make_std identifier)
         | `TClassType ->
             `ClassType
-              (signature next_token tokens, ClassTypeName.make_std identifier)
+              (signature next_token tokens, TypeName.make_std identifier)
         | _ ->
             expected [ "class"; "class-type" ] location |> Error.raise_exception
         )
@@ -391,10 +391,10 @@ let parse whole_reference_location s :
         | `TType ->
             `Type (signature next_token tokens, TypeName.make_std identifier)
         | `TClass ->
-            `Class (signature next_token tokens, ClassName.make_std identifier)
+            `Class (signature next_token tokens, TypeName.make_std identifier)
         | `TClassType ->
             `ClassType
-              (signature next_token tokens, ClassTypeName.make_std identifier)
+              (signature next_token tokens, TypeName.make_std identifier)
         | `TPathComponent -> assert false
         | _ ->
             expected ~expect_paths:true
@@ -462,10 +462,10 @@ let parse whole_reference_location s :
         | `TValue ->
             `Value (signature next_token tokens, ValueName.make_std identifier)
         | `TClass ->
-            `Class (signature next_token tokens, ClassName.make_std identifier)
+            `Class (signature next_token tokens, TypeName.make_std identifier)
         | `TClassType ->
             `ClassType
-              (signature next_token tokens, ClassTypeName.make_std identifier)
+              (signature next_token tokens, TypeName.make_std identifier)
         | `TMethod ->
             `Method
               (class_signature next_token tokens, MethodName.make_std identifier)

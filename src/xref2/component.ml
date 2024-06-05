@@ -696,11 +696,11 @@ module Fmt = struct
     | `Class (sg, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (sg :> id)
-          (ClassName.to_string name)
+          (TypeName.to_string name)
     | `ClassType (sg, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (sg :> id)
-          (ClassTypeName.to_string name)
+          (TypeName.to_string name)
     | `InstanceVariable (sg, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (sg :> id)
@@ -1241,10 +1241,10 @@ module Fmt = struct
           (t2 :> path)
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
-          (ClassName.to_string t)
+          (TypeName.to_string t)
     | `ClassType (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
-          (ClassTypeName.to_string t)
+          (TypeName.to_string t)
     | `Type (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (TypeName.to_string t)
@@ -1279,10 +1279,10 @@ module Fmt = struct
     | `Dot (m, s) -> Format.fprintf ppf "%a.%s" (module_path c) m s
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
-          (ClassName.to_string t)
+          (TypeName.to_string t)
     | `ClassType (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
-          (ClassTypeName.to_string t)
+          (TypeName.to_string t)
     | `Type (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (TypeName.to_string t)
@@ -1307,10 +1307,10 @@ module Fmt = struct
     | `Substituted s -> wrap c "substituted" resolved_class_type_path ppf s
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
-          (ClassName.to_string t)
+          (TypeName.to_string t)
     | `ClassType (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
-          (ClassTypeName.to_string t)
+          (TypeName.to_string t)
 
   and class_type_path : config -> Format.formatter -> Cpath.class_type -> unit =
    fun c ppf p ->
@@ -1323,10 +1323,10 @@ module Fmt = struct
     | `Dot (m, s) -> Format.fprintf ppf "%a.%s" (module_path c) m s
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
-          (ClassName.to_string t)
+          (TypeName.to_string t)
     | `ClassType (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
-          (ClassTypeName.to_string t)
+          (TypeName.to_string t)
 
   and model_path : config -> Format.formatter -> path -> unit =
    fun c ppf (p : path) ->
@@ -1409,11 +1409,11 @@ module Fmt = struct
     | `Class (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_resolved_path c)
           (parent :> t)
-          (ClassName.to_string name)
+          (TypeName.to_string name)
     | `ClassType (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_resolved_path c)
           (parent :> t)
-          (ClassTypeName.to_string name)
+          (TypeName.to_string name)
     | `OpaqueModule m -> wrap c "opaquemodule" model_resolved_path ppf (m :> t)
     | `OpaqueModuleType m ->
         wrap c "opaquemoduletype" model_resolved_path ppf (m :> t)
@@ -1471,12 +1471,12 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s"
           (model_resolved_fragment c)
           (sg :> t)
-          (ClassName.to_string cls)
+          (TypeName.to_string cls)
     | `ClassType (sg, cls) ->
         Format.fprintf ppf "%a.%s"
           (model_resolved_fragment c)
           (sg :> t)
-          (ClassTypeName.to_string cls)
+          (TypeName.to_string cls)
     | `OpaqueModule m ->
         Format.fprintf ppf "opaquemodule(%a)"
           (model_resolved_fragment c)
@@ -1525,9 +1525,9 @@ module Fmt = struct
     | `Type (`Root _, n) when c.short_paths ->
         Format.fprintf ppf "%s" (TypeName.to_string n)
     | `Class (`Root _, n) when c.short_paths ->
-        Format.fprintf ppf "%s" (ClassName.to_string n)
+        Format.fprintf ppf "%s" (TypeName.to_string n)
     | `ClassType (`Root _, n) when c.short_paths ->
-        Format.fprintf ppf "%s" (ClassTypeName.to_string n)
+        Format.fprintf ppf "%s" (TypeName.to_string n)
     | `Type (s, n) ->
         Format.fprintf ppf "%a.%s"
           (resolved_signature_fragment c)
@@ -1535,12 +1535,11 @@ module Fmt = struct
     | `Class (s, n) ->
         Format.fprintf ppf "%a.%s"
           (resolved_signature_fragment c)
-          s (ClassName.to_string n)
+          s (TypeName.to_string n)
     | `ClassType (s, n) ->
         Format.fprintf ppf "%a.%s"
           (resolved_signature_fragment c)
-          s
-          (ClassTypeName.to_string n)
+          s (TypeName.to_string n)
 
   and signature_fragment c ppf (f : Cfrag.signature) =
     match f with
@@ -1628,12 +1627,12 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s"
           (model_resolved_reference c)
           (parent :> t)
-          (ClassName.to_string name)
+          (TypeName.to_string name)
     | `ClassType (parent, name) ->
         Format.fprintf ppf "%a.%s"
           (model_resolved_reference c)
           (parent :> t)
-          (ClassTypeName.to_string name)
+          (TypeName.to_string name)
     | `Method (parent, name) ->
         Format.fprintf ppf "%a.%s"
           (model_resolved_reference c)
@@ -1718,11 +1717,11 @@ module Fmt = struct
     | `Class (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
-          (ClassName.to_string name)
+          (TypeName.to_string name)
     | `ClassType (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
-          (ClassTypeName.to_string name)
+          (TypeName.to_string name)
     | `Method (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)

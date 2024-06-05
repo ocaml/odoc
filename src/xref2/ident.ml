@@ -12,7 +12,7 @@ type signature =
   | `LModuleType of ModuleTypeName.t * int ]
 
 type class_signature =
-  [ `LClass of ClassName.t * int | `LClassType of ClassTypeName.t * int ]
+  [ `LClass of TypeName.t * int | `LClassType of TypeName.t * int ]
 
 type datatype = [ `LType of TypeName.t * int ]
 
@@ -47,9 +47,9 @@ type exception_ = [ `LException of ExceptionName.t * int ]
 
 type value = [ `LValue of ValueName.t * int ]
 
-type class_ = [ `LClass of ClassName.t * int ]
+type class_ = [ `LClass of TypeName.t * int ]
 
-type class_type = [ `LClassType of ClassTypeName.t * int ]
+type class_type = [ `LClassType of TypeName.t * int ]
 
 type path_type = [ type_ | class_ | class_type ]
 
@@ -211,17 +211,17 @@ module Name = struct
   let typed_type : type_ -> TypeName.t = function `LType (n, _) -> n
 
   let path_type : path_type -> string = function
-    | `LClassType (n, _) -> ClassTypeName.to_string n
-    | `LClass (n, _) -> ClassName.to_string n
+    | `LClassType (n, _) -> TypeName.to_string n
+    | `LClass (n, _) -> TypeName.to_string n
     | `LType (n, _) -> TypeName.to_string n
 
-  let class' : class_ -> ClassName.t = function `LClass (n, _) -> n
+  let class' : class_ -> TypeName.t = function `LClass (n, _) -> n
 
-  let class_ c = ClassName.to_string (class' c)
+  let class_ c = TypeName.to_string (class' c)
 
-  let unsafe_class c = ClassName.to_string_unsafe (class' c)
+  let unsafe_class c = TypeName.to_string_unsafe (class' c)
 
-  let typed_class : class_ -> ClassName.t = function `LClass (n, _) -> n
+  let typed_class : class_ -> TypeName.t = function `LClass (n, _) -> n
 
   let module_type : module_type -> string = function
     | `LModuleType (n, _) -> ModuleTypeName.to_string n
@@ -233,17 +233,17 @@ module Name = struct
     | `LModuleType (n, _) -> n
 
   let path_class_type : path_class_type -> string = function
-    | `LClass (n, _) -> ClassName.to_string n
-    | `LClassType (n, _) -> ClassTypeName.to_string n
+    | `LClass (n, _) -> TypeName.to_string n
+    | `LClassType (n, _) -> TypeName.to_string n
 
-  let class_type' : class_type -> ClassTypeName.t = function
+  let class_type' : class_type -> TypeName.t = function
     | `LClassType (n, _) -> n
 
-  let class_type c = ClassTypeName.to_string (class_type' c)
+  let class_type c = TypeName.to_string (class_type' c)
 
-  let unsafe_class_type c = ClassTypeName.to_string_unsafe (class_type' c)
+  let unsafe_class_type c = TypeName.to_string_unsafe (class_type' c)
 
-  let typed_class_type : class_type -> ClassTypeName.t = function
+  let typed_class_type : class_type -> TypeName.t = function
     | `LClassType (n, _) -> n
 
   let exception_ : exception_ -> string = function
@@ -352,8 +352,8 @@ let rec fmt_aux (id : any) : string * int =
   | `LExtension (n, i) -> (ExtensionName.to_string n, i)
   | `LException (n, i) -> (ExceptionName.to_string n, i)
   | `LValue (n, i) -> (ValueName.to_string n, i)
-  | `LClass (n, i) -> (ClassName.to_string n, i)
-  | `LClassType (n, i) -> (ClassTypeName.to_string n, i)
+  | `LClass (n, i) -> (TypeName.to_string n, i)
+  | `LClassType (n, i) -> (TypeName.to_string n, i)
   | `LMethod (n, i) -> (MethodName.to_string n, i)
   | `LInstanceVariable (n, i) -> (InstanceVariableName.to_string n, i)
   | `LLabel (n, i) -> (LabelName.to_string n, i)

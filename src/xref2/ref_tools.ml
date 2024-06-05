@@ -688,13 +688,13 @@ let rec resolve_label_parent_reference env (r : LabelParent.t) =
   | `Root (name, `TClass) -> CL.in_env env name >>= fun r -> Ok (`C r)
   | `Class (parent, name) ->
       resolve_signature_reference env parent >>= fun p ->
-      T.in_signature env p (ClassName.to_string name)
+      T.in_signature env p (TypeName.to_string name)
       >>= class_lookup_result_of_type
       >>= fun r -> Ok (`C r)
   | `Root (name, `TClassType) -> CT.in_env env name >>= fun r -> Ok (`CT r)
   | `ClassType (parent, name) ->
       resolve_signature_reference env parent >>= fun p ->
-      T.in_signature env p (ClassTypeName.to_string name)
+      T.in_signature env p (TypeName.to_string name)
       >>= class_type_lookup_result_of_type
       >>= fun r -> Ok (`CT r)
   | `Dot (parent, name) ->
@@ -923,12 +923,12 @@ let resolve_reference : _ -> Reference.t -> _ =
     | `Root (name, `TClass) -> CL.in_env env name >>= resolved2
     | `Class (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        T.in_signature env p (ClassName.to_string name)
+        T.in_signature env p (TypeName.to_string name)
         >>= class_lookup_result_of_type >>= resolved2
     | `Root (name, `TClassType) -> CT.in_env env name >>= resolved2
     | `ClassType (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        T.in_signature env p (ClassTypeName.to_string name)
+        T.in_signature env p (TypeName.to_string name)
         >>= class_type_lookup_result_of_type >>= resolved2
     | `Root (name, `TValue) -> V.in_env env name >>= resolved1
     | `Value (parent, name) ->

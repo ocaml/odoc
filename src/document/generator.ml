@@ -162,8 +162,8 @@ module Make (Syntax : SYNTAX) = struct
         | `Module (`Root _, s) -> ModuleName.to_string s
         | `Module_type (`Root _, s) -> ModuleTypeName.to_string s
         | `Type (`Root _, s) -> TypeName.to_string s
-        | `Class (`Root _, s) -> ClassName.to_string s
-        | `ClassType (`Root _, s) -> ClassTypeName.to_string s
+        | `Class (`Root _, s) -> TypeName.to_string s
+        | `ClassType (`Root _, s) -> TypeName.to_string s
         | `Module (rr, s) ->
             dot (render_resolved_fragment (rr :> t)) (ModuleName.to_string s)
         | `Module_type (rr, s) ->
@@ -173,9 +173,9 @@ module Make (Syntax : SYNTAX) = struct
         | `Type (rr, s) ->
             dot (render_resolved_fragment (rr :> t)) (TypeName.to_string s)
         | `Class (rr, s) ->
-            dot (render_resolved_fragment (rr :> t)) (ClassName.to_string s)
+            dot (render_resolved_fragment (rr :> t)) (TypeName.to_string s)
         | `ClassType (rr, s) ->
-            dot (render_resolved_fragment (rr :> t)) (ClassTypeName.to_string s)
+            dot (render_resolved_fragment (rr :> t)) (TypeName.to_string s)
         | `OpaqueModule r -> render_resolved_fragment (r :> t)
 
     let resolved_fragment_to_ir : Fragment.Resolved.leaf -> text =

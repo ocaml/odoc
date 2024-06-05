@@ -33,8 +33,8 @@ module rec Resolved : sig
     | `Substituted of type_
     | `CanonicalType of type_ * Path.Type.t
     | `Type of parent * TypeName.t
-    | `Class of parent * ClassName.t
-    | `ClassType of parent * ClassTypeName.t ]
+    | `Class of parent * TypeName.t
+    | `ClassType of parent * TypeName.t ]
 
   and value =
     [ `Value of parent * ValueName.t | `Gpath of Path.Resolved.Value.t ]
@@ -43,8 +43,8 @@ module rec Resolved : sig
     [ `Local of Ident.path_class_type
     | `Substituted of class_type
     | `Gpath of Path.Resolved.ClassType.t
-    | `Class of parent * ClassName.t
-    | `ClassType of parent * ClassTypeName.t ]
+    | `Class of parent * TypeName.t
+    | `ClassType of parent * TypeName.t ]
 end =
   Resolved
 
@@ -75,8 +75,8 @@ and Cpath : sig
     | `Identifier of Odoc_model.Paths.Identifier.Path.Type.t * bool
     | `Dot of module_ * string
     | `Type of Resolved.parent * TypeName.t
-    | `Class of Resolved.parent * ClassName.t
-    | `ClassType of Resolved.parent * ClassTypeName.t ]
+    | `Class of Resolved.parent * TypeName.t
+    | `ClassType of Resolved.parent * TypeName.t ]
 
   and value =
     [ `Resolved of Resolved.value
@@ -90,8 +90,8 @@ and Cpath : sig
     | `Local of Ident.path_class_type * bool
     | `Identifier of Odoc_model.Paths.Identifier.Path.ClassType.t * bool
     | `Dot of module_ * string
-    | `Class of Resolved.parent * ClassName.t
-    | `ClassType of Resolved.parent * ClassTypeName.t ]
+    | `Class of Resolved.parent * TypeName.t
+    | `ClassType of Resolved.parent * TypeName.t ]
 end =
   Cpath
 
@@ -242,9 +242,8 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
 and is_type_hidden : type_ -> bool = function
   | `Resolved r -> is_resolved_type_hidden r
   | `Identifier ({ iv = `Type (_, t); _ }, b) -> b || TypeName.is_hidden t
-  | `Identifier ({ iv = `ClassType (_, t); _ }, b) ->
-      b || ClassTypeName.is_hidden t
-  | `Identifier ({ iv = `Class (_, t); _ }, b) -> b || ClassName.is_hidden t
+  | `Identifier ({ iv = `ClassType (_, t); _ }, b) -> b || TypeName.is_hidden t
+  | `Identifier ({ iv = `Class (_, t); _ }, b) -> b || TypeName.is_hidden t
   | `Identifier ({ iv = `CoreType _; _ }, b) -> b
   | `Local (_, b) -> b
   | `Substituted p -> is_type_hidden p
@@ -371,18 +370,18 @@ and unresolve_resolved_type_path : Resolved.type_ -> type_ = function
   | `CanonicalType (t1, _) -> unresolve_resolved_type_path t1
   | `Type (p, n) -> `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
   | `Class (p, n) ->
-      `Dot (unresolve_resolved_parent_path p, ClassName.to_string n)
+      `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
   | `ClassType (p, n) ->
-      `Dot (unresolve_resolved_parent_path p, ClassTypeName.to_string n)
+      `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
 
 and unresolve_resolved_class_type_path : Resolved.class_type -> class_type =
   function
   | (`Local _ | `Gpath _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_class_type_path x
   | `Class (p, n) ->
-      `Dot (unresolve_resolved_parent_path p, ClassName.to_string n)
+      `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
   | `ClassType (p, n) ->
-      `Dot (unresolve_resolved_parent_path p, ClassTypeName.to_string n)
+      `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
 
 and unresolve_module_type_path : module_type -> module_type = function
   | `Resolved m -> unresolve_resolved_module_type_path m

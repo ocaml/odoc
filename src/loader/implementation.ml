@@ -220,14 +220,14 @@ let anchor_of_identifier id =
         let anchor = anchor `Exception (ExceptionName.to_string name) in
         continue anchor parent
     | `Class (parent, name) ->
-        let anchor = anchor `Class (ClassName.to_string name) in
+        let anchor = anchor `Class (TypeName.to_string name) in
         continue anchor parent
     | `Page _ -> assert false
     | `LeafPage _ -> assert false
     | `CoreType _ -> assert false
     | `SourceLocation _ -> assert false
     | `ClassType (parent, name) ->
-        let anchor = anchor `ClassType (ClassTypeName.to_string name) in
+        let anchor = anchor `ClassType (TypeName.to_string name) in
         continue anchor parent
     | `SourcePage _ -> assert false
     | `Value (parent, name) ->

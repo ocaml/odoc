@@ -9,8 +9,7 @@ type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t ]
 type datatype = [ `FType of TypeName.t * TypeDecl.t ]
 
 type class_ =
-  [ `FClass of ClassName.t * Class.t
-  | `FClassType of ClassTypeName.t * ClassType.t ]
+  [ `FClass of TypeName.t * Class.t | `FClassType of TypeName.t * ClassType.t ]
 
 type value = [ `FValue of ValueName.t * Value.t ]
 

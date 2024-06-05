@@ -47,8 +47,8 @@ module Identifier = struct
     | `Exception (_, name) -> ExceptionName.to_string name
     | `CoreException name -> ExceptionName.to_string name
     | `Value (_, name) -> ValueName.to_string name
-    | `Class (_, name) -> ClassName.to_string name
-    | `ClassType (_, name) -> ClassTypeName.to_string name
+    | `Class (_, name) -> TypeName.to_string name
+    | `ClassType (_, name) -> TypeName.to_string name
     | `Method (_, name) -> MethodName.to_string name
     | `InstanceVariable (_, name) -> InstanceVariableName.to_string name
     | `Label (_, name) -> LabelName.to_string name
@@ -82,8 +82,8 @@ module Identifier = struct
     | `Exception (parent, _) -> is_hidden (parent :> t)
     | `CoreException _ -> false
     | `Value (_, name) -> ValueName.is_hidden name
-    | `Class (_, name) -> ClassName.is_hidden name
-    | `ClassType (_, name) -> ClassTypeName.is_hidden name
+    | `Class (_, name) -> TypeName.is_hidden name
+    | `ClassType (_, name) -> TypeName.is_hidden name
     | `Method (parent, _) -> is_hidden (parent :> t)
     | `InstanceVariable (parent, _) -> is_hidden (parent :> t)
     | `Label (parent, _) -> is_hidden (parent :> t)
@@ -127,9 +127,9 @@ module Identifier = struct
     | `Value (parent, name) ->
         ValueName.to_string name :: full_name_aux (parent :> t)
     | `Class (parent, name) ->
-        ClassName.to_string name :: full_name_aux (parent :> t)
+        TypeName.to_string name :: full_name_aux (parent :> t)
     | `ClassType (parent, name) ->
-        ClassTypeName.to_string name :: full_name_aux (parent :> t)
+        TypeName.to_string name :: full_name_aux (parent :> t)
     | `Method (parent, name) ->
         MethodName.to_string name :: full_name_aux (parent :> t)
     | `InstanceVariable (parent, name) ->
@@ -553,14 +553,13 @@ module Identifier = struct
       mk_parent ModuleTypeName.to_string "mt" (fun (p, n) -> `ModuleType (p, n))
 
     let class_ :
-        Signature.t * ClassName.t -> [> `Class of Signature.t * ClassName.t ] id
-        =
-      mk_parent ClassName.to_string "c" (fun (p, n) -> `Class (p, n))
+        Signature.t * TypeName.t -> [> `Class of Signature.t * TypeName.t ] id =
+      mk_parent TypeName.to_string "c" (fun (p, n) -> `Class (p, n))
 
     let class_type :
-        Signature.t * ClassTypeName.t ->
-        [> `ClassType of Signature.t * ClassTypeName.t ] id =
-      mk_parent ClassTypeName.to_string "ct" (fun (p, n) -> `ClassType (p, n))
+        Signature.t * TypeName.t ->
+        [> `ClassType of Signature.t * TypeName.t ] id =
+      mk_parent TypeName.to_string "ct" (fun (p, n) -> `ClassType (p, n))
 
     let type_ :
         Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ] id =

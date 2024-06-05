@@ -65,9 +65,9 @@ let rec of_id x =
   | `Value (parent, name) ->
       ret "Value" (ValueName.to_string name) :: of_id (parent :> t)
   | `Class (parent, name) ->
-      ret "Class" (ClassName.to_string name) :: of_id (parent :> t)
+      ret "Class" (TypeName.to_string name) :: of_id (parent :> t)
   | `ClassType (parent, name) ->
-      ret "ClassType" (ClassTypeName.to_string name) :: of_id (parent :> t)
+      ret "ClassType" (TypeName.to_string name) :: of_id (parent :> t)
   | `Method (parent, name) ->
       ret "Method" (MethodName.to_string name) :: of_id (parent :> t)
   | `InstanceVariable (parent, name) ->

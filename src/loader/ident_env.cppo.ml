@@ -522,8 +522,8 @@ let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
       in
       let identifier, shadowed =
         if is_shadowed 
-        then Mk.class_(parent, ClassName.shadowed_of_string name), class_types @ env.shadowed
-        else Mk.class_(parent, (if is_hidden_item then ClassName.hidden_of_string else ClassName.make_std) name), env.shadowed
+        then Mk.class_(parent, TypeName.shadowed_of_string name), class_types @ env.shadowed
+        else Mk.class_(parent, (if is_hidden_item then TypeName.hidden_of_string else TypeName.make_std) name), env.shadowed
       in
 
       let classes =
@@ -543,8 +543,8 @@ let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
       in
       let identifier, shadowed =
         if is_shadowed 
-        then Mk.class_type(parent, ClassTypeName.shadowed_of_string name), class_types @ env.shadowed
-        else Mk.class_type(parent, (if is_hidden_item then ClassTypeName.hidden_of_string else ClassTypeName.make_std) name), env.shadowed
+        then Mk.class_type(parent, TypeName.shadowed_of_string name), class_types @ env.shadowed
+        else Mk.class_type(parent, (if is_hidden_item then TypeName.hidden_of_string else TypeName.make_std) name), env.shadowed
       in
       let class_types =
         List.fold_right (fun id class_types -> Ident.add id identifier class_types)

@@ -14,9 +14,9 @@ module Names = struct
 
   let typename = To_string TypeName.to_string
 
-  let classname = To_string ClassName.to_string
+  let classname = To_string TypeName.to_string
 
-  let classtypename = To_string ClassTypeName.to_string
+  let classtypename = To_string TypeName.to_string
 
   let constructorname = To_string ConstructorName.to_string
 
