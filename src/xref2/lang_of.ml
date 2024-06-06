@@ -80,8 +80,7 @@ module Path = struct
     | `Dot (p, s) -> `Dot (module_ map p, s)
     | `Forward s -> `Forward s
     | `Apply (m1, m2) -> `Apply (module_ map m1, module_ map m2)
-    | `Module (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), ModuleName.to_string n)
+    | `Module (`Module p, n) -> `Dot (`Resolved (resolved_module map p), n)
     | `Module (_, _) -> failwith "Probably shouldn't happen"
 
   and module_type map (p : Cpath.module_type) :
@@ -98,9 +97,8 @@ module Path = struct
                failwith (Format.asprintf "Not_found: %a" Ident.fmt id)),
             b )
     | `Resolved x -> `Resolved (resolved_module_type map x)
-    | `Dot (p, n) -> `Dot (module_ map p, n)
-    | `ModuleType (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), ModuleTypeName.to_string n)
+    | `DotMT (p, n) -> `DotMT (module_ map p, n)
+    | `ModuleType (`Module p, n) -> `DotMT (`Resolved (resolved_module map p), n)
     | `ModuleType (_, _) -> failwith "Probably shouldn't happen"
 
   and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
@@ -112,13 +110,10 @@ module Path = struct
     | `Local (id, b) ->
         `Identifier (Component.PathTypeMap.find id map.path_type, b)
     | `Resolved x -> `Resolved (resolved_type map x)
-    | `Dot (p, n) -> `Dot (module_ map p, n)
-    | `Type (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), TypeName.to_string n)
-    | `Class (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), TypeName.to_string n)
-    | `ClassType (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), TypeName.to_string n)
+    | `DotT (p, n) -> `DotT (module_ map p, n)
+    | `Type (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
+    | `Class (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
+    | `ClassType (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
     | `Type _ | `Class _ | `ClassType _ -> failwith "Probably shouldn't happen"
 
   and class_type map (p : Cpath.class_type) : Odoc_model.Paths.Path.ClassType.t
@@ -132,11 +127,9 @@ module Path = struct
     | `Local (id, b) ->
         `Identifier (Component.PathClassTypeMap.find id map.path_class_type, b)
     | `Resolved x -> `Resolved (resolved_class_type map x)
-    | `Dot (p, n) -> `Dot (module_ map p, n)
-    | `Class (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), TypeName.to_string n)
-    | `ClassType (`Module p, n) ->
-        `Dot (`Resolved (resolved_module map p), TypeName.to_string n)
+    | `DotT (p, n) -> `DotT (module_ map p, n)
+    | `Class (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
+    | `ClassType (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
     | `Class _ | `ClassType _ -> failwith "Probably shouldn't happen"
 
   and resolved_module map (p : Cpath.Resolved.module_) :

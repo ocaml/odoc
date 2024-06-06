@@ -30,7 +30,7 @@ let unique_id =
 type lookup_type =
   | Module of Paths.Identifier.Path.Module.t
   | ModuleType of Paths.Identifier.Path.ModuleType.t
-  | RootModule of string * [ `Forward | `Resolved of Digest.t ] option
+  | RootModule of ModuleName.t * [ `Forward | `Resolved of Digest.t ] option
   | ModuleByName of string * Paths.Identifier.Path.Module.t
   | FragmentRoot of int
 
@@ -50,7 +50,8 @@ let pp_lookup_type fmt =
       Format.fprintf fmt "ModuleType %a"
         (Component.Fmt.model_identifier c)
         (r :> Identifier.t)
-  | RootModule (str, res) -> Format.fprintf fmt "RootModule %s %a" str fmtrm res
+  | RootModule (n, res) ->
+      Format.fprintf fmt "RootModule %a %a" ModuleName.fmt n fmtrm res
   | ModuleByName (n, r) ->
       Format.fprintf fmt "ModuleByName %s, %a" n
         (Component.Fmt.model_identifier c)
@@ -402,7 +403,7 @@ let lookup_root_module name env =
     match env.resolver with
     | None -> None
     | Some r -> (
-        match r.lookup_unit (`Name name) with
+        match r.lookup_unit (`Name (ModuleName.to_string name)) with
         | Ok Forward_reference -> Some Forward
         | Error `Not_found -> None
         | Ok (Found u) ->
@@ -516,7 +517,7 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
       | _ -> None)
 
 let lookup_root_module_fallback name t =
-  match lookup_root_module name t with
+  match lookup_root_module (ModuleName.make_std name) t with
   | Some (Resolved (_, id, m)) ->
       Some
         (`Module
@@ -866,7 +867,7 @@ let verify_lookups env lookups =
           match env.resolver with
           | None -> None
           | Some r -> (
-              match r.lookup_unit (`Name name) with
+              match r.lookup_unit (`Name (ModuleName.to_string name)) with
               | Ok Forward_reference -> Some `Forward
               | Ok (Found u) -> Some (`Resolved u.root.digest)
               | Error `Not_found -> None)

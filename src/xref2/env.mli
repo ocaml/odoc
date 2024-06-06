@@ -24,7 +24,9 @@ type root =
 type lookup_type =
   | Module of Identifier.Path.Module.t
   | ModuleType of Identifier.ModuleType.t
-  | RootModule of string * [ `Forward | `Resolved of Digest.t ] option
+  | RootModule of
+      Odoc_model.Names.ModuleName.t
+      * [ `Forward | `Resolved of Digest.t ] option
   | ModuleByName of string * Identifier.Path.Module.t
   | FragmentRoot of int
 
@@ -102,7 +104,7 @@ val lookup_unit_by_path :
 
 val module_of_unit : Lang.Compilation_unit.t -> Component.Module.t
 
-val lookup_root_module : string -> t -> root option
+val lookup_root_module : Odoc_model.Names.ModuleName.t -> t -> root option
 
 type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)

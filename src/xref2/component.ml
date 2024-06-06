@@ -1181,7 +1181,8 @@ module Fmt = struct
    fun c ppf p ->
     match p with
     | `Resolved p -> wrap c "resolved" resolved_module_path ppf p
-    | `Dot (p, str) -> Format.fprintf ppf "%a.%s" (module_path c) p str
+    | `Dot (p, n) ->
+        Format.fprintf ppf "%a.%a" (module_path c) p ModuleName.fmt n
     | `Module (p, n) ->
         Format.fprintf ppf "%a.%a" (resolved_parent_path c) p ModuleName.fmt n
     | `Apply (p1, p2) ->
@@ -1191,7 +1192,7 @@ module Fmt = struct
     | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
     | `Substituted p -> wrap c "substituted" module_path ppf p
     | `Forward s -> wrap c "forward" str ppf s
-    | `Root r -> wrap c "unresolvedroot" str ppf r
+    | `Root r -> wrap c "unresolvedroot" str ppf (ModuleName.to_string r)
 
   and resolved_module_type_path :
       config -> Format.formatter -> Cpath.Resolved.module_type -> unit =
@@ -1224,7 +1225,8 @@ module Fmt = struct
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
     | `Substituted s -> wrap c "substituted" module_type_path ppf s
-    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" (module_path c) m s
+    | `DotMT (m, s) ->
+        Format.fprintf ppf "%a.%a" (module_path c) m ModuleTypeName.fmt s
     | `ModuleType (m, n) ->
         Format.fprintf ppf "%a.%a" (resolved_parent_path c) m ModuleTypeName.fmt
           n
@@ -1276,7 +1278,8 @@ module Fmt = struct
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
     | `Substituted s -> wrap c "substituted" type_path ppf s
-    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" (module_path c) m s
+    | `DotT (m, s) ->
+        Format.fprintf ppf "%a.%a" (module_path c) m TypeName.fmt s
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (TypeName.to_string t)
@@ -1291,7 +1294,8 @@ module Fmt = struct
    fun c ppf p ->
     match p with
     | `Resolved r -> wrap c "resolved" resolved_value_path ppf r
-    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" (module_path c) m s
+    | `DotV (m, s) ->
+        Format.fprintf ppf "%a.%a" (module_path c) m ValueName.fmt s
     | `Value (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (ValueName.to_string t)
@@ -1320,7 +1324,8 @@ module Fmt = struct
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
     | `Substituted s -> wrap c "substituted" class_type_path ppf s
-    | `Dot (m, s) -> Format.fprintf ppf "%a.%s" (module_path c) m s
+    | `DotT (m, s) ->
+        Format.fprintf ppf "%a.%a" (module_path c) m TypeName.fmt s
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (TypeName.to_string t)
@@ -1330,14 +1335,22 @@ module Fmt = struct
 
   and model_path : config -> Format.formatter -> path -> unit =
    fun c ppf (p : path) ->
+    let dot p s =
+      Format.fprintf ppf "%a.%s" (model_path c)
+        (p : Odoc_model.Paths.Path.Module.t :> path)
+        s
+    in
+
     match p with
     | `Resolved rp -> wrap c "resolved" model_resolved_path ppf rp
     | `Identifier (id, b) ->
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
-    | `Root s -> wrap c "root" str ppf s
+    | `Root s -> wrap c "root" str ppf (ModuleName.to_string s)
     | `Forward s -> wrap c "forward" str ppf s
-    | `Dot (parent, s) ->
-        Format.fprintf ppf "%a.%s" (model_path c) (parent :> path) s
+    | `Dot (p, s) -> dot p (ModuleName.to_string s)
+    | `DotMT (p, s) -> dot p (ModuleTypeName.to_string s)
+    | `DotT (p, s) -> dot p (TypeName.to_string s)
+    | `DotV (p, s) -> dot p (ValueName.to_string s)
     | `Apply (func, arg) ->
         Format.fprintf ppf "%a(%a)" (model_path c)
           (func :> path)
@@ -2034,7 +2047,7 @@ module Of_Lang = struct
         match identifier Maps.ModuleType.find ident_map.module_types i with
         | `Identifier i -> `Identifier (i, b)
         | `Local i -> `Local (i, b))
-    | `Dot (path', x) -> `Dot (module_path ident_map path', x)
+    | `DotMT (path', x) -> `DotMT (module_path ident_map path', x)
 
   and type_path : _ -> Odoc_model.Paths.Path.Type.t -> Cpath.type_ =
    fun ident_map p ->
@@ -2045,13 +2058,13 @@ module Of_Lang = struct
         match identifier Maps.Path.Type.find ident_map.path_types i with
         | `Identifier i -> `Identifier (i, b)
         | `Local i -> `Local (i, b))
-    | `Dot (path', x) -> `Dot (module_path ident_map path', x)
+    | `DotT (path', x) -> `DotT (module_path ident_map path', x)
 
   and value_path : _ -> Odoc_model.Paths.Path.Value.t -> Cpath.value =
    fun ident_map p ->
     match p with
     | `Resolved r -> `Resolved (resolved_value_path ident_map r)
-    | `Dot (path', x) -> `Dot (module_path ident_map path', x)
+    | `DotV (path', x) -> `DotV (module_path ident_map path', x)
     | `Identifier (i, b) -> `Identifier (i, b)
 
   and class_type_path :
@@ -2066,7 +2079,7 @@ module Of_Lang = struct
         with
         | `Identifier i -> `Identifier (i, b)
         | `Local i -> `Local (i, b))
-    | `Dot (path', x) -> `Dot (module_path ident_map path', x)
+    | `DotT (path', x) -> `DotT (module_path ident_map path', x)
 
   let rec resolved_signature_fragment :
       map ->

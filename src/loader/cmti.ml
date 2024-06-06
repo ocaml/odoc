@@ -267,7 +267,7 @@ let read_type_declaration env parent decl =
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container decl.typ_attributes in
-  let canonical = (canonical :> Path.Type.t option) in
+  let canonical = match canonical with | None -> None | Some s -> Doc_attr.conv_canonical_type s in
   let equation = read_type_equation env container decl in
   let representation = read_type_kind env id decl.typ_kind in
   {id; source_loc; doc; canonical; equation; representation}
@@ -608,7 +608,7 @@ and read_module_type_declaration env parent mtd =
         (Some expr, canonical)
     | None -> (None, canonical)
   in
-  let canonical = (canonical :> Path.ModuleType.t option) in
+  let canonical = match canonical with | None -> None | Some s -> Doc_attr.conv_canonical_module_type s in
   { id; source_loc; doc; canonical; expr }
 
 and read_module_declaration env parent md =
@@ -636,7 +636,7 @@ and read_module_declaration env parent md =
         in
         (ModuleType expr, canonical)
   in
-  let canonical = (canonical :> Path.Module.t option) in
+  let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
   let hidden =
 #if OCAML_VERSION >= (4,10,0)
     match canonical, mid.iv with
@@ -812,4 +812,5 @@ let read_interface root name intf =
   let sg, canonical =
     read_signature Odoc_model.Semantics.Expect_canonical (Env.empty ()) id intf
   in
-  (id, sg, (canonical :> Odoc_model.Paths.Path.Module.t option))
+  let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
+  (id, sg, canonical)

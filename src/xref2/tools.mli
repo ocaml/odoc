@@ -6,6 +6,7 @@
 *)
 
 open Errors.Tools_error
+open Odoc_model.Names
 
 type expansion =
   | Signature of Component.Signature.t
@@ -181,7 +182,7 @@ val reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent
 
 val handle_module_type_lookup :
   Env.t ->
-  string ->
+  ModuleTypeName.t ->
   Cpath.Resolved.parent ->
   Component.Signature.t ->
   Component.Substitution.t ->

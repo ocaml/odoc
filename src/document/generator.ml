@@ -110,11 +110,20 @@ module Make (Syntax : SYNTAX) = struct
       | `SubstitutedMT m -> from_path (m :> Path.t)
       | `SubstitutedT m -> from_path (m :> Path.t)
       | `SubstitutedCT m -> from_path (m :> Path.t)
-      | `Root root -> unresolved [ inline @@ Text root ]
+      | `Root root -> unresolved [ inline @@ Text (ModuleName.to_string root) ]
       | `Forward root -> unresolved [ inline @@ Text root ] (* FIXME *)
       | `Dot (prefix, suffix) ->
           let link = from_path (prefix :> Path.t) in
-          link ++ O.txt ("." ^ suffix)
+          link ++ O.txt ("." ^ ModuleName.to_string suffix)
+      | `DotT (prefix, suffix) ->
+          let link = from_path (prefix :> Path.t) in
+          link ++ O.txt ("." ^ TypeName.to_string suffix)
+      | `DotMT (prefix, suffix) ->
+          let link = from_path (prefix :> Path.t) in
+          link ++ O.txt ("." ^ ModuleTypeName.to_string suffix)
+      | `DotV (prefix, suffix) ->
+          let link = from_path (prefix :> Path.t) in
+          link ++ O.txt ("." ^ ValueName.to_string suffix)
       | `Apply (p1, p2) ->
           let link1 = from_path (p1 :> Path.t) in
           let link2 = from_path (p2 :> Path.t) in

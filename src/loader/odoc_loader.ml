@@ -167,7 +167,7 @@ let read_cmt ~make_root ~parent ~filename () =
                   Odoc_model.Paths.Identifier.Mk.module_
                     (id, Odoc_model.Names.ModuleName.make_std name)
                 in
-                let path = `Root name in
+                let path = `Root (Odoc_model.Names.ModuleName.make_std name) in
                 { Odoc_model.Lang.Compilation_unit.Packed.id; path })
               items
           in

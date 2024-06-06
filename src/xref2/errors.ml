@@ -1,5 +1,5 @@
 open Odoc_model
-
+open Names
 module Tools_error = struct
   open Paths
   (** Errors raised by Tools *)
@@ -43,7 +43,7 @@ module Tools_error = struct
       `Lookup_failure of
       Identifier.Path.Module.t
       (* Could not find the module in the environment *)
-    | `Lookup_failure_root of string (* Could not find the root module *)
+    | `Lookup_failure_root of ModuleName.t (* Could not find the root module *)
     | `Parent of parent_lookup_error ]
 
   and simple_module_type_expr_of_module_error =
@@ -213,7 +213,7 @@ module Tools_error = struct
         Format.fprintf fmt "Lookup failure (module): %a" (model_identifier c)
           (m :> Odoc_model.Paths.Identifier.t)
     | `Lookup_failure_root r ->
-        Format.fprintf fmt "Lookup failure (root module): %s" r
+        Format.fprintf fmt "Lookup failure (root module): %a" ModuleName.fmt r
     | `Lookup_failureMT m ->
         Format.fprintf fmt "Lookup failure (module type): %a"
           (model_identifier c)
@@ -255,7 +255,7 @@ end
 type kind = [ `OpaqueModule | `Root of string ]
 
 let rec kind_of_module_cpath = function
-  | `Root name -> Some (`Root name)
+  | `Root name -> Some (`Root (ModuleName.to_string name))
   | `Substituted p' | `Dot (p', _) -> kind_of_module_cpath p'
   | `Apply (a, b) -> (
       match kind_of_module_cpath a with
@@ -265,7 +265,7 @@ let rec kind_of_module_cpath = function
 
 let rec kind_of_module_type_cpath = function
   | `Substituted p' -> kind_of_module_type_cpath p'
-  | `Dot (p', _) -> kind_of_module_cpath p'
+  | `DotMT (p', _) -> kind_of_module_cpath p'
   | _ -> None
 
 (** [Some (`Root _)] for errors during lookup of root modules or [None] for
@@ -280,8 +280,8 @@ let rec kind_of_error : Tools_error.any -> kind option = function
       | None -> kind_of_error (e :> Tools_error.any)
       | x -> x)
   | `Lookup_failure { iv = `Root (_, name); _ } ->
-      Some (`Root (Names.ModuleName.to_string name))
-  | `Lookup_failure_root name -> Some (`Root name)
+      Some (`Root (ModuleName.to_string name))
+  | `Lookup_failure_root name -> Some (`Root (ModuleName.to_string name))
   | `Parent (`Parent_sig e) -> kind_of_error (e :> Tools_error.any)
   | `Parent (`Parent_module_type e) -> kind_of_error (e :> Tools_error.any)
   | `Parent (`Parent_expr e) -> kind_of_error (e :> Tools_error.any)
@@ -303,7 +303,7 @@ let kind_of_error ~what = function
       match what with
       | `Include (Component.Include.Alias cp) -> kind_of_module_cpath cp
       | `Module { Odoc_model.Paths.Identifier.iv = `Root (_, name); _ } ->
-          Some (`Root (Names.ModuleName.to_string name))
+          Some (`Root (ModuleName.to_string name))
       | _ -> None)
 
 open Paths
