@@ -43,6 +43,8 @@ module type Name = sig
 
   val shadowed_of_ident : Ident.t -> t
 
+  val equal_modulo_shadowing : t -> t -> bool
+
   val equal : t -> t -> bool
 
   val compare : t -> t -> int
@@ -92,6 +94,15 @@ module Name : Name = struct
     | Some s -> Shadowed (id, !internal_counter, s)
 
   let shadowed_of_ident id = shadowed_of_string (Ident.name id)
+
+  let equal_modulo_shadowing (x : t) (y : t) =
+    match (x, y) with
+    | Std x, Std y -> x = y
+    | Hidden x, Std y -> x = y
+    | Std x, Hidden y -> x = y
+    | Hidden x, Hidden y -> x = y
+    | Shadowed (x, i, s), Shadowed (y, j, t) -> x = y && i = j && s = t
+    | _, _ -> false
 
   let equal (x : t) (y : t) = x = y
 

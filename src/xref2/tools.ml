@@ -511,7 +511,7 @@ and process_module_path env m rp =
   add_canonical_path m rp'
 
 and handle_module_lookup env id rparent sg sub =
-  match Find.careful_module_in_sig sg (ModuleName.to_string id) with
+  match Find.careful_module_in_sig sg id with
   | Some (`FModule (name, m)) ->
       let rp' = simplify_module env (`Module (rparent, name)) in
       let m' = Subst.module_ sub m in
@@ -522,15 +522,14 @@ and handle_module_lookup env id rparent sg sub =
 
 and handle_module_type_lookup env id p sg sub =
   let open Odoc_utils.OptionMonad in
-  Find.module_type_in_sig sg (ModuleTypeName.to_string id)
-  >>= fun (`FModuleType (name, mt)) ->
+  Find.module_type_in_sig sg id >>= fun (`FModuleType (name, mt)) ->
   let mt = Subst.module_type sub mt in
   let p' = simplify_module_type env (`ModuleType (p, name)) in
   let p'' = process_module_type env mt p' in
   Some (p'', mt)
 
 and handle_type_lookup env id p sg =
-  match Find.careful_type_in_sig sg (TypeName.to_string id) with
+  match Find.careful_type_in_sig sg id with
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
   | Some (`FClassType (name, _) as t) -> Ok (`ClassType (p, name), t)
   | Some (`FType (name, _) as t) -> Ok (simplify_type env (`Type (p, name)), t)
@@ -538,12 +537,12 @@ and handle_type_lookup env id p sg =
   | None -> Error `Find_failure
 
 and handle_value_lookup _env id p sg =
-  match Find.value_in_sig sg (ValueName.to_string id) with
-  | (`FValue (name, _) as v) :: _ -> Ok (`Value (p, name), v)
+  match Find.value_in_sig sg id with
+  | Some (`FValue (name, _) as v) -> Ok (`Value (p, name), v)
   | _ -> Error `Find_failure
 
 and handle_class_type_lookup id p sg =
-  match Find.careful_class_in_sig sg (TypeName.to_string id) with
+  match Find.careful_class_in_sig sg id with
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
   | Some (`FClassType (name, _) as t) -> Ok (`ClassType (p, name), t)
   | Some (`FType_removed (_name, _, _) as _t) -> Error `Class_replaced
@@ -569,7 +568,7 @@ and lookup_module_gpath :
       >>= fun (_, m) -> Ok (Component.Delayed.put_val m)
   | `Module (parent, name) ->
       let find_in_sg sg sub =
-        match Find.careful_module_in_sig sg (ModuleName.to_string name) with
+        match Find.careful_module_in_sig sg name with
         | None -> Error `Find_failure
         | Some (`FModule (_, m)) ->
             Ok (Component.Delayed.put_val (Subst.module_ sub m))
@@ -606,7 +605,7 @@ and lookup_module :
         >>= fun (_, m) -> Ok (Component.Delayed.put_val m)
     | `Module (parent, name) ->
         let find_in_sg sg sub =
-          match Find.careful_module_in_sig sg (ModuleName.to_string name) with
+          match Find.careful_module_in_sig sg name with
           | None -> Error `Find_failure
           | Some (`FModule (_, m)) ->
               Ok (Component.Delayed.put_val (Subst.module_ sub m))
@@ -641,7 +640,7 @@ and lookup_module_type_gpath :
       lookup_module_type_gpath env s
   | `ModuleType (parent, name) ->
       let find_in_sg sg sub =
-        match Find.module_type_in_sig sg (ModuleTypeName.to_string name) with
+        match Find.module_type_in_sig sg name with
         | None -> Error `Find_failure
         | Some (`FModuleType (_, mt)) -> Ok (Subst.module_type sub mt)
       in
@@ -665,7 +664,7 @@ and lookup_module_type :
         lookup_module_type env s
     | `ModuleType (parent, name) ->
         let find_in_sg sg sub =
-          match Find.module_type_in_sig sg (ModuleTypeName.to_string name) with
+          match Find.module_type_in_sig sg name with
           | None -> Error `Find_failure
           | Some (`FModuleType (_, mt)) -> Ok (Subst.module_type sub mt)
         in
@@ -770,9 +769,9 @@ and lookup_type_gpath :
         >>= fun (`ClassType ({ iv = `ClassType (_, name); _ }, t)) ->
         Ok (`FClassType (name, t))
     | `CanonicalType (t1, _) -> lookup_type_gpath env t1
-    | `Type (p, id) -> do_type p (TypeName.to_string id)
-    | `Class (p, id) -> do_type p (TypeName.to_string id)
-    | `ClassType (p, id) -> do_type p (TypeName.to_string id)
+    | `Type (p, id) -> do_type p id
+    | `Class (p, id) -> do_type p id
+    | `ClassType (p, id) -> do_type p id
     | `SubstitutedT t -> lookup_type_gpath env t
     | `SubstitutedCT t ->
         lookup_type_gpath env (t :> Odoc_model.Paths.Path.Resolved.Type.t)
@@ -789,8 +788,8 @@ and lookup_value_gpath :
     |> map_error (fun e -> (e :> simple_value_lookup_error))
     >>= fun (sg, sub) ->
     match Find.value_in_sig sg name with
-    | `FValue (name, t) :: _ -> Ok (`FValue (name, Subst.value sub t))
-    | [] -> Error `Find_failure
+    | Some (`FValue (name, t)) -> Ok (`FValue (name, Subst.value sub t))
+    | None -> Error `Find_failure
   in
   let res =
     match p with
@@ -798,7 +797,7 @@ and lookup_value_gpath :
         of_option ~error:(`Lookup_failureV i) (Env.(lookup_by_id s_value) i env)
         >>= fun (`Value ({ iv = `Value (_, name); _ }, t)) ->
         Ok (`FValue (name, t))
-    | `Value (p, id) -> do_value p (ValueName.to_string id)
+    | `Value (p, id) -> do_value p id
   in
   res
 
@@ -830,8 +829,8 @@ and lookup_class_type_gpath :
           (Env.(lookup_by_id s_class_type) i env)
         >>= fun (`ClassType ({ iv = `ClassType (_, name); _ }, t)) ->
         Ok (`FClassType (name, t))
-    | `Class (p, id) -> do_type p (TypeName.to_string id)
-    | `ClassType (p, id) -> do_type p (TypeName.to_string id)
+    | `Class (p, id) -> do_type p id
+    | `ClassType (p, id) -> do_type p id
     | `SubstitutedCT c -> lookup_class_type_gpath env c
   in
   res
@@ -1032,7 +1031,7 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
         |> map_error (fun e -> (e :> simple_type_lookup_error))
         >>= fun (parent_sig, sub) ->
         let result =
-          match Find.datatype_in_sig parent_sig (TypeName.to_string id) with
+          match Find.datatype_in_sig parent_sig id with
           | Some (`FType (name, t)) ->
               Some (`Type (parent, name), `FType (name, Subst.type_ sub t))
           | None -> None
@@ -1043,7 +1042,7 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
         |> map_error (fun e -> (e :> simple_type_lookup_error))
         >>= fun (parent_sig, sub) ->
         let t =
-          match Find.type_in_sig parent_sig (TypeName.to_string id) with
+          match Find.type_in_sig parent_sig id with
           | Some (`FClass (name, t)) ->
               Some (`Class (parent, name), `FClass (name, Subst.class_ sub t))
           | Some _ -> None
@@ -1099,10 +1098,10 @@ and resolve_value : Env.t -> Cpath.value -> resolve_value_result =
         |> map_error (fun e -> (e :> simple_value_lookup_error))
         >>= fun (parent_sig, sub) ->
         let result =
-          match Find.value_in_sig parent_sig (ValueName.to_string id) with
-          | `FValue (name, t) :: _ ->
+          match Find.value_in_sig parent_sig id with
+          | Some (`FValue (name, t)) ->
               Some (`Value (parent, name), `FValue (name, Subst.value sub t))
-          | [] -> None
+          | None -> None
         in
         of_option ~error:`Find_failure result
     | `Resolved r -> lookup_value env r >>= fun t -> Ok (r, t)
@@ -1142,7 +1141,7 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
       |> map_error (fun e -> (e :> simple_type_lookup_error))
       >>= fun (parent_sig, sub) ->
       let t =
-        match Find.type_in_sig parent_sig (TypeName.to_string id) with
+        match Find.type_in_sig parent_sig id with
         | Some (`FClass (name, t)) ->
             Some (`Class (parent, name), `FClass (name, Subst.class_ sub t))
         | Some _ -> None
@@ -1739,19 +1738,22 @@ and _ascribe _env ~expansion ~original_expansion =
           (fun item acc ->
             match item with
             | Component.Signature.Module (id, _r, _m) ->
-                if Find.module_in_sig sg' (Ident.Name.module_ id) = None then
-                  acc
+                if Find.module_in_sig sg' (Ident.Name.typed_module id) = None
+                then acc
                 else item :: acc
             | Component.Signature.ModuleType (id, _m) ->
                 if
-                  Find.module_type_in_sig sg' (Ident.Name.module_type id) = None
+                  Find.module_type_in_sig sg' (Ident.Name.typed_module_type id)
+                  = None
                 then acc
                 else item :: acc
             | Component.Signature.Type (id, _r, _t) ->
-                if Find.type_in_sig sg' (Ident.Name.type_ id) = None then acc
+                if Find.type_in_sig sg' (Ident.Name.typed_type id) = None then
+                  acc
                 else item :: acc
             | Component.Signature.Value (id, _v) ->
-                if Find.value_in_sig sg' (Ident.Name.value id) = [] then acc
+                if Find.value_in_sig sg' (Ident.Name.typed_value id) = None then
+                  acc
                 else item :: acc
             | _ -> item :: acc)
           sg.items []
@@ -2114,7 +2116,7 @@ and fixup_type_cfrag (f : Cfrag.resolved_type) : Cfrag.resolved_type =
 and find_module_with_replacement :
     Env.t ->
     Component.Signature.t ->
-    string ->
+    ModuleName.t ->
     ( Component.Module.t Component.Delayed.t,
       simple_module_lookup_error )
     Result.result =
@@ -2128,7 +2130,7 @@ and find_module_with_replacement :
 and find_module_type_with_replacement :
     Env.t ->
     Component.Signature.t ->
-    string ->
+    ModuleTypeName.t ->
     ( Component.ModuleType.t Component.Delayed.t,
       simple_module_type_lookup_error )
     Result.result =
@@ -2154,7 +2156,8 @@ and resolve_signature_fragment :
       let open Odoc_utils.OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, ppath, sg) ->
-      of_result (find_module_with_replacement env sg name) >>= fun m' ->
+      of_result (find_module_with_replacement env sg (ModuleName.make_std name))
+      >>= fun m' ->
       let mname = ModuleName.make_std name in
       let new_path = `Module (ppath, mname) in
       let new_frag = `Module (pfrag, mname) in
@@ -2187,7 +2190,8 @@ and resolve_module_fragment :
       let open Odoc_utils.OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, _ppath, sg) ->
-      of_result (find_module_with_replacement env sg name) >>= fun m' ->
+      of_result (find_module_with_replacement env sg (ModuleName.make_std name))
+      >>= fun m' ->
       let mname = ModuleName.make_std name in
       let new_frag = `Module (pfrag, mname) in
       let m' = Component.Delayed.get m' in
@@ -2222,7 +2226,10 @@ and resolve_module_type_fragment :
       let open Odoc_utils.OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, _ppath, sg) ->
-      of_result (find_module_type_with_replacement env sg name) >>= fun mt' ->
+      of_result
+        (find_module_type_with_replacement env sg
+           (ModuleTypeName.make_std name))
+      >>= fun mt' ->
       let mtname = ModuleTypeName.make_std name in
       let f' = `ModuleType (pfrag, mtname) in
       let m' = Component.Delayed.get mt' in

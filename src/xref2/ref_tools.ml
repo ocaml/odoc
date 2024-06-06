@@ -143,10 +143,10 @@ let find_ambiguous ?(kind = `Any) find sg name =
       Ok x
   | [] -> Error (`Find_by_name (kind, name))
 
-let find find sg name =
+let find find sg conv name =
   match find sg name with
   | Some x -> Ok x
-  | None -> Error (`Find_by_name (`Any, name))
+  | None -> Error (`Find_by_name (`Any, (conv name : string)))
 
 let module_lookup_to_signature_lookup env (ref, cp, m) =
   let rec handle_expansion : Tools.expansion -> _ = function
@@ -206,7 +206,8 @@ module M = struct
       =
     let parent_cp = Tools.reresolve_parent env parent_cp in
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.module_in_sig sg name >>= fun (`FModule (name, m)) ->
+    find Find.module_in_sig sg ModuleName.to_string name
+    >>= fun (`FModule (name, m)) ->
     Ok (of_component env m (`Module (parent_cp, name)) (`Module (parent, name)))
 
   let of_element env (`Module (id, m)) : t =
@@ -271,7 +272,8 @@ module MT = struct
   let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
       =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.module_type_in_sig sg name >>= fun (`FModuleType (name, mt)) ->
+    find Find.module_type_in_sig sg ModuleTypeName.to_string name
+    >>= fun (`FModuleType (name, mt)) ->
     Ok
       (of_component env mt
          (`ModuleType (parent_cp, name))
@@ -328,7 +330,7 @@ module DT = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.datatype_in_sig sg name >>= function
+    find Find.datatype_in_sig sg TypeName.to_string name >>= function
     | `FType (name, t) -> Ok (`T (`Type (parent', name), t))
 end
 
@@ -349,7 +351,7 @@ module T = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.type_in_sig sg name >>= function
+    find Find.type_in_sig sg TypeName.to_string name >>= function
     | `FType (name, t) -> Ok (`T (`Type (parent', name), t))
     | `FClass (name, c) -> Ok (`C (`Class (parent', name), c))
     | `FClassType (name, ct) -> Ok (`CT (`ClassType (parent', name), ct))
@@ -366,9 +368,9 @@ module V = struct
 
   let of_component _env ~parent_ref name = Ok (`Value (parent_ref, name))
 
-  let in_signature _env ((parent', _, sg) : signature_lookup_result) name =
-    find_ambiguous ~kind:`S Find.value_in_sig sg (ValueName.to_string name)
-    >>= fun _ -> Ok (`Value (parent', name))
+  let in_signature _env ((parent, _, sg) : signature_lookup_result) name =
+    find Find.value_in_sig sg ValueName.to_string name >>= function
+    | `FValue (name, _) -> Ok (`Value (parent, name))
 end
 
 module L = struct
@@ -406,8 +408,9 @@ module L = struct
   let in_label_parent env (parent : label_parent_lookup_result) name =
     match parent with
     | `S (p, _, sg) -> (
-        find_ambiguous ~kind:`Label Find.label_in_sig sg
-          (LabelName.to_string name)
+        find_ambiguous ~kind:`Label
+          (fun sg l -> Find.label_in_sig sg (LabelName.make_std l))
+          sg (LabelName.to_string name)
         >>= function
         | `FLabel lbl ->
             Ok (`Label ((p :> Resolved.LabelParent.t), name), lbl.text))
@@ -430,7 +433,7 @@ module EC = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.extension_in_sig sg (ExtensionName.to_string name) >>= fun _ ->
+    find Find.extension_in_sig sg ExtensionName.to_string name >>= fun _ ->
     Ok (`Extension (parent', name))
 end
 
@@ -455,7 +458,7 @@ module ED = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.extension_in_sig sg (ExtensionName.to_string name)
+    find Find.extension_in_sig sg ExtensionName.to_string name
     >>= fun (`FExt (ext, _) : Find.extension) ->
     (* Type extensions always have at least 1 constructor.
        The reference to the type extension shares the same name as the first constructor. *)
@@ -479,7 +482,7 @@ module EX = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.exception_in_sig sg (ExceptionName.to_string name) >>= fun _ ->
+    find Find.exception_in_sig sg ExceptionName.to_string name >>= fun _ ->
     Ok (`Exception (parent', name))
 end
 
@@ -528,7 +531,7 @@ module CS = struct
         | `In_type (typ_name, _, `FConstructor _) ->
             Ok (`Constructor (`Type (parent', typ_name), name)))
     | `T (parent', t) -> (
-        find Find.any_in_type t name_s >>= function
+        find Find.any_in_type t (fun x -> x) name_s >>= function
         | `FField _ -> got_a_field name_s
         | `FPoly cs ->
             Ok
@@ -575,7 +578,7 @@ module F = struct
               (`Field
                 ((`Type (parent', typ_name) :> Resolved.FieldParent.t), name)))
     | `T (parent', t) -> (
-        find Find.any_in_type t name_s >>= function
+        find Find.any_in_type t (fun x -> x) name_s >>= function
         | `FConstructor _ -> got_a_constructor name_s
         | `FPoly _ -> got_a_constructor name_s
         | `FField _ -> Ok (`Field ((parent' :> Resolved.FieldParent.t), name)))
@@ -596,7 +599,7 @@ module MM = struct
   let in_env _env name : t ref_result = Error (`Lookup_by_name (`Any, name))
 
   let in_class_signature _env (parent', cs) name =
-    find Find.method_in_class_signature cs (MethodName.to_string name)
+    find Find.method_in_class_signature cs MethodName.to_string name
     >>= fun _ -> Ok (`Method (parent', name))
 
   let of_component _env parent' name = Ok (`Method (parent', name))
@@ -612,7 +615,7 @@ module MV = struct
 
   let in_class_signature _env (parent', cs) name =
     find Find.instance_variable_in_class_signature cs
-      (InstanceVariableName.to_string name)
+      InstanceVariableName.to_string name
     >>= fun _ -> Ok (`InstanceVariable (parent', name))
 
   let of_component _env parent' name = Ok (`InstanceVariable (parent', name))
@@ -686,19 +689,16 @@ let rec resolve_label_parent_reference env (r : LabelParent.t) =
   | `Root (name, `TType) -> T.in_env env name >>= label_parent_res_of_type_res
   | `Type (parent, name) ->
       resolve_signature_reference env parent >>= fun p ->
-      T.in_signature env p (TypeName.to_string name)
-      >>= label_parent_res_of_type_res
+      T.in_signature env p name >>= label_parent_res_of_type_res
   | `Root (name, `TClass) -> CL.in_env env name >>= fun r -> Ok (`C r)
   | `Class (parent, name) ->
       resolve_signature_reference env parent >>= fun p ->
-      T.in_signature env p (TypeName.to_string name)
-      >>= class_lookup_result_of_type
-      >>= fun r -> Ok (`C r)
+      T.in_signature env p name >>= class_lookup_result_of_type >>= fun r ->
+      Ok (`C r)
   | `Root (name, `TClassType) -> CT.in_env env name >>= fun r -> Ok (`CT r)
   | `ClassType (parent, name) ->
       resolve_signature_reference env parent >>= fun p ->
-      T.in_signature env p (TypeName.to_string name)
-      >>= class_type_lookup_result_of_type
+      T.in_signature env p name >>= class_type_lookup_result_of_type
       >>= fun r -> Ok (`CT r)
   | `Dot (parent, name) ->
       resolve_label_parent_reference env parent
@@ -731,11 +731,11 @@ and resolve_fragment_type_parent_reference (env : Env.t)
       DT.in_env env name >>= fragment_type_parent_res_of_type_res
   | `Type (parent, name) ->
       resolve_signature_reference env parent >>= fun p ->
-      DT.in_signature env p (TypeName.to_string name)
+      DT.in_signature env p name
   | `Dot (parent, name) ->
       resolve_label_parent_reference env parent
       >>= signature_lookup_result_of_label_parent
-      >>= fun p -> DT.in_signature env p name
+      >>= fun p -> DT.in_signature env p (TypeName.make_std name)
   | `Module_path p ->
       Path.module_in_env env p >>= module_lookup_to_signature_lookup env
       >>= fun r -> Ok (`S r)
@@ -752,13 +752,12 @@ and resolve_signature_reference :
         M.in_env env name >>= module_lookup_to_signature_lookup env
     | `Module (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        M.in_signature env p (ModuleName.to_string name)
-        >>= module_lookup_to_signature_lookup env
+        M.in_signature env p name >>= module_lookup_to_signature_lookup env
     | `Root (name, `TModuleType) ->
         MT.in_env env name >>= module_type_lookup_to_signature_lookup env
     | `ModuleType (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        MT.in_signature env p (ModuleTypeName.to_string name)
+        MT.in_signature env p name
         >>= module_type_lookup_to_signature_lookup env
     | `Root (name, `TUnknown) -> (
         env_lookup_by_name Env.s_signature name env >>= function
@@ -795,10 +794,10 @@ and resolve_module_reference env (r : Module.t) : M.t ref_result =
   | `Dot (parent, name) ->
       resolve_label_parent_reference env parent
       >>= signature_lookup_result_of_label_parent
-      >>= fun p -> M.in_signature env p name
+      >>= fun p -> M.in_signature env p (ModuleName.make_std name)
   | `Module (parent, name) ->
       resolve_signature_reference env parent >>= fun p ->
-      M.in_signature env p (ModuleName.to_string name)
+      M.in_signature env p name
   | `Root (name, _) -> M.in_env env name
   | `Module_path p -> Path.module_in_env env p
 
@@ -863,7 +862,7 @@ let resolve_reference_dot_page env page name =
   L.in_page env page name >>= resolved_with_text
 
 let resolve_reference_dot_type env ~parent_ref t name =
-  find Find.any_in_type t name >>= function
+  find Find.any_in_type t (fun x -> x) name >>= function
   | `FConstructor _ -> CS.of_component env parent_ref name >>= resolved1
   | `FPoly p -> CS.poly_of_component env parent_ref p.name >>= resolved1
   | `FField _ -> F.of_component env parent_ref name >>= resolved1
@@ -884,7 +883,12 @@ let resolve_reference_dot env parent name =
   | `P _ as page -> resolve_reference_dot_page env page name
 
 (** Warnings may be generated with [Error.implicit_warning] *)
-let resolve_reference : _ -> Reference.t -> _ =
+let resolve_reference :
+    Env.t ->
+    Reference.t ->
+    ( Reference.Resolved.t * Odoc_model.Comment.paragraph option,
+      Errors.Tools_error.reference_lookup_error )
+    Result.t =
   let resolved = resolved3 in
   fun env r ->
     match r with
@@ -914,25 +918,24 @@ let resolve_reference : _ -> Reference.t -> _ =
     | `Root (name, (`TModule | `TChildModule)) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        M.in_signature env p (ModuleName.to_string name) >>= resolved
+        M.in_signature env p name >>= resolved
     | `Root (name, `TModuleType) -> MT.in_env env name >>= resolved
     | `ModuleType (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        MT.in_signature env p (ModuleTypeName.to_string name) >>= resolved
+        MT.in_signature env p name >>= resolved
     | `Root (name, `TType) -> T.in_env env name >>= resolved_type_lookup
     | `Type (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        T.in_signature env p (TypeName.to_string name) >>= resolved_type_lookup
+        T.in_signature env p name >>= resolved_type_lookup
     | `Root (name, `TClass) -> CL.in_env env name >>= resolved2
     | `Class (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        T.in_signature env p (TypeName.to_string name)
-        >>= class_lookup_result_of_type >>= resolved2
+        T.in_signature env p name >>= class_lookup_result_of_type >>= resolved2
     | `Root (name, `TClassType) -> CT.in_env env name >>= resolved2
     | `ClassType (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        T.in_signature env p (TypeName.to_string name)
-        >>= class_type_lookup_result_of_type >>= resolved2
+        T.in_signature env p name >>= class_type_lookup_result_of_type
+        >>= resolved2
     | `Root (name, `TValue) -> V.in_env env name >>= resolved1
     | `Value (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
