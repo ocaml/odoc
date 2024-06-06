@@ -43,6 +43,8 @@ module type Name = sig
 
   val shadowed_of_ident : Ident.t -> t
 
+  val equal_modulo_shadowing : t -> t -> bool
+
   val equal : t -> t -> bool
 
   val compare : t -> t -> int

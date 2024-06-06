@@ -59,36 +59,37 @@ type any_in_class_sig = [ instance_variable | method_ ]
 
 (** Lookup by name, unambiguous *)
 
-val module_in_sig : Signature.t -> string -> module_ option
+val module_in_sig : Signature.t -> ModuleName.t -> module_ option
 
-val type_in_sig : Signature.t -> string -> type_ option
+val type_in_sig : Signature.t -> TypeName.t -> type_ option
 
-val datatype_in_sig : Signature.t -> string -> datatype option
+val datatype_in_sig : Signature.t -> TypeName.t -> datatype option
 
-val module_type_in_sig : Signature.t -> string -> module_type option
+val module_type_in_sig : Signature.t -> ModuleTypeName.t -> module_type option
 
-val exception_in_sig : Signature.t -> string -> exception_ option
+val exception_in_sig : Signature.t -> ExceptionName.t -> exception_ option
 
-val extension_in_sig : Signature.t -> string -> extension option
+val extension_in_sig : Signature.t -> ExtensionName.t -> extension option
 
 val any_in_type : TypeDecl.t -> string -> any_in_type option
 
 val any_in_typext : Extension.t -> string -> extension option
 
-val method_in_class_signature : ClassSignature.t -> string -> method_ option
+val value_in_sig : Signature.t -> ValueName.t -> value option
+
+val method_in_class_signature :
+  ClassSignature.t -> MethodName.t -> method_ option
 
 val instance_variable_in_class_signature :
-  ClassSignature.t -> string -> instance_variable option
+  ClassSignature.t -> InstanceVariableName.t -> instance_variable option
 
 (** Maybe ambiguous *)
 
-val class_in_sig : Signature.t -> string -> class_ list
+val class_in_sig : Signature.t -> TypeName.t -> class_ list
 
 val signature_in_sig : Signature.t -> string -> signature list
 
-val value_in_sig : Signature.t -> string -> value list
-
-val label_in_sig : Signature.t -> string -> label list
+val label_in_sig : Signature.t -> LabelName.t -> label list
 
 val label_parent_in_sig : Signature.t -> string -> label_parent list
 
@@ -100,9 +101,7 @@ val any_in_class_signature : ClassSignature.t -> string -> any_in_class_sig list
 
 (** Disambiguated lookups, returns the last match. *)
 
-val class_in_sig_unambiguous : Signature.t -> string -> class_ option
-
-val value_in_sig_unambiguous : Signature.t -> string -> value option
+val class_in_sig_unambiguous : Signature.t -> TypeName.t -> class_ option
 
 (** Lookup removed items *)
 
@@ -118,11 +117,11 @@ type careful_type = [ type_ | removed_type ]
 
 type careful_class = [ class_ | removed_type ]
 
-val careful_module_in_sig : Signature.t -> string -> careful_module option
+val careful_module_in_sig : Signature.t -> ModuleName.t -> careful_module option
 
 val careful_module_type_in_sig :
-  Signature.t -> string -> careful_module_type option
+  Signature.t -> ModuleTypeName.t -> careful_module_type option
 
-val careful_type_in_sig : Signature.t -> string -> careful_type option
+val careful_type_in_sig : Signature.t -> TypeName.t -> careful_type option
 
-val careful_class_in_sig : Signature.t -> string -> careful_class option
+val careful_class_in_sig : Signature.t -> TypeName.t -> careful_class option
