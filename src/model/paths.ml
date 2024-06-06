@@ -689,9 +689,16 @@ module Path = struct
     | `SubstitutedMT r -> is_path_hidden (r :> any)
     | `SubstitutedT r -> is_path_hidden (r :> any)
     | `SubstitutedCT r -> is_path_hidden (r :> any)
-    | `Root s -> contains_double_underscore s
+    | `Root s -> ModuleName.is_hidden s
     | `Forward _ -> false
-    | `Dot (p, n) -> n.[0] = '{' || is_path_hidden (p : module_ :> any)
+    | `Dot (p, n) ->
+        ModuleName.is_hidden n || is_path_hidden (p : module_ :> any)
+    | `DotMT (p, n) ->
+        ModuleTypeName.is_hidden n || is_path_hidden (p : module_ :> any)
+    | `DotT (p, n) ->
+        TypeName.is_hidden n || is_path_hidden (p : module_ :> any)
+    | `DotV (p, n) ->
+        ValueName.is_hidden n || is_path_hidden (p : module_ :> any)
     | `Apply (p1, p2) ->
         is_path_hidden (p1 : module_ :> any)
         || is_path_hidden (p2 : module_ :> any)

@@ -673,7 +673,7 @@ let is_shadowed
 module Path = struct
 
   let read_module_ident env id =
-    if Ident.persistent id then `Root (Ident.name id)
+    if Ident.persistent id then `Root (ModuleName.of_ident id)
     else
       try find_module env id
       with Not_found -> assert false
@@ -693,7 +693,7 @@ module Path = struct
     try
       `Identifier (find_class_type env id, false)
     with Not_found ->
-      `Dot(`Root "*", (Ident.name id))
+      `DotT (`Root (ModuleName.make_std "*"), (TypeName.of_ident id))
       (* TODO remove this hack once the fix for PR#6650
          is in the OCaml release *)
 
@@ -718,9 +718,9 @@ module Path = struct
   let rec read_module : t -> Path.t -> Paths.Path.Module.t = fun env -> function
     | Path.Pident id -> read_module_ident env id
 #if OCAML_VERSION >= (4,8,0)
-    | Path.Pdot(p, s) -> `Dot(read_module env p, s)
+    | Path.Pdot(p, s) -> `Dot(read_module env p, ModuleName.make_std s)
 #else
-    | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
+    | Path.Pdot(p, s, _) -> `Dot(read_module env p, ModuleName.make_std s)
 #endif
     | Path.Papply(p, arg) -> `Apply(read_module env p, read_module env arg)
 #if OCAML_VERSION >= (5,1,0)
@@ -730,9 +730,9 @@ module Path = struct
   let read_module_type env = function
     | Path.Pident id -> read_module_type_ident env id
 #if OCAML_VERSION >= (4,8,0)
-    | Path.Pdot(p, s) -> `Dot(read_module env p, s)
+    | Path.Pdot(p, s) -> `DotMT(read_module env p, ModuleTypeName.make_std s)
 #else
-    | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
+    | Path.Pdot(p, s, _) -> `DotMT(read_module env p, ModuleTypeName.make_std s)
 #endif
     | Path.Papply(_, _)-> assert false
 #if OCAML_VERSION >= (5,1,0)
@@ -742,9 +742,9 @@ module Path = struct
   let read_class_type env = function
     | Path.Pident id -> read_class_type_ident env id
 #if OCAML_VERSION >= (4,8,0)
-    | Path.Pdot(p, s) -> `Dot(read_module env p, strip_hash s)
+    | Path.Pdot(p, s) -> `DotT(read_module env p, TypeName.make_std (strip_hash s))
 #else
-    | Path.Pdot(p, s, _) -> `Dot(read_module env p, strip_hash s)
+    | Path.Pdot(p, s, _) -> `DotT(read_module env p, strip_hash s)
 #endif
     | Path.Papply(_, _)-> assert false
 #if OCAML_VERSION >= (5,1,0)
@@ -758,9 +758,9 @@ module Path = struct
 #endif
     | Path.Pident id -> read_type_ident env id
 #if OCAML_VERSION >= (4,8,0)
-    | Path.Pdot(p, s) -> `Dot(read_module env p, strip_hash s)
+    | Path.Pdot(p, s) -> `DotT(read_module env p, TypeName.make_std (strip_hash s))
 #else
-    | Path.Pdot(p, s, _) -> `Dot(read_module env p, strip_hash s)
+    | Path.Pdot(p, s, _) -> `DotT(read_module env p, TypeName.make_std (strip_hash s))
 #endif
     | Path.Papply(_, _)-> assert false
 #if OCAML_VERSION >= (5,1,0)
@@ -770,9 +770,9 @@ module Path = struct
   let read_value env = function
     | Path.Pident id -> read_value_ident env id
 #if OCAML_VERSION >= (4,8,0)
-    | Path.Pdot(p, s) -> `Dot(read_module env p, s)
+    | Path.Pdot(p, s) -> `DotV(read_module env p, ValueName.make_std s)
 #else
-    | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
+    | Path.Pdot(p, s, _) -> `DotV(read_module env p, ValueName.make_std s)
 #endif
     | Path.Papply(_, _) -> assert false
 #if OCAML_VERSION >= (5,1,0)

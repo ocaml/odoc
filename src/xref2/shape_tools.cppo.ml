@@ -67,7 +67,7 @@ let rec shape_of_module_path env : _ -> Shape.t option =
     match path with
     | `Resolved _ -> None
     | `Root name -> (
-        match Env.lookup_impl name env with
+        match Env.lookup_impl (ModuleName.to_string name) env with
         | Some impl -> (
             match impl.shape_info with
             | Some (shape, _) -> Some shape
@@ -75,7 +75,7 @@ let rec shape_of_module_path env : _ -> Shape.t option =
         | _ -> None)
     | `Forward _ -> None
     | `Dot (parent, name) ->
-        proj (parent :> Odoc_model.Paths.Path.Module.t) Kind.Module name
+        proj (parent :> Odoc_model.Paths.Path.Module.t) Kind.Module (ModuleName.to_string_unsafe name)
     | `Apply (parent, arg) ->
         shape_of_module_path env (parent :> Odoc_model.Paths.Path.Module.t)
         >>= fun parent ->
@@ -87,7 +87,7 @@ let rec shape_of_module_path env : _ -> Shape.t option =
         shape_of_module_path env m
 
 let rec shape_of_kind_path env kind :
-    _ -> Shape.t option =
+    Odoc_model.Paths.Path.t -> Shape.t option =
   let proj parent kind name =
     let item = Shape.Item.make name kind in
     match shape_of_module_path env parent with
@@ -97,12 +97,19 @@ let rec shape_of_kind_path env kind :
   fun path ->
     match path with
     | `Resolved _ -> None
-    | `Dot (parent, name) -> proj parent kind name
-    | `SubstitutedT t -> shape_of_kind_path env kind t
-    | `SubstitutedMT t -> shape_of_kind_path env kind t
-    | `SubstitutedCT t -> shape_of_kind_path env kind t
+    | `DotT (parent, name) -> proj parent kind (TypeName.to_string_unsafe name)
+    | `DotMT (parent, name) -> proj parent kind (ModuleTypeName.to_string_unsafe name)
+    | `DotV (parent, name) -> proj parent kind (ValueName.to_string_unsafe name)
+    | `SubstitutedT t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
+    | `SubstitutedMT t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
+    | `SubstitutedCT t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
     | `Identifier (id, _) -> shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
-
+    | `Substituted t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
+    | `Forward _
+    | `Dot _
+    | `Root _
+    | `Apply _ -> None
+    
 module MkId = Identifier.Mk
 
 let unit_of_uid uid =
@@ -178,18 +185,18 @@ let lookup_module_path env path =
   | None -> None
   | Some query -> lookup_shape env query
 
-let lookup_kind_path kind env path =
+let lookup_kind_path kind env (path : Odoc_model.Paths.Path.t) =
   match shape_of_kind_path env kind path with
   | None -> None
   | Some query -> lookup_shape env query
 
-let lookup_value_path = lookup_kind_path Kind.Value
+let lookup_value_path env p = lookup_kind_path Kind.Value env (p : Odoc_model.Paths.Path.Value.t :> Odoc_model.Paths.Path.t)
 
-let lookup_type_path : Env.t -> Odoc_model.Paths.Path.Type.t -> _ = lookup_kind_path Kind.Type
+let lookup_type_path env p = lookup_kind_path Kind.Type env (p : Odoc_model.Paths.Path.Type.t :> Odoc_model.Paths.Path.t)
 
-let lookup_module_type_path = lookup_kind_path Kind.Module_type
+let lookup_module_type_path env p = lookup_kind_path Kind.Module_type env (p : Odoc_model.Paths.Path.ModuleType.t :> Odoc_model.Paths.Path.t)
 
-let lookup_class_type_path = lookup_kind_path Kind.Class_type
+let lookup_class_type_path env p = lookup_kind_path Kind.Class_type env (p : Odoc_model.Paths.Path.ClassType.t :> Odoc_model.Paths.Path.t)
 
 #else
 

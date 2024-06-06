@@ -54,9 +54,9 @@ and Cpath : sig
     | `Substituted of module_
     | `Local of Ident.path_module * bool
     | `Identifier of Identifier.Path.Module.t * bool
-    | `Root of string
+    | `Root of ModuleName.t
     | `Forward of string
-    | `Dot of module_ * string
+    | `Dot of module_ * ModuleName.t
     | `Module of Resolved.parent * ModuleName.t (* Like dot, but typed *)
     | `Apply of module_ * module_ ]
 
@@ -65,7 +65,7 @@ and Cpath : sig
     | `Substituted of module_type
     | `Local of Ident.module_type * bool
     | `Identifier of Identifier.ModuleType.t * bool
-    | `Dot of module_ * string
+    | `DotMT of module_ * ModuleTypeName.t
     | `ModuleType of Resolved.parent * ModuleTypeName.t ]
 
   and type_ =
@@ -73,14 +73,14 @@ and Cpath : sig
     | `Substituted of type_
     | `Local of Ident.path_type * bool
     | `Identifier of Odoc_model.Paths.Identifier.Path.Type.t * bool
-    | `Dot of module_ * string
+    | `DotT of module_ * TypeName.t
     | `Type of Resolved.parent * TypeName.t
     | `Class of Resolved.parent * TypeName.t
     | `ClassType of Resolved.parent * TypeName.t ]
 
   and value =
     [ `Resolved of Resolved.value
-    | `Dot of module_ * string
+    | `DotV of module_ * ValueName.t
     | `Value of Resolved.parent * ValueName.t
     | `Identifier of Identifier.Value.t * bool ]
 
@@ -89,7 +89,7 @@ and Cpath : sig
     | `Substituted of class_type
     | `Local of Ident.path_class_type * bool
     | `Identifier of Odoc_model.Paths.Identifier.Path.ClassType.t * bool
-    | `Dot of module_ * string
+    | `DotT of module_ * TypeName.t
     | `Class of Resolved.parent * TypeName.t
     | `ClassType of Resolved.parent * TypeName.t ]
 end =
@@ -152,7 +152,7 @@ let is_module_type_substituted : module_type -> bool = function
   | `Identifier _ -> false
   | `Local _ -> false
   | `Substituted _ -> true
-  | `Dot (a, _) -> is_module_substituted a
+  | `DotMT (a, _) -> is_module_substituted a
   | `ModuleType (a, _) -> is_resolved_parent_substituted a
 
 let is_type_substituted : type_ -> bool = function
@@ -160,7 +160,7 @@ let is_type_substituted : type_ -> bool = function
   | `Identifier _ -> false
   | `Local _ -> false
   | `Substituted _ -> true
-  | `Dot (a, _) -> is_module_substituted a
+  | `DotT (a, _) -> is_module_substituted a
   | `Type (a, _) | `Class (a, _) | `ClassType (a, _) ->
       is_resolved_parent_substituted a
 
@@ -169,7 +169,7 @@ let is_class_type_substituted : class_type -> bool = function
   | `Identifier _ -> false
   | `Local _ -> false
   | `Substituted _ -> true
-  | `Dot (a, _) -> is_module_substituted a
+  | `DotT (a, _) -> is_module_substituted a
   | `Class (a, _) | `ClassType (a, _) -> is_resolved_parent_substituted a
 
 let rec is_module_forward : module_ -> bool = function
@@ -223,7 +223,7 @@ and is_module_type_hidden : module_type -> bool = function
       b || ModuleTypeName.is_hidden t
   | `Local (_, b) -> b
   | `Substituted p -> is_module_type_hidden p
-  | `Dot (p, _) -> is_module_hidden p
+  | `DotMT (p, _) -> is_module_hidden p
   | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
 
 and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
@@ -247,7 +247,7 @@ and is_type_hidden : type_ -> bool = function
   | `Identifier ({ iv = `CoreType _; _ }, b) -> b
   | `Local (_, b) -> b
   | `Substituted p -> is_type_hidden p
-  | `Dot (p, _) -> is_module_hidden p
+  | `DotT (p, _) -> is_module_hidden p
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
@@ -272,7 +272,7 @@ and is_class_type_hidden : class_type -> bool = function
   | `Identifier (_, b) -> b
   | `Local (_, b) -> b
   | `Substituted p -> is_class_type_hidden p
-  | `Dot (p, _) -> is_module_hidden p
+  | `DotT (p, _) -> is_module_hidden p
   | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
@@ -304,13 +304,13 @@ and module_of_module_reference : Reference.Module.t -> module_ = function
          | `Dot (_, _)
          | `Module (_, _) ) as parent),
         name ) ->
-      `Dot (module_of_module_reference parent, name)
+      `Dot (module_of_module_reference parent, ModuleName.make_std name)
   | `Module
       ( (( `Resolved (`Identifier { iv = #Identifier.Module.t_pv; _ })
          | `Dot (_, _)
          | `Module (_, _) ) as parent),
         name ) ->
-      `Dot (module_of_module_reference parent, ModuleName.to_string name)
+      `Dot (module_of_module_reference parent, name)
   | _ -> failwith "Not a module reference"
 
 let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
@@ -328,8 +328,7 @@ let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
   | `Substituted x -> unresolve_resolved_module_path x
   | `Subst (_, x) -> unresolve_resolved_module_path x
   | `Hidden x -> unresolve_resolved_module_path x (* should assert false here *)
-  | `Module (p, m) ->
-      `Dot (unresolve_resolved_parent_path p, ModuleName.to_string m)
+  | `Module (p, m) -> `Dot (unresolve_resolved_parent_path p, m)
   | `Canonical (m, _) -> unresolve_resolved_module_path m
   | `Apply (m, a) ->
       `Apply (unresolve_resolved_module_path m, unresolve_resolved_module_path a)
@@ -345,16 +344,14 @@ and unresolve_module_path : module_ -> module_ = function
   | `Root _ as x -> x
   | `Forward _ as x -> x
   | `Dot (p, x) -> `Dot (unresolve_module_path p, x)
-  | `Module (p, x) ->
-      `Dot (unresolve_resolved_parent_path p, ModuleName.to_string x)
+  | `Module (p, x) -> `Dot (unresolve_resolved_parent_path p, x)
   | `Apply (x, y) -> `Apply (unresolve_module_path x, unresolve_module_path y)
 
 and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
   function
   | (`Local _ | `Gpath _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_module_type_path x
-  | `ModuleType (p, n) ->
-      `Dot (unresolve_resolved_parent_path p, ModuleTypeName.to_string n)
+  | `ModuleType (p, n) -> `DotMT (unresolve_resolved_parent_path p, n)
   | `SubstT (_, m) -> unresolve_resolved_module_type_path m
   | `AliasModuleType (_, m2) -> unresolve_resolved_module_type_path m2
   | `CanonicalModuleType (p, _) -> unresolve_resolved_module_type_path p
@@ -368,20 +365,16 @@ and unresolve_resolved_type_path : Resolved.type_ -> type_ = function
   | (`Gpath _ | `Local _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_type_path x
   | `CanonicalType (t1, _) -> unresolve_resolved_type_path t1
-  | `Type (p, n) -> `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
-  | `Class (p, n) ->
-      `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
-  | `ClassType (p, n) ->
-      `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
+  | `Type (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
+  | `Class (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
+  | `ClassType (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
 
 and unresolve_resolved_class_type_path : Resolved.class_type -> class_type =
   function
   | (`Local _ | `Gpath _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_class_type_path x
-  | `Class (p, n) ->
-      `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
-  | `ClassType (p, n) ->
-      `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
+  | `Class (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
+  | `ClassType (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
 
 and unresolve_module_type_path : module_type -> module_type = function
   | `Resolved m -> unresolve_resolved_module_type_path m

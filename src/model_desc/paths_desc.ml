@@ -213,9 +213,16 @@ module General_paths = struct
       | `Resolved x -> C ("`Resolved", x, resolved_path)
       | `Identifier (x1, x2) ->
           C ("`Identifier", ((x1 :> id_t), x2), Pair (identifier, bool))
-      | `Root x -> C ("`Root", x, string)
+      | `Root x -> C ("`Root", x, Names.modulename)
       | `Forward x -> C ("`Forward", x, string)
-      | `Dot (x1, x2) -> C ("`Dot", ((x1 :> p), x2), Pair (path, string))
+      | `Dot (x1, x2) ->
+          C ("`Dot", ((x1 :> p), x2), Pair (path, Names.modulename))
+      | `DotT (x1, x2) ->
+          C ("`DotT", ((x1 :> p), x2), Pair (path, Names.typename))
+      | `DotMT (x1, x2) ->
+          C ("`DotMT", ((x1 :> p), x2), Pair (path, Names.moduletypename))
+      | `DotV (x1, x2) ->
+          C ("`DotV", ((x1 :> p), x2), Pair (path, Names.valuename))
       | `Apply (x1, x2) ->
           C ("`Apply", ((x1 :> p), (x2 :> p)), Pair (path, path))
       | `Substituted m -> C ("`Substituted", (m :> p), path)

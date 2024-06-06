@@ -1,4 +1,4 @@
-type path = [ `Root of string | `Dot of Paths.Path.Module.t * string ]
+type path = [ `Root of string | `Dot of path * string ]
 
 val parse :
   Location_.span -> string -> Paths.Reference.t Error.with_errors_and_warnings

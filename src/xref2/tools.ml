@@ -21,7 +21,7 @@ let c_mod_poss env p =
   let rec inner = function
     | `Dot (p, n) -> (
         let rest = List.map (fun p -> `Dot (p, n)) (inner p) in
-        match Env.lookup_by_name Env.s_module n env with
+        match Env.lookup_by_name Env.s_module (ModuleName.to_string n) env with
         | Ok (`Module (id, m)) ->
             let m = Component.Delayed.get m in
             `Identifier (id, m.hidden) :: rest
@@ -33,9 +33,11 @@ let c_mod_poss env p =
 let c_modty_poss env p =
   (* canonical module type paths *)
   match p with
-  | `Dot (p, n) -> (
-      let rest = List.map (fun p -> `Dot (p, n)) (c_mod_poss env p) in
-      match Env.lookup_by_name Env.s_module_type n env with
+  | `DotMT (p, n) -> (
+      let rest = List.map (fun p -> `DotMT (p, n)) (c_mod_poss env p) in
+      match
+        Env.lookup_by_name Env.s_module_type (ModuleTypeName.to_string n) env
+      with
       | Ok (`ModuleType (id, _)) -> `Identifier (id, false) :: rest
       | Error _ -> rest)
   | p -> [ p ]
@@ -43,9 +45,9 @@ let c_modty_poss env p =
 let c_ty_poss env p =
   (* canonical type paths *)
   match p with
-  | `Dot (p, n) -> (
-      let rest = List.map (fun p -> `Dot (p, n)) (c_mod_poss env p) in
-      match Env.lookup_by_name Env.s_datatype n env with
+  | `DotT (p, n) -> (
+      let rest = List.map (fun p -> `DotT (p, n)) (c_mod_poss env p) in
+      match Env.lookup_by_name Env.s_datatype (TypeName.to_string n) env with
       | Ok (`Type (id, _)) ->
           `Identifier ((id :> Odoc_model.Paths.Identifier.Path.Type.t), false)
           :: rest
@@ -509,7 +511,7 @@ and process_module_path env m rp =
   add_canonical_path m rp'
 
 and handle_module_lookup env id rparent sg sub =
-  match Find.careful_module_in_sig sg id with
+  match Find.careful_module_in_sig sg (ModuleName.to_string id) with
   | Some (`FModule (name, m)) ->
       let rp' = simplify_module env (`Module (rparent, name)) in
       let m' = Subst.module_ sub m in
@@ -520,14 +522,15 @@ and handle_module_lookup env id rparent sg sub =
 
 and handle_module_type_lookup env id p sg sub =
   let open Odoc_utils.OptionMonad in
-  Find.module_type_in_sig sg id >>= fun (`FModuleType (name, mt)) ->
+  Find.module_type_in_sig sg (ModuleTypeName.to_string id)
+  >>= fun (`FModuleType (name, mt)) ->
   let mt = Subst.module_type sub mt in
   let p' = simplify_module_type env (`ModuleType (p, name)) in
   let p'' = process_module_type env mt p' in
   Some (p'', mt)
 
 and handle_type_lookup env id p sg =
-  match Find.careful_type_in_sig sg id with
+  match Find.careful_type_in_sig sg (TypeName.to_string id) with
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
   | Some (`FClassType (name, _) as t) -> Ok (`ClassType (p, name), t)
   | Some (`FType (name, _) as t) -> Ok (simplify_type env (`Type (p, name)), t)
@@ -535,12 +538,12 @@ and handle_type_lookup env id p sg =
   | None -> Error `Find_failure
 
 and handle_value_lookup _env id p sg =
-  match Find.value_in_sig sg id with
+  match Find.value_in_sig sg (ValueName.to_string id) with
   | (`FValue (name, _) as v) :: _ -> Ok (`Value (p, name), v)
   | _ -> Error `Find_failure
 
 and handle_class_type_lookup id p sg =
-  match Find.careful_class_in_sig sg id with
+  match Find.careful_class_in_sig sg (TypeName.to_string id) with
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
   | Some (`FClassType (name, _) as t) -> Ok (`ClassType (p, name), t)
   | Some (`FType_removed (_name, _, _) as _t) -> Error `Class_replaced
@@ -858,9 +861,9 @@ and lookup_type :
     | `Gpath p -> lookup_type_gpath env p
     | `CanonicalType (t1, _) -> lookup_type env t1
     | `Substituted s -> lookup_type env s
-    | `Type (p, id) -> do_type p (TypeName.to_string id)
-    | `Class (p, id) -> do_type p (TypeName.to_string id)
-    | `ClassType (p, id) -> do_type p (TypeName.to_string id)
+    | `Type (p, id) -> do_type p id
+    | `Class (p, id) -> do_type p id
+    | `ClassType (p, id) -> do_type p id
   in
   res
 
@@ -874,8 +877,8 @@ and lookup_value :
       lookup_parent env p
       |> map_error (fun e -> (e :> simple_value_lookup_error))
       >>= fun (sg, sub) ->
-      handle_value_lookup env (ValueName.to_string id) p sg
-      >>= fun (_, `FValue (name, c)) -> Ok (`FValue (name, Subst.value sub c))
+      handle_value_lookup env id p sg >>= fun (_, `FValue (name, c)) ->
+      Ok (`FValue (name, Subst.value sub c))
   | `Gpath p -> lookup_value_gpath env p
 
 and lookup_class_type :
@@ -901,8 +904,8 @@ and lookup_class_type :
     | `Local id -> Error (`LocalType (env, (id :> Ident.path_type)))
     | `Gpath p -> lookup_class_type_gpath env p
     | `Substituted s -> lookup_class_type env s
-    | `Class (p, id) -> do_type p (TypeName.to_string id)
-    | `ClassType (p, id) -> do_type p (TypeName.to_string id)
+    | `Class (p, id) -> do_type p id
+    | `ClassType (p, id) -> do_type p id
   in
   res
 
@@ -932,7 +935,7 @@ and resolve_module : Env.t -> Cpath.module_ -> resolve_module_result =
         lookup_parent env parent
         |> map_error (fun e -> (e :> simple_module_lookup_error))
         >>= fun (parent_sig, sub) ->
-        handle_module_lookup env (ModuleName.to_string id) parent parent_sig sub
+        handle_module_lookup env id parent parent_sig sub
     | `Apply (m1, m2) -> (
         let func = resolve_module env m1 in
         let arg = resolve_module env m2 in
@@ -970,7 +973,7 @@ and resolve_module : Env.t -> Cpath.module_ -> resolve_module_result =
             Error (`Parent (`Parent_sig `UnresolvedForwardPath))
         | None -> Error (`Lookup_failure_root r))
     | `Forward f ->
-        resolve_module env (`Root f)
+        resolve_module env (`Root (ModuleName.make_std f))
         |> map_error (fun e -> `Parent (`Parent_module e))
   in
   LookupAndResolveMemo.memoize resolve env' id
@@ -979,7 +982,7 @@ and resolve_module_type :
     Env.t -> Cpath.module_type -> resolve_module_type_result =
  fun env p ->
   match p with
-  | `Dot (parent, id) ->
+  | `DotMT (parent, id) ->
       resolve_and_lookup_parent env parent
       |> map_error (fun e -> (e :> simple_module_type_lookup_error))
       >>= fun (parent, parent_sig, sub) ->
@@ -990,9 +993,7 @@ and resolve_module_type :
       lookup_parent env parent
       |> map_error (fun e -> (e :> simple_module_type_lookup_error))
       >>= fun (parent_sig, sub) ->
-      handle_module_type_lookup env
-        (ModuleTypeName.to_string id)
-        parent parent_sig sub
+      handle_module_type_lookup env id parent parent_sig sub
       |> of_option ~error:`Find_failure
   | `Identifier (i, _) ->
       of_option ~error:(`Lookup_failureMT i)
@@ -1012,7 +1013,7 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
  fun env p ->
   let result =
     match p with
-    | `Dot (parent, id) ->
+    | `DotT (parent, id) ->
         resolve_and_lookup_parent env parent
         |> map_error (fun e -> (e :> simple_type_lookup_error))
         >>= fun (parent, parent_sig, sub) ->
@@ -1053,8 +1054,7 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
         lookup_parent env parent
         |> map_error (fun e -> (e :> simple_type_lookup_error))
         >>= fun (parent_sg, sub) ->
-        handle_type_lookup env (TypeName.to_string id) parent parent_sg
-        >>= fun (p', t') ->
+        handle_type_lookup env id parent parent_sg >>= fun (p', t') ->
         let t =
           match t' with
           | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
@@ -1081,7 +1081,7 @@ and resolve_value : Env.t -> Cpath.value -> resolve_value_result =
  fun env p ->
   let result =
     match p with
-    | `Dot (parent, id) ->
+    | `DotV (parent, id) ->
         resolve_module env parent
         |> map_error (fun e -> `Parent (`Parent_module e))
         >>= fun (p, m) ->
@@ -1116,7 +1116,7 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
     =
  fun env p ->
   match p with
-  | `Dot (parent, id) ->
+  | `DotT (parent, id) ->
       resolve_and_lookup_parent env parent
       |> map_error (fun e -> (e :> simple_type_lookup_error))
       >>= fun (parent, parent_sig, sub) ->
@@ -1153,8 +1153,7 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
       lookup_parent env parent
       |> map_error (fun e -> (e :> simple_type_lookup_error))
       >>= fun (parent_sg, sub) ->
-      handle_class_type_lookup (TypeName.to_string id) parent parent_sg
-      >>= fun (p', t') ->
+      handle_class_type_lookup id parent parent_sg >>= fun (p', t') ->
       let t =
         match t' with
         | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)

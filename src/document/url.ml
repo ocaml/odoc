@@ -47,13 +47,19 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Value (p, s) -> render_resolved (p :> t) ^ "." ^ ValueName.to_string s
     | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
     | `ClassType (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
+  and dot p s =
+    render_path (p : Odoc_model.Paths.Path.Module.t :> Odoc_model.Paths.Path.t)
+    ^ "." ^ s
   and render_path : Odoc_model.Paths.Path.t -> string =
    fun x ->
     match x with
     | `Identifier (id, _) -> Identifier.name id
-    | `Root root -> root
+    | `Root root -> ModuleName.to_string root
     | `Forward root -> root
-    | `Dot (prefix, suffix) -> render_path (prefix :> t) ^ "." ^ suffix
+    | `Dot (p, s) -> dot p (ModuleName.to_string s)
+    | `DotT (p, s) -> dot p (TypeName.to_string s)
+    | `DotMT (p, s) -> dot p (ModuleTypeName.to_string s)
+    | `DotV (p, s) -> dot p (ValueName.to_string s)
     | `Apply (p1, p2) ->
         render_path (p1 :> t) ^ "(" ^ render_path (p2 :> t) ^ ")"
     | `Resolved rp -> render_resolved rp

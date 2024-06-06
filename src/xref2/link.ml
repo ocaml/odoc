@@ -1115,7 +1115,11 @@ let page env page =
             | Error `Not_found -> Errors.report ~what:(`Child_page page) `Lookup
             )
         | Page.Module_child mod_ -> (
-            match Env.lookup_root_module mod_ env with
+            match
+              Env.lookup_root_module
+                (Odoc_model.Names.ModuleName.make_std mod_)
+                env
+            with
             | Some _ -> ()
             | None -> Errors.report ~what:(`Child_module mod_) `Lookup))
       page.Lang.Page.children

@@ -219,7 +219,10 @@ module M = struct
   let in_env env name =
     match env_lookup_by_name Env.s_module name env with
     | Ok e -> Ok (of_element env e)
-    | Error _ -> Error (`Parent (`Parent_module (`Lookup_failure_root name)))
+    | Error _ ->
+        Error
+          (`Parent
+            (`Parent_module (`Lookup_failure_root (ModuleName.make_std name))))
 end
 
 module Path = struct
