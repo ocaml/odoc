@@ -206,14 +206,13 @@ let tokenize location s : token list =
 
   scan_identifier (String.length s) 0 (String.length s - 1) [] |> List.rev
 
-let expected allowed location =
-  let unqualified = "or an unqualified reference" in
+let expected ?(expect_paths = false) allowed location =
+  let unqualified = [ "an unqualified reference" ] in
+  let unqualified =
+    if expect_paths then "a path" :: unqualified else unqualified
+  in
   let allowed =
-    match allowed with
-    | [ one ] -> Printf.sprintf "'%s-' %s" one unqualified
-    | _ ->
-        String.concat ", "
-          (List.map (Printf.sprintf "'%s-'") allowed @ [ unqualified ])
+    String.concat ", " (List.map (Printf.sprintf "'%s-'") allowed @ unqualified)
   in
   expected_err allowed location
 
@@ -242,7 +241,7 @@ let parse whole_reference_location s :
         `Slash (page_path next_token.identifier next_token' tokens', identifier)
     | (`None | `Prefixed _), _ ->
         (* This is not really expected *)
-        expected [ "path separated components" ] next_token.location
+        expected ~expect_paths:true [] next_token.location
         |> Error.raise_exception
   in
 
@@ -262,7 +261,7 @@ let parse whole_reference_location s :
             `Root (identifier, kind)
         | `TRelativePath -> `Page_path (`Root (identifier, `TRelativePath))
         | _ ->
-            expected [ "module"; "module-type" ] location
+            expected ~expect_paths:true [ "module"; "module-type" ] location
             |> Error.raise_exception)
     | next_token :: tokens -> (
         match kind with
@@ -275,7 +274,7 @@ let parse whole_reference_location s :
               (signature next_token tokens, ModuleTypeName.make_std identifier)
         | `TRelativePath -> `Page_path (page_path identifier next_token tokens)
         | _ ->
-            expected [ "module"; "module-type" ] location
+            expected ~expect_paths:true [ "module"; "module-type" ] location
             |> Error.raise_exception)
   and parent { kind; identifier; location } tokens : FragmentTypeParent.t =
     let kind = match_reference_kind location kind in
@@ -336,7 +335,7 @@ let parse whole_reference_location s :
             `Root (identifier, kind)
         | `TRelativePath -> `Page_path (`Root (identifier, `TRelativePath))
         | _ ->
-            expected
+            expected ~expect_paths:true
               [ "module"; "module-type"; "type"; "class"; "class-type"; "page" ]
               location
             |> Error.raise_exception)
@@ -359,7 +358,7 @@ let parse whole_reference_location s :
               (signature next_token tokens, ClassTypeName.make_std identifier)
         | `TRelativePath -> `Page_path (page_path identifier next_token tokens)
         | _ ->
-            expected
+            expected ~expect_paths:true
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
               location
             |> Error.raise_exception)
