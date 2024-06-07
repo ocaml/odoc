@@ -92,6 +92,74 @@ Bar doesn't contain "Preamble for Foo" on purpose.
        </div>
       </details>
      </div>
+     <div class="odoc-spec">
+      <div class="spec module anchored" id="module-P">
+       <a href="#module-P" class="anchor"></a>
+       <code>
+        <span><span class="keyword">module</span> <a href="P/index.html">P</a>
+        </span>
+        <span> : <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
+       </code>
+      </div><div class="spec-doc"><p>Preamble for P.</p></div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec module anchored" id="module-Q">
+       <a href="#module-Q" class="anchor"></a>
+       <code>
+        <span><span class="keyword">module</span> <a href="Q/index.html">Q</a>
+        </span>
+        <span> : <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
+       </code>
+      </div><div class="spec-doc"><p>Outside preamble for Q.</p></div>
+     </div>
     </div>
+   </body>
+  </html>
+
+Check the preambles:
+
+  $ cat html/test/Bar/Q/index.html
+  <!DOCTYPE html>
+  <html xmlns="http://www.w3.org/1999/xhtml">
+   <head><title>Q (test.Bar.Q)</title><meta charset="utf-8"/>
+    <link rel="stylesheet" href="../../../odoc.css"/>
+    <meta name="generator" content="odoc %%VERSION%%"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <script src="../../../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+   </head>
+   <body class="odoc">
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
+     <a href="../../index.html">test</a> &#x00BB; 
+     <a href="../index.html">Bar</a> &#x00BB; Q
+    </nav>
+    <header class="odoc-preamble">
+     <h1>Module <code><span>Bar.Q</span></code></h1>
+     <p>Outside preamble for Q.</p><p>Inside preamble for Q.</p>
+    </header><div class="odoc-content"></div>
+   </body>
+  </html>
+  $ cat html/test/Bar/P/index.html
+  <!DOCTYPE html>
+  <html xmlns="http://www.w3.org/1999/xhtml">
+   <head><title>P (test.Bar.P)</title><meta charset="utf-8"/>
+    <link rel="stylesheet" href="../../../odoc.css"/>
+    <meta name="generator" content="odoc %%VERSION%%"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <script src="../../../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+   </head>
+   <body class="odoc">
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
+     <a href="../../index.html">test</a> &#x00BB; 
+     <a href="../index.html">Bar</a> &#x00BB; P
+    </nav>
+    <header class="odoc-preamble">
+     <h1>Module <code><span>Bar.P</span></code></h1><p>Preamble for P.</p>
+    </header><div class="odoc-content"></div>
    </body>
   </html>
