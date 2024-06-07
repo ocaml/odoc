@@ -445,13 +445,20 @@ let parse whole_reference_location s :
               location
             |> Error.raise_exception
         | `TPage ->
-            let suggestion =
-              Printf.sprintf "'page-%s' should be first." identifier
+            let () =
+              match next_token.kind with
+              | `End_in_slash -> ()
+              | `None | `Prefixed _ ->
+                  let suggestion =
+                    Printf.sprintf "Reference pages as '<parent_path>/%s'."
+                      identifier
+                  in
+                  not_allowed ~what:"Page label"
+                    ~in_what:"on the right side of a dot" ~suggestion location
+                  |> Error.raise_exception
             in
-            not_allowed ~what:"Page label"
-              ~in_what:"the last component of a reference path" ~suggestion
-              location
-            |> Error.raise_exception
+            (* Prefixed pages are not differentiated. *)
+            `Page_path (page_path identifier next_token tokens)
         | `TRelativePath -> `Page_path (page_path identifier next_token tokens))
   in
 

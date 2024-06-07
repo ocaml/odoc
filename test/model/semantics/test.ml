@@ -2353,7 +2353,7 @@ let%expect_test _ =
       test "{!foo.page-bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nPage label is not allowed in the last component of a reference path.\nSuggestion: 'page-bar' should be first."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nPage label is not allowed in on the right side of a dot.\nSuggestion: Reference pages as '<parent_path>/bar'."]} |}]
 
     let inner_parent_something_in_something =
       test "{!foo.bar.field-baz}";
@@ -2806,7 +2806,7 @@ let%expect_test _ =
     let relative_tag_after_slash =
       test "{!foo/page-bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Code_span":"foo/page-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nPage label is not allowed in the last component of a reference path.\nSuggestion: 'page-bar' should be first."]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Page_path":{"`Slash":[{"`Root":["foo","`TRelativePath"]},"bar"]}},[]]}]}],"warnings":[]} |}]
 
     let relative_tag_after_slash =
       test "{!foo/module-Bar}";
@@ -2839,6 +2839,11 @@ let%expect_test _ =
       test "{!./}";
       [%expect
         {| {"value":[{"`Paragraph":[{"`Code_span":"./"}]}],"warnings":["File \"f.ml\", line 1, characters 4-4:\nIdentifier in reference should not be empty."]} |}]
+
+    let err_page_prefix_after_dot =
+      test "{!foo.page-bar}";
+      [%expect
+        {| {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nPage label is not allowed in on the right side of a dot.\nSuggestion: Reference pages as '<parent_path>/bar'."]} |}]
 
     (* Old kind compatibility *)
 
