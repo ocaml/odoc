@@ -1576,14 +1576,10 @@ and expansion_of_module_path :
       in
       expansion_of_module_cached env p' m >>= function
       | Signature sg ->
-          let sg' =
-            match m.doc with
-            | [] -> sg
-            | doc -> { sg with doc }
+          let sg =
+            if strengthen then Strengthen.signature (`Resolved p') sg else sg
           in
-          if strengthen then
-            Ok (Signature (Strengthen.signature (`Resolved p') sg'))
-          else Ok (Signature sg')
+          Ok (Signature sg)
       | Functor _ as f -> Ok f)
   | Error _ when Cpath.is_module_forward path -> Error `UnresolvedForwardPath
   | Error e -> Error (`UnresolvedPath (`Module (path, e)))
@@ -1719,7 +1715,16 @@ and expansion_of_module :
     Env.t ->
     Component.Module.t ->
     (expansion, expansion_of_module_error) Result.result =
- fun env m -> expansion_of_module_decl env m.type_
+ fun env m ->
+  expansion_of_module_decl env m.type_ >>= function
+  | Signature sg ->
+      let sg =
+        (* Override the signature's documentation when the module also has
+           a comment attached. *)
+        match m.doc with [] -> sg | doc -> { sg with doc }
+      in
+      Ok (Signature sg)
+  | Functor _ as f -> Ok f
 
 and expansion_of_module_cached :
     Env.t ->
