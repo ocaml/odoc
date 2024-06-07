@@ -300,7 +300,7 @@ body.odoc {
   display: grid;
   grid-template-columns: min-content 1fr;
   column-gap: 4ex;
-  row-gap: 2ex;
+  row-gap: ex;
 }
 
 body.odoc-src {
@@ -316,10 +316,6 @@ body.odoc-src {
   /* This make the first thing in the preamble align with the sidebar */
   padding-top: 0;
   margin-top: 0;
-}
-
-header {
-  margin-bottom: 30px;
 }
 
 header.odoc-preamble {
@@ -478,10 +474,17 @@ h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10 {
   padding-top: 0.1em;
   line-height: 1.2;
   overflow-wrap: break-word;
+  margin-top:0;
+  margin-bottom: 0.5em;
 }
 
 .odoc-preamble h1 {
   margin-top: 10px;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1em;
 }
 
 h1 {
@@ -600,6 +603,7 @@ p a > code, li a > code {
   border-left: 4px solid var(--spec-summary-border-color);
   border-right: 5px solid transparent;
   padding: 0.35em 0.5em;
+  margin-bottom: 0.25em;
 }
 
 .spec .label, .spec .optlabel {
@@ -612,7 +616,7 @@ li:not(:last-child) > .def-doc {
 
 /* Spacing between items */
 div.odoc-spec,.odoc-include {
-  margin-bottom: 2em;
+  margin-bottom: 1em;
 }
 
 .spec.type .variant p, .spec.type .record p {
