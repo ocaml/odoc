@@ -1243,49 +1243,49 @@ let%expect_test _ =
       test "{!constructor-Foo.bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"constructor-Foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"constructor-Foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]} |}]
 
     let something_in_exception =
       test "{!exception-Foo.bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"exception-Foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"exception-Foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]} |}]
 
     let something_in_extension =
       test "{!extension-Foo.bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"extension-Foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"extension-Foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]} |}]
 
     let something_in_field =
       test "{!field-foo.bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"field-foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"field-foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]} |}]
 
     let something_in_section =
       test "{!section-foo.bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"section-foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"section-foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]} |}]
 
     let something_in_instance_variable =
       test "{!instance-variable-foo.bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"instance-variable-foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"instance-variable-foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]} |}]
 
     let something_in_method =
       test "{!method-foo.bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"method-foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"method-foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]} |}]
 
     let something_in_val =
       test "{!val-foo.bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"val-foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"val-foo.bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]} |}]
 
     let something_in_something_nested =
       test "{!foo.bar.baz}";
@@ -1327,55 +1327,55 @@ let%expect_test _ =
       test "{!foo.page-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]} |}]
 
     let something_in_constructor_nested =
       test "{!Foo.constructor-Bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.constructor-Bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.constructor-Bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]} |}]
 
     let something_in_exception_nested =
       test "{!Foo.exception-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.exception-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.exception-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]} |}]
 
     let something_in_extension_nested =
       test "{!Foo.extension-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.extension-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.extension-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]} |}]
 
     let something_in_field_nested =
       test "{!foo.field-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.field-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.field-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]} |}]
 
     let something_in_section_nested =
       test "{!foo.section-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.section-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.section-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]} |}]
 
     let something_in_instance_variable_nested =
       test "{!foo.instance-variable-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.instance-variable-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.instance-variable-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]} |}]
 
     let something_in_method_nested =
       test "{!foo.method-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.method-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.method-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]} |}]
 
     let something_in_val_nested =
       test "{!Foo.val-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.val-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.val-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_empty =
       test "{!.module-Foo}";
@@ -1405,73 +1405,73 @@ let%expect_test _ =
       test "{!class-foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_class_type =
       test "{!class-type-foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-type-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-16:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-type-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-16:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_constructor =
       test "{!constructor-Foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"constructor-Foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"constructor-Foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_exception =
       test "{!exception-Foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"exception-Foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"exception-Foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_extension =
       test "{!extension-Foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"extension-Foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"extension-Foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_field =
       test "{!field-foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"field-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"field-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_section =
       test "{!section-foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"section-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"section-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_instance_variable =
       test "{!instance-variable-foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"instance-variable-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"instance-variable-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_method =
       test "{!method-foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"method-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"method-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_page =
       test "{!page-foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_type =
       test "{!type-foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"type-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"type-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_val =
       test "{!val-foo.module-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"val-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"val-foo.module-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_something_nested =
       test "{!Foo.Bar.module-Baz}";
@@ -1495,73 +1495,73 @@ let%expect_test _ =
       test "{!Foo.class-bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.class-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.class-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_class_type_nested =
       test "{!Foo.class-type-bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.class-type-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-20:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.class-type-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-20:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_constructor_nested =
       test "{!Foo.constructor-Bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.constructor-Bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.constructor-Bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_exception_nested =
       test "{!Foo.exception-Bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.exception-Bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.exception-Bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_extension_nested =
       test "{!Foo.extension-Bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.extension-Bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.extension-Bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_field_nested =
       test "{!foo.field-bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.field-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.field-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_section_nested =
       test "{!foo.section-bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.section-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.section-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_instance_variable_nested =
       test "{!foo.instance-variable-bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.instance-variable-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.instance-variable-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_method_nested =
       test "{!foo.method-bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.method-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.method-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_page_nested =
       test "{!foo.page-bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_type_nested =
       test "{!Foo.type-bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.type-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.type-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_in_val_nested =
       test "{!Foo.val-bar.module-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"Foo.val-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"Foo.val-bar.module-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_type_in_something =
       test "{!Foo.module-type-Bar}";
@@ -1585,13 +1585,13 @@ let%expect_test _ =
       test "{!class-foo.module-type-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let module_type_in_page =
       test "{!page-foo.module-type-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.module-type-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.module-type-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let type_in_something =
       test "{!Foo.type-bar}";
@@ -1615,13 +1615,13 @@ let%expect_test _ =
       test "{!class-foo.type-bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let type_in_page =
       test "{!page-foo.type-bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.type-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.type-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let constructor_in_empty =
       test "{!.constructor-Foo}";
@@ -2011,13 +2011,13 @@ let%expect_test _ =
       test "{!class-foo.exception-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.exception-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.exception-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let exception_in_page =
       test "{!page-foo.exception-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.exception-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.exception-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let extension_in_something =
       test "{!Foo.extension-Bar}";
@@ -2035,13 +2035,13 @@ let%expect_test _ =
       test "{!class-foo.extension-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.extension-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.extension-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let extension_in_page =
       test "{!page-foo.extension-Bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.extension-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.extension-Bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let val_in_something =
       test "{!Foo.val-bar}";
@@ -2059,13 +2059,13 @@ let%expect_test _ =
       test "{!class-foo.val-bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.val-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.val-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let val_in_page =
       test "{!page-foo.val-bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.val-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.val-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let class_in_something =
       test "{!Foo.class-bar}";
@@ -2083,13 +2083,13 @@ let%expect_test _ =
       test "{!class-foo.class-bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let class_in_page =
       test "{!page-foo.class-bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.class-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.class-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let class_type_in_something =
       test "{!Foo.class-type-bar}";
@@ -2107,13 +2107,13 @@ let%expect_test _ =
       test "{!class-foo.class-type-bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-type-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-type-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let class_type_in_page =
       test "{!page-foo.class-type-bar}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.class-type-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"page-foo.class-type-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let method_in_empty =
       test "{!.method-foo}";
@@ -2389,7 +2389,7 @@ let%expect_test _ =
       test "{!class-foo.module-Bar.field-baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar.field-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar.field-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_parent_module_type_in_module =
       test "{!module-Foo.module-type-Bar.field-baz}";
@@ -2401,7 +2401,7 @@ let%expect_test _ =
       test "{!class-foo.module-type-Bar.field-baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar.field-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar.field-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_parent_type_in_module =
       test "{!module-Foo.type-bar.field-baz}";
@@ -2413,7 +2413,7 @@ let%expect_test _ =
       test "{!class-foo.type-bar.field-baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar.field-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar.field-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_parent_class_in_module =
       test "{!module-Foo.class-bar.field-baz}";
@@ -2461,7 +2461,7 @@ let%expect_test _ =
       test "{!class-foo.module-Bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_label_parent_module_type_in_module =
       test "{!module-Foo.module-type-Bar.baz}";
@@ -2473,7 +2473,7 @@ let%expect_test _ =
       test "{!class-foo.module-type-Bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_label_parent_type_in_module =
       test "{!module-Foo.type-bar.baz}";
@@ -2485,7 +2485,7 @@ let%expect_test _ =
       test "{!class-foo.type-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_label_parent_class_in_module =
       test "{!module-Foo.class-bar.baz}";
@@ -2497,7 +2497,7 @@ let%expect_test _ =
       test "{!class-foo.class-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_label_parent_class_type_in_module =
       test "{!module-Foo.class-bar.baz}";
@@ -2509,13 +2509,13 @@ let%expect_test _ =
       test "{!class-foo.class-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_page_in_something =
       test "{!foo.page-bar.baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.baz"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]} |}]
 
     let inner_class_signature_something_in_something =
       test "{!foo.bar.method-baz}";
@@ -2539,7 +2539,7 @@ let%expect_test _ =
       test "{!class-foo.class-bar.method-baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar.method-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar.method-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_class_signature_class_type_in_module =
       test "{!module-Foo.class-type-bar.method-baz}";
@@ -2551,7 +2551,7 @@ let%expect_test _ =
       test "{!class-foo.class-type-bar.method-baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-type-bar.method-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-type-bar.method-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_signature_something_in_something =
       test "{!foo.bar.type-baz}";
@@ -2575,7 +2575,7 @@ let%expect_test _ =
       test "{!class-foo.module-Bar.type-baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar.type-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar.type-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_signature_module_type_in_module =
       test "{!module-Foo.module-type-Bar.type-baz}";
@@ -2587,7 +2587,7 @@ let%expect_test _ =
       test "{!class-foo.module-type-Bar.type-baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar.type-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar.type-baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let inner_datatype_something_in_something =
       test "{!foo.bar.constructor-Baz}";
@@ -2611,7 +2611,7 @@ let%expect_test _ =
       test "{!class-foo.type-bar.constructor-Baz}";
       [%expect
         {|
-        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar.constructor-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]} |}]
+        {"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar.constructor-Baz"}]}],"warnings":["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]} |}]
 
     let kind_conflict =
       test "{!val:type-foo}";
