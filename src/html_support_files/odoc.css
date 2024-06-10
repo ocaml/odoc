@@ -300,7 +300,6 @@ body.odoc {
   display: grid;
   grid-template-columns: min-content 1fr;
   column-gap: 4ex;
-  row-gap: 2ex;
 }
 
 body.odoc-src {
@@ -310,6 +309,10 @@ body.odoc-src {
 .odoc-content {
   grid-row: 4;
   grid-column: 2;
+}
+
+.odoc-content > *:first-child {
+  margin-top: 0;
 }
 
 .odoc-preamble > *:first-child {
@@ -334,6 +337,7 @@ nav {
 nav.odoc-nav {
   grid-column: 2;
   grid-row: 2;
+  margin-bottom: 2ex;
 }
 
 /* Basic markup elements */
