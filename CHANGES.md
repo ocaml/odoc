@@ -39,6 +39,8 @@
 - Fixed title content not being picked up across pages when rendering references
   (#1116, @panglesd)
 - Fix wrong links to standalone comments in search results (#1118, @panglesd)
+- Fix a big gap between the preamble and the content of a page (#1146,
+  @panglesd)
 
 
 # 2.4.0
