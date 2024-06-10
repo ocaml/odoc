@@ -12,6 +12,7 @@
   select a result, and enter to follow the selected link. (@EmileTrotignon, #1088)
 - OCaml 5.2.0 compatibility (@Octachron, #1094, #1112)
 - New driver package (@jonludlam, #1121)
+- Fix a big gap between the preamble and the content of a page (@EmileTrotignon, #1147)
 
 ### Changed
 
