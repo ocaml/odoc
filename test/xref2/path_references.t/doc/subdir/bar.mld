@@ -1,0 +1,12 @@
+{0 Title for subdir/bar}
+
+{1 Page foo}
+{!//foo} {!/pkg/foo} {!foo}
+{1 Page subdir/bar}
+{!//subdir/bar} {!/pkg/subdir/bar} {!bar} {!./bar}
+{1 Page dup}
+{!//dup} {!/pkg/dup}
+{1 Page subdir/dup}
+{!//subdir/dup} {!/pkg/subdir/dup} {!./dup}
+{1 Module Test}
+{!//libname/Test} {!/pkg/libname/Test} {!./Test} {!Test}
