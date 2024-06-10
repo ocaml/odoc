@@ -42,7 +42,8 @@
   shadow5
   js_stack_overflow
   expansion
-  github_issue_1066)
+  github_issue_1066
+  include_module_type_of_preamble)
  (enabled_if
   (>= %{ocaml_version} 4.08.0)))
 
