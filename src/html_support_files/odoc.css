@@ -307,8 +307,8 @@ body.odoc-src {
   margin-right: calc(10vw + 20ex);
 }
 
-.odoc-content {
-  grid-row: 4;
+.odoc-main {
+  grid-row: 3;
   grid-column: 2;
 }
 
@@ -320,11 +320,6 @@ body.odoc-src {
 
 header {
   margin-bottom: 30px;
-}
-
-header.odoc-preamble {
-  grid-column: 2;
-  grid-row: 3;
 }
 
 nav {

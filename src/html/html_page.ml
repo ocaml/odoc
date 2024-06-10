@@ -210,10 +210,15 @@ let search_urls = %s;
 
   let body =
     html_of_breadcrumbs breadcrumbs
-    @ search_bar
-    @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
-    @ sidebar toc
-    @ [ Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content ]
+    @ search_bar @ sidebar toc
+    @ [
+        Html.div
+          ~a:[ Html.a_class [ "odoc-main" ] ]
+          [
+            Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header;
+            Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content;
+          ];
+      ]
   in
 
   let htmlpp = Html.pp ~indent:(Config.indent config) () in
