@@ -61,17 +61,19 @@ Look if all the source files are generated:
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
      <a href="../index.html">Main</a> &#x00BB; A
     </nav>
-    <header class="odoc-preamble">
-     <h1>Module <code><span>Main.A</span></code>
-      <a href="../../src/a.ml.html" class="source_link">Source</a>
-     </h1>
-    </header>
-    <div class="odoc-content">
-     <div class="odoc-spec">
-      <div class="spec value anchored" id="val-x">
-       <a href="#val-x" class="anchor"></a>
-       <a href="../../src/a.ml.html#val-x" class="source_link">Source</a>
-       <code><span><span class="keyword">val</span> x : int</span></code>
+    <div class="odoc-main">
+     <header class="odoc-preamble">
+      <h1>Module <code><span>Main.A</span></code>
+       <a href="../../src/a.ml.html" class="source_link">Source</a>
+      </h1>
+     </header>
+     <div class="odoc-content">
+      <div class="odoc-spec">
+       <div class="spec value anchored" id="val-x">
+        <a href="#val-x" class="anchor"></a>
+        <a href="../../src/a.ml.html#val-x" class="source_link">Source</a>
+        <code><span><span class="keyword">val</span> x : int</span></code>
+       </div>
       </div>
      </div>
     </div>

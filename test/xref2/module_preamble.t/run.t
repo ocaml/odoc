@@ -42,22 +42,24 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
      <a href="../index.html">test</a> &#x00BB; A
     </nav>
-    <header class="odoc-preamble"><h1>Module <code><span>A</span></code></h1>
-     <p>Module A.</p>
-    </header>
-    <div class="odoc-content">
-     <div class="odoc-spec">
-      <div class="spec module anchored" id="module-B">
-       <a href="#module-B" class="anchor"></a>
-       <code>
-        <span><span class="keyword">module</span> <a href="B/index.html">B</a>
-        </span>
-        <span> : <span class="keyword">sig</span> ... 
-         <span class="keyword">end</span>
-        </span>
-       </code>
-      </div>
-      <div class="spec-doc"><p>Module B. This paragraph is the synopsis.</p>
+    <div class="odoc-main">
+     <header class="odoc-preamble"><h1>Module <code><span>A</span></code></h1>
+      <p>Module A.</p>
+     </header>
+     <div class="odoc-content">
+      <div class="odoc-spec">
+       <div class="spec module anchored" id="module-B">
+        <a href="#module-B" class="anchor"></a>
+        <code>
+         <span><span class="keyword">module</span> <a href="B/index.html">B</a>
+         </span>
+         <span> : <span class="keyword">sig</span> ... 
+          <span class="keyword">end</span>
+         </span>
+        </code>
+       </div>
+       <div class="spec-doc"><p>Module B. This paragraph is the synopsis.</p>
+       </div>
       </div>
      </div>
     </div>
@@ -81,23 +83,26 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
      <a href="../../index.html">test</a> &#x00BB; <a href="../index.html">A</a>
       &#x00BB; B
     </nav>
-    <header class="odoc-preamble"><h1>Module <code><span>A.B</span></code></h1>
-     <p>Module B. This paragraph is the synopsis.</p>
-     <p>This paragraph and the previous are part of the preamble.</p>
-    </header>
     <nav class="odoc-toc">
      <ul><li><a href="#an-heading">An heading</a></li></ul>
     </nav>
-    <div class="odoc-content">
-     <h3 id="an-heading"><a href="#an-heading" class="anchor"></a>An heading
-     </h3>
-     <p>This paragraph is not part of the preamble. It'll be rendered in
-       the &quot;content&quot;.
-     </p>
-     <div class="odoc-spec">
-      <div class="spec type anchored" id="type-t">
-       <a href="#type-t" class="anchor"></a>
-       <code><span><span class="keyword">type</span> t</span></code>
+    <div class="odoc-main">
+     <header class="odoc-preamble">
+      <h1>Module <code><span>A.B</span></code></h1>
+      <p>Module B. This paragraph is the synopsis.</p>
+      <p>This paragraph and the previous are part of the preamble.</p>
+     </header>
+     <div class="odoc-content">
+      <h3 id="an-heading"><a href="#an-heading" class="anchor"></a>An heading
+      </h3>
+      <p>This paragraph is not part of the preamble. It'll be rendered 
+       in the &quot;content&quot;.
+      </p>
+      <div class="odoc-spec">
+       <div class="spec type anchored" id="type-t">
+        <a href="#type-t" class="anchor"></a>
+        <code><span><span class="keyword">type</span> t</span></code>
+       </div>
       </div>
      </div>
     </div>
@@ -120,8 +125,10 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
      <a href="../index.html">test</a> &#x00BB; A__b
     </nav>
-    <header class="odoc-preamble">
-     <h1>Module <code><span>A__b</span></code></h1>
-    </header><div class="odoc-content"><p>This module is hidden.</p></div>
+    <div class="odoc-main">
+     <header class="odoc-preamble">
+      <h1>Module <code><span>A__b</span></code></h1>
+     </header><div class="odoc-content"><p>This module is hidden.</p></div>
+    </div>
    </body>
   </html>

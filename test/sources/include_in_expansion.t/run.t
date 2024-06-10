@@ -27,14 +27,14 @@ In Main.A, the source parent of value x should be to Main__A, while the
 source parent of value y should be left to B.
 
   $ grep source_link html/Main/A/index.html -C 1
-     <h1>Module <code><span>Main.A</span></code>
-      <a href="../../src/a.ml.html" class="source_link">Source</a>
-     </h1>
+      <h1>Module <code><span>Main.A</span></code>
+       <a href="../../src/a.ml.html" class="source_link">Source</a>
+      </h1>
   --
-         <a href="#val-y" class="anchor"></a>
-         <a href="../../src/b.m.html#val-y" class="source_link">Source</a>
-         <code><span><span class="keyword">val</span> y : int</span></code>
+          <a href="#val-y" class="anchor"></a>
+          <a href="../../src/b.m.html#val-y" class="source_link">Source</a>
+          <code><span><span class="keyword">val</span> y : int</span></code>
   --
-       <a href="#val-x" class="anchor"></a>
-       <a href="../../src/a.ml.html#val-x" class="source_link">Source</a>
-       <code><span><span class="keyword">val</span> x : int</span></code>
+        <a href="#val-x" class="anchor"></a>
+        <a href="../../src/a.ml.html#val-x" class="source_link">Source</a>
+        <code><span><span class="keyword">val</span> x : int</span></code>

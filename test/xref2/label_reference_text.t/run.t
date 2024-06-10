@@ -16,12 +16,14 @@ The rendered html
   $ cat html/Foo/index.html | grep "splice_me" -A 3
     <nav class="odoc-toc"><ul><li><a href="#splice_me">Splice me</a></li></ul>
     </nav>
-    <div class="odoc-content">
-     <h3 id="splice_me"><a href="#splice_me" class="anchor"></a>Splice me</h3>
-     <p>Should output only the heading's text: 
-      <a href="#splice_me" title="splice_me">Splice me</a> 
-      <a href="#splice_me" title="splice_me">Splice me</a> 
-      <a href="../page.html#splice_me" title="splice_me">Splice me</a>
-     </p>
+    <div class="odoc-main">
+     <header class="odoc-preamble">
+  --
+      <h3 id="splice_me"><a href="#splice_me" class="anchor"></a>Splice me</h3>
+      <p>Should output only the heading's text: 
+       <a href="#splice_me" title="splice_me">Splice me</a> 
+       <a href="#splice_me" title="splice_me">Splice me</a> 
+       <a href="../page.html#splice_me" title="splice_me">Splice me</a>
+      </p>
+     </div>
     </div>
-   </body>

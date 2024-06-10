@@ -24,13 +24,13 @@ The table of content:
 The rendered headings
 
   $ cat html/Foo/index.html | grep "<h2" -A 3
-     <h2 id="references--and-with-text-in-title">
-      <a href="#references--and-with-text-in-title" class="anchor"></a>
-      References <a href="A/index.html"><code>A</code></a> and 
-      <a href="A/index.html" title="A">with text</a> in title
+      <h2 id="references--and-with-text-in-title">
+       <a href="#references--and-with-text-in-title" class="anchor"></a>
+       References <a href="A/index.html"><code>A</code></a> and 
+       <a href="A/index.html" title="A">with text</a> in title
   --
-     <h2 id="an-url--and-with-text-in-a-title">
-      <a href="#an-url--and-with-text-in-a-title" class="anchor"></a>An
-       url <a href="http://ocaml.org">http://ocaml.org</a> and 
-      <a href="http://ocaml.org">with text</a> in a title
+      <h2 id="an-url--and-with-text-in-a-title">
+       <a href="#an-url--and-with-text-in-a-title" class="anchor"></a>An
+        url <a href="http://ocaml.org">http://ocaml.org</a> and 
+       <a href="http://ocaml.org">with text</a> in a title
 

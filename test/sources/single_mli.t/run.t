@@ -48,14 +48,14 @@ Code source for `A_x` is wanted:
 `A` should contain a link to `A_x.ml.html`:
 
   $ grep source_link html/A/index.html
-      <a href="../src/a.ml.html" class="source_link">Source</a>
-       <a href="../src/a_x.ml.html" class="source_link">Source</a>
+       <a href="../src/a.ml.html" class="source_link">Source</a>
+        <a href="../src/a_x.ml.html" class="source_link">Source</a>
 
 `A.X` and `A.X.Y` should contain a link to `A_x.ml.html`:
 
   $ grep source_link html/A/X/index.html
-      <a href="../../src/a_x.ml.html" class="source_link">Source</a>
-       <a href="../../src/a_x.ml.html#module-Y" class="source_link">Source</a>
+       <a href="../../src/a_x.ml.html" class="source_link">Source</a>
+        <a href="../../src/a_x.ml.html#module-Y" class="source_link">Source</a>
   $ grep source_link html/A/X/Y/index.html
-      <a href="../../../src/a_x.ml.html#module-Y" class="source_link">Source
-       <a href="../../../src/a_x.ml.html#module-Y.val-z" class="source_link">
+       <a href="../../../src/a_x.ml.html#module-Y" class="source_link">Source
+        <a href="../../../src/a_x.ml.html#module-Y.val-z" class="source_link">

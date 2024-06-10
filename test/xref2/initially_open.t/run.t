@@ -25,7 +25,7 @@ Run 'normally', without opening the module 'To_open':
   $ odoc link -I . other.odoc
   $ odoc html-generate -o . other.odocl --indent
   $ grep To_open x/Other/index.html
-        <span> = <a href="../To_open/index.html#type-t">To_open.t</a></span>
+         <span> = <a href="../To_open/index.html#type-t">To_open.t</a></span>
 
 Now try again, this time opening 'To_open', and expect the rendered link to be simplified:
 
@@ -33,5 +33,5 @@ Now try again, this time opening 'To_open', and expect the rendered link to be s
   $ odoc link -I . other.odoc
   $ odoc html-generate -o . other.odocl --indent
   $ grep To_open x/Other/index.html
-        <span> = <a href="../To_open/index.html#type-t">t</a></span>
+         <span> = <a href="../To_open/index.html#type-t">t</a></span>
 

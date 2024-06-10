@@ -18,8 +18,8 @@ In latex, labels in subpages should be disambiguated since the subpage is inline
 In html, labels in subpages should not be disambiguated since they won't have the same URL.
 
   $ cat html/A/index.html | grep 'id='
-      <div class="spec module-type anchored" id="module-type-A">
-     <h2 id="first"><a href="#first" class="anchor"></a>First outer section
+       <div class="spec module-type anchored" id="module-type-A">
+      <h2 id="first"><a href="#first" class="anchor"></a>First outer section
 
   $ cat html/A/module-type-A/index.html | grep 'id='
-     <h2 id="first"><a href="#first" class="anchor"></a>First inner section
+      <h2 id="first"><a href="#first" class="anchor"></a>First inner section
