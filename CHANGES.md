@@ -16,6 +16,7 @@
 - Path-references to hierarchical pages and modules (@Julow, #1151)
   Absolute (`{!/foo}`), relative (`{!./foo}`) and package-local (`{!//foo}`)
   are added.
+- Add a marshalled search index consumable by sherlodoc (@EmileTrotignon, @panglesd, #1084)
 
 ### Changed
 
