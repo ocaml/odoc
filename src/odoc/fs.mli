@@ -89,5 +89,9 @@ module File : sig
 
   val exists : t -> bool
 
+  val of_segs : string list -> t
+  (** [of_segs segs] Returns an absolute path if [segs] starts with an empty
+      segment. Raises [Invalid_argument] if [segs] is empty. *)
+
   module Table : Hashtbl.S with type key = t
 end
