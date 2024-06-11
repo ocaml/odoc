@@ -297,23 +297,32 @@ let of_libs libs =
   in
   ignore libname_of_archive;
   let mk_mlds pkg_name libraries odoc_pages =
+    let prefix = Fpath.(v (Opam.prefix ()) / "doc" / pkg_name / "odoc-pages") in
     Fpath.Set.fold
       (fun mld_path acc ->
-        let mld_parent_id = Printf.sprintf "%s/doc" pkg_name in
-        let page_name = Fpath.(rem_ext mld_path |> filename) in
-        let odoc_file =
-          Fpath.(v mld_parent_id / ("page-" ^ page_name ^ ".odoc"))
-        in
-        let odocl_file = Fpath.(set_ext "odocl" odoc_file) in
-        let mld_deps = List.map (fun l -> l.odoc_dir) libraries in
-        {
-          mld_odoc_file = odoc_file;
-          mld_odocl_file = odocl_file;
-          mld_parent_id;
-          mld_path;
-          mld_deps;
-        }
-        :: acc)
+        let rel_path = Fpath.rem_prefix prefix mld_path in
+        match rel_path with
+        | None -> acc
+        | Some rel_path ->
+            let id = Fpath.(v pkg_name / "doc" // rel_path) in
+            let mld_parent_id =
+              Format.asprintf "%a" Fpath.pp
+                (id |> Fpath.parent |> Fpath.rem_empty_seg)
+            in
+            let page_name = Fpath.(rem_ext mld_path |> filename) in
+            let odoc_file =
+              Fpath.(v mld_parent_id / ("page-" ^ page_name ^ ".odoc"))
+            in
+            let odocl_file = Fpath.(set_ext "odocl" odoc_file) in
+            let mld_deps = List.map (fun l -> l.odoc_dir) libraries in
+            {
+              mld_odoc_file = odoc_file;
+              mld_odocl_file = odocl_file;
+              mld_parent_id;
+              mld_path;
+              mld_deps;
+            }
+            :: acc)
       odoc_pages []
   in
   let update_mlds mlds libraries =
