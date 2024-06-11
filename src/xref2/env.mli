@@ -12,16 +12,24 @@ type lookup_page_result = Lang.Page.t option
 
 type lookup_impl_result = Lang.Implementation.t option
 
+type lookup_path_result =
+  | Path_unit of Lang.Compilation_unit.t
+  | Path_page of Lang.Page.t
+  | Path_directory
+  | Path_not_found
+
 type root =
-  | Resolved of
-      (Root.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
+  | Resolved of (Root.t * Identifier.Module.t * Component.Module.t)
   | Forward
+
+type path_query = [ `Page | `Unit ] * Reference.tag_hierarchy * string list
 
 type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_impl : string -> lookup_impl_result;
   lookup_page : string -> lookup_page_result;
+  lookup_path : path_query -> lookup_path_result;
 }
 
 type lookup_type =
@@ -103,6 +111,8 @@ val lookup_unit : string -> t -> lookup_unit_result option
 val module_of_unit : Lang.Compilation_unit.t -> Component.Module.t
 
 val lookup_root_module : string -> t -> root option
+
+val lookup_path : path_query -> t -> lookup_path_result
 
 type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)

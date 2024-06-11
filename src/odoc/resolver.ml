@@ -206,16 +206,19 @@ let unit_name
   root_name root
 
 (** TODO: Propagate warnings instead of printing. *)
+let load_unit_from_file path =
+  match Odoc_file.load path with
+  | Ok u -> Some u.content
+  | Error (`Msg msg) ->
+      let warning =
+        Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string path)
+      in
+      prerr_endline (Odoc_model.Error.to_string warning);
+      None
+
 let load_units_from_files paths =
   let safe_read file acc =
-    match Odoc_file.load file with
-    | Ok u -> u.content :: acc
-    | Error (`Msg msg) ->
-        let warning =
-          Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string file)
-        in
-        prerr_endline (Odoc_model.Error.to_string warning);
-        acc
+    match load_unit_from_file file with Some u -> u :: acc | None -> acc
   in
   List.fold_right safe_read paths []
 
@@ -410,6 +413,34 @@ let add_unit_to_cache u =
   in
   Hashtbl.add unit_cache target_name [ u ]
 
+let lookup_path _ap ~pages ~libs:_ (kind, tag, path) =
+  let module Env = Odoc_xref2.Env in
+  let ( >>= ) x f = match x with Some x' -> f x' | None -> None in
+  let page_path_to_path path =
+    (* Turn [foo/bar] into [foo/page-bar.odoc]. *)
+    match List.rev path with
+    | [] -> []
+    | name :: rest -> List.rev (("page-" ^ name ^ ".odoc") :: rest)
+  in
+  let find_by_path named_roots path =
+    match Named_roots.find_by_path named_roots ~path with
+    | Ok x -> x
+    | Error (NoPackage | NoRoot) -> None
+  in
+  match (kind, tag) with
+  | `Page, `TCurrentPackage -> (
+      (* [path] is within the current package root. *)
+      let path = Fs.File.of_segs (page_path_to_path path) in
+      ( pages >>= fun pages ->
+        find_by_path pages path >>= fun path ->
+        load_unit_from_file path >>= function
+        | Odoc_file.Page_content page -> Some page
+        | _ -> None )
+      |> function
+      | Some page -> Env.Path_page page
+      | None -> Env.Path_not_found)
+  | _ -> Env.Path_not_found
+
 type t = {
   important_digests : bool;
   ap : Accessible_paths.t;
@@ -488,8 +519,13 @@ let build_compile_env_for_unit
   let imports_map = build_imports_map m.imports in
   let lookup_unit = lookup_unit ~important_digests ~imports_map ~libs ap
   and lookup_page = lookup_page ~pages ap
-  and lookup_impl = lookup_impl ap in
-  let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_impl } in
+  and lookup_impl = lookup_impl ap
+  (* Do not implement [lookup_path] in compile mode, as that might return
+     different results depending on the compilation order. *)
+  and lookup_path _ = Env.Path_not_found in
+  let resolver =
+    { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_path }
+  in
   Env.env_of_unit m ~linking:false resolver
 
 (** [important_digests] and [imports_map] only apply to modules. *)
@@ -497,8 +533,9 @@ let build ?(imports_map = StringMap.empty)
     { important_digests; ap; open_modules = open_units; pages; libs } =
   let lookup_unit = lookup_unit ~libs ~important_digests ~imports_map ap
   and lookup_page = lookup_page ~pages ap
-  and lookup_impl = lookup_impl ap in
-  { Env.open_units; lookup_unit; lookup_page; lookup_impl }
+  and lookup_impl = lookup_impl ap
+  and lookup_path = lookup_path ap ~pages ~libs in
+  { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_path }
 
 let build_compile_env_for_impl t i =
   let imports_map =
