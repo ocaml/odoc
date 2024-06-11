@@ -94,6 +94,15 @@ module File = struct
 
   let exists file = Sys.file_exists (Fpath.to_string file)
 
+  let rec of_segs_tl acc = function
+    | [] -> acc
+    | hd :: tl -> of_segs_tl (Fpath.( / ) acc hd) tl
+
+  let of_segs = function
+    | [] -> invalid_arg "Fs.File.of_segs"
+    | "" :: rest -> of_segs_tl (Fpath.v "/") rest
+    | first :: rest -> of_segs_tl (Fpath.v first) rest
+
   module Table = Hashtbl.Make (struct
     type nonrec t = t
 
