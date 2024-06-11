@@ -12,6 +12,8 @@ module Tools_error = struct
   type reference_kind =
     [ `S | `T | `C | `CT | `Page | `Cons | `Field | `Label | `Page_path ]
 
+  type path_kind = [ `Page | `Unit ]
+
   type expansion_of_module_error =
     [ `OpaqueModule (* The module does not have an expansion *)
     | `UnresolvedForwardPath
@@ -104,6 +106,10 @@ module Tools_error = struct
     [ `Wrong_kind of reference_kind list * reference_kind (* Expected, got *)
     | `Lookup_by_name of [ reference_kind | `Any ] * string
     | `Find_by_name of [ reference_kind | `Any ] * string
+    | `Path_error of
+      [ `Not_found | `Is_directory | `Wrong_kind of path_kind list * path_kind ]
+      * Reference.tag_page_path
+      * string list
     | `Parent of parent_lookup_error ]
 
   type any =
@@ -129,6 +135,41 @@ module Tools_error = struct
       | `Page_path -> "page path"
     in
     Format.pp_print_string fmt k
+
+  let fpf = Format.fprintf
+
+  let pp_human_list pp_a fmt lst =
+    match List.rev lst with
+    | [] -> ()
+    | [ one ] -> pp_a fmt one
+    | last :: rev_tl ->
+        let pp_sep fmt () = fpf fmt ", " in
+        fpf fmt "%a and %a" (Format.pp_print_list ~pp_sep pp_a) rev_tl pp_a last
+
+  let pp_path fmt (tag, p) =
+    let tag =
+      match tag with
+      | `TRelativePath -> ""
+      | `TAbsolutePath -> "/"
+      | `TCurrentPackage -> "//"
+    in
+    let pp_sep fmt () = fpf fmt "/" in
+    fpf fmt "%s%a" tag (Format.pp_print_list ~pp_sep Format.pp_print_string) p
+
+  let pp_path_kind fmt = function
+    | `Unit -> fpf fmt "module"
+    | `Page -> fpf fmt "page"
+
+  let pp_path_error fmt err tag path =
+    match err with
+    | `Not_found -> fpf fmt "Path '%a' not found" pp_path (tag, path)
+    | `Is_directory ->
+        fpf fmt "Path '%a' points to directory" pp_path (tag, path)
+    | `Wrong_kind (expected, got) ->
+        fpf fmt "Path '%a' is of kind %a but was expected %a" pp_path
+          (tag, path) pp_path_kind got
+          (pp_human_list pp_path_kind)
+          expected
 
   let rec pp : Format.formatter -> any -> unit =
    fun fmt err ->
@@ -195,6 +236,7 @@ module Tools_error = struct
         | #reference_kind as kind ->
             Format.fprintf fmt "Couldn't find %a %S" pp_reference_kind kind name
         )
+    | `Path_error (err, tag, path) -> pp_path_error fmt err tag path
     | `Parent e -> pp fmt (e :> any)
 end
 
