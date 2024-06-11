@@ -179,17 +179,29 @@ let type_lookup_to_class_signature_lookup =
         >>= resolved p'
 
 module Path = struct
-  let page_in_env _env _page_path : page_lookup_result ref_result =
-    (* Not implemented *)
-    Error (`Wrong_kind ([ `Page ], `Page_path))
+  (* let first_seg (`Root (s, _) | `Slash (_, s)) = s *)
+
+  let handle_lookup_errors ~tag ~path = function
+    | Env.Path_unit u -> Ok (`Unit u)
+    | Path_page p -> Ok (`Page p)
+    | Path_directory -> Error (`Path_error (`Is_directory, tag, path))
+    | Path_not_found -> Error (`Path_error (`Not_found, tag, path))
+
+  let expect_page ~tag ~path = function
+    | `Unit _ -> Error (`Path_error (`Wrong_kind ([ `Page ], `Unit), tag, path))
+    | `Page p -> Ok p
+
+  let page_in_env env (tag, path) : page_lookup_result ref_result =
+    handle_lookup_errors ~tag ~path (Env.lookup_path (`Page, tag, path) env)
+    >>= expect_page ~tag ~path
+    >>= fun p -> Ok (`Identifier p.name, p)
+
+  let any_in_env env page_path : any_path_lookup_result ref_result =
+    (* TODO: Resolve modules *)
+    page_in_env env page_path >>= fun r -> Ok (`P r)
 
   let module_in_env _env _page_path : module_lookup_result ref_result =
-    (* Not implemented *)
-    Error (`Wrong_kind ([ `S ], `Module_path))
-
-  let any_in_env _env _page_path : any_path_lookup_result ref_result =
-    (* Not implemented *)
-    Error (`Wrong_kind ([ `S; `Page ], `Any_path))
+    Error (`Wrong_kind ([ `S ], `Page_path))
 end
 
 module M = struct

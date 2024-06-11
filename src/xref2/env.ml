@@ -12,15 +12,24 @@ type lookup_page_result = Lang.Page.t option
 
 type lookup_impl_result = Lang.Implementation.t option
 
+type lookup_path_result =
+  | Path_unit of Lang.Compilation_unit.t
+  | Path_page of Lang.Page.t
+  | Path_directory
+  | Path_not_found
+
 type root =
   | Resolved of (Odoc_model.Root.t * Identifier.Module.t * Component.Module.t)
   | Forward
+
+type path_query = [ `Page | `Unit ] * Reference.tag_hierarchy * string list
 
 type resolver = {
   open_units : string list;
   lookup_unit : string -> lookup_unit_result;
   lookup_impl : string -> lookup_impl_result;
   lookup_page : string -> lookup_page_result;
+  lookup_path : path_query -> lookup_path_result;
 }
 
 let unique_id =
@@ -436,6 +445,11 @@ let lookup_unit name env =
 
 let lookup_impl name env =
   match env.resolver with None -> None | Some r -> r.lookup_impl name
+
+let lookup_path query env =
+  match env.resolver with
+  | None -> Path_not_found
+  | Some r -> r.lookup_path query
 
 type 'a scope = {
   filter : Component.Element.any -> ([< Component.Element.any ] as 'a) option;
