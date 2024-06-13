@@ -422,23 +422,32 @@ let lookup_path _ap ~pages ~libs:_ (kind, tag, path) =
     | [] -> []
     | name :: rest -> List.rev (("page-" ^ name ^ ".odoc") :: rest)
   in
-  let find_by_path named_roots path =
-    match Named_roots.find_by_path named_roots ~path with
+  let find_by_path ?root named_roots path =
+    match Named_roots.find_by_path ?root named_roots ~path with
     | Ok x -> x
     | Error (NoPackage | NoRoot) -> None
   in
+  let find_page ?root path =
+    ( pages >>= fun pages ->
+      find_by_path ?root pages path >>= fun path ->
+      load_unit_from_file path >>= function
+      | Odoc_file.Page_content page -> Some page
+      | _ -> None )
+    |> function
+    | Some page -> Env.Path_page page
+    | None -> Env.Path_not_found
+  in
   match (kind, tag) with
-  | `Page, `TCurrentPackage -> (
+  | `Page, `TCurrentPackage ->
       (* [path] is within the current package root. *)
       let path = Fs.File.of_segs (page_path_to_path path) in
-      ( pages >>= fun pages ->
-        find_by_path pages path >>= fun path ->
-        load_unit_from_file path >>= function
-        | Odoc_file.Page_content page -> Some page
-        | _ -> None )
-      |> function
-      | Some page -> Env.Path_page page
-      | None -> Env.Path_not_found)
+      find_page path
+  | `Page, `TAbsolutePath -> (
+      match path with
+      | root :: path ->
+          let path = Fs.File.of_segs (page_path_to_path path) in
+          find_page ~root path
+      | [] -> Env.Path_not_found)
   | _ -> Env.Path_not_found
 
 type t = {
