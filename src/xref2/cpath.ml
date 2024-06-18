@@ -6,7 +6,7 @@ module rec Resolved : sig
     [ `Module of module_ | `ModuleType of module_type | `FragmentRoot ]
 
   and module_ =
-    [ `Local of Ident.path_module
+    [ `Local of Ident.module_
     | `Gpath of Path.Resolved.Module.t
     | `Substituted of module_
     | `Subst of module_type * module_
@@ -28,7 +28,7 @@ module rec Resolved : sig
     | `OpaqueModuleType of module_type ]
 
   and type_ =
-    [ `Local of Ident.path_type
+    [ `Local of Ident.type_
     | `Gpath of Path.Resolved.Type.t
     | `Substituted of type_
     | `CanonicalType of type_ * Path.Type.t
@@ -40,7 +40,7 @@ module rec Resolved : sig
     [ `Value of parent * ValueName.t | `Gpath of Path.Resolved.Value.t ]
 
   and class_type =
-    [ `Local of Ident.path_class_type
+    [ `Local of Ident.type_
     | `Substituted of class_type
     | `Gpath of Path.Resolved.ClassType.t
     | `Class of parent * TypeName.t
@@ -52,7 +52,7 @@ and Cpath : sig
   type module_ =
     [ `Resolved of Resolved.module_
     | `Substituted of module_
-    | `Local of Ident.path_module * bool
+    | `Local of Ident.module_ * bool
     | `Identifier of Identifier.Path.Module.t * bool
     | `Root of ModuleName.t
     | `Forward of string
@@ -71,7 +71,7 @@ and Cpath : sig
   and type_ =
     [ `Resolved of Resolved.type_
     | `Substituted of type_
-    | `Local of Ident.path_type * bool
+    | `Local of Ident.type_ * bool
     | `Identifier of Odoc_model.Paths.Identifier.Path.Type.t * bool
     | `DotT of module_ * TypeName.t
     | `Type of Resolved.parent * TypeName.t
@@ -87,7 +87,7 @@ and Cpath : sig
   and class_type =
     [ `Resolved of Resolved.class_type
     | `Substituted of class_type
-    | `Local of Ident.path_class_type * bool
+    | `Local of Ident.type_ * bool
     | `Identifier of Odoc_model.Paths.Identifier.Path.ClassType.t * bool
     | `DotT of module_ * TypeName.t
     | `Class of Resolved.parent * TypeName.t
