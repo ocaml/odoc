@@ -12,32 +12,14 @@ module TypeMap = Map.Make (struct
   let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
 end)
 
-module PathModuleMap = Map.Make (struct
-  type t = Ident.path_module
-
-  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
-end)
-
 module ModuleTypeMap = Map.Make (struct
   type t = Ident.module_type
 
   let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
 end)
 
-module PathTypeMap = Map.Make (struct
-  type t = Ident.path_type
-
-  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
-end)
-
-module PathValueMap = Map.Make (struct
-  type t = Ident.path_value
-
-  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
-end)
-
-module PathClassTypeMap = Map.Make (struct
-  type t = Ident.path_class_type
+module ValueMap = Map.Make (struct
+  type t = Ident.value
 
   let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
 end)
@@ -182,7 +164,7 @@ end =
   Exception
 
 and FunctorParameter : sig
-  type parameter = { id : Ident.functor_parameter; expr : ModuleType.expr }
+  type parameter = { id : Ident.module_; expr : ModuleType.expr }
 
   type t = Named of parameter | Unit
 end =
@@ -320,8 +302,8 @@ and Signature : sig
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
     | Value of Ident.value * Value.t Delayed.t
-    | Class of Ident.class_ * recursive * Class.t
-    | ClassType of Ident.class_type * recursive * ClassType.t
+    | Class of Ident.type_ * recursive * Class.t
+    | ClassType of Ident.type_ * recursive * ClassType.t
     | Include of Include.t
     | Open of Open.t
     | Comment of CComment.docs_or_stop
@@ -440,28 +422,27 @@ and Substitution : sig
   type subst_module =
     [ `Prefixed of Cpath.module_ * Cpath.Resolved.module_
     | `Substituted
-    | `Renamed of Ident.path_module ]
+    | `Renamed of Ident.module_ ]
 
   type subst_module_type =
     [ `Prefixed of Cpath.module_type * Cpath.Resolved.module_type
     | `Renamed of Ident.module_type ]
 
   type subst_type =
-    [ `Prefixed of Cpath.type_ * Cpath.Resolved.type_
-    | `Renamed of Ident.path_type ]
+    [ `Prefixed of Cpath.type_ * Cpath.Resolved.type_ | `Renamed of Ident.type_ ]
 
   type subst_class_type =
     [ `Prefixed of Cpath.class_type * Cpath.Resolved.class_type
-    | `Renamed of Ident.path_class_type ]
+    | `Renamed of Ident.type_ ]
 
   type t = {
-    module_ : subst_module PathModuleMap.t;
+    module_ : subst_module ModuleMap.t;
     module_type : subst_module_type ModuleTypeMap.t;
-    type_ : subst_type PathTypeMap.t;
-    class_type : subst_class_type PathClassTypeMap.t;
-    type_replacement : (TypeExpr.t * TypeDecl.Equation.t) PathTypeMap.t;
+    type_ : subst_type TypeMap.t;
+    class_type : subst_class_type TypeMap.t;
+    type_replacement : (TypeExpr.t * TypeDecl.Equation.t) TypeMap.t;
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
-    path_invalidating_modules : Ident.path_module list;
+    path_invalidating_modules : Ident.module_ list;
     unresolve_opaque_paths : bool;
   }
 end =
@@ -1815,14 +1796,12 @@ module Of_Lang = struct
   type map = {
     modules : Ident.module_ Paths.Identifier.Maps.Module.t;
     module_types : Ident.module_type Paths.Identifier.Maps.ModuleType.t;
-    functor_parameters :
-      Ident.functor_parameter Paths.Identifier.Maps.FunctorParameter.t;
+    functor_parameters : Ident.module_ Paths.Identifier.Maps.FunctorParameter.t;
     types : Ident.type_ Paths.Identifier.Maps.Type.t;
-    path_types : Ident.path_type Paths.Identifier.Maps.Path.Type.t;
-    path_class_types :
-      Ident.path_class_type Paths.Identifier.Maps.Path.ClassType.t;
-    classes : Ident.class_ Paths.Identifier.Maps.Class.t;
-    class_types : Ident.class_type Paths.Identifier.Maps.ClassType.t;
+    path_types : Ident.type_ Paths.Identifier.Maps.Path.Type.t;
+    path_class_types : Ident.type_ Paths.Identifier.Maps.Path.ClassType.t;
+    classes : Ident.type_ Paths.Identifier.Maps.Class.t;
+    class_types : Ident.type_ Paths.Identifier.Maps.ClassType.t;
   }
 
   let empty () =
@@ -1848,10 +1827,7 @@ module Of_Lang = struct
         (fun (types, path_types) i ->
           let id = Ident.Of_Identifier.type_ i in
           ( Maps.Type.add i id types,
-            Maps.Path.Type.add
-              (i :> Path.Type.t)
-              (id :> Ident.path_type)
-              path_types ))
+            Maps.Path.Type.add (i :> Path.Type.t) id path_types ))
         (map.types, map.path_types)
         ids.LocalIdents.types
     in
@@ -1860,10 +1836,8 @@ module Of_Lang = struct
         (fun (classes, path_class_types) i ->
           let id = Ident.Of_Identifier.class_ i in
           ( Maps.Class.add i id classes,
-            Maps.Path.ClassType.add
-              (i :> Path.ClassType.t)
-              (id :> Ident.path_class_type)
-              path_class_types ))
+            Maps.Path.ClassType.add (i :> Path.ClassType.t) id path_class_types
+          ))
         (map.classes, map.path_class_types)
         ids.LocalIdents.classes
     in
@@ -1872,14 +1846,9 @@ module Of_Lang = struct
         (fun (class_types, path_types, path_class_types) i ->
           let id = Ident.Of_Identifier.class_type i in
           ( Maps.ClassType.add i id class_types,
-            Maps.Path.Type.add
-              (i :> Path.Type.t)
-              (id :> Ident.path_type)
-              path_types,
-            Maps.Path.ClassType.add
-              (i :> Path.ClassType.t)
-              (id :> Ident.path_class_type)
-              path_class_types ))
+            Maps.Path.Type.add (i :> Path.Type.t) id path_types,
+            Maps.Path.ClassType.add (i :> Path.ClassType.t) id path_class_types
+          ))
         (map.class_types, path_types_new, path_class_types_new)
         ids.LocalIdents.class_types
     in
@@ -1925,13 +1894,12 @@ module Of_Lang = struct
   let find_any_module i ident_map =
     match i with
     | { Odoc_model.Paths.Identifier.iv = `Root _ | `Module _; _ } as id ->
-        (Maps.Module.find id ident_map.modules :> Ident.path_module)
+        Maps.Module.find id ident_map.modules
     | {
         Odoc_model.Paths.Identifier.iv = #Paths.Identifier.FunctorParameter.t_pv;
         _;
       } as id ->
-        (Maps.FunctorParameter.find id ident_map.functor_parameters
-          :> Ident.path_module)
+        Maps.FunctorParameter.find id ident_map.functor_parameters
     | _ -> raise Not_found
 
   let rec resolved_module_path :

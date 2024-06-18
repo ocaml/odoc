@@ -25,7 +25,7 @@ let rec signature :
   let sg', strengthened_modules = sig_items prefix ?canonical sg in
   let substs =
     List.fold_left
-      (fun s mid -> Subst.path_invalidate_module (mid :> Ident.path_module) s)
+      (fun s mid -> Subst.path_invalidate_module (mid :> Ident.module_) s)
       Subst.identity strengthened_modules
   in
   Subst.signature substs sg'

@@ -102,7 +102,7 @@ let prefix_substitution path sg =
         let name = Ident.Name.typed_module id in
         get_sub
           (Subst.add_module
-             (id :> Ident.path_module)
+             (id :> Ident.module_)
              (`Module (path, name))
              (`Module (path, name))
              sub')
@@ -127,7 +127,7 @@ let prefix_substitution path sg =
         let name = Ident.Name.typed_module id in
         get_sub
           (Subst.add_module
-             (id :> Ident.path_module)
+             (id :> Ident.module_)
              (`Module (path, name))
              (`Module (path, name))
              sub')
@@ -143,12 +143,12 @@ let prefix_substitution path sg =
     | Comment _ :: rest ->
         get_sub sub' rest
     | Class (id, _, _) :: rest ->
-        let name = Ident.Name.typed_class id in
+        let name = Ident.Name.typed_type id in
         get_sub
           (Subst.add_class id (`Class (path, name)) (`Class (path, name)) sub')
           rest
     | ClassType (id, _, _) :: rest ->
-        let name = Ident.Name.typed_class_type id in
+        let name = Ident.Name.typed_type id in
         get_sub
           (Subst.add_class_type id
              (`ClassType (path, name))
@@ -199,9 +199,9 @@ let prefix_signature (path, sg) =
                 Component.Delayed.put (fun () ->
                     Subst.value sub (Component.Delayed.get v)) )
         | Class (id, r, c) ->
-            Class (Ident.Rename.class_ id, r, Subst.class_ sub c)
+            Class (Ident.Rename.type_ id, r, Subst.class_ sub c)
         | ClassType (id, r, c) ->
-            ClassType (Ident.Rename.class_type id, r, Subst.class_type sub c)
+            ClassType (Ident.Rename.type_ id, r, Subst.class_type sub c)
         | Include i -> Include (Subst.include_ sub i)
         | Open o -> Open (Subst.open_ sub o)
         | Comment c -> Comment c)
@@ -404,7 +404,7 @@ let rec handle_apply env func_path arg_path m =
   let path = `Apply (func_path, arg_path) in
   let subst =
     Subst.add_module
-      (arg_id :> Ident.path_module)
+      (arg_id :> Ident.module_)
       (`Resolved substitution) substitution Subst.identity
   in
   let subst = Subst.unresolve_opaque_paths subst in
@@ -900,7 +900,7 @@ and lookup_class_type :
   in
   let res =
     match p with
-    | `Local id -> Error (`LocalType (env, (id :> Ident.path_type)))
+    | `Local id -> Error (`LocalType (env, (id :> Ident.type_)))
     | `Gpath p -> lookup_class_type_gpath env p
     | `Substituted s -> lookup_class_type env s
     | `Class (p, id) -> do_type p id
@@ -1133,7 +1133,7 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
       let id = `Gpath i' in
       lookup_class_type env id >>= fun t -> Ok (id, t)
   | `Resolved r -> lookup_class_type env r >>= fun t -> Ok (r, t)
-  | `Local (l, _) -> Error (`LocalType (env, (l :> Ident.path_type)))
+  | `Local (l, _) -> Error (`LocalType (env, (l :> Ident.type_)))
   | `Substituted s ->
       resolve_class_type env s >>= fun (p, m) -> Ok (`Substituted p, m)
   | `Class (parent, id) ->
@@ -1988,9 +1988,9 @@ and fragmap :
   let sub_of_removed removed sub =
     match removed with
     | `RModule (id, p) ->
-        Subst.add_module (id :> Ident.path_module) (`Resolved p) p sub
+        Subst.add_module (id :> Ident.module_) (`Resolved p) p sub
     | `RType (id, r_texpr, r_eq) ->
-        Subst.add_type_replacement (id :> Ident.path_type) r_texpr r_eq sub
+        Subst.add_type_replacement (id :> Ident.type_) r_texpr r_eq sub
     | `RModuleType (id, e) ->
         Subst.add_module_type_replacement (id :> Ident.module_type) e sub
   in
@@ -2000,7 +2000,7 @@ and fragmap :
   (* Invalidate resolved paths containing substituted idents - See the `With11`
      test for an example of why this is necessary *)
   let sub_of_substituted x sub =
-    let x = (x :> Ident.path_module) in
+    let x = (x :> Ident.module_) in
     Subst.add_module_substitution x sub |> Subst.path_invalidate_module x
   in
 

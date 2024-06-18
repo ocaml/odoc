@@ -5,13 +5,12 @@ open Names
 type maps = {
   module_ : Identifier.Module.t Component.ModuleMap.t;
   module_type : Identifier.ModuleType.t Component.ModuleTypeMap.t;
-  functor_parameter :
-    (Ident.functor_parameter * Identifier.FunctorParameter.t) list;
+  functor_parameter : (Ident.module_ * Identifier.FunctorParameter.t) list;
   type_ : Identifier.Type.t Component.TypeMap.t;
-  path_type : Identifier.Path.Type.t Component.PathTypeMap.t;
-  class_ : (Ident.class_ * Identifier.Class.t) list;
-  class_type : (Ident.class_type * Identifier.ClassType.t) list;
-  path_class_type : Identifier.Path.ClassType.t Component.PathClassTypeMap.t;
+  path_type : Identifier.Path.Type.t Component.TypeMap.t;
+  class_ : (Ident.type_ * Identifier.Class.t) list;
+  class_type : (Ident.type_ * Identifier.ClassType.t) list;
+  path_class_type : Identifier.Path.ClassType.t Component.TypeMap.t;
   fragment_root : Cfrag.root option;
   (* Shadowed items *)
   shadowed : Lang.Include.shadowed;
@@ -34,10 +33,10 @@ let empty () =
     module_type = Component.ModuleTypeMap.empty;
     functor_parameter = [];
     type_ = Component.TypeMap.empty;
-    path_type = Component.PathTypeMap.empty;
+    path_type = Component.TypeMap.empty;
     class_ = [];
     class_type = [];
-    path_class_type = Component.PathClassTypeMap.empty;
+    path_class_type = Component.TypeMap.empty;
     fragment_root = None;
     shadowed = empty_shadow;
   }
@@ -47,12 +46,9 @@ let with_fragment_root r = { (empty ()) with fragment_root = Some r }
 let with_shadowed shadowed = { (empty ()) with shadowed }
 
 (** Raises [Not_found] *)
-let lookup_module map : Ident.path_module -> _ = function
-  | (`LRoot _ | `LModule _) as id ->
+let lookup_module map : Ident.module_ -> _ = function
+  | `LModule _ as id ->
       (Component.ModuleMap.find id map.module_ :> Identifier.Path.Module.t)
-  | #Ident.functor_parameter as id ->
-      (List.assoc id map.functor_parameter :> Identifier.Path.Module.t)
-  | _ -> raise Not_found
 
 module Opt = Component.Opt
 
@@ -107,8 +103,7 @@ module Path = struct
     | `Identifier
         (({ iv = #Odoc_model.Paths.Identifier.Path.Type.t_pv; _ } as y), b) ->
         `Identifier (y, b)
-    | `Local (id, b) ->
-        `Identifier (Component.PathTypeMap.find id map.path_type, b)
+    | `Local (id, b) -> `Identifier (Component.TypeMap.find id map.path_type, b)
     | `Resolved x -> `Resolved (resolved_type map x)
     | `DotT (p, n) -> `DotT (module_ map p, n)
     | `Type (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
@@ -125,7 +120,7 @@ module Path = struct
       ->
         `Identifier (y, b)
     | `Local (id, b) ->
-        `Identifier (Component.PathClassTypeMap.find id map.path_class_type, b)
+        `Identifier (Component.TypeMap.find id map.path_class_type, b)
     | `Resolved x -> `Resolved (resolved_class_type map x)
     | `DotT (p, n) -> `DotT (module_ map p, n)
     | `Class (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
@@ -184,7 +179,7 @@ module Path = struct
       Odoc_model.Paths.Path.Resolved.Type.t =
     match p with
     | `Gpath y -> y
-    | `Local id -> `Identifier (Component.PathTypeMap.find id map.path_type)
+    | `Local id -> `Identifier (Component.TypeMap.find id map.path_type)
     | `CanonicalType (t1, t2) -> `CanonicalType (resolved_type map t1, t2)
     | `Type (p, name) -> `Type (resolved_parent map p, name)
     | `Class (p, name) -> `Class (resolved_parent map p, name)
@@ -201,8 +196,7 @@ module Path = struct
       Odoc_model.Paths.Path.Resolved.ClassType.t =
     match p with
     | `Gpath y -> y
-    | `Local id ->
-        `Identifier (Component.PathClassTypeMap.find id map.path_class_type)
+    | `Local id -> `Identifier (Component.TypeMap.find id map.path_class_type)
     | `Class (p, name) -> `Class (resolved_parent map p, name)
     | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)
     | `Substituted s -> `SubstitutedCT (resolved_class_type map s)
@@ -292,8 +286,8 @@ module ExtractIDs = struct
       map with
       type_ = Component.TypeMap.add id identifier map.type_;
       path_type =
-        Component.PathTypeMap.add
-          (id :> Ident.path_type)
+        Component.TypeMap.add
+          (id :> Ident.type_)
           (identifier :> Identifier.Path.Type.t)
           map.path_type;
     }
@@ -322,47 +316,47 @@ module ExtractIDs = struct
     }
 
   and class_ parent map id =
-    let name = Ident.Name.class_ id in
+    let name = Ident.Name.type_ id in
     let typed_name =
       if List.mem_assoc name map.shadowed.s_classes then
         List.assoc name map.shadowed.s_classes
-      else Ident.Name.typed_class id
+      else Ident.Name.typed_type id
     in
     let identifier = Identifier.Mk.class_ (parent, typed_name) in
     {
       map with
       class_ = (id, identifier) :: map.class_;
       path_class_type =
-        Component.PathClassTypeMap.add
-          (id :> Ident.path_class_type)
+        Component.TypeMap.add
+          (id :> Ident.type_)
           (identifier :> Identifier.Path.ClassType.t)
           map.path_class_type;
       path_type =
-        Component.PathTypeMap.add
-          (id :> Ident.path_type)
+        Component.TypeMap.add
+          (id :> Ident.type_)
           (identifier :> Identifier.Path.Type.t)
           map.path_type;
     }
 
-  and class_type parent map (id : Ident.class_type) =
-    let name = Ident.Name.class_type id in
+  and class_type parent map (id : Ident.type_) =
+    let name = Ident.Name.type_ id in
     let typed_name =
       if List.mem_assoc name map.shadowed.s_class_types then
         List.assoc name map.shadowed.s_class_types
-      else Ident.Name.typed_class_type id
+      else Ident.Name.typed_type id
     in
     let identifier = Identifier.Mk.class_type (parent, typed_name) in
     {
       map with
-      class_type = ((id :> Ident.class_type), identifier) :: map.class_type;
+      class_type = ((id :> Ident.type_), identifier) :: map.class_type;
       path_class_type =
-        Component.PathClassTypeMap.add
-          (id :> Ident.path_class_type)
+        Component.TypeMap.add
+          (id :> Ident.type_)
           (identifier :> Identifier.Path.ClassType.t)
           map.path_class_type;
       path_type =
-        Component.PathTypeMap.add
-          (id :> Ident.path_type)
+        Component.TypeMap.add
+          (id :> Ident.type_)
           (identifier :> Identifier.Path.Type.t)
           map.path_type;
     }
@@ -610,7 +604,7 @@ and simple_expansion :
   | Signature sg -> Signature (signature id map sg)
   | Functor (Named arg, sg) ->
       let identifier = Identifier.Mk.result id in
-      let name = Ident.Name.typed_functor_parameter arg.id in
+      let name = Ident.Name.typed_module arg.id in
       let param_identifier = Identifier.Mk.parameter (id, name) in
       let map =
         {
@@ -825,7 +819,7 @@ and module_type_expr map identifier = function
           w_expr = u_module_type_expr map identifier w_expr;
         }
   | Functor (Named arg, expr) ->
-      let name = Ident.Name.typed_functor_parameter arg.id in
+      let name = Ident.Name.typed_module arg.id in
       let identifier' = Identifier.Mk.parameter (identifier, name) in
       let map =
         {

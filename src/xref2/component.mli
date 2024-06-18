@@ -4,16 +4,9 @@ module ModuleMap : Map.S with type key = Ident.module_
 
 module TypeMap : Map.S with type key = Ident.type_
 
-module PathModuleMap : Map.S with type key = Ident.path_module
-(** Useful maps *)
-
 module ModuleTypeMap : Map.S with type key = Ident.module_type
 
-module PathTypeMap : Map.S with type key = Ident.path_type
-
-module PathValueMap : Map.S with type key = Ident.path_value
-
-module PathClassTypeMap : Map.S with type key = Ident.path_class_type
+module ValueMap : Map.S with type key = Ident.value
 
 module IdentMap : Map.S with type key = Ident.any
 
@@ -162,7 +155,7 @@ and Exception : sig
 end
 
 and FunctorParameter : sig
-  type parameter = { id : Ident.functor_parameter; expr : ModuleType.expr }
+  type parameter = { id : Ident.module_; expr : ModuleType.expr }
 
   type t = Named of parameter | Unit
 end
@@ -285,8 +278,8 @@ and Signature : sig
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
     | Value of Ident.value * Value.t Delayed.t
-    | Class of Ident.class_ * recursive * Class.t
-    | ClassType of Ident.class_type * recursive * ClassType.t
+    | Class of Ident.type_ * recursive * Class.t
+    | ClassType of Ident.type_ * recursive * ClassType.t
     | Include of Include.t
     | Open of Open.t
     | Comment of CComment.docs_or_stop
@@ -407,28 +400,27 @@ and Substitution : sig
   type subst_module =
     [ `Prefixed of Cpath.module_ * Cpath.Resolved.module_
     | `Substituted
-    | `Renamed of Ident.path_module ]
+    | `Renamed of Ident.module_ ]
 
   type subst_module_type =
     [ `Prefixed of Cpath.module_type * Cpath.Resolved.module_type
     | `Renamed of Ident.module_type ]
 
   type subst_type =
-    [ `Prefixed of Cpath.type_ * Cpath.Resolved.type_
-    | `Renamed of Ident.path_type ]
+    [ `Prefixed of Cpath.type_ * Cpath.Resolved.type_ | `Renamed of Ident.type_ ]
 
   type subst_class_type =
     [ `Prefixed of Cpath.class_type * Cpath.Resolved.class_type
-    | `Renamed of Ident.path_class_type ]
+    | `Renamed of Ident.type_ ]
 
   type t = {
-    module_ : subst_module PathModuleMap.t;
+    module_ : subst_module ModuleMap.t;
     module_type : subst_module_type ModuleTypeMap.t;
-    type_ : subst_type PathTypeMap.t;
-    class_type : subst_class_type PathClassTypeMap.t;
-    type_replacement : (TypeExpr.t * TypeDecl.Equation.t) PathTypeMap.t;
+    type_ : subst_type TypeMap.t;
+    class_type : subst_class_type TypeMap.t;
+    type_replacement : (TypeExpr.t * TypeDecl.Equation.t) TypeMap.t;
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
-    path_invalidating_modules : Ident.path_module list;
+    path_invalidating_modules : Ident.module_ list;
     unresolve_opaque_paths : bool;
   }
 end
@@ -773,7 +765,7 @@ module Of_Lang : sig
 
   val functor_parameter :
     map ->
-    Ident.functor_parameter ->
+    Ident.module_ ->
     Odoc_model.Lang.FunctorParameter.parameter ->
     FunctorParameter.parameter
 
