@@ -11,9 +11,7 @@ let handle_expansion env id expansion =
     | Named arg ->
         let identifier =
           Paths.Identifier.Mk.parameter
-            ( parent,
-              Ident.Name.typed_functor_parameter
-                arg.Component.FunctorParameter.id )
+            (parent, Ident.Name.typed_module arg.Component.FunctorParameter.id)
         in
         let m = Component.module_of_functor_argument arg in
         let env' =
@@ -22,7 +20,7 @@ let handle_expansion env id expansion =
         let rp = `Gpath (`Identifier identifier) in
         let p = `Resolved rp in
         let subst =
-          Subst.add_module (arg.id :> Ident.path_module) p rp Subst.identity
+          Subst.add_module (arg.id :> Ident.module_) p rp Subst.identity
         in
         (env', Subst.module_type_expr subst expr)
   in

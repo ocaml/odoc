@@ -7,10 +7,10 @@ val identity : t
 
 val unresolve_opaque_paths : t -> t
 
-val path_invalidate_module : Ident.path_module -> t -> t
+val path_invalidate_module : Ident.module_ -> t -> t
 
 val add_module :
-  Ident.path_module -> Cpath.module_ -> Cpath.Resolved.module_ -> t -> t
+  Ident.module_ -> Cpath.module_ -> Cpath.Resolved.module_ -> t -> t
 
 val add_module_type :
   Ident.module_type -> Cpath.module_type -> Cpath.Resolved.module_type -> t -> t
@@ -18,17 +18,17 @@ val add_module_type :
 val add_type : Ident.type_ -> Cpath.type_ -> Cpath.Resolved.type_ -> t -> t
 
 val add_class :
-  Ident.class_ -> Cpath.class_type -> Cpath.Resolved.class_type -> t -> t
+  Ident.type_ -> Cpath.class_type -> Cpath.Resolved.class_type -> t -> t
 
 val add_class_type :
-  Ident.class_type -> Cpath.class_type -> Cpath.Resolved.class_type -> t -> t
+  Ident.type_ -> Cpath.class_type -> Cpath.Resolved.class_type -> t -> t
 
 val add_type_replacement :
-  Ident.path_type -> TypeExpr.t -> TypeDecl.Equation.t -> t -> t
+  Ident.type_ -> TypeExpr.t -> TypeDecl.Equation.t -> t -> t
 
 val add_module_type_replacement : Ident.module_type -> ModuleType.expr -> t -> t
 
-val add_module_substitution : Ident.path_module -> t -> t
+val add_module_substitution : Ident.module_ -> t -> t
 
 val type_ : t -> Component.TypeDecl.t -> Component.TypeDecl.t
 

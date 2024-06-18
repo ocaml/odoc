@@ -68,7 +68,7 @@ val signature :
 val class_ :
   maps ->
   Identifier.Signature.t ->
-  Ident.class_ ->
+  Ident.type_ ->
   Component.Class.t ->
   Odoc_model.Lang.Class.t
 
@@ -87,7 +87,7 @@ val class_type_expr :
 val class_type :
   maps ->
   Identifier.Signature.t ->
-  Ident.class_type ->
+  Ident.type_ ->
   Component.ClassType.t ->
   Odoc_model.Lang.ClassType.t
 

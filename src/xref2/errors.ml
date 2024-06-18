@@ -36,7 +36,7 @@ module Tools_error = struct
 
   and simple_module_lookup_error =
     [ `Local of
-      Env.t * Ident.path_module
+      Env.t * Ident.module_
       (* Internal error: Found local path during lookup *)
     | `Find_failure
     | (* Internal error: the module was not found in the parent signature *)
@@ -70,7 +70,7 @@ module Tools_error = struct
 
   and simple_type_lookup_error =
     [ `LocalType of
-      Env.t * Ident.path_type
+      Env.t * Ident.type_
       (* Internal error: Found local path during lookup *)
     | `Class_replaced
       (* Class was replaced with a destructive substitution and we're not sure
@@ -85,7 +85,7 @@ module Tools_error = struct
 
   and simple_value_lookup_error =
     [ `LocalValue of
-      Env.t * Ident.path_value
+      Env.t * Ident.value
       (* Internal error: Found local path during lookup *)
     | `Find_failure
       (* Internal error: the type was not found in the parent signature *)
