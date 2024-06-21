@@ -25,6 +25,9 @@
 - `Odoc_html_frontend` does not use tyxml, for smaller javascript sizes.
   (@EmileTrotignon, #1072)
 - Overhaul of module-type-of expansions and shadowing code (@jonludlam, #1081)
+- Allow `][` in code blocks (@Julow, #1149)
+  This was interpreted as "code blocks with result", which now mandate a delimiter:
+  `{delim@lang[ code ]delim[ result ]}`
 
 ### Fixed
 
