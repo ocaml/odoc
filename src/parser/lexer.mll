@@ -412,7 +412,7 @@ and token input = parse
       emit ~start_offset input token }
 
   | "{["
-    { code_block (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf }
+    { code_block false (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf }
 
   | (("{" (delim_char* as delim) "@" horizontal_space*) as prefix) (language_tag_char+ as lang_tag_)
     {
@@ -424,21 +424,31 @@ and token input = parse
         let empty_content = with_location_adjustments (fun _ -> Loc.at) input "" in
         emit ~start_offset input (`Code_block (Some (lang_tag, None), delim, empty_content, false))
       in
+      (* Disallow result block sections for code blocks without a delimiter.
+         This avoids the surprising parsing ']['. *)
+      let allow_result_block = delim <> "" in
+      let code_block_with_metadata metadata =
+        let content_offset = Lexing.lexeme_end lexbuf in
+        let metadata = Some (lang_tag, metadata) in
+        let prefix = Buffer.create 256 in
+        code_block allow_result_block start_offset content_offset metadata
+          prefix delim input lexbuf
+      in
       match code_block_metadata_tail input lexbuf with
-      | `Ok metadata -> code_block start_offset (Lexing.lexeme_end lexbuf) (Some (lang_tag, metadata)) (Buffer.create 256) delim input lexbuf
+      | `Ok metadata -> code_block_with_metadata metadata
       | `Eof ->
           warning input ~start_offset Parse_error.truncated_code_block_meta;
           emit_truncated_code_block ()
       | `Invalid_char c ->
           warning input ~start_offset
             (Parse_error.language_tag_invalid_char lang_tag_ c);
-          code_block start_offset (Lexing.lexeme_end lexbuf) (Some (lang_tag, None)) (Buffer.create 256) delim input lexbuf
+          code_block_with_metadata None
     }
 
   | "{@" horizontal_space* '['
     {
       warning input Parse_error.no_language_tag_in_meta;
-      code_block (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf
+      code_block false (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf
     }
 
   | "{v"
@@ -734,20 +744,24 @@ and code_block_metadata_tail input = parse
   | eof
     { `Eof }
 
-and code_block start_offset content_offset metadata prefix delim input = parse
+and code_block allow_result_block start_offset content_offset metadata prefix delim input = parse
   | ("]" (delim_char* as delim') "[") as terminator
-    { if delim = delim'
+    { if delim = delim' && allow_result_block
       then emit_code_block ~start_offset content_offset input metadata delim terminator prefix true
-      else
-        (Buffer.add_string prefix terminator;
-        code_block start_offset content_offset metadata prefix delim input lexbuf) }
+      else (
+        Buffer.add_string prefix terminator;
+        code_block allow_result_block start_offset content_offset metadata
+          prefix delim input lexbuf
+      )
+    }
   | ("]" (delim_char* as delim') "}") as terminator
     { 
       if delim = delim'
       then emit_code_block ~start_offset content_offset input metadata delim terminator prefix false
       else (
         Buffer.add_string prefix terminator;
-        code_block start_offset content_offset metadata prefix delim input lexbuf
+        code_block allow_result_block start_offset content_offset metadata
+          prefix delim input lexbuf
       )
     }
   | eof
@@ -758,5 +772,6 @@ and code_block start_offset content_offset metadata prefix delim input = parse
   | (_ as c)
     {
       Buffer.add_char prefix c;
-      code_block start_offset content_offset metadata prefix delim input lexbuf
+      code_block allow_result_block start_offset content_offset metadata
+        prefix delim input lexbuf
     }
