@@ -2711,15 +2711,65 @@ let%expect_test _ =
          (warnings ())) |}]
 
     let code_block_with_output =
+      test "{delim@ocaml[foo]delim[output {b foo}]}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 39))
+            (code_block (((f.ml (1 7) (1 12)) ocaml) ()) ((f.ml (1 13) (1 16)) foo)
+             ((paragraph
+               (((f.ml (1 23) (1 29)) (word output)) ((f.ml (1 29) (1 30)) space)
+                ((f.ml (1 30) (1 37)) (bold (((f.ml (1 33) (1 36)) (word foo))))))))))))
+         (warnings ())) |}]
+
+    (* Code block contains ']['. *)
+    let code_block_with_output_without_delim =
+      test "{[foo][output {b foo}]}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 23))
+            (code_block ((f.ml (1 2) (1 21)) "foo][output {b foo}")))))
+         (warnings ())) |}]
+
+    (* Code block contains ']['. *)
+    let code_block_with_output_and_lang_without_delim =
       test "{@ocaml[foo][output {b foo}]}";
       [%expect
         {|
         ((output
           (((f.ml (1 0) (1 29))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) ()) ((f.ml (1 8) (1 11)) foo)
-             ((paragraph
-               (((f.ml (1 13) (1 19)) (word output)) ((f.ml (1 19) (1 20)) space)
-                ((f.ml (1 20) (1 27)) (bold (((f.ml (1 23) (1 26)) (word foo))))))))))))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+             ((f.ml (1 8) (1 27)) "foo][output {b foo}")))))
+         (warnings ())) |}]
+
+    let code_block_with_output_unexpected_delim =
+      test "{[foo]unexpected[output {b foo}]}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 33))
+            (code_block ((f.ml (1 2) (1 31)) "foo]unexpected[output {b foo}")))))
+         (warnings ())) |}]
+
+    let code_block_with_output_lang_unexpected_delim =
+      test "{@ocaml[foo]unexpected[output {b foo}]}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 39))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+             ((f.ml (1 8) (1 37)) "foo]unexpected[output {b foo}")))))
+         (warnings ())) |}]
+
+    let code_block_with_output_wrong_delim =
+      test "{delim@ocaml[foo]wrong[output {b foo}]delim}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 44))
+            (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+             ((f.ml (1 13) (1 37)) "foo]wrong[output {b foo}")))))
          (warnings ())) |}]
 
     let code_block_empty_meta =
@@ -2850,17 +2900,22 @@ let%expect_test _ =
 
     let code_block_with_output =
       test
-        {|{@ocaml[ let x = ][ {err@mdx-error[ here's the error ]} ]err}
-        ]}|};
+        {|{delim@ocaml[ let x = ]delim[ {err@mdx-error[ here's the error ]} ]err}
+        ]delim}|};
       [%expect
-        "\n\
-        \        ((output\n\
-        \          (((f.ml (1 0) (2 10))\n\
-        \            (code_block (((f.ml (1 2) (1 7)) ocaml) ())\n\
-        \             ((f.ml (1 8) (1 17)) \"let x = \")\n\
-        \             ((code_block (((f.ml (1 25) (1 34)) mdx-error) ())\n\
-        \               ((f.ml (1 35) (1 56)) \"here's the error ]} \")))))))\n\
-        \         (warnings ()))"]
+        "
+        ((output
+          (((f.ml (1 0) (2 15))
+            (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+             ((f.ml (1 13) (1 22)) \"let x = \")
+             ((code_block (((f.ml (1 35) (1 44)) mdx-error) ())
+               ((f.ml (1 45) (1 66)) \"here's the error ]} \"))
+              (paragraph
+               (((f.ml (2 8) (2 9)) (word ])) ((f.ml (2 9) (2 14)) (word delim)))))))))
+         (warnings
+          ( \"File \\\"f.ml\\\", line 2, characters 8-9:\\
+           \\nUnpaired ']' (end of code).\\
+           \\nSuggestion: try '\\\\]'.\")))"]
 
     let delimited_code_block_with_output =
       test "{delim@ocaml[ foo ]delim[ ]}";
