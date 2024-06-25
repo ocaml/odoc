@@ -592,8 +592,8 @@ end = struct
 
   open Or_error
 
-  (** Find the package name the output is part of *)
-  let find_package_of_output l o =
+  (** Find the package/library name the output is part of *)
+  let find_root_of_output l o =
     let l =
       List.map
         ~f:(fun (x, p) ->
@@ -601,37 +601,61 @@ end = struct
         l
     in
     let o = absolute_normalization o in
-    match
-      (* Taken from OCaml 5.2 standard library *)
-      let rec find_map ~f = function
-        | [] -> None
-        | x :: l -> (
-            match f x with Some _ as result -> result | None -> find_map ~f l)
-      in
-      find_map
-        ~f:(fun (pkg, path) ->
-          if Fpath.is_prefix path o then Some pkg else None)
-        l
-    with
-    | Some pkg -> Ok pkg
-    | None ->
-        if List.length l > 0 then
-          Error
-            (`Msg
-              "The output file must be part of a directory passed as a -P or -L")
-        else Ok ""
+    (* Taken from OCaml 5.2 standard library *)
+    let rec find_map ~f = function
+      | [] -> None
+      | x :: l -> (
+          match f x with Some _ as result -> result | None -> find_map ~f l)
+    in
+    match l with
+    | [] -> Ok None
+    | _ -> (
+        match
+          find_map
+            ~f:(fun (pkg, path) ->
+              if Fpath.is_prefix path o then Some pkg else None)
+            l
+        with
+        | Some _ as r -> Ok r
+        | None -> Error `Not_found)
 
-  let validate_current_package page_roots current_package =
+  let current_library_of_output lib_roots output =
+    match find_root_of_output lib_roots output with
+    | Ok _ as ok -> ok
+    | Error `Not_found ->
+        Error (`Msg "The output file must be part of a directory passed as -L")
+
+  (** Whether if the package specified with [--current-package] is consistent
+      with the pages roots and with the output path for pages. *)
+  let validate_current_package ?detected_package page_roots current_package =
     match current_package with
-    | Some curpkgnane ->
-        if List.exists ~f:(fun (pkgname, _) -> pkgname = curpkgnane) page_roots
-        then Ok ()
-        else
+    | Some curpkgnane -> (
+        if
+          not
+            (List.exists
+               ~f:(fun (pkgname, _) -> pkgname = curpkgnane)
+               page_roots)
+        then
           Error
             (`Msg
               "The package name specified with --current-package do not match \
-               any package passed as a -P.")
-    | None -> Ok ()
+               any package passed as a -P")
+        else
+          match detected_package with
+          | Some dpkg when dpkg <> curpkgnane ->
+              Error
+                (`Msg
+                  "The package name specified with --current-package is not \
+                   consistent with the packages passed as a -P")
+          | _ -> Ok current_package)
+    | None -> Ok detected_package
+
+  let current_package_of_page ~current_package page_roots output =
+    match find_root_of_output page_roots output with
+    | Ok detected_package ->
+        validate_current_package ?detected_package page_roots current_package
+    | Error `Not_found ->
+        Error (`Msg "The output file must be part of a directory passed as -P")
 
   let is_page input =
     input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"
@@ -645,12 +669,14 @@ end = struct
          (`Msg "Arguments given to -P and -L cannot be included in each others")
      else Ok ())
     >>= fun () ->
-    (if is_page input then find_package_of_output page_roots output
-     else find_package_of_output lib_roots output)
-    >>= fun current_root ->
-    validate_current_package page_roots current_package >>= fun () ->
+    let is_page = is_page input in
+    (if is_page then Ok None else current_library_of_output lib_roots output)
+    >>= fun current_lib ->
+    (if is_page then current_package_of_page ~current_package page_roots output
+     else validate_current_package page_roots current_package)
+    >>= fun current_package ->
     let roots =
-      Some { Resolver.page_roots; lib_roots; current_root; current_package }
+      Some { Resolver.page_roots; lib_roots; current_lib; current_package }
     in
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules ~roots
