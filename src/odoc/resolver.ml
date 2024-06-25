@@ -390,6 +390,7 @@ type roots = {
   page_roots : (string * Fs.Directory.t) list;
   lib_roots : (string * Fs.Directory.t) list;
   current_root : string;
+  current_package : string option;
 }
 
 let create ~important_digests ~directories ~open_modules ~roots =
@@ -397,7 +398,7 @@ let create ~important_digests ~directories ~open_modules ~roots =
   let pages, libs =
     match roots with
     | None -> (None, None)
-    | Some { page_roots; lib_roots; current_root } ->
+    | Some { page_roots; lib_roots; current_root; _ } ->
         ( Some (Named_roots.create ~current_root page_roots),
           Some (Named_roots.create ~current_root lib_roots) )
   in
