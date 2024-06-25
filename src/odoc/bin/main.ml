@@ -621,6 +621,18 @@ end = struct
               "The output file must be part of a directory passed as a -P or -L")
         else Ok ""
 
+  let validate_current_package page_roots current_package =
+    match current_package with
+    | Some curpkgnane ->
+        if List.exists ~f:(fun (pkgname, _) -> pkgname = curpkgnane) page_roots
+        then Ok ()
+        else
+          Error
+            (`Msg
+              "The package name specified with --current-package do not match \
+               any package passed as a -P.")
+    | None -> Ok ()
+
   let is_page input =
     input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"
 
@@ -636,6 +648,7 @@ end = struct
     (if is_page input then find_package_of_output page_roots output
      else find_package_of_output lib_roots output)
     >>= fun current_root ->
+    validate_current_package page_roots current_package >>= fun () ->
     let roots =
       Some { Resolver.page_roots; lib_roots; current_root; current_package }
     in
@@ -683,7 +696,8 @@ end = struct
   let current_package =
     let doc =
       "Specify the current package name. The matching page root specified with \
-       -P is used to resolve references using the '//' syntax."
+       -P is used to resolve references using the '//' syntax. A  \
+       corresponding -P option must be passed."
     in
     Arg.(
       value
