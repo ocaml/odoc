@@ -36,9 +36,9 @@ open Or_error
 module Named_roots : sig
   type t
 
-  type error = NoPackage
+  type error = NoPackage | NoRoot
 
-  val create : (string * Fs.Directory.t) list -> current_root:string -> t
+  val create : (string * Fs.Directory.t) list -> current_root:string option -> t
 
   val find_by_path :
     ?root:string -> t -> path:Fs.File.t -> (Fs.File.t option, error) result
@@ -54,9 +54,9 @@ end = struct
 
   type pkg = { flat : flat; hierarchical : hierarchical }
 
-  type t = { table : (string, pkg) Hashtbl.t; current_root : string }
+  type t = { table : (string, pkg) Hashtbl.t; current_root : string option }
 
-  type error = NoPackage
+  type error = NoPackage | NoRoot
 
   let hashtbl_find_opt cache package =
     match Hashtbl.find cache package with
@@ -75,18 +75,23 @@ end = struct
 
   let find_by_path ?root { table = cache; current_root } ~path =
     let path = Fpath.normalize path in
-    let root = match root with None -> current_root | Some pkg -> pkg in
-    match hashtbl_find_opt cache root with
-    | Some { hierarchical = cache, root; _ } -> (
-        match hashtbl_find_opt cache path with
-        | Some x -> Ok (Some x)
-        | None ->
-            let full_path = Fpath.( // ) (Fs.Directory.to_fpath root) path in
-            if Fs.File.exists full_path then (
-              Hashtbl.add cache path full_path;
-              Ok (Some full_path))
-            else Ok None)
-    | None -> Error NoPackage
+    let root = match root with None -> current_root | Some _ as pkg -> pkg in
+    match root with
+    | Some root -> (
+        match hashtbl_find_opt cache root with
+        | Some { hierarchical = cache, root; _ } -> (
+            match hashtbl_find_opt cache path with
+            | Some x -> Ok (Some x)
+            | None ->
+                let full_path =
+                  Fpath.( // ) (Fs.Directory.to_fpath root) path
+                in
+                if Fs.File.exists full_path then (
+                  Hashtbl.add cache path full_path;
+                  Ok (Some full_path))
+                else Ok None)
+        | None -> Error NoPackage)
+    | None -> Error NoRoot
 
   let populate_flat_namespace ~root =
     let flat_namespace = Hashtbl.create 42 in
@@ -105,14 +110,19 @@ end = struct
     flat_namespace
 
   let find_by_name ?root { table = cache; current_root } ~name =
-    let package = match root with None -> current_root | Some pkg -> pkg in
-    match hashtbl_find_opt cache package with
-    | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
-    | Some ({ flat = Unvisited root; _ } as p) ->
-        let flat = populate_flat_namespace ~root in
-        Hashtbl.replace cache package { p with flat = Visited flat };
-        Ok (Hashtbl.find_all flat name)
-    | None -> Error NoPackage
+    let package =
+      match root with None -> current_root | Some _ as pkg -> pkg
+    in
+    match package with
+    | Some package -> (
+        match hashtbl_find_opt cache package with
+        | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
+        | Some ({ flat = Unvisited root; _ } as p) ->
+            let flat = populate_flat_namespace ~root in
+            Hashtbl.replace cache package { p with flat = Visited flat };
+            Ok (Hashtbl.find_all flat name)
+        | None -> Error NoPackage)
+    | None -> Error NoRoot
 end
 
 let () = (ignore Named_roots.find_by_name [@warning "-5"])
@@ -342,7 +352,8 @@ let lookup_page ~pages ap target_name =
               Format.eprintf "%s\n"
               @@ "Error during find by path: no package was found with this \
                   name";
-              None)
+              None
+          | Error NoRoot -> None)
       | _ -> failwith "Relative references (a/b, ../a/b) are not yet tested")
   | _ -> (
       let target_name = "page-" ^ target_name in
@@ -389,7 +400,7 @@ type t = {
 type roots = {
   page_roots : (string * Fs.Directory.t) list;
   lib_roots : (string * Fs.Directory.t) list;
-  current_root : string;
+  current_lib : string option;
   current_package : string option;
 }
 
@@ -398,9 +409,9 @@ let create ~important_digests ~directories ~open_modules ~roots =
   let pages, libs =
     match roots with
     | None -> (None, None)
-    | Some { page_roots; lib_roots; current_root; _ } ->
-        ( Some (Named_roots.create ~current_root page_roots),
-          Some (Named_roots.create ~current_root lib_roots) )
+    | Some { page_roots; lib_roots; current_lib; current_package } ->
+        ( Some (Named_roots.create ~current_root:current_package page_roots),
+          Some (Named_roots.create ~current_root:current_lib lib_roots) )
   in
   { important_digests; ap; open_modules; pages; libs }
 
