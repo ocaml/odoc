@@ -625,7 +625,7 @@ end = struct
     input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"
 
   let link directories page_roots lib_roots input_file output_file
-      warnings_options open_modules =
+      current_package warnings_options open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
     (if not (check_antichain (List.rev_append lib_roots page_roots)) then
@@ -636,7 +636,9 @@ end = struct
     (if is_page input then find_package_of_output page_roots output
      else find_package_of_output lib_roots output)
     >>= fun current_root ->
-    let roots = Some { Resolver.page_roots; lib_roots; current_root } in
+    let roots =
+      Some { Resolver.page_roots; lib_roots; current_root; current_package }
+    in
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules ~roots
     in
@@ -678,6 +680,16 @@ end = struct
       & opt_all convert_named_root []
       & info ~docs ~docv:"libname:DIR" ~doc [ "L" ])
 
+  let current_package =
+    let doc =
+      "Specify the current package name. The matching page root specified with \
+       -P is used to resolve references using the '//' syntax."
+    in
+    Arg.(
+      value
+      & opt (some string) None
+      & info ~docs ~docv:"pkgname" ~doc [ "current-package" ])
+
   let cmd =
     let input =
       let doc = "Input file" in
@@ -686,7 +698,7 @@ end = struct
     Term.(
       const handle_error
       $ (const link $ odoc_file_directories $ page_roots $ lib_roots $ input
-       $ dst $ warnings_options $ open_modules))
+       $ dst $ current_package $ warnings_options $ open_modules))
 
   let info ~docs =
     let man =
