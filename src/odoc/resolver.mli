@@ -24,7 +24,8 @@ type t
 type roots = {
   page_roots : (string * Fs.Directory.t) list;
   lib_roots : (string * Fs.Directory.t) list;
-  current_root : string;
+  current_lib : string option;
+  current_package : string option;
 }
 
 val create :
