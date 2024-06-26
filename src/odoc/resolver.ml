@@ -404,7 +404,7 @@ let lookup_path _ap ~pages ~libs:_ (kind, tag, path) =
   let find_by_path ?root named_roots path =
     match Named_roots.find_by_path ?root named_roots ~path with
     | Ok x -> x
-    | Error NoPackage -> None
+    | Error (NoPackage | NoRoot) -> None
   in
   let find_page ?root path =
     ( pages >>= fun pages ->
