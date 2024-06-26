@@ -45,29 +45,19 @@
   Warning: Failed to resolve reference unresolvedroot(bar) Couldn't find "bar"
   File "doc/foo.mld", line 4, characters 28-36:
   Warning: Failed to resolve reference ./foo Path 'foo' not found
-  $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/lib/libname/test.odoc
+  $ odoc link --current-package pkg -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/lib/libname/test.odoc
   File "test.ml", line 12, characters 42-51:
   Warning: Failed to resolve reference ./Test Path 'Test' not found
   File "test.ml", line 12, characters 21-41:
   Warning: Failed to resolve reference /pkg/libname/Test Path '/pkg/libname/Test' not found
   File "test.ml", line 12, characters 3-20:
   Warning: Failed to resolve reference //libname/Test Path '//libname/Test' not found
-  File "test.ml", line 10, characters 3-18:
-  Warning: Failed to resolve reference //subdir/dup Path '//subdir/dup' not found
-  File "test.ml", line 8, characters 3-11:
-  Warning: Failed to resolve reference //dup Path '//dup' not found
   File "test.ml", line 6, characters 38-44:
   Warning: Failed to resolve reference unresolvedroot(bar) Couldn't find "bar"
-  File "test.ml", line 6, characters 3-18:
-  Warning: Failed to resolve reference //subdir/bar Path '//subdir/bar' not found
   File "test.ml", line 4, characters 34-45:
   Warning: Failed to resolve reference unresolvedroot(foo) Couldn't find page "foo"
-  File "test.ml", line 4, characters 3-16:
-  Warning: Failed to resolve reference //foo Path '//foo' not found
   File "test.ml", line 3, characters 24-30:
   Warning: Failed to resolve reference unresolvedroot(foo) Couldn't find "foo"
-  File "test.ml", line 3, characters 3-11:
-  Warning: Failed to resolve reference //foo Path '//foo' not found
 
 Helper that extracts references in a compact way. Headings help to interpret the result.
 
@@ -126,21 +116,21 @@ Helper that extracts references in a compact way. Headings help to interpret the
 
   $ odoc_print ./h/pkg/lib/libname/test.odocl | jq_references
   ["Page","foo"]
-  {"`Reference":[{"`Any_path":["`TCurrentPackage",["foo"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}
-  {"`Reference":[{"`Page_path":["`TCurrentPackage",["foo"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Root":["foo","`TPage"]},[]]}
   ["Page","subdir/bar"]
-  {"`Reference":[{"`Any_path":["`TCurrentPackage",["subdir","bar"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Root":["bar","`TUnknown"]},[]]}
   ["Page","dup"]
-  {"`Reference":[{"`Any_path":["`TCurrentPackage",["dup"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"dup"]}}},[]]}
   ["Page","subdir/dup"]
-  {"`Reference":[{"`Any_path":["`TCurrentPackage",["subdir","dup"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   ["Module","Test"]
   {"`Reference":[{"`Any_path":["`TCurrentPackage",["libname","Test"]]},[]]}
