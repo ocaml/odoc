@@ -13,6 +13,9 @@
 - OCaml 5.2.0 compatibility (@Octachron, #1094, #1112)
 - New driver package (@jonludlam, #1121)
 - Fix a big gap between the preamble and the content of a page (@EmileTrotignon, #1147)
+- Path-references to hierarchical pages and modules (@Julow, #1151)
+  Absolute (`{!/foo}`), relative (`{!./foo}`) and package-local (`{!//foo}`)
+  are added.
 
 ### Changed
 
