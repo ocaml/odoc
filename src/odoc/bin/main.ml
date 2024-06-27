@@ -725,8 +725,16 @@ end = struct
     (if is_page then current_package_of_page ~current_package page_roots output
      else validate_current_package page_roots current_package)
     >>= fun current_package ->
+    let current_dir = Fs.File.dirname output in
     let roots =
-      Some { Resolver.page_roots; lib_roots; current_lib; current_package }
+      Some
+        {
+          Resolver.page_roots;
+          lib_roots;
+          current_lib;
+          current_package;
+          current_dir;
+        }
     in
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules ~roots

@@ -36,7 +36,11 @@ module Directory : sig
   val reach_from : dir:t -> string -> t
   (** @raises Invalid_argument if [parent/name] exists but is not a directory. *)
 
+  val contains : parentdir:t -> file -> bool
+
   val mkdir_p : t -> unit
+
+  val of_file : file -> t
 
   val of_string : string -> t
 
@@ -92,6 +96,9 @@ module File : sig
   val of_segs : string list -> t
   (** [of_segs segs] Returns an absolute path if [segs] starts with an empty
       segment. Raises [Invalid_argument] if [segs] is empty. *)
+
+  val append_segs : t -> string list -> t
+  (** Append a list of segments to a path. Do not raise. *)
 
   module Table : Hashtbl.S with type key = t
 end

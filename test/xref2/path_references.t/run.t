@@ -9,6 +9,8 @@
 
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/subdir/page-dup.odoc
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/subdir/page-bar.odoc
+  File "h/pkg/doc/subdir/page-Test.odoc":
+  File does not exist
   File "doc/subdir/bar.mld", line 12, characters 49-56:
   Warning: Failed to resolve reference unresolvedroot(Test) Couldn't find "Test"
   File "doc/subdir/bar.mld", line 12, characters 39-48:
@@ -17,14 +19,12 @@
   Warning: Failed to resolve reference /pkg/libname/Test Path '/pkg/libname/Test' not found
   File "doc/subdir/bar.mld", line 12, characters 0-17:
   Warning: Failed to resolve reference //libname/Test Path '//libname/Test' not found
-  File "doc/subdir/bar.mld", line 10, characters 35-43:
-  Warning: Failed to resolve reference ./dup Path 'dup' not found
-  File "doc/subdir/bar.mld", line 6, characters 42-50:
-  Warning: Failed to resolve reference ./bar Path 'bar' not found
   File "doc/subdir/bar.mld", line 4, characters 21-27:
   Warning: Failed to resolve reference unresolvedroot(foo) Couldn't find "foo"
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/page-dup.odoc
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/page-foo.odoc
+  File "h/pkg/doc/page-Test.odoc":
+  File does not exist
   File "doc/foo.mld", line 12, characters 49-56:
   Warning: Failed to resolve reference unresolvedroot(Test) Couldn't find "Test"
   File "doc/foo.mld", line 12, characters 39-48:
@@ -33,18 +33,8 @@
   Warning: Failed to resolve reference /pkg/libname/Test Path '/pkg/libname/Test' not found
   File "doc/foo.mld", line 12, characters 0-17:
   Warning: Failed to resolve reference //libname/Test Path '//libname/Test' not found
-  File "doc/foo.mld", line 10, characters 35-48:
-  Warning: Failed to resolve reference ./subdir/dup Path 'subdir/dup' not found
-  File "doc/foo.mld", line 8, characters 21-29:
-  Warning: Failed to resolve reference ./dup Path 'dup' not found
-  File "doc/foo.mld", line 6, characters 56-71:
-  Warning: Failed to resolve reference ./subdir/bar Path 'subdir/bar' not found
-  File "doc/foo.mld", line 6, characters 42-55:
-  Warning: Failed to resolve reference ./subdir/bar Path 'subdir/bar' not found
   File "doc/foo.mld", line 6, characters 35-41:
   Warning: Failed to resolve reference unresolvedroot(bar) Couldn't find "bar"
-  File "doc/foo.mld", line 4, characters 28-36:
-  Warning: Failed to resolve reference ./foo Path 'foo' not found
   $ odoc link --current-package pkg -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/lib/libname/test.odoc
   File "test.ml", line 12, characters 42-51:
   Warning: Failed to resolve reference ./Test Path 'Test' not found
@@ -69,21 +59,21 @@ Helper that extracts references in a compact way. Headings help to interpret the
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"foo"]}}},[]]}
-  {"`Reference":[{"`Any_path":["`TRelativePath",["foo"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"foo"]}}},[]]}
   ["Page","subdir/bar"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Root":["bar","`TUnknown"]},[]]}
-  {"`Reference":[{"`Any_path":["`TRelativePath",["subdir","bar"]]},[]]}
-  {"`Reference":[{"`Any_path":["`TRelativePath",["subdir","bar"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"bar"]}}},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"bar"]}}},[]]}
   ["Page","dup"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"dup"]}}},[]]}
-  {"`Reference":[{"`Any_path":["`TRelativePath",["dup"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"dup"]}}},[]]}
   ["Page","subdir/dup"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
-  {"`Reference":[{"`Any_path":["`TRelativePath",["subdir","dup"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   ["Module","Test"]
   {"`Reference":[{"`Any_path":["`TCurrentPackage",["libname","Test"]]},[]]}
   {"`Reference":[{"`Any_path":["`TAbsolutePath",["pkg","libname","Test"]]},[]]}
@@ -100,14 +90,14 @@ Helper that extracts references in a compact way. Headings help to interpret the
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"bar"]}}},[]]}
-  {"`Reference":[{"`Any_path":["`TRelativePath",["bar"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"bar"]}}},[]]}
   ["Page","dup"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"dup"]}}},[]]}
   ["Page","subdir/dup"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
-  {"`Reference":[{"`Any_path":["`TRelativePath",["dup"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   ["Module","Test"]
   {"`Reference":[{"`Any_path":["`TCurrentPackage",["libname","Test"]]},[]]}
   {"`Reference":[{"`Any_path":["`TAbsolutePath",["pkg","libname","Test"]]},[]]}

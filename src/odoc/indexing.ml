@@ -114,13 +114,20 @@ open Odoc_model.Lang.Sidebar
 
 let compile out_format ~output ~warnings_options ~lib_roots ~page_roots
     ~inputs_in_file ~odocls =
+  let current_dir = Fs.File.dirname output in
   parse_input_files inputs_in_file >>= fun files ->
   let files = List.rev_append odocls files in
   let resolver =
     Resolver.create ~important_digests:false ~directories:[]
       ~roots:
         (Some
-           { page_roots; lib_roots; current_lib = None; current_package = None })
+           {
+             page_roots;
+             lib_roots;
+             current_lib = None;
+             current_package = None;
+             current_dir;
+           })
       ~open_modules:[]
   in
   (* if files = [] && then Error (`Msg "No .odocl files were included") *)
