@@ -32,9 +32,12 @@ type label_parent = [ signature | type_ ]
 
 type constructor = [ `FConstructor of TypeDecl.Constructor.t ]
 
+type polymorphic_constructor =
+  [ `FPoly of TypeExpr.Polymorphic_variant.Constructor.t ]
+
 type field = [ `FField of TypeDecl.Field.t ]
 
-type any_in_type = [ constructor | field ]
+type any_in_type = [ constructor | field | polymorphic_constructor ]
 
 type any_in_type_in_sig =
   [ `In_type of Odoc_model.Names.TypeName.t * TypeDecl.t * any_in_type ]
@@ -191,10 +194,23 @@ let any_in_type (typ : TypeDecl.t) name =
     | _ :: tl -> find_field tl
     | [] -> None
   in
+  let rec find_poly = function
+    | TypeExpr.Polymorphic_variant.Constructor
+        ({ TypeExpr.Polymorphic_variant.Constructor.name = name'; _ } as cons)
+      :: _
+      when name' = name || name = "`" ^ name' ->
+        Some (`FPoly cons)
+    | _ :: tl -> find_poly tl
+    | [] -> None
+  in
   match typ.representation with
   | Some (Variant cons) -> find_cons cons
   | Some (Record fields) -> find_field fields
-  | Some Extensible | None -> None
+  | Some Extensible -> None
+  | None -> (
+      match typ.equation.manifest with
+      | Some (Polymorphic_variant pv) -> find_poly pv.elements
+      | Some _ | None -> None)
 
 let any_in_typext (typext : Extension.t) name =
   let rec inner = function

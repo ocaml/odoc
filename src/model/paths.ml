@@ -982,6 +982,11 @@ module Reference = struct
         | `Class _ | `ClassType _ | `ModuleType _ ) as r ->
           (label_parent_identifier r :> Identifier.t)
       | `Field (p, n) -> Identifier.Mk.field (field_parent_identifier p, n)
+      | `PolyConstructor (s, n) ->
+          (* Uses an identifier for constructor even though it is not
+             one. Document must make the links correspond. *)
+          Identifier.Mk.constructor
+            ((parent_type_identifier s :> Identifier.DataType.t), n)
       | `Constructor (s, n) ->
           Identifier.Mk.constructor
             ((parent_type_identifier s :> Identifier.DataType.t), n)

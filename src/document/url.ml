@@ -272,6 +272,11 @@ module Anchor = struct
     let page = Path.from_identifier parent in
     Ok { page; anchor = str_name; kind }
 
+  (* This is needed to ensure that references to polymorphic constructors have
+     links that use the right suffix: those resolved references are turned into
+     _constructor_ identifiers. *)
+  let suffix_for_constructor x = x
+
   let rec from_identifier : Identifier.t -> (t, Error.t) result =
     let open Error in
     function
@@ -371,7 +376,7 @@ module Anchor = struct
     | { iv = `Constructor (parent, name); _ } ->
         from_identifier (parent :> Identifier.t) >>= fun page ->
         let kind = `Constructor in
-        let suffix = ConstructorName.to_string name in
+        let suffix = suffix_for_constructor (ConstructorName.to_string name) in
         Ok (add_suffix ~kind page suffix)
     | { iv = `Field (parent, name); _ } ->
         from_identifier (parent :> Identifier.t) >>= fun page ->
@@ -424,7 +429,7 @@ module Anchor = struct
             add_suffix ~kind url suffix
         | Constructor { name; _ } ->
             let kind = `Constructor in
-            let suffix = name in
+            let suffix = suffix_for_constructor name in
             add_suffix ~kind url suffix)
 
   (** The anchor looks like
