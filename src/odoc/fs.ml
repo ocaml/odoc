@@ -94,6 +94,17 @@ module File = struct
 
   let exists file = Sys.file_exists (Fpath.to_string file)
 
+  let rec of_segs_tl acc = function
+    | [] -> acc
+    | hd :: tl -> of_segs_tl (Fpath.( / ) acc hd) tl
+
+  let of_segs = function
+    | [] -> invalid_arg "Fs.File.of_segs"
+    | "" :: rest -> of_segs_tl (Fpath.v "/") rest
+    | first :: rest -> of_segs_tl (Fpath.v first) rest
+
+  let append_segs path segs = of_segs_tl path segs
+
   module Table = Hashtbl.Make (struct
     type nonrec t = t
 
@@ -127,6 +138,8 @@ module Directory = struct
           invalid_arg "Odoc.Fs.Directory.create: not a directory";
         path
 
+  let contains ~parentdir f = Fpath.is_prefix parentdir f
+
   let mkdir_p dir =
     let mkdir d =
       try Unix.mkdir (Fpath.to_string d) 0o755 with
@@ -147,6 +160,8 @@ module Directory = struct
     match Fpath.of_string s with
     | Result.Error (`Msg e) -> invalid_arg ("Odoc.Fs.Directory.of_string: " ^ e)
     | Result.Ok p -> Fpath.to_dir_path p
+
+  let of_file f = Fpath.to_dir_path f
 
   let fold_files_rec ?(ext = "") f acc d =
     let fold_non_dirs ext f acc files =

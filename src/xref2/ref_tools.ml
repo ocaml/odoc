@@ -25,10 +25,11 @@ type type_lookup_result =
   | `C of class_lookup_result
   | `CT of class_type_lookup_result ]
 
+type page_path_lookup_result =
+  [ `S of signature_lookup_result | `P of page_lookup_result ]
+
 type label_parent_lookup_result =
-  [ `S of signature_lookup_result
-  | type_lookup_result
-  | `P of page_lookup_result ]
+  [ type_lookup_result | page_path_lookup_result ]
 
 type fragment_type_parent_lookup_result =
   [ `S of signature_lookup_result | `T of datatype_lookup_result ]
@@ -173,6 +174,37 @@ let type_lookup_to_class_signature_lookup =
         Tools.class_signature_of_class_type env ct
         |> of_option ~error:(`Parent (`Parent_type `OpaqueClass))
         >>= resolved p'
+
+module Page_path = struct
+  let rec unpack_page_path acc = function
+    | `Root (root, tag) -> (tag, root :: acc)
+    | `Slash (parent, seg) -> unpack_page_path (seg :: acc) parent
+
+  (* let first_seg (`Root (s, _) | `Slash (_, s)) = s *)
+
+  let handle_lookup_errors ~tag ~path = function
+    | Env.Path_unit u -> Ok (`Unit u)
+    | Path_page p -> Ok (`Page p)
+    | Path_directory -> Error (`Path_error (`Is_directory, tag, path))
+    | Path_not_found -> Error (`Path_error (`Not_found, tag, path))
+
+  let expect_page ~tag ~path = function
+    | `Unit _ -> Error (`Path_error (`Wrong_kind ([ `Page ], `Unit), tag, path))
+    | `Page p -> Ok p
+
+  let page_in_env env page_path : page_lookup_result ref_result =
+    let tag, path = unpack_page_path [] page_path in
+    handle_lookup_errors ~tag ~path (Env.lookup_path (`Page, tag, path) env)
+    >>= expect_page ~tag ~path
+    >>= fun p -> Ok (`Identifier p.name, p)
+
+  let any_in_env env page_path : page_path_lookup_result ref_result =
+    (* TODO: Resolve modules *)
+    page_in_env env page_path >>= fun r -> Ok (`P r)
+
+  let module_in_env _env _page_path : signature_lookup_result ref_result =
+    Error (`Wrong_kind ([ `S ], `Page_path))
+end
 
 module M = struct
   (** Module *)
@@ -618,7 +650,7 @@ module LP = struct
         Ok (`CT ct)
 end
 
-let rec resolve_label_parent_reference env r =
+let rec resolve_label_parent_reference env (r : LabelParent.t) =
   let label_parent_res_of_type_res : type_lookup_result -> _ =
    fun r -> Ok (r :> label_parent_lookup_result)
   in
@@ -653,6 +685,9 @@ let rec resolve_label_parent_reference env r =
   | `Root (name, `TChildModule) ->
       resolve_signature_reference env (`Root (name, `TModule)) >>= fun s ->
       Ok (`S s)
+  | `Page_path page_path ->
+      Page_path.any_in_env env page_path >>= fun r ->
+      Ok (r :> label_parent_lookup_result)
 
 and resolve_fragment_type_parent_reference (env : Env.t)
     (r : FragmentTypeParent.t) : (fragment_type_parent_lookup_result, _) result
@@ -718,6 +753,7 @@ and resolve_signature_reference :
               (MT.of_component env mt
                  (`ModuleType (parent_cp, name))
                  (`ModuleType (parent, name))))
+    | `Page_path page_path -> Page_path.module_in_env env page_path
   in
   resolve env'
 
@@ -755,6 +791,10 @@ let resolved_type_lookup = function
   | `T (r, _) -> resolved1 r
   | `C (r, _) -> resolved1 r
   | `CT (r, _) -> resolved1 r
+
+let resolved_page_path_lookup = function
+  | `S (r, _, _) -> resolved1 r
+  | `P (r, _) -> resolved1 r
 
 let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   let parent_path = Tools.reresolve_parent env parent_path in
@@ -810,7 +850,7 @@ let resolve_reference_dot env parent name =
   | `P _ as page -> resolve_reference_dot_page env page name
 
 (** Warnings may be generated with [Error.implicit_warning] *)
-let resolve_reference =
+let resolve_reference : _ -> Reference.t -> _ =
   let resolved = resolved3 in
   fun env r ->
     match r with
@@ -897,6 +937,8 @@ let resolve_reference =
     | `InstanceVariable (parent, name) ->
         resolve_class_signature_reference env parent >>= fun p ->
         MV.in_class_signature env p name >>= resolved1
+    | `Page_path page_path ->
+        Page_path.any_in_env env page_path >>= resolved_page_path_lookup
 
 let resolve_module_reference env m =
   Odoc_model.Error.catch_warnings (fun () -> resolve_module_reference env m)

@@ -36,9 +36,9 @@ open Or_error
 module Named_roots : sig
   type t
 
-  type error = NoPackage
+  type error = NoPackage | NoRoot
 
-  val create : (string * Fs.Directory.t) list -> current_root:string -> t
+  val create : (string * Fs.Directory.t) list -> current_root:string option -> t
 
   val find_by_path :
     ?root:string -> t -> path:Fs.File.t -> (Fs.File.t option, error) result
@@ -54,9 +54,9 @@ end = struct
 
   type pkg = { flat : flat; hierarchical : hierarchical }
 
-  type t = { table : (string, pkg) Hashtbl.t; current_root : string }
+  type t = { table : (string, pkg) Hashtbl.t; current_root : string option }
 
-  type error = NoPackage
+  type error = NoPackage | NoRoot
 
   let hashtbl_find_opt cache package =
     match Hashtbl.find cache package with
@@ -75,18 +75,23 @@ end = struct
 
   let find_by_path ?root { table = cache; current_root } ~path =
     let path = Fpath.normalize path in
-    let root = match root with None -> current_root | Some pkg -> pkg in
-    match hashtbl_find_opt cache root with
-    | Some { hierarchical = cache, root; _ } -> (
-        match hashtbl_find_opt cache path with
-        | Some x -> Ok (Some x)
-        | None ->
-            let full_path = Fpath.( // ) (Fs.Directory.to_fpath root) path in
-            if Fs.File.exists full_path then (
-              Hashtbl.add cache path full_path;
-              Ok (Some full_path))
-            else Ok None)
-    | None -> Error NoPackage
+    let root = match root with None -> current_root | Some _ as pkg -> pkg in
+    match root with
+    | Some root -> (
+        match hashtbl_find_opt cache root with
+        | Some { hierarchical = cache, root; _ } -> (
+            match hashtbl_find_opt cache path with
+            | Some x -> Ok (Some x)
+            | None ->
+                let full_path =
+                  Fpath.( // ) (Fs.Directory.to_fpath root) path
+                in
+                if Fs.File.exists full_path then (
+                  Hashtbl.add cache path full_path;
+                  Ok (Some full_path))
+                else Ok None)
+        | None -> Error NoPackage)
+    | None -> Error NoRoot
 
   let populate_flat_namespace ~root =
     let flat_namespace = Hashtbl.create 42 in
@@ -105,14 +110,19 @@ end = struct
     flat_namespace
 
   let find_by_name ?root { table = cache; current_root } ~name =
-    let package = match root with None -> current_root | Some pkg -> pkg in
-    match hashtbl_find_opt cache package with
-    | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
-    | Some ({ flat = Unvisited root; _ } as p) ->
-        let flat = populate_flat_namespace ~root in
-        Hashtbl.replace cache package { p with flat = Visited flat };
-        Ok (Hashtbl.find_all flat name)
-    | None -> Error NoPackage
+    let package =
+      match root with None -> current_root | Some _ as pkg -> pkg
+    in
+    match package with
+    | Some package -> (
+        match hashtbl_find_opt cache package with
+        | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
+        | Some ({ flat = Unvisited root; _ } as p) ->
+            let flat = populate_flat_namespace ~root in
+            Hashtbl.replace cache package { p with flat = Visited flat };
+            Ok (Hashtbl.find_all flat name)
+        | None -> Error NoPackage)
+    | None -> Error NoRoot
 end
 
 let () = (ignore Named_roots.find_by_name [@warning "-5"])
@@ -153,6 +163,32 @@ end = struct
     Hashtbl.find_all t name
 end
 
+module Hierarchy : sig
+  (** Represent a file hierarchy and allow file path manipulations that do not
+      escape it. *)
+
+  type t
+
+  type error = [ `Escape_hierarchy ]
+
+  val make : current_package:Fs.Directory.t -> current_dir:Fs.Directory.t -> t
+
+  val resolve_relative : t -> Fs.File.t -> (Fs.File.t, error) result
+  (** [resolve_relative h relpath] resolve [relpath] relatively to the current
+      directory, making sure not to escape the hierarchy. *)
+end = struct
+  type t = { current_package : Fs.Directory.t; current_dir : Fs.Directory.t }
+
+  type error = [ `Escape_hierarchy ]
+
+  let make ~current_package ~current_dir = { current_package; current_dir }
+
+  let resolve_relative t relpath =
+    let path = Fpath.normalize (Fs.File.append t.current_dir relpath) in
+    if Fs.Directory.contains ~parentdir:t.current_package path then Ok path
+    else Error `Escape_hierarchy
+end
+
 module StringMap = Map.Make (String)
 
 let build_imports_map imports =
@@ -175,16 +211,19 @@ let unit_name
   root_name root
 
 (** TODO: Propagate warnings instead of printing. *)
+let load_unit_from_file path =
+  match Odoc_file.load path with
+  | Ok u -> Some u.content
+  | Error (`Msg msg) ->
+      let warning =
+        Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string path)
+      in
+      prerr_endline (Odoc_model.Error.to_string warning);
+      None
+
 let load_units_from_files paths =
   let safe_read file acc =
-    match Odoc_file.load file with
-    | Ok u -> u.content :: acc
-    | Error (`Msg msg) ->
-        let warning =
-          Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string file)
-        in
-        prerr_endline (Odoc_model.Error.to_string warning);
-        acc
+    match load_unit_from_file file with Some u -> u :: acc | None -> acc
   in
   List.fold_right safe_read paths []
 
@@ -342,7 +381,8 @@ let lookup_page ~pages ap target_name =
               Format.eprintf "%s\n"
               @@ "Error during find by path: no package was found with this \
                   name";
-              None)
+              None
+          | Error NoRoot -> None)
       | _ -> failwith "Relative references (a/b, ../a/b) are not yet tested")
   | _ -> (
       let target_name = "page-" ^ target_name in
@@ -378,52 +418,125 @@ let add_unit_to_cache u =
   in
   Hashtbl.add unit_cache target_name [ u ]
 
+let lookup_path _ap ~pages ~libs:_ ~hierarchy (kind, tag, path) =
+  let module Env = Odoc_xref2.Env in
+  let ( >>= ) x f = match x with Some x' -> f x' | None -> None in
+  let page_path_to_path path =
+    (* Turn [foo/bar] into [foo/page-bar.odoc]. *)
+    let segs =
+      match List.rev path with
+      | [] -> []
+      | name :: rest -> List.rev (("page-" ^ name ^ ".odoc") :: rest)
+    in
+    Fs.File.of_segs segs
+  in
+  let find_by_path ?root named_roots path =
+    match Named_roots.find_by_path ?root named_roots ~path with
+    | Ok x -> x
+    | Error (NoPackage | NoRoot) -> None
+  in
+  let load_page path =
+    match load_unit_from_file path with
+    | Some (Odoc_file.Page_content page) -> Env.Path_page page
+    | _ -> Env.Path_not_found
+  in
+  let find_page ?root path =
+    (pages >>= fun pages -> find_by_path ?root pages path) |> function
+    | Some path -> load_page path
+    | None -> Env.Path_not_found
+  in
+  let find_page_in_hierarchy path =
+    match hierarchy with
+    | Some hierarchy -> (
+        match Hierarchy.resolve_relative hierarchy path with
+        | Ok path -> load_page path
+        | Error `Escape_hierarchy ->
+            Env.Path_not_found (* TODO: propagate more information *))
+    | None -> Env.Path_not_found
+  in
+  match (kind, tag) with
+  | `Page, `TCurrentPackage ->
+      (* [path] is within the current package root. *)
+      find_page (page_path_to_path path)
+  | `Page, `TAbsolutePath -> (
+      match path with
+      | root :: path -> find_page ~root (page_path_to_path path)
+      | [] -> Env.Path_not_found)
+  | `Page, `TRelativePath -> find_page_in_hierarchy (page_path_to_path path)
+  | _ -> Env.Path_not_found
+
 type t = {
   important_digests : bool;
   ap : Accessible_paths.t;
   pages : Named_roots.t option;
   libs : Named_roots.t option;
   open_modules : string list;
+  hierarchy : Hierarchy.t option;
 }
 
 type roots = {
   page_roots : (string * Fs.Directory.t) list;
   lib_roots : (string * Fs.Directory.t) list;
-  current_root : string;
+  current_lib : string option;
+  current_package : string option;
+  current_dir : Fs.Directory.t;
 }
 
 let create ~important_digests ~directories ~open_modules ~roots =
   let ap = Accessible_paths.create ~directories in
-  let pages, libs =
+  let pages, libs, hierarchy =
     match roots with
-    | None -> (None, None)
-    | Some { page_roots; lib_roots; current_root } ->
-        ( Some (Named_roots.create ~current_root page_roots),
-          Some (Named_roots.create ~current_root lib_roots) )
+    | None -> (None, None, None)
+    | Some { page_roots; lib_roots; current_lib; current_package; current_dir }
+      ->
+        let pages = Named_roots.create ~current_root:current_package page_roots
+        and libs = Named_roots.create ~current_root:current_lib lib_roots in
+        let hierarchy =
+          match Named_roots.find_by_path pages ~path:(Fpath.v ".") with
+          | Ok (Some current_package) ->
+              let current_package = Fs.Directory.of_file current_package in
+              Some (Hierarchy.make ~current_package ~current_dir)
+          | Ok None | Error _ -> None
+        in
+        (Some pages, Some libs, hierarchy)
   in
-  { important_digests; ap; open_modules; pages; libs }
+  { important_digests; ap; open_modules; pages; libs; hierarchy }
 
 (** Helpers for creating xref2 env. *)
 
 open Odoc_xref2
 
 let build_compile_env_for_unit
-    { important_digests; ap; open_modules = open_units; pages; libs } m =
+    {
+      important_digests;
+      ap;
+      open_modules = open_units;
+      pages;
+      libs;
+      hierarchy = _;
+    } m =
   add_unit_to_cache (Odoc_file.Unit_content m);
   let imports_map = build_imports_map m.imports in
   let lookup_unit = lookup_unit ~important_digests ~imports_map ~libs ap
   and lookup_page = lookup_page ~pages ap
-  and lookup_impl = lookup_impl ap in
-  let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_impl } in
+  and lookup_impl = lookup_impl ap
+  (* Do not implement [lookup_path] in compile mode, as that might return
+     different results depending on the compilation order. *)
+  and lookup_path _ = Env.Path_not_found in
+  let resolver =
+    { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_path }
+  in
   Env.env_of_unit m ~linking:false resolver
 
 (** [important_digests] and [imports_map] only apply to modules. *)
 let build ?(imports_map = StringMap.empty)
-    { important_digests; ap; open_modules = open_units; pages; libs } =
+    { important_digests; ap; open_modules = open_units; pages; libs; hierarchy }
+    =
   let lookup_unit = lookup_unit ~libs ~important_digests ~imports_map ap
   and lookup_page = lookup_page ~pages ap
-  and lookup_impl = lookup_impl ap in
-  { Env.open_units; lookup_unit; lookup_page; lookup_impl }
+  and lookup_impl = lookup_impl ap
+  and lookup_path = lookup_path ap ~pages ~libs ~hierarchy in
+  { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_path }
 
 let build_compile_env_for_impl t i =
   let imports_map =
