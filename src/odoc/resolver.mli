@@ -24,8 +24,10 @@ type t
 type roots = {
   page_roots : (string * Fs.Directory.t) list;
   lib_roots : (string * Fs.Directory.t) list;
-  current_lib : string option;
-  current_package : string option;
+  current_lib : string option;  (** Name of the current [-L]. *)
+  current_package : string option;  (** Name of the current [-P]. *)
+  current_dir : Fs.Directory.t;
+      (** Directory containing the output for the current unit. *)
 }
 
 val create :
