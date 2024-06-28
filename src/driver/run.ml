@@ -25,6 +25,7 @@ let commands = ref []
 (** Return the list of executed commands where the first argument was [cmd]. *)
 let run env cmd output_file =
   let cmd = Bos.Cmd.to_list cmd in
+  Logs.debug (fun m -> m "Executing: %s" (String.concat " " cmd));
   let proc_mgr = Eio.Stdenv.process_mgr env in
   let t_start = Unix.gettimeofday () in
   let env =
@@ -60,7 +61,7 @@ let filter_commands cmd =
       (fun c -> match c.cmd with _ :: cmd' :: _ -> cmd = cmd' | _ -> false)
       !commands
   with
-  | [] -> failwith ("No commands run for " ^ cmd)
+  | [] -> []
   | _ :: _ as cmds -> cmds
 
 let print_cmd c =

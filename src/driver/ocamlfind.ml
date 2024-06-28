@@ -6,6 +6,10 @@ let init () =
 
 let () = init ()
 
+let all () =
+  Fl_package_base.list_packages ()
+
+
 let get_dir lib =
   try
     Fl_package_base.query lib |> fun x ->

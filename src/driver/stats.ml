@@ -78,38 +78,41 @@ let rec compute_min_max_avg min_ max_ total count = function
         tl
 
 let compute_min_max_avg = function
-  | [] -> assert false
-  | hd :: tl -> compute_min_max_avg hd hd hd 1 tl
+  | [] -> None
+  | hd :: tl -> Some (compute_min_max_avg hd hd hd 1 tl)
 
 let compute_metric_int prefix suffix description values =
-  let min, max, avg, count = compute_min_max_avg values in
-  let min = int_of_float min in
-  let max = int_of_float max in
-  let avg = int_of_float avg in
-  [
-    `Assoc
-      [
-        ("name", `String (prefix ^ "-total-" ^ suffix));
-        ("value", `Int count);
-        ("description", `String ("Number of " ^ description));
-      ];
-    `Assoc
-      [
-        ("name", `String (prefix ^ "-size-" ^ suffix));
-        ( "value",
-          `Assoc [ ("min", `Int min); ("max", `Int max); ("avg", `Int avg) ] );
-        ("units", `String "b");
-        ("description", `String ("Size of " ^ description));
-        ("trend", `String "lower-is-better");
-      ];
-  ]
+  match compute_min_max_avg values with
+  | None -> []
+  | Some (min, max, avg, count) ->
+    let min = int_of_float min in
+    let max = int_of_float max in
+    let avg = int_of_float avg in
+    [
+      `Assoc
+        [
+          ("name", `String (prefix ^ "-total-" ^ suffix));
+          ("value", `Int count);
+          ("description", `String ("Number of " ^ description));
+        ];
+      `Assoc
+        [
+          ("name", `String (prefix ^ "-size-" ^ suffix));
+          ( "value",
+            `Assoc [ ("min", `Int min); ("max", `Int max); ("avg", `Int avg) ] );
+          ("units", `String "b");
+          ("description", `String ("Size of " ^ description));
+          ("trend", `String "lower-is-better");
+        ];
+    ]
 
 let compute_metric_cmd cmd =
   let open Run in
   let cmds = filter_commands cmd in
   let times = List.map (fun c -> c.Run.time) cmds in
-  let min, max, avg, count = compute_min_max_avg times in
-  [
+  match compute_min_max_avg times with
+  | None -> []
+  | Some (min, max, avg, count) -> [
     `Assoc
       [
         ("name", `String ("total-" ^ cmd));
@@ -159,7 +162,9 @@ let compute_longest_cmd cmd =
   let k = 5 in
   let cmds = k_longest_commands cmd k in
   let times = List.map (fun c -> c.Run.time) cmds in
-  let min, max, avg, _count = compute_min_max_avg times in
+  match compute_min_max_avg times with
+  | None -> []
+  | Some (min, max, avg, _count) ->
   [
     `Assoc
       [
