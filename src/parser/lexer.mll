@@ -425,7 +425,7 @@ and token input = parse
         emit ~start_offset input (`Code_block (Some (lang_tag, None), delim, empty_content, false))
       in
       (* Disallow result block sections for code blocks without a delimiter.
-         This avoids the surprising parsing ']['. *)
+         This avoids the surprising parsing of '][' ending the code block. *)
       let allow_result_block = delim <> "" in
       let code_block_with_metadata metadata =
         let content_offset = Lexing.lexeme_end lexbuf in
