@@ -9,7 +9,8 @@ module Tools_error = struct
       [ `Module of Cpath.module_ ]
       (* Failed to resolve a module path when applying a fragment item *) ]
 
-  type reference_kind = [ `S | `T | `C | `CT | `Page | `Cons | `Field | `Label ]
+  type reference_kind =
+    [ `S | `T | `C | `CT | `Page | `Cons | `Field | `Label | `Page_path ]
 
   type expansion_of_module_error =
     [ `OpaqueModule (* The module does not have an expansion *)
@@ -125,6 +126,7 @@ module Tools_error = struct
       | `Cons -> "constructor"
       | `Field -> "field"
       | `Label -> "label"
+      | `Page_path -> "page path"
     in
     Format.pp_print_string fmt k
 

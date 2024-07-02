@@ -25,10 +25,11 @@ type type_lookup_result =
   | `C of class_lookup_result
   | `CT of class_type_lookup_result ]
 
+type page_path_lookup_result =
+  [ `S of signature_lookup_result | `P of page_lookup_result ]
+
 type label_parent_lookup_result =
-  [ `S of signature_lookup_result
-  | type_lookup_result
-  | `P of page_lookup_result ]
+  [ type_lookup_result | page_path_lookup_result ]
 
 type fragment_type_parent_lookup_result =
   [ `S of signature_lookup_result | `T of datatype_lookup_result ]
@@ -161,6 +162,10 @@ let module_type_lookup_to_signature_lookup env (ref, cp, m) =
   >>= Tools.assert_not_functor
   >>= fun sg -> Ok ((ref :> Resolved.Signature.t), `ModuleType cp, sg)
 
+let page_path_lookup_to_signature_lookup = function
+  | `S r -> Ok r
+  | `P _ as r -> wrong_kind_error [ `S ] r
+
 let type_lookup_to_class_signature_lookup =
   let resolved p' cs = Ok ((p' :> Resolved.ClassSignature.t), cs) in
   fun env -> function
@@ -173,6 +178,14 @@ let type_lookup_to_class_signature_lookup =
         Tools.class_signature_of_class_type env ct
         |> of_option ~error:(`Parent (`Parent_type `OpaqueClass))
         >>= resolved p'
+
+module Page_path = struct
+  type t = page_path_lookup_result
+
+  let in_env _env _page_path : t ref_result =
+    (* Not implemented *)
+    Error (`Wrong_kind ([ `S; `Page ], `Page_path))
+end
 
 module M = struct
   (** Module *)
@@ -618,7 +631,7 @@ module LP = struct
         Ok (`CT ct)
 end
 
-let rec resolve_label_parent_reference env r =
+let rec resolve_label_parent_reference env (r : LabelParent.t) =
   let label_parent_res_of_type_res : type_lookup_result -> _ =
    fun r -> Ok (r :> label_parent_lookup_result)
   in
@@ -653,6 +666,9 @@ let rec resolve_label_parent_reference env r =
   | `Root (name, `TChildModule) ->
       resolve_signature_reference env (`Root (name, `TModule)) >>= fun s ->
       Ok (`S s)
+  | `Page_path page_path ->
+      Page_path.in_env env page_path >>= fun r ->
+      Ok (r :> label_parent_lookup_result)
 
 and resolve_fragment_type_parent_reference (env : Env.t)
     (r : FragmentTypeParent.t) : (fragment_type_parent_lookup_result, _) result
@@ -718,6 +734,8 @@ and resolve_signature_reference :
               (MT.of_component env mt
                  (`ModuleType (parent_cp, name))
                  (`ModuleType (parent, name))))
+    | `Page_path page_path ->
+        Page_path.in_env env page_path >>= page_path_lookup_to_signature_lookup
   in
   resolve env'
 
@@ -755,6 +773,10 @@ let resolved_type_lookup = function
   | `T (r, _) -> resolved1 r
   | `C (r, _) -> resolved1 r
   | `CT (r, _) -> resolved1 r
+
+let resolved_page_path_lookup = function
+  | `S (r, _, _) -> resolved1 r
+  | `P (r, _) -> resolved1 r
 
 let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   let parent_path = Tools.reresolve_parent env parent_path in
@@ -810,7 +832,7 @@ let resolve_reference_dot env parent name =
   | `P _ as page -> resolve_reference_dot_page env page name
 
 (** Warnings may be generated with [Error.implicit_warning] *)
-let resolve_reference =
+let resolve_reference : _ -> Reference.t -> _ =
   let resolved = resolved3 in
   fun env r ->
     match r with
@@ -897,6 +919,8 @@ let resolve_reference =
     | `InstanceVariable (parent, name) ->
         resolve_class_signature_reference env parent >>= fun p ->
         MV.in_class_signature env p name >>= resolved1
+    | `Page_path page_path ->
+        Page_path.in_env env page_path >>= resolved_page_path_lookup
 
 let resolve_module_reference env m =
   Odoc_model.Error.catch_warnings (fun () -> resolve_module_reference env m)
