@@ -34,11 +34,11 @@ jobs:
 
     steps:
       # Clone the project
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Setup
-      - name: Setup OCaml ${{ matrix.ocaml-version }}
-        uses: ocaml/setup-ocaml@v2
+      - name: Setup OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
         with:
           # Do not pin odoc to not break Mdx installation
           opam-pin: false
