@@ -542,6 +542,18 @@ module rec Page : sig
 end =
   Page
 
+module rec Sidebar : sig
+  type library = { name : string; units : Paths.Identifier.RootModule.t list }
+
+  type pages = {
+    page_name : string;
+    pages : (Comment.link_content * Paths.Identifier.Page.t) list;
+  }
+
+  type t = { pages : pages list; libraries : library list }
+end =
+  Sidebar
+
 module rec SourceTree : sig
   type t = {
     name : Identifier.Page.t;

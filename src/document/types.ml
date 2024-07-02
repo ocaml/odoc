@@ -174,6 +174,7 @@ and Page : sig
   type t = {
     preamble : Item.t list;
     items : Item.t list;
+    sidebar : Block.t option;
     url : Url.Path.t;
     source_anchor : Url.t option;
         (** Url to the corresponding source code. Might be a whole source file

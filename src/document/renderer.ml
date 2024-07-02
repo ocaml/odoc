@@ -27,8 +27,10 @@ type 'a t = {
   extra_documents : 'a -> input -> Types.Document.t list;
 }
 
-let document_of_page ~syntax v =
-  match syntax with Reason -> Reason.page v | OCaml -> ML.page v
+let document_of_page ~syntax ?sidebar v =
+  match syntax with
+  | Reason -> Reason.page ?sidebar v
+  | OCaml -> ML.page ?sidebar v
 
 let documents_of_source_tree ~syntax v =
   match syntax with Reason -> Reason.source_tree v | OCaml -> ML.source_tree v
@@ -38,7 +40,7 @@ let documents_of_implementation ~syntax v =
   | Reason -> Reason.implementation v
   | OCaml -> ML.implementation v
 
-let document_of_compilation_unit ~syntax v =
+let document_of_compilation_unit ~syntax ?sidebar v =
   match syntax with
-  | Reason -> Reason.compilation_unit v
-  | OCaml -> ML.compilation_unit v
+  | Reason -> Reason.compilation_unit ?sidebar v
+  | OCaml -> ML.compilation_unit ?sidebar v

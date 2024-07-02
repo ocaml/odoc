@@ -28,6 +28,7 @@ val generate_odoc :
   output:Fs.directory ->
   extra_suffix:string option ->
   source:source option ->
+  sidebar:Fpath.t option ->
   'a ->
   Fpath.t ->
   (unit, [> msg ]) result

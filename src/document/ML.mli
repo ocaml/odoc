@@ -16,9 +16,10 @@
 
 open Odoc_model
 
-val compilation_unit : Lang.Compilation_unit.t -> Types.Document.t
+val compilation_unit :
+  ?sidebar:Lang.Sidebar.t -> Lang.Compilation_unit.t -> Types.Document.t
 
-val page : Lang.Page.t -> Types.Document.t
+val page : ?sidebar:Lang.Sidebar.t -> Lang.Page.t -> Types.Document.t
 (** Convert compilation unit or page models into a document *)
 
 val source_tree : Lang.SourceTree.t -> Types.Document.t list

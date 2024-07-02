@@ -23,21 +23,22 @@ let check_empty_source_arg source filename =
          filename
 
 let documents_of_unit ~warnings_options ~syntax ~source ~renderer ~extra
-    ~filename unit =
+    ~filename ?sidebar unit =
   Error.catch_warnings (fun () ->
       check_empty_source_arg source filename;
       renderer.Renderer.extra_documents extra (CU unit))
   |> Error.handle_warnings ~warnings_options
   >>= fun extra_docs ->
-  Ok (Renderer.document_of_compilation_unit ~syntax unit :: extra_docs)
+  Ok (Renderer.document_of_compilation_unit ?sidebar ~syntax unit :: extra_docs)
 
 let documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
-    ~filename page =
+    ~filename ?sidebar page =
   Error.catch_warnings (fun () ->
       check_empty_source_arg source filename;
       renderer.Renderer.extra_documents extra (Page page))
   |> Error.handle_warnings ~warnings_options
-  >>= fun extra_docs -> Ok (Renderer.document_of_page ~syntax page :: extra_docs)
+  >>= fun extra_docs ->
+  Ok (Renderer.document_of_page ~syntax ?sidebar page :: extra_docs)
 
 let documents_of_implementation ~warnings_options:_ ~syntax impl source =
   match (source, impl.Lang.Implementation.id) with
@@ -82,22 +83,23 @@ let documents_of_source_tree ~warnings_options ~syntax ~source ~filename srctree
   |> Error.handle_warnings ~warnings_options
   >>= fun () -> Ok (Renderer.documents_of_source_tree ~syntax srctree)
 
-let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax input
-    =
+let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax
+    ?sidebar input =
   Odoc_file.load input >>= fun unit ->
   let filename = Fpath.to_string input in
   match unit.content with
   | Odoc_file.Page_content odoctree ->
       documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
-        ~filename odoctree
+        ~filename ?sidebar odoctree
   | Source_tree_content srctree ->
       documents_of_source_tree ~warnings_options ~syntax ~source ~filename
         srctree
   | Impl_content impl ->
-      documents_of_implementation ~warnings_options ~syntax impl source
+      documents_of_implementation ~warnings_options ~syntax (* ?sidebar *) impl
+        source
   | Unit_content odoctree ->
       documents_of_unit ~warnings_options ~source ~syntax ~renderer ~extra
-        ~filename odoctree
+        ~filename ?sidebar odoctree
 
 let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
     input =
@@ -135,8 +137,12 @@ let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
   Ok ()
 
 let generate_odoc ~syntax ~warnings_options ~renderer ~output ~extra_suffix
-    ~source extra file =
-  documents_of_odocl ~warnings_options ~renderer ~source ~extra ~syntax file
+    ~source ~sidebar extra file =
+  let sidebar =
+    match sidebar with None -> None | Some x -> Some (Sidebar.read x)
+  in
+  documents_of_odocl ~warnings_options ~renderer ~source ~extra ~syntax ?sidebar
+    file
   >>= fun docs ->
   List.iter (render_document renderer ~output ~extra_suffix ~extra) docs;
   Ok ()

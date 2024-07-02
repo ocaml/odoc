@@ -1,22 +1,9 @@
-
-  $ mkdir _odoc
- $ odoc compile --output-dir _odoc/ --parent-id pkg/doc/dir1 my_page.mld
- $ odoc compile --output-dir _odoc/ --parent-id pkg/doc file.mld
- $ odoc compile --output-dir _odoc/ --parent-id pkg/lib/libname unit.cmt
-
- $ tree _odoc
-
- $ odoc link _odoc/pkg/doc/page-file.odoc 2>&1 >/dev/null | grep 'Failure'
- [1]
- $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/doc/page-file.odoc
- $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/doc/dir1/page-my_page.odoc
- $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/lib/libname/unit.odoc
-
-
   $ ocamlc -c -bin-annot unit.ml
 
-  $ odoc compile --output-dir _odoc/ --parent-id pkg/doc/dir1 my_page.mld
+  $ odoc compile --output-dir _odoc/ --parent-id pkg/doc/dir1 dir1/my_page.mld
+  $ odoc compile --output-dir _odoc/ --parent-id pkg/doc/dir1 dir1/index.mld
   $ odoc compile --output-dir _odoc/ --parent-id pkg/doc file.mld
+  $ odoc compile --output-dir _odoc/ --parent-id pkg/doc index.mld
   $ odoc compile --output-dir _odoc/ --parent-id pkg/lib/libname unit.cmt
 
   $ odoc link _odoc/pkg/doc/page-file.odoc 2>&1 >/dev/null | grep 'Failure'

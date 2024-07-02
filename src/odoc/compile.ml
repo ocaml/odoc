@@ -233,11 +233,12 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
      | None -> Ok (Paths.Identifier.Mk.page (parent_id, page_name)))
      >>= fun id -> Ok (id :> Paths.Identifier.Page.t))
   >>= fun name ->
-  let root =
-    let file = Root.Odoc_file.create_page root_name in
-    { Root.id = (name :> Paths.Identifier.OdocId.t); file; digest }
-  in
   let resolve content =
+    let zero_heading = Comment.find_zero_heading content in
+    let root =
+      let file = Root.Odoc_file.create_page root_name zero_heading in
+      { Root.id = (name :> Paths.Identifier.OdocId.t); file; digest }
+    in
     let page =
       Lang.Page.{ name; root; children; content; digest; linked = false }
     in

@@ -16,16 +16,17 @@ type compiled = {
   include_dirs : Fpath.Set.t;
   impl : impl option;
   pkg_args : pkg_args;
+  package_name : string;
 }
 
 let mk_byhash (pkgs : Packages.t Util.StringMap.t) =
   Util.StringMap.fold
-    (fun _pkg_name pkg acc ->
+    (fun pkgname pkg acc ->
       List.fold_left
         (fun acc (lib : Packages.libty) ->
           List.fold_left
             (fun acc (m : Packages.modulety) ->
-              Util.StringMap.add m.m_intf.mif_hash m acc)
+              Util.StringMap.add m.m_intf.mif_hash (pkgname, m) acc)
             acc lib.modules)
         acc pkg.Packages.libraries)
     pkgs Util.StringMap.empty
@@ -94,7 +95,7 @@ let compile output_dir all =
     | None ->
         Logs.debug (fun m -> m "Error locating hash: %s" hash);
         Error Not_found
-    | Some modty ->
+    | Some (package_name, modty) ->
         let deps = modty.m_intf.mif_deps in
         let output_file = Fpath.(output_dir // modty.m_intf.mif_odoc_file) in
         let fibers =
@@ -145,6 +146,7 @@ let compile output_dir all =
             include_dirs = includes;
             impl;
             pkg_args;
+            package_name;
           }
   in
 
@@ -165,7 +167,7 @@ let compile output_dir all =
     List.filter_map (function Ok x -> Some x | Error _ -> None) mod_results
   in
   Util.StringMap.fold
-    (fun _ (pkg : Packages.t) acc ->
+    (fun package_name (pkg : Packages.t) acc ->
       Logs.debug (fun m ->
           m "Package %s mlds: [%a]" pkg.name
             Fmt.(list ~sep:sp Packages.pp_mld)
@@ -189,12 +191,17 @@ let compile output_dir all =
             include_dirs;
             impl = None;
             pkg_args;
+            package_name;
           }
           :: acc)
         acc pkg.mlds)
     all mods
 
-type linked = { output_file : Fpath.t; src : Fpath.t option }
+type linked = {
+  output_file : Fpath.t;
+  src : Fpath.t option;
+  package_name : string;
+}
 
 let link : compiled list -> _ =
  fun compiled ->
@@ -208,7 +215,13 @@ let link : compiled list -> _ =
           Odoc.link ~input_file:impl ~includes ~libs:c.pkg_args.libs
             ~docs:c.pkg_args.docs ();
           Atomic.incr Stats.stats.linked_impls;
-          [ { output_file = Fpath.(set_ext "odocl" impl); src = Some src } ]
+          [
+            {
+              package_name = c.package_name;
+              output_file = Fpath.(set_ext "odocl" impl);
+              src = Some src;
+            };
+          ]
       | None -> []
     in
     match c.m with
@@ -222,16 +235,40 @@ let link : compiled list -> _ =
         (match c.m with
         | Module _ -> Atomic.incr Stats.stats.linked_units
         | Mld _ -> Atomic.incr Stats.stats.linked_mlds);
-        { output_file = Fpath.(set_ext "odocl" c.output_file); src = None }
+        {
+          output_file = Fpath.(set_ext "odocl" c.output_file);
+          src = None;
+          package_name = c.package_name;
+        }
         :: impl
   in
   Fiber.List.map link compiled |> List.concat
 
-let html_generate : Fpath.t -> linked list -> _ =
- fun output_dir linked ->
+let compile_sidebars output_dir dir all =
+  Util.StringMap.map
+    (fun (pkg : Packages.t) ->
+      let package_name = pkg.name in
+      let ( / ) = Fpath.( / ) in
+      let libs =
+        List.map
+          (fun lib ->
+            ( lib.Packages.lib_name,
+              output_dir / package_name / "lib" / lib.lib_name ))
+          pkg.Packages.libraries
+      in
+      let output_file = Fpath.( / ) dir package_name in
+      Odoc.sidebar
+        ~docs:[ (package_name, output_dir / package_name / "doc") ]
+        ~libs ~output_file ();
+      output_file)
+    all
+
+let html_generate : Fpath.t -> Fpath.t Util.StringMap.t -> linked list -> _ =
+ fun output_dir sidebars linked ->
   let html_generate : linked -> unit =
    fun l ->
-    Odoc.html_generate
+    let sidebar = Util.StringMap.find_opt l.package_name sidebars in
+    Odoc.html_generate ?sidebar
       ~output_dir:(Fpath.to_string output_dir)
       ~input_file:l.output_file ?source:l.src ();
     Atomic.incr Stats.stats.generated_units

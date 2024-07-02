@@ -92,10 +92,10 @@ let prepare_preamble comment items =
   in
   (Comment.standalone preamble, Comment.standalone first_comment @ items)
 
-let make_expansion_page ~source_anchor url comments items =
+let make_expansion_page ~sidebar ~source_anchor url comments items =
   let comment = List.concat comments in
   let preamble, items = prepare_preamble comment items in
-  { Page.preamble; items; url; source_anchor }
+  { Page.preamble; items; url; source_anchor; sidebar }
 
 include Generator_signatures
 
@@ -1001,9 +1001,9 @@ module Make (Syntax : SYNTAX) = struct
   end
 
   module Class : sig
-    val class_ : Lang.Class.t -> Item.t
+    val class_ : sidebar:Block.t option -> Lang.Class.t -> Item.t
 
-    val class_type : Lang.ClassType.t -> Item.t
+    val class_type : sidebar:Block.t option -> Lang.ClassType.t -> Item.t
   end = struct
     let class_type_expr (cte : Odoc_model.Lang.ClassType.expr) =
       match cte with
@@ -1115,7 +1115,7 @@ module Make (Syntax : SYNTAX) = struct
             ++ O.txt " " ++ Syntax.Type.arrow)
           ++ O.txt " " ++ class_decl dst
 
-    let class_ (t : Odoc_model.Lang.Class.t) =
+    let class_ ~sidebar (t : Odoc_model.Lang.Class.t) =
       let name = Paths.Identifier.name t.id in
       let params =
         match t.params with
@@ -1134,8 +1134,8 @@ module Make (Syntax : SYNTAX) = struct
             let expansion_doc, items = class_signature csig in
             let url = Url.Path.from_identifier t.id in
             let page =
-              make_expansion_page ~source_anchor url [ t.doc; expansion_doc ]
-                items
+              make_expansion_page ~sidebar ~source_anchor url
+                [ t.doc; expansion_doc ] items
             in
             ( O.documentedSrc @@ path url [ inline @@ Text name ],
               Some page,
@@ -1158,7 +1158,7 @@ module Make (Syntax : SYNTAX) = struct
       let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
-    let class_type (t : Odoc_model.Lang.ClassType.t) =
+    let class_type ~sidebar (t : Odoc_model.Lang.ClassType.t) =
       let name = Paths.Identifier.name t.id in
       let params = format_params ~delim:`brackets t.params in
       let virtual_ =
@@ -1172,8 +1172,8 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier t.id in
             let expansion_doc, items = class_signature csig in
             let page =
-              make_expansion_page ~source_anchor url [ t.doc; expansion_doc ]
-                items
+              make_expansion_page ~sidebar ~source_anchor url
+                [ t.doc; expansion_doc ] items
             in
             ( O.documentedSrc @@ path url [ inline @@ Text name ],
               Some page,
@@ -1196,7 +1196,10 @@ module Make (Syntax : SYNTAX) = struct
   open Class
 
   module Module : sig
-    val signature : Lang.Signature.t -> Comment.Comment.docs * Item.t list
+    val signature :
+      sidebar:Block.t option ->
+      Lang.Signature.t ->
+      Comment.Comment.docs * Item.t list
     (** Returns [header_doc, content]. *)
   end = struct
     let internal_module m =
@@ -1235,7 +1238,7 @@ module Make (Syntax : SYNTAX) = struct
       | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
-    let rec signature (s : Lang.Signature.t) =
+    let rec signature ~sidebar (s : Lang.Signature.t) =
       let rec loop l acc_items =
         match l with
         | [] -> List.rev acc_items
@@ -1251,12 +1254,13 @@ module Make (Syntax : SYNTAX) = struct
             | ModuleTypeSubstitution m when internal_module_type_substitution m
               ->
                 loop rest acc_items
-            | ModuleTypeSubstitution m -> continue @@ module_type_substitution m
-            | Module (_, m) -> continue @@ module_ m
-            | ModuleType m -> continue @@ module_type m
-            | Class (_, c) -> continue @@ class_ c
-            | ClassType (_, c) -> continue @@ class_type c
-            | Include m -> continue @@ include_ m
+            | ModuleTypeSubstitution m ->
+                continue @@ module_type_substitution ~sidebar m
+            | Module (_, m) -> continue @@ module_ ~sidebar m
+            | ModuleType m -> continue @@ module_type ~sidebar m
+            | Class (_, c) -> continue @@ class_ ~sidebar c
+            | ClassType (_, c) -> continue @@ class_type ~sidebar c
+            | Include m -> continue @@ include_ ~sidebar m
             | ModuleSubstitution m -> continue @@ module_substitution m
             | TypeSubstitution t ->
                 continue @@ type_decl ~is_substitution:true (Ordinary, t)
@@ -1281,16 +1285,18 @@ module Make (Syntax : SYNTAX) = struct
       (Lang.extract_signature_doc s, loop s.items [])
 
     and functor_parameter :
-        Odoc_model.Lang.FunctorParameter.parameter -> DocumentedSrc.t =
-     fun arg ->
+        sidebar:_ ->
+        Odoc_model.Lang.FunctorParameter.parameter ->
+        DocumentedSrc.t =
+     fun ~sidebar arg ->
       let open Odoc_model.Lang.FunctorParameter in
       let name = Paths.Identifier.name arg.id in
       let render_ty = arg.expr in
       let modtyp =
-        mty_in_decl (arg.id :> Paths.Identifier.Signature.t) render_ty
+        mty_in_decl ~sidebar (arg.id :> Paths.Identifier.Signature.t) render_ty
       in
       let modname, mod_decl =
-        match expansion_of_module_type_expr arg.expr with
+        match expansion_of_module_type_expr ~sidebar arg.expr with
         | None ->
             let modname = O.txt (Paths.Identifier.name arg.id) in
             (modname, O.documentedSrc modtyp)
@@ -1299,8 +1305,8 @@ module Make (Syntax : SYNTAX) = struct
             let modname = path url [ inline @@ Text name ] in
             let type_with_expansion =
               let content =
-                make_expansion_page ~source_anchor:None url [ expansion_doc ]
-                  items
+                make_expansion_page ~sidebar ~source_anchor:None url
+                  [ expansion_doc ] items
               in
               let summary = O.render modtyp in
               let status = `Default in
@@ -1334,16 +1340,16 @@ module Make (Syntax : SYNTAX) = struct
       let doc = Comment.to_ir t.doc in
       Item.Declaration { attr; anchor; doc; content; source_anchor = None }
 
-    and module_type_substitution (t : Odoc_model.Lang.ModuleTypeSubstitution.t)
-        =
+    and module_type_substitution ~sidebar
+        (t : Odoc_model.Lang.ModuleTypeSubstitution.t) =
       let prefix =
         O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
       in
       let source_anchor = None in
       let modname = Paths.Identifier.name t.id in
       let modname, expansion_doc, mty =
-        module_type_manifest ~subst:true ~source_anchor modname t.id t.doc
-          (Some t.manifest) prefix
+        module_type_manifest ~sidebar ~subst:true ~source_anchor modname t.id
+          t.doc (Some t.manifest) prefix
       in
       let content =
         O.documentedSrc (prefix ++ modname)
@@ -1357,9 +1363,10 @@ module Make (Syntax : SYNTAX) = struct
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
     and simple_expansion :
+        sidebar:_ ->
         Odoc_model.Lang.ModuleType.simple_expansion ->
         Comment.Comment.docs * Item.t list =
-     fun t ->
+     fun ~sidebar t ->
       let rec extract_functor_params
           (f : Odoc_model.Lang.ModuleType.simple_expansion) =
         match f with
@@ -1373,12 +1380,12 @@ module Make (Syntax : SYNTAX) = struct
             (Some (add_to params), sg)
       in
       match extract_functor_params t with
-      | None, sg -> signature sg
+      | None, sg -> signature ~sidebar sg
       | Some params, sg ->
-          let sg_doc, content = signature sg in
+          let sg_doc, content = signature ~sidebar sg in
           let params =
             Utils.flatmap params ~f:(fun arg ->
-                let content = functor_parameter arg in
+                let content = functor_parameter ~sidebar arg in
                 let attr = [ "parameter" ] in
                 let anchor =
                   Utils.option_of_result
@@ -1395,9 +1402,10 @@ module Make (Syntax : SYNTAX) = struct
           (sg_doc, prelude @ content)
 
     and expansion_of_module_type_expr :
+        sidebar:_ ->
         Odoc_model.Lang.ModuleType.expr ->
         (Comment.Comment.docs * Item.t list) option =
-     fun t ->
+     fun ~sidebar t ->
       let rec simple_expansion_of (t : Odoc_model.Lang.ModuleType.expr) =
         match t with
         | Path { p_expansion = None; _ }
@@ -1416,16 +1424,16 @@ module Make (Syntax : SYNTAX) = struct
       in
       match simple_expansion_of t with
       | None -> None
-      | Some e -> Some (simple_expansion e)
+      | Some e -> Some (simple_expansion ~sidebar e)
 
-    and module_ : Odoc_model.Lang.Module.t -> Item.t =
-     fun t ->
+    and module_ : sidebar:_ -> Odoc_model.Lang.Module.t -> Item.t =
+     fun ~sidebar t ->
       let modname = Paths.Identifier.name t.id in
       let expansion =
         match t.type_ with
-        | Alias (_, Some e) -> Some (simple_expansion e)
+        | Alias (_, Some e) -> Some (simple_expansion ~sidebar e)
         | Alias (_, None) -> None
-        | ModuleType e -> expansion_of_module_type_expr e
+        | ModuleType e -> expansion_of_module_type_expr ~sidebar e
       in
       let source_anchor = source_anchor t.source_loc in
       let modname, status, expansion, expansion_doc =
@@ -1440,13 +1448,13 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
             let page =
-              make_expansion_page ~source_anchor url [ t.doc; expansion_doc ]
-                items
+              make_expansion_page ~sidebar ~source_anchor url
+                [ t.doc; expansion_doc ] items
             in
             (link, status, Some page, Some expansion_doc)
       in
       let intro = O.keyword "module" ++ O.txt " " ++ modname in
-      let summary = O.ignore intro ++ mdexpr_in_decl t.id t.type_ in
+      let summary = O.ignore intro ++ mdexpr_in_decl ~sidebar t.id t.type_ in
       let modexpr =
         attach_expansion ~status
           (Syntax.Type.annotation_separator, "sig", "end")
@@ -1470,28 +1478,30 @@ module Make (Syntax : SYNTAX) = struct
       in
       mty_in_decl (base :> Paths.Identifier.Signature.t) (ty_of_se se)
 
-    and mdexpr_in_decl (base : Paths.Identifier.Module.t) md =
+    and mdexpr_in_decl ~sidebar (base : Paths.Identifier.Module.t) md =
       let sig_dotdotdot =
         O.txt Syntax.Type.annotation_separator
         ++ O.cut ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       in
       match md with
-      | Alias (_, Some se) -> simple_expansion_in_decl base se
+      | Alias (_, Some se) -> simple_expansion_in_decl ~sidebar base se
       | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) ->
-          O.txt " =" ++ O.sp ++ mdexpr md
+          O.txt " =" ++ O.sp ++ mdexpr ~sidebar md
       | Alias _ -> sig_dotdotdot
-      | ModuleType mt -> mty_in_decl (base :> Paths.Identifier.Signature.t) mt
+      | ModuleType mt ->
+          mty_in_decl ~sidebar (base :> Paths.Identifier.Signature.t) mt
 
-    and mdexpr : Odoc_model.Lang.Module.decl -> text = function
+    and mdexpr : sidebar:_ -> Odoc_model.Lang.Module.decl -> text =
+     fun ~sidebar -> function
       | Alias (mod_path, _) -> Link.from_path (mod_path :> Paths.Path.t)
-      | ModuleType mt -> mty mt
+      | ModuleType mt -> mty ~sidebar mt
 
-    and module_type_manifest ~subst ~source_anchor modname id doc manifest
-        prefix =
+    and module_type_manifest ~sidebar ~subst ~source_anchor modname id doc
+        manifest prefix =
       let expansion =
         match manifest with
         | None -> None
-        | Some e -> expansion_of_module_type_expr e
+        | Some e -> expansion_of_module_type_expr ~sidebar e
       in
       let modname, expansion, expansion_doc =
         match expansion with
@@ -1500,8 +1510,8 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier id in
             let link = path url [ inline @@ Text modname ] in
             let page =
-              make_expansion_page ~source_anchor url [ doc; expansion_doc ]
-                items
+              make_expansion_page ~sidebar ~source_anchor url
+                [ doc; expansion_doc ] items
             in
             (link, Some page, Some expansion_doc)
       in
@@ -1511,21 +1521,21 @@ module Make (Syntax : SYNTAX) = struct
         | Some expr ->
             O.ignore (prefix ++ modname)
             ++ (if subst then O.txt " :=" ++ O.sp else O.txt " =" ++ O.sp)
-            ++ mty expr
+            ++ mty ~sidebar expr
       in
       ( modname,
         expansion_doc,
         attach_expansion (" = ", "sig", "end") expansion summary )
 
-    and module_type (t : Odoc_model.Lang.ModuleType.t) =
+    and module_type ~sidebar (t : Odoc_model.Lang.ModuleType.t) =
       let prefix =
         O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
       in
       let modname = Paths.Identifier.name t.id in
       let source_anchor = source_anchor t.source_loc in
       let modname, expansion_doc, mty =
-        module_type_manifest ~subst:false ~source_anchor modname t.id t.doc
-          t.expr prefix
+        module_type_manifest ~sidebar ~subst:false ~source_anchor modname t.id
+          t.doc t.expr prefix
       in
       let content =
         O.documentedSrc (prefix ++ modname)
@@ -1553,11 +1563,11 @@ module Make (Syntax : SYNTAX) = struct
           Paths.Path.(is_hidden (m :> t))
       | _ -> false
 
-    and mty_with subs expr =
-      umty expr ++ O.sp ++ O.keyword "with" ++ O.txt " "
+    and mty_with ~sidebar subs expr =
+      umty ~sidebar expr ++ O.sp ++ O.keyword "with" ++ O.txt " "
       ++ O.list
            ~sep:(O.cut ++ O.txt " " ++ O.keyword "and" ++ O.txt " ")
-           ~f:(fun x -> O.span (substitution x))
+           ~f:(fun x -> O.span (substitution ~sidebar x))
            subs
 
     and mty_typeof t_desc =
@@ -1580,19 +1590,19 @@ module Make (Syntax : SYNTAX) = struct
       | With (_, expr) -> is_elidable_with_u expr
       | TypeOf _ -> false
 
-    and umty : Odoc_model.Lang.ModuleType.U.expr -> text =
-     fun m ->
+    and umty : sidebar:_ -> Odoc_model.Lang.ModuleType.U.expr -> text =
+     fun ~sidebar m ->
       match m with
       | Path p -> Link.from_path (p :> Paths.Path.t)
       | Signature _ ->
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       | With (_, expr) when is_elidable_with_u expr ->
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
-      | With (subs, expr) -> mty_with subs expr
+      | With (subs, expr) -> mty_with ~sidebar subs expr
       | TypeOf (t_desc, _) -> mty_typeof t_desc
 
-    and mty : Odoc_model.Lang.ModuleType.expr -> text =
-     fun m ->
+    and mty : sidebar:_ -> Odoc_model.Lang.ModuleType.expr -> text =
+     fun ~sidebar m ->
       if mty_hidden m then
         Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       else
@@ -1602,10 +1612,12 @@ module Make (Syntax : SYNTAX) = struct
         | Functor (Unit, expr) ->
             (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop)
             ++ O.span (O.txt " () " ++ Syntax.Type.arrow)
-            ++ O.sp ++ mty expr
+            ++ O.sp ++ mty ~sidebar expr
         | Functor (Named arg, expr) ->
             let arg_expr = arg.expr in
-            let stop_before = expansion_of_module_type_expr arg_expr = None in
+            let stop_before =
+              expansion_of_module_type_expr ~sidebar arg_expr = None
+            in
             let name =
               let open Odoc_model.Lang.FunctorParameter in
               let name = Paths.Identifier.name arg.id in
@@ -1619,25 +1631,27 @@ module Make (Syntax : SYNTAX) = struct
             ++ (O.box_hv @@ O.span
                @@ O.txt " (" ++ name
                   ++ O.txt Syntax.Type.annotation_separator
-                  ++ mty arg_expr ++ O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow
-               )
-            ++ O.sp ++ mty expr
+                  ++ mty ~sidebar arg_expr ++ O.txt ")" ++ O.txt " "
+                  ++ Syntax.Type.arrow)
+            ++ O.sp ++ mty ~sidebar expr
         | With { w_expr; _ } when is_elidable_with_u w_expr ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
         | With { w_substitutions; w_expr; _ } ->
-            O.box_hv @@ mty_with w_substitutions w_expr
+            O.box_hv @@ mty_with w_substitutions ~sidebar w_expr
         | TypeOf { t_desc; _ } -> mty_typeof t_desc
         | Signature _ ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
 
     and mty_in_decl :
-        Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
-        =
-     fun base -> function
+        sidebar:_ ->
+        Paths.Identifier.Signature.t ->
+        Odoc_model.Lang.ModuleType.expr ->
+        text =
+     fun ~sidebar base -> function
       | (Path _ | Signature _ | With _ | TypeOf _) as m ->
-          O.txt Syntax.Type.annotation_separator ++ O.cut ++ mty m
+          O.txt Syntax.Type.annotation_separator ++ O.cut ++ mty ~sidebar m
       | Functor _ as m when not Syntax.Mod.functor_contraction ->
-          O.txt Syntax.Type.annotation_separator ++ O.cut ++ mty m
+          O.txt Syntax.Type.annotation_separator ++ O.cut ++ mty ~sidebar m
       | Functor (arg, expr) ->
           let text_arg =
             match arg with
@@ -1645,7 +1659,7 @@ module Make (Syntax : SYNTAX) = struct
             | Named arg ->
                 let arg_expr = arg.expr in
                 let stop_before =
-                  expansion_of_module_type_expr arg_expr = None
+                  expansion_of_module_type_expr ~sidebar arg_expr = None
                 in
                 let name =
                   let open Odoc_model.Lang.FunctorParameter in
@@ -1660,9 +1674,9 @@ module Make (Syntax : SYNTAX) = struct
                 O.box_hv
                 @@ O.txt "(" ++ name
                    ++ O.txt Syntax.Type.annotation_separator
-                   ++ O.cut ++ mty arg.expr ++ O.txt ")"
+                   ++ O.cut ++ mty ~sidebar arg.expr ++ O.txt ")"
           in
-          O.sp ++ text_arg ++ mty_in_decl base expr
+          O.sp ++ text_arg ++ mty_in_decl ~sidebar base expr
 
     (* TODO : Centralize the list juggling for type parameters *)
     and type_expr_in_subst td typath =
@@ -1671,18 +1685,19 @@ module Make (Syntax : SYNTAX) = struct
       | [] -> typath
       | l -> Syntax.Type.handle_substitution_params typath (format_params l)
 
-    and substitution : Odoc_model.Lang.ModuleType.substitution -> text =
-      function
+    and substitution :
+        sidebar:_ -> Odoc_model.Lang.ModuleType.substitution -> text =
+     fun ~sidebar -> function
       | ModuleEq (frag_mod, md) ->
           O.box_hv
           @@ O.keyword "module" ++ O.txt " "
              ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
-             ++ O.txt " =" ++ O.sp ++ mdexpr md
+             ++ O.txt " =" ++ O.sp ++ mdexpr ~sidebar md
       | ModuleTypeEq (frag_mty, md) ->
           O.box_hv
           @@ O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
              ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
-             ++ O.txt " =" ++ O.sp ++ mty md
+             ++ O.txt " =" ++ O.sp ++ mty ~sidebar md
       | TypeEq (frag_typ, td) ->
           O.box_hv
           @@ O.keyword "type" ++ O.txt " "
@@ -1700,7 +1715,7 @@ module Make (Syntax : SYNTAX) = struct
           O.box_hv
           @@ O.keyword "module" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
              ++ Link.from_fragment (frag_mty :> Paths.Fragment.leaf)
-             ++ O.txt " :=" ++ O.sp ++ mty md
+             ++ O.txt " :=" ++ O.sp ++ mty ~sidebar md
       | TypeSubst (frag_typ, td) -> (
           O.box_hv
           @@ O.keyword "type" ++ O.txt " "
@@ -1711,7 +1726,7 @@ module Make (Syntax : SYNTAX) = struct
              | None -> assert false (* cf loader/cmti *)
              | Some te -> type_expr te)
 
-    and include_ (t : Odoc_model.Lang.Include.t) =
+    and include_ ~sidebar (t : Odoc_model.Lang.Include.t) =
       let decl_hidden =
         match t.decl with
         | Alias p -> Paths.Path.(is_hidden (p :> t))
@@ -1719,7 +1734,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let status = if decl_hidden then `Inline else t.status in
 
-      let _, content = signature t.expansion.content in
+      let _, content = signature ~sidebar t.expansion.content in
       let summary =
         if decl_hidden then O.render (O.keyword "include" ++ O.txt " ...")
         else
@@ -1727,7 +1742,7 @@ module Make (Syntax : SYNTAX) = struct
             match t.decl with
             | Odoc_model.Lang.Include.Alias mod_path ->
                 Link.from_path (mod_path :> Paths.Path.t)
-            | ModuleType mt -> umty mt
+            | ModuleType mt -> umty ~sidebar mt
           in
           O.render
             (O.keyword "include" ++ O.txt " " ++ include_decl
@@ -1750,9 +1765,10 @@ module Make (Syntax : SYNTAX) = struct
   open Module
 
   module Page : sig
-    val compilation_unit : Lang.Compilation_unit.t -> Document.t
+    val compilation_unit :
+      ?sidebar:Lang.Sidebar.t -> Lang.Compilation_unit.t -> Document.t
 
-    val page : Lang.Page.t -> Document.t
+    val page : ?sidebar:Lang.Sidebar.t -> Lang.Page.t -> Document.t
 
     val source_tree : Lang.SourceTree.t -> Document.t list
 
@@ -1783,26 +1799,152 @@ module Make (Syntax : SYNTAX) = struct
       in
       List.map f t
 
-    let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) =
+    module Hierarchy = struct
+      type 'a dir = 'a option * (string * 'a t) list
+      and 'a t = Leaf of 'a | Dir of 'a dir
+
+      let rec add_entry_to_dir (dir : 'a dir) payload path =
+        match (path, dir) with
+        | [], _ -> assert false
+        | [ "index" ], (None, l) -> (Some payload, l)
+        | [ name ], (p, l) -> (p, (name, Leaf payload) :: l)
+        | name :: rest, (p, l) ->
+            let rec add_to_dir (l : (string * 'a t) list) =
+              match l with
+              | [] -> [ (name, Dir (add_entry_to_dir (None, []) payload rest)) ]
+              | (name2, Dir d) :: q when name = name2 ->
+                  (name2, Dir (add_entry_to_dir d payload rest)) :: q
+              | d :: q -> d :: add_to_dir q
+            in
+            (p, add_to_dir l)
+
+      let make l =
+        let empty = (None, []) in
+        let add_entry_to_dir acc (path, payload) =
+          add_entry_to_dir acc path payload
+        in
+        List.fold_left add_entry_to_dir empty l
+
+      let rec remove_common_root = function
+        | None, [ (_, Dir d) ] -> remove_common_root d
+        | x -> x
+
+      let rec to_sidebar ?(fallback = "root") convert (name, content) =
+        let name =
+          match name with
+          | Some v -> convert v
+          | None -> block (Block.Inline [ inline (Text fallback) ])
+        in
+        let content =
+          let content = List.map (t_to_sidebar convert) content in
+          block (Block.List (Block.Unordered, content))
+        in
+        [ name; content ]
+
+      and t_to_sidebar convert = function
+        | _, Leaf payload -> [ convert payload ]
+        | fallback, Dir d -> to_sidebar ~fallback convert d
+    end
+
+    let sidebar root_id (v : Odoc_model.Lang.Sidebar.t) =
+      let root_id = (root_id :> Paths.Identifier.t) in
+      let prepare (link_content, x) =
+        let x = (x :> Paths.Identifier.t) in
+        let payload =
+          (link_content, x, Odoc_model.Paths.Identifier.equal x root_id)
+        in
+        let path = Odoc_model.Paths.Identifier.fullname x in
+        (payload, path)
+      in
+      let title t =
+        block
+          (Inline [ inline (Inline.Styled (`Bold, [ inline (Inline.Text t) ])) ])
+      in
+      let page_hierarchy { Odoc_model.Lang.Sidebar.page_name; pages } =
+        if pages = [] then []
+        else
+          let pages = List.map prepare pages in
+          let hierarchy =
+            Hierarchy.make pages |> Hierarchy.remove_common_root
+          in
+          let convert (content, id, is_highlighted) =
+            let url = Url.from_identifier ~stop_before:false id in
+            match url with
+            | Ok href ->
+                let target = InternalLink.Resolved href in
+                let content = Comment.link_content content in
+                let link = { InternalLink.target; content; tooltip = None } in
+                let attr = if is_highlighted then [ "current_unit" ] else [] in
+                block (Inline [ inline ~attr @@ Inline.InternalLink link ])
+            | Error _ ->
+                let content = Comment.link_content content in
+                (* let attr = if is_highlighted then [ "current_unit" ] else [] in *)
+                block (Inline content)
+          in
+
+          let pages = Hierarchy.to_sidebar convert hierarchy in
+          let pages = [ block (Block.List (Block.Unordered, [ pages ])) ] in
+          [ title @@ page_name ^ "'s Pages" ] @ pages
+      in
+      let rec concat_map acc f = function
+        | hd :: tl -> concat_map (List.rev_append (f hd) acc) f tl
+        | [] -> List.rev acc
+      in
+      let page_hierarchies = concat_map [] page_hierarchy v.pages in
+      let units =
+        let item id =
+          let id = (id :> Paths.Identifier.t) in
+          let href, name, is_highlighted =
+            ( Url.from_identifier ~stop_before:false id,
+              Paths.Identifier.name id,
+              Odoc_model.Paths.Identifier.equal id root_id )
+          in
+          match href with
+          | Error _ -> None
+          | Ok href ->
+              let target = InternalLink.Resolved href in
+              let content = [ inline @@ Text name ] in
+              let link = { InternalLink.target; content; tooltip = None } in
+              let attr = if is_highlighted then [ "current_unit" ] else [] in
+              let elem =
+                [ block (Inline [ inline ~attr @@ Inline.InternalLink link ]) ]
+              in
+              Some elem
+        in
+        List.map
+          (fun { Odoc_model.Lang.Sidebar.units; name } ->
+            let units = filter_map [] item units in
+            [ title name; block (List (Block.Unordered, units)) ])
+          v.libraries
+      in
+      let units = block (Block.List (Block.Unordered, units)) in
+      let units = [ title "Libraries"; units ] in
+      page_hierarchies @ units
+
+    let compilation_unit ?sidebar:sb (t : Odoc_model.Lang.Compilation_unit.t) =
       let url = Url.Path.from_identifier t.id in
+      let sidebar =
+        match sb with None -> None | Some sb -> Some ((sidebar t.id) sb)
+      in
       let unit_doc, items =
         match t.content with
-        | Module sign -> signature sign
+        | Module sign -> signature ~sidebar sign
         | Pack packed -> ([], pack packed)
       in
       let source_anchor = source_anchor t.source_loc in
-      let page = make_expansion_page ~source_anchor url [ unit_doc ] items in
+      let page =
+        make_expansion_page ~sidebar ~source_anchor url [ unit_doc ] items
+      in
       Document.Page page
 
-    let page (t : Odoc_model.Lang.Page.t) =
-      (*let name =
-          match t.name.iv with `Page (_, name) | `LeafPage (_, name) -> name
-        in*)
-      (*let title = Odoc_model.Names.PageName.to_string name in*)
+    let page ?sidebar:sb (t : Odoc_model.Lang.Page.t) =
       let url = Url.Path.from_identifier t.name in
       let preamble, items = Sectioning.docs t.content in
       let source_anchor = None in
-      Document.Page { Page.preamble; items; url; source_anchor }
+      let sidebar =
+        match sb with None -> None | Some sb -> Some ((sidebar t.name) sb)
+      in
+      Document.Page { Page.preamble; items; url; source_anchor; sidebar }
 
     let source_tree t =
       let dir_pages = t.Odoc_model.Lang.SourceTree.source_children in
@@ -1887,7 +2029,13 @@ module Make (Syntax : SYNTAX) = struct
           :: [ text ~attr:[ "odoc-folder-list" ] @@ list list_of_children ]
         in
         Document.Page
-          { Types.Page.preamble = []; items; url; source_anchor = None }
+          {
+            Types.Page.preamble = [];
+            items;
+            url;
+            source_anchor = None;
+            sidebar = None;
+          }
       in
       M.fold (fun dir children acc -> page_of_dir dir children :: acc) mmap []
 

@@ -41,10 +41,27 @@ let html_of_search () =
   Html.(
     div ~a:[ a_class [ "search-inner" ] ] [ search_bar; snake; search_result ])
 
-let sidebar toc =
-  match toc with
-  | [] -> []
-  | _ -> [ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] (html_of_toc toc) ]
+let sidebar ~sb toc =
+  let sidebar c = [ Html.div ~a:[ Html.a_class [ "odoc-tocs" ] ] c ] in
+  match sb with
+  | None -> (
+      match toc with
+      | [] -> []
+      | _ ->
+          sidebar
+            [
+              Html.nav
+                ~a:[ Html.a_class [ "odoc-toc"; "odoc-local-toc" ] ]
+                (html_of_toc toc);
+            ])
+  | Some c ->
+      sidebar
+        [
+          Html.nav
+            ~a:[ Html.a_class [ "odoc-toc"; "odoc-local-toc" ] ]
+            (html_of_toc toc);
+          Html.nav ~a:[ Html.a_class [ "odoc-toc"; "odoc-global-toc" ] ] c;
+        ]
 
 let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
   let make_navigation ~up_url rest =
@@ -110,7 +127,7 @@ let default_meta_elements ~config ~url =
       ();
   ]
 
-let page_creator ~config ~url ~uses_katex header breadcrumbs toc content =
+let page_creator ~config ~url ~uses_katex ~sb header breadcrumbs toc content =
   let theme_uri = Config.theme_uri config in
   let support_uri = Config.support_uri config in
   let search_uris = Config.search_uris config in
@@ -212,7 +229,7 @@ let search_urls = %s;
     html_of_breadcrumbs breadcrumbs
     @ search_bar
     @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
-    @ sidebar toc
+    @ sidebar ~sb toc
     @ [ Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content ]
   in
 
@@ -225,10 +242,12 @@ let search_urls = %s;
   in
   content
 
-let make ~config ~url ~header ~breadcrumbs ~toc ~uses_katex content children =
+let make ~config ~url ~header ~breadcrumbs ~sidebar ~toc ~uses_katex content
+    children =
   let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
   let content =
-    page_creator ~config ~url ~uses_katex header breadcrumbs toc content
+    page_creator ~config ~url ~uses_katex ~sb:sidebar header breadcrumbs toc
+      content
   in
   { Odoc_document.Renderer.filename; content; children }
 

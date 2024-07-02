@@ -98,8 +98,8 @@ let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs () =
   in
   let libs =
     List.fold_left
-      (fun acc (pkgname, path) ->
-        let s = Format.asprintf "%s:%a" pkgname Fpath.pp path in
+      (fun acc (libname, path) ->
+        let s = Format.asprintf "%s:%a" libname Fpath.pp path in
         v "-L" % s %% acc)
       Cmd.empty libs
   in
@@ -116,11 +116,37 @@ let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs () =
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
 
-let html_generate ~output_dir ?(ignore_output = false) ?(assets = []) ?source
-    ?(search_uris = []) ~input_file:file () =
+let sidebar ?(ignore_output = false) ~docs ~libs ~output_file () =
+  let open Cmd in
+  let docs =
+    List.fold_left
+      (fun acc (pkgname, path) ->
+        let s = Format.asprintf "%s:%a" pkgname Fpath.pp path in
+        v "-P" % s %% acc)
+      Cmd.empty docs
+  in
+  let libs =
+    List.fold_left
+      (fun acc (libname, path) ->
+        let s = Format.asprintf "%s:%a" libname Fpath.pp path in
+        v "-L" % s %% acc)
+      Cmd.empty libs
+  in
+  let cmd = odoc % "sidebar" % "-o" % p output_file %% docs %% libs in
+  let desc = Printf.sprintf "Sidebar for %s" (Fpath.to_string output_file) in
+
+  let lines = submit desc cmd (Some output_file) in
+  if not ignore_output then
+    add_prefixed_output cmd link_output (Fpath.to_string output_file) lines
+
+let html_generate ~output_dir ?sidebar ?(ignore_output = false) ?(assets = [])
+    ?source ?(search_uris = []) ~input_file:file () =
   let open Cmd in
   let source =
     match source with None -> empty | Some source -> v "--source" % p source
+  in
+  let sidebar =
+    match sidebar with None -> empty | Some sb -> v "--sidebar" % p sb
   in
   let assets =
     List.fold_left (fun acc filename -> acc % "--asset" % filename) empty assets
@@ -131,8 +157,8 @@ let html_generate ~output_dir ?(ignore_output = false) ?(assets = []) ?source
       empty search_uris
   in
   let cmd =
-    odoc % "html-generate" %% source % p file %% assets %% search_uris % "-o"
-    % output_dir
+    odoc % "html-generate" %% source % p file %% assets %% sidebar
+    %% search_uris % "-o" % output_dir
   in
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string file) in
   let lines = submit desc cmd None in

@@ -128,3 +128,17 @@ let rec link_content_of_inline_element :
 
 and link_content_of_inline_elements l =
   l |> List.map link_content_of_inline_element |> List.concat
+
+let find_zero_heading docs : link_content option =
+  let rec find_map f = function
+    | [] -> None
+    | x :: l -> (
+        match f x with Some _ as result -> result | None -> find_map f l)
+  in
+  find_map
+    (fun doc ->
+      match doc.Location_.value with
+      | `Heading ({ heading_level = `Title; _ }, _, h_content) ->
+          Some (link_content_of_inline_elements h_content)
+      | _ -> None)
+    docs

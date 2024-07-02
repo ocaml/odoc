@@ -29,8 +29,10 @@ end
 module Odoc_file = struct
   type compilation_unit = { name : string; hidden : bool }
 
+  type page = { name : string; title : Comment.link_content option }
+
   type t =
-    | Page of string
+    | Page of page
     | Compilation_unit of compilation_unit
     | Impl of string
 
@@ -38,12 +40,12 @@ module Odoc_file = struct
     let hidden = force_hidden || Names.contains_double_underscore name in
     Compilation_unit { name; hidden }
 
-  let create_page name = Page name
+  let create_page name title = Page { name; title }
 
   let create_impl name = Impl name
 
   let name = function
-    | Page name | Compilation_unit { name; _ } | Impl name -> name
+    | Page { name; _ } | Compilation_unit { name; _ } | Impl name -> name
 
   let hidden = function
     | Page _ | Impl _ -> false

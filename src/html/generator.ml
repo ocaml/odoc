@@ -487,11 +487,16 @@ module Page = struct
   and subpages ~config subpages = List.map (include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page =
-    let { Page.preamble; items = i; url; source_anchor } =
+    let { Page.preamble; items = i; url; source_anchor; sidebar } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
     let resolve = Link.Current url in
+    let sidebar =
+      match sidebar with
+      | None -> None
+      | Some x -> (Some (block ~config ~resolve x) :> any Html.elt list option)
+    in
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
@@ -511,8 +516,8 @@ module Page = struct
         items ~config ~resolve
           (Doctree.PageTitle.render_title ?source_anchor p @ preamble)
       in
-      Html_page.make ~config ~header ~toc ~breadcrumbs ~url ~uses_katex content
-        subpages
+      Html_page.make ~sidebar ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
+        content subpages
 
   and source_page ~config sp =
     let { Source_page.url; contents } = sp in
