@@ -1,30 +1,10 @@
 open Bos
+open Cmd_outputs
 
 type compile_deps = { digest : Digest.t; deps : (string * Digest.t) list }
 
 let odoc = Cmd.v "./_build/default/src/odoc/bin/main.exe"
 (* This is the just-built odoc binary *)
-
-let submit desc cmd output_file =
-  match Worker_pool.submit desc cmd output_file with
-  | Ok x -> x
-  | Error exn -> raise exn
-
-let compile_output = ref [ "" ]
-
-let compile_src_output = ref [ "" ]
-
-let link_output = ref [ "" ]
-
-let generate_output = ref [ "" ]
-
-let source_tree_output = ref [ "" ]
-
-let add_prefixed_output cmd list prefix lines =
-  if List.length lines > 0 then
-    list :=
-      !list
-      @ (Bos.Cmd.to_string cmd :: List.map (fun l -> prefix ^ ": " ^ l) lines)
 
 let compile_deps f =
   let cmd = Cmd.(odoc % "compile-deps" % Fpath.to_string f) in
@@ -115,6 +95,21 @@ let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs () =
   let lines = submit desc cmd (Some output_file) in
   if not ignore_output then
     add_prefixed_output cmd link_output (Fpath.to_string file) lines
+
+let compile_index ?(ignore_output = false) ~dst ~json ~include_rec () =
+  let include_rec =
+    Fpath.Set.fold
+      (fun path acc -> Cmd.(acc % "--include-rec" % p path))
+      include_rec Cmd.empty
+  in
+  let json = if json then Cmd.v "--json" else Cmd.empty in
+  let cmd =
+    Cmd.(odoc % "compile-index" %% json %% v "-o" % p dst %% include_rec)
+  in
+  let desc = "Generating search index" in
+  let lines = submit desc cmd (Some dst) in
+  if not ignore_output then
+    add_prefixed_output cmd link_output (Fpath.to_string dst) lines
 
 let html_generate ~output_dir ?(ignore_output = false) ?(assets = []) ?source
     ?(search_uris = []) ~input_file:file () =

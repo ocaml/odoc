@@ -6,7 +6,7 @@ Compile and link the documentation
 
   $ odoc compile main.cmt
   $ odoc link main.odoc
-  $ odoc compile-index main.odocl
+  $ odoc compile-index --json --include-rec .
 
 Search results only redirect to their definition point (not the
 expansions). Comments link to the expansion they are in.

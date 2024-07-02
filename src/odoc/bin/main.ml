@@ -18,6 +18,7 @@ let convert_syntax : Odoc_document.Renderer.syntax Arg.conv =
   in
   (syntax_parser, syntax_printer)
 
+(** create default to false *)
 let convert_directory ?(create = false) () : Fs.Directory.t Arg.conv =
   let dir_parser, dir_printer = Arg.string in
   let odoc_dir_parser str =
@@ -478,46 +479,49 @@ module Compile_impl = struct
 end
 
 module Indexing = struct
-  let output_file ~dst =
-    match dst with
-    | Some file -> Fs.File.of_string file
-    | None -> Fs.File.of_string "index.json"
+  let output_file ~dst marshall =
+    match (dst, marshall) with
+    | Some file, _ -> Fs.File.of_string file
+    | None, `JSON -> Fs.File.of_string "index.json"
+    | None, `Marshall -> Fs.File.of_string "index.odoc-index"
 
-  let index dst warnings_options inputs_in_file inputs =
-    let output = output_file ~dst in
-    match (inputs_in_file, inputs) with
-    | [], [] ->
+  let index dst json warnings_options include_rec =
+    let marshall = if json then `JSON else `Marshall in
+    let output = output_file ~dst marshall in
+    match include_rec with
+    | [] ->
         Result.Error
           (`Msg
-            "At least one of --file-list or an .odocl file must be passed to \
-             odoc compile-index")
-    | _ -> Indexing.compile ~output ~warnings_options inputs_in_file inputs
-
+            "At least one of --include-rec must be passed to odoc compile-index")
+    | _ -> Indexing.compile marshall ~output ~warnings_options include_rec
   let cmd =
     let dst =
       let doc =
         "Output file path. Non-existing intermediate directories are created. \
-         Defaults to index.json"
+         Defaults to index.odoc-index, or index.json if --json is passed (in \
+         which case, the .odoc-index file extension is mandatory)."
+        (* This is not checked for now *)
       in
       Arg.(
         value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
     in
-    let inputs_in_file =
+    let include_rec =
       let doc =
-        "Input text file containing a line-separated list of paths to .odocl \
-         files to index."
+        "Include all the .odocl files found recursively in DIR in the \
+         generated index."
       in
       Arg.(
-        value & opt_all convert_fpath []
-        & info ~doc ~docv:"FILE" [ "file-list" ])
+        value
+        & opt_all (convert_directory ()) []
+        & info ~doc ~docv:"DIR" [ "include-rec" ])
     in
-    let inputs =
-      let doc = ".odocl file to index" in
-      Arg.(value & pos_all convert_fpath [] & info ~doc ~docv:"FILE" [])
+    let json =
+      let doc = "whether to output a json file, or a binary .odoc-index file" in
+      Arg.(value & flag & info ~doc [ "json" ])
     in
     Term.(
       const handle_error
-      $ (const index $ dst $ warnings_options $ inputs_in_file $ inputs))
+      $ (const index $ dst $ json $ warnings_options $ include_rec))
 
   let info ~docs =
     let doc =

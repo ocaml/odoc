@@ -16,16 +16,17 @@ type compiled = {
   include_dirs : Fpath.Set.t;
   impl : impl option;
   pkg_args : pkg_args;
+  pkgname : string;
 }
 
 let mk_byhash (pkgs : Packages.t Util.StringMap.t) =
   Util.StringMap.fold
-    (fun _pkg_name pkg acc ->
+    (fun pkg_name pkg acc ->
       List.fold_left
         (fun acc (lib : Packages.libty) ->
           List.fold_left
             (fun acc (m : Packages.modulety) ->
-              Util.StringMap.add m.m_intf.mif_hash m acc)
+              Util.StringMap.add m.m_intf.mif_hash (pkg_name, m) acc)
             acc lib.modules)
         acc pkg.Packages.libraries)
     pkgs Util.StringMap.empty
@@ -94,7 +95,7 @@ let compile output_dir all =
     | None ->
         Logs.debug (fun m -> m "Error locating hash: %s" hash);
         Error Not_found
-    | Some modty ->
+    | Some (pkgname, modty) ->
         let deps = modty.m_intf.mif_deps in
         let output_file = Fpath.(output_dir // modty.m_intf.mif_odoc_file) in
         let fibers =
@@ -145,6 +146,7 @@ let compile output_dir all =
             include_dirs = includes;
             impl;
             pkg_args;
+            pkgname;
           }
   in
 
@@ -165,7 +167,7 @@ let compile output_dir all =
     List.filter_map (function Ok x -> Some x | Error _ -> None) mod_results
   in
   Util.StringMap.fold
-    (fun _ (pkg : Packages.t) acc ->
+    (fun pkgname (pkg : Packages.t) acc ->
       Logs.debug (fun m ->
           m "Package %s mlds: [%a]" pkg.name
             Fmt.(list ~sep:sp Packages.pp_mld)
@@ -189,12 +191,13 @@ let compile output_dir all =
             include_dirs;
             impl = None;
             pkg_args;
+            pkgname : string;
           }
           :: acc)
         acc pkg.mlds)
     all mods
 
-type linked = { output_file : Fpath.t; src : Fpath.t option }
+type linked = { output_file : Fpath.t; src : Fpath.t option; pkgname : string }
 
 let link : compiled list -> _ =
  fun compiled ->
@@ -208,7 +211,13 @@ let link : compiled list -> _ =
           Odoc.link ~input_file:impl ~includes ~libs:c.pkg_args.libs
             ~docs:c.pkg_args.docs ();
           Atomic.incr Stats.stats.linked_impls;
-          [ { output_file = Fpath.(set_ext "odocl" impl); src = Some src } ]
+          [
+            {
+              output_file = Fpath.(set_ext "odocl" impl);
+              src = Some src;
+              pkgname = c.pkgname;
+            };
+          ]
       | None -> []
     in
     match c.m with
@@ -222,16 +231,50 @@ let link : compiled list -> _ =
         (match c.m with
         | Module _ -> Atomic.incr Stats.stats.linked_units
         | Mld _ -> Atomic.incr Stats.stats.linked_mlds);
-        { output_file = Fpath.(set_ext "odocl" c.output_file); src = None }
+        {
+          output_file = Fpath.(set_ext "odocl" c.output_file);
+          src = None;
+          pkgname = c.pkgname;
+        }
         :: impl
   in
   Fiber.List.map link compiled |> List.concat
+
+let index_one output_dir pkgname _pkg =
+  let dir = Fpath.(output_dir / pkgname) in
+  let dst = Fpath.(dir / "index.odoc-index") in
+  let include_rec = Fpath.Set.singleton dir in
+  Odoc.compile_index ~json:false ~dst ~include_rec ()
+let index odoc_dir pkgs = Util.StringMap.iter (index_one odoc_dir) pkgs
+
+let sherlodoc_index_one ~html_dir ~odoc_dir pkgname _pkg_content =
+  ignore @@ Bos.OS.Dir.create Fpath.(html_dir / pkgname);
+  let format = `js in
+  let inputs = [ Fpath.(odoc_dir / pkgname / "index.odoc-index") ] in
+  let dst = Fpath.(html_dir / pkgname / "sherlodoc_db.js") in
+  Sherlodoc.index ~format ~inputs ~dst ()
+
+let sherlodoc ~html_dir ~odoc_dir pkgs =
+  ignore @@ Bos.OS.Dir.create html_dir;
+  Sherlodoc.js Fpath.(html_dir / "sherlodoc.js");
+  Util.StringMap.iter (sherlodoc_index_one ~html_dir ~odoc_dir) pkgs;
+  let format = `marshal in
+  let dst = Fpath.(html_dir / "sherlodoc_db.marshal") in
+  let inputs =
+    pkgs |> Util.StringMap.bindings
+    |> List.map (fun (pkgname, _pkg) ->
+           Fpath.(odoc_dir / pkgname / "index.odoc-index"))
+  in
+  Sherlodoc.index ~format ~inputs ~dst ()
 
 let html_generate : Fpath.t -> linked list -> _ =
  fun output_dir linked ->
   let html_generate : linked -> unit =
    fun l ->
-    Odoc.html_generate
+    let search_uris =
+      Fpath.[ v l.pkgname / "sherlodoc_db.js"; v "sherlodoc.js" ]
+    in
+    Odoc.html_generate ~search_uris
       ~output_dir:(Fpath.to_string output_dir)
       ~input_file:l.output_file ?source:l.src ();
     Atomic.incr Stats.stats.generated_units

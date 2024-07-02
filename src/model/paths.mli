@@ -236,6 +236,10 @@ module Identifier : sig
     end
   end
 
+  module Hashtbl : sig
+    module Any : Hashtbl.S with type key = Any.t
+  end
+
   module Mk : sig
     open Names
 

@@ -7,7 +7,7 @@ Compile and link the documentation
   $ odoc compile -I . main.cmt
   $ odoc link -I . main.odoc
 
-  $ odoc compile-index main.odocl
+  $ odoc compile-index --json --include-rec .
 
 Let's have a look at the links generated for standalone comments search entries:
 

@@ -34,7 +34,7 @@ documentation for installed packages.
 
 depends: [
   "odoc" {= version}
-  "bos" 
+  "bos"
   "fpath"
   "yojson"
   "ocamlfind"
@@ -43,6 +43,7 @@ depends: [
   "eio_main"
   "progress"
   "cmdliner"
+  "sherlodoc"
 ]
 
 build: [

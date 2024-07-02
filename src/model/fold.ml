@@ -30,8 +30,9 @@ and signature ~f id acc (s : Signature.t) =
 
 and signature_item ~f id acc s_item =
   match s_item with
-  | Module (_, m) -> module_ ~f acc m
-  | ModuleType mt -> module_type ~f acc mt
+  | Module (_, m) -> module_ ~f (m.id :> Paths.Identifier.LabelParent.t) acc m
+  | ModuleType mt ->
+      module_type ~f (mt.id :> Paths.Identifier.LabelParent.t) acc mt
   | ModuleSubstitution _ -> acc
   | ModuleTypeSubstitution _ -> acc
   | Open _ -> acc
@@ -40,8 +41,9 @@ and signature_item ~f id acc s_item =
   | TypExt te -> type_extension ~f acc te
   | Exception exc -> exception_ ~f acc exc
   | Value v -> value ~f acc v
-  | Class (_, cl) -> class_ ~f acc cl
-  | ClassType (_, clt) -> class_type ~f acc clt
+  | Class (_, cl) -> class_ ~f (cl.id :> Paths.Identifier.LabelParent.t) acc cl
+  | ClassType (_, clt) ->
+      class_type ~f (clt.id :> Paths.Identifier.LabelParent.t) acc clt
   | Include i -> include_ ~f id acc i
   | Comment d -> docs ~f id acc d
 
@@ -49,8 +51,8 @@ and docs ~f id acc d = f acc (Doc (id, d))
 
 and include_ ~f id acc inc = signature ~f id acc inc.expansion.content
 
-and class_type ~f acc ct =
-  (* This check is important because [is_hidden] does not work on children of
+and class_type ~f id acc ct =
+  (* This check is important because [is_internal] does not work on children of
      internal items. This means that if [Fold] did not make this check here,
      it would be difficult to filter for internal items afterwards. This also
      applies to the same check in functions bellow. *)
@@ -59,8 +61,7 @@ and class_type ~f acc ct =
     let acc = f acc (ClassType ct) in
     match ct.expansion with
     | None -> acc
-    | Some cs ->
-        class_signature ~f (ct.id :> Paths.Identifier.LabelParent.t) acc cs
+    | Some cs -> class_signature ~f id acc cs
 
 and class_signature ~f id acc ct_expr =
   List.fold_left (class_signature_item ~f id) acc ct_expr.items
@@ -73,16 +74,13 @@ and class_signature_item ~f id acc item =
   | Inherit _ -> acc
   | Comment d -> docs ~f id acc d
 
-and class_ ~f acc cl =
+and class_ ~f id acc cl =
   if Paths.Identifier.is_hidden cl.id then acc
   else
     let acc = f acc (Class cl) in
     match cl.expansion with
     | None -> acc
-    | Some cl_signature ->
-        class_signature ~f
-          (cl.id :> Paths.Identifier.LabelParent.t)
-          acc cl_signature
+    | Some cl_signature -> class_signature ~f id acc cl_signature
 
 and exception_ ~f acc exc =
   if Paths.Identifier.is_hidden exc.id then acc else f acc (Exception exc)
@@ -92,30 +90,25 @@ and type_extension ~f acc te = f acc (Extension te)
 and value ~f acc v =
   if Paths.Identifier.is_hidden v.id then acc else f acc (Value v)
 
-and module_ ~f acc m =
+and module_ ~f id acc m =
   if Paths.Identifier.is_hidden m.id then acc
   else
     let acc = f acc (Module m) in
     match m.type_ with
     | Alias (_, None) -> acc
-    | Alias (_, Some s_e) ->
-        simple_expansion ~f (m.id :> Paths.Identifier.LabelParent.t) acc s_e
-    | ModuleType mte ->
-        module_type_expr ~f (m.id :> Paths.Identifier.LabelParent.t) acc mte
+    | Alias (_, Some s_e) -> simple_expansion ~f id acc s_e
+    | ModuleType mte -> module_type_expr ~f id acc mte
 
 and type_decl ~f acc td =
   if Paths.Identifier.is_hidden td.id then acc else f acc (TypeDecl td)
 
-and module_type ~f acc mt =
+and module_type ~f id acc mt =
   if Paths.Identifier.is_hidden mt.id then acc
   else
     let acc = f acc (ModuleType mt) in
     match mt.expr with
     | None -> acc
-    | Some mt_expr ->
-        module_type_expr ~f
-          (mt.id :> Paths.Identifier.LabelParent.t)
-          acc mt_expr
+    | Some mt_expr -> module_type_expr ~f id acc mt_expr
 
 and simple_expansion ~f id acc s_e =
   match s_e with
