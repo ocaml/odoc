@@ -83,10 +83,34 @@ type items =
   | `Include of item list
 ]
 
+let extract_visibility =
+  let open Compat in
+  function
+  | Sig_type (_, _, _, vis)
+  | Sig_module (_, _, _, _, vis)
+  | Sig_modtype (_, _, vis)
+  | Sig_value (_, _, vis)
+  | Sig_class (_, _, _, vis)
+  | Sig_class_type (_, _, _, vis)
+  | Sig_typext (_, _, _, vis) ->
+      vis
+
 let rec extract_signature_type_items vis items =
   let open Compat in
-    match items with
-    | Sig_type(id, td, _, vis') :: rest when vis=vis' ->
+  match items with
+  | item :: rest ->
+    let vis' = extract_visibility item in
+    if vis = vis' then
+      let hidden = vis' = Hidden in
+      extract_signature_type_items_extract vis ~hidden item rest
+    else
+      extract_signature_type_items_skip vis item rest
+  | [] -> []
+
+and extract_signature_type_items_extract vis ~hidden item rest =
+  let open Compat in
+  match item, rest with
+    | Sig_type(id, td, _, _), _ ->
       if Btype.is_row_name (Ident.name id)
       then extract_signature_type_items vis rest
       else
@@ -104,56 +128,64 @@ let rec extract_signature_type_items vis items =
 #endif
             List.map (fun c -> `Constructor (c.Types.cd_id, id, Some c.cd_loc)) cstrs
           | Type_open -> [] in
-        `Type (id, vis'=Hidden, None) :: constrs @ extract_signature_type_items vis rest 
+        `Type (id, hidden, None) :: constrs @ extract_signature_type_items vis rest
 
-    | Sig_module(id, _, _, _, vis') :: rest when vis=vis' ->
-      `Module (id, vis'=Hidden, None) :: extract_signature_type_items vis rest
+    | Sig_module(id, _, _, _, _), _ ->
+      `Module (id, hidden, None) :: extract_signature_type_items vis rest
 
-    | Sig_modtype(id, _, vis') :: rest when vis=vis' ->
-      `ModuleType (id, vis'=Hidden, None) :: extract_signature_type_items vis rest
-    
-    | Sig_value(id, _, vis') :: rest when vis=vis' ->
-      `Value (id, vis'=Hidden, None) :: extract_signature_type_items vis rest
+    | Sig_modtype(id, _, _), _ ->
+      `ModuleType (id, hidden, None) :: extract_signature_type_items vis rest
+
+    | Sig_value(id, _, _), _ ->
+      `Value (id, hidden, None) :: extract_signature_type_items vis rest
 #if OCAML_VERSION < (5,1,0)
-    | Sig_class(id, _, _, vis') :: Sig_class_type(ty_id, _, _, _)
-        :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest when vis=vis' ->
-      `Class (id, ty_id, obj_id, Some cl_id, vis'=Hidden, None) :: extract_signature_type_items vis rest
+    | Sig_class(id, _, _, _),
+      Sig_class_type(ty_id, _, _, _)
+      :: Sig_type(obj_id, _, _, _)
+      :: Sig_type(cl_id, _, _, _) :: _ ->
+      `Class (id, ty_id, obj_id, Some cl_id, hidden, None)
+      :: extract_signature_type_items vis rest
 
-    | Sig_class_type(id, _, _, vis') :: Sig_type(obj_id, _, _, _)
-      :: Sig_type(cl_id, _, _, _) :: rest when vis=vis' ->
-      `ClassType (id, obj_id, Some cl_id, vis'=Hidden, None) :: extract_signature_type_items vis rest
+    | Sig_class_type(id, _, _, _),
+      Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: _ ->
+      `ClassType (id, obj_id, Some cl_id, hidden, None)
+      :: extract_signature_type_items vis rest
 #else
-    | Sig_class(id, _, _, vis') :: Sig_class_type(ty_id, _, _, _)
-        :: Sig_type(obj_id, _, _, _) :: rest when vis=vis' ->
-      `Class (id, ty_id, obj_id, None, vis'=Hidden, None) :: extract_signature_type_items vis rest
+    | Sig_class(id, _, _, _),
+      Sig_class_type(ty_id, _, _, _) :: Sig_type(obj_id, _, _, _) :: _ ->
+      `Class (id, ty_id, obj_id, None, hidden, None)
+      :: extract_signature_type_items vis rest
 
-    | Sig_class_type(id, _, _, vis') :: Sig_type(obj_id, _, _, _)  :: rest when vis=vis' ->
-      `ClassType (id, obj_id, None, vis'=Hidden, None) :: extract_signature_type_items vis rest
+    | Sig_class_type(id, _, _, _), Sig_type(obj_id, _, _, _) :: _ ->
+      `ClassType (id, obj_id, None, hidden, None)
+      :: extract_signature_type_items vis rest
 #endif
 
-    | Sig_typext (id, constr, Text_exception, vis') :: rest when vis=vis' ->
+    | Sig_typext (id, constr, Text_exception, _), _ ->
       `Exception (id, Some constr.ext_loc)
       :: extract_signature_type_items vis rest
 
-    | Sig_typext (id, constr, _, vis') :: rest when vis=vis'->
+    | Sig_typext (id, constr, _, _), _ ->
       `Extension (id, Some constr.ext_loc)
       :: extract_signature_type_items vis rest
 
-    | Sig_class_type(_, _, _, _) :: Sig_type(_, _, _, _)
-      :: Sig_type(_, _, _, _) :: rest
-    | Sig_class(_, _, _, _) :: Sig_class_type(_, _, _, _)
-        :: Sig_type(_, _, _, _) :: Sig_type(_, _, _, _) :: rest
-    | Sig_typext (_,_,_,_) :: rest
-    | Sig_modtype(_, _, _) :: rest
-    | Sig_module(_, _, _, _, _) :: rest
-    | Sig_type(_, _, _, _) :: rest
-    | Sig_value (_, _, _) :: rest ->
-        extract_signature_type_items vis rest
+  | Sig_class _, _
+  | Sig_class_type _, _ -> assert false
 
-    | Sig_class _ :: _
-    | Sig_class_type _ :: _ -> assert false
+and extract_signature_type_items_skip vis item rest =
+  let open Compat in
+  match item, rest with
+  | Sig_class_type _, Sig_type _ :: Sig_type _ :: rest
+  | Sig_class _, Sig_class_type _ :: Sig_type _ :: Sig_type _ :: rest
+  | Sig_typext  _, rest
+  | Sig_modtype _, rest
+  | Sig_module _, rest
+  | Sig_type _, rest
+  | Sig_value  _, rest ->
+    extract_signature_type_items vis rest
 
-    | [] -> []
+  | Sig_class _, _
+  | Sig_class_type _, _ -> assert false
 
 #if OCAML_VERSION >= (4,8,0)
 
