@@ -81,7 +81,8 @@ let compile_impl ~output_dir ~input_file:file ~includes ~parent_id ~source_id =
   let lines = submit desc cmd output_file in
   add_prefixed_output cmd compile_output (Fpath.to_string file) lines
 
-let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs () =
+let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs
+    ~current_package () =
   let open Cmd in
   let output_file = Fpath.set_ext "odocl" file in
   let includes =
@@ -105,7 +106,7 @@ let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs () =
   in
   let cmd =
     odoc % "link" % p file % "-o" % p output_file %% includes %% docs %% libs
-    % "--enable-missing-root-warning"
+    % "--current-package" % current_package % "--enable-missing-root-warning"
   in
   let cmd =
     if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd

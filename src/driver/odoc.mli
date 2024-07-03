@@ -14,14 +14,17 @@ val compile :
   includes:Fpath.set ->
   parent_id:string ->
   unit
+
 val link :
   ?ignore_output:bool ->
   input_file:Fpath.t ->
   includes:Fpath.set ->
   docs:(string * Fpath.t) list ->
   libs:(string * Fpath.t) list ->
+  current_package:string ->
   unit ->
   unit
+
 val html_generate :
   output_dir:string ->
   ?ignore_output:bool ->
