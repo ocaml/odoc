@@ -75,23 +75,23 @@ end = struct
 
   let find_by_path ?root { table = cache; current_root } ~path =
     let path = Fpath.normalize path in
-    let root = match root with None -> current_root | Some _ as pkg -> pkg in
-    match root with
-    | Some root -> (
-        match hashtbl_find_opt cache root with
-        | Some { hierarchical = cache, root; _ } -> (
-            match hashtbl_find_opt cache path with
-            | Some x -> Ok (Some x)
-            | None ->
-                let full_path =
-                  Fpath.( // ) (Fs.Directory.to_fpath root) path
-                in
-                if Fs.File.exists full_path then (
-                  Hashtbl.add cache path full_path;
-                  Ok (Some full_path))
-                else Ok None)
-        | None -> Error NoPackage)
-    | None -> Error NoRoot
+    let root =
+      match (root, current_root) with
+      | Some pkg, _ | None, Some pkg -> Ok pkg
+      | None, None -> Error NoRoot
+    in
+    root >>= fun root ->
+    match hashtbl_find_opt cache root with
+    | Some { hierarchical = cache, root; _ } -> (
+        match hashtbl_find_opt cache path with
+        | Some x -> Ok (Some x)
+        | None ->
+            let full_path = Fpath.( // ) (Fs.Directory.to_fpath root) path in
+            if Fs.File.exists full_path then (
+              Hashtbl.add cache path full_path;
+              Ok (Some full_path))
+            else Ok None)
+    | None -> Error NoPackage
 
   let populate_flat_namespace ~root =
     let flat_namespace = Hashtbl.create 42 in
@@ -111,18 +111,18 @@ end = struct
 
   let find_by_name ?root { table = cache; current_root } ~name =
     let package =
-      match root with None -> current_root | Some _ as pkg -> pkg
+      match (root, current_root) with
+      | Some pkg, _ | None, Some pkg -> Ok pkg
+      | None, None -> Error NoRoot
     in
-    match package with
-    | Some package -> (
-        match hashtbl_find_opt cache package with
-        | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
-        | Some ({ flat = Unvisited root; _ } as p) ->
-            let flat = populate_flat_namespace ~root in
-            Hashtbl.replace cache package { p with flat = Visited flat };
-            Ok (Hashtbl.find_all flat name)
-        | None -> Error NoPackage)
-    | None -> Error NoRoot
+    package >>= fun package ->
+    match hashtbl_find_opt cache package with
+    | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
+    | Some ({ flat = Unvisited root; _ } as p) ->
+        let flat = populate_flat_namespace ~root in
+        Hashtbl.replace cache package { p with flat = Visited flat };
+        Ok (Hashtbl.find_all flat name)
+    | None -> Error NoPackage
 end
 
 let () = (ignore Named_roots.find_by_name [@warning "-5"])
