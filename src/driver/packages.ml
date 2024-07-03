@@ -30,6 +30,7 @@ type modulety = {
   m_intf : intf;
   m_impl : impl option;
   m_hidden : bool;
+  m_package : string;
 }
 
 type mld = {
@@ -67,7 +68,7 @@ module Module = struct
 
   let is_hidden name = Astring.String.is_infix ~affix:"__" name
 
-  let vs pkg_name lib_name dir modules =
+  let vs m_package lib_name dir modules =
     let mk m_name =
       let exists ext =
         let p =
@@ -86,7 +87,7 @@ module Module = struct
             | _ -> None)
       in
       let mk_intf mif_path =
-        let mif_parent_id = Printf.sprintf "%s/lib/%s" pkg_name lib_name in
+        let mif_parent_id = Printf.sprintf "%s/lib/%s" m_package lib_name in
         let mif_odoc_file =
           Fpath.(
             v mif_parent_id
@@ -106,7 +107,7 @@ module Module = struct
         | Error _ -> failwith "bad deps"
       in
       let mk_impl mip_path =
-        let mip_parent_id = Printf.sprintf "%s/lib/%s" pkg_name lib_name in
+        let mip_parent_id = Printf.sprintf "%s/lib/%s" m_package lib_name in
         let mip_odoc_file =
           Fpath.(
             v mip_parent_id
@@ -123,7 +124,7 @@ module Module = struct
                   m "Found source file %a for %s" Fpath.pp src_path m_name);
               let src_name = Fpath.filename src_path in
               let src_id =
-                Printf.sprintf "%s/src/%s/%s" pkg_name lib_name src_name
+                Printf.sprintf "%s/src/%s/%s" m_package lib_name src_name
               in
               Some { src_path; src_id }
         in
@@ -142,7 +143,7 @@ module Module = struct
               Logs.err (fun m -> m "No files for module: %s" m_name);
               failwith "no files"
         in
-        Some { m_name; m_intf; m_impl; m_hidden }
+        Some { m_name; m_intf; m_impl; m_hidden; m_package }
       with _ ->
         Logs.err (fun m -> m "Error processing module %s. Ignoring." m_name);
         None

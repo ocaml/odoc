@@ -16,6 +16,7 @@ type compiled = {
   include_dirs : Fpath.Set.t;
   impl : impl option;
   pkg_args : pkg_args;
+  current_package : string;
 }
 
 let mk_byhash (pkgs : Packages.t Util.StringMap.t) =
@@ -145,6 +146,7 @@ let compile output_dir all =
             include_dirs = includes;
             impl;
             pkg_args;
+            current_package = modty.m_package;
           }
   in
 
@@ -189,6 +191,7 @@ let compile output_dir all =
             include_dirs;
             impl = None;
             pkg_args;
+            current_package = pkg.name;
           }
           :: acc)
         acc pkg.mlds)
@@ -201,12 +204,15 @@ let link : compiled list -> _ =
   let link : compiled -> linked list =
    fun c ->
     let includes = Fpath.Set.add c.output_dir c.include_dirs in
+    let link input_file =
+      let { pkg_args = { libs; docs }; current_package; _ } = c in
+      Odoc.link ~input_file ~includes ~libs ~docs ~current_package ()
+    in
     let impl =
       match c.impl with
       | Some { impl; src } ->
           Logs.debug (fun m -> m "Linking impl: %a" Fpath.pp impl);
-          Odoc.link ~input_file:impl ~includes ~libs:c.pkg_args.libs
-            ~docs:c.pkg_args.docs ();
+          link impl;
           Atomic.incr Stats.stats.linked_impls;
           [ { output_file = Fpath.(set_ext "odocl" impl); src = Some src } ]
       | None -> []
@@ -217,8 +223,7 @@ let link : compiled list -> _ =
         impl
     | _ ->
         Logs.debug (fun m -> m "linking %a" Fpath.pp c.output_file);
-        Odoc.link ~input_file:c.output_file ~includes ~libs:c.pkg_args.libs
-          ~docs:c.pkg_args.docs ();
+        link c.output_file;
         (match c.m with
         | Module _ -> Atomic.incr Stats.stats.linked_units
         | Mld _ -> Atomic.incr Stats.stats.linked_mlds);
