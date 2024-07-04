@@ -13,7 +13,7 @@ Contributing to the HTML is slightly more complex. The main HTML generator is in
 Here's a step-by-step guide to get you set up for HTML contribution:
 
 1. **Install requirements:**
-   * Install a recent version of [HTML tidy](http://www.html-tidy.org/) (used for HTML validity testing). Here's how:
+   * Install a recent version of [HTML Tidy](http://www.html-tidy.org/) (used for HTML validity testing). Here's how:
      - On MacOS (should be version 5.8 by the date of this writing): `brew install tidy-html5`   
      - On Debian / Ubuntu: `sudo apt-get install tidy`
    * Install a recent version of [`jq`](https://github.com/stedolan/jq). Here's how:
