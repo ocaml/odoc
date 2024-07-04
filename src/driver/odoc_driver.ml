@@ -503,22 +503,24 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers o
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
   if verbose then Logs.set_level (Some Logs.Debug);
-  let libs =
-    if libs = [] then Ocamlfind.all ()
-    else libs
-  in
   Logs.set_reporter (Logs_fmt.reporter ());
   let () = Worker_pool.start_workers env sw nb_workers in
-  let libs =
-    List.map Ocamlfind.sub_libraries libs
-    |> List.fold_left Util.StringSet.union Util.StringSet.empty
-  in
+ 
   let all =
     if voodoo then
       match package_name with
       | Some p -> Voodoo.of_voodoo p blessed
       | None -> failwith "Need a package name for voodoo"
-    else Packages.of_libs packages_dir libs in
+    else
+      let libs =
+        if libs = [] then Ocamlfind.all ()
+        else libs
+      in    
+      let libs =
+        List.map Ocamlfind.sub_libraries libs
+        |> List.fold_left Util.StringSet.union Util.StringSet.empty
+      in
+      Packages.of_libs packages_dir libs in
   let partial =
     if voodoo
     then
