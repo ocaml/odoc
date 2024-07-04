@@ -23,7 +23,7 @@ val float_dsig : int -> float t
     and floats. *)
 ]}
 
-These comments are picked up by [odoc] and {{!Fmt.float_dsig}turned into HTML}, TeX, or manpages.
+These comments are picked up by [odoc] and {{!Fmt.float_dsig}turned into HTML}, LaTeX, or manpages.
 
 The syntax reference is a refinement of that explained in the
 {{:https://ocaml.org/manual/ocamldoc.html}OCaml manual}. The differences
