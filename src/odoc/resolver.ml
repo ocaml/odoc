@@ -127,7 +127,9 @@ end = struct
     | None -> Error NoPackage
 
   let all_of ?root ~ext { table; current_root } =
-    let my_root = match root with None -> current_root | Some pkg -> pkg in
+    let my_root =
+      match root with None -> Option.get current_root | Some pkg -> pkg
+    in
     let return flat =
       let values = Hashtbl.fold (fun _ v acc -> v :: acc) flat [] in
       let values = List.filter (Fpath.has_ext ext) values in
@@ -424,7 +426,7 @@ let all_roots ?root named_roots =
   let all_files =
     match Named_roots.all_of ?root named_roots ~ext:"odocl" with
     | Ok x -> x
-    | Error NoPackage -> []
+    | Error (NoPackage | NoRoot) -> []
   in
   let load page =
     match Odoc_file.load_root page with Error _ -> None | Ok root -> Some root

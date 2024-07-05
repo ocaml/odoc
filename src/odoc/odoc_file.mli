@@ -57,9 +57,8 @@ val load_root : Fs.File.t -> (Root.t, [> msg ]) result
 (** Only load the root. Faster than {!load}, used for looking up imports. *)
 
 val save_index :
-  Fs.File.t -> Odoc_search.Entry.t Paths.Identifier.Hashtbl.Any.t -> unit
+  Fs.File.t -> Odoc_search.Entry.t Odoc_model.Lang.Index.t -> unit
 
 val load_index :
-  Fs.File.t ->
-  (Odoc_search.Entry.t Paths.Identifier.Hashtbl.Any.t, [> msg ]) result
+  Fs.File.t -> (Odoc_search.Entry.t Odoc_model.Lang.Index.t, [> msg ]) result
 (** Load a [.odoc-index] file. *)

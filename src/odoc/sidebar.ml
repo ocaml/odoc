@@ -3,7 +3,9 @@ open Odoc_model.Lang.Sidebar
 let compile ~page_roots ~lib_roots ~output ~warnings_options:_ =
   let resolver =
     Resolver.create ~important_digests:false ~directories:[]
-      ~roots:(Some { page_roots; lib_roots; current_root = "" })
+      ~roots:
+        (Some
+           { page_roots; lib_roots; current_lib = None; current_package = None })
       ~open_modules:[]
   in
   let pages =
@@ -16,10 +18,10 @@ let compile ~page_roots ~lib_roots ~output ~warnings_options:_ =
               let title =
                 match title with
                 | None ->
+                    let open Odoc_model in
+                    let open Odoc_model.Paths in
                     [
-                      Odoc_model.Location_.at
-                        (Odoc_model.Location_.span [])
-                        (`Word (Odoc_model.Paths.Identifier.name page_id));
+                      Location_.(at (span [])) (`Word (Identifier.name page_id));
                     ]
                 | Some x -> x
               in
