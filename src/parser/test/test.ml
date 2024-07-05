@@ -2907,19 +2907,19 @@ let%expect_test _ =
         {|{delim@ocaml[ let x = ]delim[ {err@mdx-error[ here's the error ]} ]err}
         ]delim}|};
       [%expect
-        "
+        {|
         ((output
           (((f.ml (1 0) (2 15))
             (code_block (((f.ml (1 7) (1 12)) ocaml) ())
-             ((f.ml (1 13) (1 22)) \"let x = \")
+             ((f.ml (1 13) (1 22)) "let x = ")
              ((code_block (((f.ml (1 35) (1 44)) mdx-error) ())
-               ((f.ml (1 45) (1 66)) \"here's the error ]} \"))
+               ((f.ml (1 45) (1 66)) "here's the error ]} "))
               (paragraph
                (((f.ml (2 8) (2 9)) (word ])) ((f.ml (2 9) (2 14)) (word delim)))))))))
          (warnings
-          ( \"File \\\"f.ml\\\", line 2, characters 8-9:\\
-           \\nUnpaired ']' (end of code).\\
-           \\nSuggestion: try '\\\\]'.\")))"]
+          ( "File \"f.ml\", line 2, characters 8-9:\
+           \nUnpaired ']' (end of code).\
+           \nSuggestion: try '\\]'.")))|}]
 
     let delimited_code_block_with_output =
       test "{delim@ocaml[ foo ]delim[ ]}";
