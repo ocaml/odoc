@@ -27,17 +27,10 @@ val link :
 
 val compile_index :
   ?ignore_output:bool ->
-  dst:Fpath.t ->
+  output_file:Fpath.t ->
   json:bool ->
-  include_rec:Fpath.set ->
-  unit ->
-  unit
-
-val sidebar :
-  ?ignore_output:bool ->
   docs:(string * Fpath.t) list ->
   libs:(string * Fpath.t) list ->
-  output_file:Fpath.t ->
   unit ->
   unit
 

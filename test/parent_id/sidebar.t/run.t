@@ -12,12 +12,12 @@
   $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/doc/page-index.odoc
   $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/lib/libname/unit.odoc
 
-  $ odoc sidebar -P pkg:_odoc/pkg/doc/ -L libname:_odoc/pkg/lib/libname -o sidebar.odoc
-  $ odoc html-generate --indent --sidebar sidebar.odoc -o html _odoc/pkg/doc/page-file.odocl
-  $ odoc html-generate --indent --sidebar sidebar.odoc -o html _odoc/pkg/doc/dir1/page-my_page.odocl
-  $ odoc html-generate --indent --sidebar sidebar.odoc -o html _odoc/pkg/doc/dir1/page-index.odocl
-  $ odoc html-generate --indent --sidebar sidebar.odoc -o html _odoc/pkg/doc/page-index.odocl
-  $ odoc html-generate --indent --sidebar sidebar.odoc -o html _odoc/pkg/lib/libname/unit.odocl
+  $ odoc compile-index -P pkg:_odoc/pkg/doc/ -L libname:_odoc/pkg/lib/libname -o sidebar.odoc-index
+  $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/doc/page-file.odocl
+  $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/doc/dir1/page-my_page.odocl
+  $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/doc/dir1/page-index.odocl
+  $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/doc/page-index.odocl
+  $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/lib/libname/unit.odocl
 
   $ cat html/pkg/doc/index.html | grep odoc-global-toc -A 15
      <nav class="odoc-toc odoc-global-toc"><b>pkg's Pages</b>

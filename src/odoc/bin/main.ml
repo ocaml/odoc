@@ -808,64 +808,6 @@ end = struct
     Term.info ~docs ~doc ~man "link"
 end
 
-module Sidebar = struct
-  open Or_error
-
-  let sidebar page_roots lib_roots output_file warnings_options =
-    let output = Fs.File.of_string output_file in
-    (if
-       not
-         (Antichain.check
-            (List.rev_append lib_roots page_roots |> List.map ~f:snd))
-     then Error (`Msg "Paths given to all -P and -L options must be disjoint")
-     else Ok ())
-    >>= fun () ->
-    match Sidebar.compile ~lib_roots ~page_roots ~warnings_options ~output with
-    | Error _ as e -> e
-    | Ok _ -> Ok ()
-
-  let dst =
-    let doc =
-      "Output file path. Non-existing intermediate directories are created."
-    in
-    Arg.(
-      required & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
-
-  let page_roots =
-    let doc =
-      "Specifies a directory PATH containing pages that should be included in \
-       the sidebar, under the NAME section."
-    in
-    Arg.(
-      value
-      & opt_all convert_named_root []
-      & info ~docs ~docv:"NAME:PATH" ~doc [ "P" ])
-
-  let lib_roots =
-    let doc =
-      "Specifies a directory PATH containing units that should be included in \
-       the sidebar, as part of the LIBNAME library."
-    in
-
-    Arg.(
-      value
-      & opt_all convert_named_root []
-      & info ~docs ~docv:"LIBNAME:PATH" ~doc [ "L" ])
-
-  let cmd =
-    Term.(
-      const handle_error
-      $ (const sidebar $ page_roots $ lib_roots $ dst $ warnings_options))
-
-  let info ~docs =
-    let doc =
-      "Generate a sidebar file from a list of pages and units. The generated \
-       file ought to be passed to the --sidebar argument of the html-generate \
-       command."
-    in
-    Term.info ~docs ~doc "sidebar"
-end
-
 module type S = sig
   type args
 
@@ -965,11 +907,11 @@ end = struct
         & info [ "source-root" ] ~doc ~docv:"dir")
 
     let sidebar =
-      let doc = "Use FILE to generate the global sidebar." in
+      let doc = "A .odoc-index file, used eg to generate the sidebar." in
       Arg.(
         value
         & opt (some convert_fpath) None
-        & info [ "sidebar" ] ~doc ~docv:"FILE")
+        & info [ "index" ] ~doc ~docv:"FILE.odoc-index")
 
     let cmd =
       let syntax =
@@ -1599,7 +1541,6 @@ let () =
       Occurrences.Aggregate.(cmd, info ~docs:section_pipeline);
       Compile.(cmd, info ~docs:section_pipeline);
       Odoc_link.(cmd, info ~docs:section_pipeline);
-      Sidebar.(cmd, info ~docs:section_pipeline);
       Odoc_html.generate ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
       Source_tree.(cmd, info ~docs:section_pipeline);

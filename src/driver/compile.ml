@@ -262,11 +262,19 @@ let sherlodoc_js_path ~html_dir =
 
 let sherlodoc_marshall_path ~html_dir =
   Fpath.(html_dir / "sherlodoc_db.marshal")
-let index_one output_dir pkgname _pkg =
+let index_one output_dir pkgname pkg =
   let dir = Fpath.(output_dir / pkgname) in
-  let dst = odoc_index_path ~odoc_dir:output_dir pkgname in
-  let include_rec = Fpath.Set.singleton dir in
-  Odoc.compile_index ~json:false ~dst ~include_rec ()
+  let output_file = odoc_index_path ~odoc_dir:output_dir pkgname in
+  let ( / ) = Fpath.( / ) in
+  let libs =
+    List.map
+      (fun lib -> (lib.Packages.lib_name, dir / "lib" / lib.lib_name))
+      pkg.Packages.libraries
+  in
+  Odoc.compile_index ~json:false ~output_file ~libs
+    ~docs:[ (pkgname, dir / "doc") ]
+    ()
+
 let index odoc_dir pkgs = Util.StringMap.iter (index_one odoc_dir) pkgs
 
 let sherlodoc_index_one ~html_dir ~odoc_dir pkgname _pkg_content =
@@ -288,27 +296,7 @@ let sherlodoc ~html_dir ~odoc_dir pkgs =
   in
   Sherlodoc.index ~format ~inputs ~dst ()
 
-let compile_sidebars ~odoc_dir ~output_dir all =
-  Util.StringMap.map
-    (fun (pkg : Packages.t) ->
-      let package_name = pkg.name in
-      let ( / ) = Fpath.( / ) in
-      let libs =
-        List.map
-          (fun lib ->
-            ( lib.Packages.lib_name,
-              odoc_dir / package_name / "lib" / lib.lib_name ))
-          pkg.Packages.libraries
-      in
-      let output_file = Fpath.( / ) output_dir package_name in
-      Odoc.sidebar
-        ~docs:[ (package_name, odoc_dir / package_name / "doc") ]
-        ~libs ~output_file ();
-      output_file)
-    all
-
-let html_generate : Fpath.t -> Fpath.t Util.StringMap.t -> linked list -> _ =
- fun output_dir sidebars linked ->
+let html_generate output_dir ~odoc_dir linked =
   let html_generate : linked -> unit =
    fun l ->
     let search_uris =
@@ -317,7 +305,7 @@ let html_generate : Fpath.t -> Fpath.t Util.StringMap.t -> linked list -> _ =
         sherlodoc_js_path_relative_to_html;
       ]
     in
-    let sidebar = Util.StringMap.find_opt l.package_name sidebars in
+    let sidebar = Some (odoc_index_path ~odoc_dir l.package_name) in
     Odoc.html_generate ~search_uris ?sidebar
       ~output_dir:(Fpath.to_string output_dir)
       ~input_file:l.output_file ?source:l.src ();
