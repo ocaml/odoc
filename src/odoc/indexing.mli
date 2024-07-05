@@ -13,7 +13,8 @@ val compile :
   [ `JSON | `Marshall ] ->
   output:Fs.file ->
   warnings_options:Odoc_model.Error.warnings_options ->
-  includes_rec:Fs.directory list ->
+  lib_roots:(string * Fs.directory) list ->
+  page_roots:(string * Fs.directory) list ->
   inputs_in_file:Fs.file list ->
   odocls:Fs.file list ->
   (unit, [> msg ]) result

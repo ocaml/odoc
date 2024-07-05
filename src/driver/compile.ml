@@ -209,7 +209,9 @@ let link : compiled list -> _ =
    fun c ->
     let includes = Fpath.Set.add c.output_dir c.include_dirs in
     let link input_file =
-      let { pkg_args = { libs; docs }; pkgname = current_package; _ } = c in
+      let { pkg_args = { libs; docs }; package_name = current_package; _ } =
+        c
+      in
       Odoc.link ~input_file ~includes ~libs ~docs ~current_package ()
     in
     let impl =

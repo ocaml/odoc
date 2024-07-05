@@ -8,7 +8,7 @@ module H = Odoc_model.Paths.Identifier.Hashtbl.Any
 let handle_file file ~unit ~page ~occ =
   match Fpath.basename file with
   | s when String.is_prefix ~affix:"index-" s ->
-      Odoc_file.load_index file >>= fun index -> Ok (occ index)
+      Odoc_file.load_index file >>= fun (_sidebar, index) -> Ok (occ index)
   | _ -> (
       Odoc_file.load file >>= fun unit' ->
       match unit' with
@@ -74,7 +74,7 @@ let compile_to_json ~output ~warnings_options files =
   Format.fprintf output "]";
   Ok ()
 
-let compile_to_marshall ~output ~warnings_options files =
+let compile_to_marshall ~output ~warnings_options sidebar files =
   let final_index = H.create 10 in
   let unit u =
     Odoc_model.Fold.unit
@@ -108,12 +108,55 @@ let compile_to_marshall ~output ~warnings_options files =
   in
   let result = Error.catch_warnings index in
   result |> Error.handle_warnings ~warnings_options >>= fun () ->
-  Ok (Odoc_file.save_index output final_index)
+  Ok (Odoc_file.save_index output (sidebar, final_index))
 
-let compile out_format ~output ~warnings_options ~includes_rec ~inputs_in_file
-    ~odocls =
+open Odoc_model.Lang.Sidebar
+
+let compile out_format ~output ~warnings_options ~lib_roots ~page_roots
+    ~inputs_in_file ~odocls =
   parse_input_files inputs_in_file >>= fun files ->
   let files = List.rev_append odocls files in
+  let resolver =
+    Resolver.create ~important_digests:false ~directories:[]
+      ~roots:
+        (Some
+           { page_roots; lib_roots; current_lib = None; current_package = None })
+      ~open_modules:[]
+  in
+  (* if files = [] && then Error (`Msg "No .odocl files were included") *)
+  (* else *)
+  let pages =
+    List.map
+      (fun (page_root, _) ->
+        let pages = Resolver.all_pages ~root:page_root resolver in
+        let pages =
+          List.map
+            (fun (page_id, title) ->
+              let title =
+                match title with
+                | None ->
+                    [
+                      Odoc_model.Location_.at
+                        (Odoc_model.Location_.span [])
+                        (`Word (Odoc_model.Paths.Identifier.name page_id));
+                    ]
+                | Some x -> x
+              in
+              (title, page_id))
+            pages
+        in
+        { page_name = page_root; pages })
+      page_roots
+  in
+  let libraries =
+    List.map
+      (fun (library, _) ->
+        { name = library; units = Resolver.all_units ~library resolver })
+      lib_roots
+  in
+  let includes_rec =
+    List.rev_append (List.map snd page_roots) (List.map snd lib_roots)
+  in
   let files =
     List.rev_append files
       (includes_rec
@@ -123,6 +166,7 @@ let compile out_format ~output ~warnings_options ~includes_rec ~inputs_in_file
                [] include_rec)
       |> List.concat)
   in
+  let content = { pages; libraries } in
   match out_format with
   | `JSON -> compile_to_json ~output ~warnings_options files
-  | `Marshall -> compile_to_marshall ~output ~warnings_options files
+  | `Marshall -> compile_to_marshall ~output ~warnings_options content files

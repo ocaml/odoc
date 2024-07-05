@@ -7,7 +7,7 @@ Compile and link the documentation
   $ odoc compile -I . main.cmt
   $ odoc link -I . main.odoc
 
-  $ odoc compile-index --json --include-rec .
+  $ odoc compile-index --json -P pkgname:./
 We test that you can also pass a .odocl file directly.
   $ odoc compile-index --json main.odocl -o index2.json
 Indexes should be the same no matter how the inputs were passed.

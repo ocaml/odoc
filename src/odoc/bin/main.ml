@@ -74,6 +74,32 @@ let handle_error = function
       Printf.eprintf "ERROR: %s\n%!" msg;
       exit 1
 
+module Antichain = struct
+  let absolute_normalization p =
+    let p =
+      if Fpath.is_rel p then Fpath.( // ) (Fpath.v (Sys.getcwd ())) p else p
+    in
+    Fpath.normalize p
+
+  (** Check that a list of directories form an antichain: they are all disjoints *)
+  let check l =
+    let l =
+      List.map
+        ~f:(fun p -> p |> Fs.Directory.to_fpath |> absolute_normalization)
+        l
+    in
+    let rec check = function
+      | [] -> true
+      | p1 :: rest ->
+          List.for_all
+            ~f:(fun p2 ->
+              (not (Fpath.is_prefix p1 p2)) && not (Fpath.is_prefix p2 p1))
+            rest
+          && check rest
+    in
+    check l
+end
+
 let docs = "ARGUMENTS"
 
 let odoc_file_directories =
@@ -497,10 +523,18 @@ module Indexing = struct
     | None, `JSON -> Ok (Fs.File.of_string "index.json")
     | None, `Marshall -> Ok (Fs.File.of_string "index.odoc-index")
 
-  let index dst json warnings_options includes_rec inputs_in_file inputs =
+  let index dst json warnings_options page_roots lib_roots inputs_in_file inputs
+      =
     let marshall = if json then `JSON else `Marshall in
     output_file ~dst marshall >>= fun output ->
-    Indexing.compile marshall ~output ~warnings_options ~includes_rec
+    (if
+       not
+         (Antichain.check
+            (List.rev_append lib_roots page_roots |> List.map ~f:snd))
+     then Error (`Msg "Paths given to all -P and -L options must be disjoint")
+     else Ok ())
+    >>= fun () ->
+    Indexing.compile marshall ~output ~warnings_options ~lib_roots ~page_roots
       ~inputs_in_file ~odocls:inputs
   let cmd =
     let dst =
@@ -521,16 +555,6 @@ module Indexing = struct
         value & opt_all convert_fpath []
         & info ~doc ~docv:"FILE" [ "file-list" ])
     in
-    let include_rec =
-      let doc =
-        "Include all the .odocl files found recursively in DIR in the \
-         generated index."
-      in
-      Arg.(
-        value
-        & opt_all (convert_directory ()) []
-        & info ~doc ~docv:"DIR" [ "include-rec" ])
-    in
     let json =
       let doc = "whether to output a json file, or a binary .odoc-index file" in
       Arg.(value & flag & info ~doc [ "json" ])
@@ -539,9 +563,30 @@ module Indexing = struct
       let doc = ".odocl file to index" in
       Arg.(value & pos_all convert_fpath [] & info ~doc ~docv:"FILE" [])
     in
+    let page_roots =
+      let doc =
+        "Specifies a directory PATH containing pages that should be included \
+         in the sidebar, under the NAME section."
+      in
+      Arg.(
+        value
+        & opt_all convert_named_root []
+        & info ~docs ~docv:"NAME:PATH" ~doc [ "P" ])
+    in
+    let lib_roots =
+      let doc =
+        "Specifies a directory PATH containing units that should be included \
+         in the sidebar, as part of the LIBNAME library."
+      in
+
+      Arg.(
+        value
+        & opt_all convert_named_root []
+        & info ~docs ~docv:"LIBNAME:PATH" ~doc [ "L" ])
+    in
     Term.(
       const handle_error
-      $ (const index $ dst $ json $ warnings_options $ include_rec
+      $ (const index $ dst $ json $ warnings_options $ page_roots $ lib_roots
        $ inputs_in_file $ inputs))
 
   let info ~docs =
@@ -591,30 +636,6 @@ end = struct
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.(set_ext ".odocl" input)
 
-  let absolute_normalization p =
-    let p =
-      if Fpath.is_rel p then Fpath.( // ) (Fpath.v (Sys.getcwd ())) p else p
-    in
-    Fpath.normalize p
-
-  (** Check that a list of directories form an antichain: they are all disjoints *)
-  let check_antichain l =
-    let l =
-      List.map
-        ~f:(fun (_, p) -> p |> Fs.Directory.to_fpath |> absolute_normalization)
-        l
-    in
-    let rec check = function
-      | [] -> true
-      | p1 :: rest ->
-          List.for_all
-            ~f:(fun p2 ->
-              (not (Fpath.is_prefix p1 p2)) && not (Fpath.is_prefix p2 p1))
-            rest
-          && check rest
-    in
-    check l
-
   open Or_error
 
   (** Find the package/library name the output is part of *)
@@ -622,10 +643,10 @@ end = struct
     let l =
       List.map
         ~f:(fun (x, p) ->
-          (x, p |> Fs.Directory.to_fpath |> absolute_normalization))
+          (x, p |> Fs.Directory.to_fpath |> Antichain.absolute_normalization))
         l
     in
-    let o = absolute_normalization o in
+    let o = Antichain.absolute_normalization o in
     (* Taken from OCaml 5.2 standard library *)
     let rec find_map ~f = function
       | [] -> None
@@ -689,7 +710,11 @@ end = struct
       current_package warnings_options open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
-    (if not (check_antichain (List.rev_append lib_roots page_roots)) then
+    (if
+       not
+         (Antichain.check
+            (List.rev_append lib_roots page_roots |> List.map ~f:snd))
+     then
        Error
          (`Msg "Arguments given to -P and -L cannot be included in each others")
      else Ok ())
@@ -784,46 +809,17 @@ end = struct
 end
 
 module Sidebar = struct
-  let absolute_normalization p =
-    let p =
-      if Fpath.is_rel p then Fpath.( // ) (Fpath.v (Sys.getcwd ())) p else p
-    in
-    Fpath.normalize p
-
-  (** Check that a list of directories form an antichain: they are all disjoints *)
-  let check_antichain l =
-    let l =
-      List.map
-        ~f:(fun p -> p |> Fs.Directory.to_fpath |> absolute_normalization)
-        l
-    in
-    let rec check = function
-      | [] -> true
-      | p1 :: rest ->
-          List.for_all
-            ~f:(fun p2 ->
-              (not (Fpath.is_prefix p1 p2)) && not (Fpath.is_prefix p2 p1))
-            rest
-          && check rest
-    in
-    check l
-
   open Or_error
 
   let sidebar page_roots lib_roots output_file warnings_options =
     let output = Fs.File.of_string output_file in
     (if
        not
-         (check_antichain
-            (List.rev_append
-               (List.map ~f:snd lib_roots)
-               (List.map ~f:snd page_roots)))
+         (Antichain.check
+            (List.rev_append lib_roots page_roots |> List.map ~f:snd))
      then Error (`Msg "Paths given to all -P and -L options must be disjoint")
      else Ok ())
     >>= fun () ->
-    let lib_roots =
-      List.map ~f:(fun (libname, root) -> (libname, root)) lib_roots
-    in
     match Sidebar.compile ~lib_roots ~page_roots ~warnings_options ~output with
     | Error _ as e -> e
     | Ok _ -> Ok ()
