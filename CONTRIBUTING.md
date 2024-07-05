@@ -25,7 +25,7 @@ Here's a step-by-step guide to get you set up for HTML contribution:
    ```
    git clone https://github.com/ocaml/odoc.git
    cd odoc
-   opam pin add --no-action `odoc` .
+   opam pin add --no-action odoc .
    opam install --with-test --deps-only odoc
    ```
 
@@ -109,7 +109,7 @@ The CLI for `odoc` and various helper functions for driving the process are cont
 
 ### Test and Internal Libraries
 
-There are a couple of libraries used internally for testing - [`odoc.xref_test`](https://ocaml.github.io/odoc/odoc_xref_test/index.html) and [odoc.model_desc](https://ocaml.github.io/odoc/odoc_model_desc/index.html).
+There are a couple of libraries used internally for testing - [`odoc.xref_test`](https://ocaml.github.io/odoc/odoc_xref_test/index.html) and [`odoc.model_desc`](https://ocaml.github.io/odoc/odoc_model_desc/index.html).
 
 ## Dependency Libraries
 
