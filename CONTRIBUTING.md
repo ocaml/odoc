@@ -25,9 +25,7 @@ Here's a step-by-step guide to get you set up for HTML contribution:
    ```
    git clone https://github.com/ocaml/odoc.git
    cd odoc
-   opam pin add --no-action odoc-parser
-   opam pin add --no-action odoc .
-   opam install --with-test --deps-only odoc
+   opam install --with-test --deps-only ./odoc-parser.opam ./odoc.opam
    ```
 
 3. **Make and test changes:**
