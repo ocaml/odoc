@@ -103,29 +103,17 @@ let link ?(ignore_output = false) ~input_file:file ~includes ~docs ~libs
     Cmd_outputs.(
       add_prefixed_output cmd link_output (Fpath.to_string file) lines)
 
-let compile_index ?(ignore_output = false) ~dst ~json ~include_rec () =
-  let include_rec =
-    Fpath.Set.fold
-      (fun path acc -> Cmd.(acc % "--include-rec" % p path))
-      include_rec Cmd.empty
-  in
-  let json = if json then Cmd.v "--json" else Cmd.empty in
-  let cmd =
-    Cmd.(odoc % "compile-index" %% json %% v "-o" % p dst %% include_rec)
-  in
-  let desc = "Generating search index" in
-  let lines = Cmd_outputs.submit desc cmd (Some dst) in
-  if not ignore_output then
-    Cmd_outputs.(
-      add_prefixed_output cmd link_output (Fpath.to_string dst) lines)
-
-let sidebar ?(ignore_output = false) ~docs ~libs ~output_file () =
-  let open Cmd in
+let compile_index ?(ignore_output = false) ~output_file ~json ~docs ~libs () =
   let docs = doc_args docs in
   let libs = lib_args libs in
-  let cmd = odoc % "sidebar" % "-o" % p output_file %% docs %% libs in
-  let desc = Printf.sprintf "Sidebar for %s" (Fpath.to_string output_file) in
-
+  let json = if json then Cmd.v "--json" else Cmd.empty in
+  let cmd =
+    Cmd.(
+      odoc % "compile-index" %% json %% v "-o" % p output_file %% docs %% libs)
+  in
+  let desc =
+    Printf.sprintf "Generating index for %s" (Fpath.to_string output_file)
+  in
   let lines = Cmd_outputs.submit desc cmd (Some output_file) in
   if not ignore_output then
     Cmd_outputs.(

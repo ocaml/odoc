@@ -1,6 +1,4 @@
-module Sidebar_ = Sidebar
 open Odoc_document
-module Sidebar = Sidebar_
 open Or_error
 open Odoc_model
 
@@ -150,11 +148,12 @@ let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
 
 let generate_odoc ~syntax ~warnings_options ~renderer ~output ~extra_suffix
     ~source ~sidebar extra file =
-  let sidebar =
-    match sidebar with
-    | None -> None
-    | Some x -> Some (x |> Sidebar.read |> Odoc_document.Sidebar.of_lang)
-  in
+  (match sidebar with
+  | None -> Ok None
+  | Some x ->
+      Odoc_file.load_index x >>= fun (sidebar, _) ->
+      Ok (Some (Odoc_document.Sidebar.of_lang sidebar)))
+  >>= fun sidebar ->
   documents_of_odocl ~warnings_options ~renderer ~source ~extra ~syntax file
   >>= fun docs ->
   List.iter
