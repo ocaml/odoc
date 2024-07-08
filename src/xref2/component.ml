@@ -1660,13 +1660,14 @@ module Fmt = struct
           (parent :> t)
           (LabelName.to_string name)
 
-  and model_reference_page_path c ppf (r : Reference.PagePath.t) =
-    match r with
-    | `Root (name, `TRelativePath) -> fpf ppf "./%s" name
-    | `Root (name, `TAbsolutePath) -> fpf ppf "/%s" name
-    | `Root (name, `TCurrentPackage) -> fpf ppf "//%s" name
-    | `Slash (parent, name) ->
-        fpf ppf "%a/%s" (model_reference_page_path c) parent name
+  and model_reference_page_path _c ppf
+      ((tag, components) : Reference.PagePath.t) =
+    (match tag with
+    | `TRelativePath -> fpf ppf "./"
+    | `TAbsolutePath -> fpf ppf "/"
+    | `TCurrentPackage -> fpf ppf "//");
+    let pp_sep ppf () = fpf ppf "/" in
+    Format.pp_print_list ~pp_sep Format.pp_print_string ppf components
 
   and model_reference c ppf (r : Reference.t) =
     let open Reference in
