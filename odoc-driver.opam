@@ -43,11 +43,6 @@ depends: [
   "eio_main"
   "progress"
   "cmdliner"
-  "sherlodoc"
-]
-
-pin-depends: [
-  ["sherlodoc.dev" "git+https://github.com/emiletrotignon/sherlodoc.git#076cc2b"]
 ]
 
 build: [
