@@ -13,20 +13,19 @@ Contributing to the HTML is slightly more complex. The main HTML generator is in
 Here's a step-by-step guide to get you set up for HTML contribution:
 
 1. **Install requirements:**
-   * Install a recent version of [HTML tidy](http://www.html-tidy.org/) (used for HTML validity testing). Here's how:
-     - On MacOS (should be version 5.6.0 by the date of this writing): `brew install tidy-html5`   
+   * Install a recent version of [HTML Tidy](http://www.html-tidy.org/) (used for HTML validity testing). Here's how:
+     - On MacOS (should be version 5.8 by the date of this writing): `brew install tidy-html5`   
      - On Debian / Ubuntu: `sudo apt-get install tidy`
-   * Install a recent version of [jq](https://github.com/stedolan/jq). Here's how:
+   * Install a recent version of [`jq`](https://github.com/stedolan/jq). Here's how:
      - On MacOS: `brew install jq`
      - On Debian / Ubuntu: `sudo apt-get install jq`
 
 2. **Set up for development:**
-   Clone the odoc repository, navigate into the new directory, and install dependencies with these commands:
+   Clone the `odoc` repository, navigate into the new directory, and install dependencies with these commands:
    ```
    git clone https://github.com/ocaml/odoc.git
    cd odoc
-   opam pin add --no-action odoc .
-   opam install --with-test --deps-only odoc
+   opam install --with-test --deps-only ./odoc-parser.opam ./odoc.opam
    ```
 
 3. **Make and test changes:**
@@ -40,17 +39,17 @@ Here's a step-by-step guide to get you set up for HTML contribution:
 
 ## Testing
 
-`odoc` uses a variety of different test types. We are slowly converging on using Dune's [cram tests](https://dune.readthedocs.io/en/stable/tests.html#cram-tests), though we still have many tests that aren't yet converted.
+`odoc` uses a variety of different test types. We are slowly converging on using Dune's [Cram tests](https://dune.readthedocs.io/en/stable/tests.html#cram-tests), though we still have many tests that aren't yet converted.
 
 ### Cram Tests
 
-The tests extensively use these for the model layer and are found in [test/xref2](https://github.com/ocaml/odoc/blob/master/test/xref2). These consist of a directory called something.t, containing a file run.t. This file has shell-like syntax and usually runs `odoc` on some carefully crafted input files. 
+The tests extensively use these for the model layer and are found in [test/xref2](https://github.com/ocaml/odoc/blob/master/test/xref2). These consist of a directory called `something.t`, containing a file `run.t`. This file has shell-like syntax and usually runs `odoc` on some carefully crafted input files. 
 
-For tests of the model layer, it's often useful to use the binary odoc_print which can dump .odoc and .odocl files as JSON. This output can then be piped through jq to verify that values are as expected.
+For tests of the model layer, it's often useful to use the binary `odoc_print` which can dump `.odoc` and `.odocl` files as JSON. This output can then be piped through jq to verify that values are as expected.
 
 We try to make these test files describe the test and what's expected, which helps when the output isn’t what the test expected. This also means that the tests can serve as documentation of how things work. As an example, see the file [test/xref2/multi_file_module_type_of.t/run.t](https://github.com/ocaml/odoc/blob/master/test/xref2/multi_file_module_type_of.t/run.t)
 
-The tests work by executing the shell script snippets and then comparing the actual output with those in the run.t files. If these don't match, the difference is rendered as a diff.
+The tests work by executing the shell script snippets and then comparing the actual output with those in the `run.t` files. If these don't match, the difference is rendered as a diff.
 
 If the test is broken, run `dune promote` to replace the expected output with the current output.
 
@@ -58,13 +57,13 @@ If the test is broken, run `dune promote` to replace the expected output with th
 
 Many of `odoc`'s older tests are custom Expect-tests, similar to those run in the Cram test above, but that don't use Dune's promote workflow.
 
-When one of these Expect-tests fail, the output is saved, so the developer can choose to replace the now-incorrect expected string. For these custom Expect-tests, the results may look like the example given in the ocamldoc.
+When one of these Expect-tests fail, the output is saved, so the developer can choose to replace the now-incorrect expected string. For these custom Expect-tests, the results may look like the example given in the OCamldoc.
 
 We are slowly shifting these custom Expect-tests over to the Dune promote workflow.
 
 ### Coverage Analysis
 
-The `odoc` repo is set up for coverage analysis. This is most useful if you're writing new tests, and want to know what they’re actually touching. 
+The `odoc` repo is set up for coverage analysis. This is most useful if you're writing new tests and want to know what they’re actually touching. 
 
 To use it:
 
@@ -74,42 +73,42 @@ To use it:
 ```
 You can then open `_coverage/index.html` and see the coverage of the code you’d like your new test to reach.
 
-- Write new tests.
-- Check coverage again.
+- Write new tests
+- Check coverage again
 
 ### CI Tests
 
-`odoc` is tested by [ocaml-ci](https://ci.ocamllabs.io/) and by GitHub workflows. One of these also does a coverage build, so we have up-to-date coverage stats on [Coveralls](https://coveralls.io/github/ocaml/odoc).
+`odoc` is tested by [OCaml-CI](https://ci.ocamllabs.io/) and by GitHub workflows. One of these also does a coverage build, so we have up-to-date coverage stats on [Coveralls](https://coveralls.io/github/ocaml/odoc).
 
-The tests cover Esy and Opam builds on Windows, macOS, and Linux. The Linux tests cover all supported versions of OCaml. We strive to retain compatibility back as far as we can (currently 4.02) which is important for supporting [ocaml.org/docs](https://ocaml.org/docs/).
+The tests cover esy and opam builds on Windows, macOS, and Linux. The Linux tests cover all supported versions of OCaml. We strive to retain compatibility back as far as we can (currently 4.02) which is important for supporting [ocaml.org/docs](https://ocaml.org/docs/).
 
 ## API Reference
 
 ### Loading
 
-The [odoc.loader](https://ocaml.github.io/odoc/odoc_loader/index.html) library is responsible for converting from the OCaml [`Typedtree`](https://ocaml.github.io/odoc/deps/stdlib/Typedtree/index.html) representations to the [internal representation](https://ocaml.github.io/odoc/odoc_model/Odoc_model/Lang/index.html).
+The [`odoc.loader`](https://ocaml.github.io/odoc/odoc_loader/index.html) library is responsible for converting from the OCaml [`Typedtree`](https://ocaml.github.io/odoc/deps/stdlib/Typedtree/index.html) representations to the [internal representation](https://ocaml.github.io/odoc/odoc_model/Odoc_model/Lang/index.html).
 
 ### Model
 
-The [odoc.model](https://ocaml.github.io/odoc/odoc_model/index.html) library contains definitions of the internal types used to represent OCaml interfaces.
+The [`odoc.model`](https://ocaml.github.io/odoc/odoc_model/index.html) library contains definitions of the internal types used to represent OCaml interfaces.
 
 ### Resolution and Expansion
 
-Resolution of Paths, Fragments and References, and Expansion of Modules and Module Types are handled by the [odoc.xref2](https://ocaml.github.io/odoc/odoc_xref2/index.html) library.
+Resolution of Paths, Fragments and References, and Expansion of Modules and Module Types are handled by the [`odoc.xref2`](https://ocaml.github.io/odoc/odoc_xref2/index.html) library.
 
 ### Intermediate Representation and Renderers
 
-The generic documentation intermediate format is defined in the [odoc.document](https://ocaml.github.io/odoc/odoc_document/index.html) library.
+The generic documentation intermediate format is defined in the [`odoc.document`](https://ocaml.github.io/odoc/odoc_document/index.html) library.
 
-The three current renderers are implemented within the following libraries: [odoc.html](https://ocaml.github.io/odoc/odoc_html/index.html), [odoc.latex](https://ocaml.github.io/odoc/odoc_latex/index.html), and [odoc.manpage](https://ocaml.github.io/odoc/odoc_manpage/index.html).
+The three current renderers are implemented within the following libraries: [`odoc.html`](https://ocaml.github.io/odoc/odoc_html/index.html), [`odoc.latex`](https://ocaml.github.io/odoc/odoc_latex/index.html), and [`odoc.manpage`](https://ocaml.github.io/odoc/odoc_manpage/index.html).
 
 ### CLI and Driver
 
-The CLI for odoc and various helper functions for driving the process are contained in the [odoc.odoc](https://ocaml.github.io/odoc/odoc_odoc/index.html) library.
+The CLI for `odoc` and various helper functions for driving the process are contained in the [`odoc.odoc`](https://ocaml.github.io/odoc/odoc_odoc/index.html) library.
 
 ### Test and Internal Libraries
 
-There are a couple of libraries used internally for testing - [odoc.xref_test](https://ocaml.github.io/odoc/odoc_xref_test/index.html) and [odoc.model_desc](https://ocaml.github.io/odoc/odoc_model_desc/index.html).
+There are a couple of libraries used internally for testing - [`odoc.xref_test`](https://ocaml.github.io/odoc/odoc_xref_test/index.html) and [`odoc.model_desc`](https://ocaml.github.io/odoc/odoc_model_desc/index.html).
 
 ## Dependency Libraries
 
