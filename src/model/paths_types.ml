@@ -597,9 +597,7 @@ module rec Reference : sig
     | `TChildPage
     | `TChildModule ]
 
-  type page_path =
-    [ `Root of string * tag_page_path
-    | `Slash of page_path * string (* {!page_path/identifier} *) ]
+  type page_path = tag_page_path * string list
   (** @canonical Odoc_model.Paths.Reference.PagePath.t *)
 
   type signature =

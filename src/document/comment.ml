@@ -61,11 +61,14 @@ module Reference = struct
         render_resolved (r :> t) ^ "." ^ InstanceVariableName.to_string s
     | `Label (_, s) -> LabelName.to_string s
 
-  let rec render_page_path = function
-    | `Root (s, `TRelativePath) -> "./" ^ s
-    | `Root (s, `TAbsolutePath) -> "/" ^ s
-    | `Root (s, `TCurrentPackage) -> "//" ^ s
-    | `Slash (p, s) -> render_page_path p ^ "/" ^ s
+  let render_page_path (tag, cs) =
+    let tag =
+      match tag with
+      | `TRelativePath -> "./"
+      | `TAbsolutePath -> "/"
+      | `TCurrentPackage -> "//"
+    in
+    tag ^ String.concat "/" cs
 
   let rec render_unresolved : Reference.t -> string =
     let open Reference in

@@ -233,24 +233,24 @@ let parse whole_reference_location s :
     Paths.Reference.t Error.with_errors_and_warnings =
   let open Paths.Reference in
   let open Names in
-  let rec page_path identifier next_token tokens : PagePath.t =
+  let rec page_path components next_token tokens : PagePath.t =
     match (next_token.kind, tokens) with
     | `End_in_slash, [] when next_token.identifier = "" ->
         (* {!/identifier} *)
-        `Root (identifier, `TAbsolutePath)
+        (`TAbsolutePath, components)
     | `End_in_slash, [] when next_token.identifier = "." ->
         (* {!./identifier} *)
-        `Root (identifier, `TRelativePath)
+        (`TRelativePath, components)
     | `End_in_slash, [ { kind = `End_in_slash; identifier = ""; _ } ]
       when next_token.identifier = "" ->
         (* {!//identifier} *)
-        `Root (identifier, `TCurrentPackage)
+        (`TCurrentPackage, components)
     | `End_in_slash, [] ->
         (* {!identifier'/identifier} *)
-        `Slash (`Root (next_token.identifier, `TRelativePath), identifier)
+        (`TRelativePath, next_token.identifier :: components)
     | `End_in_slash, next_token' :: tokens' ->
         (* {!page_path/identifier} *)
-        `Slash (page_path next_token.identifier next_token' tokens', identifier)
+        page_path (next_token.identifier :: components) next_token' tokens'
     | (`None | `Prefixed _), _ ->
         (* This is not really expected *)
         expected ~expect_paths:true [] next_token.location
@@ -260,7 +260,7 @@ let parse whole_reference_location s :
   let dot_or_slash (type parent) (dot : _ -> _ -> parent) identifier next_token
       tokens : [ `Page_path of PagePath.t | `Dot of parent * string ] =
     match next_token.kind with
-    | `End_in_slash -> `Page_path (page_path identifier next_token tokens)
+    | `End_in_slash -> `Page_path (page_path [ identifier ] next_token tokens)
     | _ -> `Dot (dot next_token tokens, identifier)
   in
 
@@ -271,7 +271,7 @@ let parse whole_reference_location s :
         match kind with
         | (`TUnknown | `TModule | `TModuleType) as kind ->
             `Root (identifier, kind)
-        | `TRelativePath -> `Page_path (`Root (identifier, `TRelativePath))
+        | `TRelativePath -> `Page_path (`TRelativePath, [ identifier ])
         | _ ->
             expected ~expect_paths:true [ "module"; "module-type" ] location
             |> Error.raise_exception)
@@ -284,7 +284,8 @@ let parse whole_reference_location s :
         | `TModuleType ->
             `ModuleType
               (signature next_token tokens, ModuleTypeName.make_std identifier)
-        | `TRelativePath -> `Page_path (page_path identifier next_token tokens)
+        | `TRelativePath ->
+            `Page_path (page_path [ identifier ] next_token tokens)
         | _ ->
             expected ~expect_paths:true [ "module"; "module-type" ] location
             |> Error.raise_exception)
@@ -345,7 +346,7 @@ let parse whole_reference_location s :
         | ( `TUnknown | `TModule | `TModuleType | `TType | `TClass | `TClassType
           | `TPage ) as kind ->
             `Root (identifier, kind)
-        | `TRelativePath -> `Page_path (`Root (identifier, `TRelativePath))
+        | `TRelativePath -> `Page_path (`TRelativePath, [ identifier ])
         | _ ->
             expected ~expect_paths:true
               [ "module"; "module-type"; "type"; "class"; "class-type"; "page" ]
@@ -368,7 +369,8 @@ let parse whole_reference_location s :
         | `TClassType ->
             `ClassType
               (signature next_token tokens, ClassTypeName.make_std identifier)
-        | `TRelativePath -> `Page_path (page_path identifier next_token tokens)
+        | `TRelativePath ->
+            `Page_path (page_path [ identifier ] next_token tokens)
         | _ ->
             expected ~expect_paths:true
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
@@ -404,7 +406,7 @@ let parse whole_reference_location s :
     | [] -> (
         match kind with
         | #Paths.Reference.tag_any as kind -> `Root (identifier, kind)
-        | `TRelativePath -> `Page_path (`Root (identifier, `TRelativePath)))
+        | `TRelativePath -> `Page_path (`TRelativePath, [ identifier ]))
     | next_token :: tokens -> (
         match kind with
         | `TUnknown ->
@@ -470,8 +472,9 @@ let parse whole_reference_location s :
                   |> Error.raise_exception
             in
             (* Prefixed pages are not differentiated. *)
-            `Page_path (page_path identifier next_token tokens)
-        | `TRelativePath -> `Page_path (page_path identifier next_token tokens))
+            `Page_path (page_path [ identifier ] next_token tokens)
+        | `TRelativePath ->
+            `Page_path (page_path [ identifier ] next_token tokens))
   in
 
   let old_kind, s, location =

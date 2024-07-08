@@ -291,12 +291,7 @@ module General_paths = struct
         | `TAbsolutePath -> C0 "`TAbsolutePath"
         | `TCurrentPackage -> C0 "`TCurrentPackage")
     in
-    Variant
-      (function
-      | `Root (identifier, kind) ->
-          C ("`Root", (identifier, kind), Pair (string, tag_page_path))
-      | `Slash (parent, identifier) ->
-          C ("`Slash", (parent, identifier), Pair (page_path_reference, string)))
+    Pair (tag_page_path, List string)
 
   and reference : r t =
     Variant
