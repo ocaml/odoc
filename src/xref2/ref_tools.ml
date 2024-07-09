@@ -1,7 +1,7 @@
 open Odoc_model.Paths
 open Odoc_model.Names
 open Reference
-open Utils.ResultMonad
+open Odoc_utils.ResultMonad
 
 type module_lookup_result =
   Resolved.Module.t * Cpath.Resolved.module_ * Component.Module.t

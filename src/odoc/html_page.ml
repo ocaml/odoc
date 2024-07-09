@@ -21,15 +21,9 @@ type args = { html_config : Odoc_html.Config.t; assets : Fpath.t list }
 let render { html_config; assets = _ } sidebar page =
   Odoc_html.Generator.render ~config:html_config ~sidebar page
 
-let list_filter_map f lst =
-  List.rev
-  @@ List.fold_left
-       (fun acc x -> match f x with None -> acc | Some x -> x :: acc)
-       [] lst
-
 let asset_documents parent_id children asset_paths =
   let asset_names =
-    list_filter_map
+    Odoc_utils.List.filter_map
       (function Lang.Page.Asset_child name -> Some name | _ -> None)
       children
   in
@@ -57,7 +51,7 @@ let asset_documents parent_id children asset_paths =
            (Paths.Identifier.name parent_id)
            (Fs.File.to_string asset)))
     unmatched;
-  list_filter_map
+  Odoc_utils.List.filter_map
     (fun (name, path) ->
       match path with
       | None ->

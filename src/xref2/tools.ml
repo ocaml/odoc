@@ -1,20 +1,13 @@
 open Odoc_model.Names
 
 (* Add [result] and a bind operator over it in scope *)
-open Utils
-open ResultMonad
+open Odoc_utils.ResultMonad
 
 type expansion =
   | Signature of Component.Signature.t
   | Functor of Component.FunctorParameter.t * Component.ModuleType.expr
 
 type ('a, 'b) either = Left of 'a | Right of 'b
-
-let filter_map f x =
-  List.rev
-  @@ List.fold_left
-       (fun acc x -> match f x with Some x -> x :: acc | None -> acc)
-       [] x
 
 type module_modifiers =
   [ `Aliased of Cpath.Resolved.module_ | `SubstMT of Cpath.Resolved.module_type ]
@@ -87,7 +80,9 @@ let canonical_helper :
   | None -> None
   | Some (rp2, _) -> (
       let fallback_id = get_identifier rp2 in
-      let resolved = filter_map resolve (possibilities env p2) in
+      let resolved =
+        Odoc_utils.List.filter_map resolve (possibilities env p2)
+      in
       let find_fn (r, _) = get_identifier r = fallback_id in
       try Some (List.find find_fn resolved) with _ -> None)
 
@@ -466,7 +461,7 @@ and get_module_type_path_modifiers :
 
 and process_module_type env m p' =
   let open Component.ModuleType in
-  let open OptionMonad in
+  let open Odoc_utils.OptionMonad in
   (* Loop through potential chains of module_type equalities, looking for substitutions *)
   let substpath =
     m.expr >>= get_substituted_module_type env >>= fun p ->
@@ -524,7 +519,7 @@ and handle_module_lookup env id rparent sg sub =
   | None -> Error `Find_failure
 
 and handle_module_type_lookup env id p sg sub =
-  let open OptionMonad in
+  let open Odoc_utils.OptionMonad in
   Find.module_type_in_sig sg id >>= fun (`FModuleType (name, mt)) ->
   let mt = Subst.module_type sub mt in
   let p' = simplify_module_type env (`ModuleType (p, name)) in
@@ -1590,7 +1585,7 @@ and handle_signature_with_subs :
     Component.ModuleType.substitution list ->
     (Component.Signature.t, expansion_of_module_error) Result.result =
  fun env sg subs ->
-  let open ResultMonad in
+  let open Odoc_utils.ResultMonad in
   List.fold_left
     (fun sg_opt sub -> sg_opt >>= fun sg -> fragmap env sub sg)
     (Ok sg) subs
@@ -2030,7 +2025,7 @@ and fragmap :
 and find_external_module_path :
     Cpath.Resolved.module_ -> Cpath.Resolved.module_ option =
  fun p ->
-  let open OptionMonad in
+  let open Odoc_utils.OptionMonad in
   match p with
   | `Subst (x, y) ->
       find_external_module_type_path x >>= fun x ->
@@ -2054,7 +2049,7 @@ and find_external_module_path :
 and find_external_module_type_path :
     Cpath.Resolved.module_type -> Cpath.Resolved.module_type option =
  fun p ->
-  let open OptionMonad in
+  let open Odoc_utils.OptionMonad in
   match p with
   | `ModuleType (p, name) ->
       find_external_parent_path p >>= fun p -> Some (`ModuleType (p, name))
@@ -2079,7 +2074,7 @@ and find_external_module_type_path :
 and find_external_parent_path :
     Cpath.Resolved.parent -> Cpath.Resolved.parent option =
  fun p ->
-  let open OptionMonad in
+  let open Odoc_utils.OptionMonad in
   match p with
   | `Module m -> find_external_module_path m >>= fun m -> Some (`Module m)
   | `ModuleType m ->
@@ -2157,7 +2152,7 @@ and resolve_signature_fragment :
       Some (`Root p, `FragmentRoot, sg)
   | `Resolved _r -> None
   | `Dot (parent, name) ->
-      let open OptionMonad in
+      let open Odoc_utils.OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, ppath, sg) ->
       of_result (find_module_with_replacement env sg name) >>= fun m' ->
@@ -2174,7 +2169,9 @@ and resolve_signature_fragment :
         | Some (`SubstMT p') -> (`Subst (p', new_path), `Subst (p', new_frag))
       in
       (* Don't use the cached one - `FragmentRoot` is not unique *)
-      of_result ResultMonad.(expansion_of_module env m' >>= assert_not_functor)
+      of_result
+        Odoc_utils.ResultMonad.(
+          expansion_of_module env m' >>= assert_not_functor)
       >>= fun parent_sg ->
       let sg = prefix_signature (`Module cp', parent_sg) in
       Some (f', `Module cp', sg)
@@ -2188,7 +2185,7 @@ and resolve_module_fragment :
   match frag with
   | `Resolved r -> Some r
   | `Dot (parent, name) ->
-      let open OptionMonad in
+      let open Odoc_utils.OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, _ppath, sg) ->
       of_result (find_module_with_replacement env sg name) >>= fun m' ->
@@ -2223,7 +2220,7 @@ and resolve_module_type_fragment :
   match frag with
   | `Resolved r -> Some r
   | `Dot (parent, name) ->
-      let open OptionMonad in
+      let open Odoc_utils.OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, _ppath, sg) ->
       of_result (find_module_type_with_replacement env sg name) >>= fun mt' ->
@@ -2249,7 +2246,7 @@ and resolve_type_fragment :
   match frag with
   | `Resolved r -> Some r
   | `Dot (parent, name) ->
-      let open OptionMonad in
+      let open Odoc_utils.OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, _ppath, _sg) ->
       let result = fixup_type_cfrag (`Type (pfrag, TypeName.make_std name)) in

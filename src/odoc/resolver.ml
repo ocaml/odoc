@@ -418,12 +418,6 @@ type t = {
   open_modules : string list;
 }
 
-let rec filter_map acc f = function
-  | hd :: tl ->
-      let acc = match f hd with Some x -> x :: acc | None -> acc in
-      filter_map acc f tl
-  | [] -> List.rev acc
-
 let all_roots ?root named_roots =
   let all_files =
     match Named_roots.all_of ?root named_roots ~ext:"odocl" with
@@ -433,7 +427,7 @@ let all_roots ?root named_roots =
   let load page =
     match Odoc_file.load_root page with Error _ -> None | Ok root -> Some root
   in
-  filter_map [] load all_files
+  Odoc_utils.List.filter_map load all_files
 
 let all_pages ?root ({ pages; _ } : t) =
   let filter (root : Odoc_model.Root.t) =
@@ -448,7 +442,7 @@ let all_pages ?root ({ pages; _ } : t) =
   in
   match pages with
   | None -> []
-  | Some pages -> filter_map [] filter @@ all_roots ?root pages
+  | Some pages -> Odoc_utils.List.filter_map filter @@ all_roots ?root pages
 
 let all_units ~library ({ libs; _ } : t) =
   let filter (root : Odoc_model.Root.t) =
@@ -463,7 +457,8 @@ let all_units ~library ({ libs; _ } : t) =
   in
   match libs with
   | None -> []
-  | Some libs -> filter_map [] filter @@ all_roots ~root:library libs
+  | Some libs ->
+      Odoc_utils.List.filter_map filter @@ all_roots ~root:library libs
 
 type roots = {
   page_roots : (string * Fs.Directory.t) list;

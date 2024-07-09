@@ -23,12 +23,6 @@ open O.Infix
 
 let tag tag t = O.span ~attr:tag t
 
-let rec filter_map acc f = function
-  | hd :: tl ->
-      let acc = match f hd with Some x -> x :: acc | None -> acc in
-      filter_map acc f tl
-  | [] -> List.rev acc
-
 let label t =
   match t with
   | Odoc_model.Lang.TypeExpr.Label s -> tag "label" (O.txt s)
@@ -297,7 +291,7 @@ module Make (Syntax : SYNTAX) = struct
       let mapper (info, loc) =
         match info_of_info info with Some x -> Some (x, loc) | None -> None
       in
-      let infos = filter_map [] mapper infos in
+      let infos = Odoc_utils.List.filter_map mapper infos in
       let syntax_info =
         List.map (fun (ty, loc) -> (Source_page.Syntax ty, loc)) syntax_info
       in

@@ -88,7 +88,7 @@ let of_lang (v : Odoc_model.Lang.Sidebar.t) =
         let hierarchy = Hierarchy.make pages |> Hierarchy.remove_common_root in
         Some { name = page_name; pages = hierarchy }
     in
-    List.filter_map page_hierarchy v.pages
+    Odoc_utils.List.filter_map page_hierarchy v.pages
   in
   let units =
     let item id =

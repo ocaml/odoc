@@ -1,4 +1,4 @@
-open Utils.ResultMonad
+open Odoc_utils.ResultMonad
 open Odoc_model
 
 let handle_expansion env id expansion =

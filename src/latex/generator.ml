@@ -89,12 +89,6 @@ let list kind pp ppf x =
 
 let escape_entity = function "#45" -> "-" | "gt" -> ">" | s -> s
 
-let filter_map f x =
-  List.rev
-  @@ List.fold_left
-       (fun acc x -> match f x with Some x -> x :: acc | None -> acc)
-       [] x
-
 let elt_size (x : elt) =
   match x with
   | Txt _ | Internal_ref _ | External_ref _ | Label _ | Style _ | Inlined_code _
@@ -118,7 +112,9 @@ let layout_table = function
         | Empty, _ -> None
         | (Small | Large | Huge), x -> Some x
       in
-      let filter_row row = filter_map filter_empty @@ List.combine mask row in
+      let filter_row row =
+        Odoc_utils.List.filter_map filter_empty @@ List.combine mask row
+      in
       let row_size = List.fold_left max Empty mask in
       [ Layout_table { row_size; tbl = List.map filter_row m } ]
 

@@ -4,7 +4,7 @@ open Odoc_model.Paths
 open Odoc_model.Names
 module Kind = Shape.Sig_component_kind
 
-let ( >>= ) m f = match m with Some x -> f x | None -> None
+open Odoc_utils.OptionMonad
 
 type t = Shape.t * Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t
 

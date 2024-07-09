@@ -1,8 +1,5 @@
 (* Shared utility functions *)
 
-(* = Option.fold *)
-let fold_option ~none ~some = function Some x -> some x | None -> none
-
 let optional_elt f ?a = function [] -> [] | l -> [ f ?a l ]
 
 module Json = struct

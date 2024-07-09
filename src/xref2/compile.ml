@@ -145,7 +145,7 @@ and class_type env c =
   let open ClassType in
   let expansion =
     match
-      let open Utils.OptionMonad in
+      let open Odoc_utils.OptionMonad in
       Env.(lookup_by_id s_class_type) c.id env >>= fun (`ClassType (_, c')) ->
       Tools.class_signature_of_class_type env c' >>= fun sg ->
       let cs =
@@ -211,7 +211,7 @@ and class_ env parent c =
   let container = (parent :> Id.LabelParent.t) in
   let expansion =
     match
-      let open Utils.OptionMonad in
+      let open Odoc_utils.OptionMonad in
       Env.(lookup_by_id s_class) c.id env >>= fun (`Class (_, c')) ->
       Tools.class_signature_of_class env c' >>= fun sg ->
       let cs =
@@ -401,7 +401,7 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
   let decl = Component.Of_Lang.(include_decl (empty ()) i.decl) in
   let get_expansion () =
     match
-      let open Utils.ResultMonad in
+      let open Odoc_utils.ResultMonad in
       match decl with
       | Alias p ->
           Tools.expansion_of_module_path env ~strengthen:true p >>= fun exp ->
@@ -466,7 +466,7 @@ and functor_parameter_parameter :
   { a with expr = module_type_expr env (a.id :> Id.Signature.t) a.expr }
 
 and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
-  let open Utils.ResultMonad in
+  let open Odoc_utils.ResultMonad in
   match sg_res with
   | Error _ -> (sg_res, env, lsub :: subs)
   | Ok sg -> (
@@ -679,7 +679,7 @@ and module_type_expr :
     ModuleType.expr ->
     ModuleType.expr =
  fun env id ?(expand_paths = true) expr ->
-  let open Utils.ResultMonad in
+  let open Odoc_utils.ResultMonad in
   let get_expansion cur e =
     match cur with
     | Some e -> Some (simple_expansion env id e)
