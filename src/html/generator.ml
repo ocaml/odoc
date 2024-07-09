@@ -512,7 +512,7 @@ module Page = struct
         | Some url -> Some (Link.href ~config ~resolve url)
         | None -> None
       in
-      Html_fragment_json.make ~config
+      Html_fragment_json.make ~sidebar ~config
         ~preamble:(items ~config ~resolve preamble :> any Html.elt list)
         ~breadcrumbs ~toc ~url ~uses_katex ~source_anchor content subpages
     else
