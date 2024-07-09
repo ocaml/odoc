@@ -305,8 +305,8 @@ let html_generate output_dir ~odoc_dir linked =
         sherlodoc_js_path_relative_to_html;
       ]
     in
-    let sidebar = Some (odoc_index_path ~odoc_dir l.package_name) in
-    Odoc.html_generate ~search_uris ?sidebar
+    let index = Some (odoc_index_path ~odoc_dir l.package_name) in
+    Odoc.html_generate ~search_uris ?index
       ~output_dir:(Fpath.to_string output_dir)
       ~input_file:l.output_file ?source:l.src ();
     Atomic.incr Stats.stats.generated_units

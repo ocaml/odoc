@@ -245,7 +245,7 @@ Passing an inexistent file:
   $ odoc compile-index -P pkgname:babar
   $ odoc compile-index --file-list babar
   odoc: option '--file-list': no 'babar' file or directory
-  Usage: odoc compile-index [--file-list=FILE] [--include-rec=DIR] [--json] [OPTION]… [FILE]…
+  Usage: odoc compile-index [--file-list=FILE] [--json] [OPTION]… [FILE]…
   Try 'odoc compile-index --help' or 'odoc --help' for more information.
   [2]
 
@@ -253,8 +253,6 @@ Passing an empty folder is allowed:
 
   $ mkdir foo
   $ odoc compile-index -P pkgname:foo
-  ERROR: No .odocl files were included
-  [1]
 
 Wrong file extensions:
 
