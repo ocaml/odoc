@@ -83,7 +83,7 @@ and source k ?a (t : Source.t) =
         let content = tokens l in
         if content = [] then [] else [ Html.span content ]
     | Tag (Some s, l) -> [ Html.span ~a:[ Html.a_class [ s ] ] (tokens l) ]
-  and tokens t = Utils.list_concat_map t ~f:token in
+  and tokens t = Odoc_utils.List.concat_map t ~f:token in
   Utils.optional_elt Html.code ?a (tokens t)
 
 and styled style ~emph_level =
@@ -151,7 +151,7 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
     | Math s -> [ inline_math s ]
     | Raw_markup r -> raw_markup r
   in
-  Utils.list_concat_map ~f:one l
+  Odoc_utils.List.concat_map ~f:one l
 
 and inline_nolink ?(emph_level = 0) (l : Inline.t) :
     non_link_phrasing Html.elt list =
@@ -173,7 +173,7 @@ and inline_nolink ?(emph_level = 0) (l : Inline.t) :
     | Math s -> [ inline_math s ]
     | Raw_markup r -> raw_markup r
   in
-  Utils.list_concat_map ~f:one l
+  Odoc_utils.List.concat_map ~f:one l
 
 let heading ~config ~resolve (h : Heading.t) =
   let a, anchor =
@@ -244,7 +244,7 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
         mk_block ~extra_class Html.pre (source (inline ~config ~resolve) c)
     | Math s -> mk_block Html.div [ block_math s ]
   in
-  Utils.list_concat_map l ~f:one
+  Odoc_utils.List.concat_map l ~f:one
 
 and mk_rows ~config ~resolve { align; data } =
   let mk_row row =
