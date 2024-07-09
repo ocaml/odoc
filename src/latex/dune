@@ -5,4 +5,4 @@
   (backend landmarks --auto))
  (instrumentation
   (backend bisect_ppx))
- (libraries odoc_model odoc_document fmt fpath))
+ (libraries odoc_model odoc_document fmt fpath odoc_utils))

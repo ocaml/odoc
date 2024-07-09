@@ -163,14 +163,6 @@ let extract_extended_open o =
 #endif
 
 
-let concat_map f l =
-  let rec aux f acc = function
-    | [] -> List.rev acc
-    | x :: l ->
-       let xs = f x in
-       aux f (List.rev_append xs acc) l
-  in aux f [] l
-
 let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> items list = fun hide_item items ->
   let open Typedtree in
   match items with
@@ -179,7 +171,7 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
 #else
   | { sig_desc = Tsig_type (_, decls); _} :: rest ->
 #endif
-    concat_map (fun decl ->
+    Odoc_utils.List.concat_map ~f:(fun decl ->
       if Btype.is_row_name (Ident.name decl.typ_id)
       then []
       else
@@ -315,7 +307,7 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
 #else
     | { str_desc = Tstr_type (_, decls); _ } :: rest -> (* TODO: handle rec_flag *)
 #endif
-  concat_map (fun decl ->
+  Odoc_utils.List.concat_map ~f:(fun decl ->
       `Type (decl.typ_id, hide_item, Some decl.typ_loc) ::
         (match decl.typ_kind with
           Ttype_abstract -> []

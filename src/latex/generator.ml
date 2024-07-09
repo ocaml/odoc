@@ -2,14 +2,6 @@ open Odoc_document.Types
 open Types
 module Doctree = Odoc_document.Doctree
 
-let rec list_concat_map ?sep ~f = function
-  | [] -> []
-  | [ x ] -> f x
-  | x :: xs -> (
-      let hd = f x in
-      let tl = list_concat_map ?sep ~f xs in
-      match sep with None -> hd @ tl | Some sep -> hd @ (sep :: tl))
-
 module Link = struct
   let rec flatten_path ppf (x : Odoc_document.Url.Path.t) =
     match x.parent with
@@ -228,7 +220,7 @@ let source k (t : Source.t) =
     | Elt i -> k i
     | Tag (None, l) -> tokens l
     | Tag (Some s, l) -> [ Tag (s, tokens l) ]
-  and tokens t = list_concat_map t ~f:token in
+  and tokens t = Odoc_utils.List.concat_map t ~f:token in
   tokens t
 
 let rec internalref ~verbatim ~in_source (t : InternalLink.t) =
@@ -316,7 +308,7 @@ let rec block ~in_source (l : Block.t) =
           Break Paragraph;
         ]
   in
-  list_concat_map l ~f:one
+  Odoc_utils.List.concat_map l ~f:one
 
 and table_block { Table.data; align } =
   let data =

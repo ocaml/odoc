@@ -1,15 +1,6 @@
 open Odoc_model.Lang
 open Odoc_model.Paths
 
-let list_concat_map f l =
-  let rec aux f acc = function
-    | [] -> List.rev acc
-    | x :: l ->
-        let xs = f x in
-        aux f (List.rev_append xs acc) l
-  in
-  aux f [] l
-
 type type_decl_entry = {
   canonical : Path.Type.t option;
   equation : TypeDecl.Equation.t;
@@ -125,14 +116,15 @@ let entry_of_field id_parent params (field : TypeDecl.Field.t) =
   entry ~id:field.id ~doc:field.doc ~kind
 
 let rec entries_of_docs id (d : Odoc_model.Comment.docs) =
-  list_concat_map (entries_of_doc id) d
+  Odoc_utils.List.concat_map ~f:(entries_of_doc id) d
 
 and entries_of_doc id d =
   match d.value with
   | `Paragraph _ -> [ entry ~id ~doc:[ d ] ~kind:(Doc Paragraph) ]
   | `Tag _ -> []
   | `List (_, ds) ->
-      list_concat_map (entries_of_docs id) (ds :> Odoc_model.Comment.docs list)
+      Odoc_utils.List.concat_map ~f:(entries_of_docs id)
+        (ds :> Odoc_model.Comment.docs list)
   | `Heading (_, lbl, _) -> [ entry ~id:lbl ~doc:[ d ] ~kind:(Doc Heading) ]
   | `Modules _ -> []
   | `Code_block (_, _, o) ->
