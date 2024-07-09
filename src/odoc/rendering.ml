@@ -119,7 +119,9 @@ let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
     | Asset { url; _ } -> url
   in
   let sidebar =
-    Odoc_utils.Option.map (fun sb -> Odoc_document.Sidebar.to_block sb url) sidebar
+    Odoc_utils.Option.map
+      (fun sb -> Odoc_document.Sidebar.to_block sb url)
+      sidebar
   in
   let pages = renderer.Renderer.render extra sidebar doc in
   Renderer.traverse pages ~f:(fun filename content ->
