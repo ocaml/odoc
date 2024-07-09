@@ -5,6 +5,7 @@ val make :
   preamble:Html_types.div_content Html.elt list ->
   url:Odoc_document.Url.Path.t ->
   breadcrumbs:Types.breadcrumb list ->
+  sidebar:Html_types.div_content Html.elt list option ->
   toc:Types.toc list ->
   uses_katex:bool ->
   source_anchor:string option ->
