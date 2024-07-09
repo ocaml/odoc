@@ -17,6 +17,8 @@
   Absolute (`{!/foo}`), relative (`{!./foo}`) and package-local (`{!//foo}`)
   are added.
 - Add a marshalled search index consumable by sherlodoc (@EmileTrotignon, @panglesd, #1084)
+- Add a `--index` argument to pass indexes to the document generation, currently
+  used for sidebar (@panglesd, #1145)
 
 ### Changed
 
