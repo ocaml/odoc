@@ -2700,108 +2700,108 @@ let%expect_test _ =
     let abs =
       test "{!/foo/bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Page_path":["`TAbsolutePath",["foo","bar"]]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TAbsolutePath",["foo","bar"]]},[]]}]}],"warnings":[]} |}]
 
     let abs_label_parent_page =
       test "{!/foo/bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Page_path":["`TAbsolutePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TAbsolutePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let abs_label_parent_module =
       test "{!/foo/Bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Page_path":["`TAbsolutePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TAbsolutePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     (* References to current package root *)
 
     let root_to_page =
       test "{!//foo/bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Page_path":["`TCurrentPackage",["foo","bar"]]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TCurrentPackage",["foo","bar"]]},[]]}]}],"warnings":[]} |}]
 
     let root_to_module =
       test "{!//foo/Bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Page_path":["`TCurrentPackage",["foo","Bar"]]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TCurrentPackage",["foo","Bar"]]},[]]}]}],"warnings":[]} |}]
 
     let root_label_parent_page =
       test "{!//foo/bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Page_path":["`TCurrentPackage",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TCurrentPackage",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let root_label_parent_module =
       test "{!//foo/Bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Page_path":["`TCurrentPackage",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TCurrentPackage",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     (* Relative paths *)
 
     let relative =
       test "{!foo/bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Page_path":["`TRelativePath",["foo","bar"]]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["foo","bar"]]},[]]}]}],"warnings":[]} |}]
 
     let relative =
       test "{!foo/bar/baz}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Page_path":["`TRelativePath",["foo","bar","baz"]]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["foo","bar","baz"]]},[]]}]}],"warnings":[]} |}]
 
     let relative_module =
       test "{!foo/Bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Page_path":["`TRelativePath",["foo","Bar"]]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["foo","Bar"]]},[]]}]}],"warnings":[]} |}]
 
     let relative_label_parent_page =
       test "{!foo/bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Page_path":["`TRelativePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TRelativePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let relative_label_parent_module =
       test "{!foo/Bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Page_path":["`TRelativePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TRelativePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let dot_relative =
       test "{!./bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Page_path":["`TRelativePath",["bar"]]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["bar"]]},[]]}]}],"warnings":[]} |}]
 
     let dot_relative_module =
       test "{!./Bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Page_path":["`TRelativePath",["Bar"]]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["Bar"]]},[]]}]}],"warnings":[]} |}]
 
     let dot_relative_label_parent_page =
       test "{!./bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Page_path":["`TRelativePath",["bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TRelativePath",["bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let dot_relative_label_parent_module =
       test "{!./Bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Page_path":["`TRelativePath",["Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TRelativePath",["Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     (* Prefix *)
 
     let abs_label_parent_page_prefix =
       test "{!/foo/bar.section-label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TAbsolutePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TAbsolutePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let abs_label_parent_module_prefix =
       test "{!/foo/Bar.section-label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TAbsolutePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TAbsolutePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let root_label_parent_page_prefix =
       test "{!//foo/bar.section-label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TCurrentPackage",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TCurrentPackage",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let root_label_parent_module_prefix =
       test "{!//foo/Bar.section-label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TCurrentPackage",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TCurrentPackage",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let relative_tag_after_slash =
       test "{!foo/page-bar}";
@@ -2811,7 +2811,12 @@ let%expect_test _ =
     let relative_tag_after_slash =
       test "{!foo/module-Bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Module":[{"`Page_path":["`TRelativePath",["foo"]]},"Bar"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Module_path":["`TRelativePath",["foo","Bar"]]},[]]}]}],"warnings":[]} |}]
+
+    let relative_tag_after_slash_label_parent =
+      test "{!page_path/page-pagename.section-sectionname}";
+      [%expect
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TRelativePath",["page_path","pagename"]]},"sectionname"]},[]]}]}],"warnings":[]} |}]
 
     (* Errors *)
 
@@ -2845,36 +2850,41 @@ let%expect_test _ =
       [%expect
         {| {"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nPage label is not allowed in on the right side of a dot.\nSuggestion: Reference pages as '<parent_path>/bar'."]} |}]
 
+    let err_unsupported_kind =
+      test "{!foo/type-bar}";
+      [%expect
+        {| {"value":[{"`Paragraph":[{"`Code_span":"foo/type-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'page-', a path, or an unqualified reference."]} |}]
+
     (* Old kind compatibility *)
 
     let oldkind_abs_page =
       test "{!section:/foo.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TAbsolutePath",["foo"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TAbsolutePath",["foo"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let oldkind_abs_module =
       test "{!section:/Foo.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TAbsolutePath",["Foo"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TAbsolutePath",["Foo"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let oldkind_relative_page =
       test "{!section:foo/bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TRelativePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TRelativePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let oldkind_relative_module =
       test "{!section:foo/Bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TRelativePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TRelativePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let oldkind_root_page =
       test "{!section://foo/bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TCurrentPackage",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TCurrentPackage",["foo","bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
 
     let oldkind_root_module =
       test "{!section://foo/Bar.label}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TCurrentPackage",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TCurrentPackage",["foo","Bar"]]},"label"]},[]]}]}],"warnings":[]} |}]
   end in
   ()

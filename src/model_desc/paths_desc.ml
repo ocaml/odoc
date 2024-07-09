@@ -283,7 +283,7 @@ module General_paths = struct
       | `SubstitutedT c -> C ("`SubstitutedT", (c :> rp), resolved_path)
       | `SubstitutedCT c -> C ("`SubstitutedCT", (c :> rp), resolved_path))
 
-  and page_path_reference : Paths.Reference.PagePath.t t =
+  and path_reference : Paths.Reference.Path.t t =
     let tag_page_path =
       Variant
         (function
@@ -299,7 +299,9 @@ module General_paths = struct
       | `Resolved x -> C ("`Resolved", x, resolved_reference)
       | `Root (x1, x2) -> C ("`Root", (x1, x2), Pair (string, reference_tag))
       | `Dot (x1, x2) -> C ("`Dot", ((x1 :> r), x2), Pair (reference, string))
-      | `Page_path x -> C ("`Page_path", x, page_path_reference)
+      | `Page_path x -> C ("`Page_path", x, path_reference)
+      | `Module_path x -> C ("`Module_path", x, path_reference)
+      | `Any_path x -> C ("`Any_path", x, path_reference)
       | `Module (x1, x2) ->
           C ("`Module", ((x1 :> r), x2), Pair (reference, Names.modulename))
       | `ModuleType (x1, x2) ->

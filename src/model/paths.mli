@@ -637,12 +637,12 @@ module rec Reference : sig
     type t = Paths_types.Reference.page
   end
 
-  module PagePath : sig
-    type t = Paths_types.Reference.page_path
+  module Path : sig
+    type t = Paths_types.Reference.path
   end
 
   type t = Paths_types.Reference.any
 
   type tag_any = Paths_types.Reference.tag_any
-  type tag_page_path = Paths_types.Reference.tag_page_path
+  type tag_path = Paths_types.Reference.tag_path
 end

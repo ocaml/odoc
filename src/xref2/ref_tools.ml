@@ -25,11 +25,13 @@ type type_lookup_result =
   | `C of class_lookup_result
   | `CT of class_type_lookup_result ]
 
-type page_path_lookup_result =
-  [ `S of signature_lookup_result | `P of page_lookup_result ]
+type any_path_lookup_result =
+  [ `P of page_lookup_result | `S of signature_lookup_result ]
 
 type label_parent_lookup_result =
-  [ type_lookup_result | page_path_lookup_result ]
+  [ type_lookup_result
+  | `P of page_lookup_result
+  | `S of signature_lookup_result ]
 
 type fragment_type_parent_lookup_result =
   [ `S of signature_lookup_result | `T of datatype_lookup_result ]
@@ -163,10 +165,6 @@ let module_type_lookup_to_signature_lookup env (ref, cp, m) =
   >>= Tools.assert_not_functor
   >>= fun sg -> Ok ((ref :> Resolved.Signature.t), `ModuleType cp, sg)
 
-let page_path_lookup_to_signature_lookup = function
-  | `S r -> Ok r
-  | `P _ as r -> wrong_kind_error [ `S ] r
-
 let type_lookup_to_class_signature_lookup =
   let resolved p' cs = Ok ((p' :> Resolved.ClassSignature.t), cs) in
   fun env -> function
@@ -180,12 +178,18 @@ let type_lookup_to_class_signature_lookup =
         |> of_option ~error:(`Parent (`Parent_type `OpaqueClass))
         >>= resolved p'
 
-module Page_path = struct
-  type t = page_path_lookup_result
-
-  let in_env _env _page_path : t ref_result =
+module Path = struct
+  let page_in_env _env _page_path : page_lookup_result ref_result =
     (* Not implemented *)
-    Error (`Wrong_kind ([ `S; `Page ], `Page_path))
+    Error (`Wrong_kind ([ `Page ], `Page_path))
+
+  let module_in_env _env _page_path : module_lookup_result ref_result =
+    (* Not implemented *)
+    Error (`Wrong_kind ([ `S ], `Module_path))
+
+  let any_in_env _env _page_path : any_path_lookup_result ref_result =
+    (* Not implemented *)
+    Error (`Wrong_kind ([ `S; `Page ], `Any_path))
 end
 
 module M = struct
@@ -683,9 +687,12 @@ let rec resolve_label_parent_reference env (r : LabelParent.t) =
   | `Root (name, `TChildModule) ->
       resolve_signature_reference env (`Root (name, `TModule)) >>= fun s ->
       Ok (`S s)
-  | `Page_path page_path ->
-      Page_path.in_env env page_path >>= fun r ->
-      Ok (r :> label_parent_lookup_result)
+  | `Page_path p -> Path.page_in_env env p >>= fun r -> Ok (`P r)
+  | `Module_path p ->
+      Path.module_in_env env p >>= module_lookup_to_signature_lookup env
+      >>= fun r -> Ok (`S r)
+  | `Any_path p ->
+      Path.any_in_env env p >>= fun r -> Ok (r :> label_parent_lookup_result)
 
 and resolve_fragment_type_parent_reference (env : Env.t)
     (r : FragmentTypeParent.t) : (fragment_type_parent_lookup_result, _) result
@@ -707,6 +714,9 @@ and resolve_fragment_type_parent_reference (env : Env.t)
       resolve_label_parent_reference env parent
       >>= signature_lookup_result_of_label_parent
       >>= fun p -> DT.in_signature env p name
+  | `Module_path p ->
+      Path.module_in_env env p >>= module_lookup_to_signature_lookup env
+      >>= fun r -> Ok (`S r)
 
 and resolve_signature_reference :
     Env.t -> Signature.t -> signature_lookup_result ref_result =
@@ -751,8 +761,8 @@ and resolve_signature_reference :
               (MT.of_component env mt
                  (`ModuleType (parent_cp, name))
                  (`ModuleType (parent, name))))
-    | `Page_path page_path ->
-        Page_path.in_env env page_path >>= page_path_lookup_to_signature_lookup
+    | `Module_path p ->
+        Path.module_in_env env p >>= module_lookup_to_signature_lookup env
   in
   resolve env'
 
@@ -768,6 +778,7 @@ and resolve_module_reference env (r : Module.t) : M.t ref_result =
       resolve_signature_reference env parent >>= fun p ->
       M.in_signature env p (ModuleName.to_string name)
   | `Root (name, _) -> M.in_env env name
+  | `Module_path p -> Path.module_in_env env p
 
 let resolve_class_signature_reference env (r : ClassSignature.t) =
   (* Casting from ClassSignature to LabelParent.
@@ -938,8 +949,12 @@ let resolve_reference : _ -> Reference.t -> _ =
     | `InstanceVariable (parent, name) ->
         resolve_class_signature_reference env parent >>= fun p ->
         MV.in_class_signature env p name >>= resolved1
-    | `Page_path page_path ->
-        Page_path.in_env env page_path >>= resolved_page_path_lookup
+    | `Page_path p -> Path.page_in_env env p >>= resolved2
+    | `Module_path p ->
+        Path.module_in_env env p
+        >>= module_lookup_to_signature_lookup env
+        >>= resolved
+    | `Any_path p -> Path.any_in_env env p >>= resolved_page_path_lookup
 
 let resolve_module_reference env m =
   Odoc_model.Error.catch_warnings (fun () -> resolve_module_reference env m)
