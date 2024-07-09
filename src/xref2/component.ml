@@ -1660,8 +1660,7 @@ module Fmt = struct
           (parent :> t)
           (LabelName.to_string name)
 
-  and model_reference_page_path _c ppf
-      ((tag, components) : Reference.PagePath.t) =
+  and model_reference_path _c ppf ((tag, components) : Reference.Path.t) =
     (match tag with
     | `TRelativePath -> fpf ppf "./"
     | `TAbsolutePath -> fpf ppf "/"
@@ -1676,7 +1675,9 @@ module Fmt = struct
     | `Root (name, _) -> Format.fprintf ppf "unresolvedroot(%s)" name
     | `Dot (parent, str) ->
         Format.fprintf ppf "%a.%s" (model_reference c) (parent :> t) str
-    | `Page_path p -> model_reference_page_path c ppf p
+    | `Page_path p -> model_reference_path c ppf p
+    | `Module_path p -> model_reference_path c ppf p
+    | `Any_path p -> model_reference_path c ppf p
     | `Module (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
