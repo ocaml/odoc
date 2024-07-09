@@ -120,8 +120,8 @@ let to_block (sidebar : t) url =
     Types.block @@ Inline [ link ]
   in
   let pages =
-    List.concat_map
-      (fun (p : pages) ->
+    Odoc_utils.List.concat_map
+      ~f:(fun (p : pages) ->
         let pages = Hierarchy.to_sidebar render_entry p.pages in
         let pages = [ block (Block.List (Block.Unordered, [ pages ])) ] in
         let pages = [ title @@ p.name ^ "'s Pages" ] @ pages in
