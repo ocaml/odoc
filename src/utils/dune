@@ -1,0 +1,3 @@
+(library
+ (name odoc_utils)
+ (public_name odoc.odoc_utils))
