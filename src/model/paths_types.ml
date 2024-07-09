@@ -553,7 +553,7 @@ module rec Reference : sig
 
   type tag_only_child_module = [ `TChildModule ]
 
-  type tag_path =
+  type tag_hierarchy =
     [ `TRelativePath (* {!identifier/} *)
     | `TAbsolutePath (* {!/identifier} *)
     | `TCurrentPackage (* {!//identifier} *) ]
@@ -597,14 +597,14 @@ module rec Reference : sig
     | `TChildPage
     | `TChildModule ]
 
-  type path = tag_path * string list
-  (** @canonical Odoc_model.Paths.Reference.Path.t *)
+  type hierarchy = tag_hierarchy * string list
+  (** @canonical Odoc_model.Paths.Reference.Hierarchy.t *)
 
   type signature =
     [ `Resolved of Resolved_reference.signature
     | `Root of string * tag_signature
     | `Dot of label_parent * string
-    | `Module_path of path
+    | `Module_path of hierarchy
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Signature.t *)
@@ -629,7 +629,7 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.field_parent
     | `Root of string * tag_parent
     | `Dot of label_parent * string
-    | `Module_path of path
+    | `Module_path of hierarchy
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t ]
@@ -639,9 +639,9 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.label_parent
     | `Root of string * tag_label_parent
     | `Dot of label_parent * string
-    | `Page_path of path
-    | `Module_path of path
-    | `Any_path of path
+    | `Page_path of hierarchy
+    | `Module_path of hierarchy
+    | `Any_path of hierarchy
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
     | `Class of signature * ClassName.t
@@ -653,7 +653,7 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.module_
     | `Root of string * [ `TModule | `TUnknown ]
     | `Dot of label_parent * string
-    | `Module_path of path
+    | `Module_path of hierarchy
     | `Module of signature * ModuleName.t ]
   (** @canonical Odoc_model.Paths.Reference.Module.t *)
 
@@ -758,16 +758,16 @@ module rec Reference : sig
     [ `Resolved of Resolved_reference.page
     | `Root of string * [ `TPage | `TUnknown ]
     | `Dot of label_parent * string
-    | `Page_path of path ]
+    | `Page_path of hierarchy ]
   (** @canonical Odoc_model.Paths.Reference.Page.t *)
 
   type any =
     [ `Resolved of Resolved_reference.any
     | `Root of string * tag_any
     | `Dot of label_parent * string
-    | `Page_path of path
-    | `Module_path of path
-    | `Any_path of path
+    | `Page_path of hierarchy
+    | `Module_path of hierarchy
+    | `Any_path of hierarchy
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t

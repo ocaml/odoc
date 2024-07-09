@@ -233,7 +233,7 @@ let parse whole_reference_location s :
     Paths.Reference.t Error.with_errors_and_warnings =
   let open Paths.Reference in
   let open Names in
-  let rec path components next_token tokens : Path.t =
+  let rec path components next_token tokens : Hierarchy.t =
     match (next_token.kind, tokens) with
     | `End_in_slash, [] when next_token.identifier = "" ->
         (* {!/identifier} *)

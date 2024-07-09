@@ -637,12 +637,12 @@ module rec Reference : sig
     type t = Paths_types.Reference.page
   end
 
-  module Path : sig
-    type t = Paths_types.Reference.path
+  module Hierarchy : sig
+    type t = Paths_types.Reference.hierarchy
   end
 
   type t = Paths_types.Reference.any
 
   type tag_any = Paths_types.Reference.tag_any
-  type tag_path = Paths_types.Reference.tag_path
+  type tag_hierarchy = Paths_types.Reference.tag_hierarchy
 end
