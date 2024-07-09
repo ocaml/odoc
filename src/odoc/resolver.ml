@@ -127,9 +127,11 @@ end = struct
     | None -> Error NoPackage
 
   let all_of ?root ~ext { table; current_root } =
-    let my_root =
-      match root with None -> Option.get current_root | Some pkg -> pkg
-    in
+    (match (root, current_root) with
+    | None, Some current_root -> Ok current_root
+    | Some pkg, _ -> Ok pkg
+    | None, None -> Error NoRoot)
+    >>= fun my_root ->
     let return flat =
       let values = Hashtbl.fold (fun _ v acc -> v :: acc) flat [] in
       let values = List.filter (Fpath.has_ext ext) values in
