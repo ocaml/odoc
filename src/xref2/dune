@@ -5,7 +5,7 @@
   (backend landmarks --auto))
  (instrumentation
   (backend bisect_ppx))
- (libraries odoc_model))
+ (libraries odoc_model odoc_utils))
 
 (rule
  (with-stdout-to

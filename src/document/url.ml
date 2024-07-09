@@ -1,4 +1,3 @@
-open Result
 open Odoc_model.Paths
 open Odoc_model.Names
 module Root = Odoc_model.Root
@@ -80,7 +79,7 @@ module Error = struct
     | Unexpected_anchor s -> Printf.sprintf "Unexpected_anchor %S" s
 end
 
-let ( >>= ) x f = match x with Ok x -> f x | Error _ as e -> e
+open Odoc_utils.ResultMonad
 
 module Path = struct
   type nonsrc_pv =

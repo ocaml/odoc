@@ -20,7 +20,7 @@ let synopsis_from_comment (docs : Component.CComment.docs) =
   | _ -> None
 
 let synopsis_of_module env (m : Component.Module.t) =
-  let open Utils.ResultMonad in
+  let open Odoc_utils.ResultMonad in
   match synopsis_from_comment m.doc with
   | Some _ as s -> s
   | None -> (
@@ -585,7 +585,7 @@ and simple_expansion :
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
-  let open Utils.ResultMonad in
+  let open Odoc_utils.ResultMonad in
   let sg_id = (m.id :> Id.Signature.t) in
   if m.hidden then m
   else
@@ -830,7 +830,7 @@ and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
  fun env id expr ->
   let open ModuleType in
-  let open Utils.ResultMonad in
+  let open Odoc_utils.ResultMonad in
   let do_expn cur (e : Paths.Path.ModuleType.t option) =
     match (cur, e) with
     | Some e, _ ->
