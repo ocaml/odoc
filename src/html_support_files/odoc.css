@@ -1235,7 +1235,7 @@ td.def-doc *:first-child {
 
   body.odoc:has(> .odoc-search:focus-within) {
     grid-template-areas:
-    "nav        ."
+    "nav        nav"
     "search-bar search-bar"
     "sidebar    preamble"
     "sidebar    content";
