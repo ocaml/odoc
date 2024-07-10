@@ -234,27 +234,31 @@ let parse whole_reference_location s :
   let open Paths.Reference in
   let open Names in
   let rec path components next_token tokens : Hierarchy.t =
-    match (next_token.kind, tokens) with
-    | `End_in_slash, [] when next_token.identifier = "" ->
-        (* {!/identifier} *)
-        (`TAbsolutePath, components)
-    | `End_in_slash, [] when next_token.identifier = "." ->
-        (* {!./identifier} *)
-        (`TRelativePath, components)
-    | `End_in_slash, [ { kind = `End_in_slash; identifier = ""; _ } ]
-      when next_token.identifier = "" ->
+    match (next_token, tokens) with
+    | { kind = `End_in_slash; identifier; _ }, [] -> (
+        match identifier with
+        | "" ->
+            (* {!/identifier} *)
+            (`TAbsolutePath, components)
+        | "." ->
+            (* {!./identifier} *)
+            (`TRelativePath, components)
+        | c ->
+            (* {!identifier'/identifier} *)
+            (`TRelativePath, c :: components))
+    | ( { kind = `End_in_slash; identifier = ""; _ },
+        [ { kind = `End_in_slash; identifier = ""; _ } ] ) ->
         (* {!//identifier} *)
         (`TCurrentPackage, components)
-    | `End_in_slash, [] ->
-        (* {!identifier'/identifier} *)
-        (`TRelativePath, next_token.identifier :: components)
-    | `End_in_slash, next_token' :: tokens' ->
+    | { kind = `End_in_slash; identifier; location }, next_token' :: tokens' ->
+        if identifier = "" then
+          should_not_be_empty ~what:"Identifier in path reference" location
+          |> Error.raise_exception;
         (* {!path/identifier} *)
-        path (next_token.identifier :: components) next_token' tokens'
-    | (`None | `Prefixed _), _ ->
-        (* This is not really expected *)
-        expected ~expect_paths:true [] next_token.location
-        |> Error.raise_exception
+        path (identifier :: components) next_token' tokens'
+    | { kind = `None | `Prefixed _; _ }, _ ->
+        (* Cannot be outputed by the lexer. *)
+        assert false
   in
 
   let ends_in_slash next_token =

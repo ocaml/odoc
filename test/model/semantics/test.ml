@@ -2855,6 +2855,31 @@ let%expect_test _ =
       [%expect
         {| {"value":[{"`Paragraph":[{"`Code_span":"foo/type-bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'page-', a path, or an unqualified reference."]} |}]
 
+    let err_relative_empty_component =
+      test "{!foo//bar}";
+      [%expect
+        {| {"value":[{"`Paragraph":[{"`Code_span":"foo//bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-6:\nIdentifier in path reference should not be empty."]} |}]
+
+    let err_current_package_empty_component =
+      test "{!///bar}";
+      [%expect
+        {| {"value":[{"`Paragraph":[{"`Code_span":"///bar"}]}],"warnings":["File \"f.ml\", line 1, characters 4-4:\nIdentifier in path reference should not be empty."]} |}]
+
+    let err_last_empty_component =
+      test "{!foo/}";
+      [%expect
+        {| {"value":[{"`Paragraph":[{"`Code_span":"foo/"}]}],"warnings":["File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."]} |}]
+
+    let err_first_empty_component =
+      test "{!/}";
+      [%expect
+        {| {"value":[{"`Paragraph":[{"`Code_span":"/"}]}],"warnings":["File \"f.ml\", line 1, characters 3-3:\nIdentifier in reference should not be empty."]} |}]
+
+    let err_current_package_empty_component =
+      test "{!//}";
+      [%expect
+        {| {"value":[{"`Paragraph":[{"`Code_span":"//"}]}],"warnings":["File \"f.ml\", line 1, characters 4-4:\nIdentifier in reference should not be empty."]} |}]
+
     (* Old kind compatibility *)
 
     let oldkind_abs_page =
