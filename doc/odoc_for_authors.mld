@@ -402,7 +402,9 @@ The prefixes supported are:
 - [type]
 - [exception] (and the equivalent deprecated prefix [exn])
 - [method]
-- [constructor] (and the equivalent deprecated prefix [const])
+- [constructor] (and the equivalent deprecated prefix [const]) both for normal
+  constructors and polymorphic constructors defined in a type alias. The
+  backtick [`] in polumorphic constructor is optional.
 - [extension]
 - [extension-decl] for refering to the declaration point of an extension constructor
 - [field] (and the equivalent deprecated prefix [recfield])

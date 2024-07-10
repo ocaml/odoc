@@ -58,6 +58,10 @@ Additionally we support extra annotations:
 - [page] refers to [.mld] pages as outlined above
 - [value] is recognised as [val]
 
+Moreover, [odoc] adds support for referencing of polymorphic variants in type
+aliases such as [type t = [ `A ]]. The [constructor] annotation is extended for
+polymorphic variants.
+
 {3 Referencing items containing hyphens or dots}
 
 If it is necessary to reference a reference that contains hyphens or dots - e.g. if you have a file [docs-with-dashes.mld] or
