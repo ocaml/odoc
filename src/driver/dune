@@ -1,6 +1,8 @@
 (executable
  (public_name odoc_driver)
  (package odoc-driver)
+ (link_deps
+  (package odoc))
  (libraries
   cmdliner
   bos
