@@ -292,8 +292,7 @@ let parse whole_reference_location s :
         | `TModuleType ->
             `ModuleType
               (signature next_token tokens, ModuleTypeName.make_std identifier)
-        | `TPathComponent ->
-            `Module_path (path [ identifier ] next_token tokens)
+        | `TPathComponent -> assert false
         | _ ->
             expected ~expect_paths:true [ "module"; "module-type" ] location
             |> Error.raise_exception)
@@ -396,7 +395,7 @@ let parse whole_reference_location s :
         | `TClassType ->
             `ClassType
               (signature next_token tokens, ClassTypeName.make_std identifier)
-        | `TPathComponent -> `Page_path (path [ identifier ] next_token tokens)
+        | `TPathComponent -> assert false
         | _ ->
             expected ~expect_paths:true
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
@@ -500,7 +499,7 @@ let parse whole_reference_location s :
             in
             (* Prefixed pages are not differentiated. *)
             `Page_path (path [ identifier ] next_token tokens)
-        | `TPathComponent -> `Page_path (path [ identifier ] next_token tokens))
+        | `TPathComponent -> assert false)
   in
 
   let old_kind, s, location =
