@@ -19,6 +19,8 @@
 - Add a marshalled search index consumable by sherlodoc (@EmileTrotignon, @panglesd, #1084)
 - Add a `--index` argument to pass indexes to the document generation, currently
   used for sidebar (@panglesd, #1145)
+- Allow referencing of polymorphic constructors in polymorphic variant type
+  aliases (@panglesd, #1115)
 
 ### Changed
 
