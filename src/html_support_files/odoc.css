@@ -302,8 +302,8 @@ body.odoc {
   grid-template-columns: min-content 1fr min-content;
   grid-template-areas:
     "search-bar nav      ."
-    "toc-local  preamble toc-global"
-    "toc-local  content  toc-global";
+    "toc-global  preamble toc-local"
+    "toc-global  content  toc-local";
   column-gap: 4ex;
   grid-template-rows: auto auto 1fr;
 }
