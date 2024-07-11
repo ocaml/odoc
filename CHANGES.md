@@ -3,6 +3,9 @@
 ### Fixed
 
 - Fix missing katex headers (@panglesd, #1096)
+- Allow `][` in code blocks, fixing issue #1137 (@Julow, #1149, #xxxx)
+  This was interpreted as "code blocks with result", which now mandates a
+  delimiter: `{delim@lang[ code ]delim[ result ]}`
 
 # 2.4.2
 
