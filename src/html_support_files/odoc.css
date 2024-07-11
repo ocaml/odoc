@@ -1256,14 +1256,10 @@ td.def-doc *:first-child {
 
   body.odoc:has(> .odoc-search:focus-within) {
     grid-template-areas:
-    "nav        nav"
     "search-bar search-bar"
+    ".          nav"
     "sidebar    preamble"
-    "sidebar    content";
-  }
-
-  nav.odoc-nav:has(+ .odoc-search:focus-within) {
-    padding-bottom: 0;
+    "sidebar    content" !important;
   }
 
   .odoc-tocs {
@@ -1291,8 +1287,8 @@ td.def-doc *:first-child {
       "preamble"
       "toc-local"
       "content"
-      "toc-global";
-    grid-template-columns: 1fr;
+      "toc-global" !important;
+    grid-template-columns: 1fr !important;
   }
 
   body.odoc:has(> .odoc-search:focus-within) {
@@ -1304,15 +1300,14 @@ td.def-doc *:first-child {
       "preamble"
       "toc-local"
       "content"
-      "toc-global";
-    grid-template-columns: 1fr;
+      "toc-global" !important;
+    grid-template-columns: 1fr !important;
   }
 
 
   .odoc-search {
     position: relative;
-    padding-bottom: 0;
-    height: calc(var(--search-bar-height) + var(--search-padding-top));
+    height: calc(var(--search-bar-height) + 2 * var(--search-padding-top));
   }
 
   .odoc-tocs {
@@ -1329,6 +1324,11 @@ td.def-doc *:first-child {
     padding: 0.2em 1em;
     border-radius: 5px;
     margin-bottom: 2em;
+  }
+
+  nav.odoc-nav {
+    padding-top: 0 !important;
+    padding-bottom: var(--search-padding-top);
   }
 }
 
