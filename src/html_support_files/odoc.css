@@ -325,7 +325,7 @@ body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) {
   grid-template-columns: 1fr min-content;
 
   nav.odoc-nav {
-    padding-bottom: 0;
+    padding-top: 0;
   }
   nav.odoc-nav:has(+ .odoc-search:focus-within) {
     padding-top: var(--search-padding-top);
