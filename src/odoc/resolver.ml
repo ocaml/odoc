@@ -321,8 +321,7 @@ let lookup_unit_by_name ap target_name =
 
 (** Lookup an unit. First looks into [imports_map] then searches into the
     paths. *)
-let lookup_unit ~important_digests ~imports_map ~libs ap target_name =
-  ignore libs;
+let lookup_unit ~important_digests ~imports_map ap target_name =
   let of_option f =
     match f with Some m -> Odoc_xref2.Env.Found m | None -> Not_found
   in
@@ -340,80 +339,15 @@ let lookup_unit ~important_digests ~imports_map ~libs ap target_name =
 (** Lookup a page.
 
     TODO: Warning on ambiguous lookup. *)
-let lookup_page ~pages ap target_name =
-  match (target_name.[0], pages) with
-  (* WARNING: This is just a hack to be able to test resolving of references by
-     package until a proper reference syntax is implemented: if a page reference
-     starts with a [#], the reference is resolved in "test mode". *)
-  | '#', Some pages -> (
-      let reference =
-        String.sub target_name 1 (String.length target_name - 1)
-      in
-      match Astring.String.cuts ~sep:"/" reference with
-      | [ name ] -> (
-          let name = "page-" ^ name ^ ".odoc" in
-          match Named_roots.find_by_name ~root:"pkg" ~name pages with
-          | Ok page -> (
-              let units = load_units_from_files page in
-              let is_page u =
-                match u with
-                | Odoc_file.Page_content p -> Some p
-                | Impl_content _ | Unit_content _ | Source_tree_content _ ->
-                    None
-              in
-              match find_map is_page units with
-              | Some (p, _) -> Some p
-              | None ->
-                  Format.eprintf "%s\n"
-                    ("Page not found by name: "
-                    ^ string_of_int (List.length units));
-                  None)
-          | Error _ ->
-              Format.eprintf "Not found by name";
-              None)
-      | [] -> assert false
-      | "" :: root :: path -> (
-          let path = Fs.File.of_string @@ String.concat "/" path in
-          let filename = "page-" ^ Fpath.filename path ^ ".odoc" in
-          let path = Fpath.( / ) (Fpath.parent path) filename in
-          match Named_roots.find_by_path ~root ~path pages with
-          | Ok None ->
-              Format.eprintf "%s\n"
-              @@ Format.asprintf
-                   "Error during find by path: no file was found with this \
-                    path: %a"
-                   Fpath.pp path;
-              None
-          | Ok (Some page) -> (
-              let units = load_units_from_files [ page ] in
-              let is_page u =
-                match u with
-                | Odoc_file.Page_content p -> Some p
-                | Impl_content _ | Unit_content _ | Source_tree_content _ ->
-                    None
-              in
-              match find_map is_page units with
-              | Some (p, _) -> Some p
-              | None ->
-                  failwith
-                    ("Page not found by name: "
-                    ^ string_of_int (List.length units)))
-          | Error NoPackage ->
-              Format.eprintf "%s\n"
-              @@ "Error during find by path: no package was found with this \
-                  name";
-              None
-          | Error NoRoot -> None)
-      | _ -> failwith "Relative references (a/b, ../a/b) are not yet tested")
-  | _ -> (
-      let target_name = "page-" ^ target_name in
-      let is_page u =
-        match u with
-        | Odoc_file.Page_content p -> Some p
-        | Impl_content _ | Unit_content _ | Source_tree_content _ -> None
-      in
-      let units = load_units_from_name ap target_name in
-      match find_map is_page units with Some (p, _) -> Some p | None -> None)
+let lookup_page ap target_name =
+  let target_name = "page-" ^ target_name in
+  let is_page u =
+    match u with
+    | Odoc_file.Page_content p -> Some p
+    | Impl_content _ | Unit_content _ | Source_tree_content _ -> None
+  in
+  let units = load_units_from_name ap target_name in
+  match find_map is_page units with Some (p, _) -> Some p | None -> None
 
 (** Lookup an implementation. *)
 let lookup_impl ap target_name =
@@ -574,14 +508,14 @@ let build_compile_env_for_unit
       important_digests;
       ap;
       open_modules = open_units;
-      pages;
-      libs;
+      pages = _;
+      libs = _;
       hierarchy = _;
     } m =
   add_unit_to_cache (Odoc_file.Unit_content m);
   let imports_map = build_imports_map m.imports in
-  let lookup_unit = lookup_unit ~important_digests ~imports_map ~libs ap
-  and lookup_page = lookup_page ~pages ap
+  let lookup_unit = lookup_unit ~important_digests ~imports_map ap
+  and lookup_page = lookup_page ap
   and lookup_impl = lookup_impl ap
   (* Do not implement [lookup_path] in compile mode, as that might return
      different results depending on the compilation order. *)
@@ -595,8 +529,8 @@ let build_compile_env_for_unit
 let build ?(imports_map = StringMap.empty)
     { important_digests; ap; open_modules = open_units; pages; libs; hierarchy }
     =
-  let lookup_unit = lookup_unit ~libs ~important_digests ~imports_map ap
-  and lookup_page = lookup_page ~pages ap
+  let lookup_unit = lookup_unit ~important_digests ~imports_map ap
+  and lookup_page = lookup_page ap
   and lookup_impl = lookup_impl ap
   and lookup_path = lookup_path ap ~pages ~libs ~hierarchy in
   { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_path }
@@ -630,7 +564,7 @@ let build_env_for_reference t =
   let resolver = build { t with important_digests = false } in
   Env.env_for_reference resolver
 
-let lookup_page t target_name = lookup_page ~pages:t.pages t.ap target_name
+let lookup_page t target_name = lookup_page t.ap target_name
 
 let resolve_import t target_name =
   let rec loop = function

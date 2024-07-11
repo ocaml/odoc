@@ -64,18 +64,11 @@ Testing detection of package:
   $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/doc/page-file.odoc
  Cannot detect due to wrong input:
   $ odoc link -P pkg2:_odoc/pkg/doc/ _odoc/pkg/doc/page-file.odoc
-  Not found by nameError during find by path: no package was found with this name
-  File "file.mld", line 4, characters 0-28:
-  Warning: Failed to resolve reference unresolvedroot(#/pkg/dir1/my_page) Couldn't find page "#/pkg/dir1/my_page"
-  File "file.mld", line 3, characters 0-18:
-  Warning: Failed to resolve reference unresolvedroot(#my_page) Couldn't find page "#my_page"
+  File "file.mld", line 3, characters 0-20:
+  Warning: Failed to resolve reference /pkg/dir1/my_page Path '/pkg/dir1/my_page' not found
 
 Testing missing file:
   $ rm _odoc/pkg/doc/dir1/page-my_page.odoc*
   $ odoc link -P pkg:_odoc/pkg/doc/ _odoc/pkg/doc/page-file.odoc
-  Page not found by name: 0
-  Error during find by path: no file was found with this path: dir1/page-my_page.odoc
-  File "file.mld", line 4, characters 0-28:
-  Warning: Failed to resolve reference unresolvedroot(#/pkg/dir1/my_page) Couldn't find page "#/pkg/dir1/my_page"
-  File "file.mld", line 3, characters 0-18:
-  Warning: Failed to resolve reference unresolvedroot(#my_page) Couldn't find page "#my_page"
+  File "file.mld", line 3, characters 0-20:
+  Warning: Failed to resolve reference /pkg/dir1/my_page Path '/pkg/dir1/my_page' not found
