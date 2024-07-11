@@ -279,8 +279,8 @@ let lookup_unit_with_digest ap target_name digest =
   in
   let units = load_units_from_name ap target_name in
   match find_map unit_that_match_digest units with
-  | Some (m, _) -> Odoc_xref2.Env.Found m
-  | None -> Not_found
+  | Some (m, _) -> Ok (Odoc_xref2.Env.Found m)
+  | None -> Error `Not_found
 
 (** Lookup a compilation unit matching a name. If there is more than one
     result, report on stderr and return the first one.
@@ -321,25 +321,27 @@ let lookup_unit_by_name ap target_name =
 
 (** Lookup an unit. First looks into [imports_map] then searches into the
     paths. *)
-let lookup_unit ~important_digests ~imports_map ap target_name =
+let lookup_unit_by_name ~important_digests ~imports_map ap target_name =
   let of_option f =
-    match f with Some m -> Odoc_xref2.Env.Found m | None -> Not_found
+    match f with
+    | Some m -> Ok (Odoc_xref2.Env.Found m)
+    | None -> Error `Not_found
   in
   match StringMap.find target_name imports_map with
   | Odoc_model.Lang.Compilation_unit.Import.Unresolved (_, Some digest) ->
       lookup_unit_with_digest ap target_name digest
   | Unresolved (_, None) ->
-      if important_digests then Odoc_xref2.Env.Forward_reference
+      if important_digests then Ok Odoc_xref2.Env.Forward_reference
       else of_option (lookup_unit_by_name ap target_name)
   | Resolved (root, _) -> lookup_unit_with_digest ap target_name root.digest
   | exception Not_found ->
-      if important_digests then Odoc_xref2.Env.Not_found
+      if important_digests then Error `Not_found
       else of_option (lookup_unit_by_name ap target_name)
 
 (** Lookup a page.
 
     TODO: Warning on ambiguous lookup. *)
-let lookup_page ap target_name =
+let lookup_page_by_name ap target_name =
   let target_name = "page-" ^ target_name in
   let is_page u =
     match u with
@@ -347,7 +349,9 @@ let lookup_page ap target_name =
     | Impl_content _ | Unit_content _ | Source_tree_content _ -> None
   in
   let units = load_units_from_name ap target_name in
-  match find_map is_page units with Some (p, _) -> Some p | None -> None
+  match find_map is_page units with
+  | Some (p, _) -> Ok p
+  | None -> Error `Not_found
 
 (** Lookup an implementation. *)
 let lookup_impl ap target_name =
@@ -373,12 +377,12 @@ let add_unit_to_cache u =
   in
   Hashtbl.add unit_cache target_name [ u ]
 
-let lookup_path _ap ~pages ~libs:_ ~hierarchy (kind, tag, path) =
+let lookup_page_by_path ~pages ~hierarchy (tag, path) =
   let module Env = Odoc_xref2.Env in
   let open Odoc_utils.OptionMonad in
   let option_to_page_result = function
-    | Some p -> Env.Path_page p
-    | None -> Env.Path_not_found
+    | Some p -> Ok p
+    | None -> Error `Not_found
   in
   let page_path_to_path path =
     (* Turn [foo/bar] into [foo/page-bar.odoc]. *)
@@ -407,18 +411,25 @@ let lookup_path _ap ~pages ~libs:_ ~hierarchy (kind, tag, path) =
     | Ok path -> load_page path
     | Error `Escape_hierarchy -> None (* TODO: propagate more information *)
   in
-  match (kind, tag) with
-  | `Page, `TCurrentPackage ->
+  match tag with
+  | `TCurrentPackage ->
       (* [path] is within the current package root. *)
       page_path_to_path path >>= find_page |> option_to_page_result
-  | `Page, `TAbsolutePath ->
+  | `TAbsolutePath ->
       (match path with
       | root :: path -> page_path_to_path path >>= find_page ~root
       | [] -> None)
       |> option_to_page_result
-  | `Page, `TRelativePath ->
+  | `TRelativePath ->
       page_path_to_path path >>= find_page_in_hierarchy |> option_to_page_result
-  | _ -> Env.Path_not_found
+
+let lookup_unit ~important_digests ~imports_map ap = function
+  | `Path _ -> Error `Not_found
+  | `Name n -> lookup_unit_by_name ~important_digests ~imports_map ap n
+
+let lookup_page ap ~pages ~hierarchy = function
+  | `Path p -> lookup_page_by_path ~pages ~hierarchy p
+  | `Name n -> lookup_page_by_name ap n
 
 type t = {
   important_digests : bool;
@@ -514,26 +525,30 @@ let build_compile_env_for_unit
     } m =
   add_unit_to_cache (Odoc_file.Unit_content m);
   let imports_map = build_imports_map m.imports in
+  (* Do not implement [lookup_page] in compile mode, as that might return
+     different results depending on the compilation order.
+     On the other hand, [lookup_unit] is needed at compile time and the
+     compilation order is known by the driver. *)
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
-  and lookup_page = lookup_page ap
-  and lookup_impl = lookup_impl ap
-  (* Do not implement [lookup_path] in compile mode, as that might return
-     different results depending on the compilation order. *)
-  and lookup_path _ = Env.Path_not_found in
-  let resolver =
-    { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_path }
-  in
+  and lookup_page _ = Error `Not_found
+  and lookup_impl = lookup_impl ap in
+  let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_impl } in
   Env.env_of_unit m ~linking:false resolver
 
 (** [important_digests] and [imports_map] only apply to modules. *)
 let build ?(imports_map = StringMap.empty)
-    { important_digests; ap; open_modules = open_units; pages; libs; hierarchy }
-    =
+    {
+      important_digests;
+      ap;
+      open_modules = open_units;
+      pages;
+      libs = _;
+      hierarchy;
+    } =
   let lookup_unit = lookup_unit ~important_digests ~imports_map ap
-  and lookup_page = lookup_page ap
-  and lookup_impl = lookup_impl ap
-  and lookup_path = lookup_path ap ~pages ~libs ~hierarchy in
-  { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_path }
+  and lookup_page = lookup_page ap ~pages ~hierarchy
+  and lookup_impl = lookup_impl ap in
+  { Env.open_units; lookup_unit; lookup_page; lookup_impl }
 
 let build_compile_env_for_impl t i =
   let imports_map =
@@ -564,7 +579,10 @@ let build_env_for_reference t =
   let resolver = build { t with important_digests = false } in
   Env.env_for_reference resolver
 
-let lookup_page t target_name = lookup_page t.ap target_name
+let lookup_page t target_name =
+  match lookup_page_by_name t.ap target_name with
+  | Ok p -> Some p
+  | Error `Not_found -> None
 
 let resolve_import t target_name =
   let rec loop = function

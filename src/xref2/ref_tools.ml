@@ -182,19 +182,11 @@ module Path = struct
   (* let first_seg (`Root (s, _) | `Slash (_, s)) = s *)
 
   let handle_lookup_errors ~tag ~path = function
-    | Env.Path_unit u -> Ok (`Unit u)
-    | Path_page p -> Ok (`Page p)
-    | Path_directory -> Error (`Path_error (`Is_directory, tag, path))
-    | Path_not_found -> Error (`Path_error (`Not_found, tag, path))
-
-  let expect_page ~tag ~path = function
-    | `Unit _ -> Error (`Path_error (`Wrong_kind ([ `Page ], `Unit), tag, path))
-    | `Page p -> Ok p
+    | Ok _ as ok -> ok
+    | Error `Not_found -> Error (`Path_error (`Not_found, tag, path))
 
   let page_in_env env (tag, path) : page_lookup_result ref_result =
-    Env.lookup_path (`Page, tag, path) env
-    |> handle_lookup_errors ~tag ~path
-    >>= expect_page ~tag ~path
+    Env.lookup_page_by_path (tag, path) env |> handle_lookup_errors ~tag ~path
     >>= fun p -> Ok (`Identifier p.name, p)
 
   let any_in_env env page_path : any_path_lookup_result ref_result =
@@ -613,9 +605,9 @@ module Page = struct
   type t = page_lookup_result
 
   let in_env env name : t ref_result =
-    match Env.lookup_page name env with
-    | Some p -> Ok (`Identifier p.Odoc_model.Lang.Page.name, p)
-    | None -> Error (`Lookup_by_name (`Page, name))
+    match Env.lookup_page_by_name name env with
+    | Ok p -> Ok (`Identifier p.Odoc_model.Lang.Page.name, p)
+    | Error `Not_found -> Error (`Lookup_by_name (`Page, name))
 
   let of_element _env (`Page (id, page)) : t = (`Identifier id, page)
 end

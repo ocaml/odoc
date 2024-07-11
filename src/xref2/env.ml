@@ -3,34 +3,22 @@ open Odoc_model
 open Odoc_model.Names
 open Odoc_model.Paths
 
-type lookup_unit_result =
-  | Forward_reference
-  | Found of Lang.Compilation_unit.t
-  | Not_found
+type lookup_unit_result = Forward_reference | Found of Lang.Compilation_unit.t
 
-type lookup_page_result = Lang.Page.t option
+type path_query = [ `Path of Reference.Hierarchy.t | `Name of string ]
 
-type lookup_impl_result = Lang.Implementation.t option
-
-type lookup_path_result =
-  | Path_unit of Lang.Compilation_unit.t
-  | Path_page of Lang.Page.t
-  | Path_directory
-  | Path_not_found
-
-type root =
-  | Resolved of (Odoc_model.Root.t * Identifier.Module.t * Component.Module.t)
-  | Forward
-
-type path_query = [ `Page | `Unit ] * Reference.tag_hierarchy * string list
+type lookup_error = [ `Not_found ]
 
 type resolver = {
   open_units : string list;
-  lookup_unit : string -> lookup_unit_result;
-  lookup_impl : string -> lookup_impl_result;
-  lookup_page : string -> lookup_page_result;
-  lookup_path : path_query -> lookup_path_result;
+  lookup_unit : path_query -> (lookup_unit_result, lookup_error) result;
+  lookup_page : path_query -> (Lang.Page.t, lookup_error) result;
+  lookup_impl : string -> Lang.Implementation.t option;
 }
+
+type root =
+  | Resolved of (Root.t * Identifier.Module.t * Component.Module.t)
+  | Forward
 
 let unique_id =
   let i = ref 0 in
@@ -413,10 +401,10 @@ let lookup_root_module name env =
     match env.resolver with
     | None -> None
     | Some r -> (
-        match r.lookup_unit name with
-        | Forward_reference -> Some Forward
-        | Not_found -> None
-        | Found u ->
+        match r.lookup_unit (`Name name) with
+        | Ok Forward_reference -> Some Forward
+        | Error `Not_found -> None
+        | Ok (Found u) ->
             let ({ Odoc_model.Paths.Identifier.iv = `Root _; _ } as id) =
               u.id
             in
@@ -437,19 +425,24 @@ let lookup_root_module name env =
   | None, _ -> ());
   result
 
-let lookup_page name env =
-  match env.resolver with None -> None | Some r -> r.lookup_page name
+let lookup_page query env =
+  match env.resolver with
+  | None -> Error `Not_found
+  | Some r -> r.lookup_page query
 
-let lookup_unit name env =
-  match env.resolver with None -> None | Some r -> Some (r.lookup_unit name)
+let lookup_unit query env =
+  match env.resolver with
+  | None -> Error `Not_found
+  | Some r -> r.lookup_unit query
 
 let lookup_impl name env =
   match env.resolver with None -> None | Some r -> r.lookup_impl name
 
-let lookup_path query env =
-  match env.resolver with
-  | None -> Path_not_found
-  | Some r -> r.lookup_path query
+let lookup_page_by_name n env = lookup_page (`Name n) env
+let lookup_page_by_path p env = lookup_page (`Path p) env
+
+let lookup_unit_by_name n env = lookup_unit (`Name n) env
+let lookup_unit_by_path p env = lookup_unit (`Path p) env
 
 type 'a scope = {
   filter : Component.Element.any -> ([< Component.Element.any ] as 'a) option;
@@ -528,9 +521,9 @@ let lookup_page_or_root_module_fallback name t =
   match lookup_root_module_fallback name t with
   | Some _ as x -> x
   | None -> (
-      match lookup_page name t with
-      | Some page -> Some (`Page (page.Lang.Page.name, page))
-      | None -> None)
+      match lookup_page_by_name name t with
+      | Ok page -> Some (`Page (page.Lang.Page.name, page))
+      | Error `Not_found -> None)
 
 let s_signature : Component.Element.signature scope =
   make_scope ~root:lookup_root_module_fallback (function
@@ -814,8 +807,8 @@ let open_module_type_substitution : Lang.ModuleTypeSubstitution.t -> t -> t =
 let open_units resolver env =
   List.fold_left
     (fun env m ->
-      match resolver.lookup_unit m with
-      | Found unit -> (
+      match resolver.lookup_unit (`Name m) with
+      | Ok (Found unit) -> (
           match unit.content with
           | Module sg -> open_signature sg env
           | _ -> env)
@@ -867,10 +860,10 @@ let verify_lookups env lookups =
           match env.resolver with
           | None -> None
           | Some r -> (
-              match r.lookup_unit name with
-              | Forward_reference -> Some `Forward
-              | Not_found -> None
-              | Found u -> Some (`Resolved u.root.digest))
+              match r.lookup_unit (`Name name) with
+              | Ok Forward_reference -> Some `Forward
+              | Ok (Found u) -> Some (`Resolved u.root.digest)
+              | Error `Not_found -> None)
         in
         match (res, actual_result) with
         | None, None -> false

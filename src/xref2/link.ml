@@ -1108,18 +1108,17 @@ let page env page =
   let () =
     List.iter
       (fun child ->
-        let check_resolves ~what f name =
-          match f name env with
-          | Some _ -> ()
-          | None -> Errors.report ~what `Lookup
-        in
         match child with
         | Page.Asset_child _ | Page.Source_tree_child _ -> ()
-        | Page.Page_child page ->
-            check_resolves ~what:(`Child_page page) Env.lookup_page page
-        | Page.Module_child mod_ ->
-            check_resolves ~what:(`Child_module mod_) Env.lookup_root_module
-              mod_)
+        | Page.Page_child page -> (
+            match Env.lookup_page_by_name page env with
+            | Ok _ -> ()
+            | Error `Not_found -> Errors.report ~what:(`Child_page page) `Lookup
+            )
+        | Page.Module_child mod_ -> (
+            match Env.lookup_root_module mod_ env with
+            | Some _ -> ()
+            | None -> Errors.report ~what:(`Child_module mod_) `Lookup))
       page.Lang.Page.children
   in
   {
