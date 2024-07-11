@@ -375,7 +375,7 @@ let add_unit_to_cache u =
 
 let lookup_path _ap ~pages ~libs:_ ~hierarchy (kind, tag, path) =
   let module Env = Odoc_xref2.Env in
-  let ( >>= ) x f = match x with Some x' -> f x' | None -> None in
+  let open Odoc_utils.OptionMonad in
   let page_path_to_path path =
     (* Turn [foo/bar] into [foo/page-bar.odoc]. *)
     let segs =

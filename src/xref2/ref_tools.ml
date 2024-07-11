@@ -192,7 +192,8 @@ module Path = struct
     | `Page p -> Ok p
 
   let page_in_env env (tag, path) : page_lookup_result ref_result =
-    handle_lookup_errors ~tag ~path (Env.lookup_path (`Page, tag, path) env)
+    Env.lookup_path (`Page, tag, path) env
+    |> handle_lookup_errors ~tag ~path
     >>= expect_page ~tag ~path
     >>= fun p -> Ok (`Identifier p.name, p)
 
