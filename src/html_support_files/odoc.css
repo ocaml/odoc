@@ -310,9 +310,30 @@ body.odoc {
 
 body.odoc:has(> .odoc-search:focus-within) {
   grid-template-areas:
-  "search-bar search-bar nav"
-  "toc-local  preamble   toc-global"
-  "toc-local  content    toc-global";
+  "search-bar search-bar search-bar"
+  ".          nav        ."
+  "toc-global  preamble   toc-local"
+  "toc-global  content    toc-local";
+}
+
+body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) {
+  grid-template-areas:
+  "search-bar search-bar"
+  "nav        ."
+  "preamble   toc-local"
+  "content    toc-local";
+  grid-template-columns: 1fr min-content;
+
+  nav.odoc-nav {
+    padding-bottom: 0;
+  }
+  nav.odoc-nav:has(+ .odoc-search:focus-within) {
+    padding-top: var(--search-padding-top);
+  }
+}
+
+nav.odoc-nav:has(+ .odoc-search:focus-within) {
+  padding-top: 0;
 }
 
 body.odoc-src {
@@ -1253,7 +1274,7 @@ td.def-doc *:first-child {
   }
   .odoc-toc {
       position: unset;
-      max-height: unset;
+      max-height: unset !important;
   }
 }
 
