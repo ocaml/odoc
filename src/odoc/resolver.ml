@@ -376,14 +376,16 @@ let add_unit_to_cache u =
 let lookup_path _ap ~pages ~libs:_ ~hierarchy (kind, tag, path) =
   let module Env = Odoc_xref2.Env in
   let open Odoc_utils.OptionMonad in
+  let option_to_page_result = function
+    | Some p -> Env.Path_page p
+    | None -> Env.Path_not_found
+  in
   let page_path_to_path path =
     (* Turn [foo/bar] into [foo/page-bar.odoc]. *)
-    let segs =
-      match List.rev path with
-      | [] -> []
-      | name :: rest -> List.rev (("page-" ^ name ^ ".odoc") :: rest)
-    in
-    Fs.File.of_segs segs
+    match List.rev path with
+    | [] -> None
+    | name :: rest ->
+        Some (List.rev (("page-" ^ name ^ ".odoc") :: rest) |> Fs.File.of_segs)
   in
   let find_by_path ?root named_roots path =
     match Named_roots.find_by_path ?root named_roots ~path with
@@ -392,32 +394,30 @@ let lookup_path _ap ~pages ~libs:_ ~hierarchy (kind, tag, path) =
   in
   let load_page path =
     match load_unit_from_file path with
-    | Some (Odoc_file.Page_content page) -> Env.Path_page page
-    | _ -> Env.Path_not_found
+    | Some (Odoc_file.Page_content page) -> Some page
+    | _ -> None
   in
   let find_page ?root path =
-    (pages >>= fun pages -> find_by_path ?root pages path) |> function
-    | Some path -> load_page path
-    | None -> Env.Path_not_found
+    pages >>= fun pages ->
+    find_by_path ?root pages path >>= fun path -> load_page path
   in
   let find_page_in_hierarchy path =
-    match hierarchy with
-    | Some hierarchy -> (
-        match Hierarchy.resolve_relative hierarchy path with
-        | Ok path -> load_page path
-        | Error `Escape_hierarchy ->
-            Env.Path_not_found (* TODO: propagate more information *))
-    | None -> Env.Path_not_found
+    hierarchy >>= fun hierarchy ->
+    match Hierarchy.resolve_relative hierarchy path with
+    | Ok path -> load_page path
+    | Error `Escape_hierarchy -> None (* TODO: propagate more information *)
   in
   match (kind, tag) with
   | `Page, `TCurrentPackage ->
       (* [path] is within the current package root. *)
-      find_page (page_path_to_path path)
-  | `Page, `TAbsolutePath -> (
-      match path with
-      | root :: path -> find_page ~root (page_path_to_path path)
-      | [] -> Env.Path_not_found)
-  | `Page, `TRelativePath -> find_page_in_hierarchy (page_path_to_path path)
+      page_path_to_path path >>= find_page |> option_to_page_result
+  | `Page, `TAbsolutePath ->
+      (match path with
+      | root :: path -> page_path_to_path path >>= find_page ~root
+      | [] -> None)
+      |> option_to_page_result
+  | `Page, `TRelativePath ->
+      page_path_to_path path >>= find_page_in_hierarchy |> option_to_page_result
   | _ -> Env.Path_not_found
 
 type t = {
