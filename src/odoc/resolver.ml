@@ -31,6 +31,7 @@
    Where we notice this ambiguity we warn the user to wrap their libraries,
    which will generally fix this issue. *)
 
+open Odoc_utils
 open Or_error
 
 module Named_roots : sig
@@ -377,54 +378,75 @@ let add_unit_to_cache u =
   in
   Hashtbl.add unit_cache target_name [ u ]
 
-let lookup_page_by_path ~pages ~hierarchy (tag, path) =
-  let module Env = Odoc_xref2.Env in
+(** Resolve a path reference in the given named roots and hierarchy.
+    [possible_unit_names] should return a list of possible file names for the
+    given unit name. *)
+let lookup_path ~possible_unit_names ~named_roots ~hierarchy (tag, path) :
+    (Odoc_file.content, [ `Not_found ]) result =
   let open Odoc_utils.OptionMonad in
-  let option_to_page_result = function
-    | Some p -> Ok p
-    | None -> Error `Not_found
-  in
-  let page_path_to_path path =
-    (* Turn [foo/bar] into [foo/page-bar.odoc]. *)
+  let option_to_result = function Some p -> Ok p | None -> Error `Not_found in
+  let ref_path_to_file_path path =
     match List.rev path with
-    | [] -> None
+    | [] -> []
     | name :: rest ->
-        Some (List.rev (("page-" ^ name ^ ".odoc") :: rest) |> Fs.File.of_segs)
+        List.map
+          (fun fname -> List.rev (fname :: rest) |> Fs.File.of_segs)
+          (possible_unit_names name)
   in
   let find_by_path ?root named_roots path =
     match Named_roots.find_by_path ?root named_roots ~path with
     | Ok x -> x
     | Error (NoPackage | NoRoot) -> None
   in
-  let load_page path =
-    match load_unit_from_file path with
-    | Some (Odoc_file.Page_content page) -> Some page
-    | _ -> None
+  let find_in_named_roots ?root path =
+    named_roots >>= fun named_roots ->
+    find_by_path ?root named_roots path >>= fun path -> load_unit_from_file path
   in
-  let find_page ?root path =
-    pages >>= fun pages ->
-    find_by_path ?root pages path >>= fun path -> load_page path
-  in
-  let find_page_in_hierarchy path =
+  let find_in_hierarchy path =
     hierarchy >>= fun hierarchy ->
     match Hierarchy.resolve_relative hierarchy path with
-    | Ok path -> load_page path
+    | Ok path -> load_unit_from_file path
     | Error `Escape_hierarchy -> None (* TODO: propagate more information *)
   in
   match tag with
   | `TCurrentPackage ->
       (* [path] is within the current package root. *)
-      page_path_to_path path >>= find_page |> option_to_page_result
+      ref_path_to_file_path path
+      |> List.find_map find_in_named_roots
+      |> option_to_result
   | `TAbsolutePath ->
       (match path with
-      | root :: path -> page_path_to_path path >>= find_page ~root
+      | root :: path ->
+          ref_path_to_file_path path
+          |> List.find_map (find_in_named_roots ~root)
       | [] -> None)
-      |> option_to_page_result
+      |> option_to_result
   | `TRelativePath ->
-      page_path_to_path path >>= find_page_in_hierarchy |> option_to_page_result
+      ref_path_to_file_path path
+      |> List.find_map find_in_hierarchy
+      |> option_to_result
 
-let lookup_unit ~important_digests ~imports_map ap = function
-  | `Path _ -> Error `Not_found
+let lookup_page_by_path ~pages ~hierarchy path =
+  let possible_unit_names name = [ "page-" ^ name ^ ".odoc" ] in
+  match lookup_path ~possible_unit_names ~named_roots:pages ~hierarchy path with
+  | Ok (Odoc_file.Page_content page) -> Ok page
+  | Ok _ -> Error `Not_found (* TODO: Report is not a page. *)
+  | Error _ as e -> e
+
+let lookup_unit_by_path ~libs ~hierarchy path =
+  let possible_unit_names name =
+    [
+      String.capitalize_ascii name ^ ".odoc";
+      String.uncapitalize_ascii name ^ ".odoc";
+    ]
+  in
+  match lookup_path ~possible_unit_names ~named_roots:libs ~hierarchy path with
+  | Ok (Odoc_file.Unit_content u) -> Ok (Odoc_xref2.Env.Found u)
+  | Ok _ -> Error `Not_found (* TODO: Report is not a module. *)
+  | Error _ as e -> e
+
+let lookup_unit ~important_digests ~imports_map ap ~libs ~hierarchy = function
+  | `Path p -> lookup_unit_by_path ~libs ~hierarchy p
   | `Name n -> lookup_unit_by_name ~important_digests ~imports_map ap n
 
 let lookup_page ap ~pages ~hierarchy = function
@@ -529,7 +551,8 @@ let build_compile_env_for_unit
      different results depending on the compilation order.
      On the other hand, [lookup_unit] is needed at compile time and the
      compilation order is known by the driver. *)
-  let lookup_unit = lookup_unit ~important_digests ~imports_map ap
+  let lookup_unit =
+    lookup_unit ~important_digests ~imports_map ap ~libs:None ~hierarchy:None
   and lookup_page _ = Error `Not_found
   and lookup_impl = lookup_impl ap in
   let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_impl } in
@@ -537,15 +560,10 @@ let build_compile_env_for_unit
 
 (** [important_digests] and [imports_map] only apply to modules. *)
 let build ?(imports_map = StringMap.empty)
-    {
-      important_digests;
-      ap;
-      open_modules = open_units;
-      pages;
-      libs = _;
-      hierarchy;
-    } =
-  let lookup_unit = lookup_unit ~important_digests ~imports_map ap
+    { important_digests; ap; open_modules = open_units; pages; libs; hierarchy }
+    =
+  let lookup_unit =
+    lookup_unit ~important_digests ~imports_map ap ~libs ~hierarchy
   and lookup_page = lookup_page ap ~pages ~hierarchy
   and lookup_impl = lookup_impl ap in
   { Env.open_units; lookup_unit; lookup_page; lookup_impl }

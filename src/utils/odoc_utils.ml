@@ -63,6 +63,12 @@ module List = struct
     | [] -> List.rev acc
 
   let filter_map f x = filter_map [] f x
+
+  (** @raise [Failure] if the list is empty. *)
+  let rec last = function
+    | [] -> failwith "Odoc_utils.List.last"
+    | [ x ] -> x
+    | _ :: tl -> last tl
 end
 
 module Option = struct
