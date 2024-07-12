@@ -1,3 +1,6 @@
+(** Re-export for compatibility with 4.02. *)
+type ('a, 'b) result = ('a, 'b) Result.result = Ok of 'a | Error of 'b
+
 (** The [result] type and a bind operator. This module is meant to be opened. *)
 module ResultMonad = struct
   (** Re-export for compat *)
@@ -43,6 +46,8 @@ module EitherMonad = struct
 end
 
 module List = struct
+  include List
+
   let rec concat_map ?sep ~f = function
     | [] -> []
     | [ x ] -> f x

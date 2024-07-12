@@ -2,6 +2,7 @@
 
 open Odoc_model
 open Odoc_model.Paths
+open Odoc_utils
 
 type lookup_unit_result = Forward_reference | Found of Lang.Compilation_unit.t
 
