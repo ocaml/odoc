@@ -1,7 +1,8 @@
 open Odoc_model.Paths
 open Odoc_model.Names
 open Reference
-open Odoc_utils.ResultMonad
+open Odoc_utils
+open ResultMonad
 
 type module_lookup_result =
   Resolved.Module.t * Cpath.Resolved.module_ * Component.Module.t
@@ -178,25 +179,6 @@ let type_lookup_to_class_signature_lookup =
         |> of_option ~error:(`Parent (`Parent_type `OpaqueClass))
         >>= resolved p'
 
-module Path = struct
-  (* let first_seg (`Root (s, _) | `Slash (_, s)) = s *)
-
-  let handle_lookup_errors ~tag ~path = function
-    | Ok _ as ok -> ok
-    | Error `Not_found -> Error (`Path_error (`Not_found, tag, path))
-
-  let page_in_env env (tag, path) : page_lookup_result ref_result =
-    Env.lookup_page_by_path (tag, path) env |> handle_lookup_errors ~tag ~path
-    >>= fun p -> Ok (`Identifier p.name, p)
-
-  let any_in_env env page_path : any_path_lookup_result ref_result =
-    (* TODO: Resolve modules *)
-    page_in_env env page_path >>= fun r -> Ok (`P r)
-
-  let module_in_env _env _page_path : module_lookup_result ref_result =
-    Error (`Wrong_kind ([ `S ], `Page_path))
-end
-
 module M = struct
   (** Module *)
 
@@ -236,6 +218,38 @@ module M = struct
     match env_lookup_by_name Env.s_module name env with
     | Ok e -> Ok (of_element env e)
     | Error _ -> Error (`Parent (`Parent_module (`Lookup_failure_root name)))
+end
+
+module Path = struct
+  (* let first_seg (`Root (s, _) | `Slash (_, s)) = s *)
+
+  let mk_lookup_error (tag, path) = Error (`Path_error (`Not_found, tag, path))
+
+  let handle_lookup_error p = function
+    | Ok _ as ok -> ok
+    | Error `Not_found -> mk_lookup_error p
+
+  let page_in_env env p : page_lookup_result ref_result =
+    Env.lookup_page_by_path p env |> handle_lookup_error p >>= fun p ->
+    Ok (`Identifier p.name, p)
+
+  let module_in_env env p : module_lookup_result ref_result =
+    Env.lookup_unit_by_path p env |> handle_lookup_error p >>= fun m ->
+    Ok (M.of_element env m)
+
+  let any_in_env env p : any_path_lookup_result ref_result =
+    (* TODO: Resolve modules *)
+    let page_result = page_in_env env p in
+    let module_result = module_in_env env p in
+    match (page_result, module_result) with
+    | Ok page, Error _ -> Ok (`P page)
+    | Error _, Ok m ->
+        module_lookup_to_signature_lookup env m >>= fun s -> Ok (`S s)
+    | Ok page, Ok _ ->
+        let name = List.last (snd p) in
+        ambiguous_generic_ref_warning name [ "module"; "page" ];
+        Ok (`P page)
+    | Error _, Error _ -> mk_lookup_error p
 end
 
 module MT = struct

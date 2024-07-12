@@ -442,8 +442,13 @@ let lookup_impl name env =
 let lookup_page_by_name n env = lookup_page (`Name n) env
 let lookup_page_by_path p env = lookup_page (`Path p) env
 
-let lookup_unit_by_name n env = lookup_unit (`Name n) env
-let lookup_unit_by_path p env = lookup_unit (`Path p) env
+let lookup_unit_by_path p env =
+  match lookup_unit (`Path p) env with
+  | Ok (Found u) ->
+      let m = Component.Delayed.put_val (module_of_unit u) in
+      Ok (`Module ((u.id :> Identifier.Path.Module.t), m))
+  | Ok Forward_reference -> Error `Not_found (* TODO: Remove this case *)
+  | Error _ as e -> e
 
 type 'a scope = {
   filter : Component.Element.any -> ([< Component.Element.any ] as 'a) option;

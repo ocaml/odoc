@@ -97,10 +97,8 @@ val lookup_page_by_path :
 
 val lookup_impl : string -> t -> Lang.Implementation.t option
 
-val lookup_unit_by_name :
-  string -> t -> (lookup_unit_result, lookup_error) result
 val lookup_unit_by_path :
-  Reference.Hierarchy.t -> t -> (lookup_unit_result, lookup_error) result
+  Reference.Hierarchy.t -> t -> (Component.Element.module_, lookup_error) result
 
 val module_of_unit : Lang.Compilation_unit.t -> Component.Module.t
 
