@@ -169,7 +169,7 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
   in
   let occurrences =
     match occurrences with
-    | Some (`Direct direct, `Indirect indirect) ->
+    | Some { Odoc_occurrences.Table.direct; indirect } ->
         [
           ( "occurrences",
             `Object
@@ -211,12 +211,9 @@ let unit ?occurrences ppf u =
     match occurrences with
     | None -> None
     | Some occurrences -> (
-        (* We don't want to include the [sub] field of occurrence tables. We use
-           a "polymorphic record" to avoid defining a type, but still get named
-           fields! *)
         match Odoc_occurrences.Table.get occurrences id with
-        | Some x -> Some (`Direct x.direct, `Indirect x.indirect)
-        | None -> Some (`Direct 0, `Indirect 0))
+        | Some x -> Some x
+        | None -> Some { direct = 0; indirect = 0 })
   in
   let f first i =
     let entries = Entry.entries_of_item i in
