@@ -713,8 +713,8 @@ end = struct
         | Some _ as r -> Ok r
         | None -> Error `Not_found)
 
-  let current_library_of_output lib_roots output =
-    match find_root_of_output lib_roots output with
+  let current_library_of_input lib_roots input =
+    match find_root_of_output lib_roots input with
     | Ok _ as ok -> ok
     | Error `Not_found ->
         Error (`Msg "The output file must be part of a directory passed as -L")
@@ -768,7 +768,7 @@ end = struct
      else Ok ())
     >>= fun () ->
     let is_page = is_page input in
-    (if is_page then Ok None else current_library_of_output lib_roots output)
+    (if is_page then Ok None else current_library_of_input lib_roots input)
     >>= fun current_lib ->
     (if is_page then current_package_of_page ~current_package page_roots output
      else validate_current_package page_roots current_package)
