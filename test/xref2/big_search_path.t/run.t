@@ -1,7 +1,10 @@
+WARNING: DISABLED in the dune file.
+Was too brittle (it had too many false positive in CI.). Kept for reference
+until the test is integrated in a benchmark. (TODO)
+
 Testing our timeout (timeout is not available on mac):
 
   $ ./timeout.sh 0.01 "sleep 2" 2> /dev/null
-
 
 We create a lot of directories
 

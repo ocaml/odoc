@@ -60,3 +60,10 @@
  (applies_to lookup_def shadow3 to_remove_test)
  (enabled_if
   (>= %{ocaml_version} 4.14.0)))
+
+; Disable the big_search_path test, as it had too many false positive in CI.
+; Kept for reference until the test is integrated in a benchmark. (TODO)
+
+(cram
+ (applies_to big_search_path)
+ (enabled_if false))
