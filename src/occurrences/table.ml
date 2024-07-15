@@ -1,8 +1,13 @@
 module H = Hashtbl.Make (Odoc_model.Paths.Identifier)
 
-type t = item H.t
-and item = { direct : int; indirect : int; sub : item H.t }
+type t = internal_item H.t
+and internal_item = { direct : int; indirect : int; sub : t }
 type key = Odoc_model.Paths.Identifier.t
+
+type item = { direct : int; indirect : int }
+
+let internal_to_item : internal_item -> item =
+ fun { direct; indirect; _ } -> { direct; indirect }
 
 let v_item () = { direct = 0; indirect = 0; sub = H.create 0 }
 
@@ -78,9 +83,13 @@ let rec get t id =
   | `AssetFile _ | `SourceDir _ | `SourceLocationInternal _ ->
       None
 
+let get t id =
+  match get t id with None -> None | Some i -> Some (internal_to_item i)
+
 let rec iter f tbl =
   H.iter
     (fun id v ->
       iter f v.sub;
+      let v = internal_to_item v in
       f id v)
     tbl
