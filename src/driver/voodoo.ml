@@ -96,7 +96,13 @@ let process_package pkg =
         Fpath.Set.add meta_dir acc
       | Some x ->
         let dir = Fpath.(meta_dir // v x) in
-        Fpath.Set.add dir acc)) Fpath.Set.empty libs
+        (* NB. topkg installs a META file that points to a ../topkg-care directory
+           that is installed by the topkg-care package. We filter that out here,
+           though I've not thought of a good way to sort out the `topkg-care` package *)
+        match Bos.OS.Dir.exists dir with
+        | Ok true ->
+          Fpath.Set.add dir acc
+        | _ -> acc)) Fpath.Set.empty libs
       in
     let libname_of_archive =
       List.fold_left (fun acc x ->
