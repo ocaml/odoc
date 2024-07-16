@@ -687,7 +687,7 @@ end = struct
   open Or_error
 
   (** Find the package/library name the output is part of *)
-  let find_root_of_output l o =
+  let find_root_of_input l o =
     let l =
       List.map
         ~f:(fun (x, p) ->
@@ -714,7 +714,7 @@ end = struct
         | None -> Error `Not_found)
 
   let current_library_of_input lib_roots input =
-    match find_root_of_output lib_roots input with
+    match find_root_of_input lib_roots input with
     | Ok _ as ok -> ok
     | Error `Not_found ->
         Error (`Msg "The output file must be part of a directory passed as -L")
@@ -744,8 +744,8 @@ end = struct
           | _ -> Ok current_package)
     | None -> Ok detected_package
 
-  let current_package_of_page ~current_package page_roots output =
-    match find_root_of_output page_roots output with
+  let current_package_of_page ~current_package page_roots input =
+    match find_root_of_input page_roots input with
     | Ok detected_package ->
         validate_current_package ?detected_package page_roots current_package
     | Error `Not_found ->
@@ -770,7 +770,7 @@ end = struct
     let is_page = is_page input in
     (if is_page then Ok None else current_library_of_input lib_roots input)
     >>= fun current_lib ->
-    (if is_page then current_package_of_page ~current_package page_roots output
+    (if is_page then current_package_of_page ~current_package page_roots input
      else validate_current_package page_roots current_package)
     >>= fun current_package ->
     let current_dir = Fs.File.dirname output in
