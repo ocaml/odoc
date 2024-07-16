@@ -323,13 +323,12 @@ body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) {
   "preamble   toc-local"
   "content    toc-local";
   grid-template-columns: 1fr min-content;
-
-  nav.odoc-nav {
-    padding-top: 0;
-  }
-  nav.odoc-nav:has(+ .odoc-search:focus-within) {
-    padding-top: var(--search-padding-top);
-  }
+}
+body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) nav.odoc-nav {
+  padding-top: 0;
+}
+body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) nav.odoc-nav:has(+ .odoc-search:focus-within) {
+  padding-top: var(--search-padding-top);
 }
 
 nav.odoc-nav:has(+ .odoc-search:focus-within) {
@@ -1252,23 +1251,23 @@ body.odoc:has( .odoc-search) .odoc-toc {
       "search-bar nav"
       "sidebar    preamble"
       "sidebar    content";
-    .odoc-tocs {
+  }
+  body.odoc .odoc-tocs {
       display: flex;
       grid-area: sidebar;
       flex-direction : column;
       gap: 20px;
-      .odoc-toc {
-        position: unset;
-        max-height: unset;
-      }
-    }
-    &:has(.odoc-search:focus-within) {
-      grid-template-areas:
-        "search-bar search-bar"
-        ".          nav"
-        "sidebar    preamble"
-        "sidebar    content";
-    }
+  }
+  body.odoc .odoc-tocs .odoc-toc {
+    position: unset;
+    max-height: unset;
+  }
+  body.odoc:has(.odoc-search:focus-within) {
+    grid-template-areas:
+      "search-bar search-bar"
+      ".          nav"
+      "sidebar    preamble"
+      "sidebar    content";
   }
 }
 
@@ -1284,40 +1283,40 @@ body.odoc:has( .odoc-search) .odoc-toc {
       "content"
       "toc-global";
     grid-template-columns: 1fr;
-    &:has(> .odoc-search:focus-within) {
-      /* This is the same as when there is no focus on the search bar, this is
-      just to prevent the full screen rule from changing anything. */
-      grid-template-areas:
-        "search-bar"
-        "nav"
-        "preamble"
-        "toc-local"
-        "content"
-        "toc-global";
-      grid-template-columns: 1fr;
-    }
-    .odoc-search {
-      position: relative;
-      height: calc(var(--search-bar-height) + 2 * var(--search-padding-top));
-    }
-    nav.odoc-nav {
-      padding-top: 0;
-      padding-bottom: var(--search-padding-top);
-    }
-    .odoc-tocs {
-      display: contents;
-      .odoc-toc {
-        position: static;
-        width: auto;
-        min-width: unset;
-        max-width: unset;
-        max-height: unset;
-        border: none;
-        padding: 0.2em 1em;
-        border-radius: 5px;
-        margin-bottom: 2em;
-      }
-    }
+  }
+  body.odoc:has(> .odoc-search:focus-within) {
+    /* This is the same as when there is no focus on the search bar, this is
+    just to prevent the default "wide layout" rule from changing anything. */
+    grid-template-areas:
+      "search-bar"
+      "nav"
+      "preamble"
+      "toc-local"
+      "content"
+      "toc-global";
+    grid-template-columns: 1fr;
+  }
+  body.odoc .odoc-search {
+    position: relative;
+    height: calc(var(--search-bar-height) + 2 * var(--search-padding-top));
+  }
+  body.odoc nav.odoc-nav {
+    padding-top: 0;
+    padding-bottom: var(--search-padding-top);
+  }
+  body.odoc .odoc-tocs {
+    display: contents;
+  }
+  body.odoc .odoc-tocs .odoc-toc {
+    position: static;
+    width: auto;
+    min-width: unset;
+    max-width: unset;
+    max-height: unset;
+    border: none;
+    padding: 0.2em 1em;
+    border-radius: 5px;
+    margin-bottom: 2em;
   }
 }
 
