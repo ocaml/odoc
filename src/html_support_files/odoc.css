@@ -324,9 +324,13 @@ body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) {
   "content    toc-local";
   grid-template-columns: 1fr min-content;
 }
+
+/* When there is no global sidebar */
 body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) nav.odoc-nav {
   padding-top: 0;
 }
+
+/* When there is no global sidebbar and the searchbar is focused */
 body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) nav.odoc-nav:has(+ .odoc-search:focus-within) {
   padding-top: var(--search-padding-top);
 }
