@@ -302,17 +302,41 @@ body.odoc {
   grid-template-columns: min-content 1fr min-content;
   grid-template-areas:
     "search-bar nav      ."
-    "toc-local  preamble toc-global"
-    "toc-local  content  toc-global";
+    "toc-global  preamble toc-local"
+    "toc-global  content  toc-local";
   column-gap: 4ex;
   grid-template-rows: auto auto 1fr;
 }
 
 body.odoc:has(> .odoc-search:focus-within) {
   grid-template-areas:
-  "search-bar search-bar nav"
-  "toc-local  preamble   toc-global"
-  "toc-local  content    toc-global";
+  "search-bar search-bar search-bar"
+  ".          nav        ."
+  "toc-global  preamble   toc-local"
+  "toc-global  content    toc-local";
+}
+
+body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) {
+  grid-template-areas:
+  "search-bar search-bar"
+  "nav        ."
+  "preamble   toc-local"
+  "content    toc-local";
+  grid-template-columns: 1fr min-content;
+}
+
+/* When there is no global sidebar */
+body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) nav.odoc-nav {
+  padding-top: 0;
+}
+
+/* When there is no global sidebbar and the searchbar is focused */
+body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) nav.odoc-nav:has(+ .odoc-search:focus-within) {
+  padding-top: var(--search-padding-top);
+}
+
+nav.odoc-nav:has(+ .odoc-search:focus-within) {
+  padding-top: 0;
 }
 
 body.odoc-src {
@@ -842,7 +866,7 @@ td.def-doc *:first-child {
 /* When a search bar is present, we need the sticky sidebar to be a bit lower,
    so `top` is higher  */
 
-.odoc-search + * + .odoc-tocs .odoc-toc {
+body.odoc:has( .odoc-search) .odoc-toc {
   --toc-top: calc(var(--search-bar-height) + 2 * var(--search-padding-top));
   max-height: calc(100vh - 2 * var(--toc-top));
   top: var(--toc-top)
@@ -1228,42 +1252,33 @@ td.def-doc *:first-child {
   body.odoc {
     max-width: 132ex;
     grid-template-areas:
-    "search-bar nav"
-    "sidebar    preamble"
-    "sidebar    content";
+      "search-bar nav"
+      "sidebar    preamble"
+      "sidebar    content";
   }
-
-  body.odoc:has(> .odoc-search:focus-within) {
-    grid-template-areas:
-    "nav        nav"
-    "search-bar search-bar"
-    "sidebar    preamble"
-    "sidebar    content";
-  }
-
-  nav.odoc-nav:has(+ .odoc-search:focus-within) {
-    padding-bottom: 0;
-  }
-
-  .odoc-tocs {
+  body.odoc .odoc-tocs {
       display: flex;
       grid-area: sidebar;
       flex-direction : column;
       gap: 20px;
   }
-  .odoc-toc {
-      position: unset;
-      max-height: unset;
+  body.odoc .odoc-tocs .odoc-toc {
+    position: unset;
+    max-height: unset;
+  }
+  body.odoc:has(.odoc-search:focus-within) {
+    grid-template-areas:
+      "search-bar search-bar"
+      ".          nav"
+      "sidebar    preamble"
+      "sidebar    content";
   }
 }
 
 @media only screen and (max-width: 110ex) {
-  body {
+  body.odoc {
     margin: 2em;
     padding: 0;
-  }
-
-  body.odoc {
     grid-template-areas:
       "search-bar"
       "nav"
@@ -1273,10 +1288,9 @@ td.def-doc *:first-child {
       "toc-global";
     grid-template-columns: 1fr;
   }
-
   body.odoc:has(> .odoc-search:focus-within) {
     /* This is the same as when there is no focus on the search bar, this is
-    just to prevent the full screen rule from changing anything. */
+    just to prevent the default "wide layout" rule from changing anything. */
     grid-template-areas:
       "search-bar"
       "nav"
@@ -1286,19 +1300,18 @@ td.def-doc *:first-child {
       "toc-global";
     grid-template-columns: 1fr;
   }
-
-
-  .odoc-search {
+  body.odoc .odoc-search {
     position: relative;
-    padding-bottom: 0;
-    height: calc(var(--search-bar-height) + var(--search-padding-top));
+    height: calc(var(--search-bar-height) + 2 * var(--search-padding-top));
   }
-
-  .odoc-tocs {
-      display: contents;
+  body.odoc nav.odoc-nav {
+    padding-top: 0;
+    padding-bottom: var(--search-padding-top);
   }
-
-  .odoc-toc {
+  body.odoc .odoc-tocs {
+    display: contents;
+  }
+  body.odoc .odoc-tocs .odoc-toc {
     position: static;
     width: auto;
     min-width: unset;

@@ -56,4 +56,4 @@
       </ul>
 
   $ odoc support-files -o html
-  $ cp -r html /tmp/html
+$ cp -r html /tmp/html
