@@ -43,6 +43,8 @@ module Named_roots : sig
 
   val all_of : ?root:string -> ext:string -> t -> (Fs.File.t list, error) result
 
+  val current_root : t -> Fs.Directory.t option
+
   val find_by_path :
     ?root:string -> t -> path:Fs.File.t -> (Fs.File.t option, error) result
 
@@ -57,7 +59,11 @@ end = struct
 
   type pkg = { flat : flat; hierarchical : hierarchical }
 
-  type t = { table : (string, pkg) Hashtbl.t; current_root : string option }
+  type t = {
+    table : (string, pkg) Hashtbl.t;
+    current_root : string option;
+    current_root_dir : Fs.Directory.t option;
+  }
 
   type error = NoPackage | NoRoot
 
@@ -74,9 +80,17 @@ end = struct
         and hierarchical = (Hashtbl.create 42, root) in
         Hashtbl.add cache pkgname { flat; hierarchical })
       pkglist;
-    { current_root; table = cache }
+    let current_root_dir =
+      match current_root with
+      | Some root -> (
+          try Some (List.assq root pkglist) with Not_found -> None)
+      | None -> None
+    in
+    { current_root; table = cache; current_root_dir }
 
-  let find_by_path ?root { table = cache; current_root } ~path =
+  let current_root t = t.current_root_dir
+
+  let find_by_path ?root { table = cache; current_root; _ } ~path =
     let path = Fpath.normalize path in
     let root =
       match (root, current_root) with
@@ -112,7 +126,7 @@ end = struct
     in
     flat_namespace
 
-  let find_by_name ?root { table = cache; current_root } ~name =
+  let find_by_name ?root { table = cache; current_root; _ } ~name =
     let package =
       match (root, current_root) with
       | Some pkg, _ | None, Some pkg -> Ok pkg
@@ -127,7 +141,7 @@ end = struct
         Ok (Hashtbl.find_all flat name)
     | None -> Error NoPackage
 
-  let all_of ?root ~ext { table; current_root } =
+  let all_of ?root ~ext { table; current_root; _ } =
     (match (root, current_root) with
     | None, Some current_root -> Ok current_root
     | Some pkg, _ -> Ok pkg
@@ -148,7 +162,6 @@ end = struct
 end
 
 let () = (ignore Named_roots.find_by_name [@warning "-5"])
-let () = (ignore Named_roots.find_by_path [@warning "-5"])
 
 module Accessible_paths : sig
   type t
@@ -193,21 +206,21 @@ module Hierarchy : sig
 
   type error = [ `Escape_hierarchy ]
 
-  val make : current_package:Fs.Directory.t -> current_dir:Fs.Directory.t -> t
+  val make : hierarchy_root:Fs.Directory.t -> current_dir:Fs.Directory.t -> t
 
   val resolve_relative : t -> Fs.File.t -> (Fs.File.t, error) result
   (** [resolve_relative h relpath] resolve [relpath] relatively to the current
       directory, making sure not to escape the hierarchy. *)
 end = struct
-  type t = { current_package : Fs.Directory.t; current_dir : Fs.Directory.t }
+  type t = { hierarchy_root : Fs.Directory.t; current_dir : Fs.Directory.t }
 
   type error = [ `Escape_hierarchy ]
 
-  let make ~current_package ~current_dir = { current_package; current_dir }
+  let make ~hierarchy_root ~current_dir = { hierarchy_root; current_dir }
 
   let resolve_relative t relpath =
     let path = Fs.File.append t.current_dir relpath in
-    if Fs.Directory.contains ~parentdir:t.current_package path then Ok path
+    if Fs.Directory.contains ~parentdir:t.hierarchy_root path then Ok path
     else Error `Escape_hierarchy
 end
 
@@ -460,7 +473,7 @@ type t = {
   pages : Named_roots.t option;
   libs : Named_roots.t option;
   open_modules : string list;
-  hierarchy : Hierarchy.t option;
+  current_dir : Fs.Directory.t option;
 }
 
 let all_roots ?root named_roots =
@@ -515,23 +528,16 @@ type roots = {
 
 let create ~important_digests ~directories ~open_modules ~roots =
   let ap = Accessible_paths.create ~directories in
-  let pages, libs, hierarchy =
+  let pages, libs, current_dir =
     match roots with
     | None -> (None, None, None)
     | Some { page_roots; lib_roots; current_lib; current_package; current_dir }
       ->
         let pages = Named_roots.create ~current_root:current_package page_roots
         and libs = Named_roots.create ~current_root:current_lib lib_roots in
-        let hierarchy =
-          match Named_roots.find_by_path pages ~path:(Fpath.v ".") with
-          | Ok (Some current_package) ->
-              let current_package = Fs.Directory.of_file current_package in
-              Some (Hierarchy.make ~current_package ~current_dir)
-          | Ok None | Error _ -> None
-        in
-        (Some pages, Some libs, hierarchy)
+        (Some pages, Some libs, Some current_dir)
   in
-  { important_digests; ap; open_modules; pages; libs; hierarchy }
+  { important_digests; ap; open_modules; pages; libs; current_dir }
 
 (** Helpers for creating xref2 env. *)
 
@@ -544,7 +550,7 @@ let build_compile_env_for_unit
       open_modules = open_units;
       pages = _;
       libs = _;
-      hierarchy = _;
+      current_dir = _;
     } m =
   add_unit_to_cache (Odoc_file.Unit_content m);
   let imports_map = build_imports_map m.imports in
@@ -560,9 +566,21 @@ let build_compile_env_for_unit
   Env.env_of_unit m ~linking:false resolver
 
 (** [important_digests] and [imports_map] only apply to modules. *)
-let build ?(imports_map = StringMap.empty)
-    { important_digests; ap; open_modules = open_units; pages; libs; hierarchy }
-    =
+let build ?(imports_map = StringMap.empty) ?hierarchy_roots
+    {
+      important_digests;
+      ap;
+      open_modules = open_units;
+      pages;
+      libs;
+      current_dir;
+    } =
+  let hierarchy =
+    let open OptionMonad in
+    current_dir >>= fun current_dir ->
+    hierarchy_roots >>= Named_roots.current_root >>= fun hierarchy_root ->
+    Some (Hierarchy.make ~hierarchy_root ~current_dir)
+  in
   let lookup_unit =
     lookup_unit ~important_digests ~imports_map ap ~libs ~hierarchy
   and lookup_page = lookup_page ap ~pages ~hierarchy
@@ -579,7 +597,7 @@ let build_compile_env_for_impl t i =
 let build_link_env_for_unit t m =
   add_unit_to_cache (Odoc_file.Unit_content m);
   let imports_map = build_imports_map m.imports in
-  let resolver = build ~imports_map t in
+  let resolver = build ~imports_map ?hierarchy_roots:t.libs t in
   Env.env_of_unit m ~linking:true resolver
 
 let build_link_env_for_impl t i =
@@ -591,7 +609,9 @@ let build_link_env_for_impl t i =
 
 let build_env_for_page t p =
   add_unit_to_cache (Odoc_file.Page_content p);
-  let resolver = build { t with important_digests = false } in
+  let resolver =
+    build ?hierarchy_roots:t.pages { t with important_digests = false }
+  in
   Env.env_of_page p resolver
 
 let build_env_for_reference t =
