@@ -9,20 +9,6 @@
 
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/subdir/page-dup.odoc
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/subdir/page-bar.odoc
-  File "h/pkg/doc/subdir/Bar.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/bar.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/Dup.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/dup.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/page-Test.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/Test.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/test.odoc":
-  File does not exist
   File "doc/subdir/bar.mld", line 12, characters 49-56:
   Warning: Failed to resolve reference unresolvedroot(Test) Couldn't find "Test"
   File "doc/subdir/bar.mld", line 12, characters 39-48:
@@ -35,32 +21,6 @@
   Warning: Failed to resolve reference unresolvedroot(foo) Couldn't find "foo"
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/page-dup.odoc
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/page-foo.odoc
-  File "h/pkg/doc/Foo.odoc":
-  File does not exist
-  File "h/pkg/doc/foo.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/Bar.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/bar.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/Bar.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/bar.odoc":
-  File does not exist
-  File "h/pkg/doc/Dup.odoc":
-  File does not exist
-  File "h/pkg/doc/dup.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/Dup.odoc":
-  File does not exist
-  File "h/pkg/doc/subdir/dup.odoc":
-  File does not exist
-  File "h/pkg/doc/page-Test.odoc":
-  File does not exist
-  File "h/pkg/doc/Test.odoc":
-  File does not exist
-  File "h/pkg/doc/test.odoc":
-  File does not exist
   File "doc/foo.mld", line 12, characters 37-44:
   Warning: Failed to resolve reference unresolvedroot(Test) Couldn't find "Test"
   File "doc/foo.mld", line 12, characters 27-36:
