@@ -24,6 +24,7 @@ type content =
   | Source_tree_content of Lang.SourceTree.t
   | Impl_content of Lang.Implementation.t
   | Unit_content of unit_content
+  | Asset_content of Lang.Asset.t
 
 type t = { content : content; warnings : Odoc_model.Error.t list }
 
@@ -116,3 +117,13 @@ let load_root file =
 let save_index dst idx = save_ dst (fun oc -> Marshal.to_channel oc idx [])
 
 let load_index file = load_ file (fun ic -> Ok (Marshal.from_channel ic))
+
+let save_asset file ~warnings impl =
+  let dir = Fs.File.dirname file in
+  let base = Fs.File.(to_string @@ basename file) in
+  let file =
+    if Astring.String.is_prefix ~affix:"asset-" base then file
+    else Fs.File.create ~directory:dir ~name:("asset-" ^ base)
+  in
+  let t = { content = Asset_content impl; warnings } in
+  save_ file (fun oc -> Marshal.to_channel oc t [])

@@ -1,0 +1,4 @@
+{0 Package page}
+
+Some image:
+{%html: <img src="img.jpg" />%}

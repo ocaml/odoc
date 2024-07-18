@@ -35,6 +35,7 @@ module Odoc_file = struct
     | Page of page
     | Compilation_unit of compilation_unit
     | Impl of string
+    | Asset
 
   let create_unit ~force_hidden name =
     let hidden = force_hidden || Names.contains_double_underscore name in
@@ -46,10 +47,13 @@ module Odoc_file = struct
 
   let name = function
     | Page { name; _ } | Compilation_unit { name; _ } | Impl name -> name
+    | Asset -> failwith "todo"
 
   let hidden = function
-    | Page _ | Impl _ -> false
+    | Page _ | Impl _ | Asset -> false
     | Compilation_unit m -> m.hidden
+
+  let asset = Asset
 end
 
 type t = {
@@ -86,6 +90,10 @@ let to_string t =
     | `Root (None, name) -> Format.fprintf fmt "%a" Names.ModuleName.fmt name
     | `Implementation name ->
         Format.fprintf fmt "impl(%a)" Names.ModuleName.fmt name
+    | `AssetFile (parent, name) ->
+        Format.fprintf fmt "%a::%s" pp
+          (parent :> Paths.Identifier.OdocId.t)
+          name
   in
 
   Format.asprintf "%a" pp t.id
