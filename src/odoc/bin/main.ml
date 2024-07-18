@@ -343,6 +343,47 @@ end = struct
     Term.info "compile" ~docs ~doc ~man
 end
 
+module Compile_asset = struct
+  let compile_asset parent_id name output_dir =
+    Odoc_odoc.Compile.compile_asset ~parent_id ~name ~output_dir
+
+  let output_dir =
+    let doc = "Output file directory. " in
+    Arg.(
+      required
+      & opt (some string) None
+      & info ~docs ~docv:"PATH" ~doc [ "output-dir" ])
+
+  let cmd =
+    let name_opt =
+      let doc = "Name of the asset." in
+      Arg.(
+        required
+        & opt (some string) None
+        & info ~docs ~docv:"NAME" ~doc [ "name" ])
+    in
+    let parent_id_opt =
+      let doc = "Parent id." in
+      Arg.(
+        required
+        & opt (some string) None
+        & info ~docs ~docv:"PARENT" ~doc [ "parent-id" ])
+    in
+    Term.(const compile_asset $ parent_id_opt $ name_opt $ output_dir)
+
+  let info ~docs =
+    let man =
+      [
+        `S "DEPENDENCIES";
+        `P
+          "There are no dependency for compile assets, in particular you do \
+           not need the asset itself at this stage.";
+      ]
+    in
+    let doc = "Declare the name of an asset." in
+    Term.info "compile-asset" ~docs ~doc ~man
+end
+
 module Source_tree = struct
   let prefix = "srctree-"
 
@@ -1555,6 +1596,7 @@ let () =
       Occurrences.Count.(cmd, info ~docs:section_pipeline);
       Occurrences.Aggregate.(cmd, info ~docs:section_pipeline);
       Compile.(cmd, info ~docs:section_pipeline);
+      Compile_asset.(cmd, info ~docs:section_pipeline);
       Odoc_link.(cmd, info ~docs:section_pipeline);
       Odoc_html.generate ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);

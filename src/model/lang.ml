@@ -569,6 +569,11 @@ module rec SourceTree : sig
 end =
   SourceTree
 
+module rec Asset : sig
+  type t = { name : Identifier.AssetFile.t; root : Root.t }
+end =
+  Asset
+
 let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
   | Signature sg -> Some (Signature sg)
   | Path { p_path; _ } -> Some (Path p_path)

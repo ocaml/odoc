@@ -252,6 +252,7 @@ let run inp short long_paths show_canonical show_expansions
       | false, None, _ ->
           print_json_desc Lang_desc.compilation_unit_t u;
           Ok ())
+  | Asset_content _ -> failwith "todo"
 
 open Compatcmdliner
 

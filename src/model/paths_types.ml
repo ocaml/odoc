@@ -52,6 +52,7 @@ module Identifier = struct
   type odoc_id_pv =
     [ page_pv
     | source_page_pv
+    | asset_file_pv
     | `Root of container_page option * ModuleName.t
     | `Implementation of ModuleName.t ]
   (** @canonical Odoc_model.Paths.Identifier.OdocId.t_pv *)

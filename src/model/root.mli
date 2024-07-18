@@ -34,12 +34,15 @@ module Odoc_file : sig
     | Page of page
     | Compilation_unit of compilation_unit
     | Impl of string
+    | Asset
 
   val create_unit : force_hidden:bool -> string -> t
 
   val create_page : string -> Comment.link_content option -> t
 
   val create_impl : string -> t
+
+  val asset : t
 
   val name : t -> string
 

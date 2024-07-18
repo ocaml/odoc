@@ -59,3 +59,5 @@ val compile :
   Fpath.t ->
   (unit, [> msg ]) result
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)
+
+val compile_asset : parent_id:string -> name:string -> output_dir:string -> unit

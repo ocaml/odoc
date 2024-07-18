@@ -27,6 +27,7 @@ type content =
   | Source_tree_content of Lang.SourceTree.t
   | Impl_content of Lang.Implementation.t
   | Unit_content of unit_content
+  | Asset_content of Lang.Asset.t
 
 type t = { content : content; warnings : Error.t list }
 
@@ -62,3 +63,5 @@ val save_index :
 val load_index :
   Fs.File.t -> (Odoc_search.Entry.t Odoc_model.Lang.Index.t, [> msg ]) result
 (** Load a [.odoc-index] file. *)
+
+val save_asset : Fpath.t -> warnings:Error.t list -> Lang.Asset.t -> unit
