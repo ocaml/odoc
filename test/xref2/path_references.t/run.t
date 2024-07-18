@@ -30,8 +30,6 @@
   File "doc/foo.mld", line 6, characters 35-41:
   Warning: Failed to resolve reference unresolvedroot(bar) Couldn't find "bar"
   $ odoc link --current-package pkg -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/lib/libname/test.odoc
-  File "test.ml", line 12, characters 30-39:
-  Warning: Failed to resolve reference ./Test Path 'Test' not found
   File "test.ml", line 6, characters 38-44:
   Warning: Failed to resolve reference unresolvedroot(bar) Couldn't find "bar"
   File "test.ml", line 4, characters 34-45:
@@ -115,5 +113,5 @@ Helper that extracts references in a compact way. Headings help to interpret the
   ["Module","Test"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
-  {"`Reference":[{"`Any_path":["`TRelativePath",["Test"]]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
