@@ -25,23 +25,23 @@
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/page-foo.odoc
   File "h/pkg/doc/page-Test.odoc":
   File does not exist
-  File "doc/foo.mld", line 12, characters 49-56:
+  File "doc/foo.mld", line 12, characters 37-44:
   Warning: Failed to resolve reference unresolvedroot(Test) Couldn't find "Test"
-  File "doc/foo.mld", line 12, characters 39-48:
+  File "doc/foo.mld", line 12, characters 27-36:
   Warning: Failed to resolve reference ./Test Path 'Test' not found
-  File "doc/foo.mld", line 12, characters 18-38:
-  Warning: Failed to resolve reference /pkg/libname/Test Path '/pkg/libname/Test' not found
-  File "doc/foo.mld", line 12, characters 0-17:
-  Warning: Failed to resolve reference //libname/Test Path '//libname/Test' not found
+  File "doc/foo.mld", line 12, characters 10-26:
+  Warning: Failed to resolve reference /libname/Test Path '/libname/Test' not found
+  File "doc/foo.mld", line 12, characters 0-9:
+  Warning: Failed to resolve reference //Test Path '//Test' not found
   File "doc/foo.mld", line 6, characters 35-41:
   Warning: Failed to resolve reference unresolvedroot(bar) Couldn't find "bar"
   $ odoc link --current-package pkg -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/lib/libname/test.odoc
-  File "test.ml", line 12, characters 42-51:
+  File "test.ml", line 12, characters 30-39:
   Warning: Failed to resolve reference ./Test Path 'Test' not found
-  File "test.ml", line 12, characters 21-41:
-  Warning: Failed to resolve reference /pkg/libname/Test Path '/pkg/libname/Test' not found
-  File "test.ml", line 12, characters 3-20:
-  Warning: Failed to resolve reference //libname/Test Path '//libname/Test' not found
+  File "test.ml", line 12, characters 13-29:
+  Warning: Failed to resolve reference /libname/Test Path '/libname/Test' not found
+  File "test.ml", line 12, characters 3-12:
+  Warning: Failed to resolve reference //Test Path '//Test' not found
   File "test.ml", line 6, characters 38-44:
   Warning: Failed to resolve reference unresolvedroot(bar) Couldn't find "bar"
   File "test.ml", line 4, characters 34-45:
@@ -75,8 +75,8 @@ Helper that extracts references in a compact way. Headings help to interpret the
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   ["Module","Test"]
-  {"`Reference":[{"`Any_path":["`TCurrentPackage",["libname","Test"]]},[]]}
-  {"`Reference":[{"`Any_path":["`TAbsolutePath",["pkg","libname","Test"]]},[]]}
+  {"`Reference":[{"`Any_path":["`TCurrentPackage",["Test"]]},[]]}
+  {"`Reference":[{"`Any_path":["`TAbsolutePath",["libname","Test"]]},[]]}
   {"`Reference":[{"`Any_path":["`TRelativePath",["Test"]]},[]]}
   {"`Reference":[{"`Root":["Test","`TUnknown"]},[]]}
 
@@ -123,7 +123,7 @@ Helper that extracts references in a compact way. Headings help to interpret the
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   ["Module","Test"]
-  {"`Reference":[{"`Any_path":["`TCurrentPackage",["libname","Test"]]},[]]}
-  {"`Reference":[{"`Any_path":["`TAbsolutePath",["pkg","libname","Test"]]},[]]}
+  {"`Reference":[{"`Any_path":["`TCurrentPackage",["Test"]]},[]]}
+  {"`Reference":[{"`Any_path":["`TAbsolutePath",["libname","Test"]]},[]]}
   {"`Reference":[{"`Any_path":["`TRelativePath",["Test"]]},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
