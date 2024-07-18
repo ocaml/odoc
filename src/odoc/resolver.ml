@@ -232,30 +232,27 @@ let unit_name
     | Source_tree_content { root; _ } ) =
   root_name root
 
-(** TODO: Propagate warnings instead of printing. *)
-let load_unit_from_file path =
-  match Odoc_file.load path with
-  | Ok u -> Some u.content
-  | Error (`Msg msg) ->
-      let warning =
-        Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string path)
-      in
-      prerr_endline (Odoc_model.Error.to_string warning);
-      None
-
-let load_units_from_files paths =
-  let safe_read file acc =
-    match load_unit_from_file file with Some u -> u :: acc | None -> acc
-  in
-  List.fold_right safe_read paths []
+(** Returns [None] if the file is not found or failed to load for any reason. *)
+let load_unit_from_file path = Odoc_file.load path >>= fun u -> Ok u.content
 
 let unit_cache = Hashtbl.create 42
 
 (** Load every units matching a given name. Cached. *)
 let load_units_from_name =
+  let safe_read file acc =
+    match load_unit_from_file file with
+    | Ok u -> u :: acc
+    | Error (`Msg msg) ->
+        (* TODO: Propagate warnings instead of printing. *)
+        let warning =
+          Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string file)
+        in
+        prerr_endline (Odoc_model.Error.to_string warning);
+        acc
+  in
   let do_load ap target_name =
     let paths = Accessible_paths.find ap target_name in
-    load_units_from_files paths
+    List.fold_right safe_read paths []
   in
   fun ap target_name ->
     try Hashtbl.find unit_cache target_name
@@ -385,6 +382,9 @@ let lookup_path ~possible_unit_names ~named_roots ~hierarchy (tag, path) :
     (Odoc_file.content, [ `Not_found ]) result =
   let open Odoc_utils.OptionMonad in
   let option_to_result = function Some p -> Ok p | None -> Error `Not_found in
+  (* TODO: We might want to differentiate when the file is not found and when
+     an unexpected error occurred. *)
+  let handle_load_error = function Ok u -> Some u | Error (`Msg _) -> None in
   let ref_path_to_file_path path =
     match List.rev path with
     | [] -> []
@@ -400,12 +400,13 @@ let lookup_path ~possible_unit_names ~named_roots ~hierarchy (tag, path) :
   in
   let find_in_named_roots ?root path =
     named_roots >>= fun named_roots ->
-    find_by_path ?root named_roots path >>= fun path -> load_unit_from_file path
+    find_by_path ?root named_roots path >>= fun path ->
+    load_unit_from_file path |> handle_load_error
   in
   let find_in_hierarchy path =
     hierarchy >>= fun hierarchy ->
     match Hierarchy.resolve_relative hierarchy path with
-    | Ok path -> load_unit_from_file path
+    | Ok path -> load_unit_from_file path |> handle_load_error
     | Error `Escape_hierarchy -> None (* TODO: propagate more information *)
   in
   match tag with
