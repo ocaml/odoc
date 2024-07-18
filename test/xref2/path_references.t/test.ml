@@ -9,7 +9,7 @@
    {1 Page subdir/dup}
    {!//subdir/dup} {!/pkg/subdir/dup}
    {1 Module Test}
-   {!//libname/Test} {!/pkg/libname/Test} {!./Test} {!Test}
+   {!//Test} {!/libname/Test} {!./Test} {!Test}
 *)
 
 type t
