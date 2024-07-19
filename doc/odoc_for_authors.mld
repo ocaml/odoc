@@ -58,7 +58,7 @@ in a logical manner and write comments explaining each type, value, exception,
 type constructor, and everything else. The comments are written in a rich markup
 language that allows the usual formatting constructs: bold, italic, sub- and
 super-script, lists, verbatim and code sections, along with section headings, 
-a very rich cross-referencing mechanism and tags to add specific information 
+a very rich cross-referencing mechanism, and tags to add specific information 
 to individual elements.
 
 All the OCamldoc documentation comments described in {{:https://ocaml.org/manual/ocamldoc.html#s:ocamldoc-comments}the OCaml manual}
