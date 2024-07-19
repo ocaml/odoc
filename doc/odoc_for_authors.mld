@@ -337,7 +337,7 @@ Here is some Python code:
 {4:verbatim_blocks Verbatim Blocks}
 
 It is possible to write language agnostic code blocks, also called verbatim
-blocks using the enclosing tags [{v ... v}]. The content of these blocks will be
+blocks, using the enclosing tags [{v ... v}]. The content of these blocks will be
 formatted as code but with no particular style applied.
 
 {[
