@@ -1,21 +1,21 @@
-{0:top [odoc] for authors}
+{0:top [odoc] for Authors}
 
-This manual describes the features that are available and recommended for users
-to write great documentation using [odoc]. See also the page listing the
+This manual describes the features available and recommended for users
+in order to write great documentation with [odoc]. See also the page listing the
 {{!page-features}language features} [odoc] understands.
 
-+ {{!getting_started}Getting started}
-+ {{:#interfaces} Documenting your interfaces}
-+ {{:#doc-pages} Writing documentation pages}
++ {{!getting_started}Getting Started}
++ {{:#interfaces} Documenting Your Interfaces}
++ {{:#doc-pages} Writing Documentation Pages}
 
-{1:getting_started Getting started}
+{1:getting_started Getting Started}
 
 To generate documentation for your project, you will almost always be using
-odoc indirectly rather than executing it yourself. There are currently several
-'drivers' of odoc at time of writing, each with their own strengths and
+[odoc] indirectly rather than executing it yourself. There are currently several
+'drivers' of [odoc] at time of writing, each with their own strengths and
 weaknesses:
 
-- {{:https://dune.build/}Dune} is the best way to view docs while you're
+- {{:https://dune.build/}Dune} is the best way to view docs while
   developing your project. We have a {{!page-dune}page} describing
   how to use it, but the short version is:
 {v
@@ -32,36 +32,36 @@ v}
 - {{:https://github.com/ocaml-doc/voodoo}Voodoo} is the driver used to create
   the docs for {{:https://ocaml.org/packages}the OCaml website}.
 
-{1:interfaces Documenting your interfaces}
+{1:interfaces Documenting Your Interfaces}
 
-Odoc is built to produce documentation for your {e libraries}, and the unit of
+[odoc] is built to produce documentation for your {e libraries}, and the unit of
 organisation is the {e module}. Documentation is written by putting
-{{!special_comments}special comments} into the source of the {e module interface} or
-less commonly your {e module implementation}. 
+{{!special_comments}special comments} into the source of the {e module interface} or,
+less commonly, your {e module implementation}. 
 
 For the HTML output, [odoc] will produce one page for each module, module type,
-class and class type. This includes any submodules, so if a module [A] contains
-module [B] then two HTML pages will be created, and [A/index.html] will have a
+class, and class type. This includes any submodules, so if a module [A] contains
+module [B] then two HTML pages will be created. [A/index.html] will have a
 link to [A/B/index.html] at the point that module [B] is defined. So each
-module, module type, class and class type should be documented keeping in mind
+module, module type, class, and class type should be documented, keeping in mind
 that it will end up as a single page with a table of contents. 
 
 For each module, [odoc] will describe all of the values, types, module types,
-classes, modules and all other elements found in module signatures, documenting
+classes, modules, and all other elements found in module signatures, documenting
 the details relevant to the OCaml type system along with any documentation
 written in specially formatted comments in the source code. For any element that
 references any other, for example a [value] that has a [type], [odoc] will
 create links such that clicking them will link to the definitions.
 
-The job of the library author is therefore to organise the module interface
+Therefore, the job of the library author is to organise the module interface
 in a logical manner and write comments explaining each type, value, exception,
-type constructor and everything else. The comments are written in a rich markup
+type constructor, and everything else. The comments are written in a rich markup
 language that allows the usual formatting constructs: bold, italic, sub- and
 super-script, lists, verbatim and code sections, along with section headings, 
 a very rich cross-referencing mechanism and tags to add specific information 
 to individual elements.
 
-All of the OCamldoc documentation comments described in {{:https://ocaml.org/manual/ocamldoc.html#s:ocamldoc-comments}the OCaml manual}
+All the OCamldoc documentation comments described in {{:https://ocaml.org/manual/ocamldoc.html#s:ocamldoc-comments}the OCaml manual}
 are supported, with a few important {{!page-ocamldoc_differences}differences}. In addition, 
 it is intended that all features of the OCaml language are supported by [odoc].
 For examples of how the language features are handled, see the
@@ -79,7 +79,7 @@ two asterisks at the start:
 (*** Normal comment *)
 ]}
 
-From here on in 'comment' will refer to the special comments.
+From here forward, 'comment' will refer to the special comments.
 Most comments will be associated with particular elements, and this requires
 the comment to be immediately before or after an element with no blank lines
 in between (although non-special comments are allowed). Comments that
@@ -87,7 +87,7 @@ are not associated with a particular element are known as 'floating' comments.
 
 If there is ambiguity, which can happen if there are two elements with a
 comment directly in between, the comment will be associated with {e both}
-elements. This is an example of where odoc differs from OCamldoc - read more
+elements. This is an example of where [odoc] differs from OCamldoc. Read more
 about that on the {{!page-ocamldoc_differences}OCamldoc Differences} page.
 
 {[
@@ -96,16 +96,16 @@ type x
 type y
 ]}
 
-This behaviour, while inherited from the compiler, is unlikely to be desired
-so a blank line should be inserted to make it clear to which element the comment
+Although inherited from the compiler, this behaviour is unlikely to be desired,
+so a blank line should be inserted to clarify with which element the comment
 should be associated. Note that Dune will raise an error if there are ambiguous
 comments in the source files.
 
-The first comment of a module is special - it is associated with the module
+The first comment of a module is special, as it is associated with the module
 as a whole. This is discussed in more detail in the section on
 {{!page_structure}page structure}.
 
-The OCaml manual has a helpful example of comment placement, reproduced here.
+The OCaml manual has a helpful example of comment placement, reproduced below.
 Note that there is an additional line inserted to avoid an ambiguous special
 comment.
 
@@ -227,7 +227,7 @@ There are no differences in how [odoc] handles comment placement between [.ml]
 and [.mli] files, which is {{!page-ocamldoc_differences}another difference}
 from OCamldoc.
 
-{2:basics Basic markup}
+{2:basics Basic Markup}
 
 Text within the comments can be formatted using the following markup. Firstly,
 the simple typesetting markup:
@@ -276,8 +276,8 @@ For inline, language agnostic source code style, use square brackets: [ [ ... ] 
 (** Here, [f 0] is [None] *)
 ]}
 
-Two newlines in a row in an inline codeblock are forbidden, but in the interest
-of the 80 char rule, a single newline followed by horizontal space in an inline
+Two consecutive newlines in an inline codeblock are forbidden, but in the interest
+of the 80-char rule, a single newline followed by horizontal space in an inline
 codeblock is considered as a single space:
 
 {[
@@ -312,13 +312,13 @@ v}
 
 {4:language_headers Language Headers}
 
-As of [odoc.2.2] it is possible to write blocks with explicit language headers.
+As of [odoc.2.2], it is possible to write blocks with explicit language headers.
 These blocks can be written using the enclosing tags [{@<language>[ ... ]}].
-The content of those block should be properly styled if highlightjs supports the
+The content of those block should be properly styled if [highlight.js] supports the
 styling for the given language.
 
 {v
-(** Here is some python code:
+(** Here is some Python code:
     {@python[
     def f():
       return 0
@@ -328,7 +328,7 @@ v}
 
 And rendered this becomes:
 
-Here is some python code:
+Here is some Python code:
 {@python[
   def f():
     return 0
@@ -359,8 +359,8 @@ code. For example, the following would be acceptable in a documentation comment:
 The list [ [1;2;3] ] needs no escaping
 v}
 
-In a code block section, the section is ended with a [ \]} ], and in a
-verbatim formatted section, the section is ended with a whitespace character
+In a code block section, the section is ended with a [ \]} ]. In a
+verbatim formatted section, the section ends with a whitespace character
 followed by [ v} ]. It is not currently possible to escape this in either case.
 
 {2:links_and_references Links and References}
@@ -373,7 +373,7 @@ A link to a URL may be put into the text as follows:
 
 This will render as a link to [https://ocaml.org/] with the text "the OCaml website"
 
-References are links to other elements - e.g., comments might wish to refer to 
+References are links to other elements, e.g., comments might wish to refer to 
 a module or type elsewhere as follows:
 
 {[
@@ -387,10 +387,10 @@ See the section {!page-features.reference_resolution} for an example of this.
 The supported methods for referring to elements are:
 
 - Bare: [ {!Foo.bar} ] - this works well if there are no ambiguities in what's being referred to.
-- OCamldoc: [ {!type:Foo.bar} ] - here the [type] prefix applies to the last element - i.e., [bar].
+- OCamldoc: [ {!type:Foo.bar} ] - here the [type] prefix applies to the last element, i.e., [bar].
 This is useful if there are several identifiers [bar] in module [Foo], e.g., a type and a value.
 - [odoc]: [ {!module-Foo.type-bar} ] - each element in the path may be prefixed by its type. This is
-useful if there are ambiguous elements in any part of the path, e.g. in this case perhaps there is a
+useful if there are ambiguous elements in any part of the path, e.g., in this case perhaps there is a
 module type [Foo].
 
 The prefixes supported are:
@@ -412,8 +412,8 @@ The prefixes supported are:
 - [section] (and the equivalent deprecated prefix [label]) - for referring to headings
 - [page] - for referring to [.mld] pages
 
-In some cases the element being referenced might have a hyphen, a dot or a space in the name,
-e.g. if trying to refer to a page from a [.mld] file "1.2.3.mld". In this case, the
+In some cases the element being referenced might have a hyphen, a dot, or a space in the name,
+e.g., if trying to refer to a page from a [.mld] file [1.2.3.mld]. In this case, the
 element name should be quoted with double quote marks:
 
 {v
@@ -421,7 +421,7 @@ element name should be quoted with double quote marks:
 v}
 
 
-{4 Module lists}
+{4 Module Lists}
 
 [odoc] supports a special reference type for referring to a list of modules.
 The markup is:
@@ -441,7 +441,7 @@ signature, {e all} elements are in scope, even those later in the signature.
 Consider the following example:
 
 {[
-(** In this floating comment I can refer to type {!t} and value {!v}
+(** In this floating comment, I can refer to type {!t} and value {!v}
     declared later in the signature *)
 
 type t
@@ -457,8 +457,8 @@ val x : int
 val y : int
 
 module A : sig
-  (** In this module I can refer to val {!x} declared above as well as
-      type {!u} declared later in the parent module. Elements declared
+  (** In this module, I can refer to val {!x}, declared above, as well as
+      type {!u}, declared later in the parent module. Elements declared
       in this signature take priority, so {!y} refers to {!A.y} as
       opposed to the [y] declared in the parent signature.  *)
 
@@ -472,7 +472,7 @@ The above example can be seen rendered in the module {!Odoc_examples.Markup.Scop
 
 [odoc] allows modules to be 'opened' for the purposes of resolving references.
 By default, the module [Stdlib] is 'opened', allowing references like [{!List.t}]
-to work. This feature is enabled via the command-line flag '--open'. Currently
+to work. This feature is enabled via the command-line flag [--open]. Currently
 inline [open] statements do {e not} bring other elements into scope.
 
 In order for [odoc] to resolve links to other compilation units or [.mld] pages,
@@ -487,15 +487,17 @@ the {{!page-driver}driver}.
 Tags are used to provide specific information for individual elements, such
 as author, version, parameters, etc. Tags start with an [@] symbol, appear
 at the end of documentation comments, and are not allowed elsewhere.
-They should appear on their own lines, with nothing but whitespace before them.
+They should appear on their own lines with nothing but whitespace before them.
 
-There are three types of tag: those with no associated data (simple tags),
-those with a single line of text (line tags) and those with a block of
+There are three types of tags. Those with:
+- no associated data (simple tags),
+- a single line of text (line tags), and 
+- a block of
 marked-up text (block tags).
 
 {3 Simple Tags}
 
-The three tags with no data are hints to the HTML renderer to do with [include]s.
+The three tags without data are hints to the HTML renderer to do with [include]s.
 These are:
 
 - [@open] - the contents of the include will be expanded by default in the HTML.
@@ -508,15 +510,15 @@ the signature.
 These tags have a single line of data associated with them, [string] in the
 examples below. They are:
 
-- [@author string] - allows the author of the element to be specified.
-- [@since string] - declares from which version the element has been available.
-- [@version string] - declares the version of the element itself.
-- [@canonical string] - declares the path to the canonical instance of this element.
-Can be applied to modules, module types and types. See the {{!page-features.canonical}
-Language Features} page for more details.
+- [@author string] - allows the element's author to be specified
+- [@since string] - declares from which version the element has been available
+- [@version string] - declares the version of the element itself
+- [@canonical string] - declares the path to this element's canonical instance.
+It can be applied to modules, module types, and types. See the {{!page-features.canonical}
+Language Features} page for more details
 
-The content of the tag is then the rest of the line, and it is uninterpreted,
-i.e., there shouldn't be any odoc markup.
+The tag's content is then the rest of the line. It is also uninterpreted,
+i.e., there shouldn't be any [odoc] markup.
 
 {3 Block Tags}
 
@@ -526,35 +528,35 @@ of the comment or by another tag. They are:
 
 - [@deprecated <text>] - marks the element as deprecated. [text] should describe
 when the element was deprecated, what to use as a replacement, and possibly
-the reason for the deprecation
-- [@param <id> <text>] - Associate the the given description (text) to the given 
-parameter name id. OCamldoc uses this tag for functions, methods, classes 
+the reason for the deprecation.
+- [@param <id> <text>] - associates the the given description (text) to the given 
+parameter name ID. OCamldoc uses this tag for functions, methods, classes, 
 and functors, but [odoc] does not currently enforce this restriction.
-- [@raise <exn> <text>] - Indicates that the element may raise [exn]. The text should
+- [@raise <exn> <text>] - indicates that the element may raise [exn]. The text should
 describe when this might occur. [@raises] is a synonym for this tag.
 - [@return <text>] - describes the return value. [@returns] is a synonym for this.
-- [@before <version> <text>] - Allows differences in past behaviour to be described.
+- [@before <version> <text>] - allows differences in past behaviour to be described.
 This is intended to be used to document compatibility issues.
-- [@see <<URL>> <text>] - Add a reference to the URL (written between [<] and
-[>] delimiters) with [text] as a comment.
-- [@see '<filename>' <text>] - Add a reference to the given file (written between
+- [@see <<URL>> <text>] - adds a reference to the URL (written between [<] and
+[>] delimiters), with [text] as a comment.
+- [@see '<filename>' <text>] - adds a reference to the given file (written between
 single quotes), with the given text as comment. {e Note:} [odoc] currently
 doesn't turn this into a link in the output HTML.
-- [@see "<document-name>" <text>] - Adds a reference to the given document name
+- [@see "<document-name>" <text>] - adds a reference to the given document name
 (written between double quotes), with the given text as comment. {e Note:} 
 As with the file reference, [odoc] doesn't turn this into a link.
 
 {2:math Mathematics}
 
-Odoc 2.2 introduced new markup for maths, available both for inline and block
-content. The syntax for the maths itself is LaTeX and it is rendered by {{:https://katex.org/}KaTeX}
+[odoc] 2.2 introduced new markup for maths, available both for inline and block
+content. The syntax for the maths itself is LaTeX, and it is rendered by {{:https://katex.org/}KaTeX}
 in HTML output, dropped inline in the LaTeX output, and ignored in the man-page
 renderer.
 
-To render maths inline, use [{m <latex>}] and for block mode use [{math <latex>}].
+To render maths inline, use [{m <latex>}], and for block mode use [{math <latex>}].
 
-This is an inline equation: {m x=\frac{-b \pm \sqrt{b^2-4ac}}{2a}}, and rendered
-in block form this becomes:
+This is an inline equation: {m x=\frac{-b \pm \sqrt{b^2-4ac}}{2a}}. When rendered
+in block form, this becomes:
 
 {math x=\frac{-b \pm \sqrt{b^2-4ac}}{2a}}
 
@@ -563,7 +565,7 @@ HTML mode LaTeX support status.
 
 {2:tables Tables}
 
-Odoc 2.3 introduced new markup for tables. This markup comes in two flavors: the light syntax, and the heavy syntax.
+[odoc] 2.3 introduced new markup for tables. This markup comes in two flavors: the light syntax and the heavy syntax.
 
 The heavy syntax uses several markup: [{table ...}] to define a table, [{tr ...}] to define a row, and [{th ...}] and [{td ...}] to respectively define a header cell and a data cell.
 Direct children of tables have to be rows, and direct children of rows have to be cells. Similarly, rows have to be direct children of tables, and cells direct children of row. Cells can contain any markup.
@@ -601,7 +603,7 @@ would render as
 }
 
 
-The light syntax has the advantages of being simple to read, even as plain text. It is very similar to the {{:https://github.github.com/gfm/#tables-extension-}GFM Markdown syntax}, with the exception that it has to be enclosed in [{t ...}], and that the inline markup is the ocamldoc one. It supports alignment for columns using the [:] notation, from the GFM syntax: [---] is the default alignment, [:--] left-aligned, [--:] right-aligned and [:---:] is centered.
+The light syntax has the advantages of being simple to read, even as plain text. It is very similar to the {{:https://github.github.com/gfm/#tables-extension-}GFM Markdown syntax}, with the exception that it has to be enclosed in [{t ...}], and the inline markup is the OCamldoc one. It supports alignment for columns using the [:] notation from the GFM syntax. [---] is the default alignment, [:--] left-aligned, [--:] right-aligned, and [:---:] centered.
 
 The following table, in light syntax:
 
@@ -625,7 +627,7 @@ would render as
   | {e emph} | and | unaligned | bars |
 }
 
-The light syntax has the advantages of being arguably more readable for small tables, when viewing the source file directly. However, its content is restricted (for instance, no new line is allowed).
+The light syntax has the advantages of being arguably more readable for small tables when viewing the source file directly. However, its content is restricted (for instance, no new line is allowed).
 The heavy syntax is easier to write, can be more readable for big tables, and supports having any kind of content inside. It does not support alignment (yet).
 
 
@@ -638,7 +640,7 @@ The special comment:
 v}
 
 is a {e stop comment}. It acts as a toggle, causing subsequent elements to be
-omitted from the documentation. If the stop comment is repeated the subsequent
+omitted from the documentation. If the stop comment is repeated, the subsequent
 items will be visible once more.
 
 The OCaml manual provides an instructive example:
@@ -664,33 +666,33 @@ The OCaml manual provides an instructive example:
   val bar : string
   (**/**)
 
-  (** The type t appears since in the documentation since the previous stop comment
+  (** The type [t] appears, since in the documentation since the previous stop comment
   toggled off the "no documentation mode". *)
   type t = string
 ]}
 
-The output of this as rendered by [odoc] is {{!Odoc_examples.Markup.Stop}here}.
+[odoc] renders the output as {{!Odoc_examples.Markup.Stop}here}.
 
 
 {1:page_structure Page Structure}
 
 Producing good documentation for your library is more than simply annotating
-the various modules, type and functions that are contained however. 
-[odoc] expects the documentation to be structured in a logical way, and will work
+the various modules, type, and functions that are contained. 
+[odoc] expects the documentation to be structured in a logical way, and it will work
 best if the following conventions are applied.
 
 The overall structure is that modules start with a {{!preamble} preamble} or
 'Lead Section' that serves as an overview of the most important information
-about the module. This is followed by the content of the module, organised into {e
-sections} and {e subsections}, the structure of which will be used to populate
-a {e table of contents} which will be placed in the HTML immediately
-after the preamble, and rendered by default as a sidebar.
+about the module. This is followed by the module's content, organised into {e
+sections} and {e subsections}. Its structure will be used to populate
+a {e table of contents} that will be placed in the HTML immediately
+after the preamble and rendered by default as a sidebar.
 
-The first paragraph of the preamble will be treated as the module {{!synopsis}
-synopsis}, and will be used as a short description of the module when it
+The preamble's first paragraph will be treated as the module {{!synopsis}
+synopsis}, and it will be used as a short description of the module when it
 appears in a list of modules elsewhere in the documentation of the library.
 
-{2:top_comment Top-comment}
+{2:top_comment Top-Comment}
 
 The top-comment is the first element of a signature, if it is a documentation
 comment. For example, in an [.mli] file:
@@ -705,7 +707,7 @@ module M : sig
   end
 ]}
 
-As an exception, [open] statements and attributes are allowed to be placed before the top-comment.
+As an exception, [open] statements and attributes can be placed before the top-comment.
 For example:
 
 {[
@@ -745,7 +747,7 @@ module M : sig
 end
 ]}
 
-The preamble stops at the first heading, the rest is moved into the [content]
+The preamble stops at the first heading. The rest is moved into the [content]
 part of the page. For example, the next two snippets will {e render} the same
 way:
 
@@ -773,12 +775,12 @@ Note: A comment attached to a declaration shouldn't contain any heading.
 
 {2:synopsis Synopsis}
 
-The synopsis of a module (a module type, a class, etc..) is the first
+A module's synopsis (a module type, a class, etc..) is the first
 paragraph of the {!preamble}, {e if} the preamble starts with a paragraph.
 
 It is rendered in [{!modules:...}] lists and after {{!page-features.expansion_aliases}expanded aliases}.
 
-Note that the synopsis is computed on top of the {e preamble}, in these two
+Note that the synopsis is computed on top of the {e preamble}. In these two
 examples, the synopsis is the same:
 
 {[
@@ -806,9 +808,9 @@ Both API references and documentation pages can be split into sections that can
 be introduced with level-1 headings. Each section can also have subsections
 (level-2) and subsubsections (level-3).
 
-Additionally paragraphs can be annotated with level-4 or level-5 headings.
+Additionally, paragraphs can be annotated with level-4 or level-5 headings.
 Note that paragraph headings are {e not} be included in the generated table of
-contents and thus should be used to introduce examples, comments or other
+contents and thus should be used to introduce examples, comments, or other
 complementary notes. An alternative would be to consider splitting into
 multiple files.
 
@@ -835,13 +837,13 @@ For example:
 See {!section-foobar} for details
 v}
 
-In this case the reference text would be "Foo Bar" so the paragraph would read
-"See Foo Bar for details".
+In this case, the reference text would be "Foo Bar," so the paragraph would read
+"See Foo Bar for details."
 
 Sections with a label cannot be referenced via the section title, only
 using the label.
 
-Note that label names can contain [-] but if they do, you have to quote the label
+Note that label names can contain [-], but if they do, you have to quote the label
 name in the reference link as follows:
 
 {v
@@ -852,14 +854,14 @@ v}
 
 You can use [_] instead of [-] to avoid this syntax.
 
-Sections can also be cross referenced from another page.
+Sections can also be cross-referenced from another page.
 If you define the following section in a [a.mld] file:
 
 {v
 {1:foo Foo}
 v}
 
-And then want to reference it from another [b.mld] page,
+and then want to reference it from another [b.mld] page,
 you can use the following syntax:
 
 {v
@@ -877,12 +879,12 @@ supported.
 {2 Markup}
 
 The format of these [.mld] files is simply text that should be marked-up with
-the usual [odoc] markup as described in this page. A documentation page can be seen
+the usual [odoc] markup as described on this page. A documentation page can be seen
 as a single regular docstring in a separate file.
 
 {2 Page Title}
 
-When defining a documentation page make sure to supply a page title as one is
+When defining a documentation page, make sure to supply a page title, as one is
 not generated by default (unlike for API reference documents where the module
 or module type name is used). The level-0 heading must be used for that
 purpose. For example:
@@ -892,22 +894,22 @@ purpose. For example:
 ...
 ]}
 
-Only one title is allowed per page, the following heading levels should be in
+Only one title is allowed per page. The following heading levels should be in
 the range from 1 to 5 (inclusive). Don't worry, [odoc] will generate a warning
-if you forget accidentally include multiple titles.
+if you accidentally forget to include multiple titles.
 
 {2 Usage}
 
 The recommended way to setup documentation pages for your project is by using
 the Dune build system. It will automatically find and generate HTML for all
-[mld] files in your project. See
+[.mld] files in your project. See
 {{:https://dune.readthedocs.io/en/latest/documentation.html#documentation-stanza}
 Dune's configuration instructions} for more details.
 
 {2 Referencing Pages}
 
 Currently the generated HTML pages are not be automatically referenced in the
-index page, you must manually add links to point to the pages in your document.
+index page. You must manually add links to point to the pages in your document.
 
 For example, if you have a page called [my_page.mld], you can create a
 link to it with [{{!page-my_page}My page}] in your [index.mld] or
