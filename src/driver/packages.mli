@@ -61,7 +61,6 @@ val pp_mld : Format.formatter -> mld -> unit
 
 type libty = {
   lib_name : string;
-  dir : Fpath.t;
   odoc_dir : Fpath.t; (** Relative to dir where all odoc files are, e.g. [_odoc/] by default *)
   archive_name : string;
   modules : modulety list;
@@ -88,5 +87,5 @@ val parent_of_pkg : Fpath.t -> Fpath.t
 
 module Lib : sig
 
-  val v : Fpath.t -> string Util.StringMap.t -> string -> Fpath.t -> libty list
+  val v : Fpath.t -> string Util.StringMap.t -> string -> Fpath.t -> Fpath.t option -> libty list
 end

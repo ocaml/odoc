@@ -117,7 +117,7 @@ let process_package pkg =
       Logs.debug (fun m -> m "%s,%s\n%!" k v)) libname_of_archive;
     Some (List.map (fun directory ->
       Format.eprintf "Processing directory: %a\n%!" Fpath.pp directory;
-      Packages.Lib.v (top_dir pkg) libname_of_archive pkg.name directory) Fpath.(Set.to_list directories)))
+      Packages.Lib.v (top_dir pkg) libname_of_archive pkg.name directory None) Fpath.(Set.to_list directories)))
   metas in
 (* Check the main package lib directory even if there's no meta file *)
 let extra_libraries =
@@ -131,7 +131,7 @@ let extra_libraries =
   in
   List.map (fun libdir ->
     Logs.debug (fun m -> m "Processing directory without META: %a" Fpath.pp libdir);
-    Packages.Lib.v (top_dir pkg) Util.StringMap.empty pkg.name Fpath.(pkg_path // libdir)) libdirs_without_meta
+    Packages.Lib.v (top_dir pkg) Util.StringMap.empty pkg.name Fpath.(pkg_path // libdir) None) libdirs_without_meta
 in
 Printf.eprintf "Found %d metas" (List.length metas);
 let mld_odoc_dir = Packages.parent_of_pkg (top_dir pkg) in

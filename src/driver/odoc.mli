@@ -11,7 +11,7 @@ val odoc : Bos.Cmd.t ref
 
 type compile_deps = { digest : Digest.t; deps : (string * Digest.t) list }
 val compile_deps : Fpath.t -> (compile_deps, [> `Msg of string ]) result
-val classify : Fpath.t -> (string * string list) list
+val classify : Fpath.t list -> (string * string list) list
 val compile_impl :
   output_dir:Fpath.t ->
   input_file:Fpath.t ->
