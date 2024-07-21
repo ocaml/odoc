@@ -182,10 +182,10 @@ let source_tree ?(ignore_output = false) ~parent ~output file =
     Cmd_outputs.(
       add_prefixed_output cmd source_tree_output (Fpath.to_string file) lines)
 
-let classify dir =
+let classify dirs =
   let open Cmd in
-  let cmd = !odoc % "classify" % p dir in
-  let desc = Printf.sprintf "Classifying %s" (Fpath.to_string dir) in
+  let cmd = List.fold_left (fun cmd d -> cmd % p d) (!odoc % "classify") dirs in
+  let desc = Format.asprintf "Classifying [%a]" (Fmt.(list ~sep:sp) Fpath.pp) dirs in
   let lines =
     Cmd_outputs.submit desc cmd None |> List.filter (fun l -> l <> "")
   in

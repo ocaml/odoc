@@ -497,7 +497,7 @@ let render_stats env nprocs =
       in
       inner (0, 0, 0, 0, 0, 0, 0, 0))
 
-let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers odoc_bin voodoo package_name blessed =
+let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers odoc_bin voodoo package_name blessed dune_style =
   Odoc.odoc := Bos.Cmd.v odoc_bin;
   let _ = Voodoo.find_universe_and_version "foo" in
   Eio_main.run @@ fun env ->
@@ -511,7 +511,10 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers o
       match package_name with
       | Some p -> Voodoo.of_voodoo p blessed
       | None -> failwith "Need a package name for voodoo"
-    else
+    else match dune_style with
+    | Some dir ->
+      Dune_style.of_dune_build dir
+     | None ->
       let libs =
         if libs = [] then Ocamlfind.all ()
         else libs
@@ -623,13 +626,16 @@ let blessed =
   let doc = "Blessed" in
   Arg.(value & flag & info ["blessed"] ~doc)
 
+let dune_style =
+  let doc = "Dune style" in
+  Arg.(value & opt (some string) None & info ["dune-style"] ~doc)
   
 let cmd =
   let doc = "Generate odoc documentation" in
   let info = Cmd.info "odoc_driver" ~doc in
   Cmd.v info
     Term.(
-      const run $ packages $ verbose $ packages_dir $ odoc_dir $ odocl_dir $ html_dir $ stats $ nb_workers $ odoc_bin $ voodoo $ package_name $ blessed)
+      const run $ packages $ verbose $ packages_dir $ odoc_dir $ odocl_dir $ html_dir $ stats $ nb_workers $ odoc_bin $ voodoo $ package_name $ blessed $ dune_style)
 
 (* let map = Ocamlfind.package_to_dir_map () in
    let _dirs = List.map (fun lib -> List.assoc lib map) deps in

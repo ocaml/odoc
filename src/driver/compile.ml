@@ -135,7 +135,7 @@ let compile partial ~output_dir ?linked_dir all =
         let odoc_file = Fpath.(output_dir // modty.m_intf.mif_odoc_file) in
         let odocl_file = Fpath.(linked_dir // modty.m_intf.mif_odocl_file) in
         let fibers =
-          List.map
+          Fiber.List.map
             (fun (n, h) ->
               match compile_other h with
               | Ok r -> Some r
@@ -202,7 +202,7 @@ let compile partial ~output_dir ?linked_dir all =
         result
   in
   let to_build = Util.StringMap.bindings hashes |> List.map fst in
-  let mod_results = List.map compile to_build in
+  let mod_results = Fiber.List.map compile to_build in
   let zipped_res = List.map2 (fun a b -> (a,b)) to_build mod_results in
   let zipped = List.filter_map (function (a, Ok b) -> Some (a,b) | _ -> None) zipped_res in
   let mods =

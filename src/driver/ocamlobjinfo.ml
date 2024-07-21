@@ -17,9 +17,9 @@ let source_possibilities file =
       [ Astring.String.take ~max:pos file ^ "ml" ]
     else []
   in
-  default @ generated @ pp
+  pp @ default @ generated
 
-let get_source file =
+let get_source file srcdirs =
   let cmd = Cmd.(ocamlobjinfo % p file) in
   let lines_res =
     Worker_pool.submit ("Ocamlobjinfo " ^ Fpath.to_string file) cmd None
@@ -43,14 +43,16 @@ let get_source file =
               (String.length line - String.length affix)
           in
           let name = Fpath.(filename (v name)) in
-          let dir, _ = Fpath.split_base file in
           let possibilities =
-            List.map
-              (fun poss -> Fpath.(dir / poss))
-              (source_possibilities name)
+            List.map (fun dir ->
+              List.map
+                (fun poss -> Fpath.(dir / poss))
+                (source_possibilities name)) srcdirs |> List.flatten
           in
           List.find_opt
-            (fun f -> Sys.file_exists (Fpath.to_string f))
+            (fun f ->
+              Logs.debug (fun m -> m "src: checking %a" Fpath.pp f);
+              Sys.file_exists (Fpath.to_string f))
             possibilities
         else None)
       lines

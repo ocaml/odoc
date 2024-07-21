@@ -48,7 +48,6 @@ let pp_mld fmt m = Format.fprintf fmt "%a" Fpath.pp m.mld_path
 
 type libty = {
   lib_name : string;
-  dir : Fpath.t;
   odoc_dir : Fpath.t; (* Relative to [odoc] dir *)
   archive_name : string;
   modules : modulety list;
@@ -90,7 +89,8 @@ module Module = struct
 
   let is_hidden name = Astring.String.is_infix ~affix:"__" name
 
-  let vs pkg_dir lib_name dir modules =
+  let vs pkg_dir lib_name libsdir cmtidir modules =
+    let dir = match cmtidir with | None -> libsdir | Some dir -> dir in
     let mk m_name =
       let exists ext =
         let p =
@@ -136,8 +136,16 @@ module Module = struct
             // add_ext "odoc" (v ("impl-" ^ String.uncapitalize_ascii m_name)))
         in
         let mip_odocl_file = Fpath.(set_ext "odocl" mip_odoc_file) in
+
+        (* Directories in which we should look for source files *)
+        let src_dirs =
+          match cmtidir with
+          | None -> [libsdir]
+          | Some d2 -> [libsdir; d2]
+        in
+          
         let mip_src_info =
-          match Ocamlobjinfo.get_source mip_path with
+          match Ocamlobjinfo.get_source mip_path src_dirs with
           | None ->
               Logs.debug (fun m -> m "No source found for module %s" m_name);
               None
@@ -174,10 +182,15 @@ end
 
 module Lib = struct
 
-  let v pkg_dir libname_of_archive pkg_name dir =
+  let v pkg_dir libname_of_archive pkg_name dir cmtidir =
     Logs.debug (fun m ->
         m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
-    let results = Odoc.classify dir in
+    let dirs =
+      match cmtidir with
+      | None -> [dir]
+      | Some dir2 -> [dir; dir2]
+    in
+    let results = Odoc.classify dirs in
     Logs.debug (fun m ->
       m "Got %d lines" (List.length results));
     List.filter_map
@@ -200,11 +213,11 @@ module Lib = struct
                 );
             archive_name
           in
-          let modules = Module.vs pkg_dir lib_name dir modules in
+          let modules = Module.vs pkg_dir lib_name dir cmtidir modules in
           let odoc_dir =
             parent_of_lib pkg_dir lib_name
           in
-          Some { lib_name; dir; odoc_dir; archive_name; modules }
+          Some { lib_name; odoc_dir; archive_name; modules }
         with
         | _ ->
             Logs.err (fun m ->
@@ -213,8 +226,8 @@ module Lib = struct
       results
 
   let pp ppf t =
-    Fmt.pf ppf "path: %a archive: %a modules: [@[<hov 2>@,%a@]@,]" Fpath.pp
-      t.dir Fmt.string t.archive_name
+    Fmt.pf ppf "archive: %a modules: [@[<hov 2>@,%a@]@,]"
+      Fmt.string t.archive_name
       Fmt.(list ~sep:sp Module.pp)
       t.modules
 end
@@ -365,7 +378,7 @@ let of_libs packages_dir libs =
       | Some pkg ->
           let pkg_dir = pkg_dir packages_dir pkg.name in
 
-          let libraries = Lib.v pkg_dir libname_of_archive pkg.name dir in
+          let libraries = Lib.v pkg_dir libname_of_archive pkg.name dir None in
           let libraries =
             List.filter
               (fun l -> Util.StringSet.mem l.archive_name archives)
