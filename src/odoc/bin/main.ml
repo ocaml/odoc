@@ -1560,11 +1560,11 @@ module Odoc_error = struct
 end
 
 module Classify = struct
-  let libdir =
-    let doc = "The directory containing the libraries" in
-    Arg.(required & pos 0 (some string) None & info ~doc ~docv:"DIR" [])
+  let libdirs =
+    let doc = "The directories containing the libraries" in
+    Arg.(value & pos_all string [] & info ~doc ~docv:"DIR" [])
 
-  let cmd = Term.(const handle_error $ (const Classify.classify $ libdir))
+  let cmd = Term.(const handle_error $ (const Classify.classify $ libdirs))
 
   let info ~docs =
     Term.info "classify" ~docs
