@@ -448,10 +448,8 @@ let lookup_page_by_path ~pages ~hierarchy path =
 
 let lookup_unit_by_path ~libs ~hierarchy path =
   let possible_unit_names name =
-    [
-      String.capitalize_ascii name ^ ".odoc";
-      String.uncapitalize_ascii name ^ ".odoc";
-    ]
+    Astring.String.Ascii.
+      [ capitalize name ^ ".odoc"; uncapitalize name ^ ".odoc" ]
   in
   match lookup_path ~possible_unit_names ~named_roots:libs ~hierarchy path with
   | Ok (Odoc_file.Unit_content u) -> Ok (Odoc_xref2.Env.Found u)
