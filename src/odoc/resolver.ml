@@ -245,7 +245,6 @@ let unit_name
     | Source_tree_content { root; _ } ) =
   root_name root
 
-(** Returns [None] if the file is not found or failed to load for any reason. *)
 let load_unit_from_file path = Odoc_file.load path >>= fun u -> Ok u.content
 
 let unit_cache = Hashtbl.create 42
