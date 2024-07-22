@@ -69,6 +69,12 @@ module List = struct
     | [] -> failwith "Odoc_utils.List.last"
     | [ x ] -> x
     | _ :: tl -> last tl
+
+  (* From ocaml/ocaml *)
+  let rec find_map f = function
+    | [] -> None
+    | x :: l -> (
+        match f x with Some _ as result -> result | None -> find_map f l)
 end
 
 module Option = struct
