@@ -134,7 +134,7 @@ let process_package pkg =
           (fun k v -> Logs.debug (fun m -> m "%s,%s\n%!" k v))
           libname_of_archive;
         Some
-          (List.map
+          (List.concat_map
              (fun directory ->
                Format.eprintf "Processing directory: %a\n%!" Fpath.pp directory;
                Packages.Lib.v (top_dir pkg) libname_of_archive pkg.name
@@ -168,7 +168,7 @@ let process_package pkg =
   in
   Printf.eprintf "Found %d metas" (List.length metas);
   let mld_odoc_dir = Packages.parent_of_pkg (top_dir pkg) in
-  let libraries = List.flatten (List.flatten libraries) in
+  let libraries = List.flatten libraries in
   let libraries = List.flatten extra_libraries @ libraries in
   {
     Packages.name = pkg.name;
