@@ -492,8 +492,7 @@ They should appear on their own lines with nothing but whitespace before them.
 There are three types of tags. Those with:
 - no associated data (simple tags),
 - a single line of text (line tags), and 
-- a block of
-marked-up text (block tags).
+- a block of marked-up text (block tags).
 
 {3 Simple Tags}
 
