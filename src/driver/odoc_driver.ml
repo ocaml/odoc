@@ -509,7 +509,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
 
   let all =
     match (voodoo, package_name, dune_style, packages_dir) with
-    | true, Some p, None, None -> Voodoo.of_voodoo p blessed
+    | true, Some p, None, None -> Voodoo.of_voodoo p ~blessed
     | false, None, Some dir, None -> Dune_style.of_dune_build dir
     | false, None, None, packages_dir ->
         let libs = if libs = [] then Ocamlfind.all () else libs in
@@ -517,7 +517,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
           List.map Ocamlfind.sub_libraries libs
           |> List.fold_left Util.StringSet.union Util.StringSet.empty
         in
-        Packages.of_libs packages_dir libs
+        Packages.of_libs ~packages_dir libs
     | true, None, _, _ -> failwith "--voodoo requires --package-name"
     | false, Some _, _, _ -> failwith "--package-name requires --voodoo"
     | true, _, _, Some _ | false, _, Some _, Some _ ->

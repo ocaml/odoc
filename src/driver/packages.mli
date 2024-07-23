@@ -67,6 +67,18 @@ type libty = {
   modules : modulety list;
 }
 
+val parent_of_pkg : Fpath.t -> Fpath.t
+
+module Lib : sig
+  val v :
+    pkg_dir:Fpath.t ->
+    libname_of_archive:string Util.StringMap.t ->
+    pkg_name:string ->
+    dir:Fpath.t ->
+    cmtidir:Fpath.t option ->
+    libty list
+end
+
 type t = {
   name : string;
   version : string;
@@ -82,17 +94,5 @@ val pp : Format.formatter -> t -> unit
 
 type set = t Util.StringMap.t
 
-val of_libs : Fpath.t option -> Util.StringSet.t -> set
 (** Turns a set of libraries into a map from library name to package *)
-
-val parent_of_pkg : Fpath.t -> Fpath.t
-
-module Lib : sig
-  val v :
-    Fpath.t ->
-    string Util.StringMap.t ->
-    string ->
-    Fpath.t ->
-    Fpath.t option ->
-    libty list
-end
+val of_libs : packages_dir:Fpath.t option -> Util.StringSet.t -> set

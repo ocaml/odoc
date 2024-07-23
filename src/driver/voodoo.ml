@@ -137,8 +137,8 @@ let process_package pkg =
           (List.concat_map
              (fun directory ->
                Format.eprintf "Processing directory: %a\n%!" Fpath.pp directory;
-               Packages.Lib.v (top_dir pkg) libname_of_archive pkg.name
-                 directory None)
+               Packages.Lib.v ~pkg_dir:(top_dir pkg) ~libname_of_archive
+                 ~pkg_name:pkg.name ~dir:directory ~cmtidir:None)
              Fpath.(Set.to_list directories)))
       metas
   in
@@ -161,9 +161,10 @@ let process_package pkg =
       (fun libdir ->
         Logs.debug (fun m ->
             m "Processing directory without META: %a" Fpath.pp libdir);
-        Packages.Lib.v (top_dir pkg) Util.StringMap.empty pkg.name
-          Fpath.(pkg_path // libdir)
-          None)
+        Packages.Lib.v ~pkg_dir:(top_dir pkg)
+          ~libname_of_archive:Util.StringMap.empty ~pkg_name:pkg.name
+          ~dir:Fpath.(pkg_path // libdir)
+          ~cmtidir:None)
       libdirs_without_meta
   in
   Printf.eprintf "Found %d metas" (List.length metas);
@@ -187,7 +188,7 @@ let pp ppf v =
 
 let () = ignore pp
 
-let of_voodoo pkg_name blessed =
+let of_voodoo pkg_name ~blessed =
   let contents =
     Bos.OS.Dir.fold_contents ~dotfiles:true
       (fun p acc -> p :: acc)

@@ -184,7 +184,7 @@ module Module = struct
 end
 
 module Lib = struct
-  let v pkg_dir libname_of_archive pkg_name dir cmtidir =
+  let v ~pkg_dir ~libname_of_archive ~pkg_name ~dir ~cmtidir =
     Logs.debug (fun m ->
         m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
     let dirs =
@@ -233,7 +233,7 @@ let pp ppf t =
     Fmt.(list ~sep:sp Lib.pp)
     t.libraries
 
-let of_libs packages_dir libs =
+let of_libs ~packages_dir libs =
   let libs = Util.StringSet.to_seq libs |> List.of_seq in
   let results = List.map (fun x -> (x, Ocamlfind.deps [ x ])) libs in
   let all_libs_set =
@@ -371,7 +371,10 @@ let of_libs packages_dir libs =
       | Some pkg ->
           let pkg_dir = pkg_dir packages_dir pkg.name in
 
-          let libraries = Lib.v pkg_dir libname_of_archive pkg.name dir None in
+          let libraries =
+            Lib.v ~pkg_dir ~libname_of_archive ~pkg_name:pkg.name ~dir
+              ~cmtidir:None
+          in
           let libraries =
             List.filter
               (fun l -> Util.StringSet.mem l.archive_name archives)
