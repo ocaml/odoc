@@ -72,7 +72,7 @@ let pkg_dir top_dir pkg_name = maybe_prepend_top top_dir Fpath.(v pkg_name)
 
 let parent_of_lib pkg_dir lib_name = Fpath.(pkg_dir / "lib" / lib_name)
 
-let parent_of_pkg pkg_dir = Fpath.(pkg_dir / "doc")
+let parent_of_pages pkg_dir = Fpath.(pkg_dir / "doc")
 
 let parent_of_src pkg_dir lib_name = Fpath.(pkg_dir / "src" / lib_name)
 
@@ -336,7 +336,7 @@ let of_libs ~packages_dir libs =
         | None -> acc
         | Some rel_path ->
             let pkg_dir = pkg_dir packages_dir pkg_name in
-            let id = Fpath.(parent_of_pkg pkg_dir // rel_path) in
+            let id = Fpath.(parent_of_pages pkg_dir // rel_path) in
             let mld_parent_id = id |> Fpath.parent |> Fpath.rem_empty_seg in
             let page_name = Fpath.(rem_ext mld_path |> filename) in
             let odoc_file =
@@ -404,7 +404,7 @@ let of_libs ~packages_dir libs =
                       mlds = update_mlds pkg.mlds libraries;
                     }
               | None ->
-                  let mld_odoc_dir = parent_of_pkg pkg_dir in
+                  let mld_odoc_dir = parent_of_pages pkg_dir in
                   Some
                     {
                       name = pkg.name;

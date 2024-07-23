@@ -67,7 +67,8 @@ type libty = {
   modules : modulety list;
 }
 
-val parent_of_pkg : Fpath.t -> Fpath.t
+val parent_of_pages : Fpath.t -> Fpath.t
+(** Given a [pkg_dir], returns a [mld_odoc_dir]. *)
 
 module Lib : sig
   val v :
