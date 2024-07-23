@@ -1,6 +1,6 @@
 {0 [odoc]}
 
-For a quick look at the [odoc] syntax, see the {{!cheatsheet}cheatsheet}!
+{b For a quick look at the [odoc] syntax, see the {{!cheatsheet}cheatsheet}!}
 
 {1:overview What is [odoc]?}
 
@@ -29,7 +29,7 @@ The syntax reference is a refinement of that explained in the
 {{:https://ocaml.org/manual/ocamldoc.html}OCaml manual}. The differences
 are described {{!page-ocamldoc_differences}here}.
 
-[odoc]'s main advantages over OCamldoc are
+[odoc]'s main advantages over OCamldoc are:
 
 - an accurate {e cross-referencer} that can calculate links between types, modules,
 module types, and more. So if you've ever been baffled by exactly what the [t] was in [val f : A(M).t -> unit], [odoc] will link to it!
@@ -45,16 +45,16 @@ For guidance on how to document your OCaml project, see {{!page-odoc_for_authors
 To integrate [odoc] into your tool, webpage or any other
 setting, you'll need to understand {{!page-driver}how to drive [odoc]}.
 
-{1 Page index}
+{1 Page Index}
 
 The main other pages of this site:
-- {!page-odoc_for_authors} [odoc] For Authors
-- {!page-cheatsheet} The cheatsheet
-- {!page-features} Language Features
-- {!page-driver} Reference Driver
-- {!page-ocamldoc_differences} Differences from OCamldoc
-- {!page-dune} Dune
-- {!page-parent_child_spec} Parent/Child Specification
-- {!page-interface} Interface Guarantees
-- {!page-ocamlary} A demonstration of the rendering of most of the OCaml constructs
-- {!page-api_reference} Odoc's library API
+- {!page-odoc_for_authors} gives information for [odoc] authors.
+- {!page-cheatsheet} provides a quick quide for [odoc] markdown.
+- {!page-features} explores [odoc]'s language features.
+- {!page-driver} describes how [odoc] produces documentation.
+- {!page-ocamldoc_differences} outlines differences from OCamldoc.
+- {!page-dune} shows how to create docs using Dune.
+- {!page-parent_child_spec} delineates parent/child specifications.
+- {!page-interface} describes [odoc]'s public-facing interface and their support guarantees.
+- {!page-ocamlary} demonstrates the rendering of most of the OCaml constructs.
+- {!page-api_reference} lists [odoc]'s API reference library.
