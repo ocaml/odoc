@@ -34,7 +34,7 @@ module Odoc_file : sig
     | Page of page
     | Compilation_unit of compilation_unit
     | Impl of string
-    | Asset
+    | Asset of string
 
   val create_unit : force_hidden:bool -> string -> t
 
@@ -42,7 +42,7 @@ module Odoc_file : sig
 
   val create_impl : string -> t
 
-  val asset : t
+  val asset : string -> t
 
   val name : t -> string
 

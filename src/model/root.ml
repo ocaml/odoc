@@ -31,11 +31,12 @@ module Odoc_file = struct
 
   type page = { name : string; title : Comment.link_content option }
 
+
   type t =
     | Page of page
     | Compilation_unit of compilation_unit
     | Impl of string
-    | Asset
+    | Asset of string
 
   let create_unit ~force_hidden name =
     let hidden = force_hidden || Names.contains_double_underscore name in
@@ -46,14 +47,13 @@ module Odoc_file = struct
   let create_impl name = Impl name
 
   let name = function
-    | Page { name; _ } | Compilation_unit { name; _ } | Impl name -> name
-    | Asset -> failwith "todo"
+    | Page { name; _ } | Compilation_unit { name; _ } | Impl name | Asset name -> name
 
   let hidden = function
-    | Page _ | Impl _ | Asset -> false
+    | Page _ | Impl _ | Asset _ -> false
     | Compilation_unit m -> m.hidden
 
-  let asset = Asset
+  let asset name = Asset name
 end
 
 type t = {

@@ -638,6 +638,6 @@ let resolve_import t target_name =
             match root.Odoc_model.Root.file with
             | Compilation_unit _ -> Some root
             | Impl _ | Page _ -> loop tl
-            | Asset -> failwith "todo"))
+            | Asset _ -> failwith "todo"))
   in
   loop (Accessible_paths.find t.ap target_name)

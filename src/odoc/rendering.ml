@@ -98,7 +98,7 @@ let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax input
   | Unit_content odoctree ->
       documents_of_unit ~warnings_options ~source ~syntax ~renderer ~extra
         ~filename odoctree
-  | Asset_content _ -> failwith "todo"
+  | Asset_content _ -> Ok []
 
 let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
     input =
