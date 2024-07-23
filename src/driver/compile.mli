@@ -2,7 +2,12 @@ type compiled
 
 val init_stats : Packages.set -> unit
 
-val compile : Fpath.t option -> output_dir:Fpath.t -> ?linked_dir:Fpath.t -> Packages.set -> compiled list
+val compile :
+  Fpath.t option ->
+  output_dir:Fpath.t ->
+  ?linked_dir:Fpath.t ->
+  Packages.set ->
+  compiled list
 
 type linked
 

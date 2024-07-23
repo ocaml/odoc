@@ -7,7 +7,6 @@ let id_of_fpath id = id
 
 let index_filename = "index.odoc-index"
 
-
 type compile_deps = { digest : Digest.t; deps : (string * Digest.t) list }
 
 (* This is the just-built odoc binary *)
@@ -53,14 +52,13 @@ let compile_impl ~output_dir ~input_file:file ~includes ~parent_id ~source_id =
       includes Cmd.empty
   in
   let cmd =
-    !odoc % "compile-impl" % Fpath.to_string file % "--output-dir" % p output_dir
-    %% includes % "--enable-missing-root-warning"
+    !odoc % "compile-impl" % Fpath.to_string file % "--output-dir"
+    % p output_dir %% includes % "--enable-missing-root-warning"
   in
   let output_file =
-      let _, f = Fpath.split_base file in
-      Some
-        Fpath.(
-          output_dir // parent_id / ("impl-" ^ to_string (set_ext "odoc" f)))
+    let _, f = Fpath.split_base file in
+    Some
+      Fpath.(output_dir // parent_id / ("impl-" ^ to_string (set_ext "odoc" f)))
   in
   let cmd = cmd % "--parent-id" % Fpath.to_string parent_id in
   let cmd = cmd % "--source-id" % Fpath.to_string source_id in
@@ -87,13 +85,12 @@ let lib_args libs =
       v "-L" % s %% acc)
     Cmd.empty libs
 
-let link ?(ignore_output = false) ~input_file:file ?output_file ~includes ~docs ~libs
-    ~current_package () =
+let link ?(ignore_output = false) ~input_file:file ?output_file ~includes ~docs
+    ~libs ~current_package () =
   let open Cmd in
   let output_file =
-    match output_file with
-    | Some f -> f
-    | None -> Fpath.set_ext "odocl" file in
+    match output_file with Some f -> f | None -> Fpath.set_ext "odocl" file
+  in
   let includes =
     Fpath.Set.fold
       (fun path acc -> Cmd.(acc % "-I" % p path))
@@ -185,7 +182,9 @@ let source_tree ?(ignore_output = false) ~parent ~output file =
 let classify dirs =
   let open Cmd in
   let cmd = List.fold_left (fun cmd d -> cmd % p d) (!odoc % "classify") dirs in
-  let desc = Format.asprintf "Classifying [%a]" (Fmt.(list ~sep:sp) Fpath.pp) dirs in
+  let desc =
+    Format.asprintf "Classifying [%a]" (Fmt.(list ~sep:sp) Fpath.pp) dirs
+  in
   let lines =
     Cmd_outputs.submit desc cmd None |> List.filter (fun l -> l <> "")
   in

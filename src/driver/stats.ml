@@ -85,26 +85,27 @@ let compute_metric_int prefix suffix description values =
   match compute_min_max_avg values with
   | None -> []
   | Some (min, max, avg, count) ->
-    let min = int_of_float min in
-    let max = int_of_float max in
-    let avg = int_of_float avg in
-    [
-      `Assoc
-        [
-          ("name", `String (prefix ^ "-total-" ^ suffix));
-          ("value", `Int count);
-          ("description", `String ("Number of " ^ description));
-        ];
-      `Assoc
-        [
-          ("name", `String (prefix ^ "-size-" ^ suffix));
-          ( "value",
-            `Assoc [ ("min", `Int min); ("max", `Int max); ("avg", `Int avg) ] );
-          ("units", `String "b");
-          ("description", `String ("Size of " ^ description));
-          ("trend", `String "lower-is-better");
-        ];
-    ]
+      let min = int_of_float min in
+      let max = int_of_float max in
+      let avg = int_of_float avg in
+      [
+        `Assoc
+          [
+            ("name", `String (prefix ^ "-total-" ^ suffix));
+            ("value", `Int count);
+            ("description", `String ("Number of " ^ description));
+          ];
+        `Assoc
+          [
+            ("name", `String (prefix ^ "-size-" ^ suffix));
+            ( "value",
+              `Assoc [ ("min", `Int min); ("max", `Int max); ("avg", `Int avg) ]
+            );
+            ("units", `String "b");
+            ("description", `String ("Size of " ^ description));
+            ("trend", `String "lower-is-better");
+          ];
+      ]
 
 let compute_metric_cmd cmd =
   let open Run in
@@ -112,24 +113,28 @@ let compute_metric_cmd cmd =
   let times = List.map (fun c -> c.Run.time) cmds in
   match compute_min_max_avg times with
   | None -> []
-  | Some (min, max, avg, count) -> [
-    `Assoc
+  | Some (min, max, avg, count) ->
       [
-        ("name", `String ("total-" ^ cmd));
-        ("value", `Int count);
-        ("description", `String ("Number of time 'odoc " ^ cmd ^ "' has run."));
-      ];
-    `Assoc
-      [
-        ("name", `String ("time-" ^ cmd));
-        ( "value",
-          `Assoc
-            [ ("min", `Float min); ("max", `Float max); ("avg", `Float avg) ] );
-        ("units", `String "s");
-        ("description", `String ("Time taken by 'odoc " ^ cmd ^ "'"));
-        ("trend", `String "lower-is-better");
-      ];
-  ]
+        `Assoc
+          [
+            ("name", `String ("total-" ^ cmd));
+            ("value", `Int count);
+            ( "description",
+              `String ("Number of time 'odoc " ^ cmd ^ "' has run.") );
+          ];
+        `Assoc
+          [
+            ("name", `String ("time-" ^ cmd));
+            ( "value",
+              `Assoc
+                [
+                  ("min", `Float min); ("max", `Float max); ("avg", `Float avg);
+                ] );
+            ("units", `String "s");
+            ("description", `String ("Time taken by 'odoc " ^ cmd ^ "'"));
+            ("trend", `String "lower-is-better");
+          ];
+      ]
 
 (** Analyze the size of files produced by a command. *)
 let compute_produced_cmd cmd =
@@ -165,21 +170,23 @@ let compute_longest_cmd cmd =
   match compute_min_max_avg times with
   | None -> []
   | Some (min, max, avg, _count) ->
-  [
-    `Assoc
       [
-        ("name", `String ("longest-" ^ cmd));
-        ( "value",
-          `Assoc
-            [ ("min", `Float min); ("max", `Float max); ("avg", `Float avg) ] );
-        ("units", `String "s");
-        ( "description",
-          `String
-            (Printf.sprintf "Time taken by the %d longest calls to 'odoc %s'" k
-               cmd) );
-        ("trend", `String "lower-is-better");
-      ];
-  ]
+        `Assoc
+          [
+            ("name", `String ("longest-" ^ cmd));
+            ( "value",
+              `Assoc
+                [
+                  ("min", `Float min); ("max", `Float max); ("avg", `Float avg);
+                ] );
+            ("units", `String "s");
+            ( "description",
+              `String
+                (Printf.sprintf
+                   "Time taken by the %d longest calls to 'odoc %s'" k cmd) );
+            ("trend", `String "lower-is-better");
+          ];
+      ]
 
 let all_metrics html_dir =
   compute_metric_cmd "compile"

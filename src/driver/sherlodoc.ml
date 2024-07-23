@@ -3,20 +3,16 @@ open Cmd_outputs
 
 let sherlodoc = Cmd.v "sherlodoc"
 
-
 (* All paths relative to the html output dir *)
 
 (* Per-package sherlodoc db for javascript search*)
-let db_js_file pkg_dir =
-  Fpath.(pkg_dir / "sherlodoc_db.js")
+let db_js_file pkg_dir = Fpath.(pkg_dir / "sherlodoc_db.js")
 
 (* Global sherlodoc marshal file for server-side global search *)
-let db_marshal_file =
-  Fpath.v "sherlodoc_db.marshal"
+let db_marshal_file = Fpath.v "sherlodoc_db.marshal"
 
 (* Global static sherlodoc support file for javascript search *)
-let js_file =
-  Fpath.v "sherlodoc.js"
+let js_file = Fpath.v "sherlodoc.js"
 
 let index ?(ignore_output = false) ~format ~inputs ~dst ?favored_prefixes () =
   let desc = Printf.sprintf "Sherlodoc indexing at %s" (Fpath.to_string dst) in

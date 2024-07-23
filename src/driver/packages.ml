@@ -32,7 +32,8 @@ type modulety = {
   m_intf : intf;
   m_impl : impl option;
   m_hidden : bool;
-  m_pkg_dir : Fpath.t (* The 'top dir' of a package, relative to [_odoc] or [_html] *)
+  m_pkg_dir : Fpath.t;
+      (* The 'top dir' of a package, relative to [_odoc] or [_html] *)
 }
 
 type mld = {
@@ -41,7 +42,8 @@ type mld = {
   mld_parent_id : id;
   mld_path : Fpath.t; (* Absolute or relative to cwd *)
   mld_deps : Fpath.t list;
-  mld_pkg_dir : Fpath.t; (* The 'top dir' of a package, relative to [_odoc] or [_html] *)
+  mld_pkg_dir : Fpath.t;
+      (* The 'top dir' of a package, relative to [_odoc] or [_html] *)
 }
 
 let pp_mld fmt m = Format.fprintf fmt "%a" Fpath.pp m.mld_path
@@ -64,22 +66,16 @@ type t = {
 }
 
 let maybe_prepend_top top_dir dir =
-  match top_dir with
-  | None -> dir
-  | Some d -> Fpath.(d // dir)
+  match top_dir with None -> dir | Some d -> Fpath.(d // dir)
 
-let pkg_dir top_dir pkg_name =
-  maybe_prepend_top top_dir Fpath.(v pkg_name)
+let pkg_dir top_dir pkg_name = maybe_prepend_top top_dir Fpath.(v pkg_name)
 
-let parent_of_lib pkg_dir lib_name =
-  Fpath.(pkg_dir / "lib" / lib_name)
+let parent_of_lib pkg_dir lib_name = Fpath.(pkg_dir / "lib" / lib_name)
 
-let parent_of_pkg pkg_dir =
-  Fpath.(pkg_dir / "doc")
+let parent_of_pkg pkg_dir = Fpath.(pkg_dir / "doc")
 
-let parent_of_src pkg_dir lib_name =
-  Fpath.(pkg_dir / "src" / lib_name)
-  
+let parent_of_src pkg_dir lib_name = Fpath.(pkg_dir / "src" / lib_name)
+
 module Module = struct
   type t = modulety
 
@@ -90,7 +86,7 @@ module Module = struct
   let is_hidden name = Astring.String.is_infix ~affix:"__" name
 
   let vs pkg_dir lib_name libsdir cmtidir modules =
-    let dir = match cmtidir with | None -> libsdir | Some dir -> dir in
+    let dir = match cmtidir with None -> libsdir | Some dir -> dir in
     let mk m_name =
       let exists ext =
         let p =
@@ -139,11 +135,9 @@ module Module = struct
 
         (* Directories in which we should look for source files *)
         let src_dirs =
-          match cmtidir with
-          | None -> [libsdir]
-          | Some d2 -> [libsdir; d2]
+          match cmtidir with None -> [ libsdir ] | Some d2 -> [ libsdir; d2 ]
         in
-          
+
         let mip_src_info =
           match Ocamlobjinfo.get_source mip_path src_dirs with
           | None ->
@@ -153,10 +147,19 @@ module Module = struct
               Logs.debug (fun m ->
                   m "Found source file %a for %s" Fpath.pp src_path m_name);
               let src_name = Fpath.filename src_path in
-              let src_id = Fpath.(parent_of_src pkg_dir lib_name / src_name) |> Odoc.id_of_fpath in
+              let src_id =
+                Fpath.(parent_of_src pkg_dir lib_name / src_name)
+                |> Odoc.id_of_fpath
+              in
               Some { src_path; src_id }
         in
-        { mip_odoc_file; mip_odocl_file; mip_parent_id = Odoc.id_of_fpath mip_parent_id; mip_src_info; mip_path }
+        {
+          mip_odoc_file;
+          mip_odocl_file;
+          mip_parent_id = Odoc.id_of_fpath mip_parent_id;
+          mip_src_info;
+          mip_path;
+        }
       in
       let state = (exists "cmt", exists "cmti") in
 
@@ -181,18 +184,14 @@ module Module = struct
 end
 
 module Lib = struct
-
   let v pkg_dir libname_of_archive pkg_name dir cmtidir =
     Logs.debug (fun m ->
         m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
     let dirs =
-      match cmtidir with
-      | None -> [dir]
-      | Some dir2 -> [dir; dir2]
+      match cmtidir with None -> [ dir ] | Some dir2 -> [ dir; dir2 ]
     in
     let results = Odoc.classify dirs in
-    Logs.debug (fun m ->
-      m "Got %d lines" (List.length results));
+    Logs.debug (fun m -> m "Got %d lines" (List.length results));
     List.filter_map
       (fun (archive_name, modules) ->
         try
@@ -200,34 +199,30 @@ module Lib = struct
             try Util.StringMap.find archive_name libname_of_archive
             with Not_found ->
               Logs.debug (fun m ->
-                m
-                  "Unable to determine library in package '%s' to which \
-                   archive '%s' belongs"
-                  pkg_name archive_name);
-            Logs.debug (fun m ->
-                m "These are the archives I know about: [%a]"
-                  Fmt.(list ~sep:sp string)
-                  (Util.StringMap.bindings libname_of_archive |> List.map fst));
-            Logs.debug (fun m ->
-                m "Defaulting to name of library: %s" archive_name;
-                );
-            archive_name
+                  m
+                    "Unable to determine library in package '%s' to which \
+                     archive '%s' belongs"
+                    pkg_name archive_name);
+              Logs.debug (fun m ->
+                  m "These are the archives I know about: [%a]"
+                    Fmt.(list ~sep:sp string)
+                    (Util.StringMap.bindings libname_of_archive |> List.map fst));
+              Logs.debug (fun m ->
+                  m "Defaulting to name of library: %s" archive_name);
+              archive_name
           in
           let modules = Module.vs pkg_dir lib_name dir cmtidir modules in
-          let odoc_dir =
-            parent_of_lib pkg_dir lib_name
-          in
+          let odoc_dir = parent_of_lib pkg_dir lib_name in
           Some { lib_name; odoc_dir; archive_name; modules }
-        with
-        | _ ->
-            Logs.err (fun m ->
-                m "Error processing library %s. Ignoring." archive_name);
-            None)
+        with _ ->
+          Logs.err (fun m ->
+              m "Error processing library %s. Ignoring." archive_name);
+          None)
       results
 
   let pp ppf t =
-    Fmt.pf ppf "archive: %a modules: [@[<hov 2>@,%a@]@,]"
-      Fmt.string t.archive_name
+    Fmt.pf ppf "archive: %a modules: [@[<hov 2>@,%a@]@,]" Fmt.string
+      t.archive_name
       Fmt.(list ~sep:sp Module.pp)
       t.modules
 end
@@ -340,11 +335,9 @@ let of_libs packages_dir libs =
         match rel_path with
         | None -> acc
         | Some rel_path ->
-            let pkg_dir = (pkg_dir packages_dir pkg_name) in
-            let id = Fpath.(parent_of_pkg pkg_dir // rel_path) in 
-            let mld_parent_id =
-                (id |> Fpath.parent |> Fpath.rem_empty_seg)
-            in
+            let pkg_dir = pkg_dir packages_dir pkg_name in
+            let id = Fpath.(parent_of_pkg pkg_dir // rel_path) in
+            let mld_parent_id = id |> Fpath.parent |> Fpath.rem_empty_seg in
             let page_name = Fpath.(rem_ext mld_path |> filename) in
             let odoc_file =
               Fpath.(mld_parent_id / ("page-" ^ page_name ^ ".odoc"))

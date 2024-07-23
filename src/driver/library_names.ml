@@ -21,8 +21,10 @@ type t = { libraries : library list }
 let read_libraries_from_pkg_defs ~library_name pkg_defs =
   try
     let cma_filename = Fl_metascanner.lookup "archive" [ "byte" ] pkg_defs in
-    let dir = List.find_opt (fun d -> d.Fl_metascanner.def_var = "directory") pkg_defs in
-    let dir = Option.map (fun d -> d.Fl_metascanner.def_value) dir in 
+    let dir =
+      List.find_opt (fun d -> d.Fl_metascanner.def_var = "directory") pkg_defs
+    in
+    let dir = Option.map (fun d -> d.Fl_metascanner.def_value) dir in
     let archive_name =
       let file_name_len = String.length cma_filename in
       if file_name_len > 0 then String.sub cma_filename 0 (file_name_len - 4)
@@ -104,50 +106,50 @@ let process_ocamlobjinfo_file ~(libraries : library list) file =
     ()
 
 (* let get_libraries package =
-  let path =  package in
-  let maybe_meta_files =
-    Bos.OS.Dir.fold_contents ~dotfiles:true
-      (fun p acc ->
-        let is_meta = p |> Fpath.basename = "META" in
-        if is_meta then p :: acc else acc)
-      [] path
-  in
+   let path =  package in
+   let maybe_meta_files =
+     Bos.OS.Dir.fold_contents ~dotfiles:true
+       (fun p acc ->
+         let is_meta = p |> Fpath.basename = "META" in
+         if is_meta then p :: acc else acc)
+       [] path
+   in
 
-  match maybe_meta_files with
-  | Error (`Msg msg) ->
-      failwith
-        ("FIXME: error traversing directories to find the META files: " ^ msg)
-  | Ok meta_files -> (
-      let libraries =
-        meta_files |> List.map process_meta_file |> List.flatten
-      in
+   match maybe_meta_files with
+   | Error (`Msg msg) ->
+       failwith
+         ("FIXME: error traversing directories to find the META files: " ^ msg)
+   | Ok meta_files -> (
+       let libraries =
+         meta_files |> List.map process_meta_file |> List.flatten
+       in
 
-      let _ =
-        Format.eprintf "found archive_names: [%s]\n%!"
-          (String.concat ", "
-             (List.map (fun (l : library) -> l.archive_name) libraries))
-      in
+       let _ =
+         Format.eprintf "found archive_names: [%s]\n%!"
+           (String.concat ", "
+              (List.map (fun (l : library) -> l.archive_name) libraries))
+       in
 
-      let maybe_ocamlobjinfo_files =
-        Bos.OS.Dir.fold_contents ~dotfiles:true
-          (fun p acc ->
-            let is_ocamlobjinfo = Fpath.get_ext p = ".ocamlobjinfo" in
-            if is_ocamlobjinfo then p :: acc else acc)
-          [] path
-      in
-      match maybe_ocamlobjinfo_files with
-      | Error (`Msg msg) ->
-          failwith
-            ("FIXME: error traversing directories to find the ocamlobjinfo \
-              files: " ^ msg)
-      | Ok ocamlobjinfo_files ->
-          List.iter (process_ocamlobjinfo_file ~libraries) ocamlobjinfo_files;
-          let _ =
-            Format.eprintf "found archive_names: [%s]\n%!"
-              (String.concat ", "
-                 (List.map
-                    (fun (l : library) ->
-                      l.archive_name ^ "/" ^ String.concat "," l.modules)
-                    libraries))
-          in
-          { libraries }) *)
+       let maybe_ocamlobjinfo_files =
+         Bos.OS.Dir.fold_contents ~dotfiles:true
+           (fun p acc ->
+             let is_ocamlobjinfo = Fpath.get_ext p = ".ocamlobjinfo" in
+             if is_ocamlobjinfo then p :: acc else acc)
+           [] path
+       in
+       match maybe_ocamlobjinfo_files with
+       | Error (`Msg msg) ->
+           failwith
+             ("FIXME: error traversing directories to find the ocamlobjinfo \
+               files: " ^ msg)
+       | Ok ocamlobjinfo_files ->
+           List.iter (process_ocamlobjinfo_file ~libraries) ocamlobjinfo_files;
+           let _ =
+             Format.eprintf "found archive_names: [%s]\n%!"
+               (String.concat ", "
+                  (List.map
+                     (fun (l : library) ->
+                       l.archive_name ^ "/" ^ String.concat "," l.modules)
+                     libraries))
+           in
+           { libraries }) *)

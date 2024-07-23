@@ -497,7 +497,8 @@ let render_stats env nprocs =
       in
       inner (0, 0, 0, 0, 0, 0, 0, 0))
 
-let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers odoc_bin voodoo package_name blessed dune_style =
+let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
+    odoc_bin voodoo package_name blessed dune_style =
   Odoc.odoc := Bos.Cmd.v odoc_bin;
   let _ = Voodoo.find_universe_and_version "foo" in
   Eio_main.run @@ fun env ->
@@ -505,46 +506,41 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers o
   if verbose then Logs.set_level (Some Logs.Debug);
   Logs.set_reporter (Logs_fmt.reporter ());
   let () = Worker_pool.start_workers env sw nb_workers in
- 
+
   let all =
     if voodoo then
       match package_name with
       | Some p -> Voodoo.of_voodoo p blessed
       | None -> failwith "Need a package name for voodoo"
-    else match dune_style with
-    | Some dir ->
-      Dune_style.of_dune_build dir
-     | None ->
-      let libs =
-        if libs = [] then Ocamlfind.all ()
-        else libs
-      in    
-      let libs =
-        List.map Ocamlfind.sub_libraries libs
-        |> List.fold_left Util.StringSet.union Util.StringSet.empty
-      in
-      Packages.of_libs packages_dir libs in
+    else
+      match dune_style with
+      | Some dir -> Dune_style.of_dune_build dir
+      | None ->
+          let libs = if libs = [] then Ocamlfind.all () else libs in
+          let libs =
+            List.map Ocamlfind.sub_libraries libs
+            |> List.fold_left Util.StringSet.union Util.StringSet.empty
+          in
+          Packages.of_libs packages_dir libs
+  in
   let partial =
-    if voodoo
-    then
+    if voodoo then
       match Util.StringMap.to_list all with
-      | [ (_, p) ] -> 
-        let output_path = Fpath.(odoc_dir // p.mld_odoc_dir) in
-        Some output_path
-      | _ ->
-        failwith "Error, expecting singleton library in voodoo mode"
+      | [ (_, p) ] ->
+          let output_path = Fpath.(odoc_dir // p.mld_odoc_dir) in
+          Some output_path
+      | _ -> failwith "Error, expecting singleton library in voodoo mode"
     else None
   in
   Compile.init_stats all;
   let () =
     Eio.Fiber.both
       (fun () ->
-        let compiled = Compile.compile partial ~output_dir:odoc_dir ?linked_dir:odocl_dir all in
-        let linked = Compile.link compiled in
-        let odocl_dir = match odocl_dir with
-          | Some l -> l
-          | None -> odoc_dir
+        let compiled =
+          Compile.compile partial ~output_dir:odoc_dir ?linked_dir:odocl_dir all
         in
+        let linked = Compile.link compiled in
+        let odocl_dir = match odocl_dir with Some l -> l | None -> odoc_dir in
         let () = Compile.index ~odocl_dir all in
         let () = Compile.sherlodoc ~html_dir ~odocl_dir all in
         (* let sidebars = *)
@@ -584,7 +580,6 @@ let odocl_dir =
   let doc = "Directory in which the intermediate odocl files go" in
   Arg.(value & opt (some fpath_arg) None & info [ "odocl-dir" ] ~doc)
 
-
 let html_dir =
   let doc = "Directory in which the generated HTML files go" in
   Arg.(value & opt fpath_arg (Fpath.v "_html/") & info [ "html-dir" ] ~doc)
@@ -620,22 +615,24 @@ let voodoo =
 
 let package_name =
   let doc = "Name of package to process with voodoo" in
-  Arg.(value & opt (some string) None & info ["package"] ~doc)
+  Arg.(value & opt (some string) None & info [ "package" ] ~doc)
 
 let blessed =
   let doc = "Blessed" in
-  Arg.(value & flag & info ["blessed"] ~doc)
+  Arg.(value & flag & info [ "blessed" ] ~doc)
 
 let dune_style =
   let doc = "Dune style" in
-  Arg.(value & opt (some string) None & info ["dune-style"] ~doc)
-  
+  Arg.(value & opt (some string) None & info [ "dune-style" ] ~doc)
+
 let cmd =
   let doc = "Generate odoc documentation" in
   let info = Cmd.info "odoc_driver" ~doc in
   Cmd.v info
     Term.(
-      const run $ packages $ verbose $ packages_dir $ odoc_dir $ odocl_dir $ html_dir $ stats $ nb_workers $ odoc_bin $ voodoo $ package_name $ blessed $ dune_style)
+      const run $ packages $ verbose $ packages_dir $ odoc_dir $ odocl_dir
+      $ html_dir $ stats $ nb_workers $ odoc_bin $ voodoo $ package_name
+      $ blessed $ dune_style)
 
 (* let map = Ocamlfind.package_to_dir_map () in
    let _dirs = List.map (fun lib -> List.assoc lib map) deps in
