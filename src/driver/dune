@@ -13,5 +13,4 @@
   opam-format
   logs
   logs.fmt
-  result
   eio_main))
