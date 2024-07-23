@@ -517,7 +517,7 @@ examples below. They are:
 It can be applied to modules, module types, and types. See the {{!page-features.canonical}
 Language Features} page for more details
 
-The tag's content is then the rest of the line. It is also uninterpreted,
+The tag's content is read from the rest of the line. It is also uninterpreted,
 i.e., there shouldn't be any [odoc] markup.
 
 {3 Block Tags}
