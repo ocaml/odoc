@@ -558,13 +558,8 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
   ignore indexes
 
 let fpath_arg =
-  let parse s =
-    match Fpath.of_string s with
-    | Ok v -> Ok v
-    | Error (`Msg m) -> Error (`Msg m)
-  in
   let print ppf v = Fpath.pp ppf v in
-  Arg.conv (parse, print)
+  Arg.conv (Fpath.of_string, print)
 
 let odoc_dir =
   let doc = "Directory in which the intermediate odoc files go" in
@@ -617,7 +612,7 @@ let blessed =
 
 let dune_style =
   let doc = "Dune style" in
-  Arg.(value & opt (some string) None & info [ "dune-style" ] ~doc)
+  Arg.(value & opt (some fpath_arg) None & info [ "dune-style" ] ~doc)
 
 let cmd =
   let doc = "Generate odoc documentation" in

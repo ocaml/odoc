@@ -2,10 +2,7 @@
 
 let of_dune_build dir =
   let contents =
-    Bos.OS.Dir.fold_contents ~dotfiles:true
-      (fun p acc -> p :: acc)
-      []
-      Fpath.(v dir)
+    Bos.OS.Dir.fold_contents ~dotfiles:true (fun p acc -> p :: acc) [] dir
   in
   match contents with
   | Error _ -> Util.StringMap.empty
@@ -37,7 +34,7 @@ let of_dune_build dir =
             let cmtidir =
               Fpath.(path / Printf.sprintf ".%s.objs" libname / "byte")
             in
-            match Fpath.rem_prefix (Fpath.v dir) path with
+            match Fpath.rem_prefix dir path with
             | Some pkg_dir ->
                 ( pkg_dir,
                   Packages.Lib.v pkg_dir
