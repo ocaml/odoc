@@ -38,9 +38,6 @@ let find_universe_and_version pkg_name =
   | _ :: _ :: u :: _, [ version ] -> Ok (u, Fpath.to_string version)
   | _ -> Error (`Msg (Format.sprintf "Failed to find package %s" pkg_name))
 
-(* let read_package universe pkg version =
-   () *)
-
 let process_package pkg =
   let metas =
     List.filter
