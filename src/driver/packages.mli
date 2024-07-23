@@ -61,7 +61,8 @@ val pp_mld : Format.formatter -> mld -> unit
 
 type libty = {
   lib_name : string;
-  odoc_dir : Fpath.t; (** Relative to dir where all odoc files are, e.g. [_odoc/] by default *)
+  odoc_dir : Fpath.t;
+      (** Relative to dir where all odoc files are, e.g. [_odoc/] by default *)
   archive_name : string;
   modules : modulety list;
 }
@@ -71,7 +72,8 @@ type t = {
   version : string;
   libraries : libty list;
   mlds : mld list;
-  mld_odoc_dir : Fpath.t; (** Relative to dir where all odoc files are, e.g. [_odoc/] by default *)
+  mld_odoc_dir : Fpath.t;
+      (** Relative to dir where all odoc files are, e.g. [_odoc/] by default *)
   pkg_dir : Fpath.t;
   other_docs : Fpath.Set.t;
 }
@@ -86,6 +88,11 @@ val of_libs : Fpath.t option -> Util.StringSet.t -> set
 val parent_of_pkg : Fpath.t -> Fpath.t
 
 module Lib : sig
-
-  val v : Fpath.t -> string Util.StringMap.t -> string -> Fpath.t -> Fpath.t option -> libty list
+  val v :
+    Fpath.t ->
+    string Util.StringMap.t ->
+    string ->
+    Fpath.t ->
+    Fpath.t option ->
+    libty list
 end

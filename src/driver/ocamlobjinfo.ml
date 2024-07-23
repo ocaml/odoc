@@ -44,10 +44,13 @@ let get_source file srcdirs =
           in
           let name = Fpath.(filename (v name)) in
           let possibilities =
-            List.map (fun dir ->
-              List.map
-                (fun poss -> Fpath.(dir / poss))
-                (source_possibilities name)) srcdirs |> List.flatten
+            List.map
+              (fun dir ->
+                List.map
+                  (fun poss -> Fpath.(dir / poss))
+                  (source_possibilities name))
+              srcdirs
+            |> List.flatten
           in
           List.find_opt
             (fun f ->

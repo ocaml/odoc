@@ -136,11 +136,12 @@ let read_cmt ~make_root ~parent ~filename () =
       in
       let interface = cmt_info.cmt_interface_digest in
       (match cmt_info.cmt_interface_digest with
-      | None ->
-        (match cmt_info.cmt_source_digest with
-        | Some x -> (try Odoc_model.Names.set_unique_ident (Digest.to_hex x) with _ -> ())
-        | None ->
-          (try Odoc_model.Names.set_unique_ident name with _ -> ()))
+      | None -> (
+          match cmt_info.cmt_source_digest with
+          | Some x -> (
+              try Odoc_model.Names.set_unique_ident (Digest.to_hex x)
+              with _ -> ())
+          | None -> ( try Odoc_model.Names.set_unique_ident name with _ -> ()))
       | Some digest -> (
           try Odoc_model.Names.set_unique_ident (Digest.to_hex digest)
           with _ -> ()));
