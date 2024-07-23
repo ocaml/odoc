@@ -774,8 +774,8 @@ Note: A comment attached to a declaration shouldn't contain any heading.
 
 {2:synopsis Synopsis}
 
-A module's synopsis (a module type, a class, etc..) is the first
-paragraph of the {!preamble}, {e if} the preamble starts with a paragraph.
+A module's synopsis is the first paragraph of the {!preamble}, {e if} the preamble starts with a paragraph.
+This also applies to module types, classes, etc.
 
 It is rendered in [{!modules:...}] lists and after {{!page-features.expansion_aliases}expanded aliases}.
 
