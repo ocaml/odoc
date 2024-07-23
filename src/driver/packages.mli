@@ -95,5 +95,5 @@ val pp : Format.formatter -> t -> unit
 
 type set = t Util.StringMap.t
 
-(** Turns a set of libraries into a map from library name to package *)
 val of_libs : packages_dir:Fpath.t option -> Util.StringSet.t -> set
+(** Turns a set of libraries into a map from package name to package *)
