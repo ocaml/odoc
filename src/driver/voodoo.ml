@@ -71,7 +71,7 @@ let process_package pkg =
               | None -> None
               | Some rel_path ->
                   let id =
-                    Fpath.(Packages.parent_of_pkg (top_dir pkg) // rel_path)
+                    Fpath.(Packages.parent_of_pages (top_dir pkg) // rel_path)
                   in
                   let mld_parent_id =
                     id |> Fpath.parent |> Fpath.rem_empty_seg
@@ -168,7 +168,7 @@ let process_package pkg =
       libdirs_without_meta
   in
   Printf.eprintf "Found %d metas" (List.length metas);
-  let mld_odoc_dir = Packages.parent_of_pkg (top_dir pkg) in
+  let mld_odoc_dir = Packages.parent_of_pages (top_dir pkg) in
   let libraries = List.flatten libraries in
   let libraries = List.flatten extra_libraries @ libraries in
   {
