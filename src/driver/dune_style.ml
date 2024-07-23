@@ -34,13 +34,11 @@ let of_dune_build dir =
             let cmtidir =
               Fpath.(path / Printf.sprintf ".%s.objs" libname / "byte")
             in
-            match Fpath.rem_prefix dir path with
-            | Some pkg_dir ->
-                ( pkg_dir,
-                  Packages.Lib.v pkg_dir
-                    (Util.StringMap.singleton libname libname)
-                    libname path (Some cmtidir) )
-            | None -> failwith "Error")
+            let pkg_dir = Fpath.rem_prefix dir path |> Option.get in
+            ( pkg_dir,
+              Packages.Lib.v pkg_dir
+                (Util.StringMap.singleton libname libname)
+                libname path (Some cmtidir) ))
           libs
       in
       let packages =

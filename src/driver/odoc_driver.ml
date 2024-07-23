@@ -508,20 +508,22 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
   let () = Worker_pool.start_workers env sw nb_workers in
 
   let all =
-    if voodoo then
-      match package_name with
-      | Some p -> Voodoo.of_voodoo p blessed
-      | None -> failwith "Need a package name for voodoo"
-    else
-      match dune_style with
-      | Some dir -> Dune_style.of_dune_build dir
-      | None ->
-          let libs = if libs = [] then Ocamlfind.all () else libs in
-          let libs =
-            List.map Ocamlfind.sub_libraries libs
-            |> List.fold_left Util.StringSet.union Util.StringSet.empty
-          in
-          Packages.of_libs packages_dir libs
+    match (voodoo, package_name, dune_style, packages_dir) with
+    | true, Some p, None, None -> Voodoo.of_voodoo p blessed
+    | false, None, Some dir, None -> Dune_style.of_dune_build dir
+    | false, None, None, packages_dir ->
+        let libs = if libs = [] then Ocamlfind.all () else libs in
+        let libs =
+          List.map Ocamlfind.sub_libraries libs
+          |> List.fold_left Util.StringSet.union Util.StringSet.empty
+        in
+        Packages.of_libs packages_dir libs
+    | true, None, _, _ -> failwith "--voodoo requires --package-name"
+    | false, Some _, _, _ -> failwith "--package-name requires --voodoo"
+    | true, _, _, Some _ | false, _, Some _, Some _ ->
+        failwith "--packages-dir is only useful in opam mode"
+    | true, _, Some _, _ ->
+        failwith "--voodoo and --dune-style are mutually independent"
   in
   let partial =
     if voodoo then
