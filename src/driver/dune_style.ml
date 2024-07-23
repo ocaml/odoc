@@ -36,9 +36,9 @@ let of_dune_build dir =
             in
             let pkg_dir = Fpath.rem_prefix dir path |> Option.get in
             ( pkg_dir,
-              Packages.Lib.v pkg_dir
-                (Util.StringMap.singleton libname libname)
-                libname path (Some cmtidir) ))
+              Packages.Lib.v ~pkg_dir
+                ~libname_of_archive:(Util.StringMap.singleton libname libname)
+                ~pkg_name:libname ~dir:path ~cmtidir:(Some cmtidir) ))
           libs
       in
       let packages =
