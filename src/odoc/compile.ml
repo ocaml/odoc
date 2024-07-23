@@ -351,7 +351,12 @@ let compile_asset ~parent_id ~name ~output_dir =
   let output = Fs.File.create ~directory ~name in
   let digest = Digest.string name in
   let root =
-    Root.{ id = (id :> Paths.Identifier.OdocId.t); digest; file = Asset }
+    Root.
+      {
+        id = (id :> Paths.Identifier.OdocId.t);
+        digest;
+        file = Odoc_file.asset name;
+      }
   in
   let asset = Lang.Asset.{ name = id; root } in
   Odoc_file.save_asset output ~warnings:[] asset
