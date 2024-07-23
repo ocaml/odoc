@@ -185,6 +185,8 @@ let pp ppf v =
   List.iter (fun fp -> Format.fprintf ppf "%a\n" Fpath.pp fp) v.files;
   Format.fprintf ppf "]\n%!"
 
+let () = ignore pp
+
 let of_voodoo pkg_name blessed =
   let contents =
     Bos.OS.Dir.fold_contents ~dotfiles:true
