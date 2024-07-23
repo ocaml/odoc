@@ -537,7 +537,8 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
     Eio.Fiber.both
       (fun () ->
         let compiled =
-          Compile.compile partial ~output_dir:odoc_dir ?linked_dir:odocl_dir all
+          Compile.compile ?partial ~output_dir:odoc_dir ?linked_dir:odocl_dir
+            all
         in
         let linked = Compile.link compiled in
         let odocl_dir = match odocl_dir with Some l -> l | None -> odoc_dir in

@@ -104,7 +104,7 @@ let find_partials odoc_dir =
   | Ok h -> (h, tbl)
   | Error _ -> (* odoc_dir doesn't exist...? *) (Util.StringMap.empty, tbl)
 
-let compile partial ~output_dir ?linked_dir all =
+let compile ?partial ~output_dir ?linked_dir all =
   let linked_dir = Option.value linked_dir ~default:output_dir in
   let hashes = mk_byhash all in
   let other_hashes, tbl =
