@@ -744,7 +744,9 @@ module Fmt = struct
     | `SourceLocationMod p ->
         Format.fprintf ppf "%a#" (model_identifier c) (p :> id)
     | `AssetFile (p, name) ->
-        Format.fprintf ppf "%a/%s" (model_identifier c) (p :> id) name
+        Format.fprintf ppf "%a/%s" (model_identifier c)
+          (p :> id)
+          (AssetName.to_string name)
 
   let rec signature : config -> Format.formatter -> Signature.t -> unit =
    fun c ppf sg ->

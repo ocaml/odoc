@@ -36,6 +36,8 @@ module Names = struct
 
   let pagename = To_string PageName.to_string
 
+  let assetname = To_string AssetName.to_string
+
   let parametername = To_string ModuleName.to_string
 
   let defname = To_string DefName.to_string
@@ -77,7 +79,10 @@ module General_paths = struct
                 ((parent :> id_t option), name),
                 Pair (Option identifier, Names.pagename) )
         | `AssetFile (parent, name) ->
-            C ("`AssetFile", ((parent :> id_t), name), Pair (identifier, string))
+            C
+              ( "`AssetFile",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.assetname) )
         | `Root (parent, name) ->
             C
               ( "`Root",

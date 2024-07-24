@@ -32,7 +32,7 @@ module Identifier = struct
   type source_page = source_page_pv id
   (** @canonical Odoc_model.Paths.Identifier.SourcePage.t *)
 
-  type asset_file_pv = [ `AssetFile of page * string ]
+  type asset_file_pv = [ `AssetFile of page * AssetName.t ]
   (** The second argument is the filename.
 
     @canonical Odoc_model.Paths.Identifier.AssetFile.t_pv *)

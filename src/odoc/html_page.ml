@@ -58,7 +58,10 @@ let asset_documents parent_id children asset_paths =
           Error.raise_warning (Error.filename_only "asset is missing." name);
           None
       | Some path ->
-          let asset_id = Paths.Identifier.Mk.asset_file (parent_id, name) in
+          let asset_id =
+            Paths.Identifier.Mk.asset_file
+              (parent_id, Names.AssetName.make_std name)
+          in
           let url = Odoc_document.Url.Path.from_identifier asset_id in
           Some (Odoc_document.Types.Document.Asset { url; src = path }))
     paired_or_missing

@@ -61,7 +61,7 @@ module Identifier = struct
     | `SourceLocationMod x -> name_aux (x :> t)
     | `SourceLocationInternal (x, anchor) ->
         name_aux (x :> t) ^ "#" ^ LocalName.to_string anchor
-    | `AssetFile (_, name) -> name
+    | `AssetFile (_, name) -> AssetName.to_string name
 
   let rec is_hidden : t -> bool =
    fun x ->
@@ -143,7 +143,8 @@ module Identifier = struct
         LocalName.to_string name :: full_name_aux (parent :> t)
     | `SourceLocationMod name -> full_name_aux (name :> t)
     | `SourcePage (parent, name) -> name :: full_name_aux (parent :> t)
-    | `AssetFile (parent, name) -> name :: full_name_aux (parent :> t)
+    | `AssetFile (parent, name) ->
+        AssetName.to_string name :: full_name_aux (parent :> t)
 
   let fullname : [< t_pv ] id -> string list =
    fun n -> List.rev @@ full_name_aux (n :> t)
@@ -497,8 +498,8 @@ module Identifier = struct
         [> `LeafPage of ContainerPage.t option * PageName.t ] id =
       mk_parent_opt PageName.to_string "lp" (fun (p, n) -> `LeafPage (p, n))
 
-    let asset_file : Page.t * string -> AssetFile.t =
-      mk_parent (fun k -> k) "asset" (fun (p, n) -> `AssetFile (p, n))
+    let asset_file : Page.t * AssetName.t -> AssetFile.t =
+      mk_parent AssetName.to_string "asset" (fun (p, n) -> `AssetFile (p, n))
 
     let source_page (container_page, path) =
       let rec source_dir dir =

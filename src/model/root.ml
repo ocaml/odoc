@@ -94,7 +94,7 @@ let to_string t =
     | `AssetFile (parent, name) ->
         Format.fprintf fmt "%a::%s" pp
           (parent :> Paths.Identifier.OdocId.t)
-          name
+          (Names.AssetName.to_string name)
   in
 
   Format.asprintf "%a" pp t.id

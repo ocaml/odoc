@@ -253,7 +253,7 @@ module Identifier : sig
 
     val source_page : ContainerPage.t * string list -> SourcePage.t
 
-    val asset_file : Page.t * string -> AssetFile.t
+    val asset_file : Page.t * AssetName.t -> AssetFile.t
 
     val root :
       ContainerPage.t option * ModuleName.t ->
