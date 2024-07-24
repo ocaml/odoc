@@ -551,6 +551,10 @@ module rec Reference : sig
       type t = Paths_types.Resolved_reference.page
     end
 
+    module Asset : sig
+      type t = Paths_types.Resolved_reference.asset
+    end
+
     type t = Paths_types.Resolved_reference.any
 
     val identifier : t -> Identifier.t

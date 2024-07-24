@@ -1678,6 +1678,7 @@ module Fmt = struct
     | `Dot (parent, str) ->
         Format.fprintf ppf "%a.%s" (model_reference c) (parent :> t) str
     | `Page_path p -> model_reference_hierarchy c ppf p
+    | `Asset_path p -> model_reference_hierarchy c ppf p
     | `Module_path p -> model_reference_hierarchy c ppf p
     | `Any_path p -> model_reference_hierarchy c ppf p
     | `Module (parent, name) ->

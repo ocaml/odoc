@@ -76,6 +76,7 @@ module Reference = struct
     | `Root (n, _) -> n
     | `Dot (p, f) -> render_unresolved (p :> t) ^ "." ^ f
     | `Page_path p -> render_path p
+    | `Asset_path p -> render_path p
     | `Module_path p -> render_path p
     | `Any_path p -> render_path p
     | `Module (p, f) ->

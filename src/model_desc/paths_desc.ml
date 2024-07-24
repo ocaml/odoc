@@ -202,6 +202,7 @@ module General_paths = struct
       | `TModule -> C0 "`TModule"
       | `TModuleType -> C0 "`TModuleType"
       | `TPage -> C0 "`TPage"
+      | `TAsset -> C0 "`TAsset"
       | `TType -> C0 "`TType"
       | `TUnknown -> C0 "`TUnknown"
       | `TValue -> C0 "`TValue"
@@ -305,6 +306,7 @@ module General_paths = struct
       | `Root (x1, x2) -> C ("`Root", (x1, x2), Pair (string, reference_tag))
       | `Dot (x1, x2) -> C ("`Dot", ((x1 :> r), x2), Pair (reference, string))
       | `Page_path x -> C ("`Page_path", x, hierarchy_reference)
+      | `Asset_path x -> C ("`Asset_path", x, hierarchy_reference)
       | `Module_path x -> C ("`Module_path", x, hierarchy_reference)
       | `Any_path x -> C ("`Any_path", x, hierarchy_reference)
       | `Module (x1, x2) ->

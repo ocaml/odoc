@@ -939,6 +939,7 @@ let resolve_reference : _ -> Reference.t -> _ =
         resolve_label_parent_reference env parent >>= fun p ->
         L.in_label_parent env p name >>= resolved_with_text
     | `Root (name, (`TPage | `TChildPage)) -> Page.in_env env name >>= resolved2
+    | `Root (name, `TAsset) -> Error (`Find_by_name (`Asset_path, name))
     | `Dot (parent, name) -> resolve_reference_dot env parent name
     | `Root (name, `TConstructor) -> CS.in_env env name >>= resolved1
     | `Constructor (parent, name) ->
@@ -969,6 +970,7 @@ let resolve_reference : _ -> Reference.t -> _ =
         resolve_class_signature_reference env parent >>= fun p ->
         MV.in_class_signature env p name >>= resolved1
     | `Page_path p -> Path.page_in_env env p >>= resolved2
+    | `Asset_path (tag, p) -> Error (`Path_error (`Not_found, tag, p))
     | `Module_path p ->
         Path.module_in_env env p
         >>= module_lookup_to_signature_lookup env
