@@ -31,7 +31,6 @@ module Odoc_file = struct
 
   type page = { name : string; title : Comment.link_content option }
 
-
   type t =
     | Page of page
     | Compilation_unit of compilation_unit
@@ -47,7 +46,9 @@ module Odoc_file = struct
   let create_impl name = Impl name
 
   let name = function
-    | Page { name; _ } | Compilation_unit { name; _ } | Impl name | Asset name -> name
+    | Page { name; _ } | Compilation_unit { name; _ } | Impl name | Asset name
+      ->
+        name
 
   let hidden = function
     | Page _ | Impl _ | Asset _ -> false
