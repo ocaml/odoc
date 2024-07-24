@@ -1,5 +1,5 @@
 let package fmt (pkg : Packages.t) =
-  Format.fprintf fmt "{0 Package %s}\n" pkg.name;
+  Format.fprintf fmt "{0 Package %s}\n" pkg.pkgname.p_name;
   Format.fprintf fmt "{1 Libraries}\n";
   List.iter
     (fun (lib : Packages.libty) ->
