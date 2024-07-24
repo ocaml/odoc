@@ -24,6 +24,7 @@
 - Added a `--occurrences` argument to the `compile-index` command to output the
   number of occurrences of each entry of the index in the json output
   (@panglesd, #1076).
+- Added a `compile-asset` command (@EmileTrotignon, @panglesd, #1170)
 
 ### Changed
 
