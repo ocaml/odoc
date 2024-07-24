@@ -719,3 +719,11 @@ and source_tree_page_t =
       F ("digest", (fun t -> t.digest), Digest.t);
       F ("source_children", (fun t -> t.source_children), List identifier);
     ]
+
+and asset_t =
+  let open Lang.Asset in
+  Record
+    [
+      F ("name", (fun t -> t.name), identifier);
+      F ("root", (fun t -> t.root), root);
+    ]

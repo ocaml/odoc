@@ -73,6 +73,16 @@ let save_impl file ~warnings impl =
   save_unit file impl.Lang.Implementation.root
     { content = Impl_content impl; warnings }
 
+let save_asset file ~warnings asset =
+  let dir = Fs.File.dirname file in
+  let base = Fs.File.(to_string @@ basename file) in
+  let file =
+    if Astring.String.is_prefix ~affix:"asset-" base then file
+    else Fs.File.create ~directory:dir ~name:("asset-" ^ base)
+  in
+  let t = { content = Asset_content asset; warnings } in
+  save_unit file asset.root t
+
 let save_unit file ~warnings m =
   save_unit file m.Lang.Compilation_unit.root
     { content = Unit_content m; warnings }
@@ -117,13 +127,3 @@ let load_root file =
 let save_index dst idx = save_ dst (fun oc -> Marshal.to_channel oc idx [])
 
 let load_index file = load_ file (fun ic -> Ok (Marshal.from_channel ic))
-
-let save_asset file ~warnings impl =
-  let dir = Fs.File.dirname file in
-  let base = Fs.File.(to_string @@ basename file) in
-  let file =
-    if Astring.String.is_prefix ~affix:"asset-" base then file
-    else Fs.File.create ~directory:dir ~name:("asset-" ^ base)
-  in
-  let t = { content = Asset_content impl; warnings } in
-  save_ file (fun oc -> Marshal.to_channel oc t [])
