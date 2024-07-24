@@ -70,32 +70,35 @@ open Eio.Std
 
 type partial = (string * compiled) list * Packages.modulety Util.StringMap.t
 
-let unmarshal filename =
+let unmarshal filename : partial =
   let ic = open_in_bin (Fpath.to_string filename) in
-  let (v : partial) = Marshal.from_channel ic in
-  close_in ic;
-  v
+  Fun.protect
+    ~finally:(fun () -> close_in ic)
+    (fun () -> Marshal.from_channel ic)
 
 let marshal (v : partial) filename =
   let p = Fpath.parent filename in
   Util.mkdir_p p;
   let oc = open_out_bin (Fpath.to_string filename) in
-  Marshal.to_channel oc v [];
-  close_out oc
+  Fun.protect
+    ~finally:(fun () -> close_out oc)
+    (fun () -> Marshal.to_channel oc v [])
 
 let find_partials odoc_dir =
   let tbl = Hashtbl.create 1000 in
   let hashes_result =
-    Bos.OS.Dir.fold_contents ~dotfiles:false
+    Bos.OS.Dir.fold_contents ~dotfiles:false ~elements:`Dirs
       (fun p hashes ->
-        if Fpath.filename p = "index.m" then (
-          let tbl', hashes' = unmarshal p in
-          List.iter
-            (fun (k, v) ->
-              Hashtbl.replace tbl k (Promise.create_resolved (Ok v)))
-            tbl';
-          Util.StringMap.union (fun _x o1 _o2 -> Some o1) hashes hashes')
-        else hashes)
+        let index_m = Fpath.( / ) p "index.m" in
+        match Bos.OS.File.exists index_m with
+        | Ok true ->
+            let tbl', hashes' = unmarshal index_m in
+            List.iter
+              (fun (k, v) ->
+                Hashtbl.replace tbl k (Promise.create_resolved (Ok v)))
+              tbl';
+            Util.StringMap.union (fun _x o1 _o2 -> Some o1) hashes hashes'
+        | _ -> hashes)
       Util.StringMap.empty odoc_dir
   in
   match hashes_result with
