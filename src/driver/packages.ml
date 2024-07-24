@@ -1,5 +1,7 @@
 (* Packages *)
 
+type pkgdir = string * Fpath.t
+
 type dep = string * Digest.t
 
 type id = Odoc.id
@@ -32,7 +34,7 @@ type modulety = {
   m_intf : intf;
   m_impl : impl option;
   m_hidden : bool;
-  m_pkg_dir : Fpath.t;
+  m_pkg : pkgdir;
       (* The 'top dir' of a package, relative to [_odoc] or [_html] *)
 }
 
@@ -42,7 +44,7 @@ type mld = {
   mld_parent_id : id;
   mld_path : Fpath.t; (* Absolute or relative to cwd *)
   mld_deps : Fpath.t list;
-  mld_pkg_dir : Fpath.t;
+  mld_pkg : pkgdir;
       (* The 'top dir' of a package, relative to [_odoc] or [_html] *)
 }
 
@@ -61,20 +63,21 @@ type t = {
   libraries : libty list;
   mlds : mld list;
   mld_odoc_dir : Fpath.t; (* Relative to [odoc] dir *)
-  pkg_dir : Fpath.t;
+  pkgdir : pkgdir;
   other_docs : Fpath.Set.t;
 }
 
 let maybe_prepend_top top_dir dir =
   match top_dir with None -> dir | Some d -> Fpath.(d // dir)
 
-let pkg_dir top_dir pkg_name = maybe_prepend_top top_dir Fpath.(v pkg_name)
+let find_pkg top_dir pkg_name =
+  (pkg_name, maybe_prepend_top top_dir Fpath.(v pkg_name))
 
-let parent_of_lib pkg_dir lib_name = Fpath.(pkg_dir / "lib" / lib_name)
+let parent_of_lib (_, pkg_dir) lib_name = Fpath.(pkg_dir / "lib" / lib_name)
 
-let parent_of_pages pkg_dir = Fpath.(pkg_dir / "doc")
+let parent_of_pages (_, pkg_dir) = Fpath.(pkg_dir / "doc")
 
-let parent_of_src pkg_dir lib_name = Fpath.(pkg_dir / "src" / lib_name)
+let parent_of_src (_, pkg_dir) lib_name = Fpath.(pkg_dir / "src" / lib_name)
 
 module Module = struct
   type t = modulety
@@ -85,7 +88,7 @@ module Module = struct
 
   let is_hidden name = Astring.String.is_infix ~affix:"__" name
 
-  let vs pkg_dir lib_name libsdir cmtidir modules =
+  let vs pkgdir lib_name libsdir cmtidir modules =
     let dir = match cmtidir with None -> libsdir | Some dir -> dir in
     let mk m_name =
       let exists ext =
@@ -105,7 +108,7 @@ module Module = struct
             | _ -> None)
       in
       let mk_intf mif_path =
-        let mif_parent_id = parent_of_lib pkg_dir lib_name in
+        let mif_parent_id = parent_of_lib pkgdir lib_name in
         let mif_odoc_file =
           Fpath.(
             mif_parent_id
@@ -125,7 +128,7 @@ module Module = struct
         | Error _ -> failwith "bad deps"
       in
       let mk_impl mip_path =
-        let mip_parent_id = parent_of_lib pkg_dir lib_name in
+        let mip_parent_id = parent_of_lib pkgdir lib_name in
         let mip_odoc_file =
           Fpath.(
             mip_parent_id
@@ -148,7 +151,7 @@ module Module = struct
                   m "Found source file %a for %s" Fpath.pp src_path m_name);
               let src_name = Fpath.filename src_path in
               let src_id =
-                Fpath.(parent_of_src pkg_dir lib_name / src_name)
+                Fpath.(parent_of_src pkgdir lib_name / src_name)
                 |> Odoc.id_of_fpath
               in
               Some { src_path; src_id }
@@ -166,7 +169,7 @@ module Module = struct
       let m_hidden = is_hidden m_name in
       try
         let r (m_intf, m_impl) =
-          Some { m_name; m_intf; m_impl; m_hidden; m_pkg_dir = pkg_dir }
+          Some { m_name; m_intf; m_impl; m_hidden; m_pkg = pkgdir }
         in
         match state with
         | Some cmt, Some cmti -> r (mk_intf cmti, Some (mk_impl cmt))
@@ -184,7 +187,8 @@ module Module = struct
 end
 
 module Lib = struct
-  let v ~pkg_dir ~libname_of_archive ~pkg_name ~dir ~cmtidir =
+  let v ~pkgdir ~libname_of_archive ~dir ~cmtidir =
+    let pkg_name, _ = pkgdir in
     Logs.debug (fun m ->
         m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
     let dirs =
@@ -211,8 +215,8 @@ module Lib = struct
                   m "Defaulting to name of library: %s" archive_name);
               archive_name
           in
-          let modules = Module.vs pkg_dir lib_name dir cmtidir modules in
-          let odoc_dir = parent_of_lib pkg_dir lib_name in
+          let modules = Module.vs pkgdir lib_name dir cmtidir modules in
+          let odoc_dir = parent_of_lib pkgdir lib_name in
           Some { lib_name; odoc_dir; archive_name; modules }
         with _ ->
           Logs.err (fun m ->
@@ -335,8 +339,8 @@ let of_libs ~packages_dir libs =
         match rel_path with
         | None -> acc
         | Some rel_path ->
-            let pkg_dir = pkg_dir packages_dir pkg_name in
-            let id = Fpath.(parent_of_pages pkg_dir // rel_path) in
+            let pkgdir = find_pkg packages_dir pkg_name in
+            let id = Fpath.(parent_of_pages pkgdir // rel_path) in
             let mld_parent_id = id |> Fpath.parent |> Fpath.rem_empty_seg in
             let page_name = Fpath.(rem_ext mld_path |> filename) in
             let odoc_file =
@@ -350,7 +354,7 @@ let of_libs ~packages_dir libs =
               mld_parent_id = Odoc.id_of_fpath mld_parent_id;
               mld_path;
               mld_deps;
-              mld_pkg_dir = pkg_dir;
+              mld_pkg = pkgdir;
             }
             :: acc)
       odoc_pages []
@@ -369,11 +373,10 @@ let of_libs ~packages_dir libs =
           Logs.debug (fun m -> m "No package for dir %a\n%!" Fpath.pp dir);
           acc
       | Some pkg ->
-          let pkg_dir = pkg_dir packages_dir pkg.name in
+          let pkgdir = find_pkg packages_dir pkg.name in
 
           let libraries =
-            Lib.v ~pkg_dir ~libname_of_archive ~pkg_name:pkg.name ~dir
-              ~cmtidir:None
+            Lib.v ~pkgdir ~libname_of_archive ~dir ~cmtidir:None
           in
           let libraries =
             List.filter
@@ -404,7 +407,7 @@ let of_libs ~packages_dir libs =
                       mlds = update_mlds pkg.mlds libraries;
                     }
               | None ->
-                  let mld_odoc_dir = parent_of_pages pkg_dir in
+                  let mld_odoc_dir = parent_of_pages pkgdir in
                   Some
                     {
                       name = pkg.name;
@@ -413,7 +416,7 @@ let of_libs ~packages_dir libs =
                       mlds;
                       mld_odoc_dir;
                       other_docs;
-                      pkg_dir;
+                      pkgdir;
                     })
             acc)
     dirs Util.StringMap.empty
