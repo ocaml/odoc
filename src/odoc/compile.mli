@@ -50,6 +50,7 @@ val resolve_parent_page :
     and its children as a list of reference. *)
 
 val mk_id : string -> Identifier.ContainerPage.t
+val path_of_id : string -> Comment.Identifier.Id.container_page -> Fpath.t
 
 val compile :
   resolver:Resolver.t ->
@@ -59,5 +60,3 @@ val compile :
   Fpath.t ->
   (unit, [> msg ]) result
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)
-
-val compile_asset : parent_id:string -> name:string -> output_dir:string -> unit

@@ -345,7 +345,7 @@ end
 
 module Compile_asset = struct
   let compile_asset parent_id name output_dir =
-    Odoc_odoc.Compile.compile_asset ~parent_id ~name ~output_dir
+    Odoc_odoc.Asset.compile ~parent_id ~name ~output_dir
 
   let output_dir =
     let doc = "Output file directory. " in
@@ -362,14 +362,14 @@ module Compile_asset = struct
         & opt (some string) None
         & info ~docs ~docv:"NAME" ~doc [ "name" ])
     in
-    let parent_id_opt =
+    let parent_id =
       let doc = "Parent id." in
       Arg.(
         required
         & opt (some string) None
         & info ~docs ~docv:"PARENT" ~doc [ "parent-id" ])
     in
-    Term.(const compile_asset $ parent_id_opt $ name_opt $ output_dir)
+    Term.(const compile_asset $ parent_id $ name_opt $ output_dir)
 
   let info ~docs =
     let man =
