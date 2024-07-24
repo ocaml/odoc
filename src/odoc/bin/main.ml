@@ -355,7 +355,7 @@ module Compile_asset = struct
       & info ~docs ~docv:"PATH" ~doc [ "output-dir" ])
 
   let cmd =
-    let name_opt =
+    let asset_name =
       let doc = "Name of the asset." in
       Arg.(
         required
@@ -369,7 +369,7 @@ module Compile_asset = struct
         & opt (some string) None
         & info ~docs ~docv:"PARENT" ~doc [ "parent-id" ])
     in
-    Term.(const compile_asset $ parent_id $ name_opt $ output_dir)
+    Term.(const compile_asset $ parent_id $ asset_name $ output_dir)
 
   let info ~docs =
     let man =
