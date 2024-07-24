@@ -98,7 +98,7 @@ let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax input
   | Unit_content odoctree ->
       documents_of_unit ~warnings_options ~source ~syntax ~renderer ~extra
         ~filename odoctree
-  | Asset_content _ -> Ok []
+  | Asset_content _ -> Ok [] (* TODO *)
 
 let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
     input =
@@ -110,6 +110,7 @@ let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
   | `Module m ->
       documents_of_unit ~warnings_options ~source:None ~filename:"" ~syntax
         ~renderer ~extra m
+  | `Asset _ -> Ok [] (* TODO *)
 
 let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
     =
