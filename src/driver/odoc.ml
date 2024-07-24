@@ -9,9 +9,7 @@ let index_filename = "index.odoc-index"
 
 type compile_deps = { digest : Digest.t; deps : (string * Digest.t) list }
 
-(* This is the just-built odoc binary *)
-let default = "./_build/default/src/odoc/bin/main.exe"
-let odoc = ref (Cmd.v default)
+let odoc = ref (Cmd.v "odoc")
 
 let compile_deps f =
   let cmd = Cmd.(!odoc % "compile-deps" % Fpath.to_string f) in

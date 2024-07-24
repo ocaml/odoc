@@ -499,7 +499,7 @@ let render_stats env nprocs =
 
 let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
     odoc_bin voodoo package_name blessed dune_style =
-  Odoc.odoc := Bos.Cmd.v odoc_bin;
+  Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
   let _ = Voodoo.find_universe_and_version "foo" in
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
@@ -594,7 +594,7 @@ let nb_workers =
 
 let odoc_bin =
   let doc = "Odoc binary to use" in
-  Arg.(value & opt string Odoc.default & info [ "odoc" ] ~doc)
+  Arg.(value & opt (some string) None & info [ "odoc" ] ~doc)
 
 let packages_dir =
   let doc = "Packages directory under which packages should be output." in
