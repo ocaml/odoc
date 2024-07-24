@@ -21,6 +21,8 @@ type class_type_lookup_result = Resolved.ClassType.t * Component.ClassType.t
 
 type page_lookup_result = Resolved.Page.t * Odoc_model.Lang.Page.t
 
+type asset_lookup_result = Resolved.Asset.t * Odoc_model.Lang.Asset.t
+
 type type_lookup_result =
   [ `T of datatype_lookup_result
   | `C of class_lookup_result
@@ -231,6 +233,10 @@ module Path = struct
 
   let page_in_env env p : page_lookup_result ref_result =
     Env.lookup_page_by_path p env |> handle_lookup_error p >>= fun p ->
+    Ok (`Identifier p.name, p)
+
+  let asset_in_env env p : asset_lookup_result ref_result =
+    Env.lookup_asset_by_path p env |> handle_lookup_error p >>= fun p ->
     Ok (`Identifier p.name, p)
 
   let module_in_env env p : module_lookup_result ref_result =
@@ -626,6 +632,15 @@ module Page = struct
   let of_element _env (`Page (id, page)) : t = (`Identifier id, page)
 end
 
+module Asset = struct
+  type t = asset_lookup_result
+
+  let in_env env name : t ref_result =
+    match Env.lookup_asset_by_name name env with
+    | Ok p -> Ok (`Identifier p.Odoc_model.Lang.Asset.name, p)
+    | Error `Not_found -> Error (`Lookup_by_name (`Page (* TODO *), name))
+end
+
 module LP = struct
   (** Label parent *)
 
@@ -939,7 +954,7 @@ let resolve_reference : _ -> Reference.t -> _ =
         resolve_label_parent_reference env parent >>= fun p ->
         L.in_label_parent env p name >>= resolved_with_text
     | `Root (name, (`TPage | `TChildPage)) -> Page.in_env env name >>= resolved2
-    | `Root (name, `TAsset) -> Error (`Find_by_name (`Asset_path, name))
+    | `Root (name, `TAsset) -> Asset.in_env env name >>= resolved2
     | `Dot (parent, name) -> resolve_reference_dot env parent name
     | `Root (name, `TConstructor) -> CS.in_env env name >>= resolved1
     | `Constructor (parent, name) ->
@@ -970,7 +985,7 @@ let resolve_reference : _ -> Reference.t -> _ =
         resolve_class_signature_reference env parent >>= fun p ->
         MV.in_class_signature env p name >>= resolved1
     | `Page_path p -> Path.page_in_env env p >>= resolved2
-    | `Asset_path (tag, p) -> Error (`Path_error (`Not_found, tag, p))
+    | `Asset_path a -> Path.asset_in_env env a >>= resolved2
     | `Module_path p ->
         Path.module_in_env env p
         >>= module_lookup_to_signature_lookup env

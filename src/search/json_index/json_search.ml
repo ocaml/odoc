@@ -39,6 +39,7 @@ let rec of_id x =
   match x.iv with
   | `Root (_, name) -> [ ret "Root" (ModuleName.to_string name) ]
   | `Page (_, name) -> [ ret "Page" (PageName.to_string name) ]
+  | `AssetFile (_, name) -> [ ret "Asset" (AssetName.to_string name) ]
   | `LeafPage (_, name) -> [ ret "Page" (PageName.to_string name) ]
   | `Module (parent, name) ->
       ret "Module" (ModuleName.to_string name) :: of_id (parent :> t)
@@ -76,7 +77,7 @@ let rec of_id x =
   | `Label (parent, name) ->
       ret "Label" (LabelName.to_string name) :: of_id (parent :> t)
   | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
-  | `SourceLocationInternal _ | `AssetFile _ ->
+  | `SourceLocationInternal _ ->
       [ `Null ]
 (* TODO *)
 
