@@ -100,4 +100,6 @@ let from_odoc ~resolver ~warnings_options input output =
       >>= fun (m, warnings) ->
       Odoc_file.save_unit output ~warnings m;
       Ok (`Module m)
-  | Asset_content _ -> failwith "todo"
+  | Asset_content a ->
+      Odoc_file.save_asset output ~warnings:[] a;
+      Ok (`Asset a)
