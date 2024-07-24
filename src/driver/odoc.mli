@@ -5,7 +5,6 @@ val id_of_fpath : Fpath.t -> id
 
 val index_filename : string
 
-val default : string
 val odoc : Bos.Cmd.t ref
 
 type compile_deps = { digest : Digest.t; deps : (string * Digest.t) list }
