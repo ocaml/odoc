@@ -27,6 +27,13 @@ module Paths = Odoc_model.Paths
 
 module Compat = struct
 #if OCAML_VERSION >= (4, 14, 0)
+  (** this is the type on which physical equality is meaningful *)
+  type repr_type_node = Types.transient_expr
+
+   (** repr has morally type [type_expr -> repr_type_node] in all OCaml
+       versions *)
+  let repr x = Transient_expr.repr x
+
   let get_desc = Types.get_desc
   let get_row_name = Types.row_name
   let row_field_repr = Types.row_field_repr
@@ -35,14 +42,17 @@ module Compat = struct
   let row_closed = Types.row_closed
   let row_fields = Types.row_fields
   let field_public = Types.Fpublic
-  let repr x = x
   let self_type = Btype.self_type
   let csig_self x = x.Types.csig_self
   let row_repr x = x
   let concr_mem = Types.Meths.mem
   let csig_concr x = x.Types.csig_meths
+  let eq_type = Types.eq_type
+  let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [ty])
 #else
-  let get_desc x = x.Types.desc
+  type repr_type_node = Types.type_expr
+  let repr = Btype.repr
+  let get_desc x = (repr x).Types.desc
   let get_row_name x = x.Types.row_name
   let row_field_repr = Btype.row_field_repr
   let field_kind_repr = Btype.field_kind_repr
@@ -50,14 +60,21 @@ module Compat = struct
   let row_closed x = x.Types.row_closed
   let row_fields x = x.Types.row_fields
   let field_public = Types.Fpresent
-  let repr = Btype.repr
   let self_type = Ctype.self_type
   let csig_self x = Btype.repr x.Types.csig_self
   let row_repr = Btype.row_repr
   let concr_mem = Types.Concr.mem
   let csig_concr x = x.Types.csig_concr
+  let eq_type x y = x == y || repr x == repr y
+
+  (** Create a new node pointing to [ty] that is printed in the same way as
+      [ty]*)
+  let invisible_wrap ty =
+    Btype.(newty2 generic_level (Ttuple [ty]))
 #endif
 end
+
+let proxy ty = Compat.(repr (Btype.proxy ty))
 
 let opt_map f = function
   | None -> None
@@ -87,7 +104,10 @@ let read_label lbl =
 
 (* Handle type variable names *)
 
-let used_names = ref []
+(** To identify equal type node for type variables, we need a map from the
+    representative type node to names. Otherwise, equivalent variables would end
+    up with distinct names *)
+let used_names : (Compat.repr_type_node * string) list ref = ref []
 let name_counter = ref 0
 let reserved_names = ref []
 
@@ -119,12 +139,12 @@ let fresh_name base =
   done;
   !current_name
 
-let name_of_type (ty : Types.type_expr) =
+let name_of_type_repr (ty : Compat.repr_type_node) =
   try
     List.assq ty !used_names
   with Not_found ->
     let base =
-      match Compat.get_desc ty with
+      match ty.desc with
       | Tvar (Some name) | Tunivar (Some name) -> name
       | _ -> next_name ()
     in
@@ -132,12 +152,14 @@ let name_of_type (ty : Types.type_expr) =
     if name <> "_" then used_names := (ty, name) :: !used_names;
     name
 
+let name_of_type ty = name_of_type_repr (Compat.repr ty)
+
 let remove_names tyl =
   used_names := List.filter (fun (ty,_) -> not (List.memq ty tyl)) !used_names
 
 (* Handle recursive types and shared row variables *)
 
-let aliased = ref []
+let aliased: Compat.repr_type_node list ref = ref []
 let used_aliases = ref []
 
 let reset_aliased () = aliased := []; used_aliases := []
@@ -149,20 +171,21 @@ let aliasable (ty : Types.type_expr) =
   | Tvar _ | Tunivar _ | Tpoly _ -> false
   | _ -> true
 
-let add_alias ty =
-  let px = Btype.proxy ty in
+let add_alias_proxy px =
   if not (List.memq px !aliased) then begin
     aliased := px :: !aliased;
-    match Compat.get_desc px with
+    match px.desc with
     | Tvar name | Tunivar name -> reserve_name name
     | _ -> ()
   end
 
-let used_alias (px : Types.type_expr) = List.memq px !used_aliases
+let add_alias ty = add_alias_proxy (proxy ty)
 
-let use_alias (px : Types.type_expr) = used_aliases := px :: !used_aliases
+let used_alias (px : Compat.repr_type_node) = List.memq px !used_aliases
 
-let visited_rows = ref []
+let use_alias (px : Compat.repr_type_node) = used_aliases := px :: !used_aliases
+
+let visited_rows: Compat.repr_type_node list ref = ref []
 
 let reset_visited_rows () = visited_rows := []
 
@@ -191,9 +214,8 @@ let namable_row row =
 
 let mark_type ty =
   let rec loop visited ty =
-    let ty = Compat.repr ty in
-    let px = Btype.proxy ty in
-    if List.memq px visited && aliasable ty then add_alias px else
+    let px = proxy ty in
+    if List.memq px visited && aliasable ty then add_alias_proxy px else
       let visited = px :: visited in
       match Compat.get_desc ty with
       | Tvar name -> reserve_name name
@@ -204,7 +226,7 @@ let mark_type ty =
       | Tconstr(_, tyl, _) ->
           List.iter (loop visited) tyl
       | Tvariant row ->
-          if is_row_visited px then add_alias px else
+          if is_row_visited px then add_alias_proxy px else
            begin
             if not (Compat.static_row_repr row) then visit_row px;
             match Compat.get_row_name row with
@@ -214,7 +236,7 @@ let mark_type ty =
                 Btype.iter_row (loop visited) row
            end
       | Tobject (fi, nm) ->
-          if is_row_visited px then add_alias px else
+          if is_row_visited px then add_alias_proxy px else
            begin
             visit_object ty px;
             match !nm with
@@ -268,31 +290,34 @@ let mark_value_description vd =
   mark_type vd.val_type
 
 let mark_type_parameter param =
-  add_alias param;
+  let px = proxy param in
+  add_alias_proxy px;
   mark_type param;
-  if aliasable param then use_alias (Btype.proxy param)
+  if aliasable param then use_alias px
 
 #if OCAML_VERSION<(4,13,0)
-let tsubst x = Tsubst x
 let tvar_none ty = ty.desc <- Tvar None
 #elif OCAML_VERSION < (4,14,0)
-let tsubst x = Tsubst(x,None)
 let tvar_none ty = Types.Private_type_expr.set_desc ty (Tvar None)
 #else
-let tsubst x = Tsubst(x,None)
 let tvar_none ty = Types.Transient_expr.(set_desc (coerce ty) (Tvar None))
 #endif
 
-let prepare_type_parameters params manifest =
+let wrap_constrained_params tyl =
   let params =
     List.fold_left
-      (fun params param ->
-        let param = Compat.repr param in
-        if List.memq param params then Btype.newgenty (tsubst param) :: params
-        else param :: params)
-      [] params
-  in
-  let params = List.rev params in
+      (fun tyl ty ->
+        if List.exists (Compat.eq_type ty) tyl
+        then  Compat.invisible_wrap ty :: tyl
+        else ty :: tyl)
+      (* Two parameters might be identical due to a constraint but we need to
+         print them differently in order to make the output syntactically valid.
+         We use [Ttuple [ty]] because it is printed as [ty]. *)
+      [] tyl
+  in List.rev params
+
+let prepare_type_parameters params manifest =
+  let params = wrap_constrained_params params in
   begin match manifest with
     | Some ty ->
         let vars = Ctype.free_variables ty in
@@ -366,22 +391,22 @@ let mark_exception ext =
 let rec mark_class_type params = function
   | Cty_constr (_, tyl, cty) ->
       let sty = Compat.self_type cty in
-      if is_row_visited (Btype.proxy sty)
+      if is_row_visited (proxy sty)
       || List.exists aliasable params
       || List.exists (Ctype.deep_occur sty) tyl
       then mark_class_type params cty
       else List.iter mark_type tyl
   | Cty_signature sign ->
       let sty = Compat.csig_self sign in
-      let px = Btype.proxy sty in
-      if is_row_visited px then add_alias sty
+      let px = proxy sty in
+      if is_row_visited px then add_alias_proxy px
       else visit_row px;
       let (fields, _) =
         Ctype.flatten_fields (Ctype.object_fields sign.csig_self)
       in
       List.iter (fun (_, _, ty) -> mark_type ty) fields;
       Vars.iter (fun _ (_, _, ty) -> mark_type ty) sign.csig_vars;
-      if is_aliased sty && aliasable sty then use_alias px
+      if is_aliased px && aliasable sty then use_alias px
   | Cty_arrow (_, ty, cty) ->
       mark_type ty;
       mark_class_type params cty
@@ -398,8 +423,7 @@ let mark_class_declaration cld =
 
 let rec read_type_expr env typ =
   let open TypeExpr in
-  let typ = Compat.repr typ in
-  let px = Btype.proxy typ in
+  let px = proxy typ in
   if used_alias px then Var (name_of_type typ)
   else begin
     let alias =
@@ -418,7 +442,7 @@ let rec read_type_expr env typ =
       | Tarrow(lbl, arg, res, _) ->
           let arg =
             if Btype.is_optional lbl then
-              match Compat.get_desc (Compat.repr arg) with
+              match Compat.get_desc arg with
               | Tconstr(_option, [arg], _) -> read_type_expr env arg
               | _ -> assert false
             else read_type_expr env arg
@@ -439,7 +463,7 @@ let rec read_type_expr env typ =
       | Tpoly (typ, []) -> read_type_expr env typ
       | Tpoly (typ, tyl) ->
           let tyl = List.map Compat.repr tyl in
-          let vars = List.map name_of_type tyl in
+          let vars = List.map name_of_type_repr tyl in
           let typ = read_type_expr env typ in
             remove_names tyl;
             Poly(vars, typ)
@@ -540,8 +564,7 @@ and read_row env _px row =
 and read_object env fi nm =
   let open TypeExpr in
   let open TypeExpr.Object in
-  let fi = Compat.repr fi in
-  let px = Btype.proxy fi in
+  let px = proxy fi in
   if used_alias px then Var (name_of_type fi)
   else begin
     use_alias px;
@@ -816,14 +839,14 @@ let read_instance_variable env parent (name, mutable_, virtual_, typ) =
     ClassSignature.InstanceVariable {id; doc; mutable_; virtual_; type_}
 
 let read_self_type sty =
-  let sty = Compat.repr sty in
-    if not (is_aliased sty) then None
-    else Some (TypeExpr.Var (name_of_type (Btype.proxy sty)))
+  let px = proxy sty in
+  if not (is_aliased px) then None
+  else Some (TypeExpr.Var (name_of_type_repr px))
 
 let rec read_class_signature env parent params =
   let open ClassType in function
   | Cty_constr(p, _, cty) ->
-      if is_row_visited (Btype.proxy (Compat.self_type cty))
+      if is_row_visited (proxy (Compat.self_type cty))
       || List.exists aliasable params
       then read_class_signature env parent params cty
       else begin
@@ -902,7 +925,7 @@ let rec read_class_type env parent params =
   | Cty_arrow(lbl, arg, cty) ->
       let arg =
         if Btype.is_optional lbl then
-          match Compat.get_desc (Compat.repr arg) with
+          match Compat.get_desc arg with
           | Tconstr(path, [arg], _)
             when OCamlPath.same path Predef.path_option ->
               read_type_expr env arg
