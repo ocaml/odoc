@@ -23,4 +23,11 @@ https://github\.com/ocaml/odoc/issues/101
 .UE 
  is not fixed\.
 .nf 
+.sp 
+\f[CB]val\fR repeat : \f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR \f[CB]\->\fR \f[CB]'c\fR * \f[CB]'d\fR * \f[CB]'e\fR * \f[CB]'f\fR
+.fi 
+.br 
+.ti +2
+Renders as val repeat : 'a -> 'b -> 'c * 'd * 'e * 'f before https://github\.com/ocaml/odoc/pull/1173
+.nf 
 
