@@ -57,6 +57,9 @@
 - Fix wrong links to standalone comments in search results (#1118, @panglesd)
 - Remove duplicated or unwanted comments (@Julow, #1133)
   This could happen with inline includes.
+- Fix misprinting of type variables from ml files for OCaml 4.14 and later
+  (multiple occurences of the same type variable could be named differently)
+  (@octachron, #1173)
 
 
 # 2.4.0
