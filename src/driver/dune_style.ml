@@ -1,10 +1,5 @@
 (* Dune build tree *)
 
-(* Map lib names to package names. *)
-let mk_pkgname ~dir libname path =
-  let p_dir = Fpath.rem_prefix dir path |> Option.get in
-  { Packages.p_name = libname; p_dir }
-
 let of_dune_build dir =
   let contents =
     Bos.OS.Dir.fold_contents ~dotfiles:true (fun p acc -> p :: acc) [] dir
@@ -39,27 +34,28 @@ let of_dune_build dir =
             let cmtidir =
               Fpath.(path / Printf.sprintf ".%s.objs" libname / "byte")
             in
-            let pkgname = mk_pkgname ~dir libname path in
-            ( pkgname,
-              Packages.Lib.v ~pkgname
+            (* Map lib names to package names. *)
+            let pkgdir = (libname, Fpath.rem_prefix dir path |> Option.get) in
+            ( pkgdir,
+              Packages.Lib.v ~pkgdir
                 ~libname_of_archive:(Util.StringMap.singleton libname libname)
                 ~dir:path ~cmtidir:(Some cmtidir) ))
           libs
       in
       let packages =
         List.filter_map
-          (fun (pkgname, lib) ->
+          (fun (pkgdir, lib) ->
             match lib with
             | [ lib ] ->
-                (* Accept only one library per package for now. *)
                 Some
                   ( lib.Packages.lib_name,
                     {
-                      Packages.version = "1.0";
+                      Packages.name = lib.Packages.lib_name;
+                      version = "1.0";
                       libraries = [ lib ];
                       mlds = [];
                       mld_odoc_dir = Fpath.v lib.Packages.lib_name;
-                      pkgname;
+                      pkgdir;
                       other_docs = Fpath.Set.empty;
                     } )
             | _ -> None)
