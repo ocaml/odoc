@@ -106,7 +106,7 @@ end
 module type B = A
 ]}
 
-For these simple module-type declarations, where the right-hand side is just a
+For these simple [module type] declarations, where the right-hand side is just a
 path, [odoc] treats them as module aliases and doesn’t produce an expansion.
 This example is rendered {{!Odoc_examples.Expansion.ModuleTypeAliases}here}.
 
@@ -350,7 +350,7 @@ have no destination. This example is rendered {{!Odoc_examples.Expansion.TypeSub
 The OCaml construct [module type of] allows the type of a module to be
 recovered. As usual, when OCaml performs this operation, it only retains
 the simplified signature, stripped of comments, includes, and more
-complex module-type expressions. As with the previous sections, [odoc]
+complex [module type] expressions. As with the previous sections, [odoc]
 tries a little harder to keep track of these things and also of the
 fact that the signature came from a [module type of] expression.
 
@@ -544,7 +544,7 @@ written by the author, they’re assumed to point to the correct destination.
 
 {2 Fragment Resolution}
 
-Fragments are relative paths that appear in module-type expressions when
+Fragments are relative paths that appear in [module type] expressions when
 adding equations or substituting types or modules. For example:
 
 {[
