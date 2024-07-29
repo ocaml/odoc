@@ -112,7 +112,7 @@ This example is rendered {{!Odoc_examples.Expansion.ModuleTypeAliases}here}.
 
 When strengthening, OCaml turns modules into aliases of the original
 module, but nothing is done to module types. In contrast, [odoc] replaces
-module types with 'aliases' to the originals, too. These are not expanded, hence this is important for reducing the size of the output.
+module types with 'aliases' of the originals, too. These are not expanded, hence this is important for reducing the size of the output.
 
 The following examples use [module type of struct include ... end] to
 obtain the strengthened signature of [A] (see the {{!module_type_of}[Module Type Of]}
