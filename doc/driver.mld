@@ -93,7 +93,7 @@ Using [odoc] is a three-phase process:
 {ol {- Compilation: odoc compile
 }}
 
-This takes as input either [.mld] files containing pure [odoc] markup, or the output from the compiler in the form of [.cmti], [.cmt], or [.cmi] files (in order of preference). For [.mld] files, this step simply translates them into [odoc]'s internal format and writes the corresponding file. For example, given the input [foobar.mld], [odoc] will output [page-foobar.odoc]. There are no dependencies for compiling [.mld] files beyond the parent as outlined above.
+This takes as input either [.mld] files containing pure [odoc] markup or the output from the compiler in the form of [.cmti], [.cmt], or [.cmi] files (in order of preference). For [.mld] files, this step simply translates them into [odoc]'s internal format and writes the corresponding file. For example, given the input [foobar.mld], [odoc] will output [page-foobar.odoc]. There are no dependencies for compiling [.mld] files beyond the parent as outlined above.
 
 For modules, compilation is the point where [odoc] performs some initial expansion and resolution operations, a process that usually introduces dependencies. For a given input [/path/to/file.cmti], it will output the file [/path/to/file.odoc] unless the [-o] option is used to override the output file. If there were [.cmi] dependencies required for OCaml to compile a particular module, then there will be equivalent [.odoc] dependencies needed for the [odoc compile] step. [odoc] will search for these dependencies in the paths specified with the [-I] directive on compilation. [odoc] provides a command to help with this: [odoc compile-deps].
 
