@@ -23,12 +23,12 @@ type compiled = {
 
 let mk_byhash (pkgs : Packages.t Util.StringMap.t) =
   Util.StringMap.fold
-    (fun pkgname pkg acc ->
+    (fun pkg_name pkg acc ->
       List.fold_left
         (fun acc (lib : Packages.libty) ->
           List.fold_left
             (fun acc (m : Packages.modulety) ->
-              Util.StringMap.add m.m_intf.mif_hash (pkgname, m) acc)
+              Util.StringMap.add m.m_intf.mif_hash (pkg_name, m) acc)
             acc lib.modules)
         acc pkg.Packages.libraries)
     pkgs Util.StringMap.empty
@@ -121,8 +121,8 @@ let compile ?partial ~output_dir ?linked_dir all =
   let pkg_args =
     let docs, libs =
       Util.StringMap.fold
-        (fun pkgname (pkg : Packages.t) (docs, libs) ->
-          let doc = (pkgname, Fpath.(output_dir // pkg.mld_odoc_dir)) in
+        (fun pkg_name (pkg : Packages.t) (docs, libs) ->
+          let doc = (pkg_name, Fpath.(output_dir // pkg.mld_odoc_dir)) in
           let lib =
             List.map
               (fun lib ->
@@ -307,7 +307,7 @@ let link : compiled list -> _ =
   in
   Fiber.List.map link compiled |> List.concat
 
-let index_one ~odocl_dir pkgname pkg =
+let index_one ~odocl_dir pkg_name pkg =
   let dir = pkg.Packages.pkg_dir in
   let output_file = Fpath.(odocl_dir // dir / Odoc.index_filename) in
   let libs =
@@ -316,7 +316,7 @@ let index_one ~odocl_dir pkgname pkg =
       pkg.Packages.libraries
   in
   Odoc.compile_index ~json:false ~output_file ~libs
-    ~docs:[ (pkgname, Fpath.(odocl_dir // pkg.mld_odoc_dir)) ]
+    ~docs:[ (pkg_name, Fpath.(odocl_dir // pkg.mld_odoc_dir)) ]
     ()
 
 let index ~odocl_dir pkgs = Util.StringMap.iter (index_one ~odocl_dir) pkgs
