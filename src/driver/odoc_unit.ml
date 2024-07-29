@@ -19,7 +19,8 @@ type 'a unit = {
 type intf_extra = { hidden : bool; hash : string; deps : intf unit list }
 and intf = [ `Intf of intf_extra ]
 
-type impl = [ `Impl ]
+type impl_extra = { src_id : Odoc.id; src_path : Fpath.t }
+type impl = [ `Impl of impl_extra ]
 
 type mld = [ `Mld ]
 
@@ -112,15 +113,33 @@ let of_packages ~output_dir ~linked_dir (pkgs : Packages.t list) : t list =
     let open Fpath in
     match impl.mip_src_info with
     | None -> None
-    | Some _ ->
+    | Some { src_path } ->
         let rel_dir = pkg.Packages.pkg_dir / "lib" / libname in
         let odoc_dir = output_dir // rel_dir in
         let parent_id = rel_dir |> Odoc.id_of_fpath in
         let filename = impl.mip_path |> Fpath.rem_ext |> Fpath.basename in
-        let odoc_file = odoc_dir / (filename ^ ".odoc") in
-        let odocl_file = linked_dir // rel_dir / (filename ^ ".odocl") in
+        let odoc_file = odoc_dir / ("impl-" ^ filename ^ ".odoc") in
+        let odocl_file =
+          linked_dir // rel_dir / ("impl-" ^ filename ^ ".odocl")
+        in
         let input_file = impl.mip_path in
-        let kind = `Impl in
+        let src_name = Fpath.filename src_path in
+        let src_id =
+          Fpath.(pkg.pkg_dir / "src" / libname / src_name) |> Odoc.id_of_fpath
+        in
+        let deps =
+          List.filter_map
+            (fun (_name, hash) ->
+              match Util.StringMap.find_opt hash hashtable with
+              | None -> None
+              | Some (pkg, lib, mod_) ->
+                  let result = of_intf mod_.m_hidden pkg lib mod_.m_intf in
+                  Hashtbl.add cache mod_.m_intf.mif_hash result;
+                  Some result)
+            impl.mip_deps
+        in
+        let include_dirs = List.map (fun u -> u.odoc_dir) deps in
+        let kind = `Impl { src_id; src_path } in
         Some
           {
             output_dir;
@@ -131,7 +150,7 @@ let of_packages ~output_dir ~linked_dir (pkgs : Packages.t list) : t list =
             odoc_file;
             odocl_file;
             pkg_args;
-            include_dirs = [];
+            include_dirs;
             kind;
           }
   in

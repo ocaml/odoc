@@ -19,7 +19,8 @@ type 'a unit = {
 type intf_extra = { hidden : bool; hash : string; deps : intf unit list }
 and intf = [ `Intf of intf_extra ]
 
-type impl = [ `Impl ]
+type impl_extra = { src_id : Odoc.id; src_path : Fpath.t }
+type impl = [ `Impl of impl_extra ]
 
 type mld = [ `Mld ]
 

@@ -12,7 +12,11 @@ val pp_intf : Format.formatter -> intf -> unit
 
 type src_info = { src_path : Fpath.t }
 
-type impl = { mip_path : Fpath.t; mip_src_info : src_info option }
+type impl = {
+  mip_path : Fpath.t;
+  mip_src_info : src_info option;
+  mip_deps : dep list;
+}
 
 val pp_impl : Format.formatter -> impl -> unit
 

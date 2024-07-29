@@ -93,7 +93,7 @@ let compile ?partial ~output_dir ?linked_dir:_ (all : Odoc_unit.t list) =
         match unit with
         | { kind = `Intf _; _ } as intf ->
             (intf :: intf_units, impl_units, page_units)
-        | { kind = `Impl; _ } as impl ->
+        | { kind = `Impl _; _ } as impl ->
             (intf_units, impl :: impl_units, page_units)
         | { kind = `Mld; _ } as mld ->
             (intf_units, impl_units, mld :: page_units))
@@ -183,8 +183,9 @@ let compile ?partial ~output_dir ?linked_dir:_ (all : Odoc_unit.t list) =
   let _compiled_mlds = Fiber.List.map compile_mld mld_units in
   let compile_impl (unit : Odoc_unit.impl Odoc_unit.unit) =
     let includes = Fpath.Set.of_list unit.include_dirs in
-    Odoc.compile ~output_dir:unit.output_dir ~input_file:unit.input_file
-      ~includes ~parent_id:unit.parent_id;
+    let source_id = match unit.kind with `Impl src -> src.src_id in
+    Odoc.compile_impl ~output_dir:unit.output_dir ~input_file:unit.input_file
+      ~includes ~parent_id:unit.parent_id ~source_id;
     Atomic.incr Stats.stats.compiled_impls
   in
   let _compiled_impls = Fiber.List.map compile_impl impl_units in
@@ -223,7 +224,7 @@ let link : compiled list -> _ =
         (match c.kind with
         | `Intf _ -> Atomic.incr Stats.stats.linked_units
         | `Mld -> Atomic.incr Stats.stats.linked_mlds
-        | `Impl -> Atomic.incr Stats.stats.linked_impls);
+        | `Impl _ -> Atomic.incr Stats.stats.linked_impls);
         c
   in
   Fiber.List.map link compiled
@@ -271,6 +272,11 @@ let html_generate output_dir (* ~odocl_dir *) linked =
    fun l ->
     match l.kind with
     | `Intf { hidden = true; _ } -> ()
+    | `Impl { src_path; _ } ->
+        Odoc.html_generate ~search_uris:[] ?index:None
+          ~output_dir:(Fpath.to_string output_dir)
+          ~input_file:l.odocl_file ~source:src_path ();
+        Atomic.incr Stats.stats.generated_units
     | _ ->
         (* let pkg_dir = l. in *)
         (* let search_uris = [ Sherlodoc.db_js_file pkg_dir; Sherlodoc.js_file ] in *)

@@ -10,7 +10,11 @@ let pp_intf fmt i = Format.fprintf fmt "intf: %a" Fpath.pp i.mif_path
 
 type src_info = { src_path : Fpath.t }
 
-type impl = { mip_path : Fpath.t; mip_src_info : src_info option }
+type impl = {
+  mip_path : Fpath.t;
+  mip_src_info : src_info option;
+  mip_deps : dep list;
+}
 
 let pp_impl fmt i = Format.fprintf fmt "impl: %a" Fpath.pp i.mip_path
 
@@ -101,7 +105,12 @@ module Module = struct
                   m "Found source file %a for %s" Fpath.pp src_path m_name);
               Some { src_path }
         in
-        { mip_src_info; mip_path }
+        let mip_deps =
+          match Odoc.compile_deps mip_path with
+          | Ok { digest = _; deps } -> deps
+          | Error _ -> failwith "bad deps"
+        in
+        { mip_src_info; mip_path; mip_deps }
       in
       let state = (exists "cmt", exists "cmti") in
 
