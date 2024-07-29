@@ -110,7 +110,7 @@ For these simple module-type declarations, where the right-hand side is just a
 path, [odoc] treats them as module aliases and doesn’t produce an expansion.
 This example is rendered {{!Odoc_examples.Expansion.ModuleTypeAliases}here}.
 
-When strengthening, OCaml turns modules into aliases to the original
+When strengthening, OCaml turns modules into aliases of the original
 module, but nothing is done to module types. In contrast, [odoc] replaces
 module types with 'aliases' to the originals, too. These are not expanded, hence this is important for reducing the size of the output.
 
