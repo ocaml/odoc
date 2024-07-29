@@ -70,8 +70,8 @@ let compile_impl ~output_dir ~input_file:file ~includes ~parent_id ~source_id =
 let doc_args docs =
   let open Cmd in
   List.fold_left
-    (fun acc (pkgname, path) ->
-      let s = Format.asprintf "%s:%a" pkgname Fpath.pp path in
+    (fun acc (pkg_name, path) ->
+      let s = Format.asprintf "%s:%a" pkg_name Fpath.pp path in
       v "-P" % s %% acc)
     Cmd.empty docs
 
