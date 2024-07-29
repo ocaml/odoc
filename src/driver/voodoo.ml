@@ -12,9 +12,9 @@ type pkg = {
 
 let prep_path = ref "prep"
 
-let pkgdir pkg : Packages.pkgdir =
-  if pkg.blessed then (pkg.name, Fpath.(v "p" / pkg.name / pkg.version))
-  else (pkg.name, Fpath.(v "u" / pkg.universe / pkg.name / pkg.version))
+let top_dir pkg =
+  if pkg.blessed then Fpath.(v "p" / pkg.name / pkg.version)
+  else Fpath.(v "u" / pkg.universe / pkg.name / pkg.version)
 
 (* Use output from Voodoo Prep as input *)
 
@@ -47,7 +47,6 @@ let process_package pkg =
       pkg.files
   in
 
-  let pkgdir = pkgdir pkg in
   let pkg_path =
     Fpath.(v "prep" / "universes" / pkg.universe / pkg.name / pkg.version)
   in
@@ -72,7 +71,7 @@ let process_package pkg =
               | None -> None
               | Some rel_path ->
                   let id =
-                    Fpath.(Packages.parent_of_pages pkgdir // rel_path)
+                    Fpath.(Packages.parent_of_pages (top_dir pkg) // rel_path)
                   in
                   let mld_parent_id =
                     id |> Fpath.parent |> Fpath.rem_empty_seg
@@ -90,7 +89,7 @@ let process_package pkg =
                       mld_parent_id = Odoc.id_of_fpath mld_parent_id;
                       mld_path = Fpath.(pkg_path // p);
                       mld_deps;
-                      mld_pkg = pkgdir;
+                      mld_pkg_dir = top_dir pkg;
                     })
         | _ -> None)
       pkg.files
@@ -138,8 +137,8 @@ let process_package pkg =
           (List.concat_map
              (fun directory ->
                Format.eprintf "Processing directory: %a\n%!" Fpath.pp directory;
-               Packages.Lib.v ~pkgdir ~libname_of_archive ~dir:directory
-                 ~cmtidir:None)
+               Packages.Lib.v ~pkg_dir:(top_dir pkg) ~libname_of_archive
+                 ~pkg_name:pkg.name ~dir:directory ~cmtidir:None)
              Fpath.(Set.to_list directories)))
       metas
   in
@@ -162,13 +161,14 @@ let process_package pkg =
       (fun libdir ->
         Logs.debug (fun m ->
             m "Processing directory without META: %a" Fpath.pp libdir);
-        Packages.Lib.v ~pkgdir ~libname_of_archive:Util.StringMap.empty
+        Packages.Lib.v ~pkg_dir:(top_dir pkg)
+          ~libname_of_archive:Util.StringMap.empty ~pkg_name:pkg.name
           ~dir:Fpath.(pkg_path // libdir)
           ~cmtidir:None)
       libdirs_without_meta
   in
   Printf.eprintf "Found %d metas" (List.length metas);
-  let mld_odoc_dir = Packages.parent_of_pages pkgdir in
+  let mld_odoc_dir = Packages.parent_of_pages (top_dir pkg) in
   let libraries = List.flatten libraries in
   let libraries = List.flatten extra_libraries @ libraries in
   {
@@ -178,7 +178,7 @@ let process_package pkg =
     libraries;
     mlds;
     other_docs = Fpath.Set.empty;
-    pkgdir;
+    pkg_dir = top_dir pkg;
   }
 
 let pp ppf v =

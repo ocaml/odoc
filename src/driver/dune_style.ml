@@ -34,17 +34,16 @@ let of_dune_build dir =
             let cmtidir =
               Fpath.(path / Printf.sprintf ".%s.objs" libname / "byte")
             in
-            (* Map lib names to package names. *)
-            let pkgdir = (libname, Fpath.rem_prefix dir path |> Option.get) in
-            ( pkgdir,
-              Packages.Lib.v ~pkgdir
+            let pkg_dir = Fpath.rem_prefix dir path |> Option.get in
+            ( pkg_dir,
+              Packages.Lib.v ~pkg_dir
                 ~libname_of_archive:(Util.StringMap.singleton libname libname)
-                ~dir:path ~cmtidir:(Some cmtidir) ))
+                ~pkg_name:libname ~dir:path ~cmtidir:(Some cmtidir) ))
           libs
       in
       let packages =
         List.filter_map
-          (fun (pkgdir, lib) ->
+          (fun (pkg_dir, lib) ->
             match lib with
             | [ lib ] ->
                 Some
@@ -55,7 +54,7 @@ let of_dune_build dir =
                       libraries = [ lib ];
                       mlds = [];
                       mld_odoc_dir = Fpath.v lib.Packages.lib_name;
-                      pkgdir;
+                      pkg_dir;
                       other_docs = Fpath.Set.empty;
                     } )
             | _ -> None)

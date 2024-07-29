@@ -1,8 +1,5 @@
 (** {1 OCaml compilation unit} *)
 
-type pkgdir = string * Fpath.t
-(** A package's name and path. *)
-
 (** {2 Interface part} *)
 
 type dep = string * Digest.t
@@ -41,7 +38,7 @@ type modulety = {
   m_intf : intf;
   m_impl : impl option;
   m_hidden : bool;
-  m_pkg : pkgdir;
+  m_pkg_dir : Fpath.t;
 }
 
 (** {1 Standalone pages units} *)
@@ -52,7 +49,7 @@ type mld = {
   mld_parent_id : id;
   mld_path : Fpath.t;
   mld_deps : Fpath.t list;
-  mld_pkg : pkgdir;
+  mld_pkg_dir : Fpath.t;
 }
 
 val pp_mld : Format.formatter -> mld -> unit
@@ -70,13 +67,14 @@ type libty = {
   modules : modulety list;
 }
 
-val parent_of_pages : pkgdir -> Fpath.t
-(** Given a [pkgdir], returns a [mld_odoc_dir]. *)
+val parent_of_pages : Fpath.t -> Fpath.t
+(** Given a [pkg_dir], returns a [mld_odoc_dir]. *)
 
 module Lib : sig
   val v :
-    pkgdir:pkgdir ->
+    pkg_dir:Fpath.t ->
     libname_of_archive:string Util.StringMap.t ->
+    pkg_name:string ->
     dir:Fpath.t ->
     cmtidir:Fpath.t option ->
     libty list
@@ -89,7 +87,7 @@ type t = {
   mlds : mld list;
   mld_odoc_dir : Fpath.t;
       (** Relative to dir where all odoc files are, e.g. [_odoc/] by default *)
-  pkgdir : pkgdir;
+  pkg_dir : Fpath.t;
   other_docs : Fpath.Set.t;
 }
 

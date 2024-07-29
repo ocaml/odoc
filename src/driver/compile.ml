@@ -17,17 +17,18 @@ type compiled = {
   include_dirs : Fpath.Set.t;
   impl : impl option;
   pkg_args : pkg_args;
-  pkgdir : Packages.pkgdir;
+  pkg_name : string;
+  pkg_dir : Fpath.t;
 }
 
 let mk_byhash (pkgs : Packages.t Util.StringMap.t) =
   Util.StringMap.fold
-    (fun _pkgname pkg acc ->
+    (fun pkgname pkg acc ->
       List.fold_left
         (fun acc (lib : Packages.libty) ->
           List.fold_left
             (fun acc (m : Packages.modulety) ->
-              Util.StringMap.add m.m_intf.mif_hash m acc)
+              Util.StringMap.add m.m_intf.mif_hash (pkgname, m) acc)
             acc lib.modules)
         acc pkg.Packages.libraries)
     pkgs Util.StringMap.empty
@@ -68,7 +69,8 @@ let init_stats (pkgs : Packages.t Util.StringMap.t) =
 
 open Eio.Std
 
-type partial = (string * compiled) list * Packages.modulety Util.StringMap.t
+type partial =
+  (string * compiled) list * (string * Packages.modulety) Util.StringMap.t
 
 let unmarshal filename : partial =
   let ic = open_in_bin (Fpath.to_string filename) in
@@ -140,7 +142,7 @@ let compile ?partial ~output_dir ?linked_dir all =
     | None ->
         Logs.debug (fun m -> m "Error locating hash: %s" hash);
         Error Not_found
-    | Some modty ->
+    | Some (package_name, modty) ->
         let deps = modty.m_intf.mif_deps in
         let odoc_file = Fpath.(output_dir // modty.m_intf.mif_odoc_file) in
         let odocl_file = Fpath.(linked_dir // modty.m_intf.mif_odocl_file) in
@@ -200,7 +202,8 @@ let compile ?partial ~output_dir ?linked_dir all =
             include_dirs = includes;
             impl;
             pkg_args;
-            pkgdir = modty.m_pkg;
+            pkg_dir = modty.m_pkg_dir;
+            pkg_name = package_name;
           }
   in
 
@@ -226,7 +229,7 @@ let compile ?partial ~output_dir ?linked_dir all =
   in
   let result =
     Util.StringMap.fold
-      (fun _pkgname (pkg : Packages.t) acc ->
+      (fun package_name (pkg : Packages.t) acc ->
         Logs.debug (fun m ->
             m "Package %s mlds: [%a]" pkg.name
               Fmt.(list ~sep:sp Packages.pp_mld)
@@ -255,7 +258,8 @@ let compile ?partial ~output_dir ?linked_dir all =
               include_dirs;
               impl = None;
               pkg_args;
-              pkgdir = mld.mld_pkg;
+              pkg_dir = mld.mld_pkg_dir;
+              pkg_name = package_name;
             }
             :: acc)
           acc pkg.mlds)
@@ -267,11 +271,7 @@ let compile ?partial ~output_dir ?linked_dir all =
   | None -> ());
   result
 
-type linked = {
-  output_file : Fpath.t;
-  src : Fpath.t option;
-  pkgdir : Packages.pkgdir;
-}
+type linked = { output_file : Fpath.t; src : Fpath.t option; pkg_dir : Fpath.t }
 
 let link : compiled list -> _ =
  fun compiled ->
@@ -279,9 +279,9 @@ let link : compiled list -> _ =
    fun c ->
     let includes = Fpath.Set.add c.odoc_output_dir c.include_dirs in
     let link input_file output_file =
-      let { pkg_args = { libs; docs }; pkgdir = current_package, _; _ } = c in
-      Odoc.link ~input_file ~output_file ~includes ~libs ~docs ~current_package
-        ()
+      let { pkg_args = { libs; docs }; pkg_name; _ } = c in
+      Odoc.link ~input_file ~output_file ~includes ~libs ~docs
+        ~current_package:pkg_name ()
     in
     let impl =
       match c.impl with
@@ -290,7 +290,7 @@ let link : compiled list -> _ =
               m "Linking impl: %a -> %a" Fpath.pp impl_odoc Fpath.pp impl_odocl);
           link impl_odoc impl_odocl;
           Atomic.incr Stats.stats.linked_impls;
-          [ { pkgdir = c.pkgdir; output_file = impl_odocl; src = Some src } ]
+          [ { pkg_dir = c.pkg_dir; output_file = impl_odocl; src = Some src } ]
       | None -> []
     in
     match c.m with
@@ -303,12 +303,12 @@ let link : compiled list -> _ =
         (match c.m with
         | Module _ -> Atomic.incr Stats.stats.linked_units
         | Mld _ -> Atomic.incr Stats.stats.linked_mlds);
-        { output_file = c.odocl_file; src = None; pkgdir = c.pkgdir } :: impl
+        { output_file = c.odocl_file; src = None; pkg_dir = c.pkg_dir } :: impl
   in
   Fiber.List.map link compiled |> List.concat
 
 let index_one ~odocl_dir pkgname pkg =
-  let _, dir = pkg.Packages.pkgdir in
+  let dir = pkg.Packages.pkg_dir in
   let output_file = Fpath.(odocl_dir // dir / Odoc.index_filename) in
   let libs =
     List.map
@@ -322,9 +322,10 @@ let index_one ~odocl_dir pkgname pkg =
 let index ~odocl_dir pkgs = Util.StringMap.iter (index_one ~odocl_dir) pkgs
 
 let sherlodoc_index_one ~html_dir ~odocl_dir _ pkg_content =
-  let _, pkg_dir = pkg_content.Packages.pkgdir in
-  let inputs = [ Fpath.(odocl_dir // pkg_dir / Odoc.index_filename) ] in
-  let dst = Fpath.(html_dir // Sherlodoc.db_js_file pkg_dir) in
+  let inputs =
+    [ Fpath.(odocl_dir // pkg_content.Packages.pkg_dir / Odoc.index_filename) ]
+  in
+  let dst = Fpath.(html_dir // Sherlodoc.db_js_file pkg_content.pkg_dir) in
   let dst_dir, _ = Fpath.split_base dst in
   Util.mkdir_p dst_dir;
   Sherlodoc.index ~format:`js ~inputs ~dst ()
@@ -340,17 +341,15 @@ let sherlodoc ~html_dir ~odocl_dir pkgs =
   let inputs =
     pkgs |> Util.StringMap.bindings
     |> List.map (fun (_pkgname, pkg) ->
-           let _, pkg_dir = pkg.Packages.pkgdir in
-           Fpath.(odocl_dir // pkg_dir / Odoc.index_filename))
+           Fpath.(odocl_dir // pkg.Packages.pkg_dir / Odoc.index_filename))
   in
   Sherlodoc.index ~format ~inputs ~dst ()
 
 let html_generate output_dir ~odocl_dir linked =
   let html_generate : linked -> unit =
    fun l ->
-    let _, pkg_dir = l.pkgdir in
-    let search_uris = [ Sherlodoc.db_js_file pkg_dir; Sherlodoc.js_file ] in
-    let index = Some Fpath.(odocl_dir // pkg_dir / Odoc.index_filename) in
+    let search_uris = [ Sherlodoc.db_js_file l.pkg_dir; Sherlodoc.js_file ] in
+    let index = Some Fpath.(odocl_dir // l.pkg_dir / Odoc.index_filename) in
     Odoc.html_generate ~search_uris ?index
       ~output_dir:(Fpath.to_string output_dir)
       ~input_file:l.output_file ?source:l.src ();
