@@ -25,7 +25,7 @@ location of a module, module type, or type can be specified.
 The biggest user of module aliases is Dune's {{:https://dune.readthedocs.io/en/stable/reference/dune/library.html#library}wrapped libraries}.
 This feature allows Dune to produce a library whose interface is exposed entirely
 though a single top-level module. It does this by mangling the names of the
-real implementation modules. Then it generates the single top-level module that
+real implementation modules and generating the single top-level module that
 simply contains aliases to the these implementation modules. With [odoc]'s
 canonical modules feature, all references to the implementation modules are
 rewritten to point at the top-level module aliases instead. Please
