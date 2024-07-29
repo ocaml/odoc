@@ -8,7 +8,7 @@ complete and comprehensive use of [odoc], see the {{: https://github.com/ocaml-d
 the package docs for
 {{: https://ocaml.org/packages} ocaml.org/packages}. The information in this page is specific to
 [odoc] version 2.3 or later. For earlier
-versions, see the [driver.md] or [driver.mld] files in the corresponding source distribution.
+versions, see the [driver.md] or [driver.mld] file in the corresponding source distribution.
 
 First, we need to initialise MDX with some libraries and helpful values:
 
