@@ -1,4 +1,4 @@
-{0 Markup Differences from OCamldoc}
+{0 Markup Differences From OCamldoc}
 
 The canonical description of the markup that [odoc] understands is in {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#s%3Aocamldoc-comments}this section}
 of the OCaml reference manual. The eventual aim is to support the in-code markup
@@ -13,20 +13,20 @@ can be seen rendered by [odoc] {{!Odoc_examples.Markup.Foo}here}.
 The following describes the changes between what [odoc] understands and what’s in the OCaml manual.
 
 - Heading levels are more restrictive. In the manual, it suggests any whole number is acceptable. In [odoc],
-  similarly to the HTML spec, we allow headings from 1-5, and heading level [0] for the title
+  similarly to the HTML spec, we allow headings from 1-5. Heading level [0] is for the title
   of [.mld] files. [odoc] emits a warning for heading levels outside this range and caps them.
 
 {3 Omissions}
-- Comments describing class inheritance are not rendered ({{:https://github.com/ocaml/odoc/issues/574}github issue}).
+- Comments describing class inheritance are not rendered ({{:https://github.com/ocaml/odoc/issues/574}GitHub issue}).
 - [odoc] handles ambiguous documentation comments as the compiler does (see {{:https://caml.inria.fr/pub/docs/manual-ocaml/doccomments.html}here})
   rather than treating them as the OCamldoc manual suggests.
-- [odoc] doesn’t ignore tags that don't make sense (e.g., [@param] tags on instance variables are rendered) ({{:https://github.com/ocaml/odoc/issues/575}github issue})
-- {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#ss:ocamldoc-formatting}Alignment elements} are not handled ([{C text}], [{L text}] and [{R text}]) ({{:https://github.com/ocaml/odoc/issues/541}github issue})
-- [odoc] does not recognise {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sss:ocamldoc-html-tags}html tags embedded in comments} ({{:https://github.com/ocaml/odoc/issues/576}github issue})
-- [{!indexlist}] is not supported ({{:https://github.com/ocaml/odoc/issues/577}github issue})
+- [odoc] doesn’t ignore tags that don't make sense (e.g., [@param] tags on instance variables are rendered) ({{:https://github.com/ocaml/odoc/issues/575}GitHub issue}).
+- {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#ss:ocamldoc-formatting}Alignment elements} are not handled ([{C text}], [{L text}], and [{R text}]) ({{:https://github.com/ocaml/odoc/issues/541}GitHub issue}).
+- [odoc] does not recognise {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sss:ocamldoc-html-tags}HTML tags embedded in comments} ({{:https://github.com/ocaml/odoc/issues/576}GitHub issue}).
+- [{!indexlist}] is not supported ({{:https://github.com/ocaml/odoc/issues/577}GitHub issue}).
 - The first paragraph is used for synopses instead of the {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sss:ocamldoc-preamble}first sentence}.
   Synopses are used when rendering declarations (of modules, classes, etc.) and [{!modules:...}] lists.
-  An other difference is that documentation starting with a heading or something that is not a paragraph won't have a synopsis ({{:https://github.com/ocaml/odoc/pull/643}github issue}).
+  Another difference is that documentation starting with a heading or something that is not a paragraph won't have a synopsis ({{:https://github.com/ocaml/odoc/pull/643}GitHub issue}).
 
 {3 Improvements}
 - [odoc] supports writing mathematics and tables with a specific syntax.
@@ -34,10 +34,10 @@ The following describes the changes between what [odoc] understands and what’s
 - Built-in support for standalone [.mld] files. These are documents using the OCamldoc markup, but they’re rendered as distinct pages.
 - Structured output: [odoc] can produce output in a structured directory tree rather a set of files.
 - A few extra tags are supported:
-  + [@returns] is a synonym for [@return]
-  + [@raises] is a synonym for [@raise]
-  + [@open] and [@closed] and [@inline] are hints for how 'included' signatures should be rendered
-  + [@canonical] allows a definition of a [module], [module type] or [type] to be marked as canonically elsewhere. 
+  + [@returns] is a synonym for [@return].
+  + [@raises] is a synonym for [@raise].
+  + [@open] and [@closed] and [@inline] are hints for how 'included' signatures should be rendered.
+  + [@canonical] allows a definition of a [module], [module type], or [type] to be marked as canonically elsewhere. 
 
 {2 Reference Syntax}
 [odoc] has a far more powerful reference resolution mechanism than OCamldoc. While it supports the mechanism in OCamldoc used for disambiguating between different types of references,
@@ -46,25 +46,25 @@ where the reference manual suggests the syntax [{!type:Foo.Bar.t}] to designate 
 comments would be [{!Foo.Bar.type-t}] and [{!Foo.Bar.val-t}]. This allows [odoc] to disambiguate when there are other ambiguous elements within the path. For example, we can
 distinguish between a type or [value t] within a module or module type with the same name: [{!module-Foo.module-type-Bar.type-t}] or [{!module-type-Foo.module-Bar.val-t}].
 
-Additionally we support extra annotations:
-- [module-type] is a replacement for [modtype]
-- [class-type] is a replacement for [classtype]
-- [exn] is recognised as [exception]
-- [extension] refers to a type extension
-- [extension-decl] refers to the declaration point of an extension constructor
-- [field] is a replacement for [recfield]
-- [instance-variable] refers to instance variables
-- [label] refers to labels introduced in anchors
-- [page] refers to [.mld] pages as outlined above
-- [value] is recognised as [val]
+Additionally, we support extra annotations:
+- [module-type] is a replacement for [modtype].
+- [class-type] is a replacement for [classtype].
+- [exn] is recognised as [exception].
+- [extension] refers to a type extension.
+- [extension-decl] refers to the declaration point of an extension constructor.
+- [field] is a replacement for [recfield].
+- [instance-variable] refers to instance variables.
+- [label] refers to labels introduced in anchors.
+- [page] refers to [.mld] pages as outlined above.
+- [value] is recognised as [val].
 
-Moreover, [odoc] adds support for referencing of polymorphic variants in type
+Moreover, [odoc] adds support for referencing polymorphic variants in type
 aliases such as [type t = [ `A ]]. The [constructor] annotation is extended for
 polymorphic variants.
 
-{3 Referencing items containing hyphens or dots}
+{3 Referencing Items Containing Hyphens or Dots}
 
-If it is necessary to reference a reference that contains hyphens or dots - e.g. if you have a file [docs-with-dashes.mld] or
-[docs.with.dots.mld], to reference them use quotation marks in the reference. For the previous two examples, the references
+If it is necessary to reference a reference that contains hyphens or dots (e.g., if you have a file [docs-with-dashes.mld] or
+[docs.with.dots.mld]) use quotation marks in the reference. For the previous two examples, the references
 would be [{!page-"docs-with-dashes"}] and [{!page-"docs.with.dots"}].
 
