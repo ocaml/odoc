@@ -512,7 +512,7 @@ type unit = {
 For [odoc] libraries, we infer the implementation and interface source file path
 from the library name. We list them in a file, passed to [odoc source-tree], to
 generate [src-source.odoc]. This file contains the source hierarchy. It will be
-linked and passed to [html-generate] just as other pages and compilation units.
+linked and passed to [html-generate], just as other pages and compilation units.
 
 It is used as the [source-parent] for all units for which we could provide
 sources.
