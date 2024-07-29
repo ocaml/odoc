@@ -176,7 +176,7 @@ The above functor can be seen rendered {{!Odoc_examples.Expansion.Functors.Funct
 If part of your module signature comes from an include of another
 module or module type, [odoc] keeps track of this and can render
 the included items in a clearly delimited and collapsible way. 
-For example:
+For example, given the following:
 
 {[
 module type ToBeIncluded = sig
