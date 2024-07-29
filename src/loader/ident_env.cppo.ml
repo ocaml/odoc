@@ -744,7 +744,7 @@ module Path = struct
 #if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `DotT(read_module env p, TypeName.make_std (strip_hash s))
 #else
-    | Path.Pdot(p, s, _) -> `DotT(read_module env p, strip_hash s)
+    | Path.Pdot(p, s, _) -> `DotT(read_module env p, TypeName.make_std (strip_hash s))
 #endif
     | Path.Papply(_, _)-> assert false
 #if OCAML_VERSION >= (5,1,0)

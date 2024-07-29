@@ -903,7 +903,7 @@ let resolve_reference :
     Reference.t ->
     ( Reference.Resolved.t * Odoc_model.Comment.paragraph option,
       Errors.Tools_error.reference_lookup_error )
-    Result.t =
+    result =
   let resolved = resolved3 in
   fun env r ->
     match r with
