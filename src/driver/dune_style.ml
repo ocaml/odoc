@@ -36,7 +36,7 @@ let of_dune_build dir =
             in
             let pkg_dir = Fpath.rem_prefix dir path |> Option.get in
             ( pkg_dir,
-              Packages.Lib.v ~pkg_dir
+              Packages.Lib.v
                 ~libname_of_archive:(Util.StringMap.singleton libname libname)
                 ~pkg_name:libname ~dir:path ~cmtidir:(Some cmtidir) ))
           libs
@@ -53,7 +53,6 @@ let of_dune_build dir =
                       version = "1.0";
                       libraries = [ lib ];
                       mlds = [];
-                      mld_odoc_dir = Fpath.v lib.Packages.lib_name;
                       pkg_dir;
                       other_docs = Fpath.Set.empty;
                     } )

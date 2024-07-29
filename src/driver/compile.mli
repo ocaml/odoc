@@ -6,7 +6,7 @@ val compile :
   ?partial:Fpath.t ->
   output_dir:Fpath.t ->
   ?linked_dir:Fpath.t ->
-  Packages.set ->
+  (* Packages.set *) Odoc_unit.t list (* Util.StringMap.t *) ->
   compiled list
 (** Use [partial] to reuse the output of a previous call to [compile]. Useful in
     the voodoo context.
@@ -18,8 +18,8 @@ type linked
 
 val link : compiled list -> linked list
 
-val index : odocl_dir:Fpath.t -> Packages.set -> unit
+(* val index : odocl_dir:Fpath.t -> Packages.set -> unit *)
 
-val sherlodoc : html_dir:Fpath.t -> odocl_dir:Fpath.t -> Packages.set -> unit
+(* val sherlodoc : html_dir:Fpath.t -> odocl_dir:Fpath.t -> Packages.set -> unit *)
 
-val html_generate : Fpath.t -> odocl_dir:Fpath.t -> linked list -> unit
+val html_generate : Fpath.t (* -> odocl_dir:Fpath.t *) -> linked list -> unit

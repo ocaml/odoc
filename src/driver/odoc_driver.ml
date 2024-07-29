@@ -529,7 +529,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
     if voodoo then
       match Util.StringMap.to_list all with
       | [ (_, p) ] ->
-          let output_path = Fpath.(odoc_dir // p.mld_odoc_dir) in
+          let output_path = Fpath.(odoc_dir // p.pkg_dir / "doc") in
           Some output_path
       | _ -> failwith "Error, expecting singleton library in voodoo mode"
     else None
@@ -538,15 +538,19 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
   let () =
     Eio.Fiber.both
       (fun () ->
+        let all =
+          let all = Util.StringMap.bindings all |> List.map snd in
+          Odoc_unit.of_packages ~output_dir:odoc_dir ~linked_dir:odocl_dir all
+        in
         let compiled =
           Compile.compile ?partial ~output_dir:odoc_dir ?linked_dir:odocl_dir
             all
         in
         let linked = Compile.link compiled in
-        let odocl_dir = match odocl_dir with Some l -> l | None -> odoc_dir in
-        let () = Compile.index ~odocl_dir all in
-        let () = Compile.sherlodoc ~html_dir ~odocl_dir all in
-        let () = Compile.html_generate html_dir ~odocl_dir linked in
+        (* let odocl_dir = match odocl_dir with Some l -> l | None -> odoc_dir in *)
+        (* let () = Compile.index ~odocl_dir all in *)
+        (* let () = Compile.sherlodoc ~html_dir ~odocl_dir all in *)
+        let () = Compile.html_generate html_dir (* ~odocl_dir *) linked in
         let _ = Odoc.support_files html_dir in
         ())
       (fun () -> render_stats env nb_workers)

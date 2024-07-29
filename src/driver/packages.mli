@@ -4,30 +4,15 @@
 
 type dep = string * Digest.t
 
-type id = Odoc.id
-
-type intf = {
-  mif_odoc_file : Fpath.t;
-  mif_odocl_file : Fpath.t;
-  mif_parent_id : id;
-  mif_hash : string;
-  mif_path : Fpath.t;
-  mif_deps : dep list;
-}
+type intf = { mif_hash : string; mif_path : Fpath.t; mif_deps : dep list }
 
 val pp_intf : Format.formatter -> intf -> unit
 
 (** {2 Implementation part} *)
 
-type src_info = { src_path : Fpath.t; src_id : id }
+type src_info = { src_path : Fpath.t }
 
-type impl = {
-  mip_odoc_file : Fpath.t;
-  mip_odocl_file : Fpath.t;
-  mip_parent_id : id;
-  mip_path : Fpath.t;
-  mip_src_info : src_info option;
-}
+type impl = { mip_path : Fpath.t; mip_src_info : src_info option }
 
 val pp_impl : Format.formatter -> impl -> unit
 
@@ -38,19 +23,11 @@ type modulety = {
   m_intf : intf;
   m_impl : impl option;
   m_hidden : bool;
-  m_pkg_dir : Fpath.t;
 }
 
 (** {1 Standalone pages units} *)
 
-type mld = {
-  mld_odoc_file : Fpath.t;
-  mld_odocl_file : Fpath.t;
-  mld_parent_id : id;
-  mld_path : Fpath.t;
-  mld_deps : Fpath.t list;
-  mld_pkg_dir : Fpath.t;
-}
+type mld = { mld_path : Fpath.t; mld_rel_path : Fpath.t }
 
 val pp_mld : Format.formatter -> mld -> unit
 
@@ -61,8 +38,6 @@ val pp_mld : Format.formatter -> mld -> unit
 
 type libty = {
   lib_name : string;
-  odoc_dir : Fpath.t;
-      (** Relative to dir where all odoc files are, e.g. [_odoc/] by default *)
   archive_name : string;
   modules : modulety list;
 }
@@ -72,7 +47,6 @@ val parent_of_pages : Fpath.t -> Fpath.t
 
 module Lib : sig
   val v :
-    pkg_dir:Fpath.t ->
     libname_of_archive:string Util.StringMap.t ->
     pkg_name:string ->
     dir:Fpath.t ->
@@ -85,10 +59,8 @@ type t = {
   version : string;
   libraries : libty list;
   mlds : mld list;
-  mld_odoc_dir : Fpath.t;
-      (** Relative to dir where all odoc files are, e.g. [_odoc/] by default *)
-  pkg_dir : Fpath.t;
   other_docs : Fpath.Set.t;
+  pkg_dir : Fpath.t;
 }
 
 val pp : Format.formatter -> t -> unit
