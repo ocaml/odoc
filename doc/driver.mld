@@ -807,7 +807,7 @@ let index_generate ?(ignore_output = false) occurrence_file =
 We turn the JSON index into a JavaScript file. In order to never block the UI, this file will be used as a web worker by [odoc] to perform searches:
 
 - The search query will be sent as a plain string to the web worker, using the standard mechanism of message passing.
-- The web worker has to send back the result as a message to the main thread, containing the list of result. Each entry of this list must have the same form it had in the original JSON file.
+- The web worker has to send back the result as a message to the main thread, containing the list of results. Each entry of this list must have the same form it had in the original JSON file.
 - The file must be given to the [odoc-support] URI.
 
 In this driver, we use the MiniSearch JavaScript library. For more involved applications, we could use [index.js] to call a server-side search engine via an API call.
