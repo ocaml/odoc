@@ -470,7 +470,7 @@ let render_stats env nprocs =
       ++ dline "Linking" non_hidden
       ++ dline "Linking impls" total_impls
       ++ dline "Linking mlds" total_mlds
-      ++ dline "Indexes" 10000
+      ++ dline "Indexes" 10000 (* TODO *)
       ++ dline "HTML" (total_impls + non_hidden + total_mlds)
       ++ line (procs nprocs))
     (fun comp compimpl compmld link linkimpl linkmld indexes html procs ->
@@ -537,7 +537,6 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
       | _ -> failwith "Error, expecting singleton library in voodoo mode"
     else None
   in
-  Compile.init_stats all;
   let () =
     Eio.Fiber.both
       (fun () ->
@@ -546,6 +545,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
           Odoc_unit.of_packages ~output_dir:odoc_dir ~linked_dir:odocl_dir
             ~index_dir:None all
         in
+        Compile.init_stats all;
         let compiled =
           Compile.compile ?partial ~partial_dir:odoc_dir ?linked_dir:odocl_dir
             all
@@ -559,10 +559,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
 
   Format.eprintf "Final stats: %a@.%!" Stats.pp_stats Stats.stats;
   Format.eprintf "Total time: %f@.%!" (Stats.total_time ());
-  if stats then Stats.bench_results html_dir;
-  let indexes = Util.StringMap.map (fun _i pkg -> Indexes.package pkg) all in
-
-  ignore indexes
+  if stats then Stats.bench_results html_dir
 
 let fpath_arg =
   let print ppf v = Fpath.pp ppf v in

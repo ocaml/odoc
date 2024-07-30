@@ -9,35 +9,24 @@ let mk_byhash (pkgs : Odoc_unit.intf Odoc_unit.unit list) =
       | `Intf { hash; _ } -> Util.StringMap.add hash u acc)
     Util.StringMap.empty pkgs
 
-let init_stats (pkgs : Packages.t Util.StringMap.t) =
+let init_stats (units : Odoc_unit.t list) =
   let total, total_impl, non_hidden, mlds =
-    Util.StringMap.fold
-      (fun _pkg_name pkg acc ->
-        let tt, ti, nh, md =
-          List.fold_left
-            (fun (tt, ti, nh, md) (lib : Packages.libty) ->
-              List.fold_left
-                (fun (total, total_impl, non_hidden, mlds)
-                     (m : Packages.modulety) ->
-                  let total = total + 1 in
-                  let total_impl =
-                    match m.m_impl with
-                    | Some impl -> (
-                        match impl.mip_src_info with
-                        | Some _ -> total_impl + 1
-                        | None -> total_impl)
-                    | None -> total_impl
-                  in
-                  let non_hidden =
-                    if m.m_hidden then non_hidden else non_hidden + 1
-                  in
-                  (total, total_impl, non_hidden, mlds))
-                (tt, ti, nh, md) lib.modules)
-            acc pkg.Packages.libraries
+    List.fold_left
+      (fun (total, total_impl, non_hidden, mlds) (unit : Odoc_unit.t) ->
+        let total = match unit.kind with `Intf _ -> total + 1 | _ -> total in
+        let total_impl =
+          match unit.kind with `Impl _ -> total_impl + 1 | _ -> total_impl
         in
-        (tt, ti, nh, md + List.length pkg.Packages.mlds))
-      pkgs (0, 0, 0, 0)
+        let non_hidden =
+          match unit.kind with
+          | `Intf { hidden = false; _ } -> non_hidden + 1
+          | _ -> non_hidden
+        in
+        let mlds = match unit.kind with `Mld -> mlds + 1 | _ -> mlds in
+        (total, total_impl, non_hidden, mlds))
+      (0, 0, 0, 0) units
   in
+
   Atomic.set Stats.stats.total_units total;
   Atomic.set Stats.stats.total_impls total_impl;
   Atomic.set Stats.stats.non_hidden_units non_hidden;

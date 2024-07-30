@@ -1,6 +1,6 @@
 type compiled
 
-val init_stats : Packages.set -> unit
+val init_stats : Odoc_unit.t list -> unit
 
 val compile :
   ?partial:Fpath.t ->
