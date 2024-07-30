@@ -675,7 +675,7 @@ let compile_mlds () =
     ( "page-deps.odoc" :: odocs @ extra_odocs)
 ]}
 
-Now we get to the compilation phase. For each unit, we query its dependencies, then recursively call to compile these dependencies. Once completed, we compile the unit itself. If the unit has already been compiled, we don't do anything. Note that we aren't checking the hashes of the dependencies which a build system should do to ensure that the module being compiled is the correct one. Again we benefit from the fact that we're creating the docs for one leaf package and that there must be no module name clashes in its dependencies. The result of this function is a list of the resulting [odoc] files.
+Now we get to the compilation phase. For each unit, we query its dependencies, then recursively call to compile these dependencies. Once completed, we compile the unit itself. If the unit has already been compiled, we don't do anything. Note that we aren't checking the hashes of the dependencies, which a build system should do to ensure that the module being compiled is the correct one. Again, we benefit from the fact that we're creating the docs for one leaf package and that there must be no module name clashes in its dependencies. The result of this function is a list of the resulting [odoc] files.
 
 {[
 let compile_all () =
