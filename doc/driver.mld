@@ -38,7 +38,7 @@ let instrument = false
 }{- [odoc/odoc_model/Odoc_model/index.html] : Module page for the module [Odoc_model]
 }{- [odoc/odoc_model/Odoc_model/...] : Further pages for the submodules of [Odoc_model]
 }{- [odoc/odoc_.../index.html] : Other [odoc] library pages
-}{- [odoc/deps/stdlib/index.html] : `Stdlib` main page
+}{- [odoc/deps/stdlib/index.html] : [Stdlib] main page
 }{- [odoc/deps/stdlib/Stdlib/index.html] : Module page for the module [Stdlib]
 }{- [odoc/deps/astring/index.html] : `astring` main page
 }{- [odoc/deps/...] : Other dependencies
