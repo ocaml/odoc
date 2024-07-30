@@ -40,7 +40,7 @@ let instrument = false
 }{- [odoc/odoc_.../index.html] : Other [odoc] library pages
 }{- [odoc/deps/stdlib/index.html] : [Stdlib] main page
 }{- [odoc/deps/stdlib/Stdlib/index.html] : Module page for the module [Stdlib]
-}{- [odoc/deps/astring/index.html] : `astring` main page
+}{- [odoc/deps/astring/index.html] : [astring] main page
 }{- [odoc/deps/...] : Other dependencies
 }{- [odoc/source/...] : Rendered source files
 }}
