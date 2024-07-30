@@ -411,9 +411,9 @@ module type S =
   end
 ]}
 
-Whereas [odoc] preserves the fact that [Y] and [Z] are calculated from [X]. If the 
+On the other hand, [odoc] preserves the fact that [Y] and [Z] are calculated from [X]. If the 
 module [X] is subsequently replaced using a destructive substitution on [S], the
-results would be different. Given the following,
+results would be different. For example: 
 
 {[
 module X1 : sig
@@ -424,7 +424,7 @@ end
 module type T = S with module X := X1
 ]}
 
-then the signature of [T], as calculated by OCaml, will be
+The signature of [T], as calculated by OCaml, will be
 
 {[
 sig
