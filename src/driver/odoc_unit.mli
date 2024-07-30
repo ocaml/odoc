@@ -20,7 +20,7 @@ type 'a unit = {
   pkg_args : pkg_args;
   pkgname : string;
   include_dirs : Fpath.t list;
-  index : index;
+  index : index option;
   kind : 'a;
 }
 

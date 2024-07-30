@@ -20,7 +20,7 @@ type 'a unit = {
   pkg_args : pkg_args;
   pkgname : string;
   include_dirs : Fpath.t list;
-  index : index;
+  index : index option;
   kind : 'a;
 }
 
@@ -110,7 +110,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
       odocl_file;
       include_dirs;
       kind;
-      index = index_of pkg;
+      index = Some (index_of pkg);
     }
   in
   let rec build_deps deps =

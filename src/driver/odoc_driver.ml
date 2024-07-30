@@ -558,8 +558,17 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
       (fun () ->
         let all =
           let all = Util.StringMap.bindings all |> List.map snd in
-          Odoc_unit.of_packages ~output_dir:odoc_dir ~linked_dir:odocl_dir
-            ~index_dir:None all
+          let internal =
+            Odoc_unit.of_packages ~output_dir:odoc_dir ~linked_dir:odocl_dir
+              ~index_dir:None all
+          in
+          let external_ =
+            let mld_dir = odoc_dir in
+            let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
+            Landing_pages.of_packages ~mld_dir ~odoc_dir ~odocl_dir
+              ~output_dir:odoc_dir all
+          in
+          internal @ external_
         in
         Compile.init_stats all;
         let compiled =
@@ -573,6 +582,11 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
       (fun () -> render_stats env nb_workers)
   in
 
+  (* List.iter *)
+  (*   (fun l -> *)
+  (*     if Astring.String.is_infix ~affix:"index.mld" l then *)
+  (*       Format.printf "%s\n" l) *)
+  (*   !Cmd_outputs.compile_output; *)
   Format.eprintf "Final stats: %a@.%!" Stats.pp_stats Stats.stats;
   Format.eprintf "Total time: %f@.%!" (Stats.total_time ());
   if stats then Stats.bench_results html_dir
