@@ -3,6 +3,13 @@ type pkg_args = {
   libs : (string * Fpath.t) list;
 }
 
+type index = {
+  pkg_args : pkg_args;
+  output_file : Fpath.t;
+  json : bool;
+  search_dir : Fpath.t;
+}
+
 type 'a unit = {
   parent_id : Odoc.id;
   odoc_dir : Fpath.t;
@@ -13,6 +20,7 @@ type 'a unit = {
   pkg_args : pkg_args;
   pkgname : string;
   include_dirs : Fpath.t list;
+  index : index;
   kind : 'a;
 }
 
@@ -26,10 +34,12 @@ type mld = [ `Mld ]
 
 type t = [ impl | intf | mld ] unit
 
-let of_packages ~output_dir ~linked_dir (pkgs : Packages.t list) : t list =
+let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
+    t list =
   let linked_dir =
     match linked_dir with None -> output_dir | Some dir -> dir
   in
+  let index_dir = match index_dir with None -> output_dir | Some dir -> dir in
   (* This isn't a hashtable, but a table of hashes! Yay! *)
   let hashtable =
     let open Packages in
@@ -48,28 +58,37 @@ let of_packages ~output_dir ~linked_dir (pkgs : Packages.t list) : t list =
   in
   (* This one is a hashtable *)
   let cache = Hashtbl.create 10 in
+  let pkg_args_of pkg : pkg_args =
+    let pages =
+      [
+        (pkg.Packages.name, Fpath.(output_dir // pkg.Packages.pkg_dir / "doc"));
+      ]
+    in
+    let libs =
+      List.map
+        (fun lib ->
+          ( lib.Packages.lib_name,
+            Fpath.(output_dir // pkg.Packages.pkg_dir / "lib" / lib.lib_name) ))
+        pkg.libraries
+    in
+    { pages; libs }
+  in
   let pkg_args : pkg_args =
     let pages, libs =
       List.fold_left
-        (fun (pages, libs) pkg ->
-          let page =
-            ( pkg.Packages.name,
-              Fpath.(output_dir // pkg.Packages.pkg_dir / "doc") )
-          in
-          let new_libs =
-            List.map
-              (fun lib ->
-                ( lib.Packages.lib_name,
-                  Fpath.(
-                    output_dir // pkg.Packages.pkg_dir / "lib" / lib.lib_name)
-                ))
-              pkg.libraries
-          in
-          (page :: pages, new_libs :: libs))
+        (fun (all_pages, all_libs) pkg ->
+          let { pages; libs } = pkg_args_of pkg in
+          (pages :: all_pages, libs :: all_libs))
         ([], []) pkgs
     in
+    let pages = List.concat pages in
     let libs = List.concat libs in
     { pages; libs }
+  in
+  let index_of pkg =
+    let pkg_args = pkg_args_of pkg in
+    let output_file = Fpath.(index_dir / pkg.name / Odoc.index_filename) in
+    { pkg_args; output_file; json = false; search_dir = pkg.pkg_dir }
   in
   let rec of_intf hidden pkg libname (intf : Packages.intf) : intf unit =
     match Hashtbl.find_opt cache intf.mif_hash with
@@ -107,6 +126,7 @@ let of_packages ~output_dir ~linked_dir (pkgs : Packages.t list) : t list =
           odocl_file;
           include_dirs;
           kind;
+          index = index_of pkg;
         }
   in
   let of_impl pkg libname (impl : Packages.impl) : impl unit option =
@@ -152,6 +172,7 @@ let of_packages ~output_dir ~linked_dir (pkgs : Packages.t list) : t list =
             pkg_args;
             include_dirs;
             kind;
+            index = index_of pkg;
           }
   in
 
@@ -198,6 +219,7 @@ let of_packages ~output_dir ~linked_dir (pkgs : Packages.t list) : t list =
         kind;
         pkg_args;
         include_dirs;
+        index = index_of pkg;
       };
     ]
   in

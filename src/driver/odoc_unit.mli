@@ -3,6 +3,13 @@ type pkg_args = {
   libs : (string * Fpath.t) list;
 }
 
+type index = {
+  pkg_args : pkg_args;
+  output_file : Fpath.t;
+  json : bool;
+  search_dir : Fpath.t;
+}
+
 type 'a unit = {
   parent_id : Odoc.id;
   odoc_dir : Fpath.t;
@@ -13,6 +20,7 @@ type 'a unit = {
   pkg_args : pkg_args;
   pkgname : string;
   include_dirs : Fpath.t list;
+  index : index;
   kind : 'a;
 }
 
@@ -27,4 +35,8 @@ type mld = [ `Mld ]
 type t = [ impl | intf | mld ] unit
 
 val of_packages :
-  output_dir:Fpath.t -> linked_dir:Fpath.t option -> Packages.t list -> t list
+  output_dir:Fpath.t ->
+  linked_dir:Fpath.t option ->
+  index_dir:Fpath.t option ->
+  Packages.t list ->
+  t list

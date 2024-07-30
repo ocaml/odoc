@@ -13,6 +13,7 @@ type stats = {
   mutable linked_units : int Atomic.t;
   mutable linked_impls : int Atomic.t;
   mutable linked_mlds : int Atomic.t;
+  mutable generated_indexes : int Atomic.t;
   mutable generated_units : int Atomic.t;
   mutable processes : int Atomic.t;
 }
@@ -30,6 +31,7 @@ let stats =
     linked_impls = Atomic.make 0;
     linked_mlds = Atomic.make 0;
     generated_units = Atomic.make 0;
+    generated_indexes = Atomic.make 0;
     processes = Atomic.make 0;
   }
 

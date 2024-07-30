@@ -85,7 +85,7 @@ let find_partials odoc_dir : Odoc_unit.intf Odoc_unit.unit Util.StringMap.t * _
   | Ok h -> (h, tbl)
   | Error _ -> (* odoc_dir doesn't exist...? *) (Util.StringMap.empty, tbl)
 
-let compile ?partial ~output_dir ?linked_dir:_ (all : Odoc_unit.t list) =
+let compile ?partial ~partial_dir ?linked_dir:_ (all : Odoc_unit.t list) =
   (* let linked_dir = Option.value linked_dir ~default:output_dir in *)
   let intf_units, impl_units, mld_units =
     List.fold_left
@@ -102,7 +102,7 @@ let compile ?partial ~output_dir ?linked_dir:_ (all : Odoc_unit.t list) =
   let hashes = mk_byhash intf_units in
   let other_hashes, tbl =
     match partial with
-    | Some _ -> find_partials output_dir
+    | Some _ -> find_partials partial_dir
     | None -> (Util.StringMap.empty, Hashtbl.create 10)
   in
   let all_hashes =
@@ -127,29 +127,6 @@ let compile ?partial ~output_dir ?linked_dir:_ (all : Odoc_unit.t list) =
                   None)
             deps
         in
-
-        (* let includes = Fpath.Set.add output_dir includes in ?????????? *)
-
-        (* TOOOODOOOOO *)
-        (* let impl = *)
-        (*   match modty.m_impl with *)
-        (*   | Some impl -> ( *)
-        (*       match impl.mip_src_info with *)
-        (*       | Some si -> *)
-        (*           let odoc_file = Fpath.(output_dir // impl.mip_odoc_file) in *)
-        (*           let odocl_file = Fpath.(linked_dir // impl.mip_odocl_file) in *)
-        (*           Odoc.compile_impl ~output_dir ~input_file:impl.mip_path *)
-        (*             ~includes ~parent_id:impl.mip_parent_id ~source_id:si.src_id; *)
-        (*           Atomic.incr Stats.stats.compiled_impls; *)
-        (*           Some *)
-        (*             { *)
-        (*               impl_odoc = odoc_file; *)
-        (*               impl_odocl = odocl_file; *)
-        (*               src = si.src_path; *)
-        (*             } *)
-        (*       | None -> None) *)
-        (*   | None -> None *)
-        (* in *)
         let includes = Fpath.Set.of_list unit.include_dirs in
         Odoc.compile ~output_dir:unit.output_dir ~input_file:unit.input_file
           ~includes ~parent_id:unit.parent_id;
@@ -229,61 +206,52 @@ let link : compiled list -> _ =
   in
   Fiber.List.map link compiled
 
-(* let index_one ~odocl_dir pkg_name pkg = *)
-(*   let dir = pkg.Packages.pkg_dir in *)
-(*   let output_file = Fpath.(odocl_dir // dir / Odoc.index_filename) in *)
-(*   let libs = *)
-(*     List.map *)
-(*       (fun lib -> (lib.Packages.lib_name, Fpath.(odocl_dir // lib.odoc_dir))) *)
-(*       pkg.Packages.libraries *)
-(*   in *)
-(*   Odoc.compile_index ~json:false ~output_file ~libs *)
-(*     ~docs:[ (pkg_name, Fpath.(odocl_dir // pkg.mld_odoc_dir)) ] *)
-(*     () *)
+let sherlodoc_index_one ~output_dir (index : Odoc_unit.index) =
+  let inputs = [ index.output_file ] in
+  let rel_path = Fpath.(index.search_dir / "sherlodoc_db.js") in
+  let dst = Fpath.(output_dir // rel_path) in
+  let dst_dir, _ = Fpath.split_base dst in
+  Util.mkdir_p dst_dir;
+  Sherlodoc.index ~format:`js ~inputs ~dst ();
+  rel_path
 
-(* let index ~odocl_dir pkgs = Util.StringMap.iter (index_one ~odocl_dir) pkgs *)
-
-(* let sherlodoc_index_one ~html_dir ~odocl_dir _ pkg_content = *)
-(*   let inputs = *)
-(*     [ Fpath.(odocl_dir // pkg_content.Packages.pkg_dir / Odoc.index_filename) ] *)
-(*   in *)
-(*   let dst = Fpath.(html_dir // Sherlodoc.db_js_file pkg_content.pkg_dir) in *)
-(*   let dst_dir, _ = Fpath.split_base dst in *)
-(*   Util.mkdir_p dst_dir; *)
-(*   Sherlodoc.index ~format:`js ~inputs ~dst () *)
-
-(* let sherlodoc ~html_dir ~odocl_dir pkgs = *)
-(*   ignore @@ Bos.OS.Dir.create html_dir; *)
-(*   Sherlodoc.js Fpath.(html_dir // Sherlodoc.js_file); *)
-(*   Util.StringMap.iter (sherlodoc_index_one ~html_dir ~odocl_dir) pkgs; *)
-(*   let format = `marshal in *)
-(*   let dst = Fpath.(html_dir // Sherlodoc.db_marshal_file) in *)
-(*   let dst_dir, _ = Fpath.split_base dst in *)
-(*   Util.mkdir_p dst_dir; *)
-(*   let inputs = *)
-(*     pkgs |> Util.StringMap.bindings *)
-(*     |> List.map (fun (_pkgname, pkg) -> *)
-(*            Fpath.(odocl_dir // pkg.Packages.pkg_dir / Odoc.index_filename)) *)
-(*   in *)
-(*   Sherlodoc.index ~format ~inputs ~dst () *)
-
-let html_generate output_dir (* ~odocl_dir *) linked =
+let html_generate output_dir linked =
+  let tbl = Hashtbl.create 10 in
+  Sherlodoc.js Fpath.(output_dir // Sherlodoc.js_file);
+  let compile_index : Odoc_unit.index -> _ =
+   fun index ->
+    let compile_index_one
+        ({ pkg_args = { pages; libs }; output_file; json; search_dir = _ } as
+         index :
+          Odoc_unit.index) =
+      let () = Odoc.compile_index ~json ~output_file ~libs ~docs:pages () in
+      sherlodoc_index_one ~output_dir index
+    in
+    match Hashtbl.find_opt tbl index.output_file with
+    | None ->
+        let p, r = Promise.create () in
+        Hashtbl.add tbl index.output_file p;
+        let rel_path = compile_index_one index in
+        Atomic.incr Stats.stats.generated_indexes;
+        Promise.resolve r rel_path;
+        rel_path
+    | Some p -> Promise.await p
+  in
   let html_generate : linked -> unit =
    fun l ->
+    let output_dir = Fpath.to_string output_dir in
+    let input_file = l.odocl_file in
     match l.kind with
     | `Intf { hidden = true; _ } -> ()
     | `Impl { src_path; _ } ->
-        Odoc.html_generate ~search_uris:[] ?index:None
-          ~output_dir:(Fpath.to_string output_dir)
-          ~input_file:l.odocl_file ~source:src_path ();
+        Odoc.html_generate ~search_uris:[] ~output_dir ~input_file
+          ~source:src_path ();
         Atomic.incr Stats.stats.generated_units
     | _ ->
-        (* let pkg_dir = l. in *)
-        (* let search_uris = [ Sherlodoc.db_js_file pkg_dir; Sherlodoc.js_file ] in *)
-        (* let index = Some Fpath.(odocl_dir // pkg_dir / Odoc.index_filename) in *)
-        Odoc.html_generate ~search_uris:[] ?index:None
-          ~output_dir:(Fpath.to_string output_dir)
-          ~input_file:l.odocl_file ?source:None (* l.src *) ();
+        let db_path = compile_index l.index in
+        let search_uris = [ db_path; Sherlodoc.js_file ] in
+        let index = l.index.output_file in
+        Odoc.html_generate ~search_uris ~index ~output_dir ~input_file ();
         Atomic.incr Stats.stats.generated_units
   in
   Fiber.List.iter html_generate linked
