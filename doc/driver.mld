@@ -125,7 +125,7 @@ Once the compile and link phases are complete, the resulting [odocl] files may b
 {1 [odoc] Documentation}
 
 In this section [odoc] is used to generate the documentation of [odoc] and some of its dependent packages. We can make a few simplifying assumptions here:
-{ol {- Since we're working with one leaf package, we can assume that there can be no module name clashes in the dependencies. As such, we can afford to put all of our [.odoc] files into one directory and then hard-code the include path to be this directory. When using [odoc] in a context where there may be module name clashes, it requires more careful partitioning of output directories.
+{ol {- Since we're working with one leaf package, we can assume that there can be no module name clashes in the dependencies. As such, we can afford to put all of our [.odoc] files into one directory and then hardcode the include path to be this directory. When using [odoc] in a context where there may be module name clashes, it requires more careful partitioning of output directories.
 }{- We'll do all of the compiling before any linking.
 }}
 
@@ -143,10 +143,10 @@ identifiers. The [compile-src] command takes a source-tree parent file and a
 source path, which has to be in the source tree.
 
 Linking a file with [odoc] requires the input file and a list of include paths. As
-for compile, we will hard-code the include path.
+for compile, we will hardcode the include path.
 
 Generating the HTML requires the input [odocl] file and an output path. We will
-hard-code the output path to be [html/]. In the case of implementations, a
+hardcode the output path to be [html/]. In the case of implementations, a
 source file (passed via the [--source] argument) is required.
 
 To get the number of uses of each identifier, we can use the [count-occurrences]
@@ -313,7 +313,7 @@ We'll now make some library lists. We have not only external dependency
 libraries, but [odoc] itself is also separated into libraries. These two
 sets of libraries will be documented in different sections, so we'll keep them
 in separate lists. Moreover, [odoc] libraries will include the source code via
-a hard-coded path.
+a hardcoded path.
 
 Additionally, we'll construct a list containing the extra documentation pages. Finally let's create a list mapping the section to its parent, which matches
 the hierarchy declared above.
