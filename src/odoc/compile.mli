@@ -49,8 +49,9 @@ val resolve_parent_page :
 (** Parse and resolve a parent reference. Returns the identifier of the parent
     and its children as a list of reference. *)
 
-val mk_id : string -> Identifier.ContainerPage.t
-val path_of_id : string -> Comment.Identifier.Id.container_page -> Fpath.t
+val mk_id : string -> Identifier.ContainerPage.t option
+val path_of_id :
+  string -> Comment.Identifier.Id.container_page option -> Fpath.t
 
 val compile :
   resolver:Resolver.t ->

@@ -43,7 +43,9 @@ let list_packages_content all =
     all |> List.sort (fun n1 n2 -> String.compare n1.name n2.name)
   in
   let title = "{0 List of all packages}\n" in
-  let s_of_pkg pkg = Format.sprintf "- {{!/%s/index}%s}" pkg.name pkg.name in
+  let s_of_pkg pkg =
+    Format.sprintf "- {{!/__driver/%s/index}%s}" pkg.name pkg.name
+  in
   let pkg_ul = sorted_packages |> List.map s_of_pkg |> String.concat "\n" in
   title ^ pkg_ul
 
@@ -55,7 +57,7 @@ let of_package ~mld_dir ~odoc_dir ~odocl_dir ~output_dir pkg =
     let odoc_file = Fpath.(odoc_dir // rel_path / "page-index.odoc") in
     let odocl_file = Fpath.(odocl_dir // rel_path / "page-index.odocl") in
     let () = write_file input_file content in
-    let parent_id = rel_path |> Odoc.id_of_fpath in
+    let parent_id = rel_path |> Odoc.Id.of_fpath in
     let open Odoc_unit in
     {
       parent_id;
@@ -106,17 +108,17 @@ let of_package ~mld_dir ~odoc_dir ~odocl_dir ~output_dir pkg =
 
 let of_packages ~mld_dir ~odoc_dir ~odocl_dir ~output_dir all =
   let content = list_packages_content all in
-  let rel_path = Fpath.v "a" in
+  let rel_path = Fpath.v "./" in
   let input_file = Fpath.(mld_dir // rel_path / "index.mld") in
   let () = write_file input_file content in
   let open Odoc_unit in
-  let parent_id = rel_path |> Odoc.id_of_fpath in
+  let parent_id = rel_path |> Odoc.Id.of_fpath in
   let pkgname = "__driver" in
   let pkg_args =
     {
       pages =
-        (pkgname, Fpath.(odoc_dir // rel_path))
-        :: List.map (fun pkg -> (pkg.name, Fpath.(odoc_dir / pkg.name))) all;
+        (pkgname, Fpath.(odoc_dir // rel_path)) :: []
+        (* List.map (fun pkg -> (pkg.name, Fpath.(odoc_dir / pkg.name))) all *);
       libs = [];
     }
   in
