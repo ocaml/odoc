@@ -185,8 +185,23 @@ let reference_token start target =
   match start with
   | "{!" -> `Simple_reference target
   | "{{!" -> `Begin_reference_with_replacement_text target
-  | "{:" -> `Simple_link target
-  | "{{:" -> `Begin_link_with_replacement_text target
+  | "{:" -> `Simple_link (target)
+  | "{{:" -> `Begin_link_with_replacement_text (target)
+
+  | "{image!" -> `Simple_media (`Reference target, `Image)
+  | "{{image!" -> `Begin_media_with_replacement_text (`Reference target, `Image)
+  | "{image:" -> `Simple_media (`Link target, `Image)
+  | "{{image:" -> `Begin_media_with_replacement_text (`Link target, `Image)
+
+  | "{audio!" -> `Simple_media (`Reference target, `Audio)
+  | "{{audio!" -> `Begin_media_with_replacement_text (`Reference target, `Audio)
+  | "{audio:" -> `Simple_media (`Link target, `Audio)
+  | "{{audio:" -> `Begin_media_with_replacement_text (`Link target, `Audio)
+
+  | "{video!" -> `Simple_media (`Reference target, `Video)
+  | "{{video!" -> `Begin_media_with_replacement_text (`Reference target, `Video)
+  | "{video:" -> `Simple_media (`Link target, `Video)
+  | "{{video:" -> `Begin_media_with_replacement_text (`Link target, `Video)
   | _ -> assert false
 
 let trim_leading_space_or_accept_whitespace input start_offset text =
@@ -264,8 +279,11 @@ let horizontal_space =
 let newline =
   '\n' | "\r\n"
 
-let reference_start =
-  "{!" | "{{!" | "{:" | "{{:"
+let media_start =
+    "{!" | "{{!" | "{:" | "{{:"
+  | "{image!" | "{{image!" | "{image:" | "{{image:"
+  | "{video!" | "{{video!" | "{video:" | "{{video:"
+  | "{audio!" | "{{audio!" | "{audio:" | "{{audio:"
 
 let raw_markup =
   ([^ '%'] | '%'+ [^ '%' '}'])* '%'*
@@ -402,7 +420,7 @@ and token input = parse
   | "{!modules:" ([^ '}']* as modules) '}'
     { emit input (`Modules modules) }
 
-  | (reference_start as start)
+  | (media_start as start)
     {
       let start_offset = Lexing.lexeme_start lexbuf in
       let target =

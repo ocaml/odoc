@@ -68,9 +68,8 @@ type t = { pages : pages list; libraries : library list }
 let of_lang (v : Odoc_model.Lang.Sidebar.t) =
   let sidebar_toc_entry id content =
     let href = id |> Url.Path.from_identifier |> Url.from_path in
-    let target = InternalLink.Resolved href in
-    let link = { InternalLink.target; content; tooltip = None } in
-    inline @@ Inline.InternalLink link
+    let target = Target.Internal (Resolved href) in
+    inline @@ Inline.Link { target; content; tooltip = None }
   in
   let pages =
     let page_hierarchy { Odoc_model.Lang.Sidebar.page_name; pages } =

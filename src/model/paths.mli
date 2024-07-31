@@ -640,6 +640,10 @@ module rec Reference : sig
     type t = Paths_types.Reference.page
   end
 
+  module Asset : sig
+    type t = Paths_types.Reference.asset
+  end
+
   module Hierarchy : sig
     type t = Paths_types.Reference.hierarchy
   end

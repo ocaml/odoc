@@ -2858,12 +2858,12 @@ let%expect_test _ =
     let err_relative_empty_component =
       test "{!foo//bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Code_span":"foo//bar"}]}],"warnings":["File \"f.ml\", line 1, characters 6-6:\nIdentifier in path reference should not be empty."]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["foo","","bar"]]},[]]}]}],"warnings":[]} |}]
 
     let err_current_package_empty_component =
       test "{!///bar}";
       [%expect
-        {| {"value":[{"`Paragraph":[{"`Code_span":"///bar"}]}],"warnings":["File \"f.ml\", line 1, characters 4-4:\nIdentifier in path reference should not be empty."]} |}]
+        {| {"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TCurrentPackage",["","bar"]]},[]]}]}],"warnings":[]} |}]
 
     let err_last_empty_component =
       test "{!foo/}";
