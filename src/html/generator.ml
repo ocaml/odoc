@@ -13,11 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
-
+module HLink = Link
 open Odoc_document.Types
 module Html = Tyxml.Html
 module Doctree = Odoc_document.Doctree
 module Url = Odoc_document.Url
+module Link = HLink
 
 type any = Html_types.flow5
 
@@ -96,12 +97,12 @@ and styled style ~emph_level =
   | `Superscript -> (emph_level, Html.sup ~a:[])
   | `Subscript -> (emph_level, Html.sub ~a:[])
 
-let rec internallink ~config ~emph_level ~resolve ?(a = [])
-    { InternalLink.target; content; tooltip } =
+let rec internallink ~config ~emph_level ~resolve ?(a = []) target content
+    tooltip =
   let a = match tooltip with Some s -> Html.a_title s :: a | None -> a in
   let elt =
     match target with
-    | Resolved uri ->
+    | Target.Resolved uri ->
         let href = Link.href ~config ~resolve uri in
         let content = inline_nolink ~emph_level content in
         if Config.search_result config then
@@ -137,16 +138,17 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
     | Styled (style, c) ->
         let emph_level, app_style = styled style ~emph_level in
         [ app_style @@ inline ~config ~emph_level ~resolve c ]
-    | Link (_, c) when Config.search_result config ->
+    | Link { content = c; _ } when Config.search_result config ->
         (* When displaying for a search result, links are displayed as regular
            text. *)
         let content = inline_nolink ~emph_level c in
         [ Html.span ~a content ]
-    | Link (href, c) ->
+    | Link { target = External href; content = c; _ } ->
         let a = (a :> Html_types.a_attrib Html.attrib list) in
         let content = inline_nolink ~emph_level c in
         [ Html.a ~a:(Html.a_href href :: a) content ]
-    | InternalLink c -> internallink ~config ~emph_level ~resolve ~a c
+    | Link { target = Internal t; content; tooltip } ->
+        internallink ~config ~emph_level ~resolve ~a t content tooltip
     | Source c -> source (inline ~config ~emph_level ~resolve) ~a c
     | Math s -> [ inline_math s ]
     | Raw_markup r -> raw_markup r
@@ -168,7 +170,6 @@ and inline_nolink ?(emph_level = 0) (l : Inline.t) :
         let emph_level, app_style = styled style ~emph_level in
         [ app_style @@ inline_nolink ~emph_level c ]
     | Link _ -> assert false
-    | InternalLink _ -> assert false
     | Source c -> source (inline_nolink ~emph_level) ~a c
     | Math s -> [ inline_math s ]
     | Raw_markup r -> raw_markup r
@@ -205,6 +206,26 @@ let text_align = function
   | Default -> []
 
 let cell_kind = function `Header -> Html.th | `Data -> Html.td
+
+(* Turns an inline into a string, for use as alternative text in
+   images *)
+let rec alt_of_inline (i : Inline.t) =
+  let rec alt_of_source s =
+    List.map
+      (function
+        | Source.Elt i -> alt_of_inline i | Tag (_, t) -> alt_of_source t)
+      s
+    |> String.concat ""
+  in
+  let alt_of_one (o : Inline.one) =
+    match o.desc with
+    | Text t | Math t | Entity t -> t
+    | Linebreak -> "\n"
+    | Styled (_, i) | Link { content = i; _ } -> alt_of_inline i
+    | Source s -> alt_of_source s
+    | Raw_markup _ -> ""
+  in
+  List.map alt_of_one i |> String.concat ""
 
 let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
   let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
@@ -243,6 +264,55 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
         let extra_class = [ "language-" ^ lang_tag ] in
         mk_block ~extra_class Html.pre (source (inline ~config ~resolve) c)
     | Math s -> mk_block Html.div [ block_math s ]
+    | Audio (target, content) ->
+        let content = inline ~config ~resolve content in
+        let audio src = [ Html.audio ~src ~a:[ Html.a_controls () ] [] ] in
+        let block =
+          match target with
+          | External url -> audio url
+          | Internal (Resolved uri) ->
+              let url = Link.href ~config ~resolve uri in
+              audio url
+          | Internal Unresolved ->
+              let a = Html.a_class [ "xref-unresolved" ] :: [] in
+              [ Html.span ~a content ]
+        in
+        mk_block Html.div block
+    | Video (target, content) ->
+        let content = inline ~config ~resolve content in
+        let video src = [ Html.video ~src ~a:[ Html.a_controls () ] [] ] in
+        let block =
+          match target with
+          | External url -> video url
+          | Internal (Resolved uri) ->
+              let url = Link.href ~config ~resolve uri in
+              video url
+          | Internal Unresolved ->
+              let a = [ Html.a_class [ "xref-unresolved" ] ] in
+              [ Html.span ~a content ]
+        in
+        mk_block Html.div block
+    | Image (target, alt) ->
+        let image src =
+          let alt = alt_of_inline alt in
+          let img =
+            Html.a
+              ~a:[ Html.a_href src; Html.a_class [ "img-link" ] ]
+              [ Html.img ~src ~alt () ]
+          in
+          [ img ]
+        in
+        let block =
+          match target with
+          | External url -> image url
+          | Internal (Resolved uri) ->
+              let url = Link.href ~config ~resolve uri in
+              image url
+          | Internal Unresolved ->
+              let a = [ Html.a_class [ "xref-unresolved" ] ] in
+              [ Html.span ~a (inline ~config ~resolve alt) ]
+        in
+        mk_block Html.div block
   in
   Odoc_utils.List.concat_map l ~f:one
 

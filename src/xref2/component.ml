@@ -452,7 +452,11 @@ and CComment : sig
   type block_element =
     [ Odoc_model.Comment.nestable_block_element
     | `Heading of Label.t
-    | `Tag of Odoc_model.Comment.tag ]
+    | `Tag of Odoc_model.Comment.tag
+    | `Media of
+      Odoc_model.Comment.media_href
+      * Odoc_model.Comment.media
+      * Odoc_model.Comment.paragraph ]
 
   type docs = block_element Odoc_model.Comment.with_location list
 
@@ -2699,7 +2703,7 @@ module Of_Lang = struct
         let label = Ident.Of_Identifier.label label in
         Odoc_model.Location_.same b
           (`Heading { Label.attrs; label; text; location })
-    | { value = `Tag _; _ } as t -> t
+    | { value = `Tag _ | `Media _; _ } as t -> t
     | { value = #Odoc_model.Comment.nestable_block_element; _ } as n -> n
 
   and docs ident_map d = List.map (block_element ident_map) d

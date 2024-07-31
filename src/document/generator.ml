@@ -33,14 +33,14 @@ let type_var tv = tag "type-var" (O.txt tv)
 let enclose ~l ~r x = O.span (O.txt l ++ x ++ O.txt r)
 
 let resolved p content =
-  let link = { InternalLink.target = Resolved p; content; tooltip = None } in
-  O.elt [ inline @@ InternalLink link ]
+  let link = { Link.target = Internal (Resolved p); content; tooltip = None } in
+  O.elt [ inline @@ Link link ]
 
 let path p content = resolved (Url.from_path p) content
 
 let unresolved content =
-  let link = { InternalLink.target = Unresolved; content; tooltip = None } in
-  O.elt [ inline @@ InternalLink link ]
+  let link = { Link.target = Internal Unresolved; content; tooltip = None } in
+  O.elt [ inline @@ Link link ]
 
 let path_to_id path =
   match Url.Anchor.from_identifier (path :> Paths.Identifier.t) with

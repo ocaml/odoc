@@ -5,12 +5,19 @@ module rec Class : sig
 end =
   Class
 
-and InternalLink : sig
-  type target = Resolved of Url.t | Unresolved
-
-  type t = { target : target; content : Inline.t; tooltip : string option }
+and Link : sig
+  type t = { target : Target.t; content : Inline.t; tooltip : string option }
 end =
-  InternalLink
+  Link
+
+and Target : sig
+  type internal = Resolved of Url.t | Unresolved
+
+  type href = string
+
+  type t = Internal of internal | External of href
+end =
+  Target
 
 and Raw_markup : sig
   type target = Odoc_model.Comment.raw_markup_target
@@ -36,8 +43,6 @@ end =
 and Inline : sig
   type entity = string
 
-  type href = string
-
   type t = one list
 
   and one = { attr : Class.t; desc : desc }
@@ -47,8 +52,7 @@ and Inline : sig
     | Entity of entity
     | Linebreak
     | Styled of style * t
-    | Link of href * t
-    | InternalLink of InternalLink.t
+    | Link of Link.t
     | Source of Source.t
     | Math of Math.t
     | Raw_markup of Raw_markup.t
@@ -90,6 +94,9 @@ and Block : sig
     | Verbatim of string
     | Raw_markup of Raw_markup.t
     | Table of t Table.t
+    | Image of Target.t * Inline.t
+    | Video of Target.t * Inline.t
+    | Audio of Target.t * Inline.t
 
   and list_type = Ordered | Unordered
 end =

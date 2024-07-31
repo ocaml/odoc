@@ -39,6 +39,11 @@ module Ast_to_sexp = struct
     | `Simple -> Atom "simple"
     | `With_text -> Atom "with_text"
 
+  let media : Ast.media -> sexp = function
+    | `Image -> Atom "image"
+    | `Video -> Atom "video"
+    | `Audio -> Atom "audio"
+
   let rec inline_element at : Ast.inline_element -> sexp = function
     | `Space _ -> Atom "space"
     | `Word w -> List [ Atom "word"; Atom w ]
@@ -60,6 +65,10 @@ module Ast_to_sexp = struct
 
   let code_block_lang at { Ast.language; tags } =
     List [ at.at str language; opt (at.at str) tags ]
+
+  let media_href = function
+    | `Reference href -> List [ Atom "Reference"; Atom href ]
+    | `Link href -> List [ Atom "Link"; Atom href ]
 
   let rec nestable_block_element at : Ast.nestable_block_element -> sexp =
     function
@@ -115,6 +124,14 @@ module Ast_to_sexp = struct
               map "row" row @@ fun (cell, k) ->
               map (kind k) cell @@ at.at (nestable_block_element at) );
             alignment;
+          ]
+    | `Media (kind, href, c, m) ->
+        List
+          [
+            reference_kind kind;
+            at.at media_href href;
+            List (List.map (at.at (inline_element at)) c);
+            media m;
           ]
 
   let tag at : Ast.tag -> sexp = function

@@ -833,6 +833,11 @@ let resolved3 (r, _, _) = resolved1 r
 
 and resolved2 (r, _) = resolved1 r
 
+let resolve_asset_reference env (r : Reference.Asset.t) : Asset.t ref_result =
+  match r with
+  | `Resolved _r -> failwith "What's going on!?"
+  | `Asset_path p -> Path.asset_in_env env p
+
 let resolved_type_lookup = function
   | `T (r, _) -> resolved1 r
   | `C (r, _) -> resolved1 r
@@ -1000,6 +1005,9 @@ let resolve_reference :
 
 let resolve_module_reference env m =
   Odoc_model.Error.catch_warnings (fun () -> resolve_module_reference env m)
+
+let resolve_asset_reference env m =
+  Odoc_model.Error.catch_warnings (fun () -> resolve_asset_reference env m)
 
 let resolve_reference env m =
   Odoc_model.Error.catch_warnings (fun () -> resolve_reference env m)

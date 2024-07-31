@@ -10,6 +10,8 @@ type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 
 type alignment = [ `Left | `Center | `Right ]
 
+type media = [ `Image | `Audio | `Video ]
+
 type raw_markup_target = string
 
 type leaf_inline_element =
@@ -54,6 +56,10 @@ type 'a abstract_table = {
   align : alignment option list option;
 }
 
+type media_href = [ `Link of string | `Reference of Reference.Asset.t ]
+
+type media_element = [ `Media of media_href * media * paragraph ]
+
 type nestable_block_element =
   [ `Paragraph of paragraph
   | `Code_block of
@@ -66,7 +72,7 @@ type nestable_block_element =
   | `Table of nestable_block_element abstract_table
   | `List of
     [ `Unordered | `Ordered ] * nestable_block_element with_location list list
-  ]
+  | media_element ]
 
 type tag =
   [ `Author of string

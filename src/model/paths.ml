@@ -1162,6 +1162,10 @@ module Reference = struct
     type t = Paths_types.Reference.page
   end
 
+  module Asset = struct
+    type t = Paths_types.Reference.asset
+  end
+
   module Hierarchy = struct
     type t = Paths_types.Reference.hierarchy
   end

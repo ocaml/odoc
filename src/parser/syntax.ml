@@ -533,7 +533,7 @@ type where_in_line =
 
    When it is called inside a shorthand list item ([- foo]), it stops on end of
    input, right brace, a blank line (indicating end of shorthand list), plus or
-   minus (indicating the start of the next liste item), or a section heading or
+   minus (indicating the start of the next list item), or a section heading or
    tag, which cannot be nested in list markup.
 
    The block parser [block_element_list] explicitly returns the token that
@@ -554,6 +554,7 @@ type stopped_implicitly =
   | `Minus
   | `Plus
   | Token.section_heading
+  | Token.media_markup
   | Token.tag ]
 
 (* Ensure that the above two types are really subsets of [Token.t]. *)
@@ -1146,6 +1147,52 @@ let rec block_element_list :
           |> Loc.at location
         in
         consume_block_elements ~parsed_a_tag `At_start_of_line (paragraph :: acc)
+    | {
+        location;
+        value = `Begin_media_with_replacement_text (href, media) as token;
+      } as next_token ->
+        warn_if_after_tags next_token;
+
+        junk input;
+
+        let content, brace_location =
+          delimited_inline_element_list ~parent_markup:token
+            ~parent_markup_location:location ~requires_leading_whitespace:false
+            input
+        in
+        let r_location =
+          Loc.nudge_start
+            (String.length @@ Token.s_of_media `Replaced media)
+            location
+        in
+        let href = href |> Loc.at r_location in
+
+        if content = [] then
+          Parse_error.should_not_be_empty ~what:(Token.describe token) location
+          |> add_warning input;
+
+        let location = Loc.span [ location; brace_location ] in
+        let block = `Media (`Simple, href, content, media) in
+        let block = accepted_in_all_contexts context block in
+        let block = Loc.at location block in
+        let acc = block :: acc in
+        consume_block_elements ~parsed_a_tag `After_text acc
+    | { location; value = `Simple_media (href, media) } as next_token ->
+        warn_if_after_tags next_token;
+
+        junk input;
+
+        let r_location =
+          Loc.nudge_start
+            (String.length @@ Token.s_of_media `Replaced media)
+            location
+        in
+        let href = href |> Loc.at r_location in
+        let block = `Media (`Simple, href, [], media) in
+        let block = accepted_in_all_contexts context block in
+        let block = Loc.at location block in
+        let acc = block :: acc in
+        consume_block_elements ~parsed_a_tag `After_text acc
   in
 
   let where_in_line =
@@ -1187,7 +1234,8 @@ and shorthand_list_items :
       Ast.nestable_block_element with_location list list * where_in_line =
    fun next_token where_in_line acc ->
     match next_token.value with
-    | `End | `Right_brace | `Blank_line _ | `Tag _ | `Begin_section_heading _ ->
+    | `End | `Right_brace | `Blank_line _ | `Tag _ | `Begin_section_heading _
+    | `Simple_media _ | `Begin_media_with_replacement_text _ ->
         (List.rev acc, where_in_line)
     | (`Minus | `Plus) as bullet ->
         if bullet = bullet_token then (
