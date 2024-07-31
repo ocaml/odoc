@@ -90,6 +90,7 @@ let match_extra_odoc_reference_kind (_location as loc) s :
       Some `TLabel
   | "module-type" -> Some `TModuleType
   | "page" -> Some `TPage
+  | "asset" -> Some `TAsset
   | "value" ->
       d loc "value" "val";
       Some `TValue
@@ -352,12 +353,24 @@ let parse whole_reference_location s :
         )
   in
 
+  let label_parent_path { identifier; location; _ } kind next_token tokens =
+    let path () = path [ identifier ] next_token tokens in
+    match kind with
+    | `TUnknown -> `Any_path (path ())
+    | `TModule -> `Module_path (path ())
+    | `TPage -> `Page_path (path ())
+    | _ ->
+        expected ~expect_paths:true [ "module"; "page" ] location
+        |> Error.raise_exception
+  in
+
   let any_path { identifier; location; _ } kind next_token tokens =
     let path () = path [ identifier ] next_token tokens in
     match kind with
     | `TUnknown -> `Any_path (path ())
     | `TModule -> `Module_path (path ())
     | `TPage -> `Page_path (path ())
+    | `TAsset -> `Asset_path (path ())
     | _ ->
         expected ~expect_paths:true [ "module"; "page" ] location
         |> Error.raise_exception
@@ -379,7 +392,7 @@ let parse whole_reference_location s :
               location
             |> Error.raise_exception)
     | next_token :: tokens when ends_in_slash next_token ->
-        any_path token kind next_token tokens
+        label_parent_path token kind next_token tokens
     | next_token :: tokens -> (
         match kind with
         | `TUnknown -> `Dot (label_parent next_token tokens, identifier)
@@ -499,6 +512,21 @@ let parse whole_reference_location s :
             in
             (* Prefixed pages are not differentiated. *)
             `Page_path (path [ identifier ] next_token tokens)
+        | `TAsset ->
+            let () =
+              match next_token.kind with
+              | `End_in_slash -> ()
+              | `None | `Prefixed _ ->
+                  let suggestion =
+                    Printf.sprintf "Reference assets as '<parent_path>/%s'."
+                      identifier
+                  in
+                  not_allowed ~what:"Asset label"
+                    ~in_what:"on the right side of a dot" ~suggestion location
+                  |> Error.raise_exception
+            in
+            (* Prefixed assets are not differentiated. *)
+            `Asset_path (path [ identifier ] next_token tokens)
         | `TPathComponent -> assert false)
   in
 

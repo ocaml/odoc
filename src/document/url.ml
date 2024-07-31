@@ -190,6 +190,7 @@ module Path = struct
     | { iv = `AssetFile (parent, name); _ } ->
         let parent = from_identifier (parent :> any) in
         let kind = `File in
+        let name = AssetName.to_string name in
         mk ~parent kind name
 
   let from_identifier p =

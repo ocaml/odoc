@@ -36,6 +36,8 @@ module Names = struct
 
   let pagename = To_string PageName.to_string
 
+  let assetname = To_string AssetName.to_string
+
   let parametername = To_string ModuleName.to_string
 
   let defname = To_string DefName.to_string
@@ -77,7 +79,10 @@ module General_paths = struct
                 ((parent :> id_t option), name),
                 Pair (Option identifier, Names.pagename) )
         | `AssetFile (parent, name) ->
-            C ("`AssetFile", ((parent :> id_t), name), Pair (identifier, string))
+            C
+              ( "`AssetFile",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.assetname) )
         | `Root (parent, name) ->
             C
               ( "`Root",
@@ -197,6 +202,7 @@ module General_paths = struct
       | `TModule -> C0 "`TModule"
       | `TModuleType -> C0 "`TModuleType"
       | `TPage -> C0 "`TPage"
+      | `TAsset -> C0 "`TAsset"
       | `TType -> C0 "`TType"
       | `TUnknown -> C0 "`TUnknown"
       | `TValue -> C0 "`TValue"
@@ -300,6 +306,7 @@ module General_paths = struct
       | `Root (x1, x2) -> C ("`Root", (x1, x2), Pair (string, reference_tag))
       | `Dot (x1, x2) -> C ("`Dot", ((x1 :> r), x2), Pair (reference, string))
       | `Page_path x -> C ("`Page_path", x, hierarchy_reference)
+      | `Asset_path x -> C ("`Asset_path", x, hierarchy_reference)
       | `Module_path x -> C ("`Module_path", x, hierarchy_reference)
       | `Any_path x -> C ("`Any_path", x, hierarchy_reference)
       | `Module (x1, x2) ->

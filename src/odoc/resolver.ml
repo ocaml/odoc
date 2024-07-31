@@ -447,6 +447,13 @@ let lookup_path ~possible_unit_names ~named_roots ~hierarchy (tag, path) :
       |> List.find_map find_in_hierarchy
       |> option_to_result
 
+let lookup_asset_by_path ~pages ~hierarchy path =
+  let possible_unit_names name = [ "asset-" ^ name ^ ".odoc" ] in
+  match lookup_path ~possible_unit_names ~named_roots:pages ~hierarchy path with
+  | Ok (Odoc_file.Asset_content asset) -> Ok asset
+  | Ok _ -> Error `Not_found (* TODO: Report is not an asset. *)
+  | Error _ as e -> e
+
 let lookup_page_by_path ~pages ~hierarchy path =
   let possible_unit_names name = [ "page-" ^ name ^ ".odoc" ] in
   match lookup_path ~possible_unit_names ~named_roots:pages ~hierarchy path with
@@ -471,6 +478,10 @@ let lookup_unit ~important_digests ~imports_map ap ~libs ~hierarchy = function
 let lookup_page ap ~pages ~hierarchy = function
   | `Path p -> lookup_page_by_path ~pages ~hierarchy p
   | `Name n -> lookup_page_by_name ap n
+
+let lookup_asset ~pages ~hierarchy = function
+  | `Path p -> lookup_asset_by_path ~pages ~hierarchy p
+  | `Name _ -> failwith "TODO"
 
 type t = {
   important_digests : bool;
@@ -566,8 +577,11 @@ let build_compile_env_for_unit
   let lookup_unit =
     lookup_unit ~important_digests ~imports_map ap ~libs:None ~hierarchy:None
   and lookup_page _ = Error `Not_found
+  and lookup_asset _ = Error `Not_found
   and lookup_impl = lookup_impl ap in
-  let resolver = { Env.open_units; lookup_unit; lookup_page; lookup_impl } in
+  let resolver =
+    { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_asset }
+  in
   Env.env_of_unit m ~linking:false resolver
 
 (** [important_digests] and [imports_map] only apply to modules. *)
@@ -589,8 +603,9 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots
   let lookup_unit =
     lookup_unit ~important_digests ~imports_map ap ~libs ~hierarchy
   and lookup_page = lookup_page ap ~pages ~hierarchy
+  and lookup_asset = lookup_asset ~pages ~hierarchy
   and lookup_impl = lookup_impl ap in
-  { Env.open_units; lookup_unit; lookup_page; lookup_impl }
+  { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_asset }
 
 let build_compile_env_for_impl t i =
   let imports_map =

@@ -32,7 +32,7 @@ module Identifier = struct
   type source_page = source_page_pv id
   (** @canonical Odoc_model.Paths.Identifier.SourcePage.t *)
 
-  type asset_file_pv = [ `AssetFile of page * string ]
+  type asset_file_pv = [ `AssetFile of page * AssetName.t ]
   (** The second argument is the filename.
 
     @canonical Odoc_model.Paths.Identifier.AssetFile.t_pv *)
@@ -575,6 +575,7 @@ module rec Reference : sig
     | `TInstanceVariable
     | `TLabel
     | `TPage
+    | `TAsset
     | `TChildPage
     | `TChildModule
     | `TUnknown ]
@@ -650,6 +651,8 @@ module rec Reference : sig
     | `ClassType of signature * TypeName.t
     | `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.LabelParent.t *)
+
+  type asset = [ `Asset_path of hierarchy ]
 
   type module_ =
     [ `Resolved of Resolved_reference.module_
@@ -769,6 +772,7 @@ module rec Reference : sig
     | `Dot of label_parent * string
     | `Page_path of hierarchy
     | `Module_path of hierarchy
+    | `Asset_path of hierarchy
     | `Any_path of hierarchy
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
@@ -928,6 +932,9 @@ and Resolved_reference : sig
 
   type page = [ `Identifier of Identifier.reference_page ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Page.t *)
+
+  type asset = [ `Identifier of Identifier.asset_file ]
+  (** @canonical Odoc_model.Paths.Reference.Resolved.Asset.t *)
 
   type any =
     [ `Identifier of Identifier.any

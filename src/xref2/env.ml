@@ -14,6 +14,7 @@ type resolver = {
   open_units : string list;
   lookup_unit : path_query -> (lookup_unit_result, lookup_error) result;
   lookup_page : path_query -> (Lang.Page.t, lookup_error) result;
+  lookup_asset : path_query -> (Lang.Asset.t, lookup_error) result;
   lookup_impl : string -> Lang.Implementation.t option;
 }
 
@@ -431,6 +432,11 @@ let lookup_page query env =
   | None -> Error `Not_found
   | Some r -> r.lookup_page query
 
+let lookup_asset query env =
+  match env.resolver with
+  | None -> Error `Not_found
+  | Some r -> r.lookup_asset query
+
 let lookup_unit query env =
   match env.resolver with
   | None -> Error `Not_found
@@ -441,6 +447,9 @@ let lookup_impl name env =
 
 let lookup_page_by_name n env = lookup_page (`Name n) env
 let lookup_page_by_path p env = lookup_page (`Path p) env
+
+let lookup_asset_by_name p env = lookup_asset (`Name p) env
+let lookup_asset_by_path p env = lookup_asset (`Path p) env
 
 let lookup_unit_by_path p env =
   match lookup_unit (`Path p) env with

@@ -6,6 +6,7 @@
   $ odoc compile --output-dir h --parent-id pkg/doc/subdir doc/subdir/bar.mld
   $ odoc compile --output-dir h --parent-id pkg/doc/subdir doc/subdir/dup.mld
   $ odoc compile --output-dir h --parent-id pkg/lib/libname test.cmt
+  $ odoc compile-asset --output-dir h --parent-id pkg/doc --name img.png
 
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/subdir/page-dup.odoc
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/subdir/page-bar.odoc
@@ -67,6 +68,10 @@ Helper that extracts references in a compact way. Headings help to interpret the
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
   {"`Reference":[{"`Any_path":["`TRelativePath",["Test"]]},[]]}
   {"`Reference":[{"`Root":["Test","`TUnknown"]},[]]}
+  ["Asset"]
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`AssetFile":[{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]},"img.png"]}}},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`AssetFile":[{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]},"img.png"]}}},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`AssetFile":[{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]},"img.png"]}}},[]]}
 
   $ odoc_print ./h/pkg/doc/subdir/page-bar.odocl | jq_references
   ["Title","for","subdir/bar"]

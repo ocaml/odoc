@@ -2,7 +2,8 @@ let compile ~parent_id ~name ~output_dir =
   let open Odoc_model in
   let parent_id = Compile.mk_id parent_id in
   let id =
-    Paths.Identifier.Mk.asset_file ((parent_id :> Paths.Identifier.Page.t), name)
+    Paths.Identifier.Mk.asset_file
+      ((parent_id :> Paths.Identifier.Page.t), Names.AssetName.make_std name)
   in
   let directory =
     Compile.path_of_id output_dir parent_id

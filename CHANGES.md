@@ -25,6 +25,7 @@
   number of occurrences of each entry of the index in the json output
   (@panglesd, #1076).
 - Added a `compile-asset` command (@EmileTrotignon, @panglesd, #1170)
+- Allow referencing assets (@panglesd, #1171)
 
 ### Changed
 

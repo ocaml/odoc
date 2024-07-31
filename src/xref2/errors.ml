@@ -20,6 +20,7 @@ module Tools_error = struct
     | `Label
     | `Page_path
     | `Module_path
+    | `Asset_path
     | `Any_path ]
 
   type path_kind = [ `Page | `Unit ]
@@ -144,6 +145,7 @@ module Tools_error = struct
       | `Label -> "label"
       | `Page_path -> "path to a page"
       | `Module_path -> "path to a module"
+      | `Asset_path -> "path to an asset"
       | `Any_path -> "path"
     in
     Format.pp_print_string fmt k

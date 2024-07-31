@@ -10,3 +10,7 @@
 {!//subdir/dup} {!/pkg/subdir/dup} {!subdir/dup}
 {1 Module Test}
 {!//Test} {!/libname/Test} {!./Test} {!Test}
+
+{1 Asset}
+
+{!//asset-"img.png"} {!./asset-"img.png"} {!/pkg/asset-"img.png"}
