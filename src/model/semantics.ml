@@ -4,6 +4,11 @@ module Ast = Odoc_parser.Ast
 type internal_tags_removed =
   [ `Tag of Ast.ocamldoc_tag
   | `Heading of Ast.heading
+  | `Media of
+    Ast.reference_kind
+    * Ast.media_href Ast.with_location
+    * Ast.inline_element Ast.with_location list
+    * Ast.media
   | Ast.nestable_block_element ]
 (** {!Ast.block_element} without internal tags. *)
 
@@ -105,7 +110,7 @@ let not_allowed :
 let describe_element = function
   | `Reference (`Simple, _, _) -> "'{!...}' (cross-reference)"
   | `Reference (`With_text, _, _) -> "'{{!...} ...}' (cross-reference)"
-  | `Link _ -> "'{{:...} ...}' (external link)"
+  | `Link (_, _) -> "'{{:...} ...}' (external link)"
   | `Heading (level, _, _) ->
       Printf.sprintf "'{%i ...}' (section heading)" level
 
@@ -270,6 +275,49 @@ let rec nestable_block_element :
           grid
       in
       `Table { Comment.data; align } |> Location.at location
+  | { value = `Media (_, { value = `Link href; _ }, content, m); location } ->
+      let text = inline_elements status content in
+      `Media (`Link href, m, text) |> Location.at location
+  | {
+   value =
+     `Media
+       (kind, { value = `Reference href; location = _href_location }, content, m);
+   location;
+  } -> (
+      let fallback error =
+        Error.raise_warning error;
+        let placeholder =
+          match kind with
+          | `Simple -> `Code_span href
+          | `With_text -> `Styled (`Emphasis, content)
+        in
+        `Paragraph
+          (inline_elements status [ placeholder |> Location.at location ])
+        |> Location.at location
+      in
+      match
+        Error.raise_warnings (Reference.parse_asset (* href_location  *) href)
+      with
+      | Result.Ok target ->
+          let text = inline_elements status content in
+          (* let asset_ref_of_ref : *)
+          (*     Paths.Reference.t -> (Paths.Reference.Asset.t, _) Result.result = *)
+          (*   function *)
+          (*   | `Asset_path _ as a -> Result.Ok a *)
+          (*   (\* | `Root (_, `TAsset) as a -> Ok a *\) *)
+          (*   (\* | `Root (s, `TUnknown) -> Ok (`Root (s, `TAsset)) *\) *)
+          (*   (\* | `Dot (p, s) -> Ok (`Dot (p, s)) *\) *)
+          (*   | _ -> *)
+          (*       Error *)
+          (*         (not_allowed ~suggestion:"Use a reference to an asset" *)
+          (*            href_location ~what:"Non-asset reference" *)
+          (*            ~in_what:"media target") *)
+          (* in *)
+          (* match asset_ref_of_ref target with *)
+          (* | Error error -> fallback error *)
+          (* | Ok target -> *)
+          `Media (`Reference target, m, text) |> Location.at location
+      | Result.Error error -> fallback error)
 
 and nestable_block_elements status elements =
   List.map (nestable_block_element status) elements
@@ -354,12 +402,7 @@ let generate_heading_label : Comment.inline_element with_location list -> string
               anchor
           | `Styled (_, content) ->
               content |> strip_locs |> scan_inline_elements anchor
-          | `Reference (_, content) ->
-              content |> strip_locs
-              |> List.map (fun (ele : Comment.non_link_inline_element) ->
-                     (ele :> Comment.inline_element))
-              |> scan_inline_elements anchor
-          | `Link (_, content) ->
+          | `Reference (_, content) | `Link (_, content) ->
               content |> strip_locs
               |> List.map (fun (ele : Comment.non_link_inline_element) ->
                      (ele :> Comment.inline_element))
@@ -509,7 +552,9 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
                 loop tags ast' tl))
     | ({
          value =
-           `Tag #Ast.ocamldoc_tag | `Heading _ | #Ast.nestable_block_element;
+           ( `Tag #Ast.ocamldoc_tag
+           | `Heading _ | `Media _
+           | #Ast.nestable_block_element );
          _;
        } as hd)
       :: tl ->

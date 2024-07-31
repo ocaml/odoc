@@ -31,7 +31,12 @@ type general_block_element =
   | `Table of general_block_element abstract_table
   | `Heading of
     Comment.heading_attrs * Identifier.Label.t * general_link_content
-  | `Tag of general_tag ]
+  | `Tag of general_tag
+  | `Media of
+    [ `Reference of Paths.Reference.t | `Link of string ]
+    * media
+    * general_link_content
+  | `MediaLink of string * media * general_link_content ]
 
 and general_tag =
   [ `Author of string
@@ -49,6 +54,14 @@ and general_tag =
   | `Alert of string * string option ]
 
 and general_docs = general_block_element with_location list
+
+let media =
+  Variant
+    (function
+    | `Link -> C0 "`Link"
+    | `Audio -> C0 "`Audio"
+    | `Video -> C0 "`Video"
+    | `Image -> C0 "`Image")
 
 let rec inline_element : general_inline_element t =
   let style =
@@ -102,6 +115,12 @@ let heading =
   in
   Triple (heading_attrs, identifier, link_content)
 
+let media_href =
+  Variant
+    (function
+    | `Reference r -> C ("`Reference", r, reference)
+    | `Link l -> C ("`Link", l, string))
+
 let rec block_element : general_block_element t =
   let list_kind =
     Variant
@@ -134,7 +153,14 @@ let rec block_element : general_block_element t =
         let table_desc = Pair (data_desc, Option align_desc) in
         C ("`Table", (data, align), table_desc)
     | `Heading h -> C ("`Heading", h, heading)
-    | `Tag x -> C ("`Tag", x, tag))
+    | `Tag x -> C ("`Tag", x, tag)
+    | `Media (x1, m, x2) ->
+        C
+          ( "`MediaReference",
+            (x1, m, x2),
+            Triple (media_href, media, link_content) )
+    | `MediaLink (x1, m, x2) ->
+        C ("`MediaLink", (x1, m, x2), Triple (string, media, link_content)))
 
 and tag : general_tag t =
   let url_kind =
