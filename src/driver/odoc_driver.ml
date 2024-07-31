@@ -451,6 +451,7 @@ let render_stats env nprocs =
   let total = Atomic.get Stats.stats.total_units in
   let total_impls = Atomic.get Stats.stats.total_impls in
   let total_mlds = Atomic.get Stats.stats.total_mlds in
+  let total_indexes = Atomic.get Stats.stats.total_indexes in
   let bar message total =
     let open Progress.Line in
     list [ lpad 16 (const message); bar total; count_to total ]
@@ -459,6 +460,12 @@ let render_stats env nprocs =
     let open Progress.Line in
     list [ lpad 16 (const "Processes"); bar total; count_to total ]
   in
+  let description =
+    let open Progress.Line in
+    string
+  in
+  let descriptions = Multi.lines (List.init nprocs (fun _ -> description)) in
+
   let non_hidden = Atomic.get Stats.stats.non_hidden_units in
 
   let dline x y = Multi.line (bar x y) in
@@ -470,10 +477,12 @@ let render_stats env nprocs =
       ++ dline "Linking" non_hidden
       ++ dline "Linking impls" total_impls
       ++ dline "Linking mlds" total_mlds
+      ++ dline "Indexes" total_indexes
       ++ dline "HTML" (total_impls + non_hidden + total_mlds)
-      ++ line (procs nprocs))
-    (fun comp compimpl compmld link linkimpl linkmld html procs ->
-      let rec inner (a, b, c, d, e, f, g, h) =
+      ++ line (procs nprocs)
+      ++ descriptions)
+    (fun comp compimpl compmld link linkimpl linkmld indexes html procs descr ->
+      let rec inner (a, b, c, d, e, f, i, g, h) =
         Eio.Time.sleep clock 0.1;
         let a' = Atomic.get Stats.stats.compiled_units in
         let b' = Atomic.get Stats.stats.compiled_impls in
@@ -481,21 +490,25 @@ let render_stats env nprocs =
         let d' = Atomic.get Stats.stats.linked_units in
         let e' = Atomic.get Stats.stats.linked_impls in
         let f' = Atomic.get Stats.stats.linked_mlds in
+        let i' = Atomic.get Stats.stats.generated_indexes in
         let g' = Atomic.get Stats.stats.generated_units in
         let h' = Atomic.get Stats.stats.processes in
-
+        List.iteri
+          (fun i descr -> descr (Atomic.get Stats.stats.process_activity.(i)))
+          descr;
         comp (a' - a);
         compimpl (b' - b);
         compmld (c' - c);
         link (d' - d);
         linkimpl (e' - e);
         linkmld (f' - f);
+        indexes (i' - i);
         html (g' - g);
         procs (h' - h);
         if g' < non_hidden + total_impls + total_mlds then
-          inner (a', b', c', d', e', f', g', h')
+          inner (a', b', c', d', e', f', i', g', h')
       in
-      inner (0, 0, 0, 0, 0, 0, 0, 0))
+      inner (0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
     odoc_bin voodoo package_name blessed dune_style =
@@ -505,6 +518,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
   Eio.Switch.run @@ fun sw ->
   if verbose then Logs.set_level (Some Logs.Debug);
   Logs.set_reporter (Logs_fmt.reporter ());
+  Stats.init_nprocs nb_workers;
   let () = Worker_pool.start_workers env sw nb_workers in
 
   let all =
@@ -529,24 +543,26 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
     if voodoo then
       match Util.StringMap.to_list all with
       | [ (_, p) ] ->
-          let output_path = Fpath.(odoc_dir // p.mld_odoc_dir) in
+          let output_path = Fpath.(odoc_dir // p.pkg_dir / "doc") in
           Some output_path
       | _ -> failwith "Error, expecting singleton library in voodoo mode"
     else None
   in
-  Compile.init_stats all;
   let () =
     Eio.Fiber.both
       (fun () ->
+        let all =
+          let all = Util.StringMap.bindings all |> List.map snd in
+          Odoc_unit.of_packages ~output_dir:odoc_dir ~linked_dir:odocl_dir
+            ~index_dir:None all
+        in
+        Compile.init_stats all;
         let compiled =
-          Compile.compile ?partial ~output_dir:odoc_dir ?linked_dir:odocl_dir
+          Compile.compile ?partial ~partial_dir:odoc_dir ?linked_dir:odocl_dir
             all
         in
         let linked = Compile.link compiled in
-        let odocl_dir = match odocl_dir with Some l -> l | None -> odoc_dir in
-        let () = Compile.index ~odocl_dir all in
-        let () = Compile.sherlodoc ~html_dir ~odocl_dir all in
-        let () = Compile.html_generate html_dir ~odocl_dir linked in
+        let () = Compile.html_generate html_dir linked in
         let _ = Odoc.support_files html_dir in
         ())
       (fun () -> render_stats env nb_workers)
@@ -554,10 +570,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
 
   Format.eprintf "Final stats: %a@.%!" Stats.pp_stats Stats.stats;
   Format.eprintf "Total time: %f@.%!" (Stats.total_time ());
-  if stats then Stats.bench_results html_dir;
-  let indexes = Util.StringMap.map (fun _i pkg -> Indexes.package pkg) all in
-
-  ignore indexes
+  if stats then Stats.bench_results html_dir
 
 let fpath_arg =
   let print ppf v = Fpath.pp ppf v in

@@ -3,7 +3,10 @@ open Bos
 type id = Fpath.t
 
 let fpath_of_id id = id
-let id_of_fpath id = id
+
+let id_of_fpath id =
+  id |> Fpath.normalize
+  |> Fpath.rem_empty_seg (* If an odoc path ends with a [/] everything breaks *)
 
 let index_filename = "index.odoc-index"
 
