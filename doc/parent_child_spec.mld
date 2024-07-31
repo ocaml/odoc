@@ -13,9 +13,9 @@ The rules are;
 {- The output paths of [.mld] files and compilation units are subdirectories of their parent's
  output directory.}
 {- The output directory of a [.mld] file [x.mld] with children is [<parent_output_directory>/x],
-   and its file name is [index.html]. That is to say, [<parent_output_directory>/x/index.html]}
-{- The output directory of a [.mld] file [x.mld] without children is [<parent_output_directory> /x.html]}
-{- The output directory of a compilation unit [X] is [<parent_output_directory>/X/index.html]}
+   and its file name is [index.html]. That is to say, [<parent_output_directory>/x/index.html].}
+{- The output directory of a [.mld] file [x.mld] without children is [<parent_output_directory> /x.html].}
+{- The output directory of a compilation unit [X] is [<parent_output_directory>/X/index.html].}
 }
 
 {b Note:} The [--pkg <package>] option is still supported for backward compatibility in [odoc >= v2.0.0],
@@ -24,8 +24,8 @@ although it's now equivalent to specifying a parent [.mld] file.
 {1 Example}
 
 For example, let's consider [John] whose is [Doe] and [Mark]'s father. [Doe] has
-children, [Max], and page [foo], whereas [Mark] has no children. That is to say,
-[john.mld], [doe.mld], [mark.mld], [max.mld], [foo.ml] respectively. For instance;
+children, [Max] and page [foo], whereas [Mark] has no children. That is to say,
+[john.mld], [doe.mld], [mark.mld], [max.mld], and [foo.ml], respectively. For instance;
 
 [john.mld]
 
@@ -40,7 +40,7 @@ v}
 {v
 {0 About Doe}
 
-I'm Doe, the;
+I'm Doe, the
 - son to {{!page-john}John}
 - brother to {{!page-mark}Mark}
 - father to {{!page-max}Max}
@@ -81,7 +81,7 @@ $ ocamlc -c -bin-annot foo.ml
   && odoc compile mark.mld -I . --parent page-john
 v}
 
-The output of the compilation phase will be [.odoc] files, where each will be
+The compilation phase output will be [.odoc] files, where each will be
 linked by invoking the [odoc link] command on them.
 
 {2 Linking}
@@ -131,21 +131,21 @@ $ ls -R html
 v}
 
 {b Note:} We generated HTML files only for this example, but it's very possible to
-generate files in other formats (i.e, latex and man-pages) using:
+generate files in other formats (i.e., LaTex and man pages) using:
 
 {ul 
 {- [$ odoc latex-generate -o latex <file>.odocl]}
 {- [$ odoc man-generate -o man <file>.odocl]}
 }
 
-Of course there are different commands that [odoc] uses for other purposes; e.g.,
+Of course, there are different commands that [odoc] uses for other purposes; e.g.,
 for inspection:
 
 {ul 
-{- [odoc <html/latex/man>-targets ...] takes a glimpse of the expected targets}
+{- [odoc <html/latex/man>-targets ...] takes a glimpse of the expected targets.}
 {- [odoc compile-deps ...] lists units (with their digest) that need to be
  compiled in order to compile the current compilation unit. The unit itself and its
- digest is also reported in the output.}
+ digest are also reported in the output.}
 }
 
 For example, inspecting the dependencies required to compile [foo.cmt], we run
@@ -162,11 +162,10 @@ and we shall get
 
 For more about [odoc] commands, simply invoke [odoc --help] in your shell.
 
-{1 Convention for installed packages}
+{1 Convention for Installed Packages}
 
 Locally, the build system can make arbitrary complex documentation page
-hierarchies.
-However, the generated HTML documentation is generally not installed as part of
+hierarchies. However, the generated HTML documentation is generally not installed as part of
 a package. Instead the documentation source code made of [.mld] pages is
 installed and might be used by a different driver.
 
@@ -177,15 +176,15 @@ following convention should be followed.
 
 - [.mld] pages are installed in a package's [share] directory, under the
   [odoc-pages] sub-directory.
-- A page is the parent of every installed pages. The driver can freely name this
-  page, for example it can be named after the package. In what follows, we
+- A page is the parent of every installed page. The driver can freely name this
+  page; for example, it can be named after the package. In what follows, we
   refer to this page as the [pkg] page.
-- If there is an installed [index.mld] file, the driver has to use it as
+- If there is an installed [index.mld] file, the driver must use it as
   content for the [pkg] page.
 - If there is no installed [index.mld] page, the driver has to generate some
   content for the [pkg] page.
 
 This convention is followed by the
-{{:https://github.com/ocaml-doc/voodoo}driver for ocaml.org},
-by the driver {{:https://erratique.ch/software/odig/doc/packaging.html}Odig}
+{{:https://github.com/ocaml-doc/voodoo}driver for OCaml.org},
+by the driver {{:https://erratique.ch/software/odig/doc/packaging.html}Odig},
 and by the build system {{:https://github.com/ocaml/dune}Dune}.
