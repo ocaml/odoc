@@ -10,27 +10,30 @@ let mk_byhash (pkgs : Odoc_unit.intf Odoc_unit.unit list) =
     Util.StringMap.empty pkgs
 
 let init_stats (units : Odoc_unit.t list) =
-  let total, total_impl, non_hidden, mlds =
+  let total, total_impl, non_hidden, mlds, indexes =
     List.fold_left
-      (fun (total, total_impl, non_hidden, mlds) (unit : Odoc_unit.t) ->
+      (fun (total, total_impl, non_hidden, mlds, indexes) (unit : Odoc_unit.t) ->
         let total = match unit.kind with `Intf _ -> total + 1 | _ -> total in
         let total_impl =
           match unit.kind with `Impl _ -> total_impl + 1 | _ -> total_impl
         in
+        let indexes = Fpath.Set.add unit.index.output_file indexes in
         let non_hidden =
           match unit.kind with
           | `Intf { hidden = false; _ } -> non_hidden + 1
           | _ -> non_hidden
         in
         let mlds = match unit.kind with `Mld -> mlds + 1 | _ -> mlds in
-        (total, total_impl, non_hidden, mlds))
-      (0, 0, 0, 0) units
+        (total, total_impl, non_hidden, mlds, indexes))
+      (0, 0, 0, 0, Fpath.Set.empty)
+      units
   in
 
   Atomic.set Stats.stats.total_units total;
   Atomic.set Stats.stats.total_impls total_impl;
   Atomic.set Stats.stats.non_hidden_units non_hidden;
-  Atomic.set Stats.stats.total_mlds mlds
+  Atomic.set Stats.stats.total_mlds mlds;
+  Atomic.set Stats.stats.total_indexes (Fpath.Set.cardinal indexes)
 
 open Eio.Std
 

@@ -6,6 +6,7 @@ type stats = {
   mutable total_units : int Atomic.t;
   mutable total_impls : int Atomic.t;
   mutable total_mlds : int Atomic.t;
+  mutable total_indexes : int Atomic.t;
   mutable non_hidden_units : int Atomic.t;
   mutable compiled_units : int Atomic.t;
   mutable compiled_impls : int Atomic.t;
@@ -24,6 +25,7 @@ let stats =
     total_units = Atomic.make 0;
     total_impls = Atomic.make 0;
     total_mlds = Atomic.make 0;
+    total_indexes = Atomic.make 0;
     non_hidden_units = Atomic.make 0;
     compiled_units = Atomic.make 0;
     compiled_impls = Atomic.make 0;

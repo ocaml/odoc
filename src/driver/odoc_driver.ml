@@ -451,6 +451,7 @@ let render_stats env nprocs =
   let total = Atomic.get Stats.stats.total_units in
   let total_impls = Atomic.get Stats.stats.total_impls in
   let total_mlds = Atomic.get Stats.stats.total_mlds in
+  let total_indexes = Atomic.get Stats.stats.total_indexes in
   let bar message total =
     let open Progress.Line in
     list [ lpad 16 (const message); bar total; count_to total ]
@@ -476,7 +477,7 @@ let render_stats env nprocs =
       ++ dline "Linking" non_hidden
       ++ dline "Linking impls" total_impls
       ++ dline "Linking mlds" total_mlds
-      ++ dline "Indexes" 10000 (* TODO *)
+      ++ dline "Indexes" total_indexes
       ++ dline "HTML" (total_impls + non_hidden + total_mlds)
       ++ line (procs nprocs)
       ++ descriptions)
