@@ -140,7 +140,7 @@ directory.
 [odoc] supports compiling {i implementations}. This can be useful to render source
 code, generate links from and to source code, and count occurrences of
 identifiers. The [compile-src] command takes a source-tree parent file and a
-source path, which has to be in the source tree.
+source path that has to be in the source tree.
 
 Linking a file with [odoc] requires the input file and a list of include paths. As
 for compile, we will hard-code the include path.
