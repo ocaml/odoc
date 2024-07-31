@@ -459,6 +459,12 @@ let render_stats env nprocs =
     let open Progress.Line in
     list [ lpad 16 (const "Processes"); bar total; count_to total ]
   in
+  let description =
+    let open Progress.Line in
+    string
+  in
+  let descriptions = Multi.lines (List.init nprocs (fun _ -> description)) in
+
   let non_hidden = Atomic.get Stats.stats.non_hidden_units in
 
   let dline x y = Multi.line (bar x y) in
@@ -472,8 +478,9 @@ let render_stats env nprocs =
       ++ dline "Linking mlds" total_mlds
       ++ dline "Indexes" 10000 (* TODO *)
       ++ dline "HTML" (total_impls + non_hidden + total_mlds)
-      ++ line (procs nprocs))
-    (fun comp compimpl compmld link linkimpl linkmld indexes html procs ->
+      ++ line (procs nprocs)
+      ++ descriptions)
+    (fun comp compimpl compmld link linkimpl linkmld indexes html procs descr ->
       let rec inner (a, b, c, d, e, f, i, g, h) =
         Eio.Time.sleep clock 0.1;
         let a' = Atomic.get Stats.stats.compiled_units in
@@ -485,7 +492,9 @@ let render_stats env nprocs =
         let i' = Atomic.get Stats.stats.generated_indexes in
         let g' = Atomic.get Stats.stats.generated_units in
         let h' = Atomic.get Stats.stats.processes in
-
+        List.iteri
+          (fun i descr -> descr (Atomic.get Stats.stats.process_activity.(i)))
+          descr;
         comp (a' - a);
         compimpl (b' - b);
         compmld (c' - c);
@@ -508,6 +517,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
   Eio.Switch.run @@ fun sw ->
   if verbose then Logs.set_level (Some Logs.Debug);
   Logs.set_reporter (Logs_fmt.reporter ());
+  Stats.init_nprocs nb_workers;
   let () = Worker_pool.start_workers env sw nb_workers in
 
   let all =

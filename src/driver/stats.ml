@@ -16,6 +16,7 @@ type stats = {
   mutable generated_indexes : int Atomic.t;
   mutable generated_units : int Atomic.t;
   mutable processes : int Atomic.t;
+  mutable process_activity : string Atomic.t Array.t;
 }
 
 let stats =
@@ -33,7 +34,11 @@ let stats =
     generated_units = Atomic.make 0;
     generated_indexes = Atomic.make 0;
     processes = Atomic.make 0;
+    process_activity = [||];
   }
+
+let init_nprocs nprocs =
+  stats.process_activity <- Array.init nprocs (fun _ -> Atomic.make "idle")
 
 let pp_stats fmt stats =
   Fmt.pf fmt
