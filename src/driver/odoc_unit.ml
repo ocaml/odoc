@@ -90,17 +90,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
     let output_file = Fpath.(index_dir / pkg.name / Odoc.index_filename) in
     { pkg_args; output_file; json = false; search_dir = pkg.pkg_dir }
   in
-  let rec build_deps deps =
-    List.filter_map
-      (fun (_name, hash) ->
-        match Util.StringMap.find_opt hash hashtable with
-        | None -> None
-        | Some (pkg, lib, mod_) ->
-            let result = of_intf mod_.m_hidden pkg lib mod_.m_intf in
-            Hashtbl.add cache mod_.m_intf.mif_hash result;
-            Some result)
-      deps
-  and make_unit ~rel_dir ~input_file ~prefix ~pkg ~include_dirs : _ unit =
+  let make_unit ~kind ~rel_dir ~input_file ~prefix ~pkg ~include_dirs : _ unit =
     let ( // ) = Fpath.( // ) in
     let ( / ) = Fpath.( / ) in
     let filename = input_file |> Fpath.rem_ext |> Fpath.basename in
@@ -118,9 +108,20 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
       odoc_file;
       odocl_file;
       include_dirs;
-      kind = ();
+      kind;
       index = index_of pkg;
     }
+  in
+  let rec build_deps deps =
+    List.filter_map
+      (fun (_name, hash) ->
+        match Util.StringMap.find_opt hash hashtable with
+        | None -> None
+        | Some (pkg, lib, mod_) ->
+            let result = of_intf mod_.m_hidden pkg lib mod_.m_intf in
+            Hashtbl.add cache mod_.m_intf.mif_hash result;
+            Some result)
+      deps
   and of_intf hidden pkg libname (intf : Packages.intf) : intf unit =
     match Hashtbl.find_opt cache intf.mif_hash with
     | Some unit -> unit
@@ -133,11 +134,8 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
           let kind = `Intf { hidden; hash = intf.mif_hash; deps } in
           (include_dirs, kind)
         in
-        let unit =
-          make_unit ~rel_dir ~prefix:"" ~input_file:intf.mif_path ~pkg
-            ~include_dirs
-        in
-        { unit with kind }
+        make_unit ~kind ~rel_dir ~prefix:"" ~input_file:intf.mif_path ~pkg
+          ~include_dirs
   in
   let of_impl pkg libname (impl : Packages.impl) : impl unit option =
     let open Fpath in
@@ -157,10 +155,9 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
           `Impl { src_id; src_path }
         in
         let unit =
-          make_unit ~rel_dir ~input_file:impl.mip_path ~pkg ~include_dirs
+          make_unit ~kind ~rel_dir ~input_file:impl.mip_path ~pkg ~include_dirs
             ~prefix:"impl-"
         in
-        let unit = { unit with kind } in
         Some unit
   in
 
@@ -191,9 +188,9 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
     let include_dirs = (output_dir // rel_dir) :: include_dirs in
     let kind = `Mld in
     let unit =
-      make_unit ~rel_dir ~input_file:mld_path ~pkg ~include_dirs ~prefix:"page-"
+      make_unit ~kind ~rel_dir ~input_file:mld_path ~pkg ~include_dirs
+        ~prefix:"page-"
     in
-    let unit = { unit with kind } in
     [ unit ]
   in
   let of_package (pkg : Packages.t) : t list =
