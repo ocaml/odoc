@@ -149,7 +149,7 @@ let compile ?partial ~partial_dir ?linked_dir:_ (all : Odoc_unit.t list) =
       ~includes ~parent_id:unit.parent_id;
     Atomic.incr Stats.stats.compiled_mlds
   in
-  let _compiled_mlds = Fiber.List.map compile_mld mld_units in
+  let () = Fiber.List.iter compile_mld mld_units in
   let compile_impl (unit : Odoc_unit.impl Odoc_unit.unit) =
     let includes = Fpath.Set.of_list unit.include_dirs in
     let source_id = match unit.kind with `Impl src -> src.src_id in
@@ -157,7 +157,7 @@ let compile ?partial ~partial_dir ?linked_dir:_ (all : Odoc_unit.t list) =
       ~includes ~parent_id:unit.parent_id ~source_id;
     Atomic.incr Stats.stats.compiled_impls
   in
-  let _compiled_impls = Fiber.List.map compile_impl impl_units in
+  let () = Fiber.List.iter compile_impl impl_units in
   let zipped_res =
     List.map2
       (fun Odoc_unit.{ kind = `Intf { hash; _ }; _ } b -> (hash, b))

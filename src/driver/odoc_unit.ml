@@ -90,44 +90,54 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
     let output_file = Fpath.(index_dir / pkg.name / Odoc.index_filename) in
     { pkg_args; output_file; json = false; search_dir = pkg.pkg_dir }
   in
-  let rec of_intf hidden pkg libname (intf : Packages.intf) : intf unit =
+  let rec build_deps deps =
+    List.filter_map
+      (fun (_name, hash) ->
+        match Util.StringMap.find_opt hash hashtable with
+        | None -> None
+        | Some (pkg, lib, mod_) ->
+            let result = of_intf mod_.m_hidden pkg lib mod_.m_intf in
+            Hashtbl.add cache mod_.m_intf.mif_hash result;
+            Some result)
+      deps
+  and make_unit ~rel_dir ~input_file ~prefix ~pkg ~include_dirs : _ unit =
+    let ( // ) = Fpath.( // ) in
+    let ( / ) = Fpath.( / ) in
+    let filename = input_file |> Fpath.rem_ext |> Fpath.basename in
+    let odoc_dir = output_dir // rel_dir in
+    let parent_id = rel_dir |> Odoc.id_of_fpath in
+    let odoc_file = odoc_dir / (prefix ^ filename ^ ".odoc") in
+    let odocl_file = linked_dir // rel_dir / (prefix ^ filename ^ ".odocl") in
+    {
+      output_dir;
+      pkgname = pkg.Packages.name;
+      pkg_args;
+      parent_id;
+      odoc_dir;
+      input_file;
+      odoc_file;
+      odocl_file;
+      include_dirs;
+      kind = ();
+      index = index_of pkg;
+    }
+  and of_intf hidden pkg libname (intf : Packages.intf) : intf unit =
     match Hashtbl.find_opt cache intf.mif_hash with
     | Some unit -> unit
     | None ->
         let open Fpath in
         let rel_dir = pkg.Packages.pkg_dir / "lib" / libname in
-        let odoc_dir = output_dir // rel_dir in
-        let parent_id = rel_dir |> Odoc.id_of_fpath in
-        let filename = intf.mif_path |> Fpath.rem_ext |> Fpath.basename in
-        let odoc_file = odoc_dir / (filename ^ ".odoc") in
-        let odocl_file = linked_dir // rel_dir / (filename ^ ".odocl") in
-        let input_file = intf.mif_path in
-        let deps =
-          List.filter_map
-            (fun (_name, hash) ->
-              match Util.StringMap.find_opt hash hashtable with
-              | None -> None
-              | Some (pkg, lib, mod_) ->
-                  let result = of_intf mod_.m_hidden pkg lib mod_.m_intf in
-                  Hashtbl.add cache mod_.m_intf.mif_hash result;
-                  Some result)
-            intf.mif_deps
+        let include_dirs, kind =
+          let deps = build_deps intf.mif_deps in
+          let include_dirs = List.map (fun u -> u.odoc_dir) deps in
+          let kind = `Intf { hidden; hash = intf.mif_hash; deps } in
+          (include_dirs, kind)
         in
-        let include_dirs = List.map (fun u -> u.odoc_dir) deps in
-        let kind = `Intf { hidden; hash = intf.mif_hash; deps } in
-        {
-          output_dir;
-          pkgname = pkg.name;
-          pkg_args;
-          parent_id;
-          odoc_dir;
-          input_file;
-          odoc_file;
-          odocl_file;
-          include_dirs;
-          kind;
-          index = index_of pkg;
-        }
+        let unit =
+          make_unit ~rel_dir ~prefix:"" ~input_file:intf.mif_path ~pkg
+            ~include_dirs
+        in
+        { unit with kind }
   in
   let of_impl pkg libname (impl : Packages.impl) : impl unit option =
     let open Fpath in
@@ -135,45 +145,23 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
     | None -> None
     | Some { src_path } ->
         let rel_dir = pkg.Packages.pkg_dir / "lib" / libname in
-        let odoc_dir = output_dir // rel_dir in
-        let parent_id = rel_dir |> Odoc.id_of_fpath in
-        let filename = impl.mip_path |> Fpath.rem_ext |> Fpath.basename in
-        let odoc_file = odoc_dir / ("impl-" ^ filename ^ ".odoc") in
-        let odocl_file =
-          linked_dir // rel_dir / ("impl-" ^ filename ^ ".odocl")
+        let include_dirs =
+          let deps = build_deps impl.mip_deps in
+          List.map (fun u -> u.odoc_dir) deps
         in
-        let input_file = impl.mip_path in
-        let src_name = Fpath.filename src_path in
-        let src_id =
-          Fpath.(pkg.pkg_dir / "src" / libname / src_name) |> Odoc.id_of_fpath
+        let kind =
+          let src_name = Fpath.filename src_path in
+          let src_id =
+            Fpath.(pkg.pkg_dir / "src" / libname / src_name) |> Odoc.id_of_fpath
+          in
+          `Impl { src_id; src_path }
         in
-        let deps =
-          List.filter_map
-            (fun (_name, hash) ->
-              match Util.StringMap.find_opt hash hashtable with
-              | None -> None
-              | Some (pkg, lib, mod_) ->
-                  let result = of_intf mod_.m_hidden pkg lib mod_.m_intf in
-                  Hashtbl.add cache mod_.m_intf.mif_hash result;
-                  Some result)
-            impl.mip_deps
+        let unit =
+          make_unit ~rel_dir ~input_file:impl.mip_path ~pkg ~include_dirs
+            ~prefix:"impl-"
         in
-        let include_dirs = List.map (fun u -> u.odoc_dir) deps in
-        let kind = `Impl { src_id; src_path } in
-        Some
-          {
-            output_dir;
-            pkgname = pkg.name;
-            parent_id;
-            odoc_dir;
-            input_file;
-            odoc_file;
-            odocl_file;
-            pkg_args;
-            include_dirs;
-            kind;
-            index = index_of pkg;
-          }
+        let unit = { unit with kind } in
+        Some unit
   in
 
   let of_module pkg libname (m : Packages.modulety) : [ impl | intf ] unit list
@@ -194,34 +182,19 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
       pkg.Packages.pkg_dir / "doc" // Fpath.parent mld_rel_path
       |> Fpath.normalize
     in
-    let odoc_dir = output_dir // rel_dir in
-    let filename = mld_path |> Fpath.rem_ext |> Fpath.basename in
-    let odoc_file = odoc_dir / ("page-" ^ filename ^ ".odoc") in
-    let odocl_file = linked_dir // rel_dir / ("page-" ^ filename ^ ".odocl") in
-    let parent_id = rel_dir |> Odoc.id_of_fpath in
     let include_dirs =
       List.map
         (fun (lib : Packages.libty) ->
           Fpath.(output_dir // pkg.pkg_dir / "lib" / lib.lib_name))
         pkg.libraries
     in
-    let include_dirs = odoc_dir :: include_dirs in
+    let include_dirs = (output_dir // rel_dir) :: include_dirs in
     let kind = `Mld in
-    [
-      {
-        output_dir;
-        pkgname = pkg.name;
-        parent_id;
-        odoc_dir;
-        input_file = mld_path;
-        odoc_file;
-        odocl_file;
-        kind;
-        pkg_args;
-        include_dirs;
-        index = index_of pkg;
-      };
-    ]
+    let unit =
+      make_unit ~rel_dir ~input_file:mld_path ~pkg ~include_dirs ~prefix:"page-"
+    in
+    let unit = { unit with kind } in
+    [ unit ]
   in
   let of_package (pkg : Packages.t) : t list =
     let lib_units :> t list list = List.map (of_lib pkg) pkg.libraries in
