@@ -128,7 +128,7 @@ type token = {
   location : Location_.span;
 }
 
-type path_prefix = Path_prefix of string
+type path_prefix = Path_prefix of string * Location_.span
 
 (* The string is scanned right-to-left, because we are interested in right-most
    hyphens. The tokens are also returned in right-to-left order, because the
@@ -207,7 +207,10 @@ let tokenize location s : token list * path_prefix option =
     let location = Location_.span [ location; identifier_location ] in
     (kind, location)
   and scan_path started_at tokens =
-    (tokens, Some (Path_prefix (String.sub s 0 (started_at + 1))))
+    let location =
+      Location_.in_string s ~offset:0 ~length:(started_at + 1) location
+    in
+    (tokens, Some (Path_prefix (String.sub s 0 (started_at + 1), location)))
   in
 
   scan_identifier (String.length s) 0 (String.length s - 1) []
@@ -221,15 +224,41 @@ let expected ?(expect_paths = false) allowed location =
   let allowed = List.map (Printf.sprintf "'%s-'") allowed @ unqualified in
   expected_err (pp_hum_comma_separated Format.pp_print_string) allowed location
 
-let parse_path p =
+let parse_path whole_path_location p =
   let segs = String.split_on_char '/' p in
+  let check segs start =
+    let _finish =
+      List.fold_left
+        (fun offset seg ->
+          match seg with
+          | "" ->
+              let location =
+                Location_.in_string p ~offset ~length:0 whole_path_location
+              in
+              should_not_be_empty ~what:"Identifier in path reference" location
+              |> Error.raise_exception
+          | seg -> offset + String.length seg + 1)
+        start segs
+    in
+    ()
+  in
   match segs with
-  | "." :: segs -> (`TRelativePath, segs)
-  | "" :: "" :: segs -> (`TCurrentPackage, segs)
-  | "" :: segs -> (`TAbsolutePath, segs)
-  | segs -> (`TRelativePath, segs)
+  | "." :: segs ->
+      check segs 2;
+      (`TRelativePath, segs)
+  | "" :: "" :: segs ->
+      check segs 2;
+      (`TCurrentPackage, segs)
+  | "" :: segs ->
+      check segs 1;
+      (`TAbsolutePath, segs)
+  | segs ->
+      check segs 0;
+      (`TRelativePath, segs)
 
-let parse_path_prefix (Path_prefix p) identifier = parse_path (p ^ identifier)
+let parse_path_prefix (Path_prefix (p, path_location)) identifier
+    prefix_location =
+  parse_path (Location_.span [ path_location; prefix_location ]) (p ^ identifier)
 
 (* Parse references that do not contain a [/]. Raises errors and warnings. *)
 let parse whole_reference_location s :
@@ -255,7 +284,7 @@ let parse whole_reference_location s :
           | Some p -> (
               match kind with
               | `TUnknown | `TModule ->
-                  `Module_path (parse_path_prefix p identifier)
+                  `Module_path (parse_path_prefix p identifier location)
               | _ ->
                   expected ~expect_paths:true [ "module" ] location
                   |> Error.raise_exception))
@@ -287,7 +316,7 @@ let parse whole_reference_location s :
           | Some p -> (
               match kind with
               | `TUnknown | `TModule ->
-                  `Module_path (parse_path_prefix p identifier)
+                  `Module_path (parse_path_prefix p identifier location)
               | _ ->
                   expected ~expect_paths:true [ "module" ] location
                   |> Error.raise_exception))
@@ -335,9 +364,11 @@ let parse whole_reference_location s :
 
     let label_parent_path kind path_prefix identifier location =
       match kind with
-      | `TUnknown -> `Any_path (parse_path_prefix path_prefix identifier)
-      | `TModule -> `Module_path (parse_path_prefix path_prefix identifier)
-      | `TPage -> `Page_path (parse_path_prefix path_prefix identifier)
+      | `TUnknown ->
+          `Any_path (parse_path_prefix path_prefix identifier location)
+      | `TModule ->
+          `Module_path (parse_path_prefix path_prefix identifier location)
+      | `TPage -> `Page_path (parse_path_prefix path_prefix identifier location)
       | _ ->
           expected ~expect_paths:true [ "module"; "page" ] location
           |> Error.raise_exception
@@ -345,10 +376,13 @@ let parse whole_reference_location s :
 
     let any_path kind path_prefix identifier location =
       match kind with
-      | `TUnknown -> `Any_path (parse_path_prefix path_prefix identifier)
-      | `TModule -> `Module_path (parse_path_prefix path_prefix identifier)
-      | `TPage -> `Page_path (parse_path_prefix path_prefix identifier)
-      | `TAsset -> `Asset_path (parse_path_prefix path_prefix identifier)
+      | `TUnknown ->
+          `Any_path (parse_path_prefix path_prefix identifier location)
+      | `TModule ->
+          `Module_path (parse_path_prefix path_prefix identifier location)
+      | `TPage -> `Page_path (parse_path_prefix path_prefix identifier location)
+      | `TAsset ->
+          `Asset_path (parse_path_prefix path_prefix identifier location)
       | _ ->
           expected ~expect_paths:true [ "module"; "page" ] location
           |> Error.raise_exception
@@ -534,9 +568,9 @@ let parse whole_reference_location s :
           |> Error.raise_exception)
 
 (* Parse references that do not contain a [/]. Raises errors and warnings. *)
-let parse_asset (* whole_reference_location *) s :
+let parse_asset whole_reference_location s :
     Paths.Reference.Asset.t Error.with_errors_and_warnings =
-  let path = parse_path s in
+  let path = parse_path whole_reference_location s in
   Error.catch_errors_and_warnings (fun () -> `Asset_path path)
 
 let read_path_longident location s =

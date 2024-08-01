@@ -281,7 +281,7 @@ let rec nestable_block_element :
   | {
    value =
      `Media
-       (kind, { value = `Reference href; location = _href_location }, content, m);
+       (kind, { value = `Reference href; location = href_location }, content, m);
    location;
   } -> (
       let fallback error =
@@ -295,27 +295,9 @@ let rec nestable_block_element :
           (inline_elements status [ placeholder |> Location.at location ])
         |> Location.at location
       in
-      match
-        Error.raise_warnings (Reference.parse_asset (* href_location  *) href)
-      with
+      match Error.raise_warnings (Reference.parse_asset href_location href) with
       | Result.Ok target ->
           let text = inline_elements status content in
-          (* let asset_ref_of_ref : *)
-          (*     Paths.Reference.t -> (Paths.Reference.Asset.t, _) Result.result = *)
-          (*   function *)
-          (*   | `Asset_path _ as a -> Result.Ok a *)
-          (*   (\* | `Root (_, `TAsset) as a -> Ok a *\) *)
-          (*   (\* | `Root (s, `TUnknown) -> Ok (`Root (s, `TAsset)) *\) *)
-          (*   (\* | `Dot (p, s) -> Ok (`Dot (p, s)) *\) *)
-          (*   | _ -> *)
-          (*       Error *)
-          (*         (not_allowed ~suggestion:"Use a reference to an asset" *)
-          (*            href_location ~what:"Non-asset reference" *)
-          (*            ~in_what:"media target") *)
-          (* in *)
-          (* match asset_ref_of_ref target with *)
-          (* | Error error -> fallback error *)
-          (* | Ok target -> *)
           `Media (`Reference target, m, text) |> Location.at location
       | Result.Error error -> fallback error)
 
