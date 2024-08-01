@@ -13,7 +13,7 @@ We have a separate page describing the {{!page-ocamldoc_differences}markup diffe
 {2 CLI Interface}
 
 The way in which we invoke the [odoc] CLI is not trivial, and it requires careful
-ordering and accuarate arguments to produce correct linked documentation. It’s not expected that
+ordering and accurate arguments to produce correct linked documentation. It’s not expected that
 end users will invoke [odoc] by hand, but rather it will be driven by separate tools. As a consequence, it’s important to preserve the tools’ ability to create good documentation with
 each [odoc] release, so we’ll ensure CLI backward compatibility as much as possible.
 There are currently three ‘first class’ tools that 'drive' [odoc]. We will not make
