@@ -4,7 +4,7 @@ val parse :
   Location_.span -> string -> Paths.Reference.t Error.with_errors_and_warnings
 
 val parse_asset :
-  (* Location_.span -> *)
+  Location_.span ->
   string ->
   Paths.Reference.Asset.t Error.with_errors_and_warnings
 
