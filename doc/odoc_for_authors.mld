@@ -629,6 +629,33 @@ would render as
 The light syntax has the advantages of being arguably more readable for small tables when viewing the source file directly. However, its content is restricted (for instance, no new line is allowed).
 The heavy syntax is easier to write, can be more readable for big tables, and supports having any kind of content inside. It does not support alignment (yet).
 
+{2 Medias}
+
+Odoc 3.0 introduced new markup for medias. Medias are nestable blocks,
+so they can be put inside lists and tables, but they cannot be
+inlined, for instance in a link..
+
+There are currently three kinds of medias: image, audio, and
+video. Each of them can refer to the file either using an asset
+reference, or a direct link.
+
+The markup is [{<media>:link}], [{<media>!ref}],
+[{{<media>:link}Replacement text}] and [{{<media>:ref}Replacement text}],
+where [<media>] is either [image], [video] or [audio].
+
+The replacement text is used for backends that do not support medias
+(latex and man), and for when a reference is unresolved. In the case
+of an image, it is also used to generate an alternative text.
+
+Images are clickable and links to the image file.
+
+The following source:
+
+{[
+  renders as: {image:https://picsum.photos/200/300}
+]}
+
+renders as: {image:https://picsum.photos/200/300}
 
 {2 Stop Comments}
 
