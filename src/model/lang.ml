@@ -527,11 +527,16 @@ end =
 module rec Page : sig
   type child = Page_child of string | Module_child of string
 
+  module Frontmatter : sig
+    type t = (string * string) list
+  end
+
   type t = {
     name : Identifier.Page.t;
     root : Root.t;
     content : Comment.docs;
     children : child list;
+    frontmatter : Frontmatter.t option;
     digest : Digest.t;
     linked : bool;
   }
