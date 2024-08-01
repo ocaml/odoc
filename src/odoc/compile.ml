@@ -238,12 +238,14 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
   >>= fun name ->
   let resolve content =
     let zero_heading = Comment.find_zero_heading content in
+    let frontmatter, content = Comment.extract_frontmatter content in
     let root =
       let file = Root.Odoc_file.create_page root_name zero_heading in
       { Root.id = (name :> Paths.Identifier.OdocId.t); file; digest }
     in
     let page =
-      Lang.Page.{ name; root; children; content; digest; linked = false }
+      Lang.Page.
+        { name; root; children; content; digest; linked = false; frontmatter }
     in
     Odoc_file.save_page output ~warnings:[] page;
     Ok ()
