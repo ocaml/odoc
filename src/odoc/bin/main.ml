@@ -935,11 +935,11 @@ end = struct
           exit 1
 
     let generate extra _hidden output_dir syntax extra_suffix input_file
-        warnings_options source_file source_root sidebar =
+        warnings_options source_file source_root sidebar asset_path =
       let source = source_of_args source_root source_file in
       let file = Fs.File.of_string input_file in
       Rendering.generate_odoc ~renderer:R.renderer ~warnings_options ~syntax
-        ~output:output_dir ~extra_suffix ~source ~sidebar extra file
+        ~output:output_dir ~extra_suffix ~source ~sidebar ~asset_path extra file
 
     let source_file =
       let doc =
@@ -969,6 +969,13 @@ end = struct
         & opt (some convert_fpath) None
         & info [ "index" ] ~doc ~docv:"FILE.odoc-index")
 
+    let asset_path =
+      let doc = "The path to the asset file, when generating an asset unit." in
+      Arg.(
+        value
+        & opt (some convert_fpath) None
+        & info [ "asset-path" ] ~doc ~docv:"path/to/asset.ext")
+
     let cmd =
       let syntax =
         let doc = "Available options: ml | re" in
@@ -982,7 +989,7 @@ end = struct
         const handle_error
         $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
          $ extra_suffix $ input_odocl $ warnings_options $ source_file
-         $ source_root $ sidebar))
+         $ source_root $ sidebar $ asset_path))
 
     let info ~docs =
       let doc =
