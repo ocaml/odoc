@@ -225,7 +225,7 @@ let expected ?(expect_paths = false) allowed location =
   expected_err (pp_hum_comma_separated Format.pp_print_string) allowed location
 
 let parse_path whole_path_location p =
-  let segs = String.split_on_char '/' p in
+  let segs = Astring.String.cuts ~sep:"/" p in
   let check segs start =
     let _finish =
       List.fold_left
