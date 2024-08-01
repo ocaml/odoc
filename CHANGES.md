@@ -26,6 +26,7 @@
   (@panglesd, #1076).
 - Added a `compile-asset` command (@EmileTrotignon, @panglesd, #1170)
 - Allow referencing assets (@panglesd, #1171)
+- Added syntax for images, videos, audio (@panglesd, #1184)
 
 ### Changed
 
