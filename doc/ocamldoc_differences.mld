@@ -30,6 +30,7 @@ The following describes the changes between what [odoc] understands and what’s
 
 {3 Improvements}
 - [odoc] supports writing mathematics and tables with a specific syntax.
+- [odoc] supports the inclusion of medias such as audio, video and image.
 - [odoc] has a better mechanism for disambiguating references in comments. See 'reference syntax' later in this document.
 - Built-in support for standalone [.mld] files. These are documents using the OCamldoc markup, but they’re rendered as distinct pages.
 - Structured output: [odoc] can produce output in a structured directory tree rather a set of files.
