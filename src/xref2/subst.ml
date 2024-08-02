@@ -319,7 +319,7 @@ and module_type_path :
         in
         Not_replaced r
   | `Identifier _ -> Not_replaced p
-  | `Dot (p, n) -> Not_replaced (`Dot (module_path s p, n))
+  | `DotMT (p, n) -> Not_replaced (`DotMT (module_path s p, n))
   | `ModuleType (p', str) ->
       Not_replaced (`ModuleType (resolved_parent_path s p', str))
 
@@ -370,7 +370,7 @@ and type_path : t -> Cpath.type_ -> Cpath.type_ type_or_replaced =
         | Some (`Renamed x) -> Not_replaced (`Local (x, b))
         | None -> Not_replaced (`Local (id, b)))
   | `Identifier _ -> Not_replaced p
-  | `Dot (p, n) -> Not_replaced (`Dot (module_path s p, n))
+  | `DotT (p, n) -> Not_replaced (`DotT (module_path s p, n))
   | `Type (p, n) -> Not_replaced (`Type (resolved_parent_path s p, n))
   | `Class (p, n) -> Not_replaced (`Class (resolved_parent_path s p, n))
   | `ClassType (p, n) -> Not_replaced (`ClassType (resolved_parent_path s p, n))
@@ -408,7 +408,7 @@ and class_type_path : t -> Cpath.class_type -> Cpath.class_type =
       | None -> `Local (id, b))
   | `Identifier _ -> p
   | `Substituted p -> `Substituted (class_type_path s p)
-  | `Dot (p, n) -> `Dot (module_path s p, n)
+  | `DotT (p, n) -> `DotT (module_path s p, n)
   | `Class (p, n) -> `Class (resolved_parent_path s p, n)
   | `ClassType (p, n) -> `ClassType (resolved_parent_path s p, n)
 

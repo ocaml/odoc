@@ -1,4 +1,5 @@
 open Result
+open Odoc_model.Names
 
 (* Example usage of these:
 
@@ -38,8 +39,8 @@ let cmt_of_string s =
     Typemod.type_implementation (Unit_info.make ~source_file:"" "") env p
 #endif
 
-let parent = Odoc_model.Paths.Identifier.Mk.page (None, Odoc_model.Names.PageName.make_std "None")
-let id = Odoc_model.Paths.Identifier.Mk.root (Some parent, Odoc_model.Names.ModuleName.make_std "Root")
+let parent = Odoc_model.Paths.Identifier.Mk.page (None, PageName.make_std "None")
+let id = Odoc_model.Paths.Identifier.Mk.root (Some parent, ModuleName.make_std "Root")
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
   ignore(package);
@@ -61,7 +62,7 @@ let root =
 
 let root_identifier = `Identifier id
 
-let root_module name = Odoc_model.Paths.Identifier.Mk.module_ (id, Odoc_model.Names.ModuleName.make_std name)
+let root_module name = Odoc_model.Paths.Identifier.Mk.module_ (id, ModuleName.make_std name)
 
 let root_pp fmt (_ : Odoc_model.Root.t) = Format.fprintf fmt "Common.root"
 
@@ -405,7 +406,7 @@ module LangUtils = struct
                         let id = m.Odoc_model.Lang.Module.id in
                         match id.iv with
                         | `Module (_, mname') ->
-                            if Odoc_model.Names.ModuleName.to_string mname' = mname
+                            if ModuleName.to_string mname' = mname
                             then m
                             else inner rest
                         | _ -> inner rest
@@ -565,10 +566,10 @@ module LangUtils = struct
             | `Alias (dest, src) -> Format.fprintf ppf "(%a -> %a)" path (src :> Odoc_model.Paths.Path.t) resolved_path (cast dest)
             | `AliasModuleType (path, realpath) -> Format.fprintf ppf "(%a -> %a)" resolved_path (cast path) resolved_path (cast realpath)
             | `Subst (modty, m) -> Format.fprintf ppf "(%a subst-> %a)" resolved_path (cast modty) resolved_path (cast m)
-            | `Module (p, m) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.ModuleName.to_string m)
-            | `ModuleType (p, mt) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.ModuleTypeName.to_string mt)
-            | `Type (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.TypeName.to_string t)
-            | `Value (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.ValueName.to_string t)
+            | `Module (p, m) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (ModuleName.to_string m)
+            | `ModuleType (p, mt) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (ModuleTypeName.to_string mt)
+            | `Type (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (TypeName.to_string t)
+            | `Value (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (ValueName.to_string t)
             | `OpaqueModule m -> Format.fprintf ppf "opaquemodule(%a)" resolved_path (cast m)
             | `OpaqueModuleType m -> Format.fprintf ppf "opaquemoduletype(%a)" resolved_path (cast m)
             | `SubstT (_, _)
@@ -588,9 +589,12 @@ module LangUtils = struct
             match p with
             | `Resolved rp -> Format.fprintf ppf "resolved[%a]" resolved_path (rp :> Odoc_model.Paths.Path.Resolved.t)
             | `Identifier (i,b) -> Format.fprintf ppf "identifier(%a,%b)" identifier i b
-            | `Root s -> Format.fprintf ppf "%s" s
+            | `Root s -> Format.fprintf ppf "%a" ModuleName.fmt s
             | `Forward s -> Format.fprintf ppf "%s" s
-            | `Dot (parent,s) -> Format.fprintf ppf "%a.%s" path (parent :> Odoc_model.Paths.Path.t) s
+            | `Dot (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleName.fmt s
+            | `DotMT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleTypeName.fmt s
+            | `DotT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) TypeName.fmt s
+            | `DotV (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ValueName.fmt s
             | `Apply (func,arg) -> Format.fprintf ppf "%a(%a)" path (func :> Odoc_model.Paths.Path.t) path (arg :> Odoc_model.Paths.Path.t)
             | `SubstitutedT _|`SubstitutedMT _|`Substituted _|`SubstitutedCT _ -> Format.fprintf ppf "Unimplemented path"
 
@@ -604,8 +608,8 @@ module LangUtils = struct
             match f with
             | `Root (`Module p) -> Format.fprintf ppf "root_module(%a)" resolved_path (p :> Odoc_model.Paths.Path.Resolved.t) 
             | `Root (`ModuleType p) -> Format.fprintf ppf "root_module_type(%a)" resolved_path (p :> Odoc_model.Paths.Path.Resolved.t) 
-            | `Module (sg, m) -> Format.fprintf ppf "%a.%s" model_resolved_fragment (sg :> Odoc_model.Paths.Fragment.Resolved.t) (Odoc_model.Names.ModuleName.to_string m)
-            | `Type (sg, m) -> Format.fprintf ppf "%a.%s" model_resolved_fragment (sg :> Odoc_model.Paths.Fragment.Resolved.t) (Odoc_model.Names.TypeName.to_string m)
+            | `Module (sg, m) -> Format.fprintf ppf "%a.%s" model_resolved_fragment (sg :> Odoc_model.Paths.Fragment.Resolved.t) (ModuleName.to_string m)
+            | `Type (sg, m) -> Format.fprintf ppf "%a.%s" model_resolved_fragment (sg :> Odoc_model.Paths.Fragment.Resolved.t) (TypeName.to_string m)
             | _ -> Format.fprintf ppf "UNIMPLEMENTED model_resolved_fragment"
 
     end

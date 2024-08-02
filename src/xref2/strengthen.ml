@@ -37,7 +37,7 @@ and sig_items prefix ?canonical sg =
       (fun (items, s) item ->
         match item with
         | Module (id, r, m) ->
-            let name = Ident.Name.module_ id in
+            let name = Ident.Name.typed_module id in
             let canonical =
               match canonical with
               | Some p -> Some (`Dot (p, name))
@@ -50,7 +50,7 @@ and sig_items prefix ?canonical sg =
                 ( id,
                   put (fun () ->
                       module_type
-                        (`Dot (prefix, Ident.Name.module_type id))
+                        (`DotMT (prefix, Ident.Name.typed_module_type id))
                         (get mt)) )
               :: items,
               s )
@@ -59,7 +59,9 @@ and sig_items prefix ?canonical sg =
                 ( id,
                   r,
                   put (fun () ->
-                      type_decl (`Dot (prefix, Ident.Name.type_ id)) (get t)) )
+                      type_decl
+                        (`DotT (prefix, Ident.Name.typed_type id))
+                        (get t)) )
               :: items,
               s )
         | Include i ->

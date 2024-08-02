@@ -10,8 +10,7 @@ type internal_tags_removed =
 type _ handle_internal_tags =
   | Expect_status
       : [ `Default | `Inline | `Open | `Closed ] handle_internal_tags
-  | Expect_canonical
-      : [ `Dot of Paths.Path.Module.t * string ] option handle_internal_tags
+  | Expect_canonical : Reference.path option handle_internal_tags
   | Expect_none : unit handle_internal_tags
 
 let describe_internal_tag = function

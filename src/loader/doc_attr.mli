@@ -70,3 +70,8 @@ val extract_top_comment_class :
 (** Extract the first comment of a class signature. Returns the remaining items. *)
 
 val read_location : Location.t -> Odoc_model.Location_.span
+
+val conv_canonical_module : Odoc_model.Reference.path -> Paths.Path.Module.t
+val conv_canonical_type : Odoc_model.Reference.path -> Paths.Path.Type.t option
+val conv_canonical_module_type :
+  Odoc_model.Reference.path -> Paths.Path.ModuleType.t option

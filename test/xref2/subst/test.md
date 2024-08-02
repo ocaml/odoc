@@ -1,4 +1,6 @@
 ```ocaml
+open Odoc_model.Names
+
 let resolve_module_name sg name =
   let rec check = function
     | Component.Signature.Module (id, _r, _m) :: _rest
@@ -25,7 +27,8 @@ let module_substitution ~idents ~targets m test_data =
   in
 
   let m =
-    match Find.module_in_sig c "S" with
+    let name = ModuleName.make_std "S" in
+    match Find.module_in_sig c name with
     | Some (`FModule (name, m)) -> m
     | None -> failwith "Error finding module!"
   in

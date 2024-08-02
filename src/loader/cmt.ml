@@ -453,7 +453,7 @@ and read_module_binding env parent mb =
         in
         (ModuleType expr, canonical)
   in
-  let canonical = (canonical :> Path.Module.t option) in
+  let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
   let hidden =
 #if OCAML_VERSION >= (4,10,0)
     match canonical, mid.iv with
@@ -613,6 +613,7 @@ let read_implementation root name impl =
   let sg, canonical =
     read_structure Odoc_model.Semantics.Expect_canonical (Env.empty ()) id impl
   in
-  (id, sg, (canonical :> Odoc_model.Paths.Path.Module.t option))
+  let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
+  (id, sg, canonical)
 
 let _ = Cmti.read_module_expr := read_module_expr

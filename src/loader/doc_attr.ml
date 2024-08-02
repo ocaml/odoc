@@ -259,3 +259,15 @@ let extract_top_comment_class items =
   match items with
   | Lang.ClassSignature.Comment (`Docs doc) :: tl -> (tl, split_docs doc)
   | _ -> items, (empty,empty)
+
+let rec conv_canonical_module : Odoc_model.Reference.path -> Paths.Path.Module.t = function
+  | `Dot (parent, name) -> `Dot (conv_canonical_module parent, Names.ModuleName.make_std name)
+  | `Root name -> `Root (Names.ModuleName.make_std name)
+
+let conv_canonical_type : Odoc_model.Reference.path -> Paths.Path.Type.t option = function
+  | `Dot (parent, name) -> Some (`DotT (conv_canonical_module parent, Names.TypeName.make_std name))
+  | _ -> None
+
+let conv_canonical_module_type : Odoc_model.Reference.path -> Paths.Path.ModuleType.t option = function
+  | `Dot (parent, name) -> Some (`DotMT (conv_canonical_module parent, Names.ModuleTypeName.make_std name))
+  | _ -> None

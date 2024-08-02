@@ -266,7 +266,7 @@ and now we can get the paths for all three type declarations:
    false)
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- type_constr_path "x2") sg);;
 - : Odoc_model.Paths.Path.Type.t =
-`Dot
+`DotT
   (`Identifier
      ({Odoc_model__Paths_types.iv =
         `Module
@@ -284,10 +284,10 @@ and now we can get the paths for all three type declarations:
            N);
        ihash = 1041581453; ikey = "m_N.m_M.r_Root.p_None"},
       false),
-   "t")
+   t)
 # Common.LangUtils.Lens.(get (type_constr_path "x3") sg);;
 - : Odoc_model.Paths.Path.Type.t =
-`Dot
+`DotT
   (`Dot
      (`Identifier
         ({Odoc_model__Paths_types.iv =
@@ -302,8 +302,8 @@ and now we can get the paths for all three type declarations:
               M);
           ihash = 716453475; ikey = "m_M.r_Root.p_None"},
          false),
-      "N"),
-   "t")
+      N),
+   t)
 ```
 
 We can resolve the paths:

@@ -321,9 +321,9 @@ module rec Path : sig
     [ `Resolved of Resolved_path.module_
     | `Identifier of Identifier.path_module * bool
     | `Substituted of module_
-    | `Root of string
+    | `Root of ModuleName.t
     | `Forward of string
-    | `Dot of module_ * string
+    | `Dot of module_ * ModuleName.t
     | `Apply of module_ * module_ ]
   (** @canonical Odoc_model.Paths.Path.Module.t *)
 
@@ -331,27 +331,27 @@ module rec Path : sig
     [ `Resolved of Resolved_path.module_type
     | `SubstitutedMT of module_type
     | `Identifier of Identifier.path_module_type * bool
-    | `Dot of module_ * string ]
+    | `DotMT of module_ * ModuleTypeName.t ]
   (** @canonical Odoc_model.Paths.Path.ModuleType.t *)
 
   type type_ =
     [ `Resolved of Resolved_path.type_
     | `SubstitutedT of type_
     | `Identifier of Identifier.path_type * bool
-    | `Dot of module_ * string ]
+    | `DotT of module_ * TypeName.t ]
   (** @canonical Odoc_model.Paths.Path.Type.t *)
 
   type value =
     [ `Resolved of Resolved_path.value
     | `Identifier of Identifier.path_value * bool
-    | `Dot of module_ * string ]
+    | `DotV of module_ * ValueName.t ]
   (** @canonical Odoc_model.Paths.Path.Value.t *)
 
   type class_type =
     [ `Resolved of Resolved_path.class_type
     | `SubstitutedCT of class_type
     | `Identifier of Identifier.path_class_type * bool
-    | `Dot of module_ * string ]
+    | `DotT of module_ * TypeName.t ]
   (** @canonical Odoc_model.Paths.Path.ClassType.t *)
 
   type any =
@@ -361,9 +361,12 @@ module rec Path : sig
     | `Substituted of module_
     | `SubstitutedCT of class_type
     | `Identifier of Identifier.path_any * bool
-    | `Root of string
+    | `Root of ModuleName.t
     | `Forward of string
-    | `Dot of module_ * string
+    | `Dot of module_ * ModuleName.t
+    | `DotT of module_ * TypeName.t
+    | `DotMT of module_ * ModuleTypeName.t
+    | `DotV of module_ * ValueName.t
     | `Apply of module_ * module_ ]
   (** @canonical Odoc_model.Paths.Path.t *)
 end =

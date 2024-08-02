@@ -1,3 +1,5 @@
+type path = [ `Root of string | `Dot of path * string ]
+
 let expected_err :
     (Format.formatter -> 'a -> unit) -> 'a -> Location_.span -> Error.t =
  fun pp_a a -> Error.make "Expected %a." pp_a a
@@ -564,10 +566,7 @@ let parse whole_reference_location s :
           should_not_be_empty ~what:"Reference target" whole_reference_location
           |> Error.raise_exception)
 
-type path = [ `Root of string | `Dot of Paths.Path.Module.t * string ]
-
 let read_path_longident location s =
-  let open Paths.Path in
   let rec loop : string -> int -> path option =
    fun s pos ->
     try
@@ -577,7 +576,7 @@ let read_path_longident location s =
       else
         match loop s (idx - 1) with
         | None -> None
-        | Some parent -> Some (`Dot ((parent :> Module.t), name))
+        | Some parent -> Some (`Dot (parent, name))
     with Not_found ->
       let name = String.sub s 0 (pos + 1) in
       if String.length name = 0 then None else Some (`Root name)
