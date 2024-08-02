@@ -19,12 +19,12 @@ type nonrec t = t
 
 let identity =
   {
-    module_ = PathModuleMap.empty;
+    module_ = ModuleMap.empty;
     module_type = ModuleTypeMap.empty;
     module_type_replacement = ModuleTypeMap.empty;
-    type_ = PathTypeMap.empty;
-    class_type = PathClassTypeMap.empty;
-    type_replacement = PathTypeMap.empty;
+    type_ = TypeMap.empty;
+    class_type = TypeMap.empty;
+    type_replacement = TypeMap.empty;
     path_invalidating_modules = [];
     unresolve_opaque_paths = false;
   }
@@ -35,7 +35,7 @@ let path_invalidate_module id t =
   { t with path_invalidating_modules = id :: t.path_invalidating_modules }
 
 let add_module id p rp t =
-  { t with module_ = PathModuleMap.add id (`Prefixed (p, rp)) t.module_ }
+  { t with module_ = ModuleMap.add id (`Prefixed (p, rp)) t.module_ }
 
 let add_module_type id p rp t =
   {
@@ -45,50 +45,40 @@ let add_module_type id p rp t =
 
 let add_type : Ident.type_ -> Cpath.type_ -> Cpath.Resolved.type_ -> t -> t =
  fun id p rp t ->
-  {
-    t with
-    type_ = PathTypeMap.add (id :> Ident.path_type) (`Prefixed (p, rp)) t.type_;
-  }
+  { t with type_ = TypeMap.add (id :> Ident.type_) (`Prefixed (p, rp)) t.type_ }
 
 let add_class :
-    Ident.class_ -> Cpath.class_type -> Cpath.Resolved.class_type -> t -> t =
+    Ident.type_ -> Cpath.class_type -> Cpath.Resolved.class_type -> t -> t =
  fun id p rp t ->
   {
     t with
     type_ =
-      PathTypeMap.add
-        (id :> Ident.path_type)
+      TypeMap.add
+        (id :> Ident.type_)
         (`Prefixed ((p :> Cpath.type_), (rp :> Cpath.Resolved.type_)))
         t.type_;
     class_type =
-      PathClassTypeMap.add
-        (id :> Ident.path_class_type)
-        (`Prefixed (p, rp))
-        t.class_type;
+      TypeMap.add (id :> Ident.type_) (`Prefixed (p, rp)) t.class_type;
   }
 
 let add_class_type :
-    Ident.class_type -> Cpath.class_type -> Cpath.Resolved.class_type -> t -> t
-    =
+    Ident.type_ -> Cpath.class_type -> Cpath.Resolved.class_type -> t -> t =
  fun id p rp t ->
   {
     t with
     type_ =
-      PathTypeMap.add
-        (id :> Ident.path_type)
+      TypeMap.add
+        (id :> Ident.type_)
         (`Prefixed ((p :> Cpath.type_), (rp :> Cpath.Resolved.type_)))
         t.type_;
     class_type =
-      PathClassTypeMap.add
-        (id :> Ident.path_class_type)
-        (`Prefixed (p, rp))
-        t.class_type;
+      TypeMap.add (id :> Ident.type_) (`Prefixed (p, rp)) t.class_type;
   }
 
 let add_type_replacement id texp equation t =
   {
     t with
-    type_replacement = PathTypeMap.add id (texp, equation) t.type_replacement;
+    type_replacement = TypeMap.add id (texp, equation) t.type_replacement;
   }
 
 let add_module_type_replacement path mty t =
@@ -98,36 +88,31 @@ let add_module_type_replacement path mty t =
       ModuleTypeMap.add path mty t.module_type_replacement;
   }
 
-let add_module_substitution : Ident.path_module -> t -> t =
+let add_module_substitution : Ident.module_ -> t -> t =
  fun id t ->
   {
     t with
     path_invalidating_modules = id :: t.path_invalidating_modules;
-    module_ = PathModuleMap.add id `Substituted t.module_;
+    module_ = ModuleMap.add id `Substituted t.module_;
   }
 
-let rename_module : Ident.path_module -> Ident.path_module -> t -> t =
- fun id id' t ->
-  { t with module_ = PathModuleMap.add id (`Renamed id') t.module_ }
+let rename_module : Ident.module_ -> Ident.module_ -> t -> t =
+ fun id id' t -> { t with module_ = ModuleMap.add id (`Renamed id') t.module_ }
 
 let rename_module_type : Ident.module_type -> Ident.module_type -> t -> t =
  fun id id' t ->
   { t with module_type = ModuleTypeMap.add id (`Renamed id') t.module_type }
 
-let rename_type : Ident.path_type -> Ident.path_type -> t -> t =
- fun id id' t -> { t with type_ = PathTypeMap.add id (`Renamed id') t.type_ }
+let rename_type : Ident.type_ -> Ident.type_ -> t -> t =
+ fun id id' t -> { t with type_ = TypeMap.add id (`Renamed id') t.type_ }
 
-let rename_class_type : Ident.path_class_type -> Ident.path_class_type -> t -> t
-    =
+let rename_class_type : Ident.type_ -> Ident.type_ -> t -> t =
  fun id id' t ->
   {
     t with
-    class_type = PathClassTypeMap.add id (`Renamed id') t.class_type;
+    class_type = TypeMap.add id (`Renamed id') t.class_type;
     type_ =
-      PathTypeMap.add
-        (id :> Ident.path_type)
-        (`Renamed (id' :> Ident.path_type))
-        t.type_;
+      TypeMap.add (id :> Ident.type_) (`Renamed (id' :> Ident.type_)) t.type_;
   }
 
 let rec substitute_vars vars t =
@@ -179,7 +164,7 @@ let rec resolved_module_path :
   | `Local id -> (
       if List.mem id s.path_invalidating_modules then raise Invalidated;
       match
-        try Some (PathModuleMap.find (id :> Ident.path_module) s.module_)
+        try Some (ModuleMap.find (id :> Ident.module_) s.module_)
         with _ -> None
       with
       | Some (`Renamed x) -> `Local x
@@ -240,7 +225,7 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
   | `Apply (p1, p2) -> `Apply (module_path s p1, module_path s p2)
   | `Local (id, b) -> (
       match
-        try Some (PathModuleMap.find (id :> Ident.path_module) s.module_)
+        try Some (ModuleMap.find (id :> Ident.module_) s.module_)
         with _ -> None
       with
       | Some (`Prefixed (p, _rp)) -> p
@@ -330,12 +315,10 @@ and resolved_type_path :
  fun s p ->
   match p with
   | `Local id -> (
-      if PathTypeMap.mem id s.type_replacement then
-        Replaced (PathTypeMap.find id s.type_replacement)
+      if TypeMap.mem id s.type_replacement then
+        Replaced (TypeMap.find id s.type_replacement)
       else
-        match
-          try Some (PathTypeMap.find id s.type_) with Not_found -> None
-        with
+        match try Some (TypeMap.find id s.type_) with Not_found -> None with
         | Some (`Prefixed (_p, rp)) -> Not_replaced rp
         | Some (`Renamed x) -> Not_replaced (`Local x)
         | None -> Not_replaced (`Local id))
@@ -360,12 +343,10 @@ and type_path : t -> Cpath.type_ -> Cpath.type_ type_or_replaced =
         type_path s path')
   | `Substituted p -> type_path s p |> map_replaced (fun r -> `Substituted r)
   | `Local (id, b) -> (
-      if PathTypeMap.mem id s.type_replacement then
-        Replaced (PathTypeMap.find id s.type_replacement)
+      if TypeMap.mem id s.type_replacement then
+        Replaced (TypeMap.find id s.type_replacement)
       else
-        match
-          try Some (PathTypeMap.find id s.type_) with Not_found -> None
-        with
+        match try Some (TypeMap.find id s.type_) with Not_found -> None with
         | Some (`Prefixed (p, _rp)) -> Not_replaced p
         | Some (`Renamed x) -> Not_replaced (`Local (x, b))
         | None -> Not_replaced (`Local (id, b)))
@@ -380,9 +361,7 @@ and resolved_class_type_path :
  fun s p ->
   match p with
   | `Local id -> (
-      match
-        try Some (PathClassTypeMap.find id s.class_type) with _ -> None
-      with
+      match try Some (TypeMap.find id s.class_type) with _ -> None with
       | Some (`Prefixed (_p, rp)) -> rp
       | Some (`Renamed x) -> `Local x
       | None -> `Local id)
@@ -400,9 +379,7 @@ and class_type_path : t -> Cpath.class_type -> Cpath.class_type =
         let path' = Cpath.unresolve_resolved_class_type_path r in
         class_type_path s path')
   | `Local (id, b) -> (
-      match
-        try Some (PathClassTypeMap.find id s.class_type) with _ -> None
-      with
+      match try Some (TypeMap.find id s.class_type) with _ -> None with
       | Some (`Prefixed (p, _rp)) -> p
       | Some (`Renamed x) -> `Local (x, b)
       | None -> `Local (id, b))
@@ -821,7 +798,7 @@ and rename_bound_idents s sg =
   let open Component.Signature in
   let new_module_id id =
     try
-      match PathModuleMap.find (id :> Ident.path_module) s.module_ with
+      match ModuleMap.find (id :> Ident.module_) s.module_ with
       | `Renamed (`LModule _ as x) -> x
       | `Prefixed (_, _) ->
           (* This is unusual but can happen when we have TypeOf expressions. It means
@@ -840,44 +817,37 @@ and rename_bound_idents s sg =
   in
   let new_type_id id =
     try
-      match PathTypeMap.find (id :> Ident.path_type) s.type_ with
+      match TypeMap.find (id :> Ident.type_) s.type_ with
       | `Renamed (`LType _ as x) -> x
       | `Prefixed (_, _) -> Ident.Rename.type_ id
-      | _ -> failwith "Error"
     with Not_found -> Ident.Rename.type_ id
   in
   let new_class_id id =
     try
-      match
-        PathClassTypeMap.find (id :> Ident.path_class_type) s.class_type
-      with
-      | `Renamed (`LClass _ as x) -> x
-      | `Prefixed (_, _) -> Ident.Rename.class_ id
-      | _ -> failwith "Error"
-    with Not_found -> Ident.Rename.class_ id
+      match TypeMap.find (id :> Ident.type_) s.class_type with
+      | `Renamed (`LType _ as x) -> x
+      | `Prefixed (_, _) -> Ident.Rename.type_ id
+    with Not_found -> Ident.Rename.type_ id
   in
   let new_class_type_id id =
     try
-      match
-        PathClassTypeMap.find (id :> Ident.path_class_type) s.class_type
-      with
-      | `Renamed (`LClassType _ as x) -> x
-      | `Prefixed (_, _) -> Ident.Rename.class_type id
-      | _ -> failwith "Error!"
-    with Not_found -> Ident.Rename.class_type id
+      match TypeMap.find (id :> Ident.type_) s.class_type with
+      | `Renamed (`LType _ as x) -> x
+      | `Prefixed (_, _) -> Ident.Rename.type_ id
+    with Not_found -> Ident.Rename.type_ id
   in
   function
   | [] -> (s, List.rev sg)
   | Module (id, r, m) :: rest ->
       let id' = new_module_id id in
       rename_bound_idents
-        (rename_module (id :> Ident.path_module) (id' :> Ident.path_module) s)
+        (rename_module (id :> Ident.module_) (id' :> Ident.module_) s)
         (Module (id', r, m) :: sg)
         rest
   | ModuleSubstitution (id, m) :: rest ->
       let id' = new_module_id id in
       rename_bound_idents
-        (rename_module (id :> Ident.path_module) (id' :> Ident.path_module) s)
+        (rename_module (id :> Ident.module_) (id' :> Ident.module_) s)
         (ModuleSubstitution (id', m) :: sg)
         rest
   | ModuleType (id, mt) :: rest ->
@@ -895,13 +865,13 @@ and rename_bound_idents s sg =
   | Type (id, r, t) :: rest ->
       let id' = new_type_id id in
       rename_bound_idents
-        (rename_type (id :> Ident.path_type) (id' :> Ident.path_type) s)
+        (rename_type (id :> Ident.type_) (id' :> Ident.type_) s)
         (Type (id', r, t) :: sg)
         rest
   | TypeSubstitution (id, t) :: rest ->
       let id' = new_type_id id in
       rename_bound_idents
-        (rename_type (id :> Ident.path_type) (id' :> Ident.path_type) s)
+        (rename_type (id :> Ident.type_) (id' :> Ident.type_) s)
         (TypeSubstitution (id', t) :: sg)
         rest
   | Exception (id, e) :: rest ->
@@ -914,19 +884,13 @@ and rename_bound_idents s sg =
   | Class (id, r, c) :: rest ->
       let id' = new_class_id id in
       rename_bound_idents
-        (rename_class_type
-           (id :> Ident.path_class_type)
-           (id' :> Ident.path_class_type)
-           s)
+        (rename_class_type (id :> Ident.type_) (id' :> Ident.type_) s)
         (Class (id', r, c) :: sg)
         rest
   | ClassType (id, r, c) :: rest ->
       let id' = new_class_type_id id in
       rename_bound_idents
-        (rename_class_type
-           (id :> Ident.path_class_type)
-           (id' :> Ident.path_class_type)
-           s)
+        (rename_class_type (id :> Ident.type_) (id' :> Ident.type_) s)
         (ClassType (id', r, c) :: sg)
         rest
   | Include ({ expansion_; _ } as i) :: rest ->

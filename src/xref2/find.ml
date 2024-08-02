@@ -106,11 +106,11 @@ let module_type_in_sig sg name =
 let type_in_sig sg name =
   find_in_sig sg (function
     | Signature.Type (id, _, m) when N.type_ id = name ->
-        Some (`FType (N.type' id, Delayed.get m))
-    | Class (id, _, c) when N.class_ id = name ->
-        Some (`FClass (N.class' id, c))
-    | ClassType (id, _, c) when N.class_type id = name ->
-        Some (`FClassType (N.class_type' id, c))
+        Some (`FType (N.typed_type id, Delayed.get m))
+    | Class (id, _, c) when N.type_ id = name ->
+        Some (`FClass (N.typed_type id, c))
+    | ClassType (id, _, c) when N.type_ id = name ->
+        Some (`FClassType (N.typed_type id, c))
     | _ -> None)
 
 type removed_type =
@@ -161,15 +161,15 @@ let careful_type_in_sig sg name =
 let datatype_in_sig sg name =
   find_in_sig sg (function
     | Signature.Type (id, _, t) when N.type_ id = name ->
-        Some (`FType (N.type' id, Component.Delayed.get t))
+        Some (`FType (N.typed_type id, Component.Delayed.get t))
     | _ -> None)
 
 let class_in_sig sg name =
   filter_in_sig sg (function
-    | Signature.Class (id, _, c) when N.class_ id = name ->
-        Some (`FClass (N.class' id, c))
-    | Signature.ClassType (id, _, c) when N.class_type id = name ->
-        Some (`FClassType (N.class_type' id, c))
+    | Signature.Class (id, _, c) when N.type_ id = name ->
+        Some (`FClass (N.typed_type id, c))
+    | Signature.ClassType (id, _, c) when N.type_ id = name ->
+        Some (`FClassType (N.typed_type id, c))
     | _ -> None)
 
 let class_in_sig_unambiguous sg name = disambiguate (class_in_sig sg name)
@@ -242,20 +242,20 @@ let any_in_sig sg name =
     | ModuleType (id, mt) when N.module_type id = name ->
         Some (`FModuleType (N.typed_module_type id, Delayed.get mt))
     | Type (id, _, t) when N.type_ id = name ->
-        Some (`FType (N.type' id, Delayed.get t))
+        Some (`FType (N.typed_type id, Delayed.get t))
     | TypeSubstitution (id, ts) when N.type_ id = name -> Some (`FType_subst ts)
     | Exception (id, exc) when N.exception_ id = name ->
         Some (`FExn (N.typed_exception id, exc))
     | Value (id, v) when N.value id = name ->
         Some (`FValue (N.typed_value id, Delayed.get v))
-    | Class (id, _, c) when N.class_ id = name ->
-        Some (`FClass (N.class' id, c))
-    | ClassType (id, _, ct) when N.class_type id = name ->
-        Some (`FClassType (N.class_type' id, ct))
+    | Class (id, _, c) when N.type_ id = name ->
+        Some (`FClass (N.typed_type id, c))
+    | ClassType (id, _, ct) when N.type_ id = name ->
+        Some (`FClassType (N.typed_type id, ct))
     | Type (id, _, t) -> (
         let typ = Delayed.get t in
         match any_in_type typ name with
-        | Some r -> Some (`In_type (N.type' id, typ, r))
+        | Some r -> Some (`In_type (N.typed_type id, typ, r))
         | None -> None)
     | TypExt typext -> any_in_typext typext name
     | Comment (`Docs d) -> any_in_comment d name
@@ -314,11 +314,11 @@ let label_parent_in_sig sg name =
     | ModuleType (id, mt) when N.module_type id = name ->
         Some (`FModuleType (N.typed_module_type id, Component.Delayed.get mt))
     | Type (id, _, t) when N.type_ id = name ->
-        Some (`FType (N.type' id, Component.Delayed.get t))
-    | Class (id, _, c) when N.class_ id = name ->
-        Some (`FClass (N.class' id, c))
-    | ClassType (id, _, c) when N.class_type id = name ->
-        Some (`FClassType (N.class_type' id, c))
+        Some (`FType (N.typed_type id, Component.Delayed.get t))
+    | Class (id, _, c) when N.type_ id = name ->
+        Some (`FClass (N.typed_type id, c))
+    | ClassType (id, _, c) when N.type_ id = name ->
+        Some (`FClassType (N.typed_type id, c))
     | _ -> None)
 
 let any_in_type_in_sig sg name =
@@ -326,7 +326,7 @@ let any_in_type_in_sig sg name =
     | Signature.Type (id, _, t) -> (
         let t = Delayed.get t in
         match any_in_type t name with
-        | Some x -> Some (`In_type (N.type' id, t, x))
+        | Some x -> Some (`In_type (N.typed_type id, t, x))
         | None -> None)
     | _ -> None)
 
