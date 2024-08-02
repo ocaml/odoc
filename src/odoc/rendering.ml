@@ -22,24 +22,44 @@ let check_empty_source_arg source filename =
           an implementation"
          filename
 
+let check_empty_asset_path asset_path filename =
+  if asset_path <> None then
+    Error.raise_warning
+    @@ Error.filename_only
+         "--asset-path only has an effect when generating from an asset"
+         filename
+
 let documents_of_unit ~warnings_options ~syntax ~source ~renderer ~extra
-    ~filename unit =
+    ~asset_path ~filename unit =
   Error.catch_warnings (fun () ->
       check_empty_source_arg source filename;
+      check_empty_asset_path asset_path filename;
       renderer.Renderer.extra_documents extra (CU unit))
   |> Error.handle_warnings ~warnings_options
   >>= fun extra_docs ->
   Ok (Renderer.document_of_compilation_unit ~syntax unit :: extra_docs)
 
-let documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
-    ~filename page =
+let documents_of_asset ~warnings_options ~source ~filename ~asset_path unit =
   Error.catch_warnings (fun () ->
       check_empty_source_arg source filename;
+      match asset_path with None -> failwith "TODO" | Some a -> a)
+  |> Error.handle_warnings ~warnings_options
+  >>= fun asset_path -> Ok [ Renderer.document_of_asset asset_path unit ]
+
+let documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
+    ~asset_path ~filename page =
+  Error.catch_warnings (fun () ->
+      check_empty_source_arg source filename;
+      check_empty_asset_path asset_path filename;
       renderer.Renderer.extra_documents extra (Page page))
   |> Error.handle_warnings ~warnings_options
   >>= fun extra_docs -> Ok (Renderer.document_of_page ~syntax page :: extra_docs)
 
-let documents_of_implementation ~warnings_options:_ ~syntax impl source =
+let documents_of_implementation ~warnings_options ~syntax ~filename ~asset_path
+    impl source =
+  Error.catch_warnings (fun () -> check_empty_asset_path asset_path filename)
+  |> Error.handle_warnings ~warnings_options
+  >>= fun () ->
   match (source, impl.Lang.Implementation.id) with
   | Some source, Some source_id -> (
       let source_file =
@@ -82,26 +102,28 @@ let documents_of_source_tree ~warnings_options ~syntax ~source ~filename srctree
   |> Error.handle_warnings ~warnings_options
   >>= fun () -> Ok (Renderer.documents_of_source_tree ~syntax srctree)
 
-let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax input
-    =
+let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax
+    ~asset_path input =
   Odoc_file.load input >>= fun unit ->
   let filename = Fpath.to_string input in
   match unit.content with
   | Odoc_file.Page_content odoctree ->
       documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
-        ~filename odoctree
+        ~asset_path ~filename odoctree
   | Source_tree_content srctree ->
       documents_of_source_tree ~warnings_options ~syntax ~source ~filename
         srctree
   | Impl_content impl ->
       documents_of_implementation ~warnings_options ~syntax impl source
+        ~asset_path ~filename
   | Unit_content odoctree ->
       documents_of_unit ~warnings_options ~source ~syntax ~renderer ~extra
-        ~filename odoctree
-  | Asset_content _ -> Ok [] (* TODO *)
+        ~asset_path ~filename odoctree
+  | Asset_content a ->
+      documents_of_asset ~warnings_options ~source ~filename ~asset_path a
 
 let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
-    input =
+    ~asset_path input =
   let output = Fs.File.(set_ext ".odocl" input) in
   Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
   | `Source_tree st -> Ok (Renderer.documents_of_source_tree ~syntax st)
@@ -109,8 +131,10 @@ let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
   | `Impl impl -> Ok (Renderer.documents_of_implementation ~syntax impl [] "")
   | `Module m ->
       documents_of_unit ~warnings_options ~source:None ~filename:"" ~syntax
-        ~renderer ~extra m
-  | `Asset _ -> Ok [] (* TODO *)
+        ~asset_path ~renderer ~extra m
+  | `Asset a ->
+      documents_of_asset ~warnings_options ~source:None ~filename:"" ~asset_path
+        a
 
 let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
     =
@@ -144,6 +168,7 @@ let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
     =
   let extra_suffix = None in
   documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax file
+    ~asset_path:None
   >>= fun docs ->
   List.iter
     (render_document renderer ~sidebar:None ~output ~extra_suffix ~extra)
@@ -151,14 +176,15 @@ let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
   Ok ()
 
 let generate_odoc ~syntax ~warnings_options ~renderer ~output ~extra_suffix
-    ~source ~sidebar extra file =
+    ~source ~sidebar ~asset_path extra file =
   (match sidebar with
   | None -> Ok None
   | Some x ->
       Odoc_file.load_index x >>= fun (sidebar, _) ->
       Ok (Some (Odoc_document.Sidebar.of_lang sidebar)))
   >>= fun sidebar ->
-  documents_of_odocl ~warnings_options ~renderer ~source ~extra ~syntax file
+  documents_of_odocl ~warnings_options ~renderer ~source ~extra ~syntax
+    ~asset_path file
   >>= fun docs ->
   List.iter
     (render_document renderer ~output ~sidebar ~extra_suffix ~extra)
@@ -170,10 +196,10 @@ let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
   let docs =
     if Fpath.get_ext odoctree = ".odoc" then
       documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
-        odoctree
+        ~asset_path:None odoctree
     else
       documents_of_odocl ~warnings_options ~renderer ~extra ~syntax ~source
-        odoctree
+        ~asset_path:None odoctree
   in
   docs >>= fun docs ->
   List.iter
