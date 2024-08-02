@@ -17,8 +17,7 @@ module Of_document = struct
       | Entity e -> "&" ^ e
       | Linebreak -> "\n"
       | Styled (_, t) -> inline t
-      | Link (_, t) -> inline t
-      | InternalLink { content; _ } -> inline content
+      | Link { content; _ } -> inline content
       | Source s -> source s
       | Math m -> m
       | Raw_markup _ -> ""
@@ -59,6 +58,7 @@ module Of_comments = struct
     | `Code_block (_, s, _todo) -> s |> get_value
     | `Verbatim v -> v
     | `Math_block m -> m
+    | `Media (_, _, is) -> inlines is
     | `Table _ -> (* TODO *) ""
 
   and nestable (n : Odoc_model.Comment.nestable_block_element) =

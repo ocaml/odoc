@@ -65,9 +65,7 @@ end = struct
            | Entity _ as t -> return t
            | Linebreak as t -> return t
            | Styled (st, content) -> return (Styled (st, remove_links content))
-           | Link (_, t) -> t
-           | InternalLink { target = Resolved _; content = t; _ } -> t
-           | InternalLink { target = Unresolved; content = t; _ } -> t
+           | Link { target = _; content = t; _ } -> t
            | Source l ->
                let rec f = function
                  | Source.Elt t -> Source.Elt (remove_links t)
@@ -382,6 +380,9 @@ end = struct
      fun x ->
       match x.desc with
       | Inline x -> inline x
+      | Audio (_, x) -> inline x
+      | Video (_, x) -> inline x
+      | Image (_, x) -> inline x
       | Paragraph x -> inline x
       | List (_, x) -> List.exists block x
       | Table { data; align = _ } ->
@@ -400,8 +401,7 @@ end = struct
      fun x ->
       match x.desc with
       | Styled (_, x) -> inline x
-      | Link (_, x) -> inline x
-      | InternalLink x -> inline x.content
+      | Link { content = t; _ } -> inline t
       | Math _ -> true
       | Text _ | Entity _ | Linebreak | Source _ | Raw_markup _ -> false
     in

@@ -652,7 +652,8 @@ module rec Reference : sig
     | `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.LabelParent.t *)
 
-  type asset = [ `Asset_path of hierarchy ]
+  type asset =
+    [ `Resolved of Resolved_reference.asset | `Asset_path of hierarchy ]
 
   type module_ =
     [ `Resolved of Resolved_reference.module_
