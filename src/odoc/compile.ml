@@ -42,11 +42,13 @@ type spec = {
 }
 
 let rec path_of_id output_dir id =
-  match (id : Paths.Identifier.ContainerPage.t).iv with
-  | `Page (None, p) -> Fpath.(v output_dir / PageName.to_string p)
-  | `Page (Some parent, p) ->
-      let d = path_of_id output_dir parent in
-      Fpath.(d / PageName.to_string p)
+  match id with
+  | None -> Fpath.v output_dir
+  | Some id -> (
+      match (id : Paths.Identifier.ContainerPage.t).iv with
+      | `Page (parent, p) ->
+          let d = path_of_id output_dir parent in
+          Fpath.(d / PageName.to_string p))
 
 let check_is_empty msg = function [] -> Ok () | _ :: _ -> Error (`Msg msg)
 
@@ -98,13 +100,17 @@ let resolve_parent_page resolver f =
   extract_parent page.name >>= fun parent -> Ok (parent, page.children)
 
 let mk_id str =
-  let l = String.cuts ~sep:"/" str in
-  List.fold_left
-    (fun acc id -> Some (Paths.Identifier.Mk.page (acc, PageName.make_std id)))
-    None l
-  |> function
-  | Some x -> x
-  | None -> failwith "Failed to create ID"
+  match str with
+  | "" -> None
+  | str -> (
+      let l = String.cuts ~sep:"/" str in
+      List.fold_left
+        (fun acc id ->
+          Some (Paths.Identifier.Mk.page (acc, PageName.make_std id)))
+        None l
+      |> function
+      | Some x -> Some x
+      | None -> failwith "Failed to create ID")
 
 let resolve_imports resolver imports =
   List.map
@@ -303,13 +309,7 @@ let resolve_spec ~input resolver cli_spec =
         else name |> Fpath.to_string |> String.Ascii.uncapitalize
       in
       let output = Fs.File.create ~directory ~name in
-      Ok
-        {
-          parent_id = Some parent_id;
-          output;
-          parents_children = None;
-          children = [];
-        }
+      Ok { parent_id; output; parents_children = None; children = [] }
   | CliNoParent output ->
       Ok { output; parent_id = None; parents_children = None; children = [] }
 

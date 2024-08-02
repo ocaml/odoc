@@ -1,12 +1,20 @@
 open Bos
 
-type id = Fpath.t
+module Id : sig
+  type t
+  val to_fpath : t -> Fpath.t
+  val of_fpath : Fpath.t -> t
+  val to_string : t -> string
+end = struct
+  type t = Fpath.t
 
-let fpath_of_id id = id
+  let to_fpath id = id
 
-let id_of_fpath id =
-  id |> Fpath.normalize
-  |> Fpath.rem_empty_seg (* If an odoc path ends with a [/] everything breaks *)
+  let of_fpath id = id |> Fpath.normalize |> Fpath.rem_empty_seg
+  (* If an odoc path ends with a [/] everything breaks *)
+
+  let to_string id = match Fpath.to_string id with "." -> "" | v -> v
+end
 
 let index_filename = "index.odoc-index"
 
@@ -33,13 +41,13 @@ let compile ~output_dir ~input_file:file ~includes ~parent_id =
   in
   let output_file =
     let _, f = Fpath.split_base file in
-    Some Fpath.(output_dir // parent_id // set_ext "odoc" f)
+    Some Fpath.(output_dir // Id.to_fpath parent_id // set_ext "odoc" f)
   in
   let cmd =
     !odoc % "compile" % Fpath.to_string file % "--output-dir" % p output_dir
     %% includes % "--enable-missing-root-warning"
   in
-  let cmd = cmd % "--parent-id" % Fpath.to_string parent_id in
+  let cmd = cmd % "--parent-id" % Id.to_string parent_id in
   let desc = Printf.sprintf "Compiling %s" (Fpath.to_string file) in
   let lines = Cmd_outputs.submit desc cmd output_file in
   Cmd_outputs.(
@@ -59,10 +67,12 @@ let compile_impl ~output_dir ~input_file:file ~includes ~parent_id ~source_id =
   let output_file =
     let _, f = Fpath.split_base file in
     Some
-      Fpath.(output_dir // parent_id / ("impl-" ^ to_string (set_ext "odoc" f)))
+      Fpath.(
+        output_dir // Id.to_fpath parent_id
+        / ("impl-" ^ to_string (set_ext "odoc" f)))
   in
-  let cmd = cmd % "--parent-id" % Fpath.to_string parent_id in
-  let cmd = cmd % "--source-id" % Fpath.to_string source_id in
+  let cmd = cmd % "--parent-id" % Id.to_string parent_id in
+  let cmd = cmd % "--source-id" % Id.to_string source_id in
   let desc =
     Printf.sprintf "Compiling implementation %s" (Fpath.to_string file)
   in

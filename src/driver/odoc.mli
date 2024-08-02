@@ -1,7 +1,9 @@
-type id
-
-val fpath_of_id : id -> Fpath.t
-val id_of_fpath : Fpath.t -> id
+module Id : sig
+  type t
+  val to_fpath : t -> Fpath.t
+  val of_fpath : Fpath.t -> t
+  val to_string : t -> string
+end
 
 val index_filename : string
 
@@ -14,14 +16,14 @@ val compile_impl :
   output_dir:Fpath.t ->
   input_file:Fpath.t ->
   includes:Fpath.set ->
-  parent_id:id ->
-  source_id:id ->
+  parent_id:Id.t ->
+  source_id:Id.t ->
   unit
 val compile :
   output_dir:Fpath.t ->
   input_file:Fpath.t ->
   includes:Fpath.set ->
-  parent_id:id ->
+  parent_id:Id.t ->
   unit
 
 val link :

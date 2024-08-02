@@ -31,8 +31,14 @@ let compile ~resolver ~output ~warnings_options ~source_id input =
           Error (`Msg "Source id cannot be in the root directory")
         else
           let parent =
-            Compile.mk_id Fpath.(to_string (rem_empty_seg parent_id))
+            match Compile.mk_id Fpath.(to_string (rem_empty_seg parent_id)) with
+            | Some s -> Ok s
+            | None ->
+                Error
+                  (`Msg
+                    "parent-id cannot be empty when compiling implementations.")
           in
+          parent >>= fun parent ->
           let source_id =
             Paths.Identifier.Mk.source_page (parent, [ Fpath.to_string name ])
           in

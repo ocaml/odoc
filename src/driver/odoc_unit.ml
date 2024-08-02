@@ -11,7 +11,7 @@ type index = {
 }
 
 type 'a unit = {
-  parent_id : Odoc.id;
+  parent_id : Odoc.Id.t;
   odoc_dir : Fpath.t;
   input_file : Fpath.t;
   output_dir : Fpath.t;
@@ -20,14 +20,14 @@ type 'a unit = {
   pkg_args : pkg_args;
   pkgname : string;
   include_dirs : Fpath.t list;
-  index : index;
+  index : index option;
   kind : 'a;
 }
 
 type intf_extra = { hidden : bool; hash : string; deps : intf unit list }
 and intf = [ `Intf of intf_extra ]
 
-type impl_extra = { src_id : Odoc.id; src_path : Fpath.t }
+type impl_extra = { src_id : Odoc.Id.t; src_path : Fpath.t }
 type impl = [ `Impl of impl_extra ]
 
 type mld = [ `Mld ]
@@ -95,7 +95,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
     let ( / ) = Fpath.( / ) in
     let filename = input_file |> Fpath.rem_ext |> Fpath.basename in
     let odoc_dir = output_dir // rel_dir in
-    let parent_id = rel_dir |> Odoc.id_of_fpath in
+    let parent_id = rel_dir |> Odoc.Id.of_fpath in
     let odoc_file = odoc_dir / (prefix ^ filename ^ ".odoc") in
     let odocl_file = linked_dir // rel_dir / (prefix ^ filename ^ ".odocl") in
     {
@@ -109,7 +109,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
       odocl_file;
       include_dirs;
       kind;
-      index = index_of pkg;
+      index = Some (index_of pkg);
     }
   in
   let rec build_deps deps =
@@ -150,7 +150,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
         let kind =
           let src_name = Fpath.filename src_path in
           let src_id =
-            Fpath.(pkg.pkg_dir / "src" / libname / src_name) |> Odoc.id_of_fpath
+            Fpath.(pkg.pkg_dir / "src" / libname / src_name) |> Odoc.Id.of_fpath
           in
           `Impl { src_id; src_path }
         in

@@ -11,7 +11,7 @@ type index = {
 }
 
 type 'a unit = {
-  parent_id : Odoc.id;
+  parent_id : Odoc.Id.t;
   odoc_dir : Fpath.t;
   input_file : Fpath.t;
   output_dir : Fpath.t;
@@ -20,14 +20,14 @@ type 'a unit = {
   pkg_args : pkg_args;
   pkgname : string;
   include_dirs : Fpath.t list;
-  index : index;
+  index : index option;
   kind : 'a;
 }
 
 type intf_extra = { hidden : bool; hash : string; deps : intf unit list }
 and intf = [ `Intf of intf_extra ]
 
-type impl_extra = { src_id : Odoc.id; src_path : Fpath.t }
+type impl_extra = { src_id : Odoc.Id.t; src_path : Fpath.t }
 type impl = [ `Impl of impl_extra ]
 
 type mld = [ `Mld ]

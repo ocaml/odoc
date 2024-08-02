@@ -17,7 +17,11 @@ let init_stats (units : Odoc_unit.t list) =
         let total_impl =
           match unit.kind with `Impl _ -> total_impl + 1 | _ -> total_impl
         in
-        let indexes = Fpath.Set.add unit.index.output_file indexes in
+        let indexes =
+          match unit.index with
+          | None -> indexes
+          | Some index -> Fpath.Set.add index.output_file indexes
+        in
         let non_hidden =
           match unit.kind with
           | `Intf { hidden = false; _ } -> non_hidden + 1
@@ -240,10 +244,16 @@ let html_generate output_dir linked =
           ~source:src_path ();
         Atomic.incr Stats.stats.generated_units
     | _ ->
-        let db_path = compile_index l.index in
-        let search_uris = [ db_path; Sherlodoc.js_file ] in
-        let index = l.index.output_file in
-        Odoc.html_generate ~search_uris ~index ~output_dir ~input_file ();
+        let search_uris, index =
+          match l.index with
+          | None -> (None, None)
+          | Some index ->
+              let db_path = compile_index index in
+              let search_uris = [ db_path; Sherlodoc.js_file ] in
+              let index = index.output_file in
+              (Some search_uris, Some index)
+        in
+        Odoc.html_generate ?search_uris ?index ~output_dir ~input_file ();
         Atomic.incr Stats.stats.generated_units
   in
   Fiber.List.iter html_generate linked
