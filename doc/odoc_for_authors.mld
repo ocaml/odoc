@@ -639,9 +639,13 @@ There are currently three kinds of medias: image, audio, and
 video. Each of them can refer to the file either using an asset
 reference, or a direct link.
 
-The markup is [{<media>:link}], [{<media>!ref}],
-[{{<media>:link}Replacement text}] and [{{<media>:ref}Replacement text}],
-where [<media>] is either [image], [video] or [audio].
+The markup for images is [{image:<link>}], [{image!<path>}],
+[{{image:<link>}Replacement text}] and [{{image!<path>}Replacement text}], where
+[<link>] is a link and [<path>] is a path to an asset. This path can be either
+relative or absolute.
+
+The markup for videos and audios is similar, replacing [image] by respectively
+[video] and [audio].
 
 The replacement text is used for backends that do not support medias
 (latex and man), and for when a reference is unresolved. In the case
