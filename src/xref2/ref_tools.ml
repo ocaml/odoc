@@ -21,7 +21,7 @@ type class_type_lookup_result = Resolved.ClassType.t * Component.ClassType.t
 
 type page_lookup_result = Resolved.Page.t * Odoc_model.Lang.Page.t
 
-type asset_lookup_result = Resolved.Asset.t * Odoc_model.Lang.Asset.t
+type asset_lookup_result = Resolved.Asset.t
 
 type type_lookup_result =
   [ `T of datatype_lookup_result
@@ -241,7 +241,7 @@ module Path = struct
 
   let asset_in_env env p : asset_lookup_result ref_result =
     Env.lookup_asset_by_path p env |> handle_lookup_error p >>= fun p ->
-    Ok (`Identifier p.name, p)
+    Ok (`Identifier p.name)
 
   let module_in_env env p : module_lookup_result ref_result =
     Env.lookup_unit_by_path p env |> handle_lookup_error p >>= fun m ->
@@ -643,7 +643,7 @@ module Asset = struct
 
   let in_env env name : t ref_result =
     match Env.lookup_asset_by_name name env with
-    | Ok p -> Ok (`Identifier p.Odoc_model.Lang.Asset.name, p)
+    | Ok p -> Ok (`Identifier p.Odoc_model.Lang.Asset.name)
     | Error `Not_found -> Error (`Lookup_by_name (`Page (* TODO *), name))
 end
 
@@ -834,9 +834,7 @@ let resolved3 (r, _, _) = resolved1 r
 and resolved2 (r, _) = resolved1 r
 
 let resolve_asset_reference env (r : Reference.Asset.t) : Asset.t ref_result =
-  match r with
-  | `Resolved _r -> failwith "What's going on!?"
-  | `Asset_path p -> Path.asset_in_env env p
+  match r with `Resolved r -> Ok r | `Asset_path p -> Path.asset_in_env env p
 
 let resolved_type_lookup = function
   | `T (r, _) -> resolved1 r
@@ -965,7 +963,7 @@ let resolve_reference :
         resolve_label_parent_reference env parent >>= fun p ->
         L.in_label_parent env p name >>= resolved_with_text
     | `Root (name, (`TPage | `TChildPage)) -> Page.in_env env name >>= resolved2
-    | `Root (name, `TAsset) -> Asset.in_env env name >>= resolved2
+    | `Root (name, `TAsset) -> Asset.in_env env name >>= resolved1
     | `Dot (parent, name) -> resolve_reference_dot env parent name
     | `Root (name, `TConstructor) -> CS.in_env env name >>= resolved1
     | `Constructor (parent, name) ->
@@ -996,7 +994,7 @@ let resolve_reference :
         resolve_class_signature_reference env parent >>= fun p ->
         MV.in_class_signature env p name >>= resolved1
     | `Page_path p -> Path.page_in_env env p >>= resolved2
-    | `Asset_path a -> Path.asset_in_env env a >>= resolved2
+    | `Asset_path a -> Path.asset_in_env env a >>= resolved1
     | `Module_path p ->
         Path.module_in_env env p
         >>= module_lookup_to_signature_lookup env

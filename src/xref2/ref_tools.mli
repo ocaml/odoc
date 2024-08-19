@@ -3,7 +3,7 @@ open Odoc_model.Paths.Reference
 type module_lookup_result =
   Resolved.Module.t * Cpath.Resolved.module_ * Component.Module.t
 
-type asset_lookup_result = Resolved.Asset.t * Odoc_model.Lang.Asset.t
+type asset_lookup_result = Resolved.Asset.t
 
 type 'a ref_result =
   ('a, Errors.Tools_error.reference_lookup_error) Result.result
