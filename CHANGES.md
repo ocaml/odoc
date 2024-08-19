@@ -27,6 +27,7 @@
 - Added a `compile-asset` command (@EmileTrotignon, @panglesd, #1170)
 - Allow referencing assets (@panglesd, #1171)
 - Added a `--asset-path` arg to `html-generate` (@panglesd, #1185)
+- Add a frontmatter syntax for mld pages (@panglesd, #1187)
 
 ### Changed
 
