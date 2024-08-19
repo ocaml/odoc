@@ -108,6 +108,8 @@ val from_path : Path.t -> t
 
 val from_identifier : stop_before:bool -> Identifier.t -> (t, Error.t) result
 
+val from_asset_identifier : Identifier.AssetFile.t -> t
+
 val kind : Identifier.t -> kind
 
 val render_path : Odoc_model.Paths.Path.t -> string

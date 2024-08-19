@@ -1073,6 +1073,8 @@ module Reference = struct
     end
 
     module Asset = struct
+      let identifier = function `Identifier id -> id
+
       type t = Paths_types.Resolved_reference.asset
     end
   end

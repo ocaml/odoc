@@ -550,6 +550,8 @@ module rec Reference : sig
 
     module Asset : sig
       type t = Paths_types.Resolved_reference.asset
+
+      val identifier : t -> Identifier.AssetFile.t
     end
 
     type t = Paths_types.Resolved_reference.any

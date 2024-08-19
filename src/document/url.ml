@@ -455,6 +455,8 @@ let from_identifier ~stop_before = function
       Ok (from_path @@ Path.from_identifier p)
   | p -> Anchor.from_identifier p
 
+let from_asset_identifier p = from_path @@ Path.from_identifier p
+
 let kind id =
   match Anchor.from_identifier id with
   | Error e -> failwith (Error.to_string e)
