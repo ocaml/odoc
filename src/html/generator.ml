@@ -234,6 +234,20 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
       let a = Some (class_ (extra_class @ t.attr)) in
       [ mk ?a content ]
     in
+    let mk_media_block media_block target content =
+      let block =
+        match target with
+        | Target.External url -> media_block url
+        | Internal (Resolved uri) ->
+            let url = Link.href ~config ~resolve uri in
+            media_block url
+        | Internal Unresolved ->
+            let content = inline ~config ~resolve content in
+            let a = Html.a_class [ "xref-unresolved" ] :: [] in
+            [ Html.span ~a content ]
+      in
+      mk_block Html.div block
+    in
     match t.desc with
     | Inline i ->
         if t.attr = [] then as_flow @@ inline ~config ~resolve i
@@ -265,33 +279,11 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
         mk_block ~extra_class Html.pre (source (inline ~config ~resolve) c)
     | Math s -> mk_block Html.div [ block_math s ]
     | Audio (target, content) ->
-        let content = inline ~config ~resolve content in
         let audio src = [ Html.audio ~src ~a:[ Html.a_controls () ] [] ] in
-        let block =
-          match target with
-          | External url -> audio url
-          | Internal (Resolved uri) ->
-              let url = Link.href ~config ~resolve uri in
-              audio url
-          | Internal Unresolved ->
-              let a = Html.a_class [ "xref-unresolved" ] :: [] in
-              [ Html.span ~a content ]
-        in
-        mk_block Html.div block
+        mk_media_block audio target content
     | Video (target, content) ->
-        let content = inline ~config ~resolve content in
         let video src = [ Html.video ~src ~a:[ Html.a_controls () ] [] ] in
-        let block =
-          match target with
-          | External url -> video url
-          | Internal (Resolved uri) ->
-              let url = Link.href ~config ~resolve uri in
-              video url
-          | Internal Unresolved ->
-              let a = [ Html.a_class [ "xref-unresolved" ] ] in
-              [ Html.span ~a content ]
-        in
-        mk_block Html.div block
+        mk_media_block video target content
     | Image (target, alt) ->
         let image src =
           let alt = alt_of_inline alt in
@@ -302,18 +294,9 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
           in
           [ img ]
         in
-        let block =
-          match target with
-          | External url -> image url
-          | Internal (Resolved uri) ->
-              let url = Link.href ~config ~resolve uri in
-              image url
-          | Internal Unresolved ->
-              let a = [ Html.a_class [ "xref-unresolved" ] ] in
-              [ Html.span ~a (inline ~config ~resolve alt) ]
-        in
-        mk_block Html.div block
+        mk_media_block image target alt
   in
+
   Odoc_utils.List.concat_map l ~f:one
 
 and mk_rows ~config ~resolve { align; data } =
