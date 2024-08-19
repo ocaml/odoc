@@ -633,7 +633,7 @@ The heavy syntax is easier to write, can be more readable for big tables, and su
 
 Odoc 3.0 introduced new markup for medias. Medias are nestable blocks,
 so they can be put inside lists and tables, but they cannot be
-inlined, for instance in a link..
+inlined, for instance in a link.
 
 There are currently three kinds of medias: image, audio, and
 video. Each of them can refer to the file either using an asset
@@ -647,7 +647,7 @@ The replacement text is used for backends that do not support medias
 (latex and man), and for when a reference is unresolved. In the case
 of an image, it is also used to generate an alternative text.
 
-Images are clickable and links to the image file.
+Images are clickable and link to the image file.
 
 The following source:
 
