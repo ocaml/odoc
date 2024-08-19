@@ -1,0 +1,10 @@
+{0 Title}
+
+{@frontmatter[
+bli1: bloblobloblo1
+bli2: bloblobloblo2
+]}
+
+{@frontmatter[
+bli3: bloblobloblo1
+]}
