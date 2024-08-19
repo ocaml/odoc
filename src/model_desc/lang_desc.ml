@@ -697,6 +697,10 @@ and page_t =
     [
       F ("name", (fun t -> t.name), identifier);
       F ("root", (fun t -> t.root), root);
+      F
+        ( "frontmatter",
+          (fun t -> t.frontmatter),
+          Option (List (Pair (string, string))) );
       F ("content", (fun t -> t.content), docs);
       F ("digest", (fun t -> t.digest), Digest.t);
     ]
