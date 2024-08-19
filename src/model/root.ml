@@ -32,7 +32,7 @@ module Odoc_file = struct
   type page = {
     name : string;
     title : Comment.link_content option;
-    frontmatter : Frontmatter.t option;
+    frontmatter : Frontmatter.t;
   }
 
   type t =
