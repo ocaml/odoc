@@ -1,6 +1,6 @@
-{0 Title}
+{0 One frontmatter}
 
-{@frontmatter[
+{@meta[
 bli1: bloblobloblo1
 bli2: bloblobloblo2
 ]}
