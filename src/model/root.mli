@@ -28,7 +28,11 @@ end
 module Odoc_file : sig
   type compilation_unit = { name : string; hidden : bool }
 
-  type page = { name : string; title : Comment.link_content option }
+  type page = {
+    name : string;
+    title : Comment.link_content option;
+    frontmatter : Frontmatter.t option;
+  }
 
   type t =
     | Page of page
@@ -38,7 +42,8 @@ module Odoc_file : sig
 
   val create_unit : force_hidden:bool -> string -> t
 
-  val create_page : string -> Comment.link_content option -> t
+  val create_page :
+    string -> Comment.link_content option -> Frontmatter.t option -> t
 
   val create_impl : string -> t
 

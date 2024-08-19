@@ -9,13 +9,15 @@ let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
   in
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
-  let root =
-    let file = Odoc_model.Root.Odoc_file.create_page page_name None in
-    { Odoc_model.Root.id; file; digest }
-  in
   let to_html content =
     (* This is a mess. *)
     let frontmatter, content = Odoc_model.Comment.extract_frontmatter content in
+    let root =
+      let file =
+        Odoc_model.Root.Odoc_file.create_page page_name None frontmatter
+      in
+      { Odoc_model.Root.id; file; digest }
+    in
     let page =
       Odoc_model.Lang.Page.
         {

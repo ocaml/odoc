@@ -240,7 +240,9 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
     let zero_heading = Comment.find_zero_heading content in
     let frontmatter, content = Comment.extract_frontmatter content in
     let root =
-      let file = Root.Odoc_file.create_page root_name zero_heading in
+      let file =
+        Root.Odoc_file.create_page root_name zero_heading frontmatter
+      in
       { Root.id = (name :> Paths.Identifier.OdocId.t); file; digest }
     in
     let page =
