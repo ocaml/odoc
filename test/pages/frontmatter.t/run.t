@@ -34,12 +34,16 @@ When there is one frontmatter, it is extracted from the content:
                 "one_frontmatter"
               ]
             },
-            "title"
+            "one-frontmatter"
           ]
         },
         [
           {
-            "`Word": "Title"
+            "`Word": "One"
+          },
+          "`Space",
+          {
+            "`Word": "frontmatter"
           }
         ]
       ]
@@ -80,12 +84,16 @@ When there is more than one frontmatter, they are all extracted from the content
                 "two_frontmatters"
               ]
             },
-            "title"
+            "two-frontmatters"
           ]
         },
         [
           {
-            "`Word": "Title"
+            "`Word": "Two"
+          },
+          "`Space",
+          {
+            "`Word": "frontmatters"
           }
         ]
       ]

@@ -150,7 +150,7 @@ let extract_frontmatter docs : _ =
       List.fold_left
         (fun (fm_acc, content_acc) doc ->
           match doc.Location_.value with
-          | `Code_block (Some "frontmatter", content, None) ->
+          | `Code_block (Some "meta", content, None) ->
               (parse_frontmatter content.Location_.value :: fm_acc, content_acc)
           | _ -> (fm_acc, doc :: content_acc))
         ([], []) docs

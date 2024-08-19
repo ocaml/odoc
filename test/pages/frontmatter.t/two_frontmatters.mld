@@ -1,10 +1,10 @@
-{0 Title}
+{0 Two frontmatters}
 
-{@frontmatter[
+{@meta[
 bli1: bloblobloblo1
 bli2: bloblobloblo2
 ]}
 
-{@frontmatter[
+{@meta[
 bli3: bloblobloblo1
 ]}
