@@ -532,7 +532,7 @@ module rec Page : sig
     root : Root.t;
     content : Comment.docs;
     children : child list;
-    frontmatter : Frontmatter.t option;
+    frontmatter : Frontmatter.t;
     digest : Digest.t;
     linked : bool;
   }
