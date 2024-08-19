@@ -290,15 +290,10 @@ let rec nestable_block_element :
         match href with
         | `Reference (`Resolved r) -> (
             let id =
-              Odoc_model.Paths.Reference.Resolved.(identifier (r :> t))
+              Odoc_model.Paths.Reference.Resolved.Asset.(identifier (r :> t))
             in
-            match Url.from_identifier ~stop_before:false id with
-            | Ok url -> Target.Internal (Resolved url)
-            | Error exn ->
-                (* FIXME: better error message *)
-                Printf.eprintf "Id.href failed: %S\n%!"
-                  (Url.Error.to_string exn);
-                Internal Unresolved)
+            match Url.from_asset_identifier id with
+            | url -> Target.Internal (Resolved url))
         | `Reference _ -> Internal Unresolved
         | `Link href -> External href
       in
