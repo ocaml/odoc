@@ -775,6 +775,8 @@ module Make_renderer (R : S) : sig
   val targets : docs:string -> unit Term.t * Term.info
 
   val generate : docs:string -> unit Term.t * Term.info
+
+  val generate_impl : docs:string -> unit Term.t * Term.info
 end = struct
   let input_odoc =
     let doc = "Input file." in
@@ -857,6 +859,43 @@ end = struct
   end
 
   let generate ~docs = Generate.(cmd, info ~docs)
+
+  module Generate_impl = struct
+    let generate extra _hidden output_dir syntax extra_suffix input_file
+        warnings_options source_file =
+      let file = Fs.File.of_string input_file in
+      Rendering.generate_impl_odoc ~renderer:R.renderer ~warnings_options
+        ~syntax ~output:output_dir ~extra_suffix ~source_file extra file
+
+    let source_file =
+      let doc = "Source code for the implementation unit." in
+      Arg.(
+        value
+        & opt (some convert_fpath) None
+        & info [ "source" ] ~doc ~docv:"file.ml")
+
+    let cmd =
+      let syntax =
+        let doc = "Available options: ml | re" in
+        let env = Arg.env_var "ODOC_SYNTAX" in
+        Arg.(
+          value
+          & opt (pconv convert_syntax) Odoc_document.Renderer.OCaml
+            @@ info ~docv:"SYNTAX" ~doc ~env [ "syntax" ])
+      in
+      Term.(
+        const handle_error
+        $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
+         $ extra_suffix $ input_odocl $ warnings_options $ source_file))
+
+    let info ~docs =
+      let doc =
+        Format.sprintf "Generate %s files from a $(i,.odocl)." R.renderer.name
+      in
+      Term.info ~docs ~doc (R.renderer.name ^ "-generate-impl")
+  end
+
+  let generate_impl ~docs = Generate_impl.(cmd, info ~docs)
 
   module Targets = struct
     let list_targets output_dir directories extra odoc_file =
@@ -1458,6 +1497,7 @@ let () =
       Compile_asset.(cmd, info ~docs:section_pipeline);
       Odoc_link.(cmd, info ~docs:section_pipeline);
       Odoc_html.generate ~docs:section_pipeline;
+      Odoc_html.generate_impl ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
       Compile_impl.(cmd, info ~docs:section_pipeline);
       Indexing.(cmd, info ~docs:section_pipeline);

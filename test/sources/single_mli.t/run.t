@@ -14,9 +14,9 @@ Similar to Astring library.
   $ odoc link -I . impl-a.odoc
   $ odoc link -I . a.odoc
 
-  $ odoc html-generate --source a_x.ml --indent -o html impl-a_x.odocl
+  $ odoc html-generate-impl --source a_x.ml --indent -o html impl-a_x.odocl
   $ odoc html-generate --indent -o html a_x.odocl
-  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
+  $ odoc html-generate-impl --source a.ml --indent -o html impl-a.odocl
   $ odoc html-generate --indent -o html a.odocl
 
 Look if all the source files are generated:

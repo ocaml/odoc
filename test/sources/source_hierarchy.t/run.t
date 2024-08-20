@@ -18,11 +18,11 @@ Now, compile the pages with the --source option. The source-name must be include
   $ odoc link -I . impl-a.odoc
   $ odoc link -I . impl-b.odoc
   $ odoc link -I . impl-c.odoc
-  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
+  $ odoc html-generate-impl --source a.ml --indent -o html impl-a.odocl
   $ odoc html-generate --indent -o html a.odocl
-  $ odoc html-generate --source b.ml --indent -o html impl-b.odocl
+  $ odoc html-generate-impl --source b.ml --indent -o html impl-b.odocl
   $ odoc html-generate --indent -o html b.odocl
-  $ odoc html-generate --source c.ml --indent -o html impl-c.odocl
+  $ odoc html-generate-impl --source c.ml --indent -o html impl-c.odocl
   $ odoc html-generate --indent -o html c.odocl
 
 Source pages and source directory pages are generated:
