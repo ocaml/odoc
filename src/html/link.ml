@@ -37,11 +37,7 @@ module Path = struct
 
   let as_filename ~is_flat (url : Url.Path.t) =
     let url_segs = for_linking ~is_flat url in
-    let filename =
-      match url_segs with
-      | [] -> Fpath.v "./"
-      | url_segs -> Fpath.(v @@ String.concat Fpath.dir_sep @@ url_segs)
-    in
+    let filename = Fpath.(v @@ String.concat Fpath.dir_sep @@ url_segs) in
     filename
 end
 
