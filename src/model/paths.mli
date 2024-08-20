@@ -67,9 +67,6 @@ module Identifier : sig
 
   module Type : IdSig with type t = Id.type_ and type t_pv = Id.type_pv
 
-  module SourceDir :
-    IdSig with type t = Id.source_dir and type t_pv = Id.source_dir_pv
-
   module Class : IdSig with type t = Id.class_ and type t_pv = Id.class_pv
 
   module ClassType :
@@ -251,7 +248,7 @@ module Identifier : sig
       ContainerPage.t option * PageName.t ->
       [> `LeafPage of ContainerPage.t option * PageName.t ] id
 
-    val source_page : ContainerPage.t * string list -> SourcePage.t
+    val source_page : ContainerPage.t * string -> SourcePage.t
 
     val asset_file : Page.t * AssetName.t -> AssetFile.t
 

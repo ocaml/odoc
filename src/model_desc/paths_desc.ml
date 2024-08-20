@@ -166,8 +166,6 @@ module General_paths = struct
               ( "`Label",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.labelname) )
-        | `SourceDir (parent, name) ->
-            C ("`SourceDir", ((parent :> id_t), name), Pair (identifier, string))
         | `SourcePage (parent, name) ->
             C
               ( "`SourcePage",

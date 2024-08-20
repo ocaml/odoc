@@ -34,7 +34,6 @@ module Path : sig
     | Identifier.Signature.t_pv
     | Identifier.ClassSignature.t_pv
     | Identifier.SourcePage.t_pv
-    | Identifier.SourceDir.t_pv
     | Identifier.AssetFile.t_pv ]
 
   and any = any_pv Odoc_model.Paths.Identifier.id
