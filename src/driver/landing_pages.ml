@@ -1,13 +1,12 @@
 open Packages
 open Odoc_unit
-let write_file file content = Bos.OS.File.write file content |> Result.get_ok
 
 let make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
     ?(include_dirs = []) ~pkgname ~pkg_args () =
   let input_file = Fpath.(mld_dir // rel_path / "index.mld") in
   let odoc_file = Fpath.(odoc_dir // rel_path / "page-index.odoc") in
   let odocl_file = Fpath.(odocl_dir // rel_path / "page-index.odocl") in
-  let () = write_file input_file content in
+  let () = Util.write_file input_file (String.split_on_char '\n' content) in
   let parent_id = rel_path |> Odoc.Id.of_fpath in
   {
     parent_id;
