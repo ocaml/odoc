@@ -130,11 +130,8 @@ let compile_index ?(ignore_output = false) ~output_file ~json ~docs ~libs () =
       add_prefixed_output cmd link_output (Fpath.to_string output_file) lines)
 
 let html_generate ~output_dir ?index ?(ignore_output = false) ?(assets = [])
-    ?source ?(search_uris = []) ~input_file:file () =
+    ?(search_uris = []) ~input_file:file () =
   let open Cmd in
-  let source =
-    match source with None -> empty | Some source -> v "--source" % p source
-  in
   let index =
     match index with None -> empty | Some idx -> v "--index" % p idx
   in
@@ -147,8 +144,29 @@ let html_generate ~output_dir ?index ?(ignore_output = false) ?(assets = [])
       empty search_uris
   in
   let cmd =
-    !odoc % "html-generate" %% source % p file %% assets %% index %% search_uris
-    % "-o" % output_dir
+    !odoc % "html-generate" % p file %% assets %% index %% search_uris % "-o"
+    % output_dir
+  in
+  let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string file) in
+  let lines = Cmd_outputs.submit desc cmd None in
+  if not ignore_output then
+    Cmd_outputs.(
+      add_prefixed_output cmd generate_output (Fpath.to_string file) lines)
+
+let html_generate_impl ~output_dir ?(ignore_output = false) ?source
+    ?(search_uris = []) ~input_file:file () =
+  let open Cmd in
+  let source =
+    match source with None -> empty | Some source -> v "--source" % p source
+  in
+  let search_uris =
+    List.fold_left
+      (fun acc filename -> acc % "--search-uri" % p filename)
+      empty search_uris
+  in
+  let cmd =
+    !odoc % "html-generate-impl" %% source % p file %% search_uris % "-o"
+    % output_dir
   in
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string file) in
   let lines = Cmd_outputs.submit desc cmd None in
