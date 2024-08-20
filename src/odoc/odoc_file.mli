@@ -24,7 +24,6 @@ type unit_content = Lang.Compilation_unit.t
 (** Either a page or a module. *)
 type content =
   | Page_content of Lang.Page.t
-  | Source_tree_content of Lang.SourceTree.t
   | Impl_content of Lang.Implementation.t
   | Unit_content of unit_content
   | Asset_content of Lang.Asset.t
@@ -35,11 +34,6 @@ type t = { content : content; warnings : Error.t list }
 
 val save_page : Fs.File.t -> warnings:Error.t list -> Lang.Page.t -> unit
 (** Save a page. The [page-] prefix is added to the file name if missing. *)
-
-val save_source_tree :
-  Fs.File.t -> warnings:Error.t list -> Lang.SourceTree.t -> unit
-(** Save a source tree page. The [srctree] prefix is added to the file name if
-    missing. *)
 
 val save_unit : Fs.File.t -> warnings:Error.t list -> unit_content -> unit
 (** Save a module. *)

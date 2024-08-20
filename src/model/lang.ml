@@ -559,16 +559,6 @@ module rec Index : sig
 end =
   Index
 
-module rec SourceTree : sig
-  type t = {
-    name : Identifier.Page.t;
-    root : Root.t;
-    source_children : Identifier.SourcePage.t list;
-    digest : Digest.t;
-  }
-end =
-  SourceTree
-
 module rec Asset : sig
   type t = { name : Identifier.AssetFile.t; root : Root.t }
 end =

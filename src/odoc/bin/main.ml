@@ -384,93 +384,6 @@ module Compile_asset = struct
     Term.info "compile-asset" ~docs ~doc ~man
 end
 
-module Source_tree = struct
-  let prefix = "srctree-"
-
-  let has_src_tree_prefix input =
-    input |> Fs.File.basename |> Fs.File.to_string
-    |> Astring.String.is_prefix ~affix:prefix
-
-  let output_file ~output ~input =
-    match output with
-    | Some output -> output
-    | None ->
-        let output =
-          if not (has_src_tree_prefix input) then
-            let directory = Fs.File.dirname input in
-            let name = input |> Fs.File.basename |> Fs.File.to_string in
-            let name = prefix ^ name in
-            Fs.File.create ~directory ~name
-          else input
-        in
-        Fs.File.(set_ext ".odoc" output)
-
-  let compile_source_tree directories output parent input warnings_options =
-    let output = output_file ~output ~input in
-    let resolver =
-      Resolver.create ~important_digests:true ~directories ~open_modules:[]
-        ~roots:None
-    in
-    Source_tree.compile ~resolver ~parent ~output ~warnings_options input
-
-  let arg_page_output =
-    let open Or_error in
-    let parse inp =
-      match Arg.(conv_parser string) inp with
-      | Ok s ->
-          let f = Fs.File.of_string s in
-          if not (Fs.File.has_ext ".odoc" f) then
-            Error (`Msg "Output file must have '.odoc' extension.")
-          else if not (has_src_tree_prefix f) then
-            Error
-              (`Msg
-                (Format.sprintf "Output file must be prefixed with '%s'." prefix))
-          else Ok f
-      | Error _ as e -> e
-    and print = Fpath.pp in
-    Arg.conv (parse, print)
-
-  let cmd =
-    let parent =
-      let doc = "Parent page or subpage." in
-      Arg.(
-        required
-        & opt (some string) None
-        & info ~docs ~docv:"PARENT" ~doc [ "parent" ])
-    in
-    let dst =
-      let doc =
-        Format.sprintf
-          "Output file path. Non-existing intermediate directories are \
-           created. The basename must start with the prefix '%s' and extension \
-           '.odoc'."
-          prefix
-      in
-      Arg.(
-        value
-        & opt (some arg_page_output) None
-        & info ~docs ~docv:"PATH" ~doc [ "o" ])
-    in
-    let input =
-      let doc = "Input text file containing a line-separated list of paths." in
-      Arg.(
-        required & pos 0 (some convert_fpath) None & info ~doc ~docv:"FILE" [])
-    in
-    Term.(
-      const handle_error
-      $ (const compile_source_tree $ odoc_file_directories $ dst $ parent
-       $ input $ warnings_options))
-
-  let info ~docs =
-    let doc =
-      "(EXPERIMENTAL) Compile a source tree into a page. Expect a text file \
-       containing the relative paths to every source files in the source tree. \
-       The paths should be the same as the one passed to $(i,odoc compile \
-       --source-name)."
-    in
-    Term.info "source-tree" ~docs ~doc
-end
-
 module Compile_impl = struct
   let prefix = "impl-"
 
@@ -1600,7 +1513,6 @@ let () =
       Odoc_link.(cmd, info ~docs:section_pipeline);
       Odoc_html.generate ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
-      Source_tree.(cmd, info ~docs:section_pipeline);
       Compile_impl.(cmd, info ~docs:section_pipeline);
       Indexing.(cmd, info ~docs:section_pipeline);
       Odoc_manpage.generate ~docs:section_generators;

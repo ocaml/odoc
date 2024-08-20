@@ -106,8 +106,6 @@ module type GENERATOR = sig
 
   val page : Lang.Page.t -> Document.t
 
-  val source_tree : Lang.SourceTree.t -> Document.t list
-
   val implementation :
     Odoc_model.Lang.Implementation.t ->
     Syntax_highlighter.infos ->

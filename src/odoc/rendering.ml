@@ -76,12 +76,6 @@ let documents_of_implementation ~warnings_options:_ ~syntax impl source =
           "--source or --source-root should be passed when generating \
            documents for an implementation.")
 
-let documents_of_source_tree ~warnings_options ~syntax ~source ~filename srctree
-    =
-  Error.catch_warnings (fun () -> check_empty_source_arg source filename)
-  |> Error.handle_warnings ~warnings_options
-  >>= fun () -> Ok (Renderer.documents_of_source_tree ~syntax srctree)
-
 let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax input
     =
   Odoc_file.load input >>= fun unit ->
@@ -90,9 +84,6 @@ let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax input
   | Odoc_file.Page_content odoctree ->
       documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
         ~filename odoctree
-  | Source_tree_content srctree ->
-      documents_of_source_tree ~warnings_options ~syntax ~source ~filename
-        srctree
   | Impl_content impl ->
       documents_of_implementation ~warnings_options ~syntax impl source
   | Unit_content odoctree ->
@@ -104,7 +95,6 @@ let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
     input =
   let output = Fs.File.(set_ext ".odocl" input) in
   Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
-  | `Source_tree st -> Ok (Renderer.documents_of_source_tree ~syntax st)
   | `Page page -> Ok [ Renderer.document_of_page ~syntax page ]
   | `Impl impl -> Ok (Renderer.documents_of_implementation ~syntax impl [] "")
   | `Module m ->
