@@ -42,3 +42,13 @@ val targets_odoc :
   extra:'a ->
   Fpath.t ->
   (unit, [> msg ]) result
+
+val targets_impl_odoc :
+  syntax:Renderer.syntax ->
+  warnings_options:Odoc_model.Error.warnings_options ->
+  renderer:'a Renderer.t ->
+  output:Fs.directory ->
+  extra:'a ->
+  source_file:Fpath.t option ->
+  Fs.file ->
+  (unit, [> Or_error.msg ]) result

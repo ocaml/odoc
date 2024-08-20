@@ -150,3 +150,38 @@ let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
           Format.printf "%a\n" Fpath.pp filename))
     docs;
   Ok ()
+
+let targets_impl_odoc ~syntax ~warnings_options ~renderer ~output:root_dir
+    ~extra ~source_file odoctree =
+  Odoc_file.load odoctree >>= fun unit ->
+  match unit.content with
+  | Odoc_file.Impl_content impl ->
+      documents_of_implementation ~warnings_options ~syntax impl source_file
+      >>= fun docs ->
+      List.iter
+        (fun doc ->
+          let pages = renderer.Renderer.render extra None doc in
+          Renderer.traverse pages ~f:(fun filename _content ->
+              let filename =
+                Fpath.normalize @@ Fs.File.append root_dir filename
+              in
+              Format.printf "%a\n" Fpath.pp filename))
+        docs;
+      Ok ()
+  | Page_content _ | Unit_content _ | Asset_content _ ->
+      Error (`Msg "Expected an implementation unit")
+(* let docs = *)
+(*   if Fpath.get_ext odoctree = ".odoc" then *)
+(*     documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax *)
+(*       odoctree *)
+(*   else documents_of_odocl ~warnings_options ~renderer ~extra ~syntax odoctree *)
+(* in *)
+(* docs >>= fun docs -> *)
+(* List.iter *)
+(*   (fun doc -> *)
+(*     let pages = renderer.Renderer.render extra None doc in *)
+(*     Renderer.traverse pages ~f:(fun filename _content -> *)
+(*         let filename = Fpath.normalize @@ Fs.File.append root_dir filename in *)
+(*         Format.printf "%a\n" Fpath.pp filename)) *)
+(*   docs; *)
+(* Ok () *)
