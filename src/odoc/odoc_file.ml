@@ -21,7 +21,6 @@ type unit_content = Lang.Compilation_unit.t
 
 type content =
   | Page_content of Lang.Page.t
-  | Source_tree_content of Lang.SourceTree.t
   | Impl_content of Lang.Implementation.t
   | Unit_content of unit_content
   | Asset_content of Lang.Asset.t
@@ -52,16 +51,6 @@ let save_page file ~warnings page =
     else Fs.File.create ~directory:dir ~name:("page-" ^ base)
   in
   save_unit file page.Lang.Page.root { content = Page_content page; warnings }
-
-let save_source_tree file ~warnings src_page =
-  let dir = Fs.File.dirname file in
-  let base = Fs.File.(to_string @@ basename file) in
-  let file =
-    if Astring.String.is_prefix ~affix:"srctree-" base then file
-    else Fs.File.create ~directory:dir ~name:("srctree-" ^ base)
-  in
-  save_unit file src_page.Lang.SourceTree.root
-    { content = Source_tree_content src_page; warnings }
 
 let save_impl file ~warnings impl =
   let dir = Fs.File.dirname file in

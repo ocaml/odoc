@@ -242,7 +242,6 @@ let unit_name
     ( Odoc_file.Unit_content { root; _ }
     | Page_content { root; _ }
     | Impl_content { root; _ }
-    | Source_tree_content { root; _ }
     | Asset_content { root; _ } ) =
   root_name root
 
@@ -301,9 +300,7 @@ let lookup_unit_by_name ap target_name =
   let first_unit u =
     match u with
     | Odoc_file.Unit_content m -> Some m
-    | Impl_content _ | Page_content _ | Source_tree_content _ | Asset_content _
-      ->
-        None
+    | Impl_content _ | Page_content _ | Asset_content _ -> None
   in
   let rec find_ambiguous tl =
     match find_map first_unit tl with
@@ -359,9 +356,7 @@ let lookup_page_by_name ap target_name =
   let is_page u =
     match u with
     | Odoc_file.Page_content p -> Some p
-    | Impl_content _ | Unit_content _ | Source_tree_content _ | Asset_content _
-      ->
-        None
+    | Impl_content _ | Unit_content _ | Asset_content _ -> None
   in
   let units = load_units_from_name ap target_name in
   match find_map is_page units with
@@ -374,9 +369,7 @@ let lookup_impl ap target_name =
   let is_impl u =
     match u with
     | Odoc_file.Impl_content p -> Some p
-    | Page_content _ | Unit_content _ | Source_tree_content _ | Asset_content _
-      ->
-        None
+    | Page_content _ | Unit_content _ | Asset_content _ -> None
   in
   let units = load_units_from_name ap target_name in
   match find_map is_impl units with Some (p, _) -> Some p | None -> None
@@ -389,7 +382,6 @@ let add_unit_to_cache u =
     | Odoc_file.Page_content _ -> "page-"
     | Impl_content _ -> "impl-"
     | Unit_content _ -> ""
-    | Source_tree_content _ -> "page-"
     | Asset_content _ -> "asset-")
     ^ unit_name u
   in

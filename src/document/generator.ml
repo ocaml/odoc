@@ -1748,8 +1748,6 @@ module Make (Syntax : SYNTAX) = struct
 
     val page : Lang.Page.t -> Document.t
 
-    val source_tree : Lang.SourceTree.t -> Document.t list
-
     val implementation :
       Lang.Implementation.t ->
       Syntax_highlighter.infos ->
@@ -1797,93 +1795,6 @@ module Make (Syntax : SYNTAX) = struct
       let preamble, items = Sectioning.docs t.content in
       let source_anchor = None in
       Document.Page { Page.preamble; items; url; source_anchor }
-
-    let source_tree t =
-      let dir_pages = t.Odoc_model.Lang.SourceTree.source_children in
-      let open Paths.Identifier in
-      let module Set = Set.Make (SourceDir) in
-      let module M = Map.Make (SourceDir) in
-      (* mmap is a from a [SourceDir.t] to its [SourceDir.t] and [SourcePage.t]
-         children *)
-      let mmap =
-        let add parent f mmap =
-          let old_value =
-            try M.find parent mmap with Not_found -> (Set.empty, [])
-          in
-          M.add parent (f old_value) mmap
-        and add_file file (set, lp) = (set, file :: lp)
-        and add_dir dir (set, lp) = (Set.add dir set, lp) in
-        let rec dir_ancestors_add dir mmap =
-          match dir.iv with
-          | `SourceDir (parent, _) ->
-              let mmap = add parent (add_dir dir) mmap in
-              dir_ancestors_add parent mmap
-          | `Page _ -> mmap
-        in
-        let file_ancestors_add ({ iv = `SourcePage (parent, _); _ } as file)
-            mmap =
-          let mmap = add parent (add_file file) mmap in
-          dir_ancestors_add parent mmap
-        in
-        List.fold_left
-          (fun mmap file -> file_ancestors_add file mmap)
-          M.empty dir_pages
-      in
-      let page_of_dir (dir : SourceDir.t) (dir_children, file_children) =
-        let url = Url.Path.from_identifier dir in
-        let block ?(attr = []) desc = Block.{ attr; desc } in
-        let inline ?(attr = []) desc = Inline.[ { attr; desc } ] in
-        let header =
-          let title = inline (Text (name dir)) in
-          Item.Heading
-            Heading.{ label = None; level = 0; title; source_anchor = None }
-        in
-        let li ?(attr = []) name url =
-          let link url desc =
-            let content = [ Inline.{ attr = []; desc } ] and tooltip = None in
-            Inline.InternalLink
-              { InternalLink.target = Resolved url; content; tooltip }
-          in
-          [ block ~attr @@ Block.Inline (inline @@ link url (Text name)) ]
-        in
-        let li_of_child child =
-          match child with
-          | { iv = `Page _; _ } ->
-              assert false (* No [`Page] is child of a [`SourceDir] *)
-          | { iv = `SourceDir (_, name); _ } ->
-              let url = child |> Url.Path.from_identifier |> Url.from_path in
-              (name, url)
-        in
-        let li_of_file_child ({ iv = `SourcePage (_, name); _ } as child) =
-          let url = child |> Url.Path.from_identifier |> Url.from_path in
-          (name, url)
-        in
-        let items =
-          let text ?(attr = []) desc = Item.Text [ { attr; desc } ] in
-          let list l = Block.List (Block.Unordered, l) in
-          let list_of_children =
-            let dir_list =
-              Set.fold
-                (fun child acc -> li_of_child child :: acc)
-                dir_children []
-            and file_list =
-              List.map (fun child -> li_of_file_child child) file_children
-            in
-            let sort ?(attr = []) l =
-              l
-              |> List.sort (fun (n1, _) (n2, _) -> String.compare n1 n2)
-              |> List.map (fun (name, url) -> li ~attr name url)
-            in
-            sort ~attr:[ "odoc-directory" ] dir_list
-            @ sort ~attr:[ "odoc-file" ] file_list
-          in
-          header
-          :: [ text ~attr:[ "odoc-folder-list" ] @@ list list_of_children ]
-        in
-        Document.Page
-          { Types.Page.preamble = []; items; url; source_anchor = None }
-      in
-      M.fold (fun dir children acc -> page_of_dir dir children :: acc) mmap []
 
     let implementation (v : Odoc_model.Lang.Implementation.t) syntax_info
         source_code =
