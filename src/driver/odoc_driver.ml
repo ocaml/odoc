@@ -582,15 +582,6 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
       (fun () -> render_stats env nb_workers)
   in
 
-  (* List.iter *)
-  (*   (fun l -> *)
-  (*     if Astring.String.is_infix ~affix:"_odoc/./index.mld" l then *)
-  (*       Format.printf "%s\n" l) *)
-  (*   !Cmd_outputs.compile_output; *)
-  (* List.iter *)
-  (*   (fun l -> *)
-  (*     if Astring.String.is_infix ~affix:"__driver" l then Format.printf "%s\n" l) *)
-  (*   !Cmd_outputs.link_output; *)
   Format.eprintf "Final stats: %a@.%!" Stats.pp_stats Stats.stats;
   Format.eprintf "Total time: %f@.%!" (Stats.total_time ());
   if stats then Stats.bench_results html_dir
