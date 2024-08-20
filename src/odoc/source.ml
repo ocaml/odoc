@@ -34,7 +34,7 @@ let compile ~resolver ~output ~warnings_options ~source_id input =
             Compile.mk_id Fpath.(to_string (rem_empty_seg parent_id))
           in
           let source_id =
-            Paths.Identifier.Mk.source_page (parent, [ Fpath.to_string name ])
+            Paths.Identifier.Mk.source_page (parent, Fpath.to_string name)
           in
           Ok (Some source_id)
   in

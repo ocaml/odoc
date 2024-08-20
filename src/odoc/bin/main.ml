@@ -41,17 +41,9 @@ let convert_fpath =
 let convert_src_fpath =
   let parse inp =
     match Arg.(conv_parser file) inp with
-    | Ok s -> Result.Ok (Rendering.Source.File (Fs.File.of_string s))
+    | Ok s -> Result.Ok (Fs.File.of_string s)
     | Error _ as e -> e
-  and print = Rendering.Source.pp in
-  Arg.conv (parse, print)
-
-let convert_src_dir =
-  let parse inp =
-    match Arg.(conv_parser dir) inp with
-    | Ok s -> Result.Ok (Rendering.Source.Root (Fs.File.of_string s))
-    | Error _ as e -> e
-  and print = Rendering.Source.pp in
+  and print = Fpath.pp in
   Arg.conv (parse, print)
 
 let convert_named_root =
@@ -838,21 +830,11 @@ end = struct
   let process ~docs = Process.(cmd, info ~docs)
 
   module Generate = struct
-    let source_of_args source_root source_file =
-      match (source_root, source_file) with
-      | Some x, None -> Some x
-      | None, Some x -> Some x
-      | None, None -> None
-      | Some _, Some _ ->
-          Printf.eprintf "ERROR: Can't use both source and source-root\n%!";
-          exit 1
-
     let generate extra _hidden output_dir syntax extra_suffix input_file
-        warnings_options source_file source_root sidebar =
-      let source = source_of_args source_root source_file in
+        warnings_options source_file sidebar =
       let file = Fs.File.of_string input_file in
       Rendering.generate_odoc ~renderer:R.renderer ~warnings_options ~syntax
-        ~output:output_dir ~extra_suffix ~source ~sidebar extra file
+        ~output:output_dir ~extra_suffix ~source_file ~sidebar extra file
 
     let source_file =
       let doc =
@@ -863,17 +845,6 @@ end = struct
         value
         & opt (some convert_src_fpath) None
         & info [ "source" ] ~doc ~docv:"file.ml")
-
-    let source_root =
-      let doc =
-        "(EXPERIMENTAL) Source code root for the compilation unit. Used to \
-         find the source file from the value of --source-name it was compiled \
-         with. Incompatible with --source-file."
-      in
-      Arg.(
-        value
-        & opt (some convert_src_dir) None
-        & info [ "source-root" ] ~doc ~docv:"dir")
 
     let sidebar =
       let doc = "A .odoc-index file, used eg to generate the sidebar." in
@@ -894,8 +865,8 @@ end = struct
       Term.(
         const handle_error
         $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
-         $ extra_suffix $ input_odocl $ warnings_options $ source_file
-         $ source_root $ sidebar))
+         $ extra_suffix $ input_odocl $ warnings_options $ source_file $ sidebar
+          ))
 
     let info ~docs =
       let doc =
@@ -907,9 +878,7 @@ end = struct
   let generate ~docs = Generate.(cmd, info ~docs)
 
   module Targets = struct
-    let list_targets output_dir directories source_file source_root extra
-        odoc_file =
-      let source = Generate.source_of_args source_root source_file in
+    let list_targets output_dir directories source_file extra odoc_file =
       let odoc_file = Fs.File.of_string odoc_file in
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
@@ -919,7 +888,7 @@ end = struct
         { Odoc_model.Error.warn_error = false; print_warnings = false }
       in
       Rendering.targets_odoc ~resolver ~warnings_options ~syntax:OCaml
-        ~renderer:R.renderer ~output:output_dir ~extra ~source odoc_file
+        ~renderer:R.renderer ~output:output_dir ~extra ~source_file odoc_file
 
     let back_compat =
       let doc =
@@ -933,12 +902,10 @@ end = struct
 
     let source_file = Generate.source_file
 
-    let source_root = Generate.source_root
-
     let cmd =
       Term.(
         const handle_error
-        $ (const list_targets $ dst () $ back_compat $ source_file $ source_root
+        $ (const list_targets $ dst () $ back_compat $ source_file
          $ R.extra_args $ input_odocl))
 
     let info ~docs =
