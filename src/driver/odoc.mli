@@ -49,11 +49,20 @@ val html_generate :
   ?index:Fpath.t ->
   ?ignore_output:bool ->
   ?assets:string list ->
+  ?search_uris:Fpath.t list ->
+  input_file:Fpath.t ->
+  unit ->
+  unit
+
+val html_generate_impl :
+  output_dir:string ->
+  ?ignore_output:bool ->
   ?source:Fpath.t ->
   ?search_uris:Fpath.t list ->
   input_file:Fpath.t ->
   unit ->
   unit
+
 val support_files : Fpath.t -> string list
 
 val count_occurrences : Fpath.t -> string list
