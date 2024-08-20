@@ -26,6 +26,7 @@
   (@panglesd, #1076).
 - Added a `compile-asset` command (@EmileTrotignon, @panglesd, #1170)
 - Allow referencing assets (@panglesd, #1171)
+- Clean up CLI API for implementations (@panglesd, #1188)
 
 ### Changed
 
