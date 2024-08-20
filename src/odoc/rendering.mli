@@ -17,7 +17,6 @@ val generate_odoc :
   renderer:'a Renderer.t ->
   output:Fs.directory ->
   extra_suffix:string option ->
-  source_file:Fpath.t option ->
   sidebar:Fpath.t option ->
   'a ->
   Fpath.t ->
@@ -30,6 +29,5 @@ val targets_odoc :
   renderer:'a Renderer.t ->
   output:Fs.directory ->
   extra:'a ->
-  source_file:Fpath.t option ->
   Fpath.t ->
   (unit, [> msg ]) result

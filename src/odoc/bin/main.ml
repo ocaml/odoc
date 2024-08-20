@@ -38,14 +38,6 @@ let convert_fpath =
   and print = Fpath.pp in
   Arg.conv (parse, print)
 
-let convert_src_fpath =
-  let parse inp =
-    match Arg.(conv_parser file) inp with
-    | Ok s -> Result.Ok (Fs.File.of_string s)
-    | Error _ as e -> e
-  and print = Fpath.pp in
-  Arg.conv (parse, print)
-
 let convert_named_root =
   let parse inp =
     match Astring.String.cuts inp ~sep:":" with
@@ -831,20 +823,10 @@ end = struct
 
   module Generate = struct
     let generate extra _hidden output_dir syntax extra_suffix input_file
-        warnings_options source_file sidebar =
+        warnings_options sidebar =
       let file = Fs.File.of_string input_file in
       Rendering.generate_odoc ~renderer:R.renderer ~warnings_options ~syntax
-        ~output:output_dir ~extra_suffix ~source_file ~sidebar extra file
-
-    let source_file =
-      let doc =
-        "(EXPERIMENTAL) Source code for the compilation unit. It must have \
-         been compiled with --source-parent passed."
-      in
-      Arg.(
-        value
-        & opt (some convert_src_fpath) None
-        & info [ "source" ] ~doc ~docv:"file.ml")
+        ~output:output_dir ~extra_suffix ~sidebar extra file
 
     let sidebar =
       let doc = "A .odoc-index file, used eg to generate the sidebar." in
@@ -865,8 +847,7 @@ end = struct
       Term.(
         const handle_error
         $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
-         $ extra_suffix $ input_odocl $ warnings_options $ source_file $ sidebar
-          ))
+         $ extra_suffix $ input_odocl $ warnings_options $ sidebar))
 
     let info ~docs =
       let doc =
@@ -878,7 +859,7 @@ end = struct
   let generate ~docs = Generate.(cmd, info ~docs)
 
   module Targets = struct
-    let list_targets output_dir directories source_file extra odoc_file =
+    let list_targets output_dir directories extra odoc_file =
       let odoc_file = Fs.File.of_string odoc_file in
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
@@ -888,7 +869,7 @@ end = struct
         { Odoc_model.Error.warn_error = false; print_warnings = false }
       in
       Rendering.targets_odoc ~resolver ~warnings_options ~syntax:OCaml
-        ~renderer:R.renderer ~output:output_dir ~extra ~source_file odoc_file
+        ~renderer:R.renderer ~output:output_dir ~extra odoc_file
 
     let back_compat =
       let doc =
@@ -900,13 +881,11 @@ end = struct
         & opt_all (convert_directory ()) []
         & info ~docs ~docv:"DIR" ~doc [ "I" ])
 
-    let source_file = Generate.source_file
-
     let cmd =
       Term.(
         const handle_error
-        $ (const list_targets $ dst () $ back_compat $ source_file
-         $ R.extra_args $ input_odocl))
+        $ (const list_targets $ dst () $ back_compat $ R.extra_args
+         $ input_odocl))
 
     let info ~docs =
       let doc =
