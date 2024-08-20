@@ -23,26 +23,14 @@ Test the JSON output in the presence of expanded modules.
   html/Main/index.html.json
   html/Main/A/index.html.json
   html/Main/A/B/index.html.json
-  $ odoc html-targets --source a.ml -o html impl-main__A.odocl
-  odoc: unknown option '--source'.
-  Usage: odoc html-targets [OPTION]… FILE.odocl
-  Try 'odoc html-targets --help' or 'odoc --help' for more information.
-  [2]
-  $ odoc html-targets --source main.ml -o html impl-main.odocl
-  odoc: unknown option '--source'.
-  Usage: odoc html-targets [OPTION]… FILE.odocl
-  Try 'odoc html-targets --help' or 'odoc --help' for more information.
-  [2]
-  $ odoc html-targets --source a.ml --as-json -o html impl-main__A.odocl
-  odoc: unknown option '--source'.
-  Usage: odoc html-targets [OPTION]… FILE.odocl
-  Try 'odoc html-targets --help' or 'odoc --help' for more information.
-  [2]
-  $ odoc html-targets --source main.ml --as-json -o html impl-main.odocl
-  odoc: unknown option '--source'.
-  Usage: odoc html-targets [OPTION]… FILE.odocl
-  Try 'odoc html-targets --help' or 'odoc --help' for more information.
-  [2]
+  $ odoc html-targets-impl --source a.ml -o html impl-main__A.odocl
+  html/src/a.ml.html
+  $ odoc html-targets-impl --source main.ml -o html impl-main.odocl
+  html/src/main.ml.html
+  $ odoc html-targets-impl --source a.ml --as-json -o html impl-main__A.odocl
+  html/src/a.ml.html.json
+  $ odoc html-targets-impl --source main.ml --as-json -o html impl-main.odocl
+  html/src/main.ml.html.json
 
   $ odoc html-generate-impl --source a.ml --as-json -o html impl-main__A.odocl
   $ odoc html-generate --as-json -o html main__A.odocl
