@@ -15,29 +15,6 @@ let documents_of_page ~warnings_options ~syntax ~renderer ~extra page =
   |> Error.handle_warnings ~warnings_options
   >>= fun extra_docs -> Ok (Renderer.document_of_page ~syntax page :: extra_docs)
 
-(* let documents_of_implementation ~warnings_options:_ ~syntax impl source = *)
-(*   match (source, impl.Lang.Implementation.id) with *)
-(*   | Some source_file, Some _ -> ( *)
-(*       match Fs.File.read source_file with *)
-(*       | Error (`Msg msg) -> *)
-(*           Error (`Msg (Format.sprintf "Couldn't load source file: %s" msg)) *)
-(*       | Ok source_code -> *)
-(*           let syntax_info = *)
-(*             Syntax_highlighter.syntax_highlighting_locs source_code *)
-(*           in *)
-(*           let rendered = *)
-(*             Odoc_document.Renderer.documents_of_implementation ~syntax impl *)
-(*               syntax_info source_code *)
-(*           in *)
-(*           Ok rendered) *)
-(*   | _, None -> *)
-(*       Error (`Msg "The implementation unit was not compiled with --source-id.") *)
-(*   | None, _ -> *)
-(*       Error *)
-(*         (`Msg *)
-(* "--source or --source-root should be passed when generating \ *)
-   (*            documents for an implementation.") *)
-
 let documents_of_odocl ~warnings_options ~renderer ~extra ~syntax input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
@@ -45,7 +22,10 @@ let documents_of_odocl ~warnings_options ~renderer ~extra ~syntax input =
       documents_of_page ~warnings_options ~syntax ~renderer ~extra odoctree
   | Impl_content _impl ->
       (* documents_of_implementation ~warnings_options ~syntax impl source *)
-      failwith "TODO ERROR"
+      Error
+        (`Msg
+          "Wrong kind of unit: Expected a page or module unit, got an \
+           implementation. Use the dedicated command for implementation.")
   | Unit_content odoctree ->
       documents_of_unit ~warnings_options ~syntax ~renderer ~extra odoctree
   | Asset_content _ -> Ok [] (* TODO *)
@@ -56,8 +36,10 @@ let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
   Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
   | `Page page -> Ok [ Renderer.document_of_page ~syntax page ]
   | `Impl _impl ->
-      (* Ok (Renderer.documents_of_implementation ~syntax impl [] "") *)
-      failwith "TODO ERROR"
+      Error
+        (`Msg
+          "Wrong kind of unit: Expected a page or module unit, got an \
+           implementation. Use the dedicated command for implementation.")
   | `Module m -> documents_of_unit ~warnings_options ~syntax ~renderer ~extra m
   | `Asset _ -> Ok [] (* TODO *)
 
@@ -113,6 +95,43 @@ let generate_odoc ~syntax ~warnings_options ~renderer ~output ~extra_suffix
     (render_document renderer ~output ~sidebar ~extra_suffix ~extra)
     docs;
   Ok ()
+
+let documents_of_implementation ~warnings_options:_ ~syntax impl source =
+  match (source, impl.Lang.Implementation.id) with
+  | Some source_file, Some _ -> (
+      match Fs.File.read source_file with
+      | Error (`Msg msg) ->
+          Error (`Msg (Format.sprintf "Couldn't load source file: %s" msg))
+      | Ok source_code ->
+          let syntax_info =
+            Syntax_highlighter.syntax_highlighting_locs source_code
+          in
+          let rendered =
+            Odoc_document.Renderer.documents_of_implementation ~syntax impl
+              syntax_info source_code
+          in
+          Ok rendered)
+  | _, None ->
+      Error (`Msg "The implementation unit was not compiled with --source-id.")
+  | None, _ ->
+      Error
+        (`Msg
+          "--source should be passed when generating documents for an \
+           implementation.")
+
+let generate_impl_odoc ~syntax ~warnings_options ~renderer ~output ~source_file
+    ~extra_suffix extra file =
+  Odoc_file.load file >>= fun unit ->
+  match unit.content with
+  | Odoc_file.Impl_content impl ->
+      documents_of_implementation ~warnings_options ~syntax impl source_file
+      >>= fun docs ->
+      List.iter
+        (render_document renderer ~output ~sidebar:None ~extra_suffix ~extra)
+        docs;
+      Ok ()
+  | Page_content _ | Unit_content _ | Asset_content _ ->
+      Error (`Msg "Expected an implementation unit")
 
 let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
     ~extra odoctree =

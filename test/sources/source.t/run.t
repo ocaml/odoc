@@ -99,7 +99,7 @@ Compile the pages with the --source option:
   $ odoc link -I . a.odoc
   $ odoc link -I . impl-a.odoc
   $ odoc html-generate --indent -o html a.odocl
-  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
+  $ odoc html-generate-impl --source a.ml --indent -o html impl-a.odocl
   $ odoc support-files -o html
 
 Source links generated in the documentation:
@@ -392,7 +392,7 @@ Compiling without --source-id makes it impossible to generate the source:
   $ odoc link -I . a.odoc
   $ odoc link -I . impl-a.odoc
   $ odoc html-generate --indent -o html a.odocl
-  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
+  $ odoc html-generate-impl --source a.ml --indent -o html impl-a.odocl
   ERROR: The implementation unit was not compiled with --source-id.
   [1]
   $ odoc support-files -o html
