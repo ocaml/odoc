@@ -58,7 +58,7 @@ module Of_comments = struct
     | `Code_block (_, s, _todo) -> s |> get_value
     | `Verbatim v -> v
     | `Math_block m -> m
-    | `Media (_, _, is) -> inlines is
+    | `Media (_, _, is) -> is
     | `Table _ -> (* TODO *) ""
 
   and nestable (n : Odoc_model.Comment.nestable_block_element) =

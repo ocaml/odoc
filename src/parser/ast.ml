@@ -61,11 +61,7 @@ and nestable_block_element =
     * nestable_block_element with_location list list
   | `Table of table
   | `Math_block of string  (** @since 2.0.0 *)
-  | `Media of
-    reference_kind
-    * media_href with_location
-    * inline_element with_location list
-    * media
+  | `Media of reference_kind * media_href with_location * string * media
     (** @since 3.0.0 *) ]
 (** Some block elements may be nested within lists or tags, but not all.
     The [`List] constructor has a parameter of type [\[`Light | `Heavy\]].

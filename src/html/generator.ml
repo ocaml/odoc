@@ -207,26 +207,6 @@ let text_align = function
 
 let cell_kind = function `Header -> Html.th | `Data -> Html.td
 
-(* Turns an inline into a string, for use as alternative text in
-   images *)
-let rec alt_of_inline (i : Inline.t) =
-  let rec alt_of_source s =
-    List.map
-      (function
-        | Source.Elt i -> alt_of_inline i | Tag (_, t) -> alt_of_source t)
-      s
-    |> String.concat ""
-  in
-  let alt_of_one (o : Inline.one) =
-    match o.desc with
-    | Text t | Math t | Entity t -> t
-    | Linebreak -> "\n"
-    | Styled (_, i) | Link { content = i; _ } -> alt_of_inline i
-    | Source s -> alt_of_source s
-    | Raw_markup _ -> ""
-  in
-  List.map alt_of_one i |> String.concat ""
-
 let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
   let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
   let one (t : Block.one) =
@@ -242,7 +222,7 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
             let url = Link.href ~config ~resolve uri in
             media_block url
         | Internal Unresolved ->
-            let content = inline ~config ~resolve content in
+            let content = [ Html.txt content ] in
             let a = Html.a_class [ "xref-unresolved" ] :: [] in
             [ Html.span ~a content ]
       in
@@ -286,7 +266,6 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
         mk_media_block video target content
     | Image (target, alt) ->
         let image src =
-          let alt = alt_of_inline alt in
           let img =
             Html.a
               ~a:[ Html.a_href src; Html.a_class [ "img-link" ] ]

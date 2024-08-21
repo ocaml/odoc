@@ -33,9 +33,7 @@ type general_block_element =
     Comment.heading_attrs * Identifier.Label.t * general_link_content
   | `Tag of general_tag
   | `Media of
-    [ `Reference of Paths.Reference.t | `Link of string ]
-    * media
-    * general_link_content
+    [ `Reference of Paths.Reference.t | `Link of string ] * media * string
   | `MediaLink of string * media * general_link_content ]
 
 and general_tag =
@@ -155,10 +153,7 @@ let rec block_element : general_block_element t =
     | `Heading h -> C ("`Heading", h, heading)
     | `Tag x -> C ("`Tag", x, tag)
     | `Media (x1, m, x2) ->
-        C
-          ( "`MediaReference",
-            (x1, m, x2),
-            Triple (media_href, media, link_content) )
+        C ("`MediaReference", (x1, m, x2), Triple (media_href, media, string))
     | `MediaLink (x1, m, x2) ->
         C ("`MediaLink", (x1, m, x2), Triple (string, media, link_content)))
 

@@ -94,9 +94,9 @@ and Block : sig
     | Verbatim of string
     | Raw_markup of Raw_markup.t
     | Table of t Table.t
-    | Image of Target.t * Inline.t
-    | Video of Target.t * Inline.t
-    | Audio of Target.t * Inline.t
+    | Image of Target.t * string
+    | Video of Target.t * string
+    | Audio of Target.t * string
 
   and list_type = Ordered | Unordered
 end =

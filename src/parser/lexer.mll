@@ -181,7 +181,7 @@ let warning =
   with_location_adjustments (fun input location error ->
     input.warnings := (error location) :: !(input.warnings))
 
-let reference_token start target =
+let reference_token media start target input lexbuf =
   match start with
   | "{!" -> `Simple_reference target
   | "{{!" -> `Begin_reference_with_replacement_text target
@@ -189,20 +189,26 @@ let reference_token start target =
   | "{{:" -> `Begin_link_with_replacement_text (target)
 
   | "{image!" -> `Simple_media (`Reference target, `Image)
-  | "{{image!" -> `Begin_media_with_replacement_text (`Reference target, `Image)
   | "{image:" -> `Simple_media (`Link target, `Image)
-  | "{{image:" -> `Begin_media_with_replacement_text (`Link target, `Image)
-
   | "{audio!" -> `Simple_media (`Reference target, `Audio)
-  | "{{audio!" -> `Begin_media_with_replacement_text (`Reference target, `Audio)
   | "{audio:" -> `Simple_media (`Link target, `Audio)
-  | "{{audio:" -> `Begin_media_with_replacement_text (`Link target, `Audio)
-
   | "{video!" -> `Simple_media (`Reference target, `Video)
-  | "{{video!" -> `Begin_media_with_replacement_text (`Reference target, `Video)
   | "{video:" -> `Simple_media (`Link target, `Video)
-  | "{{video:" -> `Begin_media_with_replacement_text (`Link target, `Video)
-  | _ -> assert false
+
+  | _ ->
+     let target, kind =
+       match start with
+       | "{{image!" -> `Reference target, `Image
+       | "{{image:" -> `Link target, `Image
+       | "{{audio!" -> `Reference target, `Audio
+       | "{{audio:" -> `Link target, `Audio
+       | "{{video!" -> `Reference target, `Video
+       | "{{video:" -> `Link target, `Video
+       | _ -> assert false
+     in
+     let token_descr = Token.describe (`Media_with_replacement_text (target, kind, "")) in
+     let content = media token_descr (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf in
+     `Media_with_replacement_text (target, kind, content)
 
 let trim_leading_space_or_accept_whitespace input start_offset text =
   match text.[0] with
@@ -426,7 +432,7 @@ and token input = parse
       let target =
         reference_content input start start_offset (Buffer.create 16) lexbuf
       in
-      let token = (reference_token start target) in
+      let token = reference_token media start target input lexbuf in
       emit ~start_offset input token }
 
   | "{["
@@ -701,6 +707,32 @@ and math kind buffer nesting_level start_offset input = parse
   | _ as c
     { Buffer.add_char buffer c;
       math kind buffer nesting_level start_offset input lexbuf }
+
+and media tok_descr buffer nesting_level start_offset input = parse
+  | '}'
+    { if nesting_level == 0 then
+        Buffer.contents buffer
+      else begin
+        Buffer.add_char buffer '}';
+        media tok_descr buffer (nesting_level - 1) start_offset input lexbuf
+      end
+      }
+  | '{'
+    { Buffer.add_char buffer '{';
+      media tok_descr buffer (nesting_level + 1) start_offset input lexbuf }
+  | ("\\{" | "\\}") as s
+    { Buffer.add_string buffer s;
+      media tok_descr buffer nesting_level start_offset input lexbuf }
+  | eof
+    { warning
+        input
+        (Parse_error.not_allowed
+          ~what:(Token.describe `End)
+          ~in_what:tok_descr);
+      Buffer.contents buffer}
+  | _ as c
+    { Buffer.add_char buffer c;
+      media tok_descr buffer nesting_level start_offset input lexbuf }
 
 and verbatim buffer last_false_terminator start_offset input = parse
   | (space_char as c) "v}"

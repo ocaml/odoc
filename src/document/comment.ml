@@ -280,11 +280,10 @@ let rec nestable_block_element :
   | `Media (href, media, content) ->
       let content =
         match (content, href) with
-        | [], `Reference path ->
-            let s = Reference.render_unresolved (path :> Comment.Reference.t) in
-            [ inline @@ Inline.Source (source_of_code s) ]
-        | [], `Link href -> [ inline @@ Inline.Source (source_of_code href) ]
-        | _ -> inline_element_list content
+        | "", `Reference path ->
+            Reference.render_unresolved (path :> Comment.Reference.t)
+        | "", `Link href -> href
+        | _ -> content
       in
       let url =
         match href with
