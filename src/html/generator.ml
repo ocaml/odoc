@@ -542,7 +542,7 @@ let render ~config ~sidebar = function
   | Source_page src -> [ Page.source_page ~config src ]
 
 let filepath ~config url =
-  Link.Path.as_filename ~is_flat:(Config.flat config) url
+  Link.Path.as_filename ~config url
 
 let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in

@@ -32,7 +32,7 @@ let json_of_toc (toc : Types.toc list) : Utils.Json.json =
 
 let make ~config ~preamble ~url ~breadcrumbs ~sidebar ~toc ~uses_katex
     ~source_anchor content children =
-  let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
+  let filename = Link.Path.as_filename ~config url in
   let filename = Fpath.add_ext ".json" filename in
   let json_to_string json = Utils.Json.to_string json in
   let source_anchor =
@@ -65,7 +65,7 @@ let make ~config ~preamble ~url ~breadcrumbs ~sidebar ~toc ~uses_katex
   { Odoc_document.Renderer.filename; content; children }
 
 let make_src ~config ~url ~breadcrumbs content =
-  let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
+  let filename = Link.Path.as_filename ~config url in
   let filename = Fpath.add_ext ".json" filename in
   let htmlpp = Html.pp_elt ~indent:(Config.indent config) () in
   let json_to_string json = Utils.Json.to_string json in

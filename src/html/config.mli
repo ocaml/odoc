@@ -12,6 +12,7 @@ val v :
   flat:bool ->
   open_details:bool ->
   as_json:bool ->
+  remap:(string * string) list ->
   unit ->
   t
 (** [search_result] indicates whether this is a summary for a search result. In
@@ -34,3 +35,5 @@ val open_details : t -> bool
 val as_json : t -> bool
 
 val search_result : t -> bool
+
+val remap : t -> (string * string) list
