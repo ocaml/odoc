@@ -384,6 +384,16 @@ Ids generated in the source code:
   id="val-string"
   id="val-string2"
 
+Html generation for implementation and mld/interface uses different commands
+
+  $ odoc html-generate-impl --indent -o html a.odocl
+  ERROR: Expected an implementation unit
+  [1]
+  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
+  odoc: unknown option '--source'.
+  Usage: odoc html-generate [OPTION]… FILE.odocl
+  Try 'odoc html-generate --help' or 'odoc --help' for more information.
+  [2]
 
 Compiling without --source-id makes it impossible to generate the source:
 
@@ -395,4 +405,3 @@ Compiling without --source-id makes it impossible to generate the source:
   $ odoc html-generate-impl --source a.ml --indent -o html impl-a.odocl
   ERROR: The implementation unit was not compiled with --source-id.
   [1]
-  $ odoc support-files -o html
