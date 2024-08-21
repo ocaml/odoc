@@ -126,13 +126,7 @@ module Ast_to_sexp = struct
             alignment;
           ]
     | `Media (kind, href, c, m) ->
-        List
-          [
-            reference_kind kind;
-            at.at media_href href;
-            List (List.map (at.at (inline_element at)) c);
-            media m;
-          ]
+        List [ reference_kind kind; at.at media_href href; Atom c; media m ]
 
   let tag at : Ast.tag -> sexp = function
     | `Author s -> List [ Atom "@author"; Atom s ]

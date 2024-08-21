@@ -380,16 +380,17 @@ end = struct
      fun x ->
       match x.desc with
       | Inline x -> inline x
-      | Audio (_, x) -> inline x
-      | Video (_, x) -> inline x
-      | Image (_, x) -> inline x
       | Paragraph x -> inline x
       | List (_, x) -> List.exists block x
       | Table { data; align = _ } ->
           List.exists (List.exists (fun (cell, _) -> block cell)) data
       | Description x -> description x
       | Math _ -> true
-      | Source _ | Verbatim _ | Raw_markup _ -> false
+      | Audio (_, _)
+      | Video (_, _)
+      | Image (_, _)
+      | Source _ | Verbatim _ | Raw_markup _ ->
+          false
     in
     List.exists block_ x
 

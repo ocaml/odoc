@@ -5,10 +5,7 @@ type internal_tags_removed =
   [ `Tag of Ast.ocamldoc_tag
   | `Heading of Ast.heading
   | `Media of
-    Ast.reference_kind
-    * Ast.media_href Ast.with_location
-    * Ast.inline_element Ast.with_location list
-    * Ast.media
+    Ast.reference_kind * Ast.media_href Ast.with_location * string * Ast.media
   | Ast.nestable_block_element ]
 (** {!Ast.block_element} without internal tags. *)
 
@@ -276,8 +273,7 @@ let rec nestable_block_element :
       in
       `Table { Comment.data; align } |> Location.at location
   | { value = `Media (_, { value = `Link href; _ }, content, m); location } ->
-      let text = inline_elements status content in
-      `Media (`Link href, m, text) |> Location.at location
+      `Media (`Link href, m, content) |> Location.at location
   | {
    value =
      `Media
@@ -289,7 +285,8 @@ let rec nestable_block_element :
         let placeholder =
           match kind with
           | `Simple -> `Code_span href
-          | `With_text -> `Styled (`Emphasis, content)
+          | `With_text ->
+              `Styled (`Emphasis, [ `Word content |> Location.at location ])
         in
         `Paragraph
           (inline_elements status [ placeholder |> Location.at location ])
@@ -297,8 +294,7 @@ let rec nestable_block_element :
       in
       match Error.raise_warnings (Reference.parse_asset href_location href) with
       | Result.Ok target ->
-          let text = inline_elements status content in
-          `Media (`Reference target, m, text) |> Location.at location
+          `Media (`Reference target, m, content) |> Location.at location
       | Result.Error error -> fallback error)
 
 and nestable_block_elements status elements =

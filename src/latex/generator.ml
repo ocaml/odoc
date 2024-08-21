@@ -282,7 +282,7 @@ let rec block ~in_source (l : Block.t) =
     match t.desc with
     | Inline i -> inline ~verbatim:false ~in_source:false i
     | Audio (_, content) | Video (_, content) | Image (_, content) ->
-        inline ~verbatim:false ~in_source:false content
+        txt ~verbatim:false ~in_source:false [ content ]
         @ if in_source then [] else [ Break Paragraph ]
     | Paragraph i ->
         inline ~in_source:false ~verbatim:false i

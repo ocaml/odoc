@@ -368,7 +368,7 @@ let rec block (l : Block.t) =
       match b.desc with
       | Inline i -> inline i ++ continue rest
       | Video (_, content) | Audio (_, content) | Image (_, content) ->
-          inline content ++ continue rest
+          str "%s" content ++ continue rest
       | Paragraph i -> inline i ++ continue rest
       | List (list_typ, l) ->
           let f n b =

@@ -28,7 +28,7 @@ type media_href = [ `Reference of string | `Link of string ]
 
 type media_markup =
   [ `Simple_media of media_href * media
-  | `Begin_media_with_replacement_text of media_href * media ]
+  | `Media_with_replacement_text of media_href * media * string ]
 
 let s_of_media kind media =
   match (kind, media) with
@@ -147,15 +147,15 @@ let print : [< t ] -> string = function
   | `Simple_media (`Link _, `Image) -> "{image:...}"
   | `Simple_media (`Link _, `Audio) -> "{audio:...}"
   | `Simple_media (`Link _, `Video) -> "{video:...}"
-  | `Begin_media_with_replacement_text (`Reference _, `Image) ->
+  | `Media_with_replacement_text (`Reference _, `Image, _) ->
       "{{image!...} ...}"
-  | `Begin_media_with_replacement_text (`Reference _, `Audio) ->
+  | `Media_with_replacement_text (`Reference _, `Audio, _) ->
       "{{audio!...} ...}"
-  | `Begin_media_with_replacement_text (`Reference _, `Video) ->
+  | `Media_with_replacement_text (`Reference _, `Video, _) ->
       "{{video!...} ...}"
-  | `Begin_media_with_replacement_text (`Link _, `Image) -> "{{image:...} ...}"
-  | `Begin_media_with_replacement_text (`Link _, `Audio) -> "{{audio:...} ...}"
-  | `Begin_media_with_replacement_text (`Link _, `Video) -> "{{video:...} ...}"
+  | `Media_with_replacement_text (`Link _, `Image, _) -> "{{image:...} ...}"
+  | `Media_with_replacement_text (`Link _, `Audio, _) -> "{{audio:...} ...}"
+  | `Media_with_replacement_text (`Link _, `Video, _) -> "{{video:...} ...}"
 
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted
@@ -183,17 +183,17 @@ let describe : [< t | `Comment ] -> string = function
   | `Simple_media (`Link _, `Image) -> "'{image:...}' (image-link)"
   | `Simple_media (`Link _, `Audio) -> "'{audio:...}' (audio-link)"
   | `Simple_media (`Link _, `Video) -> "'{video:...}' (video-link)"
-  | `Begin_media_with_replacement_text (`Reference _, `Image) ->
+  | `Media_with_replacement_text (`Reference _, `Image, _) ->
       "'{{image!...} ...}' (image-reference)"
-  | `Begin_media_with_replacement_text (`Reference _, `Audio) ->
+  | `Media_with_replacement_text (`Reference _, `Audio, _) ->
       "'{{audio!...} ...}' (audio-reference)"
-  | `Begin_media_with_replacement_text (`Reference _, `Video) ->
+  | `Media_with_replacement_text (`Reference _, `Video, _) ->
       "'{{video!...} ...}' (video-reference)"
-  | `Begin_media_with_replacement_text (`Link _, `Image) ->
+  | `Media_with_replacement_text (`Link _, `Image, _) ->
       "'{{image:...} ...}' (image-link)"
-  | `Begin_media_with_replacement_text (`Link _, `Audio) ->
+  | `Media_with_replacement_text (`Link _, `Audio, _) ->
       "'{{audio:...} ...}' (audio-link)"
-  | `Begin_media_with_replacement_text (`Link _, `Video) ->
+  | `Media_with_replacement_text (`Link _, `Video, _) ->
       "'{{video:...} ...}' (video-link)"
   | `Simple_link _ -> "'{:...} (external link)'"
   | `Begin_link_with_replacement_text _ -> "'{{:...} ...}' (external link)"

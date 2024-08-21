@@ -58,7 +58,7 @@ type 'a abstract_table = {
 
 type media_href = [ `Link of string | `Reference of Reference.Asset.t ]
 
-type media_element = [ `Media of media_href * media * paragraph ]
+type media_element = [ `Media of media_href * media * string ]
 
 type nestable_block_element =
   [ `Paragraph of paragraph
