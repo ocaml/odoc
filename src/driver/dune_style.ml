@@ -53,7 +53,9 @@ let of_dune_build dir =
                       version = "1.0";
                       libraries = [ lib ];
                       mlds = [];
-                      assets = [] (* TODO *);
+                      assets =
+                        []
+                        (* When dune has a notion of doc assets, do something *);
                       pkg_dir;
                       other_docs = Fpath.Set.empty;
                     } )
