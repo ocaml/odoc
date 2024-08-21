@@ -5,8 +5,7 @@ let compile ~parent_id ~name ~output_dir =
   let parent_id =
     match Compile.mk_id parent_id with
     | Some s -> Ok s
-    | None ->
-        Error (`Msg "parent-id cannot be empty when compiling implementations.")
+    | None -> Error (`Msg "parent-id cannot be empty when compiling assets.")
   in
   parent_id >>= fun parent_id ->
   let id =
