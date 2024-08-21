@@ -1176,19 +1176,31 @@ module Odoc_html_args = struct
     in
     Arg.(value & flag & info ~doc [ "as-json" ])
 
+  let remap =
+    let convert_remap =
+      let parse inp =
+        match Astring.String.cut ~sep:":" inp with
+        | Some (orig, mapped) -> Ok (orig, mapped)
+        | _ -> Error (`Msg "Map must be of the form '<orig>:https://...'")
+      and print fmt (orig, mapped) = Format.fprintf fmt "%s:%s" orig mapped in
+      Arg.conv (parse, print)
+    in
+    let doc = "Remap an identifier to an external URL." in
+    Arg.(value & opt_all convert_remap [] & info [ "R" ] ~doc)
+
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri
-        search_uris flat as_json =
+        search_uris flat as_json remap =
       let open_details = not closed_details in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~search_uris ~semantic_uris
-          ~indent ~flat ~open_details ~as_json ()
+          ~indent ~flat ~open_details ~as_json ~remap ()
       in
       { Html_page.html_config }
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ search_uri $ flat $ as_json)
+      $ support_uri $ search_uri $ flat $ as_json $ remap)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)

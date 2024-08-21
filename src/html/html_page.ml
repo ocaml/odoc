@@ -244,7 +244,7 @@ let search_urls = %s;
 
 let make ~config ~url ~header ~breadcrumbs ~sidebar ~toc ~uses_katex content
     children =
-  let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
+  let filename = Link.Path.as_filename ~config url in
   let content =
     page_creator ~config ~url ~uses_katex ~global_toc:sidebar header breadcrumbs
       toc content
@@ -285,7 +285,7 @@ let src_page_creator ~breadcrumbs ~config ~url ~header name content =
   content
 
 let make_src ~config ~url ~breadcrumbs ~header title content =
-  let filename = Link.Path.as_filename ~is_flat:(Config.flat config) url in
+  let filename = Link.Path.as_filename ~config url in
   let content =
     src_page_creator ~breadcrumbs ~config ~url ~header title content
   in

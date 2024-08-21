@@ -4,6 +4,7 @@ type t = {
   theme_uri : Types.uri option;
   support_uri : Types.uri option;
   search_uris : Types.file_uri list;
+  remap : (string * string) list;
   semantic_uris : bool;
   search_result : bool;
       (* Used to not render links, for summary in search results *)
@@ -14,7 +15,7 @@ type t = {
 }
 
 let v ?(search_result = false) ?theme_uri ?support_uri ?(search_uris = [])
-    ~semantic_uris ~indent ~flat ~open_details ~as_json () =
+    ~semantic_uris ~indent ~flat ~open_details ~as_json ~remap () =
   {
     semantic_uris;
     indent;
@@ -25,6 +26,7 @@ let v ?(search_result = false) ?theme_uri ?support_uri ?(search_uris = [])
     search_uris;
     as_json;
     search_result;
+    remap;
   }
 
 let theme_uri config : Types.uri =
@@ -46,3 +48,5 @@ let open_details config = config.open_details
 let as_json config = config.as_json
 
 let search_result config = config.search_result
+
+let remap config = config.remap

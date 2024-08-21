@@ -22,7 +22,8 @@ let url { Entry.id; kind; doc = _ } =
   | Ok url ->
       let config =
         Odoc_html.Config.v ~search_result:true ~semantic_uris:false
-          ~indent:false ~flat:false ~open_details:false ~as_json:false ()
+          ~indent:false ~flat:false ~open_details:false ~as_json:false ~remap:[]
+          ()
       in
       let url = Odoc_html.Link.href ~config ~resolve:(Base "") url in
       Result.Ok url
@@ -201,7 +202,7 @@ let names_of_id id =
 let of_doc doc =
   let config =
     Odoc_html.Config.v ~search_result:true ~semantic_uris:false ~indent:false
-      ~flat:false ~open_details:false ~as_json:false ()
+      ~flat:false ~open_details:false ~as_json:false ~remap:[] ()
   in
   Tyxml.Html.div ~a:[]
   @@ Odoc_html.Generator.doc ~config ~xref_base_uri:""
