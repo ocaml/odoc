@@ -28,6 +28,7 @@
 - Allow referencing assets (@panglesd, #1171)
 - Added a `--asset-path` arg to `html-generate` (@panglesd, #1185)
 - Add a frontmatter syntax for mld pages (@panglesd, #1187)
+- Add a 'remap' option to HTML generation for partial docsets (@jonludlam, #1189)
 
 ### Changed
 
