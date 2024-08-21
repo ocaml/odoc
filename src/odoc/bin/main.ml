@@ -1180,7 +1180,7 @@ module Odoc_html_args = struct
     let convert_remap =
       let parse inp =
         match Astring.String.cut ~sep:":" inp with
-        | Some (orig, mapped) -> Ok (orig, mapped)
+        | Some (orig, mapped) -> Result.Ok (orig, mapped)
         | _ -> Error (`Msg "Map must be of the form '<orig>:https://...'")
       and print fmt (orig, mapped) = Format.fprintf fmt "%s:%s" orig mapped in
       Arg.conv (parse, print)

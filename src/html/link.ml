@@ -15,16 +15,17 @@ module Path = struct
 
   let remap config f =
     let l = String.concat "/" f in
-    match
-      List.find_opt
-        (fun (prefix, _replacement) -> Astring.String.is_prefix ~affix:prefix l)
-        (Config.remap config)
-    with
-    | None -> None
-    | Some (prefix, replacement) ->
-        let len = String.length prefix in
-        let l = String.sub l len (String.length l - len) in
-        Some (replacement ^ l)
+    try
+      let prefix, replacement =
+        List.find
+          (fun (prefix, _replacement) ->
+            Astring.String.is_prefix ~affix:prefix l)
+          (Config.remap config)
+      in
+      let len = String.length prefix in
+      let l = String.sub l len (String.length l - len) in
+      Some (replacement ^ l)
+    with Not_found -> None
 
   let get_dir_and_file ~config url =
     let l = Url.Path.to_list url in
