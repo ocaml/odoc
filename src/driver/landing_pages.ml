@@ -1,12 +1,16 @@
 open Packages
 open Odoc_unit
 
+let fpf = Format.fprintf
+
 let make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
     ?(include_dirs = []) ~pkgname ~pkg_args () =
   let input_file = Fpath.(mld_dir // rel_path / "index.mld") in
   let odoc_file = Fpath.(odoc_dir // rel_path / "page-index.odoc") in
   let odocl_file = Fpath.(odocl_dir // rel_path / "page-index.odocl") in
-  let () = Util.write_file input_file (String.split_on_char '\n' content) in
+  Util.with_out_to input_file (fun oc ->
+      fpf (Format.formatter_of_out_channel oc) "%t@?" content)
+  |> Result.get_ok;
   let parent_id = rel_path |> Odoc.Id.of_fpath in
   {
     parent_id;
@@ -23,25 +27,15 @@ let make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
   }
 
 module PackageLanding = struct
-  let content pkg =
-    let title = Format.sprintf "{0 %s}\n" pkg.name in
-    let documentation =
-      match pkg.mlds with
-      | _ :: _ ->
-          Format.sprintf
-            "{1 Documentation pages}\n\n\
-             {{!/%s/doc/index}Documentation for %s}\n"
-            pkg.name pkg.name
-      | [] -> ""
-    in
-    let libraries =
-      match pkg.libraries with
-      | [] -> ""
-      | _ :: _ ->
-          Format.sprintf "{1 Libraries}\n\n{{!/%s/lib/index}Libraries for %s}\n"
-            pkg.name pkg.name
-    in
-    title ^ documentation ^ libraries
+  let content pkg ppf =
+    fpf ppf "{0 %s}\n" pkg.name;
+    if not (List.is_empty pkg.mlds) then
+      fpf ppf
+        "{1 Documentation pages}@\n@\n{{!/%s/doc/index}Documentation for %s}@\n"
+        pkg.name pkg.name;
+    if not (List.is_empty pkg.libraries) then
+      fpf ppf "{1 Libraries}@\n@\n{{!/%s/lib/index}Libraries for %s}@\n"
+        pkg.name pkg.name
 
   let page ~odoc_dir ~odocl_dir ~mld_dir ~output_dir ~pkg =
     let content = content pkg in
@@ -54,16 +48,15 @@ module PackageLanding = struct
 end
 
 module PackageList = struct
-  let content all =
+  let content all ppf =
     let sorted_packages =
       all |> List.sort (fun n1 n2 -> String.compare n1.name n2.name)
     in
-    let title = "{0 List of all packages}\n" in
-    let s_of_pkg pkg =
-      Format.sprintf "- {{!/__driver/%s/index}%s}" pkg.name pkg.name
+    fpf ppf "{0 List of all packages}@\n";
+    let print_pkg pkg =
+      fpf ppf "- {{!/__driver/%s/index}%s}@\n" pkg.name pkg.name
     in
-    let pkg_ul = sorted_packages |> List.map s_of_pkg |> String.concat "\n" in
-    title ^ pkg_ul
+    List.iter print_pkg sorted_packages
 
   let page ~mld_dir ~odoc_dir ~odocl_dir ~output_dir all =
     let content = content all in
@@ -77,16 +70,13 @@ module PackageList = struct
 end
 
 module LibraryLanding = struct
-  let content lib =
-    let title = Format.sprintf "{0 %s}\n" lib.lib_name in
-    let s_of_module m =
-      if m.m_hidden then None
-      else Some (Format.sprintf "- {!%s}" m.Packages.m_name)
+  let content lib ppf =
+    fpf ppf "{0 %s}@\n" lib.lib_name;
+    let print_module m =
+      if not m.m_hidden then fpf ppf "- {!%s}@\n" m.Packages.m_name
     in
-    let modules =
-      lib.modules |> List.filter_map s_of_module |> String.concat "\n"
-    in
-    title ^ modules
+    List.iter print_module lib.modules
+
   let page ~pkg ~odoc_dir ~odocl_dir ~mld_dir ~output_dir lib =
     let content = content lib in
     let rel_path = Fpath.(v pkg.name / "lib" / lib.lib_name) in
@@ -99,13 +89,12 @@ module LibraryLanding = struct
 end
 
 module PackageLibLanding = struct
-  let content pkg =
-    let title = Format.sprintf "{0 %s}\n" pkg.name in
-    let s_of_lib (lib : Packages.libty) =
-      Format.sprintf "- {{!/%s/%s/index}%s}" pkg.name lib.lib_name lib.lib_name
+  let content pkg ppf =
+    fpf ppf "{0 %s}@\n" pkg.name;
+    let print_lib (lib : Packages.libty) =
+      fpf ppf "- {{!/%s/%s/index}%s}@\n" pkg.name lib.lib_name lib.lib_name
     in
-    let libraries = pkg.libraries |> List.map s_of_lib |> String.concat "\n" in
-    title ^ libraries
+    List.iter print_lib pkg.libraries
 
   let page ~pkg ~odoc_dir ~odocl_dir ~mld_dir ~output_dir =
     let content = content pkg in

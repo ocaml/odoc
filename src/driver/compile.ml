@@ -1,5 +1,7 @@
 (* compile *)
 
+open Bos
+
 type compiled = Odoc_unit.t
 
 let mk_byhash (pkgs : Odoc_unit.t list) =
@@ -58,8 +60,7 @@ let unmarshal filename : partial =
     (fun () -> Marshal.from_channel ic)
 
 let marshal (v : partial) filename =
-  let p = Fpath.parent filename in
-  Util.mkdir_p p;
+  let _ = OS.Dir.create (Fpath.parent filename) |> Result.get_ok in
   let oc = open_out_bin (Fpath.to_string filename) in
   Fun.protect
     ~finally:(fun () -> close_out oc)
@@ -69,10 +70,10 @@ let find_partials odoc_dir : Odoc_unit.intf Odoc_unit.unit Util.StringMap.t * _
     =
   let tbl = Hashtbl.create 1000 in
   let hashes_result =
-    Bos.OS.Dir.fold_contents ~dotfiles:false ~elements:`Dirs
+    OS.Dir.fold_contents ~dotfiles:false ~elements:`Dirs
       (fun p hashes ->
         let index_m = Fpath.( / ) p "index.m" in
-        match Bos.OS.File.exists index_m with
+        match OS.File.exists index_m with
         | Ok true ->
             let tbl', hashes' = unmarshal index_m in
             List.iter
@@ -220,7 +221,7 @@ let sherlodoc_index_one ~output_dir (index : Odoc_unit.index) =
   let rel_path = Fpath.(index.search_dir / "sherlodoc_db.js") in
   let dst = Fpath.(output_dir // rel_path) in
   let dst_dir, _ = Fpath.split_base dst in
-  Util.mkdir_p dst_dir;
+  let _ = OS.Dir.create dst_dir |> Result.get_ok in
   Sherlodoc.index ~format:`js ~inputs ~dst ();
   rel_path
 
