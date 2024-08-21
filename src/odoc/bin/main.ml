@@ -754,6 +754,9 @@ end = struct
   let is_page input =
     input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"
 
+  let is_asset input =
+    input |> Fpath.filename |> Astring.String.is_prefix ~affix:"asset-"
+
   let link directories page_roots lib_roots input_file output_file
       current_package warnings_options open_modules =
     let input = Fs.File.of_string input_file in
@@ -767,10 +770,12 @@ end = struct
          (`Msg "Arguments given to -P and -L cannot be included in each others")
      else Ok ())
     >>= fun () ->
-    let is_page = is_page input in
-    (if is_page then Ok None else current_library_of_input lib_roots input)
+    let is_page_or_asset = is_page input || is_asset input in
+    (if is_page_or_asset then Ok None
+     else current_library_of_input lib_roots input)
     >>= fun current_lib ->
-    (if is_page then current_package_of_page ~current_package page_roots input
+    (if is_page_or_asset then
+       current_package_of_page ~current_package page_roots input
      else validate_current_package page_roots current_package)
     >>= fun current_package ->
     let current_dir = Fs.File.dirname output in

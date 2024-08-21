@@ -32,7 +32,9 @@ type impl = [ `Impl of impl_extra ]
 
 type mld = [ `Mld ]
 
-type t = [ impl | intf | mld ] unit
+type asset = [ `Asset ]
+
+type t = [ impl | intf | mld | asset ] unit
 
 val of_packages :
   output_dir:Fpath.t ->

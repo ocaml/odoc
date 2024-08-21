@@ -29,6 +29,10 @@ type mld = { mld_path : Fpath.t; mld_rel_path : Fpath.t }
 
 let pp_mld fmt m = Format.fprintf fmt "%a" Fpath.pp m.mld_path
 
+type asset = { asset_path : Fpath.t; asset_rel_path : Fpath.t }
+
+let pp_asset fmt m = Format.fprintf fmt "%a" Fpath.pp m.asset_path
+
 type libty = {
   lib_name : string;
   archive_name : string;
@@ -40,6 +44,7 @@ type t = {
   version : string;
   libraries : libty list;
   mlds : mld list;
+  assets : asset list;
   other_docs : Fpath.Set.t;
   pkg_dir : Fpath.t;
 }
@@ -276,14 +281,34 @@ let of_libs ~packages_dir libs =
   in
   ignore libname_of_archive;
   let mk_mlds pkg_name odoc_pages =
+    let odig_convention asset_path =
+      let asset_prefix =
+        Fpath.(v (Opam.prefix ()) / "doc" / pkg_name / "odoc-assets")
+      in
+      let rel_path = Fpath.rem_prefix asset_prefix asset_path in
+      match rel_path with
+      | None -> []
+      | Some rel_path ->
+          [ { asset_path; asset_rel_path = Fpath.(v "_assets" // rel_path) } ]
+    in
     let prefix = Fpath.(v (Opam.prefix ()) / "doc" / pkg_name / "odoc-pages") in
-    Fpath.Set.fold
-      (fun mld_path acc ->
-        let rel_path = Fpath.rem_prefix prefix mld_path in
-        match rel_path with
-        | None -> acc
-        | Some mld_rel_path -> { mld_path; mld_rel_path } :: acc)
-      odoc_pages []
+    let mlds, assets =
+      Fpath.Set.fold
+        (fun path (mld_acc, asset_acc) ->
+          let rel_path = Fpath.rem_prefix prefix path in
+          match rel_path with
+          | None -> (mld_acc, odig_convention path @ asset_acc)
+          | Some rel_path ->
+              if Fpath.has_ext "mld" path then
+                ( { mld_path = path; mld_rel_path = rel_path } :: mld_acc,
+                  asset_acc )
+              else
+                ( mld_acc,
+                  { asset_path = path; asset_rel_path = rel_path } :: asset_acc
+                ))
+        odoc_pages ([], [])
+    in
+    (mlds, assets)
   in
   Fpath.Map.fold
     (fun dir archives acc ->
@@ -310,7 +335,7 @@ let of_libs ~packages_dir libs =
                 pkg = pkg')
               map
           in
-          let mlds = mk_mlds pkg'.name odoc_pages in
+          let mlds, assets = mk_mlds pkg'.name odoc_pages in
           Logs.debug (fun m ->
               m "%d mlds for package %s (from %d odoc_pages)" (List.length mlds)
                 pkg.name
@@ -327,6 +352,7 @@ let of_libs ~packages_dir libs =
                       version = pkg.version;
                       libraries;
                       mlds;
+                      assets;
                       other_docs;
                       pkg_dir;
                     })

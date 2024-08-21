@@ -136,6 +136,10 @@ let pkg_to_dir_map () =
                   Logs.debug (fun m -> m "Found odoc page: %a" Fpath.pp fpath);
 
                   (Fpath.Set.add Fpath.(v prefix // fpath) odoc_pages, others)
+              | "doc" :: _pkg :: "odoc-assets" :: _ ->
+                  Logs.debug (fun m -> m "Found odoc page: %a" Fpath.pp fpath);
+
+                  (Fpath.Set.add Fpath.(v prefix // fpath) odoc_pages, others)
               | "doc" :: _ ->
                   Logs.debug (fun m -> m "Found other doc: %a" Fpath.pp fpath);
                   (odoc_pages, Fpath.Set.add Fpath.(v prefix // fpath) others)

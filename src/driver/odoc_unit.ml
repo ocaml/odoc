@@ -32,7 +32,9 @@ type impl = [ `Impl of impl_extra ]
 
 type mld = [ `Mld ]
 
-type t = [ impl | intf | mld ] unit
+type asset = [ `Asset ]
+
+type t = [ impl | intf | mld | asset ] unit
 
 let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
     t list =
@@ -90,14 +92,13 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
     let output_file = Fpath.(index_dir / pkg.name / Odoc.index_filename) in
     { pkg_args; output_file; json = false; search_dir = pkg.pkg_dir }
   in
-  let make_unit ~kind ~rel_dir ~input_file ~prefix ~pkg ~include_dirs : _ unit =
+  let make_unit ~name ~kind ~rel_dir ~input_file ~pkg ~include_dirs : _ unit =
     let ( // ) = Fpath.( // ) in
     let ( / ) = Fpath.( / ) in
-    let filename = input_file |> Fpath.rem_ext |> Fpath.basename in
     let odoc_dir = output_dir // rel_dir in
     let parent_id = rel_dir |> Odoc.id_of_fpath in
-    let odoc_file = odoc_dir / (prefix ^ filename ^ ".odoc") in
-    let odocl_file = linked_dir // rel_dir / (prefix ^ filename ^ ".odocl") in
+    let odoc_file = odoc_dir / (name ^ ".odoc") in
+    let odocl_file = linked_dir // rel_dir / (name ^ ".odocl") in
     {
       output_dir;
       pkgname = pkg.Packages.name;
@@ -134,7 +135,8 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
           let kind = `Intf { hidden; hash = intf.mif_hash; deps } in
           (include_dirs, kind)
         in
-        make_unit ~kind ~rel_dir ~prefix:"" ~input_file:intf.mif_path ~pkg
+        let name = intf.mif_path |> Fpath.rem_ext |> Fpath.basename in
+        make_unit ~name ~kind ~rel_dir ~input_file:intf.mif_path ~pkg
           ~include_dirs
   in
   let of_impl pkg libname (impl : Packages.impl) : impl unit option =
@@ -154,9 +156,12 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
           in
           `Impl { src_id; src_path }
         in
+        let name =
+          impl.mip_path |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "impl-"
+        in
         let unit =
-          make_unit ~kind ~rel_dir ~input_file:impl.mip_path ~pkg ~include_dirs
-            ~prefix:"impl-"
+          make_unit ~name ~kind ~rel_dir ~input_file:impl.mip_path ~pkg
+            ~include_dirs
         in
         Some unit
   in
@@ -187,15 +192,31 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
     in
     let include_dirs = (output_dir // rel_dir) :: include_dirs in
     let kind = `Mld in
+    let name = mld_path |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "page-" in
     let unit =
-      make_unit ~kind ~rel_dir ~input_file:mld_path ~pkg ~include_dirs
-        ~prefix:"page-"
+      make_unit ~name ~kind ~rel_dir ~input_file:mld_path ~pkg ~include_dirs
+    in
+    [ unit ]
+  in
+  let of_asset pkg (asset : Packages.asset) : asset unit list =
+    let open Fpath in
+    let { Packages.asset_path; asset_rel_path } = asset in
+    let rel_dir =
+      pkg.Packages.pkg_dir / "doc" // Fpath.parent asset_rel_path
+      |> Fpath.normalize
+    in
+    let include_dirs = [] in
+    let kind = `Asset in
+    let unit =
+      let name = asset_path |> Fpath.basename |> ( ^ ) "asset-" in
+      make_unit ~name ~kind ~rel_dir ~input_file:asset_path ~pkg ~include_dirs
     in
     [ unit ]
   in
   let of_package (pkg : Packages.t) : t list =
     let lib_units :> t list list = List.map (of_lib pkg) pkg.libraries in
     let mld_units :> t list list = List.map (of_mld pkg) pkg.mlds in
-    List.concat (List.rev_append lib_units mld_units)
+    let asset_units :> t list list = List.map (of_asset pkg) pkg.assets in
+    List.concat (lib_units @ mld_units @ asset_units)
   in
   List.concat_map of_package pkgs

@@ -45,6 +45,20 @@ let compile ~output_dir ~input_file:file ~includes ~parent_id =
   Cmd_outputs.(
     add_prefixed_output cmd compile_output (Fpath.to_string file) lines)
 
+let compile_asset ~output_dir ~name ~parent_id =
+  let open Cmd in
+  let output_file =
+    Some Fpath.(output_dir // parent_id / ("asset-" ^ name ^ ".odoc"))
+  in
+  let cmd =
+    !odoc % "compile-asset" % "--name" % name % "--output-dir" % p output_dir
+  in
+
+  let cmd = cmd % "--parent-id" % Fpath.to_string parent_id in
+  let desc = Printf.sprintf "Compiling %s" name in
+  let lines = Cmd_outputs.submit desc cmd output_file in
+  Cmd_outputs.(add_prefixed_output cmd compile_output name lines)
+
 let compile_impl ~output_dir ~input_file:file ~includes ~parent_id ~source_id =
   let open Cmd in
   let includes =
@@ -151,6 +165,19 @@ let html_generate ~output_dir ?index ?(ignore_output = false) ?(assets = [])
     % "-o" % output_dir
   in
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string file) in
+  let lines = Cmd_outputs.submit desc cmd None in
+  if not ignore_output then
+    Cmd_outputs.(
+      add_prefixed_output cmd generate_output (Fpath.to_string file) lines)
+
+let html_generate_asset ~output_dir ?(ignore_output = false) ~input_file:file
+    ~asset_path () =
+  let open Cmd in
+  let cmd =
+    !odoc % "html-generate" % p file % "-o" % output_dir % "--asset-path"
+    % p asset_path
+  in
+  let desc = Printf.sprintf "Copying asset %s" (Fpath.to_string file) in
   let lines = Cmd_outputs.submit desc cmd None in
   if not ignore_output then
     Cmd_outputs.(
