@@ -11,12 +11,16 @@ let mk_byhash (pkgs : Odoc_unit.t list) =
     Util.StringMap.empty pkgs
 
 let init_stats (units : Odoc_unit.t list) =
-  let total, total_impl, non_hidden, mlds, indexes =
+  let total, total_impl, non_hidden, mlds, assets, indexes =
     List.fold_left
-      (fun (total, total_impl, non_hidden, mlds, indexes) (unit : Odoc_unit.t) ->
+      (fun (total, total_impl, non_hidden, mlds, assets, indexes)
+           (unit : Odoc_unit.t) ->
         let total = match unit.kind with `Intf _ -> total + 1 | _ -> total in
         let total_impl =
           match unit.kind with `Impl _ -> total_impl + 1 | _ -> total_impl
+        in
+        let assets =
+          match unit.kind with `Asset -> assets + 1 | _ -> assets
         in
         let indexes = Fpath.Set.add unit.index.output_file indexes in
         let non_hidden =
@@ -25,8 +29,8 @@ let init_stats (units : Odoc_unit.t list) =
           | _ -> non_hidden
         in
         let mlds = match unit.kind with `Mld -> mlds + 1 | _ -> mlds in
-        (total, total_impl, non_hidden, mlds, indexes))
-      (0, 0, 0, 0, Fpath.Set.empty)
+        (total, total_impl, non_hidden, mlds, assets, indexes))
+      (0, 0, 0, 0, 0, Fpath.Set.empty)
       units
   in
 
@@ -34,6 +38,7 @@ let init_stats (units : Odoc_unit.t list) =
   Atomic.set Stats.stats.total_impls total_impl;
   Atomic.set Stats.stats.non_hidden_units non_hidden;
   Atomic.set Stats.stats.total_mlds mlds;
+  Atomic.set Stats.stats.total_assets assets;
   Atomic.set Stats.stats.total_indexes (Fpath.Set.cardinal indexes)
 
 open Eio.Std
@@ -155,6 +160,7 @@ let compile ?partial ~partial_dir ?linked_dir:_ (all : Odoc_unit.t list) =
     | `Asset ->
         Odoc.compile_asset ~output_dir:unit.output_dir ~parent_id:unit.parent_id
           ~name:(Fpath.filename unit.input_file);
+        Atomic.incr Stats.stats.compiled_assets;
         Ok unit
     | `Mld ->
         let includes = Fpath.Set.of_list unit.include_dirs in
@@ -199,7 +205,7 @@ let link : compiled list -> _ =
         (match c.kind with
         | `Intf _ -> Atomic.incr Stats.stats.linked_units
         | `Mld -> Atomic.incr Stats.stats.linked_mlds
-        | `Asset -> () (* TODO *)
+        | `Asset -> ()
         | `Impl _ -> Atomic.incr Stats.stats.linked_impls);
         c
   in

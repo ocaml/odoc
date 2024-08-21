@@ -6,11 +6,13 @@ type stats = {
   mutable total_units : int Atomic.t;
   mutable total_impls : int Atomic.t;
   mutable total_mlds : int Atomic.t;
+  mutable total_assets : int Atomic.t;
   mutable total_indexes : int Atomic.t;
   mutable non_hidden_units : int Atomic.t;
   mutable compiled_units : int Atomic.t;
   mutable compiled_impls : int Atomic.t;
   mutable compiled_mlds : int Atomic.t;
+  mutable compiled_assets : int Atomic.t;
   mutable linked_units : int Atomic.t;
   mutable linked_impls : int Atomic.t;
   mutable linked_mlds : int Atomic.t;
@@ -25,11 +27,13 @@ let stats =
     total_units = Atomic.make 0;
     total_impls = Atomic.make 0;
     total_mlds = Atomic.make 0;
+    total_assets = Atomic.make 0;
     total_indexes = Atomic.make 0;
     non_hidden_units = Atomic.make 0;
     compiled_units = Atomic.make 0;
     compiled_impls = Atomic.make 0;
     compiled_mlds = Atomic.make 0;
+    compiled_assets = Atomic.make 0;
     linked_units = Atomic.make 0;
     linked_impls = Atomic.make 0;
     linked_mlds = Atomic.make 0;
