@@ -1109,7 +1109,6 @@ let page env page =
     List.iter
       (fun child ->
         match child with
-        | Page.Asset_child _ | Page.Source_tree_child _ -> ()
         | Page.Page_child page -> (
             match Env.lookup_page_by_name page env with
             | Ok _ -> ()

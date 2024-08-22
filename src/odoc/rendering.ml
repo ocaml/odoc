@@ -2,26 +2,13 @@ open Odoc_document
 open Or_error
 open Odoc_model
 
-let documents_of_unit ~warnings_options ~syntax ~renderer ~extra unit =
-  Error.catch_warnings (fun () ->
-      renderer.Renderer.extra_documents extra (CU unit))
-  |> Error.handle_warnings ~warnings_options
-  >>= fun extra_docs ->
-  Ok (Renderer.document_of_compilation_unit ~syntax unit :: extra_docs)
-
-let documents_of_page ~warnings_options ~syntax ~renderer ~extra page =
-  Error.catch_warnings (fun () ->
-      renderer.Renderer.extra_documents extra (Page page))
-  |> Error.handle_warnings ~warnings_options
-  >>= fun extra_docs -> Ok (Renderer.document_of_page ~syntax page :: extra_docs)
-
-let documents_of_odocl ~warnings_options ~renderer ~extra ~syntax input =
+let document_of_odocl ~syntax input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
   | Odoc_file.Page_content odoctree ->
-      documents_of_page ~warnings_options ~syntax ~renderer ~extra odoctree
+      Ok (Renderer.document_of_page ~syntax odoctree)
   | Unit_content odoctree ->
-      documents_of_unit ~warnings_options ~syntax ~renderer ~extra odoctree
+      Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
   | Impl_content _ ->
       Error
         (`Msg
@@ -33,12 +20,11 @@ let documents_of_odocl ~warnings_options ~renderer ~extra ~syntax input =
           "Wrong kind of unit: Expected a page or module unit, got an asset \
            unit. Use the dedicated command for assets.")
 
-let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
-    input =
+let document_of_input ~resolver ~warnings_options ~syntax input =
   let output = Fs.File.(set_ext ".odocl" input) in
   Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
-  | `Page page -> Ok [ Renderer.document_of_page ~syntax page ]
-  | `Module m -> documents_of_unit ~warnings_options ~syntax ~renderer ~extra m
+  | `Page page -> Ok (Renderer.document_of_page ~syntax page)
+  | `Module m -> Ok (Renderer.document_of_compilation_unit ~syntax m)
   | `Impl _ ->
       Error
         (`Msg
@@ -81,14 +67,11 @@ let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
 let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
     =
   let extra_suffix = None in
-  documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax file
-  >>= fun docs ->
-  List.iter
-    (render_document renderer ~sidebar:None ~output ~extra_suffix ~extra)
-    docs;
+  document_of_input ~resolver ~warnings_options ~syntax file >>= fun doc ->
+  render_document renderer ~sidebar:None ~output ~extra_suffix ~extra doc;
   Ok ()
 
-let generate_odoc ~syntax ~warnings_options ~renderer ~output ~extra_suffix
+let generate_odoc ~syntax ~warnings_options:_ ~renderer ~output ~extra_suffix
     ~sidebar extra file =
   (match sidebar with
   | None -> Ok None
@@ -96,11 +79,8 @@ let generate_odoc ~syntax ~warnings_options ~renderer ~output ~extra_suffix
       Odoc_file.load_index x >>= fun (sidebar, _) ->
       Ok (Some (Odoc_document.Sidebar.of_lang sidebar)))
   >>= fun sidebar ->
-  documents_of_odocl ~warnings_options ~renderer ~extra ~syntax file
-  >>= fun docs ->
-  List.iter
-    (render_document renderer ~output ~sidebar ~extra_suffix ~extra)
-    docs;
+  document_of_odocl ~syntax file >>= fun doc ->
+  render_document renderer ~output ~sidebar ~extra_suffix ~extra doc;
   Ok ()
 
 let documents_of_implementation ~warnings_options:_ ~syntax impl source_file =
@@ -148,20 +128,16 @@ let generate_asset_odoc ~warnings_options:_ ~renderer ~output ~asset_file
 
 let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
     ~extra odoctree =
-  let docs =
+  let doc =
     if Fpath.get_ext odoctree = ".odoc" then
-      documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
-        odoctree
-    else documents_of_odocl ~warnings_options ~renderer ~extra ~syntax odoctree
+      document_of_input ~resolver ~warnings_options ~syntax odoctree
+    else document_of_odocl ~syntax odoctree
   in
-  docs >>= fun docs ->
-  List.iter
-    (fun doc ->
-      let pages = renderer.Renderer.render extra None doc in
-      Renderer.traverse pages ~f:(fun filename _content ->
-          let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
-          Format.printf "%a\n" Fpath.pp filename))
-    docs;
+  doc >>= fun doc ->
+  let pages = renderer.Renderer.render extra None doc in
+  Renderer.traverse pages ~f:(fun filename _content ->
+      let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
+      Format.printf "%a\n" Fpath.pp filename);
   Ok ()
 
 let targets_source_odoc ~syntax ~warnings_options ~renderer ~output:root_dir

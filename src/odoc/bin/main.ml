@@ -1174,27 +1174,19 @@ module Odoc_html_args = struct
     in
     Arg.(value & flag & info ~doc [ "as-json" ])
 
-  let assets =
-    let doc =
-      "Assets files. These must match the assets listed as children during the \
-       compile phase."
-    in
-    Arg.(
-      value & opt_all convert_fpath [] & info [ "asset" ] ~doc ~docv:"file.ext")
-
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri
-        search_uris flat as_json assets =
+        search_uris flat as_json =
       let open_details = not closed_details in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~search_uris ~semantic_uris
           ~indent ~flat ~open_details ~as_json ()
       in
-      { Html_page.html_config; assets }
+      { Html_page.html_config }
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ search_uri $ flat $ as_json $ assets)
+      $ support_uri $ search_uri $ flat $ as_json)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)

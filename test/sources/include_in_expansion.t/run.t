@@ -1,6 +1,8 @@
 Checking that source parents are kept, using include.
 
-  $ odoc compile -c module-a -c srctree-source root.mld
+  $ odoc compile -c module-a root.mld
+  ERROR: Failed to parse child reference: Unrecognized kind: srctree
+  [1]
 
   $ ocamlc -c -o b.cmo b.ml -bin-annot -I .
   $ ocamlc -c -o main__A.cmo a.ml -bin-annot -I .

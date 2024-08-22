@@ -24,7 +24,6 @@ type input =
 type 'a t = {
   name : string;
   render : 'a -> Types.Block.t option -> Types.Document.t -> page list;
-  extra_documents : 'a -> input -> Types.Document.t list;
 }
 
 let document_of_page ~syntax v =
