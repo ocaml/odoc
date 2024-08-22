@@ -153,26 +153,24 @@ let html_generate ~output_dir ?index ?(ignore_output = false) ?(assets = [])
     Cmd_outputs.(
       add_prefixed_output cmd generate_output (Fpath.to_string file) lines)
 
-let html_generate_impl ~output_dir ?(ignore_output = false) ?source
+let html_generate_source ~output_dir ?(ignore_output = false) ~source
     ?(search_uris = []) ~input_file:file () =
   let open Cmd in
-  let source =
-    match source with None -> empty | Some source -> v "--source" % p source
-  in
+  let file = v "--impl" % p file in
   let search_uris =
     List.fold_left
       (fun acc filename -> acc % "--search-uri" % p filename)
       empty search_uris
   in
   let cmd =
-    !odoc % "html-generate-impl" %% source % p file %% search_uris % "-o"
+    !odoc % "html-generate-impl" %% file % p source %% search_uris % "-o"
     % output_dir
   in
-  let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string file) in
+  let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string source) in
   let lines = Cmd_outputs.submit desc cmd None in
   if not ignore_output then
     Cmd_outputs.(
-      add_prefixed_output cmd generate_output (Fpath.to_string file) lines)
+      add_prefixed_output cmd generate_output (Fpath.to_string source) lines)
 
 let support_files path =
   let open Cmd in
