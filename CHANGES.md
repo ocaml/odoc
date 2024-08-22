@@ -6,7 +6,7 @@
   `count-occurrences` flag and command to count occurrences of every identifiers
   (@panglesd, #976)
 - Separate compilation of interface and implementation files, using a new
-  `compile-src` command (@panglesd, #1067).
+  `compile-src` command (@panglesd, #1067, #1188).
 - Add clock emoji before `@since` tag (@yawaramin, #1089)
 - Navigation for the search bar : use '/' to enter search, up and down arrows to
   select a result, and enter to follow the selected link. (@EmileTrotignon, #1088)
@@ -26,7 +26,6 @@
   (@panglesd, #1076).
 - Added a `compile-asset` command (@EmileTrotignon, @panglesd, #1170)
 - Allow referencing assets (@panglesd, #1171)
-- Clean up CLI API for implementations (@panglesd, #1188)
 
 ### Changed
 

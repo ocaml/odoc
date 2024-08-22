@@ -863,7 +863,7 @@ end = struct
   let generate ~docs = Generate.(cmd, info ~docs)
 
   module Generate_source = struct
-    let generate extra _hidden output_dir syntax extra_suffix input_file
+    let generate extra output_dir syntax extra_suffix input_file
         warnings_options source_file =
       Rendering.generate_source_odoc ~renderer:R.renderer ~warnings_options
         ~syntax ~output:output_dir ~extra_suffix ~source_file extra input_file
@@ -873,7 +873,7 @@ end = struct
       Arg.(
         required
         & opt (some convert_fpath) None
-        & info [ "impl" ] ~doc ~docv:"impl-file.odocl")
+        & info [ "impl" ] ~doc ~docv:"impl-FILE.odocl")
 
     let source_file =
       let doc = "Source code for the implementation unit." in
@@ -893,7 +893,7 @@ end = struct
       in
       Term.(
         const handle_error
-        $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
+        $ (const generate $ R.extra_args $ dst ~create:true () $ syntax
          $ extra_suffix $ input_odocl $ warnings_options $ source_file))
 
     let info ~docs =
