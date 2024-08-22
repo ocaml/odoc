@@ -18,7 +18,6 @@ val generate_odoc :
   output:Fs.directory ->
   extra_suffix:string option ->
   sidebar:Fpath.t option ->
-  asset_path:Fpath.t option ->
   'a ->
   Fpath.t ->
   (unit, [> msg ]) result
@@ -33,6 +32,16 @@ val generate_source_odoc :
   'a ->
   Fpath.t ->
   (unit, [> msg ]) result
+
+val generate_asset_odoc :
+  warnings_options:Odoc_model.Error.warnings_options ->
+  renderer:'a Renderer.t ->
+  output:Fs.directory ->
+  asset_file:Fs.file ->
+  extra_suffix:string option ->
+  'a ->
+  Fs.file ->
+  (unit, [> Or_error.msg ]) result
 
 val targets_odoc :
   resolver:Resolver.t ->

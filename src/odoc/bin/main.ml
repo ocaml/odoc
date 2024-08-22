@@ -784,6 +784,8 @@ module Make_renderer (R : S) : sig
   val generate : docs:string -> unit Term.t * Term.info
 
   val generate_source : docs:string -> unit Term.t * Term.info
+
+  val generate_asset : docs:string -> unit Term.t * Term.info
 end = struct
   let input_odoc =
     let doc = "Input file." in
@@ -832,10 +834,10 @@ end = struct
 
   module Generate = struct
     let generate extra _hidden output_dir syntax extra_suffix input_file
-        warnings_options sidebar asset_path =
+        warnings_options sidebar =
       let file = Fs.File.of_string input_file in
       Rendering.generate_odoc ~renderer:R.renderer ~warnings_options ~syntax
-        ~output:output_dir ~extra_suffix ~sidebar ~asset_path extra file
+        ~output:output_dir ~extra_suffix ~sidebar extra file
 
     let sidebar =
       let doc = "A .odoc-index file, used eg to generate the sidebar." in
@@ -843,13 +845,6 @@ end = struct
         value
         & opt (some convert_fpath) None
         & info [ "index" ] ~doc ~docv:"FILE.odoc-index")
-
-    let asset_path =
-      let doc = "The path to the asset file, when generating an asset unit." in
-      Arg.(
-        value
-        & opt (some convert_fpath) None
-        & info [ "asset-path" ] ~doc ~docv:"path/to/asset.ext")
 
     let cmd =
       let syntax =
@@ -863,8 +858,7 @@ end = struct
       Term.(
         const handle_error
         $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
-         $ extra_suffix $ input_odocl $ warnings_options $ sidebar $ asset_path
-          ))
+         $ extra_suffix $ input_odocl $ warnings_options $ sidebar))
 
     let info ~docs =
       let doc =
@@ -918,6 +912,42 @@ end = struct
   end
 
   let generate_source ~docs = Generate_source.(cmd, info ~docs)
+
+  module Generate_asset = struct
+    let generate extra output_dir extra_suffix input_file warnings_options
+        asset_file =
+      Rendering.generate_asset_odoc ~renderer:R.renderer ~warnings_options
+        ~output:output_dir ~extra_suffix ~asset_file extra input_file
+
+    let input_odocl =
+      let doc = "Odoc asset unit." in
+      Arg.(
+        required
+        & opt (some convert_fpath) None
+        & info [ "asset-unit" ] ~doc ~docv:"asset-file.odocl")
+
+    let asset_file =
+      let doc = "The asset file" in
+      Arg.(
+        required
+        & pos 0 (some convert_fpath) None
+        & info ~doc ~docv:"FILE.ext" [])
+
+    let cmd =
+      Term.(
+        const handle_error
+        $ (const generate $ R.extra_args $ dst ~create:true () $ extra_suffix
+         $ input_odocl $ warnings_options $ asset_file))
+
+    let info ~docs =
+      let doc =
+        Format.sprintf "Generate %s files from a $(i,impl-*.odocl)."
+          R.renderer.name
+      in
+      Term.info ~docs ~doc (R.renderer.name ^ "-generate-asset")
+  end
+
+  let generate_asset ~docs = Generate_asset.(cmd, info ~docs)
 
   module Targets = struct
     let list_targets output_dir directories extra odoc_file =
@@ -1548,6 +1578,7 @@ let () =
       Odoc_link.(cmd, info ~docs:section_pipeline);
       Odoc_html.generate ~docs:section_pipeline;
       Odoc_html.generate_source ~docs:section_pipeline;
+      Odoc_html.generate_asset ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
       Compile_impl.(cmd, info ~docs:section_pipeline);
       Indexing.(cmd, info ~docs:section_pipeline);
