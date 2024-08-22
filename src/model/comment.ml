@@ -1,3 +1,5 @@
+open Odoc_utils
+
 module Path = Paths.Path
 module Reference = Paths.Reference
 module Identifier = Paths.Identifier
@@ -130,7 +132,7 @@ and link_content_of_inline_elements l =
   l |> List.map link_content_of_inline_element |> List.concat
 
 let find_zero_heading docs : link_content option =
-  Odoc_utils.List.find_map
+  List.find_map
     (fun doc ->
       match doc.Location_.value with
       | `Heading ({ heading_level = `Title; _ }, _, h_content) ->
@@ -141,9 +143,7 @@ let find_zero_heading docs : link_content option =
 let extract_frontmatter docs : _ =
   let parse_frontmatter s =
     let lines = Astring.String.cuts ~sep:"\n" s in
-    Odoc_utils.List.filter_map
-      (fun line -> Astring.String.cut ~sep:":" line)
-      lines
+    List.filter_map (fun line -> Astring.String.cut ~sep:":" line) lines
   in
   let fm, content =
     let fm, rev_content =
