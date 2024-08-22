@@ -100,13 +100,16 @@ contained within the module [Lib].
 {2 Hand-Written Top-Level Module}
 
 In some cases it's desirable to hand-write the top-level library module. This
-is usually done because some modules in the library are intended to
-be internal only and not exposed. Dune will notice that a module exists with
-the library's name ([lib.ml] in this case), so instead it will create the
-file [lib__.ml]. Its contents are identical to the previous section, with aliases for all modules. Like before, the canonical tags on these aliases are references to [Lib.A] and [Lib.B]. These module should be present in [lib.ml] as module aliases. If these are {e not} there, [odoc] won't be able to
-resolve the canonical references, and any items from these modules that are
-exposed elsewhere will be hidden. If the items are type aliases, they can be
-replaced, but otherwise they'll be rendered as unresolved links.
+is usually done because some modules in the library are intended to be internal
+only and not exposed. Dune will notice that a module exists with the library's
+name ([lib.ml] in this case), so instead it will create the file
+[lib__.ml]. Its contents are identical to the previous section, with aliases
+for all modules. Like before, the canonical tags on these aliases are
+references to [Lib.A] and [Lib.B]. These module should be present in [lib.ml]
+as module aliases. If these are {e not} there, [odoc] won't be able to resolve
+the canonical references, and any items from these modules that are exposed
+elsewhere will be hidden. If the items are type aliases, they can be replaced,
+but otherwise they'll be rendered as unresolved links.
 
 For example, consider the following module structure. First, the module [Unexposed]
 in file [unexposed.mli]:
