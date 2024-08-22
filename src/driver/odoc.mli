@@ -54,10 +54,10 @@ val html_generate :
   unit ->
   unit
 
-val html_generate_impl :
+val html_generate_source :
   output_dir:string ->
   ?ignore_output:bool ->
-  ?source:Fpath.t ->
+  source:Fpath.t ->
   ?search_uris:Fpath.t list ->
   input_file:Fpath.t ->
   unit ->
