@@ -96,9 +96,9 @@ let generate_odoc ~syntax ~warnings_options ~renderer ~output ~extra_suffix
     docs;
   Ok ()
 
-let documents_of_implementation ~warnings_options:_ ~syntax impl source =
-  match (source, impl.Lang.Implementation.id) with
-  | Some source_file, Some _ -> (
+let documents_of_implementation ~warnings_options:_ ~syntax impl source_file =
+  match impl.Lang.Implementation.id with
+  | Some _ -> (
       match Fs.File.read source_file with
       | Error (`Msg msg) ->
           Error (`Msg (Format.sprintf "Couldn't load source file: %s" msg))
@@ -111,16 +111,11 @@ let documents_of_implementation ~warnings_options:_ ~syntax impl source =
               syntax_info source_code
           in
           Ok rendered)
-  | _, None ->
+  | None ->
       Error (`Msg "The implementation unit was not compiled with --source-id.")
-  | None, _ ->
-      Error
-        (`Msg
-          "--source should be passed when generating documents for an \
-           implementation.")
 
-let generate_impl_odoc ~syntax ~warnings_options ~renderer ~output ~source_file
-    ~extra_suffix extra file =
+let generate_source_odoc ~syntax ~warnings_options ~renderer ~output
+    ~source_file ~extra_suffix extra file =
   Odoc_file.load file >>= fun unit ->
   match unit.content with
   | Odoc_file.Impl_content impl ->
@@ -151,7 +146,7 @@ let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
     docs;
   Ok ()
 
-let targets_impl_odoc ~syntax ~warnings_options ~renderer ~output:root_dir
+let targets_source_odoc ~syntax ~warnings_options ~renderer ~output:root_dir
     ~extra ~source_file odoctree =
   Odoc_file.load odoctree >>= fun unit ->
   match unit.content with
