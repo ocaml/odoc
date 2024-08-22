@@ -29,7 +29,7 @@ Testing the working references:
         <a href="caml.gif" class="img-link">
          <img src="caml.gif" alt="caml.gif"/>
         <a href="caml.gif" class="img-link">
-         <img src="caml.gif" alt="With alt text and emphasis"/>
+         <img src="caml.gif" alt="With alt text and {b emphasis}"/>
         <a href="https://picsum.photos/200/300" class="img-link">
          <img src="https://picsum.photos/200/300" alt="reference"/>
         <a href="https://picsum.photos/200/300" class="img-link">
@@ -53,21 +53,21 @@ Testing the working references:
 Testing the unresolved references:
 
   $ cat html/pkg1/doc/index.html | grep xref-unresolved
-       <div><span class="xref-unresolved"><code>./caqzdqzdml.gif</code></span>
-        <span class="xref-unresolved">With alt text and <b>emphasis</b></span>
-       <div><span class="xref-unresolved"><code>./module-x</code></span></div>
+       <div><span class="xref-unresolved">./caqzdqzdml.gif</span></div>
+       <div><span class="xref-unresolved">With alt text and {b emphasis}</span>
+       <div><span class="xref-unresolved">./module-x</span></div>
 
 Testing latex and manpages
 
   $ odoc latex-generate -o latex _odoc/pkg1/doc/page-index.odocl
   $ cat latex/pkg1/doc/index.tex | grep gif
-  \ocamlinlinecode{caml.\allowbreak{}gif}
-  \ocamlinlinecode{.\allowbreak{}/caqzdqzdml.\allowbreak{}gif}
+  caml.gif
+  ./caqzdqzdml.gif
 
   $ odoc man-generate -o man _odoc/pkg1/doc/page-index.odocl
   $ cat man/pkg1/doc/index.3o | grep gif
   caml\.gif
   \./caqzdqzdml\.gif
   $ cat man/pkg1/doc/index.3o | grep "With alt text"
-  With alt text and \fBemphasis\fR
-  With alt text and \fBemphasis\fR
+  With alt text and {b emphasis}
+  With alt text and {b emphasis}

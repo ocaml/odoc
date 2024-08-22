@@ -1159,11 +1159,22 @@ let rec block_element_list :
           Loc.nudge_start
             (String.length @@ Token.s_of_media `Replaced media)
             location
+          |> Loc.nudge_end (String.length content + 1)
+          (* +1 for closing character *)
         in
+        let c_location =
+          Loc.nudge_start
+            (String.length (Token.s_of_media `Replaced media)
+            + String.length (match href with `Reference s | `Link s -> s))
+            location
+          |> Loc.nudge_end 1
+        in
+        let content = String.trim content in
         let href = href |> Loc.at r_location in
 
         if content = "" then
-          Parse_error.should_not_be_empty ~what:(Token.describe token) location
+          Parse_error.should_not_be_empty ~what:(Token.describe token)
+            c_location
           |> add_warning input;
 
         let block = `Media (`Simple, href, content, media) in
@@ -1178,8 +1189,9 @@ let rec block_element_list :
 
         let r_location =
           Loc.nudge_start
-            (String.length @@ Token.s_of_media `Replaced media)
+            (String.length @@ Token.s_of_media `Simple media)
             location
+          |> Loc.nudge_end 1
         in
         let href = href |> Loc.at r_location in
         let block = `Media (`Simple, href, "", media) in
