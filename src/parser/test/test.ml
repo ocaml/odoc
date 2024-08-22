@@ -1974,6 +1974,206 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  let module Medias = struct
+    let basic_simple =
+      test
+        "{image!foo}\n\n\
+         {audio!foo}\n\n\
+         {video!foo}\n\n\
+         {image:foo}\n\n\
+         {audio:foo}\n\n\
+         {video:foo}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 11))
+            (simple ((f.ml (1 7) (1 10)) (Reference foo)) "" image))
+           ((f.ml (3 0) (3 11))
+            (simple ((f.ml (3 7) (3 10)) (Reference foo)) "" audio))
+           ((f.ml (5 0) (5 11))
+            (simple ((f.ml (5 7) (5 10)) (Reference foo)) "" video))
+           ((f.ml (7 0) (7 11)) (simple ((f.ml (7 7) (7 10)) (Link foo)) "" image))
+           ((f.ml (9 0) (9 11)) (simple ((f.ml (9 7) (9 10)) (Link foo)) "" audio))
+           ((f.ml (11 0) (11 11))
+            (simple ((f.ml (11 7) (11 10)) (Link foo)) "" video))))
+         (warnings ())) |}]
+
+    let basic =
+      test
+        "{{image!foo}bar}\n\n\
+         {{audio!foo}bar}\n\n\
+         {{video!foo}bar}\n\n\
+         {{image:foo}bar}\n\n\
+         {{audio:foo}bar}\n\n\
+         {{video:foo}bar}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 16))
+            (simple ((f.ml (1 8) (1 12)) (Reference foo)) bar image))
+           ((f.ml (3 0) (3 16))
+            (simple ((f.ml (3 8) (3 12)) (Reference foo)) bar audio))
+           ((f.ml (5 0) (5 16))
+            (simple ((f.ml (5 8) (5 12)) (Reference foo)) bar video))
+           ((f.ml (7 0) (7 16)) (simple ((f.ml (7 8) (7 12)) (Link foo)) bar image))
+           ((f.ml (9 0) (9 16)) (simple ((f.ml (9 8) (9 12)) (Link foo)) bar audio))
+           ((f.ml (11 0) (11 16))
+            (simple ((f.ml (11 8) (11 12)) (Link foo)) bar video))))
+         (warnings ())) |}]
+
+    let empty =
+      test "{{image!foo}}";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 13))
+               (simple ((f.ml (1 8) (1 12)) (Reference foo)) "" image))))
+            (warnings
+             ( "File \"f.ml\", line 1, characters 11-12:\
+              \n'{{image!...} ...}' (image-reference) should not be empty."))) |}]
+
+    let whitespace =
+      test "{{image!foo}   }";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 16))
+               (simple ((f.ml (1 8) (1 12)) (Reference foo)) "" image))))
+            (warnings
+             ( "File \"f.ml\", line 1, characters 11-15:\
+              \n'{{image!...} ...}' (image-reference) should not be empty."))) |}]
+
+    let trimming =
+      test "{{image!foo}    hello     }";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 27))
+               (simple ((f.ml (1 8) (1 12)) (Reference foo)) hello image))))
+            (warnings ())) |}]
+
+    let nested_markup_is_uninterpreted =
+      test "{{image!foo}{b bar}}";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 20))
+               (simple ((f.ml (1 8) (1 12)) (Reference foo)) "{b bar}" image))))
+            (warnings ())) |}]
+
+    let in_markup =
+      test "{ul {li {{image!foo}bar}}}";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 26))
+               (unordered heavy
+                ((((f.ml (1 8) (1 24))
+                   (simple ((f.ml (1 16) (1 20)) (Reference foo)) bar image))))))))
+            (warnings ())) |}]
+
+    let unterminated_image =
+      test "{{image!foo";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 11))
+               (simple ((f.ml (1 8) (1 10)) (Reference foo)) "" image))))
+            (warnings
+             ( "File \"f.ml\", line 1, characters 0-11:\
+              \nOpen bracket '{{image!' is never closed."
+               "File \"f.ml\", line 1, characters 11-11:\
+              \nEnd of text is not allowed in '{{image!...} ...}' (image-reference)."
+               "File \"f.ml\", line 1, characters 11-10:\
+              \n'{{image!...} ...}' (image-reference) should not be empty."))) |}]
+
+    let unterminated_image_simple =
+      test "{image!foo";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 10))
+               (simple ((f.ml (1 7) (1 9)) (Reference foo)) "" image))))
+            (warnings
+             ( "File \"f.ml\", line 1, characters 0-10:\
+              \nOpen bracket '{image!' is never closed."))) |}]
+
+    let unterminated_video =
+      test "{{video!foo";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 11))
+               (simple ((f.ml (1 8) (1 10)) (Reference foo)) "" video))))
+            (warnings
+             ( "File \"f.ml\", line 1, characters 0-11:\
+              \nOpen bracket '{{video!' is never closed."
+               "File \"f.ml\", line 1, characters 11-11:\
+              \nEnd of text is not allowed in '{{video!...} ...}' (video-reference)."
+               "File \"f.ml\", line 1, characters 11-10:\
+              \n'{{video!...} ...}' (video-reference) should not be empty."))) |}]
+
+    let unterminated_video_simple =
+      test "{video!foo";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 10))
+               (simple ((f.ml (1 7) (1 9)) (Reference foo)) "" video))))
+            (warnings
+             ( "File \"f.ml\", line 1, characters 0-10:\
+              \nOpen bracket '{video!' is never closed."))) |}]
+
+    let unterminated_audio =
+      test "{{audio!foo";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 11))
+               (simple ((f.ml (1 8) (1 10)) (Reference foo)) "" audio))))
+            (warnings
+             ( "File \"f.ml\", line 1, characters 0-11:\
+              \nOpen bracket '{{audio!' is never closed."
+               "File \"f.ml\", line 1, characters 11-11:\
+              \nEnd of text is not allowed in '{{audio!...} ...}' (audio-reference)."
+               "File \"f.ml\", line 1, characters 11-10:\
+              \n'{{audio!...} ...}' (audio-reference) should not be empty."))) |}]
+
+    let unterminated_audio_simple =
+      test "{audio!foo";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 10))
+               (simple ((f.ml (1 7) (1 9)) (Reference foo)) "" audio))))
+            (warnings
+             ( "File \"f.ml\", line 1, characters 0-10:\
+              \nOpen bracket '{audio!' is never closed."))) |}]
+
+    let unterminated_content =
+      test "{{image!foo} bar";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (1 16))
+               (simple ((f.ml (1 8) (1 11)) (Reference foo)) bar image))))
+            (warnings
+             ( "File \"f.ml\", line 1, characters 16-16:\
+              \nEnd of text is not allowed in '{{image!...} ...}' (image-reference)."))) |}]
+
+    let newline_in_content =
+      test "{{image!foo} bar \n baz}";
+      [%expect
+        {|
+           ((output
+             (((f.ml (1 0) (2 5))
+               (simple ((f.ml (1 8) (2 -6)) (Reference foo))  "bar \
+                                                             \n baz" image))))
+            (warnings ())) |}]
+  end in
+  ()
+
+let%expect_test _ =
   let module Link = struct
     let basic =
       test "{{:foo} bar}";
