@@ -88,7 +88,7 @@ let deps_of_imports ~deps imports =
 let deps_of_odoc_file ~deps input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
-  | Page_content _ | Source_tree_content _ | Asset_content _ ->
+  | Page_content _ | Asset_content _ ->
       Ok () (* XXX something should certainly be done here *)
   | Impl_content impl ->
       deps_of_imports ~deps impl.Odoc_model.Lang.Implementation.imports

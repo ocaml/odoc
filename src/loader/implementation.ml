@@ -198,7 +198,6 @@ let anchor_of_identifier id =
     | `Module (parent, name) ->
         let anchor = anchor `Module (ModuleName.to_string name) in
         continue anchor parent
-    | `SourceDir _ -> assert false
     | `ModuleType (parent, name) ->
         let anchor = anchor `ModuleType (ModuleTypeName.to_string name) in
         continue anchor parent

@@ -1,16 +1,6 @@
 open Odoc_document
 open Or_error
 
-module Source : sig
-  type t = File of Fpath.t | Root of Fpath.t
-
-  val pp : Format.formatter -> t -> unit
-
-  val to_string : t -> string
-end
-
-type source = Source.t
-
 val render_odoc :
   resolver:Resolver.t ->
   warnings_options:Odoc_model.Error.warnings_options ->
@@ -27,9 +17,19 @@ val generate_odoc :
   renderer:'a Renderer.t ->
   output:Fs.directory ->
   extra_suffix:string option ->
-  source:source option ->
   sidebar:Fpath.t option ->
   asset_path:Fpath.t option ->
+  'a ->
+  Fpath.t ->
+  (unit, [> msg ]) result
+
+val generate_source_odoc :
+  syntax:Renderer.syntax ->
+  warnings_options:Odoc_model.Error.warnings_options ->
+  renderer:'a Renderer.t ->
+  output:Fs.directory ->
+  source_file:Fpath.t ->
+  extra_suffix:string option ->
   'a ->
   Fpath.t ->
   (unit, [> msg ]) result
@@ -41,6 +41,15 @@ val targets_odoc :
   renderer:'a Renderer.t ->
   output:Fs.directory ->
   extra:'a ->
-  source:source option ->
   Fpath.t ->
   (unit, [> msg ]) result
+
+val targets_source_odoc :
+  syntax:Renderer.syntax ->
+  warnings_options:Odoc_model.Error.warnings_options ->
+  renderer:'a Renderer.t ->
+  output:Fs.directory ->
+  extra:'a ->
+  source_file:Fpath.t ->
+  Fs.file ->
+  (unit, [> Or_error.msg ]) result

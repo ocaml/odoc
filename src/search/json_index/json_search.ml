@@ -76,7 +76,7 @@ let rec of_id x =
       :: of_id (parent :> t)
   | `Label (parent, name) ->
       ret "Label" (LabelName.to_string name) :: of_id (parent :> t)
-  | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
+  | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
   | `SourceLocationInternal _ ->
       [ `Null ]
 (* TODO *)

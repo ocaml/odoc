@@ -15,11 +15,11 @@ Verify the behavior on functors.
   $ odoc link -I . impl-s.odoc
   $ odoc link -I . impl-a.odoc
   $ odoc link -I . impl-b.odoc
-  $ odoc html-generate --source s.ml --indent -o html impl-s.odocl
+  $ odoc html-generate-source --impl impl-s.odocl --indent -o html s.ml
   $ odoc html-generate --indent -o html s.odocl
-  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
+  $ odoc html-generate-source --impl impl-a.odocl --indent -o html a.ml
   $ odoc html-generate --indent -o html a.odocl
-  $ odoc html-generate --source b.ml --indent -o html impl-b.odocl
+  $ odoc html-generate-source --impl impl-b.odocl --indent -o html b.ml
   $ odoc html-generate --indent -o html b.odocl
 
   $ find html | sort

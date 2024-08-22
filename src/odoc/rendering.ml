@@ -2,26 +2,6 @@ open Odoc_document
 open Or_error
 open Odoc_model
 
-module Source = struct
-  type t = File of Fpath.t | Root of Fpath.t
-
-  let pp fmt = function
-    | File f -> Format.fprintf fmt "File: %a" Fpath.pp f
-    | Root f -> Format.fprintf fmt "File: %a" Fpath.pp f
-
-  let to_string f = Format.asprintf "%a" pp f
-end
-
-type source = Source.t
-
-let check_empty_source_arg source filename =
-  if source <> None then
-    Error.raise_warning
-    @@ Error.filename_only
-         "--source and --source-root only have an effect when generating from \
-          an implementation"
-         filename
-
 let check_empty_asset_path asset_path filename =
   if asset_path <> None then
     Error.raise_warning
@@ -29,112 +9,60 @@ let check_empty_asset_path asset_path filename =
          "--asset-path only has an effect when generating from an asset"
          filename
 
-let documents_of_unit ~warnings_options ~syntax ~source ~renderer ~extra
-    ~asset_path ~filename unit =
+let documents_of_unit ~warnings_options ~syntax ~renderer ~extra ~asset_path
+    ~filename unit =
   Error.catch_warnings (fun () ->
-      check_empty_source_arg source filename;
       check_empty_asset_path asset_path filename;
       renderer.Renderer.extra_documents extra (CU unit))
   |> Error.handle_warnings ~warnings_options
   >>= fun extra_docs ->
   Ok (Renderer.document_of_compilation_unit ~syntax unit :: extra_docs)
 
-let documents_of_asset ~warnings_options ~source ~filename ~asset_path unit =
+let documents_of_asset ~warnings_options ~asset_path unit =
   Error.catch_warnings (fun () ->
-      check_empty_source_arg source filename;
       match asset_path with None -> failwith "TODO" | Some a -> a)
   |> Error.handle_warnings ~warnings_options
   >>= fun asset_path -> Ok [ Renderer.document_of_asset asset_path unit ]
 
-let documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
-    ~asset_path ~filename page =
+let documents_of_page ~warnings_options ~syntax ~renderer ~extra ~asset_path
+    ~filename page =
   Error.catch_warnings (fun () ->
-      check_empty_source_arg source filename;
       check_empty_asset_path asset_path filename;
       renderer.Renderer.extra_documents extra (Page page))
   |> Error.handle_warnings ~warnings_options
   >>= fun extra_docs -> Ok (Renderer.document_of_page ~syntax page :: extra_docs)
 
-let documents_of_implementation ~warnings_options ~syntax ~filename ~asset_path
-    impl source =
-  Error.catch_warnings (fun () -> check_empty_asset_path asset_path filename)
-  |> Error.handle_warnings ~warnings_options
-  >>= fun () ->
-  match (source, impl.Lang.Implementation.id) with
-  | Some source, Some source_id -> (
-      let source_file =
-        match source with
-        | Source.File f -> f
-        | Root f ->
-            let open Paths.Identifier in
-            let rec get_path_dir : SourceDir.t -> Fpath.t = function
-              | { iv = `SourceDir (d, f); _ } -> Fpath.(get_path_dir d / f)
-              | { iv = `Page _; _ } -> f
-            in
-            let get_path : SourcePage.t -> Fpath.t = function
-              | { iv = `SourcePage (d, f); _ } -> Fpath.(get_path_dir d / f)
-            in
-            get_path source_id
-      in
-      match Fs.File.read source_file with
-      | Error (`Msg msg) ->
-          Error (`Msg (Format.sprintf "Couldn't load source file: %s" msg))
-      | Ok source_code ->
-          let syntax_info =
-            Syntax_highlighter.syntax_highlighting_locs source_code
-          in
-          let rendered =
-            Odoc_document.Renderer.documents_of_implementation ~syntax impl
-              syntax_info source_code
-          in
-          Ok rendered)
-  | _, None ->
-      Error (`Msg "The implementation unit was not compiled with --source-id.")
-  | None, _ ->
-      Error
-        (`Msg
-          "--source or --source-root should be passed when generating \
-           documents for an implementation.")
-
-let documents_of_source_tree ~warnings_options ~syntax ~source ~filename srctree
-    =
-  Error.catch_warnings (fun () -> check_empty_source_arg source filename)
-  |> Error.handle_warnings ~warnings_options
-  >>= fun () -> Ok (Renderer.documents_of_source_tree ~syntax srctree)
-
-let documents_of_odocl ~warnings_options ~renderer ~extra ~source ~syntax
+let documents_of_odocl ~warnings_options ~filename ~renderer ~extra ~syntax
     ~asset_path input =
   Odoc_file.load input >>= fun unit ->
-  let filename = Fpath.to_string input in
   match unit.content with
   | Odoc_file.Page_content odoctree ->
-      documents_of_page ~warnings_options ~syntax ~source ~renderer ~extra
-        ~asset_path ~filename odoctree
-  | Source_tree_content srctree ->
-      documents_of_source_tree ~warnings_options ~syntax ~source ~filename
-        srctree
-  | Impl_content impl ->
-      documents_of_implementation ~warnings_options ~syntax impl source
-        ~asset_path ~filename
+      documents_of_page ~warnings_options ~syntax ~renderer ~extra ~asset_path
+        ~filename odoctree
+  | Impl_content _ ->
+      Error
+        (`Msg
+          "Wrong kind of unit: Expected a page or module unit, got an \
+           implementation. Use the dedicated command for implementation.")
   | Unit_content odoctree ->
-      documents_of_unit ~warnings_options ~source ~syntax ~renderer ~extra
-        ~asset_path ~filename odoctree
-  | Asset_content a ->
-      documents_of_asset ~warnings_options ~source ~filename ~asset_path a
+      documents_of_unit ~warnings_options ~syntax ~renderer ~extra ~asset_path
+        ~filename odoctree
+  | Asset_content a -> documents_of_asset ~warnings_options ~asset_path a
 
 let documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
     ~asset_path input =
   let output = Fs.File.(set_ext ".odocl" input) in
   Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
-  | `Source_tree st -> Ok (Renderer.documents_of_source_tree ~syntax st)
   | `Page page -> Ok [ Renderer.document_of_page ~syntax page ]
-  | `Impl impl -> Ok (Renderer.documents_of_implementation ~syntax impl [] "")
+  | `Impl _impl ->
+      Error
+        (`Msg
+          "Wrong kind of unit: Expected a page or module unit, got an \
+           implementation. Use the dedicated command for implementation.")
   | `Module m ->
-      documents_of_unit ~warnings_options ~source:None ~filename:"" ~syntax
-        ~asset_path ~renderer ~extra m
-  | `Asset a ->
-      documents_of_asset ~warnings_options ~source:None ~filename:"" ~asset_path
-        a
+      documents_of_unit ~warnings_options ~filename:"" ~syntax ~asset_path
+        ~renderer ~extra m
+  | `Asset a -> documents_of_asset ~warnings_options ~asset_path a
 
 let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
     =
@@ -176,14 +104,15 @@ let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
   Ok ()
 
 let generate_odoc ~syntax ~warnings_options ~renderer ~output ~extra_suffix
-    ~source ~sidebar ~asset_path extra file =
+    ~sidebar ~asset_path extra file =
+  let filename = Fpath.filename file in
   (match sidebar with
   | None -> Ok None
   | Some x ->
       Odoc_file.load_index x >>= fun (sidebar, _) ->
       Ok (Some (Odoc_document.Sidebar.of_lang sidebar)))
   >>= fun sidebar ->
-  documents_of_odocl ~warnings_options ~renderer ~source ~extra ~syntax
+  documents_of_odocl ~warnings_options ~filename ~renderer ~extra ~syntax
     ~asset_path file
   >>= fun docs ->
   List.iter
@@ -191,14 +120,47 @@ let generate_odoc ~syntax ~warnings_options ~renderer ~output ~extra_suffix
     docs;
   Ok ()
 
+let documents_of_implementation ~warnings_options:_ ~syntax impl source_file =
+  match impl.Lang.Implementation.id with
+  | Some _ -> (
+      match Fs.File.read source_file with
+      | Error (`Msg msg) ->
+          Error (`Msg (Format.sprintf "Couldn't load source file: %s" msg))
+      | Ok source_code ->
+          let syntax_info =
+            Syntax_highlighter.syntax_highlighting_locs source_code
+          in
+          let rendered =
+            Odoc_document.Renderer.documents_of_implementation ~syntax impl
+              syntax_info source_code
+          in
+          Ok rendered)
+  | None ->
+      Error (`Msg "The implementation unit was not compiled with --source-id.")
+
+let generate_source_odoc ~syntax ~warnings_options ~renderer ~output
+    ~source_file ~extra_suffix extra file =
+  Odoc_file.load file >>= fun unit ->
+  match unit.content with
+  | Odoc_file.Impl_content impl ->
+      documents_of_implementation ~warnings_options ~syntax impl source_file
+      >>= fun docs ->
+      List.iter
+        (render_document renderer ~output ~sidebar:None ~extra_suffix ~extra)
+        docs;
+      Ok ()
+  | Page_content _ | Unit_content _ | Asset_content _ ->
+      Error (`Msg "Expected an implementation unit")
+
 let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
-    ~extra ~source odoctree =
+    ~extra odoctree =
+  let filename = Fpath.filename odoctree in
   let docs =
     if Fpath.get_ext odoctree = ".odoc" then
       documents_of_input ~renderer ~extra ~resolver ~warnings_options ~syntax
         ~asset_path:None odoctree
     else
-      documents_of_odocl ~warnings_options ~renderer ~extra ~syntax ~source
+      documents_of_odocl ~warnings_options ~renderer ~extra ~syntax ~filename
         ~asset_path:None odoctree
   in
   docs >>= fun docs ->
@@ -210,3 +172,23 @@ let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
           Format.printf "%a\n" Fpath.pp filename))
     docs;
   Ok ()
+
+let targets_source_odoc ~syntax ~warnings_options ~renderer ~output:root_dir
+    ~extra ~source_file odoctree =
+  Odoc_file.load odoctree >>= fun unit ->
+  match unit.content with
+  | Odoc_file.Impl_content impl ->
+      documents_of_implementation ~warnings_options ~syntax impl source_file
+      >>= fun docs ->
+      List.iter
+        (fun doc ->
+          let pages = renderer.Renderer.render extra None doc in
+          Renderer.traverse pages ~f:(fun filename _content ->
+              let filename =
+                Fpath.normalize @@ Fs.File.append root_dir filename
+              in
+              Format.printf "%a\n" Fpath.pp filename))
+        docs;
+      Ok ()
+  | Page_content _ | Unit_content _ | Asset_content _ ->
+      Error (`Msg "Expected an implementation unit")

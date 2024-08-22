@@ -38,22 +38,6 @@ let convert_fpath =
   and print = Fpath.pp in
   Arg.conv (parse, print)
 
-let convert_src_fpath =
-  let parse inp =
-    match Arg.(conv_parser file) inp with
-    | Ok s -> Result.Ok (Rendering.Source.File (Fs.File.of_string s))
-    | Error _ as e -> e
-  and print = Rendering.Source.pp in
-  Arg.conv (parse, print)
-
-let convert_src_dir =
-  let parse inp =
-    match Arg.(conv_parser dir) inp with
-    | Ok s -> Result.Ok (Rendering.Source.Root (Fs.File.of_string s))
-    | Error _ as e -> e
-  and print = Rendering.Source.pp in
-  Arg.conv (parse, print)
-
 let convert_named_root =
   let parse inp =
     match Astring.String.cuts inp ~sep:":" with
@@ -382,93 +366,6 @@ module Compile_asset = struct
     in
     let doc = "Declare the name of an asset." in
     Term.info "compile-asset" ~docs ~doc ~man
-end
-
-module Source_tree = struct
-  let prefix = "srctree-"
-
-  let has_src_tree_prefix input =
-    input |> Fs.File.basename |> Fs.File.to_string
-    |> Astring.String.is_prefix ~affix:prefix
-
-  let output_file ~output ~input =
-    match output with
-    | Some output -> output
-    | None ->
-        let output =
-          if not (has_src_tree_prefix input) then
-            let directory = Fs.File.dirname input in
-            let name = input |> Fs.File.basename |> Fs.File.to_string in
-            let name = prefix ^ name in
-            Fs.File.create ~directory ~name
-          else input
-        in
-        Fs.File.(set_ext ".odoc" output)
-
-  let compile_source_tree directories output parent input warnings_options =
-    let output = output_file ~output ~input in
-    let resolver =
-      Resolver.create ~important_digests:true ~directories ~open_modules:[]
-        ~roots:None
-    in
-    Source_tree.compile ~resolver ~parent ~output ~warnings_options input
-
-  let arg_page_output =
-    let open Or_error in
-    let parse inp =
-      match Arg.(conv_parser string) inp with
-      | Ok s ->
-          let f = Fs.File.of_string s in
-          if not (Fs.File.has_ext ".odoc" f) then
-            Error (`Msg "Output file must have '.odoc' extension.")
-          else if not (has_src_tree_prefix f) then
-            Error
-              (`Msg
-                (Format.sprintf "Output file must be prefixed with '%s'." prefix))
-          else Ok f
-      | Error _ as e -> e
-    and print = Fpath.pp in
-    Arg.conv (parse, print)
-
-  let cmd =
-    let parent =
-      let doc = "Parent page or subpage." in
-      Arg.(
-        required
-        & opt (some string) None
-        & info ~docs ~docv:"PARENT" ~doc [ "parent" ])
-    in
-    let dst =
-      let doc =
-        Format.sprintf
-          "Output file path. Non-existing intermediate directories are \
-           created. The basename must start with the prefix '%s' and extension \
-           '.odoc'."
-          prefix
-      in
-      Arg.(
-        value
-        & opt (some arg_page_output) None
-        & info ~docs ~docv:"PATH" ~doc [ "o" ])
-    in
-    let input =
-      let doc = "Input text file containing a line-separated list of paths." in
-      Arg.(
-        required & pos 0 (some convert_fpath) None & info ~doc ~docv:"FILE" [])
-    in
-    Term.(
-      const handle_error
-      $ (const compile_source_tree $ odoc_file_directories $ dst $ parent
-       $ input $ warnings_options))
-
-  let info ~docs =
-    let doc =
-      "(EXPERIMENTAL) Compile a source tree into a page. Expect a text file \
-       containing the relative paths to every source files in the source tree. \
-       The paths should be the same as the one passed to $(i,odoc compile \
-       --source-name)."
-    in
-    Term.info "source-tree" ~docs ~doc
 end
 
 module Compile_impl = struct
@@ -882,7 +779,11 @@ module Make_renderer (R : S) : sig
 
   val targets : docs:string -> unit Term.t * Term.info
 
+  val targets_source : docs:string -> unit Term.t * Term.info
+
   val generate : docs:string -> unit Term.t * Term.info
+
+  val generate_source : docs:string -> unit Term.t * Term.info
 end = struct
   let input_odoc =
     let doc = "Input file." in
@@ -930,42 +831,11 @@ end = struct
   let process ~docs = Process.(cmd, info ~docs)
 
   module Generate = struct
-    let source_of_args source_root source_file =
-      match (source_root, source_file) with
-      | Some x, None -> Some x
-      | None, Some x -> Some x
-      | None, None -> None
-      | Some _, Some _ ->
-          Printf.eprintf "ERROR: Can't use both source and source-root\n%!";
-          exit 1
-
     let generate extra _hidden output_dir syntax extra_suffix input_file
-        warnings_options source_file source_root sidebar asset_path =
-      let source = source_of_args source_root source_file in
+        warnings_options sidebar asset_path =
       let file = Fs.File.of_string input_file in
       Rendering.generate_odoc ~renderer:R.renderer ~warnings_options ~syntax
-        ~output:output_dir ~extra_suffix ~source ~sidebar ~asset_path extra file
-
-    let source_file =
-      let doc =
-        "(EXPERIMENTAL) Source code for the compilation unit. It must have \
-         been compiled with --source-parent passed."
-      in
-      Arg.(
-        value
-        & opt (some convert_src_fpath) None
-        & info [ "source" ] ~doc ~docv:"file.ml")
-
-    let source_root =
-      let doc =
-        "(EXPERIMENTAL) Source code root for the compilation unit. Used to \
-         find the source file from the value of --source-name it was compiled \
-         with. Incompatible with --source-file."
-      in
-      Arg.(
-        value
-        & opt (some convert_src_dir) None
-        & info [ "source-root" ] ~doc ~docv:"dir")
+        ~output:output_dir ~extra_suffix ~sidebar ~asset_path extra file
 
     let sidebar =
       let doc = "A .odoc-index file, used eg to generate the sidebar." in
@@ -993,8 +863,8 @@ end = struct
       Term.(
         const handle_error
         $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
-         $ extra_suffix $ input_odocl $ warnings_options $ source_file
-         $ source_root $ sidebar $ asset_path))
+         $ extra_suffix $ input_odocl $ warnings_options $ sidebar $ asset_path
+          ))
 
     let info ~docs =
       let doc =
@@ -1005,10 +875,52 @@ end = struct
 
   let generate ~docs = Generate.(cmd, info ~docs)
 
+  module Generate_source = struct
+    let generate extra output_dir syntax extra_suffix input_file
+        warnings_options source_file =
+      Rendering.generate_source_odoc ~renderer:R.renderer ~warnings_options
+        ~syntax ~output:output_dir ~extra_suffix ~source_file extra input_file
+
+    let input_odocl =
+      let doc = "Linked implementation file." in
+      Arg.(
+        required
+        & opt (some convert_fpath) None
+        & info [ "impl" ] ~doc ~docv:"impl-FILE.odocl")
+
+    let source_file =
+      let doc = "Source code for the implementation unit." in
+      Arg.(
+        required
+        & pos 0 (some convert_fpath) None
+        & info ~doc ~docv:"FILE.ml" [])
+
+    let cmd =
+      let syntax =
+        let doc = "Available options: ml | re" in
+        let env = Arg.env_var "ODOC_SYNTAX" in
+        Arg.(
+          value
+          & opt (pconv convert_syntax) Odoc_document.Renderer.OCaml
+            @@ info ~docv:"SYNTAX" ~doc ~env [ "syntax" ])
+      in
+      Term.(
+        const handle_error
+        $ (const generate $ R.extra_args $ dst ~create:true () $ syntax
+         $ extra_suffix $ input_odocl $ warnings_options $ source_file))
+
+    let info ~docs =
+      let doc =
+        Format.sprintf "Generate %s files from a $(i,impl-*.odocl)."
+          R.renderer.name
+      in
+      Term.info ~docs ~doc (R.renderer.name ^ "-generate-source")
+  end
+
+  let generate_source ~docs = Generate_source.(cmd, info ~docs)
+
   module Targets = struct
-    let list_targets output_dir directories source_file source_root extra
-        odoc_file =
-      let source = Generate.source_of_args source_root source_file in
+    let list_targets output_dir directories extra odoc_file =
       let odoc_file = Fs.File.of_string odoc_file in
       let resolver =
         Resolver.create ~important_digests:false ~directories ~open_modules:[]
@@ -1018,7 +930,7 @@ end = struct
         { Odoc_model.Error.warn_error = false; print_warnings = false }
       in
       Rendering.targets_odoc ~resolver ~warnings_options ~syntax:OCaml
-        ~renderer:R.renderer ~output:output_dir ~extra ~source odoc_file
+        ~renderer:R.renderer ~output:output_dir ~extra odoc_file
 
     let back_compat =
       let doc =
@@ -1030,15 +942,11 @@ end = struct
         & opt_all (convert_directory ()) []
         & info ~docs ~docv:"DIR" ~doc [ "I" ])
 
-    let source_file = Generate.source_file
-
-    let source_root = Generate.source_root
-
     let cmd =
       Term.(
         const handle_error
-        $ (const list_targets $ dst () $ back_compat $ source_file $ source_root
-         $ R.extra_args $ input_odocl))
+        $ (const list_targets $ dst () $ back_compat $ R.extra_args
+         $ input_odocl))
 
     let info ~docs =
       let doc =
@@ -1050,6 +958,34 @@ end = struct
   end
 
   let targets ~docs = Targets.(cmd, info ~docs)
+
+  module Targets_source = struct
+    let list_targets output_dir source_file extra odoc_file =
+      let warnings_options =
+        { Odoc_model.Error.warn_error = false; print_warnings = false }
+      in
+      Rendering.targets_source_odoc ~warnings_options ~syntax:OCaml
+        ~renderer:R.renderer ~output:output_dir ~extra ~source_file odoc_file
+
+    let source_file = Generate_source.source_file
+    let input_odocl = Generate_source.input_odocl
+
+    let cmd =
+      Term.(
+        const handle_error
+        $ (const list_targets $ dst () $ source_file $ R.extra_args
+         $ input_odocl))
+
+    let info ~docs =
+      let doc =
+        Format.sprintf
+          "Print the files that would be generated by $(i,%s-generate-source)."
+          R.renderer.name
+      in
+      Term.info (R.renderer.name ^ "-targets-source") ~docs ~doc
+  end
+
+  let targets_source ~docs = Targets_source.(cmd, info ~docs)
 end
 
 module Odoc_latex_url : sig
@@ -1611,8 +1547,8 @@ let () =
       Compile_asset.(cmd, info ~docs:section_pipeline);
       Odoc_link.(cmd, info ~docs:section_pipeline);
       Odoc_html.generate ~docs:section_pipeline;
+      Odoc_html.generate_source ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
-      Source_tree.(cmd, info ~docs:section_pipeline);
       Compile_impl.(cmd, info ~docs:section_pipeline);
       Indexing.(cmd, info ~docs:section_pipeline);
       Odoc_manpage.generate ~docs:section_generators;
@@ -1622,6 +1558,7 @@ let () =
       Targets.Support_files.(cmd, info ~docs:section_support);
       Odoc_error.(cmd, info ~docs:section_support);
       Odoc_html.targets ~docs:section_support;
+      Odoc_html.targets_source ~docs:section_support;
       Odoc_manpage.targets ~docs:section_support;
       Odoc_latex.targets ~docs:section_support;
       Depends.Compile.(cmd, info ~docs:section_support);

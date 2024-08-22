@@ -53,9 +53,6 @@ module Identifier = struct
     | `InstanceVariable (_, name) -> InstanceVariableName.to_string name
     | `Label (_, name) -> LabelName.to_string name
     | `SourcePage (dir, name) -> name_aux (dir :> t) ^ name
-    | `SourceDir (({ iv = `SourceDir _; _ } as p), n) ->
-        name_aux (p :> t) ^ n ^ "/"
-    | `SourceDir (_, n) -> "./" ^ n ^ "/"
     | `SourceLocation (x, anchor) ->
         name_aux (x :> t) ^ "#" ^ DefName.to_string anchor
     | `SourceLocationMod x -> name_aux (x :> t)
@@ -87,7 +84,7 @@ module Identifier = struct
     | `Method (parent, _) -> is_hidden (parent :> t)
     | `InstanceVariable (parent, _) -> is_hidden (parent :> t)
     | `Label (parent, _) -> is_hidden (parent :> t)
-    | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
+    | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
     | `SourceLocationInternal _ | `AssetFile _ ->
         false
 
@@ -136,7 +133,6 @@ module Identifier = struct
         InstanceVariableName.to_string name :: full_name_aux (parent :> t)
     | `Label (parent, name) ->
         LabelName.to_string name :: full_name_aux (parent :> t)
-    | `SourceDir (parent, name) -> name :: full_name_aux (parent :> t)
     | `SourceLocation (parent, name) ->
         DefName.to_string name :: full_name_aux (parent :> t)
     | `SourceLocationInternal (parent, name) ->
@@ -377,14 +373,6 @@ module Identifier = struct
     type t_pv = Paths_types.Identifier.non_src_pv
   end
 
-  module SourceDir = struct
-    type t = Id.source_dir
-    type t_pv = Id.source_dir_pv
-    let equal = equal
-    let hash = hash
-    let compare = compare
-  end
-
   module SourcePage = struct
     type t = Id.source_page
     type t_pv = Id.source_page_pv
@@ -501,27 +489,12 @@ module Identifier = struct
     let asset_file : Page.t * AssetName.t -> AssetFile.t =
       mk_parent AssetName.to_string "asset" (fun (p, n) -> `AssetFile (p, n))
 
-    let source_page (container_page, path) =
-      let rec source_dir dir =
-        match dir with
-        | [] -> (container_page : ContainerPage.t :> SourceDir.t)
-        | a :: q ->
-            let parent = source_dir q in
-            mk_parent
-              (fun k -> k)
-              "sd"
-              (fun (p, dir) -> `SourceDir (p, dir))
-              (parent, a)
-      in
-      match List.rev path with
-      | [] -> assert false
-      | file :: dir ->
-          let parent = source_dir dir in
-          mk_parent
-            (fun x -> x)
-            "sp"
-            (fun (p, rp) -> `SourcePage (p, rp))
-            (parent, file)
+    let source_page (container_page, name) =
+      mk_parent
+        (fun x -> x)
+        "sp"
+        (fun (p, rp) -> `SourcePage (p, rp))
+        (container_page, name)
 
     let root :
         ContainerPage.t option * ModuleName.t ->

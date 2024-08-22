@@ -87,10 +87,7 @@ module Path = struct
     | Identifier.ClassSignature.t_pv ]
 
   type any_pv =
-    [ nonsrc_pv
-    | Identifier.SourcePage.t_pv
-    | Identifier.SourceDir.t_pv
-    | Identifier.AssetFile.t_pv ]
+    [ nonsrc_pv | Identifier.SourcePage.t_pv | Identifier.AssetFile.t_pv ]
 
   and any = any_pv Odoc_model.Paths.Identifier.id
 
@@ -179,10 +176,6 @@ module Path = struct
         let name = TypeName.to_string name in
         mk ~parent kind name
     | { iv = `Result p; _ } -> from_identifier (p :> any)
-    | { iv = `SourceDir (parent, name); _ } ->
-        let parent = from_identifier (parent :> any) in
-        let kind = `Page in
-        mk ~parent kind name
     | { iv = `SourcePage (parent, name); _ } ->
         let parent = from_identifier (parent :> any) in
         let kind = `SourcePage in
@@ -402,7 +395,7 @@ module Anchor = struct
     | { iv = `SourceLocationMod parent; _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         Ok { page; kind = `SourceAnchor; anchor = "" }
-    | { iv = `SourcePage _ | `SourceDir _; _ } as p ->
+    | { iv = `SourcePage _; _ } as p ->
         let page = Path.from_identifier (p :> Path.any) in
         Ok { page; kind = `Page; anchor = "" }
     | { iv = `AssetFile _; _ } as p ->

@@ -222,9 +222,6 @@ let run inp short long_paths show_canonical show_expansions
   in
   Odoc_file.load inp >>= fun unit ->
   match unit.content with
-  | Odoc_file.Source_tree_content tree ->
-      print_json_desc Lang_desc.source_tree_page_t tree;
-      Ok ()
   | Odoc_file.Page_content page ->
       print_json_desc Lang_desc.page_t page;
       Ok ()

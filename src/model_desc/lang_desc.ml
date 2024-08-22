@@ -710,16 +710,6 @@ and implementation_t =
       F ("root", (fun t -> t.root), root);
     ]
 
-and source_tree_page_t =
-  let open Lang.SourceTree in
-  Record
-    [
-      F ("name", (fun t -> t.name), identifier);
-      F ("root", (fun t -> t.root), root);
-      F ("digest", (fun t -> t.digest), Digest.t);
-      F ("source_children", (fun t -> t.source_children), List identifier);
-    ]
-
 and asset_t =
   let open Lang.Asset in
   Record

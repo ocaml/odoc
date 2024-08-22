@@ -20,8 +20,8 @@ Similar to the lookup_def_wrapped test.
   $ odoc link -I . main__.odoc
 
   $ odoc html-generate --indent -o html main.odocl
-  $ odoc html-generate --source main.ml --indent -o html impl-main.odocl
-  $ odoc html-generate --source a.ml --indent -o html impl-main__A.odocl
+  $ odoc html-generate-source --impl impl-main.odocl --indent -o html main.ml
+  $ odoc html-generate-source --impl impl-main__A.odocl --indent -o html a.ml
 
 Look if all the source files are generated:
 

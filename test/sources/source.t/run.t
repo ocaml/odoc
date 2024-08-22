@@ -99,7 +99,7 @@ Compile the pages with the --source option:
   $ odoc link -I . a.odoc
   $ odoc link -I . impl-a.odoc
   $ odoc html-generate --indent -o html a.odocl
-  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
+  $ odoc html-generate-source --impl impl-a.odocl --indent -o html a.ml
   $ odoc support-files -o html
 
 Source links generated in the documentation:
@@ -384,6 +384,31 @@ Ids generated in the source code:
   id="val-string"
   id="val-string2"
 
+Html generation for implementation and mld/interface uses different commands
+
+  $ odoc html-generate-source --indent -o html a.odocl
+  odoc: required option --impl is missing
+  Usage: odoc html-generate-source [OPTION]… FILE.ml
+  Try 'odoc html-generate-source --help' or 'odoc --help' for more information.
+  [2]
+  $ odoc html-generate-source --indent -o html --impl a.odocl a.ml
+  ERROR: Expected an implementation unit
+  [1]
+  $ odoc html-generate-source --indent -o html --impl impl-a.odocl
+  odoc: required argument FILE.ml is missing
+  Usage: odoc html-generate-source [OPTION]… FILE.ml
+  Try 'odoc html-generate-source --help' or 'odoc --help' for more information.
+  [2]
+  $ odoc html-generate-source --indent -o html a.ml
+  odoc: required option --impl is missing
+  Usage: odoc html-generate-source [OPTION]… FILE.ml
+  Try 'odoc html-generate-source --help' or 'odoc --help' for more information.
+  [2]
+  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
+  odoc: unknown option '--source'.
+  Usage: odoc html-generate [OPTION]… FILE.odocl
+  Try 'odoc html-generate --help' or 'odoc --help' for more information.
+  [2]
 
 Compiling without --source-id makes it impossible to generate the source:
 
@@ -392,7 +417,6 @@ Compiling without --source-id makes it impossible to generate the source:
   $ odoc link -I . a.odoc
   $ odoc link -I . impl-a.odoc
   $ odoc html-generate --indent -o html a.odocl
-  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
+  $ odoc html-generate-source --impl impl-a.odocl --indent -o html a.ml
   ERROR: The implementation unit was not compiled with --source-id.
   [1]
-  $ odoc support-files -o html

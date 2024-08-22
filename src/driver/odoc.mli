@@ -51,7 +51,6 @@ val html_generate :
   ?index:Fpath.t ->
   ?ignore_output:bool ->
   ?assets:string list ->
-  ?source:Fpath.t ->
   ?search_uris:Fpath.t list ->
   input_file:Fpath.t ->
   unit ->
@@ -62,6 +61,15 @@ val html_generate_asset :
   ?ignore_output:bool ->
   input_file:Fpath.t ->
   asset_path:Fpath.t ->
+  unit ->
+  unit
+
+val html_generate_source :
+  output_dir:string ->
+  ?ignore_output:bool ->
+  source:Fpath.t ->
+  ?search_uris:Fpath.t list ->
+  input_file:Fpath.t ->
   unit ->
   unit
 

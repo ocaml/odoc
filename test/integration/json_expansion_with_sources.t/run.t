@@ -23,18 +23,18 @@ Test the JSON output in the presence of expanded modules.
   html/Main/index.html.json
   html/Main/A/index.html.json
   html/Main/A/B/index.html.json
-  $ odoc html-targets --source a.ml -o html impl-main__A.odocl
+  $ odoc html-targets-source --impl impl-main__A.odocl -o html a.ml
   html/src/a.ml.html
-  $ odoc html-targets --source main.ml -o html impl-main.odocl
+  $ odoc html-targets-source --impl impl-main.odocl -o html main.ml
   html/src/main.ml.html
-  $ odoc html-targets --source a.ml --as-json -o html impl-main__A.odocl
+  $ odoc html-targets-source --impl impl-main__A.odocl --as-json -o html a.ml
   html/src/a.ml.html.json
-  $ odoc html-targets --source main.ml --as-json -o html impl-main.odocl
+  $ odoc html-targets-source --impl impl-main.odocl --as-json -o html main.ml
   html/src/main.ml.html.json
 
-  $ odoc html-generate --source a.ml --as-json -o html impl-main__A.odocl
+  $ odoc html-generate-source --impl impl-main__A.odocl --as-json -o html a.ml
   $ odoc html-generate --as-json -o html main__A.odocl
-  $ odoc html-generate --source main.ml --as-json -o html impl-main.odocl
+  $ odoc html-generate-source --impl impl-main.odocl --as-json -o html main.ml
   $ odoc html-generate --as-json -o html main.odocl
 
   $ cat html/Main/index.html.json

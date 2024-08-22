@@ -249,7 +249,7 @@ let html_generate output_dir linked =
     match l.kind with
     | `Intf { hidden = true; _ } -> ()
     | `Impl { src_path; _ } ->
-        Odoc.html_generate ~search_uris:[] ~output_dir ~input_file
+        Odoc.html_generate_source ~search_uris:[] ~output_dir ~input_file
           ~source:src_path ();
         Atomic.incr Stats.stats.generated_units
     | `Asset ->
