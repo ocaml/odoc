@@ -47,11 +47,11 @@ module, module type, class, and class type should be documented, keeping in mind
 that it will end up as a single page with a table of contents. 
 
 For each module, [odoc] will describe all of the values, types, module types,
-classes, modules, and all other elements found in module signatures, documenting
-the details relevant to the OCaml type system along with any documentation
-written in specially formatted comments in the source code. For any element that
-references any other, for example a [value] that has a [type], [odoc] will
-create links such that clicking them will link to the definitions.
+classes, modules, and other elements found in module signatures. Their types or
+descriptions are documented along with any comments delineated by [(** ... *)],
+known as docstrings, found in the source code. For any element that references
+another, for example a [value] that has a [type], [odoc] will create links that
+point to the definitions.
 
 Therefore, the job of the library author is to organise the module interface
 in a logical manner and write comments explaining each type, value, exception,
