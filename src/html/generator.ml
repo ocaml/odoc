@@ -214,15 +214,15 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
       let a = Some (class_ (extra_class @ t.attr)) in
       [ mk ?a content ]
     in
-    let mk_media_block media_block target content =
+    let mk_media_block media_block target alt =
       let block =
         match target with
-        | Target.External url -> media_block url
+        | Target.External url -> media_block url alt
         | Internal (Resolved uri) ->
             let url = Link.href ~config ~resolve uri in
-            media_block url
+            media_block url alt
         | Internal Unresolved ->
-            let content = [ Html.txt content ] in
+            let content = [ Html.txt alt ] in
             let a = Html.a_class [ "xref-unresolved" ] :: [] in
             [ Html.span ~a content ]
       in
@@ -258,14 +258,26 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
         let extra_class = [ "language-" ^ lang_tag ] in
         mk_block ~extra_class Html.pre (source (inline ~config ~resolve) c)
     | Math s -> mk_block Html.div [ block_math s ]
-    | Audio (target, content) ->
-        let audio src = [ Html.audio ~src ~a:[ Html.a_controls () ] [] ] in
-        mk_media_block audio target content
-    | Video (target, content) ->
-        let video src = [ Html.video ~src ~a:[ Html.a_controls () ] [] ] in
-        mk_media_block video target content
+    | Audio (target, alt) ->
+        let audio src alt =
+          [
+            Html.audio ~src
+              ~a:[ Html.a_controls (); Html.a_aria "label" [ alt ] ]
+              [];
+          ]
+        in
+        mk_media_block audio target alt
+    | Video (target, alt) ->
+        let video src alt =
+          [
+            Html.video ~src
+              ~a:[ Html.a_controls (); Html.a_aria "label" [ alt ] ]
+              [];
+          ]
+        in
+        mk_media_block video target alt
     | Image (target, alt) ->
-        let image src =
+        let image src alt =
           let img =
             Html.a
               ~a:[ Html.a_href src; Html.a_class [ "img-link" ] ]

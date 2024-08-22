@@ -10,7 +10,7 @@ This will have produced a file called 'page-index.odoc'.
 
 Link (and generate the HTML):
   $ odoc link -P pkg1:_odoc/pkg1/doc _odoc/pkg1/doc/page-index.odoc
-  File "index.mld", line 41, characters 48-64:
+  File "index.mld", line 43, characters 48-64:
   Warning: Failed to resolve reference ./module-x Path 'module-x' not found
   File "index.mld", line 12, characters 28-83:
   Warning: Failed to resolve reference ./camezfzeffl.gif Path 'camezfzeffl.gif' not found
@@ -38,15 +38,23 @@ Testing the working references:
   $ cat html/pkg1/doc/index.html | grep video
        <li><a href="#video">Video</a>
      </div><h2 id="video"><a href="#video" class="anchor"></a>Video</h2>
-     </h3><div><video src="flower.webm" controls="controls"></video></div>
+      <video src="flower.webm" controls="controls" aria-label="flower.webm">
+      </video>
+      <video src="flower.webm" controls="controls"
+       aria-label="A video of a blossoming flower">
+      </video>
       <video
        src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"
+       aria-label="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"
       </video>
 
   $ cat html/pkg1/doc/index.html | grep audio
        <li><a href="#audio">Audio</a>
      </ul><h2 id="audio"><a href="#audio" class="anchor"></a>Audio</h2>
-     <div><audio src="Cri_du_chameau.ogg" controls="controls"></audio></div>
+      <audio src="Cri_du_chameau.ogg" controls="controls"
+      </audio>
+      <audio
+      </audio>
       <audio
       </audio>
 
