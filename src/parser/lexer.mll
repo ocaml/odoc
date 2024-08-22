@@ -730,6 +730,9 @@ and media tok_descr buffer nesting_level start_offset input = parse
           ~what:(Token.describe `End)
           ~in_what:tok_descr);
       Buffer.contents buffer}
+  | (newline)
+    { Buffer.add_char buffer ' ';
+      media tok_descr buffer nesting_level start_offset input lexbuf }
   | _ as c
     { Buffer.add_char buffer c;
       media tok_descr buffer nesting_level start_offset input lexbuf }

@@ -2167,8 +2167,7 @@ let%expect_test _ =
         {|
            ((output
              (((f.ml (1 0) (2 5))
-               (simple ((f.ml (1 8) (2 -6)) (Reference foo))  "bar \
-                                                             \n baz" image))))
+               (simple ((f.ml (1 8) (2 -6)) (Reference foo)) "bar   baz" image))))
             (warnings ())) |}]
   end in
   ()
