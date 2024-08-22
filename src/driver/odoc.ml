@@ -143,14 +143,11 @@ let compile_index ?(ignore_output = false) ~output_file ~json ~docs ~libs () =
     Cmd_outputs.(
       add_prefixed_output cmd link_output (Fpath.to_string output_file) lines)
 
-let html_generate ~output_dir ?index ?(ignore_output = false) ?(assets = [])
+let html_generate ~output_dir ?index ?(ignore_output = false)
     ?(search_uris = []) ~input_file:file () =
   let open Cmd in
   let index =
     match index with None -> empty | Some idx -> v "--index" % p idx
-  in
-  let assets =
-    List.fold_left (fun acc filename -> acc % "--asset" % filename) empty assets
   in
   let search_uris =
     List.fold_left
@@ -158,8 +155,7 @@ let html_generate ~output_dir ?index ?(ignore_output = false) ?(assets = [])
       empty search_uris
   in
   let cmd =
-    !odoc % "html-generate" % p file %% assets %% index %% search_uris % "-o"
-    % output_dir
+    !odoc % "html-generate" % p file %% index %% search_uris % "-o" % output_dir
   in
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string file) in
   let lines = Cmd_outputs.submit desc cmd None in
@@ -171,7 +167,7 @@ let html_generate_asset ~output_dir ?(ignore_output = false) ~input_file:file
     ~asset_path () =
   let open Cmd in
   let cmd =
-    !odoc % "html-generate" % p file % "-o" % output_dir % "--asset-path"
+    !odoc % "html-generate-asset" % p file % "-o" % output_dir % "--asset-path"
     % p asset_path
   in
   let desc = Printf.sprintf "Copying asset %s" (Fpath.to_string file) in

@@ -50,7 +50,6 @@ val html_generate :
   output_dir:string ->
   ?index:Fpath.t ->
   ?ignore_output:bool ->
-  ?assets:string list ->
   ?search_uris:Fpath.t list ->
   input_file:Fpath.t ->
   unit ->
