@@ -186,7 +186,7 @@ let html_generate_source ~output_dir ?(ignore_output = false) ~source
       empty search_uris
   in
   let cmd =
-    !odoc % "html-generate-impl" %% file % p source %% search_uris % "-o"
+    !odoc % "html-generate-source" %% file % p source %% search_uris % "-o"
     % output_dir
   in
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string source) in
