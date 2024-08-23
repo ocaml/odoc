@@ -10,11 +10,18 @@
     [archive_name], and that for this cma archive exists a corresponsing
     [archive_name].ocamlobjinfo file. *)
 
-type library = { name : string; archive_name : string; dir : string option }
+type library = {
+  name : string;
+  archive_name : string;
+  dir : string option;
+  deps : string list;
+}
 
 let read_libraries_from_pkg_defs ~library_name pkg_defs =
   try
     let cma_filename = Fl_metascanner.lookup "archive" [ "byte" ] pkg_defs in
+    let deps_str = Fl_metascanner.lookup "requires" [] pkg_defs in
+    let deps = Astring.String.fields deps_str in
     let dir =
       List.find_opt (fun d -> d.Fl_metascanner.def_var = "directory") pkg_defs
     in
@@ -25,7 +32,7 @@ let read_libraries_from_pkg_defs ~library_name pkg_defs =
       else cma_filename
     in
     if String.length archive_name > 0 then
-      [ { name = library_name; archive_name; dir } ]
+      [ { name = library_name; archive_name; dir; deps } ]
     else []
   with Not_found -> []
 
