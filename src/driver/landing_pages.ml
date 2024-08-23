@@ -4,7 +4,7 @@ open Odoc_unit
 let fpf = Format.fprintf
 
 let make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
-    ?(include_dirs = []) ~pkgname ~pkg_args () =
+    ?(include_dirs = Fpath.Set.empty) ~pkgname ~pkg_args () =
   let input_file = Fpath.(mld_dir // rel_path / "index.mld") in
   let odoc_file = Fpath.(odoc_dir // rel_path / "page-index.odoc") in
   let odocl_file = Fpath.(odocl_dir // rel_path / "page-index.odocl") in
@@ -83,7 +83,7 @@ module LibraryLanding = struct
     let pkg_args =
       { pages = [ (pkg.name, Fpath.( // ) odoc_dir rel_path) ]; libs = [] }
     in
-    let include_dirs = [ Fpath.(odoc_dir // rel_path) ] in
+    let include_dirs = Fpath.Set.singleton Fpath.(odoc_dir // rel_path) in
     make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
       ~pkgname:pkg.name ~include_dirs ~pkg_args ()
 end

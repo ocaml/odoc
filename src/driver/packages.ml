@@ -36,6 +36,7 @@ let pp_asset fmt m = Format.fprintf fmt "%a" Fpath.pp m.asset_path
 type libty = {
   lib_name : string;
   archive_name : string;
+  lib_deps : Util.StringSet.t;
   modules : modulety list;
 }
 
@@ -139,7 +140,7 @@ module Module = struct
 end
 
 module Lib = struct
-  let v ~libname_of_archive ~pkg_name ~dir ~cmtidir =
+  let v ~libname_of_archive ~pkg_name ~dir ~cmtidir ~all_lib_deps =
     Logs.debug (fun m ->
         m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
     let dirs =
@@ -150,27 +151,17 @@ module Lib = struct
     List.filter_map
       (fun (archive_name, modules) ->
         try
-          let lib_name =
-            try Util.StringMap.find archive_name libname_of_archive
-            with Not_found ->
-              Logs.debug (fun m ->
-                  m
-                    "Unable to determine library in package '%s' to which \
-                     archive '%s' belongs"
-                    pkg_name archive_name);
-              Logs.debug (fun m ->
-                  m "These are the archives I know about: [%a]"
-                    Fmt.(list ~sep:sp string)
-                    (Util.StringMap.bindings libname_of_archive |> List.map fst));
-              Logs.debug (fun m ->
-                  m "Defaulting to name of library: %s" archive_name);
-              archive_name
-          in
+          let lib_name = Util.StringMap.find archive_name libname_of_archive in
           let modules = Module.vs dir cmtidir modules in
-          Some { lib_name; archive_name; modules }
-        with _ ->
+          let lib_deps =
+            try Util.StringMap.find lib_name all_lib_deps
+            with _ -> Util.StringSet.empty
+          in
+          Some { lib_name; archive_name; modules; lib_deps }
+        with e ->
           Logs.err (fun m ->
-              m "Error processing library %s. Ignoring." archive_name);
+              m "Error processing library %s: %s Ignoring." archive_name
+                (Printexc.to_string e));
           None)
       results
 
@@ -204,6 +195,21 @@ let of_libs ~packages_dir libs =
   in
   let all_libs = Util.StringSet.elements all_libs_set in
   let all_libs = "stdlib" :: all_libs in
+  let all_lib_deps =
+    List.fold_right
+      (fun lib_name acc ->
+        match Ocamlfind.deps [ lib_name ] with
+        | Ok deps ->
+            Util.StringMap.add lib_name (Util.StringSet.of_list deps) acc
+        | Error (`Msg msg) ->
+            Logs.err (fun m ->
+                m
+                  "Error finding dependencies of library '%s' through \
+                   ocamlfind: %s"
+                  lib_name msg);
+            acc)
+      all_libs Util.StringMap.empty
+  in
   Logs.debug (fun m ->
       m "Libraries to document: [%a]" Fmt.(list ~sep:sp string) all_libs);
   let dirs' =
@@ -328,6 +334,7 @@ let of_libs ~packages_dir libs =
       | Some pkg ->
           let libraries =
             Lib.v ~libname_of_archive ~pkg_name:pkg.name ~dir ~cmtidir:None
+              ~all_lib_deps
           in
           let libraries =
             List.filter

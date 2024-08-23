@@ -19,7 +19,7 @@ type 'a unit = {
   odocl_file : Fpath.t;
   pkg_args : pkg_args;
   pkgname : string;
-  include_dirs : Fpath.t list;
+  include_dirs : Fpath.Set.t;
   index : index option;
   kind : 'a;
 }
