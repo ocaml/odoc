@@ -227,6 +227,7 @@ let sherlodoc_index_one ~output_dir (index : Odoc_unit.index) =
 
 let html_generate output_dir linked =
   let tbl = Hashtbl.create 10 in
+  let _ = OS.Dir.create output_dir |> Result.get_ok in
   Sherlodoc.js Fpath.(output_dir // Sherlodoc.js_file);
   let compile_index : Odoc_unit.index -> _ =
    fun index ->
