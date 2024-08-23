@@ -24,6 +24,7 @@ type input =
 type 'a t = {
   name : string;
   render : 'a -> Types.Block.t option -> Types.Document.t -> page list;
+  filepath : 'a -> Url.Path.t -> Fpath.t;
 }
 
 let document_of_page ~syntax v =
@@ -38,7 +39,3 @@ let document_of_compilation_unit ~syntax v =
   match syntax with
   | Reason -> Reason.compilation_unit v
   | OCaml -> ML.compilation_unit v
-
-let document_of_asset path (v : Odoc_model.Lang.Asset.t) =
-  let url = Url.Path.from_identifier v.name in
-  Types.Document.Asset { url; src = path }

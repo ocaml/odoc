@@ -42,7 +42,6 @@ let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
     match doc with
     | Odoc_document.Types.Document.Page { url; _ } -> url
     | Source_page { url; _ } -> url
-    | Asset { url; _ } -> url
   in
   let sidebar =
     Odoc_utils.Option.map
@@ -120,9 +119,16 @@ let generate_asset_odoc ~warnings_options:_ ~renderer ~output ~asset_file
   Odoc_file.load file >>= fun unit ->
   match unit.content with
   | Odoc_file.Asset_content unit ->
-      let doc = Renderer.document_of_asset asset_file unit in
-      render_document renderer ~output ~sidebar:None ~extra_suffix ~extra doc;
-      Ok ()
+      let url = Odoc_document.Url.Path.from_identifier unit.name in
+      let filename = renderer.Renderer.filepath extra url in
+      let filename =
+        match extra_suffix with
+        | Some s -> Fpath.add_ext s filename
+        | None -> filename
+      in
+
+      let dst = Fs.File.append output filename in
+      Fs.File.copy ~src:asset_file ~dst
   | Page_content _ | Unit_content _ | Impl_content _ ->
       Error (`Msg "Expected an asset unit")
 

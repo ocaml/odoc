@@ -19,4 +19,7 @@ type args = { html_config : Odoc_html.Config.t }
 let render { html_config } sidebar page =
   Odoc_html.Generator.render ~config:html_config ~sidebar page
 
-let renderer = { Odoc_document.Renderer.name = "html"; render }
+let filepath { html_config } url =
+  Odoc_html.Generator.filepath ~config:html_config url
+
+let renderer = { Odoc_document.Renderer.name = "html"; render; filepath }

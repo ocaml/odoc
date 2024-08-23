@@ -562,4 +562,6 @@ and render_page (p : Page.t) =
 
 let render = function
   | Document.Page page -> [ render_page page ]
-  | Source_page _ | Asset _ -> []
+  | Source_page _ -> []
+
+let filepath url = Link.as_filename ~add_ext:false url

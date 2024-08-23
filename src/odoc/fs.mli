@@ -91,6 +91,8 @@ module File : sig
 
   val read : t -> (string, [> msg ]) result
 
+  val copy : src:t -> dst:t -> (unit, [> msg ]) result
+
   val exists : t -> bool
 
   val of_segs : string list -> t
