@@ -115,12 +115,13 @@ module File = struct
       with_ic src (fun ic ->
           mkdir_p (dirname dst);
           with_oc dst (fun oc ->
-              let len = 1024 in
+              let len = 65536 in
               let buf = Bytes.create len in
               let rec loop () =
                 let read = input ic buf 0 len in
-                output oc buf 0 read;
-                if read = len then loop ()
+                if read > 0 then (
+                  output oc buf 0 read;
+                  loop ())
               in
               Ok (loop ())))
     with Sys_error e -> Result.Error (`Msg e)
