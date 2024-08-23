@@ -10,7 +10,12 @@
     [archive_name], and that for this cma archive exists a corresponsing
     [archive_name].ocamlobjinfo file. *)
 
-type library = { name : string; archive_name : string; dir : string option; deps : string list }
+type library = {
+  name : string;
+  archive_name : string;
+  dir : string option;
+  deps : string list;
+}
 
 let read_libraries_from_pkg_defs ~library_name pkg_defs =
   try

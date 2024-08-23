@@ -1,4 +1,9 @@
-type library = { name : string; archive_name : string; dir : string option; deps : string list }
+type library = {
+  name : string;
+  archive_name : string;
+  dir : string option;
+  deps : string list;
+}
 
 val process_meta_file : Fpath.t -> library list
 (** From a path to a [Meta] file, returns the list of libraries defined in this

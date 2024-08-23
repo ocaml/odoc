@@ -196,7 +196,12 @@ let link : compiled list -> _ =
    fun c ->
     let link input_file output_file =
       let { Odoc_unit.libs; pages } = c.pkg_args in
-      let includes = c.include_dirs |> Fpath.Set.of_list in
+      let lib_includes =
+        List.fold_left
+          (fun acc (_, lib) -> Fpath.Set.add lib acc)
+          Fpath.Set.empty libs
+      in
+      let includes = List.fold_left (fun acc lib -> Fpath.Set.add lib acc)lib_includes  c.include_dirs in
       Odoc.link ~input_file ~output_file ~includes ~libs ~docs:pages
         ~current_package:c.pkgname ()
     in

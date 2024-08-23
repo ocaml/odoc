@@ -34,11 +34,14 @@ let of_dune_build dir =
             let cmtidir =
               Fpath.(path / Printf.sprintf ".%s.objs" libname / "byte")
             in
+            let all_lib_deps = Util.StringMap.empty in
+            (* TODO *)
             let pkg_dir = Fpath.rem_prefix dir path |> Option.get in
             ( pkg_dir,
               Packages.Lib.v
                 ~libname_of_archive:(Util.StringMap.singleton libname libname)
-                ~pkg_name:libname ~dir:path ~cmtidir:(Some cmtidir) ))
+                ~pkg_name:libname ~dir:path ~cmtidir:(Some cmtidir)
+                ~all_lib_deps ))
           libs
       in
       let packages =
