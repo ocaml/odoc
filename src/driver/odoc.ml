@@ -167,7 +167,7 @@ let html_generate_asset ~output_dir ?(ignore_output = false) ~input_file:file
     ~asset_path () =
   let open Cmd in
   let cmd =
-    !odoc % "html-generate-asset" % p file % "-o" % output_dir % "--asset-path"
+    !odoc % "html-generate-asset" % "-o" % output_dir % "--asset-unit" % p file
     % p asset_path
   in
   let desc = Printf.sprintf "Copying asset %s" (Fpath.to_string file) in
