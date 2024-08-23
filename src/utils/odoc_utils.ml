@@ -80,3 +80,19 @@ end
 module Option = struct
   let map f = function None -> None | Some x -> Some (f x)
 end
+
+module Fun = struct
+  exception Finally_raised of exn
+
+  let protect ~(finally : unit -> unit) work =
+    let finally_no_exn () =
+      try finally () with e -> raise (Finally_raised e)
+    in
+    match work () with
+    | result ->
+        finally_no_exn ();
+        result
+    | exception work_exn ->
+        finally_no_exn ();
+        raise work_exn
+end

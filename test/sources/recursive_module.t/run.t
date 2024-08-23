@@ -6,11 +6,7 @@ Checking that source links exists inside recursive modules.
   $ odoc link -I . impl-main.odoc
   $ odoc link -I . main.odoc
   $ odoc html-generate --indent -o html main.odocl
-  $ odoc html-generate-impl --source main.ml --indent -o html impl-main.odocl
-  odoc: unknown command 'html-generate-impl', must be one of 'aggregate-occurrences', 'classify', 'compile', 'compile-asset', 'compile-deps', 'compile-impl', 'compile-index', 'compile-targets', 'count-occurrences', 'css', 'errors', 'html', 'html-deps', 'html-fragment', 'html-generate', 'html-generate-source', 'html-targets', 'html-targets-source', 'html-url', 'latex', 'latex-generate', 'latex-targets', 'latex-url', 'link', 'link-deps', 'man', 'man-generate', 'man-targets', 'support-files' or 'support-files-targets'.
-  Usage: odoc [COMMAND] …
-  Try 'odoc --help' for more information.
-  [2]
+  $ odoc html-generate-source --impl impl-main.odocl --indent -o html main.ml
 
 Both modules should contain source links
 

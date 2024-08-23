@@ -451,6 +451,7 @@ let render_stats env nprocs =
   let total = Atomic.get Stats.stats.total_units in
   let total_impls = Atomic.get Stats.stats.total_impls in
   let total_mlds = Atomic.get Stats.stats.total_mlds in
+  let total_assets = Atomic.get Stats.stats.total_assets in
   let total_indexes = Atomic.get Stats.stats.total_indexes in
   let bar message total =
     let open Progress.Line in
@@ -474,6 +475,7 @@ let render_stats env nprocs =
       dline "Compiling" total
       ++ dline "Compiling impls" total_impls
       ++ dline "Compiling pages" total_mlds
+      ++ dline "Compiling assets" total_assets
       ++ dline "Linking" non_hidden
       ++ dline "Linking impls" total_impls
       ++ dline "Linking mlds" total_mlds
@@ -481,12 +483,14 @@ let render_stats env nprocs =
       ++ dline "HTML" (total_impls + non_hidden + total_mlds)
       ++ line (procs nprocs)
       ++ descriptions)
-    (fun comp compimpl compmld link linkimpl linkmld indexes html procs descr ->
-      let rec inner (a, b, c, d, e, f, i, g, h) =
+    (fun comp compimpl compmld compassets link linkimpl linkmld indexes html
+         procs descr ->
+      let rec inner (a, b, c, j, d, e, f, i, g, h) =
         Eio.Time.sleep clock 0.1;
         let a' = Atomic.get Stats.stats.compiled_units in
         let b' = Atomic.get Stats.stats.compiled_impls in
         let c' = Atomic.get Stats.stats.compiled_mlds in
+        let j' = Atomic.get Stats.stats.compiled_assets in
         let d' = Atomic.get Stats.stats.linked_units in
         let e' = Atomic.get Stats.stats.linked_impls in
         let f' = Atomic.get Stats.stats.linked_mlds in
@@ -499,6 +503,7 @@ let render_stats env nprocs =
         comp (a' - a);
         compimpl (b' - b);
         compmld (c' - c);
+        compassets (j' - j);
         link (d' - d);
         linkimpl (e' - e);
         linkmld (f' - f);
@@ -506,9 +511,9 @@ let render_stats env nprocs =
         html (g' - g);
         procs (h' - h);
         if g' < non_hidden + total_impls + total_mlds then
-          inner (a', b', c', d', e', f', i', g', h')
+          inner (a', b', c', j', d', e', f', i', g', h')
       in
-      inner (0, 0, 0, 0, 0, 0, 0, 0, 0))
+      inner (0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
     odoc_bin voodoo package_name blessed dune_style =

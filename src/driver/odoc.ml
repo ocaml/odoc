@@ -45,6 +45,20 @@ let compile ~output_dir ~input_file:file ~includes ~parent_id =
   Cmd_outputs.(
     add_prefixed_output cmd compile_output (Fpath.to_string file) lines)
 
+let compile_asset ~output_dir ~name ~parent_id =
+  let open Cmd in
+  let output_file =
+    Some Fpath.(output_dir // parent_id / ("asset-" ^ name ^ ".odoc"))
+  in
+  let cmd =
+    !odoc % "compile-asset" % "--name" % name % "--output-dir" % p output_dir
+  in
+
+  let cmd = cmd % "--parent-id" % Fpath.to_string parent_id in
+  let desc = Printf.sprintf "Compiling %s" name in
+  let lines = Cmd_outputs.submit desc cmd output_file in
+  Cmd_outputs.(add_prefixed_output cmd compile_output name lines)
+
 let compile_impl ~output_dir ~input_file:file ~includes ~parent_id ~source_id =
   let open Cmd in
   let includes =
@@ -129,14 +143,11 @@ let compile_index ?(ignore_output = false) ~output_file ~json ~docs ~libs () =
     Cmd_outputs.(
       add_prefixed_output cmd link_output (Fpath.to_string output_file) lines)
 
-let html_generate ~output_dir ?index ?(ignore_output = false) ?(assets = [])
+let html_generate ~output_dir ?index ?(ignore_output = false)
     ?(search_uris = []) ~input_file:file () =
   let open Cmd in
   let index =
     match index with None -> empty | Some idx -> v "--index" % p idx
-  in
-  let assets =
-    List.fold_left (fun acc filename -> acc % "--asset" % filename) empty assets
   in
   let search_uris =
     List.fold_left
@@ -144,10 +155,22 @@ let html_generate ~output_dir ?index ?(ignore_output = false) ?(assets = [])
       empty search_uris
   in
   let cmd =
-    !odoc % "html-generate" % p file %% assets %% index %% search_uris % "-o"
-    % output_dir
+    !odoc % "html-generate" % p file %% index %% search_uris % "-o" % output_dir
   in
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string file) in
+  let lines = Cmd_outputs.submit desc cmd None in
+  if not ignore_output then
+    Cmd_outputs.(
+      add_prefixed_output cmd generate_output (Fpath.to_string file) lines)
+
+let html_generate_asset ~output_dir ?(ignore_output = false) ~input_file:file
+    ~asset_path () =
+  let open Cmd in
+  let cmd =
+    !odoc % "html-generate-asset" % "-o" % output_dir % "--asset-unit" % p file
+    % p asset_path
+  in
+  let desc = Printf.sprintf "Copying asset %s" (Fpath.to_string file) in
   let lines = Cmd_outputs.submit desc cmd None in
   if not ignore_output then
     Cmd_outputs.(
@@ -163,7 +186,7 @@ let html_generate_source ~output_dir ?(ignore_output = false) ~source
       empty search_uris
   in
   let cmd =
-    !odoc % "html-generate-impl" %% file % p source %% search_uris % "-o"
+    !odoc % "html-generate-source" %% file % p source %% search_uris % "-o"
     % output_dir
   in
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string source) in

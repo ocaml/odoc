@@ -24,6 +24,8 @@ val compile :
   parent_id:id ->
   unit
 
+val compile_asset : output_dir:Fpath.t -> name:string -> parent_id:id -> unit
+
 val link :
   ?ignore_output:bool ->
   input_file:Fpath.t ->
@@ -48,9 +50,16 @@ val html_generate :
   output_dir:string ->
   ?index:Fpath.t ->
   ?ignore_output:bool ->
-  ?assets:string list ->
   ?search_uris:Fpath.t list ->
   input_file:Fpath.t ->
+  unit ->
+  unit
+
+val html_generate_asset :
+  output_dir:string ->
+  ?ignore_output:bool ->
+  input_file:Fpath.t ->
+  asset_path:Fpath.t ->
   unit ->
   unit
 

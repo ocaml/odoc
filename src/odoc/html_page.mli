@@ -16,6 +16,6 @@
 
 open Odoc_document
 
-type args = { html_config : Odoc_html.Config.t; assets : Fpath.t list }
+type args = { html_config : Odoc_html.Config.t }
 
 val renderer : args Renderer.t

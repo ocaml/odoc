@@ -71,8 +71,6 @@ let parse_parent_child_reference s =
   in
   match String.cut ~sep:"-" s with
   | Some ("page", n) -> Ok (Lang.Page.Page_child (unquote n))
-  | Some ("srctree", n) -> Ok (Source_tree_child (unquote n))
-  | Some ("asset", n) -> Ok (Asset_child (unquote n))
   | Some ("module", n) ->
       Ok (Module_child (unquote (String.Ascii.capitalize n)))
   | Some ("src", _) -> Error (`Msg "Implementation unexpected")
@@ -85,8 +83,7 @@ let resolve_parent_page resolver f =
         match Resolver.lookup_page resolver p with
         | Some r -> Ok r
         | None -> Error (`Msg "Couldn't find specified parent page"))
-    | Source_tree_child _ | Module_child _ | Asset_child _ ->
-        Error (`Msg "Expecting page as parent")
+    | Module_child _ -> Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
     | { Paths.Identifier.iv = `Page _; _ } as container -> Ok container
@@ -171,7 +168,7 @@ let root_of_compilation_unit ~parent_id ~parents_children ~hidden ~output
           Filename.chop_extension Fs.File.(to_string @@ basename output)
         in
         String.Ascii.(uncapitalize n = uncapitalize filename)
-    | Asset_child _ | Source_tree_child _ | Page_child _ -> false
+    | Page_child _ -> false
   in
   match parents_children with
   | Some parents_children ->
@@ -215,7 +212,7 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
   let page_name = PageName.make_std root_name in
   let check_child = function
     | Lang.Page.Page_child n -> root_name = n
-    | Asset_child _ | Source_tree_child _ | Module_child _ -> false
+    | Module_child _ -> false
   in
   (if children = [] then
      (* No children, this is a leaf page. *)

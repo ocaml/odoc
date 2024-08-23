@@ -651,6 +651,9 @@ end = struct
   let is_page input =
     input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"
 
+  let is_asset input =
+    input |> Fpath.filename |> Astring.String.is_prefix ~affix:"asset-"
+
   let link directories page_roots lib_roots input_file output_file
       current_package warnings_options open_modules =
     let input = Fs.File.of_string input_file in
@@ -664,10 +667,12 @@ end = struct
          (`Msg "Arguments given to -P and -L cannot be included in each others")
      else Ok ())
     >>= fun () ->
-    let is_page = is_page input in
-    (if is_page then Ok None else current_library_of_input lib_roots input)
+    let is_page_or_asset = is_page input || is_asset input in
+    (if is_page_or_asset then Ok None
+     else current_library_of_input lib_roots input)
     >>= fun current_lib ->
-    (if is_page then current_package_of_page ~current_package page_roots input
+    (if is_page_or_asset then
+       current_package_of_page ~current_package page_roots input
      else validate_current_package page_roots current_package)
     >>= fun current_package ->
     let current_dir = Fs.File.dirname output in
@@ -779,6 +784,8 @@ module Make_renderer (R : S) : sig
   val generate : docs:string -> unit Term.t * Term.info
 
   val generate_source : docs:string -> unit Term.t * Term.info
+
+  val generate_asset : docs:string -> unit Term.t * Term.info
 end = struct
   let input_odoc =
     let doc = "Input file." in
@@ -905,6 +912,42 @@ end = struct
   end
 
   let generate_source ~docs = Generate_source.(cmd, info ~docs)
+
+  module Generate_asset = struct
+    let generate extra output_dir extra_suffix input_file warnings_options
+        asset_file =
+      Rendering.generate_asset_odoc ~renderer:R.renderer ~warnings_options
+        ~output:output_dir ~extra_suffix ~asset_file extra input_file
+
+    let input_odocl =
+      let doc = "Odoc asset unit." in
+      Arg.(
+        required
+        & opt (some convert_fpath) None
+        & info [ "asset-unit" ] ~doc ~docv:"asset-FILE.odocl")
+
+    let asset_file =
+      let doc = "The asset file" in
+      Arg.(
+        required
+        & pos 0 (some convert_fpath) None
+        & info ~doc ~docv:"FILE.ext" [])
+
+    let cmd =
+      Term.(
+        const handle_error
+        $ (const generate $ R.extra_args $ dst ~create:true () $ extra_suffix
+         $ input_odocl $ warnings_options $ asset_file))
+
+    let info ~docs =
+      let doc =
+        Format.sprintf "Generate %s files from a $(i,impl-*.odocl)."
+          R.renderer.name
+      in
+      Term.info ~docs ~doc (R.renderer.name ^ "-generate-asset")
+  end
+
+  let generate_asset ~docs = Generate_asset.(cmd, info ~docs)
 
   module Targets = struct
     let list_targets output_dir directories extra odoc_file =
@@ -1131,27 +1174,19 @@ module Odoc_html_args = struct
     in
     Arg.(value & flag & info ~doc [ "as-json" ])
 
-  let assets =
-    let doc =
-      "Assets files. These must match the assets listed as children during the \
-       compile phase."
-    in
-    Arg.(
-      value & opt_all convert_fpath [] & info [ "asset" ] ~doc ~docv:"file.ext")
-
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri
-        search_uris flat as_json assets =
+        search_uris flat as_json =
       let open_details = not closed_details in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~search_uris ~semantic_uris
           ~indent ~flat ~open_details ~as_json ()
       in
-      { Html_page.html_config; assets }
+      { Html_page.html_config }
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ search_uri $ flat $ as_json $ assets)
+      $ support_uri $ search_uri $ flat $ as_json)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)
@@ -1535,6 +1570,7 @@ let () =
       Odoc_link.(cmd, info ~docs:section_pipeline);
       Odoc_html.generate ~docs:section_pipeline;
       Odoc_html.generate_source ~docs:section_pipeline;
+      Odoc_html.generate_asset ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
       Compile_impl.(cmd, info ~docs:section_pipeline);
       Indexing.(cmd, info ~docs:section_pipeline);

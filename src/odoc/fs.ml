@@ -21,6 +21,18 @@ type directory = Fpath.t
 
 type file = Fpath.t
 
+let mkdir_p dir =
+  let mkdir d =
+    try Unix.mkdir (Fpath.to_string d) 0o755 with
+    | Unix.Unix_error (Unix.EEXIST, _, _) -> ()
+    | exn -> raise exn
+  in
+  let rec dirs_to_create p acc =
+    if Sys.file_exists (Fpath.to_string p) then acc
+    else dirs_to_create (Fpath.parent p) (p :: acc)
+  in
+  List.iter (dirs_to_create dir []) ~f:mkdir
+
 module File = struct
   type t = file
 
@@ -92,6 +104,28 @@ module File = struct
           Result.Error (`Msg err)
     with Sys_error e -> Result.Error (`Msg e)
 
+  let copy ~src ~dst =
+    let with_ open_ close filename f =
+      let c = open_ (Fpath.to_string filename) in
+      Odoc_utils.Fun.protect ~finally:(fun () -> close c) (fun () -> f c)
+    in
+    let with_ic = with_ open_in_bin close_in_noerr in
+    let with_oc = with_ open_out_bin close_out_noerr in
+    try
+      with_ic src (fun ic ->
+          mkdir_p (dirname dst);
+          with_oc dst (fun oc ->
+              let len = 65536 in
+              let buf = Bytes.create len in
+              let rec loop () =
+                let read = input ic buf 0 len in
+                if read > 0 then (
+                  output oc buf 0 read;
+                  loop ())
+              in
+              Ok (loop ())))
+    with Sys_error e -> Result.Error (`Msg e)
+
   let exists file = Sys.file_exists (Fpath.to_string file)
 
   let rec of_segs_tl acc = function
@@ -140,17 +174,7 @@ module Directory = struct
 
   let contains ~parentdir f = Fpath.is_rooted ~root:parentdir f
 
-  let mkdir_p dir =
-    let mkdir d =
-      try Unix.mkdir (Fpath.to_string d) 0o755 with
-      | Unix.Unix_error (Unix.EEXIST, _, _) -> ()
-      | exn -> raise exn
-    in
-    let rec dirs_to_create p acc =
-      if Sys.file_exists (Fpath.to_string p) then acc
-      else dirs_to_create (Fpath.parent p) (p :: acc)
-    in
-    List.iter (dirs_to_create dir []) ~f:mkdir
+  let mkdir_p dir = mkdir_p dir
 
   let to_string = Fpath.to_string
 

@@ -35,6 +35,12 @@ type mld = { mld_path : Fpath.t; mld_rel_path : Fpath.t }
 
 val pp_mld : Format.formatter -> mld -> unit
 
+(** {1 Asset units} *)
+
+type asset = { asset_path : Fpath.t; asset_rel_path : Fpath.t }
+
+val pp_asset : Format.formatter -> asset -> unit
+
 (** {1 Packages} *)
 
 (** Compilation units are associated to libraries, while documentation are
@@ -63,6 +69,7 @@ type t = {
   version : string;
   libraries : libty list;
   mlds : mld list;
+  assets : asset list;
   other_docs : Fpath.Set.t;
   pkg_dir : Fpath.t;
 }

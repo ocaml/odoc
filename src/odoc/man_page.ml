@@ -2,6 +2,6 @@ open Odoc_document
 
 let render _ _sidebar page = Odoc_manpage.Generator.render page
 
-let extra_documents _args _unit = []
+let filepath _ url = Odoc_manpage.Generator.filepath url
 
-let renderer = { Renderer.name = "man"; render; extra_documents }
+let renderer = { Renderer.name = "man"; render; filepath }

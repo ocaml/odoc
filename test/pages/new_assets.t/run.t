@@ -10,3 +10,13 @@
     },
     "root": "<root>"
   }
+
+  $ echo "Hello!" > img.png
+
+  $ odoc html-generate-asset --output-dir _html --asset-unit odoc/root/test/asset-img.png.odoc img.png
+
+  $ find _html -name img.png
+  _html/root/test/img.png
+
+  $ cat  $(find _html -name img.png)
+  Hello!

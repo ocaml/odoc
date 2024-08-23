@@ -40,10 +40,10 @@ module Link = struct
     ( List.map segment_to_string dir,
       String.concat "." (List.map segment_to_string file) )
 
-  let filename url =
+  let filename ?(add_ext = true) url =
     let dir, file = get_dir_and_file url in
     let file = Fpath.(v (String.concat dir_sep (dir @ [ file ]))) in
-    Fpath.(add_ext "tex" file)
+    if add_ext then Fpath.add_ext "tex" file else file
 end
 
 let style = function
@@ -477,4 +477,6 @@ end
 
 let render ~with_children = function
   | Document.Page page -> [ Page.page ~with_children page ]
-  | Source_page _ | Asset _ -> []
+  | Source_page _ -> []
+
+let filepath url = Link.filename ~add_ext:false url

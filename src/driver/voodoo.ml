@@ -50,32 +50,50 @@ let process_package pkg =
   let pkg_path =
     Fpath.(v "prep" / "universes" / pkg.universe / pkg.name / pkg.version)
   in
-
-  let mlds =
+  let assets, mlds =
     List.filter_map
       (fun p ->
         let prefix = Fpath.(v "doc" / pkg.name / "odoc-pages") in
-
+        let asset_prefix = Fpath.(v "doc" / pkg.name / "odoc-assets") in
+        let check_name pkg_name =
+          if pkg_name <> pkg.name then (
+            Logs.err (fun k ->
+                k
+                  "Error: name in 'doc' dir does not match package name: %s <> \
+                   %s"
+                  pkg_name pkg.name);
+            None)
+          else Some ()
+        in
+        let ( >>= ) = Option.bind in
         match Fpath.segs p with
         | "doc" :: pkg_name :: "odoc-pages" :: _ :: _ -> (
-            if pkg_name <> pkg.name then (
-              Logs.err (fun k ->
-                  k
-                    "Error: name in 'doc' dir does not match package name: %s \
-                     <> %s"
-                    pkg_name pkg.name);
-              None)
-            else
-              let rel_path = Fpath.rem_prefix prefix p in
-              match rel_path with
-              | None -> None
-              | Some mld_rel_path ->
+            check_name pkg_name >>= fun () ->
+            match Fpath.rem_prefix prefix p with
+            | None -> None
+            | Some rel_path ->
+                let path = Fpath.(pkg_path // p) in
+                if Fpath.has_ext "mld" p then
                   Some
-                    { Packages.mld_path = Fpath.(pkg_path // p); mld_rel_path })
+                    (`M { Packages.mld_path = path; mld_rel_path = rel_path })
+                else
+                  Some
+                    (`A
+                      { Packages.asset_path = path; asset_rel_path = rel_path })
+            )
+        | "doc" :: pkg_name :: "odoc-assets" :: _ :: _ -> (
+            check_name pkg_name >>= fun () ->
+            match Fpath.rem_prefix asset_prefix p with
+            | None -> None
+            | Some asset_rel_path ->
+                let asset_path = Fpath.(pkg_path // p) in
+                Some (`A { Packages.asset_path; asset_rel_path }))
         | _ -> None)
       pkg.files
+    |> List.partition_map (function
+         | `A asset -> Either.Left asset
+         | `M mld -> Either.Right mld)
   in
-
   let libraries =
     List.filter_map
       (fun meta_file ->
@@ -156,6 +174,7 @@ let process_package pkg =
     version = pkg.version;
     libraries;
     mlds;
+    assets;
     other_docs = Fpath.Set.empty;
     pkg_dir = top_dir pkg;
   }
