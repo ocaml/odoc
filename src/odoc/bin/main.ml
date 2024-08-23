@@ -924,7 +924,7 @@ end = struct
       Arg.(
         required
         & opt (some convert_fpath) None
-        & info [ "asset-unit" ] ~doc ~docv:"asset-file.odocl")
+        & info [ "asset-unit" ] ~doc ~docv:"asset-FILE.odocl")
 
     let asset_file =
       let doc = "The asset file" in
