@@ -101,20 +101,15 @@ let position_of_point : t -> Loc.point -> Lexing.position =
 
 (* The main entry point for this module *)
 let parse_comment ~location ~text =
-  let warnings = ref [] in
   let reversed_newlines = reversed_newlines ~input:text in
-  let token_stream =
-    let lexbuf = Lexing.from_string text in
-    let offset_to_location =
-      offset_to_location ~reversed_newlines ~comment_location:location
-    in
-    let input : Lexer.input =
-      { file = location.Lexing.pos_fname; offset_to_location; warnings; lexbuf }
-    in
-    Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
+  let lexbuf = Lexing.from_string text in 
+  let lexer_state = 
+    Lexer.{ warnings = []
+          ; offset_to_location = offset_to_location ~reversed_newlines ~comment_location:location
+          ; file = "foo.ml" } 
   in
-  let ast, warnings = Syntax.parse warnings token_stream in
-  { ast; warnings; reversed_newlines; original_pos = location }
+  let ast = Parser.main (Lexer.token lexer_state) lexbuf in
+  { ast; warnings = lexer_state.warnings; reversed_newlines; original_pos = location }
 
 (* Accessor functions, as [t] is opaque *)
 let warnings t = t.warnings

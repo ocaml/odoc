@@ -1,5 +1,8 @@
 (ocamllex lexer)
 
+(menhir
+ (modules parser))
+
 (library
  (name odoc_parser)
  (public_name odoc-parser)

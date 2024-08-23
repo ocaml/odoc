@@ -1,3 +1,5 @@
+(* NOTE : (@faycarsons) keep as reference for the moment *)
+
 (* This module contains the token type, emitted by the lexer, and consumed by
    the comment syntax parser. It also contains two functions that format tokens
    for error messages. *)
@@ -5,6 +7,7 @@
 type section_heading = [ `Begin_section_heading of int * string option ]
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 type paragraph_style = [ `Left | `Center | `Right ]
+
 
 type tag =
   [ `Tag of
@@ -101,143 +104,112 @@ type t =
   | section_heading
   | tag ]
 
-let print : [< t ] -> string = function
-  | `Begin_paragraph_style `Left -> "'{L'"
-  | `Begin_paragraph_style `Center -> "'{C'"
-  | `Begin_paragraph_style `Right -> "'{R'"
-  | `Begin_style `Bold -> "'{b'"
-  | `Begin_style `Italic -> "'{i'"
-  | `Begin_style `Emphasis -> "'{e'"
-  | `Begin_style `Superscript -> "'{^'"
-  | `Begin_style `Subscript -> "'{_'"
-  | `Begin_reference_with_replacement_text _ -> "'{{!'"
-  | `Begin_link_with_replacement_text _ -> "'{{:'"
-  | `Begin_list_item `Li -> "'{li ...}'"
-  | `Begin_list_item `Dash -> "'{- ...}'"
-  | `Begin_table_light -> "{t"
-  | `Begin_table_heavy -> "{table"
-  | `Begin_table_row -> "'{tr'"
-  | `Begin_table_cell `Header -> "'{th'"
-  | `Begin_table_cell `Data -> "'{td'"
-  | `Minus -> "'-'"
-  | `Plus -> "'+'"
-  | `Bar -> "'|'"
-  | `Begin_section_heading (level, label) ->
+open Parser
+
+let print : Parser.token -> string = function
+  | Paragraph_style `Left -> "'{L'"
+  | Paragraph_style `Center -> "'{C'"
+  | Paragraph_style `Right -> "'{R'"
+  | Style `Bold -> "'{b'"
+  | Style `Italic -> "'{i'"
+  | Style `Emphasis -> "'{e'"
+  | Style `Superscript -> "'{^'"
+  | Style `Subscript -> "'{_'"
+  | Ref_with_replacement _ -> "'{{!'"
+  | Link_with_replacement _ -> "'{{:'"
+  | List_item `Li -> "'{li ...}'"
+  | List_item `Dash -> "'{- ...}'"
+  | Table_light -> "{t"
+  | Table_heavy -> "{table"
+  | Table_row -> "'{tr'"
+  | Table_cell `Header -> "'{th'"
+  | Table_cell `Data -> "'{td'"
+  | MINUS -> "'-'"
+  | PLUS -> "'+'"
+  | BAR -> "'|'"
+  | Section_heading (level, label) ->
       let label = match label with None -> "" | Some label -> ":" ^ label in
       Printf.sprintf "'{%i%s'" level label
-  | `Tag (`Author _) -> "'@author'"
-  | `Tag `Deprecated -> "'@deprecated'"
-  | `Tag (`Param _) -> "'@param'"
-  | `Tag (`Raise _) -> "'@raise'"
-  | `Tag `Return -> "'@return'"
-  | `Tag (`See _) -> "'@see'"
-  | `Tag (`Since _) -> "'@since'"
-  | `Tag (`Before _) -> "'@before'"
-  | `Tag (`Version _) -> "'@version'"
-  | `Tag (`Canonical _) -> "'@canonical'"
-  | `Tag `Inline -> "'@inline'"
-  | `Tag `Open -> "'@open'"
-  | `Tag `Closed -> "'@closed'"
-  | `Tag `Hidden -> "'@hidden"
-  | `Raw_markup (None, _) -> "'{%...%}'"
-  | `Raw_markup (Some target, _) -> "'{%" ^ target ^ ":...%}'"
-  | `Simple_media (`Reference _, `Image) -> "{image!...}"
-  | `Simple_media (`Reference _, `Audio) -> "{audio!...}"
-  | `Simple_media (`Reference _, `Video) -> "{video!...}"
-  | `Simple_media (`Link _, `Image) -> "{image:...}"
-  | `Simple_media (`Link _, `Audio) -> "{audio:...}"
-  | `Simple_media (`Link _, `Video) -> "{video:...}"
-  | `Media_with_replacement_text (`Reference _, `Image, _) ->
-      "{{image!...} ...}"
-  | `Media_with_replacement_text (`Reference _, `Audio, _) ->
-      "{{audio!...} ...}"
-  | `Media_with_replacement_text (`Reference _, `Video, _) ->
-      "{{video!...} ...}"
-  | `Media_with_replacement_text (`Link _, `Image, _) -> "{{image:...} ...}"
-  | `Media_with_replacement_text (`Link _, `Audio, _) -> "{{audio:...} ...}"
-  | `Media_with_replacement_text (`Link _, `Video, _) -> "{{video:...} ...}"
+  | Tag (Author _) -> "'@author'"
+  | Tag Deprecated -> "'@deprecated'"
+  | Tag (Param _) -> "'@param'"
+  | Tag (Raise _) -> "'@raise'"
+  | Tag Return -> "'@return'"
+  | Tag (See _) -> "'@see'"
+  | Tag (Since _) -> "'@since'"
+  | Tag (Before _) -> "'@before'"
+  | Tag (Version _) -> "'@version'"
+  | Tag (Canonical _) -> "'@canonical'"
+  | Tag Inline -> "'@inline'"
+  | Tag Open -> "'@open'"
+  | Tag Closed -> "'@closed'"
+  | Tag Hidden -> "'@hidden"
+  | Raw_markup (None, _) -> "'{%...%}'"
+  | Raw_markup (Some target, _) -> "'{%" ^ target ^ ":...%}'"
 
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted
    [`Minus] and [`Plus] should always be plausibly list item bullets. *)
-let describe : [< t | `Comment ] -> string = function
-  | `Word w -> Printf.sprintf "'%s'" w
-  | `Code_span _ -> "'[...]' (code)"
-  | `Raw_markup _ -> "'{%...%}' (raw markup)"
-  | `Begin_paragraph_style `Left -> "'{L ...}' (left alignment)"
-  | `Begin_paragraph_style `Center -> "'{C ...}' (center alignment)"
-  | `Begin_paragraph_style `Right -> "'{R ...}' (right alignment)"
-  | `Begin_style `Bold -> "'{b ...}' (boldface text)"
-  | `Begin_style `Italic -> "'{i ...}' (italic text)"
-  | `Begin_style `Emphasis -> "'{e ...}' (emphasized text)"
-  | `Begin_style `Superscript -> "'{^...}' (superscript)"
-  | `Begin_style `Subscript -> "'{_...}' (subscript)"
-  | `Math_span _ -> "'{m ...}' (math span)"
-  | `Math_block _ -> "'{math ...}' (math block)"
-  | `Simple_reference _ -> "'{!...}' (cross-reference)"
-  | `Begin_reference_with_replacement_text _ ->
+let describe : Parser.token -> string = function
+  | Word w -> Printf.sprintf "'%s'" w
+  | Code_span _ -> "'[...]' (code)"
+  | Raw_markup _ -> "'{%...%}' (raw markup)"
+  | Paragraph_style `Left -> "'{L ...}' (left alignment)"
+  | Paragraph_style `Center -> "'{C ...}' (center alignment)"
+  | Paragraph_style `Right -> "'{R ...}' (right alignment)"
+  | Style `Bold -> "'{b ...}' (boldface text)"
+  | Style `Italic -> "'{i ...}' (italic text)"
+  | Style `Emphasis -> "'{e ...}' (emphasized text)"
+  | Style `Superscript -> "'{^...}' (superscript)"
+  | Style `Subscript -> "'{_...}' (subscript)"
+  | Math_span _ -> "'{m ...}' (math span)"
+  | Math_block _ -> "'{math ...}' (math block)"
+  | Simple_ref _ -> "'{!...}' (cross-reference)"
+  | Ref_with_replacement _ ->
       "'{{!...} ...}' (cross-reference)"
-  | `Simple_media (`Reference _, `Image) -> "'{image!...}' (image-reference)"
-  | `Simple_media (`Reference _, `Audio) -> "'{audio!...}' (audio-reference)"
-  | `Simple_media (`Reference _, `Video) -> "'{video!...}' (video-reference)"
-  | `Simple_media (`Link _, `Image) -> "'{image:...}' (image-link)"
-  | `Simple_media (`Link _, `Audio) -> "'{audio:...}' (audio-link)"
-  | `Simple_media (`Link _, `Video) -> "'{video:...}' (video-link)"
-  | `Media_with_replacement_text (`Reference _, `Image, _) ->
-      "'{{image!...} ...}' (image-reference)"
-  | `Media_with_replacement_text (`Reference _, `Audio, _) ->
-      "'{{audio!...} ...}' (audio-reference)"
-  | `Media_with_replacement_text (`Reference _, `Video, _) ->
-      "'{{video!...} ...}' (video-reference)"
-  | `Media_with_replacement_text (`Link _, `Image, _) ->
-      "'{{image:...} ...}' (image-link)"
-  | `Media_with_replacement_text (`Link _, `Audio, _) ->
-      "'{{audio:...} ...}' (audio-link)"
-  | `Media_with_replacement_text (`Link _, `Video, _) ->
-      "'{{video:...} ...}' (video-link)"
-  | `Simple_link _ -> "'{:...} (external link)'"
-  | `Begin_link_with_replacement_text _ -> "'{{:...} ...}' (external link)"
-  | `End -> "end of text"
-  | `Space _ -> "whitespace"
-  | `Single_newline _ -> "line break"
-  | `Blank_line _ -> "blank line"
-  | `Right_brace -> "'}'"
-  | `Right_code_delimiter -> "']}'"
-  | `Code_block _ -> "'{[...]}' (code block)"
-  | `Verbatim _ -> "'{v ... v}' (verbatim text)"
-  | `Modules _ -> "'{!modules ...}'"
-  | `Begin_list `Unordered -> "'{ul ...}' (bulleted list)"
-  | `Begin_list `Ordered -> "'{ol ...}' (numbered list)"
-  | `Begin_list_item `Li -> "'{li ...}' (list item)"
-  | `Begin_list_item `Dash -> "'{- ...}' (list item)"
-  | `Begin_table_light -> "'{t ...}' (table)"
-  | `Begin_table_heavy -> "'{table ...}' (table)"
-  | `Begin_table_row -> "'{tr ...}' (table row)"
-  | `Begin_table_cell `Header -> "'{th ... }' (table header cell)"
-  | `Begin_table_cell `Data -> "'{td ... }' (table data cell)"
-  | `Minus -> "'-' (bulleted list item)"
-  | `Plus -> "'+' (numbered list item)"
-  | `Bar -> "'|'"
-  | `Begin_section_heading (level, _) ->
+  | Simple_link _ -> "'{:...} (external link)'"
+  | Link_with_replacement _ -> "'{{:...} ...}' (external link)"
+  | END -> "end of text"
+  | SPACE _ -> "whitespace"
+  | Single_newline _ -> "line break"
+  | Blank_line _ -> "blank line"
+  | RIGHT_BRACE -> "'}'"
+  | RIGHT_CODE_DELIMITER -> "']}'"
+  | Code_block _ -> "'{[...]}' (code block)"
+  | Verbatim _ -> "'{v ... v}' (verbatim text)"
+  | Modules _ -> "'{!modules ...}'"
+  | List `Unordered -> "'{ul ...}' (bulleted list)"
+  | List `Ordered -> "'{ol ...}' (numbered list)"
+  | List_item `Li -> "'{li ...}' (list item)"
+  | List_item `Dash -> "'{- ...}' (list item)"
+  | Table_light -> "'{t ...}' (table)"
+  | Table_heavy -> "'{table ...}' (table)"
+  | Table_row -> "'{tr ...}' (table row)"
+  | Table_cell `Header -> "'{th ... }' (table header cell)"
+  | Table_cell `Data -> "'{td ... }' (table data cell)"
+  | MINUS -> "'-' (bulleted list item)"
+  | PLUS -> "'+' (numbered list item)"
+  | BAR -> "'|'"
+  | Section_heading (level, _) ->
       Printf.sprintf "'{%i ...}' (section heading)" level
-  | `Tag (`Author _) -> "'@author'"
-  | `Tag `Deprecated -> "'@deprecated'"
-  | `Tag (`Param _) -> "'@param'"
-  | `Tag (`Raise _) -> "'@raise'"
-  | `Tag `Return -> "'@return'"
-  | `Tag (`See _) -> "'@see'"
-  | `Tag (`Since _) -> "'@since'"
-  | `Tag (`Before _) -> "'@before'"
-  | `Tag (`Version _) -> "'@version'"
-  | `Tag (`Canonical _) -> "'@canonical'"
-  | `Tag `Inline -> "'@inline'"
-  | `Tag `Open -> "'@open'"
-  | `Tag `Closed -> "'@closed'"
-  | `Tag `Hidden -> "'@hidden"
-  | `Comment -> "top-level text"
+  | Tag (Author _) -> "'@author'"
+  | Tag Deprecated -> "'@deprecated'"
+  | Tag (Param _) -> "'@param'"
+  | Tag (Raise _) -> "'@raise'"
+  | Tag Return -> "'@return'"
+  | Tag (See _) -> "'@see'"
+  | Tag (Since _) -> "'@since'"
+  | Tag (Before _) -> "'@before'"
+  | Tag (Version _) -> "'@version'"
+  | Tag (Canonical _) -> "'@canonical'"
+  | Tag Inline -> "'@inline'"
+  | Tag Open -> "'@open'"
+  | Tag Closed -> "'@closed'"
+  | Tag Hidden -> "'@hidden"
+  | COMMENT -> "top-level text"
 
 let describe_element = function
-  | `Reference (`Simple, _, _) -> describe (`Simple_reference "")
+  | `Reference (`Simple, _, _) -> describe (Simple_ref "")
   | `Reference (`With_text, _, _) ->
       describe (`Begin_reference_with_replacement_text "")
   | `Link _ -> describe (`Begin_link_with_replacement_text "")

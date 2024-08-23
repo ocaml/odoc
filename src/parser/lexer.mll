@@ -1,5 +1,7 @@
 {
 
+  open Parser
+
 let unescape_word : string -> string = fun s ->
   (* The common case is that there are no escape sequences. *)
   match String.index s '\\' with
@@ -32,8 +34,8 @@ type math_kind =
 
 let math_constr kind x =
   match kind with
-  | Inline -> `Math_span x
-  | Block -> `Math_block x
+  | Inline -> Math_span x
+  | Block -> Math_block x
 
 (* This is used for code and verbatim blocks. It can be done with a regular
    expression, but the regexp gets quite ugly, so a function is easier to
@@ -139,16 +141,15 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
 type input = {
   file : string;
   offset_to_location : int -> Loc.point;
-  warnings : Warning.t list ref;
-  lexbuf : Lexing.lexbuf;
+  mutable warnings : Warning.t list;
 }
 
 let with_location_adjustments
-    k input ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by value =
+    k lexbuf input ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by value =
 
   let start =
     match start_offset with
-    | None -> Lexing.lexeme_start input.lexbuf
+    | None -> Lexing.lexeme_start lexbuf
     | Some s -> s
   in
   let start =
@@ -158,7 +159,7 @@ let with_location_adjustments
   in
   let end_ =
     match end_offset with
-    | None -> Lexing.lexeme_end input.lexbuf
+    | None -> Lexing.lexeme_end lexbuf
     | Some e -> e
   in
   let end_ =
@@ -179,44 +180,23 @@ let emit =
 
 let warning =
   with_location_adjustments (fun input location error ->
-    input.warnings := (error location) :: !(input.warnings))
+    input.warnings <- (error location) :: input.warnings)
 
 let reference_token media start target input lexbuf =
   match start with
-  | "{!" -> `Simple_reference target
-  | "{{!" -> `Begin_reference_with_replacement_text target
-  | "{:" -> `Simple_link (target)
-  | "{{:" -> `Begin_link_with_replacement_text (target)
+  | "{!" -> Simple_ref target
+  | "{{!" -> Ref_with_replacement target
+  | "{:" -> Simple_link target
+  | "{{:" -> Link_with_replacement target
+  | _ -> assert false
 
-  | "{image!" -> `Simple_media (`Reference target, `Image)
-  | "{image:" -> `Simple_media (`Link target, `Image)
-  | "{audio!" -> `Simple_media (`Reference target, `Audio)
-  | "{audio:" -> `Simple_media (`Link target, `Audio)
-  | "{video!" -> `Simple_media (`Reference target, `Video)
-  | "{video:" -> `Simple_media (`Link target, `Video)
-
-  | _ ->
-     let target, kind =
-       match start with
-       | "{{image!" -> `Reference target, `Image
-       | "{{image:" -> `Link target, `Image
-       | "{{audio!" -> `Reference target, `Audio
-       | "{{audio:" -> `Link target, `Audio
-       | "{{video!" -> `Reference target, `Video
-       | "{{video:" -> `Link target, `Video
-       | _ -> assert false
-     in
-     let token_descr = Token.describe (`Media_with_replacement_text (target, kind, "")) in
-     let content = media token_descr (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf in
-     `Media_with_replacement_text (target, kind, content)
-
-let trim_leading_space_or_accept_whitespace input start_offset text =
+let trim_leading_space_or_accept_whitespace lexbuf input start_offset text =
   match text.[0] with
   | ' ' -> String.sub text 1 (String.length text - 1)
   | '\t' | '\r' | '\n' -> text
   | exception Invalid_argument _ -> ""
   | _ ->
-    warning
+    warning lexbuf
       input
       ~start_offset
       ~end_offset:(start_offset + 2)
@@ -230,13 +210,13 @@ let trim_trailing_space_or_accept_whitespace text =
   | _ -> text
   | exception Invalid_argument _ -> text
 
-let emit_verbatim input start_offset buffer =
-  let t = Buffer.contents buffer in
-  let t = trim_trailing_space_or_accept_whitespace t in
-  let t = trim_leading_space_or_accept_whitespace input start_offset t in
-  let t = trim_leading_blank_lines t in
-  let t = trim_trailing_blank_lines t in
-  emit input (`Verbatim t) ~start_offset
+let emit_verbatim lexbuf input start_offset buffer =
+  let t = Buffer.contents buffer 
+  |> trim_trailing_space_or_accept_whitespace 
+  |> trim_leading_space_or_accept_whitespace lexbuf input start_offset 
+  |> trim_leading_blank_lines 
+  |> trim_trailing_blank_lines in
+  emit lexbuf input (Verbatim t) ~start_offset
 
 (* The locations have to be treated carefully in this function. We need to ensure that
    the []`Code_block] location matches the entirety of the block including the terminator,
@@ -244,24 +224,25 @@ let emit_verbatim input start_offset buffer =
    Note that the location reflects the content _without_ stripping of whitespace, whereas
    the value of the content in the tree has whitespace stripped from the beginning,
    and trailing empty lines removed. *)
-let emit_code_block ~start_offset content_offset input metadata delim terminator c has_results =
-  let c = Buffer.contents c |> trim_trailing_blank_lines in
+let emit_code_block ~start_offset ~content_offset ~lexbuf input meta delimiter terminator buffer output =
   let content_location = input.offset_to_location content_offset in
-  let c =
-    with_location_adjustments
-      (fun _ _location c ->
-         let first_line_offset = content_location.column in
-         trim_leading_whitespace ~first_line_offset c)
-      input c
-  in
-  let c = trim_leading_blank_lines c in
-  let c = with_location_adjustments ~adjust_end_by:terminator ~start_offset:content_offset (fun _ -> Loc.at) input c in
-  emit ~start_offset input (`Code_block (metadata, delim, c, has_results))
+  let content = 
+    Buffer.contents buffer 
+    |> trim_trailing_blank_lines  
+    |> with_location_adjustments
+        (fun _ _location c ->
+          let first_line_offset = content_location.column in
+          trim_leading_whitespace ~first_line_offset c)
+          lexbuf
+          input 
+    |> trim_leading_blank_lines 
+    |> with_location_adjustments ~adjust_end_by:terminator ~start_offset:content_offset (fun _ -> Loc.at) lexbuf input in
+  emit ~start_offset lexbuf input (Code_block { meta; delimiter; content; output }) 
 
-let heading_level input level =
+let heading_level lexbuf input level =
   if String.length level >= 2 && level.[0] = '0' then begin
     warning
-      input ~start_offset:1 (Parse_error.leading_zero_in_heading_level level)
+      lexbuf input ~start_offset:1 (Parse_error.leading_zero_in_heading_level level)
   end;
   int_of_string level
 
@@ -321,6 +302,7 @@ rule reference_paren_content input start ref_offset start_offset depth_paren
           (depth_paren - 1) buffer lexbuf }
   | eof
     { warning
+        lexbuf
         input
         ~start_offset
         (Parse_error.unclosed_bracket ~bracket:"(") ;
@@ -349,6 +331,7 @@ and reference_content input start start_offset buffer = parse
     }
   | eof
     { warning
+        lexbuf
         input
         ~start_offset
         (Parse_error.unclosed_bracket ~bracket:start) ;
@@ -360,61 +343,61 @@ and reference_content input start start_offset buffer = parse
 
 and token input = parse
   | horizontal_space* eof
-    { emit input `End }
+    { emit lexbuf input END }
 
   | ((horizontal_space* newline as prefix)
     horizontal_space* ((newline horizontal_space*)+ as suffix) as ws)
-    { emit input (`Blank_line ws) ~adjust_start_by:prefix ~adjust_end_by:suffix }
+    { emit lexbuf input (Blank_line ws) ~adjust_start_by:prefix ~adjust_end_by:suffix }
 
   | (horizontal_space* newline horizontal_space* as ws)
-    { emit input (`Single_newline ws) }
+    { emit lexbuf input (Single_newline ws) }
 
   | (horizontal_space+ as ws)
-    { emit input (`Space ws) }
+    { emit lexbuf input (Space ws) }
 
   | (horizontal_space* (newline horizontal_space*)? as p) '}'
-    { emit input `Right_brace ~adjust_start_by:p }
+    { emit lexbuf input RIGHT_BRACE ~adjust_start_by:p }
 
   | '|'
-    { emit input `Bar }
+    { emit lexbuf input BAR }
 
   | word_char (word_char | bullet_char | '@')*
   | bullet_char (word_char | bullet_char | '@')+ as w
-    { emit input (`Word (unescape_word w)) }
+    { emit lexbuf input (Word (unescape_word w)) }
 
   | '['
     { code_span
         (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
 
   | '-'
-    { emit input `Minus }
+    { emit lexbuf input MINUS }
 
   | '+'
-    { emit input `Plus }
+    { emit lexbuf input PLUS }
 
   | "{b"
-    { emit input (`Begin_style `Bold) }
+    { emit lexbuf input (Begin_style `Bold) }
 
   | "{i"
-    { emit input (`Begin_style `Italic) }
+    { emit lexbuf input (Begin_style `Italic) }
 
   | "{e"
-    { emit input (`Begin_style `Emphasis) }
+    { emit lexbuf input (Begin_style `Emphasis) }
 
   | "{L"
-    { emit input (`Begin_paragraph_style `Left) }
+    { emit lexbuf input (Begin_paragraph_style `Left) }
 
   | "{C"
-    { emit input (`Begin_paragraph_style  `Center) }
+    { emit lexbuf input (Begin_paragraph_style  `Center) }
 
   | "{R"
-    { emit input (`Begin_paragraph_style  `Right) }
+    { emit lexbuf input (Begin_paragraph_style  `Right) }
 
   | "{^"
-    { emit input (`Begin_style `Superscript) }
+    { emit lexbuf input (Begin_style `Superscript) }
 
   | "{_"
-    { emit input (`Begin_style `Subscript) }
+    { emit lexbuf input (Begin_style `Subscript) }
 
   | "{math" space_char
     { math Block (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
@@ -424,7 +407,7 @@ and token input = parse
 
 
   | "{!modules:" ([^ '}']* as modules) '}'
-    { emit input (`Modules modules) }
+    { emit lexbuf input (Modules modules) }
 
   | (media_start as start)
     {
@@ -432,47 +415,37 @@ and token input = parse
       let target =
         reference_content input start start_offset (Buffer.create 16) lexbuf
       in
-      let token = reference_token media start target input lexbuf in
-      emit ~start_offset input token }
+      let token = (reference_token start target) in
+      emit ~start_offset lexbuf input token }
 
   | "{["
-    { code_block false (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf }
+    { code_block (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf }
 
-  | (("{" (delim_char* as delim) "@" horizontal_space*) as prefix) (language_tag_char+ as lang_tag_)
+  | (("{" (delim_char* as delimiter) "@" horizontal_space*) as prefix) (language_tag_char+ as lang_tag_)
     {
       let start_offset = Lexing.lexeme_start lexbuf in
       let lang_tag =
-        with_location_adjustments ~adjust_start_by:prefix (fun _ -> Loc.at) input lang_tag_
+        with_location_adjustments ~adjust_start_by:prefix (fun _ -> Loc.at) lexbuf input lang_tag_
       in
       let emit_truncated_code_block () =
-        let empty_content = with_location_adjustments (fun _ -> Loc.at) input "" in
-        emit ~start_offset input (`Code_block (Some (lang_tag, None), delim, empty_content, false))
-      in
-      (* Disallow result block sections for code blocks without a delimiter.
-         This avoids the surprising parsing of '][' ending the code block. *)
-      let allow_result_block = delim <> "" in
-      let code_block_with_metadata metadata =
-        let content_offset = Lexing.lexeme_end lexbuf in
-        let metadata = Some (lang_tag, metadata) in
-        let prefix = Buffer.create 256 in
-        code_block allow_result_block start_offset content_offset metadata
-          prefix delim input lexbuf
+        let empty_content = with_location_adjustments (fun _ -> Loc.at) lexbuf input "" in
+            emit ~start_offset lexbuf input (Code_block { meta = Some { language = lang_tag; tags = None }; delimiter = Some delimiter; content = empty_content; output = None}) 
       in
       match code_block_metadata_tail input lexbuf with
-      | `Ok metadata -> code_block_with_metadata metadata
-      | `Eof ->
-          warning input ~start_offset Parse_error.truncated_code_block_meta;
+      | Ok metadata -> code_block start_offset (Lexing.lexeme_end lexbuf) (Some (lang_tag, metadata)) (Buffer.create 256) delimiter input lexbuf
+      | Error `Eof ->
+          warning lexbuf input ~start_offset Parse_error.truncated_code_block_meta;
           emit_truncated_code_block ()
-      | `Invalid_char c ->
-          warning input ~start_offset
+      | Error (`Invalid_char c) ->
+          warning lexbuf input ~start_offset
             (Parse_error.language_tag_invalid_char lang_tag_ c);
-          code_block_with_metadata None
+          code_block start_offset (Lexing.lexeme_end lexbuf) (Some (lang_tag, None)) (Buffer.create 256) delimiter input lexbuf
     }
 
   | "{@" horizontal_space* '['
     {
-      warning input Parse_error.no_language_tag_in_meta;
-      code_block false (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf
+      warning lexbuf input Parse_error.no_language_tag_in_meta;
+      code_block (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf
     }
 
   | "{v"
@@ -481,97 +454,98 @@ and token input = parse
 
   | "{%" ((raw_markup_target as target) ':')? (raw_markup as s)
     ("%}" | eof as e)
-    { let token = `Raw_markup (target, s) in
+    { let token = Raw_markup (target, s) in
       if e <> "%}" then
         warning
+          lexbuf
           input
           ~start_offset:(Lexing.lexeme_end lexbuf)
           (Parse_error.not_allowed
-            ~what:(Token.describe `End)
+            ~what:(Token.describe END)
             ~in_what:(Token.describe token));
-      emit input token }
+      emit lexbuf input token }
 
   | "{ul"
-    { emit input (`Begin_list `Unordered) }
+    { emit input (List `Unordered) }
 
   | "{ol"
-    { emit input (`Begin_list `Ordered) }
+    { emit input (List `Ordered) }
 
   | "{li"
-    { emit input (`Begin_list_item `Li) }
+    { emit input (List_item `Li) }
 
   | "{-"
-    { emit input (`Begin_list_item `Dash) }
+    { emit input (List_item `Dash) }
 
   | "{table"
-    { emit input (`Begin_table_heavy) }
+    { emit input Table_heavy }
 
   | "{t"
-    { emit input (`Begin_table_light) }
+    { emit input Table_light }
 
   | "{tr"
-    { emit input `Begin_table_row }
+    { emit input Table_row }
 
   | "{th"
-    { emit input (`Begin_table_cell `Header) }
+    { emit input (Table_cell `Header) }
 
   | "{td"
-    { emit input (`Begin_table_cell `Data) }
+    { emit input (Table_cell `Data) }
 
   | '{' (['0'-'9']+ as level) ':' (([^ '}'] # space_char)* as label)
     { emit
-        input (`Begin_section_heading (heading_level input level, Some label)) }
+        input (Section_heading (heading_level input level, Some label)) }
 
   | '{' (['0'-'9']+ as level)
-    { emit input (`Begin_section_heading (heading_level input level, None)) }
+    { emit input (Section_heading (heading_level input level, None)) }
 
   | "@author" ((horizontal_space+ [^ '\r' '\n']*)? as author)
-    { emit input (`Tag (`Author author)) }
+    { emit input (Tag (`Author author)) }
 
   | "@deprecated"
-    { emit input (`Tag `Deprecated) }
+    { emit input (Tag `Deprecated) }
 
   | "@param" horizontal_space+ ((_ # space_char)+ as name)
-    { emit input (`Tag (`Param name)) }
+    { emit input (Tag (`Param name)) }
 
   | ("@raise" | "@raises") horizontal_space+ ((_ # space_char)+ as name)
-    { emit input (`Tag (`Raise name)) }
+    { emit input (Tag (`Raise name)) }
 
   | ("@return" | "@returns")
-    { emit input (`Tag `Return) }
+    { emit input (Tag `Return) }
 
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
-    { emit input (`Tag (`See (`Url, url))) }
+    { emit input (Tag (`See (`Url, url))) }
 
   | "@see" horizontal_space* '\'' ([^ '\'']* as filename) '\''
-    { emit input (`Tag (`See (`File, filename))) }
+    { emit input (Tag (`See (`File, filename))) }
 
   | "@see" horizontal_space* '"' ([^ '"']* as name) '"'
-    { emit input (`Tag (`See (`Document, name))) }
+    { emit input (Tag (`See (`Document, name))) }
 
   | "@since" ((horizontal_space+ [^ '\r' '\n']*)? as version)
-    { emit input (`Tag (`Since version)) }
+    { emit input (Tag (`Since version)) }
 
   | "@before" horizontal_space+ ((_ # space_char)+ as version)
-    { emit input (`Tag (`Before version)) }
+    { emit input (Tag (`Before version)) }
 
   | "@version" ((horizontal_space+ [^ '\r' '\n']*)? as version)
-    { emit input (`Tag (`Version version)) }
+    { emit input (Tag (`Version version)) }
 
   | "@canonical" ((horizontal_space+ [^ '\r' '\n']*)? as identifier)
-    { emit input (`Tag (`Canonical identifier)) }
+    { emit input (Tag (`Canonical identifier)) }
 
   | "@inline"
-    { emit input (`Tag `Inline) }
+    { emit input (Tag `Inline) }
 
   | "@open"
-    { emit input (`Tag `Open) }
+    { emit input (Tag `Open) }
 
   | "@closed"
-    { emit input (`Tag `Closed) }
+    { emit input (Tag `Closed) }
 
   | "@hidden"
-    { emit input (`Tag `Hidden) }
+    { emit input (Tag `Hidden) }
 
   | "]}"
     { emit input `Right_code_delimiter}
@@ -591,27 +565,27 @@ and token input = parse
 
   | "@param"
     { warning input Parse_error.truncated_param;
-      emit input (`Tag (`Param "")) }
+      emit input (Tag (Param "")) }
 
   | ("@raise" | "@raises") as tag
     { warning input (Parse_error.truncated_raise tag);
-      emit input (`Tag (`Raise "")) }
+      emit input (Tag (Raise "")) }
 
   | "@before"
     { warning input Parse_error.truncated_before;
-      emit input (`Tag (`Before "")) }
+      emit input (Tag (Before "")) }
 
   | "@see"
     { warning input Parse_error.truncated_see;
-      emit input (`Word "@see") }
+      emit input (Word "@see") }
 
   | '@' ['a'-'z' 'A'-'Z']+ as tag
     { warning input (Parse_error.unknown_tag tag);
-      emit input (`Word tag) }
+      emit input (Word tag) }
 
   | '@'
     { warning input Parse_error.stray_at;
-      emit input (`Word "@") }
+      emit input (Word "@") }
 
   | '\r'
     { warning input Parse_error.stray_cr;
@@ -629,7 +603,7 @@ and token input = parse
 and code_span buffer nesting_level start_offset input = parse
   | ']'
     { if nesting_level = 0 then
-        emit input (`Code_span (Buffer.contents buffer)) ~start_offset
+        emit input (Code_span (Buffer.contents buffer)) ~start_offset
       else begin
         Buffer.add_char buffer ']';
         code_span buffer (nesting_level - 1) start_offset input lexbuf
@@ -647,8 +621,8 @@ and code_span buffer nesting_level start_offset input = parse
     { warning
         input
         (Parse_error.not_allowed
-          ~what:(Token.describe (`Blank_line "\n\n"))
-          ~in_what:(Token.describe (`Code_span "")));
+          ~what:(Token.describe (Blank_line "\n\n"))
+          ~in_what:(Token.describe (Code_span "")));
       Buffer.add_char buffer ' ';
       code_span buffer nesting_level start_offset input lexbuf }
   | newline horizontal_space*
@@ -659,9 +633,9 @@ and code_span buffer nesting_level start_offset input = parse
     { warning
         input
         (Parse_error.not_allowed
-          ~what:(Token.describe `End)
-          ~in_what:(Token.describe (`Code_span "")));
-      emit input (`Code_span (Buffer.contents buffer)) ~start_offset }
+          ~what:(Token.describe END)
+          ~in_what:(Token.describe (Code_span "")));
+      emit input (Code_span (Buffer.contents buffer)) ~start_offset }
 
   | _ as c
     { Buffer.add_char buffer c;
@@ -689,7 +663,7 @@ and math kind buffer nesting_level start_offset input = parse
         warning
           input
           (Parse_error.not_allowed
-            ~what:(Token.describe (`Blank_line "\n"))
+            ~what:(Token.describe (Blank_line "\n"))
             ~in_what:(Token.describe (math_constr kind "")));
         Buffer.add_char buffer '\n';
         math kind buffer nesting_level start_offset input lexbuf
@@ -701,7 +675,7 @@ and math kind buffer nesting_level start_offset input = parse
     { warning
         input
         (Parse_error.not_allowed
-          ~what:(Token.describe `End)
+          ~what:(Token.describe END)
           ~in_what:(Token.describe (math_constr kind "")));
       emit input (math_constr kind (Buffer.contents buffer)) ~start_offset }
   | _ as c
@@ -753,8 +727,8 @@ and verbatim buffer last_false_terminator start_offset input = parse
         warning
           input
           (Parse_error.not_allowed
-            ~what:(Token.describe `End)
-            ~in_what:(Token.describe (`Verbatim "")))
+            ~what:(Token.describe END)
+            ~in_what:(Token.describe (Verbatim "")))
       | Some location ->
         warning
           input
@@ -778,7 +752,7 @@ and bad_markup_recovery start_offset input = parse
         input
         ~start_offset
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
-      emit input (`Code_span text) ~start_offset}
+      emit input (Code_span text) ~start_offset}
 
 (* The second field of the metadata.
    This rule keeps whitespaces and newlines in the 'metadata' field except the
@@ -791,33 +765,29 @@ and code_block_metadata_tail input = parse
       let meta =
         with_location_adjustments ~adjust_start_by:prefix ~adjust_end_by:suffix (fun _ -> Loc.at) input meta
       in
-      `Ok (Some meta)
+      Ok (Some meta)
     }
   | (newline | horizontal_space)* '['
-    { `Ok None }
+    { Ok None }
   | _ as c
-    { `Invalid_char c }
+    { Error (`Invalid_char c) }
   | eof
-    { `Eof }
+    { Error `Eof }
 
-and code_block allow_result_block start_offset content_offset metadata prefix delim input = parse
+and code_block start_offset content_offset metadata prefix delim input = parse
   | ("]" (delim_char* as delim') "[") as terminator
-    { if delim = delim' && allow_result_block
+    { if delim = delim'
       then emit_code_block ~start_offset content_offset input metadata delim terminator prefix true
-      else (
-        Buffer.add_string prefix terminator;
-        code_block allow_result_block start_offset content_offset metadata
-          prefix delim input lexbuf
-      )
-    }
+      else
+        (Buffer.add_string prefix terminator;
+        code_block start_offset content_offset metadata prefix delim input lexbuf) }
   | ("]" (delim_char* as delim') "}") as terminator
     { 
       if delim = delim'
       then emit_code_block ~start_offset content_offset input metadata delim terminator prefix false
       else (
         Buffer.add_string prefix terminator;
-        code_block allow_result_block start_offset content_offset metadata
-          prefix delim input lexbuf
+        code_block start_offset content_offset metadata prefix delim input lexbuf
       )
     }
   | eof
@@ -828,6 +798,5 @@ and code_block allow_result_block start_offset content_offset metadata prefix de
   | (_ as c)
     {
       Buffer.add_char prefix c;
-      code_block allow_result_block start_offset content_offset metadata
-        prefix delim input lexbuf
+      code_block start_offset content_offset metadata prefix delim input lexbuf
     }

@@ -3,8 +3,7 @@
 type input = {
   file : string;
   offset_to_location : int -> Loc.point;
-  warnings : Warning.t list ref;
-  lexbuf : Lexing.lexbuf;
+  mutable warnings : Warning.t list;
 }
 
-val token : input -> Lexing.lexbuf -> Token.t Loc.with_location
+val token : input -> Lexing.lexbuf -> Parser.token

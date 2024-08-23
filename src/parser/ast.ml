@@ -1,5 +1,27 @@
 (** Abstract syntax tree representing ocamldoc comments *)
 
+type parser_tag = 
+    Author 
+  | Deprecated
+  | Param of string 
+  | Raise of string 
+  | Return 
+  | See of [ `Url | `File | `Document ] * string
+  | Since of string 
+  | Before of string 
+  | Version of string 
+  | Canonical of string 
+  | Inline 
+  | Open 
+  | Closed 
+  | Hidden 
+
+type list_kind = [ `Ordered | `Unordered ]
+type list_syntax = [ `Light | `Heavy ]
+type list_item = [ `Li | `Dash ]
+
+type table_cell_kind = [ `Header | `Data ]
+
 (** This is a syntactic representation of ocamldoc comments. See
     {{:https://ocaml.org/releases/4.12/htmlman/ocamldoc.html}The manual} for a detailed
     description of the syntax understood. Note that there is no attempt at semantic
@@ -13,6 +35,7 @@ type alignment = [ `Left | `Center | `Right ]
 
 type reference_kind = [ `Simple | `With_text ]
 (** References in doc comments can be of two kinds: [{!simple}] or [{{!ref}With text}]. *)
+
 
 type inline_element =
   [ `Space of string
@@ -56,8 +79,8 @@ and nestable_block_element =
   | `Verbatim of string
   | `Modules of string with_location list
   | `List of
-    [ `Unordered | `Ordered ]
-    * [ `Light | `Heavy ]
+    list_kind
+    * list_syntax
     * nestable_block_element with_location list list
   | `Table of table
   | `Math_block of string  (** @since 2.0.0 *)
@@ -68,6 +91,7 @@ and nestable_block_element =
     This corresponds to the syntactic constructor used (see the
     {{:https://ocaml.org/releases/4.12/htmlman/ocamldoc.html#sss:ocamldoc-list}manual}).
     *)
+
 
 and table = nestable_block_element abstract_table * [ `Light | `Heavy ]
 

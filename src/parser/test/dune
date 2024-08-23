@@ -7,4 +7,5 @@
   (backend landmarks --auto))
  (preprocess
   (pps ppx_expect))
+ (modules serialize)
  (libraries sexplib0 odoc-parser))
