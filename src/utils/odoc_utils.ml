@@ -82,7 +82,8 @@ module Option = struct
 end
 
 module Fun = struct
-  include Fun
+  exception Finally_raised of exn
+
   let protect ~(finally : unit -> unit) work =
     let finally_no_exn () =
       try finally ()
