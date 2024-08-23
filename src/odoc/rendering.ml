@@ -2,6 +2,17 @@ open Odoc_document
 open Or_error
 open Odoc_model
 
+let prepare ~extra_suffix ~output_dir filename =
+  let filename =
+    match extra_suffix with
+    | Some s -> Fpath.add_ext s filename
+    | None -> filename
+  in
+  let filename = Fpath.normalize @@ Fs.File.append output_dir filename in
+  let directory = Fs.File.dirname filename in
+  Fs.Directory.mkdir_p directory;
+  filename
+
 let document_of_odocl ~syntax input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
@@ -50,14 +61,7 @@ let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
   in
   let pages = renderer.Renderer.render extra sidebar doc in
   Renderer.traverse pages ~f:(fun filename content ->
-      let filename =
-        match extra_suffix with
-        | Some s -> Fpath.add_ext s filename
-        | None -> filename
-      in
-      let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
-      let directory = Fs.File.dirname filename in
-      Fs.Directory.mkdir_p directory;
+      let filename = prepare ~extra_suffix ~output_dir:root_dir filename in
       let oc = open_out (Fs.File.to_string filename) in
       let fmt = Format.formatter_of_out_channel oc in
       Format.fprintf fmt "%t@?" content;
@@ -121,13 +125,7 @@ let generate_asset_odoc ~warnings_options:_ ~renderer ~output ~asset_file
   | Odoc_file.Asset_content unit ->
       let url = Odoc_document.Url.Path.from_identifier unit.name in
       let filename = renderer.Renderer.filepath extra url in
-      let filename =
-        match extra_suffix with
-        | Some s -> Fpath.add_ext s filename
-        | None -> filename
-      in
-
-      let dst = Fs.File.append output filename in
+      let dst = prepare ~extra_suffix ~output_dir:output filename in
       Fs.File.copy ~src:asset_file ~dst
   | Page_content _ | Unit_content _ | Impl_content _ ->
       Error (`Msg "Expected an asset unit")
