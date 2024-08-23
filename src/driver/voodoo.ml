@@ -47,6 +47,9 @@ let process_package pkg =
       pkg.files
   in
 
+  let all_lib_deps = Util.StringMap.empty in
+
+  (* TODO *)
   let pkg_path =
     Fpath.(v "prep" / "universes" / pkg.universe / pkg.name / pkg.version)
   in
@@ -143,10 +146,11 @@ let process_package pkg =
              (fun directory ->
                Format.eprintf "Processing directory: %a\n%!" Fpath.pp directory;
                Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
-                 ~dir:directory ~cmtidir:None)
+                 ~dir:directory ~cmtidir:None ~all_lib_deps)
              Fpath.(Set.to_list directories)))
       metas
   in
+
   (* Check the main package lib directory even if there's no meta file *)
   let extra_libraries =
     let libdirs_without_meta =
@@ -169,7 +173,7 @@ let process_package pkg =
         Packages.Lib.v ~libname_of_archive:Util.StringMap.empty
           ~pkg_name:pkg.name
           ~dir:Fpath.(pkg_path // libdir)
-          ~cmtidir:None)
+          ~cmtidir:None ~all_lib_deps)
       libdirs_without_meta
   in
   Printf.eprintf "Found %d metas" (List.length metas);
