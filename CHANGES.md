@@ -31,6 +31,7 @@
 - Add a 'remap' option to HTML generation for partial docsets (@jonludlam, #1189)
 - Added an `html-generate-asset` command (@panglesd, #1185)
 - Added syntax for images, videos, audio (@panglesd, #1184)
+- Show packages and libraries names in breadcrumbs (@Julow, #1190)
 
 ### Changed
 
