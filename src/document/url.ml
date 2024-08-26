@@ -119,8 +119,6 @@ module Path = struct
     | `File -> "file"
     | `SourcePage -> "source"
 
-  let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
-
   type t = { kind : kind; parent : t option; name : string }
 
   let mk ?parent kind name = { kind; parent; name }
@@ -252,8 +250,6 @@ module Anchor = struct
     | `Field -> "field"
     | `SourceAnchor -> "source-anchor"
 
-  let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
-
   type t = { page : Path.t; anchor : string; kind : kind }
 
   let anchorify_path { Path.parent; name; kind } =
@@ -308,7 +304,7 @@ module Anchor = struct
           {
             page;
             anchor =
-              Format.asprintf "%a-%s" pp_kind kind
+              Format.asprintf "%s-%s" (string_of_kind kind)
                 (TypeName.to_string type_name);
             kind;
           }
@@ -321,7 +317,7 @@ module Anchor = struct
           {
             page;
             anchor =
-              Format.asprintf "%a-%s" pp_kind kind
+              Format.asprintf "%s-%s" (string_of_kind kind)
                 (ExtensionName.to_string name);
             kind;
           }
@@ -332,7 +328,7 @@ module Anchor = struct
           {
             page;
             anchor =
-              Format.asprintf "%a-%s" pp_kind kind
+              Format.asprintf "%s-%s" (string_of_kind kind)
                 (ExtensionName.to_string name);
             kind;
           }
@@ -343,7 +339,7 @@ module Anchor = struct
           {
             page;
             anchor =
-              Format.asprintf "%a-%s" pp_kind kind
+              Format.asprintf "%s-%s" (string_of_kind kind)
                 (ExceptionName.to_string name);
             kind;
           }
@@ -356,7 +352,8 @@ module Anchor = struct
           {
             page;
             anchor =
-              Format.asprintf "%a-%s" pp_kind kind (ValueName.to_string name);
+              Format.asprintf "%s-%s" (string_of_kind kind)
+                (ValueName.to_string name);
             kind;
           }
     | { iv = `Method (parent, name); _ } ->
@@ -364,13 +361,21 @@ module Anchor = struct
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Method in
         Ok
-          { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
+          {
+            page;
+            anchor = Format.asprintf "%s-%s" (string_of_kind kind) str_name;
+            kind;
+          }
     | { iv = `InstanceVariable (parent, name); _ } ->
         let str_name = InstanceVariableName.to_string name in
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Val in
         Ok
-          { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
+          {
+            page;
+            anchor = Format.asprintf "%s-%s" (string_of_kind kind) str_name;
+            kind;
+          }
     | { iv = `Constructor (parent, name); _ } ->
         from_identifier (parent :> Identifier.t) >>= fun page ->
         let kind = `Constructor in
@@ -436,7 +441,7 @@ module Anchor = struct
     let page = Path.from_identifier (decl.parent :> Path.any) in
     let kind = `ExtensionDecl in
     let first_cons = Identifier.name (List.hd decl.constructors).id in
-    let anchor = Format.asprintf "%a-%s" pp_kind kind first_cons in
+    let anchor = Format.asprintf "%s-%s" (string_of_kind kind) first_cons in
     { page; kind; anchor }
 
   let source_anchor path anchor = { page = path; anchor; kind = `SourceAnchor }

@@ -4,11 +4,10 @@ module Doctree = Odoc_document.Doctree
 
 module Link = struct
   let rec flatten_path ppf (x : Odoc_document.Url.Path.t) =
+    let kind = Odoc_document.Url.Path.string_of_kind x.kind in
     match x.parent with
-    | Some p ->
-        Fmt.pf ppf "%a-%a-%s" flatten_path p Odoc_document.Url.Path.pp_kind
-          x.kind x.name
-    | None -> Fmt.pf ppf "%a-%s" Odoc_document.Url.Path.pp_kind x.kind x.name
+    | Some p -> Fmt.pf ppf "%a-%s-%s" flatten_path p kind x.name
+    | None -> Fmt.pf ppf "%s-%s" kind x.name
 
   let page p = Format.asprintf "%a" flatten_path p
 

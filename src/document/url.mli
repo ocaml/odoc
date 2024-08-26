@@ -23,8 +23,6 @@ module Path : sig
     | `File
     | `SourcePage ]
 
-  val pp_kind : Format.formatter -> kind -> unit
-
   val string_of_kind : kind -> string
 
   type t = { kind : kind; parent : t option; name : string }
@@ -72,8 +70,6 @@ module Anchor : sig
     | `Constructor
     | `Field
     | `SourceAnchor ]
-
-  val pp_kind : Format.formatter -> kind -> unit
 
   val string_of_kind : kind -> string
 

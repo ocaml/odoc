@@ -9,7 +9,7 @@ module Path = struct
   let segment_to_string (kind, name) =
     match kind with
     | `Module | `Page | `File | `SourcePage -> name
-    | _ -> Format.asprintf "%a-%s" Url.Path.pp_kind kind name
+    | _ -> Format.asprintf "%s-%s" (Url.Path.string_of_kind kind) name
 
   let is_leaf_page url = url.Url.Path.kind = `LeafPage
 
