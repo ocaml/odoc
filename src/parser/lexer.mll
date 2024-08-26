@@ -784,6 +784,7 @@ and code_block_metadata_tail input = parse
   | eof
     { Error `Eof }
 
+(* NOTE : (@faycarsons) This is currently broken!! *)
 and code_block start_offset content_offset metadata prefix delim input = parse
   | ("]" (delim_char* as delim') "[") as terminator
     { if delim = delim'

@@ -6,4 +6,4 @@ type input = {
   mutable warnings : Warning.t list;
 }
 
-val token : input -> Lexing.lexbuf -> Parser.token
+val token : input -> Lexing.lexbuf -> Parser.token Loc.with_location

@@ -108,7 +108,11 @@ let parse_comment ~location ~text =
           ; offset_to_location = offset_to_location ~reversed_newlines ~comment_location:location
           ; file = "foo.ml" } 
   in
-  let ast = Parser.main (Lexer.token lexer_state) lexbuf in
+  let unwrapped_token : Lexing.lexbuf -> Parser.token = fun lexbuf -> 
+    let with_location = Lexer.token lexer_state lexbuf in 
+    Loc.value with_location
+  in
+  let ast = Parser.main unwrapped_token lexbuf in
   { ast; warnings = lexer_state.warnings; reversed_newlines; original_pos = location }
 
 (* Accessor functions, as [t] is opaque *)
