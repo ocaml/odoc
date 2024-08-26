@@ -1159,7 +1159,7 @@
 (subdir
  man
  (rule
-  (targets Bugs_post_406.3o.gen Bugs_post_406.let_open'.3o.gen)
+  (targets Bugs_post_406.3o.gen Bugs_post_406.class-let_open'.3o.gen)
   (action
    (run
     odoc
@@ -1180,7 +1180,9 @@
  (rule
   (alias runtest)
   (action
-   (diff Bugs_post_406.let_open'.3o Bugs_post_406.let_open'.3o.gen))
+   (diff
+    Bugs_post_406.class-let_open'.3o
+    Bugs_post_406.class-let_open'.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.06))))
 
@@ -1489,10 +1491,10 @@
  (rule
   (targets
    Class.3o.gen
-   Class.mutually'.3o.gen
-   Class.recursive'.3o.gen
-   Class.empty_virtual'.3o.gen
-   Class.polymorphic'.3o.gen)
+   Class.class-mutually'.3o.gen
+   Class.class-recursive'.3o.gen
+   Class.class-empty_virtual'.3o.gen
+   Class.class-polymorphic'.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../class.odocl}))
   (enabled_if
@@ -1506,25 +1508,25 @@
  (rule
   (alias runtest)
   (action
-   (diff Class.mutually'.3o Class.mutually'.3o.gen))
+   (diff Class.class-mutually'.3o Class.class-mutually'.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff Class.recursive'.3o Class.recursive'.3o.gen))
+   (diff Class.class-recursive'.3o Class.class-recursive'.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff Class.empty_virtual'.3o Class.empty_virtual'.3o.gen))
+   (diff Class.class-empty_virtual'.3o Class.class-empty_virtual'.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff Class.polymorphic'.3o Class.polymorphic'.3o.gen))
+   (diff Class.class-polymorphic'.3o Class.class-polymorphic'.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
 
@@ -1657,8 +1659,8 @@
  (rule
   (targets
    Class_comments.3o.gen
-   Class_comments.x.3o.gen
-   Class_comments.c.3o.gen)
+   Class_comments.class-x.3o.gen
+   Class_comments.class-c.3o.gen)
   (action
    (run
     odoc
@@ -1679,13 +1681,13 @@
  (rule
   (alias runtest)
   (action
-   (diff Class_comments.x.3o Class_comments.x.3o.gen))
+   (diff Class_comments.class-x.3o Class_comments.class-x.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
   (action
-   (diff Class_comments.c.3o Class_comments.c.3o.gen))
+   (diff Class_comments.class-c.3o Class_comments.class-c.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08))))
 
@@ -3050,7 +3052,7 @@
 (subdir
  man
  (rule
-  (targets Labels.3o.gen Labels.A.3o.gen Labels.c.3o.gen)
+  (targets Labels.3o.gen Labels.A.3o.gen Labels.class-c.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../labels.odocl}))
   (enabled_if
@@ -3070,7 +3072,7 @@
  (rule
   (alias runtest)
   (action
-   (diff Labels.c.3o Labels.c.3o.gen))
+   (diff Labels.class-c.3o Labels.class-c.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09))))
 
@@ -4569,8 +4571,8 @@
    Nested.3o.gen
    Nested.X.3o.gen
    Nested.F.3o.gen
-   Nested.z.3o.gen
-   Nested.inherits.3o.gen)
+   Nested.class-z.3o.gen
+   Nested.class-inherits.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../nested.odocl}))
   (enabled_if
@@ -4596,13 +4598,13 @@
  (rule
   (alias runtest)
   (action
-   (diff Nested.z.3o Nested.z.3o.gen))
+   (diff Nested.class-z.3o Nested.class-z.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff Nested.inherits.3o Nested.inherits.3o.gen))
+   (diff Nested.class-inherits.3o Nested.class-inherits.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
 
@@ -6356,14 +6358,14 @@
    Ocamlary.FunctorTypeOf.3o.gen
    Ocamlary.IncludedA.3o.gen
    Ocamlary.ExtMod.3o.gen
-   Ocamlary.empty_class.3o.gen
-   Ocamlary.one_method_class.3o.gen
-   Ocamlary.two_method_class.3o.gen
-   Ocamlary.param_class.3o.gen
+   Ocamlary.class-empty_class.3o.gen
+   Ocamlary.class-one_method_class.3o.gen
+   Ocamlary.class-two_method_class.3o.gen
+   Ocamlary.class-param_class.3o.gen
    Ocamlary.Dep1.3o.gen
    Ocamlary.Dep1.X.3o.gen
    Ocamlary.Dep1.X.Y.3o.gen
-   Ocamlary.Dep1.X.Y.c.3o.gen
+   Ocamlary.Dep1.X.Y.class-c.3o.gen
    Ocamlary.Dep2.3o.gen
    Ocamlary.Dep2.A.3o.gen
    Ocamlary.Dep3.3o.gen
@@ -6381,7 +6383,7 @@
    Ocamlary.Dep11.3o.gen
    Ocamlary.Dep12.3o.gen
    Ocamlary.Dep13.3o.gen
-   Ocamlary.Dep13.c.3o.gen
+   Ocamlary.Dep13.class-c.3o.gen
    Ocamlary.With2.3o.gen
    Ocamlary.With3.3o.gen
    Ocamlary.With3.N.3o.gen
@@ -6528,25 +6530,29 @@
  (rule
   (alias runtest)
   (action
-   (diff Ocamlary.empty_class.3o Ocamlary.empty_class.3o.gen))
+   (diff Ocamlary.class-empty_class.3o Ocamlary.class-empty_class.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
   (action
-   (diff Ocamlary.one_method_class.3o Ocamlary.one_method_class.3o.gen))
+   (diff
+    Ocamlary.class-one_method_class.3o
+    Ocamlary.class-one_method_class.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
   (action
-   (diff Ocamlary.two_method_class.3o Ocamlary.two_method_class.3o.gen))
+   (diff
+    Ocamlary.class-two_method_class.3o
+    Ocamlary.class-two_method_class.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
   (action
-   (diff Ocamlary.param_class.3o Ocamlary.param_class.3o.gen))
+   (diff Ocamlary.class-param_class.3o Ocamlary.class-param_class.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -6570,7 +6576,7 @@
  (rule
   (alias runtest)
   (action
-   (diff Ocamlary.Dep1.X.Y.c.3o Ocamlary.Dep1.X.Y.c.3o.gen))
+   (diff Ocamlary.Dep1.X.Y.class-c.3o Ocamlary.Dep1.X.Y.class-c.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -6678,7 +6684,7 @@
  (rule
   (alias runtest)
   (action
-   (diff Ocamlary.Dep13.c.3o Ocamlary.Dep13.c.3o.gen))
+   (diff Ocamlary.Dep13.class-c.3o Ocamlary.Dep13.class-c.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
@@ -8171,8 +8177,8 @@
    Toplevel_comments.M'.3o.gen
    Toplevel_comments.M''.3o.gen
    Toplevel_comments.Alias.3o.gen
-   Toplevel_comments.c1.3o.gen
-   Toplevel_comments.c2.3o.gen
+   Toplevel_comments.class-c1.3o.gen
+   Toplevel_comments.class-c2.3o.gen
    Toplevel_comments.Ref_in_synopsis.3o.gen
    Toplevel_comments.Comments_on_open.3o.gen
    Toplevel_comments.Comments_on_open.M.3o.gen)
@@ -8236,13 +8242,13 @@
  (rule
   (alias runtest)
   (action
-   (diff Toplevel_comments.c1.3o Toplevel_comments.c1.3o.gen))
+   (diff Toplevel_comments.class-c1.3o Toplevel_comments.class-c1.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (action
-   (diff Toplevel_comments.c2.3o Toplevel_comments.c2.3o.gen))
+   (diff Toplevel_comments.class-c2.3o Toplevel_comments.class-c2.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
