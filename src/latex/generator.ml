@@ -18,7 +18,7 @@ module Link = struct
 
   let rec is_class_or_module_path (url : Odoc_document.Url.Path.t) =
     match url.kind with
-    | `Module | `LeafPage | `Class | `Page -> (
+    | `Module | `LeafPage | `Class | `Page | `Library -> (
         match url.parent with
         | None -> true
         | Some url -> is_class_or_module_path url)

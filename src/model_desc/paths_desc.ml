@@ -73,6 +73,11 @@ module General_paths = struct
               ( "`Page",
                 ((parent :> id_t option), name),
                 Pair (Option identifier, Names.pagename) )
+        | `Library (parent, name, libname) ->
+            C
+              ( "`Library",
+                ((parent :> id_t option), name, libname),
+                Triple (Option identifier, Names.pagename, string) )
         | `LeafPage (parent, name) ->
             C
               ( "`LeafPage",

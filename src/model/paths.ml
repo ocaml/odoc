@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_utils
 module Ocaml_ident = Ident
 module Ocaml_env = Env
 
@@ -32,7 +33,7 @@ module Identifier = struct
    fun x ->
     match x.iv with
     | `Root (_, name) -> ModuleName.to_string name
-    | `Page (_, name) -> PageName.to_string name
+    | `Library (_, name, _) | `Page (_, name) -> PageName.to_string name
     | `LeafPage (_, name) -> PageName.to_string name
     | `Module (_, name) -> ModuleName.to_string name
     | `Parameter (_, name) -> ModuleName.to_string name
@@ -64,7 +65,7 @@ module Identifier = struct
    fun x ->
     match x.iv with
     | `Root (_, name) -> ModuleName.is_hidden name
-    | `Page (_, _) -> false
+    | `Page (_, _) | `Library _ -> false
     | `LeafPage (_, _) -> false
     | `Module (_, name) -> ModuleName.is_hidden name
     | `Parameter (_, name) -> ModuleName.is_hidden name
@@ -94,9 +95,13 @@ module Identifier = struct
    fun x ->
     match x.iv with
     | `Root (_, name) -> [ ModuleName.to_string name ]
-    | `Page (None, name) -> [ PageName.to_string name ]
-    | `Page (Some parent, name) ->
-        PageName.to_string name :: full_name_aux (parent :> t)
+    | `Page (parent, name) | `Library (parent, name, _) ->
+        let parent =
+          match parent with
+          | Some parent -> full_name_aux (parent :> t)
+          | None -> []
+        in
+        PageName.to_string name :: parent
     | `LeafPage (None, name) -> [ PageName.to_string name ]
     | `LeafPage (Some parent, name) ->
         PageName.to_string name :: full_name_aux (parent :> t)
@@ -156,6 +161,7 @@ module Identifier = struct
       | { iv = `Root _; _ } as p -> (p :> label_parent)
       | { iv = `Page _; _ } as p -> (p :> label_parent)
       | { iv = `LeafPage _; _ } as p -> (p :> label_parent)
+      | { iv = `Library _; _ } as p -> (p :> label_parent)
       | { iv = `Module (p, _); _ }
       | { iv = `ModuleType (p, _); _ }
       | { iv = `Parameter (p, _); _ }

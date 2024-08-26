@@ -93,8 +93,9 @@ Canonical paths should be as short as possible. As such, the following ought to 
                     "`Root": [
                       {
                         "Some": {
-                          "`Page": [
+                          "`Library": [
                             "None",
+                            "x",
                             "x"
                           ]
                         }
@@ -129,8 +130,9 @@ And this one should be `` `Type(`Identifier,t) ``
                     "`Root": [
                       {
                         "Some": {
-                          "`Page": [
+                          "`Library": [
                             "None",
+                            "x",
                             "x"
                           ]
                         }

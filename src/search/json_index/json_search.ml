@@ -39,6 +39,7 @@ let rec of_id x =
   match x.iv with
   | `Root (_, name) -> [ ret "Root" (ModuleName.to_string name) ]
   | `Page (_, name) -> [ ret "Page" (PageName.to_string name) ]
+  | `Library (_, name, _) -> [ ret "Library" (PageName.to_string name) ]
   | `AssetFile (_, name) -> [ ret "Asset" (AssetName.to_string name) ]
   | `LeafPage (_, name) -> [ ret "Page" (PageName.to_string name) ]
   | `Module (parent, name) ->

@@ -14,12 +14,12 @@ Labels don't follow OCaml's scoping rules:
 Contains some ambiguous labels:
 
   $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.) | .[1]'
-  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"section-1"]}
-  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}
-  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"section-2"]}
-  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}
-  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}
-  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example_3"]}
+  {"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"section-1"]}
+  {"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"example"]}
+  {"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"section-2"]}
+  {"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"example"]}
+  {"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"example"]}
+  {"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"example_3"]}
 
   $ odoc html-generate --indent -o html test.odocl
 
@@ -44,10 +44,10 @@ References should resolve to the first occurence of the ambiguous label. It is
 not possible to use the internal label name in references:
 
   $ odoc_print test.odocl | jq -c '.. | .["`Reference"]? | select(.)'
-  [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}}},[{"`Word":"Should"},"`Space",{"`Word":"resolve"},"`Space",{"`Word":"to"},"`Space",{"`Word":"the"},"`Space",{"`Word":"first"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"example"]}}},[{"`Word":"Should"},"`Space",{"`Word":"resolve"},"`Space",{"`Word":"to"},"`Space",{"`Word":"the"},"`Space",{"`Word":"first"},"`Space",{"`Word":"label"}]]
   [{"`Root":["example_2","`TUnknown"]},[{"`Word":"Shouldn't"},"`Space",{"`Word":"resolve"}]]
 
 A second module has a reference to the ambiguous label:
 
   $ odoc_print test_2.odocl | jq -c '.. | .["`Reference"]? | select(.)'
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]}},"example"]}},[{"`Word":"Should"},"`Space",{"`Word":"resolve"},"`Space",{"`Word":"to"},"`Space",{"`Word":"the"},"`Space",{"`Word":"first"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]}},"example"]}},[{"`Word":"Should"},"`Space",{"`Word":"resolve"},"`Space",{"`Word":"to"},"`Space",{"`Word":"the"},"`Space",{"`Word":"first"},"`Space",{"`Word":"label"}]]

@@ -106,7 +106,8 @@ module Path = struct
     | `Class
     | `ClassType
     | `File
-    | `SourcePage ]
+    | `SourcePage
+    | `Library ]
 
   let string_of_kind : kind -> string = function
     | `Page -> "page"
@@ -118,6 +119,7 @@ module Path = struct
     | `ClassType -> "class-type"
     | `File -> "file"
     | `SourcePage -> "source"
+    | `Library -> "library"
 
   type t = { kind : kind; parent : t option; name : string }
 
@@ -144,6 +146,13 @@ module Path = struct
         let kind = `Page in
         let name = PageName.to_string page_name in
         mk ?parent kind name
+    | { iv = `Library (parent, _page_name, libname); _ } ->
+        let parent =
+          match parent with
+          | Some p -> Some (from_identifier (p :> any))
+          | None -> None
+        in
+        mk ?parent `Library libname
     | { iv = `LeafPage (parent, page_name); _ } ->
         let parent =
           match parent with
@@ -211,7 +220,8 @@ module Path = struct
   let split ~is_flat ~allow_empty l =
     let is_dir =
       if is_flat then function
-        | `Page -> if allow_empty then `Always else `IfNotLast | _ -> `Never
+        | `Page | `Library -> if allow_empty then `Always else `IfNotLast
+        | _ -> `Never
       else function `LeafPage | `File | `SourcePage -> `Never | _ -> `Always
     in
     let rec inner dirs = function
@@ -289,6 +299,9 @@ module Anchor = struct
     | { iv = `Page _; _ } as p ->
         let page = Path.from_identifier (p :> Path.any) in
         Ok { page; kind = `Page; anchor = "" }
+    | { iv = `Library _; _ } as p ->
+        let page = Path.from_identifier (p :> Path.any) in
+        Ok { page; kind = `Library; anchor = "" }
     | { iv = `LeafPage _; _ } as p ->
         let page = Path.from_identifier (p :> Path.any) in
         Ok { page; kind = `LeafPage; anchor = "" }

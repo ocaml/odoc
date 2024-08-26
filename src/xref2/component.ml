@@ -712,7 +712,7 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (p :> id)
           (ExtensionName.to_string name)
-    | `Page (_, name) | `LeafPage (_, name) ->
+    | `Page (_, name) | `Library (_, name, _) | `LeafPage (_, name) ->
         Format.fprintf ppf "%s" (PageName.to_string name)
     | `SourcePage (p, name) ->
         Format.fprintf ppf "%a/%s" (model_identifier c) (p :> id) name

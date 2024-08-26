@@ -329,11 +329,12 @@ end = struct
     | `ClassType -> prefix "Class type"
     | `Class -> prefix "Class"
     | `SourcePage -> prefix "Source file"
+    | `Library -> prefix "Library"
     | `Page | `LeafPage | `File -> []
 
   let make_name_from_path { Url.Path.name; parent; _ } =
     match parent with
-    | None | Some { kind = `Page; _ } -> name
+    | None | Some { kind = `Page | `Library; _ } -> name
     | Some p -> Printf.sprintf "%s.%s" p.name name
 
   let render_title ?source_anchor (p : Page.t) =

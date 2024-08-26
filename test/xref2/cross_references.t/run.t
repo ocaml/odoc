@@ -22,8 +22,9 @@ Check that references are resolved:
                 "`Root": [
                   {
                     "Some": {
-                      "`Page": [
+                      "`Library": [
                         "None",
+                        "test",
                         "test"
                       ]
                     }
@@ -49,8 +50,9 @@ Check that references are resolved:
                 "`Root": [
                   {
                     "Some": {
-                      "`Page": [
+                      "`Library": [
                         "None",
+                        "test",
                         "test"
                       ]
                     }

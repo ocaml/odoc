@@ -4,7 +4,7 @@ let for_printing url = List.map snd @@ Url.Path.to_list url
 
 let segment_to_string (kind, name) =
   match kind with
-  | `Module | `Page | `LeafPage | `Class -> name
+  | `Module | `Page | `Library | `LeafPage | `Class -> name
   | _ ->
       Format.asprintf "%s-%s" (Odoc_document.Url.Path.string_of_kind kind) name
 
@@ -18,7 +18,7 @@ let as_filename ?(add_ext = true) (url : Url.Path.t) =
 
 let rec is_class_or_module_path (url : Url.Path.t) =
   match url.kind with
-  | `Module | `LeafPage | `Page | `Class -> (
+  | `Module | `LeafPage | `Page | `Library | `Class -> (
       match url.parent with
       | None -> true
       | Some url -> is_class_or_module_path url)

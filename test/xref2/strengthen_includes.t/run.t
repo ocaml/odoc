@@ -31,4 +31,3 @@ _not_ been strengthened.
   $ find html/x/Test/ZZ
   html/x/Test/ZZ
   html/x/Test/ZZ/index.html
-

@@ -21,7 +21,8 @@ module Path : sig
     | `Class
     | `ClassType
     | `File
-    | `SourcePage ]
+    | `SourcePage
+    | `Library ]
 
   val string_of_kind : kind -> string
 

@@ -74,7 +74,7 @@ This is the '{!childmodule:M1}' reference
         "`Root": [
           {
             "Some": {
-              "`Page": [
+              "`Library": [
                 {
                   "Some": {
                     "`Page": [
@@ -83,6 +83,7 @@ This is the '{!childmodule:M1}' reference
                     ]
                   }
                 },
+                "sub1",
                 "sub1"
               ]
             }

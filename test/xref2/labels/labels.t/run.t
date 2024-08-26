@@ -15,26 +15,26 @@ Labels:
 Some are not in order because the 'doc' field appears after the rest in the output.
 
   $ odoc_print test.odocl | jq -c '.. | .["`Heading"]? | select(.) | .[1]'
-  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]}
-  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}
-  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"C"]}
-  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"D"]}
-  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]},"B"]}
-  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]},"B"]}
-  {"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}
+  {"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"A"]}
+  {"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"B"]}
+  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"M"]},"C"]}
+  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"M"]},"D"]}
+  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"M"]},"B"]}
+  {"`Label":[{"`Module":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"N"]},"B"]}
+  {"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"B"]}
 
 References to the labels:
 We expect resolved references and the heading text filled in.
 
   $ odoc_print test.odocl | jq -c '.. | .["`Reference"]? | select(.)'
-  [{"`Resolved":{"`Identifier":{"`Label":[{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]},"B"]}}},[{"`Word":"An"},"`Space",{"`Word":"other"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[{"`Word":"Potentially"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
-  [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"A"]}}},[{"`Word":"First"},"`Space",{"`Word":"label"}]]
-  [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"B"]}}},[{"`Word":"Dupplicate"},"`Space",{"`Word":"B"}]]
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"C"]}},[{"`Word":"First"},"`Space",{"`Word":"label"},"`Space",{"`Word":"of"},"`Space",{"`Word":"M"}]]
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"D"]}},[{"`Word":"Floating"},"`Space",{"`Word":"label"},"`Space",{"`Word":"in"},"`Space",{"`Word":"M"}]]
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"M"]}},"B"]}},[{"`Word":"Potentially"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"N"]}},"B"]}},[{"`Word":"An"},"`Space",{"`Word":"other"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Identifier":{"`Label":[{"`Module":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"N"]},"B"]}}},[{"`Word":"An"},"`Space",{"`Word":"other"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"M"]}},"B"]}},[{"`Word":"Potentially"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"A"]}}},[{"`Word":"First"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"B"]}}},[{"`Word":"Dupplicate"},"`Space",{"`Word":"B"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"M"]}},"C"]}},[{"`Word":"First"},"`Space",{"`Word":"label"},"`Space",{"`Word":"of"},"`Space",{"`Word":"M"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"M"]}},"D"]}},[{"`Word":"Floating"},"`Space",{"`Word":"label"},"`Space",{"`Word":"in"},"`Space",{"`Word":"M"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"M"]}},"B"]}},[{"`Word":"Potentially"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Test"]},"N"]}},"B"]}},[{"`Word":"An"},"`Space",{"`Word":"other"},"`Space",{"`Word":"conflicting"},"`Space",{"`Word":"label"}]]
 
   $ odoc html-generate --indent -o html test.odocl
 

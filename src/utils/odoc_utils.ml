@@ -79,6 +79,7 @@ end
 
 module Option = struct
   let map f = function None -> None | Some x -> Some (f x)
+  let to_list = function None -> [] | Some x -> [ x ]
 end
 
 module Fun = struct

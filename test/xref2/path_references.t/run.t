@@ -65,7 +65,7 @@ Helper that extracts references in a compact way. Headings help to interpret the
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   ["Module","Test"]
   {"`Reference":[{"`Any_path":["`TCurrentPackage",["Test"]]},[]]}
-  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Library":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname","libname"]}},"Test"]}}},[]]}
   {"`Reference":[{"`Any_path":["`TRelativePath",["Test"]]},[]]}
   {"`Reference":[{"`Root":["Test","`TUnknown"]},[]]}
   ["Asset"]
@@ -116,7 +116,7 @@ Helper that extracts references in a compact way. Headings help to interpret the
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]}},"subdir"]}},"dup"]}}},[]]}
   ["Module","Test"]
-  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
-  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
-  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
-  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Library":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname","libname"]}},"Test"]}}},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Library":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname","libname"]}},"Test"]}}},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Library":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname","libname"]}},"Test"]}}},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Library":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname","libname"]}},"Test"]}}},[]]}

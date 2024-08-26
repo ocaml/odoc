@@ -27,5 +27,5 @@ Every references in `Bad_references` should not:
 Every references in `P` should resolve:
 
   $ odoc_print page-p.odocl | jq_scan_references
-  {"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Good_references"]}}}
-  {"`Resolved":{"`Type":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Good_references"]}},"t"]}}
+  {"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Good_references"]}}}
+  {"`Resolved":{"`Type":[{"`Identifier":{"`Root":[{"Some":{"`Library":["None","test","test"]}},"Good_references"]}},"t"]}}

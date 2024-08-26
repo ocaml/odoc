@@ -5,7 +5,12 @@ type 'a id = { iv : 'a; ihash : int; ikey : string }
 (** @canonical Odoc_model.Paths.Identifier.id *)
 
 module Identifier = struct
-  type container_page_pv = [ `Page of container_page option * PageName.t ]
+  type container_page_pv =
+    [ `Page of container_page option * PageName.t
+    | `Library of
+      container_page option
+      * PageName.t
+      * string (* (parent, dirname, libname) *) ]
   (** @canonical Odoc_model.Paths.Identifier.ContainerPage.t_pv *)
 
   and container_page = container_page_pv id
@@ -232,7 +237,11 @@ module Identifier = struct
   (** @canonical Odoc_model.Paths.Identifier.NonSrc.t *)
 
   type any_pv =
-    [ non_src_pv | source_page_pv | source_location_pv | asset_file_pv ]
+    [ non_src_pv
+    | source_page_pv
+    | source_location_pv
+    | asset_file_pv
+    | container_page_pv ]
   (** @canonical Odoc_model.Paths.Identifier.t_pv *)
 
   and any = any_pv id

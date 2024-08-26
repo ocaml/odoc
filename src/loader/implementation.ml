@@ -221,7 +221,7 @@ let anchor_of_identifier id =
     | `Class (parent, name) ->
         let anchor = anchor `Class (TypeName.to_string name) in
         continue anchor parent
-    | `Page _ -> assert false
+    | `Page _ | `Library _ -> assert false
     | `LeafPage _ -> assert false
     | `CoreType _ -> assert false
     | `SourceLocation _ -> assert false

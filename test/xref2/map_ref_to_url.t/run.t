@@ -13,7 +13,7 @@ The root-url argument prepends a string to the html url
 
 Generate latex url
   $ odoc latex-url -I . Foo.t
-  page-test-module-Foo-type-t
+  library-test-module-Foo-type-t
 
 When the reference cannot be resolved.
   $ odoc html-url -I . Foo.u

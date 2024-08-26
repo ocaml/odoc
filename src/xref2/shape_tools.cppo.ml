@@ -50,7 +50,7 @@ let rec shape_of_id env :
         proj parent Kind.Class_type (TypeName.to_string_unsafe name)
     | `Page _ | `LeafPage _ | `Label _ | `CoreType _ | `CoreException _
     | `Constructor _ | `Field _ | `Method _ | `InstanceVariable _ | `Parameter _
-      ->
+    | `Library _ ->
         (* Not represented in shapes. *)
         None
 

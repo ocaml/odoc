@@ -1339,9 +1339,8 @@ module Depends = struct
   module Link = struct
     let rec fmt_page pp page =
       match page.Odoc_model.Paths.Identifier.iv with
-      | `Page (parent_opt, name) ->
-          Format.fprintf pp "%a%a" fmt_parent_opt parent_opt
-            Odoc_model.Names.PageName.fmt name
+      | `Page (parent_opt, name)
+      | `Library (parent_opt, name, _)
       | `LeafPage (parent_opt, name) ->
           Format.fprintf pp "%a%a" fmt_parent_opt parent_opt
             Odoc_model.Names.PageName.fmt name

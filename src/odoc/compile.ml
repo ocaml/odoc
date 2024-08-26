@@ -46,7 +46,7 @@ let rec path_of_id output_dir id =
   | None -> Fpath.v output_dir
   | Some id -> (
       match (id : Paths.Identifier.ContainerPage.t).iv with
-      | `Page (parent, p) ->
+      | `Page (parent, p) | `Library (parent, p, _) ->
           let d = path_of_id output_dir parent in
           Fpath.(d / PageName.to_string p))
 
@@ -88,7 +88,8 @@ let resolve_parent_page resolver f =
     | Module_child _ -> Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
-    | { Paths.Identifier.iv = `Page _; _ } as container -> Ok container
+    | { Paths.Identifier.iv = `Page _ | `Library _; _ } as container ->
+        Ok container
     | { Paths.Identifier.iv = `LeafPage _; _ } ->
         Error (`Msg "Specified parent is not a parent of this file")
   in
@@ -319,12 +320,21 @@ let compile ~resolver ~hidden ~cli_spec ~warnings_options input =
   >>= fun { parent_id; output; parents_children; children } ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
+    (* TODO: A page might be in a library, for example the library entry page. *)
     mld ~parent_id ~parents_children ~output ~warnings_options ~children input
   else
     check_is_empty "Not expecting children (--child) when compiling modules."
       children
     >>= fun () ->
     handle_file_ext ext >>= fun input_type ->
+    let parent_id =
+      match parent_id with
+      | Some ({ iv = `Page (pparent, pname); _ } as id) ->
+          (* TODO: This should match the library name passed to the link command. *)
+          Some
+            { id with iv = `Library (pparent, pname, PageName.to_string pname) }
+      | pid -> pid
+    in
     let make_root =
       root_of_compilation_unit ~parent_id ~parents_children ~hidden ~output
     in
