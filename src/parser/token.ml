@@ -1,4 +1,5 @@
-(* NOTE : (@faycarsons) keep as reference for the moment *)
+(* NOTE : (@faycarsons) keep as reference for the moment.
+   Should probably become utilities for Menhir-defined tokens *)
 
 (* This module contains the token type, emitted by the lexer, and consumed by
    the comment syntax parser. It also contains two functions that format tokens
@@ -106,7 +107,9 @@ type t =
 
 open Parser
 
-let print : Parser.token -> string = function
+
+
+let[@warning "-8"] print : Parser.token -> string = function
   | Paragraph_style `Left -> "'{L'"
   | Paragraph_style `Center -> "'{C'"
   | Paragraph_style `Right -> "'{R'"
@@ -150,7 +153,7 @@ let print : Parser.token -> string = function
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted
    [`Minus] and [`Plus] should always be plausibly list item bullets. *)
-let describe : Parser.token -> string = function
+let[@warning "-8"] describe : Parser.token -> string = function
   | Word w -> Printf.sprintf "'%s'" w
   | Code_span _ -> "'[...]' (code)"
   | Raw_markup _ -> "'{%...%}' (raw markup)"
@@ -170,7 +173,7 @@ let describe : Parser.token -> string = function
   | Simple_link _ -> "'{:...} (external link)'"
   | Link_with_replacement _ -> "'{{:...} ...}' (external link)"
   | END -> "end of text"
-  | SPACE _ -> "whitespace"
+  | SPACE -> "whitespace"
   | Single_newline _ -> "line break"
   | Blank_line _ -> "blank line"
   | RIGHT_BRACE -> "'}'"
@@ -196,7 +199,7 @@ let describe : Parser.token -> string = function
   | Tag Deprecated -> "'@deprecated'"
   | Tag (Param _) -> "'@param'"
   | Tag (Raise _) -> "'@raise'"
-  | Tag Return -> "'@return'"
+  | Tag ( Return ) -> "'@return'"
   | Tag (See _) -> "'@see'"
   | Tag (Since _) -> "'@since'"
   | Tag (Before _) -> "'@before'"
@@ -211,6 +214,6 @@ let describe : Parser.token -> string = function
 let describe_element = function
   | `Reference (`Simple, _, _) -> describe (Simple_ref "")
   | `Reference (`With_text, _, _) ->
-      describe (`Begin_reference_with_replacement_text "")
-  | `Link _ -> describe (`Begin_link_with_replacement_text "")
-  | `Heading (level, _, _) -> describe (`Begin_section_heading (level, None))
+      describe (Ref_with_replacement "")
+  | `Link _ -> describe (Link_with_replacement "")
+  | `Heading (level, _, _) -> describe (Section_heading (level, None))

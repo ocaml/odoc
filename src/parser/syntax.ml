@@ -1,3 +1,6 @@
+(*
+
+
 (* This module is a recursive descent parser for the ocamldoc syntax. The parser
    consumes a token stream of type [Token.t Stream.t], provided by the lexer,
    and produces a comment AST of the type defined in [Parser_.Ast].
@@ -1525,3 +1528,5 @@ let parse warnings tokens =
   in
   let ast = parse_block_elements () in
   (ast, List.rev !(input.warnings))
+
+  *)

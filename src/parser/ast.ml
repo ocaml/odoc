@@ -1,11 +1,11 @@
 (** Abstract syntax tree representing ocamldoc comments *)
 
 type parser_tag = 
-    Author 
+    Author of string
   | Deprecated
   | Param of string 
   | Raise of string 
-  | Return 
+  | Return
   | See of [ `Url | `File | `Document ] * string
   | Since of string 
   | Before of string 
