@@ -29,11 +29,8 @@ module Path = struct
 
   let get_dir_and_file ~config url =
     let l = Url.Path.to_list url in
-    let is_dir =
-      if Config.flat config then function `Page -> `Always | _ -> `Never
-      else function `LeafPage | `File | `SourcePage -> `Never | _ -> `Always
-    in
-    let dir, file = Url.Path.split ~is_dir l in
+    let is_flat = Config.flat config in
+    let dir, file = Url.Path.split ~is_flat ~allow_empty:true l in
     let dir = List.map segment_to_string dir in
     let file =
       match file with

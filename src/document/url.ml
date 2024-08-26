@@ -208,11 +208,12 @@ module Path = struct
     in
     inner None l
 
-  let split :
-      is_dir:(kind -> [ `Always | `Never | `IfNotLast ]) ->
-      (kind * string) list ->
-      (kind * string) list * (kind * string) list =
-   fun ~is_dir l ->
+  let split ~is_flat ~allow_empty l =
+    let is_dir =
+      if is_flat then function
+        | `Page -> if allow_empty then `Always else `IfNotLast | _ -> `Never
+      else function `LeafPage | `File | `SourcePage -> `Never | _ -> `Always
+    in
     let rec inner dirs = function
       | [ ((kind, _) as x) ] when is_dir kind = `IfNotLast ->
           (List.rev dirs, [ x ])

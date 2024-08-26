@@ -33,8 +33,7 @@ module Link = struct
   let get_dir_and_file url =
     let open Odoc_document in
     let l = Url.Path.to_list url in
-    let is_dir = function `Page -> `IfNotLast | _ -> `Never in
-    let dir, file = Url.Path.split ~is_dir l in
+    let dir, file = Url.Path.split ~is_flat:true ~allow_empty:false l in
     let segment_to_string (_kind, name) = name in
     ( List.map segment_to_string dir,
       String.concat "." (List.map segment_to_string file) )

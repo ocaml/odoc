@@ -43,18 +43,16 @@ module Path : sig
   val of_list : (kind * string) list -> t option
 
   val split :
-    is_dir:(kind -> [ `Always | `Never | `IfNotLast ]) ->
+    is_flat:bool ->
+    allow_empty:bool ->
     (kind * string) list ->
     (kind * string) list * (kind * string) list
-  (** [split is_dir path] splits the list [path] into a directory
-      and filename, based on the [is_dir] function. The function
-      [is_dir] should return whether or not the path element [kind]
-      should be a directory or not. If the function [is_dir] returns
-      [`IfNotLast] then the element will be a directory only if it
-      is not the last element in the path. The return value is a tuple
-      of directory-type elements and filename-type elements. If the
-      [is_dir] function can return [`Always], the caller must be prepared
-      to handle the case where the filename part is empty. *)
+  (** [split ~is_flat path] splits the list [path] into a directory
+      and filename. Returns a tuple
+      of directory-type elements and filename-type elements. If [allow_empty]
+      is [true], the filename part will be empty if all components are
+      directory-type. If [allow_empty] is [false], the last element will part
+      of the filename, even if it is a directory-type. *)
 end
 
 module Anchor : sig

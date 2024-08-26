@@ -10,11 +10,7 @@ let segment_to_string (kind, name) =
 
 let as_filename ?(add_ext = true) (url : Url.Path.t) =
   let components = Url.Path.to_list url in
-  let dir, path =
-    Url.Path.split
-      ~is_dir:(function `Page -> `IfNotLast | _ -> `Never)
-      components
-  in
+  let dir, path = Url.Path.split ~is_flat:true ~allow_empty:false components in
   let dir = List.map segment_to_string dir in
   let path = String.concat "." (List.map segment_to_string path) in
   let str_path = String.concat Fpath.dir_sep (dir @ [ path ]) in
