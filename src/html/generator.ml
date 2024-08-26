@@ -14,7 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 module HLink = Link
+
+open Odoc_utils
 open Odoc_document.Types
+
 module Html = Tyxml.Html
 module Doctree = Odoc_document.Doctree
 module Url = Odoc_document.Url
@@ -499,23 +502,27 @@ module Breadcrumbs = struct
   open Types
 
   let gen_breadcrumbs ~config ~url =
-    let rec get_parent_paths x =
-      match x with
-      | [] -> []
-      | x :: xs -> (
-          match Odoc_document.Url.Path.of_list (List.rev (x :: xs)) with
-          | Some x -> x :: get_parent_paths xs
-          | None -> get_parent_paths xs)
+    let resolve = Link.Current url in
+    let breadcrumb ?(prefix = "") url =
+      let href = Link.href ~config ~resolve (Url.from_path url) in
+      { href; name = prefix ^ url.name; kind = url.kind }
     in
-    let to_breadcrumb path =
-      let href =
-        Link.href ~config ~resolve:(Current url)
-          (Odoc_document.Url.from_path path)
-      in
-      { href; name = path.name; kind = path.kind }
+    let rec package url =
+      match url.Url.Path.parent with
+      | None -> breadcrumb ~prefix:"Package " url
+      | Some url -> package url
     in
-    get_parent_paths (List.rev (Odoc_document.Url.Path.to_list url))
-    |> List.rev |> List.map to_breadcrumb
+    let rec rhs (url : Url.Path.t) =
+      match url with
+      | { kind = `Library; parent; _ } ->
+          let package = Option.map package parent in
+          (* Don't list components that separates the package and library names. *)
+          breadcrumb ~prefix:"Library " url :: Option.to_list package
+      | { parent = None; kind = `Page; _ } -> [ package url ]
+      | { parent = None; _ } -> [ breadcrumb url ]
+      | { parent = Some parent; _ } -> breadcrumb url :: rhs parent
+    in
+    List.rev (rhs url)
 end
 
 module Page = struct

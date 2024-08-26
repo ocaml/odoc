@@ -16,7 +16,7 @@ Foo contains "Preamble for O" once.
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../index.html">test</a> &#x00BB; Foo
+     <a href="../index.html">Library test</a> &#x00BB; Foo
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>Foo</span></code></h1>
      <p>Preamble for Foo.</p>
@@ -59,7 +59,7 @@ Bar doesn't contain "Preamble for Foo" on purpose.
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../index.html">test</a> &#x00BB; Bar
+     <a href="../index.html">Library test</a> &#x00BB; Bar
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>Bar</span></code></h1>
     </header>
@@ -134,7 +134,7 @@ Check the preambles:
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../../index.html">test</a> &#x00BB; 
+     <a href="../../index.html">Library test</a> &#x00BB; 
      <a href="../index.html">Bar</a> &#x00BB; Q
     </nav>
     <header class="odoc-preamble">
@@ -155,7 +155,7 @@ Check the preambles:
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../../index.html">test</a> &#x00BB; 
+     <a href="../../index.html">Library test</a> &#x00BB; 
      <a href="../index.html">Bar</a> &#x00BB; P
     </nav>
     <header class="odoc-preamble">

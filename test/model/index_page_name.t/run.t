@@ -13,4 +13,4 @@ The breadcrumbs shouldn't show the name of the page, "index".
 Expected to fail:
 
   $ grep odoc-nav test/index.html
-    <nav class="odoc-nav"><a href="../index.html">Up</a> – test</nav>
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – Package test</nav>

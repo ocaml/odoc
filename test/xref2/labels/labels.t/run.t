@@ -52,7 +52,7 @@ There are two references in N, one should point to a local label and the other t
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../../index.html">test</a> &#x00BB; 
+     <a href="../../index.html">Library test</a> &#x00BB; 
      <a href="../index.html">Test</a> &#x00BB; N
     </nav>
     <header class="odoc-preamble">
@@ -87,7 +87,7 @@ The second occurence of 'B' in the main page should be disambiguated
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../index.html">test</a> &#x00BB; Test
+     <a href="../index.html">Library test</a> &#x00BB; Test
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Test</span></code></h1>
