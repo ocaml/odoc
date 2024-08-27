@@ -541,8 +541,7 @@ let render ~config ~sidebar = function
   | Document.Page page -> [ Page.page ~config ~sidebar page ]
   | Source_page src -> [ Page.source_page ~config src ]
 
-let filepath ~config url =
-  Link.Path.as_filename ~config url
+let filepath ~config url = Link.Path.as_filename ~config url
 
 let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in
