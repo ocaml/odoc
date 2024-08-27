@@ -117,5 +117,4 @@ let href ~config ~resolve t =
           in
           match (relative_target, anchor) with
           | [], "" -> "#"
-          | page, "" -> String.concat "/" page
-          | page, anchor -> String.concat "/" page ^ "#" ^ anchor))
+          | page, _ -> add_anchor @@ String.concat "/" page))

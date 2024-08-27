@@ -10,14 +10,9 @@ We should be able to remap the links to one of the packages:
   $ odoc html-generate -o _html --indent _odoc/prefix/mypkg/doc/test.odocl
   $ odoc html-generate -o _html2 --indent _odoc/prefix/mypkg/doc/test.odocl -R prefix/otherpkg/:https://mysite.org/p/otherpkg/1.2.3/
 
-  $ diff _html/prefix/mypkg/doc/Test/index.html _html2/prefix/mypkg/doc/Test/index.html
-  25c25,27
-  <        <a href="../../../otherpkg/doc/Otherlib/index.html#type-t">Otherlib.t
-  ---
-  >        <a
-  >         href="https://mysite.org/p/otherpkg/1.2.3/doc/Otherlib/index.html#type-t"
-  >         >Otherlib.t
-  [1]
+  $ grep Otherlib/index.html _html/prefix/mypkg/doc/Test/index.html _html2/prefix/mypkg/doc/Test/index.html
+  _html/prefix/mypkg/doc/Test/index.html:       <a href="../../../otherpkg/doc/Otherlib/index.html#type-t">Otherlib.t
+  _html2/prefix/mypkg/doc/Test/index.html:        href="https://mysite.org/p/otherpkg/1.2.3/doc/Otherlib/index.html#type-t"
 
 This shouldn't stop us from outputting the remapped package though, and the following should complete without error
 
