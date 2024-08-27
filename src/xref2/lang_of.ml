@@ -611,6 +611,7 @@ and simple_expansion :
           map with
           functor_parameter =
             (arg.id, param_identifier) :: map.functor_parameter;
+          module_ = Component.ModuleMap.add arg.id param_identifier map.module_;
         }
       in
       let arg = functor_parameter map arg in
@@ -825,6 +826,7 @@ and module_type_expr map identifier = function
         {
           map with
           functor_parameter = (arg.id, identifier') :: map.functor_parameter;
+          module_ = Component.ModuleMap.add arg.id identifier' map.module_;
         }
       in
       Functor
