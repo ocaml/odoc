@@ -148,18 +148,18 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
         let pages = Resolver.all_pages ~root:page_root resolver in
         let pages =
           List.map
-            (fun (page_id, title) ->
+            (fun (id, title) ->
               let title =
                 match title with
                 | None ->
                     [
                       Odoc_model.Location_.at
                         (Odoc_model.Location_.span [])
-                        (`Word (Odoc_model.Paths.Identifier.name page_id));
+                        (`Word (Odoc_model.Paths.Identifier.name id));
                     ]
                 | Some x -> x
               in
-              (title, page_id))
+              { title; id })
             pages
         in
         { page_name = page_root; pages })

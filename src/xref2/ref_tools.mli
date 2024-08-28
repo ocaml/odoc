@@ -2,6 +2,7 @@ open Odoc_model.Paths.Reference
 
 type module_lookup_result =
   Resolved.Module.t * Cpath.Resolved.module_ * Component.Module.t
+type page_lookup_result = Resolved.Page.t * Odoc_model.Lang.Page.t
 
 type asset_lookup_result = Resolved.Asset.t
 
@@ -12,6 +13,11 @@ val resolve_module_reference :
   Env.t ->
   Module.t ->
   module_lookup_result ref_result Odoc_model.Error.with_warnings
+
+val resolve_page_reference :
+  Env.t ->
+  Page.t ->
+  page_lookup_result ref_result Odoc_model.Error.with_warnings
 
 val resolve_asset_reference :
   Env.t ->
