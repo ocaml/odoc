@@ -1,21 +1,5 @@
 (** Abstract syntax tree representing ocamldoc comments *)
 
-type parser_tag = 
-    Author of string
-  | Deprecated
-  | Param of string 
-  | Raise of string 
-  | Return
-  | See of [ `Url | `File | `Document ] * string
-  | Since of string 
-  | Before of string 
-  | Version of string 
-  | Canonical of string 
-  | Inline 
-  | Open 
-  | Closed 
-  | Hidden 
-
 type list_kind = [ `Ordered | `Unordered ]
 type list_syntax = [ `Light | `Heavy ]
 type list_item = [ `Li | `Dash ]
@@ -63,8 +47,8 @@ type code_block_meta = {
   tags : string with_location option;
 }
 
-type media = Token.media
-type media_href = Token.media_href
+type media = [ `Audio | `Video | `Image ]
+type media_href = [ `Reference of string | `Link of string ]
 
 type code_block = {
   meta : code_block_meta option;

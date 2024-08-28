@@ -1,6 +1,6 @@
 {
 
-  open Parser
+open Parser
 
 let unescape_word : string -> string = fun s ->
   (* The common case is that there are no escape sequences. *)
@@ -186,9 +186,31 @@ let reference_token media start target input lexbuf =
   match start with
   | "{!" -> Simple_ref target
   | "{{!" -> Ref_with_replacement target
-  | "{:" -> Simple_link target
-  | "{{:" -> Link_with_replacement target
-  | _ -> assert false
+  | "{:" -> Simple_link (target)
+  | "{{:" -> Link_with_replacement (target)
+
+  | "{image!" -> Media (Reference target, Image)
+  | "{image:" -> Media (Link target, Image)
+  | "{audio!" -> Media (Reference target, Audio)
+  | "{audio:" -> Media (Link target, Audio)
+  | "{video!" -> Media (Reference target, Video)
+  | "{video:" -> Media (Link target, Video)
+
+  | _ ->
+     let target, kind =
+      let open Parser_types in
+       match start with
+       | "{{image!" -> Reference target, Image
+       | "{{image:" -> Link target, Image
+       | "{{audio!" -> Reference target, Audio
+       | "{{audio:" -> Link target, Audio
+       | "{{video!" -> Reference target, Video
+       | "{{video:" -> Link target, Video
+       | _ -> assert false
+     in
+     let token_descr = "DUMMY_MEDIA_FOR_DEBUGGING" (* Parser_utils.describe (`Media_with_replacement_text (target, kind, "")) *) in
+     let content = media token_descr (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf in
+     Media_with_replacement (target, kind, content)
 
 let trim_leading_space_or_accept_whitespace lexbuf input start_offset text =
   match text.[0] with
@@ -409,13 +431,13 @@ and token input = parse
   | "{!modules:" ([^ '}']* as modules) '}'
     { emit lexbuf input (Modules modules) }
 
-  | (media_start as start)
+| (media_start as start)
     {
       let start_offset = Lexing.lexeme_start lexbuf in
       let target =
         reference_content input start start_offset (Buffer.create 16) lexbuf
       in
-      let token = (reference_token start target) in
+      let token = reference_token media start target input lexbuf in
       emit ~start_offset lexbuf input token }
 
   | "{["
@@ -463,8 +485,8 @@ and token input = parse
           input
           ~start_offset:(Lexing.lexeme_end lexbuf)
           (Parse_error.not_allowed
-            ~what:(Token.describe END)
-            ~in_what:(Token.describe token));
+            ~what:(Parser_utils.describe END)
+            ~in_what:(Parser_utils.describe token));
       emit lexbuf input token }
 
   | "{ul"
@@ -599,8 +621,8 @@ and token input = parse
         input
         ~start_offset:(Lexing.lexeme_end lexbuf)
         (Parse_error.not_allowed
-          ~what:(Token.describe END)
-          ~in_what:(Token.describe (Modules "")));
+          ~what:(Parser_utils.describe END)
+          ~in_what:(Parser_utils.describe (Modules "")));
       emit lexbuf input (Modules modules) }
 
 and code_span buffer nesting_level start_offset input = parse
@@ -625,8 +647,8 @@ and code_span buffer nesting_level start_offset input = parse
         lexbuf
         input
         (Parse_error.not_allowed
-          ~what:(Token.describe (Blank_line "\n\n"))
-          ~in_what:(Token.describe (Code_span "")));
+          ~what:(Parser_utils.describe (Blank_line "\n\n"))
+          ~in_what:(Parser_utils.describe (Code_span "")));
       Buffer.add_char buffer ' ';
       code_span buffer nesting_level start_offset input lexbuf }
   | newline horizontal_space*
@@ -638,8 +660,8 @@ and code_span buffer nesting_level start_offset input = parse
         lexbuf
         input
         (Parse_error.not_allowed
-          ~what:(Token.describe END)
-          ~in_what:(Token.describe (Code_span "")));
+          ~what:(Parser_utils.describe END)
+          ~in_what:(Parser_utils.describe (Code_span "")));
       emit lexbuf input (Code_span (Buffer.contents buffer)) ~start_offset }
 
   | _ as c
@@ -669,8 +691,8 @@ and math kind buffer nesting_level start_offset input = parse
           lexbuf
           input
           (Parse_error.not_allowed
-            ~what:(Token.describe (Blank_line "\n"))
-            ~in_what:(Token.describe (math_constr kind "")));
+            ~what:(Parser_utils.describe (Blank_line "\n"))
+            ~in_what:(Parser_utils.describe (math_constr kind "")));
         Buffer.add_char buffer '\n';
         math kind buffer nesting_level start_offset input lexbuf
       | Block ->
@@ -682,8 +704,8 @@ and math kind buffer nesting_level start_offset input = parse
         lexbuf
         input
         (Parse_error.not_allowed
-          ~what:(Token.describe END)
-          ~in_what:(Token.describe (math_constr kind "")));
+          ~what:(Parser_utils.describe END)
+          ~in_what:(Parser_utils.describe (math_constr kind "")));
       emit lexbuf input (math_constr kind (Buffer.contents buffer)) ~start_offset }
   | _ as c
     { Buffer.add_char buffer c;
@@ -706,9 +728,10 @@ and media tok_descr buffer nesting_level start_offset input = parse
       media tok_descr buffer nesting_level start_offset input lexbuf }
   | eof
     { warning
+        lexbuf
         input
         (Parse_error.not_allowed
-          ~what:(Token.describe `End)
+          ~what:(Parser_utils.describe END)
           ~in_what:tok_descr);
       Buffer.contents buffer}
   | (newline)
@@ -735,8 +758,8 @@ and verbatim buffer last_false_terminator start_offset input = parse
           lexbuf
           input
           (Parse_error.not_allowed
-            ~what:(Token.describe END)
-            ~in_what:(Token.describe (Verbatim "")))
+            ~what:(Parser_utils.describe END)
+            ~in_what:(Parser_utils.describe (Verbatim "")))
       | Some location ->
         warning
           lexbuf
