@@ -697,9 +697,19 @@ and page_t =
     [
       F ("name", (fun t -> t.name), identifier);
       F ("root", (fun t -> t.root), root);
-      F ("frontmatter", (fun t -> t.frontmatter), List (Pair (string, string)));
+      F ("frontmatter", (fun t -> t.frontmatter), frontmatter);
       F ("content", (fun t -> t.content), docs);
       F ("digest", (fun t -> t.digest), Digest.t);
+    ]
+
+and frontmatter =
+  let open Odoc_model.Frontmatter in
+  Record
+    [
+      F
+        ( "children",
+          (fun t -> (t.children_order :> Odoc_model.Paths.Reference.t list)),
+          List reference );
     ]
 
 and implementation_t =
