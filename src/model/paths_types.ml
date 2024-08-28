@@ -756,7 +756,6 @@ module rec Reference : sig
   type page =
     [ `Resolved of Resolved_reference.page
     | `Root of string * [ `TPage | `TUnknown ]
-    | `Dot of label_parent * string
     | `Page_path of hierarchy ]
   (** @canonical Odoc_model.Paths.Reference.Page.t *)
 
