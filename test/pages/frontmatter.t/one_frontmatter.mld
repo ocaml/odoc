@@ -1,6 +1,5 @@
 {0 One frontmatter}
 
 {@meta[
-bli1: bloblobloblo1
-bli2: bloblobloblo2
+children: page1 page2
 ]}
