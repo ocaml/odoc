@@ -542,10 +542,9 @@ end =
 module rec Sidebar : sig
   type library = { name : string; units : Paths.Identifier.RootModule.t list }
 
-  type pages = {
-    page_name : string;
-    pages : (Comment.link_content * Paths.Identifier.Page.t) list;
-  }
+  type page = { title : Comment.link_content; id : Paths.Identifier.Page.t }
+
+  type pages = { page_name : string; pages : page list }
 
   type t = { pages : pages list; libraries : library list }
 end =

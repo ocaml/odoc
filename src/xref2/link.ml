@@ -1133,10 +1133,26 @@ let page env page =
             | None -> Errors.report ~what:(`Child_module mod_) `Lookup))
       page.Lang.Page.children
   in
+  let frontmatter =
+    let resolve r =
+      match Ref_tools.resolve_page_reference env r |> Error.raise_warnings with
+      | Ok (ref_, _c) -> `Resolved ref_
+      | Error e ->
+          Errors.report
+            ~what:(`Reference (r :> Paths.Reference.t))
+            ~tools_error:(`Reference e) `Resolve;
+          r
+    in
+    {
+      Frontmatter.children_order =
+        List.map resolve page.frontmatter.children_order;
+    }
+  in
   {
     page with
     Page.content = comment_docs env page.Page.name page.content;
     linked = true;
+    frontmatter;
   }
 
 let source_info env infos =

@@ -75,10 +75,10 @@ let of_lang (v : Odoc_model.Lang.Sidebar.t) =
     let page_hierarchy { Odoc_model.Lang.Sidebar.page_name; pages } =
       if pages = [] then None
       else
-        let prepare_for_hierarchy (link_content, id) =
+        let prepare_for_hierarchy { Odoc_model.Lang.Sidebar.title; id } =
           let path = Url.Path.from_identifier id in
           let payload =
-            let content = Comment.link_content link_content in
+            let content = Comment.link_content title in
             (path, sidebar_toc_entry id content)
           in
           (payload, path |> Url.Path.to_list |> List.map snd)
