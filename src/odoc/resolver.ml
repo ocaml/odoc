@@ -82,8 +82,10 @@ end = struct
       pkglist;
     let current_root_dir =
       match current_root with
-      | Some root -> (
-          try Some (List.assq root pkglist) with Not_found -> None)
+      | Some root ->
+          List.fold_left
+            (fun acc (x, dir) -> if String.equal x root then Some dir else acc)
+            None pkglist
       | None -> None
     in
     { current_root; table = cache; current_root_dir }
@@ -499,11 +501,11 @@ let all_pages ?root ({ pages; _ } : t) =
   let filter (root : Odoc_model.Root.t) =
     match root with
     | {
-     file = Page { title; _ };
+     file = Page { title; frontmatter; _ };
      id = { iv = #Odoc_model.Paths.Identifier.Page.t_pv; _ } as id;
      _;
     } ->
-        Some (id, title)
+        Some (id, title, frontmatter)
     | _ -> None
   in
   match pages with

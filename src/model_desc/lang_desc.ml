@@ -708,8 +708,9 @@ and frontmatter =
     [
       F
         ( "children",
-          (fun t -> (t.children_order :> Odoc_model.Paths.Reference.t list)),
-          List reference );
+          (fun t ->
+            (t.children_order :> Odoc_model.Paths.Reference.t list option)),
+          Option (List reference) );
     ]
 
 and implementation_t =

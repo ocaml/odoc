@@ -363,14 +363,27 @@ module Identifier = struct
     type t_pv = Id.page_pv
   end
 
+  module LeafPage = struct
+    type t = Id.leaf_page
+    type t_pv = Id.leaf_page_pv
+    let equal = equal
+    let hash = hash
+  end
+
   module ContainerPage = struct
     type t = Id.container_page
     type t_pv = Id.container_page_pv
+    let equal = equal
+    let hash = hash
   end
 
   module NonSrc = struct
     type t = Paths_types.Identifier.non_src
     type t_pv = Paths_types.Identifier.non_src_pv
+
+    let equal x y = x.ihash = y.ihash && x.ikey = y.ikey
+
+    let hash x = x.ihash
   end
 
   module SourcePage = struct
@@ -623,6 +636,8 @@ module Identifier = struct
 
   module Hashtbl = struct
     module Any = Hashtbl.Make (Any)
+    module ContainerPage = Hashtbl.Make (ContainerPage)
+    module LeafPage = Hashtbl.Make (LeafPage)
   end
 end
 

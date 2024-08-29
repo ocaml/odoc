@@ -79,7 +79,7 @@ let generate_odoc ~syntax ~warnings_options:_ ~renderer ~output ~extra_suffix
   (match sidebar with
   | None -> Ok None
   | Some x ->
-      Odoc_file.load_index x >>= fun (sidebar, _) ->
+      Odoc_file.load_index x >>= fun { sidebar; index = _ } ->
       Ok (Some (Odoc_document.Sidebar.of_lang sidebar)))
   >>= fun sidebar ->
   document_of_odocl ~syntax file >>= fun doc ->

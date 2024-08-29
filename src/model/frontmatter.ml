@@ -3,14 +3,15 @@ type line =
   | KV of string * string
   | V of string
 
-type t = { children_order : Paths.Reference.Page.t list }
+type t = { children_order : Paths.Reference.Page.t list option }
 
-let empty = { children_order = [] }
+let empty = { children_order = None }
 
 let apply fm line =
   match (line, fm) with
-  | Children_order children_order, { children_order = [] } -> { children_order }
-  | Children_order _, { children_order = _ :: _ } ->
+  | Children_order children_order, { children_order = None } ->
+      { children_order = Some children_order }
+  | Children_order _, { children_order = Some _ } ->
       (* TODO raise warning about duplicate children field *) fm
   | KV _, _ | V _, _ -> (* TODO raise warning *) fm
 

@@ -47,7 +47,9 @@ val lookup_page : t -> string -> Odoc_model.Lang.Page.t option
 val all_pages :
   ?root:string ->
   t ->
-  (Odoc_model.Paths.Identifier.Page.t * Odoc_model.Comment.link_content option)
+  (Odoc_model.Paths.Identifier.Page.t
+  * Odoc_model.Comment.link_content option
+  * Odoc_model.Frontmatter.t)
   list
 
 val all_units :

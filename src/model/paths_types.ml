@@ -11,8 +11,13 @@ module Identifier = struct
   and container_page = container_page_pv id
   (** @canonical Odoc_model.Paths.Identifier.ContainerPage.t *)
 
-  type page_pv =
-    [ container_page_pv | `LeafPage of container_page option * PageName.t ]
+  type leaf_page_pv = [ `LeafPage of container_page option * PageName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.LeafPage.t_pv *)
+
+  and leaf_page = leaf_page_pv id
+  (** @canonical Odoc_model.Paths.Identifier.LeafPage.t *)
+
+  type page_pv = [ container_page_pv | leaf_page_pv ]
   (** @canonical Odoc_model.Paths.Identifier.Page.t_pv *)
 
   and page = page_pv id
