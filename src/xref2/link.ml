@@ -1145,11 +1145,17 @@ let page env page =
     in
     {
       Frontmatter.children_order =
-        List.map resolve page.frontmatter.children_order;
+        Option.map (List.map resolve) page.frontmatter.children_order;
     }
+  in
+  let root =
+    match page.root.file with
+    | Page p -> { page.root with file = Page { p with frontmatter } }
+    | _ -> assert false
   in
   {
     page with
+    root;
     Page.content = comment_docs env page.Page.name page.content;
     linked = true;
     frontmatter;
