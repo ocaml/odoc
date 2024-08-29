@@ -152,7 +152,7 @@ let compile_index ?(ignore_output = false) ~output_file ~json ~docs ~libs () =
   let lines = Cmd_outputs.submit desc cmd (Some output_file) in
   if not ignore_output then
     Cmd_outputs.(
-      add_prefixed_output cmd link_output (Fpath.to_string output_file) lines)
+      add_prefixed_output cmd index_output (Fpath.to_string output_file) lines)
 
 let html_generate ~output_dir ?index ?(ignore_output = false)
     ?(search_uris = []) ~input_file:file () =
