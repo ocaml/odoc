@@ -1,0 +1,7 @@
+{0 This index has a name}
+
+Hello
+
+{@meta[
+children: content dir1/
+]}

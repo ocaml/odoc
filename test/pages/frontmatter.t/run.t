@@ -3,7 +3,7 @@ When there is no frontmatter, everything is normal
   $ odoc compile zero_frontmatter.mld
   $ odoc_print page-zero_frontmatter.odoc | jq '.frontmatter'
   {
-    "children": []
+    "children": "None"
   }
 
 When there is one frontmatter, it is extracted from the content:
@@ -11,32 +11,19 @@ When there is one frontmatter, it is extracted from the content:
   $ odoc compile one_frontmatter.mld
   $ odoc_print page-one_frontmatter.odoc | jq '.frontmatter'
   {
-    "children": [
-      {
-        "`Page_path": [
-          "`TRelativePath",
-          [
-            ""
-          ]
-        ]
-      },
-      {
-        "`Page_path": [
-          "`TRelativePath",
-          [
-            "page1"
-          ]
-        ]
-      },
-      {
-        "`Page_path": [
-          "`TRelativePath",
-          [
-            "page2"
-          ]
-        ]
-      }
-    ]
+    "children": {
+      "Some": [
+        {
+          "Page": ""
+        },
+        {
+          "Page": "page1"
+        },
+        {
+          "Page": "page2"
+        }
+      ]
+    }
   }
   $ odoc_print page-one_frontmatter.odoc | jq '.content'
   [
@@ -75,7 +62,7 @@ When there is more than one frontmatter, they are all extracted from the content
   $ odoc compile two_frontmatters.mld
   $ odoc_print page-two_frontmatters.odoc | jq '.frontmatter'
   {
-    "children": []
+    "children": "None"
   }
   $ odoc_print page-two_frontmatters.odoc | jq '.content'
   [

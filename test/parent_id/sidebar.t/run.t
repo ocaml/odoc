@@ -23,10 +23,10 @@
      <nav class="odoc-toc odoc-global-toc"><b>pkg's Pages</b>
       <ul>
        <li><a href="#" class="current_unit">Package <code>pkg</code></a>
-        <ul><li><a href="file.html">File</a></li>
+        <ul>
          <li><a href="dir1/index.html">A directory</a>
           <ul><li><a href="dir1/my_page.html">My page</a></li></ul>
-         </li>
+         </li><li><a href="file.html">File</a></li>
         </ul>
        </li>
       </ul><b>Libraries</b>
@@ -41,11 +41,11 @@
      <nav class="odoc-toc odoc-global-toc"><b>pkg's Pages</b>
       <ul>
        <li><a href="../../../doc/index.html">Package <code>pkg</code></a>
-        <ul><li><a href="../../../doc/file.html">File</a></li>
+        <ul>
          <li><a href="../../../doc/dir1/index.html">A directory</a>
           <ul><li><a href="../../../doc/dir1/my_page.html">My page</a></li>
           </ul>
-         </li>
+         </li><li><a href="../../../doc/file.html">File</a></li>
         </ul>
        </li>
       </ul><b>Libraries</b>
