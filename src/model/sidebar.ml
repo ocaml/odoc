@@ -9,7 +9,7 @@ type container_page = ContainerPage.t
 
 module PageToc = struct
   type title = Comment.link_content
-  type children_order = Paths.Identifier.Page.t list
+  type children_order = Frontmatter.child list
 
   type payload = { title : title; children_order : children_order option }
 
@@ -63,7 +63,7 @@ module PageToc = struct
   let dirs (_, dir_content) =
     CPH.fold (fun id payload acc -> (id, payload) :: acc) dir_content.dirs []
 
-  let contents dir =
+  let contents ((dir_id, _) as dir) =
     let children_order =
       match dir_payload dir with
       | Some ({ children_order; _ }, _) -> children_order
@@ -90,7 +90,14 @@ module PageToc = struct
       | Some ch ->
           let open Odoc_utils.OptionMonad in
           List.filter_map
-            (fun id -> find dir id >>= fun content -> Some (id, content))
+            (fun c ->
+              let id =
+                match c with
+                | Frontmatter.Page name ->
+                    Mk.leaf_page (dir_id, Names.PageName.make_std name)
+                | Dir name -> Mk.page (dir_id, Names.PageName.make_std name)
+              in
+              find dir id >>= fun content -> Some (id, content))
             ch
     in
     children_order

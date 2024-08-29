@@ -14,11 +14,6 @@ val resolve_module_reference :
   Module.t ->
   module_lookup_result ref_result Odoc_model.Error.with_warnings
 
-val resolve_page_reference :
-  Env.t ->
-  Page.t ->
-  page_lookup_result ref_result Odoc_model.Error.with_warnings
-
 val resolve_asset_reference :
   Env.t ->
   Asset.t ->

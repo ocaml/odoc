@@ -159,16 +159,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
                       ]
                   | Some x -> x
                 in
-                let children_order =
-                  match fm.Frontmatter.children_order with
-                  | None -> None
-                  | Some co ->
-                      Some
-                        (List.filter_map
-                           (function
-                             | `Resolved (`Identifier id) -> Some id | _ -> None)
-                           co)
-                in
+                let children_order = fm.Frontmatter.children_order in
                 (id, title, children_order))
               (List.filter_map
                  (function

@@ -2,7 +2,7 @@ open Paths.Identifier
 
 module PageToc : sig
   type title = Comment.link_content
-  type children_order = Paths.Identifier.Page.t list
+  type children_order = Frontmatter.child list
 
   type t
   type content = Entry of title | Dir of t

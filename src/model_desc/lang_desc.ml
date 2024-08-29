@@ -704,14 +704,12 @@ and page_t =
 
 and frontmatter =
   let open Odoc_model.Frontmatter in
-  Record
-    [
-      F
-        ( "children",
-          (fun t ->
-            (t.children_order :> Odoc_model.Paths.Reference.t list option)),
-          Option (List reference) );
-    ]
+  Record [ F ("children", (fun t -> t.children_order), Option (List child)) ]
+
+and child =
+  let open Odoc_model.Frontmatter in
+  Variant
+    (function Page s -> C ("Page", s, string) | Dir s -> C ("Dir", s, string))
 
 and implementation_t =
   let open Lang.Implementation in
