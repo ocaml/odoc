@@ -1,9 +1,8 @@
-type line =
-  | Children_order of Paths.Reference.Page.t list
-  | KV of string * string
-  | V of string
+type child = Page of string | Dir of string
 
-type t = { children_order : Paths.Reference.Page.t list option }
+type line = Children_order of child list | KV of string * string | V of string
+
+type t = { children_order : child list option }
 
 let empty = { children_order = None }
 
@@ -15,6 +14,12 @@ let apply fm line =
       (* TODO raise warning about duplicate children field *) fm
   | KV _, _ | V _, _ -> (* TODO raise warning *) fm
 
+let parse_child c =
+  if Astring.String.is_suffix ~affix:"/" c then
+    let c = String.sub c 0 (String.length c - 1) in
+    Dir c
+  else Page c
+
 let parse s =
   let entries =
     s |> String.split_on_char '\n'
@@ -22,11 +27,7 @@ let parse s =
            l |> fun x ->
            Astring.String.cut ~sep:":" x |> function
            | Some ("children", v) ->
-               let refs =
-                 Astring.String.fields v
-                 |> List.map (fun name : Paths.Reference.Page.t ->
-                        `Page_path (`TRelativePath, [ name ]))
-               in
+               let refs = Astring.String.fields v |> List.map parse_child in
                Children_order refs
            | Some (k, v) -> KV (k, v)
            | None -> V x)

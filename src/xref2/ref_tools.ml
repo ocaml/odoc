@@ -816,13 +816,6 @@ and resolve_module_reference env (r : Module.t) : M.t ref_result =
   | `Root (name, _) -> M.in_env env name
   | `Module_path p -> Path.module_in_env env p
 
-let resolve_page_reference env (r : Reference.Page.t) :
-    page_lookup_result ref_result =
-  match r with
-  | `Resolved _r -> failwith "What's going on!?"
-  | `Page_path p -> Path.page_in_env env p
-  | `Root (name, _) -> Page.in_env env name
-
 let resolve_class_signature_reference env (r : ClassSignature.t) =
   (* Casting from ClassSignature to LabelParent.
      TODO: Add [resolve_class_signature_reference] when it's easier to implement. *)
@@ -1010,9 +1003,6 @@ let resolve_reference :
 
 let resolve_module_reference env m =
   Odoc_model.Error.catch_warnings (fun () -> resolve_module_reference env m)
-
-let resolve_page_reference env m =
-  Odoc_model.Error.catch_warnings (fun () -> resolve_page_reference env m)
 
 let resolve_asset_reference env m =
   Odoc_model.Error.catch_warnings (fun () -> resolve_asset_reference env m)
