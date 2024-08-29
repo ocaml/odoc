@@ -1,17 +1,21 @@
 %{
   [@@@warning "-32"]
 
+  open Error
   let point_of_position Lexing.{ pos_lnum; pos_cnum; _ } = 
     Loc.{ line = pos_lnum; column = pos_cnum }
 
-  let to_location : (Lexing.position * Lexing.position) -> 'a -> 'a Loc.with_location =
-    fun (start, end_) inner -> 
+  type lexspan = (Lexing.position * Lexing.position)
+  let to_location :  lexspan -> Loc.span =
+    fun (start, end_) -> 
       let open Loc in
       let start_point = point_of_position start 
       and end_point = point_of_position end_ in 
-      let location = { file = start.pos_fname; start = start_point; end_ = end_point } 
-      in 
-      { location; value = inner }
+      { file = start.pos_fname; start = start_point; end_ = end_point } 
+
+  let wrap_location : type a. lexspan -> a -> a Loc.with_location = fun loc value -> 
+    let location = to_location loc in 
+    { location; value }
 %}
 
 %token SPACE NEWLINE
@@ -65,16 +69,15 @@
 %start <Ast.t> main 
 %%
 
-let located(x) == 
-  matched = x; { location_of_position $loc matched }
-
 let main :=  
-  | _ws = whitespace; { [] }
-  | _ = error; { print_endline "Error"; [] }
+  | _ = whitespace; { [] }
+  | END; { [] }
+  | _ = error; { raise @@ Parser_error (wrap_location $sloc (Expecting "UNREACHABLE")) } 
 
 let whitespace := 
-  | SPACE; { [] } | NEWLINE; { [] }
-  | _ = Space; { [] }
-  | _ = Blank_line; { [ [] ] } 
-  | _ = Single_newline; { [] }
+  | SPACE; { `Space " " } 
+  | NEWLINE; { `Space "\n" }
+  | ~ = Space; <`Space>
+  | ~ = Blank_line; <`Space>
+  | ~ = Single_newline; <`Space>
 
