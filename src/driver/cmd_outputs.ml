@@ -11,6 +11,8 @@ let link_output = ref [ "" ]
 
 let generate_output = ref [ "" ]
 
+let index_output = ref [ "" ]
+
 let source_tree_output = ref [ "" ]
 
 let add_prefixed_output cmd list prefix lines =
