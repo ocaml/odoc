@@ -31,6 +31,7 @@
 - Add a 'remap' option to HTML generation for partial docsets (@jonludlam, #1189)
 - Added an `html-generate-asset` command (@panglesd, #1185)
 - Added syntax for images, videos, audio (@panglesd, #1184)
+- Added the ability to order pages in the table of content (@panglesd, #1193)
 
 ### Changed
 
