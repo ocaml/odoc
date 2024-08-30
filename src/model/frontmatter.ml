@@ -27,7 +27,9 @@ let parse s =
            l |> fun x ->
            Astring.String.cut ~sep:":" x |> function
            | Some ("children", v) ->
-               let refs = Astring.String.fields v |> List.map parse_child in
+               let refs =
+                 v |> Astring.String.fields ~empty:false |> List.map parse_child
+               in
                Children_order refs
            | Some (k, v) -> KV (k, v)
            | None -> V x)
