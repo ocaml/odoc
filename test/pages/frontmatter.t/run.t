@@ -14,9 +14,6 @@ When there is one frontmatter, it is extracted from the content:
     "children": {
       "Some": [
         {
-          "Page": ""
-        },
-        {
           "Page": "page1"
         },
         {
