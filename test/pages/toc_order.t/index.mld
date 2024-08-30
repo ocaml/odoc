@@ -1,7 +1,7 @@
-{0 This index has a name}
+{0 This is the main index}
 
 Hello
 
 {@meta[
-children: content dir1/
+children: content dir1/ typo
 ]}
