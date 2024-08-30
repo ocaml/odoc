@@ -1,3 +1,4 @@
+open Odoc_utils
 open Paths.Identifier
 
 module CPH = Hashtbl.ContainerPage
@@ -48,7 +49,7 @@ module PageToc = struct
   let leafs (_, dir_content) =
     LPH.fold
       (fun id { title = payload; _ } acc ->
-        if String.equal "index" (Paths.Identifier.name id) then acc
+        if Astring.String.equal "index" (Paths.Identifier.name id) then acc
         else (id, payload) :: acc)
       dir_content.leafs []
 
@@ -88,7 +89,7 @@ module PageToc = struct
               String.compare (Paths.Identifier.name x) (Paths.Identifier.name y))
             contents
       | Some ch ->
-          let open Odoc_utils.OptionMonad in
+          let open OptionMonad in
           List.filter_map
             (fun c ->
               let id =

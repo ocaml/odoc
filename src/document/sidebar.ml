@@ -1,3 +1,4 @@
+open Odoc_utils
 open Types
 
 let sidebar_toc_entry id content =
