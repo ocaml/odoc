@@ -84,7 +84,8 @@ end = struct
       match current_root with
       | Some root ->
           List.fold_left
-            (fun acc (x, dir) -> if String.equal x root then Some dir else acc)
+            (fun acc (x, dir) ->
+              if Astring.String.equal x root then Some dir else acc)
             None pkglist
       | None -> None
     in

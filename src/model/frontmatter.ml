@@ -22,7 +22,8 @@ let parse_child c =
 
 let parse s =
   let entries =
-    s |> String.split_on_char '\n'
+    s
+    |> Astring.String.cuts ~sep:"\n"
     |> List.map (fun l ->
            l |> fun x ->
            Astring.String.cut ~sep:":" x |> function

@@ -1,3 +1,4 @@
+open Odoc_utils
 open Astring
 open Odoc_json_index
 open Or_error
@@ -162,9 +163,9 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
                 let children_order = fm.Frontmatter.children_order in
                 (id, title, children_order))
               (List.filter_map
-                 (function
-                   | Paths.Identifier.(
-                       ({ iv = #LeafPage.t_pv; _ } as id), pl, fm) ->
+                 Paths.Identifier.(
+                   function
+                   | ({ iv = #LeafPage.t_pv; _ } as id), pl, fm ->
                        Some (id, pl, fm)
                    | _ -> None)
                  pages)
