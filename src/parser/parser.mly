@@ -31,6 +31,27 @@
     fun ~only_for_debugging:loc  -> Debug (wrap_location loc `DEBUG)  
 
   let tag : Ast.tag -> Ast.block_element = fun tag -> `Tag tag 
+
+  let tag_with_element loc children = function 
+  | Before version -> tag @@ `Before (version, [ wrap_location loc children ]) 
+  | Deprecated -> tag @@ `Deprecated [ wrap_location loc children ]
+  | Return -> tag @@ `Return [ wrap_location loc children ]
+  | Param param_name -> tag @@ `Param (param_name, [ wrap_location loc children ])
+  | Raise exn -> tag @@ `Raise (exn, [ wrap_location loc children ])
+  | See (kind, href) -> tag @@ `See (kind, href, [ wrap_location loc children ])
+  | _ -> raise @@ exn_location ~only_for_debugging:( loc )
+
+  let tag_bare loc = function 
+  | Version version -> tag @@ `Version version 
+  | Since version -> tag @@ `Since version 
+  | Canonical implementation -> tag @@ `Canonical (wrap_location loc implementation)
+  | Author author -> tag @@ `Author author
+  | Inline -> `Tag `Inline 
+  | Open -> `Tag `Open 
+  | Closed -> `Tag `Closed
+  | Hidden -> `Tag `Hidden
+  | _ -> raise @@ exn_location ~only_for_debugging:( loc )
+
 %}
 
 %token SPACE NEWLINE
@@ -83,7 +104,6 @@
 
 %start <Ast.t> main 
 
-
 %%
 
 let located(rule) == value = rule; { wrap_location $loc value }
@@ -120,31 +140,12 @@ let list_light :=
   | PLUS; ordered_items = separated_list(NEWLINE; PLUS, nestable_block_element); { `List (`Ordered, `Light, unordered_items) }
  
 let nestable_block_element := 
+  | code = Verbatim; { `Verbatim code }
   | error; { raise_unimplemented ~only_for_debugging:($loc) }
 
 let tag := 
-  | inner_tag = Tag; children = nestable_block_element; {
-      match inner_tag with 
-      | Before version -> tag @@ `Before (version, [ wrap_location $loc children ]) 
-      | Deprecated -> tag @@ `Deprecated [ wrap_location $loc children ]
-      | Return -> tag @@ `Return [ wrap_location $loc children ]
-      | Param param_name -> tag @@ `Param (param_name, [ wrap_location $loc children ])
-      | Raise exn -> tag @@ `Raise (exn, [ wrap_location $loc children ])
-      | See (kind, href) -> tag @@ `See (kind, href, [ wrap_location $loc children ])
-      | _ -> raise @@ exn_location ~only_for_debugging:( $loc )
-    }
-  | inner_tag = Tag; {
-      match inner_tag with 
-      | Version version -> tag @@ `Version version 
-      | Since version -> tag @@ `Since version 
-      | Canonical implementation -> tag @@ `Canonical (wrap_location $loc implementation)
-      | Author author -> tag @@ `Author author
-      | Inline -> `Tag `Inline 
-      | Open -> `Tag `Open 
-      | Closed -> `Tag `Closed
-      | Hidden -> `Tag `Hidden
-      | _ -> raise @@ exn_location ~only_for_debugging:( $loc )
-    }
+  | inner_tag = Tag; children = nestable_block_element; { tag_with_element $loc children inner_tag }
+  | inner_tag = Tag; { tag_bare $loc inner_tag }
 
 let style := ~ = Style; <>
 let paragraph_style := ~ = Paragraph_style; <>
