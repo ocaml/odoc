@@ -1,8 +1,8 @@
 %{
   [@@@warning "-32"]
-
- 
   open Error
+  open Parser_types
+
   let point_of_position Lexing.{ pos_lnum; pos_cnum; _ } = 
     Loc.{ line = pos_lnum; column = pos_cnum }
 
@@ -124,23 +124,27 @@ let nestable_block_element :=
   | error; { raise_unimplemented ~only_for_debugging:($loc) }
 
 let tag := 
+  | inner_tag = Tag; children = nestable_block_element; {
+      match inner_tag with 
+      | Before version -> tag @@ `Before (version, [ wrap_location $loc children ]) 
+      | Deprecated -> tag @@ `Deprecated [ wrap_location $loc children ]
+      | Return -> tag @@ `Return [ wrap_location $loc children ]
+      | Param param_name -> tag @@ `Param (param_name, [ wrap_location $loc children ])
+      | Raise exn -> tag @@ `Raise (exn, [ wrap_location $loc children ])
+      | See (kind, href) -> tag @@ `See (kind, href, [ wrap_location $loc children ])
+      | _ -> raise @@ exn_location ~only_for_debugging:( $loc )
+    }
   | inner_tag = Tag; {
-    let open Parser_types in
     match inner_tag with 
     | Version version -> tag @@ `Version version 
     | Since version -> tag @@ `Since version 
-    | Before _version -> raise_unimplemented ~only_for_debugging:( $loc )
     | Canonical implementation -> tag @@ `Canonical (wrap_location $loc implementation)
-    | Inline -> tag `Inline 
-    | Open -> tag `Open 
-    | Closed -> tag `Closed
-    | Hidden -> tag `Hidden
-    | Deprecated -> raise_unimplemented ~only_for_debugging:( $loc )
-    | Return -> raise_unimplemented ~only_for_debugging:( $loc )
-    | Author _author -> raise_unimplemented ~only_for_debugging:( $loc )
-    | Param _param -> raise_unimplemented ~only_for_debugging:( $loc )
-    | Raise _exn -> raise_unimplemented ~only_for_debugging:( $loc ) 
-    | See (_kind, _href) -> raise_unimplemented ~only_for_debugging:( $loc ) 
+    | Author author -> tag @@ `Author author
+    | Inline -> `Tag `Inline 
+    | Open -> `Tag `Open 
+    | Closed -> `Tag `Closed
+    | Hidden -> `Tag `Hidden
+    | _ -> raise @@ exn_location ~only_for_debugging:( $loc )
 }
 
 let style := ~ = Style; <>
