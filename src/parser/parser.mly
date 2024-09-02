@@ -113,16 +113,16 @@ let inline_element :=
 (* TODO: Determine how we want to handle recursive elements like refs and some of the tags that have nestable_block inners
    Currently, this is broken *)
 let ref := 
-  | ref = Simple_ref; children = inline_element; { `Reference (`Simple, ref, wrap_location $loc children) }
-  | _ref_w_text = Ref_with_replacement; children = inline_element; { `Reference (`Replacement, ref, wrap_location $loc children) }
+  | ref_body = Simple_ref; children = inline_element; { `Reference (`Simple, ref_body, wrap_location $loc children) }
+  | ref_body = Ref_with_replacement; children = inline_element; { `Reference (`Replacement, ref_body, wrap_location $loc children) }
 
 let list_light := 
-  | MINUS; unordered_items = separated_list(NEWLINE; MINUS, text); { `List (`Unordered, `Light, unordered_items) }
-  | PLUS; unordered_items = separated_list(NEWLINE; PLUS, text); { `List (`Ordered, `Light, unordered_items) }
-  
-let text := 
-  | ~ = Word; whitespace; <`Word>
-  
+  | MINUS; unordered_items = separated_list(NEWLINE; MINUS, nestable_block_element); { `List (`Unordered, `Light, unordered_items) }
+  | PLUS; ordered_items = separated_list(NEWLINE; PLUS, nestable_block_element); { `List (`Ordered, `Light, unordered_items) }
+ 
+let nestable_block_element := 
+  | error; { raise_unimplemented ~only_for_debugging:($loc) }
+
 let tag := 
   | inner_tag = Tag; {
     let open Parser_types in
