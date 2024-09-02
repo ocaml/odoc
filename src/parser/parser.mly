@@ -86,8 +86,7 @@
 
 %%
 
-%public %inline located(token):
-  value = token; { wrap_location $sloc value }
+let located(rule) == value = rule; { wrap_location $loc value }
 
 let main :=  
   | _ = whitespace; { [] }
@@ -135,17 +134,17 @@ let tag :=
       | _ -> raise @@ exn_location ~only_for_debugging:( $loc )
     }
   | inner_tag = Tag; {
-    match inner_tag with 
-    | Version version -> tag @@ `Version version 
-    | Since version -> tag @@ `Since version 
-    | Canonical implementation -> tag @@ `Canonical (wrap_location $loc implementation)
-    | Author author -> tag @@ `Author author
-    | Inline -> `Tag `Inline 
-    | Open -> `Tag `Open 
-    | Closed -> `Tag `Closed
-    | Hidden -> `Tag `Hidden
-    | _ -> raise @@ exn_location ~only_for_debugging:( $loc )
-}
+      match inner_tag with 
+      | Version version -> tag @@ `Version version 
+      | Since version -> tag @@ `Since version 
+      | Canonical implementation -> tag @@ `Canonical (wrap_location $loc implementation)
+      | Author author -> tag @@ `Author author
+      | Inline -> `Tag `Inline 
+      | Open -> `Tag `Open 
+      | Closed -> `Tag `Closed
+      | Hidden -> `Tag `Hidden
+      | _ -> raise @@ exn_location ~only_for_debugging:( $loc )
+    }
 
 let style := ~ = Style; <>
 let paragraph_style := ~ = Paragraph_style; <>
