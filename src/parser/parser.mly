@@ -110,9 +110,9 @@ let located(rule) == value = rule; { wrap_location $loc value }
 
 let main :=  
   | _ = whitespace; { [] }
-  | t = tag; { [ wrap_location $sloc t ]}
+  | t = located(tag); { [ t ]}
   | END; { [] }
-  | _ = error; { raise @@ exn_location ~only_for_debugging:( $loc ) }
+  | _ = error; { raise @@ exn_location ~only_for_debugging:$loc }
 
 let whitespace := 
   | SPACE; { `Space " " } 
@@ -125,40 +125,42 @@ let inline_element :=
   | ~ = Space; <`Space>
   | ~ = Word; <`Word>
   | ~ = Code_span; <`Code_span>
-  | s = Raw_markup; { `Raw_markup ( None, s ) }
-  | style = Style; inner = inline_element; { `Styled (style, wrap_location $loc inner)  }
+  | ~ = Raw_markup; <`Raw_markup>
+  | style = Style; inner = located( inline_element ); { `Styled (style, [ inner ])  }
   | ~ = Math_span; <`Math_span>
   | ~ = ref; <>
   | ~ = link; <>
 
-(* TODO: Determine how we want to handle recursive elements like refs and some of the tags that have nestable_block inners
-   Currently, this is broken *)
 let ref := 
-  | ref_body = Simple_ref; children = inline_element; { `Reference (`Simple, ref_body, [ wrap_location $loc children ]) }
-  | ref_body = Ref_with_replacement; children = inline_element; { `Reference (`With_text, ref_body, [ wrap_location $loc children ]) }
+  | ref_body = located(Simple_ref ); children = located( inline_element ); { `Reference (`Simple, ref_body, [ children ]) }
+  | ref_body = located(Ref_with_replacement); children = located( inline_element ); { `Reference (`With_text, ref_body, [ children ]) }
 
+(* TODO : Fix the `with_replacement` producers in the following two rules, if they're broken. Ask what `with_replacement` refers to *)
 let link := 
-  | link_body = Simple_link; children = inline_element; { `Link ( link_body, [ wrap_location $loc children ] ) }
-  | link_body = Link_with_replacement; children = inline_element; { `Link ( link_body, [ wrap_location $loc children ] 
- )}
+  | link_body = Simple_link; children = located(inline_element); { `Link (link_body, [ children ]) }
+  | link_body = Link_with_replacement; children = located(inline_element); { `Link (link_body, [ children ]) }
 
 let list_light := 
-  | MINUS; unordered_items = separated_list(NEWLINE; MINUS, nestable_block_element); { `List (`Unordered, `Light, unordered_items) }
-  | PLUS; ordered_items = separated_list(NEWLINE; PLUS, nestable_block_element); { `List (`Ordered, `Light, unordered_items) }
+  | MINUS; unordered_items = separated_list(NEWLINE; MINUS, located(nestable_block_element)); { `List (`Unordered, `Light, [ unordered_items ]) }
+  | PLUS; ordered_items = separated_list(NEWLINE; PLUS, located(nestable_block_element)); { `List (`Ordered, `Light, [ ordered_items ]) }
 
 let list_heavy := 
-  | list_type = List; 
+  | list_kind = List; 
     items = separated_list(
       NEWLINE; _ = List_item; SPACE?; RIGHT_BRACE, 
       located(nestable_block_element)
-    ); { `List (list_kind, `Heavy, items) }
- 
-(* NOTE: (@faycarsons) For some reason the inline_element rule isn't type-checking despite having(??) all of the variants in Ast.inline_element *)
+    ); { `List (list_kind, `Heavy, [ items ]) }
+
+let table := error; { raise @@ exn_location ~only_for_debugging:$loc }
+
 let nestable_block_element := 
   | code = Verbatim; { `Verbatim code }
-  | element = inline_element; { `Paragraph [ ( wrap_location $loc element : Ast.inline_element Loc.with_location ) ] }
+  | element = located( inline_element ); { `Paragraph [ element ] }
   | code_block = Code_block; <`Code_block>
-  | modules = Modules; { `Modules [ wrap_location $loc modules ]}
+  | modules = located(Modules); { `Modules [ modules ] }
+  | _ = table; { raise @@ exn_location ~only_for_debugging:$loc }
+  | _ = Media; { raise @@ exn_location ~only_for_debugging:$loc }
+  | ~ = Math_block; <`Math_block>
   | ~ = list_light; <>
   | ~ = list_heavy; <>
 
