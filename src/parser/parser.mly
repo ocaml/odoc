@@ -110,7 +110,7 @@ let located(rule) == value = rule; { wrap_location $loc value }
 
 let main :=  
   | _ = whitespace; { [] }
-  | tag_ = tag; { [ wrap_location $sloc tag_ ]}
+  | t = tag; { [ wrap_location $sloc t ]}
   | END; { [] }
   | _ = error; { raise @@ exn_location ~only_for_debugging:( $loc ) }
 
@@ -122,26 +122,45 @@ let whitespace :=
   | ~ = Single_newline; <`Space>
 
 let inline_element := 
+  | ~ = Space; <`Space>
   | ~ = Word; <`Word>
   | ~ = Code_span; <`Code_span>
-  | ~ = Raw_markup; <`Raw_markup>
-  | style = Style; inner = inline_element; { `Style (style, wrap_location $loc inner)  }
+  | s = Raw_markup; { `Raw_markup ( None, s ) }
+  | style = Style; inner = inline_element; { `Styled (style, wrap_location $loc inner)  }
   | ~ = Math_span; <`Math_span>
-  | _ = ref; <>
+  | ~ = ref; <>
+  | ~ = link; <>
 
 (* TODO: Determine how we want to handle recursive elements like refs and some of the tags that have nestable_block inners
    Currently, this is broken *)
 let ref := 
-  | ref_body = Simple_ref; children = inline_element; { `Reference (`Simple, ref_body, wrap_location $loc children) }
-  | ref_body = Ref_with_replacement; children = inline_element; { `Reference (`Replacement, ref_body, wrap_location $loc children) }
+  | ref_body = Simple_ref; children = inline_element; { `Reference (`Simple, ref_body, [ wrap_location $loc children ]) }
+  | ref_body = Ref_with_replacement; children = inline_element; { `Reference (`With_text, ref_body, [ wrap_location $loc children ]) }
+
+let link := 
+  | link_body = Simple_link; children = inline_element; { `Link ( link_body, [ wrap_location $loc children ] ) }
+  | link_body = Link_with_replacement; children = inline_element; { `Link ( link_body, [ wrap_location $loc children ] 
+ )}
 
 let list_light := 
   | MINUS; unordered_items = separated_list(NEWLINE; MINUS, nestable_block_element); { `List (`Unordered, `Light, unordered_items) }
   | PLUS; ordered_items = separated_list(NEWLINE; PLUS, nestable_block_element); { `List (`Ordered, `Light, unordered_items) }
+
+let list_heavy := 
+  | list_type = List; 
+    items = separated_list(
+      NEWLINE; _ = List_item; SPACE?; RIGHT_BRACE, 
+      located(nestable_block_element)
+    ); { `List (list_kind, `Heavy, items) }
  
+(* NOTE: (@faycarsons) For some reason the inline_element rule isn't type-checking despite having(??) all of the variants in Ast.inline_element *)
 let nestable_block_element := 
   | code = Verbatim; { `Verbatim code }
-  | error; { raise_unimplemented ~only_for_debugging:($loc) }
+  | element = inline_element; { `Paragraph [ ( wrap_location $loc element : Ast.inline_element Loc.with_location ) ] }
+  | code_block = Code_block; <`Code_block>
+  | modules = Modules; { `Modules [ wrap_location $loc modules ]}
+  | ~ = list_light; <>
+  | ~ = list_heavy; <>
 
 let tag := 
   | inner_tag = Tag; children = nestable_block_element; { tag_with_element $loc children inner_tag }
