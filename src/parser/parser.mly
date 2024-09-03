@@ -110,7 +110,16 @@ let located(rule) == value = rule; { wrap_location $loc value }
 
 let main :=  
   | _ = whitespace; { [] }
-  | t = located(tag); { [ t ]}
+  | t = located(tag); { [ t ] }
+
+  (* NOTE : (@faycarsons) Is this type coercion really necessary?? I couldn't 
+     figure out another way to get this producer to typecheck but this feels 
+     hacky *)
+  | block = located(nestable_block_element); { 
+      let block = (block :> Ast.block_element Loc.with_location) in
+      [ block ]
+    }
+
   | END; { [] }
   | _ = error; { raise @@ exn_location ~only_for_debugging:$loc }
 
@@ -149,13 +158,14 @@ let list_heavy :=
     items = separated_list(
       NEWLINE; _ = List_item; SPACE?; RIGHT_BRACE, 
       located(nestable_block_element)
-    ); { `List (list_kind, `Heavy, [ items ]) }
+    ); 
+    { `List (list_kind, `Heavy, [ items ]) }
 
 let table := error; { raise @@ exn_location ~only_for_debugging:$loc }
 
 let nestable_block_element := 
   | code = Verbatim; { `Verbatim code }
-  | element = located( inline_element ); { `Paragraph [ element ] }
+  | element = located(inline_element); { `Paragraph [ element ] }
   | code_block = Code_block; <`Code_block>
   | modules = located(Modules); { `Modules [ modules ] }
   | _ = table; { raise @@ exn_location ~only_for_debugging:$loc }
