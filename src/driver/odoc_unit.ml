@@ -139,8 +139,11 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
     let pkg_args = args_of pkg lib_deps in
     let odoc_dir = output_dir // rel_dir in
     let parent_id = rel_dir |> Odoc.Id.of_fpath in
-    let odoc_file = odoc_dir / (name ^ ".odoc") in
-    let odocl_file = linked_dir // rel_dir / (name ^ ".odocl") in
+    let odoc_file = odoc_dir / (String.uncapitalize_ascii name ^ ".odoc") in
+    (* odoc will uncapitalise the output filename *)
+    let odocl_file =
+      linked_dir // rel_dir / (String.uncapitalize_ascii name ^ ".odocl")
+    in
     {
       output_dir;
       pkgname = pkg.Packages.name;
@@ -211,7 +214,8 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
           `Impl { src_id; src_path }
         in
         let name =
-          impl.mip_path |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "impl-"
+          impl.mip_path |> Fpath.rem_ext |> Fpath.basename
+          |> String.uncapitalize_ascii |> ( ^ ) "impl-"
         in
         let unit =
           make_unit ~name ~kind ~rel_dir ~input_file:impl.mip_path ~pkg
