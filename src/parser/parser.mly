@@ -1,6 +1,5 @@
 %{
   [@@@warning "-32"]
-  open Error
   open Parser_types
 
   let point_of_position Lexing.{ pos_lnum; pos_cnum; _ } = 
@@ -18,28 +17,36 @@
     let location = to_location loc in 
     { location; value }
 
-  let throw : lexspan -> Error.parser_error -> unit = fun loc error -> 
-    raise @@ Parser_error (wrap_location loc error)
+  let pp_tag : Parser_types.tag -> string = function 
+  | Author _ -> "@author"
+  | Deprecated -> "@deprecated"
+  | Param _ -> "@param"
+  | Raise _ -> "@raise/@raises"
+  | Return -> "@return"
+  | See _ -> "@see"
+  | Since _ -> "@since"
+  | Before _ -> "@before"
+  | Version _ -> "@version"
+  | Canonical _ -> "@canonical"
+  | Inline | Open | Closed | Hidden -> "<internal>"
 
+type unimplemented = Top_level | Table | Media
+exception Debug of unimplemented Loc.with_location  
+exception No_children of string Loc.with_location
 
-  exception Debug of [ `DEBUG ] Loc.with_location
-  let raise_unimplemented : only_for_debugging:lexspan -> 'a = 
-    fun ~only_for_debugging:loc -> 
-      raise @@ Debug (wrap_location loc `DEBUG) 
-
-  let exn_location : only_for_debugging:lexspan -> exn = 
-    fun ~only_for_debugging:loc  -> Debug (wrap_location loc `DEBUG)  
+  let exn_location : only_for_debugging:lexspan -> failed_on:unimplemented -> exn = 
+    fun ~only_for_debugging:loc ~failed_on  -> Debug (wrap_location loc failed_on)  
 
   let tag : Ast.tag -> Ast.block_element = fun tag -> `Tag tag 
 
-  let tag_with_element loc children = function 
+  let tag_with_element (loc : lexspan) (children : Ast.nestable_block_element) : Parser_types.tag -> Ast.block_element = function 
   | Before version -> tag @@ `Before (version, [ wrap_location loc children ]) 
   | Deprecated -> tag @@ `Deprecated [ wrap_location loc children ]
   | Return -> tag @@ `Return [ wrap_location loc children ]
   | Param param_name -> tag @@ `Param (param_name, [ wrap_location loc children ])
   | Raise exn -> tag @@ `Raise (exn, [ wrap_location loc children ])
   | See (kind, href) -> tag @@ `See (kind, href, [ wrap_location loc children ])
-  | _ -> raise @@ exn_location ~only_for_debugging:( loc )
+  | _ -> assert false (* Unreachable *)
 
   let tag_bare loc = function 
   | Version version -> tag @@ `Version version 
@@ -50,7 +57,7 @@
   | Open -> `Tag `Open 
   | Closed -> `Tag `Closed
   | Hidden -> `Tag `Hidden
-  | _ -> raise @@ exn_location ~only_for_debugging:( loc )
+  | tag -> raise @@ No_children (wrap_location loc @@ Printf.sprintf "Tag %s expects children" (pp_tag tag)) 
 
 %}
 
@@ -121,7 +128,7 @@ let main :=
     }
 
   | END; { [] }
-  | _ = error; { raise @@ exn_location ~only_for_debugging:$loc }
+  | _ = error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Top_level }
 
 let whitespace := 
   | SPACE; { `Space " " } 
@@ -161,15 +168,15 @@ let list_heavy :=
     ); 
     { `List (list_kind, `Heavy, [ items ]) }
 
-let table := error; { raise @@ exn_location ~only_for_debugging:$loc }
+let table := error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Table }
 
 let nestable_block_element := 
   | code = Verbatim; { `Verbatim code }
   | element = located(inline_element); { `Paragraph [ element ] }
   | code_block = Code_block; <`Code_block>
   | modules = located(Modules); { `Modules [ modules ] }
-  | _ = table; { raise @@ exn_location ~only_for_debugging:$loc }
-  | _ = Media; { raise @@ exn_location ~only_for_debugging:$loc }
+  | _ = table; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Table }
+  | _ = Media; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Media }
   | ~ = Math_block; <`Math_block>
   | ~ = list_light; <>
   | ~ = list_heavy; <>
