@@ -30,8 +30,21 @@
   | Canonical _ -> "@canonical"
   | Inline | Open | Closed | Hidden -> "<internal>"
 
-type unimplemented = Top_level | Table | Media
+type unimplemented = Top_level_error | Table | Media
 exception Debug of unimplemented Loc.with_location  
+let _ = Printexc.register_printer (function
+  | Debug unimplemented_token_with_location -> 
+    begin
+      let Loc.{ location = _location; value = token } = unimplemented_token_with_location in 
+      let error_message = match token with 
+      | Top_level_error -> "Error in Parser.main rule"
+      | Table -> "table"
+      | Media -> "media" 
+      in
+      Option.some @@ Printf.sprintf "Parser failed on: %s" error_message
+    end 
+  | _ -> None
+)
 exception No_children of string Loc.with_location
 
   let exn_location : only_for_debugging:lexspan -> failed_on:unimplemented -> exn = 
@@ -128,7 +141,7 @@ let main :=
     }
 
   | END; { [] }
-  | _ = error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Top_level }
+  | _ = error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Top_level_error }
 
 let whitespace := 
   | SPACE; { `Space " " } 
