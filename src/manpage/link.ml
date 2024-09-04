@@ -3,7 +3,7 @@ open Odoc_document
 let for_printing url = List.map snd @@ Url.Path.to_list url
 
 let segment_to_string (kind, name) =
-  Format.asprintf "%a%s" Url.Path.pp_kind_prefix_for_output kind name
+  Format.asprintf "%a%s" Url.Path.pp_disambiguating_prefix kind name
 
 let as_filename ?(add_ext = true) (url : Url.Path.t) =
   let components = Url.Path.to_list url in

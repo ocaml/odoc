@@ -10,7 +10,7 @@ module Link = struct
       | None -> ()
     in
     Format.fprintf ppf "%a%a%s" pp_parent x.parent
-      Url.Path.pp_kind_prefix_for_output x.kind x.name
+      Url.Path.pp_disambiguating_prefix x.kind x.name
 
   let page p = Format.asprintf "%a" flatten_path p
 

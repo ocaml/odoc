@@ -115,7 +115,7 @@ module Path = struct
 
   let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
 
-  let pp_kind_prefix_for_output fmt = function
+  let pp_disambiguating_prefix fmt = function
     | `Module | `Page | `LeafPage | `File | `SourcePage -> ()
     | kind -> Format.fprintf fmt "%s-" (string_of_kind kind)
 
