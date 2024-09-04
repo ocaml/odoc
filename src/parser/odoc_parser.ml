@@ -102,11 +102,14 @@ let position_of_point : t -> Loc.point -> Lexing.position =
 (* The main entry point for this module *)
 let parse_comment ~location ~text =
   let reversed_newlines = reversed_newlines ~input:text in
-  let lexbuf = Lexing.from_string text in 
+  let lexbuf = Lexing.from_string text in
+  (* We cannot directly pass parameters to Menhir without converting our parser 
+     to a module functor. So we pass our current filename to the lexbuf here *)
+  lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = Lexing.(location.pos_fname) };
   let lexer_state = 
     Lexer.{ warnings = []
           ; offset_to_location = offset_to_location ~reversed_newlines ~comment_location:location
-          ; file = "foo.ml" } 
+          ; file = Lexing.(location.pos_fname) } 
   in
   let unwrapped_token : Lexing.lexbuf -> Parser.token = fun lexbuf -> 
     let with_location = Lexer.token lexer_state lexbuf in 
