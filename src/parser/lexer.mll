@@ -502,13 +502,13 @@ and token input = parse
     { emit lexbuf input (List_item `Dash) }
 
   | "{table"
-    { emit lexbuf input Table_heavy }
+    { emit lexbuf input TABLE_HEAVY }
 
   | "{t"
-    { emit lexbuf input Table_light }
+    { emit lexbuf input TABLE_LIGHT }
 
   | "{tr"
-    { emit lexbuf input Table_row }
+    { emit lexbuf input TABLE_ROW }
 
   | "{th"
     { emit lexbuf input (Table_cell `Header) }

@@ -103,9 +103,9 @@ exception No_children of string Loc.with_location
 %token <Ast.list_kind> List
 %token <Ast.list_item> List_item
 
-%token Table_light
-%token Table_heavy 
-%token Table_row 
+%token TABLE_LIGHT
+%token TABLE_HEAVY 
+%token TABLE_ROW 
 %token <Ast.table_cell_kind> Table_cell
 
 %token <int * string option> Section_heading
