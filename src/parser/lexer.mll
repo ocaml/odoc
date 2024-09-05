@@ -462,7 +462,7 @@ and token input = parse
           warning lexbuf input ~start_offset
             (Parse_error.language_tag_invalid_char lang_tag_ c);
 
-          (* NOTE : Metadata should not be `None`, fix this!! *)
+          (* NOTE : (@faycarsons) Metadata should not be `None` *)
           code_block start_offset (Lexing.lexeme_end lexbuf) None (Buffer.create 256) delimiter input lexbuf
     }
 

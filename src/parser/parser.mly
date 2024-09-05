@@ -181,14 +181,27 @@ let list_heavy :=
     ); 
     { `List (list_kind, `Heavy, [ items ]) }
 
-let table := error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Table }
+let heavy_cell := cell_kind = Table_cell; children = list(located(nestable_block_element)); { (children, cell_kind) }
+let heavy_row == TABLE_ROW; cells = list(heavy_cell);  { cells } 
+let table_heavy == TABLE_HEAVY; grid = list(heavy_row); { 
+    (* Convert into an 'abstract table' which can be either a light or heavy syntax table. 
+       We know this is a heavy table, which cannot have alignment, however, so the alignment field is `None` *)
+    let abstract : Ast.nestable_block_element Ast.abstract_table = (grid, None) in 
+    (abstract, `Heavy) 
+  }
+
+let table_light := TABLE_LIGHT; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Table }
+
+let table := 
+  | ~ = table_heavy; <`Table>
+  | ~ = table_light; <`Table>
 
 let nestable_block_element := 
   | code = Verbatim; { `Verbatim code }
   | element = located(inline_element); { `Paragraph [ element ] }
   | code_block = Code_block; <`Code_block>
   | modules = located(Modules); { `Modules [ modules ] }
-  | _ = table; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Table }
+  | ~ = table; <> 
   | _ = Media; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Media }
   | ~ = Math_block; <`Math_block>
   | ~ = list_light; <>
