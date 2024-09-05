@@ -139,7 +139,7 @@ let main :=
       let block = (block :> Ast.block_element Loc.with_location) in
       [ block ]
     }
-
+  | header = located( heading ); { [ header ]}
   | END; { [] }
   | _ = error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Top_level_error }
 
@@ -193,6 +193,11 @@ let nestable_block_element :=
   | ~ = Math_block; <`Math_block>
   | ~ = list_light; <>
   | ~ = list_heavy; <>
+
+let heading := 
+  | (num, title) = Section_heading; children = list(located(inline_element)); {
+      `Heading (num, title, children) :> Ast.block_element
+    }
 
 let tag := 
   | inner_tag = Tag; children = nestable_block_element; { tag_with_element $loc children inner_tag }
