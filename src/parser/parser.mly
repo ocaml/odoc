@@ -132,7 +132,6 @@ let located(rule) == value = rule; { wrap_location $loc value }
 (* ENTRY-POINT *)
 
 let main :=  
-  | _ = whitespace; { [] }
   | t = located(tag); { [ t ] }
 
   (* NOTE : (@faycarsons) Is this type coercion really necessary?? I couldn't 
@@ -160,25 +159,25 @@ let inline_element :=
   | ~ = Word; <`Word>
   | ~ = Code_span; <`Code_span>
   | ~ = Raw_markup; <`Raw_markup>
-  | style = Style; inner = located( inline_element ); { `Styled (style, [ inner ])  }
+  | style = Style; inner = located(inline_element)+; { `Styled (style, inner) }
   | ~ = Math_span; <`Math_span>
   | ~ = ref; <>
   | ~ = link; <>
 
 let ref := 
-  | ref_body = located(Simple_ref ); children = located(inline_element)*; { `Reference (`Simple, ref_body, children) }
-  | ref_body = located(Ref_with_replacement); children = located(inline_element)*; { `Reference (`With_text, ref_body, children) }
+  | ref_body = located(Simple_ref ); children = located(inline_element)*; RIGHT_BRACE; { `Reference (`Simple, ref_body, children) }
+  | ref_body = located(Ref_with_replacement); children = located(inline_element)*; RIGHT_BRACE; { `Reference (`With_text, ref_body, children) }
 
 (* TODO : Fix the `with_replacement` producers in the following two rules, if they're broken. Ask what `with_replacement` refers to *)
 let link := 
-  | link_body = Simple_link; children = located(inline_element); { `Link (link_body, [ children ]) }
-  | link_body = Link_with_replacement; children = located(inline_element); { `Link (link_body, [ children ]) }
+  | link_body = Simple_link; children = located(inline_element); RIGHT_BRACE; { `Link (link_body, [ children ]) }
+  | link_body = Link_with_replacement; children = located(inline_element); RIGHT_BRACE; { `Link (link_body, [ children ]) }
 
 (* LIST *)
 
 let list_light := 
-  | MINUS; unordered_items = separated_list(NEWLINE; MINUS, located(nestable_block_element)); { `List (`Unordered, `Light, [ unordered_items ]) }
-  | PLUS; ordered_items = separated_list(NEWLINE; PLUS, located(nestable_block_element)); { `List (`Ordered, `Light, [ ordered_items ]) }
+  | MINUS; unordered_items = separated_list(NEWLINE; SPACE?; MINUS, located(nestable_block_element)); { `List (`Unordered, `Light, [ unordered_items ]) }
+  | PLUS; ordered_items = separated_list(NEWLINE; SPACE?; PLUS, located(nestable_block_element)); { `List (`Ordered, `Light, [ ordered_items ]) }
 
 let list_heavy := 
   | list_kind = List; 
@@ -194,9 +193,9 @@ let list_element :=
 
 (* TABLES *)
 
-let cell_heavy := cell_kind = Table_cell; children = list(located(nestable_block_element)); { (children, cell_kind) }
-let row_heavy == TABLE_ROW; cells = list(cell_heavy);  { cells } 
-let table_heavy == TABLE_HEAVY; grid = row_heavy+; RIGHT_BRACE; { 
+let cell_heavy := cell_kind = Table_cell; SPACE?; children = list(located(nestable_block_element)); SPACE?; NEWLINE?; RIGHT_BRACE; { (children, cell_kind) }
+let row_heavy == TABLE_ROW; cells = list(cell_heavy); SPACE*; NEWLINE?; SPACE*; RIGHT_BRACE;  { cells } 
+let table_heavy == TABLE_HEAVY; grid = row_heavy+; SPACE*; NEWLINE?; SPACE*; RIGHT_BRACE; { 
     (* Convert into an 'abstract table' which can be either a light or heavy syntax table. 
        We know this is a heavy table, which cannot have alignment, however, so the alignment field is `None` *)
     let abstract : Ast.nestable_block_element Ast.abstract_table = (grid, None) in 
@@ -222,7 +221,7 @@ let nestable_block_element :=
   | ~ = Math_block; <`Math_block>
 
 let heading := 
-  | (num, title) = Section_heading; children = list(located(inline_element)); {
+  | (num, title) = Section_heading; children = list(located(inline_element)); RIGHT_BRACE; {
       `Heading (num, title, children) :> Ast.block_element
     }
 
