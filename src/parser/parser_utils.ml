@@ -100,7 +100,6 @@ let[@warning "-8"] describe : Parser.token -> string = function
   | Tag Open -> "'@open'"
   | Tag Closed -> "'@closed'"
   | Tag Hidden -> "'@hidden"
-  | COMMENT -> "top-level text"
 
 (* NOTE : (@faycarsons) Should this be in Ast.ml? This takes an Ast.t no? *)
 let describe_element = function
