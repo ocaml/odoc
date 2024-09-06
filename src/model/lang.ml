@@ -552,7 +552,10 @@ end =
   Sidebar
 
 module rec Index : sig
-  type 'a t = Sidebar.t * 'a Paths.Identifier.Hashtbl.Any.t
+  type 'a t = {
+    sidebar : Sidebar.t;
+    entries : 'a Paths.Identifier.Hashtbl.Any.t;
+  }
 end =
   Index
 
