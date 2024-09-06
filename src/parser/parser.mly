@@ -77,7 +77,6 @@ exception No_children of string Loc.with_location
 %token SPACE NEWLINE
 %token RIGHT_BRACE
 %token RIGHT_CODE_DELIMITER
-%token COMMENT
 
 %token <string> Blank_line
 %token <string> Single_newline
