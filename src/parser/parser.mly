@@ -141,12 +141,16 @@ let toplevel :=
   | block = nestable_block_element; { (block :> Ast.block_element) }
   | ~ = heading; <>
 
-let whitespace := 
-  | SPACE; { `Space " " } 
-  | NEWLINE; { `Space "\n" }
-  | ~ = Space; <`Space>
-  | ~ = Blank_line; <`Space>
-  | ~ = Single_newline; <`Space>
+(* We'll need some of these later I'd imagine, not sure about the whole rule.
+   Which elements are strict about spaces or newlines? 
+
+  let whitespace := 
+    | SPACE; { `Space " " } 
+    | NEWLINE; { `Space "\n" }
+    | ~ = Space; <`Space>
+    | ~ = Blank_line; <`Space>
+    | ~ = Single_newline; <`Space>
+*)
 
 (* INLINE ELEMENTS *)
 
@@ -155,19 +159,22 @@ let inline_element :=
   | ~ = Word; <`Word>
   | ~ = Code_span; <`Code_span>
   | ~ = Raw_markup; <`Raw_markup>
-  | style = Style; inner = located(inline_element)+; { `Styled (style, inner) }
+  | style = Style; inner = located(inline_element)*; { `Styled (style, inner) }
   | ~ = Math_span; <`Math_span>
   | ~ = ref; <>
   | ~ = link; <>
 
 let ref := 
-  | ref_body = located(Simple_ref ); children = located(inline_element)*; RIGHT_BRACE; { `Reference (`Simple, ref_body, children) }
-  | ref_body = located(Ref_with_replacement); children = located(inline_element)*; RIGHT_BRACE; { `Reference (`With_text, ref_body, children) }
+  | ref_body = located(Simple_ref); children = located(inline_element)+; RIGHT_BRACE; 
+    { `Reference (`Simple, ref_body, children) }
+
+  | ref_body = located(Ref_with_replacement); children = located(inline_element)*; RIGHT_BRACE; 
+    { `Reference (`With_text, ref_body, children) }
 
 (* TODO : Fix the `with_replacement` producers in the following two rules, if they're broken. Ask what `with_replacement` refers to *)
 let link := 
-  | link_body = Simple_link; children = located(inline_element); RIGHT_BRACE; { `Link (link_body, [ children ]) }
-  | link_body = Link_with_replacement; children = located(inline_element); RIGHT_BRACE; { `Link (link_body, [ children ]) }
+  | link_body = Simple_link; children = located(inline_element)+; RIGHT_BRACE; { `Link (link_body, children) }
+  | link_body = Link_with_replacement; children = located(inline_element)+; RIGHT_BRACE; { `Link (link_body, children) }
 
 (* LIST *)
 
@@ -178,13 +185,11 @@ let list_light :=
   | PLUS; ordered_items = separated_list(NEWLINE; SPACE?; PLUS, located(nestable_block_element)); 
     { `List (`Ordered, `Light, [ ordered_items ]) }
 
+(* `List_item` is [ `Li | `Dash ], not sure how that's useful though. Can't find '{li' syntax in Odoc docs *)
+let item_heavy == _ = List_item; ~ = located(nestable_block_element)*; RIGHT_BRACE; <>
 let list_heavy := 
-  | list_kind = List; 
-    items = separated_list(
-      NEWLINE; _ = List_item; SPACE?; RIGHT_BRACE, 
-      located(nestable_block_element)
-    ); RIGHT_BRACE;
-    { `List (list_kind, `Heavy, [ items ]) }
+  | list_kind = List; items = item_heavy*; RIGHT_BRACE;
+    { `List (list_kind, `Heavy, items) }
 
 let list_element := 
   | ~ = list_light; <>
@@ -192,7 +197,7 @@ let list_element :=
 
 (* TABLES *)
 
-let cell_heavy := cell_kind = Table_cell; SPACE?; children = list(located(nestable_block_element)); SPACE?; NEWLINE?; RIGHT_BRACE; { (children, cell_kind) }
+let cell_heavy := cell_kind = Table_cell; children = located(nestable_block_element)*; RIGHT_BRACE; { (children, cell_kind) }
 let row_heavy == TABLE_ROW; cells = list(cell_heavy); RIGHT_BRACE;  { cells } 
 let table_heavy == TABLE_HEAVY; grid = row_heavy*; RIGHT_BRACE; { 
     (* Convert into an 'abstract table' which can be either a light or heavy syntax table. 
