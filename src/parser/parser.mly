@@ -126,7 +126,10 @@ exception No_children of string Loc.with_location
 
 %%
 
+(* Utility which wraps the return value of a producer in `Loc.with_location` *)
 let located(rule) == value = rule; { wrap_location $loc value }
+
+(* ENTRY-POINT *)
 
 let main :=  
   | _ = whitespace; { [] }
@@ -150,6 +153,8 @@ let whitespace :=
   | ~ = Blank_line; <`Space>
   | ~ = Single_newline; <`Space>
 
+(* INLINE ELEMENTS *)
+
 let inline_element := 
   | ~ = Space; <`Space>
   | ~ = Word; <`Word>
@@ -161,13 +166,15 @@ let inline_element :=
   | ~ = link; <>
 
 let ref := 
-  | ref_body = located(Simple_ref ); children = located( inline_element ); { `Reference (`Simple, ref_body, [ children ]) }
-  | ref_body = located(Ref_with_replacement); children = located( inline_element ); { `Reference (`With_text, ref_body, [ children ]) }
+  | ref_body = located(Simple_ref ); children = located(inline_element)*; { `Reference (`Simple, ref_body, children) }
+  | ref_body = located(Ref_with_replacement); children = located(inline_element)*; { `Reference (`With_text, ref_body, children) }
 
 (* TODO : Fix the `with_replacement` producers in the following two rules, if they're broken. Ask what `with_replacement` refers to *)
 let link := 
   | link_body = Simple_link; children = located(inline_element); { `Link (link_body, [ children ]) }
   | link_body = Link_with_replacement; children = located(inline_element); { `Link (link_body, [ children ]) }
+
+(* LIST *)
 
 let list_light := 
   | MINUS; unordered_items = separated_list(NEWLINE; MINUS, located(nestable_block_element)); { `List (`Unordered, `Light, [ unordered_items ]) }
@@ -181,9 +188,11 @@ let list_heavy :=
     ); 
     { `List (list_kind, `Heavy, [ items ]) }
 
-let odoc_list := 
+let list_element := 
   | ~ = list_light; <>
   | ~ = list_heavy; <>
+
+(* TABLES *)
 
 let cell_heavy := cell_kind = Table_cell; children = list(located(nestable_block_element)); { (children, cell_kind) }
 let row_heavy == TABLE_ROW; cells = list(cell_heavy);  { cells } 
@@ -200,16 +209,17 @@ let table :=
   | ~ = table_heavy; <`Table>
   | ~ = table_light; <`Table>
 
+(* TOP-LEVEL ELEMENTS *)
+
 let nestable_block_element := 
   | ~ = Verbatim; <`Verbatim>
   | ~ = located(inline_element) +; <`Paragraph>
   | ~ = Code_block; <`Code_block>
   | ~ = located(Modules) +; <`Modules>
+  | ~ = list_element; <>
   | ~ = table; <> 
   | _ = Media; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Media }
   | ~ = Math_block; <`Math_block>
-  | ~ = list_light; <>
-  | ~ = list_heavy; <>
 
 let heading := 
   | (num, title) = Section_heading; children = list(located(inline_element)); {
