@@ -52,13 +52,13 @@ exception No_children of string Loc.with_location
 
   let tag : Ast.tag -> Ast.block_element = fun tag -> `Tag tag 
 
-  let tag_with_element (loc : lexspan) (children : Ast.nestable_block_element) : Parser_types.tag -> Ast.block_element = function 
-  | Before version -> tag @@ `Before (version, [ wrap_location loc children ]) 
-  | Deprecated -> tag @@ `Deprecated [ wrap_location loc children ]
-  | Return -> tag @@ `Return [ wrap_location loc children ]
-  | Param param_name -> tag @@ `Param (param_name, [ wrap_location loc children ])
-  | Raise exn -> tag @@ `Raise (exn, [ wrap_location loc children ])
-  | See (kind, href) -> tag @@ `See (kind, href, [ wrap_location loc children ])
+  let tag_with_element (children : Ast.nestable_block_element Loc.with_location list) : Parser_types.tag -> Ast.block_element = function 
+  | Before version -> tag @@ `Before (version, children) 
+  | Deprecated -> tag @@ `Deprecated children
+  | Return -> tag @@ `Return children
+  | Param param_name -> tag @@ `Param (param_name, children)
+  | Raise exn -> tag @@ `Raise (exn, children)
+  | See (kind, href) -> tag @@ `See (kind, href, children)
   | _ -> assert false (* Unreachable *)
 
   let tag_bare loc = function 
@@ -132,18 +132,14 @@ let located(rule) == value = rule; { wrap_location $loc value }
 (* ENTRY-POINT *)
 
 let main :=  
-  | t = located(tag); { [ t ] }
-
-  (* NOTE : (@faycarsons) Is this type coercion really necessary?? I couldn't 
-     figure out another way to get this producer to typecheck but this feels 
-     hacky *)
-  | block = located(nestable_block_element); { 
-      let block = (block :> Ast.block_element Loc.with_location) in
-      [ block ]
-    }
-  | header = located( heading ); { [ header ]}
+  | ~ = located(toplevel)+; <>
   | END; { [] }
-  | _ = error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Top_level_error }
+  | error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Top_level_error }
+
+let toplevel :=
+  | ~ = tag; <>
+  | block = nestable_block_element; { (block :> Ast.block_element) }
+  | ~ = heading; <>
 
 let whitespace := 
   | SPACE; { `Space " " } 
@@ -176,15 +172,18 @@ let link :=
 (* LIST *)
 
 let list_light := 
-  | MINUS; unordered_items = separated_list(NEWLINE; SPACE?; MINUS, located(nestable_block_element)); { `List (`Unordered, `Light, [ unordered_items ]) }
-  | PLUS; ordered_items = separated_list(NEWLINE; SPACE?; PLUS, located(nestable_block_element)); { `List (`Ordered, `Light, [ ordered_items ]) }
+  | MINUS; unordered_items = separated_list(NEWLINE; SPACE?; MINUS, located(nestable_block_element)); 
+    { `List (`Unordered, `Light, [ unordered_items ]) }
+
+  | PLUS; ordered_items = separated_list(NEWLINE; SPACE?; PLUS, located(nestable_block_element)); 
+    { `List (`Ordered, `Light, [ ordered_items ]) }
 
 let list_heavy := 
   | list_kind = List; 
     items = separated_list(
       NEWLINE; _ = List_item; SPACE?; RIGHT_BRACE, 
       located(nestable_block_element)
-    ); 
+    ); RIGHT_BRACE;
     { `List (list_kind, `Heavy, [ items ]) }
 
 let list_element := 
@@ -194,8 +193,8 @@ let list_element :=
 (* TABLES *)
 
 let cell_heavy := cell_kind = Table_cell; SPACE?; children = list(located(nestable_block_element)); SPACE?; NEWLINE?; RIGHT_BRACE; { (children, cell_kind) }
-let row_heavy == TABLE_ROW; cells = list(cell_heavy); SPACE*; NEWLINE?; SPACE*; RIGHT_BRACE;  { cells } 
-let table_heavy == TABLE_HEAVY; grid = row_heavy+; SPACE*; NEWLINE?; SPACE*; RIGHT_BRACE; { 
+let row_heavy == TABLE_ROW; cells = list(cell_heavy); RIGHT_BRACE;  { cells } 
+let table_heavy == TABLE_HEAVY; grid = row_heavy*; RIGHT_BRACE; { 
     (* Convert into an 'abstract table' which can be either a light or heavy syntax table. 
        We know this is a heavy table, which cannot have alignment, however, so the alignment field is `None` *)
     let abstract : Ast.nestable_block_element Ast.abstract_table = (grid, None) in 
@@ -212,9 +211,9 @@ let table :=
 
 let nestable_block_element := 
   | ~ = Verbatim; <`Verbatim>
-  | ~ = located(inline_element) +; <`Paragraph>
-  | ~ = Code_block; <`Code_block>
-  | ~ = located(Modules) +; <`Modules>
+  | ~ = located(inline_element)+; <`Paragraph>
+  | ~ = Code_block; RIGHT_CODE_DELIMITER; <`Code_block>
+  | ~ = located(Modules)+; RIGHT_BRACE; <`Modules>
   | ~ = list_element; <>
   | ~ = table; <> 
   | _ = Media; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Media }
@@ -226,7 +225,7 @@ let heading :=
     }
 
 let tag := 
-  | inner_tag = Tag; children = nestable_block_element; { tag_with_element $loc children inner_tag }
+  | inner_tag = Tag; children = located(nestable_block_element)+; { tag_with_element children inner_tag }
   | inner_tag = Tag; { tag_bare $loc inner_tag }
 
 let style := ~ = Style; <>
