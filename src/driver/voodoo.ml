@@ -94,6 +94,12 @@ let process_package pkg =
          | `A asset -> Either.Left asset
          | `M mld -> Either.Right mld)
   in
+  let config =
+    let config_file = Fpath.(v "doc" / pkg.name / "odoc-config.sexp") in
+    match Bos.OS.File.read config_file with
+    | Error _ -> Global_config.empty
+    | Ok s -> Global_config.parse s
+  in
   let libraries =
     List.filter_map
       (fun meta_file ->
@@ -177,6 +183,7 @@ let process_package pkg =
     assets;
     other_docs = Fpath.Set.empty;
     pkg_dir = top_dir pkg;
+    config;
   }
 
 let pp ppf v =

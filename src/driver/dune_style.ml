@@ -58,6 +58,7 @@ let of_dune_build dir =
                         (* When dune has a notion of doc assets, do something *);
                       pkg_dir;
                       other_docs = Fpath.Set.empty;
+                      config = Global_config.empty;
                     } )
             | _ -> None)
           libs
