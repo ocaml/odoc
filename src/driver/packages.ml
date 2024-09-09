@@ -47,6 +47,7 @@ type t = {
   assets : asset list;
   other_docs : Fpath.Set.t;
   pkg_dir : Fpath.t;
+  config : Global_config.t;
 }
 
 let maybe_prepend_top top_dir dir =
@@ -310,6 +311,14 @@ let of_libs ~packages_dir libs =
     in
     (mlds, assets)
   in
+  let global_config (pkg_name : string) =
+    let config_file =
+      Fpath.(v (Opam.prefix ()) / "doc" / pkg_name / "odoc-config.sexp")
+    in
+    match Bos.OS.File.read config_file with
+    | Error _ -> Global_config.empty
+    | Ok s -> Global_config.parse s
+  in
   Fpath.Map.fold
     (fun dir archives acc ->
       match Fpath.Map.find dir rmap with
@@ -317,8 +326,6 @@ let of_libs ~packages_dir libs =
           Logs.debug (fun m -> m "No package for dir %a\n%!" Fpath.pp dir);
           acc
       | Some pkg ->
-          let pkg_dir = pkg_dir packages_dir pkg.name in
-
           let libraries =
             Lib.v ~libname_of_archive ~pkg_name:pkg.name ~dir ~cmtidir:None
           in
@@ -327,25 +334,27 @@ let of_libs ~packages_dir libs =
               (fun l -> Util.StringSet.mem l.archive_name archives)
               libraries
           in
-          let pkg', { Opam.odoc_pages; other_docs; _ } =
-            List.find
-              (fun (pkg', _) ->
-                (* Logs.debug (fun m ->
-                    m "Checking %s against %s" pkg.Opam.name pkg'.Opam.name); *)
-                pkg = pkg')
-              map
-          in
-          let mlds, assets = mk_mlds pkg'.name odoc_pages in
-          Logs.debug (fun m ->
-              m "%d mlds for package %s (from %d odoc_pages)" (List.length mlds)
-                pkg.name
-                (Fpath.Set.cardinal odoc_pages));
           Util.StringMap.update pkg.name
             (function
               | Some pkg ->
                   let libraries = libraries @ pkg.libraries in
                   Some { pkg with libraries }
               | None ->
+                  let pkg_dir = pkg_dir packages_dir pkg.name in
+                  let config = global_config pkg.name in
+                  let pkg', { Opam.odoc_pages; other_docs; _ } =
+                    List.find
+                      (fun (pkg', _) ->
+                        (* Logs.debug (fun m ->
+                            m "Checking %s against %s" pkg.Opam.name pkg'.Opam.name); *)
+                        pkg = pkg')
+                      map
+                  in
+                  let mlds, assets = mk_mlds pkg'.name odoc_pages in
+                  Logs.debug (fun m ->
+                      m "%d mlds for package %s (from %d odoc_pages)"
+                        (List.length mlds) pkg.name
+                        (Fpath.Set.cardinal odoc_pages));
                   Some
                     {
                       name = pkg.name;
@@ -355,6 +364,7 @@ let of_libs ~packages_dir libs =
                       assets;
                       other_docs;
                       pkg_dir;
+                      config;
                     })
             acc)
     dirs Util.StringMap.empty

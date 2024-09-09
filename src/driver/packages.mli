@@ -72,6 +72,7 @@ type t = {
   assets : asset list;
   other_docs : Fpath.Set.t;
   pkg_dir : Fpath.t;
+  config : Global_config.t;
 }
 
 val pp : Format.formatter -> t -> unit

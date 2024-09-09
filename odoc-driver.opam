@@ -44,6 +44,7 @@ depends: [
   "eio_main"
   "progress"
   "cmdliner"
+  "sexplib"
 ]
 
 build: [
