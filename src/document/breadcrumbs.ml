@@ -4,6 +4,8 @@ module Id = Paths.Identifier
 
 type t = (string * Url.Path.t) list
 
+let empty = []
+
 let of_lang ~index id =
   let module H = Id.Hashtbl.Page in
   let mk_seg id title =
@@ -21,8 +23,6 @@ let of_lang ~index id =
   in
   let rec of_page acc id =
     match id.Id.iv with
-    | `Library (parent, _, lname) ->
-        of_parent (mk_page_seg id lname :: acc) parent
     | `Page (parent, pname) ->
         of_parent (mk_page_seg id (PageName.to_string pname) :: acc) parent
   and of_parent acc = function Some p -> of_page acc p | None -> acc in
