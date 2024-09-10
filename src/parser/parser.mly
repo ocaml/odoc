@@ -131,7 +131,7 @@ let located(rule) == value = rule; { wrap_location $loc value }
 (* ENTRY-POINT *)
 
 let main :=  
-  | ~ = located(toplevel)+; <>
+  | ~ = located(toplevel)+; END; <>
   | END; { [] }
   | error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Top_level_error }
 
@@ -140,21 +140,17 @@ let toplevel :=
   | block = nestable_block_element; { (block :> Ast.block_element) }
   | ~ = heading; <>
 
-(* We'll need some of these later I'd imagine, not sure about the whole rule.
-   Which elements are strict about spaces or newlines? 
-
-  let whitespace := 
-    | SPACE; { `Space " " } 
-    | NEWLINE; { `Space "\n" }
-    | ~ = Space; <`Space>
-    | ~ = Blank_line; <`Space>
-    | ~ = Single_newline; <`Space>
-*)
+let whitespace := 
+  | SPACE; { `Space " " } 
+  | NEWLINE; { `Space "\n" }
+  | ~ = Space; <`Space>
+  | ~ = Blank_line; <`Space>
+  | ~ = Single_newline; <`Space>
 
 (* INLINE ELEMENTS *)
 
 let inline_element := 
-  | ~ = Space; <`Space>
+  | ~ = whitespace; <>
   | ~ = Word; <`Word>
   | ~ = Code_span; <`Code_span>
   | ~ = Raw_markup; <`Raw_markup>
