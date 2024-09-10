@@ -1,0 +1,3 @@
+(library
+ (public_name test_odoc_driver)
+ (name test_odoc_driver))
