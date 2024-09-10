@@ -616,7 +616,7 @@ end = struct
     match find_root_of_input lib_roots input with
     | Ok _ as ok -> ok
     | Error `Not_found ->
-        Error (`Msg "The output file must be part of a directory passed as -L")
+        Error (`Msg "The input file must be part of a directory passed as -L")
 
   (** Whether if the package specified with [--current-package] is consistent
       with the pages roots and with the output path for pages. *)
@@ -648,7 +648,7 @@ end = struct
     | Ok detected_package ->
         validate_current_package ?detected_package page_roots current_package
     | Error `Not_found ->
-        Error (`Msg "The output file must be part of a directory passed as -P")
+        Error (`Msg "The input file must be part of a directory passed as -P")
 
   let is_page input =
     input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"

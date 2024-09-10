@@ -13,7 +13,7 @@ No library or package are passed, no error. This ensures compatibility with Odoc
 Current library is not passed:
 
   $ odoc link -P pkg:h/pkg/doc -L otherlib:h/otherpkg h/pkg/lib/libname/test.odoc
-  ERROR: The output file must be part of a directory passed as -L
+  ERROR: The input file must be part of a directory passed as -L
   [1]
   $ odoc link -P pkg:h/pkg/doc -L otherlib:h/otherpkg h/pkg/doc/page-page.odoc
 
@@ -21,7 +21,7 @@ Current package is not passed:
 
   $ odoc link -P otherpkg:h/otherpkg/doc -L libname:h/pkg/lib/libname h/pkg/lib/libname/test.odoc
   $ odoc link -P otherpkg:h/otherpkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/page-page.odoc
-  ERROR: The output file must be part of a directory passed as -P
+  ERROR: The input file must be part of a directory passed as -P
   [1]
 
 Specified current package is wrong:
