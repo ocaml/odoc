@@ -499,11 +499,11 @@ let all_pages ?root ({ pages; _ } : t) =
   let filter (root : Odoc_model.Root.t) =
     match root with
     | {
-     file = Page { title; _ };
+     file = Page info;
      id = { iv = #Odoc_model.Paths.Identifier.Page.t_pv; _ } as id;
      _;
     } ->
-        Some (id, title)
+        Some (id, info)
     | _ -> None
   in
   match pages with

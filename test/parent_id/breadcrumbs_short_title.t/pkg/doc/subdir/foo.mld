@@ -1,0 +1,5 @@
+{0 subdir/foo}
+
+{@meta[
+short_title: Short title foo
+]}

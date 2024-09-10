@@ -555,6 +555,7 @@ module rec Index : sig
   type 'a t = {
     sidebar : Sidebar.t;
     entries : 'a Paths.Identifier.Hashtbl.Any.t;
+    pages_short_title : string Paths.Identifier.Hashtbl.Page.t;
   }
 end =
   Index

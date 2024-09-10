@@ -361,6 +361,8 @@ module Identifier = struct
   module Page = struct
     type t = Id.page
     type t_pv = Id.page_pv
+    let equal = equal
+    let hash = hash
   end
 
   module ContainerPage = struct
@@ -623,6 +625,7 @@ module Identifier = struct
 
   module Hashtbl = struct
     module Any = Hashtbl.Make (Any)
+    module Page = Hashtbl.Make (Page)
   end
 end
 
