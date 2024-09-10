@@ -516,7 +516,8 @@ let render_stats env nprocs =
       inner (0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
-    odoc_bin voodoo package_name blessed dune_style =
+    odoc_bin voodoo package_name blessed dune_style compile_grep link_grep
+    generate_grep =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
   let _ = Voodoo.find_universe_and_version "foo" in
   Eio_main.run @@ fun env ->
@@ -582,6 +583,17 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
       (fun () -> render_stats env nb_workers)
   in
 
+  let grep_log l s =
+    let open Astring in
+    let do_ affix =
+      let grep l = if String.is_infix ~affix l then Format.printf "%s\n" l in
+      List.iter grep l
+    in
+    Option.iter do_ s
+  in
+  grep_log !Cmd_outputs.compile_output compile_grep;
+  grep_log !Cmd_outputs.link_output link_grep;
+  grep_log !Cmd_outputs.generate_output generate_grep;
   Format.eprintf "Final stats: %a@.%!" Stats.pp_stats Stats.stats;
   Format.eprintf "Total time: %f@.%!" (Stats.total_time ());
   if stats then Stats.bench_results html_dir
@@ -643,6 +655,18 @@ let dune_style =
   let doc = "Dune style" in
   Arg.(value & opt (some fpath_arg) None & info [ "dune-style" ] ~doc)
 
+let compile_grep =
+  let doc = "Show compile commands containing the string" in
+  Arg.(value & opt (some string) None & info [ "compile-grep" ] ~doc)
+
+let link_grep =
+  let doc = "Show link commands containing the string" in
+  Arg.(value & opt (some string) None & info [ "link-grep" ] ~doc)
+
+let generate_grep =
+  let doc = "Show html-generate commands containing the string" in
+  Arg.(value & opt (some string) None & info [ "html-grep" ] ~doc)
+
 let cmd =
   let doc = "Generate odoc documentation" in
   let info = Cmd.info "odoc_driver" ~doc in
@@ -650,7 +674,7 @@ let cmd =
     Term.(
       const run $ packages $ verbose $ packages_dir $ odoc_dir $ odocl_dir
       $ html_dir $ stats $ nb_workers $ odoc_bin $ voodoo $ package_name
-      $ blessed $ dune_style)
+      $ blessed $ dune_style $ compile_grep $ link_grep $ generate_grep)
 
 (* let map = Ocamlfind.package_to_dir_map () in
    let _dirs = List.map (fun lib -> List.assoc lib map) deps in
