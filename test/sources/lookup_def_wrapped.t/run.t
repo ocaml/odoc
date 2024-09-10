@@ -58,8 +58,9 @@ Look if all the source files are generated:
     <script>hljs.initHighlightingOnLoad();</script>
    </head>
    <body class="odoc">
-    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../index.html">Main</a> &#x00BB; A
+    <nav class="odoc-nav"><a href="#">Up</a> – 
+     <a href="../index.html">Main</a> &#x00BB; <a href="#">A</a> &#x00BB;
+      Main
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Main.A</span></code>

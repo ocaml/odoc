@@ -16,7 +16,8 @@ Foo contains "Preamble for O" once.
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../index.html">test</a> &#x00BB; Foo
+     <a href="#">Foo</a> &#x00BB; <a href="../index.html">test</a> &#x00BB;
+      Foo
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>Foo</span></code></h1>
      <p>Preamble for Foo.</p>
@@ -59,7 +60,8 @@ Bar doesn't contain "Preamble for Foo" on purpose.
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../index.html">test</a> &#x00BB; Bar
+     <a href="#">Bar</a> &#x00BB; <a href="../index.html">test</a> &#x00BB;
+      Bar
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>Bar</span></code></h1>
     </header>
@@ -133,9 +135,10 @@ Check the preambles:
     <script>hljs.initHighlightingOnLoad();</script>
    </head>
    <body class="odoc">
-    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../../index.html">test</a> &#x00BB; 
-     <a href="../index.html">Bar</a> &#x00BB; Q
+    <nav class="odoc-nav"><a href="#">Up</a> – 
+     <a href="../index.html">Bar</a> &#x00BB; 
+     <a href="../../index.html">test</a> &#x00BB; <a href="#">Q</a> &#x00BB;
+      Bar
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Bar.Q</span></code></h1>
@@ -154,9 +157,10 @@ Check the preambles:
     <script>hljs.initHighlightingOnLoad();</script>
    </head>
    <body class="odoc">
-    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../../index.html">test</a> &#x00BB; 
-     <a href="../index.html">Bar</a> &#x00BB; P
+    <nav class="odoc-nav"><a href="#">Up</a> – 
+     <a href="../index.html">Bar</a> &#x00BB; 
+     <a href="../../index.html">test</a> &#x00BB; <a href="#">P</a> &#x00BB;
+      Bar
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Bar.P</span></code></h1><p>Preamble for P.</p>

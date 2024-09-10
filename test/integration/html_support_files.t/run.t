@@ -1,6 +1,9 @@
   $ odoc support-files -o with-theme
   $ find with-theme | sort
   with-theme
+  with-theme/.formatted
+  with-theme/.formatted/dune
+  with-theme/dune
   with-theme/fonts
   with-theme/fonts/KaTeX_AMS-Regular.woff2
   with-theme/fonts/KaTeX_Caligraphic-Bold.woff2
@@ -42,6 +45,9 @@
   $ odoc support-files --without-theme -o without-theme
   $ find without-theme | sort
   without-theme
+  without-theme/.formatted
+  without-theme/.formatted/dune
+  without-theme/dune
   without-theme/fonts
   without-theme/fonts/KaTeX_AMS-Regular.woff2
   without-theme/fonts/KaTeX_Caligraphic-Bold.woff2

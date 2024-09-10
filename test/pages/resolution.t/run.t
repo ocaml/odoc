@@ -97,6 +97,8 @@ Let's also check the hierarchy of files produced:
 
   $ odoc support-files -o html
   $ find html -type f | sort
+  html/.formatted/dune
+  html/dune
   html/fonts/KaTeX_AMS-Regular.woff2
   html/fonts/KaTeX_Caligraphic-Bold.woff2
   html/fonts/KaTeX_Caligraphic-Regular.woff2

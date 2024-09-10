@@ -26,44 +26,43 @@ $ LINK_OPTS="$LINK_OPTS -P root_of_pkg:_odoc/pkg"
   $ nav() {  sed -n '\#<nav class="odoc-nav">#,\#<header class="odoc-preamble">#p' "$1"; }
 
   $ nav html/pkg/index.html
-    <nav class="odoc-nav"><a href="../index.html">Up</a> – Package pkg</nav>
+    <nav class="odoc-nav"><a href="#">Up</a> – <a href="#">index</a> &#x00BB;
+      pkg
+    </nav>
     <header class="odoc-preamble">
   $ nav html/pkg/doc/index.html
     <nav class="odoc-nav"><a href="#">Up</a> – 
-     <a href="../index.html">Package pkg</a> &#x00BB; <a href="#">doc</a>
-      &#x00BB; index
+     <a href="#"> Short title doc</a> &#x00BB; <a href="#">doc</a> &#x00BB;
+      pkg
     </nav>
     <header class="odoc-preamble">
   $ nav html/pkg/doc/subdir/index.html
-    <nav class="odoc-nav"><a href="#">Up</a> – 
-     <a href="../../index.html">Package pkg</a> &#x00BB; 
-     <a href="../index.html">doc</a> &#x00BB; <a href="#">subdir</a> &#x00BB;
-      index
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
+     <a href="#"> Short title subdir</a> &#x00BB; <a href="#">subdir</a>
+      &#x00BB; <a href="../index.html">doc</a> &#x00BB; pkg
     </nav>
     <header class="odoc-preamble">
   $ nav html/pkg/doc/subdir/foo.html
-    <nav class="odoc-nav"><a href="index.html">Up</a> – 
-     <a href="../../index.html">Package pkg</a> &#x00BB; 
-     <a href="../index.html">doc</a> &#x00BB; <a href="index.html">subdir</a>
-      &#x00BB; foo
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
+     <a href="#"> Short title foo</a> &#x00BB; <a href="index.html">subdir</a>
+      &#x00BB; <a href="../index.html">doc</a> &#x00BB; pkg
     </nav>
     <header class="odoc-preamble">
   $ nav html/pkg/lib/index.html
-    <nav class="odoc-nav"><a href="#">Up</a> – 
-     <a href="../index.html">Package pkg</a> &#x00BB; <a href="#">lib</a>
-      &#x00BB; index
+    <nav class="odoc-nav"><a href="#">Up</a> – <a href="#">index</a> &#x00BB;
+      <a href="#">lib</a> &#x00BB; pkg
     </nav>
     <header class="odoc-preamble">
   $ nav html/pkg/lib/lname/index.html
-    <nav class="odoc-nav"><a href="#">Up</a> – 
-     <a href="../../index.html">Package pkg</a> &#x00BB; 
-     <a href="../index.html">lib</a> &#x00BB; <a href="#">lname</a> &#x00BB;
-      index
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
+     <a href="#">index</a> &#x00BB; <a href="#">lname</a> &#x00BB; 
+     <a href="../index.html">lib</a> &#x00BB; pkg
     </nav>
     <header class="odoc-preamble">
   $ nav html/pkg/lib/lname/Lname/index.html
-    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../../../index.html">Package pkg</a> &#x00BB; 
-     <a href="../index.html">Library lname</a> &#x00BB; Lname
+    <nav class="odoc-nav"><a href="../../../index.html">Up</a> – 
+     <a href="#">Lname</a> &#x00BB; <a href="../index.html">lname</a> &#x00BB;
+      <a href="../../index.html">lib</a> &#x00BB; 
+     <a href="../../../index.html">pkg</a> &#x00BB; Lname
     </nav>
     <header class="odoc-preamble">
