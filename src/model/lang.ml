@@ -551,14 +551,13 @@ module rec Sidebar : sig
 end =
   Sidebar
 
-module rec Index : sig
+module Index = struct
   type 'a t = {
     sidebar : Sidebar.t;
     entries : 'a Paths.Identifier.Hashtbl.Any.t;
     pages_short_title : string Paths.Identifier.Hashtbl.Page.t;
   }
-end =
-  Index
+end
 
 module rec Asset : sig
   type t = { name : Identifier.AssetFile.t; root : Root.t }

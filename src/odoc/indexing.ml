@@ -74,10 +74,10 @@ let compile_to_json ~output ~warnings_options ~occurrences files =
 
 let compile_to_marshall ~output ~warnings_options ~pages_short_title sidebar
     files =
-  let module H = Odoc_model.Paths.Identifier.Hashtbl.Any in
+  let module H = Paths.Identifier.Hashtbl.Any in
   let final_index = H.create 10 in
   let unit u =
-    Odoc_model.Fold.unit
+    Fold.unit
       ~f:(fun () item ->
         let entries = Odoc_search.Entry.entries_of_item item in
         List.iter
@@ -86,7 +86,7 @@ let compile_to_marshall ~output ~warnings_options ~pages_short_title sidebar
       () u
   in
   let page p =
-    Odoc_model.Fold.page
+    Fold.page
       ~f:(fun () item ->
         let entries = Odoc_search.Entry.entries_of_item item in
         List.iter
@@ -118,7 +118,7 @@ let read_occurrences file =
   let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
   htbl
 
-open Odoc_model.Lang.Sidebar
+open Lang.Sidebar
 
 let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
     ~page_roots ~inputs_in_file ~odocls =
@@ -161,9 +161,8 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
                 match page_info.Root.Odoc_file.title with
                 | None ->
                     [
-                      Odoc_model.Location_.at
-                        (Odoc_model.Location_.span [])
-                        (`Word (Odoc_model.Paths.Identifier.name page_id));
+                      Location_.at (Location_.span [])
+                        (`Word (Paths.Identifier.name page_id));
                     ]
                 | Some x -> x
               in
@@ -193,16 +192,31 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
   in
   let pages_short_title =
     let module H = Odoc_model.Paths.Identifier.Hashtbl.Page in
+    (* let module H = Lang.Index.PagePathMap in *)
+    (* let rec page_path_of_id acc *)
+    (*     { *)
+    (*       Paths.Identifier.iv = *)
+    (*         ( `Page (parent, name) *)
+    (*         | `LeafPage (parent, name) *)
+    (*         | `Library (parent, name, _) ); *)
+    (*       _; *)
+    (*     } = *)
+    (*   let acc = Names.PageName.to_string name :: acc in *)
+    (*   match parent with *)
+    (*   | Some p -> page_path_of_id acc (p :> Paths.Identifier.Page.t) *)
+    (*   | None -> acc *)
+    (* in *)
     let dst = H.create 8 in
     List.iter
       (fun (_, pages) ->
         List.iter
           (fun (id, page_info) ->
             match
-              Odoc_model.Frontmatter.get "short_title"
-                page_info.Root.Odoc_file.frontmatter
+              Frontmatter.get "short_title" page_info.Root.Odoc_file.frontmatter
             with
-            | Some short_title -> H.replace dst id short_title
+            | Some short_title ->
+                H.replace dst id short_title
+                (* H.replace dst (page_path_of_id [] id) short_title *)
             | None -> ())
           pages)
       all_pages_of_roots;

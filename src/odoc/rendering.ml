@@ -1,6 +1,7 @@
 open Odoc_document
 open Or_error
 open Odoc_model
+module Id = Paths.Identifier
 
 let prepare ~extra_suffix ~output_dir filename =
   let filename =
@@ -17,9 +18,13 @@ let document_of_odocl ~syntax input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
   | Odoc_file.Page_content odoctree ->
-      Ok (Renderer.document_of_page ~syntax odoctree)
+      Ok
+        ( (odoctree.name :> Id.OdocId.t),
+          Renderer.document_of_page ~syntax odoctree )
   | Unit_content odoctree ->
-      Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
+      Ok
+        ( (odoctree.id :> Id.OdocId.t),
+          Renderer.document_of_compilation_unit ~syntax odoctree )
   | Impl_content _ ->
       Error
         (`Msg
@@ -76,14 +81,17 @@ let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
 
 let generate_odoc ~syntax ~warnings_options:_ ~renderer ~output ~extra_suffix
     ~sidebar extra file =
+  document_of_odocl ~syntax file >>= fun (id, doc) ->
   (match sidebar with
-  | None -> Ok None
+  | None -> Ok (None, None)
   | Some x ->
       Odoc_file.load_index x >>= fun index ->
-      Ok (Some (Odoc_document.Sidebar.of_lang index.sidebar)))
-  >>= fun sidebar ->
-  document_of_odocl ~syntax file >>= fun doc ->
-  render_document renderer ~output ~sidebar ~extra_suffix ~extra doc;
+      let sidebar = Odoc_document.Sidebar.of_lang index.sidebar in
+      Ok (Some sidebar, Some index))
+  >>= fun (sidebar, index) ->
+  let breadcrumbs = Odoc_document.Breadcrumbs.of_lang ~index id in
+  render_document renderer ~output ~sidebar ~breadcrumbs ~extra_suffix ~extra
+    doc;
   Ok ()
 
 let documents_of_implementation ~warnings_options:_ ~syntax impl source_file =
