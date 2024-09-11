@@ -132,6 +132,7 @@ let located(rule) == value = rule; { wrap_location $loc value }
 
 let main :=  
   | ~ = located(toplevel)+; END; <>
+  | _ = whitespace; { [] }
   | END; { [] }
   | error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Top_level_error }
 
