@@ -200,8 +200,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
             match
               Frontmatter.get "short_title" page_info.Root.Odoc_file.frontmatter
             with
-            | Some short_title ->
-                H.replace dst id short_title
+            | Some short_title -> H.replace dst id short_title
             | None -> ())
           pages)
       all_pages_of_roots;

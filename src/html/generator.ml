@@ -13,6 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
+open Odoc_utils
 module HLink = Link
 open Odoc_document.Types
 module Html = Tyxml.Html
@@ -498,18 +499,22 @@ end
 module Breadcrumbs = struct
   open Types
 
-  type page_path_kind = [ `Page | `LeafPage | `SourcePage | `File ]
-
   let gen_breadcrumbs ~config ~current_url breadcrumbs =
     let resolve = Link.Current current_url in
     let mk url name =
       let href = Link.href ~config ~resolve (Url.from_path url) in
       { href; name; kind = url.kind }
     in
+    let is_local_breadcrumb =
+      match breadcrumbs with
+      | [] -> fun _ -> true
+      | _ :: _ ->
+          let _, last_page_seg = List.last breadcrumbs in
+          ( <> ) last_page_seg
+    in
     let rec local_breadcrumbs acc url =
-      match url.Url.Path.kind with
-      | #page_path_kind -> acc
-      | _ -> parent (mk url url.name :: acc) url.parent
+      if is_local_breadcrumb url then parent (mk url url.name :: acc) url.parent
+      else acc
     and parent acc = function
       | Some p -> local_breadcrumbs acc p
       | None -> acc
@@ -517,7 +522,7 @@ module Breadcrumbs = struct
     let page_breadcrumbs =
       List.rev_map (fun (title, url) -> mk url title) breadcrumbs
     in
-    List.rev (local_breadcrumbs page_breadcrumbs current_url)
+    List.rev_append page_breadcrumbs (local_breadcrumbs [] current_url)
 end
 
 module Page = struct

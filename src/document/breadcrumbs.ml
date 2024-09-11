@@ -37,4 +37,4 @@ let of_lang ~index id =
         of_page [ mk_seg id ("Source " ^ name) ] parent
     | { iv = `Implementation _ | `AssetFile _; _ } -> []
   in
-  List.rev (of_odocid id)
+  of_odocid id

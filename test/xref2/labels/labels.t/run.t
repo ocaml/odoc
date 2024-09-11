@@ -51,10 +51,9 @@ There are two references in N, one should point to a local label and the other t
     <script>hljs.initHighlightingOnLoad();</script>
    </head>
    <body class="odoc">
-    <nav class="odoc-nav"><a href="#">Up</a> – 
-     <a href="../index.html">Test</a> &#x00BB; 
-     <a href="../../index.html">test</a> &#x00BB; <a href="#">N</a> &#x00BB;
-      Test
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
+     <a href="../../index.html">test</a> &#x00BB; 
+     <a href="../index.html">Test</a> &#x00BB; N
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Test.N</span></code></h1>
@@ -88,8 +87,7 @@ The second occurence of 'B' in the main page should be disambiguated
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="#">Test</a> &#x00BB; <a href="../index.html">test</a> &#x00BB;
-      Test
+     <a href="../index.html">test</a> &#x00BB; Test
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Test</span></code></h1>
