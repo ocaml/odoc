@@ -1,4 +1,4 @@
-\section{Module \ocamlinlinecode{Markup}}\label{module-Markup}%
+\section{Module \ocamlinlinecode{Markup}}\label{Markup}%
 Here, we test the rendering of comment markup.
 
 \subsection{Sections\label{sections}}%
@@ -13,7 +13,7 @@ and
 but odoc has banned deeper headings. There are also title headings, but they are only allowed in mld files.
 
 \subsubsection{Anchors\label{anchors}}%
-Sections can have attached \hyperref[module-Markup-anchors]{\ocamlinlinecode{Anchors}[p\pageref*{module-Markup-anchors}]}, and it is possible to \hyperref[module-Markup-anchors]{\ocamlinlinecode{link}[p\pageref*{module-Markup-anchors}]} to them. Links to section headers should not be set in source code style.
+Sections can have attached \hyperref[Markup-anchors]{\ocamlinlinecode{Anchors}[p\pageref*{Markup-anchors}]}, and it is possible to \hyperref[Markup-anchors]{\ocamlinlinecode{link}[p\pageref*{Markup-anchors}]} to them. Links to section headers should not be set in source code style.
 
 \subsubsection{Paragraph\label{paragraph}}%
 Individual paragraphs can have a heading.
@@ -41,7 +41,7 @@ Consecutive whitespaces not after a newline are conserved as they are: \ocamlinl
 \subsection{Links and references\label{links-and-references}}%
 This is a \href{\#}{link}\footnote{\url{\#}}. It sends you to the top of this page. Links can have markup inside them: \href{\#}{\bold{bold}}\footnote{\url{\#}}, \href{\#}{\emph{italics}}\footnote{\url{\#}}, \href{\#}{\emph{emphasis}}\footnote{\url{\#}}, \href{\#}{super\textsuperscript{script}}\footnote{\url{\#}}, \href{\#}{sub\textsubscript{script}}\footnote{\url{\#}}, and \href{\#}{\ocamlinlinecode{code}}\footnote{\url{\#}}. Links can also be nested \emph{\href{\#}{inside}\footnote{\url{\#}}} markup. Links cannot be nested inside each other. This link has no replacement text: \href{\#}{\#}\footnote{\url{\#}}. The text is filled in by odoc. This is a shorthand link: \href{\#}{\#}\footnote{\url{\#}}. The text is also filled in by odoc in this case.
 
-This is a reference to \hyperref[module-Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{foo}}[p\pageref*{module-Markup-val-foo}]}. References can have replacement text: \hyperref[module-Markup-val-foo]{\ocamlinlinecode{the value foo}[p\pageref*{module-Markup-val-foo}]}. Except for the special lookup support, references are pretty much just like links. The replacement text can have nested styles: \hyperref[module-Markup-val-foo]{\ocamlinlinecode{\bold{bold}}[p\pageref*{module-Markup-val-foo}]}, \hyperref[module-Markup-val-foo]{\ocamlinlinecode{\emph{italic}}[p\pageref*{module-Markup-val-foo}]}, \hyperref[module-Markup-val-foo]{\ocamlinlinecode{\emph{emphasis}}[p\pageref*{module-Markup-val-foo}]}, \hyperref[module-Markup-val-foo]{\ocamlinlinecode{super\textsuperscript{script}}[p\pageref*{module-Markup-val-foo}]}, \hyperref[module-Markup-val-foo]{\ocamlinlinecode{sub\textsubscript{script}}[p\pageref*{module-Markup-val-foo}]}, and \hyperref[module-Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{code}}[p\pageref*{module-Markup-val-foo}]}. It's also possible to surround a reference in a style: \bold{\hyperref[module-Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{foo}}[p\pageref*{module-Markup-val-foo}]}}. References can't be nested inside references, and links and references can't be nested inside each other.
+This is a reference to \hyperref[Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{foo}}[p\pageref*{Markup-val-foo}]}. References can have replacement text: \hyperref[Markup-val-foo]{\ocamlinlinecode{the value foo}[p\pageref*{Markup-val-foo}]}. Except for the special lookup support, references are pretty much just like links. The replacement text can have nested styles: \hyperref[Markup-val-foo]{\ocamlinlinecode{\bold{bold}}[p\pageref*{Markup-val-foo}]}, \hyperref[Markup-val-foo]{\ocamlinlinecode{\emph{italic}}[p\pageref*{Markup-val-foo}]}, \hyperref[Markup-val-foo]{\ocamlinlinecode{\emph{emphasis}}[p\pageref*{Markup-val-foo}]}, \hyperref[Markup-val-foo]{\ocamlinlinecode{super\textsuperscript{script}}[p\pageref*{Markup-val-foo}]}, \hyperref[Markup-val-foo]{\ocamlinlinecode{sub\textsubscript{script}}[p\pageref*{Markup-val-foo}]}, and \hyperref[Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{code}}[p\pageref*{Markup-val-foo}]}. It's also possible to surround a reference in a style: \bold{\hyperref[Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{foo}}[p\pageref*{Markup-val-foo}]}}. References can't be nested inside references, and links and references can't be nested inside each other.
 
 \subsection{Preformatted text\label{preformatted-text}}%
 This is a code block:\medbreak
@@ -78,7 +78,7 @@ can use explicitly-delimited lists.
 \begin{itemize}\item{\begin{itemize}\item{lists}%
 \item{can be nested}%
 \item{and can include references}%
-\item{\hyperref[module-Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{foo}}[p\pageref*{module-Markup-val-foo}]}}\end{itemize}%
+\item{\hyperref[Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{foo}}[p\pageref*{Markup-val-foo}]}}\end{itemize}%
 }\end{itemize}%
 \subsection{Unicode\label{unicode}}%
 The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
@@ -100,11 +100,11 @@ Math elements can be inline: $\int_{-\infty}^\infty$, or blocks:
 \subsection{Modules\label{modules}}%
 \begin{description}\kern-\topsep
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
-\item[{\hyperref[module-Markup-module-X]{\ocamlinlinecode{\ocamlinlinecode{X}}[p\pageref*{module-Markup-module-X}]}}]{}\end{description}%
+\item[{\hyperref[Markup-X]{\ocamlinlinecode{\ocamlinlinecode{X}}[p\pageref*{Markup-X}]}}]{}\end{description}%
 \begin{description}\kern-\topsep
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
-\item[{\hyperref[module-Markup-module-X]{\ocamlinlinecode{\ocamlinlinecode{X}}[p\pageref*{module-Markup-module-X}]}}]{}%
-\item[{\hyperref[module-Markup-module-Y]{\ocamlinlinecode{\ocamlinlinecode{Y}}[p\pageref*{module-Markup-module-Y}]}}]{}\end{description}%
+\item[{\hyperref[Markup-X]{\ocamlinlinecode{\ocamlinlinecode{X}}[p\pageref*{Markup-X}]}}]{}%
+\item[{\hyperref[Markup-Y]{\ocamlinlinecode{\ocamlinlinecode{Y}}[p\pageref*{Markup-Y}]}}]{}\end{description}%
 \subsection{Tables\label{tables}}\\
 \begin{ocamltabular}{w{l}{0.250\textwidth}w{c}{0.250\textwidth}w{r}{0.250\textwidth}p{0.250\textwidth}}\bold{Left
 
@@ -247,13 +247,13 @@ Each comment can end with zero or more tags. Here are some examples:
 \begin{description}\kern-\topsep
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
 \item[{version}]{-1}\end{description}%
-\label{module-Markup-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : unit}\begin{ocamlindent}Comments in structure items \bold{support} \emph{markup}, t\textsuperscript{o}\textsubscript{o}.\end{ocamlindent}%
+\label{Markup-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : unit}\begin{ocamlindent}Comments in structure items \bold{support} \emph{markup}, t\textsuperscript{o}\textsubscript{o}.\end{ocamlindent}%
 \medbreak
 Some modules to support references.
 
-\label{module-Markup-module-X}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Markup-module-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\label{Markup-module-X}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Markup-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
-\label{module-Markup-module-Y}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[module-Markup-module-Y]{\ocamlinlinecode{Y}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\label{Markup-module-Y}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Markup-Y]{\ocamlinlinecode{Y}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
 
 

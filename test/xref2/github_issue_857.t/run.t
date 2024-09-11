@@ -10,8 +10,8 @@ A quick test to repro the issue found in #857
 
 In latex, labels in subpages should be disambiguated since the subpage is inlined inside the generated latex source.
   $ cat latex/A.tex | sed 's/\\/\n\\/g' | grep label
-  \label{module-A}%
-  \label{module-A-module-type-A}
+  \label{A}%
+  \label{A-module-type-A}
   \label{first}}%
   \label{first_2}}%
 

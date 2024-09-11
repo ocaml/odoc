@@ -46,6 +46,8 @@
 - Allow `][` in code blocks (@Julow, #1149)
   This was interpreted as "code blocks with result", which now mandate a delimiter:
   `{delim@lang[ code ]delim[ result ]}`
+- Output file paths and labels in the man and latex backends changed to avoid name clashes
+  (@Julow, #1191)
 
 ### Fixed
 

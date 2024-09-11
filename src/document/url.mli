@@ -27,6 +27,10 @@ module Path : sig
 
   val string_of_kind : kind -> string
 
+  val pp_disambiguating_prefix : Format.formatter -> kind -> unit
+  (** Print the ["kind-"] prefix used to disambiguate urls in "flat modes":
+      e.g. latex labels and output files in [--flat] HTML and man output *)
+
   type t = { kind : kind; parent : t option; name : string }
 
   type any_pv =
