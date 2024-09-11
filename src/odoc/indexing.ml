@@ -192,20 +192,6 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
   in
   let pages_short_title =
     let module H = Odoc_model.Paths.Identifier.Hashtbl.Page in
-    (* let module H = Lang.Index.PagePathMap in *)
-    (* let rec page_path_of_id acc *)
-    (*     { *)
-    (*       Paths.Identifier.iv = *)
-    (*         ( `Page (parent, name) *)
-    (*         | `LeafPage (parent, name) *)
-    (*         | `Library (parent, name, _) ); *)
-    (*       _; *)
-    (*     } = *)
-    (*   let acc = Names.PageName.to_string name :: acc in *)
-    (*   match parent with *)
-    (*   | Some p -> page_path_of_id acc (p :> Paths.Identifier.Page.t) *)
-    (*   | None -> acc *)
-    (* in *)
     let dst = H.create 8 in
     List.iter
       (fun (_, pages) ->
@@ -216,7 +202,6 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
             with
             | Some short_title ->
                 H.replace dst id short_title
-                (* H.replace dst (page_path_of_id [] id) short_title *)
             | None -> ())
           pages)
       all_pages_of_roots;
