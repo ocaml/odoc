@@ -30,22 +30,22 @@
   | Canonical _ -> "@canonical"
   | Inline | Open | Closed | Hidden -> "<internal>"
 
-type unimplemented = Top_level_error | Table | Media
-exception Debug of unimplemented Loc.with_location  
-let _ = Printexc.register_printer (function
-  | Debug unimplemented_token_with_location -> 
-    begin
-      let Loc.{ location = _location; value = token } = unimplemented_token_with_location in 
-      let error_message = match token with 
-      | Top_level_error -> "Error in Parser.main rule"
-      | Table -> "table"
-      | Media -> "media" 
-      in
-      Option.some @@ Printf.sprintf "Parser failed on: %s" error_message
-    end 
-  | _ -> None
-)
-exception No_children of string Loc.with_location
+  type unimplemented = Top_level_error | Table | Media
+  exception Debug of unimplemented Loc.with_location  
+  let _ = Printexc.register_printer (function
+    | Debug unimplemented_token_with_location -> 
+      begin
+        let Loc.{ location = _location; value = token } = unimplemented_token_with_location in 
+        let error_message = match token with 
+        | Top_level_error -> "Error in Parser.main rule"
+        | Table -> "table"
+        | Media -> "media" 
+        in
+        Option.some @@ Printf.sprintf "Parser failed on: %s" error_message
+      end 
+    | _ -> None
+  )
+  exception No_children of string Loc.with_location
 
   let exn_location : only_for_debugging:lexspan -> failed_on:unimplemented -> exn = 
     fun ~only_for_debugging:loc ~failed_on  -> Debug (wrap_location loc failed_on)  
@@ -71,6 +71,53 @@ exception No_children of string Loc.with_location
   | Closed -> `Tag `Closed
   | Hidden -> `Tag `Hidden
   | tag -> raise @@ No_children (wrap_location loc @@ Printf.sprintf "Tag %s expects children" (pp_tag tag)) 
+
+
+
+  type align_cell = 
+  | Valid of Ast.alignment option 
+  | Invalid
+
+  (* This could be handled in the parser, I think *)
+  let valid_align_cell text = 
+      begin
+        match String.length text with
+        | 0 -> Valid None
+        | 1 -> 
+          begin
+            match text.[0] with
+            | ':' -> Valid (Some `Center)
+            | '-' -> Valid None
+            | _ -> Invalid
+          end
+        | len -> 
+          if String.for_all (Char.equal '-') (String.sub text 1 (len - 2)) then  
+            match text.[0], text.[pred len] with
+              | ':', '-' -> Valid (Some `Left)
+              | '-', ':' -> Valid (Some `Right)
+              | ':', ':' -> Valid (Some `Center)
+              | '-', '-' -> Valid (None)
+              | _ -> Invalid
+          else Invalid
+      end
+
+  let rec valid_align_row ?(acc = []) = function
+  | cell :: rest -> 
+    begin
+      match valid_align_cell cell with
+      | Valid alignment -> 
+        valid_align_row ~acc:(alignment :: acc) rest 
+      | Invalid ->
+        None
+    end
+  | [] -> 
+    Some acc
+
+  (* Wrap a list of words in a paragraph, used for 'light' table headers *)
+  let paragraph_of_words words =
+    let words = List.map (Loc.map (fun text -> `Word text)) words 
+    and span = Loc.span @@ List.map Loc.location words in 
+    Loc.at span (`Paragraph words)
 
 %}
 
@@ -202,7 +249,34 @@ let table_heavy == TABLE_HEAVY; grid = row_heavy*; RIGHT_BRACE; {
     (abstract, `Heavy) 
   }
 
-let table_light := TABLE_LIGHT; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Table }
+
+(* 
+  cell -> nestable_block_element with_location list * Header | Data
+  row -> cell list 
+  grid -> row list
+  abstract_table -> grid * alignment option list option
+
+  table -> abstract_table * Light | Heavy 
+*)
+let data_cell_light == BAR?; data = located(nestable_block_element)+; { inner, `Data } 
+let data_row_light := ~ = data_cell_light+; BAR?; NEWLINE; <>     
+
+let alignment_cell_light == BAR?; inner = Word; { inner }
+let header_cell_light == BAR?; inner = located(Word)+; { inner }
+
+let align_row_light == BAR?; ~ = alignment_cell_light+; BAR?; NEWLINE; <>
+let header_row_light := ~ = header_cell_light+; BAR?; NEWLINE; <>
+
+let table_light :=
+  (* If the first row is the alignment row then the rest should be data *)
+  | TABLE_LIGHT; align = align_row_light; data_rows = data_row_light+; RIGHT_BRACE;
+    {}
+  (* If there's only one row and it's not the align row, then it's data *)
+  | TABLE_LIGHT; header = header_row_light; align = align_row_light; data = data_row_light+; RIGHT_BRACE;
+    {}
+  (* Otherwise the first should be the headers, the second align, and the rest data *)
+  | TABLE_LIGHT; data = data_row_light; RIGHT_BRACE; 
+    {}
 
 let table := 
   | ~ = table_heavy; <`Table>
