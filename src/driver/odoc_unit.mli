@@ -1,6 +1,8 @@
 type pkg_args = {
   pages : (string * Fpath.t) list;
   libs : (string * Fpath.t) list;
+  pages_linked : (string * Fpath.t) list;
+  libs_linked : (string * Fpath.t) list;
 }
 
 type index = {
