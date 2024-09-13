@@ -113,11 +113,14 @@
   | [] -> 
     Some acc
 
+  let valid_data_grid (rows : Ast.nestable_block_element Ast.row list) = ( rows :> Ast.nestable_block_element Ast.grid )
+    
   (* Wrap a list of words in a paragraph, used for 'light' table headers *)
   let paragraph_of_words words =
     let words = List.map (Loc.map (fun text -> `Word text)) words 
     and span = Loc.span @@ List.map Loc.location words in 
     Loc.at span (`Paragraph words)
+ 
 
 %}
 
@@ -249,7 +252,6 @@ let table_heavy == TABLE_HEAVY; grid = row_heavy*; RIGHT_BRACE; {
     (abstract, `Heavy) 
   }
 
-
 (* 
   cell -> nestable_block_element with_location list * Header | Data
   row -> cell list 
@@ -258,25 +260,41 @@ let table_heavy == TABLE_HEAVY; grid = row_heavy*; RIGHT_BRACE; {
 
   table -> abstract_table * Light | Heavy 
 *)
-let data_cell_light == BAR?; data = located(nestable_block_element)+; { inner, `Data } 
-let data_row_light := ~ = data_cell_light+; BAR?; NEWLINE; <>     
+
+(* This produces a single cell *)
+let data_cell_light := BAR?; data = located(nestable_block_element)+; { ((data, `Data) : Ast.nestable_block_element Ast.cell) } 
+
+(* This produces a list of cells *)
+let data_row_light := row = data_cell_light+; BAR?; NEWLINE; { (row : Ast.nestable_block_element Ast.row) }     
 
 let alignment_cell_light == BAR?; inner = Word; { inner }
-let header_cell_light == BAR?; inner = located(Word)+; { inner }
-
 let align_row_light == BAR?; ~ = alignment_cell_light+; BAR?; NEWLINE; <>
+
+let header_cell_light == BAR?; inner = located(Word)+; { inner }
 let header_row_light := ~ = header_cell_light+; BAR?; NEWLINE; <>
 
 let table_light :=
   (* If the first row is the alignment row then the rest should be data *)
   | TABLE_LIGHT; align = align_row_light; data_rows = data_row_light+; RIGHT_BRACE;
-    {}
+    {
+      match valid_align_row align with
+      | Some _ as alignment -> (data_rows, alignment), `Light
+      | None -> (align :: data, None),`Light
+    }
+
   (* If there's only one row and it's not the align row, then it's data *)
   | TABLE_LIGHT; header = header_row_light; align = align_row_light; data = data_row_light+; RIGHT_BRACE;
-    {}
+    { let headers = ( paragraph_of_words header :> Ast.nestable_block_element Loc.with_location ), `Header in 
+      (* Why wont this typecheck??? If I make data a single row it works but not if it's a grid, but a grid is what we want here :( *)
+      let grid = valid_data_grid data in
+      match valid_align_row align with
+      | Some _ as alignment -> (grid, alignment), `Light
+      | None -> raise @@ Failure "Invalid align row" (* Handle this later, if align is not an align row then its a row of single words which need to ne inserted into paragraphs *)
+    }
+
   (* Otherwise the first should be the headers, the second align, and the rest data *)
   | TABLE_LIGHT; data = data_row_light; RIGHT_BRACE; 
-    {}
+    { (data, None), `Light }
 
 let table := 
   | ~ = table_heavy; <`Table>
