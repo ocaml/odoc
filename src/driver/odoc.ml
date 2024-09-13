@@ -162,7 +162,7 @@ let compile_index ?(ignore_output = false) ~output_file ?occurrence_file ~json
       add_prefixed_output cmd index_output (Fpath.to_string output_file) lines)
 
 let html_generate ~output_dir ?index ?(ignore_output = false)
-    ?(search_uris = []) ~input_file:file () =
+    ?(search_uris = []) ?(as_json = false) ~input_file:file () =
   let open Cmd in
   let index =
     match index with None -> empty | Some idx -> v "--index" % p idx
@@ -175,6 +175,7 @@ let html_generate ~output_dir ?index ?(ignore_output = false)
   let cmd =
     !odoc % "html-generate" % p file %% index %% search_uris % "-o" % output_dir
   in
+  let cmd = if as_json then cmd % "--as-json" else cmd in
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string file) in
   let lines = Cmd_outputs.submit desc cmd None in
   if not ignore_output then
@@ -195,7 +196,7 @@ let html_generate_asset ~output_dir ?(ignore_output = false) ~input_file:file
       add_prefixed_output cmd generate_output (Fpath.to_string file) lines)
 
 let html_generate_source ~output_dir ?(ignore_output = false) ~source
-    ?(search_uris = []) ~input_file:file () =
+    ?(search_uris = []) ?(as_json = false) ~input_file:file () =
   let open Cmd in
   let file = v "--impl" % p file in
   let search_uris =
@@ -207,6 +208,8 @@ let html_generate_source ~output_dir ?(ignore_output = false) ~source
     !odoc % "html-generate-source" %% file % p source %% search_uris % "-o"
     % output_dir
   in
+  let cmd = if as_json then cmd % "--as-json" else cmd in
+
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string source) in
   let lines = Cmd_outputs.submit desc cmd None in
   if not ignore_output then

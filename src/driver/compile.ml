@@ -264,6 +264,8 @@ let html_generate ~occurrence_file output_dir linked =
     | `Impl { src_path; _ } ->
         Odoc.html_generate_source ~search_uris:[] ~output_dir ~input_file
           ~source:src_path ();
+        Odoc.html_generate_source ~search_uris:[] ~output_dir ~input_file
+          ~source:src_path ~as_json:true ();
         Atomic.incr Stats.stats.generated_units
     | `Asset ->
         Odoc.html_generate_asset ~output_dir ~input_file:l.odoc_file
@@ -279,6 +281,8 @@ let html_generate ~occurrence_file output_dir linked =
               (Some search_uris, Some index)
         in
         Odoc.html_generate ?search_uris ?index ~output_dir ~input_file ();
+        Odoc.html_generate ?search_uris ?index ~output_dir ~input_file
+          ~as_json:true ();
         Atomic.incr Stats.stats.generated_units
   in
   Fiber.List.iter html_generate linked

@@ -54,6 +54,7 @@ val html_generate :
   ?index:Fpath.t ->
   ?ignore_output:bool ->
   ?search_uris:Fpath.t list ->
+  ?as_json:bool ->
   input_file:Fpath.t ->
   unit ->
   unit
@@ -71,6 +72,7 @@ val html_generate_source :
   ?ignore_output:bool ->
   source:Fpath.t ->
   ?search_uris:Fpath.t list ->
+  ?as_json:bool ->
   input_file:Fpath.t ->
   unit ->
   unit
