@@ -48,6 +48,7 @@ val pp_asset : Format.formatter -> asset -> unit
 
 type libty = {
   lib_name : string;
+  dir : Fpath.t;
   archive_name : string;
   lib_deps : Util.StringSet.t;
   modules : modulety list;
