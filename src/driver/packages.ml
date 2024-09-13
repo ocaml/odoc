@@ -35,6 +35,7 @@ let pp_asset fmt m = Format.fprintf fmt "%a" Fpath.pp m.asset_path
 
 type libty = {
   lib_name : string;
+  dir : Fpath.t;
   archive_name : string;
   lib_deps : Util.StringSet.t;
   modules : modulety list;
@@ -157,7 +158,7 @@ module Lib = struct
             try Util.StringMap.find lib_name all_lib_deps
             with _ -> Util.StringSet.empty
           in
-          Some { lib_name; archive_name; modules; lib_deps }
+          Some { lib_name; archive_name; modules; lib_deps; dir }
         with e ->
           Logs.err (fun m ->
               m "Error processing library %s: %s Ignoring." archive_name

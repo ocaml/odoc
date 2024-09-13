@@ -161,6 +161,7 @@ let process_package pkg =
                  ~dir:directory ~cmtidir:None ~all_lib_deps)
              Fpath.(Set.to_list directories)))
       metas
+    |> List.flatten
   in
 
   (* Check the main package lib directory even if there's no meta file *)
@@ -173,11 +174,19 @@ let process_package pkg =
             when Sys.is_directory Fpath.(pkg_path // p |> to_string) ->
               not
                 (List.exists
-                   (fun p2 -> Fpath.parent p2 = Fpath.to_dir_path p)
-                   metas)
+                   (fun lib ->
+                     Fpath.to_dir_path lib.Packages.dir
+                     = Fpath.(to_dir_path (pkg_path // p)))
+                   libraries)
           | _ -> false)
         pkg.files
     in
+    Format.eprintf "libdirs_without_meta: %a\n%!"
+      Fmt.(list ~sep:comma Fpath.pp)
+      (List.map (fun p -> Fpath.(pkg_path // p)) libdirs_without_meta);
+    Format.eprintf "lib dirs: %a\n%!"
+      Fmt.(list ~sep:comma Fpath.pp)
+      (List.map (fun (lib : Packages.libty) -> lib.dir) libraries);
     List.map
       (fun libdir ->
         let libname_of_archive =
@@ -202,7 +211,7 @@ let process_package pkg =
       libdirs_without_meta
   in
   Logs.debug (fun m -> m "Found %d METAs" (List.length metas));
-  let libraries = List.flatten (extra_libraries @ libraries) in
+  let libraries = List.flatten extra_libraries @ libraries in
   let result =
     {
       Packages.name = pkg.name;
