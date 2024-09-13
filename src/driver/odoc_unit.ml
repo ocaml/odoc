@@ -1,6 +1,8 @@
 type pkg_args = {
   pages : (string * Fpath.t) list;
   libs : (string * Fpath.t) list;
+  pages_linked : (string * Fpath.t) list;
+  libs_linked : (string * Fpath.t) list;
 }
 
 let pp_pkg_args fmt x =
@@ -104,8 +106,6 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
 
   let lib_dir pkg libname = Fpath.(pkg.Packages.pkg_dir / "lib" / libname) in
 
-  let make_absolute = Fpath.( // ) output_dir in
-
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
      [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
      odoc files. *)
@@ -133,11 +133,11 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
     Util.StringMap.of_list (List.map (fun pkg -> (pkg.Packages.name, pkg)) pkgs)
   in
 
-  let dash_p pkg = (pkg.Packages.name, doc_dir pkg |> make_absolute) in
+  let dash_p pkg = (pkg.Packages.name, doc_dir pkg) in
 
   let dash_l lib_name =
     match Util.StringMap.find_opt lib_name lib_dirs with
-    | Some dir -> [ (lib_name, make_absolute dir) ]
+    | Some dir -> [ (lib_name, dir) ]
     | None ->
         Logs.err (fun m -> m "Library %s not found" lib_name);
         []
@@ -146,11 +146,16 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
   let base_args pkg lib_deps : pkg_args =
     let own_page = dash_p pkg in
     let own_libs = List.concat_map dash_l (Util.StringSet.to_list lib_deps) in
-    { pages = [ own_page ]; libs = own_libs }
+    let map_rel dir = List.map (fun (a, b) -> (a, Fpath.(dir // b))) in
+    let pages = map_rel output_dir [ own_page ] in
+    let libs = map_rel output_dir own_libs in
+    let pages_linked = map_rel linked_dir [ own_page ] in
+    let libs_linked = map_rel linked_dir own_libs in
+    { pages; libs; pages_linked; libs_linked }
   in
   let args_of_config config : pkg_args =
     let { Global_config.deps = { packages; libraries } } = config in
-    let pages =
+    let pages_rel =
       List.filter_map
         (fun pkgname ->
           match Util.StringMap.find_opt pkgname pkg_map with
@@ -158,8 +163,13 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
           | Some pkg -> Some (dash_p pkg))
         packages
     in
-    let libs = List.concat_map dash_l libraries in
-    { pages; libs }
+    let libs_rel = List.concat_map dash_l libraries in
+    let map_rel dir = List.map (fun (a, b) -> (a, Fpath.(dir // b))) in
+    let pages = map_rel output_dir pages_rel in
+    let libs = map_rel output_dir libs_rel in
+    let pages_linked = map_rel linked_dir pages_rel in
+    let libs_linked = map_rel linked_dir libs_rel in
+    { pages; libs; pages_linked; libs_linked }
   in
   let args_of =
     let cache = Hashtbl.create 10 in
@@ -167,12 +177,29 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
       match Hashtbl.find_opt cache (pkg, lib_deps) with
       | Some res -> res
       | None ->
-          let { pages = own_page; libs = own_libs } = base_args pkg lib_deps in
-          let { pages = config_pages; libs = config_libs } =
+          let {
+            pages = own_page;
+            libs = own_libs;
+            pages_linked = own_p_l;
+            libs_linked = own_l_l;
+          } =
+            base_args pkg lib_deps
+          in
+          let {
+            pages = config_pages;
+            libs = config_libs;
+            pages_linked = cfg_p_l;
+            libs_linked = cfg_l_l;
+          } =
             args_of_config pkg.Packages.config
           in
           let result =
-            { pages = own_page @ config_pages; libs = own_libs @ config_libs }
+            {
+              pages = own_page @ config_pages;
+              libs = own_libs @ config_libs;
+              pages_linked = own_p_l @ cfg_p_l;
+              libs_linked = own_l_l @ cfg_l_l;
+            }
           in
           Hashtbl.add cache (pkg, lib_deps) result;
           result
