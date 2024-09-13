@@ -3,9 +3,12 @@
 ### Fixed
 
 - Fix missing katex headers (@panglesd, #1096)
-- Allow `][` in code blocks, fixing issue #1137 (@Julow, #1149, #xxxx)
+- Allow `][` in code blocks, fixing issue #1137 (@Julow, #1149)
   This was interpreted as "code blocks with result", which now mandates a
   delimiter: `{delim@lang[ code ]delim[ result ]}`
+- Fix misprinting of type variables from ml files for OCaml 4.14 and later
+  (multiple occurences of the same type variable could be named differently)
+  (@octachron, #1173)
 
 # 2.4.2
 

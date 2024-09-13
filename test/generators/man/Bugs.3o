@@ -24,7 +24,7 @@ https://github\.com/ocaml/odoc/issues/101
  is not fixed\.
 .nf 
 .sp 
-\f[CB]val\fR repeat : \f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR \f[CB]\->\fR \f[CB]'c\fR * \f[CB]'d\fR * \f[CB]'e\fR * \f[CB]'f\fR
+\f[CB]val\fR repeat : \f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR \f[CB]\->\fR \f[CB]'a\fR * \f[CB]'b\fR * \f[CB]'a\fR * \f[CB]'b\fR
 .fi 
 .br 
 .ti +2
