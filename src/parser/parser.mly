@@ -100,7 +100,7 @@
       end
 
   let rec valid_align_row ?(acc = []) = function
-  | cell :: rest -> 
+  | Loc.{ value = cell; _ } :: rest -> 
     begin
       match valid_align_cell cell with
       | Valid alignment -> 
@@ -114,11 +114,11 @@
   let valid_data_grid (rows : Ast.nestable_block_element Ast.row list) = ( rows :> Ast.nestable_block_element Ast.grid )
     
   (* Wrap a list of words in a paragraph, used for 'light' table headers *)
-  let paragraph_of_words : string Loc.with_location list -> Ast.nestable_block_element Ast.cell = fun words ->
+  let paragraph_of_words : string Loc.with_location list -> Ast.nestable_block_element Loc.with_location list = fun words ->
     let words = List.map (Loc.map (fun text -> `Word text)) words 
     and span = Loc.span @@ List.map Loc.location words in 
-     [Loc.at span ( `Paragraph words )], `Header
- 
+     [ Loc.at span ( `Paragraph words) ]
+  let recover_data = List.map (fun word -> paragraph_of_words [ word ], `Data)
   let assert_row : ( Ast.nestable_block_element Ast.with_location list * [ `Header | `Data ] ) list ->  ( Ast.nestable_block_element Ast.with_location list * [ `Header | `Data ] ) list = Fun.id
 %}
 
@@ -259,35 +259,36 @@ let table_heavy == TABLE_HEAVY; grid = row_heavy*; RIGHT_BRACE; {
   table -> abstract_table * Light | Heavy 
 *)
 
-(* This produces a single cell *)
 let data_cell_light == BAR?; data = located(nestable_block_element)+; { (data, `Data) } 
+let data_row_light := row = data_cell_light+; BAR?; NEWLINE; { row }     
 
-(* This produces a list of cells *)
-let data_row_light := row = data_cell_light+; BAR?; NEWLINE; { (assert_row row) }     
+let align_cell == BAR?; inner = located(Word); { inner }
+let align_row := ~ = align_cell+; BAR?; NEWLINE; <>
 
-let alignment_cell_light == BAR?; inner = Word; { inner }
-let align_row_light == BAR?; ~ = alignment_cell_light+; BAR?; NEWLINE; <>
+let header_cell_light == BAR?; inner = located(Word)+; { paragraph_of_words inner, `Header }
+let header_row_light := header_row = header_cell_light+; BAR?; NEWLINE; { header_row }
 
-let header_cell_light == BAR?; inner = located(Word)+; { paragraph_of_words inner }
-let header_row_light := header_row = header_cell_light+; BAR?; NEWLINE; { ( header_row : Ast.nestable_block_element Ast.row ) }
-
+(* NOTE: (@FayCarsons) Presently, behavior is to 'recover' when we have an invalid align row. Is this what we want? *)
 let table_light :=
   (* If the first row is the alignment row then the rest should be data *)
-  | TABLE_LIGHT; align = align_row_light; data_rows = data_row_light+; RIGHT_BRACE;
+  | TABLE_LIGHT; align = align_row; data_rows = data_row_light+; RIGHT_BRACE;
     {
       match valid_align_row align with
       | Some _ as alignment -> (data_rows, alignment), `Light
-      | None -> raise @@ Failure "Invalid align row" (* Handle this later, if align is not an align row then its a row of single words which need to ne inserted into paragraphs *)
-
+      | None ->  
+        let align_as_data = recover_data align in
+        (align_as_data :: data_rows, None), `Light
     }
 
   (* Otherwise the first should be the headers, the second align, and the rest data *)
-  | TABLE_LIGHT; header = header_row_light; align = align_row_light; data = data_row_light+; RIGHT_BRACE;
+  | TABLE_LIGHT; header = header_row_light; align = align_row; data = data_row_light+; RIGHT_BRACE;
     { 
       let grid = valid_data_grid data in
       match valid_align_row align with
       | Some _ as alignment -> (header :: grid, alignment), `Light
-      | None -> raise @@ Failure "Invalid align row" (* Handle this later, if align is not an align row then its a row of single words which need to ne inserted into paragraphs *)
+      | None -> 
+        let align_as_data = recover_data align in
+        (header :: align_as_data :: data, None), `Light
     }
 
   (* If there's only one row and it's not the align row, then it's data *)
