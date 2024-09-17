@@ -30,7 +30,7 @@
   | Canonical _ -> "@canonical"
   | Inline | Open | Closed | Hidden -> "<internal>"
 
-  type unimplemented = Top_level_error | Table | Media
+  type unimplemented = Top_level_error | Media
   exception Debug of unimplemented Loc.with_location  
   let _ = Printexc.register_printer (function
     | Debug unimplemented_token_with_location -> 
@@ -38,7 +38,6 @@
         let Loc.{ location = _location; value = token } = unimplemented_token_with_location in 
         let error_message = match token with 
         | Top_level_error -> "Error in Parser.main rule"
-        | Table -> "table"
         | Media -> "media" 
         in
         Option.some @@ Printf.sprintf "Parser failed on: %s" error_message
@@ -72,53 +71,59 @@
   | Hidden -> `Tag `Hidden
   | tag -> raise @@ No_children (wrap_location loc @@ Printf.sprintf "Tag %s expects children" (pp_tag tag)) 
 
-  type align_cell = 
-  | Valid of Ast.alignment option 
-  | Invalid
+  type align_error = 
+  | Invalid_align (* An invalid align cell *)
+  | Not_align (* Not an align cell *)
 
   (* This could be handled in the parser, I think *)
   let valid_align_cell text = 
       begin
         match String.length text with
-        | 0 -> Valid None
+        | 0 -> Ok None
         | 1 -> 
           begin
             match text.[0] with
-            | ':' -> Valid (Some `Center)
-            | '-' -> Valid None
-            | _ -> Invalid
+            | ':' -> Ok (Some `Center)
+            | '-' -> Ok None
+            | _ -> Error Not_align
           end
         | len -> 
           if String.for_all (Char.equal '-') (String.sub text 1 (len - 2)) then  
             match text.[0], text.[pred len] with
-              | ':', '-' -> Valid (Some `Left)
-              | '-', ':' -> Valid (Some `Right)
-              | ':', ':' -> Valid (Some `Center)
-              | '-', '-' -> Valid (None)
-              | _ -> Invalid
-          else Invalid
+              | ':', '-' -> Ok (Some `Left)
+              | '-', ':' -> Ok (Some `Right)
+              | ':', ':' -> Ok (Some `Center)
+              | '-', '-' -> Ok None
+              | _ -> Error Invalid_align
+          else Error Not_align
       end
 
-  let rec valid_align_row ?(acc = []) = function
-  | Loc.{ value = cell; _ } :: rest -> 
+  (* Short-circuiting fold, if we get something that isn't a valid alignment then bail and return it *)
+  let rec valid_align_row ?(acc = []) : Ast.inline_element Loc.with_location list -> (Ast.alignment option list, align_error) result = function
+  | Loc.{ value = `Word cell; _ } :: rest -> 
     begin
       match valid_align_cell cell with
-      | Valid alignment -> 
+      | Ok alignment -> 
         valid_align_row ~acc:(alignment :: acc) rest 
-      | Invalid ->
-        None
+      | Error Not_align when List.length acc > 0 -> Error Invalid_align
+      | Error err -> Error err
     end
+  | Loc.{ value = `Space "\n"; _ } :: _ when List.length acc > 0 ->
+    Error Invalid_align
+  | Loc.{ value = `Space _; _ } :: rest -> 
+    valid_align_row ~acc rest
   | [] -> 
-    Some acc
+    Ok acc
+  | _ -> Error Not_align
 
-  let valid_data_grid (rows : Ast.nestable_block_element Ast.row list) = ( rows :> Ast.nestable_block_element Ast.grid )
-    
   (* Wrap a list of words in a paragraph, used for 'light' table headers *)
-  let paragraph_of_words : string Loc.with_location list -> Ast.nestable_block_element Loc.with_location list = fun words ->
-    let words = List.map (Loc.map (fun text -> `Word text)) words 
-    and span = Loc.span @@ List.map Loc.location words in 
-     [ Loc.at span ( `Paragraph words) ]
-  let recover_data = List.map (fun word -> paragraph_of_words [ word ], `Data)
+  let to_paragraph : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Loc.with_location list = fun words ->
+    let span = Loc.span @@ List.map Loc.location words in 
+    [ Loc.at span (`Paragraph words) ]
+
+  let recover_data : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Ast.row 
+    = List.map (fun word -> let loc = Loc.location word in [ Loc.at loc @@ `Paragraph [ word ] ], `Data)
+
   let assert_row : ( Ast.nestable_block_element Ast.with_location list * [ `Header | `Data ] ) list ->  ( Ast.nestable_block_element Ast.with_location list * [ `Header | `Data ] ) list = Fun.id
 %}
 
@@ -259,40 +264,39 @@ let table_heavy == TABLE_HEAVY; grid = row_heavy*; RIGHT_BRACE; {
   table -> abstract_table * Light | Heavy 
 *)
 
-let data_cell_light == BAR?; data = located(nestable_block_element)+; { (data, `Data) } 
-let data_row_light := row = data_cell_light+; BAR?; NEWLINE; { row }     
+let cell_light == BAR?; data = located(inline_element)+; { (to_paragraph data, `Data) } 
+let row_light := ~ = cell_light+; BAR?; NEWLINE; <>     
 
-let align_cell == BAR?; inner = located(Word); { inner }
+let align_cell == BAR?; inner = located(inline_element); { inner }
 let align_row := ~ = align_cell+; BAR?; NEWLINE; <>
-
-let header_cell_light == BAR?; inner = located(Word)+; { paragraph_of_words inner, `Header }
-let header_row_light := header_row = header_cell_light+; BAR?; NEWLINE; { header_row }
 
 (* NOTE: (@FayCarsons) Presently, behavior is to 'recover' when we have an invalid align row. Is this what we want? *)
 let table_light :=
   (* If the first row is the alignment row then the rest should be data *)
-  | TABLE_LIGHT; align = align_row; data_rows = data_row_light+; RIGHT_BRACE;
+  | TABLE_LIGHT; align = align_row; data = row_light+; RIGHT_BRACE;
     {
       match valid_align_row align with
-      | Some _ as alignment -> (data_rows, alignment), `Light
-      | None ->  
+      | Ok alignment -> (data, Some alignment), `Light
+      | Error Invalid_align -> (data, None), `Light
+      | Error Not_align ->  
         let align_as_data = recover_data align in
-        (align_as_data :: data_rows, None), `Light
+        (align_as_data :: data, None), `Light
     }
 
   (* Otherwise the first should be the headers, the second align, and the rest data *)
-  | TABLE_LIGHT; header = header_row_light; align = align_row; data = data_row_light+; RIGHT_BRACE;
+  | TABLE_LIGHT; header = row_light; align = align_row; data = row_light+; RIGHT_BRACE;
     { 
-      let grid = valid_data_grid data in
       match valid_align_row align with
-      | Some _ as alignment -> (header :: grid, alignment), `Light
-      | None -> 
+      | Ok alignment -> (header :: data, Some alignment), `Light
+      | Error Invalid_align -> 
+        (header :: data, None), `Light
+      | Error Not_align -> 
         let align_as_data = recover_data align in
         (header :: align_as_data :: data, None), `Light
     }
 
   (* If there's only one row and it's not the align row, then it's data *)
-  | TABLE_LIGHT; data = data_row_light+; RIGHT_BRACE; 
+  | TABLE_LIGHT; data = row_light+; RIGHT_BRACE; 
     { (data, None), `Light }
 
 let table := 
