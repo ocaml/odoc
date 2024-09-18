@@ -29,7 +29,7 @@
   | Canonical _ -> "@canonical"
   | Inline | Open | Closed | Hidden -> "<internal>"
 
-  type unimplemented = Top_level_error | Media
+  type unimplemented = Top_level_error 
   exception Debug of unimplemented Loc.with_location  
   let _ = Printexc.register_printer (function
     | Debug unimplemented_token_with_location -> 
@@ -37,7 +37,6 @@
         let Loc.{ location = _location; value = token } = unimplemented_token_with_location in 
         let error_message = match token with 
           | Top_level_error -> "Error in Parser.main rule"
-          | Media -> "media" 
         in
         Option.some @@ Printf.sprintf "Parser failed on: %s" error_message
       end 
@@ -325,10 +324,14 @@ let table :=
 (* MEDIA *)
 
 let media := 
-| media = located(Media); inner = located(inline_element)*; RIGHT_BRACE; 
-  { let (located_media_kind, media_href) = split_simple_media media in 
-    let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
-    `Media (`Simple, located_media_kind, "", media_kind_of_target media_href) }
+  | media = located(Media); RIGHT_BRACE; 
+    { let (located_media_kind, media_href) = split_simple_media media in 
+      let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
+      `Media (`Simple, wrapped_located_kind, "", media_kind_of_target media_href) }
+  | media = located(Media_with_replacement); RIGHT_BRACE;
+    { let (located_media_kind, media_href, content) = split_replacement_media media in 
+      let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
+      `Media (`With_text, wrapped_located_kind, content, media_kind_of_target media_href) }
 
 (* TOP-LEVEL ELEMENTS *)
 
@@ -339,8 +342,7 @@ let nestable_block_element :=
   | ~ = located(Modules)+; RIGHT_BRACE; <`Modules>
   | ~ = list_element; <>
   | ~ = table; <> 
-  (* TODO: replace with real error handling *)
-  | _ = Media; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Media }
+  | ~ = media; <>
   | ~ = Math_block; <`Math_block>
 
 let heading := 
