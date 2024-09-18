@@ -133,6 +133,22 @@
         let loc = Loc.location word in 
         [ Loc.at loc @@ `Paragraph [ word ] ], `Data
       )
+
+  let media_kind_of_target = function
+    | Audio -> `Audio
+    | Video -> `Video
+    | Image -> `Image
+
+  let href_of_media = function
+    | Reference name -> `Reference name
+    | Link uri -> `Link uri
+
+  let split_simple_media Loc.{ location; value = (media, target) } = 
+    (Loc.at location media, target)
+
+  let split_replacement_media Loc.{ location; value = (media, target, content) } =
+    (Loc.at location media, target, content)
+
 %}
 
 %token SPACE NEWLINE
@@ -305,6 +321,14 @@ let table_light :=
 let table := 
   | ~ = table_heavy; <`Table>
   | ~ = table_light; <`Table>
+
+(* MEDIA *)
+
+let media := 
+| media = located(Media); inner = located(inline_element)*; RIGHT_BRACE; 
+  { let (located_media_kind, media_href) = split_simple_media media in 
+    let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
+    `Media (`Simple, located_media_kind, "", media_kind_of_target media_href) }
 
 (* TOP-LEVEL ELEMENTS *)
 

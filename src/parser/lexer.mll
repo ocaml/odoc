@@ -208,7 +208,7 @@ let reference_token media start target input lexbuf =
        | "{{video:" -> Link target, Video
        | _ -> assert false
      in
-     let token_descr = "DUMMY_MEDIA_FOR_DEBUGGING" (* Parser_utils.describe (`Media_with_replacement_text (target, kind, "")) *) in
+     let token_descr = Parser_utils.describe (Media_with_replacement (target, kind, "")) in
      let content = media token_descr (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf in
      Media_with_replacement (target, kind, content)
 
