@@ -68,6 +68,7 @@
   | Open -> `Tag `Open 
   | Closed -> `Tag `Closed
   | Hidden -> `Tag `Hidden
+  (* TODO: replace this with real error handling. Don't throw exceptions *)
   | tag -> raise @@ No_children (wrap_location loc @@ Printf.sprintf "Tag %s expects children" (pp_tag tag)) 
 
   type align_error = 
@@ -121,14 +122,16 @@
   | _ -> Error Not_align
 
   (* Wrap a list of words in a paragraph, used for 'light' table headers *)
-  let to_paragraph : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Loc.with_location list = fun words ->
-    let span = Loc.span @@ List.map Loc.location words in 
-    [ Loc.at span (`Paragraph words) ]
+  let to_paragraph : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Loc.with_location list 
+    = fun words ->
+        let span = Loc.span @@ List.map Loc.location words in 
+        [ Loc.at span (`Paragraph words) ]
 
   let recover_data : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Ast.row 
-    = List.map (fun word -> let loc = Loc.location word in [ Loc.at loc @@ `Paragraph [ word ] ], `Data)
-
-  let assert_row : ( Ast.nestable_block_element Ast.with_location list * [ `Header | `Data ] ) list ->  ( Ast.nestable_block_element Ast.with_location list * [ `Header | `Data ] ) list = Fun.id
+    = List.map (fun word -> 
+        let loc = Loc.location word in 
+        [ Loc.at loc @@ `Paragraph [ word ] ], `Data
+      )
 %}
 
 %token SPACE NEWLINE
@@ -191,6 +194,7 @@ let main :=
   | ~ = located(toplevel)+; END; <>
   | _ = whitespace; { [] }
   | END; { [] }
+  (* TODO: replace w/ real error handling *)
   | error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Top_level_error }
 
 let toplevel :=
@@ -316,6 +320,7 @@ let nestable_block_element :=
   | ~ = located(Modules)+; RIGHT_BRACE; <`Modules>
   | ~ = list_element; <>
   | ~ = table; <> 
+  (* TODO: replace with real error handling *)
   | _ = Media; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Media }
   | ~ = Math_block; <`Math_block>
 
