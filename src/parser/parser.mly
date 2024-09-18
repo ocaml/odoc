@@ -104,22 +104,23 @@
      When we get something that doesn't look like an align at all, we check to see if we've gotten 
      any valid aligns, if so we assume that the cell being considered is supposed to be an align and treat it as an error,
      otherwise we assume the row is not supposed to be an align row *)
-  let rec valid_align_row ?(acc = []) : Ast.inline_element Loc.with_location list -> (Ast.alignment option list, align_error) result = function
-  | Loc.{ value = `Word cell; _ } :: rest -> 
-    begin
-      match valid_align_cell cell with
-      | Ok alignment -> 
-        valid_align_row ~acc:(alignment :: acc) rest 
-      | Error Not_align when List.length acc > 0 -> Error Invalid_align
-      | Error err -> Error err
-    end
-  | Loc.{ value = `Space "\n"; _ } :: _ when List.length acc > 0 ->
-    Error Invalid_align
-  | Loc.{ value = `Space _; _ } :: rest -> 
-    valid_align_row ~acc rest
-  | [] -> 
-    Ok acc
-  | _ -> Error Not_align
+  let rec valid_align_row ?(acc = []) : Ast.inline_element Loc.with_location list -> (Ast.alignment option list, align_error) result
+  = function
+    | Loc.{ value = `Word cell; _ } :: rest -> 
+      begin
+        match valid_align_cell cell with
+        | Ok alignment -> 
+          valid_align_row ~acc:(alignment :: acc) rest 
+        | Error Not_align when List.length acc > 0 -> Error Invalid_align
+        | Error err -> Error err
+      end
+    | Loc.{ value = `Space "\n"; _ } :: _ when List.length acc > 0 ->
+      Error Invalid_align
+    | Loc.{ value = `Space _; _ } :: rest -> 
+      valid_align_row ~acc rest
+    | [] -> 
+      Ok acc
+    | _ -> Error Not_align
 
   (* Wrap a list of words in a paragraph, used for 'light' table headers *)
   let to_paragraph : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Loc.with_location list 
@@ -263,15 +264,6 @@ let table_heavy == TABLE_HEAVY; grid = row_heavy*; RIGHT_BRACE; {
     (abstract, `Heavy) 
   }
 
-(* 
-  cell -> nestable_block_element with_location list * Header | Data
-  row -> cell list 
-  grid -> row list
-  abstract_table -> grid * alignment option list option
-
-  table -> abstract_table * Light | Heavy 
-*)
-
 let cell_light == BAR?; data = located(inline_element)+; { (to_paragraph data, `Data) } 
 let row_light := ~ = cell_light+; BAR?; NEWLINE; <>     
 
@@ -306,6 +298,9 @@ let table_light :=
   (* If there's only one row and it's not the align row, then it's data *)
   | TABLE_LIGHT; data = row_light+; RIGHT_BRACE; 
     { (data, None), `Light }
+
+  (* If there's nothing inside, return an empty table *)
+  | TABLE_LIGHT; SPACE*; RIGHT_BRACE; { ([[]], None), `Light }
 
 let table := 
   | ~ = table_heavy; <`Table>
