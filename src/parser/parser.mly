@@ -1,5 +1,4 @@
 %{
-  [@@@warning "-32"]
   open Parser_types
 
   let point_of_position Lexing.{ pos_lnum; pos_cnum; _ } = 
@@ -37,8 +36,8 @@
       begin
         let Loc.{ location = _location; value = token } = unimplemented_token_with_location in 
         let error_message = match token with 
-        | Top_level_error -> "Error in Parser.main rule"
-        | Media -> "media" 
+          | Top_level_error -> "Error in Parser.main rule"
+          | Media -> "media" 
         in
         Option.some @@ Printf.sprintf "Parser failed on: %s" error_message
       end 
@@ -98,7 +97,12 @@
           else Error Not_align
       end
 
-  (* Short-circuiting fold, if we get something that isn't a valid alignment then bail and return it *)
+  (* NOTE: (@FayCarsons) 
+
+     This is a short-circuiting fold, if we get something that isn't a valid alignment then bail and return it.
+     When we get something that doesn't look like an align at all, we check to see if we've gotten 
+     any valid aligns, if so we assume that the cell being considered is supposed to be an align and treat it as an error,
+     otherwise we assume the row is not supposed to be an align row *)
   let rec valid_align_row ?(acc = []) : Ast.inline_element Loc.with_location list -> (Ast.alignment option list, align_error) result = function
   | Loc.{ value = `Word cell; _ } :: rest -> 
     begin
@@ -168,8 +172,8 @@
 %token <string> Ref_with_replacement 
 %token <string> Simple_link 
 %token <string> Link_with_replacement
-%token <Parser_types.(media * media_target)> Media 
-%token <Parser_types.(media * media_target * string)> Media_with_replacement
+%token <(Parser_types.media * Parser_types.media_target)> Media 
+%token <(Parser_types.media * Parser_types.media_target * string)> Media_with_replacement
 %token <string> Verbatim
 
 %token END
