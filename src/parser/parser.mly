@@ -208,15 +208,15 @@ let located(rule) == value = rule; { wrap_location $loc value }
 
 let main :=  
   | ~ = located(toplevel)+; END; <>
-  | _ = whitespace; { [] }
+  | _ = whitespace; END; { [] }
   | END; { [] }
   (* TODO: replace w/ real error handling *)
   | error; { raise @@ exn_location ~only_for_debugging:$loc ~failed_on:Top_level_error }
 
 let toplevel :=
-  | ~ = tag; <>
-  | block = nestable_block_element; { (block :> Ast.block_element) }
-  | ~ = heading; <>
+  | ~ = tag; whitespace*; <>
+  | block = nestable_block_element; whitespace*; { (block :> Ast.block_element) }
+  | ~ = heading; whitespace*; <>
 
 let whitespace := 
   | SPACE; { `Space " " } 
@@ -232,7 +232,7 @@ let inline_element :=
   | ~ = Word; <`Word>
   | ~ = Code_span; <`Code_span>
   | ~ = Raw_markup; <`Raw_markup>
-  | style = Style; inner = located(inline_element)*; { `Styled (style, inner) }
+  | style = Style; inner = located(inline_element)*; RIGHT_BRACE; { `Styled (style, inner) }
   | ~ = Math_span; <`Math_span>
   | ~ = ref; <>
   | ~ = link; <>
@@ -259,9 +259,9 @@ let list_light :=
     { `List (`Ordered, `Light, [ ordered_items ]) }
 
 (* `List_item` is [ `Li | `Dash ], not sure how that's useful though. Can't find '{li' syntax in Odoc docs *)
-let item_heavy == _ = List_item; ~ = located(nestable_block_element)*; RIGHT_BRACE; <>
+let item_heavy == _ = List_item; whitespace*; ~ = located(nestable_block_element)*; whitespace*; RIGHT_BRACE; <>
 let list_heavy := 
-  | list_kind = List; whitespace*; items = item_heavy*; RIGHT_BRACE;
+    | list_kind = List; whitespace*; items = item_heavy*; whitespace*; RIGHT_BRACE;
     { `List (list_kind, `Heavy, items) }
 
 let list_element := 
