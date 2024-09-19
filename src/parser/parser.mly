@@ -259,7 +259,7 @@ let list_light :=
     { `List (`Ordered, `Light, [ ordered_items ]) }
 
 (* `List_item` is [ `Li | `Dash ], not sure how that's useful though. Can't find '{li' syntax in Odoc docs *)
-let item_heavy == _ = List_item; whitespace*; ~ = located(nestable_block_element)*; whitespace*; RIGHT_BRACE; <>
+let item_heavy == _ = List_item; whitespace*; ~ = located(nestable_block_element)*; whitespace*; RIGHT_BRACE; whitespace*; <>
 let list_heavy := 
     | list_kind = List; whitespace*; items = item_heavy*; whitespace*; RIGHT_BRACE;
     { `List (list_kind, `Heavy, items) }
