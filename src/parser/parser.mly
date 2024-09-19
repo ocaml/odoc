@@ -324,11 +324,11 @@ let table :=
 (* MEDIA *)
 
 let media := 
-  | media = located(Media); RIGHT_BRACE; 
+  | media = located(Media); whitespace*; 
     { let (located_media_kind, media_href) = split_simple_media media in 
       let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
       `Media (`Simple, wrapped_located_kind, "", media_kind_of_target media_href) }
-  | media = located(Media_with_replacement); RIGHT_BRACE;
+  | media = located(Media_with_replacement); whitespace*;
     { let (located_media_kind, media_href, content) = split_replacement_media media in 
       let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
       `Media (`With_text, wrapped_located_kind, content, media_kind_of_target media_href) }
