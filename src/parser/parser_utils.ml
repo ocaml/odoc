@@ -1,6 +1,43 @@
 open Parser
 
-let[@warning "-8"] print : Parser.token -> string = function
+let media_description ref_kind media_kind =
+    let open Parser_types in
+    let media_kind = match media_kind with
+    | Audio -> "audio"
+    | Video -> "video"
+    | Image -> "image" 
+    in
+    let ref_kind = match ref_kind with
+    | Reference _ ->  "!"
+    | Link _ -> ":"
+    in 
+    ref_kind, media_kind
+
+let print : Parser.token -> string = function
+  | SPACE | Space _ -> "\t"
+  | NEWLINE | Single_newline _ -> "\n"
+  | Blank_line _ -> "\n\n"
+  | Simple_ref _ -> "{!"
+  | Ref_with_replacement _ -> "{{!"
+  | Simple_link _ -> "{:"
+  | Link_with_replacement _ -> "{{:"
+  | Modules _ -> "{!modules:"
+  | Media (ref_kind, media_kind) -> 
+    let (ref_kind, media_kind) = media_description ref_kind media_kind in
+    Printf.sprintf "{%s%s" media_kind ref_kind
+  | Media_with_replacement (ref_kind, media_kind, _) -> 
+    let (ref_kind, media_kind) = media_description ref_kind media_kind in
+    Printf.sprintf "{{%s%s" media_kind ref_kind
+  | Math_span _ -> 
+    "{m"
+  | Math_block _ -> 
+    "{math"
+  | Code_span _ -> "["
+  | Code_block _ -> "{["
+  | Word w -> w
+  | Verbatim _ -> "{v"
+  | RIGHT_CODE_DELIMITER -> "]}"
+  | RIGHT_BRACE -> "}"
   | Paragraph_style `Left -> "'{L'"
   | Paragraph_style `Center -> "'{C'"
   | Paragraph_style `Right -> "'{R'"
@@ -9,8 +46,8 @@ let[@warning "-8"] print : Parser.token -> string = function
   | Style `Emphasis -> "'{e'"
   | Style `Superscript -> "'{^'"
   | Style `Subscript -> "'{_'"
-  | Ref_with_replacement _ -> "'{{!'"
-  | Link_with_replacement _ -> "'{{:'"
+  | List `Ordered -> "{ol"
+  | List `Unordered -> "{ul"
   | List_item `Li -> "'{li ...}'"
   | List_item `Dash -> "'{- ...}'"
   | TABLE_LIGHT -> "{t"
@@ -40,11 +77,19 @@ let[@warning "-8"] print : Parser.token -> string = function
   | Tag Hidden -> "'@hidden"
   | Raw_markup (None, _) -> "'{%...%}'"
   | Raw_markup (Some target, _) -> "'{%" ^ target ^ ":...%}'"
+  | END -> "EOI"
 
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted
    [`Minus] and [`Plus] should always be plausibly list item bullets. *)
-let[@warning "-8"] describe : Parser.token -> string = function
+let describe : Parser.token -> string = function
+  | Space _ -> "(horizontal space)"
+  | Media (ref_kind, media_kind) -> 
+    let (ref_kind, media_kind) = media_description ref_kind media_kind in
+    Printf.sprintf "{%s%s" media_kind ref_kind
+  | Media_with_replacement (ref_kind, media_kind, _) -> 
+    let (ref_kind, media_kind) = media_description ref_kind media_kind in
+    Printf.sprintf "{{%s%s" media_kind ref_kind
   | Word w -> Printf.sprintf "'%s'" w
   | Code_span _ -> "'[...]' (code)"
   | Raw_markup _ -> "'{%...%}' (raw markup)"
@@ -65,7 +110,7 @@ let[@warning "-8"] describe : Parser.token -> string = function
   | Link_with_replacement _ -> "'{{:...} ...}' (external link)"
   | END -> "end of text"
   | SPACE -> "whitespace"
-  | Single_newline _ -> "line break"
+  | Single_newline _ | NEWLINE -> "line break"
   | Blank_line _ -> "blank line"
   | RIGHT_BRACE -> "'}'"
   | RIGHT_CODE_DELIMITER -> "']}'"
