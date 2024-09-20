@@ -101,6 +101,8 @@ module Cmi = struct
 end
 
 module Deps = struct
+  type t = (string * StringSet.t) list
+
   let closure deps =
     let rec inner acc l =
       match l with
@@ -115,9 +117,18 @@ module Deps = struct
           in
           inner acc rest
     in
+    let eq (l1 : t) (l2 : t) =
+      List.for_all
+        (fun (x, deps) ->
+          try
+            let deps' = List.assoc x l2 in
+            StringSet.equal deps deps'
+          with Not_found -> false)
+        l1
+    in
     let rec loop acc =
       let acc' = inner acc deps in
-      if acc = acc' then acc else loop acc'
+      if eq acc acc' then acc else loop acc'
     in
     loop deps
 
