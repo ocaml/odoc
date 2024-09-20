@@ -1,8 +1,8 @@
 %{
   open Parser_types
 
-  let point_of_position Lexing.{ pos_lnum; pos_cnum; _ } = 
-    Loc.{ line = pos_lnum; column = pos_cnum }
+let point_of_position Lexing.{ pos_lnum; pos_cnum; pos_bol; _ } = 
+    Loc.{ line = pos_lnum; column = pos_cnum - pos_bol }
 
   type lexspan = (Lexing.position * Lexing.position)
   let to_location :  lexspan -> Loc.span =
@@ -202,7 +202,7 @@
 %%
 
 (* Utility which wraps the return value of a producer in `Loc.with_location` *)
-let located(rule) == value = rule; { wrap_location $loc value }
+let located(rule) == inner = rule; { wrap_location $sloc inner }
 
 (* ENTRY-POINT *)
 

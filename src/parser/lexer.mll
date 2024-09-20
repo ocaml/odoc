@@ -237,7 +237,8 @@ let emit_verbatim lexbuf input start_offset buffer =
     |> trim_trailing_space_or_accept_whitespace 
     |> trim_leading_space_or_accept_whitespace lexbuf input start_offset 
     |> trim_leading_blank_lines 
-    |> trim_trailing_blank_lines in
+    |> trim_trailing_blank_lines 
+  in
   emit lexbuf input (Verbatim t) ~start_offset
 
 (* The locations have to be treated carefully in this function. We need to ensure that
