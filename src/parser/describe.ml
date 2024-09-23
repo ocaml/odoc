@@ -1,7 +1,7 @@
 open Parser
 
 let media_description ref_kind media_kind =
-    let open Parser_types in
+    let open Parser_aux in
     let media_kind = match media_kind with
     | Audio -> "audio"
     | Video -> "video"
