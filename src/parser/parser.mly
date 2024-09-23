@@ -238,10 +238,10 @@ let inline_element :=
   | ~ = link; <>
 
 let ref := 
-  | ref_body = located(Simple_ref); children = located(inline_element)+; RIGHT_BRACE; 
+  | ref_body = located(Simple_ref); children = located(inline_element)*; 
     { `Reference (`Simple, ref_body, children) }
 
-  | ref_body = located(Ref_with_replacement); children = located(inline_element)*; RIGHT_BRACE; 
+  | ref_body = located(Ref_with_replacement); children = located(inline_element)*; 
     { `Reference (`With_text, ref_body, children) }
 
 (* TODO : Fix the `with_replacement` producers in the following two rules, if they're broken. Ask what `with_replacement` refers to *)
