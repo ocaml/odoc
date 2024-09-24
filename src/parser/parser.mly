@@ -270,9 +270,9 @@ let list_element :=
 
 (* TABLES *)
 
-let cell_heavy := cell_kind = Table_cell; children = located(nestable_block_element)*; RIGHT_BRACE; { (children, cell_kind) }
-let row_heavy == TABLE_ROW; cells = list(cell_heavy); RIGHT_BRACE;  { cells } 
-let table_heavy == TABLE_HEAVY; grid = row_heavy*; RIGHT_BRACE; { 
+  let cell_heavy := cell_kind = Table_cell; whitespace?; children = located(nestable_block_element)*; whitespace?; RIGHT_BRACE; whitespace?; { (children, cell_kind) }
+let row_heavy == TABLE_ROW; whitespace?; cells = list(cell_heavy); RIGHT_BRACE; whitespace?;  { cells } 
+let table_heavy == TABLE_HEAVY; whitespace?; grid = row_heavy*; RIGHT_BRACE; { 
     (* Convert into an 'abstract table' which can be either a light or heavy syntax table. 
        We know this is a heavy table, which cannot have alignment, however, so the alignment field is `None` *)
     let abstract : Ast.nestable_block_element Ast.abstract_table = (grid, None) in 
