@@ -227,6 +227,21 @@ let whitespace :=
 
 (* INLINE ELEMENTS *)
 
+(* TODO: enforce invariant: 
+  
+(* Convenient abbreviation for use in patterns. *)
+type token_that_always_begins_an_inline_element =
+  [ `Word of string
+  | `Code_span of string
+  | `Raw_markup of string option * string
+  | `Begin_style of style
+  | `Simple_reference of string
+  | `Begin_reference_with_replacement_text of string
+  | `Simple_link of string
+  | `Begin_link_with_replacement_text of string
+  | `Math_span of string ]
+
+*)
 let inline_element := 
   | ~ = whitespace; <>
   | ~ = Word; <`Word>
@@ -338,7 +353,7 @@ let media :=
 let nestable_block_element := 
   | ~ = Verbatim; <`Verbatim>
   | ~ = located(inline_element)+; <`Paragraph>
-  | ~ = Code_block; RIGHT_CODE_DELIMITER; <`Code_block>
+  | ~ = Code_block; <`Code_block>
   | ~ = located(Modules)+; <`Modules>
   | ~ = list_element; <>
   | ~ = table; <> 
