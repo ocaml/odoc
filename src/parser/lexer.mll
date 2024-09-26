@@ -452,7 +452,7 @@ and token input = parse
       in
       let emit_truncated_code_block () =
         let empty_content = with_location_adjustments (fun _ -> Loc.at) lexbuf input "" in
-            emit ~start_offset lexbuf input (Code_block { meta = Some { language = lang_tag; tags = None }; delimiter = Some delimiter; content = empty_content; output = None}) 
+        emit ~start_offset lexbuf input (Code_block { meta = Some { language = lang_tag; tags = None }; delimiter = Some delimiter; content = empty_content; output = None}) 
       in
       match code_block_metadata_tail input lexbuf with
       | Ok metadata -> code_block start_offset (Lexing.lexeme_end lexbuf) (Some metadata) (Buffer.create 256) delimiter input lexbuf
