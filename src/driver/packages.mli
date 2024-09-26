@@ -59,7 +59,7 @@ val parent_of_pages : Fpath.t -> Fpath.t
 
 module Lib : sig
   val v :
-    libname_of_archive:string Util.StringMap.t ->
+    libname_of_archive:string Fpath.Map.t ->
     pkg_name:string ->
     dir:Fpath.t ->
     cmtidir:Fpath.t option ->

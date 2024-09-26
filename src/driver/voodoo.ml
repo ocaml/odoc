@@ -139,7 +139,13 @@ let process_package pkg =
         let libname_of_archive =
           List.fold_left
             (fun acc x ->
-              Util.StringMap.update x.Library_names.archive_name
+              let dir =
+                match x.Library_names.dir with
+                | None -> meta_dir
+                | Some x -> Fpath.(meta_dir // v x)
+              in
+              Fpath.Map.update
+                Fpath.(dir / x.archive_name)
                 (function
                   | None -> Some x.Library_names.name
                   | Some y ->
@@ -148,10 +154,10 @@ let process_package pkg =
                             x.archive_name x.name y);
                       Some y)
                 acc)
-            Util.StringMap.empty libs
+            Fpath.Map.empty libs
         in
-        Util.StringMap.iter
-          (fun k v -> Logs.debug (fun m -> m "%s,%s\n%!" k v))
+        Fpath.Map.iter
+          (fun k v -> Logs.debug (fun m -> m "%a,%s\n%!" Fpath.pp k v))
           libname_of_archive;
         Some
           (List.concat_map
@@ -192,16 +198,18 @@ let process_package pkg =
         let libname_of_archive =
           let files_res = Bos.OS.Dir.contents Fpath.(pkg_path // libdir) in
           match files_res with
-          | Error _ -> Util.StringMap.empty
+          | Error _ -> Fpath.Map.empty
           | Ok files ->
               List.fold_left
                 (fun acc file ->
                   let base = Fpath.basename file in
                   if Astring.String.is_suffix ~affix:".cma" base then
                     let libname = String.sub base 0 (String.length base - 4) in
-                    Util.StringMap.add libname libname acc
+                    Fpath.Map.add
+                      Fpath.(pkg_path // libdir / libname)
+                      libname acc
                   else acc)
-                Util.StringMap.empty files
+                Fpath.Map.empty files
         in
         Logs.debug (fun m ->
             m "Processing directory without META: %a" Fpath.pp libdir);

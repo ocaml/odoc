@@ -151,19 +151,18 @@ module Lib = struct
     Logs.debug (fun m -> m "Got %d lines" (List.length results));
     List.filter_map
       (fun (archive_name, modules) ->
-        try
-          let lib_name = Util.StringMap.find archive_name libname_of_archive in
-          let modules = Module.vs dir cmtidir modules in
-          let lib_deps =
-            try Util.StringMap.find lib_name all_lib_deps
-            with _ -> Util.StringSet.empty
-          in
-          Some { lib_name; archive_name; modules; lib_deps; dir }
-        with e ->
-          Logs.err (fun m ->
-              m "Error processing library %s: %s Ignoring." archive_name
-                (Printexc.to_string e));
-          None)
+        match Fpath.Map.find Fpath.(dir / archive_name) libname_of_archive with
+        | Some lib_name ->
+            let modules = Module.vs dir cmtidir modules in
+            let lib_deps =
+              try Util.StringMap.find lib_name all_lib_deps
+              with _ -> Util.StringSet.empty
+            in
+            Some { lib_name; archive_name; modules; lib_deps; dir }
+        | None ->
+            Logs.err (fun m ->
+                m "Error processing library %s: Ignoring." archive_name);
+            None)
       results
 
   let pp ppf t =
@@ -195,6 +194,7 @@ let of_libs ~packages_dir libs =
   in
   let all_libs = Util.StringSet.elements all_libs_set in
   let all_libs = "stdlib" :: all_libs in
+
   let all_lib_deps =
     List.fold_right
       (fun lib_name acc ->
@@ -210,9 +210,11 @@ let of_libs ~packages_dir libs =
             acc)
       all_libs Util.StringMap.empty
   in
+
   Logs.debug (fun m ->
       m "Libraries to document: [%a]" Fmt.(list ~sep:sp string) all_libs);
-  let dirs' =
+
+  let lib_dirs_and_archives =
     List.filter_map
       (fun lib ->
         match Ocamlfind.get_dir lib with
@@ -238,6 +240,7 @@ let of_libs ~packages_dir libs =
             Some (lib, p, archives))
       all_libs
   in
+
   let map, rmap =
     (* if Sys.file_exists ".pkg_to_dir_map" then (
          let ic = open_in_bin ".pkg_to_dir_map" in
@@ -251,7 +254,8 @@ let of_libs ~packages_dir libs =
        close_out oc; *)
     result
   in
-  let dirs =
+
+  let archives_by_dir =
     List.fold_left
       (fun set (_lib, p, archives) ->
         Fpath.Map.update p
@@ -259,15 +263,17 @@ let of_libs ~packages_dir libs =
             | Some set -> Some (Util.StringSet.union set archives)
             | None -> Some archives)
           set)
-      Fpath.Map.empty dirs'
+      Fpath.Map.empty lib_dirs_and_archives
   in
+
   let libname_of_archive =
     List.fold_left
-      (fun map (lib, _, archives) ->
+      (fun map (lib, dir, archives) ->
         match Util.StringSet.elements archives with
         | [] -> map
         | [ archive ] ->
-            Util.StringMap.update archive
+            Fpath.Map.update
+              Fpath.(dir / archive)
               (function
                 | None -> Some lib
                 | Some x ->
@@ -284,7 +290,7 @@ let of_libs ~packages_dir libs =
                   Fmt.(list ~sep:sp string)
                   xs);
             assert false)
-      Util.StringMap.empty dirs'
+      Fpath.Map.empty lib_dirs_and_archives
   in
   ignore libname_of_archive;
   let mk_mlds pkg_name odoc_pages =
@@ -374,6 +380,6 @@ let of_libs ~packages_dir libs =
                       config;
                     })
             acc)
-    dirs Util.StringMap.empty
+    archives_by_dir Util.StringMap.empty
 
 type set = t Util.StringMap.t
