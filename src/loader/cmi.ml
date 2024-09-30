@@ -27,6 +27,10 @@ module Paths = Odoc_model.Paths
 
 module Compat = struct
 #if OCAML_VERSION >= (4, 14, 0)
+#if OCAML_VERSION >= (5, 3, 0)
+  let newty2 = Btype.newty2
+#endif
+
   (** this is the type on which physical equality is meaningful *)
   type repr_type_node = Types.transient_expr
 
