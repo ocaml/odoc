@@ -44,6 +44,7 @@ depends: [
   "eio_main"
   "progress"
   "cmdliner"
+  "sherlodoc"
 ]
 
 build: [
@@ -59,4 +60,7 @@ build: [
     "@runtest" {with-test}
     "@doc" {with-doc}
   ]
+]
+pin-depends: [
+  [ "sherlodoc.dev" "git+https://github.com/art-w/sherlodoc#0357233acf56936db6760cba573f7e77750b5428"]
 ]
