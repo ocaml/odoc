@@ -58,7 +58,7 @@ module MkId = Identifier.Mk
 let unit_of_uid uid =
   match uid with
   | Shape.Uid.Compilation_unit s -> Some s
-  | Item { comp_unit; id = _ } -> Some comp_unit
+  | Item { comp_unit; _ } -> Some comp_unit
   | Predef _ -> None
   | Internal -> None
 

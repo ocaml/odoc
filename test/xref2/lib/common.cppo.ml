@@ -34,8 +34,10 @@ let cmt_of_string s =
     let p = Parse.implementation l in
 #if OCAML_VERSION < (5,2,0)
     Typemod.type_implementation "" "" "" env p
-#else
+#elif OCAML_VERSION < (5,3,0)
     Typemod.type_implementation (Unit_info.make ~source_file:"" "") env p
+#else
+    Typemod.type_implementation Unit_info.(make ~source_file:"" Impl "") env p
 #endif
 
 let parent = Odoc_model.Paths.Identifier.Mk.page (None, Odoc_model.Names.PageName.make_std "None")
