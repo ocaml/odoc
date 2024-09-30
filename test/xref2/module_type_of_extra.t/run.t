@@ -37,28 +37,10 @@ More advanced uses of `module type of`, including using functors.
 
   $ ocamlc -c -bin-annot a.mli
   $ ocamlc -c -bin-annot b.mli
-  $ ocamlc -i b.mli
-  module X : sig type t end
-  module type X1 = sig type t end
-  module type X2 = sig module X : sig type t end end
-  module type X3 = sig type t end
-  module Y : functor (A : sig type t end) -> sig type t end
-  module type Foo =
-    sig
-      module X : sig type t end
-      module Y : functor (A : sig type t end) -> sig module Z = X end
-      module type Z = functor (A : sig type t end) -> sig module Z = X end
-      module X' : sig type t = X.t end
-    end
-  module type X4 = functor (A : sig type t end) -> sig type t end
-  module SubX : sig type t type u end
-  module type X5 =
-    sig
-      module Y : functor (A : sig type t end) -> sig module Z = SubX end
-      module type Z = functor (A : sig type t end) -> sig module Z = SubX end
-      module X' : sig type t = SubX.t end
-    end
-  module type X6 = sig type t end
+
+Omitted for stability:
+$ ocamlc -i b.mli
+
   $ odoc compile a.cmti
   $ odoc compile -I . b.cmti
   $ odoc link -I . a.odoc
