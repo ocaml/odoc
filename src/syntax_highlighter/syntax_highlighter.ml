@@ -145,6 +145,12 @@ let tag_of_token (tok : Parser.token) =
   | ANDOP _ -> "ANDOP"
   | LETOP _ -> "LETOP"
 #endif
+#if OCAML_VERSION >= (5,3,0)
+  | METAOCAML_ESCAPE -> "METAOCAML_ESCAPE"
+  | METAOCAML_BRACKET_OPEN -> "METAOCAML_BRACKET_OPEN"
+  | METAOCAML_BRACKET_CLOSE -> "METAOCAML_BRACKET_CLOSE"
+  | EFFECT -> "EFFECT"
+#endif
 
 let syntax_highlighting_locs src =
   let lexbuf = Lexing.from_string

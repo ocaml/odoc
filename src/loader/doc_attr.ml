@@ -39,8 +39,10 @@ let load_constant_string = function
      Pexp_constant (Const_string (text, _))
 #elif OCAML_VERSION < (4,11,0)
      Pexp_constant (Pconst_string (text, _))
-#else
+#elif OCAML_VERSION < (5,3,0)
      Pexp_constant (Pconst_string (text, _, _))
+#else
+     Pexp_constant {pconst_desc= Pconst_string (text, _, _); _}
 #endif
    ; pexp_loc = loc; _} ->
        Some (text , loc)

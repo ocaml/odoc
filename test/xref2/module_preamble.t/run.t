@@ -9,7 +9,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
   $ ocamlc -bin-annot -o a__b.cmo -c b.ml
   $ ocamlc -bin-annot -o a.cmi -c a.mli
   $ ocamlc -bin-annot -o a.cmo -c a.ml
-  $ ocamlc -bin-annot -a -o a.cma a.cmo a__b.cmo
+  $ ocamlc -bin-annot -a -o a.cma a__b.cmo a.cmo
 
   $ odoc compile --pkg test -o a__b.odoc -I . a__b.cmti
   $ odoc compile --pkg test -o a.odoc -I . a.cmti
