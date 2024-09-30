@@ -44,7 +44,7 @@ jobs:
           opam-pin: false
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           opam-local-packages: |
-            odoc.opam
+            odoc-parser.opam odoc.opam
 
       - name: Install dependencies
         run: opam install -y --deps-only -t ./odoc.opam ./odoc-parser.opam
