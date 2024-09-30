@@ -1,0 +1,9 @@
+(lang dune 3.16)
+
+(name test_odoc_driver)
+
+(generate_opam_files true)
+
+(package
+ (name test_odoc_driver)
+ (depends ocaml dune))
