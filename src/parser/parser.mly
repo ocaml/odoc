@@ -137,8 +137,12 @@
         let span = Loc.span @@ List.map Loc.location words in 
         [ Loc.at span (`Paragraph words) ]
 
-  let tagged_row tag : Ast.inline_element Loc.with_location list list -> Ast.nestable_block_element Ast.row  
+  (* Merges inline elements within a cell into a single paragraph element, and tags cells w/ tag *)
+  let merged_tagged_row tag : Ast.inline_element Loc.with_location list list -> Ast.nestable_block_element Ast.row  
     = List.map (fun elts -> to_paragraph elts, tag)
+
+  let as_data = merged_tagged_row `Data
+  let as_header = merged_tagged_row `Header
 
   let media_kind_of_target = function
     | Audio -> `Audio
@@ -308,31 +312,32 @@ let table_light :=
   (* If the first row is the alignment row then the rest should be data *)
   | TABLE_LIGHT; align = row_light; data = row_light+; RIGHT_BRACE;
     {
+      let data = List.map as_data data in
       match valid_align_row align with
       | Ok alignment -> (data, Some alignment), `Light
       | Error Invalid_align -> (data, None), `Light
       | Error Not_align ->  
-        let align_as_data = tagged_row `Data align in
+        let align_as_data = as_data align in
         (align_as_data :: data, None), `Light
     }
 
   (* Otherwise the first should be the headers, the second align, and the rest data *)
   | TABLE_LIGHT; header = row_light; align = row_light; data = row_light+; RIGHT_BRACE;
     { 
-      let data = List.map (tagged_row `Data) data 
-      and header = tagged_row `Header header in
+      let data = List.map as_data data 
+      and header = as_header header in
       match valid_align_row align with
       | Ok alignment -> (header :: data, Some alignment), `Light
       | Error Invalid_align -> 
         (header :: data, None), `Light
       | Error Not_align -> 
-        let align_as_data = recover align in
+        let align_as_data = as_data align in
         (header :: align_as_data :: data, None), `Light
     }
 
   (* If there's only one row and it's not the align row, then it's data *)
   | TABLE_LIGHT; data = row_light+; RIGHT_BRACE; 
-    { (List.map (tagged_row `Data) data, None), `Light }
+    { (List.map as_data data, None), `Light }
 
   (* If there's nothing inside, return an empty table *)
   | TABLE_LIGHT; SPACE*; RIGHT_BRACE; { ([[]], None), `Light }
