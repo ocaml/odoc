@@ -1,4 +1,4 @@
-(ocamllex lexer)
+(ocamllex lexer frontmatter_lexer)
 
 (library
  (name odoc_parser)

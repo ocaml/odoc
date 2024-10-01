@@ -15,7 +15,7 @@ val ast_to_comment :
   sections_allowed:sections_allowed ->
   tags_allowed:bool ->
   parent_of_sections:Paths.Identifier.LabelParent.t ->
-  Odoc_parser.Ast.t ->
+  Odoc_parser.Ast.body ->
   alerts ->
   (Comment.docs * 'tags) Error.with_warnings
 

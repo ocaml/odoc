@@ -100,7 +100,21 @@ let position_of_point : t -> Loc.point -> Lexing.position =
   { Lexing.pos_bol; pos_lnum; pos_cnum; pos_fname }
 
 (* The main entry point for this module *)
+
+let extract_frontmatter ~location ~text =
+  let lexbuf = Lexing.from_string text in
+  Lexing.set_position lexbuf location;
+  let frontmatter = Frontmatter_lexer.parser (Buffer.create 64) lexbuf in
+  match frontmatter with
+  | None -> (None, location, text)
+  | Some _ ->
+      let loc_end = Lexing.lexeme_end lexbuf in
+      let text = String.sub text loc_end (String.length text - loc_end) in
+
+      (frontmatter, Lexing.lexeme_end_p lexbuf, text)
+
 let parse_comment ~location ~text =
+  let front_matter, location, text = extract_frontmatter ~location ~text in
   let warnings = ref [] in
   let reversed_newlines = reversed_newlines ~input:text in
   let token_stream =
@@ -114,6 +128,7 @@ let parse_comment ~location ~text =
     Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
   in
   let ast, warnings = Syntax.parse warnings token_stream in
+  let ast = Ast.{ front_matter; content = ast } in
   { ast; warnings; reversed_newlines; original_pos = location }
 
 (* Accessor functions, as [t] is opaque *)

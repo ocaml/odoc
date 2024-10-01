@@ -133,6 +133,7 @@ let attached internal_tags parent attrs =
               Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:str
               |> Error.raise_parser_warnings
             in
+            let Odoc_parser.Ast.{front_matter=_;content=ast_docs} = ast_docs in
             loop (List.rev_append ast_docs acc_docs) acc_alerts rest
         | Some (`Alert (name, p, loc)) ->
             let elt = mk_alert_payload ~loc name p in
@@ -246,14 +247,14 @@ let extract_top_comment internal_tags ~classify parent items =
         | `Skip ->
             let items, ast_docs, alerts = extract tl in
             (hd :: items, ast_docs, alerts)
-        | `Return -> (items, [], []))
-    | [] -> ([], [], [])
+        | `Return -> (items, Odoc_parser.Ast.empty, []))
+    | [] -> ([], Odoc_parser.Ast.empty, [])
   in
   let items, ast_docs, alerts = extract items in
   let docs, tags =
     ast_to_comment ~internal_tags
       (parent : Paths.Identifier.Signature.t :> Paths.Identifier.LabelParent.t)
-      ast_docs alerts
+      ast_docs.content alerts
   in
   (items, split_docs docs, tags)
 

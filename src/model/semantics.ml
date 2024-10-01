@@ -575,7 +575,7 @@ let parse_comment ~internal_tags ~sections_allowed ~tags_allowed
         Odoc_parser.parse_comment ~location ~text |> Error.raise_parser_warnings
       in
       ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
-        ~parent_of_sections:containing_definition ast []
+        ~parent_of_sections:containing_definition ast.content []
       |> Error.raise_warnings)
 
 let parse_reference text =
