@@ -3,6 +3,8 @@
  (package odoc-driver)
  (link_deps
   (package odoc))
+ (preprocess
+  (pps ppx_sexp_conv))
  (libraries
   cmdliner
   bos

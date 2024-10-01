@@ -162,6 +162,10 @@ module Lib = struct
         | None ->
             Logs.err (fun m ->
                 m "Error processing library %s: Ignoring." archive_name);
+            Logs.err (fun m ->
+                m "Known libraries: [%a]"
+                  Fmt.(list ~sep:sp string)
+                  (Fpath.Map.bindings libname_of_archive |> List.map snd));
             None)
       results
 

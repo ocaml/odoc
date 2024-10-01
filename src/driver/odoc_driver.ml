@@ -532,10 +532,6 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
     | true, Some p, None, None ->
         let all = Voodoo.of_voodoo p ~blessed in
         let extra_libs_paths = Voodoo.extra_libs_paths odoc_dir in
-        Format.eprintf "extra_libs_paths:\n%!";
-        Util.StringMap.iter
-          (fun lib path -> Format.eprintf "%s -> %a\n%!" lib Fpath.pp path)
-          extra_libs_paths;
         (all, extra_libs_paths)
     | false, None, Some dir, None ->
         (Dune_style.of_dune_build dir, Util.StringMap.empty)
@@ -571,8 +567,6 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
             Odoc_unit.of_packages ~output_dir:odoc_dir ~linked_dir:odocl_dir
               ~index_dir:None ~extra_libs_paths all
           in
-          Format.eprintf "All units:\n%!";
-          Format.eprintf "%a" Fmt.(list ~sep:Fmt.semi Odoc_unit.pp) internal;
           let external_ =
             let mld_dir = odoc_dir in
             let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
