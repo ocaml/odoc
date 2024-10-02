@@ -40,5 +40,6 @@ val of_packages :
   output_dir:Fpath.t ->
   linked_dir:Fpath.t option ->
   index_dir:Fpath.t option ->
+  extra_libs_paths:Fpath.t Util.StringMap.t ->
   Packages.t list ->
   t list

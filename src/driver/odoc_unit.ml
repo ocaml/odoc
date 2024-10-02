@@ -37,8 +37,8 @@ type asset = [ `Asset ]
 
 type t = [ impl | intf | mld | asset ] unit
 
-let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
-    t list =
+let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
+    (pkgs : Packages.t list) : t list =
   let linked_dir =
     match linked_dir with None -> output_dir | Some dir -> dir
   in
@@ -56,7 +56,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
   let module_of_hash, lib_dirs =
     let open Packages in
     let h = Util.StringMap.empty in
-    let lds = Util.StringMap.empty in
+    let lds = extra_libs_paths in
     List.fold_left
       (fun (h, lds) pkg ->
         List.fold_left
