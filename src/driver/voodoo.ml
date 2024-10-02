@@ -47,12 +47,24 @@ let process_package pkg =
       pkg.files
   in
 
-  let all_lib_deps = Util.StringMap.empty in
-
-  (* TODO *)
   let pkg_path =
     Fpath.(v "prep" / "universes" / pkg.universe / pkg.name / pkg.version)
   in
+
+  let all_lib_deps =
+    List.fold_left
+      (fun acc meta ->
+        let full_meta_path = Fpath.(pkg_path // meta) in
+        let libs = Library_names.process_meta_file full_meta_path in
+        List.fold_left
+          (fun acc lib ->
+            Util.StringMap.add lib.Library_names.name
+              (Util.StringSet.of_list lib.Library_names.deps)
+              acc)
+          acc libs)
+      Util.StringMap.empty metas
+  in
+
   let assets, mlds =
     List.filter_map
       (fun p ->
@@ -168,27 +180,43 @@ let process_package pkg =
     in
     List.map
       (fun libdir ->
+        let libname_of_archive =
+          let files_res = Bos.OS.Dir.contents Fpath.(pkg_path // libdir) in
+          match files_res with
+          | Error _ -> Util.StringMap.empty
+          | Ok files ->
+              List.fold_left
+                (fun acc file ->
+                  let base = Fpath.basename file in
+                  if Astring.String.is_suffix ~affix:".cma" base then
+                    let libname = String.sub base 0 (String.length base - 4) in
+                    Util.StringMap.add libname libname acc
+                  else acc)
+                Util.StringMap.empty files
+        in
         Logs.debug (fun m ->
             m "Processing directory without META: %a" Fpath.pp libdir);
-        Packages.Lib.v ~libname_of_archive:Util.StringMap.empty
-          ~pkg_name:pkg.name
+        Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
           ~dir:Fpath.(pkg_path // libdir)
           ~cmtidir:None ~all_lib_deps)
       libdirs_without_meta
   in
-  Printf.eprintf "Found %d metas" (List.length metas);
-  let libraries = List.flatten libraries in
-  let libraries = List.flatten extra_libraries @ libraries in
-  {
-    Packages.name = pkg.name;
-    version = pkg.version;
-    libraries;
-    mlds;
-    assets;
-    other_docs = Fpath.Set.empty;
-    pkg_dir = top_dir pkg;
-    config;
-  }
+  Logs.debug (fun m -> m "Found %d METAs" (List.length metas));
+  let libraries = List.flatten (extra_libraries @ libraries) in
+  let result =
+    {
+      Packages.name = pkg.name;
+      version = pkg.version;
+      libraries;
+      mlds;
+      assets;
+      other_docs = Fpath.Set.empty;
+      pkg_dir = top_dir pkg;
+      config;
+    }
+  in
+  Format.eprintf "%a\n%!" Packages.pp result;
+  result
 
 let pp ppf v =
   Format.fprintf ppf "n: %s v: %s u: %s [\n" v.name v.version v.universe;
@@ -235,3 +263,23 @@ let of_voodoo pkg_name ~blessed =
       let packages = List.filter_map (fun x -> x) (last :: packages) in
       let packages = List.map process_package packages in
       Util.StringMap.singleton pkg_name (List.hd packages)
+
+let extra_libs_paths compile_dir =
+  let contents =
+    Bos.OS.Dir.fold_contents ~dotfiles:true
+      (fun p acc -> p :: acc)
+      [] compile_dir
+  in
+  match contents with
+  | Error _ -> Util.StringMap.empty
+  | Ok c ->
+      List.fold_left
+        (fun acc abs_path ->
+          let path = Fpath.rem_prefix compile_dir abs_path |> Option.get in
+          match Fpath.segs path with
+          | [ "p"; _pkg; _version; "lib"; libname ] ->
+              Util.StringMap.add libname path acc
+          | [ "u"; _universe; _pkg; _version; "lib"; libname ] ->
+              Util.StringMap.add libname path acc
+          | _ -> acc)
+        Util.StringMap.empty c

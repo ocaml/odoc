@@ -527,23 +527,31 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
   Stats.init_nprocs nb_workers;
   let () = Worker_pool.start_workers env sw nb_workers in
 
-  let all =
+  let all, extra_libs_paths =
     match (voodoo, package_name, dune_style, packages_dir) with
-    | true, Some p, None, None -> Voodoo.of_voodoo p ~blessed
-    | false, None, Some dir, None -> Dune_style.of_dune_build dir
+    | true, Some p, None, None ->
+        let all = Voodoo.of_voodoo p ~blessed in
+        let extra_libs_paths = Voodoo.extra_libs_paths odoc_dir in
+        Format.eprintf "extra_libs_paths:\n%!";
+        Util.StringMap.iter
+          (fun lib path -> Format.eprintf "%s -> %a\n%!" lib Fpath.pp path)
+          extra_libs_paths;
+        (all, extra_libs_paths)
+    | false, None, Some dir, None ->
+        (Dune_style.of_dune_build dir, Util.StringMap.empty)
     | false, None, None, packages_dir ->
         let libs = if libs = [] then Ocamlfind.all () else libs in
         let libs =
           List.map Ocamlfind.sub_libraries libs
           |> List.fold_left Util.StringSet.union Util.StringSet.empty
         in
-        Packages.of_libs ~packages_dir libs
-    | true, None, _, _ -> failwith "--voodoo requires --package-name"
-    | false, Some _, _, _ -> failwith "--package-name requires --voodoo"
+        (Packages.of_libs ~packages_dir libs, Util.StringMap.empty)
+    | true, None, _, _ -> failwith "--voodoo requires --package"
+    | false, Some _, _, _ -> failwith "--package requires --voodoo"
     | true, _, _, Some _ | false, _, Some _, Some _ ->
         failwith "--packages-dir is only useful in opam mode"
     | true, _, Some _, _ ->
-        failwith "--voodoo and --dune-style are mutually independent"
+        failwith "--voodoo and --dune-style are mutually exclusive"
   in
   let partial =
     if voodoo then
@@ -561,7 +569,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
           let all = Util.StringMap.bindings all |> List.map snd in
           let internal =
             Odoc_unit.of_packages ~output_dir:odoc_dir ~linked_dir:odocl_dir
-              ~index_dir:None all
+              ~index_dir:None ~extra_libs_paths all
           in
           let external_ =
             let mld_dir = odoc_dir in
