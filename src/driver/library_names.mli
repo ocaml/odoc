@@ -1,6 +1,6 @@
 type library = {
   name : string;
-  archive_name : string;
+  archive_name : string option;
   dir : string option;
   deps : string list;
 }

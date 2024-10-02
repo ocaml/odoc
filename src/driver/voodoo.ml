@@ -138,22 +138,25 @@ let process_package pkg =
         in
         let libname_of_archive =
           List.fold_left
-            (fun acc x ->
-              let dir =
-                match x.Library_names.dir with
-                | None -> meta_dir
-                | Some x -> Fpath.(meta_dir // v x)
-              in
-              Fpath.Map.update
-                Fpath.(dir / x.archive_name)
-                (function
-                  | None -> Some x.Library_names.name
-                  | Some y ->
-                      Logs.err (fun m ->
-                          m "Multiple libraries for archive %s: %s and %s."
-                            x.archive_name x.name y);
-                      Some y)
-                acc)
+            (fun acc (x : Library_names.library) ->
+              match x.archive_name with
+              | None -> acc
+              | Some archive_name ->
+                  let dir =
+                    match x.Library_names.dir with
+                    | None -> meta_dir
+                    | Some x -> Fpath.(meta_dir // v x)
+                  in
+                  Fpath.Map.update
+                    Fpath.(dir / archive_name)
+                    (function
+                      | None -> Some x.Library_names.name
+                      | Some y ->
+                          Logs.err (fun m ->
+                              m "Multiple libraries for archive %s: %s and %s."
+                                archive_name x.name y);
+                          Some y)
+                    acc)
             Fpath.Map.empty libs
         in
         Fpath.Map.iter
@@ -165,7 +168,7 @@ let process_package pkg =
                Logs.debug (fun m ->
                    m "Processing directory: %a\n%!" Fpath.pp directory);
                Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
-                 ~dir:directory ~cmtidir:None ~all_lib_deps)
+                 ~dir:directory ~cmtidir:None ~all_lib_deps ~cmi_only_libs:[])
              Fpath.(Set.to_list directories)))
       metas
     |> List.flatten
@@ -221,7 +224,7 @@ let process_package pkg =
             m "Processing directory without META: %a" Fpath.pp libdir);
         Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
           ~dir:Fpath.(pkg_path // libdir)
-          ~cmtidir:None ~all_lib_deps)
+          ~cmtidir:None ~all_lib_deps ~cmi_only_libs:[])
       libdirs_without_meta
   in
   let libraries = List.flatten extra_libraries @ libraries in

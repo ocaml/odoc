@@ -241,12 +241,15 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
       index = Some (index_of pkg);
     }
   in
+  let missing = ref Util.StringSet.empty in
 
   let rec build_deps deps =
     List.filter_map
       (fun (_name, hash) ->
         match Util.StringMap.find_opt hash module_of_hash with
-        | None -> None
+        | None ->
+            missing := Util.StringSet.add hash !missing;
+            None
         | Some (pkg, lib, mod_) ->
             let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
             let result =

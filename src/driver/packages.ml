@@ -6,17 +6,30 @@ type dep = string * Digest.t
 
 type intf = { mif_hash : string; mif_path : Fpath.t; mif_deps : dep list }
 
-let pp_intf fmt i = Format.fprintf fmt "intf: %a" Fpath.pp i.mif_path
+let pp_intf fmt (i : intf) =
+  Format.fprintf fmt "@[<hov>{@,mif_hash: %s;@,mif_path: %a;@,mif_deps: %a@,}@]"
+    i.mif_hash Fpath.pp i.mif_path
+    (Fmt.Dump.list (Fmt.Dump.pair Fmt.string Fmt.string))
+    i.mif_deps
 
 type src_info = { src_path : Fpath.t }
 
+let pp_src_info fmt i =
+  Format.fprintf fmt "@[<hov>{@,src_path: %a@,}@]" Fpath.pp i.src_path
 type impl = {
   mip_path : Fpath.t;
   mip_src_info : src_info option;
   mip_deps : dep list;
 }
 
-let pp_impl fmt i = Format.fprintf fmt "impl: %a" Fpath.pp i.mip_path
+let pp_impl fmt i =
+  Format.fprintf fmt
+    "@[<hov>{@,mip_path: %a;@,mip_src_info: %a;@,mip_deps: %a@,}@]" Fpath.pp
+    i.mip_path
+    (Fmt.Dump.option pp_src_info)
+    i.mip_src_info
+    (Fmt.Dump.list (Fmt.Dump.pair Fmt.string Fmt.string))
+    i.mip_deps
 
 type modulety = {
   m_name : string;
@@ -25,21 +38,46 @@ type modulety = {
   m_hidden : bool;
 }
 
+let pp_modulety fmt i =
+  Format.fprintf fmt
+    "@[<hov>{@,m_name: %s;@,m_intf: %a;@,m_impl: %a;@,m_hidden: %b@,}@]"
+    i.m_name pp_intf i.m_intf (Fmt.Dump.option pp_impl) i.m_impl i.m_hidden
+
 type mld = { mld_path : Fpath.t; mld_rel_path : Fpath.t }
 
-let pp_mld fmt m = Format.fprintf fmt "%a" Fpath.pp m.mld_path
+let pp_mld fmt m =
+  Format.fprintf fmt "@[<hov>{@,mld_path: %a;@,mld_rel_path: %a@,}@]" Fpath.pp
+    m.mld_path Fpath.pp m.mld_rel_path
 
 type asset = { asset_path : Fpath.t; asset_rel_path : Fpath.t }
 
-let pp_asset fmt m = Format.fprintf fmt "%a" Fpath.pp m.asset_path
+let pp_asset fmt m =
+  Format.fprintf fmt "@[<hov>{@,asset_path: %a;@,asset_rel_path: %a@,}@]"
+    Fpath.pp m.asset_path Fpath.pp m.asset_rel_path
 
 type libty = {
   lib_name : string;
   dir : Fpath.t;
-  archive_name : string;
+  archive_name : string option;
   lib_deps : Util.StringSet.t;
   modules : modulety list;
 }
+
+let pp_libty fmt l =
+  Format.fprintf fmt
+    "@[<hov>{@,\
+     lib_name: %s;@,\
+     dir: %a;@,\
+     archive_name: %a;@,\
+     lib_deps: %a;@,\
+     modules: %a@,\
+     }@]"
+    l.lib_name Fpath.pp l.dir
+    (Fmt.Dump.option Fmt.string)
+    l.archive_name (Fmt.Dump.list Fmt.string)
+    (Util.StringSet.elements l.lib_deps)
+    (Fmt.Dump.list pp_modulety)
+    l.modules
 
 type t = {
   name : string;
@@ -51,6 +89,22 @@ type t = {
   pkg_dir : Fpath.t;
   config : Global_config.t;
 }
+
+let pp fmt t =
+  Format.fprintf fmt
+    "@[<hov>{@,\
+     name: %s;@,\
+     version: %s;@,\
+     libraries: %a;@,\
+     mlds: %a;@,\
+     assets: %a;@,\
+     other_docs: %a;@,\
+     pkg_dir: %a@,\
+     }@]"
+    t.name t.version (Fmt.Dump.list pp_libty) t.libraries (Fmt.Dump.list pp_mld)
+    t.mlds (Fmt.Dump.list pp_asset) t.assets (Fmt.Dump.list Fpath.pp)
+    (Fpath.Set.elements t.other_docs)
+    Fpath.pp t.pkg_dir
 
 let maybe_prepend_top top_dir dir =
   match top_dir with None -> dir | Some d -> Fpath.(d // dir)
@@ -141,45 +195,84 @@ module Module = struct
 end
 
 module Lib = struct
-  let v ~libname_of_archive ~pkg_name ~dir ~cmtidir ~all_lib_deps =
+  let handle_virtual_lib ~dir ~lib_name ~all_lib_deps =
+    let modules =
+      match
+        Bos.OS.Dir.fold_contents
+          (fun p acc ->
+            if Fpath.has_ext "cmti" p then
+              let m_name = Fpath.rem_ext p |> Fpath.basename in
+              m_name :: acc
+            else acc)
+          [] dir
+      with
+      | Ok x -> x
+      | Error (`Msg e) ->
+          Logs.err (fun m -> m "Error reading dir %a: %s" Fpath.pp dir e);
+          []
+    in
+    let modules = Module.vs dir None modules in
+    let lib_deps =
+      try Util.StringMap.find lib_name all_lib_deps
+      with _ -> Util.StringSet.empty
+    in
+    [ { lib_name; archive_name = None; modules; lib_deps; dir } ]
+
+  let v ~libname_of_archive ~pkg_name ~dir ~cmtidir ~all_lib_deps ~cmi_only_libs
+      =
     Logs.debug (fun m ->
         m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
     let dirs =
       match cmtidir with None -> [ dir ] | Some dir2 -> [ dir; dir2 ]
     in
     let results = Odoc.classify dirs in
-    Logs.debug (fun m -> m "Got %d lines" (List.length results));
-    List.filter_map
-      (fun (archive_name, modules) ->
-        match Fpath.Map.find Fpath.(dir / archive_name) libname_of_archive with
-        | Some lib_name ->
-            let modules = Module.vs dir cmtidir modules in
-            let lib_deps =
-              try Util.StringMap.find lib_name all_lib_deps
-              with _ -> Util.StringSet.empty
-            in
-            Some { lib_name; archive_name; modules; lib_deps; dir }
-        | None ->
-            Logs.err (fun m ->
-                m "Error processing library %s: Ignoring." archive_name);
-            Logs.err (fun m ->
-                m "Known libraries: [%a]"
-                  Fmt.(list ~sep:sp string)
-                  (Fpath.Map.bindings libname_of_archive |> List.map snd));
-            None)
-      results
+    match List.length results with
+    | 0 -> (
+        match
+          List.find_opt (fun dir -> List.mem_assoc dir cmi_only_libs) dirs
+        with
+        | None -> []
+        | Some dir ->
+            let lib_name = List.assoc dir cmi_only_libs in
+            handle_virtual_lib ~dir ~lib_name ~all_lib_deps)
+    | _ ->
+        Logs.debug (fun m -> m "Got %d lines" (List.length results));
+        List.filter_map
+          (fun (archive_name, modules) ->
+            match
+              Fpath.Map.find Fpath.(dir / archive_name) libname_of_archive
+            with
+            | Some lib_name ->
+                let modules = Module.vs dir cmtidir modules in
+                let lib_deps =
+                  try Util.StringMap.find lib_name all_lib_deps
+                  with _ -> Util.StringSet.empty
+                in
+                Some
+                  {
+                    lib_name;
+                    archive_name = Some archive_name;
+                    modules;
+                    lib_deps;
+                    dir;
+                  }
+            | None ->
+                Logs.err (fun m ->
+                    m "Error processing library %s: Ignoring." archive_name);
+                Logs.err (fun m ->
+                    m "Known libraries: [%a]"
+                      Fmt.(list ~sep:sp string)
+                      (Fpath.Map.bindings libname_of_archive |> List.map snd));
+                None)
+          results
 
   let pp ppf t =
-    Fmt.pf ppf "archive: %a modules: [@[<hov 2>@,%a@]@,]" Fmt.string
+    Fmt.pf ppf "archive: %a modules: [@[<hov 2>@,%a@]@,]"
+      Fmt.(option string)
       t.archive_name
       Fmt.(list ~sep:sp Module.pp)
       t.modules
 end
-let pp ppf t =
-  Fmt.pf ppf "name: %s@.version: %s@.libraries: [@[<hov 2>@,%a@]@,]" t.name
-    t.version
-    Fmt.(list ~sep:sp Lib.pp)
-    t.libraries
 
 let of_libs ~packages_dir libs =
   let libs = Util.StringSet.to_seq libs |> List.of_seq in
@@ -296,6 +389,20 @@ let of_libs ~packages_dir libs =
             assert false)
       Fpath.Map.empty lib_dirs_and_archives
   in
+  let cmi_only_libs =
+    List.fold_left
+      (fun map (lib, dir, archives) ->
+        match Util.StringSet.elements archives with
+        | [] -> (dir, lib) :: map
+        | _ -> map)
+      [] lib_dirs_and_archives
+  in
+
+  Logs.debug (fun m ->
+      m "cmi_only_libs: %a"
+        Fmt.(list ~sep:sp string)
+        (List.map snd cmi_only_libs));
+
   ignore libname_of_archive;
   let mk_mlds pkg_name odoc_pages =
     let odig_convention asset_path =
@@ -344,11 +451,14 @@ let of_libs ~packages_dir libs =
       | Some pkg ->
           let libraries =
             Lib.v ~libname_of_archive ~pkg_name:pkg.name ~dir ~cmtidir:None
-              ~all_lib_deps
+              ~all_lib_deps ~cmi_only_libs
           in
           let libraries =
             List.filter
-              (fun l -> Util.StringSet.mem l.archive_name archives)
+              (fun l ->
+                match l.archive_name with
+                | None -> true
+                | Some a -> Util.StringSet.mem a archives)
               libraries
           in
           Util.StringMap.update pkg.name

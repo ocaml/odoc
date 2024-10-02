@@ -12,14 +12,20 @@
 
 type library = {
   name : string;
-  archive_name : string;
+  archive_name : string option;
   dir : string option;
   deps : string list;
 }
 
 let read_libraries_from_pkg_defs ~library_name pkg_defs =
   try
-    let cma_filename = Fl_metascanner.lookup "archive" [ "byte" ] pkg_defs in
+    let archive_filename =
+      try Some (Fl_metascanner.lookup "archive" [ "byte" ] pkg_defs)
+      with _ -> (
+        try Some (Fl_metascanner.lookup "archive" [ "native" ] pkg_defs)
+        with _ -> None)
+    in
+
     let deps_str = Fl_metascanner.lookup "requires" [] pkg_defs in
     let deps = Astring.String.fields deps_str in
     let dir =
@@ -27,13 +33,11 @@ let read_libraries_from_pkg_defs ~library_name pkg_defs =
     in
     let dir = Option.map (fun d -> d.Fl_metascanner.def_value) dir in
     let archive_name =
-      let file_name_len = String.length cma_filename in
-      if file_name_len > 0 then String.sub cma_filename 0 (file_name_len - 4)
-      else cma_filename
+      Option.bind archive_filename (fun a ->
+          let file_name_len = String.length a in
+          if file_name_len > 0 then Some (Filename.chop_extension a) else None)
     in
-    if String.length archive_name > 0 then
-      [ { name = library_name; archive_name; dir; deps } ]
-    else []
+    [ { name = library_name; archive_name; dir; deps } ]
   with Not_found -> []
 
 let process_meta_file file =
