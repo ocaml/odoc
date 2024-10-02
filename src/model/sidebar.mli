@@ -4,17 +4,13 @@ module PageToc : sig
   type title = Comment.link_content
   type children_order = Frontmatter.child list
 
-  type t
-  type content = Entry of title | Dir of t
+  type index = Page.t * title
+  type t = (Page.t * content) list * index option
+  and content = Entry of title | Dir of t
 
   val of_list : (LeafPage.t * title * children_order option) list -> t
   (** Uses the convention that the [index] children passes its payload to the
       container directory to output a payload *)
-
-  val contents : t -> (Page.t * content) list
-
-  val dir_payload : t -> (LeafPage.t * title) option
-  (** Gets a title and the ID from a potential [index] page *)
 end
 
 type library = { name : string; units : RootModule.t list }
