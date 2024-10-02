@@ -14,8 +14,8 @@ module PageToc = struct
 
   type payload = { title : title; children_order : children_order option }
 
-  type dir_content = { leafs : payload LPH.t; dirs : t CPH.t }
-  and t = container_page option * dir_content
+  type dir_content = { leafs : payload LPH.t; dirs : in_progress CPH.t }
+  and in_progress = container_page option * dir_content
 
   let empty_t dir_id = (dir_id, { leafs = LPH.create 10; dirs = CPH.create 10 })
 
@@ -26,25 +26,17 @@ module PageToc = struct
     | `LeafPage (Some parent, _) -> Some parent
     | `Page (None, _) | `LeafPage (None, _) -> None
 
-  let find_leaf ((_, dir_content) : t) leaf_page =
+  let find_leaf ((_, dir_content) : in_progress) leaf_page =
     try Some (LPH.find dir_content.leafs leaf_page) with Not_found -> None
 
   let find_dir (_, dir_content) container_page =
     try Some (CPH.find dir_content.dirs container_page) with Not_found -> None
-
-  type content = Entry of title | Dir of t
 
   type c_or_l = Container of ContainerPage.t | Leaf of LeafPage.t
 
   let classify = function
     | { iv = `LeafPage _; _ } as id -> Leaf id
     | { iv = `Page _; _ } as id -> Container id
-
-  let find dir id =
-    let open Odoc_utils.OptionMonad in
-    match classify id with
-    | Leaf id -> find_leaf dir id >>= fun x -> Some (Entry x.title)
-    | Container id -> find_dir dir id >>= fun x -> Some (Dir x)
 
   let leafs (_, dir_content) =
     LPH.fold
@@ -53,62 +45,19 @@ module PageToc = struct
         else (id, payload) :: acc)
       dir_content.leafs []
 
-  let dir_payload ((parent_id, _) as dir) =
-    let index_id =
-      Paths.Identifier.Mk.leaf_page (parent_id, Names.PageName.make_std "index")
-    in
-    match find_leaf dir index_id with
-    | Some payload -> Some (payload, index_id)
-    | None -> None
-
   let dirs (_, dir_content) =
     CPH.fold (fun id payload acc -> (id, payload) :: acc) dir_content.dirs []
 
-  let contents ((dir_id, _) as dir) =
-    let children_order =
-      match dir_payload dir with
-      | Some ({ children_order; _ }, _) -> children_order
-      | None -> None
-    in
-    match children_order with
-    | None ->
-        let contents =
-          let leafs =
-            leafs dir
-            |> List.map (fun (id, payload) -> ((id :> Page.t), Entry payload))
-          in
-          let dirs =
-            dirs dir
-            |> List.map (fun (id, payload) -> ((id :> Page.t), Dir payload))
-          in
-          leafs @ dirs
-        in
-        List.sort
-          (fun (x, _) (y, _) ->
-            String.compare (Paths.Identifier.name x) (Paths.Identifier.name y))
-          contents
-    | Some ch ->
-        let open OptionMonad in
-        List.filter_map
-          (fun c ->
-            let id =
-              match c with
-              | Frontmatter.Page name ->
-                  Mk.leaf_page (dir_id, Names.PageName.make_std name)
-              | Dir name -> Mk.page (dir_id, Names.PageName.make_std name)
-            in
-            find dir id >>= fun content -> Some (id, content))
-          ch
+  (* let dir_payload ((parent_id, _) as dir) = *)
+  (*   let index_id = *)
+  (*     Paths.Identifier.Mk.leaf_page (parent_id, Names.PageName.make_std "index") *)
+  (*   in *)
+  (*   match find_leaf dir index_id with *)
+  (*   | Some payload -> Some (index_id, payload.title) *)
+  (*   | None -> None *)
 
-  let dir_payload ((parent_id, _) as dir) =
-    let index_id =
-      Paths.Identifier.Mk.leaf_page (parent_id, Names.PageName.make_std "index")
-    in
-    match find_leaf dir index_id with
-    | Some payload -> Some (index_id, payload.title)
-    | None -> None
-
-  let rec get_or_create (dir : t) (id : container_page) : t =
+  let rec get_or_create (dir : in_progress) (id : container_page) : in_progress
+      =
     let _, { dirs = parent_dirs; _ } =
       match get_parent id with
       | Some parent -> get_or_create dir parent
@@ -124,7 +73,7 @@ module PageToc = struct
         CPH.add parent_dirs id new_;
         new_
 
-  let add (dir : t) ((id : leaf_page), title, children_order) =
+  let add (dir : in_progress) ((id : leaf_page), title, children_order) =
     let _, dir_content =
       match get_parent id with
       | Some parent -> get_or_create dir parent
@@ -132,10 +81,70 @@ module PageToc = struct
     in
     LPH.replace dir_content.leafs id { title; children_order }
 
+  let dir_index ((parent_id, _) as dir) =
+    let index_id =
+      Paths.Identifier.Mk.leaf_page (parent_id, Names.PageName.make_std "index")
+    in
+    match find_leaf dir index_id with
+    | Some payload -> Some (payload, index_id, payload.title)
+    | None -> None
+
+  type index = Page.t * title
+  type t = (Page.t * content) list * index option
+  and content = Entry of title | Dir of t
+
+  let rec t_of_in_progress ((dir_id, _) as dir : in_progress) =
+    let find dir id =
+      let open Odoc_utils.OptionMonad in
+      match classify id with
+      | Leaf id -> find_leaf dir id >>= fun x -> Some (Entry x.title)
+      | Container id ->
+          find_dir dir id >>= fun x -> Some (Dir (t_of_in_progress x))
+    in
+    let children_order, index =
+      match dir_index dir with
+      | Some ({ children_order; _ }, index_id, index_title) ->
+          (children_order, Some (index_id, index_title))
+      | None -> (None, None)
+    in
+    let contents =
+      match children_order with
+      | None ->
+          let contents =
+            let leafs =
+              leafs dir
+              |> List.map (fun (id, payload) -> ((id :> Page.t), Entry payload))
+            in
+            let dirs =
+              dirs dir
+              |> List.map (fun (id, payload) ->
+                     ((id :> Page.t), Dir (t_of_in_progress payload)))
+            in
+            leafs @ dirs
+          in
+          List.sort
+            (fun (x, _) (y, _) ->
+              String.compare (Paths.Identifier.name x) (Paths.Identifier.name y))
+            contents
+      | Some ch ->
+          let open OptionMonad in
+          List.filter_map
+            (fun c ->
+              let id =
+                match c with
+                | Frontmatter.Page name ->
+                    Mk.leaf_page (dir_id, Names.PageName.make_std name)
+                | Dir name -> Mk.page (dir_id, Names.PageName.make_std name)
+              in
+              find dir id >>= fun content -> Some (id, content))
+            ch
+    in
+    (contents, index)
+
   let of_list l =
     let dir = empty_t None in
     List.iter (add dir) l;
-    dir
+    t_of_in_progress dir
 end
 
 type toc = PageToc.t

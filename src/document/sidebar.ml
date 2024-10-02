@@ -23,13 +23,12 @@ end = struct
   open Odoc_model.Paths.Identifier
 
   let of_lang (dir : PageToc.t) =
-    let rec of_lang ~parent_id (dir : PageToc.t) =
+    let rec of_lang ~parent_id ((content, index) : PageToc.t) =
       let title, parent_id =
-        match PageToc.dir_payload dir with
+        match index with
         | Some (index_id, title) -> (Some title, Some (index_id :> Page.t))
         | None -> (None, (parent_id :> Page.t option))
       in
-      let ordered_children = PageToc.contents dir in
       let entries =
         List.filter_map
           (fun id ->
@@ -43,7 +42,7 @@ end = struct
                 in
                 Some (Item (payload, []))
             | id, PageToc.Dir dir -> Some (of_lang ~parent_id:(Some id) dir))
-          ordered_children
+          content
       in
       let payload =
         match (title, parent_id) with
