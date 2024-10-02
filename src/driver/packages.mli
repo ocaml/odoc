@@ -49,7 +49,7 @@ val pp_asset : Format.formatter -> asset -> unit
 type libty = {
   lib_name : string;
   dir : Fpath.t;
-  archive_name : string;
+  archive_name : string option;
   lib_deps : Util.StringSet.t;
   modules : modulety list;
 }
@@ -64,6 +64,7 @@ module Lib : sig
     dir:Fpath.t ->
     cmtidir:Fpath.t option ->
     all_lib_deps:Util.StringSet.t Util.StringMap.t ->
+    cmi_only_libs:(Fpath.t * string) list ->
     libty list
 
   val pp : Format.formatter -> libty -> unit

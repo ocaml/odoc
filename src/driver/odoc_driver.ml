@@ -515,6 +515,42 @@ let render_stats env nprocs =
       in
       inner (0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
+let remap_virtual_interfaces duplicate_hashes pkgs =
+  let open Packages in
+  Util.StringMap.map
+    (fun pkg ->
+      {
+        pkg with
+        libraries =
+          pkg.libraries
+          |> List.map (fun lib ->
+                 {
+                   lib with
+                   modules =
+                     lib.modules
+                     |> List.map (fun m ->
+                            let m_intf =
+                              if
+                                Util.StringMap.mem m.m_intf.mif_hash
+                                  duplicate_hashes
+                                && Fpath.has_ext "cmt" m.m_intf.mif_path
+                              then
+                                match
+                                  List.filter
+                                    (fun intf ->
+                                      Fpath.has_ext "cmti" intf.mif_path)
+                                    (Util.StringMap.find m.m_intf.mif_hash
+                                       duplicate_hashes)
+                                with
+                                | [ x ] -> x
+                                | _ -> m.m_intf
+                              else m.m_intf
+                            in
+                            { m with m_intf });
+                 });
+      })
+    pkgs
+
 let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
     odoc_bin voodoo package_name blessed dune_style compile_grep link_grep
     generate_grep =
@@ -549,6 +585,31 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
     | true, _, Some _, _ ->
         failwith "--voodoo and --dune-style are mutually exclusive"
   in
+
+  let virtual_check =
+    let hashes =
+      List.fold_left
+        (fun acc (_name, pkg) ->
+          List.fold_left
+            (fun acc lib ->
+              List.fold_left
+                (fun acc m ->
+                  let hash = m.Packages.m_intf.mif_hash in
+                  Util.StringMap.update hash
+                    (function
+                      | None -> Some [ m.m_intf ]
+                      | Some l -> Some (m.m_intf :: l))
+                    acc)
+                acc lib.Packages.modules)
+            acc pkg.Packages.libraries)
+        Util.StringMap.empty
+        (Util.StringMap.to_list all)
+    in
+    Util.StringMap.filter (fun _hash intfs -> List.length intfs > 1) hashes
+  in
+
+  let all = remap_virtual_interfaces virtual_check all in
+
   let partial =
     if voodoo then
       match Util.StringMap.to_list all with

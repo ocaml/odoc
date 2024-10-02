@@ -103,7 +103,7 @@ let of_dune_build dir =
                 ~libname_of_archive:
                   (Fpath.Map.singleton Fpath.(path / libname) libname)
                 ~pkg_name:libname ~dir:path ~cmtidir:(Some cmtidir)
-                ~all_lib_deps ))
+                ~all_lib_deps ~cmi_only_libs:[] ))
           libs
       in
       let packages =
