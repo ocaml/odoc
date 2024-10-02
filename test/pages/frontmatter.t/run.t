@@ -9,6 +9,8 @@ When there is no frontmatter, everything is normal
 When there is one frontmatter, it is extracted from the content:
 
   $ odoc compile one_frontmatter.mld
+  File "one_frontmatter.mld":
+  Warning: Non-index page cannot specify (children _) in the frontmatter.
   $ odoc_print page-one_frontmatter.odoc | jq '.frontmatter'
   {
     "children": {
