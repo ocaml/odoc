@@ -44,7 +44,7 @@ $ cp -r _html /tmp/html
 
 The order in toplevel should be as given by the children field, and by
 alphabetical order on the filename in dir1.
-Omitted has been omitted in the children of index, so it does not appear.
+Omitted has been added in the children of index, after the ones that were ordered.
 Typo is in the children field of index, but does not exist. It is omitted to,
 but this should be a warning!
 
@@ -59,5 +59,5 @@ but this should be a warning!
             <a href="dir1/content_in_dir.html">This is some content in dir1</a>
            </li><li><a href="dir1/dontent.html">The name is dontent</a></li>
           </ul>
-         </li>
+         </li><li><a href="omitted.html">This one is omitted</a></li>
         </ul>

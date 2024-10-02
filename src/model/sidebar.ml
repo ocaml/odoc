@@ -29,15 +29,6 @@ module PageToc = struct
   let find_leaf ((_, dir_content) : in_progress) leaf_page =
     try Some (LPH.find dir_content.leafs leaf_page) with Not_found -> None
 
-  let find_dir (_, dir_content) container_page =
-    try Some (CPH.find dir_content.dirs container_page) with Not_found -> None
-
-  type c_or_l = Container of ContainerPage.t | Leaf of LeafPage.t
-
-  let classify = function
-    | { iv = `LeafPage _; _ } as id -> Leaf id
-    | { iv = `Page _; _ } as id -> Container id
-
   let leafs (_, dir_content) =
     LPH.fold
       (fun id { title = payload; _ } acc ->
@@ -47,14 +38,6 @@ module PageToc = struct
 
   let dirs (_, dir_content) =
     CPH.fold (fun id payload acc -> (id, payload) :: acc) dir_content.dirs []
-
-  (* let dir_payload ((parent_id, _) as dir) = *)
-  (*   let index_id = *)
-  (*     Paths.Identifier.Mk.leaf_page (parent_id, Names.PageName.make_std "index") *)
-  (*   in *)
-  (*   match find_leaf dir index_id with *)
-  (*   | Some payload -> Some (index_id, payload.title) *)
-  (*   | None -> None *)
 
   let rec get_or_create (dir : in_progress) (id : container_page) : in_progress
       =
@@ -93,52 +76,58 @@ module PageToc = struct
   type t = (Page.t * content) list * index option
   and content = Entry of title | Dir of t
 
-  let rec t_of_in_progress ((dir_id, _) as dir : in_progress) =
-    let find dir id =
-      let open Odoc_utils.OptionMonad in
-      match classify id with
-      | Leaf id -> find_leaf dir id >>= fun x -> Some (Entry x.title)
-      | Container id ->
-          find_dir dir id >>= fun x -> Some (Dir (t_of_in_progress x))
-    in
+  let rec t_of_in_progress (dir : in_progress) =
     let children_order, index =
       match dir_index dir with
       | Some ({ children_order; _ }, index_id, index_title) ->
           (children_order, Some (index_id, index_title))
       | None -> (None, None)
     in
-    let contents =
+    let ordered, unordered =
+      let contents =
+        let leafs =
+          leafs dir
+          |> List.map (fun (id, payload) -> ((id :> Page.t), Entry payload))
+        in
+        let dirs =
+          dirs dir
+          |> List.map (fun (id, payload) ->
+                 ((id :> Page.t), Dir (t_of_in_progress payload)))
+        in
+        leafs @ dirs
+      in
       match children_order with
-      | None ->
-          let contents =
-            let leafs =
-              leafs dir
-              |> List.map (fun (id, payload) -> ((id :> Page.t), Entry payload))
-            in
-            let dirs =
-              dirs dir
-              |> List.map (fun (id, payload) ->
-                     ((id :> Page.t), Dir (t_of_in_progress payload)))
-            in
-            leafs @ dirs
-          in
-          List.sort
-            (fun (x, _) (y, _) ->
-              String.compare (Paths.Identifier.name x) (Paths.Identifier.name y))
+      | None -> ([], contents)
+      | Some children_order ->
+          List.partition_map
+            (fun (((id : Page.t), _) as entry) ->
+              match
+                List.find_index
+                  (fun ch ->
+                    match (ch, id.iv) with
+                    | Frontmatter.Dir c, `Page (_, name) ->
+                        String.equal (Names.PageName.to_string name) c
+                    | Page c, `LeafPage (_, name) ->
+                        String.equal (Names.PageName.to_string name) c
+                    | _ -> false)
+                  children_order
+              with
+              | Some i -> `Left (i, entry)
+              | None -> `Right entry)
             contents
-      | Some ch ->
-          let open OptionMonad in
-          List.filter_map
-            (fun c ->
-              let id =
-                match c with
-                | Frontmatter.Page name ->
-                    Mk.leaf_page (dir_id, Names.PageName.make_std name)
-                | Dir name -> Mk.page (dir_id, Names.PageName.make_std name)
-              in
-              find dir id >>= fun content -> Some (id, content))
-            ch
     in
+    let ordered =
+      ordered
+      |> List.sort (fun (i, _) (j, _) -> Int.compare i j)
+      |> List.map snd
+    in
+    let unordered =
+      List.sort
+        (fun (x, _) (y, _) ->
+          String.compare (Paths.Identifier.name x) (Paths.Identifier.name y))
+        unordered
+    in
+    let contents = ordered @ unordered in
     (contents, index)
 
   let of_list l =

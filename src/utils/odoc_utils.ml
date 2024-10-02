@@ -75,6 +75,16 @@ module List = struct
     | [] -> None
     | x :: l -> (
         match f x with Some _ as result -> result | None -> find_map f l)
+
+  let partition_map p l =
+    let rec part left right = function
+      | [] -> (rev left, rev right)
+      | x :: l -> (
+          match p x with
+          | `Left v -> part (v :: left) right l
+          | `Right v -> part left (v :: right) l)
+    in
+    part [] [] l
 end
 
 module Option = struct
