@@ -201,6 +201,14 @@ let name_of_output ~prefix output =
 
 let page_name_of_output output = name_of_output ~prefix:"page-" output
 
+let is_index_page = function
+  | { Paths.Identifier.iv = `Page _; _ } -> false
+  | { iv = `LeafPage (_, p); _ } ->
+      String.equal (Names.PageName.to_string p) "index"
+
+let has_children_order { Frontmatter.children_order } =
+  Option.is_some children_order
+
 let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
   List.fold_left
     (fun acc child_str ->
@@ -239,6 +247,11 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
   let resolve content =
     let zero_heading = Comment.find_zero_heading content in
     let frontmatter, content = Comment.extract_frontmatter content in
+    if (not (is_index_page name)) && has_children_order frontmatter then
+      Error.raise_warning
+        (Error.filename_only
+           "Non-index page cannot specify (children _) in the frontmatter."
+           input_s);
     let root =
       let file =
         Root.Odoc_file.create_page root_name zero_heading frontmatter
@@ -250,12 +263,15 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
         { name; root; children; content; digest; linked = false; frontmatter }
     in
     Odoc_file.save_page output ~warnings:[] page;
-    Ok ()
+    ()
   in
   Fs.File.read input >>= fun str ->
+  Error.handle_errors_and_warnings ~warnings_options
+  @@ Error.catch_errors_and_warnings
+  @@ fun () ->
   Odoc_loader.read_string (name :> Paths.Identifier.LabelParent.t) input_s str
-  |> Error.handle_errors_and_warnings ~warnings_options
-  >>= function
+  |> Error.raise_errors_and_warnings
+  |> function
   | `Stop -> resolve [] (* TODO: Error? *)
   | `Docs content -> resolve content
 
