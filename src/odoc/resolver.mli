@@ -19,6 +19,8 @@
     This is the module which does the link between packages, directories and
     {!Odoc_xref2}'s needs. *)
 
+open Odoc_model
+
 type t
 
 type roots = {
@@ -42,15 +44,12 @@ val create :
     @param important_digests indicate whether digests should be compared when
     odoc_xref2 tries to lookup or fetch a unit. It defaults to [true]. *)
 
-val lookup_page : t -> string -> Odoc_model.Lang.Page.t option
+val lookup_page : t -> string -> Lang.Page.t option
 
 val all_pages :
   ?root:string ->
   t ->
-  (Odoc_model.Paths.Identifier.Page.t
-  * Odoc_model.Comment.link_content option
-  * Odoc_model.Frontmatter.t)
-  list
+  (Paths.Identifier.Page.t * Comment.link_content option * Frontmatter.t) list
 
 val all_units :
   library:string -> t -> Odoc_model.Paths.Identifier.RootModule.t list
@@ -58,28 +57,25 @@ val all_units :
 (** Helpers for creating xref2 env. *)
 
 val build_compile_env_for_unit :
-  t -> Odoc_model.Lang.Compilation_unit.t -> Odoc_xref2.Env.t
+  t -> Lang.Compilation_unit.t -> Odoc_xref2.Env.t
 (** Initialize the environment for compiling the given module. *)
 
-val build_link_env_for_unit :
-  t -> Odoc_model.Lang.Compilation_unit.t -> Odoc_xref2.Env.t
+val build_link_env_for_unit : t -> Lang.Compilation_unit.t -> Odoc_xref2.Env.t
 (** Initialize the environment for linking the given module. *)
 
-val build_env_for_page : t -> Odoc_model.Lang.Page.t -> Odoc_xref2.Env.t
+val build_env_for_page : t -> Lang.Page.t -> Odoc_xref2.Env.t
 (** Initialize the environment for the given page. *)
 
-val build_compile_env_for_impl :
-  t -> Odoc_model.Lang.Implementation.t -> Odoc_xref2.Env.t
+val build_compile_env_for_impl : t -> Lang.Implementation.t -> Odoc_xref2.Env.t
 (** Initialize the environment for the given implementation. *)
 
-val build_link_env_for_impl :
-  t -> Odoc_model.Lang.Implementation.t -> Odoc_xref2.Env.t
+val build_link_env_for_impl : t -> Lang.Implementation.t -> Odoc_xref2.Env.t
 (** Initialize the environment for the given implementation. *)
 
 val build_env_for_reference : t -> Odoc_xref2.Env.t
 (** Initialize the environment for a reference. *)
 
-val resolve_import : t -> string -> Odoc_model.Root.t option
+val resolve_import : t -> string -> Root.t option
 (** Similar to {!Odoc_xref2.Env.lookup_root_module} but save work by loading
     only the root. Only used when resolving imports, which are needed for the
     [link-deps] command. *)

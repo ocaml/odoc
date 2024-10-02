@@ -70,38 +70,35 @@ module PageToc = struct
       | Some ({ children_order; _ }, _) -> children_order
       | None -> None
     in
-    let children_order =
-      match children_order with
-      | None ->
-          let contents =
-            let leafs =
-              leafs dir
-              |> List.map (fun (id, payload) -> ((id :> Page.t), Entry payload))
-            in
-            let dirs =
-              dirs dir
-              |> List.map (fun (id, payload) -> ((id :> Page.t), Dir payload))
-            in
-            leafs @ dirs
+    match children_order with
+    | None ->
+        let contents =
+          let leafs =
+            leafs dir
+            |> List.map (fun (id, payload) -> ((id :> Page.t), Entry payload))
           in
-          List.sort
-            (fun (x, _) (y, _) ->
-              String.compare (Paths.Identifier.name x) (Paths.Identifier.name y))
-            contents
-      | Some ch ->
-          let open OptionMonad in
-          List.filter_map
-            (fun c ->
-              let id =
-                match c with
-                | Frontmatter.Page name ->
-                    Mk.leaf_page (dir_id, Names.PageName.make_std name)
-                | Dir name -> Mk.page (dir_id, Names.PageName.make_std name)
-              in
-              find dir id >>= fun content -> Some (id, content))
-            ch
-    in
-    children_order
+          let dirs =
+            dirs dir
+            |> List.map (fun (id, payload) -> ((id :> Page.t), Dir payload))
+          in
+          leafs @ dirs
+        in
+        List.sort
+          (fun (x, _) (y, _) ->
+            String.compare (Paths.Identifier.name x) (Paths.Identifier.name y))
+          contents
+    | Some ch ->
+        let open OptionMonad in
+        List.filter_map
+          (fun c ->
+            let id =
+              match c with
+              | Frontmatter.Page name ->
+                  Mk.leaf_page (dir_id, Names.PageName.make_std name)
+              | Dir name -> Mk.page (dir_id, Names.PageName.make_std name)
+            in
+            find dir id >>= fun content -> Some (id, content))
+          ch
 
   let dir_payload ((parent_id, _) as dir) =
     let index_id =

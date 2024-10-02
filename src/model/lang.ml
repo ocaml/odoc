@@ -539,15 +539,15 @@ module rec Page : sig
 end =
   Page
 
-module rec Asset : sig
-  type t = { name : Identifier.AssetFile.t; root : Root.t }
-end =
-  Asset
-
 module rec Index : sig
   type 'a t = { sidebar : Sidebar.t; index : 'a Paths.Identifier.Hashtbl.Any.t }
 end =
   Index
+
+module rec Asset : sig
+  type t = { name : Identifier.AssetFile.t; root : Root.t }
+end =
+  Asset
 
 let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
   | Signature sg -> Some (Signature sg)
