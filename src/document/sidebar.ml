@@ -26,10 +26,10 @@ end = struct
     let rec of_lang ~parent_id (dir : PageToc.t) =
       let title, parent_id =
         match PageToc.dir_payload dir with
-        | Some (title, index_id) -> (Some title, Some (index_id :> Page.t))
+        | Some (index_id, title) -> (Some title, Some (index_id :> Page.t))
         | None -> (None, (parent_id :> Page.t option))
       in
-      let children_order = PageToc.contents dir in
+      let ordered_children = PageToc.contents dir in
       let entries =
         List.filter_map
           (fun id ->
@@ -43,7 +43,7 @@ end = struct
                 in
                 Some (Item (payload, []))
             | id, PageToc.Dir dir -> Some (of_lang ~parent_id:(Some id) dir))
-          children_order
+          ordered_children
       in
       let payload =
         match (title, parent_id) with

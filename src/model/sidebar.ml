@@ -105,7 +105,7 @@ module PageToc = struct
       Paths.Identifier.Mk.leaf_page (parent_id, Names.PageName.make_std "index")
     in
     match find_leaf dir index_id with
-    | Some payload -> Some (payload.title, index_id)
+    | Some payload -> Some (index_id, payload.title)
     | None -> None
 
   let rec get_or_create (dir : t) (id : container_page) : t =

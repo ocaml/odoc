@@ -13,7 +13,7 @@ module PageToc : sig
 
   val contents : t -> (Page.t * content) list
 
-  val dir_payload : t -> (title * LeafPage.t) option
+  val dir_payload : t -> (LeafPage.t * title) option
   (** Gets a title and the ID from a potential [index] page *)
 end
 
