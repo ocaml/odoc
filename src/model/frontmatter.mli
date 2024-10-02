@@ -1,5 +1,7 @@
 type child = Page of string | Dir of string
 
-type t = { children_order : child list option }
+type t = { children_order : child list Location_.with_location option }
 
-val parse : string -> t
+val empty : t
+
+val parse : string Location_.with_location -> t

@@ -147,16 +147,13 @@ let find_zero_heading docs : link_content option =
     docs
 
 let extract_frontmatter docs : _ =
-  let fm, content =
-    let fm, rev_content =
-      List.fold_left
-        (fun (fm_acc, content_acc) doc ->
-          match doc.Location_.value with
-          | `Code_block (Some "meta", content, None) ->
-              (content.Location_.value :: fm_acc, content_acc)
-          | _ -> (fm_acc, doc :: content_acc))
-        ([], []) docs
-    in
-    (fm |> String.concat "\n" |> Frontmatter.parse, List.rev rev_content)
+  let fm, rev_content =
+    List.fold_left
+      (fun (fm_acc, content_acc) doc ->
+        match doc.Location_.value with
+        | `Code_block (Some "meta", content, None) ->
+            (Frontmatter.parse content, content_acc)
+        | _ -> (fm_acc, doc :: content_acc))
+      (Frontmatter.empty, []) docs
   in
-  (fm, content)
+  (fm, List.rev rev_content)

@@ -2,14 +2,14 @@ type child = Page of string | Dir of string
 
 type line = Children_order of child list | KV of string * string | V of string
 
-type t = { children_order : child list option }
+type t = { children_order : child list Location_.with_location option }
 
 let empty = { children_order = None }
 
 let apply fm line =
-  match (line, fm) with
+  match (line.Location_.value, fm) with
   | Children_order children_order, { children_order = None } ->
-      { children_order = Some children_order }
+      { children_order = Some (Location_.same line children_order) }
   | Children_order _, { children_order = Some _ } ->
       (* TODO raise warning about duplicate children field *) fm
   | KV _, _ | V _, _ -> (* TODO raise warning *) fm
@@ -22,17 +22,21 @@ let parse_child c =
 
 let parse s =
   let entries =
-    s
+    s.Location_.value
     |> Astring.String.cuts ~sep:"\n"
     |> List.map (fun l ->
-           l |> fun x ->
-           Astring.String.cut ~sep:":" x |> function
-           | Some ("children", v) ->
-               let refs =
-                 v |> Astring.String.fields ~empty:false |> List.map parse_child
-               in
-               Children_order refs
-           | Some (k, v) -> KV (k, v)
-           | None -> V x)
+           let v =
+             Astring.String.cut ~sep:":" l |> function
+             | Some ("children", v) ->
+                 let refs =
+                   v
+                   |> Astring.String.fields ~empty:false
+                   |> List.map parse_child
+                 in
+                 Children_order refs
+             | Some (k, v) -> KV (k, v)
+             | None -> V l
+           in
+           Location_.same s v)
   in
   List.fold_left apply empty entries
