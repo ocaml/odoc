@@ -149,26 +149,25 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
         let pages = Resolver.all_pages ~root:page_root resolver in
         let pages =
           let pages =
-            List.map
-              (fun (id, title, fm) ->
-                let title =
-                  match title with
-                  | None ->
-                      [
-                        Location_.at (Location_.span [])
-                          (`Word (Paths.Identifier.name id));
-                      ]
-                  | Some x -> x
-                in
-                let children_order = fm.Frontmatter.children_order in
-                (id, title, children_order))
-              (List.filter_map
+            pages
+            |> List.filter_map
                  Paths.Identifier.(
                    function
                    | ({ iv = #LeafPage.t_pv; _ } as id), pl, fm ->
                        Some (id, pl, fm)
                    | _ -> None)
-                 pages)
+            |> List.map (fun (id, title, fm) ->
+                   let title =
+                     match title with
+                     | None ->
+                         [
+                           Location_.at (Location_.span [])
+                             (`Word (Paths.Identifier.name id));
+                         ]
+                     | Some x -> x
+                   in
+                   let children_order = fm.Frontmatter.children_order in
+                   (id, title, children_order))
           in
           PageToc.of_list pages
         in

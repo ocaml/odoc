@@ -11,17 +11,14 @@ module PageToc : sig
   (** Uses the convention that the [index] children passes its payload to the
       container directory to output a payload *)
 
-  val find : t -> Page.t -> content option
   val contents : t -> (Page.t * content) list
 
   val dir_payload : t -> (title * LeafPage.t) option
   (** Gets a title and the ID from a potential [index] page *)
 end
 
-type toc = PageToc.t
-
 type library = { name : string; units : RootModule.t list }
 
-type page_hierarchy = { hierarchy_name : string; pages : toc }
+type page_hierarchy = { hierarchy_name : string; pages : PageToc.t }
 
 type t = { pages : page_hierarchy list; libraries : library list }

@@ -9,7 +9,7 @@ let sidebar_toc_entry id content =
 module Toc : sig
   type t
 
-  val of_lang : Odoc_model.Sidebar.toc -> t
+  val of_lang : Odoc_model.Sidebar.PageToc.t -> t
 
   val remove_common_root : t -> t
   (** Returns the deepest subdir containing all files. *)
@@ -22,8 +22,8 @@ end = struct
   open Odoc_model.Sidebar
   open Odoc_model.Paths.Identifier
 
-  let of_lang (dir : toc) =
-    let rec of_lang ~parent_id (dir : toc) =
+  let of_lang (dir : PageToc.t) =
+    let rec of_lang ~parent_id (dir : PageToc.t) =
       let title, parent_id =
         match PageToc.dir_payload dir with
         | Some (title, index_id) -> (Some title, Some (index_id :> Page.t))
@@ -55,7 +55,6 @@ end = struct
       in
       Item (payload, entries)
     in
-
     of_lang ~parent_id:None dir
 
   let rec remove_common_root = function
