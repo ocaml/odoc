@@ -704,7 +704,14 @@ and page_t =
 
 and frontmatter =
   let open Odoc_model.Frontmatter in
-  Record [ F ("children", (fun t -> t.children_order), Option (List child)) ]
+  let ignore_loc x = x.Location_.value in
+  Record
+    [
+      F
+        ( "children",
+          (fun t -> Option.map ignore_loc t.children_order),
+          Option (List child) );
+    ]
 
 and child =
   let open Odoc_model.Frontmatter in

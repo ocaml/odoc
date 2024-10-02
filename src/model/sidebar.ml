@@ -10,7 +10,7 @@ type container_page = ContainerPage.t
 
 module PageToc = struct
   type title = Comment.link_content
-  type children_order = Frontmatter.child list
+  type children_order = Frontmatter.child list Location_.with_location
 
   type payload = { title : title; children_order : children_order option }
 
@@ -110,11 +110,26 @@ module PageToc = struct
                     | Page c, `LeafPage (_, name) ->
                         String.equal (Names.PageName.to_string name) c
                     | _ -> false)
-                  children_order
+                  children_order.value
               with
               | Some i -> `Left (i, entry)
               | None -> `Right entry)
             contents
+    in
+    let () =
+      match (children_order, unordered) with
+      | Some x, (_ :: _ as l) ->
+          let pp fmt (id, _) =
+            match id.iv with
+            | `LeafPage (_, name) ->
+                Format.fprintf fmt "'%s'" (Names.PageName.to_string name)
+            | `Page (_, name) ->
+                Format.fprintf fmt "'%s/'" (Names.PageName.to_string name)
+          in
+          Error.raise_warning
+            (Error.make "(children) doesn't include %a."
+               (Format.pp_print_list pp) l (Location_.location x))
+      | _ -> ()
     in
     let ordered =
       ordered

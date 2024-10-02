@@ -2,7 +2,7 @@ open Paths.Identifier
 
 module PageToc : sig
   type title = Comment.link_content
-  type children_order = Frontmatter.child list
+  type children_order = Frontmatter.child list Location_.with_location
 
   type index = Page.t * title
   type t = (Page.t * content) list * index option

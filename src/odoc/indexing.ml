@@ -41,7 +41,7 @@ let parse_input_files input =
     (Ok []) input
   >>= fun files -> Ok (List.concat files)
 
-let compile_to_json ~output ~warnings_options ~occurrences files =
+let compile_to_json ~output ~occurrences files =
   let output_channel =
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     open_out_bin (Fs.File.to_string output)
@@ -53,7 +53,7 @@ let compile_to_json ~output ~warnings_options ~occurrences files =
     false
   in
   Format.fprintf output "[";
-  let index () =
+  let _ : bool =
     List.fold_left
       (fun acc file ->
         match
@@ -70,12 +70,10 @@ let compile_to_json ~output ~warnings_options ~occurrences files =
             acc)
       true files
   in
-  let result = Error.catch_warnings index in
-  result |> Error.handle_warnings ~warnings_options >>= fun (_ : bool) ->
   Format.fprintf output "]";
   Ok ()
 
-let compile_to_marshall ~output ~warnings_options sidebar files =
+let compile_to_marshall ~output sidebar files =
   let final_index = H.create 10 in
   let unit u =
     Odoc_model.Fold.unit
@@ -96,7 +94,7 @@ let compile_to_marshall ~output ~warnings_options sidebar files =
       () p
   in
   let index i = H.iter (H.add final_index) i in
-  let index () =
+  let () =
     List.fold_left
       (fun acc file ->
         match handle_file ~unit ~page ~occ:index file with
@@ -107,8 +105,6 @@ let compile_to_marshall ~output ~warnings_options sidebar files =
             acc)
       () files
   in
-  let result = Error.catch_warnings index in
-  result |> Error.handle_warnings ~warnings_options >>= fun () ->
   Ok (Odoc_file.save_index output { index = final_index; sidebar })
 
 let read_occurrences file =
@@ -120,6 +116,11 @@ open Odoc_model.Sidebar
 
 let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
     ~page_roots ~inputs_in_file ~odocls =
+  let handle_warnings f =
+    let res = Error.catch_warnings f in
+    Error.handle_warnings ~warnings_options res |> Result.join
+  in
+  handle_warnings @@ fun () ->
   let current_dir = Fs.File.dirname output in
   parse_input_files inputs_in_file >>= fun files ->
   let files = List.rev_append odocls files in
@@ -194,5 +195,5 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
   in
   let content = { pages; libraries } in
   match out_format with
-  | `JSON -> compile_to_json ~output ~warnings_options ~occurrences files
-  | `Marshall -> compile_to_marshall ~output ~warnings_options content files
+  | `JSON -> compile_to_json ~output ~occurrences files
+  | `Marshall -> compile_to_marshall ~output content files
