@@ -3,12 +3,26 @@ type pkg_args = {
   libs : (string * Fpath.t) list;
 }
 
+let pp_pkg_args fmt x =
+  let sfp_pp =
+    Fmt.(
+      list ~sep:comma (fun fmt (a, b) ->
+          Format.fprintf fmt "(%s, %a)" a Fpath.pp b))
+  in
+  Format.fprintf fmt "@[<hov>pages: [%a]@;libs: [%a]@]" sfp_pp x.pages sfp_pp
+    x.libs
+
 type index = {
   pkg_args : pkg_args;
   output_file : Fpath.t;
   json : bool;
   search_dir : Fpath.t;
 }
+
+let pp_index fmt x =
+  Format.fprintf fmt
+    "@[<hov>pkg_args: %a@;output_file: %a@;json: %b@;search_dir: %a@]"
+    pp_pkg_args x.pkg_args Fpath.pp x.output_file x.json Fpath.pp x.search_dir
 
 type 'a unit = {
   parent_id : Odoc.Id.t;
@@ -35,7 +49,49 @@ type mld = [ `Mld ]
 
 type asset = [ `Asset ]
 
-type t = [ impl | intf | mld | asset ] unit
+type all_kinds = [ impl | intf | mld | asset ]
+type t = all_kinds unit
+
+let rec pp_kind : all_kinds Fmt.t =
+ fun fmt x ->
+  match x with
+  | `Intf x -> Format.fprintf fmt "`Intf %a" pp_intf_extra x
+  | `Impl x -> Format.fprintf fmt "`Impl %a" pp_impl_extra x
+  | `Mld -> Format.fprintf fmt "`Mld"
+  | `Asset -> Format.fprintf fmt "`Asset"
+
+and pp_intf_extra fmt x =
+  Format.fprintf fmt "@[<hov>hidden: %b@;hash: %s@;deps: [%a]@]" x.hidden x.hash
+    Fmt.(list ~sep:comma Fpath.pp)
+  @@ List.map (fun x -> x.odoc_file) x.deps
+
+and pp_impl_extra fmt x =
+  Format.fprintf fmt "@[<hov>src_id: %s@;src_path: %a@]"
+    (Odoc.Id.to_string x.src_id)
+    Fpath.pp x.src_path
+
+and pp : all_kinds unit Fmt.t =
+ fun fmt x ->
+  Format.fprintf fmt
+    "@[<hov>parent_id: %s@;\
+     odoc_dir: %a@;\
+     input_file: %a@;\
+     output_dir: %a@;\
+     odoc_file: %a@;\
+     odocl_file: %a@;\
+     pkg_args: %a@;\
+     pkgname: %s@;\
+     include_dirs: [%a]@;\
+     index: %a@;\
+     kind:%a@;\
+     @]"
+    (Odoc.Id.to_string x.parent_id)
+    Fpath.pp x.odoc_dir Fpath.pp x.input_file Fpath.pp x.output_dir Fpath.pp
+    x.odoc_file Fpath.pp x.odocl_file pp_pkg_args x.pkg_args x.pkgname
+    Fmt.(list ~sep:comma Fpath.pp)
+    (Fpath.Set.to_list x.include_dirs)
+    (Fmt.option pp_index) x.index pp_kind
+    (x.kind :> all_kinds)
 
 let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
     (pkgs : Packages.t list) : t list =

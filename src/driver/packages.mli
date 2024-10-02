@@ -64,6 +64,8 @@ module Lib : sig
     cmtidir:Fpath.t option ->
     all_lib_deps:Util.StringSet.t Util.StringMap.t ->
     libty list
+
+  val pp : Format.formatter -> libty -> unit
 end
 
 type t = {
