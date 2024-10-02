@@ -171,7 +171,6 @@ module Lib = struct
       Fmt.(list ~sep:sp Module.pp)
       t.modules
 end
-
 let pp ppf t =
   Fmt.pf ppf "name: %s@.version: %s@.libraries: [@[<hov 2>@,%a@]@,]" t.name
     t.version

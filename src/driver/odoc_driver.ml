@@ -571,6 +571,8 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
             Odoc_unit.of_packages ~output_dir:odoc_dir ~linked_dir:odocl_dir
               ~index_dir:None ~extra_libs_paths all
           in
+          Format.eprintf "All units:\n%!";
+          Format.eprintf "%a" Fmt.(list ~sep:Fmt.semi Odoc_unit.pp) internal;
           let external_ =
             let mld_dir = odoc_dir in
             let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
