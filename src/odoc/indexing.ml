@@ -3,12 +3,10 @@ open Odoc_json_index
 open Or_error
 open Odoc_model
 
-module H = Odoc_model.Paths.Identifier.Hashtbl.Any
-
 let handle_file file ~unit ~page ~occ =
   match Fpath.basename file with
   | s when String.is_prefix ~affix:"index-" s ->
-      Odoc_file.load_index file >>= fun (_sidebar, index) -> Ok (occ index)
+      Odoc_file.load_index file >>= fun index -> Ok (occ index.entries)
   | _ -> (
       Odoc_file.load file >>= fun unit' ->
       match unit' with
@@ -74,10 +72,12 @@ let compile_to_json ~output ~warnings_options ~occurrences files =
   Format.fprintf output "]";
   Ok ()
 
-let compile_to_marshall ~output ~warnings_options sidebar files =
+let compile_to_marshall ~output ~warnings_options ~pages_short_title sidebar
+    files =
+  let module H = Paths.Identifier.Hashtbl.Any in
   let final_index = H.create 10 in
   let unit u =
-    Odoc_model.Fold.unit
+    Fold.unit
       ~f:(fun () item ->
         let entries = Odoc_search.Entry.entries_of_item item in
         List.iter
@@ -86,7 +86,7 @@ let compile_to_marshall ~output ~warnings_options sidebar files =
       () u
   in
   let page p =
-    Odoc_model.Fold.page
+    Fold.page
       ~f:(fun () item ->
         let entries = Odoc_search.Entry.entries_of_item item in
         List.iter
@@ -108,14 +108,17 @@ let compile_to_marshall ~output ~warnings_options sidebar files =
   in
   let result = Error.catch_warnings index in
   result |> Error.handle_warnings ~warnings_options >>= fun () ->
-  Ok (Odoc_file.save_index output (sidebar, final_index))
+  let index =
+    { Lang.Index.sidebar; entries = final_index; pages_short_title }
+  in
+  Ok (Odoc_file.save_index output index)
 
 let read_occurrences file =
   let ic = open_in_bin file in
   let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
   htbl
 
-open Odoc_model.Lang.Sidebar
+open Lang.Sidebar
 
 let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
     ~page_roots ~inputs_in_file ~odocls =
@@ -142,20 +145,24 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
   in
   (* if files = [] && then Error (`Msg "No .odocl files were included") *)
   (* else *)
-  let pages =
+  let all_pages_of_roots =
     List.map
       (fun (page_root, _) ->
-        let pages = Resolver.all_pages ~root:page_root resolver in
+        (page_root, Resolver.all_pages ~root:page_root resolver))
+      page_roots
+  in
+  let pages =
+    List.map
+      (fun (page_root, pages) ->
         let pages =
           List.map
-            (fun (page_id, title) ->
+            (fun (page_id, page_info) ->
               let title =
-                match title with
+                match page_info.Root.Odoc_file.title with
                 | None ->
                     [
-                      Odoc_model.Location_.at
-                        (Odoc_model.Location_.span [])
-                        (`Word (Odoc_model.Paths.Identifier.name page_id));
+                      Location_.at (Location_.span [])
+                        (`Word (Paths.Identifier.name page_id));
                     ]
                 | Some x -> x
               in
@@ -163,7 +170,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
             pages
         in
         { page_name = page_root; pages })
-      page_roots
+      all_pages_of_roots
   in
   let libraries =
     List.map
@@ -183,7 +190,25 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
                [] include_rec)
       |> List.concat)
   in
+  let pages_short_title =
+    let module H = Odoc_model.Paths.Identifier.Hashtbl.Page in
+    let dst = H.create 8 in
+    List.iter
+      (fun (_, pages) ->
+        List.iter
+          (fun (id, page_info) ->
+            match
+              Frontmatter.get "short_title" page_info.Root.Odoc_file.frontmatter
+            with
+            | Some short_title -> H.replace dst id short_title
+            | None -> ())
+          pages)
+      all_pages_of_roots;
+    dst
+  in
   let content = { pages; libraries } in
   match out_format with
   | `JSON -> compile_to_json ~output ~warnings_options ~occurrences files
-  | `Marshall -> compile_to_marshall ~output ~warnings_options content files
+  | `Marshall ->
+      compile_to_marshall ~output ~warnings_options ~pages_short_title content
+        files

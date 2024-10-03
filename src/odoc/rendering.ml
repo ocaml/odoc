@@ -1,6 +1,8 @@
+open Odoc_utils
 open Odoc_document
 open Or_error
 open Odoc_model
+module Id = Paths.Identifier
 
 let prepare ~extra_suffix ~output_dir filename =
   let filename =
@@ -17,9 +19,13 @@ let document_of_odocl ~syntax input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
   | Odoc_file.Page_content odoctree ->
-      Ok (Renderer.document_of_page ~syntax odoctree)
+      Ok
+        ( (odoctree.name :> Id.OdocId.t),
+          Renderer.document_of_page ~syntax odoctree )
   | Unit_content odoctree ->
-      Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
+      Ok
+        ( (odoctree.id :> Id.OdocId.t),
+          Renderer.document_of_compilation_unit ~syntax odoctree )
   | Impl_content _ ->
       Error
         (`Msg
@@ -34,8 +40,10 @@ let document_of_odocl ~syntax input =
 let document_of_input ~resolver ~warnings_options ~syntax input =
   let output = Fs.File.(set_ext ".odocl" input) in
   Odoc_link.from_odoc ~resolver ~warnings_options input output >>= function
-  | `Page page -> Ok (Renderer.document_of_page ~syntax page)
-  | `Module m -> Ok (Renderer.document_of_compilation_unit ~syntax m)
+  | `Page page ->
+      Ok ((page.name :> Id.OdocId.t), Renderer.document_of_page ~syntax page)
+  | `Module m ->
+      Ok ((m.id :> Id.OdocId.t), Renderer.document_of_compilation_unit ~syntax m)
   | `Impl _ ->
       Error
         (`Msg
@@ -47,19 +55,17 @@ let document_of_input ~resolver ~warnings_options ~syntax input =
           "Wrong kind of unit: Expected a page or module unit, got an asset \
            unit. Use the dedicated command for assets.")
 
-let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
-    =
+let render_document renderer ~sidebar ~breadcrumbs ~output:root_dir
+    ~extra_suffix ~extra doc =
   let url =
     match doc with
     | Odoc_document.Types.Document.Page { url; _ } -> url
     | Source_page { url; _ } -> url
   in
   let sidebar =
-    Odoc_utils.Option.map
-      (fun sb -> Odoc_document.Sidebar.to_block sb url)
-      sidebar
+    Option.map (fun sb -> Odoc_document.Sidebar.to_block sb url) sidebar
   in
-  let pages = renderer.Renderer.render extra sidebar doc in
+  let pages = renderer.Renderer.render extra ~sidebar ~breadcrumbs doc in
   Renderer.traverse pages ~f:(fun filename content ->
       let filename = prepare ~extra_suffix ~output_dir:root_dir filename in
       let oc = open_out (Fs.File.to_string filename) in
@@ -70,20 +76,26 @@ let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
 let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
     =
   let extra_suffix = None in
-  document_of_input ~resolver ~warnings_options ~syntax file >>= fun doc ->
-  render_document renderer ~sidebar:None ~output ~extra_suffix ~extra doc;
+  document_of_input ~resolver ~warnings_options ~syntax file
+  >>= fun (id, doc) ->
+  let breadcrumbs = Odoc_document.Breadcrumbs.of_lang ~index:None id in
+  render_document renderer ~sidebar:None ~breadcrumbs ~output ~extra_suffix
+    ~extra doc;
   Ok ()
 
 let generate_odoc ~syntax ~warnings_options:_ ~renderer ~output ~extra_suffix
     ~sidebar extra file =
+  document_of_odocl ~syntax file >>= fun (id, doc) ->
   (match sidebar with
-  | None -> Ok None
+  | None -> Ok (None, None)
   | Some x ->
-      Odoc_file.load_index x >>= fun (sidebar, _) ->
-      Ok (Some (Odoc_document.Sidebar.of_lang sidebar)))
-  >>= fun sidebar ->
-  document_of_odocl ~syntax file >>= fun doc ->
-  render_document renderer ~output ~sidebar ~extra_suffix ~extra doc;
+      Odoc_file.load_index x >>= fun index ->
+      let sidebar = Odoc_document.Sidebar.of_lang index.sidebar in
+      Ok (Some sidebar, Some index))
+  >>= fun (sidebar, index) ->
+  let breadcrumbs = Odoc_document.Breadcrumbs.of_lang ~index id in
+  render_document renderer ~output ~sidebar ~breadcrumbs ~extra_suffix ~extra
+    doc;
   Ok ()
 
 let documents_of_implementation ~warnings_options:_ ~syntax impl source_file =
@@ -111,8 +123,15 @@ let generate_source_odoc ~syntax ~warnings_options ~renderer ~output
   | Odoc_file.Impl_content impl ->
       documents_of_implementation ~warnings_options ~syntax impl source_file
       >>= fun docs ->
+      let breadcrumbs =
+        match impl.id with
+        | Some id ->
+            Odoc_document.Breadcrumbs.of_lang ~index:None (id :> Id.OdocId.t)
+        | None -> Odoc_document.Breadcrumbs.empty
+      in
       List.iter
-        (render_document renderer ~output ~sidebar:None ~extra_suffix ~extra)
+        (render_document renderer ~output ~sidebar:None ~breadcrumbs
+           ~extra_suffix ~extra)
         docs;
       Ok ()
   | Page_content _ | Unit_content _ | Asset_content _ ->
@@ -137,8 +156,9 @@ let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
       document_of_input ~resolver ~warnings_options ~syntax odoctree
     else document_of_odocl ~syntax odoctree
   in
-  doc >>= fun doc ->
-  let pages = renderer.Renderer.render extra None doc in
+  doc >>= fun (_id, doc) ->
+  let breadcrumbs = Breadcrumbs.empty in
+  let pages = renderer.Renderer.render extra ~sidebar:None ~breadcrumbs doc in
   Renderer.traverse pages ~f:(fun filename _content ->
       let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
       Format.printf "%a\n" Fpath.pp filename);
@@ -153,7 +173,10 @@ let targets_source_odoc ~syntax ~warnings_options ~renderer ~output:root_dir
       >>= fun docs ->
       List.iter
         (fun doc ->
-          let pages = renderer.Renderer.render extra None doc in
+          let breadcrumbs = Breadcrumbs.empty in
+          let pages =
+            renderer.Renderer.render extra ~sidebar:None ~breadcrumbs doc
+          in
           Renderer.traverse pages ~f:(fun filename _content ->
               let filename =
                 Fpath.normalize @@ Fs.File.append root_dir filename

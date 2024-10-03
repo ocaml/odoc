@@ -17,12 +17,10 @@ Current library is not passed:
   [1]
   $ odoc link -P pkg:h/pkg/doc -L otherlib:h/otherpkg h/pkg/doc/page-page.odoc
 
-Current package is not passed:
+Current package is not passed, this is allowed:
 
   $ odoc link -P otherpkg:h/otherpkg/doc -L libname:h/pkg/lib/libname h/pkg/lib/libname/test.odoc
   $ odoc link -P otherpkg:h/otherpkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/page-page.odoc
-  ERROR: The output file must be part of a directory passed as -P
-  [1]
 
 Specified current package is wrong:
 

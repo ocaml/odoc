@@ -644,11 +644,13 @@ end = struct
     | None -> Ok detected_package
 
   let current_package_of_page ~current_package page_roots input =
-    match find_root_of_input page_roots input with
-    | Ok detected_package ->
-        validate_current_package ?detected_package page_roots current_package
-    | Error `Not_found ->
-        Error (`Msg "The output file must be part of a directory passed as -P")
+    let detected_package =
+      (* Driver generated pages might not belong to a doc hierarchy. *)
+      match find_root_of_input page_roots input with
+      | Ok p -> p
+      | Error `Not_found -> None
+    in
+    validate_current_package ?detected_package page_roots current_package
 
   let is_page input =
     input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"

@@ -235,6 +235,7 @@ module Identifier : sig
 
   module Hashtbl : sig
     module Any : Hashtbl.S with type key = Any.t
+    module Page : Hashtbl.S with type key = Page.t
   end
 
   module Mk : sig

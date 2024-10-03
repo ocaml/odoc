@@ -13,6 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
+open Odoc_utils
 module HLink = Link
 open Odoc_document.Types
 module Html = Tyxml.Html
@@ -498,24 +499,30 @@ end
 module Breadcrumbs = struct
   open Types
 
-  let gen_breadcrumbs ~config ~url =
-    let rec get_parent_paths x =
-      match x with
-      | [] -> []
-      | x :: xs -> (
-          match Odoc_document.Url.Path.of_list (List.rev (x :: xs)) with
-          | Some x -> x :: get_parent_paths xs
-          | None -> get_parent_paths xs)
+  let gen_breadcrumbs ~config ~current_url breadcrumbs =
+    let resolve = Link.Current current_url in
+    let mk url name =
+      let href = Link.href ~config ~resolve (Url.from_path url) in
+      { href; name; kind = url.kind }
     in
-    let to_breadcrumb path =
-      let href =
-        Link.href ~config ~resolve:(Current url)
-          (Odoc_document.Url.from_path path)
-      in
-      { href; name = path.name; kind = path.kind }
+    let is_local_breadcrumb =
+      match breadcrumbs with
+      | [] -> fun _ -> true
+      | _ :: _ ->
+          let _, last_page_seg = List.last breadcrumbs in
+          ( <> ) last_page_seg
     in
-    get_parent_paths (List.rev (Odoc_document.Url.Path.to_list url))
-    |> List.rev |> List.map to_breadcrumb
+    let rec local_breadcrumbs acc url =
+      if is_local_breadcrumb url then parent (mk url url.name :: acc) url.parent
+      else acc
+    and parent acc = function
+      | Some p -> local_breadcrumbs acc p
+      | None -> acc
+    in
+    let page_breadcrumbs =
+      List.rev_map (fun (title, url) -> mk url title) breadcrumbs
+    in
+    List.rev_append page_breadcrumbs (local_breadcrumbs [] current_url)
 end
 
 module Page = struct
@@ -526,17 +533,19 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
-  let rec include_ ~config ~sidebar { Subpage.content; _ } =
-    page ~config ~sidebar content
+  let rec include_ ~config ~sidebar ~breadcrumbs { Subpage.content; _ } =
+    page ~config ~sidebar ~breadcrumbs content
 
-  and subpages ~config ~sidebar subpages =
-    List.map (include_ ~config ~sidebar) subpages
+  and subpages ~config ~sidebar ~breadcrumbs subpages =
+    List.map (include_ ~config ~sidebar ~breadcrumbs) subpages
 
-  and page ~config ~sidebar p : Odoc_document.Renderer.page =
+  and page ~config ~sidebar ~breadcrumbs p : Odoc_document.Renderer.page =
     let { Page.preamble; items = i; url; source_anchor } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
-    let subpages = subpages ~config ~sidebar @@ Doctree.Subpages.compute p in
+    let subpages =
+      subpages ~config ~sidebar ~breadcrumbs @@ Doctree.Subpages.compute p
+    in
     let resolve = Link.Current url in
     let sidebar =
       match sidebar with
@@ -548,7 +557,9 @@ module Page = struct
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
-    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
+    let breadcrumbs =
+      Breadcrumbs.gen_breadcrumbs ~config ~current_url:url breadcrumbs
+    in
     let content = (items ~config ~resolve i :> any Html.elt list) in
     if Config.as_json config then
       let source_anchor =
@@ -567,12 +578,14 @@ module Page = struct
       Html_page.make ~sidebar ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
         content subpages
 
-  and source_page ~config sp =
+  and source_page ~config ~breadcrumbs sp =
     let { Source_page.url; contents } = sp in
     let resolve = Link.Current sp.url in
     let title = url.Url.Path.name
     and doc = Html_source.html_of_doc ~config ~resolve contents in
-    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
+    let breadcrumbs =
+      Breadcrumbs.gen_breadcrumbs ~config ~current_url:url breadcrumbs
+    in
     let header =
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in
@@ -581,9 +594,9 @@ module Page = struct
     else Html_page.make_src ~breadcrumbs ~header ~config ~url title [ doc ]
 end
 
-let render ~config ~sidebar = function
-  | Document.Page page -> [ Page.page ~config ~sidebar page ]
-  | Source_page src -> [ Page.source_page ~config src ]
+let render ~config ~sidebar ~breadcrumbs = function
+  | Document.Page page -> [ Page.page ~config ~sidebar ~breadcrumbs page ]
+  | Source_page src -> [ Page.source_page ~config ~breadcrumbs src ]
 
 let filepath ~config url = Link.Path.as_filename ~config url
 

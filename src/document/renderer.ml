@@ -23,7 +23,12 @@ type input =
 
 type 'a t = {
   name : string;
-  render : 'a -> Types.Block.t option -> Types.Document.t -> page list;
+  render :
+    'a ->
+    sidebar:Types.Block.t option ->
+    breadcrumbs:Breadcrumbs.t ->
+    Types.Document.t ->
+    page list;
   filepath : 'a -> Url.Path.t -> Fpath.t;
 }
 
