@@ -1,8 +1,13 @@
 type child = Page of string | Dir of string
 
-type line = Children_order of child list | KV of string * string | V of string
+type line =
+  | Children_order of child Location_.with_location list
+  | KV of string * string
+  | V of string
 
-type t = { children_order : child list Location_.with_location option }
+type children_order = child Location_.with_location list Location_.with_location
+
+type t = { children_order : children_order option }
 
 let empty = { children_order = None }
 
@@ -32,6 +37,7 @@ let parse s =
                    v
                    |> Astring.String.fields ~empty:false
                    |> List.map parse_child
+                   |> List.map (Location_.same s)
                  in
                  Children_order refs
              | Some (k, v) -> KV (k, v)

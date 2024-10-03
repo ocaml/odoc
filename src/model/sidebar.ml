@@ -10,9 +10,11 @@ type container_page = ContainerPage.t
 
 module PageToc = struct
   type title = Comment.link_content
-  type children_order = Frontmatter.child list Location_.with_location
 
-  type payload = { title : title; children_order : children_order option }
+  type payload = {
+    title : title;
+    children_order : Frontmatter.children_order option;
+  }
 
   type dir_content = { leafs : payload LPH.t; dirs : in_progress CPH.t }
   and in_progress = container_page option * dir_content
@@ -83,6 +85,18 @@ module PageToc = struct
           (children_order, Some (index_id, index_title))
       | None -> (None, None)
     in
+    let pp_content fmt (id, _) =
+      match id.iv with
+      | `LeafPage (_, name) ->
+          Format.fprintf fmt "'%s'" (Names.PageName.to_string name)
+      | `Page (_, name) ->
+          Format.fprintf fmt "'%s/'" (Names.PageName.to_string name)
+    in
+    let pp_children fmt c =
+      match c.Location_.value with
+      | Frontmatter.Page s -> Format.fprintf fmt "'%s'" s
+      | Dir s -> Format.fprintf fmt "'%s/'" s
+    in
     let ordered, unordered =
       let contents =
         let leafs =
@@ -99,36 +113,57 @@ module PageToc = struct
       match children_order with
       | None -> ([], contents)
       | Some children_order ->
-          List.partition_map
-            (fun (((id : Page.t), _) as entry) ->
-              match
-                List.find_index
-                  (fun ch ->
-                    match (ch, id.iv) with
-                    | Frontmatter.Dir c, `Page (_, name) ->
-                        String.equal (Names.PageName.to_string name) c
-                    | Page c, `LeafPage (_, name) ->
-                        String.equal (Names.PageName.to_string name) c
-                    | _ -> false)
-                  children_order.value
-              with
-              | Some i -> `Left (i, entry)
-              | None -> `Right entry)
-            contents
+          let children_indexes =
+            List.mapi (fun i x -> (i, x)) children_order.value
+          in
+          let equal id ch =
+            match (ch, id.iv) with
+            | (_, { Location_.value = Frontmatter.Dir c; _ }), `Page (_, name)
+              ->
+                String.equal (Names.PageName.to_string name) c
+            | (_, { Location_.value = Page c; _ }), `LeafPage (_, name) ->
+                String.equal (Names.PageName.to_string name) c
+            | _ -> false
+          in
+          let children_indexes, indexed_content, unindexed_content =
+            List.fold_left
+              (fun (children_indexes, indexed_content, unindexed_content)
+                   (((id : Page.t), _) as entry) ->
+                let indexes_for_entry, children_indexes =
+                  List.partition (equal id) children_indexes
+                in
+                match indexes_for_entry with
+                | [] ->
+                    ( children_indexes,
+                      indexed_content,
+                      entry :: unindexed_content )
+                | (i, _) :: rest ->
+                    List.iter
+                      (fun (_, c) ->
+                        Error.raise_warning
+                          (Error.make "Duplicate %a in (children)." pp_children
+                             c (Location_.location c)))
+                      rest;
+                    ( children_indexes,
+                      (i, entry) :: indexed_content,
+                      unindexed_content ))
+              (children_indexes, [], []) contents
+          in
+          List.iter
+            (fun (_, c) ->
+              Error.raise_warning
+                (Error.make "%a in (children) does not correspond to anything."
+                   pp_children c (Location_.location c)))
+            children_indexes;
+          (indexed_content, unindexed_content)
     in
     let () =
       match (children_order, unordered) with
       | Some x, (_ :: _ as l) ->
-          let pp fmt (id, _) =
-            match id.iv with
-            | `LeafPage (_, name) ->
-                Format.fprintf fmt "'%s'" (Names.PageName.to_string name)
-            | `Page (_, name) ->
-                Format.fprintf fmt "'%s/'" (Names.PageName.to_string name)
-          in
           Error.raise_warning
             (Error.make "(children) doesn't include %a."
-               (Format.pp_print_list pp) l (Location_.location x))
+               (Format.pp_print_list pp_content)
+               l (Location_.location x))
       | _ -> ()
     in
     let ordered =

@@ -716,7 +716,9 @@ and frontmatter =
 and child =
   let open Odoc_model.Frontmatter in
   Variant
-    (function Page s -> C ("Page", s, string) | Dir s -> C ("Dir", s, string))
+    (function
+    | { Location_.value = Page s; _ } -> C ("Page", s, string)
+    | { Location_.value = Dir s; _ } -> C ("Dir", s, string))
 
 and implementation_t =
   let open Lang.Implementation in
