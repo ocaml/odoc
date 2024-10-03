@@ -1,12 +1,12 @@
 open Odoc_utils
-open Paths.Identifier
+module Id = Paths.Identifier
 
-module CPH = Hashtbl.ContainerPage
-module LPH = Hashtbl.LeafPage
+module CPH = Id.Hashtbl.ContainerPage
+module LPH = Id.Hashtbl.LeafPage
 
-type page = Page.t
-type leaf_page = LeafPage.t
-type container_page = ContainerPage.t
+type page = Id.Page.t
+type leaf_page = Id.LeafPage.t
+type container_page = Id.ContainerPage.t
 
 module PageToc = struct
   type title = Comment.link_content
@@ -74,8 +74,8 @@ module PageToc = struct
     | Some payload -> Some (payload, index_id, payload.title)
     | None -> None
 
-  type index = Page.t * title
-  type t = (Page.t * content) list * index option
+  type index = Id.Page.t * title
+  type t = (Id.Page.t * content) list * index option
   and content = Entry of title | Dir of t
 
   let rec t_of_in_progress (dir : in_progress) =
@@ -86,7 +86,7 @@ module PageToc = struct
       | None -> (None, None)
     in
     let pp_content fmt (id, _) =
-      match id.iv with
+      match id.Id.iv with
       | `LeafPage (_, name) ->
           Format.fprintf fmt "'%s'" (Names.PageName.to_string name)
       | `Page (_, name) ->
@@ -101,12 +101,12 @@ module PageToc = struct
       let contents =
         let leafs =
           leafs dir
-          |> List.map (fun (id, payload) -> ((id :> Page.t), Entry payload))
+          |> List.map (fun (id, payload) -> ((id :> Id.Page.t), Entry payload))
         in
         let dirs =
           dirs dir
           |> List.map (fun (id, payload) ->
-                 ((id :> Page.t), Dir (t_of_in_progress payload)))
+                 ((id :> Id.Page.t), Dir (t_of_in_progress payload)))
         in
         leafs @ dirs
       in
@@ -117,7 +117,7 @@ module PageToc = struct
             List.mapi (fun i x -> (i, x)) children_order.value
           in
           let equal id ch =
-            match (ch, id.iv) with
+            match (ch, id.Id.iv) with
             | (_, { Location_.value = Frontmatter.Dir c; _ }), `Page (_, name)
               ->
                 String.equal (Names.PageName.to_string name) c
@@ -128,7 +128,7 @@ module PageToc = struct
           let children_indexes, indexed_content, unindexed_content =
             List.fold_left
               (fun (children_indexes, indexed_content, unindexed_content)
-                   (((id : Page.t), _) as entry) ->
+                   (((id : Id.Page.t), _) as entry) ->
                 let indexes_for_entry, children_indexes =
                   List.partition (equal id) children_indexes
                 in
@@ -168,8 +168,7 @@ module PageToc = struct
     in
     let ordered =
       ordered
-      |> List.sort (fun (i, _) (j, _) ->
-             (Stdlib.compare : int -> int -> int) i j)
+      |> List.sort (fun (i, _) (j, _) -> (compare : int -> int -> int) i j)
       |> List.map snd
     in
     let unordered =
