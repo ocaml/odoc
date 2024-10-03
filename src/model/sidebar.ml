@@ -182,10 +182,13 @@ module PageToc = struct
     let contents = ordered @ unordered in
     (contents, index)
 
+  let rec remove_common_root (v : t) =
+    match v with [ (_, Dir v) ], None -> remove_common_root v | _ -> v
+
   let of_list l =
     let dir = empty_t None in
     List.iter (add dir) l;
-    t_of_in_progress dir
+    t_of_in_progress dir |> remove_common_root
 end
 
 type toc = PageToc.t
